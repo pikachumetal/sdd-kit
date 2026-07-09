@@ -2,7 +2,7 @@
 
 Kit SDD del equipo: skills de proceso agnósticas para el flujo **spec → plan → implementación → walkthrough** con Claude Code. Es el nivel 1 de la taxonomía de skills del equipo (proceso, igual en todos los proyectos); las skills técnicas por stack (nivel 2) y las específicas de cada proyecto (nivel 3) viven en cada repo.
 
-> Estado: **en construcción**. Cada skill se somete a test con subagentes antes de entrar (RED → GREEN → REFACTOR).
+> Estado: **v0.1.0 — completo**. Las 7 skills validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
 
 ## Instalación
 
@@ -20,17 +20,18 @@ npx skills add <org>/sdd-kit -a claude-code            # todas
 npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 ```
 
-## Contenido previsto
+## Contenido
 
 | Skill | Propósito |
 | --- | --- |
-| `sdd-init-greenfield` | Arrancar un proyecto nuevo: entrevista y genera la documentación de anclaje y las skills iniciales |
-| `sdd-init-brownfield` | Onboarding de un codebase existente: explora y documenta el estado real |
-| `sdd-start-task` | Arrancar una tarea: carga contexto y guía spec → plan → tasks |
-| `sdd-end-task` | Definition of Done: walkthrough, changelog, roadmap, estimation-log, revisión de skills |
-| `sdd-start-hotfix` | Carril ligero para bugs deterministas (<30 min): un solo hotfix.md |
-| `sdd-end-hotfix` | Cierre ligero del hotfix |
-| `add-to-changelog` | Entrada en el changelog (Keep a Changelog) |
+| `sdd-init-greenfield` | Arrancar un proyecto nuevo: entrevista (brainstorming como motor, con gates) y genera la documentación de anclaje |
+| `sdd-init-brownfield` | Onboarding de un codebase existente: documenta el estado real (no el ideal), cosecha el CLAUDE.md previo y reduce a punteros |
+| `sdd-start-task` | Arrancar una tarea: Gate 1 de contexto, spec → plan → tasks con gates de aprobación |
+| `sdd-end-task` | Definition of Done: walkthrough, aprendizajes a docs vivos, estimation-log, revisión de skills, changelog, roadmap, rama |
+| `sdd-start-hotfix` | Carril ligero para bugs deterministas (<30 min): causa raíz obligatoria + un solo hotfix.md |
+| `sdd-end-hotfix` | Cierre ligero del hotfix: changelog, roadmap, estimation-log; el merge es decisión del usuario |
+| `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
+| `sdd-templates` | Las 7 plantillas canónicas (spec, plan, tasks, walkthrough, hotfix, data-model, research) |
 
 ## Convenciones
 
