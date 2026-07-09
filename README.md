@@ -11,6 +11,13 @@ Como plugin de Claude Code (recomendado — actualizable centralmente):
 ```text
 /plugin marketplace add <ruta-o-repo>/sdd-kit
 /plugin install sdd-kit@sdd-kit
+/reload-plugins
+```
+
+```text
+/plugin marketplace add D:\code\git\sdd-kit
+/plugin install sdd-kit@sdd-kit
+/reload-plugins
 ```
 
 Por skill individual, con el CLI de agent skills:
@@ -37,4 +44,5 @@ npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 
 - Los artefactos SDD viven en **`.docs/sdd/`** de cada proyecto (carpeta con punto: no es el proyecto, es su andamiaje).
 - Requiere el plugin **superpowers** (brainstorming, executing-plans, systematic-debugging, finishing-a-development-branch).
-- Documentación del flujo: ver los documentos internos *Flux per al desenvolupament ràpid d'aplicacions amb Claude* (greenfield / brownfield / annex).
+- Documentación del flujo del equipo: [`.docs/flux/`](.docs/flux/) — *Flux per al desenvolupament ràpid d'aplicacions amb Claude* (greenfield / brownfield / annex amb l'evidència).
+- Este repo aplica su propio flujo (dogfooding): documentación de anclaje en [`.docs/sdd/`](.docs/sdd/).
