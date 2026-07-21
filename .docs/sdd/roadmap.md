@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | 1 | Subir a remoto (decidir: GitHub / Azure DevOps) para instalación del equipo | ⏳ pendiente |
 | 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — primer feedback ya devuelto al kit (carril release, fuente única de plantillas) |
-| 3 | v0.2.0 tras el estreno: REFACTOR con la fricción real + pasada de recorte de skills largas (con re-test, Art. I) | ⏳ backlog |
+| 3 | v0.3.0 tras el estreno: REFACTOR con la fricción real + pasada de recorte de skills largas (con re-test, Art. I) | ⏳ backlog |
 
 ## Backlog
 
@@ -25,6 +25,16 @@
 
 - Remoto y visibilidad (¿repo interno del equipo?).
 - ¿Changelog de cliente además del técnico? (por ahora solo técnico).
+
+## Releases cerradas
+
+### v0.2.0 — 2026-07-21
+
+Carril release (`sdd-start-release`, `sdd-end-release`) + fuente única de plantillas. [Release notes](releases/v0.2.0/release-notes.md) · [changelog](changelog.md) · [acta](releases/v0.2.0/feedback.md).
+
+### v0.1.0 — 2026-07-09
+
+Las 7 skills de proceso iniciales + plantillas + manifests. Sin acta (el carril release no existía).
 
 ## Hotfixes
 

@@ -23,4 +23,4 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 2. **Dogfooding** (Art. VII): los cambios no triviales del kit se arrancan con `sdd-start-task`; artefactos en `.docs/sdd/specs/` con el naming estándar. Fixes pequeños deterministas → carril hotfix.
 3. Texto humano en castellano con ortografía correcta; nombres de skill en inglés kebab-case; commits bilingües (tipo/scope inglés, cuerpo castellano).
 4. Cada release: bump de `version` en `.claude-plugin/plugin.json` + entrada en `.docs/sdd/changelog.md`.
-5. Las plantillas NO se duplican (Art. VIII): `.docs/sdd/templates/` solo apunta a la fuente única.
+5. Las plantillas NO se duplican (Art. VIII): se calcan siempre del skill `sdd-templates`; ningún proyecto (ni este repo) lleva carpeta `templates/`.

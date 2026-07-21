@@ -34,4 +34,4 @@ Los cambios no triviales del kit pasan por su propio flujo: `sdd-start-task` →
 
 ## Art. VIII — Una sola fuente de plantillas
 
-Las plantillas canónicas viven SOLO en `skills/sdd-templates/templates/`. Ninguna copia dentro del propio repo (`.docs/sdd/templates/` apunta allí). Los proyectos consumidores sí las copian — es su instalación.
+Las plantillas canónicas viven SOLO en `skills/sdd-templates/templates/`. Ninguna copia en ningún sitio: ni en este repo ni en los proyectos consumidores — al crear un artefacto se calca del skill `sdd-templates` (decisión 2026-07-21; antes los proyectos instalaban copia y derivaban).
