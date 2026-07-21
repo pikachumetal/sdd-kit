@@ -29,9 +29,10 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 │       ├── funcional.md      (requisitos; crece con el producto)
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de hotfixes)
 │       ├── estimation.md     (método) · estimation-log.md (VACÍO: se llena con las tareas)
-│       ├── templates/        (copiadas del kit sdd-templates; si el kit no está accesible, carpeta con nota pendiente)
 │       └── specs/            (vacía)
 ```
+
+Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates` del kit y se calcan al crear cada artefacto.
 
 Nunca `docs/`, `docs/superpowers/` ni taxonomías propias (ADRs sueltos, glosarios aparte): las decisiones técnicas viven en constitution/architecture y el lenguaje del dominio en mission.
 
@@ -39,7 +40,7 @@ Nunca `docs/`, `docs/superpowers/` ni taxonomías propias (ADRs sueltos, glosari
 
 1. **Entrevista** — `superpowers:brainstorming`, una pregunta cada vez, por bloques: (a) producto — problema, usuarios y roles, módulos imaginados; (b) stack — si no está decidido, opciones con trade-offs y tu recomendación, pero **la decisión es del usuario** y puede quedar abierta (se registra en tech-stack como pendiente con las opciones); (c) principios — qué es innegociable (datos, migraciones, commits, seguridad); (d) proceso — ¿changelog? ¿gestor de tickets? ¿convención de ramas?
 2. **Generar documento a documento, con gate**: mission → presentar → aprobar; después constitution → … Nada se da por anclaje sin aprobación explícita del usuario.
-3. **Estructura**: crear `.docs/sdd/` completa, copiar plantillas, `estimation-log.md` vacío.
+3. **Estructura**: crear `.docs/sdd/` completa, `estimation-log.md` vacío. NO copiar plantillas (viven en `sdd-templates`).
 4. **`CLAUDE.md` corto**: punteros a los documentos + reglas críticas. No duplicar contenido que ya vive en un doc de anclaje.
 5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista.
 6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando el funcional madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).

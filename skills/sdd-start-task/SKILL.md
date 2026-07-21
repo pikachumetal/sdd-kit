@@ -29,9 +29,9 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
 1. **Contexto** — leer `.docs/sdd/`: `constitution.md`, `mission.md`, `tech-stack.md`, `roadmap.md` (+ `architecture.md` y `funcional.md` si existen).
 2. **Enrutado** — ¿es un bug pequeño y **determinista** (<30 min, sin interpretación de requisitos)? Entonces NO es una task: usa `sdd-start-hotfix`. Su carpeta irá prefijada `hotfix-`, nunca `task-`.
 3. **Branch** — `feature/<ticket>` desde `develop`, o la convención que fije la constitution del proyecto.
-4. **Spec** — `superpowers:brainstorming` para explorar intención y requisitos → crear la carpeta (ver Nombrado) + `spec.md` calcando `.docs/sdd/templates/spec-template.md`.
+4. **Spec** — `superpowers:brainstorming` para explorar intención y requisitos → crear la carpeta (ver Nombrado) + `spec.md` calcando `spec-template.md` del skill `sdd-templates`.
    ⛔ **GATE de aprobación**: presenta la spec y ESPERA la aprobación explícita del usuario. Si el usuario no responde, la tarea queda EN ESPERA — "documentar la decisión y seguir" no sustituye la aprobación.
-5. **Plan** — solo tras aprobar la spec: `superpowers:writing-plans` → `plan.md` con el template del proyecto.
+5. **Plan** — solo tras aprobar la spec: `superpowers:writing-plans` → `plan.md` calcando `plan-template.md` del skill `sdd-templates`.
    ⛔ **GATE de aprobación**: igual que la spec. Sin plan aprobado no se toca código.
 6. **Implementación** — `superpowers:executing-plans` **en línea con checkpoints** (el usuario corrige en el momento). Si el plan tiene más de una task → `tasks.md` como **registro vivo** (status + commit hash por task; la lista de todos del harness es efímera, `tasks.md` es el registro durable).
 7. **Cierre** — SOLO vía `sdd-end-task`. Nada se marca ✅ sin smoke ejecutado y documentado.
@@ -58,7 +58,7 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
 | Default de superpowers | En este flujo |
 | --- | --- |
 | Specs/planes en `docs/superpowers/` | SOLO en `.docs/sdd/specs/` |
-| Formato de spec/plan del skill | Plantillas de `.docs/sdd/templates/` |
+| Formato de spec/plan del skill | Plantillas del skill `sdd-templates` (viven en el kit, no en el proyecto) |
 | `using-git-worktrees` | No-op: se usa el git-flow del proyecto |
 | `subagent-driven-development` | Se evita: ejecución en línea con checkpoints |
 

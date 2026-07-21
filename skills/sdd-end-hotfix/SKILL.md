@@ -17,7 +17,7 @@ Cierre **ligero** de un hotfix: el subconjunto de `sdd-end-task` sin la ceremoni
 2. **Commit(s)** — con la convención del proyecto, referenciando el ticket. Fix y documentación pueden ir en commits separados.
 3. **Changelog** *(si existe `.docs/sdd/changelog.md`)* — entrada `Fixed` en `[Unreleased]` (o en la unidad de release del proyecto) con link a la carpeta del hotfix.
 4. **`roadmap.md`** — fila en la tabla de hotfixes (fecha, id, descripción). El roadmap es el índice del proyecto: un hotfix sin fila es invisible.
-5. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — fila del hotfix (tipo, estimado si lo hubo, real) en `.docs/sdd/estimation-log.md`, o ejecuta `tools/sdd/Build-EstimationLog.ps1` si existe.
+5. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — fila del hotfix (tipo, estimado si lo hubo, real) en `.docs/sdd/estimation-log.md`, o ejecuta `.tools/sdd/Build-EstimationLog.ps1` si existe (o `tools/sdd/` en proyectos antiguos).
 6. **Rama** — `superpowers:finishing-a-development-branch`: la decisión de merge/PR es **del usuario**. Si no está disponible, deja la rama lista (commits hechos, working tree limpio) y el merge explícitamente PENDIENTE en tu informe final — no fusiones por tu cuenta "porque es trivial".
 
 ## Red flags — STOP
