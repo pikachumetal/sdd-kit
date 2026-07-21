@@ -4,6 +4,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-07-21
+
 ### Added
 
 - **sdd-consult** — carril de consulta: preguntar/entender/planificar/estructurar con el contexto cargado, sin artefactos; grilling para estructurar, handoff anunciado a los carriles de trabajo. Validado con RED→GREEN. → [ref](specs/20260721-114445-task-0000-consult-skill/)
