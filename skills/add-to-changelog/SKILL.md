@@ -41,6 +41,6 @@ Cada entrada es **una línea** con esta forma exacta:
 | --- | --- |
 | Entrada de varias líneas contando causa y detalle | Una frase + link: el detalle vive en la carpeta del artefacto |
 | Inventar un link para un cambio sin carpeta | Entrada sin link |
-| Cortar una versión nueva (`[0.2.0]`) al añadir la entrada | Cortar release es decisión del usuario, no parte de esta acción |
+| Cortar una versión nueva (`[0.2.0]`) al añadir la entrada | Cortar release es decisión del usuario y lo ejecuta `sdd-end-release`, no esta acción |
 | Registrar aquí deuda técnica diferida | La deuda va al roadmap |
 | Dar el roadmap por actualizado "porque ya toqué el changelog" | Cada registro se actualiza por su propio motivo |

@@ -1,11 +1,11 @@
 ---
 name: sdd-templates
-description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, hotfix, data-model, research) y el proyecto no tiene la plantilla correspondiente en .docs/sdd/templates/ — se copia desde aquí. Las skills sdd-init-* instalan este set completo en cada proyecto nuevo.
+description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, hotfix, data-model, research, feedback de release, release notes) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
 ---
 
 # sdd-templates
 
-Plantillas canónicas del kit SDD. Cada proyecto las lleva copiadas en `.docs/sdd/templates/` (las instala `sdd-init-greenfield` / `sdd-init-brownfield`); esta carpeta es la fuente de verdad del kit.
+Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan carpeta `templates/` — al crear un artefacto se invoca esta skill y se calca la plantilla que toque. Una copia por proyecto sería deriva instantánea (la plantilla evoluciona en el kit y las copias se quedan atrás).
 
 | Plantilla | Artefacto | Cuándo |
 | --- | --- | --- |
@@ -16,10 +16,12 @@ Plantillas canónicas del kit SDD. Cada proyecto las lleva copiadas en `.docs/sd
 | [hotfix-template.md](templates/hotfix-template.md) | `hotfix.md` | Carril hotfix (único artefacto) |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Opcional: cambios de datos que no caben en el plan |
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
+| [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
+| [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Cierre de release: notas de cliente destiladas del changelog |
 
 Reglas al usarlas:
 
 - **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.
-- Los artefactos viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|hotfix)-<id>-<slug>/`.
+- Los artefactos de task/hotfix viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|hotfix)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
 - Las secciones marcadas *(si el módulo está activo)* se rigen por los predicados del proyecto (`estimation.md`, `changelog.md` presentes o no).
-- Al copiar las plantillas a un proyecto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales.
+- Al redactar el artefacto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales del proyecto (`tech-stack.md`, `constitution.md`).
