@@ -37,7 +37,7 @@
 ## Anatomía de la evidencia (tests/)
 
 - `<skill>-red.md`: qué hizo el baseline sin la skill, con racionalizaciones citadas y positivos que no requieren guidance.
-- `<skill>-green.md`: mismos escenarios con la skill; veredicto contra cada fallo del RED.
+- `<skill>-green.md`: mismos escenarios con la skill; veredicto contra cada fallo del RED. El GREEN también puede exhibir huecos de la PROPIA skill (una instrucción que contradice la constitution, un caso sin cubrir): el REFACTOR y su re-verificación se documentan en el mismo fichero.
 - Las fixtures son desechables y viven en el scratchpad de sesión — no se versionan; lo durable es la narrativa verificada.
 
 ## Relación con los proyectos consumidores

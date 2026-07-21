@@ -24,19 +24,19 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 4 | Verificación y commit de la fuente única de plantillas | done | 8b47f33 | Evidencia en tests/templates-single-source-green.md |
 | 5 | Plantillas nuevas en sdd-templates | done | 5a4782c | feedback-template + release-notes-template + tabla + puntero add-to-changelog |
 | 6 | Evidencia RED/GREEN en tests/ | done | 5a4782c | 4 ficheros; veredicto por fallo del RED + REFACTOR documentado |
-| 7 | Integración documental | in_progress | — | mission, architecture, constitution, roadmap, README, CLAUDE.md editados; commit junto a spec/plan/tasks |
-| 8 | Cierre (sdd-end-task) | pending | — | |
+| 7 | Integración documental | done | 602deb2 | mission, architecture, constitution, roadmap, README, CLAUDE.md + spec/plan/tasks |
+| 8 | Cierre (sdd-end-task) | done | — | Walkthrough + estimation-log + changelog + aprendizajes a docs vivos (commit de cierre, posterior a esta edición) |
 
 ## Verificación por task
 
-- [ ] Task 1 — listado en disco de la fixture; escenarios cubren las tentaciones de la spec §4.1
-- [ ] Task 2 — salidas estructuradas de los 5 runs + inspección del estado en disco de cada copia
-- [ ] Task 3 — cada hueco del GREEN con mejora aplicada y re-verificada
-- [ ] Task 4 — evidencia escrita; diff de las 7 skills commiteado
-- [ ] Task 5 — skills de release referencian las plantillas por nombre
-- [ ] Task 6 — cada fallo RED con veredicto GREEN
-- [ ] Task 7 — grep de "7 skills"/"8 skills" sin restos obsoletos
-- [ ] Task 8 — walkthrough con tiempo real + changelog + roadmap
+- [x] Task 1 — listado en disco de la fixture; escenarios cubren las tentaciones de la spec §4.1
+- [x] Task 2 — salidas estructuradas de los 8 runs (5+3 tras el bug de args) + inspección en disco de cada copia
+- [x] Task 3 — cada hueco del GREEN con mejora aplicada y re-verificada en GREEN-2 (fixtures frescas)
+- [x] Task 4 — evidencia escrita; diff de las skills commiteado (8b47f33)
+- [x] Task 5 — skills de release referencian las plantillas por nombre (verificado en GREEN-2: las calcaron)
+- [x] Task 6 — cada fallo RED con veredicto GREEN (+ huecos propios del GREEN-1 con REFACTOR)
+- [x] Task 7 — grep sin restos obsoletos (solo históricos inmutables y menciones correctas en contexto)
+- [x] Task 8 — walkthrough con tiempo real + estimation-log + changelog + aprendizajes a docs vivos
 
 ## Fixes adicionales (trabajo descubierto fuera de scope)
 

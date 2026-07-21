@@ -4,6 +4,16 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **sdd-start-release / sdd-end-release** — carril release: apertura con scope decidido por el usuario y cierre con acta+triage, retro con evidencia, release notes de cliente y gate de merge/tag; validadas con ciclo RED→GREEN→REFACTOR. → [ref](specs/20260721-082038-task-0000-release-skills/)
+- **feedback-template / release-notes-template** — plantillas del acta de release y de las release notes en la fuente única. → [ref](specs/20260721-082038-task-0000-release-skills/)
+
+### Changed
+
+- **fuente única de plantillas** — los proyectos dejan de llevar `.docs/sdd/templates/`: las skills afectadas calcan del skill `sdd-templates`. → [ref](specs/20260721-082038-task-0000-release-skills/)
+- **add-to-changelog** — el corte de versión queda señalado como acción de `sdd-end-release`. → [ref](specs/20260721-082038-task-0000-release-skills/)
+
 ## [0.1.0] — 2026-07-09
 
 ### Added
