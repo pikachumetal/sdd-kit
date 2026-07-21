@@ -2,7 +2,7 @@
 
 Kit SDD del equipo: skills de proceso agnósticas para el flujo **spec → plan → implementación → walkthrough** con Claude Code. Es el nivel 1 de la taxonomía de skills del equipo (proceso, igual en todos los proyectos); las skills técnicas por stack (nivel 2) y las específicas de cada proyecto (nivel 3) viven en cada repo.
 
-> Estado: **v0.1.0 — completo**. Las 7 skills validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
+> Estado: **v0.1.0 publicada · carril release añadido** (pendiente de corte v0.2.0). Las 9 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
 
 ## Instalación
 
@@ -37,12 +37,14 @@ npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 | `sdd-end-task` | Definition of Done: walkthrough, aprendizajes a docs vivos, estimation-log, revisión de skills, changelog, roadmap, rama |
 | `sdd-start-hotfix` | Carril ligero para bugs deterministas (<30 min): causa raíz obligatoria + un solo hotfix.md |
 | `sdd-end-hotfix` | Cierre ligero del hotfix: changelog, roadmap, estimation-log; el merge es decisión del usuario |
+| `sdd-start-release` | Abrir la siguiente release: inventario ordenado (acta, backlog, deuda, retro) con recomendación y bloqueos; el scope lo decide el usuario; se refina solo el top |
+| `sdd-end-release` | Cierre de release: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario |
 | `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
-| `sdd-templates` | Las 7 plantillas canónicas (spec, plan, tasks, walkthrough, hotfix, data-model, research) |
+| `sdd-templates` | Las 9 plantillas canónicas (spec, plan, tasks, walkthrough, hotfix, data-model, research, feedback, release-notes) |
 
 ## Convenciones
 
-- Los artefactos SDD viven en **`.docs/sdd/`** de cada proyecto (carpeta con punto: no es el proyecto, es su andamiaje).
+- Los artefactos SDD viven en **`.docs/sdd/`** de cada proyecto (carpeta con punto: no es el proyecto, es su andamiaje); los de release (acta, release notes), en `.docs/sdd/releases/vX.Y.Z/`.
 - Requiere el plugin **superpowers** (brainstorming, executing-plans, systematic-debugging, finishing-a-development-branch).
 - Documentación del flujo del equipo: [`.docs/flux/`](.docs/flux/) — *Flux per al desenvolupament ràpid d'aplicacions amb Claude* (greenfield / brownfield / annex amb l'evidència).
 - Este repo aplica su propio flujo (dogfooding): documentación de anclaje en [`.docs/sdd/`](.docs/sdd/).

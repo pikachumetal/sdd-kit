@@ -18,7 +18,7 @@ Texto humano (skills, docs, tests, commits-cuerpo) en castellano con ortografía
 
 ## Art. IV — Convenciones que el kit fija a los proyectos
 
-`.docs/sdd/` como raíz de artefactos; naming `<yyyyMMdd-HHmmss>-(task|hotfix)-<id>-<slug>` en UTC con id de ticket (0000 si no hay); módulos por predicado observable; el merge es SIEMPRE decisión del usuario. Cambiar cualquiera de estas convenciones es un cambio mayor: spec dedicada + revisión de las 7 skills afectadas.
+`.docs/sdd/` como raíz de artefactos; naming `<yyyyMMdd-HHmmss>-(task|hotfix)-<id>-<slug>` en UTC con id de ticket (0000 si no hay); artefactos de release (acta, release notes) en `.docs/sdd/releases/vX.Y.Z/`; módulos por predicado observable; el merge es SIEMPRE decisión del usuario. Cambiar cualquiera de estas convenciones es un cambio mayor: spec dedicada + revisión de las 9 skills afectadas.
 
 ## Art. V — Versionado
 

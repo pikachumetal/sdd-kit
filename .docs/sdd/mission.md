@@ -13,12 +13,14 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 
 ## Qué es y qué no es
 
-- **Es**: las 7 skills de proceso (init ×2, task ×2, hotfix ×2, changelog) + las plantillas canónicas.
+- **Es**: las 9 skills de proceso (init ×2, task ×2, hotfix ×2, release ×2, changelog) + las plantillas canónicas.
 - **No es**: skills técnicas por stack (nivel 2: sql-migration, backend-*, frontend-*) ni específicas de proyecto (nivel 3: build, dialogs, styles) — esas viven en cada repo o en futuros kits.
 
 ## Dominio (lenguaje del equipo)
 
 - **Documentos de anclaje**: mission, constitution, tech-stack, architecture, funcional, roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico.
 - **Carril task / carril hotfix**: flujo completo con spec y plan vs registro ligero para bugs deterministas.
+- **Carril release**: apertura (el acta triada se convierte en scope que decide el usuario) y cierre (Definition of Done del hito: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario).
+- **Acta de release (feedback.md)**: acta única por release — inventario del feedback, triage y retro; vive en `.docs/sdd/releases/vX.Y.Z/`.
 - **Módulo por predicado observable**: una capacidad opcional (estimación, changelog) se activa por la presencia de su fichero, sin configuración.
 - **Walkthrough**: cierre inmutable de una task; alimenta docs vivos, skills y estimation-log.

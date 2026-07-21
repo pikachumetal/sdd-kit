@@ -13,7 +13,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/estimation.md` y `.docs/sdd/estimation-log.md` — método de estimación y registro estimado-vs-real.
 - `.docs/sdd/specs/` — artefactos SDD de las tareas del propio kit (spec, plan, walkthrough por carpeta).
 - `.docs/flux/` — los documentos de flujo del equipo, en catalán: greenfield, brownfield y anexo de evidencia.
-- `skills/<nombre>/SKILL.md` — las 8 skills del kit. `skills/sdd-templates/templates/` es la **fuente única** de las plantillas.
+- `skills/<nombre>/SKILL.md` — las 10 skills del kit. `skills/sdd-templates/templates/` es la **fuente única** de las plantillas.
 - `tests/` — evidencia RED/GREEN de cada skill (baseline sin skill → verificación con skill).
 - `.claude-plugin/` — manifests del plugin (versión) y del marketplace.
 
