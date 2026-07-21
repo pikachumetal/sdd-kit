@@ -2,7 +2,7 @@
 
 Kit SDD del equipo: skills de proceso agnósticas para el flujo **spec → plan → implementación → walkthrough** con Claude Code. Es el nivel 1 de la taxonomía de skills del equipo (proceso, igual en todos los proyectos); las skills técnicas por stack (nivel 2) y las específicas de cada proyecto (nivel 3) viven en cada repo.
 
-> Estado: **v0.1.0 publicada · carril release añadido** (pendiente de corte v0.2.0). Las 9 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
+> Estado: **v0.2.0 publicada · carril consult añadido** (hacia v0.3.0). Las 10 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
 
 ## Instalación
 
@@ -39,6 +39,7 @@ npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 | `sdd-end-hotfix` | Cierre ligero del hotfix: changelog, roadmap, estimation-log; el merge es decisión del usuario |
 | `sdd-start-release` | Abrir la siguiente release: inventario ordenado (acta, backlog, deuda, retro) con recomendación y bloqueos; el scope lo decide el usuario; se refina solo el top |
 | `sdd-end-release` | Cierre de release: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario |
+| `sdd-consult` | Carril de consulta: preguntar/entender/planificar/estructurar con el contexto cargado, sin artefactos; grilling para estructurar, handoff anunciado a los carriles de trabajo |
 | `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
 | `sdd-templates` | Las 9 plantillas canónicas (spec, plan, tasks, walkthrough, hotfix, data-model, research, feedback, release-notes) |
 

@@ -18,6 +18,7 @@
 │   ├── sdd-end-hotfix/SKILL.md
 │   ├── sdd-start-release/SKILL.md
 │   ├── sdd-end-release/SKILL.md
+│   ├── sdd-consult/SKILL.md
 │   ├── add-to-changelog/SKILL.md
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única)
 ├── tests/                       (evidencia RED/GREEN por skill)
