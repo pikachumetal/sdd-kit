@@ -1,6 +1,6 @@
 ---
 name: sdd-end-task
-description: Usar cuando la implementación de una task está terminada y hay que cerrarla — el usuario dice "cierra la tarea", "hemos acabado", "haz el walkthrough" — o antes de mergear una feature que tiene carpeta en .docs/sdd/specs/. No para hotfixes (eso es sdd-end-hotfix).
+description: Usar cuando la implementación de una task está terminada y hay que cerrarla — el usuario dice "cierra la tarea", "hemos acabado", "haz el walkthrough" — o antes de mergear una feature que tiene carpeta en .docs/sdd/specs/. No para patches (eso es sdd-end-patch).
 ---
 
 # sdd-end-task
@@ -24,9 +24,9 @@ El cierre de una task es una **Definition of Done**: un checklist que garantiza 
 8. **`roadmap.md`** — marcar el módulo/tarea. El estado ✅ exige verificación documentada en el walkthrough. Deuda descubierta → fila en la tabla de deuda técnica.
 9. **Rama** — `superpowers:finishing-a-development-branch`: verificar estado y decidir merge/PR **con el usuario**.
 
-## Para hotfixes
+## Para patches
 
-Este checklist NO aplica: el cierre ligero de un hotfix es `sdd-end-hotfix`.
+Este checklist NO aplica: el cierre ligero de un patch es `sdd-end-patch`.
 
 ## Red flags — STOP, no has cerrado
 

@@ -27,7 +27,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 │       ├── tech-stack.md     (tecnologías con versiones; decisiones abiertas, como abiertas)
 │       ├── architecture.md   (cómo se construye)
 │       ├── funcional.md      (requisitos; crece con el producto)
-│       ├── roadmap.md        (módulos identificados + deuda + tabla de hotfixes)
+│       ├── roadmap.md        (módulos identificados + deuda + tabla de patches)
 │       ├── estimation.md     (método) · estimation-log.md (VACÍO: se llena con las tareas)
 │       └── specs/            (vacía)
 ```

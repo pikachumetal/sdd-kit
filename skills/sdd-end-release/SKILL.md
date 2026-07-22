@@ -19,9 +19,9 @@ exactamente cuando se salta lo que luego cuesta semanas recuperar.
 
 ## ⛔ Gate de entrada
 
-Toda task/hotfix de la release cerrada vía `sdd-end-task` (walkthrough + changelog al día) y el build/lint
+Toda task/patch de la release cerrada vía `sdd-end-task` (walkthrough + changelog al día) y el build/lint
 del proyecto en verde. Trabajo a medias → se decide CON el usuario si entra o se mueve, nunca en silencio.
-Una task que figura cerrada en roadmap/changelog pero **sin walkthrough/hotfix.md es evidencia faltante**:
+Una task que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
 mismo tratamiento que el trabajo a medias — decisión del usuario, no "lo anoto en el acta y sigo".
 Con el usuario ausente: se PREPARAN los pasos 1-6 y el paso 7 queda **pendiente** — nunca se resuelve el
 gate en solitario.
@@ -29,7 +29,7 @@ gate en solitario.
 ## Checklist de cierre (crea un todo por paso)
 
 1. **Congelar scope y versión** — explícito: qué entra, qué se mueve a la siguiente. Versionado SemVer
-   pre-1.0: cada release es `v0.N.0` (hotfixes: `v0.N.x`); **`v1.0.0` está RESERVADO para la puesta en
+   pre-1.0: cada release es `v0.N.0` (patches: `v0.N.x`); **`v1.0.0` está RESERVADO para la puesta en
    producción** — un breaking change en pre-1.0 NO lo adelanta. La versión se propone y **la confirma el
    usuario** sobre la propuesta final de cierre: que el encargo nombre la versión ("cierra la v0.2.0")
    describe el hito, NO es la confirmación.
@@ -69,7 +69,7 @@ gate en solitario.
 - Has elegido versión (o saltado a `1.0.0`) sin confirmación del usuario.
 - El merge o el tag ya están ejecutados y el usuario no los confirmó — o el tag está sobre la rama de
   feature, o antes del merge al branch estable.
-- Hay tasks "cerradas" sin walkthrough/hotfix.md y has seguido con el cierre sin decisión del usuario.
+- Hay tasks "cerradas" sin walkthrough/patch.md y has seguido con el cierre sin decisión del usuario.
 - Has colapsado la sección del roadmap sin rescatar antes sus pendientes vivos.
 - `.docs/sdd/releases/vX.Y.Z/` no existe al terminar.
 

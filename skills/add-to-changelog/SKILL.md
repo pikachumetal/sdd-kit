@@ -1,6 +1,6 @@
 ---
 name: add-to-changelog
-description: Usar al cerrar una task o hotfix en un proyecto con .docs/sdd/changelog.md, o cuando el usuario pide poner al día el changelog — normalmente invocada desde sdd-end-task o sdd-end-hotfix.
+description: Usar al cerrar una task o patch en un proyecto con .docs/sdd/changelog.md, o cuando el usuario pide poner al día el changelog — normalmente invocada desde sdd-end-task o sdd-end-patch.
 ---
 
 # add-to-changelog
@@ -19,7 +19,7 @@ Cada entrada es **una línea** con esta forma exacta:
 
 - `<id>`: el ticket o módulo (`Ticket 217`, `M4`).
 - La frase describe el cambio para un lector técnico. El detalle (causa, evidencia, decisiones) vive en la carpeta enlazada, no aquí.
-- `→ [ref](…)` apunta a la carpeta de spec o hotfix en `specs/`. Si el cambio no tiene carpeta (cambio de una frase), la entrada va **sin link** — nunca se inventa una ruta.
+- `→ [ref](…)` apunta a la carpeta de spec o patch en `specs/`. Si el cambio no tiene carpeta (cambio de una frase), la entrada va **sin link** — nunca se inventa una ruta.
 
 ## Dónde va
 

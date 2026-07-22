@@ -1,6 +1,6 @@
 ---
 name: sdd-consult
-description: Usar cuando el usuario quiere preguntar, entender, planificar o estructurar algo del proyecto con el contexto cargado, sin arrancar el flujo SDD — "una duda", "¿por qué…?", "¿dónde tocaría…?", "¿cómo enfocarías…?", "¿qué hacemos ahora?". No para implementar una feature (sdd-start-task), arreglar un bug determinista (sdd-start-hotfix) ni investigar un fallo (superpowers:systematic-debugging).
+description: Usar cuando el usuario quiere preguntar, entender, planificar o estructurar algo del proyecto con el contexto cargado, sin arrancar el flujo SDD — "una duda", "¿por qué…?", "¿dónde tocaría…?", "¿cómo enfocarías…?", "¿qué hacemos ahora?". No para implementar una feature (sdd-start-task), arreglar un bug determinista (sdd-start-patch) ni investigar un fallo (superpowers:systematic-debugging).
 ---
 
 # sdd-consult
@@ -19,12 +19,12 @@ A diferencia del Gate 1 de `sdd-start-task`, aquí **la pregunta ES el enunciado
    - **Pensar / estructurar / tensar una dirección** ("¿cómo enfocarías X?", "pensémoslo bien") → `superpowers:grilling` (interroga una a una, recomienda respuesta, sin artefactos, no ligado a SDD). **NUNCA `superpowers:brainstorming`**: ese es el motor de construir features y acaba en spec → plan → implementación; aplicado a una consulta, la convierte en lo que no era.
 3. **Cero artefactos por defecto** — sin carpeta de spec, sin rama, sin tocar código, sin editar `roadmap`/docs "de paso". La respuesta vive en la conversación.
 4. **Salida durable opcional (con aprobación)** — si la consulta destapa un doc de anclaje desactualizado o produce una decisión que merece registrarse, **proponlo** y espera el OK del usuario; solo entonces se escribe, en el doc que le corresponde. Actualizar un doc **no** es "aprovechar y dejarlo hecho".
-5. **Handoff cuando se vuelve trabajo** — si la conversación pide hacerlo de verdad, **anúncialo y transiciona al carril**: feature/cambio no trivial → `sdd-start-task`; bug determinista → `sdd-start-hotfix`; abrir/planificar release → `sdd-start-release`; investigar un fallo → `superpowers:systematic-debugging`. El carril destino **gatea y asigna el id**. La consulta **no** ejecuta el trabajo por su cuenta.
+5. **Handoff cuando se vuelve trabajo** — si la conversación pide hacerlo de verdad, **anúncialo y transiciona al carril**: feature/cambio no trivial → `sdd-start-task`; bug determinista → `sdd-start-patch`; abrir/planificar release → `sdd-start-release`; investigar un fallo → `superpowers:systematic-debugging`. El carril destino **gatea y asigna el id**. La consulta **no** ejecuta el trabajo por su cuenta.
 
 ## Red flags — STOP, esto ya no es consulta
 
-- Vas a crear una carpeta en `.docs/sdd/specs/` (o un `hotfix.md`, o una rama) desde la consulta.
-- Estás **reproduciendo un carril a mano** (calcando el naming de una spec/hotfix) en vez de invocar `sdd-start-task`/`-hotfix`.
+- Vas a crear una carpeta en `.docs/sdd/specs/` (o un `patch.md`, o una rama) desde la consulta.
+- Estás **reproduciendo un carril a mano** (calcando el naming de una spec/patch) en vez de invocar `sdd-start-task`/`-patch`.
 - Vas a escribir un **id de ticket que te has inventado** porque "es el siguiente libre".
 - Vas a editar `roadmap`/`changelog`/un doc de anclaje sin que el usuario lo haya aprobado.
 - Has lanzado un interrogatorio (`grilling`) a una pregunta que se contestaba leyendo y respondiendo.
@@ -32,7 +32,7 @@ A diferencia del Gate 1 de `sdd-start-task`, aquí **la pregunta ES el enunciado
 
 | Racionalización | Realidad |
 | --- | --- |
-| "Me pide 'arréglalo' directamente, así que creo yo el hotfix.md" | "Arréglalo" es el disparo del handoff, no permiso para fabricar el artefacto. Se transiciona al carril, que gatea la causa raíz y el id — o, si hay que interpretar el enfoque, es task, no hotfix. |
+| "Me pide 'arréglalo' directamente, así que creo yo el patch.md" | "Arréglalo" es el disparo del handoff, no permiso para fabricar el artefacto. Se transiciona al carril, que gatea la causa raíz y el id — o, si hay que interpretar el enfoque, es task, no patch. |
 | "Elijo el id de ticket siguiente libre y lo marco tentativo" | Un id inventado en un artefacto se confunde con uno real para siempre. El id lo da el carril/gestor; la consulta no inventa ids. |
 | "Reproduzco la convención de naming a mano, total la sé" | Reproducir el carril a mano se salta sus gates. Si es trabajo, se invoca el carril; si no, no hay artefacto. |
 | "Ya que he mirado el roadmap y está desfasado, lo actualizo de paso" | La salida durable se propone y se aprueba. Editar "de paso" es exactamente lo que este carril no hace. |

@@ -40,7 +40,7 @@ Carril release (`sdd-start-release`, `sdd-end-release`) + fuente única de plant
 
 Las 7 skills de proceso iniciales + plantillas + manifests. Sin acta (el carril release no existía).
 
-## Hotfixes
+## Patches
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |

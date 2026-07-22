@@ -35,13 +35,13 @@ npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 | `sdd-init-brownfield` | Onboarding de un codebase existente: documenta el estado real (no el ideal), cosecha el CLAUDE.md previo y reduce a punteros |
 | `sdd-start-task` | Arrancar una tarea: Gate 1 de contexto, spec → plan → tasks con gates de aprobación |
 | `sdd-end-task` | Definition of Done: walkthrough, aprendizajes a docs vivos, estimation-log, revisión de skills, changelog, roadmap, rama |
-| `sdd-start-hotfix` | Carril ligero para bugs deterministas (<30 min): causa raíz obligatoria + un solo hotfix.md |
-| `sdd-end-hotfix` | Cierre ligero del hotfix: changelog, roadmap, estimation-log; el merge es decisión del usuario |
+| `sdd-start-patch` | Carril ligero para bugs deterministas (<30 min): causa raíz obligatoria + un solo patch.md |
+| `sdd-end-patch` | Cierre ligero del patch: changelog, roadmap, estimation-log; el merge es decisión del usuario |
 | `sdd-start-release` | Abrir la siguiente release: inventario ordenado (acta, backlog, deuda, retro) con recomendación y bloqueos; el scope lo decide el usuario; se refina solo el top |
 | `sdd-end-release` | Cierre de release: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario |
 | `sdd-consult` | Carril de consulta: preguntar/entender/planificar/estructurar con el contexto cargado, sin artefactos; grilling para estructurar, handoff anunciado a los carriles de trabajo |
 | `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
-| `sdd-templates` | Las 9 plantillas canónicas (spec, plan, tasks, walkthrough, hotfix, data-model, research, feedback, release-notes) |
+| `sdd-templates` | Las 9 plantillas canónicas (spec, plan, tasks, walkthrough, patch, data-model, research, feedback, release-notes) |
 
 ## Convenciones
 

@@ -14,8 +14,8 @@
 │   ├── sdd-init-brownfield/SKILL.md
 │   ├── sdd-start-task/SKILL.md
 │   ├── sdd-end-task/SKILL.md
-│   ├── sdd-start-hotfix/SKILL.md
-│   ├── sdd-end-hotfix/SKILL.md
+│   ├── sdd-start-patch/SKILL.md
+│   ├── sdd-end-patch/SKILL.md
 │   ├── sdd-start-release/SKILL.md
 │   ├── sdd-end-release/SKILL.md
 │   ├── sdd-consult/SKILL.md

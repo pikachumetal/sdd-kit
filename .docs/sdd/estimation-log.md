@@ -1,6 +1,6 @@
 # Estimation log — sdd-kit
 
-Registro estimado-vs-real por tarea. Se añade una fila al cerrar cada task/hotfix (paso del checklist de cierre).
+Registro estimado-vs-real por tarea. Se añade una fila al cerrar cada task/patch (paso del checklist de cierre).
 
 | Fecha | Task | Tipo | Estimado (h) | Real (h) | Ratio |
 | --- | --- | --- | --- | --- | --- |

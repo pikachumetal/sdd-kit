@@ -1,6 +1,6 @@
 ---
 name: sdd-templates
-description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, hotfix, data-model, research, feedback de release, release notes) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
+description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, patch, data-model, research, feedback de release, release notes) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
 ---
 
 # sdd-templates
