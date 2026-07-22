@@ -1,6 +1,6 @@
 ---
-name: sdd-end-hotfix
-description: Usar cuando un hotfix está implementado y verificado y hay que cerrarlo — "cierra el hotfix", fix aplicado con su hotfix.md en .docs/sdd/specs/. No para tasks (eso es sdd-end-task).
+name: sdd-end-patch
+description: Usar cuando un patch está implementado y verificado y hay que cerrarlo — "cierra el patch", fix aplicado con su patch.md en .docs/sdd/specs/. No para tasks (eso es sdd-end-task).
 ---
 
 # sdd-end-hotfix

@@ -1,6 +1,6 @@
 ---
-name: sdd-start-hotfix
-description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "métele un hotfix", un ticket de fallo puntual. No para features ni para bugs que exigen interpretar requisitos (eso es sdd-start-task).
+name: sdd-start-patch
+description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "métele un patch", un ticket de fallo puntual. No para features ni para bugs que exigen interpretar requisitos (eso es sdd-start-task).
 ---
 
 # sdd-start-hotfix
