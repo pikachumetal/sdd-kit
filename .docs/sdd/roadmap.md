@@ -5,8 +5,9 @@
 | # | Ítem | Estado |
 | --- | --- | --- |
 | 1 | Subir a remoto (decidir: GitHub / Azure DevOps) para instalación del equipo | ⏳ pendiente |
-| 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — primer feedback ya devuelto al kit (carril release, fuente única de plantillas) |
-| 3 | v0.4.0: REFACTOR con la fricción del estreno real + pasada de recorte de skills largas (con re-test, Art. I) | ⏳ backlog |
+| 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, y rename hotfix→patch + override de worktrees neutral (task carril-rama-worktree) |
+| 3 | Publicar la v0.4.0 (bump + `/plugin marketplace update`): el rename hotfix→patch está en el código pero no en el plugin publicado — hasta el release, los consumidores siguen viendo `sdd-start-hotfix` | ⏳ pendiente — cierra el gap código↔publicado |
+| 4 | v0.4.0: REFACTOR con la fricción del estreno real + pasada de recorte de skills largas (con re-test, Art. I) | ⏳ backlog |
 
 ## Backlog
 

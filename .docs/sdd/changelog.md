@@ -4,6 +4,11 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Changed
+
+- **sdd-start-hotfix / sdd-end-hotfix → sdd-start-patch / sdd-end-patch** — rename del carril ligero para eliminar el equívoco con `hotfix/*` de git-flow (el carril describe el proceso, no el tipo de rama); plantilla `hotfix-template.md` → `patch-template.md`, artefacto `patch.md`, prefijo de carpeta `patch-`. Histórico preservado. → [ref](specs/20260722-103807-task-0000-carril-rama-worktree/)
+- **sdd-start-task** — la fila `using-git-worktrees` del override deja de negar los worktrees: el kit no los gestiona pero respeta el git-flow del proyecto (worktrees incluidos). Verificado con RED→GREEN. → [ref](specs/20260722-103807-task-0000-carril-rama-worktree/)
+
 ## [0.3.0] — 2026-07-21
 
 ### Added
