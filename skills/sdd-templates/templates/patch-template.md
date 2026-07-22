@@ -1,15 +1,15 @@
 ---
-id: <yyyyMMdd-HHmmss>-hotfix-<id>-<slug>
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
 task: <id>            # ID del gestor de tickets, o 0000 si sin ticket
-title: Hotfix — <título corto>
-type: hotfix
+title: Patch — <título corto>
+type: patch
 status: done
 created: <YYYY-MM-DD>
-branch: hotfix/<id>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
 commit: <hash>        # se rellena al commitear
 ---
 
-# Hotfix <id> — <título corto>
+# Patch <id> — <título corto>
 
 > Registro lightweight de un fix pequeño (<30 min, determinista, sin interpretación de
 > requisitos). NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad

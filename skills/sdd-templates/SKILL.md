@@ -13,7 +13,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [plan-template.md](templates/plan-template.md) | `plan.md` | Toda task, tras aprobar la spec (cómo) |
 | [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Solo si el plan tiene >1 task (registro vivo) |
 | [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Cierre de toda task |
-| [hotfix-template.md](templates/hotfix-template.md) | `hotfix.md` | Carril hotfix (único artefacto) |
+| [patch-template.md](templates/patch-template.md) | `patch.md` | Carril patch (único artefacto) |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Opcional: cambios de datos que no caben en el plan |
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
@@ -22,6 +22,6 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 Reglas al usarlas:
 
 - **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.
-- Los artefactos de task/hotfix viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|hotfix)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
+- Los artefactos de task/patch viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
 - Las secciones marcadas *(si el módulo está activo)* se rigen por los predicados del proyecto (`estimation.md`, `changelog.md` presentes o no).
 - Al redactar el artefacto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales del proyecto (`tech-stack.md`, `constitution.md`).
