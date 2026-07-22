@@ -4,10 +4,9 @@
 
 | # | Ítem | Estado |
 | --- | --- | --- |
-| 1 | Subir a remoto (decidir: GitHub / Azure DevOps) para instalación del equipo | ⏳ pendiente |
+| 1 | 🔒 Subir a remoto (GitHub / Azure DevOps) — **pospuesto 4ª vez**; bloquea la distribución real de v0.2.0, v0.3.0 y v0.4.0 al equipo | ⏳ pendiente (decisión del usuario) |
 | 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, y rename hotfix→patch + override de worktrees neutral (task carril-rama-worktree) |
-| 3 | Publicar la v0.4.0 (bump + `/plugin marketplace update`): el rename hotfix→patch está en el código pero no en el plugin publicado — hasta el release, los consumidores siguen viendo `sdd-start-hotfix` | ⏳ pendiente — cierra el gap código↔publicado |
-| 4 | v0.4.0: REFACTOR con la fricción del estreno real + pasada de recorte de skills largas (con re-test, Art. I) | ⏳ backlog |
+| 3 | Recorte de skills largas (`sdd-start-task` 965→<500 palabras) con re-test Art. I | ⏳ backlog — REFACTOR con ciclo propio, fuera de v0.4.0 por decisión del usuario |
 
 ## Backlog
 
@@ -28,6 +27,10 @@
 - ¿Changelog de cliente además del técnico? (por ahora solo técnico).
 
 ## Releases cerradas
+
+### v0.4.0 — 2026-07-22
+
+Rename del carril `hotfix`→`patch` + override de worktrees neutral en `sdd-start-task`. **Cerrada pero no distribuida**: sin remoto configurado, no llega a los consumidores vía `/plugin marketplace update`. [Release notes](releases/v0.4.0/release-notes.md) · [changelog](changelog.md) · [acta](releases/v0.4.0/feedback.md).
 
 ### v0.3.0 — 2026-07-21
 
