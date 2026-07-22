@@ -1,6 +1,6 @@
 ---
 name: sdd-start-task
-description: Usar cuando el usuario arranca una tarea, feature o cambio no trivial en un proyecto con carpeta .docs/sdd/ — al invocar el comando, al enunciar una nueva task del roadmap o al llegar un ticket nuevo. No usar para bugs pequeños deterministas (eso es sdd-start-hotfix) ni para cambios describibles en una frase.
+description: Usar cuando el usuario arranca una tarea, feature o cambio no trivial en un proyecto con carpeta .docs/sdd/ — al invocar el comando, al enunciar una nueva task del roadmap o al llegar un ticket nuevo. No usar para bugs pequeños deterministas (eso es sdd-start-patch) ni para cambios describibles en una frase.
 ---
 
 # sdd-start-task
@@ -27,7 +27,7 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
 ## Checklist por tarea (crea un todo por paso)
 
 1. **Contexto** — leer `.docs/sdd/`: `constitution.md`, `mission.md`, `tech-stack.md`, `roadmap.md` (+ `architecture.md` y `funcional.md` si existen).
-2. **Enrutado** — ¿es un bug pequeño y **determinista** (<30 min, sin interpretación de requisitos)? Entonces NO es una task: usa `sdd-start-hotfix`. Su carpeta irá prefijada `hotfix-`, nunca `task-`.
+2. **Enrutado** — ¿es un bug pequeño y **determinista** (<30 min, sin interpretación de requisitos)? Entonces NO es una task: usa `sdd-start-patch`. Su carpeta irá prefijada `patch-`, nunca `task-`.
 3. **Branch** — `feature/<ticket>` desde `develop`, o la convención que fije la constitution del proyecto.
 4. **Spec** — `superpowers:brainstorming` para explorar intención y requisitos → crear la carpeta (ver Nombrado) + `spec.md` calcando `spec-template.md` del skill `sdd-templates`.
    ⛔ **GATE de aprobación**: presenta la spec y ESPERA la aprobación explícita del usuario. Si el usuario no responde, la tarea queda EN ESPERA — "documentar la decisión y seguir" no sustituye la aprobación.
@@ -38,10 +38,10 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
 
 ## Nombrado de carpetas de spec
 
-`<yyyyMMdd-HHmmss>-(task|hotfix)-<id>-<slug>`, todo en UTC:
+`<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>`, todo en UTC:
 
 - Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
-- `task` o `hotfix` según el carril. Una carpeta que contiene `hotfix.md` SIEMPRE va prefijada `hotfix-`.
+- `task` o `patch` según el carril. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`.
 - `<id>`: el id del ticket en el gestor del proyecto. **Nunca el nombre de un módulo** ("M4" no es un id). Si no hay ticket: `0000`.
 - `<slug>`: kebab-case corto descriptivo.
 
@@ -59,12 +59,12 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
 | --- | --- |
 | Specs/planes en `docs/superpowers/` | SOLO en `.docs/sdd/specs/` |
 | Formato de spec/plan del skill | Plantillas del skill `sdd-templates` (viven en el kit, no en el proyecto) |
-| `using-git-worktrees` | No-op: se usa el git-flow del proyecto |
+| `using-git-worktrees` | El kit no gestiona worktrees desde el flujo (no invoca esta skill ni crea entornos): trabaja dentro del git-flow del proyecto —worktrees incluidos si el proyecto los usa— que el dev gestiona por su cuenta. No los prescribe ni los excluye. |
 | `subagent-driven-development` | Se evita: ejecución en línea con checkpoints |
 
 ## Cuándo NO aplicar SDD
 
-Si el cambio se puede describir en una frase y no toca contratos ni datos, se hace directamente (commit correcto y listo). Un bug determinista va al carril hotfix. La planificación es proporcional a la incertidumbre, no un trámite universal.
+Si el cambio se puede describir en una frase y no toca contratos ni datos, se hace directamente (commit correcto y listo). Un bug determinista va al carril patch. La planificación es proporcional a la incertidumbre, no un trámite universal.
 
 ## Trabajo descubierto fuera de scope
 
@@ -75,13 +75,13 @@ No lo absorbas en silencio ni lo ignores. Decide **con el usuario** (`AskUserQue
 - Estás escribiendo `plan.md` y la spec no tiene aprobación explícita del usuario.
 - Vas a editar código y el plan no está aprobado.
 - Estás "documentando la decisión en la spec" en lugar de esperar la respuesta.
-- La carpeta dice `task-` pero el contenido es un `hotfix.md`, o el `<id>` es un módulo en vez de un ticket.
+- La carpeta dice `task-` pero el contenido es un `patch.md`, o el `<id>` es un módulo en vez de un ticket.
 - Vas a marcar el roadmap como ✅ sin haber ejecutado y documentado el smoke.
 - El walkthrough tiene el tiempo en blanco "porque no lo sé exacto".
 
 | Racionalización | Realidad |
 | --- | --- |
 | "El usuario no va a responder; sigo y lo documento" | Una spec sin aprobar no es un contrato. La tarea ESPERA en el gate; tu último mensaje presenta la spec y pide la aprobación. |
-| "Es sencillo / el cliente lo espera hoy" | La presión no cambia el proceso. Lo realmente pequeño tiene sus carriles: hotfix o cambio-de-una-frase. |
+| "Es sencillo / el cliente lo espera hoy" | La presión no cambia el proceso. Lo realmente pequeño tiene sus carriles: patch o cambio-de-una-frase. |
 | "Dejo el tiempo en blanco, no lo sé exacto" | Aproxima. Un registro aproximado alimenta el estimation-log; un blanco lo rompe. |
 | "✅ implementado (pendiente de smoke)" | Ese estado no existe. Sin verificación documentada no hay ✅. |
