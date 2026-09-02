@@ -20,7 +20,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | Declaración en los manifests | done | b2bd8d2 | Sin restricción de versión, a propósito |
 | 2 | Declaración humana en fuente única | done | 4d0057b | El plan decía "11 skills de proceso"; son 10 + sdd-templates (mission.md). No se tocó el recuento |
-| 3 | Degradación de `grilling` (Art. I) | skipped | — | RED limpio 2/2: por Art. I no se escribe la guidance. Solo queda la evidencia |
+| 3 | Degradación de `grilling` (Art. I) | skipped | — | RED limpio 2/2: por Art. I no se escribe la guidance. Evidencia en bbc5b9d |
 
 ## Verificación por task
 
