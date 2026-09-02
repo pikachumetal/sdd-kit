@@ -7,7 +7,7 @@
 | 1 | 🔒 Subir a remoto (GitHub / Azure DevOps) — **pospuesto 4ª vez**; bloquea la distribución real de v0.2.0, v0.3.0 y v0.4.0 al equipo | ⏳ pendiente (decisión del usuario) |
 | 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, rename hotfix→patch + override de worktrees neutral (task carril-rama-worktree) y modo lite + invocación explícita de brainstorming (task modo-lite) |
 | 3 | Recorte de skills largas (`sdd-start-task` 1403→<500 palabras) con re-test Art. I | ⏳ backlog — REFACTOR con ciclo propio; **más urgente tras la task modo-lite**, que la engordó un 45% |
-| 4 | Patch de compatibilidad con Claude Code y dependencias — `grilling` referenciada como `superpowers:grilling` cuando es una skill personal de `mattpocock/skills`; referencias a "crea un todo por paso" tras la retirada de TodoWrite por defecto (Claude Code v2.1.233); `dependencies` con `superpowers ^6.3.0` en `plugin.json` | ⏳ pendiente — alcance acordado con el usuario el 2026-09-02 |
+| 4 | Patch de compatibilidad con Claude Code y dependencias — ~~`grilling` referenciada como `superpowers:grilling`~~ ✅ resuelto ([patch 20260902-153722](specs/20260902-153722-patch-0000-grilling-reference/patch.md)). Pendiente: referencias a "crea un todo por paso" en 8 skills tras la retirada de TodoWrite por defecto (Claude Code v2.1.233); y la declaración de dependencias, que resultó mayor de lo previsto — `grilling` llega por `npx skills add` y no es un plugin, así que no cabe en `dependencies`, y **ningún** manifest instalado usa ese campo (67 revisados): verificar primero si existe | ⏳ parcial — alcance acordado con el usuario el 2026-09-02 |
 
 ## Backlog
 
@@ -53,3 +53,4 @@ Las 7 skills de proceso iniciales + plantillas + manifests. Sin acta (el carril 
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-09-02 | [20260902-153722-patch-0000-grilling-reference](specs/20260902-153722-patch-0000-grilling-reference/patch.md) | `sdd-consult` invocaba `superpowers:grilling`, nombre que no resuelve. Corregido a `grilling`. |

@@ -14,6 +14,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **sdd-start-task** — fila nueva de overrides: la clasificación de `brainstorming` (spike/bounded/architectural) no gobierna los artefactos del kit; su rama `bounded` ("no spec file, no implementation plan document") no aplica. → [ref](specs/20260902-084856-task-0000-modo-lite/)
 - **spec-template** — secciones marcadas *(solo full)* y bloque de estimación para el modo lite, que no tiene `plan.md` donde alojarlo. Plantilla única: no se crea `spec-lite-template.md` (Art. VIII). → [ref](specs/20260902-084856-task-0000-modo-lite/)
 
+### Fixed
+
+- **sdd-consult** — la rama de estructurar invocaba `superpowers:grilling`, nombre que no resuelve: `grilling` no la distribuye el plugin superpowers, es una skill personal instalada vía `npx skills add`. Rama muerta desde `ea4f0ba`, el commit que creó la skill. → [ref](specs/20260902-153722-patch-0000-grilling-reference/)
+
 ## [0.4.0] — 2026-07-22
 
 ### Changed

@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-02
 branch: master
-commit: <hash>
+commit: 4aecf8c
 ---
 
 # Patch 0000 — referencia rota a la skill `grilling`
