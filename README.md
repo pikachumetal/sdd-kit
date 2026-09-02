@@ -54,7 +54,7 @@ Declaración canónica del kit: el resto de documentos apuntan aquí en vez de r
 
 El kit invoca **6 skills de superpowers**: `brainstorming`, `writing-plans`, `executing-plans`, `systematic-debugging`, `writing-skills` y `finishing-a-development-branch`. Sin el plugin instalado, Claude Code deshabilita el kit y muestra el comando de instalación en el error: es un fallo ruidoso a propósito, preferible a un flujo que se ejecuta a medias sin que nadie lo note.
 
-`grilling` es opcional y solo la usa el carril consult, para tensar una dirección sin producir artefactos. Si no está instalada, la skill hace el interrogatorio por su cuenta y lo dice.
+`grilling` es opcional y solo la usa el carril consult, para tensar una dirección sin producir artefactos. Sin ella el carril sigue funcionando: el interrogatorio se hace igual, una pregunta cada vez y con recomendación, solo que sin la skill. Verificado con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), que es también la razón de que el kit no lleve guidance para ese caso.
 
 ## Convenciones
 
