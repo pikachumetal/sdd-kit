@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | RED: baseline sin guidance | pending | — | Subagentes Sonnet, 2 escenarios |
+| 1 | RED: baseline sin guidance | done | 8b9b8b2 | 2/2 omiten brainstorming; gates aguantan |
 | 2 | Guidance del modo lite en `sdd-start-task` | pending | — | Alcance sujeto al resultado del RED |
 | 3 | Plantilla de spec con marcadores de modo | pending | — | |
 | 4 | Cierre consciente del modo en `sdd-end-task` | pending | — | Consume `mode:` de la Task 3 |
@@ -26,7 +26,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 ## Verificación por task
 
-- [ ] Task 1 — evidencia verificada en disco, no por autoinforme del subagente
+- [x] Task 1 — evidencia verificada en disco, no por autoinforme del subagente
 - [ ] Task 2 — frontmatter válido, naming del Art. IV intacto, racionalizaciones citadas del RED
 - [ ] Task 3 — `templates/` sigue con 9 ficheros (Art. VIII), frontmatter de ejemplo parsea
 - [ ] Task 4 — checklist de cierre completo en modo full, smoke intacto en lite
@@ -36,3 +36,4 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+| 2/2 agentes del RED omiten `superpowers:brainstorming` y redactan la spec tras explorar el código por su cuenta | El paso 4 nombra la skill dentro de una frase que describe una actividad; se lee como glosa, no como invocación (fallo de forma, Art. II) | Arreglar en esta task (decisión del usuario, 2026-09-02): paso 4 redactado como invocación inequívoca. Registrado en la spec §4.8 | Task 2 |

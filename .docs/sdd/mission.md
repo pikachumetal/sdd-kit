@@ -20,6 +20,7 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 
 - **Documentos de anclaje**: mission, constitution, tech-stack, architecture, funcional, roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico.
 - **Carril task / carril patch**: flujo completo con spec y plan vs registro ligero para bugs deterministas.
+- **Modo lite**: variante del carril task —no un carril nuevo: sin skills propias ni prefijo de carpeta— para cambios acotados que cumplen un predicado observable. Spec corta y sin plan; el gate de la spec, el smoke y el walkthrough se conservan intactos. Lo habilita el predicado y lo activa la confirmación del usuario.
 - **Carril release**: apertura (el acta triada se convierte en scope que decide el usuario) y cierre (Definition of Done del hito: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario).
 - **Acta de release (feedback.md)**: acta única por release — inventario del feedback, triage y retro; vive en `.docs/sdd/releases/vX.Y.Z/`.
 - **Carril consult**: el anti-carril — preguntar, entender, planificar o estructurar con el contexto de anclaje cargado, sin producir artefactos; cuando la consulta se vuelve trabajo, transiciona (anunciándolo) a task/patch/release, que gatean.

@@ -124,6 +124,14 @@ No se detecta por ausencia de `plan.md`: un predicado negativo confunde "es una 
 - **Presión de calendario**: no es una condición del predicado. Entra en la tabla de racionalizaciones.
 - **La task lite crece**: ratchet (§4.2).
 
+### 4.8 Invocación explícita de `brainstorming` *(ampliación aprobada el 2026-09-02, tras el RED)*
+
+El RED destapó un fallo que esta spec no preveía: **2 de 2 agentes omitieron `superpowers:brainstorming`** y redactaron la spec tras explorar el código por su cuenta. Uno lo describió como *"una laguna de cumplimiento del checklist, no una exclusión razonada"*; el otro lo racionalizó como *"small, low-ambiguity feature… I've already gathered enough context"*.
+
+Es un fallo de forma (Art. II): el paso 4 nombra la skill dentro de una frase que describe una actividad, y se lee como glosa en lugar de como orden. Se corrige con receta —redactar el paso como invocación inequívoca con el tool `Skill`— no con tabla de racionalizaciones.
+
+Esto tiene un efecto sobre §4.3: el override sobre la clasificación de `brainstorming` no se reprodujo en el RED **porque ningún agente llegó a invocar la skill**. Reparar este fallo lo vuelve alcanzable, así que §4.3 se escribe como contención del riesgo que la propia corrección introduce. Decisión del usuario registrada el 2026-09-02.
+
 ## 5. Datos
 
 No aplica. El kit es Markdown sin código ejecutable ni persistencia.
