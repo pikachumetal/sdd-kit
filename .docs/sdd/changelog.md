@@ -7,12 +7,15 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Added
 
 - **modo lite del carril task** — variante para cambios acotados: spec corta y sin `plan.md`, habilitada por cinco condiciones observables y activada solo por confirmación del usuario; campo `mode` en el frontmatter de la spec, que lee `sdd-end-task`. Validado con RED→GREEN→REFACTOR. → [ref](specs/20260902-084856-task-0000-modo-lite/)
+- **dependencias declaradas en el manifest** — `plugin.json` declara `superpowers` como dependencia cross-marketplace y `marketplace.json` la autoriza; sin restricción de versión, para no depender de los tags de un repo ajeno. → [ref](specs/20260902-160308-task-0000-dependencias-declaradas/)
 
 ### Changed
 
 - **sdd-start-task** — el paso 4 pasa a redactarse como invocación inequívoca de `superpowers:brainstorming`: 2/2 agentes del baseline lo leían como descripción de actividad y exploraban el código en su lugar. → [ref](specs/20260902-084856-task-0000-modo-lite/)
 - **sdd-start-task** — fila nueva de overrides: la clasificación de `brainstorming` (spike/bounded/architectural) no gobierna los artefactos del kit; su rama `bounded` ("no spec file, no implementation plan document") no aplica. → [ref](specs/20260902-084856-task-0000-modo-lite/)
 - **spec-template** — secciones marcadas *(solo full)* y bloque de estimación para el modo lite, que no tiene `plan.md` donde alojarlo. Plantilla única: no se crea `spec-lite-template.md` (Art. VIII). → [ref](specs/20260902-084856-task-0000-modo-lite/)
+- **declaración de dependencias en fuente única** — el README pasa a ser la declaración canónica (canal, instalación y obligatoriedad de cada una, más las 6 skills de superpowers que el kit invoca) y `tech-stack` apunta a él en vez de repetir la lista, que ya había divergido. → [ref](specs/20260902-160308-task-0000-dependencias-declaradas/)
+- **README** — la línea de estado pasa de "v0.3.0 publicada" a "v0.4.0 cerrada, sin distribuir": ninguna versión está publicada mientras no haya remoto. → [ref](specs/20260902-160308-task-0000-dependencias-declaradas/)
 
 ### Fixed
 

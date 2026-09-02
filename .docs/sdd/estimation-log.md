@@ -11,3 +11,4 @@ Registro estimado-vs-real por tarea. Se añade una fila al cerrar cada task/patc
 | 2026-07-22 | carril-rama-worktree | docs | 2 | ~2,1 (aprox.) | 1,05 |
 | 2026-09-02 | modo-lite | docs | 3 | ~0,5 (aprox.) | 0,17 |
 | 2026-09-02 | grilling-reference (patch) | docs | — | ~0,3 (aprox.) | — |
+| 2026-09-02 | dependencias-declaradas | docs | 3 | ~0,3 (aprox.) | 0,10 |

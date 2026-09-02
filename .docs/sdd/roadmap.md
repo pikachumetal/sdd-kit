@@ -7,7 +7,7 @@
 | 1 | 🔒 Subir a remoto (GitHub / Azure DevOps) — **pospuesto 4ª vez**; bloquea la distribución real de v0.2.0, v0.3.0 y v0.4.0 al equipo | ⏳ pendiente (decisión del usuario) |
 | 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, rename hotfix→patch + override de worktrees neutral (task carril-rama-worktree) y modo lite + invocación explícita de brainstorming (task modo-lite) |
 | 3 | Recorte de skills largas (`sdd-start-task` 1403→<500 palabras) con re-test Art. I | ⏳ backlog — REFACTOR con ciclo propio; **más urgente tras la task modo-lite**, que la engordó un 45% |
-| 4 | Patch de compatibilidad con Claude Code y dependencias — ~~`grilling` referenciada como `superpowers:grilling`~~ ✅ resuelto ([patch 20260902-153722](specs/20260902-153722-patch-0000-grilling-reference/patch.md)). Pendiente: referencias a "crea un todo por paso" en 8 skills tras la retirada de TodoWrite por defecto (Claude Code v2.1.233); y la declaración de dependencias, que resultó mayor de lo previsto — `grilling` llega por `npx skills add` y no es un plugin, así que no cabe en `dependencies`, y **ningún** manifest instalado usa ese campo (67 revisados): verificar primero si existe | ⏳ parcial — alcance acordado con el usuario el 2026-09-02 |
+| 4 | Compatibilidad con Claude Code y dependencias — ~~`grilling` referenciada como `superpowers:grilling`~~ ✅ ([patch 20260902-153722](specs/20260902-153722-patch-0000-grilling-reference/patch.md)) · ~~declaración de dependencias~~ ✅ ([task dependencias-declaradas](specs/20260902-160308-task-0000-dependencias-declaradas/walkthrough.md)): `plugin.json` declara `superpowers` cross-marketplace y el README es la fuente única. Queda **solo** un pendiente: las referencias a "crea un todo por paso" en 8 skills, tras la retirada de TodoWrite por defecto (Claude Code v2.1.233) | ⏳ parcial — alcance acordado con el usuario el 2026-09-02 |
 
 ## Backlog
 
@@ -24,6 +24,7 @@
 | El override sobre la clasificación de `brainstorming` está escrito pero **no probado**: el GREEN no pudo demostrar que fuera él quien evitó el fallo. Vigilar en la próxima task que lo atraviese | Bajo |
 | `.docs/sdd/templates/` sigue existiendo en este repo pese al Art. VIII (fuente única en `skills/sdd-templates/templates/`) | Bajo — residuo, ninguna skill lo lee |
 | ~~El propio kit aún no ha ciclado ninguna tarea con su flujo~~ — saldada: la task del carril release (20260721) cicló spec → plan → RED/GREEN → cierre | — |
+| El método de test no sabe montar un entorno **sin** una skill: el staging por renombrado la hace ininvocable, no ausente (task dependencias-declaradas). Limita lo que se puede probar de cualquier degradación | Medio |
 | Sin CI que valide frontmatter/estructura de las skills | Bajo |
 
 ## Decisiones pendientes
