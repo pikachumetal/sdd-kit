@@ -4,6 +4,16 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **modo lite del carril task** — variante para cambios acotados: spec corta y sin `plan.md`, habilitada por cinco condiciones observables y activada solo por confirmación del usuario; campo `mode` en el frontmatter de la spec, que lee `sdd-end-task`. Validado con RED→GREEN→REFACTOR. → [ref](specs/20260902-084856-task-0000-modo-lite/)
+
+### Changed
+
+- **sdd-start-task** — el paso 4 pasa a redactarse como invocación inequívoca de `superpowers:brainstorming`: 2/2 agentes del baseline lo leían como descripción de actividad y exploraban el código en su lugar. → [ref](specs/20260902-084856-task-0000-modo-lite/)
+- **sdd-start-task** — fila nueva de overrides: la clasificación de `brainstorming` (spike/bounded/architectural) no gobierna los artefactos del kit; su rama `bounded` ("no spec file, no implementation plan document") no aplica. → [ref](specs/20260902-084856-task-0000-modo-lite/)
+- **spec-template** — secciones marcadas *(solo full)* y bloque de estimación para el modo lite, que no tiene `plan.md` donde alojarlo. Plantilla única: no se crea `spec-lite-template.md` (Art. VIII). → [ref](specs/20260902-084856-task-0000-modo-lite/)
+
 ## [0.4.0] — 2026-07-22
 
 ### Changed

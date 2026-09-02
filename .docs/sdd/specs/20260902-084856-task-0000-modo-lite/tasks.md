@@ -22,7 +22,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 2 | Guidance del modo lite en `sdd-start-task` | done | 70fdd74 | +F1 (invocación de brainstorming), sin red flags de gates |
 | 3 | Plantilla de spec con marcadores de modo | done | e1b0c14 | 9 plantillas, sin duplicar |
 | 4 | Cierre consciente del modo en `sdd-end-task` | done | f338103 | |
-| 5 | GREEN: verificación de la guidance | done | (este commit) | F1 y F2 reparados; REFACTOR de plantilla incluido |
+| 5 | GREEN: verificación de la guidance | done | bcc7200 | F1 y F2 reparados; REFACTOR de plantilla incluido |
 
 ## Verificación por task
 

@@ -32,7 +32,7 @@
 1. **Frontmatter**: `name` (inglés kebab) + `description` que SOLO describe cuándo usarla (nunca resume el workflow — los agentes seguirían la description y se saltarían el cuerpo).
 2. **Overview**: principio en 1-2 frases.
 3. **Gates/checklist**: pasos numerados; los ⛔ marcan puntos de parada que requieren al usuario.
-4. **Predicados**: los módulos opcionales se condicionan a ficheros observables, no a configuración.
+4. **Predicados**: los módulos opcionales se condicionan a ficheros observables, no a configuración. Un predicado bien escrito no solo clasifica: **da forma al trabajo**. En el GREEN del modo lite, el agente acotó el alcance de la spec para dejar fuera un fichero de contrato público y así cumplir una de las condiciones — el predicado se usó como herramienta de diseño, no solo como filtro de entrada. Cuando el predicado habilita un atajo, quien lo activa es el usuario: **habilitar y activar son cosas distintas**, y esa separación es lo que impide que el agente se autoconceda el atajo.
 5. **Red flags + tabla de racionalizaciones**: construidas con las frases textuales de los baselines (solo skills de disciplina; las de forma usan receta/contrato).
 
 ## Anatomía de la evidencia (tests/)
