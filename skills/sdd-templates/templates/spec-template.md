@@ -22,6 +22,8 @@ approvers:
 > **Modo lite**: borra las secciones marcadas `(solo full)` y rellena el bloque de estimación
 > de la sección 4. En lite quedan: 1, 2, 3, 4 (con estimación) y 11. Esta es la ÚNICA plantilla
 > de spec: no existe ni se crea un `spec-lite-template.md` (Art. VIII).
+> Las condiciones del predicado que justifican el modo lite van en la **sección 3**, que sobrevive
+> al recorte — nunca en Open questions, que el propio modo elimina.
 
 ## 1. Contexto
 
