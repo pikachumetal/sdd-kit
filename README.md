@@ -2,7 +2,7 @@
 
 Kit SDD del equipo: skills de proceso agnósticas para el flujo **spec → plan → implementación → walkthrough** con Claude Code. Es el nivel 1 de la taxonomía de skills del equipo (proceso, igual en todos los proyectos); las skills técnicas por stack (nivel 2) y las específicas de cada proyecto (nivel 3) viven en cada repo.
 
-> Estado: **v0.3.0 publicada** (carril consult). Las 10 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
+> Estado: **v0.4.0 cerrada**, sin distribuir (sin remoto configurado). Las 10 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
 
 ## Instalación
 
@@ -43,9 +43,21 @@ npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 | `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
 | `sdd-templates` | Las 9 plantillas canónicas (spec, plan, tasks, walkthrough, patch, data-model, research, feedback, release-notes) |
 
+## Dependencias
+
+Declaración canónica del kit: el resto de documentos apuntan aquí en vez de repetir la lista.
+
+| Dependencia | Obligatoria | Canal | Instalación |
+| --- | --- | --- | --- |
+| `superpowers` | Sí | Plugin de Claude Code, marketplace `claude-plugins-official` | Se resuelve sola: `plugin.json` la declara. Manual: `claude plugin install superpowers@claude-plugins-official` |
+| `grilling` | No | Skill suelta del CLI de agent skills | `npx skills add mattpocock/skills --skill grilling` |
+
+El kit invoca **6 skills de superpowers**: `brainstorming`, `writing-plans`, `executing-plans`, `systematic-debugging`, `writing-skills` y `finishing-a-development-branch`. Sin el plugin instalado, Claude Code deshabilita el kit y muestra el comando de instalación en el error: es un fallo ruidoso a propósito, preferible a un flujo que se ejecuta a medias sin que nadie lo note.
+
+`grilling` es opcional y solo la usa el carril consult, para tensar una dirección sin producir artefactos. Si no está instalada, la skill hace el interrogatorio por su cuenta y lo dice.
+
 ## Convenciones
 
 - Los artefactos SDD viven en **`.docs/sdd/`** de cada proyecto (carpeta con punto: no es el proyecto, es su andamiaje); los de release (acta, release notes), en `.docs/sdd/releases/vX.Y.Z/`.
-- Requiere el plugin **superpowers** (brainstorming, executing-plans, systematic-debugging, finishing-a-development-branch).
 - Documentación del flujo del equipo: [`.docs/flux/`](.docs/flux/) — *Flux per al desenvolupament ràpid d'aplicacions amb Claude* (greenfield / brownfield / annex amb l'evidència).
 - Este repo aplica su propio flujo (dogfooding): documentación de anclaje en [`.docs/sdd/`](.docs/sdd/).
