@@ -9,8 +9,8 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 
 | Plantilla | Artefacto | Cuándo |
 | --- | --- | --- |
-| [spec-template.md](templates/spec-template.md) | `spec.md` | Toda task (qué + por qué) |
-| [plan-template.md](templates/plan-template.md) | `plan.md` | Toda task, tras aprobar la spec (cómo) |
+| [spec-template.md](templates/spec-template.md) | `spec.md` | Toda task, en los dos modos (qué + por qué) |
+| [plan-template.md](templates/plan-template.md) | `plan.md` | Solo modo full, tras aprobar la spec (cómo) |
 | [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Solo si el plan tiene >1 task (registro vivo) |
 | [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Cierre de toda task |
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Carril patch (único artefacto) |
@@ -24,4 +24,5 @@ Reglas al usarlas:
 - **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.
 - Los artefactos de task/patch viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
 - Las secciones marcadas *(si el módulo está activo)* se rigen por los predicados del proyecto (`estimation.md`, `changelog.md` presentes o no).
+- **Modo lite**: la spec se calca de la MISMA plantilla, borrando las secciones marcadas *(solo full)* y rellenando el bloque de estimación de la sección 4. No existe ni se crea un `spec-lite-template.md`: una segunda plantilla es deriva instantánea (Art. VIII).
 - Al redactar el artefacto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales del proyecto (`tech-stack.md`, `constitution.md`).
