@@ -4,10 +4,9 @@
 
 | # | Ítem | Estado |
 | --- | --- | --- |
-| 1 | 🔒 Subir a remoto (GitHub / Azure DevOps) — **pospuesto 4ª vez**; bloquea la distribución real de v0.2.0, v0.3.0 y v0.4.0 al equipo | ⏳ pendiente (decisión del usuario) |
-| 2 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, rename hotfix→patch + override de worktrees neutral (task carril-rama-worktree) y modo lite + invocación explícita de brainstorming (task modo-lite) |
-| 3 | Recorte de skills largas (`sdd-start-task` 1403→<500 palabras) con re-test Art. I | ⏳ backlog — REFACTOR con ciclo propio; **más urgente tras la task modo-lite**, que la engordó un 45% |
-| 4 | Compatibilidad con Claude Code y dependencias — ~~`grilling` referenciada como `superpowers:grilling`~~ ✅ ([patch 20260902-153722](specs/20260902-153722-patch-0000-grilling-reference/patch.md)) · ~~declaración de dependencias~~ ✅ ([task dependencias-declaradas](specs/20260902-160308-task-0000-dependencias-declaradas/walkthrough.md)): `plugin.json` declara `superpowers` cross-marketplace y el README es la fuente única. Queda **solo** un pendiente: las referencias a "crea un todo por paso" en 8 skills, tras la retirada de TodoWrite por defecto (Claude Code v2.1.233) | ⏳ parcial — alcance acordado con el usuario el 2026-09-02 |
+| 1 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, rename hotfix→patch, modo lite (v0.4.0–v0.5.0). En v0.5.0 el bucle se cerró desde dentro: una consulta destapó la referencia rota a `grilling` y la ausencia de declaración de dependencias |
+| 2 | Recorte de skills largas (`sdd-start-task` 1403→<500 palabras) con re-test Art. I | ⏳ backlog — REFACTOR con ciclo propio; **más urgente tras la task modo-lite**, que la engordó un 45% |
+| 3 | Compatibilidad con Claude Code y dependencias — ~~`grilling` referenciada como `superpowers:grilling`~~ ✅ ([patch 20260902-153722](specs/20260902-153722-patch-0000-grilling-reference/patch.md)) · ~~declaración de dependencias~~ ✅ ([task dependencias-declaradas](specs/20260902-160308-task-0000-dependencias-declaradas/walkthrough.md)): `plugin.json` declara `superpowers` cross-marketplace y el README es la fuente única. Queda **solo** un pendiente: las referencias a "crea un todo por paso" en 8 skills, tras la retirada de TodoWrite por defecto (Claude Code v2.1.233) | ⏳ parcial — alcance acordado con el usuario el 2026-09-02 |
 
 ## Backlog
 
@@ -27,12 +26,20 @@
 | El método de test no sabe montar un entorno **sin** una skill: el staging por renombrado la hace ininvocable, no ausente (task dependencias-declaradas). Limita lo que se puede probar de cualquier degradación | Medio |
 | Sin CI que valide frontmatter/estructura de las skills | Bajo |
 
+## Decisiones tomadas
+
+- **Distribución: local-only** (2026-09-02). El kit se instala apuntando a la ruta local del repo y lo usa el dev-lead; no se configura remoto hasta que la empresa decida distribuirlo al equipo. Cierra el action item A2-ter, arrastrado desde v0.1.0. Consecuencia asumida: v0.2.0–v0.5.0 quedan cerradas y no distribuidas, y `claude plugin tag --push` no aplica. → [acta v0.5.0](releases/v0.5.0/feedback.md)
+
 ## Decisiones pendientes
 
-- Remoto y visibilidad (¿repo interno del equipo?).
+- Dónde se aloja el repo el día que la empresa quiera distribuirlo (GitHub / Azure DevOps / interno).
 - ¿Changelog de cliente además del técnico? (por ahora solo técnico).
 
 ## Releases cerradas
+
+### v0.5.0 — 2026-09-02
+
+Modo lite del carril task + declaración de dependencias del kit (manifest cross-marketplace y README como fuente única) + la referencia rota a `grilling`. **Cerrada, no distribuida** — por decisión, no por olvido: el kit es local-only. [Release notes](releases/v0.5.0/release-notes.md) · [changelog](changelog.md) · [acta](releases/v0.5.0/feedback.md).
 
 ### v0.4.0 — 2026-07-22
 

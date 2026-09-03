@@ -4,6 +4,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-09-02
+
 ### Added
 
 - **modo lite del carril task** — variante para cambios acotados: spec corta y sin `plan.md`, habilitada por cinco condiciones observables y activada solo por confirmación del usuario; campo `mode` en el frontmatter de la spec, que lee `sdd-end-task`. Validado con RED→GREEN→REFACTOR. → [ref](specs/20260902-084856-task-0000-modo-lite/)
