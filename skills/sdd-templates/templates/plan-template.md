@@ -21,6 +21,12 @@ created: <YYYY-MM-DD>
 
 **Spec**: `./spec.md`
 
+## Restricciones globales
+
+> Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— más los artículos de la constitution que aplican. Una línea por restricción. Cada task las hereda aunque no las repita. Escribe "ninguna" si no hay.
+
+- <restricción, con el valor exacto de la spec>
+
 ---
 
 ## Phase -1 — Pre-Implementation Gates

@@ -27,7 +27,7 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
 ## Checklist por tarea (crea un todo por paso)
 
 1. **Contexto** — leer `.docs/sdd/`: `constitution.md`, `mission.md`, `tech-stack.md`, `roadmap.md` (+ `architecture.md` y `funcional.md` si existen).
-2. **Enrutado** — tres salidas: bug pequeño y **determinista** (<30 min, sin interpretación de requisitos) → NO es una task, usa `sdd-start-patch` (carpeta prefijada `patch-`, nunca `task-`); cambio acotado que cumple el predicado → **modo lite** (ver abajo); todo lo demás → task en modo full.
+2. **Enrutado** — cuatro salidas: pregunta de viabilidad cuya salida es una **respuesta**, no código que se conserve ("¿se puede…?", "pruébalo rápido") → NO es una task, es un spike: `sdd-consult` la sondea sin artefactos; bug pequeño y **determinista** (<30 min, sin interpretación de requisitos) → NO es una task, usa `sdd-start-patch` (carpeta prefijada `patch-`, nunca `task-`); cambio acotado que cumple el predicado → **modo lite** (ver abajo); todo lo demás → task en modo full.
 3. **Branch** — `feature/<ticket>` desde `develop`, o la convención que fije la constitution del proyecto.
 4. **Spec** — **invoca la skill `superpowers:brainstorming`** con el tool `Skill`. El paso nombra una skill, no una actividad: explorar el código por tu cuenta NO la sustituye. Luego crear la carpeta (ver Nombrado) + `spec.md` calcando `spec-template.md` del skill `sdd-templates`, con `mode: full | lite` en el frontmatter.
    ⛔ **GATE de aprobación**: presenta la spec y ESPERA la aprobación explícita del usuario. Si el usuario no responde, la tarea queda EN ESPERA — "documentar la decisión y seguir" no sustituye la aprobación.
@@ -75,7 +75,7 @@ En lite: `spec.md` corta (con el bloque de estimación dentro), sin `plan.md` ni
 | Formato de spec/plan del skill | Plantillas del skill `sdd-templates` (viven en el kit, no en el proyecto) |
 | `using-git-worktrees` | El kit no gestiona worktrees desde el flujo (no invoca esta skill ni crea entornos): trabaja dentro del git-flow del proyecto —worktrees incluidos si el proyecto los usa— que el dev gestiona por su cuenta. No los prescribe ni los excluye. |
 | `subagent-driven-development` | Se evita: ejecución en línea con checkpoints |
-| Clasificación de `brainstorming` (spike / bounded / architectural) | No gobierna los artefactos del kit: la skill explora intención y requisitos, pero qué se escribe lo decide el modo del carril. Su rama `bounded` ("no spec file, no implementation plan document") NO aplica — en el kit toda task tiene `spec.md` y su gate de aprobación, en los dos modos. |
+| Clasificación de `brainstorming` (spike / bounded / architectural) | Anúnciala junto al carril del kit. `bounded` y `architectural` no gobiernan los artefactos: la skill explora intención y requisitos, pero qué se escribe lo decide el modo del carril. Su rama `bounded` ("no spec file, no implementation plan document") NO aplica — en el kit toda task tiene `spec.md` y su gate de aprobación, en los dos modos. `spike` no es una task: sale por el enrutado (paso 2) a `sdd-consult`. |
 
 ## Cuándo NO aplicar SDD
 
@@ -102,5 +102,6 @@ No lo absorbas en silencio ni lo ignores. Decide **con el usuario** (`AskUserQue
 | "El paso 4 describe una actividad; explorando el código ya la cumplo" | Nombra una skill concreta, no una actividad. `superpowers:brainstorming` se invoca con el tool `Skill`. |
 | "El usuario no va a responder; sigo y lo documento" | Una spec sin aprobar no es un contrato. La tarea ESPERA en el gate; tu último mensaje presenta la spec y pide la aprobación. |
 | "Es sencillo / el cliente lo espera hoy" | La presión no cambia el proceso. Lo realmente pequeño tiene sus carriles: patch o cambio-de-una-frase. |
+| "«Pruébalo rápido» es verbo de acción, no consulta; el usuario invocó esta skill, así que es task" | Una pregunta de viabilidad sigue siendo una pregunta aunque pida probar: su salida es una respuesta. `sdd-consult` la sondea; abrir rama y spec la convierte en trabajo que nadie pidió. |
 | "Dejo el tiempo en blanco, no lo sé exacto" | Aproxima. Un registro aproximado alimenta el estimation-log; un blanco lo rompe. |
 | "✅ implementado (pendiente de smoke)" | Ese estado no existe. Sin verificación documentada no hay ✅. |
