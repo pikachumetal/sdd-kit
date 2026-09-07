@@ -6,6 +6,8 @@ Principios no negociables del kit. La constitution manda sobre cualquier spec.
 
 Ninguna skill nueva ni edición de una existente sin test que falle primero: baseline sin la skill (RED, con racionalizaciones textuales documentadas) → skill dirigida a esos fallos (GREEN, mismos escenarios) → cierre de huecos. La evidencia vive en `tests/<skill>-red.md` y `tests/<skill>-green.md`. Aplica también a recortes, traducciones y "pequeños ajustes". Si el baseline no exhibe el fallo, no se escribe la guidance.
 
+Para un **recorte o reestructuración de una skill existente**, el baseline vacío no es el test: una versión recortada puede batir a un baseline sin skill y aun así ser peor que la versión vigente. El test válido es el **A/B de no-regresión** — control (la versión vigente) contra tratamiento (la versión recortada), mismos escenarios —, y el corte se publica solo si el tratamiento reproduce la conducta del control en TODOS ellos. La evidencia vive en `tests/<skill>-ab.md`. El RED contra baseline vacío sigue siendo el test de la guidance nueva.
+
 ## Art. II — La forma sigue al fallo
 
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
