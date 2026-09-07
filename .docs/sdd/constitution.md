@@ -22,7 +22,7 @@ Texto humano (skills, docs, tests, commits-cuerpo) en castellano con ortografía
 
 ## Art. V — Versionado
 
-SemVer en `.claude-plugin/plugin.json`. Cada release: bump de versión + entrada en `.docs/sdd/changelog.md`. Los usuarios actualizan con `/plugin marketplace update`.
+SemVer en `.claude-plugin/plugin.json`. Cada release: bump de versión + entrada en `.docs/sdd/changelog.md`. Los usuarios actualizan con `/plugin marketplace update`. Cada release del kit revisa además la compatibilidad con la versión de superpowers instalada (sus `RELEASE-NOTES.md`) y actualiza la versión validada que declara el README; si una minor cambia una skill que el kit invoca, el mapeo se re-testa antes de cerrar.
 
 ## Art. VI — Commits
 

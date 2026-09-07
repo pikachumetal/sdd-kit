@@ -45,6 +45,14 @@ Vacío por decisión (2026-09-07): todo lo que había entra en v0.6.0 (T4–T9 y
 | El método de test no sabe montar un entorno **sin** una skill: el staging por renombrado la hace ininvocable, no ausente (task dependencias-declaradas) | Medio | T9 |
 | Sin CI que valide frontmatter/estructura de las skills | Bajo | T8 |
 
+## Referencias de vigilancia
+
+Se revisan al abrir cada release del kit (Art. V). No son dependencias: son el estado del arte con el que el kit se alinea por conceptos, no por layout.
+
+- superpowers — `RELEASE-NOTES.md` del plugin instalado (`~/.claude/plugins/cache/claude-plugins-official/superpowers/<versión>/`). Validado: 6.3.0 (2026-09-07).
+- OpenSpec — <https://openspec.dev/changelog/> · conceptos: <https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md>. Visto: v1.11.0 (2026-08-26).
+- Spec Kit — <https://github.com/github/spec-kit/releases>. Visto: v0.8.7 (2026-05-07).
+
 ## Decisiones tomadas
 
 - **v0.6.0 es RC hacia v1.0.0** (2026-09-07): entra todo lo pendiente, deuda incluida; nada se arrastra a v0.7.0. Las decisiones abiertas se resuelven dentro de la release.
