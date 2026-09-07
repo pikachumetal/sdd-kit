@@ -4,6 +4,17 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **sdd-consult** — modo "sondear": un spike ("¿se puede…?", "pruébalo rápido") se prueba con código desechable y termina en una respuesta, sin carpeta, rama ni código conservado; antes la skill vetaba la prueba. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+- **sdd-start-task** — cuarta salida del enrutado: el spike no es una task y va a `sdd-consult`; antes salía como task con rama y spec. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+- **plan-template** — bloque "Restricciones globales" con copia literal de las restricciones de la spec y los artículos de la constitution aplicables, alineado con el `Global Constraints` de `writing-plans` 6.3.0. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+- **README / constitution / roadmap** — versión de superpowers validada (6.3.0, 2026-09-07), revisión de compatibilidad en cada release del kit (Art. V) y sección de referencias de vigilancia (superpowers, OpenSpec, Spec Kit). → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+
+### Changed
+
+- **sdd-start-task** — la fila de overrides sobre la clasificación de `brainstorming` queda acotada a `bounded`/`architectural` y remite el spike al enrutado; el override en sí se probó 2/2 con `brainstorming` 6.3.0 real y se mantiene sin cambios. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+
 ## [0.5.0] — 2026-09-02
 
 ### Added

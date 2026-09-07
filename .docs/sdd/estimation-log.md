@@ -12,3 +12,4 @@ Registro estimado-vs-real por tarea. Se añade una fila al cerrar cada task/patc
 | 2026-09-02 | modo-lite | docs | 3 | ~0,5 (aprox.) | 0,17 |
 | 2026-09-02 | grilling-reference (patch) | docs | — | ~0,3 (aprox.) | — |
 | 2026-09-02 | dependencias-declaradas | docs | 3 | ~0,3 (aprox.) | 0,10 |
+| 2026-09-07 | alineacion-superpowers | docs | 2 (rango 2–4, condicionado al RED) | ~0,5 (aprox.) | 0,25 |
