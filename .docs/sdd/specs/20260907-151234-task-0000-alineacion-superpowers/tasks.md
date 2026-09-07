@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Documentos del kit: versión validada, Art. V y referencias de vigilancia | pending | — | Sin Art. I |
-| 2 | RED: campaña de cuatro escenarios con superpowers 6.3.0 real | pending | — | E1 bounded · E2 spike · E3 restricciones · E4 SDD |
+| 1 | Documentos del kit: versión validada, Art. V y referencias de vigilancia | done | `928aad2` | Sin Art. I |
+| 2 | RED: campaña de cinco escenarios con superpowers 6.3.0 real | done | — | E1 bounded ✅ limpio · E2 spike en consult ❌ (la skill veta la sonda) · E3 restricciones ⚠️ parcial (1/4 por arrastre) · E4 SDD ✅ limpio · E5 spike vía start-task ❌ (añadido durante el RED; sale como task). Fixture "Bookline", 5 copias, Sonnet |
 | 3 | Implementación condicionada al RED | pending | — | Solo los escenarios que fallen |
 | 4 | GREEN y refactor | pending | — | Solo los escenarios que fallaron en RED |
 
