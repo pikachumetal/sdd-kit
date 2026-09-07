@@ -28,32 +28,23 @@ gate en solitario.
 
 ## Checklist de cierre (crea un todo por paso)
 
-1. **Congelar scope y versión** — explícito: qué entra, qué se mueve a la siguiente. Versionado SemVer
-   pre-1.0: cada release es `v0.N.0` (patches: `v0.N.x`); **`v1.0.0` está RESERVADO para la puesta en
-   producción** — un breaking change en pre-1.0 NO lo adelanta. La versión se propone y **la confirma el
-   usuario** sobre la propuesta final de cierre: que el encargo nombre la versión ("cierra la v0.2.0")
-   describe el hito, NO es la confirmación.
+1. **Congelar scope y versión** — explícito: qué entra, qué se mueve a la siguiente. La versión se propone
+   y **la confirma el usuario** sobre la propuesta final de cierre. Reglas de numeración SemVer pre-1.0:
+   [versionado.md](references/versionado.md).
 2. **Acta + triage del feedback** *(si hubo demo/reunión con transcripción o notas)* — inventario COMPLETO
-   en `.docs/sdd/releases/vX.Y.Z/feedback.md`, calcando `feedback-template.md` del skill `sdd-templates`
-   (+ la fuente archivada al lado): cada petición con referencia (minuto/fuente), área y recomendación.
-   La **decisión es del usuario, item a item**
-   (`release-siguiente / backlog / trabajo-cliente / ya-cubierto / descartado`). El feedback se procesa
-   con criterio de producto, **no se transcribe como compromisos**. Las peticiones de producto van a
-   roadmap/backlog tras decisión — **NUNCA a la tabla de deuda técnica** (eso es solo ingeniería).
-   Cambios de requisito detectados → sección propia del acta (el doc funcional lo actualiza su dueño).
-3. **Retro con evidencia** *(si existe `estimation-log.md`)* — como sección del MISMO `feedback.md` (un
-   único acta por release, no un fichero aparte): agregado estimado-vs-real de la release, qué funcionó/qué
-   corregir, action items **verificables**, y comprobación de los action items de la release anterior. Sin
-   evidencia no es retro, es opinión.
+   en `.docs/sdd/releases/vX.Y.Z/feedback.md`, con la fuente archivada al lado. La **decisión es del
+   usuario, item a item** — el feedback se procesa con criterio de producto, no se transcribe como
+   compromisos. Estructura del acta, valores del triage y dónde va cada cosa:
+   [acta-y-retro.md](references/acta-y-retro.md).
+3. **Retro con evidencia** *(si existe `estimation-log.md`)* — como sección del MISMO `feedback.md`. Sin
+   evidencia no es retro, es opinión. Qué debe contener: [acta-y-retro.md](references/acta-y-retro.md).
 4. **Sellar el changelog** *(si existe `changelog.md`)* — `[Unreleased]` → `[X.Y.Z] - YYYY-MM-DD` y nueva
    `[Unreleased]` vacía arriba. El contenido sellado no se toca.
-5. **Release notes de cliente** — `.docs/sdd/releases/vX.Y.Z/release-notes.md`, calcando
-   `release-notes-template.md` del skill `sdd-templates`, destiladas del changelog sellado en **outcome
-   para el usuario**, no entregable de ingeniería. **Prohibido**: IDs de task, scopes de commit, jerga
-   técnica. El email de entrega se deriva de las release notes y vive como borrador en la misma carpeta.
-6. **Colapsar el roadmap** — ANTES de sustituir nada, enumera los pendientes vivos de la sección de la
-   release y reubícalos (siguiente release / backlog); DESPUÉS colapsa la sección a resumen + enlaces
-   (release notes · changelog · acta). Edición determinista: localizar sección exacta → sustituir.
+5. **Release notes de cliente** — `.docs/sdd/releases/vX.Y.Z/release-notes.md`, destiladas del changelog
+   sellado en outcome para el usuario. Nunca son el changelog tal cual. Receta y prohibiciones:
+   [notas-y-roadmap.md](references/notas-y-roadmap.md).
+6. **Colapsar el roadmap** — ANTES de sustituir nada, rescata los pendientes vivos de la sección de la
+   release. Procedimiento: [notas-y-roadmap.md](references/notas-y-roadmap.md).
 7. **Versión + tag** — bump con el tooling del proyecto y deja la rama lista. ⛔ **GATE: el merge al
    branch estable y el tag son SIEMPRE decisión del usuario** — prepáralos, preséntalos y espera su
    confirmación explícita; usuario ausente → quedan PENDIENTES en tu informe final. Al ejecutarse: merge

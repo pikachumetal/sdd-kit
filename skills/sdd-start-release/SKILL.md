@@ -23,21 +23,19 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
    falta + quién la debe). ⛔ **GATE: la decisión de qué entra es del usuario, item a item o por bloques.**
    La presión de un stakeholder ("todo es importante, cuanto antes") no es una decisión de priorización —
    se registra, no se obedece.
-3. **Repriorizar** — riesgo primero, después coste-beneficio, contando dependencias. La deuda técnica solo
-   entra si es prerequisito verificable de un item del scope (no se arrastra en bloque).
+3. **Repriorizar** — riesgo primero, después coste-beneficio, contando dependencias. Criterio completo y
+   cuándo entra la deuda técnica: [priorizacion.md](references/priorizacion.md).
 4. **Estado de la release** — "comprometida" SOLO si el usuario lo dice y no hay bloqueos externos sobre
    el scope; con bloqueos abiertos → "en preparación" con los bloqueos explícitos en la sección.
 5. **Roadmap como única fuente** — sección "Release N" con filas trazables al acta/origen. **No crear
-   documentos paralelos de scope** (`scope.md`, snapshots): duplicar el roadmap es fabricar deriva; git ya
-   versiona los cambios de alcance. **Los ids de ticket no se inventan**: los da el gestor del proyecto;
-   sin gestor a la vista, la numeración se acuerda con el usuario.
+   documentos paralelos de scope.** **Los ids de ticket no se inventan.** Por qué y qué hacer sin gestor
+   de tickets: [roadmap-fuente.md](references/roadmap-fuente.md).
 6. **Refinar SOLO el top** — **TRAS la decisión de scope del usuario (gate del paso 2)**: la primera task
    (o las 2-3 primeras si son independientes) se arranca vía `sdd-start-task`, cada una con su spec y su
    gate. Scope sin decidir → ninguna task arrancada: la apertura queda EN PREPARACIÓN. **PROHIBIDO crear
    specs en batch** para todo el scope: sobre-detallar lo lejano produce specs que caducan y salta los
    gates de aprobación uno a uno.
-7. **Changelog** *(si existe `changelog.md`)* — verificar que hay una `[Unreleased]` vacía abierta (la
-   deja `sdd-end-release`; créala si falta).
+7. **Changelog** *(si existe `changelog.md`)* — ver [priorizacion.md](references/priorizacion.md).
 
 ## Red flags — STOP
 
