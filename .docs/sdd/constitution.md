@@ -22,6 +22,8 @@ Texto humano (skills, docs, tests, commits-cuerpo) en castellano con ortografía
 
 `.docs/sdd/` como raíz de artefactos; naming `<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>` en UTC con id de ticket (0000 si no hay); artefactos de release (acta, release notes) en `.docs/sdd/releases/vX.Y.Z/`; módulos por predicado observable; el merge es SIEMPRE decisión del usuario. Cambiar cualquiera de estas convenciones es un cambio mayor: spec dedicada + revisión de las 9 skills afectadas.
 
+También son convención del kit el **modo de ejecución por defecto** —`subagent-driven-development`, con la ejecución en línea como excepción que el plan declara por task— y la **política de modelos**, que es la de `subagent-driven-development` y no una propia: el modelo se declara **siempre** de forma explícita al despachar (omitirlo hereda el de la sesión, normalmente el más caro), con **gama media como suelo** para revisores y para implementadores que trabajan a partir de prosa, y el tier más barato reservado a transcripción de código ya escrito en el plan y a arreglos mecánicos de un fichero. El criterio es *turnos, no precio por token*: un modelo barato que da 2-3× vueltas sale más caro. `fable` y `opus xhigh` siguen prohibidos por defecto, con justificación escrita en la task. Un proyecto consumidor puede desviarse, pero por escrito en su propia constitution.
+
 ## Art. V — Versionado
 
 SemVer en `.claude-plugin/plugin.json`. Cada release: bump de versión + entrada en `.docs/sdd/changelog.md`. Los usuarios actualizan con `/plugin marketplace update`. Cada release del kit revisa además la compatibilidad con la versión de superpowers instalada (sus `RELEASE-NOTES.md`) y actualiza la versión validada que declara el README; si una minor cambia una skill que el kit invoca, el mapeo se re-testa antes de cerrar.
@@ -37,3 +39,13 @@ Los cambios no triviales del kit pasan por su propio flujo: `sdd-start-task` →
 ## Art. VIII — Una sola fuente de plantillas
 
 Las plantillas canónicas viven SOLO en `skills/sdd-templates/templates/`. Ninguna copia en ningún sitio: ni en este repo ni en los proyectos consumidores — al crear un artefacto se calca del skill `sdd-templates` (decisión 2026-07-21; antes los proyectos instalaban copia y derivaban).
+
+## Art. IX — Relación con superpowers
+
+El kit **no compite con superpowers: lo viste**. Tres reglas, en este orden:
+
+1. **Adoptar al máximo.** Si superpowers ya resuelve algo, el kit lo invoca y no lo reescribe. Guidance que duplica la suya está prohibida igual que la guidance sin baseline (Art. I): una segunda copia diverge, y la suya está mejor probada.
+2. **Aportar lo que superpowers no tiene.** Los artefactos del equipo (`spec.md`, `plan.md`, `tasks.md`, `walkthrough.md`, `patch.md`, acta de release), la estructura `.docs/sdd/`, los carriles y sus gates de aprobación. Ahí el kit manda y sobreescribe los defaults de superpowers.
+3. **Extender solo ante un hueco demostrado.** Cuando superpowers enuncia una regla pero no la ejecuta —lo dice en prosa y su herramienta o su receta no lo hacen—, el kit escribe la pieza que falta y **documenta el hueco** en la evidencia. Ejemplo: `subagent-driven-development` afirma que un subagente necesita "su task, las interfaces que toca y las restricciones globales", pero su `scripts/task-brief` extrae solo el texto de la task y su receta de dispatch no lista las restricciones; el kit obliga a entregarlas (medido en `tests/workflow-ejecucion-red.md`, F4).
+
+Antes de escribir guidance nueva, comprueba si superpowers ya la cubre. Si la cubre, se cita; no se copia.

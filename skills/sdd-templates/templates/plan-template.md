@@ -9,8 +9,8 @@ created: <YYYY-MM-DD>
 
 # Plan de implementación — <título>
 
-> Compatible con `superpowers:writing-plans`. Ejecución: `superpowers:executing-plans`
-> en línea con checkpoints (evitar subagent-driven salvo petición explícita).
+> Compatible con `superpowers:writing-plans`. Ejecución: `superpowers:subagent-driven-development`
+> (default del kit); una task va en línea solo si lo declara con motivo en su campo `Ejecución`.
 > Borra los bloques de ayuda (`>`) al redactar.
 
 **Goal**: <una frase con el objetivo de implementación>
@@ -23,7 +23,11 @@ created: <YYYY-MM-DD>
 
 ## Restricciones globales
 
-> Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— más los artículos de la constitution que aplican. Una línea por restricción. Cada task las hereda aunque no las repita. Escribe "ninguna" si no hay.
+> Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— más los artículos de la constitution que aplican. Una línea por restricción. Escribe "ninguna" si no hay.
+>
+> Incluye aquí la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto) y el **modo de ejecución** por defecto.
+>
+> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha debe entregársela — ver el paso de implementación de `sdd-start-task`.
 
 - <restricción, con el valor exacto de la spec>
 
@@ -75,6 +79,9 @@ Endpoints, shape request/response.
 > si no los hay. Si hay más de una task → crear `tasks.md` (registro vivo).
 
 ### Task 1 — <nombre>
+
+**Modelo**: <explícito siempre. Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
+**Ejecución**: <omitir si va por agente, que es el default; `en línea` + motivo si esta task se desvía>
 
 **Ficheros**: crear/modificar `path/...`
 

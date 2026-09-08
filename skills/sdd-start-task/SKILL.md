@@ -33,7 +33,7 @@ Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: prima
    ⛔ **GATE de aprobación**: presenta la spec y ESPERA la aprobación explícita del usuario. Si el usuario no responde, la tarea queda EN ESPERA — "documentar la decisión y seguir" no sustituye la aprobación.
 5. **Plan** *(solo en modo full)* — solo tras aprobar la spec: `superpowers:writing-plans` → `plan.md` calcando `plan-template.md` del skill `sdd-templates`.
    ⛔ **GATE de aprobación**: igual que la spec. Sin plan aprobado no se toca código.
-6. **Implementación** — `superpowers:executing-plans` **en línea con checkpoints** (el usuario corrige en el momento). Si el plan tiene más de una task → `tasks.md` como **registro vivo** (status + commit hash por task; la lista de todos del harness es efímera, `tasks.md` es el registro durable).
+6. **Implementación** — `superpowers:subagent-driven-development` (**default del kit**). Una task va **en línea** solo si el plan lo declara con motivo en su campo `Ejecución`. Al despachar cada task, **incluye en el encargo del subagente el bloque "Restricciones globales" del plan íntegro**: el ejecutor solo ve su task y NO hereda lo que no se le entrega. Si el plan tiene más de una task → `tasks.md` como **registro vivo** (status + commit hash por task; la lista de todos del harness es efímera, `tasks.md` es el registro durable).
 7. **Cierre** — SOLO vía `sdd-end-task`. Nada se marca ✅ sin smoke ejecutado y documentado.
 
 > Detalle en el punto de uso: [modo-lite.md](references/modo-lite.md) · [nombrado.md](references/nombrado.md) · [overrides-superpowers.md](references/overrides-superpowers.md).
