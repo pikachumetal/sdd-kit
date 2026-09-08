@@ -40,9 +40,9 @@ approvers:
   1. `sdd-start-task` prescribe `superpowers:subagent-driven-development` como default, y la ejecución en línea como excepción que el plan declara con motivo.
   2. `plan-template.md` obliga a un campo **`Modelo`** por task y admite un campo **`Ejecución`** que solo aparece cuando la task se desvía del default.
   3. Las "Restricciones globales" del plan recogen la política de modelos: el más barato que resuelva bien la tarea; nunca `fable` ni `opus xhigh` por defecto.
-  4. `test-driven-development` entra por **predicado observable** (hay tests automáticos ejecutables → TDD; si no → smoke manual documentado).
+  4. ~~`test-driven-development` entra por predicado observable~~ — **RECORTADO por el RED (2026-09-08)**: el baseline hace test-primero sin que nadie lo nombre, empujado por el artículo de testing de la constitution del proyecto. Guidance sin fallo que la respalde → no se escribe (Art. I). Ver [`tests/workflow-ejecucion-red.md`](../../../../tests/workflow-ejecucion-red.md).
   5. `sdd-end-task` invoca `superpowers:requesting-code-review` antes de cerrar, haya tests o no.
-  6. Un ejecutor que **solo ve su task** hereda las "Restricciones globales" del plan sin que su task las repita — residual de T1, verificado con un plan multi-task real.
+  6. Un ejecutor que **solo ve su task** recibe las "Restricciones globales" del plan. **Reformulado tras el RED**: el ejecutor NO las hereda por sí solo (0 de 2 respetaron una restricción no inferible del código), así que la obligación recae en **quien despacha** — `sdd-start-task` exige que viajen en el encargo del subagente.
   7. Las conductas ya validadas de `sdd-start-task` y `sdd-end-task` (gates, enrutado, Definition of Done) siguen intactas tras la edición.
 
 - **NO objetivos**:
