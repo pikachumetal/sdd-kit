@@ -10,4 +10,4 @@
 
 ## Paso 5 — Estructura
 
-5. **Estructura**: `.docs/sdd/` completa + `estimation.md` y `estimation-log.md` vacío + `specs/` vacía. Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates`. ¿Changelog? — preguntar, o dejar como decisión pendiente.
+5. **Estructura**: `.docs/sdd/` completa + `estimation.md` y `estimation-log.md` vacío + `specs/` vacía. Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates`. ¿Changelog? — preguntar, o dejar como decisión pendiente. **`environments.md`** calcando `environments-template.md` del skill `sdd-templates` **si el inventario encontró scripts de entorno** (medido en `tests/entorno-worktree-red.md`, F3: sin este paso el entorno queda repartido en notas que ningún predicado lee).
