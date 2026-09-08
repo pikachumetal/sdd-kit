@@ -14,6 +14,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **architecture.md** — criterio (a)+(b) que decide qué bloque baja a `references/`, con enlace relativo en el punto de uso, más la anatomía de `tests/<skill>-ab.md`. → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
 - **Art. IX** — relación con superpowers en tres reglas: adoptar al máximo, aportar lo propio (artefactos, `.docs/sdd/`, gates), extender solo ante hueco demostrado y documentado. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **plan-template** — campos `Modelo` (modelo **y** effort, ambos explícitos) y `Ejecución` (solo si la task se desvía del default) por task; aviso de que las "Restricciones globales" no se heredan solas. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
+- **environments-template** — contrato agnóstico del entorno por worktree: marcador `.sdd-env.json` (`ticket`, `state`, `created`), entradas `env:setup` / `env:clean` / `env:preflight`, dos tipos de entorno; el proyecto decide runner y scripts. → [ref](specs/20260908-135025-task-0000-entorno-por-worktree/)
 
 ### Changed
 
@@ -22,6 +23,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **sdd-start-task** — `subagent-driven-development` pasa a ser el default de implementación; la ejecución en línea es la excepción que el plan declara por task; al despachar, las "Restricciones globales" viajan en el encargo del subagente (hueco de superpowers: lo exige en prosa, su `task-brief` no lo ejecuta). → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **sdd-end-task** — paso de `requesting-code-review` antes de la rama, solo para tasks ejecutadas en línea (el default ya revisa cada task y la rama). → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **Art. IV** — el modo de ejecución por defecto y la política de modelos (la de superpowers: turnos, no precio por token) son convención del kit. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
+- **sdd-start-task, sdd-end-task, sdd-end-patch, sdd-init-greenfield, sdd-init-brownfield** — predicado `environments.md`: `env:setup` tras el worktree, `env:clean` antes de `finishing-a-development-branch`, y `init-*` lo calca por entrevista o cosecha. El worktree y su borrado se adoptan de superpowers; el override deja de negarlos. → [ref](specs/20260908-135025-task-0000-entorno-por-worktree/)
 
 ## [0.5.0] — 2026-09-02
 
