@@ -18,6 +18,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
 | [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Cierre de release: notas de cliente destiladas del changelog |
+| [environments-template.md](templates/environments-template.md) | `environments.md` | Solo si el proyecto usa worktrees **y** su entorno necesita más que instalar dependencias (BD, puertos, servicios). Lo calca `init-*` por entrevista; `sdd-start-task` y `sdd-end-*` lo activan por predicado |
 
 Reglas al usarlas:
 
