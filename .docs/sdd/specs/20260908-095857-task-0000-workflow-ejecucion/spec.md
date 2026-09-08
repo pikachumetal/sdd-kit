@@ -41,7 +41,7 @@ approvers:
   2. `plan-template.md` obliga a un campo **`Modelo`** por task y admite un campo **`Ejecución`** que solo aparece cuando la task se desvía del default.
   3. Las "Restricciones globales" del plan recogen la política de modelos: el más barato que resuelva bien la tarea; nunca `fable` ni `opus xhigh` por defecto.
   4. ~~`test-driven-development` entra por predicado observable~~ — **RECORTADO por el RED (2026-09-08)**: el baseline hace test-primero sin que nadie lo nombre, empujado por el artículo de testing de la constitution del proyecto. Guidance sin fallo que la respalde → no se escribe (Art. I). Ver [`tests/workflow-ejecucion-red.md`](../../../../tests/workflow-ejecucion-red.md).
-  5. `sdd-end-task` invoca `superpowers:requesting-code-review` antes de cerrar, haya tests o no.
+  5. `sdd-end-task` invoca `superpowers:requesting-code-review` antes de cerrar — **CONDICIONADO en la implementación (2026-09-08)** a las tasks ejecutadas en línea: `subagent-driven-development`, el default nuevo, ya revisa cada task y la rama entera, y duplicarlo viola el Art. IX. Ver `walkthrough.md` §3.
   6. Un ejecutor que **solo ve su task** recibe las "Restricciones globales" del plan. **Reformulado tras el RED**: el ejecutor NO las hereda por sí solo (0 de 2 respetaron una restricción no inferible del código), así que la obligación recae en **quien despacha** — `sdd-start-task` exige que viajen en el encargo del subagente.
   7. Las conductas ya validadas de `sdd-start-task` y `sdd-end-task` (gates, enrutado, Definition of Done) siguen intactas tras la edición.
 
@@ -128,7 +128,8 @@ No aplica.
 ### 7.3 Ampliación de la constitution
 
 - **Artículo**: Art. IV — Convenciones que el kit fija a los proyectos.
-- **Ampliación propuesta**: el **modo de ejecución por defecto** (agente, con excepción declarada en el plan) y la **política de modelos** (el más barato que resuelva bien; `fable` y `opus xhigh` solo con justificación escrita) son convención del kit, no preferencia de quien ejecuta. Un proyecto consumidor puede desviarse, pero por escrito en su propia constitution.
+- **Ampliación propuesta**: el **modo de ejecución por defecto** (agente, con excepción declarada en el plan) y la **política de modelos** son convención del kit, no preferencia de quien ejecuta. Un proyecto consumidor puede desviarse, pero por escrito en su propia constitution.
+- **Política de modelos, redacción final (2026-09-08)**: ~~el más barato que resuelva bien~~ → **la de `subagent-driven-development`**, no una propia (Art. IX regla 1): modelo y effort explícitos siempre, gama media como suelo para revisores e implementadores de prosa, el tier más barato solo para transcripción y arreglos mecánicos; `fable` y `opus xhigh` siguen prohibidos por defecto. Motivo: superpowers mide que el modelo barato da 2-3× turnos y sale más caro. Ver `walkthrough.md` §3.
 - **Aprobado por**: dev-lead, en el gate de esta spec.
 
 ## 8. Riesgos
