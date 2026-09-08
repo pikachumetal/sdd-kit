@@ -12,11 +12,16 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **README / constitution / roadmap** — versión de superpowers validada (6.3.0, 2026-09-07), revisión de compatibilidad en cada release del kit (Art. V) y sección de referencias de vigilancia (superpowers, OpenSpec, Spec Kit). → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
 - **Art. I** — el **A/B de no-regresión** (control = versión vigente, tratamiento = versión recortada) es el test válido para recortes y reestructuraciones de skills existentes; el baseline vacío no mide un recorte. → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
 - **architecture.md** — criterio (a)+(b) que decide qué bloque baja a `references/`, con enlace relativo en el punto de uso, más la anatomía de `tests/<skill>-ab.md`. → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
+- **Art. IX** — relación con superpowers en tres reglas: adoptar al máximo, aportar lo propio (artefactos, `.docs/sdd/`, gates), extender solo ante hueco demostrado y documentado. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
+- **plan-template** — campos `Modelo` (modelo **y** effort, ambos explícitos) y `Ejecución` (solo si la task se desvía del default) por task; aviso de que las "Restricciones globales" no se heredan solas. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 
 ### Changed
 
 - **sdd-start-task** — la fila de overrides sobre la clasificación de `brainstorming` queda acotada a `bounded`/`architectural` y remite el spike al enrutado; el override en sí se probó 2/2 con `brainstorming` 6.3.0 real y se mantiene sin cambios. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
 - **6 skills** — `sdd-start-task`, `sdd-end-release`, `sdd-start-release`, `sdd-end-task`, `sdd-init-greenfield` y `sdd-init-brownfield` bajan su detalle a `references/` leídos en el punto de uso; el conjunto de las 11 pasa de 8011 a 7054 palabras (−12 %). → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
+- **sdd-start-task** — `subagent-driven-development` pasa a ser el default de implementación; la ejecución en línea es la excepción que el plan declara por task; al despachar, las "Restricciones globales" viajan en el encargo del subagente (hueco de superpowers: lo exige en prosa, su `task-brief` no lo ejecuta). → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
+- **sdd-end-task** — paso de `requesting-code-review` antes de la rama, solo para tasks ejecutadas en línea (el default ya revisa cada task y la rama). → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
+- **Art. IV** — el modo de ejecución por defecto y la política de modelos (la de superpowers: turnos, no precio por token) son convención del kit. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 
 ## [0.5.0] — 2026-09-02
 
