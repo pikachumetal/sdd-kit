@@ -27,3 +27,4 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 - **Spike**: la vía de `brainstorming` cuya salida es una respuesta, no código que se conserve ("¿se puede…?", "pruébalo rápido"). En el kit no es una task: `sdd-start-task` la enruta a `sdd-consult`.
 - **Módulo por predicado observable**: una capacidad opcional (estimación, changelog) se activa por la presencia de su fichero, sin configuración.
 - **Walkthrough**: cierre inmutable de una task; alimenta docs vivos, skills y estimation-log.
+- **Entorno por worktree**: lo que un worktree necesita además de sus dependencias —base de datos, puertos, servicios, datos de prueba— para trabajar aislado. El kit fija el contrato (`environments.md`, marcador `.sdd-env.json`, entradas `env:setup` / `env:clean` / `env:preflight`); el proyecto escribe los scripts. El worktree lo crea y borra superpowers.

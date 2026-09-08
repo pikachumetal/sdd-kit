@@ -18,7 +18,7 @@ Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia
 3. **Changelog** *(si existe `.docs/sdd/changelog.md`)* — entrada `Fixed` en `[Unreleased]` (o en la unidad de release del proyecto) con link a la carpeta del patch.
 4. **`roadmap.md`** — fila en la tabla de patches (fecha, id, descripción). El roadmap es el índice del proyecto: un patch sin fila es invisible.
 5. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — fila del patch (tipo, estimado si lo hubo, real) en `.docs/sdd/estimation-log.md`, o ejecuta `.tools/sdd/Build-EstimationLog.ps1` si existe (o `tools/sdd/` en proyectos antiguos).
-6. **Rama** — `superpowers:finishing-a-development-branch`: la decisión de merge/PR es **del usuario**. Si no está disponible, deja la rama lista (commits hechos, working tree limpio) y el merge explícitamente PENDIENTE en tu informe final — no fusiones por tu cuenta "porque es trivial".
+6. **Rama** — *(si existe `.docs/sdd/environments.md`)* `env:clean` **ANTES** de `finishing-a-development-branch`, para no dejar el entorno del worktree huérfano. Luego `superpowers:finishing-a-development-branch`: la decisión de merge/PR es **del usuario**. Si no está disponible, deja la rama lista (commits hechos, working tree limpio) y el merge explícitamente PENDIENTE en tu informe final — no fusiones por tu cuenta "porque es trivial".
 
 ## Red flags — STOP
 

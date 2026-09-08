@@ -28,7 +28,7 @@ El cierre de una task es una **Definition of Done**: un checklist que garantiza 
 7. **Changelog** *(si existe `.docs/sdd/changelog.md`)* — entrada vía `add-to-changelog`.
 8. **`roadmap.md`** — marcar el módulo/tarea. El estado ✅ exige verificación documentada en el walkthrough. Deuda descubierta → fila en la tabla de deuda técnica.
 9. **Code-review** *(solo si la task se ejecutó **en línea**)* — `superpowers:requesting-code-review` antes de darla por cerrada. Con el default del kit no hace falta: `subagent-driven-development` ya revisa cada task y lanza la revisión final de la rama. Este paso cubre únicamente el camino que se salta esas revisiones.
-10. **Rama** — `superpowers:finishing-a-development-branch`: verificar estado y decidir merge/PR **con el usuario**.
+10. **Rama** — *(si existe `.docs/sdd/environments.md`)* `env:clean` **ANTES** de invocar `finishing-a-development-branch`: borrar un worktree con el entorno vivo deja contenedores huérfanos secuestrando puertos. Luego `superpowers:finishing-a-development-branch`: verificar estado y decidir merge/PR **con el usuario**.
 
 ## Para patches
 

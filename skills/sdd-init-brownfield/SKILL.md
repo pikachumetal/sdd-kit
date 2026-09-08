@@ -19,7 +19,7 @@ Onboarding de un codebase existente al flujo SDD: genera la documentación de an
 
 ## Flujo (crea un todo por paso)
 
-1. **Inventario** — explorar el repo: stack real con versiones exactas (de los manifests: `.csproj`, `package.json`, `pom.xml`…), estructura de módulos, patrones observados, señales de deuda (duplicación, TODOs, documentación contradictoria, dependencias bloqueadas).
+1. **Inventario** — explorar el repo: stack real con versiones exactas (de los manifests: `.csproj`, `package.json`, `pom.xml`…), estructura de módulos, patrones observados, señales de deuda (duplicación, TODOs, documentación contradictoria, dependencias bloqueadas), y **scripts de entorno por worktree** (`env:*`, `worktree:*`, marcadores): si existen, son un contrato que hay que cosechar, no una nota de `tech-stack.md`.
 2. **Cosecha del `CLAUDE.md` existente** (si lo hay, incluido uno generado por `/init`): cada afirmación se clasifica — verificada en el código → va al documento de anclaje que corresponda; no verificada → va a la lista de discrepancias para el usuario. Nada se pierde en silencio.
 3. **Generar documento a documento, con gate de revisión** — cada documento se presenta al usuario antes
    de darse por anclaje; si el usuario no está disponible, se entregan marcados **PENDIENTES DE REVISIÓN**,
