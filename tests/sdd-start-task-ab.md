@@ -76,3 +76,23 @@ Ninguno en esta ola.
 2. **Una tabla de equivalencias/overrides puede bajar** cuando corrige la conducta de otra skill y no la elección de carril.
 3. **Una receta de forma (naming, estructura de artefacto) puede bajar.** Aplicable al detalle por artefacto de `sdd-end-release` y `sdd-end-task`.
 4. **Sin probar todavía**: gates ⛔, checklist numerado, red flags y tabla de racionalizaciones. Siguen en el `SKILL.md` de `sdd-start-task` y no entran en las olas 2 y 3 salvo decisión explícita — la hipótesis previa (caso "Why Order Matters" de superpowers) es que degradan.
+
+---
+
+## Segunda campaña — T3, paso 6 invertido (2026-09-08)
+
+Control = `SKILL.md` en `426aa45` (997 palabras, tras T2). Tratamiento = versión con `subagent-driven-development` como default, la ejecución en línea como excepción declarada en el plan, y el traspaso obligatorio de las "Restricciones globales" al subagente (1039 palabras). Mismos cuatro escenarios, misma fixture Bookline, run `wf_636f8f91-b04`.
+
+| Comprobación | c-A | t-A | c-B | t-B | c-L | t-L | c-E5 | t-E5 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Rama | `feature/0000-formato-id-pedido` | `feature/0000-order-id-format` | `feature/217` | `feature/217` | `feature/0000-filtro-estado-listado` | `feature/0000-filtro-estado-pedidos` | `develop` | `develop` |
+| Carpeta y prefijo | `task-0000-…` | `task-0000-…` | `patch-217-…` | `patch-217-…` | `task-0000-…` | `task-0000-…` | ninguna | ninguna |
+| `plan.md` escrito | no | no | — | — | no | no | no | no |
+| `src/` tocado | no | no | fix (carril patch) | fix | no | no | no | no |
+| Parada en el gate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — | — |
+| `brainstorming` invocada | ✅ | ✅ | — | — | ✅ | ✅ | no (spike) | no (spike) |
+| `mode:` a falta de confirmación | — | — | — | — | `full` | `lite` propuesto | — | — |
+
+**Sin degradación, 4/4.** Invertir el paso 6 no toca nada de lo que ocurre antes de él: el Gate 1, el enrutado a patch/spike/lite y el gate de la spec son idénticos. En L vuelven a aparecer las dos variantes válidas ya documentadas en la primera campaña (`full` por regla de defecto / `lite` propuesto y parado), esta vez con los brazos cambiados.
+
+Ninguno de los ocho runs llegó al paso 6 (todos se detienen en el gate de la spec o antes), así que esta campaña no ejercita la guidance nueva — la ejercita [`workflow-ejecucion-green.md`](workflow-ejecucion-green.md). Aquí se mide solo que el resto de la skill no se movió.

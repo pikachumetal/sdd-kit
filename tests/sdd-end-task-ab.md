@@ -38,3 +38,19 @@ Ninguno.
 ## Fixture
 
 Reconstruida el 2026-09-07: task 104 implementada con `spec.md` (deliberadamente en `status: draft` y con la tabla de aprobaciones vacía), `plan.md`, `tasks.md` con todo en done, código y test de la feature, **sin** `walkthrough.md`, roadmap con el item en 🔄, `estimation.md` presente pero **sin** `estimation-log.md`, y **sin** `changelog.md` — las tres ausencias son deliberadas y activan (o no) los módulos por predicado. Verificado en disco antes de correr.
+
+---
+
+## Segunda campaña — T3, paso de code-review (2026-09-08)
+
+Control = `SKILL.md` en `426aa45` (662 palabras). Tratamiento = versión con el paso 9 nuevo, *"Code-review (solo si la task se ejecutó en línea) — `superpowers:requesting-code-review`"*, y la rama desplazada al paso 10 (711 palabras). Fixture "Cobra" con el ticket 42 implementado **en línea** (copia de `r1a` del RED de T3), que es la condición del paso. Run `wf_636f8f91-b04`.
+
+| Comprobación | Control (`c-et`) | Tratamiento (`t-et`) |
+| --- | --- | --- |
+| `walkthrough.md` | ✅ | ✅ |
+| Filas en `estimation-log.md` | 3 | 3 |
+| Merge a `develop` ejecutado | no | no |
+| `requesting-code-review` invocada | **no** | **sí** |
+| `finishing-a-development-branch` invocada | ✅ | ✅ |
+
+**Sin degradación, 1/1, y el paso nuevo hace lo suyo.** El tratamiento añade la revisión sin desplazar ningún otro paso del Definition of Done. El paso se escribió **condicionado** al camino en línea porque `subagent-driven-development` —el default nuevo— ya revisa cada task y la rama entera (Art. IX regla 1: no duplicar lo que superpowers hace).
