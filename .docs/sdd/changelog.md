@@ -15,6 +15,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Art. IX** — relación con superpowers en tres reglas: adoptar al máximo, aportar lo propio (artefactos, `.docs/sdd/`, gates), extender solo ante hueco demostrado y documentado. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **plan-template** — campos `Modelo` (modelo **y** effort, ambos explícitos) y `Ejecución` (solo si la task se desvía del default) por task; aviso de que las "Restricciones globales" no se heredan solas. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **environments-template** — contrato agnóstico del entorno por worktree: marcador `.sdd-env.json` (`ticket`, `state`, `created`), entradas `env:setup` / `env:clean` / `env:preflight`, dos tipos de entorno; el proyecto decide runner y scripts. → [ref](specs/20260908-135025-task-0000-entorno-por-worktree/)
+- **spec-template** — spec ligera: "Decisiones que he tomado yo — valida estas" arriba, Intent/Scope/Approach, delta por capacidad con `ADDED`/`MODIFIED (antes: …)`/`REMOVED` y escenarios GIVEN/WHEN/THEN, aprobaciones. Lo técnico (datos, UX, riesgos, rollout) pasa a `plan.md`. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
+- **funcional-template** — `funcional/<capacidad>.md`, verdad viva del comportamiento por capacidad, con título estable por requisito como clave de fusión y cinco reglas contra la proliferación de ficheros. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
 
 ### Changed
 
@@ -24,6 +26,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **sdd-end-task** — paso de `requesting-code-review` antes de la rama, solo para tasks ejecutadas en línea (el default ya revisa cada task y la rama). → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **Art. IV** — el modo de ejecución por defecto y la política de modelos (la de superpowers: turnos, no precio por token) son convención del kit. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **sdd-start-task, sdd-end-task, sdd-end-patch, sdd-init-greenfield, sdd-init-brownfield** — predicado `environments.md`: `env:setup` tras el worktree, `env:clean` antes de `finishing-a-development-branch`, y `init-*` lo calca por entrevista o cosecha. El worktree y su borrado se adoptan de superpowers; el override deja de negarlos. → [ref](specs/20260908-135025-task-0000-entorno-por-worktree/)
+- **Convención `funcional/`** — `funcional.md` (declarado en siete sitios y escrito por ninguna skill) pasa a ser la carpeta `funcional/`, un fichero por capacidad; `sdd-start-task` presenta el gate de la spec empezando por las decisiones a validar; `plan-template` recibe riesgos y rollout. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
 
 ## [0.5.0] — 2026-09-02
 
