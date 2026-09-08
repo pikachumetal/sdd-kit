@@ -26,7 +26,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 3. **Estructura**: crear `.docs/sdd/` completa, `estimation-log.md` vacío. NO copiar plantillas (viven en `sdd-templates`).
 4. **`CLAUDE.md` corto**: punteros a los documentos + reglas críticas. No duplicar contenido que ya vive en un doc de anclaje.
 5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista.
-6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando el funcional madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).
+6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando `funcional/` madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).
 
 ## Red flags — STOP
 

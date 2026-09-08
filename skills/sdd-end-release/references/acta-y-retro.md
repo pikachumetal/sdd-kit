@@ -9,7 +9,7 @@
    (`release-siguiente / backlog / trabajo-cliente / ya-cubierto / descartado`). El feedback se procesa
    con criterio de producto, **no se transcribe como compromisos**. Las peticiones de producto van a
    roadmap/backlog tras decisión — **NUNCA a la tabla de deuda técnica** (eso es solo ingeniería).
-   Cambios de requisito detectados → sección propia del acta (el doc funcional lo actualiza su dueño).
+   Cambios de requisito detectados → sección propia del acta (`funcional/<capacidad>.md` lo actualiza su dueño).
 
 ## Paso 3 — Retro con evidencia
 

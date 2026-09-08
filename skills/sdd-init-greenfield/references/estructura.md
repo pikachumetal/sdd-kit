@@ -10,7 +10,7 @@
 │       ├── constitution.md   (principios no negociables)
 │       ├── tech-stack.md     (tecnologías con versiones; decisiones abiertas, como abiertas)
 │       ├── architecture.md   (cómo se construye)
-│       ├── funcional.md      (requisitos; crece con el producto)
+│       ├── funcional/         (vacía: una capacidad por fichero, las crean las tasks)
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de patches)
 │       ├── estimation.md     (método) · estimation-log.md (VACÍO: se llena con las tareas)
 │       └── specs/            (vacía)

@@ -70,6 +70,17 @@ Mecanismo y nomenclatura del proyecto (ver `tech-stack.md` y skills de nivel 2).
 
 Endpoints, shape request/response.
 
+### 1.5 Riesgos
+
+> Recibidos de la spec ligera, que ya no los lleva: lo técnico vive aquí.
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+| --- | --- | --- | --- |
+
+### 1.6 Rollout
+
+> Cómo llega a producción: toggle, orden de despliegue, entrega al cliente. \"Directo\" si no hay nada especial.
+
 ---
 
 ## 2. Tasks

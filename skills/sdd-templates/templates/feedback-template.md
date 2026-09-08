@@ -26,7 +26,7 @@ Fuente: <sesión + fecha> ([archivada al lado](<fichero-fuente>)).
 
 ## 2. Cambios de requisito detectados
 
-> Peticiones que contradicen un supuesto del doc funcional o de `mission.md`. El documento lo
+> Peticiones que contradicen un supuesto de `funcional/<capacidad>.md` o de `mission.md`. El documento lo
 > actualiza su dueño; aquí solo se deja constancia. `_Ninguno_` si no hay.
 
 ## 3. Retro *(si existe `.docs/sdd/estimation-log.md`)*
