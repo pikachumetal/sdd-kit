@@ -84,3 +84,15 @@ La evidencia de esta skill costó **15 runs** (3 escenarios × 2 brazos + 4 de b
 ## Fixture
 
 "TimeTrack" reconstruida el 2026-09-07: las fixtures de la campaña original (2026-07-21) no sobrevivieron al scratchpad. Estado post-v0.2.0 con el acta triada, el SSO bloqueado entre Entra ID y ADFS con Marta como dueña de la decisión, el cambio de requisito de Sevilla, la deuda de identidad acoplada, y `FichajeService.ExportarInformeSemanalCsv` generando el CSV con separador coma. Verificada en disco antes de correr.
+
+---
+
+## Segunda campaña — T5, `funcional/<capacidad>` en el paso 1 (2026-09-08)
+
+Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md` → `funcional/`, spec ligera, T5). Run `wf_1d195d44-140`, mismos escenarios y fixtures que las campañas anteriores. Detalle en [`spec-ligera-green.md`](spec-ligera-green.md).
+
+| | c-s1 | t-s1 | c-s2 | t-s2 | c-s3 | t-s3 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Artefactos / cambios | 0 | 0 | 0 | 0 | handoff → `feature/109-…` + spec en gate | igual |
+
+**Sin degradación, 3/3.** S3 hace handoff al carril en ambos brazos, la variante válida de la primera campaña. El rename solo cambia un nombre en la lista de documentos de anclaje.

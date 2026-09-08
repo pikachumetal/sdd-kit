@@ -55,3 +55,16 @@ Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno
 | `environments.md` | no | no |
 
 **Sin degradación, 1/1, y el predicado no dispara en falso**: la fixture Ledgerly-derivas no tiene scripts de entorno, así que ninguno de los dos brazos crea `environments.md`. Que sí lo crea cuando los scripts existen lo mide `g4` en el GREEN de T4.
+
+---
+
+## Tercera campaña — T5, "`funcional/` NO se crea ni se vuelca" (2026-09-08)
+
+Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md` → `funcional/`, spec ligera, T5). Run `wf_1d195d44-140`, mismos escenarios y fixtures que las campañas anteriores. Detalle en [`spec-ligera-green.md`](spec-ligera-green.md).
+
+| | Control (`c-bf`) | Tratamiento (`t-bf`) |
+| --- | --- | --- |
+| Docs generados / `templates/` / PENDIENTES | 8 / no / 5 | 8 / no / 6 |
+| `funcional/` o `funcional.md` | no | no |
+
+**Sin degradación, 1/1.** Ninguno de los dos brazos crea ni vuelca `funcional/`; el 5/6 en PENDIENTES es la varianza de muestra ya documentada.

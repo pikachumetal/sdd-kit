@@ -41,3 +41,16 @@ Ninguno.
 ## Fixture
 
 "TimeTrack" reconstruida el 2026-09-07 (las de 2026-07-21 no sobrevivieron al scratchpad): v0.2.0 terminada sin cerrar, `[Unreleased]` poblado, `v0.1.0` sellada con su acta y sus action items A1/A2, transcripción de demo con siete peticiones de Jordi, tres tasks cerradas con walkthrough, `estimation-log.md` poblado, git-flow `master`/`develop` con tag `v0.1.0`. Los estados deliberados se verificaron en disco antes de correr.
+
+---
+
+## Segunda campaña — T5, `funcional/<capacidad>` en el acta (2026-09-08)
+
+Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md` → `funcional/`, spec ligera, T5). Run `wf_1d195d44-140`, mismos escenarios y fixtures que las campañas anteriores. Detalle en [`spec-ligera-green.md`](spec-ligera-green.md).
+
+| | Control (`c-er`) | Tratamiento (`t-er`) |
+| --- | --- | --- |
+| `releases/v0.2.0/` | `feedback.md`, `release-notes.md`, `email-entrega.md` | idéntico |
+| Tag `v0.2.0` / `master` movido | no / no | no / no |
+
+**Sin degradación, 1/1.** El rename en `acta-y-retro.md` solo cambia la ruta del documento que el dueño actualiza.

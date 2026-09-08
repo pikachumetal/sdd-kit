@@ -110,3 +110,17 @@ Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno
 | `plan.md` / `src/` | no / intacto | igual | — / fix | igual | no / intacto | igual | no / intacto | igual |
 
 **Sin degradación, 4/4.** Ninguno de los ocho llega al paso 6 (paran en el gate o antes), así que el predicado nuevo no se ejercita aquí: lo ejercita `g2` en el GREEN de T4. Aquí se mide que el resto de la skill no se movió.
+
+---
+
+## Cuarta campaña — T5, paso 4 con la spec ligera (2026-09-08)
+
+Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md` → `funcional/`, spec ligera, T5). Run `wf_1d195d44-140`, mismos escenarios y fixtures que las campañas anteriores. Detalle en [`spec-ligera-green.md`](spec-ligera-green.md).
+
+| | c-A | t-A | c-B | t-B | c-L | t-L | c-E5 | t-E5 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Carril / rama | task `feature/0000-…` | igual | patch `feature/217` | igual | task `feature/0000-…` | igual | `develop` | `develop` |
+| `plan.md` / `src/` | no / intacto | igual | — / fix | igual | no / intacto | igual | no / intacto | igual |
+| Primera sección de la spec | Contexto (plantilla vieja, no instalada: equivalente) | **"Decisiones que he tomado yo — valida estas"** | — | — | Contexto | **"Decisiones…"** | — | — |
+
+**Sin degradación, 4/4.** La única diferencia es la que el paso 4 introduce: el tratamiento escribe la spec ligera con las decisiones primero. Gate, enrutado y modo lite intactos.

@@ -46,3 +46,15 @@ Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno
 | `git init` | no | no |
 
 **Sin degradación, 1/1.** El gate de entrevista sigue deteniendo todo en la primera pregunta; el bloque (d), donde vive la pregunta nueva, es inalcanzable con usuario ausente — por eso esa pregunta se escribió sin baseline propio y declarada como contraparte de la cosecha de brownfield.
+
+---
+
+## Tercera campaña — T5, `funcional/` vacía en la estructura (2026-09-08)
+
+Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md` → `funcional/`, spec ligera, T5). Run `wf_1d195d44-140`, mismos escenarios y fixtures que las campañas anteriores. Detalle en [`spec-ligera-green.md`](spec-ligera-green.md).
+
+| | Control (`c-gf`) | Tratamiento (`t-gf`) |
+| --- | --- | --- |
+| Ficheros al terminar | solo `README.md` | solo `README.md` |
+
+**Sin degradación, 1/1.** El gate de entrevista sigue deteniendo todo antes de generar nada.

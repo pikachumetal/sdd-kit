@@ -69,3 +69,15 @@ Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno
 | Spec en `draft` señalada | ✅ | ✅ |
 
 **Sin degradación, 1/1.** La fixture (TimeTrack) no tiene `environments.md`, así que el paso 10 nuevo es un predicado falso en ambos brazos: se mide que anteponerlo a `finishing-a-development-branch` no altera el cierre cuando no aplica. Que actúa cuando aplica lo mide `g3` en el GREEN de T4.
+
+---
+
+## Cuarta campaña — T5, `funcional/` como destino del paso 4 (2026-09-08)
+
+Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md` → `funcional/`, spec ligera, T5). Run `wf_1d195d44-140`, mismos escenarios y fixtures que las campañas anteriores. Detalle en [`spec-ligera-green.md`](spec-ligera-green.md).
+
+| | Control (`c-et`) | Tratamiento (`t-et`) |
+| --- | --- | --- |
+| `walkthrough.md` / filas `estimation-log` / merge | ✅ / 3 / no | ✅ / 3 / no |
+
+**Sin degradación, 1/1.** La fixture (TimeTrack) no tiene `funcional/` ni spec con delta: el rename no actúa. Que la fusión ocurre cuando hay delta lo mide el RED de T5 (E1, 3/3) y el dogfooding del cierre.
