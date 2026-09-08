@@ -17,7 +17,7 @@ Cierre del ciclo de la task [spec-ligera-funcional](../.docs/sdd/specs/20260908-
 
 ## Dogfooding — el paso de fusión que no existe
 
-La spec de esta task lleva siete requisitos bajo la capacidad `flujo-de-task`, que no existía. Al cerrarla con `sdd-end-task`, el paso 4 vigente ("cada aprendizaje del walkthrough se vuelca donde vive", con `funcional/<capacidad>` como destino tras el rename) debe producir `.docs/sdd/funcional/flujo-de-task.md` desde el delta — igual que `e1`, `e1b` y `e1c` produjeron la fusión en la fixture sin ningún paso que la nombrara. El resultado se registra en el walkthrough de la task, §4.2. Si el fichero no aparece, la conclusión del RED estaba mal y el paso se escribe.
+La spec de esta task lleva siete requisitos bajo la capacidad `flujo-de-task`, que no existía. Al cerrarla con `sdd-end-task`, el paso 4 vigente ("cada aprendizaje del walkthrough se vuelca donde vive"; `funcional/<capacidad>` se añadió a sus destinos tras el code-review del cierre, no antes del RED) debe producir `.docs/sdd/funcional/flujo-de-task.md` desde el delta — igual que `e1`, `e1b` y `e1c` produjeron la fusión en la fixture sin ningún paso que la nombrara. El resultado se registra en el walkthrough de la task, §4.2. Si el fichero no aparece, la conclusión del RED estaba mal y el paso se escribe.
 
 ## Lo que esta task enseña sobre el método
 

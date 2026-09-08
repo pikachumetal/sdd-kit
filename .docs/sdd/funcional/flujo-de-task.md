@@ -31,7 +31,7 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN se generan los documentos de anclaje
 - THEN `funcional/` no se crea ni se rellena: aparece con la primera task que toque una capacidad
 
-### Los documentos de anclaje nombran `funcional/` (antes: `funcional.md`)
+### Los documentos de anclaje nombran `funcional/`
 - GIVEN cualquier skill o plantilla que hoy cite `funcional.md`
 - WHEN se lee el contexto SDD
 - THEN la referencia es a la carpeta `funcional/` y a sus capacidades
@@ -43,4 +43,10 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 
 ## Historial
 
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — creada la capacidad; 7 requisitos fusionados desde el delta (ADDED, ADDED, ADDED, ADDED, ADDED, MODIFIED, ADDED)
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED El delta declara el comportamiento por capacidad
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED Lo técnico no vive en la spec
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED El cierre fusiona el delta en la verdad viva
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED Brownfield no vuelca `funcional/`
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — MODIFIED Los documentos de anclaje nombran `funcional/`
+- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La consulta lee la capacidad, no las specs

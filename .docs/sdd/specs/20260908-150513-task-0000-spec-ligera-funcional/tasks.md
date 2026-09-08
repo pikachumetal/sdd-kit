@@ -18,7 +18,7 @@ created: 2026-09-08
 | 2 | Plantillas `spec-template` y `funcional-template` | done | `29d9123` | Por despacho, en paralelo con el RED |
 | 3 | Rename + guidance reclamada | done | `48c0f4a` | Rename en todo caso (Art. IV). **El RED no reclamó ninguna guidance**: E1 3/3 fusiona sin paso, E2 lee la capacidad, E3 no vuelca, E4 la plantilla basta |
 | 4 | GREEN + A/B (6 skills) | done | `d5b0e35` | Sin GREEN de conducta (nada falló); A/B 22 runs, 6/6 sin degradación |
-| 5 | Cierre documental + dogfooding `funcional/flujo-de-task.md` | done | pendiente | El paso de fusión lo escribe, no a mano |
+| 5 | Cierre documental + dogfooding `funcional/flujo-de-task.md` | done | `68e3e7d` | El paso de fusión lo escribe, no a mano |
 
 ## Verificación por task
 

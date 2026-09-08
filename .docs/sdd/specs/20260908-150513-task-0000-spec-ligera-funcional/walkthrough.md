@@ -69,11 +69,16 @@ Todo **verificado por el agente en disco**:
 - **Las specs anteriores a T5 siguen en el formato de 11 secciones.** No se migran (decisión de la spec); conviven como registro histórico.
 - **`funcional/` del kit tiene una sola capacidad.** Las demás (carril patch, carril release, consulta, init) aparecerán cuando una task las toque — es la regla de brownfield aplicada al propio kit.
 - **Alybo no tiene `funcional/`.** Decisión de Alybo, no del kit.
-- **La fusión la hizo un script**, no un agente leyendo el paso 4. Es el mismo movimiento de bloques que `e1`/`e1b`/`e1c` hicieron sin script; se declara por honestidad, no cambia la conclusión del RED.
+- **La fusión la hizo primero un script mío y el code-review lo señaló** (Important): el plan exigía que la produjera el paso de la skill. Se borró el fichero y un agente con `sdd-end-task` vigente ejecutó el paso 4 sobre el repo real: produjo los 7 requisitos y **corrigió por su cuenta** el título del `MODIFIED` que mi spec y mi script arrastraban con `(antes: …)` dentro. Matiz: el agente podía ver la versión borrada en `HEAD` (`git status` la marcaba `D`) y su Historial salió idéntico al del script; el Historial se reescribió después a una línea por fusión, como pide la plantilla.
 
 ### 4.4 Code-review (paso 9)
 
-Ejecutado con `superpowers:requesting-code-review` sobre `f88c3d6..HEAD` más el working tree (revisor Sonnet, effort medium). Resultado en el commit de cierre.
+Ejecutado con `superpowers:requesting-code-review` sobre `f88c3d6..68e3e7d` más el working tree (revisor Sonnet, effort medium). **Veredicto: necesita cambios**, todos aplicados en el commit de cierre:
+
+- **Critical** — `plan-template.md` había recibido solo Riesgos y Rollout: UX, Dependencias y Excepciones a la constitution se perdieron pese a que la decisión 1 de la spec prometía recolocarlos. Añadidos como §1.5, §1.6 y §1.9 (Riesgos y Rollout pasan a §1.7 y §1.8).
+- **Important** — la fusión de `funcional/flujo-de-task.md` la hizo un script, no el paso de la skill. Rehecha por un agente con `sdd-end-task` vigente (ver §4.3).
+- **Important** — título del requisito `MODIFIED` con `(antes: …)` incrustado, error nacido en la propia spec de T5. Corregido en la spec y en la capacidad; el agente que fusionó lo detectó también por su cuenta.
+- **Minor** — Historial de la capacidad en una sola línea: reescrito a una línea por fusión. Narrativa del RED/GREEN sobre `aprendizajes-skills.md` sobreafirmaba: corregida, y `funcional/<capacidad>` añadido a ese fichero como destino (Art. IV).
 
 ## 5. Aprendizajes
 

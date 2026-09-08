@@ -70,16 +70,28 @@ Mecanismo y nomenclatura del proyecto (ver `tech-stack.md` y skills de nivel 2).
 
 Endpoints, shape request/response.
 
-### 1.5 Riesgos
+### 1.5 UX *(si aplica)*
+
+> Recibido de la spec ligera, que ya no lo lleva. Frontend: componentes, wireframes o capturas. La API va en §1.4.
+
+### 1.6 Dependencias
+
+> Specs previas, servicios externos, librerías. Recibido de la spec ligera.
+
+### 1.7 Riesgos
 
 > Recibidos de la spec ligera, que ya no los lleva: lo técnico vive aquí.
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 | --- | --- | --- | --- |
 
-### 1.6 Rollout
+### 1.8 Rollout
 
-> Cómo llega a producción: toggle, orden de despliegue, entrega al cliente. \"Directo\" si no hay nada especial.
+> Cómo llega a producción: toggle, orden de despliegue, entrega al cliente. "Directo" si no hay nada especial.
+
+### 1.9 Excepciones a la constitution
+
+> Si el plan necesita desviarse de un artículo: artículo · por qué · plan de remediación · aprobado por. Recibido de la spec ligera. "Ninguna" si no hay.
 
 ---
 

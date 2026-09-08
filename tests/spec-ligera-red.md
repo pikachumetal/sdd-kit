@@ -30,7 +30,7 @@ Los tres ejecutaron además el Definition of Done completo (walkthrough distingu
 
 `e1b` en sus palabras: *"Fusionado el delta de comportamiento de la spec en `.docs/sdd/funcional/pedidos.md`: ADDED 'Filtro por estado en el listado', MODIFIED 'Listado paginado de pedidos', con entrada en su Historial"*.
 
-**Por qué ocurre sin guidance**: el paso 4 de `sdd-end-task` ya dice "cada aprendizaje del walkthrough se vuelca donde vive", el rename (`48c0f4a`) ya deja `funcional/<capacidad>` como uno de esos destinos, y el delta de la spec ligera está escrito **en la forma exacta** del fichero de capacidad: `ADDED`/`MODIFIED (antes: …)` con título estable. El agente no tiene que interpretar nada — solo mover bloques. La plantilla hace el trabajo que el paso habría hecho.
+**Por qué ocurre sin guidance**: el paso 4 de `sdd-end-task` ya dice "cada aprendizaje del walkthrough se vuelca donde vive", el rename (`48c0f4a`) deja `funcional/` en la lista de documentos de anclaje de `sdd-start-task` —no en `aprendizajes-skills.md`, que en el momento del RED no lo citaba y se añadió después por coherencia (Art. IV)—, y el delta de la spec ligera está escrito **en la forma exacta** del fichero de capacidad: `ADDED`/`MODIFIED (antes: …)` con título estable. El agente no tiene que interpretar nada — solo mover bloques. La plantilla hace el trabajo que el paso habría hecho.
 
 Consecuencia (Art. I): **el paso "Fusionar el delta en `funcional/`" previsto en el plan (Task 3 Step 2) no se escribe.** Es el mismo desenlace que tuvo la skill `sdd-env` en T4: el disparador no es una instrucción en la skill, es que el artefacto exista y esté bien formado.
 

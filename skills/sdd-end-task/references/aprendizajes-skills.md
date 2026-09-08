@@ -2,7 +2,7 @@
 
 ## Paso 4 — Aprendizajes
 
-4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive: convención nueva → `constitution.md`; cambio estructural → `architecture.md`; versión/herramienta → `tech-stack.md`. Un aprendizaje que se queda solo en el walkthrough se pierde para las próximas tareas.
+4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive: convención nueva → `constitution.md`; cambio estructural → `architecture.md`; versión/herramienta → `tech-stack.md`; cambio de comportamiento observable → el delta de la spec se fusiona en `funcional/<capacidad>.md` (ADDED añade, MODIFIED sustituye por título estable, REMOVED quita; nunca una capacidad que la spec no declare). Un aprendizaje que se queda solo en el walkthrough se pierde para las próximas tareas.
 
 ## Paso 5 — Revisión de skills
 

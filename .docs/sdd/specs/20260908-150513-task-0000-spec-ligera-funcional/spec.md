@@ -71,7 +71,7 @@ Mapeo por conceptos desde OpenSpec, no por layout: su `proposal.md` es nuestra s
 - WHEN se generan los documentos de anclaje
 - THEN `funcional/` no se crea ni se rellena: aparece con la primera task que toque una capacidad
 
-**MODIFIED — Los documentos de anclaje nombran `funcional/` (antes: `funcional.md`)**
+**MODIFIED — Los documentos de anclaje nombran `funcional/`** (antes: "los documentos de anclaje citan `funcional.md`, un fichero que ninguna skill escribe")
 - GIVEN cualquier skill o plantilla que hoy cite `funcional.md`
 - WHEN se lee el contexto SDD
 - THEN la referencia es a la carpeta `funcional/` y a sus capacidades

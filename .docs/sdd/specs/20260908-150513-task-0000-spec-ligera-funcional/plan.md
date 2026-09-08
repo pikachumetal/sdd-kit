@@ -55,7 +55,7 @@ Copiadas de la spec y la constitution. Toda task las hereda; **quien despacha la
 
 **Modificar**:
 
-- `skills/sdd-templates/templates/plan-template.md` — recibe §Riesgos y §Rollout (el constitution check ya lo tiene en Phase -1).
+- `skills/sdd-templates/templates/plan-template.md` — recibe §UX, §Dependencias, §Riesgos, §Rollout y §Excepciones a la constitution (el constitution check ya lo tiene en Phase -1).
 - `skills/sdd-templates/SKILL.md` — filas de `spec-template` (descripción nueva) y `funcional-template`.
 - `skills/sdd-start-task/SKILL.md` — paso 4: el gate presenta primero "Decisiones a validar"; `references/modo-lite.md`: la spec lite es la misma plantilla con el bloque de estimación.
 - `skills/sdd-end-task/SKILL.md` — paso nuevo entre `walkthrough.md` y `tasks.md`: fusionar el delta en `funcional/`.
@@ -118,7 +118,7 @@ Directo, local-only. A partir de esta task toda spec nueva del kit y de los proy
 
 - [ ] **Step 1: Despachar** con: (1) dónde encaja; (2) brief = la spec de esta task íntegra (es el ejemplar) + su §"Decisiones" 1-4 como reglas + las plantillas hermanas como patrón de forma; (3) Restricciones globales de este plan; (4) los dos ficheros a producir y el contrato de cada uno: `spec-template.md` con frontmatter (id, task, title, mode, status, created, author, approvers), los cuatro bloques, bloque de estimación marcado *(solo lite)*, y la regla de contenido como bloque de ayuda; `funcional-template.md` con cabecera de capacidad, un requisito de ejemplo con título estable y escenarios GIVEN/WHEN/THEN, y las cinco reglas anti-proliferación como bloque de ayuda; (5) informe: secciones de cada fichero y líneas.
 - [ ] **Step 2: Revisar** (task review): la spec de esta task debe poder reescribirse con la plantilla sin perder nada; la plantilla de capacidad debe soportar `MODIFIED (antes: …)` por título estable.
-- [ ] **Step 3: En línea — `plan-template.md`**: añadir tras §1.4 las secciones `### 1.5 Riesgos` (tabla riesgo / probabilidad / impacto / mitigación) y `### 1.6 Rollout`, con bloque de ayuda «recibidos de la spec ligera, que ya no los lleva». `skills/sdd-templates/SKILL.md`: descripción nueva de `spec-template` («decisiones a validar · Intent/Scope/Approach · delta por capacidad · aprobaciones») y fila de `funcional-template` («`funcional/<capacidad>.md` — verdad viva del comportamiento; la crea la spec que declara la capacidad, la fusiona `sdd-end-task`»).
+- [ ] **Step 3: En línea — `plan-template.md`**: añadir tras §1.4 las secciones `### 1.5 UX`, `### 1.6 Dependencias`, `### 1.7 Riesgos` (tabla), `### 1.8 Rollout` y `### 1.9 Excepciones a la constitution`, con bloque de ayuda «recibido de la spec ligera, que ya no lo lleva». *(Corregido tras el code-review del cierre: la primera versión solo añadió Riesgos y Rollout y perdió UX, Dependencias y Excepciones.)* `skills/sdd-templates/SKILL.md`: descripción nueva de `spec-template` («decisiones a validar · Intent/Scope/Approach · delta por capacidad · aprobaciones») y fila de `funcional-template` («`funcional/<capacidad>.md` — verdad viva del comportamiento; la crea la spec que declara la capacidad, la fusiona `sdd-end-task`»).
 - [ ] **Step 4: Commit** — `feat(templates): spec ligera y plantilla de capacidad`.
 
 ### Task 3 — Guidance reclamada por el RED + rename de convención
