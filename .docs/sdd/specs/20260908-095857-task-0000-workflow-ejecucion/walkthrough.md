@@ -73,7 +73,14 @@ Todo **verificado por el agente en disco**, no autoinformado:
 
 ### 4.4 Code-review (paso 9, camino en línea)
 
-Ejecutado con `superpowers:requesting-code-review` sobre el diff `426aa45..HEAD`. Resultado en el mensaje de cierre.
+Ejecutado con `superpowers:requesting-code-review` sobre `426aa45..9ab5a92` (revisor Sonnet, effort medium — la política del Art. IV aplicada a sí misma). Resultado:
+
+- **Critical** — `README.md:55` listaba `executing-plans` como skill de implementación y omitía `subagent-driven-development` y `requesting-code-review`. Arreglado en `08432d8`; al corregir cometí el mismo error en sentido contrario (nueve nombres, dos no invocados) y lo enmendé contra el `grep` real: **7 skills**, con el comando de verificación en el propio README.
+- **Important** — `spec.md` no reflejaba dos decisiones de implementación (code-review condicionado; política de modelos de superpowers) con el patrón usado en el criterio 4. Arreglado en `08432d8`.
+- **Minor** — cuatro mensajes de commit sin tildes ("campana" por "campaña"). No se reescribe historia; anotado para no repetirlo: los commits escritos con `printf` perdieron los acentos, los escritos con heredoc no.
+- Verificado sin issue por el revisor: numeración de `sdd-end-task`, enlaces a `references/`, coherencia del Art. IX con I/IV/VIII, `plan-template` con el plan que lo estrena, Art. VIII intacto, y que la evidencia no sobreafirma.
+
+Valoración del revisor: listo para cerrar tras los dos arreglos.
 
 ## 5. Aprendizajes
 
