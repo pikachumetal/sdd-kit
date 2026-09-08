@@ -80,7 +80,7 @@ Endpoints, shape request/response.
 
 ### Task 1 — <nombre>
 
-**Modelo**: <explícito siempre. Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
+**Modelo**: <modelo **y** effort, los dos explícitos — declarar solo el modelo es una trampa: el effort cae al defecto de ese modelo, no al tuyo. Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
 **Ejecución**: <omitir si va por agente, que es el default; `en línea` + motivo si esta task se desvía>
 
 **Ficheros**: crear/modificar `path/...`

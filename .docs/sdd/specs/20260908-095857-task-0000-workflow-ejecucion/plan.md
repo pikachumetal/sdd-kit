@@ -89,7 +89,7 @@ El contrato que esta task cambia es el `plan-template.md`: los planes que se esc
 
 ### Task 1 — Campaña RED: qué hace el baseline sin la política
 
-**Modelo**: Sonnet (subagentes de la campaña); orquestación en la sesión.
+**Modelo**: Sonnet, effort medium (subagentes de la campaña); orquestación en la sesión.
 **Ejecución**: en línea — la campaña es medición, no implementación delegable.
 
 **Ficheros**: crear `tests/workflow-ejecucion-red.md`; fixture desechable en el scratchpad.
@@ -112,7 +112,7 @@ El contrato que esta task cambia es el `plan-template.md`: los planes que se esc
 
 ### Task 2 — Escribir la guidance reclamada
 
-**Modelo**: ninguno — edición de documentos en la sesión.
+**Modelo**: ninguno — edición de documentos en la sesión, sin despacho.
 **Ejecución**: en línea — son ediciones de una a cinco líneas con decisiones de redacción que se corrigen en el momento.
 
 **Ficheros**: modificar `plan-template.md`, `sdd-start-task/SKILL.md`, `sdd-start-task/references/overrides-superpowers.md`, `sdd-end-task/SKILL.md`, `.docs/sdd/constitution.md`.
@@ -160,7 +160,7 @@ Dos regímenes sobre la misma fixture, en una sola tanda:
 
 ### Task 4 — Cierre documental
 
-**Modelo**: ninguno — edición de documentos en la sesión.
+**Modelo**: ninguno — edición de documentos en la sesión, sin despacho.
 **Ejecución**: en línea.
 
 **Ficheros**: modificar `.docs/sdd/roadmap.md` y, si la campaña deja aprendizaje de método, `.docs/sdd/tech-stack.md`.
