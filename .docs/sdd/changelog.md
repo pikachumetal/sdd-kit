@@ -10,10 +10,13 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **sdd-start-task** — cuarta salida del enrutado: el spike no es una task y va a `sdd-consult`; antes salía como task con rama y spec. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
 - **plan-template** — bloque "Restricciones globales" con copia literal de las restricciones de la spec y los artículos de la constitution aplicables, alineado con el `Global Constraints` de `writing-plans` 6.3.0. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
 - **README / constitution / roadmap** — versión de superpowers validada (6.3.0, 2026-09-07), revisión de compatibilidad en cada release del kit (Art. V) y sección de referencias de vigilancia (superpowers, OpenSpec, Spec Kit). → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+- **Art. I** — el **A/B de no-regresión** (control = versión vigente, tratamiento = versión recortada) es el test válido para recortes y reestructuraciones de skills existentes; el baseline vacío no mide un recorte. → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
+- **architecture.md** — criterio (a)+(b) que decide qué bloque baja a `references/`, con enlace relativo en el punto de uso, más la anatomía de `tests/<skill>-ab.md`. → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
 
 ### Changed
 
 - **sdd-start-task** — la fila de overrides sobre la clasificación de `brainstorming` queda acotada a `bounded`/`architectural` y remite el spike al enrutado; el override en sí se probó 2/2 con `brainstorming` 6.3.0 real y se mantiene sin cambios. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
+- **6 skills** — `sdd-start-task`, `sdd-end-release`, `sdd-start-release`, `sdd-end-task`, `sdd-init-greenfield` y `sdd-init-brownfield` bajan su detalle a `references/` leídos en el punto de uso; el conjunto de las 11 pasa de 8011 a 7054 palabras (−12 %). → [ref](specs/20260907-184057-task-0000-progressive-disclosure/)
 
 ## [0.5.0] — 2026-09-02
 

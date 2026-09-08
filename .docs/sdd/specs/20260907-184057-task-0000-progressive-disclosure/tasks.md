@@ -22,7 +22,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 2 | Ola 1 — A/B de `sdd-start-task` | done | `2503a34` | 3/3 cortes aceptados, 4/4 escenarios sin degradación. 1503 → 997 palabras |
 | 3 | Ola 2 — A/B de `sdd-end-release`, `sdd-consult`, `sdd-start-release`, `sdd-end-task` | done | `1ad92d4` | 3 aceptadas, `sdd-consult` descartada. 27 runs: 12 de campaña + 4 de bisección + 6 de repetición + 4 constructores de fixture |
 | 4 | Ola 3 — A/B de las seis skills cortas | done | `426aa45` | 2 cortes aceptados (`init-*`); 4 skills sin candidato (a)+(b), documentadas sin correr A/B |
-| 5 | Cierre documental — roadmap T2 y `tech-stack.md` | done | pendiente | El cierre de la task va por `sdd-end-task`, no aquí |
+| 5 | Cierre documental — roadmap T2 y `tech-stack.md` | done | `d904f25` | El cierre de la task va por `sdd-end-task`, no aquí |
 
 ## Verificación por task
 
