@@ -39,3 +39,19 @@ El control detectó además un bloqueo no plantado: `OrderService.cs` referencia
 ## Cortes descartados
 
 Ninguno.
+
+---
+
+## Segunda campaña — T4, cosecha del entorno en `environments.md` (2026-09-08)
+
+Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno por worktree, T4). Run `wf_a54014d6-ce6`, fixture y escenarios de la campaña anterior. Detalle en [`entorno-worktree-green.md`](entorno-worktree-green.md) §No-regresión.
+
+| | Control (`c-bf`) | Tratamiento (`t-bf`) |
+| --- | --- | --- |
+| Documentos generados | 8 | 8 |
+| `templates/` creada | no | no |
+| Marcados PENDIENTES DE REVISIÓN | 5 | 5 |
+| Derivas del `CLAUDE.md` citadas | 12 | 16 |
+| `environments.md` | no | no |
+
+**Sin degradación, 1/1, y el predicado no dispara en falso**: la fixture Ledgerly-derivas no tiene scripts de entorno, así que ninguno de los dos brazos crea `environments.md`. Que sí lo crea cuando los scripts existen lo mide `g4` en el GREEN de T4.

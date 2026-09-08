@@ -96,3 +96,17 @@ Control = `SKILL.md` en `426aa45` (997 palabras, tras T2). Tratamiento = versió
 **Sin degradación, 4/4.** Invertir el paso 6 no toca nada de lo que ocurre antes de él: el Gate 1, el enrutado a patch/spike/lite y el gate de la spec son idénticos. En L vuelven a aparecer las dos variantes válidas ya documentadas en la primera campaña (`full` por regla de defecto / `lite` propuesto y parado), esta vez con los brazos cambiados.
 
 Ninguno de los ocho runs llegó al paso 6 (todos se detienen en el gate de la spec o antes), así que esta campaña no ejercita la guidance nueva — la ejercita [`workflow-ejecucion-green.md`](workflow-ejecucion-green.md). Aquí se mide solo que el resto de la skill no se movió.
+
+---
+
+## Tercera campaña — T4, predicado `environments.md` en el paso 6 (2026-09-08)
+
+Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno por worktree, T4). Run `wf_a54014d6-ce6`, fixture y escenarios de la campaña anterior. Detalle en [`entorno-worktree-green.md`](entorno-worktree-green.md) §No-regresión.
+
+| | c-A | t-A | c-B | t-B | c-L | t-L | c-E5 | t-E5 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Rama | `feature/0000-formato-id-pedido` | igual | `feature/217` | igual | `feature/0000-filtro-estado-listado-pedidos` | igual | `develop` | `develop` |
+| Carpeta | `task-0000-…` | igual | `patch-217-…` | igual | `task-0000-…` | igual | ninguna | ninguna |
+| `plan.md` / `src/` | no / intacto | igual | — / fix | igual | no / intacto | igual | no / intacto | igual |
+
+**Sin degradación, 4/4.** Ninguno de los ocho llega al paso 6 (paran en el gate o antes), así que el predicado nuevo no se ejercita aquí: lo ejercita `g2` en el GREEN de T4. Aquí se mide que el resto de la skill no se movió.

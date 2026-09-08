@@ -54,3 +54,18 @@ Control = `SKILL.md` en `426aa45` (662 palabras). Tratamiento = versión con el 
 | `finishing-a-development-branch` invocada | ✅ | ✅ |
 
 **Sin degradación, 1/1, y el paso nuevo hace lo suyo.** El tratamiento añade la revisión sin desplazar ningún otro paso del Definition of Done. El paso se escribió **condicionado** al camino en línea porque `subagent-driven-development` —el default nuevo— ya revisa cada task y la rama entera (Art. IX regla 1: no duplicar lo que superpowers hace).
+
+---
+
+## Tercera campaña — T4, `env:clean` antes de la rama (2026-09-08)
+
+Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno por worktree, T4). Run `wf_a54014d6-ce6`, fixture y escenarios de la campaña anterior. Detalle en [`entorno-worktree-green.md`](entorno-worktree-green.md) §No-regresión.
+
+| Comprobación | Control (`c-et`) | Tratamiento (`t-et`) |
+| --- | --- | --- |
+| `walkthrough.md` | ✅ | ✅ |
+| Filas en `estimation-log.md` | 3 | 3 |
+| Merge ejecutado | no | no |
+| Spec en `draft` señalada | ✅ | ✅ |
+
+**Sin degradación, 1/1.** La fixture (TimeTrack) no tiene `environments.md`, así que el paso 10 nuevo es un predicado falso en ambos brazos: se mide que anteponerlo a `finishing-a-development-branch` no altera el cierre cuando no aplica. Que actúa cuando aplica lo mide `g3` en el GREEN de T4.

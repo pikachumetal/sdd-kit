@@ -33,3 +33,16 @@ Nota: el escenario no llega a ejercitar el contenido de `references/estructura.m
 ## Cortes descartados
 
 Ninguno.
+
+---
+
+## Segunda campaña — T4, pregunta de entorno en la entrevista (2026-09-08)
+
+Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno por worktree, T4). Run `wf_a54014d6-ce6`, fixture y escenarios de la campaña anterior. Detalle en [`entorno-worktree-green.md`](entorno-worktree-green.md) §No-regresión.
+
+| | Control (`c-gf`) | Tratamiento (`t-gf`) |
+| --- | --- | --- |
+| Ficheros al terminar | solo `README.md` | solo `README.md` |
+| `git init` | no | no |
+
+**Sin degradación, 1/1.** El gate de entrevista sigue deteniendo todo en la primera pregunta; el bloque (d), donde vive la pregunta nueva, es inalcanzable con usuario ausente — por eso esa pregunta se escribió sin baseline propio y declarada como contraparte de la cosecha de brownfield.
