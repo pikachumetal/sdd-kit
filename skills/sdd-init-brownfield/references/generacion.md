@@ -1,0 +1,13 @@
+# Generación de los documentos de anclaje en brownfield — detalle
+
+## Paso 3 — Orden de generación y gate
+
+3. **Generar documento a documento, con gate de revisión**: `mission.md` (qué hace el sistema HOY) → `tech-stack.md` (versiones exactas y bloqueos) → `architecture.md` (estructura real) → `constitution.md` (convenciones observadas COMO PROPUESTA + reglas de oro brownfield) → `roadmap.md` (deuda técnica inventariada en tabla + bloqueos + tabla de patches vacía). Cada documento se presenta al usuario antes de darse por anclaje; si el usuario no está disponible, se entregan marcados **PENDIENTES DE REVISIÓN** — nunca como aprobados.
+
+## Paso 4 — Reglas de oro brownfield
+
+4. **Reglas de oro brownfield** (van a la constitution): retrocompatibilidad por defecto; respetar el patrón existente aunque no sea ideal; cero refactor oportunista; migraciones masivas solo con justificación escrita.
+
+## Paso 5 — Estructura
+
+5. **Estructura**: `.docs/sdd/` completa + `estimation.md` y `estimation-log.md` vacío + `specs/` vacía. Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates`. ¿Changelog? — preguntar, o dejar como decisión pendiente.

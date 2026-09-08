@@ -17,24 +17,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 
 ## Estructura objetivo (la fija el kit, no se rediseña)
 
-```text
-/
-├── CLAUDE.md                 (corto: punteros + 3-5 reglas críticas)
-├── .docs/
-│   └── sdd/
-│       ├── mission.md        (por qué existe, usuarios/roles, dominio)
-│       ├── constitution.md   (principios no negociables)
-│       ├── tech-stack.md     (tecnologías con versiones; decisiones abiertas, como abiertas)
-│       ├── architecture.md   (cómo se construye)
-│       ├── funcional.md      (requisitos; crece con el producto)
-│       ├── roadmap.md        (módulos identificados + deuda + tabla de patches)
-│       ├── estimation.md     (método) · estimation-log.md (VACÍO: se llena con las tareas)
-│       └── specs/            (vacía)
-```
-
-Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates` del kit y se calcan al crear cada artefacto.
-
-Nunca `docs/`, `docs/superpowers/` ni taxonomías propias (ADRs sueltos, glosarios aparte): las decisiones técnicas viven en constitution/architecture y el lenguaje del dominio en mission.
+`.docs/sdd/` con los documentos de anclaje del kit. **No se rediseña**: nada de `docs/superpowers/specs/`, `docs/decisions/` con ADRs sueltos ni glosario aparte — las decisiones viven en constitution/architecture y el glosario en mission. Árbol exacto y qué va en cada fichero: [estructura.md](references/estructura.md).
 
 ## Flujo (crea un todo por paso)
 
