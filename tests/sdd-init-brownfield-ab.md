@@ -51,7 +51,7 @@ Control = `SKILL.md` en `f0360eb`, tratamiento = `ed79c68` (guidance del entorno
 | Documentos generados | 8 | 8 |
 | `templates/` creada | no | no |
 | Marcados PENDIENTES DE REVISIÓN | 5 | 5 |
-| Derivas del `CLAUDE.md` citadas | 12 | 16 |
+| Derivas del `CLAUDE.md` citadas | 12 | 16 — varianza de redacción, no señal: las cuatro derivas plantadas aparecen en ambos; cambia cuántas veces se repiten, igual que el 5/6 de PENDIENTES en la primera campaña |
 | `environments.md` | no | no |
 
 **Sin degradación, 1/1, y el predicado no dispara en falso**: la fixture Ledgerly-derivas no tiene scripts de entorno, así que ninguno de los dos brazos crea `environments.md`. Que sí lo crea cuando los scripts existen lo mide `g4` en el GREEN de T4.

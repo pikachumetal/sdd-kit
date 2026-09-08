@@ -44,7 +44,7 @@ created: 2026-09-08
 
 ### 4.1 Builds
 
-No aplica. Verificado: `grep -rn "no gestiona worktrees" skills/` vacío; gates ⛔ y tablas de racionalizaciones intactos en las cinco skills; `environments.md` mencionado por 10 ficheros con el mismo predicado; plantilla con los tres valores del proyecto fuera de las citas.
+No aplica. Verificado: `grep -rn "no gestiona worktrees" skills/` vacío; gates ⛔ y tablas de racionalizaciones intactos en las cinco skills; `environments.md` mencionado por 11 ficheros de skills y docs vivos (sin contar los artefactos de esta task ni `tests/`) con el mismo predicado; plantilla con los tres valores del proyecto fuera de las citas.
 
 ### 4.2 Smoke / tests
 
@@ -76,7 +76,9 @@ Todo **verificado por el agente en disco**:
 
 ### 4.4 Code-review (paso 9)
 
-Ejecutado con `superpowers:requesting-code-review` sobre `f0360eb..HEAD` (revisor Sonnet, effort medium). Resultado en el commit de cierre.
+Ejecutado con `superpowers:requesting-code-review` sobre `f0360eb..8816e94` (revisor Sonnet, effort medium). **Veredicto: listo para cerrar**, sin Critical ni Important. Verificado por el revisor: 8/8 criterios de la spec cubiertos (el 6 como recorte justificado), 21 menciones a `environments.md` describiendo el mismo contrato, override sin contradicción, numeración de pasos correcta, enlaces resolviendo, Art. VIII y IX cumplidos.
+
+Dos Minor, arreglados en el commit de cierre: la cifra de ficheros que mencionan el predicado (11, no 10, con el criterio de conteo explícito) y una nota que faltaba en `tests/sdd-init-brownfield-ab.md` descartando la diferencia 12/16 en derivas citadas como varianza de muestra.
 
 ## 5. Aprendizajes
 
