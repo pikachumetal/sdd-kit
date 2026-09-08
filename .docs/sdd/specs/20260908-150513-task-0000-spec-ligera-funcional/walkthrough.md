@@ -12,7 +12,7 @@ created: 2026-09-08
 
 ## 1. Cambios realizados
 
-**Plantillas** (`29d9123`, por despacho a un subagente con revisión de dos fases y una ronda de arreglos): `spec-template.md` reescrita entera — 82 líneas, cuatro bloques: "Decisiones que he tomado yo — valida estas", Intent/Scope/Approach, delta por capacidad con `ADDED`/`MODIFIED (antes: …)`/`REMOVED` y escenarios GIVEN/WHEN/THEN como receta (no descripción, Art. II), estimación solo en lite, aprobaciones. `funcional-template.md` nueva — 32 líneas, título estable por requisito como clave de fusión, cinco reglas anti-proliferación, Historial opcional. `plan-template.md` recibe §1.5 Riesgos y §1.6 Rollout. Índice de `sdd-templates` con la descripción nueva y la fila de la capacidad.
+**Plantillas** (`29d9123`, por despacho a un subagente con revisión de dos fases y una ronda de arreglos): `spec-template.md` reescrita entera — 82 líneas, cuatro bloques: "Decisiones que he tomado yo — valida estas", Intent/Scope/Approach, delta por capacidad con `ADDED`/`MODIFIED (antes: …)`/`REMOVED` y escenarios GIVEN/WHEN/THEN como receta (no descripción, Art. II), estimación solo en lite, aprobaciones. `funcional-template.md` nueva — 32 líneas, título estable por requisito como clave de fusión, cinco reglas anti-proliferación, Historial opcional. `plan-template.md` recibe §1.5 UX, §1.6 Dependencias, §1.7 Riesgos, §1.8 Rollout y §1.9 Excepciones a la constitution (los tres primeros, tras el code-review del cierre). Índice de `sdd-templates` con la descripción nueva y la fila de la capacidad.
 
 **Convención** (`48c0f4a`): `funcional.md` → `funcional/` en los siete sitios que lo citaban y ninguna skill escribía. `sdd-start-task` paso 4 calca la spec ligera y presenta el gate empezando por las decisiones.
 
