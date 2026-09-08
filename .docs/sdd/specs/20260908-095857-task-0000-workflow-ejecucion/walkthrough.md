@@ -37,7 +37,7 @@ created: 2026-09-08
 - **El campo `Modelo` ganó el effort a mitad de task**, a propuesta del dev-lead. Respaldado por un hueco demostrado en superpowers (`codex-tools.md:66-68`), no por un escenario propio.
 - **El code-review del cierre se escribió y luego se condicionó** al aplicar el Art. IX: duplicaba lo que `subagent-driven-development` ya hace.
 - **La política de modelos cambió de "el más barato" a la de superpowers** por la misma regla.
-- **GREEN de F1/F2/F4-traspaso pendiente de dogfooding**, por limitación del harness (ver §4.3).
+- **GREEN de F1/F2/F4-traspaso por dogfooding en la propia sesión**, no en la siguiente task como preveía el plan: el dev-lead pidió cerrar T3 sin pendientes.
 
 ## 4. Verificación
 
@@ -58,7 +58,8 @@ Todo **verificado por el agente en disco**, no autoinformado:
 | 5 | RED positivo — ¿TDD sin nombrarlo? | 2/2 test-primero; `r1b` invocó la skill sola → guidance recortada |
 | 6 | GREEN F3 | `t-et` invoca `requesting-code-review`; `c-et` no |
 | 7 | GREEN F4 (lo medible) | 3/3 JSDoc en `g1a` y `g1b` |
-| 8 | GREEN F1/F2 | no medible: 2/2 sujetos comprobaron por `ToolSearch` que no tienen tool de despacho y lo documentaron en `tasks.md` |
+| 8 | GREEN F1/F2 con sujetos-subagente | no medible: 2/2 comprobaron por `ToolSearch` que no tienen tool de despacho |
+| 8b | GREEN F1/F2/F4-traspaso por dogfooding (`dog1`, `dog2`) | la sesión despachó dos ejecutores aislados con Sonnet/medium explícitos y el bloque de restricciones en el encargo: **1/1 JSDoc en ambos** frente a 0/2 en el RED |
 | 9 | A/B `sdd-start-task` (A, B, L, E5) | 4/4 idénticos entre brazos |
 | 10 | A/B `sdd-end-task` | 1/1, DoD idéntico + review añadida |
 | 11 | Dogfooding del propio cierre | esta task se cerró con la `sdd-end-task` editada; paso 9 (code-review, camino en línea) ejecutado — ver §4.4 |
@@ -67,8 +68,8 @@ Todo **verificado por el agente en disco**, no autoinformado:
 
 ### 4.3 Residuales / deuda generada
 
-- **GREEN de F1, F2 y F4-traspaso por dogfooding**: la siguiente task del kit se ejecuta con el default nuevo desde la sesión principal, con el dev-lead como testigo. Registrado en el roadmap (T3 "escrito, no verificado") y en T9.
-- **Si el dogfooding muestra que el ejecutor aislado sigue sin recibir las restricciones**, se pasa a la opción C (campos repetidos por task *y* traspaso). Anotado en `plan-template-herencia-ab.md`.
+- ~~GREEN de F1, F2 y F4-traspaso por dogfooding en la siguiente task~~ — **hecho en esta misma sesión** a petición del dev-lead (§4.2 fila 8b). La opción C queda descartada: el traspaso basta.
+
 - **El `CLAUDE.md` global del dev-lead sigue prefiriendo ejecución en línea.** Declarado en la spec; su cláusula "salvo que el proyecto indique otra cosa" lo cubre. Si molesta, se alinea aparte.
 
 ### 4.4 Code-review (paso 9, camino en línea)

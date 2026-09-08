@@ -33,4 +33,4 @@ Tres salidas se presentaron al dev-lead, que delegó la elección:
 
 - **RED**: reproducido 2/2 con restricción no inferible.
 - **GREEN parcial**: `g1a` y `g1b` (skill nueva) pusieron **3/3 JSDoc** — pero vieron el plan entero porque el harness no permite a un subagente de workflow despachar subagentes. Mide "el orquestador aplica las restricciones", no "el orquestador las entrega al aislado".
-- **GREEN del traspaso: pendiente de dogfooding** (ver [`workflow-ejecucion-green.md`](workflow-ejecucion-green.md) §Limitación). Si en el dogfooding el ejecutor aislado sigue sin ponerlas, se pasa a **C**: campos repetidos *y* traspaso.
+- **GREEN del traspaso: 2/2 por dogfooding** (`dog1`, `dog2`, 2026-09-08): con el bloque en el encargo, el ejecutor aislado puso el JSDoc que sin él no ponía (ver [`workflow-ejecucion-green.md`](workflow-ejecucion-green.md)). La opción **C** (campos repetidos *y* traspaso) queda descartada: B basta.

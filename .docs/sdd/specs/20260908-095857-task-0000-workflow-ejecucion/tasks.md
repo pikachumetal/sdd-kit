@@ -34,4 +34,4 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
-| Un subagente de workflow no tiene tool de despacho | Limitación del harness, no del kit | Registrar en T9 del roadmap; GREEN de F1/F2/F4 por dogfooding | `bcb83a7` |
+| Un subagente de workflow no tiene tool de despacho | Limitación del harness, no del kit | T9 + dogfooding ejecutado en la sesión (`dog1`/`dog2`, 2/2) | `bcb83a7` |

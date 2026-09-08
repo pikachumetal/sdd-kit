@@ -34,7 +34,16 @@ Sin despacho no hay modelo ni effort que declarar. Ninguno de los dos runs menci
 
 **Un subagente de workflow no puede despachar subagentes.** Cualquier guidance cuyo efecto sea *despachar* —default de ejecución, modelo y effort del despacho, traspaso al ejecutor aislado— no se puede validar con sujetos-subagente. Se suma a la limitación ya registrada en T9 ("no sabemos montar un entorno sin una skill").
 
-**GREEN real de F1, F2 y F4: dogfooding.** La siguiente task del kit se ejecuta con el default nuevo, desde la sesión principal, con el dev-lead como testigo: cuenta como evidencia por el Art. VII, y tiene lo que ningún subagente puede dar — un humano que ve el despacho y el modelo declarado en el `plan.md`. Hasta entonces, F1, F2 y F4-traspaso quedan en **"escrito, no verificado"**, y así se registra en el roadmap.
+**GREEN de F1, F2 y F4-traspaso: dogfooding, ejecutado en la misma sesión (2026-09-08, a petición del dev-lead: "si encontramos algo hay que solucionarlo").** La sesión principal actuó como orquestador según el paso 6 nuevo: despachó dos ejecutores aislados (`dog1`, `dog2`) con el tool `Agent`, **modelo y effort explícitos** (Sonnet, medium), y el encargo compuesto por el texto íntegro de la Task 2 **más el bloque "Restricciones globales"**. Plan borrado de sus copias, como en `r4b`/`r4c`.
+
+| | `r4b` / `r4c` (RED) | `dog1` / `dog2` (dogfooding) |
+| --- | --- | --- |
+| Restricciones en el encargo | no | **sí** |
+| JSDoc en la función nueva | 0 / 0 | **1 / 1** |
+| Ficheros de test nuevos | 0 / 0 | 0 / 0 |
+| Tests | verde | 6/6 verde |
+
+Misma fixture, mismo aislamiento, mismo modelo: la única variable es el traspaso. **F4-traspaso reparado 2/2.** F1 (delegar) y F2 (modelo + effort declarados) cumplidos por construcción del despacho, con el dev-lead como testigo (Art. VII). La limitación de método sigue siendo cierta para *sujetos*-subagente y queda en T9; el GREEN ya no depende de ella.
 
 ## No-regresión
 
