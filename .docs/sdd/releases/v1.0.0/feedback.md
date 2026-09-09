@@ -71,3 +71,5 @@ Cada hallazgo del hackaton, con su sección de origen, y la decisión del dev-le
   - **[A10] Medir la lente dominio con las cinco reglas** — se verifica con un GREEN en `tests/` donde el usuario (o su simulación) active la review sobre una spec con datos nuevos, en la primera task que toque `review-spec.md`.
 
 - **Smoke de la release**: por tramo (GREEN E2E de cada task con el kit al día) y final (Pester 136/136, `claude plugin validate --strict`, implementación completa de una task con el kit en T16 A/B). Hallazgos por tramo saldados dentro de la release: 2 (patches de T7: etiqueta lite y residuales de la revisión final). Final: 0.
+
+- **Compatibilidad con superpowers**: instalada 6.3.0, la misma validada el 2026-09-07 (README); el mapeo de vías y el bloque de restricciones no se re-testan porque no hubo minor nuevo.

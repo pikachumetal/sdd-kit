@@ -1,6 +1,6 @@
 # Evidencia RED — release pequeña primero (2026-09-09)
 
-Baseline de la task [release-pequena](../.docs/sdd/specs/20260909-172400-task-0000-release-pequena/spec.md) (T15), que responde al §3 de [research-hackaton.md](../.docs/sdd/releases/v0.6.0/research-hackaton.md): ¿`sdd-start-release` propone un alcance mínimo entregable en la primera release de un proyecto, o mete el backlog entero?
+Baseline de la task [release-pequena](../.docs/sdd/specs/20260909-172400-task-0000-release-pequena/spec.md) (T15), que responde al §3 de [research-hackaton.md](../.docs/sdd/releases/v1.0.0/research-hackaton.md): ¿`sdd-start-release` propone un alcance mínimo entregable en la primera release de un proyecto, o mete el backlog entero?
 
 ## Método
 

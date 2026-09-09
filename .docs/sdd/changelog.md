@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-09
+
+Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por decisión del dev-lead en el cierre. Los artefactos históricos conservan el nombre v0.6.0. [Acta](releases/v1.0.0/feedback.md) · [release notes](releases/v1.0.0/release-notes.md).
+
 ### Added
 
 - **sdd-consult** — modo "sondear": un spike ("¿se puede…?", "pruébalo rápido") se prueba con código desechable y termina en una respuesta, sin carpeta, rama ni código conservado; antes la skill vetaba la prueba. → [ref](specs/20260907-151234-task-0000-alineacion-superpowers/)
@@ -21,7 +25,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Art. X** — calidad de código: sin comentarios que repitan el código, clean code, y la regla viaja literal en planes y encargos a subagentes. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **funcional/estimacion.md** — primera capacidad del kit fusionada por `sdd-end-task` con cinco requisitos `ADDED`. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **tests/Skills.Tests.ps1, tests/Manifests.Tests.ps1, .githooks/pre-commit** — validación de la anatomía de las 11 skills contra el propio repo (name, description, H1, Overview, enlaces, `references/` sin huérfanos, sin `@`, lista de superpowers, índice de plantillas, manifests) más `claude plugin validate` en strict; el hook pre-commit bloquea el commit si la suite falla. → [ref](specs/20260909-100606-task-0000-skills-validation/)
-- **sdd-init-brownfield** — migración de proyectos consumidores: `references/migrations/vX.Y.Z.md` por versión con cambio estructural (v0.2.0 plantillas, v0.4.0 hotfix→patch, v0.6.0 `funcional/`, marcador, script de estimación, entorno) con pasos-predicado, gates y verificación, más el procedimiento en `migrations/README.md`; predicado «¿onboarding o migración?» (si existe `.docs/sdd/`, migrar y nada más). RED 1/3 aplicaba el onboarding encima → GREEN 0/4. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
+- **sdd-init-brownfield** — migración de proyectos consumidores: `references/migrations/vX.Y.Z.md` por versión con cambio estructural (v0.2.0 plantillas, v0.4.0 hotfix→patch, v1.0.0 `funcional/`, marcador, script de estimación, entorno) con pasos-predicado, gates y verificación, más el procedimiento en `migrations/README.md`; predicado «¿onboarding o migración?» (si existe `.docs/sdd/`, migrar y nada más). RED 1/3 aplicaba el onboarding encima → GREEN 0/4. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
 - **sdd-kit.json** — marcador de versión del kit en `.docs/sdd/` (`version`, `channel`, `updated`), escrito por `init-*` y por la migración; el propio kit lo lleva. Art. V exige el fichero de migración en toda release con cambio estructural. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
 - **funcional/migracion.md** — capacidad nueva fusionada con cinco `ADDED`. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
 - **sdd-start-task** — `references/review-spec.md`: rúbrica de complejidad (ocho señales, tres niveles) que propone cuánta review adversarial merece una spec, encargo del revisor por lente (dominio / técnica) con la pregunta del complemento de visibilidad, e incorporación de hallazgos antes del gate; `references/encargo-revision.md`: cabecera obligatoria de todo encargo de revisión con el bloque de Restricciones globales como primera sección (el revisor final de superpowers no tiene hueco para restricciones). → [ref](specs/20260909-131802-task-0000-gates-y-reviews/)

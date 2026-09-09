@@ -1,6 +1,6 @@
 # Evidencia RED — comentarios que citan documentos (2026-09-09)
 
-Baseline de la task [comentarios-sin-citas](../.docs/sdd/specs/20260909-164438-task-0000-comentarios-sin-citas/spec.md) (T14), que responde al §4 de [research-hackaton.md](../.docs/sdd/releases/v0.6.0/research-hackaton.md): en los dos retos hubo 110 comentarios que citaban constitution, spec, task o funcional, y en el experimento del 9 de septiembre el implementador rompió la regla escrita 4 veces en 2 de 4 tasks. ¿Pasa lo mismo con el implementador que despacha el kit? Si no, el punto explícito para el revisor no se escribe (Art. I) y la regla queda como principio (Art. X) y forma (Restricciones globales).
+Baseline de la task [comentarios-sin-citas](../.docs/sdd/specs/20260909-164438-task-0000-comentarios-sin-citas/spec.md) (T14), que responde al §4 de [research-hackaton.md](../.docs/sdd/releases/v1.0.0/research-hackaton.md): en los dos retos hubo 110 comentarios que citaban constitution, spec, task o funcional, y en el experimento del 9 de septiembre el implementador rompió la regla escrita 4 veces en 2 de 4 tasks. ¿Pasa lo mismo con el implementador que despacha el kit? Si no, el punto explícito para el revisor no se escribe (Art. I) y la regla queda como principio (Art. X) y forma (Restricciones globales).
 
 ## Método
 

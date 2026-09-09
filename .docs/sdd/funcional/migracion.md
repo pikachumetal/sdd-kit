@@ -22,12 +22,12 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 
 ### El `funcional.md` heredado se conserva como legado
 - GIVEN un proyecto con `funcional.md`
-- WHEN se aplica la migración a v0.6.0
+- WHEN se aplica la migración a v1.0.0
 - THEN el fichero pasa a `funcional/legado.md` con una nota de excepción temporal, y ninguna capacidad se crea de golpe
 
 ### La copia local del script de estimación se retira
 - GIVEN un proyecto con `.tools/sdd/Build-EstimationLog.ps1` o `tools/sdd/Build-EstimationLog.ps1`
-- WHEN se aplica la migración a v0.6.0
+- WHEN se aplica la migración a v1.0.0
 - THEN se borra la copia, se regenera `estimation-log.md` con el script del kit y el diff del log se presenta al dev-lead antes de commitear
 
 ## Historial

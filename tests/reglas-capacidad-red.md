@@ -1,6 +1,6 @@
 # Evidencia RED — las cinco reglas que el agente decide al azar (2026-09-09)
 
-Baseline de la task [reglas-de-capacidad](../.docs/sdd/specs/20260909-180422-task-0000-reglas-de-capacidad/spec.md) (T17), que responde al §2 de [research-hackaton.md](../.docs/sdd/releases/v0.6.0/research-hackaton.md): cuando nadie escribe *dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto*, ¿la spec las declara y la entrevista de init las pregunta?
+Baseline de la task [reglas-de-capacidad](../.docs/sdd/specs/20260909-180422-task-0000-reglas-de-capacidad/spec.md) (T17), que responde al §2 de [research-hackaton.md](../.docs/sdd/releases/v1.0.0/research-hackaton.md): cuando nadie escribe *dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto*, ¿la spec las declara y la entrevista de init las pregunta?
 
 ## Método
 

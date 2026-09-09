@@ -1,6 +1,6 @@
 # Evidencia RED — tests escritos por el hilo principal antes de despachar (2026-09-09)
 
-Baseline de la task [tests-red-hilo](../.docs/sdd/specs/20260909-173929-task-0000-tests-red-hilo/spec.md) (T16), que responde al §1 de [research-hackaton.md](../.docs/sdd/releases/v0.6.0/research-hackaton.md): con el default del kit (`subagent-driven-development`), ¿quién escribe los tests de una task y qué describen?
+Baseline de la task [tests-red-hilo](../.docs/sdd/specs/20260909-173929-task-0000-tests-red-hilo/spec.md) (T16), que responde al §1 de [research-hackaton.md](../.docs/sdd/releases/v1.0.0/research-hackaton.md): con el default del kit (`subagent-driven-development`), ¿quién escribe los tests de una task y qué describen?
 
 ## Método
 

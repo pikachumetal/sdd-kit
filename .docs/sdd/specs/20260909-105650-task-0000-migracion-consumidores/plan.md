@@ -53,7 +53,7 @@ Copiadas de la spec y la constitution. Toda task las hereda; **quien despacha la
 - `skills/sdd-init-brownfield/references/migrations/README.md` — procedimiento.
 - `skills/sdd-init-brownfield/references/migrations/v0.2.0.md` — borrar `.docs/sdd/templates/` (fuente única, 2026-07-21). **Corrige la decisión 3 de la spec**: v0.2.0 sí tuvo cambio estructural.
 - `skills/sdd-init-brownfield/references/migrations/v0.4.0.md` — hotfix → patch.
-- `skills/sdd-init-brownfield/references/migrations/v0.6.0.md` — `funcional/`, marcador, script de estimación, `environments.md`.
+- `skills/sdd-init-brownfield/references/migrations/v1.0.0.md` — `funcional/`, marcador, script de estimación, `environments.md`.
 - `.docs/sdd/sdd-kit.json` — el del kit.
 - `tests/migracion-red.md`, `tests/migracion-green.md`.
 - `tasks.md`.
