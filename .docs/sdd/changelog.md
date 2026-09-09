@@ -39,6 +39,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Convención `funcional/`** — `funcional.md` (declarado en siete sitios y escrito por ninguna skill) pasa a ser la carpeta `funcional/`, un fichero por capacidad; `sdd-start-task` presenta el gate de la spec empezando por las decisiones a validar; `plan-template` recibe riesgos y rollout. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
 - **sdd-end-task, sdd-end-patch** — el paso estimation-log ejecuta el script del kit por `<Base directory>/../sdd-templates/scripts/` en vez de buscar una copia en `.tools/sdd/` del proyecto; la fila a mano queda solo sin `pwsh` o sin el script (instalación parcial). RED 2/2 → GREEN 2/2. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **estimation-log.md del kit** — pasa de manual a generado por el script (dogfooding); `estimation.md`, `tech-stack.md`, `architecture.md` y README lo reflejan. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
+- **sdd-start-task** — Gate 1 con dos vías explícitas: invocación sola → contexto y parar; con enunciado → contexto y seguir por el enrutado. Medido: la `description` dispara la skill sola 2/2 ante «implementa la task N», sin regla en el `CLAUDE.md` del proyecto. → [ref](specs/20260909-162118-task-0000-disparo-skills/)
 
 ### Fixed
 

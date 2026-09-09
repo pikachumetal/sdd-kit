@@ -14,4 +14,6 @@ Nota de coste de gates (T11, 2026-09-09): un gate bien escrito sale más barato 
 
 Ancla de review (T12, 2026-09-09): no se presupuesta review adversarial multi-lente por defecto; la review de superpowers con la cabecera de restricciones cazó un bug de transición de estado 4/4 a ~1,2 $ por sujeto.
 
+Dos poblaciones y un ratio por proyecto (hackaton, 2026-09-09): tasks y patches se calibran aparte (SifAcademy: tasks 0,48, patches 1,44 — en un patch el trabajo es encontrar la causa, no escribir) y el ratio no viaja entre proyectos (0,55 frente a 0,15 con el mismo estimador): la banda se calibra por proyecto desde la tercera muestra.
+
 El log (`estimation-log.md`) **se genera**, no se escribe: desde T7 (2026-09-09) lo regenera `skills/sdd-templates/scripts/Build-EstimationLog.ps1` a partir del bloque de tiempo de cada walkthrough y patch, con el factor global y la mediana por Tipo. Los rangos y las notas («condicionado al RED») viven en el walkthrough; el log es la tabla de calibración. Comportamiento observable en `funcional/estimacion.md`.

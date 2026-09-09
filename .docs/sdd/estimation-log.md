@@ -23,12 +23,13 @@
 | 2026-09-09 | 0000 | patch | — | 0.15 | — | 20260909-120448-patch-0000-estimation-log-residuales |
 | 2026-09-09 | 0000 | docs | 2 | 1.8 | 0.9 | 20260909-131802-task-0000-gates-y-reviews |
 | 2026-09-09 | 0000 | docs | 0.8 | 0.4 | 0.5 | 20260909-160248-task-0000-review-reforzada |
+| 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | 20260909-162118-task-0000-disparo-skills |
 
-**Factor de calibración** (ratio mediano real/estimado, 15 artefactos): **0.38**
+**Factor de calibración** (ratio mediano real/estimado, 16 artefactos): **0.44**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
-| docs | 13 | 0.33 |
+| docs | 14 | 0.35 |
 | infra/tooling | 2 | 0.9 |
 
 > Ver `estimation.md`.
