@@ -4,7 +4,7 @@
 
 | # | Ítem | Estado |
 | --- | --- | --- |
-| 4 | Migrar Alybo y MDT con `sdd-init-brownfield` (acta v1.0.0, A8): marcador `1.0.0`, `funcional/legado.md`, sin `templates/`, un commit por versión migrada | ⏳ primero tras 1.0.0 |
+| 4 | Feedback de la migración real de Alybo y MDT (acta v1.0.0, A8): la ejecuta el dev-lead en los proyectos con `sdd-init-brownfield`; lo que falle vuelve al kit como patch | ⏳ |
 | 1 | Estreno real: instalar en un proyecto del equipo y ciclar las primeras tareas | 🔄 en curso — feedback devuelto al kit: carril release, fuente única de plantillas, rename hotfix→patch, modo lite (v0.4.0–v0.5.0). En v0.5.0 el bucle se cerró desde dentro: una consulta destapó la referencia rota a `grilling` y la ausencia de declaración de dependencias. El 2026-09-07 otra consulta abrió v0.6.0 entera |
 | 3 | Compatibilidad con Claude Code y dependencias — ~~`grilling` referenciada como `superpowers:grilling`~~ ✅ ([patch 20260902-153722](specs/20260902-153722-patch-0000-grilling-reference/patch.md)) · ~~declaración de dependencias~~ ✅ ([task dependencias-declaradas](specs/20260902-160308-task-0000-dependencias-declaradas/walkthrough.md)). El pendiente "crea un todo por paso" pasa a **T2** | ✅ cerrado como ítem; resto en v0.6.0 |
 

@@ -66,7 +66,7 @@ Cada hallazgo del hackaton, con su sección de origen, y la decisión del dev-le
   - **1.0.0 sin distribución**: la versión dice producción y el kit sigue instalándose por ruta local. La primera migración real (Alybo, MDT) es la prueba de producción que la versión promete.
 
 - **Action items nuevos** (verificables):
-  - **[A8] Migrar Alybo y MDT con `sdd-init-brownfield`** — se verifica con el `sdd-kit.json` de cada proyecto en `1.0.0`, `funcional/legado.md`, sin `templates/` y con `chore(sdd): migrar al kit v1.0.0` en su historial, antes de la siguiente release del kit.
+  - **[A8] Recoger el feedback de la migración real de Alybo y MDT** — la migración la ejecuta el dev-lead en cada proyecto con `sdd-init-brownfield` (no es trabajo del kit); lo que falle vuelve como patch. Se verifica con la lista de patches (o «ninguno») en la próxima acta.
   - **[A9] Estimar los ciclos Art. I en minutos de campaña** — se verifica con que el ratio mediano de las tasks docs de la siguiente release esté entre 0,7 y 1,3.
   - **[A10] Medir la lente dominio con las cinco reglas** — se verifica con un GREEN en `tests/` donde el usuario (o su simulación) active la review sobre una spec con datos nuevos, en la primera task que toque `review-spec.md`.
 

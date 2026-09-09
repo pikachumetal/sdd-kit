@@ -37,5 +37,5 @@ Esta versión cierra lo que dos retos reales del equipo enseñaron: dónde el as
 
 ## Próximos pasos
 
-- Por nuestra parte: migrar los dos proyectos del equipo que ya usan el kit y ciclar con ellos las primeras tareas de 1.0.0.
+- Por nuestra parte: atender como patch cualquier problema que aparezca al poner al día los proyectos del equipo.
 - Por vuestra parte: cuando abráis una tarea en un proyecto ya inicializado, pedir primero «ponme al día con el kit» y aprobar los cambios uno a uno.
