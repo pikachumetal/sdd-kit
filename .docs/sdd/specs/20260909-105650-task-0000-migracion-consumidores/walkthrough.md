@@ -56,11 +56,13 @@ created: 2026-09-09
 
 ### 4.3 Residuales / deuda generada
 
-- **Sobre-cautela 1/2 en E2 GREEN** (trató los pasos de texto como gate): conservador y reversible; sin guidance con n=2. Se anota para la próxima campaña que toque `sdd-init-brownfield`.
-- **Contaminación del método headless**: `--plugin-dir <working tree>` expone `.docs/` del kit y un sujeto leyó la spec de la task que lo medía. Próximas campañas: copia del kit con solo `skills/` y `.claude-plugin/`. → tech-stack.
-- **Commit con gates pendientes**: conducta variable (E1 commiteó lo sin gate; E1b, E2, E2b no). Matizado en el README; tolerado.
-- **Alybo y MDT** siguen sin migrar: primera invocación real a petición del dev-lead. Los cuatro gates que la fixture destapó son los mismos que tendrá Alybo (más `Validate-Specs.ps1`, que no se toca).
-- `sdd-consult` no se midió con «¿qué tengo que cambiar?» dirigido a ella: E2/E2b lo enrutaron solos al artefacto. Sin deuda.
+Ninguna: la RC no arrastra deuda (decisión del dev-lead, 2026-09-09). Lo que quedó anotado al cerrar se resolvió el mismo día con dos runs más (`tests/migracion-green.md`, «Ronda de cierre de residuales»):
+
+- **Sobre-cautela en E2** → el README de migraciones dice que los pasos sin gate se ejecutan sin preguntar; E2c y E2d los aplican (2/2).
+- **Contaminación del método headless** → `--plugin-dir` sobre una copia limpia del kit (solo `skills/` y `.claude-plugin/`); 0 menciones al kit en E2c y E2d. Es la regla del método en `tech-stack.md`.
+- **Dos conductas destapadas por la copia limpia** (E2c, 1/1): versión objetivo tomada de `plugin.json` (0.5.0, aún sin bump) saltándose v0.6.0, y un gate ejecutado y dejado staged. README reforzado («**Nunca** `plugin.json`…»; «pendiente significa sin tocar, ni staged») y verificado en E2d.
+- **Commit con gates pendientes**: conducta variable y tolerada; el README la acota.
+- **Alybo y MDT**: se migran cuando v0.6.0 esté cerrada e instalada; es uso del paquete, no deuda de la task.
 
 ## 5. Aprendizajes
 

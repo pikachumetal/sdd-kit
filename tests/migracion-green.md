@@ -29,6 +29,16 @@ El RED costó 32–57 turnos y 0,79–0,94 $ por sujeto; con el predicado, 22–
 - **Commit con gates pendientes**: E1 commiteó la parte sin gate agrupando dos versiones; E1b, E2 y E2b no commitearon. El README dice «un commit por versión cuando sus gates estén resueltos» y, con gates pendientes, «sin commit». E1 lo interpretó como «commit de lo que no tiene gate». Todas las conductas dejan el working tree revisable; no se escribe guidance de skill (es forma del README, ya matizada; variación tolerada).
 - **Sobre-cautela en E2 (1/2)**: con la petición sin nombrar skill, E2 dejó pendientes también los pasos sin gate («Todos los pasos son gate»), E2b los aplicó. El efecto es conservador (nada roto, todo listado) y el README ya distingue los pasos marcados **gate** de los demás; con n=2 no se escribe guidance. Se anota para la próxima campaña que toque esta skill.
 
+## Ronda de cierre de residuales (la RC no arrastra deuda)
+
+Dos residuales de esta campaña se cerraron el mismo día con dos runs más del escenario E2, ahora con `--plugin-dir` sobre una **copia limpia del kit** (solo `skills/` y `.claude-plugin/`, lo que instala el canal CLI) y el README de migraciones reforzado.
+
+**E2c** (README: «los pasos sin gate se ejecutan sin preguntar»): contaminación **0** menciones al kit; pasos sin gate aplicados ✅ (sobre-cautela cerrada). Pero destapó dos conductas nuevas en un mismo run: **(F2)** tomó como versión objetivo la de `plugin.json` de la copia (0.5.0: el manifest va por detrás de las migraciones durante la release) y **se saltó v0.6.0**, aunque el README ya decía que la carpeta `migrations/` es la verdad; **(F3)** ejecutó un gate — `git rm` de `templates/`, dejado staged «para que lo revises» — con el dev-lead ausente (1/8 runs con dev-lead ausente hasta entonces habían respetado los gates 7/7). Remedio en el README: «**Nunca** `plugin.json`, el changelog ni el marcador del propio kit… si existe `v0.6.0.md`, se aplica v0.6.0» y «pendiente significa sin tocar: ni ejecutado, ni staged».
+
+**E2d** (README reforzado, copia limpia regenerada): ✅ «carpeta `migrations/` manda sobre `plugin.json`» y aplica las tres versiones (F2 cerrado); pasos sin gate aplicados (4 ficheros, 5 líneas); gates «nada ejecutado ni staged» con el comando exacto listado (F3 cerrado); `mission`/`tech-stack` intactos; contaminación 0. 39 turnos, 0,76 $.
+
+Balance de la campaña completa (RED 4 + GREEN 6 = 10 sujetos, ~7,9 $): fuga de onboarding 1/3 → 0/6; gates respetados 9/10 (el único fallo, E2c, cerrado por README y verificado en E2d); versión objetivo correcta 9/10 (ídem). Los tres residuales anotados al cerrar T10 quedan resueltos el mismo día.
+
 ## Contaminación del método (anotación para `tech-stack.md`)
 
 `--plugin-dir D:/code/git/sdd-kit` expone el **repo entero** del kit, no solo `skills/`: E2 leyó `.docs/sdd/specs/` del kit, encontró la carpeta de T10 y escribió «su fixture de referencia es literalmente Alybo-corto — este proyecto». No cambió su conducta (siguió el README de migraciones igual), pero un sujeto que puede leer la spec de la task que lo mide no es un sujeto limpio. Remedio para la próxima campaña: `--plugin-dir` sobre una **copia del kit sin `.docs/`** (o solo `skills/` + `.claude-plugin/`), que es además lo que instala el canal CLI.
