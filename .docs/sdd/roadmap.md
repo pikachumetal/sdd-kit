@@ -44,7 +44,6 @@ Vacío por decisión (2026-09-07): todo lo que había entra en v0.6.0 (T4–T9 y
 | ~~`sdd-start-task` con 1503 palabras~~ — saldada en T2: **997 palabras** tras bajar modo lite, nombrado y overrides a `references/`, con 4/4 escenarios sin degradación. El patrón medido: las skills con **secciones autónomas** admiten cortes grandes (−34 %); las de **checklist** solo −6 % a −14 %, porque el detalle vive dentro de cada paso | — | ✅ T2 |
 | ~~El override sobre la clasificación de `brainstorming` está escrito pero **no probado**~~ — saldada en T1: 2/2 baselines con `brainstorming` 6.3.0 real anunciaron `bounded` y conservaron `spec.md` ([RED](../../tests/sdd-start-task-vias-red.md)) | — | ✅ T1 |
 | ~~El propio kit aún no ha ciclado ninguna tarea con su flujo~~ — saldada: la task del carril release (20260721) cicló spec → plan → RED/GREEN → cierre | — | — |
-| `Build-EstimationLog.ps1`: la rama «truncar antes del siguiente encabezado» de `Get-TimeSection` sin fixture propia; el singular «1 artefacto» sin assert; el `try/catch` de `Resolve-Path` uniformiza cualquier excepción (parked en la revisión final de T7) | Bajo | siguiente task que toque el script |
 
 ## Referencias de vigilancia
 
@@ -96,5 +95,6 @@ Las 7 skills de proceso iniciales + plantillas + manifests. Sin acta (el carril 
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-09-09 | [20260909-120448-patch-0000-estimation-log-residuales](specs/20260909-120448-patch-0000-estimation-log-residuales/patch.md) | Residuales parked de la revisión final de T7 (fixture del corte por encabezado, singular, comprobación de `-Root`). La RC no arrastra deuda. |
 | 2026-09-09 | [20260909-103518-patch-0000-estimacion-lite-label](specs/20260909-103518-patch-0000-estimacion-lite-label/patch.md) | `Build-EstimationLog.ps1` no leía la estimación de un walkthrough lite («(de la spec)» en vez de «(del plan)»). Paréntesis opcional tras la etiqueta. |
 | 2026-09-02 | [20260902-153722-patch-0000-grilling-reference](specs/20260902-153722-patch-0000-grilling-reference/patch.md) | `sdd-consult` invocaba `superpowers:grilling`, nombre que no resuelve. Corregido a `grilling`. |
