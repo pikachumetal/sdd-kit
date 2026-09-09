@@ -20,6 +20,7 @@
 | 2026-09-09 | 0000 | infra/tooling | 1 | 0.7 | 0.7 | 20260909-100606-task-0000-skills-validation |
 | 2026-09-09 | 0000 | patch | — | 0.15 | — | 20260909-103518-patch-0000-estimacion-lite-label |
 | 2026-09-09 | 0000 | docs | 1.5 | 0.5 | 0.33 | 20260909-105650-task-0000-migracion-consumidores |
+| 2026-09-09 | 0000 | patch | — | 0.15 | — | 20260909-120448-patch-0000-estimation-log-residuales |
 
 **Factor de calibración** (ratio mediano real/estimado, 13 artefactos): **0.33**
 
