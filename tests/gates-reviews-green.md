@@ -55,6 +55,10 @@ Consistente con E1b del RED: la conducta la lleva el artefacto (`spec-template` 
 
 Con la primera redacción el sujeto pega el bloque donde la plantilla de superpowers tiene hueco (`GLOBAL_CONSTRAINTS` del revisor de task) y en el implementador; con la segunda, más concreta y con red flag, lo mismo. **El revisor final se queda sin bloque 3 de 3 veces**: el sujeto construye ese encargo desde `code-reviewer.md` de superpowers, que no tiene hueco, y ninguna prosa se lo añade. Es el hueco que el Art. IX llama demostrado, y la lección de la release: donde la prosa falla, un artefacto. Tercera iteración: `references/encargo-revision.md`, cabecera obligatoria de todo encargo de revisión con el bloque como primera sección, y el paso 6 remite a ella.
 
+### E5 — señal «reglas de visibilidad o permiso» → **cambia la profundidad, no la conducta**
+
+GREEN E5c (rúbrica con la señal, fixture sin el artículo, misma petición que E5b): «Review de spec propuesta: un revisor, lente dominio — señales: contrato público, reglas de visibilidad/permiso»; revisor despachado, **8 hallazgos, todos aceptados**; la spec declara cuatro prohibiciones explícitas para `soporte` (no aprueba reembolsos, no ve datos de pago, no cancela, no ve pedidos propios como cliente), el alcance de datos que sí ve (pedido y contacto, no pago) y el alcance de pedidos (todos, sin acotar por ticket). 0,96 $. El baseline (E5d, 0,64 $) declaró el complemento en una línea y clasificó la task como lite. La señal no enseña a preguntar por el complemento —el baseline ya lo hace— sino que hace que exista un revisor que lo exija completo. Se conserva como criterio de la rúbrica con esa lectura, y con la excepción al Art. I anotada en el walkthrough.
+
 ## Anotaciones de método
 
 - **`--add-dir <copia limpia>`** es parte del método headless desde ahora: sin él, el sujeto no lee los `references/` del plugin ni ejecuta sus scripts (E1 y E4b del RED).

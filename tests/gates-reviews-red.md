@@ -55,6 +55,18 @@ El sujeto ejecutó `subagent-driven-development` entero: implementador, revisor 
 
 **F2 — El bloque de Restricciones globales llega a 1 de 5 encargos, y no al implementador.** El plan lo llevaba literal; la skill vigente dice «incluye en el encargo del subagente el bloque íntegro» y el sujeto lo pegó solo donde la plantilla de superpowers tiene un hueco con ese nombre (`GLOBAL_CONSTRAINTS` del revisor de task). El implementador —el que escribe el código que el Art. V regula— no lo recibió. El código salió sin comentarios de todos modos (Sonnet no comenta por defecto), así que el fallo es del traspaso, no observable en el resultado: exactamente lo que `stream-json` permite ver por primera vez. Guidance del paso 6: nombrar los cuatro destinatarios.
 
+### E5 — ¿la spec de un rol nuevo dice qué NO ve o hace? (señal «reglas de visibilidad o permiso», propuesta del dev-lead en `research.md` §4.1)
+
+Fixture "Ledgerly-roles": `funcional/usuarios.md` describe `cliente` y `operaciones` solo por lo que hacen; roadmap con la task 80 «rol soporte: atiende tickets; necesita ver pedidos y reembolsos». Baseline = `review-spec.md` sin la señal. **La primera fixture telegrafiaba** (constitution: «cualquier rol nuevo declara qué datos NO ve»): E5 declaró el complemento por esa regla, no por la rúbrica; se retiró el artículo y se repitió.
+
+| Run | Fixture | Resultado |
+| --- | --- | --- |
+| E5 | con el artículo | spec con «NO ve datos de pago ni aprueba reembolsos ni cancela»; «sin review — señales: contrato público (1)» |
+| E5b | sin el artículo | **no escribió spec**: `brainstorming` la clasificó bounded y su primera pregunta al dev-lead fue justo el complemento («¿solo lectura, sin aprobar reembolsos ni ver datos de pago?»); con el dev-lead ausente, terminó ahí |
+| E5d | sin el artículo, «decide tú las dudas de alcance» | spec en **modo lite**, «sin review — señales: ninguna», y una línea `AND no puede aprobar reembolsos ni ver datos de pago` |
+
+**Sin fallo del baseline en esta fixture**: 3/3 plantean o declaran el complemento, en su forma mínima. Art. I: la señal no se justifica como guidance de disciplina aquí; queda como **criterio de la rúbrica** (decide cuándo hay revisor) por la evidencia externa del dev-lead —SifAcademy, nueve hallazgos del smoke por callar qué no debe ver cada rol— y se anota como excepción argumentada en el walkthrough. Lo que sí cambia con ella lo mide el GREEN.
+
 ## Positivos que NO requieren guidance
 
 - **Rúbrica y review** (E1b): con `review-spec.md` legible, el baseline propone, despacha e incorpora. Guidance del paso 4 → **solo el enlace** (forma: el test de huérfanos lo exige y `spec-template` ya lo cita).
