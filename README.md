@@ -41,7 +41,7 @@ npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 | `sdd-end-release` | Cierre de release: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario |
 | `sdd-consult` | Carril de consulta: preguntar/entender/planificar/estructurar con el contexto cargado, sin artefactos; grilling para estructurar, handoff anunciado a los carriles de trabajo |
 | `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
-| `sdd-templates` | Las 9 plantillas canónicas (spec, plan, tasks, walkthrough, patch, data-model, research, feedback, release-notes) |
+| `sdd-templates` | Las 11 plantillas canónicas (spec, plan, tasks, walkthrough, patch, data-model, research, feedback, release-notes, environments, funcional) y el script `Build-EstimationLog.ps1`, que `sdd-end-task` y `sdd-end-patch` ejecutan desde el kit para regenerar el estimation-log del proyecto |
 
 ## Dependencias
 

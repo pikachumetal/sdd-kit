@@ -21,6 +21,12 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [environments-template.md](templates/environments-template.md) | `environments.md` | Solo si el proyecto usa worktrees **y** su entorno necesita más que instalar dependencias (BD, puertos, servicios). Lo calca `init-*` por entrevista; `sdd-start-task` y `sdd-end-*` lo activan por predicado |
 | [funcional-template.md](templates/funcional-template.md) | `funcional/<capacidad>.md` | Verdad viva del comportamiento: la crea la spec que declara la capacidad, la fusiona `sdd-end-task` |
 
+## Scripts
+
+| Script | Uso |
+| --- | --- |
+| [scripts/Build-EstimationLog.ps1](scripts/Build-EstimationLog.ps1) | Regenera `estimation-log.md` desde los walkthroughs y patches (`walkthrough.md` §2, `patch.md` §5, `hotfix.md` legacy). Lo ejecutan `sdd-end-task` y `sdd-end-patch` desde el kit: `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`. No se copia al proyecto: una copia local es deriva, igual que con las plantillas. |
+
 Reglas al usarlas:
 
 - **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.

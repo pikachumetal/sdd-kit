@@ -20,8 +20,8 @@
 │   ├── sdd-end-release/SKILL.md
 │   ├── sdd-consult/SKILL.md
 │   ├── add-to-changelog/SKILL.md
-│   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única)
-├── tests/                       (evidencia RED/GREEN por skill)
+│   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única + scripts/Build-EstimationLog.ps1)
+├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1 y fixtures/ de los scripts)
 └── .docs/
     ├── flux/                    (documentos de flujo del equipo, en catalán)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)
@@ -42,7 +42,8 @@
 - `<skill>-red.md`: qué hizo el baseline sin la skill, con racionalizaciones citadas y positivos que no requieren guidance.
 - `<skill>-green.md`: mismos escenarios con la skill; veredicto contra cada fallo del RED. El GREEN también puede exhibir huecos de la PROPIA skill (una instrucción que contradice la constitution, un caso sin cubrir): el REFACTOR y su re-verificación se documentan en el mismo fichero.
 - `<skill>-ab.md`: campaña de no-regresión de un recorte (Art. I). Registra los cortes probados, los aceptados y **los descartados con su motivo** — el descarte es el dato caro: evita que la siguiente campaña repita el experimento.
-- Las fixtures son desechables y viven en el scratchpad de sesión — no se versionan; lo durable es la narrativa verificada.
+- Las fixtures de las campañas de skills son desechables y viven en el scratchpad de sesión — no se versionan; lo durable es la narrativa verificada.
+- `<script>.Tests.ps1`: tests Pester del código ejecutable del kit. Sus fixtures en `tests/fixtures/<tema>/` **sí se versionan**: son el contrato del formato que el script lee (líneas reales de walkthroughs y patches del kit y de Alybo).
 
 ## Relación con los proyectos consumidores
 
