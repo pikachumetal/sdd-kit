@@ -129,6 +129,20 @@ Describe 'Resolución de la carpeta de docs' {
     Get-Row $r.Text '20260915-100000-task-0013-lite' | Should -Be '| 2026-09-15 | 0013 | docs | 1 | 0.5 | 0.5 | 20260915-100000-task-0013-lite |'
   }
 
+  It 'corta la sección de tiempo en el siguiente encabezado' {
+    $r = Invoke-Build (Join-Path $script:Fixtures 'seccion')
+    Get-Row $r.Text '20260916-100000-task-0014-seccion' | Should -Be '| 2026-09-16 | 0014 | docs | 2 | 1 | 0.5 | 20260916-100000-task-0014-seccion |'
+  }
+
+  It 'escribe el singular con un solo artefacto con ratio' {
+    $r = Invoke-Build (Join-Path $script:Fixtures 'lite')
+    $r.Text | Should -Match '1 artefacto\)'
+  }
+
+  It 'falla con el mismo mensaje si -Root no existe' {
+    { & $script:Script -Root (Join-Path $TestDrive 'no-existe') -OutFile (Join-Path $TestDrive 'x.md') } | Should -Throw '*No se encuentra*'
+  }
+
   It 'falla con mensaje si no hay specs' {
     { & $script:Script -Root $TestDrive -OutFile (Join-Path $TestDrive 'x.md') } | Should -Throw '*No se encuentra*'
   }

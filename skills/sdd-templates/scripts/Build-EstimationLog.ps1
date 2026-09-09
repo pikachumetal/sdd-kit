@@ -176,11 +176,10 @@ function Test-ManualLog([string]$Path) {
   return ($firstLine -notmatch '^<!-- AUTO-GENERADO')
 }
 
-try {
-  $Root = (Resolve-Path -LiteralPath $Root).Path
-} catch {
+if (-not (Test-Path -LiteralPath $Root)) {
   throw "No se encuentra '.docs/sdd/specs' ni 'docs/sdd/specs' bajo '$Root'."
 }
+$Root = (Resolve-Path -LiteralPath $Root).Path
 $docsPath = Resolve-DocsPath $Root
 if ([string]::IsNullOrWhiteSpace($OutFile)) { $OutFile = Join-Path $docsPath 'estimation-log.md' }
 $OutFile = [System.IO.Path]::GetFullPath($OutFile, (Get-Location).Path)
