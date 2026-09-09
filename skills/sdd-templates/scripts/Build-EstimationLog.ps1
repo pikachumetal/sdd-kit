@@ -63,7 +63,7 @@ function Read-Walkthrough([string]$Path) {
 
 function Read-Patch([string]$Path, [string]$Type) {
   $content = Get-Content $Path -Raw
-  if ($content -notmatch 'Tiempo \(ligero\)') { return $null }
+  if ($content -notmatch '(?m)^#+\s*(?:\d+\.\s*)?Tiempo') { return $null }
   return [pscustomobject]@{
     Content  = $content
     Type     = $Type

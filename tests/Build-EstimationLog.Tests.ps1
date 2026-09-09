@@ -61,6 +61,10 @@ Describe 'Build-EstimationLog.ps1' {
     Get-Row $script:Result.Text '20260909-100000-hotfix-0007-sinfrontmatter' | Should -Be '| 2026-09-09 | 0007 | hotfix | 1 | 1 | 1 | 20260909-100000-hotfix-0007-sinfrontmatter |'
   }
 
+  It 'lee un patch cuya sección se titula solo Tiempo' {
+    Get-Row $script:Result.Text '20260910-100000-patch-0000-sinligero' | Should -Be '| 2026-09-10 | 0000 | patch | 1 | 0.5 | 0.5 | 20260910-100000-patch-0000-sinligero |'
+  }
+
   It 'escribe LF sin BOM' {
     $bytes = [System.IO.File]::ReadAllBytes($script:Result.Path)
     $tieneBom = ($bytes.Length -ge 3) -and ($bytes[0] -eq 0xEF) -and ($bytes[1] -eq 0xBB) -and ($bytes[2] -eq 0xBF)
@@ -69,13 +73,13 @@ Describe 'Build-EstimationLog.ps1' {
   }
 
   It 'calcula el factor global como mediana de los ratios' {
-    # Ratios: 0.5, 0.25, 0.6, 2, 1 → ordenados [0.25, 0.5, 0.6, 1, 2] → mediana 0.6, n = 5
-    $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 5 tareas\): \*\*0\.6\*\*'
+    # Ratios: 0.5, 0.25, 0.6, 2, 1, 0.5 → ordenados [0.25, 0.5, 0.5, 0.6, 1, 2] → mediana (0.5+0.6)/2 = 0.55, n = 6
+    $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 6 tareas\): \*\*0\.55\*\*'
   }
 
   It 'calcula la mediana por Tipo' {
     $script:Result.Text | Should -Match '(?m)^\| docs \| 2 \| 0\.38 \|$'
-    $script:Result.Text | Should -Match '(?m)^\| patch \| 1 \| 0\.6 \|$'
+    $script:Result.Text | Should -Match '(?m)^\| patch \| 2 \| 0\.55 \|$'
     $script:Result.Text | Should -Match '(?m)^\| hotfix \| 2 \| 1\.5 \|$'
   }
 
