@@ -25,6 +25,7 @@ created: <YYYY-MM-DD>
 - Esfuerzo real: <Zh> (aproximado si no hay medición exacta — nunca en blanco)
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <…>
+- Review de spec: <no | 1 revisor (dominio|técnica) | 2 revisores> · hallazgos <N>, aceptados <M>
 
 ## 3. Desviaciones del plan
 
@@ -39,6 +40,8 @@ created: <YYYY-MM-DD>
 ### 4.2 Smoke / tests
 
 > Distinguir siempre lo **verificado por el agente** (con evidencia) de lo **reportado por el usuario**.
+
+- Validado por el dev-lead: <fecha> · <qué probó> *(obligatorio: sin validación no hay cierre; si validó sobre lo reportado por el agente, dilo)*
 
 | # | Caso | Resultado |
 | --- | --- | --- |

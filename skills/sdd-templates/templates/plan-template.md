@@ -13,6 +13,12 @@ created: <YYYY-MM-DD>
 > (default del kit); una task va en línea solo si lo declara con motivo en su campo `Ejecución`.
 > Borra los bloques de ayuda (`>`) al redactar.
 
+## Decisiones que he tomado yo — valida estas
+
+> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué), **ejecución** (agente por defecto; en línea solo con motivo), **decisiones técnicas que la spec no fija**, **riesgos altos** y **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero).
+
+1. <decisión> — <por qué>
+
 **Goal**: <una frase con el objetivo de implementación>
 
 **Architecture**: <2-3 frases sobre el enfoque técnico y por qué>
@@ -25,7 +31,7 @@ created: <YYYY-MM-DD>
 
 > Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— más los artículos de la constitution que aplican. Una línea por restricción. Escribe "ninguna" si no hay.
 >
-> Incluye aquí la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto) y el **modo de ejecución** por defecto.
+> Incluye aquí la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto) y el **modo de ejecución** por defecto. Copia también, **literal**, el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código, clean code, umbrales): viaja en el encargo del implementador **y de cada revisor**.
 >
 > ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha debe entregársela — ver el paso de implementación de `sdd-start-task`.
 
