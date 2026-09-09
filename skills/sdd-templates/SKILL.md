@@ -5,6 +5,8 @@ description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walk
 
 # sdd-templates
 
+## Overview
+
 Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan carpeta `templates/` — al crear un artefacto se invoca esta skill y se calca la plantilla que toque. Una copia por proyecto sería deriva instantánea (la plantilla evoluciona en el kit y las copias se quedan atrás).
 
 | Plantilla | Artefacto | Cuándo |

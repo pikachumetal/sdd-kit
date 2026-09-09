@@ -58,6 +58,22 @@ El kit invoca **7 skills de superpowers**: `brainstorming`, `writing-plans`, `su
 
 `grilling` es opcional y solo la usa el carril consult, para tensar una dirección sin producir artefactos. Sin ella el carril sigue funcionando: el interrogatorio se hace igual, una pregunta cada vez y con recomendación, solo que sin la skill. Verificado con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), que es también la razón de que el kit no lleve guidance para ese caso.
 
+## Desarrollo del kit
+
+La suite valida la anatomía de las skills, los manifests y el script de estimación. Se ejecuta con Pester (≥ 5) en `pwsh` 7+:
+
+```powershell
+pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
+```
+
+El hook `.githooks/pre-commit` la ejecuta antes de cada commit y lo bloquea si falla. Se activa una vez por clon:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+`tests/Manifests.Tests.ps1` usa `claude plugin validate` si el CLI de Claude Code está en PATH; si no, esos tests se saltan.
+
 ## Convenciones
 
 - Los artefactos SDD viven en **`.docs/sdd/`** de cada proyecto (carpeta con punto: no es el proyecto, es su andamiaje); los de release (acta, release notes), en `.docs/sdd/releases/vX.Y.Z/`.

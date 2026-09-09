@@ -5,7 +5,7 @@ BeforeAll {
   function Invoke-Build([string]$Root) {
     $out = Join-Path $TestDrive ([guid]::NewGuid().ToString() + '.md')
     $warnings = @()
-    & $script:Script -Root $Root -OutFile $out -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
+    & $script:Script -Root $Root -OutFile $out -WarningVariable warnings -WarningAction SilentlyContinue 6>$null | Out-Null
     return [pscustomobject]@{ Text = Get-Content $out -Raw; Warnings = @($warnings | ForEach-Object { $_.Message }); Path = $out }
   }
 
@@ -131,7 +131,7 @@ Describe 'Resolución de la carpeta de docs' {
   It 'escribe por defecto en <docs>/estimation-log.md' {
     $root = Join-Path $TestDrive 'def'
     Copy-Item (Join-Path $script:Fixtures 'proyecto') $root -Recurse
-    & $script:Script -Root $root -WarningAction SilentlyContinue | Out-Null
+    & $script:Script -Root $root -WarningAction SilentlyContinue 6>$null | Out-Null
     Test-Path (Join-Path $root '.docs/sdd/estimation-log.md') | Should -BeTrue
   }
 
@@ -141,7 +141,7 @@ Describe 'Resolución de la carpeta de docs' {
     $logPath = Join-Path $root '.docs/sdd/estimation-log.md'
     [System.IO.File]::WriteAllText($logPath, "# Log manual`n", [System.Text.UTF8Encoding]::new($false))
     $warnings = @()
-    & $script:Script -Root $root -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
+    & $script:Script -Root $root -WarningVariable warnings -WarningAction SilentlyContinue 6>$null | Out-Null
     ($warnings | ForEach-Object { $_.Message }) -join ' ' | Should -Match 'mantenido a mano'
     (Get-Content $logPath -TotalCount 1) | Should -Match '^<!-- AUTO-GENERADO'
   }
@@ -151,9 +151,9 @@ Describe 'Resolución de la carpeta de docs' {
     Copy-Item (Join-Path $script:Fixtures 'proyecto') $root -Recurse
     $logPath = Join-Path $root '.docs/sdd/estimation-log.md'
     [System.IO.File]::WriteAllText($logPath, "# Log manual`n", [System.Text.UTF8Encoding]::new($false))
-    & $script:Script -Root $root -WarningAction SilentlyContinue | Out-Null
+    & $script:Script -Root $root -WarningAction SilentlyContinue 6>$null | Out-Null
     $warnings = @()
-    & $script:Script -Root $root -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
+    & $script:Script -Root $root -WarningVariable warnings -WarningAction SilentlyContinue 6>$null | Out-Null
     ($warnings | ForEach-Object { $_.Message }) -join ' ' | Should -Not -Match 'mantenido a mano'
   }
 }
