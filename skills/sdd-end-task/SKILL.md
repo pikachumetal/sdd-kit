@@ -13,7 +13,7 @@ El cierre de una task es una **Definition of Done**: un checklist que garantiza 
 
 ## Checklist de cierre (crea un todo por paso)
 
-0. **Pre-check de coherencia** — ¿la spec está aprobada (`status: approved`, aprobaciones firmadas)? Si no, SEÑÁLALO al usuario antes de continuar: cerrar sobre una spec en draft es una anomalía que debe aceptarse explícitamente y quedar anotada en el walkthrough.
+0. **Pre-check de coherencia** — ¿la spec está aprobada (`status: approved`, aprobaciones firmadas)? Si no, SEÑÁLALO al usuario antes de continuar: cerrar sobre una spec en draft es una anomalía que debe aceptarse explícitamente y quedar anotada en el walkthrough. ¿El usuario ha **validado el trabajo** — ha dicho **qué probó él y que funciona**? «Cierra la tarea», «está implementada» o una `review-final.md` limpia NO lo son: son la orden de cerrar. Si no hay validación, PARA antes de tocar nada: presenta qué hay, cómo probarlo y tu smoke, y pregunta qué ha probado. Con el usuario ausente, este checklist no arranca y la task queda EN ESPERA. Un «Validado por el dev-lead» en el walkthrough que el dev-lead no ha dado es una invención, no un registro.
    **Lee `mode:` en el frontmatter de `spec.md`** (sin campo = `full`). En modo `lite` no existen `plan.md` ni `tasks.md`: no los reclames y salta el paso 6. Todo lo demás del checklist se aplica igual — el modo abarata los artefactos de planificación, nunca la verificación.
 1. **`walkthrough.md`** — calcando `walkthrough-template.md` del skill `sdd-templates`. En la verificación, distingue siempre **verificado por ti** (con la evidencia) de **reportado por el usuario**. Sin verificación documentada no hay cierre.
 2. **Tiempo real** *(si existe `.docs/sdd/estimation.md`)* — estimado vs real en el walkthrough; nunca en
@@ -44,6 +44,7 @@ Este checklist NO aplica: el cierre ligero de un patch es `sdd-end-patch`.
 
 | Racionalización | Realidad |
 | --- | --- |
+| "El usuario me ha pedido cerrar: eso ya es validar" | Pedir el cierre es una orden, no una prueba. Validar es que diga qué probó y que funciona. Sin eso, el checklist no arranca; con el usuario ausente, la task espera. |
 | "Es una task lite, el cierre también va ligero" | Lite abarata la planificación, no la verificación. Smoke, walkthrough con tiempo real, changelog y roadmap siguen siendo obligatorios. Lo único que desaparece es lo que nunca existió: `plan.md` y `tasks.md`. |
 | "El usuario tiene prisa: walkthrough mínimo y listo" | El checklist entero cabe en minutos. Lo que se salta hoy es la deriva de docs de mañana. |
 | "El aprendizaje ya está en el walkthrough" | El walkthrough es un registro muerto para las próximas tareas; los docs vivos son constitution/architecture/tech-stack. |
