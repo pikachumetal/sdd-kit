@@ -124,6 +124,11 @@ Describe 'Resolución de la carpeta de docs' {
     $r.Text | Should -Match 'Con menos de 10 tareas con ratio la calibración es orientativa'
   }
 
+  It 'lee la estimación de un walkthrough lite (etiqueta con «de la spec»)' {
+    $r = Invoke-Build (Join-Path $script:Fixtures 'lite')
+    Get-Row $r.Text '20260915-100000-task-0013-lite' | Should -Be '| 2026-09-15 | 0013 | docs | 1 | 0.5 | 0.5 | 20260915-100000-task-0013-lite |'
+  }
+
   It 'falla con mensaje si no hay specs' {
     { & $script:Script -Root $TestDrive -OutFile (Join-Path $TestDrive 'x.md') } | Should -Throw '*No se encuentra*'
   }

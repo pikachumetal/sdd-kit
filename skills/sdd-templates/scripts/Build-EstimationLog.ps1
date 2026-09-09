@@ -59,7 +59,7 @@ function Read-Walkthrough([string]$Path) {
   $content = Get-Content $Path -Raw
   $section = Get-TimeSection $content '(?m)^#+.*estimado vs real'
   if ($null -eq $section) { return $null }
-  $estimateLabel = 'Estimaci[oó]n de implementaci[oó]n \(del plan\)|Estimaci[oó]n de implementaci[oó]n|Estimaci[oó]n'
+  $estimateLabel = 'Estimaci[oó]n de implementaci[oó]n(?: \([^)]*\))?|Estimaci[oó]n'
   $realLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real'
   return [pscustomobject]@{
     Content  = $content
