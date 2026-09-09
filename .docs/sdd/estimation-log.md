@@ -17,6 +17,7 @@
 | 2026-09-08 | 0000 | docs | 2 | 0.4 | 0.2 | 20260908-135025-task-0000-entorno-por-worktree |
 | 2026-09-08 | 0000 | docs | 1.5 | 0.5 | 0.33 | 20260908-150513-task-0000-spec-ligera-funcional |
 | 2026-09-09 | 0000 | infra/tooling | 1 | 1.1 | 1.1 | 20260909-065145-task-0000-estimation-log-script |
+| 2026-09-09 | 0000 | infra/tooling | — | 0.7 | — | 20260909-100606-task-0000-skills-validation |
 
 **Factor de calibración** (ratio mediano real/estimado, 11 artefactos): **0.33**
 

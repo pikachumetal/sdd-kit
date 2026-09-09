@@ -20,6 +20,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **sdd-templates** — `scripts/Build-EstimationLog.ps1`, primer código ejecutable del kit: regenera `estimation-log.md` desde walkthroughs, patches y hotfix legacy con parseo tolerante (negrita, `~`, coma decimal, rangos, extracción acotada a la sección de tiempo), factor global y mediana por Tipo, aviso ante esfuerzo real ilegible o log mantenido a mano; 26 tests Pester con fixtures versionadas en `tests/fixtures/`. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **Art. X** — calidad de código: sin comentarios que repitan el código, clean code, y la regla viaja literal en planes y encargos a subagentes. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **funcional/estimacion.md** — primera capacidad del kit fusionada por `sdd-end-task` con cinco requisitos `ADDED`. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
+- **tests/Skills.Tests.ps1, tests/Manifests.Tests.ps1, .githooks/pre-commit** — validación de la anatomía de las 11 skills contra el propio repo (name, description, H1, Overview, enlaces, `references/` sin huérfanos, sin `@`, lista de superpowers, índice de plantillas, manifests) más `claude plugin validate` en strict; el hook pre-commit bloquea el commit si la suite falla. → [ref](specs/20260909-100606-task-0000-skills-validation/)
 
 ### Changed
 
@@ -32,6 +33,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Convención `funcional/`** — `funcional.md` (declarado en siete sitios y escrito por ninguna skill) pasa a ser la carpeta `funcional/`, un fichero por capacidad; `sdd-start-task` presenta el gate de la spec empezando por las decisiones a validar; `plan-template` recibe riesgos y rollout. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
 - **sdd-end-task, sdd-end-patch** — el paso estimation-log ejecuta el script del kit por `<Base directory>/../sdd-templates/scripts/` en vez de buscar una copia en `.tools/sdd/` del proyecto; la fila a mano queda solo sin `pwsh` o sin el script (instalación parcial). RED 2/2 → GREEN 2/2. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **estimation-log.md del kit** — pasa de manual a generado por el script (dogfooding); `estimation.md`, `tech-stack.md`, `architecture.md` y README lo reflejan. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
+
+### Fixed
+
+- **sdd-templates, marketplace.json** — `## Overview` que faltaba en el índice de plantillas y `description` del marketplace (único aviso de `claude plugin validate --strict`); ambos destapados por la suite nueva. → [ref](specs/20260909-100606-task-0000-skills-validation/)
 
 ## [0.5.0] — 2026-09-02
 
