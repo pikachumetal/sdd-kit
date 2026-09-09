@@ -41,6 +41,44 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN existe `funcional/<capacidad>.md`
 - THEN la respuesta se ancla en ese fichero, no en la reconstrucción a partir de specs históricas
 
+### La spec propone su propio nivel de review por complejidad
+- GIVEN una spec en modo full recién redactada
+- WHEN el agente la presenta en el gate
+- THEN la primera línea de «Decisiones a validar» dice el nivel propuesto (sin review · un revisor con su lente · dos revisores) y las señales contadas que lo justifican
+- AND el usuario activa o rechaza; en modo lite no se propone
+
+### La review adversarial tensa la spec antes del gate
+- GIVEN un nivel de review activado por el usuario
+- WHEN el agente despacha el revisor con la spec, la constitution, la mission y las capacidades tocadas
+- THEN cada hallazgo aparece en «Decisiones a validar» como aceptado (con el cambio en la spec) o rechazado con motivo, antes de pedir la aprobación
+
+### El plan presenta primero las decisiones tomadas sin el usuario
+- GIVEN un plan en modo full
+- WHEN el agente lo presenta en el gate
+- THEN el primer bloque es «Decisiones que he tomado yo — valida estas» con modelo y effort por task, ejecución, decisiones técnicas fuera de la spec, riesgos altos y coste estimado
+- AND el resto del plan es para el ejecutor
+
+### El artículo de calidad de código viaja a implementadores y revisores
+- GIVEN un plan con Restricciones globales que copian el artículo de calidad de código de la constitution
+- WHEN se despacha un implementador, un revisor de task o el revisor final
+- THEN el encargo lleva ese bloque literal como primera sección
+
+### El trabajo se valida con el usuario antes de cerrar
+- GIVEN una task con la implementación terminada y la revisión final limpia
+- WHEN el agente va a cerrar
+- THEN antes de invocar `sdd-end-task` presenta qué hay, cómo probarlo y el smoke que ejecutó, y espera la validación explícita del usuario (que diga qué probó y que funciona; «cierra la tarea» no lo es)
+- AND si el usuario no responde, la task queda en espera con el smoke documentado; `sdd-end-task` no arranca sin esa validación y el walkthrough la registra separada de lo verificado por el agente
+
+### La review de dominio pregunta por el complemento de visibilidad
+- GIVEN una spec que introduce un rol, un estado o una condición de acceso
+- WHEN la lente dominio la revisa
+- THEN pide que la spec diga qué no ve y qué no puede hacer ese rol o estado, y la spec lo declara o lo rechaza con motivo
+
+### El walkthrough registra la review de spec
+- GIVEN una task cerrada
+- WHEN se escribe el bloque de tiempo del walkthrough
+- THEN lleva la línea «Review de spec: no | 1 revisor (lente) | 2 revisores · hallazgos N, aceptados M»
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -50,3 +88,10 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED Brownfield no vuelca `funcional/`
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — MODIFIED Los documentos de anclaje nombran `funcional/`
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La consulta lee la capacidad, no las specs
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La spec propone su propio nivel de review por complejidad
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La review adversarial tensa la spec antes del gate
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El plan presenta primero las decisiones tomadas sin el usuario
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El artículo de calidad de código viaja a implementadores y revisores
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El trabajo se valida con el usuario antes de cerrar
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La review de dominio pregunta por el complemento de visibilidad
+- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El walkthrough registra la review de spec
