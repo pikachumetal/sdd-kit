@@ -15,7 +15,10 @@ Este proyecto trabaja con **Spec-Driven Development**: la spec es la fuente de v
 
 ## ⛔ Gate 1 — Al invocar: cargar contexto y PARAR
 
-Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: primar el contexto SDD. Si el usuario aún no ha enunciado la tarea, tu único objetivo en este turno es **leer el contexto SDD y DETENERTE** hasta que la enuncie.
+Invocar esta skill NO significa "ejecuta toda la SDD ahora". Es el paso 0: primar el contexto SDD. Dos vías, según cómo llegue la invocación:
+
+- **Sola** (`/sdd-start-task` sin enunciado, o la skill disparada antes de que el usuario diga qué quiere): tu único objetivo en este turno es **leer el contexto SDD y DETENERTE** hasta que enuncie la tarea.
+- **Con enunciado** (`/sdd-start-task <tarea>`, o la tarea en el mismo mensaje que dispara la skill): leer el contexto SDD y **seguir** por el paso 2 (enrutado) sin parar a preguntar qué hacer — el enunciado ya está.
 
 **NO** explores el código de la feature (grep / `semble` / Read de la implementación). El contexto SDD son los **docs**, no el código — y aún no sabes cuál es la tarea.
 
