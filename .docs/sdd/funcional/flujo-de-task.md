@@ -79,6 +79,12 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN se escribe el bloque de tiempo del walkthrough
 - THEN lleva la línea «Review de spec: no | 1 revisor (lente) | 2 revisores · hallazgos N, aceptados M»
 
+### Los tests de la spec preceden al implementador
+- GIVEN una task cuya implementación se despacha a un subagente
+- WHEN el hilo principal prepara el despacho
+- THEN los tests que codifican los escenarios de la task existen y están commiteados antes del primer encargo, uno por THEN, en RED
+- AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -95,3 +101,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El trabajo se valida con el usuario antes de cerrar
 - 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La review de dominio pregunta por el complemento de visibilidad
 - 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El walkthrough registra la review de spec
+- 2026-09-09 — 20260909-173929-task-0000-tests-red-hilo — ADDED Los tests de la spec preceden al implementador
