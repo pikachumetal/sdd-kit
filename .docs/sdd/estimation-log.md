@@ -25,12 +25,13 @@
 | 2026-09-09 | 0000 | docs | 0.8 | 0.4 | 0.5 | 20260909-160248-task-0000-review-reforzada |
 | 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | 20260909-162118-task-0000-disparo-skills |
 | 2026-09-09 | 0000 | docs | 0.5 | 0.3 | 0.6 | 20260909-164438-task-0000-comentarios-sin-citas |
+| 2026-09-09 | 0000 | docs | 0.5 | 0.25 | 0.5 | 20260909-172400-task-0000-release-pequena |
 
-**Factor de calibración** (ratio mediano real/estimado, 17 artefactos): **0.5**
+**Factor de calibración** (ratio mediano real/estimado, 18 artefactos): **0.5**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
-| docs | 15 | 0.38 |
+| docs | 16 | 0.44 |
 | infra/tooling | 2 | 0.9 |
 
 > Ver `estimation.md`.
