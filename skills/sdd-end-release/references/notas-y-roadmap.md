@@ -12,6 +12,6 @@
 6. **Colapsar el roadmap** — ANTES de sustituir nada, enumera los pendientes vivos de la sección de la
    release y reubícalos (siguiente release / backlog); DESPUÉS colapsa la sección a resumen + enlaces
    (release notes · changelog · acta) **y la línea «smoke: <fecha> · <N> hallazgos»** del smoke de la
-   release (el patrón «release pequeña, smoke por tramo» se lee así sin abrir las actas: en los retos del
+   release (o «smoke: pendiente» si no se ejecutó: el número no se inventa) (el patrón «release pequeña, smoke por tramo» se lee así sin abrir las actas: en los retos del
    equipo, una release grande con smoke único dio 9 hallazgos; tres cortas, 3 · 0 · 0). Edición
    determinista: localizar sección exacta → sustituir.
