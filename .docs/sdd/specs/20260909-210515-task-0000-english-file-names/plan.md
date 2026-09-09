@@ -3,7 +3,7 @@ id: 20260909-210515-task-0000-english-file-names
 task: 0000
 title: Plan de implementación — Nombres de fichero en inglés
 spec: ./spec.md
-status: draft
+status: done
 created: 2026-09-09
 ---
 

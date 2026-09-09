@@ -1,4 +1,4 @@
-# Capacidad — flujo-de-task
+# Capacidad — task-flow
 
 Verdad viva del comportamiento observable del carril task del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una task. Cada requisito tiene un título estable: las specs lo citan literal en `MODIFIED (antes: …)`. Una capacidad es un sustantivo del dominio; esta la declaró la spec de la task `spec-ligera-funcional` en sus «Decisiones a validar» (decisión 6).
 
@@ -13,7 +13,7 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - GIVEN una spec que cambia comportamiento observable
 - WHEN se escribe su sección de delta
 - THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED (antes: …)` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
-- AND si la capacidad no existe en `funcional/`, su creación aparece en "Decisiones a validar"
+- AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
 - AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto); `sdd-end-task` sustituye o añade cada entrada por su nombre
 - AND la lente dominio reclama las entradas que falten y marca como Crítico una regla que contradiga la constitution
 
@@ -25,22 +25,22 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 ### El cierre fusiona el delta en la verdad viva
 - GIVEN una task cerrándose vía `sdd-end-task` con un delta en su spec
 - WHEN se ejecuta el paso de fusión
-- THEN cada `ADDED` se añade a `funcional/<capacidad>.md`, cada `MODIFIED` sustituye el requisito anterior, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
+- THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye el requisito anterior, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 
-### Brownfield no vuelca `funcional/`
+### Brownfield no vuelca `capabilities/`
 - GIVEN un proyecto existente inicializado con `sdd-init-brownfield`
 - WHEN se generan los documentos de anclaje
-- THEN `funcional/` no se crea ni se rellena: aparece con la primera task que toque una capacidad
+- THEN `capabilities/` no se crea ni se rellena: aparece con la primera task que toque una capacidad
 
-### Los documentos de anclaje nombran `funcional/`
-- GIVEN cualquier skill o plantilla que hoy cite `funcional.md`
+### Los documentos de anclaje nombran `capabilities/`
+- GIVEN cualquier skill o plantilla que cite la carpeta de capacidades
 - WHEN se lee el contexto SDD
-- THEN la referencia es a la carpeta `funcional/` y a sus capacidades
+- THEN la referencia es a la carpeta `capabilities/` y a sus capacidades
 
 ### La consulta lee la capacidad, no las specs
 - GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-consult`
-- WHEN existe `funcional/<capacidad>.md`
+- WHEN existe `capabilities/<capability>.md`
 - THEN la respuesta se ancla en ese fichero, no en la reconstrucción a partir de specs históricas
 
 ### La spec propone su propio nivel de review por complejidad
@@ -87,6 +87,10 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - THEN los tests que codifican los escenarios de la task existen y están commiteados antes del primer encargo, uno por THEN, en RED
 - AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica
 
+**Reglas de la capacidad**
+- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
+- **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -105,3 +109,8 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El walkthrough registra la review de spec
 - 2026-09-09 — 20260909-173929-task-0000-tests-red-hilo — ADDED Los tests de la spec preceden al implementador
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — MODIFIED El delta declara el comportamiento por capacidad
+- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED Los documentos de anclaje nombran `capabilities/`
+- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED Brownfield no vuelca `capabilities/`
+- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El cierre fusiona el delta en la verdad viva
+- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El delta declara el comportamiento por capacidad
+- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED La consulta lee la capacidad, no las specs

@@ -3,13 +3,13 @@ id: 20260909-210515-task-0000-english-file-names
 task: 0000
 title: Nombres de fichero en inglés — funcional/ pasa a capabilities/
 mode: full
-status: draft
+status: done
 created: 2026-09-09
 author: Àngel Delgado
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: Àngel Delgado
+    approved_at: 2026-09-09
 ---
 
 # Spec — Nombres de fichero en inglés: `funcional/` pasa a `capabilities/`
@@ -144,4 +144,4 @@ Qué ficheros, en qué orden, modelo y effort por task y coste estimado son cont
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-09 | aprobada en conversación (frontmatter corregido en el cierre) |

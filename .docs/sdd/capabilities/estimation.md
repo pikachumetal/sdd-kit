@@ -1,4 +1,4 @@
-# Capacidad — estimacion
+# Capacidad — estimation
 
 Verdad viva del comportamiento observable del módulo de estimación del kit: cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién lo genera. La declaró la spec de la task `estimation-log-script` (T7) en sus «Decisiones a validar» (decisión 1). El método de estimación en sí (factor de calibración, reference-class) vive en `estimation.md`.
 

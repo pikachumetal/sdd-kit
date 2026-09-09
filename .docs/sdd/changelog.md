@@ -4,6 +4,16 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Changed
+
+- **Convención de nombres (rompe para consumidores)** — los nombres que el kit fija a los proyectos pasan a inglés (Art. III): `funcional/` → `capabilities/`, `funcional/legado.md` → `capabilities/legacy.md`, el placeholder `<capacidad>` → `<capability>`, `changelog-cliente.md` → `client-changelog.md`; las plantillas `funcional-template.md` → `capability-template.md` y `changelog-cliente-template.md` → `client-changelog-template.md`. → [ref](specs/20260909-210515-task-0000-english-file-names/)
+- **`migrations/v1.0.0.md`** — corregido en sitio: el `funcional.md` heredado aterriza en `capabilities/legacy.md`. → [ref](specs/20260909-210515-task-0000-english-file-names/)
+
+### Added
+
+- **`migrations/v1.1.0.md`** — migración idempotente por predicado para proyectos que ya declaraban `1.0.0`: sin ella la corrección de `v1.0.0.md` no les llegaría nunca, porque el procedimiento solo aplica versiones posteriores a la declarada. → [ref](specs/20260909-210515-task-0000-english-file-names/)
+- **`tests/NamingConvention.Tests.ps1`** — barrido por lista blanca de rutas vivas que falla si un nombre en castellano vuelve a `skills/`, `README.md` o el anclaje vivo; el histórico sellado, el contenido de `capabilities/` y `migrations/` quedan fuera por diseño. → [ref](specs/20260909-210515-task-0000-english-file-names/)
+
 ## [1.0.0] - 2026-09-09
 
 Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por decisión del dev-lead en el cierre. Los artefactos históricos conservan el nombre v0.6.0. [Acta](releases/v1.0.0/feedback.md) · [release notes](releases/v1.0.0/release-notes.md).

@@ -23,6 +23,8 @@ BeforeAll {
   # El historico sellado (specs/, releases/, changelog.md, roadmap.md) conserva los nombres
   # antiguos a proposito: describe lo que se entrego. Por eso el barrido va por lista blanca
   # de rutas vivas y no por exclusiones, que dejarian el test imposible de poner en verde.
+  # estimation-log.md tampoco entra: lo genera un script a partir de los nombres de carpeta
+  # de las specs historicas, asi que arrastra los nombres antiguos por construccion.
   $script:LivePaths = @(
     'README.md'
     '.docs/sdd/mission.md'
@@ -30,7 +32,6 @@ BeforeAll {
     '.docs/sdd/architecture.md'
     '.docs/sdd/tech-stack.md'
     '.docs/sdd/estimation.md'
-    '.docs/sdd/estimation-log.md'
   )
 
   # El contenido de capabilities/ queda fuera del barrido: son requisitos vivos que solo
