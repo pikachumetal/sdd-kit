@@ -31,7 +31,7 @@ created: <YYYY-MM-DD>
 
 > Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— más los artículos de la constitution que aplican. Una línea por restricción. Escribe "ninguna" si no hay.
 >
-> Incluye aquí la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto) y el **modo de ejecución** por defecto. Copia también, **literal**, el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código, clean code, umbrales): viaja en el encargo del implementador **y de cada revisor**.
+> Incluye aquí la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto) y el **modo de ejecución** por defecto. Copia también, **literal**, el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código ni que citen documentos —constitution, spec, task, funcional—, clean code, umbrales): viaja en el encargo del implementador **y de cada revisor**. Si la constitution del proyecto no tiene ese artículo, escribe aquí las dos reglas de comentarios igualmente.
 >
 > ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha debe entregársela — ver el paso de implementación de `sdd-start-task`.
 
