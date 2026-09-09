@@ -24,20 +24,22 @@ function Resolve-DocsPath([string]$ProjectRoot) {
 }
 
 function Get-FieldText([string]$Content, [string]$LabelPattern) {
-  # Texto tras "- Etiqueta:" (admite la etiqueta en negrita). $null si no hay línea.
   if ($Content -match "(?m)^\s*-\s*\**(?:$LabelPattern)\**\s*:\s*(.*)$") { return $Matches[1] }
   return $null
 }
 
+function Get-TimeSection([string]$Content, [string]$HeadingPattern) {
+  if ($Content -match "$HeadingPattern[\s\S]*?(?=`n#+\s|\z)") { return $Matches[0] }
+  return $null
+}
+
 function ConvertTo-Hours([string]$Text) {
-  # Primer número del texto; tolera '**', '~', coma decimal y unidad. '—' o prosa → $null.
   if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
   if ($Text -match '^[\s*~]*(\d+(?:[.,]\d+)?)') { return [double]($Matches[1] -replace ',', '.') }
   return $null
 }
 
 function Get-FirstToken([string]$Text, [string]$Fallback) {
-  # Normaliza el Tipo: primer token alfanumérico ("docs (x) + infra" → "docs").
   if ($Text -match '^\**\s*([A-Za-z][\w/-]*)') { return $Matches[1] }
   return $Fallback
 }
@@ -48,37 +50,49 @@ function Get-TaskId([string]$Content, [string]$Folder) {
   return '—'
 }
 
+function Get-FolderDate([string]$FolderName) {
+  if ($FolderName -match '^(\d{4})(\d{2})(\d{2})-\d{6}-') { return "$($Matches[1])-$($Matches[2])-$($Matches[3])" }
+  return '—'
+}
+
 function Read-Walkthrough([string]$Path) {
   $content = Get-Content $Path -Raw
-  if ($content -notmatch 'estimado vs real') { return $null }
+  $section = Get-TimeSection $content '(?m)^#+.*estimado vs real'
+  if ($null -eq $section) { return $null }
   $estimateLabel = 'Estimaci[oó]n de implementaci[oó]n \(del plan\)|Estimaci[oó]n de implementaci[oó]n|Estimaci[oó]n'
   $realLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real'
   return [pscustomobject]@{
     Content  = $content
-    Type     = Get-FirstToken (Get-FieldText $content 'Tipo') '—'
-    Estimate = ConvertTo-Hours (Get-FieldText $content $estimateLabel)
-    Real     = ConvertTo-Hours (Get-FieldText $content $realLabel)
+    Type     = Get-FirstToken (Get-FieldText $section 'Tipo') '—'
+    Estimate = ConvertTo-Hours (Get-FieldText $section $estimateLabel)
+    Real     = ConvertTo-Hours (Get-FieldText $section $realLabel)
   }
 }
 
 function Read-Patch([string]$Path, [string]$Type) {
   $content = Get-Content $Path -Raw
-  if ($content -notmatch '(?m)^#+\s*(?:\d+\.\s*)?Tiempo') { return $null }
+  $section = Get-TimeSection $content '(?m)^#+\s*(?:\d+\.\s*)?Tiempo\b'
+  if ($null -eq $section) { return $null }
   return [pscustomobject]@{
     Content  = $content
     Type     = $Type
-    Estimate = ConvertTo-Hours (Get-FieldText $content 'Estimaci[oó]n')
-    Real     = ConvertTo-Hours (Get-FieldText $content 'Real')
+    Estimate = ConvertTo-Hours (Get-FieldText $section 'Estimaci[oó]n')
+    Real     = ConvertTo-Hours (Get-FieldText $section 'Real')
   }
 }
 
 function Read-Artifact([System.IO.DirectoryInfo]$Dir) {
-  # Prioridad: walkthrough (task) > patch > hotfix (legacy). $null si la carpeta no tiene ninguno.
   $walkthrough = Join-Path $Dir.FullName 'walkthrough.md'
   $patch = Join-Path $Dir.FullName 'patch.md'
   $hotfix = Join-Path $Dir.FullName 'hotfix.md'
-  if (Test-Path $walkthrough) { return Read-Walkthrough $walkthrough }
-  if (Test-Path $patch) { return Read-Patch $patch 'patch' }
+  if (Test-Path $walkthrough) {
+    $artifact = Read-Walkthrough $walkthrough
+    if ($null -ne $artifact) { return $artifact }
+  }
+  if (Test-Path $patch) {
+    $artifact = Read-Patch $patch 'patch'
+    if ($null -ne $artifact) { return $artifact }
+  }
   if (Test-Path $hotfix) { return Read-Patch $hotfix 'hotfix' }
   return $null
 }
@@ -97,10 +111,9 @@ function Get-Median([double[]]$Values) {
 }
 
 function New-Row([System.IO.DirectoryInfo]$Dir, [pscustomobject]$Artifact) {
-  $date = $Dir.Name.Substring(0, 8)
   $ratio = if ($null -ne $Artifact.Estimate -and $Artifact.Estimate -gt 0) { $Artifact.Real / $Artifact.Estimate } else { $null }
   return [pscustomobject]@{
-    Date     = "$($date.Substring(0,4))-$($date.Substring(4,2))-$($date.Substring(6,2))"
+    Date     = Get-FolderDate $Dir.Name
     Task     = Get-TaskId $Artifact.Content $Dir.Name
     Type     = $Artifact.Type
     Estimate = $Artifact.Estimate
@@ -127,9 +140,10 @@ function Get-Rows([string]$SpecsPath) {
 function Add-CalibrationSection([System.Text.StringBuilder]$Builder, [object[]]$Rows) {
   $withRatio = @($Rows | Where-Object { $null -ne $_.Ratio })
   if ($withRatio.Count -eq 0) { return }
-  $global = Get-Median ($withRatio | ForEach-Object { [double]$_.Ratio })
+  $globalMedian = Get-Median ($withRatio | ForEach-Object { [double]$_.Ratio })
+  $unit = if ($withRatio.Count -eq 1) { 'artefacto' } else { 'artefactos' }
   [void]$Builder.AppendLine('')
-  [void]$Builder.AppendLine("**Factor de calibración** (ratio mediano real/estimado, $($withRatio.Count) tareas): **$(Format-Number $global)**")
+  [void]$Builder.AppendLine("**Factor de calibración** (ratio mediano real/estimado, $($withRatio.Count) $unit): **$(Format-Number $globalMedian)**")
   [void]$Builder.AppendLine('')
   [void]$Builder.AppendLine('| Tipo | n | Mediana |')
   [void]$Builder.AppendLine('| --- | --- | --- |')
@@ -156,11 +170,26 @@ function Format-Log([object[]]$Rows) {
   return $builder.ToString()
 }
 
+function Test-ManualLog([string]$Path) {
+  if (-not (Test-Path -LiteralPath $Path)) { return $false }
+  $firstLine = Get-Content -LiteralPath $Path -TotalCount 1
+  return ($firstLine -notmatch '^<!-- AUTO-GENERADO')
+}
+
+try {
+  $Root = (Resolve-Path -LiteralPath $Root).Path
+} catch {
+  throw "No se encuentra '.docs/sdd/specs' ni 'docs/sdd/specs' bajo '$Root'."
+}
 $docsPath = Resolve-DocsPath $Root
 if ([string]::IsNullOrWhiteSpace($OutFile)) { $OutFile = Join-Path $docsPath 'estimation-log.md' }
+$OutFile = [System.IO.Path]::GetFullPath($OutFile, (Get-Location).Path)
 $rows = Get-Rows (Join-Path $docsPath 'specs')
 # Salida con saltos de línea LF exclusivamente (AppendLine usa CRLF en Windows).
 $text = (Format-Log $rows) -replace "`r`n", "`n"
+if (Test-ManualLog $OutFile) {
+  Write-Warning "El fichero $OutFile no es un log generado (sin cabecera AUTO-GENERADO): se sobreescribe un log mantenido a mano. Revisa el diff antes de commitear."
+}
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [System.IO.File]::WriteAllText($OutFile, $text, $utf8NoBom)
 Write-Host "Generado $OutFile con $($rows.Count) filas."
