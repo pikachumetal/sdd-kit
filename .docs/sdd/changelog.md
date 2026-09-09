@@ -37,6 +37,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Fixed
 
 - **sdd-templates, marketplace.json** — `## Overview` que faltaba en el índice de plantillas y `description` del marketplace (único aviso de `claude plugin validate --strict`); ambos destapados por la suite nueva. → [ref](specs/20260909-100606-task-0000-skills-validation/)
+- **Build-EstimationLog.ps1** — la etiqueta «Estimación de implementación» admite cualquier paréntesis («(de la spec)» en walkthroughs lite), no solo «(del plan)»; la fila de T8 salía con estimado vacío. → [ref](specs/20260909-103518-patch-0000-estimacion-lite-label/)
 
 ## [0.5.0] — 2026-09-02
 
