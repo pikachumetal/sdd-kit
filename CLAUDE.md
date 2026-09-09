@@ -5,7 +5,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 ## Dónde está cada cosa
 
 - `.docs/sdd/mission.md` — por qué existe el kit, usuarios, y el glosario del equipo (documentos de anclaje, carriles, predicados, walkthrough).
-- `.docs/sdd/constitution.md` — los 8 artículos no negociables: ley de hierro de skills, la forma sigue al fallo, idioma, convenciones que el kit fija a los proyectos, versionado, commits, dogfooding, fuente única de plantillas.
+- `.docs/sdd/constitution.md` — los 10 artículos no negociables: ley de hierro de skills, la forma sigue al fallo, idioma, convenciones que el kit fija a los proyectos, versionado y migraciones, commits, dogfooding, fuente única de plantillas, relación con superpowers, calidad de código.
 - `.docs/sdd/tech-stack.md` — distribución dual (plugin de Claude Code + `npx skills add`), dependencia de superpowers, cómo se testean las skills.
 - `.docs/sdd/architecture.md` — estructura del repo, anatomía de una skill y de su evidencia de test.
 - `.docs/sdd/roadmap.md` — próximo, backlog, deuda técnica inventariada y decisiones pendientes.
