@@ -21,6 +21,9 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Art. X** — calidad de código: sin comentarios que repitan el código, clean code, y la regla viaja literal en planes y encargos a subagentes. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **funcional/estimacion.md** — primera capacidad del kit fusionada por `sdd-end-task` con cinco requisitos `ADDED`. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 - **tests/Skills.Tests.ps1, tests/Manifests.Tests.ps1, .githooks/pre-commit** — validación de la anatomía de las 11 skills contra el propio repo (name, description, H1, Overview, enlaces, `references/` sin huérfanos, sin `@`, lista de superpowers, índice de plantillas, manifests) más `claude plugin validate` en strict; el hook pre-commit bloquea el commit si la suite falla. → [ref](specs/20260909-100606-task-0000-skills-validation/)
+- **sdd-init-brownfield** — migración de proyectos consumidores: `references/migrations/vX.Y.Z.md` por versión con cambio estructural (v0.2.0 plantillas, v0.4.0 hotfix→patch, v0.6.0 `funcional/`, marcador, script de estimación, entorno) con pasos-predicado, gates y verificación, más el procedimiento en `migrations/README.md`; predicado «¿onboarding o migración?» (si existe `.docs/sdd/`, migrar y nada más). RED 1/3 aplicaba el onboarding encima → GREEN 0/4. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
+- **sdd-kit.json** — marcador de versión del kit en `.docs/sdd/` (`version`, `channel`, `updated`), escrito por `init-*` y por la migración; el propio kit lo lleva. Art. V exige el fichero de migración en toda release con cambio estructural. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
+- **funcional/migracion.md** — capacidad nueva fusionada con cinco `ADDED`. → [ref](specs/20260909-105650-task-0000-migracion-consumidores/)
 
 ### Changed
 

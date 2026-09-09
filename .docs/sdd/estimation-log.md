@@ -19,12 +19,13 @@
 | 2026-09-09 | 0000 | infra/tooling | 1 | 1.1 | 1.1 | 20260909-065145-task-0000-estimation-log-script |
 | 2026-09-09 | 0000 | infra/tooling | 1 | 0.7 | 0.7 | 20260909-100606-task-0000-skills-validation |
 | 2026-09-09 | 0000 | patch | — | 0.15 | — | 20260909-103518-patch-0000-estimacion-lite-label |
+| 2026-09-09 | 0000 | docs | 1.5 | 0.5 | 0.33 | 20260909-105650-task-0000-migracion-consumidores |
 
-**Factor de calibración** (ratio mediano real/estimado, 12 artefactos): **0.35**
+**Factor de calibración** (ratio mediano real/estimado, 13 artefactos): **0.33**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
-| docs | 10 | 0.33 |
+| docs | 11 | 0.33 |
 | infra/tooling | 2 | 0.9 |
 
 > Ver `estimation.md`.
