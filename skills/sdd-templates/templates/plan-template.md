@@ -111,6 +111,10 @@ Endpoints, shape request/response.
 
 **Modelo**: <modelo **y** effort, los dos explícitos — declarar solo el modelo es una trampa: el effort cae al defecto de ese modelo, no al tuyo. Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
 **Ejecución**: <omitir si va por agente, que es el default; `en línea` + motivo si esta task se desvía>
+**Tests RED**: <hilo principal · `ruta/del/test`, escritos y commiteados antes de despachar; `en línea`: TDD del propio hilo>
+
+> Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
+
 
 **Ficheros**: crear/modificar `path/...`
 
