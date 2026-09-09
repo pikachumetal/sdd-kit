@@ -71,10 +71,11 @@ Unificar las dos copias existentes en un script con la lógica de Alybo (la más
 - THEN aparece el factor global (mediana real/estimado, n) y una tabla Tipo | n | mediana
 - AND con menos de 10 filas con ratio el log avisa de que la calibración es orientativa
 
-**ADDED — Un bloque presente sin métricas avisa**
-- GIVEN un walkthrough con sección de tiempo cuyo estimado o real no se puede leer
+**ADDED — Un bloque presente sin esfuerzo real avisa**
+- GIVEN un walkthrough o patch con sección de tiempo cuyo esfuerzo real no se puede leer
 - WHEN se genera el log
-- THEN el script emite un warning con la carpeta afectada y no la descarta en silencio
+- THEN el script emite un warning con la carpeta afectada y excluye la fila, en vez de descartarla en silencio
+- AND un estimado ilegible no avisa: la fila entra con estimado vacío (requisito anterior)
 
 ## Aprobaciones
 

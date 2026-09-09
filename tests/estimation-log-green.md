@@ -33,6 +33,10 @@ En `green-e1` el patch `null-date` seguía con placeholders en §5. El script av
 
 Ninguno observado en 2/2. No medido: el aviso ante una copia antigua en `.tools/sdd/` (la fixture no la tenía; E1 lo comprobó de forma espontánea, E2 no lo mencionó). Se deja anotado como escenario pendiente para la próxima campaña que toque estas skills.
 
+## Añadido tras la revisión final de rama (no medido)
+
+La revisión de rama señaló que el fallback «solo sin `pwsh`» no cubría la instalación parcial de una sola skill por `npx skills add --skill sdd-end-task`, donde no existe el hermano `../sdd-templates/`. Las dos frases reciben la cláusula «o el script no está en esa ruta (instalación parcial de una sola skill) … y dilo en el informe». Es un camino de error, no la conducta principal, y no tiene escenario propio: queda anotado como **no medido**. Verificación empírica del canal CLI (hallazgo 4a): `npx -y skills add D:\code\git\sdd-kit --skill sdd-templates -a claude-code` en un directorio temporal instala `.claude/skills/sdd-templates/scripts/Build-EstimationLog.ps1` — el CLI copia la carpeta entera, `.ps1` incluido (2026-09-09).
+
 ## Anotación de método
 
 El GREEN corrió con el script en el estado del commit `809a8da` (antes de la ronda de arreglos de la revisión de Task 1: gate de sección en `patch.md`, fallback de id para `hotfix`). Ninguno de los dos arreglos afecta a lo medido aquí: los dos artefactos de la fixture tienen la sección de tiempo y frontmatter `task:`.
