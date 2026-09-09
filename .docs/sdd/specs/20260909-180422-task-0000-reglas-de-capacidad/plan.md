@@ -3,7 +3,7 @@ id: 20260909-180422-task-0000-reglas-de-capacidad
 task: 0000
 title: Plan de implementación — Las cinco reglas que el agente decide al azar si nadie las escribe (T17)
 spec: ./spec.md
-status: draft
+status: approved
 created: 2026-09-09
 ---
 

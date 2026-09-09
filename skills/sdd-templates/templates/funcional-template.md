@@ -24,6 +24,18 @@
 - WHEN <acción>
 - THEN <resultado observable>
 
+## Reglas de la capacidad *(opcional; presente obliga a decidir)*
+
+> Cinco entradas fijas, por nombre; «no aplica» es respuesta válida. El nombre es la clave:
+> `sdd-end-task` sustituye o añade cada entrada por su nombre cuando una spec la cambia. Sin
+> ellas, el agente decide cada una al azar y distinto en cada ejecución.
+
+- **Dónde viven los datos**: <fichero, tabla, memoria, almacenamiento del cliente… | no aplica>
+- **Idioma de los nombres**: <API, claves, mensajes | no aplica>
+- **Límites**: <topes, profundidades, tamaños | no aplica>
+- **Avisos**: <qué se avisa al usuario y cuándo | no aplica>
+- **Regla ante conflicto**: <qué manda cuando dos vías dan el mismo dato | no aplica>
+
 ## Historial *(opcional)*
 
 > Una línea por fusión de `sdd-end-task`, más reciente arriba. Útil para auditar cómo llegó la
