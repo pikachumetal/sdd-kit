@@ -27,12 +27,13 @@
 | 2026-09-09 | 0000 | docs | 0.5 | 0.3 | 0.6 | 20260909-164438-task-0000-comentarios-sin-citas |
 | 2026-09-09 | 0000 | docs | 0.5 | 0.25 | 0.5 | 20260909-172400-task-0000-release-pequena |
 | 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | 20260909-173929-task-0000-tests-red-hilo |
+| 2026-09-09 | 0000 | docs | 1 | 0.9 | 0.9 | 20260909-180422-task-0000-reglas-de-capacidad |
 
-**Factor de calibración** (ratio mediano real/estimado, 19 artefactos): **0.5**
+**Factor de calibración** (ratio mediano real/estimado, 20 artefactos): **0.53**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
-| docs | 17 | 0.5 |
+| docs | 18 | 0.5 |
 | infra/tooling | 2 | 0.9 |
 
 > Ver `estimation.md`.
