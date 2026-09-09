@@ -9,7 +9,7 @@ Registro vivo. Modelo y effort según el plan; `Agent` no expone effort, así qu
 
 | # | Task | Ejecución | Modelo | Estado | Commit |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Script + tests Pester + fixtures | agente | Sonnet (effort por defecto del harness) | 🔄 despachada | |
-| 2 | RED: cierre de task y de patch con la guidance vigente | en línea (sujetos Sonnet/medium vía Workflow) | — | ⏳ | |
-| 3 | Guidance en las skills de cierre + GREEN | en línea | — | ⏳ | |
-| 4 | Índices y documentos de anclaje | en línea | — | ⏳ | |
+| 1 | Script + tests Pester + fixtures | agente | Sonnet (effort por defecto del harness) | ✅ 26/26 tras 2 rondas de task + 1 de rama | `809a8da`, `dea8273`, `c17b973`, `976a549` |
+| 2 | RED: cierre de task y de patch con la guidance vigente | en línea (sujetos Sonnet, `Agent` ×2 en paralelo) | — | ✅ 2/2 exhiben F1 | `a980518` |
+| 3 | Guidance en las skills de cierre + GREEN | en línea | — | ✅ GREEN 2/2 | `74b4eae` |
+| 4 | Índices y documentos de anclaje | en línea | — | ✅ (Pester 14/14 en su momento; 26/26 al final) | `cdad2bc` |

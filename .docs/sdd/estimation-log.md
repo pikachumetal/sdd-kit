@@ -1,19 +1,28 @@
-# Estimation log — sdd-kit
+<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) — no editar a mano. Regenerar: pwsh -NoProfile -File <sdd-templates>/scripts/Build-EstimationLog.ps1 -Root <proyecto> -->
+# Estimation log (estimado vs real)
 
-Registro estimado-vs-real por tarea. Se añade una fila al cerrar cada task/patch (paso del checklist de cierre).
+| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Carpeta |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-09 | 0000 | docs | — | 3 | — | 20260709-073000-task-0000-flux-documents |
+| 2026-07-09 | 0000 | infra/tooling | — | 4.5 | — | 20260709-100000-task-0000-sdd-kit-v010 |
+| 2026-07-21 | 0000 | docs | 4 | 1.5 | 0.38 | 20260721-082038-task-0000-release-skills |
+| 2026-07-21 | 0000 | docs | 2.5 | 1.4 | 0.56 | 20260721-114445-task-0000-consult-skill |
+| 2026-07-22 | 0000 | docs | 2 | 2.1 | 1.05 | 20260722-103807-task-0000-carril-rama-worktree |
+| 2026-09-02 | 0000 | docs | 3 | 0.5 | 0.17 | 20260902-084856-task-0000-modo-lite |
+| 2026-09-02 | 0000 | patch | — | 0.3 | — | 20260902-153722-patch-0000-grilling-reference |
+| 2026-09-02 | 0000 | docs | 3 | 0.3 | 0.1 | 20260902-160308-task-0000-dependencias-declaradas |
+| 2026-09-07 | 0000 | docs | 2 | 0.5 | 0.25 | 20260907-151234-task-0000-alineacion-superpowers |
+| 2026-09-07 | 0000 | docs | 3.5 | 5.5 | 1.57 | 20260907-184057-task-0000-progressive-disclosure |
+| 2026-09-08 | 0000 | docs | 4 | 1.3 | 0.33 | 20260908-095857-task-0000-workflow-ejecucion |
+| 2026-09-08 | 0000 | docs | 2 | 0.4 | 0.2 | 20260908-135025-task-0000-entorno-por-worktree |
+| 2026-09-08 | 0000 | docs | 1.5 | 0.5 | 0.33 | 20260908-150513-task-0000-spec-ligera-funcional |
+| 2026-09-09 | 0000 | infra/tooling | 1 | 1.1 | 1.1 | 20260909-065145-task-0000-estimation-log-script |
 
-| Fecha | Task | Tipo | Estimado (h) | Real (h) | Ratio |
-| --- | --- | --- | --- | --- | --- |
-| 2026-07-09 | flux-documents | docs | — | ~3 (aprox.) | — |
-| 2026-07-09 | sdd-kit-v010 | infra/tooling | — | ~4,5 (aprox.) | — |
-| 2026-07-21 | release-skills | docs | 4 | ~1,5 (aprox.) | 0,38 |
-| 2026-07-21 | consult-skill | docs | 2,5 | ~1,4 (aprox.) | 0,56 |
-| 2026-07-22 | carril-rama-worktree | docs | 2 | ~2,1 (aprox.) | 1,05 |
-| 2026-09-02 | modo-lite | docs | 3 | ~0,5 (aprox.) | 0,17 |
-| 2026-09-02 | grilling-reference (patch) | docs | — | ~0,3 (aprox.) | — |
-| 2026-09-02 | dependencias-declaradas | docs | 3 | ~0,3 (aprox.) | 0,10 |
-| 2026-09-07 | alineacion-superpowers | docs | 2 (rango 2–4, condicionado al RED) | ~0,5 (aprox.) | 0,25 |
-| 2026-09-08 | progressive-disclosure | docs | 3,5 (rango 2,5–5) | ~5,5 (aprox.) | 1,57 |
-| 2026-09-08 | workflow-ejecucion | docs | 4 (rango 3–6) | ~1,3 (aprox.) | 0,33 |
-| 2026-09-08 | entorno-por-worktree | docs | 2 (rango 1,5–3) | ~0,4 (aprox.) | 0,20 |
-| 2026-09-08 | spec-ligera-funcional | docs | 1,5 (rango 1–2,5) | ~0,5 (aprox.) | 0,33 |
+**Factor de calibración** (ratio mediano real/estimado, 11 artefactos): **0.33**
+
+| Tipo | n | Mediana |
+| --- | --- | --- |
+| docs | 10 | 0.33 |
+| infra/tooling | 1 | 1.1 |
+
+> Ver `estimation.md`.

@@ -17,6 +17,9 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **environments-template** — contrato agnóstico del entorno por worktree: marcador `.sdd-env.json` (`ticket`, `state`, `created`), entradas `env:setup` / `env:clean` / `env:preflight`, dos tipos de entorno; el proyecto decide runner y scripts. → [ref](specs/20260908-135025-task-0000-entorno-por-worktree/)
 - **spec-template** — spec ligera: "Decisiones que he tomado yo — valida estas" arriba, Intent/Scope/Approach, delta por capacidad con `ADDED`/`MODIFIED (antes: …)`/`REMOVED` y escenarios GIVEN/WHEN/THEN, aprobaciones. Lo técnico (datos, UX, riesgos, rollout) pasa a `plan.md`. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
 - **funcional-template** — `funcional/<capacidad>.md`, verdad viva del comportamiento por capacidad, con título estable por requisito como clave de fusión y cinco reglas contra la proliferación de ficheros. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
+- **sdd-templates** — `scripts/Build-EstimationLog.ps1`, primer código ejecutable del kit: regenera `estimation-log.md` desde walkthroughs, patches y hotfix legacy con parseo tolerante (negrita, `~`, coma decimal, rangos, extracción acotada a la sección de tiempo), factor global y mediana por Tipo, aviso ante esfuerzo real ilegible o log mantenido a mano; 26 tests Pester con fixtures versionadas en `tests/fixtures/`. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
+- **Art. X** — calidad de código: sin comentarios que repitan el código, clean code, y la regla viaja literal en planes y encargos a subagentes. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
+- **funcional/estimacion.md** — primera capacidad del kit fusionada por `sdd-end-task` con cinco requisitos `ADDED`. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 
 ### Changed
 
@@ -27,6 +30,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Art. IV** — el modo de ejecución por defecto y la política de modelos (la de superpowers: turnos, no precio por token) son convención del kit. → [ref](specs/20260908-095857-task-0000-workflow-ejecucion/)
 - **sdd-start-task, sdd-end-task, sdd-end-patch, sdd-init-greenfield, sdd-init-brownfield** — predicado `environments.md`: `env:setup` tras el worktree, `env:clean` antes de `finishing-a-development-branch`, y `init-*` lo calca por entrevista o cosecha. El worktree y su borrado se adoptan de superpowers; el override deja de negarlos. → [ref](specs/20260908-135025-task-0000-entorno-por-worktree/)
 - **Convención `funcional/`** — `funcional.md` (declarado en siete sitios y escrito por ninguna skill) pasa a ser la carpeta `funcional/`, un fichero por capacidad; `sdd-start-task` presenta el gate de la spec empezando por las decisiones a validar; `plan-template` recibe riesgos y rollout. → [ref](specs/20260908-150513-task-0000-spec-ligera-funcional/)
+- **sdd-end-task, sdd-end-patch** — el paso estimation-log ejecuta el script del kit por `<Base directory>/../sdd-templates/scripts/` en vez de buscar una copia en `.tools/sdd/` del proyecto; la fila a mano queda solo sin `pwsh` o sin el script (instalación parcial). RED 2/2 → GREEN 2/2. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
+- **estimation-log.md del kit** — pasa de manual a generado por el script (dogfooding); `estimation.md`, `tech-stack.md`, `architecture.md` y README lo reflejan. → [ref](specs/20260909-065145-task-0000-estimation-log-script/)
 
 ## [0.5.0] — 2026-09-02
 

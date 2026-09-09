@@ -49,3 +49,11 @@ El kit **no compite con superpowers: lo viste**. Tres reglas, en este orden:
 3. **Extender solo ante un hueco demostrado.** Cuando superpowers enuncia una regla pero no la ejecuta —lo dice en prosa y su herramienta o su receta no lo hacen—, el kit escribe la pieza que falta y **documenta el hueco** en la evidencia. Ejemplo: `subagent-driven-development` afirma que un subagente necesita "su task, las interfaces que toca y las restricciones globales", pero su `scripts/task-brief` extrae solo el texto de la task y su receta de dispatch no lista las restricciones; el kit obliga a entregarlas (medido en `tests/workflow-ejecucion-red.md`, F4). Segundo ejemplo: superpowers advierte de que declarar el modelo sin el effort es una trampa, pero solo en `using-superpowers/references/codex-tools.md`; su propia skill de despacho no lo recoge, así que el campo `Modelo` del plan del kit exige los dos valores.
 
 Antes de escribir guidance nueva, comprueba si superpowers ya la cubre. Si la cubre, se cita; no se copia.
+
+## Art. X — Calidad de código
+
+Aplica al código ejecutable del kit (scripts, tests) y viaja **literal** en las Restricciones globales de todo plan y en el encargo de todo implementador y revisor: un subagente no hereda el CLAUDE.md del dev-lead, y de ahí que la regla se duplique donde haga falta (decisión 2026-09-09, T7).
+
+- **Sin comentarios que repitan el código.** Un comentario existe solo si sin él la línea no se entiende, y antes de escribirlo se intenta que el nombre o una extracción lo hagan innecesario. Lo que se conserva es el *porqué* no deducible (una convención heredada, un límite externo). El bloque de ayuda de `Get-Help` no es un comentario.
+- Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano (mensajes, warnings, ayuda) en castellano con tildes (Art. III).
+- El revisor marca el incumplimiento como Important, no como estilo.
