@@ -8,6 +8,7 @@ BeforeDiscovery {
     'estimacion\.md'
     'migracion\.md'
     'flujo-de-task'
+    '<capacidad>'
   )
 
   $script:ForbiddenPaths = @(
@@ -37,6 +38,8 @@ BeforeAll {
   # El contenido de capabilities/ queda fuera del barrido: son requisitos vivos que solo
   # cambian por la fusion del delta al cerrar una task, nunca por edicion manual. Aqui se
   # vigilan sus nombres de fichero, que si son responsabilidad de quien crea la capacidad.
+  # Riesgo aceptado a cambio: una fusion mal hecha que reintroduzca un nombre antiguo como
+  # ruta vigente —y no como cita de un «antes:»— no la detecta nadie.
   function Get-LiveFile {
     $named = foreach ($relative in $script:LivePaths) {
       $full = Join-Path $script:KitRoot $relative

@@ -65,7 +65,20 @@ Commit `fd250e0` (rama `master`), 33 ficheros.
 - ~40 nombres de fichero internos siguen en castellano y no los vigila ningún test: `skills/*/references/*.md` (`versionado.md`, `generacion.md`, `estructura.md`, `nombrado.md`, `priorizacion.md`, `acta-y-retro.md`, `encargo-revision.md`, `modo-lite.md`, `aprendizajes-skills.md`, `notas-y-roadmap.md`, `roadmap-fuente.md`, `email-entrega.md`), la evidencia de `tests/` (`*-red.md`, `*-green.md`) y los fixtures (`roto/`, `sinplan/`, `notas-sueltas/`). → tabla de deuda del roadmap.
 - Los slugs de `.docs/sdd/specs/` históricas siguen en castellano. El Art. IV los declara convención de cambio mayor; esta task usó slug inglés como excepción puntual sin reabrirla.
 
-### 4.4 Revisión de skills
+### 4.4 Code-review (obligatorio: la ejecución fue en línea)
+
+Un revisor `general-purpose` (Sonnet) sobre el diff, con las Restricciones globales como cabecera del encargo. 6 hallazgos, 2 Críticos, todos corregidos antes del cierre:
+
+| Severidad | Hallazgo | Corrección |
+| --- | --- | --- |
+| Crítico | `sdd-consult/SKILL.md:16` quedó como `capabilities/<capacidad>`: carpeta nueva con el placeholder viejo. La regla de sustitución cubría la variante con `.md` y no la que no lo lleva | placeholder corregido; el test ahora vigila `<capacidad>` como token propio, que es lo que dejó pasar el fallo |
+| Crítico | `migrations/v1.0.0.md:3` — `git mv .docs/sdd/funcional.md .docs/sdd/capabilities/legacy.md` falla con `fatal: renaming ... failed: No such file or directory` cuando la carpeta destino no existe, que es justo el estado que ese gate describe. Reproducido con `git mv` real | el paso crea la carpeta antes del `git mv` |
+| Importante | el test no vigilaba `<capacidad>`, por eso el Crítico 1 pasaba en verde | token añadido; la suite sube a 147 |
+| Importante | `README.md:48` decía «12 plantillas» y enumeraba 11: faltaba `client-changelog`. `Skills.Tests.ps1` compara el número, no los nombres | enumeración completada |
+| Importante | excluir todo el contenido de `capabilities/` deja un hueco: una fusión mal hecha que reintroduzca un nombre antiguo como ruta vigente no la detecta nadie | riesgo aceptado, ahora **escrito** en el propio test en vez de silencioso |
+| Menor | `.docs/flux/…greenfield.md:25` sigue mapeando «Requisits funcionals» a `.docs/sdd/funcional.md` | fuera de scope (documento de proceso en catalán) → deuda del roadmap |
+
+### 4.5 Revisión de skills
 
 `.claude/skills/` no existe en este repo (solo `.claude/settings.json`): el kit no tiene skills de nivel 3 propias, y esta task no revela ninguna que crear. Las skills de nivel 1 sí se tocaron, pero por rename de referencias, no por cambio de conducta. Decidido mirando, no por omisión.
 
