@@ -30,6 +30,12 @@ BeforeAll {
   }
 }
 
+Describe 'Carpeta skills/' {
+  It 'contiene al menos una skill' {
+    (Get-ChildItem $script:SkillsRoot -Directory).Count | Should -BeGreaterThan 0
+  }
+}
+
 Describe 'Skill <_>' -ForEach $script:SkillFolders {
   BeforeAll {
     $script:Skill = $_
@@ -88,6 +94,7 @@ Describe 'Índice de sdd-templates' {
   }
 
   It 'lista cada plantilla de templates/ exactamente una vez' {
+    $script:TemplateFiles.Count | Should -BeGreaterThan 0
     Compare-Object $script:TemplateFiles $script:IndexedTemplates | Should -BeNullOrEmpty
   }
 
@@ -108,6 +115,7 @@ Describe 'Skills de superpowers citadas' {
   }
 
   It 'el README declara la misma lista que citan las skills' {
+    $script:CitedSkills.Count | Should -BeGreaterThan 0
     Compare-Object $script:ReadmeSkills $script:CitedSkills | Should -BeNullOrEmpty
   }
 

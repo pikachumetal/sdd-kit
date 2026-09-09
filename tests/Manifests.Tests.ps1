@@ -1,20 +1,20 @@
+BeforeDiscovery {
+  $script:HasClaudeCli = [bool](Get-Command claude -ErrorAction SilentlyContinue)
+}
+
 BeforeAll {
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
-  $script:ClaudeCli = Get-Command claude -ErrorAction SilentlyContinue
 
   function Invoke-PluginValidate([string]$Target, [switch]$Strict) {
     $arguments = @('plugin', 'validate', (Join-Path $script:KitRoot $Target), '--json')
     if ($Strict) { $arguments += '--strict' }
-    $output = & $script:ClaudeCli.Source @arguments 2>&1 | Out-String
-    return ($output | ConvertFrom-Json)
+    $stdout = & (Get-Command claude).Source @arguments 2>$null | Out-String
+    try { return ($stdout | ConvertFrom-Json) }
+    catch { throw "claude plugin validate no devolvió JSON para '$Target':`n$stdout" }
   }
 }
 
-Describe 'claude plugin validate' {
-  BeforeAll {
-    if (-not $script:ClaudeCli) { Set-ItResult -Skipped -Because 'claude no está en PATH' }
-  }
-
+Describe 'claude plugin validate' -Skip:(-not $script:HasClaudeCli) {
   It 'acepta la carpeta skills/ en modo strict' {
     (Invoke-PluginValidate 'skills' -Strict).success | Should -BeTrue
   }
