@@ -27,6 +27,10 @@ npx skills add <org>/sdd-kit -a claude-code            # todas
 npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
 ```
 
+## Actualizar un proyecto
+
+Tras actualizar el kit (`/plugin marketplace update` o de nuevo `npx skills add`), pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill lee `.docs/sdd/sdd-kit.json` (la versión aplicada), ejecuta en orden los ficheros de `skills/sdd-init-brownfield/references/migrations/` posteriores a esa versión —cada paso con su predicado, los borrados y renombrados con gate del dev-lead— y escribe el marcador al terminar. Un proyecto sin marcador se trata como anterior a v0.2.0.
+
 ## Contenido
 
 | Skill | Propósito |

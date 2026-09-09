@@ -23,7 +23,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 
 1. **Entrevista** — `superpowers:brainstorming`, una pregunta cada vez, por bloques: (a) producto — problema, usuarios y roles, módulos imaginados; (b) stack — si no está decidido, opciones con trade-offs y tu recomendación, pero **la decisión es del usuario** y puede quedar abierta (se registra en tech-stack como pendiente con las opciones); (c) principios — qué es innegociable (datos, migraciones, commits, seguridad); (d) proceso — ¿changelog? ¿gestor de tickets? ¿convención de ramas? ¿worktrees? y, solo si sí, ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? — con ambas afirmativas se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre y no se crea.
 2. **Generar documento a documento, con gate**: mission → presentar → aprobar; después constitution → … Nada se da por anclaje sin aprobación explícita del usuario.
-3. **Estructura**: crear `.docs/sdd/` completa, `estimation-log.md` vacío. NO copiar plantillas (viven en `sdd-templates`).
+3. **Estructura**: crear `.docs/sdd/` completa, `estimation-log.md` vacío y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`). NO copiar plantillas (viven en `sdd-templates`).
 4. **`CLAUDE.md` corto**: punteros a los documentos + reglas críticas. No duplicar contenido que ya vive en un doc de anclaje.
 5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista.
 6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando `funcional/` madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).

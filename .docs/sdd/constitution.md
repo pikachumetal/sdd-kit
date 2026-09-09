@@ -26,7 +26,7 @@ También son convención del kit el **modo de ejecución por defecto** —`subag
 
 ## Art. V — Versionado
 
-SemVer en `.claude-plugin/plugin.json`. Cada release: bump de versión + entrada en `.docs/sdd/changelog.md`. Los usuarios actualizan con `/plugin marketplace update`. Cada release del kit revisa además la compatibilidad con la versión de superpowers instalada (sus `RELEASE-NOTES.md`) y actualiza la versión validada que declara el README; si una minor cambia una skill que el kit invoca, el mapeo se re-testa antes de cerrar.
+SemVer en `.claude-plugin/plugin.json`. Cada release: bump de versión + entrada en `.docs/sdd/changelog.md`. Los usuarios actualizan con `/plugin marketplace update`. Toda release que cambie la estructura de `.docs/sdd/` o retire algo del proyecto consumidor escribe además `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md` con pasos-predicado y verificación; el proyecto declara la versión que tiene aplicada en `.docs/sdd/sdd-kit.json`, y «actualízame al kit» aplica solo las migraciones posteriores (T10, 2026-09-09). Cada release del kit revisa además la compatibilidad con la versión de superpowers instalada (sus `RELEASE-NOTES.md`) y actualiza la versión validada que declara el README; si una minor cambia una skill que el kit invoca, el mapeo se re-testa antes de cerrar.
 
 ## Art. VI — Commits
 

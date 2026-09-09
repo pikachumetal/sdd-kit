@@ -13,6 +13,7 @@
 │       ├── funcional/         (vacía: una capacidad por fichero, las crean las tasks)
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de patches)
 │       ├── estimation.md     (método) · estimation-log.md (VACÍO: se llena con las tareas)
+│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated" })
 │       └── specs/            (vacía)
 ```
 
