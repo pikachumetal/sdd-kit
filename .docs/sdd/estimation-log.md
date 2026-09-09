@@ -22,12 +22,13 @@
 | 2026-09-09 | 0000 | docs | 1.5 | 0.5 | 0.33 | 20260909-105650-task-0000-migracion-consumidores |
 | 2026-09-09 | 0000 | patch | — | 0.15 | — | 20260909-120448-patch-0000-estimation-log-residuales |
 | 2026-09-09 | 0000 | docs | 2 | 1.8 | 0.9 | 20260909-131802-task-0000-gates-y-reviews |
+| 2026-09-09 | 0000 | docs | 0.8 | 0.4 | 0.5 | 20260909-160248-task-0000-review-reforzada |
 
-**Factor de calibración** (ratio mediano real/estimado, 14 artefactos): **0.35**
+**Factor de calibración** (ratio mediano real/estimado, 15 artefactos): **0.38**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
-| docs | 12 | 0.33 |
+| docs | 13 | 0.33 |
 | infra/tooling | 2 | 0.9 |
 
 > Ver `estimation.md`.

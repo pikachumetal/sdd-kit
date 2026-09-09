@@ -12,4 +12,6 @@ Tercer aviso (2026-09-09, T10): con el método headless los sujetos corren en se
 
 Nota de coste de gates (T11, 2026-09-09): un gate bien escrito sale más barato que saltárselo — parar a pedir validación costó 0,25 $ por sujeto; cerrar sin ella, 0,7–1,1 $. Los gates no se estiman como sobrecoste.
 
+Ancla de review (T12, 2026-09-09): no se presupuesta review adversarial multi-lente por defecto; la review de superpowers con la cabecera de restricciones cazó un bug de transición de estado 4/4 a ~1,2 $ por sujeto.
+
 El log (`estimation-log.md`) **se genera**, no se escribe: desde T7 (2026-09-09) lo regenera `skills/sdd-templates/scripts/Build-EstimationLog.ps1` a partir del bloque de tiempo de cada walkthrough y patch, con el factor global y la mediana por Tipo. Los rangos y las notas («condicionado al RED») viven en el walkthrough; el log es la tabla de calibración. Comportamiento observable en `funcional/estimacion.md`.
