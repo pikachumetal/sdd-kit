@@ -6,12 +6,12 @@
 >    la crea `sdd-end-task` por su cuenta.
 > 3. `sdd-end-task` fusiona el delta: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita.
-> 4. Brownfield no vuelca: la carpeta `funcional/` no se rellena de golpe al inicializar, crece
+> 4. Brownfield no vuelca: la carpeta `capabilities/` no se rellena de golpe al inicializar, crece
 >    task a task, con la primera que toque cada capacidad.
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
 >    duplica.
 >
-> Sin índice: el listado de ficheros de `funcional/` es el índice.
+> Sin índice: el listado de ficheros de `capabilities/` es el índice.
 
 ## Requisitos
 

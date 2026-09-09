@@ -18,7 +18,7 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 
 ## Dominio (lenguaje del equipo)
 
-- **Documentos de anclaje**: mission, constitution, tech-stack, architecture, `funcional/` (una capacidad por fichero), roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico.
+- **Documentos de anclaje**: mission, constitution, tech-stack, architecture, `capabilities/` (una capacidad por fichero), roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico.
 - **Carril task / carril patch**: flujo completo con spec y plan vs registro ligero para bugs deterministas.
 - **Modo lite**: variante del carril task —no un carril nuevo: sin skills propias ni prefijo de carpeta— para cambios acotados que cumplen un predicado observable. Spec corta y sin plan; el gate de la spec, el smoke y el walkthrough se conservan intactos. Lo habilita el predicado y lo activa la confirmación del usuario.
 - **Carril release**: apertura (el acta triada se convierte en scope que decide el usuario) y cierre (Definition of Done del hito: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario).
@@ -29,5 +29,5 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 - **Walkthrough**: cierre inmutable de una task; alimenta docs vivos, skills y estimation-log.
 - **Nivel de review**: cuánta review adversarial merece una spec —sin · un revisor (lente dominio o técnica) · dos revisores—, propuesto por la rúbrica de complejidad (señales observables en la spec: capacidad nueva, contrato público, `MODIFIED`/`REMOVED`, tres o más capacidades, datos, dependencia externa, área no explorada) y **activado por el usuario**. Sus hallazgos entran en «Decisiones a validar» antes del gate. Nunca en lite.
 - **Gate de validación**: el usuario prueba y valida el trabajo terminado **antes** de `sdd-end-task`; el merge viene después, en el cierre. Es distinto de la revisión final de rama, que es del agente.
-- **Marcador de versión** (`.docs/sdd/sdd-kit.json`): la versión del kit que un proyecto tiene aplicada, con el canal por el que llegó. **Migración**: aplicar, en orden y con gate, los `migrations/vX.Y.Z.md` posteriores a esa versión; la ejecuta `sdd-init-brownfield` cuando `.docs/sdd/` ya existe. No es re-inicializar: no regenera anclaje ni vuelca `funcional/`.
+- **Marcador de versión** (`.docs/sdd/sdd-kit.json`): la versión del kit que un proyecto tiene aplicada, con el canal por el que llegó. **Migración**: aplicar, en orden y con gate, los `migrations/vX.Y.Z.md` posteriores a esa versión; la ejecuta `sdd-init-brownfield` cuando `.docs/sdd/` ya existe. No es re-inicializar: no regenera anclaje ni vuelca `capabilities/`.
 - **Entorno por worktree**: lo que un worktree necesita además de sus dependencias —base de datos, puertos, servicios, datos de prueba— para trabajar aislado. El kit fija el contrato (`environments.md`, marcador `.sdd-env.json`, entradas `env:setup` / `env:clean` / `env:preflight`); el proyecto escribe los scripts. El worktree lo crea y borra superpowers.

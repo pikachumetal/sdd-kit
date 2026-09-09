@@ -20,9 +20,9 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
 | [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Cierre de release: notas de cliente destiladas del changelog |
-| [changelog-cliente-template.md](templates/changelog-cliente-template.md) | `changelog-cliente.md` | Opt-in del proyecto (entrevista de init): acumulado de cliente, versión a versión, derivado de las release notes de cada cierre; lo actualiza `sdd-end-release` si existe |
+| [client-changelog-template.md](templates/client-changelog-template.md) | `client-changelog.md` | Opt-in del proyecto (entrevista de init): acumulado de cliente, versión a versión, derivado de las release notes de cada cierre; lo actualiza `sdd-end-release` si existe |
 | [environments-template.md](templates/environments-template.md) | `environments.md` | Solo si el proyecto usa worktrees **y** su entorno necesita más que instalar dependencias (BD, puertos, servicios). Lo calca `init-*` por entrevista; `sdd-start-task` y `sdd-end-*` lo activan por predicado |
-| [funcional-template.md](templates/funcional-template.md) | `funcional/<capacidad>.md` | Verdad viva del comportamiento: la crea la spec que declara la capacidad, la fusiona `sdd-end-task` |
+| [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Verdad viva del comportamiento: la crea la spec que declara la capacidad, la fusiona `sdd-end-task` |
 
 ## Scripts
 

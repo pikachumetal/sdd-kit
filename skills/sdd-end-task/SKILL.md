@@ -17,9 +17,9 @@ El cierre de una task es una **Definition of Done**: un checklist que garantiza 
    **Lee `mode:` en el frontmatter de `spec.md`** (sin campo = `full`). En modo `lite` no existen `plan.md` ni `tasks.md`: no los reclames y salta el paso 6. Todo lo demás del checklist se aplica igual — el modo abarata los artefactos de planificación, nunca la verificación.
 1. **`walkthrough.md`** — calcando `walkthrough-template.md` del skill `sdd-templates`. En la verificación, distingue siempre **verificado por ti** (con la evidencia) de **reportado por el usuario**. Sin verificación documentada no hay cierre.
 2. **Tiempo real** *(si existe `.docs/sdd/estimation.md`)* — estimado vs real en el walkthrough; nunca en
-   blanco. Umbral de desviación y qué hacer si no lo sabes: [estimacion.md](references/estimacion.md).
+   blanco. Umbral de desviación y qué hacer si no lo sabes: [estimation.md](references/estimation.md).
 3. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — el walkthrough registra, el log acumula:
-   sin fila no hay calibración. Cómo generarlo: [estimacion.md](references/estimacion.md).
+   sin fila no hay calibración. Cómo generarlo: [estimation.md](references/estimation.md).
 4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive. Destino por tipo
    de aprendizaje: [aprendizajes-skills.md](references/aprendizajes-skills.md).
 5. **Revisión de skills** — "no aplica" se decide mirando, no por omisión.
