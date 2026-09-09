@@ -44,7 +44,7 @@ function Get-FirstToken([string]$Text, [string]$Fallback) {
 
 function Get-TaskId([string]$Content, [string]$Folder) {
   if ($Content -match '(?m)^task:\s*(\S+)') { return $Matches[1] }
-  if ($Folder -match '^\d{8}-\d{6}-(?:task|patch)-([^-]+)-') { return $Matches[1] }
+  if ($Folder -match '^\d{8}-\d{6}-(?:task|patch|hotfix)-([^-]+)-') { return $Matches[1] }
   return '—'
 }
 
@@ -63,6 +63,7 @@ function Read-Walkthrough([string]$Path) {
 
 function Read-Patch([string]$Path, [string]$Type) {
   $content = Get-Content $Path -Raw
+  if ($content -notmatch 'Tiempo \(ligero\)') { return $null }
   return [pscustomobject]@{
     Content  = $content
     Type     = $Type

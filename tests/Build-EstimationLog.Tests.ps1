@@ -7,7 +7,7 @@ BeforeAll {
     $out = Join-Path $TestDrive ([guid]::NewGuid().ToString() + '.md')
     $warnings = @()
     & $script:Script -Root $Root -OutFile $out -WarningVariable warnings -WarningAction SilentlyContinue | Out-Null
-    return [pscustomobject]@{ Text = Get-Content $out -Raw; Warnings = @($warnings | ForEach-Object { $_.Message }) }
+    return [pscustomobject]@{ Text = Get-Content $out -Raw; Warnings = @($warnings | ForEach-Object { $_.Message }); Path = $out }
   }
 
   function Get-Row([string]$Text, [string]$Folder) {
@@ -52,15 +52,31 @@ Describe 'Build-EstimationLog.ps1' {
     $script:Result.Warnings -join ' ' | Should -Not -Match 'sinbloque'
   }
 
+  It 'ignora en silencio un patch sin bloque de tiempo' {
+    Get-Row $script:Result.Text '20260908-100000-patch-0000-sinbloque' | Should -BeNullOrEmpty
+    $script:Result.Warnings -join ' ' | Should -Not -Match 'patch-0000-sinbloque'
+  }
+
+  It 'lee hotfix.md sin frontmatter usando la carpeta para el id de task' {
+    Get-Row $script:Result.Text '20260909-100000-hotfix-0007-sinfrontmatter' | Should -Be '| 2026-09-09 | 0007 | hotfix | 1 | 1 | 1 | 20260909-100000-hotfix-0007-sinfrontmatter |'
+  }
+
+  It 'escribe LF sin BOM' {
+    $bytes = [System.IO.File]::ReadAllBytes($script:Result.Path)
+    $tieneBom = ($bytes.Length -ge 3) -and ($bytes[0] -eq 0xEF) -and ($bytes[1] -eq 0xBB) -and ($bytes[2] -eq 0xBF)
+    $tieneBom | Should -BeFalse
+    ($bytes -contains 13) | Should -BeFalse
+  }
+
   It 'calcula el factor global como mediana de los ratios' {
-    # Ratios: 0.5, 0.25, 0.6, 2 → mediana (0.5 + 0.6) / 2 = 0.55, n = 4
-    $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 4 tareas\): \*\*0\.55\*\*'
+    # Ratios: 0.5, 0.25, 0.6, 2, 1 → ordenados [0.25, 0.5, 0.6, 1, 2] → mediana 0.6, n = 5
+    $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 5 tareas\): \*\*0\.6\*\*'
   }
 
   It 'calcula la mediana por Tipo' {
     $script:Result.Text | Should -Match '(?m)^\| docs \| 2 \| 0\.38 \|$'
     $script:Result.Text | Should -Match '(?m)^\| patch \| 1 \| 0\.6 \|$'
-    $script:Result.Text | Should -Match '(?m)^\| hotfix \| 1 \| 2 \|$'
+    $script:Result.Text | Should -Match '(?m)^\| hotfix \| 2 \| 1\.5 \|$'
   }
 
   It 'avisa de calibración orientativa con menos de 10 ratios' {
