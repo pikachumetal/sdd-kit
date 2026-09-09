@@ -27,6 +27,7 @@ approvers:
 6. **El walkthrough registra la review**: línea en §2 «Review de spec: no | 1 revisor (lente) | 2 revisores · hallazgos N, aceptados M», parseable por `Build-EstimationLog.ps1` en una task futura (hoy solo se registra).
 7. **RED/GREEN con el método headless y copia limpia** (T10): E1 mide si un agente con `sdd-start-task` vigente tensa una spec con defectos sembrados (una contradicción con `funcional/`, un `ADDED` que es `MODIFIED`, un requisito sin escenario) antes del gate; E2 mide el plan-gate (baseline: sin bloque de decisiones, receta); E3 mide el traspaso del Art. X al revisor con `--output-format stream-json`, que sí expone los encargos de `Agent`. Lo que el baseline ya haga no se escribe.
 8. **Evidencia de coste**: la nota de Alybo (6106/6121, −50/−80 % de implementación tras tensar) es el argumento; el kit empieza a medirlo con la línea del walkthrough y lo cruzará cuando haya diez tasks.
+10. **Señal «reglas de visibilidad o permiso» en la rúbrica y pregunta del complemento en la lente dominio** (propuesta del dev-lead, [research.md](research.md) §4.1, con la evidencia de SifAcademy: nueve hallazgos del smoke por callar qué no debe ver cada rol). Condicionada al RED E5: fixture con roles descritos por lo que hacen y una task que añade un tercero. La review reforzada multi-lente (§4.3) va a T12, condicionada a su propio RED.
 9. **Gate de validación del trabajo antes de cerrar** (tu petición en el gate de esta spec): entre la implementación terminada (revisión final limpia) y `sdd-end-task` hay un ⛔ nuevo: el agente presenta qué hay, cómo probarlo y el smoke que él ya ejecutó, y **espera tu validación**. Sin ella no se invoca `sdd-end-task`; con el dev-lead ausente, la task queda EN ESPERA con el smoke documentado. `sdd-end-task` lo comprueba en su pre-check y el walkthrough lo registra («Validado por el dev-lead: fecha · qué probó»), separado de lo verificado por el agente. El merge sigue siendo el último paso: primero validas el trabajo, luego decides la integración. Evidencia RED ya disponible: en esta sesión se cerraron T7, T8 y T10 sin ese paso.
 
 ## Intent
@@ -73,6 +74,11 @@ Guidance de forma donde la forma decide (plantillas: bloque del plan, línea del
 - WHEN el agente va a cerrar
 - THEN antes de invocar `sdd-end-task` presenta qué hay, cómo probarlo y el smoke que ejecutó, y espera la validación explícita del usuario
 - AND si el usuario no responde, la task queda en espera con el smoke documentado; `sdd-end-task` no arranca sin esa validación y el walkthrough la registra separada de lo verificado por el agente
+
+**ADDED — La review de dominio pregunta por el complemento de visibilidad**
+- GIVEN una spec que introduce un rol, un estado o una condición de acceso
+- WHEN la lente dominio la revisa
+- THEN pide que la spec diga qué no ve y qué no puede hacer ese rol o estado, y la spec lo declara o lo rechaza con motivo
 
 **ADDED — El walkthrough registra la review de spec**
 - GIVEN una task cerrada
