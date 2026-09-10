@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-10
 branch: master
-commit: <hash>
+commit: fb95bee
 ---
 
 # Patch 0000 — el parser del log de estimación pierde filas por el formato del bloque de tiempo
