@@ -14,6 +14,13 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
+# Etiquetas del bloque de tiempo. Las largas van primero: el motor de regex prueba las
+# alternativas en orden y la corta dejaría fuera el resto de la etiqueta antes de los dos puntos.
+# Las comparten walkthrough.md y patch.md porque en la práctica un patch.md se escribe con
+# cualquiera de las dos formas.
+$script:EstimateLabel = 'Estimaci[oó]n de implementaci[oó]n(?: \([^)]*\))?|Estimaci[oó]n'
+$script:RealLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real|Real'
+
 function Resolve-DocsPath([string]$ProjectRoot) {
   # .docs/sdd es la convención del kit; docs/sdd sobrevive en proyectos antiguos.
   foreach ($candidate in @('.docs/sdd', 'docs/sdd')) {
@@ -35,7 +42,9 @@ function Get-TimeSection([string]$Content, [string]$HeadingPattern) {
 
 function ConvertTo-Hours([string]$Text) {
   if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
-  if ($Text -match '^[\s*~]*(\d+(?:[.,]\d+)?)') { return [double]($Matches[1] -replace ',', '.') }
+  # Prefijos tolerados delante de la cifra: espacios, negrita markdown y las marcas de
+  # aproximación que se escriben a mano (~, ≈, ≃).
+  if ($Text -match '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)') { return [double]($Matches[1] -replace ',', '.') }
   return $null
 }
 
@@ -59,13 +68,11 @@ function Read-Walkthrough([string]$Path) {
   $content = Get-Content $Path -Raw
   $section = Get-TimeSection $content '(?m)^#+.*estimado vs real'
   if ($null -eq $section) { return $null }
-  $estimateLabel = 'Estimaci[oó]n de implementaci[oó]n(?: \([^)]*\))?|Estimaci[oó]n'
-  $realLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real'
   return [pscustomobject]@{
     Content  = $content
     Type     = Get-FirstToken (Get-FieldText $section 'Tipo') '—'
-    Estimate = ConvertTo-Hours (Get-FieldText $section $estimateLabel)
-    Real     = ConvertTo-Hours (Get-FieldText $section $realLabel)
+    Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel)
+    Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel)
   }
 }
 
@@ -76,8 +83,8 @@ function Read-Patch([string]$Path, [string]$Type) {
   return [pscustomobject]@{
     Content  = $content
     Type     = $Type
-    Estimate = ConvertTo-Hours (Get-FieldText $section 'Estimaci[oó]n')
-    Real     = ConvertTo-Hours (Get-FieldText $section 'Real')
+    Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel)
+    Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel)
   }
 }
 

@@ -83,6 +83,7 @@ Las 7 skills de proceso iniciales + plantillas + manifests. Sin acta (el carril 
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-09-10 | [20260910-072132-patch-0000-estimation-parser-tolerante](specs/20260910-072132-patch-0000-estimation-parser-tolerante/patch.md) | `Build-EstimationLog.ps1` excluía filas por el formato del bloque de tiempo: `patch.md` escrito con las etiquetas largas del walkthrough, y cifras precedidas de `≈`. Etiquetas compartidas por los dos lectores y marcas de aproximación toleradas. Detectado migrando LegalRep.pro. |
 | 2026-09-09 | [20260909-120448-patch-0000-estimation-log-residuales](specs/20260909-120448-patch-0000-estimation-log-residuales/patch.md) | Residuales parked de la revisión final de T7 (fixture del corte por encabezado, singular, comprobación de `-Root`). La RC no arrastra deuda. |
 | 2026-09-09 | [20260909-103518-patch-0000-estimacion-lite-label](specs/20260909-103518-patch-0000-estimacion-lite-label/patch.md) | `Build-EstimationLog.ps1` no leía la estimación de un walkthrough lite («(de la spec)» en vez de «(del plan)»). Paréntesis opcional tras la etiqueta. |
 | 2026-09-02 | [20260902-153722-patch-0000-grilling-reference](specs/20260902-153722-patch-0000-grilling-reference/patch.md) | `sdd-consult` invocaba `superpowers:grilling`, nombre que no resuelve. Corregido a `grilling`. |

@@ -14,6 +14,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **`migrations/v1.1.0.md`** — migración idempotente por predicado para proyectos que ya declaraban `1.0.0`: sin ella la corrección de `v1.0.0.md` no les llegaría nunca, porque el procedimiento solo aplica versiones posteriores a la declarada. → [ref](specs/20260909-210515-task-0000-english-file-names/)
 - **`tests/NamingConvention.Tests.ps1`** — barrido por lista blanca de rutas vivas que falla si un nombre en castellano vuelve a `skills/`, `README.md` o el anclaje vivo; el histórico sellado, el contenido de `capabilities/` y `migrations/` quedan fuera por diseño. → [ref](specs/20260909-210515-task-0000-english-file-names/)
 
+### Fixed
+
+- **`Build-EstimationLog.ps1`** — dejaba fuera del log, con un WARNING y sin más consecuencia visible, dos formas de escribir el bloque de tiempo que nadie considera erróneas: un `patch.md` redactado con las etiquetas largas del walkthrough (`- Estimación de implementación (del plan):` / `- Esfuerzo real:`) y una cifra precedida de `≈`. Las etiquetas pasan a constantes compartidas por `Read-Walkthrough` y `Read-Patch`, y `ConvertTo-Hours` acepta `≈`/`≃` junto a `~`. El daño era silencioso: el factor de calibración se calculaba sobre un conjunto incompleto. → [ref](specs/20260910-072132-patch-0000-estimation-parser-tolerante/patch.md)
+
 ## [1.0.0] - 2026-09-09
 
 Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por decisión del dev-lead en el cierre. Los artefactos históricos conservan el nombre v0.6.0. [Acta](releases/v1.0.0/feedback.md) · [release notes](releases/v1.0.0/release-notes.md).

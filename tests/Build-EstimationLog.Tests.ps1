@@ -176,3 +176,17 @@ Describe 'Resolución de la carpeta de docs' {
     ($warnings | ForEach-Object { $_.Message }) -join ' ' | Should -Not -Match 'mantenido a mano'
   }
 }
+
+Describe 'Tolerancia de formato en el bloque de tiempo' {
+  BeforeAll { $script:Tolerante = Invoke-Build (Join-Path $script:Fixtures 'tolerante') }
+
+  It 'lee un patch.md escrito con las etiquetas largas del walkthrough' {
+    Get-Row $script:Tolerante.Text '20260917-100000-patch-0000-etiqueta-larga' | Should -Be '| 2026-09-17 | 0000 | patch | 1.5 | 1.2 | 0.8 | 20260917-100000-patch-0000-etiqueta-larga |'
+    $script:Tolerante.Warnings -join ' ' | Should -Not -Match 'etiqueta-larga'
+  }
+
+  It 'tolera el símbolo de aproximación delante de la cifra' {
+    Get-Row $script:Tolerante.Text '20260918-100000-task-0015-aprox' | Should -Be '| 2026-09-18 | 0015 | docs | 3 | 2.5 | 0.83 | 20260918-100000-task-0015-aprox |'
+    $script:Tolerante.Warnings -join ' ' | Should -Not -Match 'aprox'
+  }
+}
