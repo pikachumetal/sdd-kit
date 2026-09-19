@@ -15,6 +15,7 @@
 | B1 | Kit de nivel 2 como **segundo plugin** (skills técnicas por stack), cuando un proyecto lo pida | decisión 2026-09-09 |
 | B2 | Medir la lente dominio con las cinco reglas (GREEN con review activada) y la entrevista de brownfield | acta v1.0.0, A10 |
 | B3 | Resumen para personas generado desde los artefactos al cerrar una release | research-hackaton §7, sin prioridad |
+| B4 | **`sdd-init-greenfield` consciente de los templates de arranque** — el dev-lead está montando `D:\code\git\angular-dotnet-template` (nombre provisional), un repo de templates de arranque de proyectos con skill propia `init-template` que renombra y prepara el template. Un proyecto nacido así **no llega en blanco al init**: llega con parte hecha y con marca blanca por sustituir por los valores correctos. Greenfield tendría que detectarlo, saltarse lo que el template ya resuelve y completar solo los huecos. Abierto: (a) cómo se detecta el origen template — marcador en el repo, como `.sdd-env.json` hace con el entorno; (b) quién manda en el orden — `init-template` invoca greenfield al acabar, o greenfield detecta y se adapta; (c) si la marca blanca son placeholders literales o anclaje a medias, en cuyo caso se cruza con la deuda del anclaje pospuesto (2026-09-15). **Bloqueado hasta que exista un template hecho**; se arranca entonces | dev-lead 2026-09-16 |
 
 ## Deuda técnica
 
