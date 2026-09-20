@@ -108,7 +108,8 @@ Describe 'Índice de sdd-templates' {
 Describe 'Skills de superpowers citadas' {
   BeforeAll {
     $readme = Get-Content (Join-Path $script:KitRoot 'README.md') -Raw
-    $sentence = [regex]::Match($readme, 'invoca \*\*(\d+) skills de superpowers\*\*: (.*?)\. Lista verificable')
+    # El recuento y la lista son el contrato; el énfasis y la frase de cierre son redacción.
+    $sentence = [regex]::Match($readme, 'invoca \*{0,2}(\d+) skills de superpowers\*{0,2}: (.*?)\.')
     $script:ReadmeCount = [int]$sentence.Groups[1].Value
     $script:ReadmeSkills = @([regex]::Matches($sentence.Groups[2].Value, '`([a-z-]+)`') | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
     $script:CitedSkills = Get-SuperpowersSkillsCited $script:SkillsRoot

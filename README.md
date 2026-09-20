@@ -1,12 +1,42 @@
 # sdd-kit
 
-Kit SDD del equipo: skills de proceso agnósticas para el flujo **spec → plan → implementación → walkthrough** con Claude Code. Es el nivel 1 de la taxonomía de skills del equipo (proceso, igual en todos los proyectos); las skills técnicas por stack (nivel 2) y las específicas de cada proyecto (nivel 3) viven en cada repo.
+Once skills para Claude Code que convierten «hazme esta feature» en un flujo con spec, plan, tests en rojo antes del código y un cierre que deja la documentación al día.
 
-> Estado: **v1.1.0 cerrada** y publicada en `pikachumetal/sdd-kit`. La 1.2.0 está abierta: 16 tasks salidas de siete tickets de campo de agentes que usaron el kit en proyectos reales (ver [roadmap](.docs/sdd/roadmap.md)). Las 11 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
+La idea es sencilla: **el resultado debería depender del proceso, no de con qué pie se levantó el agente esa mañana**. Dos sesiones con la misma tarea deberían producir los mismos artefactos, pasar por los mismos gates y dejar el mismo rastro.
+
+## El problema que resuelve
+
+Si trabajas con Claude Code en varios proyectos, seguramente has copiado las mismas instrucciones de un repo a otro. Y las copias derivan: rutas distintas, fraseos distintos, pasos que en un repo están y en otro no. Al final cada proyecto tiene su propia versión de «cómo trabajamos» y ninguna está al día.
+
+Esto es la parte de proceso, la que es igual en todos los proyectos, empaquetada en un sitio y actualizable de una vez. Las skills técnicas de cada stack y las específicas de cada proyecto siguen viviendo en su repo; el kit no se mete ahí.
+
+## Cómo se usa
+
+Le dices a Claude lo que quieres y él entra por el carril que toca:
+
+```
+> añade autenticación con magic link
+```
+
+Arranca `sdd-start-task`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación por subagentes con los tests escritos antes.
+
+```
+> el contador de la home muestra un número de más
+```
+
+Eso no necesita spec. Va por `sdd-start-patch`: causa raíz primero, un solo documento, cierre ligero.
+
+```
+> ¿por qué decidimos guardar los tokens en la tabla de sesiones?
+```
+
+Tampoco es trabajo. `sdd-consult` lee la documentación de anclaje y responde, sin crear carpetas ni ramas.
+
+Cuando terminas, `sdd-end-task` escribe el walkthrough, vuelca los aprendizajes a los documentos vivos, actualiza el changelog y el registro de estimaciones, y te pregunta qué has probado antes de dar nada por cerrado.
 
 ## Instalación
 
-Como plugin de Claude Code (recomendado — actualizable centralmente):
+Como plugin de Claude Code:
 
 ```text
 /plugin marketplace add pikachumetal/sdd-kit
@@ -14,74 +44,84 @@ Como plugin de Claude Code (recomendado — actualizable centralmente):
 /reload-plugins
 ```
 
-Desde un clon local, para desarrollar el propio kit:
+Necesita [superpowers](https://github.com/obra/superpowers), que se resuelve solo porque el manifest lo declara. Si falta, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
 
-```text
-/plugin marketplace add <ruta-al-clon>
-/plugin install sdd-kit@sdd-kit
-/reload-plugins
-```
-
-Por skill individual, con el CLI de agent skills:
+Si solo quieres una skill suelta, o usas otro agente:
 
 ```bash
 npx skills add pikachumetal/sdd-kit -a claude-code            # todas
-npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una concreta
+npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una
 ```
 
-## Actualizar un proyecto
+Para desarrollar el propio kit, apunta el marketplace a tu clon local en vez del repo.
 
-Tras actualizar el kit (`/plugin marketplace update` o de nuevo `npx skills add`), pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill lee `.docs/sdd/sdd-kit.json` (la versión aplicada), ejecuta en orden los ficheros de `skills/sdd-init-brownfield/references/migrations/` posteriores a esa versión —cada paso con su predicado, los borrados y renombrados con gate del dev-lead— y escribe el marcador al terminar. Un proyecto sin marcador se trata como anterior a v0.2.0.
+## Las skills
 
-## Contenido
-
-| Skill | Propósito |
+| Skill | Qué hace |
 | --- | --- |
-| `sdd-init-greenfield` | Arrancar un proyecto nuevo: entrevista (brainstorming como motor, con gates) y genera la documentación de anclaje |
-| `sdd-init-brownfield` | Onboarding de un codebase existente: documenta el estado real (no el ideal), cosecha el CLAUDE.md previo y reduce a punteros |
-| `sdd-start-task` | Arrancar una tarea: Gate 1 de contexto, spec → plan → tasks con gates de aprobación |
-| `sdd-end-task` | Definition of Done: walkthrough, aprendizajes a docs vivos, estimation-log, revisión de skills, changelog, roadmap, rama |
-| `sdd-start-patch` | Carril ligero para bugs deterministas (<30 min): causa raíz obligatoria + un solo patch.md |
-| `sdd-end-patch` | Cierre ligero del patch: changelog, roadmap, estimation-log; el merge es decisión del usuario |
-| `sdd-start-release` | Abrir la siguiente release: inventario ordenado (acta, backlog, deuda, retro) con recomendación y bloqueos; el scope lo decide el usuario; se refina solo el top |
-| `sdd-end-release` | Cierre de release: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario |
-| `sdd-consult` | Carril de consulta: preguntar/entender/planificar/estructurar con el contexto cargado, sin artefactos; grilling para estructurar, handoff anunciado a los carriles de trabajo |
-| `add-to-changelog` | Entrada en el changelog con contrato de formato (Keep a Changelog; SemVer o bundle) |
-| `sdd-templates` | Las 12 plantillas canónicas (spec, plan, tasks, walkthrough, patch, data-model, research, feedback, release-notes, environments, capability, client-changelog) y el script `Build-EstimationLog.ps1`, que `sdd-end-task` y `sdd-end-patch` ejecutan desde el kit para regenerar el estimation-log del proyecto |
+| `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
+| `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
+| `sdd-start-task` | El carril completo: contexto, spec, plan, tasks, con gate de aprobación en cada paso. |
+| `sdd-end-task` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
+| `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria. |
+| `sdd-end-patch` | Cierre del patch. El merge lo decides tú. |
+| `sdd-start-release` | Abre la siguiente release con el inventario ordenado y sus bloqueos. El scope lo decides tú; solo se refina lo inmediato. |
+| `sdd-end-release` | Cierra la release: acta, retro con números, changelog sellado, notas para quien la va a usar. El tag lo confirmas tú. |
+| `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
+| `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
+| `sdd-templates` | Las 12 plantillas canónicas y el script que regenera el registro de estimaciones. |
 
-## Dependencias
+## Cómo está escrito
 
-Declaración canónica del kit: el resto de documentos apuntan aquí en vez de repetir la lista.
+Ninguna skill se escribe a ojo. Antes de añadir una instrucción hay que demostrar que hace falta: se lanza un agente sin ella y se mira si falla (RED), y luego con ella y se mira si deja de fallar (GREEN). La evidencia de cada una está en [`tests/`](tests/).
 
-| Dependencia | Obligatoria | Canal | Instalación |
-| --- | --- | --- | --- |
-| `superpowers` | Sí | Plugin de Claude Code, marketplace `claude-plugins-official` | Se resuelve sola: `plugin.json` la declara. Manual: `claude plugin install superpowers@claude-plugins-official` |
-| `grilling` | No | Skill suelta del CLI de agent skills | `npx skills add mattpocock/skills --skill grilling` |
+Esto tiene una consecuencia que no esperaba cuando empecé: **más de la mitad de las veces el agente ya lo hacía bien sin que se lo dijeran**, y entonces la instrucción no se escribe. En la release 1.0.0 recortó el alcance nueve veces. Una skill corta que alguien lee entera vale más que una larga que se saltan.
 
-El kit invoca **7 skills de superpowers**: `brainstorming`, `writing-plans`, `subagent-driven-development` (default de implementación desde v1.0.0; la ejecución en línea es excepción declarada en el plan), `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. Lista verificable con `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`. Sin el plugin instalado, Claude Code deshabilita el kit y muestra el comando de instalación en el error: es un fallo ruidoso a propósito, preferible a un flujo que se ejecuta a medias sin que nadie lo note.
+El kit se usa a sí mismo. Sus features salen por `sdd-start-task`, sus releases por el carril release, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [actas de release](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
 
-**Versión validada**: superpowers **6.3.0** (revisado el 2026-09-07). El kit traduce las vías de `brainstorming` (spike / bounded / architectural) a sus carriles y adopta el bloque de restricciones globales de `writing-plans`; ese mapeo se re-testa (Art. I) en cada minor de superpowers antes de cerrar una release del kit.
+## Estado
 
-`grilling` es opcional y solo la usa el carril consult, para tensar una dirección sin producir artefactos. Sin ella el carril sigue funcionando: el interrogatorio se hace igual, una pregunta cada vez y con recomendación, solo que sin la skill. Verificado con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), que es también la razón de que el kit no lleve guidance para ese caso.
+La 1.1.0 está cerrada. La 1.2.0 está abierta con 16 tasks que salieron de siete tickets de campo: agentes que usaron el kit en proyectos reales y reportaron dónde se rompía. Lo que más pesa ahí es `capabilities/`, el fichero por capacidad donde vive el comportamiento del producto; hoy el agente no siempre la crea cuando toca.
 
-## Desarrollo del kit
+Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastante.
 
-La suite valida la anatomía de las skills, los manifests y el script de estimación. Se ejecuta con Pester (≥ 5) en `pwsh` 7+:
+## Actualizar un proyecto que ya lo usa
+
+Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes.
+
+## Desarrollo
+
+Los tests validan la anatomía de las skills, los manifests y el script de estimación. Necesitas Pester 5 o superior y `pwsh` 7+:
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
 ```
 
-El hook `.githooks/pre-commit` la ejecuta antes de cada commit y lo bloquea si falla. Se activa una vez por clon:
+El hook de pre-commit los ejecuta y bloquea el commit si fallan. Se activa una vez por clon:
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-`tests/Manifests.Tests.ps1` usa `claude plugin validate` si el CLI de Claude Code está en PATH; si no, esos tests se saltan.
+Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`.
 
-## Convenciones
+## Dependencias
 
-- Los artefactos SDD viven en **`.docs/sdd/`** de cada proyecto (carpeta con punto: no es el proyecto, es su andamiaje); los de release (acta, release notes), en `.docs/sdd/releases/vX.Y.Z/`.
-- Documentación del flujo del equipo: [`.docs/flux/`](.docs/flux/) — *Flux per al desenvolupament ràpid d'aplicacions amb Claude* (greenfield / brownfield / annex amb l'evidència).
-- Este repo aplica su propio flujo (dogfooding): documentación de anclaje en [`.docs/sdd/`](.docs/sdd/).
+| Dependencia | ¿Obligatoria? | Instalación |
+| --- | --- | --- |
+| [`superpowers`](https://github.com/obra/superpowers) | Sí | Se resuelve sola con el plugin. Manual: `claude plugin install superpowers@claude-plugins-official` |
+| `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
+
+El kit invoca 7 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.3.0, revisada el 2026-09-07; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+
+`grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
+
+## Idioma
+
+El texto está en castellano porque es la lengua del equipo donde nació esto. Los nombres de skill, los identificadores y todo lo que el kit fija a los proyectos van en inglés. Si alguien lo quiere en otro idioma, se puede hablar.
+
+## Origen
+
+Escribí esto para el equipo con el que trabajo y lo publico en mi cuenta personal por comodidad, para poder instalarlo en cualquier máquina sin copiar carpetas. Los documentos de proceso del equipo, en catalán, están en [`.docs/flux/`](.docs/flux/).
+
+Si lo pruebas y algo te chirría, abre un issue. Los tickets de campo de `field-reports/` son justo eso, escritos por agentes, y han sido la mejor fuente de mejoras que he tenido hasta ahora.
