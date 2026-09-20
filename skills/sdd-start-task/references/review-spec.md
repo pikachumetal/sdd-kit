@@ -21,13 +21,40 @@ Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gat
 - **2–3 → un revisor.** Lente **dominio** si pesan capacidad nueva o `MODIFIED`; lente **técnica** si pesan contrato, datos o dependencia.
 - **4 o más, o contrato público + datos → dos revisores** en paralelo (una lente cada uno).
 
-Escríbelo como **primera línea** de «Decisiones que he tomado yo — valida estas»: `Review de spec propuesta: <nivel> — señales: <lista>`. **Proponer no es activar**: el usuario activa con su respuesta. Si no responde, la spec se presenta sin review y se anota.
+El nivel se presenta como el **bloque que abre** «Decisiones que he tomado yo — valida estas», con esta forma:
+
+```text
+Review de spec propuesta: <nivel> — señales: <las contadas>
+- Dominio: <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
+- Técnica: <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
+- Mínimo razonable: <el nivel más bajo defendible> — deja sin cubrir <qué>
+```
+
+Cada línea de lente **cita un requisito, una sección o un valor de esta spec**. «Comprobaría contradicciones con las capacidades» vale para cualquier spec y no ayuda a decidir; lista solo las lentes que el nivel propone o que el mínimo descarta. La línea del mínimo nombra el **descubierto**, no el precio: lo que cuesta un revisor (~100k tokens) ya se sabe, y lo que el dev-lead no puede ver sin ti es qué se queda sin mirar si recorta.
+
+Ejemplo, en una spec que añade un rol de supervisor y un fichero que lee otro sistema:
+
+```text
+Review de spec propuesta: dos revisores — señales: contrato público (`exports/*.csv` lo lee logística), MODIFIED (cancelar tras el envío), dato nuevo (`cancel_reason`), reglas de visibilidad (rol supervisor)
+- Dominio: si el ADDED de cancelación tras el envío deroga «Un pedido se cancela solo antes del envío» sin declararlo, y qué NO puede hacer el supervisor (señal: MODIFIED + rol nuevo)
+- Técnica: si el CSV de logística es un contrato acordado y si `cancel_reason` necesita migración (señal: contrato público + dato nuevo)
+- Mínimo razonable: solo dominio — deja sin mirar el contrato con logística, el único cambio de esta spec que puede romper a otro equipo
+```
+
+**Proponer no es activar**: el usuario activa con su respuesta. Si no responde, la spec se presenta sin review y se anota.
 
 ## 3. Despacha el revisor (si el usuario activa)
 
-Subagente `general-purpose`, **modelo Sonnet, effort medium**, uno por lente. La lente dominio es un solo pase con dos listas: el complemento de visibilidad (5) y las cinco reglas (5 bis). Encargo:
+Subagente `general-purpose`, **modelo Sonnet, effort medium**, uno por lente. Los puntos del encargo **se reparten según cuántos revisores despaches**:
 
-> Eres un revisor adversarial de una spec SDD. Tu trabajo es encontrar lo que hará fallar la implementación o el gate, no aprobar. Lee: `<ruta spec.md>`, `.docs/sdd/constitution.md`, `.docs/sdd/mission.md`, `<capacidades tocadas de capabilities/>` [lente técnica: y `.docs/sdd/architecture.md`]. No leas código ni otras specs. Busca, en este orden: (1) contradicciones con la verdad viva de `capabilities/` — un `ADDED` que cambia un requisito existente es un `MODIFIED` no declarado; (2) requisitos del delta sin escenario GIVEN/WHEN/THEN o con escenario que no se puede verificar; (3) alcance oculto — algo que el Intent promete y el Scope no lista, o al revés; (4) decisiones tomadas en el cuerpo que no están en «Decisiones a validar»; (5) [lente dominio, si la spec introduce un rol, un estado o una condición de acceso] **el complemento**: para cada rol o estado nuevo, qué queda prohibido —qué no ve, qué no puede hacer— y si la spec lo dice; un rol descrito solo por lo que hace es un hueco de visibilidad; (5 bis) [lente dominio, si el delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos] **las cinco reglas por nombre** —dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto—: cada una declarada en «Reglas de la capacidad» o «no aplica», con el valor tomado de las «Reglas de producto» de la constitution o de la capacidad; una regla inventada donde ya había una escrita, o que contradiga la constitution, es Crítico; (6) [lente técnica] contratos, datos o dependencias que la spec toca sin decirlo. Devuelve SOLO una lista numerada; cada hallazgo en una línea: `<Crítico|Importante|Menor> · <dónde (sección)> · <qué falla> · <qué cambiar>`. Sin preámbulo, sin elogios, máximo diez hallazgos.
+- **Un revisor**: su lente recibe los **siete puntos**.
+- **Dos revisores**: **dominio** recibe 1, 3, 5, 5 bis y 7; **técnica** recibe 2, 4 y 6, y además lee `architecture.md`. Cada encargo cierra con la frontera: «si un hallazgo pertenece a un punto que no está en tu lista, no lo reportes: lo mira el otro revisor».
+
+Sin el reparto, los puntos comunes se pagan dos veces: 4 de 18 hallazgos duplicados en campo (task 0009) y 8 de 19 —el 45 %— en el RED de esta regla, a ~100k tokens por revisor (`tests/spec-review-lenses-red.md`).
+
+Encargo, con los puntos que le tocan:
+
+> Eres un revisor adversarial de una spec SDD, con la lente `<dominio|técnica>`. Tu trabajo es encontrar lo que hará fallar la implementación o el gate, no aprobar. Lee: `<ruta spec.md>`, `.docs/sdd/constitution.md`, `.docs/sdd/mission.md`, `<capacidades tocadas de capabilities/>` [lente técnica: y `.docs/sdd/architecture.md`]. No leas código ni otras specs. Busca, en este orden: (1) contradicciones con la verdad viva de `capabilities/` — un `ADDED` que cambia un requisito existente es un `MODIFIED` no declarado; (2) requisitos del delta sin escenario GIVEN/WHEN/THEN o con escenario que no se puede verificar; (3) alcance oculto — algo que el Intent promete y el Scope no lista, o al revés; (4) decisiones tomadas en el cuerpo que no están en «Decisiones a validar»; (5) [si la spec introduce un rol, un estado o una condición de acceso] **el complemento**: para cada rol o estado nuevo, qué queda prohibido —qué no ve, qué no puede hacer— y si la spec lo dice; un rol descrito solo por lo que hace es un hueco de visibilidad; (5 bis) [si el delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos] **las cinco reglas por nombre** —dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto—: cada una declarada en «Reglas de la capacidad» o «no aplica», con el valor tomado de las «Reglas de producto» de la constitution o de la capacidad; una regla inventada donde ya había una escrita, o que contradiga la constitution, es Crítico; (6) contratos, datos o dependencias que la spec toca sin decirlo; (7) **los ejemplos**: un ejemplo, un valor o una fixture de la spec que contradiga la constitution, y —aunque la constitution no lo prohíba— cualquiera que nombre un cliente, un proyecto, una persona o un dato reales donde un ejemplo inventado serviría igual; los artefactos se publican y el nombre no se retira del historial. Termina con la frontera que te corresponda. Devuelve SOLO una lista numerada; cada hallazgo en una línea: `<Crítico|Importante|Menor> · <dónde (sección)> · <qué falla> · <qué cambiar>`. Sin preámbulo, sin elogios, máximo diez hallazgos.
 
 ## 4. Incorpora los hallazgos antes del gate
 
