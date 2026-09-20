@@ -32,13 +32,13 @@ Review de spec propuesta: <nivel> — señales: <las contadas>
 
 Cada línea de lente **cita un requisito, una sección o un valor de esta spec**. «Comprobaría contradicciones con las capacidades» vale para cualquier spec y no ayuda a decidir; lista solo las lentes que el nivel propone o que el mínimo descarta. La línea del mínimo nombra el **descubierto**, no el precio: lo que cuesta un revisor (~100k tokens) ya se sabe, y lo que el dev-lead no puede ver sin ti es qué se queda sin mirar si recorta.
 
-Ejemplo, en una spec que añade un rol de supervisor y un fichero que lee otro sistema:
+Ejemplo, en una spec de facturación:
 
 ```text
-Review de spec propuesta: dos revisores — señales: contrato público (`exports/*.csv` lo lee logística), MODIFIED (cancelar tras el envío), dato nuevo (`cancel_reason`), reglas de visibilidad (rol supervisor)
-- Dominio: si el ADDED de cancelación tras el envío deroga «Un pedido se cancela solo antes del envío» sin declararlo, y qué NO puede hacer el supervisor (señal: MODIFIED + rol nuevo)
-- Técnica: si el CSV de logística es un contrato acordado y si `cancel_reason` necesita migración (señal: contrato público + dato nuevo)
-- Mínimo razonable: solo dominio — deja sin mirar el contrato con logística, el único cambio de esta spec que puede romper a otro equipo
+Review de spec propuesta: dos revisores — señales: contrato público (el webhook `invoice.paid` lo consume el portal del cliente), MODIFIED (dos requisitos de `invoicing`), datos (columna `tax_rate`), rol nuevo (gestor de cobros)
+- Dominio: si el MODIFIED de «La factura se emite al cerrar el mes» mantiene el aviso a contabilidad que hoy exige la capacidad, y qué NO puede hacer el gestor de cobros (señal: MODIFIED + rol nuevo)
+- Técnica: si el payload de `invoice.paid` queda versionado y si `tax_rate` necesita migración con valor por defecto para las facturas ya emitidas (señal: contrato público + datos)
+- Mínimo razonable: solo técnica — deja sin mirar el complemento del rol nuevo, el tipo de hueco que no se ve hasta que alguien accede a lo que no debía
 ```
 
 **Proponer no es activar**: el usuario activa con su respuesta. Si no responde, la spec se presenta sin review y se anota.
