@@ -19,19 +19,19 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | Fixture de la campaña | done | (sin commit) | Fixture Ledgerly en el scratchpad con ocho defectos plantados, uno por punto del encargo más el ejemplo con nombre real. Desechable por diseño (`architecture.md`): no se versiona |
-| 2 | Campaña RED (4 sujetos) | in_progress | — | Dos revisores con el encargo vigente (una lente cada uno) y dos sujetos de propuesta de nivel. Sonnet; el tool `Agent` no expone `effort`, se anota como desviación del Art. IV igual que en T7 |
-| 3 | Reescritura de `review-spec.md` y frase de la plantilla | pending | — | En línea. Bloqueada por el veredicto del RED |
-| 4 | Campaña GREEN (4 sujetos) | pending | — | Mismos escenarios y mismo fixture |
-| 5 | Evidencia RED/GREEN | pending | — | `tests/spec-review-lenses-red.md` y `-green.md` |
-| 6 | Revisión final de rama | pending | — | Subagente con la cabecera de `encargo-revision.md` |
+| 2 | Campaña RED (6 sujetos) | done | `c05fa26` | Dos revisores con el encargo vigente, dos sujetos de propuesta y **dos sujetos extra** (E3b) sobre un fixture sin la regla de datos ficticios: el primer intento del punto de ejemplos salió 2/2 positivo y hubo que reproducir la condición real del kit. Sonnet; el tool `Agent` no expone `effort`, desviación del Art. IV ya anotada en T7 |
+| 3 | Reescritura de `review-spec.md` y frase de la plantilla | done | `62f49f5`, `ddba5e0` | El segundo commit mueve el ejemplo de §2 a otro dominio: coincidía con el de la fixture y contaminaba el GREEN de la propuesta |
+| 4 | Campaña GREEN (5 sujetos) | done | `5372b50` | Sobre `fixture-no-rule`, la condición dura. Un sujeto extra: el punto 7 iba a quedar con n=1 en GREEN frente a n=2 en RED |
+| 5 | Evidencia RED/GREEN | done | `c05fa26`, `5372b50` | Sin refactor: ningún criterio del GREEN falló |
+| 6 | Revisión final de rama | in_progress | — | Subagente con la cabecera de `encargo-revision.md` |
 
 ## Verificación por task
 
 - [x] Task 1 — ocho defectos verificados en disco; el fixture no telegrafía la conducta medida
-- [ ] Task 2 — recuento de duplicados, Críticos, nombre real marcado y forma de la propuesta
-- [ ] Task 3 — suite verde (`Invoke-Pester -Path tests`)
-- [ ] Task 4 — duplicados < 10 %, ningún Crítico del RED perdido, nombre real marcado, propuesta anclada
-- [ ] Task 5 — suite verde
+- [x] Task 2 — recuento de duplicados, Críticos, nombre real marcado y forma de la propuesta
+- [x] Task 3 — suite verde (184/0)
+- [x] Task 4 — duplicados < 10 %, ningún Crítico del RED perdido, nombre real marcado, propuesta anclada
+- [x] Task 5 — suite verde (184/0)
 - [ ] Task 6 — hallazgos Crítico e Importante incorporados
 
 ## Fixes adicionales (trabajo descubierto fuera de scope)
