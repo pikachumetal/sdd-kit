@@ -2,20 +2,22 @@
 
 Kit SDD del equipo: skills de proceso agnósticas para el flujo **spec → plan → implementación → walkthrough** con Claude Code. Es el nivel 1 de la taxonomía de skills del equipo (proceso, igual en todos los proyectos); las skills técnicas por stack (nivel 2) y las específicas de cada proyecto (nivel 3) viven en cada repo.
 
-> Estado: **v0.4.0 cerrada**, sin distribuir (sin remoto configurado). Las 10 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
+> Estado: **v1.1.0 cerrada** y publicada en `pikachumetal/sdd-kit`. La 1.2.0 está abierta: 16 tasks salidas de siete tickets de campo de agentes que usaron el kit en proyectos reales (ver [roadmap](.docs/sdd/roadmap.md)). Las 11 skills de proceso validadas con el TDD de writing-skills: baseline sin skill (RED) → skill dirigida a los fallos observados (GREEN) → cierre de huecos. Evidencia completa en `tests/`.
 
 ## Instalación
 
 Como plugin de Claude Code (recomendado — actualizable centralmente):
 
 ```text
-/plugin marketplace add <ruta-o-repo>/sdd-kit
+/plugin marketplace add pikachumetal/sdd-kit
 /plugin install sdd-kit@sdd-kit
 /reload-plugins
 ```
 
+Desde un clon local, para desarrollar el propio kit:
+
 ```text
-/plugin marketplace add D:\code\git\sdd-kit
+/plugin marketplace add <ruta-al-clon>
 /plugin install sdd-kit@sdd-kit
 /reload-plugins
 ```
@@ -23,8 +25,8 @@ Como plugin de Claude Code (recomendado — actualizable centralmente):
 Por skill individual, con el CLI de agent skills:
 
 ```bash
-npx skills add <org>/sdd-kit -a claude-code            # todas
-npx skills add <org>/sdd-kit --skill sdd-start-task    # una concreta
+npx skills add pikachumetal/sdd-kit -a claude-code            # todas
+npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una concreta
 ```
 
 ## Actualizar un proyecto

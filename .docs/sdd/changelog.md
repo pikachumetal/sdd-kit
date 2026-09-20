@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Fixed
+
+- **Nombres de proyectos reales dentro de `skills/`** — dos frases de evidencia de campo citaban el proyecto por su nombre (`encargo-revision.md` y `environments-template.md`), y `skills/` es lo que se instala en cada proyecto consumidor. Conservan la evidencia y pierden el nombre propio. Detectado en el barrido previo a publicar el repo. → [ref](specs/20260920-192907-patch-0017-nombres-de-proyecto-en-skills/patch.md)
+
 ## [1.1.0] - 2026-09-20
 
 En uso desde el bump del 2026-09-09; cerrada formalmente el 2026-09-20. [Acta](releases/v1.1.0/feedback.md) · [release notes](releases/v1.1.0/release-notes.md).

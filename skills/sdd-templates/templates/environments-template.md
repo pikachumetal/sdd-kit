@@ -56,5 +56,5 @@ aislada>.
 
 ## 5. Referencia
 
-> Alybo resuelve este mismo contrato en Node + Docker Compose (`.tools/scripts/env-*.mjs`,
-> marcador `.aly-env.json`); es una referencia de implementación de nivel 3, no se copia aquí.
+> Una implementación de referencia de este mismo contrato en Node + Docker Compose vive en los
+> scripts del propio proyecto (`env-*.mjs` con su marcador); es nivel 3 y no se copia aquí.

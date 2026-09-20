@@ -34,4 +34,4 @@ Los tests de `<ruta>` son el contrato; no los modifiques; si uno te parece incor
 <task-brief de superpowers a partir de aquí>
 ```
 
-La frase corta es la que funcionó en SifRest; la versión larga («sin investigar fuera del repo…») no bastó. Los tests los escribe el hilo principal desde los THEN de la spec antes de despachar (paso 6 de `sdd-start-task`); el implementador los hace pasar, no los redacta.
+La frase corta es la que funcionó en un proyecto real del equipo; la versión larga («sin investigar fuera del repo…») no bastó. Los tests los escribe el hilo principal desde los THEN de la spec antes de despachar (paso 6 de `sdd-start-task`); el implementador los hace pasar, no los redacta.
