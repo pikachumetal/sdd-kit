@@ -23,7 +23,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 3 | Reescritura de `review-spec.md` y frase de la plantilla | done | `62f49f5`, `ddba5e0` | El segundo commit mueve el ejemplo de §2 a otro dominio: coincidía con el de la fixture y contaminaba el GREEN de la propuesta |
 | 4 | Campaña GREEN (5 sujetos) | done | `5372b50` | Sobre `fixture-no-rule`, la condición dura. Un sujeto extra: el punto 7 iba a quedar con n=1 en GREEN frente a n=2 en RED |
 | 5 | Evidencia RED/GREEN | done | `c05fa26`, `5372b50` | Sin refactor: ningún criterio del GREEN falló |
-| 6 | Revisión final de rama | in_progress | — | Subagente con la cabecera de `encargo-revision.md` |
+| 6 | Revisión final de rama | pending | — | **Pendiente de la próxima sesión**: el dev-lead apagó el equipo antes de despacharla. Subagente Sonnet medium con la cabecera de `encargo-revision.md` y el diff de `feature/0011` contra `develop` (7 ficheros, +535/−4) |
 
 ## Verificación por task
 
