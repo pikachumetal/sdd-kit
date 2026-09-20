@@ -3,13 +3,13 @@ id: 20260920-202137-task-0001-task-ids
 task: 0001
 title: Ids de task y numeración sin gestor de tickets
 mode: full
-status: draft
+status: approved
 created: 2026-09-20
 author: Àngel Delgado (con Claude Opus 5)
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-20
 ---
 
 # Spec — Ids de task y numeración sin gestor de tickets
@@ -170,4 +170,4 @@ El modo de ids es un **dato del proyecto**, no una decisión del agente: se preg
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-20 | aprobada («ok, adelante») |
