@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-20
+
+En uso desde el bump del 2026-09-09; cerrada formalmente el 2026-09-20. [Acta](releases/v1.1.0/feedback.md) · [release notes](releases/v1.1.0/release-notes.md).
+
 ### Changed
 
 - **Convención de nombres (rompe para consumidores)** — los nombres que el kit fija a los proyectos pasan a inglés (Art. III): `funcional/` → `capabilities/`, `funcional/legado.md` → `capabilities/legacy.md`, el placeholder `<capacidad>` → `<capability>`, `changelog-cliente.md` → `client-changelog.md`; las plantillas `funcional-template.md` → `capability-template.md` y `changelog-cliente-template.md` → `client-changelog-template.md`. → [ref](specs/20260909-210515-task-0000-english-file-names/)

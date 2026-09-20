@@ -30,13 +30,15 @@
 | 2026-09-09 | 0000 | docs | 1 | 0.9 | 0.9 | 20260909-180422-task-0000-reglas-de-capacidad |
 | 2026-09-09 | 0000 | docs | 0.6 | 0.4 | 0.67 | 20260909-194633-task-0000-changelog-cliente |
 | 2026-09-09 | 0000 | chore | 1.5 | 1 | 0.67 | 20260909-210515-task-0000-english-file-names |
+| 2026-09-10 | 0000 | patch | 1.5 | 1.2 | 0.8 | 20260910-072132-patch-0000-estimation-parser-tolerante |
 
-**Factor de calibración** (ratio mediano real/estimado, 22 artefactos): **0.57**
+**Factor de calibración** (ratio mediano real/estimado, 23 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 19 | 0.5 |
 | infra/tooling | 2 | 0.9 |
+| patch | 1 | 0.8 |
 
 > Ver `estimation.md`.
