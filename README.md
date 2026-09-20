@@ -120,6 +120,10 @@ El kit invoca 7 skills de superpowers: `brainstorming`, `writing-plans`, `subage
 
 El texto está en castellano porque es la lengua del equipo donde nació esto. Los nombres de skill, los identificadores y todo lo que el kit fija a los proyectos van en inglés. Si alguien lo quiere en otro idioma, se puede hablar.
 
+## Licencia
+
+MIT, en [LICENSE](LICENSE). Úsalo, cópialo, modifícalo y redistribúyelo; lo único que pide es que la nota de copyright viaje con el código.
+
 ## Origen
 
 Escribí esto para el equipo con el que trabajo y lo publico en mi cuenta personal por comodidad, para poder instalarlo en cualquier máquina sin copiar carpetas. Los documentos de proceso del equipo, en catalán, están en [`.docs/flux/`](.docs/flux/).
