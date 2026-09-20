@@ -29,6 +29,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | Script | Uso |
 | --- | --- |
 | [scripts/Build-EstimationLog.ps1](scripts/Build-EstimationLog.ps1) | Regenera `estimation-log.md` desde los walkthroughs y patches (`walkthrough.md` §2, `patch.md` §5, `hotfix.md` legacy). Lo ejecutan `sdd-end-task` y `sdd-end-patch` desde el kit: `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`. No se copia al proyecto: una copia local es deriva, igual que con las plantillas. |
+| [scripts/Get-NextSddId.ps1](scripts/Get-NextSddId.ps1) | Calcula el siguiente id libre (`0001`–`9999`) para un proyecto en modo `ids.mode: sequence`, mirando `specs/`, `roadmap.md` y las ramas del repo. Solo lee, no escribe nada: `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-NextSddId.ps1" -ProjectRoot "<raíz del proyecto>"`. En modo `tracker` (o sin campo `ids`) sale con error: ese modo asigna el id con el gestor de tickets, no con este script. No se copia al proyecto. |
 
 Reglas al usarlas:
 
