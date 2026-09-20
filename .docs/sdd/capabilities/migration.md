@@ -7,7 +7,7 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 ### El proyecto declara la versión del kit que tiene
 - GIVEN un proyecto inicializado con `sdd-init-greenfield` o `sdd-init-brownfield`
 - WHEN termina la inicialización
-- THEN existe `.docs/sdd/sdd-kit.json` con `version`, `channel` y `updated`
+- THEN existe `.docs/sdd/sdd-kit.json` con `version`, `channel`, `updated` e `ids`
 
 ### Cada release con cambio estructural lleva su migración
 - GIVEN una release del kit que cambia la estructura de `.docs/sdd/` o retira algo del proyecto
@@ -41,6 +41,12 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto.
 - **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case.
 
+### La migración a v1.2.0 pregunta el modo de ids
+- GIVEN un proyecto que migra a v1.2.0 y cuyo `sdd-kit.json` no tiene campo `ids`
+- WHEN se aplica `migrations/v1.2.0.md`
+- THEN el paso es un **gate**: presenta los dos modos al dev-lead y escribe su respuesta
+- AND si el dev-lead no está, el paso queda pendiente explícito y el proyecto sigue funcionando en `tracker`
+
 ## Historial
 
 - 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED El proyecto declara la versión del kit que tiene
@@ -51,3 +57,5 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED Un proyecto ya inicializado se migra, no se re-inicializa
 - 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El `funcional.md` heredado se conserva como legado
 - 2026-09-09 — 20260909-210515-task-0000-english-file-names — ADDED Un proyecto que ya migró a v1.0.0 recibe el rename por `v1.1.0.md`
+- 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED El proyecto declara la versión del kit que tiene
+- 2026-09-20 — 20260920-202137-task-0001-task-ids — ADDED La migración a v1.2.0 pregunta el modo de ids

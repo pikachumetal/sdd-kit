@@ -32,14 +32,15 @@
 | 2026-09-09 | 0000 | chore | 1.5 | 1 | 0.67 | 20260909-210515-task-0000-english-file-names |
 | 2026-09-10 | 0000 | patch | 1.5 | 1.2 | 0.8 | 20260910-072132-patch-0000-estimation-parser-tolerante |
 | 2026-09-20 | 0017 | patch | 0.25 | 0.2 | 0.8 | 20260920-192907-patch-0017-nombres-de-proyecto-en-skills |
+| 2026-09-20 | 0001 | infra/tooling | 2.5 | 0.9 | 0.36 | 20260920-202137-task-0001-task-ids |
 
-**Factor de calibración** (ratio mediano real/estimado, 24 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 25 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 19 | 0.5 |
-| infra/tooling | 2 | 0.9 |
+| infra/tooling | 3 | 0.7 |
 | patch | 2 | 0.8 |
 
 > Ver `estimation.md`.

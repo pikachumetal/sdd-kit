@@ -4,6 +4,15 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Numeración propia para proyectos sin gestor de tickets** — `sdd-kit.json` declara el modo (`ids.mode`: `tracker` | `sequence`; sin campo, `tracker`), la entrevista de las dos init lo decide, `migrations/v1.2.0.md` lo pregunta a un proyecto ya inicializado, y en modo `sequence` el id lo reserva el roadmap al planificar o lo calcula `Get-NextSddId.ps1` para el trabajo no planificado. Tasks y patches comparten secuencia y una task partida toma el siguiente id libre con `parent:` en vez de un sufijo. → [ref](specs/20260920-202137-task-0001-task-ids/)
+- **`skills/sdd-templates/scripts/Get-NextSddId.ps1`** — script de solo lectura que deriva el siguiente id libre de las carpetas de `specs/`, la primera columna del roadmap y los nombres de rama; avisa y no devuelve id si el proyecto numera con gestor o si dos artefactos comparten id. → [ref](specs/20260920-202137-task-0001-task-ids/)
+
+### Changed
+
+- **Art. IV de la constitution del kit** — la cláusula del naming pasa de «id de ticket (0000 si no hay)» a los dos modos de numeración. → [ref](specs/20260920-202137-task-0001-task-ids/)
+
 ### Fixed
 
 - **Nombres de proyectos reales dentro de `skills/`** — dos frases de evidencia de campo citaban el proyecto por su nombre (`encargo-revision.md` y `environments-template.md`), y `skills/` es lo que se instala en cada proyecto consumidor. Conservan la evidencia y pierden el nombre propio. Detectado en el barrido previo a publicar el repo. → [ref](specs/20260920-192907-patch-0017-nombres-de-proyecto-en-skills/patch.md)
