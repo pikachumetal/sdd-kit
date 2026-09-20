@@ -34,7 +34,7 @@ A diferencia del Gate 1 de `sdd-start-task`, aquí **la pregunta ES el enunciado
 | Racionalización | Realidad |
 | --- | --- |
 | "Me pide 'arréglalo' directamente, así que creo yo el patch.md" | "Arréglalo" es el disparo del handoff, no permiso para fabricar el artefacto. Se transiciona al carril, que gatea la causa raíz y el id — o, si hay que interpretar el enfoque, es task, no patch. |
-| "Elijo el id de ticket siguiente libre y lo marco tentativo" | Un id inventado en un artefacto se confunde con uno real para siempre. El id lo da el carril/gestor; la consulta no inventa ids. |
+| "Elijo el id de ticket siguiente libre y lo marco tentativo" | La consulta puede **calcular y proponer** el siguiente id con `Get-NextSddId.ps1`, pero no lo reserva ni lo escribe en ningún artefacto: la reserva es del carril. |
 | "Reproduzco la convención de naming a mano, total la sé" | Reproducir el carril a mano se salta sus gates. Si es trabajo, se invoca el carril; si no, no hay artefacto. |
 | "Ya que he mirado el roadmap y está desfasado, lo actualizo de paso" | La salida durable se propone y se aprueba. Editar "de paso" es exactamente lo que este carril no hace. |
 | "Para estructurar esto uso brainstorming" | Brainstorming construye features (acaba en spec). Para estructurar/tensar una dirección sin artefactos: `grilling`. |

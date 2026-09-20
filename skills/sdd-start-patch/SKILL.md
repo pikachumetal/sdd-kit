@@ -33,7 +33,7 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 ## Flujo (crea un todo por paso)
 
 1. **Causa raíz OBLIGATORIA** — `superpowers:systematic-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o el fix crece más allá de lo puntual → STOP: era una task, cambia a `sdd-start-task`.
-2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` = ticket, `0000` si no hay). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca.
+2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` según el modo de `.docs/sdd/sdd-kit.json`, igual que la task (`sdd-start-task/references/nombrado.md`) — en `sequence` comparte secuencia con las tasks, nunca la reutiliza entre carriles). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca.
 3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal), causa raíz (lo que TÚ encontraste, con la evidencia), fix, verificación, tiempo.
 4. **Fix mínimo** — sin refactor oportunista, aunque la deuda esté a un renglón de distancia. Verificar que el build del proyecto pasa.
 5. **Commit** — convención de commits del proyecto, referenciando el ticket.

@@ -28,8 +28,10 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
 4. **Estado de la release** — "comprometida" SOLO si el usuario lo dice y no hay bloqueos externos sobre
    el scope; con bloqueos abiertos → "en preparación" con los bloqueos explícitos en la sección.
 5. **Roadmap como única fuente** — sección "Release N" con filas trazables al acta/origen. **No crear
-   documentos paralelos de scope.** **Los ids de ticket no se inventan.** Por qué y qué hacer sin gestor
-   de tickets: [roadmap-fuente.md](references/roadmap-fuente.md).
+   documentos paralelos de scope.** **Los ids no se inventan**: el origen legítimo es el ticket del gestor
+   o la secuencia del proyecto (`ids.mode`) — nunca un número a ojo. En `sequence`, cada fila lleva su id
+   **reservado y correlativo** al escribir el scope: esa reserva es lo que impide que dos worktrees cojan
+   el mismo número. Detalle: [roadmap-fuente.md](references/roadmap-fuente.md).
 6. **Refinar SOLO el top** — **TRAS la decisión de scope del usuario (gate del paso 2)**: la primera task
    (o las 2-3 primeras si son independientes) se arranca vía `sdd-start-task`, cada una con su spec y su
    gate. Scope sin decidir → ninguna task arrancada: la apertura queda EN PREPARACIÓN. **PROHIBIDO crear
@@ -44,7 +46,7 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
 - Has marcado la release "comprometida" con bloqueos externos abiertos, o sin que el usuario lo diga.
 - Has creado un documento de scope paralelo al roadmap.
 - Has movido items de backlog a la release por el énfasis verbal de un stakeholder.
-- Has escrito ids de ticket nuevos en el roadmap que no existen en ningún gestor.
+- Has escrito en el roadmap un id que no viene del gestor ni de la secuencia del proyecto (`Get-NextSddId.ps1` o fila ya reservada).
 - El usuario no ha confirmado el scope y ya estás editando el roadmap como definitivo.
 
 | Racionalización | Realidad |
@@ -55,4 +57,4 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
 | "Congelo el scope en un doc aparte para auditarlo" | El roadmap versionado en git YA es auditable. Un segundo documento es el que nadie actualiza. |
 | "Arrastro la deuda técnica entera, así se salda" | La deuda entra por prerequisito o por decisión explícita, no por inercia — infla el scope y diluye el hito. |
 | "El encargo de 'dejarlo todo listo' ya autoriza arrancar la primera task" | "Listo" = propuesta ordenada con bloqueos claros. El scope no está decidido hasta que el usuario decide; sin esa decisión no se abre ninguna task. |
-| "Propongo numeración correlativa de tickets para adelantar" | Un id inventado en el roadmap se confunde con un ticket real para siempre. El id lo da el gestor, o lo acuerda el usuario. |
+| "Propongo numeración correlativa de tickets para adelantar" | Un id inventado en el roadmap se confunde con un ticket real para siempre. El id lo da el gestor, o la secuencia del proyecto (`ids.mode: sequence` + `Get-NextSddId.ps1`) — nunca un número a ojo. |
