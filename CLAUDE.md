@@ -13,7 +13,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/estimation.md` y `.docs/sdd/estimation-log.md` — método de estimación y registro estimado-vs-real.
 - `.docs/sdd/field-reports/` — tickets de campo escritos por agentes que usaron el kit en proyectos reales, copiados literales (nacen en scratchpads efímeros). Son la evidencia de origen de las filas de deuda del roadmap; no se editan.
 - `.docs/sdd/specs/` — artefactos SDD de las tareas del propio kit (spec, plan, walkthrough por carpeta).
-- `.docs/workflow/` — la documentación temprana del kit en castellano: [greenfield](.docs/workflow/greenfield.md), [brownfield](.docs/workflow/brownfield.md) y el [anexo de evidencia](.docs/workflow/evidence-and-references.md). **Se mantienen al día con el kit**: si una release cambia un carril, un artefacto o una regla que describen, se actualizan en el mismo cierre.
+- `.docs/workflow/` — documentación temprana del flujo en castellano: [greenfield](.docs/workflow/greenfield.md), [brownfield](.docs/workflow/brownfield.md) y el [anexo de evidencia](.docs/workflow/evidence-and-references.md). Es **de este repo**, no algo que el kit fije a los proyectos: ninguna skill la nombra. Los dos primeros describen el kit y se releen al subir de versión; lo vigila `tests/WorkflowDocs.Tests.ps1`, que compara su marcador «Última revisión: kit vX.Y.Z» con `plugin.json`.
 - `skills/<nombre>/SKILL.md` — las 11 skills del kit. `skills/sdd-templates/templates/` es la **fuente única** de las plantillas.
 - `tests/` — evidencia RED/GREEN de cada skill (baseline sin skill → verificación con skill).
 - `.claude-plugin/` — manifests del plugin (versión) y del marketplace.

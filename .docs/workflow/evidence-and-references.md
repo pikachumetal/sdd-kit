@@ -1,6 +1,6 @@
 # Flujo de desarrollo rápido con Claude: anexo de evidencia y referencias
 
-Este anexo recoge la evidencia que sustenta los documentos de flujo [greenfield](greenfield.md) y [brownfield](brownfield.md). Todas las fuentes se verificaron el 9 de julio de 2026 leyendo directamente la fuente primaria.
+Este anexo recoge la evidencia que sustenta los documentos de flujo [greenfield](greenfield.md) y [brownfield](brownfield.md). Todas las fuentes se verificaron el 9 de julio de 2026 leyendo directamente la fuente primaria. A diferencia de los otros dos, este documento no describe el kit, así que envejece con sus fuentes y no con cada release.
 
 Cada afirmación lleva una etiqueta de fiabilidad:
 
