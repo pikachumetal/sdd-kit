@@ -126,6 +126,6 @@ MIT, en [LICENSE](LICENSE). Úsalo, cópialo, modifícalo y redistribúyelo; lo 
 
 ## Origen
 
-Escribí esto para el equipo con el que trabajo y lo publico en mi cuenta personal por comodidad, para poder instalarlo en cualquier máquina sin copiar carpetas. Los documentos de proceso del equipo, en catalán, están en [`.docs/flux/`](.docs/flux/).
+Escribí esto para el equipo con el que trabajo y lo publico en mi cuenta personal por comodidad, para poder instalarlo en cualquier máquina sin copiar carpetas.
 
 Si lo pruebas y algo te chirría, abre un issue. Los tickets de campo de `field-reports/` son justo eso, escritos por agentes, y han sido la mejor fuente de mejoras que he tenido hasta ahora.

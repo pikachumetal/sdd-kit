@@ -133,4 +133,4 @@ Planificada y trabajada como v0.6.0 (RC hacia 1.0.0); cerrada como 1.0.0 por dec
 - **sdd-init-greenfield / sdd-init-brownfield** — arranque de proyecto por entrevista con gate / onboarding de codebase documentando el estado real. → [ref](../../tests/)
 - **sdd-templates** — las 7 plantillas canónicas (base marketplace + injertos del legacy).
 - Manifests de plugin (`.claude-plugin/`) con distribución dual (plugin de Claude Code + npx skills add).
-- Documentos de flujo del equipo en `.docs/flux/` (greenfield, brownfield, annex — en catalán).
+- Documentos internos de flujo del equipo, fuera del repo desde 2026-09-20.

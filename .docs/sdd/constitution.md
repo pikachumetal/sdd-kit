@@ -16,7 +16,7 @@ Para un **recorte o reestructuración de una skill existente**, el baseline vac�
 
 ## Art. III — Idioma
 
-Texto humano (skills, docs, tests, commits-cuerpo) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case; los documentos de flujo del equipo (`.docs/flux/`) en catalán. No se traducen las skills al inglés por ahorro de tokens: el ahorro es marginal y rompe la validación y la legibilidad del equipo (decisión 2026-07-09).
+Texto humano (skills, docs, tests, commits-cuerpo) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case. No se traducen las skills al inglés por ahorro de tokens: el ahorro es marginal y rompe la validación y la legibilidad del equipo (decisión 2026-07-09).
 
 ## Art. IV — Convenciones que el kit fija a los proyectos
 

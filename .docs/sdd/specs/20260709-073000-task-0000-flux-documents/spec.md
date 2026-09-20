@@ -4,7 +4,7 @@
 - **Estado**: done
 - **Origen**: evolución del documento interno "Flux per al desenvolupament ràpid d'apps.md"
 
-> **Nota de migración**: spec redactada originalmente en `D:\code\labs\vibe-coding\docs\specs\` (antes de existir este repo) y migrada aquí el 2026-07-09 al aplicar el Art. VII (dogfooding). El plan de ejecución vivía embebido en §9 — no existió `plan.md` separado. Los entregables viven en `.docs/flux/` de este repo.
+> **Nota de migración**: spec redactada originalmente en `D:\code\labs\vibe-coding\docs\specs\` (antes de existir este repo) y migrada aquí el 2026-07-09 al aplicar el Art. VII (dogfooding). El plan de ejecución vivía embebido en §9 — no existió `plan.md` separado. Los entregables son documentos internos del equipo y viven fuera de este repo desde 2026-09-20.
 
 ## 1. Contexto y objetivo
 
@@ -20,7 +20,7 @@ El equipo dispone de un primer documento de flujo de desarrollo rápido con Clau
 | 2 | `Flux … — Projectes brownfield.md` | ~150 líneas |
 | 3 | `Flux … — Annex: evidència i referències.md` | sin límite estricto, documento de referencia |
 
-Ubicación final: `.docs/flux/` de este repo. Los títulos mantienen la familia del documento original (se leen como su continuación).
+Ubicación final: documentación interna del equipo, fuera de este repo desde 2026-09-20. Los títulos mantienen la familia del documento original (se leen como su continuación).
 
 ## 3. Decisiones cerradas (grilling 2026-07-09)
 
@@ -42,7 +42,7 @@ Ubicación final: `.docs/flux/` de este repo. Los títulos mantienen la familia 
 
 ## 4-6. Estructuras de los tres documentos
 
-Ver los entregables en `.docs/flux/` — las estructuras detalladas de la spec original se materializaron sin desviaciones relevantes (ver walkthrough).
+Los entregables están fuera de este repo — las estructuras detalladas de la spec original se materializaron sin desviaciones relevantes (ver walkthrough).
 
 ## 7. Criterios de aceptación
 

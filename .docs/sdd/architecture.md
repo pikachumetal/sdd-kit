@@ -23,7 +23,6 @@
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única + scripts/Build-EstimationLog.ps1)
 ├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1 y fixtures/ de los scripts)
 └── .docs/
-    ├── flux/                    (documentos de flujo del equipo, en catalán)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)
         └── capabilities/           (verdad viva por capacidad: un fichero por sustantivo del dominio, fusionado desde el delta de cada spec)
 ```
