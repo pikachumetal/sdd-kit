@@ -27,7 +27,7 @@ Los ficheros y carpetas que el kit crea en tu proyecto pasan a tener nombre en i
 
 ## Fuera de alcance de esta entrega
 
-Todo lo que el uso real ha destapado entre el 16 y el 20 de septiembre —37 peticiones, recogidas en el [acta](feedback.md)— entra en la próxima versión, no en esta.
+Todo lo que el uso real ha destapado entre el 16 y el 20 de septiembre —38 peticiones, recogidas en el [acta](feedback.md)— entra en la próxima versión, no en esta.
 
 ## Próximos pasos
 
