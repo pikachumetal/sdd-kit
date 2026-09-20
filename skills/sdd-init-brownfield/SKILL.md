@@ -27,11 +27,14 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 2. **Cosecha del `CLAUDE.md` existente** (si lo hay, incluido uno generado por `/init`): cada afirmación se clasifica — verificada en el código → va al documento de anclaje que corresponda; no verificada → va a la lista de discrepancias para el usuario. Nada se pierde en silencio.
 3. **Generar documento a documento, con gate de revisión** — cada documento se presenta al usuario antes
    de darse por anclaje; si el usuario no está disponible, se entregan marcados **PENDIENTES DE REVISIÓN**,
-   nunca como aprobados. Orden de generación y qué lleva cada uno:
+   nunca como aprobados. Antes de la constitution, pregunta además cómo se numeran las tasks: ids del
+   gestor de tickets (`tracker`) o secuencia propia del proyecto (`sequence`); «no sé» deja `tracker`
+   (el comportamiento de hoy). Orden de generación y qué lleva cada uno:
    [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).
 5. **Estructura** — `.docs/sdd/` completa. Sin carpeta `templates/`: las plantillas viven en el skill
-   `sdd-templates`. Detalle: [generacion.md](references/generacion.md).
+   `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` con la respuesta de la entrevista.
+   Detalle: [generacion.md](references/generacion.md).
 6. **`CLAUDE.md` corto**: reescribirlo como punteros a los documentos + 3-5 reglas críticas. El contenido largo vive en los docs de anclaje, no aquí.
 7. **Cierre**: resumen + discrepancias pendientes de confirmar + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
 

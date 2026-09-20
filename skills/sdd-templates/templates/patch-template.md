@@ -1,6 +1,7 @@
 ---
 id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
-task: <id>            # ID del gestor de tickets, o 0000 si sin ticket
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
 title: Patch — <título corto>
 type: patch
 status: done

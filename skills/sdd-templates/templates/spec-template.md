@@ -1,6 +1,7 @@
 ---
 id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
-task: <id>            # ID del gestor de tickets, o 0000 si interno
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta task nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
 title: <título corto descriptivo>
 mode: full            # full | lite — lo lee sdd-end-task; sin campo = full
 status: draft
