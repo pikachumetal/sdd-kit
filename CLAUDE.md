@@ -11,6 +11,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/roadmap.md` — próximo, backlog, deuda técnica inventariada y decisiones pendientes.
 - `.docs/sdd/changelog.md` — historial de releases (Keep a Changelog, SemVer).
 - `.docs/sdd/estimation.md` y `.docs/sdd/estimation-log.md` — método de estimación y registro estimado-vs-real.
+- `.docs/sdd/field-reports/` — tickets de campo escritos por agentes que usaron el kit en proyectos reales, copiados literales (nacen en scratchpads efímeros). Son la evidencia de origen de las filas de deuda del roadmap; no se editan.
 - `.docs/sdd/specs/` — artefactos SDD de las tareas del propio kit (spec, plan, walkthrough por carpeta).
 - `.docs/flux/` — los documentos de flujo del equipo, en catalán: greenfield, brownfield y anexo de evidencia.
 - `skills/<nombre>/SKILL.md` — las 11 skills del kit. `skills/sdd-templates/templates/` es la **fuente única** de las plantillas.
