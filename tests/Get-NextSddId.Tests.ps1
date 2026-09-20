@@ -89,6 +89,12 @@ Describe 'Get-NextSddId.ps1' {
     }
   }
 
+  Context 'histórico con sufijos anteriores a la secuencia' {
+    It 'cuenta el id de una carpeta con sufijo alfabético' {
+      (Invoke-NextId (Join-Path $script:Fixtures 'legacy-suffix')).Id | Should -Be '0007'
+    }
+  }
+
   Context 'proyecto en modo tracker' {
     It 'avisa y no devuelve id con ids.mode tracker' {
       $result = Invoke-NextId (Join-Path $script:Fixtures 'tracker-project')
@@ -128,6 +134,12 @@ Describe 'Get-NextSddId.ps1' {
         Remove-Item Env:\GIT_DIR -ErrorAction SilentlyContinue
         Remove-Item Env:\GIT_WORK_TREE -ErrorAction SilentlyContinue
       }
+    }
+
+    It 'avisa cuando omite las ramas porque el proyecto no es la raíz de su repositorio' {
+      $result = Invoke-NextId (Join-Path $script:Fixtures 'sequence-project')
+      $result.Id | Should -Be '0006'
+      $result.Error | Should -Match 'rama'
     }
 
     It 'funciona en un directorio que no es repositorio git' {

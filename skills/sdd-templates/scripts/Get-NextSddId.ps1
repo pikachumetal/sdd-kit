@@ -27,7 +27,7 @@ function Get-SpecArtifactIds([string]$ProjectRoot) {
   if (-not (Test-Path -LiteralPath $specsPath)) { return @() }
   $folders = Get-ChildItem -LiteralPath $specsPath -Directory
   foreach ($folder in $folders) {
-    if ($folder.Name -match '-(?:task|patch)-(\d{4})-') {
+    if ($folder.Name -match '-(?:task|patch)-(\d{4})[a-z]*-') {
       [pscustomobject]@{ Id = $Matches[1]; Folder = $folder.Name }
     }
   }
@@ -60,15 +60,19 @@ function Invoke-IsolatedGit([string]$ProjectRoot, [string[]]$Arguments) {
   }
 }
 
-function Test-IsRepoRoot([string]$ProjectRoot) {
+function Get-RepoToplevel([string]$ProjectRoot) {
   $topLevel = Invoke-IsolatedGit $ProjectRoot @('rev-parse', '--show-toplevel')
-  if ($LASTEXITCODE -ne 0) { return $false }
-  $topLevel = (Resolve-Path -LiteralPath ($topLevel -replace '/', '\')).Path.TrimEnd('\')
-  return $topLevel -ieq $ProjectRoot.TrimEnd('\')
+  if ($LASTEXITCODE -ne 0) { return $null }
+  return (Resolve-Path -LiteralPath ($topLevel -replace '/', '\')).Path.TrimEnd('\')
 }
 
 function Get-BranchIds([string]$ProjectRoot) {
-  if (-not (Test-IsRepoRoot $ProjectRoot)) { return @() }
+  $topLevel = Get-RepoToplevel $ProjectRoot
+  if ($null -eq $topLevel) { return @() }
+  if ($topLevel -ine $ProjectRoot.TrimEnd('\')) {
+    Write-Error "Se omiten las ramas: la raíz del proyecto no es la raíz del repositorio (repositorio en '$topLevel')." -ErrorAction Continue
+    return @()
+  }
   $branches = Invoke-IsolatedGit $ProjectRoot @('branch', '--all', '--format=%(refname:short)')
   foreach ($branch in $branches) {
     if ($branch -match '(?:^|/)(\d{4})(?:$|-)') { $Matches[1] }
