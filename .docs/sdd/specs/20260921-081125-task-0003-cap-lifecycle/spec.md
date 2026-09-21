@@ -3,13 +3,13 @@ id: 20260921-081125-task-0003-cap-lifecycle
 task: 0003
 title: Capabilities — ciclo de vida completo
 mode: full
-status: draft
+status: approved
 created: 2026-09-21
 author: Claude Opus 5 (1M context)
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: Àngel Delgado
+    approved_at: 2026-09-21
 ---
 
 # Spec — Capabilities: ciclo de vida completo
@@ -23,7 +23,7 @@ approvers:
 2. **Capacidad(es) del delta: `capabilities` (nueva) y `task-flow` (existente).**
    - Sustantivo: las capacidades del proyecto.
    - Descartada: dejarlo todo en `task-flow`, porque los requisitos comparten el sustantivo «capacidad» y no «flujo de task». Es la misma decisión que aprobaste en la versión anterior.
-3. **Muevo cinco requisitos de `task-flow` a `capabilities` sin cambiar su texto**: «El delta declara el comportamiento por capacidad», «El cierre fusiona el delta en la verdad viva», «Brownfield no vuelca `capabilities/`», «Los documentos de anclaje nombran `capabilities/`» y «La consulta lee la capacidad, no las specs».
+3. **Muevo cinco requisitos de `task-flow` a `capabilities`**: «El delta declara el comportamiento por capacidad», «El cierre fusiona el delta en la verdad viva», «Brownfield no vuelca `capabilities/`», «Los documentos de anclaje nombran `capabilities/`» y «La consulta lee la capacidad, no las specs». Los dos primeros cambian por la decisión 9; los otros tres se mueven tal cual.
 4. **La regla del slug va donde se crea la capacidad**: `spec-template.md` (la frase de ayuda del delta), `capability-template.md` (regla 1) y `sdd-start-task` paso 4. No va a las init: ningún sujeto del RED creó una capacidad desde una init, y las reescribe la task 0012.
 5. **La regla de reparto va donde se escribe el valor duplicado**:
    - `spec-template.md`, junto a la «Regla de contenido»;
@@ -31,13 +31,15 @@ approvers:
    - el paso 4 (aprendizajes) de `sdd-end-task`, con red flag y racionalización.
 6. **Fuera, por el RED**:
    - la línea fija de capacidad, el test de pertenencia, el cambio de la rúbrica y el punto 8 de la lente dominio;
-   - el paso de fusión propio en task y patch, y el `MODIFIED` de bloque entero con `(retira: …)`;
+   - el paso de fusión propio en task y patch, y la marca `(retira: …)`;
    - la alarma de fusión, la frontera patch/task, el sitio único (skill o referencia) y el validador `Test-Capabilities.ps1`, ya revertido.
 7. **Fuera, sin RED**: el volcado inicial en greenfield. La excepción que decidiste el 2026-09-20 sigue en «Decisiones tomadas» del roadmap. Se escribe en la task 0012, que reescribe la init de greenfield, y con su propio RED. Lo apunto en su fila al cerrar, junto con dónde vive el funcional aportado en un greenfield.
 8. **Se mantienen** las decisiones de la versión anterior que no dependen del recorte:
    - rutas de la evidencia por debajo de 140 caracteres;
    - sin migración nueva;
    - la fusión no depende de que exista una release.
+9. **`MODIFIED` copia el bloque entero del requisito** (regla de OpenSpec), y la fusión sustituye el bloque. Es un arreglo de forma: la plantilla manda «sustituir» y los dos sujetos del RED fusionaron *añadiendo*, contra la letra. En campo, un revisor marcó Crítico dos veces por esa misma letra (task 0008). `(antes: …)` pasa a opcional. El dev-lead lo añadió al recorte el 2026-09-21.
+10. **Lo que el RED no reprodujo va a una fila de deuda del roadmap** en el cierre, con `tests/capabilities-red.md` como baseline. Son la defensa bajo presión (cajón, fusión), el validador y el delta en `patch.md`. Se reabre con un ticket de `sdd-feedback` que lo muestre en campo.
 
 ## Intent
 
@@ -48,6 +50,7 @@ En campo, un agente copió a `tech-stack.md` valores que ya estaban en la capaci
 - Entra:
   - la regla del slug en inglés kebab-case, en sus tres puntos de uso;
   - la regla de reparto, en sus tres puntos de uso;
+  - `MODIFIED` de bloque entero en `spec-template.md` y en la fusión (`aprendizajes-skills.md`);
   - mover cinco requisitos de `task-flow` a la capacidad nueva `capabilities`.
 - No entra: lo listado en las decisiones 6 y 7.
 
@@ -73,7 +76,8 @@ Cada regla, una línea en el sitio donde el RED vio el fallo, sin ficheros nuevo
 **ADDED — El delta declara el comportamiento por capacidad**
 - GIVEN una spec que cambia comportamiento observable
 - WHEN se escribe su sección de delta
-- THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED (antes: …)` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
+- THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
+- AND un `MODIFIED` copia el bloque entero del requisito con los cambios; `(antes: …)` es opcional y señala la cláusula que cambia
 - AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
 - AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto); `sdd-end-task` sustituye o añade cada entrada por su nombre
 - AND la lente dominio reclama las entradas que falten y marca como Crítico una regla que contradiga la constitution
@@ -81,7 +85,7 @@ Cada regla, una línea en el sitio donde el RED vio el fallo, sin ficheros nuevo
 **ADDED — El cierre fusiona el delta en la verdad viva**
 - GIVEN una task cerrándose vía `sdd-end-task` con un delta en su spec
 - WHEN se ejecuta el paso de fusión
-- THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye el requisito anterior, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
+- THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye entero el requisito con ese título, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 
 **ADDED — Brownfield no vuelca `capabilities/`**
@@ -109,10 +113,10 @@ Cada regla, una línea en el sitio donde el RED vio el fallo, sin ficheros nuevo
 ### Capacidad: `task-flow`
 
 **REMOVED — El delta declara el comportamiento por capacidad**
-- motivo: se mueve a `capabilities` sin cambios.
+- motivo: se mueve a `capabilities`, con el `MODIFIED` de bloque entero.
 
 **REMOVED — El cierre fusiona el delta en la verdad viva**
-- motivo: se mueve a `capabilities` sin cambios.
+- motivo: se mueve a `capabilities`, con la sustitución del bloque entero.
 
 **REMOVED — Brownfield no vuelca `capabilities/`**
 - motivo: se mueve a `capabilities` sin cambios.
@@ -127,4 +131,4 @@ Cada regla, una línea en el sitio donde el RED vio el fallo, sin ficheros nuevo
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-21 | aprobada: eligió «Recorte + MODIFIED + deuda» entre las opciones de alcance, con esta spec y el plan presentados |

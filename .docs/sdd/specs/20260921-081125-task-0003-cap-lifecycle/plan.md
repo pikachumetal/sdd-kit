@@ -3,7 +3,7 @@ id: 20260921-081125-task-0003-cap-lifecycle
 task: 0003
 title: Plan de implementación — Capabilities, ciclo de vida completo
 spec: ./spec.md
-status: draft
+status: approved
 created: 2026-09-21
 ---
 
@@ -68,11 +68,12 @@ created: 2026-09-21
 
 - `skills/sdd-templates/templates/spec-template.md`:
   - la frase de ayuda del delta: «el slug es un sustantivo en inglés kebab-case aunque el contenido vaya en castellano»;
-  - junto a la «Regla de contenido», la regla de reparto.
+  - junto a la «Regla de contenido», la regla de reparto;
+  - el marcador `MODIFIED`: copia el bloque entero del requisito; `(antes: …)` opcional.
 - `skills/sdd-templates/templates/capability-template.md`: regla 1, con el slug en inglés kebab-case aprobado por el dev-lead.
 - `skills/sdd-templates/templates/plan-template.md`: §1.1, una línea sobre qué no se documenta en `tech-stack.md`.
 - `skills/sdd-start-task/SKILL.md`: paso 4, «nombre en inglés kebab-case» en la frase que ya declara la capacidad nueva.
-- `skills/sdd-end-task/references/aprendizajes-skills.md`: paso 4, «los anclajes enlazan el valor, no lo copian».
+- `skills/sdd-end-task/references/aprendizajes-skills.md`: paso 4, «los anclajes enlazan el valor, no lo copian», y «`MODIFIED` sustituye entero el requisito con ese título».
 - `skills/sdd-end-task/SKILL.md`: una red flag y una fila de racionalización.
 
 **NO se tocan**: `.docs/sdd/capabilities/*`, `roadmap.md`, `mission.md`, `tech-stack.md` y `changelog.md` (son del cierre, tras integrar develop); `sdd-init-*` (task 0012); el carril release (task 0004).
@@ -119,7 +120,8 @@ Implementado en `79bec32` y revertido en `ca51ef4` por el RED.
   - `capability-template.md`, regla 1, contiene «inglés»;
   - `plan-template.md` contiene la línea de reparto;
   - `sdd-start-task/SKILL.md`, paso 4, contiene «inglés kebab-case»;
-  - `aprendizajes-skills.md` contiene «enlaza»;
+  - `aprendizajes-skills.md` contiene «enlaza» y «entero»;
+  - `spec-template.md` contiene «bloque entero» junto al marcador `MODIFIED`;
   - `sdd-end-task/SKILL.md` tiene la red flag con `tech-stack`.
 - [ ] **Step 2: RED**: `Invoke-Pester tests/CapabilityRules.Tests.ps1` falla.
 - [ ] **Step 3: Editar** los seis puntos.
@@ -133,7 +135,7 @@ Implementado en `79bec32` y revertido en `ca51ef4` por el RED.
 
 - [ ] **Step 1**: copia limpia del kit de la rama y moldes `m1` y `m2` copiados de `red/` a `green/`.
 - [ ] **Step 2**: lanzar 2 sujetos por molde.
-- [ ] **Step 3**: veredicto por fallo del RED (slug, tech-stack) y comprobación de que los positivos del RED siguen igual (capacidad nueva, fusión, `legacy.md`, valor construido).
+- [ ] **Step 3**: veredicto por fallo del RED (slug, tech-stack), comprobación de que el `MODIFIED` aditivo de m2 se sigue fusionando sin perder `AND`, y comprobación de que los positivos del RED siguen igual (capacidad nueva, fusión, `legacy.md`, valor construido).
 - [ ] **Step 4**: `tests/capabilities-green.md`, longitud de rutas (§1.6 del plan anterior: `git ls-files --others --cached --exclude-standard -- <carpeta> tests | Where-Object { $_.Length -ge 140 }`, sin salida) y commit.
 
 ### Revisión final de rama
