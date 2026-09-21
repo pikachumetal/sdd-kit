@@ -199,14 +199,20 @@ bash $SPEC/run-controls.sh $SP/kit $SPEC/out-controls-red
 `red/Hook.Tests.ps1`:
 
 ```powershell
-BeforeDiscovery {
-  $script:BashAvailable = [bool](Get-Command bash -ErrorAction SilentlyContinue)
-}
-
 BeforeAll {
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
   $script:HooksDir = Join-Path $script:KitRoot 'hooks'
   $script:Script = Join-Path $script:HooksDir 'session-start'
+
+  # En Windows, `bash` del PATH suele ser el lanzador de WSL, que no ejecuta el script: se prefiere Git Bash.
+  function Resolve-Bash {
+    $gitBash = @("$env:ProgramFiles\Git\bin\bash.exe", "${env:ProgramFiles(x86)}\Git\bin\bash.exe") |
+      Where-Object { Test-Path $_ } | Select-Object -First 1
+    if ($gitBash) { return $gitBash }
+    $onPath = Get-Command bash -ErrorAction SilentlyContinue
+    if ($onPath -and $onPath.Source -notmatch 'System32') { return $onPath.Source }
+  }
+  $script:Bash = Resolve-Bash
 
   function New-ProjectDir([bool]$WithSdd) {
     $dir = Join-Path ([IO.Path]::GetTempPath()) ('hook-' + [guid]::NewGuid().ToString('N'))
@@ -218,7 +224,7 @@ BeforeAll {
   function Invoke-SessionStart([string]$ProjectDir) {
     $previous = $env:CLAUDE_PROJECT_DIR
     $env:CLAUDE_PROJECT_DIR = $ProjectDir
-    try { $output = & bash $script:Script }
+    try { $output = & $script:Bash $script:Script }
     finally { $env:CLAUDE_PROJECT_DIR = $previous }
     return [pscustomobject]@{ Output = ($output -join "`n"); ExitCode = $LASTEXITCODE }
   }
@@ -234,7 +240,7 @@ Describe 'hooks/hooks.json' {
 
 Describe 'hooks/router.md' {
   It 'es corto (150 palabras como máximo)' {
-    $words = (Get-Content (Join-Path $script:HooksDir 'router.md') -Raw) -split '\s+' | Where-Object { $_ }
+    $words = (Get-Content (Join-Path $script:HooksDir 'router.md') -Raw -ErrorAction Stop) -split '\s+' | Where-Object { $_ }
     $words.Count | Should -BeLessOrEqual 150
   }
 }
@@ -245,13 +251,15 @@ Describe 'hooks/session-start' {
     $bytes | Should -Not -Contain 13
   }
 
-  It 'no inyecta nada sin .docs/sdd/' -Skip:(-not $script:BashAvailable) {
+  It 'no inyecta nada sin .docs/sdd/' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
     $result = Invoke-SessionStart (New-ProjectDir $false)
     $result.ExitCode | Should -Be 0
     $result.Output.Trim() | Should -BeNullOrEmpty
   }
 
-  It 'inyecta el router con .docs/sdd/' -Skip:(-not $script:BashAvailable) {
+  It 'inyecta el router con .docs/sdd/' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
     $result = Invoke-SessionStart (New-ProjectDir $true)
     $result.ExitCode | Should -Be 0
     $context = ($result.Output | ConvertFrom-Json).hookSpecificOutput
@@ -271,6 +279,8 @@ pwsh -NoProfile -Command "Invoke-Pester -Path '.docs/sdd/specs/20260921-162213-t
 ```
 
 Esperado: los 5 fallan porque `hooks/` no existe (no encuentra `hooks.json`, `router.md` ni el script), no por un error del test.
+
+> **Desvío del plan (ejecución, Task 2, Step 2)**: la primera versión del test daba 1 verde y 4 rojos. El verde era un falso positivo (`Get-Content` sin `-ErrorAction Stop` no falla y el recuento de palabras daba 0), y los dos rojos de ejecución fallaban porque `bash` del PATH es el lanzador de WSL, sin distribución instalada. Se corrigió el test (`Resolve-Bash` prefiere Git Bash; `-ErrorAction Stop`) y el bloque de arriba ya es el corregido. La spec no cambia.
 
 - [ ] **Step 3: `.gitattributes`**
 
