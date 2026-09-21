@@ -3,13 +3,13 @@ id: 20260921-162234-task-0008-control-profiles
 task: 0008
 title: Perfiles de control y gates
 mode: full
-status: draft
+status: approved
 created: 2026-09-21
 author: Claude (Opus 5) con el dev-lead
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: Àngel Delgado
+    approved_at: 2026-09-21
 ---
 
 # Spec — Perfiles de control y gates
@@ -192,4 +192,4 @@ La tabla de gates por perfil vive en **un solo sitio** y cada gate de las skills
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-21 | aprobada: «Apruebo la spec» (opción del gate, tras la review de dos revisores) |
