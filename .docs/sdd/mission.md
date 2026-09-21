@@ -13,7 +13,7 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 
 ## Qué es y qué no es
 
-- **Es**: las 10 skills de proceso (init ×2, task ×2, patch ×2, release ×2, consult, changelog) + las plantillas canónicas.
+- **Es**: las 11 skills de proceso (init ×2, task ×2, patch ×2, release ×2, consult, changelog, feedback del kit) y la de plantillas + las plantillas canónicas.
 - **No es**: skills técnicas por stack (nivel 2: sql-migration, backend-*, frontend-*) ni específicas de proyecto (nivel 3: build, dialogs, styles) — esas viven en cada repo o en futuros kits.
 
 ## Dominio (lenguaje del equipo)
