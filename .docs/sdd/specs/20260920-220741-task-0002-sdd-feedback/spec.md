@@ -96,7 +96,7 @@ Los cierres de task y patch añaden un paso de oferta al final, después de que 
 
 **Reglas de la capacidad**
 - **Dónde viven los datos**: `.docs/sdd/kit-feedback/` en el proyecto consumidor; su destino final en el repo del kit es `.docs/sdd/field-reports/`.
-- **Idioma de los nombres**: nombre de fichero y slug en inglés kebab-case; el contenido del ticket en castellano.
+- **Idioma de los nombres**: nombre de fichero en kebab-case con el slug en la misma convención que las carpetas de spec del proyecto; el contenido del ticket en castellano.
 - **Límites**: un ticket por sesión de carril; los hallazgos van ordenados por coste observado.
 - **Avisos**: al crear la carpeta por primera vez, la skill avisa de que puede ignorarse en git.
 - **Regla ante conflicto**: entre contar el hallazgo y proteger el dominio del cliente manda la privacidad — el hallazgo se despersonaliza, nunca se omite.
@@ -104,6 +104,7 @@ Los cierres de task y patch añaden un paso de oferta al final, después de que 
 ## Enmiendas
 
 - **2026-09-21 — recorte del RED (Art. I)**, sin cambio de comportamiento observable. La decisión 7 atribuía a la skill cuatro reglas; el RED (`tests/kit-feedback-red.md`) confirmó el fallo de privacidad y de la oferta en el cierre, y destapó otros dos de forma (ningún hallazgo traía criterio de aceptación y la iniciativa propia se diluía en la prosa). En cambio, **no inventar fricciones** y **separar el hueco del kit del error propio** ya los cumplía el baseline, 2 de 2. Esos dos requisitos del delta se mantienen tal cual, pero los garantiza la forma de la plantilla (salida «Sin hallazgos» explícita y sección de errores propios), no una regla de la skill. El GREEN comprueba que la plantilla no empuja a rellenar.
+- **2026-09-21 — idioma del slug, tras el GREEN.** La regla «Idioma de los nombres» pedía slug en inglés, pero `nombrado.md` no fija el idioma del slug de las carpetas de spec: es la decisión abierta de la task 0016. Se enmienda para seguir la misma convención que las carpetas de spec en vez de adelantarse; la 0016 decidirá las dos a la vez.
 
 ## Aprobaciones
 
