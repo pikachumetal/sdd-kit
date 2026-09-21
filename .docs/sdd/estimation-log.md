@@ -33,13 +33,14 @@
 | 2026-09-10 | 0000 | patch | 1.5 | 1.2 | 0.8 | 20260910-072132-patch-0000-estimation-parser-tolerante |
 | 2026-09-20 | 0017 | patch | 0.25 | 0.2 | 0.8 | 20260920-192907-patch-0017-nombres-de-proyecto-en-skills |
 | 2026-09-20 | 0001 | infra/tooling | 2.5 | 0.9 | 0.36 | 20260920-202137-task-0001-task-ids |
+| 2026-09-20 | 0011 | docs | 1.75 | 0.55 | 0.31 | 20260920-220930-task-0011-spec-review-lenses |
 
-**Factor de calibración** (ratio mediano real/estimado, 25 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 26 artefactos): **0.57**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 19 | 0.5 |
+| docs | 20 | 0.5 |
 | infra/tooling | 3 | 0.7 |
 | patch | 2 | 0.8 |
 

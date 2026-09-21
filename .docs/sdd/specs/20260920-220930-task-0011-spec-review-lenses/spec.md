@@ -3,13 +3,13 @@ id: 20260920-220930-task-0011-spec-review-lenses
 task: 0011
 title: Review de spec — lentes sin solape y propuesta que ayuda a decidir
 mode: full
-status: draft
+status: approved
 created: 2026-09-21
 author: Claude Opus 5 (1M context)
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-21
 ---
 
 # Spec — Review de spec: lentes sin solape y propuesta que ayuda a decidir
@@ -75,4 +75,4 @@ La verificación es una campaña de sujetos con la misma spec fixture para los d
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-21 | aprobada en el gate único spec+plan (opción «8 sujetos, ~2 $», cuya descripción decía «Aprobar esto aprueba spec y plan») |

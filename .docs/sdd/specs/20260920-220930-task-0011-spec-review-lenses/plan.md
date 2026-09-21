@@ -3,7 +3,7 @@ id: 20260920-220930-task-0011-spec-review-lenses
 task: 0011
 title: Plan de implementación — Review de spec: lentes sin solape y propuesta que ayuda a decidir
 spec: ./spec.md
-status: draft
+status: approved
 created: 2026-09-21
 ---
 

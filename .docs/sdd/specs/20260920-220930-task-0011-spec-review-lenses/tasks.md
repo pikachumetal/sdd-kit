@@ -23,7 +23,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 3 | Reescritura de `review-spec.md` y frase de la plantilla | done | `62f49f5`, `ddba5e0` | El segundo commit mueve el ejemplo de §2 a otro dominio: coincidía con el de la fixture y contaminaba el GREEN de la propuesta |
 | 4 | Campaña GREEN (5 sujetos) | done | `5372b50` | Sobre `fixture-no-rule`, la condición dura. Un sujeto extra: el punto 7 iba a quedar con n=1 en GREEN frente a n=2 en RED |
 | 5 | Evidencia RED/GREEN | done | `c05fa26`, `5372b50` | Sin refactor: ningún criterio del GREEN falló |
-| 6 | Revisión final de rama | done | (este commit) | Sonnet, 135k tokens. 0 Críticos. **Aceptados**: el Importante (`review-spec.md` citaba «8 de 19 —el 45 %—»; 8/19 es 42 %, el 45 % no salía de ninguna cuenta, corregido también en el RED con 47 % si se cuenta el parcial) y tres Menores — «línea» por «bloque» en la decisión 1 de la spec, la frontera acotada a «con dos revisores», y los ~100k tokens atribuidos al campo y no a la campaña (~72k). **Rechazado en parte**: partir la decisión 1 de la spec en viñetas; la spec ya está aprobada y el cambio es cosmético |
+| 6 | Revisión final de rama | done | `d6c6c8c` | Sonnet, 135k tokens. 0 Críticos. **Aceptados**: el Importante (`review-spec.md` citaba «8 de 19 —el 45 %—»; 8/19 es 42 %, el 45 % no salía de ninguna cuenta, corregido también en el RED con 47 % si se cuenta el parcial) y tres Menores — «línea» por «bloque» en la decisión 1 de la spec, la frontera acotada a «con dos revisores», y los ~100k tokens atribuidos al campo y no a la campaña (~72k). **Rechazado en parte**: partir la decisión 1 de la spec en viñetas; la spec ya está aprobada y el cambio es cosmético |
 
 ## Verificación por task
 
@@ -38,3 +38,4 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+| La evidencia RED/GREEN citaba el nombre real del proyecto plantado en el fixture, incluidas las citas literales de los sujetos | La campaña copió al informe lo que los sujetos devolvieron sin anonimizar; el punto que la task enseña a marcar | Arreglado en la misma rama, antes del cierre, a petición del dev-lead («si no hay alguna deuda que podamos solucionar») | `ecffbef` |
