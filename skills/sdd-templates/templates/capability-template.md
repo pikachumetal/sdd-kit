@@ -17,7 +17,7 @@
 
 ### <Título estable del requisito>
 
-> El título es la clave que `MODIFIED — <título> (antes: …)` cita al fusionar un delta futuro;
+> El título es la clave que `MODIFIED — <título>` cita al fusionar un delta futuro;
 > no lo cambies al fusionar salvo que la spec lo renombre explícitamente.
 
 - GIVEN <precondición>

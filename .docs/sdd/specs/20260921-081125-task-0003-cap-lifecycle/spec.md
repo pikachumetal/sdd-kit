@@ -50,7 +50,7 @@ En campo, un agente copió a `tech-stack.md` valores que ya estaban en la capaci
 - Entra:
   - la regla del slug en inglés kebab-case, en sus tres puntos de uso;
   - la regla de reparto, en sus tres puntos de uso;
-  - `MODIFIED` de bloque entero en `spec-template.md` y en la fusión (`aprendizajes-skills.md`);
+  - `MODIFIED` de bloque entero en `spec-template.md` y en la fusión (`aprendizajes-skills.md` y la regla 3 de `capability-template.md`);
   - mover cinco requisitos de `task-flow` a la capacidad nueva `capabilities`.
 - No entra: lo listado en las decisiones 6 y 7.
 

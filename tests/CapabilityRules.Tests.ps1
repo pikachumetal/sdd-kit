@@ -59,5 +59,11 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     It 'la fusión sustituye entero el requisito' {
       Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md' | Should -Match 'MODIFIED sustituye entero'
     }
+
+    It 'capability-template describe la misma fusión en la regla 3' {
+      $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
+      $rule = [regex]::Match($content, '(?s)> 3\. .*?(?=> 4\. )').Value
+      $rule | Should -Match 'sustituye entero'
+    }
   }
 }

@@ -48,11 +48,13 @@ Volcado inicial de capacidades: sin escenario. El RED es el caso real de campo d
 
 ## Recorte (Art. I), aprobado por el dev-lead el 2026-09-21
 
-Entra solo la guidance de los dos fallos:
+Entra la guidance de los dos fallos y un arreglo de forma:
 
 1. **El slug de una capacidad nueva es un sustantivo en inglés kebab-case**, escrito donde se crea: `spec-template.md`, `capability-template.md` y `sdd-start-task` paso 4.
 2. **El comportamiento observable vive solo en `capabilities/`; los anclajes enlazan, no copian**: `spec-template.md`, `plan-template.md` y el paso de aprendizajes de `sdd-end-task`, con su red flag.
 
-Sale todo lo demás de la spec aprobada: línea fija de capacidad, test de pertenencia, cambio de la rúbrica y punto 8 de la lente dominio, paso de fusión propio en task y patch, `MODIFIED` de bloque entero y `(retira: …)`, alarma de fusión, frontera patch/task, sitio único (skill o referencia), volcado inicial y el validador `Test-Capabilities.ps1` (implementado en `79bec32` y revertido en `ca51ef4`: los errores que vigila no aparecieron, y el único fallo de nombre, `avisos`, es kebab-case ASCII válido).
+3. **`MODIFIED` copia el bloque entero y la fusión lo sustituye entero** (`spec-template.md`, `capability-template.md` regla 3, `aprendizajes-skills.md`). No es guidance para un fallo de conducta: es un arreglo de la letra de la plantilla, que mandaba «sustituir» mientras los agentes, con razón, fusionaban añadiendo. Evidencia: la contradicción de la task 0008 (dos Críticos de revisor por esa letra) y el positivo de E2. El dev-lead lo añadió al recorte al preguntar qué se perdía. El GREEN comprueba que no cambia la conducta de fusión.
+
+Sale todo lo demás de la spec aprobada: línea fija de capacidad, test de pertenencia, cambio de la rúbrica y punto 8 de la lente dominio, paso de fusión propio en task y patch, la marca `(retira: …)`, alarma de fusión, frontera patch/task, sitio único (skill o referencia), volcado inicial y el validador `Test-Capabilities.ps1` (implementado en `79bec32` y revertido en `ca51ef4`: los errores que vigila no aparecieron, y el único fallo de nombre, `avisos`, es kebab-case ASCII válido).
 
 **Límite de la muestra**: dos sujetos por escenario, en sesiones limpias. Los fallos de campo salieron en sesiones largas con subagentes y más contexto acumulado. Si vuelven a aparecer en campo, el ticket de `sdd-feedback` es la vía para reabrirlos con esta evidencia como baseline.

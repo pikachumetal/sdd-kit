@@ -70,7 +70,7 @@ created: 2026-09-21
   - la frase de ayuda del delta: «el slug es un sustantivo en inglés kebab-case aunque el contenido vaya en castellano»;
   - junto a la «Regla de contenido», la regla de reparto;
   - el marcador `MODIFIED`: copia el bloque entero del requisito; `(antes: …)` opcional.
-- `skills/sdd-templates/templates/capability-template.md`: regla 1, con el slug en inglés kebab-case aprobado por el dev-lead.
+- `skills/sdd-templates/templates/capability-template.md`: regla 1, con el slug en inglés kebab-case aprobado por el dev-lead; regla 3, «`MODIFIED` sustituye entero», para que la plantilla describa la misma fusión que `aprendizajes-skills.md` (añadido tras la revisión final).
 - `skills/sdd-templates/templates/plan-template.md`: §1.1, una línea sobre qué no se documenta en `tech-stack.md`.
 - `skills/sdd-start-task/SKILL.md`: paso 4, «nombre en inglés kebab-case» en la frase que ya declara la capacidad nueva.
 - `skills/sdd-end-task/references/aprendizajes-skills.md`: paso 4, «los anclajes enlazan el valor, no lo copian», y «`MODIFIED` sustituye entero el requisito con ese título».
