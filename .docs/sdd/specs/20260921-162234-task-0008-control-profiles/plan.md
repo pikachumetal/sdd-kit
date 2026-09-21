@@ -3,7 +3,7 @@ id: 20260921-162234-task-0008-control-profiles
 task: 0008
 title: Plan de implementación — Perfiles de control y gates
 spec: ./spec.md
-status: draft
+status: approved
 created: 2026-09-21
 ---
 
@@ -16,14 +16,16 @@ created: 2026-09-21
 3. **GREEN con dos sujetos por escenario, nueve escenarios: 18 sujetos.** Cubren los 16 requisitos del delta (§4). Alternativa más barata: un sujeto por escenario (9); pierde la frecuencia y un 1/1 no es veredicto (`tech-stack.md`, A/B punto 1). Recomiendo dos.
 4. **Task 1 y Task 4 en línea**, como excepción declarada. La evidencia decide qué guía se escribe (Art. I), y leer qué hizo cada sujeto es juicio.
 5. **Tasks 2 y 3 por subagente, Sonnet effort high**, en serie. Interpretan prosa, así que el suelo es gama media con effort alto. El tool `Agent` no expone el effort: va escrito en el encargo y se anota como desviación, igual que en las tasks anteriores.
-6. **Un revisor de task por cada una (Sonnet, effort medium) y sin revisor final de rama.** El diff es markdown que el GREEN mide con sujetos, y una revisión final repetiría la misma lectura. Mismo criterio que las tasks 0002 y 0004.
+6. **Una sola revisión agrupada para las Tasks 2 y 3 (Sonnet, effort medium)**, despachada tras la Task 3 sobre el diff de las dos, con las Restricciones globales al principio del encargo. Sin revisión por task ni revisión final aparte. *(Pedido por el dev-lead al aprobar el plan: «se pueden agrupar los reviews?».)* El diff es markdown que el GREEN mide con sujetos. Ahorra ~135k tokens.
 7. **Tests deterministas del hilo: `ControlProfiles.Tests.ps1`**, con anclas de cada fichero tocado: la tabla existe y los gates la enlazan, el walkthrough ya no dice «inmutable», el Art. IV ya no dice «SIEMPRE decisión del usuario», la migración nombra `control.profile`, etc. Se aparcan en `red/` y cada implementador mueve su bloque con `git mv` (pre-commit de suite verde; nunca `--no-verify`).
 8. **La tabla de gates por perfil vive en `skills/sdd-start-task/references/control-profiles.md`** y `sdd-end-task` la enlaza con ruta relativa. No es una skill nueva: se lee en el punto de uso, como `modo-lite.md`.
 9. **El carril patch no se toca, pero el Art. IV sí.** El artículo nuevo dice que la política de merge la aplican las skills que la declaran. Hoy solo es el cierre de task: `sdd-end-patch` sigue preguntando. Queda una fila de deuda para decidir el patch.
 10. **El `sdd-kit.json` de este repo no gana `control` ni `merge` en esta task.** Escribirlos sin tu frase literal es justo el atajo que la spec prohíbe. Te los pregunto en la validación, con la migración recién escrita como guion (es su smoke).
 11. **Integrar `develop` antes de los docs de cierre y otra vez justo antes del merge** (regla 4 del roadmap).
-12. **Coste estimado**: ~6 h de reloj (RED 1 h, implementación 2 h, GREEN 2 h, cierre 1 h). Sujetos: 8 en el RED (~10 $) y 18 en el GREEN (~30–40 $; E2 y E8 implementan y cuestan más). Subagentes: ~440k tokens de implementadores y ~270k de revisores.
+12. **Coste estimado**: ~6 h de reloj (RED 1 h, implementación 2 h, GREEN 2 h, cierre 1 h). Sujetos: 8 en el RED (~10 $) y 18 en el GREEN (~30–40 $; E2 y E8 implementan y cuestan más). Subagentes: ~440k tokens de implementadores y ~135k del revisor.
 13. **Riesgo alto asumido**: E3 o E4 pueden salir limpios en el RED. Si pasa, esa guía no se escribe, y la spec vuelve al gate con el alcance recortado.
+
+**Aprobado por el dev-lead el 2026-09-21**: «1, pero podemos bajar lo de una task un review, se pueden agrupar los reviews?» (opción «Apruebo el plan», GREEN con dos sujetos por escenario; revisión agrupada, decisión 6).
 
 **Goal**: que el agente pare donde lo dice el perfil vigente y que cada gate tenga una forma fija para aprobar, desviarse, diferir la validación y fusionar.
 
