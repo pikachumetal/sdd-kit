@@ -10,8 +10,8 @@ description: Usar cuando hay que cerrar una release/entrega en un proyecto con .
 Cerrar una release es la **Definition of Done del hito** y el **corte de publicación**: se lanza haya
 habido apertura con `sdd-start-release` o no — el modo incremental (task y patch sin abrir release) llega
 aquí igual. Se ejecuta SOBRE tasks ya cerradas (vía `sdd-end-task`) y produce los artefactos que
-convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente, feedback
-triado, roadmap colapsado y tag.
+convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente (solo con
+destinatario), feedback triado, roadmap colapsado y tag.
 
 **Principio central: dos audiencias, dos documentos.** El changelog es exhaustivo y técnico (equipo);
 las release notes se **destilan** de él, curadas y por beneficio (cliente). Nunca son el mismo documento.
@@ -92,5 +92,6 @@ gate en solitario.
 | "La retro la hago de memoria, fue hace nada" | Sin los números del estimation-log y los action items anteriores no hay aprendizaje, hay anécdota. |
 | "Hay prisa con el email: colapso el roadmap y sigo" | Un pendiente vivo enterrado en el colapso es scope perdido en silencio. Primero rescatar, después colapsar. |
 | "El usuario ya nombró la versión en su encargo: la doy por confirmada y ejecuto merge+tag" | Nombrar el hito describe el encargo. La confirmación se pide sobre la propuesta final de cierre; merge y tag esperan al usuario. |
-| "Que me des la versión no cuenta como confirmación de estos pasos, así que pregunto otra vez" | Cuenta si citas la orden de cierre y la versión respondiendo a tu propuesta del paso 1, y `hasRecipient: false` lo escribió el usuario sin mover scope: ahí preguntar de más es la misma indecisión, en el otro sentido. Pero el atajo no te lo concedes tú: si el campo lo escribiste tú o disparaste la skill sin su orden, ninguna condición es válida y el gate sigue completo. |
+| "Que me des la versión no cuenta como confirmación de estos pasos, así que pregunto otra vez" | Cuenta si citas la orden de cierre y la versión respondiendo a tu propuesta del paso 1, y `hasRecipient: false` lo escribió el usuario sin mover scope: con las tres condiciones, la segunda ronda sobra. |
+| "Escribo yo `hasRecipient: false`: el proyecto es claramente de una persona" | El campo solo lo escribe el usuario, por respuesta o petición explícita suya. Sin eso, ninguna condición es válida y el gate sigue completo. |
 | "El trabajo está entregado y demostrado; el walkthrough que falta no bloquea" | Evidencia faltante = gate de entrada fallido. Se regulariza o lo decide el usuario; documentarlo y seguir es la racionalización, no el remedio. |
