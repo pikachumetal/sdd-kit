@@ -43,3 +43,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
 | Revisión final de rama (Sonnet): regla 3 de `capability-template` fuera del plan y sin test; ayuda con `(antes: …)` desactualizada | Edición coherente con el requisito de fusión, no declarada | Aceptado: al plan, a la spec y con test. Rechazado el hallazgo de Art. I: el `MODIFIED` de bloque entero es la decisión 9 del dev-lead | `b82f8ee` |
+
+## Cierre
+
+- 2026-09-21: integrado develop (272a336) antes de los docs de cierre, suite 212/0 tras el merge. Validación del dev-lead diferida al uso real de la 1.2.0 (walkthrough §4.2).
