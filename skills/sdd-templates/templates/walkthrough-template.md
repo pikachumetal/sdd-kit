@@ -10,9 +10,10 @@ created: <YYYY-MM-DD>
 
 # Walkthrough — <título>
 
-> Documento post-implementación e inmutable: resume lo que se hizo REALMENTE (no lo planeado),
-> las desviaciones, la verificación con evidencia y los aprendizajes que vuelven a los docs
-> vivos. Borra los bloques de ayuda (`>`) al redactar.
+> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), las desviaciones,
+> la verificación con evidencia y los aprendizajes que vuelven a los docs vivos. El cuerpo no se
+> reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra task) se
+> añade como entrada fechada en `## 6. Adendas`. Borra los bloques de ayuda (`>`) al redactar.
 
 ## 1. Cambios realizados
 
@@ -31,6 +32,13 @@ created: <YYYY-MM-DD>
 
 - _Ninguna_ / lista de divergencias entre `plan.md` y la implementación final, con la razón.
 
+### Decisiones tomadas sin el dev-lead
+
+> Los rulings de la ejecución («Rulings I made», del informe final de `subagent-driven-development`): salir
+> del plan sin cambiar la spec y seguir, sin parar. _Ninguna_ si no hubo.
+
+- <decisión> — <por qué> — <coste si está mal>
+
 ## 4. Verificación
 
 ### 4.1 Builds
@@ -41,7 +49,9 @@ created: <YYYY-MM-DD>
 
 > Distinguir siempre lo **verificado por el agente** (con evidencia) de lo **reportado por el usuario**.
 
-- Validado por el dev-lead: <fecha> · <qué probó> *(obligatorio: sin validación no hay cierre; si validó sobre lo reportado por el agente, dilo)*
+- Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
+  disparador: <task, release o uso con dueño> *(obligatorio: sin uno de los dos no hay cierre; si validó
+  sobre lo reportado por el agente, dilo)*
 
 | # | Caso | Resultado |
 | --- | --- | --- |
@@ -55,3 +65,10 @@ created: <YYYY-MM-DD>
 > Cada punto indica a qué doc vivo o skill se ha volcado (constitution / architecture / tech-stack / skill X). Un aprendizaje sin destino se pierde.
 
 - <aprendizaje> → <destino>
+
+## 6. Adendas
+
+> Lo que cambia después del cierre: validación tardía, integración con otra task. El cuerpo de arriba
+> (secciones 1-5) no se reescribe.
+
+- <fecha> — <qué cambia> — <quién lo dice>

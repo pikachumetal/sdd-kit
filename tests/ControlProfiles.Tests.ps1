@@ -41,3 +41,37 @@ Describe 'Perfiles de control: arranque y ejecución' {
     $template | Should -Match '## Enmiendas'
   }
 }
+
+Describe 'Perfiles de control: cierre, release y migración' {
+  It 'el walkthrough crece por adendas y ya no es inmutable' {
+    $template = Get-KitFile 'skills/sdd-templates/templates/walkthrough-template.md'
+    $template | Should -Not -Match 'inmutable'
+    $template | Should -Match '## 6\. Adendas'
+    $template | Should -Match 'Validación diferida: <fecha>'
+  }
+
+  It 'sdd-end-task enlaza la tabla y aplica la política de merge' {
+    $skill = Get-KitFile 'skills/sdd-end-task/SKILL.md'
+    $skill | Should -Match 'sdd-start-task/references/control-profiles\.md'
+    $skill | Should -Match '🧪'
+    $skill | Should -Not -Match 'decidir merge/PR \*\*con el usuario\*\*'
+  }
+
+  It 'sdd-end-release valida las tasks diferidas a su smoke' {
+    Get-KitFile 'skills/sdd-end-release/SKILL.md' | Should -Match '🧪'
+  }
+
+  It 'la migración a v1.2.0 pregunta las claves de control' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    $migration | Should -Match 'control\.profile'
+    $migration | Should -Match 'merge'
+  }
+
+  It 'el Art. IV ya no reserva todo merge al usuario' {
+    Get-KitFile '.docs/sdd/constitution.md' | Should -Not -Match 'el merge es SIEMPRE decisión del usuario'
+  }
+
+  It 'el glosario no llama inmutable al walkthrough' {
+    Get-KitFile '.docs/sdd/mission.md' | Should -Not -Match 'cierre inmutable'
+  }
+}
