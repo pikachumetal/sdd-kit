@@ -2,7 +2,8 @@
 kit_version: <de .docs/sdd/sdd-kit.json>
 superpowers_version: <versión instalada>
 lane: <task|patch>
-id: <id del modo del proyecto>
+id: <yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>   # igual que el nombre del fichero
+task: <id>                                    # id de la task o del patch, según el modo del proyecto
 mode: <full|lite>          # vacío en patch
 date: <YYYY-MM-DD>
 ---
