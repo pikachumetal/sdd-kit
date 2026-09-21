@@ -55,6 +55,10 @@ npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una
 
 Para desarrollar el propio kit, apunta el marketplace a tu clon local en vez del repo.
 
+### Enrutado automático
+
+El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, recuerda al agente que una petición de trabajo entra por `sdd-start-task` antes que por `brainstorming`, un bug pequeño por `sdd-start-patch` y una pregunta por `sdd-consult`. `npx skills add` no instala hooks: quien use ese canal recibe solo las frases de las `description`.
+
 ## Las skills
 
 | Skill | Qué hace |
