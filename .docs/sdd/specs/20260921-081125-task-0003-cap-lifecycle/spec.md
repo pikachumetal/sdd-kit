@@ -3,13 +3,13 @@ id: 20260921-081125-task-0003-cap-lifecycle
 task: 0003
 title: Capabilities — ciclo de vida completo
 mode: full
-status: draft
+status: approved
 created: 2026-09-21
 author: Claude Opus 5 (1M context)
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: Àngel Delgado
+    approved_at: 2026-09-21
 ---
 
 # Spec — Capabilities: ciclo de vida completo
@@ -239,4 +239,4 @@ Un sitio único con todas las reglas de capacidades. Su forma la decide el RED. 
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-21 | aprobada |
