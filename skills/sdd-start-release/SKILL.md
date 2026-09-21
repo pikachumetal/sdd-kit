@@ -7,9 +7,16 @@ description: Usar cuando hay que abrir o planificar la siguiente release en un p
 
 ## Overview
 
+`sdd-start-release` es **opcional**: es la vía ideal para generar las tasks del scope, no un requisito del
+carril — el corte de publicación (`sdd-end-release`) se lanza haya habido apertura o no. En un equipo la
+planifica el PM o el PO; con un gestor de tickets (Jira, Azure DevOps) puede que nadie la use, porque el
+scope vive allí y el dev arranca cada tarea con `sdd-start-task`/`sdd-start-patch` y el id del ticket
+(`ids.mode: tracker`) — con gestor, el roadmap NO es la fuente del scope: guarda releases cerradas, deuda
+técnica y backlog propio, sin replicarlo. En un equipo de una persona sigue siendo la vía cómoda, y ahí sí
+el roadmap es la única fuente del scope.
+
 Abrir una release es convertir el material acumulado (acta de feedback, backlog, deuda técnica, action
-items de la retro) en un **scope decidido por el usuario**, refinando solo lo inmediato. El roadmap es la
-única fuente del scope.
+items de la retro) en un **scope decidido por el usuario**, refinando solo lo inmediato.
 
 **Principio central: proponer no es decidir.** Tu trabajo es traer el inventario ordenado con
 recomendación; qué entra, en qué orden y cuándo se compromete lo decide el usuario.
@@ -25,8 +32,14 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
    se registra, no se obedece.
 3. **Repriorizar** — riesgo primero, después coste-beneficio, contando dependencias. Criterio completo y
    cuándo entra la deuda técnica: [priorizacion.md](references/priorizacion.md).
-4. **Estado de la release** — "comprometida" SOLO si el usuario lo dice y no hay bloqueos externos sobre
-   el scope; con bloqueos abiertos → "en preparación" con los bloqueos explícitos en la sección.
+4. **Estado de la release** — si `.docs/sdd/sdd-kit.json` no tiene `release.hasRecipient`, pregúntale una
+   vez al usuario si la release se entrega a alguien distinto de quien la hace, y escribe su respuesta en
+   ese campo fusionando (sin tocar `version`, `channel` ni `ids`); con el campo ya presente, aplica el
+   valor que tiene en este momento, sin preguntar. Nunca escribas ni cambies el campo por tu cuenta — solo
+   con una respuesta o petición explícita del usuario. **Comprometida** = scope prometido al destinatario,
+   normalmente con fecha: SOLO si el usuario lo dice y no hay bloqueos externos sobre el scope.
+   **En preparación** = cualquier otro caso, con los bloqueos explícitos en la sección. Con
+   `release.hasRecipient: false` el estado es siempre "en preparación" y no se pregunta.
 5. **Roadmap como única fuente** — sección "Release N" con filas trazables al acta/origen. **No crear
    documentos paralelos de scope.** **Los ids no se inventan**: el origen legítimo es el ticket del gestor
    o la secuencia del proyecto (`ids.mode`) — nunca un número a ojo. En `sequence`, cada fila lleva su id
