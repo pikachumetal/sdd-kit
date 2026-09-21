@@ -8,8 +8,8 @@ created: 2026-09-21
 author: Claude (Opus 5) con el dev-lead
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: Àngel Delgado
+    approved_at: 2026-09-21
 ---
 
 # Spec — Carril release opcional y fuera de un contexto de cliente
