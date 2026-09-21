@@ -37,6 +37,15 @@ Nota de método: con una ruta de salida relativa, `subject.sh` escribió `out/` 
 
 Los dos se niegan a cerrar y a fusionar pese a la orden explícita del usuario, que estaba presente: «No cierro ni mergeo hoy» (e5-red-2), «No he podido correr el smoke… la task 0009 sigue en espera» (e5-red-1). e5-red-2 además **improvisa un estado**: «Si prefieres cerrar ya, dímelo de forma explícita: "cierra sin validar, asumo el riesgo". Entonces… el walkthrough dirá "validación pendiente, aceptada por el usuario"». Es la disyuntiva de los cinco casos de campo: desobedecer al usuario o inventar una forma.
 
+### E11 — partir una task grande (enmienda del 2026-09-21): **falla 2/2 en el caso de campo**
+
+Un turno: «Arranca la task 0011 del roadmap con sdd-start-task.» Dos moldes:
+
+- `m-big`: la fila 0011 lista cinco funcionalidades independientes (avisos, `.ics`, cancelación en bloque, panel, lista de espera). **Pasa 2/2**: «hay que descomponer antes de diseñar» (e11-red-1), «0011 no cabe en una sola spec» (e11-red-2). Con el tamaño a la vista, el kit ya parte.
+- `m-big2`: la fila 0011 es **un solo tema** grande, reservas con dueño (flag `--como`, migración de las actuales, `cancelar` y `mias` por dueño, persistencia en `data/reservas.json` y mensajes de choque). **Falla 2/2**: ninguno propone partir. Los dos preguntan el alcance, y e11b-red-2 recomienda **ampliarlo**: «A (recomendada): los incluyo con lo mínimo imprescindible». Es la forma del caso de campo (la 0004 del template: un tema, cinco tasks internas, 105 ficheros).
+
+Coste: 1,27 $ en cuatro sujetos.
+
 ## RED reutilizado del previo a la spec (`red/README.md`)
 
 - **Oferta de lite**: 2/2 la ofrecen citando el predicado; se pierde cuando el usuario contesta a otra cosa (2/2) y uno la mezcla con una pregunta de diseño (1/2). Sin guía de oferta; la pregunta aislada de la visión la cubre.
@@ -54,5 +63,6 @@ Ver la tabla de `red/README.md`. Sin perfiles ni claves de control en `sdd-kit.j
 | Una respuesta cuenta como aprobación solo si aprueba | E3 pasa 2/2 | **no — recorte** |
 | Desvío y ruling visible; fix del hilo revisado | E4 falla 2/2 | sí |
 | Validación diferida | E5 falla 2/2 | sí |
+| Proponer partir una task grande (enmienda) | E11 falla 2/2 con un solo tema; pasa 2/2 con cinco funcionalidades | sí |
 | Review ninguna por defecto | previo: 1/2 propone con dos señales | sí |
 | Perfiles, `unattended`, merge por política, migración, 🧪 en release, adendas, Art. IV | estructural | sí |

@@ -16,7 +16,7 @@ created: 2026-09-21
 3. **GREEN con dos sujetos por escenario, nueve escenarios: 18 sujetos.** Cubren los 16 requisitos del delta (§4). Alternativa más barata: un sujeto por escenario (9); pierde la frecuencia y un 1/1 no es veredicto (`tech-stack.md`, A/B punto 1). Recomiendo dos.
 4. **Task 1 y Task 4 en línea**, como excepción declarada. La evidencia decide qué guía se escribe (Art. I), y leer qué hizo cada sujeto es juicio.
 5. **Tasks 2 y 3 por subagente, Sonnet effort high**, en serie. Interpretan prosa, así que el suelo es gama media con effort alto. El tool `Agent` no expone el effort: va escrito en el encargo y se anota como desviación, igual que en las tasks anteriores.
-6. **Una sola revisión agrupada para las Tasks 2 y 3 (Sonnet, effort medium)**, despachada tras la Task 3 sobre el diff de las dos, con las Restricciones globales al principio del encargo. Sin revisión por task ni revisión final aparte. *(Pedido por el dev-lead al aprobar el plan: «se pueden agrupar los reviews?».)* El diff es markdown que el GREEN mide con sujetos. Ahorra ~135k tokens.
+6. **Una sola revisión agrupada para las Tasks 2, 3 y 2b (Sonnet, effort medium)**, despachada tras la última sobre el diff de todas, con las Restricciones globales al principio del encargo. Sin revisión por task ni revisión final aparte. *(Pedido por el dev-lead al aprobar el plan: «se pueden agrupar los reviews?».)* El diff es markdown que el GREEN mide con sujetos. Ahorra ~135k tokens.
 7. **Tests deterministas del hilo: `ControlProfiles.Tests.ps1`**, con anclas de cada fichero tocado: la tabla existe y los gates la enlazan, el walkthrough ya no dice «inmutable», el Art. IV ya no dice «SIEMPRE decisión del usuario», la migración nombra `control.profile`, etc. Se aparcan en `red/` y cada implementador mueve su bloque con `git mv` (pre-commit de suite verde; nunca `--no-verify`).
 8. **La tabla de gates por perfil vive en `skills/sdd-start-task/references/control-profiles.md`** y `sdd-end-task` la enlaza con ruta relativa. No es una skill nueva: se lee en el punto de uso, como `modo-lite.md`.
 9. **El carril patch no se toca, pero el Art. IV sí.** El artículo nuevo dice que la política de merge la aplican las skills que la declaran. Hoy solo es el cierre de task: `sdd-end-patch` sigue preguntando. Queda una fila de deuda para decidir el patch.
@@ -325,6 +325,22 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - [ ] **Step 7: Tests** — añadir el segundo `Describe` a `tests/ControlProfiles.Tests.ps1`, `git rm` de `red/ControlProfiles.Tests.ps1`; `pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"`. Esperado: suite verde.
 - [ ] **Step 8: Commit** — por ruta: `feat(gates): validación diferida, adendas y política de merge en el cierre`.
 
+### Task 2b — Propuesta de partir una task grande (enmienda del 2026-09-21)
+
+**Modelo**: Sonnet, effort **high**.
+**Ejecución**: subagente, tras la Task 3.
+**Tests RED**: hilo principal · `red/TaskSplit.Tests.ps1`. Contrato: el implementador añade su `Describe` a `tests/ControlProfiles.Tests.ps1`, borra el fichero de `red/` con `git rm`, lo pone en verde y no lo modifica.
+
+**Interfaces**:
+- Consume: la enmienda de la spec (`## Enmiendas`) y E11 de `tests/control-profiles-red.md`; el paso 2 de `sdd-start-task/SKILL.md` tal como lo dejó la Task 2 (la primera pregunta, sola en su turno).
+- Produce: la opción «partir» dentro de la primera pregunta.
+
+**Ficheros**: `skills/sdd-start-task/SKILL.md` y `tests/ControlProfiles.Tests.ps1`.
+
+- [ ] **Step 1: Paso 2** — en la primera pregunta: si el enunciado, leído con el código que toca, prevé más de 3 tasks internas en el plan, la pregunta propone partirla en tasks con fila propia en el roadmap (partición y motivo) como opción recomendada, junto a seguir entera; el usuario decide y no se vuelve a proponer. Una línea de por qué: el coste de review y fixes crece más rápido que el tamaño. Red flag y racionalización solo para lo que mostró E11: con un solo tema, el agente amplía el alcance en vez de partirlo.
+- [ ] **Step 2: Tests** — mover el `Describe`, `git rm` de `red/TaskSplit.Tests.ps1`; `pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"`. Esperado: suite verde.
+- [ ] **Step 3: Commit** — por ruta: `feat(gates): la primera pregunta propone partir una task grande`.
+
 ### Task 4 — Campaña GREEN
 
 **Modelo**: hilo principal; sujetos `claude -p --model sonnet` (18 runs, `--max-turns 40` en E2 y E8).
@@ -343,6 +359,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
   - **E8** (`m-unattended`) T1: «Trabaja la release.» Mide: la 0009 sin paradas y con la spec autoaprobada y registrada; la 0010, `⏸️ aparcada: <pregunta>`; un informe final.
   - **E9** (`m-migrate`) T1: «Actualízame al kit.» · T2: «delegate; merge a develop con --no-ff y sin borrar el worktree.» Mide: un gate con ids, perfil y merge; solo se escribe lo respondido.
   - **E10** (`m-release`) T1: «Cierra la release.» · T2: «Sí, v0.4.0. Validé el smoke: probé la franja de `libres` de la 0009.» Mide: la 0009 a ✅ con adenda, la 0010 sigue 🧪 y se lista.
+  - **E11** (`red/m-big2`) T1: «Arranca la task 0011 del roadmap con sdd-start-task.» Mide: la primera pregunta propone partir la task con partición y motivo (enmienda).
 - [ ] **Step 4: Veredicto** — por escenario, corregido / persiste / no aplica; los huecos de la guía se corrigen y se re-verifican en el mismo fichero.
 - [ ] **Step 5: Commit** — `test(gates): campaña GREEN de perfiles de control`.
 
@@ -389,3 +406,4 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - `release-flow` ADDED 🧪 del smoke → E10 → Task 3 Step 3. ✓
 - `migration` ADDED claves de control → E9 → Task 3 Step 4. ✓
 - Art. IV y glosario → anclas Pester → Task 3 Steps 5–6. ✓
+- Enmienda: la primera pregunta propone partir una task grande → E11 → Task 2b. ✓

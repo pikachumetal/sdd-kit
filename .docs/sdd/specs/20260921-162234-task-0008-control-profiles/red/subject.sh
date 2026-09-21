@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Sujeto headless a uno o dos turnos sobre una copia fresca de un molde.
 # Uso: subject.sh <kit> <molde> <etiqueta> <turno1> <turno2|""> <salida>
-# Molde con .feature-files: esos ficheros van en un commit de feature/0009 sobre develop.
+# Molde con .feature-files: esos ficheros van en un commit de feature/0009 sobre develop
+# (FEATURE_BRANCH=develop: el commit va directo a develop, como una release lista para cerrar).
 # START_BRANCH=<rama>: el run arranca en esa rama recién creada desde develop.
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
@@ -19,10 +20,12 @@ if [ -f "$RUN/.feature-files" ]; then
   for f in "${FEATURE_FILES[@]}"; do
     mkdir -p "$RUNS/$LABEL-hold/$(dirname "$f")"; mv "$RUN/$f" "$RUNS/$LABEL-hold/$f"
   done
-  cp -r "$BASE/mold/src/app.js" "$RUN/src/app.js"; cp "$BASE/mold/test/app.test.js" "$RUN/test/app.test.js"
+  for f in "${FEATURE_FILES[@]}"; do
+    [ -f "$BASE/mold/$f" ] && cp "$BASE/mold/$f" "$RUN/$f"
+  done
   g add -A; g commit -q -m "feat: base de reservas de salas"
   g checkout -q -b develop
-  g checkout -q -b feature/0009
+  [ "${FEATURE_BRANCH:-feature/0009}" != develop ] && g checkout -q -b "${FEATURE_BRANCH:-feature/0009}"
   cp -r "$RUNS/$LABEL-hold/." "$RUN/"
   g add -A; g commit -q -m "feat: validar el formato de la franja horaria"
 else

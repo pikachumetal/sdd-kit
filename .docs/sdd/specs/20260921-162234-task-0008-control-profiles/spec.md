@@ -182,6 +182,16 @@ La tabla de gates por perfil vive en **un solo sitio** y cada gate de las skills
 - THEN un solo gate pregunta al dev-lead el perfil (recomendado `delegate`) y la política de merge a `develop`, y escribe solo lo que responde; lo que ya estaba no se pregunta
 - AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con `delegate` y con el paso 10 preguntando el merge, y el informe dice cómo reanudarlo
 
+## Enmiendas
+
+- 2026-09-21 — ADDED «La primera pregunta propone partir una task grande» en `control-profiles`, con umbral orientativo de más de 3 tasks internas previstas — hipótesis nueva de la fila 0008 en `develop` (`30f4a5f`): el coste de review, fixes y revisión final crece más rápido que el tamaño. RED: con cinco funcionalidades listadas, 2/2 proponen partir; con una task grande de un solo tema, 0/2 (`tests/control-profiles-red.md`, E11) — aprobada: «Enmienda en la 0008». El valor del umbral es decisión del agente: el mismo número que el tope de agentes en paralelo, para que una task quepa en una ola.
+
+**Capacidad `control-profiles` — ADDED — La primera pregunta propone partir una task grande**
+- GIVEN una task cuyo enunciado, leído con el código que toca, prevé más de 3 tasks internas en el plan
+- WHEN el agente formula la primera pregunta de la entrevista
+- THEN propone partirla en tasks con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera
+- AND el usuario decide; si sigue entera, no se vuelve a proponer en esa task
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
