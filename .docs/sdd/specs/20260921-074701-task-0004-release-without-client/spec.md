@@ -35,6 +35,18 @@ Activada por el dev-lead el 2026-09-21: un revisor, lente dominio (Sonnet; el to
 6. **Aceptado** — Menor: nombres reales de proyectos en la decisión 6 → «los proyectos ya instalados».
 7. **Aceptado** — Menor: `smoke: pendiente` no estaba en las decisiones → añadido a la decisión 13.
 
+### Recorte tras el RED (Art. I, 2026-09-21) — pendiente de reaprobación
+
+La evidencia está en `tests/release-flow-red.md`: 10 sujetos, 10,17 $. Llevan guía los requisitos cuyo fallo mostró el RED:
+
+- **Release notes sin destinatario**: fallaron 4 de 4.
+- **«Comprometida» preguntada sin definir**: falló 1 de 2, y los 2 usaron los términos sin definirlos.
+- **Smoke contado distinto** que en el caso de campo.
+- **Lista de tickets**: ausente en 2 de 2.
+- **Segunda ronda de merge y tag**: falló 2 de 2 en E5, que reproduce el orden del caso de campo.
+
+Se quedan **sin guía nueva**, porque el baseline ya los cumple: cierre sin apertura, versión propuesta desde el changelog, bump con el tooling o sin fichero, y acta sin fuente. Siguen en el delta porque describen comportamiento verificado del kit, y la capacidad los recoge igual. El test determinista pierde la aserción del bump.
+
 **Modelo acordado con el dev-lead (2026-09-21)**, cita literal: «vamos haciendo tarea con start-* y en algún momento end-release, el user dice la versión, y cortamos Unreleased y luego seguimos con start-* etc.»
 
 1. **Modo incremental = trabajar con task y patch sin abrir release.** `sdd-start-release` es opcional: es la vía ideal para *generar* las tasks, pero no es requisito. `sdd-end-release` es el **corte de publicación** (por ejemplo, al subir a producción), y se lanza haya habido apertura o no. Por eso no hay un interruptor «carril activo / inactivo». Descarto la propuesta anterior de usar la clave `release` como predicado del carril, porque con este modelo no hay nada que activar.
@@ -106,7 +118,7 @@ Toda la guía nueva está condicionada a dos predicados observables (Art. II): l
 - THEN sus entradas van a `[Unreleased]` y ninguna skill de task o patch pide abrir una release
 - AND el id de una task sin fila reservada sigue lo que ya declara `capabilities/task-ids.md` («Una task no planificada obtiene su id con un script determinista»); esta capacidad no lo repite
 
-**ADDED — Se puede cerrar una release que no se abrió**
+**ADDED — Se puede cerrar una release que no se abrió** *(sin guía nueva: el RED ya lo cumple 6/6)*
 - GIVEN un roadmap sin sección de la release y un `[Unreleased]` con entradas
 - WHEN el usuario lanza `sdd-end-release` para publicar
 - THEN el scope que se congela es el contenido de `[Unreleased]`, el agente propone la versión y espera a que el usuario la confirme
@@ -151,18 +163,18 @@ Toda la guía nueva está condicionada a dos predicados observables (Art. II): l
 - THEN no se exige que exista `.docs/sdd/releases/vX.Y.Z/` ni se crea vacía
 - AND con destinatario o con acta, la carpeta sigue siendo obligatoria
 
-**ADDED — El bump usa el tooling del proyecto**
+**ADDED — El bump usa el tooling del proyecto** *(sin guía nueva: el RED ya lo cumple 2/2)*
 - GIVEN un `tech-stack.md` que declara el comando que cambia la versión (p. ej. un script de Node)
 - WHEN se llega al bump
 - THEN se ejecuta ese comando con la versión confirmada y no se editan los ficheros a mano
 - AND si no hay comando declarado pero sí ficheros de versión (`package.json`, `*.props`, `*.csproj`, `plugin.json`, etc.), se actualizan esos ficheros y el resumen de cierre propone declarar el comando en `tech-stack.md`
 
-**ADDED — Sin fichero de versión, la versión vive en el tag y en el changelog**
+**ADDED — Sin fichero de versión, la versión vive en el tag y en el changelog** *(sin guía nueva: el RED ya lo cumple 4/4)*
 - GIVEN un proyecto sin fichero de versión ni comando declarado
 - WHEN se llega al bump
 - THEN no se crea ningún fichero para la versión: la registran el tag anotado y la cabecera del changelog sellado
 
-**ADDED — La versión se propone desde el changelog**
+**ADDED — La versión se propone desde el changelog** *(sin guía nueva: el RED ya lo cumple 6/6)*
 - GIVEN un `[Unreleased]` con entradas
 - WHEN `sdd-end-release` propone la versión en el paso 1
 - THEN la propuesta sale de las secciones de `[Unreleased]` (`Removed` o incompatible → major; `Added` o `Changed` → minor; solo `Fixed` → patch; en pre-1.0, según `versionado.md`) y va con su motivo
@@ -173,7 +185,7 @@ Toda la guía nueva está condicionada a dos predicados observables (Art. II): l
 - WHEN se presenta el resumen de cierre
 - THEN incluye los ids de ticket de las entradas de `[Unreleased]` que entran en la versión
 
-**ADDED — El acta solo se escribe si hay fuente**
+**ADDED — El acta solo se escribe si hay fuente** *(sin guía nueva: sin destinatario, el RED ya lo cumple 4/4)*
 - GIVEN un cierre sin transcripción ni notas aportadas por el usuario y sin fichero de fuente en `.docs/sdd/releases/vX.Y.Z/`
 - WHEN `sdd-end-release` llega al acta
 - THEN omite el paso sin preguntar si hubo demo o reunión
