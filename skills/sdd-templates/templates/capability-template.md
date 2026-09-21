@@ -1,10 +1,10 @@
 # Capacidad — <nombre>
 
 > **Reglas anti-proliferación** (no se rompen sin pasar por esta lista):
-> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una task.
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una task. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
 > 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
 >    la crea `sdd-end-task` por su cuenta.
-> 3. `sdd-end-task` fusiona el delta: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye el
+> 3. `sdd-end-task` fusiona el delta: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita.
 > 4. Brownfield no vuelca: la carpeta `capabilities/` no se rellena de golpe al inicializar, crece
 >    task a task, con la primera que toque cada capacidad.
@@ -17,7 +17,7 @@
 
 ### <Título estable del requisito>
 
-> El título es la clave que `MODIFIED — <título> (antes: …)` cita al fusionar un delta futuro;
+> El título es la clave que `MODIFIED — <título>` cita al fusionar un delta futuro;
 > no lo cambies al fusionar salvo que la spec lo renombre explícitamente.
 
 - GIVEN <precondición>

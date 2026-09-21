@@ -1,6 +1,6 @@
 # Capacidad — task-flow
 
-Verdad viva del comportamiento observable del carril task del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una task. Cada requisito tiene un título estable: las specs lo citan literal en `MODIFIED (antes: …)`. Una capacidad es un sustantivo del dominio; esta la declaró la spec de la task `spec-ligera-funcional` en sus «Decisiones a validar» (decisión 6).
+Verdad viva del comportamiento observable del carril task del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una task. Cada requisito tiene un título estable: las specs lo citan literal en `MODIFIED — <título>`. Una capacidad es un sustantivo del dominio; esta la declaró la spec de la task `spec-ligera-funcional` en sus «Decisiones a validar» (decisión 6).
 
 ## Requisitos
 
@@ -9,39 +9,10 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN el agente presenta la spec en el gate
 - THEN el primer bloque que el dev-lead lee es "Decisiones que he tomado yo — valida estas", con una línea por decisión, y el resto de la spec cabe en una pantalla
 
-### El delta declara el comportamiento por capacidad
-- GIVEN una spec que cambia comportamiento observable
-- WHEN se escribe su sección de delta
-- THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED (antes: …)` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
-- AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
-- AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto); `sdd-end-task` sustituye o añade cada entrada por su nombre
-- AND la lente dominio reclama las entradas que falten y marca como Crítico una regla que contradiga la constitution
-
 ### Lo técnico no vive en la spec
 - GIVEN un contenido cuya implementación puede cambiar sin cambiar el comportamiento observable (modelo de datos, endpoints, riesgos técnicos, rollout)
 - WHEN se redacta la spec
 - THEN ese contenido va a `plan.md`, no a `spec.md`
-
-### El cierre fusiona el delta en la verdad viva
-- GIVEN una task cerrándose vía `sdd-end-task` con un delta en su spec
-- WHEN se ejecuta el paso de fusión
-- THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye el requisito anterior, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
-- AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
-
-### Brownfield no vuelca `capabilities/`
-- GIVEN un proyecto existente inicializado con `sdd-init-brownfield`
-- WHEN se generan los documentos de anclaje
-- THEN `capabilities/` no se crea ni se rellena: aparece con la primera task que toque una capacidad
-
-### Los documentos de anclaje nombran `capabilities/`
-- GIVEN cualquier skill o plantilla que cite la carpeta de capacidades
-- WHEN se lee el contexto SDD
-- THEN la referencia es a la carpeta `capabilities/` y a sus capacidades
-
-### La consulta lee la capacidad, no las specs
-- GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-consult`
-- WHEN existe `capabilities/<capability>.md`
-- THEN la respuesta se ancla en ese fichero, no en la reconstrucción a partir de specs históricas
 
 ### La spec propone su propio nivel de review por complejidad
 - GIVEN una spec en modo full recién redactada
@@ -125,3 +96,8 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — MODIFIED La spec propone su propio nivel de review por complejidad
 - 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — MODIFIED La review adversarial tensa la spec antes del gate
 - 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — ADDED La review mira los ejemplos de la spec contra la constitution
+- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED El delta declara el comportamiento por capacidad (se mueve a `capabilities`)
+- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED El cierre fusiona el delta en la verdad viva (se mueve a `capabilities`)
+- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED Brownfield no vuelca `capabilities/` (se mueve a `capabilities`)
+- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED Los documentos de anclaje nombran `capabilities/` (se mueve a `capabilities`)
+- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED La consulta lee la capacidad, no las specs (se mueve a `capabilities`)

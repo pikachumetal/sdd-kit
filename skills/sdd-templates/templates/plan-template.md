@@ -52,6 +52,8 @@ created: <YYYY-MM-DD>
 
 ### 1.1 Estructura de ficheros
 
+> Los valores de comportamiento (tiempos, límites, cuotas, avisos) viven solo en `capabilities/`. Si una task documenta `tech-stack.md`, `architecture.md` o `environments.md`, dice dónde está la pieza técnica y enlaza la capacidad, sin copiar el valor.
+
 **Crear**:
 
 - `path/al/fichero` — responsabilidad.

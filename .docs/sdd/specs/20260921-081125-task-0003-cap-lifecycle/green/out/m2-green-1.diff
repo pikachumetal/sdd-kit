@@ -1,0 +1,186 @@
+diff --git a/.docs/sdd/capabilities/bookings.md b/.docs/sdd/capabilities/bookings.md
+index e5dce0e..9bd8a36 100644
+--- a/.docs/sdd/capabilities/bookings.md
++++ b/.docs/sdd/capabilities/bookings.md
+@@ -10,19 +10,26 @@
+ ### Una reserva pendiente caduca si nadie la confirma
+ - GIVEN una reserva en estado `pending`
+ - WHEN pasan 30 minutos sin que secretaría la confirme
+-- THEN la reserva pasa a `expired` y el aula queda libre
++- THEN la reserva pasa a `expired`, el aula queda libre y el profesor recibe un email avisando de la caducidad
+ - AND secretaría deja de verla en la lista de pendientes
+ - AND el profesor la ve como caducada en su lista de reservas
+ 
++### El profesor recibe un recordatorio antes de su reserva
++- GIVEN una reserva confirmada para mañana a las 10:00
++- WHEN faltan 12 horas para el inicio
++- THEN el profesor recibe un email con aula, hora de inicio y un enlace para cancelar
++
+ ## Reglas de la capacidad
+ 
+ - **Dónde viven los datos**: tabla `bookings` de `data/aulario.db`.
+ - **Idioma de los nombres**: estados en inglés (`pending`, `confirmed`, `expired`, `cancelled`); mensajes en castellano.
+ - **Límites**: caducidad a los 30 minutos; una reserva dura como máximo 4 horas; un profesor tiene como máximo 3 reservas pendientes a la vez.
+-- **Avisos**: el profesor ve el estado de cada reserva en su lista al recargar; secretaría ve el contador de pendientes en la cabecera; ningún aviso sale del sistema por otro canal.
++- **Avisos**: el profesor ve el estado de cada reserva en su lista al recargar; secretaría ve el contador de pendientes en la cabecera; además el profesor recibe por email un recordatorio antes de una reserva confirmada y un aviso cuando una reserva pendiente caduca.
+ - **Regla ante conflicto**: la confirmación de secretaría manda sobre la reserva del profesor.
+ 
+ ## Historial
+ 
++- 2026-09-21 — task 0005 — ADDED El profesor recibe un recordatorio antes de su reserva
++- 2026-09-21 — task 0005 — MODIFIED Una reserva pendiente caduca si nadie la confirma
+ - 2026-09-16 — task 0004 — ADDED Una reserva pendiente caduca si nadie la confirma
+ - 2026-09-12 — task 0002 — ADDED Una reserva no puede solaparse con otra
+diff --git a/.docs/sdd/capabilities/legacy.md b/.docs/sdd/capabilities/legacy.md
+index 929ff2c..7c12d63 100644
+--- a/.docs/sdd/capabilities/legacy.md
++++ b/.docs/sdd/capabilities/legacy.md
+@@ -6,10 +6,6 @@
+ 
+ La secretaría ve una tabla por semana con las aulas en filas y las franjas de una hora en columnas. Una celda ocupada muestra el nombre del profesor.
+ 
+-## Recordatorios
+-
+-El sistema envía un recordatorio por email al profesor 24 horas antes de cada reserva confirmada. El correo incluye aula, hora de inicio y un enlace para cancelar.
+-
+ ## Informes
+ 
+ A final de mes, la secretaría descarga un CSV con las horas reservadas por profesor y por aula.
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index 7549e3f..55d24b0 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -8,3 +8,12 @@
+ | 0004 | Caducidad de reservas pendientes | ✅ |
+ | 0005 | Emails de recordatorio y de caducidad | 🔄 |
+ | 0006 | Informe mensual de horas | ⏳ |
++
++## Deuda técnica
++
++| Origen | Deuda |
++| --- | --- |
++| 0005 | El email de recordatorio no incluye el enlace para cancelar que exige la spec (`src/reminders.js:9`) |
++| 0005 | Sin tests de recordatorio ni de caducidad (constitution, art. 3) |
++| 0005 | `startScheduler` no se llama desde `src/app.js`: la app commiteada no arranca el proceso periódico |
++| 0005 | `package.json` sin `express`, `better-sqlite3` ni `nodemailer`; columnas `teacher_email` y `reminded` sin esquema ni migración en el repo |
+diff --git a/.docs/sdd/specs/20260918-100000-task-0005-mails/spec.md b/.docs/sdd/specs/20260918-100000-task-0005-mails/spec.md
+index 8e8695f..25d94e7 100644
+--- a/.docs/sdd/specs/20260918-100000-task-0005-mails/spec.md
++++ b/.docs/sdd/specs/20260918-100000-task-0005-mails/spec.md
+@@ -16,7 +16,7 @@ approvers:
+ ## Decisiones que he tomado yo — valida estas
+ 
+ 1. **Los dos requisitos van a `bookings`**: son avisos sobre una reserva.
+-2. **El recordatorio sale 24 horas antes**, como en la versión anterior.
++2. **El recordatorio sale 12 horas antes** *(corregido el 2026-09-21 al cerrar: la spec aprobada decía 24 h, como la versión anterior; el dev-lead pidió 12 h el 2026-09-19 durante la implementación —ver `tasks.md` #2— y es lo que implementa el código y lo que se probó)*.
+ 3. Review de spec propuesta: sin review — señales: `MODIFIED` (1).
+ 
+ ## Intent
+@@ -38,7 +38,7 @@ Un proceso cada minuto revisa reservas próximas y caducadas y envía los correo
+ 
+ **ADDED — El profesor recibe un recordatorio antes de su reserva**
+ - GIVEN una reserva confirmada para mañana a las 10:00
+-- WHEN faltan 24 horas para el inicio
++- WHEN faltan 12 horas para el inicio
+ - THEN el profesor recibe un email con aula, hora de inicio y un enlace para cancelar
+ 
+ **MODIFIED — Una reserva pendiente caduca si nadie la confirma** (antes: "THEN la reserva pasa a `expired` y el aula queda libre")
+diff --git a/.docs/sdd/specs/20260918-100000-task-0005-mails/tasks.md b/.docs/sdd/specs/20260918-100000-task-0005-mails/tasks.md
+index f199ac9..6d7e448 100644
+--- a/.docs/sdd/specs/20260918-100000-task-0005-mails/tasks.md
++++ b/.docs/sdd/specs/20260918-100000-task-0005-mails/tasks.md
+@@ -2,6 +2,6 @@
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+-| 1 | Proceso periódico y envío SMTP | done | base de la rama | |
+-| 2 | Recordatorio y caducidad | done | base de la rama | El dev-lead pidió el 2026-09-19, durante la implementación, que el recordatorio salga **12 horas antes**, no 24: «a 24 h lo olvidan igual; mejor la noche antes». El código usa 12 h |
+-| 3 | Documentación | pending | — | |
++| 1 | Proceso periódico y envío SMTP | done | 6e0d356 | El código llegó dentro del commit `base` de la rama. `startScheduler` existe pero nada lo llama desde `src/app.js` (ver walkthrough §4.3) |
++| 2 | Recordatorio y caducidad | done | 6e0d356 | El dev-lead pidió el 2026-09-19, durante la implementación, que el recordatorio salga **12 horas antes**, no 24: «a 24 h lo olvidan igual; mejor la noche antes». El código usa 12 h. Los «sus tests» del plan no existen en el repo (walkthrough §4.3) |
++| 3 | Documentación | done | b710f0a | Solo la pieza técnica en `tech-stack.md`; el plan pedía documentar también los tiempos y no se hizo: viven solo en `capabilities/bookings.md` |
+diff --git a/.docs/sdd/specs/20260918-100000-task-0005-mails/walkthrough.md b/.docs/sdd/specs/20260918-100000-task-0005-mails/walkthrough.md
+new file mode 100644
+index 0000000..4d50977
+--- /dev/null
++++ b/.docs/sdd/specs/20260918-100000-task-0005-mails/walkthrough.md
+@@ -0,0 +1,65 @@
++---
++id: 20260918-100000-task-0005-mails
++task: 0005
++title: Walkthrough — Emails de recordatorio y de caducidad
++spec: ./spec.md
++plan: ./plan.md
++status: done
++created: 2026-09-21
++---
++
++# Walkthrough — Emails de recordatorio y de caducidad
++
++## 1. Cambios realizados
++
++- **Proceso periódico y SMTP** (`src/scheduler.js`, `src/mailer.js`, commit `6e0d356`): `startScheduler` ejecuta cada minuto el recordatorio y la caducidad; `sendMail` envía por SMTP con `nodemailer`.
++- **Recordatorio** (`src/reminders.js`, `6e0d356`): reservas `confirmed` con `reminded = 0` cuyo inicio cae dentro de las próximas 12 h; envía el email y marca `reminded = 1`.
++- **Caducidad** (`src/expiry.js`, `6e0d356`): reservas `pending` con 30 min o más desde `created_at` pasan a `expired` y el profesor recibe un email.
++- **Docs** (`b710f0a`): sección «Emails y proceso periódico» en `tech-stack.md`, sin copiar tiempos.
++- **Docs vivos al cerrar**: delta de la spec fusionado en `capabilities/bookings.md` (ADDED recordatorio, MODIFIED caducidad, regla «Avisos»); «Recordatorios» retirado de `capabilities/legacy.md` porque ya vive en `bookings`.
++
++## 2. Tiempo: estimado vs real
++
++No aplica: el proyecto no tiene `.docs/sdd/estimation.md`.
++
++## 3. Desviaciones del plan
++
++- **Antelación del recordatorio: 12 h, no 24 h.** La spec aprobada decía 24 h. El dev-lead pidió 12 h el 2026-09-19 durante la implementación (registrado solo en `tasks.md` #2). Al cerrar se corrigió la spec (decisión 2 y el `WHEN` del delta) para que la capacidad no herede un valor falso. La aprobación firmada el 2026-09-18 cubría 24 h; el cambio no tiene aprobación firmada propia.
++- **Task 3 sin los tiempos.** El plan pedía documentar en `tech-stack.md` la caducidad a 30 min y la antelación del recordatorio. No se hizo: los valores de comportamiento viven solo en `capabilities/bookings.md`; `tech-stack.md` dice dónde está la pieza técnica y enlaza la capacidad.
++- **Tests de la Task 2: no existen.** El plan decía «con sus tests». No hay ningún fichero de test en el repo (ver §4.2).
++
++## 4. Verificación
++
++### 4.1 Builds
++
++- `node --test` (ejecutado por mí, 2026-09-21): `tests 0 · pass 0 · fail 0`. Pasa porque no hay tests, no porque las reglas estén cubiertas.
++- No hay `node_modules` en la rama y `package.json` no declara `express`, `better-sqlite3` ni `nodemailer`; no he podido arrancar la app.
++
++### 4.2 Smoke / tests
++
++- **Validado por el dev-lead: 2026-09-21 · en local reservó un aula para mañana a las 10:00 y el recordatorio le llegó hoy a las 22:00; dejó otra reserva sin confirmar y a la media hora caducó y le llegó el email de caducidad.** *(Reportado por el usuario; yo no lo he reproducido.)*
++
++| # | Caso | Resultado |
++| --- | --- | --- |
++| 1 | Recordatorio de una reserva para mañana 10:00 llega a las 22:00 de hoy (12 h antes) | OK — reportado por el usuario |
++| 2 | Reserva `pending` sin confirmar caduca a los 30 min y llega el email de caducidad | OK — reportado por el usuario |
++| 3 | Constantes en el código: `REMINDER_HOURS_BEFORE = 12` (`src/reminders.js:3`), `EXPIRY_MINUTES = 30` (`src/expiry.js:3`) | OK — verificado por mí, leyendo el código; coherente con los casos 1 y 2 |
++| 4 | El recordatorio incluye «un enlace para cancelar» (spec) | **No cumple** — verificado por mí: el cuerpo es solo `Aula <id> a las <start>` (`src/reminders.js:9`). El usuario no informó de este punto |
++| 5 | Tests automáticos de recordatorio y caducidad | **No existen** — verificado por mí (`node --test`: 0 tests) |
++
++### 4.3 Residuales / deuda generada
++
++Pasan a la tabla de deuda técnica del roadmap:
++
++- El email de recordatorio no lleva el enlace para cancelar que exige la spec. Hay `POST /bookings/:id/cancel`, pero un enlace en un email necesita además decidir URL base y método.
++- Sin tests de recordatorio ni de caducidad; la constitution (art. 3) pide un test para toda regla de reserva, y la caducidad está entre ellas.
++- `startScheduler` no se llama desde `src/app.js` ni desde ningún otro fichero de la rama: tal como está commiteada, la app no arranca el proceso periódico. La prueba del usuario funcionó, así que en su entorno se arrancó por otra vía que no está en el repo.
++- `package.json` sin `express`, `better-sqlite3` ni `nodemailer`; y las columnas `teacher_email` y `reminded` de `bookings` no tienen esquema ni migración en el repo.
++
++## 5. Aprendizajes
++
++- La antelación real del recordatorio es 12 h → `capabilities/bookings.md` (requisito ADDED); `legacy.md` decía 24 h y esa sección se ha retirado.
++- «Ningún aviso sale del sistema por otro canal» ya no es cierto → regla «Avisos» de `capabilities/bookings.md` actualizada.
++- Proceso periódico y SMTP → `tech-stack.md`, sin valores de comportamiento.
++- Un cambio de requisito pedido en mitad de la implementación (24 h → 12 h) quedó solo en `tasks.md` y la spec siguió diciendo 24 h hasta el cierre. Va en el ticket para el kit (`sdd-feedback`) si el usuario lo pide.
++- Revisión de skills: el proyecto no tiene `.claude/skills/` (comprobado) y esta task no revela un patrón reutilizable; no se crea ninguna.
+diff --git a/.docs/sdd/tech-stack.md b/.docs/sdd/tech-stack.md
+index b72f5bb..364a037 100644
+--- a/.docs/sdd/tech-stack.md
++++ b/.docs/sdd/tech-stack.md
+@@ -4,3 +4,9 @@
+ - Tests: `node --test`.
+ - Docker Compose para desarrollo: `docker compose up`.
+ - Git-flow: `main`, `develop`, `feature/<id>` desde `develop`.
++
++## Emails y proceso periódico
++
++- Proceso periódico: `startScheduler` en `src/scheduler.js` (`setInterval` de un minuto) llama a `src/reminders.js` y `src/expiry.js`.
++- Envío: SMTP con `nodemailer` desde `src/mailer.js`; host en `SMTP_HOST` (por defecto `localhost`), puerto 1025 fijo en el código.
++- Cuándo se envía cada aviso y con qué tiempos: [`capabilities/bookings.md`](capabilities/bookings.md). Los valores viven solo allí.

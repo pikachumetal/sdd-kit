@@ -42,6 +42,7 @@ Este checklist NO aplica: el cierre ligero de un patch es `sdd-end-patch`.
 - No has abierto `.claude/skills/` — la revisión de skills no se hace de memoria.
 - No has tocado `roadmap.md`.
 - La spec sigue en `draft` y no se lo has señalado al usuario.
+- Has escrito en `tech-stack.md`, `architecture.md` o `environments.md` un valor que ya está en `capabilities/` (un tiempo, un límite, una cuota).
 
 | Racionalización | Realidad |
 | --- | --- |
@@ -50,4 +51,5 @@ Este checklist NO aplica: el cierre ligero de un patch es `sdd-end-patch`.
 | "El usuario tiene prisa: walkthrough mínimo y listo" | El checklist entero cabe en minutos. Lo que se salta hoy es la deriva de docs de mañana. |
 | "El aprendizaje ya está en el walkthrough" | El walkthrough es un registro muerto para las próximas tareas; los docs vivos son constitution/architecture/tech-stack. |
 | "Este proyecto no tiene skills, me salto ese paso" | Se mira `.claude/skills/`, no se asume. Quizá esta task crea la primera. |
+| "El plan pide documentar los tiempos en tech-stack" | El anclaje dice dónde está la constante y enlaza la capacidad; el valor vive solo en `capabilities/`. Dos copias divergen en el primer `MODIFIED`. |
 | "El tiempo quedó en el walkthrough, con eso basta" | Sin fila en el log no hay factor de calibración. El log es lo que convierte tiempos sueltos en estimaciones defendibles. |

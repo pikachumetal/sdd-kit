@@ -1,0 +1,83 @@
+diff --git a/.docs/sdd/specs/20260921-112440-task-0006-reservas-en-sabado/spec.md b/.docs/sdd/specs/20260921-112440-task-0006-reservas-en-sabado/spec.md
+new file mode 100644
+index 0000000..a99b70c
+--- /dev/null
++++ b/.docs/sdd/specs/20260921-112440-task-0006-reservas-en-sabado/spec.md
+@@ -0,0 +1,77 @@
++---
++id: 20260921-112440-task-0006-reservas-en-sabado
++task: 0006            # id de la secuencia del proyecto (ids.mode: sequence en sdd-kit.json)
++title: Reservas en sábado
++mode: full
++status: draft
++created: 2026-09-21
++author: Claude Sonnet 5, por encargo de Àngel Delgado
++approvers:
++  - role: dev-lead
++    name: TBD
++    approved_at: null
++---
++
++# Spec — Reservas en sábado
++
++> **Estado**: draft — en espera de aprobación del dev-lead. Sin código tocado.
++> **Siguiente paso**: aprobada la spec → `plan.md` con `superpowers:writing-plans`.
++
++## Decisiones que he tomado yo — valida estas
++
++```text
++Review de spec propuesta: un revisor — señales: MODIFIED (requisito «Solo se reserva en días lectivos» y límite «lunes a viernes»), contrato público (POST /bookings acepta un día que antes rechazaba y cambia el texto del error 422)
++- Dominio: si el MODIFIED deja el domingo cerrado y si «lunes a sábado» encaja con el límite 8:00–21:00 de «Reglas de la capacidad» (señal: MODIFIED)
++- Mínimo razonable: sin review — deja sin cubrir si secretaría quiere otra franja horaria en sábado (decisión 3)
++```
++
++> Proponer no es activar: no hay revisor despachado porque el usuario no está para activarlo y cuesta tokens. Se anota aquí; se puede lanzar antes de aprobar.
++
++1. **Solo se abre el sábado; el domingo sigue cerrado** — es lo único que se ha pedido (cursos intensivos de sábado) y nadie ha declarado demanda en domingo.
++2. **Cualquier profesor puede reservar en sábado, no solo los de cursos intensivos** — Aulario no modela cursos («No es: … horarios de cursos», `mission.md`); distinguirlos exigiría un dato nuevo en el schema que nadie ha pedido. Restringirlo sería otra task.
++3. **Mismo horario en sábado: 8:00 a 21:00** — no hay otra franja declarada. **Suposición sin confirmar**: secretaría debería decir si los intensivos usan otra franja.
++4. **El mensaje de rechazo pasa a «Solo se reserva de lunes a sábado»** — con el texto actual el domingo se rechazaría con una frase falsa (dice «a viernes» y el sábado sí se acepta). Cambia el texto del 422 de `POST /bookings`; en este repo no hay ningún consumidor que dependa de él.
++5. **La regla es permanente, sin flag ni configuración por entorno** — «desde este mes» no trae fecha de fin. Si los intensivos son temporales, volver atrás es una task de una línea; un flag hoy es sobreingeniería.
++6. **Modo full, no lite** — el texto del 422 es parte del contrato público de la API, lo que ya descarta lite; y no hay nadie para confirmarlo.
++7. **Sin capacidad nueva**: el delta toca solo `bookings`.
++8. **Diferido a tu decisión (descubierto, NO absorbido en esta task)**:
++   - La franja 8:00–21:00 no se valida en el código; `POST /bookings` solo mira el día (`src/bookings.js:11-16`). El sábado hereda esa laguna.
++   - `isBookableDay` usa `getDay()` en la zona horaria del servidor (`src/bookings.js:4`); con fechas `YYYY-MM-DD` y un servidor con offset negativo el día leído se desplaza. No verificado en el entorno real.
++   - No hay tests ni `express`/`better-sqlite3` declarados en `package.json`, aunque la constitution (Art. 3) exige test por regla y la task 0002 figura ✅. El plan tendrá que decidir cómo cubrir la regla.
++9. **Notas de proceso de esta sesión (borrar al aprobar)**: la rama `feature/0006` **no está creada** — `git switch -c` pedía aprobación y la sesión no era interactiva. La spec está sin commitear en el árbol de `develop`; el id 0006 se calculó a mano con la lógica de `Get-NextSddId.ps1` (máximo usado 0005 + 1) porque el script tampoco se pudo ejecutar. Crear la rama y confirmar el id antes de seguir.
++
++## Intent
++
++Hoy `POST /bookings` rechaza con 422 cualquier reserva en sábado o domingo (`isBookableDay`, `src/bookings.js:3-6`), tal como fija la capacidad `bookings`. Desde septiembre de 2026 hay cursos intensivos en sábado y, según secretaría, los profesores no pueden reservar aula ese día. Se quiere que el sábado sea un día reservable.
++
++## Scope
++
++- Entra: aceptar reservas en sábado; nuevo texto del rechazo del domingo; actualizar la capacidad `bookings` (requisito y límite de días) al cerrar la task.
++- No entra: abrir el domingo; distinguir profesores o cursos; configuración por entorno; validar la franja 8:00–21:00; tratamiento de zonas horarias; montar la infraestructura de tests más allá de lo que el plan necesite para cubrir esta regla.
++
++## Approach
++
++El día de la semana deja de excluir el sábado: se reserva de lunes a sábado. El domingo sigue rechazado con el mensaje actualizado. El resto del flujo (estado `pending`, confirmación de secretaría) no cambia.
++
++## Delta de comportamiento
++
++### Capacidad: `bookings`
++
++**MODIFIED — Solo se reserva en días lectivos** (antes: "GIVEN un profesor que pide un aula / WHEN la fecha de la reserva cae en sábado o domingo / THEN la petición se rechaza con «Solo se reserva de lunes a viernes»")
++- GIVEN un profesor que pide un aula
++- WHEN la fecha de la reserva cae en domingo
++- THEN la petición se rechaza con «Solo se reserva de lunes a sábado»
++
++**ADDED — Se puede reservar en sábado**
++- GIVEN un profesor que pide un aula sin otra reserva en esa franja
++- WHEN la fecha de la reserva cae en sábado
++- THEN la reserva se crea en estado `pending`, pendiente de la confirmación de secretaría como cualquier otra
++
++**Reglas de la capacidad**
++- **Límites**: reservas de lunes a sábado, de 8:00 a 21:00
++
++## Aprobaciones
++
++| Rol | Nombre | Fecha | Estado |
++| --- | --- | --- | --- |
++| dev-lead | | | pendiente |
