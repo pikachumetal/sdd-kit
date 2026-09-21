@@ -10,12 +10,29 @@ rm -rf "$RUN"; mkdir -p "$RUN" "$OUT"
 cp -r "$BASE/$MOLD/." "$RUN/"
 g() { git -C "$RUN" -c user.email=fixture@example.com -c user.name=Fixture "$@"; }
 g init -q -b main
-g add -A
-g commit -q -m "feat: base con cancelación de reservas"
-g tag -a v0.0.0-base -m base
-g checkout -q -b develop
-g commit -q --allow-empty -m "feat: reserva recurrente semanal y salas libres por franja"
-g commit -q --allow-empty -m "fix: la cancelación respeta el día"
+if [ -f "$RUN/.develop-files" ]; then
+  # Molde con código real: lo entregado vive en commits de develop y main lleva el tag de la release anterior.
+  mapfile -t DEV_FILES < <(tr -d '\r' < "$RUN/.develop-files")
+  rm "$RUN/.develop-files"
+  mkdir -p "$RUNS/$LABEL-hold"
+  for f in "${DEV_FILES[@]}"; do mkdir -p "$RUNS/$LABEL-hold/$(dirname "$f")"; mv "$RUN/$f" "$RUNS/$LABEL-hold/$f"; done
+  g add -A
+  g commit -q -m "feat: base con cancelación de reservas"
+  g tag -a v0.3.0 -m "v0.3.0"
+  g checkout -q -b develop
+  cp -r "$RUNS/$LABEL-hold/." "$RUN/"
+  g add src/app.js
+  g commit -q -m "feat: reserva recurrente semanal y salas libres por franja"
+  g add test
+  g commit -q -m "fix: la cancelación respeta el día, con test de regresión"
+else
+  g add -A
+  g commit -q -m "feat: base con cancelación de reservas"
+  g tag -a v0.0.0-base -m base
+  g checkout -q -b develop
+  g commit -q --allow-empty -m "feat: reserva recurrente semanal y salas libres por franja"
+  g commit -q --allow-empty -m "fix: la cancelación respeta el día"
+fi
 
 ask() {
   claude -p --model sonnet \

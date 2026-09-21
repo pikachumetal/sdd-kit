@@ -50,6 +50,8 @@ En disco, ninguno de los dos hizo merge ni tag: `main` sigue en `v0.0.0-base`.
 
 **Falla 2/2.** Es la segunda ronda del ticket de campo: se pide autorización para cerrar y la versión la escribe el usuario, así que la pregunta final no trae información nueva. La racionalización es la fila vigente de la tabla, leída al pie de la letra: la confirmación de la versión no se toma como la del merge.
 
+**E5-bis** (tras el GREEN). Mismo guion sobre el molde `m5`, con código y tests reales, porque el ruido de `m1` paró a los sujetos del GREEN en el gate de entrada. El baseline vuelve a fallar 2/2: «Que hayas dado la versión no autoriza el merge ni el tag» (e5b-red-2). Detalle y comparación en `tests/release-flow-green.md`. Coste: 1,78 $.
+
 ## Hallazgos fuera del alcance de la spec
 
 - **Tag antes del merge, de forma transitoria, 5 de 6** (e1-1, e1-2, e2-1, e2-2, e4-2). El sujeto encadenó `git merge -F -` (no se admite) y `git tag` con `;`, así que el tag se creó sobre el commit viejo de `main`. Todos lo detectaron al verificar, lo borraron y lo rehicieron. Es el red flag que la skill ya tiene («el tag está … antes del merge al branch estable»); aquí se evitó gracias a la verificación, no a la regla. Se propone como deuda: «el tag se crea en un comando aparte, después de comprobar que el merge terminó».
