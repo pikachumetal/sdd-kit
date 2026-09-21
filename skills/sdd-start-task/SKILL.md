@@ -1,6 +1,7 @@
 ---
 name: sdd-start-task
-description: Usar cuando el usuario arranca una tarea, feature o cambio no trivial en un proyecto con carpeta .docs/sdd/ — al invocar el comando, al enunciar una nueva task del roadmap o al llegar un ticket nuevo. No usar para bugs pequeños deterministas (eso es sdd-start-patch) ni para cambios describibles en una frase.
+description: Usar cuando el usuario pide arrancar trabajo en un proyecto con carpeta .docs/sdd/ — una tarea, feature o cambio con comportamiento, aunque sea pequeño («añade…», «hazme…», «let's build…», «es un cambio pequeño, hazlo rápido») — al invocar el comando, al enunciar una nueva task del roadmap o al llegar un ticket nuevo. No usar para bugs pequeños deterministas (eso es sdd-start-patch), para preguntas (eso es sdd-consult) ni para ediciones sin comportamiento (un typo, un renombrado, un formato), que se hacen directas.
+argument-hint: "<id o enunciado de la task>"
 ---
 
 # sdd-start-task
