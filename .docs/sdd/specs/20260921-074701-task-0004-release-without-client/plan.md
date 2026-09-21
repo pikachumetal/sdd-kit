@@ -3,7 +3,7 @@ id: 20260921-074701-task-0004-release-without-client
 task: 0004
 title: Plan de implementación — Carril release opcional y fuera de un contexto de cliente
 spec: ./spec.md
-status: draft
+status: approved
 created: 2026-09-21
 ---
 
