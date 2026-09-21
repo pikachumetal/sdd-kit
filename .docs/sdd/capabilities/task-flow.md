@@ -46,13 +46,21 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 ### La spec propone su propio nivel de review por complejidad
 - GIVEN una spec en modo full recién redactada
 - WHEN el agente la presenta en el gate
-- THEN la primera línea de «Decisiones a validar» dice el nivel propuesto (sin review · un revisor con su lente · dos revisores) y las señales contadas que lo justifican
+- THEN el bloque que abre «Decisiones a validar» dice el nivel propuesto (sin review · un revisor con su lente · dos revisores), las señales contadas que lo justifican, una línea por lente candidata con qué comprobaría en esta spec y la señal que lo motiva, y la opción mínima razonable con lo que deja sin cubrir
+- AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
 - AND el usuario activa o rechaza; en modo lite no se propone
 
 ### La review adversarial tensa la spec antes del gate
 - GIVEN un nivel de review activado por el usuario
 - WHEN el agente despacha el revisor con la spec, la constitution, la mission y las capacidades tocadas
 - THEN cada hallazgo aparece en «Decisiones a validar» como aceptado (con el cambio en la spec) o rechazado con motivo, antes de pedir la aprobación
+- AND con dos revisores cada lente recibe puntos disjuntos y el encargo le prohíbe reportar lo que pertenece al punto de la otra
+- AND con un revisor la lente única recibe todos los puntos
+
+### La review mira los ejemplos de la spec contra la constitution
+- GIVEN una spec cuyos ejemplos, valores o fixtures citan datos concretos
+- WHEN la lente dominio la revisa
+- THEN marca el ejemplo que contradiga la constitution del proyecto y el que identifique un cliente, proyecto o persona reales donde un ejemplo neutro serviría igual
 
 ### El plan presenta primero las decisiones tomadas sin el usuario
 - GIVEN un plan en modo full
@@ -114,3 +122,6 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El cierre fusiona el delta en la verdad viva
 - 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El delta declara el comportamiento por capacidad
 - 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED La consulta lee la capacidad, no las specs
+- 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — MODIFIED La spec propone su propio nivel de review por complejidad
+- 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — MODIFIED La review adversarial tensa la spec antes del gate
+- 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — ADDED La review mira los ejemplos de la spec contra la constitution

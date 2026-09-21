@@ -23,7 +23,7 @@ approvers:
 
 ## Decisiones que he tomado yo — valida estas
 
-> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. La **primera línea** es el nivel de review propuesto con sus señales (modo full; rúbrica en `sdd-start-task/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
+> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-start-task/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
 
