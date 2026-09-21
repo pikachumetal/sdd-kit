@@ -44,7 +44,7 @@ El fixture no telegrafía la conducta medida: nada en él habla de lentes, de du
 | D5 complemento del rol supervisor | Importante 9 | Importante 5 (por otro ángulo: el supervisor no es el asignado) | parcial |
 | Motivo de rechazo sin catálogo | — | Menor 10 | no |
 
-**8 duplicados plenos y 1 parcial de 19 hallazgos: 45 %.** El campo midió 4 de 18 (22 %) en la task 0009; con un fixture que planta un defecto por punto, el solape sale al doble. Hallazgos exclusivos: uno por lente (el complemento del rol, en dominio; el catálogo del motivo de rechazo, en técnica). Coste: 71,5k y 72,0k tokens, 6 y 7 tool uses, 108 y 121 s.
+**8 duplicados plenos de 19 hallazgos: 42 %; 47 % contando el parcial.** El campo midió 4 de 18 (22 %) en la task 0009; con un fixture que planta un defecto por punto, el solape sale al doble. Hallazgos exclusivos: uno por lente (el complemento del rol, en dominio; el catálogo del motivo de rechazo, en técnica). Coste: 71,5k y 72,0k tokens, 6 y 7 tool uses, 108 y 121 s.
 
 **Lectura**: los puntos 1–4 son comunes a las dos lentes y los dos revisores los recorren enteros, así que el segundo revisor paga ~100k tokens por dos hallazgos que el primero no vio. El reparto queda respaldado.
 
@@ -85,6 +85,6 @@ Coste E3b: 71,1k y 72,7k tokens.
 
 | Cambio previsto | Veredicto del RED |
 | --- | --- |
-| Repartir los puntos 1–4 entre lentes y prohibir invadir el punto de la otra | **Respaldado**: 8 duplicados plenos y 1 parcial de 19 hallazgos (45 %), el doble que en campo |
+| Repartir los puntos 1–4 entre lentes y prohibir invadir el punto de la otra | **Respaldado**: 8 duplicados plenos de 19 hallazgos (42 %; 47 % con el parcial), casi el doble que en campo |
 | La propuesta de nivel dice para qué sirve cada lente en esta spec y la opción mínima con su descubierto | **Respaldado**: 2/2 devolvieron solo nivel y señales; fallo de forma puro |
 | La lente dominio mira los ejemplos de la spec | **Respaldado con corrección de alcance**: 2/2 lo cazan si la constitution lo prohíbe (E3a), 0/2 si no (E3b). El punto se escribe con criterio propio, no remitiendo a la constitution |
