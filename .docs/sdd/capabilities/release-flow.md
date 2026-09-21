@@ -97,4 +97,18 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 
 ## Historial
 
-- 2026-09-21 — task 0004 — ADDED los quince requisitos y las reglas de la capacidad. Se fusionan acotados a lo que el RED y el GREEN verificaron: sin la tabla de major, minor y patch de «La versión se propone desde el changelog» ni el caso «ficheros de versión sin comando» de «El bump usa el tooling del proyecto», que ningún escenario midió. «El acta solo se escribe si hay fuente» se acota a `hasRecipient: false`, porque con cliente preguntar por la demo es pertinente (E2 del RED)
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El carril release es opcional
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED Se puede cerrar una release que no se abrió
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El proyecto declara si sus releases tienen destinatario
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El valor vigente del campo es el que se aplica
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED Sin destinatario no se pregunta si la release está comprometida
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED Merge y tag sin segunda ronda cuando la decisión ya está tomada
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED Sin una de las tres condiciones, el gate de merge y tag se mantiene
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED Sin destinatario no hay release notes ni email
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED La carpeta de la release existe solo si tiene contenido
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El bump usa el tooling del proyecto (sin el caso «ficheros de versión sin comando», que ningún escenario midió)
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED Sin fichero de versión, la versión vive en el tag y en el changelog
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED La versión se propone desde el changelog (sin la tabla de major, minor y patch, que ningún escenario midió)
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED En modo tracker, el cierre lista los tickets
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El acta solo se escribe si hay fuente (acotado a `hasRecipient: false`: con cliente, preguntar por la demo es pertinente)
+- 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED La línea de smoke se cuenta igual en todas las releases

@@ -36,13 +36,14 @@
 | 2026-09-20 | 0002 | docs | 2.5 | 1.3 | 0.52 | 20260920-220741-task-0002-sdd-feedback |
 | 2026-09-20 | 0011 | docs | 1.75 | 0.55 | 0.31 | 20260920-220930-task-0011-spec-review-lenses |
 | 2026-09-21 | 0004 | docs | 3 | 2.2 | 0.73 | 20260921-074701-task-0004-release-without-client |
+| 2026-09-21 | 0003 | docs | 4 | 3 | 0.75 | 20260921-081125-task-0003-cap-lifecycle |
 
-**Factor de calibración** (ratio mediano real/estimado, 28 artefactos): **0.57**
+**Factor de calibración** (ratio mediano real/estimado, 29 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 22 | 0.51 |
+| docs | 23 | 0.52 |
 | infra/tooling | 3 | 0.7 |
 | patch | 2 | 0.8 |
 

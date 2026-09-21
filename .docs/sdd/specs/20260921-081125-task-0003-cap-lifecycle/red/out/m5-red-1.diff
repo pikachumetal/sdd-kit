@@ -1,0 +1,110 @@
+diff --git a/.docs/sdd/specs/20260921-112108-task-0006-caducadas-del-dia/spec.md b/.docs/sdd/specs/20260921-112108-task-0006-caducadas-del-dia/spec.md
+new file mode 100644
+index 0000000..edc04c0
+--- /dev/null
++++ b/.docs/sdd/specs/20260921-112108-task-0006-caducadas-del-dia/spec.md
+@@ -0,0 +1,104 @@
++---
++id: 20260921-112108-task-0006-caducadas-del-dia
++task: 0006
++title: Caducadas del día para secretaría
++mode: full
++status: in-review
++created: 2026-09-21
++author: Claude (a petición de Àngel Delgado)
++approvers:
++  - role: dev-lead
++    name: TBD
++    approved_at: null
++---
++
++# Spec — Caducadas del día para secretaría
++
++## Decisiones que he tomado yo — valida estas
++
++```text
++Review de spec propuesta: un revisor (lente técnica) — señales: contrato público (endpoint nuevo que consumirá la vista de secretaría), reglas de visibilidad (la lista expone profesor y aula solo a secretaría)
++- Técnica: si «hoy» calculado con `created_at + 30 min` en Europe/Madrid cuadra con cómo `expiry.js` compara `created_at` (strings ISO), y si ejecutar el barrido dentro de un GET es seguro (señal: contrato público)
++- Mínimo razonable: sin review — deja sin mirar el hueco de visibilidad (decisión 8) y el supuesto sobre `created_at` (decisión 9), justo los dos que no se ven hasta que la task está en uso
++```
++
++**Proponer no es activar**: el usuario no estaba disponible al redactar esta spec, así que no se ha despachado ningún revisor. Se presenta sin review y queda anotado.
++
++1. **Solo servidor, sin pantalla.** El repo es una API Express y no tiene capa de UI; el contador «en la cabecera» y el de pendientes que menciona `capabilities/bookings.md` tampoco existen en el código. Esta task entrega la consulta que alimenta el contador y la lista. La fila del roadmap promete además pintarlos: si se aprueba así, un ✅ cubriría solo el lado servidor. Si la UI vive en otro repo o debe construirse aquí, es una task aparte (`parent: 0006`, id siguiente libre, fila propia en el roadmap); no la he abierto sin tu visto bueno.
++2. **Una sola consulta**: `GET /bookings/expired-today` devuelve `{ count, bookings: [{ id, teacherId, roomId }] }`, con `count` igual al largo de la lista. No hay endpoint aparte para el contador: la lista de un día es pequeña. Claves en inglés, como el resto de la API.
++3. **«Caducó hoy» se mide por el plazo, no por el barrido.** Una reserva cuenta como caducada hoy si `created_at + 30 min` cae dentro del día de hoy, con independencia de cuándo se ejecutó la marca a `expired`. Así no hace falta columna `expired_at` ni migración.
++4. **Zona horaria: `Europe/Madrid`**, como constante única (igual que `EXPIRY_MINUTES`). Es una asunción mía: ni la constitution ni la capacidad fijan zona («Límites: pendiente»). Si el centro no está en esa zona, cambia una constante.
++5. **La consulta ejecuta antes `expirePendingBookings`.** Hoy nada en el repo invoca ese barrido, y sin él el contador daría 0 siempre. Contrapartida: un GET que escribe (idempotente). No introduzco planificador: si hace falta uno, es otro ticket.
++6. **«Profesor y aula» son `teacherId` y `roomId`**, los únicos datos que el repo guarda. No hay tablas de profesores ni de aulas visibles, así que no hay nombres.
++7. **Orden de la lista**: la caducada más recientemente primero (por `created_at + 30 min` descendente). Lo fijo para que los tests no dependan del orden de inserción.
++8. **Sin control de acceso.** El código no tiene roles: `confirm` y `cancel` tampoco se protegen. La consulta nueva sigue ese patrón, así que «solo secretaría» queda como intención de producto, no como algo que el sistema fuerce. Consecuencia: cualquiera que llame a la API ve profesor y aula de las caducadas de todos. Recomiendo ticket aparte de roles; incluirlo aquí tocaría todos los endpoints. El profesor sigue viendo sus caducadas en su propia lista, sin cambios.
++9. **Supuesto: `bookings.created_at` existe y guarda ISO-8601 en UTC.** Es lo que `expiry.js` da por hecho al comparar con `toISOString()`, pero el DDL no está en el repo y no puedo verificarlo. Se comprueba al planificar; si no se cumple, aparece una migración y esta spec vuelve al gate.
++10. **Modo full, no lite.** No hay un flujo de contador ni lista que leer en el repo y el endpoint es un contrato nuevo, así que no cumple el predicado de lite. Lite necesita además confirmación tuya, que no puedo pedir.
++11. **No se crea capacidad nueva.** Todo cuelga de `bookings`. Los cuatro escenarios son `ADDED`. Dos entradas de las reglas de la capacidad cambian, «Límites» (decisión 4) y «Avisos», y se muestran abajo con su texto anterior; la redacción de «Avisos» depende de la decisión 1. Ningún requisito existente se modifica.
++
++## Intent
++
++Cuando una reserva pendiente caduca, hoy secretaría no tiene forma de saber que ocurrió: la reserva sale de pendientes y solo el profesor la ve como caducada. Secretaría necesita ver cuántas han caducado en el día y quién las tenía, para llamar al profesor o reasignar el aula. Se quiere una consulta de «caducadas de hoy» con contador y lista con profesor y aula.
++
++## Scope
++
++- Entra:
++  - Una consulta de servidor con el contador y la lista de reservas caducadas hoy, con profesor y aula.
++  - Ejecutar el barrido de caducidad existente al consultar.
++  - Un test por cada THEN del delta (Art. 3 de la constitution).
++  - Actualizar `capabilities/bookings.md` en el cierre.
++- No entra:
++  - La pantalla: cabecera, contador pintado, pulsación y lista visual (decisión 1).
++  - El contador de pendientes, que la capacidad describe pero el código no tiene.
++  - Autenticación o roles (decisión 8).
++  - Histórico de días anteriores.
++  - Nombres de profesor y aula (decisión 6).
++  - Un planificador que marque las caducadas sin que nadie consulte.
++  - Avisos por otro canal: la capacidad dice que ninguno sale del sistema.
++- Descubierto, sin absorber (a decidir contigo):
++  - `POST /bookings/:id/confirm` marca `confirmed` sobre cualquier estado, también sobre una `expired`. Una caducada confirmada después sale de la lista del día y podría reservar un aula que ya se liberó.
++  - El repo no tiene tests, pese a que 0002 y 0004 figuran como ✅ y el Art. 3 exige uno por regla.
++
++## Approach
++
++Una consulta de solo lectura para secretaría, `GET /bookings/expired-today`, que primero aplica la regla de caducidad ya existente y después devuelve las reservas en estado `expired` cuyo plazo (creación + 30 minutos) vence dentro del día natural de hoy en la zona del centro. El contador es el largo de esa lista. No se toca el schema: el momento de caducidad se deduce de `created_at` y del límite de 30 minutos que la capacidad ya fija.
++
++## Delta de comportamiento
++
++### Capacidad: `bookings`
++
++**ADDED — Secretaría ve las caducadas del día con su profesor y aula**
++- GIVEN dos reservas que caducaron hoy: el aula 2 del profesor 7 y el aula 3 del profesor 9
++- WHEN secretaría consulta las caducadas de hoy
++- THEN recibe el contador 2 y la lista de esas dos reservas, cada una con su profesor y su aula, la caducada más recientemente primero
++- AND el contador coincide con el número de entradas de la lista
++
++**ADDED — Solo cuentan las reservas cuyo plazo venció hoy**
++- GIVEN una reserva creada el 20/09 a las 23:50 hora del centro, cuyo plazo venció el 21/09 a las 00:20, y otra que caducó el 20/09 a las 10:30
++- WHEN secretaría consulta el 21/09 a las 09:00
++- THEN la primera cuenta y aparece en la lista
++- AND la segunda ni cuenta ni aparece
++
++**ADDED — Una reserva pendiente vencida cuenta como caducada al consultar**
++- GIVEN una reserva `pending` creada hace 31 minutos que nadie ha confirmado, y que ningún proceso ha marcado como caducada
++- WHEN secretaría consulta las caducadas de hoy
++- THEN la reserva aparece en la lista y cuenta
++- AND su estado pasa a `expired`
++
++**ADDED — Solo las reservas caducadas cuentan como caducadas**
++- GIVEN una reserva `confirmed`, una `cancelled` y una `pending` aún dentro de sus 30 minutos
++- WHEN secretaría consulta las caducadas de hoy
++- THEN el contador es 0 y la lista está vacía, sin error
++
++**Reglas de la capacidad**
++- **Dónde viven los datos**: sin cambio (tabla `bookings`, sin columnas nuevas).
++- **Idioma de los nombres**: sin cambio. Endpoint y claves en inglés (`expired-today`, `count`, `bookings`, `teacherId`, `roomId`); no hay mensajes nuevos al usuario.
++- **Límites**: MODIFIED (antes: "caducidad a los 30 minutos; una reserva dura como máximo 4 horas; un profesor tiene como máximo 3 reservas pendientes a la vez") → lo mismo, más «"hoy" es el día natural en `Europe/Madrid`» (decisión 4).
++- **Avisos**: MODIFIED (antes: "el profesor ve el estado de cada reserva en su lista al recargar; secretaría ve el contador de pendientes en la cabecera; ningún aviso sale del sistema por otro canal") → "el profesor ve el estado de cada reserva en su lista al recargar; secretaría ve el contador de pendientes en la cabecera y, junto a él, el de caducadas hoy con su lista; ningún aviso sale del sistema por otro canal".
++- **Regla ante conflicto**: no aplica.
++
++## Aprobaciones
++
++| Rol | Nombre | Fecha | Estado |
++| --- | --- | --- | --- |
++| dev-lead | | | pendiente |
