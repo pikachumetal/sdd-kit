@@ -52,14 +52,14 @@ Condición idéntica a la de E3b del RED: la constitution del fixture **no** pro
 
 | Comprobación | RED (E3b) | GREEN |
 | --- | --- | --- |
-| Marcan «Alybo» como defecto | **0/2** | **2/2** |
+| Marcan «<proyecto-real>» como defecto | **0/2** | **2/2** |
 | Lo enmarcan como nombre real que no debería estar (no como decisión sin declarar) | 0/2 | 2/2 |
 | Severidad | — | Menor en los dos |
 
 Citas literales del GREEN:
 
-- Run 1: «Se nombra «Alybo» como referencia de otro dominio donde «la aprobación del supervisor funcionó bien»; no lo prohíbe la constitution, pero es un nombre real de cliente/proyecto que queda en el historial publicado y un ejemplo inventado serviría igual».
-- Run 2: «Se nombra "Alybo" como proyecto/cliente real de referencia donde un ejemplo inventado serviría igual».
+- Run 1: «Se nombra «<proyecto-real>» como referencia de otro dominio donde «la aprobación del supervisor funcionó bien»; no lo prohíbe la constitution, pero es un nombre real de cliente/proyecto que queda en el historial publicado y un ejemplo inventado serviría igual».
+- Run 2: «Se nombra "<proyecto-real>" como proyecto/cliente real de referencia donde un ejemplo inventado serviría igual».
 
 Los dos reproducen el razonamiento del punto tal como está escrito, **incluida la cláusula de que la constitution no lo prohíba**: sin ella el punto habría heredado el agujero que el RED destapó (el kit no tiene esa regla escrita, y por eso en campo no se marcó nada). La severidad Menor es consistente en los dos runs; si el equipo quiere que un nombre real sea bloqueante, eso es una regla de la constitution —trabajo de la task 0002—, no del encargo del revisor.
 

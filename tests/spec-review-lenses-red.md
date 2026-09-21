@@ -23,9 +23,9 @@ Sobre eso, la spec de la task 0042 «Cancelar pedidos ya enviados con reembolso�
 | D5 | Rol `supervisor de tienda` descrito solo por lo que puede hacer | (5) complemento de visibilidad |
 | D6 | Tope de 30 días y aviso al cliente nuevos, sin «Reglas de la capacidad» | (5 bis) las cinco reglas por nombre |
 | D7 | `exports/cancellations-YYYYMMDD.csv` que lee logística, mencionado de pasada | (6) contratos, datos, dependencias |
-| D8 | «El flujo copia el de Alybo…» — nombre de un proyecto real del equipo como ejemplo | ninguno (el hueco que la task viene a cerrar) |
+| D8 | «El flujo copia el de <proyecto-real>…» — nombre de un proyecto real del equipo como ejemplo | ninguno (el hueco que la task viene a cerrar) |
 
-El fixture no telegrafía la conducta medida: nada en él habla de lentes, de duplicados ni de revisar ejemplos.
+El fixture no telegrafía la conducta medida: nada en él habla de lentes, de duplicados ni de revisar ejemplos. En este fichero y en el GREEN, el nombre real del fixture aparece como `<proyecto-real>`, también dentro de las citas de los sujetos: la evidencia se publica y un nombre de producto del equipo no se retira del historial.
 
 ## E1 — ¿se solapan las dos lentes? (2 sujetos: una lente cada uno, encargo vigente)
 
@@ -68,7 +68,7 @@ El ticket de la task 0009 §16 reportó una spec que usaba el nombre de un proye
 | E3a (2 sujetos, lentes dominio y técnica) | con Art. II «Datos ficticios en los artefactos», explícito | **2/2 sí**, los dos como Crítico |
 | E3b (2 sujetos, lente dominio) | el mismo fixture **sin** ese artículo | **0/2** |
 
-En E3b el sujeto A sí nombró la frase, pero como decisión no declarada («la referencia a copiar el flujo de Alybo… son decisiones tomadas en Approach que no figuran en la lista de decisiones a validar»): la trató como un hueco de trazabilidad, no como un nombre que no debería estar. El sujeto B no la mencionó en ninguno de sus nueve hallazgos.
+En E3b el sujeto A sí nombró la frase, pero como decisión no declarada («la referencia a copiar el flujo de <proyecto-real>… son decisiones tomadas en Approach que no figuran en la lista de decisiones a validar»): la trató como un hueco de trazabilidad, no como un nombre que no debería estar. El sujeto B no la mencionó en ninguno de sus nueve hallazgos.
 
 **Lectura**: con una regla escrita, el revisor la aplica sin necesidad de un punto nuevo en el encargo; el hueco aparece cuando **la regla no existe**, que es la situación real del kit — su constitution no dice en ninguna parte que la evidencia de campo se cite sin nombre propio, y por eso en campo nadie marcó nada. El punto que se añade no puede remitir a la constitution del proyecto, o hereda el mismo agujero: se escribe con criterio propio («aunque la constitution no lo prohíba»). La regla general para los proyectos consumidores sigue siendo trabajo de la task 0002.
 
