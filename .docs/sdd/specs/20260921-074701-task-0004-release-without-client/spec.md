@@ -35,7 +35,7 @@ Activada por el dev-lead el 2026-09-21: un revisor, lente dominio (Sonnet; el to
 6. **Aceptado** — Menor: nombres reales de proyectos en la decisión 6 → «los proyectos ya instalados».
 7. **Aceptado** — Menor: `smoke: pendiente` no estaba en las decisiones → añadido a la decisión 13.
 
-### Recorte tras el RED (Art. I, 2026-09-21) — pendiente de reaprobación
+### Recorte tras el RED (Art. I, 2026-09-21) — reaprobado por el dev-lead: «aprobado»
 
 La evidencia está en `tests/release-flow-red.md`: 10 sujetos, 10,17 $. Llevan guía los requisitos cuyo fallo mostró el RED:
 
