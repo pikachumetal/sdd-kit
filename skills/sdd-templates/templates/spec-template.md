@@ -19,6 +19,7 @@ approvers:
 > **Siguiente paso**: modo full → `plan.md` con `superpowers:writing-plans`; modo lite → implementación directa.
 > **Modo lite** = rellenar el bloque «Estimación y esfuerzo» de esta misma plantilla; no existe ni se crea un `spec-lite-template.md` (Art. VIII).
 > **Regla de contenido**: si la implementación puede cambiar sin cambiar el comportamiento observable, no va en la spec — va en `plan.md` (datos, UX, riesgos, rollout, restricciones).
+> **Regla de reparto**: el comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`. `tech-stack.md`, `architecture.md` y `environments.md` dicen dónde está la pieza técnica y enlazan la capacidad; no copian el valor.
 > Borra los bloques de ayuda (`>`) al redactar.
 
 ## Decisiones que he tomado yo — valida estas
@@ -48,7 +49,7 @@ approvers:
 
 ## Delta de comportamiento
 
-> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-end-task`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket.
+> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-end-task`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket. Su slug es un nombre de fichero: va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing`, no `facturacion`), y lo aprueba el dev-lead.
 
 ### Capacidad: `<nombre>`
 
@@ -58,7 +59,10 @@ approvers:
 - THEN <resultado observable>
 - AND <opcional>
 
-**MODIFIED — <título estable>** (antes: "<texto anterior literal>")
+**MODIFIED — <título estable>** (antes: "<la cláusula que cambia>" — opcional)
+
+> Copia el bloque entero del requisito vigente con los cambios: al fusionar sustituye al anterior, y lo que no esté aquí desaparece.
+
 - GIVEN <contexto>
 - WHEN <acción>
 - THEN <resultado actualizado>

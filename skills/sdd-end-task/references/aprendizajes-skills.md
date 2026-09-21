@@ -2,7 +2,7 @@
 
 ## Paso 4 — Aprendizajes
 
-4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive: convención nueva → `constitution.md`; cambio estructural → `architecture.md`; versión/herramienta → `tech-stack.md`; cambio de comportamiento observable → el delta de la spec se fusiona en `capabilities/<capability>.md` (ADDED añade, MODIFIED sustituye por título estable, REMOVED quita; las entradas de «Reglas de la capacidad» se sustituyen o añaden por su nombre, sin marcas; nunca una capacidad que la spec no declare). Un aprendizaje que se queda solo en el walkthrough se pierde para las próximas tareas.
+4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive: convención nueva → `constitution.md`; cambio estructural → `architecture.md`; versión/herramienta → `tech-stack.md`; cambio de comportamiento observable → el delta de la spec se fusiona en `capabilities/<capability>.md` (ADDED añade, MODIFIED sustituye entero el requisito con ese título, REMOVED quita; las entradas de «Reglas de la capacidad» se sustituyen o añaden por su nombre, sin marcas; nunca una capacidad que la spec no declare). Un aprendizaje que se queda solo en el walkthrough se pierde para las próximas tareas. Un documento de anclaje dice dónde está la pieza técnica y enlaza la capacidad; nunca copia un valor de comportamiento (tiempo, límite, cuota, aviso), que vive solo en `capabilities/`, aunque el plan pida documentarlo.
 
 ## Paso 5 — Revisión de skills
 
