@@ -22,7 +22,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 2 | Hook `SessionStart` con su test | done | e514aa2 | Implementador Sonnet (el tool `Agent` no expone effort: desviación del Art. IV, effort medium no garantizado) |
 | 3 | `description` y frontmatter | done | 3e4d94e | En línea |
 | 4 | Campaña GREEN | done | ver commit | 17 sujetos, 3,58 $; criterio de la decisión 4 cumplido |
-| 5 | Evidencia en `tests/` y README | in_progress | — | En línea |
+| 5 | Evidencia en `tests/` y README | done | 0584d31 | En línea |
 | 6 | Escalada a `using-sdd` | skipped | — | No hizo falta: el GREEN cumple la decisión 4 de la spec |
 
 ## Verificación por task
@@ -31,7 +31,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 - [x] Task 2 — suite Pester en verde, salida del hook con y sin `.docs/sdd/`, revisión de task limpia
 - [x] Task 3 — suite en verde, `claude plugin validate --strict` incluido
 - [x] Task 4 — criterio de la decisión 4 de la spec leído de `*.skills.txt`, y router visible en el `hook_response`
-- [ ] Task 5 — suite en verde
+- [x] Task 5 — suite en verde, README y evidencia commiteados
 
 ## Fixes adicionales (trabajo descubierto fuera de scope)
 
