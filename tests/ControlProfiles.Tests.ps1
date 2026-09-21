@@ -75,3 +75,9 @@ Describe 'Perfiles de control: cierre, release y migración' {
     Get-KitFile '.docs/sdd/mission.md' | Should -Not -Match 'cierre inmutable'
   }
 }
+
+Describe 'Perfiles de control: propuesta de partir una task grande' {
+  It 'la primera pregunta propone partir por encima del umbral orientativo' {
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'más de 3 tasks internas'
+  }
+}
