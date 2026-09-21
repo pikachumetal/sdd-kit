@@ -25,7 +25,7 @@ Review de spec propuesta: dos revisores — señales: capacidad nueva (`control-
 
 Activada por el dev-lead: dos revisores (2026-09-21).
 
-1. **Capacidad nueva `control-profiles`** con los perfiles, la tabla de gates, el desvío, la aprobación explícita y la validación diferida. En `task-flow` quedan el flujo y cuatro requisitos de gates que pasan a `MODIFIED`. `release-flow` y `migration` ganan un requisito cada una. Motivo: los perfiles también los leen el carril release (`unattended`) y las tasks 0005, 0006 y 0012.
+1. **Capacidad nueva `control-profiles`** con los perfiles, la tabla de gates, el desvío y la validación diferida. En `task-flow` quedan el flujo y cuatro requisitos de gates que pasan a `MODIFIED`. `release-flow` y `migration` ganan un requisito cada una. Motivo: los perfiles también los leen el carril release (`unattended`) y las tasks 0005, 0006 y 0012.
 2. **Validación diferida con símbolo propio** 🧪. *(Decidido contigo el 2026-09-21.)* La forma exacta es decisión mía. En el walkthrough: `Validación diferida: <fecha> · «<frase literal>» · disparador: <task, release o uso con dueño>`. En el roadmap: `🧪 validación diferida a <disparador>`. ✅ solo cuando dices qué probaste.
 3. **El gate de desvío salta solo ante cambios a la spec aprobada**: un requisito, un THEN, el Scope o un «No entra». Salir del plan es un ruling que se registra y se presenta en «Me salí del plan en…», sin parar. Arbitra la contradicción con `subagent-driven-development`. *(Decidido contigo el 2026-09-21.)*
 4. **La aprobación delegada se convierte en un cambio de perfil de la task.** «Ve tú solo hasta el smoke» dicho en `pair` pasa la task a `delegate`. Se escribe `profile:` en el frontmatter de la spec y una fila en «Aprobaciones» con la fecha y, en «Estado», `perfil → <perfil>: «<frase literal>»`. Así desaparece el concepto suelto de «aprobación delegada».
@@ -35,7 +35,7 @@ Activada por el dev-lead: dos revisores (2026-09-21).
 8. **`unattended` se define aquí solo a nivel de gates.** La spec la aprueba el agente con las decisiones registradas. Si una pregunta de la entrevista no tiene respuesta en los documentos, la task se aparca. La validación se aplaza al smoke de la release (🧪 con ese disparador); cuando el dev-lead valida ese smoke, `sdd-end-release` pasa a ✅ las tasks diferidas a él. Encadenar tasks e informe final: una línea en `sdd-start-task`. Los frenos (reintentos, vigía) son de la 0005.
 9. **Review de spec: ninguna por defecto.** El agente la recomienda con 4 señales o más, o con contrato público + datos (hoy basta con 2). Si la recomienda, lo pregunta **antes** de presentar la spec, en una sola pregunta con su motivo. En `unattended` decide él y lo registra.
 10. **La primera pregunta de la entrevista** confirma carril, modo (ofrece lite si se cumple el predicado) y el perfil vigente, **sola** y antes de cualquier pregunta de diseño. Si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, propone ese enunciado en la misma pregunta. El RED mostró que la oferta de lite se pierde cuando se mezcla con otra pregunta (1 de 2) y cuando el usuario contesta a otra cosa (2 de 2).
-11. **«Aprobación explícita»** es responder «sí» o «apruebo» a la pregunta del gate, o elegir una opción cuyo texto diga que aprueba. Elegir un alcance o contestar otra pregunta no aprueba la spec.
+11. ~~**«Aprobación explícita»**~~ **Recortada por el RED** (2026-09-21): 2 de 2 sujetos no tomaron la elección de un alcance como aprobación y volvieron a pedirla (`tests/control-profiles-red.md`, E3). Sin fallo no hay guía (Art. I). Va a deuda como posible falso negativo: en campo fue el hilo, con la sesión cargada, quien lo hizo.
 12. **El walkthrough deja de ser «inmutable».** El cuerpo no se reescribe tras el cierre; lo posterior (validación tardía, integración con otra task) va en `## 6. Adendas`, con entradas fechadas. También cambia la entrada «Walkthrough» del glosario de `mission.md`. Gana además la sección «Decisiones tomadas sin el dev-lead»: los rulings de la ejecución, que `subagent-driven-development` ya lista en su informe final («Rulings I made»).
 13. **Un commit del hilo principal durante la ejecución** entra en el alcance de la revisión de la task en curso; si ya no queda ninguna, en la revisión final de rama.
 14. **Estados del roadmap, conjunto cerrado**: `⏳` pendiente · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`. «EN ESPERA» no es un estado del roadmap: es la task en curso esperando al usuario.
@@ -64,8 +64,8 @@ El kit para en cada gate igual para todo el mundo, y por eso se siente lento (is
 
 ## Scope
 
-- Entra: perfiles `pair` · `delegate` · `unattended` y su precedencia; tabla de gates por perfil; gate de desvío y `## Enmiendas`; aprobación explícita; primera pregunta de la entrevista (carril, modo, lite, perfil, enunciado desde la rama); review de spec ninguna por defecto; validación diferida (🧪, condiciones, adendas); estados cerrados del roadmap; «Me salí del plan en…» y «Decisiones tomadas sin el dev-lead»; todo fix del hilo pasa por revisión; paso 10 con política de merge; claves de control en `sdd-kit.json` y su paso en `migrations/v1.2.0.md`; Art. IV; glosario «Walkthrough» de `mission.md`; `sdd-end-release` para las 🧪 de su smoke.
-- No entra: frenos del modo autónomo, tope de agentes y paralelismo (0005, solo lee las claves); verificación por task y parar procesos (0006); preguntas de la entrevista de las init (0012); carril patch (sus gates no cambian); cosecha del ledger al borrar el workspace y recuperación (0009); interruptores por gate sueltos.
+- Entra: perfiles `pair` · `delegate` · `unattended` y su precedencia; tabla de gates por perfil; gate de desvío y `## Enmiendas`; primera pregunta de la entrevista (carril, modo, lite, perfil, enunciado desde la rama); review de spec ninguna por defecto; validación diferida (🧪, condiciones, adendas); estados cerrados del roadmap; «Me salí del plan en…» y «Decisiones tomadas sin el dev-lead»; todo fix del hilo pasa por revisión; paso 10 con política de merge; claves de control en `sdd-kit.json` y su paso en `migrations/v1.2.0.md`; Art. IV; glosario «Walkthrough» de `mission.md`; `sdd-end-release` para las 🧪 de su smoke.
+- No entra: frenos del modo autónomo, tope de agentes y paralelismo (0005, solo lee las claves); verificación por task y parar procesos (0006); preguntas de la entrevista de las init (0012); carril patch (sus gates no cambian); cosecha del ledger al borrar el workspace y recuperación (0009); interruptores por gate sueltos; qué cuenta como aprobación explícita (recortado por el RED).
 
 ## Approach
 
@@ -92,12 +92,6 @@ La tabla de gates por perfil vive en **un solo sitio** y cada gate de las skills
 - WHEN el agente termina de leer el contexto
 - THEN su primera pregunta, sola en su turno, confirma carril y modo, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta task
 - AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, la pregunta propone esa fila como enunciado
-
-**ADDED — Una respuesta cuenta como aprobación solo si aprueba**
-- GIVEN un gate de aprobación (spec, plan en `pair`, enmienda)
-- WHEN el usuario responde
-- THEN cuenta como aprobación un «sí» o un «apruebo» a la pregunta del gate, o elegir una opción cuyo texto diga que aprueba
-- AND elegir un alcance o responder a otra pregunta no aprueba: el agente pregunta la aprobación en una línea
 
 **ADDED — Un cambio a la spec aprobada es un desvío**
 - GIVEN una spec aprobada y una ejecución en curso

@@ -75,7 +75,7 @@ created: 2026-09-21
 
 **Crear**:
 
-- `skills/sdd-start-task/references/control-profiles.md` — tabla de gates por perfil, precedencia, desvío, aprobación explícita, validación diferida, `unattended`, estados del roadmap y claves de `sdd-kit.json`. Fuente única.
+- `skills/sdd-start-task/references/control-profiles.md` — tabla de gates por perfil, precedencia, desvío, validación diferida, `unattended`, estados del roadmap y claves de `sdd-kit.json`. Fuente única.
 - `tests/ControlProfiles.Tests.ps1` — anclas (lo escribe el hilo en `red/`; lo mueven los implementadores).
 - `tests/control-profiles-red.md` y `tests/control-profiles-green.md` — evidencia.
 - `red/` y `green/` en la carpeta de la spec — moldes, lanzadores y salidas.
@@ -269,7 +269,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
 
 **Interfaces**:
 - Consume: `tests/control-profiles-red.md` (solo lo que falló lleva guía de conducta; lo estructural va como receta) y la spec (`./spec.md`).
-- Produce: `skills/sdd-start-task/references/control-profiles.md`, que la Task 3 enlaza desde `sdd-end-task` con la ruta relativa `../sdd-start-task/references/control-profiles.md`, y cuyas secciones se titulan exactamente: `## Perfiles`, `## Precedencia`, `## Gates por perfil`, `## Desvío`, `## Aprobación explícita`, `## Validación diferida`, `## unattended`, `## Estados del roadmap`, `## Claves de sdd-kit.json`.
+- Produce: `skills/sdd-start-task/references/control-profiles.md`, que la Task 3 enlaza desde `sdd-end-task` con la ruta relativa `../sdd-start-task/references/control-profiles.md`, y cuyas secciones se titulan exactamente: `## Perfiles`, `## Precedencia`, `## Gates por perfil`, `## Desvío`, `## Validación diferida`, `## unattended`, `## Estados del roadmap`, `## Claves de sdd-kit.json`.
 
 **Ficheros**: crear `control-profiles.md`; modificar `sdd-start-task/SKILL.md`, `overrides-superpowers.md`, `review-spec.md` y `spec-template.md`; crear `tests/ControlProfiles.Tests.ps1`.
 
@@ -292,7 +292,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - [ ] **Step 2: `sdd-start-task/SKILL.md`**:
   - Gate 1: con la rama `feature/<id>` y `<id>` pendiente en el roadmap, la vía «sola» deja de parar a preguntar qué tarea: el enunciado sale de la fila y se confirma en la primera pregunta (solo si E1 falló).
   - Paso 2: la primera pregunta de la entrevista, **sola en su turno**, confirma carril, modo (lite con el predicado citado) y perfil vigente.
-  - Paso 4: la review según `review-spec.md`; el gate según el perfil, con enlace a `control-profiles.md`; qué cuenta como aprobación explícita (con red flag y racionalización si E3 falló).
+  - Paso 4: la review según `review-spec.md`; el gate según el perfil, con enlace a `control-profiles.md`. Sin guía sobre qué cuenta como aprobación explícita: E3 pasó 2/2 y se recortó.
   - Paso 5: el gate del plan solo en `pair`; en `delegate` y `unattended`, comprobación escenario → task anotada en el plan.
   - Paso 6: salir del plan es ruling; un cambio a la spec es desvío; todo commit del hilo entra en la revisión de la task en curso o en la final (guía de conducta si E4 falló).
   - Paso 7: la presentación abre con «Me salí del plan en…» y lista las decisiones sin el dev-lead; diferida con sus tres condiciones (enlace a la tabla); en `unattended`, diferida al smoke.
@@ -336,7 +336,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - [ ] **Step 1: Kit del brazo GREEN** — copia limpia con las Tasks 2 y 3 aplicadas.
 - [ ] **Step 2: Moldes adicionales** — `m-unattended` (`mold` con `control.profile: "unattended"`, sección de release con 0009 y una 0010 cuya fila no dice qué hacer ante un conflicto de reservas), `m-migrate` (`mold` con `sdd-kit.json` v1.1.0 sin `ids` ni `control`), `m-release` (roadmap con 0009 y 0010 en `🧪 validación diferida a v0.4.0`, `[Unreleased]` con las dos) y `m-close` con `merge` completo y `control.profile: "delegate"` para E6.
 - [ ] **Step 3: Escenarios** (2 sujetos cada uno):
-  - E1, E3, E4 y E5: los del RED.
+  - E1, E3, E4 y E5: los del RED (E3 como control de no regresión).
   - **E2** (`mold`) T1 como E3 · T2: «Apruebo la spec.» Mide: plan sin gate con la comprobación escenario → task, y despacho sin parar.
   - **E6** (`m-close` con `merge`) T1: «Cierra la task 0009.» · T2: «Validado: probé `libres 24:00-25:00` y da el error.» Mide: el walkthrough registra solo lo probado, y el merge a `develop` se hace sin preguntar y sin tocar `main`.
   - **E7** (review por defecto): se lee en la spec de E2 y E3 (dos señales → sin review).
@@ -375,7 +375,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - El perfil de control decide dónde para el agente → E2, E8 → Task 2 Step 1. ✓
 - El perfil se hereda de la task, de la release o del proyecto → E8 (proyecto), E2 (sin `profile:`) → Task 2 Steps 1 y 5. Sin escenario para release > proyecto: se ancla en la tabla. ✓
 - La primera pregunta confirma carril, modo y perfil → E1, E2 T1 → Task 2 Step 2. ✓
-- Una respuesta cuenta como aprobación solo si aprueba → E3 → Task 2 Step 2. ✓
+- ~~Una respuesta cuenta como aprobación solo si aprueba~~ → recortado por el RED (E3 pasa 2/2); E3 se repite en el GREEN como control de no regresión. ✓
 - Un cambio a la spec aprobada es un desvío → E8 (conflicto sin respuesta) → Task 2 Steps 1–2. ✓
 - Salir del plan es un ruling visible → E4 → Task 2 Steps 2–3. ✓
 - La validación puede diferirse con condiciones → E5 → Task 3 Steps 1–2. ✓
