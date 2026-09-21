@@ -27,7 +27,7 @@ date: <YYYY-MM-DD>
 
 ## Cómo leer este ticket
 
-> Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y van ordenados por coste observado.
+Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y van ordenados por coste observado.
 
 ## Hallazgos
 

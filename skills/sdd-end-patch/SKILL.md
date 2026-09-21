@@ -7,7 +7,7 @@ description: Usar cuando un patch está implementado y verificado y hay que cerr
 
 ## Overview
 
-Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia de una feature. Ligero no significa opcional — son siete pasos y caben en minutos.
+Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia de una feature. Ligero no significa opcional — son seis pasos y caben en minutos; el séptimo es una oferta.
 
 **Cláusula de escalada**: si el "fix" creció a algo no trivial (varios módulos, interpretación de requisitos), era una task: ciérralo con `sdd-end-task` y deja constancia del cambio de carril.
 

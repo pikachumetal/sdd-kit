@@ -101,6 +101,10 @@ Los cierres de task y patch añaden un paso de oferta al final, después de que 
 - **Avisos**: al crear la carpeta por primera vez, la skill avisa de que puede ignorarse en git.
 - **Regla ante conflicto**: entre contar el hallazgo y proteger el dominio del cliente manda la privacidad — el hallazgo se despersonaliza, nunca se omite.
 
+## Enmiendas
+
+- **2026-09-21 — recorte del RED (Art. I)**, sin cambio de comportamiento observable. La decisión 7 atribuía a la skill cuatro reglas; el RED (`tests/kit-feedback-red.md`) confirmó el fallo de privacidad y de la oferta en el cierre, y destapó otros dos de forma (ningún hallazgo traía criterio de aceptación y la iniciativa propia se diluía en la prosa). En cambio, **no inventar fricciones** y **separar el hueco del kit del error propio** ya los cumplía el baseline, 2 de 2. Esos dos requisitos del delta se mantienen tal cual, pero los garantiza la forma de la plantilla (salida «Sin hallazgos» explícita y sección de errores propios), no una regla de la skill. El GREEN comprueba que la plantilla no empuja a rellenar.
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
