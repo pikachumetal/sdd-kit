@@ -7,7 +7,7 @@ description: Usar cuando un patch está implementado y verificado y hay que cerr
 
 ## Overview
 
-Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia de una feature. Ligero no significa opcional — son seis pasos y caben en minutos.
+Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia de una feature. Ligero no significa opcional — son siete pasos y caben en minutos.
 
 **Cláusula de escalada**: si el "fix" creció a algo no trivial (varios módulos, interpretación de requisitos), era una task: ciérralo con `sdd-end-task` y deja constancia del cambio de carril.
 
@@ -19,6 +19,7 @@ Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia
 4. **`roadmap.md`** — fila en la tabla de patches (fecha, id, descripción). El roadmap es el índice del proyecto: un patch sin fila es invisible.
 5. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — ejecuta el script del kit: `pwsh -NoProfile -File "<Base directory de esta skill>/../sdd-templates/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`. Regenera el log desde `patch.md` (§5 Tiempo): no añadas la fila a mano ni uses una copia local del proyecto (`.tools/sdd/`, `tools/sdd/` son copias antiguas: avísalo). Solo sin `pwsh`, o si el script no está en esa ruta (instalación parcial de una sola skill), fila a mano (tipo, estimado si lo hubo, real) y dilo en el informe.
 6. **Rama** — *(si existe `.docs/sdd/environments.md`)* `env:clean` **ANTES** de `finishing-a-development-branch`, para no dejar el entorno del worktree huérfano. Luego `superpowers:finishing-a-development-branch`: la decisión de merge/PR es **del usuario**. Si no está disponible, deja la rama lista (commits hechos, working tree limpio) y el merge explícitamente PENDIENTE en tu informe final — no fusiones por tu cuenta "porque es trivial".
+7. **Ticket para el kit** — ofrece generar el ticket de mejora del kit con `sdd-feedback` en esta misma sesión: al limpiar el contexto se pierde lo aprendido sobre el kit. No es un gate — sin respuesta, el cierre termina y no queda nada pendiente ni anotado. Si esta sesión ya generó su ticket, no se ofrece otra vez.
 
 ## Red flags — STOP
 

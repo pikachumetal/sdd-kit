@@ -68,8 +68,9 @@ Para desarrollar el propio kit, apunta el marketplace a tu clon local en vez del
 | `sdd-start-release` | Abre la siguiente release con el inventario ordenado y sus bloqueos. El scope lo decides tú; solo se refina lo inmediato. |
 | `sdd-end-release` | Cierra la release: acta, retro con números, changelog sellado, notas para quien la va a usar. El tag lo confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
+| `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 12 plantillas canónicas y el script que regenera el registro de estimaciones. |
+| `sdd-templates` | Las 13 plantillas canónicas y el script que regenera el registro de estimaciones. |
 
 ## Cómo está escrito
 

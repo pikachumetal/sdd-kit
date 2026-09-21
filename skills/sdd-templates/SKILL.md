@@ -23,6 +23,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [client-changelog-template.md](templates/client-changelog-template.md) | `client-changelog.md` | Opt-in del proyecto (entrevista de init): acumulado de cliente, versión a versión, derivado de las release notes de cada cierre; lo actualiza `sdd-end-release` si existe |
 | [environments-template.md](templates/environments-template.md) | `environments.md` | Solo si el proyecto usa worktrees **y** su entorno necesita más que instalar dependencias (BD, puertos, servicios). Lo calca `init-*` por entrevista; `sdd-start-task` y `sdd-end-*` lo activan por predicado |
 | [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Verdad viva del comportamiento: la crea la spec que declara la capacidad, la fusiona `sdd-end-task` |
+| [kit-feedback-template.md](templates/kit-feedback-template.md) | ticket en `.docs/sdd/kit-feedback/` | Al cerrar una task o un patch, vía `sdd-feedback` |
 
 ## Scripts
 
