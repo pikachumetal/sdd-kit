@@ -3,7 +3,7 @@ id: 20260921-074701-task-0004-release-without-client
 task: 0004
 title: Carril release opcional y fuera de un contexto de cliente
 mode: full
-status: in-review
+status: approved
 created: 2026-09-21
 author: Claude (Opus 5) con el dev-lead
 approvers:
@@ -54,6 +54,12 @@ Activada por el dev-lead el 2026-09-21: un revisor, lente dominio (Sonnet; el to
 14. **Capacidad nueva `release-flow`**, solo con los requisitos de este delta y sin volcado del resto del carril.
 15. **Cada punto entra solo si su RED falla (Art. I).** En el ticket de campo, el agente ya acertó sin guía con M2 (no hizo email) y con M3 (no creó fichero de versión). Si el baseline acierta, ese punto se recorta y vuelvo a pedir aprobación del alcance.
 16. **Fixtures con rutas cortas**: cada ruta de la evidencia queda por debajo de 140 caracteres relativos, con carpetas del tipo `red/e1/` (aviso del dev-lead, 2026-09-21).
+17. **Roles en un equipo** (conversación con el dev-lead, 2026-09-21). Planificar es del PM o el PO: con un gestor (Jira, Azure DevOps), las tareas se dan de alta allí y `sdd-start-release` no se usa. El dev hace las tareas una a una con `sdd-start-task` o `sdd-start-patch` y el id del ticket (`ids.mode: tracker`). El corte (develop → main, tag, changelog, roadmap) es `sdd-end-release`. En un equipo de uno, `sdd-start-release` sigue siendo la vía cómoda para generar las tareas. La skill no modela roles: «el usuario» es quien la ejecuta.
+18. **Con gestor, el roadmap no es la fuente del scope.** La fuente es el gestor, y el roadmap guarda las releases cerradas, la deuda técnica y el backlog propio sin replicarlo. El hueco que eso destapa en el paso 8 de `sdd-end-task` («marcar el módulo/tarea» cuando la task no tiene fila) va a una **task aparte**, que se registra en el roadmap al cerrar esta: `sdd-end-task` es un fichero caliente de la task 0003.
+19. **La versión se propone desde el changelog**, como hacen `release-please` y `changesets`. `Removed` o un cambio incompatible propone major, `Added` o `Changed` propone minor, y si solo hay `Fixed` propone patch. En pre-1.0 aplica `versionado.md`. La propuesta va con su motivo y la confirma el usuario (decisión 10): se contesta con un «sí», pero se pregunta siempre.
+20. **Lista de tickets para el PM.** En modo `tracker`, el resumen de cierre lista los ids de ticket que entran en `[Unreleased]`, para marcarlos en el campo de versión del gestor (Fix Version en Jira, el campo equivalente en Azure DevOps).
+21. **No se pregunta por lo que no ha pasado.** El acta solo se escribe si hay fuente: transcripción o notas que aporta el usuario, o un fichero en `.docs/sdd/releases/vX.Y.Z/`. Sin fuente, el paso se omite sin preguntar si hubo demo. La retro sigue con su predicado (`estimation-log.md`). En T18 el agente se paraba a preguntarlo y hubo que decirle «no hubo demo» de antemano.
+22. **Bump con el tooling del proyecto.** Los proyectos del equipo guardan la versión en `package.json` y/o `dependencies.props` y la editan con un script de Node (dev-lead, 2026-09-21). Si `tech-stack.md` declara el comando de versión, se usa ese. Si no lo declara pero hay ficheros de versión, se actualizan esos ficheros y el resumen de cierre propone declarar el comando en `tech-stack.md`. Sin fichero de versión, la versión vive en el tag y en el changelog (M3).
 
 ## Intent
 
@@ -73,13 +79,17 @@ La línea de smoke tampoco dice qué se cuenta, así que la métrica que defiend
   - El gate de merge y tag acotado por tres condiciones comprobables: paso 7 y tabla de racionalizaciones.
   - La definición de comprometida y en preparación.
   - Release notes y email solo con destinatario: pasos 5 y 8, `notas-y-roadmap.md` y red flags.
-  - El bump sin fichero de versión: paso 7 y `versionado.md`.
+  - El bump con el comando que declara `tech-stack.md`, con los ficheros de versión o sin fichero: paso 7 y `versionado.md`.
+  - La versión propuesta desde el changelog y la lista de tickets en modo `tracker`: pasos 1 y 7.
+  - El acta solo con fuente, sin preguntar por la demo: paso 2.
+  - Los roles y el roadmap con gestor: una frase en el Overview de cada skill del carril.
   - La definición de smoke y hallazgo, en `notas-y-roadmap.md`.
   - La capacidad `release-flow`.
 - No entra:
   - Editar `sdd-init-*` ni la pregunta de la entrevista «¿trabajas por releases o de forma incremental?», que son de la task 0012.
   - Reescribir el Art. IV.
   - Cambiar `release-notes-template.md`, `add-to-changelog` o las skills de task y patch.
+  - El paso 8 de `sdd-end-task` con tareas que solo existen en el gestor: va a una task aparte.
   - Una migración `v1.2.0` para el campo.
 
 ## Approach
@@ -141,10 +151,32 @@ Toda la guía nueva está condicionada a dos predicados observables (Art. II): l
 - THEN no se exige que exista `.docs/sdd/releases/vX.Y.Z/` ni se crea vacía
 - AND con destinatario o con acta, la carpeta sigue siendo obligatoria
 
+**ADDED — El bump usa el tooling del proyecto**
+- GIVEN un `tech-stack.md` que declara el comando que cambia la versión (p. ej. un script de Node)
+- WHEN se llega al bump
+- THEN se ejecuta ese comando con la versión confirmada y no se editan los ficheros a mano
+- AND si no hay comando declarado pero sí ficheros de versión (`package.json`, `*.props`, `*.csproj`, `plugin.json`, etc.), se actualizan esos ficheros y el resumen de cierre propone declarar el comando en `tech-stack.md`
+
 **ADDED — Sin fichero de versión, la versión vive en el tag y en el changelog**
-- GIVEN un proyecto sin fichero de versión (`package.json`, `*.csproj`, `plugin.json`, etc.)
+- GIVEN un proyecto sin fichero de versión ni comando declarado
 - WHEN se llega al bump
 - THEN no se crea ningún fichero para la versión: la registran el tag anotado y la cabecera del changelog sellado
+
+**ADDED — La versión se propone desde el changelog**
+- GIVEN un `[Unreleased]` con entradas
+- WHEN `sdd-end-release` propone la versión en el paso 1
+- THEN la propuesta sale de las secciones de `[Unreleased]` (`Removed` o incompatible → major; `Added` o `Changed` → minor; solo `Fixed` → patch; en pre-1.0, según `versionado.md`) y va con su motivo
+- AND la versión sigue esperando la confirmación explícita del usuario
+
+**ADDED — En modo tracker, el cierre lista los tickets**
+- GIVEN `ids.mode: tracker`
+- WHEN se presenta el resumen de cierre
+- THEN incluye los ids de ticket de las entradas de `[Unreleased]` que entran en la versión
+
+**ADDED — El acta solo se escribe si hay fuente**
+- GIVEN un cierre sin transcripción ni notas aportadas por el usuario y sin fichero de fuente en `.docs/sdd/releases/vX.Y.Z/`
+- WHEN `sdd-end-release` llega al acta
+- THEN omite el paso sin preguntar si hubo demo o reunión
 
 **ADDED — La línea de smoke se cuenta igual en todas las releases**
 - GIVEN el cierre de una release
@@ -163,4 +195,4 @@ Toda la guía nueva está condicionada a dos predicados observables (Art. II): l
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-21 | aprobada: «si, si lo ves claro adelante» (tras añadir roles, versión propuesta, lista de tickets, acta sin pregunta y bump con tooling) |
