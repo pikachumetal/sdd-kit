@@ -44,7 +44,7 @@ Review de spec propuesta: dos revisores — señales: contrato público (el webh
 
 **Proponer no es activar**: el usuario activa con su respuesta a esta pregunta, antes de ver la spec.
 
-## 3. Despacha el revisor (si el usuario activa)
+## 3. Despacha el revisor (si se activa: por el usuario, o por el agente en `unattended`)
 
 Subagente `general-purpose`, **modelo Sonnet, effort medium**, uno por lente. Los puntos del encargo **se reparten según cuántos revisores despaches**:
 
