@@ -16,14 +16,14 @@ created: 2026-09-21
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Campaña RED | in-progress | | |
-| 2 | Guía de arranque y ejecución | pending | | |
+| 1 | Campaña RED | done | `3473e25`, `973b1e0` | Nueve sujetos (4,14 $; E4-1 inválido por permisos y relanzado). E1, E4 y E5 fallan 2/2; E3 pasa 2/2 y recorta la aprobación explícita, reaprobado por el dev-lead: «Apruebo el recorte» |
+| 2 | Guía de arranque y ejecución | in-progress | | |
 | 3 | Cierre, plantillas, release y migración | pending | | |
 | 4 | Campaña GREEN | pending | | |
 
 ## Verificación por task
 
-- [ ] Task 1 — `tests/control-profiles-red.md`, artefactos en `red/`
+- [x] Task 1 — `tests/control-profiles-red.md`, artefactos en `red/`; `red/ControlProfiles.Tests.ps1` 0/12
 - [ ] Task 2 — `Invoke-Pester tests` verde con el primer bloque de `tests/ControlProfiles.Tests.ps1`
 - [ ] Task 3 — `Invoke-Pester tests` verde con los dos bloques
 - [ ] Revisión agrupada de las Tasks 2 y 3

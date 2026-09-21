@@ -187,3 +187,4 @@ La tabla de gates por perfil vive en **un solo sitio** y cada gate de las skills
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
 | dev-lead | Àngel Delgado | 2026-09-21 | aprobada: «Apruebo la spec» (opción del gate, tras la review de dos revisores) |
+| dev-lead | Àngel Delgado | 2026-09-21 | reaprobada tras el recorte del RED (decisión 11): «Apruebo el recorte» |
