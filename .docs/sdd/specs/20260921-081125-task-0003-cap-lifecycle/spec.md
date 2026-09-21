@@ -36,6 +36,7 @@ approvers:
 11. **Fuera de la task**: el campo `Cobertura` por requisito (va al backlog, sin evidencia de necesidad); limpiar capacidades cajón que ya existen en proyectos consumidores; `status: draft` para capacidades nuevas; la pregunta de modo incremental del init (task 0012); cualquier dependencia de la fusión respecto a una release (task 0004).
 12. **Rutas de la evidencia por debajo de 140 caracteres relativos**: moldes en `red/m1/`, `green/m1/` y specs de los moldes con slug de una palabra. Lo comprueba un paso del plan antes de cada commit de evidencia. No añado test de convención: fallaría con las rutas de 165 que ya están en develop.
 13. **Sin migración nueva.** La task cambia cómo se escriben los artefactos nuevos, no la estructura de `.docs/sdd/`. Las capacidades con slug en castellano de los consumidores no se renombran solas: la regla aplica a las nuevas.
+14. **Vaciar `legacy.md` pasa al paso de fusión** (añadido tras la review, a propuesta del agente y entendido con el dev-lead el 2026-09-21). Hoy la regla solo vive en la nota de `legacy.md`, y quien no abre el fichero deja el comportamiento descrito dos veces. **El funcional que se aporta en un greenfield no va a `legacy.md`**: describe lo que se quiere construir, no lo construido. Dónde vive después del init lo decide la task 0012; en el cierre se apunta en su fila del roadmap.
 
 ### Hallazgos de la review
 
@@ -112,6 +113,7 @@ Un sitio único con todas las reglas de capacidades. Su forma la decide el RED. 
 - WHEN el agente elige la capacidad
 - THEN ha leído el listado de `capabilities/` y se ha preguntado si los títulos de los `ADDED` comparten un sustantivo distinto del nombre de la capacidad elegida, y si el delta trae sus propias «Reglas de la capacidad»
 - AND con dos síes propone una capacidad nueva, o escribe en la línea de capacidad el motivo para no hacerlo
+- AND si existe `capabilities/legacy.md` y describe el comportamiento que toca el delta, la spec lo dice en la línea de capacidad
 
 **ADDED — El nombre de una capacidad es un sustantivo inglés en kebab-case**
 - GIVEN una capacidad nueva, declarada en una spec o propuesta por una init
@@ -150,6 +152,12 @@ Un sitio único con todas las reglas de capacidades. Su forma la decide el RED. 
 - AND si se van a fusionar tres o más `ADDED` con «Reglas de la capacidad» propias en una capacidad existente, el agente pregunta antes de fusionar y no crea nada por su cuenta
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 - AND la fusión no depende de que exista una release
+
+**ADDED — Lo que sale de `legacy.md` a una capacidad se borra de `legacy.md`**
+- GIVEN un proyecto con `capabilities/legacy.md` y una task o un patch cuyo delta describe un comportamiento que `legacy.md` ya recogía
+- WHEN se fusiona el delta
+- THEN el requisito queda en `capabilities/<capability>.md` y ese texto se retira de `legacy.md`, de modo que el comportamiento se describe en un solo fichero
+- AND el resto de `legacy.md` no se trocea: solo sale lo que toca el delta
 
 **ADDED — El patch fusiona su delta al cerrar**
 - GIVEN un patch cuyo fix cambia comportamiento descrito en `capabilities/<capability>.md`
