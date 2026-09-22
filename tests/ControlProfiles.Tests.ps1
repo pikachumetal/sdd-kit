@@ -81,3 +81,13 @@ Describe 'Perfiles de control: propuesta de partir una task grande' {
     Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'más de 3 tasks internas'
   }
 }
+
+Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la release' {
+  It 'elegir un alcance no cuenta como aprobar la spec' {
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match '(?i)elegir un alcance'
+  }
+
+  It 'la task 🧪 que el smoke no valida conserva la forma con disparador nuevo' {
+    Get-KitFile 'skills/sdd-end-release/SKILL.md' | Should -Match 'disparador nuevo'
+  }
+}
