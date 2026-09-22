@@ -16,13 +16,13 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 
 ### La spec propone su propio nivel de review por complejidad
 - GIVEN una spec en modo full recién redactada
-- WHEN el agente la presenta en el gate
-- THEN el bloque que abre «Decisiones a validar» dice el nivel propuesto (sin review · un revisor con su lente · dos revisores), las señales contadas que lo justifican, una línea por lente candidata con qué comprobaría en esta spec y la señal que lo motiva, y la opción mínima razonable con lo que deja sin cubrir
+- WHEN el agente cuenta las señales de la rúbrica
+- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
 - AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
-- AND el usuario activa o rechaza; en modo lite no se propone
+- AND en `unattended` el agente decide y lo registra; en modo lite no se propone
 
 ### La review adversarial tensa la spec antes del gate
-- GIVEN un nivel de review activado por el usuario
+- GIVEN un nivel de review activado por el usuario o, en `unattended`, decidido y registrado por el agente
 - WHEN el agente despacha el revisor con la spec, la constitution, la mission y las capacidades tocadas
 - THEN cada hallazgo aparece en «Decisiones a validar» como aceptado (con el cambio en la spec) o rechazado con motivo, antes de pedir la aprobación
 - AND con dos revisores cada lente recibe puntos disjuntos y el encargo le prohíbe reportar lo que pertenece al punto de la otra
@@ -35,8 +35,9 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 
 ### El plan presenta primero las decisiones tomadas sin el usuario
 - GIVEN un plan en modo full
-- WHEN el agente lo presenta en el gate
-- THEN el primer bloque es «Decisiones que he tomado yo — valida estas» con modelo y effort por task, ejecución, decisiones técnicas fuera de la spec, riesgos altos y coste estimado
+- WHEN el agente lo termina
+- THEN el primer bloque es «Decisiones que he tomado yo — valida estas», con modelo y effort por task, ejecución, decisiones técnicas fuera de la spec, riesgos altos y coste estimado
+- AND en `pair` lo presenta en el gate; en `delegate` y `unattended` no hay gate: el agente comprueba que cada escenario de la spec tiene su task, lo anota en el plan y sigue
 - AND el resto del plan es para el ejecutor
 
 ### El artículo de calidad de código viaja a implementadores y revisores
@@ -47,8 +48,14 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 ### El trabajo se valida con el usuario antes de cerrar
 - GIVEN una task con la implementación terminada y la revisión final limpia
 - WHEN el agente va a cerrar
-- THEN antes de invocar `sdd-end-task` presenta qué hay, cómo probarlo y el smoke que ejecutó, y espera la validación explícita del usuario (que diga qué probó y que funciona; «cierra la tarea» no lo es)
-- AND si el usuario no responde, la task queda en espera con el smoke documentado; `sdd-end-task` no arranca sin esa validación y el walkthrough la registra separada de lo verificado por el agente
+- THEN antes de invocar `sdd-end-task` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, cómo probarlo y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- AND si el usuario no responde, la task queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
+- AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
+
+### El walkthrough crece por adendas
+- GIVEN una task cerrada con walkthrough
+- WHEN algo cambia después del cierre (validación tardía, integración con otra task)
+- THEN se añade una entrada fechada en `## 6. Adendas` y el cuerpo no se reescribe
 
 ### La review de dominio pregunta por el complemento de visibilidad
 - GIVEN una spec que introduce un rol, un estado o una condición de acceso
@@ -101,3 +108,8 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED Brownfield no vuelca `capabilities/` (se mueve a `capabilities`)
 - 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED Los documentos de anclaje nombran `capabilities/` (se mueve a `capabilities`)
 - 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED La consulta lee la capacidad, no las specs (se mueve a `capabilities`)
+- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED La spec propone su propio nivel de review por complejidad
+- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED La review adversarial tensa la spec antes del gate
+- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED El plan presenta primero las decisiones tomadas sin el usuario
+- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED El trabajo se valida con el usuario antes de cerrar
+- 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El walkthrough crece por adendas
