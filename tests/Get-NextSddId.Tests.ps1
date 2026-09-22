@@ -48,6 +48,18 @@ BeforeAll {
     foreach ($branch in $Branches) { Invoke-GitIsolated $repo @('branch', $branch) | Out-Null }
     return $repo
   }
+
+  function Add-UnmergedCommit([string]$Repo, [string]$Branch, [string]$RelativePath, [string]$Line) {
+    # Commit en otra rama sin fusionar, como el de otro worktree que parte o reserva en paralelo.
+    $current = Invoke-GitIsolated $Repo @('branch', '--show-current')
+    Invoke-GitIsolated $Repo @('switch', '-qc', $Branch) | Out-Null
+    $path = Join-Path $Repo $RelativePath
+    New-Item -ItemType Directory -Force -Path (Split-Path $path) | Out-Null
+    Add-Content -LiteralPath $path -Value $Line
+    Invoke-GitIsolated $Repo @('add', '-A') | Out-Null
+    Invoke-GitIsolated $Repo @('-c', 'user.email=fixture@local', '-c', 'user.name=Fixture', 'commit', '-qm', "trabajo en $Branch") | Out-Null
+    Invoke-GitIsolated $Repo @('switch', '-q', $current) | Out-Null
+  }
 }
 
 Describe 'Get-NextSddId.ps1' {
@@ -155,6 +167,46 @@ Describe 'Get-NextSddId.ps1' {
       $plain = Join-Path (New-TempDirectory) 'project'
       Copy-Item -Recurse (Join-Path $script:Fixtures 'sequence-project') $plain
       (Invoke-NextId $plain).Id | Should -Be '0006'
+    }
+  }
+
+  Context 'worktrees que parten en paralelo desde la misma base' {
+    # Tres colisiones reales: cada worktree solo veía el roadmap y specs/ de su propia rama.
+    # Las rutas llevan tildes a propósito (regla de la 0010).
+    It 'cuenta una fila reservada en el roadmap de develop que la rama actual no ha integrado' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @('feature/partición-b') '0035-Partición-en-paralelo'
+      Add-UnmergedCommit $repo 'develop' '.docs/sdd/roadmap.md' '| 0031 | Reservada por la partición | S |'
+      Invoke-GitIsolated $repo @('switch', '-q', 'feature/partición-b') | Out-Null
+      $result = Invoke-NextId $repo
+      $result.Id | Should -Be '0032'
+      $result.ExitCode | Should -Be 0
+    }
+
+    It 'cuenta una fila reservada en el roadmap de otra rama feature/ sin fusionar' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @() '0035-Partición-en-paralelo'
+      Add-UnmergedCommit $repo 'feature/partición-a' '.docs/sdd/roadmap.md' '| 0019 | Reservada por la partición | S |'
+      (Invoke-NextId $repo).Id | Should -Be '0020'
+    }
+
+    It 'cuenta la carpeta de specs/ de otra rama sin fusionar' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @() '0035-Partición-en-paralelo'
+      Add-UnmergedCommit $repo 'feature/exportación' '.docs/sdd/specs/20260922-100000-task-0012-exportación/spec.md' '# Spec'
+      (Invoke-NextId $repo).Id | Should -Be '0013'
+    }
+  }
+
+  Context 'rama actual con id' {
+    It 'devuelve el id de la rama actual cuando no se usa en otro sitio' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @('feature/0027')
+      Invoke-GitIsolated $repo @('switch', '-q', 'feature/0027') | Out-Null
+      (Invoke-NextId $repo).Id | Should -Be '0027'
+    }
+
+    It 'no devuelve el id de la rama actual cuando otra rama ya lo usa en specs/' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @('feature/0027')
+      Add-UnmergedCommit $repo 'feature/otra' '.docs/sdd/specs/20260922-100000-patch-0027-otro/patch.md' '# Patch'
+      Invoke-GitIsolated $repo @('switch', '-q', 'feature/0027') | Out-Null
+      (Invoke-NextId $repo).Id | Should -Be '0028'
     }
   }
 
