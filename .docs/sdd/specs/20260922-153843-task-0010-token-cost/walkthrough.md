@@ -55,7 +55,7 @@ created: 2026-09-22
 
 ### 4.2 Smoke / tests
 
-- Validado por el dev-lead: PENDIENTE
+- Validado por el dev-lead: 2026-09-22 · regeneró `estimation-log.md` con el script y leyó la fila de esta task (`| 0010 | docs | 1.2 | 0.8 | 0.67 | no medido | 182k | 8.17 |`) · «sí, funciona»
 
 | # | Caso | Resultado |
 | --- | --- | --- |
@@ -77,6 +77,6 @@ created: 2026-09-22
 
 - El hueco fijo en una plantilla es lo que hace que el dato aparezca: los tickets de campo lo rellenan 14/14 y los walkthroughs, sin hueco, 6/11 y en cuatro formas. → `tests/token-cost-red.md` y la propia plantilla.
 - Un molde cuyos commits nacen todos a la vez no sirve para medir nada que se deduzca del historial: el sujeto rellena el campo obligatorio con lo que tenga cerca. Con horas repartidas, la conducta correcta sale 2/2. → `tech-stack.md`, «Fixtures y baselines».
-- Leer la salida de git en PowerShell sin fijar UTF-8 rompe en cualquier ruta con tildes. Ya ha mordido a dos scripts y a dos tests del repo. → `tech-stack.md` (pendiente de escribir en el cierre).
+- Leer la salida de git en PowerShell sin fijar UTF-8 rompe en cualquier ruta con tildes. Ya ha mordido a un script y a dos tests del repo. → `tech-stack.md`, «Cómo se testean las skills».
 
 ## 6. Adendas

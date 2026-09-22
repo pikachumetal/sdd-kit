@@ -12,9 +12,11 @@ plan: ./plan.md
 | 1 — Sección 2 de `walkthrough-template.md` | ✅ | `6fd401c` + ajuste tras la ronda 1 del GREEN | En línea |
 | 2 — Tres columnas de coste en `Build-EstimationLog.ps1` | ✅ | `cfe160f` | En línea, TDD: 19 tests en rojo → 35/0 |
 | 3 — Calibración en `estimation.md` | ✅ | `1039c02` | En línea |
-| 4 — GREEN con sujetos | ✅ | este commit | 4 sujetos Sonnet en dos rondas, 4,40 $ |
+| 4 — GREEN con sujetos | ✅ | `526b3b5`, `1b376b4` | 6 sujetos Sonnet en tres rondas, 6,10 $ |
 
 ## Fuera del plan
+
+- `fix` `6d1c15d` y `test` `c7332ef` — los dos Important de la revisión final y el Minor de cobertura de la re-revisión.
 
 - `merge` `7e257b9` — integración de `develop` (tasks 0018 y 0025, patch 0030). Conflicto de `estimation-log.md` resuelto regenerando con el script.
 - Dentro de ese merge, dos tests que llegan de `develop` (`RoadmapClosing`, `ScopeBrake`) resolvían la raíz del repo con `git rev-parse --show-toplevel` y fallaban por el mismo defecto de codificación de la decisión 8; pasan al patrón `$PSScriptRoot/..` que usan los otros seis.
