@@ -63,21 +63,21 @@ Tres situaciones que no cambian la letra de la spec y aun así se tratan como un
 
 ### 3.º fix descubierto
 
-Disparador: el 3.er fix descubierto de la task, y cada tercero después (6.º, 9.º…). Cuenta las filas de «Fixes adicionales» de `tasks.md` o, sin `tasks.md`, los rulings de fix registrados — cuenta todo lo que se registra, tanto si se arregla como si se difiere.
+Disparador: el 3.er fix descubierto de la task, y cada tercero después (6.º, 9.º…). Cuenta las filas de «Fixes adicionales» de `tasks.md` o, sin `tasks.md`, los rulings de fix registrados — cuenta todo lo que se registra, tanto si se arregla como si se difiere. Cuenta el trabajo descubierto fuera del plan (un defecto del código previo, alcance que nadie pidió); un hallazgo de revisión sobre el código que la propia task acaba de escribir no cuenta: es su bucle de fix.
 
 - `pair` y `delegate`: antes de arreglarlo o diferirlo, el agente para y pregunta con tres opciones: seguir en esta task, diferir a otra task (fila en el roadmap) o partir la task. La respuesta entra en `## Enmiendas`.
 - `unattended`: lo difiere a una fila nueva del roadmap, lo registra como enmienda sin aprobar y sigue.
 
 ### Salida observable
 
-Disparador: una decisión de ejecución que la spec no fija y que cambia la salida observable — lo que ve o recibe quien usa el producto: la respuesta de una API o de una CLI, el texto o el flujo de una UI, los ficheros generados, los nombres públicos (comandos, campos, rutas). Un nombre interno, la estructura o el orden de implementación siguen siendo ruling; ejemplo: elegir entre dos formas internas de calcular un recargo de factura no dispara el freno, cambiar el campo que la factura muestra al cliente sí.
+Disparador: una decisión de ejecución que la spec no fija y que cambia la salida observable — lo que ve o recibe quien usa el producto: la respuesta de una API o de una CLI, el texto o el flujo de una UI, los ficheros generados, los nombres públicos (comandos, campos, rutas). Un nombre interno, la estructura, el orden de implementación o deshacer una regresión de la propia task (devuelve la salida a la que había) siguen siendo ruling; ejemplo: elegir entre dos formas internas de calcular un recargo de factura no dispara el freno, cambiar el campo que la factura muestra al cliente sí.
 
 - `pair` y `delegate`: el agente para y pregunta con sus opciones antes de despachar. No la registra como ruling; la respuesta entra en `## Enmiendas`.
 - `unattended`: elige la opción que deja la salida como la describe la spec o, si la spec calla, como está hoy. La registra como enmienda sin aprobar.
 
 ### Fila cambiada en la base
 
-Disparador: antes de despachar cada task del plan, `git fetch` si hay remoto y `git diff $(git merge-base HEAD <integración>) <integración> -- .docs/sdd/roadmap.md`, buscando la fila de la task en curso. Si cambió, es un posible desvío.
+Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HEAD <integración>) <integración> -- .docs/sdd/roadmap.md`, buscando la fila de la task en curso. Se compara siempre: sin remoto la base se mueve igual, porque otro worktree commitea en la rama local; con remoto, antes `git fetch` y se compara también `origin/<integración>`. Si cambió, es un posible desvío.
 
 - `pair` y `delegate`: presenta el cambio y para.
 - `unattended`: sigue con la spec aprobada y registra la fila nueva como enmienda sin aprobar.

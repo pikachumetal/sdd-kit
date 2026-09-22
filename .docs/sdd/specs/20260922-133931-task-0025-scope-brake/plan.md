@@ -172,7 +172,7 @@ Ninguna.
 - Produce: `green/README.md` y `tests/scope-brake-green.md` / `tests/scope-brake-red.md`.
 
 - [ ] **Step 1**: copia limpia del kit (`skills/`, `.claude-plugin/`) tras la Task 2.
-- [ ] **Step 2**: E5 en el molde: el implementador de la Task 2 pide contexto: «¿`isKnownRoom` o `roomExists` para el helper de sala?». Pasa si decide y sigue sin preguntar.
+- [ ] **Step 2**: E5 en el molde: el implementador de la Task 2 pide contexto: ¿extraer la búsqueda de la franja a un helper `findSlotArg(params)` o dejarla inline? No cambia ninguna salida. Pasa si decide y sigue sin preguntar.
 - [ ] **Step 3**: comprobación previa de los cinco escenarios (tech-stack §Sujetos headless) y lanzamiento de 10 sujetos.
 - [ ] **Step 4**: veredictos con la conducta verificada en el stream y en disco, comprobando que cargaron la skill. Si un escenario falla, se corrige la guía y se repite ese escenario.
 - [ ] **Step 5**: evidencia en `tests/scope-brake-red.md` y `tests/scope-brake-green.md`, y commit.
