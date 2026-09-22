@@ -4,13 +4,13 @@ task: 0021
 parent: 0005
 title: Revisión por task abaratada
 mode: full
-status: draft
+status: approved
 created: 2026-09-22
 author: Claude (Opus 5.5)
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-22
 ---
 
 # Spec — Revisión por task abaratada
@@ -86,4 +86,4 @@ Cambiar solo lo que el kit escribe y hoy estorba a superpowers: la plantilla del
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-22 | aprobada: «si» |
