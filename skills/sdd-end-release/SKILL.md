@@ -11,7 +11,7 @@ Cerrar una release es la **Definition of Done del hito** y el **corte de publica
 habido apertura con `sdd-start-release` o no — el modo incremental (task y patch sin abrir release) llega
 aquí igual. Se ejecuta SOBRE tasks ya cerradas (vía `sdd-end-task`) y produce los artefactos que
 convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente (solo con
-destinatario), feedback triado, roadmap colapsado y tag.
+destinatario), feedback triado (si hubo demo con notas), roadmap colapsado y tag.
 
 **Principio central: dos audiencias, dos documentos.** El changelog es exhaustivo y técnico (equipo);
 las release notes se **destilan** de él, curadas y por beneficio (cliente). Nunca son el mismo documento.
@@ -69,8 +69,10 @@ gate en solitario.
    orden y la versión en el resumen, y ejecuta merge + tag en el mismo turno, sin pedir otra confirmación.
    Si falta cualquiera de las tres: el gate de siempre — prepara, presenta, espera. Al ejecutarse: merge
    según el git-flow del proyecto, **tag ANOTADO `vX.Y.Z` sobre el merge commit del branch estable** (no
-   sobre la feature, no antes del merge), push del tag. Con `ids.mode: tracker`, el resumen de cierre
-   lista los ids de ticket de `[Unreleased]` que entran en la versión.
+   sobre la feature, no antes del merge), push del tag y, si el git-flow tiene rama de integración
+   (`develop`), **merge de vuelta del branch estable a esa rama**, para que el tag quede en su historia.
+   Con `ids.mode: tracker`, el resumen de cierre lista los ids de ticket de
+   `[Unreleased]` que entran en la versión.
 8. **Comunicar** *(solo con `release.hasRecipient: true`)* — entregar al destinatario las release notes Y
    el resultado del triage (qué se decidió con su feedback — el "ack" que cierra el ciclo). El envío lo
    hace el usuario; tú preparas. Sin destinatario, este paso no aplica.
