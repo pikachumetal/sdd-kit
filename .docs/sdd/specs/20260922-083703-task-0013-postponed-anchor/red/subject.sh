@@ -62,6 +62,6 @@ fi
   echo "## diff contra la base del run"; g diff --stat "$(g rev-list --max-parents=0 HEAD)" 
 } > "$OUT/$LABEL.state.txt"
 mkdir -p "$OUT/$LABEL"
-cp -r .docs "$OUT/$LABEL/"
+cp -r .docs/sdd/. "$OUT/$LABEL/"
 for t in $TURNS; do grep '"type":"result"' "$RUNS/$LABEL-$t.jsonl" > "$OUT/$LABEL/$t-result.json"; done
 echo "[$LABEL] listo (sesión $SESSION)"

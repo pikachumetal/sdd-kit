@@ -5,6 +5,7 @@ Regla de `tech-stack.md` («Un baseline limpio no reproduce los fallos de sesion
 - **Kit**: copia limpia de `skills/`, `.claude-plugin/` y `hooks/` de `feature/0013` a 2026-09-22, sin cambios de la task.
 - **Moldes**: los de la task 0008 (CLI de reservas de salas), sin `architecture.md`. `m-close`: task 0009 implementada, con un plan que crea `src/slots.js` y una nota de revisión que describe el cambio de estructura. `m-close-b`: igual, pero sin la línea «un solo fichero de entrada» en `tech-stack.md`. `mold`: base, con la fila 0010 «Documentar la arquitectura: el `architecture.md` se pospuso en el init».
 - **Lanzador**: `run.sh` → `subject.sh` (Sonnet headless, mensajería entre sesiones bloqueada). E1b con `E1B=1`.
+- **Salidas**: `<etiqueta>/` guarda el `.docs/sdd/` del sujeto aplanado (sin `.docs/sdd/`, para no pasar de 140 caracteres de ruta) y el resultado de cada turno; `<etiqueta>.state.txt`, el estado git del run.
 - **Coste**: 4,67 $ (E1 1,40 · E1b 1,34 · E2 1,93).
 
 ## E1 — cierre con un aprendizaje estructural y sin `architecture.md`

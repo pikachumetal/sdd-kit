@@ -2,7 +2,8 @@
 
 - **Kit**: copia limpia de `skills/`, `.claude-plugin/` y `hooks/` de `feature/0013` tras T2 (`12d9fbd`), y tras el REFACTOR (`f4f50bb`) para los reruns `e1b-refactor-*`.
 - **Moldes y turnos**: E1b y E2 iguales que en el RED (`m-close-b`, `mold`). E3 usa `m-empty` (repo con solo un README) y una petición a `sdd-init-greenfield` que lleva dentro las respuestas de la entrevista, con los documentos aprobados de antemano y la arquitectura pospuesta.
-- **Lanzador**: `run.sh` → `subject.sh`. Los reruns se lanzan con `subject.sh` directamente, con el mismo turno.
+- **Lanzador**: `run.sh` → `subject.sh`.
+- **Salidas**: `<etiqueta>/` guarda el `.docs/sdd/` del sujeto aplanado (sin `.docs/sdd/`, para no pasar de 140 caracteres de ruta) y el resultado de cada turno; `<etiqueta>.state.txt`, el estado git del run. Los reruns se lanzan con `subject.sh` directamente, con el mismo turno.
 - **Coste**: 6,92 $ (12 sujetos).
 
 ## E1b — cierre con un aprendizaje estructural y sin `architecture.md`

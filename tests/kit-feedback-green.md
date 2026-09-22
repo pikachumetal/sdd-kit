@@ -1,6 +1,6 @@
 # GREEN — skill `sdd-feedback` (task 0002)
 
-**Sesión del 2026-09-21.** Mismos tres escenarios y mismas peticiones que el RED ([kit-feedback-red.md](kit-feedback-red.md)), dos sujetos por escenario. La única diferencia es la copia limpia del kit: esta lleva `sdd-feedback`, `kit-feedback-template.md` y la oferta en los dos cierres (commit `d5b30bd`). E3 usa el molde coherente (`molde-limpia-v2/`) y la rama del lanzador coincide con el id de su task.
+**Sesión del 2026-09-21.** Mismos tres escenarios y mismas peticiones que el RED ([kit-feedback-red.md](kit-feedback-red.md)), dos sujetos por escenario. La única diferencia es la copia limpia del kit: esta lleva `sdd-feedback`, `kit-feedback-template.md` y la oferta en los dos cierres (commit `d5b30bd`). E3 usa el molde coherente (`m-limpia-v2/`) y la rama del lanzador coincide con el id de su task.
 
 Coste: seis sujetos, 0,57–1,09 $ cada uno, 5,58 $ en total; de 24 a 51 turnos.
 
@@ -9,7 +9,7 @@ Coste: seis sujetos, 0,57–1,09 $ cada uno, 5,58 $ en total; de 24 a 51 turnos.
 | Fallo del RED | RED | GREEN | Evidencia |
 | --- | --- | --- | --- |
 | El cierre no ofrece el ticket | 0/2 lo ofrecen | **2/2 lo ofrecen** | Los dos informes finales de `sdd-end-task` cierran con la oferta, el motivo («mientras tengo la sesión en contexto») y un adelanto de lo que incluiría. Uno lo dice literal: «Si no, no queda nada pendiente». Ninguno la convierte en gate |
-| Ubicación y nombre de fichero a ojo | 0/2 en sitio fijo | **4/4** | Los cuatro tickets de E2 y E3 están en `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-task-<id>-<slug>.md` |
+| Ubicación y nombre de fichero a ojo | 0/2 en sitio fijo | **4/4** | Los cuatro tickets de E2 y E3 están en `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-task-<id>-<slug>.md`. La copia versionada se llama `green/tickets/<etiqueta>.md` para no pasar de 140 caracteres de ruta; el nombre que escribió el sujeto está en su `<etiqueta>.status.txt` |
 | Filtra cliente, dominio y personas | 2/2 filtran | **0/2 filtran** | Cero apariciones del nombre del cliente, de la interlocutora o del vocabulario de negocio. El proyecto queda como «aplicación de negocio en .NET, brownfield» y la persona como «un interlocutor de negocio»: el descriptor genérico de la regla |
 | Sin criterio de aceptación | 0 de 7 hallazgos | **6 de 6** | Cada hallazgo de E2 lleva su GIVEN/WHEN/THEN y el RED que hoy falla |
 | La iniciativa propia se diluye | 0/2 con sección | **4/4 con sección** | La tabla THEN → test sale en su sección en E2; en E3, aunque la sesión fue limpia, los sujetos encuentran dos iniciativas (la bitácora con hora y un test por cláusula del THEN) y las proponen como candidatas a regla |

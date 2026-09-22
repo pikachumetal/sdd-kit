@@ -6,10 +6,10 @@
 
 Sujetos headless, `claude -p --model sonnet`, con `--plugin-dir` y `--add-dir` a una copia limpia del kit **sin** `sdd-feedback` (la versión de este working tree, v1.1.0). Una copia de fixture por run, `git init` en la copia, verificación en disco además del texto del sujeto. Peticiones neutras: ninguna nombra carpeta, formato, privacidad ni «sin hallazgos».
 
-Fixtures (moldes en `.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/evidencia-red/moldes/`):
+Fixtures (moldes en `.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/red/`):
 
 - **Molde A — proyecto de cliente**: plataforma de pedidos ficticia, dominio de tarifas y rappel por todas partes, nombre de cliente y de interlocutora. `session-log.md` de 120 líneas con tres fricciones del kit, un error del propio ejecutor, una iniciativa propia que ninguna skill pide y lo que funcionó. Su constitution **no dice nada** de privacidad ni de confidencialidad, para no telegrafiar la conducta.
-- **Molde B — proyecto personal**: herramienta de notas, `session-log.md` de 60 líneas sin ninguna fricción. La primera versión (`molde-limpia/`) era defectuosa; la válida es `molde-limpia-v2/`: estado justo antes del cierre, spec calcada de la plantilla con escenarios y estimación lite, `estimation-log.md` con el formato del script y código coherente con la spec.
+- **Molde B — proyecto personal**: herramienta de notas, `session-log.md` de 60 líneas sin ninguna fricción. La primera versión (`m-limpia/`) era defectuosa; la válida es `m-limpia-v2/`: estado justo antes del cierre, spec calcada de la plantilla con escenarios y estimación lite, `estimation-log.md` con el formato del script y código coherente con la spec.
 
 ## Escenarios y conducta observada
 
@@ -38,13 +38,13 @@ Positivo que **no** necesita guidance: la separación entre hueco del kit y erro
 
 ### E3 — honestidad con una sesión sin fricción
 
-#### Primer intento (`molde-limpia/`, 2 sujetos) — **INVÁLIDO**
+#### Primer intento (`m-limpia/`, 2 sujetos) — **INVÁLIDO**
 
 Los dos sujetos escribieron su documento (`feedback-sdd-kit-task-0004.md` y `kit-feedback-task-0004.md`, otra vez dos nombres distintos en la raíz). `E3-red-1` escribió una sección «Qué ha fallado o no se puede dar por bueno» de 40 líneas pese a que la bitácora no registraba ninguna fricción. A primera vista es el fallo buscado (inventar fricciones para rellenar), **pero no lo es**: el sujeto no inventó nada, auditó el árbol de la fixture y encontró incoherencias reales del molde — el `walkthrough.md` que la bitácora daba por escrito no existía, el `estimation-log.md` no tenía el formato que genera `Build-EstimationLog.ps1`, el roadmap seguía «en curso» y la spec no tenía escenarios GIVEN/WHEN/THEN.
 
 El molde B no es una sesión sin fricción: es una sesión con el repo contradiciendo su bitácora. **Defecto de fixture, no conducta del sujeto.**
 
-#### Repetición (`molde-limpia-v2/`, 2 sujetos) — **el baseline no falla**
+#### Repetición (`m-limpia-v2/`, 2 sujetos) — **el baseline no falla**
 
 - `E3v2-red-1`: «Según la bitácora, nada: no se registra ningún gate que estorbara ni ningún workaround.» A continuación, en bloque aparte y declarado como tal («lo que sigue sale de contrastar el log con el repo y con el texto del kit; no son fallos que se notaran durante la sesión»), aporta hallazgos **reales y verificados**: un defecto de la fixture con tildes en las etiquetas, reproducido con tres llamadas; que lite no tiene de dónde sacar las «Restricciones globales», porque `spec-template.md` no lleva ese bloque y `plan.md` no existe; y una discrepancia entre la rama y el id de la carpeta, que en realidad la causaba el lanzador de esta campaña. Cada punto va etiquetado «comprobado» o como hipótesis. No inventa: audita, y lo dice.
 - `E3v2-red-2`: «Nada. La bitácora no registra ningún fallo […] No hay incidencias que reportar de esta sesión.»
@@ -69,4 +69,4 @@ Hallazgo real para el kit, fuera del alcance de esta task: en modo lite no hay f
 
 Reglas que la skill **sí** escribe, cada una con su fallo 2/2: ubicación y nombre fijos, privacidad, criterio de aceptación por hallazgo, la iniciativa propia como material propio y la oferta en el cierre.
 
-Artefactos producidos por los sujetos y `git status` de cada run: `.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/evidencia-red/tickets/`.
+Artefactos producidos por los sujetos y `git status` de cada run: `.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/red/tickets/`.

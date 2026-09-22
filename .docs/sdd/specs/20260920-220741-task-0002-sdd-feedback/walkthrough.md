@@ -16,7 +16,7 @@ created: 2026-09-21
 - **Plantilla `skills/sdd-templates/templates/kit-feedback-template.md`** (`9c387da`, `d5b30bd`, `521c019`): cabecera cosechable (versiones, carril, id compuesto + `task:`), contexto con «no medido» como valor válido, hallazgos con seis campos fijos, salida «Sin hallazgos» explícita, y las secciones de iniciativa propia, «Funcionó, no tocar» y errores propios.
 - **Oferta en los cierres** (`9c387da`, `d5b30bd`): paso 11 de `sdd-end-task` y paso 7 de `sdd-end-patch`. No es un gate y no se repite si la sesión ya tiene ticket.
 - **Índices**: fila en `sdd-templates/SKILL.md` y en el catálogo del README, que pasa a «13 plantillas canónicas».
-- **Evidencia**: `tests/kit-feedback-red.md` (`ea3908c`, `a57c973`, `ddafe35`), `tests/kit-feedback-green.md` (`49ee2e8`), `tests/KitFeedback.Tests.ps1` (10 aserciones), y moldes, lanzadores y artefactos de los 14 sujetos en `evidencia-red/` y `evidencia-green/`.
+- **Evidencia**: `tests/kit-feedback-red.md` (`ea3908c`, `a57c973`, `ddafe35`), `tests/kit-feedback-green.md` (`49ee2e8`), `tests/KitFeedback.Tests.ps1` (10 aserciones), y moldes, lanzadores y artefactos de los 14 sujetos en `red/` y `green/`.
 - **Capacidad nueva `kit-feedback`** en `.docs/sdd/capabilities/`, fusionada en este cierre.
 
 ## 2. Tiempo: estimado vs real
@@ -53,7 +53,7 @@ created: 2026-09-21
 
 | # | Caso | Resultado |
 | --- | --- | --- |
-| 1 | El cierre ofrece el ticket en la misma sesión, sin gate (delta: «El cierre de una task y el de un patch ofrecen el ticket») | Verificado: GREEN E1, 2/2 (`evidencia-green/tickets/E1-offers.md`); RED 0/2 |
+| 1 | El cierre ofrece el ticket en la misma sesión, sin gate (delta: «El cierre de una task y el de un patch ofrecen el ticket») | Verificado: GREEN E1, 2/2 (`green/tickets/E1-offers.md`); RED 0/2 |
 | 2 | El ticket vive en `.docs/sdd/kit-feedback/` con el nombre fijo (delta: «El ticket de mejora del kit vive en…») | Verificado: GREEN E2 + E3, 4/4; RED 0/4 |
 | 3 | No lleva el dominio del cliente (delta: «El ticket no lleva el dominio del cliente») | Verificado: GREEN E2, 0 nombres en 2/2; RED 2/2 filtraban, uno con el nombre de una persona |
 | 4 | Escrito para un agente: criterio de aceptación por hallazgo y cabecera con versiones (delta: «El ticket se escribe para un agente») | Verificado: 6 de 6 hallazgos con criterio; RED 0 de 7 |
