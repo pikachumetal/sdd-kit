@@ -3,10 +3,10 @@ id: 20260922-135640-patch-0027-script-arranque
 task: 0027
 title: Patch — las sesiones del repo arrancan con las skills del working tree
 type: patch
-status: in-progress
+status: done
 created: 2026-09-22
 branch: feature/0027
-commit:
+commit: e0580d5
 ---
 
 # Patch 0027 — las sesiones del repo arrancan con las skills del working tree
@@ -40,7 +40,7 @@ Base comprobada: la rama sale de `develop` en `2fb5b37`, que ya lleva el `CLAUDE
 | 3 | Con el script, el plugin publicado no se cuela duplicado | ✅ agente: `sdd-kit:sdd-start-patch` aparece una vez, con la description de la rama («hay un bug…, arréglalo», que la 1.1.0 no lleva) |
 | 4 | Los argumentos extra llegan a `claude` | ✅ agente: `./Start-KitSession.ps1 --version` → `2.1.278 (Claude Code)` |
 | 5 | Suite completa `Invoke-Pester -Path tests` | ✅ agente: 291 pasan, 0 fallan, 6 skipped |
-| 6 | Arranque desde el terminal propio del dev-lead | pendiente de validación del dev-lead |
+| 6 | Arranque desde el terminal propio del dev-lead | diferido por el dev-lead al uso diario: «ya sabe sdd-kit se prueba en el dida a dia en el uso» |
 
 ## 5. Tiempo (ligero)
 
