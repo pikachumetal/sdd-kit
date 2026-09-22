@@ -52,6 +52,10 @@ Describe 'Consumidores de las plantillas de anclaje' {
     Get-KitFileContent 'skills/sdd-end-task/references/aprendizajes-skills.md' | Should -Match 'informe final del cierre'
   }
 
+  It 'la regla del destino que falta está en el checklist, no solo en references' {
+    Get-KitFileContent 'skills/sdd-end-task/SKILL.md' | Should -Match '(?s)Si el destino no existe.*calcando su plantilla'
+  }
+
   It 'nombrado.md dice de dónde sale la forma de architecture.md' {
     Get-KitFileContent 'skills/sdd-start-task/references/nombrado.md' | Should -Match 'architecture-template\.md'
   }
