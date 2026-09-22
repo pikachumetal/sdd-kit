@@ -59,7 +59,7 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No en
 
 ## Frenos de alcance
 
-Tres situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: su fila de la tabla tiene la misma conducta que la de «Desvío», sin estado nuevo del roadmap.
+Tres situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: en `pair` y `delegate` su fila de la tabla para como la de «Desvío»; en `unattended` sigue con la opción conservadora y no aparca, porque ninguno de los tres bloquea la task. Sin estado nuevo del roadmap.
 
 ### 3.er fix descubierto
 
