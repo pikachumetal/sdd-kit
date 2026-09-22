@@ -37,14 +37,15 @@
 | 2026-09-20 | 0011 | docs | 1.75 | 0.55 | 0.31 | 20260920-220930-task-0011-spec-review-lenses |
 | 2026-09-21 | 0004 | docs | 3 | 2.2 | 0.73 | 20260921-074701-task-0004-release-without-client |
 | 2026-09-21 | 0003 | docs | 4 | 3 | 0.75 | 20260921-081125-task-0003-cap-lifecycle |
+| 2026-09-21 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | 20260921-162213-task-0014-auto-routing |
 
-**Factor de calibración** (ratio mediano real/estimado, 29 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 30 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 23 | 0.52 |
-| infra/tooling | 3 | 0.7 |
+| infra/tooling | 4 | 0.88 |
 | patch | 2 | 0.8 |
 
 > Ver `estimation.md`.

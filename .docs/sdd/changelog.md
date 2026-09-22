@@ -12,6 +12,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Capacidades: slug en inglés y comportamiento solo en `capabilities/`** — una capacidad nueva nace con slug en inglés kebab-case (`spec-template`, `capability-template`, `sdd-start-task` paso 4), y los documentos de anclaje enlazan la capacidad en vez de copiar sus valores (`spec-template`, `plan-template`, paso de aprendizajes y red flag de `sdd-end-task`). → [ref](specs/20260921-081125-task-0003-cap-lifecycle/)
 - **Review de spec: la lente dominio mira los ejemplos** — punto 7 del encargo: marca los ejemplos, valores y fixtures de la spec que contradigan la constitution o nombren un cliente, proyecto o persona reales, aunque la constitution no lo prohíba. → [ref](specs/20260920-220930-task-0011-spec-review-lenses/)
 - **Destinatario de la release (`release.hasRecipient` en `sdd-kit.json`)** — sin destinatario no hay release notes ni email, «comprometida» no se pregunta, y merge y tag se ejecutan sin segunda ronda si el usuario ordenó el cierre y escribió la versión; si falta el campo, lo pregunta la primera skill del carril y solo lo escribe el usuario. → [ref](specs/20260921-074701-task-0004-release-without-client/)
+- **Auto-enrutado frente a superpowers** — hook `SessionStart` del plugin (`hooks/`) que, solo en proyectos con `.docs/sdd/`, manda las peticiones de trabajo a `sdd-start-task` antes que a `brainstorming`, los bugs a `sdd-start-patch` y las preguntas a `sdd-consult`; capacidad nueva `routing`. → [ref](specs/20260921-162213-task-0014-auto-routing/)
 
 ### Changed
 
@@ -19,6 +20,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Art. IV de la constitution del kit** — la cláusula del naming pasa de «id de ticket (0000 si no hay)» a los dos modos de numeración. → [ref](specs/20260920-202137-task-0001-task-ids/)
 - **Review de spec sin solape y con propuesta decidible** — con dos revisores, los puntos del encargo se reparten entre lentes y cada una tiene prohibido invadir los de la otra; la propuesta de nivel pasa de una línea a un bloque que dice qué comprobaría cada lente en esa spec y qué deja sin cubrir la opción mínima. → [ref](specs/20260920-220930-task-0011-spec-review-lenses/)
 - **`MODIFIED` copia el bloque entero del requisito** — la fusión lo sustituye entero y `(antes: …)` pasa a opcional; la letra de la plantilla deja de contradecir la fusión aditiva que ya hacían los agentes. → [ref](specs/20260921-081125-task-0003-cap-lifecycle/)
+- **`description` y frontmatter de las skills de arranque** — frases naturales en `sdd-start-task`, `sdd-start-patch` y `sdd-consult`; `sdd-start-task` excluye solo las ediciones sin comportamiento, no los cambios que caben en una frase; `argument-hint` en las tres y `user-invocable: false` en `sdd-templates`. → [ref](specs/20260921-162213-task-0014-auto-routing/)
 
 ### Fixed
 
