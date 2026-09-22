@@ -48,14 +48,15 @@
 | 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | 20260922-135640-patch-0027-script-arranque |
 | 2026-09-22 | 0028 | patch | — | 1 | — | 20260922-135817-patch-0028-end-release |
 | 2026-09-22 | 0020 | docs | 2 | 0.75 | 0.38 | 20260922-141616-task-0020-init-control-keys |
+| 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | 20260922-153902-task-0018-roadmap-closing |
 | 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | 20260922-154302-patch-0030-pre-merge-commit |
 
-**Factor de calibración** (ratio mediano real/estimado, 40 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 41 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 29 | 0.52 |
+| docs | 30 | 0.51 |
 | infra/tooling | 4 | 0.88 |
 | patch | 6 | 1.27 |
 
