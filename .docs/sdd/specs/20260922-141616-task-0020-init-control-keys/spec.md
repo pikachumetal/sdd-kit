@@ -4,7 +4,7 @@ task: 0020
 parent: 0012
 title: Claves de control en las entrevistas de las init
 mode: full
-status: approved
+status: done
 created: 2026-09-22
 author: Claude (hilo principal)
 approvers:
