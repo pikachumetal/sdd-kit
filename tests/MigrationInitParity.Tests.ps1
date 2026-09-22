@@ -100,3 +100,18 @@ Describe 'Configuración y log que deja la init' {
     Get-KitFile 'README.md' | Should -Match 'autoMemoryEnabled'
   }
 }
+
+Describe 'Proyecto de referencia' {
+  It 'la constitution lo lleva en Convenciones' {
+    Get-KitFile 'skills/sdd-templates/templates/constitution-template.md' |
+      Should -Match '(?s)## Convenciones.*\*\*Proyecto de referencia\*\*.*## Reglas de producto'
+  }
+
+  It 'greenfield lo pregunta como pregunta 21' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 21 \|.*proyecto de referencia'
+  }
+
+  It 'brownfield lo pregunta como pregunta 7' {
+    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 7 \|.*proyecto de referencia'
+  }
+}

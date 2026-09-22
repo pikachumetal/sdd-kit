@@ -39,6 +39,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    | 4 | Frenos: pregunta 3 del mismo bloque | `sdd-kit.json` |
    | 5 | ¿Llevamos changelog? | `changelog.md` |
    | 6 | Solo si 5 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
+   | 7 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
    Orden de generación y qué lleva cada documento: [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).

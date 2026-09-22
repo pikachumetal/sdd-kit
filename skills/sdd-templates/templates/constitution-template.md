@@ -13,6 +13,7 @@
 - **Idioma**: <idioma del texto humano (interfaz, docs, commits) y de los nombres de fichero>
 - **Ramas**: <convención de ramas; p. ej. `main` estable, `develop` de integración, `feature/<id>` desde `develop`>
 - **Commits**: <formato de los mensajes>
+- **Proyecto de referencia**: <ruta o repositorio cuyos patrones replica este proyecto, p. ej. `../orders-api` | no aplica>
 
 ## Reglas de producto
 
