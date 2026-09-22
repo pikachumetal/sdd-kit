@@ -68,7 +68,7 @@ created: 2026-09-22
 | --- | --- | --- | --- |
 | El sujeto commitea también otros ficheros con la reserva | media | bajo | el paso pide «solo `roadmap.md`» y el GREEN lo mira en `git show --stat` |
 | El camino nuevo se aplica al abrir una release | baja | medio | predicado observable: sección de release abierta en el roadmap |
-| La salida «worktree temporal» del paso 4 (rama de integración sin worktree) no tiene GREEN | media | medio | riesgo aceptado tras la revisión final (presupuesto agotado); fila de deuda en el roadmap |
+| La salida «worktree temporal» del paso 4 (rama de integración sin worktree) no tiene GREEN | media | medio | riesgo aceptado tras la revisión final (presupuesto agotado); pasa a la tabla de deuda del roadmap en el cierre |
 
 ### 1.8 Rollout
 

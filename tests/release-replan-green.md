@@ -31,7 +31,7 @@ Con n=1 tras el refuerzo, el veredicto de E3 se apoya también en los cinco suje
 
 ## Sin GREEN: `develop` sin worktree
 
-En los tres moldes, la rama de integración estaba sacada en algún worktree, así que la otra salida del paso 4 —un worktree temporal cuando no está en ninguno— no la ejercitó ningún sujeto. La destapó la revisión final. Queda como riesgo aceptado, porque el presupuesto de la campaña estaba agotado (11,83 de 12 $), y como fila de deuda del roadmap. La redacción de esa rama se concretó tras la revisión («en la misma carpeta que los demás worktrees y con un nombre corto»), sin nuevo GREEN.
+En los tres moldes, la rama de integración estaba sacada en algún worktree, así que la otra salida del paso 4 —un worktree temporal cuando no está en ninguno— no la ejercitó ningún sujeto. La destapó la revisión final. Queda como riesgo aceptado, porque el presupuesto de la campaña estaba agotado (11,83 de 12 $), y pasa a la tabla de deuda del roadmap en el cierre de la task. La redacción de esa rama se concretó tras la revisión («en la misma carpeta que los demás worktrees y con un nombre corto»), sin nuevo GREEN.
 
 ## No regresión
 
