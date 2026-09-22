@@ -109,6 +109,10 @@ Describe 'Build-EstimationLog.ps1' {
     Get-Row $script:Result.Text '20260918-100000-task-0016-miles' | Should -Be '| 2026-09-18 | 0016 | docs | 2 | 1 | 0.5 | 148k | 1230k | 1850 | 20260918-100000-task-0016-miles |'
   }
 
+  It 'no toca un decimal con punto, que lleva dos dígitos detrás' {
+    Get-Row $script:Result.Text '20260919-100000-task-0017-decimal' | Should -Be '| 2026-09-19 | 0017 | docs | — | 1 | — | — | — | 1.85 | 20260919-100000-task-0017-decimal |'
+  }
+
   It 'calcula el factor global como mediana de los ratios' {
     # Ratios ordenados: [0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 1, 1, 1, 1, 1, 2] → mediana 0.55, n = 14
     $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 14 artefactos\): \*\*0\.55\*\*'
