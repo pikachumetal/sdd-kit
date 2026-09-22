@@ -20,14 +20,28 @@ approvers:
 
 ## Decisiones que he tomado yo — valida estas
 
-REVIEW_BLOCK
+```text
+Review de spec propuesta: dos revisores — señales: contrato público (la cabecera `| id | Task | Origen | Ficheros que toca | Estado |` que lee el freno de alcance, y la línea `**Escribe**:` que lee el test), tres capacidades (onboarding, migration, roadmap), datos (pasos nuevos en `migrations/v1.2.0.md` que borran entradas de la memoria del usuario), área no explorada (`sdd-start-release` paso 5 y las migraciones v0.2.0–v1.1.0, que también reciben la línea `**Escribe**:`)
+- Dominio: si el campo nuevo de la constitution es en realidad un MODIFIED no declarado de «La init calca cada documento de su plantilla», y si «La memoria ya guardada se vuelca a los docs antes de borrarse» cubre una entrada que contradice lo que ya dicen los docs (señal: MODIFIED posible + datos)
+- Técnica: si la alcanzabilidad «a un salto» del test deja pasar una clave que solo está en un enlace de dos saltos, y si la cabecera de release de la plantilla choca con la de este repo (`Peticiones`, `Tamaño`) (señal: contrato público + área no explorada)
+- Mínimo razonable: solo técnica — deja sin mirar el requisito del volcado de memoria, que es el único que borra algo del usuario
+```
+
+Nivel elegido por el dev-lead: dos revisores.
 
 1. **El RED del frente del script de estimación reutiliza diez sujetos ya archivados**, sin lanzar ninguno nuevo. `tech-stack.md` admite un stream previo como baseline. Las campañas de init de las tasks 0012, 0013 y 0020 dejaron `estimation-log.md` en disco: 0 de 10 ejecutaron `Build-EstimationLog.ps1`, 6 lo dejaron en 0 bytes y 4 inventaron una cabecera. Uno de esos 4 escribió «Generado por `Build-EstimationLog.ps1`» sin haberlo ejecutado (0020 `red/out/bf-b`). Ninguno escribió `.claude/settings.json` ni tocó `.gitignore`. Evidencia en `red/README.md`.
-2. **La init ejecuta `Build-EstimationLog.ps1` desde el kit** en vez de crear el log «vacío». Verificado sobre un proyecto sin specs: exit 0, cabecera `<!-- AUTO-GENERADO …` y tabla sin filas. La red flag «El estimation-log nace con contenido» pasa a decir «con filas», porque la cabecera ya es contenido.
-3. **`.claude/settings.json` se crea o se fusiona con `"autoMemoryEnabled": false`, sin tocar las demás claves.** Si la clave ya está a `true`, se pregunta antes de cambiarla: puede ser una decisión explícita del proyecto.
+2. **La init ejecuta `Build-EstimationLog.ps1` desde el kit** en vez de crear el log «vacío». Verificado sobre un proyecto sin specs: exit 0, cabecera `<!-- AUTO-GENERADO …` y tabla sin filas. La red flag «El estimation-log nace con contenido» pasa a decir «con filas», porque la cabecera ya es contenido. Una init no puede encontrar una copia heredada del script: esa copia solo existe en un proyecto que ya tiene `.docs/sdd/`, y ese proyecto va por la migración, cuya v1.0.0 ya la retira.
+3. **`.claude/settings.json` se crea o se fusiona con `"autoMemoryEnabled": false`, sin tocar las demás claves.** Si la clave ya está a `true`, se pregunta antes de cambiarla, porque puede ser una decisión explícita del proyecto; esto vale igual en la init y en la migración. Si el usuario dice que no, la clave se queda en `true`, el resto sigue igual y el resumen de cierre lo anota.
 4. **`.gitignore` gana `.playwright-mcp/` y `.superpowers/` si faltan**, y se crea si no existe. Se añaden las líneas que faltan, sin duplicar.
-5. **Los pasos nuevos de la migración van a `v1.2.0.md` y no a una `v1.3.0.md`**: la 1.2.0 es la release en curso y no está publicada (`plugin.json` sigue en 1.1.0).
-6. **Volcado de la memoria ya guardada, con gate.** El paso lista cada entrada de la carpeta de memoria del proyecto con su destino en los docs, o con «ya está en `<doc>`». Vuelca y borra solo tras el «sí», y nunca borra una entrada que no se volcó. Sin dev-lead no se borra nada y el paso queda pendiente explícito. Motivo: al hacerlo a mano en este repo, 7 de 9 memorias ya estaban en `tech-stack.md`, así que el riesgo real es duplicar, no perder.
+5. **Los pasos nuevos de la migración van a `v1.2.0.md` y no a una `v1.3.0.md`**: la 1.2.0 es la release en curso y no está publicada (`plugin.json` sigue en 1.1.0). El orden de `v1.2.0.md` queda así:
+   1. Modo de ids (ya existe).
+   2. Claves de control (ya existe).
+   3. Configuración: `settings.json` y `.gitignore`. Sin gate, salvo la clave a `true`.
+   4. Memoria, con su propio gate.
+   5. Marcador.
+
+   Así el marcador sigue siendo lo último.
+6. **Volcado de la memoria ya guardada, con gate.** La carpeta es la que fija la doc de Claude Code: `~/.claude/projects/<project>/memory/`, o `autoMemoryDirectory` si el proyecto la redefine. La comparten todos los worktrees del repo. Cada entrada es un fichero de memoria del índice `MEMORY.md`. El paso lista cada entrada con su destino en los docs, o con «ya está en `<doc>`». Vuelca y borra solo tras el «sí», y nunca borra una entrada que no se volcó. Sin dev-lead no se borra nada y el paso queda pendiente explícito. Motivo: al hacerlo a mano en este repo, 7 de 9 memorias ya estaban en `tech-stack.md`, así que el riesgo real es duplicar, no perder.
 7. **«Proyecto de referencia» es un campo opcional de «Convenciones»** en `constitution-template.md`, y cada init lo pregunta una vez:
    - En greenfield va como pregunta 21, al final de la lista, para no renumerar las referencias a 11–20 del propio `SKILL.md`.
    - En brownfield va como pregunta 7.
@@ -39,8 +53,26 @@ REVIEW_BLOCK
    - Cada clave declarada aparece literal en cada una de las dos init: en su `SKILL.md`, en sus `references/` o en un `.md` que estos enlazan (un salto, que es como las init leen las claves de control de `control-profiles.md`).
 
    Deducir las claves del texto de la migración resultaba frágil: comodines como `control.silence.*` y claves que se mencionan pero no se escriben. La declaración cubre además `.claude/settings.json` y `.gitignore`, porque el Art. V dice «toda pregunta o dato», no solo `sdd-kit.json`. Para que el test pase, las init nombran literal `ids.mode`, que hoy dicen como «el campo `ids`».
-10. **«Ficheros que toca» va en la tabla de la sección de release** de `roadmap-template.md`, con la cabecera `| id | Task | Origen | Ficheros que toca | Estado |`. `sdd-start-release` la escribe al abrir una release. «Próximo» no la lleva: sus filas no son tasks planificadas y el freno ya dice «solape no comprobable» cuando falta.
+
+   **Retrofit**: de las migraciones publicadas, `v1.0.0.md` y `v1.1.0.md` nombran `sdd-kit.json` y reciben su línea; `v0.2.0.md` y `v0.4.0.md` no lo nombran y no se tocan. `migrations/README.md` no es una migración y el test no lo mira.
+
+   **Supuesto verificado**: hoy ninguna clave está a más de un salto. Las claves de control viven en `control-profiles.md`, que las dos init enlazan directamente.
+10. **«Ficheros que toca» va en la tabla de la sección «Release N»**, con la cabecera `| id | Task | Origen | Ficheros que toca | Estado |`. `roadmap-template.md` gana un bloque de ayuda propio para esa sección, que `sdd-start-release` añade bajo «Próximo»; la regla vive en esa ayuda y no en la de «Próximo». «Próximo» no lleva la columna: sus filas no son tasks planificadas, y el freno ya dice «solape no comprobable» cuando falta. El roadmap de este repo mantiene su cabecera propia (`Peticiones`, `Tamaño`), que ya incluye la columna: la plantilla no se retroaplica.
 11. **Sin capacidad nueva**: el delta toca `onboarding`, `migration` y `roadmap`, las tres existentes.
+12. **El README no lleva escenario**: es documentación, no conducta. Un test de la suite comprueba que cita `autoMemoryEnabled`.
+
+### Hallazgos de la review
+
+- **Aceptado** — (técnica 1, dominio 2, Crítico) el retrofit de las migraciones publicadas no estaba en el Scope → decisión 9 y Scope: `v1.0.0.md` y `v1.1.0.md` reciben la línea; `v0.2.0.md` y `v0.4.0.md` no nombran `sdd-kit.json` y no se tocan.
+- **Aceptado** — (técnica 2, Crítico) la carpeta de memoria y qué es una «entrada» no estaban definidas → decisión 6 y regla «Dónde viven los datos» de `migration`, con la ruta y la estructura que da la doc de Claude Code.
+- **Aceptado** — (técnica 3, dominio 1, Crítico) la cabecera de release se documentaba en la ayuda de «Próximo» → la regla apunta al bloque de ayuda propio de «Release N» (decisión 10).
+- **Aceptado** — (técnica 4) el THEN del proyecto de referencia no fijaba la posición de la pregunta → la añade: 21 en greenfield y 7 en brownfield.
+- **Aceptado** — (técnica 5) la alcanzabilidad «a un salto» no estaba comprobada contra el kit real → supuesto verificado y escrito en la decisión 9.
+- **Aceptado** — (técnica 6) faltaba el orden de los pasos de `v1.2.0.md` → decisión 5.
+- **Aceptado** — (técnica 7, Menor) faltaba el caso de una copia heredada del script en brownfield → decisión 2: no puede darse en una init.
+- **Aceptado** — (dominio 3) la migración no repetía la pregunta ante `autoMemoryEnabled: true` → añadida al THEN de `migration` (decisión 3).
+- **Aceptado** — (dominio 4) faltaba qué pasa si el usuario responde que no → decisión 3 y los dos THEN: la clave se queda en `true` y el cierre lo anota.
+- **Aceptado** — (dominio 5) el README no tenía criterio de aceptación → decisión 12: comprobación en la suite, sin escenario porque no es conducta.
 
 ### Decisiones tomadas con el dev-lead
 
@@ -61,7 +93,7 @@ Además, faltan dos cosas en el propio kit:
 
 ## Scope
 
-- Entra: `.claude/settings.json` con `autoMemoryEnabled: false` en las dos init y en `migrations/v1.2.0.md`, con volcado de la memoria ya guardada · `.gitignore` con `.playwright-mcp/` y `.superpowers/` en las dos init y en la migración · las init ejecutan `Build-EstimationLog.ps1` desde `sdd-templates` · campo «Proyecto de referencia» en `constitution-template.md` y pregunta en las dos entrevistas · línea `**Escribe**:` en cada migración y test estructural que la vigila · columna «Ficheros que toca» en la tabla de release de `roadmap-template.md`, escrita por `sdd-start-release` · README: la memoria desactivada, junto a las dependencias.
+- Entra: `.claude/settings.json` con `autoMemoryEnabled: false` en las dos init y en `migrations/v1.2.0.md`, con volcado de la memoria ya guardada · `.gitignore` con `.playwright-mcp/` y `.superpowers/` en las dos init y en la migración · las init ejecutan `Build-EstimationLog.ps1` desde `sdd-templates` · campo «Proyecto de referencia» en `constitution-template.md` y pregunta en las dos entrevistas · línea `**Escribe**:` en `v1.0.0.md`, `v1.1.0.md` y `v1.2.0.md` (las que nombran `sdd-kit.json`), las init nombrando literal `ids.mode`, y test estructural que lo vigila · columna «Ficheros que toca» en la tabla de release de `roadmap-template.md`, escrita por `sdd-start-release` · README: la memoria desactivada, junto a las dependencias, con un test que lo comprueba.
 - No entra: lo partido a la 0033 (`capabilities/` al nacer, volcado inicial, funcional del usuario) y a la 0034 (`CLAUDE.md` en el gate, estado de init en curso, `VERSION` y canal) · la pregunta de `release.hasRecipient` en la entrevista · un aviso del hook `SessionStart` cuando la memoria sigue activa · migración del campo «Proyecto de referencia».
 
 ## Approach
@@ -77,7 +109,7 @@ Todo lo que la init deja en el proyecto sale de un solo sitio: el paso de estruc
 - WHEN crea la estructura del proyecto
 - THEN `.claude/settings.json` tiene `"autoMemoryEnabled": false` y conserva las demás claves que ya tuviera
 - AND `.gitignore` contiene las líneas `.playwright-mcp/` y `.superpowers/` una sola vez cada una
-- AND si `.claude/settings.json` ya tenía `"autoMemoryEnabled": true`, el agente pregunta antes de cambiarlo
+- AND si `.claude/settings.json` ya tenía `"autoMemoryEnabled": true`, el agente pregunta antes de cambiarlo; si el usuario dice que no, la clave se queda en `true` y el resumen de cierre lo anota
 
 **ADDED — El log de estimación lo genera el script del kit**
 - GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
@@ -87,7 +119,7 @@ Todo lo que la init deja en el proyecto sale de un solo sitio: el paso de estruc
 
 **ADDED — La constitution nombra el proyecto de referencia**
 - GIVEN una init greenfield o brownfield en su entrevista
-- WHEN el agente pregunta si el proyecto replica los patrones de otro
+- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 21 de greenfield y la 7 de brownfield
 - THEN la constitution lleva en «Convenciones» la entrada «Proyecto de referencia» con la ruta o el repositorio que el usuario dé, o «no aplica» si responde que no
 
 ### Capacidad: `migration`
@@ -96,6 +128,7 @@ Todo lo que la init deja en el proyecto sale de un solo sitio: el paso de estruc
 - GIVEN un proyecto que migra a v1.2.0 sin `"autoMemoryEnabled": false` en `.claude/settings.json` o sin `.playwright-mcp/` y `.superpowers/` en `.gitignore`
 - WHEN se aplica `migrations/v1.2.0.md`
 - THEN el proyecto queda con la clave y las dos líneas, igual que tras una init, sin duplicar líneas ni tocar las demás claves
+- AND si la clave estaba a `true`, el agente pregunta antes de cambiarla; si el usuario dice que no, se queda en `true` y el informe lo anota
 - AND si ya estaban, el paso se salta y lo dice
 
 **ADDED — La memoria ya guardada se vuelca a los docs antes de borrarse**
@@ -111,6 +144,9 @@ Todo lo que la init deja en el proyecto sale de un solo sitio: el paso de estruc
 - THEN la migración declara en su línea `**Escribe**:` cada fichero y cada clave que escribe
 - AND la suite falla si una clave declarada no aparece literal en `sdd-init-greenfield` o en `sdd-init-brownfield`, contando su `SKILL.md`, sus `references/` y los documentos que estos enlazan
 
+**Reglas de la capacidad**
+- **Dónde viven los datos**: la memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. Lo que escribe cada migración, en su línea `**Escribe**:`.
+
 ### Capacidad: `roadmap`
 
 **ADDED — Cada task de una release declara los ficheros que toca**
@@ -120,7 +156,7 @@ Todo lo que la init deja en el proyecto sale de un solo sitio: el paso de estruc
 - AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra esa columna
 
 **Reglas de la capacidad**
-- **Dónde viven los datos**: la cabecera de la tabla de release, en el bloque de ayuda de «Próximo» de `roadmap-template.md`.
+- **Dónde viven los datos**: la cabecera de la tabla de release, en el bloque de ayuda de la sección «Release N» de `roadmap-template.md`.
 
 ## Enmiendas
 
