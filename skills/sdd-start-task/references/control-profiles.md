@@ -109,3 +109,16 @@ Conjunto cerrado:
 `control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0022.
 
 El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`).
+
+## Preguntas de las claves de control
+
+Las hacen `sdd-init-greenfield`, `sdd-init-brownfield` y la migración v1.2.0, con este texto: **una pregunta por turno**, cada una con su recomendación y su motivo. Se salta la que ya tiene su clave en `sdd-kit.json`. Se escribe solo lo que el usuario responde, y esa respuesta es su frase: anotarla no es el atajo autoconcedido.
+
+| # | Pregunta | Recomendada y motivo | Escribe |
+| --- | --- | --- | --- |
+| 1 | ¿Con qué perfil de control trabajáis: `pair`, `delegate` o `unattended`? | Recomendado `delegate`: para en la spec, en los desvíos y en la validación, y se ahorra el gate del plan; con menos paradas, la 0.6.0 cerró tres tasks en un día | `control.profile` |
+| 2 | Al cerrar una task, ¿fusiono a `<rama de integración>` con `--no-ff` y dejo que el worktree lo borre una persona? | Recomendado sí: `--no-ff` deja la task en un commit que se revierte de una vez, y borrar un worktree es irreversible si quedan cambios sin commit | «sí»: `merge` entero (`into`: la rama, `noFf: true`, `removeWorktree: false`); otra combinación dicha entera: esa; «no» o «no sé»: nada, y el cierre de task pregunta |
+| 3 | ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo? | Recomendado sí: son los defaults del kit; su conducta la define la task 0022 | «sí» o números propios: `control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`; «no sé»: nada, y rigen los defaults |
+
+- **Rama de integración** de la pregunta 2: la de la convención de ramas (greenfield) o la que se ve en el repo (brownfield). Si la integración va directa a la rama estable, la pregunta no se hace y `merge` queda sin declarar: el merge a la rama estable lo decide siempre una persona.
+- **Sin usuario**: las preguntas quedan pendientes explícitas en el informe o en el resumen de cierre, y rigen los defaults.

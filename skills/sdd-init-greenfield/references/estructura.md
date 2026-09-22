@@ -14,7 +14,7 @@
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de patches · calca roadmap-template.md)
 │       ├── estimation.md     (método · calca estimation-template.md) · estimation-log.md (VACÍO: se llena con las tareas)
 │       ├── changelog.md      (opcional, según entrevista · calca changelog-template.md)
-│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated" })
+│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids", "control"?, "merge"? }; `control` y `merge`, solo con lo respondido)
 │       └── specs/            (vacía)
 ```
 
