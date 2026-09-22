@@ -1,0 +1,63 @@
+===== r2-t1.jsonl
+ TOOL Skill sdd-kit:sdd-start-release
+ TOOL Bash find "$(pwd)" -maxdepth 2 -iname "sdd*" 2>/dev/null; echo "---"; ls -la
+ TOOL Bash find .docs/sdd -maxdepth 3 | sort
+ TOOL Read <scratchpad>/r2\.docs\sdd\roadmap.md
+ TOOL Read <scratchpad>/r2\.docs\sdd\sdd-kit.json
+ TOOL Read <scratchpad>/r2\.docs\sdd\changelog.md
+ TOOL Bash find . -iname "*NextSddId*" 2>/dev/null; find . -path ./.git -prune -o -iname "*.ps1" -print 2>/dev/null
+ TOOL Read <scratchpad>/r2\.docs\sdd\specs\20260915-090000-task-0005-recurring\spec.md
+ TOOL Bash find "<scratchpad>/kit" -iname "*NextSddId*" 2>/dev/null
+ TOOL Bash find .docs/sdd/specs -maxdepth 1; echo "---branches---"; git branch -a 2>/dev/null | grep -i 0006
+ TOOL Read <scratchpad>/kit\skills\sdd-templates\scripts\Get-NextSddId.ps1
+ TOOL Bash cd "<scratchpad>/r2" && pwsh -NoProfile -File "<local>
+ COST 0.3608414 turns 14
+ FINAL: Reviso el roadmap actual y el kit para preparar la propuesta. Antes de tocar `roadmap.md` necesito tu confirmación (gate obligatorio del kit): quién entra, en qué orden y con qué ids.
+
+**Contexto que ya tengo:**
+- Release 0.4.0 sigue "en preparación" (`hasRecipient: false`, no se pregunta).
+- 0005 (recurrente semanal) cerrada ✅ — su spec dejó explícito en "No entra": *"Fin por número de repeticiones"*. No es un olvido, fue excluido a propósito → toca como task nueva, no reabrir 0005.
+- 0006 (aviso 30 min antes) sigue 🔄 en curso en `feature/0006`, scope original solo cubre el aviso previo, no la cancelación.
+- 0007 (`.ics` export+import) aún ⏳ sin arrancar, sin spec ni rama → se puede partir sin conflicto.
+- Ids en modo `sequence`; siguiente libre es `0008` (0007 ya está reservado).
+
+**Propuesta de scope** (orden por riesgo/dependencia):
+
+| id | Task | Ficheros | Depende de | Bloqueo |
+| --- | --- | --- | --- | --- |
+| 0006 | (ya en curso, sin cambios) | `src/notify.js`, `src/app.js` | — | ninguno |
+| 0009 | Fin de recurrencia por número de repeticiones | `src/recurring.js`, `src/app.js` | 0005 (cerrada) | ninguno |
+| 0010 | Aviso por correo al cancelar una reserva | `src/notify.js`, `src/app.js` | 0006 debe estar cerrada primero (reutiliza el envío) | 🔒 esperar merge de `feature/0006` |
+| 0007 | Exportar reservas propias a `.ics` | `src/ics.js` | — | ninguno |
+| 0008 | Importar reservas desde `.ics` | `src/ics.js` | 0007 (comparte formato) | ninguno |
+
+¿Confirmas este scope y orden, o cambias algo (ids, orden, ficheros)?
+===== r2-t2.jsonl
+ TOOL Edit <scratchpad>/r2\.docs\sdd\roadmap.md
+ TOOL Skill sdd-kit:sdd-start-task
+ TOOL Bash find .docs/sdd -maxdepth 1 -type f; find .docs/sdd -iname "architecture.md" -o -iname "capabilities" 2>/dev/null; git branch --all 2>/dev/null; git rev-parse --abbrev-ref HEAD
+ TOOL Read <scratchpad>/r2\.docs\sdd\constitution.md
+ TOOL Read <scratchpad>/r2\.docs\sdd\mission.md
+ TOOL Read <scratchpad>/r2\.docs\sdd\tech-stack.md
+ TOOL Read <scratchpad>/kit\skills\sdd-start-task\references\modo-lite.md
+ TOOL Read <scratchpad>/kit\skills\sdd-start-task\references\nombrado.md
+ TOOL Read <scratchpad>/kit\skills\sdd-start-task\references\control-profiles.md
+ TOOL Read <scratchpad>/r2\src\recurring.js
+ TOOL Read <scratchpad>/r2\src\app.js
+ TOOL Bash find test -iname "*recurring*"
+ TOOL Bash find test -type f
+ COST 0.618856 turns 15
+ FINAL: Task 0009, carril **task** (interpreta requisito, no es bug determinista → no patch).
+
+Modo — cumple las condiciones de lite:
+- Flujo existente y legible: `src/recurring.js` (`weeklyOccurrences`) y `src/app.js` (`bookWeekly`).
+- No rompe contrato público: añade un parámetro opcional (`count`), las llamadas existentes con `untilDate` siguen igual.
+- No toca schema de datos ni migración: `bookings` es un array en memoria, sin persistencia.
+- Cabe en un solo módulo/área: `recurring.js` + su cableado en `app.js`.
+- No hay `estimation.md` en el proyecto → condición no aplica.
+
+Propongo **modo lite** (spec corta, sin `plan.md`).
+
+Perfil vigente: `delegate` (default de `sdd-kit.json`) — paro en la spec y en la validación, sin gate de plan.
+
+¿Confirmas lite y perfil `delegate` para esta task?

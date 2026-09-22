@@ -32,6 +32,8 @@
 
 ## Anatomía de una skill del kit
 
+**Placeholders de una receta**: todo hueco de una plantilla o receta declara **su tipo con un ejemplo real del dominio del documento** ([walkthrough](specs/<carpeta>/walkthrough.md)), no solo su contenido semántico. Con <enlace> a secas, dos sujetos escribieron un enlace Markdown y dos la ruta suelta; con el tipo y el ejemplo, 2 de 2 (task 0018, 2026-09-22).
+
 1. **Frontmatter**: `name` (inglés kebab) + `description` que SOLO describe cuándo usarla (nunca resume el workflow — los agentes seguirían la description y se saltarían el cuerpo). Opcionales en uso desde la task 0014: `argument-hint` en las skills de arranque y `user-invocable: false` en `sdd-templates`; descartados `paths` (oculta la `description` hasta tocar un fichero) y `disable-model-invocation`. `claude plugin validate --strict` los acepta; fuera de Claude Code no está verificado.
 2. **Overview**: principio en 1-2 frases.
 3. **Gates/checklist**: pasos numerados; los ⛔ marcan puntos de parada que requieren al usuario.

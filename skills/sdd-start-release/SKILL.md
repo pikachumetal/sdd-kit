@@ -53,6 +53,28 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
    gates de aprobación uno a uno.
 7. **Changelog** *(si existe `changelog.md`)* — ver [priorizacion.md](references/priorizacion.md).
 
+## Replanificar la release en curso
+
+Si el roadmap ya tiene una sección de release abierta y el usuario pide meter trabajo en ella, triar notas o
+tickets, partir, mover o crear tasks, no se abre otra release: se replanifica la que hay. La decisión sigue
+siendo del usuario (gate del paso 2). Además:
+
+1. **Estado real antes de tocar nada** — el roadmap de tu worktree puede ir por detrás. Lee el de la rama de
+   integración (`git show develop:.docs/sdd/roadmap.md`, o la que fije la constitution) y, **por cada rama
+   `feature/*`** que liste `git branch --all`, su roadmap (`git show <rama>:.docs/sdd/roadmap.md`). Listar
+   las ramas no basta: lo que una rama partió o reservó solo está en su roadmap. Una task cerrada (✅ o 🧪)
+   en la rama de integración no recibe trabajo nuevo: va a una task nueva.
+2. **Una task en marcha no se toca** — con rama `feature/<id>` abierta o 🔄 en el roadmap, ni su fila ni su
+   spec cambian, aunque la nota sea de su tema: su rama las está editando y el cambio acaba en conflicto o en
+   un scope que nadie aprobó. El trabajo nuevo va a una task nueva con fila propia que dice que va tras ella.
+3. **Ids sin choque** *(en `sequence`)* — cada id nuevo es mayor que el que da `Get-NextSddId.ps1` y que
+   cualquier id de los roadmaps del paso 1: el script no ve lo que otra rama reservó sin fusionar.
+4. **Publicar la reserva** — tras la decisión del usuario, commitea en la rama de integración las filas nuevas
+   en un commit que solo toca `roadmap.md`: en el worktree donde está sacada (`git worktree list`) o, si no
+   está en ninguno, en un worktree temporal creado en la misma carpeta que los demás worktrees y con un nombre
+   corto (en Windows, una ruta larga falla con `Filename too long`). Hasta ese commit la reserva no
+   existe para los demás worktrees: ninguna task nueva se arranca antes.
+
 ## Red flags — STOP
 
 - Estás creando specs para todos los items del scope de golpe.
@@ -62,6 +84,9 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
 - Has movido items de backlog a la release por el énfasis verbal de un stakeholder.
 - Has escrito en el roadmap un id que no viene del gestor ni de la secuencia del proyecto (`Get-NextSddId.ps1` o fila ya reservada).
 - El usuario no ha confirmado el scope y ya estás editando el roadmap como definitivo.
+- Estás replanificando con el roadmap de tu worktree sin haber leído el de la rama de integración ni el de las ramas `feature/*`.
+- Vas a editar la fila o la spec de una task en marcha para meterle trabajo nuevo.
+- Vas a arrancar una task nueva con su fila sin commitear en la rama de integración.
 
 | Racionalización | Realidad |
 | --- | --- |
@@ -71,4 +96,7 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
 | "Congelo el scope en un doc aparte para auditarlo" | El roadmap versionado en git YA es auditable. Un segundo documento es el que nadie actualiza. |
 | "Arrastro la deuda técnica entera, así se salda" | La deuda entra por prerequisito o por decisión explícita, no por inercia — infla el scope y diluye el hito. |
 | "El encargo de 'dejarlo todo listo' ya autoriza arrancar la primera task" | "Listo" = propuesta ordenada con bloqueos claros. El scope no está decidido hasta que el usuario decide; sin esa decisión no se abre ninguna task. |
+| "El roadmap de mi worktree es el estado de la release" | Es el de tu base. Una task puede haberse cerrado en la rama de integración o haber reservado ids en su rama mientras tanto; sin leerlas, amplías tasks cerradas y repites ids. |
+| "Ya sé qué ramas hay y mi roadmap dice que la task está en curso; no hace falta abrir su roadmap" | Su rama puede haber partido la task y reservado ids que tu roadmap no tiene. El script tampoco los ve: sin leer ese roadmap, das el mismo id dos veces. |
+| "La nota es del tema de la task en marcha; la agrupo en su fila" | Su rama está editando esa fila y esa spec. Agruparla ahí provoca el conflicto al cerrarla y le cambia un scope aprobado: va a una task nueva tras ella. |
 | "Propongo numeración correlativa de tickets para adelantar" | Un id inventado en el roadmap se confunde con un ticket real para siempre. El id lo da el gestor, o la secuencia del proyecto (`ids.mode: sequence` + `Get-NextSddId.ps1`) — nunca un número a ojo. |
