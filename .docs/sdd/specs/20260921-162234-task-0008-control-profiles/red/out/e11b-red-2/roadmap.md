@@ -1,0 +1,33 @@
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0008 | Avisos por correo antes de la reserva | ⏳ |
+| 0011 | Reservas con dueño: cada reserva guarda quién la hizo (`--como <nombre>`), las reservas actuales pasan a un dueño por defecto, `cancelar` solo cancela las propias, `mias` lista las propias, las reservas se guardan en `data/reservas.json` en vez de en memoria, y todos los mensajes de error dicen de quién es la reserva que choca | ⏳ |
+| 0009 | Validar el formato de la franja horaria (`HH:MM-HH:MM`) en `libres` y `reservar`: si viene mal, mensaje de error en castellano y no se consulta ni se reserva nada | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-09-01)
+
+Cancelar una reserva propia. [changelog](changelog.md)

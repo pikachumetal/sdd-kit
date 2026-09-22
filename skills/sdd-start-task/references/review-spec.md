@@ -15,11 +15,12 @@ Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gat
 | Área no explorada | la spec toca código o documentos que no has leído en esta sesión |
 | Reglas de visibilidad o permiso | el delta introduce un rol, un estado o una condición que decide **qué no debe ver o hacer** alguien (el funcional suele decir qué hace cada rol y callar lo que no debe) |
 
-## 2. Propón el nivel
+## 2. Decide si recomiendas review
 
-- **0–1 señales → sin review.**
-- **2–3 → un revisor.** Lente **dominio** si pesan capacidad nueva o `MODIFIED`; lente **técnica** si pesan contrato, datos o dependencia.
-- **4 o más, o contrato público + datos → dos revisores** en paralelo (una lente cada uno).
+- **Por defecto, ninguna.** 0–3 señales no proponen review.
+- **4 señales o más, o contrato público + datos → recomienda dos revisores** en paralelo (una lente cada uno).
+
+En `pair` y `delegate`, si toca recomendar, lo preguntas **antes de presentar la spec**, en una sola pregunta con su motivo. En `unattended` el agente decide él mismo, sin preguntar, y lo registra con el mismo bloque en «Decisiones que he tomado yo».
 
 El nivel se presenta como el **bloque que abre** «Decisiones que he tomado yo — valida estas», con esta forma:
 
@@ -41,9 +42,9 @@ Review de spec propuesta: dos revisores — señales: contrato público (el webh
 - Mínimo razonable: solo técnica — deja sin mirar el complemento del rol nuevo, el tipo de hueco que no se ve hasta que alguien accede a lo que no debía
 ```
 
-**Proponer no es activar**: el usuario activa con su respuesta. Si no responde, la spec se presenta sin review y se anota.
+**Proponer no es activar**: el usuario activa con su respuesta a esta pregunta, antes de ver la spec.
 
-## 3. Despacha el revisor (si el usuario activa)
+## 3. Despacha el revisor (si se activa: por el usuario, o por el agente en `unattended`)
 
 Subagente `general-purpose`, **modelo Sonnet, effort medium**, uno por lente. Los puntos del encargo **se reparten según cuántos revisores despaches**:
 

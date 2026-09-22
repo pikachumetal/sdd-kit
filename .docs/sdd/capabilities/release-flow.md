@@ -87,6 +87,12 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - THEN tiene la forma `smoke: <fecha> · <N> hallazgos (<qué se ejecutó>; <M> corregidos en la release)`, donde N cuenta solo defectos del comportamiento entregado detectados por el smoke sobre la rama integrada
 - AND si no se ejecutó smoke, la línea es `smoke: pendiente`
 
+### El smoke de la release valida las tasks diferidas a él
+- GIVEN una release con tasks `🧪 validación diferida a <esta release>`
+- WHEN el dev-lead valida el smoke de la release en `sdd-end-release`, diciendo qué probó
+- THEN cada una de esas tasks gana una adenda fechada en su walkthrough con lo que el dev-lead probó que le toca, y su fila pasa a ✅
+- AND una task que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>` (la siguiente release, salvo que el dev-lead diga otro), y el cierre la lista
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: si la release tiene destinatario vive en `.docs/sdd/sdd-kit.json` (`release.hasRecipient`, booleano), junto a `version` e `ids`. El nombre del destinatario no se guarda en la configuración.
@@ -112,3 +118,4 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED En modo tracker, el cierre lista los tickets
 - 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El acta solo se escribe si hay fuente (acotado a `hasRecipient: false`: con cliente, preguntar por la demo es pertinente)
 - 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED La línea de smoke se cuenta igual en todas las releases
+- 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El smoke de la release valida las tasks diferidas a él (con la forma de la 🧪 no validada de la segunda enmienda)

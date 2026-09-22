@@ -51,7 +51,13 @@ gate en solitario.
    destinatario, el paso se omite: basta el changelog sellado. Receta, prohibiciones y la entrada del
    roadmap sin destinatario: [notas-y-roadmap.md](references/notas-y-roadmap.md).
 6. **Colapsar el roadmap** — ANTES de sustituir nada, rescata los pendientes vivos de la sección de la
-   release. Procedimiento: [notas-y-roadmap.md](references/notas-y-roadmap.md).
+   release. Si hay tasks `🧪 validación diferida a <esta release>`, antes de colapsar pide al dev-lead que
+   valide el smoke diciendo qué probó: cada task que menciona gana una adenda fechada en su
+   `walkthrough.md` con lo que le toca y su fila pasa a `✅`; la que no menciona **conserva la forma**
+   `🧪 validación diferida a <disparador nuevo>` — la siguiente release, salvo que el dev-lead nombre otro
+   disparador — y el resumen de cierre la lista. Estados del roadmap:
+   [control-profiles.md](../sdd-start-task/references/control-profiles.md).
+   Procedimiento del colapso: [notas-y-roadmap.md](references/notas-y-roadmap.md).
 7. **Versión + tag** — bump con el tooling del proyecto y deja la rama lista. ⛔ **GATE: el merge al
    branch estable y el tag son SIEMPRE decisión del usuario** — prepáralos, preséntalos y espera su
    confirmación explícita; usuario ausente → quedan PENDIENTES en tu informe final. **Atajo, solo si se

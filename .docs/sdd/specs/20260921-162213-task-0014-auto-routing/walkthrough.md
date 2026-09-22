@@ -29,7 +29,9 @@ created: 2026-09-22
 - **README** (`0584d31`): sección «Enrutado automático», con el límite del canal `npx`.
 - **Capacidad nueva** [`routing`](../../capabilities/routing.md), fusionada en este cierre desde el delta.
 - **Roadmap** (`034aa60`): fila de deuda sobre Codex.
-- **Integración** (`c7e31c5`): `develop` había avanzado con un commit que solo tocaba `roadmap.md`. Se integró antes de escribir los docs de cierre y se repitió la suite.
+- **Integración con `develop`, dos veces**:
+  - `c7e31c5`, antes de escribir los docs de cierre: `develop` había avanzado con un commit que solo tocaba `roadmap.md`.
+  - Justo antes del merge, `develop` ya traía la 0008 (perfiles de control). Chocaron `changelog.md`, `roadmap.md` y `estimation-log.md`, y `sdd-start-task/SKILL.md` se fusionó solo: la `description` de la 0014 en el frontmatter y los pasos de la 0008 en el cuerpo. Tras integrar se repitió la suite, y este cierre sigue la versión de `sdd-end-task` y de la plantilla que trae la 0008.
 
 ## 2. Tiempo: estimado vs real
 
@@ -59,9 +61,12 @@ created: 2026-09-22
 - **Hardening después de la revisión final** (`c544031`). El dev-lead preguntó por qué no se copiaba `run-hook.cmd` de superpowers. Al revisarlo apareció un `bash` literal en el `command`, además de `"shell": "bash"`: era una segunda resolución por PATH, que en esta máquina es WSL. No fallaba, pero dependía de un comportamiento no documentado de Claude Code. El dev-lead eligió quitarlo en vez de copiar el wrapper.
 - **La regresión que introdujo ese fix** (`896dd50`). Sin `bash` delante, el script se ejecuta por ruta, y estaba en 100644. En Linux y macOS eso da «Permission denied»; en Windows no se ve, porque Git Bash ignora el bit. La cazó el revisor del fix en línea (paso 9), que la marcó Critical. Se corrigió con `chmod +x` y con un test que exige 100755. Además, los tests de conducta, que invocaban `bash script` (la ruta vieja), pasan a ejecutar el comando real.
 - **Task 6 (`using-sdd`) no se ejecutó**: el GREEN cumplió la decisión 4 de la spec.
-- **Decisiones tomadas sin el dev-lead** (rulings del ledger):
-  - El test RED se movió con `git mv` desde un fichero ya commiteado. Coste si fallaba: ninguno.
-  - Las Tasks 1, 3, 4 y 5 se ejecutaron en línea, con el motivo escrito en el plan.
+
+### Decisiones tomadas sin el dev-lead
+
+- El test RED del hook se movió con `git mv` desde un fichero ya commiteado, cuando el plan lo suponía sin seguir — el contenido del test no cambia — coste si está mal: ninguno.
+- El paquete de la revisión final se regeneró sin `red/` — el de `review-package` pesaba 4,1 MB por los streams y no cabía con provecho en el contexto del revisor — coste si está mal: el revisor final no vio los streams, solo su resumen en `tests/auto-routing-*.md`.
+- Los conflictos de la integración con la 0008 (`changelog.md`, `roadmap.md`) se resolvieron conservando las dos entradas, ordenadas por id, y `estimation-log.md` se regeneró con el script — coste si está mal: una entrada fuera de orden, sin pérdida.
 
 ## 4. Verificación
 
@@ -118,3 +123,7 @@ created: 2026-09-22
   - `.claude/skills/` no existe en este repo.
   - Las skills del kit se revisaron: la frase «cambio en una frase» de `overrides-superpowers.md` y la tabla de `sdd-start-task` conviven con la nueva `description`. Los controles del GREEN (typo y renombrado directos) muestran que no chocan.
   - No se editan: sin fallo medido no hay guidance (Art. I).
+
+## 6. Adendas
+
+_Ninguna._
