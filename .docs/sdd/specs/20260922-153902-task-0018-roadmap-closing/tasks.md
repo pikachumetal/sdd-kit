@@ -16,15 +16,15 @@ created: 2026-09-22
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Receta, citas, capacidad y GREEN | in_progress | — | en línea |
-| 2 | Normalizar este roadmap | pending | — | en línea |
-| 3 | Disparador observable en `tech-stack.md` | pending | — | en línea |
+| 1 | Receta, citas, capacidad y GREEN | done | f688ecc · (este commit) | en línea; capacidad a la fusión del cierre (ruling); enlace Markdown precisado tras GREEN ronda 1 |
+| 2 | Normalizar este roadmap | done | 4bb291b | en línea |
+| 3 | Disparador observable en `tech-stack.md` | done | dc923d0 | en línea |
 
 ## Verificación por task
 
-- [ ] Task 1 — `RoadmapClosing.Tests.ps1` en verde + GREEN 4 sujetos
-- [ ] Task 2 — casos del roadmap en verde + `grep` de conteo leído
-- [ ] Task 3 — lectura del diff
+- [x] Task 1 — `RoadmapClosing.Tests.ps1` en verde + GREEN 4 sujetos
+- [x] Task 2 — casos del roadmap en verde + `grep` de conteo leído
+- [x] Task 3 — lectura del diff
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

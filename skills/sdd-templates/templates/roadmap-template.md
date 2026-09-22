@@ -24,7 +24,7 @@
 > - Saldada entera: `**[<Task|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`
 > - Saldada en parte: `**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**`
 >
-> El enlace va al `walkthrough.md` de la task o al `patch.md` del patch. Las filas saldadas se cuentan con `grep -E '^\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '`; las demás siguen abiertas.
+> `<enlace>` es un enlace Markdown, no una ruta suelta: `[walkthrough](specs/<carpeta>/walkthrough.md)` para una task, `[patch](specs/<carpeta>/patch.md)` para un patch. Las filas saldadas se cuentan con `grep -E '^\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '`; las demás siguen abiertas.
 
 | Ítem | Impacto | Destino |
 | --- | --- | --- |
