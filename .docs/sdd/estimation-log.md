@@ -39,13 +39,14 @@
 | 2026-09-21 | 0003 | docs | 4 | 3 | 0.75 | 20260921-081125-task-0003-cap-lifecycle |
 | 2026-09-21 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | 20260921-162213-task-0014-auto-routing |
 | 2026-09-21 | 0008 | docs | 6 | 2.6 | 0.43 | 20260921-162234-task-0008-control-profiles |
+| 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | 20260922-090037-task-0012-init-interview |
 
-**Factor de calibración** (ratio mediano real/estimado, 31 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 32 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 24 | 0.51 |
+| docs | 25 | 0.52 |
 | infra/tooling | 4 | 0.88 |
 | patch | 2 | 0.8 |
 

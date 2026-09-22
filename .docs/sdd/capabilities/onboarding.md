@@ -11,7 +11,31 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - AND una regla que difiere por capacidad se lista por capacidad dentro de su entrada
 - AND el bloque de proceso ha decidido además el modo de ids del proyecto, que se escribe en `sdd-kit.json`
 
+### La entrevista hace una sola pregunta por turno
+- GIVEN una init greenfield en su entrevista
+- WHEN el agente pregunta al usuario
+- THEN cada turno termina con una única pregunta de la lista de la entrevista
+- AND convención de ramas, worktrees y entorno del worktree son preguntas distintas, en turnos distintos
+
+### La pregunta de ramas recomienda git-flow
+- GIVEN una init greenfield que llega a la convención de ramas
+- WHEN el agente la pregunta
+- THEN la opción recomendada es git-flow: `main` estable, `develop` de integración y `feature/<id>` desde `develop`
+- AND el usuario puede elegir otra, y se registra la que elija
+
+### Lo que fijan las instrucciones del usuario no se pregunta
+- GIVEN unas instrucciones del usuario (`CLAUDE.md` global o del proyecto) que ya fijan un punto de la entrevista, p. ej. el formato de commit o el idioma del código
+- WHEN la entrevista llega a ese punto
+- THEN el agente no lo pregunta: la constitution lo referencia
+
+### Git sobre un repo existente
+- GIVEN una init greenfield sobre un repo que ya existe y cuyas ramas o remoto no siguen la convención acordada
+- WHEN la init llega al paso de git
+- THEN el agente presenta el plan completo (renombrados, ramas nuevas, rama por defecto del remoto, borrados) y espera la confirmación antes de ejecutar nada
+- AND las operaciones sobre el remoto las ejecuta el usuario, con los comandos que le da el agente
+
 ## Historial
 
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — ADDED La entrevista fija las cinco reglas de producto
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED La entrevista fija las cinco reglas de producto
+- 2026-09-22 — 20260922-090037-task-0012-init-interview — ADDED La entrevista hace una sola pregunta por turno · ADDED La pregunta de ramas recomienda git-flow · ADDED Lo que fijan las instrucciones del usuario no se pregunta · ADDED Git sobre un repo existente
