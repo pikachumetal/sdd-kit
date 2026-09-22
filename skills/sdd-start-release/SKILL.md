@@ -71,7 +71,8 @@ siendo del usuario (gate del paso 2). Además:
    cualquier id de los roadmaps del paso 1: el script no ve lo que otra rama reservó sin fusionar.
 4. **Publicar la reserva** — tras la decisión del usuario, commitea en la rama de integración las filas nuevas
    en un commit que solo toca `roadmap.md`: en el worktree donde está sacada (`git worktree list`) o, si no
-   está en ninguno, en un worktree temporal de ruta corta junto a los demás. Hasta ese commit la reserva no
+   está en ninguno, en un worktree temporal creado en la misma carpeta que los demás worktrees y con un nombre
+   corto (en Windows, una ruta larga falla con `Filename too long`). Hasta ese commit la reserva no
    existe para los demás worktrees: ninguna task nueva se arranca antes.
 
 ## Red flags — STOP

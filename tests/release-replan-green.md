@@ -29,6 +29,10 @@ El fallo de s2 era leer la lista de ramas y dar el paso por hecho. El paso 1 pas
 
 Con n=1 tras el refuerzo, el veredicto de E3 se apoya también en los cinco sujetos que ya lo cumplían con la primera redacción.
 
+## Sin GREEN: `develop` sin worktree
+
+En los tres moldes, la rama de integración estaba sacada en algún worktree, así que la otra salida del paso 4 —un worktree temporal cuando no está en ninguno— no la ejercitó ningún sujeto. La destapó la revisión final. Queda como riesgo aceptado, porque el presupuesto de la campaña estaba agotado (11,83 de 12 $), y como fila de deuda del roadmap. La redacción de esa rama se concretó tras la revisión («en la misma carpeta que los demás worktrees y con un nombre corto»), sin nuevo GREEN.
+
 ## No regresión
 
 - La apertura de release no se ejecutó en ningún escenario: la sección nueva solo se aplica con una release abierta en el roadmap, y el checklist de apertura no cambia.
