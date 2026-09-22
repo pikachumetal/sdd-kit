@@ -1,5 +1,7 @@
 # sdd-kit — Guía para Claude
 
+Arranca las sesiones de este repo con `./Start-KitSession.ps1` (acepta argumentos extra, p. ej. `--model sonnet`): carga las skills del working tree y deshabilita el plugin publicado, que el `.claude/settings.json` del repo activa.
+
 Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualquier tarea, lee los documentos de anclaje que apliquen — este fichero solo es el índice.
 
 ## Dónde está cada cosa
@@ -21,7 +23,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 ## Reglas críticas (detalle y justificación en la constitution)
 
 1. **Ley de hierro de skills** (Art. I): ninguna skill nueva ni edición de una existente — incluidos recortes y traducciones — sin ciclo RED→GREEN documentado en `tests/`.
-2. **Dogfooding** (Art. VII): los cambios no triviales del kit se arrancan con `sdd-start-task`; artefactos en `.docs/sdd/specs/` con el naming estándar. Fixes pequeños deterministas → carril patch. El flujo se sigue con las skills del **working tree** (`skills/`), no con las de la caché del plugin instalado: si difieren, mandan las del working tree. Antes de ejecutar un paso de una skill cargada por el harness, contrasta su texto con `skills/<nombre>/SKILL.md` de la rama. Mejor aún, arranca la sesión con el plugin del worktree y el instalado deshabilitado (la misma receta que los sujetos en `tech-stack.md`): `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir .` — tercer reporte de skills cargadas desde la caché (tickets 0003, 0004 y 0013); en sesión interactiva está por comprobar.
+2. **Dogfooding** (Art. VII): los cambios no triviales del kit se arrancan con `sdd-start-task`; artefactos en `.docs/sdd/specs/` con el naming estándar. Fixes pequeños deterministas → carril patch. El flujo se sigue con las skills del **working tree** (`skills/`), no con las de la caché del plugin instalado: si difieren, mandan las del working tree. Por eso la sesión se arranca con `./Start-KitSession.ps1` (comprobado en sesión interactiva en el patch 0027: el `Base directory` de la skill apunta al worktree; sin script, a la caché). Si la sesión no salió del script, antes de ejecutar un paso de una skill cargada por el harness contrasta su texto con `skills/<nombre>/SKILL.md` de la rama — cinco reportes de skills cargadas desde la caché (tickets 0003, 0004, 0013, 0005 y patch 0024).
 3. Texto humano en castellano con ortografía correcta; nombres de skill en inglés kebab-case; commits bilingües (tipo/scope inglés, cuerpo castellano).
 4. Cada release: bump de `version` en `.claude-plugin/plugin.json` + entrada en `.docs/sdd/changelog.md`.
 5. **Sin memoria automática**: este repo lleva `autoMemoryEnabled: false`. Lo que aprendas se escribe en los docs (`tech-stack.md`, `roadmap.md`, `constitution.md`), nunca en la memoria del agente: la memoria se queda en un PC, los docs van al repositorio.

@@ -115,9 +115,11 @@ Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sd
 
 Para probar el kit desde tu clon, arranca Claude Code con el plugin del working tree y el instalado deshabilitado:
 
-```bash
-claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir .
+```powershell
+./Start-KitSession.ps1
 ```
+
+El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir <raíz del clon>` y pasa detrás los argumentos que le des (por ejemplo, `--model sonnet`).
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
