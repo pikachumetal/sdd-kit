@@ -19,14 +19,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | Encargo de revisión y plantilla del plan | done | `1a1d6bc` | en línea |
-| 2 | Repaso de coherencia antes del gate | done | (este commit) | en línea |
-| 3 | GREEN | pending | — | 6 sujetos Sonnet |
+| 2 | Repaso de coherencia antes del gate | done | `be3c2f5` | en línea |
+| 3 | GREEN | done | (este commit) | 8 sujetos Sonnet, 2,71 $; R3 en dos rondas: afinada la frase del paso 4 |
 
 ## Verificación por task
 
 - [x] Task 1 — RED de las anclas (salida abajo) → `Invoke-Pester ./tests` verde
 - [x] Task 2 — RED del ancla del paso 4 → `Invoke-Pester ./tests` verde
-- [ ] Task 3 — cuatro frentes de la spec en verde
+- [x] Task 3 — cuatro frentes de la spec en verde
 
 ### Rojo de la Task 1 (antes de editar las skills)
 
