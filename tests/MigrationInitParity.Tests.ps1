@@ -64,3 +64,39 @@ Describe 'Paridad migración–init' {
     Get-KitFile 'skills/sdd-init-brownfield/references/migrations/README.md' | Should -Match '\*\*Escribe\*\*'
   }
 }
+
+Describe 'Configuración y log que deja la init' {
+  It '<_> deja autoMemoryEnabled a false, los temporales ignorados y el log del script' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
+    $corpus = Get-InitCorpus $_
+    foreach ($literal in '"autoMemoryEnabled": false', '.claude/settings.json', '.playwright-mcp/', '.superpowers/', 'Build-EstimationLog.ps1') {
+      $corpus.Contains($literal) | Should -BeTrue -Because "falta $literal"
+    }
+  }
+
+  It '<_> pregunta antes de cambiar autoMemoryEnabled a true' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
+    (Get-InitCorpus $_).Contains('"autoMemoryEnabled": true') | Should -BeTrue
+  }
+
+  It 'la red flag de greenfield habla de filas, no de contenido' {
+    $skill = Get-KitFile 'skills/sdd-init-greenfield/SKILL.md'
+    $skill | Should -Not -Match 'El estimation-log nace con contenido'
+    $skill | Should -Match 'estimation-log nace con filas'
+  }
+
+  It 'la migración a v1.2.0 ordena ids, control, configuración, memoria y marcador' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    $steps = [regex]::Matches($migration, '(?m)^\d\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
+    $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', 'Marcador')
+  }
+
+  It 'el paso de memoria nombra la carpeta, el índice y el gate de borrado' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    foreach ($literal in '~/.claude/projects/<project>/memory/', 'autoMemoryDirectory', 'MEMORY.md', 'pendiente explícito') {
+      $migration.Contains($literal) | Should -BeTrue -Because "falta $literal"
+    }
+  }
+
+  It 'el README cita autoMemoryEnabled' {
+    Get-KitFile 'README.md' | Should -Match 'autoMemoryEnabled'
+  }
+}

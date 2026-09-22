@@ -44,7 +44,9 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).
 5. **Estructura** — `.docs/sdd/` completa. Sin carpeta `templates/`: las plantillas viven en el skill
    `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves de control que el usuario respondió
-   (solo esas: «no sé» no escribe la clave).
+   (solo esas: «no sé» no escribe la clave). Además, `.claude/settings.json` con `"autoMemoryEnabled": false`
+   (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo), `.gitignore` con los
+   temporales de las herramientas y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
    Detalle: [generacion.md](references/generacion.md).
 6. **`CLAUDE.md` corto**: reescribirlo como punteros a los documentos + 3-5 reglas críticas. El contenido largo vive en los docs de anclaje, no aquí.
 7. **Cierre**: resumen + discrepancias y preguntas del paso 3 pendientes de confirmar + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
