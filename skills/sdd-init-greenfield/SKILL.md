@@ -38,17 +38,21 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    | 11 | ¿Llevamos changelog? | `changelog.md` |
    | 12 | Solo si 11 es sí: ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release`) | `client-changelog.md` |
    | 13 | ¿Hay gestor de tickets? | `CLAUDE.md` |
-   | 14 | ¿Cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` |
+   | 14 | ¿Cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` (`ids.mode`) |
    | 15 | ¿Qué convención de ramas? Recomendada, la del kit: git-flow — `main` estable, `develop` de integración, `feature/<id>` desde `develop` | constitution, paso 5 |
    | 16 | ¿Trabajaréis con worktrees? | `CLAUDE.md` |
    | 17 | Solo si 16 es sí: ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? Si es sí, se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre | `environments.md` |
    | 18 | Perfil de control: pregunta 1 del [bloque de claves de control](../sdd-start-task/references/control-profiles.md#preguntas-de-las-claves-de-control), con su recomendación y su motivo | `sdd-kit.json` |
    | 19 | Solo si 15 deja una rama de integración distinta de la estable: política de merge, pregunta 2 del mismo bloque | `sdd-kit.json` |
    | 20 | Frenos: pregunta 3 del mismo bloque | `sdd-kit.json` |
+   | 21 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
    Las preguntas 4 a 8 son las cinco reglas de producto: se preguntan por nombre, porque sin ellas el agente las decide al azar en cada task.
 2. **Generar documento a documento, con gate**: mission → presentar → aprobar; después constitution (con la sección «Reglas de producto»: las cinco por nombre, cada una respondida · pendiente · no aplica; si difiere por capacidad, por capacidad dentro de la entrada) → … Nada se da por anclaje sin aprobación explícita del usuario.
-3. **Estructura**: crear `.docs/sdd/` completa, `estimation-log.md` vacío y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`), el campo `ids` y las claves de control que el usuario respondió en 18–20 (solo esas: «no sé» no escribe la clave). Cada documento se **calca** de su plantilla de `sdd-templates` (lista en [estructura.md](references/estructura.md)): la forma es la de la plantilla y el contenido, el de la entrevista. Nunca se copia un documento del `.docs/` del kit ni de otro proyecto, y no se crea carpeta `templates/`.
+3. **Estructura**: crear `.docs/sdd/` completa y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`), el campo `ids` y las claves de control que el usuario respondió en 18–20 (solo esas: «no sé» no escribe la clave). Cada documento se **calca** de su plantilla de `sdd-templates` (lista en [estructura.md](references/estructura.md)): la forma es la de la plantilla y el contenido, el de la entrevista. Nunca se copia un documento del `.docs/` del kit ni de otro proyecto, y no se crea carpeta `templates/`. Además:
+   - `estimation-log.md` no se escribe a mano: se genera con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas. El script vive en el kit y no se copia al proyecto.
+   - `.claude/settings.json`: se crea, o se fusiona sin tocar las demás claves, con `"autoMemoryEnabled": false`. La memoria automática vive en una sola máquina, y lo que se aprende va a los docs. Si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo; si el usuario dice que no, se deja y el resumen de cierre lo anota.
+   - `.gitignore`: se añaden `.playwright-mcp/` y `.superpowers/` si faltan, sin duplicar líneas; se crea si no existe.
 4. **`CLAUDE.md` corto**: punteros a los documentos + reglas críticas. No duplicar contenido que ya vive en un doc de anclaje.
 5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista. Si el repo ya existe y sus ramas o su remoto no siguen esa convención, presenta el plan completo —renombrados, ramas nuevas, rama por defecto del remoto, borrados— y espera el «sí» antes de ejecutar nada. Lo que toca el remoto (push, rama por defecto, borrar ramas) lo ejecuta el usuario, con los comandos que le das.
 6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando `capabilities/` madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).
@@ -58,7 +62,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 - Estás escribiendo mission o constitution y el usuario no ha respondido la entrevista.
 - Has decidido tú el alcance del MVP, un rol o el stack "como propuesta razonable".
 - Estás creando `docs/`, `docs/superpowers/` o ADRs sueltos en vez de `.docs/sdd/`.
-- El estimation-log nace con contenido.
+- El estimation-log nace con filas, o escrito a mano en vez de generado por el script.
 
 | Racionalización | Realidad |
 | --- | --- |

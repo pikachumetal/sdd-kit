@@ -8,7 +8,12 @@
 | --- | --- | --- |
 | <id> | <qué> | ⏳ |
 
-> Una release abierta con `sdd-start-release` añade aquí debajo su sección `## Release <N>`, con una fila por task y su id reservado; `sdd-end-release` la colapsa al cerrar.
+> **Sección `## Release <N>`**: la añade aquí debajo `sdd-start-release` al abrir una release, con una fila por task y su id reservado; `sdd-end-release` la colapsa al cerrar. Cabecera literal de su tabla:
+>
+> | id | Task | Origen | Ficheros que toca | Estado |
+> | --- | --- | --- | --- | --- |
+>
+> «Ficheros que toca» nombra los ficheros o módulos que la task prevé tocar. La lee el freno de alcance de una enmienda para ver qué otras tasks abiertas comparten un fichero; sin la columna, el solape no se puede comprobar.
 
 ## Backlog
 

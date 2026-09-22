@@ -49,6 +49,24 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar
 - AND en brownfield sin usuario, las tres quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
 
+### La init deja la memoria automática desactivada y los temporales ignorados
+- GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
+- WHEN crea la estructura del proyecto
+- THEN `.claude/settings.json` tiene `"autoMemoryEnabled": false` y conserva las demás claves que ya tuviera
+- AND `.gitignore` contiene las líneas `.playwright-mcp/` y `.superpowers/` una sola vez cada una
+- AND si `.claude/settings.json` ya tenía `"autoMemoryEnabled": true`, el agente pregunta antes de cambiarlo; si el usuario dice que no, la clave se queda en `true` y el resumen de cierre lo anota
+
+### El log de estimación lo genera el script del kit
+- GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
+- WHEN crea `estimation-log.md`
+- THEN lo genera `Build-EstimationLog.ps1` ejecutado desde `sdd-templates/scripts/` del kit: la primera línea empieza por `<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit)` y la tabla no tiene filas
+- AND el proyecto no contiene ninguna copia del script
+
+### La constitution nombra el proyecto de referencia
+- GIVEN una init greenfield o brownfield en su entrevista
+- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 21 de greenfield y la 7 de brownfield
+- THEN la constitution lleva en «Convenciones» la entrada «Proyecto de referencia» con la ruta o el repositorio que el usuario dé, o «no aplica» si responde que no
+
 ## Historial
 
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — ADDED La entrevista fija las cinco reglas de producto
@@ -57,3 +75,4 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED La init calca cada documento de su plantilla
 - 2026-09-22 — 20260922-141616-task-0020-init-control-keys — MODIFIED La entrevista hace una sola pregunta por turno
 - 2026-09-22 — 20260922-141616-task-0020-init-control-keys — ADDED La entrevista fija las claves de control
+- 2026-09-23 — 20260922-211157-task-0019-init-files — ADDED La init deja la memoria automática desactivada y los temporales ignorados · ADDED El log de estimación lo genera el script del kit · ADDED La constitution nombra el proyecto de referencia

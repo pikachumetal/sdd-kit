@@ -4,6 +4,8 @@
 ```text
 /
 ├── CLAUDE.md                 (corto: punteros + 3-5 reglas críticas)
+├── .claude/settings.json     ("autoMemoryEnabled": false, fusionado con lo que ya tenga)
+├── .gitignore                (+ .playwright-mcp/ y .superpowers/)
 ├── .docs/
 │   └── sdd/
 │       ├── mission.md        (por qué existe, usuarios/roles, dominio · calca mission-template.md)
@@ -12,9 +14,9 @@
 │       ├── architecture.md   (cómo se construye · calca architecture-template.md)
 │       ├── capabilities/         (vacía: una capacidad por fichero, las crean las tasks)
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de patches · calca roadmap-template.md)
-│       ├── estimation.md     (método · calca estimation-template.md) · estimation-log.md (VACÍO: se llena con las tareas)
+│       ├── estimation.md     (método · calca estimation-template.md) · estimation-log.md (lo genera Build-EstimationLog.ps1: cabecera y 0 filas)
 │       ├── changelog.md      (opcional, según entrevista · calca changelog-template.md)
-│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids", "control"?, "merge"? }; `control` y `merge`, solo con lo respondido)
+│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids": { "mode" }, "control"?, "merge"? }, con `ids.mode` de la pregunta 14; `control` y `merge`, solo con lo respondido)
 │       └── specs/            (vacía)
 ```
 

@@ -29,13 +29,21 @@ created: <YYYY-MM-DD>
 
 ## Restricciones globales
 
-> Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— más los artículos de la constitution que aplican. Una línea por restricción. Escribe "ninguna" si no hay.
+> Dos bloques. Una línea por restricción; "ninguna" si un bloque no tiene.
 >
-> Incluye aquí la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto) y el **modo de ejecución** por defecto. Copia también, **literal**, el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código ni que citen documentos —constitution, spec, task, capacidad—, clean code, umbrales): viaja en el encargo del implementador **y de cada revisor**. Si la constitution del proyecto no tiene ese artículo, escribe aquí las dos reglas de comentarios igualmente.
->
-> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha debe entregársela — ver el paso de implementación de `sdd-start-task`.
+> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha le entrega el bloque «De código» — ver el paso de implementación de `sdd-start-task`.
+
+### De código
+
+> Viaja al implementador y a cada revisor. Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos—, el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código ni que citen documentos —constitution, spec, task, capacidad—, clean code, umbrales) y los comandos que el cambio tiene que dejar en verde. Si la constitution del proyecto no tiene artículo de calidad, escribe aquí las dos reglas de comentarios igualmente.
 
 - <restricción, con el valor exacto de la spec>
+
+### De proceso
+
+> El bloque «De proceso» es para quien despacha: no viaja al encargo de ningún revisor, porque un revisor audita lo que lee y convierte en hallazgo una regla que no es del código (medido en `tests/proportional-review-red.md`). Aquí van la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto), el **modo de ejecución** por defecto y las reglas de atribución de commits.
+
+- <regla de proceso>
 
 ---
 

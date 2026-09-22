@@ -33,18 +33,21 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 
    | # | Pregunta | Va a |
    | --- | --- | --- |
-   | 1 | ¿Cómo se numeran las tasks: ids del gestor de tickets (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` |
+   | 1 | ¿Cómo se numeran las tasks: ids del gestor de tickets (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` (`ids.mode`) |
    | 2 | Perfil de control: pregunta 1 del [bloque de claves de control](../sdd-start-task/references/control-profiles.md#preguntas-de-las-claves-de-control), con su recomendación y su motivo | `sdd-kit.json` |
    | 3 | Solo si el repo tiene una rama de integración distinta de la estable: política de merge, pregunta 2 del mismo bloque, con esa rama | `sdd-kit.json` |
    | 4 | Frenos: pregunta 3 del mismo bloque | `sdd-kit.json` |
    | 5 | ¿Llevamos changelog? | `changelog.md` |
    | 6 | Solo si 5 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
+   | 7 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
    Orden de generación y qué lleva cada documento: [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).
 5. **Estructura** — `.docs/sdd/` completa. Sin carpeta `templates/`: las plantillas viven en el skill
    `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves de control que el usuario respondió
-   (solo esas: «no sé» no escribe la clave).
+   (solo esas: «no sé» no escribe la clave). Además, `.claude/settings.json` con `"autoMemoryEnabled": false`
+   (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo), `.gitignore` con los
+   temporales de las herramientas y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
    Detalle: [generacion.md](references/generacion.md).
 6. **`CLAUDE.md` corto**: reescribirlo como punteros a los documentos + 3-5 reglas críticas. El contenido largo vive en los docs de anclaje, no aquí.
 7. **Cierre**: resumen + discrepancias y preguntas del paso 3 pendientes de confirmar + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
