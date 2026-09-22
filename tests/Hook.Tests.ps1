@@ -30,10 +30,23 @@ BeforeAll {
 }
 
 Describe 'hooks/hooks.json' {
+  BeforeAll {
+    $script:Config = Get-Content (Join-Path $script:HooksDir 'hooks.json') -Raw | ConvertFrom-Json
+    $script:Command = $script:Config.hooks.SessionStart[0].hooks[0].command
+  }
+
   It 'declara un hook SessionStart que ejecuta session-start' {
-    $config = Get-Content (Join-Path $script:HooksDir 'hooks.json') -Raw | ConvertFrom-Json
-    $command = $config.hooks.SessionStart[0].hooks[0].command
-    $command | Should -Match 'hooks/session-start'
+    $script:Command | Should -Match 'hooks/session-start'
+  }
+
+  It 'no antepone un bash literal al comando' {
+    # Un `bash` extra en el comando hace una segunda resolución por PATH, que en Windows
+    # puede encontrar el lanzador de WSL en vez de Git Bash (visto en Resolve-Bash arriba).
+    $script:Command | Should -Not -Match '^bash '
+  }
+
+  It 'delega la resolución del intérprete en el campo shell' {
+    $script:Config.hooks.SessionStart[0].hooks[0].shell | Should -Be 'bash'
   }
 }
 

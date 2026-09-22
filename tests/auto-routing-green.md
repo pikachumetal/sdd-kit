@@ -22,6 +22,8 @@ Verificación de la task [auto-routing](../.docs/sdd/specs/20260921-162213-task-
 
 Comprobación de que el hook del kit disparó: en los **17 streams**, el `hook_response` de `SessionStart` contiene `Este proyecto trabaja con el kit SDD` **exactamente una vez** (ni ausente ni duplicado), así que el verde no se debe a que el hook no corriera ni a una doble inyección. Salida del hook en Windows con Git Bash (`shell: bash`, sin wrapper): la duda de riesgo del plan queda resuelta.
 
+**Hardening post-revisión (2026-09-22)**: `hooks/hooks.json` tenía un `bash` literal delante del comando, además de `"shell": "bash"` — una segunda resolución por PATH que en esta máquina encuentra `C:\Windows\System32\bash.exe` (el lanzador de WSL sin distro, el mismo fallo de `Hook.Tests.ps1`). No llegó a fallar porque Claude Code resuelve `shell: bash` a Git Bash real, y dentro de ese proceso el PATH interno prioriza su propio `bin/`; pero era una suposición sobre el comportamiento de Claude Code, no algo documentado. Se quitó el `bash` redundante (`command` pasa a ser solo la ruta del script) y se añadió un test que lo cubre. Verificado el disparo del hook desde **PowerShell real** (no solo Git Bash, que es lo que usa `subject.sh`) antes y después del cambio, y los 7 sujetos de `h1`/`h4`/`t1` repetidos dan el mismo resultado tras el fix: 7 de 7 idénticos.
+
 Suite Pester: 224 verdes, 0 fallos, 6 saltados (los previos). `claude plugin validate --strict skills` acepta `argument-hint` y `user-invocable`.
 
 Coste: 17 sujetos, 3,58 $. Total de la campaña de la task (RED, controles y GREEN): ≈ 8 $.
