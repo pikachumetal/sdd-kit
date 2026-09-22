@@ -34,8 +34,16 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - THEN el agente presenta el plan completo (renombrados, ramas nuevas, rama por defecto del remoto, borrados) y espera la confirmación antes de ejecutar nada
 - AND las operaciones sobre el remoto las ejecuta el usuario, con los comandos que le da el agente
 
+### La init calca cada documento de su plantilla
+- GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield` que crea `mission.md`, `constitution.md`, `tech-stack.md`, `architecture.md`, `roadmap.md`, `estimation.md` o `changelog.md`
+- WHEN escribe cada documento
+- THEN su estructura es la de la plantilla correspondiente de `sdd-templates`, y el contenido sale de la entrevista (greenfield) o del código (brownfield)
+- AND ningún documento copia texto, secciones ni notas del `.docs/` del kit ni de otro proyecto
+- AND las tablas que leen otras skills (patches, deuda técnica, backlog del roadmap; `## [Unreleased]` del changelog) tienen las columnas y cabeceras literales de la plantilla
+
 ## Historial
 
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — ADDED La entrevista fija las cinco reglas de producto
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED La entrevista fija las cinco reglas de producto
 - 2026-09-22 — 20260922-090037-task-0012-init-interview — ADDED La entrevista hace una sola pregunta por turno · ADDED La pregunta de ramas recomienda git-flow · ADDED Lo que fijan las instrucciones del usuario no se pregunta · ADDED Git sobre un repo existente
+- 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED La init calca cada documento de su plantilla
