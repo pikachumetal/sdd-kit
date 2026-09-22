@@ -4,18 +4,18 @@ task: 0019
 parent: 0012
 title: Lo que crean las init — ficheros y configuración
 mode: full
-status: draft
+status: approved
 created: 2026-09-22
 author: Claude (Opus 5.5) con Àngel Delgado
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-22
 ---
 
 # Spec — Lo que crean las init: ficheros y configuración
 
-> **Estado**: draft.
+> **Estado**: approved.
 > **Siguiente paso**: `plan.md` con `superpowers:writing-plans`.
 
 ## Decisiones que he tomado yo — valida estas
@@ -164,4 +164,4 @@ Todo lo que la init deja en el proyecto sale de un solo sitio: el paso de estruc
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-22 | aprobada: «si» |
