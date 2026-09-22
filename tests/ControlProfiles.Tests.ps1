@@ -103,3 +103,11 @@ Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la r
     Get-KitFile 'skills/sdd-end-release/SKILL.md' | Should -Match 'disparador nuevo'
   }
 }
+
+Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
+  It 'la regla 6 nombra las paradas de delegate: spec, desvío y validación final' {
+    $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^6\. .+$').Value
+    $rule | Should -Match 'control-profiles\.md'
+    foreach ($stop in 'aprobación de la spec', 'desvío', 'validación final') { $rule | Should -Match $stop }
+  }
+}
