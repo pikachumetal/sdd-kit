@@ -16,7 +16,7 @@ created: 2026-09-22
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Receta, citas, capacidad y GREEN | done | f688ecc · (este commit) | en línea; capacidad a la fusión del cierre (ruling); enlace Markdown precisado tras GREEN ronda 1 |
+| 1 | Receta, citas, capacidad y GREEN | done | f688ecc · 292543e | en línea; capacidad a la fusión del cierre (ruling); enlace Markdown precisado tras GREEN ronda 1 |
 | 2 | Normalizar este roadmap | done | 4bb291b | en línea |
 | 3 | Disparador observable en `tech-stack.md` | done | dc923d0 | en línea |
 
