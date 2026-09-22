@@ -3,13 +3,13 @@ id: 20260922-084550-task-0005-dispatch-brief
 task: 0005
 title: Despacho a subagentes — el encargo del implementador
 mode: full
-status: draft
+status: approved
 created: 2026-09-22
 author: agente
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-22
 ---
 
 # Spec — Despacho a subagentes: el encargo del implementador
@@ -73,4 +73,4 @@ Todo va en los dos ficheros que ya gobiernan el despacho: `encargo-revision.md` 
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-22 | aprobada: «entiendo que la spec la has generado con datos yo solo tengo sensaciones del sdd-kit asi que te lo apruebo» |
