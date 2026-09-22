@@ -20,7 +20,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | Encargo de revisión y plantilla del plan | done | `1a1d6bc` | en línea |
 | 2 | Repaso de coherencia antes del gate | done | `be3c2f5` | en línea |
-| 3 | GREEN | done | (este commit) | 8 sujetos Sonnet, 2,71 $; R3 en dos rondas: afinada la frase del paso 4 |
+| 3 | GREEN | done | `79affd7` | 8 sujetos Sonnet, 2,71 $; R3 en dos rondas: afinada la frase del paso 4 |
 
 ## Verificación por task
 
@@ -51,3 +51,17 @@ Failed | dice de dónde sale el bloque de restricciones en modo lite | Expected 
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+## Revisión final (Sonnet, ~142k tokens, 8,7 min)
+
+Paquete sin `red/` ni `green/`, encargo con la cabecera nueva: el revisor no ejecutó la suite. Veredicto «With fixes».
+
+- **Important — arreglado**: el ancla del paso 4 no fijaba «busca todas sus apariciones», la frase que llevó R3 de 1/2 a 2/2 → aserción nueva en `tests/ProportionalReview.Tests.ps1`; rojo contra `be3c2f5` (`Expected regular expression 'busca todas sus apariciones' to match …`), verde en HEAD, suite 324/0.
+- Minor (diferido): el commit `79affd7` es `test(sdd):` y lleva una línea de skill; el cuerpo lo explica.
+- Minor (diferido): el Art. X solo da el ejemplo de las líneas; `encargo-revision.md` da también el de los parámetros.
+
+## Rulings
+
+- Task 3: R3 ronda 1 dejó un THEN con el literal viejo (r3-1) → añadida al paso 4 «busca todas sus apariciones… cámbialas todas» y repetido R3 con dos sujetos (2/2). Si me equivoco, la frase sobra: una línea del `SKILL.md`.
+- Final: los commits solo de `roadmap.md` (partición 0031/0032, palanca a la 0022) y el merge de `develop` quedaron fuera del paquete del revisor: los leí en el hilo (diff de filas, sin código) y los decidió el dev-lead en la sesión. Si me equivoco, una fila mal escrita en el roadmap, visible en `git log`.
+- Final: `green/m3` era copia idéntica de `red/m3` y pasaba del límite de longitud de ruta (140) → quitado; el lanzador GREEN usa `red/m3`. Coste si me equivoco: ninguno en la evidencia (el molde es el mismo byte a byte).

@@ -49,5 +49,6 @@ Describe 'Paso 4' {
     $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
     $skill | Should -Match 'Spec Self-Review'
     $skill | Should -Match 'literal[^\n]*más de un sitio'
+    $skill | Should -Match 'busca todas sus apariciones'
   }
 }
