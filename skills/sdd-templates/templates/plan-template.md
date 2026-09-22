@@ -123,7 +123,6 @@ Endpoints, shape request/response.
 
 > La task viaja sola: `task-brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»). Copia aquí las firmas, tablas y textos que necesita.
 
-
 **Ficheros**: crear/modificar `path/...`
 
 - [ ] **Step 1: Implementación** — descripción concreta; código real cuando ayude, sin placeholders.

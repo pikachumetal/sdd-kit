@@ -1,6 +1,6 @@
 # Perfiles de control y gates
 
-Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006 y 0012: no lo dupliques, enlázalo.
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0019 y 0020: no lo dupliques, enlázalo.
 
 ## Perfiles
 
@@ -76,7 +76,7 @@ Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el 
 - La spec la aprueba el agente, con las decisiones registradas en «Decisiones que he tomado yo».
 - Si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, la task queda `⏸️ aparcada: <pregunta>` en el roadmap y el agente sigue con la siguiente task de la release.
 - Al terminar la release, un solo informe: tasks cerradas, decisiones, enmiendas sin aprobar y tasks aparcadas.
-- Los frenos (reintentos, tope de agentes en paralelo, vigía de silencio) no son de esta capacidad: los define la task 0005. Aquí solo se fijan las claves `control.maxParallelAgents` y `control.silence.*` que esa task lee.
+- Los frenos (reintentos, tope de agentes en paralelo, vigía de silencio) no son de esta capacidad: los define la task 0020. Aquí solo se fijan las claves `control.maxParallelAgents` y `control.silence.*` que esa task lee.
 
 ## Estados del roadmap
 
@@ -106,6 +106,6 @@ Conjunto cerrado:
 
 `merge` no tiene default: si falta el bloque o cualquiera de sus tres campos, el paso 10 del cierre pregunta como hoy — una política que nadie declaró entera no se aplica.
 
-`control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0005.
+`control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0020.
 
 El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`).

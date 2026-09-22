@@ -1,4 +1,5 @@
 BeforeAll {
+  . (Join-Path $PSScriptRoot 'Resolve-Bash.ps1')
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
 
   function Get-KitFile([string]$RelativePath) {
@@ -43,11 +44,11 @@ Describe 'La task del plan viaja sola' {
   It 'task-brief de superpowers extrae las interfaces con la task' {
     $taskBrief = Get-ChildItem (Join-Path $HOME '.claude/plugins/cache/claude-plugins-official/superpowers') -Recurse -Filter 'task-brief' -ErrorAction SilentlyContinue |
       Select-Object -First 1
-    $bash = Get-Command bash -ErrorAction SilentlyContinue
-    if (-not $taskBrief -or -not $bash) { Set-ItResult -Skipped -Because 'sin bash o sin superpowers instalado'; return }
+    $bash = Resolve-Bash
+    if (-not $taskBrief -or -not $bash) { Set-ItResult -Skipped -Because 'sin bash ejecutable o sin superpowers instalado'; return }
     $outFile = Join-Path ([System.IO.Path]::GetTempPath()) "task-brief-$([guid]::NewGuid()).md"
     $templatePath = (Join-Path $script:RepoRoot $script:PlanTemplate).Replace('\', '/')
-    & $bash.Source $taskBrief.FullName.Replace('\', '/') $templatePath 1 $outFile.Replace('\', '/') | Out-Null
+    & $bash $taskBrief.FullName.Replace('\', '/') $templatePath 1 $outFile.Replace('\', '/') | Out-Null
     $brief = Get-Content $outFile -Raw
     Remove-Item $outFile
     $brief | Should -Match '\*\*Interfaces\*\*'
