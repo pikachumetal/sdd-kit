@@ -30,6 +30,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **El README llevaba al choque entre marketplace local y GitHub** — recomendaba apuntar el marketplace al clon local sin decir cómo volver, y `/plugin marketplace add` fallaba con «its network source differs». Ahora documenta la instalación por proyecto (`extraKnownMarketplaces` con `source: github` y `enabledPlugins` en `.claude/settings.json`), la nota de migración y `--plugin-dir` con el plugin instalado deshabilitado para desarrollar el kit. → [ref](specs/20260922-133508-patch-0024-readme-marketplace/)
 - **Rutas de más de 140 caracteres en la evidencia de tests** — los moldes y salidas de sujetos de las tasks 0002 y 0013 llegaban a 165 caracteres y rompían el clon del plugin en Windows; acortados, y `tests/PathLength.Tests.ps1` falla si alguna ruta versionada llega a 140. → [ref](specs/20260922-132530-patch-0023-rutas-largas/)
 - **Nombres de proyectos reales dentro de `skills/`** — dos frases de evidencia de campo citaban el proyecto por su nombre (`encargo-revision.md` y `environments-template.md`), y `skills/` es lo que se instala en cada proyecto consumidor. Conservan la evidencia y pierden el nombre propio. Detectado en el barrido previo a publicar el repo. → [ref](specs/20260920-192907-patch-0017-nombres-de-proyecto-en-skills/patch.md)
 

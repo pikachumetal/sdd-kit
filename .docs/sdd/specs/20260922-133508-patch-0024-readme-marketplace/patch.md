@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-22
 branch: feature/patch-readme
-commit: <hash>
+commit: b67e663
 ---
 
 # Patch 0024 — el README ya no lleva al choque de marketplace local contra GitHub
