@@ -1,7 +1,7 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { git -C $PSScriptRoot rev-parse --show-toplevel }
   $script:SaldadaLiteral = ': saldada — <enlace>]**'
-  $script:ClosingPrefix = '^\*\*\[(Task|Patch) [^],]+, \d{4}-\d{2}-\d{2}: (saldada|parcial) — '
+  $script:ClosingPrefix = '^\*\*\[(Task|Patch) [^],]+, \d{4}-\d{2}-\d{2}: (saldada|parcial) — \[[^\]]+\]\([^)]+\)'
 
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
