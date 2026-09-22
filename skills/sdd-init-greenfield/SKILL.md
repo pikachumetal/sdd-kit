@@ -34,7 +34,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    | 7 | ¿Qué se avisa al usuario y cuándo (p. ej. un secreto en claro)? | constitution, «Reglas de producto» |
    | 8 | Cuando dos vías dan el mismo dato, ¿cuál manda? | constitution, «Reglas de producto» |
    | 9 | ¿Qué stack? Si no está decidido: opciones con trade-offs y tu recomendación; decide el usuario y puede quedar abierto, con las opciones | tech-stack |
-   | 10 | ¿Qué es innegociable (datos, migraciones, commits, seguridad)? | constitution |
+   | 10 | ¿Qué es innegociable (datos, migraciones, seguridad; commits, solo si las instrucciones del usuario no los fijan ya)? | constitution |
    | 11 | ¿Llevamos changelog? | `changelog.md` |
    | 12 | Solo si 11 es sí: ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release`) | `client-changelog.md` |
    | 13 | ¿Hay gestor de tickets? | `CLAUDE.md` |
