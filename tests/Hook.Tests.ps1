@@ -20,11 +20,17 @@ BeforeAll {
     return $dir
   }
 
+  $script:HookCommand = (Get-Content (Join-Path $script:HooksDir 'hooks.json') -Raw | ConvertFrom-Json).hooks.SessionStart[0].hooks[0].command
+
   function Invoke-SessionStart([string]$ProjectDir) {
-    $previous = $env:CLAUDE_PROJECT_DIR
+    $previous = @{ Project = $env:CLAUDE_PROJECT_DIR; Plugin = $env:CLAUDE_PLUGIN_ROOT }
     $env:CLAUDE_PROJECT_DIR = $ProjectDir
-    try { $output = & $script:Bash $script:Script }
-    finally { $env:CLAUDE_PROJECT_DIR = $previous }
+    $env:CLAUDE_PLUGIN_ROOT = $script:KitRoot -replace '\\', '/'
+    try { $output = & $script:Bash -c $script:HookCommand }
+    finally {
+      $env:CLAUDE_PROJECT_DIR = $previous.Project
+      $env:CLAUDE_PLUGIN_ROOT = $previous.Plugin
+    }
     return [pscustomobject]@{ Output = ($output -join "`n"); ExitCode = $LASTEXITCODE }
   }
 }
@@ -40,9 +46,7 @@ Describe 'hooks/hooks.json' {
   }
 
   It 'no antepone un bash literal al comando' {
-    # Un `bash` extra en el comando hace una segunda resolución por PATH, que en Windows
-    # puede encontrar el lanzador de WSL en vez de Git Bash (visto en Resolve-Bash arriba).
-    $script:Command | Should -Not -Match '^bash '
+    $script:Command | Should -Not -Match '^\s*"?bash(\.exe)?"?\s'
   }
 
   It 'delega la resolución del intérprete en el campo shell' {
@@ -58,6 +62,12 @@ Describe 'hooks/router.md' {
 }
 
 Describe 'hooks/session-start' {
+  It 'es ejecutable en git, porque hooks.json lo invoca por ruta' {
+    $entry = git -C $script:KitRoot ls-files -s hooks/session-start 2>$null
+    if (-not $entry) { Set-ItResult -Skipped -Because 'la raíz del kit no es un repositorio git'; return }
+    $entry | Should -Match '^100755 '
+  }
+
   It 'se guarda con finales de línea LF' {
     $bytes = [IO.File]::ReadAllBytes($script:Script)
     $bytes | Should -Not -Contain 13
