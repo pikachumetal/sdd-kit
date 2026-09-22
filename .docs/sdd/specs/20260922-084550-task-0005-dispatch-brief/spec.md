@@ -25,11 +25,11 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` (un requisito de `tas
 4. **En modo lite, el bloque de Restricciones globales sale de la constitution**: el artículo de calidad de código y la política de modelos, literales. No se añade un bloque nuevo a `spec-template.md`: la spec lite seguiría igual de corta y la fuente ya existe.
 5. **Cada task del plan lleva `Interfaces: Consume / Produce`**, el bloque que ya trae `superpowers:writing-plans` (se adopta, Art. IX), y la regla de que una task no remite a otras secciones del plan: copia los valores que necesita.
 6. **Capacidad del delta: `task-flow` (existente)** — el despacho es un paso del flujo de la task, como el requisito vigente «El artículo de calidad de código viaja a implementadores y revisores». Alternativa descartada: una capacidad `dispatch` nueva para tres requisitos que no traen reglas propias.
-7. **La task se partió en tres** (0005, 0019, 0020) en la primera pregunta; el roadmap ya lo recoge (`43867be`).
+7. **La task se partió en tres** (0005, 0021, 0022) en la primera pregunta; el roadmap ya lo recoge (`43867be`, renumeradas al integrar `develop`: la 0012 había tomado antes la 0019 y la 0020).
 
 ### Decisiones tomadas con el dev-lead
 
-- Partir la fila 0005 en 0005, 0019 y 0020 — opción «Partir en 3 (Recomendado)».
+- Partir la fila 0005 en 0005, 0021 y 0022 — opción «Partir en 3 (Recomendado)».
 - El método de la task lo decide el agente — «te voy a decir si a lo que me recomiendes... necesitamos que los cambios que metemos en el kit aporten calidad al kit, nos aporten valor y aligerar lo máximo sin perder calidad».
 
 ## Intent
@@ -39,7 +39,7 @@ Hoy el implementador recibe las restricciones y el contrato de tests, pero nada 
 ## Scope
 
 - Entra: tres reglas fijas en el encargo del implementador; fuente de las Restricciones globales en lite; `Interfaces: Consume / Produce` por task y regla de que la task viaja sola.
-- No entra: script o plantilla que componga el encargo (decisión 1); regla de búsqueda fuera del repo y procesos en background (decisión 3); todo lo de revisión y effort (task 0019); paralelismo y frenos (task 0020); lint de los tests RED del hilo (task 0007).
+- No entra: script o plantilla que componga el encargo (decisión 1); regla de búsqueda fuera del repo y procesos en background (decisión 3); todo lo de revisión y effort (task 0021); paralelismo y frenos (task 0022); lint de los tests RED del hilo (task 0007).
 
 ## Approach
 

@@ -1,6 +1,6 @@
 ---
 name: sdd-templates
-description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, patch, data-model, research, feedback de release, release notes) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
+description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, patch, data-model, research, feedback de release, release notes) o un documento de SDD del proyecto (mission, constitution, tech-stack, architecture, roadmap, estimation, changelog) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
 user-invocable: false
 ---
 
@@ -25,6 +25,13 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [environments-template.md](templates/environments-template.md) | `environments.md` | Solo si el proyecto usa worktrees **y** su entorno necesita más que instalar dependencias (BD, puertos, servicios). Lo calca `init-*` por entrevista; `sdd-start-task` y `sdd-end-*` lo activan por predicado |
 | [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Verdad viva del comportamiento: la crea la spec que declara la capacidad, la fusiona `sdd-end-task` |
 | [kit-feedback-template.md](templates/kit-feedback-template.md) | ticket en `.docs/sdd/kit-feedback/` | Al cerrar una task o un patch, vía `sdd-feedback` |
+| [mission-template.md](templates/mission-template.md) | `mission.md` | Documento de anclaje: lo calca el init; la entrevista o el código ponen el contenido |
+| [constitution-template.md](templates/constitution-template.md) | `constitution.md` | Documento de anclaje: lo calca el init, con las cinco «Reglas de producto» por nombre |
+| [tech-stack-template.md](templates/tech-stack-template.md) | `tech-stack.md` | Documento de anclaje: lo calca el init |
+| [architecture-template.md](templates/architecture-template.md) | `architecture.md` | Documento de anclaje: lo calca el init, o quien lo necesite si se pospuso (una task, `sdd-end-task` con un aprendizaje estructural, una consulta) |
+| [roadmap-template.md](templates/roadmap-template.md) | `roadmap.md` | Documento de anclaje: lo calca el init; secciones y cabeceras de tabla literales, porque las leen otras skills |
+| [estimation-template.md](templates/estimation-template.md) | `estimation.md` | Opt-in del proyecto: activa el módulo de estimación; calibración vacía al nacer |
+| [changelog-template.md](templates/changelog-template.md) | `changelog.md` | Opt-in del proyecto (entrevista de init): activa `add-to-changelog`; nace con `## [Unreleased]` y sin entradas |
 
 ## Scripts
 

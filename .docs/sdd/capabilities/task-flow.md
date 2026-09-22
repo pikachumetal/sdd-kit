@@ -73,6 +73,18 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - THEN los tests que codifican los escenarios de la task existen y están commiteados antes del primer encargo, uno por THEN, en RED
 - AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica
 
+### Un aprendizaje sin destino no se redirige en silencio
+- GIVEN un cierre de task cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
+- WHEN `sdd-end-task` vuelca los aprendizajes a los docs vivos
+- THEN crea `architecture.md` calcando `architecture-template.md` de `sdd-templates`, vuelca ahí el aprendizaje y lo dice en el informe final («`architecture.md` no existía: creado desde la plantilla»)
+- AND no escribe el aprendizaje estructural en `tech-stack.md` ni en otro documento en su lugar
+- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `tech-stack.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la tabla de deuda técnica del roadmap
+
+### Un documento de anclaje que falta se calca de su plantilla
+- GIVEN un proyecto al que le falta un documento de anclaje con plantilla en `sdd-templates`
+- WHEN una task, un cierre o una consulta lo tiene que crear
+- THEN el documento sigue las secciones de su plantilla, sin secciones inventadas ni omitidas (las vacías llevan su marcador)
+
 **Reglas de la capacidad**
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
@@ -113,3 +125,5 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED El plan presenta primero las decisiones tomadas sin el usuario
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED El trabajo se valida con el usuario antes de cerrar
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El walkthrough crece por adendas
+- 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED Un aprendizaje sin destino no se redirige en silencio
+- 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED Un documento de anclaje que falta se calca de su plantilla

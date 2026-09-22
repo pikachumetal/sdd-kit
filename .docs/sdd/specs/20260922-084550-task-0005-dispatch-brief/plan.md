@@ -63,7 +63,7 @@ created: 2026-09-22
 **NO se tocan**:
 
 - `skills/sdd-templates/templates/spec-template.md` — la fuente lite es la constitution (spec, decisión 4).
-- `review-spec.md`, lo de revisión y effort — task 0019.
+- `review-spec.md`, lo de revisión y effort — task 0021.
 
 ### 1.7 Riesgos
 

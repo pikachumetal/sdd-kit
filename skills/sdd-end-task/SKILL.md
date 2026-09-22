@@ -21,7 +21,10 @@ El cierre de una task es una **Definition of Done**: un checklist que garantiza 
 3. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — el walkthrough registra, el log acumula:
    sin fila no hay calibración. Cómo generarlo: [estimation.md](references/estimation.md).
 4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive. Destino por tipo
-   de aprendizaje: [aprendizajes-skills.md](references/aprendizajes-skills.md).
+   de aprendizaje: [aprendizajes-skills.md](references/aprendizajes-skills.md). **Si el destino no existe**
+   (un `architecture.md` pospuesto en el init): créalo calcando su plantilla de `sdd-templates`, vuelca el
+   aprendizaje y dilo en el informe final. Nunca lo dejes solo en el walkthrough ni lo lleves a otro documento. Sin plantilla
+   para ese destino, no lo inventes: dilo y añade una fila a la deuda técnica del roadmap.
 5. **Revisión de skills** — "no aplica" se decide mirando, no por omisión.
    Cómo: [aprendizajes-skills.md](references/aprendizajes-skills.md).
 6. **`tasks.md`** *(solo modo full, y solo si el plan tuvo >1 task)* — todas las filas con status final y commit hash. Si encuentras discrepancias entre `tasks.md` y la realidad, corrígelas y déjalo anotado.
@@ -43,9 +46,11 @@ Este checklist NO aplica: el cierre ligero de un patch es `sdd-end-patch`.
 - No has tocado `roadmap.md`.
 - La spec sigue en `draft` y no se lo has señalado al usuario.
 - Has escrito en `tech-stack.md`, `architecture.md` o `environments.md` un valor que ya está en `capabilities/` (un tiempo, un límite, una cuota).
+- Un aprendizaje estructural se queda en el walkthrough, o en `tech-stack.md`, porque el proyecto no tiene `architecture.md`.
 
 | Racionalización | Realidad |
 | --- | --- |
+| "Sin `architecture.md` no hay doc vivo donde volcarlo" / "Ya se ve en el código, no requiere doc aparte" | Son las frases del GREEN (2/2) que dejaron el aprendizaje solo en el walkthrough. Un destino que falta se crea desde su plantilla y se dice; el código no cuenta a la próxima task dónde va lo nuevo. |
 | "El usuario me ha pedido cerrar: eso ya es validar" | Pedir el cierre es una orden, no una prueba. Validar es que diga qué probó y que funciona. Sin eso, el checklist no arranca; con el usuario ausente, la task espera. Si dice, presente y con el trabajo delante, «lo pruebo mañana» con un disparador con dueño, eso sí cierra: es una validación diferida (🧪), no un cierre sin validar. |
 | "Es una task lite, el cierre también va ligero" | Lite abarata la planificación, no la verificación. Smoke, walkthrough con tiempo real, changelog y roadmap siguen siendo obligatorios. Lo único que desaparece es lo que nunca existió: `plan.md` y `tasks.md`. |
 | "El usuario tiene prisa: walkthrough mínimo y listo" | El checklist entero cabe en minutos. Lo que se salta hoy es la deriva de docs de mañana. |
