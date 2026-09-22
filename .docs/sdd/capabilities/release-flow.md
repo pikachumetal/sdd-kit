@@ -93,6 +93,28 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - THEN cada una de esas tasks gana una adenda fechada en su walkthrough con lo que el dev-lead probó que le toca, y su fila pasa a ✅
 - AND una task que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>` (la siguiente release, salvo que el dev-lead diga otro), y el cierre la lista
 
+### Replanificar parte del estado real de la release
+- GIVEN una release en curso en el roadmap, con la rama de integración por delante del worktree del agente o con ramas `feature/*` abiertas
+- WHEN el usuario pide meter trabajo en la release, partir, mover o crear tasks
+- THEN antes de proponer nada el agente lee el roadmap de la rama de integración y el de cada rama `feature/*` abierta, no solo el de su worktree
+- AND no amplía una task que esté cerrada (✅ o 🧪) en la rama de integración: el trabajo nuevo va a una task nueva
+
+### Una task en marcha no se toca al replanificar
+- GIVEN una task en marcha (con rama `feature/<id>` abierta o 🔄 en el roadmap)
+- WHEN la replanificación trae trabajo de su tema
+- THEN ni su fila ni su spec cambian: el trabajo va a una task nueva con fila propia que declara que va tras ella
+
+### Los ids nuevos no chocan con reservas de otras ramas
+- GIVEN `ids.mode: sequence` y una rama `feature/*` que reservó en su roadmap un id que la rama de integración aún no tiene
+- WHEN la replanificación crea tasks
+- THEN cada id nuevo es mayor que el que da `Get-NextSddId.ps1` y que cualquier id de los roadmaps leídos
+
+### La reserva se publica antes de arrancar
+- GIVEN un scope replanificado que el usuario ha decidido
+- WHEN el agente escribe las filas en el roadmap
+- THEN las publica en la rama de integración con un commit que solo toca `roadmap.md`, en el worktree donde está sacada (o en uno temporal, en la carpeta de los demás worktrees y con nombre corto, si no está en ninguno)
+- AND lo hace antes de arrancar ninguna de las tasks nuevas
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: si la release tiene destinatario vive en `.docs/sdd/sdd-kit.json` (`release.hasRecipient`, booleano), junto a `version` e `ids`. El nombre del destinatario no se guarda en la configuración.
@@ -119,3 +141,7 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED El acta solo se escribe si hay fuente (acotado a `hasRecipient: false`: con cliente, preguntar por la demo es pertinente)
 - 2026-09-21 — 20260921-074701-task-0004-release-without-client — ADDED La línea de smoke se cuenta igual en todas las releases
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El smoke de la release valida las tasks diferidas a él (con la forma de la 🧪 no validada de la segunda enmienda)
+- 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Replanificar parte del estado real de la release
+- 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Una task en marcha no se toca al replanificar
+- 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Los ids nuevos no chocan con reservas de otras ramas
+- 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED La reserva se publica antes de arrancar (la salida del worktree temporal, sin GREEN: deuda del roadmap)
