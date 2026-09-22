@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Encargo de revisión y plantilla del plan | pending | — | en línea |
+| 1 | Encargo de revisión y plantilla del plan | done | (este commit) | en línea |
 | 2 | Repaso de coherencia antes del gate | pending | — | en línea |
 | 3 | GREEN | pending | — | 6 sujetos Sonnet |
 
@@ -27,6 +27,21 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 - [ ] Task 1 — RED de las anclas (salida abajo) → `Invoke-Pester ./tests` verde
 - [ ] Task 2 — RED del ancla del paso 4 → `Invoke-Pester ./tests` verde
 - [ ] Task 3 — cuatro frentes de la spec en verde
+
+### Rojo de la Task 1 (antes de editar las skills)
+
+`Invoke-Pester ./tests/ProportionalReview.Tests.ps1, ./tests/DispatchBrief.Tests.ps1`, 8 en rojo, cada uno por su aserción:
+
+```text
+Failed | la plantilla del plan separa código y proceso | Expected regular expression '## Restricciones globales\s*\r?\n[\s\S]*### De código[\s\S]*### De proceso' to ma…
+Failed | el paso 6 despacha solo el bloque de código | Expected regular expression 'bloque «De código»' to match …
+Failed | no convierte en Important todo incumplimiento | Expected regular expression 'Todo hallazgo que las incumpla es \*\*Important\*\*' to not match …
+Failed | da tolerancia de una unidad a los umbrales numéricos | Expected regular expression 'una unidad[^\n]*Minor' to match …
+Failed | define qué es modificar un test RED | Expected regular expression 'aserción[^\n]*nombre[^\n]*dato[^\n]*linter' to match …
+Failed | dice al revisor final que lea el paquete y no ejecute la suite | Expected regular expression 'revisor final[\s\S]*paquete[\s\S]*No ejecutes la suite' to match …
+Failed | el Art. X declara la tolerancia | Expected regular expression 'Art\. X[\s\S]*una unidad[^\n]*Minor' to match …
+Failed | dice de dónde sale el bloque de restricciones en modo lite | Expected regular expression 'modo lite[^\n]*artículo de calidad de código y la política de modelos' to not mat…
+```
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
