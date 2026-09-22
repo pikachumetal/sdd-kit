@@ -38,7 +38,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    | 11 | ¿Llevamos changelog? | `changelog.md` |
    | 12 | Solo si 11 es sí: ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release`) | `client-changelog.md` |
    | 13 | ¿Hay gestor de tickets? | `CLAUDE.md` |
-   | 14 | ¿Cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` |
+   | 14 | ¿Cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` (`ids.mode`) |
    | 15 | ¿Qué convención de ramas? Recomendada, la del kit: git-flow — `main` estable, `develop` de integración, `feature/<id>` desde `develop` | constitution, paso 5 |
    | 16 | ¿Trabajaréis con worktrees? | `CLAUDE.md` |
    | 17 | Solo si 16 es sí: ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? Si es sí, se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre | `environments.md` |

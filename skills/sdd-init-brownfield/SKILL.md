@@ -33,7 +33,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 
    | # | Pregunta | Va a |
    | --- | --- | --- |
-   | 1 | ¿Cómo se numeran las tasks: ids del gestor de tickets (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` |
+   | 1 | ¿Cómo se numeran las tasks: ids del gestor de tickets (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` (`ids.mode`) |
    | 2 | Perfil de control: pregunta 1 del [bloque de claves de control](../sdd-start-task/references/control-profiles.md#preguntas-de-las-claves-de-control), con su recomendación y su motivo | `sdd-kit.json` |
    | 3 | Solo si el repo tiene una rama de integración distinta de la estable: política de merge, pregunta 2 del mismo bloque, con esa rama | `sdd-kit.json` |
    | 4 | Frenos: pregunta 3 del mismo bloque | `sdd-kit.json` |
