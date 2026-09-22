@@ -3,13 +3,13 @@ id: 20260922-153843-task-0010-token-cost
 task: 0010
 title: Estimación con tokens y modelos reales
 mode: full
-status: in-review
+status: approved
 created: 2026-09-22
 author: agente
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-22
 ---
 
 # Spec — Estimación con tokens y modelos reales
@@ -26,6 +26,16 @@ Review de spec propuesta: ninguna. Señales: contrato público (el formato de la
 5. **La calibración de los tickets va a `estimation.md`**: una tabla de referencia por rol (tokens y minutos por despacho) y el coste por sujeto, con un turno y con varios turnos y simulador. También un aviso: la campaña de sujetos es la partida más variable (0012: RED de 29,8 $ frente a 5–7 $ estimados).
 6. **Solo cambia la plantilla, no `sdd-end-task`.** El RED es un fallo de forma y la receta va en la plantilla (Art. II). Si el GREEN falla con la plantilla sola, subir la regla a `sdd-end-task` es un desvío y se trae como enmienda.
 7. **Sin migración.** Los walkthroughs antiguos se quedan como están y el log los muestra con `—`. El proyecto consumidor no tiene nada que hacer.
+8. **Entra un arreglo descubierto: `Get-NextSddId.ps1` con rutas no ASCII.** El pre-commit bloquea todo commit en este worktree porque 7 tests de `Get-NextSddId.Tests.ps1` fallan.
+   - Causa raíz, reproducida: el script lee la salida de `git rev-parse --show-toplevel` con la codificación de consola por defecto. «Estimación» llega como «EstimaciÃ³n» y `Resolve-Path` falla.
+   - Afecta a cualquier proyecto con tildes en la ruta.
+   - Arreglo: leer la salida de git en UTF-8. Va con un test Pester sobre un repo temporal con tilde en el nombre y en un commit propio, separado del resto.
+   - La alternativa es abrir un patch aparte con su id. Lo descarto porque ese patch tampoco podría commitearse desde aquí, y `--no-verify` no se usa nunca.
+
+### Decisiones tomadas con el dev-lead
+
+- Aprobación de la spec (2026-09-22) — «sí, apruebo la spec»
+- Ejecución hasta el cierre sin paradas de método (2026-09-22) — «avanza hasta el end, que me voy con la bici»; la validación final se mantiene
 
 ## Intent
 
@@ -33,7 +43,7 @@ El walkthrough registra horas, pero no lo que la task costó en tokens ni en din
 
 ## Scope
 
-- Entra: sección 2 de `walkthrough-template.md`; `Build-EstimationLog.ps1` y sus tests Pester; `estimation.md` del kit (calibración y aviso); capacidad `estimation`.
+- Entra: sección 2 de `walkthrough-template.md`; `Build-EstimationLog.ps1` y sus tests Pester; `estimation.md` del kit (calibración y aviso); capacidad `estimation`; arreglo de `Get-NextSddId.ps1` con rutas no ASCII y su test (decisión 8).
 - No entra:
   - Estimar el dinero en el plan y calcular un ratio en dólares: tocaría `plan-template.md`, fichero caliente de la 0006, la 0007, la 0021 y la 0022. Va a deuda.
   - El bloque de tiempo de `patch-template.md`: 1 de 5 patches de la release tuvo campaña.
@@ -71,10 +81,18 @@ La receta vive en la plantilla, que es donde el ticket de campo ya demostró que
 - THEN «Esfuerzo real» recoge el reloj del hilo, y los tokens y minutos de cada subagente van en «Tokens de subagentes», con su rol y su modelo
 - AND «Modelo del hilo» y «Tokens del hilo» están rellenos: el segundo con `no medido` si nadie aportó la cifra
 
+### Capacidad: `task-ids`
+
+**ADDED — El id se calcula igual con una ruta no ASCII**
+
+- GIVEN un proyecto en modo `sequence` cuyo repositorio vive en una ruta con caracteres no ASCII (`…/0010-Estimación-…`)
+- WHEN se ejecuta `Get-NextSddId.ps1 -ProjectRoot <proyecto>` desde un proceso con la codificación de consola por defecto
+- THEN devuelve el mismo id que con una ruta ASCII y sale con código 0
+
 ## Enmiendas
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-22 | aprobada |
