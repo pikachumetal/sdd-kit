@@ -44,6 +44,19 @@ function Get-RoadmapIds([string]$ProjectRoot) {
 
 $script:GitEnvVars = @('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR')
 
+function Invoke-GitUtf8([string]$ProjectRoot, [string[]]$Arguments) {
+  # git emite las rutas en UTF-8. Con la codificación de consola por defecto (CP1252 en Windows),
+  # una ruta con tildes vuelve mal decodificada y deja de resolverse.
+  $previousEncoding = [System.Console]::OutputEncoding
+  [System.Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+  try {
+    return & git -C $ProjectRoot @Arguments 2>$null
+  }
+  finally {
+    [System.Console]::OutputEncoding = $previousEncoding
+  }
+}
+
 function Invoke-IsolatedGit([string]$ProjectRoot, [string[]]$Arguments) {
   $saved = @{}
   foreach ($name in $script:GitEnvVars) {
@@ -51,7 +64,7 @@ function Invoke-IsolatedGit([string]$ProjectRoot, [string[]]$Arguments) {
     Remove-Item "Env:\$name" -ErrorAction SilentlyContinue
   }
   try {
-    return & git -C $ProjectRoot @Arguments 2>$null
+    return Invoke-GitUtf8 $ProjectRoot $Arguments
   }
   finally {
     foreach ($name in $script:GitEnvVars) {

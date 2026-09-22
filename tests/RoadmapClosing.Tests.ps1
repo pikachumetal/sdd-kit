@@ -1,5 +1,5 @@
 BeforeAll {
-  $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { git -C $PSScriptRoot rev-parse --show-toplevel }
+  $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:SaldadaLiteral = ': saldada — <enlace>]**'
   $script:ClosingPrefix = '^\*\*\[(Task|Patch) [^],]+, \d{4}-\d{2}-\d{2}: (saldada|parcial) — \[[^\]]+\]\([^)]+\)'
 

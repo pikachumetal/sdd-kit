@@ -39,8 +39,8 @@ BeforeAll {
     }
   }
 
-  function Copy-FixtureToRepo([string]$Name, [string[]]$Branches) {
-    $repo = Join-Path (New-TempDirectory) 'project'
+  function Copy-FixtureToRepo([string]$Name, [string[]]$Branches, [string]$FolderName = 'project') {
+    $repo = Join-Path (New-TempDirectory) $FolderName
     Copy-Item -Recurse (Join-Path $script:Fixtures $Name) $repo
     Invoke-GitIsolated $repo @('init', '-q', '-b', 'main') | Out-Null
     Invoke-GitIsolated $repo @('add', '-A') | Out-Null
@@ -140,6 +140,15 @@ Describe 'Get-NextSddId.ps1' {
       $result = Invoke-NextId (Join-Path $script:Fixtures 'sequence-project')
       $result.Id | Should -Be '0006'
       $result.Error | Should -Match 'rama'
+    }
+
+    It 'devuelve el id cuando la ruta del repositorio lleva caracteres no ASCII' {
+      # git emite las rutas en UTF-8: con la codificación de consola por defecto, 'Estimación'
+      # vuelve como 'EstimaciÃ³n' y la resolución de la raíz del repositorio falla.
+      $repo = Copy-FixtureToRepo 'sequence-project' @('feature/0009-export') '0010-Estimación-con-tokens'
+      $result = Invoke-NextId $repo
+      $result.Id | Should -Be '0010'
+      $result.ExitCode | Should -Be 0
     }
 
     It 'funciona en un directorio que no es repositorio git' {
