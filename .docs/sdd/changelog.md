@@ -18,6 +18,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 - **Entrevista de `sdd-init-greenfield`: una pregunta por turno y git con repo existente** — el paso 1 es una lista de 17 preguntas numeradas con destino, una por turno; la de ramas recomienda git-flow, lo que ya fijan las instrucciones del usuario no se pregunta, y con un repo existente el agente presenta el plan de git, espera el «sí» y deja al usuario lo que toca el remoto. → [ref](specs/20260922-090037-task-0012-init-interview/)
 - **Encargo del implementador: reglas fijas, fuente lite e `Interfaces` por task** — el encargo lleva tres reglas (no silenciar un gate, nombre y mensaje de un test ajeno antes de relanzarlo, nunca `git stash`), en modo lite el bloque de restricciones sale de la constitution, y cada task de `plan-template.md` declara `Interfaces: Consume / Produce` sin remitir a otras secciones. → [ref](specs/20260922-084550-task-0005-dispatch-brief/)
+- **Claves de control en las entrevistas de las init** — `sdd-init-greenfield` (preguntas 18–20), `sdd-init-brownfield` y la migración v1.2.0 preguntan perfil, política de merge y frenos con el mismo texto, una por turno, desde el bloque «Preguntas de las claves de control» de `control-profiles.md`, y guardan en `sdd-kit.json` solo lo respondido; la entrevista de brownfield pasa a lista numerada con una pregunta o un documento por turno. → [ref](specs/20260922-141616-task-0020-init-control-keys/)
 
 ### Changed
 

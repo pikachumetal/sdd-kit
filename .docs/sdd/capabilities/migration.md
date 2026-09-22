@@ -48,10 +48,10 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - AND si el dev-lead no está, el paso queda pendiente explícito y el proyecto sigue funcionando en `tracker`
 
 ### La migración a v1.2.0 pregunta las claves de control que faltan
-- GIVEN un proyecto cuyo `sdd-kit.json` no tiene `control.profile` o no tiene un bloque `merge` completo
+- GIVEN un proyecto cuyo `sdd-kit.json` no tiene `control.profile`, un bloque `merge` completo o las claves de frenos (`control.maxParallelAgents`, `control.silence.*`)
 - WHEN se aplica `migrations/v1.2.0.md`
-- THEN un solo gate pregunta al dev-lead el perfil (recomendado `delegate`) y la política de merge a `develop`, y escribe solo lo que responde; lo que ya estaba no se pregunta
-- AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con `delegate` y con el paso 10 preguntando el merge, y el informe dice cómo reanudarlo
+- THEN el agente hace, una por turno, las preguntas del bloque de `control-profiles.md` que corresponden a lo que falta, las mismas que hace la init, y escribe solo lo que responde; lo que ya estaba no se pregunta
+- AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con los defaults y con el paso 10 del cierre preguntando el merge, y el informe dice cómo reanudarlo
 
 ## Historial
 
@@ -66,3 +66,4 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED El proyecto declara la versión del kit que tiene
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — ADDED La migración a v1.2.0 pregunta el modo de ids
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED La migración a v1.2.0 pregunta las claves de control que faltan
+- 2026-09-22 — 20260922-141616-task-0020-init-control-keys — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan

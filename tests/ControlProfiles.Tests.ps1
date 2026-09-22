@@ -67,6 +67,18 @@ Describe 'Perfiles de control: cierre, release y migración' {
     $migration | Should -Match 'merge'
   }
 
+  It 'las init y la migración enlazan las preguntas de las claves de control sin copiarlas' {
+    $block = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+    $block | Should -Match '(?m)^## Preguntas de las claves de control'
+    ($block | Select-String -Pattern 'Recomendad[ao]' -AllMatches).Matches.Count | Should -BeGreaterOrEqual 3
+    $consumers = 'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
+      'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    foreach ($consumer in $consumers) {
+      Get-KitFile $consumer | Should -Match 'control-profiles\.md#preguntas-de-las-claves-de-control'
+    }
+    foreach ($init in $consumers[0..1]) { Get-KitFile $init | Should -Not -Match 'maxParallelAgents' }
+  }
+
   It 'el Art. IV ya no reserva todo merge al usuario' {
     Get-KitFile '.docs/sdd/constitution.md' | Should -Not -Match 'el merge es SIEMPRE decisión del usuario'
   }
