@@ -113,4 +113,4 @@ Se extiende `control-profiles.md`. La sección «Desvío» pasa a nombrar los **
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-22 | aprobada: «si» |
