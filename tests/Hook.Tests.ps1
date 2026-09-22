@@ -3,14 +3,7 @@ BeforeAll {
   $script:HooksDir = Join-Path $script:KitRoot 'hooks'
   $script:Script = Join-Path $script:HooksDir 'session-start'
 
-  # En Windows, `bash` del PATH suele ser el lanzador de WSL, que no ejecuta el script: se prefiere Git Bash.
-  function Resolve-Bash {
-    $gitBash = @("$env:ProgramFiles\Git\bin\bash.exe", "${env:ProgramFiles(x86)}\Git\bin\bash.exe") |
-      Where-Object { Test-Path $_ } | Select-Object -First 1
-    if ($gitBash) { return $gitBash }
-    $onPath = Get-Command bash -ErrorAction SilentlyContinue
-    if ($onPath -and $onPath.Source -notmatch 'System32') { return $onPath.Source }
-  }
+  . (Join-Path $PSScriptRoot 'Resolve-Bash.ps1')
   $script:Bash = Resolve-Bash
 
   function New-ProjectDir([bool]$WithSdd) {

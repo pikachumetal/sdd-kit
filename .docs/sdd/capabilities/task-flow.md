@@ -41,9 +41,10 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - AND el resto del plan es para el ejecutor
 
 ### El artículo de calidad de código viaja a implementadores y revisores
-- GIVEN un plan con Restricciones globales que copian el artículo de calidad de código de la constitution
+- GIVEN un plan con Restricciones globales que copian el artículo de calidad de código de la constitution, o una task en modo lite, que no tiene plan
 - WHEN se despacha un implementador, un revisor de task o el revisor final
 - THEN el encargo lleva ese bloque literal como primera sección
+- AND en modo lite el bloque lo forman el artículo de calidad de código y la política de modelos de la constitution, copiados literales
 
 ### El trabajo se valida con el usuario antes de cerrar
 - GIVEN una task con la implementación terminada y la revisión final limpia
@@ -84,6 +85,18 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - GIVEN un proyecto al que le falta un documento de anclaje con plantilla en `sdd-templates`
 - WHEN una task, un cierre o una consulta lo tiene que crear
 - THEN el documento sigue las secciones de su plantilla, sin secciones inventadas ni omitidas (las vacías llevan su marcador)
+
+### El implementador no esquiva lo que le frena
+- GIVEN un implementador despachado con el encargo del kit
+- WHEN un gate o un checker le avisa, un test que no es suyo falla, o necesita ver el código sin su cambio
+- THEN no edita la configuración del gate ni disfraza el código para que el aviso desaparezca: para y lo reporta con el mensaje literal
+- AND antes de relanzar un test rojo captura su nombre y su mensaje, y no le atribuye causa sin evidencia
+- AND no usa `git stash`: aparta trabajo con un commit WIP o lee la versión de la base con `git show`
+
+### Cada task del plan viaja sola
+- GIVEN un plan cuyas tasks usan firmas, formatos o valores que fija otra task o una sección del plan
+- WHEN se extrae una task para su encargo
+- THEN el texto de la task lleva `Interfaces: Consume / Produce` con los nombres y firmas exactos, y los valores que necesita copiados, sin remitir a otras secciones
 
 **Reglas de la capacidad**
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
@@ -127,3 +140,6 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El walkthrough crece por adendas
 - 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED Un aprendizaje sin destino no se redirige en silencio
 - 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED Un documento de anclaje que falta se calca de su plantilla
+- 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — MODIFIED El artículo de calidad de código viaja a implementadores y revisores
+- 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — ADDED El implementador no esquiva lo que le frena
+- 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — ADDED Cada task del plan viaja sola
