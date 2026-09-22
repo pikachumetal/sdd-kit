@@ -12,9 +12,9 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - AND el bloque de proceso ha decidido además el modo de ids del proyecto, que se escribe en `sdd-kit.json`
 
 ### La entrevista hace una sola pregunta por turno
-- GIVEN una init greenfield en su entrevista
-- WHEN el agente pregunta al usuario
-- THEN cada turno termina con una única pregunta de la lista de la entrevista
+- GIVEN una init greenfield o brownfield en su entrevista
+- WHEN el agente pregunta al usuario o le presenta un documento
+- THEN cada turno termina con una única pregunta de la lista de la entrevista, o con un único documento para aprobar
 - AND convención de ramas, worktrees y entorno del worktree son preguntas distintas, en turnos distintos
 
 ### La pregunta de ramas recomienda git-flow
@@ -41,9 +41,19 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - AND ningún documento copia texto, secciones ni notas del `.docs/` del kit ni de otro proyecto
 - AND las tablas que leen otras skills (patches, deuda técnica, backlog del roadmap; `## [Unreleased]` del changelog) tienen las columnas y cabeceras literales de la plantilla
 
+### La entrevista fija las claves de control
+- GIVEN una init greenfield o brownfield con el usuario presente
+- WHEN la entrevista llega a las claves de control
+- THEN el agente hace, en turnos distintos, las tres preguntas del bloque de `control-profiles.md`, cada una con su opción recomendada y su motivo: perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona) y frenos (3 agentes; 8 y 20 minutos)
+- AND escribe en `sdd-kit.json` solo lo que el usuario responde: «no sé» no escribe la clave y rige su default, y un «no» a la política de merge deja `merge` sin declarar
+- AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar
+- AND en brownfield sin usuario, las tres quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
+
 ## Historial
 
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — ADDED La entrevista fija las cinco reglas de producto
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED La entrevista fija las cinco reglas de producto
 - 2026-09-22 — 20260922-090037-task-0012-init-interview — ADDED La entrevista hace una sola pregunta por turno · ADDED La pregunta de ramas recomienda git-flow · ADDED Lo que fijan las instrucciones del usuario no se pregunta · ADDED Git sobre un repo existente
 - 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED La init calca cada documento de su plantilla
+- 2026-09-22 — 20260922-141616-task-0020-init-control-keys — MODIFIED La entrevista hace una sola pregunta por turno
+- 2026-09-22 — 20260922-141616-task-0020-init-control-keys — ADDED La entrevista fija las claves de control

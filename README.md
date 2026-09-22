@@ -46,14 +46,29 @@ Como plugin de Claude Code:
 
 Necesita [superpowers](https://github.com/obra/superpowers), que se resuelve solo porque el manifest lo declara. Si falta, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
 
+Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea las dos claves en el `.claude/settings.json` del proyecto: de dónde sale el marketplace y qué plugin activar. Con solo `enabledPlugins`, el plugin aparece activado pero Claude Code no sabe de dónde sacarlo.
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "sdd-kit": {
+      "source": { "source": "github", "repo": "pikachumetal/sdd-kit" }
+    }
+  },
+  "enabledPlugins": {
+    "sdd-kit@sdd-kit": true
+  }
+}
+```
+
+Si antes lo tenías apuntando a un clon local, `/plugin marketplace add` falla con `Cannot add marketplace "sdd-kit": its network source differs from the one declared for it in settings`. Cambia la fuente de `extraKnownMarketplaces.sdd-kit` a `github` en tu `~/.claude/settings.json` antes de añadirlo. Un mismo nombre de marketplace no admite dos fuentes: la de usuario y la de proyecto tienen que ser idénticas, `ref` incluido.
+
 Si solo quieres una skill suelta, o usas otro agente:
 
 ```bash
 npx skills add pikachumetal/sdd-kit -a claude-code            # todas
 npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una
 ```
-
-Para desarrollar el propio kit, apunta el marketplace a tu clon local en vez del repo.
 
 ### Enrutado automático
 
@@ -97,6 +112,16 @@ Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastan
 Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes.
 
 ## Desarrollo
+
+Para probar el kit desde tu clon, arranca Claude Code con el plugin del working tree y el instalado deshabilitado:
+
+```powershell
+./Start-KitSession.ps1
+```
+
+El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir <raíz del clon>` y pasa detrás los argumentos que le des (por ejemplo, `--model sonnet`).
+
+No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
 Los tests validan la anatomía de las skills, los manifests y el script de estimación. Necesitas Pester 5 o superior y `pwsh` 7+:
 
