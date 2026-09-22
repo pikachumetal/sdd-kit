@@ -43,3 +43,11 @@ Describe 'Constitution' {
     Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'Art\. X[\s\S]*una unidad[^\n]*Minor'
   }
 }
+
+Describe 'Paso 4' {
+  It 'repasa la coherencia de la spec antes del gate' {
+    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $skill | Should -Match 'Spec Self-Review'
+    $skill | Should -Match 'literal[^\n]*más de un sitio'
+  }
+}

@@ -18,14 +18,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Encargo de revisión y plantilla del plan | done | (este commit) | en línea |
-| 2 | Repaso de coherencia antes del gate | pending | — | en línea |
+| 1 | Encargo de revisión y plantilla del plan | done | `1a1d6bc` | en línea |
+| 2 | Repaso de coherencia antes del gate | done | (este commit) | en línea |
 | 3 | GREEN | pending | — | 6 sujetos Sonnet |
 
 ## Verificación por task
 
-- [ ] Task 1 — RED de las anclas (salida abajo) → `Invoke-Pester ./tests` verde
-- [ ] Task 2 — RED del ancla del paso 4 → `Invoke-Pester ./tests` verde
+- [x] Task 1 — RED de las anclas (salida abajo) → `Invoke-Pester ./tests` verde
+- [x] Task 2 — RED del ancla del paso 4 → `Invoke-Pester ./tests` verde
 - [ ] Task 3 — cuatro frentes de la spec en verde
 
 ### Rojo de la Task 1 (antes de editar las skills)
@@ -42,6 +42,10 @@ Failed | dice al revisor final que lea el paquete y no ejecute la suite | Expect
 Failed | el Art. X declara la tolerancia | Expected regular expression 'Art\. X[\s\S]*una unidad[^\n]*Minor' to match …
 Failed | dice de dónde sale el bloque de restricciones en modo lite | Expected regular expression 'modo lite[^\n]*artículo de calidad de código y la política de modelos' to not mat…
 ```
+
+### Rojo de la Task 2
+
+`Invoke-Pester ./tests/ProportionalReview.Tests.ps1`: `Failed | repasa la coherencia de la spec antes del gate | Expected regular expression 'Spec Self-Review' to match …`.
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
