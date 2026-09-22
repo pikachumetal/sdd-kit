@@ -39,12 +39,31 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el trabajo exige cambiar un requisito, un THEN, el Scope o un «No entra»
 - THEN en `pair` y `delegate` el agente para, propone el cambio como entrada de `## Enmiendas` en la spec y espera la aprobación
 - AND en `unattended` elige la opción más conservadora, la registra como enmienda sin aprobar y, si no hay opción que no bloquee, aparca la task (`⏸️ aparcada: <motivo>`)
+- AND si la enmienda añade ficheros, la entrada nombra, antes de pedir la aprobación, las tasks abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno en «Ficheros que toca», o dice «solape no comprobable» si el roadmap no declara ficheros; con la aprobación, la fila de la task añade esos ficheros
 
 ### Salir del plan es un ruling visible
-- GIVEN una ejecución que se aparta del plan sin cambiar la spec (un fichero de «NO se tocan», un orden distinto, un fix del hilo principal)
+- GIVEN una ejecución que se aparta del plan sin cambiar la spec (un fichero de «NO se tocan», un orden distinto, un fix del hilo principal) y sin caer en un freno de alcance
 - WHEN el agente decide
 - THEN no para: registra el ruling, y todo commit del hilo principal entra en el alcance de la revisión de la task en curso o, si no queda ninguna, de la revisión final de rama
 - AND la presentación de la validación abre con el bloque «Me salí del plan en…», separado del resto de decisiones
+
+### El tercer fix descubierto abre un checkpoint de alcance
+- GIVEN una task en ejecución con dos fixes descubiertos ya registrados (en «Fixes adicionales» de `tasks.md` o como ruling de fix)
+- WHEN aparece un tercer defecto fuera del plan, y después cada tercero (6.º, 9.º…)
+- THEN antes de arreglarlo o diferirlo, en `pair` y `delegate` el agente para y pregunta con tres opciones: seguir en esta task, diferir a otra task (fila en el roadmap) o partir la task
+- AND en `unattended` lo difiere a una fila nueva del roadmap, lo registra como enmienda sin aprobar y sigue
+
+### Una decisión que cambia la salida observable se pregunta
+- GIVEN una decisión de ejecución que la spec no fija y que cambia lo que ve o recibe quien usa el producto: la respuesta de una API o de una CLI, el texto o el flujo de una UI, los ficheros generados o los nombres públicos
+- WHEN el agente o un subagente la tiene que tomar
+- THEN en `pair` y `delegate` el agente para, la pregunta con sus opciones antes de despachar y no la registra como ruling; la respuesta entra en `## Enmiendas`
+- AND en `unattended` elige la opción que deja la salida como la describe la spec o, si la spec calla, como está hoy, y la registra como enmienda sin aprobar
+
+### La fila de la task se compara con la base antes de cada despacho
+- GIVEN una task en ejecución con su fila en el roadmap
+- WHEN el agente va a despachar la siguiente task del plan
+- THEN compara la fila en la base de la rama (`git merge-base`) con la fila en la rama de integración
+- AND si cambió, lo trata como posible desvío: en `pair` y `delegate` presenta el cambio y para; en `unattended` sigue con la spec aprobada y registra la fila nueva como enmienda sin aprobar
 
 ### La validación puede diferirse con condiciones
 - GIVEN una task verificada por el agente y un usuario que, presente y con el trabajo delante, dice que probará más tarde; o una task en `unattended`
@@ -69,12 +88,13 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
-- **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una task: más de 3 tasks internas previstas.
+- **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una task: más de 3 tasks internas previstas. Checkpoint de alcance: en el 3.º fix descubierto de una task y en cada tercero después.
 - **Avisos**: no aplica.
 - **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona.
 
 ## Historial
 
+- 2026-09-22 — 20260922-133931-task-0025-scope-brake — ADDED El tercer fix descubierto abre un checkpoint de alcance · Una decisión que cambia la salida observable se pregunta · La fila de la task se compara con la base antes de cada despacho · MODIFIED Un cambio a la spec aprobada es un desvío · Salir del plan es un ruling visible · regla Límites
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED Una respuesta cuenta como aprobación solo si aprueba (enmienda)
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED La primera pregunta propone partir una task grande (enmienda)
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El perfil de control decide dónde para el agente · El perfil se hereda de la task, de la release o del proyecto · La primera pregunta confirma carril, modo y perfil · Un cambio a la spec aprobada es un desvío · Salir del plan es un ruling visible · La validación puede diferirse con condiciones · En `unattended`, lo que falta aparca la task · El merge a develop sigue la política declarada
