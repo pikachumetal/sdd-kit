@@ -1,0 +1,33 @@
+diff --git a/.docs/sdd/specs/20260922-090000-task-0008-booking-code-search/spec.md b/.docs/sdd/specs/20260922-090000-task-0008-booking-code-search/spec.md
+index cdf7266..6930fe3 100644
+--- a/.docs/sdd/specs/20260922-090000-task-0008-booking-code-search/spec.md
++++ b/.docs/sdd/specs/20260922-090000-task-0008-booking-code-search/spec.md
+@@ -16,8 +16,8 @@ approvers:
+ 
+ ## Decisiones que he tomado yo — valida estas
+ 
+-1. El buscador reconoce un código de reserva con la expresión `^R-\d{4}$` y, si la consulta encaja, busca por código en vez de por cliente — es la forma del código que fija la capacidad `bookings`.
+-2. Los códigos de las reservas importadas de la otra sede (`MAD-R-0042`) también se reconocen como código — la recepción las atiende igual que las propias.
++1. El buscador reconoce un código de reserva con la expresión `^(?:[A-Za-z]+-)?R-\d{4}$`, sin distinguir mayúsculas; si la consulta encaja, busca por código en vez de por cliente — es la forma del código que fija la capacidad `bookings`, con el prefijo de sede opcional para cubrir también las importadas.
++2. El prefijo de sede es genérico (letras seguidas de guion), no solo `MAD-`: la regex de la decisión 1 no enumera sedes, así que una reserva importada de cualquier sede se reconoce igual sin tocar el buscador cuando se añadan sedes nuevas.
+ 3. Búsqueda por código exacta, sin distinguir mayúsculas — un código parcial no identifica una reserva.
+ 4. Sin capacidad nueva: el delta va a `bookings`.
+ 
+@@ -32,7 +32,7 @@ Hoy la recepción solo busca por nombre de cliente, y con dos clientes del mismo
+ 
+ ## Approach
+ 
+-El buscador decide el modo por la forma de la consulta: si encaja con `^R-\d{4}$` busca por código; si no, por cliente como hoy.
++El buscador decide el modo por la forma de la consulta: si encaja con `^(?:[A-Za-z]+-)?R-\d{4}$` busca por código; si no, por cliente como hoy. Esto reemplaza el filtro actual de `src/search.js` (case-insensitive por substring sobre `booking.customer`), que no tiene ningún campo `code` todavía.
+ 
+ ## Delta de comportamiento
+ 
+@@ -46,7 +46,7 @@ El buscador decide el modo por la forma de la consulta: si encaja con `^R-\d{4}$
+ 
+ **ADDED — Consulta que no es un código**
+ - GIVEN reservas de varios clientes
+-- WHEN el recepcionista escribe un texto que no encaja con `^R-\d{4}$`
++- WHEN el recepcionista escribe un texto que no encaja con `^(?:[A-Za-z]+-)?R-\d{4}$`
+ - THEN se busca por cliente, como en «Búsqueda por cliente»
+ 
+ ## Enmiendas
