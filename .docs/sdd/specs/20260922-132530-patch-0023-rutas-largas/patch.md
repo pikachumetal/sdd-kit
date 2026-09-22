@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-22
 branch: feture/patch-rutas-largas
-commit: <hash>
+commit: f59754c
 ---
 
 # Patch 0023 — rutas de evidencia por debajo de 140 caracteres

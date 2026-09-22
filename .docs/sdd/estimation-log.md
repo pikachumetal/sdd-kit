@@ -42,14 +42,15 @@
 | 2026-09-22 | 0013 | docs | 3 | 1.5 | 0.5 | 20260922-083703-task-0013-postponed-anchor |
 | 2026-09-22 | 0005 | docs | 1.5 | 0.8 | 0.53 | 20260922-084550-task-0005-dispatch-brief |
 | 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | 20260922-090037-task-0012-init-interview |
+| 2026-09-22 | 0023 | patch | 0.5 | 0.75 | 1.5 | 20260922-132530-patch-0023-rutas-largas |
 
-**Factor de calibración** (ratio mediano real/estimado, 34 artefactos): **0.57**
+**Factor de calibración** (ratio mediano real/estimado, 35 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 27 | 0.52 |
 | infra/tooling | 4 | 0.88 |
-| patch | 2 | 0.8 |
+| patch | 3 | 0.8 |
 
 > Ver `estimation.md`.
