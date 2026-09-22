@@ -24,9 +24,9 @@ created: 2026-09-21
 
 ## Verificación por task
 
-- [x] Task 1 — `tests/kit-feedback-red.md`, artefactos en `evidencia-red/`
+- [x] Task 1 — `tests/kit-feedback-red.md`, artefactos en `red/`
 - [x] Task 2 — `Invoke-Pester tests`: 202/0, con los 10 tests de `tests/KitFeedback.Tests.ps1` en verde; revisor de task: 2 hallazgos, 1 aceptado
-- [x] Task 3 — `tests/kit-feedback-green.md`, artefactos en `evidencia-green/`
+- [x] Task 3 — `tests/kit-feedback-green.md`, artefactos en `green/`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope)
 

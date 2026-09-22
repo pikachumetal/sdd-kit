@@ -3,7 +3,7 @@
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 KIT="${KIT_DIR:?define KIT_DIR (copia limpia del kit)}"
-S="$BASE/subject.sh"; O="$BASE/out"
+S="$BASE/subject.sh"; O="$BASE"
 # E1b: E1 sin la línea de estructura en tech-stack.md (el molde de E1 le daba sitio al aprendizaje).
 if [ -n "${E1B:-}" ]; then
   for i in 1 2; do
