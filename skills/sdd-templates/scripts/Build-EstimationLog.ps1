@@ -20,8 +20,8 @@ $ErrorActionPreference = 'Stop'
 # cualquiera de las dos formas.
 $script:EstimateLabel = 'Estimaci[oó]n de implementaci[oó]n(?: \([^)]*\))?|Estimaci[oó]n'
 $script:RealLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real|Real'
-# Las etiquetas de coste admiten la forma anterior a la task 0010, que sigue viva en los
-# walkthroughs ya cerrados: su cuerpo no se reescribe.
+# Las etiquetas de coste admiten formas anteriores que siguen vivas en walkthroughs ya
+# cerrados: su cuerpo no se reescribe.
 $script:ThreadTokensLabel = 'Tokens del hilo'
 $script:SubagentTokensLabel = 'Tokens de subagentes|Coste de subagentes'
 $script:SubjectCostLabel = 'Coste de los sujetos headless|Coste de sujetos'
@@ -62,9 +62,16 @@ function Get-DeclaredAbsence([string]$Text) {
   return $null
 }
 
-function ConvertTo-Thousands([string]$Text) {
-  $absence = Get-DeclaredAbsence $Text
+function Remove-ThousandsSeparator([string]$Text) {
+  # Un punto entre dígitos y seguido de exactamente tres es separador de miles en castellano;
+  # el decimal se escribe con coma.
+  return ($Text -replace '(?<=\d)\.(?=\d{3}(?!\d))', '')
+}
+
+function ConvertTo-Thousands([string]$RawText) {
+  $absence = Get-DeclaredAbsence $RawText
   if ($null -ne $absence) { return $absence }
+  $Text = Remove-ThousandsSeparator $RawText
   if ($Text -notmatch '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)\s*([kKmM])?') { return $null }
   $amount = [double]($Matches[1] -replace ',', '.')
   $thousands = switch -Regex ($Matches[2]) {
@@ -91,9 +98,10 @@ function Get-FolderDate([string]$FolderName) {
   return '—'
 }
 
-function ConvertTo-Money([string]$Text) {
-  $absence = Get-DeclaredAbsence $Text
+function ConvertTo-Money([string]$RawText) {
+  $absence = Get-DeclaredAbsence $RawText
   if ($null -ne $absence) { return $absence }
+  $Text = Remove-ThousandsSeparator $RawText
   if ($Text -notmatch '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)\s*\$') { return $null }
   return Format-Number ([double]($Matches[1] -replace ',', '.'))
 }

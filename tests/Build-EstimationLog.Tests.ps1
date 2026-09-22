@@ -105,13 +105,17 @@ Describe 'Build-EstimationLog.ps1' {
     Get-Row $script:Result.Text '20260917-100000-task-0015-legacy' | Should -Be '| 2026-09-17 | 0015 | docs | 2 | 2 | 1 | — | 1230k | 10.3 | 20260917-100000-task-0015-legacy |'
   }
 
+  It 'lee el punto como separador de miles, no como decimal' {
+    Get-Row $script:Result.Text '20260918-100000-task-0016-miles' | Should -Be '| 2026-09-18 | 0016 | docs | 2 | 1 | 0.5 | 148k | 1230k | 1850 | 20260918-100000-task-0016-miles |'
+  }
+
   It 'calcula el factor global como mediana de los ratios' {
-    # Ratios ordenados: [0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 1, 1, 1, 1, 1, 2] → mediana 0.6, n = 13
-    $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 13 artefactos\): \*\*0\.6\*\*'
+    # Ratios ordenados: [0.25, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.6, 1, 1, 1, 1, 1, 2] → mediana 0.55, n = 14
+    $script:Result.Text | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 14 artefactos\): \*\*0\.55\*\*'
   }
 
   It 'calcula la mediana por Tipo' {
-    $script:Result.Text | Should -Match '(?m)^\| docs \| 7 \| 0\.5 \|$'
+    $script:Result.Text | Should -Match '(?m)^\| docs \| 8 \| 0\.5 \|$'
     $script:Result.Text | Should -Match '(?m)^\| patch \| 3 \| 0\.6 \|$'
     $script:Result.Text | Should -Match '(?m)^\| hotfix \| 2 \| 1\.5 \|$'
     $script:Result.Text | Should -Match '(?m)^\| — \| 1 \| 0\.5 \|$'
