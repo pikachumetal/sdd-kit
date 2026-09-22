@@ -94,15 +94,15 @@ Ninguna.
 
 **Ficheros**: modificar `skills/sdd-init-greenfield/SKILL.md`
 
-- [ ] **Step 1: Implementación** — el paso 1 pasa a ser:
+- [x] **Step 1: Implementación** — el paso 1 pasa a ser:
   - una línea de forma: cada turno termina con una sola pregunta de la lista, en su orden. «No sé» deja la entrada pendiente y «no aplica» la cierra. Lo que ya existe (código, documentos de anclaje sin marcador) o ya fijan las instrucciones del usuario (`CLAUDE.md` global o del proyecto) no se pregunta: se presenta como propuesta o se referencia;
   - la tabla `# · Pregunta · Va a`, que separa en filas lo que hoy va junto (roles y módulos; ramas, worktrees y entorno) y conserva todas las preguntas actuales, incluidas las cinco reglas de producto por nombre;
   - la fila de ramas lleva git-flow como opción recomendada (`main` estable, `develop` de integración, `feature/<id>` desde `develop`).
 
   El paso 5 añade el caso de repo existente: presentar el plan completo (renombrados, ramas nuevas, rama por defecto del remoto, borrados) y esperar el «sí»; lo que toca el remoto lo ejecuta el usuario con los comandos que le da el agente.
-- [ ] **Step 2: Build** — `Invoke-Pester tests` (lo corre también el pre-commit). Esperado: 242/0.
-- [ ] **Step 3: Verificación** — releer la skill contra los cuatro THEN de la spec.
-- [ ] **Step 4: Commit** — `feat(sdd-init-greenfield): …`.
+- [x] **Step 2: Build** — `Invoke-Pester tests` (lo corre también el pre-commit). Esperado: 242/0.
+- [x] **Step 3: Verificación** — releer la skill contra los cuatro THEN de la spec.
+- [x] **Step 4: Commit** — `feat(sdd-init-greenfield): …`.
 
 ### Task 2 — GREEN
 
@@ -112,11 +112,11 @@ Ninguna.
 
 **Ficheros**: crear `tests/init-interview-green.md`, `green/` en la carpeta de la spec.
 
-- [ ] **Step 1: Molde E4** — el molde E2 más `.docs/sdd/` ya aprobado (mission, constitution con git-flow acordado, tech-stack, roadmap, `sdd-kit.json`). Petición: «Sigue con sdd-init-greenfield: la entrevista y los documentos ya están aprobados; acordamos git-flow. Te toca el paso de git.» Turno 2: «adelante».
-- [ ] **Step 2: Comprobación previa** (tech-stack, cinco puntos): la skill se carga en el turno 1, el molde tiene lo que la petición da por hecho, el turno 2 encaja, la petición tiene una sola lectura y la copia del kit lleva la skill nueva.
-- [ ] **Step 3: Lanzar** E2 ×2 (16 turnos), E4 ×2 (2 turnos), E3 ×2 (1 turno) y E1 ×1 (hasta el cierre), en paralelo.
-- [ ] **Step 4: Veredicto** por THEN y controles, con literales. Stream: comprobar que se cargó la skill.
-- [ ] **Step 5: Commit** — evidencia y `tests/init-interview-green.md`.
+- [x] **Step 1: Molde E4** — el molde E2 más `.docs/sdd/` ya aprobado (mission, constitution con git-flow acordado, tech-stack, roadmap, `sdd-kit.json`). Petición: «Sigue con sdd-init-greenfield: la entrevista y los documentos ya están aprobados; acordamos git-flow. Te toca el paso de git.» Turno 2: «adelante».
+- [x] **Step 2: Comprobación previa** (tech-stack, cinco puntos): la skill se carga en el turno 1, el molde tiene lo que la petición da por hecho, el turno 2 encaja, la petición tiene una sola lectura y la copia del kit lleva la skill nueva.
+- [x] **Step 3: Lanzar** E2 ×2 (16 turnos), E4 ×2 (2 turnos), E3 ×2 (1 turno) y E1 ×1 (hasta el cierre), en paralelo.
+- [x] **Step 4: Veredicto** por THEN y controles, con literales. Stream: comprobar que se cargó la skill.
+- [x] **Step 5: Commit** — evidencia y `tests/init-interview-green.md`.
 
 ---
 
@@ -132,8 +132,8 @@ Ninguna.
 
 ## 3. Validación final
 
-- [ ] Suite verde
-- [ ] Los cuatro THEN de la spec en GREEN; controles E1 y E3 sin regresión
+- [x] Suite verde
+- [x] Los cuatro THEN de la spec en GREEN; controles E1 y E3 sin regresión
 - [ ] Cierre vía `sdd-end-task`
 
 ---
