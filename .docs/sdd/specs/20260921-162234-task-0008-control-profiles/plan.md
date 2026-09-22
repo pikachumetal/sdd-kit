@@ -341,6 +341,19 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - [ ] **Step 2: Tests** — mover el `Describe`, `git rm` de `red/TaskSplit.Tests.ps1`; `pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"`. Esperado: suite verde.
 - [ ] **Step 3: Commit** — por ruta: `feat(gates): la primera pregunta propone partir una task grande`.
 
+### Task 2c — Aprobación explícita y 🧪 sin validar en la release (enmienda del 2026-09-22)
+
+**Modelo**: Sonnet, effort **high**.
+**Ejecución**: subagente, durante la Task 4 (el GREEN destapó los dos fallos).
+**Tests RED**: hilo principal · `red/ApprovalAndSmoke.Tests.ps1`. Contrato: el implementador añade su `Describe` a `tests/ControlProfiles.Tests.ps1`, hace `git rm` del fichero de `red/`, lo pone en verde y no lo modifica.
+
+**Ficheros**: `skills/sdd-start-task/SKILL.md` (paso 4), `skills/sdd-start-task/references/control-profiles.md` (si hace falta una línea en `## Gates por perfil` o en `## Desvío`), `skills/sdd-end-release/SKILL.md` (paso 6) y `tests/ControlProfiles.Tests.ps1`.
+
+- [ ] **Step 1: Aprobación explícita** — en el gate del paso 4: cuenta como aprobación un «sí» o un «apruebo» a la pregunta del gate, o una opción cuyo texto diga que aprueba; elegir un alcance o responder a otra pregunta no aprueba, y el agente pregunta la aprobación en una línea. Red flag y racionalización del fallo de E3 en el GREEN: en `delegate`, «desde la aprobación el agente trabaja solo» se leyó como licencia para tratar un alcance elegido como aprobado.
+- [ ] **Step 2: 🧪 que el smoke no valida** — en el paso 6 de `sdd-end-release`: la task que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>`, la siguiente release salvo que el dev-lead diga otro, y el cierre la lista.
+- [ ] **Step 3: Tests** — mover el `Describe`, `git rm` del fichero de `red/`; `pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"`. Esperado: suite verde.
+- [ ] **Step 4: Commit** — por ruta: `fix(gates): elegir un alcance no aprueba la spec y la 🧪 conserva su forma`.
+
 ### Task 4 — Campaña GREEN
 
 **Modelo**: hilo principal; sujetos `claude -p --model sonnet` (18 runs, `--max-turns 40` en E2 y E8).
@@ -392,7 +405,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
 - El perfil de control decide dónde para el agente → E2, E8 → Task 2 Step 1. ✓
 - El perfil se hereda de la task, de la release o del proyecto → E8 (proyecto), E2 (sin `profile:`) → Task 2 Steps 1 y 5. Sin escenario para release > proyecto: se ancla en la tabla. ✓
 - La primera pregunta confirma carril, modo y perfil → E1, E2 T1 → Task 2 Step 2. ✓
-- ~~Una respuesta cuenta como aprobación solo si aprueba~~ → recortado por el RED (E3 pasa 2/2); E3 se repite en el GREEN como control de no regresión. ✓
+- Una respuesta cuenta como aprobación solo si aprueba → recortado por el RED (E3 pasa 2/2), recuperado por enmienda cuando el GREEN falló 1/2 → Task 2c, E3 repetido. ✓
 - Un cambio a la spec aprobada es un desvío → E8 (conflicto sin respuesta) → Task 2 Steps 1–2. ✓
 - Salir del plan es un ruling visible → E4 → Task 2 Steps 2–3. ✓
 - La validación puede diferirse con condiciones → E5 → Task 3 Steps 1–2. ✓

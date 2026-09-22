@@ -35,7 +35,7 @@ Activada por el dev-lead: dos revisores (2026-09-21).
 8. **`unattended` se define aquí solo a nivel de gates.** La spec la aprueba el agente con las decisiones registradas. Si una pregunta de la entrevista no tiene respuesta en los documentos, la task se aparca. La validación se aplaza al smoke de la release (🧪 con ese disparador); cuando el dev-lead valida ese smoke, `sdd-end-release` pasa a ✅ las tasks diferidas a él. Encadenar tasks e informe final: una línea en `sdd-start-task`. Los frenos (reintentos, vigía) son de la 0005.
 9. **Review de spec: ninguna por defecto.** El agente la recomienda con 4 señales o más, o con contrato público + datos (hoy basta con 2). Si la recomienda, lo pregunta **antes** de presentar la spec, en una sola pregunta con su motivo. En `unattended` decide él y lo registra.
 10. **La primera pregunta de la entrevista** confirma carril, modo (ofrece lite si se cumple el predicado) y el perfil vigente, **sola** y antes de cualquier pregunta de diseño. Si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, propone ese enunciado en la misma pregunta. El RED mostró que la oferta de lite se pierde cuando se mezcla con otra pregunta (1 de 2) y cuando el usuario contesta a otra cosa (2 de 2).
-11. ~~**«Aprobación explícita»**~~ **Recortada por el RED** (2026-09-21): 2 de 2 sujetos no tomaron la elección de un alcance como aprobación y volvieron a pedirla (`tests/control-profiles-red.md`, E3). Sin fallo no hay guía (Art. I). Va a deuda como posible falso negativo: en campo fue el hilo, con la sesión cargada, quien lo hizo.
+11. ~~**«Aprobación explícita»**~~ **Recortada por el RED** (2026-09-21): 2 de 2 sujetos no tomaron la elección de un alcance como aprobación y volvieron a pedirla (`tests/control-profiles-red.md`, E3). Sin fallo no hay guía (Art. I). Va a deuda como posible falso negativo: en campo fue el hilo, con la sesión cargada, quien lo hizo. **Recuperada el 2026-09-22 por enmienda** (ver `## Enmiendas`): con la guía de `delegate`, el GREEN falló 1 de 2.
 12. **El walkthrough deja de ser «inmutable».** El cuerpo no se reescribe tras el cierre; lo posterior (validación tardía, integración con otra task) va en `## 6. Adendas`, con entradas fechadas. También cambia la entrada «Walkthrough» del glosario de `mission.md`. Gana además la sección «Decisiones tomadas sin el dev-lead»: los rulings de la ejecución, que `subagent-driven-development` ya lista en su informe final («Rulings I made»).
 13. **Un commit del hilo principal durante la ejecución** entra en el alcance de la revisión de la task en curso; si ya no queda ninguna, en la revisión final de rama.
 14. **Estados del roadmap, conjunto cerrado**: `⏳` pendiente · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`. «EN ESPERA» no es un estado del roadmap: es la task en curso esperando al usuario.
@@ -191,6 +191,20 @@ La tabla de gates por perfil vive en **un solo sitio** y cada gate de las skills
 - WHEN el agente formula la primera pregunta de la entrevista
 - THEN propone partirla en tasks con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera
 - AND el usuario decide; si sigue entera, no se vuelve a proponer en esa task
+
+- 2026-09-22 — Se recupera el requisito recortado «Una respuesta cuenta como aprobación solo si aprueba» (decisión 11): el GREEN destapó una regresión con la guía nueva. En `delegate`, 1 de 2 sujetos tomó «vale, que solo valide `libres`» como aprobación e implementó (`tests/control-profiles-green.md`, E3). De paso, en `release-flow`, una task 🧪 que el dev-lead no menciona en el smoke **conserva la forma cerrada** con disparador nuevo, la siguiente release salvo que el dev-lead diga otro: 1 de 2 sujetos la dejó como «🧪 sin validar» (E10) — aprobada: «Recuperarlo (Recomendado)».
+
+**Capacidad `control-profiles` — ADDED — Una respuesta cuenta como aprobación solo si aprueba**
+- GIVEN un gate de aprobación (spec, plan en `pair`, enmienda)
+- WHEN el usuario responde
+- THEN cuenta como aprobación un «sí» o un «apruebo» a la pregunta del gate, o elegir una opción cuyo texto diga que aprueba
+- AND elegir un alcance o responder a otra pregunta no aprueba: el agente pregunta la aprobación en una línea
+
+**Capacidad `release-flow` — MODIFIED — El smoke de la release valida las tasks diferidas a él**
+- GIVEN una release con tasks `🧪 validación diferida a <esta release>`
+- WHEN el dev-lead valida el smoke de la release en `sdd-end-release`, diciendo qué probó
+- THEN cada una de esas tasks gana una adenda fechada en su walkthrough con lo que el dev-lead probó que le toca, y su fila pasa a ✅
+- AND una task que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>` (la siguiente release, salvo que el dev-lead diga otro), y el cierre la lista
 
 ## Aprobaciones
 
