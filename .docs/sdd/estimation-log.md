@@ -45,6 +45,7 @@
 | 2026-09-22 | 0023 | patch | 0.5 | 0.75 | 1.5 | 20260922-132530-patch-0023-rutas-largas |
 | 2026-09-22 | 0024 | patch | 0.25 | 0.3 | 1.2 | 20260922-133508-patch-0024-readme-marketplace |
 | 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | 20260922-135640-patch-0027-script-arranque |
+| 2026-09-22 | 0028 | patch | — | 1 | — | 20260922-135817-patch-0028-end-release |
 
 **Factor de calibración** (ratio mediano real/estimado, 37 artefactos): **0.58**
 
