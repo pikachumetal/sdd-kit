@@ -4,5 +4,5 @@ Registro vivo: status y commit por task.
 
 | Task | Nombre | Status | Commit |
 | --- | --- | --- | --- |
-| 1 | Bloque único de preguntas y sus tres consumidores | 🔄 en curso | — |
-| 2 | GREEN | ⏳ | — |
+| 1 | Bloque único de preguntas y sus tres consumidores | ✅ | 6e3bebc |
+| 2 | GREEN | ✅ | ver commit «test(sdd): GREEN…» |
