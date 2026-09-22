@@ -34,7 +34,7 @@ Describe 'Formato de cierre de filas del roadmap' {
   It 'la plantilla fija los dos prefijos y la regex de conteo en el bloque de Deuda técnica' {
     $script:DebtBlock | Should -Match ([regex]::Escape('**[<Task|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))
     $script:DebtBlock | Should -Match ([regex]::Escape('**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**'))
-    $script:DebtBlock | Should -Match ([regex]::Escape("grep -E '^\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '"))
+    $script:DebtBlock | Should -Match ([regex]::Escape("grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '"))
   }
 
   It 'el paso 8 de sdd-end-task cita el formato de la plantilla para Deuda técnica y Backlog' {

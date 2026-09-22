@@ -29,7 +29,7 @@ Review de spec propuesta: ninguna — señales: capacidad nueva (`roadmap`), con
    - `**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**` cuando se salda en parte.
    - El enlace va al `walkthrough.md` de la task o al `patch.md` del patch. El texto original de la fila se queda detrás, sin tocar.
    - Descarto el estado en la columna «Destino» y una sección aparte de deuda saldada: la primera mezcla el plan con el resultado, y la segunda obliga a leer por secciones en vez de por líneas.
-3. **Se cuenta con un grep.** La palabra `parcial` no contiene `saldada`, así que `grep -E '^\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` lista las filas cerradas y ninguna abierta ni parcial. Las abiertas son el resto de filas de la tabla. El id admite el del gestor (`SALAS-142`) igual que el de secuencia.
+3. **Se cuenta con un grep.** La palabra `parcial` no contiene `saldada`, así que `grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` lista las filas cerradas y ninguna abierta ni parcial. Las abiertas son el resto de filas de la tabla. El id admite el del gestor (`SALAS-142`) igual que el de secuencia.
 4. **Vale para «Deuda técnica» y para «Backlog»**, las dos tablas de cosas pendientes que una task o un patch salda. Las filas de task de «Próximo» y de la release siguen con sus estados (✅, 🧪…).
 5. **Un cierre posterior sustituye el prefijo** (de `parcial` a `saldada`, por ejemplo). El historial queda en git: dos prefijos en una fila romperían el «empieza por».
 6. **El formato vive en `roadmap-template.md`**, en el bloque de ayuda de «Deuda técnica», que es la fuente única de la forma del roadmap (Art. VIII). El paso 8 de `sdd-end-task` y el paso 4 de `sdd-end-patch` lo citan, sin copiarlo.
@@ -73,7 +73,7 @@ Receta de forma (Art. II): el fallo es de forma, no de disciplina. Los agentes y
 - WHEN se cierra con `sdd-end-task` o con `sdd-end-patch`
 - THEN la celda «Ítem» empieza por `**[<Task|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, o por `**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**` si queda algo, con el enlace al `walkthrough.md` o al `patch.md`
 - AND el texto con que se abrió la fila sigue detrás del prefijo, sin reescribir
-- AND `grep -E '^\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` sobre el roadmap lista esa fila si está saldada, y no la lista si es `parcial`
+- AND `grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` sobre el roadmap lista esa fila si está saldada, y no la lista si es `parcial`
 
 **Reglas de la capacidad**
 - **Dónde viven los datos**: el formato, en el bloque de ayuda de «Deuda técnica» de `roadmap-template.md` de `sdd-templates`; los cierres lo citan.
@@ -82,7 +82,7 @@ Receta de forma (Art. II): el fallo es de forma, no de disciplina. Los agentes y
 
 ## Enmiendas
 
-- 2026-09-22 — La regex del THEN y de la decisión 3 pierde el ancla `^`: `grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` — Anclada al principio de línea no lista las filas de «Backlog», cuya celda «Ítem» es la segunda columna, y la decisión 4 dice que el formato vale también ahí. El `| ` delante del prefijo sigue exigiendo que esté al principio de una celda — sin aprobar (dev-lead ausente; se implementa la regex literal y se presenta en la validación)
+- 2026-09-22 — La regex del THEN y de la decisión 3 pierde el ancla `^` — Anclada al principio de línea no lista las filas de «Backlog», cuya celda «Ítem» es la segunda columna, y la decisión 4 dice que el formato vale también ahí. El `| ` delante del prefijo sigue exigiendo que esté al principio de una celda — aprobada: «Apruebo, quítalo»
 
 ## Aprobaciones
 
