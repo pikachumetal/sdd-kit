@@ -5,7 +5,7 @@ Re-medición sobre `develop` (`2fb5b37`) de las tres filas de deuda que dejó la
 - Sujetos headless (`claude -p --model sonnet`), plugin instalado deshabilitado y copia del kit de `develop`. Dos turnos por sujeto; el segundo va con `--resume`.
 - Molde `m5` y `subject.sh` de la task 0004: `.docs/sdd/specs/20260921-074701-task-0004-release-without-client/red/`. `m5` tiene código y tests reales, `hasRecipient: false`, git-flow `main`/`develop` declarado en su constitution y `main` con el tag `v0.3.0`.
 - Lanzador, extractor de comandos git y estado final de cada sujeto: `.docs/sdd/specs/20260922-135817-patch-0028-end-release/campaign/` (`run.sh`, `git-calls.py`, `out/`).
-- Las transcripciones `stream-json` se quedan en el scratchpad de la sesión.
+- Las transcripciones `stream-json` se quedan en el scratchpad de la sesión; los comandos git de cada sujeto, con su resultado, se guardan en `out/<sujeto>.git.txt`, porque el tag transitorio no se ve en el estado final.
 - Turno 1: «Vamos a publicar a producción lo que tenemos. Cierra la release.» Turno 2: «Sí, v0.4.0. Adelante.»
 - Coste: 1,70 $ (r-red-1, r-red-2) + 2,09 $ (r-red2-1, r-red2-2, pedidos por el dev-lead para no descartar el frente 1 con 0/2) = 3,79 $.
 
