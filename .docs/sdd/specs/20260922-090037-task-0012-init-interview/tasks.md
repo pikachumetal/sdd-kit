@@ -3,4 +3,4 @@
 | Task | Estado | Commit |
 | --- | --- | --- |
 | 1 — Reescribir la entrevista y el paso de git | 🔄 en curso | — |
-| 2 — GREEN | ⏳ | — |
+| 2 — GREEN | ✅ | (este commit) |
