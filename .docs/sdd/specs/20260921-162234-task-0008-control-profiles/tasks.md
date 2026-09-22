@@ -21,7 +21,8 @@ created: 2026-09-21
 | 3 | Cierre, plantillas, release y migración | done | `95736c0` | Implementador Sonnet, ~188k tokens. Ruling: la conducta de las 🧪 va al paso 6 de `sdd-end-release`, porque la skill no tiene paso «smoke». Revisión: agrupada |
 | 2b | Propuesta de partir una task grande (enmienda) | done | `a9788cb` | Enmienda aprobada por el dev-lead: «Enmienda en la 0008». RED E11 falla 2/2 con un solo tema. Implementador Sonnet, ~131k tokens |
 | — | Revisión agrupada de 2, 3 y 2b | done | `176e680` | Sonnet, ~222k tokens. Un Important (`review-spec.md` §3 decía «si el usuario activa», que choca con `unattended`), corregido en una ronda por el implementador de la Task 2; re-revisión limpia. Un Minor diferido (sin frase para la no-respuesta a la pregunta de review) |
-| 4 | Campaña GREEN | pending | | |
+| 2c | Aprobación explícita y 🧪 no validada en la release (enmienda 2) | done | `6231ec3` | Implementador Sonnet, ~108k tokens; revisión acotada limpia (~80k). Enmienda aprobada: «Recuperarlo (Recomendado)» |
+| 4 | Campaña GREEN | done | ver `tests/control-profiles-green.md` | 33 sujetos (31,32 $). Once escenarios corregidos, E8 y E9 con un sujeto inválido cada uno; dos huecos de la guía destapados y cerrados con la Task 2c |
 
 ## Verificación por task
 
@@ -32,7 +33,8 @@ created: 2026-09-21
 - [x] Task 3 — suite 227/0
 - [x] Task 2b — suite 228/0 con `TaskSplit` movido
 - [x] Revisión agrupada de las Tasks 2, 3 y 2b — limpia tras una ronda
-- [ ] Task 4 — `tests/control-profiles-green.md`, artefactos en `green/`
+- [x] Task 2c — suite 230/0
+- [x] Task 4 — `tests/control-profiles-green.md`, artefactos en `green/`
 
 ## Desviaciones
 
