@@ -91,7 +91,7 @@ Describe 'Configuración y log que deja la init' {
 
   It 'el paso de memoria nombra la carpeta, el índice y el gate de borrado' {
     $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
-    foreach ($literal in '~/.claude/projects/<project>/memory/', 'autoMemoryDirectory', 'MEMORY.md', 'pendiente explícito') {
+    foreach ($literal in '~/.claude/projects/<project>/memory/', 'autoMemoryDirectory', 'MEMORY.md', 'pendiente explícito', 'la tabla va igual en el informe') {
       $migration.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }
   }
@@ -124,5 +124,9 @@ Describe 'Tabla de release con Ficheros que toca' {
 
   It 'sdd-start-release escribe la sección con esa tabla' {
     Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'Ficheros que toca'
+  }
+
+  It 'sdd-start-release no deja la celda de ficheros por definir' {
+    Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'nunca «por definir»'
   }
 }
