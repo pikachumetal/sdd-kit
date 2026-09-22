@@ -64,7 +64,7 @@ Describe 'Consumidores de las plantillas de anclaje' {
     Get-KitFileContent 'skills/sdd-init-greenfield/references/estructura.md' | Should -Match ([regex]::Escape("$_-template.md"))
   }
 
-  It 'brownfield calca <_>-template.md' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation') {
+  It 'brownfield calca <_>-template.md' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation', 'changelog') {
     Get-KitFileContent 'skills/sdd-init-brownfield/references/generacion.md' | Should -Match ([regex]::Escape("$_-template.md"))
   }
 }

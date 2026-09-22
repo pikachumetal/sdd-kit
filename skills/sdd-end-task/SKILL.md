@@ -23,7 +23,8 @@ El cierre de una task es una **Definition of Done**: un checklist que garantiza 
 4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive. Destino por tipo
    de aprendizaje: [aprendizajes-skills.md](references/aprendizajes-skills.md). **Si el destino no existe**
    (un `architecture.md` pospuesto en el init): créalo calcando su plantilla de `sdd-templates`, vuelca el
-   aprendizaje y dilo en el informe final. Nunca lo dejes solo en el walkthrough ni lo lleves a otro documento.
+   aprendizaje y dilo en el informe final. Nunca lo dejes solo en el walkthrough ni lo lleves a otro documento. Sin plantilla
+   para ese destino, no lo inventes: dilo y añade una fila a la deuda técnica del roadmap.
 5. **Revisión de skills** — "no aplica" se decide mirando, no por omisión.
    Cómo: [aprendizajes-skills.md](references/aprendizajes-skills.md).
 6. **`tasks.md`** *(solo modo full, y solo si el plan tuvo >1 task)* — todas las filas con status final y commit hash. Si encuentras discrepancias entre `tasks.md` y la realidad, corrígelas y déjalo anotado.
