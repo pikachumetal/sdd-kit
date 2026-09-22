@@ -3,13 +3,13 @@ id: 20260922-090037-task-0012-init-interview
 task: 0012
 title: Entrevista de sdd-init-greenfield — lo que el RED dejó en pie
 mode: full
-status: draft
+status: approved
 created: 2026-09-22
 author: Claude (hilo principal)
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-22
 ---
 
 # Spec — Entrevista de sdd-init-greenfield
@@ -82,4 +82,4 @@ Se reescribe el paso 1 de `sdd-init-greenfield` como lista numerada de preguntas
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-22 | aprobada: «te lo apruebo porque no tengo forma de decirte que no es lo correcto» |
