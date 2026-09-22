@@ -1,6 +1,7 @@
 ---
 name: sdd-consult
-description: Usar cuando el usuario quiere preguntar, entender, planificar o estructurar algo del proyecto con el contexto cargado, sin arrancar el flujo SDD — "una duda", "¿por qué…?", "¿dónde tocaría…?", "¿cómo enfocarías…?", "¿qué hacemos ahora?". No para implementar una feature (sdd-start-task), arreglar un bug determinista (sdd-start-patch) ni investigar un fallo (superpowers:systematic-debugging).
+description: Usar cuando el usuario quiere preguntar, entender, planificar o estructurar algo del proyecto con el contexto cargado, sin arrancar el flujo SDD — "una duda", "¿por qué…?", "¿cómo funciona…?", "¿se puede…?", "¿dónde tocaría…?", "¿cómo enfocarías…?", "¿qué hacemos ahora?". No para implementar una feature (sdd-start-task), arreglar un bug determinista (sdd-start-patch) ni investigar un fallo (superpowers:systematic-debugging).
+argument-hint: "<pregunta>"
 ---
 
 # sdd-consult

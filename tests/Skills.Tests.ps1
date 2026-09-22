@@ -148,3 +148,15 @@ Describe 'Manifests del plugin' {
     $script:Marketplace.description | Should -Not -BeNullOrEmpty
   }
 }
+
+Describe 'Frontmatter de las skills de arranque' {
+  It '<_> lleva argument-hint' -ForEach @('sdd-start-task', 'sdd-start-patch', 'sdd-consult') {
+    $fields = Get-Frontmatter (Get-Content (Get-SkillFile $_) -Raw)
+    $fields['argument-hint'] | Should -Not -BeNullOrEmpty
+  }
+
+  It 'sdd-templates no aparece en el menú de comandos' {
+    $fields = Get-Frontmatter (Get-Content (Get-SkillFile 'sdd-templates') -Raw)
+    $fields['user-invocable'] | Should -Be 'false'
+  }
+}
