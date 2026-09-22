@@ -115,3 +115,14 @@ Describe 'Proyecto de referencia' {
     Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 7 \|.*proyecto de referencia'
   }
 }
+
+Describe 'Tabla de release con Ficheros que toca' {
+  It 'la plantilla del roadmap fija la cabecera de la tabla de release' {
+    Get-KitFile 'skills/sdd-templates/templates/roadmap-template.md' |
+      Should -Match ([regex]::Escape('| id | Task | Origen | Ficheros que toca | Estado |'))
+  }
+
+  It 'sdd-start-release escribe la sección con esa tabla' {
+    Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'Ficheros que toca'
+  }
+}

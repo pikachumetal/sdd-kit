@@ -41,7 +41,8 @@ recomendación; qué entra, en qué orden y cuándo se compromete lo decide el u
    **En preparación** = cualquier otro caso, con los bloqueos explícitos en la sección. Con
    `release.hasRecipient: false` el estado es siempre "en preparación" y no se pregunta.
 5. **Roadmap como única fuente** *(sin gestor: con gestor, la fuente del scope es él, no el roadmap)* —
-   sección "Release N" con filas trazables al acta/origen. **No crear
+   sección "Release N" con filas trazables al acta/origen, en la tabla de `roadmap-template.md` (con la
+   columna «Ficheros que toca»). **No crear
    documentos paralelos de scope.** **Los ids no se inventan**: el origen legítimo es el ticket del gestor
    o la secuencia del proyecto (`ids.mode`) — nunca un número a ojo. En `sequence`, cada fila lleva su id
    **reservado y correlativo** al escribir el scope: esa reserva es lo que impide que dos worktrees cojan
