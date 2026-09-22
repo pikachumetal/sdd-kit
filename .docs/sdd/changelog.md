@@ -17,6 +17,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Auto-enrutado frente a superpowers** — hook `SessionStart` del plugin (`hooks/`) que, solo en proyectos con `.docs/sdd/`, manda las peticiones de trabajo a `sdd-start-task` antes que a `brainstorming`, los bugs a `sdd-start-patch` y las preguntas a `sdd-consult`; capacidad nueva `routing`. → [ref](specs/20260921-162213-task-0014-auto-routing/)
 
 - **Entrevista de `sdd-init-greenfield`: una pregunta por turno y git con repo existente** — el paso 1 es una lista de 17 preguntas numeradas con destino, una por turno; la de ramas recomienda git-flow, lo que ya fijan las instrucciones del usuario no se pregunta, y con un repo existente el agente presenta el plan de git, espera el «sí» y deja al usuario lo que toca el remoto. → [ref](specs/20260922-090037-task-0012-init-interview/)
+- **Encargo del implementador: reglas fijas, fuente lite e `Interfaces` por task** — el encargo lleva tres reglas (no silenciar un gate, nombre y mensaje de un test ajeno antes de relanzarlo, nunca `git stash`), en modo lite el bloque de restricciones sale de la constitution, y cada task de `plan-template.md` declara `Interfaces: Consume / Produce` sin remitir a otras secciones. → [ref](specs/20260922-084550-task-0005-dispatch-brief/)
 
 ### Changed
 
