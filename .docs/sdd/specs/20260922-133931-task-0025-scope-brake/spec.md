@@ -4,13 +4,13 @@ task: 0025
 parent: 0009
 title: Freno de alcance en ejecución
 mode: full
-status: in-review
+status: approved
 created: 2026-09-22
 author: agente
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-22
 ---
 
 # Spec — Freno de alcance en ejecución

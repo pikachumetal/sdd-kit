@@ -14,7 +14,7 @@ Describe 'Frenos de alcance en la ejecución' {
 
   It 'control-profiles define los tres frenos y el solape de la enmienda' {
     $script:Profiles | Should -Match '(?m)^## Frenos de alcance'
-    foreach ($anchor in '3.º fix', 'salida observable', 'git merge-base', 'solape no comprobable') {
+    foreach ($anchor in '3.er fix', 'salida observable', 'git merge-base', 'solape no comprobable') {
       $script:Profiles | Should -Match ([regex]::Escape($anchor))
     }
   }
@@ -29,11 +29,12 @@ Describe 'Frenos de alcance en la ejecución' {
 
   It 'sdd-start-task nombra el freno en el paso 6 y en el trabajo descubierto, y enlaza la referencia' {
     ([regex]::Matches($script:Skill, '(?i)freno de alcance')).Count | Should -BeGreaterOrEqual 2
-    $script:Skill | Should -Match '\(references/control-profiles\.md\)'
+    $script:Skill | Should -Match '(?i)freno de alcance[^
+]*\(references/control-profiles\.md\)'
   }
 
   It 'sdd-start-task no copia el umbral: vive en la referencia' {
-    $script:Skill | Should -Not -Match ([regex]::Escape('3.º fix'))
+    $script:Skill | Should -Not -Match ([regex]::Escape('3.er fix'))
   }
 
   It 'el encabezado de Fixes adicionales lleva el contador' {

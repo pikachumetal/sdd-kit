@@ -44,7 +44,7 @@ Más:
 
 ## Desvío
 
-Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No entra». Todo lo demás que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— es un **ruling**, no un desvío.
+Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No entra». Todo lo demás que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— es un **ruling**, no un desvío, salvo que caiga en un freno de alcance (ver «Frenos de alcance»): entonces se trata como un desvío.
 
 **Desvío** (cambia la spec):
 - `pair` y `delegate`: el agente para, propone el cambio como entrada de `## Enmiendas` en `spec.md` y espera la aprobación. No sigue con la enmienda sin aprobar.
@@ -59,9 +59,9 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No en
 
 ## Frenos de alcance
 
-Tres situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: mismo gate de la tabla, ningún estado nuevo del roadmap.
+Tres situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: su fila de la tabla tiene la misma conducta que la de «Desvío», sin estado nuevo del roadmap.
 
-### 3.º fix descubierto
+### 3.er fix descubierto
 
 Disparador: el 3.er fix descubierto de la task, y cada tercero después (6.º, 9.º…). Cuenta las filas de «Fixes adicionales» de `tasks.md` o, sin `tasks.md`, los rulings de fix registrados — cuenta todo lo que se registra, tanto si se arregla como si se difiere. Cuenta el trabajo descubierto fuera del plan (un defecto del código previo, alcance que nadie pidió); un hallazgo de revisión sobre el código que la propia task acaba de escribir no cuenta: es su bucle de fix.
 
