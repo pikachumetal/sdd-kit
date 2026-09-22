@@ -4,13 +4,13 @@ task: 0020
 parent: 0012
 title: Claves de control en las entrevistas de las init
 mode: full
-status: in-review
+status: approved
 created: 2026-09-22
 author: Claude (hilo principal)
 approvers:
   - role: dev-lead
     name: dev-lead
-    approved_at: null
+    approved_at: 2026-09-22
 ---
 
 # Spec — Claves de control en las entrevistas de las init
@@ -92,4 +92,4 @@ Una fuente, tres consumidores. Las preguntas y sus recomendaciones se escriben u
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-22 | aprobada: «si» |
