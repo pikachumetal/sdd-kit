@@ -72,7 +72,7 @@ created: 2026-09-22
 
 ### 4.1 Builds
 
-- `pwsh -NoProfile -Command "Invoke-Pester -Path tests"`: 227 verdes, 0 fallos, 6 saltados (los previos), después de integrar `develop` y del último fix.
+- `pwsh -NoProfile -Command "Invoke-Pester -Path tests"`: 242 verdes, 0 fallos, 6 saltados (los previos), después de integrar la 0008 y del último fix (227 antes de integrarla).
 - `claude plugin validate --strict skills`: acepta `argument-hint` y `user-invocable`.
 
 ### 4.2 Smoke / tests
