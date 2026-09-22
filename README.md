@@ -74,7 +74,7 @@ El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, r
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 13 plantillas canónicas y el script que regenera el registro de estimaciones. |
+| `sdd-templates` | Las 20 plantillas canónicas y el script que regenera el registro de estimaciones. |
 
 ## Cómo está escrito
 
