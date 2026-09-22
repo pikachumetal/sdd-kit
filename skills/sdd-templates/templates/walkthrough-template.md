@@ -23,12 +23,12 @@ created: <YYYY-MM-DD>
 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Estimación de implementación (del plan): <Yh>
-- Esfuerzo real: <Zh> — reloj del hilo (aproximado si no hay medición exacta — nunca en blanco). Los minutos de los subagentes NO se suman aquí: van en su línea.
+- Esfuerzo real: <Zh> — reloj del hilo (aproximado si no hay medición exacta — nunca en blanco). Los minutos de los subagentes NO se suman aquí: van en su línea. Sin reloj exacto, aproxima con las marcas de los commits y dilo; «no tengo reloj del hilo, sumo los despachos» convierte el ratio en el de los subagentes.
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <…>
 - Modelo del hilo: <modelo>
 - Tokens del hilo: no medido | <N> *(«no medido» es la salida honesta: el agente no tiene contador expuesto. Solo se pone cifra si el dev-lead la aporta)*
-- Tokens de subagentes: <total> en <n> despachos — <rol> <modelo> <tokens> / <min>; … | no aplica
+- Tokens de subagentes: <total> en <n> despachos — <rol> <modelo> <tokens> / <min>; … | no aplica *(la línea abre con el total sumado: el log lee esa primera cifra, no la lista)*
 - Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
 - Review de spec: <no | 1 revisor (dominio|técnica) | 2 revisores> · hallazgos <N>, aceptados <M>
 
