@@ -22,7 +22,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 2 | Configuración y log que deja la init, y su migración | done | `80a0617` | la regla de `true` sube también al `SKILL.md` de brownfield (anatomía: lo que decide no va solo en `references/`) |
 | 3 | Proyecto de referencia | done | `bc33a97` | |
 | 4 | «Ficheros que toca» en la tabla de release | done | `4dfa57b` | |
-| 5 | GREEN headless y evidencia | done | ver commit de la GREEN | 18 sujetos (14 + 4 de re-verificación), 8,14 $; dos REFACTOR, en `tests/init-files-green.md` |
+| 5 | GREEN headless y evidencia | done | `e1efdc3` | 18 sujetos (14 + 4 de re-verificación), 8,14 $; dos REFACTOR, en `tests/init-files-green.md` |
 
 ## Verificación por task
 

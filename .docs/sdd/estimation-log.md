@@ -52,14 +52,15 @@
 | 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | — | — | — | 20260922-153902-task-0018-roadmap-closing |
 | 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | — | — | — | 20260922-154013-task-0029-release-replan |
 | 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
+| 2026-09-22 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | 20260922-211157-task-0019-init-files |
 | 2026-09-22 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
 
-**Factor de calibración** (ratio mediano real/estimado, 44 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 45 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 33 | 0.52 |
+| docs | 34 | 0.51 |
 | infra/tooling | 4 | 0.88 |
 | patch | 6 | 1.27 |
 
