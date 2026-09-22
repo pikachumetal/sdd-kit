@@ -31,7 +31,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 - [ ] Task 1 — build verde + verificación según la política del proyecto
 - [ ] Task 2 — …
 
-## Fixes adicionales (trabajo descubierto fuera de scope)
+## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
 > Si durante la ejecución aparece un bug o scope no previsto en la spec: decidir con el
 > usuario (arreglar ahora vs ticket aparte; misma rama vs rama nueva). Antes de proponer el

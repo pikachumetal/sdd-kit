@@ -44,18 +44,21 @@
 | 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | 20260922-090037-task-0012-init-interview |
 | 2026-09-22 | 0023 | patch | 0.5 | 0.75 | 1.5 | 20260922-132530-patch-0023-rutas-largas |
 | 2026-09-22 | 0024 | patch | 0.25 | 0.3 | 1.2 | 20260922-133508-patch-0024-readme-marketplace |
+| 2026-09-22 | 0025 | docs | 2.5 | 1.3 | 0.52 | 20260922-133931-task-0025-scope-brake |
 | 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | 20260922-135640-patch-0027-script-arranque |
 | 2026-09-22 | 0028 | patch | — | 1 | — | 20260922-135817-patch-0028-end-release |
 | 2026-09-22 | 0020 | docs | 2 | 0.75 | 0.38 | 20260922-141616-task-0020-init-control-keys |
+| 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | 20260922-153902-task-0018-roadmap-closing |
 | 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | 20260922-154013-task-0029-release-replan |
+| 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | 20260922-154302-patch-0030-pre-merge-commit |
 
-**Factor de calibración** (ratio mediano real/estimado, 39 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 42 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 29 | 0.52 |
+| docs | 31 | 0.52 |
 | infra/tooling | 4 | 0.88 |
-| patch | 5 | 1.2 |
+| patch | 6 | 1.27 |
 
 > Ver `estimation.md`.
