@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-22
 branch: feature/pre-merge
-commit: <hash>
+commit: f47866e
 ---
 
 # Patch 0030 — la suite corre también en los commits de merge
