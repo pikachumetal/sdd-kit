@@ -20,6 +20,11 @@ $ErrorActionPreference = 'Stop'
 # cualquiera de las dos formas.
 $script:EstimateLabel = 'Estimaci[oó]n de implementaci[oó]n(?: \([^)]*\))?|Estimaci[oó]n'
 $script:RealLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real|Real'
+# Las etiquetas de coste admiten formas anteriores que siguen vivas en walkthroughs ya
+# cerrados: su cuerpo no se reescribe.
+$script:ThreadTokensLabel = 'Tokens del hilo'
+$script:SubagentTokensLabel = 'Tokens de subagentes|Coste de subagentes'
+$script:SubjectCostLabel = 'Coste de los sujetos headless|Coste de sujetos'
 
 function Resolve-DocsPath([string]$ProjectRoot) {
   # .docs/sdd es la convención del kit; docs/sdd sobrevive en proyectos antiguos.
@@ -48,6 +53,35 @@ function ConvertTo-Hours([string]$Text) {
   return $null
 }
 
+function Get-DeclaredAbsence([string]$Text) {
+  if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
+  $normalized = ($Text -replace '\*', '').Trim()
+  foreach ($answer in @('no medido', 'no aplica')) {
+    if ($normalized -like "$answer*") { return $answer }
+  }
+  return $null
+}
+
+function Remove-ThousandsSeparator([string]$Text) {
+  # Un punto entre dígitos y seguido de exactamente tres es separador de miles en castellano;
+  # el decimal se escribe con coma.
+  return ($Text -replace '(?<=\d)\.(?=\d{3}(?!\d))', '')
+}
+
+function ConvertTo-Thousands([string]$RawText) {
+  $absence = Get-DeclaredAbsence $RawText
+  if ($null -ne $absence) { return $absence }
+  $Text = Remove-ThousandsSeparator $RawText
+  if ($Text -notmatch '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)\s*([kKmM])?') { return $null }
+  $amount = [double]($Matches[1] -replace ',', '.')
+  $thousands = switch -Regex ($Matches[2]) {
+    '[mM]' { $amount * 1000 }
+    '[kK]' { $amount }
+    default { $amount / 1000 }
+  }
+  return '{0}k' -f [math]::Round($thousands, 0, [System.MidpointRounding]::AwayFromZero)
+}
+
 function Get-FirstToken([string]$Text, [string]$Fallback) {
   if ($Text -match '^\**\s*([A-Za-z][\w/-]*)') { return $Matches[1] }
   return $Fallback
@@ -64,6 +98,22 @@ function Get-FolderDate([string]$FolderName) {
   return '—'
 }
 
+function ConvertTo-Money([string]$RawText) {
+  $absence = Get-DeclaredAbsence $RawText
+  if ($null -ne $absence) { return $absence }
+  $Text = Remove-ThousandsSeparator $RawText
+  if ($Text -notmatch '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)\s*\$') { return $null }
+  return Format-Number ([double]($Matches[1] -replace ',', '.'))
+}
+
+function Read-CostFields([string]$Section) {
+  return [pscustomobject]@{
+    ThreadTokens   = ConvertTo-Thousands (Get-FieldText $Section $script:ThreadTokensLabel)
+    SubagentTokens = ConvertTo-Thousands (Get-FieldText $Section $script:SubagentTokensLabel)
+    SubjectCost    = ConvertTo-Money (Get-FieldText $Section $script:SubjectCostLabel)
+  }
+}
+
 function Read-Walkthrough([string]$Path) {
   $content = Get-Content $Path -Raw
   $section = Get-TimeSection $content '(?m)^#+.*estimado vs real'
@@ -73,6 +123,7 @@ function Read-Walkthrough([string]$Path) {
     Type     = Get-FirstToken (Get-FieldText $section 'Tipo') '—'
     Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel)
     Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel)
+    Cost     = Read-CostFields $section
   }
 }
 
@@ -85,6 +136,7 @@ function Read-Patch([string]$Path, [string]$Type) {
     Type     = $Type
     Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel)
     Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel)
+    Cost     = Read-CostFields $section
   }
 }
 
@@ -104,6 +156,11 @@ function Read-Artifact([System.IO.DirectoryInfo]$Dir) {
   return $null
 }
 
+function Format-Text([object]$Value) {
+  if ([string]::IsNullOrWhiteSpace($Value)) { return '—' }
+  return $Value
+}
+
 function Format-Number([object]$Value) {
   if ($null -eq $Value) { return '—' }
   $rounded = [math]::Round([double]$Value, 2, [System.MidpointRounding]::AwayFromZero)
@@ -120,13 +177,16 @@ function Get-Median([double[]]$Values) {
 function New-Row([System.IO.DirectoryInfo]$Dir, [pscustomobject]$Artifact) {
   $ratio = if ($null -ne $Artifact.Estimate -and $Artifact.Estimate -gt 0) { $Artifact.Real / $Artifact.Estimate } else { $null }
   return [pscustomobject]@{
-    Date     = Get-FolderDate $Dir.Name
-    Task     = Get-TaskId $Artifact.Content $Dir.Name
-    Type     = $Artifact.Type
-    Estimate = $Artifact.Estimate
-    Real     = $Artifact.Real
-    Ratio    = $ratio
-    Folder   = $Dir.Name
+    Date           = Get-FolderDate $Dir.Name
+    Task           = Get-TaskId $Artifact.Content $Dir.Name
+    Type           = $Artifact.Type
+    Estimate       = $Artifact.Estimate
+    Real           = $Artifact.Real
+    Ratio          = $ratio
+    ThreadTokens   = $Artifact.Cost.ThreadTokens
+    SubagentTokens = $Artifact.Cost.SubagentTokens
+    SubjectCost    = $Artifact.Cost.SubjectCost
+    Folder         = $Dir.Name
   }
 }
 
@@ -168,10 +228,12 @@ function Format-Log([object[]]$Rows) {
   [void]$builder.AppendLine('<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) — no editar a mano. Regenerar: pwsh -NoProfile -File <sdd-templates>/scripts/Build-EstimationLog.ps1 -Root <proyecto> -->')
   [void]$builder.AppendLine('# Estimation log (estimado vs real)')
   [void]$builder.AppendLine('')
-  [void]$builder.AppendLine('| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Carpeta |')
-  [void]$builder.AppendLine('| --- | --- | --- | --- | --- | --- | --- |')
+  [void]$builder.AppendLine('| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Carpeta |')
+  [void]$builder.AppendLine('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
   foreach ($row in $Rows) {
-    [void]$builder.AppendLine("| $($row.Date) | $($row.Task) | $($row.Type) | $(Format-Number $row.Estimate) | $(Format-Number $row.Real) | $(Format-Number $row.Ratio) | $($row.Folder) |")
+    $hours = "$(Format-Number $row.Estimate) | $(Format-Number $row.Real) | $(Format-Number $row.Ratio)"
+    $cost = "$(Format-Text $row.ThreadTokens) | $(Format-Text $row.SubagentTokens) | $(Format-Text $row.SubjectCost)"
+    [void]$builder.AppendLine("| $($row.Date) | $($row.Task) | $($row.Type) | $hours | $cost | $($row.Folder) |")
   }
   Add-CalibrationSection $builder $Rows
   return $builder.ToString()
