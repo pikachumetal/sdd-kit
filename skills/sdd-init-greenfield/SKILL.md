@@ -21,11 +21,33 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 
 ## Flujo (crea un todo por paso)
 
-1. **Entrevista** — `superpowers:brainstorming`, una pregunta cada vez, por bloques: (a) producto — problema, usuarios y roles, módulos imaginados, **y las cinco reglas de producto preguntadas por nombre** —dónde viven los datos (fichero, tabla, memoria, almacenamiento del cliente) · idioma de los nombres (API, claves, mensajes) · límites (topes: tamaños, profundidades, número de resultados) · avisos (qué se avisa al usuario y cuándo, p. ej. un secreto en claro) · regla ante conflicto (qué manda cuando dos vías dan el mismo dato)— («no sé» deja la entrada pendiente; sin ellas el agente las decide al azar en cada task); (b) stack — si no está decidido, opciones con trade-offs y tu recomendación, pero **la decisión es del usuario** y puede quedar abierta (se registra en tech-stack como pendiente con las opciones); (c) principios — qué es innegociable (datos, migraciones, commits, seguridad); (d) proceso — ¿changelog? y, si sí, ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release` desde las release notes) ¿gestor de tickets? ¿cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia del proyecto (`sequence`)? — «no sé» deja `tracker` (el comportamiento de hoy). ¿convención de ramas? ¿worktrees? y, solo si sí, ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? — con ambas afirmativas se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre y no se crea.
+1. **Entrevista** — `superpowers:brainstorming`, con esta lista. **Cada turno termina con una sola pregunta de la lista**, en su orden. «No sé» deja la entrada pendiente; «no aplica» la cierra. Lo que ya existe (código, un documento de anclaje) se presenta como propuesta para confirmar, y lo que ya fijan las instrucciones del usuario (`CLAUDE.md` global o del proyecto) no se pregunta: se referencia.
+
+   | # | Pregunta | Va a |
+   | --- | --- | --- |
+   | 1 | ¿Qué problema resuelve el proyecto? | mission |
+   | 2 | ¿Quién lo usa y con qué roles? | mission |
+   | 3 | ¿Qué módulos imaginas? | mission, roadmap |
+   | 4 | ¿Dónde viven los datos (fichero, tabla, memoria, almacenamiento del cliente)? | constitution, «Reglas de producto» |
+   | 5 | ¿En qué idioma van los nombres (API, claves, mensajes)? | constitution, «Reglas de producto» |
+   | 6 | ¿Qué límites hay (tamaños, profundidades, número de resultados)? | constitution, «Reglas de producto» |
+   | 7 | ¿Qué se avisa al usuario y cuándo (p. ej. un secreto en claro)? | constitution, «Reglas de producto» |
+   | 8 | Cuando dos vías dan el mismo dato, ¿cuál manda? | constitution, «Reglas de producto» |
+   | 9 | ¿Qué stack? Si no está decidido: opciones con trade-offs y tu recomendación; decide el usuario y puede quedar abierto, con las opciones | tech-stack |
+   | 10 | ¿Qué es innegociable (datos, migraciones, seguridad; commits, solo si las instrucciones del usuario no los fijan ya)? | constitution |
+   | 11 | ¿Llevamos changelog? | `changelog.md` |
+   | 12 | Solo si 11 es sí: ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release`) | `client-changelog.md` |
+   | 13 | ¿Hay gestor de tickets? | `CLAUDE.md` |
+   | 14 | ¿Cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` |
+   | 15 | ¿Qué convención de ramas? Recomendada, la del kit: git-flow — `main` estable, `develop` de integración, `feature/<id>` desde `develop` | constitution, paso 5 |
+   | 16 | ¿Trabajaréis con worktrees? | `CLAUDE.md` |
+   | 17 | Solo si 16 es sí: ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? Si es sí, se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre | `environments.md` |
+
+   Las preguntas 4 a 8 son las cinco reglas de producto: se preguntan por nombre, porque sin ellas el agente las decide al azar en cada task.
 2. **Generar documento a documento, con gate**: mission → presentar → aprobar; después constitution (con la sección «Reglas de producto»: las cinco por nombre, cada una respondida · pendiente · no aplica; si difiere por capacidad, por capacidad dentro de la entrada) → … Nada se da por anclaje sin aprobación explícita del usuario.
 3. **Estructura**: crear `.docs/sdd/` completa, `estimation-log.md` vacío y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`) y el campo `ids` con la respuesta de la entrevista. Cada documento se **calca** de su plantilla de `sdd-templates` (lista en [estructura.md](references/estructura.md)): la forma es la de la plantilla y el contenido, el de la entrevista. Nunca se copia un documento del `.docs/` del kit ni de otro proyecto, y no se crea carpeta `templates/`.
 4. **`CLAUDE.md` corto**: punteros a los documentos + reglas críticas. No duplicar contenido que ya vive en un doc de anclaje.
-5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista.
+5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista. Si el repo ya existe y sus ramas o su remoto no siguen esa convención, presenta el plan completo —renombrados, ramas nuevas, rama por defecto del remoto, borrados— y espera el «sí» antes de ejecutar nada. Lo que toca el remoto (push, rama por defecto, borrar ramas) lo ejecuta el usuario, con los comandos que le das.
 6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando `capabilities/` madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).
 
 ## Red flags — STOP

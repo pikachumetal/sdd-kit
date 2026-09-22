@@ -40,13 +40,14 @@
 | 2026-09-21 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | 20260921-162213-task-0014-auto-routing |
 | 2026-09-21 | 0008 | docs | 6 | 2.6 | 0.43 | 20260921-162234-task-0008-control-profiles |
 | 2026-09-22 | 0013 | docs | 3 | 1.5 | 0.5 | 20260922-083703-task-0013-postponed-anchor |
+| 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | 20260922-090037-task-0012-init-interview |
 
-**Factor de calibración** (ratio mediano real/estimado, 32 artefactos): **0.57**
+**Factor de calibración** (ratio mediano real/estimado, 33 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 25 | 0.5 |
+| docs | 26 | 0.51 |
 | infra/tooling | 4 | 0.88 |
 | patch | 2 | 0.8 |
 
