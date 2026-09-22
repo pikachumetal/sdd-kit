@@ -24,7 +24,8 @@ Describe 'Encargo del implementador' {
   It 'dice de dónde sale el bloque de restricciones en modo lite' {
     foreach ($path in 'skills/sdd-start-task/references/encargo-revision.md', 'skills/sdd-start-task/SKILL.md') {
       $text = Get-KitFile $path
-      $text | Should -Match 'modo lite[^\n]*artículo de calidad de código[^\n]*política de modelos'
+      $text | Should -Match 'modo lite[^\n]*artículo de calidad de código'
+      $text | Should -Not -Match 'modo lite[^\n]*artículo de calidad de código y la política de modelos'
     }
   }
 }
