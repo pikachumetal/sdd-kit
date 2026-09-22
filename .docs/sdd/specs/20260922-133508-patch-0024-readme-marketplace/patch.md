@@ -29,8 +29,8 @@ Base comprobada: la rama sale de `develop` en `cc87b3c`. El único cambio del RE
 
 ## 3. Fix
 
-- **Fichero(s)**: `README.md`
-- **Cambio**: en «Instalación», bloque de `.claude/settings.json` por proyecto con `extraKnownMarketplaces.sdd-kit` (`source: github`, `repo: pikachumetal/sdd-kit`) y `enabledPlugins`, más la nota de migración con el error literal y la regla de fuentes idénticas, `ref` incluido. La frase del clon local sale de «Instalación»; en «Desarrollo» entra la receta `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir .`.
+- **Fichero(s)**: `README.md`, `.claude/settings.json`
+- **Cambio**: en «Instalación», bloque de `.claude/settings.json` por proyecto con `extraKnownMarketplaces.sdd-kit` (`source: github`, `repo: pikachumetal/sdd-kit`) y `enabledPlugins`, más la nota de migración con el error literal y la regla de fuentes idénticas, `ref` incluido. La frase del clon local sale de «Instalación»; en «Desarrollo» entra la receta `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir .`. A petición del dev-lead, el `.claude/settings.json` de este repo añade también `extraKnownMarketplaces.sdd-kit`, para cumplir lo que el README recomienda.
 
 ## 4. Verificación
 
