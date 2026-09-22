@@ -1,0 +1,105 @@
+diff --git a/.docs/sdd/specs/20260922-090000-task-0009-slot-format/spec.md b/.docs/sdd/specs/20260922-090000-task-0009-slot-format/spec.md
+new file mode 100644
+index 0000000..dfe569f
+--- /dev/null
++++ b/.docs/sdd/specs/20260922-090000-task-0009-slot-format/spec.md
+@@ -0,0 +1,54 @@
++---
++id: 20260922-090000-task-0009-slot-format
++task: 0009
++title: Validar el formato de la franja horaria
++mode: lite
++status: approved
++created: 2026-09-22
++author: agente
++approvers:
++  - role: dev-lead
++    name: dev-lead
++    approved_at: 2026-09-22
++---
++
++# Spec — Validar el formato de la franja horaria
++
++## Decisiones que he tomado yo — valida estas
++
++Review de spec propuesta: sin review — señales: ninguna.
++
++1. Formato estricto `HH:MM-HH:MM`, horas 00–23 y minutos 00–59.
++2. Mensaje único para `libres` y `reservar`.
++
++## Intent
++
++Hoy una franja mal escrita devuelve salas libres que no lo están. Se quiere un error claro.
++
++## Scope
++
++- Entra: validar la franja en `libres` y `reservar`.
++- No entra: validar que el inicio sea anterior al fin.
++
++## Delta de comportamiento
++
++### Capacidad: `room-booking`
++
++**ADDED — Una franja mal formada se rechaza**
++- GIVEN una franja que no cumple `HH:MM-HH:MM` con horas 00–23 y minutos 00–59 (por ejemplo `10-12`, `9:00-11:00` o `24:00-24:30`)
++- WHEN se usa en `libres` o en `reservar`
++- THEN la respuesta es `Franja horaria no válida: "<valor>". Usa el formato HH:MM-HH:MM (por ejemplo, 10:00-12:00).` y no se consulta ni se reserva nada
++
++### Estimación y esfuerzo
++
++- Tipo: backend
++- Esfuerzo spec: 0,25h
++- Estimación de implementación: 0,5h
++- Base de la estimación: un fichero, dos tests
++- Confianza: alta
++
++## Aprobaciones
++
++| Rol | Nombre | Fecha | Estado |
++| --- | --- | --- | --- |
++| dev-lead | dev-lead | 2026-09-22 | aprobada |
+diff --git a/src/app.js b/src/app.js
+index 3b8db29..33bb0f7 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -6,9 +6,23 @@ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+ }
+ 
++const SLOT_PATTERN = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
++
++function isValidSlot(slot) {
++  return SLOT_PATTERN.test(slot);
++}
++
++function invalidSlotError(slot) {
++  return `Franja horaria no válida: "${slot}". Usa el formato HH:MM-HH:MM (por ejemplo, 10:00-12:00).`;
++}
++
+ export function run(cmd, params) {
+-  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
++  if (cmd === 'libres') {
++    const slot = params[0];
++    return isValidSlot(slot) ? freeRooms(slot).join(', ') : invalidSlotError(slot);
++  }
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
++  if (cmd === 'reservar' && !isValidSlot(params[1])) return invalidSlotError(params[1]);
+   if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+   return 'salas';
+ }
+diff --git a/test/app.test.js b/test/app.test.js
+index 6af74ce..ccd7637 100644
+--- a/test/app.test.js
++++ b/test/app.test.js
+@@ -13,3 +13,11 @@ test('reservar --cada-semana crea la reserva semanal', () => {
+ test('cancelar respeta el día', () => {
+   assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+ });
++
++test('libres rechaza una franja mal formada', () => {
++  assert.match(run('libres', ['10-12']), /^Franja horaria no válida/);
++});
++
++test('reservar rechaza una franja mal formada', () => {
++  assert.match(run('reservar', ['Norte', '9:00-11:00']), /^Franja horaria no válida/);
++});

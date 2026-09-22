@@ -80,7 +80,7 @@ Endpoints, shape request/response.
 
 ### 1.5 UX *(si aplica)*
 
-> Recibido de la spec ligera, que ya no lo lleva. Frontend: componentes, wireframes o capturas. La API va en §1.4.
+> Recibido de la spec ligera, que ya no lo lleva. Frontend: componentes, wireframes o capturas.
 
 ### 1.6 Dependencias
 
@@ -116,6 +116,12 @@ Endpoints, shape request/response.
 **Tests RED**: <hilo principal · `ruta/del/test`, escritos y commiteados antes de despachar; `en línea`: TDD del propio hilo>
 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
+
+**Interfaces**:
+- Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
+- Produce: <lo que las tasks siguientes usan de esta: nombres, firmas y formatos exactos>
+
+> La task viaja sola: `task-brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»). Copia aquí las firmas, tablas y textos que necesita.
 
 
 **Ficheros**: crear/modificar `path/...`
