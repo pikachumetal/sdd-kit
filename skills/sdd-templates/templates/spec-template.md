@@ -4,6 +4,7 @@ task: <id>            # id del gestor de tickets (0000 si no hay) · id de la se
 parent: <id>          # solo si esta task nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
 title: <título corto descriptivo>
 mode: full            # full | lite — lo lee sdd-end-task; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto
 status: draft
 created: <YYYY-MM-DD>
 author: <autor>
@@ -27,6 +28,12 @@ approvers:
 > Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-start-task/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
+
+### Decisiones tomadas con el dev-lead
+
+> Solo si alguna decisión no la tomaste tú sola: una aprobación delegada, un cambio de perfil, una respuesta que resolvió una ambigüedad. Una línea por decisión, con la frase literal del dev-lead.
+
+- <decisión> — «<frase literal>»
 
 ## Intent
 
@@ -83,7 +90,15 @@ approvers:
 - Base de la estimación: <complejidad, incertidumbres, referencia del estimation-log>
 - Confianza: alta / media / baja
 
+## Enmiendas
+
+> Un cambio a la spec aprobada durante la ejecución: un requisito, un THEN, el Scope o un «No entra». Una entrada por cambio, más reciente arriba.
+
+- <fecha> — <qué cambia> — <por qué> — aprobada: «<frase>» | sin aprobar (unattended)
+
 ## Aprobaciones
+
+> Fila normal: aprobación de la spec o del plan. Fila de cambio de perfil a media task: Estado `perfil → <perfil>: «<frase literal>»`, con la fecha en que el dev-lead lo dijo.
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
