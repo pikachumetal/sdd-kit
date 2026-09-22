@@ -47,13 +47,14 @@
 | 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | 20260922-135640-patch-0027-script-arranque |
 | 2026-09-22 | 0028 | patch | — | 1 | — | 20260922-135817-patch-0028-end-release |
 | 2026-09-22 | 0020 | docs | 2 | 0.75 | 0.38 | 20260922-141616-task-0020-init-control-keys |
+| 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | 20260922-154013-task-0029-release-replan |
 
-**Factor de calibración** (ratio mediano real/estimado, 38 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 39 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 28 | 0.51 |
+| docs | 29 | 0.52 |
 | infra/tooling | 4 | 0.88 |
 | patch | 5 | 1.2 |
 
