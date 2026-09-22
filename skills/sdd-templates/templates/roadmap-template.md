@@ -19,6 +19,12 @@
 ## Deuda técnica
 
 > Solo ingeniería. Las peticiones de producto van al Backlog, nunca aquí.
+>
+> **Formato de cierre** (esta tabla y el Backlog): cuando una task o un patch salda una fila, la celda «Ítem» empieza por un prefijo y el texto con que se abrió la fila sigue detrás, sin reescribir. Un cierre posterior sustituye el prefijo; nunca lleva dos.
+> - Saldada entera: `**[<Task|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`
+> - Saldada en parte: `**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**`
+>
+> El enlace va al `walkthrough.md` de la task o al `patch.md` del patch. Las filas saldadas se cuentan con `grep -E '^\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '`; las demás siguen abiertas.
 
 | Ítem | Impacto | Destino |
 | --- | --- | --- |

@@ -57,7 +57,7 @@ created: 2026-09-22
 **Crear**:
 
 - `tests/RoadmapClosing.Tests.ps1` — citas de las dos skills, fuente única del formato y roadmap de este repo normalizado.
-- `.docs/sdd/capabilities/roadmap.md` — capacidad nueva con el requisito de la spec.
+- `.docs/sdd/capabilities/roadmap.md` — capacidad nueva; la crea la fusión del delta en `sdd-end-task`, tras la validación, no esta implementación.
 - `tests/roadmap-closing-green.md` — evidencia GREEN.
 
 **Modificar**:
@@ -102,8 +102,8 @@ Ninguna.
 - Consume: nada.
 - Produce: el formato en `roadmap-template.md` bajo el encabezado `## Deuda técnica`, con los literales `: saldada — <enlace>]**`, `: parcial — <enlace>; queda: <lo pendiente>]**` y la regex; las citas «formato de cierre de `roadmap-template.md`» en los dos pasos.
 
-- [ ] **Step 1**: escribir `RoadmapClosing.Tests.ps1` con los casos de plantilla, citas, no-copia y capacidad; ejecutarlo y verlo fallar.
-- [ ] **Step 2**: bloque de ayuda en la plantilla; frase en el paso 8 de `sdd-end-task`: «Si la task salda una fila de «Deuda técnica» o de «Backlog», ciérrala con el formato de cierre de `roadmap-template.md` (`sdd-templates`)»; frase equivalente en el paso 4 de `sdd-end-patch`; `capabilities/roadmap.md`.
+- [ ] **Step 1**: escribir `RoadmapClosing.Tests.ps1` con los casos de plantilla, citas y no-copia; ejecutarlo y verlo fallar.
+- [ ] **Step 2**: bloque de ayuda en la plantilla; frase en el paso 8 de `sdd-end-task`: «Si la task salda una fila de «Deuda técnica» o de «Backlog», ciérrala con el formato de cierre de `roadmap-template.md` (`sdd-templates`)»; frase equivalente en el paso 4 de `sdd-end-patch`.
 - [ ] **Step 3**: test en verde; `git mv` del test a `tests/`; commit.
 - [ ] **Step 4**: GREEN con `red/run.sh` sobre una copia del kit con la guía; evidencia en `tests/roadmap-closing-green.md`; commit.
 
@@ -161,7 +161,7 @@ Ninguna.
 - ADDED «Cerrar una fila de deuda o de backlog deja un prefijo contable», THEN y dos AND → Task 1 (receta, citas, GREEN). ✓
 - Decisión 1 (frente A a deuda) → Task 2, paso 2. ✓
 - Decisiones 2–6 (formato, grep, tablas, sustitución, fuente única) → Task 1. ✓
-- Decisión 7 (capacidad `roadmap`) → Task 1, paso 2. ✓
+- Decisión 7 (capacidad `roadmap`) → fusión del delta en `sdd-end-task`. ✓
 - Decisión 8 (disparador) → Task 3. ✓
 - Decisión 9 (normalización y test) → Task 2 y Task 1, paso 1. ✓
 - Escenario → task: el único escenario de la spec tiene su task (Task 1). ✓
