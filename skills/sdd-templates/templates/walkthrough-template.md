@@ -19,13 +19,17 @@ created: <YYYY-MM-DD>
 
 - Resumen por área, con ficheros clave y commit hash.
 
-## 2. Tiempo: estimado vs real *(OBLIGATORIO si existe `.docs/sdd/estimation.md` — no borrar)*
+## 2. Tiempo y coste: estimado vs real *(OBLIGATORIO si existe `.docs/sdd/estimation.md` — no borrar)*
 
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Estimación de implementación (del plan): <Yh>
-- Esfuerzo real: <Zh> (aproximado si no hay medición exacta — nunca en blanco)
+- Esfuerzo real: <Zh> — reloj del hilo (aproximado si no hay medición exacta — nunca en blanco). Los minutos de los subagentes NO se suman aquí: van en su línea.
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <…>
+- Modelo del hilo: <modelo>
+- Tokens del hilo: no medido | <N> *(«no medido» es la salida honesta: el agente no tiene contador expuesto. Solo se pone cifra si el dev-lead la aporta)*
+- Tokens de subagentes: <total> en <n> despachos — <rol> <modelo> <tokens> / <min>; … | no aplica
+- Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
 - Review de spec: <no | 1 revisor (dominio|técnica) | 2 revisores> · hallazgos <N>, aceptados <M>
 
 ## 3. Desviaciones del plan
