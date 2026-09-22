@@ -56,7 +56,7 @@ Failed | dice de dónde sale el bloque de restricciones en modo lite | Expected 
 
 Paquete sin `red/` ni `green/`, encargo con la cabecera nueva: el revisor no ejecutó la suite. Veredicto «With fixes».
 
-- **Important — arreglado**: el ancla del paso 4 no fijaba «busca todas sus apariciones», la frase que llevó R3 de 1/2 a 2/2 → aserción nueva en `tests/ProportionalReview.Tests.ps1`; rojo contra `be3c2f5` (`Expected regular expression 'busca todas sus apariciones' to match …`), verde en HEAD, suite 324/0.
+- **Important — arreglado** (`54300d6`): el ancla del paso 4 no fijaba «busca todas sus apariciones», la frase que llevó R3 de 1/2 a 2/2 → aserción nueva en `tests/ProportionalReview.Tests.ps1`; rojo contra `be3c2f5` (`Expected regular expression 'busca todas sus apariciones' to match …`), verde en HEAD, suite 324/0.
 - Minor (diferido): el commit `79affd7` es `test(sdd):` y lleva una línea de skill; el cuerpo lo explica.
 - Minor (diferido): el Art. X solo da el ejemplo de las líneas; `encargo-revision.md` da también el de los parámetros.
 

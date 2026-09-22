@@ -41,10 +41,11 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - AND el resto del plan es para el ejecutor
 
 ### El artículo de calidad de código viaja a implementadores y revisores
-- GIVEN un plan con Restricciones globales que copian el artículo de calidad de código de la constitution, o una task en modo lite, que no tiene plan
-- WHEN se despacha un implementador, un revisor de task o el revisor final
-- THEN el encargo lleva ese bloque literal como primera sección
-- AND en modo lite el bloque lo forman el artículo de calidad de código y la política de modelos de la constitution, copiados literales
+- GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una task en modo lite, que no tiene plan
+- WHEN se despacha un implementador, un revisor de task, un re-revisor o el revisor final
+- THEN el encargo lleva el bloque «De código» literal como primera sección
+- AND el bloque «De proceso» (política de modelos, modo de ejecución, atribución de commits) no aparece en el encargo de ningún revisor
+- AND en modo lite el bloque es el artículo de calidad de código de la constitution, copiado literal; la política de modelos la aplica quien despacha
 
 ### El trabajo se valida con el usuario antes de cerrar
 - GIVEN una task con la implementación terminada y la revisión final limpia
@@ -98,6 +99,29 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN se extrae una task para su encargo
 - THEN el texto de la task lleva `Interfaces: Consume / Produce` con los nombres y firmas exactos, y los valores que necesita copiados, sin remitir a otras secciones
 
+### Un umbral superado en una unidad es Minor
+- GIVEN un diff correcto con una función de 21 líneas y un bloque «De código» que fija funciones de 20 líneas como máximo
+- WHEN un revisor de task o el revisor final lo revisa
+- THEN reporta la función como Minor y, si no hay otro hallazgo, aprueba
+- AND una función de 22 líneas o más sigue siendo Important
+
+### El formato que exige el linter no rompe el contrato de los tests RED
+- GIVEN un implementador que solo añadió en un test RED la línea en blanco que exigía el linter, sin tocar aserciones, nombres ni datos, y lo declara en su informe
+- WHEN el revisor de task revisa el diff
+- THEN no lo reporta como Critical ni como Important
+
+### El revisor final revisa el paquete sin ejecutar la suite
+- GIVEN el despacho del revisor final con el paquete de review de la rama
+- WHEN revisa
+- THEN lee el paquete y no ejecuta la suite, el build ni el lint del proyecto
+- AND si cree que hace falta una verificación pesada, la recomienda en su informe
+
+### La spec se repasa antes del gate
+- GIVEN una spec redactada en la que un mismo literal (una expresión, un fichero, un umbral) aparece en una decisión y en un escenario que se contradicen
+- WHEN el agente termina el paso 4, con o sin review de spec
+- THEN corrige la contradicción, o la señala, antes de pedir la aprobación
+- AND lo que cambió aparece en «Decisiones que he tomado yo»
+
 **Reglas de la capacidad**
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
@@ -143,3 +167,8 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — MODIFIED El artículo de calidad de código viaja a implementadores y revisores
 - 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — ADDED El implementador no esquiva lo que le frena
 - 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — ADDED Cada task del plan viaja sola
+- 2026-09-23 — 20260922-211605-task-0021-proportional-review — MODIFIED El artículo de calidad de código viaja a implementadores y revisores
+- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED Un umbral superado en una unidad es Minor
+- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED El formato que exige el linter no rompe el contrato de los tests RED
+- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED El revisor final revisa el paquete sin ejecutar la suite
+- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED La spec se repasa antes del gate
