@@ -84,3 +84,25 @@ Describe 'hooks/session-start' {
     $context.additionalContext | Should -Match 'sdd-kit:sdd-consult'
   }
 }
+
+Describe '.githooks/pre-merge-commit' {
+  BeforeAll {
+    $script:MergeHook = Join-Path $script:KitRoot '.githooks/pre-merge-commit'
+  }
+
+  It 'existe, porque git no ejecuta pre-commit en un merge sin conflictos' {
+    $script:MergeHook | Should -Exist
+  }
+
+  It 'es ejecutable en git' {
+    if (-not (git -C $script:KitRoot rev-parse --git-dir 2>$null)) { Set-ItResult -Skipped -Because 'la raíz del kit no es un repositorio git'; return }
+    $entry = git -C $script:KitRoot ls-files -s .githooks/pre-merge-commit 2>$null
+    $entry | Should -Match '^100755 '
+  }
+
+  It 'delega en pre-commit en vez de duplicar la suite' {
+    $content = Get-Content $script:MergeHook -Raw
+    $content | Should -Match 'pre-commit'
+    $content | Should -Not -Match 'Invoke-Pester'
+  }
+}
