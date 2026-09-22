@@ -3,13 +3,13 @@ id: 20260922-153902-task-0018-roadmap-closing
 task: 0018
 title: Cómo se cierra una fila del roadmap
 mode: full
-status: draft
+status: approved
 created: 2026-09-22
 author: Claude (hilo principal)
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-22
 ---
 
 # Spec — Cómo se cierra una fila del roadmap
@@ -42,6 +42,10 @@ Review de spec propuesta: ninguna — señales: capacidad nueva (`roadmap`), con
 9. **Este roadmap se normaliza** al formato: las filas cerradas de «Deuda técnica» y «Backlog» que hoy usan tachado, cursiva o `Saldada por…` pasan al prefijo. Las notas que no cierran nada (la de «sigue abierta» del patch 0028) salen del prefijo y se quedan como texto normal.
    - Un test de Pester, `RoadmapClosing.Tests.ps1`, lo vigila en este repo y comprueba que las dos skills citan el formato.
    - **Sin migración para los proyectos**: sus filas ya cerradas se quedan como estén y el formato rige desde la 1.2.0.
+
+### Decisiones tomadas con el dev-lead
+
+- Aprobación de la spec por delegación, con avance sin paradas hasta la validación final — «avanza hasta el end, que me voy con la bici, :D»
 
 ## Intent
 
@@ -78,8 +82,10 @@ Receta de forma (Art. II): el fallo es de forma, no de disciplina. Los agentes y
 
 ## Enmiendas
 
+- 2026-09-22 — La regex del THEN y de la decisión 3 pierde el ancla `^`: `grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` — Anclada al principio de línea no lista las filas de «Backlog», cuya celda «Ítem» es la segunda columna, y la decisión 4 dice que el formato vale también ahí. El `| ` delante del prefijo sigue exigiendo que esté al principio de una celda — sin aprobar (dev-lead ausente; se implementa la regex literal y se presenta en la validación)
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-22 | aprobada por delegación: «avanza hasta el end, que me voy con la bici, :D» |
