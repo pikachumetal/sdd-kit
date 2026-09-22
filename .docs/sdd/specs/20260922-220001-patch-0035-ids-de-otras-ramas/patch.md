@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-22
 branch: feature/next-id
-commit: <hash>
+commit: 1c052eb
 ---
 
 # Patch 0035 — Get-NextSddId.ps1 lee el roadmap y specs/ de todas las ramas

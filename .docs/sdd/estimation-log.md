@@ -52,6 +52,7 @@
 | 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | — | — | — | 20260922-153902-task-0018-roadmap-closing |
 | 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | — | — | — | 20260922-154013-task-0029-release-replan |
 | 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
+| 2026-09-22 | 0035 | patch | — | 0.5 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
 
 **Factor de calibración** (ratio mediano real/estimado, 43 artefactos): **0.58**
 
