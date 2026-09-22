@@ -18,3 +18,5 @@ Con la regla solo en `sdd-end-task/references/aprendizajes-skills.md`, 0/2 sujet
 
 - **El aviso en el mensaje final llega en 2/3**; el tercero lo registra solo en el walkthrough. No es silencioso, así que no se endurece más sin otro dato.
 - **Un sujeto no recogió como aprendizaje la nota de estructura de `review.md`**. Es un hueco de la cosecha de aprendizajes, no del destino que falta. Va a deuda.
+- **La rama «destino sin plantilla → deuda» se verificó leyendo, no con sujetos.** Tras esta task, todo documento que el cierre puede tener que crear tiene plantilla, así que no hay escenario real que la dispare. Es el mismo criterio que la decisión 7 de la spec aplica a brownfield.
+- **La cabecera de la tabla de deuda cambió después del E3** (`Deuda · Plan` pasó a `Ítem · Destino`, hallazgo de la revisión). E3 no se repitió: el cambio es de texto de columna, y la conducta medida, calcar la plantilla, no depende de él.

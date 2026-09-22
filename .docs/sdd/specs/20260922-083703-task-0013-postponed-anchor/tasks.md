@@ -20,13 +20,13 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | Siete plantillas de documentos SDD | done | `ed7130f` | En línea; tests RED del hilo en `tests/AnchorTemplates.Tests.ps1` |
 | 2 | Consumidores: cierre, nombrado e init | done | `12d9fbd` | En línea; incluye `sdd-init-greenfield/SKILL.md` paso 3 |
-| 3 | GREEN | in_progress | — | |
+| 3 | GREEN | done | `f4f50bb` · `93ee1c7` | 12 sujetos, 6,92 $; REFACTOR del paso 4 de `sdd-end-task` |
 
 ## Verificación por task
 
 - [x] Task 1 — suite Pester verde (283/0)
 - [x] Task 2 — suite Pester verde (283/0)
-- [ ] Task 3 — veredicto por THEN en `green/README.md`
+- [x] Task 3 — veredicto por THEN en `green/README.md`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope)
 
