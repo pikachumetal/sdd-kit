@@ -41,7 +41,7 @@ created: 2026-09-22
 
 - Las 🧪 de la release van al paso 6 de `sdd-end-release`, que es donde vive el smoke; la skill no tiene paso «smoke» — si es mal sitio, quien lea `notas-y-roadmap.md` no lo encuentra.
 - El umbral para proponer partir es «más de 3 tasks internas previstas», el mismo número que el tope de agentes en paralelo — un umbral mal elegido propone partir de más o de menos, y el usuario sigue decidiendo.
-- El `sdd-kit.json` de este repo no gana `control` ni `merge` en esta task: escribirlo sin la frase del dev-lead es el atajo que la spec prohíbe — hasta que se escriba, el kit se trabaja a sí mismo en `delegate` y el cierre pregunta el merge.
+- El `sdd-kit.json` de este repo no ganó `control` ni `merge` durante la ejecución: escribirlo sin la frase del dev-lead es el atajo que la spec prohíbe. Se escribió en el cierre, con el gate de la migración (fila 6 de §4.2). El `version` del marcador sigue en 1.1.0: sube con el cierre de la release 1.2.0, a la vez que `plugin.json` — si otra skill lo lee antes como versión aplicada, verá la 1.1.0.
 - El implementador de la Task 2b usó un `git stash` temporal para ver su RED; la pila quedó vacía — si hubiera tocado una entrada de otra sesión, se habría perdido trabajo ajeno.
 
 ## 4. Verificación
@@ -61,6 +61,8 @@ created: 2026-09-22
 | 3 | GREEN (33 sujetos, 31,32 $), once escenarios | corregidos todos; E8 y E9 con un sujeto válido y otro invalidado por el harness (verificado por el agente, `tests/control-profiles-green.md`) |
 | 4 | Suite Pester | 230/0 (verificado por el agente) |
 | 5 | Revisión agrupada y revisión acotada de la 2c | limpias tras una ronda de fix (verificado por el agente) |
+| 6 | Smoke de la migración sobre este repo: paso 2 de `v1.2.0.md` | un solo gate con perfil y merge; el dev-lead eligió «delegate (Recomendado)» y «develop, --no-ff, conservar worktree (Recomendado)»; `ConvertFrom-Json` devuelve `control.profile` = `delegate`; changelog y roadmap intactos por este paso (verificado por el agente) |
+| 7 | Paso 10 con la política recién escrita | `delegate` + bloque `merge` completo: fusión a `develop` con `--no-ff` sin segunda pregunta, worktree conservado (verificado por el agente en el propio cierre) |
 
 ### 4.3 Residuales / deuda generada
 
