@@ -48,16 +48,16 @@
 | 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | — | — | — | 20260922-135640-patch-0027-script-arranque |
 | 2026-09-22 | 0028 | patch | — | 1 | — | — | — | — | 20260922-135817-patch-0028-end-release |
 | 2026-09-22 | 0020 | docs | 2 | 0.75 | 0.38 | — | — | — | 20260922-141616-task-0020-init-control-keys |
-| 2026-09-22 | 0010 | docs | 1.2 | 0.6 | 0.5 | no medido | 182k | 6.47 | 20260922-153843-task-0010-token-cost |
+| 2026-09-22 | 0010 | docs | 1.2 | 0.8 | 0.67 | no medido | 182k | 8.17 | 20260922-153843-task-0010-token-cost |
 | 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | — | — | — | 20260922-153902-task-0018-roadmap-closing |
 | 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
 
-**Factor de calibración** (ratio mediano real/estimado, 42 artefactos): **0.57**
+**Factor de calibración** (ratio mediano real/estimado, 42 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 31 | 0.5 |
+| docs | 31 | 0.52 |
 | infra/tooling | 4 | 0.88 |
 | patch | 6 | 1.27 |
 

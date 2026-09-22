@@ -24,13 +24,13 @@ created: 2026-09-22
 
 - Tipo: docs
 - Estimación de implementación (del plan): 1,2h
-- Esfuerzo real: 0,6h — reloj del hilo (22:18 → 22:55 hora local, por las marcas de los commits; la campaña GREEN corrió en paralelo). Spec, RED y plan, aparte: 0,5h
-- Desviación: −0,6h (−50%)
+- Esfuerzo real: 0,8h — reloj del hilo (22:18 → 23:10 hora local, por las marcas de los commits; la campaña GREEN corrió en paralelo). Spec, RED y plan, aparte: 0,5h
+- Desviación: −0,4h (−33%)
 - Causa de la desviación: la de los avisos 2 y 3 de `estimation.md`, otra vez. Las cuatro tasks fueron ediciones de pocas líneas con el contexto ya cargado, y los cuatro sujetos corrieron en segundo plano sin sumar reloj.
 - Modelo del hilo: Opus 5 (1M)
 - Tokens del hilo: no medido
 - Tokens de subagentes: 182k en 2 despachos — revisor final de rama Sonnet 163k / 8 min; re-revisión acotada del mismo agente 19k / 3 min
-- Coste de sujetos: 6,47 $ en 6 sujetos Sonnet — RED 2,07 $ (2 sujetos); GREEN 4,40 $ (4 sujetos en dos rondas)
+- Coste de sujetos: 8,17 $ en 8 sujetos Sonnet — RED 2,07 $ (2 sujetos); GREEN 6,10 $ (6 sujetos en tres rondas)
 - Review de spec: no · hallazgos 0, aceptados 0
 
 ## 3. Desviaciones del plan
@@ -44,6 +44,7 @@ created: 2026-09-22
 - **Arreglo de `Get-NextSddId.ps1` antes del plan** — el pre-commit bloqueaba todos los commits de este worktree; el arreglo estaba aprobado en la decisión 8 de la spec. Coste si me equivoco: un commit que revertir.
 - **Los dos tests que llegaron de `develop` con el mismo defecto** (`RoadmapClosing`, `ScopeBrake`) se alinearon con el patrón `$PSScriptRoot/..` de los otros seis, en el commit de merge. Sin eso, el merge no podía commitearse. Coste si me equivoco: los tests pasan a resolver la raíz del worktree en vez de la del repositorio, que en este proyecto son la misma carpeta.
 - **Segunda ronda de GREEN** (2 sujetos, 1,50 $) tras ajustar la plantilla, en vez de dar por bueno el resultado parcial de la primera.
+- **Tercera ronda de GREEN** (2 sujetos, 1,70 $) con el molde rehecho, a petición del dev-lead: «no entiendo, no hemos podido solucionarlo y no sabemos porque?». Sirvió para saber que el fallo era del molde.
 
 ## 4. Verificación
 
@@ -62,20 +63,20 @@ created: 2026-09-22
 | 2 | GREEN con sujetos: cuatro líneas de coste en el walkthrough | 3/3 de los que escribieron walkthrough, frente a 0/2 en el RED ✔ (agente) |
 | 3 | GREEN: el hilo se declara «no medido» | 3/3 ✔ (agente) |
 | 4 | GREEN: el log del sujeto muestra las tres columnas | 3/3 ✔ (agente) |
-| 5 | GREEN: «Esfuerzo real» sin sumar los minutos de los subagentes | 1/4 ✘ (agente) — ver 4.3 |
+| 5 | GREEN: «Esfuerzo real» sin sumar los minutos de los subagentes | 2/2 ✔ (agente) con el molde fechado; 1/4 con el molde original, que no daba marcas de tiempo |
 | 6 | `Get-NextSddId.ps1` en una ruta con tilde | devuelve el id y sale con código 0 ✔ (agente, test Pester) |
 | 7 | Revisión final de rama y re-revisión | 2 Important, los dos arreglados; la re-revisión no encontró ninguno nuevo ✔ (subagente) |
 
 ### 4.3 Residuales / deuda generada
 
-- **«Esfuerzo real» sigue absorbiendo los minutos de los subagentes** (3 de 4 sujetos; el cuarto paró a preguntar). El molde no da marcas del reloj del hilo y la plantilla exige un valor. Propuesta al dev-lead, que cambia la spec: admitir `no medido` también en «Esfuerzo real», con el log dejando `—` en Real y Ratio sin avisar. Detalle en `tests/token-cost-green.md`.
+- **Ninguno abierto de la task**. El fallo de «Esfuerzo real» de las rondas 1 y 2 era del molde: se rehízo con commits fechados y salió 2/2. La enmienda que se había propuesto queda retirada.
 - **Estimar el dinero en el plan y sacar un ratio en dólares**: fuera de scope por `plan-template.md`, fichero caliente de las tasks 0006, 0007, 0021 y 0022.
 - **El bloque de tiempo de `patch-template.md`** sigue sin campos de coste.
 
 ## 5. Aprendizajes
 
 - El hueco fijo en una plantilla es lo que hace que el dato aparezca: los tickets de campo lo rellenan 14/14 y los walkthroughs, sin hueco, 6/11 y en cuatro formas. → `tests/token-cost-red.md` y la propia plantilla.
-- Un campo obligatorio sin salida honesta se rellena con lo que haya a mano: el esfuerzo real acabó siendo la suma de los despachos. → `tests/token-cost-green.md`, pendiente de la enmienda.
+- Un molde cuyos commits nacen todos a la vez no sirve para medir nada que se deduzca del historial: el sujeto rellena el campo obligatorio con lo que tenga cerca. Con horas repartidas, la conducta correcta sale 2/2. → `tech-stack.md`, «Fixtures y baselines».
 - Leer la salida de git en PowerShell sin fijar UTF-8 rompe en cualquier ruta con tildes. Ya ha mordido a dos scripts y a dos tests del repo. → `tech-stack.md` (pendiente de escribir en el cierre).
 
 ## 6. Adendas

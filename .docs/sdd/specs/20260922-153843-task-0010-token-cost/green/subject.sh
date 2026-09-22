@@ -27,7 +27,12 @@ if [ -f "$RUN/.feature-files" ]; then
   g checkout -q -b develop
   [ "${FEATURE_BRANCH:-feature/0009}" != develop ] && g checkout -q -b "${FEATURE_BRANCH:-feature/0009}"
   cp -r "$RUNS/$LABEL-hold/." "$RUN/"
-  g add -A; g commit -q -m "feat: validar el formato de la franja horaria"
+  # La sesión de la task se reparte en tres commits con hora real: sin marcas separadas no hay
+  # reloj del hilo que leer.
+  dated() { GIT_AUTHOR_DATE="$1" GIT_COMMITTER_DATE="$1" g commit -q -m "$2"; }
+  g add test/app.test.js; dated "2026-09-21T10:05:00" "test: franjas mal formadas en libres y reservar"
+  g add src/slots.js src/app.js; dated "2026-09-21T10:41:00" "feat: validar el formato de la franja horaria"
+  g add -A; dated "2026-09-21T11:08:00" "docs(sdd): spec, plan, tasks y revisión de la task 0009"
 else
   g add -A; g commit -q -m "feat: base de reservas de salas"
   g checkout -q -b develop
