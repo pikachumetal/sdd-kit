@@ -120,7 +120,10 @@ function Test-OrphanLock([pscustomobject]$Owner) {
 }
 
 function Format-LockOwner([pscustomobject]$Owner) {
-  return "$($Owner.branch) ($($Owner.worktree), PID $($Owner.pid)) desde $($Owner.since)."
+  # ConvertFrom-Json convierte "since" (ISO 8601) en [datetime]; interpolarlo directo saldría
+  # con el formato de la cultura del sistema en vez de uno fijo.
+  $since = ([datetime]$Owner.since).ToString('yyyy-MM-dd HH:mm:ss')
+  return "$($Owner.branch) ($($Owner.worktree), PID $($Owner.pid)) desde $since."
 }
 
 function Write-MergeStatus([string]$Message) {
@@ -191,6 +194,12 @@ function Get-RemoteForBranch([string]$Worktree, [string]$Into) {
   $remotes = @(Invoke-IsolatedGit $Worktree @('remote'))
   if ($remotes -contains 'origin') { return 'origin' }
   return $null
+}
+
+function Assert-PushableRemote([bool]$Push, [string]$Remote, [string]$Into) {
+  if ($Push -and [string]::IsNullOrWhiteSpace($Remote)) {
+    throw "push: no hay remoto configurado para '$Into'."
+  }
 }
 
 function Complete-MergeAttempt([string]$Worktree, [int]$MergeExitCode, [string]$StepName) {
@@ -269,6 +278,7 @@ try {
   $target = [pscustomobject]@{ Into = $policy.Into; Branch = $branch }
   $destination = Resolve-DestinationWorktree $ProjectRoot $target $paths.WorktreesParent
   $remote = Get-RemoteForBranch $destination.Path $policy.Into
+  Assert-PushableRemote $Push $remote $policy.Into
   Sync-BaseBranch $destination.Path $policy.Into $remote
 
   $before = Invoke-IsolatedGit $destination.Path @('rev-parse', 'HEAD') | Select-Object -First 1

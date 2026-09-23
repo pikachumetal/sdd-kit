@@ -152,6 +152,7 @@ Describe 'El merge del cierre espera su turno' {
     $results[0].ExitCode | Should -Be 0 -Because $results[0].Text
     $results[1].ExitCode | Should -Be 0 -Because $results[1].Text
     $results[1].Text | Should -Match 'Esperando el cerrojo de merge: lo tiene feature/0001'
+    $results[1].Text | Should -Match 'desde \d{4}-\d{2}-\d{2} \d{2}:\d{2}'
     Invoke-FixtureGit $fx.Repo @('log', '--first-parent', '--format=%s', '-2', 'develop') | Should -Be @('merge: feature/0002 en develop', 'merge: feature/0001 en develop')
     Get-Sha $fx.Repo 'develop^1^2' | Should -Be (Get-Sha $fx.Repo 'feature/0001')
     Get-Sha $fx.Remote 'develop' | Should -Be (Get-Sha $fx.Repo 'develop')
@@ -275,6 +276,18 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' {
     Assert-CleanedUp $fx
   }
 
+  It 'con -Push y sin remoto falla con push: en vez de saltarse el push' {
+    $fx = New-MergeFixture 'sin-remoto'
+    Invoke-FixtureGit $fx.Repo @('remote', 'remove', 'origin') | Out-Null
+    $before = Get-Sha $fx.Repo 'develop'
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push')
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'push:'
+    Get-Sha $fx.Repo 'develop' | Should -Be $before
+    Assert-CleanedUp $fx
+  }
   It 'con el push rechazado devuelve develop a su commit y limpia' {
     $fx = New-MergeFixture 'rechazo'
     $before = Get-Sha $fx.Repo 'develop'
