@@ -81,7 +81,7 @@ Dos filas nuevas en la tabla de overrides, cada una con el texto de superpowers 
 
 ## Enmiendas
 
-- 2026-09-24 — La decisión 8 añade `skills/sdd-start-task/references/encargo-revision.md` a los ficheros que toco: una sección «Rutas del workspace en Windows» que remite a la fila de overrides. — En el GREEN, `g-w-2` no abrió `overrides-superpowers.md` (el paso 6 solo la enlaza al pie), su primer `Write` fue a `C:\tmp\…` y quedó denegado. Los dos sujetos leyeron `encargo-revision.md`, que el paso 6 sí enlaza donde se usa. Ni la 0031 ni la 0053 tocan ese fichero. — aprobada: «Puntero en encargo-revision (Recomendado)»
+- 2026-09-24 — La decisión 8 añade `skills/sdd-start-task/references/encargo-revision.md` a los ficheros que toco: una sección «Rutas del workspace en Windows» que remite a la fila de overrides. — En el GREEN, `g-w-2` no abrió `overrides-superpowers.md` (el paso 6 solo la enlaza al pie), su primer `Write` fue a `C:\tmp\…` y quedó denegado. Los dos sujetos leyeron `encargo-revision.md`, que el paso 6 sí enlaza donde se usa. Ni la 0031 ni la 0053 tocan ese fichero. Solape con tasks abiertas que declaran ese fichero (anotado después de la aprobación, cuando debía ir antes): 0005, 0006 y 0021 (🧪), 0032 (en serie tras la 0053) y 0007 (versión siguiente); la fila 0026 ya lo declara. — aprobada: «Puntero en encargo-revision (Recomendado)»
 
 ## Aprobaciones
 

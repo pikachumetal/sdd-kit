@@ -26,3 +26,5 @@ Plan comprobado sin gate (perfil `delegate`): los dos requisitos `ADDED` de la s
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+| 2026-09-24, antes de la Task 3 | Freno de alcance: `README.md` (`7263e43`) y `roadmap.md` (`6c0054c`, `ed25527`) cambiaron en `develop` al fusionarse la 0031 | El dev-lead elige «Traer develop antes»: merge de `develop` en `feature/0026` antes de la Task 3 | merge |
+| 2026-09-24, antes de la Task 3 | La enmienda de `encargo-revision.md` se aprobó sin nombrar las tasks abiertas que declaran ese fichero | Añadido a la enmienda: 0005, 0006, 0021, 0032 y 0007 | este hito |
