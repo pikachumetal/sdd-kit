@@ -8,6 +8,8 @@ Ninguna skill nueva ni edición de una existente sin test que falle primero: bas
 
 Para un **recorte o reestructuración de una skill existente**, el baseline vacío no es el test: una versión recortada puede batir a un baseline sin skill y aun así ser peor que la versión vigente. El test válido es el **A/B de no-regresión** — control (la versión vigente) contra tratamiento (la versión recortada), mismos escenarios —, y el corte se publica solo si el tratamiento reproduce la conducta del control en TODOS ellos. La evidencia vive en `tests/<skill>-ab.md`. El RED contra baseline vacío sigue siendo el test de la guidance nueva.
 
+**La campaña se dimensiona al cambio.** Un cambio de redacción que no añade ni quita conducta (una frase, un ejemplo, una aclaración) lleva RED y GREEN con un sujeto cada uno por escenario afectado; una conducta o un paso nuevos llevan la campaña completa. **Antes de lanzarla se declara la previsión** —sujetos, minutos y coste—, y si la campaña la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead: seguir, cerrar con lo medido y dejar lo pendiente como deuda, o recortar el alcance. La 0040 gastó ~3,5 h, 44 sujetos y 15,29 $ en un cambio de ~30 min de texto sin que nadie avisara del coste (decisión del dev-lead, 2026-09-23).
+
 ## Art. II — La forma sigue al fallo
 
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
