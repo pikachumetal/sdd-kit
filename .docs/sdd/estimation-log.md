@@ -69,27 +69,28 @@
 | 2026-09-23 | 0039 | docs | 2 | 0.7 | 0.35 | no medido | 596k | 4.39 | 20260923-203736-task-0039-moving-base |
 | 2026-09-23 | 0051 | patch | 0.5 | 0.6 | 1.2 | — | — | 1.18 | 20260923-212835-patch-0051-verify-gate |
 | 2026-09-23 | 0031 | infra/tooling | 1 | 0.6 | 0.6 | no medido | 292k | 4.88 | 20260923-213417-task-0031-dispatch-effort |
+| 2026-09-23 | 0026 | docs | 1.25 | 0.8 | 0.64 | no medido | 301k | 5.44 | 20260923-220402-task-0026-superpowers-641 |
 
-**Factor de calibración** (ratio mediano real/estimado, 59 artefactos): **0.58** · media 0.67
+**Factor de calibración** (ratio mediano real/estimado, 60 artefactos): **0.59** · media 0.67
 
 - p25–p75: 0.38–0.9
-- p80: 1.02 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 27 % · sobreestimadas: 66 % · infraestimadas: 7 %
-- Error absoluto (h): media 0.89 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.52
+- p80: 1.01 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 27 % · sobreestimadas: 67 % · infraestimadas: 7 %
+- Error absoluto (h): media 0.88 · mediana 0.6
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.57
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 19 | 32 % |
-| 0.5–0.8 | 22 | 37 % |
-| 0.8–1.25 | 14 | 24 % |
+| 0.5–0.8 | 23 | 38 % |
+| 0.8–1.25 | 14 | 23 % |
 | 1.25–2 | 4 | 7 % |
 | ≥2 | 0 | 0 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 40 | 0.51 | 0.36–0.68 |
+| docs | 41 | 0.52 | 0.36–0.67 |
 | infra/tooling | 8 | 0.57 | 0.37–0.79 |
 | patch | 10 | 1.2 | 0.85–1.3 |
 
@@ -101,6 +102,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — |
 | 1.1.0 | 5 | 4.15 | 0.52 | — |
-| sin publicar | 34 | 39.8 | 0.67 | 118.41 |
+| sin publicar | 35 | 40.6 | 0.67 | 123.85 |
 
 > Ver `estimation.md`.

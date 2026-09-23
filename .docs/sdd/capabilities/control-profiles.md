@@ -174,6 +174,12 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el agente sigue la receta del merge
 - THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy
 
+### El plan no pregunta el método de ejecución
+- GIVEN una task en modo full con la spec aprobada y superpowers ≥ 6.4.1, cuyo `writing-plans` cierra con un Execution Handoff
+- WHEN el agente guarda el plan
+- THEN no pregunta el método de ejecución ni ofrece «Native»: aplica `subagent-driven-development`, salvo las tasks que el plan declara en línea en `Ejecución`
+- AND la revisión del plan sigue la tabla de gates del perfil vigente: en `delegate` y `unattended` no para; en `pair` para a aprobar el plan, sin preguntar el método
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`, con `merge.push` opcional); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
@@ -184,6 +190,7 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Historial
 
+- 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED El plan no pregunta el método de ejecución
 - 2026-09-23 — 20260923-203736-task-0039-moving-base — ADDED Los ficheros de la task se cruzan con la base antes de cada despacho · Un conflicto solo en los registros se resuelve con un merge de sincronización · Un conflicto que no se puede conservar entero es de una persona
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El push del cierre publica la rama destino (al integrar la task 0042: `merge.push` también lo autoriza)
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El perfil de control decide dónde para el agente · ADDED El push de la rama de integración sigue `merge.push` · Sin autorización, el push no lo hace el agente solo · Un push que no sale se informa y no se fuerza · El cierre acaba con una línea de terminado (con enmienda) · reglas Dónde viven los datos, Avisos, Regla ante conflicto
