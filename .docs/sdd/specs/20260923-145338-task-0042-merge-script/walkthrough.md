@@ -84,4 +84,5 @@ date: 2026-09-23
 
 ## 6. Adendas
 
-_Ninguna._
+- 2026-09-23 — **Los tests de `Invoke-SddMerge.Tests.ps1` salen del hook.** Con ellos, el `pre-commit` pasó de ~50 s a ~200 s por commit, y el dev-lead lo paró («¿llevas 3m o más para un commit?»). Los cinco `Describe` llevan `-Tag 'Slow'`, y `.githooks/pre-commit` ejecuta `Invoke-Pester -Path tests -ExcludeTagFilter Slow`. La suite completa queda para la validación final. Se documenta en `tech-stack.md` (línea del «CI» local) y en el `README`. — dev-lead: «pon los tests lentos fuera del hook»
+- 2026-09-23 — **Corrección de §3 y §5.** Dos cosas que en esta task se trataron como descubrimientos ya estaban en `tech-stack.md`, y no se leyeron porque el paso 1 de contexto buscó por palabras en vez de leer el documento entero. Una es la regla «Dentro de un hook de git, `git -C` no basta». La otra, que los tests RED del hilo se aparcan en la carpeta de la spec y el implementador los mueve con `git mv`. El aprendizaje de §5 sobre `GIT_INDEX_FILE` no es nuevo: el punto (8) de las trampas de `tech-stack.md` queda como remisión a esa regla, sin duplicarla. — agente, a raíz de la pregunta del dev-lead «¿cuándo pusimos eso?»
