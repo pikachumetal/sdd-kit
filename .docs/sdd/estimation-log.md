@@ -60,13 +60,14 @@
 | 2026-09-23 | 0038 | patch | 0.3 | 0.2 | 0.67 | — | — | — | 20260923-103947-patch-0038-specs-de-otros-worktrees |
 | 2026-09-23 | 0033 | docs | 1.5 | 1.6 | 1.07 | no medido | 153k | 12.22 | 20260923-105726-task-0033-capabilities-at-birth |
 | 2026-09-23 | 0009 | docs | 3 | 1.5 | 0.5 | no medido | 119k | 14.43 | 20260923-120510-task-0009-merge-close |
+| 2026-09-23 | 0040 | docs | 2.5 | 2.1 | 0.84 | no medido | 391k | 15.29 | 20260923-143450-task-0040-close-push |
 
-**Factor de calibración** (ratio mediano real/estimado, 50 artefactos): **0.59**
+**Factor de calibración** (ratio mediano real/estimado, 51 artefactos): **0.6**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 37 | 0.52 |
+| docs | 38 | 0.52 |
 | infra/tooling | 4 | 0.88 |
 | patch | 8 | 1.2 |
 

@@ -21,7 +21,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 1 | `merge.push`: clave, gates y pregunta | done | `8843a37` | en línea; RED 7 fallos por aserción → 53/0 |
 | 2 | Push en el paso de rama | done | `5e157eb` | en línea; RED 2 → 32/0. El hook `block-dangerous-git.js` casó `--force` en el mensaje de commit: mensaje por fichero |
 | 3 | Paso «Mensaje final» | done | `b16db17` | en línea; RED 4 → 160/0 (ControlProfiles, Skills, KitFeedback) |
-| 4 | GREEN | done | (este commit) | en línea; tres tandas y dos REFACTOR (`6c9d689`, `5f9315d`); 12,75 $ |
+| 4 | GREEN | done | `547c0f7` | en línea; tres tandas y dos REFACTOR (`6c9d689`, `5f9315d`); 12,75 $. Fixes de la revisión de rama en `1598afd`, re-revisión limpia |
 
 ## Verificación por task
 
@@ -35,4 +35,4 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
 | La línea de terminado ofrecía borrar el checkout principal en un repo sin worktrees (GREEN, escenario F) | la spec suponía siempre un worktree enlazado | enmienda aprobada por el dev-lead («si»); un AND en el requisito y una frase en los dos cierres | `5f9315d` |
-| Los `state.txt` de las campañas llevaban rutas locales con el usuario de la máquina | el `sed` del lanzador de la 0009 solo reemplazaba la ruta en forma Unix | ruling: limpiadas en esta task y el lanzador del GREEN reemplaza las dos formas; la carpeta de la 0009 queda a deuda | (este commit) |
+| Los `state.txt` de las campañas llevaban rutas locales con el usuario de la máquina | el `sed` del lanzador de la 0009 solo reemplazaba la ruta en forma Unix | ruling: limpiadas en esta task y el lanzador del GREEN reemplaza las dos formas; la carpeta de la 0009 queda a deuda | `547c0f7` |

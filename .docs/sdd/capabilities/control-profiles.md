@@ -8,7 +8,7 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - GIVEN un proyecto con `control.profile` en `sdd-kit.json`, o sin él (default `delegate`)
 - WHEN el agente recorre una task
 - THEN para en estos puntos y en ningún otro: `pair` en la spec, el plan, tras cada task, los desvíos, la validación y antes del merge; `delegate` en la spec, los desvíos y la validación; `unattended` en ninguno hasta terminar la release
-- AND en los tres perfiles se confirman siempre las acciones hacia fuera (push, PR, publicar), y el merge a `main` y el tag los decide una persona
+- AND en `pair` se confirman siempre las acciones hacia fuera (push, PR, publicar); en `delegate` y `unattended` también, salvo el push de la rama de integración tras el merge del cierre cuando `merge.push` es `true`; en los tres, el merge a `main` y el tag los decide una persona
 
 ### El perfil se hereda de la task, de la release o del proyecto
 - GIVEN un perfil en el `profile:` de la spec, una línea `Perfil de control: <perfil>` justo bajo el encabezado de la release en el roadmap o `control.profile`
@@ -102,6 +102,32 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - THEN el informe final cita en un bloque el comando denegado, literal; cita el texto de la denegación y el hash de la rama destino, que sigue sin tocar; y dice que el resto del cierre está hecho
 - AND no reintenta el merge con otra herramienta ni con otra forma del comando
 
+### El push de la rama de integración sigue `merge.push`
+- GIVEN un cierre de task o de patch que acaba de fusionar en `merge.into` según la política, con la suite en verde sobre el resultado, `merge.push: true` en `sdd-kit.json` y un upstream en `merge.into`
+- WHEN el perfil vigente es `delegate` o `unattended`
+- THEN el agente hace push de `merge.into` a su upstream sin preguntar, y no empuja ninguna otra rama ni tags
+
+### Sin autorización, el push no lo hace el agente solo
+- GIVEN un cierre de task o de patch que acaba de fusionar en `merge.into`
+- WHEN el perfil vigente es `pair`, `merge.push` está ausente o es `false`, o `merge.into` no tiene upstream
+- THEN el agente no hace push sin confirmación: en `pair` presenta el push junto con el merge y espera; en los demás casos no lo hace
+- AND el mensaje final dice que el push no se hizo y por qué
+
+### Un push que no sale se informa y no se fuerza
+- GIVEN `merge.push: true` y un push que falla: el remoto lo rechaza, faltan credenciales o el entorno lo deniega
+- WHEN el cierre termina
+- THEN el mensaje final cita en un bloque el comando literal, cita el error y dice que el merge queda en local con el hash de `merge.into`
+- AND el agente no reintenta con `--force`, `pull`, `rebase` ni otra herramienta
+
+### El cierre acaba con una línea de terminado
+- GIVEN un cierre de task (`sdd-end-task`) o de patch (`sdd-end-patch`) que ha recorrido su checklist
+- WHEN el agente escribe su último mensaje
+- THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, y lo pendiente; y ofrece el ticket del kit si toca
+- AND su última línea es la de terminado: si la rama está fusionada en `merge.into` y el worktree no tiene cambios sin commitear, dice rama, destino, hash, estado del push (hecho, no hecho y por qué) y que se puede borrar el worktree, con su ruta; si no, dice «No terminado», qué falta y que el worktree no se borra todavía
+- AND con el merge o el push denegados o fallidos, sus bloques de evidencia van antes, y la línea de terminado sigue siendo la última: «No terminado» si falta el merge; con el merge hecho y el push fallido, dice «push no hecho» y el motivo
+- AND solo se ofrece borrar un worktree enlazado: si la rama está en el checkout principal del repo, la línea acaba en el push, sin cláusula de borrado
+- AND si después el agente escribe el ticket del kit en ese worktree, repite la línea de terminado con el ticket como pendiente hasta que se commitee y se fusione
+
 ### Un conflicto en el estimation-log se regenera con el script
 - GIVEN un merge del cierre con conflicto en `estimation-log.md`
 - WHEN el agente resuelve los conflictos
@@ -109,14 +135,15 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
+- **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`, con `merge.push` opcional); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
 - **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una task: más de 3 tasks internas previstas. Checkpoint de alcance: en el 3.º fix descubierto de una task y en cada tercero después.
-- **Avisos**: no aplica.
-- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge que el entorno deniega no se reintenta: lo desbloquea una persona.
+- **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); y el bloque de un push fallido (comando literal y error).
+- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
 
 ## Historial
 
+- 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El perfil de control decide dónde para el agente · ADDED El push de la rama de integración sigue `merge.push` · Sin autorización, el push no lo hace el agente solo · Un push que no sale se informa y no se fuerza · El cierre acaba con una línea de terminado (con enmienda) · reglas Dónde viven los datos, Avisos, Regla ante conflicto
 - 2026-09-23 — 20260923-120510-task-0009-merge-close — MODIFIED El merge a develop sigue la política declarada · ADDED Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás · Con la rama destino sacada y con cambios sin commitear, el cierre no fusiona (enmienda) · Un merge que el entorno deniega se informa con su evidencia · Un conflicto en el estimation-log se regenera con el script · regla Regla ante conflicto
 
 - 2026-09-22 — 20260922-133931-task-0025-scope-brake — ADDED El tercer fix descubierto abre un checkpoint de alcance · Una decisión que cambia la salida observable se pregunta · La fila de la task se compara con la base antes de cada despacho · MODIFIED Un cambio a la spec aprobada es un desvío · Salir del plan es un ruling visible · regla Límites

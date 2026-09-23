@@ -44,10 +44,11 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 ### La entrevista fija las claves de control
 - GIVEN una init greenfield o brownfield con el usuario presente
 - WHEN la entrevista llega a las claves de control
-- THEN el agente hace, en turnos distintos, las tres preguntas del bloque de `control-profiles.md`, cada una con su opción recomendada y su motivo: perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona) y frenos (3 agentes; 8 y 20 minutos)
+- THEN el agente hace, en turnos distintos, las preguntas del bloque de `control-profiles.md`, cada una con su opción recomendada y su motivo: perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona), push de la rama de integración tras el merge («sí» con git-flow) y frenos (3 agentes; 8 y 20 minutos)
 - AND escribe en `sdd-kit.json` solo lo que el usuario responde: «no sé» no escribe la clave y rige su default, y un «no» a la política de merge deja `merge` sin declarar
-- AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar
-- AND en brownfield sin usuario, las tres quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
+- AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar; sin `merge` declarado, la de push tampoco se hace
+- AND la pregunta de push recomienda «sí» solo si la convención de ramas es git-flow; con otra convención se hace sin opción recomendada
+- AND en brownfield sin usuario, las cuatro quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
 
 ### La init deja la memoria automática desactivada y los temporales ignorados
 - GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
@@ -92,3 +93,4 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - 2026-09-22 — 20260922-141616-task-0020-init-control-keys — ADDED La entrevista fija las claves de control
 - 2026-09-23 — 20260922-211157-task-0019-init-files — ADDED La init deja la memoria automática desactivada y los temporales ignorados · ADDED El log de estimación lo genera el script del kit · ADDED La constitution nombra el proyecto de referencia
 - 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED El funcional aportado se guarda literal
+- 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED La entrevista fija las claves de control
