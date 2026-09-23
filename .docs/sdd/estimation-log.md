@@ -54,7 +54,7 @@
 | 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
 | 2026-09-22 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | 20260922-211157-task-0019-init-files |
 | 2026-09-22 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
-| 2026-09-22 | 0035 | patch | — | 0.5 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
+| 2026-09-22 | 0035 | patch | — | 0.75 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
 | 2026-09-23 | 0036 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | 20260923-070206-patch-0036-disparador-vago |
 
 **Factor de calibración** (ratio mediano real/estimado, 46 artefactos): **0.58**
