@@ -55,14 +55,15 @@
 | 2026-09-22 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | 20260922-211157-task-0019-init-files |
 | 2026-09-22 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
 | 2026-09-22 | 0035 | patch | — | 0.5 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
+| 2026-09-23 | 0036 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | 20260923-070206-patch-0036-disparador-vago |
 
-**Factor de calibración** (ratio mediano real/estimado, 45 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 46 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 34 | 0.51 |
 | infra/tooling | 4 | 0.88 |
-| patch | 6 | 1.27 |
+| patch | 7 | 1.2 |
 
 > Ver `estimation.md`.

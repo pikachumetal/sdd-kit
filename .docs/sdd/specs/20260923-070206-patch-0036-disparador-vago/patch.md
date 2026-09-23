@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-23
 branch: feature/fix-01
-commit: <hash>
+commit: 0b40d12
 ---
 
 # Patch 0036 — la validación diferida con disparador vago se concreta en vez de quedar EN ESPERA
@@ -38,9 +38,8 @@ Del dev-lead: «la regla de la validación diferida con disparador vago está en
 | 5 | Ancla Pester: con el texto antiguo | ✅ agente: los tests nuevos de `ControlProfiles.Tests.ps1` fallan con `Expected regular expression 'uso más próximo'` |
 | 6 | Suite completa `Invoke-Pester -Path tests` con el fix | ✅ agente: 355 pasan, 0 fallan, 6 skipped |
 
-Coste de sujetos: 6,10 $ (RED 1,33 $; GREEN 4,23 $ en dos rondas; control 0,54 $).
-
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5h
 - Real: 0,6h
+- Coste de sujetos: 6,10 $ (RED 1,33 $; GREEN 4,23 $ en dos rondas; control 0,54 $)
