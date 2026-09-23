@@ -242,7 +242,9 @@ function Get-BandCount([object[]]$Grouped, [string]$Label) {
 
 function Add-HistogramTable([System.Text.StringBuilder]$Builder, [double[]]$Ratios) {
   $labels = @('<0.5', '0.5–0.8', '0.8–1.25', '1.25–2', '≥2')
+  if ($Ratios.Count -lt 5) { return }
   $grouped = $Ratios | ForEach-Object { Get-BandLabel $_ } | Group-Object
+  [void]$Builder.AppendLine('')
   [void]$Builder.AppendLine('| Tramo del ratio | n | % |')
   [void]$Builder.AppendLine('| --- | --- | --- |')
   foreach ($label in $labels) {
@@ -261,10 +263,10 @@ function Add-PercentileLines([System.Text.StringBuilder]$Builder, [double[]]$Rat
 
 function Add-BandPercentLine([System.Text.StringBuilder]$Builder, [double[]]$Ratios) {
   $within = @($Ratios | Where-Object { $_ -ge 0.75 -and $_ -le 1.25 }).Count
-  $over = @($Ratios | Where-Object { $_ -lt 0.75 }).Count
-  $under = @($Ratios | Where-Object { $_ -gt 1.25 }).Count
+  $overestimated = @($Ratios | Where-Object { $_ -lt 0.75 }).Count
+  $underestimated = @($Ratios | Where-Object { $_ -gt 1.25 }).Count
   $total = $Ratios.Count
-  [void]$Builder.AppendLine("- Dentro de ±25 %: $(Format-Percent $within $total) · sobreestimadas: $(Format-Percent $over $total) · infraestimadas: $(Format-Percent $under $total)")
+  [void]$Builder.AppendLine("- Dentro de ±25 %: $(Format-Percent $within $total) · sobreestimadas: $(Format-Percent $overestimated $total) · infraestimadas: $(Format-Percent $underestimated $total)")
 }
 
 function Add-AbsoluteErrorLine([System.Text.StringBuilder]$Builder, [object[]]$WithRatio) {
@@ -282,8 +284,6 @@ function Add-DispersionSummary([System.Text.StringBuilder]$Builder, [object[]]$W
   Add-PercentileLines $Builder $ratios
   Add-BandPercentLine $Builder $ratios
   Add-AbsoluteErrorLine $Builder $WithRatio
-  [void]$Builder.AppendLine('')
-  Add-HistogramTable $Builder $ratios
 }
 
 function Add-TrendLine([System.Text.StringBuilder]$Builder, [double[]]$Ratios) {
@@ -369,6 +369,7 @@ function Add-CalibrationSection([System.Text.StringBuilder]$Builder, [object[]]$
   [void]$Builder.AppendLine('')
   Add-DispersionSummary $Builder $withRatio
   Add-TrendLine $Builder $ratios
+  Add-HistogramTable $Builder $ratios
   [void]$Builder.AppendLine('')
   Add-TypeTable $Builder $withRatio
   Add-ReleaseTable $Builder $Rows $DocsPath
