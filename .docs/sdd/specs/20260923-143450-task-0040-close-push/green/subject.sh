@@ -76,7 +76,7 @@ fi
 
 {
   echo "## develop antes: $DEV_BEFORE · después: $(git -C "$BARE" rev-parse --short develop)"
-  echo "## worktree list"; git -C "$BARE" worktree list | sed "s#$RUN#<run>#g"
+  echo "## worktree list"; git -C "$BARE" worktree list | sed -e "s#$RUN#<run>#g" -e "s#$(cygpath -m "$RUN")#<run>#g"
   echo "## git log"; git -C "$BARE" log --oneline --all --graph --decorate
   for w in "$RUN"/wt/*/; do echo "## status ${w#$RUN/}"; git -C "$w" status --short --branch --untracked-files=all; done
 } > "$OUT/$LABEL.state.txt" 2>&1
