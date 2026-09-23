@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> PowerShell: Get-Content .docs/sdd/sdd-kit.json; Test-Path .docs/sdd/environments.md; git worktree list; git status --short; git branch -a
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-start-task\references\control-profiles.md
+<<< The .git file or symlink here redirects to a location that cannot be verified as safe (it may have been planted by an untrusted archive). Git commands need approval.
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10	
+11	La primer
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+
+>>> Glob: .docs/sdd/*
+
+>>> Read: <run>\wt\0009\.docs\sdd\sdd-kit.json
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\estimation-log.md
+.docs\sdd\estimation.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\tech-stack.md
+<<< 1	{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+2	
+
+>>> Read: <run>\wt\0009\.git
+<<< 1	gitdir: <run>/git/salas.git/worktrees/0009
+2	
+
+>>> Grep: develop|feature/0009
+<<< Claude requested permissions to read from <run>\git\salas.git, but you haven't granted it yet.
+
+=== RESULTADO (10 turnos, 0.3245248 $)
+Paro en el paso 10: el cierre de la task 0009 no está terminado, porque el merge a `develop` está bloqueado por el entorno y no lo he hecho.
+
+**Qué pasó**
+- Al empezar el paso 10 ejecuté `git worktree list; git status --short; git branch -a` en PowerShell. El entorno lo denegó con este texto:
+  > The .git file or symlink here redirects to a location that cannot be verified as safe (it may have been planted by an untrusted archive). Git commands need approval.
+- Después intenté leer el repo bare (`salas.git`) para sacar el hash de `develop`. También lo denegó por falta de permisos de lectura.
+- No he reintentado con Bash, ni con `safe.directory`, ni con variables de entorno, porque sería saltarme la denegación. Lo puede desbloquear una persona.
+
+**Paso 10, lo verificado**
+- No existe `.docs/sdd/environments.md`, así que no hay `env:clean`.
+- `sdd-kit.json` tiene el bloque `merge` completo (`into: develop`, `noFf: true`, `removeWorktree: false`) y el perfil es `delegate`. La política manda fusionar sin preguntar.
+- No he podido comprobar con `git worktree list` si `develop` está sacada en algún worktree, ni el estado de la rama. No sé cuál de las dos vías de merge toca.
+
+**Qué queda**
+1. **Merge:**
+   - Si `develop` no está sacada en ningún worktree, se sigue la receta del merge: `git worktree add <carpeta padre del worktree 0009>/merge-0009 develop`, y ahí `git merge --no-ff feature/0009`.
+   - Después va la suite del proyecto sobre el resultado y `git worktree remove` del temporal.
+   - Si `develop` sí está sacada, se fusiona en ese worktree, y solo si está limpio.
+   - Si el merge no se hace en esta sesión, el hash de `develop` sigue sin tocar y hay que apuntarlo antes de fusionar.
+2. **Push de `develop`:** el dev-lead dijo «cuando fusiones, sube develop», pero el push se confirma siempre, en los tres perfiles, y ahora no hay nadie para confirmarlo. No lo haré sin confirmación. Cuando esté el dev-lead, basta que diga «sube develop» y lo hago.
+3. **Retirada de la rama y el worktree de la feature:** `removeWorktree` es `false`, así que la decide una persona.
+
+**Paso 11**
+- Los pasos 0 a 9 estaban hechos antes de esta sesión. No he reabierto ni verificado nada de ellos.
+- En el paso 0 no concreté ningún disparador de validación diferida: el dev-lead dijo qué probó y que funciona.
+- Si quieres el ticket de mejora del kit con `sdd-feedback`, dímelo. Hay un fallo del entorno que reportar: git bloquea un worktree cuyo `gitdir` está en un bare repo hermano dentro del scratchpad.
+
+Para seguir necesito que se apruebe el acceso git a este worktree o que alguien ejecute la receta.
