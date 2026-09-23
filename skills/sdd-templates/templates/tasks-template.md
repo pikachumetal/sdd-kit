@@ -9,7 +9,8 @@ created: <YYYY-MM-DD>
 # Tasks — <título> (registro vivo)
 
 > Registro **vivo** de la ejecución del plan: se crea ANTES de empezar a implementar y se
-> actualiza (status + commit) al cerrar cada task. La lista de todos del harness es efímera;
+> actualiza al cerrar cada task: el status en el commit de la task y su hash —el del commit ya
+> juntado— en el del hito siguiente. La lista de todos del harness es efímera;
 > **este fichero es el registro durable**. Solo se crea si el plan tiene más de una task.
 > Borra los bloques de ayuda (`>`) al redactar.
 

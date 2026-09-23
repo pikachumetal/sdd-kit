@@ -124,7 +124,7 @@ Endpoints, shape request/response.
 
 **Modelo**: <modelo **y** effort, los dos explícitos — declarar solo el modelo es una trampa: el effort cae al defecto de ese modelo, no al tuyo. Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
 **Ejecución**: <omitir si va por agente, que es el default; `en línea` + motivo si esta task se desvía>
-**Tests RED**: <hilo principal · `ruta/del/test`, escritos y commiteados antes de despachar; `en línea`: TDD del propio hilo>
+**Tests RED**: <hilo principal · `ruta/del/test`, escritos antes de despachar y sin commitear: van en el commit de la task; `en línea`: TDD del propio hilo>
 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
 
@@ -146,7 +146,7 @@ Endpoints, shape request/response.
 - [ ] **Step 1: Implementación** — descripción concreta; código real cuando ayude, sin placeholders.
 - [ ] **Step 2: Build** — el build de las superficies de la task. Esperado: verde, sin errores.
 - [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
-- [ ] **Step 4: Commit** — convención del proyecto, referenciando el ticket.
+- [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-start-task/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
 
 ---
 
