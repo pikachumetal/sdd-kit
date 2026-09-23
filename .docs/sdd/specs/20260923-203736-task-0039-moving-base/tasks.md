@@ -18,15 +18,15 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | El merge de sincronización en el cierre | pending | — | |
-| 2 | El cruce de ficheros antes de cada despacho | pending | — | |
-| 3 | GREEN | pending | — | en línea |
+| 1 | El merge de sincronización en el cierre | done | 0555b2b | review limpia |
+| 2 | El cruce de ficheros antes de cada despacho | done | 8449cff | review limpia; 1 Minor diferido |
+| 3 | GREEN | done | — | en línea; 10/10, 3,13 $ |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester -Path tests/SyncMerge.Tests.ps1, tests/Skills.Tests.ps1, tests/CommitMilestones.Tests.ps1`
-- [ ] Task 2 — `Invoke-Pester -Path tests/FileOverlap.Tests.ps1, tests/ScopeBrake.Tests.ps1, tests/Skills.Tests.ps1`
-- [ ] Task 3 — veredictos leídos en `green/out/`
+- [x] Task 1 — `Invoke-Pester -Path tests/SyncMerge.Tests.ps1, tests/Skills.Tests.ps1, tests/CommitMilestones.Tests.ps1`
+- [x] Task 2 — `Invoke-Pester -Path tests/FileOverlap.Tests.ps1, tests/ScopeBrake.Tests.ps1, tests/Skills.Tests.ps1`
+- [x] Task 3 — veredictos leídos en `green/out/`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd . && git status --short; git branch -a; git worktree list; cat .docs/sdd/sdd-kit.json; ls .docs/sdd; git rev-parse --git-dir --git-common-dir; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-end-task/references" "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-end-task"
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0039\e85f6b4a-84d9-41f6-b848-730cbacc6db2\scratchpad\kit-green\skills\sdd-end-task\references\merge-recipe.md
+<<<   develop
+* feature/0012
+  feature/0014
++ main
+<run>/salas   1adbf56 [main]
+<run>/wt/0012 5990e2a [feature/0012]
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+roadmap.md
+sdd-kit.json
+specs/
+<run>/salas/.git/worktrees/0012
+<run>/salas/.git
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base directory
+
+>>> Grep: merge\.|removeWorktree|incompleto
+
+>>> Bash: ls .git 2>/dev/null; git config core.hooksPath; git remote -v; git log --oneline -3 develop; git status --short
+<<< 9:- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración tras el merge del cierre sigue `merge.push`.
+37:| Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
+141:| `merge.into` | cadena (rama destino) | — |
+142:| `merge.noFf` | booleano | — |
+143:| `merge.removeWorktree` | booleano | — |
+144:| `merge.push` | booleano 
+<<< .git
+61e1ff9 merge: feature/0014 en develop
+f352097 feat(0014): listar las salas
+1adbf56 feat: base de reservas de salas
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "$(pwd)"; echo "exit=$?"; git rev-parse --short develop; git log --oneline -3 develop; git status --short
+<<< [31;1mException: [0m<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0039\e85f6b4a-84d9-41f6-b848-730cbacc6db2\scratchpad\kit-green\skills\sdd-templates\scripts\Invoke-SddMerge.ps1:215[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 215 | [0m   [36;1mthrow "${StepName}: conflicto en $($conflicted -join ', ')."[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mmerge: conflicto en .docs/sdd/changelog.md,
+
+>>> Bash: git status --short; git worktree list; git branch --show-current
+<<< <run>/salas   1adbf56 [main]
+<run>/wt/0012 5990e2a [feature/0012]
+feature/0012
+
+=== RESULTADO (9 turnos, 0.236871 $)
+Paso 10 sin completar: el merge de `feature/0012` a `develop` falló por conflicto y no lo he resuelto.
+
+Ejecuté `Invoke-SddMerge.ps1` con la política `delegate`, `merge.into: develop` y `noFf: true`. El script terminó con este error:
+
+```
+merge: conflicto en .docs/sdd/changelog.md, .docs/sdd/estimation-log.md, .docs/sdd/roadmap.md, src/slots.js.
+```
+
+Los tres registros (`changelog.md`, `estimation-log.md`, `roadmap.md`) tienen receta automática, pero `src/slots.js` no. Con ese fichero en la lista, el conflicto lo resuelve una persona y no reintenté ni hice el merge a mano. El script dejó todo como estaba:
+
+- **`develop`:** sigue en `61e1ff9` (`merge: feature/0014 en develop`). Eso significa que `feature/0014` se fusionó antes que esta task y tocó `src/slots.js`, igual que ella.
+- **Worktree de la feature:** limpio, en `feature/0012` (`5990e2a`).
+- **Worktrees temporales:** no queda ninguno.
+
+- **Sin `environments.md`:** no hubo `env:clean`.
+- **Push:** no aplica, porque el repo no tiene remoto.
+- **Validación:** el dev-lead la dio, y el walkthrough recoge que probó `salas reservar Norte 1012` y que da el error bueno.
+- **Decisiones sin el dev-lead:** no las releí del walkthrough en esta sesión; los pasos 1 a 9 venían hechos.
+- **Ticket para el kit:** puedo generarlo con `sdd-feedback` en esta sesión si quieres, y este cierre aporta un dato para él. El merge fallido dejó claro que una task hermana ya había tocado `src/slots.js`.
+
+**No terminado.** Falta fusionar `feature/0012` en `develop`: alguien tiene que resolver el conflicto en `src/slots.js` y relanzar el script. No borres todavía el worktree `<run>/wt/0012`.
