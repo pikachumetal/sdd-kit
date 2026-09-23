@@ -3,6 +3,9 @@ BeforeAll {
   $script:Fixtures = Join-Path $PSScriptRoot 'fixtures/task-ids'
   $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
+
   function Invoke-NextId([string]$Root) {
     if (-not (Test-Path $script:Script)) { throw "No existe el script $script:Script" }
     $errFile = Join-Path (New-TempDirectory) 'stderr.txt'
@@ -23,20 +26,7 @@ BeforeAll {
   }
 
   function Invoke-GitIsolated([string]$Repo, [string[]]$GitArguments) {
-    # Un hook de git exporta GIT_DIR y GIT_WORK_TREE al entorno, y con ellas puestas `git -C`
-    # opera sobre el repositorio del hook: un `git init` aquí reinicializaría el repo del kit.
-    $names = @('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR')
-    $saved = @{}
-    foreach ($name in $names) {
-      $saved[$name] = [Environment]::GetEnvironmentVariable($name)
-      Remove-Item "Env:\$name" -ErrorAction SilentlyContinue
-    }
-    try { return (& git -C $Repo @GitArguments) }
-    finally {
-      foreach ($name in $names) {
-        if ($null -ne $saved[$name]) { Set-Item "Env:\$name" $saved[$name] }
-      }
-    }
+    return (& git -C $Repo @GitArguments)
   }
 
   function Copy-FixtureToRepo([string]$Name, [string[]]$Branches, [string]$FolderName = 'project') {
@@ -60,6 +50,10 @@ BeforeAll {
     Invoke-GitIsolated $Repo @('-c', 'user.email=fixture@local', '-c', 'user.name=Fixture', 'commit', '-qm', "trabajo en $Branch") | Out-Null
     Invoke-GitIsolated $Repo @('switch', '-q', $current) | Out-Null
   }
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
