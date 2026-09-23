@@ -4,13 +4,13 @@ task: 0042
 title: La receta de merge del cierre como script con cerrojo
 mode: full
 profile: delegate
-status: in-review
+status: done
 created: 2026-09-23
 author: Claude (Opus 5.5)
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-23
 ---
 
 # Spec — La receta de merge del cierre como script con cerrojo
