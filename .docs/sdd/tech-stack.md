@@ -111,6 +111,7 @@ Para el código ejecutable, Pester con fixtures versionadas (arriba). Para las s
 - **Ocultar la ruta de la campaña en sus dos formas** (task 0040): `sed "s#$RUN#<run>#g"` no casa con la salida de `git worktree list`, que usa la forma Windows (`C:/Users/…`), y el usuario de la máquina acabó en la evidencia (también en la de la 0009). El lanzador reemplaza `$RUN` y `$(cygpath -m "$RUN")`.
 - **Paquete de revisión sin evidencia** (task 0040): `git diff <base>..HEAD -- . ':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**'`. Sin `glob`, el `*` del pathspec no cruza `/` y no excluye nada: 423 KB frente a 94 KB.
 - **Lo que el mensaje final lee de un fichero se pide abriéndolo** (task 0040, complemento del aprendizaje del patch 0037): «relee la sección del walkthrough» dio 7/8, y un sujeto dijo «no hubo decisiones» sin abrirlo; «abre ahora `walkthrough.md`… no la resumas de memoria» dio 2/2.
+- **El techo de coste lo aplica el lanzador** (task 0044, 2026-09-23): `green/run.sh` suma el coste de cada sujeto terminado y no lanza el siguiente si supera el techo declarado en la spec. Así el Art. I proporcional no depende de que el hilo vigile: 12 sujetos y 3,93 $ frente a un techo de 14.
 
 ### A/B de no-regresión (recortes, Art. I ampliado el 2026-09-07)
 
