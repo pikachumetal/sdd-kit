@@ -29,7 +29,7 @@ Si la rama destino está sacada en un worktree con cambios sin commitear, el scr
 
 ## Si el script falla
 
-Si falla, la rama destino queda como estaba antes de fusionar la feature: no se empuja nada, el worktree temporal se retira y el cerrojo se suelta. El mensaje empieza por el paso que falló (`cerrojo:`, `base:`, `merge:`, `verificación:`, `push:`, `política:`). El informe final cita ese mensaje literal, el hash de la rama destino (`git rev-parse --short <destino>`) y qué queda pendiente. **No se rehace a mano** con git merge, git pull ni git push. Un fallo de push: o de ase: (otra sesión publicó en ese rato) se resuelve ejecutando el script **una vez más**: parte del remoto nuevo. Un conflicto de merge:, una erificación: en rojo o un cerrojo: agotado no se reintentan: los resuelve una persona.
+Si falla, la rama destino queda como estaba antes de fusionar la feature: no se empuja nada, el worktree temporal se retira y el cerrojo se suelta. El mensaje empieza por el paso que falló (`cerrojo:`, `base:`, `merge:`, `verificación:`, `push:`, `política:`). El informe final cita ese mensaje literal, el hash de la rama destino (`git rev-parse --short <destino>`) y qué queda pendiente. **No se rehace a mano** con `git merge`, `git pull` ni `git push`. Un fallo de `push:` o de `base:` (otra sesión publicó en ese rato) se resuelve ejecutando el script **una vez más**: parte del remoto nuevo. Un conflicto de `merge:`, una `verificación:` en rojo o un `cerrojo:` agotado no se reintentan: los resuelve una persona.
 
 ## Merge denegado por el entorno
 
