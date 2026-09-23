@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-23
 branch: feature/patch
-commit:
+commit: 6722dcd
 ---
 
 # Patch 0051 — -VerifyCommand es el gate de merge y la suite completa corre antes del script
@@ -35,6 +35,7 @@ Del dev-lead: «Fila de deuda del roadmap «`-VerifyCommand` pide «la suite del
 | 3 | Ancla Pester con el texto anterior | ✅ agente: falla con `Expected regular expression '-VerifyCommand "<gate de merge>"'` |
 | 4 | `ControlProfiles.Tests.ps1` y `SyncMerge.Tests.ps1` con el fix | ✅ agente: 50 pasan, 0 fallan |
 | 5 | Suite completa `Invoke-Pester -Path tests` | ✅ agente: 498 pasan, 0 fallan, 6 skipped |
+| 6 | Validación del dev-lead | reportado: «si» (2026-09-23), a la pregunta «¿Lo das por validado y cierro?» |
 
 ## 5. Tiempo (ligero)
 

@@ -1,4 +1,5 @@
-# Changelog — sdd-kit
+# Changelo- **`-VerifyCommand` pedía «la suite del proyecto» sin distinguir la rápida de la completa** — con un hook `pre-merge-commit` que corre el conjunto rápido, la receta del merge omitía el parámetro y la suite completa no corría en todo el cierre (RED 0/2). Ahora `-VerifyCommand` es el gate de merge de `tech-stack.md` §Testing (el conjunto rápido si el proyecto separa), y la suite completa se ejecuta antes del script, en la validación final, y su resultado va en el mensaje final (GREEN 2/2). → [ref](specs/20260923-212835-patch-0051-verify-gate/)
+g — sdd-kit
 
 Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técnico del kit. Backward-looking: el `roadmap.md` es forward-looking.
 
