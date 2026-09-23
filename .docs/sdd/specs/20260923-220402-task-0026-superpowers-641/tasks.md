@@ -19,8 +19,8 @@ Plan comprobado sin gate (perfil `delegate`): los dos requisitos `ADDED` de la s
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | Filas de override: handoff de ejecución y ruta del workspace | done | 99bc819 | en línea; revisión de task aprobada (Sonnet, effort medio), un Minor. Ruling: cuarto `It` para «Referencias de vigilancia», que cubre la decisión 6 de la spec — el plan pedía tres; coste si es un error: un test de más
-| 2 | GREEN de conducta | done | — | en línea; h 2/2; w 1/2 → 2/2 tras REFACTOR (enmienda aprobada: puntero en `encargo-revision.md`); 11 sujetos, 5,45 $ de 16 $ |
-| 3 | Validación de la 6.4.1 y registros | pending | — | en línea |
+| 2 | GREEN de conducta | done | 7dddf64 | en línea; h 2/2; w 1/2 → 2/2 tras REFACTOR (enmienda aprobada: puntero en `encargo-revision.md`); 11 sujetos, 5,45 $ de 16 $ |
+| 3 | Validación de la 6.4.1 y registros | done | — | en línea; tras traer develop (250fc63). Resto de la fila a la 0054. Pendiente: revisión final de rama y gate de cierre (parado a petición del dev-lead, 2026-09-24) |
 
 ## Fixes adicionales
 
