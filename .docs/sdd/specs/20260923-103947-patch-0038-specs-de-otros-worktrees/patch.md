@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-23
 branch: feature/0038
-commit: <hash>
+commit: d3a40f9
 ---
 
 # Patch 0038 — Get-NextSddId cuenta las carpetas de specs/ sin commitear de otros worktrees
@@ -34,6 +34,8 @@ Del dev-lead: «Get-WorktreeRoadmapIds lee del disco de cada worktree el roadmap
 | 2 | GREEN: `tests/Get-NextSddId.Tests.ps1` con el fix | ✅ agente: 24 pasan, 0 fallan |
 | 3 | Suite completa `Invoke-Pester -Path tests` | ✅ agente: 357 pasan, 0 fallan, 6 skipped |
 | 4 | En este repo, con la carpeta del patch 0038 creada | ✅ agente: el script devuelve 0039 |
+
+Validación diferida: 2026-09-23 · «ya sabes, diferido al uso del kit» · disparador: el próximo `Get-NextSddId.ps1` que se ejecute con otro worktree del kit abierto y una carpeta de patch sin commitear, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 
