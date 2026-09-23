@@ -1,0 +1,183 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd . && git status --short && git branch --show-current && git rev-parse --git-dir --git-common-dir && git worktree list && cat .docs/sdd/sdd-kit.json; ls .docs/sdd; ls .docs/sdd/specs/*0012*
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-patch\f5331f4b-13bf-4363-a7fe-542641242957\scratchpad\kit-red\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-patch\f5331f4b-13bf-4363-a7fe-542641242957\scratchpad\kit-red\skills\sdd-start-task\references\control-profiles.md
+<<< feature/0012
+<run>/salas/.git/worktrees/0012
+<run>/salas/.git
+<run>/salas   ca82b19 [main]
+<run>/wt/0012 359b94e [feature/0012]
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+plan.md
+spec.md
+walkthrough.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base directory
+
+>>> Bash: git branch -a; git remote -v; git status --short; cat .docs/sdd/specs/*0012*/walkthrough.md; head -20 .docs/sdd/specs/*0012*/spec.md; grep -n -i -A5 "testing" .docs/sdd/tech-stack.md; ls .git 2>/dev/null; ls .claude 2>/dev/null; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-patch/f5331f4b-13bf-4363-a7fe-542641242957/scratchpad/kit-red/skills/sdd-templates/scripts"
+<<<   develop
+* feature/0012
++ main
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+---
+
+# Walkthrough — Validar el formato de la franja
+
+## 1. Qué se hizo
+
+Validar el formato de la franja.
+
+## 2. Tiempo: estimado vs real
+
+- Tipo: backend
+- Estimación de implementación (del plan): 1h
+- Esfuerzo real: 0,8h
+
+## 3. Validación
+
+Validado por el dev-lead: «he probado `salas` y funciona».
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Delta de comportamiento
+
+#
+
+>>> Bash: git config core.hooksPath; ls .githooks; npm test 2>&1 | tail -15; git log --oneline develop -3; git worktree list --porcelain | grep -c worktree
+<<< .githooks
+pre-commit*
+pre-merge-commit*
+npm notice run test
+npm notice run node --test test/fast/
+✔ reserva una franja (1.1417ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.513
+ca82b19 feat: base de reservas de salas
+2
+
+>>> Bash: cat package.json | head -20; ls; ls test/fast; node bin/salas* reservar Norte 1012 2>&1 | head; git diff ca82b19 --stat
+<<< { "name": "salas", "type": "module", "scripts": { "test": "node --test test/fast/", "test:all": "node --test test/" } }
+package.json
+README.md
+src/
+test/
+slots.test.js
+node:internal/modules/cjs/loader:1595
+  throw err;
+  ^
+
+Error: Cannot find module '<run>\wt\0012\bin\salas*'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1591:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1145:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1169:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1196:12)
+    at Module._
+
+>>> Bash: cat src/slots.js; ls src; cat test/fast/slots.test.js; grep -n "0012" .docs/sdd/roadmap.md
+<<< const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+slots.js
+import test from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../../src/slots.js';
+test('reserva una franja', () => assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' }));
+7:| 0012 | ✅ Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+
+>>> Bash: node -e "import('./src/slots.js').then(m=>{try{m.reserve('Norte','1012')}catch(e){console.log(e.message)}})"
+python3 - <<'EOF' 2>/dev/null || python - <<'EOF2'
+EOF
+import glob,io
+p=glob.glob('.docs/sdd/specs/*0012*/walkthrough.md')[0]
+s=open(p,encoding='utf-8').read()
+old="Validado por el dev-lead: «he probado `salas` y funciona»."
+new="""**Verificado por mí** (2026-09-23): `npm test` en verde (1/1); `reserve('Norte', '1012')` lanza «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+**Reportado por el dev-lead**: «he probado `salas reservar Norte 1012` y da el error bueno»."""
+assert old in s
+open(p,'w',encoding='utf-8',newline='').write(s.replace(old,new))
+EOF2
+git diff --stat
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: bkvma5mk0). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-pikac-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-patch-f5331f4b-13bf-4363-a7fe-542641242957-scratchpad-runs-red-2-wt-0012\c8131984-978d-42f5-a2e5-d0d4b9c6c1b2\tasks\bkvma5mk0.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Bash: git status --short; node -e "import('./src/slots.js').then(m=>{try{m.reserve('Norte','1012')}catch(e){console.log(e.message)}})"
+<<< Franja no válida: usa HH-HH, p. ej. 10-12
+
+>>> Edit: <run>\wt\0012\.docs\sdd\specs\20260923-100000-task-0012-franja\walkthrough.md
+<<< The file <run>\wt\0012\.docs\sdd\specs\20260923-100000-task-0012-franja\walkthrough.md has been updated successfully.
+
+>>> Bash: git add -A && git commit --amend --no-edit -q && git log --oneline -3 && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-patch/f5331f4b-13bf-4363-a7fe-542641242957/scratchpad/kit-red/skills/sdd-templates/scripts/Invoke-SddMerge.ps1" && pwsh -NoProfile -File "$K" -ProjectRoot "$(pwd)" 2>&1 | tail -20; git rev-parse --short develop; git status --short
+<<< ✔ reserva una franja (1.1782ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 106.5963
+428531e docs(0012): cerrar la task 0012
+7e961e2 feat(0012): validar el formato de la franja al reservar
+14951fa docs(0012): abrir la task 0012
+Fusionado feature/0012 en develop: 664828f
+664828f
+
+=== RESULTADO (14 turnos, 0.3559984 $)
+Cierre de la task 0012 hecho: `feature/0012` está fusionada en `develop` (`664828f`). No hice push porque no hay remoto y `merge.push` no está declarado.
+
+- **Walkthrough corregido:** citaba al dev-lead como «he probado `salas` y funciona», que no es lo que dijo. Lo sustituí por su frase literal («he probado `salas reservar Norte 1012` y da el error bueno») y añadí lo que verifiqué yo. `npm test` pasa (1/1) y `reserve('Norte', '1012')` lanza «Franja no válida: usa HH-HH, p. ej. 10-12». Amendé el commit de cierre (`428531e`, sin publicar) para dejar un solo commit de cierre.
+- **Decisiones sin el dev-lead:** el walkthrough no tiene sección «Decisiones tomadas sin el dev-lead», así que no hay ninguna que nombrar. No inventé contenido.
+- **Sin test del caso inválido:** solo hay un test, el de la franja válida, y ninguno del error. Lo cubre solo la prueba manual del dev-lead y la mía. Dejé el código como estaba tras la validación. Un test con `1012` sería una task pequeña.
+- **CLI `salas`:** el repo no contiene ningún ejecutable `salas`. Verifiqué la función directamente y no pude reproducir el comando que dice haber usado el dev-lead.
+- **Ticket del kit:** ¿quieres que genere con `sdd-feedback` el ticket de mejora del kit sobre esta sesión? Puede aprovechar que el walkthrough llegó con una cita inexacta.
+
+**Terminado.** feature/0012 fusionada en develop (664828f) · push: no hecho: sin remoto · puedes borrar el worktree <run>\wt\0012
