@@ -16,7 +16,7 @@ created: 2026-09-23
 | --- | --- | --- | --- |
 | 1 — RED del delta y anclas | done | `935c8af` | el pre-commit rechaza la suite en rojo: el test viaja con la implementación |
 | 2 — Receta y pasos de rama | done | `935c8af`, `8484a9a` | el segundo es el REFACTOR del GREEN (enmienda aprobada) |
-| 3 — GREEN | done | ver commit de la evidencia | 14 sujetos, 6,71 $; R4 retrocedió y se corrigió |
+| 3 — GREEN | done | `a6bc5b3` | 14 sujetos, 6,71 $; R4 retrocedió y se corrigió |
 
 ## Evidencia del RED de las anclas
 

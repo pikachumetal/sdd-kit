@@ -57,13 +57,14 @@
 | 2026-09-22 | 0035 | patch | — | 0.75 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
 | 2026-09-23 | 0037 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | 20260923-070206-patch-0037-disparador-vago |
 | 2026-09-23 | 0038 | patch | 0.3 | 0.2 | 0.67 | — | — | — | 20260923-103947-patch-0038-specs-de-otros-worktrees |
+| 2026-09-23 | 0009 | docs | 3 | 1.5 | 0.5 | no medido | 119k | 14.43 | 20260923-120510-task-0009-merge-close |
 
-**Factor de calibración** (ratio mediano real/estimado, 47 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 48 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 34 | 0.51 |
+| docs | 35 | 0.5 |
 | infra/tooling | 4 | 0.88 |
 | patch | 8 | 1.2 |
 

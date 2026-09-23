@@ -79,10 +79,33 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - AND al terminar la release entrega un solo informe: tasks cerradas, decisiones, enmiendas sin aprobar y tasks aparcadas
 
 ### El merge a develop sigue la política declarada
-- GIVEN una task validada (o diferida) y un bloque `merge` completo (`into`, `noFf`, `removeWorktree`) en `sdd-kit.json`
-- WHEN el agente llega al paso de rama del cierre
-- THEN en `delegate` y `unattended` aplica la política sin preguntar; en `pair` la presenta y espera
+- GIVEN una task validada (o diferida) o un patch listo para su paso de rama, y un bloque `merge` completo (`into`, `noFf`, `removeWorktree`) en `sdd-kit.json`
+- WHEN el agente llega al paso de rama del cierre (paso 10 de `sdd-end-task`, paso 6 de `sdd-end-patch`)
+- THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
 - AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta
+
+### Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás
+- GIVEN un repo en el que `git worktree list` no muestra la rama destino sacada en ningún worktree
+- WHEN el cierre fusiona
+- THEN crea un worktree temporal de la rama destino en la carpeta que contiene el worktree de la feature, con nombre `merge-<id>`, fusiona allí y lo retira con `git worktree remove` antes de terminar
+- AND el worktree de la feature sigue en su rama, el temporal no se crea en el scratchpad, en `%TEMP%` ni con `mktemp`, y ningún commit usa `--no-verify`
+
+### Con la rama destino sacada y con cambios sin commitear, el cierre no fusiona
+- GIVEN la rama destino sacada en un worktree con cambios sin commitear
+- WHEN el cierre va a fusionar
+- THEN no fusiona ahí: dice qué ficheros tienen cambios y para
+- AND no hace `stash`, `reset` ni commit de lo ajeno
+
+### Un merge que el entorno deniega se informa con su evidencia
+- GIVEN una política que autoriza el merge y un entorno que lo deniega (clasificador del harness o hook)
+- WHEN el cierre termina
+- THEN el informe final cita en un bloque el comando denegado, literal; cita el texto de la denegación y el hash de la rama destino, que sigue sin tocar; y dice que el resto del cierre está hecho
+- AND no reintenta el merge con otra herramienta ni con otra forma del comando
+
+### Un conflicto en el estimation-log se regenera con el script
+- GIVEN un merge del cierre con conflicto en `estimation-log.md`
+- WHEN el agente resuelve los conflictos
+- THEN regenera `estimation-log.md` con `Build-EstimationLog.ps1` de `sdd-templates/scripts/`, y no lo edita a mano
 
 ## Reglas de la capacidad
 
@@ -90,9 +113,11 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
 - **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una task: más de 3 tasks internas previstas. Checkpoint de alcance: en el 3.º fix descubierto de una task y en cada tercero después.
 - **Avisos**: no aplica.
-- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona.
+- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge que el entorno deniega no se reintenta: lo desbloquea una persona.
 
 ## Historial
+
+- 2026-09-23 — 20260923-120510-task-0009-merge-close — MODIFIED El merge a develop sigue la política declarada · ADDED Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás · Con la rama destino sacada y con cambios sin commitear, el cierre no fusiona (enmienda) · Un merge que el entorno deniega se informa con su evidencia · Un conflicto en el estimation-log se regenera con el script · regla Regla ante conflicto
 
 - 2026-09-22 — 20260922-133931-task-0025-scope-brake — ADDED El tercer fix descubierto abre un checkpoint de alcance · Una decisión que cambia la salida observable se pregunta · La fila de la task se compara con la base antes de cada despacho · MODIFIED Un cambio a la spec aprobada es un desvío · Salir del plan es un ruling visible · regla Límites
 - 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED Una respuesta cuenta como aprobación solo si aprueba (enmienda)
