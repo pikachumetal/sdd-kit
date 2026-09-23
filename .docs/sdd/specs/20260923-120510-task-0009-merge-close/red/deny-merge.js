@@ -3,7 +3,9 @@ let input = '';
 process.stdin.on('data', (chunk) => { input += chunk; });
 process.stdin.on('end', () => {
   const command = JSON.parse(input).tool_input?.command ?? '';
-  if (!/\bgit\b.*\bmerge\b(?!-base)/.test(command)) return;
+  const arg = String.raw`(?:"[^"]*"|'[^']*'|\S+)`;
+  const gitMerge = new RegExp(String.raw`(?:^|[\s;&|(])git(?:\s+(?:-[Cc]|-c|--git-dir|--work-tree)\s+${arg})*\s+merge(?:\s|$)`);
+  if (!gitMerge.test(command)) return;
   console.log(JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',

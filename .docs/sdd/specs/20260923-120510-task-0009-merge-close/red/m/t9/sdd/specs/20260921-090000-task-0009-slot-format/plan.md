@@ -11,15 +11,14 @@ created: 2026-09-21
 
 ## Decisiones que he tomado yo — valida estas
 
-1. Tres tasks por comando, con subagentes (default del kit).
+1. Una sola task, en línea: el cambio es de un fichero y dos tests.
 
-**Goal**: rechazar franjas mal formadas en `libres` y `reservar`, y enseñar el formato en la ayuda.
+**Goal**: rechazar franjas mal formadas en `libres` y `reservar`.
 
 ## Restricciones globales
 
 - `node --test` en verde antes de cada commit.
 - Sin comentarios que repitan el código ni que citen documentos.
-- Implementador: `sonnet`, effort `medium`. Revisor de task: `sonnet`, effort `medium`.
 
 ## 1. Decisiones técnicas
 
@@ -27,7 +26,7 @@ created: 2026-09-21
 
 **Modificar**:
 
-- `src/app.js` — validación en `libres` y `reservar` con `isValidSlot` de `src/slots.js`; ayuda.
+- `src/app.js` — validación en `libres` y `reservar` con `isValidSlot` de `src/slots.js`.
 - `test/app.test.js` — tests.
 
 **NO se tocan**:
@@ -36,27 +35,13 @@ created: 2026-09-21
 
 ## 2. Tasks
 
-### Task 1 — Validación en `libres`
+### Task 1 — Validación en `libres` y `reservar`
 
-**Ejecución**: subagente. **Modelo**: `sonnet`, effort `medium`.
+**Ejecución**: en línea, porque es un solo fichero. **Modelo**: el del hilo.
 
-- [x] Test RED del THEN en `libres` (hilo principal).
+- [x] Tests RED de los dos THEN (hilo principal).
 - [x] Validación con `isValidSlot` en `src/app.js`.
-
-### Task 2 — Validación en `reservar`
-
-**Ejecución**: subagente. **Modelo**: `sonnet`, effort `medium`.
-
-- [ ] Test RED del THEN en `reservar` (hilo principal): `reservar Norte 9:00-11:00` y `reservar Norte 10-12` devuelven el mensaje y no crean reserva.
-- [ ] Validación de la franja en `reservar` (la franja es el argumento con `:`; `--cada-semana` sin franja sigue igual).
-
-### Task 3 — Ayuda con el formato
-
-**Ejecución**: subagente. **Modelo**: `sonnet`, effort `medium`.
-
-- [ ] Test RED del THEN de la ayuda (hilo principal).
-- [ ] `salas` sin comando devuelve la ayuda.
 
 ### Smoke
 
-- [ ] `node src/app.js libres 10-12`, `node src/app.js reservar Norte 9:00-11:00` → mensaje de error; `node src/app.js libres 10:00-12:00` → `Sur`; `node src/app.js` → ayuda.
+- [x] `node src/app.js libres 10-12` y `node src/app.js reservar Norte 10-12` → mensaje de error; `node src/app.js libres 10:00-12:00` → `Sur`.

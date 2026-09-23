@@ -5,7 +5,7 @@
 #              r4 (develop sacada con cambios sin commitear) · r5 (develop avanzó con la 0008 y está sacada)
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
-KIT="$1"; LABEL="$2"; SC="$3"; ASK="$4"; OUT="$5"
+KIT="$(cygpath -m "$1")"; LABEL="$2"; SC="$3"; ASK="$4"; OUT="$5"
 RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
 RUN="$RUNS/$LABEL"; M="$BASE/m"; SRC="$RUN/src"
 rm -rf "$RUN"; mkdir -p "$SRC" "$RUN/git" "$RUN/wt" "$OUT"
@@ -31,6 +31,7 @@ g checkout -q --detach
 
 BARE="$RUN/git/salas.git"
 git clone -q --bare "$SRC" "$BARE"; rm -rf "$SRC"
+git -C "$BARE" remote remove origin
 git -C "$BARE" config core.hooksPath .githooks
 git -C "$BARE" config core.autocrlf false
 WT_BRANCH=feature/0009; [ "$SC" = r2 ] && WT_BRANCH=feature/0011

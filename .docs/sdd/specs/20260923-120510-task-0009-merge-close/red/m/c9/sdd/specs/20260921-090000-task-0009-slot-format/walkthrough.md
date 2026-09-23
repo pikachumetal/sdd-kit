@@ -42,7 +42,7 @@ created: 2026-09-23
 | `libres 10-12` responde el mensaje de franja no válida | suite y ejecución real | agente |
 | `reservar Norte 10-12` no crea la reserva | suite y ejecución real | agente |
 
-Suite: `node --test`, 6/6.
+Suite: `node --test`, 6/6. Task en línea: `superpowers:requesting-code-review` sobre la rama, sin hallazgos (paso 9).
 
 Validado por el dev-lead el 2026-09-23: «he probado `salas libres 10-12` y `salas reservar Norte 10-12` y dan el error bueno».
 
