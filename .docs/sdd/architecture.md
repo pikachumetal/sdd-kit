@@ -23,6 +23,7 @@
 │   ├── add-to-changelog/SKILL.md
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)
 ├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, router.md — solo canal plugin)
+├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
 ├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1 y fixtures/ de los scripts)
 └── .docs/
     ├── workflow/                (documentación temprana del flujo: greenfield, brownfield, anexo de evidencia)
