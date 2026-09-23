@@ -120,8 +120,9 @@ Describe 'Perfiles de control: validación diferida con disparador vago (patch 0
     $step | Should -Match 'mensaje de cierre'
   }
 
-  It 'el paso 11 de sdd-end-task dice en el mensaje final el disparador concretado' {
-    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^11\. .+$').Value | Should -Match 'lo elegí yo'
+  It 'el paso 12 de sdd-end-task dice en el mensaje final el disparador concretado' {
+    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?ms)^12\. .+?(?=^## )').Value | Should -Match 'lo elegí yo'
+    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^11\. .+$').Value | Should -Not -Match 'lo elegí yo'
   }
 }
 
@@ -200,5 +201,19 @@ Describe 'Push autorizado en el cierre: paso de rama' {
     $section | Should -Match '@\{upstream\}'
     $section | Should -Match '--force'
     $section | Should -Match 'en un bloque'
+  }
+}
+
+Describe 'Mensaje final del cierre' {
+  It 'el último paso de <_.Skill> es el mensaje final y acaba con la línea de terminado' -ForEach @(
+    @{ Skill = 'sdd-end-task'; Step = '12' }, @{ Skill = 'sdd-end-patch'; Step = '8' }
+  ) {
+    $step = [regex]::Match((Get-KitFile "skills/$($_.Skill)/SKILL.md"), "(?ms)^$($_.Step)\. .+?(?=^## )").Value
+    $step | Should -Match '^\d+\. \*\*Mensaje final\*\*'
+    foreach ($literal in '**Terminado.**', '**No terminado.**', 'worktree', 'ticket') { $step.Contains($literal) | Should -BeTrue -Because "falta $literal" }
+  }
+
+  It 'el paso 0 de sdd-end-task remite al mensaje final del paso 12' {
+    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^0\. .+$').Value | Should -Match 'paso 12'
   }
 }

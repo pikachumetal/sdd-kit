@@ -46,7 +46,7 @@ Solo con el merge hecho y la suite en verde sobre el resultado. Lo autoriza `mer
 
 - `merge.push: true` y perfil `delegate` o `unattended`: se hace sin preguntar.
 - Perfil `pair`: se presenta junto con el merge y se espera.
-- `merge.push` ausente o `false`: no se hace, y el mensaje final lo dice («push: no hecho, `merge.push` no lo autoriza»).
+- `merge.push` ausente o `false`: no se hace, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
 
 Pasos:
 
