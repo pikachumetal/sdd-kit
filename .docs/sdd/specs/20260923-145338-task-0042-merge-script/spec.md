@@ -84,4 +84,4 @@ Un script PowerShell en `sdd-templates/scripts/`, junto a `Build-EstimationLog.p
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-23 | aprobada: «ok» (push con `-Push` confirmado, decisión 1; sin `merge.push`) |
