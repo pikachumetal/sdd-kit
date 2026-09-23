@@ -217,3 +217,16 @@ Describe 'Mensaje final del cierre' {
     [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^0\. .+$').Value | Should -Match 'paso 12'
   }
 }
+
+Describe 'Mensaje final del cierre: solo se borra un worktree enlazado' {
+  It '<_> no ofrece borrar el checkout principal' -ForEach @('sdd-end-task', 'sdd-end-patch') {
+    $skill = Get-KitFile "skills/$_/SKILL.md"
+    $skill | Should -Match 'git rev-parse --git-common-dir'
+    $skill | Should -Match 'sin cláusula de borrado'
+  }
+
+  It 'la receta decide el push con pair primero' {
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
+    $section | Should -Match '(?m)^1\. Perfil `pair`'
+  }
+}

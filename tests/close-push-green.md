@@ -40,6 +40,7 @@ Un sujeto más de la tanda 2 corrió sin la copia del kit: un `rm` fallido cort�
 | F1 · push con `merge.push: true` | 1 de 3 lo intenta, y se contradice | A y B: 4/4 empujan `develop`; ninguno fuerza ni reintenta; el comando va citado (tanda 2) |
 | F2 · línea de terminado con el worktree | 0/5 | 10/10 cierres en la tanda 2; C 2/2 y F 2/2 en la 3 |
 | F3 · ruling en el mensaje final | 0/3 | C 2/2 en la tanda 3; A, E y T 2/2 en la 2 |
+| F3 en patch (B) | no medido | `patch.md` no tiene sección de decisiones y el del molde no registra ninguna: B 2/2 (tanda 2) cuentan solo las que toman en el cierre (el hash real y el recuento de la suite en `patch.md`); ninguno se inventa una. La revisión de rama pidió aclararlo, y el paso 8 lo dice ahora |
 | F4 · instrucción al validar (control) | pasa 2/2 | C 2/2 cumple y lo dice (tandas 2 y 3) |
 | Estructural · la clave y la pregunta | no existen | I, I2 y M 2/2: la pregunta 3 con su recomendación |
 

@@ -42,11 +42,11 @@ Es el mismo script que ya ejecutó el paso del estimation-log del cierre.
 
 ## Push
 
-Solo con el merge hecho y la suite en verde sobre el resultado. Lo autoriza `merge.push`:
+Solo con el merge hecho y la suite en verde sobre el resultado. Se decide en este orden, y manda la primera regla que aplique:
 
-- `merge.push: true` y perfil `delegate` o `unattended`: se hace sin preguntar.
-- Perfil `pair`: se presenta junto con el merge y se espera.
-- `merge.push` ausente o `false`: no se hace, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
+1. Perfil `pair`: se presenta junto con el merge y se espera, sea cual sea `merge.push`.
+2. `merge.push: true` (perfil `delegate` o `unattended`): se hace sin preguntar.
+3. `merge.push` ausente o `false`: no se hace, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
 
 Pasos:
 

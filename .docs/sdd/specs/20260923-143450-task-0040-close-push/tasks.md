@@ -28,7 +28,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 - [x] Task 1 — `Invoke-Pester -Path tests/ControlProfiles.Tests.ps1, tests/MigrationInitParity.Tests.ps1`: 53/0
 - [x] Task 2 — `Invoke-Pester -Path tests/ControlProfiles.Tests.ps1`: 32/0
 - [x] Task 3 — `Invoke-Pester -Path tests/ControlProfiles.Tests.ps1`: 35/0
-- [ ] Task 4 — veredictos del GREEN en `green/out/`
+- [x] Task 4 — veredictos del GREEN en `green/out/`, `out2/`, `out3/`, `f2/` y `f3/` (`tests/close-push-green.md`)
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
