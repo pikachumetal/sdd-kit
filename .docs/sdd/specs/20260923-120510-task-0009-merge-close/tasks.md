@@ -36,6 +36,21 @@ Expected regular expression 'comando' to match $null, but it did not match.
 Tests Passed: 20, Failed: 5, Skipped: 0, Inconclusive: 0, NotRun: 0
 ```
 
+## Revisión de rama
+
+Revisor `general-purpose`, `sonnet` (el tool `Agent` no admite effort: deuda de la 0031), cabecera de `encargo-revision.md`, paquete sin `red/` ni `green/` (64 KB). Veredicto: «With fixes (opcional-recomendado, no bloqueante)», ~119k tokens.
+
+| Hallazgo | Decisión |
+| --- | --- |
+| Important 1: un `merge-<id>` que sobra de un intento anterior haría fallar `git worktree add` | ruling, sin cambio: «Cuándo» va primero; con `merge-<id>` vivo la rama destino está sacada y el reintento entra por «Sacada» |
+| Important 2: sin forma de informe cuando la suite falla tras el merge | a deuda sin medir: ningún escenario lo mostró (Art. I) y superpowers ya dice que se pare |
+| Minor 1: «en la carpeta del worktree de la feature» admite dos lecturas | sin cambio: 4/4 sujetos lo leyeron bien en el GREEN; tocarlo pide otro ciclo |
+| Minor 2: `ControlProfiles.Tests.ps1` sin salto de línea final | arreglado |
+
+## Smoke del hilo
+
+La receta a mano en PowerShell sobre un repo bare del molde (`DRY=1 subject.sh … r1`), fuera de todo sujeto: `git worktree list` sin `develop` sacada → `git worktree add "$parent/merge-0009" develop` con `$parent = Split-Path (git rev-parse --show-toplevel)` → `git merge --no-ff feature/0009` → `node --test`: `pass 6`, `fail 0` → `git worktree remove` → la lista vuelve a `0008` y `0009`, la feature sigue en `feature/0009` y `develop` apunta al merge commit (`19bf28d merge: task 0009`).
+
 ## Fixes adicionales
 
 | # | Qué | Decisión | Commit |
