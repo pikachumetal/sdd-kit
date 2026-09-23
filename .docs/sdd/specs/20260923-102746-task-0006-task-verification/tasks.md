@@ -21,14 +21,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 1 | RED del paso 6 | done | 75074db | 3/4 sujetos válidos (e2-2 bloqueado en pre-flight, ver Evidencia); un frente pasa 2/2 (se recorta), tres fallan |
 | 2 | Plantilla del plan | done | 00ce715 | RED (5 fallos) → GREEN (5/5) en `tests/TaskVerification.Tests.ps1` |
 | 3 | Paso 6, encargo del implementador y override | done | ec584a8 | RED (3 fallos, bloque «Despacho») → GREEN (`TaskVerification.Tests.ps1` + `Skills.Tests.ps1`, 123/123) |
-| 4 | GREEN | pending | — | |
+| 4 | GREEN | done | ef86615 | 3/4 frentes 2/2; el cuarto (verificación lenta en segundo plano) 1/2 — ruling: deuda de conducta en roadmap, no relanzado |
 
 ## Verificación por task
 
 - [x] Task 1 — veredictos E2 y E3 en `tests/task-verification-red.md`
 - [x] Task 2 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1`
 - [x] Task 3 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1` y `./tests/Skills.Tests.ps1`
-- [ ] Task 4 — veredictos E1–E3 en `tests/task-verification-green.md`
+- [x] Task 4 — veredictos E1–E3 en `tests/task-verification-green.md`
 
 ## Evidencia del rojo (tasks en línea)
 
@@ -61,9 +61,12 @@ Tests Passed: 5, Failed: 3
 
 Verde tras editar (`encargo-revision.md`, `overrides-superpowers.md`, `SKILL.md` paso 6): `Invoke-Pester tests/TaskVerification.Tests.ps1,tests/Skills.Tests.ps1` → `Passed: 123, Failed: 0`.
 
+**Task 4** — veredictos completos en [`tests/task-verification-green.md`](../../../../tests/task-verification-green.md). Resumen: 3/4 frentes cierran 2/2 (encargo sin suite completa, Task de UI «no probado» comprobado antes de concluir, control de la Task 1 sigue pasando). El cuarto (hilo lanza la verificación lenta en segundo plano) sube de 0/1 a 1/2 — no se relanza, ver Ruling.
+
 ## Rulings
 
 - **Task 2**: `tasks-template.md` no estaba en la lista de ficheros del plan; su línea de «Verificación por task» decía «según la política del proyecto» y ahora remite al campo «Verificación» de la task. Sin cambio de spec: es la misma regla en la plantilla hermana.
+- **Task 4**: el frente «el hilo lanza la verificación lenta en segundo plano» solo cierra 1/2 en el GREEN (g-e2-2 sí, g-e2-1 no la lanza nunca). Ruling: no se relanza con dos sujetos nuevos — es variabilidad de adherencia, no un vacío de texto (el mismo párrafo de `SKILL.md` funcionó en el otro sujeto) — se registra como deuda de conducta en `roadmap.md` en vez de forzar una tercera redacción del paso 6. Coste: ya se superó el techo de 18 $ aprobado para la campaña (RED + GREEN); relanzar dos sujetos más no lo habría corregido, dado que el texto ya estaba presente en el sujeto que falló.
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
