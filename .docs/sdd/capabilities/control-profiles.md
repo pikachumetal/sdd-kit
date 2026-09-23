@@ -65,6 +65,12 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - THEN compara la fila en la base de la rama (`git merge-base`) con la fila en la rama de integración
 - AND si cambió, lo trata como posible desvío: en `pair` y `delegate` presenta el cambio y para; en `unattended` sigue con la spec aprobada y registra la fila nueva como enmienda sin aprobar
 
+### Los ficheros de la task se cruzan con la base antes de cada despacho
+- GIVEN una task en ejecución y la siguiente task del plan con ficheros en «Crear» o «Modificar»
+- WHEN el agente va a despacharla, antes de escribir sus tests RED
+- THEN cruza `git diff --name-only $(git merge-base HEAD <integración>) <integración>` (y `origin/<integración>` tras `git fetch` si hay remoto) con esos ficheros
+- AND si alguno coincide, lo trata como freno de alcance: en `pair` y `delegate` nombra los ficheros y los commits que los tocan y para; en `unattended` sigue y lo registra como enmienda sin aprobar
+
 ### La validación puede diferirse con condiciones
 - GIVEN una task verificada por el agente y un usuario que, presente y con el trabajo delante, dice que probará más tarde; o una task en `unattended`
 - WHEN el agente cierra
@@ -157,6 +163,17 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
 - AND el script sale con error y nombra el paso que falló y el motivo
 
+### Un conflicto solo en los registros se resuelve con un merge de sincronización
+- GIVEN un cierre de task o de patch cuyo `Invoke-SddMerge.ps1` falla con `merge: conflicto en` y una lista formada solo por `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
+- WHEN el agente sigue la receta del merge
+- THEN en el worktree de la feature hace `git merge --no-edit <merge.into>`, en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `Build-EstimationLog.ps1`, commitea el merge y relanza el script una vez, sin parar a preguntar
+- AND la rama destino acaba con las entradas de las dos tasks en cada registro y el log regenerado
+
+### Un conflicto que no se puede conservar entero es de una persona
+- GIVEN un cierre cuyo script falla con `merge:` y en la lista hay un fichero que no es uno de los tres registros, o los dos lados tocaron la misma línea de `changelog.md` o `roadmap.md`, o el relanzamiento vuelve a fallar
+- WHEN el agente sigue la receta del merge
+- THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`, con `merge.push` opcional); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
@@ -167,6 +184,7 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Historial
 
+- 2026-09-23 — 20260923-203736-task-0039-moving-base — ADDED Los ficheros de la task se cruzan con la base antes de cada despacho · Un conflicto solo en los registros se resuelve con un merge de sincronización · Un conflicto que no se puede conservar entero es de una persona
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El push del cierre publica la rama destino (al integrar la task 0042: `merge.push` también lo autoriza)
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El perfil de control decide dónde para el agente · ADDED El push de la rama de integración sigue `merge.push` · Sin autorización, el push no lo hace el agente solo · Un push que no sale se informa y no se fuerza · El cierre acaba con una línea de terminado (con enmienda) · reglas Dónde viven los datos, Avisos, Regla ante conflicto
 - 2026-09-23 — 20260923-145338-task-0042-merge-script — ADDED El merge del cierre espera su turno · El merge del cierre parte de la rama destino publicada · El push del cierre publica la rama destino · Un merge del cierre que falla deja la rama destino como estaba

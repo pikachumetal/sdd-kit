@@ -65,13 +65,14 @@
 | 2026-09-23 | 0043 | patch | 0.5 | 0.5 | 1 | — | — | — | 20260923-173026-patch-0043-fast-pre-commit |
 | 2026-09-23 | 0016 | infra/tooling | 2.5 | 0.7 | 0.28 | no medido | 815k | no aplica | 20260923-190542-task-0016-git-env-cache-warning |
 | 2026-09-23 | 0044 | docs | 2.5 | 0.9 | 0.36 | no medido | 602k | 3.93 | 20260923-191212-task-0044-commit-per-milestone |
+| 2026-09-23 | 0039 | docs | 2 | 0.7 | 0.35 | no medido | 596k | 4.39 | 20260923-203736-task-0039-moving-base |
 
-**Factor de calibración** (ratio mediano real/estimado, 55 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 56 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 39 | 0.52 |
+| docs | 40 | 0.51 |
 | infra/tooling | 6 | 0.62 |
 | patch | 9 | 1.2 |
 

@@ -20,7 +20,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | El merge de sincronización en el cierre | done | 0555b2b | review limpia |
 | 2 | El cruce de ficheros antes de cada despacho | done | 8449cff | review limpia; 1 Minor diferido |
-| 3 | GREEN | done | — | en línea; 10/10, 3,13 $ |
+| 3 | GREEN | done | 6f175c1 | en línea; 10/10, 3,13 $ |
 
 ## Verificación por task
 

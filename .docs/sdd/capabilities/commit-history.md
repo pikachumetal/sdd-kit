@@ -20,12 +20,14 @@ Verdad viva de la historia de la rama de una task o de un patch: qué commits qu
 - WHEN el hilo va a hacer el merge del cierre
 - THEN desde el commit de la última task la rama tiene un solo commit, con la documentación de cierre y los arreglos de la revisión final y de la validación
 - AND una rama sin merges de sincronización tiene 2 + N commits desde el `merge-base`, con N tasks en el plan (3 en lite)
+- AND si el cierre necesita un merge de sincronización, va después del commit de cierre y es el último commit de la rama; el cierre no se vuelve a juntar
 
 ### El patch queda en dos commits
 - GIVEN un patch con el fix verificado
 - WHEN se cierra con `sdd-end-patch`
 - THEN la rama tiene dos commits desde el `merge-base`: el fix (código, tests y `patch.md`) y el cierre (`patch.md` con el hash del fix y el tiempo, más changelog, roadmap y estimation-log si existen)
 - AND el `commit:` de `patch.md` es el hash del commit del fix
+- AND si el cierre necesita un merge de sincronización, va después del commit de cierre y es el último commit de la rama
 
 ### No se junta a través de un merge ni lo ya publicado
 - GIVEN el rango de un hito que contiene un commit de merge, o un commit ya publicado en un remoto
@@ -40,3 +42,4 @@ Verdad viva de la historia de la rama de una task o de un patch: qué commits qu
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — ADDED El cierre de una task queda en un commit
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — ADDED El patch queda en dos commits
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — ADDED No se junta a través de un merge ni lo ya publicado
+- 2026-09-23 — 20260923-203736-task-0039-moving-base — MODIFIED El cierre de una task queda en un commit · El patch queda en dos commits
