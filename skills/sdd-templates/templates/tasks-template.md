@@ -28,7 +28,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 ## Verificación por task
 
-- [ ] Task 1 — build verde + verificación según la política del proyecto
+- [ ] Task 1 — los comandos de su campo «Verificación» del plan (más la visual o la lenta, si las declara)
 - [ ] Task 2 — …
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
