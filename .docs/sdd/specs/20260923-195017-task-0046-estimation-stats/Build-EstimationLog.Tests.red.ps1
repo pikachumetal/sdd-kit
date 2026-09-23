@@ -198,10 +198,10 @@ Describe 'Resolución de la carpeta de docs' {
 
 Describe 'Resumen estadístico' {
   BeforeAll {
-    function New-Walkthrough([string]$Specs, [string]$Folder, [string]$Type, [string]$Estimate, [string]$Real, [string]$SubjectCost = '') {
+    function New-Walkthrough([string]$Specs, [string]$Folder, [hashtable]$Time) {
       $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
-      $cost = if ($SubjectCost) { "`n- Coste de sujetos: $SubjectCost" } else { '' }
-      $text = "## 2. Tiempo: estimado vs real`n`n- Tipo: $Type`n- Estimación de implementación (del plan): $Estimate`n- Esfuerzo real: $Real$cost`n"
+      $cost = if ($Time.Cost) { "`n- Coste de sujetos: $($Time.Cost)" } else { '' }
+      $text = "## 2. Tiempo: estimado vs real`n`n- Tipo: $($Time.Type)`n- Estimación de implementación (del plan): $($Time.Est)`n- Esfuerzo real: $($Time.Real)$cost`n"
       [System.IO.File]::WriteAllText((Join-Path $dir 'walkthrough.md'), $text, [System.Text.UTF8Encoding]::new($false))
     }
 
@@ -218,18 +218,18 @@ Describe 'Resumen estadístico' {
       $type = if ($i -lt 11) { 'docs' } elseif ($i -lt 17) { 'patch' } else { 'chore' }
       $folder = '202608{0:d2}-100000-task-{1:d4}-r' -f ($i + 1), ($i + 1)
       $cost = switch ($i) { 0 { '2,5 $' } 1 { 'no medido' } default { '' } }
-      New-Walkthrough $specs $folder $type '1h' ("$($ratios[$i])h" -replace '\.', ',') $cost
+      New-Walkthrough $specs $folder @{ Type = $type; Est = '1h'; Real = ("$($ratios[$i])h" -replace '\.', ','); Cost = $cost }
     }
-    New-Walkthrough $specs '20260803-120000-task-0099-sinest' 'docs' '—' '1,5h' '1,5 $'
-    New-Walkthrough $specs 'notas-sueltas' 'docs' '—' '2h'
+    New-Walkthrough $specs '20260803-120000-task-0099-sinest' @{ Type = 'docs'; Est = '—'; Real = '1,5h'; Cost = '1,5 $' }
+    New-Walkthrough $specs 'notas-sueltas' @{ Type = 'docs'; Est = '—'; Real = '2h' }
     $changelog = "# Changelog`n`n## [Unreleased]`n`n## [0.2.0] - 2026-08-10`n`n- algo`n`n## [0.1.0] — 2026-08-05`n`n- algo`n"
     [System.IO.File]::WriteAllText((Join-Path $TestDrive 'completo/.docs/sdd/changelog.md'), $changelog, [System.Text.UTF8Encoding]::new($false))
     $script:Completo = (Invoke-Build (Join-Path $TestDrive 'completo')).Text
 
     $specs = New-Project 'escaso'
-    New-Walkthrough $specs '20260801-100000-task-0001-a' 'docs' '2h' '1h'
-    New-Walkthrough $specs '20260802-100000-task-0002-b' 'docs' '1h' '1h'
-    New-Walkthrough $specs '20260803-100000-task-0003-c' 'docs' '1h' '2h'
+    New-Walkthrough $specs '20260801-100000-task-0001-a' @{ Type = 'docs'; Est = '2h'; Real = '1h' }
+    New-Walkthrough $specs '20260802-100000-task-0002-b' @{ Type = 'docs'; Est = '1h'; Real = '1h' }
+    New-Walkthrough $specs '20260803-100000-task-0003-c' @{ Type = 'docs'; Est = '1h'; Real = '2h' }
     $script:Escaso = (Invoke-Build (Join-Path $TestDrive 'escaso')).Text
   }
 
