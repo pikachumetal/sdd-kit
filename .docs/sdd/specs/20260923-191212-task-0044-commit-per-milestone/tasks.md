@@ -20,13 +20,13 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | La forma en la task, en la constitution y en las plantillas | done | 703fc0b | revisión limpia; rango de un solo commit, nada que juntar |
 | 2 | El carril patch | done | 9582af8 | revisión limpia tras un ruling (trailer de atribución); rango de un solo commit |
-| 3 | GREEN | done | — | 12 sujetos, 3,93 $; G4 0/2 → REFACTOR de `sdd-end-patch` paso 2 → 2/2 |
+| 3 | GREEN | done | f480201 | 12 sujetos, 3,93 $; G4 0/2 → REFACTOR de `sdd-end-patch` paso 2 → 2/2 |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester -Path tests/CommitMilestones.Tests.ps1, tests/Skills.Tests.ps1, tests/TaskVerification.Tests.ps1`
-- [ ] Task 2 — `Invoke-Pester -Path tests/CommitMilestones.Tests.ps1, tests/Skills.Tests.ps1`
-- [ ] Task 3 — veredictos del GREEN en `green/out/`
+- [x] Task 1 — `Invoke-Pester -Path tests/CommitMilestones.Tests.ps1, tests/Skills.Tests.ps1, tests/TaskVerification.Tests.ps1`
+- [x] Task 2 — `Invoke-Pester -Path tests/CommitMilestones.Tests.ps1, tests/Skills.Tests.ps1`
+- [x] Task 3 — veredictos del GREEN en `green/out/`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
