@@ -32,6 +32,15 @@ Describe 'Plantilla del plan' {
   }
 }
 
+Describe 'Plantilla de tasks' {
+  BeforeAll { $script:TasksTemplate = Get-KitFile 'skills/sdd-templates/templates/tasks-template.md' }
+
+  It 'remite al campo «Verificación» de la task, no a la política del proyecto' {
+    $script:TasksTemplate | Should -Match 'campo «Verificación»'
+    $script:TasksTemplate | Should -Not -Match 'según la política del proyecto'
+  }
+}
+
 Describe 'Despacho' {
   It 'el encargo del implementador lleva la verificación de su task' {
     $brief = Get-KitFile 'skills/sdd-start-task/references/encargo-revision.md'
