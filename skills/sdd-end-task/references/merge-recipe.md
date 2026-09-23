@@ -6,7 +6,7 @@ La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la po
 
 `git worktree list` dice si la rama destino está sacada en algún worktree:
 
-- **Sacada**: se fusiona en ese worktree, como pide `superpowers:finishing-a-development-branch`. De esta receta valen entonces «Conflicto en estimation-log.md» y «Merge denegado por el entorno».
+- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: son de otra sesión, así que el informe dice qué ficheros son y el cierre para, sin `stash`, `reset` ni commit de lo ajeno. Limpio, se fusiona en ese worktree, como pide `superpowers:finishing-a-development-branch`, y de esta receta valen «Conflicto en estimation-log.md» y «Merge denegado por el entorno».
 - **Sin sacar en ninguno** (repo bare con un worktree por rama, el caso normal con worktrees): sigue esta receta **en lugar de la opción 1 de `finishing-a-development-branch`**. Esa opción hace `cd` a la raíz del repo principal y `git checkout <destino>`, y en un repo bare esa raíz no es un working tree: falla con `fatal: not a git repository`.
 
 ## Worktree temporal

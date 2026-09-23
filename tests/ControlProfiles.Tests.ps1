@@ -155,4 +155,10 @@ Describe 'Merge en el cierre' {
     $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
     foreach ($item in 'comando', 'texto de la denegación', 'hash') { $recipe | Should -Match $item }
   }
+
+  It 'los dos pasos de rama paran ante la rama destino sacada con cambios sin commitear' {
+    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
+      Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'cambios sin commitear, no fusiones ahí'
+    }
+  }
 }

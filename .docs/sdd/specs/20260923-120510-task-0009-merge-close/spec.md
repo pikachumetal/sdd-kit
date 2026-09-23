@@ -40,7 +40,7 @@ Seis reportes de campo cuentan el mismo cierre: el repo es bare, la rama destino
 ## Scope
 
 - Entra: `sdd-end-task` paso 10 y `sdd-end-patch` paso 6 leen `merge.into` y `merge.noFf` y aplican la tabla de gates; receta del merge sin la rama destino sacada; forma del informe de un merge denegado; `estimation-log.md` en conflicto se regenera con el script; texto del Art. IV y de `control-profiles.md` que hoy restringe la política al cierre de task.
-- No entra: integrar la base antes de los docs de cierre, detectar otras tasks abiertas y la receta de `changelog.md`, `roadmap.md` y capacidades en conflicto (0039); el ensayo con `--detach` (decisión 2); cambios sin commitear en el checkout destino (R4 pasa); la suite sobre el resultado del merge (la pide superpowers); la rama preexistente en `nombrado.md` (deuda, patch); el merge a `main` y el tag, que siguen siendo de una persona.
+- No entra: integrar la base antes de los docs de cierre, detectar otras tasks abiertas y la receta de `changelog.md`, `roadmap.md` y capacidades en conflicto (0039); el ensayo con `--detach` (decisión 2); la suite sobre el resultado del merge (la pide superpowers); la rama preexistente en `nombrado.md` (deuda, patch); el merge a `main` y el tag, que siguen siendo de una persona.
 
 ## Approach
 
@@ -62,6 +62,12 @@ Los dos pasos de rama delegan en `finishing-a-development-branch`, como hoy, con
 - THEN crea un worktree temporal de la rama destino en la carpeta que contiene el worktree de la feature, con nombre `merge-<id>`, fusiona allí y lo retira con `git worktree remove` antes de terminar
 - AND el worktree de la feature sigue en su rama, el temporal no se crea en el scratchpad, en `%TEMP%` ni con `mktemp`, y ningún commit usa `--no-verify`
 
+**ADDED — Con la rama destino sacada y con cambios sin commitear, el cierre no fusiona** (enmienda del 2026-09-23)
+- GIVEN la rama destino sacada en un worktree con cambios sin commitear
+- WHEN el cierre va a fusionar
+- THEN no fusiona ahí: dice qué ficheros tienen cambios y para
+- AND no hace `stash`, `reset` ni commit de lo ajeno
+
 **ADDED — Un merge que el entorno deniega se informa con su evidencia**
 - GIVEN una política que autoriza el merge y un entorno que lo deniega (clasificador del harness o hook)
 - WHEN el cierre termina
@@ -77,6 +83,8 @@ Los dos pasos de rama delegan en `finishing-a-development-branch`, como hoy, con
 - **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge que el entorno deniega no se reintenta: lo desbloquea una persona.
 
 ## Enmiendas
+
+- 2026-09-23 — Sale de «No entra» «cambios sin commitear en el checkout destino» y entra un requisito ADDED en `control-profiles`, «Con la rama destino sacada y con cambios sin commitear, el cierre no fusiona». Motivo: en el GREEN, R4 (control de no regresión) retrocedió de 2/2 a 0/2. `r4-1` encadenó `git status && git merge` en el worktree sucio y lo frenó git; `r4-2` buscó `sdd-kit.json` en la raíz del worktree y no llegó a mirar. Es el caso del Art. I: la guía nueva («se fusiona en ese worktree») creó la presión que el baseline no tenía. Texto propuesto, ya en el working tree y sin commitear: en la receta y en los dos pasos, «si la rama destino está sacada en un worktree con cambios sin commitear, no fusiones ahí: di qué ficheros y para, sin tocarlos». Solapes: ninguna task abierta del roadmap declara `sdd-end-task`, `sdd-end-patch` ni `merge-recipe.md` en «Ficheros que toca», salvo la 0039, que va tras esta. Requisito: *GIVEN la rama destino sacada en un worktree con cambios sin commitear · WHEN el cierre va a fusionar · THEN no fusiona ahí: dice qué ficheros y para · AND sin `stash`, `reset` ni commit de lo ajeno*. Coste: una tanda de R4 (2 sujetos, ~1 $), dentro del techo de 10 $ del GREEN (llevo 6,19 $). — aprobada: «si, apruebo»
 
 ## Aprobaciones
 
