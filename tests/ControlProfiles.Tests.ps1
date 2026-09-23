@@ -132,3 +132,27 @@ Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
     foreach ($stop in 'aprobación de la spec', 'desvío', 'validación final') { $rule | Should -Match $stop }
   }
 }
+
+Describe 'Merge en el cierre' {
+  It 'los dos pasos de rama enlazan la receta' {
+    Get-KitFile 'skills/sdd-end-task/SKILL.md' | Should -Match '\(references/merge-recipe\.md\)'
+    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '\(\.\./sdd-end-task/references/merge-recipe\.md\)'
+  }
+
+  It 'el cierre de patch lee la política de merge' {
+    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match 'merge\.noFf'
+  }
+
+  It 'el Art. IV nombra el cierre de patch' {
+    Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'el cierre de task y el de patch'
+  }
+
+  It 'la receta regenera el log con el script' {
+    Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md' | Should -Match 'Build-EstimationLog\.ps1'
+  }
+
+  It 'la receta fija los tres datos del informe de denegación' {
+    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    foreach ($item in 'comando', 'texto de la denegación', 'hash') { $recipe | Should -Match $item }
+  }
+}

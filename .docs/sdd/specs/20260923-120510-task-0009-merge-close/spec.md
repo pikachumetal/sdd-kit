@@ -3,13 +3,13 @@ id: 20260923-120510-task-0009-merge-close
 task: 0009
 title: Merge en el cierre
 mode: full
-status: draft
+status: approved
 created: 2026-09-23
 author: agente
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-23
 ---
 
 # Spec — Merge en el cierre
@@ -82,4 +82,4 @@ Los dos pasos de rama delegan en `finishing-a-development-branch`, como hoy, con
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-23 | aprobada: «si» |
