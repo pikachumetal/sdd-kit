@@ -141,7 +141,7 @@ AfterAll {
   }
 }
 
-Describe 'El merge del cierre espera su turno' {
+Describe 'El merge del cierre espera su turno' -Tag 'Slow' {
   It 'el segundo proceso espera, dice quién tiene el cerrojo y fusiona sobre lo que dejó el primero' {
     $fx = New-MergeFixture 'turno'
     $first = Start-MergeJob (Join-Path $fx.Wt '0001') @('-Push', '-VerifyCommand', 'Start-Sleep -Seconds 6')
@@ -187,7 +187,7 @@ Describe 'El merge del cierre espera su turno' {
   }
 }
 
-Describe 'El merge del cierre parte de la rama destino publicada' {
+Describe 'El merge del cierre parte de la rama destino publicada' -Tag 'Slow' {
   It 'integra los commits del remoto antes de fusionar la feature' {
     $fx = New-MergeFixture 'base'
     $remoteSha = Push-RemoteCommit $fx 'otra-task.txt' "otra`n"
@@ -236,7 +236,7 @@ Describe 'El merge del cierre parte de la rama destino publicada' {
   }
 }
 
-Describe 'El push del cierre publica la rama destino' {
+Describe 'El push del cierre publica la rama destino' -Tag 'Slow' {
   It 'con -Push fusiona --no-ff con el título acordado y deja local y remoto iguales' {
     $fx = New-MergeFixture 'push'
 
@@ -262,7 +262,7 @@ Describe 'El push del cierre publica la rama destino' {
   }
 }
 
-Describe 'Un merge del cierre que falla deja la rama destino como estaba' {
+Describe 'Un merge del cierre que falla deja la rama destino como estaba' -Tag 'Slow' {
   It 'con la verificación en rojo no fusiona, no empuja y limpia' {
     $fx = New-MergeFixture 'verificacion'
     $before = Get-Sha $fx.Repo 'develop'
@@ -316,7 +316,7 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' {
   }
 }
 
-Describe 'Rama destino sacada y política de merge' {
+Describe 'Rama destino sacada y política de merge' -Tag 'Slow' {
   It 'con develop sacada y con cambios falla con la lista y no la toca' {
     $fx = New-MergeFixture 'sucia'
     $dev = Join-Path $fx.Wt 'dev'
