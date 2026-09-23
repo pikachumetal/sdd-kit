@@ -20,4 +20,8 @@ Describe 'Entorno de git en los tests' {
   It '<Name> llama a Restore-GitEnv' -ForEach $script:GitTestFiles {
     Select-String -LiteralPath $Path -Pattern '^(?!\s*#).*\bRestore-GitEnv\b' -Quiet | Should -BeTrue -Because "$Name ejecuta git"
   }
+
+  It '<Name> guarda Clear-GitEnv' -ForEach $script:GitTestFiles {
+    Select-String -LiteralPath $Path -Pattern '^(?!\s*#).*=\s*Clear-GitEnv\b' -Quiet | Should -BeTrue -Because "$Name ejecuta git"
+  }
 }
