@@ -66,6 +66,7 @@ Para el código ejecutable, Pester con fixtures versionadas (arriba). Para las s
 - **Un molde que simula el paso 6 lleva un THEN por cada task de su plan de juguete** (task 0044): a la Task 2 del plan de `salas` le faltaba el suyo, y 4 de 4 sujetos de G2 y G5 pararon a proponer una enmienda (conducta correcta) en vez de preparar el despacho, así que el escenario dejó de medir los tests RED de la task siguiente.
 - **Un molde de cierre que regenera `estimation-log.md` lleva un walkthrough ya en la base** (task 0039): sin carpeta `specs/`, `Build-EstimationLog.ps1` falla, el log nace en las dos ramas por separado y el conflicto sale add/add en vez de modify/modify, que es el de campo. Antes de lanzar, ensayar el merge del molde con el propio `Invoke-SddMerge.ps1` y comparar su mensaje con el del ticket.
 - **Un frente del GREEN puede correr mientras se revisa otra task del plan** (task 0039): si no comparten ficheros, se lanza sobre una copia del kit sacada con `git archive <commit ya revisado> skills .claude-plugin`, y el tiempo de campaña se solapa con el de revisión. Si la revisión pendiente acaba tocando lo que el frente mide, se repite el frente.
+- **Un molde que reutilizan dos tasks se copia a la carpeta de la segunda** (task 0039, 2026-09-23): el RED previo de la 0039 cargó el molde `salas` desde la carpeta de spec de la 0044; si esa carpeta se mueve o se poda, el RED de la 0039 deja de reproducirse.
 
 ### Entrega de la skill al sujeto
 
