@@ -119,10 +119,10 @@ Describe 'Build-EstimationLog.ps1' {
   }
 
   It 'calcula la mediana por Tipo' {
-    $script:Result.Text | Should -Match '(?m)^\| docs \| 8 \| 0\.5 \|$'
-    $script:Result.Text | Should -Match '(?m)^\| patch \| 3 \| 0\.6 \|$'
-    $script:Result.Text | Should -Match '(?m)^\| hotfix \| 2 \| 1\.5 \|$'
-    $script:Result.Text | Should -Match '(?m)^\| — \| 1 \| 0\.5 \|$'
+    $script:Result.Text | Should -Match '(?m)^\| docs \| 8 \| 0\.5 \| [\d.]+–[\d.]+ \|$'
+    $script:Result.Text | Should -Match '(?m)^\| patch \| 3 \| 0\.6 \| — \|$'
+    $script:Result.Text | Should -Match '(?m)^\| hotfix \| 2 \| 1\.5 \| — \|$'
+    $script:Result.Text | Should -Match '(?m)^\| — \| 1 \| 0\.5 \| — \|$'
   }
 
   It 'no avisa de calibración orientativa con 10 o más ratios' {
@@ -193,6 +193,113 @@ Describe 'Resolución de la carpeta de docs' {
     $warnings = @()
     & $script:Script -Root $root -WarningVariable warnings -WarningAction SilentlyContinue 6>$null | Out-Null
     ($warnings | ForEach-Object { $_.Message }) -join ' ' | Should -Not -Match 'mantenido a mano'
+  }
+}
+
+Describe 'Resumen estadístico' {
+  BeforeAll {
+    function New-Walkthrough([string]$Specs, [string]$Folder, [hashtable]$Time) {
+      $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
+      $cost = if ($Time.Cost) { "`n- Coste de sujetos: $($Time.Cost)" } else { '' }
+      $text = "## 2. Tiempo: estimado vs real`n`n- Tipo: $($Time.Type)`n- Estimación de implementación (del plan): $($Time.Est)`n- Esfuerzo real: $($Time.Real)$cost`n"
+      [System.IO.File]::WriteAllText((Join-Path $dir 'walkthrough.md'), $text, [System.Text.UTF8Encoding]::new($false))
+    }
+
+    function New-Project([string]$Name) {
+      $specs = Join-Path $TestDrive "$Name/.docs/sdd/specs"
+      New-Item -ItemType Directory -Path $specs -Force | Out-Null
+      return $specs
+    }
+
+    # Estimado 1 h en todas: el ratio es el real. Con 21 ratios, los percentiles caen en índices enteros.
+    $ratios = @(0.2, 0.3, 0.4, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 0.6, 0.7, 0.8, 1.0, 1.1, 1.2, 1.3, 1.5, 2.0, 3.0)
+    $specs = New-Project 'completo'
+    for ($i = 0; $i -lt $ratios.Count; $i++) {
+      $type = if ($i -lt 11) { 'docs' } elseif ($i -lt 17) { 'patch' } else { 'chore' }
+      $folder = '202608{0:d2}-100000-task-{1:d4}-r' -f ($i + 1), ($i + 1)
+      $cost = switch ($i) { 0 { '2,5 $' } 1 { 'no medido' } default { '' } }
+      New-Walkthrough $specs $folder @{ Type = $type; Est = '1h'; Real = ("$($ratios[$i])h" -replace '\.', ','); Cost = $cost }
+    }
+    New-Walkthrough $specs '20260803-120000-task-0099-sinest' @{ Type = 'docs'; Est = '—'; Real = '1,5h'; Cost = '1,5 $' }
+    New-Walkthrough $specs 'notas-sueltas' @{ Type = 'docs'; Est = '—'; Real = '2h' }
+    $changelog = "# Changelog`n`n## [Unreleased]`n`n## [0.2.0] - 2026-08-10`n`n- algo`n`n## [0.1.0] — 2026-08-05`n`n- algo`n"
+    [System.IO.File]::WriteAllText((Join-Path $TestDrive 'completo/.docs/sdd/changelog.md'), $changelog, [System.Text.UTF8Encoding]::new($false))
+    $script:Completo = (Invoke-Build (Join-Path $TestDrive 'completo')).Text
+
+    $specs = New-Project 'escaso'
+    New-Walkthrough $specs '20260801-100000-task-0001-a' @{ Type = 'docs'; Est = '2h'; Real = '1h' }
+    New-Walkthrough $specs '20260802-100000-task-0002-b' @{ Type = 'docs'; Est = '1h'; Real = '1h' }
+    New-Walkthrough $specs '20260803-100000-task-0003-c' @{ Type = 'docs'; Est = '1h'; Real = '2h' }
+    $script:Escaso = (Invoke-Build (Join-Path $TestDrive 'escaso')).Text
+  }
+
+  It 'pone la media al lado del factor de calibración' {
+    $script:Completo | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 21 artefactos\): \*\*0\.8\*\* · media 0\.95'
+  }
+
+  It 'da el p25–p75 y el p80 con su uso para comprometer fechas' {
+    $script:Completo | Should -Match '(?m)^- p25–p75: 0\.6–1\.1$'
+    $script:Completo | Should -Match '(?m)^- p80: 1\.2 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos\.$'
+  }
+
+  It 'reparte los ratios en el histograma por tramos' {
+    $script:Completo | Should -Match '(?m)^\| Tramo del ratio \| n \| % \|$'
+    $script:Completo | Should -Match '(?m)^\| <0\.5 \| 4 \| 19 % \|$'
+    $script:Completo | Should -Match '(?m)^\| 0\.5–0\.8 \| 5 \| 24 % \|$'
+    $script:Completo | Should -Match '(?m)^\| 0\.8–1\.25 \| 8 \| 38 % \|$'
+    $script:Completo | Should -Match '(?m)^\| 1\.25–2 \| 2 \| 10 % \|$'
+    $script:Completo | Should -Match '(?m)^\| ≥2 \| 2 \| 10 % \|$'
+  }
+
+  It 'da el % dentro de ±25 %, sobreestimadas e infraestimadas' {
+    $script:Completo | Should -Match '(?m)^- Dentro de ±25 %: 38 % · sobreestimadas: 43 % · infraestimadas: 19 %$'
+  }
+
+  It 'da el error absoluto en horas' {
+    $script:Completo | Should -Match '(?m)^- Error absoluto \(h\): media 0\.44 · mediana 0\.3$'
+  }
+
+  It 'compara la mediana de las 10 primeras con la de las 10 últimas' {
+    $script:Completo | Should -Match '(?m)^- Tendencia \(mediana de las 10 primeras frente a las 10 últimas\): 0\.55 frente a 1\.15$'
+  }
+
+  It 'da n, mediana y p25–p75 por Tipo, con — por debajo de 5' {
+    $script:Completo | Should -Match '(?m)^\| Tipo \| n \| Mediana \| p25–p75 \|$'
+    $script:Completo | Should -Match '(?m)^\| docs \| 11 \| 0\.6 \| 0\.4–0\.85 \|$'
+    $script:Completo | Should -Match '(?m)^\| chore \| 4 \| 1\.75 \| — \|$'
+  }
+
+  It 'agrupa por release según las fechas del changelog' {
+    $script:Completo | Should -Match '(?m)^\| Release \| Artefactos \| Horas reales \| Mediana \| Sujetos \(\$\) \|$'
+    $script:Completo | Should -Match '(?m)^\| 0\.1\.0 \| 6 \| 3\.3 \| 0\.4 \| 4 \|$'
+    $script:Completo | Should -Match '(?m)^\| 0\.2\.0 \| 5 \| 4 \| 0\.8 \| — \|$'
+    $script:Completo | Should -Match '(?m)^\| sin publicar \| 11 \| 14\.2 \| 1\.1 \| — \|$'
+    $script:Completo | Should -Match '(?m)^\| sin fecha \| 1 \| 2 \| — \| — \|$'
+  }
+
+  It 'ordena las releases de la más antigua a sin publicar' {
+    $script:Completo.IndexOf('| 0.1.0 |') | Should -BeLessThan $script:Completo.IndexOf('| 0.2.0 |')
+    $script:Completo.IndexOf('| 0.2.0 |') | Should -BeLessThan $script:Completo.IndexOf('| sin publicar |')
+  }
+
+  It 'con menos de 5 ratios da mediana y media y dice n insuficiente' {
+    $script:Escaso | Should -Match '\*\*Factor de calibración\*\* \(ratio mediano real/estimado, 3 artefactos\): \*\*1\*\* · media 1\.17'
+    $script:Escaso | Should -Match 'n insuficiente \(hacen falta 5\)'
+    $script:Escaso | Should -Not -Match 'p80'
+    $script:Escaso | Should -Not -Match 'Tramo del ratio'
+    $script:Escaso | Should -Not -Match 'Error absoluto'
+    $script:Escaso | Should -Match '(?m)^\| docs \| 3 \| 1 \| — \|$'
+  }
+
+  It 'con menos de 20 ratios la tendencia dice n insuficiente' {
+    $script:Escaso | Should -Match 'Tendencia: n insuficiente \(hacen falta 20\)'
+    $proyecto = (Invoke-Build (Join-Path $script:Fixtures 'proyecto')).Text
+    $proyecto | Should -Match 'Tendencia: n insuficiente \(hacen falta 20\)'
+    $proyecto | Should -Match '(?m)^- p80: '
+  }
+
+  It 'sin changelog no hay tabla por release' {
+    $script:Escaso | Should -Not -Match '\| Release \|'
   }
 }
 
