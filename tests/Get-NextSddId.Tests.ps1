@@ -203,6 +203,15 @@ Describe 'Get-NextSddId.ps1' {
       Invoke-GitIsolated $otherWorktree @('add', '-A') | Out-Null
       (Invoke-NextId $repo).Id | Should -Be '0033'
     }
+
+    It 'cuenta la carpeta de specs/ sin commitear de otro worktree' {
+      # Ticket del patch 0037 §1: un patch reserva su id con la carpeta, no con una fila del roadmap.
+      $repo = Copy-FixtureToRepo 'sequence-project' @() '0035-Partición-en-paralelo'
+      $otherWorktree = Join-Path (Split-Path $repo) 'worktree-patch'
+      Invoke-GitIsolated $repo @('worktree', 'add', '-qb', 'feature/patch', $otherWorktree) | Out-Null
+      New-Item -ItemType Directory -Path (Join-Path $otherWorktree '.docs/sdd/specs/20260923-070206-patch-0036-disparador') | Out-Null
+      (Invoke-NextId $repo).Id | Should -Be '0037'
+    }
   }
 
   Context 'rama actual con id' {

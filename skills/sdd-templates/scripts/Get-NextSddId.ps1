@@ -4,7 +4,7 @@
 .DESCRIPTION
   Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
   Lee specs/ y el roadmap del working tree y de cada rama del repo, que es donde reservan ids los worktrees en paralelo,
-  y el roadmap del disco de cada worktree de `git worktree list`, donde queda una reserva aún sin commitear.
+  y el roadmap y specs/ del disco de cada worktree de `git worktree list`, donde queda una reserva aún sin commitear.
   Solo lee: no crea carpetas ni ficheros, no toca el roadmap, no crea ramas ni contacta con el remoto.
 .EXAMPLE
   pwsh -NoProfile -File Get-NextSddId.ps1 -ProjectRoot D:\code\git\mi-proyecto
@@ -97,12 +97,15 @@ function Get-BranchContentIds([string]$ProjectRoot, [string]$Branch) {
   }
 }
 
-function Get-WorktreeRoadmapIds([string]$ProjectRoot) {
-  # Una reserva en staged sin commitear solo está en el disco de su worktree (ticket de la task 0019 §1).
+function Get-WorktreeDiskIds([string]$ProjectRoot) {
+  # Una reserva sin commitear solo está en el disco de su worktree: la fila del roadmap en staged
+  # (ticket de la task 0019 §1) o la carpeta de specs/ con la que un patch reserva su id (ticket del patch 0037 §1).
   $lines = Invoke-IsolatedGit $ProjectRoot @('worktree', 'list', '--porcelain')
   foreach ($line in $lines) {
     if ($line -notmatch '^worktree (.+)$') { continue }
-    Get-RoadmapIds $Matches[1]
+    $worktree = $Matches[1]
+    Get-RoadmapIds $worktree
+    (Get-SpecArtifactIds $worktree).Id
   }
 }
 
@@ -125,7 +128,7 @@ function Get-GitIds([string]$ProjectRoot) {
     if (-not (Test-IsCurrentBranch $branch $current) -and $branch -match $script:BranchIdPattern) { $Matches[1] }
     Get-BranchContentIds $ProjectRoot $branch
   }
-  $usedIds = @($usedIds) + @(Get-WorktreeRoadmapIds $ProjectRoot)
+  $usedIds = @($usedIds) + @(Get-WorktreeDiskIds $ProjectRoot)
   $currentId = if ($current -match $script:BranchIdPattern) { $Matches[1] } else { $null }
   return [pscustomobject]@{ UsedIds = @($usedIds); CurrentBranchId = $currentId }
 }
