@@ -35,7 +35,9 @@ created: <YYYY-MM-DD>
 
 ### De código
 
-> Viaja al implementador y a cada revisor. Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos—, el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código ni que citen documentos —constitution, spec, task, capacidad—, clean code, umbrales) y los comandos que el cambio tiene que dejar en verde. Si la constitution del proyecto no tiene artículo de calidad, escribe aquí las dos reglas de comentarios igualmente.
+> Viaja al implementador y a cada revisor. Copia **literal** de las restricciones de la spec que atan a todas las tasks —versiones mínimas, límites de dependencias, naming, valores exactos— y el artículo de calidad de código de la constitution del proyecto (en el kit, Art. X: sin comentarios que repitan el código ni que citen documentos —constitution, spec, task, capacidad—, clean code, umbrales). Si la constitution del proyecto no tiene artículo de calidad, escribe aquí las dos reglas de comentarios igualmente.
+>
+> El gate completo del proyecto (la suite entera, el lint de todo el repo) **no va aquí**: este bloque viaja a cada implementador y lo convertiría en obligación de cada task. Cada task declara su verificación; el gate va en §3, una vez.
 
 - <restricción, con el valor exacto de la spec>
 
@@ -113,9 +115,10 @@ Endpoints, shape request/response.
 
 ## 2. Tasks
 
-> Cada task es ejecutable y acotada. La verificación de cada task sigue la política del
-> proyecto (`tech-stack.md` §Testing): TDD si hay tests automáticos; smoke manual documentado
-> si no los hay. Si hay más de una task → crear `tasks.md` (registro vivo).
+> Cada task es ejecutable y acotada, y verifica solo lo que toca: sus superficies dicen qué
+> comandos corre (`tech-stack.md` §Testing: TDD si hay tests automáticos; smoke manual documentado
+> si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
+> (registro vivo).
 
 ### Task 1 — <nombre>
 
@@ -124,6 +127,13 @@ Endpoints, shape request/response.
 **Tests RED**: <hilo principal · `ruta/del/test`, escritos y commiteados antes de despachar; `en línea`: TDD del propio hilo>
 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
+
+**Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
+**Verificación**: <los comandos de esas superficies y ninguno más>
+**Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · qué mirar>
+**Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
+
+> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve: qué mirar es alineación, separación a bordes y contraste, en cada estado y tema; la hace el hilo principal en un navegador. Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
 
 **Interfaces**:
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
@@ -134,8 +144,8 @@ Endpoints, shape request/response.
 **Ficheros**: crear/modificar `path/...`
 
 - [ ] **Step 1: Implementación** — descripción concreta; código real cuando ayude, sin placeholders.
-- [ ] **Step 2: Build** — comando de build del proyecto. Esperado: verde, sin errores.
-- [ ] **Step 3: Verificación** — test (si TDD) o smoke manual con resultado esperado.
+- [ ] **Step 2: Build** — el build de las superficies de la task. Esperado: verde, sin errores.
+- [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
 - [ ] **Step 4: Commit** — convención del proyecto, referenciando el ticket.
 
 ---
@@ -154,7 +164,7 @@ Endpoints, shape request/response.
 
 ## 3. Validación final
 
-- [ ] Build verde con los comandos del proyecto
+- [ ] Gate de cierre, una vez y en el hilo principal: <el gate completo del proyecto: build, suite entera, lint>
 - [ ] Verificación de los criterios de éxito de la spec (§2)
 - [ ] Spec satisfecha: cada requisito tiene su task (ver Self-review)
 - [ ] Cierre de rama según el flujo del proyecto (`sdd-end-task`)

@@ -1,0 +1,64 @@
+## Restricciones de código
+
+- Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación. El revisor marca el incumplimiento como Important.
+- Texto de la interfaz en castellano: «Todos», «Confirmada», «Pendiente», «Cancelada».
+- Valores del enum, literales: `Confirmed`, `Pending`, `Cancelled`.
+
+Incumplir una de estas restricciones es **Important**, aunque el resto del encargo no lo mencione. Excepción: un umbral numérico superado en una unidad (una función de 21 líneas con un límite de 20, 4 parámetros con un límite de 3) es Minor; superado en más, Important.
+
+## Tests RED
+
+Los tests de `frontend/src/app/bookings/status-select.component.spec.ts` y `frontend/src/app/bookings/booking-list.component.spec.ts` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo en tu informe en vez de tocarlo.
+
+## Reglas del implementador
+
+- Si un gate o un checker te avisa y el aviso no se arregla con un cambio real del código, para y repórtalo con el mensaje literal. Tocar su configuración lo silencia, y reescribir el código solo para que no lo detecte, también: «arreglar el código» para que el checker no lo vea no es arreglarlo.
+- Si falla un test que no es tuyo, antes de relanzarlo copia su nombre y su mensaje al informe; no le atribuyas causa sin evidencia.
+- Nunca `git stash`: la pila es común a todos los worktrees. Para apartar trabajo, un commit WIP; para ver la base, `git show <base>:<ruta>`.
+
+---
+
+## Tarea
+
+Repo: raíz del working directory actual (Angular 20, monorepo con `frontend/` y `backend/`, gestionado con `moon`). Estás en la rama `feature/0012`, working tree limpio salvo por los tests RED ya commiteados.
+
+**Contexto de negocio**: la app lista reservas (`bookings`). La Task 1 (ya hecha) añadió un campo `status` (`Confirmed` | `Pending` | `Cancelled`, como texto) al backend y un filtro `GET /bookings?status=` documentado en `docs/api.md`. Esta Task 2 añade el selector de estado en el frontend que consume ese filtro.
+
+**Objetivo de la task**: implementar el componente `app-status-select` y conectarlo a `BookingListComponent` para que la lista pida `/api/bookings?status=<valor>` cuando el usuario elige un estado.
+
+**Ficheros a tocar**:
+- `frontend/src/app/bookings/booking.ts` — añade el tipo `BookingStatus` (literal union: `'Confirmed' | 'Pending' | 'Cancelled'`).
+- `frontend/src/app/bookings/status-select.component.ts` — componente nuevo, standalone.
+- `frontend/src/app/bookings/status-select.component.css` — estilos nuevos.
+- `frontend/src/app/bookings/booking-list.component.ts` — usa el selector y pasa el filtro a `httpResource`.
+
+**Qué deben hacer los tests RED existentes (ya commiteados, no los toques)**:
+
+`status-select.component.spec.ts`:
+1. El `<select>` nativo del componente ofrece 4 `<option>` con estos `textContent` exactos, en este orden: `Todos`, `Confirmada`, `Pendiente`, `Cancelada`.
+2. Con el input `disabled` a `true` (via `fixture.componentRef.setInput('disabled', true)`), el `<select>` queda `disabled`.
+
+`booking-list.component.spec.ts`:
+1. Test existente (no lo rompas): sin filtro, pide `/api/bookings` y pinta un `<li>` por reserva.
+2. Test nuevo: si se hace `fixture.componentInstance.status.set('Cancelled')` y luego `detectChanges()`, la petición HTTP esperada es `/api/bookings?status=Cancelled` (nota: el test usa `HttpTestingController.expectOne('/api/bookings?status=Cancelled')`, que compara la URL completa con querystring).
+
+**Diseño pedido por la spec y el plan** (`.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md` y `plan.md`, ya aprobados — no los edites, son solo contexto):
+
+- `app-status-select` es un componente Angular standalone con:
+  - Un `input()` llamado `disabled` (booleano, default `false`) — controla si el `<select>` queda deshabilitado (se usa mientras `bookings.isLoading()` en el padre).
+  - Un `model<BookingStatus | null>(null)` para el valor elegido (two-way binding con el padre). Nombra la propiedad de forma clara, p.ej. `value`.
+  - Un `<select>` nativo (no Material ni librería: no hay ninguna instalada para esto) con 4 `<option>`: la primera con `value=""` y texto «Todos» (equivale a `null`/sin filtro), luego una opción por cada valor del enum con su etiqueta en castellano: `Confirmed` → «Confirmada», `Pending` → «Pendiente», `Cancelled` → «Cancelada».
+  - Estilos en `status-select.component.css` usando las variables de tema ya existentes `--text` y `--surface` (mismas que usa `booking-list.component.css`), para que se vea bien en tema claro y oscuro.
+
+- `BookingListComponent`:
+  - Añade una señal/estado `status` (ver test: `fixture.componentInstance.status.set('Cancelled')` — debe ser un `WritableSignal<BookingStatus | null>` o un `model`, con nombre público `status`).
+  - El `httpResource` debe construir la URL con el querystring `?status=<valor>` solo cuando `status()` tiene un valor; sin valor, sigue pidiendo `/api/bookings` a secas (no rompas el test existente).
+  - Usa `app-status-select` en la plantilla, enlazado a `status` (two-way, p.ej. `[(value)]="status"`) y con `[disabled]="bookings.isLoading()"`.
+
+**Verificación que debes ejecutar tú y reportar en tu informe**:
+1. `moon run frontend:test` — deben pasar los tests RED de arriba y no romper ningún test existente.
+2. `moon run frontend:check` — build/lint del frontend, debe pasar limpio.
+
+**Commit**: si build y tests pasan, crea un commit único con mensaje `feat(frontend): selector de estado en la lista de reservas (0012)` (Conventional Commits, cuerpo en castellano si hace falta detalle). No hagas push.
+
+**Qué reportar al terminar**: resumen de qué archivos tocaste, salida relevante de `moon run frontend:test` y `moon run frontend:check` (confirmando verde), el hash del commit creado, y cualquier desviación, duda o test que te haya parecido incorrecto (sin haberlo tocado).
