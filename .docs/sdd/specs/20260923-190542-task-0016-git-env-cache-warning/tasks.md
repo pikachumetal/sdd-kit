@@ -18,13 +18,15 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Helper `Clear-GitEnv.ps1` y migración de los tests | pending | — | |
-| 2 | Hook `SessionStart` del repo | pending | — | |
+| 1 | Helper `Clear-GitEnv.ps1` y migración de los tests | done | `17dd401` | revisión limpia; lenta 40/40 |
+| 2 | Hook `SessionStart` del repo | done | `f515759`, `83d689a`, `11ed312` | 1 ronda de fix (guard de `GetFullPath`) |
+
+Revisión final de rama: lista para mergear; sus tres Minor se arreglaron en `dbdd29b`, re-revisado.
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester -Path tests/Clear-GitEnv.Tests.ps1,tests/GitEnvConvention.Tests.ps1,tests/PathLength.Tests.ps1,tests/Hook.Tests.ps1`; lenta: `Get-NextSddId.Tests.ps1`, `Invoke-SddMerge.Tests.ps1`
-- [ ] Task 2 — `Invoke-Pester -Path tests/KitSessionSource.Tests.ps1,tests/GitEnvConvention.Tests.ps1`
+- [x] Task 1 — 27/27 (implementador); lenta 40/40 (hilo principal) — `Invoke-Pester -Path tests/Clear-GitEnv.Tests.ps1,tests/GitEnvConvention.Tests.ps1,tests/PathLength.Tests.ps1,tests/Hook.Tests.ps1`; lenta: `Get-NextSddId.Tests.ps1`, `Invoke-SddMerge.Tests.ps1`
+- [x] Task 2 — 13/13 tras el fix — `Invoke-Pester -Path tests/KitSessionSource.Tests.ps1,tests/GitEnvConvention.Tests.ps1`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
