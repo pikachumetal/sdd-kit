@@ -45,6 +45,10 @@ Su brief (`task-brief`) es solo el texto de la task. Delante van el mismo bloque
 
 Los tests de `<ruta>` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo.
 
+## Verificación
+
+Ejecuta los comandos del campo «Verificación» de tu task: `<comandos>`. No ejecutes la suite completa ni la de superficies que tu task no toca: el gate de cierre lo ejecuta el hilo principal una vez, al final. <Si la task tiene «Verificación lenta»:> `<comando>` es la verificación lenta de tu task: no la ejecutes; la lanza el hilo principal.
+
 ## Reglas del implementador
 
 - Si un gate o un checker te avisa y el aviso no se arregla con un cambio real del código, para y repórtalo con el mensaje literal. Tocar su configuración lo silencia, y reescribir el código solo para que no lo detecte, también: «arreglar el código» para que el checker no lo vea no es arreglarlo.
@@ -59,3 +63,5 @@ Los tests de `<ruta>` son el contrato; no los modifiques: no cambies una aserci�
 Las tres reglas salen de incidentes de campo y del RED de la task 0005: con la cabecera sin ellas, 4 de 4 implementadores silenciaron un checker (uno editó su configuración, tres disfrazaron el valor), 3 de 4 usaron `git stash` y 1 de 2 relanzó un test rojo ajeno y lo dio por «puntual» sin causa (`tests/dispatch-brief-red.md`).
 
 La frase corta es la que funcionó en un proyecto real del equipo; la versión larga («sin investigar fuera del repo…») no bastó. Los tests los escribe el hilo principal desde los THEN de la spec antes de despachar (paso 6 de `sdd-start-task`); el implementador los hace pasar, no los redacta.
+
+La sección «Verificación» sustituye el «run the full suite once before committing» de `implementer-prompt.md`: `subagent-driven-development/implementer-prompt.md:48` (6.4.1) lo pide para toda task, y con el gate completo en cada task una suite de backend corrió ~12 veces en una task de solo frontend (RED previo 2/2, `tests/task-verification-red.md`). Sin la frase «no ejecutes… suite completa» el sujeto usa el texto por defecto de superpowers y arrastra `backend:test` a una task de backend aunque el plan ya declare `Verificación: dotnet build backend` (RED del paso 6, medida «el encargo dice que no ejecute backend:test», falla 1/1).
