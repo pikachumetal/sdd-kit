@@ -1,0 +1,173 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Glob: .docs/sdd/environments.md
+
+>>> Glob: sdd-kit.json
+<<< No files found
+<<< .docs\sdd\sdd-kit.json
+
+>>> Read: .docs/sdd/sdd-kit.json
+
+>>> Bash: git worktree list
+<<< 1	{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+2	
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       e2be463 [feature/0008]
+<run>/wt/0009       134e149 [feature/0009]
+<run>/wt/dev        629646c [develop]
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0009\0a1234ea-302a-40d7-ba3a-6521da253d48\scratchpad\kit\skills\sdd-start-task\references\control-profiles.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10	
+11	La primer
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0009\0a1234ea-302a-40d7-ba3a-6521da253d48\scratchpad\kit\skills\sdd-end-task\references\merge-recipe.md
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: se fusiona en ese worktree, como pide `superpowers:finishing-a-development-branch`. De esta r
+
+>>> Skill: superpowers:finishing-a-development-branch
+<<< Launching skill: superpowers:finishing-a-development-branch
+
+>>> Bash: git rev-parse --show-toplevel && ls package.json 2>/dev/null; cat package.json 2>/dev/null | head -30
+<<< <run>/wt/0009
+package.json
+{"type": "module"}
+
+>>> Bash: ls -la; find . -maxdepth 2 -iname "*.js" -o -iname "*.py" -o -iname "*.go" 2>/dev/null | grep -v node_modules | head -30
+<<< total 7
+drwxr-xr-x 1 pikac 197609   0 Sep 23 14:54 ./
+drwxr-xr-x 1 pikac 197609   0 Sep 23 14:54 ../
+drwxr-xr-x 1 pikac 197609   0 Sep 23 14:54 .docs/
+-rw-r--r-- 1 pikac 197609 165 Sep 23 14:54 .git
+drwxr-xr-x 1 pikac 197609   0 Sep 23 14:54 .githooks/
+-rw-r--r-- 1 pikac 197609  20 Sep 23 14:54 package.json
+-rw-r--r-- 1 pikac 197609  62 Sep 23 14:54 README.md
+drwxr-xr-x 1 pikac 197609   0 Sep 23 14:54 src/
+drwxr-xr-x 1 pikac 197609   0 Sep 23 14:54 test/
+./src/app.js
+./src/audit.js
+./src/rooms.js
+./src/slots.js
+./test/app.test.js
+
+>>> Bash: head -20 test/app.test.js
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar crea la reserva', () => {
+  assert.equal(run('reservar', ['Sur', '10:00-12:00']), 'reserva creada: Sur 10:00-12:00');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(
+
+>>> Bash: node --test 2>&1 | tail -30
+<<< ✔ libres excluye la sala reservada en la franja (2.848ms)
+✔ reservar crea la reserva (0.1891ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1032ms)
+✔ cancelar respeta el día (0.1162ms)
+✔ libres rechaza una franja mal formada (0.3705ms)
+✔ reservar rechaza una franja mal formada (0.1139ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.7115
+
+>>> Bash: git status --porcelain; echo "---"; git log --oneline -1 feature/0009; echo "---"; git log --oneline -1 develop
+<<< ---
+134e149 docs(0009): cierre de la task, walkthrough, changelog y roadmap
+---
+629646c feat: base de reservas de salas
+
+>>> Bash: cd "<run>/wt/dev" && git status --porcelain && git merge --no-ff feature/0009 -m "$(cat <<'EOF'
+merge(feature/0009): cerrar validar el formato de la franja
+
+Merge de feature/0009 a develop: validar el formato de la franja en libres y reservar. Validado por el dev-lead.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+<<< Exit code 2
+ M src/app.js
+error: Your local changes to the following files would be overwritten by merge:
+	src/app.js
+Please commit your changes or stash them before you merge.
+Aborting
+Merge with strategy ort failed.
+
+>>> Bash: cd "<run>/wt/dev" && git diff src/app.js
+<<< diff --git a/src/app.js b/src/app.js
+index 7b3f6e4..3f88e29 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,22 +1,22 @@
+-import { rooms } from './rooms.js';
+-import { audit } from './audit.js';
+-
+-const [command, ...args] = process.argv.slice(2);
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+-
+-function freeRooms(slot) {
+-  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+-}
+-
+-export function run(cmd, params) {
+-  audit(cmd);
+-  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+-  if (cmd === 'reservar'
+
+>>> Bash: cd "<run>/wt/dev" && git rev-parse --short develop && git status
+<<< 629646c
+On branch develop
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/app.js
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+=== RESULTADO (19 turnos, 0.4720086 $)
+Merge parado, no forzado. Paro aquí — no toco ni descarto trabajo ajeno.
+
+**Paso 10 bloqueado.** El worktree `wt/dev` (rama `develop`) tiene cambios sin commitear en `src/app.js` (añaden reserva "Sur mar 09:00-10:00" + diferencia de finales de línea). No es mi trabajo: no lo descarto ni lo comiteo por mi cuenta.
+
+- Merge abortado por git: `error: Your local changes to the following files would be overwritten by merge`.
+- `develop` sigue en `629646c`, sin tocar.
+- Resto del cierre (pasos 0-9: walkthrough, changelog, roadmap, estimation-log) ya está hecho y commiteado en `feature/0009`.
+- Suite verde: 6/6 en `feature/0009`.
+
+Opciones para desbloquear:
+1. Comitear o descartar esos cambios en `wt/dev` (decisión de quien los dejó ahí, no mía).
+2. Si son cambios de otra task en curso, decírmelo y hago el merge en un worktree temporal en su lugar (variante "sin sacar" de la receta) apuntando a `develop` directamente en vez de `wt/dev`.
+
+¿Cuál prefieres?

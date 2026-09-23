@@ -33,7 +33,7 @@ Manda el primero que exista, de arriba abajo: task sobre release, release sobre 
 | Freno de alcance (3.er fix, salida observable, fila cambiada en la base) | para | para | opción conservadora, enmienda sin aprobar |
 | Salida del plan | ruling + «Me salí del plan en…» | ruling + «Me salí del plan en…» | ruling + informe |
 | Validación | para | para | diferida al smoke de la release (🧪) |
-| Merge a develop | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
+| Merge a develop (cierre de task y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
 | Merge a main, tag, push, PR, publicar | persona | persona | persona |
 
 Más:
@@ -134,7 +134,7 @@ Conjunto cerrado:
 | `merge.noFf` | booleano | — |
 | `merge.removeWorktree` | booleano | — |
 
-`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos, el paso 10 del cierre pregunta como hoy — una política que nadie declaró entera no se aplica.
+`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos, el paso de rama del cierre (10 de `sdd-end-task`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica.
 
 `control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0022.
 
