@@ -18,13 +18,13 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Tipos de agente y texto que los nombra | pending | — | |
-| 2 | Campaña GREEN y evidencia | pending | — | en línea |
+| 1 | Tipos de agente y texto que los nombra | done | 7263e43 | review limpia; 1 minor aparcado (tres agentes casi iguales, los manda el plan) |
+| 2 | Campaña GREEN y evidencia | done | — | en línea; 2/2 sujetos, 10/10 peticiones del subagente con effort medium |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester -Path tests/AgentDefinitions.Tests.ps1,tests/Skills.Tests.ps1,tests/Manifests.Tests.ps1,tests/ProportionalReview.Tests.ps1`
-- [ ] Task 2 — 2 sujetos detrás del proxy: llamada `Agent` con `sdd-kit:effort-medium` y peticiones con `effort: medium`
+- [x] Task 1 — `Invoke-Pester -Path tests/AgentDefinitions.Tests.ps1,tests/Skills.Tests.ps1,tests/Manifests.Tests.ps1,tests/ProportionalReview.Tests.ps1`
+- [x] Task 2 — 2 sujetos detrás del proxy: llamada `Agent` con `sdd-kit:effort-medium` y peticiones con `effort: medium`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
