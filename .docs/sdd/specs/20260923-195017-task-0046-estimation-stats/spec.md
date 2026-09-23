@@ -4,18 +4,18 @@ task: 0046
 title: Resumen estadístico del estimation-log
 mode: lite
 profile: delegate
-status: draft
+status: approved
 created: 2026-09-23
 author: Claude (Opus 5.5)
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-23
 ---
 
 # Spec — Resumen estadístico del estimation-log
 
-> **Estado**: draft.
+> **Estado**: approved.
 > **Siguiente paso**: modo lite → implementación directa, tests primero.
 
 ## Decisiones que he tomado yo — valida estas
@@ -97,4 +97,4 @@ El script sigue leyendo las mismas filas. El único cambio está en la sección 
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-23 | aprobada: «si» |
