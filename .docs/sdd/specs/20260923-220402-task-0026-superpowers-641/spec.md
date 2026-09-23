@@ -3,7 +3,7 @@ id: 20260923-220402-task-0026-superpowers-641
 task: 0026
 title: Compatibilidad con superpowers 6.4.1 y ruta del workspace en Windows
 mode: full
-status: approved
+status: done
 created: 2026-09-24
 author: Claude (Opus 5.5), dev-lead Àngel Delgado
 approvers:

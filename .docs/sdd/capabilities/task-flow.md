@@ -167,6 +167,11 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
 
+### En Windows, el workspace de ejecución se usa en su ruta Windows
+- GIVEN Windows y la ruta que imprimen `sdd-workspace` o `task-brief` de superpowers en forma POSIX (empieza por `/`, por ejemplo `/tmp/claude/…` o `/d/code/…`)
+- WHEN el agente va a escribir o leer por primera vez en ese workspace (el ledger, un brief, un informe)
+- THEN usa la ruta que da `cygpath -w`, y el `Write` no pide un permiso que un sujeto sin usuario no puede conceder
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -221,3 +226,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El effort declarado viaja en el tipo de agente
 - 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED Sin effort en el harness, el plan lo dice
 - 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El revisor de spec se despacha con su effort
+- 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED En Windows, el workspace de ejecución se usa en su ruta Windows

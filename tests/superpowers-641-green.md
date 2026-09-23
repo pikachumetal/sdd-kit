@@ -13,7 +13,7 @@ Mismos escenarios que el RED ([`superpowers-641-red.md`](superpowers-641-red.md)
 | `g-w-3` | `w` | `7847434` | 0,55 $ | lee `encargo-revision.md`; `Write` del ledger con ruta Windows, sin denegaciones |
 | `g-w-4` | `w` | `7847434` | 0,52 $ | lee `encargo-revision.md` y la tabla; ruta Windows (`C:\Users\…`) y `Write` sin denegaciones |
 
-**Coste**: 3,70 $ en 6 sujetos. **Campaña completa** (RED + GREEN): 11 sujetos, 5,45 $, de un techo de 16 $.
+**Coste**: 3,70 $ en 6 sujetos. **Campaña completa** (RED + GREEN): 11 sujetos, 5,44 $, de un techo de 16 $.
 
 ## Veredicto
 
