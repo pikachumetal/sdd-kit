@@ -31,9 +31,25 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 
 ### Brownfield no vuelca `capabilities/`
-- GIVEN un proyecto existente inicializado con `sdd-init-brownfield`
+- GIVEN un proyecto existente inicializado con `sdd-init-brownfield`, aunque el usuario pida generar las capacidades desde el código
 - WHEN se generan los documentos de anclaje
 - THEN `capabilities/` no se crea ni se rellena: aparece con la primera task que toque una capacidad
+- AND si el usuario lo pidió, el agente explica que en brownfield las capacidades crecen task a task
+
+### Ninguna init crea `capabilities/` vacía
+- GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield` sin petición de volcado
+- WHEN crea la estructura de `.docs/sdd/`
+- THEN no existe `capabilities/` ni `specs/` al terminar, ni ningún `.gitkeep` en `.docs/sdd/`
+- AND `capabilities/` aparece con la primera task que declara una capacidad, y `specs/` con la primera task o patch
+
+### El volcado inicial es una excepción de greenfield
+- GIVEN un `sdd-init-greenfield` sobre un proyecto con código, en el que el usuario pide generar las capacidades desde el código
+- WHEN el agente atiende la petición
+- THEN antes de escribir ningún fichero propone la partición (slugs en inglés kebab-case, sustantivos del dominio) y espera la aprobación
+- AND presenta cada capacidad para su aprobación, como los documentos de anclaje
+- AND cada capacidad lleva en «Historial» la línea `- <YYYY-MM-DD> — init — ADDED volcado inicial desde el código`
+- AND si no puede leer el código entero en la sesión, lo dice y no vuelca
+- AND el agente no propone el volcado si el usuario no lo pide
 
 ### Los documentos de anclaje nombran `capabilities/`
 - GIVEN cualquier skill o plantilla que cite la carpeta de capacidades
@@ -61,4 +77,7 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED El cierre fusiona el delta en la verdad viva (desde `task-flow`, con la sustitución entera)
 - 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED Brownfield no vuelca `capabilities/` (desde `task-flow`)
 - 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED Los documentos de anclaje nombran `capabilities/` (desde `task-flow`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED La consulta lee la capacidad, no las specs (desde `task-flow`)
+- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED La consulta lee la capacidad, no las specs
+- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — MODIFIED Brownfield no vuelca `capabilities/` (añade la explicación al usuario que pide el volcado)
+- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED Ninguna init crea `capabilities/` vacía
+- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED El volcado inicial es una excepción de greenfield (desde `task-flow`)
