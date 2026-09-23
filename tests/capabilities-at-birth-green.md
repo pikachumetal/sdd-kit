@@ -11,7 +11,7 @@ Mismos frentes que [`capabilities-at-birth-red.md`](capabilities-at-birth-red.md
 | G1 volcado pedido, sin partición previa | propone la partición (slugs ingleses, sustantivo de dominio) y para sin escribir nada en `capabilities/` | **2/2** | `g1a2`, `g1b2` |
 | G2 volcado con partición ya acordada | escribe las capacidades con `- <fecha> — init — ADDED volcado inicial desde el código` y las presenta antes de seguir | **2/2** | `g2a2`, `g2b2`: línea de historial literal en las 4×2 capacidades |
 | G3 brownfield pide volcado (control) | se niega, capacidades crecen task a task | **2/2** | `g3a`, `g3b` |
-| G4 greenfield sin petición de volcado | no crea `capabilities/`, no lo ofrece | **2/2** | `g4a2`, `g4b2`: «no hay volcado inicial salvo que lo pidas» |
+| G4 greenfield sin petición de volcado | no crea `capabilities/`, no lo ofrece | **2/2** | `g4b2`, `g4d`: «no hay volcado inicial salvo que lo pidas» / «no lo pides, no lo ofrezco — se salta» |
 | G5 greenfield con funcional aportado | `sources/<fichero>` idéntico al original, enlazado desde mission, citado en el roadmap; sin `capabilities/`, `specs/` ni `.gitkeep` | **2/2** | `g5b2`, `g5e`: `diff` sin salida contra `molds/gym/funcional-cliente.md` |
 | G6 brownfield completo, sin petición | sin `capabilities/`, `specs/` ni `.gitkeep` al cerrar | **2/2** | `g6a3`, `g6b3` |
 
@@ -21,6 +21,8 @@ El primer lote (10 de 12 sujetos) se lanzó en segundo plano en una sesión que 
 
 Un bloqueo de permiso de lectura sobre `molds/gym/*.md`, ajeno a ambos arreglos, apareció en 3 de 5 intentos de G5 (`g5a2`, `g5c`, `g5d`); relanzando el mismo sujeto sin cambios pasó limpio 2 de esas 3 veces más (`g5b2`, `g5e`). Ruido del entorno: no hay guidance de skill ni cambio de driver que lo explique, y los dos sujetos que sí terminan cumplen el escenario entero. Va a la deuda del roadmap junto con el resto de bloqueos de `-p` ya documentados en la 0019.
 
+El revisor final de rama marcó que `g4a2` (primer par de G4) se paraba pidiendo permiso de escritura en `.claude/settings.json` antes de llegar al texto del volcado — el mismo bloqueo de entorno de la 0019, pero aquí impedía ejercitar el THEN bajo prueba. Se descartó y se relanzó con la petición ajustada para no tocar `.claude/` (como ya hacían G5 y G6); `g4d` completó el cierre entero y confirmó explícito que no ofrece el volcado.
+
 ## Coste
 
-GREEN: 6,20 $ en los 12 sujetos válidos (0,34 $ del primer lote, `g3a`/`g3b`, más 5,86 $ del relanzamiento). Los sujetos descartados del relanzamiento (`g5a2`, `g5c`, `g5d`, `g6a2`, `g6b2`) suman 1,52 $ más; el resto del primer lote (10 sujetos que se cortaron con la sesión) no llegó a costar nada. Con el RED previo (3,73 $), la task lleva 11,45 $ de un techo de 20 $.
+GREEN: 6,16 $ en los 12 sujetos válidos (0,34 $ del primer lote, `g3a`/`g3b`, más 5,82 $ del relanzamiento). Los sujetos descartados (`g5a2`, `g5c`, `g5d`, `g6a2`, `g6b2`, `g4a2`, `g4c`) suman 2,33 $ más; el resto del primer lote (10 sujetos que se cortaron con la sesión) no llegó a costar nada. Con el RED previo (3,73 $), la task lleva 12,22 $ de un techo de 20 $.

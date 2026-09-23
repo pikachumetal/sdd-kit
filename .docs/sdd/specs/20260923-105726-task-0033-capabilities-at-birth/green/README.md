@@ -1,6 +1,6 @@
 # GREEN headless — task 0033
 
-Kit tras la Task 3 (`e174219`). Sujetos Sonnet de un turno, sin persona, lanzados con `driver.py`. Coste del dataset válido: 6,20 $ en 12 sujetos.
+Kit tras la Task 3 (`e174219`). Sujetos Sonnet de un turno, sin persona, lanzados con `driver.py`. Coste del dataset válido: 6,16 $ en 12 sujetos.
 
 **Recuperación de sesión**: la primera campaña (10 de los 12 sujetos) se cortó a mitad de lanzamiento porque la sesión que la lanzó en segundo plano murió antes de que los procesos `claude -p` emitieran su evento `result` (streams `.jsonl` truncados, sin coste, `git log` vacío en el `state.txt`; `g1a` corrió pero nunca llegó al snapshot). Solo `g3a`/`g3b` (los más rápidos) alcanzaron a terminar. Se relanzaron uno por uno en esta sesión, con etiquetas nuevas para no chocar con los directorios de scratch ya creados.
 
@@ -40,10 +40,10 @@ Dos ajustes al arnés, no al texto de las skills:
 
 | Sujeto | Resultado | Coste |
 | --- | --- | --- |
-| `g4a2` | para pidiendo permiso de escritura en `.claude/settings.json` (bloqueo de entorno ya documentado en la 0019); no crea `capabilities/`, no ofrece el volcado | 0,40 $ |
 | `g4b2` | cierra completo; dice explícito «`capabilities/` y `specs/` nacen con esa primera task — no hay volcado inicial salvo que lo pidas» | 0,57 $ |
+| `g4d` | cierra completo (petición ajustada para no tocar `.claude/`, como en G5/G6); dice explícito «Volcado inicial de capacidades: no lo pides, no lo ofrezco — se salta» | 0,36 $ |
 
-**2/2**: en ninguno de los dos aparece `capabilities/` ni una oferta de volcado no pedida.
+**2/2**, los dos ejecutando el paso 6 entero hasta el texto del volcado. `g4a2` y `g4c`, con la petición original, se pararon antes de ese punto pidiendo permiso de escritura en `.claude/settings.json` (bloqueo de entorno ya documentado en la 0019); no llegaban a ejercitar el THEN («no ofrece el volcado»), así que no cuentan para el veredicto — señalado por el revisor final de rama.
 
 ## G5 — greenfield con funcional aportado
 
@@ -65,7 +65,7 @@ Dos ajustes al arnés, no al texto de las skills:
 
 ## Descartados (no cuentan para el veredicto)
 
-`g5a2`, `g5c`, `g5d`, `g6a2`, `g6b2`, `g4a2` en su primer intento del lote anterior — cortes de sesión o el bloqueo de lectura de `molds/gym/` descrito arriba, no una conducta del texto evaluado.
+`g5a2`, `g5c`, `g5d`, `g6a2`, `g6b2` del lote anterior — cortes de sesión o el bloqueo de lectura de `molds/gym/` descrito arriba, no una conducta del texto evaluado. `g4a2` y `g4c` — se pararon antes del punto bajo prueba pidiendo permiso de escritura en `.claude/settings.json` (bloqueo de entorno ya documentado en la 0019, no del texto de esta task).
 
 ## Salidas
 
