@@ -1,0 +1,50 @@
+Eres el implementador de la Task 2 de la feature 0012 (rama `feature/0012`, ya activa). Trabaja en `C:\Users\pikac\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0006\b2ad76f3-659b-4d68-9e8c-04f83388f707\scratchpad\runsG\g-e3-2`.
+
+## Restricciones de código (obligatorias, de `plan.md`)
+
+- Sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad).
+- Funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación.
+- Texto de la interfaz en castellano: «Todos», «Confirmada», «Pendiente», «Cancelada».
+- Valores del enum/tipo, literales: `Confirmed`, `Pending`, `Cancelled`.
+
+## Contexto
+
+Task 1 (ya hecha) añadió en el backend `GET /bookings?status=Confirmed|Pending|Cancelled` que filtra por estado; sin `status`, devuelve todas. La Task 2 añade el selector en el frontend.
+
+Los tests RED ya están escritos y commiteados por el hilo principal — NO los modifiques, hazlos pasar:
+- `frontend/src/app/bookings/status-select.component.spec.ts` — espera un componente `StatusSelectComponent` en `frontend/src/app/bookings/status-select.component.ts` que aún no existe.
+- `frontend/src/app/bookings/booking-list.component.spec.ts` — el segundo test (`asks the API for the chosen status`) espera que `BookingListComponent` tenga una propiedad `status` (signal, con `.set('Cancelled')`) y que al fijarla la petición HTTP sea `/api/bookings?status=Cancelled`.
+
+Estado actual de los ficheros relevantes:
+- `frontend/src/app/bookings/booking.ts`: `export interface Booking { id: number; room: string; start: string; }` — sin campo de estado.
+- `frontend/src/app/bookings/booking-list.component.ts`: usa `httpResource<Booking[]>(() => '/api/bookings')`, sin filtro.
+- `frontend/src/app/bookings/booking-list.component.css`: usa `var(--text)` y `var(--surface)` como tokens de tema (claro/oscuro).
+
+## Qué implementar (Step 1 del plan)
+
+1. En `frontend/src/app/bookings/booking.ts`: añade el tipo `BookingStatus = 'Confirmed' | 'Pending' | 'Cancelled'` (o enum equivalente en TS) y opcionalmente el campo `status` en `Booking` si hace falta para tipar correctamente.
+2. Crea `frontend/src/app/bookings/status-select.component.ts`: componente standalone `app-status-select` con un `<select>` nativo. Opciones, en este orden y con este texto exacto: «Todos» (valor vacío/null), «Confirmada» (`Confirmed`), «Pendiente» (`Pending`), «Cancelada» (`Cancelled`). Debe exponer `model<BookingStatus | null>(null)` (two-way binding) según el plan, y un input `disabled` (signal input) que deshabilite el `<select>` cuando sea `true` (para el estado "mientras carga").
+3. Crea `frontend/src/app/bookings/status-select.component.css` con estilos que usen `var(--text)` y `var(--surface)` (mismo patrón que `booking-list.component.css`) para que el selector se vea bien en tema claro y oscuro.
+4. Modifica `frontend/src/app/bookings/booking-list.component.ts`: añade una signal `status` (p.ej. `signal<BookingStatus | null>(null)`), usa `app-status-select` en el template ligado a esa signal, y haz que `httpResource` pida `/api/bookings?status=<valor>` cuando `status()` tiene valor, o `/api/bookings` cuando es `null`. Deshabilita el selector mientras `bookings.isLoading()`.
+
+No toques el backend ni `docs/api.md` (ya hechos en Task 1). No toques los ficheros `.spec.ts`.
+
+## Verificación (solo esto, NO ejecutes la suite completa del proyecto ni `moon run :test`)
+
+Ejecuta, en este orden, y pega la salida real:
+1. `moon run frontend:test`
+2. `moon run frontend:check`
+
+Ambos deben quedar en verde. Si algo falla, corrige el código (no los tests) hasta que pase.
+
+## Commit
+
+Cuando todo esté en verde, haz un commit con:
+```
+feat(frontend): selector de estado en la lista de reservas (0012)
+```
+en castellano en el cuerpo si añades cuerpo, tipo/scope en inglés. Usa `git add` solo sobre los ficheros que has tocado (no `git add -A`).
+
+## Entrega
+
+Al terminar, informa en tu respuesta final: ficheros creados/modificados, resultado exacto de los dos comandos de verificación, y el hash del commit.
