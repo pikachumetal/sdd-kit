@@ -7,7 +7,7 @@ Registro vivo: estado y commit por task.
 | 1 — Carpetas que no nacen vacías | ✅ RED 6/6 → verde | `b87a0cb` |
 | 2 — Volcado inicial en greenfield | ✅ RED 7/7 → verde | `64d1cfa` |
 | 3 — El funcional aportado se guarda literal | ✅ RED 5/5 → verde | `e174219` |
-| 4 — GREEN headless y evidencia | ✅ GREEN 6/6 escenarios 2/2 | — |
+| 4 — GREEN headless y evidencia | ✅ GREEN 6/6 escenarios 2/2 | `3c33b6c`, `70be44f` |
 
 ## Fixes adicionales
 
