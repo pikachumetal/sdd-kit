@@ -39,6 +39,21 @@ Nivel elegido por el dev-lead: dos revisores (2026-09-23).
 12. **No escribo `merge.push` en el `sdd-kit.json` de este repo.** La regla del atajo autoconcedido pide tu frase, así que te lo pregunto en la validación.
 13. **Capacidades tocadas**: `control-profiles` (push y mensaje final: los dos son del paso de rama del cierre, que ya vive ahí), `onboarding` y `migration`. No nace ninguna capacidad nueva.
 
+### Hallazgos de la review
+
+Dos revisores Sonnet, unos 208k tokens entre los dos. Técnica devolvió 7 hallazgos y dominio 5. El Crítico del push en `pair` lo encontraron los dos.
+
+- **Aceptado** — (técnica 1, dominio 1, Crítico) el AND del MODIFIED eximía de confirmación el push en los tres perfiles y contradecía `pair` → el AND dice el predicado entero: `pair` confirma siempre; `delegate` y `unattended` también, salvo el push de la rama de integración con `merge.push: true`.
+- **Aceptado** — (técnica 2) el ADDED del push mezclaba tres ramas en un escenario → partido en «El push de la rama de integración sigue `merge.push`» y «Sin autorización, el push no lo hace el agente solo».
+- **Aceptado** — (técnica 3, Crítico) no se decía cómo conviven la evidencia del merge denegado y la línea de terminado → AND nuevo: la evidencia va antes y la línea de terminado es siempre la última.
+- **Aceptado** — (técnica 4) el push fallido no citaba el comando «en un bloque», como el merge denegado → igualado.
+- **Aceptado** — (técnica 5) `merge-recipe.md` sin ruta en el Scope → ruta completa y sección «Push».
+- **Aceptado** — (técnica 6) `mission.md` sin el texto de antes y de después → citados en el Scope.
+- **Aceptado** — (técnica 7, dominio 2) la recomendación sin git-flow solo estaba en la decisión 5 → AND en `onboarding` y «con la misma recomendación» en `migration`.
+- **Aceptado** — (dominio 3) «Regla ante conflicto» no cubría el push → ampliada: el push de la rama de integración es la única acción hacia fuera que cubre la política, y un push denegado no se reintenta.
+- **Aceptado** — (dominio 4) «Avisos» quedaba en «no aplica» → declarados la línea de terminado y el bloque del push fallido.
+- **Aceptado** — (dominio 5) no se decía dónde vive la repetición de la línea tras el ticket → en el Scope: la lleva el paso «Mensaje final» de los dos cierres, sin tocar `sdd-feedback`.
+
 ### Decisiones tomadas con el dev-lead
 
 - Carril task, modo full, perfil `delegate` y **spec aprobada por delegación**: opción «Full + delegate, spec aprobada por delegación» de la primera pregunta (2026-09-23). Su texto: «Apruebas la spec por delegación ("nos vemos en la validación")».
@@ -54,7 +69,7 @@ El final: ningún mensaje de cierre dice que el worktree se pueda borrar (0/5, F
 
 ## Scope
 
-- Entra: clave `merge.push` en `control-profiles.md` (tabla de claves, tabla de gates y pregunta 3 del bloque); push tras el merge en el paso 10 de `sdd-end-task`, el paso 6 de `sdd-end-patch` y `merge-recipe.md`; paso «Mensaje final» en los dos cierres; referencias renumeradas en las dos init; `migrations/v1.2.0.md` (aplica, paso 2, paso 5, «Escribe» y verificación); `mission.md` (acciones hacia fuera); tests estructurales de `ControlProfiles.Tests.ps1`.
+- Entra: clave `merge.push` en `skills/sdd-start-task/references/control-profiles.md` (tabla de claves, tabla de gates y pregunta 3 del bloque); push tras el merge en el paso 10 de `sdd-end-task`, el paso 6 de `sdd-end-patch` y una sección «Push» en `skills/sdd-end-task/references/merge-recipe.md`; paso «Mensaje final» en los dos cierres, que también lleva la repetición de la línea de terminado tras escribir el ticket (sin tocar `sdd-feedback`); referencias renumeradas en las dos init; `migrations/v1.2.0.md` (aplica, paso 2, paso 5, «Escribe» y verificación); `mission.md`, «Lo que la autonomía no cubre»: de «Las acciones hacia fuera (push, PR, publicar) se confirman siempre.» a «Las acciones hacia fuera (push, PR, publicar) se confirman siempre, salvo el push de la rama de integración tras el merge del cierre, que en `delegate` y `unattended` sigue `merge.push`.»; tests estructurales de `ControlProfiles.Tests.ps1`.
 - No entra: push de la rama estable, de tags o de la feature; crear PR; borrar el worktree por el agente (sigue siendo `merge.removeWorktree`); cambiar `sdd-feedback`; escribir `merge.push` en el `sdd-kit.json` de este repo sin la frase del dev-lead.
 
 ## Approach
@@ -70,19 +85,23 @@ La clave se declara donde viven las demás (`control-profiles.md`) y se pregunta
 - GIVEN un proyecto con `control.profile` en `sdd-kit.json`, o sin él (default `delegate`)
 - WHEN el agente recorre una task
 - THEN para en estos puntos y en ningún otro: `pair` en la spec, el plan, tras cada task, los desvíos, la validación y antes del merge; `delegate` en la spec, los desvíos y la validación; `unattended` en ninguno hasta terminar la release
-- AND en los tres perfiles se confirman siempre las acciones hacia fuera (push, PR, publicar), salvo el push de la rama de integración que autoriza `merge.push`, y el merge a `main` y el tag los decide una persona
+- AND en `pair` se confirman siempre las acciones hacia fuera (push, PR, publicar); en `delegate` y `unattended` también, salvo el push de la rama de integración tras el merge del cierre cuando `merge.push` es `true`; en los tres, el merge a `main` y el tag los decide una persona
 
 **ADDED — El push de la rama de integración sigue `merge.push`**
-- GIVEN un cierre de task o de patch que acaba de fusionar en `merge.into` según la política, con la suite en verde sobre el resultado, y `merge.push: true` en `sdd-kit.json`
+- GIVEN un cierre de task o de patch que acaba de fusionar en `merge.into` según la política, con la suite en verde sobre el resultado, `merge.push: true` en `sdd-kit.json` y un upstream en `merge.into`
 - WHEN el perfil vigente es `delegate` o `unattended`
 - THEN el agente hace push de `merge.into` a su upstream sin preguntar, y no empuja ninguna otra rama ni tags
-- AND en `pair` presenta el push junto con el merge y espera
-- AND con `merge.push` ausente o `false`, o sin upstream en `merge.into`, no hace push, y el mensaje final lo dice
+
+**ADDED — Sin autorización, el push no lo hace el agente solo**
+- GIVEN un cierre de task o de patch que acaba de fusionar en `merge.into`
+- WHEN el perfil vigente es `pair`, `merge.push` está ausente o es `false`, o `merge.into` no tiene upstream
+- THEN el agente no hace push sin confirmación: en `pair` presenta el push junto con el merge y espera; en los demás casos no lo hace
+- AND el mensaje final dice que el push no se hizo y por qué
 
 **ADDED — Un push que no sale se informa y no se fuerza**
 - GIVEN `merge.push: true` y un push que falla: el remoto lo rechaza, faltan credenciales o el entorno lo deniega
 - WHEN el cierre termina
-- THEN el mensaje final cita el comando literal y el error, y dice que el merge queda en local con el hash de `merge.into`
+- THEN el mensaje final cita en un bloque el comando literal, cita el error y dice que el merge queda en local con el hash de `merge.into`
 - AND el agente no reintenta con `--force`, `pull`, `rebase` ni otra herramienta
 
 **ADDED — El cierre acaba con una línea de terminado**
@@ -90,10 +109,13 @@ La clave se declara donde viven las demás (`control-profiles.md`) y se pregunta
 - WHEN el agente escribe su último mensaje
 - THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, y lo pendiente; y ofrece el ticket del kit si toca
 - AND su última línea es la de terminado: si la rama está fusionada en `merge.into` y el worktree no tiene cambios sin commitear, dice rama, destino, hash, estado del push (hecho, no hecho y por qué) y que se puede borrar el worktree, con su ruta; si no, dice «No terminado», qué falta y que el worktree no se borra todavía
+- AND con el merge o el push denegados o fallidos, sus bloques de evidencia van antes, y la línea de terminado sigue siendo la última: «No terminado» si falta el merge; con el merge hecho y el push fallido, dice «push no hecho» y el motivo
 - AND si después el agente escribe el ticket del kit en ese worktree, repite la línea de terminado con el ticket como pendiente hasta que se commitee y se fusione
 
 **Reglas de la capacidad**
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`, con `merge.push` opcional); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
+- **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); y el bloque de un push fallido (comando literal y error).
+- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
 
 ### Capacidad: `onboarding`
 
@@ -103,6 +125,7 @@ La clave se declara donde viven las demás (`control-profiles.md`) y se pregunta
 - THEN el agente hace, en turnos distintos, las preguntas del bloque de `control-profiles.md`, cada una con su opción recomendada y su motivo: perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona), push de la rama de integración tras el merge («sí» con git-flow) y frenos (3 agentes; 8 y 20 minutos)
 - AND escribe en `sdd-kit.json` solo lo que el usuario responde: «no sé» no escribe la clave y rige su default, y un «no» a la política de merge deja `merge` sin declarar
 - AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar; sin `merge` declarado, la de push tampoco se hace
+- AND la pregunta de push recomienda «sí» solo si la convención de ramas es git-flow; con otra convención se hace sin opción recomendada
 - AND en brownfield sin usuario, las cuatro quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
 
 ### Capacidad: `migration`
@@ -110,7 +133,7 @@ La clave se declara donde viven las demás (`control-profiles.md`) y se pregunta
 **MODIFIED — La migración a v1.2.0 pregunta las claves de control que faltan**
 - GIVEN un proyecto cuyo `sdd-kit.json` no tiene `control.profile`, un bloque `merge` completo, `merge.push` con el bloque `merge` completo, o las claves de frenos (`control.maxParallelAgents`, `control.silence.*`)
 - WHEN se aplica `migrations/v1.2.0.md`
-- THEN el agente hace, una por turno, las preguntas del bloque de `control-profiles.md` que corresponden a lo que falta, las mismas que hace la init, y escribe solo lo que responde; lo que ya estaba no se pregunta
+- THEN el agente hace, una por turno, las preguntas del bloque de `control-profiles.md` que corresponden a lo que falta, las mismas que hace la init y con la misma recomendación, y escribe solo lo que responde; lo que ya estaba no se pregunta
 - AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con los defaults, con el paso 10 del cierre preguntando el merge y sin push, y el informe dice cómo reanudarlo
 
 ## Enmiendas
