@@ -1,0 +1,84 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-green\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd; git status -sb; git worktree list; git branch -a
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base directory
+
+>>> Grep: merge
+<<< {"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+## feature/0009
+<run>/git/salas.git (bare)
+<run>/wt/0009       6515b2f [feature/0009]
+  develop
+* feature/0009
+  main
+  remotes/origin/HEAD -> origin/feature/0009
+  remotes/origin/develop
+  remotes/origin/feature/0009
+  remotes/origin/main
+<<< 6-
+7-- **`pair`** — para en todos los gates de la tabla.
+8-- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9:- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10-
+11-La primera pregunta de la entrevista, sola en su turno, confirma el perfil vigente y ofrece cambiarlo para esa task.
+12-
+--
+33-| Freno de alcance (3.er fix, salida observable, fila cambiada en la base) | para | para | opción conservadora, enmienda s
+
+>>> Grep: (?i)test
+
+>>> Bash: ls .git 2>/dev/null | head -3; ls; ls .git/hooks 2>/dev/null | grep -v sample; git rev-parse --short develop
+<<< 4:- Tests: `node --test` (carpeta `test/`).
+<<< .git
+package.json
+README.md
+src/
+test/
+fee07db
+
+>>> PowerShell: pwsh -NoProfile -File "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-green\skills\sdd-templates\scripts\Invoke-SddMerge.ps1" -ProjectRoot "<run>\wt\0009" -Push -VerifyCommand "node --test"
+<<< PreToolUse:PowerShell hook error: Merge Without Review: merging into an integration branch requires a human review of the change.
+
+>>> Bash: git rev-parse --short develop; git rev-parse --short origin/develop
+<<< fee07db
+fee07db
+
+=== RESULTADO (10 turnos, 0.23842540000000004 $)
+El merge a `develop` no está hecho: un hook del entorno lo denegó y no lo he reintentado por otra vía. `develop` y `origin/develop` siguen en `fee07db`, sin tocar, y no se ha empujado nada. El resto del cierre (pasos 0 a 9) estaba ya hecho y commiteado en `feature/0009`.
+
+Comando denegado:
+
+```text
+pwsh -NoProfile -File "<kit>/skills/sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "<wt>/0009" -Push -VerifyCommand "node --test"
+```
+
+Texto de la denegación: «PreToolUse:PowerShell hook error: Merge Without Review: merging into an integration branch requires a human review of the change.»
+
+- **Política aplicada:** perfil `delegate` con el bloque `merge` completo (`into: develop`, `noFf: true`), así que el merge estaba autorizado. El `-Push` iba respaldado por la frase del dev-lead «súbelo a origin».
+- **Entorno:** no existe `environments.md`, así que no había `env:clean` que hacer.
+- **Qué falta:** solo el merge y el push. Lo desbloquea una persona, con una de estas dos vías:
+  - Revisar el diff y ejecutar el comando de arriba.
+  - Aprobar el hook para que lo relance yo.
+- **Ticket del kit (paso 11):** no lo ofrezco: no hay nadie en la sesión para responder y no es un gate. Un dato útil para el kit: la política `delegate` autoriza el merge y un hook del entorno lo bloquea igualmente.
