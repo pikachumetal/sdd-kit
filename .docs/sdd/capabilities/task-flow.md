@@ -122,6 +122,30 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
 
+### Cada task del plan verifica solo sus superficies
+- GIVEN una spec aprobada cuyo cambio toca BD, backend y frontend, y un proyecto con una suite de BD distinta de la de frontend
+- WHEN se escribe el plan
+- THEN cada task declara sus superficies (BD · backend · frontend · tooling · docs) y una verificación con los comandos de esas superficies y ninguno más
+- AND la suite de BD solo aparece en las tasks cuyas superficies incluyen BD (migraciones, persistencia o dialecto)
+
+### El gate de cierre se ejecuta una vez
+- GIVEN una constitution que pide el gate completo en verde al cerrar cada task
+- WHEN se escribe el plan y se despacha una task de solo frontend
+- THEN el gate completo aparece una sola vez, en la validación final, y lo ejecuta el hilo principal
+- AND no aparece en «De código» ni en la verificación de esa task, y el encargo de su implementador le dice que ejecute su verificación y no la suite completa
+
+### Una task que cambia la UI se mira en un navegador
+- GIVEN una task con superficie frontend que cambia lo que se ve
+- WHEN se escribe el plan y, después, cuando esa task termina su revisión
+- THEN la task lleva una verificación visual con la pantalla o ruta, los estados y los temas que se miran y qué se mira en ellos (alineación, separación a bordes, contraste)
+- AND no se da por terminada en `tasks.md` hasta que el hilo principal la ha visto en un navegador real; sin navegador disponible queda como «no probado», nunca sustituida por la suite
+
+### Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano
+- GIVEN una task cuya verificación incluye un comando que tarda más de 10 minutos
+- WHEN se escribe el plan y se despacha la task
+- THEN la task declara ese comando y su duración como verificación lenta, el encargo del implementador le dice que no lo ejecute, y el hilo principal lo lanza en segundo plano mientras corre la revisión
+- AND la task siguiente solo se despacha durante esa ejecución si no comparte ficheros con ella y su encargo prohíbe los comandos que compiten por los mismos binarios; si la verificación lenta falla, abre la ronda de fix de su task
+
 **Reglas de la capacidad**
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
@@ -172,3 +196,7 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED El formato que exige el linter no rompe el contrato de los tests RED
 - 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED El revisor final revisa el paquete sin ejecutar la suite
 - 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED La spec se repasa antes del gate
+- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Cada task del plan verifica solo sus superficies
+- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED El gate de cierre se ejecuta una vez
+- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una task que cambia la UI se mira en un navegador
+- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano

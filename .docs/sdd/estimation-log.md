@@ -56,16 +56,17 @@
 | 2026-09-22 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
 | 2026-09-22 | 0035 | patch | — | 0.75 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
 | 2026-09-23 | 0037 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | 20260923-070206-patch-0037-disparador-vago |
+| 2026-09-23 | 0006 | docs | 3 | 2 | 0.67 | no medido | 201k | 20.93 | 20260923-102746-task-0006-task-verification |
 | 2026-09-23 | 0038 | patch | 0.3 | 0.2 | 0.67 | — | — | — | 20260923-103947-patch-0038-specs-de-otros-worktrees |
 | 2026-09-23 | 0033 | docs | 1.5 | 1.6 | 1.07 | no medido | 153k | 12.22 | 20260923-105726-task-0033-capabilities-at-birth |
 | 2026-09-23 | 0009 | docs | 3 | 1.5 | 0.5 | no medido | 119k | 14.43 | 20260923-120510-task-0009-merge-close |
 
-**Factor de calibración** (ratio mediano real/estimado, 49 artefactos): **0.58**
+**Factor de calibración** (ratio mediano real/estimado, 50 artefactos): **0.59**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 36 | 0.51 |
+| docs | 37 | 0.52 |
 | infra/tooling | 4 | 0.88 |
 | patch | 8 | 1.2 |
 
