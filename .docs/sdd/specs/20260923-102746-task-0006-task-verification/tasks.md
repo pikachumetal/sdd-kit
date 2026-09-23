@@ -20,14 +20,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | RED del paso 6 | done | 75074db | 3/4 sujetos válidos (e2-2 bloqueado en pre-flight, ver Evidencia); un frente pasa 2/2 (se recorta), tres fallan |
 | 2 | Plantilla del plan | done | 00ce715 | RED (5 fallos) → GREEN (5/5) en `tests/TaskVerification.Tests.ps1` |
-| 3 | Paso 6, encargo del implementador y override | pending | — | |
+| 3 | Paso 6, encargo del implementador y override | done | ec584a8 | RED (3 fallos, bloque «Despacho») → GREEN (`TaskVerification.Tests.ps1` + `Skills.Tests.ps1`, 123/123) |
 | 4 | GREEN | pending | — | |
 
 ## Verificación por task
 
 - [x] Task 1 — veredictos E2 y E3 en `tests/task-verification-red.md`
 - [x] Task 2 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1`
-- [ ] Task 3 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1` y `./tests/Skills.Tests.ps1`
+- [x] Task 3 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1` y `./tests/Skills.Tests.ps1`
 - [ ] Task 4 — veredictos E1–E3 en `tests/task-verification-green.md`
 
 ## Evidencia del rojo (tasks en línea)
@@ -49,6 +49,17 @@ Expected regular expression 'los comandos que el cambio tiene que dejar en verde
 Expected regular expression '## 3\. Validación final[\s\S]*Gate de cierre[^\n]*una vez' to match '---
 Tests Passed: 0, Failed: 5
 ```
+
+**Task 3** — `Invoke-Pester -Path tests/TaskVerification.Tests.ps1` antes de editar (bloque «Despacho»):
+
+```text
+[-] el encargo del implementador lleva la verificación de su task
+[-] el override sustituye la suite completa de superpowers
+[-] el paso 6 dice quién mira la UI y quién lanza la verificación lenta
+Tests Passed: 5, Failed: 3
+```
+
+Verde tras editar (`encargo-revision.md`, `overrides-superpowers.md`, `SKILL.md` paso 6): `Invoke-Pester tests/TaskVerification.Tests.ps1,tests/Skills.Tests.ps1` → `Passed: 123, Failed: 0`.
 
 ## Rulings
 
