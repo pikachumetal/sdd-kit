@@ -4,18 +4,18 @@ task: 0033
 parent: 0019
 title: Capacidades al nacer
 mode: full
-status: draft
+status: approved
 created: 2026-09-23
 author: Claude (Opus 5.5) con Àngel Delgado
 approvers:
   - role: dev-lead
     name: Àngel Delgado
-    approved_at: null
+    approved_at: 2026-09-23
 ---
 
 # Spec — Capacidades al nacer
 
-> **Estado**: draft.
+> **Estado**: approved.
 > **Siguiente paso**: `plan.md` con `superpowers:writing-plans`.
 
 ## Decisiones que he tomado yo — valida estas
@@ -106,4 +106,4 @@ Texto de skills y plantilla, con la evidencia RED/GREEN en `tests/`. La regla de
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | Àngel Delgado | 2026-09-23 | aprobada: «si» |
