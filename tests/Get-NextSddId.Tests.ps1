@@ -193,6 +193,16 @@ Describe 'Get-NextSddId.ps1' {
       Add-UnmergedCommit $repo 'feature/exportación' '.docs/sdd/specs/20260922-100000-task-0012-exportación/spec.md' '# Spec'
       (Invoke-NextId $repo).Id | Should -Be '0013'
     }
+
+    It 'cuenta una fila reservada solo en el índice de otro worktree' {
+      # Ticket de la task 0019 §1: la 0021 tenía la 0031 y la 0032 en staged y ninguna rama las mostraba.
+      $repo = Copy-FixtureToRepo 'sequence-project' @() '0035-Partición-en-paralelo'
+      $otherWorktree = Join-Path (Split-Path $repo) 'worktree-partición'
+      Invoke-GitIsolated $repo @('worktree', 'add', '-qb', 'feature/partición', $otherWorktree) | Out-Null
+      Add-Content -LiteralPath (Join-Path $otherWorktree '.docs/sdd/roadmap.md') -Value '| 0032 | Reservada en staged | S |'
+      Invoke-GitIsolated $otherWorktree @('add', '-A') | Out-Null
+      (Invoke-NextId $repo).Id | Should -Be '0033'
+    }
   }
 
   Context 'rama actual con id' {

@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-22
 branch: feature/next-id
-commit: 1c052eb
+commit: 1c052eb, 0a1ff14 (ampliación, rama feature/fix-01-2)
 ---
 
 # Patch 0035 — Get-NextSddId.ps1 lee el roadmap y specs/ de todas las ramas
@@ -14,6 +14,8 @@ commit: 1c052eb
 ## 1. Síntoma
 
 Del dev-lead: «en modo sequence colisiona cuando dos worktrees parten tasks en paralelo, porque solo ve el roadmap de su propia rama. Tercera colisión en dos días: la 0005 y la 0012 tomaron la 0019 y la 0020; la rama feature/0027; y hoy la 0019 iba a usar la 0031 y la 0032, ya reservadas en develop por la 0021 (lo frené yo a mano)». Detalle en la fila 0009 del roadmap.
+
+Ampliación del dev-lead (2026-09-23): «además de las ramas, lee el roadmap.md del disco de cada worktree de `git worktree list`, porque una reserva puede estar en el índice sin commitear (ticket de la task 0019 §1: la 0021 tenía la 0031 y la 0032 en staged y ninguna rama las mostraba)».
 
 ## 2. Causa raíz
 
@@ -31,6 +33,7 @@ Evidencia en el repo real, con un worktree `--detach` en `02da87b^`, la base de 
 
 - **Fichero(s)**: `skills/sdd-templates/scripts/Get-NextSddId.ps1`, `tests/Get-NextSddId.Tests.ps1`
 - **Cambio**: por cada rama de `git branch --all`, el script lee también su roadmap (`git show <rama>:.docs/sdd/roadmap.md`) y sus carpetas de `specs/` (`git ls-tree -d --name-only`, con `core.quotePath=false` para las tildes), y devuelve el máximo más uno. Lee todas las ramas, no solo la de integración y las `feature/*`: así cubre `develop`, la que declare `merge.into` de `sdd-kit.json` y los `hotfix/*` sin leer la configuración, y también la fila reservada en otra `feature/*` sin fusionar, que es el caso de la 0005 y la 0012. Si la rama actual lleva id (`feature/<id>`) y ese id no aparece en ningún otro sitio, lo devuelve como el id de la sesión. Su rama de seguimiento `origin/<rama>` no cuenta como otra rama. La comprobación de carpetas duplicadas sigue mirando solo el working tree: una rama vieja con una carpeta renombrada no bloquea el script.
+- **Ampliación**: lee además el `roadmap.md` del disco de cada worktree de `git worktree list --porcelain`. Una fila en *staged* o sin añadir al índice no está en ninguna rama; solo en el árbol de trabajo de su worktree. El worktree bare y los que ya no existen en disco no tienen roadmap y no cuentan.
 
 ## 4. Verificación
 
@@ -41,8 +44,12 @@ Evidencia en el repo real, con un worktree `--detach` en `02da87b^`, la base de 
 | 3 | Colisión real de la 0019: worktree `--detach` en `02da87b^` | ✅ agente: script anterior `0031`, script nuevo `0035` |
 | 4 | El script sobre este worktree (`feature/next-id`, sin id en el nombre) | ✅ agente: `0035`, el id de este patch |
 | 5 | Suite completa `Invoke-Pester -Path tests` | ✅ agente: 321 pasan, 0 fallan, 6 skipped |
+| 6 | Ampliación, RED: otro worktree con `\| 0032 \|` añadida al roadmap y solo en *staged* | ✅ agente: falla, `0006` en vez de `0033` |
+| 7 | Ampliación, GREEN: `tests/Get-NextSddId.Tests.ps1` | ✅ agente: 23 pasan, 0 fallan |
+| 8 | Ampliación: el script sobre este worktree (`feature/fix-01-2`, repo bare con cuatro worktrees) | ✅ agente: `0036` |
+| 9 | Ampliación: suite completa `Invoke-Pester -Path tests` | ✅ agente: 353 pasan, 0 fallan, 6 skipped |
 
 ## 5. Tiempo (ligero)
 
 - Estimación: sin estimación
-- Real: 0,5h
+- Real: 0,75h (0,5h del patch y 0,25h de la ampliación)
