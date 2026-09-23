@@ -40,7 +40,18 @@ Si la rama destino está sacada en un worktree con cambios sin commitear, el scr
 
 ## Si el script falla
 
-Si falla, la rama destino queda como estaba antes de fusionar la feature: no se empuja nada, el worktree temporal se retira y el cerrojo se suelta. El mensaje empieza por el paso que falló (`cerrojo:`, `base:`, `merge:`, `verificación:`, `push:`, `política:`). El informe final cita ese mensaje literal, el hash de la rama destino (`git rev-parse --short <destino>`) y qué queda pendiente. **No se rehace a mano** con `git merge`, `git pull` ni `git push`. Un fallo de `push:` o de `base:` (otra sesión publicó en ese rato) se resuelve ejecutando el script **una vez más**: parte del remoto nuevo. Un conflicto de `merge:`, una `verificación:` en rojo o un `cerrojo:` agotado no se reintentan: los resuelve una persona.
+Si falla, la rama destino queda como estaba antes de fusionar la feature: no se empuja nada, el worktree temporal se retira y el cerrojo se suelta. El mensaje empieza por el paso que falló (`cerrojo:`, `base:`, `merge:`, `verificación:`, `push:`, `política:`). El informe final cita ese mensaje literal, el hash de la rama destino (`git rev-parse --short <destino>`) y qué queda pendiente. **No se rehace a mano** con `git merge`, `git pull` ni `git push`. Un fallo de `push:` o de `base:` (otra sesión publicó en ese rato) se resuelve ejecutando el script **una vez más**: parte del remoto nuevo. Un conflicto de `merge:`, una `verificación:` en rojo o un `cerrojo:` agotado no se reintentan: los resuelve una persona, salvo el de los registros (siguiente sección).
+
+## Conflicto solo en los registros
+
+1. Se aplica cuando el script falla con `merge: conflicto en` y todos los ficheros de la lista son de estos tres: `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` y `.docs/sdd/estimation-log.md`. Si en la lista hay cualquier otro fichero, sigue «Si el script falla»: es de una persona.
+2. En el worktree de la feature, con el commit de cierre ya hecho: `git merge --no-edit <merge.into>`. La base es la rama local: al fallar en `merge:`, el script ya dejó ahí lo publicado en el remoto.
+3. En `changelog.md` y `roadmap.md`, cada línea se queda con el cambio del lado que la tocó. Dos líneas nuevas entran las dos, y dos filas distintas, aunque sean contiguas y caigan en el mismo trozo, se quedan cada una con su cambio. Los dos trozos no se pegan enteros: eso duplicaría filas.
+4. Si los dos lados tocaron la misma línea, `git merge --abort` y sigue «Si el script falla»: es de una persona.
+5. `estimation-log.md` no se edita: se regenera con `Build-EstimationLog.ps1`.
+6. `git add` de los tres y `git commit --no-edit`, que pasa el hook. Nunca `--no-verify`.
+7. Relanza el script **una vez**. Si vuelve a fallar con `merge:`, es de una persona, aunque sea otra vez solo en los registros.
+8. Es el único `git merge` a mano del cierre, y nunca toca la rama destino.
 
 ## Merge denegado por el entorno
 
