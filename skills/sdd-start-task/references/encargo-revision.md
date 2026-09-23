@@ -20,6 +20,10 @@ Por qué así: las plantillas de superpowers solo tienen hueco para restriccione
 
 Solo viaja el bloque «De código». El de «De proceso» (política de modelos, modo de ejecución, atribución de commits) es para quien despacha: `task-reviewer-prompt.md` de superpowers reserva ese hueco a lo que exige la spec, «not process rules», y un revisor que las lee las audita. Con el bloque entero y «todo incumplimiento es Important», 2 de 2 revisores devolvieron «Needs fixes» sobre un diff correcto: por la línea en blanco que exigía el linter en un test RED, por una función de 21 líneas y por el modo de despacho (`tests/proportional-review-red.md`, R1).
 
+## Rutas del workspace en Windows
+
+El brief, el informe, el paquete de review y el ledger viven en el workspace de `subagent-driven-development`. En Windows, `sdd-workspace`, `task-brief` y `review-package` imprimen la ruta de Git Bash (`/tmp/claude/…`, `/d/code/…`). Conviértela con `cygpath -w <ruta>` antes del primer `Write` o `Read` en el workspace, ledger incluido, y antes de escribirla en un encargo ([overrides](overrides-superpowers.md)). Con la ruta POSIX, el `Write` apunta a `C:\tmp\…` y pide un permiso que un sujeto sin usuario no puede conceder: así quedó bloqueado 1 de 2 sujetos que no leyeron la fila de overrides (`tests/superpowers-641-green.md`).
+
 ## Revisor final
 
 Tras la cabecera y antes de `code-reviewer.md`:

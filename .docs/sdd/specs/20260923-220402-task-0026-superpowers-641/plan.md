@@ -46,7 +46,7 @@ created: 2026-09-24
   - Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano (mensajes, warnings, ayuda) en castellano con tildes (Art. III).
   - El revisor marca el incumplimiento como Important, no como estilo, salvo un umbral numérico superado en una unidad (21 líneas con un límite de 20), que es Minor.
 - Texto de skills en castellano con ortografía correcta; nombres de fichero en inglés kebab-case (Art. III).
-- No se tocan `plan-template.md`, `review-spec.md`, `constitution.md`, `skills/sdd-start-task/SKILL.md`, `sdd-start-patch`, `sdd-end-patch` ni `encargo-revision.md`: los tocan la 0031 y la 0053 en paralelo.
+- No se tocan `plan-template.md`, `review-spec.md`, `constitution.md`, `skills/sdd-start-task/SKILL.md`, `sdd-start-patch` ni `sdd-end-patch`: los tocan la 0031 y la 0053 en paralelo. `encargo-revision.md` solo gana la sección «Rutas del workspace en Windows» (enmienda de la spec, 2026-09-24).
 - En `README.md` solo cambia la frase «Versión validada: …» (línea 149).
 - La conversión de ruta, literal: `cygpath -w <ruta>`.
 
@@ -80,6 +80,7 @@ created: 2026-09-24
 **Modificar**:
 
 - `skills/sdd-start-task/references/overrides-superpowers.md`: dos filas nuevas.
+- `skills/sdd-start-task/references/encargo-revision.md`: sección «Rutas del workspace en Windows» (enmienda, REFACTOR de la Task 2).
 - `README.md:149`: «Versión validada: 6.4.1».
 - `.docs/sdd/roadmap.md`: fila 0026, «Referencias de vigilancia» y filas de deuda.
 

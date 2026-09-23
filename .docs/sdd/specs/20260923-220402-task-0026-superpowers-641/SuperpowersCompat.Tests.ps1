@@ -24,6 +24,10 @@ Describe 'Compatibilidad con superpowers 6.4.1' {
     $row | Where-Object { $_.Contains('cygpath -w') } | Should -Not -BeNullOrEmpty
   }
 
+  It 'encargo-revision remite a la conversión de la ruta del workspace' {
+    Get-KitFile 'skills/sdd-start-task/references/encargo-revision.md' | Should -Match '(?m)^## Rutas del workspace en Windows[\s\S]*cygpath -w'
+  }
+
   It 'el README declara validada la 6.4.1' {
     Get-KitFile 'README.md' | Should -Match 'Versión validada: 6\.4\.1'
   }
