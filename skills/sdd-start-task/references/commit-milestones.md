@@ -11,6 +11,9 @@ La rama de una task cuenta sus hitos: **apertura**, **un commit por task del pla
 | Cierre | documentación de `sdd-end-task`, arreglos de la revisión final de rama y de la validación | tras la documentación de cierre, antes del merge | el commit de la última task |
 | Fix (patch) | código, tests y `patch.md` | con el fix verificado | `git merge-base HEAD <integración>` |
 | Cierre (patch) | `patch.md` con hash y tiempo, changelog, roadmap, estimation-log | antes del merge | el commit del fix |
+| Merge de sincronización | la rama destino integrada en la feature, con los registros resueltos | no se junta | — |
+
+El merge de sincronización solo lo pide la [receta del merge](../../sdd-end-task/references/merge-recipe.md#conflicto-solo-en-los-registros); va después del commit de cierre y es el último commit de la rama, así que la historia queda en 2 + N (2 en un patch) más ese merge, y el cierre no se vuelve a juntar.
 
 ## Receta
 

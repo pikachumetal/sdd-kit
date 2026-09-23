@@ -30,7 +30,7 @@ Manda el primero que exista, de arriba abajo: task sobre release, release sobre 
 | Plan | para | sin gate: comprueba escenario → task y sigue | igual que `delegate` |
 | Tras cada task | para | sigue | sigue |
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
-| Freno de alcance (3.er fix, salida observable, fila cambiada en la base) | para | para | opción conservadora, enmienda sin aprobar |
+| Freno de alcance (3.er fix, salida observable, fila o fichero de la task cambiados en la base) | para | para | opción conservadora, enmienda sin aprobar |
 | Salida del plan | ruling + «Me salí del plan en…» | ruling + «Me salí del plan en…» | ruling + informe |
 | Validación | para | para | diferida al smoke de la release (🧪) |
 | Merge a develop (cierre de task y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
@@ -60,7 +60,7 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No en
 
 ## Frenos de alcance
 
-Tres situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: en `pair` y `delegate` su fila de la tabla para como la de «Desvío»; en `unattended` sigue con la opción conservadora y no aparca, porque ninguno de los tres bloquea la task. Sin estado nuevo del roadmap.
+Cuatro situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: en `pair` y `delegate` su fila de la tabla para como la de «Desvío»; en `unattended` sigue con la opción conservadora y no aparca, porque ninguno de los cuatro bloquea la task. Sin estado nuevo del roadmap.
 
 ### 3.er fix descubierto
 
@@ -82,6 +82,13 @@ Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HE
 
 - `pair` y `delegate`: presenta el cambio y para.
 - `unattended`: sigue con la spec aprobada y registra la fila nueva como enmienda sin aprobar.
+
+### Fichero de la task cambiado en la base
+
+Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, es un posible desvío.
+
+- `pair` y `delegate`: nombran los ficheros y los commits de la base que los tocan (`git log --oneline $(git merge-base HEAD <integración>)..<integración> -- <fichero>`) y paran.
+- `unattended`: sigue con la spec aprobada y lo registra como enmienda sin aprobar.
 
 ## Validación diferida
 
