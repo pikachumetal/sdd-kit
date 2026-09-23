@@ -19,7 +19,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | Tipos de agente y texto que los nombra | done | 7263e43 | review limpia; 1 minor aparcado (tres agentes casi iguales, los manda el plan) |
-| 2 | Campaña GREEN y evidencia | done | — | en línea; 2/2 sujetos, 10/10 peticiones del subagente con effort medium |
+| 2 | Campaña GREEN y evidencia | done | 0db8175 | en línea; 2/2 sujetos, 10/10 peticiones del subagente con effort medium |
 
 ## Verificación por task
 
