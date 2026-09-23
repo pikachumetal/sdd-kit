@@ -19,8 +19,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | La forma en la task, en la constitution y en las plantillas | done | 703fc0b | revisión limpia; rango de un solo commit, nada que juntar |
-| 2 | El carril patch | in_progress | — | |
-| 3 | GREEN | pending | — | |
+| 2 | El carril patch | done | 9582af8 | revisión limpia tras un ruling (trailer de atribución); rango de un solo commit |
+| 3 | GREEN | done | — | 12 sujetos, 3,93 $; G4 0/2 → REFACTOR de `sdd-end-patch` paso 2 → 2/2 |
 
 ## Verificación por task
 

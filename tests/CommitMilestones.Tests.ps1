@@ -95,6 +95,10 @@ Describe 'Carril patch' {
     $step | Should -Match 'Commit de cierre[^\n]*commit-milestones\.md'
   }
 
+  It 'el paso 2 de sdd-end-patch junta un fix que llega en varios commits' {
+    Get-SkillStep 'sdd-end-patch' 2 | Should -Match 'más de un commit[^\n]*júntalo'
+  }
+
   It 'la plantilla del patch apunta el hash del fix' {
     Get-KitFile 'skills/sdd-templates/templates/patch-template.md' | Should -Match 'commit: <hash>\s+# hash del commit del fix'
   }
