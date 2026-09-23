@@ -58,3 +58,25 @@ Describe 'Task 1 — carril de task' {
     Assert-Literal (Get-SkillStep 'sdd-end-task' 1) @('`Validado: <fecha> · «<frase literal>» · no detalló qué probó`')
   }
 }
+
+Describe 'Task 2 — carril de patch' {
+  It 'el paso 1 para sin abrir el patch si el fallo no se reproduce' {
+    Assert-Literal (Get-SkillStep 'sdd-start-patch' 1) @('**no reproduce el fallo**', 'ni rama, ni carpeta, ni `patch.md`, ni fix, ni id reservado', 'déjala re-medida')
+  }
+
+  It 'el paso 1 sigue con el fallo medido si es distinto del predicho' {
+    Assert-Literal (Get-SkillStep 'sdd-start-patch' 1) @('un fallo **distinto**', 'el patch sigue con el fallo medido')
+  }
+
+  It 'el paso 3 recoge el síntoma medido junto al reportado' {
+    Assert-Literal (Get-SkillStep 'sdd-start-patch' 3) @('también el medido y en qué difiere del reportado')
+  }
+
+  It 'la red flag y la racionalización cierran el patch sin fallo' {
+    Assert-Literal (Get-SkillSection 'sdd-start-patch' 'Red flags — STOP') @('cuyo fallo no has reproducido', '"No se reproduce, pero dejo el patch como cobertura y rastro documental"')
+  }
+
+  It 'el cierre reescribe la fila que su re-medición contradice' {
+    Assert-Literal (Get-SkillStep 'sdd-end-patch' 4) @('que el patch no salda', 'reescribe esas celdas')
+  }
+}
