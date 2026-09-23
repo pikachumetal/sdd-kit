@@ -17,7 +17,7 @@ Describe 'Referencia commit-milestones' {
 
   It 'tiene las cinco secciones que enlazan las skills' {
     foreach ($heading in 'Qué lleva cada hito', 'Receta', 'Guardas', 'El hash en los artefactos', 'Tests RED sin commitear') {
-      $script:Recipe | Should -Match "(?m)^## $heading$"
+      $script:Recipe | Should -Match "(?m)^## $heading\r?$"
     }
   }
 
