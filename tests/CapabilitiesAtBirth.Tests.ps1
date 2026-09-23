@@ -82,3 +82,32 @@ Describe 'Volcado inicial en greenfield' {
     $redFlags | Should -Match 'volcando capacidades'
   }
 }
+
+Describe 'Funcional aportado en greenfield' {
+  BeforeAll {
+    $script:StructureStep = Get-NumberedStep (Get-KitFile 'skills/sdd-init-greenfield/SKILL.md') 3
+  }
+
+  It 'el paso 3 guarda el funcional literal en sources/' {
+    $script:StructureStep | Should -Match '`\.docs/sdd/sources/`'
+    $script:StructureStep | Should -Match 'nombre original'
+    $script:StructureStep | Should -Match 'No se edita nunca'
+  }
+
+  It 'el funcional pegado en el chat tiene nombre fijo' {
+    $script:StructureStep | Should -Match '<yyyyMMdd>-functional-brief\.md'
+  }
+
+  It 'mission lo enlaza y el roadmap cita su sección' {
+    $script:StructureStep | Should -Match '`mission\.md` lo enlaza'
+    $script:StructureStep | Should -Match 'sources/<fichero> §<n>'
+  }
+
+  It 'ninguna capacidad nace del funcional' {
+    $script:StructureStep | Should -Match 'Ninguna capacidad nace de él'
+  }
+
+  It 'el árbol de greenfield lleva sources/ como opcional' {
+    ($script:Tree -split "`r?`n" | Where-Object { $_ -match '── sources/' }) | Should -Match 'opcional'
+  }
+}
