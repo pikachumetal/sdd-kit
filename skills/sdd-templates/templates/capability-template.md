@@ -6,8 +6,9 @@
 >    la crea `sdd-end-task` por su cuenta.
 > 3. `sdd-end-task` fusiona el delta: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita.
-> 4. Brownfield no vuelca: la carpeta `capabilities/` no se rellena de golpe al inicializar, crece
->    task a task, con la primera que toque cada capacidad.
+> 4. Las init no vuelcan: la carpeta `capabilities/` no se crea al inicializar y crece task a task,
+>    con la primera que toque cada capacidad. Única excepción: el volcado inicial de `sdd-init-greenfield`
+>    (paso 6), a petición del usuario y con la partición aprobada antes. Brownfield no vuelca nunca.
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
 >    duplica.
 >
@@ -39,6 +40,8 @@
 ## Historial *(opcional)*
 
 > Una línea por fusión de `sdd-end-task`, más reciente arriba. Útil para auditar cómo llegó la
-> capacidad a su estado actual sin bucear en las specs históricas.
+> capacidad a su estado actual sin bucear en las specs históricas. Una capacidad nacida del volcado
+> inicial de una init greenfield empieza con esta línea:
+> - <YYYY-MM-DD> — init — ADDED volcado inicial desde el código
 
 - <YYYY-MM-DD> — task <id> — ADDED/MODIFIED/REMOVED <título>
