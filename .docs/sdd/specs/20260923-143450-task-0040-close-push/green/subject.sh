@@ -12,6 +12,7 @@ M0="$(cd "$BASE/../../20260923-120510-task-0009-merge-close/red/m" && pwd)"; M1=
 KIT="$(cygpath -m "$1")"; LABEL="$2"; SC="$3"; ASK="$4"; OUT="$5"; TURN2="${6:-}"
 RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
 case "$RUNS" in *scratchpad*) ;; *) echo "RUNS_DIR fuera del scratchpad: $RUNS" >&2; exit 1 ;; esac
+[ -f "$KIT/skills/sdd-end-task/SKILL.md" ] || { echo "sin kit en $KIT" >&2; exit 1; }
 RUN="$RUNS/$LABEL"; SRC="$RUN/src"
 rm -rf "$RUN"; mkdir -p "$SRC" "$RUN/git" "$RUN/wt" "$OUT"
 g() { git -C "$SRC" -c user.email=fixture@example.com -c user.name=Fixture "$@"; }

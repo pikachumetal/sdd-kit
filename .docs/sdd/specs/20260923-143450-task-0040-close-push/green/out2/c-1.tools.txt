@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd "<run>/wt/0009" && git status --short && git worktree list && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0040/98d9bc4d-1ac4-498b-b33e-2e1c3272dd77/scratchpad/kit3/skills/sdd-end-task/references/merge-recipe.md"
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       3eda641 [feature/0008]
+<run>/wt/0009       aa7e990 [feature/0009]
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Receta del merge en el cierre
+
+La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge y
+
+>>> Bash: cd "<run>/wt/0009" && git rev-parse --show-toplevel && git rev-parse --abbrev-ref develop@{upstream}; git rev-parse --short develop; ls; cat package.json 2>/dev/null | head -20; grep -n -i "test\|suite" .docs/sdd/tech-stack.md | head
+<<< <run>/wt/0009
+origin/develop
+8fb5501
+package.json
+README.md
+src/
+test/
+{"type": "module"}
+4:- Tests: `node --test` (carpeta `test/`).
+
+>>> Bash: cd "<run>/wt" && git -C 0009 worktree add ../wt/merge-0009 develop 2>&1 | tail -2; cd merge-0009 && git merge --no-ff feature/0009 -m "merge: feature/0009 validar la franja en libres y reservar" 2>&1 | tail -5 && node --test 2>&1 | tail -12
+<<< Exit code 1
+Preparing worktree (checking out 'develop')
+HEAD is now at 8fb5501 feat: base de reservas de salas
+/usr/bin/bash: line 1: cd: merge-0009: No such file or directory
+
+>>> Bash: cd "<run>/wt" && git -C 0009 worktree remove ../wt/merge-0009 && git -C 0009 worktree add ../merge-0009 develop 2>&1 | tail -1; ls; cd merge-0009 && git merge --no-ff feature/0009 -m "merge: feature/0009 validar la franja en libres y reservar" 2>&1 | tail -5 && node --test 2>&1 | tail -12
+<<< HEAD is now at 8fb5501 feat: base de reservas de salas
+0008/
+0009/
+merge-0009/
+wt/
+ test/app.test.js                                   |  9 ++++
+ 8 files changed, 177 insertions(+), 2 deletions(-)
+ create mode 100644 .docs/sdd/specs/20260921-090000-task-0009-slot-format/plan.md
+ create mode 100644 .docs/sdd/specs/20260921-090000-task-0009-slot-format/spec.md
+ create mode 100644 .docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md
+✔ reservar --cada-semana crea la reserva semanal (0.1707ms)
+✔ cancelar respeta el día (0.1397ms)
+✔ libres rechaza una franja mal formada (0.3147ms)
+✔ 
+
+>>> Bash: cd "<run>/wt/merge-0009" && git push origin develop 2>&1 | tail -4; git rev-parse --short develop; cd ..; git -C 0009 worktree remove ../merge-0009 && rmdir wt 2>&1; git -C 0009 worktree list; git -C 0009 status --short
+<<< fatal: could not read Username for 'https://github.com': terminal prompts disabled
+284df5a
+<run>/git/salas.git (bare)
+<run>/wt/0008       3eda641 [feature/0008]
+<run>/wt/0009       aa7e990 [feature/0009]
+
+>>> Bash: cd "<run>/wt/0009" && grep -n -A8 -i "Decisiones tomadas sin" .docs/sdd/specs/*0009*/walkthrough.md; grep -n -i "diferida\|Validado" .docs/sdd/specs/*0009*/walkthrough.md
+<<< 34:### Decisiones tomadas sin el dev-lead
+35-
+36-- El mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+37-
+38-## 4. Verificación
+39-
+40-| THEN | Evidencia | Por |
+41-| --- | --- | --- |
+42-| `libres 10-12` responde el mensaje de franja no válida | suite y ejecución real | agente |
+47:Validado por el dev-lead el 2026-09-23: «he probado `salas libres 10-12` y `salas reservar Norte 10-12` y dan el error bueno».
+
+=== RESULTADO (9 turnos, 0.2722665999999999 $)
+Decisión tomada sin el dev-lead:
+- El mensaje de franja no válida incluye un ejemplo (`10:00-12:00`). Sale de una sola función, `invalidSlot` en `src/app.js`, que comparten `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+
+Instrucciones del dev-lead antes del cierre:
+- «Cuando fusiones, sube develop»: el merge está hecho, pero el push falló.
+
+Pendiente:
+- El push de `develop` falló por falta de credenciales. No lo reintenté. Un dev con credenciales debe ejecutar `git push origin develop`.
+- El bloque `merge` de `sdd-kit.json` no tiene `merge.push`. Hice el intento solo porque el dev-lead lo pidió de forma explícita.
+- Comando ejecutado:
+  ```
+  git push origin develop
+  ```
+- Error: `fatal: could not read Username for 'https://github.com': terminal prompts disabled`
+- `develop` queda en local en `284df5a`. `origin/develop` sigue en `8fb5501`.
+
+Verificación del merge: con `--no-ff` en un worktree temporal `merge-0009`, `node --test` dio 6/6 en verde. Ese worktree ya está retirado. No existe `.docs/sdd/environments.md`, así que no hizo falta `env:clean`. Tampoco invoqué `finishing-a-development-branch`, porque la receta del merge lo sustituye cuando `develop` no está sacada en ningún worktree.
+
+¿Quieres que genere con `sdd-feedback` el ticket de mejora del kit de esta sesión?
+
+**Terminado.** feature/0009 fusionada en develop (284df5a) · push: no hecho: credenciales de https://github.com no disponibles · puedes borrar el worktree <run>\wt\0009

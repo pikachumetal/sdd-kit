@@ -110,6 +110,7 @@ La clave se declara donde viven las demás (`control-profiles.md`) y se pregunta
 - THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, y lo pendiente; y ofrece el ticket del kit si toca
 - AND su última línea es la de terminado: si la rama está fusionada en `merge.into` y el worktree no tiene cambios sin commitear, dice rama, destino, hash, estado del push (hecho, no hecho y por qué) y que se puede borrar el worktree, con su ruta; si no, dice «No terminado», qué falta y que el worktree no se borra todavía
 - AND con el merge o el push denegados o fallidos, sus bloques de evidencia van antes, y la línea de terminado sigue siendo la última: «No terminado» si falta el merge; con el merge hecho y el push fallido, dice «push no hecho» y el motivo
+- AND solo se ofrece borrar un worktree enlazado: si la rama está en el checkout principal del repo, la línea acaba en el push, sin cláusula de borrado (enmienda)
 - AND si después el agente escribe el ticket del kit en ese worktree, repite la línea de terminado con el ticket como pendiente hasta que se commitee y se fusione
 
 **Reglas de la capacidad**
@@ -138,7 +139,7 @@ La clave se declara donde viven las demás (`control-profiles.md`) y se pregunta
 
 ## Enmiendas
 
-- _Ninguna_
+- 2026-09-23 — «El cierre acaba con una línea de terminado» gana un AND: solo se ofrece borrar un worktree enlazado; si la rama está en el checkout principal del repo (`git rev-parse --git-dir` igual a `--git-common-dir`), la línea acaba en el push, sin cláusula de borrado — en el escenario F del GREEN (repo sin worktrees), 2/2 sujetos ofrecieron «puedes borrar el worktree» con la ruta del repo entero. No añade ficheros: `sdd-end-task` y `sdd-end-patch` ya estaban en el Scope — aprobada: «si»
 
 ## Aprobaciones
 

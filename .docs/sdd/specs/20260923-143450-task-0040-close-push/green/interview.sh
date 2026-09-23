@@ -7,6 +7,7 @@ set -u
 KIT="$(cygpath -m "$1")"; LABEL="$2"; SC="$3"; OUT="$4"
 RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
 case "$RUNS" in *scratchpad*) ;; *) echo "RUNS_DIR fuera del scratchpad: $RUNS" >&2; exit 1 ;; esac
+[ -f "$KIT/skills/sdd-init-greenfield/SKILL.md" ] || { echo "sin kit en $KIT" >&2; exit 1; }
 RUN="$RUNS/$LABEL"; P="$RUN/salas"
 rm -rf "$RUN"; mkdir -p "$P" "$OUT"
 g() { git -C "$P" -c user.email=fixture@example.com -c user.name=Fixture "$@"; }
