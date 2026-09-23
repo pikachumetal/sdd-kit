@@ -93,7 +93,9 @@ Con las tres, el agente no se niega a cerrar ni inventa un estado nuevo — la f
 - Walkthrough: `Validación diferida: <fecha> · «<frase literal>» · disparador: <task, release o uso con dueño>`
 - Roadmap: `🧪 validación diferida a <disparador>` (no ✅)
 
-Sin las tres condiciones no hay diferido: la task sigue EN ESPERA con el smoke documentado.
+Si el disparador falta o es vago («diferida», «se prueba en uso») y se cumplen las dos primeras, no vuelvas a preguntar: concreta tú el uso más próximo, con quien difiere como dueño, y escríbelo así: `disparador: <uso más próximo>, a cargo de <quien difiere>` (p. ej., «la primera exportación del informe mensual, a cargo del dev-lead»). Dilo en el mensaje de cierre para que lo corrija. Con eso la tercera condición queda cumplida.
+
+Sin las dos primeras no hay diferido: la task sigue EN ESPERA con el smoke documentado.
 
 En `unattended` el disparador es siempre el smoke de la release: no hacen falta las tres condiciones, el perfil ya lo fija.
 

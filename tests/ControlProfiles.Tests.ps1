@@ -104,6 +104,27 @@ Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la r
   }
 }
 
+Describe 'Perfiles de control: validación diferida con disparador vago (patch 0036)' {
+  It 'control-profiles concreta el disparador en vez de dejar la task EN ESPERA' {
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'),
+      '(?ms)^## Validación diferida\r?$.*?(?=^## )').Value
+    $section | Should -Match 'uso más próximo'
+    $section | Should -Match 'a cargo de <quien difiere>'
+    $section | Should -Match 'mensaje de cierre'
+    $section | Should -Not -Match 'Sin las tres condiciones no hay diferido'
+  }
+
+  It 'el paso 0 de sdd-end-task no vuelve a preguntar el disparador' {
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^0\. .+$').Value
+    $step | Should -Match 'uso más próximo'
+    $step | Should -Match 'mensaje de cierre'
+  }
+
+  It 'el paso 11 de sdd-end-task dice en el mensaje final el disparador concretado' {
+    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^11\. .+$').Value | Should -Match 'lo elegí yo'
+  }
+}
+
 Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
   It 'la regla 6 nombra las paradas de delegate: spec, desvío y validación final' {
     $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^6\. .+$').Value
