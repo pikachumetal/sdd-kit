@@ -9,7 +9,12 @@ y las skills sdd-kit:* pueden venir de la caché del plugin.
 #>
 
 function Get-NormalizedPath([string]$Path) {
-  $fullPath = [IO.Path]::GetFullPath($Path)
+  try {
+    $fullPath = [IO.Path]::GetFullPath($Path)
+  }
+  catch {
+    return $null
+  }
   return $fullPath.TrimEnd('\', '/').Replace('\', '/').ToLowerInvariant()
 }
 
@@ -34,8 +39,9 @@ function Write-SessionSourceWarning([string]$SystemMessage) {
 
 $sessionRoot = $env:SDD_KIT_SESSION_ROOT
 $projectDir = if ($env:CLAUDE_PROJECT_DIR) { $env:CLAUDE_PROJECT_DIR } else { (Get-Location).Path }
+$normalizedSessionRoot = if ($sessionRoot) { Get-NormalizedPath $sessionRoot } else { $null }
 
-if ($sessionRoot -and (Get-NormalizedPath $sessionRoot) -eq (Get-NormalizedPath $projectDir)) {
+if ($normalizedSessionRoot -and $normalizedSessionRoot -eq (Get-NormalizedPath $projectDir)) {
   exit 0
 }
 

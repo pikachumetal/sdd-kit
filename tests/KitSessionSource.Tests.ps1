@@ -76,6 +76,12 @@ Describe 'Hook SessionStart del repo' {
       $script:Json.hookSpecificOutput.additionalContext | Should -Match ([regex]::Escape('skills/<nombre>/SKILL.md'))
     }
   }
+
+  It 'con SDD_KIT_SESSION_ROOT inválida avisa y sale con 0' {
+    $result = Invoke-KitSessionHook "C:\bad`0path" $script:ProjectDir
+    $result.ExitCode | Should -Be 0
+    ($result.Output | ConvertFrom-Json).systemMessage | Should -Not -BeNullOrEmpty
+  }
 }
 
 Describe 'Start-KitSession.ps1' {
