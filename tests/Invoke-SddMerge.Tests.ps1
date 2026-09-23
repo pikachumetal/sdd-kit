@@ -7,13 +7,8 @@ BeforeAll {
   $script:PreviousEncoding = [Console]::OutputEncoding
   [Console]::OutputEncoding = [Text.Encoding]::UTF8
 
-  # Dentro del hook pre-commit git exporta GIT_INDEX_FILE y compañía: heredadas, harían que la fixture
-  # escribiera en el índice del repo que se está commiteando.
-  $script:SavedGitEnv = @{}
-  foreach ($name in 'GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY', 'GIT_PREFIX') {
-    $script:SavedGitEnv[$name] = [Environment]::GetEnvironmentVariable($name)
-    Remove-Item -LiteralPath "Env:\$name" -ErrorAction SilentlyContinue
-  }
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
 
   function Invoke-FixtureGit([string]$Dir, [string[]]$Arguments) {
     $output = & git -C $Dir @Arguments 2>&1
@@ -136,9 +131,7 @@ BeforeAll {
 
 AfterAll {
   [Console]::OutputEncoding = $script:PreviousEncoding
-  foreach ($name in $script:SavedGitEnv.Keys) {
-    if ($null -ne $script:SavedGitEnv[$name]) { Set-Item -LiteralPath "Env:\$name" -Value $script:SavedGitEnv[$name] }
-  }
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'El merge del cierre espera su turno' -Tag 'Slow' {
