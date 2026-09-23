@@ -3,6 +3,7 @@
 # Uso: subject.sh <kit> <etiqueta> <escenario> <petición> <salida>
 #   escenario: r1 (task, develop fuera de todo worktree) · r2 (patch) · r3 (r1 + merge denegado)
 #              r4 (develop sacada con cambios sin commitear) · r5 (develop avanzó con la 0008 y está sacada)
+#              r6 (como r1, publicando una reserva de sdd-start-release)
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 KIT="$(cygpath -m "$1")"; LABEL="$2"; SC="$3"; ASK="$4"; OUT="$5"
@@ -66,6 +67,7 @@ claude -p --model sonnet \
   echo "## develop antes: $DEV_BEFORE · después: $(git -C "$BARE" rev-parse --short develop)"
   echo "## worktree list"; git -C "$BARE" worktree list | sed "s#$RUN#<run>#g"
   echo "## git log"; git -C "$BARE" log --oneline --all --graph --decorate
+  echo "## último commit de develop"; git -C "$BARE" show --stat --format='%h %s' develop | head -8
   for w in "$RUN"/wt/*/; do echo "## status ${w#$RUN/}"; git -C "$w" status --short --branch; done
 } > "$OUT/$LABEL.state.txt" 2>&1
 node "$BASE/tools.mjs" "$RUNS/$LABEL.jsonl" "$RUN" > "$OUT/$LABEL.tools.txt"
