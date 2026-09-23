@@ -12,7 +12,7 @@ Describe 'Frenos de alcance en la ejecución' {
     $script:Skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
   }
 
-  It 'control-profiles define los tres frenos y el solape de la enmienda' {
+  It 'control-profiles define los frenos y el solape de la enmienda' {
     $script:Profiles | Should -Match '(?m)^## Frenos de alcance'
     foreach ($anchor in '3.er fix', 'salida observable', 'git merge-base', 'solape no comprobable') {
       $script:Profiles | Should -Match ([regex]::Escape($anchor))
