@@ -43,8 +43,8 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    | 16 | ¿Trabajaréis con worktrees? | `CLAUDE.md` |
    | 17 | Solo si 16 es sí: ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? Si es sí, se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre | `environments.md` |
    | 18 | Perfil de control: pregunta 1 del [bloque de claves de control](../sdd-start-task/references/control-profiles.md#preguntas-de-las-claves-de-control), con su recomendación y su motivo | `sdd-kit.json` |
-   | 19 | Solo si 15 deja una rama de integración distinta de la estable: política de merge, pregunta 2 del mismo bloque | `sdd-kit.json` |
-   | 20 | Frenos: pregunta 3 del mismo bloque | `sdd-kit.json` |
+   | 19 | Solo si 15 deja una rama de integración distinta de la estable: política de merge y push, preguntas 2 y 3 del mismo bloque, una por turno | `sdd-kit.json` |
+   | 20 | Frenos: pregunta 4 del mismo bloque | `sdd-kit.json` |
    | 21 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
    Las preguntas 4 a 8 son las cinco reglas de producto: se preguntan por nombre, porque sin ellas el agente las decide al azar en cada task.

@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd . && git status --short && git worktree list && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; ls .docs/sdd/environments.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit4\skills\sdd-end-task\references\merge-recipe.md
+<<< Exit code 2
+<run>/git/salas.git (bare)
+<run>/wt/0008       4cd80c5 [feature/0008]
+<run>/wt/0009       5879916 [feature/0009]
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+ls: cannot access '.docs/sdd/environments.md': No such file or directory
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+
+>>> Bash: cd . && W=$(dirname "$(git rev-parse --show-toplevel)") && git worktree add "$W/merge-0009" develop && cd "$W/merge-0009" && git merge --no-ff feature/0009 -m "merge: feature/0009 validar la franja en libres y reservar" ; git status --short | head; ls; git rev-parse --abbrev-ref develop@{upstream}
+<<< Preparing worktree (checking out 'develop')
+HEAD is now at e77a8df feat: base de reservas de salas
+Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  9 ++++
+ .docs/sdd/roadmap.md                               |  2 +-
+ .../20260921-090000-task-0009-slot-format/plan.md  | 47 +++++++++++++++++++
+ .../20260921-090000-task-0009-slot-format/spec.md  | 52 ++++++++++++++++++++++
+ .../walkthrough.md                                 | 51 +++++++++++++++++++++
+ src/app.js                                       
+
+>>> Bash: cd "$(dirname "$(git rev-parse --show-toplevel)")/merge-0009" && cat package.json | grep -A3 scripts; npm test 2>&1 | tail -15
+<<< npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: <home>\AppData\Local\npm-cache\_logs\2026-09-23T16_59_55_593Z-debug-0.log
+
+>>> Bash: cd "$(dirname "$(git rev-parse --show-toplevel)")/merge-0009" && cat package.json; ls test; node --test 2>&1 | tail -15
+<<< {"type": "module"}
+app.test.js
+✔ libres excluye la sala reservada en la franja (3.1756ms)
+✔ reservar crea la reserva (0.2226ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1633ms)
+✔ cancelar respeta el día (0.1908ms)
+✔ libres rechaza una franja mal formada (0.3886ms)
+✔ reservar rechaza una franja mal formada (0.1551ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 210.0899
+
+>>> Bash: cd "$(dirname "$(git rev-parse --show-toplevel)")/merge-0009" && H=$(git rev-parse --short develop) && git push origin develop 2>&1 | tail -5; echo "hash=$H"; cd .. && git worktree remove merge-0009 && git worktree list && git -C wt/0009 status --short 2>/dev/null; git -C 0009 status --short 2>/dev/null
+<<< fatal: could not read Username for 'https://github.com': terminal prompts disabled
+hash=7f9f81b
+fatal: 'merge-0009' is not a working tree
+
+>>> Bash: cd <run>/wt/0009 && W=$(dirname "$(git rev-parse --show-toplevel)") && git worktree remove "$W/merge-0009" ; git worktree list; git status --short; git rev-parse --short develop
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       4cd80c5 [feature/0008]
+<run>/wt/0009       5879916 [feature/0009]
+7f9f81b
+
+>>> Grep: Decisiones tomadas sin el dev-lead
+<<< 34:### Decisiones tomadas sin el dev-lead
+35-
+36-- El mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+37-
+38-## 4. Verificación
+39-
+40-| THEN | Evidencia | Por |
+41-| --- | --- | --- |
+42-| `libres 10-12` responde el mensaje de franja no válida | suite y ejecución real | agente |
+
+=== RESULTADO (11 turnos, 0.2650462 $)
+Decisión tomada sin el dev-lead (de `walkthrough.md`): el mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+
+Instrucción del dev-lead antes del cierre: «cuando fusiones, sube develop».
+- **Merge:** hecho. `feature/0009` está fusionada en `develop` con `--no-ff`, en un worktree temporal `merge-0009` que ya retiré. La suite pasa 6/6 sobre el resultado.
+- **Push:** no hecho. `git push origin develop` falló con `fatal: could not read Username for 'https://github.com': terminal prompts disabled`. No reintenté ni toqué credenciales. `develop` está solo en local, en `7f9f81b`.
+
+Pendiente: alguien con credenciales tiene que ejecutar esto.
+
+```
+git push origin develop
+```
+
+Si quieres, genero el ticket de mejora del kit con `sdd-feedback` en esta sesión.
+
+**Terminado.** feature/0009 fusionada en develop (7f9f81b) · push: no hecho: sin credenciales para `https://github.com` (`could not read Username`) · puedes borrar el worktree <run>/wt/0009

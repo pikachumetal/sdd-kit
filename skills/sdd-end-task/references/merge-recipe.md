@@ -19,9 +19,20 @@ El script hace, en este orden:
 5. Empuja la rama destino por su nombre.
 6. Retira el worktree temporal.
 
-- **`-Push`** solo si una persona ha confirmado el push: una frase del usuario en esta sesión como «súbelo», «publícalo» o «push». Sin ella, el script fusiona en local y el informe dice que el push queda pendiente.
+- **`-Push`**: según «Push», abajo. Sin él, el script fusiona en local y no publica nada.
 - **`-VerifyCommand`**: la suite del proyecto, que se ejecuta sobre el resultado del merge y antes del push (`tech-stack.md` §Testing). Se omite si un hook `pre-merge-commit` del repo ya la ejecuta.
 - El worktree de la feature sigue en su rama. Lo decide `merge.removeWorktree`, no esta receta.
+
+## Push
+
+El push lo hace el script con `-Push`: publica solo la rama destino, por su nombre, en su remoto, y nunca la rama de la feature ni tags. Se decide en este orden, y manda la primera regla que aplique:
+
+1. Perfil `pair`: se presenta junto con el merge y se espera, sea cual sea `merge.push`; `-Push` solo si el usuario lo confirma.
+2. Una frase del usuario en esta sesión que confirma el push («súbelo», «publícalo», «push»): `-Push`.
+3. `merge.push: true` (perfil `delegate` o `unattended`): `-Push`, sin preguntar.
+4. `merge.push` ausente o `false`: sin `-Push`, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
+
+Si la rama destino no tiene remoto, no se pasa `-Push` (el script fallaría con `push:` antes de fusionar), y el mensaje final dice «push: no hecho: sin remoto». Si el push falla, se sigue «Si el script falla»: nunca `--force`, `pull`, `rebase` ni `git push` a mano. El mensaje final cita en un bloque el comando del script, cita su error y da el hash de la rama destino.
 
 ## Cuándo no se llama
 
