@@ -63,29 +63,31 @@
 | 2026-09-23 | 0040 | docs | 2.5 | 2.1 | 0.84 | no medido | 391k | 15.29 | 20260923-143450-task-0040-close-push |
 | 2026-09-23 | 0042 | infra/tooling | 3 | 1.6 | 0.53 | no medido | 662k | 1.43 | 20260923-145338-task-0042-merge-script |
 | 2026-09-23 | 0043 | patch | 0.5 | 0.5 | 1 | — | — | — | 20260923-173026-patch-0043-fast-pre-commit |
+| 2026-09-23 | 0016 | infra/tooling | 2.5 | 0.7 | 0.28 | no medido | 815k | no aplica | 20260923-190542-task-0016-git-env-cache-warning |
+| 2026-09-23 | 0044 | docs | 2.5 | 0.9 | 0.36 | no medido | 602k | 3.93 | 20260923-191212-task-0044-commit-per-milestone |
 | 2026-09-23 | 0046 | infra/tooling | 2 | 0.75 | 0.38 | no medido | 295k | no aplica | 20260923-195017-task-0046-estimation-stats |
 
-**Factor de calibración** (ratio mediano real/estimado, 54 artefactos): **0.59** · media 0.68
+**Factor de calibración** (ratio mediano real/estimado, 56 artefactos): **0.58** · media 0.67
 
-- p25–p75: 0.39–0.9
-- p80: 1.02 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 65 % · infraestimadas: 7 %
-- Error absoluto (h): media 0.87 · mediana 0.6
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.67
+- p25–p75: 0.38–0.9
+- p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 27 % · sobreestimadas: 66 % · infraestimadas: 7 %
+- Error absoluto (h): media 0.9 · mediana 0.75
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.6
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 16 | 30 % |
-| 0.5–0.8 | 21 | 39 % |
-| 0.8–1.25 | 13 | 24 % |
+| <0.5 | 18 | 32 % |
+| 0.5–0.8 | 21 | 38 % |
+| 0.8–1.25 | 13 | 23 % |
 | 1.25–2 | 4 | 7 % |
 | ≥2 | 0 | 0 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 38 | 0.52 | 0.38–0.72 |
-| infra/tooling | 6 | 0.62 | 0.41–0.98 |
+| docs | 39 | 0.52 | 0.37–0.7 |
+| infra/tooling | 7 | 0.53 | 0.37–0.88 |
 | patch | 9 | 1.2 | 0.8–1.33 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) |
@@ -96,6 +98,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — |
 | 1.1.0 | 5 | 4.15 | 0.52 | — |
-| sin publicar | 29 | 36.3 | 0.67 | 104.03 |
+| sin publicar | 31 | 37.9 | 0.67 | 107.96 |
 
 > Ver `estimation.md`.

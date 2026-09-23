@@ -13,8 +13,8 @@ Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia
 
 ## Checklist (crea un todo por paso)
 
-1. **`patch.md` finalizado** — commit hash real, verificación con el smoke real (distinguiendo lo verificado por ti de lo reportado por el usuario) y tiempo invertido. Nunca en blanco.
-2. **Commit(s)** — con la convención del proyecto, referenciando el ticket. Fix y documentación pueden ir en commits separados.
+1. **`patch.md` finalizado** — commit hash real —el del commit del fix—, verificación con el smoke real (distinguiendo lo verificado por ti de lo reportado por el usuario) y tiempo invertido. Nunca en blanco.
+2. **Commit de cierre** — si el fix llega en más de un commit desde el `merge-base`, júntalo antes en uno con la receta, salvo que salte una guarda, y apunta en `patch.md` el hash del commit juntado. Luego, un solo commit sobre el del fix: `patch.md` con su hash y el tiempo, más changelog, roadmap y estimation-log si existen. El patch queda en dos commits, fix y cierre ([commit-milestones.md](../sdd-start-task/references/commit-milestones.md)).
 3. **Changelog** *(si existe `.docs/sdd/changelog.md`)* — entrada `Fixed` en `[Unreleased]` (o en la unidad de release del proyecto) con link a la carpeta del patch.
 4. **`roadmap.md`** — fila en la tabla de patches (fecha, id, descripción). El roadmap es el índice del proyecto: un patch sin fila es invisible. Si el patch salda una fila de «Deuda técnica» o de «Backlog», ciérrala con el formato de cierre de `roadmap-template.md` (`sdd-templates`): prefijo al principio y texto original intacto.
 5. **estimation-log** *(si existe `.docs/sdd/estimation.md`)* — ejecuta el script del kit: `pwsh -NoProfile -File "<Base directory de esta skill>/../sdd-templates/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`. Regenera el log desde `patch.md` (§5 Tiempo): no añadas la fila a mano ni uses una copia local del proyecto (`.tools/sdd/`, `tools/sdd/` son copias antiguas: avísalo). Solo sin `pwsh`, o si el script no está en esa ruta (instalación parcial de una sola skill), fila a mano (tipo, estimado si lo hubo, real) y dilo en el informe.

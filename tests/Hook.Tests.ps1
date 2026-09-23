@@ -3,6 +3,9 @@ BeforeAll {
   $script:HooksDir = Join-Path $script:KitRoot 'hooks'
   $script:Script = Join-Path $script:HooksDir 'session-start'
 
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
+
   . (Join-Path $PSScriptRoot 'Resolve-Bash.ps1')
   $script:Bash = Resolve-Bash
 
@@ -26,6 +29,10 @@ BeforeAll {
     }
     return [pscustomobject]@{ Output = ($output -join "`n"); ExitCode = $LASTEXITCODE }
   }
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'hooks/hooks.json' {
