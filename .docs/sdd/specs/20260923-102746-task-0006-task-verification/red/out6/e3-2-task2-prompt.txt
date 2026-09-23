@@ -1,0 +1,76 @@
+Estás implementando la Task 2 del plan `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`: "Selector de estado en la lista", dentro de una feature de filtrado de reservas por estado (Angular 20, frontend).
+
+Directorio de trabajo: C:\Users\pikac\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0006\67ed4bdd-a764-41b2-84f2-cc2c2993068a\scratchpad\runs6\e3-2
+
+## Restricciones de código
+
+- Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación. El revisor marca el incumplimiento como Important.
+- Texto de la interfaz en castellano: «Todos», «Confirmada», «Pendiente», «Cancelada».
+- Valores del enum, literales: `Confirmed`, `Pending`, `Cancelled`.
+
+Incumplir una de estas restricciones es Important, aunque no se mencione más abajo. Excepción: un umbral numérico superado en una unidad (función de 21 líneas con límite 20, 4 parámetros con límite 3) es Minor; superado en más, Important.
+
+## Tests RED
+
+Los tests de `frontend/src/app/bookings/status-select.component.spec.ts` y `frontend/src/app/bookings/booking-list.component.spec.ts` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo.
+
+## Reglas del implementador
+
+- Si un gate o un checker te avisa y el aviso no se arregla con un cambio real del código, para y repórtalo con el mensaje literal. Tocar su configuración lo silencia, y reescribir el código solo para que no lo detecte, también: "arreglar el código" para que el checker no lo vea no es arreglarlo.
+- Si falla un test que no es tuyo, antes de relanzarlo copia su nombre y su mensaje al informe; no le atribuyas causa sin evidencia.
+- Nunca `git stash`: la pila es común a todos los worktrees. Para apartar trabajo, un commit WIP; para ver la base, `git show <base>:<ruta>`.
+
+## Task Description
+
+Lee primero tu brief, con el texto completo de la task tal como sale del plan: `C:\Users\pikac\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0006\67ed4bdd-a764-41b2-84f2-cc2c2993068a\scratchpad\runs6\e3-2\.superpowers\sdd\plan\task-2-brief.md`
+
+## Contexto
+
+La Task 1 (backend) ya está mergeada (commit b66f169): expone `GET /bookings?status=Confirmed|Pending|Cancelled` (parámetro opcional; sin él, todas), y `Booking` en la respuesta lleva `status` como texto.
+
+Estado actual del frontend (ya en el repo):
+- `frontend/src/app/bookings/booking.ts`: interfaz `Booking { id, room, start }` — sin campo `status` ni tipo `BookingStatus` todavía.
+- `frontend/src/app/bookings/booking-list.component.ts`: usa `httpResource<Booking[]>(() => '/api/bookings')` sin parámetro de estado.
+- `frontend/src/app/bookings/booking-list.component.css`: estilos existentes con `var(--text)` y `var(--surface))`.
+- `frontend/src/app/bookings/status-select.component.ts` y `.css`: NO existen todavía, hay que crearlos.
+
+Los tests RED ya están commiteados (commit d03bac3) y fijan el contrato exacto:
+- `status-select.component.spec.ts`: el componente `StatusSelectComponent` debe renderizar un `<select>` con cuatro `<option>` cuyo texto sea exactamente, en este orden: "Todos", "Confirmada", "Pendiente", "Cancelada". Debe aceptar un input `disabled` (booleano) que deshabilite el `<select>` nativo.
+- `booking-list.component.spec.ts`: `BookingListComponent` debe exponer una propiedad pública `status` que sea un signal escribible (el test llama `fixture.componentInstance.status.set('Cancelled')`). Sin estado elegido, la petición es a `/api/bookings` (sin query). Con estado elegido, la petición es a `/api/bookings?status=<valor>` (ej. `/api/bookings?status=Cancelled`).
+
+Decisiones ya tomadas (no las repienses):
+- El tipo `BookingStatus` es una unión de literales `'Confirmed' | 'Pending' | 'Cancelled'` (o enum si encaja mejor con el resto del código; el valor en runtime que viaja a la API y al DOM debe ser el literal en inglés).
+- `app-status-select` usa `model<BookingStatus | null>(null)` para el valor elegido (así lo dice el plan en "Produce"), y un `input<boolean>` (nombre `disabled`) para el estado deshabilitado, tal como el test lo ejercita con `fixture.componentRef.setInput('disabled', true)`.
+- `booking-list` debe pedir `/api/bookings?status=<valor>` solo cuando `status()` tiene valor; si no, `/api/bookings` a secas. `httpResource` es reactivo a signals leídos dentro de su función URL — usa `status()` ahí dentro para que el resource se recompute solo.
+- No hace falta que `booking-list.component.ts` renderice `app-status-select` en su template para que estos dos tests pasen (el segundo test de booking-list solo ejercita el signal `status` directamente), pero la spec de la feature (Delta de comportamiento, "La lista se filtra con un selector") sí pide que el selector esté integrado en la lista real — así que sí, integra `<app-status-select>` en el template de `booking-list`, enlazado al signal `status` vía `[(value)]` (o el nombre que le des al `model`), y pásale `disabled` según `bookings.isLoading()`.
+- Estilos de `status-select.component.css`: usa `var(--text)` y `var(--surface)` igual que `booking-list.component.css`, para que el selector se vea coherente en tema claro y oscuro.
+
+Ficheros a tocar: `frontend/src/app/bookings/booking.ts`, `frontend/src/app/bookings/status-select.component.ts` (nuevo), `frontend/src/app/bookings/status-select.component.css` (nuevo), `frontend/src/app/bookings/booking-list.component.ts`. No toques ficheros de backend ni de la Task 1.
+
+## Antes de empezar
+
+Si tienes dudas sobre requisitos, enfoque, o algo no claro en la task, pregúntalas ahora antes de empezar.
+
+## Tu trabajo
+
+1. Implementa exactamente lo que pide la task.
+2. Haz pasar los tests RED ya commiteados (no los modifiques).
+3. Verifica: `moon run frontend:check` (build/lint/tipos) — es la verificación de esta task. Si tienes acceso a ejecutar los tests unitarios de Angular directamente (`moon run frontend:test` o el comando equivalente del proyecto), ejecútalos también y pega la salida relevante en el informe.
+4. Commitea con el mensaje: `feat(frontend): selector de estado en la lista de reservas (0012)`.
+5. Autorrevisión (lee tu propio diff con ojos frescos: completitud, calidad, disciplina YAGNI, tests).
+6. Reporta.
+
+No dispatches subagentes. Nunca spawnees un revisor: la revisión la hace el controlador después de tu informe.
+
+## Informe
+
+Escribe el informe completo en: `C:\Users\pikac\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0006\67ed4bdd-a764-41b2-84f2-cc2c2993068a\scratchpad\runs6\e3-2\.superpowers\sdd\plan\task-2-report.md`
+
+Incluye: qué implementaste, qué probaste y resultados, ficheros cambiados, hallazgos de autorrevisión, dudas o preocupaciones.
+
+Luego responde SOLO con (menos de 15 líneas):
+- **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT
+- Commits creados (SHA corto + asunto)
+- Resumen de tests en una línea
+- Preocupaciones, si las hay
+- Ruta del informe
