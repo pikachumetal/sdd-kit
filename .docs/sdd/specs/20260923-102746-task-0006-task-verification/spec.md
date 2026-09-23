@@ -3,13 +3,13 @@ id: 20260923-102746-task-0006-task-verification
 task: 0006
 title: Verificación por task — qué se ejecuta y qué cuesta
 mode: full
-status: draft
+status: approved
 created: 2026-09-23
 author: agente
 approvers:
   - role: dev-lead
-    name: TBD
-    approved_at: null
+    name: dev-lead
+    approved_at: 2026-09-23
 ---
 
 # Spec — Verificación por task: qué se ejecuta y qué cuesta
@@ -81,4 +81,4 @@ La verificación sale de lo que la task toca. Cada task del plan declara sus sup
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| dev-lead | dev-lead | 2026-09-23 | aprobada: «si» |
