@@ -70,6 +70,8 @@ npx skills add pikachumetal/sdd-kit -a claude-code            # todas
 npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una
 ```
 
+Este canal no instala los tipos de agente `agents/effort-*.md`: el plan escribe «effort: no disponible en este harness, hereda el de la sesión».
+
 ### Enrutado automático
 
 El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, recuerda al agente que una petición de trabajo entra por `sdd-start-task` antes que por `brainstorming`, un bug pequeño por `sdd-start-patch` y una pregunta por `sdd-consult`. `npx skills add` no instala hooks: quien use ese canal recibe solo las frases de las `description`.
