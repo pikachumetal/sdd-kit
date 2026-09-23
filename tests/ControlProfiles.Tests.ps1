@@ -104,7 +104,7 @@ Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la r
   }
 }
 
-Describe 'Perfiles de control: validación diferida con disparador vago (patch 0036)' {
+Describe 'Perfiles de control: validación diferida con disparador vago (patch 0037)' {
   It 'control-profiles concreta el disparador en vez de dejar la task EN ESPERA' {
     $section = [regex]::Match((Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'),
       '(?ms)^## Validación diferida\r?$.*?(?=^## )').Value

@@ -1,6 +1,6 @@
 ---
-id: 20260923-070206-patch-0036-disparador-vago
-task: 0036
+id: 20260923-070206-patch-0037-disparador-vago
+task: 0037
 title: Patch — la validación diferida con disparador vago se concreta en vez de quedar EN ESPERA
 type: patch
 status: done
@@ -9,7 +9,7 @@ branch: feature/fix-01
 commit: 0b40d12
 ---
 
-# Patch 0036 — la validación diferida con disparador vago se concreta en vez de quedar EN ESPERA
+# Patch 0037 — la validación diferida con disparador vago se concreta en vez de quedar EN ESPERA
 
 ## 1. Síntoma
 
@@ -26,6 +26,7 @@ Del dev-lead: «la regla de la validación diferida con disparador vago está en
 
 - **Fichero(s)**: `skills/sdd-start-task/references/control-profiles.md`, `skills/sdd-end-task/SKILL.md`, `tests/ControlProfiles.Tests.ps1`
 - **Cambio**: con el usuario presente y su frase de diferir, un disparador ausente o vago ya no deja la task EN ESPERA: el agente concreta el uso más próximo, con quien difiere como dueño (`disparador: <uso más próximo>, a cargo de <quien difiere>`), y lo dice en el mensaje final: el paso 0 de `sdd-end-task` remite al paso 11, que abre ese mensaje con el disparador concretado y la invitación a corregirlo. El ancla Pester exige la regla en la referencia y en los pasos 0 y 11.
+- **Id**: nació como 0036. Al integrar `develop` vi que la task 0006 había reservado 0036 mientras esta carpeta estaba sin commitear, y renumeré a 0037 (ticket de campo §1). Los commits `0b40d12`, `88d5780` y `f8ed13b` dicen 0036.
 
 ## 4. Verificación
 

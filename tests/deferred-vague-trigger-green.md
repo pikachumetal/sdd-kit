@@ -1,6 +1,6 @@
-# GREEN — validación diferida con disparador vago (patch 0036)
+# GREEN — validación diferida con disparador vago (patch 0037)
 
-Mismo molde, lanzador y turnos que el [RED](deferred-vague-trigger-red.md), con la copia del kit del working tree de `feature/fix-01` con el fix. Salidas: `.docs/sdd/specs/20260923-070206-patch-0036-disparador-vago/campaign/out/`.
+Mismo molde, lanzador y turnos que el [RED](deferred-vague-trigger-red.md), con la copia del kit del working tree de `feature/fix-01` con el fix. Salidas: `.docs/sdd/specs/20260923-070206-patch-0037-disparador-vago/campaign/out/`.
 
 ## Ronda 1 — regla en `control-profiles.md` y en el paso 0 de `sdd-end-task`
 

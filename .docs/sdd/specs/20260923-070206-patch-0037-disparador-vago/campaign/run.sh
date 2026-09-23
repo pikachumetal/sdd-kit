@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Patch 0036: validación diferida con disparador vago. Reutiliza subject.sh y el molde m-close de la task 0008.
+# Patch 0037: validación diferida con disparador vago. Reutiliza subject.sh y el molde m-close de la task 0008.
 # Uso: [ROUND=2] run.sh <kit> <brazo> <salida>. Brazos: red y green (dos sujetos, dos turnos), ctl (un turno, sin diferir).
 # Sujetos en serie; se archivan solo walkthrough, roadmap, estado git y mensaje final (rutas cortas).
 set -u

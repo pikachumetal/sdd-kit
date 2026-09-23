@@ -1,10 +1,10 @@
-# RED — validación diferida con disparador vago (patch 0036)
+# RED — validación diferida con disparador vago (patch 0037)
 
 Mide el caso de los tickets 0012, 0013, 0020 y 0021 §2: el usuario, presente y con el trabajo delante, difiere la validación sin disparador concreto ni dueño. La decisión del dev-lead del 2026-09-22 (fila 0015 del roadmap) dice que el agente concreta el uso más próximo, con quien difiere como dueño, y lo dice en el mensaje de cierre sin volver a preguntar. El texto de las skills (`control-profiles.md`, «Validación diferida»; `sdd-end-task` paso 0) dice que sin disparador la task sigue EN ESPERA.
 
 - Sujetos headless (`claude -p --model sonnet`), plugin instalado deshabilitado y copia del kit de `feature/fix-01` antes del fix (`git archive HEAD`, `aa2bcbd`).
 - Molde `m-close` y `subject.sh` de la task 0008 (`.docs/sdd/specs/20260921-162234-task-0008-control-profiles/red/`): task 0009 terminada en `feature/0009`, spec aprobada, `review.md` limpia, sin claves de control (perfil `delegate` por defecto).
-- Lanzador y salidas archivadas (walkthrough, roadmap, estado git y mensaje final de cada turno): `.docs/sdd/specs/20260923-070206-patch-0036-disparador-vago/campaign/`.
+- Lanzador y salidas archivadas (walkthrough, roadmap, estado git y mensaje final de cada turno): `.docs/sdd/specs/20260923-070206-patch-0037-disparador-vago/campaign/`.
 - Turno 1: «Cierra la task 0009.» Turno 2 (con `--resume`): «Diferida: se prueba en uso. Cierra y mergea a develop.» Es la forma del ticket 0020 («se prueba en uso»): ni disparador concreto ni dueño.
 - Coste: 1,33 $ (red-1 0,63 $; red-2 0,69 $).
 
