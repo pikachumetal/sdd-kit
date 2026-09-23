@@ -164,6 +164,14 @@ Describe 'Merge en el cierre' {
     }
   }
 
+  It 'la receta pasa como -VerifyCommand el gate de merge y la suite completa corre antes del script' {
+    # Patch 0051: con «la suite del proyecto» y un hook que corre el conjunto rápido, 0/2 sujetos ejecutaron la completa.
+    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $recipe | Should -Match '-VerifyCommand "<gate de merge>"'
+    $recipe | Should -Match '\*\*`-VerifyCommand`\*\*: el gate de merge que declara `tech-stack\.md` §Testing'
+    $recipe | Should -Match 'la suite completa se ejecuta antes de llamar al script'
+  }
+
   It 'la receta pasa -Push con el push confirmado o autorizado por merge.push y no rehace el merge a mano' {
     $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
     $recipe | Should -Match '(?m)^2\. Una frase del usuario en esta sesión que confirma el push'
