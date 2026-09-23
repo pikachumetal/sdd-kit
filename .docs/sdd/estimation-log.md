@@ -64,13 +64,14 @@
 | 2026-09-23 | 0042 | infra/tooling | 3 | 1.6 | 0.53 | no medido | 662k | 1.43 | 20260923-145338-task-0042-merge-script |
 | 2026-09-23 | 0043 | patch | 0.5 | 0.5 | 1 | — | — | — | 20260923-173026-patch-0043-fast-pre-commit |
 | 2026-09-23 | 0016 | infra/tooling | 2.5 | 0.7 | 0.28 | no medido | 815k | no aplica | 20260923-190542-task-0016-git-env-cache-warning |
+| 2026-09-23 | 0044 | docs | 2.5 | 0.9 | 0.36 | no medido | 602k | 3.93 | 20260923-191212-task-0044-commit-per-milestone |
 
-**Factor de calibración** (ratio mediano real/estimado, 54 artefactos): **0.59**
+**Factor de calibración** (ratio mediano real/estimado, 55 artefactos): **0.58**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
-| docs | 38 | 0.52 |
+| docs | 39 | 0.52 |
 | infra/tooling | 6 | 0.62 |
 | patch | 9 | 1.2 |
 

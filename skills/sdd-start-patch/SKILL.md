@@ -37,7 +37,7 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` según el modo de `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`): en `tracker`, el ticket y `0000` si no hay; en `sequence`, el id reservado en la fila del roadmap, o el que devuelve `Get-NextSddId.ps1` si no tiene fila — comparte secuencia con las tasks y nunca reutiliza un id entre carriles (detalle en `sdd-start-task/references/nombrado.md`)). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca.
 3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal), causa raíz (lo que TÚ encontraste, con la evidencia), fix, verificación, tiempo.
 4. **Fix mínimo** — sin refactor oportunista, aunque la deuda esté a un renglón de distancia. Verificar que el build del proyecto pasa.
-5. **Commit** — convención de commits del proyecto, referenciando el ticket.
+5. **Commit del fix** — un solo commit con el código, los tests y `patch.md`, con la convención del proyecto y referenciando el ticket; si hubo intermedios, se juntan ([commit-milestones.md](../sdd-start-task/references/commit-milestones.md)).
 6. **Cierre** — `sdd-end-patch`.
 
 ## Red flags — STOP

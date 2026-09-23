@@ -72,8 +72,9 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 ### Los tests de la spec preceden al implementador
 - GIVEN una task cuya implementación se despacha a un subagente
 - WHEN el hilo principal prepara el despacho
-- THEN los tests que codifican los escenarios de la task existen y están commiteados antes del primer encargo, uno por THEN, en RED
-- AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica
+- THEN los tests que codifican los escenarios de la task existen antes del primer encargo, escritos por el hilo, uno por THEN, en RED, sin commitear
+- AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica; los commitea con su implementación con `git add` de rutas explícitas y nunca con `--no-verify`
+- AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
 
 ### Un aprendizaje sin destino no se redirige en silencio
 - GIVEN un cierre de task cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
@@ -200,3 +201,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED El gate de cierre se ejecuta una vez
 - 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una task que cambia la UI se mira en un navegador
 - 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano
+- 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — MODIFIED Los tests de la spec preceden al implementador
