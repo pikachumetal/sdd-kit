@@ -6,7 +6,7 @@ Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla 
 
 - **`pair`** — para en todos los gates de la tabla.
 - **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
-- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración tras el merge del cierre sigue `merge.push`.
 
 La primera pregunta de la entrevista, sola en su turno, confirma el perfil vigente y ofrece cambiarlo para esa task.
 
@@ -34,7 +34,8 @@ Manda el primero que exista, de arriba abajo: task sobre release, release sobre 
 | Salida del plan | ruling + «Me salí del plan en…» | ruling + «Me salí del plan en…» | ruling + informe |
 | Validación | para | para | diferida al smoke de la release (🧪) |
 | Merge a develop (cierre de task y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
-| Merge a main, tag, push, PR, publicar | persona | persona | persona |
+| Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
+| Merge a main, tag, cualquier otro push, PR, publicar | persona | persona | persona |
 
 Más:
 - La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada.
@@ -133,8 +134,9 @@ Conjunto cerrado:
 | `merge.into` | cadena (rama destino) | — |
 | `merge.noFf` | booleano | — |
 | `merge.removeWorktree` | booleano | — |
+| `merge.push` | booleano | `false` |
 
-`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos, el paso de rama del cierre (10 de `sdd-end-task`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica.
+`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-task`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
 `control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0022.
 
@@ -148,7 +150,9 @@ Las hacen `sdd-init-greenfield`, `sdd-init-brownfield` y la migración v1.2.0, c
 | --- | --- | --- | --- |
 | 1 | ¿Con qué perfil de control trabajáis: `pair`, `delegate` o `unattended`? | Recomendado `delegate`: para en la spec, en los desvíos y en la validación, y se ahorra el gate del plan; con menos paradas, la 0.6.0 cerró tres tasks en un día | `control.profile` |
 | 2 | Al cerrar una task, ¿fusiono a `<rama de integración>` con `--no-ff` y dejo que el worktree lo borre una persona? | Recomendado sí: `--no-ff` deja la task en un commit que se revierte de una vez, y borrar un worktree es irreversible si quedan cambios sin commit | «sí»: `merge` entero (`into`: la rama, `noFf: true`, `removeWorktree: false`); otra combinación dicha entera: esa; «no» o «no sé»: nada, y el cierre de task pregunta |
-| 3 | ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo? | Recomendado sí: son los defaults del kit; su conducta la define la task 0022 | «sí» o números propios: `control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`; «no sé»: nada, y rigen los defaults |
+| 3 | Tras fusionar en `<rama de integración>`, ¿hago push de esa rama a su remoto sin preguntar? | Recomendado sí si la convención es `main` estable y `develop` de integración (git-flow): la rama de integración es compartida, y un merge sin push no lo ve nadie más; la rama estable, los tags y cualquier otro push siguen siendo de una persona. Con otra convención, sin recomendación | «sí»: `merge.push: true`; «no»: `merge.push: false`; «no sé»: nada, y el cierre no hace push |
+| 4 | ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo? | Recomendado sí: son los defaults del kit; su conducta la define la task 0022 | «sí» o números propios: `control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`; «no sé»: nada, y rigen los defaults |
 
 - **Rama de integración** de la pregunta 2: la de la convención de ramas (greenfield) o la que se ve en el repo (brownfield). Si la integración va directa a la rama estable, la pregunta no se hace y `merge` queda sin declarar: el merge a la rama estable lo decide siempre una persona.
+- **Push** de la pregunta 3: solo se hace si la 2 dejó `merge` declarado. Sin `merge`, no hay merge que empujar.
 - **Sin usuario**: las preguntas quedan pendientes explícitas en el informe o en el resumen de cierre, y rigen los defaults.

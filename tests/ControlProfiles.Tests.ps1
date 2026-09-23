@@ -15,7 +15,7 @@ Describe 'Perfiles de control: arranque y ejecución' {
   It 'la tabla declara las claves de control con su default' {
     $table = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
     $keys = 'control.profile', 'control.maxParallelAgents', 'control.silence.betweenStepsMinutes',
-      'control.silence.longCommandMinutes', 'merge.into', 'merge.noFf', 'merge.removeWorktree'
+      'control.silence.longCommandMinutes', 'merge.into', 'merge.noFf', 'merge.removeWorktree', 'merge.push'
     foreach ($key in $keys) { $table | Should -Match ([regex]::Escape($key)) }
   }
 
@@ -160,5 +160,30 @@ Describe 'Merge en el cierre' {
     foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
       Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'cambios sin commitear, no fusiones ahí'
     }
+  }
+}
+
+Describe 'Push autorizado en el cierre: clave y pregunta' {
+  It 'el bloque de claves de control tiene cuatro preguntas con su recomendación' {
+    $block = [regex]::Match((Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'),
+      '(?ms)^## Preguntas de las claves de control\r?$.*').Value
+    $block | Should -Match '(?m)^\| 4 \|'
+    $block | Should -Match 'merge\.push'
+  }
+
+  It 'las init piden los frenos con la pregunta 4 del bloque' {
+    foreach ($init in 'sdd-init-greenfield', 'sdd-init-brownfield') {
+      Get-KitFile "skills/$init/SKILL.md" | Should -Match 'Frenos: pregunta 4 del mismo bloque'
+    }
+  }
+
+  It 'la tabla de gates saca el push de la rama de integración de la fila de persona' {
+    $table = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+    $table | Should -Match '(?m)^\| Push de la rama de integración'
+    $table | Should -Match '(?m)^\| Merge a main, tag, cualquier otro push'
+  }
+
+  It 'la misión nombra la excepción del push de la rama de integración' {
+    Get-KitFile '.docs/sdd/mission.md' | Should -Match 'merge\.push'
   }
 }
