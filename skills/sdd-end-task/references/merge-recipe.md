@@ -2,58 +2,45 @@
 
 La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
 
-## Cuándo
+## El merge es un script
 
-`git worktree list` dice si la rama destino está sacada en algún worktree:
-
-- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: son de otra sesión, así que el informe dice qué ficheros son y el cierre para, sin `stash`, `reset` ni commit de lo ajeno. Limpio, se fusiona en ese worktree, como pide `superpowers:finishing-a-development-branch`, y de esta receta valen «Conflicto en estimation-log.md», «Push» y «Merge denegado por el entorno».
-- **Sin sacar en ninguno** (repo bare con un worktree por rama, el caso normal con worktrees): sigue esta receta **en lugar de la opción 1 de `finishing-a-development-branch`**. Esa opción hace `cd` a la raíz del repo principal y `git checkout <destino>`, y en un repo bare esa raíz no es un working tree: falla con `fatal: not a git repository`.
-
-## Worktree temporal
-
-1. Carpeta: la que contiene el worktree de la feature, es decir, el directorio padre de `git rev-parse --show-toplevel`. Ahí viven los demás worktrees, con rutas cortas. Nombre: `merge-<id>`, con el id de la task o del patch.
-2. `git worktree add <carpeta>/merge-<id> <destino>`.
-
-Nunca:
-
-- en el scratchpad, en `%TEMP%` o `/tmp`, ni con `mktemp`: rutas largas (`Filename too long` en Windows) y fuera de la vista de quien lista los worktrees;
-- junto al repo bare si los worktrees viven en otra carpeta;
-- `git checkout <destino>` o `git switch <destino>` en el worktree de la feature: la feature sigue en su rama.
-
-## Merge
-
-En el worktree temporal: `git merge --no-ff <rama de la feature>` si `merge.noFf` es `true`; sin la opción si es `false`. Con los hooks activos: nunca `--no-verify`.
-
-## Conflicto en estimation-log.md
-
-`estimation-log.md` es un fichero generado. Con conflicto, se regenera en el worktree temporal con el script del kit y se marca resuelto; nunca se edita a mano:
+El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
 
 ```text
-pwsh -NoProfile -File "<Base directory de la skill de cierre>/../sdd-templates/scripts/Build-EstimationLog.ps1" -Root "<worktree temporal>"
-git add .docs/sdd/estimation-log.md
+pwsh -NoProfile -File "<Base directory de la skill de cierre>/../sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "<worktree de la feature>" [-Push] [-VerifyCommand "<suite del proyecto>"]
 ```
 
-Es el mismo script que ya ejecutó el paso del estimation-log del cierre.
+El script hace, en este orden:
 
-## Suite y retirada
+1. Espera su turno. Hay un cerrojo por repo, y si otra sesión lo tiene, el script dice quién es y espera.
+2. Hace `fetch` e integra en la rama destino lo que el remoto tenga de nuevo.
+3. Fusiona. Si la rama destino no está sacada, lo hace en un worktree temporal `merge-<id>` junto a los demás worktrees. Si está sacada en un worktree limpio, lo hace en ese worktree. Un conflicto en `estimation-log.md` lo regenera con `Build-EstimationLog.ps1`.
+4. Ejecuta la verificación.
+5. Empuja la rama destino por su nombre.
+6. Retira el worktree temporal.
 
-1. La suite del proyecto sobre el resultado del merge, en el worktree temporal, como pide `finishing-a-development-branch` («Verify tests on merged result»). Si falla, para: el merge es local, y el worktree y la rama de la feature se quedan como están.
-2. En verde: si toca push, antes de retirar el worktree temporal (ver «Push»). Después, `git worktree remove <carpeta>/merge-<id>`, nunca `rm -rf`. El worktree de la feature lo decide `merge.removeWorktree`, no esta receta.
+- **`-Push`**: según «Push», abajo. Sin él, el script fusiona en local y no publica nada.
+- **`-VerifyCommand`**: la suite del proyecto, que se ejecuta sobre el resultado del merge y antes del push (`tech-stack.md` §Testing). Se omite si un hook `pre-merge-commit` del repo ya la ejecuta.
+- El worktree de la feature sigue en su rama. Lo decide `merge.removeWorktree`, no esta receta.
 
 ## Push
 
-Solo con el merge hecho y la suite en verde sobre el resultado. Se decide en este orden, y manda la primera regla que aplique:
+El push lo hace el script con `-Push`: publica solo la rama destino, por su nombre, en su remoto, y nunca la rama de la feature ni tags. Se decide en este orden, y manda la primera regla que aplique:
 
-1. Perfil `pair`: se presenta junto con el merge y se espera, sea cual sea `merge.push`.
-2. `merge.push: true` (perfil `delegate` o `unattended`): se hace sin preguntar.
-3. `merge.push` ausente o `false`: no se hace, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
+1. Perfil `pair`: se presenta junto con el merge y se espera, sea cual sea `merge.push`; `-Push` solo si el usuario lo confirma.
+2. Una frase del usuario en esta sesión que confirma el push («súbelo», «publícalo», «push»): `-Push`.
+3. `merge.push: true` (perfil `delegate` o `unattended`): `-Push`, sin preguntar.
+4. `merge.push` ausente o `false`: sin `-Push`, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
 
-Pasos:
+Si la rama destino no tiene remoto, no se pasa `-Push` (el script fallaría con `push:` antes de fusionar), y el mensaje final dice «push: no hecho: sin remoto». Si el push falla, se sigue «Si el script falla»: nunca `--force`, `pull`, `rebase` ni `git push` a mano. El mensaje final cita en un bloque el comando del script, cita su error y da el hash de la rama destino.
 
-1. `git rev-parse --abbrev-ref <destino>@{upstream}` da el remoto y la rama. Sin upstream, no hay push, y el mensaje final lo dice. El remoto no se inventa.
-2. `git push <remoto> <destino>`, desde el worktree del merge o desde cualquier otro del repo. Solo la rama destino: nunca `--force`, ni tags, ni la rama de la feature.
+## Cuándo no se llama
 
-Si falla (el remoto lo rechaza porque avanzó, faltan credenciales o el entorno lo deniega), no se reintenta con `--force`, `pull`, `rebase` ni otra herramienta: lo desbloquea una persona. El mensaje final cita el comando literal en un bloque de código, cita el error y dice que el merge queda en local con el hash del destino (`git rev-parse --short <destino>`). Un merge que no se hizo no se empuja.
+Si la rama destino está sacada en un worktree con cambios sin commitear, el script falla con `destino sacado:` y la lista de ficheros. Esos cambios son de otra sesión: el cierre para y dice qué ficheros son, sin `stash`, `reset` ni commit de lo ajeno.
+
+## Si el script falla
+
+Si falla, la rama destino queda como estaba antes de fusionar la feature: no se empuja nada, el worktree temporal se retira y el cerrojo se suelta. El mensaje empieza por el paso que falló (`cerrojo:`, `base:`, `merge:`, `verificación:`, `push:`, `política:`). El informe final cita ese mensaje literal, el hash de la rama destino (`git rev-parse --short <destino>`) y qué queda pendiente. **No se rehace a mano** con `git merge`, `git pull` ni `git push`. Un fallo de `push:` o de `base:` (otra sesión publicó en ese rato) se resuelve ejecutando el script **una vez más**: parte del remoto nuevo. Un conflicto de `merge:`, una `verificación:` en rojo o un `cerrojo:` agotado no se reintentan: los resuelve una persona.
 
 ## Merge denegado por el entorno
 
@@ -63,5 +50,3 @@ La política autoriza el merge y el entorno lo deniega (un clasificador del harn
 2. El **texto de la denegación**, citado.
 3. El **hash** de la rama destino, que sigue sin tocar (`git rev-parse --short <destino>`). Si al volver a mirarlo ha cambiado, otra sesión fusionó en ese rato: dilo.
 4. Que el resto del cierre está hecho, y qué queda: solo el merge.
-
-Si el worktree temporal llegó a crearse, se retira igual (`git worktree remove`).

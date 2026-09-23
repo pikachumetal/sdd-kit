@@ -129,7 +129,7 @@ Los tests validan la anatomía de las skills, los manifests y el script de estim
 pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
 ```
 
-El hook de pre-commit los ejecuta y bloquea el commit si fallan. Se activa una vez por clon:
+El hook de pre-commit los ejecuta, salvo los marcados con `-Tag 'Slow'`, y bloquea el commit si fallan. El comando de arriba los ejecuta todos. Se activa una vez por clon:
 
 ```bash
 git config core.hooksPath .githooks

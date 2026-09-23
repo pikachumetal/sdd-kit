@@ -157,6 +157,30 @@ Describe 'Merge en el cierre' {
     foreach ($item in 'comando', 'texto de la denegación', 'hash') { $recipe | Should -Match $item }
   }
 
+  It 'la receta y los dos pasos de rama fusionan con Invoke-SddMerge.ps1' {
+    Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md' | Should -Match 'sdd-templates/scripts/Invoke-SddMerge\.ps1'
+    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
+      Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'Invoke-SddMerge\.ps1'
+    }
+  }
+
+  It 'la receta pasa -Push con el push confirmado o autorizado por merge.push y no rehace el merge a mano' {
+    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $recipe | Should -Match '(?m)^2\. Una frase del usuario en esta sesión que confirma el push'
+    $recipe | Should -Match '(?m)^3\. `merge\.push: true` \(perfil `delegate` o `unattended`\): `-Push`'
+    $recipe | Should -Match 'No se rehace a mano'
+    $recipe | Should -Not -Match 'git worktree add'
+  }
+
+  It 'ningún texto de skill lleva caracteres de control' {
+    # Un here-string de PowerShell con comillas dobles convierte `b o `v en caracteres de control sin avisar.
+    $root = Join-Path $PSScriptRoot '../skills'
+    $dirty = Get-ChildItem -LiteralPath $root -Recurse -Filter '*.md' |
+      Where-Object { [IO.File]::ReadAllText($_.FullName) -match '[\x00-\x08\x0B\x0C\x0E-\x1F]' } |
+      ForEach-Object { $_.FullName }
+    $dirty | Should -BeNullOrEmpty
+  }
+
   It 'los dos pasos de rama paran ante la rama destino sacada con cambios sin commitear' {
     foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
       Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'cambios sin commitear, no fusiones ahí'
@@ -196,9 +220,9 @@ Describe 'Push autorizado en el cierre: paso de rama' {
     foreach ($skill in 'sdd-end-task', 'sdd-end-patch') { Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'merge\.push' }
   }
 
-  It 'la receta empuja al upstream y prohíbe forzar' {
+  It 'la receta empuja con -Push del script y prohíbe forzar' {
     $section = [regex]::Match((Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
-    $section | Should -Match '@\{upstream\}'
+    $section | Should -Match '`-Push`'
     $section | Should -Match '--force'
     $section | Should -Match 'en un bloque'
   }

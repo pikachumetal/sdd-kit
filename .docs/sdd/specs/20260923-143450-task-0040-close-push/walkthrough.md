@@ -90,4 +90,4 @@ Validación diferida: 2026-09-23 · «pues merge a develop y cierro el worktree�
 
 ## 6. Adendas
 
-- _Ninguna_
+- 2026-09-23 — Integración de `develop` con la task 0042 antes del merge. La 0042 hizo del merge del cierre un script (`Invoke-SddMerge.ps1`) que empuja con `-Push`. Resuelto así: los pasos 10 y 6 pasan `-Push` cuando el usuario lo confirma o `merge.push: true` lo autoriza en `delegate` o `unattended`, y la sección «Push» de `merge-recipe.md` decide en el mismo orden (pair, frase del usuario, `merge.push`, nada) sobre el script en lugar de con `git push`. El requisito de la 0042 «El push del cierre publica la rama destino» admite ahora `merge.push` como autorización, como anticipaba su fila del roadmap. El ancla Pester de la receta pide `-Push` en vez de `@{upstream}`. La fila de deuda «La receta del merge no fija el mensaje del commit» se retira: ahora el merge lo hace el script. La del push sin escenario anota que el GREEN midió la regla con `git push` a mano, no con el script. No se repitió el GREEN — Claude (agente), en el cierre

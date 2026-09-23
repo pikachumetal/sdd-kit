@@ -61,14 +61,15 @@
 | 2026-09-23 | 0033 | docs | 1.5 | 1.6 | 1.07 | no medido | 153k | 12.22 | 20260923-105726-task-0033-capabilities-at-birth |
 | 2026-09-23 | 0009 | docs | 3 | 1.5 | 0.5 | no medido | 119k | 14.43 | 20260923-120510-task-0009-merge-close |
 | 2026-09-23 | 0040 | docs | 2.5 | 2.1 | 0.84 | no medido | 391k | 15.29 | 20260923-143450-task-0040-close-push |
+| 2026-09-23 | 0042 | infra/tooling | 3 | 1.6 | 0.53 | no medido | 662k | 1.43 | 20260923-145338-task-0042-merge-script |
 
-**Factor de calibración** (ratio mediano real/estimado, 51 artefactos): **0.6**
+**Factor de calibración** (ratio mediano real/estimado, 52 artefactos): **0.59**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 38 | 0.52 |
-| infra/tooling | 4 | 0.88 |
+| infra/tooling | 5 | 0.7 |
 | patch | 8 | 1.2 |
 
 > Ver `estimation.md`.

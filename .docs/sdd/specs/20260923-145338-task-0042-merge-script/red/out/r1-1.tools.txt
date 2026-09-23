@@ -1,0 +1,156 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> PowerShell: git status --short; git worktree list; git branch -a; Test-Path .docs/sdd/environments.md; Get-Content .docs/sdd/sdd-kit.json; git remote -v
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-red\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-red\skills\sdd-start-task\references\control-profiles.md
+<<< <run>/git/salas.git (bare)
+<run>/wt/0009       2556c05 [feature/0009]
+  develop
+* feature/0009
+  main
+  remotes/origin/HEAD -> origin/feature/0009
+  remotes/origin/develop
+  remotes/origin/feature/0009
+  remotes/origin/main
+False
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+origin	<run>/git/origin.git (fetch)
+origin	<run>/git/origin.git (push)
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10	
+11	La primer
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+
+>>> PowerShell: $top = git rev-parse --show-toplevel; $parent = Split-Path $top -Parent; "$top | $parent"; git worktree add "$parent/merge-0009" develop; Get-ChildItem "$parent/merge-0009" -Name; git -C "$parent/merge-0009" merge --no-ff feature/0009 -m "merge(0009): validar el formato de la franja en libres y reservar"
+<<< <run>/wt/0009 | <run>\wt
+Preparing worktree (checking out 'develop')
+HEAD is now at c087b00 feat: base de reservas de salas
+.docs
+.githooks
+src
+test
+package.json
+README.md
+Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  9 ++++
+ .docs/sdd/roadmap.md                               |  2 +-
+ .../20260921-090000-task-0009-slot-format/plan.md  | 47 +++++++++++++++++++
+ .../20260921-090000-task-0009-slot-format/spec.md  | 52 ++++++++++++++++++++++
+ .../walkthrough.md                              
+
+>>> PowerShell: $parent = "<run>\wt"; Get-Content "$parent/merge-0009/package.json"; Push-Location "$parent/merge-0009"; npm test 2>&1 | Select-Object -Last 25; Pop-Location
+<<< Exit code 1
+{"type": "module"}
+npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: <home>\AppData\Local\npm-cache\_logs\2026-09-23T15_34_14_939Z-debug-0.log
+
+>>> Grep: node --test|npm test|node test
+<<< .docs\sdd\constitution.md:4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+.githooks\pre-commit:3:exec node --test
+.docs\sdd\tech-stack.md:4:- Tests: `node --test` (carpeta `test/`).
+.docs\sdd\specs\20260921-090000-task-0009-slot-format\plan.md:20:- `node --test` en verde antes de cada commit.
+.docs\sdd\specs\20260921-090000-task-0009-slot-format\walkthrough.md:45:Suite: `node --test`, 6/6. Task en línea: `superpowers:requesting-code-review` sobre la rama, sin hallazgos (paso 9).
+
+>>> PowerShell: $parent = "<run>\wt"; Push-Location "$parent/merge-0009"; node --test 2>&1 | Select-Object -Last 12; $rc=$LASTEXITCODE; Pop-Location; "rc=$rc"
+<<< ✔ reservar --cada-semana crea la reserva semanal (0.1695ms)
+✔ cancelar respeta el día (0.1643ms)
+✔ libres rechaza una franja mal formada (0.3752ms)
+✔ reservar rechaza una franja mal formada (0.1596ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 159.882
+rc=0
+
+>>> PowerShell: git worktree remove "<run>\wt\merge-0009"; git worktree list; git log --oneline -3 develop; git status --short
+<<< <run>/git/salas.git (bare)
+<run>/wt/0009       2556c05 [feature/0009]
+f091fe5 merge(0009): validar el formato de la franja en libres y reservar
+2556c05 docs(0009): cierre de la task, walkthrough, changelog y roadmap
+8feeb31 feat(0009): validar la franja en libres y reservar
+
+>>> PowerShell: git push origin develop; git rev-parse --short develop origin/develop
+<<< Exit code 128
+To <run>/git/origin.git
+ ! [rejected]        develop -> develop (fetch first)
+error: failed to push some refs to '<run>/git/origin.git'
+hint: Updates were rejected because the remote contains work that you do not
+hint: have locally. This is usually caused by another repository pushing to
+hint: the same ref. If you want to integrate the remote changes, use
+hint: 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+fatal: Needed a single revision
+
+>>> PowerShell: git fetch origin; git log --oneline --graph -8 origin/develop develop; git diff --stat develop...origin/develop
+<<< From <run>/git/origin
+   c087b00..609bb82  develop    -> origin/develop
+*   f091fe5 merge(0009): validar el formato de la franja en libres y reservar
+|\  
+| * 2556c05 docs(0009): cierre de la task, walkthrough, changelog y roadmap
+| * 8feeb31 feat(0009): validar la franja en libres y reservar
+|/  
+| * 609bb82 merge: task 0010, nota de uso
+|/  
+* c087b00 feat: base de reservas de salas
+ docs/nota-0010.md | 1 +
+ 1 file changed, 1 insertion(+)
+
+=== RESULTADO (13 turnos, 0.32330099999999995 $)
+Task 0009 está fusionada en `develop` en local, pero no está subida a origin: el push fue rechazado y no lo he forzado.
+
+**Hecho**
+- Merge `--no-ff` de `feature/0009` en `develop`: `f091fe5`. `develop` no estaba sacada en ningún worktree, así que usé un worktree temporal `merge-0009` siguiendo la receta del kit.
+- `node --test` sobre el resultado del merge: 6/6 en verde.
+- Worktree temporal retirado. El worktree `0009` y la rama `feature/0009` quedan como estaban, porque `merge.removeWorktree` es `false`.
+- No existe `.docs/sdd/environments.md`, así que no hizo falta `env:clean`.
+- No he fusionado a `main` ni he etiquetado.
+
+**Rechazo del push**
+```
+git push origin develop
+ ! [rejected]        develop -> develop (fetch first)
+```
+`origin/develop` avanzó con `609bb82 merge: task 0010, nota de uso`, que solo añade `docs/nota-0010.md`. Nuestro `develop` local y ése comparten `c087b00` como base y han divergido. Un `push` normal no puede subirlo.
+
+**Por qué no lo he resuelto**
+Para subirlo habría que integrar la task 0010 de otra persona en `develop`: un segundo merge sin probar, que el dev-lead no pidió. Tampoco iba a forzar el push. No hay a quién preguntar.
+
+**Para terminar**, cuando alguien lo confirme:
+```
+git worktree add ../merge-0009 develop
+git -C ../merge-0009 merge origin/develop
+node --test        # dentro de ../merge-0009
+git -C ../merge-0009 push origin develop
+git worktree remove ../merge-0009
+```
+Como los ficheros no se solapan, el merge no debería dar conflicto.
+
+**Ticket para el kit (paso 11)**: la validación de 0009 la dio el dev-lead, así que no hay disparador que concretar. Si quieres el ticket de mejora con `sdd-feedback`, dímelo en esta sesión.

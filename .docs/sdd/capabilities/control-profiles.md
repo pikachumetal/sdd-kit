@@ -133,6 +133,30 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el agente resuelve los conflictos
 - THEN regenera `estimation-log.md` con `Build-EstimationLog.ps1` de `sdd-templates/scripts/`, y no lo edita a mano
 
+### El merge del cierre espera su turno
+- GIVEN dos cierres del mismo repo que fusionan en `merge.into` a la vez, desde worktrees distintos
+- WHEN los dos ejecutan `Invoke-SddMerge.ps1`
+- THEN el segundo espera y dice quién tiene el cerrojo (rama y worktree); fusiona cuando el primero lo suelta, sobre la rama destino que dejó el primero
+- AND si el cerrojo no se libera en `-LockTimeoutMinutes`, el script falla nombrando al dueño y no toca nada; un cerrojo de un proceso que ya no existe en la misma máquina se toma, y el script lo dice
+
+### El merge del cierre parte de la rama destino publicada
+- GIVEN una rama destino con remoto que avanzó después de abrir la feature
+- WHEN el cierre fusiona
+- THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
+- AND si el único conflicto es `estimation-log.md`, lo regenera con `Build-EstimationLog.ps1`; con cualquier otro conflicto, falla con la lista de ficheros
+
+### El push del cierre publica la rama destino
+- GIVEN un merge del cierre cuyo push ha confirmado una persona o autoriza `merge.push` (perfil `delegate` o `unattended`)
+- WHEN el script empuja
+- THEN empuja la rama destino por su nombre (`git push <remoto> <destino>`), nunca `HEAD:<destino>`, y al terminar la rama local y la remota apuntan al mismo commit
+- AND sin la confirmación ni `merge.push`, el script fusiona en local y no empuja
+
+### Un merge del cierre que falla deja la rama destino como estaba
+- GIVEN un merge del cierre que falla: conflicto que no es el del log, verificación en rojo, push rechazado o error de git
+- WHEN el script termina
+- THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
+- AND el script sale con error y nombra el paso que falló y el motivo
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`, con `merge.push` opcional); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
@@ -143,7 +167,10 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Historial
 
+- 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El push del cierre publica la rama destino (al integrar la task 0042: `merge.push` también lo autoriza)
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El perfil de control decide dónde para el agente · ADDED El push de la rama de integración sigue `merge.push` · Sin autorización, el push no lo hace el agente solo · Un push que no sale se informa y no se fuerza · El cierre acaba con una línea de terminado (con enmienda) · reglas Dónde viven los datos, Avisos, Regla ante conflicto
+- 2026-09-23 — 20260923-145338-task-0042-merge-script — ADDED El merge del cierre espera su turno · El merge del cierre parte de la rama destino publicada · El push del cierre publica la rama destino · Un merge del cierre que falla deja la rama destino como estaba
+
 - 2026-09-23 — 20260923-120510-task-0009-merge-close — MODIFIED El merge a develop sigue la política declarada · ADDED Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás · Con la rama destino sacada y con cambios sin commitear, el cierre no fusiona (enmienda) · Un merge que el entorno deniega se informa con su evidencia · Un conflicto en el estimation-log se regenera con el script · regla Regla ante conflicto
 
 - 2026-09-22 — 20260922-133931-task-0025-scope-brake — ADDED El tercer fix descubierto abre un checkpoint de alcance · Una decisión que cambia la salida observable se pregunta · La fila de la task se compara con la base antes de cada despacho · MODIFIED Un cambio a la spec aprobada es un desvío · Salir del plan es un ruling visible · regla Límites
