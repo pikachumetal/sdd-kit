@@ -147,6 +147,22 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - THEN la task declara ese comando y su duración como verificación lenta, el encargo del implementador le dice que no lo ejecute, y el hilo principal lo lanza en segundo plano mientras corre la revisión
 - AND la task siguiente solo se despacha durante esa ejecución si no comparte ficheros con ella y su encargo prohíbe los comandos que compiten por los mismos binarios; si la verificación lenta falla, abre la ronda de fix de su task
 
+### El effort declarado viaja en el tipo de agente
+- GIVEN un plan cuya task declara en `Modelo` «Sonnet, effort medium» con el kit instalado como plugin de Claude Code
+- WHEN el hilo despacha su implementador
+- THEN la llamada a `Agent` lleva `subagent_type: sdd-kit:effort-medium` y `model: sonnet`
+- AND cada petición a la API del subagente lleva `effort: medium`
+
+### Sin effort en el harness, el plan lo dice
+- GIVEN un harness que no expone el effort al despachar (kit instalado sin sus agentes, u otro harness)
+- WHEN se escribe el campo `Modelo` de una task
+- THEN dice «effort: no disponible en este harness, hereda el de la sesión» en vez de un nivel de effort
+
+### El revisor de spec se despacha con su effort
+- GIVEN una spec con review de uno o dos revisores
+- WHEN el hilo despacha cada revisor
+- THEN el despacho lleva `subagent_type: sdd-kit:effort-medium` y `model: sonnet`
+
 **Reglas de la capacidad**
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
@@ -202,3 +218,6 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una task que cambia la UI se mira en un navegador
 - 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — MODIFIED Los tests de la spec preceden al implementador
+- 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El effort declarado viaja en el tipo de agente
+- 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED Sin effort en el harness, el plan lo dice
+- 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El revisor de spec se despacha con su effort
