@@ -187,3 +187,18 @@ Describe 'Push autorizado en el cierre: clave y pregunta' {
     Get-KitFile '.docs/sdd/mission.md' | Should -Match 'merge\.push'
   }
 }
+
+Describe 'Push autorizado en el cierre: paso de rama' {
+  It 'los dos pasos de rama enlazan la sección Push de la receta y nombran merge.push' {
+    Get-KitFile 'skills/sdd-end-task/SKILL.md' | Should -Match '\(references/merge-recipe\.md#push\)'
+    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '\(\.\./sdd-end-task/references/merge-recipe\.md#push\)'
+    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') { Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'merge\.push' }
+  }
+
+  It 'la receta empuja al upstream y prohíbe forzar' {
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
+    $section | Should -Match '@\{upstream\}'
+    $section | Should -Match '--force'
+    $section | Should -Match 'en un bloque'
+  }
+}
