@@ -39,3 +39,46 @@ Describe 'Carpetas que no nacen vacías' {
     @($script:BrownfieldStructure -split "`r?`n" | Where-Object { $_ -match '^   - ' }).Count | Should -BeGreaterOrEqual 6
   }
 }
+
+Describe 'Volcado inicial en greenfield' {
+  BeforeAll {
+    $script:InitLine = '- <YYYY-MM-DD> — init — ADDED volcado inicial desde el código'
+    $script:Greenfield = Get-KitFile 'skills/sdd-init-greenfield/SKILL.md'
+    $script:ClosingStep = Get-NumberedStep $script:Greenfield 6
+    $script:CapabilityTemplate = Get-KitFile 'skills/sdd-templates/templates/capability-template.md'
+  }
+
+  It 'el cierre de greenfield vuelca solo a petición del usuario' {
+    $script:ClosingStep | Should -Match 'solo si el usuario lo pide'
+    $script:ClosingStep | Should -Match 'nunca lo ofrezcas'
+  }
+
+  It 'el cierre exige leer el código entero o no volcar' {
+    $script:ClosingStep | Should -Match 'código entero'
+  }
+
+  It 'la partición se aprueba antes de escribir ningún fichero' {
+    $script:ClosingStep | Should -Match 'Antes de escribir ningún fichero'
+    $script:ClosingStep | Should -Match 'partición'
+  }
+
+  It 'cada capacidad pasa el gate de los documentos de anclaje' {
+    $script:ClosingStep | Should -Match 'mismo gate que los documentos de anclaje'
+  }
+
+  It 'el cierre y la plantilla llevan la línea de historial init' {
+    $script:ClosingStep.Contains($script:InitLine) | Should -BeTrue
+    $script:CapabilityTemplate.Contains($script:InitLine) | Should -BeTrue
+  }
+
+  It 'la regla 4 de la plantilla dice que las init no vuelcan, salvo la excepción de greenfield' {
+    $rule = ($script:CapabilityTemplate -split "`r?`n" | Where-Object { $_ -match '^> 4\. ' })
+    $rule | Should -Match 'Las init no vuelcan'
+    $script:CapabilityTemplate | Should -Match 'Única excepción: el volcado inicial de `sdd-init-greenfield`'
+  }
+
+  It 'greenfield tiene una red flag contra el volcado no pedido o sin partición' {
+    $redFlags = [regex]::Match($script:Greenfield, '(?s)## Red flags.*?\|').Value
+    $redFlags | Should -Match 'volcando capacidades'
+  }
+}

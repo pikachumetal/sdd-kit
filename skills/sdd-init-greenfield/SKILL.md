@@ -53,9 +53,15 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    - `estimation-log.md` no se escribe a mano: se genera con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas. El script vive en el kit y no se copia al proyecto.
    - `.claude/settings.json`: se crea, o se fusiona sin tocar las demás claves, con `"autoMemoryEnabled": false`. La memoria automática vive en una sola máquina, y lo que se aprende va a los docs. Si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo; si el usuario dice que no, se deja y el resumen de cierre lo anota.
    - `.gitignore`: se añaden `.playwright-mcp/` y `.superpowers/` si faltan, sin duplicar líneas; se crea si no existe.
+   - `capabilities/` y `specs/` no se crean: git no versiona carpetas vacías, y ninguna se crea vacía ni con `.gitkeep`. Nacen con su primer fichero (la primera task, o el volcado del paso 6).
 4. **`CLAUDE.md` corto**: punteros a los documentos + reglas críticas. No duplicar contenido que ya vive en un doc de anclaje.
 5. **Git**: `git init` si no hay repo, con la convención de ramas acordada en la entrevista. Si el repo ya existe y sus ramas o su remoto no siguen esa convención, presenta el plan completo —renombrados, ramas nuevas, rama por defecto del remoto, borrados— y espera el «sí» antes de ejecutar nada. Lo que toca el remoto (push, rama por defecto, borrar ramas) lo ejecuta el usuario, con los comandos que le das.
 6. **Cierre**: resumen de lo creado + siguientes pasos — partición fina y estimación cuando `capabilities/` madure; skills de nivel 2 recomendadas según el stack (esta skill no las crea).
+   **Volcado inicial de capacidades, solo si el usuario lo pide** (nunca lo ofrezcas). Es la única excepción a que las capacidades crecen task a task, y solo existe en greenfield:
+   - Lee el código entero. Si no puedes leerlo entero en esta sesión, dilo y no vuelques.
+   - Antes de escribir ningún fichero, propón la partición: la lista de capacidades, cada una con su slug en inglés kebab-case y sustantivo del dominio (regla 1 de `capability-template.md`; el nombre de un módulo del código no es un nombre de capacidad). Espera el «sí».
+   - Escribe cada capacidad calcando `capability-template.md`, con lo que el código hace hoy, y preséntala con el mismo gate que los documentos de anclaje.
+   - Su «Historial» empieza con `- <YYYY-MM-DD> — init — ADDED volcado inicial desde el código`.
 
 ## Red flags — STOP
 
@@ -63,9 +69,12 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 - Has decidido tú el alcance del MVP, un rol o el stack "como propuesta razonable".
 - Estás creando `docs/`, `docs/superpowers/` o ADRs sueltos en vez de `.docs/sdd/`.
 - El estimation-log nace con filas, o escrito a mano en vez de generado por el script.
+- Estás volcando capacidades que el usuario no ha pedido, o escribiendo alguna antes de que apruebe la partición.
 
 | Racionalización | Realidad |
 | --- | --- |
 | "El usuario no responde: convierto las preguntas en asunciones documentadas" | Eso es inventar un proyecto. La entrevista ESPERA: tu último mensaje es la primera pregunta de la entrevista. |
 | "Lo marco todo como borrador pendiente y así avanzo" | Cientos de líneas de suposiciones anclan las conversaciones futuras a TUS decisiones. Un documento corto y aprobado vale más que ocho borradores inventados. |
 | "Una estructura con ADRs y glosario es más estándar" | La estructura del equipo es `.docs/sdd/`. Las decisiones viven en constitution/architecture; el glosario, en mission. |
+| "El kit dice que las capacidades crecen task a task: me niego a volcarlas" | En greenfield, a petición del usuario, el volcado es la excepción escrita en el paso 6. Negarse es el fallo que mostró el RED (1/2): aplica sus condiciones. |
+| "El código es pequeño: vuelco las capacidades y las enseño al final" | La partición se aprueba antes de escribir ningún fichero. En el RED, un volcado directo nombró las capacidades como los módulos del código y las dejó sin historial. |
