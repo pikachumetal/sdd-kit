@@ -19,14 +19,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | RED del paso 6 | done | 75074db | 3/4 sujetos válidos (e2-2 bloqueado en pre-flight, ver Evidencia); un frente pasa 2/2 (se recorta), tres fallan |
-| 2 | Plantilla del plan | in_progress | — | verde; commit en espera de que acabe la tanda de sujetos |
+| 2 | Plantilla del plan | done | 00ce715 | RED (5 fallos) → GREEN (5/5) en `tests/TaskVerification.Tests.ps1` |
 | 3 | Paso 6, encargo del implementador y override | pending | — | |
 | 4 | GREEN | pending | — | |
 
 ## Verificación por task
 
 - [x] Task 1 — veredictos E2 y E3 en `tests/task-verification-red.md`
-- [ ] Task 2 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1`
+- [x] Task 2 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1`
 - [ ] Task 3 — `Invoke-Pester ./tests/TaskVerification.Tests.ps1` y `./tests/Skills.Tests.ps1`
 - [ ] Task 4 — veredictos E1–E3 en `tests/task-verification-green.md`
 
