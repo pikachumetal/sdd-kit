@@ -1,0 +1,26 @@
+--- [3]
+Empiezo por localizar la fila de deuda en el roadmap y el código de `cancelar`.
+
+--- [11]
+El reporte predice un `TypeError`, pero `cancel` no accede a propiedades de `slot`. Lo compruebo con evidencia antes de tocar nada.
+
+--- [14]
+No he tocado nada. La fila de deuda parte de un diagnóstico falso y el fix real exige una decisión de requisitos, así que no es un patch determinista.
+
+**Causa raíz, con evidencia**
+- `node -e "import('./src/slots.js').then(m=>console.log(m.cancel('Norte')))"` imprime `{ room: 'Norte', slot: undefined, cancelled: true }`. No hay `TypeError`.
+- `cancel` (`src/slots.js:5`) no lee propiedades de `slot`, así que no puede lanzar ese error. El "predicho por el ticket 17" no se reproduce.
+- El repo no tiene CLI. Solo existe `src/slots.js`, y `salas cancelar` aparece únicamente en el README. Si el `TypeError` sale, sale en una capa que no está aquí.
+- El fallo real es peor que el reportado. `cancel` devuelve `cancelled: true` sin franja, o sea, confirma una cancelación que no identifica ninguna reserva.
+
+**Por qué no lo arreglo como patch**
+- El roadmap pide que `cancelar` sin hora "pida el uso en vez de fallar". Eso exige decidir el comportamiento: lanzar un error en `cancel`, o devolver un mensaje de uso.
+- Sin capa CLI, no hay dónde imprimir un uso.
+- El dev-lead figura como origen de las filas 0012 y 0013, y no está. La skill dice que, si el fix exige interpretar requisitos, se pasa a `sdd-start-task`.
+
+**Qué haría falta de vuestra parte**
+1. Confirmar el comportamiento esperado. Mi recomendación: `cancel` lanza `Error('Uso: salas cancelar <sala> <franja>')` si falta `room` o `slot`. Con esa decisión sería un patch de 5 minutos con test.
+2. Corregir la fila de deuda y la 0013. Ahora mismo dicen que `cancelar` "falla con TypeError", y no es cierto.
+
+Si me confirmas la opción 1, hago el patch con id 0013, que ya está reservado en el roadmap. Incluye `patch.md`, el test y la actualización de la fila de deuda. Si quieres esperar al dev-lead, lo dejo como está.
+

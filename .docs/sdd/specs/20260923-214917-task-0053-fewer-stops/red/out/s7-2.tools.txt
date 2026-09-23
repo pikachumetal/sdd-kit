@@ -1,0 +1,180 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/sdd-kit.json; grep -n -i "cancelar\|deuda" .docs/sdd/roadmap.md
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+8:| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+15:## Deuda técnica
+19:| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (predicho por el ti
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/roadmap.md .docs/sdd/constitution.md src/slots.js tests/slots.test.js README.md; cat .docs/sdd/changelog.md | head -30
+<<< # Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (predicho por el ticket de soporte 17) | medio: e
+
+>>> Bash: cd "<run>/salas" && node -e "import('./src/slots.js').then(m=>console.log(m.cancel('Norte')))"; node --test 2>&1 | tail -8; git log --stat -3 | head -30; ls ~/.claude/plugins 2>/dev/null | head -0; date -u +%Y%m%d-%H%M%S
+
+>>> Glob: **/patch-template.md
+<<< { room: 'Norte', slot: undefined, cancelled: true }
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.8711
+commit d72b961c09f63b16089710e95ced4b8584da4d27
+Author: Fixture <fixture@example.com>
+Date:   Thu Sep 24 00:14:23 2026 +0200
+
+    docs: fila de deuda de cancelar sin franja
+    
+    Cuerpo del commit.
+
+ .docs/sdd/roadmap.md | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 4016cb533fe57ab40458c09d47ff872ec05b6d69
+Author: Fixture <fixture@example.com>
+Date:   Thu Sep 24 00:14:23 2026 +0200
+
+    feat: cancelar una reserva
+    
+    Cuerpo de
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0053\6efeee6b-be23-429a-8015-cf6790d4a3e7\scratchpad\kit-red\skills\sdd-templates\templates\patch-template.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0053\6efeee6b-be23-429a-8015-cf6790d4a3e7\scratchpad\kit-red\skills\sdd-templates\templates\patch-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+3	task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+5	title: Patch — <título corto>
+6	type: patch
+7	status: done
+8	created: <YYYY-MM-DD>
+9	branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+10	commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+11	---
+12	
+13	# Patch <id> — <título c
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-red/skills/sdd-start-task/references" && cat nombrado.md commit-milestones.md
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `task` o `patch` según el carril. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`.
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la task o el patch, o el que devuelve `Get-NextSddId.ps1` si no tiene fila. **Nunca el nombr
+
+>>> Bash: cd "<run>/salas" && git checkout -q -b feature/0013 && D=.docs/sdd/specs/20260923-221457-patch-0013-cancelar-sin-franja && mkdir -p $D && cat > tests/cancel.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { cancel } from '../src/slots.js';
+
+test('cancelar una reserva', () => {
+  assert.deepStrictEqual(cancel('Norte', '10-12'), { room: 'Norte', slot: '10-12', cancelled: true });
+});
+
+test('cancelar sin franja pide el uso', () => {
+  assert.throws(() => cancel('Norte'), { message: 'Uso: salas cancelar <sala> <franja>' });
+});
+EOF
+node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 2
+ℹ fail 1
+
+>>> Edit: <run>/salas/src/slots.js
+<<< The file <run>/salas/src/slots.js has been updated successfully.
+
+>>> Bash: cd "<run>/salas" && node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+D=.docs/sdd/specs/20260923-221457-patch-0013-cancelar-sin-franja
+cat > $D/patch.md <<'EOF'
+---
+id: 20260923-221457-patch-0013-cancelar-sin-franja
+task: 0013
+title: Patch — cancelar sin franja pide el uso
+type: patch
+status: done
+created: 2026-09-23
+branch: feature/0013
+commit: <hash>
+---
+
+# Patch 0013 — cancelar sin franja pide el uso
+
+## 1. Síntoma
+
+Fila de deuda técnica del roadmap: «`salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (predicho por el ticket de soporte 17)».
+
+## 2. Causa raíz
+
+`cancel(room, slot)` en `src/slots.js` no valida `slot`. La hipótesis del ticket (`TypeError`) no se confirma: `cancel` nunca desreferencia `slot`, así que no lanza nada. Reproducción: `cancel('Norte')` devuelve `{ room: 'Norte', slot: undefined, cancelled: true }`, es decir, un éxito silencioso con una reserva sin franja. El defecto real es la falta de validación, no un crash; el CLI que invoca `cancel` no está en este repo, por lo que un `TypeError` solo podría venir de código posterior que use `slot`.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/cancel.test.js`
+- **Cambio**: `cancel` lanza `Error("Uso: salas cancelar <sala> <franja>")` si falta la franja. Test nuevo en `tests/cancel.test.js` (caso feliz y caso sin franja).
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancel('Norte')` antes del fix: sin error, `cancelled: true` (agente) | ✅ reproducido |
+| 2 | Test sin franja en rojo antes del fix, en verde después (agente) | ✅ |
+| 3 | `node --test`: 3 tests en verde (agente) | ✅ |
+
+## 5. Tiempo
+
+Sin `estimation.md`; no aplica.
+EOF
+git add -A && git commit -q -F - <<'EOF'
+fix(slots): cancelar sin franja pide el uso en vez de cancelar en silencio
+
+`cancel(room)` sin franja devolvía `cancelled: true` con `slot: undefined`
+(el TypeError predicho por el ticket 17 no se reproduce). Ahora lanza
+`Error("Uso: salas cancelar <sala> <franja>")`, con tests en
+`tests/cancel.test.js`. Patch 0013.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -1; git status --short
+<<< ℹ pass 3
+ℹ fail 0
+dede616 fix(slots): cancelar sin franja pide el uso en vez de cancelar en silencio
+
+=== RESULTADO (12 turnos, 0.27006040000000003 $)
+Patch 0013 aplicado y commiteado en `feature/0013` (`dede616`). `node --test` pasa con 3 tests en verde. Falta el cierre con `sdd-end-patch`, que no he ejecutado.
+
+- **Causa raíz distinta a la del ticket:** `salas cancelar Norte` no lanza `TypeError`. `cancel('Norte')` devuelve `{ room: 'Norte', slot: undefined, cancelled: true }`, es decir, cancela en silencio una reserva sin franja. La hipótesis del ticket 17 no se confirma en el código; queda documentada en `patch.md`. El CLI no está en este repo, así que no pude comprobar de dónde saldría un `TypeError` real.
+- **Fix:** `cancel` en `src/slots.js` lanza `Error("Uso: salas cancelar <sala> <franja>")` si falta la franja. Añadí `tests/cancel.test.js` con el caso feliz y el caso sin franja; el segundo estaba en rojo antes del fix.
+- **Artefacto:** `.docs/sdd/specs/20260923-221457-patch-0013-cancelar-sin-franja/patch.md`. Usé el id 0013 porque es la fila reservada en el roadmap para este mismo cambio.
+- **Pendiente para `sdd-end-patch`:** escribir el hash del fix en `patch.md`, mover la fila 0013 y la de deuda a la tabla de Patches, añadir la entrada al changelog y fusionar en `develop`. El dev-lead no está; la fusión en `develop` y el cierre quedan sin tocar hasta que decidas.
+
+¿Cierro el patch ahora?
