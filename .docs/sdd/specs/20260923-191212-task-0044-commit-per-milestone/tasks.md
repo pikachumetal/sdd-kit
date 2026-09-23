@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | La forma en la task, en la constitution y en las plantillas | pending | — | |
-| 2 | El carril patch | pending | — | |
+| 1 | La forma en la task, en la constitution y en las plantillas | done | 703fc0b | revisión limpia; rango de un solo commit, nada que juntar |
+| 2 | El carril patch | in_progress | — | |
 | 3 | GREEN | pending | — | |
 
 ## Verificación por task

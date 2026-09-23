@@ -80,6 +80,26 @@ Describe 'Carril task' {
   }
 }
 
+Describe 'Carril patch' {
+  It 'el paso 5 de sdd-start-patch hace un solo commit de fix con patch.md' {
+    Get-SkillStep 'sdd-start-patch' 5 | Should -Match 'un solo commit con el código, los tests y `patch\.md`[^\n]*commit-milestones\.md'
+  }
+
+  It 'el paso 1 de sdd-end-patch apunta el hash del fix' {
+    Get-SkillStep 'sdd-end-patch' 1 | Should -Match 'el del commit del fix'
+  }
+
+  It 'el paso 2 de sdd-end-patch es un solo commit de cierre' {
+    $step = Get-SkillStep 'sdd-end-patch' 2
+    $step | Should -Not -Match 'pueden ir en commits separados'
+    $step | Should -Match 'Commit de cierre[^\n]*commit-milestones\.md'
+  }
+
+  It 'la plantilla del patch apunta el hash del fix' {
+    Get-KitFile 'skills/sdd-templates/templates/patch-template.md' | Should -Match 'commit: <hash>\s+# hash del commit del fix'
+  }
+}
+
 Describe 'Constitution' {
   It 'el Art. IV fija la forma de la historia' {
     $constitution = Get-KitFile '.docs/sdd/constitution.md'

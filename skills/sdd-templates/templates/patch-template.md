@@ -7,7 +7,7 @@ type: patch
 status: done
 created: <YYYY-MM-DD>
 branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
-commit: <hash>        # se rellena al commitear
+commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
 ---
 
 # Patch <id> — <título corto>
