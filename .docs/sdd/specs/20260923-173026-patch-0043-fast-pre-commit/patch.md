@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-23
 branch: feature/0043
-commit: <hash>
+commit: ff8add6
 ---
 
 # Patch 0043 — pre-commit rápido con los tests lentos marcados
