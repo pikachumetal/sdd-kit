@@ -101,6 +101,8 @@ Sin capacidad tocada (decisión 2). Escenarios, contrato de los tests:
 
 ## Enmiendas
 
+- **2026-09-23 — `Start-KitSession.ps1` lanza `claude` con `--dangerously-skip-permissions`.** El dev-lead lo tenía como cambio local sin commitear; ante la pregunta de qué hacer con él al reescribir el lanzador, eligió «Commitearlo con la Task 2». Consecuencia: toda sesión del kit lanzada con el script arranca sin confirmaciones de permisos. Entra en el Scope; aprobada por el dev-lead en esa respuesta.
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |

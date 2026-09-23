@@ -191,7 +191,7 @@ function Restore-GitEnv([hashtable]$Saved) {
 $previousSessionRoot = $env:SDD_KIT_SESSION_ROOT
 $env:SDD_KIT_SESSION_ROOT = $PSScriptRoot
 try {
-  claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir $PSScriptRoot @args
+  claude --dangerously-skip-permissions --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir $PSScriptRoot @args
 }
 finally {
   if ($null -eq $previousSessionRoot) { Remove-Item -LiteralPath Env:\SDD_KIT_SESSION_ROOT -ErrorAction SilentlyContinue }
