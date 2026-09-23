@@ -67,6 +67,21 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 21 de greenfield y la 7 de brownfield
 - THEN la constitution lleva en «Convenciones» la entrada «Proyecto de referencia» con la ruta o el repositorio que el usuario dé, o «no aplica» si responde que no
 
+### El funcional aportado se guarda literal
+- GIVEN un `sdd-init-greenfield` en el que el usuario aporta un funcional (un documento, o texto pegado en el chat)
+- WHEN la init crea la estructura
+- THEN el funcional está en `.docs/sdd/sources/` sin editar: con su nombre original si es un fichero, o como `<yyyyMMdd>-functional-brief.md` si llegó pegado
+- AND `mission.md` lo enlaza, y cada fila de módulo del roadmap que sale de él cita su sección
+- AND ninguna capacidad nace de él
+
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar.
+- **Idioma de los nombres**: no aplica.
+- **Límites**: no aplica.
+- **Avisos**: no aplica.
+- **Regla ante conflicto**: no aplica.
+
 ## Historial
 
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — ADDED La entrevista fija las cinco reglas de producto
@@ -76,3 +91,4 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 - 2026-09-22 — 20260922-141616-task-0020-init-control-keys — MODIFIED La entrevista hace una sola pregunta por turno
 - 2026-09-22 — 20260922-141616-task-0020-init-control-keys — ADDED La entrevista fija las claves de control
 - 2026-09-23 — 20260922-211157-task-0019-init-files — ADDED La init deja la memoria automática desactivada y los temporales ignorados · ADDED El log de estimación lo genera el script del kit · ADDED La constitution nombra el proyecto de referencia
+- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED El funcional aportado se guarda literal

@@ -1,0 +1,7 @@
+### dev-lead
+
+Estamos en el paso 6 (cierre) de sdd-init-greenfield en este proyecto: los documentos de `.docs/sdd/` ya están aprobados y commiteados. Antes de cerrar, genera las capacidades de `capabilities/` a partir del código: es pequeño y quiero tenerlas desde el principio. Ya acordamos la partición: `sessions`, `settings`, `notifications` y `history`. Escríbelas.
+
+### agente
+
+

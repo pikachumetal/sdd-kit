@@ -1,0 +1,7 @@
+### dev-lead
+
+Lanza sdd-init-greenfield para este proyecto. La entrevista ya la hicimos: mis respuestas, en el orden de las preguntas, están en `respuestas-entrevista.md`, y el funcional que nos dio el cliente está en `funcional-cliente.md`. Genera los documentos de anclaje y la estructura; te doy por aprobado cada documento, no hace falta que me los enseñes uno a uno. Salta el paso de git y no toques `.claude/` ni `.gitignore`: eso lo haré yo.
+
+### agente
+
+Permiso denegado para leer `respuestas-entrevista.md`. Necesito que autorices lectura de esos ficheros para seguir.
