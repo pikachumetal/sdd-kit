@@ -62,7 +62,7 @@ BeforeAll {
   }
 }
 
-Describe 'Get-NextSddId.ps1' {
+Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
   Context 'proyecto en modo sequence' {
     BeforeAll { $script:Result = Invoke-NextId (Join-Path $script:Fixtures 'sequence-project') }
 

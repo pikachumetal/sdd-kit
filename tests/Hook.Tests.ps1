@@ -66,14 +66,14 @@ Describe 'hooks/session-start' {
     $bytes | Should -Not -Contain 13
   }
 
-  It 'no inyecta nada sin .docs/sdd/' {
+  It 'no inyecta nada sin .docs/sdd/' -Tag 'Slow' {
     if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
     $result = Invoke-SessionStart (New-ProjectDir $false)
     $result.ExitCode | Should -Be 0
     $result.Output.Trim() | Should -BeNullOrEmpty
   }
 
-  It 'inyecta el router con .docs/sdd/' {
+  It 'inyecta el router con .docs/sdd/' -Tag 'Slow' {
     if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
     $result = Invoke-SessionStart (New-ProjectDir $true)
     $result.ExitCode | Should -Be 0

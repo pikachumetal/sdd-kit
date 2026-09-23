@@ -42,7 +42,7 @@ Describe 'La task del plan viaja sola' {
     $template | Should -Not -Match 'La API va en §1\.4'
   }
 
-  It 'task-brief de superpowers extrae las interfaces con la task' {
+  It 'task-brief de superpowers extrae las interfaces con la task' -Tag 'Slow' {
     $taskBrief = Get-ChildItem (Join-Path $HOME '.claude/plugins/cache/claude-plugins-official/superpowers') -Recurse -Filter 'task-brief' -ErrorAction SilentlyContinue |
       Select-Object -First 1
     $bash = Resolve-Bash
