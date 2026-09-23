@@ -6,6 +6,9 @@ BeforeAll {
   # clonado largos llegan a ~120: 140 relativos es lo que deja margen para esas bases.
   $script:MaxRelativeLength = 140
 
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
+
   # Sin UTF-8 la salida de git se decodifica con la página de códigos de la consola y cada
   # tilde cuenta doble; quotepath=off evita que git escape esos caracteres en octal.
   $script:PreviousEncoding = [Console]::OutputEncoding
@@ -15,6 +18,7 @@ BeforeAll {
 
 AfterAll {
   [Console]::OutputEncoding = $script:PreviousEncoding
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'Longitud de las rutas versionadas' {

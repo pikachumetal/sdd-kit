@@ -63,14 +63,15 @@
 | 2026-09-23 | 0040 | docs | 2.5 | 2.1 | 0.84 | no medido | 391k | 15.29 | 20260923-143450-task-0040-close-push |
 | 2026-09-23 | 0042 | infra/tooling | 3 | 1.6 | 0.53 | no medido | 662k | 1.43 | 20260923-145338-task-0042-merge-script |
 | 2026-09-23 | 0043 | patch | 0.5 | 0.5 | 1 | — | — | — | 20260923-173026-patch-0043-fast-pre-commit |
+| 2026-09-23 | 0016 | infra/tooling | 2.5 | 0.7 | 0.28 | no medido | 815k | no aplica | 20260923-190542-task-0016-git-env-cache-warning |
 
-**Factor de calibración** (ratio mediano real/estimado, 52 artefactos): **0.59**
+**Factor de calibración** (ratio mediano real/estimado, 54 artefactos): **0.59**
 
 | Tipo | n | Mediana |
 | --- | --- | --- |
 | chore | 1 | 0.67 |
 | docs | 38 | 0.52 |
-| infra/tooling | 5 | 0.7 |
+| infra/tooling | 6 | 0.62 |
 | patch | 9 | 1.2 |
 
 > Ver `estimation.md`.
