@@ -156,6 +156,20 @@ Describe 'Merge en el cierre' {
     foreach ($item in 'comando', 'texto de la denegación', 'hash') { $recipe | Should -Match $item }
   }
 
+  It 'la receta y los dos pasos de rama fusionan con Invoke-SddMerge.ps1' {
+    Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md' | Should -Match 'sdd-templates/scripts/Invoke-SddMerge\.ps1'
+    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
+      Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'Invoke-SddMerge\.ps1'
+    }
+  }
+
+  It 'la receta pasa -Push solo con el push confirmado y no rehace el merge a mano' {
+    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $recipe | Should -Match '`-Push`\*\* solo si una persona ha confirmado el push'
+    $recipe | Should -Match 'No se rehace a mano'
+    $recipe | Should -Not -Match 'git worktree add'
+  }
+
   It 'los dos pasos de rama paran ante la rama destino sacada con cambios sin commitear' {
     foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
       Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'cambios sin commitear, no fusiones ahí'
