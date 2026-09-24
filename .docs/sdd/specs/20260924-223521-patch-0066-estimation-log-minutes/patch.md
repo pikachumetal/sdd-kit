@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: feature/0066
-commit: <hash>
+commit: 846e68c
 ---
 
 # Patch 0066 — Build-EstimationLog.ps1 convierte los minutos a horas y avisa de otras unidades
