@@ -45,3 +45,31 @@ Describe 'Task 1 — bucle Native' {
     Get-KitFile $script:Dispatch | Should -Match '`sdd-workspace`, `task-brief`, `task-start` y `review-package` imprimen'
   }
 }
+
+Describe 'Task 2 — historia de commits' {
+  BeforeAll { $script:Recipe = Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md' }
+
+  It 'la receta vale también con un solo commit en el rango' {
+    $script:Recipe | Should -Match 'también con un solo commit'
+    $script:Recipe | Should -Not -Match 'no hay nada que juntar'
+  }
+
+  It 'la fila Task N dice cuándo se junta en Native' {
+    $row = $script:Recipe -split "`r?`n" | Where-Object { $_.StartsWith('| Task N |') }
+    $row | Should -Match 'en Native, con su contrato de cierre cumplido y antes de `task-done`'
+  }
+
+  It 'con un RED en el árbol, el hilo lo aparta para commitear' {
+    $section = [regex]::Match($script:Recipe, '(?ms)^## Tests RED sin commitear.*').Value
+    $section | Should -Match 'antes de escribir los RED'
+    $section | Should -Match 'apártalo'
+  }
+
+  It 'el paso 5 junta la apertura antes de los RED' {
+    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'Antes de escribir los RED de la primera task, junta la apertura'
+  }
+
+  It 'el paso 6 pide escribir el mensaje del hito aunque haya un solo commit' {
+    Get-SkillStep 'sdd-start-task' 6 | Should -Match 'con el mensaje que escribes tú, también si el rango tiene un solo commit'
+  }
+}
