@@ -22,17 +22,19 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 2 | Historia de commits | done | f6a283e | |
 | 3 | Revisor final, tipo de effort y cierre | done | b97c72a | ruling: la comprobación del tipo, párrafo propio tras «En Native» |
 | 4 | Cambio a SDD tras una compactación | done | 75ba772 | |
-| 5 | GREEN | done | — | 22 sujetos, 10,04 $; REFACTOR de tres textos tras la tanda 1 |
+| 5 | GREEN | done | 5d7575b | 22 sujetos, 10,04 $; REFACTOR de tres textos tras la tanda 1 |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester` de NativeAdapt, NativeDefault, SuperpowersCompat y Skills
-- [ ] Task 2 — `Invoke-Pester` de NativeAdapt, CommitMilestones y Skills
-- [ ] Task 3 — `Invoke-Pester` de NativeAdapt, Skills, AgentDefinitions y CommitMilestones
-- [ ] Task 4 — `Invoke-Pester` de NativeAdapt, NativeDefault y Skills
-- [ ] Task 5 — campaña GREEN con `red/run.sh`
+- [x] Task 1 — `Invoke-Pester` de NativeAdapt, NativeDefault, SuperpowersCompat y Skills
+- [x] Task 2 — `Invoke-Pester` de NativeAdapt, CommitMilestones y Skills
+- [x] Task 3 — `Invoke-Pester` de NativeAdapt, Skills, AgentDefinitions y CommitMilestones
+- [x] Task 4 — `Invoke-Pester` de NativeAdapt, NativeDefault y Skills
+- [x] Task 5 — campaña GREEN con `red/run.sh`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 10 Minor); Important 1–3 arreglados en el pase de fix, 4 al dev-lead, minors diferidos en el walkthrough

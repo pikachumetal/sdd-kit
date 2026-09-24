@@ -128,3 +128,33 @@ Describe 'Task 5 — REFACTOR del GREEN' {
     Get-SkillStep 'sdd-start-task' 6 | Should -Match 'con la apertura ya juntada en su commit'
   }
 }
+
+Describe 'Revisión final — pase de fix' {
+  It 'la fila Apertura se junta antes de los RED y, en Native, antes de task-start' {
+    $row = (Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md') -split "`r?`n" | Where-Object { $_.StartsWith('| Apertura |') }
+    $row | Should -Not -Match 'justo antes del primer despacho'
+    $row | Should -Match 'antes de escribir los RED de la primera task \(en Native, antes de su `task-start`\)'
+  }
+
+  It 'el paso 5 junta la apertura antes del task-start de la primera task en Native' {
+    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'en Native, antes de su `task-start`'
+  }
+
+  It 'el paso 6 apunta la revisión final en tasks.md' {
+    Get-SkillStep 'sdd-start-task' 6 | Should -Match 'apunta en `tasks.md` la línea `Revisión final:'
+  }
+
+  It 'el paso 9 del cierre busca la revisión final en tasks.md y no en el ledger' {
+    $step = Get-SkillStep 'sdd-end-task' 9
+    $step | Should -Match 'la línea `Revisión final:` de `tasks.md`'
+    $step | Should -Not -Match 'queda en el ledger'
+  }
+}
+
+Describe 'Decisión del dev-lead — native fijado también cambia tras compactar' {
+  It 'la pregunta 5 describe native con la excepción de la compactación' {
+    $row = (Get-KitFile 'skills/sdd-start-task/references/control-profiles.md') -split "`r?`n" | Where-Object { $_.StartsWith('| 5 |') }
+    $row | Should -Not -Match 'siempre en la sesión'
+    $row | Should -Match '`native` \(en la sesión; tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes\)'
+  }
+}

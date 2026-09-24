@@ -186,7 +186,7 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el agente guarda el plan
 - THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff de `writing-plans` y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo sacado del plan>`
 - AND en `pair` la parada del plan es una sola pregunta que aprueba el plan y elige el método, con la recomendación del handoff como primera opción; no hay una parada aparte para el método
-- AND ninguna task del plan lleva un campo `Ejecución` propio: el método es del plan entero
+- AND ninguna task del plan lleva un campo `Ejecución` propio: el método es del plan entero, salvo el cambio a SDD tras una compactación
 
 ### Un método fijado en `sdd-kit.json` no se pregunta
 - GIVEN una task en modo full con la spec aprobada y `execution: native` o `execution: subagent` en `sdd-kit.json`
@@ -194,6 +194,12 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - THEN escribe en la cabecera `Ejecución: <valor>, fijado en sdd-kit.json` y no pregunta el método en ningún perfil
 - AND el valor fijado manda aunque el handoff recomiende el otro método
 - AND en `pair` la parada del plan solo pide aprobarlo
+
+### Tras una compactación, lo que queda de un plan Native va con SDD
+- GIVEN un plan con `Ejecución: native` (recomendado por el handoff o fijado en `sdd-kit.json`), una sesión retomada tras una compactación y dos o más tasks sin su línea `complete` en el ledger
+- WHEN el hilo retoma la ejecución
+- THEN sigue con `subagent-driven-development` sobre el mismo ledger y lo registra como ruling, sin parar en `delegate` ni en `unattended`
+- AND con una sola task pendiente, o sin compactación, sigue en Native
 
 ## Reglas de la capacidad
 
@@ -205,6 +211,7 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Historial
 
+- 2026-09-24 — 20260924-105352-task-0057-native-adapt — ADDED Tras una compactación, lo que queda de un plan Native va con SDD (también con `native` fijado, decisión del dev-lead) · MODIFIED El método de ejecución lo elige el handoff del plan (salvo el cambio tras compactar)
 - 2026-09-24 — 20260924-082516-task-0055-native-default — REMOVED El plan no pregunta el método de ejecución · ADDED El método de ejecución lo elige el handoff del plan · ADDED Un método fijado en `sdd-kit.json` no se pregunta · Reglas: dónde viven los datos, idioma de los nombres y regla ante conflicto (`execution`)
 - 2026-09-24 — 20260923-214917-task-0053-fewer-stops — MODIFIED La primera pregunta confirma carril, modo y perfil (opción de aprobar la spec por delegación) · ADDED La spec aprobada por delegación en la primera pregunta no para
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED El plan no pregunta el método de ejecución

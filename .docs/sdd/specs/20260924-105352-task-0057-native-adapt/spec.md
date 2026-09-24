@@ -181,6 +181,11 @@ El kit adopta `executing-plans` entero (Art. IX.1) y añade solo lo que el RED m
 
 ## Enmiendas
 
+- **2026-09-24, sin aprobar** (pase de fix de la revisión final): en «El cierre no repite la revisión final de Native», el GIVEN pasa de «cuyo ledger registra la revisión final de rama» a «cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama», y el AND a «solo sin esa línea (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`». Motivo: `executing-plans` borra el workspace, ledger incluido, cuando la revisión final queda limpia. Se añade al paso 6 que el hilo apunta esa línea. Presentada al dev-lead en el cierre.
+- **2026-09-24, del dev-lead** («Sí: compactar manda»): «Tras una compactación, lo que queda de un plan Native va con SDD» vale también con `execution: native` fijado en `sdd-kit.json`; la pregunta 5 de `control-profiles.md` lo dice.
+- **2026-09-24, ruling** (REFACTOR del GREEN): la forma literal de la línea `Ejecución` del Approach pasa a «Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.».
+
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |

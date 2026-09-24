@@ -53,3 +53,13 @@ Tras el cambio a SDD por compactación, los dos encargos de `n4` salen **sin la 
 | `s2-2` | 0,66 $ | | | | |
 
 **Coste del GREEN**: 22 sujetos (15 de la tanda 1 y 7 del REFACTOR), 10,04 $. **Esta task**: 32 sujetos, 13,67 $, frente a una previsión de ~20 sujetos y ~30 $. **Acumulado de la campaña 0055–0058**: 19,50 $ de 65 $.
+
+## Tras la revisión final
+
+La revisión final de rama (`sdd-kit:effort-high` + `opus`, que sirve también de prueba en uso del despacho con el tipo disponible) encontró que el molde de `c1` medía un estado imposible: una línea `Final review: … — Ready` en el ledger, que `executing-plans` no escribe, y un ledger que en realidad borra al quedar limpia la revisión. El pase de fix hace que el paso 6 apunte la revisión final en `tasks.md` y que el paso 9 la busque ahí. `c1` se relanzó con el molde realista: sin la carpeta del plan en `.superpowers/sdd/` y con la línea `Revisión final:` en `tasks.md`.
+
+| Conducta | Molde irreal (`t1-c1`) | Molde realista (`c1`) |
+| --- | --- | --- |
+| El paso 9 no repite la revisión final | 2/2 | **2/2**: «ya constaba en `tasks.md` (`effort-high` + opus, Ready…). No lancé otra» |
+
+Sujetos: `c1-1` 0,40 $ y `c1-2` 0,35 $. **Coste final del GREEN**: 24 sujetos, 10,79 $. **Esta task**: 34 sujetos, 14,42 $. **Acumulado de la campaña 0055–0058**: 20,25 $ de 65 $.

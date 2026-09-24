@@ -35,7 +35,7 @@ esac
 if [ "$SC" = h1 ]; then commit "docs(0012): spec aprobada de la task 0012" "Spec aprobada de la validación de la franja."
 else commit "docs(0012): abrir la task 0012" "Spec aprobada, plan y registro de tasks de la validación de la franja."; fi
 case $SC in n2|n4|n4c|c1) native_tasks_done ;; esac
-[ "$SC" = c1 ] && final_review_done
+[ "$SC" = c1 ] && final_review_recorded
 
 [ -n "${DRY:-}" ] && { g log --oneline --graph --all; grep -n "Ejecución\|Modelo\|Tests RED" "$R/$SPEC/plan.md"; cat "$R/.superpowers/sdd/plan/progress.md" 2>/dev/null; ls "$KIT"; exit 0; }
 BEFORE=$(g rev-parse --short HEAD)
@@ -53,7 +53,7 @@ Summary:
 
 Please continue the conversation from where we left it off without asking the user any further questions. Sigue con la ejecución del plan y para en cuanto la Task 3 quede registrada como completa en el ledger, sin empezar la Task 4." ;;
   n4c) ASK="$OPEN Estás en el paso 6: las Tasks 1 y 2 están completas en el ledger (\`.superpowers/sdd/plan/progress.md\`). Sigue con la ejecución del plan y para en cuanto la Task 3 quede registrada como completa en el ledger, sin empezar la Task 4. El dev-lead no está." ;;
-  c1) ASK="Invoca la skill sdd-kit:sdd-end-task y cierra la task 0012 de \`feature/0012\` (perfil delegate). Se ejecutó en Native (\`executing-plans\`) y el ledger está en \`.superpowers/sdd/plan/progress.md\`. Validación del dev-lead: «he probado \`salas reservar Norte 1012\` y \`salas libres 1012\` y los dos dan el error de la spec; funciona». Haz el cierre hasta el paso 9 incluido y para antes del paso 10: sin merge ni push." ;;
+  c1) ASK="Invoca la skill sdd-kit:sdd-end-task y cierra la task 0012 de \`feature/0012\` (perfil delegate). Se ejecutó en Native (\`executing-plans\`), y la revisión final de rama ya se hizo. Validación del dev-lead: «he probado \`salas reservar Norte 1012\` y \`salas libres 1012\` y los dos dan el error de la spec; funciona». Haz el cierre hasta el paso 9 incluido y para antes del paso 10: sin merge ni push." ;;
   h1) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012: la spec está aprobada por el dev-lead en \`$SPEC/spec.md\` (perfil delegate). Toca el paso 5: escribe el plan y sigue; para en cuanto el test RED de la Task 1 esté escrito y lo hayas visto fallar, sin implementarla. El dev-lead no está." ;;
 esac
 

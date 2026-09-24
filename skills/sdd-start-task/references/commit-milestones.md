@@ -6,7 +6,7 @@ La rama de una task cuenta sus hitos: **apertura**, **un commit por task del pla
 
 | Hito | Lleva | Se junta | Base |
 | --- | --- | --- | --- |
-| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | justo antes del primer despacho (lite: antes de implementar) | `git merge-base HEAD <integración>` |
+| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | antes de escribir los RED de la primera task (en Native, antes de su `task-start`); lite: antes de implementar | `git merge-base HEAD <integración>` |
 | Task N | sus tests RED, su implementación, los arreglos de su revisión, su evidencia | con su revisión (y re-revisión) limpia, antes de despachar la siguiente o la revisión final; en Native, con su contrato de cierre cumplido y antes de `task-done` | el `BASE` que apuntaste antes de despacharla (en Native, el que imprime `task-start`) |
 | Cierre | documentación de `sdd-end-task`, arreglos de la revisión final de rama y de la validación | tras la documentación de cierre, antes del merge | el commit de la última task |
 | Fix (patch) | código, tests y `patch.md` | con el fix verificado | `git merge-base HEAD <integración>` |

@@ -90,3 +90,14 @@ Final: minor (deferred): la validación y el mensaje se repiten en reserve y fre
 Final: minor (deferred): ningún test cubre una franja válida como 10-12
 EOF2
 }
+
+# Estado real tras la revisión final de Native: superpowers borró el workspace y el hilo apuntó la revisión en tasks.md.
+final_review_recorded() {
+  rm -rf "$R/.superpowers/sdd/plan"
+  cat >> "$R/$SPEC/tasks.md" <<'EOF2'
+
+Revisión final: sdd-kit:effort-high + opus, Ready (0 Critical, 0 Important, 2 Minor)
+Deferred minors: la validación y el mensaje se repiten en reserve y free; ningún test cubre una franja válida como 10-12
+EOF2
+  commit "docs(0012): revisión final de rama" "Apunta la revisión final y los minors diferidos en tasks.md."
+}
