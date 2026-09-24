@@ -37,9 +37,10 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    | 2 | Perfil de control: pregunta 1 del [bloque de claves de control](../sdd-start-task/references/control-profiles.md#preguntas-de-las-claves-de-control), con su recomendación y su motivo | `sdd-kit.json` |
    | 3 | Solo si el repo tiene una rama de integración distinta de la estable: política de merge y push, preguntas 2 y 3 del mismo bloque, con esa rama, una por turno | `sdd-kit.json` |
    | 4 | Frenos: pregunta 4 del mismo bloque | `sdd-kit.json` |
-   | 5 | ¿Llevamos changelog? | `changelog.md` |
-   | 6 | Solo si 5 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
-   | 7 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
+   | 5 | Método de ejecución: pregunta 5 del mismo bloque | `sdd-kit.json` |
+   | 6 | ¿Llevamos changelog? | `changelog.md` |
+   | 7 | Solo si 6 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
+   | 8 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
    Orden de generación y qué lleva cada documento: [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).

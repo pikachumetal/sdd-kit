@@ -6,7 +6,7 @@ BeforeAll {
   }
 
   function Get-TableRow([string]$RelativePath, [string]$Anchor) {
-    return (Get-KitFile $RelativePath) -split "`r?`n" | Where-Object { $_ -match '^\|' -and $_.Contains($Anchor) }
+    return (Get-KitFile $RelativePath) -split "`r?`n" | Where-Object { $_ -match '^\s*\|' -and $_.Contains($Anchor) }
   }
 
   $script:ControlProfiles = 'skills/sdd-start-task/references/control-profiles.md'
@@ -80,5 +80,39 @@ Describe 'Task 1 — contrato del método' {
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {
     Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match '6\. \*\*Implementación\*\* — según la línea `Ejecución` del plan: `superpowers:executing-plans` \(Native\) o `superpowers:subagent-driven-development`'
+  }
+}
+
+Describe 'Task 2 — init y migración' {
+  It 'greenfield pregunta el método de ejecución tras los frenos' {
+    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 21 |'
+    $row | Should -Match 'Método de ejecución: pregunta 5 del mismo bloque'
+  }
+
+  It 'greenfield escribe las claves respondidas en 18–21' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves de control que el usuario respondió en 18–21'
+  }
+
+  It 'brownfield pregunta el método de ejecución tras los frenos' {
+    $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 5 |'
+    $row | Should -Match 'Método de ejecución: pregunta 5 del mismo bloque'
+  }
+
+  It 'brownfield escribe execution en el marcador solo si se respondió' {
+    $generation = Get-KitFile 'skills/sdd-init-brownfield/references/generacion.md'
+    $generation | Should -Match '"execution"\?'
+    $generation | Should -Match 'con `control`, `merge` y `execution` solo con lo respondido'
+  }
+
+  It 'la migración a v1.2.0 pregunta execution si falta y la escribe' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    $migration | Should -Match 'o `execution`'
+    $migration | Should -Match '`execution: auto`'
+    $migration | Should -Match '"execution"'
+  }
+
+  It 'la línea Escribe de la migración declara execution' {
+    $line = (Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md') -split "`r?`n" | Where-Object { $_ -match '^\*\*Escribe\*\*:' }
+    $line | Should -Match '`merge\.push`, `execution`'
   }
 }
