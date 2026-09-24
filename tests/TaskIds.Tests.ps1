@@ -57,6 +57,18 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
       Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'sequence'
     }
 
+    It 'los arranques sin fila reservan el id con -Reserve, no lo calculan' -ForEach @(
+      @{ File = 'skills/sdd-start-task/references/nombrado.md' }
+      @{ File = 'skills/sdd-start-patch/SKILL.md' }
+      @{ File = 'skills/sdd-start-release/SKILL.md' }
+    ) {
+      Get-KitFile $File | Should -Match 'Get-NextSddId\.ps1[^`]*-Reserve'
+    }
+
+    It 'sdd-start-release reserva los N ids de la release en una sola llamada' {
+      Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match '-Reserve -Count'
+    }
+
     It 'sdd-consult puede proponer un id pero no reservarlo' {
       Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'Get-NextSddId|sequence'
     }

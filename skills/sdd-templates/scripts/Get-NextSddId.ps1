@@ -1,19 +1,30 @@
 <#
 .SYNOPSIS
-  Calcula el siguiente id SDD libre (task/patch) para un proyecto en modo ids.mode=sequence.
+  Reserva (con -Reserve) o propone el siguiente id SDD (task/patch) para un proyecto en modo ids.mode=sequence.
 .DESCRIPTION
   Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
-  Lee specs/ y el roadmap del working tree y de cada rama del repo, que es donde reservan ids los worktrees en paralelo,
-  y el roadmap y specs/ del disco de cada worktree de `git worktree list`, donde queda una reserva aún sin commitear.
-  Solo lee: no crea carpetas ni ficheros, no toca el roadmap, no crea ramas ni contacta con el remoto.
+  Con -Reserve toma un cerrojo en el directorio común de git y consume los ids en el contador sdd-ids, que comparten
+  todos los worktrees de la máquina: un id reservado no vuelve a salir aunque el trabajo se abandone. Sin -Reserve
+  solo propone el id y no escribe nada.
+  El escaneo inicializa o corrige el contador: lee specs/ y el roadmap del working tree y de cada rama del repo, y el
+  roadmap y specs/ del disco de cada worktree de `git worktree list`. Nunca toca el roadmap, no crea ramas ni
+  contacta con el remoto.
 .EXAMPLE
-  pwsh -NoProfile -File Get-NextSddId.ps1 -ProjectRoot D:\code\git\mi-proyecto
+  pwsh -NoProfile -File Get-NextSddId.ps1 -ProjectRoot D:\code\git\mi-proyecto -Reserve
+.EXAMPLE
+  pwsh -NoProfile -File Get-NextSddId.ps1 -ProjectRoot D:\code\git\mi-proyecto -Reserve -Count 3
 #>
 [CmdletBinding()]
 param(
-  [string]$ProjectRoot = '.'
+  [string]$ProjectRoot = '.',
+  [switch]$Reserve,
+  [ValidateRange(1, 99)]
+  [int]$Count = 1,
+  [double]$LockTimeoutMinutes = 2
 )
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'SddLock.ps1')
 
 function Get-EffectiveIdsMode([string]$ProjectRoot) {
   $configPath = Join-Path $ProjectRoot '.docs/sdd/sdd-kit.json'
@@ -142,26 +153,91 @@ function Assert-NoSharedIds([object[]]$SpecArtifacts) {
   }
 }
 
-function Get-NextSddId([string]$ProjectRoot) {
+function Assert-SequenceMode([string]$ProjectRoot) {
   $mode = Get-EffectiveIdsMode $ProjectRoot
   if ($mode -ne 'sequence') {
     throw "El proyecto no está en modo 'sequence' (modo actual: '$mode'); asigna el id con el gestor de tickets, no con este script."
   }
+}
+
+function Get-IdScan([string]$ProjectRoot) {
+  Assert-SequenceMode $ProjectRoot
   $specArtifacts = @(Get-SpecArtifactIds $ProjectRoot | Where-Object { $_.Id -ne '0000' })
   Assert-NoSharedIds $specArtifacts
   $gitIds = Get-GitIds $ProjectRoot
   $allIds = @($specArtifacts.Id) + @(Get-RoadmapIds $ProjectRoot) + $gitIds.UsedIds
   $usedIds = @($allIds | Where-Object { $_ -ne '0000' } | ForEach-Object { [int]$_ })
-  # Una rama feature/<id> creada para esta sesión reserva su id (ticket del patch 0027 §1).
-  if ($gitIds.CurrentBranchId -and $usedIds -notcontains [int]$gitIds.CurrentBranchId) {
-    return $gitIds.CurrentBranchId
-  }
   $max = if ($usedIds.Count -gt 0) { [int]($usedIds | Measure-Object -Maximum).Maximum } else { 0 }
-  return '{0:D4}' -f ($max + 1)
+  return [pscustomobject]@{ UsedIds = $usedIds; Max = $max; CurrentBranchId = $gitIds.CurrentBranchId }
+}
+
+function Format-SddId([int]$Number) {
+  return '{0:D4}' -f $Number
+}
+
+function Get-CounterName([string]$ProjectRoot, [string]$TopLevel) {
+  # Un proyecto en una subcarpeta (monorepo o repositorio padre ajeno) no comparte secuencia con la raíz.
+  if ($TopLevel -ieq $ProjectRoot.TrimEnd('\')) { return 'sdd-ids' }
+  $relative = [System.IO.Path]::GetRelativePath($TopLevel, $ProjectRoot).TrimEnd('\', '/')
+  return 'sdd-ids-' + ($relative -replace '[\\/:]+', '-')
+}
+
+function Get-CounterPath([string]$ProjectRoot) {
+  $topLevel = Get-RepoToplevel $ProjectRoot
+  if ($null -eq $topLevel) { return $null }
+  $commonDir = @(Invoke-IsolatedGit $ProjectRoot @('rev-parse', '--git-common-dir'))[0]
+  if (-not [System.IO.Path]::IsPathRooted($commonDir)) { $commonDir = Join-Path $ProjectRoot $commonDir }
+  return Join-Path (Resolve-Path -LiteralPath $commonDir).Path (Get-CounterName $ProjectRoot $topLevel)
+}
+
+function Read-IdCounter([string]$CounterPath) {
+  if (-not $CounterPath -or -not (Test-Path -LiteralPath $CounterPath)) { return 0 }
+  $text = (Get-Content -LiteralPath $CounterPath -Raw).Trim()
+  if ($text -match '^\d{1,4}$') { return [int]$text }
+  Write-Error "El contador de ids '$CounterPath' no se puede leer ('$text'): se reinicializa con el escaneo." -ErrorAction Continue
+  return 0
+}
+
+function Get-ProposedId([string]$ProjectRoot) {
+  $scan = Get-IdScan $ProjectRoot
+  # Una rama feature/<id> creada para esta sesión ya es su id: proponer otro la dejaría huérfana.
+  if ($scan.CurrentBranchId -and $scan.UsedIds -notcontains [int]$scan.CurrentBranchId) {
+    return $scan.CurrentBranchId
+  }
+  $base = [Math]::Max($scan.Max, (Read-IdCounter (Get-CounterPath $ProjectRoot)))
+  return Format-SddId ($base + 1)
+}
+
+function Get-ReservedIds([string]$ProjectRoot, [string]$CounterPath, [int]$Count) {
+  $base = [Math]::Max((Get-IdScan $ProjectRoot).Max, (Read-IdCounter $CounterPath))
+  $last = $base + $Count
+  if ($last -gt 9999) { throw "La reserva pasaría de 9999 (último id consumido: $(Format-SddId $base)); no se reserva nada." }
+  Set-Content -LiteralPath $CounterPath -Value (Format-SddId $last)
+  return ($base + 1)..$last | ForEach-Object { Format-SddId $_ }
+}
+
+function Invoke-IdReservation([string]$ProjectRoot, [int]$Count, [double]$TimeoutMinutes) {
+  Assert-SequenceMode $ProjectRoot
+  $counterPath = Get-CounterPath $ProjectRoot
+  if (-not $counterPath) { throw "El proyecto no está en un repositorio git: no hay dónde reservar el id." }
+  $lock = New-SddLock (Join-Path (Split-Path $counterPath) 'sdd-ids.lock') 'ids' ([Console]::Error)
+  $branch = Invoke-IsolatedGit $ProjectRoot @('branch', '--show-current') | Select-Object -First 1
+  $stream = Enter-SddLock $lock ([pscustomobject]@{ Branch = $branch; Worktree = $ProjectRoot }) $TimeoutMinutes
+  try {
+    return Get-ReservedIds $ProjectRoot $counterPath $Count
+  }
+  finally {
+    Exit-SddLock $stream $lock
+  }
 }
 
 if (-not (Test-Path -LiteralPath $ProjectRoot)) {
   throw "No existe la ruta de proyecto '$ProjectRoot'."
 }
 $ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
-Write-Output (Get-NextSddId $ProjectRoot)
+if ($Reserve) {
+  Write-Output (Invoke-IdReservation $ProjectRoot $Count $LockTimeoutMinutes)
+}
+else {
+  Write-Output (Get-ProposedId $ProjectRoot)
+}
