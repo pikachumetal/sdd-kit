@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Campaña de la 0067: el RED y el GREEN comparten techo. Para si existe `stop` junto a este lanzador, si se llega a SUBJECT_CAP sujetos o si el coste acumulado pasa de COST_CAP.
+# Campaña: el RED y el GREEN comparten techo. Para si existe `stop` junto a este lanzador, si se llega a SUBJECT_CAP sujetos o si el coste acumulado pasa de COST_CAP.
 # Uso: KIT_DIR=<copia del kit> RUNS_DIR=<scratchpad> OUT_NAME=<red|green> SCENARIOS="p1 p2" SUBJECT=<n> run.sh
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
@@ -21,4 +21,4 @@ for sc in ${SCENARIOS:-p1 p2}; do
   launched=$((launched + 1))
 done
 [ ${#pids[@]} -gt 0 ] && wait "${pids[@]}"
-echo "sujetos de la campaña 0067: $(subjects) · coste acumulado: $(spent) \$"
+echo "sujetos de la campaña: $(subjects) · coste acumulado: $(spent) \$"

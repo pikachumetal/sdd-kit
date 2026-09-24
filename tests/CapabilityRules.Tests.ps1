@@ -31,7 +31,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     It 'capability-template nombra el cierre de patch en la fusión y en el historial' {
       $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
       ($content -split "`n" | Where-Object { $_ -match '^> 3\. ' }) | Should -Match 'sdd-end-patch'
-      $content | Should -Match 'task <id> \| patch <id>|<carpeta de la task o del patch>'
+      $content | Should -Match '<carpeta de la task o del patch>'
     }
   }
 

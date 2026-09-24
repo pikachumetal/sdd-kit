@@ -1,4 +1,4 @@
-# Molde de la 0067: repo de juguete salas con una capacidad y un patch listo para cerrar; subject.sh lo carga con «.».
+# Molde: repo de juguete salas con una capacidad y un patch listo para cerrar; subject.sh lo carga con «.».
 # Usa g, put, commit y R de subject.sh.
 
 base_files() {
@@ -143,6 +143,18 @@ $cause
 ## 5. Tiempo (ligero)
 
 - Real: 0,3h
+EOF
+  [ "${SECTION6:-0}" = 1 ] || return 0
+  cat >> "$R/.docs/sdd/specs/20260925-080000-patch-$id-$slug/patch.md" <<'EOF'
+
+## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*
+
+### Capacidad: `<nombre>`
+
+**MODIFIED — <título estable>**
+- GIVEN <contexto>
+- WHEN <acción>
+- THEN <resultado actualizado>
 EOF
 }
 

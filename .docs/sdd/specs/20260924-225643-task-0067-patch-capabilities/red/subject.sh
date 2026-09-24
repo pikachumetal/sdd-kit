@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Sujeto headless de la 0067 sobre el repo de juguete salas.
+# Sujeto headless sobre el repo de juguete salas.
 # Uso: subject.sh <kit> <etiqueta> <escenario> <salida>
 #   p1  cerrar un patch cuyo fix cambia lo que lista `libres`, que la capacidad describe de otra forma
 #   p2  cerrar un patch cuyo fix devuelve `reservar` a lo que la capacidad ya decía (salida corta)
+# SECTION6=1: el patch.md nace con la sección de delta vacía de patch-template.md, como al calcarla.
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 SPECS="$(dirname "$(dirname "$BASE")")"
