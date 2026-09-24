@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Bucle Native en el paso 6 | pending | — | |
+| 1 | Bucle Native en el paso 6 | done | — | ruling: ancla de NativeDefault.Tests.ps1:130 estrechada |
 | 2 | Historia de commits | pending | — | |
 | 3 | Revisor final, tipo de effort y cierre | pending | — | |
 | 4 | Cambio a SDD tras una compactación | pending | — | |
