@@ -33,19 +33,15 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 
    | # | Pregunta | Va a |
    | --- | --- | --- |
-   | 1 | ¿Cómo se numeran las tasks: ids del gestor de tickets (`tracker`) o secuencia propia (`sequence`)? «No sé» deja `tracker` | `sdd-kit.json` (`ids.mode`) |
-   | 2 | Perfil de control: pregunta 1 del [bloque de claves de control](../sdd-start-task/references/control-profiles.md#preguntas-de-las-claves-de-control), con su recomendación y su motivo | `sdd-kit.json` |
-   | 3 | Solo si el repo tiene una rama de integración distinta de la estable: política de merge y push, preguntas 2 y 3 del mismo bloque, con esa rama, una por turno | `sdd-kit.json` |
-   | 4 | Frenos: pregunta 4 del mismo bloque | `sdd-kit.json` |
-   | 5 | Método de ejecución: pregunta 5 del mismo bloque | `sdd-kit.json` |
-   | 6 | ¿Llevamos changelog? | `changelog.md` |
-   | 7 | Solo si 6 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
-   | 8 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
+   | 1 | Claves del kit: invoca la skill [`sdd-config`](../sdd-config/SKILL.md) con la rama de integración que se ve en el repo. Hace, una por turno y con su recomendación, sus preguntas de cómo se numera el trabajo (`ids.mode`), perfil de control, política de merge y push (solo con una rama de integración distinta de la estable), frenos y método de ejecución | `sdd-kit.json` |
+   | 2 | ¿Llevamos changelog? | `changelog.md` |
+   | 3 | Solo si 2 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
+   | 4 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
    Orden de generación y qué lleva cada documento: [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).
 5. **Estructura** — `.docs/sdd/` completa. Sin carpeta `templates/`: las plantillas viven en el skill
-   `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves de control que el usuario respondió
+   `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves que el usuario respondió a `sdd-config`
    (solo esas: «no sé» no escribe la clave). Además, `.claude/settings.json` con `"autoMemoryEnabled": false`
    (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo), `.gitignore` con los
    temporales de las herramientas y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
@@ -53,7 +49,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    aunque el usuario lo pida: crecen task a task.
    Detalle: [generacion.md](references/generacion.md).
 6. **`CLAUDE.md` corto**: reescribirlo como punteros a los documentos + 3-5 reglas críticas. El contenido largo vive en los docs de anclaje, no aquí.
-7. **Cierre**: resumen + discrepancias y preguntas del paso 3 pendientes de confirmar + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
+7. **Cierre**: resumen + discrepancias y preguntas del paso 3 pendientes de confirmar + que las preferencias de cada persona (perfil, método, entorno en la validación) se fijan con `sdd-config` + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
 
 ## Red flags — STOP
 

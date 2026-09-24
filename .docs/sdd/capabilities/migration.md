@@ -44,19 +44,19 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 ### La migración a v1.2.0 pregunta el modo de ids
 - GIVEN un proyecto que migra a v1.2.0 y cuyo `sdd-kit.json` no tiene campo `ids`
 - WHEN se aplica `migrations/v1.2.0.md`
-- THEN el paso es un **gate**: presenta los dos modos al dev-lead y escribe su respuesta
+- THEN el paso es un **gate**: invoca `sdd-config`, que presenta los dos modos con la pregunta de su catálogo, y escribe la respuesta
 - AND si el dev-lead no está, el paso queda pendiente explícito y el proyecto sigue funcionando en `tracker`
 
 ### La migración a v1.2.0 pregunta las claves de control que faltan
 - GIVEN un proyecto cuyo `sdd-kit.json` no tiene `control.profile`, un bloque `merge` completo, `merge.push` con el bloque `merge` completo, las claves de frenos (`control.maxParallelAgents`, `control.silence.*`) o `execution`
 - WHEN se aplica `migrations/v1.2.0.md`
-- THEN el agente hace, una por turno, las preguntas del bloque de `control-profiles.md` que corresponden a lo que falta, las mismas que hace la init y con la misma recomendación, y escribe solo lo que responde; lo que ya estaba no se pregunta
+- THEN el agente invoca `sdd-config`, que hace una por turno las preguntas de su catálogo que corresponden a lo que falta, las mismas que en la init y con la misma recomendación, y escribe solo lo que se responde; lo que ya estaba no se pregunta
 - AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con los defaults (`execution: auto` incluido), con el paso 10 del cierre preguntando el merge y sin push, y el informe dice cómo reanudarlo
 
 ### La migración a v1.2.0 deja la configuración que deja la init
-- GIVEN un proyecto que migra a v1.2.0 sin `"autoMemoryEnabled": false` en `.claude/settings.json` o sin `.playwright-mcp/` y `.superpowers/` en `.gitignore`
+- GIVEN un proyecto que migra a v1.2.0 sin `"autoMemoryEnabled": false` en `.claude/settings.json` o sin `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` en `.gitignore`
 - WHEN se aplica `migrations/v1.2.0.md`
-- THEN el proyecto queda con la clave y las dos líneas, igual que tras una init, sin duplicar líneas ni tocar las demás claves
+- THEN el proyecto queda con la clave y las tres líneas, igual que tras una init, sin duplicar líneas ni tocar las demás claves
 - AND si la clave estaba a `true`, el agente pregunta antes de cambiarla; si el usuario dice que no, se queda en `true` y el informe lo anota
 - AND si ya estaban, el paso se salta y lo dice
 
@@ -71,7 +71,8 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - GIVEN una migración de `skills/sdd-init-brownfield/references/migrations/` que escribe en `sdd-kit.json` u otro fichero del proyecto
 - WHEN corre la suite del kit
 - THEN la migración declara en su línea `**Escribe**:` cada fichero y cada clave que escribe
-- AND la suite falla si una clave declarada no aparece literal en `sdd-init-greenfield` o en `sdd-init-brownfield`, contando su `SKILL.md`, sus `references/` y los documentos que estos enlazan
+- AND la suite falla si una clave declarada no aparece literal en `sdd-init-greenfield` o en `sdd-init-brownfield`, contando su `SKILL.md`, sus `references/` y los documentos que estos enlazan, `sdd-config` incluido
+- AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en una init o en una migración, o si una de ellas no nombra `sdd-config`
 
 ## Historial
 
@@ -90,3 +91,7 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - 2026-09-22 — 20260922-141616-task-0020-init-control-keys — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan
 - 2026-09-23 — 20260922-211157-task-0019-init-files — ADDED La migración a v1.2.0 deja la configuración que deja la init · ADDED La memoria ya guardada se vuelca a los docs antes de borrarse · ADDED Lo que escribe una migración lo reciben también las init
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La migración a v1.2.0 pregunta el modo de ids
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La migración a v1.2.0 deja la configuración que deja la init
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED Lo que escribe una migración lo reciben también las init
