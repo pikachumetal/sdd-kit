@@ -27,3 +27,7 @@ Mismos escenarios y sujetos que el [RED](sdd-config-red.md), con el kit de la ra
 - **c4 no invoca `sdd-config` con el tool `Skill`**: sigue la migración, lee el catálogo por el enlace y hace la pregunta con su texto y su recomendación. La conducta medida es la del control. La diferencia no cambia la salida.
 - **c3 (2/2) añade un matiz propio**: sin remoto, desaconseja `merge.push: true` después de recomendarlo. No viene del catálogo, y es razonable: no se escribe guía.
 - **c1-1 no enseña la tabla** antes de escribir, porque no hace ninguna pregunta: la petición ya traía las dos respuestas. c1-2 sí la enseña. La regla del paso 1 va ligada a la primera pregunta, así que no es un fallo.
+
+## Control tras la revisión final
+
+La revisión final cambió tres textos de guía: el paso 5 (cabecera `fijado en <fichero>` y `auto` en local), los lectores del fichero local (con los cierres) y que `sdd-config` devuelva las respuestas a la init o a la migración en vez de escribirlas. Un sujeto de control c3 (`c3-3`, 0,19 $) repite el GREEN: enseña la tabla, hace una sola pregunta con la recomendada primero y no escribe nada. Campaña cerrada en 15 sujetos y 4,01 $.

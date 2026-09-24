@@ -21,7 +21,7 @@ Manda el primero que exista, de arriba abajo: task sobre persona, persona sobre 
 
 ## sdd-kit.local.json
 
-`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee quien resuelve la configuración —la primera pregunta de `sdd-start-task` (el perfil), el plan (`execution`) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
+`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee toda skill que resuelve el perfil vigente o `execution` —`sdd-start-task` (la primera pregunta y el plan), `sdd-end-task` y `sdd-end-patch` (el merge y el push dependen del perfil) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
 
 Admite solo tres claves:
 

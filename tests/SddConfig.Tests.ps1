@@ -47,8 +47,8 @@ Describe 'Anatomía de sdd-config' {
     Get-KitFile $script:SkillPath | Should -Match 'antes de la primera pregunta'
   }
 
-  It 'invocada por una init o por la migración, escribe solo en sdd-kit.json' {
-    Get-KitFile $script:SkillPath | Should -Match 'init o (por )?la migración.*solo en `sdd-kit\.json`'
+  It 'invocada por una init o por una migración, no escribe: devuelve las respuestas a quien la invocó' {
+    Get-KitFile $script:SkillPath | Should -Match 'init o una migración, no escribes: devuelves las respuestas'
   }
 
   It 'pone la línea de .gitignore antes de escribir el fichero local y no lo commitea' {

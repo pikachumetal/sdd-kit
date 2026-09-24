@@ -144,7 +144,7 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado en `sdd-kit.local.json` o en `sdd-kit.json`, o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado \(`native` o `subagent` que ningún `auto` de `sdd-kit.local.json` pisa\), o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
   }
 
   It 'la celda de pair dice que con execution fijado solo se aprueba' {

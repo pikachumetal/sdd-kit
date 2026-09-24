@@ -71,6 +71,22 @@ Describe 'sdd-start-task lee el fichero local' {
   It 'el paso 5 nombra el fichero local como sitio donde se fija execution' {
     Get-SkillStep 5 | Should -Match 'sdd-kit\.local\.json'
   }
+
+  It 'el paso 5 dice que la cabecera nombra el fichero que fija el método, aunque la plantilla solo nombre sdd-kit.json' {
+    $step = Get-SkillStep 5
+    $step | Should -Match 'fijado en <fichero>'
+    $step | Should -Match '`auto` en `sdd-kit\.local\.json`'
+  }
+
+  It 'los cierres de task y de patch también leen el fichero local' {
+    $section = Get-Section $script:Profiles 'sdd-kit.local.json'
+    $section | Should -Match '`sdd-end-task`'
+    $section | Should -Match '`sdd-end-patch`'
+  }
+
+  It 'generacion.md cita el changelog con la numeración nueva de brownfield' {
+    Get-KitFile 'skills/sdd-init-brownfield/references/generacion.md' | Should -Not -Match 'preguntas 6 y 7'
+  }
 }
 
 Describe 'El fichero local queda fuera de git' {
