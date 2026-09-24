@@ -20,6 +20,10 @@ BeforeAll {
 }
 
 Describe 'Task 1 — bucle Native' {
+  It 'el párrafo Native dice que los scripts son de executing-plans y no del kit' {
+    Get-NativeParagraph | Should -Match 'son de esa skill de superpowers, no del kit'
+  }
+
   It 'el paso 6 tiene un párrafo Native con task-start y task-done' {
     $paragraph = Get-NativeParagraph
     $paragraph | Should -Match 'scripts/task-start'
@@ -27,7 +31,7 @@ Describe 'Task 1 — bucle Native' {
   }
 
   It 'el párrafo Native comprueba la base antes de cada task' {
-    Get-NativeParagraph | Should -Match 'Antes de empezar \*\*cada\*\* task'
+    Get-NativeParagraph | Should -Match 'Cada task, también la segunda y las siguientes, se abre en este orden: `task-start`, la comprobación de la base'
   }
 
   It 'el párrafo Native aparta y compara los RED' {
@@ -106,7 +110,7 @@ Describe 'Task 3 — revisión final y cierre' {
 Describe 'Task 4 — cambio tras compactar' {
   It 'la cabecera Ejecución de la plantilla lleva la frase del cambio de método' {
     $line = (Get-KitFile 'skills/sdd-templates/templates/plan-template.md') -split "`r?`n" | Where-Object { $_.StartsWith('**Ejecución**') }
-    $line | Should -Match ([regex]::Escape('Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.'))
+    $line | Should -Match ([regex]::Escape('Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.'))
   }
 
   It 'el paso 5 dice que tras compactar se relee el plan y no la skill' {
@@ -116,5 +120,11 @@ Describe 'Task 4 — cambio tras compactar' {
   It 'la fila de executing-plans en overrides cambia a subagentes tras compactar' {
     $row = (Get-KitFile $script:Overrides) -split "`r?`n" | Where-Object { $_.StartsWith('| `executing-plans` (Native) |') }
     $row | Should -Match 'Tras una compactación con dos o más tasks pendientes'
+  }
+}
+
+Describe 'Task 5 — REFACTOR del GREEN' {
+  It 'el paso 6 escribe los RED de SDD con la apertura ya juntada' {
+    Get-SkillStep 'sdd-start-task' 6 | Should -Match 'con la apertura ya juntada en su commit'
   }
 }

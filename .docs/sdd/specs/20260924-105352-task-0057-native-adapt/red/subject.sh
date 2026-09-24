@@ -4,6 +4,9 @@
 #   n1  paso 6 en Native: ejecutar las Tasks 1 y 2 y parar antes de la revisión final
 #   n2  paso 6 en Native, tasks hechas: revisión final de rama (el kit va sin agents/)
 #   n4  sesión compactada a mitad de un plan Native de cuatro tasks, dos hechas
+#   n4c control de n4 sin compactación · c1 cierre con sdd-end-task tras la revisión final de Native
+#   h1  paso 5 en delegate sin el hueco de «libres», hasta el RED de la Task 1
+# GREEN=1 escribe en la línea Ejecución del plan la frase del cambio de método de la plantilla.
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 KIT="$(cygpath -m "$1")"; LABEL="$2"; SC="$3"; OUT="$4"
@@ -20,16 +23,19 @@ SPEC=.docs/sdd/specs/20260923-100000-task-0012-franja
 . "$BASE/mold.sh"
 
 g init -q -b main; g config core.autocrlf false
-base_files; suite_hook; commit "feat: base de reservas de salas"
+base_files; [ "$SC" = h1 ] && free_in_base; suite_hook; commit "feat: base de reservas de salas"
 g checkout -q -b develop
 g checkout -q -b feature/0012
 spec_files
+[ -n "${GREEN:-}" ] && export EXEC_RULE='. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.'
 case $SC in
-  n1|n2) native_plan ;;
-  n4) four_task_spec; four_task_plan ;;
+  n1|n2|c1) native_plan ;;
+  n4|n4c) four_task_spec; four_task_plan ;;
 esac
-commit "docs(0012): abrir la task 0012" "Spec aprobada, plan y registro de tasks de la validación de la franja."
-case $SC in n2|n4) native_tasks_done ;; esac
+if [ "$SC" = h1 ]; then commit "docs(0012): spec aprobada de la task 0012" "Spec aprobada de la validación de la franja."
+else commit "docs(0012): abrir la task 0012" "Spec aprobada, plan y registro de tasks de la validación de la franja."; fi
+case $SC in n2|n4|n4c|c1) native_tasks_done ;; esac
+[ "$SC" = c1 ] && final_review_done
 
 [ -n "${DRY:-}" ] && { g log --oneline --graph --all; grep -n "Ejecución\|Modelo\|Tests RED" "$R/$SPEC/plan.md"; cat "$R/.superpowers/sdd/plan/progress.md" 2>/dev/null; ls "$KIT"; exit 0; }
 BEFORE=$(g rev-parse --short HEAD)
@@ -46,6 +52,9 @@ Summary:
 4. Pending Tasks: Task 3 (validar al cancelar) y Task 4 (validar al mover).
 
 Please continue the conversation from where we left it off without asking the user any further questions. Sigue con la ejecución del plan y para en cuanto la Task 3 quede registrada como completa en el ledger, sin empezar la Task 4." ;;
+  n4c) ASK="$OPEN Estás en el paso 6: las Tasks 1 y 2 están completas en el ledger (\`.superpowers/sdd/plan/progress.md\`). Sigue con la ejecución del plan y para en cuanto la Task 3 quede registrada como completa en el ledger, sin empezar la Task 4. El dev-lead no está." ;;
+  c1) ASK="Invoca la skill sdd-kit:sdd-end-task y cierra la task 0012 de \`feature/0012\` (perfil delegate). Se ejecutó en Native (\`executing-plans\`) y el ledger está en \`.superpowers/sdd/plan/progress.md\`. Validación del dev-lead: «he probado \`salas reservar Norte 1012\` y \`salas libres 1012\` y los dos dan el error de la spec; funciona». Haz el cierre hasta el paso 9 incluido y para antes del paso 10: sin merge ni push." ;;
+  h1) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012: la spec está aprobada por el dev-lead en \`$SPEC/spec.md\` (perfil delegate). Toca el paso 5: escribe el plan y sigue; para en cuanto el test RED de la Task 1 esté escrito y lo hayas visto fallar, sin implementarla. El dev-lead no está." ;;
 esac
 
 cd "$R"
@@ -65,6 +74,8 @@ claude -p --model sonnet --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}
   echo "## workspace"; ls -1 "$R/.superpowers/sdd/plan" 2>/dev/null
   echo "## tests en disco"; ls -1 "$R/tests"
   echo "## tasks.md"; cat "$R/$SPEC/tasks.md"
+  echo "## plan.md (Ejecución)"; grep -n "Ejecución" "$R/$SPEC/plan.md" 2>/dev/null
+  echo "## walkthrough.md"; cat "$R/$SPEC/walkthrough.md" 2>/dev/null
 } 2>&1 | sed -e "s#$RUN#<run>#g" -e "s#$(cygpath -m "$RUN")#<run>#g" > "$OUT/$LABEL.state.txt"
 node "$BASE/tools.mjs" "$RUNS/$LABEL.jsonl" "$RUN" > "$OUT/$LABEL.tools.txt"
 node "$BASE/texts.mjs" "$RUNS/$LABEL.jsonl" > "$OUT/$LABEL.texts.txt"

@@ -26,7 +26,7 @@ created: 2026-09-24
 
 **Spec**: `./spec.md`
 
-**Ejecución**: native, porque las cuatro tasks de texto tocan en serie los mismos ficheros y un error lo ven la revisión final y el GREEN. Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.
+**Ejecución**: native, porque las cuatro tasks de texto tocan en serie los mismos ficheros y un error lo ven la revisión final y el GREEN. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.
 
 ## Restricciones globales
 

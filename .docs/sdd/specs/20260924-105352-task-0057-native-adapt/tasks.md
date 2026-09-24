@@ -21,8 +21,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 1 | Bucle Native en el paso 6 | done | 5c26769 | ruling: ancla de NativeDefault.Tests.ps1:130 estrechada |
 | 2 | Historia de commits | done | f6a283e | |
 | 3 | Revisor final, tipo de effort y cierre | done | b97c72a | ruling: la comprobación del tipo, párrafo propio tras «En Native» |
-| 4 | Cambio a SDD tras una compactación | done | — | |
-| 5 | GREEN | pending | — | |
+| 4 | Cambio a SDD tras una compactación | done | 75ba772 | |
+| 5 | GREEN | done | — | 22 sujetos, 10,04 $; REFACTOR de tres textos tras la tanda 1 |
 
 ## Verificación por task
 

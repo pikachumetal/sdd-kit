@@ -1,0 +1,103 @@
+
+>>> Read: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\plan.md
+
+>>> Read: <run>\salas\.superpowers\sdd\plan\progress.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son cuatro tasks cortas sobre el mismo fichero y un error cuesta poco. Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes:
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits 9933064..4816fa7, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 4816fa7..133909d, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	
+
+>>> Read: <run>\salas\src\slots.js
+
+>>> Read: <run>\salas\tests\free-format.test.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	export function reserve(room, slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	  return { room, slot };
+6	}
+7	
+8	export function free(slot) {
+9	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+10	  return [];
+11	}
+12	
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { free } from '../src/slots.js';
+4	
+5	test('libres rechaza una franja sin guion', () => {
+6	  assert.throws(() => free('1012'), /Franja no válida/);
+7	});
+8	
+
+>>> Write: <run>\salas\tests\cancel-format.test.js
+<<< File created successfully at: <run>\salas\tests\cancel-format.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test tests/cancel-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)|SyntaxError|not.*function|export"
+<<< SyntaxError: The requested module '../src/slots.js' does not provide an export named 'cancel'
+ℹ pass 0
+ℹ fail 1
+
+>>> Edit: <run>\salas\src\slots.js
+<<< The file <run>\salas\src\slots.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test tests/ 2>&1 | grep -E "^ℹ (pass|fail)"; node --test tests/cancel-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 4
+ℹ fail 0
+ℹ pass 1
+ℹ fail 0
+
+>>> Bash: git add src/slots.js tests/cancel-format.test.js && git commit -q -m "feat(0012): validar el formato de la franja al cancelar
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+<<< ✔ cancelar rechaza una franja sin guion (1.0071ms)
+✔ libres rechaza una franja sin guion (1.2971ms)
+✔ rechaza una franja sin guion (1.0577ms)
+✔ reserva una sala en una franja (1.253ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.6857
+39185dc feat(0012): validar el formato de la franja al cancelar
+
+>>> Bash: echo "Task 3: complete (commits 133909d..39185dc, tests: node --test tests/cancel-format.test.js → ℹ pass 1)" >> .superpowers/sdd/plan/progress.md && tail -2 .superpowers/sdd/plan/progress.md
+<<< Task 2: complete (commits 4816fa7..133909d, tests: node --test tests/free-format.test.js → ℹ pass 1)
+Task 3: complete (commits 133909d..39185dc, tests: node --test tests/cancel-format.test.js → ℹ pass 1)
+
+=== RESULTADO (11 turnos, 0.2316542 $)
+Task 3 completa y registrada en el ledger `.superpowers/sdd/plan/progress.md`.
+
+- **RED:** `tests/cancel-format.test.js` falló con `does not provide an export named 'cancel'`.
+- **Implementación:** `cancel(room, slot)` en `src/slots.js` reutiliza `SLOT` y el mensaje literal.
+- **Verificación:** `node --test tests/cancel-format.test.js` da pass 1. La suite completa da pass 4, fail 0.
+- **Commit:** `39185dc feat(0012): validar el formato de la franja al cancelar`.
+
+Paro aquí, sin empezar la Task 4.

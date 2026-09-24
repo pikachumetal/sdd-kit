@@ -1,0 +1,120 @@
+
+>>> Read: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\plan.md
+
+>>> Read: <run>\salas\.superpowers\sdd\plan\progress.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son cuatro tasks cortas sobre el mismo fichero y un error cuesta poco. Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes:
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits f805556..55946a6, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 55946a6..f18bee2, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js && cat tests/free-format.test.js && git status --short
+<<< const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('libres rechaza una franja sin guion', () => {
+  assert.throws(() => free('1012'), /Franja no válida/);
+});
+
+>>> Write: <run>\salas\tests\cancel-format.test.js
+
+>>> Bash: cd "<run>/salas" && node --test tests/cancel-format.test.js 2>&1 | tail -15
+<<< File created successfully at: <run>\salas\tests\cancel-format.test.js (file state is current in your context — no need to Read it back)
+<<< ✖ tests\cancel-format.test.js (64.1415ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 71.1821
+
+✖ failing tests:
+
+test at tests\cancel-format.test.js:1:1
+✖ tests\cancel-format.test.js (64.1415ms)
+  'test failed'
+
+>>> Bash: cd "<run>/salas" && cat >> src/slots.js <<'EOF'
+
+export function cancel(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+EOF
+node --test tests/cancel-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; node --test tests/ 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 1
+ℹ fail 0
+ℹ pass 4
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && git status --short && git check-ignore -v .superpowers/sdd/plan/progress.md; git add src/slots.js tests/cancel-format.test.js && git commit -q -m "feat(0012): validar el formato de la franja al cancelar
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -1
+<<<  M src/slots.js
+?? tests/cancel-format.test.js
+.gitignore:1:.superpowers/	.superpowers/sdd/plan/progress.md
+✔ cancelar rechaza una franja sin guion (1.5296ms)
+✔ libres rechaza una franja sin guion (1.4749ms)
+✔ rechaza una franja sin guion (1.3554ms)
+✔ reserva una sala en una franja (1.8358ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 183.9093
+63f4af4 feat(0012): validar el formato de la franja al cancelar
+
+>>> Bash: cd "<run>/salas" && echo "Task 3: complete (commits f18bee2..63f4af4, tests: node --test tests/cancel-format.test.js → ℹ pass 1)" >> .superpowers/sdd/plan/progress.md && tail -2 .superpowers/sdd/plan/progress.md
+<<< Task 2: complete (commits 55946a6..f18bee2, tests: node --test tests/free-format.test.js → ℹ pass 1)
+Task 3: complete (commits f18bee2..63f4af4, tests: node --test tests/cancel-format.test.js → ℹ pass 1)
+
+=== RESULTADO (9 turnos, 0.21536979999999997 $)
+Task 3 completa y registrada en el ledger. Paro aquí, sin empezar la Task 4.
+
+- `cancel(room, slot)` en `src/slots.js` lanza el mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12» cuando la franja no casa con `SLOT`.
+- Vi el test `tests/cancel-format.test.js` fallar antes de implementar. Después `node --test tests/cancel-format.test.js` da `pass 1`, y la suite completa `node --test tests/` da `pass 4, fail 0`.
+- Commit `63f4af4` (`feat(0012): validar el formato de la franja al cancelar`).
+- El ledger `.superpowers/sdd/plan/progress.md` tiene la línea `Task 3: complete`.
+
+No marqué los checkboxes de `plan.md`, porque las Tasks 1 y 2 tampoco están marcadas ahí.
+
+Queda la Task 4 (validar al mover).

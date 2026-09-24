@@ -13,7 +13,7 @@ EOF
 
 native_plan() {
   plan_files
-  sed -i 's/^## Restricciones globales$/**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero\n\n## Restricciones globales/' "$R/$SPEC/plan.md"
+  sed -i 's/^## Restricciones globales$/**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero'"${EXEC_RULE:-}"'\n\n## Restricciones globales/' "$R/$SPEC/plan.md"
   sed -i 's/^- Implementadores y revisores Sonnet, effort medio\.$/- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto./' "$R/$SPEC/plan.md"
   sed -i 's/^\*\*Modelo\*\*: Sonnet, effort medio$/**Modelo**: la sesión (Native)/' "$R/$SPEC/plan.md"
   sed -i 's/, escritos antes de despachar y sin commitear: van en el commit de la task$/; Native: TDD del propio hilo/' "$R/$SPEC/plan.md"
@@ -70,4 +70,23 @@ Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
 Task 1: complete (commits $b1..$b2, tests: node --test tests/slot-format.test.js → ℹ pass 1)
 Task 2: complete (commits $b2..$(g rev-parse --short HEAD), tests: node --test tests/free-format.test.js → ℹ pass 1)
 EOF
+}
+
+# Sin el hueco de «libres»: `free` ya existe, así que la spec no pide nada que el código no tenga.
+free_in_base() {
+  cat >> "$R/src/slots.js" <<'EOF2'
+
+export function free(slot) {
+  return [];
+}
+EOF2
+}
+
+# Revisión final hecha en Native, con dos minors diferidos.
+final_review_done() {
+  cat >> "$R/.superpowers/sdd/plan/progress.md" <<'EOF2'
+Final review: sdd-kit:effort-high + opus — Ready (0 Critical, 0 Important, 2 Minor)
+Final: minor (deferred): la validación y el mensaje se repiten en reserve y free; un helper común los juntaría
+Final: minor (deferred): ningún test cubre una franja válida como 10-12
+EOF2
 }
