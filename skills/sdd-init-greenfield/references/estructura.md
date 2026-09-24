@@ -5,7 +5,7 @@
 /
 ├── CLAUDE.md                 (corto: punteros + 3-5 reglas críticas)
 ├── .claude/settings.json     ("autoMemoryEnabled": false, fusionado con lo que ya tenga)
-├── .gitignore                (+ .playwright-mcp/ y .superpowers/)
+├── .gitignore                (+ .playwright-mcp/, .superpowers/ y `.docs/sdd/sdd-kit.local.json`)
 ├── .docs/
 │   └── sdd/
 │       ├── mission.md        (por qué existe, usuarios/roles, dominio · calca mission-template.md)

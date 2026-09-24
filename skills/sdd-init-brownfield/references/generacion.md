@@ -18,5 +18,5 @@
    - Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates`.
    - ¿Changelog? — preguntas 6 y 7 del paso 3 (o decisión pendiente); si sí, `changelog.md` calcando `changelog-template.md`, y ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`, alimentado por `sdd-end-release` desde las release notes).
    - **Configuración del proyecto**: `.claude/settings.json` se crea, o se fusiona sin tocar las demás claves, con `"autoMemoryEnabled": false`, porque la memoria automática vive en una sola máquina y lo que se aprende va a los docs; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo y, si el usuario dice que no, se deja y el resumen de cierre lo anota.
-   - `.gitignore` gana `.playwright-mcp/` y `.superpowers/` si faltan, sin duplicar líneas, y se crea si no existe.
+   - `.gitignore` gana `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` si faltan, sin duplicar líneas, y se crea si no existe.
    - **`environments.md`** calcando `environments-template.md` del skill `sdd-templates` **si el inventario encontró scripts de entorno** (medido en `tests/entorno-worktree-red.md`, F3: sin este paso el entorno queda repartido en notas que ningún predicado lee).

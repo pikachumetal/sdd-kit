@@ -13,10 +13,31 @@ La primera pregunta de la entrevista, sola en su turno, confirma el perfil vigen
 ## Precedencia
 
 1. `profile:` en el frontmatter de `spec.md` — la task. Omitido, hereda.
-2. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap.
-3. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+2. `control.profile` en `.docs/sdd/sdd-kit.local.json` — la persona. Fuera de git: ver la sección siguiente.
+3. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap.
+4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
 
-Manda el primero que exista, de arriba abajo: task sobre release, release sobre proyecto.
+Manda el primero que exista, de arriba abajo: task sobre persona, persona sobre release, release sobre proyecto. Al confirmar el perfil vigente, di de qué nivel sale.
+
+## sdd-kit.local.json
+
+`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee quien resuelve la configuración —la primera pregunta de `sdd-start-task` (el perfil), el plan (`execution`) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
+
+Admite solo tres claves:
+
+- `control.profile`: `pair` | `delegate` | `unattended`, con la precedencia de arriba.
+- `execution`: `auto` | `native` | `subagent`. Precedencia: el método que el dev-lead nombra para la task → `sdd-kit.local.json` → `sdd-kit.json`, sin nivel de release. Un `execution: auto` en local también cuenta: pisa un `native` o `subagent` del proyecto y el método lo recomienda el handoff.
+- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+
+Todo lo demás —`merge`, `ids`, `release`, los frenos de `control`, cualquier nivel o suelo de tests, una clave desconocida o un nombre de persona— es del proyecto o no existe: no se aplica, rige el siguiente nivel de la precedencia, y se avisa una vez por clave, con esta línea literal:
+
+`Aviso: se ignora <clave> de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.`
+
+Una clave admitida con un valor fuera de su tipo se ignora igual, con:
+
+`Aviso: se ignora <clave> de sdd-kit.local.json: <valor> no es un valor admitido.`
+
+El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falta, sale de `git config user.name`. Las claves las escribe `sdd-config`.
 
 **Cambio de perfil a media task**: una aprobación delegada («ve tú solo hasta el smoke», dicha en `pair`) cambia el perfil de la task. Se escribe `profile:` en el frontmatter y una fila en «Aprobaciones»: fecha y, en «Estado», `perfil → <perfil>: «<frase literal>»`. Sin esa frase literal el perfil no cambia — es la misma regla del atajo autoconcedido.
 
@@ -143,14 +164,15 @@ Conjunto cerrado:
 | `merge.removeWorktree` | booleano | — |
 | `merge.push` | booleano | `false` |
 | `execution` | `auto` \| `native` \| `subagent` | `"auto"` |
+| `validation.startEnvironment` | booleano (solo en `sdd-kit.local.json`) | `false` |
 
-`execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `writing-plans` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en sdd-kit.json`, aunque el handoff recomiende el otro. No tiene nivel de task ni de release: el método queda escrito en el plan de cada task, y un método que el dev-lead nombra para una task concreta cuenta como dado.
+`execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `writing-plans` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro. No tiene nivel de release (precedencia en «sdd-kit.local.json»): el método queda escrito en el plan de cada task, y un método que el dev-lead nombra para una task concreta cuenta como dado.
 
 `merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-task`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
 `control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0022.
 
-El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`).
+El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 
 ## Preguntas de las claves de control
 

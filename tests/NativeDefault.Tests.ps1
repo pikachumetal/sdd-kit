@@ -42,8 +42,8 @@ Describe 'Task 1 — contrato del método' {
 
   It 'un método fijado en sdd-kit.json no se pregunta y manda sobre el handoff' {
     $profiles = Get-KitFile $script:ControlProfiles
-    $profiles | Should -Match 'Ejecución: <valor>, fijado en sdd-kit.json`, aunque el handoff recomiende el otro'
-    $profiles | Should -Match 'No tiene nivel de task ni de release'
+    $profiles | Should -Match 'Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro'
+    $profiles | Should -Match 'No tiene nivel de release'
   }
 
   It 'la pregunta 5 pregunta el método con auto recomendado' {
@@ -75,7 +75,7 @@ Describe 'Task 1 — contrato del método' {
   }
 
   It 'el paso 5 nombra el método del handoff y la clave execution' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `sdd-kit.json`'
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `.docs/sdd/sdd-kit.local.json` o en `sdd-kit.json`'
   }
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {
@@ -144,7 +144,7 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado en `sdd-kit.json` o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado en `sdd-kit.local.json` o en `sdd-kit.json`, o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
   }
 
   It 'la celda de pair dice que con execution fijado solo se aprueba' {
