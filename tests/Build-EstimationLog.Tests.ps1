@@ -351,3 +351,41 @@ Describe 'Tolerancia de formato en el bloque de tiempo' {
     $script:Tolerante.Warnings -join ' ' | Should -Not -Match 'aprox'
   }
 }
+
+Describe 'Unidad del tiempo' {
+  BeforeAll {
+    function New-Patch([string]$Specs, [string]$Folder, [string]$Estimate, [string]$Real) {
+      $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
+      $text = "## 5. Tiempo (ligero)`n`n- Estimación: $Estimate`n- Real: $Real`n"
+      [System.IO.File]::WriteAllText((Join-Path $dir 'patch.md'), $text, [System.Text.UTF8Encoding]::new($false))
+    }
+
+    $specs = Join-Path $TestDrive 'unidades/.docs/sdd/specs'
+    New-Item -ItemType Directory -Path $specs -Force | Out-Null
+    New-Patch $specs '20260924-100000-patch-0065-minutos' '30 min' '25 min'
+    New-Patch $specs '20260924-110000-patch-0070-horas' '1 hora' '2 horas'
+    New-Patch $specs '20260924-120000-patch-0071-dias' '2 días' '3 h'
+    New-Patch $specs '20260924-130000-patch-0072-real-semanas' '1 h' '1 semana'
+    $script:Unidades = Invoke-Build (Join-Path $TestDrive 'unidades')
+  }
+
+  It 'convierte los minutos a horas' {
+    Get-Row $script:Unidades.Text '20260924-100000-patch-0065-minutos' | Should -Be '| 2026-09-24 | 0065 | patch | 0.5 | 0.42 | 0.83 | — | — | — | 20260924-100000-patch-0065-minutos |'
+    $script:Unidades.Warnings -join ' ' | Should -Not -Match 'minutos'
+  }
+
+  It 'lee hora y horas como h' {
+    Get-Row $script:Unidades.Text '20260924-110000-patch-0070-horas' | Should -Be '| 2026-09-24 | 0070 | patch | 1 | 2 | 2 | — | — | — | 20260924-110000-patch-0070-horas |'
+    $script:Unidades.Warnings -join ' ' | Should -Not -Match 'patch-0070-horas'
+  }
+
+  It 'deja vacía y avisa una estimación en otra unidad, sin adivinar' {
+    Get-Row $script:Unidades.Text '20260924-120000-patch-0071-dias' | Should -Be '| 2026-09-24 | 0071 | patch | — | 3 | — | — | — | — | 20260924-120000-patch-0071-dias |'
+    $script:Unidades.Warnings -join ' ' | Should -Match 'días.*patch-0071-dias'
+  }
+
+  It 'avisa y excluye un real en otra unidad' {
+    Get-Row $script:Unidades.Text '20260924-130000-patch-0072-real-semanas' | Should -BeNullOrEmpty
+    $script:Unidades.Warnings -join ' ' | Should -Match 'semana.*patch-0072-real-semanas'
+  }
+}
