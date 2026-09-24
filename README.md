@@ -18,7 +18,7 @@ Le dices a Claude lo que quieres y él entra por el carril que toca:
 > añade autenticación con magic link
 ```
 
-Arranca `sdd-start-task`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación por subagentes con los tests escritos antes.
+Arranca `sdd-start-task`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
 
 ```
 > el contador de la home muestra un número de más
@@ -148,7 +148,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v1.2.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 7 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.1, revisada el 2026-09-24; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.1, revisada el 2026-09-24; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 `grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
 

@@ -16,7 +16,7 @@
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de patches · calca roadmap-template.md)
 │       ├── estimation.md     (método · calca estimation-template.md) · estimation-log.md (lo genera Build-EstimationLog.ps1: cabecera y 0 filas)
 │       ├── changelog.md      (opcional, según entrevista · calca changelog-template.md)
-│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids": { "mode" }, "control"?, "merge"? }, con `ids.mode` de la pregunta 14; `control` y `merge`, solo con lo respondido)
+│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids": { "mode" }, "control"?, "merge"?, "execution"? }, con `ids.mode` de la pregunta 14; `control`, `merge` y `execution`, solo con lo respondido)
 │       ├── sources/          (opcional: el funcional que aporta el usuario, literal y sin editar · paso 3)
 │       └── specs/            (no se crea: nace con la primera task o patch)
 ```

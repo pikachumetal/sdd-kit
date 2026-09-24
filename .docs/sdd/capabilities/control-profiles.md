@@ -181,22 +181,31 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el agente sigue la receta del merge
 - THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy
 
-### El plan no pregunta el método de ejecución
-- GIVEN una task en modo full con la spec aprobada y superpowers ≥ 6.4.1, cuyo `writing-plans` cierra con un Execution Handoff
+### El método de ejecución lo elige el handoff del plan
+- GIVEN una task en modo full con la spec aprobada, superpowers ≥ 6.4.1 y `execution` ausente o `auto` en `sdd-kit.json`
 - WHEN el agente guarda el plan
-- THEN no pregunta el método de ejecución ni ofrece «Native»: aplica `subagent-driven-development`, salvo las tasks que el plan declara en línea en `Ejecución`
-- AND la revisión del plan sigue la tabla de gates del perfil vigente: en `delegate` y `unattended` no para; en `pair` para a aprobar el plan, sin preguntar el método
+- THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff de `writing-plans` y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo sacado del plan>`
+- AND en `pair` la parada del plan es una sola pregunta que aprueba el plan y elige el método, con la recomendación del handoff como primera opción; no hay una parada aparte para el método
+- AND ninguna task del plan lleva un campo `Ejecución` propio: el método es del plan entero
+
+### Un método fijado en `sdd-kit.json` no se pregunta
+- GIVEN una task en modo full con la spec aprobada y `execution: native` o `execution: subagent` en `sdd-kit.json`
+- WHEN el agente guarda el plan
+- THEN escribe en la cabecera `Ejecución: <valor>, fijado en sdd-kit.json` y no pregunta el método en ningún perfil
+- AND el valor fijado manda aunque el handoff recomiende el otro método
+- AND en `pair` la parada del plan solo pide aprobarlo
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge`, con `merge.push` opcional); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap.
-- **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
+- **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); el perfil de la task, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap; el método de un plan, en la línea `Ejecución:` de su cabecera.
+- **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
 - **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una task: más de 3 tasks internas previstas. Checkpoint de alcance: en el 3.º fix descubierto de una task y en cada tercero después.
 - **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); y el bloque de un push fallido (comando literal y error).
-- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
+- **Regla ante conflicto**: la task manda sobre la release y la release sobre el proyecto; `execution` no sigue esa herencia: solo tiene nivel de proyecto (`sdd-kit.json`), un valor fijado ahí manda sobre la recomendación del handoff y un método que el dev-lead nombra para una task cuenta como método dado; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
 
 ## Historial
 
+- 2026-09-24 — 20260924-082516-task-0055-native-default — REMOVED El plan no pregunta el método de ejecución · ADDED El método de ejecución lo elige el handoff del plan · ADDED Un método fijado en `sdd-kit.json` no se pregunta · Reglas: dónde viven los datos, idioma de los nombres y regla ante conflicto (`execution`)
 - 2026-09-24 — 20260923-214917-task-0053-fewer-stops — MODIFIED La primera pregunta confirma carril, modo y perfil (opción de aprobar la spec por delegación) · ADDED La spec aprobada por delegación en la primera pregunta no para
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED El plan no pregunta el método de ejecución
 - 2026-09-23 — 20260923-203736-task-0039-moving-base — ADDED Los ficheros de la task se cruzan con la base antes de cada despacho · Un conflicto solo en los registros se resuelve con un merge de sincronización · Un conflicto que no se puede conservar entero es de una persona

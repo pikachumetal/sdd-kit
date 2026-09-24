@@ -48,10 +48,10 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - AND si el dev-lead no está, el paso queda pendiente explícito y el proyecto sigue funcionando en `tracker`
 
 ### La migración a v1.2.0 pregunta las claves de control que faltan
-- GIVEN un proyecto cuyo `sdd-kit.json` no tiene `control.profile`, un bloque `merge` completo, `merge.push` con el bloque `merge` completo, o las claves de frenos (`control.maxParallelAgents`, `control.silence.*`)
+- GIVEN un proyecto cuyo `sdd-kit.json` no tiene `control.profile`, un bloque `merge` completo, `merge.push` con el bloque `merge` completo, las claves de frenos (`control.maxParallelAgents`, `control.silence.*`) o `execution`
 - WHEN se aplica `migrations/v1.2.0.md`
 - THEN el agente hace, una por turno, las preguntas del bloque de `control-profiles.md` que corresponden a lo que falta, las mismas que hace la init y con la misma recomendación, y escribe solo lo que responde; lo que ya estaba no se pregunta
-- AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con los defaults, con el paso 10 del cierre preguntando el merge y sin push, y el informe dice cómo reanudarlo
+- AND sin dev-lead, el paso queda pendiente explícito: el proyecto funciona con los defaults (`execution: auto` incluido), con el paso 10 del cierre preguntando el merge y sin push, y el informe dice cómo reanudarlo
 
 ### La migración a v1.2.0 deja la configuración que deja la init
 - GIVEN un proyecto que migra a v1.2.0 sin `"autoMemoryEnabled": false` en `.claude/settings.json` o sin `.playwright-mcp/` y `.superpowers/` en `.gitignore`
@@ -75,6 +75,7 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 
 ## Historial
 
+- 2026-09-24 — 20260924-082516-task-0055-native-default — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan (`execution`)
 - 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED El proyecto declara la versión del kit que tiene
 - 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED Cada release con cambio estructural lleva su migración
 - 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED Un proyecto ya inicializado se migra, no se re-inicializa
