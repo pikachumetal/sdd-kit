@@ -6,12 +6,13 @@ BeforeAll {
   . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
   $script:SavedGitEnv = Clear-GitEnv
 
-  function Invoke-NextId([string]$Root) {
+  function Invoke-NextId([string]$Root, [string[]]$Arguments = @()) {
     if (-not (Test-Path $script:Script)) { throw "No existe el script $script:Script" }
     $errFile = Join-Path (New-TempDirectory) 'stderr.txt'
-    $stdout = & pwsh -NoProfile -File $script:Script -ProjectRoot $Root 2>$errFile
+    $stdout = & pwsh -NoProfile -File $script:Script -ProjectRoot $Root @Arguments 2>$errFile
     return [pscustomobject]@{
       Id       = ($stdout | Out-String).Trim()
+      Ids      = @($stdout)
       Error    = (Get-Content $errFile -Raw)
       ExitCode = $LASTEXITCODE
     }
@@ -49,6 +50,38 @@ BeforeAll {
     Invoke-GitIsolated $Repo @('add', '-A') | Out-Null
     Invoke-GitIsolated $Repo @('-c', 'user.email=fixture@local', '-c', 'user.name=Fixture', 'commit', '-qm', "trabajo en $Branch") | Out-Null
     Invoke-GitIsolated $Repo @('switch', '-q', $current) | Out-Null
+  }
+
+  function Get-CounterPath([string]$Repo) {
+    return Join-Path $Repo '.git/sdd-ids'
+  }
+
+  function Get-Counter([string]$Repo) {
+    $path = Get-CounterPath $Repo
+    if (-not (Test-Path -LiteralPath $path)) { return $null }
+    return (Get-Content -LiteralPath $path -Raw).Trim()
+  }
+
+  function Start-ReserveJob([string]$Root) {
+    return Start-ThreadJob -ArgumentList $script:Script, $Root -ScriptBlock {
+      param($ScriptPath, $Root)
+      $output = & pwsh -NoProfile -File $ScriptPath -ProjectRoot $Root -Reserve 2>$null
+      [pscustomobject]@{ ExitCode = $LASTEXITCODE; Id = ($output | Out-String).Trim() }
+    }
+  }
+
+  function New-HeldLock([string]$Repo, [int]$OwnerPid) {
+    $owner = @{ branch = 'feature/9999'; worktree = 'otra-sesion'; pid = $OwnerPid; host = [Environment]::MachineName; since = (Get-Date).ToString('o') } | ConvertTo-Json -Compress
+    $stream = [System.IO.FileStream]::new((Join-Path $Repo '.git/sdd-ids.lock'), 'CreateNew', 'ReadWrite', [System.IO.FileShare]'Read, Delete')
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($owner)
+    $stream.Write($bytes, 0, $bytes.Length)
+    $stream.Flush()
+    return $stream
+  }
+
+  function Remove-HeldLock([System.IO.FileStream]$Stream, [string]$Repo) {
+    $Stream.Dispose()
+    Remove-Item -LiteralPath (Join-Path $Repo '.git/sdd-ids.lock') -ErrorAction SilentlyContinue
   }
 }
 
@@ -232,6 +265,174 @@ Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
 
     It 'no contacta con el remoto' {
       Get-Content $script:Script -Raw -ErrorAction Stop | Should -Not -Match 'git\s+fetch'
+    }
+  }
+}
+
+Describe 'Get-NextSddId.ps1 -Reserve' -Tag 'Slow' {
+  Context 'reserva en un repositorio' {
+    It 'reserva el siguiente id y lo deja consumido en el contador del directorio común' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      $result = Invoke-NextId $repo @('-Reserve')
+      $result.Id | Should -Be '0006'
+      $result.ExitCode | Should -Be 0
+      Get-Counter $repo | Should -Be '0006'
+    }
+
+    It 'no reutiliza un id reservado aunque el trabajo se abandone' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      (Invoke-NextId $repo @('-Reserve')).Id | Should -Be '0006'
+      (Invoke-NextId $repo @('-Reserve')).Id | Should -Be '0007'
+    }
+
+    It 'devuelve ids consecutivos, uno por línea, con -Count' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      $result = Invoke-NextId $repo @('-Reserve', '-Count', '3')
+      $result.Ids | Should -Be @('0006', '0007', '0008')
+      Get-Counter $repo | Should -Be '0008'
+    }
+
+    It 'reserva en un contador propio cuando el proyecto está en una subcarpeta del repositorio' {
+      $parent = Join-Path (New-TempDirectory) 'monorepo'
+      $project = Join-Path $parent 'apps/proyecto'
+      New-Item -ItemType Directory -Path (Split-Path $project) -Force | Out-Null
+      Copy-Item -Recurse (Join-Path $script:Fixtures 'sequence-project') $project
+      Invoke-GitIsolated $parent @('init', '-q', '-b', 'main') | Out-Null
+      Set-Content -LiteralPath (Get-CounterPath $parent) -Value '0040'
+      (Invoke-NextId $project @('-Reserve')).Id | Should -Be '0006'
+      Get-Content -LiteralPath (Join-Path $parent '.git/sdd-ids-apps-proyecto') | Should -Be '0006'
+      Get-Counter $parent | Should -Be '0040'
+    }
+
+    It 'deja el árbol de trabajo sin cambios' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Invoke-NextId $repo @('-Reserve') | Out-Null
+      Invoke-GitIsolated $repo @('status', '--porcelain') | Should -BeNullOrEmpty
+    }
+  }
+
+  Context 'sin -Reserve' {
+    It 'propone contando el contador y no lo escribe' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Invoke-NextId $repo @('-Reserve') | Out-Null
+      (Invoke-NextId $repo).Id | Should -Be '0007'
+      Get-Counter $repo | Should -Be '0006'
+    }
+
+    It 'no crea el contador' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Invoke-NextId $repo | Out-Null
+      Test-Path -LiteralPath (Get-CounterPath $repo) | Should -BeFalse
+    }
+  }
+
+  Context 'el escaneo inicializa o corrige el contador' {
+    It 'gana el escaneo cuando el contador es menor' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Set-Content -LiteralPath (Get-CounterPath $repo) -Value '0002'
+      (Invoke-NextId $repo @('-Reserve')).Id | Should -Be '0006'
+    }
+
+    It 'gana el contador cuando es mayor que el escaneo' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Set-Content -LiteralPath (Get-CounterPath $repo) -Value '0040'
+      (Invoke-NextId $repo @('-Reserve')).Id | Should -Be '0041'
+    }
+
+    It 'avisa de un contador ilegible y lo reinicializa con el escaneo' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Set-Content -LiteralPath (Get-CounterPath $repo) -Value 'basura'
+      $result = Invoke-NextId $repo @('-Reserve')
+      $result.Id | Should -Be '0006'
+      $result.Error | Should -Match 'contador'
+      Get-Counter $repo | Should -Be '0006'
+    }
+  }
+
+  Context 'worktrees y procesos a la vez' {
+    It 'comparte el contador entre los worktrees del repositorio' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @() '0059-Reserva-compartida'
+      $otherWorktree = Join-Path (Split-Path $repo) 'worktree-reserva'
+      Invoke-GitIsolated $repo @('worktree', 'add', '-qb', 'feature/otra', $otherWorktree) | Out-Null
+      (Invoke-NextId $repo @('-Reserve')).Id | Should -Be '0006'
+      (Invoke-NextId $otherWorktree @('-Reserve')).Id | Should -Be '0007'
+    }
+
+    It 'da ids distintos a dos procesos de dos worktrees que reservan a la vez' {
+      # Los dos esperan al mismo cerrojo y compiten en cuanto se suelta.
+      $repo = Copy-FixtureToRepo 'sequence-project' @() '0059-Reserva-simultánea'
+      $otherWorktree = Join-Path (Split-Path $repo) 'worktree-simultáneo'
+      Invoke-GitIsolated $repo @('worktree', 'add', '-qb', 'feature/otra', $otherWorktree) | Out-Null
+      $lock = New-HeldLock $repo $PID
+      try {
+        $jobs = @((Start-ReserveJob $repo), (Start-ReserveJob $otherWorktree))
+        Start-Sleep -Seconds 4
+      }
+      finally {
+        Remove-HeldLock $lock $repo
+      }
+      $results = @($jobs | Wait-Job -Timeout 120 | Receive-Job)
+      $results.ExitCode | Should -Be @(0, 0)
+      ($results.Id | Sort-Object) | Should -Be @('0006', '0007')
+      Get-Counter $repo | Should -Be '0007'
+    }
+
+    It 'falla sin reservar si el cerrojo no se libera a tiempo, nombrando al dueño' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      $lock = New-HeldLock $repo $PID
+      try {
+        $result = Invoke-NextId $repo @('-Reserve', '-LockTimeoutMinutes', '0.05')
+      }
+      finally {
+        Remove-HeldLock $lock $repo
+      }
+      $result.ExitCode | Should -Not -Be 0
+      $result.Id | Should -BeNullOrEmpty
+      $result.Error | Should -Match 'feature/9999'
+      Test-Path -LiteralPath (Get-CounterPath $repo) | Should -BeFalse
+    }
+  }
+
+  Context 'casos en los que no reserva' {
+    It 'falla sin repositorio git' {
+      # El directorio temporal puede estar dentro de un repositorio (pasa en la máquina del dev-lead):
+      # el techo de búsqueda impide que git lo encuentre subiendo.
+      $plain = Join-Path (New-TempDirectory) 'project'
+      Copy-Item -Recurse (Join-Path $script:Fixtures 'sequence-project') $plain
+      try {
+        $env:GIT_CEILING_DIRECTORIES = Split-Path $plain
+        $result = Invoke-NextId $plain @('-Reserve')
+      }
+      finally {
+        Remove-Item Env:\GIT_CEILING_DIRECTORIES -ErrorAction SilentlyContinue
+      }
+      $result.Id | Should -BeNullOrEmpty
+      $result.Error | Should -Match 'git'
+      $result.ExitCode | Should -Be 1
+    }
+
+    It 'no consume ningún id cuando hay ids duplicados' {
+      $repo = Copy-FixtureToRepo 'duplicate-ids' @()
+      $result = Invoke-NextId $repo @('-Reserve')
+      $result.Id | Should -BeNullOrEmpty
+      $result.ExitCode | Should -Be 1
+      Test-Path -LiteralPath (Get-CounterPath $repo) | Should -BeFalse
+    }
+
+    It 'no crea el contador en modo tracker' {
+      $repo = Copy-FixtureToRepo 'tracker-project' @()
+      $result = Invoke-NextId $repo @('-Reserve')
+      $result.ExitCode | Should -Be 1
+      Test-Path -LiteralPath (Get-CounterPath $repo) | Should -BeFalse
+    }
+
+    It 'falla sin reservar si la reserva pasaría de 9999' {
+      $repo = Copy-FixtureToRepo 'sequence-project' @()
+      Set-Content -LiteralPath (Get-CounterPath $repo) -Value '9998'
+      $result = Invoke-NextId $repo @('-Reserve', '-Count', '2')
+      $result.Id | Should -BeNullOrEmpty
+      $result.ExitCode | Should -Be 1
+      Get-Counter $repo | Should -Be '9998'
     }
   }
 }

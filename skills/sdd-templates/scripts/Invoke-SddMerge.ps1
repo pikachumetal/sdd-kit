@@ -20,6 +20,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
+. (Join-Path $PSScriptRoot 'SddLock.ps1')
 $script:LogBuilderPath = Join-Path $PSScriptRoot 'Build-EstimationLog.ps1'
 $script:GitEnvVars = @('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY')
 
@@ -78,86 +79,8 @@ function Resolve-GitPaths([string]$ProjectRoot) {
   return [pscustomobject]@{ CommonDir = $commonDir; WorktreesParent = $worktreesParent }
 }
 
-function New-LockStream([string]$LockPath, [pscustomobject]$Owner) {
-  try {
-    $stream = [System.IO.FileStream]::new($LockPath, 'CreateNew', 'ReadWrite', [System.IO.FileShare]'Read, Delete')
-  }
-  catch [System.IO.IOException] {
-    return $null
-  }
-  $json = [pscustomobject]@{
-    branch = $Owner.Branch; worktree = $Owner.Worktree; pid = $PID
-    host   = [Environment]::MachineName; since = (Get-Date).ToString('o')
-  } | ConvertTo-Json -Compress
-  $bytes = [Text.Encoding]::UTF8.GetBytes($json)
-  $stream.Write($bytes, 0, $bytes.Length)
-  $stream.Flush()
-  return $stream
-}
-
-function Read-LockOwner([string]$LockPath) {
-  try {
-    $stream = [System.IO.FileStream]::new($LockPath, 'Open', 'Read', [System.IO.FileShare]'ReadWrite, Delete')
-  }
-  catch [System.IO.IOException] {
-    return $null
-  }
-  try {
-    $reader = [System.IO.StreamReader]::new($stream, [Text.Encoding]::UTF8)
-    return ($reader.ReadToEnd() | ConvertFrom-Json)
-  }
-  catch {
-    return $null
-  }
-  finally {
-    $stream.Dispose()
-  }
-}
-
-function Test-OrphanLock([pscustomobject]$Owner) {
-  if ($Owner.host -ne [Environment]::MachineName) { return $false }
-  return -not (Get-Process -Id $Owner.pid -ErrorAction SilentlyContinue)
-}
-
-function Format-LockOwner([pscustomobject]$Owner) {
-  # ConvertFrom-Json convierte "since" (ISO 8601) en [datetime]; interpolarlo directo saldría
-  # con el formato de la cultura del sistema en vez de uno fijo.
-  $since = ([datetime]$Owner.since).ToString('yyyy-MM-dd HH:mm:ss')
-  return "$($Owner.branch) ($($Owner.worktree), PID $($Owner.pid)) desde $since."
-}
-
 function Write-MergeStatus([string]$Message) {
-  # Write-Output aquí se mezclaría con el valor de retorno de la función que llama a esta
-  # (p. ej. Enter-MergeLock devuelve un FileStream): se escribe directo a la consola.
   [Console]::Out.WriteLine($Message)
-}
-
-function Enter-MergeLock([string]$LockPath, [pscustomobject]$Self, [double]$TimeoutMinutes) {
-  $deadline = (Get-Date).AddMinutes($TimeoutMinutes)
-  $lastOwnerKey = $null
-  while ($true) {
-    $stream = New-LockStream $LockPath $Self
-    if ($null -ne $stream) { return $stream }
-    $owner = Read-LockOwner $LockPath
-    if ($null -eq $owner) { continue }
-    if (Test-OrphanLock $owner) {
-      Remove-Item -LiteralPath $LockPath -ErrorAction SilentlyContinue
-      Write-MergeStatus "Cerrojo huérfano: lo tenía $(Format-LockOwner $owner)"
-      continue
-    }
-    $ownerKey = "$($owner.branch)|$($owner.pid)|$($owner.since)"
-    if ($ownerKey -ne $lastOwnerKey) {
-      Write-MergeStatus "Esperando el cerrojo de merge: lo tiene $(Format-LockOwner $owner)"
-      $lastOwnerKey = $ownerKey
-    }
-    if ((Get-Date) -gt $deadline) { throw "cerrojo: no se libera; lo tiene $(Format-LockOwner $owner)" }
-    Start-Sleep -Seconds 2
-  }
-}
-
-function Exit-MergeLock([System.IO.FileStream]$Stream, [string]$LockPath) {
-  $Stream.Dispose()
-  Remove-Item -LiteralPath $LockPath -ErrorAction SilentlyContinue
 }
 
 function Find-BranchWorktree([string]$ProjectRoot, [string]$Into) {
@@ -269,9 +192,9 @@ $ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 $policy = Resolve-MergePolicy $ProjectRoot
 $branch = Resolve-MergeBranch $ProjectRoot $Branch
 $paths = Resolve-GitPaths $ProjectRoot
-$lockPath = Join-Path $paths.CommonDir 'sdd-merge.lock'
+$lock = New-SddLock (Join-Path $paths.CommonDir 'sdd-merge.lock') 'merge' ([Console]::Out)
 
-$lockStream = Enter-MergeLock $lockPath ([pscustomobject]@{ Branch = $branch; Worktree = $ProjectRoot }) $LockTimeoutMinutes
+$lockStream = Enter-SddLock $lock ([pscustomobject]@{ Branch = $branch; Worktree = $ProjectRoot }) $LockTimeoutMinutes
 $destination = $null
 $before = $null
 try {
@@ -301,5 +224,5 @@ catch {
 }
 finally {
   if ($null -ne $destination -and $destination.Temporary) { Remove-MergeWorktree $ProjectRoot $destination.Path }
-  Exit-MergeLock $lockStream $lockPath
+  Exit-SddLock $lockStream $lock
 }
