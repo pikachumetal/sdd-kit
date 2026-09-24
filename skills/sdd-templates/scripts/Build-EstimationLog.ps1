@@ -93,7 +93,10 @@ function Get-TaskId([string]$Content, [string]$Folder) {
   return '—'
 }
 
-function Get-FolderDate([string]$FolderName) {
+function Get-RowDate([string]$Content, [string]$FolderName) {
+  # La carpeta lleva la fecha de apertura; el artefacto, la del cierre. Una task abierta de
+  # noche y cerrada al día siguiente caería en el día (y la release) equivocados.
+  if ($Content -match '(?m)^(?:created|date):\s*(\d{4}-\d{2}-\d{2})\b') { return $Matches[1] }
   if ($FolderName -match '^(\d{4})(\d{2})(\d{2})-\d{6}-') { return "$($Matches[1])-$($Matches[2])-$($Matches[3])" }
   return '—'
 }
@@ -177,7 +180,7 @@ function Get-Median([double[]]$Values) {
 function New-Row([System.IO.DirectoryInfo]$Dir, [pscustomobject]$Artifact) {
   $ratio = if ($null -ne $Artifact.Estimate -and $Artifact.Estimate -gt 0) { $Artifact.Real / $Artifact.Estimate } else { $null }
   return [pscustomobject]@{
-    Date           = Get-FolderDate $Dir.Name
+    Date           = Get-RowDate $Artifact.Content $Dir.Name
     Task           = Get-TaskId $Artifact.Content $Dir.Name
     Type           = $Artifact.Type
     Estimate       = $Artifact.Estimate
