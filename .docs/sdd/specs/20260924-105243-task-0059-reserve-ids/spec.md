@@ -3,7 +3,7 @@ id: 20260924-105243-task-0059-reserve-ids
 task: 0059
 title: Reservar ids en vez de calcularlos
 mode: lite
-status: approved
+status: done
 created: 2026-09-24
 author: Claude (Opus 5.5), dev-lead Àngel Delgado
 approvers:
