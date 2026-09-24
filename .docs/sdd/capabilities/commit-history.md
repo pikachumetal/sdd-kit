@@ -6,13 +6,14 @@ Verdad viva de la historia de la rama de una task o de un patch: qué commits qu
 
 ### La apertura de una task queda en un commit
 - GIVEN una task con la spec aprobada y, en full, `plan.md` y `tasks.md` escritos, con uno o más commits desde el `merge-base` con la rama de integración
-- WHEN el hilo va a despachar la primera task (en lite, a empezar la implementación)
+- WHEN el hilo va a escribir los RED de la primera task (en Native, antes de su `task-start`; en lite, a empezar la implementación)
 - THEN desde el `merge-base` la rama tiene un solo commit, con spec, hallazgos de la review de spec, `plan.md` y `tasks.md` (en lite, solo la spec)
 
 ### Cada task del plan queda en un commit
-- GIVEN la revisión de la task N limpia (y su re-revisión, si la hubo) con uno o más commits desde el BASE que el hilo apuntó antes de despacharla
-- WHEN el hilo va a despachar la task siguiente o la revisión final de rama
+- GIVEN la task N con uno o más commits desde el BASE que el hilo apuntó al empezarla, y su revisión limpia (SDD) o su contrato de cierre cumplido (Native)
+- WHEN el hilo va a empezar o despachar la task siguiente, o la revisión final de rama (en Native, antes de `task-done`)
 - THEN desde ese BASE la rama tiene un solo commit, con los tests RED, la implementación, los arreglos de la revisión y la evidencia de la task
+- AND el mensaje de ese commit lo escribe el hilo con la convención del proyecto, también cuando el rango ya tenía un solo commit
 - AND el hash que `tasks.md` apunta para la task N es el de ese commit, escrito en el commit del hito siguiente
 
 ### El cierre de una task queda en un commit
@@ -35,6 +36,12 @@ Verdad viva de la historia de la rama de una task o de un patch: qué commits qu
 - THEN no se junta y no se hace push forzado
 - AND el walkthrough (o `patch.md`) dice qué hito quedó sin juntar y por qué
 
+### Un RED sin commitear no tumba los commits del hilo
+- GIVEN un repo con un `pre-commit` que ejecuta la suite y un plan SDD
+- WHEN el hilo prepara el despacho de una task
+- THEN la apertura (o el hito anterior) ya está en su commit antes de escribir los RED
+- AND si el hilo tiene que commitear con un RED en el árbol, lo aparta antes y lo devuelve después, sin `--no-verify`
+
 ## Historial
 
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — ADDED La apertura de una task queda en un commit
@@ -43,3 +50,4 @@ Verdad viva de la historia de la rama de una task o de un patch: qué commits qu
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — ADDED El patch queda en dos commits
 - 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — ADDED No se junta a través de un merge ni lo ya publicado
 - 2026-09-23 — 20260923-203736-task-0039-moving-base — MODIFIED El cierre de una task queda en un commit · El patch queda en dos commits
+- 2026-09-24 — 20260924-105352-task-0057-native-adapt — MODIFIED Cada task del plan queda en un commit · La apertura de una task queda en un commit (antes de los RED; ruling del pase de fix) · ADDED Un RED sin commitear no tumba los commits del hilo

@@ -127,7 +127,7 @@ Describe 'REFACTOR — la pregunta del gate del plan en pair' {
 
 Describe 'Revisión final — huecos del método' {
   It 'overrides: executing-plans para en los frenos y en pair tras cada task aunque diga only these' {
-    $row = Get-TableRow $script:Overrides '`executing-plans`'
+    $row = Get-TableRow $script:Overrides '| `executing-plans` (Native) |'
     $row | Should -Match 'Four things stop you, and only these'
     $row | Should -Match 'frenos de alcance'
     $row | Should -Match 'tras cada task'

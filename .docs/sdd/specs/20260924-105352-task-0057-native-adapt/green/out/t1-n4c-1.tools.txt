@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && cat .superpowers/sdd/plan/progress.md; ls .docs/sdd/specs/*; git log --oneline | head -5; git status --short
+
+>>> Skill: superpowers:executing-plans
+<<< # SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+Task 1: complete (commits 83878c7..5d76f23, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+Task 2: complete (commits 5d76f23..06e1e6e, tests: node --test tests/free-format.test.js → ℹ pass 1)
+plan.md
+spec.md
+tasks.md
+06e1e6e feat(0012): validar el formato de la franja al consultar libres
+5d76f23 feat(0012): validar el formato de la franja al reservar
+83878c7 docs(0012): abrir la task 0012
+95ee762 feat: base de reservas de salas
+<<< Launching skill: superpowers:executing-plans
+
+>>> Bash: cd "<run>/salas" && P=.docs/sdd/specs/20260923-100000-task-0012-franja; S=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills/executing-plans/scripts); ls $S; bash $S/task-start $P/plan.md 3; grep -n "Task 3" -A60 $P/plan.md | head -120
+<<< task-done*
+task-start*
+brief: /tmp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n4c-1/salas/.superpowers/sdd/plan/task-3-brief.md
+base: 06e1e6e2f4a5a91a2881a14cccbf312f68442019
+45:### Task 3 — Validar al cancelar
+46-
+47-**Modelo**: la sesión (Native)
+48-**Tests RED**: hilo principal · `tests/cancel-format.test.js`; Native: TDD del propio hilo
+49-**Superficies**: backend
+50-**Verificación**: `node --test tests/cancel-format.test.js`
+51-
+52-- [ ] **Step 1: Implementación** — `cancel(room, slot)` en `src/slots.js` con la misma validación.
+53-- [ ] **
+
+>>> Bash: cd "<run>/salas" && P=.docs/sdd/specs/20260923-100000-task-0012-franja; cat .superpowers/sdd/plan/task-3-brief.md | head -40; cat src/slots.js; cat tests/free-format.test.js; grep -n -i "cancel" -B2 -A8 $P/spec.md | head -60; git diff $(git merge-base HEAD main) main --name-only
+<<< ### Task 3 — Validar al cancelar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tests/cancel-format.test.js`; Native: TDD del propio hilo
+**Superficies**: backend
+**Verificación**: `node --test tests/cancel-format.test.js`
+
+- [ ] **Step 1: Implementación** — `cancel(room, slot)` en `src/slots.js` con la misma validación.
+- [ ] **Step 2: Commit de la task** — uno solo por task.
+
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function fr
+
+>>> Bash: cd "<run>/salas" && cat > tests/cancel-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { cancel } from '../src/slots.js';
+
+test('cancelar rechaza una franja sin guion', () => {
+  assert.throws(() => cancel('sala-1', '1012'), /Franja no válida/);
+});
+EOF
+mkdir -p /tmp/red3 && cp tests/cancel-format.test.js /tmp/red3/
+node --test tests/cancel-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)|not ok|SyntaxError|does not provide" | head
+<<< SyntaxError: The requested module '../src/slots.js' does not provide an export named 'cancel'
+ℹ pass 0
+ℹ fail 1
+
+>>> Bash: cd "<run>/salas" && cat >> src/slots.js <<'EOF'
+
+export function cancel(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+EOF
+node --test tests/cancel-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+git diff --no-index --stat /tmp/red3/cancel-format.test.js tests/cancel-format.test.js && echo RED-identico
+git add -A src tests && git commit -q -m "feat(0012): validar el formato de la franja al cancelar
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git status --short
+S=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills/executing-plans/scripts)
+bash $S/task-done .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md 3 06e1e6e2f4a5a91a2881a14cccbf312f68442019 -- node --test tests/cancel-format.test.js | tail -5; tail -2 .superpowers/sdd/plan/progress.md
+<<< ℹ pass 1
+ℹ fail 0
+RED-identico
+✔ cancelar rechaza una franja sin guion (0.868ms)
+✔ libres rechaza una franja sin guion (0.8484ms)
+✔ rechaza una franja sin guion (0.8539ms)
+✔ reserva una sala en una franja (1.0828ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.6922
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.815
+ledger: Task 3: complete (commits 06e1e6e..25a2a03, tests: node --test tests/cancel-format.test.js → ℹ duration_ms 99.815)
+Task 2: complete (commits 5d76f23..06e1e6e, tests: node --test tests/free-format.test.js → ℹ pass 1)
+Task 3:
+
+=== RESULTADO (10 turnos, 0.3156194 $)
+La Task 3 está completa y registrada en el ledger, y no he empezado la Task 4.
+
+- **RED:** `tests/cancel-format.test.js` falló primero con `does not provide an export named 'cancel'`. La copia guardada fuera del repo salió idéntica al comparar antes del commit.
+- **Implementación:** `cancel(room, slot)` en `src/slots.js`, con la misma validación de `HH-HH` y el mismo mensaje `Franja no válida`.
+- **Commit:** `25a2a03 feat(0012): validar el formato de la franja al cancelar`. La base no había cambiado respecto a `main`.
+- **Ledger:** `Task 3: complete (commits 06e1e6e..25a2a03, tests: node --test tests/cancel-format.test.js → ℹ duration_ms 99.815)`. El resumen de `task-done` guardó la última línea de la salida y no `pass 1`; el resultado real fue 1 test pasando, 0 fallos.
+
+Rulings: ninguno. La validación sigue duplicada en `reserve`, `free` y `cancel`, tal como pide el plan. Cuando llegue `move` habrá cuatro copias, así que conviene extraer un helper `assertSlot` en la revisión final.
+
+No he actualizado `tasks.md` con el hash de la Task 3; iría en el commit del hito siguiente.

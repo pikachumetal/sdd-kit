@@ -169,7 +169,7 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
 
 ### En Windows, el workspace de ejecución se usa en su ruta Windows
-- GIVEN Windows y la ruta que imprimen `sdd-workspace` o `task-brief` de superpowers en forma POSIX (empieza por `/`, por ejemplo `/tmp/claude/…` o `/d/code/…`)
+- GIVEN Windows y la ruta que imprimen `sdd-workspace`, `task-brief` o `task-start` de superpowers en forma POSIX (empieza por `/`, por ejemplo `/tmp/claude/…` o `/d/code/…`)
 - WHEN el agente va a escribir o leer por primera vez en ese workspace (el ledger, un brief, un informe)
 - THEN usa la ruta que da `cygpath -w`, y el `Write` no pide un permiso que un sujeto sin usuario no puede conceder
 
@@ -184,6 +184,44 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN el agente llega al paso 7
 - THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
 - AND no la resuelve por defecto ni la mete en el mensaje de la validación
+
+### Una task Native se registra en el ledger de `executing-plans`
+- GIVEN un plan con `Ejecución: native`
+- WHEN el hilo ejecuta cada task
+- THEN la abre con `task-start` y la cierra con `task-done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
+
+### La base se comprueba antes de cada task Native
+- GIVEN un plan con `Ejecución: native` y dos o más tasks
+- WHEN el hilo va a empezar cada task
+- THEN antes compara la fila de la task y los ficheros de la task con la base, como antes de despachar un implementador
+
+### Los RED de una task Native se apartan y se comparan
+- GIVEN una task de un plan con `Ejecución: native`
+- WHEN el hilo la empieza
+- THEN escribe los tests de sus THEN antes del código y guarda una copia fuera del repo
+- AND antes del commit de la task compara la copia con el test con `git diff --no-index`, y un cambio que no sea de formato es un ruling del ledger
+
+### El revisor final de Native va con el techo del kit
+- GIVEN un plan con `Ejecución: native` con todas sus tasks completas en el ledger
+- WHEN el hilo despacha el revisor final de rama
+- THEN el despacho lleva `subagent_type: sdd-kit:effort-high` y `model: opus`
+- AND el encargo lleva la cabecera de `encargo-revision.md` y su sección «Cómo revisar»
+
+### Sin el tipo de effort, se dice antes del primer despacho
+- GIVEN una sesión cuyos tipos de agente no incluyen el `sdd-kit:effort-<nivel>` que toca
+- WHEN el hilo va a hacer el primer despacho de la task (implementador en SDD, revisor final en Native)
+- THEN antes de despachar dice que el tipo falta, despacha con el `model` y la frase de respaldo «effort: no disponible en este harness, hereda el de la sesión», y lo registra como ruling
+
+### El cierre no repite la revisión final de Native
+- GIVEN una task Native cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama
+- WHEN se ejecuta el paso 9 de `sdd-end-task`
+- THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
+- AND solo sin esa línea (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
+
+### Los minors diferidos llegan al walkthrough
+- GIVEN una task Native con líneas `Final: minor (deferred)` en el ledger
+- WHEN se escribe el walkthrough
+- THEN «Decisiones tomadas sin el dev-lead» lleva los «Rulings I made» y los «Deferred minors» del mensaje final de `executing-plans`
 
 ## Historial
 
@@ -241,3 +279,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El revisor de spec se despacha con su effort
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED En Windows, el workspace de ejecución se usa en su ruta Windows
 - 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED Cada cambio de paso lleva un aviso en llano · Una decisión del dev-lead que sale de la revisión final se pregunta sola · MODIFIED El trabajo se valida con el usuario antes de cerrar («sí» sin detalle)
+- 2026-09-24 — 20260924-105352-task-0057-native-adapt — ADDED Una task Native se registra en el ledger de `executing-plans` · La base se comprueba antes de cada task Native · Los RED de una task Native se apartan y se comparan · El revisor final de Native va con el techo del kit · Sin el tipo de effort, se dice antes del primer despacho · El cierre no repite la revisión final de Native (enmienda: `tasks.md`) · Los minors diferidos llegan al walkthrough · MODIFIED En Windows, el workspace de ejecución se usa en su ruta Windows

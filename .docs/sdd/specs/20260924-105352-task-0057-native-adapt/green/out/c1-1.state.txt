@@ -1,0 +1,104 @@
+## HEAD antes: 91aae85 · después: 91aae85
+## git log
+* 91aae85 docs(0012): revisión final de rama
+|     Apunta la revisión final y los minors diferidos en tasks.md.
+| 
+* eb38625 feat(0012): validar el formato de la franja al consultar libres
+|     La consulta de libres rechaza la franja mal formada con el mismo mensaje.
+| 
+* 4a72271 feat(0012): validar el formato de la franja al reservar
+|     La reserva rechaza una franja que no casa con HH-HH, con el mensaje literal de la spec.
+| 
+* 8bfb9db docs(0012): abrir la task 0012
+|     Spec aprobada, plan y registro de tasks de la validación de la franja.
+| 
+* 67603a7 feat: base de reservas de salas
+      Cuerpo del commit.
+  
+## status
+## feature/0012
+ M .docs/sdd/changelog.md
+ M .docs/sdd/roadmap.md
+ M .docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+?? .docs/sdd/capabilities/booking.md
+?? .docs/sdd/specs/20260923-100000-task-0012-franja/walkthrough.md
+## ledger
+## workspace
+## tests en disco
+free-format.test.js
+slot-format.test.js
+slots.test.js
+## tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | 4a72271 | |
+| 2 | Validar al consultar libres | done | eb38625 | Filas corregidas al cierre: estaban en pending pese a estar commiteadas |
+
+Revisión final: sdd-kit:effort-high + opus, Ready (0 Critical, 0 Important, 2 Minor)
+Deferred minors: la validación y el mensaje se repiten en reserve y free; ningún test cubre una franja válida como 10-12
+## plan.md (Ejecución)
+11:**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.
+## walkthrough.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Walkthrough — Validar el formato de la franja
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-09-24
+---
+
+# Walkthrough — Validar el formato de la franja
+
+## 1. Cambios realizados
+
+- `src/slots.js`: `reserve` y `free` lanzan «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `/^\d{2}-\d{2}$/`.
+- Task 1 (reservar): `4a72271` · `tests/slot-format.test.js`.
+- Task 2 (consultar libres): `eb38625` · `tests/free-format.test.js`.
+- Revisión final de rama: `91aae85` (apunte en `tasks.md`).
+
+## 2. Tiempo y coste: estimado vs real
+
+- No aplica: el proyecto no tiene `.docs/sdd/estimation.md`.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_.
+
+### Decisiones tomadas sin el dev-lead
+
+- Deferred minors de la revisión final (Native), no arreglados — la validación y el mensaje se repiten en `reserve` y `free`; ningún test cubre una franja válida en `free` — quedan fuera de la spec (no piden refactor) — coste si está mal: un cambio futuro del formato o del mensaje puede tocar solo una de las dos copias. Anotado como deuda técnica en `roadmap.md`.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- `node --test tests/` (cierre, 2026-09-24): 3 tests, 3 pass, 0 fail.
+
+### 4.2 Smoke / tests
+
+- Validado por el dev-lead: 2026-09-24 · «he probado `salas reservar Norte 1012` y `salas libres 1012` y los dos dan el error de la spec; funciona». Reportado por el dev-lead; el agente no ha ejecutado la CLI, solo la suite.
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `reserve('Norte', '1012')` lanza el mensaje de la spec (`tests/slot-format.test.js`) | ✅ verificado por el agente |
+| 2 | `free('1012')` lanza «Franja no válida» (`tests/free-format.test.js`) | ✅ verificado por el agente |
+| 3 | `reserve('Norte', '10-12')` sigue reservando (`tests/slots.test.js`) | ✅ verificado por el agente |
+| 4 | `salas reservar Norte 1012` y `salas libres 1012` dan el error de la spec | ✅ reportado por el dev-lead |
+
+### 4.3 Residuales / deuda generada
+
+- Duplicación de la validación y del mensaje en `reserve` y `free`, y falta de test de `free` con franja válida → fila en la deuda técnica del roadmap.
+
+## 5. Aprendizajes
+
+- Comportamiento observable nuevo: dos requisitos ADDED → `capabilities/booking.md` (no existía: creada al fusionar el delta de la spec, que declara `booking`).
+- Ninguno estructural ni de convención: `constitution.md` no cambia; no existen `architecture.md` ni `tech-stack.md` y nada los requiere.
+- Skills: el proyecto no tiene `.claude/skills/`; la task no reveló un patrón reutilizable.
+
+## 6. Adendas
+
+- _Ninguna_.

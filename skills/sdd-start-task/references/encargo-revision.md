@@ -22,9 +22,11 @@ Solo viaja el bloque «De código». El de «De proceso» (política de modelos,
 
 ## Rutas del workspace en Windows
 
-El brief, el informe, el paquete de review y el ledger viven en el workspace de `subagent-driven-development`. En Windows, `sdd-workspace`, `task-brief` y `review-package` imprimen la ruta de Git Bash (`/tmp/claude/…`, `/d/code/…`). Conviértela con `cygpath -w <ruta>` antes del primer `Write` o `Read` en el workspace, ledger incluido, y antes de escribirla en un encargo ([overrides](overrides-superpowers.md)). Con la ruta POSIX, el `Write` apunta a `C:\tmp\…` y pide un permiso que un sujeto sin usuario no puede conceder: así quedó bloqueado 1 de 2 sujetos que no leyeron la fila de overrides (`tests/superpowers-641-green.md`).
+El brief, el informe, el paquete de review y el ledger viven en el workspace de `subagent-driven-development`. En Windows, `sdd-workspace`, `task-brief`, `task-start` y `review-package` imprimen la ruta de Git Bash (`/tmp/claude/…`, `/d/code/…`). Conviértela con `cygpath -w <ruta>` antes del primer `Write` o `Read` en el workspace, ledger incluido, y antes de escribirla en un encargo ([overrides](overrides-superpowers.md)). Con la ruta POSIX, el `Write` apunta a `C:\tmp\…` y pide un permiso que un sujeto sin usuario no puede conceder: así quedó bloqueado 1 de 2 sujetos que no leyeron la fila de overrides (`tests/superpowers-641-green.md`).
 
 ## Revisor final
+
+Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`).
 
 Tras la cabecera y antes de `code-reviewer.md`:
 
