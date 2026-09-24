@@ -46,3 +46,16 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 - Estimación: <Xh> (si la hubo)
 - Real: <Yh>
+
+## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*
+
+> Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: borra
+> esta sección. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
+> la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-end-patch`.
+
+### Capacidad: `<nombre>`
+
+**MODIFIED — <título estable>**
+- GIVEN <contexto>
+- WHEN <acción>
+- THEN <resultado actualizado>

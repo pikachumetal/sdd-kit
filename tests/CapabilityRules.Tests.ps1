@@ -12,6 +12,29 @@ BeforeAll {
 }
 
 Describe 'Reglas de capacidades en sus puntos de uso' {
+  Context 'el cierre de un patch fusiona su delta de capacidad' {
+    It 'sdd-end-patch lo manda en el paso 1, con la salida corta' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
+      $step | Should -Match '\.docs/sdd/capabilities/'
+      $step | Should -Match 'ya decía, no hay delta'
+      $step | Should -Match 'aprendizajes-skills\.md'
+    }
+
+    It 'sdd-end-patch mete la capacidad en el commit de cierre' {
+      Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 2 | Should -Match 'capacidades'
+    }
+
+    It 'patch-template lleva la sección opcional de delta' {
+      Read-SkillFile 'sdd-templates/templates/patch-template.md' | Should -Match '(?m)^## 6\. Delta de capacidad'
+    }
+
+    It 'capability-template nombra el cierre de patch en la fusión y en el historial' {
+      $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
+      ($content -split "`n" | Where-Object { $_ -match '^> 3\. ' }) | Should -Match 'sdd-end-patch'
+      $content | Should -Match 'task <id> \| patch <id>|<carpeta de la task o del patch>'
+    }
+  }
+
   Context 'el slug de una capacidad nueva va en inglés' {
     It 'spec-template lo dice en la ayuda del delta' {
       $content = Read-SkillFile 'sdd-templates/templates/spec-template.md'
