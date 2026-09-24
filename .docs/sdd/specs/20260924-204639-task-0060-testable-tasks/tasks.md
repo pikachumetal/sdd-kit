@@ -18,9 +18,9 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Plantillas: tasks verticales, escenarios con datos y reglas completas | done | — | |
-| 2 | `sdd-start-task`: guion de pruebas en la validación y en la parada de `pair` | done | — | |
-| 3 | GREEN y evidencia | pending | — | |
+| 1 | Plantillas: tasks verticales, escenarios con datos y reglas completas | done | 8bbd796 | |
+| 2 | `sdd-start-task`: guion de pruebas en la validación y en la parada de `pair` | done | a691c49 | |
+| 3 | GREEN y evidencia | done | — | REFACTOR de `plan-template.md` §2 tras el GREEN p3 (ruling del ledger) |
 
 ## Verificación por task
 

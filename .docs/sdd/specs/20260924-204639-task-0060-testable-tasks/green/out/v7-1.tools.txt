@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd .docs/sdd/specs/20260923-100000-task-0012-franja && ls && cat review-final.md tasks.md spec.md && git -C ../../../.. log --oneline -8 && git -C ../../../.. status --short
+
+>>> Bash: cat .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md 2>/dev/null | head -80; ls; cat package.json 2>/dev/null | head -30
+<<< plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos.
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | b2ce347 | |
+| 2 | Validar al consultar libres | done | 5bf46fb | |
+
+Revisión final: general-purpose + sonnet, limpia
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: subagent, porque cada task lleva su revisión.
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Implementadores y revisores Sonnet, effort medio.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: Sonnet, effort medio
+**Tests RED**: hilo principal · `tests/slot-format.test.js`, escritos antes de despachar y sin commitear
+
+>>> Bash: cat bin/salas.js src/*.js; ls tests; node --test 2>&1 | tail -15; for a in "reservar Norte 1012" "reservar Norte 10-12" "libres 1012" "libres 10-12"; do echo "== $a"; node bin/salas.js $a; echo "exit=$?"; done
+<<< #!/usr/bin/env node
+import * as slots from '../src/slots.js';
+
+const [command, ...args] = process.argv.slice(2);
+const commands = { reservar: () => slots.reserve(...args), libres: () => slots.free(...args) };
+try {
+  console.log(JSON.stringify(commands[command]()));
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+}
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Fran
+
+=== RESULTADO (6 turnos, 0.2052686 $)
+Ahora: validación del trabajo (paso 7). Queda: que pruebes el guion y me digas qué probaste. No cierro hasta entonces, ~5 min de tu parte.
+
+## Me salí del plan en…
+
+Nada. No hay rulings ni desvíos en `tasks.md`: las dos tasks están hechas tal como estaban en el plan (commits `b2ce347` y `5bf46fb`). La spec no cambió.
+
+## Qué hay
+
+- `reserve` y `free` en `src/slots.js` validan la franja con `/^\d{2}-\d{2}$/`. Si no casa, lanzan «Franja no válida: usa HH-HH, p. ej. 10-12».
+- La revisión final (general-purpose + sonnet) salió limpia, sin hallazgos.
+- No queda ninguna decisión de producto ni de alcance pendiente.
+- El regex solo comprueba el formato. `99-99` o `12-10` pasan, porque la spec no pide validar los rangos.
+
+## Smoke que he ejecutado
+
+- `node --test`: 3 tests, 3 pasan, 0 fallan.
+- `node bin/salas.js reservar Norte 1012`: imprime el mensaje de error y sale con código 1.
+- `node bin/salas.js reservar Norte 10-12`: imprime `{"room":"Norte","slot":"10-12"}`.
+- `node bin/salas.js libres 1012`: imprime el mismo mensaje y sale con código 1.
+- `node bin/salas.js libres 10-12`: imprime `["Norte","Sur"]`.
+
+## Guion de pruebas (para ti)
+
+1. `node bin/salas.js reservar Norte 1012`. Debe mostrar `Franja no válida: usa HH-HH, p. ej. 10-12` y salir con código 1.
+2. `node bin/salas.js reservar Norte 10-12`. Debe mostrar `{"room":"Norte","slot":"10-12"}`.
+3. `node bin/salas.js libres 1012`. Debe mostrar el mismo mensaje de error, con código 1.
+4. `node bin/salas.js libres 10-12`. Debe mostrar `["Norte","Sur"]`.
+
+¿Lo has probado y funciona? Dime qué probaste tú, y con eso cierro con `sdd-end-task`.

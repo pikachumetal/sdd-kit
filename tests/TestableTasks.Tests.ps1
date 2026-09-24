@@ -13,7 +13,7 @@ BeforeAll {
 Describe 'Plantillas' {
   It 'el plan orienta a tasks que se prueban en la aplicación' {
     $section = [regex]::Match((Get-KitFile 'skills/sdd-templates/templates/plan-template.md'), '(?s)## 2\. Tasks.*?### Task 1').Value
-    Assert-Literal $section @('Tasks verticales', 'orientación, no regla', 'no una capa', 'Sin tamaño fijo en horas')
+    Assert-Literal $section @('Tasks verticales', 'orientación, no regla', 'no una capa', 'Sin tamaño fijo en horas', 'Las capas de una sola funcionalidad no son base común')
   }
 
   It 'cada task del plan dice si se prueba en la aplicación o por qué no' {
