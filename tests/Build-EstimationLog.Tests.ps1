@@ -303,6 +303,41 @@ Describe 'Resumen estadístico' {
   }
 }
 
+Describe 'Fecha de la fila' {
+  BeforeAll {
+    function New-Artifact([string]$Specs, [string]$Folder, [string]$File, [string]$FrontMatter) {
+      $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
+      $heading = if ($File -eq 'patch.md') { '## 5. Tiempo' } else { '## 2. Tiempo: estimado vs real' }
+      $text = "---`n$FrontMatter`n---`n`n$heading`n`n- Tipo: docs`n- Estimación: 1h`n- Real: 1h`n"
+      [System.IO.File]::WriteAllText((Join-Path $dir $File), $text, [System.Text.UTF8Encoding]::new($false))
+    }
+
+    $specs = Join-Path $TestDrive 'fechas/.docs/sdd/specs'
+    New-Item -ItemType Directory -Path $specs -Force | Out-Null
+    New-Artifact $specs '20260923-214917-task-0053-noche' 'walkthrough.md' "task: 0053`ncreated: 2026-09-24"
+    New-Artifact $specs '20260923-230000-patch-0060-noche' 'patch.md' "task: 0060`ncreated: 2026-09-24"
+    New-Artifact $specs '20260923-230500-task-0061-date' 'walkthrough.md' "task: 0061`ndate: 2026-09-24"
+    New-Artifact $specs '20260923-231000-task-0062-plantilla' 'walkthrough.md' "task: 0062`ncreated: <YYYY-MM-DD>"
+    $script:Fechas = (Invoke-Build (Join-Path $TestDrive 'fechas')).Text
+  }
+
+  It 'fecha un walkthrough con su created: y no con la carpeta' {
+    Get-Row $script:Fechas '20260923-214917-task-0053-noche' | Should -BeLike '| 2026-09-24 | 0053 |*'
+  }
+
+  It 'fecha un patch.md con su created:' {
+    Get-Row $script:Fechas '20260923-230000-patch-0060-noche' | Should -BeLike '| 2026-09-24 | 0060 |*'
+  }
+
+  It 'acepta date: en el frontmatter' {
+    Get-Row $script:Fechas '20260923-230500-task-0061-date' | Should -BeLike '| 2026-09-24 | 0061 |*'
+  }
+
+  It 'usa la carpeta si el campo no trae una fecha' {
+    Get-Row $script:Fechas '20260923-231000-task-0062-plantilla' | Should -BeLike '| 2026-09-23 | 0062 |*'
+  }
+}
+
 Describe 'Tolerancia de formato en el bloque de tiempo' {
   BeforeAll { $script:Tolerante = Invoke-Build (Join-Path $script:Fixtures 'tolerante') }
 

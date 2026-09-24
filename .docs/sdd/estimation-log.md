@@ -12,7 +12,7 @@
 | 2026-09-02 | 0000 | patch | — | 0.3 | — | — | — | — | 20260902-153722-patch-0000-grilling-reference |
 | 2026-09-02 | 0000 | docs | 3 | 0.3 | 0.1 | — | — | — | 20260902-160308-task-0000-dependencias-declaradas |
 | 2026-09-07 | 0000 | docs | 2 | 0.5 | 0.25 | — | — | — | 20260907-151234-task-0000-alineacion-superpowers |
-| 2026-09-07 | 0000 | docs | 3.5 | 5.5 | 1.57 | — | — | — | 20260907-184057-task-0000-progressive-disclosure |
+| 2026-09-08 | 0000 | docs | 3.5 | 5.5 | 1.57 | — | — | — | 20260907-184057-task-0000-progressive-disclosure |
 | 2026-09-08 | 0000 | docs | 4 | 1.3 | 0.33 | — | — | — | 20260908-095857-task-0000-workflow-ejecucion |
 | 2026-09-08 | 0000 | docs | 2 | 0.4 | 0.2 | — | — | — | 20260908-135025-task-0000-entorno-por-worktree |
 | 2026-09-08 | 0000 | docs | 1.5 | 0.5 | 0.33 | — | — | — | 20260908-150513-task-0000-spec-ligera-funcional |
@@ -33,12 +33,12 @@
 | 2026-09-10 | 0000 | patch | 1.5 | 1.2 | 0.8 | — | — | — | 20260910-072132-patch-0000-estimation-parser-tolerante |
 | 2026-09-20 | 0017 | patch | 0.25 | 0.2 | 0.8 | — | — | — | 20260920-192907-patch-0017-nombres-de-proyecto-en-skills |
 | 2026-09-20 | 0001 | infra/tooling | 2.5 | 0.9 | 0.36 | — | 835k | — | 20260920-202137-task-0001-task-ids |
-| 2026-09-20 | 0002 | docs | 2.5 | 1.3 | 0.52 | — | 448k | — | 20260920-220741-task-0002-sdd-feedback |
-| 2026-09-20 | 0011 | docs | 1.75 | 0.55 | 0.31 | — | 940k | — | 20260920-220930-task-0011-spec-review-lenses |
+| 2026-09-21 | 0002 | docs | 2.5 | 1.3 | 0.52 | — | 448k | — | 20260920-220741-task-0002-sdd-feedback |
+| 2026-09-21 | 0011 | docs | 1.75 | 0.55 | 0.31 | — | 940k | — | 20260920-220930-task-0011-spec-review-lenses |
 | 2026-09-21 | 0004 | docs | 3 | 2.2 | 0.73 | — | 532k | — | 20260921-074701-task-0004-release-without-client |
 | 2026-09-21 | 0003 | docs | 4 | 3 | 0.75 | — | — | — | 20260921-081125-task-0003-cap-lifecycle |
-| 2026-09-21 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | — | 355k | 10.3 | 20260921-162213-task-0014-auto-routing |
-| 2026-09-21 | 0008 | docs | 6 | 2.6 | 0.43 | — | — | — | 20260921-162234-task-0008-control-profiles |
+| 2026-09-22 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | — | 355k | 10.3 | 20260921-162213-task-0014-auto-routing |
+| 2026-09-22 | 0008 | docs | 6 | 2.6 | 0.43 | — | — | — | 20260921-162234-task-0008-control-profiles |
 | 2026-09-22 | 0013 | docs | 3 | 1.5 | 0.5 | — | — | — | 20260922-083703-task-0013-postponed-anchor |
 | 2026-09-22 | 0005 | docs | 1.5 | 0.8 | 0.53 | — | — | — | 20260922-084550-task-0005-dispatch-brief |
 | 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | — | — | — | 20260922-090037-task-0012-init-interview |
@@ -52,8 +52,8 @@
 | 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | — | — | — | 20260922-153902-task-0018-roadmap-closing |
 | 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | — | — | — | 20260922-154013-task-0029-release-replan |
 | 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
-| 2026-09-22 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | 20260922-211157-task-0019-init-files |
-| 2026-09-22 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
+| 2026-09-23 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | 20260922-211157-task-0019-init-files |
+| 2026-09-23 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
 | 2026-09-22 | 0035 | patch | — | 0.75 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
 | 2026-09-23 | 0037 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | 20260923-070206-patch-0037-disparador-vago |
 | 2026-09-23 | 0006 | docs | 3 | 2 | 0.67 | no medido | 201k | 20.93 | 20260923-102746-task-0006-task-verification |
@@ -68,24 +68,25 @@
 | 2026-09-23 | 0046 | infra/tooling | 2 | 0.75 | 0.38 | no medido | 295k | no aplica | 20260923-195017-task-0046-estimation-stats |
 | 2026-09-23 | 0039 | docs | 2 | 0.7 | 0.35 | no medido | 596k | 4.39 | 20260923-203736-task-0039-moving-base |
 | 2026-09-23 | 0051 | patch | 0.5 | 0.6 | 1.2 | — | — | 1.18 | 20260923-212835-patch-0051-verify-gate |
-| 2026-09-23 | 0031 | infra/tooling | 1 | 0.6 | 0.6 | no medido | 292k | 4.88 | 20260923-213417-task-0031-dispatch-effort |
-| 2026-09-23 | 0053 | docs | 2 | 1.9 | 0.95 | no medido | 509k | 10.04 | 20260923-214917-task-0053-fewer-stops |
-| 2026-09-23 | 0026 | docs | 1.25 | 0.8 | 0.64 | no medido | 301k | 5.44 | 20260923-220402-task-0026-superpowers-641 |
+| 2026-09-24 | 0031 | infra/tooling | 1 | 0.6 | 0.6 | no medido | 292k | 4.88 | 20260923-213417-task-0031-dispatch-effort |
+| 2026-09-24 | 0053 | docs | 2 | 1.9 | 0.95 | no medido | 509k | 10.04 | 20260923-214917-task-0053-fewer-stops |
+| 2026-09-24 | 0026 | docs | 1.25 | 0.8 | 0.64 | no medido | 301k | 5.44 | 20260923-220402-task-0026-superpowers-641 |
+| 2026-09-24 | 0056 | patch | 0.5 | 0.4 | 0.8 | — | — | no aplica | 20260924-081646-patch-0056-estimation-log-close-date |
 
-**Factor de calibración** (ratio mediano real/estimado, 61 artefactos): **0.6** · media 0.68
+**Factor de calibración** (ratio mediano real/estimado, 62 artefactos): **0.6** · media 0.68
 
 - p25–p75: 0.38–0.9
-- p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 66 % · infraestimadas: 7 %
-- Error absoluto (h): media 0.87 · mediana 0.5
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.57
+- p80: 0.99 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 29 % · sobreestimadas: 65 % · infraestimadas: 6 %
+- Error absoluto (h): media 0.85 · mediana 0.48
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.62
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 19 | 31 % |
-| 0.5–0.8 | 23 | 38 % |
-| 0.8–1.25 | 15 | 25 % |
-| 1.25–2 | 4 | 7 % |
+| 0.5–0.8 | 23 | 37 % |
+| 0.8–1.25 | 16 | 26 % |
+| 1.25–2 | 4 | 6 % |
 | ≥2 | 0 | 0 % |
 
 | Tipo | n | Mediana | p25–p75 |
@@ -93,7 +94,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 42 | 0.52 | 0.36–0.72 |
 | infra/tooling | 8 | 0.57 | 0.37–0.79 |
-| patch | 10 | 1.2 | 0.85–1.3 |
+| patch | 11 | 1.2 | 0.8–1.27 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) |
 | --- | --- | --- | --- | --- |
@@ -102,7 +103,7 @@
 | 0.4.0 | 1 | 2.1 | 1.05 | — |
 | 0.5.0 | 3 | 1.1 | 0.13 | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — |
-| 1.1.0 | 5 | 4.15 | 0.52 | — |
-| sin publicar | 36 | 42.5 | 0.67 | 133.89 |
+| 1.1.0 | 3 | 2.3 | 0.8 | — |
+| sin publicar | 39 | 44.75 | 0.67 | 133.89 |
 
 > Ver `estimation.md`.
