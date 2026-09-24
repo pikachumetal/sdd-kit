@@ -4,7 +4,7 @@ task: 0053
 parent: 0015
 title: Menos paradas y avisos llanos
 mode: full
-status: approved
+status: done
 created: 2026-09-23
 author: Claude (Opus 5.5) con el dev-lead
 approvers:
