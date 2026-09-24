@@ -122,6 +122,7 @@ Hoy todo lo configurable vive en `sdd-kit.json`, que está en git y es del equip
 - WHEN la escribe
 - THEN una clave de política (`ids`, `merge`, frenos de `control`) va a `sdd-kit.json`; `validation.startEnvironment` va a `sdd-kit.local.json`; `control.profile` y `execution` van donde el usuario diga (invocada por una init o por la migración, siempre a `sdd-kit.json`)
 - AND «no sé» no escribe la clave y rige su default; lo que no se preguntó no se escribe
+- AND invocada por una init o por una migración no escribe: devuelve las respuestas y quien la invocó las escribe en `sdd-kit.json`, en su paso de estructura o de marcador (enmienda del 2026-09-25)
 - AND sin usuario no escribe nada: las preguntas quedan como pendientes explícitas en el informe de quien la invocó
 
 **Reglas de la capacidad**
@@ -150,6 +151,20 @@ Hoy todo lo configurable vive en `sdd-kit.json`, que está en git y es del equip
 - AND un método que el dev-lead nombra para la task manda sobre los dos ficheros
 - AND un `execution: auto` en `sdd-kit.local.json` también cuenta: el método lo recomienda el handoff aunque `sdd-kit.json` fije `native` o `subagent`
 
+**MODIFIED — El método de ejecución lo elige el handoff del plan** (antes: GIVEN sin mirar `sdd-kit.local.json`; enmienda del 2026-09-25)
+- GIVEN una task en modo full con la spec aprobada, superpowers ≥ 6.4.1, `execution` ausente o `auto` en `sdd-kit.json` y sin `native` ni `subagent` en `sdd-kit.local.json`, o `execution: auto` en `sdd-kit.local.json`
+- WHEN el agente guarda el plan
+- THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff de `writing-plans` y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo sacado del plan>`
+- AND en `pair` la parada del plan es una sola pregunta que aprueba el plan y elige el método, con la recomendación del handoff como primera opción; no hay una parada aparte para el método
+- AND ninguna task del plan lleva un campo `Ejecución` propio: el método es del plan entero, salvo el cambio a SDD tras una compactación
+
+**MODIFIED — Un método fijado en `sdd-kit.json` no se pregunta** (antes: GIVEN sin mirar `sdd-kit.local.json`; enmienda del 2026-09-25)
+- GIVEN una task en modo full con la spec aprobada, `execution: native` o `execution: subagent` en `sdd-kit.json` y sin `execution` en `sdd-kit.local.json`
+- WHEN el agente guarda el plan
+- THEN escribe en la cabecera `Ejecución: <valor>, fijado en sdd-kit.json` y no pregunta el método en ningún perfil
+- AND el valor fijado manda aunque el handoff recomiende el otro método
+- AND en `pair` la parada del plan solo pide aprobarlo
+
 **Reglas de la capacidad**
 - **Dónde viven los datos**: se añade `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git.
 - **Regla ante conflicto**: el perfil sigue task → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la task → persona → proyecto, sin nivel de release.
@@ -172,6 +187,11 @@ Hoy todo lo configurable vive en `sdd-kit.json`, que está en git y es del equip
 - THEN `.claude/settings.json` tiene `"autoMemoryEnabled": false` y conserva las demás claves que ya tuviera
 - AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` una sola vez cada una
 - AND si `.claude/settings.json` ya tenía `"autoMemoryEnabled": true`, el agente pregunta antes de cambiarlo; si el usuario dice que no, la clave se queda en `true` y el resumen de cierre lo anota
+
+**MODIFIED — La constitution nombra el proyecto de referencia** (antes: «la pregunta 21 de greenfield y la 7 de brownfield»; enmienda del 2026-09-25)
+- GIVEN una init greenfield o brownfield en su entrevista
+- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 18 de greenfield y la 4 de brownfield
+- THEN la constitution lleva en «Convenciones» la entrada «Proyecto de referencia» con la ruta o el repositorio que el usuario dé, o «no aplica» si responde que no
 
 ### Capacidad: `migration`
 
@@ -202,6 +222,8 @@ Hoy todo lo configurable vive en `sdd-kit.json`, que está en git y es del equip
 - AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en una init o en una migración, o si una de ellas no nombra `sdd-config`
 
 ## Enmiendas
+
+- 2026-09-25 — Cuatro cambios del delta, de la revisión final de rama: (1) MODIFIED «El método de ejecución lo elige el handoff del plan» y (2) MODIFIED «Un método fijado en `sdd-kit.json` no se pregunta», con el fichero local en el GIVEN, para que la capacidad no se contradiga al fusionar; (3) MODIFIED «La constitution nombra el proyecto de referencia», con las preguntas 18 y 4; (4) `sdd-config`, invocada por una init o una migración, devuelve las respuestas y escribe quien la invocó, para que `sdd-kit.json` no nazca sin `version` — por qué: la review final vio requisitos vigentes que el delta dejaba contradictorios y una escritura temprana en las init — aprobada: «Apruebo la enmienda (Recomendada)»
 
 ## Aprobaciones
 
