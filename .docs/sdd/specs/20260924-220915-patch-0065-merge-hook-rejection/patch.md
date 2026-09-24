@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: feature/004-patch
-commit: <hash>
+commit: 771fda4
 ---
 
 # Patch 0065 — Invoke-SddMerge.ps1 distingue el hook que rechaza el merge de un conflicto
@@ -47,5 +47,5 @@ Hay dos causas en `skills/sdd-templates/scripts/Invoke-SddMerge.ps1`:
 
 ## 5. Tiempo (ligero)
 
-- Estimación: 30 min (fila de deuda: patch)
-- Real: 25 min
+- Estimación: 0.5h (fila de deuda: patch)
+- Real: 0.4 h
