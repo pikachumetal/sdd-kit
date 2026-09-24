@@ -15,7 +15,7 @@ for i in ${SUBJECTS:-1 2}; do
     [ -f "$BASE/stop" ] && { echo "parada a petición (existe $BASE/stop)"; exit 3; }
     total=$(spent)
     if awk -v t="$total" -v c="$CAP" 'BEGIN { exit !(t >= c) }'; then echo "techo de $CAP \$ alcanzado ($total \$): paro"; exit 2; fi
-    bash "$BASE/subject.sh" "$KIT_DIR" "$sc-$i" "$sc" "$O"
+    bash "$BASE/${SUBJECT_SCRIPT:-subject.sh}" "$KIT_DIR" "$sc-$i" "$sc" "$O"
   done
 done
 echo "coste acumulado de la campaña 0055-0058: $(spent) \$"

@@ -20,8 +20,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | Contrato del método | done | `5c9f401` | 1 ronda de fix: barra sin escapar en la fila del handoff |
 | 2 | Init y migración preguntan `execution` | done | `b3f2bb7` | ruling: el helper `Get-TableRow` del RED acepta filas indentadas |
-| 3 | El aviso del hook nombra los agentes | done | — | 3 RED (el plan decía 2) |
-| 4 | GREEN | pending | — | en línea |
+| 3 | El aviso del hook nombra los agentes | done | `0030a51` | 3 RED (el plan decía 2) |
+| 4 | GREEN | done | — | en línea; REFACTOR del gate del paso 5 en `pair` (ruling, entra en la revisión final) |
 
 ## Verificación por task
 

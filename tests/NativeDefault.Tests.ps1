@@ -116,3 +116,11 @@ Describe 'Task 2 — init y migración' {
     $line | Should -Match '`merge\.push`, `execution`'
   }
 }
+
+Describe 'REFACTOR — la pregunta del gate del plan en pair' {
+  It 'el paso 5 da la forma de la pregunta con el método y la recomendada primero' {
+    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $skill | Should -Match 'En `pair`, la pregunta del gate aprueba el plan y elige el método a la vez'
+    $skill | Should -Match '«Apruebo, con <método recomendado> \(Recomendada\)», «Apruebo, con <el otro método>» y «Cambios»'
+  }
+}
