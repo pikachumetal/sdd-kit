@@ -69,8 +69,10 @@ siendo del usuario (gate del paso 2). Además:
 2. **Una task en marcha no se toca** — con rama `feature/<id>` abierta o 🔄 en el roadmap, ni su fila ni su
    spec cambian, aunque la nota sea de su tema: su rama las está editando y el cambio acaba en conflicto o en
    un scope que nadie aprobó. El trabajo nuevo va a una task nueva con fila propia que dice que va tras ella.
-3. **Ids sin choque** *(en `sequence`)* — cada id nuevo es mayor que el que da `Get-NextSddId.ps1` y que
-   cualquier id de los roadmaps del paso 1: el script no ve lo que otra rama reservó sin fusionar.
+3. **Ids reservados** *(en `sequence`)* — los N ids nuevos salen de una sola reserva,
+   `Get-NextSddId.ps1 -Reserve -Count N`, que los deja consumidos para todos los worktrees. Ninguno se
+   calcula a mano ni con el script sin `-Reserve`, que solo propone: en el RED, un sujeto lo ejecutó así y
+   escribió tres ids que otro worktree podía coger a la vez (`tests/reserve-ids-red.md`, r1-2).
 4. **Publicar la reserva** — tras la decisión del usuario, commitea en la rama de integración las filas nuevas
    en un commit que solo toca `roadmap.md`: en el worktree donde está sacada (`git worktree list`) o, si no
    está en ninguno, en un worktree temporal creado en la misma carpeta que los demás worktrees y con un nombre
