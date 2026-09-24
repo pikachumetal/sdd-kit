@@ -1,0 +1,54 @@
+## HEAD antes: d318c1d · después: f2f5b57
+## git log
+* f2f5b57 fix(slots): cancelar sin franja lanza el error de uso
+* d318c1d docs: fila de deuda de cancelar sin franja
+* 7fefede feat: cancelar una reserva
+* b3b718a feat: base de reservas de salas
+## status
+## feature/0013
+## diff del roadmap desde el inicio
+## carpetas de specs
+20260924-065849-patch-0013-cancelar-sin-franja
+## .docs/sdd/specs/20260924-065849-patch-0013-cancelar-sin-franja/patch.md
+---
+id: 20260924-065849-patch-0013-cancelar-sin-franja
+task: 0013
+title: Patch — cancelar sin franja pide el uso
+type: patch
+status: done
+created: 2026-09-24
+branch: feature/0013
+commit: pendiente
+---
+
+# Patch 0013 — cancelar sin franja pide el uso
+
+## 1. Síntoma
+
+Reportado (ticket de soporte 17, vía fila de deuda técnica): `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined`.
+
+Medido (2026-09-24): no hay `TypeError`. `cancel('Norte')` devuelve `{ room: 'Norte', slot: undefined, cancelled: true }`, o sea, da por cancelada una reserva sin franja y no avisa. Difiere de lo reportado: no revienta, acepta el input inválido en silencio.
+
+## 2. Causa raíz
+
+`cancel(room, slot)` en `src/slots.js` no validaba `slot`: construía y devolvía el resultado con `slot` indefinido. Evidencia: `node -e "import('./src/slots.js').then(m=>console.log(m.cancel('Norte')))"` imprime el objeto anterior. No existe CLI en el repo (solo `src/slots.js`), así que el `TypeError` del ticket no sale de este código.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/cancel.test.js`
+- **Cambio**: `cancel` lanza `Error("Uso: salas cancelar <sala> <franja>")` si falta la franja, con el mensaje que fija la fila de deuda técnica.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancel('Norte')` antes del fix: test en rojo | ✅ agente |
+| 2 | `cancel('Norte')` lanza el error de uso | ✅ agente, `node --test` |
+| 3 | `cancel('Norte', '10-12')` sigue cancelando | ✅ agente, `node --test` |
+| 4 | `TypeError` en el CLI real | no verificado: el repo no tiene CLI |
+
+Decisión sin el dev-lead: se siguió con el fallo medido (cancelación silenciosa) en vez de parar, y el mensaje de error es el que ya fijaba la fila de deuda.
+
+## 5. Tiempo
+
+Estimación: patch (<30 min). Real: 0,25 h.

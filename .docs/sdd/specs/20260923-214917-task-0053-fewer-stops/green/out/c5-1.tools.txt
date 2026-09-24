@@ -1,0 +1,195 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Grep: franja|cancelar
+
+>>> Glob: .docs/sdd/**
+<<< tests\slots.test.js:5:test('reserva una sala en una franja', () => {
+README.md:3:CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+.docs\sdd\roadmap.md:7:| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+.docs\sdd\roadmap.md:8:| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+.docs\sdd\roadmap.md:19:| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (predicho por el ticket d
+<<< .docs\sdd\constitution.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+
+>>> Read: <run>\salas\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+6	| --- | --- | --- | --- | --- |
+7	| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+8	| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+9	
+10	## Patches
+11	
+12	| Fecha | Id | Descripción |
+13	| --- | --- | --- |
+14	
+15	## Deuda técnica
+16	
+17	| Ítem | Impacto | Destino |
+18	| --- | --- | --- |
+19	| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (
+
+>>> Bash: cd "<run>/salas" && ls -R src bin tests package.json 2>/dev/null; cat src/*.js; cat bin/* 2>/dev/null; cat .docs/sdd/sdd-kit.json
+<<< src:
+slots.js
+
+tests:
+slots.test.js
+export function reserve(room, slot) {
+  return { room, slot };
+}
+
+export function cancel(room, slot) {
+  const [from] = slot.split("-");
+  return { room, slot, cancelled: true };
+}
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+>>> Bash: cd "<run>/salas" && ls -a; cat package.json; node -e 'import("./src/slots.js").then(m=>m.cancel("Norte"))' 2>&1 | head -8; cat tests/slots.test.js; git log --oneline -3 -- src/slots.js
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+README.md
+src/
+tests/
+cat: package.json: No such file or directory
+file:///<run>/salas/src/slots.js:6
+  const [from] = slot.split("-");
+                      ^
+
+TypeError: Cannot read properties of undefined (reading 'split')
+    at Module.cancel (file:///<run>/salas/src/slots.js:6:23)
+    at [eval]:1:36
+
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+974b
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/constitution.md .docs/sdd/changelog.md; git branch -a; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-green/skills"; find $K/sdd-templates -name 'patch-template*' | xargs cat; date -u +%Y%m%d-%H%M%S
+<<< # Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+# Changelog
+
+## [Unreleased]
+* develop
+  main
+---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+status: done
+created: <YYYY-MM-D
+
+>>> Bash: cd "<run>/salas" && git switch -c feature/0013 && mkdir -p .docs/sdd/specs/20260924-070203-patch-0013-cancelar-sin-franja && cat > tests/cancel.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { cancel } from '../src/slots.js';
+
+test('cancela una reserva con franja', () => {
+  assert.deepStrictEqual(cancel('Norte', '10-12'), { room: 'Norte', slot: '10-12', cancelled: true });
+});
+
+test('cancelar sin franja pide el uso en vez de fallar con TypeError', () => {
+  assert.throws(() => cancel('Norte'), { message: 'Uso: salas cancelar <sala> <franja>' });
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)|TypeError" | head
+<<< Switched to a new branch 'feature/0013'
+✖ cancelar sin franja pide el uso en vez de fallar con TypeError (2.1381ms)
+✖ cancelar sin franja pide el uso en vez de fallar con TypeError (2.1381ms)
+    actual: TypeError: Cannot read properties of undefined (reading 'split')
+
+>>> Bash: cd "<run>/salas" && python3 - <<'EOF' 2>/dev/null || node -e '
+const fs=require("fs");let s=fs.readFileSync("src/slots.js","utf8");
+s=s.replace("export function cancel(room, slot) {\n","export function cancel(room, slot) {\n  if (!slot) throw new Error(\"Uso: salas cancelar <sala> <franja>\");\n");
+fs.writeFileSync("src/slots.js",s);'
+EOF
+cat src/slots.js; node --test 2>&1 | grep -E "^# (pass|fail)"
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: bq97knrs2). Output is being written to: <home>\AppData\Local\Temp\claude\<home-slug>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0053-6efeee6b-be23-429a-8015-cf6790d4a3e7-scratchpad-runs-green-c5-1-salas\7fe62153-7792-4420-8b8f-5be4ffc9f590\tasks\bq97knrs2.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\salas; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Bash: cd "<run>/salas" && git status --short; cat src/slots.js
+<<< ?? tests/cancel.test.js
+export function reserve(room, slot) {
+  return { room, slot };
+}
+
+export function cancel(room, slot) {
+  const [from] = slot.split("-");
+  return { room, slot, cancelled: true };
+}
+
+>>> Edit: <run>\salas\src\slots.js
+<<< The file <run>\salas\src\slots.js has been updated successfully.
+
+>>> Write: <run>\salas\.docs\sdd\specs\20260924-070203-patch-0013-cancelar-sin-franja\patch.md
+<<< File created successfully at: <run>\salas\.docs\sdd\specs\20260924-070203-patch-0013-cancelar-sin-franja\patch.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/salas" && node --test 2>&1 | grep -E "^# (pass|fail)"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/salas" && node --test 2>&1 | tail -12
+<<< ✔ cancela una reserva con franja (1.3832ms)
+✔ cancelar sin franja pide el uso en vez de fallar con TypeError (1.1306ms)
+✔ reserva una sala en una franja (1.4317ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.8849
+
+>>> Bash: cd "<run>/salas" && git add -A && git commit -q -F - <<'EOF'
+fix: cancelar sin franja pide el uso en vez de fallar
+
+`cancel` desreferenciaba `slot` sin comprobarlo y lanzaba un `TypeError`
+al omitir la franja. Ahora lanza `Error("Uso: salas cancelar <sala> <franja>")`.
+Incluye test en `tests/cancel.test.js` y `patch.md` (tarea 0013, ticket de
+soporte 17).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -1; git status --short
+<<< 438c069 fix: cancelar sin franja pide el uso en vez de fallar
+
+=== RESULTADO (17 turnos, 0.319647 $)
+Patch 0013 aplicado y commiteado (`438c069`, rama `feature/0013`), pero todavía no está cerrado.
+
+- **Reproducido:** `cancel("Norte")` lanzaba `TypeError: Cannot read properties of undefined (reading 'split')` en `src/slots.js:6`, tal como predecía el ticket 17.
+- **Causa:** `cancel` hacía `slot.split("-")` sin comprobar que existiera `slot`. Es la única función que lo desreferencia.
+- **Fix:** ahora lanza `Error("Uso: salas cancelar <sala> <franja>")` si falta la franja. Añadí `tests/cancel.test.js` primero, en rojo, y luego en verde. `node --test` pasa 3/3.
+- **Registro:** `.docs/sdd/specs/20260924-070203-patch-0013-cancelar-sin-franja/patch.md`. Usé el id 0013 porque el roadmap ya lo tenía reservado para esto en "Próximo".
+
+Pendiente, y lo dejo para `sdd-end-patch` porque cierra el patch y toca changelog y roadmap:
+- Mover la fila 0013 y la de deuda técnica a la tabla "Patches".
+- Escribir el hash del commit en `patch.md`, que ahora pone `pendiente`.
+- Fusionar la rama a `develop`.
+
+Como el dev-lead no está, no he tocado nada de eso. El repo no tiene un CLI que llame a `cancel`, así que la validación cubre solo la función. Validar el formato de la franja (`1012`) sigue siendo el 0012.
+
+¿Cierro con `sdd-end-patch` ahora o esperas al dev-lead?

@@ -18,9 +18,9 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Carril de task: aviso de fase, delegación en la primera pregunta y paso 7 | blocked | — | espera a que la 0031 esté en `develop` |
-| 2 | Carril de patch: el fallo que no se reproduce y la fila re-medida | pending | — | |
-| 3 | GREEN | pending | — | en línea |
+| 1 | Carril de task: aviso de fase, delegación en la primera pregunta y paso 7 | done | fd19c86 | revisión limpia; 1 Minor diferido (un test comprueba presencia, no orden) |
+| 2 | Carril de patch: el fallo que no se reproduce y la fila re-medida | done | b0f6dbf | revisión limpia |
+| 3 | GREEN | done | (este commit) | en línea; 17/17 (7 escenarios 2/2 y 3 controles), 5,43 $; campaña entera 10,04 $ de un techo de 18 $. Parado el 2026-09-24 a petición del dev-lead («si tienes agentes arrancados, espera pero no arranques más»), tras la primera ronda s1-1…s5-1. s6-1 arrancó después de la petición, porque el hilo paró primero los procesos equivocados y el lanzador siguió vivo; se deja terminar. El resto (s7-1, la segunda ronda y los controles) se lanzó al retomar el 2026-09-24 |
 
 ## Verificación por task
 

@@ -67,7 +67,7 @@ claude -p --model sonnet --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}
   echo "## diff del roadmap desde el inicio"; g diff "$BEFORE" -- .docs/sdd/roadmap.md; g diff -- .docs/sdd/roadmap.md
   echo "## carpetas de specs"; ls "$R/.docs/sdd/specs" 2>/dev/null
 } 2>&1 | sed -e "s#$RUN#<run>#g" -e "s#$(cygpath -m "$RUN")#<run>#g" > "$OUT/$LABEL.state.txt"
-for f in "$R"/.docs/sdd/specs/*/walkthrough.md "$R/$PATCHDIR/patch.md"; do [ -f "$f" ] && { echo "## ${f#$R/}"; cat "$f"; } >> "$OUT/$LABEL.state.txt"; done
+for f in "$R"/.docs/sdd/specs/*/walkthrough.md "$R"/.docs/sdd/specs/*/patch.md; do [ -f "$f" ] && { echo "## ${f#$R/}"; cat "$f"; } >> "$OUT/$LABEL.state.txt"; done
 node "$TOOLS" "$RUNS/$LABEL.jsonl" "$RUN" > "$OUT/$LABEL.tools.txt"
 node "$BASE/texts.mjs" "$RUNS/$LABEL.jsonl" > "$OUT/$LABEL.texts.txt"
 echo "[$LABEL] listo"

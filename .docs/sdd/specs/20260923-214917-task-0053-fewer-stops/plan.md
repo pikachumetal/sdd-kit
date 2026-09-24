@@ -109,7 +109,7 @@ Ninguna.
 
 ### Task 1 — Carril de task: aviso de fase, delegación en la primera pregunta y paso 7
 
-**Modelo**: Sonnet, effort medio
+**Modelo**: `general-purpose` + `model: sonnet` · effort: no disponible en este harness, hereda el de la sesión (la sesión no carga `sdd-kit:effort-medium` de la 0031)
 **Tests RED**: hilo principal · `tests/FewerStops.Tests.ps1`, bloques `Describe 'Task 1 — …'`, escritos antes de despachar y sin commitear: van en el commit de la task
 **Superficies**: docs
 **Verificación**: `pwsh -NoProfile -Command "Invoke-Pester -Path tests -ExcludeTagFilter Slow -Output Normal"`
@@ -164,7 +164,7 @@ Ninguna.
 
 ### Task 2 — Carril de patch: el fallo que no se reproduce y la fila re-medida
 
-**Modelo**: Sonnet, effort medio
+**Modelo**: `general-purpose` + `model: sonnet` · effort: no disponible en este harness, hereda el de la sesión (la sesión no carga `sdd-kit:effort-medium` de la 0031)
 **Tests RED**: hilo principal · `tests/FewerStops.Tests.ps1`, bloques `Describe 'Task 2 — …'`, escritos antes de despachar y sin commitear: van en el commit de la task
 **Superficies**: docs
 **Verificación**: `pwsh -NoProfile -Command "Invoke-Pester -Path tests -ExcludeTagFilter Slow -Output Normal"`
