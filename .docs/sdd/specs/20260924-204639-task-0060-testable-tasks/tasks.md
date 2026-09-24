@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Plantillas: tasks verticales, escenarios con datos y reglas completas | pending | — | |
+| 1 | Plantillas: tasks verticales, escenarios con datos y reglas completas | done | — | |
 | 2 | `sdd-start-task`: guion de pruebas en la validación y en la parada de `pair` | pending | — | |
 | 3 | GREEN y evidencia | pending | — | |
 
