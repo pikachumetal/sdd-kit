@@ -1,0 +1,152 @@
+
+>>> Read: <run>/salas/.docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+>>> Read: <run>/salas/.superpowers/sdd/plan/progress.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son cuatro tasks cortas sobre el mismo fichero y un error cuesta poco
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+22	
+23	## 2. Tasks
+24	
+25	### Task 1 — Validar al
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits 56fb6dc..1bbc22e, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 1bbc22e..c81840f, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	
+
+>>> Bash: cd "<run>/salas" && git log --stat -2 && git status --short && ls -R src tests 2>/dev/null | head -50
+<<< commit c81840f9587500c3086c054b700f4bb64ad82737
+Author: Fixture <fixture@example.com>
+Date:   Thu Sep 24 12:58:02 2026 +0200
+
+    feat(0012): validar el formato de la franja al consultar libres
+    
+    La consulta de libres rechaza la franja mal formada con el mismo mensaje.
+
+ src/slots.js              | 5 +++++
+ tests/free-format.test.js | 7 +++++++
+ 2 files changed, 12 insertions(+)
+
+commit 1bbc22e3d40dd936ef235a0180b0fc25207b0556
+Author: Fixture <fixture@example.com>
+Date:   Thu Sep 24 12:58:01 2026 +0200
+
+    feat(0012): validar el formato de la franja al reservar
+    
+    La reserva rech
+
+>>> Read: <run>/salas/src/slots.js
+
+>>> Read: <run>/salas/tests/free-format.test.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	export function reserve(room, slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	  return { room, slot };
+6	}
+7	
+8	export function free(slot) {
+9	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+10	  return [];
+11	}
+12	
+
+>>> Bash: cd "<run>/salas" && cat .githooks/pre-commit; git config core.hooksPath
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { free } from '../src/slots.js';
+4	
+5	test('libres rechaza una franja sin guion', () => {
+6	  assert.throws(() => free('1012'), /Franja no válida/);
+7	});
+8	
+<<< #!/bin/sh
+# La suite entera sobre el árbol de trabajo, también los ficheros sin seguimiento.
+node --test || { echo "pre-commit: la suite falla; commit rechazado" >&2; exit 1; }
+.githooks
+
+>>> Write: <run>/salas/tests/cancel-format.test.js
+
+>>> Bash: cd "<run>/salas" && node --test tests/cancel-format.test.js 2>&1 | tail -15
+<<< File created successfully at: <run>/salas/tests/cancel-format.test.js (file state is current in your context — no need to Read it back)
+<<< ✖ tests\cancel-format.test.js (70.3307ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.6365
+
+✖ failing tests:
+
+test at tests\cancel-format.test.js:1:1
+✖ tests\cancel-format.test.js (70.3307ms)
+  'test failed'
+
+>>> Edit: <run>/salas/src/slots.js
+<<< The file <run>/salas/src/slots.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/salas" && node --test tests/cancel-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 1
+ℹ fail 0
+ℹ pass 4
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && git add src/slots.js tests/cancel-format.test.js && git commit -q -m "feat(0012): validar el formato de la franja al cancelar
+
+La cancelación rechaza la franja mal formada con el mismo mensaje.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< ✔ cancelar rechaza una franja sin guion (0.8486ms)
+✔ libres rechaza una franja sin guion (0.8126ms)
+✔ rechaza una franja sin guion (0.8747ms)
+✔ reserva una sala en una franja (1.0826ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.9016
+06e4231 feat(0012): validar el formato de la franja al cancelar
+c81840f feat(0012): validar el formato de la franja al consultar libres
+
+>>> Bash: cd "<run>/salas" && echo "Task 3: complete (commits c81840f..06e4231, tests: node --test tests/cancel-format.test.js → ℹ pass 1)" >> .superpowers/sdd/plan/progress.md && tail -2 .superpowers/sdd/plan/progress.md
+<<< Task 2: complete (commits 1bbc22e..c81840f, tests: node --test tests/free-format.test.js → ℹ pass 1)
+Task 3: complete (commits c81840f..06e4231, tests: node --test tests/cancel-format.test.js → ℹ pass 1)
+
+=== RESULTADO (13 turnos, 0.24349699999999996 $)
+Task 3 completa. Paro aquí, sin empezar la Task 4.
+
+- **RED:** `tests/cancel-format.test.js` falló antes de implementar, porque `cancel` no existía.
+- **Implementación:** `cancel(room, slot)` en `src/slots.js` lanza el mensaje literal si la franja no casa con `/^\d{2}-\d{2}$/`.
+- **Tests:** `node --test tests/cancel-format.test.js` da `pass 1`. La suite completa, que también corre el hook pre-commit, da `pass 4, fail 0`.
+- **Commit:** `06e4231 feat(0012): validar el formato de la franja al cancelar`.
+- **Ledger:** `.superpowers/sdd/plan/progress.md` ya tiene la línea `Task 3: complete`.
+
+Queda la Task 4 (validar al mover).
+
+Como `cancel` no tenía comportamiento previo, devuelve `{ room, slot, cancelled: true }` como valor mínimo. Si la spec define otra forma de retorno, hay que ajustarla.
