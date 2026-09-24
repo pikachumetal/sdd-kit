@@ -46,8 +46,8 @@ Describe 'Task 1 — contrato del método' {
     $profiles | Should -Match 'No tiene nivel de release'
   }
 
-  It 'la pregunta 5 pregunta el método con auto recomendado' {
-    $row = Get-TableRow $script:ControlProfiles '| 5 |'
+  It 'la pregunta 6 de sdd-config pregunta el método con auto recomendado' {
+    $row = Get-TableRow 'skills/sdd-config/SKILL.md' '| 6 |'
     $row | Should -Match '¿Cómo se ejecutan los planes'
     $row | Should -Match 'Recomendado `auto`'
     $row | Should -Match '`execution`'
@@ -84,18 +84,18 @@ Describe 'Task 1 — contrato del método' {
 }
 
 Describe 'Task 2 — init y migración' {
-  It 'greenfield pregunta el método de ejecución tras los frenos' {
-    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 21 |'
-    $row | Should -Match 'Método de ejecución: pregunta 5 del mismo bloque'
+  It 'greenfield pregunta el método de ejecución a través de sdd-config' {
+    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 17 |'
+    $row | Should -Match '`sdd-config`.*método de ejecución'
   }
 
-  It 'greenfield escribe las claves respondidas en 18–21' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves de control que el usuario respondió en 18–21'
+  It 'greenfield escribe las claves respondidas en la 17' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves que el usuario respondió en la 17'
   }
 
-  It 'brownfield pregunta el método de ejecución tras los frenos' {
-    $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 5 |'
-    $row | Should -Match 'Método de ejecución: pregunta 5 del mismo bloque'
+  It 'brownfield pregunta el método de ejecución a través de sdd-config' {
+    $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 1 |'
+    $row | Should -Match '`sdd-config`.*método de ejecución'
   }
 
   It 'brownfield escribe execution en el marcador solo si se respondió' {

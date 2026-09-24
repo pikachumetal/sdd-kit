@@ -19,6 +19,7 @@
 │   ├── sdd-start-release/SKILL.md
 │   ├── sdd-end-release/SKILL.md
 │   ├── sdd-consult/SKILL.md
+│   ├── sdd-config/SKILL.md
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)

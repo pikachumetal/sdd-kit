@@ -174,18 +174,6 @@ Conjunto cerrado:
 
 El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 
-## Preguntas de las claves de control
+## Preguntas de las claves
 
-Las hacen `sdd-init-greenfield`, `sdd-init-brownfield` y la migración v1.2.0, con este texto: **una pregunta por turno**, cada una con su recomendación y su motivo. Se salta la que ya tiene su clave en `sdd-kit.json`. Se escribe solo lo que el usuario responde, y esa respuesta es su frase: anotarla no es el atajo autoconcedido.
-
-| # | Pregunta | Recomendada y motivo | Escribe |
-| --- | --- | --- | --- |
-| 1 | ¿Con qué perfil de control trabajáis: `pair`, `delegate` o `unattended`? | Recomendado `delegate`: para en la spec, en los desvíos y en la validación, y se ahorra el gate del plan; con menos paradas, la 0.6.0 cerró tres tasks en un día | `control.profile` |
-| 2 | Al cerrar una task, ¿fusiono a `<rama de integración>` con `--no-ff` y dejo que el worktree lo borre una persona? | Recomendado sí: `--no-ff` deja la task en un commit que se revierte de una vez, y borrar un worktree es irreversible si quedan cambios sin commit | «sí»: `merge` entero (`into`: la rama, `noFf: true`, `removeWorktree: false`); otra combinación dicha entera: esa; «no» o «no sé»: nada, y el cierre de task pregunta |
-| 3 | Tras fusionar en `<rama de integración>`, ¿hago push de esa rama a su remoto sin preguntar? | Recomendado sí si la convención es `main` estable y `develop` de integración (git-flow): la rama de integración es compartida, y un merge sin push no lo ve nadie más; la rama estable, los tags y cualquier otro push siguen siendo de una persona. Con otra convención, sin recomendación | «sí»: `merge.push: true`; «no»: `merge.push: false`; «no sé»: nada, y el cierre no hace push |
-| 4 | ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo? | Recomendado sí: son los defaults del kit; su conducta la define la task 0022 | «sí» o números propios: `control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`; «no sé»: nada, y rigen los defaults |
-| 5 | ¿Cómo se ejecutan los planes: `auto` (cada plan recomienda su método), `native` (en la sesión; tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes) o `subagent` (siempre con subagentes)? | Recomendado `auto`: el handoff de `writing-plans` pesa cada plan: Native es lo más barato, y los subagentes quedan para los planes largos o cuando se quiere revisión por task | la respuesta: `execution`; «no sé»: nada, y rige `auto` |
-
-- **Rama de integración** de la pregunta 2: la de la convención de ramas (greenfield) o la que se ve en el repo (brownfield). Si la integración va directa a la rama estable, la pregunta no se hace y `merge` queda sin declarar: el merge a la rama estable lo decide siempre una persona.
-- **Push** de la pregunta 3: solo se hace si la 2 dejó `merge` declarado. Sin `merge`, no hay merge que empujar.
-- **Sin usuario**: las preguntas quedan pendientes explícitas en el informe o en el resumen de cierre, y rigen los defaults.
+Las preguntas que fijan estas claves, con su recomendación y el fichero donde va cada respuesta, viven solo en `sdd-config` ([catálogo](../../sdd-config/SKILL.md#catálogo)). Las init y las migraciones la invocan en lugar de llevar su lista.
