@@ -124,3 +124,38 @@ Describe 'REFACTOR — la pregunta del gate del plan en pair' {
     $skill | Should -Match '«Apruebo, con <método recomendado> \(Recomendada\)», «Apruebo, con <el otro método>» y «Cambios»'
   }
 }
+
+Describe 'Revisión final — huecos del método' {
+  It 'overrides: executing-plans para en los frenos y en pair tras cada task aunque diga only these' {
+    $row = Get-TableRow $script:Overrides '`executing-plans`'
+    $row | Should -Match 'Four things stop you, and only these'
+    $row | Should -Match 'frenos de alcance'
+    $row | Should -Match 'tras cada task'
+  }
+
+  It 'greenfield escribe execution en el marcador solo si se respondió' {
+    $structure = Get-KitFile 'skills/sdd-init-greenfield/references/estructura.md'
+    $structure | Should -Match '"execution"\?'
+    $structure | Should -Match '`control`, `merge` y `execution`'
+  }
+
+  It 'el paso 6 dice cómo se ejecuta una task lite' {
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'En modo lite, sin plan: el valor de `execution` si está fijado; con `auto`, Native'
+  }
+
+  It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado en `sdd-kit.json` o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
+  }
+
+  It 'la celda de pair dice que con execution fijado solo se aprueba' {
+    Get-TableRow $script:ControlProfiles '| Plan |' | Should -Match 'con `execution` fijado, solo aprueba'
+  }
+
+  It 'la migración verifica execution como las demás claves' {
+    Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md' | Should -Match '(?m)^.*Verificaci[\s\S]*`execution`'
+  }
+
+  It 'el README describe la ejecución en la sesión o por subagentes' {
+    Get-KitFile 'README.md' | Should -Not -Match 'la implementación por subagentes con los tests escritos antes'
+  }
+}

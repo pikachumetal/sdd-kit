@@ -18,7 +18,7 @@ Le dices a Claude lo que quieres y él entra por el carril que toca:
 > añade autenticación con magic link
 ```
 
-Arranca `sdd-start-task`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación por subagentes con los tests escritos antes.
+Arranca `sdd-start-task`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
 
 ```
 > el contador de la home muestra un número de más

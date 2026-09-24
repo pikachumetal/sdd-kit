@@ -21,14 +21,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 1 | Contrato del método | done | `5c9f401` | 1 ronda de fix: barra sin escapar en la fila del handoff |
 | 2 | Init y migración preguntan `execution` | done | `b3f2bb7` | ruling: el helper `Get-TableRow` del RED acepta filas indentadas |
 | 3 | El aviso del hook nombra los agentes | done | `0030a51` | 3 RED (el plan decía 2) |
-| 4 | GREEN | done | — | en línea; REFACTOR del gate del paso 5 en `pair` (ruling, entra en la revisión final) |
+| 4 | GREEN | done | `0c43874` | en línea; REFACTOR del gate del paso 5 en `pair` (ruling, entra en la revisión final) |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester` de `NativeDefault`, `SuperpowersCompat`, `Skills` y `ControlProfiles`
-- [ ] Task 2 — `Invoke-Pester` de `NativeDefault`, `MigrationInitParity` y `Skills`
-- [ ] Task 3 — `Invoke-Pester` de `KitSessionSource`
-- [ ] Task 4 — campaña GREEN con el techo común
+- [x] Task 1 — `Invoke-Pester` de `NativeDefault`, `SuperpowersCompat`, `Skills` y `ControlProfiles`
+- [x] Task 2 — `Invoke-Pester` de `NativeDefault`, `MigrationInitParity` y `Skills`
+- [x] Task 3 — `Invoke-Pester` de `KitSessionSource`
+- [x] Task 4 — campaña GREEN con el techo común
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

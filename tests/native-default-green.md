@@ -6,7 +6,7 @@ Mismas conductas que el RED ([`native-default-red.md`](native-default-red.md)). 
 
 - **Paso 5** (`g1`, `g2`, `g3`): Sonnet headless sobre el molde `salas` de la 0044, con la spec de la task 0012 aprobada en `feature/0012` y la petición «escribe el plan y sigue hasta justo antes de ejecutar la Task 1; para ahí». `g1`: `delegate`, sin `execution`. `g2`: `pair`, sin `execution`. `g3-1`: `delegate` con `"execution": "subagent"`. `g3-2`: `pair` con `"execution": "native"`. Lanzador: [`red/subject.sh`](../.docs/sdd/specs/20260924-082516-task-0055-native-default/red/subject.sh).
 - **Entrevistas** (`ig`, `ib`, `im`), a un turno: init greenfield con la pregunta 20 (frenos) respondida, init brownfield con la 4 (frenos) respondida, y migración v1.2.0 de un proyecto al que solo le falta `execution`. Lanzador: [`red/interview.sh`](../.docs/sdd/specs/20260924-082516-task-0055-native-default/red/interview.sh).
-- `KIT_DIR`: copia de `5c9f401` (Task 1) en la primera tanda; copia de `a789242` (Tasks 1–3 y REFACTOR) en la segunda.
+- `KIT_DIR`: copia de `5c9f401` (Task 1) en la primera tanda; copia de `a789242` (Tasks 1–3 y REFACTOR) en la segunda. `a789242` es un commit intermedio que se juntó en `0c43874`; su contenido de skills es el de `0c43874`.
 
 ## Sujetos
 
