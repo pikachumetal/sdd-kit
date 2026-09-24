@@ -102,3 +102,19 @@ Describe 'Task 3 — revisión final y cierre' {
     $step | Should -Match 'Deferred minors'
   }
 }
+
+Describe 'Task 4 — cambio tras compactar' {
+  It 'la cabecera Ejecución de la plantilla lleva la frase del cambio de método' {
+    $line = (Get-KitFile 'skills/sdd-templates/templates/plan-template.md') -split "`r?`n" | Where-Object { $_.StartsWith('**Ejecución**') }
+    $line | Should -Match ([regex]::Escape('Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.'))
+  }
+
+  It 'el paso 5 dice que tras compactar se relee el plan y no la skill' {
+    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'tras compactar, la sesión relee el plan y el ledger'
+  }
+
+  It 'la fila de executing-plans en overrides cambia a subagentes tras compactar' {
+    $row = (Get-KitFile $script:Overrides) -split "`r?`n" | Where-Object { $_.StartsWith('| `executing-plans` (Native) |') }
+    $row | Should -Match 'Tras una compactación con dos o más tasks pendientes'
+  }
+}

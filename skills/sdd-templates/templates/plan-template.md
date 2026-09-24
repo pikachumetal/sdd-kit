@@ -27,7 +27,7 @@ created: <YYYY-MM-DD>
 
 **Spec**: `./spec.md`
 
-**Ejecución**: <native | subagent>, porque <motivo del plan> · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json
+**Ejecución**: <native | subagent>, porque <motivo del plan> · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json · con native, añade: Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.
 
 ## Restricciones globales
 
