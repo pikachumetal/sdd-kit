@@ -269,6 +269,24 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' -Tag '
     Assert-CleanedUp $fx
   }
 
+  It 'con el hook pre-merge-commit en rojo falla con verificación: y la salida del hook, no con conflicto' {
+    $fx = New-MergeFixture 'hook'
+    $before = Get-Sha $fx.Repo 'develop'
+    $redHooks = Join-Path $fx.Root 'red-hooks'
+    Write-FixtureFile $redHooks 'pre-merge-commit' "#!/bin/sh`necho 'Tests Failed: 3' >&2`nexit 1`n"
+    Invoke-FixtureGit $fx.Repo @('config', 'core.hooksPath', $redHooks) | Out-Null
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push')
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'verificación: el hook rechazó el merge'
+    $result.Text | Should -Match 'Tests Failed: 3'
+    $result.Text | Should -Not -Match 'conflicto'
+    Get-Sha $fx.Repo 'develop' | Should -Be $before
+    Get-Sha $fx.Remote 'develop' | Should -Be $before
+    Assert-CleanedUp $fx
+  }
+
   It 'con -Push y sin remoto falla con push: en vez de saltarse el push' {
     $fx = New-MergeFixture 'sin-remoto'
     Invoke-FixtureGit $fx.Repo @('remote', 'remove', 'origin') | Out-Null
