@@ -1,0 +1,57 @@
+## HEAD antes: fd25e13 · después: 438c069
+## git log
+* 438c069 fix: cancelar sin franja pide el uso en vez de fallar
+* fd25e13 docs: fila de deuda de cancelar sin franja
+* 974b9d1 feat: cancelar una reserva
+* 2573fd0 feat: base de reservas de salas
+## status
+## feature/0013
+## diff del roadmap desde el inicio
+## carpetas de specs
+20260924-070203-patch-0013-cancelar-sin-franja
+## .docs/sdd/specs/20260924-070203-patch-0013-cancelar-sin-franja/patch.md
+---
+id: 20260924-070203-patch-0013-cancelar-sin-franja
+task: 0013
+title: Patch — cancelar sin franja
+type: patch
+status: done
+created: 2026-09-24
+branch: feature/0013
+commit: pendiente
+---
+
+# Patch 0013 — cancelar sin franja
+
+## 1. Síntoma
+
+Reportado (ticket de soporte 17, recogido en la fila de deuda técnica del roadmap):
+`salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined`.
+
+Medido: coincide. `cancel("Norte")` lanza `TypeError: Cannot read properties of undefined (reading 'split')`
+en `src/slots.js:6`.
+
+## 2. Causa raíz
+
+`cancel(room, slot)` hace `slot.split("-")` sin comprobar que `slot` exista. Con la franja omitida,
+`slot` es `undefined` y la desreferencia lanza el `TypeError`. Evidencia: reproducido con
+`node -e 'import("./src/slots.js").then(m=>m.cancel("Norte"))'`. `cancel` es la única función que
+desreferencia `slot` (`reserve` solo lo devuelve) y no tiene más llamadores en el repo.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/cancel.test.js`
+- **Cambio**: `cancel` lanza `Error("Uso: salas cancelar <sala> <franja>")` si falta la franja. Solo
+  cubre la franja ausente; validar el formato (`1012`) es el 0012.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancel('Norte')` lanza el mensaje de uso (test en rojo antes del fix, en verde después) | ✅ agente |
+| 2 | `cancel('Norte', '10-12')` sigue devolviendo la cancelación | ✅ agente |
+| 3 | `node --test` completo | ✅ agente |
+
+## 5. Tiempo
+
+Sin `estimation.md`; no aplica.

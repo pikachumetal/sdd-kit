@@ -1,0 +1,92 @@
+## HEAD antes: 8ca90bd · después: 81bbf34
+## git log
+* 81bbf34 docs(0012): cerrar la task 0012 con walkthrough, changelog y roadmap
+* 26a5e3f feat(0012): validar el formato de la franja al consultar libres
+* c51a011 feat(0012): validar el formato de la franja al reservar
+* c4e21ea docs(0012): abrir la task 0012
+* b631111 feat: base de reservas de salas
+## status
+## feature/0012
+## diff del roadmap desde el inicio
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index 18ab87a..e39ca8f 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -4,5 +4,12 @@
+ 
+ | Id | Tarea | Origen | Ficheros que toca | Tamaño |
+ | --- | --- | --- | --- | --- |
+-| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
++| 0012 | ✅ Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+ | 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
++
++## Deuda técnica
++
++| Ítem | Impacto | Destino |
++| --- | --- | --- |
++| `.docs/sdd/capabilities/booking.md` no existe: el delta `booking` de la task 0012 (franja validada al reservar y al consultar libres) no está fusionado en ninguna capacidad | medio: el comportamiento validado no queda en un doc vivo | el dev-lead decide si se crea `booking` desde `capability-template.md` y se fusiona el delta |
++| Mensaje «Franja no válida…» duplicado literal en `reserve` y `free` (`src/slots.js`), y `SLOT_FORMAT` exportado sin consumidor | bajo: dos copias divergen al cambiar el mensaje | próxima task que toque `src/slots.js` |
+## carpetas de specs
+20260923-100000-task-0012-franja
+## .docs/sdd/specs/20260923-100000-task-0012-franja/walkthrough.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Walkthrough — Validar el formato de la franja
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-09-24
+---
+
+# Walkthrough — Validar el formato de la franja
+
+## 1. Cambios realizados
+
+- **Reservar** (`src/slots.js`, `c51a011`): `reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `/^\d{2}-\d{2}$/`. Test: `tests/slot-format.test.js`.
+- **Consultar libres** (`src/slots.js`, `26a5e3f`): nueva `free(slot)` con la misma validación y el mismo mensaje. Test: `tests/free-format.test.js`.
+- **Revisión final de rama** (entra en el commit de cierre, junto a la documentación): exporta `SLOT_FORMAT` desde `src/slots.js`.
+- Apertura de la task: `c4e21ea`.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_ respecto a `plan.md`, salvo el export `SLOT_FORMAT` que añadió el fix de la revisión final: no está en el plan ni lo consume nadie en el repo (ver 4.3).
+
+### Decisiones tomadas sin el dev-lead
+
+- _Ninguna_ registrada: el repo no conserva el informe final de `subagent-driven-development` (los «Rulings I made») y no tengo otra fuente de la ejecución. Si hubo rulings, no constan aquí.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- Sin build: JS con módulos ES ejecutado directamente por `node`.
+
+### 4.2 Smoke / tests
+
+- Validado por el dev-lead: 2026-09-24 · «sí, perfecto» · no detalló qué probó.
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` (suite completa, Art. II) | 3 tests, 3 pasan, 0 fallan (verificado por el agente) |
+| 2 | `node --test tests/slot-format.test.js` | 1 pasa (verificado por el agente) |
+| 3 | `node --test tests/free-format.test.js` | 1 pasa (verificado por el agente) |
+| 4 | `reserve('Norte', '1012')` | lanza «Franja no válida: usa HH-HH, p. ej. 10-12» (verificado por el agente) |
+| 5 | `free('1012')` | lanza el mismo mensaje (verificado por el agente) |
+| 6 | `reserve('Norte', '10-12')` / `free('10-12')` | `{room, slot}` / `[]`, sin error (verificado por el agente) |
+
+### 4.3 Residuales / deuda generada
+
+- El mensaje de error está duplicado literal en `reserve` y `free`, y `SLOT_FORMAT` se exporta sin consumidor: fila en la deuda técnica del roadmap.
+- `.docs/sdd/capabilities/booking.md` no existe, así que el delta `booking` de la spec no se ha fusionado (ver 5).
+- `free` devuelve siempre `[]`: la consulta real de salas libres queda fuera de esta task.
+
+## 5. Aprendizajes
+
+- El delta de comportamiento de la spec (`booking`: la franja se valida al reservar y al consultar libres) no se ha fusionado: la capacidad no existe y `sdd-end-task` no la crea por su cuenta (regla 2 de `capability-template.md`; la spec no la declara en «Decisiones que he tomado yo») → fila en la deuda técnica del roadmap, a decidir por el dev-lead.
+- Sin aprendizajes de convención, estructura ni herramientas: `constitution.md` no cambia, y `architecture.md` y `tech-stack.md` no existen ni hacía falta crearlos.
+- Revisión de skills: el proyecto no tiene `.claude/skills/`; el trabajo no reveló ningún patrón reutilizable → no aplica.
+
+## 6. Adendas
+
+- _Ninguna_

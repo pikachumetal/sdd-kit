@@ -51,6 +51,7 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - GIVEN una task con la implementación terminada y la revisión final limpia
 - WHEN el agente va a cerrar
 - THEN antes de invocar `sdd-end-task` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, cómo probarlo y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la task queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
 
@@ -172,6 +173,18 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN el agente va a escribir o leer por primera vez en ese workspace (el ledger, un brief, un informe)
 - THEN usa la ruta que da `cygpath -w`, y el `Write` no pide un permiso que un sujeto sin usuario no puede conceder
 
+### Cada cambio de paso lleva un aviso en llano
+- GIVEN una task en curso con `sdd-start-task`
+- WHEN el agente pasa de un paso del flujo al siguiente
+- THEN su mensaje dice, en lenguaje llano, qué hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará cuando el paso lanza subagentes o sujetos
+- AND un contador («van 7 de 15») o un número de paso sin esa frase no cuentan como aviso
+
+### Una decisión del dev-lead que sale de la revisión final se pregunta sola
+- GIVEN la revisión final de rama con un hallazgo cuya resolución es del dev-lead
+- WHEN el agente llega al paso 7
+- THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
+- AND no la resuelve por defecto ni la mete en el mensaje de la validación
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -227,3 +240,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED Sin effort en el harness, el plan lo dice
 - 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El revisor de spec se despacha con su effort
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED En Windows, el workspace de ejecución se usa en su ruta Windows
+- 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED Cada cambio de paso lleva un aviso en llano · Una decisión del dev-lead que sale de la revisión final se pregunta sola · MODIFIED El trabajo se valida con el usuario antes de cerrar («sí» sin detalle)

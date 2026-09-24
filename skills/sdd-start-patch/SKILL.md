@@ -34,8 +34,10 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 ## Flujo (crea un todo por paso)
 
 1. **Causa raíz OBLIGATORIA** — `superpowers:systematic-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o el fix crece más allá de lo puntual → STOP: era una task, cambia a `sdd-start-task`.
+
+   Si la investigación **no reproduce el fallo** sobre la base actual → STOP también, sin abrir el patch: ni rama, ni carpeta, ni `patch.md`, ni fix, ni id reservado. Si la petición viene de una fila del roadmap, déjala re-medida: las celdas que el resultado contradice se reescriben con la fecha y la evidencia nuevas, porque añadir la medición y dejar el texto viejo no basta. Díselo al usuario. Si reproduce un fallo **distinto** del que predice el ticket o la fila, no es este caso: el patch sigue con el fallo medido.
 2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` según el modo de `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`): en `tracker`, el ticket y `0000` si no hay; en `sequence`, el id reservado en la fila del roadmap, o el que devuelve `Get-NextSddId.ps1` si no tiene fila — comparte secuencia con las tasks y nunca reutiliza un id entre carriles (detalle en `sdd-start-task/references/nombrado.md`)). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca.
-3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal), causa raíz (lo que TÚ encontraste, con la evidencia), fix, verificación, tiempo.
+3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal; si la investigación midió otro, también el medido y en qué difiere del reportado), causa raíz (lo que TÚ encontraste, con la evidencia), fix, verificación, tiempo.
 4. **Fix mínimo** — sin refactor oportunista, aunque la deuda esté a un renglón de distancia. Verificar que el build del proyecto pasa.
 5. **Commit del fix** — un solo commit con el código, los tests y `patch.md`, con la convención del proyecto y referenciando el ticket; si hubo intermedios, se juntan ([commit-milestones.md](../sdd-start-task/references/commit-milestones.md)).
 6. **Cierre** — `sdd-end-patch`.
@@ -46,6 +48,7 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 - Vas a crear el documento fuera de `.docs/sdd/specs/` o en una carpeta sin prefijo `patch-`.
 - El "fix" ya toca varios módulos o interpreta requisitos → era una task.
 - `patch.md` sin causa raíz con evidencia, o con el tiempo en blanco.
+- Vas a abrir rama o carpeta de un patch cuyo fallo no has reproducido.
 
 | Racionalización | Realidad |
 | --- | --- |
@@ -53,3 +56,4 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 | "Es un fix de una línea, no hace falta documento" | Una línea sin rastro es una regresión esperando repetirse. El `patch.md` cuesta 2 minutos. |
 | "No quiero abrir una tarea entera" | Correcto: patch ≠ tarea entera. Pero patch ≠ sin proceso: causa raíz + `patch.md` + cierre. |
 | "Lo pongo en `.docs/sdd/patches/`, queda más ordenado" | Una segunda ubicación es deriva instantánea. SOLO `.docs/sdd/specs/`. |
+| "No se reproduce, pero dejo el patch como cobertura y rastro documental" | Un patch sin fallo consume id, rama y carpeta para nada: 2/2 sujetos del RED lo hicieron (`tests/fewer-stops-red.md`, s5). Se para, y la fila queda re-medida. |

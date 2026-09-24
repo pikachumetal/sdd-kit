@@ -21,6 +21,13 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el agente termina de leer el contexto
 - THEN su primera pregunta, sola en su turno, confirma carril y modo, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta task
 - AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, la pregunta propone esa fila como enunciado
+- AND en `pair` y `delegate`, una de sus opciones aprueba la spec por delegación con la frase «apruebo la spec por delegación, nos vemos en la validación»
+
+### La spec aprobada por delegación en la primera pregunta no para
+- GIVEN el usuario eligió en la primera pregunta la opción que aprueba la spec por delegación
+- WHEN la spec está escrita y repasada
+- THEN el agente la aprueba sin parar, registra la frase literal y la fecha en «Decisiones tomadas con el dev-lead» y en «Aprobaciones», decide él la review de spec y la registra, y sigue
+- AND el resto de paradas del perfil vigente sigue igual: la validación final no se quita nunca
 
 ### La primera pregunta propone partir una task grande
 - GIVEN una task cuyo enunciado, leído con el código que toca, prevé más de 3 tasks internas en el plan
@@ -190,6 +197,7 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Historial
 
+- 2026-09-24 — 20260923-214917-task-0053-fewer-stops — MODIFIED La primera pregunta confirma carril, modo y perfil (opción de aprobar la spec por delegación) · ADDED La spec aprobada por delegación en la primera pregunta no para
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED El plan no pregunta el método de ejecución
 - 2026-09-23 — 20260923-203736-task-0039-moving-base — ADDED Los ficheros de la task se cruzan con la base antes de cada despacho · Un conflicto solo en los registros se resuelve con un merge de sincronización · Un conflicto que no se puede conservar entero es de una persona
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El push del cierre publica la rama destino (al integrar la task 0042: `merge.push` también lo autoriza)

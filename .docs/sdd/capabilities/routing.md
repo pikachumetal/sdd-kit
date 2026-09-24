@@ -36,6 +36,21 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN el hook no inyecta ningún contexto
 - AND cuando sí lo contiene, inyecta el router, que nombra `sdd-start-task`, `sdd-start-patch` y `sdd-consult`
 
+### Un patch cuyo fallo no se reproduce no se abre
+
+- GIVEN una petición de patch (una fila de deuda, un ticket) cuyo fallo la investigación del paso 1 no reproduce sobre la base actual
+- WHEN el agente termina la investigación
+- THEN para: no crea rama ni carpeta, no escribe `patch.md` ni fix, y no reserva id
+- AND si viene de una fila del roadmap, la deja re-medida según «Una re-medición que contradice una fila la reescribe» de [`roadmap`](roadmap.md), y lo dice al usuario
+
+### En un patch manda el síntoma medido, no el predicho
+
+- GIVEN una petición de patch cuyo ticket o fila predice un síntoma A, y una investigación del paso 1 que mide otro fallo B
+- WHEN el agente fija el alcance del fix
+- THEN el patch sigue con B: la sección de síntoma de `patch.md` recoge B como síntoma medido y dice en qué difiere de A, y el fix cubre B
+- AND si no mide ningún fallo, no es este caso: se aplica «Un patch cuyo fallo no se reproduce no se abre»
+
 ## Historial
 
 - 2026-09-22 — task 0014 — ADDED «Una petición de trabajo entra por el kit, no por brainstorming», «Un bug pequeño y determinista entra por el carril patch», «Una pregunta entra por consult», «Una edición trivial no lleva ceremonia», «El router solo existe donde hay SDD»
+- 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED «Un patch cuyo fallo no se reproduce no se abre», «En un patch manda el síntoma medido, no el predicho»

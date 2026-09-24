@@ -25,8 +25,8 @@ Manda el primero que exista, de arriba abajo: task sobre release, release sobre 
 | Punto | `pair` | `delegate` | `unattended` |
 | --- | --- | --- | --- |
 | Primera pregunta (carril, modo, lite, perfil, enunciado desde la rama) | pregunta | pregunta | decide y registra |
-| Review de spec recomendada | pregunta antes de presentar | pregunta antes de presentar | decide y registra |
-| Spec | para | para | la aprueba el agente con las decisiones registradas |
+| Review de spec recomendada | pregunta antes de presentar; con la spec delegada, decide y registra | pregunta antes de presentar; con la spec delegada, decide y registra | decide y registra |
+| Spec | para, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | para, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
 | Plan | para | sin gate: comprueba escenario → task y sigue | igual que `delegate` |
 | Tras cada task | para | sigue | sigue |
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |

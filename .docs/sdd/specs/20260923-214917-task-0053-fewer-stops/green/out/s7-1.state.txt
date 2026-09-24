@@ -1,0 +1,47 @@
+## HEAD antes: 35fa9e8 · después: 4eea909
+## git log
+* 4eea909 fix(slots): cancelar sin franja pide el uso
+* 35fa9e8 docs: fila de deuda de cancelar sin franja
+* b786f3e feat: cancelar una reserva
+* 0c97db4 feat: base de reservas de salas
+## status
+## feature/0013
+## diff del roadmap desde el inicio
+## carpetas de specs
+20260924-064719-patch-0013-cancelar-sin-franja
+## .docs/sdd/specs/20260924-064719-patch-0013-cancelar-sin-franja/patch.md
+---
+id: 20260924-064719-patch-0013-cancelar-sin-franja
+task: 0013
+title: Patch — cancelar sin franja pide el uso
+type: patch
+status: done
+created: 2026-09-24
+branch: feature/0013
+commit: pendiente
+---
+
+# Patch 0013 — cancelar sin franja pide el uso
+
+## 1. Síntoma
+
+Reportado (ticket de soporte 17, fila de deuda técnica): `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined`.
+
+Medido: no hay `TypeError`. `cancel('Norte')` devuelve `{ room: 'Norte', slot: undefined, cancelled: true }`, es decir, da por cancelada una reserva sin franja. Difiere del reporte: el fallo es silencioso, no una excepción.
+
+## 2. Causa raíz
+
+`cancel(room, slot)` en `src/slots.js` no valida `slot`; devuelve el objeto con `slot: undefined` y `cancelled: true`. Evidencia: reproducido con `node --input-type=module -e "import {cancel} from './src/slots.js'; console.log(cancel('Norte'))"`. El repo no tiene CLI: la función es el único punto por el que pasa toda llamada.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/cancel.test.js`
+- **Cambio**: `cancel` lanza `Error('Uso: salas cancelar <sala> <franja>')` si falta la franja. Test nuevo que falla antes del fix.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancel('Norte')` lanza el mensaje de uso (RED antes, verde después) | ✅ agente |
+| 2 | `cancel('Norte', '10-12')` sigue devolviendo `cancelled: true` | ✅ agente |
+| 3 | `node --test` completo | ✅ agente |
