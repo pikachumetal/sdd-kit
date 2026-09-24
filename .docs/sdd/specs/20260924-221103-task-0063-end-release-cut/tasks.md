@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Recorte de la skill | pending | — | |
+| 1 | Recorte de la skill | done | — | `SKILL.md` de 1468 a 1346 palabras |
 | 2 | Campaña A/B de no-regresión | pending | — | |
 
 ## Verificación por task
