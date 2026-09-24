@@ -124,6 +124,7 @@ Para el código ejecutable, Pester con fixtures versionadas (arriba). Para las s
 - **El techo de coste lo aplica el lanzador** (task 0044, 2026-09-23): `green/run.sh` suma el coste de cada sujeto terminado y no lanza el siguiente si supera el techo declarado en la spec. Así el Art. I proporcional no depende de que el hilo vigile: 12 sujetos y 3,93 $ frente a un techo de 14.
 - **No se edita un script mientras bash lo ejecuta** (task 0053): bash lee el fichero a trozos, y un `subject.sh` editado con un sujeto en marcha falló por sintaxis en su cola, sin recoger las salidas; se regeneraron a mano desde el `.jsonl`. Un cambio al molde espera a que acabe la tanda.
 - **Parar una campaña es matar su bucle, no su envoltorio** (task 0053): el `bash -c` que lanza la herramienta envuelve a `run.sh`, y matar el envoltorio deja vivo el bucle, que arrancó otro sujeto después de que el dev-lead pidiera no lanzar más. Se busca con `Get-CimInstance Win32_Process` el `run.sh` padre del `subject.sh` en curso, se para ese y se comprueba que no queda ninguno; el sujeto en curso termina solo.
+- **Mejor aún, parar sin buscar procesos: `touch stop`** (ticket de la task 0053 §2, 2026-09-24): el lanzador comprueba un fichero `stop` en la carpeta de la campaña antes de cada sujeto, igual que el techo, y dice «parada a petición».
 
 ### A/B de no-regresión (recortes, Art. I ampliado el 2026-09-07)
 
