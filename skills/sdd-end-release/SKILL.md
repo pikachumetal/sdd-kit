@@ -41,7 +41,7 @@ gate en solitario.
    presente, aplica el valor que tiene en este momento, sin preguntar. Nunca escribas ni cambies el campo
    por tu cuenta — solo con una respuesta o petición explícita del usuario.
    *(si existe `estimation-log.md`)* La misma propuesta ofrece la **retro**, en una línea y sin pregunta
-   aparte. Es opcional: se hace solo si el usuario la pide, antes del paso 4, que la enlaza. Qué
+   aparte. Es opcional: se hace solo si el usuario la pide, y no retiene los demás pasos: si el roadmap ya está colapsado, se añade su enlace a la entrada de la release. Qué
    contiene: [retro.md](references/retro.md).
 2. **Sellar el changelog** *(si existe `changelog.md`)* — `[Unreleased]` → `[X.Y.Z] - YYYY-MM-DD` y nueva
    `[Unreleased]` vacía arriba. El contenido sellado no se toca.

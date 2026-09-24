@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Recorte de la skill | done | — | `SKILL.md` de 1468 a 1346 palabras |
-| 2 | Campaña A/B de no-regresión | pending | — | |
+| 1 | Recorte de la skill | done | ed9647c | `SKILL.md` de 1468 a 1346 palabras |
+| 2 | Campaña A/B de no-regresión | done | — | 14 sujetos, 5,23 $; REFACTOR de la retro tras A2 (enmienda aprobada) |
 
 ## Verificación por task
 

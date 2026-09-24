@@ -27,7 +27,7 @@ Una señal de ocho: no toca contrato público, datos ni capacidad nueva, y todo 
 1. **Cinco pasos, en el orden del enunciado**: congelar scope y versión · sellar el changelog · release notes y comunicación · colapsar el roadmap · versión, tag y merge. El gate de entrada y el ⛔ de merge y tag, con su atajo de tres condiciones, no cambian de letra: solo cambia su número de paso (7 → 5).
 2. **El paso 3 junta las release notes y el borrador de email, solo con `release.hasRecipient: true`**. Sale el «ack del triage» del paso 8 actual: sin acta no hay triaje que devolver. El envío sigue siendo del usuario.
 3. **El acta y el triaje salen sin copia en ningún otro sitio**, como pediste. La skill deja una frase: el feedback de una demo o reunión no se procesa en el cierre, es entrada de `sdd-plan`. Nombra una skill que aún no existe (la 0062): es el hueco que aceptaste para `develop` hasta que estén las dos.
-4. **La retro opcional se ofrece en la propuesta del paso 1** y solo con `estimation-log.md`: una línea en el mismo mensaje que ya espera la versión, sin pregunta aparte. Hoy es obligatoria si existe el log. Solo se escribe si el usuario la pide, antes de colapsar el roadmap, que la enlaza.
+4. **La retro opcional se ofrece en la propuesta del paso 1** y solo con `estimation-log.md`: una línea en el mismo mensaje que ya espera la versión, sin pregunta aparte. Hoy es obligatoria si existe el log. Solo se escribe si el usuario la pide, y no retiene los demás pasos: si el roadmap ya está colapsado, se añade su enlace (enmienda del 2026-09-25).
 5. **La retro va a `releases/vX.Y.Z/retro.md`**, calcando la sección «Retro» de `feedback-template.md`, no a `feedback.md`. En `feedback.md` se confundiría con el acta, que pasa a `sdd-plan`. No creo `retro-template.md`: tocaría `sdd-templates/SKILL.md`, que también toca la 0061. Queda como nota para la 0062: al llevarse el acta, decide si la retro sale a su propia plantilla.
 6. **`references/acta-y-retro.md` pasa a `references/retro.md`** con solo la retro. `notas-y-roadmap.md` cambia «acta solo si existe» por «retro solo si existe» y renumera los pasos.
 7. **Salen de la tabla y de las red flags las entradas del triaje y de la deuda de producto.** Se quedan la de la retro de memoria (aplica si se hace) y todas las de versión, merge, tag, colapso y evidencia faltante.
@@ -78,7 +78,7 @@ Recorte sobre el `SKILL.md` vigente, conservando literal lo que no es acta ni tr
 - GIVEN un proyecto con `.docs/sdd/estimation-log.md`
 - WHEN `sdd-end-release` propone la versión en el paso 1
 - THEN la misma propuesta ofrece la retro en una línea, sin pregunta aparte
-- AND solo se escribe si el usuario la pide, en `.docs/sdd/releases/vX.Y.Z/retro.md` y antes de colapsar el roadmap
+- AND solo se escribe si el usuario la pide, en `.docs/sdd/releases/vX.Y.Z/retro.md`, y no retiene los demás pasos: si el roadmap ya está colapsado, se añade su enlace a la entrada de la release
 - AND sin `estimation-log.md` no se ofrece
 
 **MODIFIED — Sin destinatario no hay release notes ni email** (antes: «el paso «Comunicar» no aplica y la entrada del roadmap enlaza al changelog (y al acta si existe)»)
@@ -96,6 +96,8 @@ Recorte sobre el `SKILL.md` vigente, conservando literal lo que no es acta ni tr
 - motivo: el cierre ya no escribe acta; el feedback de una reunión es entrada de `sdd-plan` (task 0062)
 
 ## Enmiendas
+
+- 2026-09-25 — El THEN de «La retro es opcional» deja de pedir la retro «antes de colapsar el roadmap»: no retiene los demás pasos y, si el roadmap ya está colapsado, se añade su enlace — en el A/B, 1 de 2 sujetos del tratamiento de A2 esperó a la respuesta sobre la retro y no preparó los pasos 1-4 con el dev-lead ausente («va antes del paso 4, por lo que habría que reabrir el roadmap», t-a2-2) — aprobada: «Arreglo + 2 sujetos (Recomendada)»
 
 ## Aprobaciones
 
