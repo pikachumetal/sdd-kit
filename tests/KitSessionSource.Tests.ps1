@@ -59,12 +59,24 @@ Describe 'Hook SessionStart del repo' {
     It 'additionalContext manda contrastar con skills/<nombre>/SKILL.md de la rama' {
       $script:Json.hookSpecificOutput.additionalContext | Should -Match ([regex]::Escape('skills/<nombre>/SKILL.md'))
     }
+
+    It 'systemMessage nombra las skills y los agentes' {
+      $script:Json.systemMessage | Should -Match 'Las skills y los agentes del kit'
+    }
+
+    It 'additionalContext nombra los agentes sdd-kit:*' {
+      $script:Json.hookSpecificOutput.additionalContext | Should -Match ([regex]::Escape('Las skills y los agentes sdd-kit:*'))
+    }
   }
 
   Context 'con SDD_KIT_SESSION_ROOT de otro worktree' {
     BeforeAll {
       $script:OtherRoot = Join-Path ([IO.Path]::GetTempPath()) 'otro-worktree'
       $script:Json = (Invoke-KitSessionHook $script:OtherRoot $script:ProjectDir).Output | ConvertFrom-Json
+    }
+
+    It 'avisa nombrando las skills y los agentes' {
+      $script:Json.systemMessage | Should -Match 'Las skills y los agentes del kit'
     }
 
     It 'avisa nombrando las dos carpetas' {
