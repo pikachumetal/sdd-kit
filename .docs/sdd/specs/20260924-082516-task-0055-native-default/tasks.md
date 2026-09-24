@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Contrato del método | pending | — | |
+| 1 | Contrato del método | done | — | 1 ronda de fix: barra sin escapar en la fila del handoff |
 | 2 | Init y migración preguntan `execution` | pending | — | |
 | 3 | El aviso del hook nombra los agentes | pending | — | |
 | 4 | GREEN | pending | — | en línea |

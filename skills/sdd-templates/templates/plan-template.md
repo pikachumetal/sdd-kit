@@ -9,13 +9,13 @@ created: <YYYY-MM-DD>
 
 # Plan de implementación — <título>
 
-> Compatible con `superpowers:writing-plans`. Ejecución: `superpowers:subagent-driven-development`
-> (default del kit); una task va en línea solo si lo declara con motivo en su campo `Ejecución`.
+> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-task/references/control-profiles.md)).
 > Borra los bloques de ayuda (`>`) al redactar.
 
 ## Decisiones que he tomado yo — valida estas
 
-> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué), **ejecución** (agente por defecto; en línea solo con motivo), **decisiones técnicas que la spec no fija**, **riesgos altos** y **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero).
+> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos** y **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero).
 
 1. <decisión> — <por qué>
 
@@ -26,6 +26,8 @@ created: <YYYY-MM-DD>
 **Tech Stack**: <el del proyecto — ver `.docs/sdd/tech-stack.md`; recorta a lo que toca esta feature>
 
 **Spec**: `./spec.md`
+
+**Ejecución**: <native | subagent>, porque <motivo del plan> · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json
 
 ## Restricciones globales
 
@@ -123,8 +125,7 @@ Endpoints, shape request/response.
 ### Task 1 — <nombre>
 
 **Modelo**: <modelo **y** effort, los dos explícitos, con el despacho literal: `subagent_type: sdd-kit:effort-<low|medium|high>` + `model: <sonnet|opus>` — `Agent` no tiene parámetro de effort y, sin tipo, el subagente hereda el de la sesión. Con Haiku, que no admite effort: `general-purpose` + `model: haiku`. Si el harness no expone el effort (kit sin sus agentes, otro harness): «effort: no disponible en este harness, hereda el de la sesión». Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
-**Ejecución**: <omitir si va por agente, que es el default; `en línea` + motivo si esta task se desvía>
-**Tests RED**: <hilo principal · `ruta/del/test`, escritos antes de despachar y sin commitear: van en el commit de la task; `en línea`: TDD del propio hilo>
+**Tests RED**: <hilo principal · `ruta/del/test`, escritos antes de despachar y sin commitear: van en el commit de la task; Native: TDD del propio hilo>
 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
 

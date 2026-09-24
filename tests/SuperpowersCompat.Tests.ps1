@@ -12,7 +12,7 @@ BeforeAll {
 }
 
 Describe 'Compatibilidad con superpowers 6.4.1' {
-  It 'una fila de overrides sustituye el Execution Handoff y no ofrece Native' {
+  It 'una fila de overrides integra el Execution Handoff en la tabla de gates' {
     $row = Get-OverrideRow 'Execution Handoff'
     $row | Should -Not -BeNullOrEmpty
     $row | Should -Match 'Native'

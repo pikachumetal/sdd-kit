@@ -27,7 +27,7 @@ Manda el primero que exista, de arriba abajo: task sobre release, release sobre 
 | Primera pregunta (carril, modo, lite, perfil, enunciado desde la rama) | pregunta | pregunta | decide y registra |
 | Review de spec recomendada | pregunta antes de presentar; con la spec delegada, decide y registra | pregunta antes de presentar; con la spec delegada, decide y registra | decide y registra |
 | Spec | para, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | para, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
-| Plan | para | sin gate: comprueba escenario → task y sigue | igual que `delegate` |
+| Plan | para: una sola pregunta aprueba el plan y elige el método, con la recomendación del handoff primero; con `execution` fijado, solo aprueba | sin gate: comprueba escenario → task, escribe el método que recomienda el handoff (o el fijado en `execution`) y sigue | igual que `delegate` |
 | Tras cada task | para | sigue | sigue |
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
 | Freno de alcance (3.er fix, salida observable, fila o fichero de la task cambiados en la base) | para | para | opción conservadora, enmienda sin aprobar |
@@ -142,6 +142,9 @@ Conjunto cerrado:
 | `merge.noFf` | booleano | — |
 | `merge.removeWorktree` | booleano | — |
 | `merge.push` | booleano | `false` |
+| `execution` | `auto` \| `native` \| `subagent` | `"auto"` |
+
+`execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `writing-plans` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en sdd-kit.json`, aunque el handoff recomiende el otro. No tiene nivel de task ni de release: el método queda escrito en el plan de cada task, y un método que el dev-lead nombra para una task concreta cuenta como dado.
 
 `merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-task`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
@@ -159,6 +162,7 @@ Las hacen `sdd-init-greenfield`, `sdd-init-brownfield` y la migración v1.2.0, c
 | 2 | Al cerrar una task, ¿fusiono a `<rama de integración>` con `--no-ff` y dejo que el worktree lo borre una persona? | Recomendado sí: `--no-ff` deja la task en un commit que se revierte de una vez, y borrar un worktree es irreversible si quedan cambios sin commit | «sí»: `merge` entero (`into`: la rama, `noFf: true`, `removeWorktree: false`); otra combinación dicha entera: esa; «no» o «no sé»: nada, y el cierre de task pregunta |
 | 3 | Tras fusionar en `<rama de integración>`, ¿hago push de esa rama a su remoto sin preguntar? | Recomendado sí si la convención es `main` estable y `develop` de integración (git-flow): la rama de integración es compartida, y un merge sin push no lo ve nadie más; la rama estable, los tags y cualquier otro push siguen siendo de una persona. Con otra convención, sin recomendación | «sí»: `merge.push: true`; «no»: `merge.push: false`; «no sé»: nada, y el cierre no hace push |
 | 4 | ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo? | Recomendado sí: son los defaults del kit; su conducta la define la task 0022 | «sí» o números propios: `control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`; «no sé»: nada, y rigen los defaults |
+| 5 | ¿Cómo se ejecutan los planes: `auto` (cada plan recomienda su método), `native` (siempre en la sesión) o `subagent` (siempre con subagentes)? | Recomendado `auto`: el handoff de `writing-plans` pesa cada plan: Native es lo más barato, y los subagentes quedan para los planes largos o cuando se quiere revisión por task | la respuesta: `execution`; «no sé»: nada, y rige `auto` |
 
 - **Rama de integración** de la pregunta 2: la de la convención de ramas (greenfield) o la que se ve en el repo (brownfield). Si la integración va directa a la rama estable, la pregunta no se hace y `merge` queda sin declarar: el merge a la rama estable lo decide siempre una persona.
 - **Push** de la pregunta 3: solo se hace si la 2 dejó `merge` declarado. Sin `merge`, no hay merge que empujar.
