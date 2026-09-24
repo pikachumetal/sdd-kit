@@ -44,6 +44,13 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - WHEN se llega al paso de versión y tag
 - THEN el agente prepara el merge y el tag, los presenta y espera la confirmación explícita
 
+### El tag vuelve a la rama de integración
+- GIVEN un proyecto cuyo git-flow tiene rama de integración (`develop`) y un cierre de release que ya fusionó en el branch estable
+- WHEN se ejecutan el merge y el tag
+- THEN el tag anotado `vX.Y.Z` va sobre el merge commit del branch estable y se empuja
+- AND después se fusiona el branch estable de vuelta en la rama de integración, para que el tag quede en su historia
+- AND sin rama de integración no hay merge de vuelta
+
 ### Sin destinatario no hay release notes ni email
 - GIVEN `release.hasRecipient: false`
 - WHEN se cierra una release
@@ -145,3 +152,4 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Una task en marcha no se toca al replanificar
 - 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Los ids nuevos no chocan con reservas de otras ramas
 - 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED La reserva se publica antes de arrancar (la salida del worktree temporal, sin GREEN: deuda del roadmap)
+- 2026-09-22 — 20260922-135817-patch-0028-end-release — ADDED El tag vuelve a la rama de integración (fusionado por la task 0067)

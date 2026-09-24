@@ -8,6 +8,7 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo
 - WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
 - THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, task, tipo, estimado, real, ratio, carpeta), ordenado por carpeta
+- AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
 - AND el fichero lleva cabecera "AUTO-GENERADO — no editar a mano"
 
 ### El script vive en el kit y las skills de cierre lo invocan
@@ -22,6 +23,8 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - THEN obtiene estimado 2 y el real correspondiente, sin descartar la fila
 - AND un `walkthrough.md` con `Estimación: —` entra con estimado vacío y ratio vacío
 - AND `hotfix.md` se lee como `patch.md` con tipo `hotfix`
+- AND la unidad `h`, `hora` u `horas`, o ninguna, deja la cifra en horas; `min`, `mins`, `minuto` o `minutos` la dividen entre 60 (`30 min` → 0,5)
+- AND otra unidad (`2 días`) deja la celda vacía y avisa con el texto y el fichero, sin adivinar la conversión; si es el real, la fila se excluye con el aviso del requisito siguiente
 
 ### El log muestra el factor global y por Tipo
 - GIVEN filas con ratio
@@ -55,7 +58,7 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - GIVEN un `<docs>/changelog.md` con versiones `## [X.Y.Z] - AAAA-MM-DD` (o con `—`)
 - WHEN se genera el log
 - THEN aparece una tabla Release | Artefactos | Horas reales | Mediana | Sujetos ($), de la release más antigua a la más reciente
-- AND cada artefacto va a la primera versión con fecha igual o posterior a la de su carpeta; los posteriores a la última versión van a «sin publicar», y los que no tienen fecha, a «sin fecha»
+- AND cada artefacto va a la primera versión con fecha igual o posterior a la de su fila (la de cierre); los posteriores a la última versión van a «sin publicar», y los que no tienen fecha, a «sin fecha»
 - AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
 
 ## Historial
@@ -69,3 +72,5 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - 2026-09-23 — 20260923-195017-task-0046-estimation-stats — ADDED El log resume la dispersión de los ratios
 - 2026-09-23 — 20260923-195017-task-0046-estimation-stats — ADDED El log muestra la tendencia del ratio
 - 2026-09-23 — 20260923-195017-task-0046-estimation-stats — ADDED El log agrupa por release
+- 2026-09-24 — 20260924-081646-patch-0056-estimation-log-close-date — MODIFIED El estimation-log se genera desde los artefactos de cierre; MODIFIED El log agrupa por release (la fecha es la de cierre, no la de la carpeta; fusionado por la task 0067)
+- 2026-09-25 — 20260924-223521-patch-0066-estimation-log-minutes — MODIFIED El parseo tolera el formato real de las plantillas (minutos y unidades desconocidas; fusionado por la task 0067)
