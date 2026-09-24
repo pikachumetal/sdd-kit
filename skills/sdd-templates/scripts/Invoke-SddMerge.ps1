@@ -24,12 +24,13 @@ $ErrorActionPreference = 'Stop'
 $script:LogBuilderPath = Join-Path $PSScriptRoot 'Build-EstimationLog.ps1'
 $script:GitEnvVars = @('GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY')
 
-function Invoke-GitUtf8([string]$WorkingDirectory, [string[]]$Arguments) {
+function Invoke-GitUtf8([string]$WorkingDirectory, [string[]]$Arguments, [switch]$KeepErrors) {
   # git emite las rutas en UTF-8. Con la codificación de consola por defecto (CP1252 en Windows),
   # una ruta con tildes vuelve mal decodificada y deja de resolverse.
   $previousEncoding = [System.Console]::OutputEncoding
   [System.Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
   try {
+    if ($KeepErrors) { return & git -C $WorkingDirectory @Arguments 2>&1 | ForEach-Object { "$_" } }
     return & git -C $WorkingDirectory @Arguments 2>$null
   }
   finally {
@@ -37,14 +38,14 @@ function Invoke-GitUtf8([string]$WorkingDirectory, [string[]]$Arguments) {
   }
 }
 
-function Invoke-IsolatedGit([string]$WorkingDirectory, [string[]]$Arguments) {
+function Invoke-IsolatedGit([string]$WorkingDirectory, [string[]]$Arguments, [switch]$KeepErrors) {
   $saved = @{}
   foreach ($name in $script:GitEnvVars) {
     $saved[$name] = [System.Environment]::GetEnvironmentVariable($name)
     Remove-Item "Env:\$name" -ErrorAction SilentlyContinue
   }
   try {
-    return Invoke-GitUtf8 $WorkingDirectory $Arguments
+    return Invoke-GitUtf8 $WorkingDirectory $Arguments -KeepErrors:$KeepErrors
   }
   finally {
     foreach ($name in $script:GitEnvVars) {
@@ -125,7 +126,7 @@ function Assert-PushableRemote([bool]$Push, [string]$Remote, [string]$Into) {
   }
 }
 
-function Complete-MergeAttempt([string]$Worktree, [int]$MergeExitCode, [string]$StepName) {
+function Complete-MergeAttempt([string]$Worktree, [int]$MergeExitCode, [string]$StepName, [string[]]$MergeOutput) {
   if ($MergeExitCode -eq 0) { return }
   $conflicted = @(Invoke-IsolatedGit $Worktree @('diff', '--name-only', '--diff-filter=U'))
   if ($conflicted.Count -eq 1 -and $conflicted[0] -match 'sdd/estimation-log\.md$') {
@@ -135,6 +136,10 @@ function Complete-MergeAttempt([string]$Worktree, [int]$MergeExitCode, [string]$
     return
   }
   Invoke-IsolatedGit $Worktree @('merge', '--abort') | Out-Null
+  # Sin ficheros en conflicto, lo que paró el merge fue el hook pre-merge-commit: su salida dice por qué.
+  if ($conflicted.Count -eq 0) {
+    throw "verificación: el hook rechazó el merge.`n$(($MergeOutput | Select-Object -Last 20) -join "`n")"
+  }
   throw "${StepName}: conflicto en $($conflicted -join ', ')."
 }
 
@@ -148,16 +153,16 @@ function Sync-BaseBranch([string]$Worktree, [string]$Into, [string]$Remote) {
   if ($LASTEXITCODE -eq 0) { return }
   Invoke-IsolatedGit $Worktree @('merge', '--ff-only', $remoteRef) | Out-Null
   if ($LASTEXITCODE -eq 0) { return }
-  Invoke-IsolatedGit $Worktree @('merge', '--no-edit', $remoteRef) | Out-Null
-  Complete-MergeAttempt $Worktree $LASTEXITCODE 'base'
+  $output = Invoke-IsolatedGit $Worktree @('merge', '--no-edit', $remoteRef) -KeepErrors
+  Complete-MergeAttempt $Worktree $LASTEXITCODE 'base' $output
 }
 
 function Invoke-FeatureMerge([string]$Worktree, [string]$Branch, [pscustomobject]$Policy) {
   $mergeArgs = @('merge')
   if ($Policy.NoFf) { $mergeArgs += '--no-ff' }
   $mergeArgs += @('-m', "merge: $Branch en $($Policy.Into)", '-m', 'Fusión hecha con Invoke-SddMerge.ps1 (sdd-kit).', $Branch)
-  Invoke-IsolatedGit $Worktree $mergeArgs | Out-Null
-  Complete-MergeAttempt $Worktree $LASTEXITCODE 'merge'
+  $output = Invoke-IsolatedGit $Worktree $mergeArgs -KeepErrors
+  Complete-MergeAttempt $Worktree $LASTEXITCODE 'merge' $output
 }
 
 function Invoke-Verification([string]$Worktree, [string]$Command) {

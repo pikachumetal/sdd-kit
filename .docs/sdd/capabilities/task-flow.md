@@ -50,7 +50,8 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 ### El trabajo se valida con el usuario antes de cerrar
 - GIVEN una task con la implementación terminada y la revisión final limpia
 - WHEN el agente va a cerrar
-- THEN antes de invocar `sdd-end-task` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, cómo probarlo y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- THEN antes de invocar `sdd-end-task` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
 - AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la task queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
@@ -223,6 +224,19 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN se escribe el walkthrough
 - THEN «Decisiones tomadas sin el dev-lead» lleva los «Rulings I made» y los «Deferred minors» del mensaje final de `executing-plans`
 
+### Cada task de producto acaba en algo que se prueba en la aplicación
+- GIVEN un plan para las salas favoritas, que tocan la migración `favorite_rooms`, la API y la estrella de la pantalla de salas
+- WHEN se parte en tasks
+- THEN la task «Marcar Sur como favorita» atraviesa migración, API y estrella, y su línea «Se prueba en la aplicación» dice «Ana pulsa la estrella de Sur y la ve llena tras recargar». No sale una task «BD y API» seguida de otra «web».
+- AND una task que no deja nada probable (una migración de datos previa, un refactor) lleva en esa línea «no, porque <motivo>»
+- AND el plan no fija un tamaño en horas por task
+
+### En `pair`, cada task cerrada para con su guion de pruebas
+- GIVEN perfil `pair` y la Task 1 de 2 de la task 0012 («Validar al reservar») con su revisión limpia y su commit
+- WHEN el hilo cierra la Task 1
+- THEN para antes de la Task 2 y presenta el guion de la Task 1, con la forma del guion de la validación: por ejemplo, «1. `salas reservar Norte 1012` → «Franja no válida: usa HH-HH, p. ej. 10-12»; 2. `salas reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`»
+- AND en `delegate` y `unattended` sigue con la Task 2 sin parar ni presentar guion
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -280,3 +294,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED En Windows, el workspace de ejecución se usa en su ruta Windows
 - 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED Cada cambio de paso lleva un aviso en llano · Una decisión del dev-lead que sale de la revisión final se pregunta sola · MODIFIED El trabajo se valida con el usuario antes de cerrar («sí» sin detalle)
 - 2026-09-24 — 20260924-105352-task-0057-native-adapt — ADDED Una task Native se registra en el ledger de `executing-plans` · La base se comprueba antes de cada task Native · Los RED de una task Native se apartan y se comparan · El revisor final de Native va con el techo del kit · Sin el tipo de effort, se dice antes del primer despacho · El cierre no repite la revisión final de Native (enmienda: `tasks.md`) · Los minors diferidos llegan al walkthrough · MODIFIED En Windows, el workspace de ejecución se usa en su ruta Windows
+- 2026-09-25 — 20260924-204639-task-0060-testable-tasks — ADDED Cada task de producto acaba en algo que se prueba en la aplicación · En `pair`, cada task cerrada para con su guion de pruebas · MODIFIED El trabajo se valida con el usuario antes de cerrar (guion de pruebas)
