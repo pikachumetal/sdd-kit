@@ -19,9 +19,10 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - GIVEN una spec que cambia comportamiento observable
 - WHEN se escribe su sección de delta
 - THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
+- AND un escenario de una regla de negocio lleva datos concretos de entrada y de salida («bolsa FR, IT, PT; oferta en DE → no cubre»), no una frase abstracta («una oferta fuera de la bolsa no cubre»)
 - AND un `MODIFIED` copia el bloque entero del requisito con los cambios; `(antes: …)` es opcional y señala la cláusula que cambia
 - AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
-- AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto); `sdd-end-task` sustituye o añade cada entrada por su nombre
+- AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto), cada una con su valor completo: con **Avisos**: A y B vigentes y una task que añade C, la entrada dice A, B y C, porque `sdd-end-task` sustituye o añade cada entrada entera por su nombre
 - AND la lente dominio reclama las entradas que falten y marca como Crítico una regla que contradiga la constitution
 
 ### El cierre fusiona el delta en la verdad viva
@@ -81,3 +82,4 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — MODIFIED Brownfield no vuelca `capabilities/` (añade la explicación al usuario que pide el volcado)
 - 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED Ninguna init crea `capabilities/` vacía
 - 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED El volcado inicial es una excepción de greenfield (desde `task-flow`)
+- 2026-09-25 — 20260924-204639-task-0060-testable-tasks — MODIFIED El delta declara el comportamiento por capacidad (escenarios con datos; reglas con su valor completo)
