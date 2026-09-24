@@ -26,6 +26,8 @@ El brief, el informe, el paquete de review y el ledger viven en el workspace de 
 
 ## Revisor final
 
+Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`).
+
 Tras la cabecera y antes de `code-reviewer.md`:
 
 ```markdown

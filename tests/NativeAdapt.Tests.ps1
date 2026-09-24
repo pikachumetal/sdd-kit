@@ -73,3 +73,32 @@ Describe 'Task 2 — historia de commits' {
     Get-SkillStep 'sdd-start-task' 6 | Should -Match 'con el mensaje que escribes tú, también si el rango tiene un solo commit'
   }
 }
+
+Describe 'Task 3 — revisión final y cierre' {
+  It 'el Art. IV fija el techo del revisor final de Native' {
+    Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'va con Opus y effort high \(`sdd-kit:effort-high`\): es el techo por defecto'
+  }
+
+  It 'el revisor final se despacha con effort-high y opus' {
+    $section = [regex]::Match((Get-KitFile $script:Dispatch), '(?ms)^## Revisor final.*?(?=^## )').Value
+    $section | Should -Match '`subagent_type: sdd-kit:effort-high` \+ `model: opus`'
+  }
+
+  It 'el paso 6 comprueba el tipo de effort antes del primer despacho' {
+    $step = Get-SkillStep 'sdd-start-task' 6
+    $step | Should -Match 'Antes del primer despacho de la task'
+    $step | Should -Match 'effort: no disponible en este harness, hereda el de la sesión'
+  }
+
+  It 'el paso 9 del cierre no repite la revisión final' {
+    $step = Get-SkillStep 'sdd-end-task' 9
+    $step | Should -Match 'No lances otra'
+    $step | Should -Not -Match 'solo si la task se ejecutó \*\*en línea\*\*'
+  }
+
+  It 'el paso 1 del cierre vuelca los rulings y los minors de executing-plans' {
+    $step = Get-SkillStep 'sdd-end-task' 1
+    $step | Should -Match '`executing-plans`'
+    $step | Should -Match 'Deferred minors'
+  }
+}
