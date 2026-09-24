@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd .docs/sdd/specs/20260923-100000-task-0012-franja && ls && cat review-final.md tasks.md && cat spec.md && git status --short && git log --oneline -8
+
+>>> Bash: ls; cat package.json 2>/dev/null | head -30; cat .docs/sdd/constitution.md | head -60
+<<< plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos.
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | c9cdff4 | |
+| 2 | Validar al consultar libres | done | 827c2c5 | |
+
+Revisión final: general-purpose + sonnet, limpia
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 
+<<< bin/
+package.json
+README.md
+src/
+tests/
+{ "name": "salas", "type": "module", "bin": { "salas": "bin/salas.js" } }
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+
+>>> Bash: node --test 2>&1 | tail -12; cat bin/salas.js | head -30; echo ---; node bin/salas.js reservar Norte 1012; echo "exit $?"; node bin/salas.js reservar Norte 10-12; echo "exit $?"; node bin/salas.js libres 1012; echo "exit $?"; node bin/salas.js libres 10-12; echo "exit $?"
+
+>>> Bash: grep -n "^##\|Ejecución\|ruling\|Ruling" .docs/sdd/specs/*0012*/plan.md | head -30; git status --short
+<<< ✔ libres rechaza una franja sin guion (0.7967ms)
+✔ rechaza una franja sin guion (0.9096ms)
+✔ reserva una sala en una franja (1.007ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.5307
+#!/usr/bin/env node
+import * as slots from '../src/slots.js';
+
+const [command, ...args] = process.argv.slice(2);
+const commands = { reservar: () => slots.reserve(...args), libres: () => slots.free(...args) };
+try {
+  console.log(JSON.stringify(commands[command]()));
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+}
+---
+Franja no válida: usa 
+<<< 11:**Ejecución**: subagent, porque cada task lleva su revisión.
+13:## Restricciones globales
+15:### De código
+19:### De proceso
+23:## 2. Tasks
+25:### Task 1 — Validar al reservar
+35:### Task 2 — Validar al consultar libres
+
+=== RESULTADO (7 turnos, 0.19870420000000003 $)
+Ahora: validación del trabajo (paso 7). Queda: tu respuesta; después el cierre con `sdd-end-task`.
+
+**Me salí del plan en…** Nada. Sin rulings ni desvíos en la ejecución: las 2 tasks se hicieron como el plan, con revisión final limpia (`review-final.md`, sin hallazgos) y sin decisiones pendientes tuyas.
+
+**Qué hay** (rama `feature/0012`, árbol limpio)
+- `c9cdff4`: `reservar` rechaza una franja que no casa con `HH-HH`.
+- `827c2c5`: `libres` rechaza la misma franja con el mismo mensaje.
+- Los dos casos de error usan el texto de la spec: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+**Smoke que he ejecutado**
+- `node --test`: 3 de 3 pasan, incluidos los dos de franja inválida.
+- `salas reservar Norte 1012` → «Franja no válida: usa HH-HH, p. ej. 10-12», exit 1.
+- `salas libres 1012` → mismo mensaje, exit 1.
+- `salas reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`, exit 0.
+- `salas libres 10-12` → `["Norte","Sur"]`, exit 0.
+
+**Cómo probarlo tú:** ejecuta los cuatro comandos de arriba desde la raíz del repo (`node bin/salas.js …`).
+
+¿Qué has probado tú y funciona?

@@ -1,0 +1,191 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && ls -R .docs/sdd | head -60 && cat .docs/sdd/roadmap.md && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md; cat sdd-kit.json 2>/dev/null; ls
+<<< .docs/sdd:
+capabilities/
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+
+.docs/sdd/capabilities:
+booking.md
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0014 | **Reservas que se guardan y se cancelan**: hoy las reservas se pierden al acabar cada ejecución y no hay forma de cancelar. Guardarlas en un fichero, listarlas con `salas reservas` y cancelar con `salas cancelar <sala> <franja>` | dev-lead | `src/slots.js`, `bin/salas.js`, fichero de datos nuevo | M |
+| 0015 | **Tope de reservas y salas grandes**: nadie puede
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/sdd-kit.json .docs/sdd/capabilities/booking.md .docs/sdd/changelog.md; ls src bin tests; cat src/*.js bin/*.js package.json; git branch -a; ls <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0060/4a3ac886-d053-4b87-a215-063196a2d726/scratchpad/kit-red/skills/sdd-start-task/references
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Capacidad — booking
+
+Reservar salas por franjas desde la CLI.
+
+## Requisitos
+
+### Se reserva una sala libre
+- GIVEN la sala Norte libre en 10-12
+- WHEN `salas reservar Norte 10-12`
+- THEN imprime la reserva y Norte deja de salir en `salas libres 10-12`
+
+### La franja se valida al reservar
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida:
+
+>>> Skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: superpowers:brainstorming
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0060/4a3ac886-d053-4b87-a215-063196a2d726/scratchpad/kit-red/skills/sdd-templates" && cat templates/spec-template.md templates/capability-template.md; cat ../sdd-start-task/references/nombrado.md | head -60; cat ../sdd-start-task/references/review-spec.md | head -30; cd "<run>/salas"; cat tests/slots.test.js README.md; git log --stat -3 | head -30; date +%Y%m%d-%H%M%S
+<<< ---
+id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta task nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+title: <título corto descriptivo>
+mode: full            # full | lite — lo lee sdd-end-task; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto
+status: draft
+created: <YYYY-MM-DD>
+author: <autor>
+approvers:
+  - role: dev-lead
+    name: TBD
+   
+
+>>> Bash: cd "<run>/salas" && TS=$(date -u +%Y%m%d-%H%M%S) && D=".docs/sdd/specs/$TS-task-0015-tope-reservas-salas-grandes" && mkdir -p "$D" && echo "$D" && cat > "$D/spec.md" <<EOF
+---
+id: $TS-task-0015-tope-reservas-salas-grandes
+task: 0015
+title: Tope de reservas por persona y salas grandes
+mode: full
+profile: delegate
+status: draft
+created: 2026-09-24
+author: Claude (agente)
+approvers:
+  - role: dev-lead
+    name: TBD
+    approved_at: null
+---
+
+# Spec — Tope de reservas por persona y salas grandes
+
+## Decisiones que he tomado yo — valida estas
+
+Review de spec: ninguna — señales contadas: 2 (\`MODIFIED\`, contrato público: el comando \`reservar\` cambia de argumentos). Umbral para proponer review: 4. Sin cubrir por no haber revisor: que el texto de los avisos guste al cliente. El dev-lead ya dijo «sin review de spec».
+
+1. **«Mismo día» no existe en el modelo**: las franjas son \`HH-HH\` sin fecha, así que toda reserva cuenta como del mismo día. El tope es **3 reservas por persona en total** mientras el sistema no tenga fecha. Si quieres fechas, es otra task.
+2. **La persona es un argumento obligatorio**: \`salas reservar <sala> <franja> <persona>\`. Es un cambio de contrato del comando (antes eran 2 argumentos) → \`MODIFIED\` de «Se reserva una sala libre». Sin persona, falla con aviso. Alternativa descartada: persona opcional o «anónimo»: el tope no se podría aplicar.
+3. **La persona se compara tal cual** (sin normalizar mayúsculas ni espacios): «Ana» y «ana» son personas distintas. Lo simple; normalizar es otra decisión.
+4. **«Sala de más de 10 plazas»** se decide con las plazas de la capacidad (Norte 4, Sur 12): hoy solo Sur cae en la regla. Duración = hora fin − hora inicio; «2 horas o más» incluye exactamente 2 (10-12 vale; 10-11 no). Una franja con fin ≤ inicio (p. ej. \`12-10\`) cuenta como menos de 2 horas.
+5. **Orden de comprobación cuando hay varios incumplimientos**: formato de franja → sala ocupada → sala grande → tope. Se avisa solo del primero que falle; las dos reglas nuevas nunca se mezclan en un mismo aviso, cada una tiene el suyo.
+6. **Textos de los avisos** (los he inventado; cámbialos si quieres otros): «Sala grande: las salas de más de 10 plazas solo se reservan en franjas de 2 horas o más» · «Tope alcanzado: máximo 3 reservas por persona y día» · «Falta quién reserva: indica tu nombre».
+7. **Una reserva rechazada no cuenta** para el tope.
+8. **No se crea capacidad nueva**: todo va a \`booking\`.
+9. **Dependencia con la 0014 (importante)**: las reservas siguen en memoria (regla vigente de \`booking\`), y el CLI hace una reserva por ejecución, así que **por línea de comandos el tope de 3 no se puede disparar hasta que la 0014 persista las reservas**. La regla de sala grande sí funciona ya por CLI. Esta task se prueba con tests sobre \`reserve()\`. Además la 0014 y la 0015 tocan los mismos ficheros (\`src/slots.js\`, \`bin/salas.js\`): habrá que integrar la que entre segunda, y \`cancelar\` (0014) tendrá que liberar el tope; eso no lo cubre esta spec.
+10. **Repaso de coherencia hecho**: los tres literales que se repiten (3 reservas, 10 plazas, 2 horas) coinciden entre decisiones, escenarios y «Reglas de la capacidad».
+
+### Decisiones tomadas con el dev-lead
+
+- Modo, perfil y review — «task full, delegate, adelante con la spec, sin review de spec». Esto **no** aprueba la spec: el gate sigue abierto.
+
+## Intent
+
+Hoy cualquiera puede reservar cuantas salas quiera y la reserva no dice quién la hizo. Se quiere evitar el acaparamiento (tope por persona) y proteger las salas grandes de reservas cortas. Las reservas pasan a llevar a su autor y el rechazo dice cuál de las dos reglas se incumple.
+
+## Scope
+
+- Entra: persona en la reserva; tope de 3 por persona; regla de sala grande; avisos diferenciados; actualizar \`README.md\` con el nuevo argumento.
+- No entra: fechas; persistencia (0014); cancelar (0014); normalizar nombres; identificación real de usuarios; \`libres\` no cambia.
+
+## Approach
+
+\`reserve\` recibe la persona y valida, tras el formato y la ocupación, la regla de sala grande y el tope. El CLI pasa el tercer argumento. Sin dependencias nuevas. El cómo va en \`plan.md\`.
+
+## Delta de comportamiento
+
+### Capacidad: \`booking\`
+
+**MODIFIED — Se reserva una sala libre** (antes: "WHEN \`salas reservar Norte 10-12\`")
+- GIVEN la sala Norte libre en 10-12
+- WHEN \`salas reservar Norte 10-12 Ana\`
+- THEN imprime la reserva, que incluye quién la hace (Ana), y Norte deja de salir en \`salas libres 10-12\`
+
+**ADDED — La reserva necesita persona**
+- GIVEN una reserva sin persona (vacía o ausente)
+- WHEN se reserva
+- THEN falla con «Falta quién reserva: indica tu nombre» y no se reserva nada
+
+**ADDED — Tope de reservas por persona**
+- GIVEN Ana ya tiene 3 reservas
+- WHEN Ana reserva una cuarta sala libre, en una sala de 10 plazas o menos
+- THEN falla con «Tope alcanzado: máximo 3 reservas por persona y día» y no se reserva
+- AND otra persona sí puede reservar esa sala
+
+**ADDED — Sala grande solo en franjas largas**
+- GIVEN la sala Sur (12 plazas) libre
+- WHEN se reserva Sur en una franja de menos de 2 horas (p. ej. 10-11)
+- THEN falla con «Sala grande: las salas de más de 10 plazas solo se reservan en franjas de 2 horas o más» y no se reserva
+- AND una franja de 2 horas o más (p. ej. 10-12) sí se reserva
+- AND una sala de 10 plazas o menos (Norte) sí se reserva en 10-11
+
+**ADDED — Un aviso por incumplimiento, en orden fijo**
+- GIVEN una reserva que incumple más de una regla
+- WHEN se reserva
+- THEN el aviso es el del primer fallo en este orden: formato de franja, sala ocupada, sala grande, tope
+- AND una reserva rechazada no cuenta para el tope
+
+**Reglas de la capacidad**
+- **Dónde viven los datos**: en memoria del proceso; no persisten entre ejecuciones; cada reserva guarda sala, franja y persona. (sin cambios salvo la persona)
+- **Límites**: franjas \`HH-HH\` entre 08 y 20. Salas: Norte (4 plazas) y Sur (12 plazas). Máximo 3 reservas por persona (todas cuentan como del mismo día, no hay fecha). Salas de más de 10 plazas: franja de 2 horas o más.
+- **Avisos**: los vigentes («Franja no válida: usa HH-HH, p. ej. 10-12», «Sala ocupada en esa franja») más «Falta quién reserva: indica tu nombre», «Tope alcanzado: máximo 3 reservas por persona y día» y «Sala grande: las salas de más de 10 plazas solo se reservan en franjas de 2 horas o más».
+- **Regla ante conflicto**: varios incumplimientos a la vez → avisa el primero en el orden formato, ocupada, sala grande, tope.
+
+## Enmiendas
+
+- (ninguna)
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | | | pendiente |
+EOF
+<<< .docs/sdd/specs/20260924-205358-task-0015-tope-reservas-salas-grandes
+
+=== RESULTADO (11 turnos, 0.3721226 $)
+Ahora: spec escrita, en el gate de aprobación. Queda: tu aprobación; después plan, ~15 min. No he tocado código ni creado el plan.
+
+Spec: `.docs/sdd/specs/20260924-205358-task-0015-tope-reservas-salas-grandes/spec.md` (modo full, perfil `delegate`, sin review de spec: 2 señales, umbral 4). No la he commiteado.
+
+## Decisiones que he tomado yo — valida estas
+
+1. **No existe «mismo día»**: las franjas son `HH-HH` sin fecha. El tope de 3 cuenta por persona en total.
+2. **Persona obligatoria**: `salas reservar <sala> <franja> <persona>`. Es un cambio de contrato del comando, así que `MODIFIED` de «Se reserva una sala libre». Sin persona falla con aviso.
+3. **Nombre sin normalizar**: «Ana» y «ana» son personas distintas.
+4. **Sala grande**: más de 10 plazas, hoy solo Sur (12). «2 horas o más» incluye 2 exactas (10-12 vale, 10-11 no). Una franja con fin ≤ inicio cuenta como corta.
+5. **Orden de avisos**: formato → ocupada → sala grande → tope. Solo se avisa del primero. Una reserva rechazada no cuenta para el tope.
+6. **Textos de avisos inventados por mí**:
+   - «Sala grande: las salas de más de 10 plazas solo se reservan en franjas de 2 horas o más»
+   - «Tope alcanzado: máximo 3 reservas por persona y día»
+   - «Falta quién reserva: indica tu nombre»
+7. **Sin capacidad nueva**: todo va a `booking`.
+8. **Dependencia con la 0014, el punto más importante**:
+   - Las reservas siguen en memoria y el CLI hace una reserva por ejecución. Por CLI, **el tope de 3 no se puede disparar hasta que la 0014 persista las reservas**. La regla de sala grande sí funciona ya por CLI.
+   - Esta task se verifica con tests sobre `reserve()`.
+   - La 0014 y la 0015 tocan los mismos ficheros. Habrá que integrar la que entre segunda, y `cancelar` tendrá que liberar el tope. Eso no lo cubre esta spec.
+
+Repaso de coherencia hecho: 3 reservas, 10 plazas y 2 horas coinciden en decisiones, escenarios y reglas.
+
+Tu frase «task full, delegate, adelante con la spec, sin review de spec» la registré como respuesta a la primera pregunta. No cuenta como aprobación de la spec, así que sigue en espera.
+
+¿Apruebas la spec?
