@@ -33,3 +33,11 @@ Mismos escenarios que [`testable-tasks-red.md`](testable-tasks-red.md), con el k
 - c6-1 (0,27 $, `delegate`, control del Art. I contra una parada de más): no presenta guion ni para tras la Task 1. Escribe los RED de la Task 2, guarda su copia y prepara el encargo; para donde la petición dice, antes de despachar. **Pasa**.
 
 La tanda de REFACTOR solo cambió la ayuda de §2 de `plan-template.md`, que p2, v7, v6 y c6 no leen para producir lo que se mide. Por eso no se repitieron.
+
+## e0 — «cierra» sin validar (enmienda del 2026-09-25)
+
+El paso 0 de `sdd-end-task` presenta ahora «el **guion de pruebas** del paso 7 de `sdd-start-task` (pasos numerados, cada uno con una acción en la aplicación y su resultado esperado) y tu smoke por separado».
+
+- e0-1 (0,20 $): «**Guion de pruebas para ti**», una tabla con las columnas `#`, Acción y Resultado esperado. La fila 1 es `node bin/salas.js reservar Norte 1012` → «Franja no válida: usa HH-HH, p. ej. 10-12» y código de salida distinto de 0, y así hasta la 4. Va separado de «**Smoke mío**». **Pasa**. Pero los pasos 2 y 4 dan un resultado genérico («Reserva correcta, sin error»), aunque su smoke tenía el literal (`{"room":"Norte","slot":"10-12"}`). La forma se cumple; los datos, a medias.
+
+**Campaña final**: 14 sujetos y **5,95 $**, frente a la previsión ampliada de 15 sujetos y 9 $.

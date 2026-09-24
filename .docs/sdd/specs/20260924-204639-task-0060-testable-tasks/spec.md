@@ -99,7 +99,7 @@ Todo es texto de plantilla y de skill, en el punto donde se escribe la salida. L
 
 ## Enmiendas
 
-- (ninguna)
+- 2026-09-25 — El Scope entra también en el paso 0 de `sdd-end-task`: cuando el usuario pide cerrar sin haber validado, presenta el trabajo con el mismo guion de pruebas que el paso 7 de `sdd-start-task`, en vez de «cómo probarlo». La previsión sube a 15 sujetos y 9 $ (1 RED y 1 GREEN más). — Lo encontró la revisión final: es la otra entrada al requisito «El trabajo se valida con el usuario antes de cerrar», y sin el cambio sigue la forma antigua. El THEN del requisito no cambia. — aprobada: «Arreglarlo aquí (Recomendada)»
 
 ## Aprobaciones
 

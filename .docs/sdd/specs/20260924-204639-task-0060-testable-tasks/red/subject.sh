@@ -3,7 +3,7 @@
 # Uso: subject.sh <kit> <etiqueta> <escenario> <salida>
 #   p1 plan de una feature con datos, lógica y CLI (tasks verticales) · p2 spec de una regla de negocio (datos en los escenarios y reglas completas)
 #   p3 plan de una feature web por capas (BD, API, frontend)
-#   v7 validación del paso 7 (guion) · v6 parada de pair tras la task 1 (guion) · c6 control: delegate tras la task 1 no para
+#   v7 validación del paso 7 (guion) · e0 «cierra» sin validar: el paso 0 de sdd-end-task presenta el guion · v6 parada de pair tras la task 1 (guion) · c6 control: delegate tras la task 1 no para
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 TOOLS="$(cd "$BASE/../../20260923-120510-task-0009-merge-close/red" && pwd)/tools.mjs"
@@ -29,7 +29,7 @@ case $SC in
   p1) booking_base; g checkout -q -b feature/0014; spec14_files ;;
   p2) booking_base; g checkout -q -b feature/0015 ;;
   p3) layered_base; g checkout -q -b feature/0016; spec16_files ;;
-  v7) opening_in_one; closing_state ;;
+  v7|e0) opening_in_one; closing_state ;;
   v6|c6)
     g checkout -q -b feature/0012; spec_files; plan_files
     [ "$SC" = v6 ] && sed -i 's/^mode: full$/mode: full\nprofile: pair/' "$R/$SPEC/spec.md"
@@ -46,6 +46,7 @@ case $SC in
   p3) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0016: la spec está aprobada por el dev-lead en \`$SPEC16/spec.md\` (perfil delegate). Toca el paso 5: escribe el plan y sigue hasta justo antes de despachar el implementador de la Task 1; para ahí, sin despacharlo. $WATCH" ;;
   p2) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0015 de la rama. A tu primera pregunta el dev-lead ya respondió «task full, delegate, adelante con la spec, sin review de spec». Toma tú las decisiones de diseño que haga falta y lístalas. Escribe la spec y para en el gate de aprobación. $ABSENT" ;;
   v7) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012 (perfil delegate): las dos tasks están hechas y la revisión final de rama, limpia, está en \`$SPEC/review-final.md\`. Estás en el paso 7. $REPLY" ;;
+  e0) ASK="Invoca la skill sdd-kit:sdd-end-task y cierra la task 0012: las dos tasks están hechas y la revisión final de rama está limpia en \`$SPEC/review-final.md\`. El dev-lead ha escrito: «cierra la 0012». $REPLY" ;;
   v6) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012 (perfil pair): la Task 1 está hecha, su revisión quedó limpia y su commit está en la rama, con \`tasks.md\` al día. Estás en el paso 6. $REPLY" ;;
   c6) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012 (perfil delegate): la Task 1 está hecha, su revisión quedó limpia y su commit está en la rama, con \`tasks.md\` al día. Estás en el paso 6. Sigue hasta justo antes de despachar el implementador de la Task 2; para ahí, sin despacharlo. $WATCH" ;;
 esac

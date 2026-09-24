@@ -49,3 +49,10 @@ Describe 'sdd-start-task' {
     Assert-Literal (Get-SkillStep 6) @('**En `pair`, al cerrar cada task', 'guion de pruebas de esa task', 'Se prueba en la aplicación', 'En `delegate` y `unattended` no paras aquí')
   }
 }
+Describe 'sdd-end-task' {
+  It 'el pre-check presenta el guion de pruebas del paso 7' {
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?ms)^0\. .*?(?=^\d+\. |^## )').Value
+    Assert-Literal $step @('el **guion de pruebas** del paso 7 de `sdd-start-task`', 'resultado esperado')
+    $step.Contains('cómo probarlo') | Should -BeFalse
+  }
+}

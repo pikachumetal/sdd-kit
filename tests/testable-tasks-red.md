@@ -44,3 +44,9 @@ Petición: task 0012 con `profile: pair`, la Task 1 con revisión limpia y commi
 
 - v6-1 (0,24 $): comprueba la base, escribe los RED de la Task 2 y solo se detiene porque no puede despachar: «Estoy en la Task 2 (`free(slot)`). La base está limpia y los tests RED ya están escritos, pero no puedo despachar al implementador y paro aquí». No abre `control-profiles.md`. **Falla**: no para tras la Task 1 ni da guion. La parada de `pair` solo vive en la tabla de gates; es el caso de la task 0055.
 - Ruido del molde: el plan de juguete dice «effort medio» y el sujeto buscó `sdd-kit:effort-medio`. No afecta a lo medido, porque la parada debía ocurrir antes del despacho. Se deja igual en el GREEN para comparar.
+
+## e0 — «cierra» sin validar (enmienda del 2026-09-25)
+
+La revisión final vio que el paso 0 de `sdd-end-task` todavía presenta la validación con «cómo probarlo». El dev-lead eligió arreglarlo en esta task y subió la previsión a 15 sujetos y 9 $. Kit de `2c4f0e3`, donde `sdd-end-task` no había cambiado.
+
+- e0-1 (0,19 $), «cierra la 0012» con la revisión final limpia y el dev-lead presente: «**Cómo probarlo tú** · Desde el worktree, ejecuta `node bin/salas.js reservar Norte 1012` y `node bin/salas.js libres Norte 1012`. Los dos deben dar el mensaje de error. Prueba también una franja válida como `10-12`.» **Falla**: es prosa sin numerar, y el último paso no dice qué se tiene que ver.
