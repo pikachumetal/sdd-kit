@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-24
 branch: feature/patch-log
-commit: <hash>
+commit: 3e8cfb9
 ---
 
 # Patch 0056 — el estimation-log fecha la fila con el cierre, no con la apertura
@@ -36,6 +36,7 @@ Efecto colateral: `Get-ReleaseLabel` asigna la release comparando esa fecha con 
 | 2 | GREEN: mismos casos con el fix | ✅ agente: 4/4 |
 | 3 | Suite completa `Invoke-Pester tests` | ✅ agente: 528 pasan, 0 fallan |
 | 4 | `estimation-log.md` regenerado | ✅ agente: cambian exactamente las 10 filas medidas en §1 y la tabla por release (1.1.0 pasa de 5 a 3 artefactos; «sin publicar», de 36 a 38) |
+| 5 | Validación del dev-lead | reportado: «si, end, feedback, commit, push» (2026-09-24), a la pregunta «¿Lo das por validado y lo cierro ya…?» |
 
 ## 5. Tiempo (ligero)
 
