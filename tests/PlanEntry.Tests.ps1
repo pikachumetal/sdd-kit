@@ -211,3 +211,16 @@ Describe 'Revisión final' {
     $script:PatchStep2 | Should -Match 'antes del primer commit'
   }
 }
+
+Describe 'Enrutado de un cambio de planificación' {
+  It 'el paso 2 de sdd-start-task tiene una salida a sdd-roadmap' {
+    $step2 = [regex]::Match((Get-KitFile 'skills/sdd-start-task/SKILL.md'), '(?ms)^2\. \*\*Enrutado\*\*.*?(?=^3\. )').Value
+    $step2 | Should -Match 'sdd-roadmap'
+    $step2 | Should -Match 'definición de una propuesta'
+  }
+
+  It 'la description de sdd-roadmap recoge el cambio de algo ya planificado' {
+    $description = [regex]::Match((Get-KitFile 'skills/sdd-roadmap/SKILL.md'), '(?m)^description: (.+)$').Groups[1].Value
+    $description | Should -Match 'ya planificado'
+  }
+}

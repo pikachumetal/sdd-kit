@@ -1,6 +1,6 @@
 ---
 name: sdd-roadmap
-description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "prepara la release N", "qué entra en la siguiente entrega". No para hacer el trabajo ya (eso es sdd-start-task o sdd-start-patch) ni para cerrar una release (eso es sdd-end-release).
+description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta", "prepara la release N", "qué entra en la siguiente entrega". No para hacer el trabajo ya (eso es sdd-start-task o sdd-start-patch) ni para cerrar una release (eso es sdd-end-release).
 ---
 
 # sdd-roadmap
