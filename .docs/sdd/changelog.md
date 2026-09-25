@@ -72,6 +72,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Task 0062** — se retira `sdd-start-release`: preparar una release y replanificar pasan a `sdd-roadmap`, y la migración v1.2.0 lo avisa. → [ref](specs/20260924-231636-task-0062-plan-entry/)
 
 ### Fixed
+- **El lanzador de sujetos headless perdía las salidas con `SPEC_DIR` relativo** — el sujeto hacía `cd` al molde antes de escribir, y `run.sh` contaba 0 sujetos y 0 $, con lo que el techo de coste dejaba de vigilar (tickets de la task 0077 §2 y de la feature 0064 §1). `lib.sh` resuelve la salida a ruta absoluta, igual que ya hacía con `RUNS_DIR`. → [ref](specs/20260925-175053-patch-0079-spec-dir-absolute/patch.md)
+
 - **`sdd-end-patch` fusionaba y empujaba sin la parada de validación** — con `delegate` y el bloque `merge` completo, el cierre de un patch llegaba al merge sin preguntar la validación. Ahora el paso 0 «Validación» para en `pair` y `delegate` con el smoke de `patch.md` §4 y un guion de pruebas, y tiene tres salidas: validado, diferido (línea en §4 y prefijo 🧪 en la fila) o no funciona, que vuelve al fix. En `unattended` queda diferido al smoke de la release. `control-profiles.md` extiende la validación al patch con su forma diferida, y `commit-milestones.md` deja mandar la forma de commits que fija el dev-lead. → [ref](specs/20260925-114821-patch-0075-patch-close-validation/)
 
 - **Nada comprobaba la estructura del roadmap** — filas encima de `# Roadmap`, pegadas en una cabecera o vacías pasaban el pre-commit. `RoadmapStructure.Tests.ps1` lo comprueba en el conjunto rápido, y `PathLength.Tests.ps1` mira también los ficheros sin versionar. → [ref](specs/20260925-080508-patch-0071-roadmap-structure-tests/)

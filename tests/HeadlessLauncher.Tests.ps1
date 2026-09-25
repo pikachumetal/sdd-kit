@@ -71,6 +71,18 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     Get-Content -Raw (Join-Path $campaign.Out 'a-1.tools.txt') | Should -Match '>>> Bash: ls <run>/repo'
   }
 
+  It 'con SPEC_DIR relativo guarda las salidas y las cuenta (tickets 0077 §2 y 0064 §1)' {
+    $root = Join-Path $TestDrive 'relative'
+    $campaign = New-Campaign $root
+
+    Push-Location $root
+    try { $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SPEC_DIR = 'spec' } } finally { Pop-Location }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Join-Path $campaign.Out 'a-1.tools.txt' | Should -Exist
+    $run.Output | Should -Match 'sujetos de la campaña: 1 '
+  }
+
   It 'suma EXTRA_ALLOWED a las herramientas permitidas del sujeto (task 0077)' {
     $campaign = New-Campaign (Join-Path $TestDrive 'allowed')
 

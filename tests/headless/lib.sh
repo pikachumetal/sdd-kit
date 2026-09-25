@@ -27,6 +27,8 @@ subject_init() {
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
   mkdir -p "$RUNS" "$OUT"
   RUNS="$(cd "$RUNS" && pwd)"
+  # subject_launch hace cd al molde: un OUT relativo perdía las salidas (tickets 0077 §2 y 0064 §1).
+  OUT="$(cd "$OUT" && pwd)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
   rm -rf "$RUN"; mkdir -p "$R"
   JSONL="$RUNS/$LABEL.jsonl"
