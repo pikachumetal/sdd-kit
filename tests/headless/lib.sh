@@ -10,6 +10,7 @@
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
 # que se suman a --allowedTools, como un servidor MCP),
+# SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5).
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
@@ -46,16 +47,22 @@ subject_launch() {
   local settings="${SETTINGS:-"{\"enabledPlugins\":{\"sdd-kit@sdd-kit\":false}}"}"
   # Sin esa clave, el sujeto carga también el kit instalado, y mide la caché en vez de la copia.
   case "$settings" in *'"sdd-kit@sdd-kit":false'*) ;; *) die "SETTINGS sin deshabilitar el kit instalado: $settings" ;; esac
+  # El CLAUDE.md del dev-lead ya enruta al kit: medir con él da por buena una puerta que un dev sin él no tiene (feature 0074).
+  local isolation=() isolated=""
+  if [ -n "${SUPERPOWERS_DIR:-}" ]; then
+    isolation=(--setting-sources "" --plugin-dir "$SUPERPOWERS_DIR")
+    isolated=" · aislado con superpowers de $SUPERPOWERS_DIR"
+  fi
   if [ "${DRY_RUN:-}" = 1 ]; then
     printf '%s\n' \
-      '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \
+      '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}$isolated"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \
       '{"type":"result","num_turns":1,"total_cost_usd":'"${DRY_COST:-0.5}"',"result":"hecho"}' > "$JSONL"
     return
   fi
   # Sin < /dev/null, un aviso de stdin precede al JSON. La mensajería entre sesiones va bloqueada (task 0008).
   # shellcheck disable=SC2086
   claude -p --model "${MODEL:-sonnet}" --settings "$settings" \
-    --plugin-dir "$KIT" --add-dir "$KIT" \
+    --plugin-dir "$KIT" --add-dir "$KIT" "${isolation[@]}" \
     --permission-mode acceptEdits \
     --allowedTools "Bash(*)" "PowerShell(*)" "Agent" ${EXTRA_ALLOWED:-} \
     --disallowedTools "SendMessage" "ListAgents" "AskUserQuestion" ${EXTRA_DISALLOWED:-} \

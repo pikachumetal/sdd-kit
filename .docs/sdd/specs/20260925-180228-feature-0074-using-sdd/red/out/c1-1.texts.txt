@@ -1,0 +1,30 @@
+--- [3]
+Es una pregunta de entender, así que exploro el código y los docs de anclaje.
+
+--- [10]
+Lo de cancelar es casi nada: un stub que no cancela nada de verdad.
+
+**El código** (`src/app.js:12`)
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+- El comando es `cancelar <día> <franja>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve un string con los parámetros. No toca el array `bookings` ni busca ninguna reserva.
+- No comprueba que la reserva exista. Tampoco comprueba de quién es.
+- `bookings` es un array en memoria con una única reserva de ejemplo (`Norte`, `lun`, `10:00-12:00`). No hay persistencia.
+
+**El test** (`test/app.test.js:13`)
+- "cancelar respeta el día" solo comprueba que `run('cancelar', ['mar', '10:00'])` devuelve `'cancelada mar 10:00'`.
+- Es decir, prueba el string y no el comportamiento.
+
+**Lo que dicen los docs**
+- El changelog y el patch 0007 (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`) dicen que se arregló que la cancelación borraba reservas de otro día con la misma hora. La causa raíz era comparar solo por hora.
+- El roadmap (línea 31) lista "Cancelar una reserva propia" como algo pendiente.
+
+**Lo que infiero yo**
+- El código actual no coincide con lo que cuenta el patch 0007. No hay ninguna comparación de hora ni de día. Lo más probable es que el fix sea un stub, o que la lógica real nunca llegara a esta rama.
+- El commit `9ac20d5 "base con cancelación de reservas"` parece haber dejado solo el esqueleto.
+- Además, `cancelar` no recibe sala. Cuando haya más de una sala con la misma franja, no sabrá cuál cancelar.
+
+No he tocado nada. Si quieres implementar la cancelación de verdad, sería una feature nueva (la del roadmap) y la arrancaría por el carril `sdd-start-feature`. Dime si quieres que lo haga.
+

@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; ls .docs/sdd/sdd-kit*.json 2>&1
+
+>>> Glob: **/sdd-templates/scripts/Get-CapabilityIndex.ps1
+<<< develop
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+.docs/sdd/sdd-kit.json
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0074-using-sdd\67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a\scratchpad\kit-red\skills\sdd-templates\scripts\Get-CapabilityIndex.ps1
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap sdd-kit.json changelog; do echo "=== $f"; cat $f* 2>/dev/null | head -150; done; ls -R specs | head -30
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-red/skills/sdd-start-feature/references" && cat nombrado.md modo-lite.md; head -60 control-profiles.md; ls ../../sdd-templates/scripts
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (
+
+>>> Bash: cd "<run>/repo" && ls -a . src test; wc -l src/*.js; grep -n "^function\|^const .*=>\|case '" src/app.js | head -40; ls .docs/sdd/sdd-kit.local.json 2>&1; pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-red/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot .
+<<< .:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+src:
+.
+..
+app.js
+
+test:
+.
+..
+app.test.js
+16 src/app.js
+5:function freeRooms(slot) {
+ls: cannot access '.docs/sdd/sdd-kit.local.json': No such file or directory
+0008
+
+>>> Bash: cd "<run>/repo" && cat src/app.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (9 turnos, 0.22799399999999997 $)
+Ahora: enrutado de los dos tickets. Queda: tu respuesta a esta pregunta, y luego rama, `brainstorming` y la spec del primero (~10 min hasta la spec para aprobar).
+
+He leído la constitution, la misión, el stack y el roadmap. No hay `capabilities/` ni `sdd-kit.local.json`. He mirado `src/app.js` (16 líneas) para enrutar.
+
+**Son dos features, no una.** Las hago una detrás de otra, cada una con su rama, su spec y su cierre. Como el proyecto va en `ids.mode: sequence`, cada una recibe un id reservado con `Get-NextSddId.ps1 -Reserve`. El siguiente libre es `0008`, y ninguno de los dos tickets tiene fila en el roadmap. Como B1 es el `.ics`, la 412 se apoya en esa fila del backlog.
+
+Ninguna cumple el predicado del modo lite, así que propongo modo **full** para las dos:
+- **412 (.ics):** el flujo a modificar no existe. Es un comando de exportación nuevo, y no hay nada que leer y modificar.
+- **415 (máx. 2 reservas por persona):** las reservas (`{room, day, slot}`) no tienen campo de persona. Añadirlo cambia el modelo de datos y el contrato de `reservar`. Eso rompe la condición «no toca schema de datos», y de paso te deja una decisión de producto abierta: qué identifica a la persona.
+
+**Perfil vigente:** `delegate`, que sale del default del proyecto porque `sdd-kit.json` no fija `control.profile`. Paro en la spec, en los desvíos y en la validación. El plan no lleva gate. Puedes cambiarlo para estas features.
+
+**Orden:** propongo 415 primero. Es la más acotada, y su decisión sobre la persona condiciona qué datos exporta la 412.
+
+¿Confirmas modo full para las dos, perfil `delegate` y empezar por la 415? Si prefieres empezar por la 412, dímelo.

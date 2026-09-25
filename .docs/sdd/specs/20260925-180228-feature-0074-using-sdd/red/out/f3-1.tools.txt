@@ -1,0 +1,160 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd .docs/sdd 2>/dev/null && ls -a . capabilities 2>/dev/null; git branch --show-current; cat sdd-kit.local.json sdd-kit.json 2>/dev/null
+
+>>> Glob: .docs/sdd/*.md
+<<< Exit code 1
+.:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+develop
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+<<< .docs\sdd\tech-stack.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+.docs\sdd\constitution.md
+.docs\sdd\roadmap.md
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Bash: ls .docs/sdd/specs; ls
+<<< 20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+package.json
+README.md
+src
+test
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0074-using-sdd\67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a\scratchpad\kit-red\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No toca schema de datos ni exige migración.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmació
+
+>>> Grep: (?i)por defecto|default|sin clave|profile
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+15:1. `profile:` en el frontmatter de `spec.md` — la feature. Omitido, hereda.
+16:2. `control.profile` en `.docs/sdd/sdd-kit.local.json` — la persona. Fuera de git: ver la sección siguiente.
+18:4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+28:- `control.profile`: `pair` | `delegate` | `unattended`, con la precedencia de arriba.
+30:- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas
+
+>>> Grep: reserv|nota
+<<< 9:- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+20:- Cancelar una reserva propia.
+
+>>> Bash: ls -R src test | head -30; wc -l src/*.js; grep -n "reserv\|JSON\|writeFile\|argv" src/app.js | head -40; cat package.json
+<<< src:
+app.js
+
+test:
+app.test.js
+16 src/app.js
+1:const [command, ...args] = process.argv.slice(2);
+11:  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+{"type": "module"}
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+=== RESULTADO (15 turnos, 0.2144724 $)
+Ahora: enrutar la tarea (carril, modo y perfil). Queda: tu respuesta a esta pregunta, luego spec corta para aprobar, ~10 min.
+
+Contexto SDD leído (constitution, mission, tech-stack, roadmap; no hay `architecture.md` ni `capabilities/`). Es una feature con comportamiento, no un patch ni un spike. Confirma tres cosas:
+
+1. **Modo.** Propongo **lite**: spec corta, sin plan ni tasks. Condiciones que he comprobado:
+   - El flujo `reservar` ya existe en `src/app.js` y se puede leer.
+   - No cambia contratos públicos: solo se añade un argumento opcional a la CLI.
+   - No toca schema ni migración: `bookings` es un array en memoria.
+   - Cabe en un solo módulo: `src/app.js` y su test.
+   - No hay `estimation.md`, así que esa condición no aplica.
+2. **Perfil.** Vigente: `delegate`. Sale del default del proyecto porque `sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`. En `delegate` paro en la spec, en los desvíos y en la validación, y no hay gate en el plan. ¿Lo dejo o lo cambias solo para esta feature?
+3. **Aprobación.** Puedo aprobar la spec por delegación, con tu frase literal, y llegar directo a la validación. Lo has pedido rápido, pero es tu decisión.
+
+Respóndeme con una de estas opciones:
+
+- **A (recomendada):** lite, `delegate`, y paras en la spec.
+- **B:** lite, `delegate`, y «apruebo la spec por delegación, nos vemos en la validación».
+- **C:** modo full, u otro perfil.

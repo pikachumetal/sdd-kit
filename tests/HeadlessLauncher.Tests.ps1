@@ -92,6 +92,15 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     Get-Content -Raw (Join-Path $campaign.Out 'a-1.texts.txt') | Should -Match 'permitidas extra: mcp__plugin_playwright_playwright'
   }
 
+  It 'con SUPERPOWERS_DIR aísla al sujeto de la configuración del usuario y carga superpowers desde esa ruta (feature 0074)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'isolated')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SUPERPOWERS_DIR = 'C:/sp/6.4.1' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Out 'a-1.texts.txt') | Should -Match 'aislado con superpowers de C:/sp/6.4.1'
+  }
+
   It 'aborta si SETTINGS no deshabilita el kit instalado' {
     $campaign = New-Campaign (Join-Path $TestDrive 'settings')
 
