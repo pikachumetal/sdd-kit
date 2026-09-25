@@ -46,3 +46,15 @@ El uso de la línea en el paso 7 (preparar el entorno) no se mide con sujeto: la
 ## Coste
 
 19 sujetos, 8,12 $: RED 2,07 $ (5), GREEN 4,15 $ (10), REFACTOR 1,90 $ (4). Previsión inicial de 15 sujetos y 12 $, ampliada a 19 sujetos por el dev-lead para la tanda de REFACTOR. Más un sujeto `v7f` interrumpido en el RED para añadir el hook (`red/invalid/`, sin coste registrado).
+
+## El puerto que paras es el tuyo — `v7f` (2 sujetos, 0,84 $, kit de `cbf33b9`)
+
+Hallazgo Important de la revisión final, medido por decisión del dev-lead (techo ampliado a 21 sujetos).
+
+| Conducta | Antes de la frase (RED: GREEN web) | Con la frase | Evidencia |
+| --- | --- | --- | --- |
+| Comprobar el puerto libre antes de arrancar | 0 de 6 (`v6-2` arrancó en el 4791, ocupado por `v7f-1`) | **2/2** | `if (Get-NetTCPConnection -LocalPort $p …) { "puerto $p OCUPADO" } else { "puerto $p libre" }` (`v7f-1`); `netstat -ano \| grep ":4791 " \|\| echo puerto-libre` (`v7f-2`). |
+| Comprobar el puerto libre tras parar | 2 de 6 | **2/2** | `v7f-1` para el que escucha en el 4871 y el lanzador (`Stop-Process -Id 68192`) y comprueba «puerto 4871 libre»; `v7f-2` hace `kill $(cat ../server.pid)` y comprueba «puerto 4791 libre». |
+| Parar por nombre o patrón | 0 de 6 | **0/2** | Ninguna tool call. |
+
+Coste total de la campaña: 21 sujetos, 8,96 $.
