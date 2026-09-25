@@ -2,6 +2,7 @@
 # Sujeto headless de la 0058 sobre el repo de juguete salas.
 # Uso: subject.sh <kit> <etiqueta> <escenario> <salida>
 #   d4  gate de la spec en delegate, sesión Opus · p5 paso 5 en pair hasta justo antes de la Task 1, sesión Opus
+#   d5  paso 5 en delegate con la spec aprobada con la opción de parar antes de la Task 1, sesión Opus
 #   c1  cierre con sdd-end-task tras una ejecución Native; la petición da el modelo y el effort de cada fase (Sonnet)
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
@@ -24,12 +25,13 @@ draft_spec() {
 }
 
 g init -q -b main; g config core.autocrlf false
-base_files; [ "$SC" = c1 ] && suite_hook; commit "feat: base de reservas de salas"
+base_files; [ "$SC" = c1 ] && suite_hook; [ "$SC" = d5 ] && free_in_base; commit "feat: base de reservas de salas"
 g checkout -q -b develop
 g checkout -q -b feature/0012
 spec_files
 case $SC in
   d4) draft_spec; commit "docs(0012): spec de la task 0012, pendiente de aprobar" ;;
+  d5) commit "docs(0012): spec aprobada de la task 0012" ;;
   p5) sed -i 's/"profile": "delegate"/"profile": "pair"/' "$R/.docs/sdd/sdd-kit.json"
       commit "docs(0012): spec aprobada de la task 0012" ;;
   c1) native_plan; commit "docs(0012): abrir la task 0012" "Spec aprobada, plan y registro de tasks de la validación de la franja."
@@ -42,6 +44,7 @@ MODEL=opus; TURNS=30
 case $SC in
   d4) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012: la spec está escrita y repasada en \`$SPEC/spec.md\`, sin review. Toca el gate del paso 4: preséntala al dev-lead y para. El dev-lead leerá tu mensaje y, si le preguntas algo, contestará en el siguiente." ;;
   p5) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012: la spec está aprobada por el dev-lead en \`$SPEC/spec.md\`. Toca el paso 5: escribe el plan y sigue hasta justo antes de ejecutar la Task 1; para ahí, sin empezarla. El dev-lead leerá tu mensaje y, si le preguntas algo, contestará en el siguiente."; TURNS=45 ;;
+  d5) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012: la spec está aprobada en \`$SPEC/spec.md\`. El dev-lead la aprobó en el gate de la spec eligiendo la opción «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media». Toca el paso 5 y sigue con el flujo."; TURNS=45 ;;
   c1) MODEL=sonnet; TURNS=60
       ASK="Invoca la skill sdd-kit:sdd-end-task y cierra la task 0012 de \`feature/0012\` (perfil delegate). Se ejecutó en Native (\`executing-plans\`), y la revisión final de rama ya se hizo. La spec y el plan se hicieron con Opus 5.5, effort medium; antes de la Task 1 cambié con \`/model\` a Sonnet 5, effort medium. Validación del dev-lead: «he probado \`salas reservar Norte 1012\` y \`salas libres 1012\` y los dos dan el error de la spec; funciona». Haz el cierre hasta el paso 9 incluido y para antes del paso 10: sin merge ni push." ;;
 esac
