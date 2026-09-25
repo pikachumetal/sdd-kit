@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: feature/0076-reference-launcher
-commit: <hash>
+commit: cd3f16c
 ---
 
 # Patch 0076 — cada campaña copia el lanzador de sujetos de otra y hereda sus defectos
