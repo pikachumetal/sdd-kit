@@ -244,6 +244,8 @@ Una skill de proceso nueva, con la forma que pide cada fallo (Art. II): contrato
 
 ## Enmiendas
 
+- 2026-09-25 — Freno de alcance antes de la Task 4: `README.md` y `tests/ReleaseFlow.Tests.ps1` cambiaron en `develop` (`ed9647c`, `8ae9997`, task 0063). Se integra `develop` en la rama antes de la Task 4; la spec no cambia — aprobada: «Integrar develop ahora (Recomendada)»
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
