@@ -59,3 +59,15 @@ Describe 'Native: task-done tras el commit' {
     Assert-Literal (Get-Step 6) @('`task-done` va en su propia orden, después de comprobar que el commit existe', 'si `HEAD` sigue en la base de la task, el pre-commit lo rechazó', 'lee su mensaje y arregla la causa')
   }
 }
+
+Describe 'Se valida en' {
+  BeforeAll { $script:SpecTemplate = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-templates/templates/spec-template.md') -Raw }
+
+  It 'la plantilla de spec pide la vía de validación de un THEN que depende de la base' {
+    Assert-Literal $script:SpecTemplate @('- Se valida en:', '`worktree con la base al día`', '`validación post-merge con fecha`', 'de la rama de integración, del historial de git, del remoto')
+  }
+
+  It 'el paso 7 prepara ese entorno' {
+    Assert-Literal (Get-Step 7) @('Si un THEN de la spec lleva `Se valida en:`, prepara ese entorno')
+  }
+}
