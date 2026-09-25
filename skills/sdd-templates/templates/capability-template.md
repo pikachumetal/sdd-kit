@@ -3,8 +3,8 @@
 > **Reglas anti-proliferación** (no se rompen sin pasar por esta lista):
 > 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una task. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
 > 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
->    la crea `sdd-end-task` por su cuenta.
-> 3. `sdd-end-task` fusiona el delta: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
+>    la crean `sdd-end-task` ni `sdd-end-patch` por su cuenta.
+> 3. `sdd-end-task` fusiona el delta de la spec, y `sdd-end-patch` el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita.
 > 4. Las init no vuelcan: la carpeta `capabilities/` no se crea al inicializar y crece task a task,
 >    con la primera que toque cada capacidad. Única excepción: el volcado inicial de `sdd-init-greenfield`
@@ -39,9 +39,9 @@
 
 ## Historial *(opcional)*
 
-> Una línea por fusión de `sdd-end-task`, más reciente arriba. Útil para auditar cómo llegó la
+> Una línea por fusión de `sdd-end-task` o `sdd-end-patch`, más reciente arriba. Útil para auditar cómo llegó la
 > capacidad a su estado actual sin bucear en las specs históricas. Una capacidad nacida del volcado
 > inicial de una init greenfield empieza con esta línea:
 > - <YYYY-MM-DD> — init — ADDED volcado inicial desde el código
 
-- <YYYY-MM-DD> — task <id> — ADDED/MODIFIED/REMOVED <título>
+- <YYYY-MM-DD> — <carpeta de la task o del patch> — ADDED/MODIFIED/REMOVED <título>

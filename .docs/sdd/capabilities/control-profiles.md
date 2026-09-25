@@ -76,7 +76,8 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - GIVEN una task verificada por el agente y un usuario que, presente y con el trabajo delante, dice que probará más tarde; o una task en `unattended`
 - WHEN el agente cierra
 - THEN el walkthrough registra `Validación diferida: <fecha> · «<frase literal>» · disparador: <task, release o uso con dueño>` y el roadmap marca la fila `🧪 validación diferida a <disparador>`, no ✅
-- AND sin frase del usuario (salvo en `unattended`, cuyo disparador es el smoke de la release) o sin disparador con dueño no hay diferido: la task sigue esperando la validación
+- AND sin frase del usuario (salvo en `unattended`, cuyo disparador es el smoke de la release) no hay diferido: la task sigue esperando la validación
+- AND con la frase y sin disparador, o con uno vago («diferida», «se prueba en uso»), el agente no vuelve a preguntar: concreta el uso más próximo, con quien difiere como dueño (`disparador: la primera exportación del informe mensual, a cargo del dev-lead`), y lo dice en el mensaje de cierre para que lo corrija
 - AND cuando el usuario valida, el agente añade una adenda fechada con **solo lo que él dice que probó** y pasa la fila a ✅
 
 ### En `unattended`, lo que falta aparca la task
@@ -163,6 +164,14 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 - WHEN el script termina
 - THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
 - AND el script sale con error y nombra el paso que falló y el motivo
+- AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de las últimas 20 líneas de la salida del hook, no un conflicto
+
+### La verificación del merge es el gate de merge, no la suite completa
+- GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
+- WHEN el cierre fusiona con `Invoke-SddMerge.ps1`
+- THEN `-VerifyCommand` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
+- AND la suite completa ya corrió antes del script, en la validación final, y el mensaje final da su resultado
+- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `-VerifyCommand` se omite; la suite completa no se omite nunca
 
 ### Un conflicto solo en los registros se resuelve con un merge de sincronización
 - GIVEN un cierre de task o de patch cuyo `Invoke-SddMerge.ps1` falla con `merge: conflicto en` y una lista formada solo por `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
@@ -219,10 +228,13 @@ Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control,
 
 ## Historial
 
+- 2026-09-25 — 20260924-220915-patch-0065-merge-hook-rejection — MODIFIED Un merge del cierre que falla deja la rama destino como estaba (el rechazo de un hook se informa con su salida; fusionado por la task 0067)
 - 2026-09-24 — 20260924-105352-task-0057-native-adapt — ADDED Tras una compactación, lo que queda de un plan Native va con SDD (también con `native` fijado, decisión del dev-lead) · MODIFIED El método de ejecución lo elige el handoff del plan (salvo el cambio tras compactar)
 - 2026-09-24 — 20260924-082516-task-0055-native-default — REMOVED El plan no pregunta el método de ejecución · ADDED El método de ejecución lo elige el handoff del plan · ADDED Un método fijado en `sdd-kit.json` no se pregunta · Reglas: dónde viven los datos, idioma de los nombres y regla ante conflicto (`execution`)
 - 2026-09-24 — 20260923-214917-task-0053-fewer-stops — MODIFIED La primera pregunta confirma carril, modo y perfil (opción de aprobar la spec por delegación) · ADDED La spec aprobada por delegación en la primera pregunta no para
 - 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED El plan no pregunta el método de ejecución
+- 2026-09-23 — 20260923-212835-patch-0051-verify-gate — ADDED La verificación del merge es el gate de merge, no la suite completa (fusionado por la task 0067)
+- 2026-09-23 — 20260923-070206-patch-0037-disparador-vago — MODIFIED La validación puede diferirse con condiciones (el agente concreta un disparador vago; fusionado por la task 0067)
 - 2026-09-23 — 20260923-203736-task-0039-moving-base — ADDED Los ficheros de la task se cruzan con la base antes de cada despacho · Un conflicto solo en los registros se resuelve con un merge de sincronización · Un conflicto que no se puede conservar entero es de una persona
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El push del cierre publica la rama destino (al integrar la task 0042: `merge.push` también lo autoriza)
 - 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED El perfil de control decide dónde para el agente · ADDED El push de la rama de integración sigue `merge.push` · Sin autorización, el push no lo hace el agente solo · Un push que no sale se informa y no se fuerza · El cierre acaba con una línea de terminado (con enmienda) · reglas Dónde viven los datos, Avisos, Regla ante conflicto
