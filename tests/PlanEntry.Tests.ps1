@@ -156,3 +156,26 @@ Describe 'Retirada de sdd-start-release' {
     Get-KitFile 'tests/WorkflowDocs.Tests.ps1' | Should -Match "'sdd-start-release'"
   }
 }
+
+Describe 'Rama sin id' {
+  BeforeAll {
+    $script:Naming = Get-KitFile 'skills/sdd-start-task/references/nombrado.md'
+    $script:PatchStep2 = [regex]::Match((Get-KitFile 'skills/sdd-start-patch/SKILL.md'), '(?ms)^2\. \*\*Carpeta\*\*.*?(?=^3\. )').Value
+  }
+
+  It 'el nombrado renombra la rama sin id y sin commits propios' {
+    $script:Naming | Should -Match 'git branch -m feature/<id>-<slug>'
+    $script:Naming | Should -Match 'sin id'
+    $script:Naming | Should -Match 'sin commits propios'
+  }
+
+  It 'el paso 2 del patch aplica la regla del nombrado' {
+    $script:PatchStep2 | Should -Match 'git branch -m'
+    $script:PatchStep2 | Should -Match 'sin id'
+  }
+
+  It 'ninguno de los dos renombra una rama que ya lleva otro id' {
+    $script:Naming | Should -Not -Match 'otro id o ninguno'
+    $script:PatchStep2 | Should -Not -Match 'otro id o ninguno'
+  }
+}
