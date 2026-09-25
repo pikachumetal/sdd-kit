@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | El validador de capacidades | pending | | |
+| 1 | El validador de capacidades | done | 5d49009 | 24 tests Pester; sobre el repo daba 13 historiales y 4 bloques de reglas pegados |
 | 2 | Las capacidades sin historial | pending | | |
 | 3 | El bloque «Capacidades» y el validador en los cierres (con GREEN) | pending | | |
 | 4 | Migración a 2.0.0 y documentos de anclaje | pending | | |

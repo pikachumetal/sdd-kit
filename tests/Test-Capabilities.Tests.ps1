@@ -128,6 +128,14 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
   }
 }
 
+Describe 'Las capacidades del repo' {
+  It 'pasan el validador' {
+    $result = Invoke-Validator (Join-Path $PSScriptRoot '../.docs/sdd')
+    $result.Lines | Should -Be @('Capacidades válidas: 13')
+    $result.Code | Should -Be 0
+  }
+}
+
 Describe 'Test-Capabilities.ps1 con -Artifact' {
   It 'un bloque que coincide con el delta pasa' {
     $spec = Get-Spec "## Capacidades`n`n- Modificadas: ``bookings`` — añade «Algo»`n" @('bookings')

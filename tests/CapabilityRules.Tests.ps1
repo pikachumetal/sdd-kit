@@ -28,10 +28,26 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       Read-SkillFile 'sdd-templates/templates/patch-template.md' | Should -Match '(?m)^## 6\. Delta de capacidad'
     }
 
-    It 'capability-template nombra el cierre de patch en la fusión y en el historial' {
+    It 'capability-template nombra el cierre de patch en la fusión' {
       $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
       ($content -split "`n" | Where-Object { $_ -match '^> 3\. ' }) | Should -Match 'sdd-end-patch'
-      $content | Should -Match '<carpeta de la task o del patch>'
+    }
+  }
+
+  Context 'una capacidad no guarda historial' {
+    It 'capability-template no tiene sección de historial y dice dónde se lee' {
+      $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
+      $content | Should -Not -Match '(?m)^## Historial'
+      $content | Should -Not -Match '<carpeta de la task o del patch>'
+      $content | Should -Match 'no guarda historial'
+    }
+
+    It 'sdd-end-patch no pide línea de historial al fusionar' {
+      Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1 | Should -Not -Match 'historial'
+    }
+
+    It 'la regla de fusión de sdd-end-task dice que la capacidad no guarda historial' {
+      Get-NumberedStep (Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md') 4 | Should -Match 'no guarda historial'
     }
   }
 

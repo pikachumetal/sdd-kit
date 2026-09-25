@@ -59,7 +59,6 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    - Lee el código entero. Si no puedes leerlo entero en esta sesión, dilo y no vuelques.
    - Antes de escribir ningún fichero, propón la partición: la lista de capacidades, cada una con su slug en inglés kebab-case y sustantivo del dominio (regla 1 de `capability-template.md`; el nombre de un módulo del código no es un nombre de capacidad). Espera el «sí».
    - Escribe cada capacidad calcando `capability-template.md`, con lo que el código hace hoy, y preséntala con el mismo gate que los documentos de anclaje.
-   - Su «Historial» empieza con `- <YYYY-MM-DD> — init — ADDED volcado inicial desde el código`.
 
 ## Red flags — STOP
 
@@ -75,4 +74,4 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 | "Lo marco todo como borrador pendiente y así avanzo" | Cientos de líneas de suposiciones anclan las conversaciones futuras a TUS decisiones. Un documento corto y aprobado vale más que ocho borradores inventados. |
 | "Una estructura con ADRs y glosario es más estándar" | La estructura del equipo es `.docs/sdd/`. Las decisiones viven en constitution/architecture; el glosario, en mission. |
 | "El kit dice que las capacidades crecen task a task: me niego a volcarlas" | En greenfield, a petición del usuario, el volcado es la excepción escrita en el paso 6. Negarse es el fallo que mostró el RED (1/2): aplica sus condiciones. |
-| "El código es pequeño: vuelco las capacidades y las enseño al final" | La partición se aprueba antes de escribir ningún fichero. En el RED, un volcado directo nombró las capacidades como los módulos del código y las dejó sin historial. |
+| "El código es pequeño: vuelco las capacidades y las enseño al final" | La partición se aprueba antes de escribir ningún fichero. En el RED, un volcado directo nombró las capacidades como los módulos del código. |
