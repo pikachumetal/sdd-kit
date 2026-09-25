@@ -88,21 +88,22 @@
 | 2026-09-25 | 0071 | patch | — | 0.25 | — | — | — | — | — | 20260925-080508-patch-0071-roadmap-structure-tests |
 | 2026-09-25 | 0072 | patch | 0.5 | 0.42 | 0.83 | — | — | — | — | 20260925-080650-patch-0072-subject-output-privacy |
 | 2026-09-25 | 0070 | infra/tooling | 4 | 1.6 | 0.4 | 56699k | 5298k | 6.58 | 21.34 | 20260925-081130-task-0070-openspec-capabilities |
+| 2026-09-25 | 0075 | patch | 0.5 | 0.7 | 1.4 | — | — | — | — | 20260925-114821-patch-0075-patch-close-validation |
 
-**Factor de calibración** (ratio mediano real/estimado, 77 artefactos): **0.6** · media 0.69
+**Factor de calibración** (ratio mediano real/estimado, 78 artefactos): **0.6** · media 0.7
 
 - p25–p75: 0.43–0.9
-- p80: 0.99 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 64 % · infraestimadas: 8 %
-- Error absoluto (h): media 0.87 · mediana 0.7
+- p80: 1.03 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 28 % · sobreestimadas: 63 % · infraestimadas: 9 %
+- Error absoluto (h): media 0.86 · mediana 0.7
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.73
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 23 | 30 % |
+| <0.5 | 23 | 29 % |
 | 0.5–0.8 | 28 | 36 % |
 | 0.8–1.25 | 20 | 26 % |
-| 1.25–2 | 6 | 8 % |
+| 1.25–2 | 7 | 9 % |
 | ≥2 | 0 | 0 % |
 
 | Tipo | n | Mediana | p25–p75 |
@@ -110,7 +111,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 50 | 0.53 | 0.38–0.72 |
 | infra/tooling | 11 | 0.43 | 0.37–0.65 |
-| patch | 15 | 1 | 0.8–1.27 |
+| patch | 16 | 1.1 | 0.8–1.35 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
 | --- | --- | --- | --- | --- | --- |
@@ -120,6 +121,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 55 | 64.92 | 0.65 | 210.06 | 65.48 |
+| sin publicar | 56 | 65.62 | 0.65 | 210.06 | 65.48 |
 
 > Ver `estimation.md`.
