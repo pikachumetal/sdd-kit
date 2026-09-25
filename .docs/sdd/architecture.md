@@ -16,7 +16,7 @@
 │   ├── sdd-end-task/SKILL.md
 │   ├── sdd-start-patch/SKILL.md
 │   ├── sdd-end-patch/SKILL.md
-│   ├── sdd-start-release/SKILL.md
+│   ├── sdd-roadmap/SKILL.md
 │   ├── sdd-end-release/SKILL.md
 │   ├── sdd-consult/SKILL.md
 │   ├── sdd-config/SKILL.md
@@ -36,7 +36,7 @@
 
 **Placeholders de una receta**: todo hueco de una plantilla o receta declara **su tipo con un ejemplo real del dominio del documento** ([walkthrough](specs/<carpeta>/walkthrough.md)), no solo su contenido semántico. Con <enlace> a secas, dos sujetos escribieron un enlace Markdown y dos la ruta suelta; con el tipo y el ejemplo, 2 de 2 (task 0018, 2026-09-22).
 
-1. **Frontmatter**: `name` (inglés kebab) + `description` que SOLO describe cuándo usarla (nunca resume el workflow — los agentes seguirían la description y se saltarían el cuerpo). Opcionales en uso desde la task 0014: `argument-hint` en las skills de arranque y `user-invocable: false` en `sdd-templates`; descartados `paths` (oculta la `description` hasta tocar un fichero) y `disable-model-invocation`. `claude plugin validate --strict` los acepta; fuera de Claude Code no está verificado.
+1. **Frontmatter**: `name` (inglés kebab) + `description` que SOLO describe cuándo usarla (nunca resume el workflow — los agentes seguirían la description y se saltarían el cuerpo). Opcionales en uso desde la task 0014: `argument-hint` en las skills de arranque y `user-invocable: false` en `sdd-templates`; descartados `paths` (oculta la `description` hasta tocar un fichero) y `disable-model-invocation`. `claude plugin validate --strict` los acepta; fuera de Claude Code no está verificado. **El `name` también enruta**: renombrar una skill obliga a volver a medir su enrutado, igual que editar su `description`. En la task 0062, con «el cliente ha cambiado la facturación, actualiza lo que haga falta», 2 de 2 sujetos que habían entrado por `sdd-start-task` se pasaron solos a `sdd-plan`, y 0 de 1 a la misma skill renombrada `sdd-roadmap` hasta darle una salida explícita en el paso 2 de `sdd-start-task`.
 2. **Overview**: principio en 1-2 frases.
 3. **Gates/checklist**: pasos numerados; los ⛔ marcan puntos de parada que requieren al usuario.
 4. **Predicados**: los módulos opcionales se condicionan a ficheros observables, no a configuración — `estimation.md` (estimación y tiempo real), `changelog.md` (entrada al cerrar), `architecture.md` (se lee en el contexto), `capabilities/<capability>.md` (desde T5: verdad viva del comportamiento, fusionada desde el delta de cada spec al cerrar) y, desde T4, `environments.md` (entorno por worktree: `env:setup` tras crear el worktree, `env:clean` antes de borrarlo; el worktree en sí lo gestiona superpowers). Un predicado bien escrito no solo clasifica: **da forma al trabajo**. En el GREEN del modo lite, el agente acotó el alcance de la spec para dejar fuera un fichero de contrato público y así cumplir una de las condiciones — el predicado se usó como herramienta de diseño, no solo como filtro de entrada. Cuando el predicado habilita un atajo, quien lo activa es el usuario: **habilitar y activar son cosas distintas**, y esa separación es lo que impide que el agente se autoconceda el atajo. Un fichero de configuración que el agente debe leer se **nombra en la skill que lo lee**, con su ruta: en el RED de la task 0061, 2 de 2 sujetos aplicaron `sdd-kit.local.json` solo porque lo vieron al listar `.docs/sdd/`, y en otro worktree nada los habría llevado a buscarlo.

@@ -13,7 +13,7 @@ release) llega aquí igual. Se ejecuta SOBRE tasks ya cerradas (vía `sdd-end-ta
 artefactos que convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente
 (solo con destinatario), roadmap colapsado y tag.
 
-**El feedback de una demo o reunión no se procesa en el cierre**: su acta y su triaje son de `sdd-plan`,
+**El feedback de una demo o reunión no se procesa en el cierre**: su acta y su triaje son de `sdd-roadmap`,
 y el cierre sigue con sus cinco pasos sin esperar a que se procese.
 
 **Principio central: dos audiencias, dos documentos.** El changelog es exhaustivo y técnico (equipo);

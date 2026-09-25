@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: ls -a .docs/sdd .docs/sdd/capabilities .docs/sdd/specs 2>&1; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1
+
+>>> Read: <run>\salas\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+8	| 0013 | Reservas recurrentes (cada lunes), tras 0012: usa su validación de franja | ⏳ |
+9	
+10	## Backlog
+11	
+12	| # | Ítem | Origen |
+13	| --- | --- | --- |
+14	
+15	## Deuda técnica
+16	
+17	| Ítem | Impacto | Destino |
+18	| --- | --- | --- |
+19	
+20	## Patches
+21	
+22	| Fecha | Id | Descripción |
+23	| --- | --- | --- |
+24	| 2026-09-12 | 0011 | `informe` contaba dos veces las reservas canceladas |
+25	
+<<< Exit code 1
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md; ls ../..; git log --oneline --all | head; git branch -a
+<<< # Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+# Mission — salas
+
+CLI interna para reservar las salas de reuniones de la oficina. Usuarios: el equipo de oficina y, desde este año, clientes externos que alquilan salas.
+data/
+README.md
+src/
+tests/
+3c002fc feat: base de reservas de salas
+  develop
+* feature/0013
+  main
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-red\skills\sdd-start-task\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una task **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No toca schema de datos ni exige migración.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmación e
+
+>>> Bash: git diff main develop --stat; git diff develop HEAD --stat; git show develop:.docs/sdd/roadmap.md | sed -n 5,9p
+<<< | # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0013 | Reservas recurrentes (cada lunes), tras 0012: usa su validación de franja | ⏳ |
+
+=== RESULTADO (8 turnos, 0.2546466 $)
+Ahora: contexto SDD leído (constitution, mission, roadmap, `sdd-kit.json`; no existen `tech-stack.md`, `architecture.md` ni `capabilities/`). Queda: tu respuesta a esta pregunta, y después brainstorming y spec hasta el gate de aprobación, ~10 min.
+
+Antes de seguir tienes que decidir cuatro cosas. Las pongo juntas porque son la confirmación de arranque; no hay preguntas de diseño.
+
+**1. Enunciado y carril.** La rama es `feature/0013` y la fila pendiente del roadmap dice: «Reservas recurrentes (cada lunes), tras 0012: usa su validación de franja». Propongo esa fila como enunciado y la trato como task, no como patch ni spike, porque añade comportamiento nuevo.
+
+**2. Dependencia bloqueante.** La fila 0013 depende de 0012 (validar el formato de la franja), y 0012 sigue ⏳ tanto en `develop` como en esta rama. No hay ninguna validación de franja que reutilizar todavía. Opciones:
+- **(a) Recomendada:** hacer antes 0012 (patch o task pequeña) y arrancar 0013 encima.
+- **(b)** Seguir con 0013 y que su spec incluya la validación de franja. Esto invade el alcance de 0012 y hay que dejar 0012 anotada como absorbida.
+- **(c)** Seguir con 0013 asumiendo que 0012 llegará antes de implementar. Choca con el freno de fila y ficheros cambiados en la base.
+
+**3. Modo.** Recomiendo **full**. No propongo lite porque no puedo citar sus condiciones como comprobadas. Aún no he leído el código y este paso no me deja explorarlo. Sé lo siguiente:
+- «El flujo ya existe en el repo»: no lo he comprobado.
+- «No cambia contratos públicos»: no lo he comprobado. Una reserva recurrente probablemente cambia el comando de reservar.
+- «No toca schema de datos»: probablemente falla. Existe `data/`, y una recurrencia suele exigir guardar la regla o varias ocurrencias.
+- «Cabe en un solo módulo»: no lo he comprobado.
+- La condición de estimación no aplica: no hay `estimation.md`.
+
+Si quieres lite pese a esto, dilo y verifico las condiciones antes de proponerla en firme.
+
+**4. Perfil de control vigente: `delegate`.** Sale del nivel proyecto (`.docs/sdd/sdd-kit.json`, clave `control.profile`). No hay `sdd-kit.local.json`, ni perfil de release ni de task. Las demás claves no cambian nada en el arranque: `ids.mode: sequence` (el id 0013 sale de la fila del roadmap), `release.hasRecipient` y `merge` (se usa en el cierre). Puedes cambiar el perfil solo para esta task.
+
+**Aprobación por delegación.** Como el perfil es `delegate`, hay una opción extra: «apruebo la spec por delegación, nos vemos en la validación». Si la eliges, apruebo yo la spec, dejo tu frase literal y la fecha registradas, decido y registro la review de spec sin preguntarte, y sigo. La validación final de tu parte no se quita nunca.
+
+¿Confirmas enunciado y carril (1), cómo resolvemos la dependencia con 0012 (a/b/c), el modo (full o lite) y el perfil `delegate` (o cuál prefieres para esta task), y quieres además la aprobación por delegación de la spec?

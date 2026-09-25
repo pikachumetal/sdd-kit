@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git branch --show-current && find .docs -type f | head -50 && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>/dev/null; done; echo ===local; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>/dev/null
+<<< Exit code 1
+develop
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+=== constitution
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+=== mission
+# Mission — salas
+
+CLI interna para reservar las salas de reuniones de la oficina. Usuarios: el equipo de oficina y, desde este año, clientes externos que alquilan salas.
+=== tech-stack
+=== roadmap
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-start-task/references" && cat nombrado.md; cd - >/dev/null; cd "<run>/salas" && git ls-files && wc -l $(git ls-files src) && ls .docs/sdd/specs 2>&1; git branch -a
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `task` o `patch` según el carril. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`.
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la task o el patch, o, si no tiene fila, el que reserva `Get-NextSddId.ps1 -ProjectRoot <raí
+
+>>> Bash: cd "<run>/salas" && cat README.md src/*.js; head -5 data/usage.csv; cat .docs/sdd/changelog.md; git log --stat -3 | head -30; find ../../../kit-red -name 'Get-NextSddId.ps1'
+<<< # salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`, `salas informe <mes>`.
+import { readFileSync } from 'node:fs';
+
+// Convierte la duración de una fila de data/usage.csv a horas.
+export function toHours(duration) {
+  return parseFloat(duration);
+}
+
+export function usageReport(csvPath) {
+  const rows = readFileSync(csvPath, 'utf8').trim().split('\n').slice(1);
+  const totals = {};
+  for (const row of rows) {
+    const [room, duration] = row.split(',');
+    totals[room] = (totals[room] ?? 0) + toHours(duration);
+  }
+  r
+
+>>> Bash: cd "<run>/salas" && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-templates/scripts/Get-NextSddId.ps1"; for i in 1 2 3 4 5; do pwsh -NoProfile -File "$S" -ProjectRoot . -Reserve; done; git status --short; git branch -a
+<<< 0014
+0015
+0016
+0017
+0018
+* develop
+  main
+
+>>> Edit: <run>\salas\.docs\sdd\roadmap.md
+<<< The file <run>\salas\.docs\sdd\roadmap.md has been updated successfully.
+
+=== RESULTADO (8 turnos, 0.3653652 $)
+Lo he partido en 5 tasks con fila propia en `.docs/sdd/roadmap.md` (sección «Próximo»). No he escrito código ni specs y no he creado ramas. Los cambios en el roadmap están sin commitear.
+
+Los ids 0014–0018 salen de `Get-NextSddId.ps1 -Reserve`. El plan completo daba bastante más de 3 tasks internas, así que el kit pide partir en vez de hacer una sola.
+
+| Id | Task | Depende de |
+|---|---|---|
+| 0014 | Reservas persistentes con cliente y fecha. Hoy `reserve` no guarda nada. | 0012, porque toca el mismo comando |
+| 0015 | Tarifa €/hora por sala en `data/rates.csv` y precio de una reserva | nada |
+| 0016 | `salas facturar <mes>`: una factura por cliente | 0014 y 0015 |
+| 0017 | Estado de la factura y `salas pagar` | 0016 |
+| 0018 | Bloqueo de `reservar` por impago a los 30 días | 0017 |
+
+- **En paralelo:** 0014 y 0015 pueden ir a la vez a dos personas del equipo.
+- **Cada task:** se arranca con `/sdd-start-task`, que crea su spec y su plan.
+- **Perfil:** `delegate`, tomado de `sdd-kit.json`.
+
+Como no había nadie a quien preguntar, decidí lo siguiente y lo dejé escrito en el roadmap como «decisiones comunes»:
+
+- **Cliente externo:** es una reserva con `--cliente`. Sin cliente es el equipo de oficina, y no se factura ni se bloquea.
+- **Tarifa:** se congela en la reserva al crearla. Cambiar `rates.csv` no altera reservas ni facturas ya emitidas.
+- **Sala sin tarifa:** reservar con cliente falla.
+- **Factura:** una por cliente y mes natural, con número `AAAA-MM-<cliente>`. Sin IVA.
+- **Plazo de pago:** «30 días» son 30 días naturales desde la emisión de la factura.
+- **Bloqueo:** se aplica al cliente con cualquier factura vencida sin pagar y se levanta al pagarla.
+- **Fuera de alcance:** pasarela de pago, envío por email, PDF y recordatorios de cobro.
+
+Estas decisiones vienen de mí, no del dev-lead. La que más conviene revisar es la de congelar la tarifa en la reserva, porque afecta al modelo de datos de 0014. Se pueden cambiar en la spec de cada task.
+
+¿Hago commit del roadmap en `develop` para que el equipo lo vea?

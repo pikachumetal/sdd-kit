@@ -142,8 +142,10 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
 
 Describe 'Las capacidades del repo' {
   It 'pasan el validador' {
-    $result = Invoke-Validator (Join-Path $PSScriptRoot '../.docs/sdd')
-    $result.Lines | Should -Be @('Capacidades válidas: 13')
+    $docs = Join-Path $PSScriptRoot '../.docs/sdd'
+    $count = @(Get-ChildItem -LiteralPath (Join-Path $docs 'capabilities') -Filter '*.md').Count
+    $result = Invoke-Validator $docs
+    $result.Lines | Should -Be @("Capacidades válidas: $count")
     $result.Code | Should -Be 0
   }
 }

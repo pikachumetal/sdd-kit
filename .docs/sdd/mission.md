@@ -28,7 +28,7 @@ Decidido por el dev-lead el 2026-09-21 a partir del [issue GH #1](field-reports/
 
 - **`pair`** (en pareja): además de lo del flujo por defecto, para en el plan, tras cada task y antes del merge.
 - **`delegate`** (delegado, el default): para en la spec, en los desvíos y en la validación.
-- **`unattended`** (desatendido): sin paradas hasta terminar la release. Solo con información suficiente (funcional y planificación de `sdd-start-release`); si una task no la tiene, se aparca como bloqueada. La spec la aprueba el agente con las decisiones registradas; un desvío se resuelve con la opción más conservadora y se registra, y si bloquea, la task se aparca. La validación se aplaza a un único smoke de release. Al final, un solo informe; el merge a main y el tag siguen siendo del dev.
+- **`unattended`** (desatendido): sin paradas hasta terminar la release. Solo con información suficiente (funcional y planificación de `sdd-roadmap`); si una task no la tiene, se aparca como bloqueada. La spec la aprueba el agente con las decisiones registradas; un desvío se resuelve con la opción más conservadora y se registra, y si bloquea, la task se aparca. La validación se aplaza a un único smoke de release. Al final, un solo informe; el merge a main y el tag siguen siendo del dev.
 
 Los interruptores por gate sueltos quedan fuera: cuatro gates opcionales son 16 combinaciones que nadie prueba. Si hace falta, el perfil se cambia para una task concreta.
 

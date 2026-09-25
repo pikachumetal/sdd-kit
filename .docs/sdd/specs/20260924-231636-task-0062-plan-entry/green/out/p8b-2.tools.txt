@@ -1,0 +1,189 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Read: <run>\salas\src\slots.js
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs; cat package.json; grep -rn "reserve" --include=*.js . | grep -v node_modules
+<<< 1	export function reserve(room, slot) {
+2	  return { room, slot };
+3	}
+4	
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+data/usage.csv
+src/report.js
+src/slots.js
+tests/slots.test.js
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+cat: package.json: No such file or directory
+./src/slo
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/roadmap.md tests/slots.test.js .docs/sdd/changelog.md; git branch -a; K=../../../kit-green; ls $K $K/skills $K/skills/sdd-templates $K/scripts 2>&1 | head -60
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| — | Recordatorio el día antes de una reserva | equipo de oficina |
+| — | Reservas recurrentes (cada lunes) | equipo de oficina |
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| `src/slots.js` no tiene tests de franjas límite (`00-24`) | bajo | task |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2
+
+>>> Bash: cd ../../../kit-green/skills 2>/dev/null || cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills"; ls sdd-templates/scripts sdd-templates/templates; cat sdd-templates/templates/patch-template.md; cat sdd-start-task/references/nombrado.md; cat sdd-start-task/references/commit-milestones.md
+<<< sdd-templates/scripts:
+Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+
+sdd-templates/templates:
+architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+environments-template.md
+estimation-template.md
+feedback-template.md
+kit-feedback-template.md
+mission-template.md
+patch-template.md
+plan-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+tech-stack-template.md
+walkthrou
+
+>>> PowerShell: $k='<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-green\skills\sdd-templates\scripts\Get-NextSddId.ps1'
+$p='<run>\salas'
+& $k -ProjectRoot $p -Reserve; Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'; git -C $p status --short
+<<< 0014
+20260925-082048
+
+>>> Bash: cd "<run>/salas" && node -e "import('./src/slots.js').then(m=>console.log(m.reserve('','10-12')))" && git branch -m feature/0014-sala-obligatoria && git status --short && git rev-list --count develop..HEAD
+<<< { room: '', slot: '10-12' }
+0
+
+>>> Bash: cd "<run>/salas" && cat > src/slots.js <<'EOF'
+export function reserve(room, slot) {
+  if (!room?.trim()) throw new Error('Sala obligatoria');
+  return { room, slot };
+}
+EOF
+cat >> tests/slots.test.js <<'EOF'
+
+test('rechaza una sala vacía', () => {
+  assert.throws(() => reserve('', '10-12'), { message: 'Sala obligatoria' });
+});
+EOF
+node --test tests/ 2>&1 | tail -12
+D=.docs/sdd/specs/20260925-082048-patch-0014-sala-obligatoria; mkdir -p $D
+cat > $D/patch.md <<'EOF'
+---
+id: 20260925-082048-patch-0014-sala-obligatoria
+task: 0014
+title: Patch — reserve exige sala
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0014-sala-obligatoria
+commit: <hash>
+---
+
+# Patch 0014 — reserve exige sala
+
+## 1. Síntoma
+
+`reserve('', '10-12')` reserva una sala sin nombre; debería lanzar «Sala obligatoria».
+
+## 2. Causa raíz
+
+`reserve` en `src/slots.js` no validaba `room`: devolvía `{ room, slot }` tal cual. Reproducido antes del fix con `node`: `reserve('', '10-12')` devuelve `{ room: '', slot: '10-12' }`. Único llamante: `tests/slots.test.js`; la función es el punto único de reserva.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/slots.test.js`
+- **Cambio**: guarda `if (!room?.trim()) throw new Error('Sala obligatoria')` al inicio de `reserve` (cubre vacío, solo espacios, `undefined`/`null`) y test de regresión.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `reserve('', '10-12')` lanza «Sala obligatoria» | ✅ (agente, `node --test`) |
+| 2 | `reserve('Norte', '10-12')` sigue funcionando | ✅ (agente, `node --test`) |
+
+## 5. Tiempo
+
+- Real: ~0,2 h
+EOF
+git add -A && git commit -q -F - <<'EOF'
+fix(slots): exigir sala en reserve (patch 0014)
+
+`reserve('', '10-12')` reservaba una sala sin nombre. Ahora lanza
+«Sala obligatoria» si `room` está vacío o solo tiene espacios.
+Se añade test de regresión y `patch.md`.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short
+<<< ✔ reserva una sala en una franja (1.3507ms)
+✔ rechaza una sala vacía (1.3328ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 131.6077
+56e0ed6 fix(slots): exigir sala en reserve (patch 0014)
+d9d480b feat: base de reservas de salas
+
+=== RESULTADO (10 turnos, 0.2675312 $)
+Arreglado en un commit (`56e0ed6`), sin cerrar el patch. `reserve('', '10-12')` ahora lanza «Sala obligatoria». Los 2 tests pasan.
+
+- **Causa:** `reserve` en `src/slots.js` no validaba `room` y devolvía `{ room, slot }` tal cual. Antes del fix lo reproduje: `reserve('', '10-12')` devolvía `{ room: '', slot: '10-12' }`.
+- **Fix:** una guarda `if (!room?.trim()) throw new Error('Sala obligatoria')`. Rechaza también sala solo con espacios, `null` y `undefined`. Añadí un test de regresión en `tests/slots.test.js`.
+- **Patch:** id `0014`, reservado con `Get-NextSddId.ps1 -Reserve`. El `patch.md` está en `.docs/sdd/specs/20260925-082048-patch-0014-sala-obligatoria/`, con el campo `commit` todavía en `<hash>`.
+- **Rama:** la renombré de `feature/fix-sala` a `feature/0014-sala-obligatoria` antes del commit, porque no tenía commits propios.
+
+Pendiente para `sdd-end-patch`: escribir el hash en `patch.md`, la fila del roadmap y el changelog.
+
+Sin preguntas.

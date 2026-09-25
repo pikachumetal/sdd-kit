@@ -134,6 +134,16 @@ Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
     }
   }
 
+  Context 'carril proposal' {
+    It 'cuenta el id de una carpeta de propuesta que no tiene fila en el roadmap' {
+      (Invoke-NextId (Join-Path $script:Fixtures 'proposal-lane')).Id | Should -Be '0021'
+    }
+
+    It 'cuenta el id de una carpeta de propuesta con sufijo alfabético' {
+      (Invoke-NextId (Join-Path $script:Fixtures 'proposal-suffix')).Id | Should -Be '0021'
+    }
+  }
+
   Context 'proyecto en modo tracker' {
     It 'avisa y no devuelve id con ids.mode tracker' {
       $result = Invoke-NextId (Join-Path $script:Fixtures 'tracker-project')

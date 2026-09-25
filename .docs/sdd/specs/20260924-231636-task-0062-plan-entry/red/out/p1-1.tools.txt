@@ -1,0 +1,173 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git branch --show-current && find .docs -type f | head -50 && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>/dev/null; done; cat .docs/sdd/sdd-kit*.json 2>/dev/null
+<<< develop
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+=== constitution
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+=== mission
+# Mission — salas
+
+CLI interna para reservar las salas de reuniones de la oficina. Usuarios: el equipo de oficina y, desde este año, clientes externos que alquilan salas.
+=== tech-stack
+=== roadmap
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | -
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red" && cat skills/sdd-start-task/references/nombrado.md; ls; ls ../runs/p1-1/salas ../runs/p1-1/salas/.docs/sdd; cd ../runs/p1-1/salas; git branch -a; ls src; git log --oneline | head
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `task` o `patch` según el carril. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`.
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la task o el patch, o, si no tiene fila, el que reserva `Get-NextSddId.ps1 -ProjectRoot <raí
+
+>>> Bash: cd "<run>/salas"; cat README.md; ls data tests; head -c 600 data/*; cat src/*.js | head -120; find ../../../kit-red -name 'Get-NextSddId.ps1'
+<<< # salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`, `salas informe <mes>`.
+data:
+usage.csv
+
+tests:
+slots.test.js
+room,duration
+Norte,2 h
+Sur,1.5 h
+Norte,1 h
+import { readFileSync } from 'node:fs';
+
+// Convierte la duración de una fila de data/usage.csv a horas.
+export function toHours(duration) {
+  return parseFloat(duration);
+}
+
+export function usageReport(csvPath) {
+  const rows = readFileSync(csvPath, 'utf8').trim().split('\n').slice(1);
+  const totals = {};
+  for (const row of rows) {
+    const [room, duration] = r
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-templates/scripts"; sed -n 1,60p Get-NextSddId.ps1
+<<< <#
+.SYNOPSIS
+  Reserva (con -Reserve) o propone el siguiente id SDD (task/patch) para un proyecto en modo ids.mode=sequence.
+.DESCRIPTION
+  Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
+  Con -Reserve toma un cerrojo en el directorio común de git y consume los ids en el contador sdd-ids, que comparten
+  todos los worktrees de la máquina: un id reservado no vuelve a salir aunque el trabajo se abandone. Sin -Reserve
+  solo propone el id y no escribe nada.
+  El escaneo inicializa o corrige el contador: lee specs/ y el roadmap del
+
+>>> Bash: cd "<run>/salas"; pwsh -NoProfile -File ../../../kit-red/skills/sdd-templates/scripts/Get-NextSddId.ps1 -ProjectRoot . -Reserve -Count 5
+<<< 0014
+0015
+0016
+0017
+0018
+
+>>> Bash: cd "<run>/salas"; python3 - <<'E' 2>/dev/null || pwsh -NoProfile -Command "echo nopython"
+E
+cat > /tmp/ins.txt <<'E'
+| 0014 | Clientes externos: `reservar` recibe cliente y fecha; el equipo interno no factura. Base de las cuatro siguientes | ⏳ |
+| 0015 | Tarifa por hora distinta por sala (`data/tarifas.csv`) y coste de cada reserva | ⏳ (tras 0014) |
+| 0016 | `salas facturar <cliente> <mes>`: una factura mensual por cliente con las reservas del mes | ⏳ (tras 0014, 0015) |
+| 0017 | `salas pagar <factura>`: estado de factura pendiente/pagada | ⏳ (tras 0016) |
+| 0018 | Bloquear `reservar` al cliente con una factura impagada a más de 30 días | ⏳ (tras 0017) |
+
+E
+awk 'FNR==NR{ins=ins $0 "\n"; next} /^\| 0013 \|/{print; printf "%s", ins; next} {print}' /tmp/ins.txt .docs/sdd/roadmap.md > /tmp/r.md
+# quitar línea vacía duplicada tras el bloque
+cat > /tmp/dec.txt <<'E'
+
+### Cobro a clientes externos (0014–0018) — decisiones ya tomadas
+
+Sin interlocutor disponible; el dev-lead puede revertirlas al aprobar cada spec.
+
+- Orden fijo: 0014 → 0015 → 0016 → 0017 → 0018. 0015 solo depende de la sala, pero 0016 necesita ambas.
+- Hoy una reserva no guarda cliente ni fecha; 0014 lo añade. Solo los clientes externos se facturan.
+- Moneda EUR; tarifa por hora por sala, sin tramos ni descuentos. Las horas se cobran tal cual (1,5 h = 1,5 × tarifa).
+- La factura se emite bajo demanda y congela precios: un cambio de tarifa posterior no la altera. No incluye reservas canceladas.
+- Plazo de pago: 30 días naturales desde la emisión. Pasado el plazo, el cliente no puede reservar hasta pagar; pagar levanta el bloqueo. Las reservas ya hechas se mantienen.
+- Fuera de alcance: IVA, envío de facturas, pagos parciales, recordatorios de impago.
+- Cada task lleva su spec y plan al arrancarla con `sdd-start-task`; no se crean ramas ni carpetas hasta entonces.
+E
+awk 'FNR==NR{d=d $0 "\n"; next} /^## Backlog/{printf "%s\n", d} {print}' /tmp/dec.txt /tmp/r.md > .docs/sdd/roadmap.md
+sed -n 1,35p .docs/sdd/roadmap.md
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: bzwg5qwrh). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0062-plan-entry-be24c358-5880-40fc-bfb7-1f7e1b6bf0ea-scratchpad-runs-p1-1-salas\1b1882e2-6102-4d8a-9a93-5ae959b2dc23\tasks\bzwg5qwrh.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\salas; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Bash: cd "<run>/salas"; git status --short; head -30 .docs/sdd/roadmap.md
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| — | Recordatorio el día antes de una reserva | equipo de oficina |
+| — | Reservas recurrentes (cada lunes) | equipo de oficina |
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| `src/slots.js` no tiene tests de franjas límite (`00-24`) | bajo | task |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2
+
+>>> Edit: <run>\salas\.docs\sdd\roadmap.md
+
+>>> TaskStop: {"task_id":"bzwg5qwrh"}
+<<< The file <run>\salas\.docs\sdd\roadmap.md has been updated successfully.
+<<< {"message":"Successfully stopped task: bzwg5qwrh (cd \"<run>/salas\"; python3 - <<'E' 2>/dev/null || pwsh -NoProfile -Command \"echo nopython\"\nE\ncat > /tmp/ins.txt <<'E'\n| 0014 | Clientes externos: `reservar` recibe cliente y fecha; el equipo interno no factura. Base de las cuatro siguientes | ⏳ |\n| 0015 | Tarifa por hora distinta por sala (`data/tarifas.csv`) y coste de cada reserva | ⏳ (tras 0014) |\n| 0016 | `salas facturar <cliente> <mes>`: una factura mensual por cliente con las reservas del mes | ⏳ (tras 0014, 0015) |\n| 0017 | `salas pagar <factura>`: estado de factura pendiente/pa
+
+=== RESULTADO (12 turnos, 0.3683446 $)
+Organizado en el roadmap (`.docs/sdd/roadmap.md`) como 5 tasks con id reservado (0014–0018). No he creado ramas ni specs, y el cambio del roadmap no está commiteado.
+
+| Id | Task | Depende de |
+| --- | --- | --- |
+| 0014 | `reservar` recibe cliente y fecha; el equipo interno no factura | — |
+| 0015 | Tarifa por hora por sala (`data/tarifas.csv`) y coste de cada reserva | 0014 |
+| 0016 | `salas facturar <cliente> <mes>`: una factura mensual por cliente | 0014, 0015 |
+| 0017 | `salas pagar <factura>`: factura pendiente o pagada | 0016 |
+| 0018 | Bloquear `reservar` si hay una factura impagada a más de 30 días | 0017 |
+
+**Por qué 5 tasks y no una:** el enunciado prevé más de 3 tasks internas, así que el kit pide partirlo. Además hoy una reserva no guarda cliente ni fecha (`reserve()` devuelve solo `{room, slot}`), y sin eso no se puede facturar nada. Por eso 0014 va primero. Como van en cadena, casi no se pueden paralelizar. Una vez hecha 0014, 0015 puede ir en paralelo con lo que quede de la base.
+
+**Decisiones que he tomado yo** (también en el roadmap, para que el dev-lead las revierta al aprobar cada spec):
+- Moneda EUR, tarifa lineal por hora de cada sala, sin tramos ni descuentos. 1,5 h se cobran como 1,5 × tarifa.
+- La factura se emite bajo demanda y congela precios: cambiar la tarifa después no la altera. No incluye reservas canceladas.
+- El plazo son 30 días naturales desde la emisión. Pasado el plazo no se puede reservar hasta pagar, y pagar levanta el bloqueo. Las reservas ya hechas se mantienen.
+- Fuera de alcance: IVA, envío de facturas, pagos parciales y recordatorios de impago.
+
+**Cómo se arranca cada una:** con `sdd-start-task`, empezando por 0014. En el perfil `delegate` cada spec pide su aprobación explícita. Reservar 5 ids consume el contador aunque alguna task no se haga.

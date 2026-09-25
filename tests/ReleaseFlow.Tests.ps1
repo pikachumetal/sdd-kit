@@ -13,7 +13,7 @@ Describe 'Carril release opcional' {
   }
 
   It 'las dos skills del carril leen el campo de destinatario' {
-    Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'hasRecipient'
+    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'hasRecipient'
     Get-KitFile 'skills/sdd-end-release/SKILL.md' | Should -Match 'hasRecipient'
   }
 
@@ -39,7 +39,7 @@ Describe 'sdd-end-release es solo el corte' {
     $script:EndRelease | Should -Not -Match 'feedback\.md'
   }
 
-  It 'remite el feedback de una reunión a sdd-plan' {
-    $script:EndRelease | Should -Match 'sdd-plan'
+  It 'remite el feedback de una reunión a sdd-roadmap' {
+    $script:EndRelease | Should -Match 'sdd-roadmap'
   }
 }

@@ -82,17 +82,17 @@ El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, r
 | --- | --- |
 | `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
+| `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
 | `sdd-start-task` | El carril completo: contexto, spec, plan, tasks, con gate de aprobación en cada paso. |
 | `sdd-end-task` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
 | `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria. |
 | `sdd-end-patch` | Cierre del patch. El merge lo decides tú. |
-| `sdd-start-release` | Abre la siguiente release con el inventario ordenado y sus bloqueos. El scope lo decides tú; solo se refina lo inmediato. |
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El tag lo confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 20 plantillas canónicas y el script que regenera el registro de estimaciones. |
+| `sdd-templates` | Las 21 plantillas canónicas y el script que regenera el registro de estimaciones. |
 
 ## Cómo está escrito
 

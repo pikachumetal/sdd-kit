@@ -83,10 +83,10 @@ Describe 'Configuración y log que deja la init' {
     $skill | Should -Match 'estimation-log nace con filas'
   }
 
-  It 'la migración a v1.2.0 ordena ids, control, configuración, memoria y marcador' {
+  It 'la migración a v1.2.0 ordena ids, control, configuración, memoria, la retirada de sdd-start-release y marcador' {
     $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
     $steps = [regex]::Matches($migration, '(?m)^\d\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
-    $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', 'Marcador')
+    $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', '`sdd-start-release` retirada', 'Marcador')
   }
 
   It 'el paso de memoria nombra la carpeta, el índice y el gate de borrado' {
@@ -122,11 +122,11 @@ Describe 'Tabla de release con Ficheros que toca' {
       Should -Match ([regex]::Escape('| id | Task | Origen | Ficheros que toca | Estado |'))
   }
 
-  It 'sdd-start-release escribe la sección con esa tabla' {
-    Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'Ficheros que toca'
+  It 'sdd-roadmap escribe la sección con esa tabla' {
+    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'Ficheros que toca'
   }
 
-  It 'sdd-start-release no deja la celda de ficheros por definir' {
-    Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'nunca «por definir»'
+  It 'sdd-roadmap no deja la celda de ficheros por definir' {
+    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'nunca «por definir»'
   }
 }
