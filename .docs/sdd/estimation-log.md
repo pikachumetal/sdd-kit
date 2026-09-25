@@ -81,20 +81,21 @@
 | 2026-09-25 | 0063 | docs | 2 | 1.2 | 0.6 | no medido | 136k | 6.03 | 20260924-221103-task-0063-end-release-cut |
 | 2026-09-25 | 0066 | patch | 0.5 | 0.4 | 0.8 | — | — | — | 20260924-223521-patch-0066-estimation-log-minutes |
 | 2026-09-25 | 0067 | docs | 2.5 | 1.4 | 0.56 | no medido | 324k | 3.65 | 20260924-225643-task-0067-patch-capabilities |
+| 2026-09-25 | 0058 | docs | 2 | 1.3 | 0.65 | no medido | 103k | 8.28 | 20260924-225741-task-0058-session-model-policy |
 | 2026-09-25 | 0069 | patch | 0.5 | 0.8 | 1.6 | — | — | 2.71 | 20260924-231705-patch-0069-scope-brake-registries |
 
-**Factor de calibración** (ratio mediano real/estimado, 72 artefactos): **0.6** · media 0.69
+**Factor de calibración** (ratio mediano real/estimado, 73 artefactos): **0.6** · media 0.69
 
 - p25–p75: 0.43–0.9
-- p80: 0.99 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p80: 0.98 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 29 % · sobreestimadas: 64 % · infraestimadas: 7 %
-- Error absoluto (h): media 0.84 · mediana 0.6
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.58
+- Error absoluto (h): media 0.84 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.63
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 21 | 29 % |
-| 0.5–0.8 | 27 | 38 % |
+| 0.5–0.8 | 28 | 38 % |
 | 0.8–1.25 | 19 | 26 % |
 | 1.25–2 | 5 | 7 % |
 | ≥2 | 0 | 0 % |
@@ -102,7 +103,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 48 | 0.53 | 0.38–0.68 |
+| docs | 49 | 0.53 | 0.38–0.67 |
 | infra/tooling | 9 | 0.53 | 0.38–0.7 |
 | patch | 14 | 1.1 | 0.8–1.3 |
 
@@ -114,6 +115,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — |
-| sin publicar | 49 | 56.15 | 0.64 | 179.44 |
+| sin publicar | 50 | 57.45 | 0.65 | 187.72 |
 
 > Ver `estimation.md`.

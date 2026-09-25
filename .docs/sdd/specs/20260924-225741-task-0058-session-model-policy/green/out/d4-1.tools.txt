@@ -1,0 +1,146 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Read: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md
+
+>>> Glob: .docs/sdd/**/*
+
+>>> Glob: *.json
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Validar el formato de la franja
+5	mode: full
+6	status: draft
+7	created: 2026-09-23
+8	approvers:
+9	  - role: dev-lead
+10	    name: Dev Lead
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Validar el formato de la franja
+15	
+16	## Intent
+17	
+18	`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+19	
+20	## Delta de comportamiento
+21	
+22	### Capacidad: `booking`
+23	
+24	**ADDED — La franja se valida al reservar**
+25	- GIVEN una franja que no casa con `HH-HH`
+26	- WHEN se reserva
+27	- THEN falla con 
+<<< .docs\sdd\constitution.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md
+<<< .docs\sdd\sdd-kit.json
+
+>>> Read: <run>\salas\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+2	
+
+>>> Read: <run>\salas\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	## Art. I — Commits
+4	
+5	Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+6	
+7	## Art. II — Tests
+8	
+9	Suite: `node --test`. Todo verde antes de fusionar.
+10	
+
+>>> Read: <run>\salas\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+6	| --- | --- | --- | --- | --- |
+7	| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+8	| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+9	
+
+>>> Bash: cd "<run>/salas" && ls -la .docs/sdd/ && git ls-files
+<<< total 8
+drwxr-xr-x 1 pikac 197609   0 Sep 25 09:01 ./
+drwxr-xr-x 1 pikac 197609   0 Sep 25 09:01 ../
+-rw-r--r-- 1 pikac 197609  29 Sep 25 09:01 changelog.md
+-rw-r--r-- 1 pikac 197609 197 Sep 25 09:01 constitution.md
+-rw-r--r-- 1 pikac 197609 330 Sep 25 09:01 roadmap.md
+-rw-r--r-- 1 pikac 197609 212 Sep 25 09:01 sdd-kit.json
+drwxr-xr-x 1 pikac 197609   0 Sep 25 09:01 specs/
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+
+>>> Read: <run>\salas\src\slots.js
+<<< 1	export function reserve(room, slot) {
+2	  return { room, slot };
+3	}
+4	
+
+>>> Read: <run>\salas\tests\slots.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('reserva una sala en una franja', () => {
+6	  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+7	});
+8	
+
+>>> Read: <run>\salas\README.md
+<<< 1	# salas
+2	
+3	CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+4	
+
+>>> Edit: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md
+<<< The file <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md
+<<< The file <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (15 turnos, 0.6697878000000002 $)
+Ahora: presento la spec de la 0012 para que la apruebes. Queda: tu aprobación. Después escribo el plan sin más paradas, porque el perfil es `delegate`. Unos 5 minutos.
+
+## Decisiones que he tomado yo: valida estas
+
+Al repasar la spec contra el roadmap y el código he cambiado dos cosas. Todo está en `.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md`:
+
+1. **He quitado el escenario de «consultar libres» y lo he pasado a «No entra».** `src/slots.js` solo exporta `reserve` y el comando `libres` no existe en el código, aunque el README lo anuncie. Además, la fila 0012 del roadmap dice solo «al reservar». Si lo quieres dentro, hay que crear `libres` primero, y eso ya no encaja en una task de tamaño S.
+2. **He añadido un escenario para una franja válida** (`Norte` + `10-12` devuelve `{ room: 'Norte', slot: '10-12' }`). Así se comprueba que la validación no rompe lo que ya funcionaba.
+3. **Formato: `^\d{2}-\d{2}$`, dos dígitos a cada lado.** `9-11` da error. `25-30` y `12-10` pasan, porque el rango de horas y el orden inicio < fin quedan fuera. Es lo que pide el título de la spec (validar el formato). Si quieres que también rechace `25-30` y `12-10`, dímelo y lo meto en esta misma task.
+4. **Cómo falla:** `reserve` lanza un `Error` con el mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+## Resto
+
+- **Carril y modo:** task en modo full, rama `feature/0012` y fila pendiente en el roadmap.
+- **Perfil:** `delegate`, que sale de `.docs/sdd/sdd-kit.json` (proyecto). No hay `sdd-kit.local.json`.
+- **Review de la spec:** ninguna. Es un único fichero y la validación es un regex. El repaso de coherencia lo he hecho yo, y ha dado los puntos 1 a 3.
+- **Sin commitear:** la edición de la spec. Irá en el commit de apertura, junto con el plan.
+
+## Modelo de la sesión
+
+Esta sesión va con Opus 5.5. Si el plan sale en Native, la sesión implementa ella misma todas las tasks, y eso va bien en gama media (Sonnet con effort medium). Bajar solo el effort de Opus no es gama media. Yo no puedo cambiarme el modelo, y en `delegate` no hay otra parada después de aprobar donde puedas hacerlo tú.
+
+Opciones:
+- **A (recomendada):** «Apruebo».
+- **B:** «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media».
+- **C:** «Cambios», diciendo cuáles.
+
+¿Apruebas la spec (A, B o C)?
