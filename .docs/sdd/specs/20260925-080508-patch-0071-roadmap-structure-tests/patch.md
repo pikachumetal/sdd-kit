@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: feature/0071-roadmap-structure-tests
-commit: <hash>
+commit: 9f0b902
 ---
 
 # Patch 0071 — nada comprueba la estructura del roadmap
