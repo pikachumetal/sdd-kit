@@ -1,6 +1,6 @@
 ---
 name: sdd-templates
-description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, patch, data-model, research, feedback de release, release notes) o un documento de SDD del proyecto (mission, constitution, tech-stack, architecture, roadmap, estimation, changelog) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
+description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, patch, propuesta, data-model, research, feedback de release, release notes) o un documento de SDD del proyecto (mission, constitution, tech-stack, architecture, roadmap, estimation, changelog) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
 user-invocable: false
 ---
 
@@ -17,6 +17,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Solo si el plan tiene >1 task (registro vivo) |
 | [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Cierre de toda task |
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Carril patch (único artefacto) |
+| [proposal-template.md](templates/proposal-template.md) | `proposal.md` | Carril `proposal`: la escribe `sdd-plan` para algo grande o una reunión con el cliente; histórica, con enmiendas fechadas |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Opcional: cambios de datos que no caben en el plan |
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
@@ -45,7 +46,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 Reglas al usarlas:
 
 - **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.
-- Los artefactos de task/patch viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
+- Los artefactos de task, patch y propuesta viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|patch|proposal)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
 - Las secciones marcadas *(si el módulo está activo)* se rigen por los predicados del proyecto (`estimation.md`, `changelog.md` presentes o no).
 - **Modo lite**: la spec se calca de la MISMA plantilla ligera (decisiones · Intent/Scope/Approach · delta · aprobaciones) y añade el bloque «Estimación y esfuerzo», que en modo full vive en `plan.md`. No existe ni se crea un `spec-lite-template.md`: una segunda plantilla es deriva instantánea (Art. VIII).
 - Al redactar el artefacto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales del proyecto (`tech-stack.md`, `constitution.md`).

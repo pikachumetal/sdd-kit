@@ -9,7 +9,7 @@ source: <demo/reunión con fecha, o "sin sesión de feedback">
 
 > Acta ÚNICA por release: inventario del feedback + triage + retro, en este orden. La fuente
 > (transcripción, notas) se archiva en la misma carpeta y se enlaza aquí. La crea `sdd-end-release`;
-> la lee `sdd-start-release` al abrir la siguiente. Borra los bloques de ayuda (`>`) al redactar.
+> la lee `sdd-plan` al preparar la siguiente. Borra los bloques de ayuda (`>`) al redactar.
 
 Fuente: <sesión + fecha> ([archivada al lado](<fichero-fuente>)).
 
