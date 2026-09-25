@@ -30,7 +30,7 @@ created: <YYYY-MM-DD>
 
 ## Fuera de alcance de esta entrega
 
-> Qué se pidió/comentó y NO entra, sin comprometer fechas que el triage no haya decidido.
+> Qué se pidió/comentó y NO entra, sin comprometer fechas que no estén decididas.
 
 ## Próximos pasos
 
