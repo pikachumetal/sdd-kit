@@ -2,7 +2,7 @@
 
 Spec: `.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md` (aprobada, dev-lead, 2026-09-23). Perfil: `delegate`. Modo: full.
 Rama: `feature/0012`. Base de integración: `develop` (sin remoto). BASE de la rama = `b419555`. Apertura = `654dd38` (spec + plan + tasks.md + tests RED; junté los 2 commits previos `514bd58`, `a7ee1a9`).
-Workspace: `C:\Users\pikac\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0026\a6e2ad97-c324-4ac6-9f87-080fc6f05e05\scratchpad\runs\g-w-3\.superpowers\sdd\plan` (ruta POSIX convertida con `cygpath -w`).
+Workspace: `<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0026\a6e2ad97-c324-4ac6-9f87-080fc6f05e05\scratchpad\runs\g-w-3\.superpowers\sdd\plan` (ruta POSIX convertida con `cygpath -w`).
 Sin `.docs/sdd/environments.md`: no hay `env:setup`. Trabajo en el worktree actual (ya aislado, rama `feature/0012`).
 
 ## Comprobaciones previas al despacho

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # uso: subject.sh <n> <copia-del-kit>
-SP="/c/Users/pikac/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0031/90c5479d-0d8a-4a69-b5e0-a6ed5b5bbd13/scratchpad"
+SP="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0031/90c5479d-0d8a-4a69-b5e0-a6ed5b5bbd13/scratchpad"
 N=$1; KIT=$2; RUN="$SP/green/run-$N"
 rm -rf "$RUN"; cp -r "$SP/green/molde" "$RUN"; cd "$RUN" || exit 1
 case "$(pwd)" in */scratchpad/green/run-*) ;; *) echo "ABORT cwd"; exit 1;; esac
