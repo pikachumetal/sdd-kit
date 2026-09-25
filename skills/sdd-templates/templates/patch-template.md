@@ -42,7 +42,9 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ## 4. Verificación
 
-> Distinguir lo verificado por el agente de lo reportado por el usuario.
+> Distinguir lo verificado por el agente de lo reportado por el usuario. Debajo de la tabla, la
+> validación del paso 0 de `sdd-end-patch`: `Validado: <fecha> · «<frase literal>»` o
+> `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>`.
 
 | # | Caso | Resultado |
 | --- | --- | --- |

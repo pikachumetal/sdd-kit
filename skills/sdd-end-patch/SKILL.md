@@ -7,12 +7,18 @@ description: Usar cuando un patch está implementado y verificado y hay que cerr
 
 ## Overview
 
-Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia de una feature. Ligero no significa opcional — son seis pasos y caben en minutos; el séptimo es una oferta y el octavo, el mensaje final.
+Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia de una feature. Ligero no significa opcional — son la validación y seis pasos, y caben en minutos; el séptimo es una oferta y el octavo, el mensaje final.
 
 **Cláusula de escalada**: si el "fix" creció a algo no trivial (varios módulos, interpretación de requisitos), era una task: ciérralo con `sdd-end-task` y deja constancia del cambio de carril.
 
 ## Checklist (crea un todo por paso)
 
+0. **Validación** — antes de tocar nada, y siempre antes del merge del paso 6, aunque el bloque `merge` lo autorice sin preguntar: la fila «Validación» de la [tabla de gates](../sdd-start-task/references/control-profiles.md) vale para el patch. En `pair` y `delegate`, para y presenta el smoke de `patch.md` §4 y un guion de pruebas (pasos numerados, cada uno con una acción y su resultado esperado); pregunta qué ha probado con `AskUserQuestion`, sola en su turno. «Cierra el patch» o «los tests pasan» no son validación: son la orden de cerrar. Tres salidas:
+   - **Validado**: dice qué probó y que funciona, o contesta «sí» sin detalle a esa pregunta, que también es validación. Debajo de la tabla de §4: `Validado: <fecha> · «<frase literal>»`, con `· no detalló qué probó` si fue un «sí» sin detalle.
+   - **Diferido**, con las condiciones de la [validación diferida](../sdd-start-task/references/control-profiles.md#validación-diferida): debajo de la tabla de §4, `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>`, y la fila del patch en el roadmap (paso 4) empieza por `🧪 validación diferida a <disparador> — `.
+   - **No funciona**: no se cierra ni se fusiona. Vuelve al fix (pasos 4 y 5 de `sdd-start-patch`) y el cierre empieza de nuevo.
+
+   En `unattended` no para: la validación queda diferida al smoke de la release, con esa misma forma. Con el usuario ausente en `pair` o `delegate`, el cierre no arranca: deja la rama como está y el merge PENDIENTE.
 1. **`patch.md` finalizado** — commit hash real —el del commit del fix—, verificación con el smoke real (distinguiendo lo verificado por ti de lo reportado por el usuario) y tiempo invertido. Nunca en blanco.
 
    **Capacidades** *(si existe `.docs/sdd/capabilities/`)* — abre la capacidad que describe la pieza que tocó el fix y compárala con lo que hace ahora. Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: el bloque «Capacidades» de `patch.md` dice `Ninguna, porque el fix devuelve <comando> a lo que ya dice <nombre>`, la capacidad no cambia, y si `patch.md` trae la sección de delta vacía de la plantilla, bórrala. Si el fix cambió algo observable que la capacidad dice de otra forma o no dice —una salida, un mensaje, un formato, de dónde lee un dato—, el bloque dice `- Modificadas: <nombre> — cambia «<requisito>»`, escribes el delta en la sección «Delta de capacidad» de `patch.md` y lo fusionas en `capabilities/<capability>.md` igual que el cierre de una task ([aprendizajes-skills.md](../sdd-end-task/references/aprendizajes-skills.md)). Un patch no crea capacidades: si ninguna describe esa pieza, el bloque dice `Ninguna, porque ninguna capacidad describe <pieza>` y lo dices en el mensaje final. Después ejecuta `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Capabilities.ps1" -Path .docs/sdd -Artifact <ruta de patch.md>`: si falla en lo que fusionaste o en el bloque, corrígelo, nunca el validador. Un fallo en una capacidad que el delta no toca no bloquea el cierre: no la edites y dilo en el mensaje final como pendiente del dev-lead.
@@ -36,11 +42,13 @@ Cierre **ligero** de un patch: el subconjunto de `sdd-end-task` sin la ceremonia
 ## Red flags — STOP
 
 - Vas a fusionar sin que el usuario lo haya decidido ni el bloque `merge` de `sdd-kit.json` lo declare, o a fusionar a `main`.
+- Vas a fusionar sin la línea `Validado:` o `Validación diferida:` en `patch.md` §4.
 - La tabla de patches del roadmap no tiene la fila de este patch.
 - `patch.md` sin commit hash o con el tiempo en blanco.
 
 | Racionalización | Realidad |
 | --- | --- |
 | "Es trivial y hay urgencia: fusiono y listo" | La urgencia es la causa nº1 de merges rotos. Fusiona solo si lo decidió el usuario o lo declara el bloque `merge`; si no, deja la rama lista. |
+| "El bloque `merge` y `delegate` me autorizan a fusionar sin preguntar" | Autorizan el merge, no la validación: en `delegate` la validación para siempre. En el patch 0072 se fusionó y publicó sin ella, y hubo que reabrir y fusionar otra vez. |
 | "El roadmap ya se actualizará" | La fila cuesta 30 segundos ahora; luego nadie se acuerda. |
 | "Ya está todo en el patch.md" | El `patch.md` documenta; el changelog y el roadmap indexan. Sin ellos, el patch es invisible. |
