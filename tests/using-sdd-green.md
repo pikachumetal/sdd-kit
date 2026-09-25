@@ -34,4 +34,17 @@ Recuento: **14 de 14 frases, 28 de 28 sujetos**, en su puerta.
 - n = 2 por frase: es la frecuencia observada, no una tasa.
 - Los controles pasan con la skill entera cargada en lugar del router de 150 palabras. La skill tiene 426 palabras, con un tope de 450 que fija `tests/UsingSdd.Tests.ps1`.
 
-Coste: 28 sujetos, 4,00 $. Campaña entera: 46 sujetos y 6,88 $ (más ~0,06 $ de sondas), dentro de la previsión de 50 sujetos y 18 $. Sin ronda de REFACTOR.
+## Control tras la revisión final
+
+La revisión final encontró que la regla del router «planificar sin hacerlo todavía» («apunta en el roadmap», «no lo arranques») no había llegado a la fila de `sdd-roadmap`. Se añadió a esa fila, y la skill quedó en 437 palabras. La medida usa los 4 sujetos que quedaban en el techo, uno por frase, en `refactor/out/`:
+
+| Frase | Puerta esperada | Primera skill | Veredicto |
+| --- | --- | --- | --- |
+| r5 «Apunta en el roadmap lo del filtro por sala, no lo arranques todavía.» | `sdd-roadmap` | `sdd-roadmap` | pasa (frase nueva) |
+| r3 | `sdd-roadmap` | `sdd-roadmap` | control, sin regresión |
+| f1 | `sdd-start-feature` | `sdd-start-feature` | control, sin regresión |
+| f3 | `sdd-start-feature` | `sdd-start-feature` | control, sin regresión |
+
+Los `.args` de estos sujetos confirman que `--setting-sources ""` y `--plugin-dir` de superpowers llegaron a `claude`. r1, r2 y r4, las otras frases de la misma fila, no se volvieron a medir tras la edición: no quedaban sujetos dentro del techo.
+
+Coste: 28 sujetos del GREEN (4,00 $) y 4 de control (0,66 $). Campaña entera: 50 sujetos y 7,54 $ (más ~0,06 $ de sondas), en el techo de sujetos de la previsión (50) y muy por debajo del de coste (18 $).

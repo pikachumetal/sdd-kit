@@ -1,0 +1,100 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a .docs/sdd .docs/sdd/capabilities 2>&1 | head -50
+<<< develop
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat $f.md; done; echo === json; cat sdd-kit.json; ls -a . specs; ls specs/*
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-fix/skills/sdd-start-feature/references" && cat modo-lite.md; sed -n 1,60p control-profiles.md
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No toca schema de datos ni exige migración.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmación explícita de
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs" && cat 20260917-090000-task-0006-free/spec.md | head -40
+<<< # Spec — free
+
+status: done
+
+>>> Bash: cd "<run>/repo" && ls src test; wc -l src/app.js; grep -n "libres\|sala" src/app.js | head -30
+<<< src:
+app.js
+
+test:
+app.test.js
+16 src/app.js
+10:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+13:  return 'salas';
+
+>>> Bash: cd "<run>/repo" && cat src/app.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (9 turnos, 0.21976020000000002 $)
+Ahora: confirmar carril, modo y perfil antes de arrancar. Queda: la spec, con su gate de aprobación (~10 min), y luego implementación y validación (~15 min).
+
+Antes de nada, una pregunta sola para fijar cómo lo llevamos:
+
+**Carril:** feature, no patch ni spike. Es un cambio con comportamiento nuevo: `libres` hoy solo filtra por franja y tú quieres filtrar también por sala.
+
+**Modo:** propongo **lite** (spec corta, sin `plan.md` ni `tasks.md`). Estas son las condiciones del predicado que he comprobado:
+- El flujo ya existe y se lee: `freeRooms` y el comando `libres` en `src/app.js`, con la spec 0006-free como antecedente.
+- No cambia contratos públicos: es un CLI de un solo fichero y nadie más lo consume.
+- No toca schema ni migración: las salas y reservas son datos en memoria.
+- Cabe en un solo módulo: solo `src/app.js` y `test/app.test.js`.
+- No hay `.docs/sdd/estimation.md`, así que esa condición no aplica.
+
+Prevé una sola task, así que no propongo partirla. Si al implementar cae alguna condición, sube a modo full.
+
+**Perfil:** `delegate`, que sale del nivel de proyecto porque es el default. No hay `sdd-kit.local.json`, ni `profile:` de feature, ni perfil de release. Para y pide tu aprobación en la spec, los desvíos y la validación, y no tiene gate en el plan.
+
+**¿Cómo seguimos?**
+1. **Lite, `delegate` (Recomendada).** Escribo la spec y paro en el gate.
+2. **Lite, `delegate`, y apruebo la spec por delegación, nos vemos en la validación.** Sigo sin parar en la spec; la validación del final no se quita nunca.
+3. **Full, `delegate`.** Spec, plan y tasks completos.
+4. **Otro perfil** para esta feature (`pair` o `unattended`).
