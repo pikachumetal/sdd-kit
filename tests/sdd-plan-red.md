@@ -76,7 +76,7 @@ Además, sin sujetos: `Get-NextSddId.ps1` sobre un repo con solo `specs/20260915
 | Reordenar y dependencias en la fila | ✅ 2/2, en prosa | forma: «tras NNNN» en la plantilla del roadmap; p5 como control |
 | «Prepara la release» sin `sdd-start-release` | ❌ 2/2 a `sdd-end-release` | sí: `description` de `sdd-plan` y router |
 | «tras NNNN» comprobado al arrancar | ✅ 2/2 | **recortada**: sin texto nuevo en `sdd-start-task`; p7 como control |
-| Renombrar la rama tras reservar el id | ✅ 2/2 con colisión visible, ❌ 2/2 sin id | sí |
+| Renombrar la rama tras reservar el id | ✅ 2/2 con el id de otra fila, ❌ 2/2 sin id | sí, solo para la rama sin id; p8 como control |
 | Reproducir con una entrada mínima | ✅ 2/2 | **recortada**: sin texto nuevo en `sdd-start-patch`; p9 como control |
 | Enmienda fechada y nada arrancado al cambiar la definición | ❌ 2/2 y 2/2 | sí |
 | Re-partir solo lo pendiente | ✅ 2/2 | no; p10 lo repite en el GREEN |
