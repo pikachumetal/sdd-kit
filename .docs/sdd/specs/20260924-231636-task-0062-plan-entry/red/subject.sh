@@ -85,6 +85,6 @@ claude -p --model sonnet --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}
 } 2>&1 | sed -e "s#$RUN#<run>#g" -e "s#$(cygpath -m "$RUN")#<run>#g" > "$OUT/$LABEL.state.txt"
 # Solo el roadmap y specs/: con la ruta entera de .docs/, las carpetas de los sujetos pasan de 140 caracteres (PathLength.Tests.ps1).
 mkdir -p "$OUT/$LABEL"; cp "$R/.docs/sdd/roadmap.md" "$OUT/$LABEL/"; [ -d "$R/.docs/sdd/specs" ] && cp -r "$R/.docs/sdd/specs" "$OUT/$LABEL/"
-node "$SPECS/20260924-082516-task-0055-native-default/red/tools.mjs" "$RUNS/$LABEL.jsonl" "$RUN" > "$OUT/$LABEL.tools.txt"
+node "$SPECS/20260923-120510-task-0009-merge-close/red/tools.mjs" "$RUNS/$LABEL.jsonl" "$RUN" > "$OUT/$LABEL.tools.txt"
 node "$SPECS/20260924-082516-task-0055-native-default/red/texts.mjs" "$RUNS/$LABEL.jsonl" > "$OUT/$LABEL.texts.txt"
 echo "[$LABEL] listo"

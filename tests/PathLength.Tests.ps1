@@ -13,7 +13,8 @@ BeforeAll {
   # tilde cuenta doble; quotepath=off evita que git escape esos caracteres en octal.
   $script:PreviousEncoding = [Console]::OutputEncoding
   [Console]::OutputEncoding = [Text.Encoding]::UTF8
-  $script:TrackedPaths = @(git -C $script:KitRoot -c core.quotepath=off ls-files)
+  # También los ficheros sin versionar no ignorados: antes de `git add` el test pasaba en falso (ticket 0063 §3).
+  $script:TrackedPaths = @(git -C $script:KitRoot -c core.quotepath=off ls-files --cached --others --exclude-standard)
 }
 
 AfterAll {
@@ -21,7 +22,7 @@ AfterAll {
   Restore-GitEnv $script:SavedGitEnv
 }
 
-Describe 'Longitud de las rutas versionadas' {
+Describe 'Longitud de las rutas versionadas y por versionar' {
   It 'lista ficheros versionados' {
     $script:TrackedPaths.Count | Should -BeGreaterThan 0
   }

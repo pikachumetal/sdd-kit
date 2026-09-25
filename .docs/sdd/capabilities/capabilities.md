@@ -29,20 +29,24 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - GIVEN una task cerrándose vía `sdd-end-task` con un delta en su spec
 - WHEN se ejecuta el paso de fusión
 - THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye entero el requisito con ese título, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
+- AND la capacidad no gana ninguna línea de historial
+- AND tras fusionar y antes del commit de cierre, `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <spec.md>` pasa; si falla en lo fusionado o en el bloque, se corrige eso, no el validador
+- AND un fallo en una capacidad que el delta no toca (`rooms.md` con un requisito sin THEN, mientras la 0020 fusiona en `bookings`) no bloquea el cierre: `rooms.md` no se edita y el informe final lo lista como pendiente del dev-lead
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 
 ### El cierre de un patch fusiona su delta
 - GIVEN un proyecto con `.docs/sdd/capabilities/bookings.md`, cuyo requisito «Consultar salas libres» dice que `salas libres 10-12` lista las salas sin reserva en esa franja
 - WHEN se cierra con `sdd-end-patch` el patch 0014, cuyo fix hace que `salas libres 10-12` deje fuera las salas en mantenimiento y las liste aparte con `(en mantenimiento)`
-- THEN `patch.md` lleva la sección «Delta de capacidad» con `MODIFIED — Consultar salas libres` y el bloque entero del requisito con el cambio
-- AND `bookings.md` sustituye ese requisito y añade a «Historial» `- <fecha de cierre> — <carpeta del patch 0014> — MODIFIED Consultar salas libres`
+- THEN `patch.md` abre con `## Capacidades` y `- Modificadas: \`bookings\` — cambia «Consultar salas libres»`, y lleva la sección «Delta de capacidad» con `MODIFIED — Consultar salas libres` y el bloque entero del requisito con el cambio
+- AND `bookings.md` sustituye ese requisito, sin línea de historial
+- AND `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <patch.md>` pasa antes del commit de cierre, salvo en una capacidad que el delta no toca: esa no se edita y el mensaje final la lista como pendiente del dev-lead
 - AND el cambio de `bookings.md` va en el commit de cierre del patch, y el fix con su `patch.md` queda en un solo commit
-- AND si ninguna capacidad describe la pieza que cambió, no se crea ninguna y el mensaje final lo dice
+- AND si ninguna capacidad describe la pieza que cambió, no se crea ninguna, el bloque dice `Ninguna, porque ninguna capacidad describe <pieza>` y el mensaje final lo dice
 
 ### Un patch que devuelve el comportamiento a la capacidad no lleva delta
 - GIVEN `bookings.md` con la regla «Límites: una reserva dura como máximo 2 h»
 - WHEN se cierra el patch 0013, cuyo fix hace que `salas reservar Norte 10-13` se rechace, como ya decía la capacidad
-- THEN `bookings.md` no cambia y `patch.md` no lleva sección de delta ni línea de «sin delta»; si la traía vacía de la plantilla, se borra
+- THEN `bookings.md` no cambia, y `patch.md` lleva en su bloque `## Capacidades` la línea `Ninguna, porque el fix devuelve \`reservar\` a lo que ya dice \`bookings\`` y ninguna sección de delta; si la traía vacía de la plantilla, se borra
 
 ### Brownfield no vuelca `capabilities/`
 - GIVEN un proyecto existente inicializado con `sdd-init-brownfield`, aunque el usuario pida generar las capacidades desde el código
@@ -61,7 +65,7 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - WHEN el agente atiende la petición
 - THEN antes de escribir ningún fichero propone la partición (slugs en inglés kebab-case, sustantivos del dominio) y espera la aprobación
 - AND presenta cada capacidad para su aprobación, como los documentos de anclaje
-- AND cada capacidad lleva en «Historial» la línea `- <YYYY-MM-DD> — init — ADDED volcado inicial desde el código`
+- AND ninguna capacidad lleva sección de historial
 - AND si no puede leer el código entero en la sesión, lo dice y no vuelca
 - AND el agente no propone el volcado si el usuario no lo pide
 
@@ -75,25 +79,34 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - WHEN existe `capabilities/<capability>.md`
 - THEN la respuesta se ancla en ese fichero, no en la reconstrucción a partir de specs históricas
 
+### La spec y el patch declaran sus capacidades al principio
+- GIVEN un proyecto con `capabilities/bookings.md` y la fila 0021 «Cancelar una reserva: `salas cancelar <sala> <franja>` libera la franja»
+- WHEN se escribe la spec de la 0021
+- THEN la spec abre, tras el título, con `## Capacidades` y la línea `- Modificadas: \`bookings\` — añade «Cancelar una reserva»`, escrita tras listar `capabilities/` y con el nombre exacto del fichero (`bookings`, no `reservations` ni `booking`)
+- AND cada capacidad del bloque tiene su subsección `### Capacidad: \`<nombre>\`` en el delta, y ninguna subsección del delta falta en el bloque
+- AND una capacidad que no existe en `capabilities/` va como `- Nuevas: \`<nombre>\` — <qué cubre>`, y su creación aparece también en «Decisiones que he tomado yo»
+- AND un cambio sin comportamiento observable lleva `Ninguna, porque <motivo>` (refactor, herramientas, docs) y no lleva delta
+- AND `patch.md` abre con el mismo bloque; un patch no lleva «Nuevas»
+
+### Una capacidad no guarda historial
+- GIVEN `capabilities/bookings.md` después de fusionar el patch 0014 y la task 0020
+- WHEN se abre el fichero
+- THEN tiene `## Requisitos` y, si aplica, `## Reglas de la capacidad`, y ninguna sección `## Historial`
+- AND quién cambió cada requisito se lee en git (`git log -p -- .docs/sdd/capabilities/bookings.md`) y en la spec o el `patch.md` que lo declara en su bloque «Capacidades»
+
+### El validador de capacidades
+- GIVEN `.docs/sdd/capabilities/bookings.md` cuyo requisito `### Consultar salas libres` tiene GIVEN y WHEN pero no `- THEN`
+- WHEN se ejecuta `pwsh -NoProfile -File <sdd-templates>/scripts/Test-Capabilities.ps1 -Path .docs/sdd`
+- THEN sale con código 1 y escribe `bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)`
+- AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) en la capacidad; un bloque `**Reglas de la capacidad**` en negrita, que es la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
+- AND ante `## Historial` el mensaje es `bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0`
+- AND con `-Artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
+- AND sin fallos escribe `Capacidades válidas: <n>` y sale con 0; sin carpeta `capabilities/`, o con la carpeta vacía, y sin `-Artifact`, escribe `Sin capacidades que validar` y sale con 0
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el listado de la carpeta es el índice.
 - **Idioma de los nombres**: slug en inglés kebab-case; el contenido, en el idioma que fija la constitution del proyecto.
 - **Límites**: no aplica.
-- **Avisos**: no aplica.
+- **Avisos**: `Test-Capabilities.ps1` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`.
 - **Regla ante conflicto**: entre una capacidad y un documento de anclaje, manda la capacidad.
-
-## Historial
-
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED El nombre de una capacidad nueva es un sustantivo inglés en kebab-case
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED El comportamiento observable vive solo en `capabilities/`
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED El delta declara el comportamiento por capacidad (desde `task-flow`, con el `MODIFIED` de bloque entero)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED El cierre fusiona el delta en la verdad viva (desde `task-flow`, con la sustitución entera)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED Brownfield no vuelca `capabilities/` (desde `task-flow`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED Los documentos de anclaje nombran `capabilities/` (desde `task-flow`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — ADDED La consulta lee la capacidad, no las specs
-- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — MODIFIED Brownfield no vuelca `capabilities/` (añade la explicación al usuario que pide el volcado)
-- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED Ninguna init crea `capabilities/` vacía
-- 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED El volcado inicial es una excepción de greenfield (desde `task-flow`)
-- 2026-09-25 — 20260924-204639-task-0060-testable-tasks — MODIFIED El delta declara el comportamiento por capacidad (escenarios con datos; reglas con su valor completo)
-- 2026-09-25 — 20260924-225643-task-0067-patch-capabilities — ADDED El cierre de un patch fusiona su delta · ADDED Un patch que devuelve el comportamiento a la capacidad no lleva delta

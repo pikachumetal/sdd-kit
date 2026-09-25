@@ -5,7 +5,8 @@
 > 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
 >    la crean `sdd-end-task` ni `sdd-end-patch` por su cuenta.
 > 3. `sdd-end-task` fusiona el delta de la spec, y `sdd-end-patch` el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
->    requisito que tiene ese mismo título, `REMOVED` lo quita.
+>    requisito que tiene ese mismo título, `REMOVED` lo quita. La capacidad no guarda historial: quién cambió
+>    qué lo dicen git y el bloque «Capacidades» de cada spec o `patch.md`.
 > 4. Las init no vuelcan: la carpeta `capabilities/` no se crea al inicializar y crece task a task,
 >    con la primera que toque cada capacidad. Única excepción: el volcado inicial de `sdd-init-greenfield`
 >    (paso 6), a petición del usuario y con la partición aprobada antes. Brownfield no vuelca nunca.
@@ -36,12 +37,3 @@
 - **Límites**: <topes, profundidades, tamaños | no aplica>
 - **Avisos**: <qué se avisa al usuario y cuándo | no aplica>
 - **Regla ante conflicto**: <qué manda cuando dos vías dan el mismo dato | no aplica>
-
-## Historial *(opcional)*
-
-> Una línea por fusión de `sdd-end-task` o `sdd-end-patch`, más reciente arriba. Útil para auditar cómo llegó la
-> capacidad a su estado actual sin bucear en las specs históricas. Una capacidad nacida del volcado
-> inicial de una init greenfield empieza con esta línea:
-> - <YYYY-MM-DD> — init — ADDED volcado inicial desde el código
-
-- <YYYY-MM-DD> — <carpeta de la task o del patch> — ADDED/MODIFIED/REMOVED <título>

@@ -165,10 +165,6 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN el hilo despacha cada revisor
 - THEN el despacho lleva `subagent_type: sdd-kit:effort-medium` y `model: sonnet`
 
-**Reglas de la capacidad**
-- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
-- **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
-
 ### En Windows, el workspace de ejecución se usa en su ruta Windows
 - GIVEN Windows y la ruta que imprimen `sdd-workspace`, `task-brief` o `task-start` de superpowers en forma POSIX (empieza por `/`, por ejemplo `/tmp/claude/…` o `/d/code/…`)
 - WHEN el agente va a escribir o leer por primera vez en ese workspace (el ledger, un brief, un informe)
@@ -254,62 +250,10 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - WHEN el agente escribe su línea `Ejecución`
 - THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.»
 
-## Historial
+## Reglas de la capacidad
 
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED El delta declara el comportamiento por capacidad
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED Lo técnico no vive en la spec
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED El cierre fusiona el delta en la verdad viva
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED Brownfield no vuelca `funcional/`
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — MODIFIED Los documentos de anclaje nombran `funcional/`
-- 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La consulta lee la capacidad, no las specs
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La spec propone su propio nivel de review por complejidad
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La review adversarial tensa la spec antes del gate
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El plan presenta primero las decisiones tomadas sin el usuario
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El artículo de calidad de código viaja a implementadores y revisores
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El trabajo se valida con el usuario antes de cerrar
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED La review de dominio pregunta por el complemento de visibilidad
-- 2026-09-09 — 20260909-131802-task-0000-gates-y-reviews — ADDED El walkthrough registra la review de spec
-- 2026-09-09 — 20260909-173929-task-0000-tests-red-hilo — ADDED Los tests de la spec preceden al implementador
-- 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — MODIFIED El delta declara el comportamiento por capacidad
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED Los documentos de anclaje nombran `capabilities/`
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED Brownfield no vuelca `capabilities/`
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El cierre fusiona el delta en la verdad viva
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El delta declara el comportamiento por capacidad
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED La consulta lee la capacidad, no las specs
-- 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — MODIFIED La spec propone su propio nivel de review por complejidad
-- 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — MODIFIED La review adversarial tensa la spec antes del gate
-- 2026-09-21 — 20260920-220930-task-0011-spec-review-lenses — ADDED La review mira los ejemplos de la spec contra la constitution
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED El delta declara el comportamiento por capacidad (se mueve a `capabilities`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED El cierre fusiona el delta en la verdad viva (se mueve a `capabilities`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED Brownfield no vuelca `capabilities/` (se mueve a `capabilities`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED Los documentos de anclaje nombran `capabilities/` (se mueve a `capabilities`)
-- 2026-09-21 — 20260921-081125-task-0003-cap-lifecycle — REMOVED La consulta lee la capacidad, no las specs (se mueve a `capabilities`)
-- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED La spec propone su propio nivel de review por complejidad
-- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED La review adversarial tensa la spec antes del gate
-- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED El plan presenta primero las decisiones tomadas sin el usuario
-- 2026-09-22 — 20260921-162234-task-0008-control-profiles — MODIFIED El trabajo se valida con el usuario antes de cerrar
-- 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED El walkthrough crece por adendas
-- 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED Un aprendizaje sin destino no se redirige en silencio
-- 2026-09-22 — 20260922-083703-task-0013-postponed-anchor — ADDED Un documento de anclaje que falta se calca de su plantilla
-- 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — MODIFIED El artículo de calidad de código viaja a implementadores y revisores
-- 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — ADDED El implementador no esquiva lo que le frena
-- 2026-09-22 — 20260922-084550-task-0005-dispatch-brief — ADDED Cada task del plan viaja sola
-- 2026-09-23 — 20260922-211605-task-0021-proportional-review — MODIFIED El artículo de calidad de código viaja a implementadores y revisores
-- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED Un umbral superado en una unidad es Minor
-- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED El formato que exige el linter no rompe el contrato de los tests RED
-- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED El revisor final revisa el paquete sin ejecutar la suite
-- 2026-09-23 — 20260922-211605-task-0021-proportional-review — ADDED La spec se repasa antes del gate
-- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Cada task del plan verifica solo sus superficies
-- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED El gate de cierre se ejecuta una vez
-- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una task que cambia la UI se mira en un navegador
-- 2026-09-23 — 20260923-102746-task-0006-task-verification — ADDED Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano
-- 2026-09-23 — 20260923-191212-task-0044-commit-per-milestone — MODIFIED Los tests de la spec preceden al implementador
-- 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El effort declarado viaja en el tipo de agente
-- 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED Sin effort en el harness, el plan lo dice
-- 2026-09-24 — 20260923-213417-task-0031-dispatch-effort — ADDED El revisor de spec se despacha con su effort
-- 2026-09-24 — 20260923-220402-task-0026-superpowers-641 — ADDED En Windows, el workspace de ejecución se usa en su ruta Windows
-- 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED Cada cambio de paso lleva un aviso en llano · Una decisión del dev-lead que sale de la revisión final se pregunta sola · MODIFIED El trabajo se valida con el usuario antes de cerrar («sí» sin detalle)
-- 2026-09-24 — 20260924-105352-task-0057-native-adapt — ADDED Una task Native se registra en el ledger de `executing-plans` · La base se comprueba antes de cada task Native · Los RED de una task Native se apartan y se comparan · El revisor final de Native va con el techo del kit · Sin el tipo de effort, se dice antes del primer despacho · El cierre no repite la revisión final de Native (enmienda: `tasks.md`) · Los minors diferidos llegan al walkthrough · MODIFIED En Windows, el workspace de ejecución se usa en su ruta Windows
-- 2026-09-25 — 20260924-204639-task-0060-testable-tasks — ADDED Cada task de producto acaba en algo que se prueba en la aplicación · En `pair`, cada task cerrada para con su guion de pruebas · MODIFIED El trabajo se valida con el usuario antes de cerrar (guion de pruebas)
-- 2026-09-25 — 20260924-225741-task-0058-session-model-policy — ADDED El gate del plan en `pair` ofrece parar para bajar la sesión a gama media · El gate de la spec en `delegate` ofrece parar tras el plan para bajar la sesión a gama media · Con Native, el plan registra el modelo recomendado para la sesión
+- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
+- **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
+- **Límites**: no aplica.
+- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos.
+- **Regla ante conflicto**: no aplica.

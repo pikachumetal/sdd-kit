@@ -16,7 +16,7 @@ Frentes que se miden leyendo el texto de superpowers o ejecutando sus scripts, s
 - `scripts/sdd-workspace` 6.4.1 termina con `CDPATH= cd -- "$dir" && pwd`: imprime la ruta de Git Bash.
 - Ejecución en Git Bash sobre un repo del scratchpad: `/tmp/claude/D--code--…/scratchpad/probe-ws/.superpowers/sdd/plan`. Sobre este worktree: `/d/code/.worktrees/sdd-kit/0026/.superpowers/sdd/roadmap`.
 - `task-brief` hereda la forma: «wrote /tmp/claude/…/.superpowers/sdd/plan/task-1-brief.md».
-- `cygpath -w` da la forma Windows: `/tmp/claude/x/.superpowers/sdd/plan` → `C:\Users\pikac\AppData\Local\Temp\claude\x\.superpowers\sdd\plan`.
+- `cygpath -w` da la forma Windows: `/tmp/claude/x/.superpowers/sdd/plan` → `<home>\AppData\Local\Temp\claude\x\.superpowers\sdd\plan`.
 
 **Veredicto**: reproducido. La ruta que ve el agente es POSIX, y el `Write` de Claude Code en Windows la resuelve contra la unidad actual (`\tmp\claude\…`), fuera del directorio con permiso: el sujeto del ticket 0006 quedó bloqueado 1 de 2 veces.
 

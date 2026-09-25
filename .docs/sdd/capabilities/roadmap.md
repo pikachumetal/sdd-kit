@@ -23,13 +23,10 @@ Verdad viva de cómo se marca el roadmap de un proyecto: qué escriben los cierr
 - THEN las celdas que lo afirman se reescriben con la medición nueva, su fecha y su evidencia
 - AND la fila ya no afirma el estado contradicho: añadir la re-medición y dejar el texto viejo no cuenta
 
-**Reglas de la capacidad**
+## Reglas de la capacidad
+
 - **Dónde viven los datos**: el formato de cierre, en el bloque de ayuda de «Deuda técnica» de `roadmap-template.md` de `sdd-templates`; los cierres lo citan. La cabecera de la tabla de release, en el bloque de ayuda de la sección «Release N» de la misma plantilla.
 - **Idioma de los nombres**: estados `saldada` y `parcial`, en castellano, como el resto del roadmap.
+- **Límites**: no aplica.
+- **Avisos**: no aplica.
 - **Regla ante conflicto**: una fila lleva un solo prefijo; un cierre posterior lo sustituye.
-
-## Historial
-
-- 2026-09-22 — 20260922-153902-task-0018-roadmap-closing — ADDED Cerrar una fila de deuda o de backlog deja un prefijo contable
-- 2026-09-23 — 20260922-211157-task-0019-init-files — ADDED Cada task de una release declara los ficheros que toca
-- 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED Una re-medición que contradice una fila la reescribe

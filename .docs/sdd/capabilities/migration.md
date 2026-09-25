@@ -37,10 +37,6 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - AND si el proyecto no tiene `funcional/`, el paso se salta y se dice — la migración es idempotente
 - AND los nombres de capacidad en castellano se presentan al dev-lead con su propuesta en inglés: el sustantivo del dominio es suyo, no del kit
 
-**Reglas de la capacidad**
-- **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.
-- **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case.
-
 ### La migración a v1.2.0 pregunta el modo de ids
 - GIVEN un proyecto que migra a v1.2.0 y cuyo `sdd-kit.json` no tiene campo `ids`
 - WHEN se aplica `migrations/v1.2.0.md`
@@ -74,24 +70,18 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - AND la suite falla si una clave declarada no aparece literal en `sdd-init-greenfield` o en `sdd-init-brownfield`, contando su `SKILL.md`, sus `references/` y los documentos que estos enlazan, `sdd-config` incluido
 - AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en una init o en una migración, o si una de ellas no nombra `sdd-config`
 
-## Historial
+### La migración a v2.0.0 quita el historial de las capacidades
+- GIVEN un proyecto en el kit v1.2.0 con `capabilities/bookings.md` terminado en `## Historial` con dos líneas
+- WHEN se migra al kit v2.0.0
+- THEN `bookings.md` pierde la sección `## Historial` entera, con su ayuda y sus líneas, y nada más, sin gate
+- AND la verificación de la migración ejecuta `Test-Capabilities.ps1 -Path .docs/sdd`; si falla por otra cosa que el historial (un bloque de reglas del delta pegado, un requisito sin escenario), el informe lo lista como pendiente del dev-lead, sin tocarlo
+- AND `tests/MigrationInitParity.Tests.ps1` sigue en verde con `v2.0.0.md` en la carpeta
+- AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
-- 2026-09-24 — 20260924-082516-task-0055-native-default — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan (`execution`)
-- 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED El proyecto declara la versión del kit que tiene
-- 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED Cada release con cambio estructural lleva su migración
-- 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED Un proyecto ya inicializado se migra, no se re-inicializa
-- 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED El `funcional.md` heredado se conserva como legado
-- 2026-09-09 — 20260909-105650-task-0000-migracion-consumidores — ADDED La copia local del script de estimación se retira
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED Un proyecto ya inicializado se migra, no se re-inicializa
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — MODIFIED El `funcional.md` heredado se conserva como legado
-- 2026-09-09 — 20260909-210515-task-0000-english-file-names — ADDED Un proyecto que ya migró a v1.0.0 recibe el rename por `v1.1.0.md`
-- 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED El proyecto declara la versión del kit que tiene
-- 2026-09-20 — 20260920-202137-task-0001-task-ids — ADDED La migración a v1.2.0 pregunta el modo de ids
-- 2026-09-22 — 20260921-162234-task-0008-control-profiles — ADDED La migración a v1.2.0 pregunta las claves de control que faltan
-- 2026-09-22 — 20260922-141616-task-0020-init-control-keys — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan
-- 2026-09-23 — 20260922-211157-task-0019-init-files — ADDED La migración a v1.2.0 deja la configuración que deja la init · ADDED La memoria ya guardada se vuelca a los docs antes de borrarse · ADDED Lo que escribe una migración lo reciben también las init
-- 2026-09-23 — 20260923-143450-task-0040-close-push — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan
-- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La migración a v1.2.0 pregunta el modo de ids
-- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La migración a v1.2.0 pregunta las claves de control que faltan
-- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La migración a v1.2.0 deja la configuración que deja la init
-- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED Lo que escribe una migración lo reciben también las init
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.
+- **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case.
+- **Límites**: no aplica.
+- **Avisos**: un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado.
+- **Regla ante conflicto**: no aplica.
