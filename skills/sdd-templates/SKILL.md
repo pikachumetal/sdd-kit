@@ -49,7 +49,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 Reglas al usarlas:
 
 - **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.
-- Los artefactos de task, patch y propuesta viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(task|patch|proposal)-<id>-<slug>/`; los de release, en `.docs/sdd/releases/vX.Y.Z/`.
+- Los artefactos de feature, patch y propuesta viven en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>/` (las carpetas `-task-` anteriores a la 2.0.0 son legado y no se renombran); los de release, en `.docs/sdd/releases/vX.Y.Z/`.
 - Las secciones marcadas *(si el módulo está activo)* se rigen por los predicados del proyecto (`estimation.md`, `changelog.md` presentes o no).
 - **Modo lite**: la spec se calca de la MISMA plantilla ligera (decisiones · Intent/Scope/Approach · delta · aprobaciones) y añade el bloque «Estimación y esfuerzo», que en modo full vive en `plan.md`. No existe ni se crea un `spec-lite-template.md`: una segunda plantilla es deriva instantánea (Art. VIII).
 - Al redactar el artefacto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales del proyecto (`tech-stack.md`, `constitution.md`).

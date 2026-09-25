@@ -144,6 +144,23 @@ Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
     }
   }
 
+  Context 'carril feature' {
+    It 'cuenta las carpetas feature junto a las task y los patches' {
+      (Invoke-NextId (Join-Path $script:Fixtures 'feature-lane')).Id | Should -Be '0081'
+    }
+
+    It 'cuenta una carpeta feature sin ninguna task' {
+      (Invoke-NextId (Join-Path $script:Fixtures 'feature-only')).Id | Should -Be '0080'
+    }
+
+    It 'avisa del mismo id en una carpeta task y otra feature' {
+      $result = Invoke-NextId (Join-Path $script:Fixtures 'mixed-duplicate')
+      $result.Id | Should -BeNullOrEmpty
+      $result.Error | Should -Match '0063'
+      $result.ExitCode | Should -Be 1
+    }
+  }
+
   Context 'proyecto en modo tracker' {
     It 'avisa y no devuelve id con ids.mode tracker' {
       $result = Invoke-NextId (Join-Path $script:Fixtures 'tracker-project')

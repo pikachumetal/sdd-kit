@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Reserva (con -Reserve) o propone el siguiente id SDD (task/patch/proposal) para un proyecto en modo ids.mode=sequence.
+  Reserva (con -Reserve) o propone el siguiente id SDD (feature/patch/proposal) para un proyecto en modo ids.mode=sequence.
 .DESCRIPTION
   Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
   Con -Reserve toma un cerrojo en el directorio común de git y consume los ids en el contador sdd-ids, que comparten
@@ -35,7 +35,7 @@ function Get-EffectiveIdsMode([string]$ProjectRoot) {
   return $mode
 }
 
-$script:SpecFolderIdPattern = '-(?:task|patch|proposal)-(\d{4})[a-z]*-'
+$script:SpecFolderIdPattern = '-(?:feature|task|patch|proposal)-(\d{4})[a-z]*-'
 $script:BranchIdPattern = '(?:^|/)(\d{4})(?:$|-)'
 
 function Get-SpecArtifactIds([string]$ProjectRoot) {

@@ -1,8 +1,8 @@
 ---
-id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
-task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
-parent: <id>          # solo si esta task nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
-proposal: <id>        # solo si esta task sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
 title: <título corto descriptivo>
 mode: full            # full | lite — lo lee sdd-end-task; sin campo = full
 profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto

@@ -48,8 +48,8 @@ Describe 'Carril proposal' {
   }
 
   It 'el nombrado de carpetas incluye el carril proposal' {
-    Get-KitFile 'skills/sdd-start-task/references/nombrado.md' | Should -Match '\(task\|patch\|proposal\)'
-    Get-KitFile 'skills/sdd-templates/SKILL.md' | Should -Match '\(task\|patch\|proposal\)'
+    Get-KitFile 'skills/sdd-start-task/references/nombrado.md' | Should -Match '\(feature\|patch\|proposal\)'
+    Get-KitFile 'skills/sdd-templates/SKILL.md' | Should -Match '\(feature\|patch\|proposal\)'
   }
 
   It 'el roadmap escribe la dependencia en la fila' {

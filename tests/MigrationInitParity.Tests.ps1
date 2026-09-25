@@ -119,7 +119,7 @@ Describe 'Proyecto de referencia' {
 Describe 'Tabla de release con Ficheros que toca' {
   It 'la plantilla del roadmap fija la cabecera de la tabla de release' {
     Get-KitFile 'skills/sdd-templates/templates/roadmap-template.md' |
-      Should -Match ([regex]::Escape('| id | Task | Origen | Ficheros que toca | Estado |'))
+      Should -Match ([regex]::Escape('| id | Feature | Origen | Ficheros que toca | Estado |'))
   }
 
   It 'sdd-roadmap escribe la sección con esa tabla' {

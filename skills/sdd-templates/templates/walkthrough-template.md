@@ -1,6 +1,6 @@
 ---
-id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
-task: <id>
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
 title: Walkthrough — <título de la spec>
 spec: ./spec.md
 plan: ./plan.md
