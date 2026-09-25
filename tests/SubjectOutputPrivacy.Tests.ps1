@@ -1,7 +1,7 @@
 BeforeAll {
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
-  # Lanzador de referencia: subject.sh de la 0039 extrae las salidas con este tools.mjs.
-  $script:Tools = Join-Path $script:KitRoot '.docs/sdd/specs/20260923-120510-task-0009-merge-close/red/tools.mjs'
+  # Extractor de referencia de los sujetos headless (patch 0076).
+  $script:Tools = Join-Path $PSScriptRoot 'headless/extract.mjs'
 
   # El ejecutable real: un shim de node (proto) necesita el home verdadero para arrancar.
   $script:Node = node -e 'console.log(process.execPath)'
@@ -32,12 +32,12 @@ BeforeAll {
 }
 
 Describe 'El lanzador de sujetos oculta el home y el usuario' {
-  It 'tools.mjs los sustituye en el extracto del stream' {
+  It 'extract.mjs tools los sustituye en el extracto del stream' {
     $stream = Join-Path $TestDrive 'stream.jsonl'
     $event = @{ message = @{ content = @(@{ type = 'tool_result'; content = $script:Leaky }) } } | ConvertTo-Json -Depth 5 -Compress
     Set-Content -LiteralPath $stream -Value $event -Encoding utf8NoBOM
 
-    $out = Invoke-Tools @($stream, '/c/runs/x')
+    $out = Invoke-Tools @('tools', $stream, '/c/runs/x')
 
     $out | Should -Not -Match '\balice\b'
     $out | Should -Match '<home>/\.claude/plugins'
@@ -46,8 +46,31 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' {
     $out | Should -Match 'alicemetal/sdd-kit' -Because 'solo se sustituye el usuario como palabra entera'
   }
 
-  It 'tools.mjs --clean filtra la entrada estándar (state.txt)' {
-    $out = Invoke-Tools @('--clean', '/c/runs/x') $script:Leaky
+  It 'extract.mjs texts los sustituye en los mensajes del agente' {
+    $stream = Join-Path $TestDrive 'texts.jsonl'
+    $event = @{ type = 'assistant'; message = @{ content = @(@{ type = 'text'; text = $script:Leaky }) } } | ConvertTo-Json -Depth 5 -Compress
+    Set-Content -LiteralPath $stream -Value $event -Encoding utf8NoBOM
+
+    $out = Invoke-Tools @('texts', $stream, '/c/runs/x')
+
+    $out | Should -Match '--- \[1\]'
+    $out | Should -Not -Match '\balice\b'
+    $out | Should -Match '<home>/\.claude/plugins'
+  }
+
+  It 'extract.mjs clean sustituye la ruta de la campaña en todas sus formas' {
+    $saved = $env:TEMP
+    try {
+      $env:TEMP = 'C:\tmpdir'
+      $forms = 'a C:/tmpdir/runs/x/repo b C:\tmpdir\runs\x c C:\\tmpdir\\runs\\x d /c/tmpdir/runs/x e /tmp/runs/x/repo'
+      $out = Invoke-Tools @('clean', 'C:/tmpdir/runs/x') $forms
+    } finally { $env:TEMP = $saved }
+
+    $out | Should -Be 'a <run>/repo b <run> c <run> d <run> e <run>/repo'
+  }
+
+  It 'extract.mjs clean filtra la entrada estándar (state.txt)' {
+    $out = Invoke-Tools @('clean', '/c/runs/x') $script:Leaky
 
     $out | Should -Not -Match '\balice\b'
     $out | Should -Match '<home>/\.claude/plugins'
@@ -70,13 +93,13 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
   It 'ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario' {
     # X:\Users\…, X:\\Users\\… (JSON), X:/Users/…, /x/Users/… y la carpeta de proyecto X--Users-….
     Find-Leak '(?i)(?:\b[a-z]:|(?<![\w.])/[a-z])(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?![\\/<])|\b[a-z]--Users-(?!<)' |
-      Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tools.mjs --clean de la 0009'
+      Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
   }
 
   It 'ni el usuario de esta máquina suelto (ls -l)' {
     # Del home, no de $USERNAME, que en Git Bash vale SYSTEM (ticket 0068 §5).
     $user = Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME)
     Find-Leak "\b$([regex]::Escape($user))\b" |
-      Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tools.mjs --clean de la 0009'
+      Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
   }
 }
