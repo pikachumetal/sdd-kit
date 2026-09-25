@@ -1,6 +1,6 @@
 # Capacidad — routing
 
-Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y con superpowers instalado. Las cuatro salidas finas (consult, patch, lite, full) las decide después el paso 2 de `sdd-start-task`; esta capacidad cubre solo la primera skill que se invoca.
+Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y con superpowers instalado. Las cinco salidas finas (roadmap, consult, patch, lite, full) las decide después el paso 2 de `sdd-start-task`; esta capacidad cubre solo la primera skill que se invoca.
 
 ## Requisitos
 
@@ -49,3 +49,10 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el agente fija el alcance del fix
 - THEN el patch sigue con B: la sección de síntoma de `patch.md` recoge B como síntoma medido y dice en qué difiere de A, y el fix cubre B
 - AND si no mide ningún fallo, no es este caso: se aplica «Un patch cuyo fallo no se reproduce no se abre»
+
+### Una petición de planificar entra por `sdd-roadmap`
+
+- GIVEN un proyecto con `.docs/sdd/` y el hook de sesión activo
+- WHEN el usuario trae algo para el roadmap sin nombrar ninguna skill: «organízalo para el equipo», «apunta en el roadmap», items del gestor, notas de una reunión, «reordena», «prepara la release 1.3»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`
+- AND con «prepara la release 1.3», no `sdd-end-release`; con «organízalo para el equipo», no `sdd-start-task`

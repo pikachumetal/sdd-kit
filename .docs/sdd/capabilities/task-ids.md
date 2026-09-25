@@ -22,13 +22,14 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 
 ### Tasks y patches comparten una sola secuencia
 - GIVEN un proyecto en modo `sequence`
-- WHEN se asigna el id de una task o de un patch
+- WHEN se asigna el id de una task, de un patch o de una propuesta
 - THEN sale de la misma secuencia correlativa: un id nunca se repite entre carriles
+- AND `Get-NextSddId.ps1` cuenta como usado el id de una carpeta `-proposal-<id>-`: con `specs/20260915-090000-proposal-0020-billing/` y ninguna fila 0020, no propone `0020`
 
 ### En modo secuencia el id lo reserva el hilo principal al planificar
-- GIVEN un proyecto en modo `sequence` con una release en planificación
-- WHEN `sdd-start-release` escribe N tasks nuevas en el roadmap
-- THEN sus ids salen de una sola reserva `Get-NextSddId.ps1 -Reserve -Count N`, y cada fila lleva el suyo
+- GIVEN un proyecto en modo `sequence`
+- WHEN `sdd-roadmap` escribe N filas nuevas en el roadmap, o una propuesta y sus N features
+- THEN sus ids salen de una sola reserva `Get-NextSddId.ps1 -Reserve -Count N` (N + 1 con propuesta), y cada fila lleva el suyo
 - AND el agente que abre el worktree de una task toma el id de su fila, sin reservar ni recalcular
 
 ### Una task no planificada obtiene su id con un script determinista
@@ -66,7 +67,7 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 - AND su `spec.md` (o `patch.md`) lleva `parent: <id>` en el frontmatter y el roadmap le da su fila propia
 
 ### En modo gestor el id es el del ticket
-- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-task`, `sdd-start-patch`, `sdd-start-release`, `sdd-consult`)
+- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-task`, `sdd-start-patch`, `sdd-roadmap`, `sdd-consult`)
 - WHEN el trabajo tiene ticket en el gestor
 - THEN el id es el del ticket, y `0000` cuando el trabajo no tiene ticket
 
@@ -116,6 +117,7 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 - GIVEN un proyecto en modo `sequence` y un arranque de task o de patch sin fila de roadmap
 - WHEN el agente necesita el id
 - THEN lo reserva con `Get-NextSddId.ps1 -Reserve` antes de crear la rama y la carpeta, y usa ese id en las dos
+- AND si ya está en una rama sin id y sin commits propios frente a la rama de integración (`feature/fix-sala`, con la reserva en 0014), la renombra a `feature/<id>-<slug>` con `git branch -m` antes del primer commit y lo dice: el commit del fix sale en `feature/0014-<slug>`, y `feature/fix-sala` ya no existe
 
 ## Reglas de la capacidad
 
@@ -124,4 +126,4 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 - **Límites**: cuatro dígitos con ceros a la izquierda (`0001`–`9999`); `0000` reservado como comodín de «sin ticket» en modo `tracker`. Una reserva que pasaría de `9999` falla sin reservar. `-Count` va de 1 a 99. Una sola máquina: con varias máquinas en `sequence` haría falta un cerrojo en el remoto o el modo `tracker`. Hay un contador por proyecto: `sdd-ids` en la raíz del repositorio y `sdd-ids-<ruta relativa>` en una subcarpeta.
 - **Avisos**: ids duplicados entre artefactos, proyecto en modo `tracker` y ramas omitidas por no ser raíz del repositorio se avisan por salida de error; en los dos primeros casos el script no devuelve id ni toca el contador. El script avisa además por salida de error si el contador no se puede leer (y lo reinicializa) y si no hay repositorio git donde reservar (sin reservar). También avisa si el cerrojo no se libera en el plazo, nombrando al dueño y sin reservar.
 - **Regla ante conflicto**: la fila del roadmap manda. El contador nunca baja: si el escaneo ve un id mayor, gana el escaneo. Si aun así dos trabajos acaban con el mismo id, el segundo en darse cuenta renumera su carpeta y su rama y lo anota en el roadmap.
-- **Contrato de lectura del roadmap**: el script reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en los nombres de artefacto (`task-<id>-`, `patch-<id>-`) y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.
+- **Contrato de lectura del roadmap**: el script reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en los nombres de artefacto (`task-<id>-`, `patch-<id>-`, `proposal-<id>-`) y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.

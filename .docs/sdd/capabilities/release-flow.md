@@ -1,6 +1,6 @@
 # Capacidad — release-flow
 
-Verdad viva del comportamiento observable del carril release del kit: cuándo es opcional, cómo se cierra una publicación y cómo se adapta a si la release tiene destinatario. La declaró la spec de la task 0004 en sus «Decisiones a validar» (decisión 14). Recoge solo lo que esa task tocó o verificó: el resto del carril (retro, colapso con apertura; el acta y el triaje, en `sdd-start-release` hasta que los recoja `sdd-plan`) sigue descrito en las skills `sdd-start-release` y `sdd-end-release` hasta que una task lo traiga aquí.
+Verdad viva del comportamiento observable del carril release del kit: cuándo es opcional, cómo se cierra una publicación y cómo se adapta a si la release tiene destinatario. La declaró la spec de la task 0004 en sus «Decisiones a validar» (decisión 14). Recoge solo lo que esa task tocó o verificó: el resto del carril (retro, colapso) sigue descrito en `sdd-end-release`, y preparar la release y el acta de una reunión, en `sdd-roadmap` y en la capacidad [`planning`](planning.md).
 
 ## Requisitos
 
@@ -18,19 +18,19 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 
 ### El proyecto declara si sus releases tienen destinatario
 - GIVEN un `.docs/sdd/sdd-kit.json` sin `release.hasRecipient`
-- WHEN se ejecuta `sdd-start-release` o `sdd-end-release`
+- WHEN se ejecuta `sdd-roadmap` para preparar una release, o `sdd-end-release`
 - THEN el agente pregunta una sola vez si la release se entrega a alguien distinto de quien la hace, y escribe la respuesta en `release.hasRecipient` sin tocar los demás campos
 - AND con el campo ya presente no se pregunta
 - AND el agente no escribe ni cambia el campo sin una respuesta o petición explícita del usuario
 
 ### El valor vigente del campo es el que se aplica
 - GIVEN un proyecto que cambia `release.hasRecipient` de `true` a `false`, o al revés, aunque sea con una release abierta
-- WHEN se ejecuta `sdd-start-release` o `sdd-end-release`
+- WHEN se ejecuta `sdd-roadmap` para preparar una release, o `sdd-end-release`
 - THEN la skill aplica el valor que tiene el campo en ese momento, sin migración y sin reescribir releases pasadas
 
 ### Sin destinatario no se pregunta si la release está comprometida
 - GIVEN `release.hasRecipient: false`
-- WHEN `sdd-start-release` llega al estado de la release
+- WHEN `sdd-roadmap` llega al estado de la release que prepara
 - THEN el estado es «en preparación» y no se pregunta
 - AND con `true`, la pregunta usa las definiciones: comprometida = scope prometido al destinatario, normalmente con fecha; en preparación = cualquier otro caso
 
@@ -114,13 +114,13 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 ### La reserva se publica antes de arrancar
 - GIVEN un scope replanificado que el usuario ha decidido
 - WHEN el agente escribe las filas en el roadmap
-- THEN las publica en la rama de integración con un commit que solo toca `roadmap.md`, en el worktree donde está sacada (o en uno temporal, en la carpeta de los demás worktrees y con nombre corto, si no está en ninguno)
+- THEN las publica en la rama de integración con un commit que solo toca `roadmap.md`, y el `proposal.md` de la propuesta si la hay, en el worktree donde está sacada (o en uno temporal, en la carpeta de los demás worktrees y con nombre corto, si no está en ninguno)
 - AND lo hace antes de arrancar ninguna de las tasks nuevas
 
 ### El cierre no procesa el feedback de una reunión
 - GIVEN un cierre en el que el usuario aporta la transcripción o las notas de una demo o reunión
 - WHEN se ejecuta `sdd-end-release`
-- THEN no escribe acta ni triaje (`feedback.md`) y dice que ese feedback es entrada de `sdd-plan`
+- THEN no escribe acta ni triaje (`feedback.md`) y dice que ese feedback es entrada de `sdd-roadmap`
 - AND el cierre sigue con sus cinco pasos, sin esperar a que se procese
 
 ### La retro es opcional

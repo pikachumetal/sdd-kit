@@ -12,7 +12,7 @@ Verdad viva de cómo se marca el roadmap de un proyecto: qué escriben los cierr
 - AND `grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` sobre el roadmap lista esa fila si está saldada, y no la lista si es `parcial`
 
 ### Cada task de una release declara los ficheros que toca
-- GIVEN un `sdd-start-release` que escribe la sección «Release N» del roadmap
+- GIVEN un `sdd-roadmap` que escribe la sección «Release N» del roadmap
 - WHEN añade la fila de una task
 - THEN la tabla sigue la cabecera de `roadmap-template.md`, `| id | Task | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» nombra los ficheros o módulos previstos
 - AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra esa columna

@@ -14,6 +14,14 @@ approvers:
 
 # Spec — `sdd-roadmap`, una sola puerta de entrada al roadmap, con el carril `proposal`
 
+## Capacidades
+
+- Nuevas: `planning` — las entradas de `sdd-roadmap`, la propuesta y las reglas del roadmap que fija
+- Modificadas: `release-flow` — destinatario, estado, reserva publicada y feedback de una reunión, con `sdd-roadmap` en lugar de `sdd-start-release` o `sdd-plan`
+- Modificadas: `roadmap` — la sección de release la escribe `sdd-roadmap`
+- Modificadas: `task-ids` — secuencia compartida con las propuestas, reserva al planificar, modo gestor, rama sin id y contrato de lectura
+- Modificadas: `routing` — una petición de planificar entra por `sdd-roadmap`
+
 ## Decisiones que he tomado yo — valida estas
 
 Review de spec: dos revisores Sonnet, una lente cada uno (el dev-lead eligió «Dos revisores Sonnet (Recomendada)», 2026-09-25). Señales: capacidad nueva (`planning`), contrato público (la carpeta `-proposal-` que lee `Get-NextSddId.ps1` y el campo `proposal:`), MODIFIED (nueve requisitos en `release-flow`, `roadmap` y `task-ids`) y tres o más capacidades (cinco). Los tipos `sdd-kit:effort-*` no están en esta sesión: despacho `general-purpose` con `model: sonnet` y la frase «effort: no disponible en este harness, hereda el de la sesión» (ruling).
