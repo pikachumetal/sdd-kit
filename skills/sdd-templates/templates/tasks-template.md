@@ -1,5 +1,5 @@
 ---
-id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
 title: Tasks — <título de la spec>
 spec: ./spec.md
 plan: ./plan.md

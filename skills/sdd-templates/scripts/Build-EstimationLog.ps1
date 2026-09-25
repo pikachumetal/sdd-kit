@@ -94,14 +94,14 @@ function Get-FirstToken([string]$Text, [string]$Fallback) {
   return $Fallback
 }
 
-function Get-TaskId([string]$Content, [string]$Folder) {
-  if ($Content -match '(?m)^task:\s*(\S+)') { return $Matches[1] }
-  if ($Folder -match '^\d{8}-\d{6}-(?:task|patch|hotfix)-([^-]+)-') { return $Matches[1] }
+function Get-ArtifactId([string]$Content, [string]$Folder) {
+  if ($Content -match '(?m)^(?:feature|task):\s*(\S+)') { return $Matches[1] }
+  if ($Folder -match '^\d{8}-\d{6}-(?:feature|task|patch|hotfix)-([^-]+)-') { return $Matches[1] }
   return '—'
 }
 
 function Get-RowDate([string]$Content, [string]$FolderName) {
-  # La carpeta lleva la fecha de apertura; el artefacto, la del cierre. Una task abierta de
+  # La carpeta lleva la fecha de apertura; el artefacto, la del cierre. Una feature abierta de
   # noche y cerrada al día siguiente caería en el día (y la release) equivocados.
   if ($Content -match '(?m)^(?:created|date):\s*(\d{4}-\d{2}-\d{2})\b') { return $Matches[1] }
   if ($FolderName -match '^(\d{4})(\d{2})(\d{2})-\d{6}-') { return "$($Matches[1])-$($Matches[2])-$($Matches[3])" }
@@ -189,7 +189,7 @@ function New-Row([System.IO.DirectoryInfo]$Dir, [pscustomobject]$Artifact) {
   $ratio = if ($null -ne $Artifact.Estimate -and $Artifact.Estimate -gt 0) { $Artifact.Real / $Artifact.Estimate } else { $null }
   return [pscustomobject]@{
     Date           = Get-RowDate $Artifact.Content $Dir.Name
-    Task           = Get-TaskId $Artifact.Content $Dir.Name
+    Id             = Get-ArtifactId $Artifact.Content $Dir.Name
     Type           = $Artifact.Type
     Estimate       = $Artifact.Estimate
     Real           = $Artifact.Real
@@ -395,12 +395,12 @@ function Format-Log([object[]]$Rows, [string]$DocsPath) {
   [void]$builder.AppendLine('<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) — no editar a mano. Regenerar: pwsh -NoProfile -File <sdd-templates>/scripts/Build-EstimationLog.ps1 -Root <proyecto> -->')
   [void]$builder.AppendLine('# Estimation log (estimado vs real)')
   [void]$builder.AppendLine('')
-  [void]$builder.AppendLine('| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |')
+  [void]$builder.AppendLine('| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |')
   [void]$builder.AppendLine('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
   foreach ($row in $Rows) {
     $hours = "$(Format-Number $row.Estimate) | $(Format-Number $row.Real) | $(Format-Number $row.Ratio)"
     $cost = "$(Format-Text $row.ThreadTokens) | $(Format-Text $row.SubagentTokens) | $(Format-Text $row.SubjectCost) | $(Format-Text $row.SessionCost)"
-    [void]$builder.AppendLine("| $($row.Date) | $($row.Task) | $($row.Type) | $hours | $cost | $($row.Folder) |")
+    [void]$builder.AppendLine("| $($row.Date) | $($row.Id) | $($row.Type) | $hours | $cost | $($row.Folder) |")
   }
   Add-CalibrationSection $builder $Rows $DocsPath
   return $builder.ToString()

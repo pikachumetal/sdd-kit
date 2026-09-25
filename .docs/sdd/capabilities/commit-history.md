@@ -2,12 +2,12 @@
 
 ## Propósito
 
-La historia de la rama de una task o de un patch: qué commits quedan al fusionar y qué hash apuntan los artefactos. La receta vive en `skills/sdd-start-task/references/commit-milestones.md`.
+La historia de la rama de una feature o de un patch: qué commits quedan al fusionar y qué hash apuntan los artefactos. La receta vive en `skills/sdd-start-feature/references/commit-milestones.md`.
 
 ## Requisitos
 
-### La apertura de una task queda en un commit
-- GIVEN una task con la spec aprobada y, en full, `plan.md` y `tasks.md` escritos, con uno o más commits desde el `merge-base` con la rama de integración
+### La apertura de una feature queda en un commit
+- GIVEN una feature con la spec aprobada y, en full, `plan.md` y `tasks.md` escritos, con uno o más commits desde el `merge-base` con la rama de integración
 - WHEN el hilo va a escribir los RED de la primera task (en Native, antes de su `task-start`; en lite, a empezar la implementación)
 - THEN desde el `merge-base` la rama tiene un solo commit, con spec, hallazgos de la review de spec, `plan.md` y `tasks.md` (en lite, solo la spec)
 
@@ -18,8 +18,8 @@ La historia de la rama de una task o de un patch: qué commits quedan al fusiona
 - AND el mensaje de ese commit lo escribe el hilo con la convención del proyecto, también cuando el rango ya tenía un solo commit
 - AND el hash que `tasks.md` apunta para la task N es el de ese commit, escrito en el commit del hito siguiente
 
-### El cierre de una task queda en un commit
-- GIVEN las tasks juntadas, la revisión final de rama hecha, el trabajo validado y la documentación de `sdd-end-task` escrita
+### El cierre de una feature queda en un commit
+- GIVEN las tasks juntadas, la revisión final de rama hecha, el trabajo validado y la documentación de `sdd-end-feature` escrita
 - WHEN el hilo va a hacer el merge del cierre
 - THEN desde el commit de la última task la rama tiene un solo commit, con la documentación de cierre y los arreglos de la revisión final y de la validación
 - AND una rama sin merges de sincronización tiene 2 + N commits desde el `merge-base`, con N tasks en el plan (3 en lite)

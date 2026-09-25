@@ -18,7 +18,7 @@ Le dices a Claude lo que quieres y él entra por el carril que toca:
 > añade autenticación con magic link
 ```
 
-Arranca `sdd-start-task`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
+Arranca `sdd-start-feature`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
 
 ```
 > el contador de la home muestra un número de más
@@ -32,7 +32,7 @@ Eso no necesita spec. Va por `sdd-start-patch`: causa raíz primero, un solo doc
 
 Tampoco es trabajo. `sdd-consult` lee la documentación de anclaje y responde, sin crear carpetas ni ramas.
 
-Cuando terminas, `sdd-end-task` escribe el walkthrough, vuelca los aprendizajes a los documentos vivos, actualiza el changelog y el registro de estimaciones, y te pregunta qué has probado antes de dar nada por cerrado.
+Cuando terminas, `sdd-end-feature` escribe el walkthrough, vuelca los aprendizajes a los documentos vivos, actualiza el changelog y el registro de estimaciones, y te pregunta qué has probado antes de dar nada por cerrado.
 
 ## Instalación
 
@@ -67,14 +67,14 @@ Si solo quieres una skill suelta, o usas otro agente:
 
 ```bash
 npx skills add pikachumetal/sdd-kit -a claude-code            # todas
-npx skills add pikachumetal/sdd-kit --skill sdd-start-task    # una
+npx skills add pikachumetal/sdd-kit --skill sdd-start-feature    # una
 ```
 
 Este canal no instala los tipos de agente `agents/effort-*.md`: el plan escribe «effort: no disponible en este harness, hereda el de la sesión».
 
 ### Enrutado automático
 
-El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, recuerda al agente que una petición de trabajo entra por `sdd-start-task` antes que por `brainstorming`, un bug pequeño por `sdd-start-patch` y una pregunta por `sdd-consult`. `npx skills add` no instala hooks: quien use ese canal recibe solo las frases de las `description`.
+El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, recuerda al agente que una petición de trabajo entra por `sdd-start-feature` antes que por `brainstorming`, un bug pequeño por `sdd-start-patch` y una pregunta por `sdd-consult`. `npx skills add` no instala hooks: quien use ese canal recibe solo las frases de las `description`.
 
 ## Las skills
 
@@ -83,8 +83,8 @@ El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, r
 | `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
-| `sdd-start-task` | El carril completo: contexto, spec, plan, tasks, con gate de aprobación en cada paso. |
-| `sdd-end-task` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
+| `sdd-start-feature` | El carril completo: contexto, spec, plan, tasks, con gate de aprobación en cada paso. |
+| `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
 | `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria. |
 | `sdd-end-patch` | Cierre del patch. El merge lo decides tú. |
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El tag lo confirmas tú. |
@@ -102,7 +102,7 @@ Esto tiene una consecuencia que no esperaba cuando empecé: **más de la mitad d
 
 Si quieres entender el flujo antes de instalar nada, en [`.docs/workflow/`](.docs/workflow/) están los tres documentos que lo explican: el de [proyectos nuevos](.docs/workflow/greenfield.md), el de [codebases existentes](.docs/workflow/brownfield.md) y un [anexo](.docs/workflow/evidence-and-references.md) con la evidencia que lo sustenta, 25 fuentes verificadas una a una y etiquetadas según lo que valen.
 
-El kit se usa a sí mismo. Sus features salen por `sdd-start-task`, sus releases por el carril release, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [actas de release](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
+El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus releases por el carril release, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [actas de release](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
 
 ## Estado
 

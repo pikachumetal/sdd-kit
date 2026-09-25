@@ -1,14 +1,14 @@
 ---
 kit_version: <de .docs/sdd/sdd-kit.json>
 superpowers_version: <versión instalada>
-lane: <task|patch>
-id: <yyyyMMdd-HHmmss>-(task|patch)-<id>-<slug>   # igual que el nombre del fichero
-task: <id>                                    # id de la task o del patch, según el modo del proyecto
+lane: <feature|patch>
+id: <yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>   # igual que el nombre del fichero
+task: <id>                                    # id de la feature o del patch, según el modo del proyecto
 mode: <full|lite>          # vacío en patch
 date: <YYYY-MM-DD>
 ---
 
-# Ticket para el kit — <task|patch> <id>: <resumen de una línea>
+# Ticket para el kit — <feature|patch> <id>: <resumen de una línea>
 
 > Lo lee un agente que mantiene el kit, no una persona: describe el comportamiento del kit,
 > nunca el dominio del proyecto — sin nombres de cliente, proyecto, producto ni personas, sin
@@ -18,7 +18,7 @@ date: <YYYY-MM-DD>
 
 ## Contexto
 
-- Carril y modo: <task full | task lite | patch>
+- Carril y modo: <feature full | feature lite | patch>
 - Skills del kit usadas: <lista>
 - Proyecto: <tipo, stack, tamaño, nº de personas — genérico, sin nombre>
 - Modelo del hilo: <modelo>

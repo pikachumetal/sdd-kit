@@ -41,7 +41,7 @@ Describe 'El effort declarado se despacha con el tipo de agente' {
   }
 
   It 'el revisor de spec se despacha con effort-medium y Sonnet' {
-    $reviewSpec = Get-KitFile 'skills/sdd-start-task/references/review-spec.md'
+    $reviewSpec = Get-KitFile 'skills/sdd-start-feature/references/review-spec.md'
     $reviewSpec | Should -Match 'subagent_type: sdd-kit:effort-medium'
     $reviewSpec | Should -Match 'model: sonnet'
   }

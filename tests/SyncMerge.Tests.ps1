@@ -15,7 +15,7 @@ BeforeAll {
 
 Describe 'Merge de sincronización ante un conflicto solo en los registros' {
   BeforeAll {
-    $script:Recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $script:Recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
     $script:Section = Get-MarkdownSection $script:Recipe '## Conflicto solo en los registros'
     $script:Anchor = 'merge-recipe.md#conflicto-solo-en-los-registros'
   }
@@ -55,14 +55,14 @@ Describe 'Merge de sincronización ante un conflicto solo en los registros' {
     $failSection | Should -Match '(?i)salvo[^\r\n]*registros'
   }
 
-  It 'el paso 10 de sdd-end-task y el paso 6 de sdd-end-patch enlazan la excepción' {
-    foreach ($skill in 'skills/sdd-end-task/SKILL.md', 'skills/sdd-end-patch/SKILL.md') {
+  It 'el paso 10 de sdd-end-feature y el paso 6 de sdd-end-patch enlazan la excepción' {
+    foreach ($skill in 'skills/sdd-end-feature/SKILL.md', 'skills/sdd-end-patch/SKILL.md') {
       Get-KitFile $skill | Should -Match ([regex]::Escape($script:Anchor))
     }
   }
 
   It 'commit-milestones añade el merge de sincronización a la tabla de hitos y enlaza la receta' {
-    $milestones = Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md'
+    $milestones = Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md'
     $milestones | Should -Match '(?m)^\| Merge de sincronización \|'
     $milestones | Should -Match ([regex]::Escape($script:Anchor))
   }

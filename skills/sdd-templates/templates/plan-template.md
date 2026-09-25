@@ -1,6 +1,6 @@
 ---
-id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
-task: <id>
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
 title: Plan de implementación — <título de la spec>
 spec: ./spec.md
 status: draft
@@ -10,7 +10,7 @@ created: <YYYY-MM-DD>
 # Plan de implementación — <título>
 
 > Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
-> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-task/references/control-profiles.md)).
+> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
 > Borra los bloques de ayuda (`>`) al redactar.
 
 ## Decisiones que he tomado yo — valida estas
@@ -33,7 +33,7 @@ created: <YYYY-MM-DD>
 
 > Dos bloques. Una línea por restricción; "ninguna" si un bloque no tiene.
 >
-> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha le entrega el bloque «De código» — ver el paso de implementación de `sdd-start-task`.
+> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha le entrega el bloque «De código» — ver el paso de implementación de `sdd-start-feature`.
 
 ### De código
 
@@ -150,7 +150,7 @@ Endpoints, shape request/response.
 - [ ] **Step 1: Implementación** — descripción concreta; código real cuando ayude, sin placeholders.
 - [ ] **Step 2: Build** — el build de las superficies de la task. Esperado: verde, sin errores.
 - [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
-- [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-start-task/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
+- [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-start-feature/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
 
 ---
 
@@ -171,7 +171,7 @@ Endpoints, shape request/response.
 - [ ] Gate de cierre, una vez y en el hilo principal: <el gate completo del proyecto: build, suite entera, lint>
 - [ ] Verificación de los criterios de éxito de la spec (§2)
 - [ ] Spec satisfecha: cada requisito tiene su task (ver Self-review)
-- [ ] Cierre de rama según el flujo del proyecto (`sdd-end-task`)
+- [ ] Cierre de rama según el flujo del proyecto (`sdd-end-feature`)
 
 ---
 

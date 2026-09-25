@@ -7,10 +7,10 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 ## Requisitos
 
 ### El carril release es opcional
-- GIVEN un proyecto que trabaja solo con task y patch, sin sección de release abierta en el roadmap
-- WHEN se cierran tasks y patches
-- THEN sus entradas van a `[Unreleased]` y ninguna skill de task o patch pide abrir una release
-- AND el id de una task sin fila reservada sigue lo que declara [`task-ids.md`](task-ids.md) («Una task no planificada obtiene su id con un script determinista»)
+- GIVEN un proyecto que trabaja solo con feature y patch, sin sección de release abierta en el roadmap
+- WHEN se cierran features y patches
+- THEN sus entradas van a `[Unreleased]` y ninguna skill de feature o patch pide abrir una release
+- AND el id de una feature sin fila reservada sigue lo que declara [`task-ids.md`](task-ids.md) («Una feature no planificada obtiene su id con un script determinista»)
 
 ### Se puede cerrar una release que no se abrió
 - GIVEN un roadmap sin sección de la release y un `[Unreleased]` con entradas
@@ -91,33 +91,33 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - THEN tiene la forma `smoke: <fecha> · <N> hallazgos (<qué se ejecutó>; <M> corregidos en la release)`, donde N cuenta solo defectos del comportamiento entregado detectados por el smoke sobre la rama integrada
 - AND si no se ejecutó smoke, la línea es `smoke: pendiente`
 
-### El smoke de la release valida las tasks diferidas a él
-- GIVEN una release con tasks `🧪 validación diferida a <esta release>`
+### El smoke de la release valida las features diferidas a él
+- GIVEN una release con features `🧪 validación diferida a <esta release>`
 - WHEN el dev-lead valida el smoke de la release en `sdd-end-release`, diciendo qué probó
-- THEN cada una de esas tasks gana una adenda fechada en su walkthrough con lo que el dev-lead probó que le toca, y su fila pasa a ✅
-- AND una task que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>` (la siguiente release, salvo que el dev-lead diga otro), y el cierre la lista
+- THEN cada una de esas features gana una adenda fechada en su walkthrough con lo que el dev-lead probó que le toca, y su fila pasa a ✅
+- AND una feature que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>` (la siguiente release, salvo que el dev-lead diga otro), y el cierre la lista
 
 ### Replanificar parte del estado real de la release
 - GIVEN una release en curso en el roadmap, con la rama de integración por delante del worktree del agente o con ramas `feature/*` abiertas
-- WHEN el usuario pide meter trabajo en la release, partir, mover o crear tasks
+- WHEN el usuario pide meter trabajo en la release, partir, mover o crear features
 - THEN antes de proponer nada el agente lee el roadmap de la rama de integración y el de cada rama `feature/*` abierta, no solo el de su worktree
-- AND no amplía una task que esté cerrada (✅ o 🧪) en la rama de integración: el trabajo nuevo va a una task nueva
+- AND no amplía una feature que esté cerrada (✅ o 🧪) en la rama de integración: el trabajo nuevo va a una feature nueva
 
-### Una task en marcha no se toca al replanificar
-- GIVEN una task en marcha (con rama `feature/<id>` abierta o 🔄 en el roadmap)
+### Una feature en marcha no se toca al replanificar
+- GIVEN una feature en marcha (con rama `feature/<id>` abierta o 🔄 en el roadmap)
 - WHEN la replanificación trae trabajo de su tema
-- THEN ni su fila ni su spec cambian: el trabajo va a una task nueva con fila propia que declara que va tras ella
+- THEN ni su fila ni su spec cambian: el trabajo va a una feature nueva con fila propia que declara que va tras ella
 
 ### Los ids nuevos no chocan con reservas de otras ramas
 - GIVEN `ids.mode: sequence` y una rama `feature/*` que reservó en su roadmap un id que la rama de integración aún no tiene
-- WHEN la replanificación crea tasks
+- WHEN la replanificación crea features
 - THEN cada id nuevo es mayor que el que da `Get-NextSddId.ps1` y que cualquier id de los roadmaps leídos
 
 ### La reserva se publica antes de arrancar
 - GIVEN un scope replanificado que el usuario ha decidido
 - WHEN el agente escribe las filas en el roadmap
 - THEN las publica en la rama de integración con un commit que solo toca `roadmap.md`, y el `proposal.md` de la propuesta si la hay, en el worktree donde está sacada (o en uno temporal, en la carpeta de los demás worktrees y con nombre corto, si no está en ninguno)
-- AND lo hace antes de arrancar ninguna de las tasks nuevas
+- AND lo hace antes de arrancar ninguna de las features nuevas
 
 ### El cierre no procesa el feedback de una reunión
 - GIVEN un cierre en el que el usuario aporta la transcripción o las notas de una demo o reunión

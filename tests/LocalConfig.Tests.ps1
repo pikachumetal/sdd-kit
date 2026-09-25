@@ -11,11 +11,11 @@ BeforeAll {
   }
 
   function Get-SkillStep([int]$Number) {
-    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
     return [regex]::Match($skill, "(?ms)^$Number\. \*\*.*?(?=^$($Number + 1)\. \*\*)").Value
   }
 
-  $script:Profiles = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+  $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
 }
 
 Describe 'Precedencia con el fichero local' {
@@ -27,7 +27,7 @@ Describe 'Precedencia con el fichero local' {
 
   It 'la regla de execution va de la task al fichero local y al proyecto, con auto como nivel' {
     $section = Get-Section $script:Profiles 'sdd-kit.local.json'
-    $section | Should -Match 'execution.*task.*sdd-kit\.local\.json.*sdd-kit\.json'
+    $section | Should -Match 'execution.*feature.*sdd-kit\.local\.json.*sdd-kit\.json'
     $section | Should -Match '`execution: auto`.*cuenta'
   }
 }
@@ -61,7 +61,7 @@ Describe 'Sección del fichero local' {
   }
 }
 
-Describe 'sdd-start-task lee el fichero local' {
+Describe 'sdd-start-feature lee el fichero local' {
   It 'el paso 2 nombra el fichero local y el nivel del que sale el perfil' {
     $step = Get-SkillStep 2
     $step | Should -Match 'sdd-kit\.local\.json'
@@ -80,7 +80,7 @@ Describe 'sdd-start-task lee el fichero local' {
 
   It 'los cierres de task y de patch también leen el fichero local' {
     $section = Get-Section $script:Profiles 'sdd-kit.local.json'
-    $section | Should -Match '`sdd-end-task`'
+    $section | Should -Match '`sdd-end-feature`'
     $section | Should -Match '`sdd-end-patch`'
   }
 

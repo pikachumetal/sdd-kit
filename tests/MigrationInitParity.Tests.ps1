@@ -119,7 +119,7 @@ Describe 'Proyecto de referencia' {
 Describe 'Tabla de release con Ficheros que toca' {
   It 'la plantilla del roadmap fija la cabecera de la tabla de release' {
     Get-KitFile 'skills/sdd-templates/templates/roadmap-template.md' |
-      Should -Match ([regex]::Escape('| id | Task | Origen | Ficheros que toca | Estado |'))
+      Should -Match ([regex]::Escape('| id | Feature | Origen | Ficheros que toca | Estado |'))
   }
 
   It 'sdd-roadmap escribe la sección con esa tabla' {
@@ -128,5 +128,25 @@ Describe 'Tabla de release con Ficheros que toca' {
 
   It 'sdd-roadmap no deja la celda de ficheros por definir' {
     Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'nunca «por definir»'
+  }
+}
+
+Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
+  BeforeAll { $script:V2 = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md' }
+
+  It 'tiene un paso que sustituye los nombres viejos por sdd-start-feature y sdd-end-feature' {
+    $script:V2 | Should -Match '(?s)sdd-start-task.{0,200}sdd-start-feature'
+    $script:V2 | Should -Match '(?s)sdd-end-task.{0,200}sdd-end-feature'
+  }
+
+  It 'el paso nombra CLAUDE.md, AGENTS.md y capabilities/ y excluye el histórico' {
+    foreach ($literal in @('CLAUDE.md', 'AGENTS.md', 'capabilities/', 'specs/', 'changelog.md', 'client-changelog.md', 'roadmap.md')) {
+      $script:V2 | Should -Match ([regex]::Escape($literal))
+    }
+    $script:V2 | Should -Match 'no se renombra'
+  }
+
+  It 'la verificación lleva el Select-String con AGENTS.md y el histórico excluido' {
+    $script:V2 | Should -Match ([regex]::Escape("Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task'"))
   }
 }

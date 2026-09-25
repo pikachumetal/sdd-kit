@@ -36,7 +36,7 @@ La entrevista incluye además **cinco reglas de producto** que, si no se pregunt
 
 `capabilities/` merece un apartado propio porque es donde vive lo que el sistema hace, con un fichero por capacidad. Una capacidad es un sustantivo del dominio, nunca un ticket ni una tarea.
 
-La carpeta nace vacía y crece tarea a tarea. Cada spec declara su **delta** sobre las capacidades que toca: `ADDED` para un requisito nuevo, `MODIFIED` para uno que cambia y `REMOVED` para uno que se retira. Al cerrar la tarea, `sdd-end-task` fusiona ese delta en el fichero de la capacidad y añade una línea al historial. Así el fichero describe siempre el comportamiento actual, no el histórico de cómo se llegó a él, y es lo primero que lee la tarea siguiente.
+La carpeta nace vacía y crece tarea a tarea. Cada spec declara su **delta** sobre las capacidades que toca: `ADDED` para un requisito nuevo, `MODIFIED` para uno que cambia y `REMOVED` para uno que se retira. Al cerrar la tarea, `sdd-end-feature` fusiona ese delta en el fichero de la capacidad y añade una línea al historial. Así el fichero describe siempre el comportamiento actual, no el histórico de cómo se llegó a él, y es lo primero que lee la tarea siguiente.
 
 El comportamiento observable vive solo ahí. Los documentos de anclaje enlazan a la capacidad en lugar de copiar sus valores, porque una copia queda desactualizada en cuanto un `MODIFIED` toca el original.
 
@@ -52,7 +52,7 @@ El resultado de esta fase es el plan de implementación, igual que en el flujo o
 
 Instala el kit SDD desde el primer día:
 
-- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-task` y `sdd-end-task` para el ciclo completo; `sdd-start-patch` y `sdd-end-patch` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
+- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-feature` y `sdd-end-feature` para el ciclo completo; `sdd-start-patch` y `sdd-end-patch` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
 - **Skills técnicas**, según el stack elegido: por ejemplo `sql-migration`, `translation-migration`, `backend-command` y `backend-query` para CQRS, `backend-feature` para casos de uso, o `frontend-feature`.
 
 Las skills encapsulan las convenciones del proyecto, así que nadie tiene que recordarlas ni interpretarlas: basta con seguir el flujo.
@@ -65,14 +65,14 @@ Antes de empezar, inicializa el repositorio Git y haz commits frecuentes, como e
 
 Cada tarea del plan sigue el mismo ciclo, guiado por las skills:
 
-1. **Arranque** con `sdd-start-task`, que carga el contexto del proyecto y para. Desde ahí enruta: una pregunta va a `sdd-consult`, un bug determinista al carril patch, un cambio acotado al modo lite y el resto al ciclo completo.
+1. **Arranque** con `sdd-start-feature`, que carga el contexto del proyecto y para. Desde ahí enruta: una pregunta va a `sdd-consult`, un bug determinista al carril patch, un cambio acotado al modo lite y el resto al ciclo completo.
 2. **Especificación**: sesión de brainstorming con Claude cuyo resultado es `spec.md`, qué hay que hacer y por qué, con el delta de comportamiento por capacidad. Empieza por las decisiones que el agente ha tomado sin ti, que es lo único que necesitas leer para aprobarla. Según la complejidad, propone una revisión adversarial de la spec y tú decides si la activas.
 3. **Plan** en `plan.md`: cómo se va a hacer, con la estimación de esfuerzo, el modelo por tarea y las restricciones globales que viajarán en cada encargo.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos que conviene seguir por separado.
 5. **Implementación** con subagentes, que es el modo por defecto: un agente fresco por tarea y revisión entre tareas. La ejecución en línea con checkpoints es la excepción y el plan la declara con su motivo. **Antes de despachar a nadie, el hilo principal escribe los tests que codifican los escenarios de la spec**, uno por THEN y en rojo, y los commitea: son el contrato del implementador, que los hace pasar y no los redacta.
 6. **Verificación**, que se detalla en el punto 2.2.
 7. **Validación**: antes de cerrar, el agente presenta qué hay, cómo probarlo y el smoke que ha ejecutado, y espera a que digas qué has probado tú y que funciona. Pedir el cierre no es validar.
-8. **Cierre** con `walkthrough.md`, donde queda lo que se hizo y el tiempo real invertido, y `sdd-end-task`, que fusiona el delta en `capabilities/`, vuelca los aprendizajes a los documentos vivos y actualiza changelog, roadmap y registro de estimaciones.
+8. **Cierre** con `walkthrough.md`, donde queda lo que se hizo y el tiempo real invertido, y `sdd-end-feature`, que fusiona el delta en `capabilities/`, vuelca los aprendizajes a los documentos vivos y actualiza changelog, roadmap y registro de estimaciones.
 
 Para cambios acotados existe el **modo lite**, que no es un carril aparte: spec corta y sin plan, conservando el gate de aprobación, el smoke y el walkthrough.
 
@@ -87,7 +87,7 @@ Estructura recomendada:
 │       │   architecture.md, roadmap.md, changelog.md
 │       ├── capabilities/
 │       └── specs/
-│           └── <fecha>-task-<id>-<nombre>/
+│           └── <fecha>-feature-<id>-<nombre>/
 │               ├── spec.md
 │               ├── plan.md
 │               ├── tasks.md
@@ -96,7 +96,7 @@ Estructura recomendada:
 
 ### 2.1. Gestión del contexto
 
-**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-start-task` carga la documentación de anclaje que hace falta.
+**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-start-feature` carga la documentación de anclaje que hace falta.
 
 ### 2.2. Verificación
 

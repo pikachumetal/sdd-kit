@@ -280,7 +280,7 @@ Describe 'Resumen estadístico' {
   }
 
   It 'lleva la columna Sesión ($) en la tabla principal' {
-    $script:Completo | Should -Match '(?m)^\| Fecha \| Task \| Tipo \| Est \(h\) \| Real \(h\) \| Ratio \| Hilo \(tokens\) \| Subagentes \(tokens\) \| Sujetos \(\$\) \| Sesión \(\$\) \| Carpeta \|$'
+    $script:Completo | Should -Match '(?m)^\| Fecha \| Id \| Tipo \| Est \(h\) \| Real \(h\) \| Ratio \| Hilo \(tokens\) \| Subagentes \(tokens\) \| Sujetos \(\$\) \| Sesión \(\$\) \| Carpeta \|$'
   }
 
   It 'lee la cifra de Coste de la sesión' {
@@ -405,5 +405,25 @@ Describe 'Unidad del tiempo' {
   It 'avisa y excluye un real en otra unidad' {
     Get-Row $script:Unidades.Text '20260924-130000-patch-0072-real-semanas' | Should -BeNullOrEmpty
     $script:Unidades.Warnings -join ' ' | Should -Match 'semana.*patch-0072-real-semanas'
+  }
+}
+
+Describe 'Carpetas feature y task heredadas' {
+  BeforeAll { $script:Mixed = Invoke-Build (Join-Path $script:Fixtures 'features') }
+
+  It 'lee el id de una task heredada' {
+    Get-Row $script:Mixed.Text '20260920-100000-task-0063-a' | Should -Match '^\| 2026-09-20 \| 0063 \|'
+  }
+
+  It 'lee el id del campo feature' {
+    Get-Row $script:Mixed.Text '20261001-091500-feature-0079-b' | Should -Match '^\| 2026-10-01 \| 0079 \|'
+  }
+
+  It 'lee el id de una carpeta feature sin frontmatter' {
+    Get-Row $script:Mixed.Text '20261003-100000-feature-0081-c' | Should -Match '^\| 2026-10-03 \| 0081 \|'
+  }
+
+  It 'titula Id la columna del id' {
+    $script:Mixed.Text | Should -Match '(?m)^\| Fecha \| Id \| Tipo \| Est \(h\) \| Real \(h\) \| Ratio \| Hilo \(tokens\) \| Subagentes \(tokens\) \| Sujetos \(\$\) \| Sesión \(\$\) \| Carpeta \|\r?$'
   }
 }

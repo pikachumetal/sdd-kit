@@ -73,7 +73,7 @@ Describe 'Fuente única de la entrevista de claves' {
   }
 
   It 'control-profiles apunta a sdd-config en lugar de llevar las preguntas' {
-    $profiles = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+    $profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
     $profiles | Should -Not -Match '(?m)^## Preguntas de las claves de control'
     $profiles | Should -Match '`sdd-config`'
   }

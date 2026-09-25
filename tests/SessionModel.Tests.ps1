@@ -19,11 +19,11 @@ BeforeAll {
 
 Describe 'Modelo de la sesión que ejecuta en Native' {
   It 'el gate de la spec en delegate ofrece parar tras el plan para bajar la sesión' {
-    Get-SkillStep 'sdd-start-task' 4 | Should -Match ([regex]::Escape('«Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media»'))
+    Get-SkillStep 'sdd-start-feature' 4 | Should -Match ([regex]::Escape('«Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media»'))
   }
 
   It 'el gate del plan en pair ofrece parar antes de la Task 1 para bajar la sesión' {
-    Get-SkillStep 'sdd-start-task' 5 | Should -Match ([regex]::Escape('«Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media»'))
+    Get-SkillStep 'sdd-start-feature' 5 | Should -Match ([regex]::Escape('«Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media»'))
   }
 
   It 'la línea Ejecución del plan registra el modelo recomendado para la sesión' {

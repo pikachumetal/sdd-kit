@@ -14,12 +14,12 @@ Describe 'Restricciones globales en dos bloques' {
   }
 
   It 'el paso 6 despacha solo el bloque de código' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'bloque «De código»'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'bloque «De código»'
   }
 }
 
 Describe 'Encargo de revisión' {
-  BeforeAll { $script:Brief = Get-KitFile 'skills/sdd-start-task/references/encargo-revision.md' }
+  BeforeAll { $script:Brief = Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' }
 
   It 'no convierte en Important todo incumplimiento' {
     $script:Brief | Should -Not -Match 'Todo hallazgo que las incumpla es \*\*Important\*\*'
@@ -46,7 +46,7 @@ Describe 'Constitution' {
 
 Describe 'Paso 4' {
   It 'repasa la coherencia de la spec antes del gate' {
-    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
     $skill | Should -Match 'Spec Self-Review'
     $skill | Should -Match 'literal[^\n]*más de un sitio'
     $skill | Should -Match 'busca todas sus apariciones'

@@ -86,7 +86,7 @@ Describe 'hooks/session-start' {
     $result.ExitCode | Should -Be 0
     $context = ($result.Output | ConvertFrom-Json).hookSpecificOutput
     $context.hookEventName | Should -Be 'SessionStart'
-    $context.additionalContext | Should -Match 'sdd-kit:sdd-start-task'
+    $context.additionalContext | Should -Match 'sdd-kit:sdd-start-feature'
     $context.additionalContext | Should -Match 'sdd-kit:sdd-start-patch'
     $context.additionalContext | Should -Match 'sdd-kit:sdd-consult'
   }

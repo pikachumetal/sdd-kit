@@ -2,21 +2,22 @@
 
 ## Propósito
 
-Cómo marcan el roadmap los cierres de task y de patch en «Deuda técnica» y «Backlog», y cómo se cuenta lo que sigue abierto. Los estados de las filas de task viven en `control-profiles`.
+Cómo marcan el roadmap los cierres de feature y de patch en «Deuda técnica» y «Backlog», y cómo se cuenta lo que sigue abierto. Los estados de las filas de feature viven en `control-profiles`.
 
 ## Requisitos
 
 ### Cerrar una fila de deuda o de backlog deja un prefijo contable
-- GIVEN una fila de «Deuda técnica» o de «Backlog» del roadmap que una task o un patch salda entera o en parte
-- WHEN se cierra con `sdd-end-task` o con `sdd-end-patch`
-- THEN la celda «Ítem» empieza por `**[<Task|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, o por `**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**` si queda algo, con el enlace al `walkthrough.md` o al `patch.md`
+- GIVEN una fila de «Deuda técnica» o de «Backlog» del roadmap que una feature o un patch salda entera o en parte
+- WHEN se cierra con `sdd-end-feature` o con `sdd-end-patch`
+- THEN la celda «Ítem» empieza por `**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, o por `**[<Feature|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**` si queda algo, con el enlace al `walkthrough.md` o al `patch.md`
 - AND el texto con que se abrió la fila sigue detrás del prefijo, sin reescribir
-- AND `grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` sobre el roadmap lista esa fila si está saldada, y no la lista si es `parcial`
+- AND `grep -E '\| \*\*\[(Feature|Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` sobre el roadmap lista esa fila si está saldada, y no la lista si es `parcial`
+- AND una fila saldada antes de la 2.0.0 con `**[Task 0012, 2026-09-10: saldada — …]**` sigue sin tocar y el `grep` la cuenta: `Task` es legado que se lee y ya no se escribe
 
-### Cada task de una release declara los ficheros que toca
+### Cada feature de una release declara los ficheros que toca
 - GIVEN un `sdd-roadmap` que escribe la sección «Release N» del roadmap
-- WHEN añade la fila de una task
-- THEN la tabla sigue la cabecera de `roadmap-template.md`, `| id | Task | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» nombra los ficheros o módulos previstos
+- WHEN añade la fila de una feature
+- THEN la tabla sigue la cabecera de `roadmap-template.md`, `| id | Feature | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» nombra los ficheros o módulos previstos
 - AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra esa columna
 
 ### Una re-medición que contradice una fila la reescribe

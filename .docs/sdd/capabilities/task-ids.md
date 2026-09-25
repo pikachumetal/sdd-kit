@@ -2,7 +2,7 @@
 
 ## Propósito
 
-La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch, quién los asigna y qué garantiza que no se repitan. Cubre los dos carriles porque comparten secuencia.
+La numeración del trabajo: cómo un proyecto decide sus ids de feature y de patch, quién los asigna y qué garantiza que no se repitan. Cubre los dos carriles porque comparten secuencia.
 
 ## Requisitos
 
@@ -19,12 +19,12 @@ La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch,
 ### La entrevista de init decide el modo de ids
 - GIVEN una init greenfield o brownfield en el bloque (d) de proceso
 - WHEN el agente pregunta por el gestor de tickets
-- THEN pregunta a continuación cómo se numeran las tasks: ids del gestor (`tracker`) o secuencia propia del proyecto (`sequence`)
+- THEN pregunta a continuación cómo se numeran las features: ids del gestor (`tracker`) o secuencia propia del proyecto (`sequence`)
 - AND escribe la respuesta en `sdd-kit.json`; «no sé» deja `tracker`
 
-### Tasks y patches comparten una sola secuencia
+### Features y patches comparten una sola secuencia
 - GIVEN un proyecto en modo `sequence`
-- WHEN se asigna el id de una task, de un patch o de una propuesta
+- WHEN se asigna el id de una feature, de un patch o de una propuesta
 - THEN sale de la misma secuencia correlativa: un id nunca se repite entre carriles
 - AND `Get-NextSddId.ps1` cuenta como usado el id de una carpeta `-proposal-<id>-`: con `specs/20260915-090000-proposal-0020-billing/` y ninguna fila 0020, no propone `0020`
 
@@ -32,10 +32,10 @@ La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch,
 - GIVEN un proyecto en modo `sequence`
 - WHEN `sdd-roadmap` escribe N filas nuevas en el roadmap, o una propuesta y sus N features
 - THEN sus ids salen de una sola reserva `Get-NextSddId.ps1 -Reserve -Count N` (N + 1 con propuesta), y cada fila lleva el suyo
-- AND el agente que abre el worktree de una task toma el id de su fila, sin reservar ni recalcular
+- AND el agente que abre el worktree de una feature toma el id de su fila, sin reservar ni recalcular
 
-### Una task no planificada obtiene su id con un script determinista
-- GIVEN un proyecto en modo `sequence` y una task o patch sin fila en el roadmap
+### Una feature no planificada obtiene su id con un script determinista
+- GIVEN un proyecto en modo `sequence` y una feature o patch sin fila en el roadmap
 - WHEN se invoca `Get-NextSddId.ps1 -Reserve` desde la raíz del proyecto
 - THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en `.docs/sdd/specs/` y `.docs/sdd/roadmap.md` del working tree; en el roadmap y las carpetas de `specs/` de cada rama local y remota, y en su nombre salvo el de la rama actual; y en el roadmap y las carpetas de `specs/` del disco de cada worktree de `git worktree list`, más uno
 - AND lo que otro worktree tiene reservado sin fusionar cuenta aunque no esté en ninguna rama: una fila del roadmap en *staged* o una carpeta de `specs/` sin commitear
@@ -62,14 +62,14 @@ La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch,
 - THEN devuelve el id calculado con `specs/` y el roadmap del working tree, sin leer ramas ni el disco de otros worktrees, y avisa por salida de error de que omite las ramas, nombrando el repositorio que encontró
 - AND no lee las ramas del repositorio padre: sus ids no son ids de este proyecto
 
-### Una task partida toma el siguiente id, no un sufijo
-- GIVEN una task que se parte en dos durante la planificación o la ejecución
+### Una feature partida toma el siguiente id, no un sufijo
+- GIVEN una feature que se parte en dos durante la planificación o la ejecución
 - WHEN se nombra la segunda mitad
 - THEN recibe un id reservado con `Get-NextSddId.ps1 -Reserve`, nunca un sufijo tipo `0006a`
 - AND su `spec.md` (o `patch.md`) lleva `parent: <id>` en el frontmatter y el roadmap le da su fila propia
 
 ### En modo gestor el id es el del ticket
-- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-task`, `sdd-start-patch`, `sdd-roadmap`, `sdd-consult`)
+- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-feature`, `sdd-start-patch`, `sdd-roadmap`, `sdd-consult`)
 - WHEN el trabajo tiene ticket en el gestor
 - THEN el id es el del ticket, y `0000` cuando el trabajo no tiene ticket
 
@@ -116,10 +116,17 @@ La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch,
 - THEN falla con un mensaje que dice que no hay dónde reservar, y no devuelve ningún id
 
 ### La reserva precede a la rama y a la carpeta
-- GIVEN un proyecto en modo `sequence` y un arranque de task o de patch sin fila de roadmap
+- GIVEN un proyecto en modo `sequence` y un arranque de feature o de patch sin fila de roadmap
 - WHEN el agente necesita el id
 - THEN lo reserva con `Get-NextSddId.ps1 -Reserve` antes de crear la rama y la carpeta, y usa ese id en las dos
 - AND si ya está en una rama sin id y sin commits propios frente a la rama de integración (`feature/fix-sala`, con la reserva en 0014), la renombra a `feature/<id>-<slug>` con `git branch -m` antes del primer commit y lo dice: el commit del fix sale en `feature/0014-<slug>`, y `feature/fix-sala` ya no existe
+
+### El escaneo cuenta las carpetas `-feature-` y las `-task-`
+- GIVEN un proyecto en modo `sequence` con `specs/20260920-100000-task-0063-a/`, `specs/20261001-091500-feature-0079-b/` y `specs/20261002-100000-patch-0080-c/`, sin ninguna fila del roadmap, rama, worktree ni contador con un id mayor
+- WHEN se ejecuta `Get-NextSddId.ps1 -ProjectRoot <raíz>` sin `-Reserve`
+- THEN propone `0081`
+- AND si solo existiera `…-feature-0079-b/`, propondría `0080`
+- AND si `specs/` tiene a la vez `…-task-0063-a/` y `…-feature-0063-b/`, es un id duplicado: se aplica «El script avisa de un id duplicado y no devuelve ninguno», sin distinguir carril
 
 ## Reglas de la capacidad
 
@@ -128,4 +135,4 @@ La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch,
 - **Límites**: cuatro dígitos con ceros a la izquierda (`0001`–`9999`); `0000` reservado como comodín de «sin ticket» en modo `tracker`. Una reserva que pasaría de `9999` falla sin reservar. `-Count` va de 1 a 99. Una sola máquina: con varias máquinas en `sequence` haría falta un cerrojo en el remoto o el modo `tracker`. Hay un contador por proyecto: `sdd-ids` en la raíz del repositorio y `sdd-ids-<ruta relativa>` en una subcarpeta.
 - **Avisos**: ids duplicados entre artefactos, proyecto en modo `tracker` y ramas omitidas por no ser raíz del repositorio se avisan por salida de error; en los dos primeros casos el script no devuelve id ni toca el contador. El script avisa además por salida de error si el contador no se puede leer (y lo reinicializa) y si no hay repositorio git donde reservar (sin reservar). También avisa si el cerrojo no se libera en el plazo, nombrando al dueño y sin reservar.
 - **Regla ante conflicto**: la fila del roadmap manda. El contador nunca baja: si el escaneo ve un id mayor, gana el escaneo. Si aun así dos trabajos acaban con el mismo id, el segundo en darse cuenta renumera su carpeta y su rama y lo anota en el roadmap.
-- **Contrato de lectura del roadmap**: el script reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en los nombres de artefacto (`task-<id>-`, `patch-<id>-`, `proposal-<id>-`) y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.
+- **Contrato de lectura del roadmap**: el script reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en los nombres de artefacto (`feature-<id>-`, `task-<id>-`, `patch-<id>-`, `proposal-<id>-`) y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.

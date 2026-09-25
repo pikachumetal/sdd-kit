@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y superpowers: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-start-task`.
+Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y superpowers: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-start-feature`.
 
 ## Requisitos
 
@@ -10,8 +10,8 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario pide una feature o un cambio con comportamiento sin nombrar ninguna skill («añade…», «hazme…», «let's build…», «es un cambio pequeño, hazlo rápido»)
-- THEN la primera skill que se invoca es `sdd-kit:sdd-start-task`
-- AND `superpowers:brainstorming` se invoca después, desde el paso 4 de `sdd-start-task`, nunca antes
+- THEN la primera skill que se invoca es `sdd-kit:sdd-start-feature`
+- AND `superpowers:brainstorming` se invoca después, desde el paso 4 de `sdd-start-feature`, nunca antes
 
 ### Un bug pequeño y determinista entra por el carril patch
 
@@ -36,7 +36,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN una sesión que arranca con el plugin instalado
 - WHEN el directorio de trabajo no contiene `.docs/sdd/`
 - THEN el hook no inyecta ningún contexto
-- AND cuando sí lo contiene, inyecta el router, que nombra `sdd-start-task`, `sdd-start-patch` y `sdd-consult`
+- AND cuando sí lo contiene, inyecta el router, que nombra `sdd-start-feature`, `sdd-start-patch` y `sdd-consult`
 
 ### Un patch cuyo fallo no se reproduce no se abre
 
@@ -57,4 +57,9 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/` y el hook de sesión activo
 - WHEN el usuario trae algo para el roadmap sin nombrar ninguna skill: «organízalo para el equipo», «apunta en el roadmap», items del gestor, notas de una reunión, «reordena», «prepara la release 1.3»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`
-- AND con «prepara la release 1.3», no `sdd-end-release`; con «organízalo para el equipo», no `sdd-start-task`
+- AND con «prepara la release 1.3», no `sdd-end-release`; con «organízalo para el equipo», no `sdd-start-feature`
+
+### El cierre de una feature entra por `sdd-end-feature`
+- GIVEN un proyecto con `.docs/sdd/`, en la rama `feature/0081-booking-reminders` con su `plan.md` y su `tasks.md` con todas las tasks hechas
+- WHEN el usuario escribe «hemos acabado, cierra la tarea»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-end-feature`

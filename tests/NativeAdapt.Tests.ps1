@@ -12,11 +12,11 @@ BeforeAll {
   }
 
   function Get-NativeParagraph {
-    return [regex]::Match((Get-SkillStep 'sdd-start-task' 6), '(?m)^\s*\*\*En Native\*\*.*$').Value
+    return [regex]::Match((Get-SkillStep 'sdd-start-feature' 6), '(?m)^\s*\*\*En Native\*\*.*$').Value
   }
 
-  $script:Overrides = 'skills/sdd-start-task/references/overrides-superpowers.md'
-  $script:Dispatch = 'skills/sdd-start-task/references/encargo-revision.md'
+  $script:Overrides = 'skills/sdd-start-feature/references/overrides-superpowers.md'
+  $script:Dispatch = 'skills/sdd-start-feature/references/encargo-revision.md'
 }
 
 Describe 'Task 1 — bucle Native' {
@@ -51,7 +51,7 @@ Describe 'Task 1 — bucle Native' {
 }
 
 Describe 'Task 2 — historia de commits' {
-  BeforeAll { $script:Recipe = Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md' }
+  BeforeAll { $script:Recipe = Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md' }
 
   It 'la receta vale también con un solo commit en el rango' {
     $script:Recipe | Should -Match 'también con un solo commit'
@@ -70,11 +70,11 @@ Describe 'Task 2 — historia de commits' {
   }
 
   It 'el paso 5 junta la apertura antes de los RED' {
-    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'Antes de escribir los RED de la primera task, junta la apertura'
+    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'Antes de escribir los RED de la primera task, junta la apertura'
   }
 
   It 'el paso 6 pide escribir el mensaje del hito aunque haya un solo commit' {
-    Get-SkillStep 'sdd-start-task' 6 | Should -Match 'con el mensaje que escribes tú, también si el rango tiene un solo commit'
+    Get-SkillStep 'sdd-start-feature' 6 | Should -Match 'con el mensaje que escribes tú, también si el rango tiene un solo commit'
   }
 }
 
@@ -89,19 +89,19 @@ Describe 'Task 3 — revisión final y cierre' {
   }
 
   It 'el paso 6 comprueba el tipo de effort antes del primer despacho' {
-    $step = Get-SkillStep 'sdd-start-task' 6
-    $step | Should -Match 'Antes del primer despacho de la task'
+    $step = Get-SkillStep 'sdd-start-feature' 6
+    $step | Should -Match 'Antes del primer despacho de la feature'
     $step | Should -Match 'effort: no disponible en este harness, hereda el de la sesión'
   }
 
   It 'el paso 9 del cierre no repite la revisión final' {
-    $step = Get-SkillStep 'sdd-end-task' 9
+    $step = Get-SkillStep 'sdd-end-feature' 9
     $step | Should -Match 'No lances otra'
     $step | Should -Not -Match 'solo si la task se ejecutó \*\*en línea\*\*'
   }
 
   It 'el paso 1 del cierre vuelca los rulings y los minors de executing-plans' {
-    $step = Get-SkillStep 'sdd-end-task' 1
+    $step = Get-SkillStep 'sdd-end-feature' 1
     $step | Should -Match '`executing-plans`'
     $step | Should -Match 'Deferred minors'
   }
@@ -114,7 +114,7 @@ Describe 'Task 4 — cambio tras compactar' {
   }
 
   It 'el paso 5 dice que tras compactar se relee el plan y no la skill' {
-    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'tras compactar, la sesión relee el plan y el ledger'
+    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'tras compactar, la sesión relee el plan y el ledger'
   }
 
   It 'la fila de executing-plans en overrides cambia a subagentes tras compactar' {
@@ -125,27 +125,27 @@ Describe 'Task 4 — cambio tras compactar' {
 
 Describe 'Task 5 — REFACTOR del GREEN' {
   It 'el paso 6 escribe los RED de SDD con la apertura ya juntada' {
-    Get-SkillStep 'sdd-start-task' 6 | Should -Match 'con la apertura ya juntada en su commit'
+    Get-SkillStep 'sdd-start-feature' 6 | Should -Match 'con la apertura ya juntada en su commit'
   }
 }
 
 Describe 'Revisión final — pase de fix' {
   It 'la fila Apertura se junta antes de los RED y, en Native, antes de task-start' {
-    $row = (Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md') -split "`r?`n" | Where-Object { $_.StartsWith('| Apertura |') }
+    $row = (Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md') -split "`r?`n" | Where-Object { $_.StartsWith('| Apertura |') }
     $row | Should -Not -Match 'justo antes del primer despacho'
     $row | Should -Match 'antes de escribir los RED de la primera task \(en Native, antes de su `task-start`\)'
   }
 
   It 'el paso 5 junta la apertura antes del task-start de la primera task en Native' {
-    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'en Native, antes de su `task-start`'
+    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'en Native, antes de su `task-start`'
   }
 
   It 'el paso 6 apunta la revisión final en tasks.md' {
-    Get-SkillStep 'sdd-start-task' 6 | Should -Match 'apunta en `tasks.md` la línea `Revisión final:'
+    Get-SkillStep 'sdd-start-feature' 6 | Should -Match 'apunta en `tasks.md` la línea `Revisión final:'
   }
 
   It 'el paso 9 del cierre busca la revisión final en tasks.md y no en el ledger' {
-    $step = Get-SkillStep 'sdd-end-task' 9
+    $step = Get-SkillStep 'sdd-end-feature' 9
     $step | Should -Match 'la línea `Revisión final:` de `tasks.md`'
     $step | Should -Not -Match 'queda en el ledger'
   }

@@ -6,7 +6,7 @@ BeforeAll {
   }
 
   function Get-OverrideRow([string]$Anchor) {
-    $table = Get-KitFile 'skills/sdd-start-task/references/overrides-superpowers.md'
+    $table = Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md'
     return ($table -split "`n") | Where-Object { $_ -match '^\|' -and $_.Contains($Anchor) }
   }
 }
@@ -25,7 +25,7 @@ Describe 'Compatibilidad con superpowers 6.4.1' {
   }
 
   It 'encargo-revision remite a la conversión de la ruta del workspace' {
-    Get-KitFile 'skills/sdd-start-task/references/encargo-revision.md' | Should -Match '(?m)^## Rutas del workspace en Windows[\s\S]*cygpath -w'
+    Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' | Should -Match '(?m)^## Rutas del workspace en Windows[\s\S]*cygpath -w'
   }
 
   It 'el README declara validada la 6.4.1' {

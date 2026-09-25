@@ -46,8 +46,8 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1 | Should -Not -Match 'historial'
     }
 
-    It 'la regla de fusión de sdd-end-task dice que la capacidad no guarda historial' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md') 4 | Should -Match 'no guarda historial'
+    It 'la regla de fusión de sdd-end-feature dice que la capacidad no guarda historial' {
+      Get-NumberedStep (Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md') 4 | Should -Match 'no guarda historial'
     }
   }
 
@@ -79,8 +79,8 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $section | Should -Match 'Ninguna, porque'
     }
 
-    It 'sdd-end-task ejecuta el validador con la spec en el paso 4' {
-      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-task/SKILL.md') 4
+    It 'sdd-end-feature ejecuta el validador con la spec en el paso 4' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-feature/SKILL.md') 4
       $step | Should -Match 'Test-Capabilities\.ps1'
       $step | Should -Match '-Artifact'
     }
@@ -93,14 +93,14 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
 
     It 'en los dos cierres, un fallo en una capacidad que el delta no toca se informa y no bloquea' {
-      foreach ($step in @((Get-NumberedStep (Read-SkillFile 'sdd-end-task/SKILL.md') 4), (Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1))) {
+      foreach ($step in @((Get-NumberedStep (Read-SkillFile 'sdd-end-feature/SKILL.md') 4), (Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1))) {
         $step | Should -Match 'que el delta no toca'
         $step | Should -Match 'no bloquea'
       }
     }
 
     It 'la regla de fusión nombra el validador' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md') 4 | Should -Match 'Test-Capabilities\.ps1'
+      Get-NumberedStep (Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md') 4 | Should -Match 'Test-Capabilities\.ps1'
     }
   }
 
@@ -116,8 +116,8 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       ($content -split "`n" | Where-Object { $_ -match '^> 1\. ' }) | Should -Match 'inglés'
     }
 
-    It 'sdd-start-task lo dice en el paso 4' {
-      $step = Get-NumberedStep (Read-SkillFile 'sdd-start-task/SKILL.md') 4
+    It 'sdd-start-feature lo dice en el paso 4' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-start-feature/SKILL.md') 4
       $step | Should -Match 'inglés kebab-case'
     }
   }
@@ -132,11 +132,11 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
 
     It 'el paso de aprendizajes dice que los anclajes enlazan el valor' {
-      Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md' | Should -Match 'enlaza'
+      Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md' | Should -Match 'enlaza'
     }
 
-    It 'sdd-end-task tiene una red flag sobre valores copiados a tech-stack' {
-      $redFlags = [regex]::Match((Read-SkillFile 'sdd-end-task/SKILL.md'), '(?s)## Red flags.*?\|').Value
+    It 'sdd-end-feature tiene una red flag sobre valores copiados a tech-stack' {
+      $redFlags = [regex]::Match((Read-SkillFile 'sdd-end-feature/SKILL.md'), '(?s)## Red flags.*?\|').Value
       $redFlags | Should -Match 'tech-stack'
     }
   }
@@ -149,7 +149,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
 
     It 'la fusión sustituye entero el requisito' {
-      Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md' | Should -Match 'MODIFIED sustituye entero'
+      Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md' | Should -Match 'MODIFIED sustituye entero'
     }
 
     It 'capability-template describe la misma fusión en la regla 3' {
@@ -162,7 +162,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
 
 Describe 'Las skills eligen capacidades con el índice generado' {
   It '<Skill> ejecuta Get-CapabilityIndex.ps1 en su paso de contexto, antes de abrir capacidades' -ForEach @(
-    @{ Skill = 'sdd-start-task'; Step = 'Contexto' }
+    @{ Skill = 'sdd-start-feature'; Step = 'Contexto' }
     @{ Skill = 'sdd-roadmap'; Step = 'Estado real' }
     @{ Skill = 'sdd-consult'; Step = 'Primar contexto' }
   ) {

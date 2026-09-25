@@ -8,8 +8,8 @@ BeforeAll {
 
 Describe 'Frenos de alcance en la ejecución' {
   BeforeAll {
-    $script:Profiles = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
-    $script:Skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
+    $script:Skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
   }
 
   It 'control-profiles define los frenos y el solape de la enmienda' {
@@ -27,13 +27,13 @@ Describe 'Frenos de alcance en la ejecución' {
     $cells[3] | Should -Be 'para'
   }
 
-  It 'sdd-start-task nombra el freno en el paso 6 y en el trabajo descubierto, y enlaza la referencia' {
+  It 'sdd-start-feature nombra el freno en el paso 6 y en el trabajo descubierto, y enlaza la referencia' {
     ([regex]::Matches($script:Skill, '(?i)freno de alcance')).Count | Should -BeGreaterOrEqual 2
     $script:Skill | Should -Match '(?i)freno de alcance[^
 ]*\(references/control-profiles\.md\)'
   }
 
-  It 'sdd-start-task no copia el umbral: vive en la referencia' {
+  It 'sdd-start-feature no copia el umbral: vive en la referencia' {
     $script:Skill | Should -Not -Match ([regex]::Escape('3.er fix'))
   }
 
@@ -42,6 +42,6 @@ Describe 'Frenos de alcance en la ejecución' {
   }
 
   It 'los overrides arbitran los frenos frente a subagent-driven-development' {
-    Get-KitFile 'skills/sdd-start-task/references/overrides-superpowers.md' | Should -Match 'frenos de alcance'
+    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Match 'frenos de alcance'
   }
 }

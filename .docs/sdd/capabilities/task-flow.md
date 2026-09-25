@@ -2,12 +2,12 @@
 
 ## Propósito
 
-El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una task.
+El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una feature.
 
 ## Requisitos
 
 ### La spec presenta primero las decisiones tomadas sin el usuario
-- GIVEN una task en modo full o lite
+- GIVEN una feature en modo full o lite
 - WHEN el agente presenta la spec en el gate
 - THEN el primer bloque que el dev-lead lee es "Decisiones que he tomado yo — valida estas", con una línea por decisión, y el resto de la spec cabe en una pantalla
 
@@ -43,24 +43,24 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - AND el resto del plan es para el ejecutor
 
 ### El artículo de calidad de código viaja a implementadores y revisores
-- GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una task en modo lite, que no tiene plan
+- GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una feature en modo lite, que no tiene plan
 - WHEN se despacha un implementador, un revisor de task, un re-revisor o el revisor final
 - THEN el encargo lleva el bloque «De código» literal como primera sección
 - AND el bloque «De proceso» (política de modelos, modo de ejecución, atribución de commits) no aparece en el encargo de ningún revisor
 - AND en modo lite el bloque es el artículo de calidad de código de la constitution, copiado literal; la política de modelos la aplica quien despacha
 
 ### El trabajo se valida con el usuario antes de cerrar
-- GIVEN una task con la implementación terminada y la revisión final limpia
+- GIVEN una feature con la implementación terminada y la revisión final limpia
 - WHEN el agente va a cerrar
-- THEN antes de invocar `sdd-end-task` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- THEN antes de invocar `sdd-end-feature` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
 - AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
-- AND si el usuario no responde, la task queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
+- AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
 
 ### El walkthrough crece por adendas
-- GIVEN una task cerrada con walkthrough
-- WHEN algo cambia después del cierre (validación tardía, integración con otra task)
+- GIVEN una feature cerrada con walkthrough
+- WHEN algo cambia después del cierre (validación tardía, integración con otra feature)
 - THEN se añade una entrada fechada en `## 6. Adendas` y el cuerpo no se reescribe
 
 ### La review de dominio pregunta por el complemento de visibilidad
@@ -69,7 +69,7 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - THEN pide que la spec diga qué no ve y qué no puede hacer ese rol o estado, y la spec lo declara o lo rechaza con motivo
 
 ### El walkthrough registra la review de spec
-- GIVEN una task cerrada
+- GIVEN una feature cerrada
 - WHEN se escribe el bloque de tiempo del walkthrough
 - THEN lleva la línea «Review de spec: no | 1 revisor (lente) | 2 revisores · hallazgos N, aceptados M»
 
@@ -81,15 +81,15 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
 
 ### Un aprendizaje sin destino no se redirige en silencio
-- GIVEN un cierre de task cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
-- WHEN `sdd-end-task` vuelca los aprendizajes a los docs vivos
+- GIVEN un cierre de feature cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
+- WHEN `sdd-end-feature` vuelca los aprendizajes a los docs vivos
 - THEN crea `architecture.md` calcando `architecture-template.md` de `sdd-templates`, vuelca ahí el aprendizaje y lo dice en el informe final («`architecture.md` no existía: creado desde la plantilla»)
 - AND no escribe el aprendizaje estructural en `tech-stack.md` ni en otro documento en su lugar
 - AND lo mismo con cualquier otro destino que falte (`constitution.md`, `tech-stack.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la tabla de deuda técnica del roadmap
 
 ### Un documento de anclaje que falta se calca de su plantilla
 - GIVEN un proyecto al que le falta un documento de anclaje con plantilla en `sdd-templates`
-- WHEN una task, un cierre o una consulta lo tiene que crear
+- WHEN una feature, un cierre o una consulta lo tiene que crear
 - THEN el documento sigue las secciones de su plantilla, sin secciones inventadas ni omitidas (las vacías llevan su marcador)
 
 ### El implementador no esquiva lo que le frena
@@ -147,7 +147,7 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - AND sin navegador con el que ejecutar Playwright o sin forma de levantar la aplicación, lo dice con el error concreto y la task queda «no probado» en lo visual, nunca «verificado» ni sustituida por la suite; «el MCP de Playwright no está en la sesión» y «faltan dependencias» no son ninguno de los dos
 
 ### La verificación visual se enseña con medidas y capturas
-- GIVEN la task 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, contraste del texto y separación de la flecha al borde
+- GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, contraste del texto y separación de la flecha al borde
 - WHEN el agente para tras la task en `pair`, o presenta la validación del paso 7 en `delegate`
 - THEN antes del guion de pruebas enseña cada medida con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1») y la ruta de cada captura
 - AND una task que quedó «no probado» lo dice en ese sitio, con su motivo
@@ -180,7 +180,7 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - THEN usa la ruta que da `cygpath -w`, y el `Write` no pide un permiso que un sujeto sin usuario no puede conceder
 
 ### Cada cambio de paso lleva un aviso en llano
-- GIVEN una task en curso con `sdd-start-task`
+- GIVEN una feature en curso con `sdd-start-feature`
 - WHEN el agente pasa de un paso del flujo al siguiente
 - THEN su mensaje dice, en lenguaje llano, qué hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará cuando el paso lanza subagentes o sujetos
 - AND un contador («van 7 de 15») o un número de paso sin esa frase no cuentan como aviso
@@ -215,17 +215,17 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 
 ### Sin el tipo de effort, se dice antes del primer despacho
 - GIVEN una sesión cuyos tipos de agente no incluyen el `sdd-kit:effort-<nivel>` que toca
-- WHEN el hilo va a hacer el primer despacho de la task (implementador en SDD, revisor final en Native)
+- WHEN el hilo va a hacer el primer despacho de la feature (implementador en SDD, revisor final en Native)
 - THEN antes de despachar dice que el tipo falta, despacha con el `model` y la frase de respaldo «effort: no disponible en este harness, hereda el de la sesión», y lo registra como ruling
 
 ### El cierre no repite la revisión final de Native
-- GIVEN una task Native cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama
-- WHEN se ejecuta el paso 9 de `sdd-end-task`
+- GIVEN una feature Native cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama
+- WHEN se ejecuta el paso 9 de `sdd-end-feature`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
 - AND solo sin esa línea (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
 
 ### Los minors diferidos llegan al walkthrough
-- GIVEN una task Native con líneas `Final: minor (deferred)` en el ledger
+- GIVEN una feature Native con líneas `Final: minor (deferred)` en el ledger
 - WHEN se escribe el walkthrough
 - THEN «Decisiones tomadas sin el dev-lead» lleva los «Rulings I made» y los «Deferred minors» del mensaje final de `executing-plans`
 
@@ -237,19 +237,19 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - AND el plan no fija un tamaño en horas por task
 
 ### En `pair`, cada task cerrada para con su guion de pruebas
-- GIVEN perfil `pair` y la Task 1 de 2 de la task 0012 («Validar al reservar») con su revisión limpia y su commit
+- GIVEN perfil `pair` y la Task 1 de 2 de la feature 0012 («Validar al reservar») con su revisión limpia y su commit
 - WHEN el hilo cierra la Task 1
 - THEN para antes de la Task 2 y presenta el guion de la Task 1, con la forma del guion de la validación: por ejemplo, «1. `salas reservar Norte 1012` → «Franja no válida: usa HH-HH, p. ej. 10-12»; 2. `salas reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`»
 - AND en `delegate` y `unattended` sigue con la Task 2 sin parar ni presentar guion
 
 ### El gate del plan en `pair` ofrece parar para bajar la sesión a gama media
-- GIVEN una task en `pair`, una sesión con Opus 5.5 y un plan con `Ejecución: native, porque…`
+- GIVEN una feature en `pair`, una sesión con Opus 5.5 y un plan con `Ejecución: native, porque…`
 - WHEN el agente presenta el gate del plan
 - THEN entre las opciones está «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con su motivo: Native va bien en gama media (Sonnet, effort medium) y bajar solo el effort de Opus no es gama media
 - AND si el usuario la elige, el agente junta la apertura en su commit y termina el turno antes de la Task 1 diciendo el cambio (`/model`, Sonnet con effort medium)
 
 ### El gate de la spec en `delegate` ofrece parar tras el plan para bajar la sesión a gama media
-- GIVEN una task en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
+- GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
 - WHEN el agente presenta la spec
 - THEN entre las opciones está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
 - AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
@@ -258,6 +258,24 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - GIVEN un plan cuyo método es Native
 - WHEN el agente escribe su línea `Ejecución`
 - THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.»
+
+### La carpeta de una feature nueva lleva `-feature-`
+- GIVEN un proyecto en modo `sequence` con la fila 0081 «Avisos de reserva» pendiente en el roadmap
+- WHEN `sdd-start-feature` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
+- THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
+- AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
+
+### Una carpeta `-task-` se cierra como legado
+- GIVEN la rama `feature/0064-task-to-feature-rename` con su carpeta `20260925-163055-task-0064-task-to-feature-rename/`, cuyo `spec.md` lleva `task: 0064`
+- WHEN `sdd-end-feature` cierra la feature
+- THEN escribe `walkthrough.md` en esa misma carpeta, sin renombrarla
+- AND el estimation-log regenerado tiene una fila con id `0064` y carpeta `20260925-163055-task-0064-task-to-feature-rename`
+
+### Las tasks del plan conservan su nombre
+- GIVEN una feature en modo full con su plan escrito
+- WHEN el dev abre `plan.md` y el registro vivo
+- THEN las unidades del plan se llaman «Task 1», «Task 2»… y el registro es `tasks.md`, con cabecera `| # | Task | Status | Commit | Notas |`
+- AND la palabra «feature» nombra solo la unidad del kit: la spec, la rama y la carpeta
 
 ## Reglas de la capacidad
 

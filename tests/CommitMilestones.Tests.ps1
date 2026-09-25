@@ -13,7 +13,7 @@ BeforeAll {
 }
 
 Describe 'Referencia commit-milestones' {
-  BeforeAll { $script:Recipe = Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md' }
+  BeforeAll { $script:Recipe = Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md' }
 
   It 'tiene las cinco secciones que enlazan las skills' {
     foreach ($heading in 'Qué lleva cada hito', 'Receta', 'Guardas', 'El hash en los artefactos', 'Tests RED sin commitear') {
@@ -46,26 +46,26 @@ Describe 'Referencia commit-milestones' {
 
 Describe 'Carril task' {
   It 'el paso 5 junta la apertura antes del primer despacho' {
-    Get-SkillStep 'sdd-start-task' 5 | Should -Match 'junta la apertura[^\n]*commit-milestones\.md'
+    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'junta la apertura[^\n]*commit-milestones\.md'
   }
 
   It 'el paso 6 deja los RED sin commitear y junta cada task' {
-    $step = Get-SkillStep 'sdd-start-task' 6
+    $step = Get-SkillStep 'sdd-start-feature' 6
     $step | Should -Not -Match 'y los commitea;'
     $step | Should -Match 'sin commitearlos'
     $step | Should -Match 'junta su rango en un commit[^\n]*commit-milestones\.md'
   }
 
   It 'el cierre junta su commit antes del merge' {
-    Get-SkillStep 'sdd-end-task' 10 | Should -Match 'junta el cierre en un commit[^\n]*commit-milestones\.md'
+    Get-SkillStep 'sdd-end-feature' 10 | Should -Match 'junta el cierre en un commit[^\n]*commit-milestones\.md'
   }
 
   It 'el override cubre los commits frecuentes de superpowers' {
-    Get-KitFile 'skills/sdd-start-task/references/overrides-superpowers.md' | Should -Match 'Frequent commits[^\n]*commit-milestones\.md'
+    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Match 'Frequent commits[^\n]*commit-milestones\.md'
   }
 
   It 'el encargo del implementador commitea los RED con la implementación' {
-    Get-KitFile 'skills/sdd-start-task/references/encargo-revision.md' | Should -Match 'sin commitear: commitéalos con tu implementación[^\n]*--no-verify'
+    Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' | Should -Match 'sin commitear: commitéalos con tu implementación[^\n]*--no-verify'
   }
 
   It 'la plantilla del plan ya no commitea los RED antes de despachar' {
@@ -111,11 +111,11 @@ Describe 'Carril patch' {
   }
 
   It 'la tabla de gates aplica la validación también al cierre de patch' {
-    Get-KitFile 'skills/sdd-start-task/references/control-profiles.md' | Should -Match '(?m)^\| Validación \(cierre de task y de patch\) \| para \| para \|'
+    Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md' | Should -Match '(?m)^\| Validación \(cierre de feature y de patch\) \| para \| para \|'
   }
 
   It 'commit-milestones deja mandar la forma de commits del dev-lead y fija dónde va un test en RED (patch 0075)' {
-    $recipe = Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md'
+    $recipe = Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md'
     $recipe | Should -Match 'manda la suya sobre «un solo commit»'
     $recipe | Should -Match 'test en RED va en el commit de su arreglo o en uno posterior'
   }

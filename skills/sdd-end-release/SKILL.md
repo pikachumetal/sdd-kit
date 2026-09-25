@@ -1,6 +1,6 @@
 ---
 name: sdd-end-release
-description: Usar cuando hay que cerrar una release/entrega en un proyecto con .docs/sdd/ — el usuario dice "cierra la release", "prepara la entrega", "el cliente espera el email", o el changelog acumula tasks sin corte de versión. No para cerrar una task individual (eso es sdd-end-task).
+description: Usar cuando hay que cerrar una release/entrega en un proyecto con .docs/sdd/ — el usuario dice "cierra la release", "prepara la entrega", "el cliente espera el email", o el changelog acumula features sin corte de versión. No para cerrar una feature individual (eso es sdd-end-feature).
 ---
 
 # sdd-end-release
@@ -8,8 +8,8 @@ description: Usar cuando hay que cerrar una release/entrega en un proyecto con .
 ## Overview
 
 Cerrar una release es el **corte de publicación** de lo hecho, como la rama de release de git-flow: se
-lanza haya habido apertura con `sdd-start-release` o no — el modo incremental (task y patch sin abrir
-release) llega aquí igual. Se ejecuta SOBRE tasks ya cerradas (vía `sdd-end-task`) y produce los
+lanza haya habido apertura con `sdd-start-release` o no — el modo incremental (feature y patch sin abrir
+release) llega aquí igual. Se ejecuta SOBRE features ya cerradas (vía `sdd-end-feature`) y produce los
 artefactos que convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente
 (solo con destinatario), roadmap colapsado y tag.
 
@@ -24,9 +24,9 @@ exactamente cuando se salta lo que luego cuesta semanas recuperar.
 
 ## ⛔ Gate de entrada
 
-Toda task/patch de la release cerrada vía `sdd-end-task` (walkthrough + changelog al día) y el build/lint
+Toda feature/patch de la release cerrada vía `sdd-end-feature` (walkthrough + changelog al día) y el build/lint
 del proyecto en verde. Trabajo a medias → se decide CON el usuario si entra o se mueve, nunca en silencio.
-Una task que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
+Una feature que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
 mismo tratamiento que el trabajo a medias — decisión del usuario, no "lo anoto y sigo".
 Con el usuario ausente: se PREPARAN los pasos 1-4 y el paso 5 queda **pendiente** — nunca se resuelve el
 gate en solitario.
@@ -52,12 +52,12 @@ gate en solitario.
    Receta, prohibiciones y la entrada del roadmap sin destinatario:
    [notas-y-roadmap.md](references/notas-y-roadmap.md).
 4. **Colapsar el roadmap** — ANTES de sustituir nada, rescata los pendientes vivos de la sección de la
-   release. Si hay tasks `🧪 validación diferida a <esta release>`, antes de colapsar pide al dev-lead que
-   valide el smoke diciendo qué probó: cada task que menciona gana una adenda fechada en su
+   release. Si hay features `🧪 validación diferida a <esta release>`, antes de colapsar pide al dev-lead que
+   valide el smoke diciendo qué probó: cada feature que menciona gana una adenda fechada en su
    `walkthrough.md` con lo que le toca y su fila pasa a `✅`; la que no menciona **conserva la forma**
    `🧪 validación diferida a <disparador nuevo>` — la siguiente release, salvo que el dev-lead nombre otro
    disparador — y el resumen de cierre la lista. Estados del roadmap:
-   [control-profiles.md](../sdd-start-task/references/control-profiles.md).
+   [control-profiles.md](../sdd-start-feature/references/control-profiles.md).
    Procedimiento del colapso: [notas-y-roadmap.md](references/notas-y-roadmap.md).
 5. **Versión, tag y merge** — bump con el tooling del proyecto y deja la rama lista. ⛔ **GATE: el merge al
    branch estable y el tag son SIEMPRE decisión del usuario** — prepáralos, preséntalos y espera su
@@ -83,14 +83,14 @@ gate en solitario.
   feature, o antes del merge al branch estable.
 - Te has concedido el atajo tú mismo: escribiste `release.hasRecipient: false` sin que el usuario
   respondiera, o disparaste `sdd-end-release` sin una orden de cierre suya en la conversación.
-- Hay tasks "cerradas" sin walkthrough/patch.md y has seguido con el cierre sin decisión del usuario.
+- Hay features "cerradas" sin walkthrough/patch.md y has seguido con el cierre sin decisión del usuario.
 - Has colapsado la sección del roadmap sin rescatar antes sus pendientes vivos.
 - `.docs/sdd/releases/vX.Y.Z/` no existe al terminar, habiendo destinatario o habiendo retro (sin
   ninguno de los dos, la carpeta no es obligatoria).
 
 | Racionalización | Realidad |
 | --- | --- |
-| "El changelog ya lo cuenta todo, lo mando tal cual" | Audiencias distintas: el cliente no lee IDs de task ni jerga. Las release notes se destilan, no se copian. |
+| "El changelog ya lo cuenta todo, lo mando tal cual" | Audiencias distintas: el cliente no lee IDs de feature ni jerga. Las release notes se destilan, no se copian. |
 | "Hay un breaking change: toca 1.0.0" | En pre-1.0 no: `v1.0.0` marca producción, no un breaking. Y la versión la confirma el usuario. |
 | "La retro la hago de memoria, fue hace nada" | Sin los números del estimation-log y los action items anteriores no hay aprendizaje, hay anécdota. |
 | "Hay prisa con el email: colapso el roadmap y sigo" | Un pendiente vivo enterrado en el colapso es scope perdido en silencio. Primero rescatar, después colapsar. |
