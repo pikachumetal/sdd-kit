@@ -1,5 +1,9 @@
 # Capacidad — bookings
 
+## Propósito
+
+Reservar y consultar salas por franja horaria desde el CLI.
+
 ## Requisitos
 
 ### Reservar una franja

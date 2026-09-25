@@ -1,6 +1,8 @@
 # Capacidad — control-profiles
 
-Verdad viva de cuánto para el agente a esperar al dev: los perfiles de control, los gates de cada uno, el desvío, la aprobación, la validación diferida y la política de merge. La declaró la spec de la task 0008 en sus «Decisiones que he tomado yo» (decisión 1). La tabla que las skills aplican vive en `skills/sdd-start-task/references/control-profiles.md`; aquí está el comportamiento observable.
+## Propósito
+
+Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, aprobación, validación diferida y política de merge. La tabla que aplican las skills vive en `skills/sdd-start-task/references/control-profiles.md`.
 
 ## Requisitos
 

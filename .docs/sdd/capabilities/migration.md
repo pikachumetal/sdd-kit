@@ -1,6 +1,8 @@
 # Capacidad — migration
 
-Verdad viva del comportamiento observable de la migración de un proyecto consumidor entre versiones del kit: cómo declara la versión que tiene, qué escribe cada release del kit y qué hace «actualízame al kit». La declaró la spec de la task `migracion-consumidores` (T10) en sus «Decisiones a validar» (decisión 1). El procedimiento detallado vive en `skills/sdd-init-brownfield/references/migrations/README.md`.
+## Propósito
+
+La migración de un proyecto consumidor entre versiones del kit: cómo declara la versión que tiene, qué escribe cada release y qué hace «actualízame al kit». El procedimiento vive en `skills/sdd-init-brownfield/references/migrations/README.md`.
 
 ## Requisitos
 

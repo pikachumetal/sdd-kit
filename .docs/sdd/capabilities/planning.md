@@ -1,6 +1,8 @@
 # Capacidad — planning
 
-Cómo entra el trabajo en el roadmap de un proyecto con `.docs/sdd/` antes de hacerlo: qué distingue `sdd-roadmap` en lo que le traen, qué deja en el roadmap y cuándo escribe una propuesta (`specs/<ts>-proposal-<id>-<slug>/proposal.md`). La declaró la spec de la task 0062. Qué skill se invoca primero lo cubre [`routing`](routing.md); los ids, [`task-ids`](task-ids.md); el destinatario y el estado de una release, [`release-flow`](release-flow.md).
+## Propósito
+
+Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadmap` en lo que le traen, qué deja en el roadmap y cuándo escribe una propuesta (`specs/<ts>-proposal-<id>-<slug>/proposal.md`).
 
 ## Requisitos
 

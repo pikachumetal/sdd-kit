@@ -1,6 +1,8 @@
 # Capacidad — capabilities
 
-Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que usan el kit. La declaró la spec de la task 0003 (decisión 2); sus cinco primeros requisitos vivían antes en `task-flow`.
+## Propósito
+
+Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que usan el kit, y cómo se valida y se lista (`Test-Capabilities.ps1`, `Get-CapabilityIndex.ps1`).
 
 ## Requisitos
 

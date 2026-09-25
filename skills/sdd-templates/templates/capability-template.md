@@ -13,7 +13,14 @@
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
 >    duplica.
 >
-> Sin índice: el listado de ficheros de `capabilities/` es el índice.
+> Índice: lo genera `Get-CapabilityIndex.ps1` al vuelo; no hay `index.md`.
+
+## Propósito
+
+> Una o dos frases, 300 caracteres como máximo: qué cubre la capacidad, para que el índice la distinga de las demás.
+> Sin procedencia (quién o qué task la creó): eso lo dicen git y el bloque «Capacidades» de cada spec.
+
+<una o dos frases: qué cubre la capacidad>
 
 ## Requisitos
 

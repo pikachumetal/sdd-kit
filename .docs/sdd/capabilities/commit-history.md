@@ -1,6 +1,8 @@
 # Capacidad — commit-history
 
-Verdad viva de la historia de la rama de una task o de un patch: qué commits quedan al fusionar y qué hash apuntan los artefactos. Esta capacidad la declaró la spec de la task 0044 en sus «Decisiones que he tomado yo» (decisión 1). La receta y las guardas viven en `skills/sdd-start-task/references/commit-milestones.md`.
+## Propósito
+
+La historia de la rama de una task o de un patch: qué commits quedan al fusionar y qué hash apuntan los artefactos. La receta vive en `skills/sdd-start-task/references/commit-milestones.md`.
 
 ## Requisitos
 
