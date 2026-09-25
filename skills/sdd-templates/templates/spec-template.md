@@ -23,6 +23,13 @@ approvers:
 > **Regla de reparto**: el comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`. `tech-stack.md`, `architecture.md` y `environments.md` dicen dónde está la pieza técnica y enlazan la capacidad; no copian el valor.
 > Borra los bloques de ayuda (`>`) al redactar.
 
+## Capacidades
+
+> Se escribe tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo». Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta. Lo comprueba `Test-Capabilities.ps1` al cerrar.
+
+- Nuevas: `<nombre>` — <qué cubre>
+- Modificadas: `<nombre>` — <qué requisito cambia>
+
 ## Decisiones que he tomado yo — valida estas
 
 > Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-start-task/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).

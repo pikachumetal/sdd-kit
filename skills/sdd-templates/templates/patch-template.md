@@ -19,6 +19,12 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
 > Borra los bloques de ayuda (`>`) al redactar.
 
+## Capacidades
+
+> Se escribe al cerrar, tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `Test-Capabilities.ps1` al cerrar.
+
+- Modificadas: `<nombre>` — <qué requisito cambia>
+
 ## 1. Síntoma
 
 Lo observado/reportado, literal. Error o traza recortada a lo relevante.
@@ -49,8 +55,8 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*
 
-> Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: borra
-> esta sección. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
+> Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: el bloque
+> «Capacidades» lo dice con «Ninguna, porque el fix devuelve…» y esta sección se borra. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
 > la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-end-patch`.
 
 ### Capacidad: `<nombre>`

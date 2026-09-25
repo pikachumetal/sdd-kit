@@ -51,6 +51,52 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
   }
 
+  Context 'el bloque «Capacidades» abre la spec y el patch' {
+    It 'spec-template lo lleva antes de las decisiones, con sus tres formas' {
+      $content = Read-SkillFile 'sdd-templates/templates/spec-template.md'
+      $content.IndexOf("`n## Capacidades") | Should -BeGreaterThan 0
+      $content.IndexOf("`n## Capacidades") | Should -BeLessThan $content.IndexOf('## Decisiones que he tomado yo')
+      $block = [regex]::Match($content, '(?s)\n## Capacidades.*?\n## ').Value
+      $block.Contains('- Nuevas: `<nombre>`') | Should -BeTrue
+      $block.Contains('- Modificadas: `<nombre>`') | Should -BeTrue
+      $block.Contains('Ninguna, porque') | Should -BeTrue
+      $block | Should -Match 'listar `\.docs/sdd/capabilities/`'
+      $block | Should -Match 'nombre exacto'
+    }
+
+    It 'patch-template lo lleva antes del síntoma, sin «Nuevas»' {
+      $content = Read-SkillFile 'sdd-templates/templates/patch-template.md'
+      $content.IndexOf("`n## Capacidades") | Should -BeGreaterThan 0
+      $content.IndexOf("`n## Capacidades") | Should -BeLessThan $content.IndexOf('## 1. Síntoma')
+      $block = [regex]::Match($content, '(?s)\n## Capacidades.*?\n## ').Value
+      $block.Contains('- Modificadas: `<nombre>`') | Should -BeTrue
+      $block.Contains('- Nuevas:') | Should -BeFalse
+      $block.Contains('Ninguna, porque el fix devuelve') | Should -BeTrue
+    }
+
+    It 'la ayuda de la sección de delta del patch manda la salida corta al bloque' {
+      $section = [regex]::Match((Read-SkillFile 'sdd-templates/templates/patch-template.md'), '(?s)## 6\. Delta de capacidad.*').Value
+      $section | Should -Match 'Ninguna, porque'
+    }
+
+    It 'sdd-end-task ejecuta el validador con la spec en el paso 4' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-task/SKILL.md') 4
+      $step | Should -Match 'Test-Capabilities\.ps1'
+      $step | Should -Match '-Artifact'
+    }
+
+    It 'sdd-end-patch ejecuta el validador con el patch y escribe el bloque en el paso 1' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
+      $step | Should -Match 'Test-Capabilities\.ps1'
+      $step | Should -Match '-Artifact'
+      $step | Should -Match 'Ninguna, porque el fix devuelve'
+    }
+
+    It 'la regla de fusión nombra el validador' {
+      Get-NumberedStep (Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md') 4 | Should -Match 'Test-Capabilities\.ps1'
+    }
+  }
+
   Context 'el slug de una capacidad nueva va en inglés' {
     It 'spec-template lo dice en la ayuda del delta' {
       $content = Read-SkillFile 'sdd-templates/templates/spec-template.md'
