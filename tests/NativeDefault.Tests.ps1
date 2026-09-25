@@ -9,8 +9,8 @@ BeforeAll {
     return (Get-KitFile $RelativePath) -split "`r?`n" | Where-Object { $_ -match '^\s*\|' -and $_.Contains($Anchor) }
   }
 
-  $script:ControlProfiles = 'skills/sdd-start-task/references/control-profiles.md'
-  $script:Overrides = 'skills/sdd-start-task/references/overrides-superpowers.md'
+  $script:ControlProfiles = 'skills/sdd-start-feature/references/control-profiles.md'
+  $script:Overrides = 'skills/sdd-start-feature/references/overrides-superpowers.md'
 }
 
 Describe 'Task 1 — contrato del método' {
@@ -75,11 +75,11 @@ Describe 'Task 1 — contrato del método' {
   }
 
   It 'el paso 5 nombra el método del handoff y la clave execution' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `.docs/sdd/sdd-kit.local.json` o en `sdd-kit.json`'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `.docs/sdd/sdd-kit.local.json` o en `sdd-kit.json`'
   }
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match '6\. \*\*Implementación\*\* — según la línea `Ejecución` del plan: `superpowers:executing-plans` \(Native\) o `superpowers:subagent-driven-development`'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match '6\. \*\*Implementación\*\* — según la línea `Ejecución` del plan: `superpowers:executing-plans` \(Native\) o `superpowers:subagent-driven-development`'
   }
 }
 
@@ -119,7 +119,7 @@ Describe 'Task 2 — init y migración' {
 
 Describe 'REFACTOR — la pregunta del gate del plan en pair' {
   It 'el paso 5 da la forma de la pregunta con el método y la recomendada primero' {
-    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
     $skill | Should -Match 'En `pair`, la pregunta del gate aprueba el plan y elige el método a la vez'
     $skill | Should -Match '«Apruebo, con <método recomendado> \(Recomendada\)», «Apruebo, con <el otro método>» y «Cambios»'
   }
@@ -140,11 +140,11 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'el paso 6 dice cómo se ejecuta una task lite' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'En modo lite, sin plan: el valor de `execution` si está fijado; con `auto`, Native'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'En modo lite, sin plan: el valor de `execution` si está fijado; con `auto`, Native'
   }
 
   It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado \(`native` o `subagent` que ningún `auto` de `sdd-kit.local.json` pisa\), o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'con `execution` fijado \(`native` o `subagent` que ningún `auto` de `sdd-kit.local.json` pisa\), o un método que el dev-lead ya nombró para la feature, solo «Apruebo» y «Cambios»'
   }
 
   It 'la celda de pair dice que con execution fijado solo se aprueba' {

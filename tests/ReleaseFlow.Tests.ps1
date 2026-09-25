@@ -18,7 +18,7 @@ Describe 'Carril release opcional' {
   }
 
   It 'ninguna skill de task o patch presupone una release' {
-    $taskAndPatchSkills = 'sdd-start-task', 'sdd-end-task', 'sdd-start-patch', 'sdd-end-patch'
+    $taskAndPatchSkills = 'sdd-start-feature', 'sdd-end-feature', 'sdd-start-patch', 'sdd-end-patch'
     foreach ($skill in $taskAndPatchSkills) {
       Get-ChildItem (Join-Path $script:RepoRoot "skills/$skill") -Recurse -File |
         ForEach-Object { Get-Content $_.FullName -Raw } |

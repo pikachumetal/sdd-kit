@@ -40,13 +40,13 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
 
   Context 'skills de carril' {
     It 'nombrado.md hace depender el id del modo declarado en sdd-kit.json' {
-      $nombrado = Get-KitFile 'skills/sdd-start-task/references/nombrado.md'
+      $nombrado = Get-KitFile 'skills/sdd-start-feature/references/nombrado.md'
       $nombrado | Should -Match 'sdd-kit\.json'
       $nombrado | Should -Match 'sequence'
     }
 
-    It 'sdd-start-task dice de dónde sale el id en cada modo' {
-      Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'sequence'
+    It 'sdd-start-feature dice de dónde sale el id en cada modo' {
+      Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'sequence'
     }
 
     It 'sdd-start-patch declara la secuencia compartida con las tasks' {
@@ -58,7 +58,7 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
     }
 
     It 'los arranques sin fila reservan el id con -Reserve, no lo calculan' -ForEach @(
-      @{ File = 'skills/sdd-start-task/references/nombrado.md' }
+      @{ File = 'skills/sdd-start-feature/references/nombrado.md' }
       @{ File = 'skills/sdd-start-patch/SKILL.md' }
       @{ File = 'skills/sdd-roadmap/SKILL.md' }
     ) {

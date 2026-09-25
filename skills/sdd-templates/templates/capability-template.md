@@ -1,13 +1,13 @@
 # Capacidad — <nombre>
 
 > **Reglas anti-proliferación** (no se rompen sin pasar por esta lista):
-> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una task. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
 > 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
->    la crean `sdd-end-task` ni `sdd-end-patch` por su cuenta.
-> 3. `sdd-end-task` fusiona el delta de la spec, y `sdd-end-patch` el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
+>    la crean `sdd-end-feature` ni `sdd-end-patch` por su cuenta.
+> 3. `sdd-end-feature` fusiona el delta de la spec, y `sdd-end-patch` el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita. La capacidad no guarda historial: quién cambió
 >    qué lo dicen git y el bloque «Capacidades» de cada spec o `patch.md`.
-> 4. Las init no vuelcan: la carpeta `capabilities/` no se crea al inicializar y crece task a task,
+> 4. Las init no vuelcan: la carpeta `capabilities/` no se crea al inicializar y crece feature a feature,
 >    con la primera que toque cada capacidad. Única excepción: el volcado inicial de `sdd-init-greenfield`
 >    (paso 6), a petición del usuario y con la partición aprobada antes. Brownfield no vuelca nunca.
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
@@ -18,7 +18,7 @@
 ## Propósito
 
 > Una o dos frases, 300 caracteres como máximo: qué cubre la capacidad, para que el índice la distinga de las demás.
-> Sin procedencia (quién o qué task la creó): eso lo dicen git y el bloque «Capacidades» de cada spec.
+> Sin procedencia (quién o qué feature la creó): eso lo dicen git y el bloque «Capacidades» de cada spec.
 
 <una o dos frases: qué cubre la capacidad>
 
@@ -36,7 +36,7 @@
 ## Reglas de la capacidad *(opcional; presente obliga a decidir)*
 
 > Cinco entradas fijas, por nombre; «no aplica» es respuesta válida. El nombre es la clave:
-> `sdd-end-task` sustituye o añade cada entrada por su nombre cuando una spec la cambia. Sin
+> `sdd-end-feature` sustituye o añade cada entrada por su nombre cuando una spec la cambia. Sin
 > ellas, el agente decide cada una al azar y distinto en cada ejecución.
 
 - **Dónde viven los datos**: <fichero, tabla, memoria, almacenamiento del cliente… | no aplica>

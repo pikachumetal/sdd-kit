@@ -16,7 +16,7 @@
 
 ## Testing
 
-> La política que lee el plan de cada task: TDD si hay tests automáticos; smoke manual documentado si no los hay.
+> La política que lee el plan de cada feature: TDD si hay tests automáticos; smoke manual documentado si no los hay.
 
 <política>
 

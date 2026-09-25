@@ -1,6 +1,6 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
-  $script:Skill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-start-task/SKILL.md') -Raw
+  $script:Skill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-start-feature/SKILL.md') -Raw
 
   function Get-Step([int]$Step) {
     return [regex]::Match($script:Skill, "(?ms)^$Step\. .*?(?=^\d+\. |^## )").Value

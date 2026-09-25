@@ -46,4 +46,36 @@ Describe 'Renombrado task → feature' {
       $naming | Should -Match '(?s)-task-.{0,80}legado'
     }
   }
+
+  Context 'skills' {
+    It '<_> existe y su name es el de la carpeta' -ForEach @('sdd-start-feature', 'sdd-end-feature') {
+      Get-KitFile "skills/$_/SKILL.md" | Should -Match "(?m)^name: $_\s*$"
+    }
+
+    It 'la carpeta <_> ya no existe' -ForEach @('sdd-start-task', 'sdd-end-task') {
+      Test-Path (Join-Path $script:KitRoot "skills/$_") | Should -BeFalse
+    }
+
+    It 'la description de sdd-end-feature conserva «cierra la tarea»' {
+      Get-KitFile 'skills/sdd-end-feature/SKILL.md' | Should -Match '(?m)^description:.*cierra la tarea'
+    }
+
+    It 'la description de sdd-start-feature conserva «tarea» y nombra la feature' {
+      $description = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/SKILL.md'), '(?m)^description:.*$').Value
+      $description | Should -Match 'tarea'
+      $description | Should -Match 'feature'
+    }
+
+    It 'el router entra por sdd-start-feature' {
+      $router = Get-KitFile 'hooks/router.md'
+      $router | Should -Match ([regex]::Escape('sdd-kit:sdd-start-feature'))
+      $router | Should -Not -Match 'sdd-(start|end)-task'
+    }
+
+    It 'ninguna skill ni referencia fuera de migrations/ nombra las skills viejas' {
+      $files = Get-ChildItem (Join-Path $script:KitRoot 'skills') -Recurse -Filter '*.md' | Where-Object { $_.FullName -notmatch '[\\/]migrations[\\/]' }
+      $hits = $files | Where-Object { Select-String -LiteralPath $_.FullName -Pattern 'sdd-(start|end)-task' -Quiet } | ForEach-Object { $_.FullName }
+      $hits | Should -BeNullOrEmpty
+    }
+  }
 }

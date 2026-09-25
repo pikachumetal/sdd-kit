@@ -48,7 +48,7 @@ Describe 'Carril proposal' {
   }
 
   It 'el nombrado de carpetas incluye el carril proposal' {
-    Get-KitFile 'skills/sdd-start-task/references/nombrado.md' | Should -Match '\(feature\|patch\|proposal\)'
+    Get-KitFile 'skills/sdd-start-feature/references/nombrado.md' | Should -Match '\(feature\|patch\|proposal\)'
     Get-KitFile 'skills/sdd-templates/SKILL.md' | Should -Match '\(feature\|patch\|proposal\)'
   }
 
@@ -85,7 +85,7 @@ Describe 'sdd-roadmap' {
   }
 
   It 'separa planificar de hacer por el verbo' {
-    $script:Plan | Should -Match 'sdd-start-task'
+    $script:Plan | Should -Match 'sdd-start-feature'
     $script:Plan | Should -Match 'no lo arranques'
   }
 
@@ -100,7 +100,7 @@ Describe 'sdd-roadmap' {
   }
 
   It 'no arranca nada' {
-    $script:Plan | Should -Match 'ni rama, ni carpeta de task, ni spec'
+    $script:Plan | Should -Match 'ni rama, ni carpeta de feature, ni spec'
   }
 
   It 'fija las reglas del roadmap' {
@@ -159,7 +159,7 @@ Describe 'Retirada de sdd-start-release' {
 
 Describe 'Rama sin id' {
   BeforeAll {
-    $script:Naming = Get-KitFile 'skills/sdd-start-task/references/nombrado.md'
+    $script:Naming = Get-KitFile 'skills/sdd-start-feature/references/nombrado.md'
     $script:PatchStep2 = [regex]::Match((Get-KitFile 'skills/sdd-start-patch/SKILL.md'), '(?ms)^2\. \*\*Carpeta\*\*.*?(?=^3\. )').Value
   }
 
@@ -184,19 +184,19 @@ Describe 'Revisión final' {
   BeforeAll {
     $script:Plan = Get-KitFile 'skills/sdd-roadmap/SKILL.md'
     $script:Checklist = (($script:Plan -split '## Checklist')[1] -split '## Lo que deja')[0]
-    $script:Naming = Get-KitFile 'skills/sdd-start-task/references/nombrado.md'
+    $script:Naming = Get-KitFile 'skills/sdd-start-feature/references/nombrado.md'
     $script:PatchStep2 = [regex]::Match((Get-KitFile 'skills/sdd-start-patch/SKILL.md'), '(?ms)^2\. \*\*Carpeta\*\*.*?(?=^3\. )').Value
   }
 
   It 'la regla de la task en marcha vale para toda entrada, en el checklist' {
-    $script:Checklist | Should -Match 'task en marcha'
+    $script:Checklist | Should -Match 'feature en marcha'
     $script:Checklist | Should -Match 'tras'
     $script:Checklist | Should -Match 'cerrada'
   }
 
   It 'la red flag y la racionalización de la task en marcha vuelven' {
-    $script:Plan | Should -Match 'Vas a editar la fila o la spec de una task en marcha'
-    $script:Plan | Should -Match 'La nota es del tema de la task en marcha'
+    $script:Plan | Should -Match 'Vas a editar la fila o la spec de una feature en marcha'
+    $script:Plan | Should -Match 'La nota es del tema de la feature en marcha'
   }
 
   It 'el renombrado nunca toca la rama de integración ni la estable' {
@@ -213,8 +213,8 @@ Describe 'Revisión final' {
 }
 
 Describe 'Enrutado de un cambio de planificación' {
-  It 'el paso 2 de sdd-start-task tiene una salida a sdd-roadmap' {
-    $step2 = [regex]::Match((Get-KitFile 'skills/sdd-start-task/SKILL.md'), '(?ms)^2\. \*\*Enrutado\*\*.*?(?=^3\. )').Value
+  It 'el paso 2 de sdd-start-feature tiene una salida a sdd-roadmap' {
+    $step2 = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/SKILL.md'), '(?ms)^2\. \*\*Enrutado\*\*.*?(?=^3\. )').Value
     $step2 | Should -Match 'sdd-roadmap'
     $step2 | Should -Match 'definición de una propuesta'
   }

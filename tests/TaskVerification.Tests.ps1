@@ -43,19 +43,19 @@ Describe 'Plantilla de tasks' {
 
 Describe 'Despacho' {
   It 'el encargo del implementador lleva la verificación de su task' {
-    $brief = Get-KitFile 'skills/sdd-start-task/references/encargo-revision.md'
+    $brief = Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'
     $brief | Should -Match '## Verificación[\s\S]*campo «Verificación»'
     $brief | Should -Match 'No ejecutes[^\n]*suite completa'
     $brief | Should -Match 'Verificación lenta[^\n]*no la ejecutes'
   }
 
   It 'el override sustituye la suite completa de superpowers' {
-    $overrides = Get-KitFile 'skills/sdd-start-task/references/overrides-superpowers.md'
+    $overrides = Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md'
     $overrides | Should -Match 'run the full suite once before committing'
   }
 
   It 'el paso 6 dice quién mira la UI y quién lanza la verificación lenta' {
-    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
     $skill | Should -Match 'Verificación visual[^\n]*navegador[^\n]*no probado'
     $skill | Should -Match 'Verificación lenta[^\n]*segundo plano'
     $skill | Should -Match 'gate de cierre[^\n]*una vez'

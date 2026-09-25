@@ -39,7 +39,7 @@ Describe 'Plantilla kit-feedback-template.md' {
 }
 
 Describe 'Oferta en el cierre de cada carril' {
-  It 'la ofrece <_>' -ForEach @('sdd-end-task', 'sdd-end-patch') {
+  It 'la ofrece <_>' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
     Get-KitFileContent (Join-Path $script:KitRoot "skills/$_/SKILL.md") | Should -Match 'sdd-feedback'
   }
 }

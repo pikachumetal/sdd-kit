@@ -27,7 +27,7 @@ Describe 'Formato de cierre de filas del roadmap' {
   BeforeAll {
     $script:Template = Get-KitFile 'skills/sdd-templates/templates/roadmap-template.md'
     $script:DebtBlock = [regex]::Match($script:Template, '(?ms)^## Deuda técnica\r?\n(.*?)(?=^## )').Groups[1].Value
-    $script:EndTask = Get-KitFile 'skills/sdd-end-task/SKILL.md'
+    $script:EndTask = Get-KitFile 'skills/sdd-end-feature/SKILL.md'
     $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
   }
 
@@ -37,7 +37,7 @@ Describe 'Formato de cierre de filas del roadmap' {
     $script:DebtBlock | Should -Match ([regex]::Escape("grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '"))
   }
 
-  It 'el paso 8 de sdd-end-task cita el formato de la plantilla para Deuda técnica y Backlog' {
+  It 'el paso 8 de sdd-end-feature cita el formato de la plantilla para Deuda técnica y Backlog' {
     $line = Get-StepLine $script:EndTask 8
     $line | Should -Match 'roadmap-template\.md'
     $line | Should -Match 'Deuda técnica'

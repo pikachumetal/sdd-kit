@@ -32,10 +32,10 @@ Describe 'Plantillas' {
   }
 }
 
-Describe 'sdd-start-task' {
+Describe 'sdd-start-feature' {
   BeforeAll {
     function Get-SkillStep([int]$Step) {
-      $text = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+      $text = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
       return [regex]::Match($text, "(?ms)^$Step\. .*?(?=^\d+\. |^## )").Value
     }
   }
@@ -49,10 +49,10 @@ Describe 'sdd-start-task' {
     Assert-Literal (Get-SkillStep 6) @('**En `pair`, al cerrar cada task', 'guion de pruebas de esa task', 'Se prueba en la aplicación', 'En `delegate` y `unattended` no paras aquí')
   }
 }
-Describe 'sdd-end-task' {
+Describe 'sdd-end-feature' {
   It 'el pre-check presenta el guion de pruebas del paso 7' {
-    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?ms)^0\. .*?(?=^\d+\. |^## )').Value
-    Assert-Literal $step @('el **guion de pruebas** del paso 7 de `sdd-start-task`', 'resultado esperado')
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?ms)^0\. .*?(?=^\d+\. |^## )').Value
+    Assert-Literal $step @('el **guion de pruebas** del paso 7 de `sdd-start-feature`', 'resultado esperado')
     $step.Contains('cómo probarlo') | Should -BeFalse
   }
 }

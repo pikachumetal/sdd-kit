@@ -12,13 +12,13 @@
 │       ├── constitution.md   (principios no negociables · calca constitution-template.md)
 │       ├── tech-stack.md     (tecnologías con versiones; decisiones abiertas, como abiertas · calca tech-stack-template.md)
 │       ├── architecture.md   (cómo se construye · calca architecture-template.md)
-│       ├── capabilities/     (no se crea: nace con la primera task que declara una capacidad, o con el volcado inicial del paso 6)
+│       ├── capabilities/     (no se crea: nace con la primera feature que declara una capacidad, o con el volcado inicial del paso 6)
 │       ├── roadmap.md        (módulos identificados + deuda + tabla de patches · calca roadmap-template.md)
 │       ├── estimation.md     (método · calca estimation-template.md) · estimation-log.md (lo genera Build-EstimationLog.ps1: cabecera y 0 filas)
 │       ├── changelog.md      (opcional, según entrevista · calca changelog-template.md)
 │       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids": { "mode" }, "control"?, "merge"?, "execution"? }, con `ids.mode` de la pregunta 17 (`sdd-config`); `control`, `merge` y `execution`, solo con lo respondido)
 │       ├── sources/          (opcional: el funcional que aporta el usuario, literal y sin editar · paso 3)
-│       └── specs/            (no se crea: nace con la primera task o patch)
+│       └── specs/            (no se crea: nace con la primera feature o patch)
 ```
 
 Git no versiona carpetas vacías: ninguna carpeta de `.docs/sdd/` se crea vacía ni con `.gitkeep`.

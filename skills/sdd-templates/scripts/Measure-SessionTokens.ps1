@@ -8,7 +8,7 @@
   está en ella, el coste es «sin precio». Imprime una tabla por ámbito y modelo, y las tres líneas de la
   sección de tiempo y coste del walkthrough. Sin transcripts (otro harness), las tres dicen «no medido».
 .EXAMPLE
-  pwsh -NoProfile -File Measure-SessionTokens.ps1 -Path D:\code\worktrees\mi-task -Branch feature/0042
+  pwsh -NoProfile -File Measure-SessionTokens.ps1 -Path D:\code\worktrees\mi-feature -Branch feature/0042
 #>
 [CmdletBinding()]
 param(

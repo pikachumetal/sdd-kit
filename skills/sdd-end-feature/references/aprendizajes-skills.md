@@ -8,4 +8,4 @@
 
 ## Paso 5 — Revisión de skills
 
-5. **Revisión de skills** — abre `.claude/skills/` del proyecto y decide: ¿este trabajo reveló un patrón reutilizable (nueva skill), o desmintió algo que una skill afirma (actualizarla)? Usa `superpowers:writing-skills` si toca. "No aplica" se decide mirando, no por omisión — y si el proyecto aún no tiene skills, quizá esta task crea la primera.
+5. **Revisión de skills** — abre `.claude/skills/` del proyecto y decide: ¿este trabajo reveló un patrón reutilizable (nueva skill), o desmintió algo que una skill afirma (actualizarla)? Usa `superpowers:writing-skills` si toca. "No aplica" se decide mirando, no por omisión — y si el proyecto aún no tiene skills, quizá esta feature crea la primera.

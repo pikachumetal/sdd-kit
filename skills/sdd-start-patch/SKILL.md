@@ -1,6 +1,6 @@
 ---
 name: sdd-start-patch
-description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "hay un bug…, arréglalo", "métele un patch", un ticket de fallo puntual. No para features ni para bugs que exigen interpretar requisitos (eso es sdd-start-task).
+description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "hay un bug…, arréglalo", "métele un patch", un ticket de fallo puntual. No para features ni para bugs que exigen interpretar requisitos (eso es sdd-start-feature).
 argument-hint: "<id o descripción del bug>"
 ---
 
@@ -19,13 +19,13 @@ digraph decision {
     "¿Toca una feature cuyo walkthrough sigue abierto?" [shape=diamond];
     "¿Determinista, <30 min, sin interpretar requisitos?" [shape=diamond];
     "Apéndice 'Post-release fixes' en el walkthrough de esa feature" [shape=box];
-    "Es una TASK: usa sdd-start-task" [shape=box];
+    "Es una FEATURE: usa sdd-start-feature" [shape=box];
     "PATCH: este flujo" [shape=box];
 
     "¿Toca una feature cuyo walkthrough sigue abierto?" -> "Apéndice 'Post-release fixes' en el walkthrough de esa feature" [label="sí"];
     "¿Toca una feature cuyo walkthrough sigue abierto?" -> "¿Determinista, <30 min, sin interpretar requisitos?" [label="no"];
     "¿Determinista, <30 min, sin interpretar requisitos?" -> "PATCH: este flujo" [label="sí"];
-    "¿Determinista, <30 min, sin interpretar requisitos?" -> "Es una TASK: usa sdd-start-task" [label="no"];
+    "¿Determinista, <30 min, sin interpretar requisitos?" -> "Es una FEATURE: usa sdd-start-feature" [label="no"];
 }
 ```
 
@@ -33,20 +33,20 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 
 ## Flujo (crea un todo por paso)
 
-1. **Causa raíz OBLIGATORIA** — `superpowers:systematic-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o el fix crece más allá de lo puntual → STOP: era una task, cambia a `sdd-start-task`.
+1. **Causa raíz OBLIGATORIA** — `superpowers:systematic-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o el fix crece más allá de lo puntual → STOP: era una feature, cambia a `sdd-start-feature`.
 
    Si la investigación **no reproduce el fallo** sobre la base actual → STOP también, sin abrir el patch: ni rama, ni carpeta, ni `patch.md`, ni fix, ni id reservado. Si la petición viene de una fila del roadmap, déjala re-medida: las celdas que el resultado contradice se reescriben con la fecha y la evidencia nuevas, porque añadir la medición y dejar el texto viejo no basta. Díselo al usuario. Si reproduce un fallo **distinto** del que predice el ticket o la fila, no es este caso: el patch sigue con el fallo medido.
-2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` según el modo de `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`): en `tracker`, el ticket y `0000` si no hay; en `sequence`, el id reservado en la fila del roadmap, o el que reserva `Get-NextSddId.ps1 -Reserve` si no tiene fila (sin `-Reserve` solo propone, y otro worktree puede coger el mismo) — comparte secuencia con las tasks y nunca reutiliza un id entre carriles (detalle en `sdd-start-task/references/nombrado.md`)). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca. Si estás en una rama `feature/<slug>` sin id (`feature/fix-sala`) y sin commits propios frente a la rama de integración, renómbrala con `git branch -m feature/<id>-<slug>` antes del primer commit y dilo; nunca renombres la rama de integración ni la estable: sin esa regla, 2 de 2 sujetos commitearon en `feature/fix-sala` (`tests/sdd-roadmap-red.md`, p8b). Detalle en `nombrado.md`.
+2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` según el modo de `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`): en `tracker`, el ticket y `0000` si no hay; en `sequence`, el id reservado en la fila del roadmap, o el que reserva `Get-NextSddId.ps1 -Reserve` si no tiene fila (sin `-Reserve` solo propone, y otro worktree puede coger el mismo) — comparte secuencia con las features y nunca reutiliza un id entre carriles (detalle en `sdd-start-feature/references/nombrado.md`)). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca. Si estás en una rama `feature/<slug>` sin id (`feature/fix-sala`) y sin commits propios frente a la rama de integración, renómbrala con `git branch -m feature/<id>-<slug>` antes del primer commit y dilo; nunca renombres la rama de integración ni la estable: sin esa regla, 2 de 2 sujetos commitearon en `feature/fix-sala` (`tests/sdd-roadmap-red.md`, p8b). Detalle en `nombrado.md`.
 3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal; si la investigación midió otro, también el medido y en qué difiere del reportado), causa raíz (lo que TÚ encontraste, con la evidencia), fix, verificación, tiempo.
 4. **Fix mínimo** — sin refactor oportunista, aunque la deuda esté a un renglón de distancia. Verificar que el build del proyecto pasa.
-5. **Commit del fix** — un solo commit con el código, los tests y `patch.md`, con la convención del proyecto y referenciando el ticket; si hubo intermedios, se juntan ([commit-milestones.md](../sdd-start-task/references/commit-milestones.md)).
+5. **Commit del fix** — un solo commit con el código, los tests y `patch.md`, con la convención del proyecto y referenciando el ticket; si hubo intermedios, se juntan ([commit-milestones.md](../sdd-start-feature/references/commit-milestones.md)).
 6. **Cierre** — `sdd-end-patch`.
 
 ## Red flags — STOP
 
 - Estás implementando la hipótesis de quien reporta sin haberla confirmado en el código.
 - Vas a crear el documento fuera de `.docs/sdd/specs/` o en una carpeta sin prefijo `patch-`.
-- El "fix" ya toca varios módulos o interpreta requisitos → era una task.
+- El "fix" ya toca varios módulos o interpreta requisitos → era una feature.
 - `patch.md` sin causa raíz con evidencia, o con el tiempo en blanco.
 - Vas a abrir rama o carpeta de un patch cuyo fallo no has reproducido.
 

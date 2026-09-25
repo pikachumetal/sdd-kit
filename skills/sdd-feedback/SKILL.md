@@ -1,6 +1,6 @@
 ---
 name: sdd-feedback
-description: Usar al cerrar una task o un patch — lo ofrecen sdd-end-task y sdd-end-patch — o cuando el usuario pide el ticket, el informe o el feedback de mejora del kit sobre la sesión.
+description: Usar al cerrar una feature o un patch — lo ofrecen sdd-end-feature y sdd-end-patch — o cuando el usuario pide el ticket, el informe o el feedback de mejora del kit sobre la sesión.
 ---
 
 # sdd-feedback

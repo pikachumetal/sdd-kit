@@ -46,7 +46,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo), `.gitignore` con los
    temporales de las herramientas y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
    `capabilities/` y `specs/` no se crean (git no versiona carpetas vacías), y las capacidades no se vuelcan
-   aunque el usuario lo pida: crecen task a task.
+   aunque el usuario lo pida: crecen feature a feature.
    Detalle: [generacion.md](references/generacion.md).
 6. **`CLAUDE.md` corto**: reescribirlo como punteros a los documentos + 3-5 reglas críticas. El contenido largo vive en los docs de anclaje, no aquí.
 7. **Cierre**: resumen + discrepancias y preguntas del paso 3 pendientes de confirmar + que las preferencias de cada persona (perfil, método, entorno en la validación) se fijan con `sdd-config` + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).

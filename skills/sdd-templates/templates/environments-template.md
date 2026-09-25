@@ -14,7 +14,7 @@ Vive en la raíz del worktree y registra el estado del entorno activo. Campos m�
 
 | Campo | Valor | Significado |
 | --- | --- | --- |
-| `ticket` | string | identificador de la task o el ticket al que pertenece el worktree |
+| `ticket` | string | identificador de la feature o el ticket al que pertenece el worktree |
 | `state` | `active` \| `cleaned` | si el entorno está levantado o ya se bajó |
 | `created` | string, ISO 8601 | cuándo se generó el marcador |
 

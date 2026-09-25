@@ -17,7 +17,7 @@
 
 ## Reglas de producto
 
-> Las cinco, por nombre. Cada entrada: respondida · pendiente · no aplica. Una pendiente no se inventa: sin ella, cada task la decidiría al azar. Si difiere por capacidad, se detalla por capacidad dentro de la entrada.
+> Las cinco, por nombre. Cada entrada: respondida · pendiente · no aplica. Una pendiente no se inventa: sin ella, cada feature la decidiría al azar. Si difiere por capacidad, se detalla por capacidad dentro de la entrada.
 
 - **Dónde viven los datos**: <fichero, tabla, memoria, almacenamiento del cliente… | pendiente | no aplica>
 - **Idioma de los nombres**: <API, claves, mensajes… | pendiente | no aplica>

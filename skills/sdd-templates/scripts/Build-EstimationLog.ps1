@@ -101,7 +101,7 @@ function Get-ArtifactId([string]$Content, [string]$Folder) {
 }
 
 function Get-RowDate([string]$Content, [string]$FolderName) {
-  # La carpeta lleva la fecha de apertura; el artefacto, la del cierre. Una task abierta de
+  # La carpeta lleva la fecha de apertura; el artefacto, la del cierre. Una feature abierta de
   # noche y cerrada al día siguiente caería en el día (y la release) equivocados.
   if ($Content -match '(?m)^(?:created|date):\s*(\d{4}-\d{2}-\d{2})\b') { return $Matches[1] }
   if ($FolderName -match '^(\d{4})(\d{2})(\d{2})-\d{6}-') { return "$($Matches[1])-$($Matches[2])-$($Matches[3])" }

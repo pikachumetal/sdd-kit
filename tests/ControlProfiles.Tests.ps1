@@ -8,31 +8,31 @@ BeforeAll {
 
 Describe 'Perfiles de control: arranque y ejecución' {
   It 'la tabla de gates existe y nombra los tres perfiles' {
-    $table = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+    $table = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
     foreach ($profileName in 'pair', 'delegate', 'unattended') { $table | Should -Match "``$profileName``" }
   }
 
   It 'la tabla declara las claves de control con su default' {
-    $table = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+    $table = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
     $keys = 'control.profile', 'control.maxParallelAgents', 'control.silence.betweenStepsMinutes',
       'control.silence.longCommandMinutes', 'merge.into', 'merge.noFf', 'merge.removeWorktree', 'merge.push'
     foreach ($key in $keys) { $table | Should -Match ([regex]::Escape($key)) }
   }
 
-  It 'sdd-start-task enlaza la tabla en vez de copiarla' {
-    $skill = Get-KitFile 'skills/sdd-start-task/SKILL.md'
+  It 'sdd-start-feature enlaza la tabla en vez de copiarla' {
+    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
     $skill | Should -Match '\(references/control-profiles\.md\)'
     $skill | Should -Not -Match 'maxParallelAgents'
   }
 
   It 'los overrides arbitran rulings y merge' {
-    $overrides = Get-KitFile 'skills/sdd-start-task/references/overrides-superpowers.md'
+    $overrides = Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md'
     $overrides | Should -Match 'finishing-a-development-branch'
     $overrides | Should -Match '(?i)ruling'
   }
 
   It 'la review de spec no se propone por defecto' {
-    Get-KitFile 'skills/sdd-start-task/references/review-spec.md' | Should -Match '4 señales o más'
+    Get-KitFile 'skills/sdd-start-feature/references/review-spec.md' | Should -Match '4 señales o más'
   }
 
   It 'la plantilla de spec admite perfil y enmiendas' {
@@ -50,9 +50,9 @@ Describe 'Perfiles de control: cierre, release y migración' {
     $template | Should -Match 'Validación diferida: <fecha>'
   }
 
-  It 'sdd-end-task enlaza la tabla y aplica la política de merge' {
-    $skill = Get-KitFile 'skills/sdd-end-task/SKILL.md'
-    $skill | Should -Match 'sdd-start-task/references/control-profiles\.md'
+  It 'sdd-end-feature enlaza la tabla y aplica la política de merge' {
+    $skill = Get-KitFile 'skills/sdd-end-feature/SKILL.md'
+    $skill | Should -Match 'sdd-start-feature/references/control-profiles\.md'
     $skill | Should -Match '🧪'
     $skill | Should -Not -Match 'decidir merge/PR \*\*con el usuario\*\*'
   }
@@ -90,13 +90,13 @@ Describe 'Perfiles de control: cierre, release y migración' {
 
 Describe 'Perfiles de control: propuesta de partir una task grande' {
   It 'la primera pregunta propone partir por encima del umbral orientativo' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'más de 3 tasks internas'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'más de 3 tasks internas'
   }
 }
 
 Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la release' {
   It 'elegir un alcance no cuenta como aprobar la spec' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match '(?i)elegir un alcance'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match '(?i)elegir un alcance'
   }
 
   It 'la task 🧪 que el smoke no valida conserva la forma con disparador nuevo' {
@@ -106,7 +106,7 @@ Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la r
 
 Describe 'Perfiles de control: validación diferida con disparador vago (patch 0037)' {
   It 'control-profiles concreta el disparador en vez de dejar la task EN ESPERA' {
-    $section = [regex]::Match((Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'),
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'),
       '(?ms)^## Validación diferida\r?$.*?(?=^## )').Value
     $section | Should -Match 'uso más próximo'
     $section | Should -Match 'a cargo de <quien difiere>'
@@ -114,15 +114,15 @@ Describe 'Perfiles de control: validación diferida con disparador vago (patch 0
     $section | Should -Not -Match 'Sin las tres condiciones no hay diferido'
   }
 
-  It 'el paso 0 de sdd-end-task no vuelve a preguntar el disparador' {
-    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^0\. .+$').Value
+  It 'el paso 0 de sdd-end-feature no vuelve a preguntar el disparador' {
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?m)^0\. .+$').Value
     $step | Should -Match 'uso más próximo'
     $step | Should -Match 'mensaje de cierre'
   }
 
-  It 'el paso 12 de sdd-end-task dice en el mensaje final el disparador concretado' {
-    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?ms)^12\. .+?(?=^## )').Value | Should -Match 'lo elegí yo'
-    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^11\. .+$').Value | Should -Not -Match 'lo elegí yo'
+  It 'el paso 12 de sdd-end-feature dice en el mensaje final el disparador concretado' {
+    [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?ms)^12\. .+?(?=^## )').Value | Should -Match 'lo elegí yo'
+    [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?m)^11\. .+$').Value | Should -Not -Match 'lo elegí yo'
   }
 }
 
@@ -136,8 +136,8 @@ Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
 
 Describe 'Merge en el cierre' {
   It 'los dos pasos de rama enlazan la receta' {
-    Get-KitFile 'skills/sdd-end-task/SKILL.md' | Should -Match '\(references/merge-recipe\.md\)'
-    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '\(\.\./sdd-end-task/references/merge-recipe\.md\)'
+    Get-KitFile 'skills/sdd-end-feature/SKILL.md' | Should -Match '\(references/merge-recipe\.md\)'
+    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '\(\.\./sdd-end-feature/references/merge-recipe\.md\)'
   }
 
   It 'el cierre de patch lee la política de merge' {
@@ -149,31 +149,31 @@ Describe 'Merge en el cierre' {
   }
 
   It 'la receta regenera el log con el script' {
-    Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md' | Should -Match 'Build-EstimationLog\.ps1'
+    Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md' | Should -Match 'Build-EstimationLog\.ps1'
   }
 
   It 'la receta fija los tres datos del informe de denegación' {
-    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
     foreach ($item in 'comando', 'texto de la denegación', 'hash') { $recipe | Should -Match $item }
   }
 
   It 'la receta y los dos pasos de rama fusionan con Invoke-SddMerge.ps1' {
-    Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md' | Should -Match 'sdd-templates/scripts/Invoke-SddMerge\.ps1'
-    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
+    Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md' | Should -Match 'sdd-templates/scripts/Invoke-SddMerge\.ps1'
+    foreach ($skill in 'sdd-end-feature', 'sdd-end-patch') {
       Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'Invoke-SddMerge\.ps1'
     }
   }
 
   It 'la receta pasa como -VerifyCommand el gate de merge y la suite completa corre antes del script' {
     # Patch 0051: con «la suite del proyecto» y un hook que corre el conjunto rápido, 0/2 sujetos ejecutaron la completa.
-    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
     $recipe | Should -Match '-VerifyCommand "<gate de merge>"'
     $recipe | Should -Match '\*\*`-VerifyCommand`\*\*: el gate de merge que declara `tech-stack\.md` §Testing'
     $recipe | Should -Match 'la suite completa se ejecuta antes de llamar al script'
   }
 
   It 'la receta pasa -Push con el push confirmado o autorizado por merge.push y no rehace el merge a mano' {
-    $recipe = Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'
+    $recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
     $recipe | Should -Match '(?m)^2\. Una frase del usuario en esta sesión que confirma el push'
     $recipe | Should -Match '(?m)^3\. `merge\.push: true` \(perfil `delegate` o `unattended`\): `-Push`'
     $recipe | Should -Match 'No se rehace a mano'
@@ -190,7 +190,7 @@ Describe 'Merge en el cierre' {
   }
 
   It 'los dos pasos de rama paran ante la rama destino sacada con cambios sin commitear' {
-    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') {
+    foreach ($skill in 'sdd-end-feature', 'sdd-end-patch') {
       Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'cambios sin commitear, no fusiones ahí'
     }
   }
@@ -211,7 +211,7 @@ Describe 'Push autorizado en el cierre: clave y pregunta' {
   }
 
   It 'la tabla de gates saca el push de la rama de integración de la fila de persona' {
-    $table = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
+    $table = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
     $table | Should -Match '(?m)^\| Push de la rama de integración'
     $table | Should -Match '(?m)^\| Merge a main, tag, cualquier otro push'
   }
@@ -223,13 +223,13 @@ Describe 'Push autorizado en el cierre: clave y pregunta' {
 
 Describe 'Push autorizado en el cierre: paso de rama' {
   It 'los dos pasos de rama enlazan la sección Push de la receta y nombran merge.push' {
-    Get-KitFile 'skills/sdd-end-task/SKILL.md' | Should -Match '\(references/merge-recipe\.md#push\)'
-    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '\(\.\./sdd-end-task/references/merge-recipe\.md#push\)'
-    foreach ($skill in 'sdd-end-task', 'sdd-end-patch') { Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'merge\.push' }
+    Get-KitFile 'skills/sdd-end-feature/SKILL.md' | Should -Match '\(references/merge-recipe\.md#push\)'
+    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '\(\.\./sdd-end-feature/references/merge-recipe\.md#push\)'
+    foreach ($skill in 'sdd-end-feature', 'sdd-end-patch') { Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'merge\.push' }
   }
 
   It 'la receta empuja con -Push del script y prohíbe forzar' {
-    $section = [regex]::Match((Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
     $section | Should -Match '`-Push`'
     $section | Should -Match '--force'
     $section | Should -Match 'en un bloque'
@@ -238,27 +238,27 @@ Describe 'Push autorizado en el cierre: paso de rama' {
 
 Describe 'Mensaje final del cierre' {
   It 'el último paso de <_.Skill> es el mensaje final y acaba con la línea de terminado' -ForEach @(
-    @{ Skill = 'sdd-end-task'; Step = '12' }, @{ Skill = 'sdd-end-patch'; Step = '8' }
+    @{ Skill = 'sdd-end-feature'; Step = '12' }, @{ Skill = 'sdd-end-patch'; Step = '8' }
   ) {
     $step = [regex]::Match((Get-KitFile "skills/$($_.Skill)/SKILL.md"), "(?ms)^$($_.Step)\. .+?(?=^## )").Value
     $step | Should -Match '^\d+\. \*\*Mensaje final\*\*'
     foreach ($literal in '**Terminado.**', '**No terminado.**', 'worktree', 'ticket') { $step.Contains($literal) | Should -BeTrue -Because "falta $literal" }
   }
 
-  It 'el paso 0 de sdd-end-task remite al mensaje final del paso 12' {
-    [regex]::Match((Get-KitFile 'skills/sdd-end-task/SKILL.md'), '(?m)^0\. .+$').Value | Should -Match 'paso 12'
+  It 'el paso 0 de sdd-end-feature remite al mensaje final del paso 12' {
+    [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?m)^0\. .+$').Value | Should -Match 'paso 12'
   }
 }
 
 Describe 'Mensaje final del cierre: solo se borra un worktree enlazado' {
-  It '<_> no ofrece borrar el checkout principal' -ForEach @('sdd-end-task', 'sdd-end-patch') {
+  It '<_> no ofrece borrar el checkout principal' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
     $skill = Get-KitFile "skills/$_/SKILL.md"
     $skill | Should -Match 'git rev-parse --git-common-dir'
     $skill | Should -Match 'sin cláusula de borrado'
   }
 
   It 'la receta decide el push con pair primero' {
-    $section = [regex]::Match((Get-KitFile 'skills/sdd-end-task/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
     $section | Should -Match '(?m)^1\. Perfil `pair`'
   }
 }

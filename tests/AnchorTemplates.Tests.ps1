@@ -45,19 +45,19 @@ Describe 'Plantillas de anclaje' {
 
 Describe 'Consumidores de las plantillas de anclaje' {
   It 'el cierre calca el destino que falta desde su plantilla' {
-    Get-KitFileContent 'skills/sdd-end-task/references/aprendizajes-skills.md' | Should -Match '(?s)destino no existe.*calcando su plantilla'
+    Get-KitFileContent 'skills/sdd-end-feature/references/aprendizajes-skills.md' | Should -Match '(?s)destino no existe.*calcando su plantilla'
   }
 
   It 'el cierre dice en el informe que el destino no existía' {
-    Get-KitFileContent 'skills/sdd-end-task/references/aprendizajes-skills.md' | Should -Match 'informe final del cierre'
+    Get-KitFileContent 'skills/sdd-end-feature/references/aprendizajes-skills.md' | Should -Match 'informe final del cierre'
   }
 
   It 'la regla del destino que falta está en el checklist, no solo en references' {
-    Get-KitFileContent 'skills/sdd-end-task/SKILL.md' | Should -Match '(?s)Si el destino no existe.*calcando su plantilla'
+    Get-KitFileContent 'skills/sdd-end-feature/SKILL.md' | Should -Match '(?s)Si el destino no existe.*calcando su plantilla'
   }
 
   It 'nombrado.md dice de dónde sale la forma de architecture.md' {
-    Get-KitFileContent 'skills/sdd-start-task/references/nombrado.md' | Should -Match 'architecture-template\.md'
+    Get-KitFileContent 'skills/sdd-start-feature/references/nombrado.md' | Should -Match 'architecture-template\.md'
   }
 
   It 'greenfield calca <_>-template.md' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation', 'changelog') {
