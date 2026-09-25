@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: feature/0069-scope-brake-registries
-commit: <hash>
+commit: a2f4877
 ---
 
 # Patch 0069 — el cruce de ficheros del freno no cuenta los registros compartidos
