@@ -106,7 +106,7 @@ Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HE
 
 ### Fichero de la task cambiado en la base
 
-Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, es un posible desvío.
+Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, es un posible desvío. En el cruce no cuentan los tres registros compartidos: `.docs/sdd/roadmap.md`, porque su fila la cubre «Fila cambiada en la base», ni `.docs/sdd/changelog.md` ni `.docs/sdd/estimation-log.md`, que los resuelve el merge de sincronización del cierre. Cualquier otro fichero para igual.
 
 - `pair` y `delegate`: nombran los ficheros y los commits de la base que los tocan (`git log --oneline $(git merge-base HEAD <integración>)..<integración> -- <fichero>`) y paran.
 - `unattended`: sigue con la spec aprobada y lo registra como enmienda sin aprobar.
