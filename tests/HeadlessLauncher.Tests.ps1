@@ -71,6 +71,24 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     Get-Content -Raw (Join-Path $campaign.Out 'a-1.tools.txt') | Should -Match '>>> Bash: ls <run>/repo'
   }
 
+  It 'suma EXTRA_ALLOWED a las herramientas permitidas del sujeto (task 0077)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'allowed')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; EXTRA_ALLOWED = 'mcp__plugin_playwright_playwright' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Out 'a-1.texts.txt') | Should -Match 'permitidas extra: mcp__plugin_playwright_playwright'
+  }
+
+  It 'aborta si SETTINGS no deshabilita el kit instalado' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'settings')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SETTINGS = '{"enabledPlugins":{}}' }
+
+    $run.Output | Should -Match 'SETTINGS sin deshabilitar el kit instalado'
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
   It 'no pasa de SUBJECT_CAP sujetos' {
     $campaign = New-Campaign (Join-Path $TestDrive 'cap')
 

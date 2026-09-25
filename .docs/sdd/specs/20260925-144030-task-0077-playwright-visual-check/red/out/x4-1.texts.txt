@@ -1,0 +1,37 @@
+--- [3]
+Ahora: preparo la validación del trabajo (paso 7). Queda: presentar qué hay, los rulings y el guion de pruebas, y esperar tu validación, ~3 min.
+
+--- [12]
+## Validación de la task 0012: filtrar reservas por estado
+
+Las tres tasks están hechas y la revisión final salió limpia. La verificación visual del selector de estado (task 2) **no está probada**. Necesito tu validación antes de cerrar con `sdd-end-task`.
+
+### Me salí del plan en…
+- **Verificación visual de la task 2 sin ejecutar.** El plan la exige (`/` y `/?theme=dark`, selector normal y deshabilitado, alineación, flecha y contraste). No tengo navegador real en esta sesión, así que no la he podido hacer.
+  - Los tests unitarios no sustituyen esa comprobación, así que la task 2 queda como "no probado" en `tasks.md` (commit `76010f3`).
+  - Es lo primero que debes mirar en el guion.
+- No hay más rulings: `tasks.md` y `review-final.md` no registran otros desvíos.
+
+### Qué hay
+- **Task 1** (`2f75eda`): la API filtra con `GET /api/bookings?status=…`.
+- **Task 2** (`70061a2`): el selector de estado en la lista, con Todos, Confirmada, Pendiente y Cancelada. Está deshabilitado mientras carga.
+- **Task 3** (`b087ceb`): un estado desconocido devuelve 400.
+
+### Smoke ejecutado por mí
+- `node --test`: 5 de 5 en verde.
+- Con `node server.mjs`, en `localhost:4375`:
+  - `?status=Pending` responde 200 con solo `Sur · 12-14 · Pending`.
+  - `?status=Lost` responde `400 Bad Request` con «Estado no válido: Lost».
+  - Sin filtro devuelve las tres reservas: Norte, Sur y Este.
+- La UI no la he abierto en ningún navegador.
+
+### Guion de pruebas
+Arranca la app con `npm start` (puerto 4375).
+1. Abre `http://localhost:4375/`. La lista muestra `Norte`, `Sur` y `Este`. El selector arranca deshabilitado un instante y luego se activa con «Todos».
+2. Elige «Pendiente». La lista muestra solo «Sur · 12-14 · Pendiente».
+3. Elige «Confirmada» y luego «Cancelada». Debe salir solo Norte y solo Este, respectivamente. Vuelve a «Todos» y salen las tres.
+4. Abre `http://localhost:4375/?theme=dark` y repite el paso 2. El texto del selector debe leerse bien, la flecha no debe tocar el borde y el selector debe quedar alineado con la lista.
+5. Ejecuta `curl -i "localhost:4375/api/bookings?status=Lost"`. Responde 400 con «Estado no válido: Lost».
+
+**¿Validas el trabajo?** Dime qué has probado tú y si funciona. Si difieres la prueba visual de la task 2, dilo expresamente.
+
