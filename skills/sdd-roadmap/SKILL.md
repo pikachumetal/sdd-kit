@@ -21,7 +21,7 @@ Mira lo que trae la petición, en este orden:
 2. **Una reunión** — notas o acta de una reunión con el cliente.
 3. **Preparar una release** — «prepara la release N», «qué entra en la siguiente entrega».
 4. **Reordenar o cambiar** — solo habla de filas que ya existen: «reordena», «la X va tras la Y», «quita la Z», o cambia la definición de una propuesta existente.
-5. Lo demás, por tamaño: **Algo concreto** si cabe en una feature; **Algo grande** si prevé más de una (el mismo umbral que usa `sdd-start-feature` para proponer partir: más de 3 tasks internas).
+5. Lo demás, por tamaño: **Algo concreto** si cabe en una feature; **Algo grande** si prevé más de una (el mismo umbral que usa `sdd-start-feature` para proponer partir: más de 5 tasks internas, o 4 o 5 que tocan capacidades o superficies distintas —BD, UI, API— o alguna con migración; con 3 o menos, nunca).
 
 Frente a `sdd-start-feature` decide el verbo: hacerlo ya («añade», «hazme», «arréglalo») es `sdd-start-feature`; dejarlo apuntado («apunta», «organízalo», «planifica», «no lo arranques») es esta skill.
 
