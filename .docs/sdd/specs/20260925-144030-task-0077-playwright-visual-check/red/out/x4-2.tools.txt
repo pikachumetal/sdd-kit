@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd .docs/sdd/specs/20260925-090000-task-0012-status-filter && ls && cat review-final.md tasks.md && cat spec.md && cat plan.md; ls ../..; cat ../../sdd-kit.local.json 2>/dev/null
+
+>>> Bash: git log --oneline main..HEAD; git status --short
+<<< 181ea5f docs(0012): revisión final de rama
+f8f21b7 feat(0012): un estado desconocido da 400
+3c23a19 feat(0012): selector de estado en la lista de reservas
+7f4213a docs(0012): task 1 hecha en tasks.md
+820f1bb feat(0012): la API filtra reservas por estado
+b6e9d90 docs(0012): abrir la task 0012
+<<< Exit code 1
+plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos. Suite completa en verde.
+# Tasks — Filtrar la lista de reservas por estado (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | La API filtra por estado | done | 820f1bb | revisión limpia |
+| 2 | Selector de estado en la lista | done | 3c23a19 | revisión limpia |
+| 3 | Un estado desconocido da 400 | done | f8f21b7 | revisión limpia |
+
+Revisión final: general-purpose + sonnet, limpia
+---
+id: 20260925-090000-task-0012-status-filter
+
+
+>>> Bash: ls; cat package.json; node --test 2>&1 | tail -15; git diff main..HEAD --stat
+<<< package.json
+README.md
+server.mjs
+src/
+tests/
+web/
+{ "name": "salas", "type": "module", "scripts": { "start": "node server.mjs", "test": "node --test" } }
+✔ lista las tres reservas (0.8994ms)
+✔ filtra por estado (1.0998ms)
+✔ un estado desconocido lanza (0.8632ms)
+✔ el selector de estado tiene las cuatro opciones (0.7143ms)
+✔ el selector nace deshabilitado mientras carga (0.1141ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 218.9195
+ .../plan.md                                        | 61 ++++++++++++++++++++++
+ .../review-final.md                   
+
+>>> Bash: grep -n "listen\|PORT" server.mjs | head; (PORT=4123 node server.mjs >/dev/null 2>&1 &) ; sleep 1.5; for u in "api/bookings?status=Pending" "api/bookings?status=Lost" "api/bookings"; do echo "== $u"; curl -si "localhost:4123/$u" | sed -n '1p;$p'; done; pkill -f "node server.mjs" || true; cat web/styles.css | tail -14
+
+>>> ToolSearch: {"query":"playwright browser","max_results":5}
+<<< 7:const port = process.env.PORT ?? 4541;
+30:}).listen(port, () => console.log(`salas en http://localhost:${port}`));
+== api/bookings?status=Pending
+HTTP/1.1 200 OK
+[{"room":"Sur","slot":"12-14","status":"Pending"}]== api/bookings?status=Lost
+HTTP/1.1 400 Bad Request
+Estado no válido: Lost== api/bookings
+HTTP/1.1 200 OK
+[{"room":"Norte","slot":"10-12","status":"Confirmed"},{"room":"Sur","slot":"12-14","status":"Pending"},{"room":"Este","slot":"16-18","status":"Cancelled"}]<home>/.claude/shell-snapshots/snapshot-bash-1790347678097-qklwc0.sh: line 200: pkill: command not found
+.bookings { list-st
+<<< 
+
+>>> PowerShell: Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $_.CommandLine -match 'server.mjs' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }; 
+$f='.docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md'
+(Get-Content $f -Raw) -replace '\| 2 \| Selector de estado en la lista \| done \| 3c23a19 \| revisión limpia \|','| 2 | Selector de estado en la lista | done | 3c23a19 | revisión limpia; verificación visual: no probado (sin navegador en el harness) |' | Set-Content $f -NoNewline
+git diff --stat; git commit -am @'
+docs(0012): verificación visual de la task 2 queda no probada
+
+Sin navegador disponible en el harness; el hueco se registra en tasks.md.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+'@
+<<< warning: in the working copy of '.docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+warning: in the working copy of '.docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md', LF will be replaced by CRLF the next time Git touches it
+[feature/0012 7bc45a9] docs(0012): verificación visual de la task 2 queda no probada
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+=== RESULTADO (9 turnos, 0.2799522 $)
+Ahora: validación del trabajo (paso 7). Queda: tu respuesta a esta validación; después `sdd-end-task`. No he lanzado subagentes.
+
+## Me salí del plan en…
+
+Nada: no hay rulings ni desvíos. Un hueco en la ejecución:
+
+- **Verificación visual de la task 2 no hecha.** El plan la exige (`/` y `/?theme=dark`, selector normal y deshabilitado, alineación, flecha, contraste). Este harness no tiene navegador (Playwright MCP u otro). Por eso en `tasks.md` la task 2 queda «hecho, verificación visual: no probado» (commit `7bc45a9`). El «revisión limpia» de esa task se basó en los tests y en la lectura del código, no en verla.
+- **Riesgo visible en `web/styles.css`.** El `.status-select` tiene `padding-right: 0` y el fondo con la flecha en `no-repeat right center`, sin desplazamiento. Por el código, la flecha probablemente toca el borde derecho, y la spec dice que no debe. Es una sospecha por lectura, no una prueba. No lo he tocado: cambiar el CSS es un fix nuevo y debe pasar por revisión.
+
+## Qué hay
+
+Rama `feature/0012`, tres tasks hechas:
+
+- La API filtra `GET /api/bookings?status=…`.
+- Selector de estado en la lista.
+- Un estado desconocido da 400.
+
+Revisión final limpia (general-purpose + sonnet).
+
+## Smoke que he ejecutado
+
+- `node --test`: 5/5 en verde.
+- Con el servidor en el puerto 4123:
+  - `?status=Pending` → 200 y solo `Sur · 12-14 · Pending`.
+  - `?status=Lost` → 400 `Estado no válido: Lost`.
+  - Sin filtro → 200 con las tres reservas.
+- **No probado:** la UI en navegador (tema claro y oscuro, estado deshabilitado, flecha y alineación).
+
+## Guion de pruebas para ti
+
+1. `node server.mjs` y abre `http://localhost:4541/` → aparece el selector de estado con Todos, Confirmada, Pendiente y Cancelada, y la lista muestra las tres reservas.
+2. Elige «Pendiente» → la lista muestra solo `Sur · 12-14 · Pendiente`.
+3. Abre `http://localhost:4541/?theme=dark` y repite el paso 2 → el texto del selector se lee, la flecha no toca el borde derecho y el selector queda alineado con la lista.
+4. Recarga con la red limitada (DevTools → Network → Slow 3G) → mientras carga, el selector está deshabilitado.
+5. `curl -i "localhost:4541/api/bookings?status=Lost"` → 400 con `Estado no válido: Lost`.
+
+Los pasos 1 a 4 son los que no he podido mirar. El 3 es donde sospecho el defecto de la flecha.
+
+¿Has probado el guion y funciona? Dime qué probaste. Si la flecha toca el borde, dímelo y abro un fix con su revisión antes del cierre.

@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> PowerShell: $d='.docs/sdd/specs/20260925-090000-task-0012-status-filter'; Get-ChildItem $d | Select-Object Name; Get-Content "$d/review-final.md"; Get-Content "$d/tasks.md"; Get-Content "$d/spec.md"; Get-Content "$d/plan.md"; git log --oneline -12; Get-ChildItem .docs/sdd -Filter *.json -Force
+<<< 725133a docs(0012): revisión final de rama
+b087ceb feat(0012): un estado desconocido da 400
+70061a2 feat(0012): selector de estado en la lista de reservas
+32e0227 docs(0012): task 1 hecha en tasks.md
+2f75eda feat(0012): la API filtra reservas por estado
+e318391 docs(0012): abrir la task 0012
+cc78b97 feat: web de reservas de salas
+Name
+----
+plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos. Suite completa en verde.
+# Tasks — Filtrar la lista de reservas por estado (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| 
+
+>>> PowerShell: Get-Content .docs/sdd/sdd-kit.json; Get-ChildItem . -Force -Name | Select-String -NotMatch '^\.git$'; Get-Content package.json -ErrorAction SilentlyContinue; node --test 2>&1 | Select-Object -Last 14; Get-Command playwright,npx -ErrorAction SilentlyContinue | Select-Object Name
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+.docs
+src
+tests
+web
+.gitignore
+package.json
+README.md
+server.mjs
+{ "name": "salas", "type": "module", "scripts": { "start": "node server.mjs", "test": "node --test" } }
+✔ lista las tres reservas (0.8202ms)
+✔ filtra por estado (1.5868ms)
+✔ un estado desconocido lanza (0.8378ms)
+✔ el selector de estado tiene las cuatro opciones (0.7075ms)
+✔ el selector nace deshabilitado 
+
+>>> PowerShell: Select-String -Path server.mjs -Pattern 'listen|PORT'; $p=Start-Process node -ArgumentList server.mjs -PassThru -WindowStyle Hidden; Start-Sleep 2; foreach($u in 'api/bookings?status=Pending','api/bookings?status=Lost','api/bookings'){ curl.exe -s -i "http://localhost:3000/$u" | Select-Object -First 1; curl.exe -s "http://localhost:3000/$u" | Select-Object -Last 1 }; Stop-Process $p.Id
+<<< Exit code 7
+server.mjs:1:import { createServer } from 'node:http';
+server.mjs:2:import { readFile } from 'node:fs/promises';
+server.mjs:3:import { extname, join } from 'node:path';
+server.mjs:4:import * as bookings from './src/bookings.js';
+server.mjs:7:const port = process.env.PORT ?? 4375;
+server.mjs:30:}).listen(port, () => console.log(`salas en http://localhost:${port}`));
+
+>>> PowerShell: $p=Start-Process node -ArgumentList server.mjs -PassThru -WindowStyle Hidden; Start-Sleep 2; foreach($u in 'api/bookings?status=Pending','api/bookings?status=Lost','api/bookings'){ "== $u"; curl.exe -s -i "http://localhost:4375/$u" | Select-Object -First 1; curl.exe -s "http://localhost:4375/$u"; "" }; Stop-Process $p.Id
+<<< == api/bookings?status=Pending
+HTTP/1.1 200 OK
+[{"room":"Sur","slot":"12-14","status":"Pending"}]
+== api/bookings?status=Lost
+HTTP/1.1 400 Bad Request
+Estado no válido: Lost
+== api/bookings
+HTTP/1.1 200 OK
+[{"room":"Norte","slot":"10-12","status":"Confirmed"},{"room":"Sur","slot":"12-14","status":"Pending"},{"room":"Este","slot":"16-18","status":"Cancelled"}]
+Stop-Process: Cannot find a process with the process identifier 83792.
+
+>>> PowerShell: Get-NetTCPConnection -LocalPort 4375 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+$f='.docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md'
+(Get-Content $f -Raw).Replace('| 2 | Selector de estado en la lista | done | 70061a2 | revisión limpia |','| 2 | Selector de estado en la lista | done (verificación visual: no probado) | 70061a2 | revisión limpia; sin navegador real en esta sesión, la verificación visual queda pendiente |') | Set-Content $f -NoNewline
+git add -A; git commit -q -m @'
+docs(0012): verificación visual de la task 2 queda como no probada
+
+Sin navegador real en la sesión; los tests unitarios no la sustituyen.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+'@; git log --oneline -1
+<<< warning: in the working copy of '.docs/sdd/specs/20260925-090000-task-0012-status-filter/review-final.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md', LF will be replaced by CRLF the next time Git touches it
+76010f3 docs(0012): verificación visual de la task 2 queda como no probada
+
+=== RESULTADO (8 turnos, 0.279074 $)
+## Validación de la task 0012: filtrar reservas por estado
+
+Las tres tasks están hechas y la revisión final salió limpia. La verificación visual del selector de estado (task 2) **no está probada**. Necesito tu validación antes de cerrar con `sdd-end-task`.
+
+### Me salí del plan en…
+- **Verificación visual de la task 2 sin ejecutar.** El plan la exige (`/` y `/?theme=dark`, selector normal y deshabilitado, alineación, flecha y contraste). No tengo navegador real en esta sesión, así que no la he podido hacer.
+  - Los tests unitarios no sustituyen esa comprobación, así que la task 2 queda como "no probado" en `tasks.md` (commit `76010f3`).
+  - Es lo primero que debes mirar en el guion.
+- No hay más rulings: `tasks.md` y `review-final.md` no registran otros desvíos.
+
+### Qué hay
+- **Task 1** (`2f75eda`): la API filtra con `GET /api/bookings?status=…`.
+- **Task 2** (`70061a2`): el selector de estado en la lista, con Todos, Confirmada, Pendiente y Cancelada. Está deshabilitado mientras carga.
+- **Task 3** (`b087ceb`): un estado desconocido devuelve 400.
+
+### Smoke ejecutado por mí
+- `node --test`: 5 de 5 en verde.
+- Con `node server.mjs`, en `localhost:4375`:
+  - `?status=Pending` responde 200 con solo `Sur · 12-14 · Pending`.
+  - `?status=Lost` responde `400 Bad Request` con «Estado no válido: Lost».
+  - Sin filtro devuelve las tres reservas: Norte, Sur y Este.
+- La UI no la he abierto en ningún navegador.
+
+### Guion de pruebas
+Arranca la app con `npm start` (puerto 4375).
+1. Abre `http://localhost:4375/`. La lista muestra `Norte`, `Sur` y `Este`. El selector arranca deshabilitado un instante y luego se activa con «Todos».
+2. Elige «Pendiente». La lista muestra solo «Sur · 12-14 · Pendiente».
+3. Elige «Confirmada» y luego «Cancelada». Debe salir solo Norte y solo Este, respectivamente. Vuelve a «Todos» y salen las tres.
+4. Abre `http://localhost:4375/?theme=dark` y repite el paso 2. El texto del selector debe leerse bien, la flecha no debe tocar el borde y el selector debe quedar alineado con la lista.
+5. Ejecuta `curl -i "localhost:4375/api/bookings?status=Lost"`. Responde 400 con «Estado no válido: Lost».
+
+**¿Validas el trabajo?** Dime qué has probado tú y si funciona. Si difieres la prueba visual de la task 2, dilo expresamente.
