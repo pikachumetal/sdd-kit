@@ -25,7 +25,7 @@
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)
 ├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, router.md — solo canal plugin)
 ├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
-├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1 y fixtures/ de los scripts)
+├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/ de los scripts y headless/, el lanzador de sujetos)
 └── .docs/
     ├── workflow/                (documentación temprana del flujo: greenfield, brownfield, anexo de evidencia)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)
@@ -48,7 +48,7 @@
 - `<skill>-red.md`: qué hizo el baseline sin la skill, con racionalizaciones citadas y positivos que no requieren guidance.
 - `<skill>-green.md`: mismos escenarios con la skill; veredicto contra cada fallo del RED. El GREEN también puede exhibir huecos de la PROPIA skill (una instrucción que contradice la constitution, un caso sin cubrir): el REFACTOR y su re-verificación se documentan en el mismo fichero.
 - `<skill>-ab.md`: campaña de no-regresión de un recorte (Art. I). Registra los cortes probados, los aceptados y **los descartados con su motivo** — el descarte es el dato caro: evita que la siguiente campaña repita el experimento.
-- Las fixtures de las campañas de skills se construyen en el scratchpad de sesión; lo que se versiona, en la carpeta de la spec (`red/`, `green/`), es el molde, el lanzador y lo que produjo cada sujeto, para que la narrativa verificada de `tests/*.md` apunte a ficheros que se pueden abrir (desde la task 0002).
+- Las fixtures de las campañas de skills se construyen en el scratchpad de sesión; lo que se versiona, en la carpeta de la spec (`red/`, `green/`), es el molde, el `subject.sh` de la campaña (desde el patch 0076, sobre el lanzador de referencia de `tests/headless/`) y lo que produjo cada sujeto, para que la narrativa verificada de `tests/*.md` apunte a ficheros que se pueden abrir (desde la task 0002).
 - `<script>.Tests.ps1`: tests Pester del código ejecutable del kit. Sus fixtures en `tests/fixtures/<tema>/` **sí se versionan**: son el contrato del formato que el script lee (líneas reales de walkthroughs y patches del kit y de Alybo). Todo `<script>.Tests.ps1` que ejecute git dot-sourcea `tests/Clear-GitEnv.ps1`, guarda `Clear-GitEnv` en `BeforeAll` y llama a `Restore-GitEnv` en `AfterAll`: dentro del pre-commit, git exporta `GIT_INDEX_FILE` y compañía, y una fixture de la task 0042 escribió en el índice del worktree real. Lo exige `tests/GitEnvConvention.Tests.ps1`.
 - **Scripts portables**: el código ejecutable del kit es PowerShell 7 porque todo el equipo usa Windows, pero sin APIs exclusivas de Windows (rutas con `\` fijas, `cmd.exe`, el registro): llevarlo a macOS o Linux tiene que ser instalar `pwsh`, no reescribir (decisión del 2026-09-25 en el roadmap).
 - **Un script que lee un artefacto del kit se prueba contra su plantilla**: un test con la plantilla de `sdd-templates` calcada sin tocar y otro con la plantilla calcada y rellenada a medias (task 0070: `Test-Capabilities.ps1` pasó 24 tests y el GREEN, y rechazaba la cabecera de la propia `capability-template.md`).
