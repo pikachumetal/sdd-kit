@@ -36,6 +36,16 @@ Describe 'Cruce de los ficheros de la task con la base antes de cada despacho' {
     $script:Brake | Should -Match '(?i)antes de escribir sus tests RED'
   }
 
+  It 'el cruce no cuenta los tres registros compartidos y cualquier otro fichero sigue parando (patch 0069)' {
+    $script:Brake | Should -Match 'En el cruce no cuentan los tres registros compartidos'
+    foreach ($registry in 'roadmap.md', 'changelog.md', 'estimation-log.md') {
+      $script:Brake | Should -Match ([regex]::Escape(".docs/sdd/$registry"))
+    }
+    $script:Brake | Should -Match '«Fila cambiada en la base»'
+    $script:Brake | Should -Match 'merge de sincronización del cierre'
+    $script:Brake | Should -Match 'Cualquier otro fichero para igual'
+  }
+
   It 'el freno para en pair y delegate y registra enmienda sin aprobar en unattended' {
     $script:Brake | Should -Match '`pair` y `delegate`[^\r\n]*para'
     $script:Brake | Should -Match '`unattended`[^\r\n]*enmienda sin aprobar'
