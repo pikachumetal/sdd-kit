@@ -28,9 +28,10 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND el resto de paradas del perfil vigente sigue igual: la validación final no se quita nunca
 
 ### La primera pregunta propone partir una feature grande
-- GIVEN una feature cuyo enunciado, leído con el código que toca, prevé más de 3 tasks internas en el plan
+- GIVEN una feature cuyo enunciado, leído con el código que toca, prevé más de 5 tasks internas en el plan, o 4 o 5 que tocan capacidades o superficies distintas (BD, UI, API) o alguna con migración
 - WHEN el agente formula la primera pregunta de la entrevista
 - THEN propone partirla en features con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera
+- AND con 3 tasks o menos no lo propone; con 4 o 5 de la misma superficie y sin migración, tampoco, y dice el recuento
 - AND el usuario decide; si sigue entera, no se vuelve a proponer en esa feature
 
 ### Una respuesta cuenta como aprobación solo si aprueba
@@ -227,6 +228,6 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap; el método de un plan, en la línea `Ejecución:` de su cabecera.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
-- **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una feature: más de 3 tasks internas previstas. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después.
+- **Límites**: `control.maxParallelAgents` 3 y `control.silence` 8 y 20 minutos por defecto; su conducta la define la task 0005. Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después.
 - **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); y el bloque de un push fallido (comando literal y error).
 - **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
