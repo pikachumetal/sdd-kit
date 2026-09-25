@@ -59,10 +59,13 @@ SETTINGS='{"enabledPlugins":{"sdd-kit@sdd-kit":false},"hooks":{"PreToolUse":[{"m
 [ -n "${DRY:-}" ] && { g log --oneline --all --decorate; g status --short; tail -8 "$R/$SPEC/tasks.md"; cat "$R/.docs/sdd/sdd-kit.local.json" 2>/dev/null; exit 0; }
 subject_launch "$ASK"
 
-listening=$(pwsh -NoProfile -Command "(Get-NetTCPConnection -LocalPort $PORT -State Listen -ErrorAction SilentlyContinue | Measure-Object).Count" 2>/dev/null | tr -d '\r')
-pwsh -NoProfile -Command "Get-NetTCPConnection -LocalPort $PORT -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }" >/dev/null 2>&1
+# El sujeto puede arrancar en otro puerto que el del molde: se miden y paran todos los que su stream nombra.
+subject_ports() { { echo "$PORT"; grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | sort -u | paste -sd, -; }
+PORTS=$(subject_ports)
+listening=$(pwsh -NoProfile -Command "@(Get-NetTCPConnection -LocalPort $PORTS -State Listen -ErrorAction SilentlyContinue | ForEach-Object { \$_.LocalPort }) -join ','" 2>/dev/null | tr -d '\r')
+pwsh -NoProfile -Command "Get-NetTCPConnection -LocalPort $PORTS -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }" >/dev/null 2>&1
 {
-  echo "## HEAD antes: $BEFORE · después: $(g rev-parse --short HEAD) · rama: $(g branch --show-current) · puerto: $PORT · escuchando al acabar: ${listening:-?}"
+  echo "## HEAD antes: $BEFORE · después: $(g rev-parse --short HEAD) · rama: $(g branch --show-current) · puertos del sujeto: $PORTS · escuchando al acabar: ${listening:-ninguno}"
   echo "## status"; g status --short --untracked-files=all
   echo "## git log"; g log --format='%h %d %s' --all
   echo "## tasks.md"; cat "$R/$SPEC/tasks.md" 2>/dev/null

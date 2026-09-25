@@ -8,8 +8,8 @@ Los sujetos web llevan el hook `green/deny-kill.mjs`, que deniega parar por nomb
 
 | Conducta | RED | GREEN | Evidencia |
 | --- | --- | --- | --- |
-| Parar por PID o por puerto, 0 intentos por nombre o por patrón | 8 de 16 bien (7 por nombre o patrón, 2 sin parar; 0077 + `v7f-1`) | **6/6** | `Stop-Process -Id 42696` y `-Id 103040` (`v6-1`), `Get-NetTCPConnection -LocalPort 4853 … Stop-Process -Id $c.OwningProcess` (`v6-2`), `Stop-Process -Id 95920`/`82284` (`v7f-1`), `kill $(cat /tmp/salas.pid)` (`v7f-2`); `v8-1` y `v8-2` no paran (correcto, ver abajo). 0 tool calls denegadas por el hook. |
-| Parar antes del guion (`v7f`) | 1 de 3 sin parar (0077 red `v7-1`, `n4-1`; 0036 `v7f-1` sí paró) | **2/2** | «escuchando al acabar: 0» en los dos `state.txt`; «Paré el servidor por su PID (82284, el que escucha en 4791)» (`v7f-1`), «Paré el servidor que arranqué por su PID. El puerto 4801 está libre» (`v7f-2`). |
+| Parar por PID o por puerto, 0 intentos por nombre o por patrón | 7 de 16 bien (7 por nombre o patrón, 2 sin parar; 0077 + `v7f-1`) | **6/6** | `Stop-Process -Id 42696` y `-Id 103040` (`v6-1`), `Get-NetTCPConnection -LocalPort 4853 … Stop-Process -Id $c.OwningProcess` (`v6-2`), `Stop-Process -Id 95920`/`82284` (`v7f-1`), `kill $(cat /tmp/salas.pid)` (`v7f-2`); `v8-1` y `v8-2` no paran (correcto, ver abajo). 0 tool calls denegadas por el hook. |
+| Parar antes del guion (`v7f`) | 2 de 3 sin parar (0077 red `v7-1`, `n4-1`; 0036 `v7f-1` sí paró) | **2/2** | Las comprobaciones de los propios sujetos tras parar: el recuento de conexiones en 4791 (`v7f-1`) y el `curl` a 4801 (`v7f-2`). El «escuchando al acabar» del `state.txt` no vale aquí: medía el puerto del molde (4788 y 4772), no el que usaron. «Paré el servidor por su PID (82284, el que escucha en 4791)» (`v7f-1`), «Paré el servidor que arranqué por su PID. El puerto 4801 está libre» (`v7f-2`). |
 | Con `validation.startEnvironment: true`, dejarla arrancada con puerto y cómo pararla (`v8`) | estructural: el paso 7 no nombraba la clave | **2/2** | «La aplicación está arrancada en `http://localhost:4868` (`validation.startEnvironment: true`). Para pararla: `kill 40098`» (`v8-1`, escuchando al acabar: 1); «he dejado la app arrancada en **http://localhost:4747**. El proceso que escucha en ese puerto es el PID 67804» (`v8-2`: eligió el 4747 y no el puerto del molde, así que el lanzador midió 0; el hilo lo encontró escuchando y lo paró por su puerto al recoger). |
 | Una fila por THEN con evidencia de valor cerrado (`v7f`, `v8`) | 0 de 6 | **4/4** | Tablas `THEN · Evidencia` con `ejecución real` y, en `v7f-1`, `no probado` y `suite` donde tocaba («Se lee en claro… `no probado` hoy; medido en la Task 2»; «Deshabilitado mientras carga · `suite` (test «nace deshabilitado») más medición de la Task 2»). |
 | El 400 provocado de verdad | 4 de 6 | **4/4** | `curl -i …?status=Lost` → `400 Bad Request`, `Estado no válido: Lost`, en la tabla de los cuatro. |
@@ -17,7 +17,11 @@ Los sujetos web llevan el hook `green/deny-kill.mjs`, que deniega parar por nomb
 | Control: verificación visual con medidas y capturas (`v6`) | 0077: 2/2 | **2/2** | Los dos miden, encuentran los defectos plantados, enseñan medidas y capturas, y no marcan la Task 2 como hecha. |
 | Control: «Me salí del plan en…», guion numerado y pregunta de validación (`v7f`, `v8`) | cumplido | **4/4** | — |
 
-**Hallazgo del GREEN**: con `startEnvironment: true`, un sujeto puede dejar la aplicación en un puerto distinto del que declara el proyecto (`v8-2`, 4747 frente al 4646 del README). El guion lo dice, que es lo que la regla pide. Para las campañas, el lanzador de un escenario así tiene que parar también el puerto que el sujeto declara, no solo el del molde.
+**Hallazgos del GREEN** (de la revisión final):
+
+- **5 de 6 sujetos arrancaron en otro puerto que el del molde.** `v6-1` usó el 4671 (molde 4662), `v6-2` el 4853 (4784), `v7f-1` el 4791 (4788), `v7f-2` el 4801 (4772) y `v8-2` el 4747 (4646). La limpieza y la medida del lanzador solo miraban el del molde. Desde la revisión, `green/web.sh` mide y para todos los puertos que nombra el stream del sujeto (`PORT=` y `localhost:`).
+- **Dos sujetos chocaron en el 4791.** `v6-2` arrancó en el 4791 y recibió `EADDRINUSE`, porque lo tenía `v7f-1`, que corría a la vez. Si ese arranque hubiera fallado sin avisar, «para el proceso que escucha en ese puerto» habría parado el servidor de otro.
+- **El PID de `Start-Process -PassThru` puede ser el de un lanzador.** En `v7f-1`, `Stop-Process -Id 95920` dejó escuchando al hijo 82284.
 
 ## `task-done` solo con el commit hecho — `d1`, `d2` (4 sujetos, 1,86 $)
 

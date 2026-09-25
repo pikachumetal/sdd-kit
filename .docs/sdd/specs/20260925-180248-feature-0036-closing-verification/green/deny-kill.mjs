@@ -1,15 +1,19 @@
-// PreToolUse de los sujetos web de la 0036: deniega parar procesos por nombre o por línea de comandos.
-// Un sujeto que mata todos los node.exe tumba los MCP de las sesiones del dev-lead y los servidores de los
-// demás sujetos (ticket 0077 §1). La tool call denegada sigue en el stream: la medida no cambia.
+// PreToolUse de los sujetos web: deniega parar procesos por nombre o por línea de comandos.
+// Matar todos los node.exe tumba los MCP de las sesiones abiertas en la máquina y los servidores de los
+// demás sujetos. La tool call denegada sigue en el stream, así que la medida no cambia.
 import { readFileSync } from 'node:fs';
 
 const BY_NAME = [
   /taskkill\b[^\n]*[/-](IM|FI)\b/i,
   /\bpkill\b/,
+  /\bpgrep\b/,
   /\bkillall\b/,
   /Stop-Process\b[^\n]*-(Name|ProcessName)\b/i,
-  /Get-Process\b[^\n|]*[a-z][^\n]*\|\s*Stop-Process/i,
-  /CommandLine[^\n]*(Stop-Process|kill|Terminate)/i,
+  /\b(kill|spps)\s+-(Name|ProcessName)\b/i,
+  /Get-Process\s+(?!-Id\b)[^\n|]*\|[^\n]*(Stop-Process|\bkill\b|Terminate)/i,
+  /\bName\s*=\s*['"][^'"]+['"][^\n]*(Terminate|Stop-Process|\bkill\b)/i,
+  /CommandLine[^\n]*(Stop-Process|\bkill\b|Terminate)/i,
+  /\bcall\s+terminate\b/i,
   /\bwmic\b[^\n]*\bdelete\b/i,
 ];
 
