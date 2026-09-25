@@ -44,7 +44,10 @@ La revisión final encontró que la regla del router «planificar sin hacerlo to
 | r3 | `sdd-roadmap` | `sdd-roadmap` | control, sin regresión |
 | f1 | `sdd-start-feature` | `sdd-start-feature` | control, sin regresión |
 | f3 | `sdd-start-feature` | `sdd-start-feature` | control, sin regresión |
+| r1 | `sdd-roadmap` | `sdd-roadmap` | control, sin regresión |
+| r2 | `sdd-roadmap` | `sdd-roadmap` | control, sin regresión |
+| r4 | `sdd-roadmap` | `sdd-roadmap` | control, sin regresión |
 
-Los `.args` de estos sujetos confirman que `--setting-sources ""` y `--plugin-dir` de superpowers llegaron a `claude`. r1, r2 y r4, las otras frases de la misma fila, no se volvieron a medir tras la edición: no quedaban sujetos dentro del techo.
+Los `.args` de estos sujetos confirman que `--setting-sources ""` y `--plugin-dir` de superpowers llegaron a `claude`. r1, r2 y r4, las otras frases de la misma fila, se midieron después: el dev-lead amplió el techo a 53 sujetos («Sí, 3 sujetos más», 2026-09-25).
 
-Coste: 28 sujetos del GREEN (4,00 $) y 4 de control (0,66 $). Campaña entera: 50 sujetos y 7,54 $ (más ~0,06 $ de sondas), en el techo de sujetos de la previsión (50) y muy por debajo del de coste (18 $).
+Coste: 28 sujetos del GREEN (4,00 $) y 7 de control (1,13 $). Campaña entera: 53 sujetos y 8,01 $ (más ~0,06 $ de sondas). El techo de sujetos pasó de 50 a 53 por decisión del dev-lead; el de coste (18 $) no se tocó.
