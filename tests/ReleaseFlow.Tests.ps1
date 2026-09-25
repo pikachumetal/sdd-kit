@@ -13,7 +13,7 @@ Describe 'Carril release opcional' {
   }
 
   It 'las dos skills del carril leen el campo de destinatario' {
-    Get-KitFile 'skills/sdd-start-release/SKILL.md' | Should -Match 'hasRecipient'
+    Get-KitFile 'skills/sdd-plan/SKILL.md' | Should -Match 'hasRecipient'
     Get-KitFile 'skills/sdd-end-release/SKILL.md' | Should -Match 'hasRecipient'
   }
 

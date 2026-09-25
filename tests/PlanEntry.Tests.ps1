@@ -4,6 +4,13 @@ BeforeAll {
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
   }
+
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'Carril proposal' {
@@ -121,5 +128,31 @@ Describe 'sdd-plan' {
 
   It 'el README lista sdd-plan' {
     Get-KitFile 'README.md' | Should -Match '\| `sdd-plan` \|'
+  }
+}
+
+Describe 'Retirada de sdd-start-release' {
+  It 'la skill ya no existe' {
+    Join-Path $script:RepoRoot 'skills/sdd-start-release' | Should -Not -Exist
+  }
+
+  It 'solo la nombran la migración que avisa y sdd-end-release, que es de otra task' {
+    $paths = @('skills', 'hooks', 'README.md', '.docs/workflow', '.docs/sdd/architecture.md', '.docs/sdd/mission.md')
+    $mentions = @(git -C $script:RepoRoot grep -l 'sdd-start-release' -- @paths)
+    $mentions | Should -Be @('skills/sdd-end-release/SKILL.md', 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md')
+  }
+
+  It 'la consulta pasa la planificación a sdd-plan' {
+    Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'sdd-plan'
+  }
+
+  It 'la migración avisa de la retirada' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    $migration | Should -Match 'sdd-start-release'
+    $migration | Should -Match 'sdd-plan'
+  }
+
+  It 'los documentos del flujo la tienen por artefacto retirado' {
+    Get-KitFile 'tests/WorkflowDocs.Tests.ps1' | Should -Match "'sdd-start-release'"
   }
 }

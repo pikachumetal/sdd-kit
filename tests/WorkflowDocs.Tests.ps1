@@ -34,7 +34,7 @@ Describe 'Documentación de flujo' {
 
   It '<_> no nombra artefactos que el kit ya no produce' -ForEach $VersionedDocs {
     $content = Get-Content (Join-Path $script:WorkflowRoot $_) -Raw
-    foreach ($obsoleto in @('hotfix', 'funcional\.md')) {
+    foreach ($obsoleto in @('hotfix', 'funcional\.md', 'sdd-start-release')) {
       $content | Should -Not -Match $obsoleto
     }
   }
