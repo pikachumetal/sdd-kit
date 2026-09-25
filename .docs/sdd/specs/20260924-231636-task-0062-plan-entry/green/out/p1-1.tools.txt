@@ -1,0 +1,246 @@
+
+>>> Skill: sdd-kit:sdd-plan
+<<< Launching skill: sdd-kit:sdd-plan
+
+>>> Bash: cd "<run>/salas" && git branch --all && git worktree list && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json && git show develop:.docs/sdd/roadmap.md
+<<< * develop
+  main
+<run>/salas df96c6a [develop]
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| — | R
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/constitution.md .docs/sdd/mission.md; git ls-files | head -40; cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/proposal-template.md"; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/scripts"
+<<< # Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+# Mission — salas
+
+CLI interna para reservar las salas de reuniones de la oficina. Usuarios: el equipo de oficina y, desde este año, clientes externos que alquilan salas.
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+data/usage.csv
+src/report.js
+src/slots.js
+tests/slots.test.js
+cat: '<home>/AppData/Local/Temp/claude/D--c
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates" && ls -R . | head -40; cat $(find . -name 'proposal-template.md'); cd ../../../runs-green/p1-1/salas && cat README.md src/report.js data/usage.csv | head -80
+<<< .:
+scripts
+SKILL.md
+templates
+
+./scripts:
+Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+
+./templates:
+architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+environments-template.md
+estimation-template.md
+feedback-template.md
+kit-feedback-template.md
+mission-template.md
+patch-template.md
+plan-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+tech-stack-template.md
+wa
+
+>>> Bash: cd "<run>/salas" && pwsh -NoProfile -File "../../../kit-green/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot "$PWD" -Reserve -Count 6
+<<< 0014
+0015
+0016
+0017
+0018
+0019
+
+>>> Bash: cd "<run>/salas" && git status --short && D=.docs/sdd/specs/20260925-120000-proposal-0014-cobro-clientes-externos && mkdir -p $D && cat > $D/proposal.md <<'EOF'
+---
+id: 20260925-120000-proposal-0014-cobro-clientes-externos
+proposal: 0014
+title: Cobro a clientes externos
+source: interview
+created: 2026-09-25
+---
+
+# Propuesta — Cobro a clientes externos
+
+## Por qué
+
+Los clientes externos alquilan salas y hoy no se les cobra: `salas` solo registra el uso. Se quiere una tarifa por hora distinta en cada sala, una factura mensual por cliente con las reservas del mes y que quien no paga en 30 días no pueda reservar más.
+
+## Reglas de negocio
+
+Petición original: tarifa por hora por sala, factura mensual por cliente, bloqueo a los 30 días sin pagar. El resto son decisiones tomadas al planificar (nadie a quien preguntar); están marcadas con «(decidido)» y se enmiendan si el negocio dice otra cosa.
+
+- Cliente externo (decidido): las reservas del equipo de oficina no se cobran. Solo las reservas hechas con `--cliente <id>` generan cobro. Ejemplo: `salas reservar Norte 10-12 --cliente acme` → cobrable a `acme`; `salas reservar Norte 10-12` → interna, 0 €.
+- Tarifa por sala: cada sala tiene su tarifa en €/hora. Ejemplo: Norte 20 €/h, Sur 35 €/h → reservar Sur 10-12 son 2 h × 35 = 70 €.
+- Importes (decidido): en céntimos enteros, EUR, sin IVA (el IVA queda fuera de esta propuesta). Ejemplo: 20 €/h → 2000 céntimos/h.
+- Tarifa congelada (decidido): la reserva guarda la tarifa vigente al reservar; cambiar la tarifa no afecta a reservas ya hechas. Ejemplo: Norte 20 €/h, `acme` reserva 10-12 el 3 oct; el 5 oct Norte pasa a 25 €/h → esa reserva sigue costando 40 €; una reserva nueva 10-12 cuesta 50 €.
+- Sala sin tarifa (decidido): no se puede reservar para un cliente externo. Ejemplo: Este sin tarifa, `salas reservar Este 10-12 --cliente acme` → error «la sala Este no tiene tarifa».
+- Factura mensual: una por cliente y mes natural, con las reservas de ese mes (por fecha de la reserva, no de creación), una línea por reserva. Ejemplo: `acme` en octubre reserva Norte 2 h a 20 €/h (3 oct) y Sur 1 h a 35 €/h (9 oct) → factura de octubre: 2 líneas, total 7500 céntimos... es decir 40 € + 35 € = 75 €.
+- Reservas canceladas (decidido): no se facturan. Ejemplo: `acme` cancela la de Sur del 9 oct → factura de octubre: 1 línea, 40 €.
+- Mes sin reservas (decidido): no se emite factura. Ejemplo: `beta` sin reservas en octubre → no hay factura de `beta` de octubre.
+- Emisión y numeración (decidido): se emite con `salas facturar <mes>` (manual; sin cron), es idempotente y su número es `FAC-<yyyyMM>-<cliente>`. Ejemplo: `salas facturar 2026-10` dos veces → una sola `FAC-202610-acme`.
+- Vencimiento (decidido): 30 días naturales desde la emisión; la factura se marca pagada con `salas pagar <número>`. Ejemplo: emitida el 2026-11-02 → vence el 2026-12-02.
+- Bloqueo por impago: un cliente con alguna factura sin pagar pasado su vencimiento no puede reservar. Las reservas ya hechas se mantienen y se siguen facturando. Ejemplo: `FAC-202610-acme` emitida el 2026-11-02, vence el 2026-12-02 → el 2026-12-02 `acme` aún puede reservar; el 2026-12-03 `salas reservar Norte 10-12 --cliente acme` → error «cliente bloqueado por impago: FAC-202610-acme».
+- Desbloqueo (decidido): al pagar (`salas pagar`) la última factura vencida, el cliente puede reservar de nuevo en el acto. Ejemplo: `acme` bloqueado, `salas pagar FAC-202610-acme` → puede reservar.
+- Persistencia (decidido): ficheros CSV en `data/`, como `usage.csv`.
+
+## Capacidades que toca
+
+- `client-billing` — nueva: clientes, reservas cobrables, tarifas congeladas.
+- `room-rates` — nueva: tarifa por sala.
+- `invoicing` — nueva: facturas mensuales, pago y vencimiento.
+- `booking` — bloqueo de clientes morosos y sala sin tarifa al reservar.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0015 | Clientes externos y reservas a su nombre (`--cliente`) | — |
+| 2 | 0016 | Tarifa por hora de cada sala, congelada en la reserva | — |
+| 3 | 0017 | Factura mensual por cliente (`salas facturar <mes>`) | 0015, 0016 |
+| 4 | 0018 | Pago de facturas (`salas pagar`) y vencimiento a 30 días | 0017 |
+| 5 | 0019 | Bloqueo de reservas por impago | 0018 |
+
+0015 y 0016 son independientes y pueden hacerse en paralelo por dos personas: tocan ficheros distintos.
+
+## Acta
+
+No aplica: entrevista.
+
+## Enmiendas
+
+_Ninguna._
+EOF
+sed -i 's/total 7500 céntimos... es decir 40 € + 35 € = 75 €/total 40 € + 35 € = 75 €/' $D/proposal.md
+python3 - <<'EOF' 2>/dev/null || true
+EOF
+grep -n "75 €" $D/proposal.md
+<<< 24:- Factura mensual: una por cliente y mes natural, con las reservas de ese mes (por fecha de la reserva, no de creación), una línea por reserva. Ejemplo: `acme` en octubre reserva Norte 2 h a 20 €/h (3 oct) y Sur 1 h a 35 €/h (9 oct) → factura de octubre: 2 líneas, total 40 € + 35 € = 75 €.
+
+>>> Bash: cd "<run>/salas" && python3 - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+old="| 0013 | Aforo de cada sala en `salas libres` | ⏳ |\n"
+new=old+"""| 0015 | Clientes externos y reservas a su nombre (`--cliente`) — `proposal: 0014` | ⏳ |
+| 0016 | Tarifa por hora de cada sala, congelada en la reserva — `proposal: 0014` | ⏳ |
+| 0017 | Factura mensual por cliente (`salas facturar <mes>`) — tras 0015, 0016 — `proposal: 0014` | ⏳ |
+| 0018 | Pago de facturas (`salas pagar`) y vencimiento a 30 días — tras 0017 — `proposal: 0014` | ⏳ |
+| 0019 | Bloqueo de reservas por impago — tras 0018 — `proposal: 0014` | ⏳ |
+"""
+assert old in s
+open(p,'w',encoding='utf-8',newline='').write(s.replace(old,new))
+EOF
+git status --short; git add .docs/sdd && git commit -q -F - <<'EOF'
+docs(sdd): planificar cobro a clientes externos (propuesta 0014)
+
+Reserva los ids 0014 (propuesta) y 0015-0019 (features) y las añade
+al roadmap en Próximo, con su orden «tras».
+
+Decisiones tomadas al no haber a quién preguntar (recogidas en la
+propuesta): solo se cobran las reservas con --cliente; importes en
+céntimos, EUR, sin IVA; tarifa congelada al reservar; sala sin tarifa
+no reservable por clientes; canceladas no se facturan; facturación
+manual con `salas facturar <mes>`; vencimiento a 30 días naturales
+desde la emisión; bloqueo desde el día siguiente al vencimiento y
+desbloqueo al pagar; persistencia en CSV bajo data/.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< /usr/bin/bash: line 2: python3: command not found
+?? .docs/sdd/specs/
+8584bd6 docs(sdd): planificar cobro a clientes externos (propuesta 0014)
+df96c6a feat: base de reservas de salas
+
+>>> Edit: <run>\salas\.docs\sdd\roadmap.md
+<<< The file <run>\salas\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Bash: cd "<run>/salas" && git add .docs/sdd && git commit -q --amend --no-edit && git show --stat --oneline HEAD && git status --short
+<<< a8703a2 docs(sdd): planificar cobro a clientes externos (propuesta 0014)
+ .docs/sdd/roadmap.md                               |  5 ++
+ .../proposal.md                                    | 58 ++++++++++++++++++++++
+ 2 files changed, 63 insertions(+)
+
+=== RESULTADO (11 turnos, 0.34800000000000003 $)
+Dejé el cobro a clientes externos planificado y commiteado en `develop` (`a8703a2`, solo `roadmap.md` y `proposal.md`). No arranqué ninguna rama, spec ni código.
+
+**Qué hay**
+- Propuesta `0014`, en `.docs/sdd/specs/20260925-120000-proposal-0014-cobro-clientes-externos/proposal.md`. Recoge las reglas de negocio con ejemplos con datos y el reparto de features.
+- Cinco filas nuevas en «Próximo» del roadmap, ids `0015`–`0019` reservados con el script. `0012` y `0013` no las toqué.
+
+**Reparto para el equipo**
+
+| Id | Feature | Tras |
+| --- | --- | --- |
+| 0015 | Clientes externos y reservas con `--cliente` | — |
+| 0016 | Tarifa por hora de cada sala, congelada en la reserva | — |
+| 0017 | Factura mensual por cliente (`salas facturar <mes>`) | 0015, 0016 |
+| 0018 | Pago de facturas (`salas pagar`) y vencimiento a 30 días | 0017 |
+| 0019 | Bloqueo de reservas por impago | 0018 |
+
+`0015` y `0016` se pueden hacer a la vez por dos personas, porque tocan ficheros distintos. Cada una se arranca con `sdd-kit:sdd-start-task`.
+
+**Decisiones que tomé yo** (están marcadas «(decidido)» en la propuesta; si el negocio dice otra cosa, se enmiendan):
+- **Qué se cobra:** solo las reservas hechas con `--cliente`. Las del equipo de oficina no se cobran.
+- **Importes:** en céntimos, EUR, sin IVA.
+- **Tarifa:** queda congelada en la reserva, así que cambiarla no afecta a las reservas ya hechas. Una sala sin tarifa no se puede reservar para un cliente.
+- **Facturación:**
+  - Es manual, con `salas facturar <mes>`, y no se repite si ya está emitida.
+  - Las reservas canceladas no se facturan.
+  - Si el cliente no tiene reservas en el mes, no hay factura.
+- **Vencimiento:** 30 días naturales desde la emisión.
+- **Bloqueo:** empieza el día siguiente al vencimiento y se levanta al pagar. Las reservas ya hechas se mantienen.
+- **Persistencia:** ficheros CSV en `data/`, como `usage.csv`.
+
+**Dos cosas sin resolver**
+- **IVA:** lo dejé fuera. Si estos clientes necesitan factura con IVA, hace falta una enmienda antes de empezar `0017`.
+- **Reservas:** el repo no guarda las reservas en ningún fichero (solo existe `data/usage.csv`). `0015` tendrá que decidir dónde se guardan.
+
+Al principio el commit salió sin las filas del roadmap, porque falló un script de edición. Lo corregí con `git commit --amend` y ahora el commit contiene las dos cosas.

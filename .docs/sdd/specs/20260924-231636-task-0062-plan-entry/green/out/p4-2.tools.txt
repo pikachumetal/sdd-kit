@@ -1,0 +1,177 @@
+
+>>> Skill: sdd-kit:sdd-plan
+<<< Launching skill: sdd-kit:sdd-plan
+
+>>> Bash: cd "<run>/salas" && git branch --all && git worktree list && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/roadmap.md && ls -R .docs/sdd | head -60
+<<< * develop
+  main
+<run>/salas 2c7f0df [develop]
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| — | Recordatorio el día antes de una reserva | equipo de oficina |
+| — | Reserva
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates"; ls $K $K/scripts; cat $K/proposal-template.md 2>/dev/null || find $K -name 'proposal-template*'; cd "<run>/salas"; cat .docs/sdd/constitution.md .docs/sdd/mission.md; git ls-files; grep -rniE "min|franja|60|hora" src README* 2>/dev/null | head -20
+<<< <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates:
+scripts
+SKILL.md
+templates
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/scripts:
+Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templat
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates"; cat $K/templates/proposal-template.md; cat $K/templates/roadmap-template.md | head -50; cd "<run>/salas"; cat src/slots.js data/usage.csv | head -40
+<<< ---
+id: <yyyyMMdd-HHmmss>-proposal-<id>-<slug>
+proposal: <id>        # id de la secuencia del proyecto (ids.mode: sequence) · id de la épica en el gestor (tracker)
+title: <título corto>
+source: interview | meeting
+created: <YYYY-MM-DD>
+---
+
+# Propuesta — <título>
+
+> Lo que hay que hacer, no lo que ya está hecho: eso vive en `capabilities/`. La escribe `sdd-plan` al entrevistar algo grande o al recoger una reunión, y es **histórica**: nada de lo escrito se reescribe; los cambios van a «Enmiendas». Sin deltas formales: cada feature escribe el suyo en su spec, que apunta aquí con `propo
+
+>>> Bash: cd "<run>/salas"; pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot "$PWD" -Reserve -Count 4; git status --short; date +%Y%m%d-%H%M%S
+<<< 0014
+0015
+0016
+0017
+20260925-101650
+
+>>> Bash: cd "<run>/salas"
+D=.docs/sdd/specs/20260925-101650-proposal-0014-acme-reunion; mkdir -p $D
+cat > $D/proposal.md <<'EOF'
+---
+id: 20260925-101650-proposal-0014-acme-reunion
+proposal: 0014
+title: Peticiones de Acme (reunión del 2026-09-25)
+source: meeting
+created: 2026-09-25
+---
+
+# Propuesta — Peticiones de Acme (reunión del 2026-09-25)
+
+## Por qué
+
+Acme alquila salas y pide tres cambios: exportar las reservas a CSV (lo primero que quieren ver), avisar por email a los asistentes cuando se cancela una reserva y una franja mínima de 30 minutos. Su calendario ya valida el formato de la franja, así que la 0012 ya no hace falta.
+
+## Reglas de negocio
+
+- Exportar a CSV: `salas exportar <mes>` escribe una fila por reserva con las columnas `sala,inicio,fin,estado`. Ejemplo: la reserva de Norte de 10:00 a 11:30 el 2026-10-03, cancelada → `Norte,2026-10-03 10:00,2026-10-03 11:30,cancelada`. Las canceladas se incluyen con su estado.
+- Aviso de cancelación: al cancelar una reserva se envía un email a cada asistente. Ejemplo: reserva de Sur con asistentes `ana@acme.com` y `luis@acme.com`; se cancela → salen 2 emails, uno a cada dirección, con sala y franja. Una reserva sin asistentes se cancela sin enviar nada.
+- Los asistentes se indican al reservar (`--asistentes ana@acme.com,luis@acme.com`), porque hoy `reserve(room, slot)` no los guarda y sin ellos no hay a quién avisar. Opcional: sin `--asistentes` la reserva funciona igual.
+- Franja mínima de 30 minutos: `10:00-10:30` se acepta; `10:00-10:15` se rechaza con error. Ejemplo: `salas reservar Norte 10:00-10:15` → error «la franja mínima es de 30 minutos».
+- Validar el formato de la franja (`10-12`, no `1012`) deja de ser responsabilidad de la app: lo hace el calendario del cliente.
+
+## Capacidades que toca
+
+- `booking-export` — nueva: exportación de reservas a CSV.
+- `cancellation-notice` — nueva: email a los asistentes al cancelar; incluye guardar los asistentes al reservar.
+- `slot-rules` — franja mínima de 30 minutos.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0015 | Exportar reservas a CSV | — |
+| 2 | 0016 | Email a los asistentes al cancelar | — |
+| 3 | 0017 | Franja mínima de 30 minutos | — |
+
+## Acta
+
+2026-09-25 · Acme (cliente) y el equipo de desarrollo; asistentes concretos no anotados.
+
+1) lo de validar la franja (0012) ya no lo quieren, lo hace su calendario; 2) quieren poder exportar las reservas a CSV, y es lo primero que quieren ver; 3) al cancelar una reserva, que se avise por email a los asistentes; 4) la franja mínima pasa a ser de 30 minutos.
+
+Decisiones tomadas sin el cliente (nadie a quien preguntar; a confirmar con Acme): columnas y nombre del comando del CSV, captura de asistentes con `--asistentes` opcional, texto del error, y que la franja mínima la aplica la app aunque el formato lo valide su calendario.
+
+## Enmiendas
+
+Ninguna.
+EOF
+python - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |\n| 0013 | Aforo de cada sala en `salas libres` | ⏳ |",
+"| 0015 | Exportar reservas a CSV — `proposal: 0014` (primero: lo primero que quiere ver Acme) | ⏳ |\n| 0016 | Email a los asistentes al cancelar una reserva — `proposal: 0014` | ⏳ |\n| 0017 | Franja mínima de 30 minutos — `proposal: 0014` | ⏳ |\n| 0013 | Aforo de cada sala en `salas libres` | ⏳ |\n| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏸️ aparcada: descartada por Acme (lo valida su calendario), 2026-09-25 — `proposal: 0014` |")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git add -A && git commit -q -m "docs(roadmap): planificar peticiones de Acme (propuesta 0014)
+
+Reunión del 2026-09-25: exportar reservas a CSV (0015), email a los
+asistentes al cancelar (0016) y franja mínima de 30 minutos (0017).
+La 0012 queda aparcada: la valida el calendario de Acme.
+
+Decisiones sin el cliente (a confirmar): columnas del CSV, captura de
+asistentes con --asistentes opcional y franja mínima aplicada por la app.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -2 && git show --stat HEAD | tail -4
+<<< fa421f0 docs(roadmap): planificar peticiones de Acme (propuesta 0014)
+2c7f0df feat: base de reservas de salas
+
+ .docs/sdd/roadmap.md                               | 67 +++++++++++-----------
+ .../proposal.md                                    | 47 +++++++++++++++
+ 2 files changed, 82 insertions(+), 32 deletions(-)
+
+>>> Bash: cd "<run>/salas"; git show 2c7f0df:.docs/sdd/roadmap.md | file - ; file .docs/sdd/roadmap.md
+<<< /dev/stdin: Unicode text, UTF-8 text
+.docs/sdd/roadmap.md: Unicode text, UTF-8 text, with CRLF line terminators
+
+>>> Bash: cd "<run>/salas"; sed -i 's/\r$//' .docs/sdd/roadmap.md .docs/sdd/specs/*/proposal.md; git add -A; git commit -q --amend --no-edit; git show --stat HEAD | tail -3; sed -n 1,12p .docs/sdd/roadmap.md
+<<<  .docs/sdd/roadmap.md                               |  5 ++-
+ .../proposal.md                                    | 47 ++++++++++++++++++++++
+ 2 files changed, 51 insertions(+), 1 deletion(-)
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0015 | Exportar reservas a CSV — `proposal: 0014` (primero: lo primero que quiere ver Acme) | ⏳ |
+| 0016 | Email a los asistentes al cancelar una reserva — `proposal: 0014` | ⏳ |
+| 0017 | Franja mínima de 30 minutos — `proposal: 0014` | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+| 0012 | Validar el formato de la franja 
+
+=== RESULTADO (10 turnos, 0.3122878 $)
+Las notas de la reunión están en el roadmap y en una propuesta nueva, commiteadas en `develop` (`fa421f0`). No he arrancado ninguna task, rama ni código, y no he ejecutado tests.
+
+**Roadmap (`.docs/sdd/roadmap.md`)**
+- **0012:** queda aparcada con el motivo «descartada por Acme (lo valida su calendario), 2026-09-25». No se borra.
+- **0015:** exportar reservas a CSV. Va la primera, porque es lo que Acme quiere ver antes.
+- **0016:** email a los asistentes al cancelar una reserva.
+- **0017:** franja mínima de 30 minutos.
+- **0013:** el aforo de cada sala no se ha tocado y queda detrás de las nuevas.
+
+**Propuesta (`specs/20260925-101650-proposal-0014-acme-reunion/proposal.md`)**
+- Lleva las notas literales de la reunión, las reglas de negocio con ejemplos con datos, el reparto de features y una sección de enmiendas vacía.
+- Los ids 0014 a 0017 salen de una sola reserva con `Get-NextSddId.ps1`.
+
+**Decisiones que he tomado yo, sin el cliente**
+- **Asistentes:** hoy `reserve(room, slot)` no guarda los asistentes, así que no hay a quién avisar. Entra en la 0016 un parámetro opcional `--asistentes` al reservar. Sin él, la reserva funciona igual y no se envía email.
+- **CSV:** el comando será `salas exportar <mes>`, con las columnas `sala,inicio,fin,estado`, y las canceladas van incluidas con su estado.
+- **Franja mínima:** la aplica la app, aunque el formato lo valide el calendario de Acme. El error dice «la franja mínima es de 30 minutos». No había ninguna regla previa de franja mínima en el código.
+- **Asistentes a la reunión:** no los anotaste, y el acta lo dice así.
+
+Estas decisiones están escritas en el acta de la propuesta como pendientes de confirmar con Acme. La de los asistentes es la que más pesa: sin datos de asistentes, la 0016 no puede enviar nada.
+
+Siguiente paso: arrancar la 0015 con `sdd-kit:sdd-start-task`.
