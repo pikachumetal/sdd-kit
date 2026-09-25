@@ -98,8 +98,13 @@ Describe 'Measure-SessionTokens.ps1' {
     It 'sin carpeta de transcripts las tres líneas dicen no medido y sale con 0' {
       $worktree = Join-Path $TestDrive 'sin-transcripts'
       $projects = Join-Path $TestDrive 'projects-vacio'
-      $output = pwsh -NoProfile -File $script:Script -Path $worktree -ProjectsRoot $projects
-      $LASTEXITCODE | Should -Be 0
+      $previous = [Console]::OutputEncoding
+      try {
+        [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+        $output = pwsh -NoProfile -File $script:Script -Path $worktree -ProjectsRoot $projects
+        $LASTEXITCODE | Should -Be 0
+      }
+      finally { [Console]::OutputEncoding = $previous }
       $reason = "no medido (sin transcripts de Claude Code para $worktree)"
       ($output -join "`n") | Should -Match ([regex]::Escape("- Tokens del hilo: $reason"))
       ($output -join "`n") | Should -Match ([regex]::Escape("- Tokens de subagentes: $reason"))
@@ -148,6 +153,24 @@ Describe 'Measure-SessionTokens.ps1' {
       $command = "[Console]::OutputEncoding = [System.Text.Encoding]::Latin1; & '$($script:Script)' -Path '$($worktree.Path)' -ProjectsRoot '$($worktree.Projects)'"
       Start-Process pwsh -ArgumentList @('-NoProfile', '-Command', $command) -RedirectStandardOutput $stdout -NoNewWindow -Wait
       [System.IO.File]::ReadAllText($stdout, [System.Text.UTF8Encoding]::new($false, $true)) | Should -Match '2\.605\.005 — claude-sonnet-5'
+    }
+
+    It 'deja la codificación de la consola como estaba al volver' {
+      $previous = [Console]::OutputEncoding
+      try {
+        [Console]::OutputEncoding = [System.Text.Encoding]::Latin1
+        Invoke-Measure (New-Worktree @('base') $null) | Out-Null
+        [Console]::OutputEncoding.WebName | Should -Be ([System.Text.Encoding]::Latin1.WebName)
+      }
+      finally { [Console]::OutputEncoding = $previous }
+    }
+
+    It 'resuelve una ruta relativa contra el directorio actual' {
+      $worktree = New-Worktree @('base') $null
+      Push-Location (Split-Path $worktree.Path -Parent)
+      try { $output = (& $script:Script -Path (Split-Path $worktree.Path -Leaf) -ProjectsRoot $worktree.Projects | Out-String) -replace "`r`n", "`n" }
+      finally { Pop-Location }
+      Get-Line $output 'Tokens del hilo' | Should -Be '- Tokens del hilo: 2.605.005 — claude-sonnet-5 2.605.005'
     }
 
     It 'sin desglose de cache_creation la escritura cuenta como de 5 minutos' {

@@ -17,14 +17,11 @@ param(
   [string]$ProjectsRoot = (Join-Path $HOME '.claude/projects')
 )
 $ErrorActionPreference = 'Stop'
-# Llamado desde Git Bash, la consola hereda una página de códigos OEM y la raya y las tildes llegan corruptas.
-[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $script:Categories = @('input', 'cacheWrite5m', 'cacheWrite1h', 'cacheRead', 'output')
 $script:Invariant = [System.Globalization.CultureInfo]::InvariantCulture
 
 function Get-TranscriptFolder([string]$WorktreePath, [string]$Root) {
-  $fullPath = [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]::GetFullPath($WorktreePath))
-  return Join-Path $Root ($fullPath -replace '[^A-Za-z0-9]', '-')
+  return Join-Path $Root ($WorktreePath -replace '[^A-Za-z0-9]', '-')
 }
 
 function ConvertFrom-JsonLine([string]$Text) {
@@ -227,15 +224,24 @@ function Write-Report([object]$Session, [object]$Prices) {
   Write-Output (Format-CostLine $Session $Prices)
 }
 
-$folder = Get-TranscriptFolder $Path $ProjectsRoot
-if (-not (Test-Path -LiteralPath $folder)) {
-  Write-NotMeasured "sin transcripts de Claude Code para $Path"
-  exit 0
+function Invoke-Measurement([string]$WorktreePath, [string]$Root, [string]$BranchName) {
+  $folder = Get-TranscriptFolder $WorktreePath $Root
+  if (-not (Test-Path -LiteralPath $folder)) {
+    Write-NotMeasured "sin transcripts de Claude Code para $WorktreePath"
+    return
+  }
+  $session = Read-Session $folder $BranchName
+  if ($session.Thread.Count -eq 0 -and $session.Dispatches.Count -eq 0) {
+    $subject = if ($BranchName) { $BranchName } else { 'ninguna rama' }
+    Write-NotMeasured "sin respuestas de $subject en los transcripts"
+    return
+  }
+  Write-Report $session (Read-Prices $WorktreePath)
 }
-$session = Read-Session $folder $Branch
-if ($session.Thread.Count -eq 0 -and $session.Dispatches.Count -eq 0) {
-  $subject = if ($Branch) { $Branch } else { 'ninguna rama' }
-  Write-NotMeasured "sin respuestas de $subject en los transcripts"
-  exit 0
-}
-Write-Report $session (Read-Prices $Path)
+
+$worktreePath = [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]::GetFullPath($Path, (Get-Location).Path))
+# Llamado desde Git Bash, la consola hereda una página de códigos OEM y la raya y las tildes llegan corruptas.
+$previousEncoding = [Console]::OutputEncoding
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+try { Invoke-Measurement $worktreePath $ProjectsRoot $Branch }
+finally { [Console]::OutputEncoding = $previousEncoding }
