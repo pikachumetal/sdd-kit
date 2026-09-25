@@ -54,13 +54,6 @@ Describe 'hooks/hooks.json' {
   }
 }
 
-Describe 'hooks/router.md' {
-  It 'es corto (150 palabras como máximo)' {
-    $words = (Get-Content (Join-Path $script:HooksDir 'router.md') -Raw -ErrorAction Stop) -split '\s+' | Where-Object { $_ }
-    $words.Count | Should -BeLessOrEqual 150
-  }
-}
-
 Describe 'hooks/session-start' {
   It 'es ejecutable en git, porque hooks.json lo invoca por ruta' {
     $entry = git -C $script:KitRoot ls-files -s hooks/session-start 2>$null
@@ -80,7 +73,7 @@ Describe 'hooks/session-start' {
     $result.Output.Trim() | Should -BeNullOrEmpty
   }
 
-  It 'inyecta el router con .docs/sdd/' -Tag 'Slow' {
+  It 'inyecta la skill using-sdd con .docs/sdd/' -Tag 'Slow' {
     if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
     $result = Invoke-SessionStart (New-ProjectDir $true)
     $result.ExitCode | Should -Be 0
@@ -89,6 +82,9 @@ Describe 'hooks/session-start' {
     $context.additionalContext | Should -Match 'sdd-kit:sdd-start-feature'
     $context.additionalContext | Should -Match 'sdd-kit:sdd-start-patch'
     $context.additionalContext | Should -Match 'sdd-kit:sdd-consult'
+    $context.additionalContext | Should -Match 'name: using-sdd'
+    $context.additionalContext | Should -Match 'sdd-kit:sdd-config'
+    $context.additionalContext | Should -Match 'sdd-kit:sdd-roadmap'
   }
 }
 

@@ -122,8 +122,8 @@ Describe 'sdd-roadmap' {
     $script:Plan | Should -Match 'sequence'
   }
 
-  It 'el router lleva la entrada a sdd-roadmap' {
-    Get-KitFile 'hooks/router.md' | Should -Match 'sdd-kit:sdd-roadmap'
+  It 'using-sdd lleva la entrada a sdd-roadmap' {
+    Get-KitFile 'skills/using-sdd/SKILL.md' | Should -Match 'sdd-kit:sdd-roadmap'
   }
 
   It 'el README lista sdd-roadmap' {
