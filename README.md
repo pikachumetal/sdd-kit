@@ -89,6 +89,7 @@ El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, r
 | `sdd-start-release` | Abre la siguiente release con el inventario ordenado y sus bloqueos. El scope lo decides tú; solo se refina lo inmediato. |
 | `sdd-end-release` | Cierra la release: acta, retro con números, changelog sellado, notas para quien la va a usar. El tag lo confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
+| `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
 | `sdd-templates` | Las 20 plantillas canónicas y el script que regenera el registro de estimaciones. |

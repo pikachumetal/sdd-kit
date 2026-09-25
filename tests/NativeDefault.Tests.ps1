@@ -42,12 +42,12 @@ Describe 'Task 1 — contrato del método' {
 
   It 'un método fijado en sdd-kit.json no se pregunta y manda sobre el handoff' {
     $profiles = Get-KitFile $script:ControlProfiles
-    $profiles | Should -Match 'Ejecución: <valor>, fijado en sdd-kit.json`, aunque el handoff recomiende el otro'
-    $profiles | Should -Match 'No tiene nivel de task ni de release'
+    $profiles | Should -Match 'Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro'
+    $profiles | Should -Match 'No tiene nivel de release'
   }
 
-  It 'la pregunta 5 pregunta el método con auto recomendado' {
-    $row = Get-TableRow $script:ControlProfiles '| 5 |'
+  It 'la pregunta 6 de sdd-config pregunta el método con auto recomendado' {
+    $row = Get-TableRow 'skills/sdd-config/SKILL.md' '| 6 |'
     $row | Should -Match '¿Cómo se ejecutan los planes'
     $row | Should -Match 'Recomendado `auto`'
     $row | Should -Match '`execution`'
@@ -75,7 +75,7 @@ Describe 'Task 1 — contrato del método' {
   }
 
   It 'el paso 5 nombra el método del handoff y la clave execution' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `sdd-kit.json`'
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `.docs/sdd/sdd-kit.local.json` o en `sdd-kit.json`'
   }
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {
@@ -84,18 +84,18 @@ Describe 'Task 1 — contrato del método' {
 }
 
 Describe 'Task 2 — init y migración' {
-  It 'greenfield pregunta el método de ejecución tras los frenos' {
-    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 21 |'
-    $row | Should -Match 'Método de ejecución: pregunta 5 del mismo bloque'
+  It 'greenfield pregunta el método de ejecución a través de sdd-config' {
+    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 17 |'
+    $row | Should -Match '`sdd-config`.*método de ejecución'
   }
 
-  It 'greenfield escribe las claves respondidas en 18–21' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves de control que el usuario respondió en 18–21'
+  It 'greenfield escribe las claves respondidas en la 17' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves que el usuario respondió en la 17'
   }
 
-  It 'brownfield pregunta el método de ejecución tras los frenos' {
-    $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 5 |'
-    $row | Should -Match 'Método de ejecución: pregunta 5 del mismo bloque'
+  It 'brownfield pregunta el método de ejecución a través de sdd-config' {
+    $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 1 |'
+    $row | Should -Match '`sdd-config`.*método de ejecución'
   }
 
   It 'brownfield escribe execution en el marcador solo si se respondió' {
@@ -144,7 +144,7 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {
-    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado en `sdd-kit.json` o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
+    Get-KitFile 'skills/sdd-start-task/SKILL.md' | Should -Match 'con `execution` fijado \(`native` o `subagent` que ningún `auto` de `sdd-kit.local.json` pisa\), o un método que el dev-lead ya nombró para la task, solo «Apruebo» y «Cambios»'
   }
 
   It 'la celda de pair dice que con execution fijado solo se aprueba' {
