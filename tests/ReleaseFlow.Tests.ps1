@@ -26,3 +26,20 @@ Describe 'Carril release opcional' {
     }
   }
 }
+
+Describe 'sdd-end-release es solo el corte' {
+  BeforeAll { $script:EndRelease = Get-KitFile 'skills/sdd-end-release/SKILL.md' }
+
+  It 'el checklist tiene cinco pasos numerados' {
+    $checklist = (($script:EndRelease -split '## Checklist de cierre')[1] -split '## Red flags')[0]
+    ([regex]::Matches($checklist, '(?m)^\d+\. \*\*')).Count | Should -Be 5
+  }
+
+  It 'no escribe el acta de la reunión' {
+    $script:EndRelease | Should -Not -Match 'feedback\.md'
+  }
+
+  It 'remite el feedback de una reunión a sdd-plan' {
+    $script:EndRelease | Should -Match 'sdd-plan'
+  }
+}

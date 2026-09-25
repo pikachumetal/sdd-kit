@@ -43,18 +43,19 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 
 ### La entrevista fija las claves de control
 - GIVEN una init greenfield o brownfield con el usuario presente
-- WHEN la entrevista llega a las claves de control
-- THEN el agente hace, en turnos distintos, las preguntas del bloque de `control-profiles.md`, cada una con su opción recomendada y su motivo: perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona), push de la rama de integración tras el merge («sí» con git-flow), frenos (3 agentes; 8 y 20 minutos) y método de ejecución (`auto`)
+- WHEN la entrevista llega a las claves del kit
+- THEN el agente invoca `sdd-config`, que hace en turnos distintos las preguntas de su catálogo, cada una con su opción recomendada y su motivo: modo de ids, perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona), push de la rama de integración tras el merge («sí» con git-flow), frenos (3 agentes; 8 y 20 minutos) y método de ejecución (`auto`)
 - AND escribe en `sdd-kit.json` solo lo que el usuario responde: «no sé» no escribe la clave y rige su default, y un «no» a la política de merge deja `merge` sin declarar
 - AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar; sin `merge` declarado, la de push tampoco se hace
 - AND la pregunta de push recomienda «sí» solo si la convención de ramas es git-flow; con otra convención se hace sin opción recomendada
-- AND en brownfield sin usuario, las cinco quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
+- AND en brownfield sin usuario, las preguntas quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
+- AND la init no pregunta las preferencias personales: el resumen de cierre dice que se fijan con `sdd-config`
 
 ### La init deja la memoria automática desactivada y los temporales ignorados
 - GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
 - WHEN crea la estructura del proyecto
 - THEN `.claude/settings.json` tiene `"autoMemoryEnabled": false` y conserva las demás claves que ya tuviera
-- AND `.gitignore` contiene las líneas `.playwright-mcp/` y `.superpowers/` una sola vez cada una
+- AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` una sola vez cada una
 - AND si `.claude/settings.json` ya tenía `"autoMemoryEnabled": true`, el agente pregunta antes de cambiarlo; si el usuario dice que no, la clave se queda en `true` y el resumen de cierre lo anota
 
 ### El log de estimación lo genera el script del kit
@@ -65,7 +66,7 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 
 ### La constitution nombra el proyecto de referencia
 - GIVEN una init greenfield o brownfield en su entrevista
-- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 21 de greenfield y la 7 de brownfield
+- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 18 de greenfield y la 4 de brownfield
 - THEN la constitution lleva en «Convenciones» la entrada «Proyecto de referencia» con la ruta o el repositorio que el usuario dé, o «no aplica» si responde que no
 
 ### El funcional aportado se guarda literal
@@ -85,6 +86,9 @@ Verdad viva del comportamiento observable de la inicialización de un proyecto c
 
 ## Historial
 
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La entrevista fija las claves de control
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La init deja la memoria automática desactivada y los temporales ignorados
+- 2026-09-25 — 20260924-220849-task-0061-local-config — MODIFIED La constitution nombra el proyecto de referencia
 - 2026-09-24 — 20260924-082516-task-0055-native-default — MODIFIED La entrevista fija las claves de control (pregunta del método de ejecución)
 - 2026-09-09 — 20260909-180422-task-0000-reglas-de-capacidad — ADDED La entrevista fija las cinco reglas de producto
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — MODIFIED La entrevista fija las cinco reglas de producto
