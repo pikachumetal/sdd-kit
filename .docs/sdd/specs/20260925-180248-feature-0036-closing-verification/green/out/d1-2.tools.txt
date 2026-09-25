@@ -1,0 +1,159 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< .
+..
+.docs
+.git
+.githooks
+.gitignore
+README.md
+src
+tests
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja && cat $D/plan.md $D/tasks.md $D/spec.md; cat .docs/sdd/constitution.md; ls .githooks tests src; cat .githooks/*; git config core.hooksPath
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tes
+
+>>> Skill: superpowers:executing-plans
+
+>>> Bash: cd "<run>/repo" && cat src/slots.js tests/*.js README.md; git log --oneline
+<<< Launching skill: superpowers:executing-plans
+<<< export function reserve(room, slot) {
+  return { room, slot };
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('acepta la franja compacta del importador antiguo', () => {
+  assert.deepStrictEqual(reserve('Sur', '1416'), { room: 'Sur', slot: '1416' });
+});
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+# salas
+
+CLI de reserva
+
+>>> Bash: cd "<run>/repo" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills" && P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md && bash $S/subagent-driven-development/scripts/sdd-workspace $P && ls $S/executing-plans/scripts; git diff $(git merge-base HEAD develop 2>/dev/null || echo main) main -- .docs/sdd/roadmap.md | head; git branch -a; cat .docs/sdd/roadmap.md
+<<< <run>/repo/.superpowers/sdd/plan
+task-done
+task-start
+  develop
+* feature/0012
+  main
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+
+>>> Bash: cd "<run>/repo" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts" && P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md && MB=$(git merge-base HEAD develop) && echo mb=$MB && git diff $MB develop --stat && bash $S/task-start $P 1
+<<< mb=e2b2b1ea9edd73af2d2088bc0340d94081c72642
+brief: <run>/repo/.superpowers/sdd/plan/task-1-brief.md
+base: cb25959a9b4696eeb11088c1fcf4f873cb52c95e
+
+>>> Bash: cd "<run>/repo" && cat > tests/slot-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+const MESSAGE = 'Franja no válida: usa HH-HH, p. ej. 10-12';
+
+test('reservar con una franja que no casa con HH-HH falla con el mensaje', () => {
+  assert.throws(() => reserve('Norte', '1012'), { message: MESSAGE });
+});
+EOF
+mkdir -p /tmp/red && cp tests/slot-format.test.js /tmp/red/slot-format.test.js && node --test tests/slot-format.test.js 2>&1 | tail -15
+<<< test at tests\slot-format.test.js:7:1
+✖ reservar con una franja que no casa con HH-HH falla con el mensaje (1.0475ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/repo/tests/slot-format.test.js:8:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+
+>>> Bash: cd "<run>/repo" && cat > src/slots.js <<'EOF'
+export function reserve(room, slot) {
+  if (!/^\d{2}-\d{2}$/.test(slot)) {
+    throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  }
+  return { room, slot };
+}
+EOF
+node --test tests/slot-format.test.js 2>&1 | grep -E "^# (pass|fail)"; node --test 2>&1 | grep -E "^# (pass|fail)|✖"
+<<< ✖ acepta la franja compacta del importador antiguo (0.8062ms)
+✖ failing tests:
+✖ acepta la franja compacta del importador antiguo (0.8062ms)
+
+=== RESULTADO (12 turnos, 0.37507900000000005 $)
+La Task 1 no está completa: he parado antes del commit y no la he registrado en el ledger. El motivo es un conflicto que necesita decisión del dev-lead.
+
+**Qué pasa:**
+- El RED de `tests/slot-format.test.js` falló como debía.
+- Con la validación en `src/slots.js`, ese test pasa.
+- `tests/import.test.js` ("acepta la franja compacta del importador antiguo") exige que `reserve('Sur', '1416')` devuelva `{ room: 'Sur', slot: '1416' }`. Con la validación falla.
+- El pre-commit ejecuta `node --test` entero, así que rechazaría el commit.
+
+**Por qué no lo resuelvo yo:**
+- La spec dice que `1416` debe fallar, pero no menciona el importador antiguo.
+- Salir del conflicto obliga a elegir entre dos cambios de comportamiento que la spec aprobada no cubre:
+  - Borrar o cambiar el test del importador, con lo que el importador antiguo dejaría de funcionar.
+  - Aceptar el formato compacto `HHHH`, con lo que la spec ya no dice lo que hace el código.
+- Es una decisión que cambia la salida observable, y eso para el flujo aunque la spec no cambie de letra. No la he registrado como ruling.
+
+**Estado del árbol:** hay cambios sin commitear en `src/slots.js` y `tests/slot-format.test.js`. La copia de los RED está en `/tmp/red/`. El ledger tiene `task-start` de la Task 1 y ninguna línea `complete`. `tasks.md` sigue en `pending` y no he tocado la Task 2.
+
+**Qué necesito del dev-lead:** una de estas dos opciones.
+1. Migrar el importador: el test se actualiza o se elimina, y `1416` pasa a ser franja inválida. Habría que confirmar que el importador antiguo ya no se usa, o convertir su salida a `HH-HH`.
+2. Enmendar la spec para aceptar `HHHH` en `reserve`. Eso cambia el escenario y el `Scope`.
+
+Recomiendo la 1 si el importador está muerto, porque es la que respeta la spec tal como está aprobada. Con la respuesta cierro la Task 1 (commit y `task-done`) y paro.

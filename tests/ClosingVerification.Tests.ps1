@@ -71,3 +71,9 @@ Describe 'Se valida en' {
     Assert-Literal (Get-Step 7) @('Si un THEN de la spec lleva `Se valida en:`, prepara ese entorno')
   }
 }
+
+Describe 'Se valida en, en el paso que escribe los escenarios' {
+  It 'el paso 4 pide la línea bajo el escenario, también sin delta de capacidad' {
+    Assert-Literal (Get-Step 4) @('escribe bajo su escenario `Se valida en:`', 'también si los escenarios no van en un delta de capacidad')
+  }
+}

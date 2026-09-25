@@ -58,6 +58,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (dos requisitos de task
 - Alcance: la fila entera en la 2.0.0, sin partir — «Seguir entera en la 2.0.0» (2026-09-25, a la propuesta de partir en patch + 2.0.1)
 - Spec aprobada por delegación — «Apruebo spec por delegación» (opción «apruebo la spec por delegación, nos vemos en la validación», 2026-09-25)
 - Método: lo decide el agente — «Me dejo recomendar en lo de método: decide tú y cuéntamelo al final» (2026-09-25)
+- Campaña ampliada de 15 a 19 sujetos, techo de 12 $ sin cambios, para una tanda de REFACTOR de `b1` (0/2 en el GREEN) y `d1` (disparador ausente 2/2) — «Ampliar a 19 sujetos (Recomendada)» (2026-09-25)
 
 ## Intent
 
