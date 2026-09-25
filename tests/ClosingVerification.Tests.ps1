@@ -77,3 +77,9 @@ Describe 'Se valida en, en el paso que escribe los escenarios' {
     Assert-Literal (Get-Step 4) @('escribe bajo su escenario `Se valida en:`', 'también si los escenarios no van en un delta de capacidad')
   }
 }
+
+Describe 'El puerto es tuyo' {
+  It 'el paso 6 comprueba el puerto libre antes de arrancar y libre después de parar' {
+    Assert-Literal (Get-Step 6) @('antes de arrancar, comprueba que el puerto está libre', 'si no lo está, no es tuyo: usa otro', 'tras parar, comprueba que quedó libre', 'si sigue escuchando, para el que escucha')
+  }
+}

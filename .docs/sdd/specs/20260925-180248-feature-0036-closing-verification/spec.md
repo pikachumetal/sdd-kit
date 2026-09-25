@@ -59,6 +59,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (dos requisitos de task
 - Spec aprobada por delegación — «Apruebo spec por delegación» (opción «apruebo la spec por delegación, nos vemos en la validación», 2026-09-25)
 - Método: lo decide el agente — «Me dejo recomendar en lo de método: decide tú y cuéntamelo al final» (2026-09-25)
 - Campaña ampliada de 15 a 19 sujetos, techo de 12 $ sin cambios, para una tanda de REFACTOR de `b1` (0/2 en el GREEN) y `d1` (disparador ausente 2/2) — «Ampliar a 19 sujetos (Recomendada)» (2026-09-25)
+- Hallazgo Important 1 de la revisión final (el proceso que escucha en el puerto puede no ser el tuyo): frase en el paso 6 y 2 sujetos `v7f`, techo de 21 sujetos — «Frase + 2 sujetos (Recomendada)» (2026-09-25)
 
 ## Intent
 
