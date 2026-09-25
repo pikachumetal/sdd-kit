@@ -75,30 +75,35 @@
 | 2026-09-24 | 0055 | docs | 2.5 | 1.3 | 0.52 | no medido | 1178k | 5.83 | 20260924-082516-task-0055-native-default |
 | 2026-09-24 | 0059 | infra/tooling | 3 | 1.3 | 0.43 | no medido | 143k | 2.95 | 20260924-105243-task-0059-reserve-ids |
 | 2026-09-24 | 0057 | docs | 2.5 | 2.7 | 1.08 | no medido | 146k | 14.42 | 20260924-105352-task-0057-native-adapt |
+| 2026-09-25 | 0060 | docs | 1.5 | 0.8 | 0.53 | no medido | 113k | 5.95 | 20260924-204639-task-0060-testable-tasks |
+| 2026-09-25 | 0061 | docs | 2.5 | 1.1 | 0.44 | no medido | 279k | 4.01 | 20260924-220849-task-0061-local-config |
+| 2026-09-25 | 0065 | patch | 0.5 | 0.4 | 0.8 | — | — | — | 20260924-220915-patch-0065-merge-hook-rejection |
 | 2026-09-25 | 0063 | docs | 2 | 1.2 | 0.6 | no medido | 136k | 6.03 | 20260924-221103-task-0063-end-release-cut |
+| 2026-09-25 | 0066 | patch | 0.5 | 0.4 | 0.8 | — | — | — | 20260924-223521-patch-0066-estimation-log-minutes |
+| 2026-09-25 | 0069 | patch | 0.5 | 0.8 | 1.6 | — | — | 2.71 | 20260924-231705-patch-0069-scope-brake-registries |
 
-**Factor de calibración** (ratio mediano real/estimado, 66 artefactos): **0.6** · media 0.68
+**Factor de calibración** (ratio mediano real/estimado, 71 artefactos): **0.6** · media 0.69
 
-- p25–p75: 0.39–0.9
+- p25–p75: 0.43–0.9
 - p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 65 % · infraestimadas: 6 %
-- Error absoluto (h): media 0.86 · mediana 0.6
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.62
+- Dentro de ±25 %: 30 % · sobreestimadas: 63 % · infraestimadas: 7 %
+- Error absoluto (h): media 0.84 · mediana 0.5
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.7
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 20 | 30 % |
-| 0.5–0.8 | 25 | 38 % |
-| 0.8–1.25 | 17 | 26 % |
-| 1.25–2 | 4 | 6 % |
+| <0.5 | 21 | 30 % |
+| 0.5–0.8 | 26 | 37 % |
+| 0.8–1.25 | 19 | 27 % |
+| 1.25–2 | 5 | 7 % |
 | ≥2 | 0 | 0 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 45 | 0.52 | 0.38–0.73 |
+| docs | 47 | 0.52 | 0.38–0.7 |
 | infra/tooling | 9 | 0.53 | 0.38–0.7 |
-| patch | 11 | 1.2 | 0.8–1.27 |
+| patch | 14 | 1.1 | 0.8–1.3 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) |
 | --- | --- | --- | --- | --- |
@@ -108,6 +113,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — |
-| sin publicar | 43 | 51.25 | 0.64 | 163.12 |
+| sin publicar | 48 | 54.75 | 0.65 | 175.79 |
 
 > Ver `estimation.md`.

@@ -121,6 +121,8 @@ Endpoints, shape request/response.
 > comandos corre (`tech-stack.md` §Testing: TDD si hay tests automáticos; smoke manual documentado
 > si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
 > (registro vivo).
+>
+> **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. «BD y API» seguida de «pantalla» deja la primera task sin nada que probar ni que enseñar en la parada tras la task. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón. Sin tamaño fijo en horas.
 
 ### Task 1 — <nombre>
 
@@ -133,6 +135,7 @@ Endpoints, shape request/response.
 **Verificación**: <los comandos de esas superficies y ninguno más>
 **Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · qué mirar>
 **Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
+**Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>
 
 > BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve: qué mirar es alineación, separación a bordes y contraste, en cada estado y tema; la hace el hilo principal en un navegador. Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
 

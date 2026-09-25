@@ -57,6 +57,8 @@ approvers:
 ## Delta de comportamiento
 
 > Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-end-task`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket. Su slug es un nombre de fichero: va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing`, no `facturacion`), y lo aprueba el dev-lead.
+>
+> Un escenario de una regla de negocio lleva datos concretos de entrada y de salida, no una frase abstracta: «GIVEN bolsa FR, IT, PT · WHEN oferta en DE · THEN no cubre», no «una oferta fuera de la bolsa no cubre». La regla mal entendida se ve en la spec, no al validar.
 
 ### Capacidad: `<nombre>`
 
@@ -77,7 +79,7 @@ approvers:
 **REMOVED — <título estable>**
 - motivo: <por qué deja de aplicar>
 
-**Reglas de la capacidad** *(solo si este delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos; solo las entradas que cambian; el nombre es la clave de fusión; el valor sale de las «Reglas de producto» de la constitution o de la capacidad, no se inventa)*
+**Reglas de la capacidad** *(solo si este delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos; solo las entradas que cambian, cada una con su valor completo —el vigente más el cambio—: al fusionar sustituye entera a la vigente, y lo que no esté aquí desaparece (con **Avisos**: A y B vigentes y una task que añade C, se escribe A, B y C, no «además de los vigentes, C»); el nombre es la clave de fusión; el valor sale de las «Reglas de producto» de la constitution o de la capacidad, no se inventa)*
 - **Dónde viven los datos** / **Idioma de los nombres** / **Límites** / **Avisos** / **Regla ante conflicto**: <valor | no aplica>
 
 ### Estimación y esfuerzo *(solo modo lite — OBLIGATORIO si existe `.docs/sdd/estimation.md`)*

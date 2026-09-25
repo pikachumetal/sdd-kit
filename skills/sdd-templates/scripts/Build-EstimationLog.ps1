@@ -45,11 +45,17 @@ function Get-TimeSection([string]$Content, [string]$HeadingPattern) {
   return $null
 }
 
-function ConvertTo-Hours([string]$Text) {
+function ConvertTo-Hours([string]$Text, [string]$Source) {
   if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
   # Prefijos tolerados delante de la cifra: espacios, negrita markdown y las marcas de
   # aproximación que se escriben a mano (~, ≈, ≃).
-  if ($Text -match '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)') { return [double]($Matches[1] -replace ',', '.') }
+  if ($Text -notmatch '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)\s*\**\s*([^\W\d_]+)?') { return $null }
+  $amount = [double]($Matches[1] -replace ',', '.')
+  $unit = $Matches[2]
+  if (-not $unit -or $unit -match '^(?:h|horas?)$') { return $amount }
+  if ($unit -match '^(?:min|mins|minutos?)$') { return $amount / 60 }
+  # Otra unidad (días, semanas…): sin adivinar la conversión, celda vacía y aviso.
+  Write-Warning "Unidad de tiempo no reconocida en '$($Text.Trim())': $Source. Celda vacía."
   return $null
 }
 
@@ -124,8 +130,8 @@ function Read-Walkthrough([string]$Path) {
   return [pscustomobject]@{
     Content  = $content
     Type     = Get-FirstToken (Get-FieldText $section 'Tipo') '—'
-    Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel)
-    Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel)
+    Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel) $Path
+    Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel) $Path
     Cost     = Read-CostFields $section
   }
 }
@@ -137,8 +143,8 @@ function Read-Patch([string]$Path, [string]$Type) {
   return [pscustomobject]@{
     Content  = $content
     Type     = $Type
-    Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel)
-    Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel)
+    Estimate = ConvertTo-Hours (Get-FieldText $section $script:EstimateLabel) $Path
+    Real     = ConvertTo-Hours (Get-FieldText $section $script:RealLabel) $Path
     Cost     = Read-CostFields $section
   }
 }

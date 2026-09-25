@@ -67,14 +67,14 @@ Describe 'Perfiles de control: cierre, release y migración' {
     $migration | Should -Match 'merge'
   }
 
-  It 'las init y la migración enlazan las preguntas de las claves de control sin copiarlas' {
-    $block = Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'
-    $block | Should -Match '(?m)^## Preguntas de las claves de control'
+  It 'las init y la migración invocan sdd-config sin copiar sus preguntas' {
+    $block = Get-KitFile 'skills/sdd-config/SKILL.md'
+    $block | Should -Match '(?m)^## Catálogo'
     ($block | Select-String -Pattern 'Recomendad[ao]' -AllMatches).Matches.Count | Should -BeGreaterOrEqual 3
     $consumers = 'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
       'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
     foreach ($consumer in $consumers) {
-      Get-KitFile $consumer | Should -Match 'control-profiles\.md#preguntas-de-las-claves-de-control'
+      Get-KitFile $consumer | Should -Match '`sdd-config`'
     }
     foreach ($init in $consumers[0..1]) { Get-KitFile $init | Should -Not -Match 'maxParallelAgents' }
   }
@@ -197,16 +197,16 @@ Describe 'Merge en el cierre' {
 }
 
 Describe 'Push autorizado en el cierre: clave y pregunta' {
-  It 'el bloque de claves de control tiene cuatro preguntas con su recomendación' {
-    $block = [regex]::Match((Get-KitFile 'skills/sdd-start-task/references/control-profiles.md'),
-      '(?ms)^## Preguntas de las claves de control\r?$.*').Value
+  It 'el catálogo de sdd-config tiene la pregunta del push' {
+    $block = [regex]::Match((Get-KitFile 'skills/sdd-config/SKILL.md'),
+      '(?ms)^## Catálogo\r?$.*').Value
     $block | Should -Match '(?m)^\| 4 \|'
     $block | Should -Match 'merge\.push'
   }
 
-  It 'las init piden los frenos con la pregunta 4 del bloque' {
+  It 'las init piden los frenos a través de sdd-config' {
     foreach ($init in 'sdd-init-greenfield', 'sdd-init-brownfield') {
-      Get-KitFile "skills/$init/SKILL.md" | Should -Match 'Frenos: pregunta 4 del mismo bloque'
+      Get-KitFile "skills/$init/SKILL.md" | Should -Match 'sdd-config`.*frenos'
     }
   }
 

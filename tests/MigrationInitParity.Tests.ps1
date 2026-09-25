@@ -107,12 +107,12 @@ Describe 'Proyecto de referencia' {
       Should -Match '(?s)## Convenciones.*\*\*Proyecto de referencia\*\*.*## Reglas de producto'
   }
 
-  It 'greenfield lo pregunta como pregunta 22' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 22 \|.*proyecto de referencia'
+  It 'greenfield lo pregunta como pregunta 18' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 18 \|.*proyecto de referencia'
   }
 
-  It 'brownfield lo pregunta como pregunta 8' {
-    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 8 \|.*proyecto de referencia'
+  It 'brownfield lo pregunta como pregunta 4' {
+    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 4 \|.*proyecto de referencia'
   }
 }
 

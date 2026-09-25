@@ -13,10 +13,31 @@ La primera pregunta de la entrevista, sola en su turno, confirma el perfil vigen
 ## Precedencia
 
 1. `profile:` en el frontmatter de `spec.md` — la task. Omitido, hereda.
-2. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap.
-3. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+2. `control.profile` en `.docs/sdd/sdd-kit.local.json` — la persona. Fuera de git: ver la sección siguiente.
+3. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap.
+4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
 
-Manda el primero que exista, de arriba abajo: task sobre release, release sobre proyecto.
+Manda el primero que exista, de arriba abajo: task sobre persona, persona sobre release, release sobre proyecto. Al confirmar el perfil vigente, di de qué nivel sale.
+
+## sdd-kit.local.json
+
+`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee toda skill que resuelve el perfil vigente o `execution` —`sdd-start-task` (la primera pregunta y el plan), `sdd-end-task` y `sdd-end-patch` (el merge y el push dependen del perfil) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
+
+Admite solo tres claves:
+
+- `control.profile`: `pair` | `delegate` | `unattended`, con la precedencia de arriba.
+- `execution`: `auto` | `native` | `subagent`. Precedencia: el método que el dev-lead nombra para la task → `sdd-kit.local.json` → `sdd-kit.json`, sin nivel de release. Un `execution: auto` en local también cuenta: pisa un `native` o `subagent` del proyecto y el método lo recomienda el handoff.
+- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+
+Todo lo demás —`merge`, `ids`, `release`, los frenos de `control`, cualquier nivel o suelo de tests, una clave desconocida o un nombre de persona— es del proyecto o no existe: no se aplica, rige el siguiente nivel de la precedencia, y se avisa una vez por clave, con esta línea literal:
+
+`Aviso: se ignora <clave> de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.`
+
+Una clave admitida con un valor fuera de su tipo se ignora igual, con:
+
+`Aviso: se ignora <clave> de sdd-kit.local.json: <valor> no es un valor admitido.`
+
+El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falta, sale de `git config user.name`. Las claves las escribe `sdd-config`.
 
 **Cambio de perfil a media task**: una aprobación delegada («ve tú solo hasta el smoke», dicha en `pair`) cambia el perfil de la task. Se escribe `profile:` en el frontmatter y una fila en «Aprobaciones»: fecha y, en «Estado», `perfil → <perfil>: «<frase literal>»`. Sin esa frase literal el perfil no cambia — es la misma regla del atajo autoconcedido.
 
@@ -85,7 +106,7 @@ Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HE
 
 ### Fichero de la task cambiado en la base
 
-Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, es un posible desvío.
+Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, es un posible desvío. En el cruce no cuentan los tres registros compartidos: `.docs/sdd/roadmap.md`, porque su fila la cubre «Fila cambiada en la base», ni `.docs/sdd/changelog.md` ni `.docs/sdd/estimation-log.md`, que los resuelve el merge de sincronización del cierre. Cualquier otro fichero para igual.
 
 - `pair` y `delegate`: nombran los ficheros y los commits de la base que los tocan (`git log --oneline $(git merge-base HEAD <integración>)..<integración> -- <fichero>`) y paran.
 - `unattended`: sigue con la spec aprobada y lo registra como enmienda sin aprobar.
@@ -143,27 +164,16 @@ Conjunto cerrado:
 | `merge.removeWorktree` | booleano | — |
 | `merge.push` | booleano | `false` |
 | `execution` | `auto` \| `native` \| `subagent` | `"auto"` |
+| `validation.startEnvironment` | booleano (solo en `sdd-kit.local.json`) | `false` |
 
-`execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `writing-plans` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en sdd-kit.json`, aunque el handoff recomiende el otro. No tiene nivel de task ni de release: el método queda escrito en el plan de cada task, y un método que el dev-lead nombra para una task concreta cuenta como dado.
+`execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `writing-plans` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro. No tiene nivel de release (precedencia en «sdd-kit.local.json»): el método queda escrito en el plan de cada task, y un método que el dev-lead nombra para una task concreta cuenta como dado.
 
 `merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-task`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
 `control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0022.
 
-El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`).
+El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 
-## Preguntas de las claves de control
+## Preguntas de las claves
 
-Las hacen `sdd-init-greenfield`, `sdd-init-brownfield` y la migración v1.2.0, con este texto: **una pregunta por turno**, cada una con su recomendación y su motivo. Se salta la que ya tiene su clave en `sdd-kit.json`. Se escribe solo lo que el usuario responde, y esa respuesta es su frase: anotarla no es el atajo autoconcedido.
-
-| # | Pregunta | Recomendada y motivo | Escribe |
-| --- | --- | --- | --- |
-| 1 | ¿Con qué perfil de control trabajáis: `pair`, `delegate` o `unattended`? | Recomendado `delegate`: para en la spec, en los desvíos y en la validación, y se ahorra el gate del plan; con menos paradas, la 0.6.0 cerró tres tasks en un día | `control.profile` |
-| 2 | Al cerrar una task, ¿fusiono a `<rama de integración>` con `--no-ff` y dejo que el worktree lo borre una persona? | Recomendado sí: `--no-ff` deja la task en un commit que se revierte de una vez, y borrar un worktree es irreversible si quedan cambios sin commit | «sí»: `merge` entero (`into`: la rama, `noFf: true`, `removeWorktree: false`); otra combinación dicha entera: esa; «no» o «no sé»: nada, y el cierre de task pregunta |
-| 3 | Tras fusionar en `<rama de integración>`, ¿hago push de esa rama a su remoto sin preguntar? | Recomendado sí si la convención es `main` estable y `develop` de integración (git-flow): la rama de integración es compartida, y un merge sin push no lo ve nadie más; la rama estable, los tags y cualquier otro push siguen siendo de una persona. Con otra convención, sin recomendación | «sí»: `merge.push: true`; «no»: `merge.push: false`; «no sé»: nada, y el cierre no hace push |
-| 4 | ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo? | Recomendado sí: son los defaults del kit; su conducta la define la task 0022 | «sí» o números propios: `control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`; «no sé»: nada, y rigen los defaults |
-| 5 | ¿Cómo se ejecutan los planes: `auto` (cada plan recomienda su método), `native` (en la sesión; tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes) o `subagent` (siempre con subagentes)? | Recomendado `auto`: el handoff de `writing-plans` pesa cada plan: Native es lo más barato, y los subagentes quedan para los planes largos o cuando se quiere revisión por task | la respuesta: `execution`; «no sé»: nada, y rige `auto` |
-
-- **Rama de integración** de la pregunta 2: la de la convención de ramas (greenfield) o la que se ve en el repo (brownfield). Si la integración va directa a la rama estable, la pregunta no se hace y `merge` queda sin declarar: el merge a la rama estable lo decide siempre una persona.
-- **Push** de la pregunta 3: solo se hace si la 2 dejó `merge` declarado. Sin `merge`, no hay merge que empujar.
-- **Sin usuario**: las preguntas quedan pendientes explícitas en el informe o en el resumen de cierre, y rigen los defaults.
+Las preguntas que fijan estas claves, con su recomendación y el fichero donde va cada respuesta, viven solo en `sdd-config` ([catálogo](../../sdd-config/SKILL.md#catálogo)). Las init y las migraciones la invocan en lugar de llevar su lista.
