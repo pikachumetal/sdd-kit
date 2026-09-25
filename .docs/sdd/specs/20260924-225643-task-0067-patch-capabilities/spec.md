@@ -102,6 +102,8 @@ Pieza 1: RED con el kit de `develop` sobre dos escenarios de campo, el cambio de
 
 ## Enmiendas
 
+- 2026-09-25 — El paso de capacidades es un párrafo **Capacidades** dentro del paso 1 de `sdd-end-patch` («`patch.md` finalizado»), no un paso 2 nuevo, y no se renumeran los pasos (decisión 1 y Scope) — renumerar rompía las referencias por número de tres tests y de `merge-recipe.md`, y el comportamiento es el mismo — aprobada: «Sí, párrafo del paso 1 (Recomendada)»
+
 ## Aprobaciones
 
 - 2026-09-25 — dev-lead, por delegación: «Lite, apruebo spec por delegación» (respuesta a la primera pregunta de `sdd-start-task`). Review de spec: ninguna (modo lite).

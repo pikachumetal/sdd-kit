@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Campaña: el RED y el GREEN comparten techo. Para si existe `stop` junto a este lanzador, si se llega a SUBJECT_CAP sujetos o si el coste acumulado pasa de COST_CAP.
-# Uso: KIT_DIR=<copia del kit> RUNS_DIR=<scratchpad> OUT_NAME=<red|green> SCENARIOS="p1 p2" SUBJECT=<n> run.sh
+# Uso: KIT_DIR=<copia del kit> RUNS_DIR=<scratchpad> OUT_NAME=<red|green|refactor> SCENARIOS="p1 p2" SUBJECT=<n> run.sh
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 TASK="$(dirname "$BASE")"
