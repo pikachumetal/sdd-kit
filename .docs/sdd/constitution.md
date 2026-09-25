@@ -14,6 +14,8 @@ Para un **recorte o reestructuración de una skill existente**, el baseline vac�
 
 **Renombrar, retirar o fusionar una skill también es editarla.** Un renombrado cambia su enrutado y exige volver a medir sus escenarios de entrada (task 0062: con `sdd-plan`, 2/2 sujetos llegaban solos; con `sdd-roadmap`, 0/1). Una spec que retira o fusiona una skill lleva una tabla «regla de la skill retirada → dónde vive ahora | por qué se descarta», una fila por paso, red flag y racionalización (task 0062: una regla quedó sin destino y la encontró la revisión final).
 
+**La previsión cuenta todo lo que el agente ejecuta.** La decisión de campaña de la spec lista cada paso nuevo o cambiado de cualquier texto que el agente sigue —`SKILL.md`, `references/` y `migrations/`—, con su escenario o el motivo de no medirlo, y la lente técnica de la review de spec lo comprueba (task 0073: un paso nuevo de la migración solo tenía un test estático y lo encontró la revisión final).
+
 ## Art. II — La forma sigue al fallo
 
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
