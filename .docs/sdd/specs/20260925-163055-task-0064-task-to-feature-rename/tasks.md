@@ -21,7 +21,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 1 | Lectores y plantillas con `feature` | done | af6e722 | el THEN literal de `task-ids` pasa antes de implementar (el patch 0080 manda); discrimina el AND `feature-only` |
 | 2 | Renombrar las skills y su vocabulario | done | 9963d5b | formato de cierre `**[<Task|Patch> …]**` del roadmap conservado (ruling) |
 | 3 | Migración, docs vivos y guarda | done | 1ee68c4 | RED m1: 2 menciones vivas sin tocar (0,34 $); la guarda deja `capabilities/` en su lista blanca hasta el cierre |
-| 4 | Campaña de enrutado y de migración | done | — | 10/10 contra el criterio; campaña 11 sujetos, 3,03 $ |
+| 4 | Campaña de enrutado y de migración | done | 3ba8934 | 10/10 contra el criterio; campaña 11 sujetos, 3,03 $ |
 
 ## Verificación por task
 
@@ -32,4 +32,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
-Ninguno.
+- `a9e9211` — `tech-stack.md` recomendaba situar al sujeto con `sdd-start-task` (revisión final).
+- `5f03a89` — enmienda del dev-lead: prefijo de cierre de fila `Feature`, con `Task` como legado.
+
+Revisión final: sdd-kit:effort-high + opus, lista para mergear con arreglos (1 importante arreglado en a9e9211; el prefijo de cierre de fila, decidido por el dev-lead como enmienda: Feature en filas nuevas y Task como legado; 6 menores diferidos)

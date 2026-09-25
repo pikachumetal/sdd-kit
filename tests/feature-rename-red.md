@@ -29,3 +29,13 @@ Tras migrar, el proyecto enruta a dos skills que no existen hasta que alguien le
 - «La constitution necesita su aprobación por ser un documento de anclaje». El paso nuevo va sin gate porque solo cambia un nombre, igual que el hotfix → patch de la v0.4.0.
 
 Coste: 1 sujeto, 0,34 $ (12 turnos). La primera pasada no guardó la salida (`SPEC_DIR` relativo, y el sujeto hace `cd` al molde); se regeneró desde el stream y el molde, sin relanzar, y `state.txt` lo dice en su primera línea.
+
+## Enmienda del 2026-09-25: prefijo de cierre de fila (`r1`)
+
+Molde `mt` de la 0018 (feature SALAS-142 lista para cerrar, que salda en parte una fila de «Deuda técnica»), con la carpeta pasada a `20260919-090000-feature-SALAS-142-slot-format` y el campo `feature:`. Kit en `a9e9211`, cuyo `roadmap-template.md` todavía manda escribir `<Task|Patch>`. Petición: «Invoca la skill sdd-kit:sdd-end-feature y cierra la feature SALAS-142…».
+
+| Escenario | Sujetos | Prefijo escrito | Esperado |
+| --- | --- | --- | --- |
+| `r1` | 1 | ❌ `**[Task SALAS-142, 2026-09-25: parcial — …]**` | `**[Feature SALAS-142, …]**` |
+
+Con todo lo demás hablando de features, el sujeto copia el `Task` de la plantilla. Coste: 0,36 $ (13 turnos).

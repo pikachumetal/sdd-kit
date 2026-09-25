@@ -34,3 +34,13 @@ Verificación de la decisión 14 de la [spec](../.docs/sdd/specs/20260925-163055
 `m1` llegó a la migración por otra ruta que en el RED. El RED invocó `sdd-kit:sdd-init-brownfield`; el GREEN leyó `migrations/README.md` y `v2.0.0.md` directamente en la copia del kit. Aun así aplicó el paso 3, verificó con su `Select-String` («El grep de `sdd-(start|end)-task` en los docs vivos no devuelve nada») y dejó el histórico: «`changelog.md` y `roadmap.md` siguen citando `sdd-end-task`. `specs/20260910-080000-task-0012-login/` conserva el nombre y el texto de `spec.md`» ([`m1-1.texts.txt`](../.docs/sdd/specs/20260925-163055-task-0064-task-to-feature-rename/green/out/m1-1.texts.txt)). El criterio mide lo que queda en el proyecto, no la ruta, así que se cumple.
 
 Coste: 10 sujetos, 2,68 $. Campaña entera: 11 sujetos y 3,03 $, dentro de la previsión de la spec (techo: 15 sujetos y 4 $).
+
+## Enmienda del 2026-09-25: prefijo de cierre de fila (`r1`)
+
+Mismo molde y petición que el [RED](feature-rename-red.md#enmienda-del-2026-09-25-prefijo-de-cierre-de-fila-r1), con `roadmap-template.md` en su versión nueva: las filas nuevas se saldan con `<Feature|Patch>` y `Task` queda como legado que se cuenta.
+
+| Escenario | Sujetos | Prefijo escrito | RED |
+| --- | --- | --- | --- |
+| `r1` | 1 | ✅ `**[Feature SALAS-142, 2026-09-25: parcial — [walkthrough](specs/20260919-090000-feature-SALAS-142-slot-format/walkthrough.md); queda: validar el día de `cancelar`]**` | `Task` |
+
+Coste: 0,37 $ (10 turnos). Campaña entera de la 0064: 13 sujetos y 3,76 $, dentro del techo de la enmienda (17 sujetos y 5 $).

@@ -1,7 +1,7 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:SaldadaLiteral = ': saldada — <enlace>]**'
-  $script:ClosingPrefix = '^\*\*\[(Task|Patch) [^],]+, \d{4}-\d{2}-\d{2}: (saldada|parcial) — \[[^\]]+\]\([^)]+\)'
+  $script:ClosingPrefix = '^\*\*\[(Feature|Task|Patch) [^],]+, \d{4}-\d{2}-\d{2}: (saldada|parcial) — \[[^\]]+\]\([^)]+\)'
 
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
@@ -32,9 +32,9 @@ Describe 'Formato de cierre de filas del roadmap' {
   }
 
   It 'la plantilla fija los dos prefijos y la regex de conteo en el bloque de Deuda técnica' {
-    $script:DebtBlock | Should -Match ([regex]::Escape('**[<Task|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))
-    $script:DebtBlock | Should -Match ([regex]::Escape('**[<Task|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**'))
-    $script:DebtBlock | Should -Match ([regex]::Escape("grep -E '\| \*\*\[(Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '"))
+    $script:DebtBlock | Should -Match ([regex]::Escape('**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))
+    $script:DebtBlock | Should -Match ([regex]::Escape('**[<Feature|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**'))
+    $script:DebtBlock | Should -Match ([regex]::Escape("grep -E '\| \*\*\[(Feature|Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '"))
   }
 
   It 'el paso 8 de sdd-end-feature cita el formato de la plantilla para Deuda técnica y Backlog' {

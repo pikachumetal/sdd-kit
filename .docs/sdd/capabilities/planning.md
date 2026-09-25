@@ -12,7 +12,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - WHEN `sdd-roadmap` termina, con los detalles dados o delegados
 - THEN existe `specs/<ts>-proposal-0014-<slug>/proposal.md` con el porqué, las reglas, las capacidades y el reparto, y las features ocupan las filas 0015 en adelante, cada una con «`proposal: 0014`» y su «tras NNNN»
 - AND cada regla lleva un ejemplo con datos: «Acme, 3 h en Norte (40 €/h) y 2 h en Sur (25 €/h) en agosto → factura del 1 de septiembre por 170 €»
-- AND no hay rama nueva, ni carpeta de task, ni `spec.md`
+- AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
 
 ### Algo concreto es una fila, sin propuesta
 - GIVEN «apunta en el roadmap: exportar las reservas a CSV. No la arranques»
@@ -45,18 +45,18 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - WHEN el cliente pide «factura quincenal, el 1 y el 16, y de 8 a 14 h un 20 % más cara»
 - THEN `proposal.md` gana en «Enmiendas» una entrada con la fecha que dice «Factura mensual → quincenal (días 1 y 16)» y «recargo del 20 % de 8 a 14 h: Norte 13-15 → 48 + 40 = 88 €», y «Reglas de negocio» no cambia
 - AND la fila 0021 no cambia; la 0022 cambia su ítem; el recargo va a una fila nueva con «`proposal: 0020`»
-- AND no hay rama nueva, ni carpeta de task, ni `spec.md`
+- AND no hay rama nueva, ni carpeta de feature, ni `spec.md`
 
 ### Preparar una release fija el scope en el roadmap
 - GIVEN un roadmap con las filas pendientes 0012 y 0013, un Backlog y `release.hasRecipient: true`
 - WHEN el usuario pide «prepara la release 1.3: qué entra de lo que tenemos»
 - THEN `sdd-roadmap` presenta el inventario ordenado con los bloqueos y espera a que el usuario decida el scope
-- AND, decidido, escribe `## Release 1.3` con la cabecera `| id | Task | Origen | Ficheros que toca | Estado |` y el estado «en preparación», salvo que el usuario diga que está comprometida
+- AND, decidido, escribe `## Release 1.3` con la cabecera `| id | Feature | Origen | Ficheros que toca | Estado |` y el estado «en preparación», salvo que el usuario diga que está comprometida
 
 ## Reglas de la capacidad
 - **Dónde viven los datos**: el índice, en `.docs/sdd/roadmap.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/specs/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap.
-- **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `task` y `patch`. El texto va en castellano.
-- **Límites**: `sdd-roadmap` no crea ramas, carpetas de task ni specs. Una propuesta no tiene walkthrough ni cierre.
+- **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`. El texto va en castellano.
+- **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs. Una propuesta no tiene walkthrough ni cierre.
 - **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve.
 - **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva.
 

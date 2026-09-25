@@ -42,6 +42,11 @@ Describe 'Renombrado task → feature' {
       Get-Template 'roadmap' | Should -Match ([regex]::Escape('| id | Feature | Origen | Ficheros que toca | Estado |'))
     }
 
+    It 'roadmap-template.md salda con Feature y cuenta Task como legado' {
+      $template = Get-Template 'roadmap'
+      $template | Should -Match '(?s)`\*\*\[Task <id>, …\]\*\*`.{0,160}legado'
+    }
+
     It 'nombrado.md escribe feature y lee task como legado' {
       $naming = (Get-KitFile 'skills/sdd-start-task/references/nombrado.md') + (Get-KitFile 'skills/sdd-start-feature/references/nombrado.md')
       $naming | Should -Match ([regex]::Escape('<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>'))
@@ -81,9 +86,17 @@ Describe 'Renombrado task → feature' {
     }
   }
 
+  Context 'método de campañas' {
+    It 'tech-stack recomienda situar al sujeto con sdd-start-feature' {
+      $techStack = Get-KitFile '.docs/sdd/tech-stack.md'
+      $techStack | Should -Match ([regex]::Escape('«Invoca la skill sdd-kit:sdd-start-feature y sigue'))
+      $techStack | Should -Not -Match ([regex]::Escape('«Invoca la skill sdd-kit:sdd-start-task y sigue'))
+    }
+  }
+
   Context 'guarda' {
     It 'no queda ningún nombre viejo fuera del histórico' {
-      $allowed = '^(\.docs/sdd/(specs|field-reports|releases|capabilities)/|\.docs/sdd/(changelog|roadmap|tech-stack|estimation-log)\.md$|tests/.*\.md$|skills/sdd-init-brownfield/references/migrations/|tests/(FeatureRename|MigrationInitParity)\.Tests\.ps1$)'
+      $allowed = '^(\.docs/sdd/(specs|field-reports|releases)/|\.docs/sdd/(changelog|roadmap|tech-stack|estimation-log|capabilities/migration)\.md$|tests/.*\.md$|skills/sdd-init-brownfield/references/migrations/|tests/(FeatureRename|MigrationInitParity)\.Tests\.ps1$)'
       $files = git -C $script:KitRoot ls-files | Where-Object { $_ -notmatch $allowed }
       $hits = $files | Where-Object { Select-String -LiteralPath (Join-Path $script:KitRoot $_) -Pattern 'sdd-(start|end)-task' -Quiet }
       $hits | Should -BeNullOrEmpty

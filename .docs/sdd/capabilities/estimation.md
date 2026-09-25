@@ -2,21 +2,21 @@
 
 ## Propósito
 
-Cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién lo genera, y cómo se miden los tokens y el coste de una sesión de Claude Code. El método de estimación vive en `estimation.md`.
+Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y quién lo genera, y cómo se miden los tokens y el coste de una sesión de Claude Code. El método de estimación vive en `estimation.md`.
 
 ## Requisitos
 
 ### El estimation-log se genera desde los artefactos de cierre
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo
 - WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
-- THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, task, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
+- THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
 - AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
 - AND `Sesión ($)` es la cifra de `Coste de la sesión`; «sin precio» y «no medido» aparecen tal cual, y sin la línea la celda es `—`
 - AND el fichero lleva cabecera "AUTO-GENERADO — no editar a mano"
 
 ### El script vive en el kit y las skills de cierre lo invocan
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y el kit instalado
-- WHEN `sdd-end-task` o `sdd-end-patch` llegan al paso estimation-log
+- WHEN `sdd-end-feature` o `sdd-end-patch` llegan al paso estimation-log
 - THEN ejecutan el script desde el Base directory de `sdd-templates`, sin buscar ni crear copia en el proyecto
 - AND solo si `pwsh` no está disponible añaden la fila a mano
 
@@ -66,7 +66,7 @@ Cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién
 - AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
 
 ### El walkthrough registra el modelo y el effort del hilo en cada fase
-- GIVEN una task cuya spec y plan corrieron con Opus 5.5 y effort medium, y cuya ejecución corrió con Sonnet 5 y effort medium tras un `/model`
+- GIVEN una feature cuya spec y plan corrieron con Opus 5.5 y effort medium, y cuya ejecución corrió con Sonnet 5 y effort medium tras un `/model`
 - WHEN el agente rellena «Modelo del hilo» del walkthrough
 - THEN escribe los dos, con su fase: «Opus 5.5, effort medium (spec y plan) → Sonnet 5, effort medium (ejecución)»
 - AND si no sabe el effort de una fase, escribe «effort no registrado» en esa fase, no un valor supuesto
@@ -90,7 +90,7 @@ Cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién
 - AND sin la clave `pricing`, o con un modelo que tiene tokens y no está en la tabla, la línea es `Coste de la sesión: sin precio (<motivo>)` y nombra los modelos que faltan
 - AND una respuesta con `usage.speed: "fast"` cuenta con el modelo `claude-sonnet-5:fast`, que necesita su propia fila
 
-### Con `-Branch` solo cuenta la rama de la task
+### Con `-Branch` solo cuenta la rama de la feature
 - GIVEN la sesión del primer requisito, con todas sus líneas en la rama `feature/0068`, y una segunda sesión con la respuesta `msg_C` de `claude-sonnet-5` (lectura 900.000) en la rama `develop`
 - WHEN se ejecuta el script con `-Branch feature/0068`
 - THEN el hilo suma 2.605.005 tokens: `msg_C` queda fuera
@@ -104,7 +104,13 @@ Cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién
 - AND con respuestas del hilo y ningún subagente, la línea de subagentes dice `no aplica` y la del coste lleva solo el hilo: `Coste de la sesión: 0,95 $ (hilo 0,95 $)`
 
 ### El cierre rellena los tokens y el coste de la sesión
-- GIVEN una task en Claude Code que llega al paso de tiempo real de `sdd-end-task`, en un proyecto con `.docs/sdd/estimation.md`
+- GIVEN una feature en Claude Code que llega al paso de tiempo real de `sdd-end-feature`, en un proyecto con `.docs/sdd/estimation.md`
 - WHEN se rellena la sección 2 del walkthrough
-- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `Measure-SessionTokens.ps1 -Path <worktree> -Branch <rama de la task>`, ejecutado desde el Base directory de `sdd-templates`
+- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `Measure-SessionTokens.ps1 -Path <worktree> -Branch <rama de la feature>`, ejecutado desde el Base directory de `sdd-templates`
 - AND en otro harness, las tres dicen «no medido», con el motivo
+
+### El log lee las features y las tasks heredadas
+- GIVEN `specs/20260920-100000-task-0063-a/walkthrough.md` con `task: 0063` y `specs/20261001-091500-feature-0079-b/walkthrough.md` con `feature: 0079`, los dos con su bloque de tiempo
+- WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
+- THEN `estimation-log.md` tiene dos filas, con ids `0063` y `0079`
+- AND la cabecera de la tabla es `| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |`

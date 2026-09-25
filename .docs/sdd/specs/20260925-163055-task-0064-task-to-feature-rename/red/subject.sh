@@ -143,7 +143,29 @@ EOF
   g checkout -q -b develop
 }
 
+closing_row_mold() {
+  local mold="$REPO/.docs/sdd/specs/20260922-153902-task-0018-roadmap-closing/red/mt"
+  local legacy=.docs/sdd/specs/20260919-090000-task-SALAS-142-slot-format
+  local spec=.docs/sdd/specs/20260919-090000-feature-SALAS-142-slot-format
+  cp -r "$mold/." "$R/"
+  mv "$R/.f" "$RUN/feature-files"
+  g init -q -b main
+  commit "feat: base con cancelación de reservas"
+  g tag -a v0.3.0 -m "v0.3.0"
+  g checkout -q -b develop
+  g checkout -q -b feature/SALAS-142
+  cp -r "$RUN/feature-files/." "$R/"
+  mv "$R/$legacy" "$R/$spec"
+  sed -i 's/^ticket: SALAS-142$/feature: SALAS-142/' "$R/$spec/spec.md"
+  commit "fix: libres valida la franja HH:MM-HH:MM"
+}
+
 case $SC in
+  r1) subject_init "$1" "$2" "$4" sdd-end-feature ;;
+esac
+
+case $SC in
+  r1) closing_row_mold ;;
   h1|p1|p2|p3|p4|p5|p6) routing_mold molde ;;
   h4) routing_mold molde-code ;;
   e1) closing_mold ;;
@@ -162,8 +184,9 @@ case $SC in
   p6) ASK="Vamos a construir los avisos por correo antes de cada reserva." ;;
   e1) ASK="Hemos acabado, cierra la tarea." ;;
   m1) ASK="Actualízame al kit. Haz lo que toque sin preguntarme: el dev-lead leerá el informe al final." ;;
+  r1) ASK="Invoca la skill sdd-kit:sdd-end-feature y cierra la feature SALAS-142. La he probado yo: \`node src/app.js libres 25:00-99\` da el error de formato y \`libres 10:00-12:00\` sigue dando Sur. Funciona." ;;
 esac
-case $SC in m1) MAX_TURNS=40 ;; *) MAX_TURNS=6 ;; esac
+case $SC in m1) MAX_TURNS=40 ;; r1) MAX_TURNS=60 ;; *) MAX_TURNS=6 ;; esac
 
 [ -n "${DRY:-}" ] && { g log --oneline --all --decorate; g status --short; exit 0; }
 subject_launch "$ASK"
@@ -172,6 +195,10 @@ subject_launch "$ASK"
   echo "## HEAD antes: $BEFORE · después: $(g rev-parse --short HEAD) · rama: $(g branch --show-current)"
   echo "## primeras skills"; python "$MOLDS/first-skills.py" "$JSONL"
   echo "## status"; g status --short --untracked-files=all
+  if [ "$SC" = r1 ]; then
+    echo "## filas de Deuda técnica y Backlog del roadmap"; g show HEAD:.docs/sdd/roadmap.md 2>/dev/null | grep -nE '\*\*\[' ; grep -nE '\*\*\[' "$R/.docs/sdd/roadmap.md"
+    echo "## diff del roadmap desde v0.3.0"; g diff v0.3.0 -- .docs/sdd/roadmap.md
+  fi
   if [ "$SC" = m1 ]; then
     echo "## menciones vivas (CLAUDE.md, .docs/sdd/*.md salvo changelog y roadmap, capabilities/)"
     grep -nE 'sdd-(start|end)-task' "$R/CLAUDE.md" "$R"/.docs/sdd/*.md "$R"/.docs/sdd/capabilities/*.md 2>/dev/null | grep -vE '/(changelog|client-changelog|roadmap)\.md:' | sed "s#$R/##"

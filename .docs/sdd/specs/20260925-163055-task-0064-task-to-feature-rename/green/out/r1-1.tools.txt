@@ -1,0 +1,205 @@
+
+>>> Skill: sdd-kit:sdd-end-feature
+<<< Launching skill: sdd-kit:sdd-end-feature
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline -5 && find .docs .claude -type f 2>/dev/null | grep -v node_modules | head -80 && cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< e188dcc fix: libres valida la franja HH:MM-HH:MM
+68fb7d0 feat: base con cancelación de reservas
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260919-090000-feature-SALAS-142-slot-format/spec.md
+.docs/sdd/tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "tracker"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/specs/*/spec.md .docs/sdd/roadmap.md .docs/sdd/changelog.md .docs/sdd/tech-stack.md; do echo "=== $f"; cat "$f"; done; git branch -a; git diff main --stat; ls; cat src/app.js | head -80
+<<< === .docs/sdd/specs/20260919-090000-feature-SALAS-142-slot-format/spec.md
+---
+mode: lite
+status: approved
+feature: SALAS-142
+---
+
+# Spec — SALAS-142: validar la franja de `libres`
+
+## Decisiones que he tomado yo — valida estas
+
+1. Formato aceptado: `HH:MM-HH:MM` en 24 h. Cualquier otro devuelve un error y no un listado.
+
+## Intent
+
+`libres 25:00-99` devuelve todas las salas como libres. Una franja mal escrita tiene que dar un error.
+
+## Scope
+
+- Entra: validar la franja de `libres`.
+- No entra: validar el día de `cancelar` (queda para otro ticket).
+
+Origen: ticket SALAS-142 de Jira, abierto de
+
+>>> Bash: cd "<run>/repo" && git diff main -- src test && npm test 2>&1 | tail -15; node src/app.js libres 25:00-99; node src/app.js libres 10:00-12:00; K="../../../kit-green2"; ls "$K/skills/sdd-templates" "$K/skills/sdd-templates/templates" 2>/dev/null; cat "$K/skills/sdd-end-feature/references/merge-recipe.md" | head -60; git rev-parse --git-dir --git-common-dir
+<<< diff --git a/src/app.js b/src/app.js
+index a366456..acf3742 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,13 +1,17 @@
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
++const SLOT = /^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/;
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+ }
+ 
+ export function run(cmd, params) {
+-  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
++  if (cmd === 'li
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12; K="../../../kit-green2/skills"; cat $K/sdd-templates/templates/walkthrough-template.md; echo =====; cat $K/sdd-templates/templates/roadmap-template.md | grep -n -i -B2 -A6 "cierre\|cerrad\|✅"; echo =====; cat $K/sdd-end-feature/references/aprendizajes-skills.md; echo ====; cat $K/add-to-changelog/SKILL.md | head -60
+<<< ✔ libres excluye la sala reservada en la franja (0.8331ms)
+✔ reservar --cada-semana crea la reserva semanal (1.0843ms)
+✔ cancelar respeta el día (0.1774ms)
+✔ libres rechaza una franja mal escrita (0.2777ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 129.0484
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Walkthrough — <título de la spec>
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: <YYYY-MM-DD>
+---
+
+# Walkthrough — <título>
+
+> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), la
+
+>>> Bash: cd "<run>/repo" && D=".docs/sdd/specs/20260919-090000-feature-SALAS-142-slot-format" && cat > $D/walkthrough.md <<'EOF'
+---
+id: 20260919-090000-feature-SALAS-142-slot-format
+feature: SALAS-142
+title: Walkthrough — validar la franja de `libres`
+spec: ./spec.md
+status: done
+created: 2026-09-25
+---
+
+# Walkthrough — validar la franja de `libres`
+
+## 1. Cambios realizados
+
+- `src/app.js`: constante `SLOT` (`HH:MM-HH:MM`, 24 h) y guarda en `libres`: una franja que no cumple devuelve `error: franja no válida (HH:MM-HH:MM)` en lugar del listado. Commit `e188dcc`.
+- `test/app.test.js`: test `libres rechaza una franja mal escrita`. Commit `e188dcc`.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_ (feature `lite`: no hay `plan.md`).
+
+### Decisiones tomadas sin el dev-lead
+
+- _Ninguna_. La única decisión (formato `HH:MM-HH:MM` en 24 h) está en la spec, aprobada el 2026-09-19.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- Sin paso de build (Node 22, sin dependencias).
+
+### 4.2 Smoke / tests
+
+- Verificado por el agente (2026-09-25): `node --test` → 4 tests, 4 pass, 0 fail. `node src/app.js libres 25:00-99` → `error: franja no válida (HH:MM-HH:MM)`. `node src/app.js libres 10:00-12:00` → `Sur`.
+- Validado por el dev-lead: 2026-09-25 · probó `node src/app.js libres 25:00-99` (da el error de formato) y `libres 10:00-12:00` (sigue dando Sur): «Funciona».
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `libres 25:00-99` → error de formato | OK (agente y dev-lead) |
+| 2 | `libres 10:00-12:00` → `Sur` | OK (agente y dev-lead) |
+
+### 4.3 Residuales / deuda generada
+
+- `cancelar` sigue sin validar el día (fuera de scope por la spec): la fila de deuda del roadmap queda como saldada en parte.
+- La validación es solo de formato: `12:00-10:00` (fin antes del inicio) pasa el filtro y da un listado. La spec no lo pedía; no se ha anotado como deuda.
+- `package.json` no tiene script `test`; los tests se lanzan con `node --test`, como dice `tech-stack.md`.
+
+## 5. Aprendizajes
+
+- Ninguno nuevo: no hay convención, cambio estructural ni versión que volcar. No hay `capabilities/` ni delta en la spec → sin destino que fusionar.
+
+## 6. Adendas
+
+_Ninguna._
+EOF
+python - <<'EOF'
+import re
+p='.docs/sdd/changelog.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("## [Unreleased]\n","## [Unreleased]\n\n### Fixed\n\n- **SALAS-142** — `libres` valida la franja `HH:MM-HH:MM` y responde un error si no cumple. → [ref](specs/20260919-090000-feature-SALAS-142-slot-format/)\n",1)
+open(p,'w',encoding='utf-8',newline='').write(s)
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| **Sin validación de la entrada","| **[Feature SALAS-142, 2026-09-25: parcial — [walkthrough](specs/20260919-090000-feature-SALAS-142-slot-format/walkthrough.md); queda: validar el día de `cancelar`]** **Sin validación de la entrada",1)
+open(p,'w',encoding='utf-8',newline='').write(s)
+EOF
+git diff --stat; git diff .docs/sdd/roadmap.md .docs/sdd/changelog.md
+<<< warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/changelog.md | 26 +++++++++++++---------
+ .docs/sdd/roadmap.md   | 60 +++++++++++++++++++++++++-------------------------
+ 2 files changed, 45 insertions(+), 41 deletions(-)
+warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replac
+
+>>> Bash: cd "<run>/repo" && sed -i 's/$/\r/' .docs/sdd/changelog.md .docs/sdd/roadmap.md && git diff --stat 2>&1 | grep -v warning; git ls-files --eol .docs/sdd/specs | head
+<<<  .docs/sdd/changelog.md | 4 ++++
+ .docs/sdd/roadmap.md   | 2 +-
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+i/lf    w/lf    attr/                 	.docs/sdd/specs/20260919-090000-feature-SALAS-142-slot-format/spec.md
+
+>>> Bash: cd "<run>/repo" && git add -A && git commit -q -F - <<'EOF'
+docs(sdd): cierre de SALAS-142, validación de la franja de libres
+
+Walkthrough con la verificación (agente y dev-lead), entrada en el
+changelog y deuda del roadmap saldada en parte: queda validar el día
+de `cancelar`.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short; git rev-parse --short develop main
+<<< Exit code 128
+warning: in the working copy of '.docs/sdd/specs/20260919-090000-feature-SALAS-142-slot-format/walkthrough.md', LF will be replaced by CRLF the next time Git touches it
+d65f097 docs(sdd): cierre de SALAS-142, validación de la franja de libres
+e188dcc fix: libres valida la franja HH:MM-HH:MM
+68fb7d0 feat: base con cancelación de reservas
+fatal: Needed a single revision
+
+=== RESULTADO (10 turnos, 0.3652116 $)
+**No terminado.** Falta el merge a `develop`, que necesita tu confirmación. No hay bloque `merge` en `.docs/sdd/sdd-kit.json`, y sin él la política pide presentarlo y esperar. No borres todavía el worktree: la rama `feature/SALAS-142` está en el checkout principal y no hay ninguno enlazado que borrar.
+
+Cierre commiteado como `d65f097` sobre `e188dcc`. Los cambios están en `walkthrough.md`, `changelog.md` y `roadmap.md`.
+
+- **Validación:** la registré como tuya, con lo que probaste y tu «funciona». También verifiqué yo `node --test` (4 de 4 pasan) y los dos comandos.
+- **Spec:** estaba `approved`, modo `lite`, sin anomalías.
+- **Changelog:** entrada en `Fixed` bajo `Unreleased`.
+- **Roadmap:** la fila de deuda queda saldada en parte. Queda validar el día de `cancelar`, que la spec dejaba fuera.
+- **Pasos que no aplican:**
+  - Estimación y `tasks.md`: no existen `estimation.md` ni plan, por ser `lite`.
+  - `capabilities/` y skills: no existen `capabilities/` ni `.claude/skills/`.
+  - Aprendizajes: no hay ninguno que volcar.
+- **Decisiones sin el dev-lead:** ninguna.
+- **Revisión final de rama:** no hubo. No lancé `requesting-code-review` (el diff son unas 6 líneas más un test) ni la simulé con otro modelo. La hice yo leyendo el diff. Si la quieres formal, dímelo.
+- **Residuales sin anotar como deuda:**
+  - La validación es solo de formato: `12:00-10:00` pasa el filtro.
+  - `package.json` no tiene script `test`. Se usa `node --test`, como dice `tech-stack.md`.
+
+¿Fusiono `feature/SALAS-142` en `develop` con `Invoke-SddMerge.ps1` y `--no-ff`? El repo no tiene remoto configurado que yo haya visto, así que no haría push salvo que me lo pidas. Ofrezco también generar el ticket de mejora del kit con `sdd-feedback` en esta sesión.

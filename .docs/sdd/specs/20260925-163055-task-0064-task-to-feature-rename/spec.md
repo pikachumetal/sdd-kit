@@ -23,6 +23,7 @@ approvers:
 - Modificadas: `estimation` — el log lee `feature:` y `task:`, y su columna de id pasa a `Id`
 - Modificadas: `kit-feedback` — el ticket de una feature se nombra `-feature-`
 - Modificadas: `migration` — la migración a v2.0.0 sustituye los nombres de las dos skills en los docs vivos del proyecto
+- Modificadas: `roadmap` — las filas nuevas se saldan con `Feature`; `Task` queda como legado que se cuenta (enmienda del 2026-09-25)
 
 ## Decisiones que he tomado yo — valida estas
 
@@ -221,6 +222,19 @@ Renombrado mecánico en dos capas. Los **lectores** (scripts) aceptan los dos no
 - AND la verificación de la migración, con `Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task' -ErrorAction SilentlyContinue` (sin `AGENTS.md`, esa ruta no cuenta), no devuelve nada
 
 ## Enmiendas
+
+- 2026-09-25 — El prefijo de cierre de fila del roadmap pasa a ser legado, como las carpetas. Las filas saldadas nuevas empiezan por `**[Feature <id>, …]**` (o `**[Patch <id>, …]**`), las ya saldadas conservan `**[Task <id>, …]**`, y el `grep` de conteo lee `(Feature|Task|Patch)`. Añade al delta la capacidad `roadmap` (MODIFIED abajo) y a la campaña el escenario `r1`, en RED y GREEN, con el techo subido a 17 sujetos y 5 $. No hay paso de migración: las filas viejas se leen como están. — La revisión final señaló que la plantilla decía «cuando una feature salda una fila» y mandaba escribir `Task` — aprobada: «solucionalo ahora …» y, para el techo, «Subir el techo a 5 $ (Recomendada)»
+
+### Capacidad: `roadmap` (enmienda del 2026-09-25)
+
+**MODIFIED — Cerrar una fila de deuda o de backlog deja un prefijo contable** (antes: «`**[<Task|Patch> <id>, …`» y el `grep` sobre `(Task|Patch)`)
+
+> El bloque completo del requisito vigente, con el cambio, se copia de `capabilities/roadmap.md` al fusionar: solo cambian el prefijo, que pasa a `<Feature|Patch>` en las filas nuevas, y el `grep`, que pasa a `(Feature|Task|Patch)`, con `Task` como legado que se cuenta y ya no se escribe.
+
+- GIVEN una fila de «Deuda técnica» del roadmap que la feature SALAS-142 salda entera, cerrada con `sdd-end-feature` el 2026-09-22
+- WHEN el cierre marca la fila
+- THEN la celda «Ítem» empieza por `**[Feature SALAS-142, 2026-09-22: saldada — [walkthrough](specs/<carpeta>/walkthrough.md)]**`
+- AND una fila saldada antes de la 2.0.0 con `**[Task 0012, 2026-09-10: saldada — …]**` sigue sin tocar, y `grep -E '\| \*\*\[(Feature|Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` lista las dos
 
 ## Aprobaciones
 
