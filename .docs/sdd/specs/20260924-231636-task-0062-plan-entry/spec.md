@@ -169,6 +169,12 @@ Una skill de proceso nueva, con la forma que pide cada fallo (Art. II): contrato
 
 ### Capacidad: `release-flow`
 
+**MODIFIED — El cierre no procesa el feedback de una reunión** (antes: «ese feedback es entrada de `sdd-plan`», escrito por la task 0063 con el nombre anterior de la skill)
+- GIVEN un cierre en el que el usuario aporta la transcripción o las notas de una demo o reunión
+- WHEN se ejecuta `sdd-end-release`
+- THEN no escribe acta ni triaje (`feedback.md`) y dice que ese feedback es entrada de `sdd-roadmap`
+- AND el cierre sigue con sus cinco pasos, sin esperar a que se procese
+
 **MODIFIED — El proyecto declara si sus releases tienen destinatario** (antes: «se ejecuta `sdd-start-release` o `sdd-end-release`»)
 - GIVEN un `.docs/sdd/sdd-kit.json` sin `release.hasRecipient`
 - WHEN se ejecuta `sdd-roadmap` para preparar una release, o `sdd-end-release`
