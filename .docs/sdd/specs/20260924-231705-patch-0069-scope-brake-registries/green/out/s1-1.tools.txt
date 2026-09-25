@@ -1,0 +1,148 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git status --short && git log --oneline -8 && ls -la .superpowers/sdd/plan .docs/sdd .docs/sdd/specs/* 2>&1 && cat .superpowers/sdd/plan/progress.md && cat .superpowers/sdd/plan/task-1-rereview.md
+<<< 4d77ce5 fix(0012): mensaje literal de la revisión de la task 1
+bd5f290 feat(0012): validar el formato de la franja al reservar
+89298eb test(0012): RED de la task 1
+5cba6ab docs(0012): abrir la task 0012
+1236fbe feat: base de reservas de salas
+.docs/sdd:
+total 8
+drwxr-xr-x 1 <user> 197609   0 Sep 25 01:17 ./
+drwxr-xr-x 1 <user> 197609   0 Sep 25 01:17 ../
+-rw-r--r-- 1 <user> 197609  29 Sep 25 01:17 changelog.md
+-rw-r--r-- 1 <user> 197609 197 Sep 25 01:17 constitution.md
+-rw-r--r-- 1 <user> 197609 330 Sep 25 01:17 roadmap.md
+-rw-r--r-- 1 <user> 197609 212 Sep 25 01:17 sdd-kit.json
+drwxr-xr-x 1 <user> 1
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-task-0012-franja; for f in $D/*.md .docs/sdd/{roadmap,constitution,changelog}.md .docs/sdd/sdd-kit.json; do echo "=== $f"; cat "$f"; done; ls -R src test tests 2>/dev/null; git branch -a; git remote -v; ls .docs/sdd/*.local.json 2>&1
+<<< Exit code 2
+=== .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Implementadores y revisores Sonnet, effort medio.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: Sonnet, effort medio
+**Tests RED**: hilo principal · `tests/slot-format.test.js`, escritos antes de despachar y si
+
+>>> Bash: cd /d/code/.worktrees/sdd-kit/scope-brake-registries/skills/sdd-start-task/references && cat commit-milestones.md; echo =====; cat encargo-revision.md; echo ====; cat control-profiles.md
+<<< # Un commit por hito
+
+La rama de una task cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+
+## Qué lleva cada hito
+
+| Hito | Lleva | Se junta | Base |
+| --- | --- | --- | --- |
+| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: s
+
+>>> Bash: cd "<run>/salas" && echo "merges:"; git rev-list --merges 5cba6ab..HEAD; echo "published:"; git branch -r --contains 89298eb; echo "--- base checks"; MB=$(git merge-base HEAD develop); echo MB=$MB; git log --oneline $MB..develop; echo "roadmap diff:"; git diff $MB develop -- .docs/sdd/roadmap.md; echo "names:"; git diff --name-only $MB develop; echo "--- files"; git show --stat HEAD~2 | head; cat src/slots.js; cat tests/slot-format.test.js; cat tests/slots.test.js
+<<< merges:
+published:
+--- base checks
+MB=1236fbe1e3d7f188e08ed2f7365d6a6b4fcc061e
+35ae457 fix(0013): cancelar sin hora pide el uso
+roadmap diff:
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index 18ab87a..548c4e2 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -5,4 +5,4 @@
+ | Id | Tarea | Origen | Ficheros que toca | Tamaño |
+ | --- | --- | --- | --- | --- |
+ | 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+-| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
++|
+
+>>> Bash: cd "<run>/salas" && git reset --soft 5cba6ab && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al reservar
+
+`reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» cuando la
+franja no casa con `HH-HH`, en lugar de reservar una franja sin sentido
+como `1012`. Incluye el test que codifica el escenario de la spec y el
+mensaje literal corregido tras la revisión de la task.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+H=$(git rev-parse --short HEAD); echo $H; git log --oneline -3; git status --short; node --test tests/slot-format.test.js 2>&1 | tail -8
+<<< eba1d09
+eba1d09 feat(0012): validar el formato de la franja al reservar
+5cba6ab docs(0012): abrir la task 0012
+1236fbe feat: base de reservas de salas
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 128.8881
+
+>>> Bash: cd "<run>/salas" && echo "Task 1: clean re-review; squashed 5cba6ab..eba1d09" >> .superpowers/sdd/plan/progress.md
+D=.docs/sdd/specs/20260923-100000-task-0012-franja
+sed -i 's/^| 1 | Validar al reservar | pending | — | |$/| 1 | Validar al reservar | done | eba1d09 | revisión y re-revisión limpias (1 fix: mensaje literal) |/' $D/tasks.md
+cat $D/tasks.md
+cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('rechaza una franja sin guion al consultar libres', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+EOF
+mkdir -p /tmp/claude-red-0012-t2 && cp tests/free-format.test.js /tmp/claude-red-0012-t2/ && cygpath -w /tmp/claude-red-0012-t2/free-format.test.js
+node --test tests/free-format.test.js 2>&1 | grep -E "SyntaxError|fail|pass" | head -4; git status --short
+<<< # Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | eba1d09 | revisión y re-revisión limpias (1 fix: mensaje literal) |
+| 2 | Validar al consultar libres | pending | — | |
+<home>\AppData\Local\Temp\claude-red-0012-t2\free-format.test.js
+SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+ M .docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+?? tests/free-format.test.js
+
+=== RESULTADO (9 turnos, 0.3564216 $)
+Ahora: parado justo antes de despachar el implementador de la Task 2, como pediste.
+
+**Hecho**
+- **Task 1 juntada**: `eba1d09` (`feat(0012): validar el formato de la franja al reservar`), con mensaje mío en castellano, cuerpo y trailer. Sustituye a `89298eb`, `bd5f290` y `4d77ce5`, sobre la base `5cba6ab`. No había merges en el rango ni estaba publicado (no hay remotos). `node --test tests/slot-format.test.js` pasa.
+- **Ledger y `tasks.md`**: la Task 1 figura como `done` con su hash. El cambio de `tasks.md` está sin commitear y irá en el commit de la Task 2, como marca `commit-milestones.md`.
+- **Frenos de alcance**: comprobados contra `develop`, con la Task 2 en el papel de la task a despachar.
+  - `develop` trae `35ae457` (fix 0013). Solo cambia la fila 0013 del roadmap y `changelog.md`.
+  - La fila 0012 no cambió.
+  - Ninguno de los ficheros de la Task 2 (`src/slots.js`) coincide. El roadmap y el changelog no cuentan en el cruce. Sin freno, sigo.
+- **RED de la Task 2**: `tests/free-format.test.js`, un test por el THEN «falla con el mismo mensaje», sin commitear. Falla como toca: `does not provide an export named 'free'`. La copia de contrato está en `<home>\AppData\Local\Temp\claude-red-0012-t2\free-format.test.js`.
+
+**Antes de despachar**
+- **Tipo de agente**: no puedo comprobar que `sdd-kit:effort-medio` esté entre los agentes de la sesión. Esta sesión no me ofrece la herramienta de despacho. Si falta, el ruling es despachar con `model: sonnet` y la frase «effort: no disponible en este harness, hereda el de la sesión».
+- **Encargo**: lleva el bloque «De código» (`Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».`), la sección Tests RED con la ruta de la copia y `## Verificación` con solo `node --test tests/free-format.test.js`. Sin suite completa.
+- **Conflicto previsible**: la Task 2 modifica `.docs/sdd/roadmap.md`, y `develop` ya cambió otra fila del mismo fichero. Es un conflicto de registros, que resuelve el merge de sincronización del cierre. No frena nada.

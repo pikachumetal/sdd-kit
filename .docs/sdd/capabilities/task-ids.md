@@ -34,7 +34,8 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 ### Una task no planificada obtiene su id con un script determinista
 - GIVEN un proyecto en modo `sequence` y una task o patch sin fila en el roadmap
 - WHEN se invoca `Get-NextSddId.ps1 -Reserve` desde la raíz del proyecto
-- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en `.docs/sdd/specs/`, en `.docs/sdd/roadmap.md` y en los nombres de rama locales y remotos, más uno
+- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en `.docs/sdd/specs/` y `.docs/sdd/roadmap.md` del working tree; en el roadmap y las carpetas de `specs/` de cada rama local y remota, y en su nombre salvo el de la rama actual; y en el roadmap y las carpetas de `specs/` del disco de cada worktree de `git worktree list`, más uno
+- AND lo que otro worktree tiene reservado sin fusionar cuenta aunque no esté en ninguna rama: una fila del roadmap en *staged* o una carpeta de `specs/` sin commitear
 - AND deja ese id consumido en el contador
 - AND no hace `git fetch`: lee las referencias tal como están en el repositorio
 - AND `0000` no cuenta como id ocupado: un proyecto cuyo histórico es todo `0000` recibe `0001`
@@ -55,7 +56,7 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 ### El script avisa cuando omite las ramas
 - GIVEN un proyecto en modo `sequence` cuya raíz no es la raíz de su repositorio (un proyecto dentro de un monorepo)
 - WHEN se invoca `Get-NextSddId.ps1`
-- THEN devuelve el id calculado con las demás fuentes y avisa por salida de error de que omite las ramas, nombrando el repositorio que encontró
+- THEN devuelve el id calculado con `specs/` y el roadmap del working tree, sin leer ramas ni el disco de otros worktrees, y avisa por salida de error de que omite las ramas, nombrando el repositorio que encontró
 - AND no lee las ramas del repositorio padre: sus ids no son ids de este proyecto
 
 ### Una task partida toma el siguiente id, no un sufijo
@@ -139,6 +140,8 @@ Verdad viva del comportamiento observable de la numeración del trabajo: cómo u
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — ADDED Una task partida toma el siguiente id, no un sufijo
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — ADDED En modo gestor el id es el del ticket
 - 2026-09-20 — 20260920-202137-task-0001-task-ids — ADDED En modo secuencia el id sale de la reserva o del script
+- 2026-09-23 — 20260922-220001-patch-0035-ids-de-otras-ramas — MODIFIED Una task no planificada obtiene su id con un script determinista (roadmap y `specs/` de todas las ramas y roadmap del disco de cada worktree; fusionado por la task 0067) · MODIFIED El script avisa cuando omite las ramas (tampoco lee el disco de los worktrees; fusionado por la task 0067)
+- 2026-09-23 — 20260923-103947-patch-0038-specs-de-otros-worktrees — MODIFIED Una task no planificada obtiene su id con un script determinista (carpetas de `specs/` del disco de cada worktree; fusionado por la task 0067)
 - 2026-09-24 — 20260924-105243-task-0059-reserve-ids — MODIFIED Una task no planificada obtiene su id con un script determinista
 - 2026-09-24 — 20260924-105243-task-0059-reserve-ids — ADDED Sin reserva, el script solo propone
 - 2026-09-24 — 20260924-105243-task-0059-reserve-ids — ADDED Dos reservas simultáneas no comparten id

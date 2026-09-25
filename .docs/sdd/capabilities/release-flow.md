@@ -1,6 +1,6 @@
 # Capacidad — release-flow
 
-Verdad viva del comportamiento observable del carril release del kit: cuándo es opcional, cómo se cierra una publicación y cómo se adapta a si la release tiene destinatario. La declaró la spec de la task 0004 en sus «Decisiones a validar» (decisión 14). Recoge solo lo que esa task tocó o verificó: el resto del carril (acta, retro, triage, colapso con apertura) sigue descrito en las skills `sdd-start-release` y `sdd-end-release` hasta que una task lo traiga aquí.
+Verdad viva del comportamiento observable del carril release del kit: cuándo es opcional, cómo se cierra una publicación y cómo se adapta a si la release tiene destinatario. La declaró la spec de la task 0004 en sus «Decisiones a validar» (decisión 14). Recoge solo lo que esa task tocó o verificó: el resto del carril (retro, colapso con apertura; el acta y el triaje, en `sdd-start-release` hasta que los recoja `sdd-plan`) sigue descrito en las skills `sdd-start-release` y `sdd-end-release` hasta que una task lo traiga aquí.
 
 ## Requisitos
 
@@ -44,16 +44,23 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - WHEN se llega al paso de versión y tag
 - THEN el agente prepara el merge y el tag, los presenta y espera la confirmación explícita
 
+### El tag vuelve a la rama de integración
+- GIVEN un proyecto cuyo git-flow tiene rama de integración (`develop`) y un cierre de release que ya fusionó en el branch estable
+- WHEN se ejecutan el merge y el tag
+- THEN el tag anotado `vX.Y.Z` va sobre el merge commit del branch estable y se empuja
+- AND después se fusiona el branch estable de vuelta en la rama de integración, para que el tag quede en su historia
+- AND sin rama de integración no hay merge de vuelta
+
 ### Sin destinatario no hay release notes ni email
 - GIVEN `release.hasRecipient: false`
 - WHEN se cierra una release
-- THEN no se escriben `release-notes.md` ni el borrador de email, el paso «Comunicar» no aplica y la entrada del roadmap enlaza al changelog (y al acta si existe)
+- THEN no se escriben `release-notes.md` ni el borrador de email, el paso de release notes y comunicación no aplica y la entrada del roadmap enlaza al changelog (y a la retro si existe)
 
 ### La carpeta de la release existe solo si tiene contenido
-- GIVEN `release.hasRecipient: false` y un cierre sin acta (no hubo demo ni retro)
+- GIVEN `release.hasRecipient: false` y un cierre sin retro
 - WHEN termina `sdd-end-release`
 - THEN no se exige que exista `.docs/sdd/releases/vX.Y.Z/` ni se crea vacía
-- AND con destinatario o con acta, la carpeta sigue siendo obligatoria
+- AND con destinatario o con retro, la carpeta sigue siendo obligatoria
 
 ### El bump usa el tooling del proyecto
 - GIVEN un `tech-stack.md` que declara el comando que cambia la versión (p. ej. un script de Node)
@@ -75,11 +82,6 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - GIVEN `ids.mode: tracker`
 - WHEN se presenta el resumen de cierre
 - THEN incluye los ids de ticket de las entradas de `[Unreleased]` que entran en la versión
-
-### El acta solo se escribe si hay fuente
-- GIVEN `release.hasRecipient: false` y un cierre sin transcripción ni notas aportadas por el usuario y sin fichero de fuente en `.docs/sdd/releases/vX.Y.Z/`
-- WHEN `sdd-end-release` llega al acta
-- THEN omite el paso sin preguntar si hubo demo o reunión
 
 ### La línea de smoke se cuenta igual en todas las releases
 - GIVEN el cierre de una release
@@ -115,6 +117,19 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - THEN las publica en la rama de integración con un commit que solo toca `roadmap.md`, en el worktree donde está sacada (o en uno temporal, en la carpeta de los demás worktrees y con nombre corto, si no está en ninguno)
 - AND lo hace antes de arrancar ninguna de las tasks nuevas
 
+### El cierre no procesa el feedback de una reunión
+- GIVEN un cierre en el que el usuario aporta la transcripción o las notas de una demo o reunión
+- WHEN se ejecuta `sdd-end-release`
+- THEN no escribe acta ni triaje (`feedback.md`) y dice que ese feedback es entrada de `sdd-plan`
+- AND el cierre sigue con sus cinco pasos, sin esperar a que se procese
+
+### La retro es opcional
+- GIVEN un proyecto con `.docs/sdd/estimation-log.md`
+- WHEN `sdd-end-release` propone la versión en el paso 1
+- THEN la misma propuesta ofrece la retro en una línea, sin pregunta aparte
+- AND solo se escribe si el usuario la pide, en `.docs/sdd/releases/vX.Y.Z/retro.md`, y no retiene los demás pasos: si el roadmap ya está colapsado, se añade su enlace a la entrada de la release
+- AND sin `estimation-log.md` no se ofrece
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: si la release tiene destinatario vive en `.docs/sdd/sdd-kit.json` (`release.hasRecipient`, booleano), junto a `version` e `ids`. El nombre del destinatario no se guarda en la configuración.
@@ -145,3 +160,9 @@ Verdad viva del comportamiento observable del carril release del kit: cuándo es
 - 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Una task en marcha no se toca al replanificar
 - 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED Los ids nuevos no chocan con reservas de otras ramas
 - 2026-09-22 — 20260922-154013-task-0029-release-replan — ADDED La reserva se publica antes de arrancar (la salida del worktree temporal, sin GREEN: deuda del roadmap)
+- 2026-09-22 — 20260922-135817-patch-0028-end-release — ADDED El tag vuelve a la rama de integración (fusionado por la task 0067)
+- 2026-09-25 — 20260924-221103-task-0063-end-release-cut — ADDED El cierre no procesa el feedback de una reunión
+- 2026-09-25 — 20260924-221103-task-0063-end-release-cut — ADDED La retro es opcional (con la enmienda: no retiene los demás pasos)
+- 2026-09-25 — 20260924-221103-task-0063-end-release-cut — MODIFIED Sin destinatario no hay release notes ni email
+- 2026-09-25 — 20260924-221103-task-0063-end-release-cut — MODIFIED La carpeta de la release existe solo si tiene contenido
+- 2026-09-25 — 20260924-221103-task-0063-end-release-cut — REMOVED El acta solo se escribe si hay fuente

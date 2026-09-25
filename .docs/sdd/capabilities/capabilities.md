@@ -31,6 +31,19 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye entero el requisito con ese título, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 
+### El cierre de un patch fusiona su delta
+- GIVEN un proyecto con `.docs/sdd/capabilities/bookings.md`, cuyo requisito «Consultar salas libres» dice que `salas libres 10-12` lista las salas sin reserva en esa franja
+- WHEN se cierra con `sdd-end-patch` el patch 0014, cuyo fix hace que `salas libres 10-12` deje fuera las salas en mantenimiento y las liste aparte con `(en mantenimiento)`
+- THEN `patch.md` lleva la sección «Delta de capacidad» con `MODIFIED — Consultar salas libres` y el bloque entero del requisito con el cambio
+- AND `bookings.md` sustituye ese requisito y añade a «Historial» `- <fecha de cierre> — <carpeta del patch 0014> — MODIFIED Consultar salas libres`
+- AND el cambio de `bookings.md` va en el commit de cierre del patch, y el fix con su `patch.md` queda en un solo commit
+- AND si ninguna capacidad describe la pieza que cambió, no se crea ninguna y el mensaje final lo dice
+
+### Un patch que devuelve el comportamiento a la capacidad no lleva delta
+- GIVEN `bookings.md` con la regla «Límites: una reserva dura como máximo 2 h»
+- WHEN se cierra el patch 0013, cuyo fix hace que `salas reservar Norte 10-13` se rechace, como ya decía la capacidad
+- THEN `bookings.md` no cambia y `patch.md` no lleva sección de delta ni línea de «sin delta»; si la traía vacía de la plantilla, se borra
+
 ### Brownfield no vuelca `capabilities/`
 - GIVEN un proyecto existente inicializado con `sdd-init-brownfield`, aunque el usuario pida generar las capacidades desde el código
 - WHEN se generan los documentos de anclaje
@@ -83,3 +96,4 @@ Verdad viva de cómo nace, qué contiene y cómo se fusiona una capacidad en los
 - 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED Ninguna init crea `capabilities/` vacía
 - 2026-09-23 — 20260923-105726-task-0033-capabilities-at-birth — ADDED El volcado inicial es una excepción de greenfield (desde `task-flow`)
 - 2026-09-25 — 20260924-204639-task-0060-testable-tasks — MODIFIED El delta declara el comportamiento por capacidad (escenarios con datos; reglas con su valor completo)
+- 2026-09-25 — 20260924-225643-task-0067-patch-capabilities — ADDED El cierre de un patch fusiona su delta · ADDED Un patch que devuelve el comportamiento a la capacidad no lleva delta
