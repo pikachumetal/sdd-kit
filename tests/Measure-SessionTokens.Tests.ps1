@@ -142,6 +142,14 @@ Describe 'Measure-SessionTokens.ps1' {
       Get-Line (Invoke-Measure $worktree) 'Tokens del hilo' | Should -Be '- Tokens del hilo: 2.605.005 — claude-sonnet-5 2.605.005'
     }
 
+    It 'escribe UTF-8 cuando la salida va redirigida a otro proceso' {
+      $worktree = New-Worktree @('base') $null
+      $stdout = Join-Path $TestDrive 'stdout.txt'
+      $command = "[Console]::OutputEncoding = [System.Text.Encoding]::Latin1; & '$($script:Script)' -Path '$($worktree.Path)' -ProjectsRoot '$($worktree.Projects)'"
+      Start-Process pwsh -ArgumentList @('-NoProfile', '-Command', $command) -RedirectStandardOutput $stdout -NoNewWindow -Wait
+      [System.IO.File]::ReadAllText($stdout, [System.Text.UTF8Encoding]::new($false, $true)) | Should -Match '2\.605\.005 — claude-sonnet-5'
+    }
+
     It 'sin desglose de cache_creation la escritura cuenta como de 5 minutos' {
       $output = Invoke-Measure (New-Worktree @('legacy') $null)
       $output | Should -Match '(?m)^\| Hilo \| claude-sonnet-5 \| 0 \| 1\.000 \| 0 \| 0 \| 0 \| 1\.000 \| sin precio \|$'

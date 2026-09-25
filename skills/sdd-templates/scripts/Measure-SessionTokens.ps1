@@ -17,6 +17,8 @@ param(
   [string]$ProjectsRoot = (Join-Path $HOME '.claude/projects')
 )
 $ErrorActionPreference = 'Stop'
+# Llamado desde Git Bash, la consola hereda una página de códigos OEM y la raya y las tildes llegan corruptas.
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $script:Categories = @('input', 'cacheWrite5m', 'cacheWrite1h', 'cacheRead', 'output')
 $script:Invariant = [System.Globalization.CultureInfo]::InvariantCulture
 
