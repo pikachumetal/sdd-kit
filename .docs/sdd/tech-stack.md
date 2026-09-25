@@ -144,6 +144,8 @@ Para el código ejecutable, Pester con fixtures versionadas (arriba). Para las s
 - **Un test de literales no usa `-BeLike`** (task 0060): en PowerShell la comilla invertida es el escape de los comodines, así que un literal con código Markdown (`` `pair` ``) no casa nunca. Se compara con `.Contains`.
 - **`tools.mjs` de la 0009 tampoco oculta la forma Git Bash de la carpeta de usuario** (`/c/Users/<usuario>/`, task 0060), además de la de la 0053: sale en rutas de copias de seguridad de tests que escriben los sujetos. La comprobación `Select-String -SimpleMatch <usuario>` antes del commit la encontró.
 
+- **La verificación de una task Native en este repo, sin color** (tickets 0057 §4, 0060 §3 y 0063 §4, tercer reporte): `task-done` guarda la última línea de la salida, y con Pester en color queda ilegible. El comando es `NO_COLOR=1 pwsh -NoProfile -Command "Invoke-Pester -Path <…> -CI"`, y `testResults.xml`, que deja `-CI`, va en `.gitignore`.
+
 ### A/B de no-regresión (recortes, Art. I ampliado el 2026-09-07)
 
 Un recorte no se mide contra un baseline vacío sino contra la versión vigente: control = `SKILL.md` actual, tratamiento = versión recortada más sus `references/`, mismos escenarios (los de su `*-green.md`), y el corte se publica solo si el tratamiento reproduce la conducta del control en TODOS ellos. Evidencia en `tests/<skill>-ab.md`, con los cortes descartados y su motivo — el descarte es el dato caro. De la campaña de T2 (38 runs, 2026-09-07/08):

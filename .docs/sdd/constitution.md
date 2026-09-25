@@ -10,11 +10,15 @@ Para un **recorte o reestructuración de una skill existente**, el baseline vac�
 
 **La campaña se dimensiona al cambio.** Un cambio de redacción que no añade ni quita conducta (una frase, un ejemplo, una aclaración) lleva RED y GREEN con un sujeto cada uno por escenario afectado; una conducta o un paso nuevos llevan la campaña completa. **Antes de lanzarla se declara la previsión** —sujetos, minutos y coste—, y si la campaña la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead: seguir, cerrar con lo medido y dejar lo pendiente como deuda, o recortar el alcance. **La previsión cubre la campaña entera**: el RED previo a la spec y el GREEN comparten previsión y techo, que se declaran antes del primer sujeto y la spec repite en sus decisiones (task 0039). La 0040 gastó ~3,5 h, 44 sujetos y 15,29 $ en un cambio de ~30 min de texto sin que nadie avisara del coste (decisión del dev-lead, 2026-09-23).
 
+**El GREEN mide también lo que el RED ya cumplía.** Además de los fallos del RED, el GREEN cuenta como filas de control cada conducta que el RED cumplía en los pasos que la guía nueva toca o bordea (task 0067: el paso de al lado cayó de 4/4 a 1/4 y la evidencia decía «sin regresión»). Una edición de la guía después del GREEN lleva un sujeto de control por escenario afectado (task 0061).
+
 ## Art. II — La forma sigue al fallo
 
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
 - Fallo de forma (cumple pero con la forma equivocada) → receta/contrato de cómo ES el output.
 - Comportamiento condicional → predicado observable ("si existe `.docs/sdd/estimation.md`…"), nunca cláusulas de excepción.
+
+**Una excepción de la guía lleva su contraejemplo.** Si la guía dice «si no puedes X, di por qué», escribe también el motivo que NO vale, y el GREEN tiene un escenario en el que esa excepción es la salida fácil (task 0060: «es una base común» justificó partir por capas lo que debía ir en vertical, hasta que la guía dijo que las capas de una sola funcionalidad no son base común).
 
 ## Art. III — Idioma
 
