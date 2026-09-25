@@ -1,100 +1,101 @@
 <!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) — no editar a mano. Regenerar: pwsh -NoProfile -File <sdd-templates>/scripts/Build-EstimationLog.ps1 -Root <proyecto> -->
 # Estimation log (estimado vs real)
 
-| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Carpeta |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2026-07-09 | 0000 | docs | — | 3 | — | — | — | — | 20260709-073000-task-0000-flux-documents |
-| 2026-07-09 | 0000 | infra/tooling | — | 4.5 | — | — | — | — | 20260709-100000-task-0000-sdd-kit-v010 |
-| 2026-07-21 | 0000 | docs | 4 | 1.5 | 0.38 | — | — | — | 20260721-082038-task-0000-release-skills |
-| 2026-07-21 | 0000 | docs | 2.5 | 1.4 | 0.56 | — | — | — | 20260721-114445-task-0000-consult-skill |
-| 2026-07-22 | 0000 | docs | 2 | 2.1 | 1.05 | — | — | — | 20260722-103807-task-0000-carril-rama-worktree |
-| 2026-09-02 | 0000 | docs | 3 | 0.5 | 0.17 | — | — | — | 20260902-084856-task-0000-modo-lite |
-| 2026-09-02 | 0000 | patch | — | 0.3 | — | — | — | — | 20260902-153722-patch-0000-grilling-reference |
-| 2026-09-02 | 0000 | docs | 3 | 0.3 | 0.1 | — | — | — | 20260902-160308-task-0000-dependencias-declaradas |
-| 2026-09-07 | 0000 | docs | 2 | 0.5 | 0.25 | — | — | — | 20260907-151234-task-0000-alineacion-superpowers |
-| 2026-09-08 | 0000 | docs | 3.5 | 5.5 | 1.57 | — | — | — | 20260907-184057-task-0000-progressive-disclosure |
-| 2026-09-08 | 0000 | docs | 4 | 1.3 | 0.33 | — | — | — | 20260908-095857-task-0000-workflow-ejecucion |
-| 2026-09-08 | 0000 | docs | 2 | 0.4 | 0.2 | — | — | — | 20260908-135025-task-0000-entorno-por-worktree |
-| 2026-09-08 | 0000 | docs | 1.5 | 0.5 | 0.33 | — | — | — | 20260908-150513-task-0000-spec-ligera-funcional |
-| 2026-09-09 | 0000 | infra/tooling | 1 | 1.1 | 1.1 | — | — | — | 20260909-065145-task-0000-estimation-log-script |
-| 2026-09-09 | 0000 | infra/tooling | 1 | 0.7 | 0.7 | — | — | — | 20260909-100606-task-0000-skills-validation |
-| 2026-09-09 | 0000 | patch | — | 0.15 | — | — | — | — | 20260909-103518-patch-0000-estimacion-lite-label |
-| 2026-09-09 | 0000 | docs | 1.5 | 0.5 | 0.33 | — | — | — | 20260909-105650-task-0000-migracion-consumidores |
-| 2026-09-09 | 0000 | patch | — | 0.15 | — | — | — | — | 20260909-120448-patch-0000-estimation-log-residuales |
-| 2026-09-09 | 0000 | docs | 2 | 1.8 | 0.9 | — | — | — | 20260909-131802-task-0000-gates-y-reviews |
-| 2026-09-09 | 0000 | docs | 0.8 | 0.4 | 0.5 | — | — | — | 20260909-160248-task-0000-review-reforzada |
-| 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | — | — | — | 20260909-162118-task-0000-disparo-skills |
-| 2026-09-09 | 0000 | docs | 0.5 | 0.3 | 0.6 | — | — | — | 20260909-164438-task-0000-comentarios-sin-citas |
-| 2026-09-09 | 0000 | docs | 0.5 | 0.25 | 0.5 | — | — | — | 20260909-172400-task-0000-release-pequena |
-| 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | — | — | — | 20260909-173929-task-0000-tests-red-hilo |
-| 2026-09-09 | 0000 | docs | 1 | 0.9 | 0.9 | — | — | — | 20260909-180422-task-0000-reglas-de-capacidad |
-| 2026-09-09 | 0000 | docs | 0.6 | 0.4 | 0.67 | — | — | — | 20260909-194633-task-0000-changelog-cliente |
-| 2026-09-09 | 0000 | chore | 1.5 | 1 | 0.67 | — | — | — | 20260909-210515-task-0000-english-file-names |
-| 2026-09-10 | 0000 | patch | 1.5 | 1.2 | 0.8 | — | — | — | 20260910-072132-patch-0000-estimation-parser-tolerante |
-| 2026-09-20 | 0017 | patch | 0.25 | 0.2 | 0.8 | — | — | — | 20260920-192907-patch-0017-nombres-de-proyecto-en-skills |
-| 2026-09-20 | 0001 | infra/tooling | 2.5 | 0.9 | 0.36 | — | 835k | — | 20260920-202137-task-0001-task-ids |
-| 2026-09-21 | 0002 | docs | 2.5 | 1.3 | 0.52 | — | 448k | — | 20260920-220741-task-0002-sdd-feedback |
-| 2026-09-21 | 0011 | docs | 1.75 | 0.55 | 0.31 | — | 940k | — | 20260920-220930-task-0011-spec-review-lenses |
-| 2026-09-21 | 0004 | docs | 3 | 2.2 | 0.73 | — | 532k | — | 20260921-074701-task-0004-release-without-client |
-| 2026-09-21 | 0003 | docs | 4 | 3 | 0.75 | — | — | — | 20260921-081125-task-0003-cap-lifecycle |
-| 2026-09-22 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | — | 355k | 10.3 | 20260921-162213-task-0014-auto-routing |
-| 2026-09-22 | 0008 | docs | 6 | 2.6 | 0.43 | — | — | — | 20260921-162234-task-0008-control-profiles |
-| 2026-09-22 | 0013 | docs | 3 | 1.5 | 0.5 | — | — | — | 20260922-083703-task-0013-postponed-anchor |
-| 2026-09-22 | 0005 | docs | 1.5 | 0.8 | 0.53 | — | — | — | 20260922-084550-task-0005-dispatch-brief |
-| 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | — | — | — | 20260922-090037-task-0012-init-interview |
-| 2026-09-22 | 0023 | patch | 0.5 | 0.75 | 1.5 | — | — | — | 20260922-132530-patch-0023-rutas-largas |
-| 2026-09-22 | 0024 | patch | 0.25 | 0.3 | 1.2 | — | — | — | 20260922-133508-patch-0024-readme-marketplace |
-| 2026-09-22 | 0025 | docs | 2.5 | 1.3 | 0.52 | — | — | — | 20260922-133931-task-0025-scope-brake |
-| 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | — | — | — | 20260922-135640-patch-0027-script-arranque |
-| 2026-09-22 | 0028 | patch | — | 1 | — | — | — | — | 20260922-135817-patch-0028-end-release |
-| 2026-09-22 | 0020 | docs | 2 | 0.75 | 0.38 | — | — | — | 20260922-141616-task-0020-init-control-keys |
-| 2026-09-22 | 0010 | docs | 1.2 | 0.8 | 0.67 | no medido | 182k | 8.17 | 20260922-153843-task-0010-token-cost |
-| 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | — | — | — | 20260922-153902-task-0018-roadmap-closing |
-| 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | — | — | — | 20260922-154013-task-0029-release-replan |
-| 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
-| 2026-09-23 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | 20260922-211157-task-0019-init-files |
-| 2026-09-23 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | 20260922-211605-task-0021-proportional-review |
-| 2026-09-22 | 0035 | patch | — | 0.75 | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
-| 2026-09-23 | 0037 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | 20260923-070206-patch-0037-disparador-vago |
-| 2026-09-23 | 0006 | docs | 3 | 2 | 0.67 | no medido | 201k | 20.93 | 20260923-102746-task-0006-task-verification |
-| 2026-09-23 | 0038 | patch | 0.3 | 0.2 | 0.67 | — | — | — | 20260923-103947-patch-0038-specs-de-otros-worktrees |
-| 2026-09-23 | 0033 | docs | 1.5 | 1.6 | 1.07 | no medido | 153k | 12.22 | 20260923-105726-task-0033-capabilities-at-birth |
-| 2026-09-23 | 0009 | docs | 3 | 1.5 | 0.5 | no medido | 119k | 14.43 | 20260923-120510-task-0009-merge-close |
-| 2026-09-23 | 0040 | docs | 2.5 | 2.1 | 0.84 | no medido | 391k | 15.29 | 20260923-143450-task-0040-close-push |
-| 2026-09-23 | 0042 | infra/tooling | 3 | 1.6 | 0.53 | no medido | 662k | 1.43 | 20260923-145338-task-0042-merge-script |
-| 2026-09-23 | 0043 | patch | 0.5 | 0.5 | 1 | — | — | — | 20260923-173026-patch-0043-fast-pre-commit |
-| 2026-09-23 | 0016 | infra/tooling | 2.5 | 0.7 | 0.28 | no medido | 815k | no aplica | 20260923-190542-task-0016-git-env-cache-warning |
-| 2026-09-23 | 0044 | docs | 2.5 | 0.9 | 0.36 | no medido | 602k | 3.93 | 20260923-191212-task-0044-commit-per-milestone |
-| 2026-09-23 | 0046 | infra/tooling | 2 | 0.75 | 0.38 | no medido | 295k | no aplica | 20260923-195017-task-0046-estimation-stats |
-| 2026-09-23 | 0039 | docs | 2 | 0.7 | 0.35 | no medido | 596k | 4.39 | 20260923-203736-task-0039-moving-base |
-| 2026-09-23 | 0051 | patch | 0.5 | 0.6 | 1.2 | — | — | 1.18 | 20260923-212835-patch-0051-verify-gate |
-| 2026-09-24 | 0031 | infra/tooling | 1 | 0.6 | 0.6 | no medido | 292k | 4.88 | 20260923-213417-task-0031-dispatch-effort |
-| 2026-09-24 | 0053 | docs | 2 | 1.9 | 0.95 | no medido | 509k | 10.04 | 20260923-214917-task-0053-fewer-stops |
-| 2026-09-24 | 0026 | docs | 1.25 | 0.8 | 0.64 | no medido | 301k | 5.44 | 20260923-220402-task-0026-superpowers-641 |
-| 2026-09-24 | 0056 | patch | 0.5 | 0.4 | 0.8 | — | — | no aplica | 20260924-081646-patch-0056-estimation-log-close-date |
-| 2026-09-24 | 0055 | docs | 2.5 | 1.3 | 0.52 | no medido | 1178k | 5.83 | 20260924-082516-task-0055-native-default |
-| 2026-09-24 | 0059 | infra/tooling | 3 | 1.3 | 0.43 | no medido | 143k | 2.95 | 20260924-105243-task-0059-reserve-ids |
-| 2026-09-24 | 0057 | docs | 2.5 | 2.7 | 1.08 | no medido | 146k | 14.42 | 20260924-105352-task-0057-native-adapt |
-| 2026-09-25 | 0060 | docs | 1.5 | 0.8 | 0.53 | no medido | 113k | 5.95 | 20260924-204639-task-0060-testable-tasks |
-| 2026-09-25 | 0061 | docs | 2.5 | 1.1 | 0.44 | no medido | 279k | 4.01 | 20260924-220849-task-0061-local-config |
-| 2026-09-25 | 0065 | patch | 0.5 | 0.4 | 0.8 | — | — | — | 20260924-220915-patch-0065-merge-hook-rejection |
-| 2026-09-25 | 0063 | docs | 2 | 1.2 | 0.6 | no medido | 136k | 6.03 | 20260924-221103-task-0063-end-release-cut |
-| 2026-09-25 | 0066 | patch | 0.5 | 0.4 | 0.8 | — | — | — | 20260924-223521-patch-0066-estimation-log-minutes |
-| 2026-09-25 | 0067 | docs | 2.5 | 1.4 | 0.56 | no medido | 324k | 3.65 | 20260924-225643-task-0067-patch-capabilities |
-| 2026-09-25 | 0069 | patch | 0.5 | 0.8 | 1.6 | — | — | 2.71 | 20260924-231705-patch-0069-scope-brake-registries |
+| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-07-09 | 0000 | docs | — | 3 | — | — | — | — | — | 20260709-073000-task-0000-flux-documents |
+| 2026-07-09 | 0000 | infra/tooling | — | 4.5 | — | — | — | — | — | 20260709-100000-task-0000-sdd-kit-v010 |
+| 2026-07-21 | 0000 | docs | 4 | 1.5 | 0.38 | — | — | — | — | 20260721-082038-task-0000-release-skills |
+| 2026-07-21 | 0000 | docs | 2.5 | 1.4 | 0.56 | — | — | — | — | 20260721-114445-task-0000-consult-skill |
+| 2026-07-22 | 0000 | docs | 2 | 2.1 | 1.05 | — | — | — | — | 20260722-103807-task-0000-carril-rama-worktree |
+| 2026-09-02 | 0000 | docs | 3 | 0.5 | 0.17 | — | — | — | — | 20260902-084856-task-0000-modo-lite |
+| 2026-09-02 | 0000 | patch | — | 0.3 | — | — | — | — | — | 20260902-153722-patch-0000-grilling-reference |
+| 2026-09-02 | 0000 | docs | 3 | 0.3 | 0.1 | — | — | — | — | 20260902-160308-task-0000-dependencias-declaradas |
+| 2026-09-07 | 0000 | docs | 2 | 0.5 | 0.25 | — | — | — | — | 20260907-151234-task-0000-alineacion-superpowers |
+| 2026-09-08 | 0000 | docs | 3.5 | 5.5 | 1.57 | — | — | — | — | 20260907-184057-task-0000-progressive-disclosure |
+| 2026-09-08 | 0000 | docs | 4 | 1.3 | 0.33 | — | — | — | — | 20260908-095857-task-0000-workflow-ejecucion |
+| 2026-09-08 | 0000 | docs | 2 | 0.4 | 0.2 | — | — | — | — | 20260908-135025-task-0000-entorno-por-worktree |
+| 2026-09-08 | 0000 | docs | 1.5 | 0.5 | 0.33 | — | — | — | — | 20260908-150513-task-0000-spec-ligera-funcional |
+| 2026-09-09 | 0000 | infra/tooling | 1 | 1.1 | 1.1 | — | — | — | — | 20260909-065145-task-0000-estimation-log-script |
+| 2026-09-09 | 0000 | infra/tooling | 1 | 0.7 | 0.7 | — | — | — | — | 20260909-100606-task-0000-skills-validation |
+| 2026-09-09 | 0000 | patch | — | 0.15 | — | — | — | — | — | 20260909-103518-patch-0000-estimacion-lite-label |
+| 2026-09-09 | 0000 | docs | 1.5 | 0.5 | 0.33 | — | — | — | — | 20260909-105650-task-0000-migracion-consumidores |
+| 2026-09-09 | 0000 | patch | — | 0.15 | — | — | — | — | — | 20260909-120448-patch-0000-estimation-log-residuales |
+| 2026-09-09 | 0000 | docs | 2 | 1.8 | 0.9 | — | — | — | — | 20260909-131802-task-0000-gates-y-reviews |
+| 2026-09-09 | 0000 | docs | 0.8 | 0.4 | 0.5 | — | — | — | — | 20260909-160248-task-0000-review-reforzada |
+| 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | — | — | — | — | 20260909-162118-task-0000-disparo-skills |
+| 2026-09-09 | 0000 | docs | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260909-164438-task-0000-comentarios-sin-citas |
+| 2026-09-09 | 0000 | docs | 0.5 | 0.25 | 0.5 | — | — | — | — | 20260909-172400-task-0000-release-pequena |
+| 2026-09-09 | 0000 | docs | 0.6 | 0.35 | 0.58 | — | — | — | — | 20260909-173929-task-0000-tests-red-hilo |
+| 2026-09-09 | 0000 | docs | 1 | 0.9 | 0.9 | — | — | — | — | 20260909-180422-task-0000-reglas-de-capacidad |
+| 2026-09-09 | 0000 | docs | 0.6 | 0.4 | 0.67 | — | — | — | — | 20260909-194633-task-0000-changelog-cliente |
+| 2026-09-09 | 0000 | chore | 1.5 | 1 | 0.67 | — | — | — | — | 20260909-210515-task-0000-english-file-names |
+| 2026-09-10 | 0000 | patch | 1.5 | 1.2 | 0.8 | — | — | — | — | 20260910-072132-patch-0000-estimation-parser-tolerante |
+| 2026-09-20 | 0017 | patch | 0.25 | 0.2 | 0.8 | — | — | — | — | 20260920-192907-patch-0017-nombres-de-proyecto-en-skills |
+| 2026-09-20 | 0001 | infra/tooling | 2.5 | 0.9 | 0.36 | — | 835k | — | — | 20260920-202137-task-0001-task-ids |
+| 2026-09-21 | 0002 | docs | 2.5 | 1.3 | 0.52 | — | 448k | — | — | 20260920-220741-task-0002-sdd-feedback |
+| 2026-09-21 | 0011 | docs | 1.75 | 0.55 | 0.31 | — | 940k | — | — | 20260920-220930-task-0011-spec-review-lenses |
+| 2026-09-21 | 0004 | docs | 3 | 2.2 | 0.73 | — | 532k | — | — | 20260921-074701-task-0004-release-without-client |
+| 2026-09-21 | 0003 | docs | 4 | 3 | 0.75 | — | — | — | — | 20260921-081125-task-0003-cap-lifecycle |
+| 2026-09-22 | 0014 | infra/tooling | 3 | 3.2 | 1.07 | — | 355k | 10.3 | — | 20260921-162213-task-0014-auto-routing |
+| 2026-09-22 | 0008 | docs | 6 | 2.6 | 0.43 | — | — | — | — | 20260921-162234-task-0008-control-profiles |
+| 2026-09-22 | 0013 | docs | 3 | 1.5 | 0.5 | — | — | — | — | 20260922-083703-task-0013-postponed-anchor |
+| 2026-09-22 | 0005 | docs | 1.5 | 0.8 | 0.53 | — | — | — | — | 20260922-084550-task-0005-dispatch-brief |
+| 2026-09-22 | 0012 | docs | 2 | 2.1 | 1.05 | — | — | — | — | 20260922-090037-task-0012-init-interview |
+| 2026-09-22 | 0023 | patch | 0.5 | 0.75 | 1.5 | — | — | — | — | 20260922-132530-patch-0023-rutas-largas |
+| 2026-09-22 | 0024 | patch | 0.25 | 0.3 | 1.2 | — | — | — | — | 20260922-133508-patch-0024-readme-marketplace |
+| 2026-09-22 | 0025 | docs | 2.5 | 1.3 | 0.52 | — | — | — | — | 20260922-133931-task-0025-scope-brake |
+| 2026-09-22 | 0027 | patch | 0.25 | 0.4 | 1.6 | — | — | — | — | 20260922-135640-patch-0027-script-arranque |
+| 2026-09-22 | 0028 | patch | — | 1 | — | — | — | — | — | 20260922-135817-patch-0028-end-release |
+| 2026-09-22 | 0020 | docs | 2 | 0.75 | 0.38 | — | — | — | — | 20260922-141616-task-0020-init-control-keys |
+| 2026-09-22 | 0010 | docs | 1.2 | 0.8 | 0.67 | no medido | 182k | 8.17 | — | 20260922-153843-task-0010-token-cost |
+| 2026-09-22 | 0018 | docs | 1.5 | 0.7 | 0.47 | — | — | — | — | 20260922-153902-task-0018-roadmap-closing |
+| 2026-09-22 | 0029 | docs | 1.5 | 1.4 | 0.93 | — | — | — | — | 20260922-154013-task-0029-release-replan |
+| 2026-09-22 | 0030 | patch | 0.3 | 0.4 | 1.33 | — | — | — | — | 20260922-154302-patch-0030-pre-merge-commit |
+| 2026-09-23 | 0019 | docs | 3 | 0.75 | 0.25 | no medido | 316k | 10.01 | — | 20260922-211157-task-0019-init-files |
+| 2026-09-23 | 0021 | docs | 2 | 0.75 | 0.38 | no medido | 142k | 5.15 | — | 20260922-211605-task-0021-proportional-review |
+| 2026-09-22 | 0035 | patch | — | 0.75 | — | — | — | — | — | 20260922-220001-patch-0035-ids-de-otras-ramas |
+| 2026-09-23 | 0037 | patch | 0.5 | 0.6 | 1.2 | — | — | 6.1 | — | 20260923-070206-patch-0037-disparador-vago |
+| 2026-09-23 | 0006 | docs | 3 | 2 | 0.67 | no medido | 201k | 20.93 | — | 20260923-102746-task-0006-task-verification |
+| 2026-09-23 | 0038 | patch | 0.3 | 0.2 | 0.67 | — | — | — | — | 20260923-103947-patch-0038-specs-de-otros-worktrees |
+| 2026-09-23 | 0033 | docs | 1.5 | 1.6 | 1.07 | no medido | 153k | 12.22 | — | 20260923-105726-task-0033-capabilities-at-birth |
+| 2026-09-23 | 0009 | docs | 3 | 1.5 | 0.5 | no medido | 119k | 14.43 | — | 20260923-120510-task-0009-merge-close |
+| 2026-09-23 | 0040 | docs | 2.5 | 2.1 | 0.84 | no medido | 391k | 15.29 | — | 20260923-143450-task-0040-close-push |
+| 2026-09-23 | 0042 | infra/tooling | 3 | 1.6 | 0.53 | no medido | 662k | 1.43 | — | 20260923-145338-task-0042-merge-script |
+| 2026-09-23 | 0043 | patch | 0.5 | 0.5 | 1 | — | — | — | — | 20260923-173026-patch-0043-fast-pre-commit |
+| 2026-09-23 | 0016 | infra/tooling | 2.5 | 0.7 | 0.28 | no medido | 815k | no aplica | — | 20260923-190542-task-0016-git-env-cache-warning |
+| 2026-09-23 | 0044 | docs | 2.5 | 0.9 | 0.36 | no medido | 602k | 3.93 | — | 20260923-191212-task-0044-commit-per-milestone |
+| 2026-09-23 | 0046 | infra/tooling | 2 | 0.75 | 0.38 | no medido | 295k | no aplica | — | 20260923-195017-task-0046-estimation-stats |
+| 2026-09-23 | 0039 | docs | 2 | 0.7 | 0.35 | no medido | 596k | 4.39 | — | 20260923-203736-task-0039-moving-base |
+| 2026-09-23 | 0051 | patch | 0.5 | 0.6 | 1.2 | — | — | 1.18 | — | 20260923-212835-patch-0051-verify-gate |
+| 2026-09-24 | 0031 | infra/tooling | 1 | 0.6 | 0.6 | no medido | 292k | 4.88 | — | 20260923-213417-task-0031-dispatch-effort |
+| 2026-09-24 | 0053 | docs | 2 | 1.9 | 0.95 | no medido | 509k | 10.04 | — | 20260923-214917-task-0053-fewer-stops |
+| 2026-09-24 | 0026 | docs | 1.25 | 0.8 | 0.64 | no medido | 301k | 5.44 | — | 20260923-220402-task-0026-superpowers-641 |
+| 2026-09-24 | 0056 | patch | 0.5 | 0.4 | 0.8 | — | — | no aplica | — | 20260924-081646-patch-0056-estimation-log-close-date |
+| 2026-09-24 | 0055 | docs | 2.5 | 1.3 | 0.52 | no medido | 1178k | 5.83 | — | 20260924-082516-task-0055-native-default |
+| 2026-09-24 | 0059 | infra/tooling | 3 | 1.3 | 0.43 | no medido | 143k | 2.95 | — | 20260924-105243-task-0059-reserve-ids |
+| 2026-09-24 | 0057 | docs | 2.5 | 2.7 | 1.08 | no medido | 146k | 14.42 | — | 20260924-105352-task-0057-native-adapt |
+| 2026-09-25 | 0060 | docs | 1.5 | 0.8 | 0.53 | no medido | 113k | 5.95 | — | 20260924-204639-task-0060-testable-tasks |
+| 2026-09-25 | 0061 | docs | 2.5 | 1.1 | 0.44 | no medido | 279k | 4.01 | — | 20260924-220849-task-0061-local-config |
+| 2026-09-25 | 0065 | patch | 0.5 | 0.4 | 0.8 | — | — | — | — | 20260924-220915-patch-0065-merge-hook-rejection |
+| 2026-09-25 | 0063 | docs | 2 | 1.2 | 0.6 | no medido | 136k | 6.03 | — | 20260924-221103-task-0063-end-release-cut |
+| 2026-09-25 | 0066 | patch | 0.5 | 0.4 | 0.8 | — | — | — | — | 20260924-223521-patch-0066-estimation-log-minutes |
+| 2026-09-25 | 0067 | docs | 2.5 | 1.4 | 0.56 | no medido | 324k | 3.65 | — | 20260924-225643-task-0067-patch-capabilities |
+| 2026-09-25 | 0068 | infra/tooling | 3.5 | 1 | 0.29 | 30423k | 2184k | 1.06 | 14.81 | 20260924-230945-task-0068-session-tokens |
+| 2026-09-25 | 0069 | patch | 0.5 | 0.8 | 1.6 | — | — | 2.71 | — | 20260924-231705-patch-0069-scope-brake-registries |
 
-**Factor de calibración** (ratio mediano real/estimado, 72 artefactos): **0.6** · media 0.69
+**Factor de calibración** (ratio mediano real/estimado, 73 artefactos): **0.6** · media 0.68
 
 - p25–p75: 0.43–0.9
-- p80: 0.99 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p80: 0.98 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 29 % · sobreestimadas: 64 % · infraestimadas: 7 %
-- Error absoluto (h): media 0.84 · mediana 0.6
+- Error absoluto (h): media 0.86 · mediana 0.7
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.58
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 21 | 29 % |
-| 0.5–0.8 | 27 | 38 % |
+| <0.5 | 22 | 30 % |
+| 0.5–0.8 | 27 | 37 % |
 | 0.8–1.25 | 19 | 26 % |
 | 1.25–2 | 5 | 7 % |
 | ≥2 | 0 | 0 % |
@@ -103,17 +104,17 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 48 | 0.53 | 0.38–0.68 |
-| infra/tooling | 9 | 0.53 | 0.38–0.7 |
+| infra/tooling | 10 | 0.48 | 0.36–0.68 |
 | patch | 14 | 1.1 | 0.8–1.3 |
 
-| Release | Artefactos | Horas reales | Mediana | Sujetos ($) |
-| --- | --- | --- | --- | --- |
-| 0.1.0 | 2 | 7.5 | — | — |
-| 0.3.0 | 2 | 2.9 | 0.47 | — |
-| 0.4.0 | 1 | 2.1 | 1.05 | — |
-| 0.5.0 | 3 | 1.1 | 0.13 | — |
-| 1.0.0 | 19 | 16.55 | 0.58 | — |
-| 1.1.0 | 3 | 2.3 | 0.8 | — |
-| sin publicar | 49 | 56.15 | 0.64 | 179.44 |
+| Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
+| --- | --- | --- | --- | --- | --- |
+| 0.1.0 | 2 | 7.5 | — | — | — |
+| 0.3.0 | 2 | 2.9 | 0.47 | — | — |
+| 0.4.0 | 1 | 2.1 | 1.05 | — | — |
+| 0.5.0 | 3 | 1.1 | 0.13 | — | — |
+| 1.0.0 | 19 | 16.55 | 0.58 | — | — |
+| 1.1.0 | 3 | 2.3 | 0.8 | — | — |
+| sin publicar | 50 | 57.15 | 0.62 | 180.5 | 14.81 |
 
 > Ver `estimation.md`.
