@@ -84,6 +84,7 @@
 | 2026-09-25 | 0058 | docs | 2 | 1.3 | 0.65 | no medido | 103k | 8.28 | — | 20260924-225741-task-0058-session-model-policy |
 | 2026-09-25 | 0068 | infra/tooling | 3.5 | 1 | 0.29 | 30423k | 2184k | 1.06 | 14.81 | 20260924-230945-task-0068-session-tokens |
 | 2026-09-25 | 0069 | patch | 0.5 | 0.8 | 1.6 | — | — | 2.71 | — | 20260924-231705-patch-0069-scope-brake-registries |
+| 2026-09-25 | 0071 | patch | — | 0.25 | — | — | — | — | — | 20260925-080508-patch-0071-roadmap-structure-tests |
 | 2026-09-25 | 0072 | patch | 0.5 | 0.42 | 0.83 | — | — | — | — | 20260925-080650-patch-0072-subject-output-privacy |
 
 **Factor de calibración** (ratio mediano real/estimado, 75 artefactos): **0.6** · media 0.68
@@ -117,6 +118,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 52 | 58.87 | 0.65 | 188.78 | 14.81 |
+| sin publicar | 53 | 59.12 | 0.65 | 188.78 | 14.81 |
 
 > Ver `estimation.md`.

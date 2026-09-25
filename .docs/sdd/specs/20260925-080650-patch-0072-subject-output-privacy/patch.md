@@ -46,6 +46,8 @@ Tres commits, por decisión del dev-lead. El orden pedido era lanzador, test y s
 | 6 | GREEN del test del repo y suite del pre-commit | ✅ 4/4; 632 pasan, 0 fallan |
 | 7 | El primer GREEN marcaba `C:\\Users\\<user>` (limpio a mano en la 0040) | Falso positivo por backtracking de `\\{1,2}`: el patrón exige que tras el separador no venga otro ni `<` |
 
+Validación diferida: 2026-09-25 · «pruebas diferidas a uso» · disparador: la próxima campaña de sujetos que lance `subject.sh` de la 0039 o un lanzador que llame a `tools.mjs`, a cargo del dev-lead. Llegó después del merge (`b603883`): `sdd-end-patch` no tiene parada de validación (ticket del patch 0072 §1).
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 30 min
