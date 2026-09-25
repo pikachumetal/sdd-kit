@@ -80,3 +80,5 @@ En el GREEN, con el nombre `sdd-plan`, los dos p10 entraban por `sdd-start-task`
 | nada arrancado; la 0021 cerrada no se reabre | ✅ | ✅ | ✅ propone una fila, sin propuesta, y espera |
 
 **Campaña entera**: 53 sujetos, 14.47 $, con el techo de sujetos ampliado a 53 por el dev-lead y el de dinero (25 $) sin tocar.
+
+**Control de una petición de hacer tras el REFACTOR** (decidido por el dev-lead, techo de 53 a 54 sujetos): p7-3, «arranca la task 0013» sobre el kit de `e68cd50`, se queda en `sdd-start-task` ✅ y su primera pregunta señala que la 0013 va tras la 0012, pendiente ✅. La quinta salida del paso 2 no desvía una petición de hacer. **Campaña cerrada**: 54 sujetos, 14,70 $.
