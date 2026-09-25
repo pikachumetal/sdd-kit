@@ -99,6 +99,27 @@ Describe 'Carril patch' {
     Get-SkillStep 'sdd-end-patch' 2 | Should -Match 'más de un commit[^\n]*júntalo'
   }
 
+  It 'el paso 0 de sdd-end-patch para con la validación antes del merge, salvo en unattended (patch 0075)' {
+    $step = Get-SkillStep 'sdd-end-patch' 0
+    $step | Should -Match 'Validación\*\* — [^\n]*antes del merge'
+    $step | Should -Match 'AskUserQuestion`, sola en su turno'
+    $step | Should -Match '«sí» sin detalle'
+    $step | Should -Match 'Validación diferida: <fecha>'
+    $step | Should -Match '🧪 validación diferida a <disparador> — '
+    $step | Should -Match 'No funciona'
+    $step | Should -Match 'En `unattended` no para'
+  }
+
+  It 'la tabla de gates aplica la validación también al cierre de patch' {
+    Get-KitFile 'skills/sdd-start-task/references/control-profiles.md' | Should -Match '(?m)^\| Validación \(cierre de task y de patch\) \| para \| para \|'
+  }
+
+  It 'commit-milestones deja mandar la forma de commits del dev-lead y fija dónde va un test en RED (patch 0075)' {
+    $recipe = Get-KitFile 'skills/sdd-start-task/references/commit-milestones.md'
+    $recipe | Should -Match 'manda la suya sobre «un solo commit»'
+    $recipe | Should -Match 'test en RED va en el commit de su arreglo o en uno posterior'
+  }
+
   It 'la plantilla del patch apunta el hash del fix' {
     Get-KitFile 'skills/sdd-templates/templates/patch-template.md' | Should -Match 'commit: <hash>\s+# hash del commit del fix'
   }

@@ -75,12 +75,12 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND si alguno coincide, lo trata como freno de alcance: en `pair` y `delegate` nombra los ficheros y los commits que los tocan y para; en `unattended` sigue y lo registra como enmienda sin aprobar
 
 ### La validación puede diferirse con condiciones
-- GIVEN una task verificada por el agente y un usuario que, presente y con el trabajo delante, dice que probará más tarde; o una task en `unattended`
+- GIVEN una task o un patch verificados por el agente y un usuario que, presente y con el trabajo delante, dice que probará más tarde; o una task o un patch en `unattended`
 - WHEN el agente cierra
-- THEN el walkthrough registra `Validación diferida: <fecha> · «<frase literal>» · disparador: <task, release o uso con dueño>` y el roadmap marca la fila `🧪 validación diferida a <disparador>`, no ✅
-- AND sin frase del usuario (salvo en `unattended`, cuyo disparador es el smoke de la release) no hay diferido: la task sigue esperando la validación
+- THEN el walkthrough registra `Validación diferida: <fecha> · «<frase literal>» · disparador: <task, release o uso con dueño>` y el roadmap marca la fila `🧪 validación diferida a <disparador>`, no ✅; en un patch, la línea va en `patch.md` §4, debajo de la tabla, y la fila de la tabla de patches empieza por `🧪 validación diferida a <disparador> — `
+- AND sin frase del usuario (salvo en `unattended`, cuyo disparador es el smoke de la release) no hay diferido: la task o el patch siguen esperando la validación
 - AND con la frase y sin disparador, o con uno vago («diferida», «se prueba en uso»), el agente no vuelve a preguntar: concreta el uso más próximo, con quien difiere como dueño (`disparador: la primera exportación del informe mensual, a cargo del dev-lead`), y lo dice en el mensaje de cierre para que lo corrija
-- AND cuando el usuario valida, el agente añade una adenda fechada con **solo lo que él dice que probó** y pasa la fila a ✅
+- AND cuando el usuario valida, el agente añade una adenda fechada con **solo lo que él dice que probó** (en un patch, en `patch.md` §4) y pasa la fila a ✅ (en un patch, quita el prefijo 🧪)
 
 ### En `unattended`, lo que falta aparca la task
 - GIVEN una task en `unattended`
@@ -89,10 +89,11 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND al terminar la release entrega un solo informe: tasks cerradas, decisiones, enmiendas sin aprobar y tasks aparcadas
 
 ### El merge a develop sigue la política declarada
-- GIVEN una task validada (o diferida) o un patch listo para su paso de rama, y un bloque `merge` completo (`into`, `noFf`, `removeWorktree`) en `sdd-kit.json`
+- GIVEN una task o un patch validados (o diferidos) y un bloque `merge` completo (`into`, `noFf`, `removeWorktree`) en `sdd-kit.json`
 - WHEN el agente llega al paso de rama del cierre (paso 10 de `sdd-end-task`, paso 6 de `sdd-end-patch`)
 - THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
 - AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta
+- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, el paso 0 de `sdd-end-patch` para con el smoke y la pregunta de validación antes de tocar nada
 
 ### Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás
 - GIVEN un repo en el que `git worktree list` no muestra la rama destino sacada en ningún worktree

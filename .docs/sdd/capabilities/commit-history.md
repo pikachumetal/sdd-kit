@@ -31,6 +31,7 @@ La historia de la rama de una task o de un patch: qué commits quedan al fusiona
 - THEN la rama tiene dos commits desde el `merge-base`: el fix (código, tests y `patch.md`) y el cierre (`patch.md` con el hash del fix y el tiempo, más changelog, roadmap y estimation-log si existen)
 - AND el `commit:` de `patch.md` es el hash del commit del fix
 - AND si el cierre necesita un merge de sincronización, va después del commit de cierre y es el último commit de la rama
+- AND si el dev-lead fija otra forma de commits, manda la suya y el fix no se junta; un test en RED va en el commit de su arreglo o en uno posterior, y el RED queda registrado en `patch.md` §4
 
 ### No se junta a través de un merge ni lo ya publicado
 - GIVEN el rango de un hito que contiene un commit de merge, o un commit ya publicado en un remoto

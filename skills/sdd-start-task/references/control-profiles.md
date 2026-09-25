@@ -53,7 +53,7 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
 | Freno de alcance (3.er fix, salida observable, fila o fichero de la task cambiados en la base) | para | para | opción conservadora, enmienda sin aprobar |
 | Salida del plan | ruling + «Me salí del plan en…» | ruling + «Me salí del plan en…» | ruling + informe |
-| Validación | para | para | diferida al smoke de la release (🧪) |
+| Validación (cierre de task y de patch) | para | para | diferida al smoke de la release (🧪) |
 | Merge a develop (cierre de task y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
 | Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
 | Merge a main, tag, cualquier otro push, PR, publicar | persona | persona | persona |
@@ -121,6 +121,7 @@ Diferir cuenta solo con las tres condiciones a la vez:
 Con las tres, el agente no se niega a cerrar ni inventa un estado nuevo — la forma es esta, y solo esta:
 - Walkthrough: `Validación diferida: <fecha> · «<frase literal>» · disparador: <task, release o uso con dueño>`
 - Roadmap: `🧪 validación diferida a <disparador>` (no ✅)
+- Patch: la misma línea en `patch.md` §4, debajo de la tabla, y la fila de la tabla de patches del roadmap empieza por `🧪 validación diferida a <disparador> — `
 
 Si el disparador falta o es vago («diferida», «se prueba en uso») y se cumplen las dos primeras, no vuelvas a preguntar: concreta tú el uso más próximo, con quien difiere como dueño, y escríbelo así: `disparador: <uso más próximo>, a cargo de <quien difiere>` (p. ej., «la primera exportación del informe mensual, a cargo del dev-lead»). Dilo en el mensaje de cierre para que lo corrija. Con eso la tercera condición queda cumplida.
 
@@ -128,7 +129,7 @@ Sin las dos primeras no hay diferido: la task sigue EN ESPERA con el smoke docum
 
 En `unattended` el disparador es siempre el smoke de la release: no hacen falta las tres condiciones, el perfil ya lo fija.
 
-Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el walkthrough con solo lo que él dice que probó, y pasa la fila a ✅.
+Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el walkthrough (en un patch, en `patch.md` §4) con solo lo que él dice que probó, y pasa la fila a ✅ (en un patch, quita el prefijo 🧪).
 
 ## unattended
 

@@ -13,6 +13,8 @@ La rama de una task cuenta sus hitos: **apertura**, **un commit por task del pla
 | Cierre (patch) | `patch.md` con hash y tiempo, changelog, roadmap, estimation-log | antes del merge | el commit del fix |
 | Merge de sincronización | la rama destino integrada en la feature, con los registros resueltos | no se junta | — |
 
+Si el dev-lead fija otra forma de commits («tres commits en orden»), manda la suya sobre «un solo commit» y el hito no se junta. Un test en RED va en el commit de su arreglo o en uno posterior, nunca antes: un `pre-commit` que corre la suite lo rechaza, y sin él la rama llevaría un commit en rojo. El RED queda registrado en `patch.md` §4 (en una task, en su evidencia). Sin `--no-verify` (ticket del patch 0072 §2).
+
 El merge de sincronización solo lo pide la [receta del merge](../../sdd-end-task/references/merge-recipe.md#conflicto-solo-en-los-registros); va después del commit de cierre y es el último commit de la rama, así que la historia queda en 2 + N (2 en un patch) más ese merge, y el cierre no se vuelve a juntar.
 
 ## Receta
