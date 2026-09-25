@@ -1,0 +1,191 @@
+## HEAD antes: 2d124cb · después: b0e263e · rama: feature/0020
+## status
+## feature/0020
+## git log
+b0e263e docs(0020): cierre de la task 0020
+2d124cb docs(0020): bloque Capacidades en la spec
+556a848 chore(sdd): capacidades sin historial
+d3b2de1 merge: develop en feature/0020
+6bb0f8e merge: develop en feature/0020
+80a31f5 docs(0014): cierre del patch 0014
+0a91114 docs(0014): patch.md del fix de libres
+1378db9 merge: feature/0014 en develop
+20b059a fix(0014): libres deja aparte las salas en mantenimiento
+2526aa9 feat(0020): libres en orden alfabético
+6b70fff docs(sdd): filas 0020 y 0021
+c310f13 feat: base de reservas de salas
+## ficheros tocados tras la base (commits y árbol)
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/changelog.md
+.docs/sdd/roadmap.md
+.docs/sdd/specs/20260925-070000-task-0020-libres-orden/spec.md
+.docs/sdd/specs/20260925-070000-task-0020-libres-orden/walkthrough.md
+## diff de capabilities/ frente a la base
+diff --git a/.docs/sdd/capabilities/bookings.md b/.docs/sdd/capabilities/bookings.md
+index 29fdfaa..4b31088 100644
+--- a/.docs/sdd/capabilities/bookings.md
++++ b/.docs/sdd/capabilities/bookings.md
+@@ -11,6 +11,7 @@
+ - GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12 y Oeste en mantenimiento
+ - WHEN `salas libres 10-12`
+ - THEN lista `Sur`
++- AND las salas libres salen una por línea y en orden alfabético
+ - AND lista aparte, al final, `Oeste (en mantenimiento)`
+ 
+ ## Reglas de la capacidad
+## validador sobre el estado final
+rooms.md: «Poner una sala en mantenimiento» no tiene escenario completo (falta - THEN)
+## 20260925-070000-task-0020-libres-orden/spec.md
+---
+id: 20260925-070000-task-0020-libres-orden
+task: 0020
+title: libres en orden alfabético
+mode: lite
+status: approved
+created: 2026-09-25
+author: agente
+approvers:
+  - role: dev-lead
+    name: dev-lead
+    approved_at: 2026-09-25
+---
+
+# Spec — libres en orden alfabético
+
+## Capacidades
+
+- Modificadas: `bookings` — cambia «Consultar salas libres»
+
+## Decisiones que he tomado yo — valida estas
+
+1. Orden alfabético simple, sin distinguir tildes: solo hay tres salas.
+
+## Intent
+
+Soporte pide que `salas libres` salga en orden alfabético: hoy sale en el orden de alta de las salas.
+
+## Scope
+
+- Entra: el orden de la salida de `salas libres`.
+- No entra: el formato de cada línea.
+
+## Approach
+
+Ordenar la lista antes de unirla.
+
+## Delta de comportamiento
+
+### Capacidad: `bookings`
+
+**MODIFIED — Consultar salas libres**
+- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12 y Oeste en mantenimiento
+- WHEN `salas libres 10-12`
+- THEN lista `Sur`
+- AND las salas libres salen una por línea y en orden alfabético
+- AND lista aparte, al final, `Oeste (en mantenimiento)`
+
+### Estimación y esfuerzo
+
+- Tipo: backend
+- Estimación de implementación: 0,5h
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | dev-lead | 2026-09-25 | aprobada |
+## 20260925-070000-task-0020-libres-orden/walkthrough.md
+---
+id: 20260925-070000-task-0020-libres-orden
+task: 0020
+title: Walkthrough — libres en orden alfabético
+spec: ./spec.md
+status: done
+created: 2026-09-25
+---
+
+# Walkthrough — libres en orden alfabético
+
+## 1. Cambios realizados
+
+- `src/slots.js`: `free` ordena las salas libres con `.sort()` antes de unirlas (commit `2526aa9`).
+- `tests/slots.test.js`: caso «libres sale en orden alfabético».
+- Cierre: delta fusionado en `capabilities/bookings.md`, changelog y roadmap.
+
+## 2. Tiempo y coste: estimado vs real
+
+- Tipo: backend
+- Estimación de implementación: 0,5 h
+- Esfuerzo real: 0,6 h (dato dado por el dev-lead)
+- Desviación: +0,1 h (+20 %)
+- Tokens y coste: no medidos (el proyecto no tiene `estimation.md`, el módulo de estimación no está activo)
+
+## 3. Desviaciones del plan
+
+- Modo `lite`: sin `plan.md` ni `tasks.md`.
+
+### Decisiones tomadas sin el dev-lead
+
+- Alinear el delta de la spec con `develop` antes de fusionarlo en `bookings` — el escenario aprobado («lista `Oeste` y `Sur`») contradecía el patch 0014, ya integrado (Oeste en mantenimiento va aparte, al final); fusionarlo tal cual habría borrado esa regla de la capacidad. El requisito conserva lo del 0014 y añade el orden alfabético — si está mal, `bookings` pierde o mantiene de más una línea de «Consultar salas libres».
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- `node --test` en la rama tras integrar `develop`: 3 tests, 3 pasan, 0 fallan (ejecutado por mí en el cierre).
+
+### 4.2 Smoke / tests
+
+- Validado por el dev-lead: 2026-09-25 · «he probado `salas libres 10-12` y las salas salen en orden alfabético; funciona».
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `free([], '10-12')` → `Norte\nSur\nOeste (en mantenimiento)` | pasa (agente) |
+| 2 | `salas libres 10-12` en el CLI, orden alfabético | funciona (dev-lead) |
+
+### 4.3 Residuales / deuda generada
+
+- Con Oeste en mantenimiento, las salas libres ya salen ordenadas por el orden de alta (Norte, Sur): ni el test ni la prueba manual distinguen el `.sort()` de no ordenar. Se ejercitaría con una sala libre cuyo alta vaya antes en la lista que otra alfabéticamente anterior.
+
+## 5. Aprendizajes
+
+- Delta de comportamiento (orden de `libres`) → `capabilities/bookings.md`, «Consultar salas libres».
+- Un delta escrito antes de integrar `develop` puede pisar un cambio ajeno: se revisó contra la capacidad vigente antes de fusionar → este walkthrough (sin `constitution.md` ni `architecture.md` donde volcarlo; no se crean sin un aprendizaje estructural).
+
+## 6. Adendas
+## 20260925-080000-patch-0014-libres-mantenimiento/patch.md
+---
+id: 20260925-080000-patch-0014-libres-mantenimiento
+task: 0014
+title: Patch — `libres` ofrece salas en mantenimiento
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0014
+commit: <hash>
+---
+
+# Patch 0014 — `libres` ofrece salas en mantenimiento
+
+## 1. Síntoma
+
+Soporte: `salas libres 10-12` ofreció Oeste, que está en mantenimiento, y un usuario la reservó.
+
+## 2. Causa raíz
+
+`free` solo miraba las reservas; no leía el campo `maintenance` de `ROOMS`.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/slots.test.js`
+- **Cambio**: `free` excluye las salas en mantenimiento de la lista y las añade al final como `<sala> (en mantenimiento)`.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `salas libres 10-12` con Norte reservada → `Sur` y `Oeste (en mantenimiento)` | ✅ verificado por el agente: `node --test` 2/2 verde |
+
+## 5. Tiempo (ligero)
+
+- Real: 0,3h

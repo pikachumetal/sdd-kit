@@ -66,9 +66,10 @@ Describe 'Volcado inicial en greenfield' {
     $script:ClosingStep | Should -Match 'mismo gate que los documentos de anclaje'
   }
 
-  It 'el cierre y la plantilla llevan la línea de historial init' {
-    $script:ClosingStep.Contains($script:InitLine) | Should -BeTrue
-    $script:CapabilityTemplate.Contains($script:InitLine) | Should -BeTrue
+  It 'ni el volcado ni la plantilla llevan línea de historial' {
+    $script:ClosingStep.Contains($script:InitLine) | Should -BeFalse
+    $script:ClosingStep | Should -Not -Match 'Historial'
+    $script:CapabilityTemplate.Contains($script:InitLine) | Should -BeFalse
   }
 
   It 'la regla 4 de la plantilla dice que las init no vuelcan, salvo la excepción de greenfield' {
