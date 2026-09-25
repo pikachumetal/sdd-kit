@@ -1,17 +1,17 @@
 ---
-name: sdd-plan
+name: sdd-roadmap
 description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "prepara la release N", "qué entra en la siguiente entrega". No para hacer el trabajo ya (eso es sdd-start-task o sdd-start-patch) ni para cerrar una release (eso es sdd-end-release).
 ---
 
-# sdd-plan
+# sdd-roadmap
 
 ## Overview
 
-El kit tiene tres verbos: **planificar** (`sdd-plan`) → **hacer** (`sdd-start-task`, `sdd-start-patch`) → **entregar** (`sdd-end-release`). Esta skill es la única puerta de entrada al roadmap: el usuario trae algo, la skill reconoce qué es y deja el roadmap listo para que otro lo arranque, con la definición de lo grande en una propuesta (`proposal.md`) que no se reescribe.
+El kit tiene tres verbos: **planificar** (`sdd-roadmap`) → **hacer** (`sdd-start-task`, `sdd-start-patch`) → **entregar** (`sdd-end-release`). Esta skill es la única puerta de entrada al roadmap: el usuario trae algo, la skill reconoce qué es y deja el roadmap listo para que otro lo arranque, con la definición de lo grande en una propuesta (`proposal.md`) que no se reescribe.
 
 **Principio central: proponer no es decidir.** Traes los cambios ordenados con tu recomendación; qué entra, en qué orden y qué se descarta lo decide el usuario.
 
-**`sdd-plan` no arranca nada: ni rama, ni carpeta de task, ni spec, ni código.** Termina en el roadmap, y en `proposal.md` si toca. El mensaje final dice qué fila va primero y con qué skill se arranca.
+**`sdd-roadmap` no arranca nada: ni rama, ni carpeta de task, ni spec, ni código.** Termina en el roadmap, y en `proposal.md` si toca. El mensaje final dice qué fila va primero y con qué skill se arranca.
 
 ## Qué entrada es (lo decides tú, sin preguntarlo)
 
@@ -95,13 +95,13 @@ Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog»
 
 | Racionalización | Realidad |
 | --- | --- |
-| «Cada task lleva su spec y plan al arrancarla; las decisiones comunes las dejo en un bloque del roadmap» | El roadmap es el índice que leen todas las skills. Las reglas y su porqué van a `proposal.md`, con ejemplos con datos: 2 de 2 sujetos del RED las dejaron sueltas en el roadmap y sin datos (`tests/sdd-plan-red.md`, p1). |
+| «Cada task lleva su spec y plan al arrancarla; las decisiones comunes las dejo en un bloque del roadmap» | El roadmap es el índice que leen todas las skills. Las reglas y su porqué van a `proposal.md`, con ejemplos con datos: 2 de 2 sujetos del RED las dejaron sueltas en el roadmap y sin datos (`tests/sdd-roadmap-red.md`, p1). |
 | «El item de Azure y la fila son lo mismo; dejo una sola fila» | Borrar o sustituir una fila es una decisión del usuario, no una limpieza: 2 de 2 sujetos sustituyeron la 0013 por la 4514 sin preguntar (p3). Pregunta el duplicado. |
 | «Es una épica; ya se trocea al arrancarla» | Al arrancarla nadie mira el roadmap entero. La partición se propone ahora, para que el PM cree los hijos (p3, 2 de 2). |
 | «Las notas ya están reflejadas en las filas» | Las filas dicen qué hacer, no qué dijo el cliente. Sin acta, la siguiente discusión no tiene de dónde leer (p4, 2 de 2 sin acta). |
 | «La 0012 está descartada; la quito del roadmap» | Un descarte es `⏸️ aparcada: descartada por <quién>, <fecha>`. Borrarla pierde el porqué (p4-1). |
 | «El ejemplo de la propuesta estaba incompleto; lo reescribo» | La propuesta es histórica: el cambio va a «Enmiendas» con su fecha. Reescribirla borra lo que se acordó antes (p10, 2 de 2). |
-| «Ya que tengo el cambio claro, arranco la task y escribo la spec» | Planificar no es hacer. `sdd-plan` termina en el roadmap; 2 de 2 sujetos abrieron rama y spec sin que nadie lo pidiera (p10). |
+| «Ya que tengo el cambio claro, arranco la task y escribo la spec» | Planificar no es hacer. `sdd-roadmap` termina en el roadmap; 2 de 2 sujetos abrieron rama y spec sin que nadie lo pidiera (p10). |
 | «"Prepara la release" es cerrar la release» | Preparar es decidir qué entra; cerrar es `sdd-end-release`. 2 de 2 sujetos sin esta skill acabaron en el cierre (p6). |
 | «El triage del acta ya lo decidió; marco la release comprometida» | El triage decidió el destino de cada petición; comprometer el hito, su orden y su estado es otra decisión del usuario. |
 | «El cliente dijo que todo es importante» | Énfasis verbal no es priorización. Se registra y se decide con criterio de producto. |

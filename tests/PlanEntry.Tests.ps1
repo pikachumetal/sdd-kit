@@ -56,18 +56,18 @@ Describe 'Carril proposal' {
     Get-KitFile 'skills/sdd-templates/templates/roadmap-template.md' | Should -Match 'tras NNNN'
   }
 
-  It 'las plantillas del roadmap y del acta nombran sdd-plan, no sdd-start-release' {
+  It 'las plantillas del roadmap y del acta nombran sdd-roadmap, no sdd-start-release' {
     foreach ($template in 'roadmap-template.md', 'feedback-template.md') {
       $content = Get-KitFile "skills/sdd-templates/templates/$template"
-      $content | Should -Match 'sdd-plan'
+      $content | Should -Match 'sdd-roadmap'
       $content | Should -Not -Match 'sdd-start-release'
     }
   }
 }
 
-Describe 'sdd-plan' {
+Describe 'sdd-roadmap' {
   BeforeAll {
-    $script:Plan = Get-KitFile 'skills/sdd-plan/SKILL.md'
+    $script:Plan = Get-KitFile 'skills/sdd-roadmap/SKILL.md'
     $script:Description = [regex]::Match($script:Plan, '(?m)^description: (.+)$').Groups[1].Value
   }
 
@@ -122,12 +122,12 @@ Describe 'sdd-plan' {
     $script:Plan | Should -Match 'sequence'
   }
 
-  It 'el router lleva la entrada a sdd-plan' {
-    Get-KitFile 'hooks/router.md' | Should -Match 'sdd-kit:sdd-plan'
+  It 'el router lleva la entrada a sdd-roadmap' {
+    Get-KitFile 'hooks/router.md' | Should -Match 'sdd-kit:sdd-roadmap'
   }
 
-  It 'el README lista sdd-plan' {
-    Get-KitFile 'README.md' | Should -Match '\| `sdd-plan` \|'
+  It 'el README lista sdd-roadmap' {
+    Get-KitFile 'README.md' | Should -Match '\| `sdd-roadmap` \|'
   }
 }
 
@@ -142,14 +142,14 @@ Describe 'Retirada de sdd-start-release' {
     $mentions | Should -Be @('skills/sdd-end-release/SKILL.md', 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md')
   }
 
-  It 'la consulta pasa la planificación a sdd-plan' {
-    Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'sdd-plan'
+  It 'la consulta pasa la planificación a sdd-roadmap' {
+    Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'sdd-roadmap'
   }
 
   It 'la migración avisa de la retirada' {
     $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
     $migration | Should -Match 'sdd-start-release'
-    $migration | Should -Match 'sdd-plan'
+    $migration | Should -Match 'sdd-roadmap'
   }
 
   It 'los documentos del flujo la tienen por artefacto retirado' {
@@ -182,7 +182,7 @@ Describe 'Rama sin id' {
 
 Describe 'Revisión final' {
   BeforeAll {
-    $script:Plan = Get-KitFile 'skills/sdd-plan/SKILL.md'
+    $script:Plan = Get-KitFile 'skills/sdd-roadmap/SKILL.md'
     $script:Checklist = (($script:Plan -split '## Checklist')[1] -split '## Lo que deja')[0]
     $script:Naming = Get-KitFile 'skills/sdd-start-task/references/nombrado.md'
     $script:PatchStep2 = [regex]::Match((Get-KitFile 'skills/sdd-start-patch/SKILL.md'), '(?ms)^2\. \*\*Carpeta\*\*.*?(?=^3\. )').Value

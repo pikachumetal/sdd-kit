@@ -1,13 +1,13 @@
 ---
 id: 20260924-231636-task-0062-plan-entry
 task: 0062
-title: Plan de implementación — sdd-plan, una sola puerta de entrada al roadmap, con el carril proposal
+title: Plan de implementación — sdd-roadmap, una sola puerta de entrada al roadmap, con el carril proposal
 spec: ./spec.md
 status: approved
 created: 2026-09-25
 ---
 
-# Plan de implementación — `sdd-plan`, una sola puerta de entrada al roadmap, con el carril `proposal`
+# Plan de implementación — `sdd-roadmap`, una sola puerta de entrada al roadmap, con el carril `proposal`
 
 ## Decisiones que he tomado yo — valida estas
 
@@ -18,7 +18,7 @@ created: 2026-09-25
 5. **La campaña GREEN (Task 6)** reutiliza `red/subject.sh` y `red/run.sh` con `OUT_NAME=green`, sobre una copia del kit sacada con `git archive` del commit de la Task 5. Techo común: 50 sujetos y 25 $; van gastados 22 y 5,92 $.
 6. **Coste estimado**: ~4 h de reloj, ~6 $ de sujetos y ~150k tokens del revisor final.
 
-**Goal**: una skill `sdd-plan` que reconoce cinco entradas y el scope de release y deja el roadmap (y la propuesta si toca) sin arrancar nada; retirar `sdd-start-release`; renombrar la rama sin id tras reservar.
+**Goal**: una skill `sdd-roadmap` que reconoce cinco entradas y el scope de release y deja el roadmap (y la propuesta si toca) sin arrancar nada; retirar `sdd-start-release`; renombrar la rama sin id tras reservar.
 
 **Architecture**: la skill nueva lleva el contrato de salida de la propuesta y del roadmap y la tabla de racionalizaciones del RED y de `sdd-start-release`. La plantilla de la propuesta vive en `sdd-templates` (Art. VIII). El carril `proposal` entra en `nombrado.md` y en el patrón de `Get-NextSddId.ps1`.
 
@@ -52,7 +52,7 @@ created: 2026-09-25
 
 ## Phase -1 — Pre-Implementation Gates
 
-- [x] **Simplicity gate**: una skill, una plantilla, un cambio de patrón. Sin `references/` en `sdd-plan`: todo lo que decide va en su `SKILL.md` (architecture.md, predicado de auxiliares).
+- [x] **Simplicity gate**: una skill, una plantilla, un cambio de patrón. Sin `references/` en `sdd-roadmap`: todo lo que decide va en su `SKILL.md` (architecture.md, predicado de auxiliares).
 - [x] **YAGNI gate**: sin columna de dependencias ni de responsable; sin estado en el reparto; sin guía para lo que el RED sacó limpio.
 - [x] **Brownfield gate**: las carpetas y filas existentes no cambian; el patrón nuevo conserva el sufijo heredado.
 - [x] **Constitution check**: Art. I (RED hecho, GREEN en la Task 6), Art. III, Art. VIII (plantilla en `sdd-templates`), Art. X.
@@ -65,10 +65,10 @@ created: 2026-09-25
 
 **Crear**:
 
-- `skills/sdd-plan/SKILL.md` — la skill.
+- `skills/sdd-roadmap/SKILL.md` — la skill.
 - `skills/sdd-templates/templates/proposal-template.md` — plantilla de la propuesta.
 - `tests/PlanEntry.Tests.ps1` — contratos de texto de la task.
-- `tests/sdd-plan-green.md` — evidencia GREEN.
+- `tests/sdd-roadmap-green.md` — evidencia GREEN.
 
 **Modificar**:
 
@@ -76,7 +76,7 @@ created: 2026-09-25
 - `tests/Get-NextSddId.Tests.ps1` — dos casos de `proposal`.
 - `skills/sdd-templates/SKILL.md` — índice de plantillas y línea de artefactos de specs.
 - `skills/sdd-templates/templates/spec-template.md` — campo `proposal:`.
-- `skills/sdd-templates/templates/roadmap-template.md` — «tras NNNN», `sdd-plan` en lugar de `sdd-start-release`.
+- `skills/sdd-templates/templates/roadmap-template.md` — «tras NNNN», `sdd-roadmap` en lugar de `sdd-start-release`.
 - `skills/sdd-templates/templates/feedback-template.md` — quién lee el acta.
 - `skills/sdd-start-task/references/nombrado.md` — carril `proposal` y renombrado de la rama.
 - `skills/sdd-start-patch/SKILL.md` — paso 2, renombrado.
@@ -85,7 +85,7 @@ created: 2026-09-25
 - `skills/sdd-init-brownfield/references/migrations/v1.2.0.md` — aviso de la retirada.
 - `README.md` — tabla de skills y recuento de plantillas.
 - `.docs/sdd/architecture.md`, `.docs/sdd/mission.md`, `.docs/workflow/greenfield.md`, `.docs/workflow/brownfield.md` — menciones.
-- `tests/TaskIds.Tests.ps1`, `tests/ReleaseFlow.Tests.ps1`, `tests/MigrationInitParity.Tests.ps1`, `tests/WorkflowDocs.Tests.ps1` — leen `sdd-plan`.
+- `tests/TaskIds.Tests.ps1`, `tests/ReleaseFlow.Tests.ps1`, `tests/MigrationInitParity.Tests.ps1`, `tests/WorkflowDocs.Tests.ps1` — leen `sdd-roadmap`.
 
 **Borrar**: `skills/sdd-start-release/` (con sus dos `references/`).
 
@@ -99,7 +99,7 @@ created: 2026-09-25
 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 | --- | --- | --- | --- |
-| La guía nueva de `sdd-plan` rompe una conducta limpia del RED (p2, p5) | media | medio | controles en el GREEN (Art. I) |
+| La guía nueva de `sdd-roadmap` rompe una conducta limpia del RED (p2, p5) | media | medio | controles en el GREEN (Art. I) |
 | Conflicto con la 0063 en `.docs/workflow/` | media | bajo | solo se cambian las palabras `sdd-start-release`; se integra develop antes del cierre |
 | `Skills.Tests.ps1` exige README e índice al día | alta | bajo | la Task 2 y la 3 los actualizan con su test |
 
@@ -149,46 +149,46 @@ Ninguna. El Art. IV (naming) necesita `(task|patch|proposal)`, pero es de la 005
 
 **Ficheros**: crear `skills/sdd-templates/templates/proposal-template.md`; modificar `spec-template.md`, `roadmap-template.md`, `feedback-template.md`, `skills/sdd-templates/SKILL.md`, `skills/sdd-start-task/references/nombrado.md`, `README.md` (recuento de plantillas).
 
-- [ ] **Step 1: RED** — tests: la plantilla existe con las seis secciones en orden; su ayuda dice que las reglas llevan un ejemplo con datos, que el reparto no lleva estado y es la lista completa, y que las enmiendas van fechadas y la más reciente arriba sin reescribir las reglas; `spec-template.md` tiene `proposal:`; `nombrado.md` dice `(task|patch|proposal)`; `roadmap-template.md` dice «tras NNNN» y nombra `sdd-plan`, no `sdd-start-release`; `feedback-template.md` no nombra `sdd-start-release`.
+- [ ] **Step 1: RED** — tests: la plantilla existe con las seis secciones en orden; su ayuda dice que las reglas llevan un ejemplo con datos, que el reparto no lleva estado y es la lista completa, y que las enmiendas van fechadas y la más reciente arriba sin reescribir las reglas; `spec-template.md` tiene `proposal:`; `nombrado.md` dice `(task|patch|proposal)`; `roadmap-template.md` dice «tras NNNN» y nombra `sdd-roadmap`, no `sdd-start-release`; `feedback-template.md` no nombra `sdd-start-release`.
 - [ ] **Step 2: Implementación** — la plantilla, con el ejemplo en otro dominio que el molde del GREEN (préstamo de libros de una biblioteca, no reservas de salas); los cambios de una línea en las demás; el índice de `sdd-templates` y el recuento del README.
 - [ ] **Step 3: Verificación** — el comando de arriba en verde.
 - [ ] **Step 4: Commit de la task**.
 
-### Task 3 — Skill `sdd-plan` y entrada por el router
+### Task 3 — Skill `sdd-roadmap` y entrada por el router
 
 **Modelo**: Native, el hilo principal.
-**Tests RED**: hilo principal · `tests/PlanEntry.Tests.ps1`, `Describe 'sdd-plan'`.
+**Tests RED**: hilo principal · `tests/PlanEntry.Tests.ps1`, `Describe 'sdd-roadmap'`.
 **Superficies**: docs
 **Verificación**: `pwsh -NoProfile -Command "Invoke-Pester -Path tests/PlanEntry.Tests.ps1,tests/Skills.Tests.ps1,tests/Hook.Tests.ps1 -Output Detailed"`
 **Se prueba en la aplicación**: no con la suite: la conducta se mide en el GREEN (Task 6).
 
 **Interfaces**:
 - Consume: `proposal-template.md` (Task 2), `Get-NextSddId.ps1 -Reserve -Count N` (Task 1).
-- Produce: `skills/sdd-plan/SKILL.md` con `name: sdd-plan`.
+- Produce: `skills/sdd-roadmap/SKILL.md` con `name: sdd-roadmap`.
 
-**Ficheros**: crear `skills/sdd-plan/SKILL.md`; modificar `hooks/router.md`, `README.md` (fila de la tabla de skills).
+**Ficheros**: crear `skills/sdd-roadmap/SKILL.md`; modificar `hooks/router.md`, `README.md` (fila de la tabla de skills).
 
-- [ ] **Step 1: RED** — tests sobre el texto: `description` empieza por «Usar» y nombra «prepara la release», «reunión» y «roadmap»; la skill nombra las cinco entradas; calca `proposal-template.md`; dice que no crea rama, carpeta de task ni spec; dice «tras NNNN», «⏸️ aparcada: descartada por» y `-Reserve -Count`; nombra `release.hasRecipient`; nombra `superpowers:brainstorming` con el override de que no acaba en spec; `hooks/router.md` nombra `sdd-kit:sdd-plan`.
-- [ ] **Step 2: Implementación** — `SKILL.md` con: Overview (tres verbos; proponer no es decidir); cómo se reconoce cada entrada (decisión 3 de la spec, con el criterio del verbo); qué deja cada entrada (decisiones 4–11); la sección de release (decisión 13) con el estado real y la publicación de la reserva; red flags y tabla de racionalizaciones con las frases del RED (`tests/sdd-plan-red.md`) y las de `sdd-start-release` que siguen aplicando. Línea del router y fila del README.
+- [ ] **Step 1: RED** — tests sobre el texto: `description` empieza por «Usar» y nombra «prepara la release», «reunión» y «roadmap»; la skill nombra las cinco entradas; calca `proposal-template.md`; dice que no crea rama, carpeta de task ni spec; dice «tras NNNN», «⏸️ aparcada: descartada por» y `-Reserve -Count`; nombra `release.hasRecipient`; nombra `superpowers:brainstorming` con el override de que no acaba en spec; `hooks/router.md` nombra `sdd-kit:sdd-roadmap`.
+- [ ] **Step 2: Implementación** — `SKILL.md` con: Overview (tres verbos; proponer no es decidir); cómo se reconoce cada entrada (decisión 3 de la spec, con el criterio del verbo); qué deja cada entrada (decisiones 4–11); la sección de release (decisión 13) con el estado real y la publicación de la reserva; red flags y tabla de racionalizaciones con las frases del RED (`tests/sdd-roadmap-red.md`) y las de `sdd-start-release` que siguen aplicando. Línea del router y fila del README.
 - [ ] **Step 3: Verificación** — el comando de arriba en verde.
 - [ ] **Step 4: Commit de la task**.
 
 ### Task 4 — Retirada de `sdd-start-release`
 
 **Modelo**: Native, el hilo principal.
-**Tests RED**: hilo principal · `tests/PlanEntry.Tests.ps1`, `Describe 'Retirada de sdd-start-release'`; y los tests existentes que leen la skill, reapuntados a `sdd-plan`.
+**Tests RED**: hilo principal · `tests/PlanEntry.Tests.ps1`, `Describe 'Retirada de sdd-start-release'`; y los tests existentes que leen la skill, reapuntados a `sdd-roadmap`.
 **Superficies**: docs, tooling
 **Verificación**: `pwsh -NoProfile -Command "Invoke-Pester -Path tests -ExcludeTagFilter Slow -Output Detailed"` (los tests que cambian están repartidos por la suite rápida)
 **Se prueba en la aplicación**: no con la suite: p6 del GREEN la mide.
 
 **Interfaces**:
-- Consume: `skills/sdd-plan/SKILL.md` (Task 3), que debe contener `hasRecipient`, `sequence`, `-Reserve -Count`, «Ficheros que toca» y «nunca «por definir»».
+- Consume: `skills/sdd-roadmap/SKILL.md` (Task 3), que debe contener `hasRecipient`, `sequence`, `-Reserve -Count`, «Ficheros que toca» y «nunca «por definir»».
 - Produce: ninguna mención viva a `sdd-start-release` fuera de `tests/*-ab.md`, `tests/*-red.md`, `.docs/sdd/specs/`, `field-reports/`, `releases/`, `changelog.md`, `roadmap.md` y `sdd-end-release/SKILL.md` (pendiente de la 0063).
 
 **Ficheros**: borrar `skills/sdd-start-release/`; modificar `README.md`, `skills/sdd-consult/SKILL.md`, `.docs/sdd/architecture.md`, `.docs/sdd/mission.md`, `.docs/workflow/greenfield.md`, `.docs/workflow/brownfield.md`, `skills/sdd-init-brownfield/references/migrations/v1.2.0.md`, `tests/TaskIds.Tests.ps1`, `tests/ReleaseFlow.Tests.ps1`, `tests/MigrationInitParity.Tests.ps1`, `tests/WorkflowDocs.Tests.ps1`.
 
-- [ ] **Step 1: RED** — test: `skills/sdd-start-release` no existe; un `git grep -l sdd-start-release` sobre `skills hooks README.md .docs/workflow .docs/sdd/architecture.md .docs/sdd/mission.md` devuelve solo `skills/sdd-end-release/SKILL.md`; la v1.2.0 tiene un paso que nombra `sdd-start-release` y `sdd-plan`. Los tests existentes se reapuntan a `skills/sdd-plan/SKILL.md` (fallan hasta el Step 2 si la Task 3 no dejó algún literal).
-- [ ] **Step 2: Implementación** — borrar la carpeta; sustituir las menciones (handoff de `sdd-consult`: «planificar, meter en el roadmap o preparar una release → `sdd-plan`»); añadir `sdd-start-release` a la lista de retirados de `WorkflowDocs.Tests.ps1`; paso sin gate en la v1.2.0: «**`sdd-start-release` retirada.** Sin predicado ni cambios en el proyecto: el informe dice que "prepara la release" y replanificar pasan a `sdd-plan`».
+- [ ] **Step 1: RED** — test: `skills/sdd-start-release` no existe; un `git grep -l sdd-start-release` sobre `skills hooks README.md .docs/workflow .docs/sdd/architecture.md .docs/sdd/mission.md` devuelve solo `skills/sdd-end-release/SKILL.md`; la v1.2.0 tiene un paso que nombra `sdd-start-release` y `sdd-roadmap`. Los tests existentes se reapuntan a `skills/sdd-roadmap/SKILL.md` (fallan hasta el Step 2 si la Task 3 no dejó algún literal).
+- [ ] **Step 2: Implementación** — borrar la carpeta; sustituir las menciones (handoff de `sdd-consult`: «planificar, meter en el roadmap o preparar una release → `sdd-roadmap`»); añadir `sdd-start-release` a la lista de retirados de `WorkflowDocs.Tests.ps1`; paso sin gate en la v1.2.0: «**`sdd-start-release` retirada.** Sin predicado ni cambios en el proyecto: el informe dice que "prepara la release" y replanificar pasan a `sdd-roadmap`».
 - [ ] **Step 3: Verificación** — el comando de arriba en verde.
 - [ ] **Step 4: Commit de la task**.
 
@@ -216,20 +216,20 @@ Ninguna. El Art. IV (naming) necesita `(task|patch|proposal)`, pero es de la 005
 **Modelo**: Native, el hilo principal; sujetos Sonnet headless.
 **Tests RED**: no aplica: es la medición del Art. I.
 **Superficies**: docs
-**Verificación**: los 22 sujetos leídos contra las medidas de `tests/sdd-plan-red.md`.
-**Se prueba en la aplicación**: no; la evidencia es `tests/sdd-plan-green.md`.
+**Verificación**: los 22 sujetos leídos contra las medidas de `tests/sdd-roadmap-red.md`.
+**Se prueba en la aplicación**: no; la evidencia es `tests/sdd-roadmap-green.md`.
 
 **Interfaces**:
 - Consume: el kit en el commit de la Task 5.
-- Produce: `tests/sdd-plan-green.md` y `green/out/`.
+- Produce: `tests/sdd-roadmap-green.md` y `green/out/`.
 
-**Ficheros**: crear `tests/sdd-plan-green.md`, `.docs/sdd/specs/20260924-231636-task-0062-plan-entry/green/out/`.
+**Ficheros**: crear `tests/sdd-roadmap-green.md`, `.docs/sdd/specs/20260924-231636-task-0062-plan-entry/green/out/`.
 
 - [ ] **Step 1** — `git archive HEAD skills hooks .claude-plugin agents README.md` a `scratchpad/kit-green`.
 - [ ] **Step 2** — dos lotes, `OUT_NAME=green`, `SCENARIOS="p1 p2 p3 p4 p5"` y `"p6 p7 p8 p8b p9 p10"`, `SUBJECT=1` y `2`. p6 ya no necesita `KIT_DIR_P6`.
-- [ ] **Step 3** — leer cada sujeto con las medidas del RED; comprobar en el stream que p1–p6 y p10 cargaron `sdd-plan`.
+- [ ] **Step 3** — leer cada sujeto con las medidas del RED; comprobar en el stream que p1–p6 y p10 cargaron `sdd-roadmap`.
 - [ ] **Step 4** — si algo falla: REFACTOR de la skill y una tanda del escenario, dentro del techo (50 sujetos, 25 $). Si se superaría, parar y preguntar.
-- [ ] **Step 5** — `tests/sdd-plan-green.md` y commit.
+- [ ] **Step 5** — `tests/sdd-roadmap-green.md` y commit.
 
 ---
 
@@ -261,7 +261,7 @@ Ninguna. El Art. IV (naming) necesita `(task|patch|proposal)`, pero es de la 005
 - `planning` · Reordenar → Task 2 (roadmap-template) + Task 3; GREEN p5. ✓
 - `planning` · Cambio de definición → Task 2 (Enmiendas) + Task 3; GREEN p10. ✓
 - `planning` · Preparar una release → Task 3; GREEN p6. ✓
-- `routing` · Entrada por `sdd-plan` → Task 3 (description, router) + Task 4 (sin `sdd-start-release`); GREEN p1–p6. ✓
+- `routing` · Entrada por `sdd-roadmap` → Task 3 (description, router) + Task 4 (sin `sdd-start-release`); GREEN p1–p6. ✓
 - `release-flow` · hasRecipient, valor vigente, comprometida, reserva publicada → Task 3; GREEN p6. ✓
 - `roadmap` · Ficheros que toca → Task 3 (sección de release); test de la Task 4 (`MigrationInitParity`). ✓
 - `task-ids` · Secuencia compartida con propuestas y contrato de lectura → Task 1. ✓

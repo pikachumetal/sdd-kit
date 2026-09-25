@@ -8,7 +8,7 @@ created: <YYYY-MM-DD>
 
 # Propuesta — <título>
 
-> Lo que hay que hacer, no lo que ya está hecho: eso vive en `capabilities/`. La escribe `sdd-plan` al entrevistar algo grande o al recoger una reunión, y es **histórica**: nada de lo escrito se reescribe; los cambios van a «Enmiendas». Sin deltas formales: cada feature escribe el suyo en su spec, que apunta aquí con `proposal: <id>`, y lo fusiona al cerrar. No tiene walkthrough ni cierre. Borra los bloques de ayuda (`>`) al redactar.
+> Lo que hay que hacer, no lo que ya está hecho: eso vive en `capabilities/`. La escribe `sdd-roadmap` al entrevistar algo grande o al recoger una reunión, y es **histórica**: nada de lo escrito se reescribe; los cambios van a «Enmiendas». Sin deltas formales: cada feature escribe el suyo en su spec, que apunta aquí con `proposal: <id>`, y lo fusiona al cerrar. No tiene walkthrough ni cierre. Borra los bloques de ayuda (`>`) al redactar.
 
 ## Por qué
 

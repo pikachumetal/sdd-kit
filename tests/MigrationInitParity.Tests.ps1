@@ -122,11 +122,11 @@ Describe 'Tabla de release con Ficheros que toca' {
       Should -Match ([regex]::Escape('| id | Task | Origen | Ficheros que toca | Estado |'))
   }
 
-  It 'sdd-plan escribe la sección con esa tabla' {
-    Get-KitFile 'skills/sdd-plan/SKILL.md' | Should -Match 'Ficheros que toca'
+  It 'sdd-roadmap escribe la sección con esa tabla' {
+    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'Ficheros que toca'
   }
 
-  It 'sdd-plan no deja la celda de ficheros por definir' {
-    Get-KitFile 'skills/sdd-plan/SKILL.md' | Should -Match 'nunca «por definir»'
+  It 'sdd-roadmap no deja la celda de ficheros por definir' {
+    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'nunca «por definir»'
   }
 }

@@ -1,6 +1,6 @@
 # Roadmap — <proyecto>
 
-> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-plan` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-plan` (Backlog y deuda técnica), `sdd-end-task` (marca la fila de la task), `sdd-end-patch` (tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 🧪 validación diferida a <disparador> · ⏸️ aparcada: <motivo>. Con ids de secuencia (`ids.mode: sequence`), el id de una task planificada se reserva aquí. Una fila que depende de otra lo dice en su celda «Ítem» con «tras NNNN», sin columna aparte: así lo ve quien la arranca. Una fila que sale de una propuesta lleva «`proposal: <id>`» en la misma celda. Borra los bloques de ayuda (`>`) al redactar.
+> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-end-task` (marca la fila de la task), `sdd-end-patch` (tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 🧪 validación diferida a <disparador> · ⏸️ aparcada: <motivo>. Con ids de secuencia (`ids.mode: sequence`), el id de una task planificada se reserva aquí. Una fila que depende de otra lo dice en su celda «Ítem» con «tras NNNN», sin columna aparte: así lo ve quien la arranca. Una fila que sale de una propuesta lleva «`proposal: <id>`» en la misma celda. Borra los bloques de ayuda (`>`) al redactar.
 
 ## Próximo
 
@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | <id> | <qué> | ⏳ |
 
-> **Sección `## Release <N>`**: la añade aquí debajo `sdd-plan` al preparar una release, con una fila por task y su id reservado; `sdd-end-release` la colapsa al cerrar. Cabecera literal de su tabla:
+> **Sección `## Release <N>`**: la añade aquí debajo `sdd-roadmap` al preparar una release, con una fila por task y su id reservado; `sdd-end-release` la colapsa al cerrar. Cabecera literal de su tabla:
 >
 > | id | Task | Origen | Ficheros que toca | Estado |
 > | --- | --- | --- | --- | --- |

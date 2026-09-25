@@ -16,7 +16,7 @@
 │   ├── sdd-end-task/SKILL.md
 │   ├── sdd-start-patch/SKILL.md
 │   ├── sdd-end-patch/SKILL.md
-│   ├── sdd-plan/SKILL.md
+│   ├── sdd-roadmap/SKILL.md
 │   ├── sdd-end-release/SKILL.md
 │   ├── sdd-consult/SKILL.md
 │   ├── sdd-config/SKILL.md

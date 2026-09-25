@@ -52,7 +52,7 @@ El resultado de esta fase es el plan de implementación, igual que en el flujo o
 
 Instala el kit SDD desde el primer día:
 
-- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-task` y `sdd-end-task` para el ciclo completo; `sdd-start-patch` y `sdd-end-patch` para el carril corto; `sdd-plan` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
+- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-task` y `sdd-end-task` para el ciclo completo; `sdd-start-patch` y `sdd-end-patch` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
 - **Skills técnicas**, según el stack elegido: por ejemplo `sql-migration`, `translation-migration`, `backend-command` y `backend-query` para CQRS, `backend-feature` para casos de uso, o `frontend-feature`.
 
 Las skills encapsulan las convenciones del proyecto, así que nadie tiene que recordarlas ni interpretarlas: basta con seguir el flujo.
@@ -144,7 +144,7 @@ Durante la reunión se recoge toda la información posible: notas, capturas, dec
 
 ### 3.3. Carril de release
 
-Cuando el trabajo se agrupa en entregas, hay dos skills más. `sdd-end-release` cierra el hito: inventario completo del feedback con su triaje, que decides tú punto por punto; retro con los números del registro de estimaciones; changelog sellado; notas de release destiladas del changelog y escritas en beneficio para quien las va a leer, nunca copiadas de él; roadmap colapsado; y el merge y el tag, que confirmas tú. `sdd-plan` prepara la siguiente: convierte el acta y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan.
+Cuando el trabajo se agrupa en entregas, hay dos skills más. `sdd-end-release` cierra el hito: inventario completo del feedback con su triaje, que decides tú punto por punto; retro con los números del registro de estimaciones; changelog sellado; notas de release destiladas del changelog y escritas en beneficio para quien las va a leer, nunca copiadas de él; roadmap colapsado; y el merge y el tag, que confirmas tú. `sdd-roadmap` prepara la siguiente: convierte el acta y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan.
 
 Trabajar por releases es opcional. Si el proyecto no lo necesita, las tareas se cierran una a una y ya está.
 

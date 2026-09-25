@@ -17,7 +17,7 @@ Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan
 | [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Solo si el plan tiene >1 task (registro vivo) |
 | [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Cierre de toda task |
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Carril patch (único artefacto) |
-| [proposal-template.md](templates/proposal-template.md) | `proposal.md` | Carril `proposal`: la escribe `sdd-plan` para algo grande o una reunión con el cliente; histórica, con enmiendas fechadas |
+| [proposal-template.md](templates/proposal-template.md) | `proposal.md` | Carril `proposal`: la escribe `sdd-roadmap` para algo grande o una reunión con el cliente; histórica, con enmiendas fechadas |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Opcional: cambios de datos que no caben en el plan |
 | [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
 | [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |

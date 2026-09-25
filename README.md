@@ -82,7 +82,7 @@ El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, r
 | --- | --- |
 | `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
-| `sdd-plan` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
+| `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
 | `sdd-start-task` | El carril completo: contexto, spec, plan, tasks, con gate de aprobación en cada paso. |
 | `sdd-end-task` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
 | `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria. |

@@ -1,6 +1,8 @@
 # GREEN — una sola puerta de entrada al roadmap y retirada de `sdd-start-release` (task 0062)
 
-Mismo molde, mismos guiones y mismo lanzador que el [RED](sdd-plan-red.md), con `OUT_NAME=green`, sobre el kit del commit `debb31f` (copia con `git archive`): `sdd-plan` presente y `sdd-start-release` retirada en todos los escenarios. La rama ya lleva `develop` integrado (`b8e7312`), así que el kit medido incluye las tasks 0058, 0063, 0067 y 0068. Salidas en [`green/`](../.docs/sdd/specs/20260924-231636-task-0062-plan-entry/green/).
+> **Nombre**: la skill se llamaba `sdd-plan` cuando se midió esta campaña; el 2026-09-25 pasó a `sdd-roadmap` (enmienda de la spec). Las citas y las salidas de los sujetos conservan el nombre con que se midió.
+
+Mismo molde, mismos guiones y mismo lanzador que el [RED](sdd-roadmap-red.md), con `OUT_NAME=green`, sobre el kit del commit `debb31f` (copia con `git archive`): `sdd-plan` presente y `sdd-start-release` retirada en todos los escenarios. La rama ya lleva `develop` integrado (`b8e7312`), así que el kit medido incluye las tasks 0058, 0063, 0067 y 0068. Salidas en [`green/`](../.docs/sdd/specs/20260924-231636-task-0062-plan-entry/green/).
 
 **Gastado en el GREEN**: 22 sujetos, 5,99 $, ~25 min de reloj en paralelo. **Campaña entera** (RED + GREEN): 44 sujetos y 11,91 $, frente a la previsión de ~40 sujetos y ~15 $ y al techo de 50 sujetos y 25 $.
 

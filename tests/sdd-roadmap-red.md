@@ -1,5 +1,7 @@
 # RED — una sola puerta de entrada al roadmap y retirada de `sdd-start-release` (task 0062)
 
+> **Nombre**: la skill se llamaba `sdd-plan` cuando se midió esta campaña; el 2026-09-25 pasó a `sdd-roadmap` (enmienda de la spec). Las citas y las salidas de los sujetos conservan el nombre con que se midió.
+
 Baseline **sin** `sdd-plan`: el kit en la base de la rama (`9b62ba2`, copia con `git archive`), con `sdd-start-release` dentro salvo en p6, que corre sobre una copia sin ella para medir el hueco que deja la retirada. Sujetos Sonnet headless sobre el repo de juguete `salas` (base de la 0044, con un informe de uso y un roadmap por escenario), sin `AskUserQuestion`. Lanzador, molde, sujeto y salidas en [`red/`](../.docs/sdd/specs/20260924-231636-task-0062-plan-entry/red/).
 
 **Previsión y techo comunes al RED y al GREEN** (aprobados por el dev-lead el 2026-09-25, antes del primer sujeto): ~40 sujetos, ~15 $, ~4 h; techo 50 sujetos, 25 $, 5 h. `SUBJECT_CAP=50`, `COST_CAP=25` y fichero `stop` en `red/run.sh`. La campaña se paró con `stop` a mitad del primer lote (el dev-lead se fue a dormir) y siguió al día siguiente.

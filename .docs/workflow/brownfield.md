@@ -88,7 +88,7 @@ Si el cambio se puede describir en una frase, se hace directamente. La planifica
 
 Igual que en el flujo original: presentación periódica, idealmente semanal, de lo implementado al cliente o a los stakeholders internos; recogida de feedback con notas, capturas y decisiones; y conversión de cada cambio en una tarea nueva que entra por el ciclo de la fase 2.
 
-Si el trabajo se agrupa en entregas, `sdd-end-release` cierra el hito con el acta de feedback triado, la retro con números, el changelog sellado y las notas para el cliente, y `sdd-plan` convierte todo eso en el scope de la siguiente. En brownfield el acta tiene una sección que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
+Si el trabajo se agrupa en entregas, `sdd-end-release` cierra el hito con el acta de feedback triado, la retro con números, el changelog sellado y las notas para el cliente, y `sdd-roadmap` convierte todo eso en el scope de la siguiente. En brownfield el acta tiene una sección que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
 
 ## 4. Trazabilidad y estimación
 

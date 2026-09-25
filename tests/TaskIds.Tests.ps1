@@ -53,20 +53,20 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
       Get-KitFile 'skills/sdd-start-patch/SKILL.md' | Should -Match 'sequence'
     }
 
-    It 'sdd-plan reserva ids correlativos al planificar' {
-      Get-KitFile 'skills/sdd-plan/SKILL.md' | Should -Match 'sequence'
+    It 'sdd-roadmap reserva ids correlativos al planificar' {
+      Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'sequence'
     }
 
     It 'los arranques sin fila reservan el id con -Reserve, no lo calculan' -ForEach @(
       @{ File = 'skills/sdd-start-task/references/nombrado.md' }
       @{ File = 'skills/sdd-start-patch/SKILL.md' }
-      @{ File = 'skills/sdd-plan/SKILL.md' }
+      @{ File = 'skills/sdd-roadmap/SKILL.md' }
     ) {
       Get-KitFile $File | Should -Match 'Get-NextSddId\.ps1[^`]*-Reserve'
     }
 
-    It 'sdd-plan reserva los N ids en una sola llamada' {
-      Get-KitFile 'skills/sdd-plan/SKILL.md' | Should -Match '-Reserve -Count'
+    It 'sdd-roadmap reserva los N ids en una sola llamada' {
+      Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match '-Reserve -Count'
     }
 
     It 'sdd-consult puede proponer un id pero no reservarlo' {
