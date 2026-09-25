@@ -54,6 +54,11 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Compatibilidad con superpowers 6.4.1** — versión validada en README y «Referencias de vigilancia»; `overrides-superpowers.md` anula el Execution Handoff de `writing-plans` y el HARD-GATE architectural de `brainstorming` (el método de ejecución no se pregunta ni se ofrece «Native»), y en Windows convierte con `cygpath -w` la ruta POSIX de `sdd-workspace` y `task-brief` antes del primer `Write`, con un puntero en `encargo-revision.md`. → [ref](specs/20260923-220402-task-0026-superpowers-641/)
 - **Task 0059** — en modo `sequence` el id se reserva en vez de calcularse: `Get-NextSddId.ps1 -Reserve [-Count N]` consume los ids en un contador del directorio común de git con cerrojo (`SddLock.ps1`, compartido con `Invoke-SddMerge.ps1`), un id reservado no vuelve a salir aunque el trabajo se abandone, y `nombrado.md`, `sdd-start-patch` y `sdd-start-release` reservan. → [ref](specs/20260924-105243-task-0059-reserve-ids/)
 - **Task 0060** — cada task del plan acaba en algo que se prueba en la aplicación, o dice por qué no (línea «Se prueba en la aplicación» de `plan-template.md`). Los escenarios de reglas de negocio llevan datos, y una regla de capacidad que cambia se copia completa (`spec-template.md`). La validación (paso 7 de `sdd-start-task`, paso 0 de `sdd-end-task`) y la parada de `pair` tras cada task traen un guion de pruebas numerado, con el resultado esperado de cada paso. → [ref](specs/20260924-204639-task-0060-testable-tasks/)
+- **Task 0063** — `sdd-end-release` pasa a ser solo el corte de la release, en cinco pasos: congelar scope y versión, sellar el changelog, release notes y comunicación (solo con `release.hasRecipient`), colapsar el roadmap, y versión, tag y merge; la retro con `estimation-log.md` es opcional, se ofrece en el paso 1 y va a `releases/vX.Y.Z/retro.md`. → [ref](specs/20260924-221103-task-0063-end-release-cut/)
+
+### Removed
+
+- **Task 0063** — el acta y el triaje del feedback de la reunión salen de `sdd-end-release`: el cierre remite ese feedback a `sdd-plan` (task 0062) y `references/acta-y-retro.md` pasa a `references/retro.md`. → [ref](specs/20260924-221103-task-0063-end-release-cut/)
 
 ### Fixed
 

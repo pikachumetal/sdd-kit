@@ -1,0 +1,60 @@
+
+>>> Bash: cd "<run>" && python - <<'E'
+import re
+p='.docs/sdd/changelog.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("## [Unreleased]\n","## [Unreleased]\n\n## [0.4.0] - 2026-09-25\n",1)
+open(p,'w',encoding='utf-8').write(s)
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("## Releases cerradas\n","## Releases cerradas\n\n### v0.4.0 (2026-09-25)\n\nReserva recurrente semanal, salas libres por franja y fix de la cancelación por día. [changelog](changelog.md)\n\nsmoke: pendiente\n",1)
+open(p,'w',encoding='utf-8').write(s)
+p='package.json'
+s=open(p).read()
+s=s.replace('{"type": "module"}','{"type": "module", "version": "0.4.0"}')
+open(p,'w').write(s)
+E
+git diff --stat; sed -n 5,12p .docs/sdd/changelog.md; git log -1 --format=%B | head -3
+<<<  .docs/sdd/changelog.md | 2 ++
+ .docs/sdd/roadmap.md   | 6 ++++++
+ package.json           | 2 +-
+ 3 files changed, 9 insertions(+), 1 deletion(-)
+## [Unreleased]
+
+## [0.4.0] - 2026-09-25
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](specs/20260917-090000-task-0006-free/)
+fix: la cancelación respeta el día, con test de regresión
+
+>>> Bash: cd "<run>" && node --test 2>&1 | grep -E "^ℹ (pass|fail)" && git commit -qam "chore(release): cerrar v0.4.0
+
+Sellar changelog, colapsar roadmap y subir versión a 0.4.0.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git checkout -q main && git merge --no-ff -q develop -m "release: v0.4.0
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git tag -a v0.4.0 -m "v0.4.0" && git checkout -q develop && git merge -q main && git remote -v && git log --oneline --graph --decorate --all | head; git tag -n1
+<<< ℹ pass 3
+ℹ fail 0
+*   e6c9fe1 (HEAD -> develop, tag: v0.4.0, main) release: v0.4.0
+|\  
+| * 1f5acbf chore(release): cerrar v0.4.0
+| * cf8f592 fix: la cancelación respeta el día, con test de regresión
+| * 6ba86b2 feat: reserva recurrente semanal y salas libres por franja
+|/  
+* e216ea1 (tag: v0.3.0) feat: base con cancelación de reservas
+v0.3.0          v0.3.0
+v0.4.0          v0.4.0
+
+=== RESULTADO (3 turnos, 0.3024344 $)
+Release `v0.4.0` cerrada en local. No hay remoto configurado (`git remote -v` sale vacío), así que **no se ha hecho push** del tag ni de las ramas. Tampoco se ha desplegado nada.
+
+- **Changelog:** sellado como `[0.4.0] - 2026-09-25`, con una `[Unreleased]` vacía arriba.
+- **Roadmap:** `v0.4.0` añadida a «Releases cerradas», con `smoke: pendiente`. Solo he ejecutado la suite (3/3 en verde). No he hecho un uso real de la CLI, así que no he inventado el número de hallazgos.
+- **Versión:** `package.json` subido a `0.4.0`.
+- **Git:** `develop` fusionada en `main` con merge commit (`e6c9fe1`) y tag anotado `v0.4.0` sobre ese commit. Después he fusionado `main` de vuelta en `develop`, así que ambas ramas apuntan al mismo commit.
+- **Omitido:** las release notes, la comunicación, el acta y la retro, porque `hasRecipient` es `false`, no hubo demo y no existe `estimation-log.md`.
+
+Si hay remoto, dime cuál y hago el push de `main`, `develop` y el tag. Si «producción» implica un despliegue, eso queda fuera de esta skill.

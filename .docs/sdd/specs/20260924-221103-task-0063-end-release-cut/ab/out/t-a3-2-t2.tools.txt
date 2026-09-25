@@ -1,0 +1,102 @@
+
+>>> Bash: cd "<run>" && cat .docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md; git log --format='%h %an %s' -- .docs/sdd/sdd-kit.json; grep -n "🧪\|✅" ../../../kt/skills/sdd-start-task/references/control-profiles.md | head
+<<< ---
+id: 20260921-090000-task-0009-slot-format
+task: 0009
+title: Walkthrough — Validar el formato de la franja horaria
+spec: ./spec.md
+status: done
+created: 2026-09-21
+---
+
+# Walkthrough — Validar el formato de la franja horaria
+
+## 1. Cambios realizados
+
+- `src/app.js` (y `src/slots.js` en la 0009).
+
+## 4. Verificación
+
+### 4.2 Smoke / tests
+
+- Validación diferida: 2026-09-21 · «lo valido todo junto en el smoke de la release» · disparador: smoke de la release v0.4.0
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` | verde (verificado por el agente) |
+
+
+
+>>> Bash: cd "<run>" && python - <<'E'
+import re,io
+def sub(p,a,b):
+    s=open(p,encoding='utf-8').read(); assert a in s,(p,a); open(p,'w',encoding='utf-8',newline='').write(s.replace(a,b,1))
+sub('.docs/sdd/changelog.md','## [Unreleased]\n','## [Unreleased]\n\n## [0.4.0] - 2026-09-25\n')
+sub('.docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md','- _Ninguna_','- 2026-09-25 · Smoke de la release v0.4.0 validado por el dev-lead: probó la franja de `salas libres`. La validación de `reservar` no se mencionó; la cubren los tests (`node --test`, verde).')
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace('''| # | Ítem | Estado |
+| --- | --- | --- |
+''','''| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | Listar mis reservas (`salas mias`) | 🧪 validación diferida a v0.5.0 |
+''',1)
+i=s.index('## Release 0.4.0'); j=s.index('## Backlog')
+s=s[:i]+s[j:]
+s=s.replace('''Cancelar una reserva propia. [changelog](changelog.md)''','''Cancelar una reserva propia. [changelog](changelog.md)
+
+### v0.4.0 (2026-09-25)
+
+Reserva recurrente semanal, salas libres por franja, validación del formato de franja, listado de mis reservas y fix de la cancelación. [changelog](changelog.md)
+smoke: 2026-09-25 · 0 hallazgos (`node --test` y prueba manual de la franja de `salas libres`; 0 corregidos en la release)''')
+open(p,'w',encoding='utf-8',newline='').write(s)
+E
+git diff --stat; cat .docs/sdd/roadmap.md | head -20
+<<< warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/changelog.md                                      |  2 ++
+ .docs/sdd/roadmap.md                                        | 13 ++++++-------
+ .../20260921-090000-task-0009-slot-format/walkthrough.md    |
+
+>>> Bash: cd "<run>" && git remote -v; git add -A && git commit -q -F - <<'E'
+chore(release): cerrar la release v0.4.0
+
+Sellar el changelog, colapsar el roadmap y añadir la adenda de smoke de la 0009.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+E
+git checkout -q main && git merge --no-ff -q develop -m "merge: release v0.4.0
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git tag -a v0.4.0 -m "v0.4.0" && git checkout -q develop && git merge -q main && git log --oneline --graph --decorate -6; git status -sb
+<<< warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md', LF will be replaced by CRLF the next time Git touches it
+*   225d640 (HEAD -> develop, tag: v0.4.0, main) merge: release v0.4.0
+|\  
+| * 220560b chore(release): cerrar la release v0.4.0
+| * fa50afa feat: validar el formato de la franja horaria
+|/  
+* ec2cba4 feat: bas
+
+=== RESULTADO (4 turnos, 0.2754528 $)
+Release `v0.4.0` cerrada. No hay remoto configurado, así que no he hecho push.
+
+**Atajo aplicado**
+- **Orden de cierre:** «Cierra la release.»
+- **Versión:** «Sí, v0.4.0», en respuesta a mi propuesta.
+- **Destinatario:** `release.hasRecipient: false` ya estaba en `sdd-kit.json` desde el commit base y yo no lo escribí. Lo he tratado como decisión tuya. Si no lo era, dímelo.
+- **Scope:** no se movió ningún ítem.
+
+**Hecho**
+- **Changelog:** `[Unreleased]` sellado como `[0.4.0] - 2026-09-25`, con una `[Unreleased]` nueva y vacía arriba.
+- **Release notes y email:** omitidos, porque no hay destinatario.
+- **Roadmap:** sección `0.4.0` colapsada a resumen y enlace al changelog. Línea de smoke: `smoke: 2026-09-25 · 0 hallazgos (node --test y prueba manual de la franja de salas libres; 0 corregidos en la release)`.
+- **Task 0009:** validada. Su walkthrough tiene la adenda del smoke, que dice que `reservar` quedó cubierto solo por los tests.
+- **Task 0010:** no la mencionaste en el smoke. Conserva `🧪 validación diferida a v0.5.0` y está en «Próximo» del roadmap.
+- **Git:** commit `220560b` en `develop`, merge `--no-ff` a `main` (`225d640`) y tag anotado `v0.4.0` sobre ese merge commit. Después hice merge de `main` a `develop`, que queda en `225d640`, el mismo commit que `main`.
+- **Versión:** no hay `package.json` con campo `version`, así que no había nada que subir.
+
+**Pendiente**
+- **0010:** validar `salas mias` a mano en la próxima release.
+- **Push:** de `main`, `develop` y el tag, cuando haya remoto.
