@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: patch/0079-spec-dir-absolute
-commit: <hash>
+commit: 5dc1c31
 ---
 
 # Patch 0079 — el lanzador headless pierde las salidas con SPEC_DIR relativo
@@ -37,6 +37,8 @@ Dos veces el mismo día. En la task 0077 (ticket §2), la primera tanda del RED 
 | 1 | `SPEC_DIR` relativo y `DRY_RUN=1`: antes del fix, el test nuevo falla porque `spec/red/out/a-1.tools.txt` no existe | ✅ RED reproducido |
 | 2 | El mismo caso con el fix: la salida existe y el recuento dice «sujetos de la campaña: 1» | ✅ |
 | 3 | `HeadlessLauncher`, `PathLength` y `SubjectOutputPrivacy` completos, incluido el límite de 140 caracteres con `OUT` ya absoluto | ✅ 18/18 |
+
+Validación diferida: 2026-09-25 · «Diferido a la ola 1» · disparador: la primera campaña de la ola 1 (0078, 0074 o 0036) lanzada con `run.sh`, cuyo recuento final de «sujetos de la campaña» y de coste tiene que coincidir con los sujetos que corrieron, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 
