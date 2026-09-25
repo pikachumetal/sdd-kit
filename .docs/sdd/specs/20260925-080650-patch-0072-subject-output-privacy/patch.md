@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: feature/0072-subject-output-privacy
-commit: <hash>
+commit: 4010306, ef9cda6, fba67ae   # lanzador, saneado y test: tres commits por decisión del dev-lead, sin juntar
 ---
 
 # Patch 0072 — las salidas de los sujetos guardan el usuario y el home de la máquina
