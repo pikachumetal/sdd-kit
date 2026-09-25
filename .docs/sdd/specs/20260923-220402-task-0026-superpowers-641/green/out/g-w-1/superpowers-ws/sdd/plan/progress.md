@@ -1,7 +1,7 @@
 # SDD ledger — plan: .docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md
 
 Spec: `.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md` (aprobada, dev-lead, 2026-09-23). Perfil: `delegate`. Integración: `develop`. Rama: `feature/0012`.
-Workspace (Windows): `C:\Users\pikac\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0026\a6e2ad97-c324-4ac6-9f87-080fc6f05e05\scratchpad\runs\g-w-1\.superpowers\sdd\plan`
+Workspace (Windows): `<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0026\a6e2ad97-c324-4ac6-9f87-080fc6f05e05\scratchpad\runs\g-w-1\.superpowers\sdd\plan`
 
 ## Setup (2026-09-24)
 
