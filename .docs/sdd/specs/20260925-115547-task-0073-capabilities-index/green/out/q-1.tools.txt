@@ -1,0 +1,108 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cd "<run>/salas" && git ls-files && ls .docs/sdd .docs/sdd/capabilities 2>/dev/null
+<<< .docs/sdd/capabilities/access.md
+.docs/sdd/capabilities/billing.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/calendar-sync.md
+.docs/sdd/capabilities/house-rules.md
+.docs/sdd/capabilities/notifications.md
+.docs/sdd/capabilities/quotas.md
+.docs/sdd/capabilities/rooms.md
+.docs/sdd/capabilities/usage-reports.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/cli.js
+tests/cli.test.js
+.docs/sdd:
+capabilities
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+
+.docs/sdd/capabilities
+
+>>> Bash: cd "<run>/salas" && pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0073-capabilities-index/67727309-6a15-4d6f-bdfc-fb77df5068f1/scratchpad/kit-green/skills/sdd-templates/scripts/Get-CapabilityIndex.ps1" -Path .docs/sdd
+<<< - `access` — Quién entra en la aplicación y con qué rol (empleado, invitado, administrador). No decide cuánto, cuándo ni qué días se reserva.
+- `billing` — Cobro por horas a los departamentos externos que reservan salas, y factura mensual a cada uno.
+- `bookings` — Reservar, consultar y cancelar salas por franja horaria desde el CLI.
+- `calendar-sync` — Exportación de las reservas a calendarios externos en formato .ics.
+- `house-rules` — Normas de uso de las salas según el rol de quien reserva: duración máxima, días y horas permitidos, antelación y penalización por no presentarse.
+- `noti
+
+>>> Read: <run>/salas/.docs/sdd/capabilities/house-rules.md
+
+>>> Read: <run>/salas/src/cli.js
+<<< 1	# Capacidad — house-rules
+2	
+3	## Propósito
+4	
+5	Normas de uso de las salas según el rol de quien reserva: duración máxima, días y horas permitidos, antelación y penalización por no presentarse.
+6	
+7	## Requisitos
+8	
+9	### Duración máxima por rol
+10	- GIVEN una sesión con rol `invitado`
+11	- WHEN `salas reservar Sur 10-13`
+12	- THEN responde `Máximo 2 h por reserva` y no guarda nada; un `empleado` tiene el mismo tope
+13	
+14	### Días permitidos por rol
+15	- GIVEN una sesión con rol `invitado`
+16	- WHEN `salas reservar Sur sabado 10-12`
+17	- THEN responde `Los invitados reservan de lunes a vie
+
+>>> Read: <run>/salas/.docs/sdd/capabilities/access.md
+<<< 1	export function run(args) {
+2	  return `salas ${args.join(' ')}`;
+3	}
+4	
+<<< 1	# Capacidad — access
+2	
+3	## Propósito
+4	
+5	Quién entra en la aplicación y con qué rol (empleado, invitado, administrador). No decide cuánto, cuándo ni qué días se reserva.
+6	
+7	## Requisitos
+8	
+9	### Entrar con la tarjeta de empleado
+10	- GIVEN una tarjeta de empleado válida
+11	- WHEN `salas login --tarjeta 4411`
+12	- THEN la sesión se abre con el rol `empleado`
+13	
+14	### Un invitado entra con código de un solo día
+15	- GIVEN un código de invitado emitido hoy por recepción
+16	- WHEN `salas login --invitado K7Q2`
+17	- THEN la sesión se abre con el rol `invitado` y caduca a las 23:59
+18	
+19	
+
+=== RESULTADO (8 turnos, 0.1959272 $)
+Tocarías la capacidad **`house-rules`**, en el requisito «Días permitidos por rol» de `.docs/sdd/capabilities/house-rules.md:14-17`.
+
+**Lo que dice el doc:**
+- Hoy un `invitado` que ejecuta `salas reservar Sur sabado 10-12` recibe `Los invitados reservan de lunes a viernes`.
+- Un `empleado` puede reservar cualquier día.
+- Los datos de las normas viven en `data/rules.json`.
+- Si dos normas aplican, manda la más restrictiva.
+
+**Dónde tocar:**
+1. **Spec:** cambia ese requisito (escenario, mensaje de rechazo y, si procede, la regla de conflicto) para que los invitados puedan reservar también los sábados.
+2. **Dato:** actualiza la lista de días permitidos del rol `invitado` en `data/rules.json`.
+3. **Código y tests:** aplica la comprobación de días en `src/cli.js` y añade el caso en `tests/cli.test.js`.
+
+**Lo que infiero yo:**
+- `data/rules.json` no existe en el repo y `src/cli.js` es un stub (`run` solo devuelve `salas ${args.join(' ')}`). Por eso no hay lógica de días que modificar todavía. Esa comprobación, y ese fichero, se crearían al implementar `house-rules`.
+- **Access:** `access` no interviene. Su propósito excluye explícitamente decidir qué días se reserva.
+- **Otras capacidades:** no he leído `bookings`, `quotas`, `billing` ni `calendar-sync`. Convendría comprobar que no repiten la regla de «lunes a viernes».
+- **Sábado y la penalización:** revisa también que la penalización por no presentarse, que también está en `house-rules`, no dependa de días laborables.
+
+No he cambiado ningún fichero. Si quieres hacerlo, es un cambio de comportamiento, así que va por `sdd-kit:sdd-start-task`.

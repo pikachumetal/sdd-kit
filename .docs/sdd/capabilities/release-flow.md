@@ -1,6 +1,8 @@
 # Capacidad — release-flow
 
-Verdad viva del comportamiento observable del carril release del kit: cuándo es opcional, cómo se cierra una publicación y cómo se adapta a si la release tiene destinatario. La declaró la spec de la task 0004 en sus «Decisiones a validar» (decisión 14). Recoge solo lo que esa task tocó o verificó: el resto del carril (retro, colapso) sigue descrito en `sdd-end-release`, y preparar la release y el acta de una reunión, en `sdd-roadmap` y en la capacidad [`planning`](planning.md).
+## Propósito
+
+El carril release del kit: cuándo es opcional, cómo se cierra una publicación y cómo se adapta a si la release tiene destinatario. Preparar la release vive en `planning`.
 
 ## Requisitos
 

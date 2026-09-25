@@ -1,0 +1,217 @@
+
+>>> Skill: sdd-kit:sdd-init-brownfield
+<<< Launching skill: sdd-kit:sdd-init-brownfield
+
+>>> Bash: cd "<run>/salas" && ls -a && ls -R .docs | head -50 && cat .docs/sdd/sdd-kit.json; cat CLAUDE.md | head -30
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0073-capabilities-index\67727309-6a15-4d6f-bdfc-fb77df5068f1\scratchpad\kit-green\skills\sdd-init-brownfield\references\migrations\README.md
+<<< 1	# Migraciones del kit — procedimiento
+2	
+3	Un proyecto ya inicializado (`.docs/sdd/` existe) no se re-inicializa: se migra. Cada fichero `vX.Y.Z.md` de esta carpeta recoge los cambios estructurales que esa versión del kit pide al proyecto, como pasos-predicado que se pueden verificar.
+4	
+5	1. **Desde dónde**: lee `.docs/sdd/sdd-kit.json`. Si no existe, el proyecto es anterior a v0.2.0: se aplican todas.
+6	2. **Hasta dónde**: la mayor versión que tenga fichero en esta carpeta. **Nunca** `plugin.json`, el changelog ni el marcador del propio kit: el canal `npx skills add` no los instala, y dura
+<<< .
+..
+.docs
+.git
+.gitignore
+README.md
+src
+tests
+.docs:
+sdd
+
+.docs/sdd:
+capabilities
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+
+.docs/sdd/capabilities:
+access.md
+billing.md
+bookings.md
+calendar-sync.md
+house-rules.md
+notifications.md
+quotas.md
+rooms.md
+usage-reports.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-20", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+cat: CLAUDE.md: No such file or directory
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0073-capabilities-index/67727309-6a15-4d6f-bdfc-fb77df5068f1/scratchpad/kit-green/skills/sdd-init-brownfield/references/migrations" && ls && cat v*.md | wc -l
+<<< README.md
+v0.2.0.md
+v0.4.0.md
+v1.0.0.md
+v1.1.0.md
+v1.2.0.md
+v2.0.0.md
+143
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0073-capabilities-index\67727309-6a15-4d6f-bdfc-fb77df5068f1\scratchpad\kit-green\skills\sdd-init-brownfield\references\migrations\v2.0.0.md
+<<< 1	# Migración a v2.0.0 — capacidades sin historial y con propósito
+2	
+3	Aplica a cualquier proyecto con `.docs/sdd/capabilities/` cuyas capacidades tengan la sección `## Historial` o no tengan `## Propósito`. Desde la v2.0.0 una capacidad abre con su propósito y solo lleva, además, sus requisitos y sus reglas: quién cambió qué lo dicen git y el bloque «Capacidades» de cada spec o `patch.md`. Un proyecto inicializado ya con el kit v2.0.0 o posterior no tiene historial en sus capacidades y ya las escribe con propósito: los pasos se saltan por predicado.
+4	
+5	1. **Historial de las capacidades.** 
+
+>>> Bash: cd "<run>/salas/.docs/sdd/capabilities" && grep -c '^## Historial' *.md; grep -L '^## Propósito' *.md; for f in rooms.md quotas.md; do echo "=== $f"; cat $f; done
+<<< access.md:0
+billing.md:0
+bookings.md:1
+calendar-sync.md:0
+house-rules.md:0
+notifications.md:0
+quotas.md:0
+rooms.md:0
+usage-reports.md:0
+access.md
+billing.md
+bookings.md
+calendar-sync.md
+house-rules.md
+notifications.md
+quotas.md
+rooms.md
+usage-reports.md
+=== rooms.md
+# Capacidad — rooms
+
+Verdad viva del catálogo de salas y de su mantenimiento. La declaró la spec de la task 0005 (decisión 1).
+
+## Requisitos
+
+### Listar el catálogo
+- GIVEN las salas Norte (8 personas, pantalla), Sur (4) y Oeste (12, en mantenimiento)
+- WHEN `salas catalogo`
+- THEN lista las tres con su aforo y su equipamiento, y 
+
+>>> Bash: cd "<run>/salas/.docs/sdd/capabilities" && for f in access billing bookings calendar-sync house-rules notifications usage-reports; do echo "=== $f"; cat $f.md; done
+<<< === access
+# Capacidad — access
+
+Verdad viva del acceso a la aplicación y de los roles. La declaró la spec de la task 0002 en sus «Decisiones a validar» (decisión 1). El login con tarjeta vive en `src/auth.js`.
+
+## Requisitos
+
+### Entrar con la tarjeta de empleado
+- GIVEN una tarjeta de empleado válida
+- WHEN `salas login --tarjeta 4411`
+- THEN la sesión se abre con el rol `empleado`
+
+### Un invitado entra con código de un solo día
+- GIVEN un código de invitado emitido hoy por recepción
+- WHEN `salas login --invitado K7Q2`
+- THEN la sesión se abre con el rol `invitado` y caduca a las 23:59
+
+##
+
+>>> PowerShell: cd "<run>/salas/.docs/sdd/capabilities"
+$p = @{
+ 'access'='Cubre cómo se entra en la aplicación (tarjeta de empleado, código de invitado) y quién puede cambiar roles.'
+ 'billing'='Cubre el cobro a los departamentos externos por horas reservadas y la exención de los internos.'
+ 'bookings'='Cubre las reservas de salas por franja: reservar, consultar salas libres y cancelar.'
+ 'calendar-sync'='Cubre la exportación de las reservas de cada persona a un calendario `.ics`.'
+ 'house-rules'='Cubre las normas de uso según el rol de quien reserva: duración, días, antelación y no presentarse.'
+ 'notifications'='Cubre los correos que envía la aplicación: confirmación de reserva y recordatorio.'
+ 'quotas'='Cubre el tope semanal de horas reservadas por departamento.'
+ 'rooms'='Cubre el catálogo de salas, su aforo y equipamiento, y su mantenimiento.'
+ 'usage-reports'='Cubre el informe mensual de ocupación por sala.'
+}
+foreach ($k in $p.Keys) {
+  $f = "$k.md"; $t = Get-Content $f -Raw -Encoding utf8
+  $t = $t -replace '(?s)\r?\n## Historial.*?(?=\r?\n## |\z)', ''
+  $t = $t -replace '(?m)^(# Capacidad — .+)\r?\n\r?\n(?!## )[^\r\n]+\r?\n', "`$1`n`n"
+  $t = $t -replace '(?m)^(# Capacidad — .+)\r?\n\r?\n## Requisitos', "`$1`n`n## Propósito`n`n$($p[$k])`n`n## Requisitos"
+  Set-Content $f ($t.TrimEnd() + "`n") -Encoding utf8 -NoNewline
+}
+Get-Content bookings.md, access.md
+cd ../../..
+pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0073-capabilities-index/67727309-6a15-4d6f-bdfc-fb77df5068f1/scratchpad/kit-green/skills/sdd-templates/scripts/Test-Capabilities.ps1" -Path .docs/sdd
+Select-String -Path .docs/sdd/capabilities/*.md -Pattern '^## Historial'
+<<< Exit code 1
+# Capacidad — bookings
+
+
+## Requisitos
+
+### Reservar una franja
+- GIVEN la sala Norte libre de 10 a 12
+- WHEN `salas reservar Norte 10-12`
+- THEN la reserva queda guardada y el CLI responde `Reservada Norte 10-12`
+
+### Consultar salas libres
+- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12
+- WHEN `salas libres 10-12`
+- THEN lista `Sur` y `Oeste`, una por línea
+
+### Cancelar una reserva
+- GIVEN Norte reservada de 10 a 12 por quien cancela
+- WHEN `salas cancelar Norte 10-12`
+- THEN la franja queda libre y el CLI responde `Cancelada Norte 10-12`
+
+
+>>> PowerShell: cd "<run>/salas/.docs/sdd/capabilities"
+$p = @{
+ 'access'='Cubre cómo se entra en la aplicación (tarjeta de empleado, código de invitado) y quién puede cambiar roles.'
+ 'billing'='Cubre el cobro a los departamentos externos por horas reservadas y la exención de los internos.'
+ 'bookings'='Cubre las reservas de salas por franja: reservar, consultar salas libres y cancelar.'
+ 'calendar-sync'='Cubre la exportación de las reservas de cada persona a un calendario `.ics`.'
+ 'house-rules'='Cubre las normas de uso según el rol de quien reserva: duración, días, antelación y no presentarse.'
+ 'notifications'='Cubre los correos que envía la aplicación: confirmación de reserva y recordatorio.'
+ 'rooms'='Cubre el catálogo de salas, su aforo y equipamiento, y su mantenimiento.'
+ 'usage-reports'='Cubre el informe mensual de ocupación por sala.'
+}
+foreach ($k in $p.Keys) {
+  $f = "$k.md"; $t = Get-Content $f -Raw -Encoding utf8
+  $t = $t -replace '(?m)^(# Capacidad — .+)\r?\n\s*\r?\n## Requisitos', "`$1`n`n## Propósito`n`n$($p[$k])`n`n## Requisitos"
+  Set-Content $f $t -Encoding utf8 -NoNewline
+}
+cd ../../..
+pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0073-capabilities-index/67727309-6a15-4d6f-bdfc-fb77df5068f1/scratchpad/kit-green/skills/sdd-templates/scripts/Test-Capabilities.ps1" -Path .docs/sdd
+Select-String -Path .docs/sdd/capabilities/*.md -Pattern '^## Historial'
+git diff --stat; Get-Content .docs/sdd/capabilities/house-rules.md | Select -First 8
+<<< Capacidades válidas: 9
+ .docs/sdd/capabilities/access.md        | 4 +++-
+ .docs/sdd/capabilities/billing.md       | 4 +++-
+ .docs/sdd/capabilities/bookings.md      | 9 +++------
+ .docs/sdd/capabilities/calendar-sync.md | 4 +++-
+ .docs/sdd/capabilities/house-rules.md   | 4 +++-
+ .docs/sdd/capabilities/notifications.md | 4 +++-
+ .docs/sdd/capabilities/quotas.md        | 4 ++++
+ .docs/sdd/capabilities/rooms.md         | 4 +++-
+ .docs/sdd/capabilities/usage-reports.md | 4 +++-
+ 9 files changed, 28 insertions(+), 13 deletions(-)
+# Capacidad — house-rules
+
+## Propósito
+
+Cubre las normas de uso 
+
+>>> Bash: cd "<run>/salas" && sed -i 's/"version": "1.2.0"/"version": "2.0.0"/; s/"updated": "2026-09-20"/"updated": "2026-09-25"/' .docs/sdd/sdd-kit.json && cat .docs/sdd/sdd-kit.json && git add -A && git commit -q -m "chore(sdd): migrar al kit v2.0.0
+
+Capacidades sin sección Historial y con Propósito; marcador a 2.0.0.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline | head -2 && git status --short
+<<< {"version": "2.0.0", "channel": "plugin", "updated": "2026-09-25", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+6e79bc3 chore(sdd): migrar al kit v2.0.0
+f5b51f0 feat: base de reservas de salas
+
+=== RESULTADO (12 turnos, 0.304687 $)
+Migré el proyecto de la v1.2.0 a la v2.0.0 del kit y lo dejé commiteado (`6e79bc3`, `chore(sdd): migrar al kit v2.0.0`). Como ya existía `.docs/sdd/`, no hice onboarding, sino solo la migración pendiente. De las migraciones del kit, la única que faltaba era `v2.0.0.md`.
+
+- **Historial:** borré la sección `## Historial` de `bookings.md`, la única que la tenía. Las otras ocho capacidades no la tenían.
+- **Propósito:** añadí `## Propósito` (una frase por capacidad) a las nueve capacidades: access, billing, bookings, calendar-sync, house-rules, notifications, quotas, rooms y usage-reports. En las siete que tenían un párrafo de procedencia bajo el título, lo quité, como pide la migración. Ese párrafo era del tipo «La declaró la spec de la task…».
+- **`access.md`:** su párrafo decía además que el login con tarjeta vive en `src/auth.js`. Lo quité con el resto, así que esa referencia ya no está.
+- **`house-rules.md`:** su párrafo decía que las normas antes vivían en `bookings`. Ese dato tampoco se conserva.
+- **Marcador:** `sdd-kit.json` queda en `"version": "2.0.0"` con fecha 2026-09-25; el resto de claves no cambió.
+- **Verificación:** `Test-Capabilities.ps1` da «Capacidades válidas: 9». No queda ningún `## Historial`.
+
+No hay gates pendientes. No hice inventario, cosecha, reglas de oro ni regeneración de documentos, porque no forman parte de una migración. No existe `CLAUDE.md` en el repo, y no lo creé.
+
+Los propósitos están redactados por mí; conviene revisarlos en el diff (`git show 6e79bc3`).

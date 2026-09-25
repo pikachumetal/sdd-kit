@@ -90,20 +90,21 @@
 | 2026-09-25 | 0070 | infra/tooling | 4 | 1.6 | 0.4 | 56699k | 5298k | 6.58 | 21.34 | 20260925-081130-task-0070-openspec-capabilities |
 | 2026-09-25 | 0075 | patch | 0.5 | 0.7 | 1.4 | — | — | — | — | 20260925-114821-patch-0075-patch-close-validation |
 | 2026-09-25 | 0076 | patch | 0.5 | 0.58 | 1.17 | — | — | — | — | 20260925-115315-patch-0076-reference-launcher |
+| 2026-09-25 | 0073 | infra/tooling | 2.5 | 1 | 0.4 | 36365k | 4474k | 4.7 | 15.49 | 20260925-115547-task-0073-capabilities-index |
 
-**Factor de calibración** (ratio mediano real/estimado, 79 artefactos): **0.6** · media 0.7
+**Factor de calibración** (ratio mediano real/estimado, 80 artefactos): **0.6** · media 0.7
 
-- p25–p75: 0.43–0.92
+- p25–p75: 0.43–0.91
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 62 % · infraestimadas: 9 %
-- Error absoluto (h): media 0.85 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.82
+- Dentro de ±25 %: 29 % · sobreestimadas: 63 % · infraestimadas: 9 %
+- Error absoluto (h): media 0.86 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.74
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 23 | 29 % |
+| <0.5 | 24 | 30 % |
 | 0.5–0.8 | 28 | 35 % |
-| 0.8–1.25 | 21 | 27 % |
+| 0.8–1.25 | 21 | 26 % |
 | 1.25–2 | 7 | 9 % |
 | ≥2 | 0 | 0 % |
 
@@ -111,7 +112,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 50 | 0.53 | 0.38–0.72 |
-| infra/tooling | 11 | 0.43 | 0.37–0.65 |
+| infra/tooling | 12 | 0.42 | 0.37–0.63 |
 | patch | 17 | 1.17 | 0.8–1.33 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -122,6 +123,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 57 | 66.2 | 0.66 | 210.06 | 65.48 |
+| sin publicar | 58 | 67.2 | 0.65 | 214.76 | 80.97 |
 
 > Ver `estimation.md`.

@@ -1,6 +1,8 @@
 # Capacidad — configuration
 
-Verdad viva de la configuración del kit en un proyecto: qué va en `sdd-kit.json` (del proyecto, en git) y qué en `sdd-kit.local.json` (de cada persona, fuera de git), y cómo la entrevista de `sdd-config` la enseña, la pregunta y la escribe. La declaró la spec de la task 0061 en sus «Decisiones que he tomado yo» (decisión 15). El contrato que aplican las skills vive en `skills/sdd-start-task/references/control-profiles.md` y el catálogo de preguntas en `skills/sdd-config/SKILL.md`.
+## Propósito
+
+La configuración del kit en un proyecto: qué va en `sdd-kit.json` (del equipo, en git) y qué en `sdd-kit.local.json` (de cada persona), y cómo `sdd-config` la enseña, la pregunta y la escribe.
 
 ## Requisitos
 

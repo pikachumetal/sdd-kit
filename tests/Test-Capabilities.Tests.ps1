@@ -87,7 +87,7 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
   It 'otra sección de nivel 2 falla' {
     $content = $script:Bookings + "`n## Notas`n`nalgo`n"
     (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
-      Should -Contain 'bookings.md: sección «Notas» no admitida: solo «Requisitos» y «Reglas de la capacidad»'
+      Should -Contain 'bookings.md: sección «Notas» no admitida: solo «Propósito», «Requisitos» y «Reglas de la capacidad»'
   }
 
   It 'sin sección Requisitos falla' {
@@ -99,7 +99,7 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
   It 'una marca de delta en la capacidad falla con su línea' {
     $content = $script:Bookings -replace '### Consultar salas libres', "**MODIFIED — Consultar salas libres**"
     $lines = (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines
-    ($lines | Where-Object { $_.Contains('bookings.md: resto de delta «**MODIFIED —» en la línea 10') }) | Should -Not -BeNullOrEmpty
+    ($lines | Where-Object { $_.Contains('bookings.md: resto de delta «**MODIFIED —» en la línea 14') }) | Should -Not -BeNullOrEmpty
   }
 
   It 'el bloque de reglas en negrita del delta falla aunque haya sección' {
@@ -140,6 +140,65 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
   }
 }
 
+Describe 'Test-Capabilities.ps1 exige el propósito' {
+  BeforeAll {
+    $script:Template = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../skills/sdd-templates/templates/capability-template.md')
+    function Set-Purpose([string]$Content, [string]$Body) {
+      return $Content -replace '(?s)## Propósito\r?\n.*?(?=\r?\n## )', "## Propósito`n`n$Body`n"
+    }
+  }
+
+  It 'sin sección Propósito falla' {
+    $content = $script:Bookings -replace '(?s)## Propósito.*?(?=## Requisitos)', ''
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })
+    $result.Lines | Should -Be @('bookings.md: falta la sección «Propósito»')
+    $result.Code | Should -Be 1
+  }
+
+  It 'un propósito vacío falla' {
+    $content = Set-Purpose $script:Bookings ''
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
+      Should -Be @('bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad')
+  }
+
+  It 'un propósito con solo la ayuda y el hueco de la plantilla falla como vacío' {
+    $content = Set-Purpose $script:Bookings "> Una o dos frases.`n`n<una o dos frases: qué cubre la capacidad>"
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
+      Should -Be @('bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad')
+  }
+
+  It 'un propósito de más de 300 caracteres falla con su longitud medida en una línea' {
+    $content = Set-Purpose $script:Bookings (('a' * 200) + "`n" + ('b' * 211))
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
+      Should -Be @('bookings.md: «Propósito» tiene 412 caracteres; el máximo es 300 (una o dos frases)')
+  }
+
+  It 'un propósito de 300 caracteres pasa' {
+    $content = Set-Purpose $script:Bookings ('a' * 300)
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Code | Should -Be 0
+  }
+
+  It 'un propósito detrás de otra sección falla' {
+    $purpose = "## Propósito`n`nReservar y consultar salas.`n`n"
+    $content = ($script:Bookings -replace '(?s)## Propósito.*?(?=## Requisitos)', '') -replace '## Reglas de la capacidad', "$purpose## Reglas de la capacidad"
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
+      Should -Be @('bookings.md: «Propósito» debe ser la primera sección')
+  }
+
+  It 'la plantilla calcada tal cual falla solo por el título y el propósito sin rellenar' {
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Template })).Lines | Should -Be @(
+      'bookings.md: el título debe ser «# Capacidad — bookings»'
+      'bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad'
+    )
+  }
+
+  It 'la plantilla con título y propósito rellenos y el resto a medias pasa' {
+    $content = Set-Purpose ($script:Template -replace '# Capacidad — <nombre>', '# Capacidad — bookings') "> Una o dos frases.`n`nReservar y consultar salas por franja."
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })
+    $result.Lines | Should -Be @('Capacidades válidas: 1')
+  }
+}
+
 Describe 'Las capacidades del repo' {
   It 'pasan el validador' {
     $docs = Join-Path $PSScriptRoot '../.docs/sdd'
@@ -158,6 +217,13 @@ Describe 'La migración a 2.0.0' {
   It 'tiene un paso que quita la sección Historial sin gate y se salta sin capabilities/' {
     $step = ($script:Migration -split "`r?`n") | Where-Object { $_ -match 'Historial de las capacidades' }
     $step | Should -Match '## Historial'
+    $step | Should -Match 'Sin gate'
+    $step | Should -Match 'se salta'
+  }
+
+  It 'tiene un paso que escribe el propósito sin gate y se salta sin capabilities/' {
+    $step = ($script:Migration -split "`r?`n") | Where-Object { $_ -match 'Propósito de las capacidades' }
+    $step | Should -Match '## Propósito'
     $step | Should -Match 'Sin gate'
     $step | Should -Match 'se salta'
   }

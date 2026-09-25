@@ -26,7 +26,7 @@ approvers:
 
 ## Capacidades
 
-> Se escribe tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo». Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta. Lo comprueba `Test-Capabilities.ps1` al cerrar.
+> Se escribe con la salida de `Get-CapabilityIndex.ps1`, que ejecuta el paso 1 de `sdd-start-task`, con el nombre exacto que da el índice. Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo». Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta. Lo comprueba `Test-Capabilities.ps1` al cerrar.
 
 - Nuevas: `<nombre>` — <qué cubre>
 - Modificadas: `<nombre>` — <qué requisito cambia>

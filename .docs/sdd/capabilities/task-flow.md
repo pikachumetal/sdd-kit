@@ -1,6 +1,8 @@
 # Capacidad — task-flow
 
-Verdad viva del comportamiento observable del carril task del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una task. Cada requisito tiene un título estable: las specs lo citan literal en `MODIFIED — <título>`. Una capacidad es un sustantivo del dominio; esta la declaró la spec de la task `spec-ligera-funcional` en sus «Decisiones a validar» (decisión 6).
+## Propósito
+
+El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, especificar y cerrar una task.
 
 ## Requisitos
 

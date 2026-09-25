@@ -1,6 +1,8 @@
 # Capacidad — onboarding
 
-Verdad viva del comportamiento observable de la inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-brownfield`): lo que un dev puede esperar de la entrevista y de los documentos de anclaje que produce. La declaró la spec de la task `reglas-de-capacidad` en sus «Decisiones a validar» (decisión 9). La actualización de un proyecto ya inicializado vive en `migracion`.
+## Propósito
+
+La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-brownfield`): qué puede esperar un dev de la entrevista y de los documentos de anclaje que produce.
 
 ## Requisitos
 

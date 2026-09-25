@@ -1,6 +1,8 @@
 # Capacidad — task-ids
 
-Verdad viva del comportamiento observable de la numeración del trabajo: cómo un proyecto decide sus ids de task y de patch, quién los asigna y qué garantiza que no se repitan. Cubre los dos carriles porque comparten secuencia. Cada requisito tiene un título estable: las specs lo citan literal en `MODIFIED (antes: …)`. La declaró la spec de la task `task-ids` en sus «Decisiones a validar» (decisión 2).
+## Propósito
+
+La numeración del trabajo: cómo un proyecto decide sus ids de task y de patch, quién los asigna y qué garantiza que no se repitan. Cubre los dos carriles porque comparten secuencia.
 
 ## Requisitos
 

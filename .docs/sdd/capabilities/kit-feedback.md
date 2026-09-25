@@ -1,6 +1,8 @@
 # Capacidad — kit-feedback
 
-Verdad viva del ticket de mejora del kit: lo que un proyecto consumidor escribe sobre el comportamiento del kit al terminar una sesión de trabajo, para el agente que mantiene el kit. Esta capacidad la declaró la spec de la task 0002 en sus «Decisiones que he tomado yo» (decisión 2).
+## Propósito
+
+El ticket de mejora del kit: lo que un proyecto consumidor escribe sobre el comportamiento del kit al terminar una sesión de trabajo, para el agente que mantiene el kit.
 
 ## Requisitos
 

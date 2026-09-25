@@ -1,6 +1,8 @@
 # Capacidad — roadmap
 
-Verdad viva de cómo se marca el roadmap de un proyecto: qué escriben los cierres de task y de patch en las tablas de «Deuda técnica» y «Backlog», y cómo se cuenta lo que sigue abierto. Esta capacidad la declaró la spec de la task 0018 en sus «Decisiones que he tomado yo» (decisión 7); los estados de las filas de task viven en [`control-profiles`](control-profiles.md).
+## Propósito
+
+Cómo marcan el roadmap los cierres de task y de patch en «Deuda técnica» y «Backlog», y cómo se cuenta lo que sigue abierto. Los estados de las filas de task viven en `control-profiles`.
 
 ## Requisitos
 

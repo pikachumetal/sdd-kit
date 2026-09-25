@@ -1,6 +1,8 @@
 # Capacidad — routing
 
-Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y con superpowers instalado. Las cinco salidas finas (roadmap, consult, patch, lite, full) las decide después el paso 2 de `sdd-start-task`; esta capacidad cubre solo la primera skill que se invoca.
+## Propósito
+
+Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y superpowers: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-start-task`.
 
 ## Requisitos
 
