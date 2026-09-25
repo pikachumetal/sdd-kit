@@ -36,6 +36,7 @@ Verificado por el agente.
 | 3 | RED: `PathLength` con un fichero sin versionar de 148 caracteres, antes del fix | ✅ reproduce el falso verde: 2/2 pasan |
 | 4 | GREEN: el mismo fichero después del fix | ✅ falla y nombra `148 tests/fixtures/xxx….md`; al borrarlo, 2/2 |
 | 5 | Conjunto rápido (`-ExcludeTagFilter Slow`) | ✅ 630 pasan, 0 fallan, 18,4 s |
+| 6 | Validación del dev-lead | 🧪 diferida a uso (dev-lead, 2026-09-25: «pruebas diferidas a uso»): el próximo commit que toque `roadmap.md` y la próxima ruta larga sin versionar |
 
 ## 5. Tiempo (ligero)
 
