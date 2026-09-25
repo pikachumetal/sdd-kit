@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-25
 branch: patch/0078-split-threshold
-commit: <hash>
+commit: a95b1d9
 ---
 
 # Patch 0078 — umbral para proponer partir una feature, con tramo 4-5
@@ -39,6 +39,8 @@ El umbral es un solo número sin criterio: `skills/sdd-start-feature/SKILL.md` (
 | 3 | RED `x`, 4 tasks heterogéneas (migración, persistencia, API, pantalla) | ✅ 2/2 proponen, solo por el recuento |
 | 4 | GREEN `x`, mismo molde, kit con el fix | ✅ 2/2 proponen, con superficies distintas y migración como motivo |
 | 5 | Suite Pester completa, con el literal nuevo de `tests/ControlProfiles.Tests.ps1` | ✅ 850/851; el que falla es el tiempo del conjunto rápido del pre-commit (medido dentro de la suite completa, con carga), que pasa solo |
+
+Validación diferida: 2026-09-25 · «si validacion diferida al uso» · disparador: la primera feature de 4 o 5 tasks arrancada con el kit de `develop`, a cargo del dev-lead
 
 Sujetos Sonnet headless con `tests/headless/run.sh` y `SPEC_DIR` absoluto: 8 sujetos, 2,23 $. El recuento final del lanzador («sujetos de la campaña: 8 · coste acumulado: 2.23 $») coincide con los sujetos que corrieron.
 
