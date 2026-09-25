@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sujeto de la batería de puertas: una frase de dev, vaga y en castellano, sobre el molde de salas de la 0014.
+# Sujeto de la batería de puertas: una frase de dev, vaga y en castellano, sobre el molde de salas `molde-code`.
 # Lo lanza tests/headless/run.sh con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -14,6 +14,7 @@ case "$3" in
   r2) ASK="Te paso las notas de la reunión de hoy con el cliente: quieren reservas recurrentes, ver las salas libres por la tarde y quitar lo del correo. A ver qué hacemos." ;;
   r3) ASK="Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona)." ;;
   r4) ASK="Lo de exportar a calendario tiene que ir antes que los avisos por correo." ;;
+  r5) ASK="Apunta en el roadmap lo del filtro por sala, no lo arranques todavía." ;;
   f1) ASK="Mete un filtro por sala en el comando libres." ;;
   f2) ASK="Let's build a waitlist for when a room is full." ;;
   f3) ASK="Es una tontería: que al reservar se pueda poner una nota. Hazlo rápido." ;;

@@ -35,6 +35,12 @@ Describe 'skills/using-sdd' {
     $row | Should -Not -Match '\d'
   }
 
+  It 'lleva a sdd-roadmap lo que se planifica sin hacerlo todavía, como hacía el router' {
+    $row = ($script:Skill -split '\r?\n') | Where-Object { $_ -match '^\|' -and $_ -match 'sdd-kit:sdd-roadmap' } | Select-Object -First 1
+    $row | Should -Match 'sin hacerlo todavía'
+    $row | Should -Match 'apunta en el roadmap'
+  }
+
   It 'lleva los items asignados del gestor a sdd-roadmap' {
     $row = ($script:Skill -split '\r?\n') | Where-Object { $_ -match '^\|' -and $_ -match 'sdd-kit:sdd-roadmap' } | Select-Object -First 1
     $row | Should -Match 'asignado'

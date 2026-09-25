@@ -98,7 +98,23 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SUPERPOWERS_DIR = 'C:/sp/6.4.1' }
 
     $run.ExitCode | Should -Be 0 -Because $run.Output
-    Get-Content -Raw (Join-Path $campaign.Out 'a-1.texts.txt') | Should -Match 'aislado con superpowers de C:/sp/6.4.1'
+    $claudeArgs = @(Get-Content (Join-Path $campaign.Runs 'a-1.args'))
+    $sources = [array]::IndexOf($claudeArgs, '--setting-sources')
+    $sources | Should -BeGreaterThan -1
+    $claudeArgs[$sources + 1] | Should -BeExactly ''
+    $claudeArgs | Should -Contain 'C:/sp/6.4.1'
+    $claudeArgs[[array]::IndexOf($claudeArgs, 'C:/sp/6.4.1') - 1] | Should -Be '--plugin-dir'
+  }
+
+  It 'sin SUPERPOWERS_DIR no aísla al sujeto' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'not-isolated')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $argsFile = Join-Path $campaign.Runs 'a-1.args'
+    $argsFile | Should -Exist
+    Get-Content $argsFile | Should -Not -Contain '--setting-sources'
   }
 
   It 'aborta si SETTINGS no deshabilita el kit instalado' {
