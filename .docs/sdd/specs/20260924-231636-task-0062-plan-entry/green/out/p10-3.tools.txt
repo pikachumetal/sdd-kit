@@ -1,0 +1,153 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git ls-files && echo ---- && for f in .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md .docs/sdd/architecture.md .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json; do echo "=== $f"; cat "$f" 2>/dev/null; done; ls .docs/sdd/capabilities 2>/dev/null
+<<< Exit code 2
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-proposal-0020-billing/proposal.md
+.docs/sdd/specs/20260916-100000-task-0021-room-rates/walkthrough.md
+.gitignore
+README.md
+data/usage.csv
+src/report.js
+src/slots.js
+tests/slots.test.js
+----
+=== .docs/sdd/constitution.md
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+=== .docs/sdd/mission.md
+# Missio
+
+>>> Bash: cd "<run>/salas" && for f in .docs/sdd/specs/*/*.md .docs/sdd/changelog.md README.md src/*.js tests/*.js; do echo "=== $f"; cat "$f"; done; head -5 data/usage.csv; git branch -a
+<<< === .docs/sdd/specs/20260915-090000-proposal-0020-billing/proposal.md
+---
+id: 20260915-090000-proposal-0020-billing
+proposal: 0020
+title: Facturación a clientes externos
+created: 2026-09-15
+---
+
+# Propuesta — Facturación a clientes externos
+
+## Por qué
+
+Desde este año alquilamos salas a clientes externos y hoy se factura a mano en una hoja de cálculo.
+
+## Reglas de negocio
+
+- Tarifa por hora distinta para cada sala: Norte 40 €/h, Sur 25 €/h.
+- Factura mensual: el día 1 se emite una factura por cliente con las reservas del mes anterior. Cliente Acme con 3 h en Norte y 2 h en Sur en agosto → fac
+
+>>> Bash: cd "<run>/salas" && python - <<'EOF'
+p='.docs/sdd/specs/20260915-090000-proposal-0020-billing/proposal.md'
+s=open(p,encoding='utf8').read()
+old_start=s.index('- Tarifa por hora distinta')
+old_end=s.index('- Impago:')
+new='''- Tarifa base por hora distinta para cada sala: Norte 40 €/h, Sur 25 €/h.
+- Recargo horario: las horas de 8 a 14 h (8 incluida, 14 excluida) cuestan un 20 % más, en todas las salas (Norte 48 €/h, Sur 30 €/h). Una reserva que cruza el límite se factura hora a hora: `13-15` en Norte = 1 h a 48 € + 1 h a 40 € = 88 €.
+- Factura quincenal: los días 1 y 16 se emite una factura por cliente. La del día 1 cubre del 16 al último día del mes anterior; la del día 16 cubre del 1 al 15 del mes en curso. Una reserva pertenece al periodo de su fecha. Cliente Acme, del 1 al 15 de septiembre: Norte `10-13` (3 h a 48 €) y Sur `15-17` (2 h a 25 €) → factura del 16 de septiembre por 194 €.
+'''
+s=s[:old_start]+new+s[old_end:]
+s=s.replace('- Impago: una factura sin pagar a los 30 días','- Impago: una factura sin pagar a los 30 días desde su emisión')
+i=s.index('## Reparto')
+s=s[:i]+'''## Reparto
+
+| Orden | Feature | Estado |
+| --- | --- | --- |
+| 1 | 0021 — Tarifa por sala | ✅ |
+| 2 | 0024 — Recargo 8–14 h (+20 %) | ⏳ |
+| 3 | 0022 — Factura quincenal (1 y 16) | ⏳ |
+| 4 | 0023 — Bloqueo por impago | ⏳ |
+
+## Cambios
+
+- 2026-09-25 — el cliente cambia la facturación de mensual a quincenal (1 y 16) y añade el recargo del 20 % de 8 a 14 h. Decisiones tomadas sin consulta: límites de la franja (8 incl., 14 excl.), prorrateo hora a hora en reservas que cruzan el límite, recargo en todas las salas, reserva asignada por su fecha, plazo de impago contado desde la emisión de cada factura quincenal. Nueva feature 0024 antes de 0022; 0021 se mantiene ✅ (sigue siendo correcta como tarifa base).
+'''
+open(p,'w',encoding='utf8').write(s)
+r='.docs/sdd/roadmap.md'
+t=open(r,encoding='utf8').read()
+t=t.replace('| 0022 | Factura mensual — `proposal: 0020`, tras 0021 | ⏳ |','| 0024 | Recargo 8–14 h (+20 %) sobre la tarifa base — `proposal: 0020`, tras 0021 | ⏳ |\n| 0022 | Factura quincenal (días 1 y 16) — `proposal: 0020`, tras 0024 | ⏳ |')
+open(r,'w',encoding='utf8').write(t)
+EOF
+git diff --stat; git diff .docs/sdd/roadmap.md
+<<<  .docs/sdd/roadmap.md                               | 51 +++++++++--------
+ .../proposal.md                                    | 66 ++++++++++++----------
+ 2 files changed, 62 insertions(+), 55 deletions(-)
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index 11a3d13..42d12f1 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -1,25 +1,26 @@
+-# Roadmap — salas
+-
+-## Próximo
+-
+-| # | Ítem | Estado |
+-| --- | --- | --- |
+-| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+-| 0021 | Tarifa por sala — `proposal: 0020` | ✅ |
+-| 0022 | Factura mensu
+
+>>> Bash: cd "<run>/salas" && for f in .docs/sdd/roadmap.md .docs/sdd/specs/20260915-090000-proposal-0020-billing/proposal.md; do sed -i 's/$/\r/' "$f"; done; git diff --stat; git diff .docs/sdd/roadmap.md | cat -A | grep -c '\^M\$' ; git diff --stat
+<<<  .docs/sdd/roadmap.md                               | 51 +++++++++--------
+ .../proposal.md                                    | 66 ++++++++++++----------
+ 2 files changed, 62 insertions(+), 55 deletions(-)
+26
+ .docs/sdd/roadmap.md                               | 51 +++++++++--------
+ .../proposal.md                                    | 66 ++++++++++++----------
+ 2 files changed, 62 insertions(+), 55 deletions(-)
+
+>>> Bash: cd "<run>/salas" && git show HEAD:.docs/sdd/roadmap.md | head -2 | od -c | head -3; git config core.autocrlf; head -2 .docs/sdd/roadmap.md | od -c | head -3
+<<< 0000000   #       R   o   a   d   m   a   p     342 200 224       s   a
+0000020   l   a   s  \n  \n
+0000025
+false
+0000000   #       R   o   a   d   m   a   p     342 200 224       s   a
+0000020   l   a   s  \r  \n  \r  \n
+0000027
+
+>>> Bash: cd "<run>/salas" && sed -i 's/\r$//' .docs/sdd/roadmap.md .docs/sdd/specs/20260915-090000-proposal-0020-billing/proposal.md; git diff --stat
+<<<  .docs/sdd/roadmap.md                                     |  3 ++-
+ .../20260915-090000-proposal-0020-billing/proposal.md    | 16 +++++++++++-----
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+
+=== RESULTADO (9 turnos, 0.33266860000000004 $)
+He actualizado la propuesta 0020 y el roadmap, sin tocar código ni hacer commit. Los cambios están en el working tree y no he ejecutado tests.
+
+Facturación aún no existe en el código: 0022 (factura) y 0023 (bloqueo por impago) están pendientes, y 0021 solo cubre la tarifa por sala. Por eso lo he tratado como cambio de planificación y no he arrancado ninguna task con spec.
+
+**Propuesta 0020** (`proposal.md`):
+- **Recargo:** las horas de 8 a 14 h cuestan un 20 % más en todas las salas: Norte pasa a 48 €/h y Sur a 30 €/h.
+- **Factura quincenal:** los días 1 y 16. La del día 1 cubre del 16 al fin del mes anterior, y la del día 16 cubre del 1 al 15.
+- **Ejemplo:** Acme, del 1 al 15 de septiembre, con Norte `10-13` y Sur `15-17`, sale a 194 €. Sustituye al ejemplo mensual de 170 €.
+- **Plazo de impago:** los 30 días se cuentan desde la emisión de cada factura.
+- **Registro:** he añadido una sección «Cambios» con la fecha y las decisiones.
+
+**Roadmap:**
+- **Nuevo 0024:** recargo 8–14 h, después de 0021 y antes de 0022.
+- **0022:** pasa de mensual a «Factura quincenal (días 1 y 16)» y depende de 0024.
+- **0021:** sigue ✅, porque la tarifa por sala sigue siendo la base.
+
+**Decisiones que he tomado yo, por falta de alguien a quien preguntar:**
+- **Límites de la franja:** las 8 h entran en el recargo y las 14 h no.
+- **Reservas que cruzan el límite:** se facturan hora a hora, así que `13-15` en Norte son 88 €.
+- **Periodo de una reserva:** la fecha de la reserva decide a qué factura va.
+- **Recargo en todas las salas:** el mismo 20 % para Norte y Sur.
+- **Orden:** el recargo va antes que la factura, porque la factura depende del precio.
+
+El walkthrough de 0021 cita `data/rates.csv`, pero ese fichero no está en el repo. Habrá que comprobarlo al implementar 0024.
+
+Las specs de 0024 y 0022 quedan para cuando se arranquen. En `delegate` la spec necesita aprobación explícita antes de escribir código, y no he saltado ese paso.

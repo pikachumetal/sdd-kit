@@ -61,3 +61,22 @@ La revisión final (Opus) encontró que la regla de «task en marcha» solo apar
 
 p11-2: «La 0013 (aforo) sigue en marcha en `feature/0013-aforo`, así que no la modifiqué ni amplié». Dos sujetos más, 0,67 $. **Campaña entera**: 46 sujetos y 12,58 $, dentro del techo de 50 sujetos y 25 $.
 La copia de la propuesta de p11-2 se guarda como `…-proposal-0014-salas-libres/`: el sujeto la llamó `…-salas-libres-proyector-orden` y la ruta pasaba de 140 caracteres.
+
+## Tras el renombrado a `sdd-roadmap` (`cda449d`)
+
+El enrutado se vuelve a medir con el nombre nuevo, un sujeto por escenario de entrada (p1, p4, p6, p10):
+
+| Medida | p1-3 | p4-3 | p6-3 | p10-3 |
+| --- | --- | --- | --- | --- |
+| carga `sdd-roadmap` | ✅ | ✅ | ✅ | ❌ se queda en `sdd-start-task` |
+| conducta de su escenario | ✅ propuesta 0014 y filas 0015–0019 | ✅ acta, 0012 aparcada | ✅ propone el scope y espera | ❌ reescribe las reglas de la propuesta (sección «Cambios» sin enmienda) |
+
+En el GREEN, con el nombre `sdd-plan`, los dos p10 entraban por `sdd-start-task` y se pasaban solos; con `sdd-roadmap`, p10-3 no se pasó. **REFACTOR** (`e68cd50`, decidido por el dev-lead al llegar al techo, que sube de 50 a 53 sujetos): el paso 2 de `sdd-start-task` gana una quinta salida, «petición que solo cambia la planificación → `sdd-roadmap`», y la `description` de `sdd-roadmap` recoge «el cliente ha cambiado una regla de algo ya planificado».
+
+| Medida | p10-4 | p10-5 | p2-4 (control) |
+| --- | --- | --- | --- |
+| carga `sdd-roadmap` directamente | ✅ | ✅ | ✅ |
+| enmienda fechada, reglas originales intactas | ✅ | ✅ | — |
+| nada arrancado; la 0021 cerrada no se reabre | ✅ | ✅ | ✅ propone una fila, sin propuesta, y espera |
+
+**Campaña entera**: 53 sujetos, 14.47 $, con el techo de sujetos ampliado a 53 por el dev-lead y el de dinero (25 $) sin tocar.

@@ -1,0 +1,184 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> PowerShell: git branch --all; git worktree list; Get-Content .docs/sdd/sdd-kit.json; Get-Content .docs/sdd/roadmap.md; Get-ChildItem -Recurse .docs/sdd | Select-Object -ExpandProperty FullName
+<<< * develop
+  main
+<run>/salas 0efbab2 [develop]
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| — | Recordatorio el día antes de una reserva | equipo de oficina |
+
+>>> PowerShell: $k="<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-rename\skills\sdd-templates"; Get-ChildItem -Recurse $k | % FullName; Get-Content "$k\proposal-template.md" -ErrorAction SilentlyContinue; Get-Content "$k\templates\proposal-template.md" -ErrorAction SilentlyContinue; git ls-files; Get-Content .docs/sdd/constitution.md, .docs/sdd/mission.md; git grep -n -i "min\|franja\|slot" -- src README* | Select-Object -First 30
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-rename\skills\sdd-templates\scripts
+<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-rename\skills\sdd-templates\templates
+<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-rename\skills\sdd-templates\SKILL.md
+<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f
+
+>>> PowerShell: $k="<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0062-plan-entry\be24c358-5880-40fc-bfb7-1f7e1b6bf0ea\scratchpad\kit-rename\skills\sdd-templates"; pwsh -NoProfile -File "$k\scripts\Get-NextSddId.ps1" -ProjectRoot (Get-Location).Path -Reserve -Count 4; git status --short; Get-Content "$k\templates\roadmap-template.md"|Select-Object -First 40
+<<< 0014
+0015
+0016
+0017
+# Roadmap — <proyecto>
+
+> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-end-task` (marca la fila de la task), `sdd-end-patch` (tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 
+
+>>> PowerShell: $ts=Get-Date -Format "yyyyMMdd-HHmmss"; $d=".docs/sdd/specs/$ts-proposal-0014-reunion-acme"; New-Item -ItemType Directory $d | Out-Null
+@'
+---
+id: PLACEHOLDER-proposal-0014-reunion-acme
+proposal: 0014
+title: Reunión con Acme (2026-09-25)
+source: meeting
+created: 2026-09-25
+---
+
+# Propuesta — Reunión con Acme (2026-09-25)
+
+## Por qué
+
+Acme alquila salas como cliente externo. En la reunión pidió poder sacar sus reservas en CSV (lo primero que quiere ver), avisar por email a los asistentes al cancelar y una franja mínima de 30 minutos. Descartó validar el formato de la franja (0012): lo hace su calendario.
+
+## Reglas de negocio
+
+- Exportación CSV: `salas exportar <mes>` escribe `mes,sala,franja,estado` con una fila por reserva (canceladas incluidas, con `estado=cancelada`). Ej.: reservas `A 10-12` activa y `B 14-15` cancelada en 2026-09 → `2026-09,A,10-12,activa` y `2026-09,B,14-15,cancelada`.
+- Franja mínima de 30 minutos: la duración de una reserva es ≥ 30 min. Ej.: `10:00-10:30` → aceptada; `10:00-10:15` → rechazada con error. `10-12` sigue siendo válida.
+- Aviso al cancelar: al cancelar una reserva se envía un email a cada asistente. Ej.: reserva `A 10-12` con asistentes `ana@acme.com, luis@acme.com`, `salas cancelar A 10-12` → 2 emails, uno por dirección. Sin asistentes, no se envía nada.
+- Asistentes: `salas reservar <sala> <franja> --asistentes a@x,b@y` (opcional) guarda las direcciones con la reserva. Ej.: la reserva anterior guarda 2 direcciones.
+
+## Capacidades que toca
+
+- `booking-export` — nueva: exportación CSV.
+- `booking-slots` — duración mínima de franja.
+- `booking-cancellation` — aviso a los asistentes; `booking` gana el dato de asistentes.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0015 | Exportar reservas a CSV | — |
+| 2 | 0016 | Franja mínima de 30 minutos | — |
+| 3 | 0017 | Email a los asistentes al cancelar (incluye captar asistentes al reservar) | — |
+
+## Acta
+
+2026-09-25 · Acme (asistentes no indicados en las notas)
+
+1) Lo de validar la franja (0012) ya no lo quieren, lo hace su calendario; 2) quieren poder exportar las reservas a CSV, y es lo primero que quieren ver; 3) al cancelar una reserva, que se avise por email a los asistentes; 4) la franja mínima pasa a ser de 30 minutos.
+
+## Enmiendas
+
+Ninguna.
+'@.Replace("PLACEHOLDER",$ts) | Set-Content "$d/proposal.md" -Encoding utf8
+
+$r=Get-Content .docs/sdd/roadmap.md -Raw
+$old=$r.Substring($r.IndexOf("| 0012"), $r.IndexOf("| 0013")-$r.IndexOf("| 0012"))
+$new=@"
+| 0015 | Exportar reservas a CSV — lo primero que quiere ver Acme · proposal: 0014 | ⏳ |
+| 0016 | Franja mínima de 30 minutos · proposal: 0014 | ⏳ |
+| 0017 | Email a los asistentes al cancelar una reserva · proposal: 0014 · tras 0015 | ⏳ |
+
+"@
+$r=$r.Replace($old,$new)
+$r=$r.Replace("## Backlog","## Aparcadas`n`n| # | Ítem | Estado |`n| --- | --- | --- |`n| 0012 | Validar el formato de la franja al reservar (``10-12``, no ``1012``) | ⏸️ aparcada: descartada por Acme, 2026-09-25 (lo valida su calendario) |`n`n## Backlog")
+Set-Content .docs/sdd/roadmap.md $r -Encoding utf8
+git diff --stat; Get-Content .docs/sdd/roadmap.md | Select-Object -First 22
+<<<  .docs/sdd/roadmap.md | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0015 | Exportar reservas a CSV — lo primero que quiere ver Acme · proposal: 0014 | ⏳ |
+| 0016 | Franja mínima de 30 minutos · proposal: 0014 | ⏳ |
+| 0017 | Email a los asistentes al cancelar una reserva · proposal: 0014 · tras 0015 | ⏳ |
+| 0013 | Aforo de cada sala en `salas libres` | ⏳ |
+
+## Aparcadas
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) |
+
+>>> PowerShell: (Get-Content .docs/sdd/roadmap.md -Raw).Replace(" · tras 0015","") | Set-Content .docs/sdd/roadmap.md -Encoding utf8
+git add .docs/sdd; git commit -q -F - @'
+docs(sdd): planificar la reunión con Acme (propuesta 0014)
+
+Reserva 0014-0017. Propuesta 0014 con el acta literal y reglas con ejemplos.
+Filas nuevas: 0015 exportar CSV (primera), 0016 franja mínima de 30 min,
+0017 email a asistentes al cancelar. 0012 aparcada: descartada por Acme.
+
+Decisiones tomadas sin consulta (no había a quién preguntar):
+- CSV como `salas exportar <mes>` con columnas mes,sala,franja,estado.
+- Las canceladas van en el CSV con estado=cancelada.
+- Los asistentes se captan con `--asistentes` al reservar (hoy no existen).
+- La franja mínima la aplica salas aunque el calendario valide el formato.
+- Sin dependencias entre 0015, 0016 y 0017.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+'@; git log --oneline -2; git status --short
+<<< error: pathspec 'docs(sdd): planificar la reunión con Acme (propuesta 0014)
+
+Reserva 0014-0017. Propuesta 0014 con el acta literal y reglas con ejemplos.
+Filas nuevas: 0015 exportar CSV (primera), 0016 franja mínima de 30 min,
+0017 email a asistentes al cancelar. 0012 aparcada: descartada por Acme.
+
+Decisiones tomadas sin consulta (no había a quién preguntar):
+- CSV como `salas exportar <mes>` con columnas mes,sala,franja,estado.
+- Las canceladas van en el CSV con estado=cancelada.
+- Los asistentes se captan con `--asistentes` al reservar (hoy no existen).
+- La franja mínima la aplica salas au
+
+>>> PowerShell: $m=@'
+docs(sdd): planificar la reunión con Acme (propuesta 0014)
+
+Reserva 0014-0017. Propuesta 0014 con el acta literal y reglas con ejemplos.
+Filas nuevas: 0015 exportar CSV (primera), 0016 franja mínima de 30 min,
+0017 email a asistentes al cancelar. 0012 aparcada: descartada por Acme.
+
+Decisiones tomadas sin consulta (no había a quién preguntar):
+- CSV como `salas exportar <mes>` con columnas mes,sala,franja,estado.
+- Las canceladas van en el CSV con estado=cancelada.
+- Los asistentes se captan con `--asistentes` al reservar (hoy no existen).
+- La franja mínima la aplica salas aunque el calendario valide el formato.
+- Sin dependencias entre 0015, 0016 y 0017.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+'@
+$f=New-TemporaryFile; Set-Content $f $m -Encoding utf8; git commit -q -F $f; Remove-Item $f; git log --oneline -2; git status --short
+<<< d76d767 docs(sdd): planificar la reunión con Acme (propuesta 0014)
+0efbab2 feat: base de reservas de salas
+
+=== RESULTADO (9 turnos, 0.3109434 $)
+Reunión con Acme reflejada en el roadmap y en una propuesta nueva, ya commiteada en `develop` (`d76d767`). No arranqué ninguna task ni toqué código.
+
+- **0012 (validar franja):** pasa a una sección «Aparcadas» como `⏸️ aparcada: descartada por Acme, 2026-09-25`. No la borré.
+- **0015:** exportar reservas a CSV. Va primera, porque es lo que Acme quiere ver antes.
+- **0016:** franja mínima de 30 minutos.
+- **0017:** email a los asistentes al cancelar una reserva.
+- **0013 (aforo):** la dejé donde estaba, detrás de las nuevas.
+- **Propuesta:** `.docs/sdd/specs/20260925-110657-proposal-0014-reunion-acme/proposal.md`. Lleva tus notas literales como acta, las reglas con ejemplos con datos y el reparto de las tres features.
+
+**Decisiones que tomé por ti** (también quedaron en el cuerpo del commit):
+- **Formato del CSV:** el comando será `salas exportar <mes>`, con columnas `mes,sala,franja,estado`. Las reservas canceladas salen con `estado=cancelada`.
+- **Asistentes:** hoy no existen en el modelo (solo `reserve(room, slot)`). Se captan con `--asistentes a@x,b@y` al reservar, y eso va dentro de 0017. Sin asistentes, no se envía nada al cancelar.
+- **Franja mínima:** la aplica `salas` aunque el calendario de Acme valide el formato. `10-12` sigue siendo válido y `10:00-10:30` es el formato nuevo.
+- **Dependencias:** no hay ninguna entre 0015, 0016 y 0017. Tampoco abrí una sección de release.
+
+Arranca con `sdd-start-task` sobre 0015. Conviene confirmar con Acme dos cosas: si quieren las canceladas en el CSV y si `--asistentes` les sirve como forma de captar los emails.

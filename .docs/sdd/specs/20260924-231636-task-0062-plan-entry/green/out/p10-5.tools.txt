@@ -1,0 +1,109 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: git branch --all; git worktree list; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/roadmap.md; ls -R .docs/sdd | head -60
+<<< * develop
+  main
+<run>/salas 1536cc0 [develop]
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | ⏳ |
+| 0021 | Tarifa por sala — `proposal: 0020` | ✅ |
+| 0022 | Factura mensual — `proposal: 0020`, tras 0021 | ⏳ |
+| 0023 | Bloqueo por impago — `proposal: 0020`, tras 0022 | ⏳ |
+
+## Backlog
+
+|
+
+>>> Bash: cd .docs/sdd; cat specs/*proposal-0020*/proposal.md; cat specs/*0021*/walkthrough.md; cat changelog.md; ls capabilities 2>&1 | head; git ls-files | head -30
+<<< ---
+id: 20260915-090000-proposal-0020-billing
+proposal: 0020
+title: Facturación a clientes externos
+created: 2026-09-15
+---
+
+# Propuesta — Facturación a clientes externos
+
+## Por qué
+
+Desde este año alquilamos salas a clientes externos y hoy se factura a mano en una hoja de cálculo.
+
+## Reglas de negocio
+
+- Tarifa por hora distinta para cada sala: Norte 40 €/h, Sur 25 €/h.
+- Factura mensual: el día 1 se emite una factura por cliente con las reservas del mes anterior. Cliente Acme con 3 h en Norte y 2 h en Sur en agosto → factura del 1 de septiembre por 170 €.
+- Impago: una factura sin pagar a 
+
+>>> Bash: cd "<home>/.claude" 2>/dev/null; S=$(ls -d /c/Users/pikac/AppData/Local/Temp/claude/*/*/scratchpad/kit-refactor/skills/sdd-templates 2>/dev/null | head -1); echo $S; cd - >/dev/null; pwsh -NoProfile -File "$S/scripts/Get-NextSddId.ps1" -ProjectRoot "$(pwd)" -Reserve -Count 1
+<<< /c/Users/pikac/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0060/4a3ac886-d053-4b87-a215-063196a2d726/scratchpad/kit-refactor/skills/sdd-templates/
+0024
+
+>>> Bash: cd .docs/sdd && python - <<'E'
+p='roadmap.md'; t=open(p,encoding='utf-8').read()
+t=t.replace("| 0022 | Factura mensual — `proposal: 0020`, tras 0021 | ⏳ |","| 0024 | Recargo horario: +20 % de 8 a 14 h — `proposal: 0020`, tras 0021 | ⏳ |\n| 0022 | Factura quincenal (días 1 y 16; antes «mensual») — `proposal: 0020`, tras 0024 | ⏳ |")
+open(p,'w',encoding='utf-8').write(t)
+p='specs/20260915-090000-proposal-0020-billing/proposal.md'; t=open(p,encoding='utf-8').read()
+t=t.replace("| 2 | 0022 — Factura mensual | ⏳ |\n| 3 | 0023","| 2 | 0024 — Recargo horario (enmienda 2026-09-25) | ⏳ |\n| 3 | 0022 — Factura quincenal (antes mensual) | ⏳ |\n| 4 | 0023")
+t=t.rstrip()+"""
+
+## Enmiendas
+
+### 2026-09-25 — el cliente cambia tarifa y periodicidad
+
+Pedido por el cliente. «Reglas de negocio» y la 0021 (✅) no se tocan; lo nuevo va a la 0024 y la 0022 (pendiente) se re-parte.
+
+- **Tarifa** (sustituye a «solo por sala»): la tarifa de la sala se multiplica por 1,2 en las horas de 8 a 14 h. Antes: Norte 40 €/h y Sur 25 €/h a cualquier hora. Ahora: Norte 48 €/h y Sur 30 €/h de 8 a 14 h; fuera de ese tramo no cambia. Ejemplo: reserva en Norte de 13 a 15 h → 1 h a 48 € + 1 h a 40 € = 88 €.
+- **Facturación** (sustituye a «mensual»): se emite el día 1 (reservas del 16 al último día del mes anterior) y el día 16 (reservas del 1 al 15 del mes en curso). Antes: una factura el día 1 con el mes anterior. Ejemplo: Acme con 2 h en Norte de 9 a 11 h y 1 h en Sur de 15 a 16 h entre el 1 y el 15 de septiembre → factura del 16 de septiembre por 2×48 + 25 = 121 €.
+- Sin cambio: el impago a 30 días bloquea reservas.
+
+Decisiones tomadas sin consultar (nadie disponible), revisables: el tramo es [8, 14) — la hora 14-15 no lleva recargo; una reserva a caballo se prorratea por hora; el recargo aplica a todas las salas; el impago se cuenta desde la fecha de emisión de cada factura quincenal.
+"""
+open(p,'w',encoding='utf-8').write(t)
+E
+git diff --stat; git add roadmap.md specs && git commit -q -m "docs(roadmap): recargo horario y factura quincenal en la propuesta 0020
+
+El cliente pasa a facturación quincenal (días 1 y 16) y a recargo del 20 % de 8 a 14 h.
+La 0021 está cerrada, así que no se reabre: nueva fila 0024 (recargo) y la 0022 pendiente
+pasa a quincenal, tras 0024. Enmienda fechada en la proposal.
+Decisiones sin consultar: tramo [8,14), prorrateo por hora, recargo en todas las salas,
+impago contado desde la emisión de cada factura.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -2
+<<<  .docs/sdd/roadmap.md                               | 51 +++++++--------
+ .../proposal.md                                    | 73 +++++++++++++---------
+ 2 files changed, 69 insertions(+), 55 deletions(-)
+4ce3e38 docs(roadmap): recargo horario y factura quincenal en la propuesta 0020
+1536cc0 feat: base de reservas de salas
+
+>>> Bash: git show 1536cc0:.docs/sdd/roadmap.md | file - ; file .docs/sdd/roadmap.md
+<<< /dev/stdin: Unicode text, UTF-8 text
+.docs/sdd/roadmap.md: Unicode text, UTF-8 text, with CRLF line terminators
+
+>>> Bash: sed -i 's/\r$//' .docs/sdd/roadmap.md .docs/sdd/specs/*proposal-0020*/proposal.md && git add -A && git commit -q --amend --no-edit && git show --stat HEAD | tail -4 && git status --short
+<<<  .docs/sdd/roadmap.md                                    |  3 ++-
+ .../20260915-090000-proposal-0020-billing/proposal.md   | 17 +++++++++++++++--
+ 2 files changed, 17 insertions(+), 3 deletions(-)
+
+=== RESULTADO (9 turnos, 0.26233579999999995 $)
+Actualizado el roadmap y la propuesta 0020, y commiteado en `develop` (`4ce3e38` antes de un `--amend` para restaurar los saltos de línea LF que Python había pasado a CRLF). No he arrancado ninguna task. No he ejecutado código ni tests, solo he tocado documentación.
+
+- **Recargo horario (nueva fila 0024):** la 0021 (tarifa por sala) está cerrada, así que no la reabro. El +20 % de 8 a 14 h va a una fila nueva, `0024`, «tras 0021». El id salió de `Get-NextSddId.ps1 -Reserve`.
+- **Factura quincenal (fila 0022):** sigue pendiente, así que la re-parto. Pasa de mensual a quincenal (días 1 y 16) y queda «tras 0024».
+- **Bloqueo por impago (0023):** no cambia.
+- **Propuesta 0020:** añado una enmienda fechada el 2026-09-25 con el valor anterior y el nuevo, y ejemplos con datos. No reescribo «Reglas de negocio». El reparto queda como 0021 ✅, 0024, 0022, 0023.
+
+Decisiones que tomé sin poder consultar (todas quedan escritas en la enmienda y en el commit):
+- El tramo con recargo es [8, 14): la hora de 14 a 15 no lo lleva.
+- Una reserva a caballo entre tramos se prorratea por hora. Ejemplo: Norte de 13 a 15 h son 48 € más 40 €, 88 €.
+- El recargo aplica a todas las salas.
+- El impago a 30 días se cuenta desde la emisión de cada factura quincenal.
+
+Si el cliente quiere otra cosa en alguno de esos puntos, hay que corregir la enmienda antes de arrancar. Lo siguiente en el orden es la `0024`, con `sdd-kit:sdd-start-task`.

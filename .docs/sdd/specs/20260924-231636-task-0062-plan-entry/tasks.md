@@ -10,3 +10,4 @@
 | 6 | GREEN | done | (este commit) | 22 sujetos, 5,99 $; sin REFACTOR |
 
 Revisión final: general-purpose + opus, con cambios (2 Important corregidos en `3180924` y verificados con p11 ×2; 6 Minor diferidos)
+REFACTOR tras el renombrado: salida a sdd-roadmap en el paso 2 de sdd-start-task (`e68cd50`), verificada con p10 ×2 y p2 ×1
