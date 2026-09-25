@@ -136,6 +136,31 @@ Describe 'Las capacidades del repo' {
   }
 }
 
+Describe 'La migración a 2.0.0' {
+  BeforeAll {
+    $script:Migration = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../skills/sdd-init-brownfield/references/migrations/v2.0.0.md')
+  }
+
+  It 'tiene un paso que quita la sección Historial sin gate y se salta sin capabilities/' {
+    $step = ($script:Migration -split "`r?`n") | Where-Object { $_ -match 'Historial de las capacidades' }
+    $step | Should -Match '## Historial'
+    $step | Should -Match 'Sin gate'
+    $step | Should -Match 'se salta'
+  }
+
+  It 'verifica con Test-Capabilities.ps1 y deja lo demás como pendiente' {
+    $verification = [regex]::Match($script:Migration, '(?s)## Verificación.*').Value
+    $verification | Should -Match 'Test-Capabilities\.ps1'
+    $verification | Should -Match 'pendiente'
+  }
+
+  It 'aplicado a una capacidad con historial, el validador pasa' {
+    $withHistory = $script:Bookings + "`n## Historial`n`n- 2026-09-10 — task-0004 — ADDED Reservar una franja`n"
+    $migrated = $withHistory -replace '(?s)\r?\n## Historial.*?(?=\r?\n## |\z)', ''
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $migrated })).Code | Should -Be 0
+  }
+}
+
 Describe 'Test-Capabilities.ps1 con -Artifact' {
   It 'un bloque que coincide con el delta pasa' {
     $spec = Get-Spec "## Capacidades`n`n- Modificadas: ``bookings`` — añade «Algo»`n" @('bookings')
