@@ -136,6 +136,8 @@ Primero el formato y su comprobación: la plantilla gana `## Propósito`, el val
 
 ## Enmiendas
 
+- 2026-09-25 — Freno de alcance antes de la Task 2 (fichero de la task cambiado en la base): `tech-stack.md` cambió en `develop` con el patch 0076 (`cd3f16c`). Se integra `develop` en la rama antes de seguir; el Scope no cambia — aprobada: «Integrar develop ahora»
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
