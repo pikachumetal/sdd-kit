@@ -105,6 +105,7 @@ En uso desde el bump del 2026-09-09; cerrada formalmente el 2026-09-20. [Acta](r
 
 ### Fixed
 
+- **Cada campaña de sujetos copiaba el lanzador de otra y heredaba sus defectos** — lanzador de referencia en `tests/headless/`: `run.sh` con `SUBJECT_CAP` y `COST_CAP` obligatorios y comunes a las fases, parada con `RUNS_DIR/stop` y guarda del scratchpad; `lib.sh` con las funciones del `subject.sh` de la campaña (comprobación del kit y del `cwd`, `claude -p`, copias planas por debajo de 140); `extract.mjs` con el saneado del patch 0072 y la ruta de la campaña en todas sus formas, también la `/tmp/…` de Git Bash, que antes quedaba sin sustituir. `DRY_RUN=1` recorre una campaña sin coste; `tests/HeadlessLauncher.Tests.ps1` lo cubre. → [ref](specs/20260925-115315-patch-0076-reference-launcher/)
 - **`Build-EstimationLog.ps1`** — dejaba fuera del log, con un WARNING y sin más consecuencia visible, dos formas de escribir el bloque de tiempo que nadie considera erróneas: un `patch.md` redactado con las etiquetas largas del walkthrough (`- Estimación de implementación (del plan):` / `- Esfuerzo real:`) y una cifra precedida de `≈`. Las etiquetas pasan a constantes compartidas por `Read-Walkthrough` y `Read-Patch`, y `ConvertTo-Hours` acepta `≈`/`≃` junto a `~`. El daño era silencioso: el factor de calibración se calculaba sobre un conjunto incompleto. → [ref](specs/20260910-072132-patch-0000-estimation-parser-tolerante/patch.md)
 
 ## [1.0.0] - 2026-09-09
