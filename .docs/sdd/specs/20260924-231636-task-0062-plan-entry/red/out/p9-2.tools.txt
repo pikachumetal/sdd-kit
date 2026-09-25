@@ -1,0 +1,193 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+
+>>> Skill: superpowers:systematic-debugging
+<<< Launching skill: sdd-kit:sdd-start-patch
+<<< Launching skill: superpowers:systematic-debugging
+
+>>> Bash: git ls-files; cat data/usage.csv; cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs
+<<< Exit code 2
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+data/usage.csv
+src/report.js
+src/slots.js
+tests/slots.test.js
+room,duration
+Norte,2 h
+Sur,1.5 h
+Norte,1 h
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.jso
+
+>>> Bash: cat src/report.js src/slots.js tests/slots.test.js .docs/sdd/roadmap.md .docs/sdd/constitution.md; git log --stat | head -30; ls ~/.claude/plugins 2>/dev/null | head -0
+<<< import { readFileSync } from 'node:fs';
+
+// Convierte la duración de una fila de data/usage.csv a horas.
+export function toHours(duration) {
+  return parseFloat(duration);
+}
+
+export function usageReport(csvPath) {
+  const rows = readFileSync(csvPath, 'utf8').trim().split('\n').slice(1);
+  const totals = {};
+  for (const row of rows) {
+    const [room, duration] = row.split(',');
+    totals[room] = (totals[room] ?? 0) + toHours(duration);
+  }
+  return Object.entries(totals).map(([room, hours]) => `${room} · ${hours} h`).join('\n');
+}
+export function reserve(room, slot) {
+  return { room, slot }
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red"; ls $K $K/skills/sdd-templates $K/skills/sdd-templates/* | head -40; find $K -name 'Get-NextSddId.ps1'; node -e "import('./src/report.js').then(m=>console.log(m.toHours('90 min')))"; cat $K/skills/sdd-start-task/references/commit-milestones.md | head -40
+<<< <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-templates/SKILL.md
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red:
+agents/
+hooks/
+README.md
+skills/
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-templates:
+scripts/
+SKILL.md
+templates/
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-templates"; cat $K/templates/patch-template.md; head -30 $K/scripts/Get-NextSddId.ps1; git branch -a
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+---
+
+# Patch <id> — <título corto>
+
+> Registr
+
+>>> PowerShell: $K='<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-red/skills/sdd-templates/scripts/Get-NextSddId.ps1'
+pwsh -NoProfile -File $K -ProjectRoot . -Reserve; Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'
+<<< 0014
+20260925-070657
+
+>>> Bash: git switch -c hotfix/0014 && python3 - <<'E' 2>/dev/null || true
+E
+cat > src/report.js.new <<'E'
+E
+rm src/report.js.new
+node -e "
+const fs=require('fs');let s=fs.readFileSync('src/report.js','utf8');
+s=s.replace(\`export function toHours(duration) {
+  return parseFloat(duration);
+}\`,\`export function toHours(duration) {
+  const match = /^\\\\s*(\\\\d+(?:\\\\.\\\\d+)?)\\\\s*(h|min)\\\\s*\$/.exec(duration);
+  if (!match) throw new Error(\\\`Duración no reconocida: \"\\\${duration}\"\\\`);
+  return match[2] === 'min' ? Number(match[1]) / 60 : Number(match[1]);
+}\`);
+fs.writeFileSync('src/report.js',s)"
+sed -n 1,12p src/report.js
+cat > tests/report.test.js <<'E'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { toHours } from '../src/report.js';
+
+test('toHours convierte minutos a horas', () => {
+  assert.strictEqual(toHours('90 min'), 1.5);
+});
+
+test('toHours respeta las horas', () => {
+  assert.strictEqual(toHours('1.5 h'), 1.5);
+  assert.strictEqual(toHours('2 h'), 2);
+});
+
+test('toHours rechaza una unidad desconocida', () => {
+  assert.throws(() => toHours('2 d'), /Duración no reconocida/);
+});
+E
+node --test 2>&1 | tail -12
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: bcktes2u0). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-pikac-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0062-plan-entry-be24c358-5880-40fc-bfb7-1f7e1b6bf0ea-scratchpad-runs-p9-2-salas\e8ed1429-dcf4-42a9-90a7-8c9d10a5f12d\tasks\bcktes2u0.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Bash: git status --short; git branch --show-current; cat src/report.js | head -12; ls tests
+<<< hotfix/0014
+import { readFileSync } from 'node:fs';
+
+// Convierte la duración de una fila de data/usage.csv a horas.
+export function toHours(duration) {
+  return parseFloat(duration);
+}
+
+export function usageReport(csvPath) {
+  const rows = readFileSync(csvPath, 'utf8').trim().split('\n').slice(1);
+  const totals = {};
+  for (const row of rows) {
+    const [room, duration] = row.split(',');
+slots.test.js
+
+>>> Edit: <run>\salas\src\report.js
+<<< The file <run>\salas\src\report.js has been updated successfully.
+
+>>> Write: <run>\salas\tests\report.test.js
+<<< File created successfully at: <run>\salas\tests\report.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: timeout 60 node --test tests/ 2>&1 | tail -12; timeout 20 node -e "import('./src/report.js').then(m=>console.log(m.usageReport('data/usage.csv')))"
+<<< ✔ toHours convierte minutos a horas (9.8417ms)
+✔ toHours respeta las horas (0.2023ms)
+✔ toHours rechaza una unidad desconocida (0.4147ms)
+✔ reserva una sala en una franja (1.4803ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 150.1591
+Norte · 3 h
+Sur · 1.5 h
+
+>>> Write: <run>\salas\.docs\sdd\specs\20260925-070657-patch-0014-informe-minutos-como-horas\patch.md
+<<< File created successfully at: <run>\salas\.docs\sdd\specs\20260925-070657-patch-0014-informe-minutos-como-horas\patch.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add -A && git commit -q -F - <<'E'
+fix(report): interpretar la unidad de la duración en toHours
+
+toHours usaba parseFloat y descartaba la unidad, así que «90 min» se
+contaba como 90 horas en el informe de uso. Ahora convierte min a horas
+y lanza error ante una unidad desconocida. Incluye tests y patch 0014.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+E
+git log --oneline -2; git status --short
+<<< ac4cdff fix(report): interpretar la unidad de la duración en toHours
+118ff18 feat: base de reservas de salas
+
+=== RESULTADO (17 turnos, 0.36889559999999993 $)
+Arreglado y commiteado en `hotfix/0014` (`ac4cdff`). El patch queda abierto: `patch.md` aún lleva `commit: <hash>` sin rellenar, y `sdd-end-patch` no está ejecutado.
+
+- **Causa:** `toHours` en `src/report.js` hacía `parseFloat(duration)`, que lee el número y descarta la unidad. Comprobé que `toHours('90 min')` devolvía `90`.
+- **Fix:** `toHours` ahora divide entre 60 los `min`, deja igual los `h` y lanza error con cualquier otra unidad. Así una unidad rara falla en vez de colarse en el informe.
+- **Tests:** añadí `tests/report.test.js` con 3 casos. Los 4 tests de la suite pasan con `node --test tests/`, y `usageReport` da ahora Norte 3 h, Sur 1.5 h.
+- **Patch:** id 0014 reservado, con su `patch.md` en `.docs/sdd/specs/20260925-070657-patch-0014-informe-minutos-como-horas/`.
+
+No he tocado tu corrección manual del CSV: sigue en «1.5 h». Ninguna fila del CSV está ahora en minutos, así que el informe real no ejercita el fix. Solo lo cubren los tests unitarios.
+
+Pregunta: la constitution no fija el git-flow y he ramificado como `hotfix/0014`. ¿Prefieres `feature/0014`?
