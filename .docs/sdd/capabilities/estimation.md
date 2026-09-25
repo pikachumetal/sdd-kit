@@ -1,14 +1,15 @@
 # Capacidad — estimation
 
-Verdad viva del comportamiento observable del módulo de estimación del kit: cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién lo genera. La declaró la spec de la task `estimation-log-script` (T7) en sus «Decisiones a validar» (decisión 1). El método de estimación en sí (factor de calibración, reference-class) vive en `estimation.md`.
+Verdad viva del comportamiento observable del módulo de estimación del kit: cómo se acumulan los tiempos de tasks y patches en `estimation-log.md` y quién lo genera, y cómo se miden los tokens y el coste de una sesión de Claude Code (task 0068). La declaró la spec de la task `estimation-log-script` (T7) en sus «Decisiones a validar» (decisión 1). El método de estimación en sí (factor de calibración, reference-class) vive en `estimation.md`.
 
 ## Requisitos
 
 ### El estimation-log se genera desde los artefactos de cierre
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo
 - WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
-- THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, task, tipo, estimado, real, ratio, carpeta), ordenado por carpeta
+- THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, task, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
 - AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
+- AND `Sesión ($)` es la cifra de `Coste de la sesión`; «sin precio» y «no medido» aparecen tal cual, y sin la línea la celda es `—`
 - AND el fichero lleva cabecera "AUTO-GENERADO — no editar a mano"
 
 ### El script vive en el kit y las skills de cierre lo invocan
@@ -57,7 +58,8 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 ### El log agrupa por release
 - GIVEN un `<docs>/changelog.md` con versiones `## [X.Y.Z] - AAAA-MM-DD` (o con `—`)
 - WHEN se genera el log
-- THEN aparece una tabla Release | Artefactos | Horas reales | Mediana | Sujetos ($), de la release más antigua a la más reciente
+- THEN aparece una tabla Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($), de la release más antigua a la más reciente
+- AND `Sesión ($)` suma las cifras de los artefactos de la release que la tienen; sin ninguna, `—`
 - AND cada artefacto va a la primera versión con fecha igual o posterior a la de su fila (la de cierre); los posteriores a la última versión van a «sin publicar», y los que no tienen fecha, a «sin fecha»
 - AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
 
@@ -66,6 +68,44 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - WHEN el agente rellena «Modelo del hilo» del walkthrough
 - THEN escribe los dos, con su fase: «Opus 5.5, effort medium (spec y plan) → Sonnet 5, effort medium (ejecución)»
 - AND si no sabe el effort de una fase, escribe «effort no registrado» en esa fase, no un valor supuesto
+
+### La sesión se mide desde los transcripts
+- GIVEN un worktree `D:\w\t1` y, en `<proyectos>/D--w-t1/`, una sesión con dos respuestas de `claude-sonnet-5`: la `msg_A` en tres líneas con salida 8, 8 y 4.000 (entrada 2, escritura en caché 1h 100.000, lectura 1.000.000 en las tres), y la `msg_B` en una línea (entrada 3, lectura 1.500.000, salida 1.000), más una línea `<synthetic>`
+- WHEN se ejecuta `Measure-SessionTokens.ps1 -Path D:\w\t1`
+- THEN el hilo suma, para `claude-sonnet-5`: entrada 5, escritura 1h 100.000, lectura 2.500.000 y salida 5.000, en total 2.605.005 tokens
+- AND la línea `<synthetic>` no aparece en ningún modelo
+
+### Los subagentes se miden aparte del hilo
+- GIVEN la sesión anterior con `subagents/agent-x1.jsonl` (una respuesta de `claude-opus-5-5`: entrada 10, lectura 500.000 y salida 10.000, entre las 10:00 y las 10:12) y su `agent-x1.meta.json` con `description` «Revisión final de rama»
+- WHEN se ejecuta el script
+- THEN la línea empieza por `Tokens de subagentes: 510.010 en 1 despacho — Revisión final de rama claude-opus-5-5 510.010 / 12 min` (con dos o más, «despachos» y los despachos separados por `; `)
+- AND los tokens del subagente no se suman a los del hilo
+
+### El coste sale de la tabla de precios del proyecto
+- GIVEN la sesión y el subagente anteriores, y un `sdd-kit.json` con `pricing.usdPerMillionTokens` para `claude-sonnet-5` (2 / 2,5 / 4 / 0,2 / 10) y para `claude-opus-5-5` (4 / 5 / 8 / 0,2 / 20)
+- WHEN se ejecuta el script
+- THEN la línea es `Coste de la sesión: 1,25 $ (hilo 0,95 $ + subagentes 0,30 $)`: el hilo cuesta 0,00001 + 0,4 + 0,5 + 0,05 = 0,95001 $ y el subagente 0,00004 + 0,1 + 0,2 = 0,30004 $, redondeados a céntimos
+- AND sin la clave `pricing`, o con un modelo que tiene tokens y no está en la tabla, la línea es `Coste de la sesión: sin precio (<motivo>)` y nombra los modelos que faltan
+- AND una respuesta con `usage.speed: "fast"` cuenta con el modelo `claude-sonnet-5:fast`, que necesita su propia fila
+
+### Con `-Branch` solo cuenta la rama de la task
+- GIVEN la sesión del primer requisito, con todas sus líneas en la rama `feature/0068`, y una segunda sesión con la respuesta `msg_C` de `claude-sonnet-5` (lectura 900.000) en la rama `develop`
+- WHEN se ejecuta el script con `-Branch feature/0068`
+- THEN el hilo suma 2.605.005 tokens: `msg_C` queda fuera
+- AND sin `-Branch`, el hilo suma 3.505.005
+
+### Sin transcripts, «no medido»
+- GIVEN un worktree sin carpeta en `<proyectos>/`
+- WHEN se ejecuta el script
+- THEN las tres líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
+- AND con la carpeta pero sin ninguna respuesta de la rama pedida, las tres dicen `no medido (sin respuestas de <rama> en los transcripts)`
+- AND con respuestas del hilo y ningún subagente, la línea de subagentes dice `no aplica` y la del coste lleva solo el hilo: `Coste de la sesión: 0,95 $ (hilo 0,95 $)`
+
+### El cierre rellena los tokens y el coste de la sesión
+- GIVEN una task en Claude Code que llega al paso de tiempo real de `sdd-end-task`, en un proyecto con `.docs/sdd/estimation.md`
+- WHEN se rellena la sección 2 del walkthrough
+- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `Measure-SessionTokens.ps1 -Path <worktree> -Branch <rama de la task>`, ejecutado desde el Base directory de `sdd-templates`
+- AND en otro harness, las tres dicen «no medido», con el motivo
 
 ## Historial
 
@@ -81,3 +121,5 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - 2026-09-24 — 20260924-081646-patch-0056-estimation-log-close-date — MODIFIED El estimation-log se genera desde los artefactos de cierre; MODIFIED El log agrupa por release (la fecha es la de cierre, no la de la carpeta; fusionado por la task 0067)
 - 2026-09-25 — 20260924-223521-patch-0066-estimation-log-minutes — MODIFIED El parseo tolera el formato real de las plantillas (minutos y unidades desconocidas; fusionado por la task 0067)
 - 2026-09-25 — 20260924-225741-task-0058-session-model-policy — ADDED El walkthrough registra el modelo y el effort del hilo en cada fase
+- 2026-09-25 — 20260924-230945-task-0068-session-tokens — MODIFIED El estimation-log se genera desde los artefactos de cierre; MODIFIED El log agrupa por release (columna Sesión ($); conserva las cláusulas de fecha de cierre que fusionó la 0067)
+- 2026-09-25 — 20260924-230945-task-0068-session-tokens — ADDED La sesión se mide desde los transcripts; ADDED Los subagentes se miden aparte del hilo; ADDED El coste sale de la tabla de precios del proyecto; ADDED Con `-Branch` solo cuenta la rama de la task; ADDED Sin transcripts, «no medido»; ADDED El cierre rellena los tokens y el coste de la sesión

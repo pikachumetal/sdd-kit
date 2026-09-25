@@ -20,7 +20,7 @@ El log (`estimation-log.md`) **se genera**, no se escribe: desde T7 (2026-09-09)
 
 ## Coste en tokens y en dinero
 
-Desde la task 0010 (2026-09-22) el walkthrough registra el coste del hilo, el de los subagentes y el de los sujetos en líneas propias, y `estimation-log.md` los agrega en tres columnas. El hilo principal no tiene contador expuesto al agente: su salida honesta es **«no medido»**, y solo lleva cifra si el dev-lead la aporta. Los subagentes sí reportan sus tokens al terminar, y las campañas headless dan su coste en dólares en el `result` de cada sujeto.
+Desde la task 0010 (2026-09-22) el walkthrough registra el coste del hilo, el de los subagentes y el de los sujetos en líneas propias, y `estimation-log.md` los agrega en tres columnas. El hilo principal no tiene contador expuesto al agente en vivo, pero Claude Code guarda cada sesión en `~/.claude/projects/`. Desde la task 0068 (2026-09-25), el cierre ejecuta `Measure-SessionTokens.ps1`, que suma el hilo y los subagentes desde esos transcripts, y pega sus líneas: `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión`. El coste sale de la tabla `pricing` de `sdd-kit.json`, y sin ella dice «sin precio». Fuera de Claude Code, «no medido» sigue siendo la salida honesta. **Los tokens de la 0068 no se comparan con los anteriores**: esos eran el informe del subagente, y estos incluyen la lectura de caché, que domina. La comparación entre métodos (Native frente a SDD) se hace en dólares. Las campañas headless dan su coste en dólares en el `result` de cada sujeto, y corren en el scratchpad, así que no entran en la sesión.
 
 Referencia por despacho, medida en los 14 tickets de campo de la release 1.2.0 (todos Sonnet):
 

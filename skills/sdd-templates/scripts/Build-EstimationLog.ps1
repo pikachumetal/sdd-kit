@@ -25,6 +25,7 @@ $script:RealLabel = 'Esfuerzo real de implementaci[oó]n|Esfuerzo real|Real'
 $script:ThreadTokensLabel = 'Tokens del hilo'
 $script:SubagentTokensLabel = 'Tokens de subagentes|Coste de subagentes'
 $script:SubjectCostLabel = 'Coste de los sujetos headless|Coste de sujetos'
+$script:SessionCostLabel = 'Coste de la sesi[oó]n'
 
 function Resolve-DocsPath([string]$ProjectRoot) {
   # .docs/sdd es la convención del kit; docs/sdd sobrevive en proyectos antiguos.
@@ -62,7 +63,7 @@ function ConvertTo-Hours([string]$Text, [string]$Source) {
 function Get-DeclaredAbsence([string]$Text) {
   if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
   $normalized = ($Text -replace '\*', '').Trim()
-  foreach ($answer in @('no medido', 'no aplica')) {
+  foreach ($answer in @('no medido', 'no aplica', 'sin precio')) {
     if ($normalized -like "$answer*") { return $answer }
   }
   return $null
@@ -120,6 +121,7 @@ function Read-CostFields([string]$Section) {
     ThreadTokens   = ConvertTo-Thousands (Get-FieldText $Section $script:ThreadTokensLabel)
     SubagentTokens = ConvertTo-Thousands (Get-FieldText $Section $script:SubagentTokensLabel)
     SubjectCost    = ConvertTo-Money (Get-FieldText $Section $script:SubjectCostLabel)
+    SessionCost    = ConvertTo-Money (Get-FieldText $Section $script:SessionCostLabel)
   }
 }
 
@@ -195,6 +197,7 @@ function New-Row([System.IO.DirectoryInfo]$Dir, [pscustomobject]$Artifact) {
     ThreadTokens   = $Artifact.Cost.ThreadTokens
     SubagentTokens = $Artifact.Cost.SubagentTokens
     SubjectCost    = $Artifact.Cost.SubjectCost
+    SessionCost    = $Artifact.Cost.SessionCost
     Folder         = $Dir.Name
   }
 }
@@ -340,8 +343,8 @@ function Get-ReleaseLabel([object]$Row, [object[]]$Versions) {
   return $match.Name
 }
 
-function Get-SubjectSum([object[]]$Rows) {
-  $numbers = $Rows | ForEach-Object { $_.SubjectCost } |
+function Get-CostSum([object[]]$Rows, [string]$Field) {
+  $numbers = $Rows | ForEach-Object { $_.$Field } |
     Where-Object { $_ -match '^\d+(\.\d+)?$' } | ForEach-Object { [double]$_ }
   if ($numbers.Count -eq 0) { return '—' }
   return Format-Number (($numbers | Measure-Object -Sum).Sum)
@@ -352,7 +355,7 @@ function Add-ReleaseRow([System.Text.StringBuilder]$Builder, [string]$Label, [ob
   $withRatio = @($Rows | Where-Object { $null -ne $_.Ratio })
   $median = '—'
   if ($withRatio.Count -gt 0) { $median = Format-Number (Get-Median ($withRatio | ForEach-Object { [double]$_.Ratio })) }
-  [void]$Builder.AppendLine("| $Label | $($Rows.Count) | $hours | $median | $(Get-SubjectSum $Rows) |")
+  [void]$Builder.AppendLine("| $Label | $($Rows.Count) | $hours | $median | $(Get-CostSum $Rows 'SubjectCost') | $(Get-CostSum $Rows 'SessionCost') |")
 }
 
 function Add-ReleaseTable([System.Text.StringBuilder]$Builder, [object[]]$Rows, [string]$DocsPath) {
@@ -361,8 +364,8 @@ function Add-ReleaseTable([System.Text.StringBuilder]$Builder, [object[]]$Rows, 
   $labels = @($versions | ForEach-Object { $_.Name }) + @('sin publicar', 'sin fecha')
   $byLabel = $Rows | Group-Object { Get-ReleaseLabel $_ $versions }
   [void]$Builder.AppendLine('')
-  [void]$Builder.AppendLine('| Release | Artefactos | Horas reales | Mediana | Sujetos ($) |')
-  [void]$Builder.AppendLine('| --- | --- | --- | --- | --- |')
+  [void]$Builder.AppendLine('| Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |')
+  [void]$Builder.AppendLine('| --- | --- | --- | --- | --- | --- |')
   foreach ($label in $labels) {
     $group = $byLabel | Where-Object { $_.Name -eq $label }
     if ($null -ne $group) { Add-ReleaseRow $Builder $label $group.Group }
@@ -392,11 +395,11 @@ function Format-Log([object[]]$Rows, [string]$DocsPath) {
   [void]$builder.AppendLine('<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) — no editar a mano. Regenerar: pwsh -NoProfile -File <sdd-templates>/scripts/Build-EstimationLog.ps1 -Root <proyecto> -->')
   [void]$builder.AppendLine('# Estimation log (estimado vs real)')
   [void]$builder.AppendLine('')
-  [void]$builder.AppendLine('| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Carpeta |')
-  [void]$builder.AppendLine('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
+  [void]$builder.AppendLine('| Fecha | Task | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |')
+  [void]$builder.AppendLine('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |')
   foreach ($row in $Rows) {
     $hours = "$(Format-Number $row.Estimate) | $(Format-Number $row.Real) | $(Format-Number $row.Ratio)"
-    $cost = "$(Format-Text $row.ThreadTokens) | $(Format-Text $row.SubagentTokens) | $(Format-Text $row.SubjectCost)"
+    $cost = "$(Format-Text $row.ThreadTokens) | $(Format-Text $row.SubagentTokens) | $(Format-Text $row.SubjectCost) | $(Format-Text $row.SessionCost)"
     [void]$builder.AppendLine("| $($row.Date) | $($row.Task) | $($row.Type) | $hours | $cost | $($row.Folder) |")
   }
   Add-CalibrationSection $builder $Rows $DocsPath
