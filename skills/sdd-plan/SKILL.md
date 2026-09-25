@@ -27,7 +27,7 @@ Frente a `sdd-start-task` decide el verbo: hacerlo ya («añade», «hazme», «
 
 ## Checklist (crea un todo por paso)
 
-1. **Estado real** — lee `.docs/sdd/roadmap.md` de la rama de integración (`git show develop:.docs/sdd/roadmap.md`, o la que fije la constitution) y, **por cada rama `feature/*`** que liste `git branch --all`, su roadmap (`git show <rama>:.docs/sdd/roadmap.md`): lo que una rama partió o reservó solo está en su roadmap. Lee también `ids.mode` y, si vas a escribir reglas, las `capabilities/` que tocan.
+1. **Estado real** — lee `.docs/sdd/roadmap.md` de la rama de integración (`git show develop:.docs/sdd/roadmap.md`, o la que fije la constitution) y, **por cada rama `feature/*`** que liste `git branch --all`, su roadmap (`git show <rama>:.docs/sdd/roadmap.md`): lo que una rama partió o reservó solo está en su roadmap. Lee también `ids.mode` y, si vas a escribir reglas, las `capabilities/` que tocan. Con ese estado, en **cualquier** entrada: una task en marcha (rama `feature/<id>` abierta o 🔄) no se toca —ni su fila ni su spec—, aunque lo nuevo sea de su tema: va a una fila nueva «tras» ella. Una task cerrada (✅ o 🧪) en la rama de integración tampoco recibe trabajo nuevo: va a una fila nueva.
 2. **Lo que deja cada entrada** — la sección de abajo que corresponda.
 3. **Propón y espera** — en `pair` y `delegate`, presenta las filas, la propuesta y la partición antes de escribirlas, y espera la decisión del usuario. Un «decide tú» o «no hay nadie a quien preguntar» es una decisión delegada: escribe y deja las decisiones que tomaste en la propuesta o en el cuerpo del commit. En `unattended`, la opción más conservadora, registrada igual.
 4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-NextSddId.ps1" -ProjectRoot "<raíz>" -Reserve -Count N`. Sin `-Reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
@@ -88,6 +88,7 @@ Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog»
 - Vas a recoger una reunión sin guardar sus notas literales.
 - Vas a reescribir una regla de una propuesta en vez de añadir una enmienda fechada.
 - Vas a reabrir una feature cerrada o en marcha porque la definición cambió.
+- Vas a editar la fila o la spec de una task en marcha para meterle trabajo nuevo.
 - Vas a escribir en el roadmap un id que no viene del gestor ni de `Get-NextSddId.ps1 -Reserve`.
 - Vas a marcar una release «comprometida» sin que el usuario lo diga, o con bloqueos externos abiertos.
 - Estás planificando con el roadmap de tu worktree sin haber leído el de la rama de integración y el de las ramas `feature/*`.
@@ -106,5 +107,6 @@ Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog»
 | «El cliente dijo que todo es importante» | Énfasis verbal no es priorización. Se registra y se decide con criterio de producto. |
 | «Arrastro la deuda técnica entera, así se salda» | La deuda entra por prerrequisito o por decisión explícita, no por inercia: infla el scope. |
 | «Congelo el scope en un documento aparte» | El roadmap versionado ya es auditable. La propuesta es la definición de lo grande, no una copia del scope. |
+| «La nota es del tema de la task en marcha; la agrupo en su fila» | Su rama está editando esa fila y esa spec. Agruparla ahí provoca el conflicto al cerrarla y le cambia un scope aprobado: va a una fila nueva «tras» ella. |
 | «El roadmap de mi worktree es el estado real» | Es el de tu base. Otra rama puede haber cerrado, partido o reservado; sin leerla, repites ids o amplías tasks cerradas. |
 | «Pongo el siguiente número libre para adelantar» | Un id inventado se confunde con uno reservado para siempre. El id lo da el gestor o `Get-NextSddId.ps1 -Reserve`. |

@@ -179,3 +179,35 @@ Describe 'Rama sin id' {
     $script:PatchStep2 | Should -Not -Match 'otro id o ninguno'
   }
 }
+
+Describe 'Revisión final' {
+  BeforeAll {
+    $script:Plan = Get-KitFile 'skills/sdd-plan/SKILL.md'
+    $script:Checklist = (($script:Plan -split '## Checklist')[1] -split '## Lo que deja')[0]
+    $script:Naming = Get-KitFile 'skills/sdd-start-task/references/nombrado.md'
+    $script:PatchStep2 = [regex]::Match((Get-KitFile 'skills/sdd-start-patch/SKILL.md'), '(?ms)^2\. \*\*Carpeta\*\*.*?(?=^3\. )').Value
+  }
+
+  It 'la regla de la task en marcha vale para toda entrada, en el checklist' {
+    $script:Checklist | Should -Match 'task en marcha'
+    $script:Checklist | Should -Match 'tras'
+    $script:Checklist | Should -Match 'cerrada'
+  }
+
+  It 'la red flag y la racionalización de la task en marcha vuelven' {
+    $script:Plan | Should -Match 'Vas a editar la fila o la spec de una task en marcha'
+    $script:Plan | Should -Match 'La nota es del tema de la task en marcha'
+  }
+
+  It 'el renombrado nunca toca la rama de integración ni la estable' {
+    foreach ($text in $script:Naming, $script:PatchStep2) {
+      $text | Should -Match 'feature/<slug>'
+      $text | Should -Match 'nunca .*rama de integración'
+    }
+  }
+
+  It 'el paso 2 del patch usa las mismas condiciones que el nombrado' {
+    $script:PatchStep2 | Should -Match 'frente a la rama de integración'
+    $script:PatchStep2 | Should -Match 'antes del primer commit'
+  }
+}

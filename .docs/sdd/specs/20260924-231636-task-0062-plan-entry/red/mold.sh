@@ -254,3 +254,9 @@ EOF
 | --- | --- | --- |
 EOF
 }
+
+# p11: la 0013 está en marcha, con su rama abierta y un commit propio.
+roadmap_in_progress() {
+  roadmap_plain
+  sed -i 's/^| 0013 | Aforo de cada sala en `salas libres` | ⏳ |$/| 0013 | Aforo de cada sala en `salas libres` | 🔄 |/' "$R/.docs/sdd/roadmap.md"
+}
