@@ -57,3 +57,69 @@ Describe 'Carril proposal' {
     }
   }
 }
+
+Describe 'sdd-plan' {
+  BeforeAll {
+    $script:Plan = Get-KitFile 'skills/sdd-plan/SKILL.md'
+    $script:Description = [regex]::Match($script:Plan, '(?m)^description: (.+)$').Groups[1].Value
+  }
+
+  It 'la description recoge preparar la release, las reuniones y el roadmap' {
+    $script:Description | Should -Match '^Usar'
+    $script:Description | Should -Match 'prepara la release'
+    $script:Description | Should -Match 'reunión'
+    $script:Description | Should -Match 'roadmap'
+  }
+
+  It 'distingue las cinco entradas y el scope de release' {
+    foreach ($entry in 'Algo grande', 'Algo concreto', 'Items del gestor', 'Una reunión', 'Reordenar o cambiar', 'Preparar una release') {
+      $script:Plan | Should -Match ([regex]::Escape($entry))
+    }
+  }
+
+  It 'separa planificar de hacer por el verbo' {
+    $script:Plan | Should -Match 'sdd-start-task'
+    $script:Plan | Should -Match 'no lo arranques'
+  }
+
+  It 'la entrevista usa brainstorming y acaba en el roadmap, no en una spec' {
+    $script:Plan | Should -Match 'superpowers:brainstorming'
+    $script:Plan | Should -Match 'nunca acaba en spec'
+  }
+
+  It 'calca la propuesta de sdd-templates' {
+    $script:Plan | Should -Match 'proposal-template\.md'
+    $script:Plan | Should -Match 'proposal-<id>-<slug>'
+  }
+
+  It 'no arranca nada' {
+    $script:Plan | Should -Match 'ni rama, ni carpeta de task, ni spec'
+  }
+
+  It 'fija las reglas del roadmap' {
+    $script:Plan | Should -Match 'tras NNNN'
+    $script:Plan | Should -Match '⏸️ aparcada: descartada por'
+    $script:Plan | Should -Match '-Reserve -Count'
+    $script:Plan | Should -Match 'sin preguntar'
+  }
+
+  It 'un cambio de definición es una enmienda fechada' {
+    $script:Plan | Should -Match 'Enmiendas'
+    $script:Plan | Should -Match 'solo lo pendiente'
+  }
+
+  It 'hereda la preparación de la release' {
+    $script:Plan | Should -Match 'release\.hasRecipient'
+    $script:Plan | Should -Match 'Ficheros que toca'
+    $script:Plan | Should -Match 'nunca «por definir»'
+    $script:Plan | Should -Match 'sequence'
+  }
+
+  It 'el router lleva la entrada a sdd-plan' {
+    Get-KitFile 'hooks/router.md' | Should -Match 'sdd-kit:sdd-plan'
+  }
+
+  It 'el README lista sdd-plan' {
+    Get-KitFile 'README.md' | Should -Match '\| `sdd-plan` \|'
+  }
+}
