@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -50
+<<< develop
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat $f.md; done; echo === json; cat sdd-kit.json; ls -a . specs; ls -a ../.. | head
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills/sdd-start-feature/references" && cat modo-lite.md; echo =====; cat nombrado.md; echo =====; sed -n 1,60p control-profiles.md
+
+>>> Bash: cd "<run>/repo" && wc -l src/app.js && grep -n -i "libres" -r src test README.md | head -30
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No toca schema de datos ni exige migración.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmación explícita de
+<<< 16 src/app.js
+src/app.js:10:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+test/app.test.js:6:  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls .docs/sdd/specs/*; git check-ignore -v .docs/sdd/sdd-kit.local.json; ls .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 2
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (comman
+
+=== RESULTADO (8 turnos, 0.213409 $)
+Ahora: confirmar carril, modo y perfil, en una sola pregunta. Queda: rama, spec con su aprobación, implementación y validación, ~20 min.
+
+Contexto leído: constitution, mission, tech-stack y roadmap. No hay `architecture.md` ni `capabilities/`. El roadmap no tiene fila para esto y no estamos en una rama `feature/<id>`, así que el enunciado es el que me has dado: **filtro por sala en `libres`**.
+
+**Carril:** feature con comportamiento nuevo. No es patch ni cambio de roadmap.
+
+**Modo:** puede ir en **lite** (spec corta, sin `plan.md` ni `tasks.md`). He comprobado las condiciones una por una:
+- **El flujo ya existe y se puede leer:** `libres` está en `src/app.js` (`freeRooms`) y tiene un test en `test/app.test.js`.
+- **No cambia contratos públicos:** es un comando de CLI. Solo añadiría un parámetro opcional, y `libres 10:00-12:00` seguiría igual.
+- **No toca schema ni exige migración:** los datos están en memoria y no hay BD.
+- **Cabe en un solo módulo:** un fichero, `src/app.js`, más su test.
+- **Estimación:** no hay `.docs/sdd/estimation.md`, así que esta condición no aplica.
+
+Preveo 1 task, así que no propongo partirla. En lite el gate de la spec, el smoke y el walkthrough se mantienen igual.
+
+**Perfil vigente:** `delegate`. Sale del nivel de proyecto, por defecto, porque `sdd-kit.json` no fija `control.profile`. No hay `sdd-kit.local.json` ni perfil de release. En `delegate` paro en la spec, en los desvíos y en la validación.
+
+**Id:** `ids.mode` es `sequence` y no hay fila en el roadmap. Reservaré el id con `Get-NextSddId.ps1 -Reserve` y crearé `feature/<id>-filtro-sala` desde `develop`.
+
+¿Cómo seguimos?
+1. **Modo lite, perfil `delegate` (recomendada).**
+2. Modo full, perfil `delegate`.
+3. Modo lite, con la spec aprobada por delegación («apruebo la spec por delegación, nos vemos en la validación»). Así no paro en el gate de la spec.
+4. Otro perfil (`pair` o `unattended`) solo para esta feature.

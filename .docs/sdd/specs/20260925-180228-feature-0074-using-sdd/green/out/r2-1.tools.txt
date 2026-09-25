@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && git worktree list && echo ---CFG && cat .docs/sdd/sdd-kit.json; echo ---ROADMAP && git show develop:.docs/sdd/roadmap.md; echo ---LS && ls .docs/sdd .docs/sdd/specs 2>&1 | head -50
+<<< * develop
+  main
+<run>/repo 00f8039 [develop]
+---CFG
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+---ROADMAP
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd/specs/*; cat .docs/sdd/constitution.md | head -40; cat sdd-kit.local.json 2>/dev/null; SK="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills/sdd-templates"; pwsh -NoProfile -File "$SK/scripts/Get-CapabilityIndex.ps1" -Path .docs/sdd; ls "$SK"
+<<< .:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+.
+..
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+.
+..
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+.
+..
+patch.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` de
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat .docs/sdd/changelog.md; SK="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills/sdd-templates"; cat "$SK/templates/proposal-template.md"; ls src test
+<<< # Spec — weekly
+
+status: done
+# Spec — free
+
+status: done
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](specs/20260917-090000-task-0006-free/)
+
+### Fixed
+
+- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+
+## [0.3.0] - 2026-09
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; grep -n -i "correo\|mail" -r src test README.md package.json
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.16809960000000002 $)
+He mirado el roadmap de `develop` (no hay ramas `feature/*`), el changelog y el código. Antes de escribir nada, hay dos cosas de las notas que no cuadran con lo que ya hay.
+
+**Lo que ya existe**
+- **Recurrentes:** la 0005 ya da reserva semanal (`reservar --cada-semana`). Está en `[Unreleased]`, sin release. En el código solo devuelve el texto «reserva semanal creada»: no guarda ninguna reserva.
+- **Libres por la tarde:** la 0006 ya lista salas libres por franja exacta (`libres 10:00-12:00`). No hay «tarde» como concepto, y en el código solo compara la franja por igualdad de texto.
+- **Correo:** la fila 1 «Avisos por correo antes de la reserva» está ⏳ en «Próximo». No hay código de correo en `src/`, así que quitarlo es solo cuestión del roadmap.
+
+Como la 0005 y la 0006 están cerradas, no recibirán trabajo nuevo. Lo que salga va a filas nuevas «tras» ellas.
+
+**Lo que propongo apuntar** (sin arrancar nada)
+
+| Pedido | Fila propuesta | Dónde |
+| --- | --- | --- |
+| Reservas recurrentes | Fila nueva, tras 0005 | Próximo |
+| Salas libres por la tarde | Fila nueva, tras 0006 | Próximo |
+| Quitar lo del correo | Fila 1 → `⏸️ aparcada: descartada por el cliente, 2026-09-25`. No se borra. | Próximo |
+
+Con una `proposal.md` `source: meeting` que guarda las notas literales y las reglas de negocio con ejemplo con datos. Reservaría 3 ids de una vez (2 features y la propuesta) y los publicaría en un commit que solo toca `roadmap.md` y la propuesta.
+
+**Necesito una decisión antes de escribir.** Las notas son muy escuetas para las reglas con ejemplos. Mi recomendación es que me pases lo que dijo el cliente de cada punto y lo dejamos literal. Lo que no tengo claro:
+1. **Recurrentes:** ¿qué falta respecto a la semanal? Puede ser otra periodicidad (diaria, quincenal, mensual), un fin de la serie (hasta una fecha o N veces), cancelar solo una ocurrencia, o que la semanal ya funcione de verdad. Mi recomendación es apuntar «ampliar la recurrencia» con esas reglas por confirmar, no inventarlas.
+2. **Tarde:** ¿qué franja es «tarde»? Si es a partir de las 14:00, ¿libre significa libre toda la tarde o libre en algún tramo? Recomiendo un atajo `libres tarde` con la franja fijada en la propuesta.
+3. **Correo:** ¿el cliente lo descarta del todo, o solo por ahora? Lo apunto como descartado salvo que me digas otra cosa.
+
+Dime cómo quieres cerrar esos tres puntos, o si prefieres que decida yo con mis recomendaciones y lo deje anotado en la propuesta.

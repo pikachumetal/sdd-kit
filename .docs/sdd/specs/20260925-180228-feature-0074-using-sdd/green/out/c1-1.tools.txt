@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: ls -R .docs/sdd 2>/dev/null | head -50; git ls-files | head -80
+
+>>> Grep: cancel|cancela
+<<< Found 5 files
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\changelog.md
+test\app.test.js
+src\app.js
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/s
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|cancela
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+.docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserva propia. [changelog](changelog.md)
+
+=== RESULTADO (8 turnos, 0.11639000000000001 $)
+Lo de cancelar reservas está muy poco montado, y por eso no lo pillas: casi no hay nada. Lo que sigue lo he visto en el código y en los docs, salvo lo que marco como inferencia mía.
+
+**Qué hace el código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Es una sola línea dentro de `run()`. Se usa así: `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**, no busca ninguna reserva y no comprueba que exista.
+- `bookings` (línea 3) es un array en memoria con una única reserva de ejemplo: `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`. Ninguna otra parte lo modifica.
+- Además, el formato de hora no casa. La reserva guarda un tramo (`10:00-12:00`) y `cancelar` recibe una hora suelta (`10:00`).
+
+**Qué dicen los docs**
+
+- El `changelog.md` (línea 20) anota «Cancelar una reserva propia» como funcionalidad.
+- El patch 0007 (`specs/20260918-090000-patch-0007-cancel/patch.md`) dice: «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado». El changelog lo resume como que la cancelación ya no borra reservas de otro día con la misma hora.
+- El único test (`test/app.test.js:13`, «cancelar respeta el día») comprueba solo que la cadena devuelta sea `cancelada mar 10:00`. No demuestra que se respete el día.
+
+**Inferencia mía**
+
+El código actual no coincide con lo que dicen el changelog y el patch. Es probable que el commit `7947411 feat: base con cancelación de reservas` dejara solo un esqueleto, o que la lógica real no llegara a esta rama. No he mirado el historial para confirmarlo.
+
+**Qué haría ahora**
+
+- Si solo querías entender el estado, ya lo tienes: hoy cancelar es un *stub*.
+- Si quieres implementarlo de verdad, con búsqueda por día y hora y borrado de `bookings`, es una funcionalidad nueva. Iría por `sdd-start-feature`, o por `sdd-roadmap` si prefieres apuntarla antes.
+- Si quieres reabrir el patch 0007, sería `sdd-start-patch`. Dudo que encaje, porque habría que decidir cómo casan `10:00` y `10:00-12:00`.
+- Puedo revisar el historial de git para ver si la lógica existió y se perdió. No cambio nada sin que me lo pidas.

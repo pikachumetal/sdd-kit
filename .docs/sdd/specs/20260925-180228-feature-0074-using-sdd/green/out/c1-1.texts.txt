@@ -1,0 +1,37 @@
+--- [1]
+Es una pregunta sobre cómo funciona algo del proyecto, así que entra por `sdd-consult`.
+
+--- [4]
+Voy a mirar los documentos de anclaje y el código de la cancelación.
+
+--- [11]
+Lo de cancelar reservas está muy poco montado, y por eso no lo pillas: casi no hay nada. Lo que sigue lo he visto en el código y en los docs, salvo lo que marco como inferencia mía.
+
+**Qué hace el código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Es una sola línea dentro de `run()`. Se usa así: `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**, no busca ninguna reserva y no comprueba que exista.
+- `bookings` (línea 3) es un array en memoria con una única reserva de ejemplo: `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`. Ninguna otra parte lo modifica.
+- Además, el formato de hora no casa. La reserva guarda un tramo (`10:00-12:00`) y `cancelar` recibe una hora suelta (`10:00`).
+
+**Qué dicen los docs**
+
+- El `changelog.md` (línea 20) anota «Cancelar una reserva propia» como funcionalidad.
+- El patch 0007 (`specs/20260918-090000-patch-0007-cancel/patch.md`) dice: «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado». El changelog lo resume como que la cancelación ya no borra reservas de otro día con la misma hora.
+- El único test (`test/app.test.js:13`, «cancelar respeta el día») comprueba solo que la cadena devuelta sea `cancelada mar 10:00`. No demuestra que se respete el día.
+
+**Inferencia mía**
+
+El código actual no coincide con lo que dicen el changelog y el patch. Es probable que el commit `7947411 feat: base con cancelación de reservas` dejara solo un esqueleto, o que la lógica real no llegara a esta rama. No he mirado el historial para confirmarlo.
+
+**Qué haría ahora**
+
+- Si solo querías entender el estado, ya lo tienes: hoy cancelar es un *stub*.
+- Si quieres implementarlo de verdad, con búsqueda por día y hora y borrado de `bookings`, es una funcionalidad nueva. Iría por `sdd-start-feature`, o por `sdd-roadmap` si prefieres apuntarla antes.
+- Si quieres reabrir el patch 0007, sería `sdd-start-patch`. Dudo que encaje, porque habría que decidir cómo casan `10:00` y `10:00-12:00`.
+- Puedo revisar el historial de git para ver si la lógica existió y se perdió. No cambio nada sin que me lo pidas.
+

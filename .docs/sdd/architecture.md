@@ -10,6 +10,7 @@
 │   ├── plugin.json              (manifest del plugin, versión)
 │   └── marketplace.json         (marketplace self-hosted, source ".")
 ├── skills/
+│   ├── using-sdd/SKILL.md          (puerta de entrada: la inyecta el hook SessionStart)
 │   ├── sdd-init-greenfield/SKILL.md
 │   ├── sdd-init-brownfield/SKILL.md
 │   ├── sdd-start-feature/SKILL.md
@@ -23,7 +24,7 @@
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)
-├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, router.md — solo canal plugin)
+├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, que inyecta skills/using-sdd/SKILL.md — solo canal plugin)
 ├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
 ├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/ de los scripts y headless/, el lanzador de sujetos)
 └── .docs/

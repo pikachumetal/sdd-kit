@@ -1,0 +1,158 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Grep: cancel|cancela
+
+>>> Bash: ls -a; cat .docs/sdd/sdd-kit.json 2>/dev/null; ls .docs/sdd 2>/dev/null
+<<< Found 5 files
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\changelog.md
+test\app.test.js
+src\app.js
+<<< .
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Bash: node src/app.js cancelar zzz 99:99; git branch --show-current; find "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green" -name 'Get-NextSddId.ps1' -o -name 'patch-template.md' -o -name nombrado.md | head; cat package.json; ls .docs/sdd/specs
+<<< cancelada zzz 99:99
+develop
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills/sdd-start-feature/references/nombrado.md
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills/sdd-templates/scripts/Get-NextSddId.ps1
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills/sdd-templates/templates/patch-template.md
+{"type": "module"}
+20260915-
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0074-using-sdd/67a0eb93-893c-4fe1-ac9f-167eb5ca4f1a/scratchpad/kit-green/skills"; cat "$K/sdd-templates/templates/patch-template.md"; grep -n -i "patch\|rama\|branch" "$K/sdd-start-feature/references/nombrado.md" | head -40; pwsh -NoProfile -File "$K/sdd-templates/scripts/Get-NextSddId.ps1" -Reserve; git status --short
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+---
+
+# Patch <id> — <título corto>
+
+> Registr
+
+>>> Bash: git checkout -b feature/0008-cancelar-inexistente && Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss' 2>/dev/null || date -u +%Y%m%d-%H%M%S
+<<< Switched to a new branch 'feature/0008-cancelar-inexistente'
+20260925-183609
+
+>>> Edit: <run>\repo\test\app.test.js
+<<< The file <run>\repo\test\app.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test 2>&1 | tail -15; node src/app.js cancelar zzz 99:99
+<<< ✔ libres excluye la sala reservada en la franja (1.3917ms)
+✔ reservar --cada-semana crea la reserva semanal (9.6306ms)
+✔ cancelar respeta el día (0.2591ms)
+✔ cancelar una reserva que no existe no dice cancelada (0.1975ms)
+✔ cancelar una reserva existente la cancela (0.1687ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 235.9017
+no existe la reserva zzz 99:99
+
+=== RESULTADO (9 turnos, 0.1806598 $)
+
