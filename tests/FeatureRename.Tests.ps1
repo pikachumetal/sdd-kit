@@ -1,5 +1,7 @@
 BeforeAll {
   $script:KitRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
 
   function Get-KitFile([string]$RelativePath) {
     $path = Join-Path $script:KitRoot $RelativePath
@@ -78,4 +80,17 @@ Describe 'Renombrado task → feature' {
       $hits | Should -BeNullOrEmpty
     }
   }
+
+  Context 'guarda' {
+    It 'no queda ningún nombre viejo fuera del histórico' {
+      $allowed = '^(\.docs/sdd/(specs|field-reports|releases|capabilities)/|\.docs/sdd/(changelog|roadmap|tech-stack|estimation-log)\.md$|tests/.*\.md$|skills/sdd-init-brownfield/references/migrations/|tests/(FeatureRename|MigrationInitParity)\.Tests\.ps1$)'
+      $files = git -C $script:KitRoot ls-files | Where-Object { $_ -notmatch $allowed }
+      $hits = $files | Where-Object { Select-String -LiteralPath (Join-Path $script:KitRoot $_) -Pattern 'sdd-(start|end)-task' -Quiet }
+      $hits | Should -BeNullOrEmpty
+    }
+  }
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }

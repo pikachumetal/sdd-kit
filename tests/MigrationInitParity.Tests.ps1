@@ -130,3 +130,23 @@ Describe 'Tabla de release con Ficheros que toca' {
     Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'nunca «por definir»'
   }
 }
+
+Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
+  BeforeAll { $script:V2 = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md' }
+
+  It 'tiene un paso que sustituye los nombres viejos por sdd-start-feature y sdd-end-feature' {
+    $script:V2 | Should -Match '(?s)sdd-start-task.{0,200}sdd-start-feature'
+    $script:V2 | Should -Match '(?s)sdd-end-task.{0,200}sdd-end-feature'
+  }
+
+  It 'el paso nombra CLAUDE.md, AGENTS.md y capabilities/ y excluye el histórico' {
+    foreach ($literal in @('CLAUDE.md', 'AGENTS.md', 'capabilities/', 'specs/', 'changelog.md', 'client-changelog.md', 'roadmap.md')) {
+      $script:V2 | Should -Match ([regex]::Escape($literal))
+    }
+    $script:V2 | Should -Match 'no se renombra'
+  }
+
+  It 'la verificación lleva el Select-String con AGENTS.md y el histórico excluido' {
+    $script:V2 | Should -Match ([regex]::Escape("Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task'"))
+  }
+}

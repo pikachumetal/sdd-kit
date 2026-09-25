@@ -47,22 +47,22 @@ El onboarding no bloquea: se crea la documentación mínima de anclaje y se empi
 
 El ciclo es el mismo que en greenfield, guiado por las skills:
 
-1. **Arranque** con `sdd-start-task`, que carga el contexto del proyecto y enruta según lo que sea: consulta, patch, modo lite o ciclo completo.
+1. **Arranque** con `sdd-start-feature`, que carga el contexto del proyecto y enruta según lo que sea: consulta, patch, modo lite o ciclo completo.
 2. **Especificación**: brainstorming con Claude hasta llegar a `spec.md`, con el delta de comportamiento por capacidad, revisada y aprobada antes de continuar. En brownfield conviene activar la revisión adversarial de la spec más a menudo, porque el riesgo está en lo que la spec da por supuesto del sistema existente.
 3. **Plan** en `plan.md`, con la estimación de esfuerzo, el modelo por tarea y las restricciones globales.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos.
 5. **Implementación** con subagentes por defecto, y los tests en rojo escritos por el hilo principal antes de despachar: son el contrato del implementador.
 6. **Verificación**, que se detalla en el punto 2.2.
 7. **Validación**: el agente presenta lo hecho y espera a que digas qué has probado y que funciona.
-8. **Cierre** con `walkthrough.md` y `sdd-end-task`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
+8. **Cierre** con `walkthrough.md` y `sdd-end-feature`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
 
-Los artefactos viven en `.docs/sdd/specs/<fecha>-task-<id>-<nombre>/`, como en greenfield.
+Los artefactos viven en `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/`, como en greenfield.
 
 Las tareas tienen que ser pequeñas, de una jornada o menos. En las demasiado grandes los últimos pasos pierden calidad. Si una tarea crece mientras se trabaja, se divide.
 
 ### 2.1. Gestión del contexto
 
-**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva y `sdd-start-task` carga la documentación de anclaje. En codebases grandes conviene usar subagentes para explorar el código sin contaminar el contexto principal, que es lo que recomienda Anthropic para repositorios de ese tamaño.
+**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva y `sdd-start-feature` carga la documentación de anclaje. En codebases grandes conviene usar subagentes para explorar el código sin contaminar el contexto principal, que es lo que recomienda Anthropic para repositorios de ese tamaño.
 
 ### 2.2. Verificación
 
@@ -98,7 +98,7 @@ Resultados del primer proyecto del equipo con el flujo completo, que era un brow
 
 ## 5. Evolución: los aprendizajes vuelven al proceso
 
-Cada `walkthrough.md` recoge los aprendizajes de la tarea, y el cierre con `sdd-end-task` obliga a volcarlos a los documentos y a las skills. Un ejemplo real del equipo: un bug de producción causado por un detalle de serialización se convirtió en un artículo de la constitution, y desde entonces ninguna tarea lo repite, la haga quien la haga. En brownfield este bucle es el mecanismo por el que el conocimiento tribal se convierte en activo del proyecto.
+Cada `walkthrough.md` recoge los aprendizajes de la tarea, y el cierre con `sdd-end-feature` obliga a volcarlos a los documentos y a las skills. Un ejemplo real del equipo: un bug de producción causado por un detalle de serialización se convirtió en un artículo de la constitution, y desde entonces ninguna tarea lo repite, la haga quien la haga. En brownfield este bucle es el mecanismo por el que el conocimiento tribal se convierte en activo del proyecto.
 
 ## 6. Principio general
 

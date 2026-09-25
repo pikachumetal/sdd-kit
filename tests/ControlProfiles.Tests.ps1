@@ -145,7 +145,7 @@ Describe 'Merge en el cierre' {
   }
 
   It 'el Art. IV nombra el cierre de patch' {
-    Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'el cierre de task y el de patch'
+    Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'el cierre de feature y el de patch'
   }
 
   It 'la receta regenera el log con el script' {
