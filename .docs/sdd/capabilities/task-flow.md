@@ -237,6 +237,23 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - THEN para antes de la Task 2 y presenta el guion de la Task 1, con la forma del guion de la validación: por ejemplo, «1. `salas reservar Norte 1012` → «Franja no válida: usa HH-HH, p. ej. 10-12»; 2. `salas reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`»
 - AND en `delegate` y `unattended` sigue con la Task 2 sin parar ni presentar guion
 
+### El gate del plan en `pair` ofrece parar para bajar la sesión a gama media
+- GIVEN una task en `pair`, una sesión con Opus 5.5 y un plan con `Ejecución: native, porque…`
+- WHEN el agente presenta el gate del plan
+- THEN entre las opciones está «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con su motivo: Native va bien en gama media (Sonnet, effort medium) y bajar solo el effort de Opus no es gama media
+- AND si el usuario la elige, el agente junta la apertura en su commit y termina el turno antes de la Task 1 diciendo el cambio (`/model`, Sonnet con effort medium)
+
+### El gate de la spec en `delegate` ofrece parar tras el plan para bajar la sesión a gama media
+- GIVEN una task en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
+- WHEN el agente presenta la spec
+- THEN entre las opciones está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
+- AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
+
+### Con Native, el plan registra el modelo recomendado para la sesión
+- GIVEN un plan cuyo método es Native
+- WHEN el agente escribe su línea `Ejecución`
+- THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.»
+
 ## Historial
 
 - 2026-09-08 — 20260908-150513-task-0000-spec-ligera-funcional — ADDED La spec presenta primero las decisiones tomadas sin el usuario
@@ -295,3 +312,4 @@ Verdad viva del comportamiento observable del carril task del kit: lo que un dev
 - 2026-09-24 — 20260923-214917-task-0053-fewer-stops — ADDED Cada cambio de paso lleva un aviso en llano · Una decisión del dev-lead que sale de la revisión final se pregunta sola · MODIFIED El trabajo se valida con el usuario antes de cerrar («sí» sin detalle)
 - 2026-09-24 — 20260924-105352-task-0057-native-adapt — ADDED Una task Native se registra en el ledger de `executing-plans` · La base se comprueba antes de cada task Native · Los RED de una task Native se apartan y se comparan · El revisor final de Native va con el techo del kit · Sin el tipo de effort, se dice antes del primer despacho · El cierre no repite la revisión final de Native (enmienda: `tasks.md`) · Los minors diferidos llegan al walkthrough · MODIFIED En Windows, el workspace de ejecución se usa en su ruta Windows
 - 2026-09-25 — 20260924-204639-task-0060-testable-tasks — ADDED Cada task de producto acaba en algo que se prueba en la aplicación · En `pair`, cada task cerrada para con su guion de pruebas · MODIFIED El trabajo se valida con el usuario antes de cerrar (guion de pruebas)
+- 2026-09-25 — 20260924-225741-task-0058-session-model-policy — ADDED El gate del plan en `pair` ofrece parar para bajar la sesión a gama media · El gate de la spec en `delegate` ofrece parar tras el plan para bajar la sesión a gama media · Con Native, el plan registra el modelo recomendado para la sesión

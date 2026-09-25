@@ -61,6 +61,12 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - AND cada artefacto va a la primera versión con fecha igual o posterior a la de su fila (la de cierre); los posteriores a la última versión van a «sin publicar», y los que no tienen fecha, a «sin fecha»
 - AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
 
+### El walkthrough registra el modelo y el effort del hilo en cada fase
+- GIVEN una task cuya spec y plan corrieron con Opus 5.5 y effort medium, y cuya ejecución corrió con Sonnet 5 y effort medium tras un `/model`
+- WHEN el agente rellena «Modelo del hilo» del walkthrough
+- THEN escribe los dos, con su fase: «Opus 5.5, effort medium (spec y plan) → Sonnet 5, effort medium (ejecución)»
+- AND si no sabe el effort de una fase, escribe «effort no registrado» en esa fase, no un valor supuesto
+
 ## Historial
 
 - 2026-09-09 — 20260909-065145-task-0000-estimation-log-script — ADDED El estimation-log se genera desde los artefactos de cierre
@@ -74,3 +80,4 @@ Verdad viva del comportamiento observable del módulo de estimación del kit: c�
 - 2026-09-23 — 20260923-195017-task-0046-estimation-stats — ADDED El log agrupa por release
 - 2026-09-24 — 20260924-081646-patch-0056-estimation-log-close-date — MODIFIED El estimation-log se genera desde los artefactos de cierre; MODIFIED El log agrupa por release (la fecha es la de cierre, no la de la carpeta; fusionado por la task 0067)
 - 2026-09-25 — 20260924-223521-patch-0066-estimation-log-minutes — MODIFIED El parseo tolera el formato real de las plantillas (minutos y unidades desconocidas; fusionado por la task 0067)
+- 2026-09-25 — 20260924-225741-task-0058-session-model-policy — ADDED El walkthrough registra el modelo y el effort del hilo en cada fase
