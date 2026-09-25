@@ -12,6 +12,8 @@ Para un **recorte o reestructuración de una skill existente**, el baseline vac�
 
 **El GREEN mide también lo que el RED ya cumplía.** Además de los fallos del RED, el GREEN cuenta como filas de control cada conducta que el RED cumplía en los pasos que la guía nueva toca o bordea (task 0067: el paso de al lado cayó de 4/4 a 1/4 y la evidencia decía «sin regresión»). Una edición de la guía después del GREEN lleva un sujeto de control por escenario afectado (task 0061).
 
+**Renombrar, retirar o fusionar una skill también es editarla.** Un renombrado cambia su enrutado y exige volver a medir sus escenarios de entrada (task 0062: con `sdd-plan`, 2/2 sujetos llegaban solos; con `sdd-roadmap`, 0/1). Una spec que retira o fusiona una skill lleva una tabla «regla de la skill retirada → dónde vive ahora | por qué se descarta», una fila por paso, red flag y racionalización (task 0062: una regla quedó sin destino y la encontró la revisión final).
+
 ## Art. II — La forma sigue al fallo
 
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
