@@ -26,7 +26,7 @@ created: <YYYY-MM-DD>
 - Esfuerzo real: <Zh> — reloj del hilo (aproximado si no hay medición exacta — nunca en blanco). Los minutos de los subagentes NO se suman aquí: van en su línea. Sin reloj exacto, aproxima con las marcas de los commits y dilo; «no tengo reloj del hilo, sumo los despachos» convierte el ratio en el de los subagentes.
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <…>
-- Modelo del hilo: <modelo>
+- Modelo del hilo: <modelo y effort; si cambiaron durante la task, los de cada fase en esta misma línea: «Opus 5.5, effort medium (spec y plan) → Sonnet 5, effort medium (ejecución)»; «effort no registrado» en la fase cuyo effort no sabes, nunca uno supuesto>
 - Tokens del hilo: no medido | <N> *(«no medido» es la salida honesta: el agente no tiene contador expuesto. Solo se pone cifra si el dev-lead la aporta)*
 - Tokens de subagentes: <total> en <n> despachos — <rol> <modelo> <tokens> / <min>; … | no aplica *(la línea abre con el total sumado: el log lee esa primera cifra, no la lista)*
 - Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
