@@ -22,23 +22,23 @@ Describe 'Build-EstimationLog.ps1' {
   }
 
   It 'lee un walkthrough plano' {
-    Get-Row $script:Result.Text '20260901-100000-task-0001-plain' | Should -Be '| 2026-09-01 | 0001 | docs | 4 | 2 | 0.5 | — | — | — | 20260901-100000-task-0001-plain |'
+    Get-Row $script:Result.Text '20260901-100000-task-0001-plain' | Should -Be '| 2026-09-01 | 0001 | docs | 4 | 2 | 0.5 | — | — | — | — | 20260901-100000-task-0001-plain |'
   }
 
   It 'tolera negrita, virgulilla, coma decimal, rango y Tipo compuesto' {
-    Get-Row $script:Result.Text '20260902-100000-task-0002-fancy' | Should -Be '| 2026-09-02 | 0002 | docs | 2 | 0.5 | 0.25 | — | — | — | 20260902-100000-task-0002-fancy |'
+    Get-Row $script:Result.Text '20260902-100000-task-0002-fancy' | Should -Be '| 2026-09-02 | 0002 | docs | 2 | 0.5 | 0.25 | — | — | — | — | 20260902-100000-task-0002-fancy |'
   }
 
   It 'incluye una task sin plan con estimado y ratio vacíos' {
-    Get-Row $script:Result.Text '20260903-100000-task-0003-sinplan' | Should -Be '| 2026-09-03 | 0003 | infra/tooling | — | 3 | — | — | — | — | 20260903-100000-task-0003-sinplan |'
+    Get-Row $script:Result.Text '20260903-100000-task-0003-sinplan' | Should -Be '| 2026-09-03 | 0003 | infra/tooling | — | 3 | — | — | — | — | — | 20260903-100000-task-0003-sinplan |'
   }
 
   It 'lee patch.md con tipo patch' {
-    Get-Row $script:Result.Text '20260904-100000-patch-0000-fix' | Should -Be '| 2026-09-04 | 0000 | patch | 0.5 | 0.3 | 0.6 | — | — | — | 20260904-100000-patch-0000-fix |'
+    Get-Row $script:Result.Text '20260904-100000-patch-0000-fix' | Should -Be '| 2026-09-04 | 0000 | patch | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260904-100000-patch-0000-fix |'
   }
 
   It 'lee hotfix.md legacy con tipo hotfix' {
-    Get-Row $script:Result.Text '20260905-100000-task-0004-legacy' | Should -Be '| 2026-09-05 | 0004 | hotfix | 1 | 2 | 2 | — | — | — | 20260905-100000-task-0004-legacy |'
+    Get-Row $script:Result.Text '20260905-100000-task-0004-legacy' | Should -Be '| 2026-09-05 | 0004 | hotfix | 1 | 2 | 2 | — | — | — | — | 20260905-100000-task-0004-legacy |'
   }
 
   It 'avisa y excluye un bloque presente con real ilegible' {
@@ -57,11 +57,11 @@ Describe 'Build-EstimationLog.ps1' {
   }
 
   It 'lee hotfix.md sin frontmatter usando la carpeta para el id de task' {
-    Get-Row $script:Result.Text '20260909-100000-hotfix-0007-sinfrontmatter' | Should -Be '| 2026-09-09 | 0007 | hotfix | 1 | 1 | 1 | — | — | — | 20260909-100000-hotfix-0007-sinfrontmatter |'
+    Get-Row $script:Result.Text '20260909-100000-hotfix-0007-sinfrontmatter' | Should -Be '| 2026-09-09 | 0007 | hotfix | 1 | 1 | 1 | — | — | — | — | 20260909-100000-hotfix-0007-sinfrontmatter |'
   }
 
   It 'lee un patch cuya sección se titula solo Tiempo' {
-    Get-Row $script:Result.Text '20260910-100000-patch-0000-sinligero' | Should -Be '| 2026-09-10 | 0000 | patch | 1 | 0.5 | 0.5 | — | — | — | 20260910-100000-patch-0000-sinligero |'
+    Get-Row $script:Result.Text '20260910-100000-patch-0000-sinligero' | Should -Be '| 2026-09-10 | 0000 | patch | 1 | 0.5 | 0.5 | — | — | — | — | 20260910-100000-patch-0000-sinligero |'
   }
 
   It 'escribe LF sin BOM' {
@@ -72,11 +72,11 @@ Describe 'Build-EstimationLog.ps1' {
   }
 
   It 'una carpeta fuera de convención sale con fecha y task vacíos en vez de abortar' {
-    Get-Row $script:Result.Text 'notas-sueltas' | Should -Be '| — | — | docs | 2 | 1 | 0.5 | — | — | — | notas-sueltas |'
+    Get-Row $script:Result.Text 'notas-sueltas' | Should -Be '| — | — | docs | 2 | 1 | 0.5 | — | — | — | — | notas-sueltas |'
   }
 
   It 'no deja que un "Real" de otra sección secuestre el valor correcto' {
-    Get-Row $script:Result.Text '20260911-100000-patch-0000-real-en-diagnostico' | Should -Be '| 2026-09-11 | 0000 | patch | 1 | 1 | 1 | — | — | — | 20260911-100000-patch-0000-real-en-diagnostico |'
+    Get-Row $script:Result.Text '20260911-100000-patch-0000-real-en-diagnostico' | Should -Be '| 2026-09-11 | 0000 | patch | 1 | 1 | 1 | — | — | — | — | 20260911-100000-patch-0000-real-en-diagnostico |'
     $script:Result.Warnings -join ' ' | Should -Not -Match 'real-en-diagnostico'
   }
 
@@ -86,31 +86,31 @@ Describe 'Build-EstimationLog.ps1' {
   }
 
   It 'admite la etiqueta de estimación sin "(del plan)"' {
-    Get-Row $script:Result.Text '20260912-100000-task-0010-sin-etiqueta-plan' | Should -Be '| 2026-09-12 | 0010 | docs | 3 | 3 | 1 | — | — | — | 20260912-100000-task-0010-sin-etiqueta-plan |'
+    Get-Row $script:Result.Text '20260912-100000-task-0010-sin-etiqueta-plan' | Should -Be '| 2026-09-12 | 0010 | docs | 3 | 3 | 1 | — | — | — | — | 20260912-100000-task-0010-sin-etiqueta-plan |'
   }
 
   It 'usa Tipo — cuando falta la línea Tipo' {
-    Get-Row $script:Result.Text '20260913-100000-task-0011-sin-tipo' | Should -Be '| 2026-09-13 | 0011 | — | 2 | 1 | 0.5 | — | — | — | 20260913-100000-task-0011-sin-tipo |'
+    Get-Row $script:Result.Text '20260913-100000-task-0011-sin-tipo' | Should -Be '| 2026-09-13 | 0011 | — | 2 | 1 | 0.5 | — | — | — | — | 20260913-100000-task-0011-sin-tipo |'
   }
 
   It 'lee los tres costes declarados por separado' {
-    Get-Row $script:Result.Text '20260915-100000-task-0013-coste' | Should -Be '| 2026-09-15 | 0013 | docs | 2 | 1 | 0.5 | no medido | 342k | 1.85 | 20260915-100000-task-0013-coste |'
+    Get-Row $script:Result.Text '20260915-100000-task-0013-coste' | Should -Be '| 2026-09-15 | 0013 | docs | 2 | 1 | 0.5 | no medido | 342k | 1.85 | — | 20260915-100000-task-0013-coste |'
   }
 
   It 'muestra no aplica cuando la task no tuvo subagentes ni sujetos' {
-    Get-Row $script:Result.Text '20260916-100000-task-0014-solo' | Should -Be '| 2026-09-16 | 0014 | docs | 1 | 1 | 1 | 120k | no aplica | no aplica | 20260916-100000-task-0014-solo |'
+    Get-Row $script:Result.Text '20260916-100000-task-0014-solo' | Should -Be '| 2026-09-16 | 0014 | docs | 1 | 1 | 1 | 120k | no aplica | no aplica | — | 20260916-100000-task-0014-solo |'
   }
 
   It 'lee las etiquetas antiguas del corpus y los tokens en millones' {
-    Get-Row $script:Result.Text '20260917-100000-task-0015-legacy' | Should -Be '| 2026-09-17 | 0015 | docs | 2 | 2 | 1 | — | 1230k | 10.3 | 20260917-100000-task-0015-legacy |'
+    Get-Row $script:Result.Text '20260917-100000-task-0015-legacy' | Should -Be '| 2026-09-17 | 0015 | docs | 2 | 2 | 1 | — | 1230k | 10.3 | — | 20260917-100000-task-0015-legacy |'
   }
 
   It 'lee el punto como separador de miles, no como decimal' {
-    Get-Row $script:Result.Text '20260918-100000-task-0016-miles' | Should -Be '| 2026-09-18 | 0016 | docs | 2 | 1 | 0.5 | 148k | 1230k | 1850 | 20260918-100000-task-0016-miles |'
+    Get-Row $script:Result.Text '20260918-100000-task-0016-miles' | Should -Be '| 2026-09-18 | 0016 | docs | 2 | 1 | 0.5 | 148k | 1230k | 1850 | — | 20260918-100000-task-0016-miles |'
   }
 
   It 'no toca un decimal con punto, que lleva dos dígitos detrás' {
-    Get-Row $script:Result.Text '20260919-100000-task-0017-decimal' | Should -Be '| 2026-09-19 | 0017 | docs | — | 1 | — | — | — | 1.85 | 20260919-100000-task-0017-decimal |'
+    Get-Row $script:Result.Text '20260919-100000-task-0017-decimal' | Should -Be '| 2026-09-19 | 0017 | docs | — | 1 | — | — | — | 1.85 | — | 20260919-100000-task-0017-decimal |'
   }
 
   It 'calcula el factor global como mediana de los ratios' {
@@ -135,7 +135,7 @@ Describe 'Build-EstimationLog.ps1' {
 Describe 'Resolución de la carpeta de docs' {
   It 'usa docs/sdd cuando no existe .docs/sdd' {
     $r = Invoke-Build (Join-Path $script:Fixtures 'legacy')
-    Get-Row $r.Text '20260801-100000-task-0009-old' | Should -Be '| 2026-08-01 | 0009 | backend | 3 | 6 | 2 | — | — | — | 20260801-100000-task-0009-old |'
+    Get-Row $r.Text '20260801-100000-task-0009-old' | Should -Be '| 2026-08-01 | 0009 | backend | 3 | 6 | 2 | — | — | — | — | 20260801-100000-task-0009-old |'
   }
 
   It 'avisa de calibración orientativa con menos de 10 ratios' {
@@ -145,12 +145,12 @@ Describe 'Resolución de la carpeta de docs' {
 
   It 'lee la estimación de un walkthrough lite (etiqueta con «de la spec»)' {
     $r = Invoke-Build (Join-Path $script:Fixtures 'lite')
-    Get-Row $r.Text '20260915-100000-task-0013-lite' | Should -Be '| 2026-09-15 | 0013 | docs | 1 | 0.5 | 0.5 | — | — | — | 20260915-100000-task-0013-lite |'
+    Get-Row $r.Text '20260915-100000-task-0013-lite' | Should -Be '| 2026-09-15 | 0013 | docs | 1 | 0.5 | 0.5 | — | — | — | — | 20260915-100000-task-0013-lite |'
   }
 
   It 'corta la sección de tiempo en el siguiente encabezado' {
     $r = Invoke-Build (Join-Path $script:Fixtures 'seccion')
-    Get-Row $r.Text '20260916-100000-task-0014-seccion' | Should -Be '| 2026-09-16 | 0014 | docs | 2 | 1 | 0.5 | — | — | — | 20260916-100000-task-0014-seccion |'
+    Get-Row $r.Text '20260916-100000-task-0014-seccion' | Should -Be '| 2026-09-16 | 0014 | docs | 2 | 1 | 0.5 | — | — | — | — | 20260916-100000-task-0014-seccion |'
   }
 
   It 'escribe el singular con un solo artefacto con ratio' {
@@ -201,6 +201,7 @@ Describe 'Resumen estadístico' {
     function New-Walkthrough([string]$Specs, [string]$Folder, [hashtable]$Time) {
       $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
       $cost = if ($Time.Cost) { "`n- Coste de sujetos: $($Time.Cost)" } else { '' }
+      if ($Time.Session) { $cost += "`n- Coste de la sesión: $($Time.Session)" }
       $text = "## 2. Tiempo: estimado vs real`n`n- Tipo: $($Time.Type)`n- Estimación de implementación (del plan): $($Time.Est)`n- Esfuerzo real: $($Time.Real)$cost`n"
       [System.IO.File]::WriteAllText((Join-Path $dir 'walkthrough.md'), $text, [System.Text.UTF8Encoding]::new($false))
     }
@@ -218,7 +219,8 @@ Describe 'Resumen estadístico' {
       $type = if ($i -lt 11) { 'docs' } elseif ($i -lt 17) { 'patch' } else { 'chore' }
       $folder = '202608{0:d2}-100000-task-{1:d4}-r' -f ($i + 1), ($i + 1)
       $cost = switch ($i) { 0 { '2,5 $' } 1 { 'no medido' } default { '' } }
-      New-Walkthrough $specs $folder @{ Type = $type; Est = '1h'; Real = ("$($ratios[$i])h" -replace '\.', ','); Cost = $cost }
+      $session = switch ($i) { 0 { '1,25 $ (hilo 0,95 $ + subagentes 0,30 $)' } 1 { 'sin precio (sin tabla pricing en sdd-kit.json)' } 2 { '0,75 $ (hilo 0,75 $)' } default { '' } }
+      New-Walkthrough $specs $folder @{ Type = $type; Est = '1h'; Real = ("$($ratios[$i])h" -replace '\.', ','); Cost = $cost; Session = $session }
     }
     New-Walkthrough $specs '20260803-120000-task-0099-sinest' @{ Type = 'docs'; Est = '—'; Real = '1,5h'; Cost = '1,5 $' }
     New-Walkthrough $specs 'notas-sueltas' @{ Type = 'docs'; Est = '—'; Real = '2h' }
@@ -270,11 +272,27 @@ Describe 'Resumen estadístico' {
   }
 
   It 'agrupa por release según las fechas del changelog' {
-    $script:Completo | Should -Match '(?m)^\| Release \| Artefactos \| Horas reales \| Mediana \| Sujetos \(\$\) \|$'
-    $script:Completo | Should -Match '(?m)^\| 0\.1\.0 \| 6 \| 3\.3 \| 0\.4 \| 4 \|$'
-    $script:Completo | Should -Match '(?m)^\| 0\.2\.0 \| 5 \| 4 \| 0\.8 \| — \|$'
-    $script:Completo | Should -Match '(?m)^\| sin publicar \| 11 \| 14\.2 \| 1\.1 \| — \|$'
-    $script:Completo | Should -Match '(?m)^\| sin fecha \| 1 \| 2 \| — \| — \|$'
+    $script:Completo | Should -Match '(?m)^\| Release \| Artefactos \| Horas reales \| Mediana \| Sujetos \(\$\) \| Sesión \(\$\) \|$'
+    $script:Completo | Should -Match '(?m)^\| 0\.1\.0 \| 6 \| 3\.3 \| 0\.4 \| 4 \| 2 \|$'
+    $script:Completo | Should -Match '(?m)^\| 0\.2\.0 \| 5 \| 4 \| 0\.8 \| — \| — \|$'
+    $script:Completo | Should -Match '(?m)^\| sin publicar \| 11 \| 14\.2 \| 1\.1 \| — \| — \|$'
+    $script:Completo | Should -Match '(?m)^\| sin fecha \| 1 \| 2 \| — \| — \| — \|$'
+  }
+
+  It 'lleva la columna Sesión ($) en la tabla principal' {
+    $script:Completo | Should -Match '(?m)^\| Fecha \| Task \| Tipo \| Est \(h\) \| Real \(h\) \| Ratio \| Hilo \(tokens\) \| Subagentes \(tokens\) \| Sujetos \(\$\) \| Sesión \(\$\) \| Carpeta \|$'
+  }
+
+  It 'lee la cifra de Coste de la sesión' {
+    $script:Completo | Should -Match '(?m)^\| 2026-08-01 \| 0001 \| docs \| 1 \| 0\.2 \| 0\.2 \| — \| — \| 2\.5 \| 1\.25 \| 20260801-100000-task-0001-r \|$'
+  }
+
+  It 'deja sin precio y no medido tal cual' {
+    $script:Completo | Should -Match '(?m)^\| 2026-08-02 \| 0002 \| docs \| 1 \| 0\.3 \| 0\.3 \| — \| — \| no medido \| sin precio \| 20260802-100000-task-0002-r \|$'
+  }
+
+  It 'pone — cuando el walkthrough no tiene la línea' {
+    $script:Completo | Should -Match '(?m)^\| 2026-08-04 \| 0004 \| docs \| 1 \| 0\.4 \| 0\.4 \| — \| — \| — \| — \| 20260804-100000-task-0004-r \|$'
   }
 
   It 'ordena las releases de la más antigua a sin publicar' {
@@ -342,12 +360,12 @@ Describe 'Tolerancia de formato en el bloque de tiempo' {
   BeforeAll { $script:Tolerante = Invoke-Build (Join-Path $script:Fixtures 'tolerante') }
 
   It 'lee un patch.md escrito con las etiquetas largas del walkthrough' {
-    Get-Row $script:Tolerante.Text '20260917-100000-patch-0000-etiqueta-larga' | Should -Be '| 2026-09-17 | 0000 | patch | 1.5 | 1.2 | 0.8 | — | — | — | 20260917-100000-patch-0000-etiqueta-larga |'
+    Get-Row $script:Tolerante.Text '20260917-100000-patch-0000-etiqueta-larga' | Should -Be '| 2026-09-17 | 0000 | patch | 1.5 | 1.2 | 0.8 | — | — | — | — | 20260917-100000-patch-0000-etiqueta-larga |'
     $script:Tolerante.Warnings -join ' ' | Should -Not -Match 'etiqueta-larga'
   }
 
   It 'tolera el símbolo de aproximación delante de la cifra' {
-    Get-Row $script:Tolerante.Text '20260918-100000-task-0015-aprox' | Should -Be '| 2026-09-18 | 0015 | docs | 3 | 2.5 | 0.83 | — | — | — | 20260918-100000-task-0015-aprox |'
+    Get-Row $script:Tolerante.Text '20260918-100000-task-0015-aprox' | Should -Be '| 2026-09-18 | 0015 | docs | 3 | 2.5 | 0.83 | — | — | — | — | 20260918-100000-task-0015-aprox |'
     $script:Tolerante.Warnings -join ' ' | Should -Not -Match 'aprox'
   }
 }
@@ -370,17 +388,17 @@ Describe 'Unidad del tiempo' {
   }
 
   It 'convierte los minutos a horas' {
-    Get-Row $script:Unidades.Text '20260924-100000-patch-0065-minutos' | Should -Be '| 2026-09-24 | 0065 | patch | 0.5 | 0.42 | 0.83 | — | — | — | 20260924-100000-patch-0065-minutos |'
+    Get-Row $script:Unidades.Text '20260924-100000-patch-0065-minutos' | Should -Be '| 2026-09-24 | 0065 | patch | 0.5 | 0.42 | 0.83 | — | — | — | — | 20260924-100000-patch-0065-minutos |'
     $script:Unidades.Warnings -join ' ' | Should -Not -Match 'minutos'
   }
 
   It 'lee hora y horas como h' {
-    Get-Row $script:Unidades.Text '20260924-110000-patch-0070-horas' | Should -Be '| 2026-09-24 | 0070 | patch | 1 | 2 | 2 | — | — | — | 20260924-110000-patch-0070-horas |'
+    Get-Row $script:Unidades.Text '20260924-110000-patch-0070-horas' | Should -Be '| 2026-09-24 | 0070 | patch | 1 | 2 | 2 | — | — | — | — | 20260924-110000-patch-0070-horas |'
     $script:Unidades.Warnings -join ' ' | Should -Not -Match 'patch-0070-horas'
   }
 
   It 'deja vacía y avisa una estimación en otra unidad, sin adivinar' {
-    Get-Row $script:Unidades.Text '20260924-120000-patch-0071-dias' | Should -Be '| 2026-09-24 | 0071 | patch | — | 3 | — | — | — | — | 20260924-120000-patch-0071-dias |'
+    Get-Row $script:Unidades.Text '20260924-120000-patch-0071-dias' | Should -Be '| 2026-09-24 | 0071 | patch | — | 3 | — | — | — | — | — | 20260924-120000-patch-0071-dias |'
     $script:Unidades.Warnings -join ' ' | Should -Match 'días.*patch-0071-dias'
   }
 
