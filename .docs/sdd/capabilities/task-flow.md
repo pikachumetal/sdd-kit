@@ -143,7 +143,14 @@ El carril task del kit: lo que un dev y un agente pueden esperar al arrancar, es
 - GIVEN una task con superficie frontend que cambia lo que se ve
 - WHEN se escribe el plan y, después, cuando esa task termina su revisión
 - THEN la task lleva una verificación visual con la pantalla o ruta, los estados y los temas que se miran y qué se mira en ellos (alineación, separación a bordes, contraste)
-- AND no se da por terminada en `tasks.md` hasta que el hilo principal la ha visto en un navegador real; sin navegador disponible queda como «no probado», nunca sustituida por la suite
+- AND el hilo principal la abre en un navegador real con Playwright —el MCP si está en la sesión, un script del paquete `playwright` si no—, mide en estilos computados cada cosa que el campo declara y saca una captura por estado y tema, que guarda fuera de git hasta la validación, antes de darla por terminada en `tasks.md`
+- AND sin navegador con el que ejecutar Playwright o sin forma de levantar la aplicación, lo dice con el error concreto y la task queda «no probado» en lo visual, nunca «verificado» ni sustituida por la suite; «el MCP de Playwright no está en la sesión» y «faltan dependencias» no son ninguno de los dos
+
+### La verificación visual se enseña con medidas y capturas
+- GIVEN la task 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, contraste del texto y separación de la flecha al borde
+- WHEN el agente para tras la task en `pair`, o presenta la validación del paso 7 en `delegate`
+- THEN antes del guion de pruebas enseña cada medida con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1») y la ruta de cada captura
+- AND una task que quedó «no probado» lo dice en ese sitio, con su motivo
 
 ### Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano
 - GIVEN una task cuya verificación incluye un comando que tarda más de 10 minutos

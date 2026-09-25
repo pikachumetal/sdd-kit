@@ -17,9 +17,11 @@ created: 2026-09-25
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | El texto de `sdd-start-task` y sus literales | done | 02b4933 | 5 tests de literales; RED sin cambios frente a su copia |
-| 2 | GREEN | pending | — | |
+| 2 | GREEN | done | 613073c | 11 sujetos, 5,40 $; las cuatro conductas del RED pasan |
 
 ## Fixes adicionales
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+Revisión final: sdd-kit:effort-high + opus, con arreglos (4 Important arreglados en el commit de cierre, con 2 sujetos de control; 6 minors diferidos)

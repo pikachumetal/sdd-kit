@@ -33,6 +33,6 @@ Describe 'Verificación visual' {
 
 Describe 'Delegación y gama media' {
   It 'la primera pregunta ofrece la variante de gama media con las tasks previstas' {
-    Assert-Literal (Get-Step 2) @('«apruebo la spec por delegación, nos vemos en la validación, y paras antes de la Task 1 para que baje la sesión a gama media»', '(«prevé 3 tasks»)', 'Con una sola task prevista no la ofrezcas')
+    Assert-Literal (Get-Step 2) @('«apruebo la spec por delegación, nos vemos en la validación, y paras antes de la Task 1 para que baje la sesión a gama media»', '(«prevé 3 tasks»)', 'Con una sola task prevista no la ofrezcas', 'paras antes de la Task 1 sea cual sea el método')
   }
 }

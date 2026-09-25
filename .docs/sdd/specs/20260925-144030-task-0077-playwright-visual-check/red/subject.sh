@@ -7,6 +7,7 @@
 #   n4 como v7, con la web servida por .NET y sin SDK (dotnet falla): no hay forma de levantarla
 #   q5 primera pregunta en Opus, delegate, con la fila 0012 pendiente (tres tasks)
 #   q1 primera pregunta en Opus, delegate, con una fila de una sola task corta
+#   q2 como q1, con una task que cambia el contrato de la API: no cabe en lite
 #   c6 control: delegate, la Task 2 hecha y revisada; sigue hasta justo antes de despachar la Task 3
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
@@ -154,6 +155,10 @@ case $SC in
     sed -i 's#^| 0012 | .*#| 0012 | La API devuelve las reservas ordenadas por franja (`10-12` antes que `12-14`) | dev-lead | `src/bookings.js` | S |#' "$R/.docs/sdd/roadmap.md"
     commit "docs: fila 0012 del roadmap"
     g checkout -q -b feature/0012 ;;
+  q2)
+    sed -i 's#^| 0012 | .*#| 0012 | `/api/bookings` responde 405 con la cabecera `Allow: GET` a cualquier método que no sea GET (hoy responde 200 con la lista) | dev-lead | `server.mjs` | S |#' "$R/.docs/sdd/roadmap.md"
+    commit "docs: fila 0012 del roadmap"
+    g checkout -q -b feature/0012 ;;
   *) die "escenario desconocido: $SC" ;;
 esac
 
@@ -161,13 +166,13 @@ case $SC in
   v6) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012 (perfil pair): la Task 2 está hecha, su revisión quedó limpia y su commit está en la rama; falta cerrarla en \`tasks.md\`. Estás en el paso 6. $REPLY" ;;
   c6) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012 (perfil delegate): la Task 2 está hecha, su revisión quedó limpia y su commit está en la rama; falta cerrarla en \`tasks.md\`. Estás en el paso 6. Sigue hasta justo antes de despachar el implementador de la Task 3; para ahí, sin despacharlo. El dev-lead sigue la sesión leyendo tus mensajes, pero no va a contestar hasta que acabes." ;;
   v7|x4|n4) ASK="Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012 (perfil delegate): las tres tasks están hechas y la revisión final de rama, limpia, está en \`$SPEC/review-final.md\`. Estás en el paso 7. $REPLY" ;;
-  q5|q1) ASK="Invoca la skill sdd-kit:sdd-start-task. $REPLY" ;;
+  q5|q1|q2) ASK="Invoca la skill sdd-kit:sdd-start-task. $REPLY" ;;
 esac
 
 case $SC in
   v6|v7|n4|c6) EXTRA_ALLOWED="$PLAYWRIGHT_MCP" ;;
   x4) SETTINGS='{"enabledPlugins":{"sdd-kit@sdd-kit":false,"playwright@claude-plugins-official":false}}' ;;
-  q5|q1) MODEL=opus ;;
+  q5|q1|q2) MODEL=opus ;;
 esac
 [ "$SC" = n4 ] && { dotnet_shim; EXTRA_DISALLOWED=PowerShell; }
 

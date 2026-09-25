@@ -9,7 +9,7 @@
 # Variables: RUNS_DIR (obligatoria, en el scratchpad), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
-# que se suman a --allowedTools, como un servidor MCP: task 0077),
+# que se suman a --allowedTools, como un servidor MCP),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5).
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
@@ -42,6 +42,8 @@ subject_launch() {
   case "$(pwd)/" in "$RUNS"/*) ;; *) die "cwd fuera del scratchpad: $(pwd)" ;; esac
   BEFORE=$(g rev-parse --short HEAD 2>/dev/null)
   local settings="${SETTINGS:-"{\"enabledPlugins\":{\"sdd-kit@sdd-kit\":false}}"}"
+  # Sin esa clave, el sujeto carga también el kit instalado, y mide la caché en vez de la copia.
+  case "$settings" in *'"sdd-kit@sdd-kit":false'*) ;; *) die "SETTINGS sin deshabilitar el kit instalado: $settings" ;; esac
   if [ "${DRY_RUN:-}" = 1 ]; then
     printf '%s\n' \
       '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \

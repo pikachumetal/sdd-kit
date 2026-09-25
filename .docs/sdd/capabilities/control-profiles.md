@@ -18,6 +18,8 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN su primera pregunta, sola en su turno, confirma carril y modo, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta task
 - AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, la pregunta propone esa fila como enunciado
 - AND en `pair` y `delegate`, una de sus opciones aprueba la spec por delegación con la frase «apruebo la spec por delegación, nos vemos en la validación»
+- AND con la sesión en el modelo más capaz y más de una task prevista, otra opción aprueba igual y añade «…y paras antes de la Task 1 para que baje la sesión a gama media», con las tasks que prevé («prevé 3 tasks») y el motivo: en Native la sesión implementa todas las tasks y va bien en Sonnet con effort medium; con una sola task prevista no se ofrece, porque rehacer la caché al cambiar de modelo no compensa
+- AND si el usuario la elige, el agente escribe el plan, junta la apertura en su commit y para antes de la Task 1, sea cual sea el método
 
 ### La spec aprobada por delegación en la primera pregunta no para
 - GIVEN el usuario eligió en la primera pregunta la opción que aprueba la spec por delegación

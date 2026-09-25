@@ -31,7 +31,7 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` (un requisito de `tas
 6. **Pieza 5 con el matiz del dev-lead**: con la sesión en el modelo más capaz, la opción de delegación de la primera pregunta tiene la variante «…y paras antes de la Task 1 para que baje la sesión a gama media», con las tasks que prevé el agente y el motivo del paso 4. Con una sola task prevista no se ofrece, porque rehacer la caché al cambiar de modelo no compensa.
 7. **El mismo matiz no se lleva a las ofertas de los pasos 4 y 5.** Queda como fila de deuda: medirlo ahí es otra campaña.
 8. **El lanzador de referencia gana dos variables**, `SETTINGS` y `EXTRA_ALLOWED`, con su test en `tests/HeadlessLauncher.Tests.ps1`: hacían falta para lanzar sujetos con y sin el MCP de Playwright.
-9. **Campaña (Art. I)**: previsión común de RED y GREEN, declarada antes del primer sujeto: 25 sujetos, ~30 $ y ~2 h de reloj, con techo de 30 sujetos y 36 $ que aplica el lanzador. El RED usó 12 sujetos y 5,31 $, dos de ellos repetidos por un molde defectuoso, y el GREEN lleva 11: 23 en total, con un coste muy por debajo, ~0,5 $ por sujeto. Pasos que el agente ejecuta y su escenario:
+9. **Campaña (Art. I)**: previsión común de RED y GREEN, declarada antes del primer sujeto: 25 sujetos, ~30 $ y ~2 h de reloj, con techo de 30 sujetos y 36 $ que aplica el lanzador. El RED usó 12 sujetos y 5,33 $, dos de ellos repetidos por un molde defectuoso, y el GREEN lleva 11: 23 en total, con un coste muy por debajo, ~0,5 $ por sujeto. Pasos que el agente ejecuta y su escenario:
 
 | Paso nuevo o cambiado | Escenario |
 | --- | --- |
