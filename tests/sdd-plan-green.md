@@ -45,3 +45,17 @@ Mismo molde, mismos guiones y mismo lanzador que el [RED](sdd-plan-red.md), con 
 ## Veredicto
 
 Los seis frentes con guía pasan 2/2. Los cinco controles (p2, p5, p7, p8, p9) no regresan, incluidos los dos recortes del RED. Sin REFACTOR.
+
+## Verificación tras la revisión final (p11)
+
+La revisión final (Opus) encontró que la regla de «task en marcha» solo aparecía en los cambios de definición de una propuesta. Tras subirla al paso 1 del checklist (`3180924`), un escenario nuevo sobre el kit arreglado: la 0013 🔄 con su rama `feature/0013-aforo` y un commit propio, y las notas de una reunión sobre su mismo tema («proyector y orden por aforo en `salas libres`»).
+
+| Medida | p11-1 | p11-2 |
+| --- | --- | --- |
+| carga `sdd-plan` | ✅ | ✅ |
+| la fila 0013 y su rama no cambian | ✅ | ✅ |
+| lo nuevo va a filas nuevas «tras 0013» con «`proposal: 0014`» | ✅ 0015 y 0016 | ✅ 0015 y 0016 |
+| acta con las notas literales | ✅ | ✅ |
+
+p11-2: «La 0013 (aforo) sigue en marcha en `feature/0013-aforo`, así que no la modifiqué ni amplié». Dos sujetos más, 0,67 $. **Campaña entera**: 46 sujetos y 12,58 $, dentro del techo de 50 sujetos y 25 $.
+La copia de la propuesta de p11-2 se guarda como `…-proposal-0014-salas-libres/`: el sujeto la llamó `…-salas-libres-proyector-orden` y la ruta pasaba de 140 caracteres.

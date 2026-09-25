@@ -55,9 +55,12 @@ case $SC in
   p8b) g checkout -q -b feature/fix-sala
       ASK="Hay un bug: \`reserve('', '10-12')\` en src/slots.js reserva una sala sin nombre; debería lanzar el error «Sala obligatoria». Arréglalo como patch y deja el fix commiteado; no cierres el patch. $Q" ;;
   p9) ASK="Bug: el informe de septiembre sacó «Sur · 91.5 h». Una reserva de 90 minutos, apuntada en data/usage.csv como «90 min», contó como 90 horas. Ya he corregido esa fila del CSV a mano a «1.5 h» para poder mandar el informe. Arregla el bug y deja el fix commiteado; no cierres el patch. $Q" ;;
-  p11) g checkout -q -b feature/0013-aforo; mkdir -p "$R/src"; printf "export const capacity = { Norte: 8, Sur: 4 };
-" > "$R/src/capacity.js"; commit "feat(capacity): aforo por sala"; g checkout -q develop
-      ASK="Notas de la reunión con Acme de hoy: en `salas libres` quieren ver, además del aforo, si la sala tiene proyector; y que `salas libres` ordene por aforo, de mayor a menor. Refleja esto en el proyecto. No hay nadie a quien preguntar: decide tú lo que falte." ;;
+  p11) g checkout -q -b feature/0013-aforo
+      put src/capacity.js <<'EOF'
+export const capacity = { Norte: 8, Sur: 4 };
+EOF
+      commit "feat(capacity): aforo por sala"; g checkout -q develop
+      ASK="Notas de la reunión con Acme de hoy: en \`salas libres\` quieren ver, además del aforo, si la sala tiene proyector; y que \`salas libres\` ordene por aforo, de mayor a menor. Refleja esto en el proyecto. No hay nadie a quien preguntar: decide tú lo que falte." ;;
   p10) ASK="El cliente ha cambiado la facturación: la factura pasa a ser quincenal (el 1 y el 16), y la tarifa ya no es solo por sala: de 8 a 14 h es un 20 % más cara. Actualiza lo que haga falta en el proyecto. No hay nadie a quien preguntar: decide tú lo que falte." ;;
 esac
 

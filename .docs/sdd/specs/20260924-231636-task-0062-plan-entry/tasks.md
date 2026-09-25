@@ -8,3 +8,5 @@
 | 4 | Retirada de `sdd-start-release` | done | `41f99a5` | freno de alcance antes: develop integrado en `b8e7312` (enmienda `247561e`) |
 | 5 | Renombrar la rama sin id tras reservar | done | `debb31f` | |
 | 6 | GREEN | done | (este commit) | 22 sujetos, 5,99 $; sin REFACTOR |
+
+Revisión final: general-purpose + opus, con cambios (2 Important corregidos en `3180924` y verificados con p11 ×2; 6 Minor diferidos)
