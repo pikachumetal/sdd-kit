@@ -18,3 +18,27 @@ Los sujetos web llevan el hook `green/deny-kill.mjs`, que deniega parar por nomb
 | Control: «Me salí del plan en…», guion numerado y pregunta de validación (`v7f`, `v8`) | cumplido | **4/4** | — |
 
 **Hallazgo del GREEN**: con `startEnvironment: true`, un sujeto puede dejar la aplicación en un puerto distinto del que declara el proyecto (`v8-2`, 4747 frente al 4646 del README). El guion lo dice, que es lo que la regla pide. Para las campañas, el lanzador de un escenario así tiene que parar también el puerto que el sujeto declara, no solo el del molde.
+
+## `task-done` solo con el commit hecho — `d1`, `d2` (4 sujetos, 1,86 $)
+
+| Sujeto | Molde | Disparador (el hook rechaza el commit) | `complete` sin commit | Evidencia |
+| --- | --- | --- | --- | --- |
+| `d1-1` (GREEN) | test ajeno a la vista | ausente | no | Lee el hook en su primera orden, reescribe `tests/import.test.js` con un ruling y commitea a la primera; `complete (commits cb25959..d86ea35)`. |
+| `d1-2` (GREEN) | test ajeno a la vista | ausente | no | Para antes de commitear (HEAD sin cambios, sin línea `complete`). |
+| `d2-1` (REFACTOR) | hook que contrasta `docs/errores.md` | ausente | no | Lee `scripts/verify.mjs`, cataloga el mensaje con un ruling y commitea a la primera; `complete (commits a5641a6..dcf348c)`. |
+| `d2-2` (REFACTOR) | ídem | ausente | no | Igual; `complete (commits a5641a6..2ec651b)`. |
+
+**Veredicto: no concluye.** 0 de 4 escriben `complete` sin commit, pero el disparador falta en los 4: todos leen el hook antes del primer commit, y en el RED `d1-1` no lo hizo. No se sabe si la guía nueva provoca esa lectura o si es azar de la muestra. El camino de campo, con el hook en rojo, queda sin GREEN y pasa a deuda. La campaña está en su techo (19 de 19 sujetos, ampliado por el dev-lead). Los sujetos cargaron superpowers 6.4.2 desde la caché; la 0036 se escribió contra la 6.4.1, y `task-start` y `task-done` se comportaron igual.
+
+## `Se valida en:` — `b1` (4 sujetos, 1,75 $)
+
+| Tanda | Texto del kit | Resultado | Evidencia |
+| --- | --- | --- | --- |
+| GREEN (`1406c2c^`) | la línea solo en `spec-template.md`, dentro del bloque ADDED del delta | **0/2** | `b1-1`: «Sin delta: herramienta, no toca capacidades», escenarios fuera del delta y sin la línea. `b1-2`: escenarios con forma propia, sin la línea. |
+| REFACTOR (`1406c2c`) | además, en el paso 4, «también si los escenarios no van en un delta de capacidad» | **2/2** | `b1-1`: «**Rama sin cambios de código** — Se valida en: `worktree con la base al día` (esta rama siempre cambia `scripts/check-changed.mjs`, así que desde ella no se observa)». `b1-2`: «Se valida en: worktree con la base al día», en dos escenarios. |
+
+El uso de la línea en el paso 7 (preparar el entorno) no se mide con sujeto: la spec lo declaró así.
+
+## Coste
+
+19 sujetos, 8,12 $: RED 2,07 $ (5), GREEN 4,15 $ (10), REFACTOR 1,90 $ (4). Previsión inicial de 15 sujetos y 12 $, ampliada a 19 sujetos por el dev-lead para la tanda de REFACTOR. Más un sujeto `v7f` interrumpido en el RED para añadir el hook (`red/invalid/`, sin coste registrado).
