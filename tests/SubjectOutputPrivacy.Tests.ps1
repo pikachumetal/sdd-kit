@@ -53,3 +53,30 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' {
     $out | Should -Match '<home>/\.claude/plugins'
   }
 }
+
+Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
+  BeforeAll {
+    $root = Join-Path $script:KitRoot '.docs/sdd/specs'
+    $script:Evidence = Get-ChildItem -LiteralPath $root -Directory |
+      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -in 'red', 'green', 'refactor' } |
+      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse }
+    function Find-Leak([string]$Pattern) {
+      $script:Evidence |
+        Where-Object { Select-String -LiteralPath $_.FullName -Pattern $Pattern -Quiet } |
+        ForEach-Object { [IO.Path]::GetRelativePath($script:KitRoot, $_.FullName) }
+    }
+  }
+
+  It 'ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario' {
+    # X:\Users\…, X:\\Users\\… (JSON), X:/Users/…, /x/Users/… y la carpeta de proyecto X--Users-….
+    Find-Leak '(?i)(?:\b[a-z]:|(?<![\w.])/[a-z])(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?![\\/<])|\b[a-z]--Users-(?!<)' |
+      Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tools.mjs --clean de la 0009'
+  }
+
+  It 'ni el usuario de esta máquina suelto (ls -l)' {
+    # Del home, no de $USERNAME, que en Git Bash vale SYSTEM (ticket 0068 §5).
+    $user = Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME)
+    Find-Leak "\b$([regex]::Escape($user))\b" |
+      Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tools.mjs --clean de la 0009'
+  }
+}

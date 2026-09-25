@@ -26,11 +26,11 @@ Medido en la rama: son **186** ficheros bajo `specs/*/red|green|refactor/`, no 1
 
 ## 3. Fix
 
-Tres commits, por decisión del dev-lead:
+Tres commits, por decisión del dev-lead. El orden pedido era lanzador, test y saneado; va lanzador, saneado y test, porque el pre-commit corre la suite y no deja commitear el test en rojo. El RED del test se vio antes del saneado (fila 4).
 
 1. **Lanzador** — `tools.mjs` (0009) toma el usuario del nombre de la carpeta home (no de `$USERNAME`, que en Git Bash vale `SYSTEM`: ticket 0068 §5), sustituye el home en sus formas Windows (`\`, `\\` de JSON, `/`) y Git Bash por `<home>`, y el usuario como palabra entera por `<user>`. Nuevo modo `--clean <run>` que filtra la entrada estándar; `subject.sh` de la 0039 lo usa para `state.txt` en lugar de su `sed`. Test: `tests/SubjectOutputPrivacy.Tests.ps1`, dos casos.
-2. **Test del repo** — el mismo fichero de test falla si un fichero versionado de `specs/*/red|green|refactor/` lleva `X:\Users\…`, `/x/Users/…` o `X--Users-…`, y nombra el fichero.
-3. **Saneado** — las salidas existentes pasan por la misma limpieza de `tools.mjs --clean`. Solo cambian esas rutas y el usuario.
+2. **Saneado** — las salidas existentes pasan por la misma limpieza de `tools.mjs --clean`. Solo cambian esas rutas y el usuario.
+3. **Test del repo** — el mismo fichero de test falla si un fichero de `specs/*/red|green|refactor/` lleva `X:\Users\…` (también con `\\` o `/`), `/x/Users/…` o `X--Users-…` sin marcador, o el usuario de la máquina que corre la suite como palabra suelta, y nombra los ficheros.
 
 `refactor/` entra en el alcance aunque la petición decía `red|green`: es evidencia de sujetos del mismo tipo (0067) y traía el usuario.
 
@@ -41,8 +41,12 @@ Tres commits, por decisión del dev-lead:
 | 1 | RED: `tools.mjs` con un home falso deja `/c/Users/alice`, `C:\\Users\\alice`, `C--Users-alice` y `1 alice` | ✅ fallaba (2/2 casos), verificado por el agente |
 | 2 | GREEN: las cinco formas salen como `<home>` o `<user>`; `alicemetal/sdd-kit` queda intacto | ✅ 2/2 |
 | 3 | `--clean` con el `$HOME` real de Git Bash | ✅ `<home>/b`, `1 <user> 1` |
+| 4 | RED del test del repo antes del saneado | ✅ fallaba: 186 ficheros con el usuario, 115 de ellos con la ruta |
+| 5 | Saneado, `git diff --word-diff` | ✅ 1313 líneas en 186 ficheros; 0 palabras quitadas sin el usuario, 0 añadidas sin `<home>` o `<user>` |
+| 6 | GREEN del test del repo y suite del pre-commit | ✅ 4/4; 632 pasan, 0 fallan |
+| 7 | El primer GREEN marcaba `C:\\Users\\<user>` (limpio a mano en la 0040) | Falso positivo por backtracking de `\\{1,2}`: el patrón exige que tras el separador no venga otro ni `<` |
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 30 min
-- Real: <pendiente>
+- Real: ~25 min
