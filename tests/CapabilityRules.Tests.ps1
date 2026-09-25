@@ -60,7 +60,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $block.Contains('- Nuevas: `<nombre>`') | Should -BeTrue
       $block.Contains('- Modificadas: `<nombre>`') | Should -BeTrue
       $block.Contains('Ninguna, porque') | Should -BeTrue
-      $block | Should -Match 'listar `\.docs/sdd/capabilities/`'
+      $block | Should -Match 'Get-CapabilityIndex\.ps1'
       $block | Should -Match 'nombre exacto'
     }
 
@@ -157,5 +157,23 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $rule = [regex]::Match($content, '(?s)> 3\. .*?(?=> 4\. )').Value
       $rule | Should -Match 'sustituye entero'
     }
+  }
+}
+
+Describe 'Las skills eligen capacidades con el índice generado' {
+  It '<Skill> ejecuta Get-CapabilityIndex.ps1 en su paso de contexto, antes de abrir capacidades' -ForEach @(
+    @{ Skill = 'sdd-start-task'; Step = 'Contexto' }
+    @{ Skill = 'sdd-roadmap'; Step = 'Estado real' }
+    @{ Skill = 'sdd-consult'; Step = 'Primar contexto' }
+  ) {
+    $step = [regex]::Match((Read-SkillFile "$Skill/SKILL.md"), "(?ms)^1\. \*\*$Step.*?(?=^\d+\. |^## |\z)").Value
+    $step | Should -Match 'pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-CapabilityIndex\.ps1" -Path'
+    $step | Should -Match 'propósito'
+  }
+
+  It 'la plantilla de capacidad dice que el índice se genera, sin index.md' {
+    $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
+    $content | Should -Match 'Índice: lo genera `Get-CapabilityIndex\.ps1` al vuelo; no hay `index\.md`\.'
+    $content | Should -Not -Match 'el listado de ficheros de `capabilities/` es el índice'
   }
 }

@@ -1,0 +1,97 @@
+## HEAD antes: 23010e1 · después: 733a069 · rama: feature/0021-invitado-1h
+## status
+## feature/0021-invitado-1h
+## git log
+733a069  (HEAD -> feature/0021-invitado-1h) docs(sdd): spec de la task 0021, invitados con 1 h máxima por reserva
+23010e1  (main, develop) feat: base de reservas de salas
+## ficheros tocados tras la base (commits y árbol)
+.docs/sdd/specs/20260925-122815-task-0021-invitado-1h/spec.md
+## capabilities/ al final
+access.md
+billing.md
+bookings.md
+calendar-sync.md
+house-rules.md
+notifications.md
+quotas.md
+rooms.md
+usage-reports.md
+## diff de roadmap.md frente a la base
+## 20260925-122815-task-0021-invitado-1h/spec.md
+---
+id: 20260925-122815-task-0021-invitado-1h
+task: 0021
+title: Los invitados reservan como máximo 1 h por reserva
+mode: full
+profile: delegate
+status: approved
+created: 2026-09-25
+author: Claude
+approvers:
+  - role: dev-lead
+    name: dev-lead (por delegación)
+    approved_at: 2026-09-25
+---
+
+# Spec — Los invitados reservan como máximo 1 h por reserva
+
+## Capacidades
+
+- Modificadas: `house-rules` — el requisito «Duración máxima por rol» pasa de 2 h a 1 h para el rol `invitado`; el `empleado` no cambia.
+
+## Decisiones que he tomado yo — valida estas
+
+Review de spec propuesta: ninguna — señales: MODIFIED (un requisito de `house-rules`). Las otras siete no se cumplen: no hay capacidad nueva, contrato público, tres capacidades, datos, dependencia, área sin leer ni rol o estado nuevos.
+- Mínimo razonable: ninguna review — deja sin mirar solo si el texto del THEN nuevo choca con algún escenario de otra capacidad que no he leído entera (`billing`, `notifications`, `calendar-sync`, `rooms`, `usage-reports`; leí `access`, `bookings`, `quotas` y `house-rules`).
+
+1. «1 h seguida» = tope **por reserva**, con la misma semántica que el tope de 2 h actual — la fila no habla de un total por día y `house-rules` ya define el tope por reserva. Dos reservas de 1 h consecutivas (10-11 y 11-12) siguen permitidas; encadenarlas no se vigila hoy con los empleados tampoco.
+2. Mensaje del invitado: `Máximo 1 h por reserva`; el del empleado sigue siendo `Máximo 2 h por reserva` — mismo formato que el mensaje actual con el tope de su rol; evita inventar una frase nueva.
+3. Una reserva de exactamente 1 h (`10-11`) se acepta; a partir de más de 1 h se rechaza — «solo 1 h» es un tope, no una obligación de reservar 1 h.
+4. Capacidad tocada: solo `house-rules`, con un `MODIFIED` de «Duración máxima por rol» y la regla **Límites** reescrita entera (2 h empleado, 1 h invitado, antelación 14 días sin cambio). No hay capacidad nueva.
+5. Franjas con minutos (`10-11:30`): no se decide aquí — los escenarios vigentes solo usan horas enteras y el tope se expresa en horas. Queda fuera de alcance.
+6. Rol `administrador`: no cambia ni se menciona — la capacidad vigente no le fija tope y esta fila habla de invitados.
+7. Ficheros: la fila del roadmap dice `src/cli.js`, pero `house-rules` dice que los límites viven en `data/rules.json`, que hoy no existe en el repo (`cli.js` es un stub). No lo resuelvo en la spec — es cómo se implementa. Lo decide el plan; si necesita crear `data/rules.json` o tocar otro fichero, se registra como ruling o freno de alcance según corresponda.
+8. Repaso de coherencia: el literal `Máximo 1 h por reserva` aparece en Decisiones 2 y 3, en el THEN y en **Avisos**; el `1 h` del invitado y el `2 h` del empleado coinciden en Decisiones, THEN y **Límites**. Sin contradicciones ni placeholders.
+
+### Decisiones tomadas con el dev-lead
+
+- Spec aprobada por delegación, sin preguntas previas; decisiones tomadas por el agente y registradas arriba — «apruebo la spec por delegación, nos vemos en la validación» (2026-09-25).
+- Perfil `delegate`, modo full — «modo full, perfil delegate».
+
+## Intent
+
+Hoy un invitado puede reservar hasta 2 h seguidas, igual que un empleado. Recepción quiere que los invitados reserven 1 h como máximo por reserva, para que una sala no se ocupe más tiempo del necesario por quien solo viene de visita. Los empleados siguen con 2 h.
+
+## Scope
+
+- Entra: el tope de duración del rol `invitado` baja a 1 h por reserva, con su mensaje; los escenarios de `house-rules` reflejan el nuevo valor.
+- No entra: total por día o por semana del invitado; franjas con minutos; tope del rol `administrador`; días permitidos, antelación y penalización por no presentarse; cualquier otro cambio a `bookings`, `quotas` o `billing`.
+
+## Approach
+
+El tope de duración pasa a depender del rol: 2 h para `empleado`, 1 h para `invitado`. La comprobación es la misma que ya rechaza las reservas de más de 2 h, con el tope y el mensaje del rol de la sesión.
+
+## Delta de comportamiento
+
+### Capacidad: `house-rules`
+
+**MODIFIED — Duración máxima por rol** (antes: "un `empleado` tiene el mismo tope")
+- GIVEN una sesión con rol `invitado`
+- WHEN `salas reservar Sur 10-12`
+- THEN responde `Máximo 1 h por reserva` y no guarda nada
+- AND con rol `invitado`, `salas reservar Sur 10-11` se guarda y responde `Reservada Sur 10-11`
+- AND con rol `empleado`, `salas reservar Sur 10-12` se guarda y `salas reservar Sur 10-13` responde `Máximo 2 h por reserva` y no guarda nada
+
+**Reglas de la capacidad**
+- **Límites**: 2 h por reserva para el `empleado`, 1 h por reserva para el `invitado`; antelación máxima de 14 días.
+- **Avisos**: cada norma incumplida responde con su mensaje y no guarda la reserva; el de duración es `Máximo 1 h por reserva` para el `invitado` y `Máximo 2 h por reserva` para el `empleado`.
+
+## Enmiendas
+
+- Ninguna.
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | dev-lead (por delegación) | 2026-09-25 | aprobada: «apruebo la spec por delegación, nos vemos en la validación» |
