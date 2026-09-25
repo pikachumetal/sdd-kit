@@ -4,6 +4,7 @@
 #   c   arrancar la task 0021 (cancelar una reserva) hasta la spec
 #   m   cerrar la task 0020, cuyo MODIFIED se escribió antes de que el patch 0014 fusionara en el mismo requisito
 #   p1  cerrar el patch 0014, cuyo fix cambia lo que lista `libres`
+#   BROKEN_OTHER=1: la base trae capabilities/rooms.md con un requisito sin THEN, que ningún delta toca
 #   p2  cerrar el patch 0013, cuyo fix devuelve `reservar` a lo que la capacidad ya decía
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
@@ -38,9 +39,27 @@ template_block_in_patch() {
   sed -i 's/^## 1\. Síntoma$/## Capacidades\n\n- Modificadas: `<nombre>` — <qué requisito cambia>\n\n&/' "$f"
 }
 
+broken_rooms() {
+  put .docs/sdd/capabilities/rooms.md <<'EOF'
+# Capacidad — rooms
+
+## Requisitos
+
+### Dar de alta una sala
+- GIVEN ninguna sala llamada Este
+- WHEN `salas alta Este`
+- THEN la sala Este aparece en `salas libres`
+
+### Poner una sala en mantenimiento
+- GIVEN la sala Oeste disponible
+- WHEN `salas mantenimiento Oeste`
+EOF
+}
+
 g init -q -b main; g config core.autocrlf false; g config user.name Fixture; g config user.email fixture@example.com
 base_files
 without_history
+[ "${BROKEN_OTHER:-0}" = 1 ] && broken_rooms
 commit "feat: base de reservas de salas"
 case $SC in
   c) task_cancel_start; ARTIFACT="task-0021-*"

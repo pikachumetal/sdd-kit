@@ -4,7 +4,7 @@ task: 0070
 title: Capacidades al estilo OpenSpec — sin Historial, con validador y con bloque «Capacidades»
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-09-25
 author: agente (Opus 5.5)
 approvers:
@@ -94,7 +94,8 @@ Tres piezas de formato y una de proceso, en el orden en que se apoyan. Primero e
 - WHEN se ejecuta el paso de fusión
 - THEN cada `ADDED` se añade a `capabilities/<capability>.md`, cada `MODIFIED` sustituye entero el requisito con ese título, cada `REMOVED` lo quita, y el walkthrough referencia los escenarios del delta como casos del smoke
 - AND la capacidad no gana ninguna línea de historial
-- AND tras fusionar y antes del commit de cierre, `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <spec.md>` pasa; si falla, se corrige la fusión, no el validador
+- AND tras fusionar y antes del commit de cierre, `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <spec.md>` pasa; si falla en lo fusionado o en el bloque, se corrige eso, no el validador
+- AND un fallo en una capacidad que el delta no toca (`rooms.md` con un requisito sin THEN, mientras la 0020 fusiona en `bookings`) no bloquea el cierre: `rooms.md` no se edita y el informe final lo lista como pendiente del dev-lead
 - AND `sdd-end-task` no crea ningún fichero de capacidad que la spec no haya declarado
 
 **MODIFIED — El cierre de un patch fusiona su delta** (antes: "añade a «Historial» `- <fecha de cierre> — <carpeta del patch 0014> — MODIFIED Consultar salas libres`")
@@ -102,7 +103,7 @@ Tres piezas de formato y una de proceso, en el orden en que se apoyan. Primero e
 - WHEN se cierra con `sdd-end-patch` el patch 0014, cuyo fix hace que `salas libres 10-12` deje fuera las salas en mantenimiento y las liste aparte con `(en mantenimiento)`
 - THEN `patch.md` abre con `## Capacidades` y `- Modificadas: \`bookings\` — cambia «Consultar salas libres»`, y lleva la sección «Delta de capacidad» con `MODIFIED — Consultar salas libres` y el bloque entero del requisito con el cambio
 - AND `bookings.md` sustituye ese requisito, sin línea de historial
-- AND `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <patch.md>` pasa antes del commit de cierre
+- AND `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <patch.md>` pasa antes del commit de cierre, salvo en una capacidad que el delta no toca: esa no se edita y el mensaje final la lista como pendiente del dev-lead
 - AND el cambio de `bookings.md` va en el commit de cierre del patch, y el fix con su `patch.md` queda en un solo commit
 - AND si ninguna capacidad describe la pieza que cambió, no se crea ninguna, el bloque dice `Ninguna, porque ninguna capacidad describe <pieza>` y el mensaje final lo dice
 
@@ -132,7 +133,7 @@ Tres piezas de formato y una de proceso, en el orden en que se apoyan. Primero e
 - THEN sale con código 1 y escribe `bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)`
 - AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) en la capacidad; un bloque `**Reglas de la capacidad**` en negrita, que es la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
 - AND ante `## Historial` el mensaje es `bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0`
-- AND con `-Artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
+- AND con `-Artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
 - AND sin fallos escribe `Capacidades válidas: <n>` y sale con 0; sin carpeta `capabilities/`, o con la carpeta vacía, y sin `-Artifact`, escribe `Sin capacidades que validar` y sale con 0
 
 **Reglas de la capacidad**
@@ -150,6 +151,7 @@ Tres piezas de formato y una de proceso, en el orden en que se apoyan. Primero e
 
 ## Enmiendas
 
+- 2026-09-25 — El validador falla con un bloque «Capacidades» vacío; y en los cierres, un fallo del validador en una capacidad que el delta no toca no bloquea: se informa como pendiente — hallazgos 2 y 3 de la revisión final — aprobada: «Sí, falla (Recomendada)» y «Se informa y no bloquea (Recomendada)»
 - 2026-09-25 — Sale la pieza (4) y pasa a deuda — el RED salió 6 de 6 limpio, también sin la pista del `(antes:)` — aprobada: el dev-lead eligió «Una tanda más sin «(antes:)»», cuya opción decía «si sale limpia, pasa a deuda como posible falso negativo»
 - 2026-09-25 — Entra la pieza (4), fusionar un `MODIFIED` contra la base de la spec (ticket 0068 §2, commit `bb11f59` de la fila) — la añadió el dev-lead a la fila durante el arranque — aprobada: «Integra develop, añádela a la spec como enmienda aprobada y sigue.»
 

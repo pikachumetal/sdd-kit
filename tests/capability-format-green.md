@@ -15,10 +15,10 @@ Kit de la rama tras la Task 3 (`git archive` del commit provisional `16ba9dc`), 
 
 | Conducta | Resultado | Evidencia |
 | --- | --- | --- |
-| La spec abre con el bloque «Capacidades», con `Modificadas: \`bookings\`` y su subsección en el delta | 2/2 | `c-1`, `c-2`: línea 23 de la spec |
+| La spec abre con el bloque «Capacidades», con `Modificadas: \`bookings\`` y su subsección en el delta | 2/2 | `c-1`, `c-2`: el bloque abre la spec, tras el título (línea 20) |
 | El patch con delta declara `Modificadas: \`bookings\` — cambia «Consultar salas libres»` y fusiona el `MODIFIED` | 2/2 | `p1-1`, `p1-2` |
 | El patch sin delta escribe «Ninguna, porque el fix devuelve…», borra la §6 vacía y no toca `bookings.md` | 1/1 | `p2-1`: «Ninguna, porque el fix devuelve `salas reservar` a lo que ya dice `bookings`…»; diff de `capabilities/` vacío |
-| Los cierres ejecutan `Test-Capabilities.ps1` con `-Artifact` tras fusionar | 5/5 | `m-1` (4 llamadas), `m-2` (3), `p1-1` (5), `p1-2` (3), `p2-1` (2) en `tools.txt` |
+| Los cierres ejecutan `Test-Capabilities.ps1` con `-Artifact` tras fusionar | 5/5 | invocaciones en `tools.txt`: `m-1` 2 (la primera se colgó a los 120 s y la repitió), `m-2` 1, `p1-1` 2, `p1-2` 1, `p2-1` 1 |
 | El validador pasa sobre el estado final | 7/7 | sección «validador sobre el estado final» de cada `state.txt`: `Capacidades válidas: 1` |
 | Sin línea de historial al fusionar | 5/5 | ningún `+- 2026-…` en el diff de `capabilities/` |
 
@@ -37,3 +37,12 @@ Kit de la rama tras la Task 3 (`git archive` del commit provisional `16ba9dc`), 
 ## Sin sujeto
 
 - El volcado de `sdd-init-greenfield` pierde la línea de historial: ninguna fuente lo pide ya (ni la skill ni la plantilla); lo vigila `CapabilitiesAtBirth.Tests.ps1`.
+
+## Control tras la revisión final
+
+La revisión final cambió `sdd-end-task` paso 4 y `sdd-end-patch` paso 1: un fallo del validador en una capacidad que el delta no toca no bloquea el cierre. Un sujeto por escenario afectado (Art. I), con `BROKEN_OTHER=1`: la base trae `capabilities/rooms.md` con «Poner una sala en mantenimiento» sin `- THEN`. Salidas en [refactor/](../.docs/sdd/specs/20260925-081130-task-0070-openspec-capabilities/refactor/). 2 sujetos, 0,66 $; campaña total, 17 sujetos y 6,58 $.
+
+| Conducta | Resultado | Evidencia |
+| --- | --- | --- |
+| No edita `rooms.md` y lo da como pendiente del dev-lead | 2/2 | `m-3`, `p1-3`: `rooms.md` fuera de «ficheros tocados»; «El delta no toca esa capacidad, así que no la edité; queda pendiente del dev-lead» |
+| Control: la fusión de `bookings` sigue bien (cláusula del 0014 conservada, `MODIFIED` en bloque entero) | 2/2 | diff de `capabilities/` de `m-3` y `p1-3` |

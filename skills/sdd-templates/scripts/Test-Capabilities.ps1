@@ -21,8 +21,13 @@ $script:RuleNames = @('Dónde viven los datos', 'Idioma de los nombres', 'Límit
 $script:AllowedSections = @('Requisitos', 'Reglas de la capacidad')
 $script:ScenarioKeywords = @('GIVEN', 'WHEN', 'THEN')
 
+function Get-SectionTitle([string]$Line) {
+  if ($Line -notmatch '^## (.+)$') { return $null }
+  return ($Matches[1] -replace '\s*\*\(.*\)\*\s*$', '').Trim()
+}
+
 function Get-SectionLines([string[]]$Lines, [string]$Title) {
-  $start = [array]::FindIndex($Lines, [Predicate[string]] { param($line) $line.TrimEnd() -eq "## $Title" })
+  $start = [array]::FindIndex($Lines, [Predicate[string]] { param($line) (Get-SectionTitle $line) -eq $Title })
   if ($start -lt 0) { return $null }
   $section = [System.Collections.Generic.List[string]]::new()
   for ($i = $start + 1; $i -lt $Lines.Count -and $Lines[$i] -notmatch '^## '; $i++) { $section.Add($Lines[$i]) }
@@ -35,7 +40,7 @@ function Test-CapabilityTitle([string]$Slug, [string[]]$Lines) {
 }
 
 function Test-CapabilitySections([string[]]$Lines) {
-  $sections = $Lines | Where-Object { $_ -match '^## ' } | ForEach-Object { $_.Substring(3).Trim() }
+  $sections = $Lines | ForEach-Object { Get-SectionTitle $_ } | Where-Object { $_ }
   if ($sections -notcontains 'Requisitos') { 'falta la sección «Requisitos»' }
   foreach ($section in $sections | Where-Object { $script:AllowedSections -notcontains $_ }) {
     if ($section -eq 'Historial') { 'sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0'; continue }
@@ -112,6 +117,11 @@ function Test-NoneLine([string[]]$Block, [string[]]$DeltaNames) {
   if ($DeltaNames) { 'el bloque dice «Ninguna» y hay delta' }
 }
 
+function Test-EmptyBlock([string[]]$Block, [object[]]$Declared) {
+  if ($Declared -or ($Block | Where-Object { $_ -match '^(?:-\s*)?Ninguna\b' })) { return }
+  'el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»'
+}
+
 function Test-BlockAgainstDelta([object[]]$Declared, [string[]]$DeltaNames, [string]$CapabilitiesDir) {
   $declaredNames = @($Declared | ForEach-Object Name | Select-Object -Unique)
   foreach ($name in $declaredNames | Where-Object { $DeltaNames -notcontains $_ }) {
@@ -136,6 +146,7 @@ function Test-ArtifactBlock([System.IO.FileInfo]$File, [string]$CapabilitiesDir)
   $deltaNames = @($lines | Where-Object { $_ -match '^### Capacidad: `([^`]+)`' } | ForEach-Object { [regex]::Match($_, '`([^`]+)`').Groups[1].Value })
   $declared = @(Get-DeclaredCapabilities $block)
   $problems = @(
+    Test-EmptyBlock $block $declared
     Test-NoneLine $block $deltaNames
     Test-BlockAgainstDelta $declared $deltaNames $CapabilitiesDir
     if ((Test-IsPatch $File $lines) -and ($declared | Where-Object Kind -eq 'Nuevas')) { 'un patch no crea capacidades: quita «Nuevas»' }

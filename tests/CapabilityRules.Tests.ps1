@@ -92,6 +92,13 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $step | Should -Match 'Ninguna, porque el fix devuelve'
     }
 
+    It 'en los dos cierres, un fallo en una capacidad que el delta no toca se informa y no bloquea' {
+      foreach ($step in @((Get-NumberedStep (Read-SkillFile 'sdd-end-task/SKILL.md') 4), (Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1))) {
+        $step | Should -Match 'que el delta no toca'
+        $step | Should -Match 'no bloquea'
+      }
+    }
+
     It 'la regla de fusión nombra el validador' {
       Get-NumberedStep (Read-SkillFile 'sdd-end-task/references/aprendizajes-skills.md') 4 | Should -Match 'Test-Capabilities\.ps1'
     }

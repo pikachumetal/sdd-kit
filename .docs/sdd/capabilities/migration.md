@@ -70,6 +70,14 @@ Verdad viva del comportamiento observable de la migración de un proyecto consum
 - AND la suite falla si una clave declarada no aparece literal en `sdd-init-greenfield` o en `sdd-init-brownfield`, contando su `SKILL.md`, sus `references/` y los documentos que estos enlazan, `sdd-config` incluido
 - AND la suite falla si el texto de una pregunta del catálogo de `sdd-config` aparece en una init o en una migración, o si una de ellas no nombra `sdd-config`
 
+### La migración a v2.0.0 quita el historial de las capacidades
+- GIVEN un proyecto en el kit v1.2.0 con `capabilities/bookings.md` terminado en `## Historial` con dos líneas
+- WHEN se migra al kit v2.0.0
+- THEN `bookings.md` pierde la sección `## Historial` entera, con su ayuda y sus líneas, y nada más, sin gate
+- AND la verificación de la migración ejecuta `Test-Capabilities.ps1 -Path .docs/sdd`; si falla por otra cosa que el historial (un bloque de reglas del delta pegado, un requisito sin escenario), el informe lo lista como pendiente del dev-lead, sin tocarlo
+- AND `tests/MigrationInitParity.Tests.ps1` sigue en verde con `v2.0.0.md` en la carpeta
+- AND sin carpeta `capabilities/`, el paso se salta y lo dice
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.

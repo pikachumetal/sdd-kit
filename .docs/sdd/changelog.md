@@ -36,6 +36,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Task 0061** — preferencias personales en `.docs/sdd/sdd-kit.local.json`, fuera de git (`control.profile`, `execution`, `validation.startEnvironment`; precedencia task → persona → release → proyecto; aviso por cada clave no admitida), y la skill `sdd-config`, que enseña la configuración y pregunta una clave por turno, como única entrevista de claves que invocan las init y la v1.2.0. → [ref](specs/20260924-220849-task-0061-local-config/)
 - **Task 0067** — el cierre de un patch fusiona su delta de capacidad: `sdd-end-patch` (paso 1) compara la capacidad de la pieza tocada con lo que hace el fix; si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no escribe nada, y si lo cambia, escribe el delta en la nueva sección 6 de `patch-template.md` y lo fusiona con su línea de historial. El paso 2 nombra `patch.md` dentro del commit del fix. `capabilities/` se pone al día con los 8 patches desde el 2026-09-20 que cambiaron comportamiento (0028, 0035, 0037, 0038, 0051, 0056, 0065 y 0066). → [ref](specs/20260924-225643-task-0067-patch-capabilities/)
 - **Task 0068** — el cierre mide los tokens y el coste de la sesión: `skills/sdd-templates/scripts/Measure-SessionTokens.ps1` suma el hilo y los subagentes desde los transcripts de Claude Code (una vez por `message.id`, por modelo y categoría), el dinero sale de la tabla `pricing` de `sdd-kit.json` («sin precio» sin ella) y fuera de Claude Code dice «no medido»; `sdd-end-task` (paso 2) lo ejecuta, el walkthrough gana `Coste de la sesión` y `Build-EstimationLog.ps1` la columna `Sesión ($)` y su suma por release. → [ref](specs/20260924-230945-task-0068-session-tokens/)
+- **Task 0070** — capacidades al estilo OpenSpec: `Test-Capabilities.ps1` valida `capabilities/` y, con `-Artifact`, el bloque «## Capacidades» con que abren ahora `spec-template.md` y `patch-template.md` (Nuevas, Modificadas o «Ninguna, porque…»); los cierres lo ejecutan tras fusionar. → [ref](specs/20260925-081130-task-0070-openspec-capabilities/)
 
 ### Changed
 
@@ -62,6 +63,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Removed
 
 - **Task 0063** — el acta y el triaje del feedback de la reunión salen de `sdd-end-release`: el cierre remite ese feedback a `sdd-plan` (task 0062) y `references/acta-y-retro.md` pasa a `references/retro.md`. → [ref](specs/20260924-221103-task-0063-end-release-cut/)
+- **Task 0070** — la sección `## Historial` de las capacidades: el historial lo dan git y el bloque «Capacidades» de cada spec o patch; la migración a 2.0.0 la quita de los proyectos. → [ref](specs/20260925-081130-task-0070-openspec-capabilities/)
 
 ### Fixed
 - **Nada comprobaba la estructura del roadmap** — filas encima de `# Roadmap`, pegadas en una cabecera o vacías pasaban el pre-commit. `RoadmapStructure.Tests.ps1` lo comprueba en el conjunto rápido, y `PathLength.Tests.ps1` mira también los ficheros sin versionar. → [ref](specs/20260925-080508-patch-0071-roadmap-structure-tests/)

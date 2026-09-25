@@ -59,6 +59,18 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
       Should -Contain 'bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)'
   }
 
+  It 'la cabecera de reglas calcada de la plantilla, con su nota, se admite y se comprueba' {
+    $content = ($script:Bookings -replace '## Reglas de la capacidad', '## Reglas de la capacidad *(opcional; presente obliga a decidir)*') -replace '(?m)^- \*\*Límites\*\*:.*\r?\n', ''
+    $lines = (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines
+    $lines | Should -Be @('bookings.md: a «Reglas de la capacidad» le falta «Límites»')
+  }
+
+  It 'un Historial con la nota de la plantilla 1.x recibe el aviso de la migración' {
+    $content = $script:Bookings + "`n## Historial *(opcional)*`n`n- 2026-09-10 — task-0004 — ADDED Reservar una franja`n"
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
+      Should -Be @('bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0')
+  }
+
   It 'un título que no nombra el fichero falla' {
     $content = $script:Bookings -replace '# Capacidad — bookings', '# Capacidad — reservas'
     (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines |
@@ -194,6 +206,12 @@ Describe 'Test-Capabilities.ps1 con -Artifact' {
     $spec = Get-Spec "## Capacidades`n`nNinguna, porque es un refactor.`n" @('bookings')
     (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/t/spec.md' = $spec }) 'specs/t/spec.md').Lines |
       Should -Contain 'spec.md: el bloque dice «Ninguna» y hay delta'
+  }
+
+  It 'un bloque vacío falla' {
+    $spec = Get-Spec "## Capacidades`n`n> Se escribe tras listar capabilities/.`n`n- Nuevas: ninguna`n" @()
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/t/spec.md' = $spec }) 'specs/t/spec.md').Lines |
+      Should -Contain 'spec.md: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»'
   }
 
   It '«Ninguna» sin motivo falla' {
