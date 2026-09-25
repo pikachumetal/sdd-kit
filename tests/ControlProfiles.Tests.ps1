@@ -89,8 +89,10 @@ Describe 'Perfiles de control: cierre, release y migración' {
 }
 
 Describe 'Perfiles de control: propuesta de partir una task grande' {
-  It 'la primera pregunta propone partir por encima del umbral orientativo' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'más de 3 tasks internas'
+  It 'la primera pregunta propone partir según el umbral con tramo 4-5 (patch 0078)' {
+    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+    $skill | Should -Match 'Con 3 o menos no propongas partir nunca; con más de 5, siempre; con 4 o 5, solo si tocan capacidades o superficies distintas \(BD, UI, API\) o alguna lleva migración'
+    $skill | Should -Not -Match 'más de 3 tasks internas'
   }
 }
 

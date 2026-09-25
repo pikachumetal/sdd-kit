@@ -94,6 +94,7 @@
 | 2026-09-25 | 0077 | docs | 1 | 1 | 1 | 30597k | 2923k | 11.7 | sin precio | 20260925-144030-task-0077-playwright-visual-check |
 | 2026-09-25 | 0064 | docs | 4 | 1.2 | 0.3 | 64154k | 9660k | 3.76 | 24.67 | 20260925-163055-task-0064-task-to-feature-rename |
 | 2026-09-25 | 0079 | patch | — | 0.3 | — | — | — | — | — | 20260925-175053-patch-0079-spec-dir-absolute |
+| 2026-09-25 | 0078 | patch | — | 0.6 | — | — | — | — | — | 20260925-175850-patch-0078-split-threshold |
 
 **Factor de calibración** (ratio mediano real/estimado, 82 artefactos): **0.6** · media 0.7
 
@@ -126,6 +127,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 61 | 69.7 | 0.65 | 230.22 | 105.64 |
+| sin publicar | 62 | 70.3 | 0.65 | 230.22 | 105.64 |
 
 > Ver `estimation.md`.

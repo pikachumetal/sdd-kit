@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities .docs/sdd/specs 2>&1; cat .docs/sdd/roadmap.md; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1
+
+>>> Read: <run>/repo/.docs/sdd/constitution.md
+
+>>> Read: <run>/repo/.docs/sdd/mission.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/tech-stack.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+<<< Exit code 1
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/specs:
+.
+..
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0012 | **Consultas de reservas en el CLI** — cinco subcomandos nuevos de solo lectura sobre las reservas en memoria de `src/app.js`: `hoy` (reservas del día), `semana` (reservas de los próximos 7 días), `sala <nombre>` (re
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0078-split-threshold/13524f8e-a9ae-42fa-a34c-bb5baa2d6970/scratchpad/kit-green/skills/sdd-start-feature/references" && cat modo-lite.md; wc -l "<run>/repo/src/app.js"; ls "<run>/repo/test"
+<<< Exit code 2
+## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No toca schema de datos ni exige migración.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmación 
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	// salas: CLI de reservas de salas por franja, en memoria.
+2	const bookings = [
+3	  { room: 'Norte', day: '2026-09-28', slot: '10:00-12:00', owner: 'ana' },
+4	  { room: 'Sur', day: '2026-09-28', slot: '12:00-13:00', owner: 'luis' },
+5	];
+6	
+7	function book(room, day, slot, owner) {
+8	  if (bookings.some(b => b.room === room && b.day === day && b.slot === slot)) throw new Error('sala ocupada');
+9	  bookings.push({ room, day, slot, owner });
+10	}
+11	
+12	function cancel(room, day, slot, owner) {
+13	  const i = bookings.findIndex(b => b.room === room && b.day === day && b.slot === slot && b.owne
+
+=== RESULTADO (9 turnos, 0.2676586 $)
+Ahora: enrutado, una única pregunta. Queda: tu respuesta; después spec con `superpowers:brainstorming` y la presento en el gate, ~10 min.
+
+Contexto leído: constitution, mission, tech-stack y roadmap (no hay `architecture.md` ni `capabilities/`). La rama `feature/0012` ya existe y el roadmap tiene la fila 0012 pendiente, así que la propongo como enunciado: **Consultas de reservas en el CLI** (`hoy`, `semana`, `sala <nombre>`, `usuario <nombre>`, `buscar <texto>`, todas de solo lectura).
+
+**Carril:** feature, no patch ni spike. Añade comportamiento nuevo y no es un bug ni una duda de viabilidad.
+
+**Modo:** puede ir en lite. Comprobé las condiciones una por una:
+- El flujo ya existe y se puede leer: el array `bookings` y los comandos `reservar`, `cancelar` y `libres` en `src/app.js`.
+- No cambia contratos públicos: solo añade subcomandos, y los tres existentes quedan igual.
+- No toca schema ni exige migración: `bookings` es un array en memoria y solo se lee.
+- Cabe en un solo módulo: `src/app.js`, 26 líneas.
+- No existe `estimation.md`, así que esa condición no aplica.
+
+Cumplirlas solo lo habilita. Si eliges lite, la spec es corta y no hay `plan.md` ni `tasks.md`. Si al implementar cae alguna condición, subo a full.
+
+**Perfil:** `delegate`, de `.docs/sdd/sdd-kit.json` (nivel proyecto). No hay `sdd-kit.local.json` ni perfil de release o feature que lo pise. En `delegate` hay gate de spec y validación final, y no paro en cada task.
+
+**Partir:** prevé unas 5 tasks (una por subcomando). Todas tocan la misma superficie (CLI), sin migración. Por eso **no propongo partirla**.
+
+**Delegación de la spec:** como te puedes ausentar, hay una opción para aprobar la spec por delegación y verte en la validación. La validación final no se quita.
+
+¿Cómo seguimos?
+1. **Lite, `delegate`, spec con gate normal** (recomendada: cumple el predicado y es un fichero de 26 líneas).
+2. Full, `delegate`, spec con gate normal.
+3. Lite, `delegate`, y apruebo la spec por delegación, nos vemos en la validación.
+4. Full, `delegate`, y apruebo la spec por delegación, nos vemos en la validación.
+5. Otro perfil para esta feature (`pair` o `unattended`).
