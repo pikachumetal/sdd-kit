@@ -57,6 +57,18 @@ Describe 'skills/using-sdd' {
   }
 }
 
+Describe 'description de las skills de entrada' {
+  It 'sdd-config recoge las preferencias de cómo trabajar' {
+    $description = Get-Description 'sdd-config'
+    $description | Should -Match 'me paras mucho'
+    $description | Should -Match 'menos preguntas'
+  }
+
+  It 'sdd-roadmap recoge los items del gestor aunque estén asignados para hacerlos' {
+    Get-Description 'sdd-roadmap' | Should -Match 'asignado'
+  }
+}
+
 Describe 'hooks/router.md' {
   It 'ya no existe: la única fuente de las puertas es using-sdd' {
     Join-Path $script:KitRoot 'hooks/router.md' | Should -Not -Exist

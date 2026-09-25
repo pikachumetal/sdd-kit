@@ -1,6 +1,6 @@
 ---
 name: sdd-config
-description: Usar cuando hay que crear, revisar o poner al día la configuración del kit SDD de un proyecto con .docs/sdd/ — "configura el kit", "revisa la configuración", "quiero trabajar en pair solo yo", "déjamelo configurado para mí", una preferencia personal que no debe cambiar la del equipo — o cuando una init o una migración llega a las claves del kit y la invoca.
+description: Usar cuando hay que crear, revisar o poner al día la configuración del kit SDD de un proyecto con .docs/sdd/ — "configura el kit", "revisa la configuración", "quiero trabajar en pair solo yo", "déjamelo configurado para mí", "me paras mucho", "quiero menos preguntas", cómo trabajas conmigo, una preferencia personal que no debe cambiar la del equipo — o cuando una init o una migración llega a las claves del kit y la invoca.
 argument-hint: "<qué quieres configurar>"
 ---
 
