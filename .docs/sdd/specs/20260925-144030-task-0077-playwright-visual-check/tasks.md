@@ -16,7 +16,7 @@ created: 2026-09-25
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | El texto de `sdd-start-task` y sus literales | pending | — | |
+| 1 | El texto de `sdd-start-task` y sus literales | done | 02b4933 | 5 tests de literales; RED sin cambios frente a su copia |
 | 2 | GREEN | pending | — | |
 
 ## Fixes adicionales

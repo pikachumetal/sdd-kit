@@ -1,0 +1,48 @@
+--- [3]
+Ahora: preparo la validación del trabajo (paso 7). Queda: leer artefactos, ejecutar el smoke y presentar el guion, ~5 min.
+
+--- [8]
+Task 2 tiene «Verificación visual» y `tasks.md` no registra medidas ni capturas. Debo hacerla antes de validar.
+
+--- [11]
+Playwright no está instalado. Lo instalo fuera del repo (restricción: sin dependencias nuevas) y mido.
+
+--- [24]
+Estoy corrigiendo el fallo de la verificación visual de la task 2: commit del fix y revisión antes de presentar.
+
+--- [32]
+**Me salí del plan en…**
+
+- **Verificación visual de la task 2.** `tasks.md` la daba por «done» sin haberla ejecutado. La ejecuté con Playwright, instalado fuera del repo para no añadir dependencias. Falló en tres puntos que ni los tests ni la revisión final habían visto:
+  - **Contraste en oscuro:** 2,24:1 frente al 4,5:1 mínimo.
+  - **Flecha del selector:** pegada al borde (`padding-right: 0`).
+  - **Alineación:** el label estaba 1 px desalineado del texto de la lista.
+- **Fix del hilo principal** en `b861f62`, solo `web/styles.css`, revisado por un Sonnet con effort medio: limpia. Queda un Minor opcional: el `1px` del label duplica el borde de `li` sin nada que lo enlace. No lo toqué.
+- **Registro** en `tasks.md` (commit `docs(0012)`) con las medidas y las capturas.
+
+**Qué hay:** los tres escenarios de la spec, más el fix visual. `node --test`: 5/5 en verde. No hay decisión de producto pendiente de la revisión final.
+
+**Medidas de la verificación visual** (Chromium, `/` y `/?theme=dark`):
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del texto del selector, claro | 7,46:1 | ≥ 4,5:1 |
+| Contraste del texto del selector, oscuro | 8,40:1 | ≥ 4,5:1 |
+| Separación de la flecha al borde | `padding-right` 24 px, flecha a 0,5 rem | no toca el borde |
+| Alineación del label con el texto de la lista | 93 px = 93 px | igual |
+| Selector deshabilitado mientras carga | sí, en ambos temas | sí |
+
+Smoke ejecutado: el selector con «Pendiente» deja solo `Sur · 12-14 · Pendiente` en los dos temas.
+
+Capturas, fuera de git, en `scratchpad/pw-0012/`: `shot-{claro,oscuro}-{cargando,normal,pendiente}.png` (ruta completa `<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0077-playwright-visual-check\a63deee4-b15d-4fbf-ad0b-4222cb4f2925\scratchpad\pw-0012\`). No abrí ninguna: no tuve permiso de lectura de imágenes, así que las medidas salen de estilos computados.
+
+**Guion de pruebas** (`npm start`, puerto 4563):
+
+1. `curl "localhost:4563/api/bookings?status=Pending"` → devuelve solo Sur.
+2. `curl -i "localhost:4563/api/bookings?status=Lost"` → 400 con `Estado no válido: Lost`.
+3. Abre `/`, elige «Pendiente» en el selector → la lista muestra solo `Sur · 12-14 · Pendiente`.
+4. Abre `/?theme=dark` y repite el paso 3 → mismo resultado y el texto del selector se lee bien.
+5. Mira las capturas o el selector: la flecha tiene aire a la derecha y «Estado» empieza donde empieza el texto de las reservas.
+
+**Para aquí.** Dev-lead: dime qué has probado tú y si funciona. Con eso sigo a `sdd-end-task`. Sin esa respuesta, la task queda EN ESPERA.
+
