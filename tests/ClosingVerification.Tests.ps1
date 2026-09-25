@@ -29,3 +29,27 @@ Describe 'Parar lo arrancado' {
     $script:Skill | Should -Match '(?m)^- Vas a parar un proceso por su nombre o por un patrón de su línea de comandos'
   }
 }
+
+Describe 'Evidencia por THEN' {
+  BeforeAll { $script:Walkthrough = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-templates/templates/walkthrough-template.md') -Raw }
+
+  It 'el paso 7 da una fila por THEN con tres valores cerrados' {
+    Assert-Literal (Get-Step 7) @('una fila por THEN de la spec con su evidencia', '`suite`, `ejecución real` o `no probado`', 'solo cuenta como verificado con `ejecución real`')
+  }
+
+  It 'el paso 7 provoca de verdad los THEN de fallo' {
+    Assert-Literal (Get-Step 7) @('se provoca de verdad con la entrada que falla', '«lo cubre el test» es `suite`')
+  }
+
+  It 'el paso 7 dice cuánto tardó la suite' {
+    Assert-Literal (Get-Step 7) @('cuánto tardó la suite completa')
+  }
+
+  It 'el walkthrough lleva la suite con su duración y el umbral de 10 minutos' {
+    Assert-Literal $script:Walkthrough @('Suite completa: `<comando>` → <resultado> · <duración>', 'más de 10 min')
+  }
+
+  It 'la tabla 4.2 es una fila por THEN con su evidencia' {
+    Assert-Literal $script:Walkthrough @('| THEN | Evidencia | Resultado |', '`suite` · `ejecución real` · `no probado`')
+  }
+}
