@@ -78,13 +78,13 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 
 ### La consulta lee la capacidad, no las specs
 - GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-consult`
-- WHEN existe `capabilities/<capability>.md`
-- THEN la respuesta se ancla en ese fichero, no en la reconstrucción a partir de specs históricas
+- WHEN existe `capabilities/`
+- THEN la consulta ejecuta `Get-CapabilityIndex.ps1`, elige por su propósito la capacidad que cubre X y ancla la respuesta en ese fichero, no en la reconstrucción a partir de specs históricas
 
 ### La spec y el patch declaran sus capacidades al principio
 - GIVEN un proyecto con `capabilities/bookings.md` y la fila 0021 «Cancelar una reserva: `salas cancelar <sala> <franja>` libera la franja»
 - WHEN se escribe la spec de la 0021
-- THEN la spec abre, tras el título, con `## Capacidades` y la línea `- Modificadas: \`bookings\` — añade «Cancelar una reserva»`, escrita tras listar `capabilities/` y con el nombre exacto del fichero (`bookings`, no `reservations` ni `booking`)
+- THEN la spec abre, tras el título, con `## Capacidades` y la línea `- Modificadas: \`bookings\` — añade «Cancelar una reserva»`, escrita tras ejecutar `Get-CapabilityIndex.ps1` y con el nombre exacto que da el índice (`bookings`, no `reservations` ni `booking`)
 - AND cada capacidad del bloque tiene su subsección `### Capacidad: \`<nombre>\`` en el delta, y ninguna subsección del delta falta en el bloque
 - AND una capacidad que no existe en `capabilities/` va como `- Nuevas: \`<nombre>\` — <qué cubre>`, y su creación aparece también en «Decisiones que he tomado yo»
 - AND un cambio sin comportamiento observable lleva `Ninguna, porque <motivo>` (refactor, herramientas, docs) y no lleva delta
@@ -100,15 +100,33 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - GIVEN `.docs/sdd/capabilities/bookings.md` cuyo requisito `### Consultar salas libres` tiene GIVEN y WHEN pero no `- THEN`
 - WHEN se ejecuta `pwsh -NoProfile -File <sdd-templates>/scripts/Test-Capabilities.ps1 -Path .docs/sdd`
 - THEN sale con código 1 y escribe `bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)`
-- AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) en la capacidad; un bloque `**Reglas de la capacidad**` en negrita, que es la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
+- AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Propósito`, `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) en la capacidad; un bloque `**Reglas de la capacidad**` en negrita, que es la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
 - AND ante `## Historial` el mensaje es `bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0`
+- AND sin `## Propósito` escribe `bookings.md: falta la sección «Propósito»`; con la sección vacía, o solo con la ayuda `>` y el hueco `<…>` de la plantilla, `bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad`; con un propósito de 412 caracteres, medidos sobre el propósito en una sola línea como lo escribe el índice, `bookings.md: «Propósito» tiene 412 caracteres; el máximo es 300 (una o dos frases)`; y con `## Propósito` detrás de otra sección, `bookings.md: «Propósito» debe ser la primera sección`
 - AND con `-Artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
 - AND sin fallos escribe `Capacidades válidas: <n>` y sale con 0; sin carpeta `capabilities/`, o con la carpeta vacía, y sin `-Artifact`, escribe `Sin capacidades que validar` y sale con 0
 
+### Cada capacidad declara su propósito
+- GIVEN `capability-template.md` calcada para la capacidad `bookings` de un proyecto de reservas de salas
+- WHEN se escribe `capabilities/bookings.md`
+- THEN tras el título va `## Propósito` con una o dos frases, de 300 caracteres como máximo, que dicen qué cubre: «Reservar, consultar y cancelar salas por franja horaria.»
+- AND `## Propósito` es la primera sección, antes de `## Requisitos`, y no queda ningún párrafo libre entre el título y ella
+- AND el propósito no cuenta quién ni cuándo creó la capacidad: eso lo dicen git y el bloque «Capacidades» de cada spec o `patch.md`
+
+### El índice de capacidades se genera al vuelo
+- GIVEN `.docs/sdd/capabilities/` con `bookings.md`, cuyo propósito es «Reservar, consultar y cancelar salas por franja horaria.», y `rooms.md`, sin `## Propósito`
+- WHEN se ejecuta `pwsh -NoProfile -File <sdd-templates>/scripts/Get-CapabilityIndex.ps1 -Path .docs/sdd`
+- THEN escribe, en orden de nombre, `` - `bookings` — Reservar, consultar y cancelar salas por franja horaria. `` y `` - `rooms` — (sin propósito) ``, y sale con 0
+- AND un propósito escrito en varias líneas sale en una sola, y las líneas de ayuda `>` no salen
+- AND un propósito de más de 300 caracteres sale entero: el índice no valida
+- AND sin carpeta `capabilities/`, o con la carpeta vacía, escribe `Sin capacidades` y sale con 0
+- AND el índice no se guarda en ningún fichero
+- AND `sdd-start-task`, `sdd-roadmap` y `sdd-consult` lo ejecutan en su paso de contexto, antes de decidir qué capacidades leer o tocar, y abren solo las que eligen con él
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el listado de la carpeta es el índice.
+- **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el índice lo genera `Get-CapabilityIndex.ps1` al vuelo y no se guarda en ningún fichero.
 - **Idioma de los nombres**: slug en inglés kebab-case; el contenido, en el idioma que fija la constitution del proyecto.
-- **Límites**: no aplica.
-- **Avisos**: `Test-Capabilities.ps1` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`.
+- **Límites**: el propósito de una capacidad, una o dos frases de 300 caracteres como máximo.
+- **Avisos**: `Test-Capabilities.ps1` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`. `Get-CapabilityIndex.ps1` marca con `(sin propósito)` la capacidad que no lo tiene, y sale con 0.
 - **Regla ante conflicto**: entre una capacidad y un documento de anclaje, manda la capacidad.

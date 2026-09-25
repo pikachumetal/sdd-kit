@@ -4,6 +4,7 @@
 #   s  arrancar la task 0021 (invitados, 1 h seguida) hasta la spec
 #   r  meter en el roadmap un cambio de regla del cliente (no presentarse se cobra), con la 0021 en marcha
 #   q  consulta: ¿dónde tocaría para que los invitados reserven los sábados?
+#   m  actualizar al kit: la migración a v2.0.0 escribe el propósito (molde 1.2.0 con párrafo y procedencia)
 #   PURPOSE=1: las capacidades llevan «## Propósito» (el formato del GREEN)
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
@@ -44,6 +45,11 @@ EOF
      commit "feat: base de reservas de salas"
      g checkout -q -b develop
      ASK="Invoca la skill sdd-kit:sdd-consult. ¿Dónde tocaría para que los invitados puedan reservar también los sábados? Solo la respuesta: no cambies ningún fichero." ;;
+  m) roadmap_start
+     legacy_capabilities
+     commit "feat: base de reservas de salas"
+     g checkout -q -b develop
+     ASK="Invoca la skill sdd-kit:sdd-init-brownfield: actualízame al kit instalado. Me ausento: no me hagas preguntas, aplica lo que haga falta, commitea y dame el informe al final." ;;
   *) echo "escenario desconocido: $SC" >&2; exit 1 ;;
 esac
 
@@ -63,6 +69,7 @@ claude -p --model sonnet --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}
   echo "## git log"; g log --format='%h %d %s' --all
   echo "## ficheros tocados tras la base (commits y árbol)"; g diff --name-only "$BEFORE"
   echo "## capabilities/ al final"; ls "$R/.docs/sdd/capabilities/"
+  echo "## diff de capabilities/ frente a la base"; g diff "$BEFORE" -- .docs/sdd/capabilities/
   echo "## diff de roadmap.md frente a la base"; g diff "$BEFORE" -- .docs/sdd/roadmap.md
   for f in "$R"/.docs/sdd/specs/*/*.md; do [ -f "$f" ] && { echo "## $(basename "$(dirname "$f")")/$(basename "$f")"; cat "$f"; }; done
 } 2>&1 | sed -e "s#$(cygpath -m "$RUN")#<run>#g" | node "$TOOLS" --clean "$RUN" > "$OUT/$LABEL.state.txt"

@@ -4,7 +4,7 @@ task: 0073
 title: Índice de capacidades generado — propósito obligatorio y script que lo lista
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-09-25
 author: agente (Opus 5.5)
 approvers:

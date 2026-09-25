@@ -222,3 +222,25 @@ roadmap_running() {
 | --- | --- | --- |
 EOF
 }
+
+# Escenario m: el molde en el kit 1.2.0, con el párrafo inicial y su procedencia y sin «## Propósito»;
+# quotas sin párrafo y bookings con «## Historial».
+legacy_intro() {
+  local file="$R/.docs/sdd/capabilities/$1.md"
+  { head -n 2 "$file"; printf '%s\n\n' "$2"; tail -n +3 "$file"; } > "$file.tmp" && mv "$file.tmp" "$file"
+}
+
+legacy_capabilities() {
+  legacy_intro bookings 'Verdad viva de las reservas de salas por franja. La declaró la spec de la task 0004 en sus «Decisiones a validar» (decisión 2).'
+  legacy_intro rooms 'Verdad viva del catálogo de salas y de su mantenimiento. La declaró la spec de la task 0005 (decisión 1).'
+  legacy_intro access 'Verdad viva del acceso a la aplicación y de los roles. La declaró la spec de la task 0002 en sus «Decisiones a validar» (decisión 1). El login con tarjeta vive en `src/auth.js`.'
+  legacy_intro house-rules 'Verdad viva de las normas de uso según el rol de quien reserva: duración, días, antelación y no presentarse. La declaró la spec de la task 0006 (decisión 3); antes vivían en `bookings`.'
+  legacy_intro billing 'Verdad viva del cobro a los departamentos externos. La declaró la spec de la task 0008 (decisión 4).'
+  legacy_intro notifications 'Verdad viva de los correos que envía la aplicación. La declaró la spec de la task 0009 (decisión 2).'
+  legacy_intro calendar-sync 'Verdad viva de la exportación a calendarios. La declaró la spec de la task 0011 (decisión 1).'
+  legacy_intro usage-reports 'Verdad viva del informe de ocupación. La declaró la spec de la task 0012 (decisión 1).'
+  printf '\n## Historial\n\n- 2026-09-10 — 20260910-090000-task-0004-bookings — ADDED Reservar una franja\n- 2026-09-18 — 20260918-100000-task-0010-cancel — ADDED Cancelar una reserva\n' >> "$R/.docs/sdd/capabilities/bookings.md"
+  put .docs/sdd/sdd-kit.json <<'JSON'
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-20", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+JSON
+}

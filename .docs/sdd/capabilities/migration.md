@@ -80,6 +80,16 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND `tests/MigrationInitParity.Tests.ps1` sigue en verde con `v2.0.0.md` en la carpeta
 - AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
+### La migración a v2.0.0 añade el propósito a las capacidades
+- GIVEN un proyecto en el kit v1.2.0 con `capabilities/bookings.md`, que abre con el párrafo «Verdad viva de las reservas de salas por franja. La declaró la spec de la task 0003.» y no tiene `## Propósito`
+- WHEN se migra al kit v2.0.0
+- THEN `bookings.md` lleva tras el título `## Propósito` con una o dos frases de 300 caracteres como máximo sacadas de ese párrafo sin la procedencia («Reservas de salas por franja.»), y el párrafo desaparece
+- AND si la capacidad no tiene párrafo bajo el título, el propósito sale de los títulos de sus requisitos
+- AND va sin gate, y el informe lista las capacidades a las que se ha escrito el propósito, para que el dev-lead lo revise en el diff
+- AND la verificación de la migración ejecuta `Test-Capabilities.ps1 -Path .docs/sdd`, y no queda ningún fallo del propósito
+- AND la línea `**Escribe**:` de `v2.0.0.md` no gana tokens: el paso va en su frase «Además…», como el del historial, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
+- AND sin carpeta `capabilities/`, el paso se salta y lo dice
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.
