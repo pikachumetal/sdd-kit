@@ -57,6 +57,6 @@ claude -p --model sonnet --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}
   echo "## ficheros por commit desde el merge-base"; g log --reverse --format='--- %h %s' --name-only "$(g merge-base HEAD develop)"..HEAD
   echo "## status"; g status --short --branch --untracked-files=all
   echo "## diff de src/slots.js en el working tree"; g diff -- src/slots.js
-} 2>&1 | sed -e "s#$RUN#<run>#g" -e "s#$(cygpath -m "$RUN")#<run>#g" > "$OUT/$LABEL.state.txt"
+} 2>&1 | node "$TOOLS" --clean "$RUN" > "$OUT/$LABEL.state.txt"
 node "$TOOLS" "$RUNS/$LABEL.jsonl" "$RUN" > "$OUT/$LABEL.tools.txt"
 echo "[$LABEL] listo"
