@@ -75,19 +75,20 @@
 | 2026-09-24 | 0055 | docs | 2.5 | 1.3 | 0.52 | no medido | 1178k | 5.83 | 20260924-082516-task-0055-native-default |
 | 2026-09-24 | 0059 | infra/tooling | 3 | 1.3 | 0.43 | no medido | 143k | 2.95 | 20260924-105243-task-0059-reserve-ids |
 | 2026-09-24 | 0057 | docs | 2.5 | 2.7 | 1.08 | no medido | 146k | 14.42 | 20260924-105352-task-0057-native-adapt |
+| 2026-09-25 | 0063 | docs | 2 | 1.2 | 0.6 | no medido | 136k | 6.03 | 20260924-221103-task-0063-end-release-cut |
 
-**Factor de calibración** (ratio mediano real/estimado, 65 artefactos): **0.6** · media 0.68
+**Factor de calibración** (ratio mediano real/estimado, 66 artefactos): **0.6** · media 0.68
 
-- p25–p75: 0.38–0.9
-- p80: 1.01 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p25–p75: 0.39–0.9
+- p80: 1 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 29 % · sobreestimadas: 65 % · infraestimadas: 6 %
-- Error absoluto (h): media 0.86 · mediana 0.5
+- Error absoluto (h): media 0.86 · mediana 0.6
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.62
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 20 | 31 % |
-| 0.5–0.8 | 24 | 37 % |
+| <0.5 | 20 | 30 % |
+| 0.5–0.8 | 25 | 38 % |
 | 0.8–1.25 | 17 | 26 % |
 | 1.25–2 | 4 | 6 % |
 | ≥2 | 0 | 0 % |
@@ -95,7 +96,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 44 | 0.52 | 0.37–0.74 |
+| docs | 45 | 0.52 | 0.38–0.73 |
 | infra/tooling | 9 | 0.53 | 0.38–0.7 |
 | patch | 11 | 1.2 | 0.8–1.27 |
 
@@ -107,6 +108,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — |
-| sin publicar | 42 | 50.05 | 0.65 | 157.09 |
+| sin publicar | 43 | 51.25 | 0.64 | 163.12 |
 
 > Ver `estimation.md`.

@@ -52,6 +52,11 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Task 0016** — `Start-KitSession.ps1` exporta `SDD_KIT_SESSION_ROOT` mientras dura la sesión y lanza `claude` con `--dangerously-skip-permissions`. → [ref](specs/20260923-190542-task-0016-git-env-cache-warning/)
 - **Compatibilidad con superpowers 6.4.1** — versión validada en README y «Referencias de vigilancia»; `overrides-superpowers.md` anula el Execution Handoff de `writing-plans` y el HARD-GATE architectural de `brainstorming` (el método de ejecución no se pregunta ni se ofrece «Native»), y en Windows convierte con `cygpath -w` la ruta POSIX de `sdd-workspace` y `task-brief` antes del primer `Write`, con un puntero en `encargo-revision.md`. → [ref](specs/20260923-220402-task-0026-superpowers-641/)
 - **Task 0059** — en modo `sequence` el id se reserva en vez de calcularse: `Get-NextSddId.ps1 -Reserve [-Count N]` consume los ids en un contador del directorio común de git con cerrojo (`SddLock.ps1`, compartido con `Invoke-SddMerge.ps1`), un id reservado no vuelve a salir aunque el trabajo se abandone, y `nombrado.md`, `sdd-start-patch` y `sdd-start-release` reservan. → [ref](specs/20260924-105243-task-0059-reserve-ids/)
+- **Task 0063** — `sdd-end-release` pasa a ser solo el corte de la release, en cinco pasos: congelar scope y versión, sellar el changelog, release notes y comunicación (solo con `release.hasRecipient`), colapsar el roadmap, y versión, tag y merge; la retro con `estimation-log.md` es opcional, se ofrece en el paso 1 y va a `releases/vX.Y.Z/retro.md`. → [ref](specs/20260924-221103-task-0063-end-release-cut/)
+
+### Removed
+
+- **Task 0063** — el acta y el triaje del feedback de la reunión salen de `sdd-end-release`: el cierre remite ese feedback a `sdd-plan` (task 0062) y `references/acta-y-retro.md` pasa a `references/retro.md`. → [ref](specs/20260924-221103-task-0063-end-release-cut/)
 
 ### Fixed
 

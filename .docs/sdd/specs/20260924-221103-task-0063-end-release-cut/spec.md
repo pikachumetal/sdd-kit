@@ -97,7 +97,7 @@ Recorte sobre el `SKILL.md` vigente, conservando literal lo que no es acta ni tr
 
 ## Enmiendas
 
-- 2026-09-25 — El THEN de «La retro es opcional» deja de pedir la retro «antes de colapsar el roadmap»: no retiene los demás pasos y, si el roadmap ya está colapsado, se añade su enlace — en el A/B, 1 de 2 sujetos del tratamiento de A2 esperó a la respuesta sobre la retro y no preparó los pasos 1-4 con el dev-lead ausente («va antes del paso 4, por lo que habría que reabrir el roadmap», t-a2-2) — aprobada: «Arreglo + 2 sujetos (Recomendada)»
+- 2026-09-25 — El THEN de «La retro es opcional» deja de pedir la retro «antes de colapsar el roadmap»: no retiene los demás pasos y, si el roadmap ya está colapsado, se añade su enlace — en el A/B, 1 de 2 sujetos del tratamiento de A2 (t-a2-1) no preparó los pasos 1-4 con el dev-lead ausente y esperó a la versión; otro (t-a2-2) sí los preparó, pero señaló la contradicción del texto («va antes del paso 4, por lo que habría que reabrir el roadmap»). Atribuir la parada a la retro es una hipótesis: tras el cambio, 5/5 — aprobada: «Arreglo + 2 sujetos (Recomendada)»
 
 ## Aprobaciones
 
