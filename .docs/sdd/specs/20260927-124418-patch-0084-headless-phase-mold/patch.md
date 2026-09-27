@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: feature/0084-headless-phase-mold
-commit: <hash>
+commit: 2919749
 ---
 
 # Patch 0084 — el molde de cada sujeto headless, en una carpeta por fase
@@ -47,6 +47,8 @@ Por tanto, el `tail -n 1` de `spent()` ya da el coste del sujeto. Los 6,69 $ era
 | 1 | `red` y `green` con el mismo `RUNS_DIR` dejan dos moldes y dos streams (test nuevo): RED antes del fix («Expected path '…\runs\red\a-1\repo\README.md' to exist»), GREEN después | ✅ |
 | 2 | `Invoke-Pester tests/HeadlessLauncher.Tests.ps1`: 14/14 | ✅ |
 | 3 | (1): `modelUsage` del último `result` = suma de los `usage` de los dos turnos, en 10 de 10 streams del 0080 | ✅ sin fallo |
+
+Validación diferida: 2026-09-27 · «Diferir: lo pruebo en la próxima campaña headless con dos fases, a cargo del dev-lead» · disparador: la próxima campaña headless con dos fases, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 
