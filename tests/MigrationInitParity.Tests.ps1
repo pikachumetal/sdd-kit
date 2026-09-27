@@ -124,12 +124,24 @@ Describe 'Proyecto de referencia' {
       Should -Match '(?s)## Convenciones.*\*\*Proyecto de referencia\*\*.*## Reglas de producto'
   }
 
-  It 'greenfield lo pregunta como pregunta 18' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 18 \|.*proyecto de referencia'
+  It 'greenfield lo pregunta como pregunta 20' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 20 \|.*proyecto de referencia'
   }
 
   It 'brownfield lo pregunta como pregunta 4' {
     Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 4 \|.*proyecto de referencia'
+  }
+}
+
+Describe 'Entrevista de greenfield: mission completa' {
+  It 'pregunta qué queda fuera de alcance como pregunta 4' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' |
+      Should -Match '(?m)^\s*\| 4 \| ¿Qué queda fuera de alcance\? \| mission, «Qué es y qué no es» \|'
+  }
+
+  It 'pregunta los términos del dominio como pregunta 5' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' |
+      Should -Match '(?m)^\s*\| 5 \| ¿Qué términos del dominio hay que fijar\? \| mission, «Dominio» \|'
   }
 }
 

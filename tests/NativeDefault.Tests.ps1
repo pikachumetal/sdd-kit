@@ -85,12 +85,12 @@ Describe 'Task 1 — contrato del método' {
 
 Describe 'Task 2 — init y migración' {
   It 'greenfield pregunta el método de ejecución a través de sdd-config' {
-    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 17 |'
+    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 19 |'
     $row | Should -Match '`sdd-config`.*método de ejecución'
   }
 
-  It 'greenfield escribe las claves respondidas en la 17' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves que el usuario respondió en la 17'
+  It 'greenfield escribe las claves respondidas en la 19' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves que el usuario respondió en la 19'
   }
 
   It 'brownfield pregunta el método de ejecución a través de sdd-config' {

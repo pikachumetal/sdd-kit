@@ -18,12 +18,12 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Entrevista con fuera de alcance y dominio | pending | — | |
+| 1 | Entrevista con fuera de alcance y dominio | done | — | ruling: recuento de la spec corregido a 4 de 4 |
 | 2 | GREEN sobre el template | pending | — | |
 
 ## Verificación por task
 
-- [ ] Task 1 — `pwsh -NoProfile -Command "Invoke-Pester -Path tests/MigrationInitParity.Tests.ps1, tests/NativeDefault.Tests.ps1"`
+- [x] Task 1 — `pwsh -NoProfile -Command "Invoke-Pester -Path tests/MigrationInitParity.Tests.ps1, tests/NativeDefault.Tests.ps1"`
 - [ ] Task 2 — dos sujetos terminados y la tabla de `tests/init-over-template-green.md`
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
