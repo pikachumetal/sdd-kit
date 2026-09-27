@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0090-config-dir-mold-guard
-commit: <hash>
+commit: 33ab72d
 ---
 
 # Patch 0090 — transcripts de todas las configuraciones de Claude Code y molde que no es su propio repo
@@ -49,10 +49,14 @@ Durante el patch, el dev-lead amplió la decisión: tiene dos cuentas y cambió 
 | 6 | Este worktree sin `-ProjectsRoot`: mide la sesión (3.430.767 tokens del hilo) | ✅ |
 | 7 | `Invoke-Pester tests`: 957 pasan, 0 fallan, 10 skipped | ✅ |
 
+Todo lo de la tabla lo verificó el agente; el dev-lead no ha probado nada todavía.
+
+Validación diferida: 2026-09-27 · «Diferir: lo pruebo en el próximo cierre» · disparador: el próximo cierre de feature que mida tokens (0091), a cargo del dev-lead
+
 ## 5. Tiempo (ligero)
 
 - Estimación: S
-- Real: 0,5 h
+- Real: 0,7 h
 
 ## 6. Delta de capacidad
 
