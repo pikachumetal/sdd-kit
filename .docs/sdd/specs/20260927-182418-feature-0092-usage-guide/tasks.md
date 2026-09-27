@@ -7,7 +7,9 @@ Registro vivo. Ejecución Native.
 | 1 — La guía de uso, bajo la vigilancia del test | hecha | 9bf7def |
 | 2 — Greenfield, brownfield y el anexo al día con la 2.0.0 | hecha | d118b23 |
 | 3 — El README y los índices apuntan a la guía | hecha | 3714291 |
-| 4 — Pasada de humanizer | pendiente | |
+| 4 — Pasada de humanizer | hecha | 0410928 |
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (1 Important, 13 Minor), sobre 0410928
 
 ## Task 2 — RED de C6
 
@@ -33,3 +35,4 @@ Skill `humanizer:humanizer` 3.0.0, modo fichero, sobre `usage-guide.md` entera y
 - §4: fuera las etiquetas en negrita de la lista del smoke (patrón 19).
 
 Sin cambios: la única raya de la guía está dentro del literal «Decisiones que he tomado yo — valida estas»; las etiquetas en negrita de §3 y §5 nombran la parte de la pregunta o la regla. En los párrafos reescritos de greenfield y brownfield no quedó ningún patrón de los fuertes (1 a 5), ni rayas.
+Pasada de fix: juntada en el commit de cierre, 12 hallazgos, de lectura (sin RED, paso 6); el del test verificado con la guía retirada

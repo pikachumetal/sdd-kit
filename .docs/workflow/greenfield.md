@@ -144,7 +144,7 @@ Durante la reunión se recoge toda la información posible: notas, capturas, dec
 
 ### 3.3. Carril de release
 
-Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado: congela el alcance y la versión, que confirmas tú; sella el changelog; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; colapsa el roadmap tras pedirte el smoke de lo que quedó con la validación diferida; y prepara el merge a la rama estable y el tag, que confirmas tú. La retro con los números del registro de estimaciones es opcional: se hace si la pides.
+Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado: congela el alcance y la versión, que confirmas tú; sella el changelog; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; colapsa el roadmap tras pedirte el smoke de lo que quedó con la validación diferida a esa release; y prepara el merge a la rama estable y el tag, que confirmas tú. La retro con los números del registro de estimaciones es opcional: se hace si la pides.
 
 Trabajar por releases es opcional. Si el proyecto no lo necesita, las tareas se cierran una a una y ya está.
 

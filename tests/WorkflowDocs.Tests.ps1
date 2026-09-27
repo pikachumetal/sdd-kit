@@ -33,11 +33,8 @@ BeforeAll {
 }
 
 Describe 'Documentación de flujo' {
-  It 'existe la carpeta con los cuatro documentos' {
-    $script:WorkflowRoot | Should -Exist
-    foreach ($doc in @('greenfield.md', 'brownfield.md', 'evidence-and-references.md', 'usage-guide.md')) {
-      Join-Path $script:WorkflowRoot $doc | Should -Exist
-    }
+  It 'existe <_>' -ForEach $AllDocs {
+    Join-Path $script:WorkflowRoot $_ | Should -Exist
   }
 
   It '<_> declara la versión del kit que revisó' -ForEach $VersionedDocs {

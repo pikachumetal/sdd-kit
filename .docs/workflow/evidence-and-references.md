@@ -43,7 +43,7 @@ El flujo descrito en los dos documentos coincide punto por punto con las *best p
 | --- | --- |
 | Flujo Explore, Plan, Implement, Commit; «dejar que Claude salte directamente al código produce código que resuelve el problema equivocado» | Ciclo spec, plan, implementación, walkthrough |
 | Patrón entrevista a spec: «keep interviewing until we've covered everything, then write a complete spec» | Brainstorming hasta una `spec.md` aprobada antes de continuar |
-| «Time spent making the spec precise pays off more than time spent watching the implementation» | El dev aprueba la spec antes de implementar y valida el resultado; en medio, el agente trabaja solo y una revisión final de rama lo comprueba |
+| «Time spent making the spec precise pays off more than time spent watching the implementation» | El dev aprueba la spec antes de implementar y valida el resultado; con el perfil por defecto, en medio el agente trabaja solo y una revisión final de rama lo comprueba |
 | «If you could describe the diff in one sentence, skip the plan» | Sección «Cuándo no usar el ciclo completo» y carril patch |
 | `CLAUDE.md` corto y por capas; «un CLAUDE.md inflado hace que Claude ignore las instrucciones» | `CLAUDE.md` con punteros y documentos de anclaje separados |
 | La ventana de contexto es el recurso más importante; `/clear` entre tareas | Una tarea, un contexto |

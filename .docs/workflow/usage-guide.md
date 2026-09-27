@@ -38,7 +38,7 @@ Llega algo y lo escribes tal cual. El agente elige la puerta por lo que dices:
 
 Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las reservas»), el agente te hace una sola pregunta sobre eso, con su recomendación, y elige la puerta con tu respuesta.
 
-**Patch o feature.** Un patch es un fallo determinista, de menos de media hora y sin nada que interpretar: se sabe qué debería pasar y no pasa. En cuanto el arreglo exige decidir cómo debería comportarse algo, o toca varios sitios, es una feature, y el agente cambia de carril y te lo dice. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
+**Patch o feature.** Un patch es un fallo determinista, de menos de media hora y sin nada que interpretar: se sabe qué debería pasar y no pasa. En cuanto el arreglo exige decidir cómo debería comportarse algo, o toca varios módulos, es una feature, y el agente cambia de carril y te lo dice. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
 
 **Algo grande.** Si pides varias cosas a la vez, o una que el agente partiría en varias features, lo mejor es pasarlo por el roadmap: «organízalo para el equipo». `sdd-roadmap` te entrevista, escribe la propuesta y deja las filas con su id y su orden. Después arrancas cada una por separado.
 
@@ -53,9 +53,9 @@ Al arrancar una feature, el primer mensaje del agente es una sola pregunta que c
 - **El carril**: feature, o el que le haya parecido (a veces te propone que sea un patch o una consulta).
 - **El modo, lite o full.** Lite es una spec corta y sin plan, para cambios acotados. Solo te lo ofrece si se cumplen todas estas condiciones, y te las cita una a una: el flujo que se toca ya existe y se puede leer, no cambia contratos públicos, no toca el esquema de datos ni exige migración, cabe en un módulo y, si el proyecto estima, la estimación no pasa de media jornada. Lite no se salta ni la aprobación de la spec ni la validación.
 - **El perfil de control** (abajo), y de dónde sale: de la feature, de tu `sdd-kit.local.json`, de la release o del proyecto.
-- **Partir la feature**, si el agente prevé muchas tasks. Con 3 o menos no lo propone nunca; con más de 5, siempre; con 4 o 5, solo si tocan superficies distintas (base de datos, interfaz, API) o llevan migración. Si lo propone, «seguir entera» también es una respuesta válida, y no te lo vuelve a preguntar.
-- **Aprobar la spec por delegación**: «apruebo la spec por delegación, nos vemos en la validación». Elígela si te vas a ausentar. El agente aprueba la spec por ti, apunta tu frase y la fecha, y ya no para hasta la validación, salvo un desvío.
-- **Bajar de modelo**: si la sesión va con el modelo más caro y el plan va a tener varias tasks, te ofrece parar antes de la primera para que cambies a Sonnet con effort medium (`/model`). En ejecución Native la sesión hace todas las tasks, y el modelo medio basta; el caro se guarda para la revisión final.
+- **Partir la feature**, si el agente prevé muchas tasks. Con 3 o menos no lo propone nunca; con más de 5, siempre; con 4 o 5, solo si tocan capacidades o superficies distintas (base de datos, interfaz, API) o llevan migración. Si lo propone, «seguir entera» también es una respuesta válida, y no te lo vuelve a preguntar.
+- **Aprobar la spec por delegación**: «apruebo la spec por delegación, nos vemos en la validación». Elígela si te vas a ausentar. El agente aprueba la spec por ti, apunta tu frase y la fecha, y no vuelve a pararte por la spec. El resto de paradas de tu perfil sigue igual: en `delegate`, los desvíos, los frenos y la validación; en `pair`, además el plan y cada task.
+- **Bajar de modelo**, pegado a la opción anterior: si la sesión va con el modelo más caro y el plan va a tener varias tasks, una variante de la delegación añade parar antes de la primera task para que cambies a Sonnet con effort medium (`/model`). En ejecución Native la sesión hace todas las tasks, y el modelo medio basta; el caro se guarda para la revisión final. Si no delegas la spec, la misma opción te llega al aprobarla (en `delegate`) o al aprobar el plan (en `pair`).
 
 Si en tu petición ya dijiste «decide tú el método», la pregunta llega igual. Contéstala en un clic, con la opción de delegar la spec.
 
@@ -67,7 +67,7 @@ Si una parte no la entiendes (por ejemplo, si te propone partir y no sabes si ha
 | --- | --- |
 | `pair` | En la spec, en el plan, tras cada task (con un guion para probarla), en los desvíos, en la validación y antes del merge |
 | `delegate` (el de defecto) | En la spec, en los desvíos y en la validación. El plan lo escribe y sigue sin preguntarte |
-| `unattended` | En ningún punto hasta terminar la release. Aprueba él las specs con las decisiones apuntadas, resuelve los desvíos por la opción más conservadora y deja la validación para un único smoke de la release. Solo vale con el trabajo bien definido en el roadmap |
+| `unattended` | En ningún punto hasta terminar la release. Aprueba él las specs con las decisiones apuntadas, resuelve los desvíos por la opción más conservadora y deja la validación para un único smoke de la release. Conviene con el trabajo bien definido: si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, aparca la feature y sigue con la siguiente |
 
 En los tres, el merge a `main`, el tag, un push que no sea el de la rama de integración y abrir un PR los decides tú.
 
@@ -95,12 +95,11 @@ Lo demás lo decide él sin pararte (otro orden, un fichero que no pensaba tocar
 
 ## 4. Validar de verdad
 
-Cuando termina, el agente para lo que haya arrancado y te presenta el trabajo en este orden:
+Si la revisión final del agente deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, empezando por «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
 
-1. «Me salí del plan en…», con las decisiones que tomó durante la ejecución.
-2. Qué hay.
-3. El smoke: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
-4. El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`).
+- Qué hay.
+- El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Si alguna task cambió lo que se ve, antes del guion van sus medidas y las capturas.
+- El smoke, separado del guion porque es lo que ya hizo él: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
 
 **Validar es decir qué has probado y que funciona**: «he filtrado por Pendiente y Enviado, y el listado cambia bien». Un «sí» a secas a esa pregunta también vale, y queda escrito tal cual, con la nota de que no detallaste.
 
@@ -123,7 +122,7 @@ La pregunta de validación ya trae la opción con el disparador relleno, por eje
 
 Díselo cuando te pregunte, con el trabajo delante. Un «cuando acabes, lo difieres» dicho a mitad de la implementación no cumple la primera condición: el trabajo todavía no existe.
 
-Con la validación diferida, la feature se cierra y se fusiona, pero su fila del roadmap lleva `🧪 validación diferida a <disparador>` en vez de ✅. Cuando lo pruebes, díselo al agente y la fila pasa a ✅ con una adenda en el walkthrough. Las que siguen en 🧪 al cortar la release se validan en su smoke.
+Con la validación diferida, la feature se cierra y se fusiona, pero su fila del roadmap lleva `🧪 validación diferida a <disparador>` en vez de ✅. Cuando lo pruebes, díselo al agente y la fila pasa a ✅ con una adenda en el walkthrough. Las diferidas a la release se validan en su smoke, al cortarla; las diferidas a otro disparador esperan a que llegue.
 
 En `unattended` no hay pregunta: todo se difiere al smoke de la release.
 
@@ -135,7 +134,7 @@ En `unattended` no hay pregunta: todo se difiere al smoke de la release.
 
 **La rama tiene que llevar su id.** Si abres el worktree con una rama sin id (`feature/filtro-pedidos`) y sin commits, el agente la renombra a `feature/<id>-filtro-pedidos` antes del primer commit y te lo dice. Si la rama trae un número que no es el suyo (por ejemplo, el de otra feature ya cerrada), díselo antes de empezar. La regla de renombrado solo cubre la rama sin id, y un número ajeno en la rama confunde a cualquiera que lea el historial.
 
-**`develop` no se trabaja en ningún worktree.** El merge del cierre se hace en un worktree temporal `merge-<id>` que el script crea y borra. Si tienes `develop` sacada en algún sitio con cambios sin commitear, el merge se para con `destino sacado:` y la lista de ficheros, y no los toca: son tuyos o de otra sesión.
+**No trabajes sobre `develop`.** Si `develop` no está sacada en ningún worktree, el merge del cierre se hace en uno temporal, `merge-<id>`, que el script crea y borra; si está sacada en un worktree limpio, fusiona ahí. Pero si la tienes sacada con cambios sin commitear, el merge se para con `destino sacado:` y la lista de ficheros, y no los toca: son tuyos o de otra sesión.
 
 **Cuando la base se mueve.** Antes de cada task, el agente mira si `develop` ha cambiado la fila de tu feature o algún fichero que la task va a tocar. Si pasa, para y te lo enseña con los commits que lo cambiaron. Para aunque tú ya supieras que otra feature tocaba el mismo fichero: el freno compara ficheros, no partes de un fichero. Si el solapamiento era el previsto, díselo y sigue.
 
@@ -148,7 +147,7 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-end-feature` de un tir�
 - escribe el `walkthrough.md` con lo que se hizo, cómo se verificó, el tiempo real y las decisiones que tomó sin ti;
 - lleva los aprendizajes a los documentos que los guardan y fusiona el comportamiento nuevo en `capabilities/`;
 - actualiza el changelog, el roadmap y el registro de estimaciones, si el proyecto los tiene;
-- fusiona en `develop` con el script del kit, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite;
+- fusiona en `develop` con el script del kit, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite. Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
 El patch cierra igual, más corto, con `sdd-end-patch`: primero te pide la validación con tres opciones (validado, diferir o no funciona) y después fusiona.
@@ -190,6 +189,7 @@ El merge lo hace un script, y su mensaje empieza por el paso que falló. La rama
 | `destino sacado: ya existe '…merge-<id>'` | Quedó la carpeta de un merge anterior, con contenido o todavía registrada como worktree | Mira qué hay dentro antes de borrarla. Si está vacía y no es un worktree, el script ya la borra solo |
 | `verificación:` | Los tests fallan sobre el resultado del merge | Es un fallo real: se arregla antes de volver a fusionar |
 | `cerrojo:` | Otra sesión lleva mucho rato fusionando | Espera a que acabe o mira qué sesión es |
+| `política:` | Falta `sdd-kit.json`, o a su bloque `merge` le falta `into` o `noFf` | Complétalo con `sdd-config` y pide el merge otra vez |
 
 En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `git push`, ni usa `--force`. Si un permiso de tu entorno le deniega el merge, no lo reintenta: te da el comando exacto y el texto de la denegación para que lo lances tú.
 
