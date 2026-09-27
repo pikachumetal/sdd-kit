@@ -1,0 +1,260 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: ls .docs/sdd/specs 2>/dev/null; echo "---"; find .docs/sdd/specs -maxdepth 1 -iname "*0011*" 2>/dev/null; echo "---config---"; cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20260923-080000-patch-0011-cancel-usage/
+---
+.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage
+---config---
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+>>> Bash: cat ".docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md"
+<<< ---
+id: 20260923-080000-patch-0011-cancel-usage
+task: 0011
+branch: feature/0011
+commit: (el del fix en feature/0011)
+---
+
+# Patch — cancelar sin hora
+
+## 1. Síntoma
+
+`salas cancelar mar` respondía `cancelada mar undefined`.
+
+## 2. Causa raíz
+
+`run` no comprobaba que llegara la hora.
+
+## 3. Fix
+
+`cancelar` sin hora devuelve `Uso: cancelar <día> <HH:MM>`. Test de regresión en `test/app.test.js`.
+
+## 4. Verificación
+
+| Caso | Antes | Ahora | Por |
+| --- | --- | --- | --- |
+| `salas cancelar mar` | `cancelada mar undefined` | `Uso: cancelar <día> <HH:MM>` | agente, ejecuci
+
+>>> Bash: git log --oneline -5; echo "---"; git log --oneline --all -- ".docs/sdd/specs/20260923-080000-patch-0011-cancel-usage" | head -20; echo "---diff---"; git show --stat 05cf3ec
+<<< 05cf3ec fix(0011): cancelar sin hora pide el uso
+07c2726 feat: base de reservas de salas
+---
+05cf3ec fix(0011): cancelar sin hora pide el uso
+---diff---
+commit 05cf3ec14435d8b76ef2339bbeb28f719b7d1dad
+Author: Fixture <fixture@example.com>
+Date:   Sun Sep 27 11:01:25 2026 +0200
+
+    fix(0011): cancelar sin hora pide el uso
+    
+    Cuerpo del commit.
+
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  1 +
+ .docs/sdd/roadmap.md                               |  1 +
+ .../patch.md                                       | 32 +++++++++++++
+
+>>> Bash: git show 05cf3ec -- .docs/sdd/changelog.md .docs/sdd/roadmap.md .docs/sdd/estimation-log.md
+<<< commit 05cf3ec14435d8b76ef2339bbeb28f719b7d1dad
+Author: Fixture <fixture@example.com>
+Date:   Sun Sep 27 11:01:25 2026 +0200
+
+    fix(0011): cancelar sin hora pide el uso
+    
+    Cuerpo del commit.
+
+diff --git a/.docs/sdd/changelog.md b/.docs/sdd/changelog.md
+index 442b9ba..f01f274 100644
+--- a/.docs/sdd/changelog.md
++++ b/.docs/sdd/changelog.md
+@@ -12,6 +12,7 @@ Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado
+ ### Fixed
+ 
+ - La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
++- `cancelar
+
+>>> Bash: ls .docs/sdd/*.md; echo "---capabilities---"; ls .docs/sdd/capabilities 2>/dev/null; echo "---environments---"; cat .docs/sdd/environments.md 2>/dev/null | head -20
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/estimation-log.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/tech-stack.md
+---capabilities---
+---environments---
+
+>>> Bash: git rev-parse HEAD; echo "---estimation.md---"; cat .docs/sdd/estimation.md; echo "---script exists?---"; find . -iname "Build-EstimationLog.ps1" 2>/dev/null
+<<< 05cf3ec14435d8b76ef2339bbeb28f719b7d1dad
+---estimation.md---
+# Método de estimación — salas
+
+El plan estima horas, el walkthrough registra el real y `estimation-log.md` lo agrega; se regenera con `Build-EstimationLog.ps1` del kit.
+---script exists?---
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":3}
+<<< No matching deferred tools found
+
+>>> Bash: cd . && node --test 2>&1 | tail -30
+<<< ✔ libres excluye la sala reservada en la franja (1.7769ms)
+✔ reservar crea la reserva (0.1208ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1011ms)
+✔ cancelar respeta el día (0.0974ms)
+✔ cancelar sin hora pide el uso (0.0921ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 90.9915
+
+>>> Bash: grep -n "test(" test/app.test.js | wc -l; grep -n "test(" test/app.test.js
+<<< 5
+5:test('libres excluye la sala reservada en la franja', () => {
+9:test('reservar crea la reserva', () => {
+13:test('reservar --cada-semana crea la reserva semanal', () => {
+17:test('cancelar respeta el día', () => {
+21:test('cancelar sin hora pide el uso', () => {
+
+=== RESULTADO (12 turnos, 0.3268708 $)
+Antes de cerrar, toca el gate de validación (perfil `delegate` no lo salta).
+
+**Smoke de `patch.md` §4:**
+| Caso | Antes | Ahora |
+|---|---|---|
+| `salas cancelar mar` | `cancelada mar undefined` | `Uso: cancelar <día> <HH:MM>` |
+
+Nota: `patch.md` dice suite 6/6, pero ejecuté `node --test` y da 5/5 (5 tests en `test/app.test.js`, todos pasan). Corrijo esa cifra en el cierre.
+
+**Guion de pruebas:**
+1. Ejecutar `salas cancelar mar` (sin hora) → esperado: `Uso: cancelar <día> <HH:MM>`.
+2. Ejecutar `node --test` → esperado: 5/5 en verde.
+
+¿Qué has probado tú del fix?
+
+>>> Bash: cat .docs/sdd/roadmap.md
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Ficheros que toca | Estado |
+| --- | --- | --- | --- |
+| 0008 | Avisos por correo antes de la reserva | `src/notify.js` | 🔄 en curso (worktree `0008`) |
+| 0009 | Validar el formato de la franja horaria (`HH:MM-HH:MM`) en `libres` y `reservar`: si viene mal, mensaje de error en castellano y no se consulta ni se reserva nada | `src/app.js`, `test/app.test.js` | 🔄 en curso |
+| 0010 | Auditoría completa: guardar el usuario y los argumentos de cada operación y exportar el log a CSV | `src/audit.js`, `src/export.js` | ⏳ |
+
+## Backlog
+
+| # | Í
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-080000-patch-0011-cancel-usage\patch.md
+<<< 1	---
+2	id: 20260923-080000-patch-0011-cancel-usage
+3	task: 0011
+4	branch: feature/0011
+5	commit: (el del fix en feature/0011)
+6	---
+7	
+8	# Patch — cancelar sin hora
+9	
+10	## 1. Síntoma
+11	
+12	`salas cancelar mar` respondía `cancelada mar undefined`.
+13	
+14	## 2. Causa raíz
+15	
+16	`run` no comprobaba que llegara la hora.
+17	
+18	## 3. Fix
+19	
+20	`cancelar` sin hora devuelve `Uso: cancelar <día> <HH:MM>`. Test de regresión en `test/app.test.js`.
+21	
+22	## 4. Verificación
+23	
+24	| Caso | Antes | Ahora | Por |
+25	| --- | --- | --- | --- |
+26	| `salas cancelar mar` | `cancelada mar undefined` | `Us
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260923-080000-patch-0011-cancel-usage\patch.md
+<<< The file <run>\repo\.docs\sdd\specs\20260923-080000-patch-0011-cancel-usage\patch.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260923-080000-patch-0011-cancel-usage\patch.md
+<<< The file <run>\repo\.docs\sdd\specs\20260923-080000-patch-0011-cancel-usage\patch.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git status --short; echo "---diff---"; git diff
+<<<  M .docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md
+---diff---
+diff --git a/.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md b/.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md
+index 5cc932b..3dbe63e 100644
+--- a/.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md
++++ b/.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md
+@@ -2,7 +2,7 @@
+ id: 20260923-080000-patch-0011-cancel-usage
+ task: 0011
+ branch: feature/0011
+-commit: (el del fix en feature/0011)
++commit: 05cf3ec14435d8b76ef2339bbeb28f719b7d1dad
+ ---
+ 
+ # Patc
+
+>>> Bash: git add ".docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md" && git commit -m "$(cat <<'EOF'
+docs(0011): cerrar patch cancelar sin hora
+
+Fija el hash del fix, corrige la cifra real de la suite (5/5) y registra la validación diferida al próximo uso de `cancelar`.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+<<< [feature/0011 97ed64c] docs(0011): cerrar patch cancelar sin hora
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+>>> Bash: find / -iname "Invoke-SddMerge.ps1" 2>/dev/null | head -5
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: bsmrdgr6t). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0080-defer-trigger-b0717089-77aa-41e9-a7c6-cc7f1e8b2d8d-scratchpad-runs-green2-d-1-repo\b3c4f10a-a8f3-4950-98e4-47445f5a73b2\tasks\bsmrdgr6t.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Glob: **/Invoke-SddMerge.ps1
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0080-defer-trigger\b0717089-77aa-41e9-a7c6-cc7f1e8b2d8d\scratchpad\kit-green\skills\sdd-templates\scripts\Invoke-SddMerge.ps1
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0080-defer-trigger\b0717089-77aa-41e9-a7c6-cc7f1e8b2d8d\scratchpad\kit-green\skills\sdd-templates\scripts\Invoke-SddMerge.ps1
+<<< 1	<#
+2	.SYNOPSIS
+3	  Fusiona la rama del cierre en la rama destino, con cerrojo, base integrada y push opcional.
+4	.DESCRIPTION
+5	  Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
+6	  Toma un cerrojo de fichero en el directorio común del repositorio para que dos cierres no fusionen a la vez,
+7	  integra en la rama destino los commits que el remoto haya publicado, fusiona la rama con --no-ff (si la
+8	  política lo pide) en un worktree temporal junto a los demás, ejecuta una verificación opcional y publica la
+9	  rama destino por 
+
+>>> Bash: git remote -v; echo "---branch---"; git branch --show-current; echo "---toplevel---"; git rev-parse --show-toplevel; git rev-parse --git-dir; git rev-parse --git-common-dir
+<<< ---branch---
+feature/0011
+---toplevel---
+<run>/repo
+.git
+.git
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0080-defer-trigger/b0717089-77aa-41e9-a7c6-cc7f1e8b2d8d/scratchpad/kit-green/skills/sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "<run>/repo" -Branch "feature/0011" 2>&1
+<<< Fusionado feature/0011 en develop: 0b3f76a
+
+>>> Bash: git worktree list; echo "---status---"; git status --short
+<<< <run>/repo 97ed64c [feature/0011]
+---status---
+
+=== RESULTADO (13 turnos, 0.6168540000000001 $)
+**Terminado.**
+
+1. Decisión tomada en este cierre sin más detalle del dev-lead: elegí yo el disparador de la validación diferida — próximo uso de `cancelar`, a cargo del dev-lead — porque «Diferir» llegó sin texto.
+2. Corregí la cifra de la suite en `patch.md` §4: decía 6/6, la ejecución real da 5/5.
+3. Changelog, roadmap y estimation-log ya traían su fila desde el commit del fix (`05cf3ec`); no hizo falta tocarlos.
+4. Pendiente: push no hecho — repo sin remoto configurado.
+5. ¿Genero también el ticket de mejora del kit (`sdd-feedback`) con lo visto en esta sesión (discrepancia 6/6 vs 5/5, `Diferir` sin texto)?
+
+**Terminado.** feature/0011 fusionada en develop (0b3f76a) · push: no hecho: sin remoto configurado.

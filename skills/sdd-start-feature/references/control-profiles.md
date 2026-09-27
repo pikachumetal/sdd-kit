@@ -125,6 +125,8 @@ Con las tres, el agente no se niega a cerrar ni inventa un estado nuevo — la f
 
 Si el disparador falta o es vago («diferida», «se prueba en uso») y se cumplen las dos primeras, no vuelvas a preguntar: concreta tú el uso más próximo, con quien difiere como dueño, y escríbelo así: `disparador: <uso más próximo>, a cargo de <quien difiere>` (p. ej., «la primera exportación del informe mensual, a cargo del dev-lead»). Dilo en el mensaje de cierre para que lo corrija. Con eso la tercera condición queda cumplida.
 
+La pregunta de validación ofrece diferir con un disparador concreto que elige el agente, con dueño, sin pedir nada al usuario: «Diferir: lo pruebo en <uso más próximo>, a cargo de <quien valida>». Elegirla, aunque sea sin texto, es la frase literal (segunda condición) y el disparador (tercera), igual que elegir «apruebo la spec por delegación» en el paso 2 de `sdd-start-feature`: no vuelves a preguntar. Si quiere otro disparador, lo escribe en «Other». Sin él en la opción, 0 de 2 sujetos lo propusieron y uno pidió al usuario «motivo y disparador» (`tests/defer-trigger-red.md`); en el patch 0078, con `AskUserQuestion`, hizo falta otro turno y el cierre quedó parado.
+
 Sin las dos primeras no hay diferido: la feature sigue EN ESPERA con el smoke documentado.
 
 En `unattended` el disparador es siempre el smoke de la release: no hacen falta las tres condiciones, el perfil ya lo fija.

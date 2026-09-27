@@ -13,9 +13,13 @@ Cierre **ligero** de un patch: el subconjunto de `sdd-end-feature` sin la ceremo
 
 ## Checklist (crea un todo por paso)
 
-0. **Validación** — antes de tocar nada, y siempre antes del merge del paso 6, aunque el bloque `merge` lo autorice sin preguntar: la fila «Validación» de la [tabla de gates](../sdd-start-feature/references/control-profiles.md) vale para el patch. En `pair` y `delegate`, para y presenta el smoke de `patch.md` §4 y un guion de pruebas (pasos numerados, cada uno con una acción y su resultado esperado); pregunta qué ha probado con `AskUserQuestion`, sola en su turno. «Cierra el patch» o «los tests pasan» no son validación: son la orden de cerrar. Tres salidas:
+0. **Validación** — antes de tocar nada, y siempre antes del merge del paso 6, aunque el bloque `merge` lo autorice sin preguntar: la fila «Validación» de la [tabla de gates](../sdd-start-feature/references/control-profiles.md) vale para el patch. En `pair` y `delegate`, para y presenta el smoke de `patch.md` §4 y un guion de pruebas (pasos numerados, cada uno con una acción y su resultado esperado); pregunta qué ha probado con `AskUserQuestion`, sola en su turno. «Cierra el patch» o «los tests pasan» no son validación: son la orden de cerrar. La pregunta ofrece estas tres opciones, con estas etiquetas, también si la haces en texto por no tener `AskUserQuestion`. En la de diferir, el uso y el dueño los rellenas tú antes de preguntar:
+
+   `Validado: lo he probado y funciona` · `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>` · `No funciona`
+
+   Tres salidas:
    - **Validado**: dice qué probó y que funciona, o contesta «sí» sin detalle a esa pregunta, que también es validación. Debajo de la tabla de §4: `Validado: <fecha> · «<frase literal>»`, con `· no detalló qué probó` si fue un «sí» sin detalle.
-   - **Diferido**, con las condiciones de la [validación diferida](../sdd-start-feature/references/control-profiles.md#validación-diferida): debajo de la tabla de §4, `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>`, y la fila del patch en el roadmap (paso 4) empieza por `🧪 validación diferida a <disparador> — `.
+   - **Diferido**, con las condiciones de la [validación diferida](../sdd-start-feature/references/control-profiles.md#validación-diferida). La opción no pide nada al usuario (p. ej. «Diferir: lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead»): elegirla sin texto es la frase y el disparador, y no vuelves a preguntar. Pedirle «dime dónde y quién» es el turno de más del patch 0078. Debajo de la tabla de §4, `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>`, y la fila del patch en el roadmap (paso 4) empieza por `🧪 validación diferida a <disparador> — `.
    - **No funciona**: no se cierra ni se fusiona. Vuelve al fix (pasos 4 y 5 de `sdd-start-patch`) y el cierre empieza de nuevo.
 
    En `unattended` no para: la validación queda diferida al smoke de la release, con esa misma forma. Con el usuario ausente en `pair` o `delegate`, el cierre no arranca: deja la rama como está y el merge PENDIENTE.

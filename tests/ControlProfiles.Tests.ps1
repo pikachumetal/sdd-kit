@@ -128,6 +128,20 @@ Describe 'Perfiles de control: validación diferida con disparador vago (patch 0
   }
 }
 
+Describe 'Perfiles de control: la opción de diferir trae su disparador (patch 0080)' {
+  It 'control-profiles: elegir la opción es la frase y el disparador' {
+    $section = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'),
+      '(?ms)^## Validación diferida\r?$.*?(?=^## )').Value
+    $section | Should -Match 'lo pruebo en <uso más próximo>, a cargo de <quien valida>'
+    $section | Should -Match 'es la frase literal'
+  }
+
+  It 'el paso 0 de sdd-end-patch y el paso 7 de sdd-start-feature lo aplican' {
+    [regex]::Match((Get-KitFile 'skills/sdd-end-patch/SKILL.md'), '(?ms)^0\. .+?(?=^1\. )').Value | Should -Match 'sin texto es la frase y el disparador'
+    [regex]::Match((Get-KitFile 'skills/sdd-start-feature/SKILL.md'), '(?m)^7\. .+$').Value | Should -Match 'sin texto es la frase y el disparador'
+  }
+}
+
 Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
   It 'la regla 6 nombra las paradas de delegate: spec, desvío y validación final' {
     $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^6\. .+$').Value
