@@ -427,3 +427,30 @@ Describe 'Carpetas feature y task heredadas' {
     $script:Mixed.Text | Should -Match '(?m)^\| Fecha \| Id \| Tipo \| Est \(h\) \| Real \(h\) \| Ratio \| Hilo \(tokens\) \| Subagentes \(tokens\) \| Sujetos \(\$\) \| Sesión \(\$\) \| Carpeta \|\r?$'
   }
 }
+
+Describe 'Walkthrough con evidencia por THEN' {
+  BeforeAll {
+    $root = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString())
+    $specs = Join-Path $root '.docs/sdd/specs'
+    $template = Get-Content (Join-Path $PSScriptRoot '../skills/sdd-templates/templates/walkthrough-template.md') -Raw
+    $filled = $template -replace '(?m)^- Tipo: <[^\n]*', '- Tipo: docs' -replace '(?m)^- Estimación de implementación \(del plan\): <Yh>', '- Estimación de implementación (del plan): 2h' -replace '(?m)^- Esfuerzo real: <Zh>', '- Esfuerzo real: 3h'
+    New-Item -ItemType Directory -Force (Join-Path $specs '20260926-100000-feature-0100-nuevo') | Out-Null
+    Set-Content -Path (Join-Path $specs '20260926-100000-feature-0100-nuevo/walkthrough.md') -Value ($filled -replace '(?m)^feature: <id>', 'feature: 0100')
+    $closed = Get-ChildItem (Join-Path $PSScriptRoot '../.docs/sdd/specs') -Directory -Filter '*-task-0077-*' | Select-Object -First 1
+    Copy-Item -Recurse $closed.FullName (Join-Path $specs $closed.Name)
+    $script:Closed = $closed.Name
+    $script:Result = Invoke-Build $root
+  }
+
+  It 'lee la plantilla nueva rellena' {
+    Get-Row $script:Result.Text '20260926-100000-feature-0100-nuevo' | Should -Match '^\| 2026-09-26 \| 0100 \| docs \| 2 \| 3 \| 1\.5 \|'
+  }
+
+  It 'sigue leyendo un walkthrough cerrado con la tabla 4.2 vieja' {
+    Get-Row $script:Result.Text $script:Closed | Should -Match '^\| 2026-09-25 \| 0077 \| '
+  }
+
+  It 'no avisa de nada' {
+    $script:Result.Warnings | Should -BeNullOrEmpty
+  }
+}

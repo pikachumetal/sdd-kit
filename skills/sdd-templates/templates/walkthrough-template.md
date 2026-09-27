@@ -49,21 +49,26 @@ created: <YYYY-MM-DD>
 ### 4.1 Builds
 
 - Comandos ejecutados y resultado real (no "debería funcionar").
+- Suite completa: `<comando>` → <resultado> · <duración> *(si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración)*
 
 ### 4.2 Smoke / tests
 
 > Distinguir siempre lo **verificado por el agente** (con evidencia) de lo **reportado por el usuario**.
+> Una fila por THEN de la spec. Evidencia: `suite` · `ejecución real` · `no probado`. Un THEN que se ve en una
+> interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado
+> con `ejecución real`; un THEN de fallo se provoca con la entrada que falla.
 
 - Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
   disparador: <feature, release o uso con dueño> *(obligatorio: sin uno de los dos no hay cierre; si validó
   sobre lo reportado por el agente, dilo)*
 
-| # | Caso | Resultado |
+| THEN | Evidencia | Resultado |
 | --- | --- | --- |
 
 ### 4.3 Residuales / deuda generada
 
 - Ítems fuera de scope que pasan a otra spec, al backlog o a la tabla de deuda del roadmap.
+- Suite de más de 10 min: <duración> — deuda del proyecto *(omitir si no pasa)*.
 
 ## 5. Aprendizajes
 

@@ -1,0 +1,54 @@
+--- [3]
+Ahora: preparar la validación del trabajo (paso 7). Queda: leer spec, tasks y revisión final, ejecutar el smoke y presentar el guion, ~10 min.
+
+--- [16]
+Smoke de API hecho (Pending → solo Sur; Lost → 400). Sigo con el selector en navegador real antes de parar el servidor.
+
+--- [23]
+Cierro el navegador y paro el servidor por el proceso que escucha en el puerto 4871 (PID 86712) y por el lanzador (68192), no por nombre.
+
+--- [26]
+Ahora: validación del trabajo. Queda: tu prueba y tu respuesta; después, `sdd-end-feature`. Está EN ESPERA de tu validación.
+
+**Me salí del plan en…**
+
+- El plan no preveía ningún fix. La verificación visual de la Task 2 dio tres fallos: contraste en oscuro, flecha pegada al borde y selector desalineado. Los arreglé en `1236fd8` (`web/styles.css`, 4 líneas). Ese commit pasó por revisión de un Sonnet con effort medio, limpia, y no cambia la spec. Es un ruling.
+- La revisión final de rama (`general-purpose` + sonnet) quedó limpia y no dejó decisiones tuyas.
+
+**Qué hay:** `GET /api/bookings?status=` filtra por estado y responde 400 con «Estado no válido: X» si el estado no existe. La lista tiene un selector (Todos, Confirmada, Pendiente, Cancelada), deshabilitado mientras carga.
+
+**Smoke que ejecuté yo** (servidor en el puerto 4871, ya parado por su PID y el puerto queda libre):
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| La API responde solo Sur con `?status=Pending` | ejecución real: `curl` devolvió `[{"room":"Sur","slot":"12-14","status":"Pending"}]` |
+| La lista muestra solo «Sur · 12-14 · Pendiente» al elegir «Pendiente» | ejecución real: Playwright eligió «Pendiente» y la lista quedó con `Sur · 12-14 · Pendiente` |
+| El selector se lee en los dos temas, con la flecha separada del borde, alineado y deshabilitado mientras carga | ejecución real: medidas de la verificación visual, abajo |
+| `?status=Lost` da 400 con «Estado no válido: Lost» | ejecución real: `curl -i` devolvió `HTTP/1.1 400` y `Estado no válido: Lost` |
+
+- Suite completa (`node --test`): 5 tests, 5 en verde, 0,5 s.
+- En la carga de la página hay un 404 de `favicon.ico`. No es de esta feature: el servidor no sirve favicon.
+
+**Verificación visual de la Task 2** (medidas de la Task 2, tras el fix `1236fd8`):
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del selector en claro | 7,46:1 | ≥ 4,5:1 |
+| Contraste del selector en oscuro | 9,96:1 | ≥ 4,5:1 |
+| Flecha al borde | 9,6 px | > 0 |
+| Etiqueta y lista alineadas | 80 px | alineadas |
+| Deshabilitado mientras carga | sí, en los dos temas | sí |
+
+Capturas fuera de git, en `<run>/shots/`: `light-normal.png`, `light-disabled.png`, `dark-normal.png`, `dark-disabled.png`.
+
+**Guion de pruebas** (lo haces tú):
+
+1. En el repo, arranca con `$env:PORT=4871; node server.mjs` (o `npm start`, puerto 4814). Al acabar, para el proceso que escucha en ese puerto por su PID, no por nombre.
+2. Abre `http://localhost:4871/` → la lista muestra `Norte · 10-12 · Confirmada`, `Sur · 12-14 · Pendiente` y `Este · 16-18 · Cancelada`, y el selector está en «Todos».
+3. Elige «Pendiente» en el selector → la lista muestra solo `Sur · 12-14 · Pendiente`.
+4. Abre `http://localhost:4871/?theme=dark` y repite el paso 3 → el selector se lee bien, la flecha no toca el borde y queda alineado con la lista.
+5. Ejecuta `curl http://localhost:4871/api/bookings?status=Pending` → responde solo Sur.
+6. Ejecuta `curl -i http://localhost:4871/api/bookings?status=Lost` → `400` con «Estado no válido: Lost».
+
+¿Validas el trabajo? Dime qué has probado tú y que funciona. Si no puedes probarlo ahora, dime cuándo y con qué disparador.
+
