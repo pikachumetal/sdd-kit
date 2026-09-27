@@ -28,25 +28,27 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
    | 1 | ¿Qué problema resuelve el proyecto? | mission |
    | 2 | ¿Quién lo usa y con qué roles? | mission |
    | 3 | ¿Qué módulos imaginas? | mission, roadmap |
-   | 4 | ¿Dónde viven los datos (fichero, tabla, memoria, almacenamiento del cliente)? | constitution, «Reglas de producto» |
-   | 5 | ¿En qué idioma van los nombres (API, claves, mensajes)? | constitution, «Reglas de producto» |
-   | 6 | ¿Qué límites hay (tamaños, profundidades, número de resultados)? | constitution, «Reglas de producto» |
-   | 7 | ¿Qué se avisa al usuario y cuándo (p. ej. un secreto en claro)? | constitution, «Reglas de producto» |
-   | 8 | Cuando dos vías dan el mismo dato, ¿cuál manda? | constitution, «Reglas de producto» |
-   | 9 | ¿Qué stack? Si no está decidido: opciones con trade-offs y tu recomendación; decide el usuario y puede quedar abierto, con las opciones | tech-stack |
-   | 10 | ¿Qué es innegociable (datos, migraciones, seguridad; commits, solo si las instrucciones del usuario no los fijan ya)? | constitution |
-   | 11 | ¿Llevamos changelog? | `changelog.md` |
-   | 12 | Solo si 11 es sí: ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release`) | `client-changelog.md` |
-   | 13 | ¿Hay gestor de tickets? | `CLAUDE.md` |
-   | 14 | ¿Qué convención de ramas? Recomendada, la del kit: git-flow — `main` estable, `develop` de integración, `feature/<id>` desde `develop` | constitution, paso 5 |
-   | 15 | ¿Trabajaréis con worktrees? | `CLAUDE.md` |
-   | 16 | Solo si 15 es sí: ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? Si es sí, se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre | `environments.md` |
-   | 17 | Claves del kit: invoca la skill [`sdd-config`](../sdd-config/SKILL.md) con la rama de integración que dejó la 14. Hace, una por turno y con su recomendación, sus preguntas de cómo se numera el trabajo (`ids.mode`), perfil de control, política de merge y push (solo con una rama de integración distinta de la estable), frenos y método de ejecución | `sdd-kit.json` |
-   | 18 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
+   | 4 | ¿Qué queda fuera de alcance? | mission, «Qué es y qué no es» |
+   | 5 | ¿Qué términos del dominio hay que fijar? | mission, «Dominio» |
+   | 6 | ¿Dónde viven los datos (fichero, tabla, memoria, almacenamiento del cliente)? | constitution, «Reglas de producto» |
+   | 7 | ¿En qué idioma van los nombres (API, claves, mensajes)? | constitution, «Reglas de producto» |
+   | 8 | ¿Qué límites hay (tamaños, profundidades, número de resultados)? | constitution, «Reglas de producto» |
+   | 9 | ¿Qué se avisa al usuario y cuándo (p. ej. un secreto en claro)? | constitution, «Reglas de producto» |
+   | 10 | Cuando dos vías dan el mismo dato, ¿cuál manda? | constitution, «Reglas de producto» |
+   | 11 | ¿Qué stack? Si no está decidido: opciones con trade-offs y tu recomendación; decide el usuario y puede quedar abierto, con las opciones | tech-stack |
+   | 12 | ¿Qué es innegociable (datos, migraciones, seguridad; commits, solo si las instrucciones del usuario no los fijan ya)? | constitution |
+   | 13 | ¿Llevamos changelog? | `changelog.md` |
+   | 14 | Solo si 13 es sí: ¿también novedades para el cliente? (`client-changelog.md` calcado de `client-changelog-template.md`; lo alimenta `sdd-end-release`) | `client-changelog.md` |
+   | 15 | ¿Hay gestor de tickets? | `CLAUDE.md` |
+   | 16 | ¿Qué convención de ramas? Recomendada, la del kit: git-flow — `main` estable, `develop` de integración, `feature/<id>` desde `develop` | constitution, paso 5 |
+   | 17 | ¿Trabajaréis con worktrees? | `CLAUDE.md` |
+   | 18 | Solo si 17 es sí: ¿el entorno de un worktree necesita más que instalar dependencias (BD, puertos, servicios, datos)? Si es sí, se calca `environments.md` de `sdd-templates`; si no, superpowers ya lo cubre | `environments.md` |
+   | 19 | Claves del kit: invoca la skill [`sdd-config`](../sdd-config/SKILL.md) con la rama de integración que dejó la 16. Hace, una por turno y con su recomendación, sus preguntas de cómo se numera el trabajo (`ids.mode`), perfil de control, política de merge y push (solo con una rama de integración distinta de la estable), frenos y método de ejecución | `sdd-kit.json` |
+   | 20 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
 
-   Las preguntas 4 a 8 son las cinco reglas de producto: se preguntan por nombre, porque sin ellas el agente las decide al azar en cada feature.
+   Las preguntas 6 a 10 son las cinco reglas de producto: se preguntan por nombre, porque sin ellas el agente las decide al azar en cada feature.
 2. **Generar documento a documento, con gate**: mission → presentar → aprobar; después constitution (con la sección «Reglas de producto»: las cinco por nombre, cada una respondida · pendiente · no aplica; si difiere por capacidad, por capacidad dentro de la entrada) → … Nada se da por anclaje sin aprobación explícita del usuario.
-3. **Estructura**: crear `.docs/sdd/` completa y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`), el campo `ids` y las claves que el usuario respondió en la 17 (solo esas: «no sé» no escribe la clave). Las preferencias de cada persona no se preguntan aquí: el resumen de cierre dice que se fijan con `sdd-config`. Cada documento se **calca** de su plantilla de `sdd-templates` (lista en [estructura.md](references/estructura.md)): la forma es la de la plantilla y el contenido, el de la entrevista. Nunca se copia un documento del `.docs/` del kit ni de otro proyecto, y no se crea carpeta `templates/`. Además:
+3. **Estructura**: crear `.docs/sdd/` completa y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`), el campo `ids` y las claves que el usuario respondió en la 19 (solo esas: «no sé» no escribe la clave). Las preferencias de cada persona no se preguntan aquí: el resumen de cierre dice que se fijan con `sdd-config`. Cada documento se **calca** de su plantilla de `sdd-templates` (lista en [estructura.md](references/estructura.md)): la forma es la de la plantilla y el contenido, el de la entrevista. Nunca se copia un documento del `.docs/` del kit ni de otro proyecto, y no se crea carpeta `templates/`. Además:
    - **Funcional aportado**: si el usuario aporta un funcional (un documento, un correo o texto pegado en el chat), se guarda literal en `.docs/sdd/sources/`: con su nombre original si es un fichero, o como `<yyyyMMdd>-functional-brief.md` si llegó pegado. No se edita nunca: los documentos de anclaje lo resumen y lo enlazan — `mission.md` lo enlaza en una línea, y cada fila de módulo del roadmap que sale de él cita su sección (`sources/<fichero> §<n>`). Ninguna capacidad nace de él: describe lo que se quiere construir, no lo construido.
    - `estimation-log.md` no se escribe a mano: se genera con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas. El script vive en el kit y no se copia al proyecto.
    - `.claude/settings.json`: se crea, o se fusiona sin tocar las demás claves, con `"autoMemoryEnabled": false`. La memoria automática vive en una sola máquina, y lo que se aprende va a los docs. Si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo; si el usuario dice que no, se deja y el resumen de cierre lo anota. Lleva también `extraKnownMarketplaces.superpowers-marketplace` con la fuente `{"source": "github", "repo": "obra/superpowers-marketplace"}`, sin tocar las demás entradas: quien clone el proyecto necesita ese marketplace para que se instale superpowers, la dependencia del kit. Si `claude plugin marketplace list` no muestra `superpowers-marketplace`, ejecuta `claude plugin marketplace add obra/superpowers-marketplace`.

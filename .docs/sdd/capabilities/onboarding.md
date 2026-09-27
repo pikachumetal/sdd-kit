@@ -12,6 +12,7 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 - THEN el agente ha preguntado por las cinco reglas por nombre (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto) y la constitution propuesta lleva la sección «Reglas de producto» con las cinco: respondida, «pendiente» si el dev-lead no sabe, o «no aplica» si él lo dice
 - AND una regla que difiere por capacidad se lista por capacidad dentro de su entrada
 - AND el bloque de proceso ha decidido además el modo de ids del proyecto, que se escribe en `sdd-kit.json`
+- AND en greenfield la entrevista incluye qué queda fuera de alcance y qué términos del dominio se fijan, y las secciones «Qué es y qué no es» y «Dominio» de `mission.md` (o las que el template marca para eso) llevan la respuesta, o «pendiente» o el marcador del template si el dev-lead no sabe: con el dev-lead diciendo «no sé» a las dos, ninguna de las dos secciones lista un término ni una exclusión que él no dijo
 
 ### La entrevista hace una sola pregunta por turno
 - GIVEN una init greenfield o brownfield en su entrevista
@@ -69,8 +70,15 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 
 ### La constitution nombra el proyecto de referencia
 - GIVEN una init greenfield o brownfield en su entrevista
-- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 18 de greenfield y la 4 de brownfield
+- WHEN el agente pregunta si el proyecto replica los patrones de otro, que es la pregunta 20 de greenfield y la 4 de brownfield
 - THEN la constitution lleva en «Convenciones» la entrada «Proyecto de referencia» con la ruta o el repositorio que el usuario dé, o «no aplica» si responde que no
+
+### La init sobre un template completa solo lo marcado
+- GIVEN un proyecto instanciado desde un template cuyo `.docs/sdd/` trae `tech-stack.md`, `architecture.md` y `environments.md` completos, y `mission.md`, `roadmap.md` y secciones de `constitution.md` con `<!-- sdd-template: pending -->`, y un `sdd-kit.json` con `"version": "1.1.0"`
+- WHEN el usuario lanza `sdd-init-greenfield`, directamente o desde la skill puente del template
+- THEN la entrevista no pregunta stack, convención de ramas ni worktrees, y `tech-stack.md`, `architecture.md` y `environments.md` quedan sin cambios
+- AND `sdd-kit.json` conserva `"version": "1.1.0"` y gana `ids` y las claves que el usuario respondió
+- AND el contrato con el template es el texto `sdd-template: pending`: su posición y su número los decide el template
 
 ### El funcional aportado se guarda literal
 - GIVEN un `sdd-init-greenfield` en el que el usuario aporta un funcional (un documento, o texto pegado en el chat)
