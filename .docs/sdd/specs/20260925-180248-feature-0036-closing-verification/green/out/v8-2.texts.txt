@@ -1,0 +1,62 @@
+--- [3]
+Ahora: preparo la validación del trabajo (leo spec, plan y tasks, y ejecuto el smoke). Queda: presentarte el guion y parar, ~10 min.
+
+--- [13]
+Compruebo qué muestra la lista tras elegir «Pendiente».
+
+--- [16]
+Ahora: presento la validación del trabajo. Queda: tu validación, luego `sdd-end-feature`.
+
+## Me salí del plan en…
+
+Nada. Sin rulings: las tres tasks siguieron el plan. Un fix (`23a8889`: contraste en oscuro, flecha y alineación del selector) salió de la verificación visual de la Task 2 y entró en su revisión.
+
+## Qué hay
+
+Filtro de reservas por estado, en 3 tasks (`27a0783`, `1591ab1`, `e9e798a`). La revisión final de rama (general-purpose + sonnet) está limpia.
+
+- La API acepta `?status=`.
+- Un selector de estado filtra la lista.
+- Un estado desconocido da 400 con «Estado no válido: X».
+
+Suite completa (`node --test`): 5 tests, todos pasan, 0,6 s. El gate del proyecto es solo esa suite.
+
+## Smoke ya ejecutado por mí
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| `?status=Pending` responde solo Sur | ejecución real: `curl` devolvió `[{"room":"Sur","slot":"12-14","status":"Pending"}]` |
+| Elegir «Pendiente» muestra solo «Sur · 12-14 · Pendiente» | ejecución real: Playwright eligió `Pending` en `#status` y la lista quedó con esa única fila |
+| Selector legible en los dos temas, flecha sin tocar el borde, alineado, deshabilitado al cargar | ejecución real: Playwright, ver medidas |
+| `?status=Lost` da 400 con «Estado no válido: Lost» | ejecución real: `curl -i` devolvió `400 Bad Request` con el cuerpo `Estado no válido: Lost` |
+
+### Verificación visual de la Task 2
+
+Se hizo con Playwright MCP tras el fix `23a8889`:
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del selector, claro | 7,46:1 | ≥ 4,5:1 |
+| Contraste del selector, oscuro | 9,96:1 | ≥ 4,5:1 |
+| Flecha al borde | 9,6 px | > 0 |
+| Alineación etiqueta/lista | 80 px / 80 px | igual |
+| Deshabilitado mientras carga | sí, en los dos temas | sí |
+
+Capturas fuera de git, en `<run>/shots/`: `light-normal.png`, `light-disabled.png`, `dark-normal.png`, `dark-disabled.png`.
+
+Lo único raro: `favicon.ico` da 404 en la consola. Es ruido ajeno a la feature.
+
+## Guion de pruebas (lo haces tú)
+
+`validation.startEnvironment: true`, así que he dejado la app arrancada en **http://localhost:4747**. El proceso que escucha en ese puerto es el PID 67804. El PID 7088 es el lanzador de `Start-Process`. Se para por PID o por puerto, nunca por nombre: `Stop-Process -Id 67804` (y `7088` si sigue vivo).
+
+1. Abre `http://localhost:4747/` → la lista muestra Norte · 10-12 · Confirmada, Sur · 12-14 · Pendiente y Este · 16-18 · Cancelada, y el selector marca «Todos».
+2. Elige «Pendiente» en el selector → la lista muestra solo «Sur · 12-14 · Pendiente».
+3. Elige «Confirmada» → solo Norte. Elige «Cancelada» → solo Este. Elige «Todos» → vuelven las tres.
+4. Abre `http://localhost:4747/?theme=dark` → el texto del selector se lee, la flecha no toca el borde y el selector queda alineado con la lista.
+5. `curl localhost:4747/api/bookings?status=Pending` → devuelve solo Sur.
+6. `curl -i localhost:4747/api/bookings?status=Lost` → `400` con el cuerpo «Estado no válido: Lost».
+7. Comprobación que no se puede hacer en la aplicación: el selector deshabilitado mientras carga dura milisegundos y no se ve a mano. Míralo en las capturas `light-disabled.png` y `dark-disabled.png`.
+
+¿Validas el trabajo? Dime qué probaste tú y si funciona.
+

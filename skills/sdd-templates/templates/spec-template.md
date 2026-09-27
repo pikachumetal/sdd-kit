@@ -75,6 +75,7 @@ approvers:
 - WHEN <acción>
 - THEN <resultado observable>
 - AND <opcional>
+- Se valida en: <omite la línea si se ve desde la rama · `worktree con la base al día` · `validación post-merge con fecha`> *(solo si el THEN depende de la rama de integración, del historial de git, del remoto o de un entorno que la rama no reproduce: desde la rama de la feature no se puede observar, y el dev-lead no puede validarlo ahí)*
 
 **MODIFIED — <título estable>** (antes: "<la cláusula que cambia>" — opcional)
 

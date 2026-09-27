@@ -95,27 +95,28 @@
 | 2026-09-25 | 0064 | docs | 4 | 1.2 | 0.3 | 64154k | 9660k | 3.76 | 24.67 | 20260925-163055-task-0064-task-to-feature-rename |
 | 2026-09-25 | 0079 | patch | — | 0.3 | — | — | — | — | — | 20260925-175053-patch-0079-spec-dir-absolute |
 | 2026-09-25 | 0078 | patch | — | 0.6 | — | — | — | — | — | 20260925-175850-patch-0078-split-threshold |
+| 2026-09-27 | 0036 | docs | 3 | 3.5 | 1.17 | 49384k | 2239k | 8.96 | 24.24 | 20260925-180248-feature-0036-closing-verification |
 
-**Factor de calibración** (ratio mediano real/estimado, 82 artefactos): **0.6** · media 0.7
+**Factor de calibración** (ratio mediano real/estimado, 83 artefactos): **0.6** · media 0.7
 
-- p25–p75: 0.41–0.93
-- p80: 1.04 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 62 % · infraestimadas: 9 %
-- Error absoluto (h): media 0.88 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.92
+- p25–p75: 0.42–0.94
+- p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 30 % · sobreestimadas: 61 % · infraestimadas: 8 %
+- Error absoluto (h): media 0.87 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 1.08
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 25 | 30 % |
 | 0.5–0.8 | 28 | 34 % |
-| 0.8–1.25 | 22 | 27 % |
-| 1.25–2 | 7 | 9 % |
+| 0.8–1.25 | 23 | 28 % |
+| 1.25–2 | 7 | 8 % |
 | ≥2 | 0 | 0 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 52 | 0.53 | 0.38–0.74 |
+| docs | 53 | 0.53 | 0.38–0.75 |
 | infra/tooling | 12 | 0.42 | 0.37–0.63 |
 | patch | 17 | 1.17 | 0.8–1.33 |
 
@@ -127,6 +128,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 62 | 70.3 | 0.65 | 230.22 | 105.64 |
+| sin publicar | 63 | 73.8 | 0.66 | 239.18 | 129.88 |
 
 > Ver `estimation.md`.

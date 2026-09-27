@@ -54,6 +54,9 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente va a cerrar
 - THEN antes de invocar `sdd-end-feature` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
+- AND el smoke da una fila por THEN de la spec con su evidencia, que es uno de tres valores: `suite`, `ejecución real` o `no probado`. Un THEN que se observa en una interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado con `ejecución real`.
+- AND un THEN de fallo (un error, un rechazo, un 400) se provoca de verdad con la entrada que falla: con la feature 0012, `curl -i localhost:<puerto>/api/bookings?status=Lost` → `400` con «Estado no válido: Lost», no «lo cubre el test de la task 3»
+- AND el smoke dice cuánto tardó la suite completa
 - AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
@@ -276,6 +279,38 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el dev abre `plan.md` y el registro vivo
 - THEN las unidades del plan se llaman «Task 1», «Task 2»… y el registro es `tasks.md`, con cabecera `| # | Task | Status | Commit | Notas |`
 - AND la palabra «feature» nombra solo la unidad del kit: la spec, la rama y la carpeta
+
+### El agente para lo que arrancó por su PID o su puerto
+- GIVEN la feature 0012 con su web levantada por el agente con `PORT=4656 node server.mjs` para la verificación visual o para el smoke, y otros procesos `node` en la máquina (el MCP de Playwright, el servidor del dev-lead)
+- WHEN el agente termina de usarla
+- THEN la para por el PID que guardó al arrancarla o por el proceso que escucha en el puerto 4656
+- AND ninguna tool call la para por el nombre del ejecutable (`taskkill /IM node.exe`, `pkill node`, `killall node`, `Stop-Process -Name node`) ni por un patrón de su línea de comandos (`pkill -f server.mjs`, filtrar `CommandLine`)
+- AND antes de arrancar comprueba que el puerto 4656 está libre (si no, no es suyo: usa otro), y tras parar, que quedó libre; si sigue escuchando, para el que escucha, porque el PID guardado era el de un lanzador
+
+### El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado
+- GIVEN la validación del paso 7 de la feature 0012, con la web levantada por el agente en el puerto 4656
+- WHEN el agente presenta el guion de pruebas sin `validation.startEnvironment` en `.docs/sdd/sdd-kit.local.json`, o con `false`
+- THEN antes de presentarlo ha parado lo que arrancó, y el guion empieza por cómo arrancarla
+- AND con `validation.startEnvironment: true`, la deja arrancada, y el guion dice en qué puerto está y cómo pararla
+
+### Una task Native no se da por completa sin su commit
+- GIVEN la Task 1 de un plan Native, cuya «Verificación» (`node --test tests/slot-format.test.js`) pasa, y un pre-commit que corre la suite y rechaza el commit porque `tests/import.test.js` falla
+- WHEN el agente cierra la task
+- THEN no ejecuta `task-done` ni escribe la línea `Task 1: complete` mientras `HEAD` siga en la base de la task
+- AND lee el mensaje del hook y arregla la causa antes de volver a commitear
+
+### Un THEN que solo se observa con la base al día declara cómo se valida
+- GIVEN la fila 0012 «`npm run check:changed` … si la rama no cambia ninguno, escribe «Nada que comprobar» y sale con 0», cuyo THEN negativo no se puede observar desde `feature/0012`, porque la rama siempre cambia `scripts/check-changed.mjs`
+- WHEN el agente escribe la spec
+- THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
+- AND en el paso 7 prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
+
+### El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite
+- GIVEN una feature cerrada con `sdd-end-feature`
+- WHEN se escribe «4. Verificación» del walkthrough
+- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado y su duración
+- AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
+- AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
 
 ## Reglas de la capacidad
 

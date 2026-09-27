@@ -1,0 +1,42 @@
+--- [11]
+Estoy mirando la Task 2 en un navegador real (verificación visual del plan). Servidor propio en el puerto 4671, PID 42696.
+
+--- [33]
+Servidor parado (por el proceso que escuchaba en mi puerto 4671). Ahora apunto el estado en `tasks.md`; me equivoqué de ruta.
+
+--- [35]
+Ahora: cerrar la Task 2 en `tasks.md`. Queda: tu decisión sobre el fix y las Tasks 2 (fix) y 3, ~15 min.
+
+**No he marcado la Task 2 como hecha.** Su commit `49be4ca` y su revisión están limpios, y `node --test tests/status-select.test.js` es la verificación del plan. Pero la task tiene «Verificación visual» y, mirada en un navegador real (Playwright, servidor propio en el puerto 4671, ya parado), falla en dos puntos. Lo dejé en `tasks.md` como `pending`, con el commit y los dos fallos anotados. Ese cambio queda sin commitear.
+
+**Medidas (valor · esperado)**
+
+| Medida | Valor | Esperado | Resultado |
+| --- | --- | --- | --- |
+| Contraste del texto del selector, tema claro (`/`) | 7,46:1 | ≥ 4,5:1 | ✅ |
+| Contraste del texto del selector, tema oscuro (`/?theme=dark`) | **2,24:1** (`#555` sobre `#1e1e1e`) | ≥ 4,5:1 | ❌ |
+| Separación de la flecha al borde derecho | **0 px** (`padding-right: 0`, flecha en `right center`) | > 0 | ❌ |
+| Alineación del selector con la lista | etiqueta a 316,5 px; texto de las filas a 317,5 px | alineados con el texto de las filas | ✅ (1 px por el borde) |
+| Selector deshabilitado | `opacity: 0.6`, sin cambios de layout | — | ✅ |
+
+**Causas**
+- `--text-muted` no se redefine en `:root[data-theme="dark"]` (`web/styles.css`).
+- `.status-select` pone `padding: 0.35rem 0 0.35rem 0.5rem`, con el lado derecho a 0.
+
+**Capturas** (fuera de git hasta la validación; `.playwright-mcp/` está sin ignorar, no la borres ni la commitees):
+- `.playwright-mcp/0012-t2-light-enabled.png`
+- `.playwright-mcp/0012-t2-light-disabled.png`
+- `.playwright-mcp/0012-t2-dark-enabled.png`
+- `.playwright-mcp/0012-t2-dark-disabled.png`
+
+El estado «deshabilitado» lo forcé con `select.disabled = true`, porque la carga es demasiado rápida para capturarlo. Lo medido es el estilo, no la ventana real de carga.
+
+**Guion de pruebas de la Task 2**
+1. Arranca `node server.mjs` y abre `/` → la lista muestra `Norte · 10-12 · Confirmada`, `Sur · 12-14 · Pendiente` y `Este · 16-18 · Cancelada`, con el selector «Estado» en «Todos».
+2. Elige «Pendiente» → la lista muestra solo `Sur · 12-14 · Pendiente`.
+3. Elige «Todos» → vuelven las tres reservas.
+4. Abre `/?theme=dark` → el texto del selector se lee bien. Hoy no: 2,24:1.
+5. Mira la flecha del selector → tiene aire hasta el borde. Hoy no: está pegada.
+
+**Decisión tuya:** propongo corregir los dos fallos en un commit propio (`--text-muted` en oscuro y `padding-right` del selector), con revisión, antes de cerrar la Task 2 y pasar a la 3. Es un cambio de CSS que no toca la spec. Es el primer fix descubierto, así que no salta el freno de alcance. ¿Lo hago así, o prefieres otra cosa?
+

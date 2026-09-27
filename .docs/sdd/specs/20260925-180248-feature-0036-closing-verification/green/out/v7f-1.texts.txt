@@ -1,0 +1,57 @@
+--- [3]
+Ahora: preparo la validación (paso 7). Queda: leer spec, plan y revisión, ejecutar suite completa y smoke real, y presentarte guion; ~15 min.
+
+--- [14]
+Solo el 404 de favicon (no es del cambio). Elijo «Pendiente» y mido en los dos temas.
+
+--- [27]
+Aviso: el `node` real (proto shim) escucha en 4791 con PID 82284, es el que arranqué yo (`server.mjs`, puerto que elegí). Lo paro por ese PID.
+
+--- [29]
+Ahora: validación de la feature 0012 (paso 7). Queda: tu validación; no hay más paradas antes del cierre (`sdd-end-feature`).
+
+Perfil `delegate` (de `sdd-kit.json`). Revisión final limpia (`general-purpose + sonnet`). No hay decisiones de producto pendientes de la revisión.
+
+## Me salí del plan en…
+
+Nada. `tasks.md` no registra rulings y el historial de commits no muestra desvíos. Sí hay un fix posterior a la Task 2, `3dbd732` (contraste en oscuro, flecha y alineación del selector), que salió de la verificación visual y entró en la revisión.
+
+## Qué hay
+
+- La API filtra `GET /api/bookings?status=<estado>`.
+- La lista tiene un selector «Estado» (Todos, Confirmada, Pendiente, Cancelada).
+- Un estado desconocido da 400 con «Estado no válido: X».
+
+## Smoke que ejecuté
+
+Suite completa (`npm test`): 5/5 en verde, ~1,2 s. El proyecto no tiene paso de build.
+
+| THEN | Evidencia |
+| --- | --- |
+| `?status=Pending` responde solo Sur | `ejecución real`: `curl` devuelve `[{"room":"Sur","slot":"12-14","status":"Pending"}]`, HTTP 200 |
+| Elegir «Pendiente» deja solo «Sur · 12-14 · Pendiente» | `ejecución real`: Playwright, `select` en la página, la lista queda con ese único elemento |
+| El selector se lee en oscuro | `ejecución real`: `/?theme=dark`, contraste 9,96:1 (≥ 4,5:1) |
+| La flecha no toca el borde | `ejecución real` en oscuro: 9,6 px del borde derecho (> 0) |
+| Alineado con la lista | `ejecución real` en oscuro: etiqueta y lista con `left` idéntico (304,5 px) |
+| Se lee en claro, flecha y alineación en claro | `no probado` hoy; medido en la Task 2 tras `3dbd732`: contraste 7,46:1, flecha 9,6 px, alineado a 80 px (solo `tasks.md`, no lo repetí) |
+| Deshabilitado mientras carga | `suite` (test «nace deshabilitado») más medición de la Task 2 en los dos temas. Hoy no lo provoqué, porque carga instantánea |
+| `?status=Lost` da 400 «Estado no válido: Lost» | `ejecución real`: `curl` devuelve `Estado no válido: Lost`, HTTP 400 |
+
+Capturas de la Task 2 (fuera de git): `…/scratchpad/runs-green/v7f-1/shots/` (light-normal, light-disabled, dark-normal, dark-disabled). Hoy no saqué capturas nuevas.
+
+Único aviso en consola: 404 de `favicon.ico`, ajeno al cambio.
+
+Paré el servidor por su PID (82284, el que escucha en 4791). El puerto queda libre y el árbol de git limpio.
+
+## Guion de pruebas
+
+1. Arranca `npm start` y abre `http://localhost:4788/` → lista Norte · 10-12 · Confirmada, Sur · 12-14 · Pendiente, Este · 16-18 · Cancelada, con el selector «Estado» en «Todos».
+2. Elige «Pendiente» → solo «Sur · 12-14 · Pendiente».
+3. Elige «Confirmada» y luego «Cancelada» → solo Norte, y solo Este.
+4. Vuelve a «Todos» → las tres reservas.
+5. Abre `http://localhost:4788/?theme=dark` → el selector se lee, la flecha no toca el borde y queda alineado con la lista.
+6. Abre `http://localhost:4788/api/bookings?status=Lost` → HTTP 400 con «Estado no válido: Lost».
+7. Para parar el servidor, usa Ctrl+C en su terminal.
+
+**¿Has probado esto y funciona? Dime qué probaste, y con eso paso al cierre con `sdd-end-feature`.**
+

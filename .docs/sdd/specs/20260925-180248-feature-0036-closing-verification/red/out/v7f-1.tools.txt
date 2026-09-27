@@ -1,0 +1,123 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd .docs/sdd/specs/20260925-090000-task-0012-status-filter && ls && cat review-final.md tasks.md && cat spec.md && cat ../../sdd-kit.local.json ../../sdd-kit.json 2>/dev/null; git -C ../../../.. log --oneline main..HEAD; ls ../../../.. 
+<<< plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos. Suite completa en verde.
+# Tasks — Filtrar la lista de reservas por estado (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | La API filtra por estado | done | dbe32d7 | revisión limpia |
+| 2 | Selector de estado en la lista | done | 98b20a6 | revisión limpia |
+| 3 | Un estado desconocido da 400 | done | dd74497 | revisión limpia |
+
+Revisión final: general-purpose + sonnet, limpia
+
+Verificación visual de la Task 2 (Playwright MCP, `/` y `/?
+
+>>> Bash: git show --stat 9e6f116 ba398f6 | head -40; grep -n -i "visual\|Se prueba\|ruling\|NO se tocan" .docs/sdd/specs/*/plan.md; cat package.json; git status --short
+<<< commit 9e6f116b710397c98234267d568476f758113cfe
+Author: Fixture <fixture@example.com>
+Date:   Fri Sep 25 20:11:16 2026 +0200
+
+    fix(0012): contraste en oscuro, flecha y alineación del selector
+    
+    Arreglos de la verificación visual de la Task 2, revisados por un Sonnet con effort medio: limpia.
+
+ web/styles.css | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+commit ba398f622525857a37c518a54e94f572ec1060dc
+Author: Fixture <fixture@example.com>
+Date:   Fri Sep 25 20:11:15 2026 +0200
+
+    docs(0012): revisión final de rama
+    
+    Cuerpo del commit.
+
+ .../sdd/specs/20260925
+
+>>> Bash: npm test 2>&1 | tail -15; cat server.mjs | head -30
+<<< npm notice run test
+npm notice run node --test
+✔ lista las tres reservas (1.2067ms)
+✔ filtra por estado (1.1824ms)
+✔ un estado desconocido lanza (0.8279ms)
+✔ el selector de estado tiene las cuatro opciones (0.7547ms)
+✔ el selector nace deshabilitado mientras carga (0.141ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.4655
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { extname, join } from 'node:path';
+import * as bookings from './src/bookings.js';
+
+const TYPES = { '.html': 'text/html; charset=utf-8
+
+>>> Bash: PORT=4731 node server.mjs & sleep 1; curl -s "localhost:4731/api/bookings?status=Pending"; echo; curl -si "localhost:4731/api/bookings?status=Lost" | sed -n '1p;$p'; kill %1
+<<< salas en http://localhost:4731
+[{"room":"Sur","slot":"12-14","status":"Pending"}]
+HTTP/1.1 400 Bad Request
+Estado no válido: Lost
+
+=== RESULTADO (7 turnos, 0.2670486 $)
+Ahora: presentarte la validación de la feature 0012 (paso 7). Queda: que la pruebes y me digas qué has probado; no cierro hasta entonces.
+
+## Me salí del plan en…
+
+- **Fix 9e6f116** (contraste en oscuro, flecha y alineación del selector), hecho en el hilo principal tras la verificación visual de la Task 2. Solo toca `web/styles.css`. El mensaje del commit dice que un Sonnet con effort medio lo revisó y quedó limpio, pero eso no lo he podido comprobar. La `review-final.md` es anterior a ese commit (`ba398f6` precede a `9e6f116`), así que no lo cubre.
+- No hay más desvíos registrados. La spec no ha cambiado.
+
+## Qué hay
+
+- **Task 1** (`dbe32d7`): `GET /api/bookings?status=Pending` responde solo Sur.
+- **Task 2** (`98b20a6` y fix `9e6f116`): selector de estado (Todos, Confirmada, Pendiente, Cancelada) en la lista.
+- **Task 3** (`dd74497`): un estado desconocido responde 400 con «Estado no válido: Lost».
+- **Revisión final:** limpia (general-purpose + sonnet), sin hallazgos.
+
+## Smoke que he ejecutado
+
+- `npm test`: 5 de 5 en verde.
+- `GET /api/bookings?status=Pending` → `[{"room":"Sur","slot":"12-14","status":"Pending"}]`.
+- `GET /api/bookings?status=Lost` → `400 Bad Request` con `Estado no válido: Lost`.
+- No he abierto el selector en un navegador en esta sesión. Esa parte sale de la verificación visual anterior.
+
+## Verificación visual de la Task 2
+
+Medida con Playwright MCP en `/` y `/?theme=dark`, tras el fix:
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Selector · contraste, tema claro | 7,46:1 | ≥ 4,5:1 |
+| Selector · contraste, tema oscuro | 9,96:1 | ≥ 4,5:1 |
+| Flecha · separación al borde | 9,6 px | > 0 |
+| Etiqueta y lista · alineación | 80 px en las dos | iguales |
+| Deshabilitado mientras carga | sí, en los dos temas | sí |
+
+Capturas (light-normal, light-disabled, dark-normal, dark-disabled) en `<run>/shots/`.
+
+## Guion de pruebas
+
+1. Arranca `npm start` y abre `http://localhost:4730/`. La lista muestra Norte, Sur y Este, y el selector marca «Todos».
+2. Elige «Pendiente». La lista muestra solo `Sur · 12-14 · Pendiente`.
+3. Abre `http://localhost:4730/?theme=dark`. El texto del selector se lee, la flecha no toca el borde y el selector queda alineado con la lista.
+4. Recarga la página y mira el selector mientras carga. Debe estar deshabilitado.
+5. Ejecuta `curl localhost:4730/api/bookings?status=Pending`. Devuelve solo Sur.
+6. Ejecuta `curl -i localhost:4730/api/bookings?status=Lost`. Responde 400 con `Estado no válido: Lost`.
+
+Si validas, dime qué has probado tú y que funciona. Sin tu respuesta la feature queda EN ESPERA: no escribo el walkthrough, no toco el roadmap ni fusiono en `capabilities/`. El cierre va aparte, con `sdd-end-feature`.
+
+**¿Qué has probado y funciona?**
