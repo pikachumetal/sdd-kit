@@ -2,11 +2,13 @@ BeforeAll {
   . (Join-Path $PSScriptRoot 'Resolve-Bash.ps1')
   $script:Bash = Resolve-Bash
   $script:Headless = Join-Path $PSScriptRoot 'headless'
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
   # El ejecutable real: un shim de node (proto) necesita el home verdadero para arrancar (patch 0072).
   $script:Node = node -e 'console.log(process.execPath)'
 
   # Una campaña mínima: un subject.sh que usa lib.sh y un molde de un commit, en seco (DRY_RUN=1).
-  function New-Campaign([string]$Root, [string]$KeepName = 'readme.md') {
+  function New-Campaign([string]$Root, [string]$KeepName = 'readme.md', [string]$Init = 'g init -q -b main; ') {
     $spec = Join-Path $Root 'spec'
     $runs = Join-Path $Root 'scratchpad/runs'
     $kit = Join-Path $Root 'kit'
@@ -19,7 +21,7 @@ set -u
 . "$lib"
 subject_init "`$1" "`$2" "`$4" sdd-plan
 put README.md <<< 'salas'
-g init -q -b main; commit "feat: base"
+${Init}commit "feat: base"
 subject_launch "Invoca la skill sdd-kit:sdd-plan."
 { echo "## home: `$HOME/.claude"; echo "-rw-r--r-- 1 alice 197609 12 f"; } | subject_save
 subject_keep "`$R/README.md" $KeepName
@@ -50,6 +52,10 @@ subject_keep "`$R/README.md" $KeepName
   }
 
   function Get-Subjects($Campaign) { @(Get-ChildItem -Path (Join-Path $Campaign.Spec '*/out/*.tools.txt') -ErrorAction SilentlyContinue) }
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 # Slow porque cada caso arranca bash, git y node por sujeto.
@@ -191,6 +197,20 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
     $run.ExitCode | Should -Not -Be 0
     $run.Output | Should -Match 'fuera del scratchpad'
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'aborta antes de escribir si el molde no es su propio repo git (ticket 0086 §1)' {
+    # El %TEMP% de aquel sujeto colgaba de un repo: sin g init, git subía hasta él y le cambió el HEAD.
+    $root = Join-Path $TestDrive 'nested'
+    New-Item -ItemType Directory -Force $root | Out-Null
+    git -C $root init -q -b main
+    $campaign = New-Campaign $root -Init ''
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'no es su propio repo git'
+    git -C $root rev-parse -q --verify HEAD | Should -BeNullOrEmpty
     (Get-Subjects $campaign).Count | Should -Be 0
   }
 

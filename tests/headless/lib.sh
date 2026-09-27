@@ -32,11 +32,22 @@ subject_init() {
   # subject_launch hace cd al molde: un OUT relativo perdía las salidas (tickets 0077 §2 y 0064 §1).
   OUT="$(cd "$OUT" && pwd)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
-  rm -rf "$RUN"; mkdir -p "$R"
+  rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=
   JSONL="$RUNS/$LABEL.jsonl"
 }
 
-g() { git -C "$R" -c user.email=fixture@example.com -c user.name=Fixture -c core.autocrlf=false "$@"; }
+g() {
+  [ "$1" = init ] || [ -n "${MOLD_IS_REPO:-}" ] || mold_is_repo
+  git -C "$R" -c user.email=fixture@example.com -c user.name=Fixture -c core.autocrlf=false "$@"
+}
+# Sin g init, git sube hasta el repo que contiene el molde: un %TEMP% dentro de un repo perdió su HEAD (ticket 0086 §1).
+# --show-cdup vacío es --show-toplevel igual a $R, sin comparar C:/… con /c/… ni nombres cortos de Windows.
+mold_is_repo() {
+  local cdup
+  cdup=$(git -C "$R" rev-parse --show-cdup 2>/dev/null) && [ -z "$cdup" ] \
+    || die "el molde $R no es su propio repo git: falta g init en el subject.sh antes del primer g"
+  MOLD_IS_REPO=1
+}
 put() { mkdir -p "$(dirname "$R/$1")"; cat > "$R/$1"; }
 commit() { g add -A; g commit -q -m "$1" -m "${2:-Cuerpo del commit.}"; }
 
