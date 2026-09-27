@@ -5,7 +5,7 @@ title: Validar el formato de la franja horaria en `libres` y `reservar`
 mode: full
 status: in-review
 created: 2026-09-21
-author: Àngel Delgado
+author: <git-user>
 approvers:
   - role: dev-lead
     name: TBD

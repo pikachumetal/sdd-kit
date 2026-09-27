@@ -6,7 +6,7 @@ mode: full
 profile: delegate
 status: draft
 created: 2026-09-22
-author: Àngel Delgado (spec redactada por Claude, perfil delegate)
+author: <git-user> (spec redactada por Claude, perfil delegate)
 approvers:
   - role: dev-lead
     name: TBD

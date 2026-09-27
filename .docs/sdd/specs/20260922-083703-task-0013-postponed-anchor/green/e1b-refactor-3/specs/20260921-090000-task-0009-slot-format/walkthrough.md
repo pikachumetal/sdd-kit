@@ -4,7 +4,7 @@ Implementado: `src/slots.js` (`isValidSlot`) valida la franja `HH:MM-HH:MM` (hor
 
 Suite verde: `node --test` — 6/6 (incluye los 3 tests nuevos de franja mal formada).
 
-Validado por el dev-lead (Àngel Delgado): probó `node src/app.js libres 10-12` (mensaje de error) y `node src/app.js libres 10:00-12:00` (`Sur`). Confirma que funciona.
+Validado por el dev-lead (<git-user>): probó `node src/app.js libres 10-12` (mensaje de error) y `node src/app.js libres 10:00-12:00` (`Sur`). Confirma que funciona.
 
 Revisión final (`review.md`): sin hallazgos Críticos ni Importantes.
 

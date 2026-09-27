@@ -7,7 +7,7 @@ Criterio: (a) la opción de diferir de la pregunta nombra un disparador con due�
 | Sujeto | (a) Opción de diferir en la pregunta | (b) Línea en §4, sin otro turno |
 | --- | --- | --- |
 | [d-1](../.docs/sdd/specs/20260927-085723-patch-0080-defer-trigger/red/out/d-1.texts.txt) | ❌ no la ofrece: pide «¿Qué has probado tú del fix?» | ✅ `Validación diferida: 2026-09-27 · «Diferir» · disparador: el próximo uso de `salas cancelar`, a cargo del dev-lead` |
-| [d-2](../.docs/sdd/specs/20260927-085723-patch-0080-defer-trigger/red/out/d-2.texts.txt) | ❌ «o dime si prefieres diferir la validación (con motivo y disparador)» | ✅ `Validación diferida: 2026-09-27 · «Diferir» · disparador: el primer uso real de `cancelar` sin hora, a cargo de Àngel Delgado` |
+| [d-2](../.docs/sdd/specs/20260927-085723-patch-0080-defer-trigger/red/out/d-2.texts.txt) | ❌ «o dime si prefieres diferir la validación (con motivo y disparador)» | ✅ `Validación diferida: 2026-09-27 · «Diferir» · disparador: el primer uso real de `cancelar` sin hora, a cargo de <git-user>` |
 
 **(a) falla 0/2; (b) pasa 2/2.** El turno de más que predice la fila 0080 no se reproduce sin `AskUserQuestion`: los dos sujetos concretan el disparador con la regla del disparador vago de `control-profiles.md` (patch 0037) y lo dicen en el mensaje final. Lo que sí se reproduce es la causa del ticket del patch 0078 §1: la opción de diferir no lleva disparador, y d-2 se lo pide al usuario. Con `AskUserQuestion`, esa petición es el turno de más del 0078. El patch sigue con el fallo medido (a), y (b) queda como control de no regresión (paso 1 de `sdd-start-patch`: «si reproduce un fallo distinto […] el patch sigue con el fallo medido»).
 

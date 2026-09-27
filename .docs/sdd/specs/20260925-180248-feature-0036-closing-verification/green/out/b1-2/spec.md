@@ -6,7 +6,7 @@ mode: full
 profile: delegate
 status: approved
 created: 2026-09-25
-author: Àngel Delgado
+author: <git-user>
 approvers:
   - role: dev-lead
     name: dev-lead (por delegación)

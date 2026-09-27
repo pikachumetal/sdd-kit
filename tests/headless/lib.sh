@@ -41,6 +41,10 @@ commit() { g add -A; g commit -q -m "$1" -m "${2:-Cuerpo del commit.}"; }
 
 subject_launch() {
   cd "$R" || die "sin molde en $R"
+  # Config de línea de comandos: gana a la global también en `git config user.name`, que GIT_AUTHOR_NAME no cambia.
+  # Sin ella, 3 de 10 sujetos pusieron el nombre del dev-lead en las salidas (ticket del patch 0080 §2).
+  export GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=user.name GIT_CONFIG_VALUE_0=Fixture \
+    GIT_CONFIG_KEY_1=user.email GIT_CONFIG_VALUE_1=fixture@example.com
   # Una petición ejecutada fuera del molde corrió una vez sobre el worktree del kit (2026-09-23).
   case "$(pwd)/" in "$RUNS"/*) ;; *) die "cwd fuera del scratchpad: $(pwd)" ;; esac
   BEFORE=$(g rev-parse --short HEAD 2>/dev/null)
@@ -51,7 +55,7 @@ subject_launch() {
   printf '%s\n' "${CLAUDE_ARGS[@]}" > "$RUNS/$LABEL.args"
   if [ "${DRY_RUN:-}" = 1 ]; then
     printf '%s\n' \
-      '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \
+      '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}"' · git: '"$(git config user.name) <$(git config user.email)>"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \
       '{"type":"result","num_turns":1,"total_cost_usd":'"${DRY_COST:-0.5}"',"result":"hecho"}' > "$JSONL"
     return
   fi

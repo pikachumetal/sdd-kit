@@ -2,6 +2,7 @@ BeforeAll {
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
   # Extractor de referencia de los sujetos headless (patch 0076).
   $script:Tools = Join-Path $PSScriptRoot 'headless/extract.mjs'
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
 
   # El ejecutable real: un shim de node (proto) necesita el home verdadero para arrancar.
   $script:Node = node -e 'console.log(process.execPath)'
@@ -80,9 +81,11 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' {
 Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
   BeforeAll {
     $root = Join-Path $script:KitRoot '.docs/sdd/specs'
-    $script:Evidence = Get-ChildItem -LiteralPath $root -Directory |
-      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -in 'red', 'green', 'refactor' } |
-      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse }
+    # green1, red2…: las rondas extra de una campaña también son salidas de sujetos (patch 0080).
+    $script:Evidence = @(Get-ChildItem -LiteralPath $root -Directory |
+      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -match '^(red|green|refactor)' } |
+      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse }) +
+      @(Get-ChildItem -Path (Join-Path $script:KitRoot 'tests/*') -File -Include '*-red.md', '*-green.md')
     function Find-Leak([string]$Pattern) {
       $script:Evidence |
         Where-Object { Select-String -LiteralPath $_.FullName -Pattern $Pattern -Quiet } |
@@ -92,7 +95,7 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
 
   It 'ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario' {
     # X:\Users\…, X:\\Users\\… (JSON), X:/Users/…, /x/Users/… y la carpeta de proyecto X--Users-….
-    Find-Leak '(?i)(?:\b[a-z]:|(?<![\w.])/[a-z])(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?![\\/<])|\b[a-z]--Users-(?!<)' |
+    Find-Leak '(?i)(?:\b[a-z]:|(?<![\w.])/[a-z])(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?![\\/<…])|\b[a-z]--Users-(?!<)' |
       Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
   }
 
@@ -101,5 +104,13 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
     $user = Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME)
     Find-Leak "\b$([regex]::Escape($user))\b" |
       Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
+  }
+
+  It 'ni el user.name de git de esta máquina (ticket del patch 0080 §2)' {
+    $savedGitEnv = Clear-GitEnv
+    try { $name = git -C $script:KitRoot config user.name } finally { Restore-GitEnv $savedGitEnv }
+    if (-not $name) { Set-ItResult -Skipped -Because 'esta máquina no tiene user.name en git'; return }
+    Find-Leak ([regex]::Escape($name)) |
+      Should -BeNullOrEmpty -Because 'el sujeto hereda la identidad de git si subject_launch no la fija: sustitúyelo por <git-user>'
   }
 }
