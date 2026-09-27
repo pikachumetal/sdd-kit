@@ -312,6 +312,18 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
 - AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
 
+### El paquete del revisor final sale del merge-base actual y sin evidencia
+- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/specs/<carpeta>/red/out.jsonl` en su rama
+- WHEN el hilo prepara el paquete del revisor final
+- THEN la sección de diff del paquete no contiene `skills/otra/SKILL.md` ni ningún fichero bajo `red/` o `green/`
+- AND la sección de commits lista solo los de la feature y el merge
+- AND el paquete se genera a la primera, con `spec.md` como `PLAN_FILE`
+
+### El plan escribe al revisor final con el techo del kit
+- GIVEN una spec aprobada en `delegate` y un plan Native de una sola task pequeña
+- WHEN el agente escribe `plan.md`
+- THEN el revisor final aparece como `sdd-kit:effort-high` + `opus`, o no aparece
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.

@@ -10,8 +10,13 @@ BeforeAll {
 }
 
 Describe 'Paquete del revisor final' {
-  It 'corta desde el merge-base actual con la rama de integración' {
-    $script:FinalReviewer | Should -Match 'MERGE_BASE=\$\(git merge-base HEAD <integración>\)'
+  It 'corta desde el merge-base actual con la rama de integración y su remota' {
+    $script:FinalReviewer | Should -Match ([regex]::Escape('MERGE_BASE=$(git merge-base HEAD <integración> $(git rev-parse -q --verify origin/<integración>))'))
+    $script:FinalReviewer | Should -Match 'Con remoto, `git fetch` antes'
+  }
+
+  It 'se ejecuta desde la raíz del repo' {
+    $script:FinalReviewer | Should -Match ([regex]::Escape('cd "$(git rev-parse --show-toplevel)"'))
   }
 
   It 'excluye red/ y green/ con glob' {
@@ -20,7 +25,7 @@ Describe 'Paquete del revisor final' {
   }
 
   It 'escribe el paquete en el workspace de superpowers' {
-    $script:FinalReviewer | Should -Match 'sdd-workspace'
+    $script:FinalReviewer | Should -Match 'OUT="\$\(bash "<ruta de sdd-workspace>" "<PLAN_FILE>"\)/review-final-'
   }
 
   It 'en lite usa spec.md como PLAN_FILE' {
@@ -29,10 +34,13 @@ Describe 'Paquete del revisor final' {
 
   It 'el revisor lee el paquete del kit, no el de review-package' {
     $script:FinalReviewer | Should -Not -Match '<ruta que imprime review-package>'
+    $script:FinalReviewer | Should -Match 'Lee el paquete de review `<ruta del paquete que imprime la receta>`'
   }
 
-  It 'la fila de executing-plans dice que la revisión final usa el paquete del kit' {
-    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Match '`executing-plans` \(Native\)[^\n]*paquete del revisor final'
+  It 'las filas de executing-plans y subagent-driven-development dicen que la revisión final usa el paquete del kit' {
+    $overrides = Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md'
+    $overrides | Should -Match '`executing-plans` \(Native\)[^\n]*paquete del revisor final'
+    $overrides | Should -Match '\| `subagent-driven-development` \|[^\n]*paquete del revisor final'
   }
 }
 

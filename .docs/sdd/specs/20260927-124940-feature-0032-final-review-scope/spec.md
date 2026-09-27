@@ -3,7 +3,7 @@ id: 20260927-124940-feature-0032-final-review-scope
 feature: 0032
 title: Encargo del revisor final — paquete con la base actual y sin evidencia
 mode: lite
-status: approved
+status: done
 created: 2026-09-27
 author: Claude (Opus 5.5) con Àngel Delgado
 approvers:
@@ -14,12 +14,12 @@ approvers:
 
 # Spec — Encargo del revisor final: paquete con la base actual y sin evidencia
 
-> **Estado**: approved.
+> **Estado**: done.
 > **Siguiente paso**: modo lite → implementación directa tras la aprobación.
 
 ## Capacidades
 
-- Modificadas: `task-flow` — cómo se prepara el paquete del revisor final, qué no reporta un revisor sobre la atribución y con qué modelo escribe el plan al revisor final.
+- Modificadas: `feature-flow` — cómo se prepara el paquete del revisor final y con qué modelo escribe el plan al revisor final.
 
 ## Decisiones que he tomado yo — valida estas
 
@@ -57,7 +57,7 @@ El revisor final lee un paquete que hace hoy `review-package` de superpowers. Es
 
 ## Scope
 
-- Entra: la receta del paquete en «Revisor final» de `skills/sdd-start-feature/references/encargo-revision.md`, con el merge-base actual, las exclusiones de `red/` y `green/` y `PLAN_FILE` = `spec.md` en lite. También «Cómo revisar», que apunta al paquete nuevo y la fila de `executing-plans`/SDD en `references/overrides-superpowers.md` (el final no usa `review-package`). En `skills/sdd-templates/templates/plan-template.md`, el campo `Modelo`. Además, la evidencia en `tests/final-review-package-red.md` y `-green.md`, el delta de `task-flow`, la entrada del changelog y, al cerrar, el recorte de la fila 0032.
+- Entra: la receta del paquete en «Revisor final» de `skills/sdd-start-feature/references/encargo-revision.md`, con el merge-base actual, las exclusiones de `red/` y `green/` y `PLAN_FILE` = `spec.md` en lite. También «Cómo revisar», que apunta al paquete nuevo y la fila de `executing-plans`/SDD en `references/overrides-superpowers.md` (el final no usa `review-package`). En `skills/sdd-templates/templates/plan-template.md`, el campo `Modelo`. Además, la evidencia en `tests/final-review-package-red.md` y `-green.md`, el delta de `feature-flow`, la entrada del changelog y, al cerrar, el recorte de la fila 0032.
 - No entra: la frase del trailer `Co-Authored-By` (enmienda del 2026-09-27: RED limpio 0 de 2; vuelve al roadmap como deuda). Tampoco lo de la 0085 (re-revisión de `<revisión final>..HEAD`, docs de menos de ~20 líneas en el hilo, reproducir antes de arreglar) ni lo de la 0086 (rúbrica, un revisor con los siete puntos, `MODIFIED` en el repaso). Tampoco un script del kit para el paquete, `tech-stack.md:133` (sigue como aprendizaje), el paquete del revisor de task y de la re-revisión, ni migración: no cambia `.docs/sdd/` de los proyectos.
 
 ## Approach
@@ -66,7 +66,7 @@ En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con l
 
 ## Delta de comportamiento
 
-### Capacidad: `task-flow`
+### Capacidad: `feature-flow`
 
 **ADDED — El paquete del revisor final sale del merge-base actual y sin evidencia**
 - GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/specs/<carpeta>/red/out.jsonl` en su rama
