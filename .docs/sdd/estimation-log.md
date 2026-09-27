@@ -101,19 +101,20 @@
 | 2026-09-27 | 0081 | patch | — | 0.6 | — | — | — | — | — | 20260927-102959-patch-0081-subject-git-identity |
 | 2026-09-27 | 0082 | patch | — | 2.5 | — | — | — | — | — | 20260927-105403-patch-0082-superpowers-obra-642 |
 | 2026-09-27 | 0083 | patch | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260927-124029-patch-0083-rename-leftovers |
+| 2026-09-27 | 0086 | docs | 2.5 | 1.5 | 0.6 | 29408k | 2443k | 9.65 | 11.74 | 20260927-125612-feature-0086-spec-review-weight |
 
-**Factor de calibración** (ratio mediano real/estimado, 85 artefactos): **0.6** · media 0.7
+**Factor de calibración** (ratio mediano real/estimado, 86 artefactos): **0.6** · media 0.7
 
-- p25–p75: 0.4–0.93
+- p25–p75: 0.41–0.93
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 62 % · infraestimadas: 8 %
-- Error absoluto (h): media 0.86 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.72
+- Dentro de ±25 %: 29 % · sobreestimadas: 63 % · infraestimadas: 8 %
+- Error absoluto (h): media 0.87 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.6
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 26 | 31 % |
-| 0.5–0.8 | 29 | 34 % |
+| <0.5 | 26 | 30 % |
+| 0.5–0.8 | 30 | 35 % |
 | 0.8–1.25 | 23 | 27 % |
 | 1.25–2 | 7 | 8 % |
 | ≥2 | 0 | 0 % |
@@ -121,7 +122,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 53 | 0.53 | 0.38–0.75 |
+| docs | 54 | 0.55 | 0.38–0.75 |
 | infra/tooling | 13 | 0.4 | 0.36–0.6 |
 | patch | 18 | 1.08 | 0.8–1.3 |
 
@@ -133,6 +134,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 68 | 78.9 | 0.65 | 247.25 | 146.65 |
+| sin publicar | 69 | 80.4 | 0.64 | 256.9 | 158.39 |
 
 > Ver `estimation.md`.

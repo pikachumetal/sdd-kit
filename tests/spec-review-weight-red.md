@@ -18,6 +18,6 @@ Baseline: kit de `feature/0086-spec-review-weight` en `0c2840b`, sin cambios de 
 
 ## Método
 
-- Un turno por sujeto, situado en el paso 4 con «Invoca la skill sdd-kit:sdd-start-feature…». Los 4 cargan la skill (`>>> Skill: sdd-kit:sdd-start-feature` en `tools.txt`) y los 4 leen `review-spec.md` o la aplican.
+- Un turno por sujeto, situado en el paso 4 con «Invoca la skill sdd-kit:sdd-start-feature…». Los 4 cargan la skill (`>>> Skill: sdd-kit:sdd-start-feature` en `tools.txt`). 3 de 4 leen `review-spec.md`; m-1 no, y no menciona el nivel de review.
 - La copia del kit no llevaba `agents/`, así que p-1 y p-2 dijeron que `sdd-kit:effort-medium` no estaba en la sesión. No cambia lo medido: los dos pararon a preguntar antes de despachar, por el `CLAUDE.md`, no por el tipo de agente. El GREEN lleva `agents/` en la copia.
 - El primer ensayo en seco, sin `git init` en el molde, escribió en el repo vacío que contiene `%TEMP%` en esta máquina (ver `tech-stack.md`, task 0059). Se restauró (HEAD a `master`, sin objetos) y `subject.sh` comprueba ahora que el molde es su propio repo.

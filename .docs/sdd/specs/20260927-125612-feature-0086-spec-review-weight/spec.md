@@ -59,7 +59,7 @@ Dos viñetas nuevas en §2 de `review-spec.md`, cada una con su contraejemplo o 
 - WHEN el agente cuenta las señales de la rúbrica
 - THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
 - AND si el Scope cambia menos de ~50 líneas (texto y código), el nivel baja de dos revisores a uno con los siete puntos, nunca a ninguno: con contrato público + datos y dos líneas en `db/002-site.sql` y `src/api.js`, un revisor
-- AND si la spec va aprobada por delegación y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo
+- AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción «apruebo la spec por delegación» de la primera pregunta) y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
 - AND con 4 señales o más y un delta grande (seis ficheros, uno de ellos una migración), sin esa restricción, siguen siendo dos revisores
 - AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
 - AND en `unattended` el agente decide y lo registra; en modo lite no se propone
@@ -80,6 +80,8 @@ Dos viñetas nuevas en §2 de `review-spec.md`, cada una con su contraejemplo o 
 - Confianza: media
 
 ## Enmiendas
+
+- 2026-09-27 — El THEN del paralelismo restringido se condiciona a que el nivel sea dos revisores y a la opción literal de delegación; con «ninguna» no se despacha revisor — hallazgo Important 2 de la revisión final: sin la condición, un agente despacharía un revisor donde la rúbrica dice ninguna — aprobada: «Sí, enmienda (Recomendada)»
 
 ## Aprobaciones
 

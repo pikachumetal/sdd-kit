@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sujeto headless en el paso 4 de sdd-start-feature con la spec ya redactada (molde agenda de la 0021).
+# Sujeto headless en el paso 4 de sdd-start-feature con la spec ya redactada, sobre el molde agenda.
 # Escenarios: m (MODIFIED cuyo literal vive en dos ficheros), p (spec delegada, 4 señales, delta grande),
 # c (p sin delegar: control de la rúbrica), s (contrato público + datos con un delta pequeño).
 # Uso (desde run.sh): subject.sh <kit> <etiqueta> <escenario> <salida>
@@ -9,17 +9,10 @@ BASE="$(cd "$(dirname "$0")" && pwd)"
 subject_init "$1" "$2" "$4" sdd-start-feature
 SC="$3"
 cp -r "$BASE/mold/." "$R/"
-# Sin init, g cae en el repo que contenga el scratchpad: en esta máquina, %TEMP% (ensayo en seco de la 0086).
+# Sin init, g cae en el repo que contenga el scratchpad: en esta máquina, %TEMP%.
 g init -q -b main
 [ "$(g rev-parse --show-toplevel)" = "$(cygpath -m "$R" 2>/dev/null || echo "$R")" ] || die "el molde no es su propio repo: $R"
 
-put src/search.js <<'EOF'
-export function searchBookings(bookings, query) {
-  const text = query.trim().toLowerCase();
-  if (text === '') return [];
-  return bookings.filter((booking) => booking.customer.toLowerCase().includes(text));
-}
-EOF
 put src/phone.js <<'EOF'
 export function lookupCaller(bookings, spokenName) {
   const name = spokenName.trim().toLowerCase();
