@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0080-defer-trigger
-commit: <hash>
+commit: 187a027
 ---
 
 # Patch 0080 — la opción «Diferir» de la validación trae su disparador
@@ -40,6 +40,8 @@ El paso 0 de `skills/sdd-end-patch/SKILL.md` manda una pregunta cerrada con tres
 | 4 | GREEN ronda 4, texto final: (a) | ⚠️ 1/2: d-2 ofrece «Diferir: lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead»; d-1 copia `<uso más próximo>` sin rellenarlo |
 | 5 | GREEN ronda 4: (b) | ✅ 2/2 |
 | 6 | Suite Pester completa, con los literales nuevos de `tests/ControlProfiles.Tests.ps1` | ✅ 915/0 |
+
+Validación diferida: 2026-09-27 · «Diferir: pruebo al cerrar» · disparador: el próximo cierre de patch con el kit de develop, a cargo del dev-lead
 
 GREEN parcial: el dev-lead decidió cerrar tras la ronda 4 con lo que hubiera. Sujetos Sonnet headless con `tests/headless/run.sh`: 10 sujetos, 10,00 $. Límite: sin `AskUserQuestion`, que headless no puede contestar.
 
