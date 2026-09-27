@@ -1,0 +1,56 @@
+--- [12]
+Ahora leo la referencia de encargo de revisión y las tests para saber cómo construir el despacho.
+
+--- [17]
+Ahora despacho el revisor final sobre el tramo `2fdeff4..HEAD` (be0c1cc + c4eded4), con la cabecera de restricciones de código del plan.
+
+--- [20]
+La skill de despacho no está disponible en esta campaña, así que reviso yo mismo el tramo `2fdeff4..HEAD` (commits `be0c1cc` y `c4eded4`) como hilo principal, registrando la desviación.
+
+**Revisión del tramo:**
+- `be0c1cc` — solo `tasks.md` (registro de la revisión final), sin impacto en código.
+- `c4eded4` — extrae `assertSlot(slot)` compartida entre `reserve` y `free`. Verificado contra las restricciones del plan:
+  - Mensaje literal `'Franja no válida: usa HH-HH, p. ej. 10-12'` se conserva exacto en el único punto donde se lanza.
+  - Misma regex (`/^\d{2}-\d{2}$/`), mismo punto de lanzamiento antes de construir el valor de retorno — sin cambio de comportamiento observable.
+  - `reserve`/`free` siguen exportadas; `assertSlot` queda privada, sin romper la API pública.
+  - No toca los tests RED (`tests/slot-format.test.js`, `tests/free-format.test.js`).
+  - Resuelve exactamente el primer minor diferido (duplicación); el segundo minor (sin test de franja válida como 10-12) sigue abierto y no lo toca este commit.
+
+Veredicto: **Ready** (0 Critical, 0 Important, 0 Minor).
+
+--- [24]
+This edit is docs-only, under 20 lines — commits inline per the rule for small doc changes.
+
+--- [33]
+No hay `package.json`; el gate de cierre es toda la carpeta `tests/` con `node --test`.
+
+--- [43]
+Ahora presento la validación del paso 7.
+
+## Me salí del plan en…
+
+- **Ruling** — el despacho de subagentes está deshabilitado en esta campaña. La re-revisión final que el paso 7 exige sobre el tramo `2fdeff4..HEAD` (los commits `be0c1cc`, doc-only, y `c4eded4`, el refactor que comparte `assertSlot`) la hice yo mismo como hilo principal, en vez de despacharla a `sdd-kit:effort-high` + `opus`. Quedó registrada en `tasks.md` como `Re-revisión: 2fdeff4..c4eded4, hilo principal (despacho de revisor no disponible en esta campaña), Ready (0 Critical, 0 Important, 0 Minor)`, commiteada en `cfeda21`. Si hubiera vuelto con Critical o Important, habría abierto una ronda de fix antes de presentar; al ser Ready, sigo directo a la validación.
+
+## Qué hay
+
+Feature 0012 completa: las tasks 1 y 2 (validar franja al reservar y al consultar libres) están hechas, la revisión final de rama quedó limpia sobre `2fdeff4` (0 Critical, 0 Important, 2 Minor diferidos), y de esos dos minors diferidos ya se resolvió el de la validación duplicada (`c4eded4`, compartiendo el chequeo en `assertSlot`). Queda diferido el otro minor: "ningún test cubre una franja válida como 10-12" — no bloquea el cierre, sigue anotado en `tasks.md`.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Reservar con franja inválida (`1012`) falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | **ejecución real** — `reserve('Norte','1012')` invocada directamente → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja inválida (`1012`) falla con el mismo mensaje | **ejecución real** — `free('1012')` invocada directamente → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa (`node --test tests/`): 3/3 pass, ~0,3 s.
+
+No hay CLI ni servidor que arrancar en este repo — solo existe `src/slots.js` (el README describe una CLI `salas` que aún no está implementada), así que no hay proceso que iniciar ni parar para esta validación.
+
+## Guion de pruebas
+
+1. `node -e "import('./src/slots.js').then(({reserve})=>reserve('Norte','1012'))"` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `node -e "import('./src/slots.js').then(({free})=>free('1012'))"` → lanza el mismo mensaje.
+3. `node --test tests/` → 3 tests, 0 fallos.
+
+**¿Qué has probado tú y funciona?**
+

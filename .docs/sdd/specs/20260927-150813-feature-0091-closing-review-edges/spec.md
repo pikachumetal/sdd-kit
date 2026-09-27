@@ -17,16 +17,16 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — «El cierre no repite la revisión final de Native» (re-revisión del tramo antes del walkthrough), «Un commit del hilo posterior a la revisión final se revisa antes de la validación» (la pasada de fix no abre re-revisión) y nuevo «En lite, el revisor final llega antes de la validación»
+- Modificadas: `feature-flow` — «El cierre no repite la revisión final de Native» (re-revisión del tramo antes del walkthrough), «Un commit del hilo posterior a la revisión final se revisa antes de la validación» (la pasada de fix no abre re-revisión)
 - Modificadas: `control-profiles` — «Salir del plan es un ruling visible» (la pasada de fix de la revisión final no entra en la re-revisión del tramo)
 
 ## Decisiones que he tomado yo — valida estas
 
-1. **Último commit revisado**: es el de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`. Los pasos 7 de `sdd-start-feature` y 9 de `sdd-end-feature` comparan `HEAD` con ese commit. Así las tres piezas usan una sola regla.
+1. **Último commit revisado**: es el de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`. Los pasos 7 de `sdd-start-feature` y 9 de `sdd-end-feature` comparan `HEAD` con ese commit. Así las dos piezas usan una sola regla.
 2. **Línea nueva `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`**: va debajo de `Revisión final:` en `tasks.md`, o en la presentación si no hay `tasks.md`. La pone el hilo al terminar la pasada. Hace falta porque superpowers borra el ledger (`Final: fixed …`) cuando la revisión queda limpia, y sin la línea el cierre no sabe dónde acabó la pasada.
 3. **La pasada de fix no abre la re-revisión en los dos métodos**. En Native la verifica su TDD: `executing-plans` dice «Do not dispatch a re-review». En SDD ya lleva la re-revisión acotada de superpowers. Un commit del hilo posterior a la pasada sí abre la re-revisión, sobre el tramo `<pasada de fix>..HEAD`.
 4. **Paso 9 del cierre antes del walkthrough**: el paso 0 manda hacer el paso 9 antes de escribir nada. El paso 9 conserva su número, porque otras skills citan los pasos 10 y 12. Las condiciones de «revisado en el hilo» (docs, menos de 20 líneas, `numstat`, `--remerge-diff`) se copian en el paso 9: el ticket 0085 §1 midió que un resumen sin ellas falla 1 de 2.
-5. **Lite**: el paso 6 dice que, al terminar la implementación, se despacha el revisor final con el despacho de «Revisor final» de `encargo-revision.md` (paquete con `PLAN_FILE` = `spec.md`) antes del paso 7, con cualquier método. El paso 9 del cierre sigue siendo la red de seguridad.
+5. **Lite, recortada por el RED** (enmienda del 2026-09-27): 3 de 3 sujetos válidos (`l1` ×2, `l2-1`) despacharon el revisor final antes de la validación sacándolo del propio `SKILL.md`, así que no se escribe guía (Art. I). `l1` queda como control en el GREEN.
 6. **Fuera del Scope, con motivo** (búsqueda de cada `MODIFIED` en `skills/` y `tests/`):
    - La fila de `executing-plans` en `overrides-superpowers.md` ya adopta su revisión final «tal cual», y la pasada de fix coincide con ella.
    - `commit-milestones.md` (fila «Cierre») ya junta los arreglos de la revisión final en el cierre.
@@ -34,16 +34,16 @@ approvers:
    - El título de «El cierre no repite la revisión final de Native» se conserva como clave de fusión.
 7. **Campaña (Art. I)**. Previsión de RED y GREEN juntos: 19 sujetos Sonnet, unos 17 $ y 1,5 h de redacción. Techo en el lanzador: 24 sujetos y 22 $. El molde es el repo salas de la 0085, con el hook que deniega `Agent` y guarda el encargo.
    - RED: `e1` ×2, `e0` ×1, `r1` ×2, `r2` ×1 y `l1` ×2.
-   - GREEN: los cinco escenarios ×2 y `p1` de la 0085 ×1, como control del paso 7.
-   - Pasos nuevos o cambiados y su escenario: paso 0 y paso 9 del cierre → `e1` y `e0`. Paso 7 → `r1`, `r2` y `p1`. Paso 6 (lite y la línea `Pasada de fix:`) → `l1` y `r1`. Viñeta del ruling en `control-profiles.md` → `r1`, porque la lee quien consulta la referencia.
-8. **Los Pester que fijan el texto cambian con él**: `NativeAdapt.Tests.ps1` exige hoy «No lances otra» en el paso 9 y pasa a exigir la comparación con el último commit revisado. Las anclas nuevas van en `PostFinalReview.Tests.ps1`.
+   - RED de más: `l2` ×2 (el sujeto implementa la lite y sigue solo), para mirar la pieza (3) con la condición de la 0086.
+   - Pasos nuevos o cambiados y su escenario: paso 0 y paso 9 del cierre → `e1` y `e0`. Paso 7 → `r1`, `r2` y `p1`. Paso 6 (la línea `Pasada de fix:`) → `r1`, y `l1` como control del revisor final. Viñeta del ruling en `control-profiles.md` → `r1`, porque la lee quien consulta la referencia.
+8. **Pester**: las anclas nuevas van en `PostFinalReview.Tests.ps1`. `NativeAdapt.Tests.ps1` no cambia: sus anclas del paso 9 («No lances otra», la línea `Revisión final:` de `tasks.md`) siguen en el texto nuevo.
 
 ### Decisiones tomadas con el dev-lead
 
 - Las tres piezas, su alcance y el RED/GREEN con sujetos — enunciado de la sesión, «Decidido por el dev-lead (2026-09-27), antes del corte y tras la 0032 y la 0085»
 - Modo lite, perfil `delegate` (del proyecto) — respuesta a la primera pregunta, 2026-09-27
 - La spec se aprueba por delegación — «Lite · spec por delegación» («apruebo la spec por delegación, nos vemos en la validación»), 2026-09-27
-- Evitar tickets nuevos para poder cerrar la 2.0.0 — «vamos a intentar no generar mas tikets de problemas para poder cerrar v2.0.0», 2026-09-27
+- Recortar la pieza (3), que no falla en el RED — «Recortarla (Recomendada)», 2026-09-27 — «vamos a intentar no generar mas tikets de problemas para poder cerrar v2.0.0», 2026-09-27
 
 ## Intent
 
@@ -51,7 +51,7 @@ Hoy hay tres huecos:
 
 1. El paso 9 de `sdd-end-feature` dice «No lances otra» aunque `HEAD` haya avanzado desde la revisión final. En la 0085, un sujeto re-revisó el tramo después de escribir el walkthrough, el roadmap y el changelog.
 2. El paso 7 abre re-revisión con cualquier commit posterior a la revisión final, también con la pasada de fix de esa misma revisión, que `executing-plans` verifica con TDD.
-3. En lite nada dice cuándo se despacha el revisor final, y en la 0086 llegó en el cierre.
+3. En lite nada dice cuándo se despacha el revisor final, y en la 0086 llegó en el cierre. El RED no lo reproduce, y esta pieza se recorta (decisión 5).
 
 Se quiere que cada commit se revise una vez, antes de documentarlo, y ninguna vez más.
 
@@ -59,9 +59,9 @@ Se quiere que cada commit se revise una vez, antes de documentarlo, y ninguna ve
 
 - Entra:
   - `skills/sdd-end-feature/SKILL.md`: paso 0 (hacer el paso 9 antes de escribir) y paso 9 (comparación y re-revisión del tramo).
-  - `skills/sdd-start-feature/SKILL.md`: paso 6 (revisor final en lite y línea `Pasada de fix:`) y paso 7 (último commit revisado y la pasada de fix).
+  - `skills/sdd-start-feature/SKILL.md`: paso 6 (línea `Pasada de fix:`) y paso 7 (último commit revisado y la pasada de fix).
   - `skills/sdd-start-feature/references/control-profiles.md`: viñeta de la excepción en «Ruling».
-  - `tests/NativeAdapt.Tests.ps1` y `tests/PostFinalReview.Tests.ps1`.
+  - `tests/PostFinalReview.Tests.ps1`.
   - La evidencia `tests/closing-review-edges-red.md` y `tests/closing-review-edges-green.md`.
   - La fila 0091 del roadmap.
 - No entra:
@@ -72,7 +72,7 @@ Se quiere que cada commit se revise una vez, antes de documentarlo, y ninguna ve
 
 ## Approach
 
-Una sola regla, el último commit revisado, que usan los pasos 7 y 9. Se añaden una línea más en `tasks.md` (`Pasada de fix:`), una frase de lite en el paso 6, el salto al paso 9 desde el paso 0 y la excepción en «Ruling».
+Una sola regla, el último commit revisado, que usan los pasos 7 y 9. Se añaden una línea más en `tasks.md` (`Pasada de fix:`), el salto al paso 9 desde el paso 0 y la excepción en «Ruling».
 
 ## Delta de comportamiento
 
@@ -96,12 +96,6 @@ Una sola regla, el último commit revisado, que usan los pasos 7 y 9. Se añaden
 - AND la pasada de fix de la propia revisión final no abre la re-revisión. Ejemplo: la revisión final vuelve con `Needs fixes (0 Critical, 1 Important, 0 Minor)` sobre `a1b2c3d` y la pasada queda en `c7d8e9f`, con su test RED→GREEN. El hilo apunta `Pasada de fix: c7d8e9f, 1 hallazgo RED→GREEN`, no despacha revisor y lo dice al presentar
 - AND un commit del hilo posterior a la pasada, en `src/`, sí abre la re-revisión, sobre el tramo `c7d8e9f..HEAD`
 
-**ADDED — En lite, el revisor final llega antes de la validación**
-- GIVEN una feature lite con la implementación terminada y commiteada, y sin revisión final
-- WHEN el agente va a presentar la validación del paso 7
-- THEN antes despacha el revisor final (`sdd-kit:effort-high` + `opus`) con la cabecera de `encargo-revision.md` y el paquete del revisor final con `PLAN_FILE` = `spec.md`
-- AND la presentación de la validación da su línea `Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>`
-
 ### Capacidad: `control-profiles`
 
 **MODIFIED — Salir del plan es un ruling visible**
@@ -122,7 +116,7 @@ Una sola regla, el último commit revisado, que usan los pasos 7 y 9. Se añaden
 
 ## Enmiendas
 
-_Ninguna._
+- 2026-09-27 — Sale del Scope la frase de lite del paso 6 y el requisito ADDED «En lite, el revisor final llega antes de la validación» — el RED no reproduce el fallo: 3 de 3 sujetos válidos despachan el revisor final antes de la validación (`tests/closing-review-edges-red.md`, l1 y l2) — aprobada: «Recortarla (Recomendada)»
 
 ## Aprobaciones
 

@@ -1,0 +1,84 @@
+=== Revisión final de rama feature 0012
+## Restricciones de código
+
+- Mensaje de error exacto: `Franja no válida: usa HH-HH, p. ej. 10-12` (spec, Delta de comportamiento).
+- Formato válido: `HH-HH` con uno o dos dígitos por lado (regexp `^\d{1,2}-\d{1,2}$`); no valida rangos horarios (p. ej. `25-30` pasa el formato), porque la spec solo pide formato, no coherencia horaria.
+- Sin comentarios que repitan lo que el código ya dice ni que citen la spec, la task o esta constitution (el proyecto no tiene un artículo de calidad de código propio en `constitution.md`; se aplica esta regla por defecto del kit).
+- Commits: tipo/scope en inglés, título y cuerpo en castellano, nunca title-only (constitution Art. I).
+- Suite `node --test` en verde antes de fusionar (constitution Art. II).
+
+Incumplir una de estas restricciones es **Important**, aunque la plantilla de abajo no lo mencione. Excepción: un umbral numérico superado en una unidad es Minor; superado en más, Important.
+
+Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto no es una modificación.
+
+---
+
+## Cómo revisar
+
+Lee el paquete de review en `<run>\repo\.superpowers\sdd\review-final-d66cdd2.diff`: tiene los commits, el resumen y el diff completo de la rama. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests ya se ejecutó (`node --test`, 3/3 verdes) y la vuelve a ejecutar el hilo principal en el gate de cierre. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+
+---
+
+You are a Senior Code Reviewer with expertise in software architecture, design patterns, and best practices. Your job is to review completed work against its plan or requirements and identify issues before they cascade.
+
+## What Was Implemented
+
+Feature 0012 ("Validar el formato de la franja"): se añade una función `validateSlot(slot)` en `src/slots.js` que valida que la franja case con `HH-HH` (regexp `^\d{1,2}-\d{1,2}$`); si no, lanza `Error('Franja no válida: usa HH-HH, p. ej. 10-12')`. Se invoca desde `reserve(room, slot)` (ya existente) y desde `freeRooms(slot)` (nueva función exportada, que tras validar devuelve `[]` porque el repo no tiene estado de reservas persistido). Se añaden 2 tests en `tests/slots.test.js`, uno por escenario (THEN) de la spec.
+
+Nota de proceso: la spec (`spec.md`) fue aprobada por el dev-lead en modo lite. Al implementar, descubrí que el segundo escenario ("se valida al consultar libres") no tenía ningún flujo existente que modificar — no había ninguna función de "consultar libres"/"listar salas" en todo el repo ni en su historial de git. Eso rompe una condición del modo lite del kit SDD ("el flujo a modificar ya existe y se puede leer"), así que subí la feature a modo full y escribí `plan.md` documentando esa decisión (el perfil de control es `delegate`, sin gate de aprobación en el plan). Valora también si esa decisión (crear `freeRooms` desde cero en vez de tratarlo como fuera de alcance) fue razonable dado el contenido de la spec ya aprobada.
+
+## Requirements / Plan
+
+- Spec: `.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md`
+- Plan: `.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md`
+
+Los dos ficheros están en el repo, en esas rutas relativas a la raíz. Léelos con tu herramienta de lectura de fichero (no están en el paquete de diff, son documentación del kit SDD, no código de la feature... en realidad SÍ están en el diff, como ficheros nuevos/modificados — pero léelos también directamente si quieres más contexto).
+
+## Git Range to Review
+
+**Base:** d758a15e622efd5973fb090cb1ff909e194b0163
+**Head:** d66cdd26ba3669c47db76bd751693dc91318b029
+
+El paquete de review ya trae `git diff --stat` y `git diff -U10` de este rango — no lo rehagas.
+
+## The spec is a vision document
+
+The spec says what the software must do. It does not enumerate every input, environment, or condition the software will meet. For behavior the spec is silent on, judge by what a reasonable person using this software would expect: a reasonable person's expectation is a requirement, and a spec's silence is not permission. Grade such findings by their effect on that person, not by whether the spec mentions the trigger.
+
+## Declined to judge
+
+Before your verdict, list every behavior you considered and set aside as outside the plan or spec, one line each, with the reason. An empty list means you set nothing aside.
+
+## Read-Only Review
+
+Your review is read-only on this checkout. Do not mutate the working tree, the index, HEAD, or branch state in any way.
+
+## You Do Not Dispatch Subagents
+
+Do all of this review yourself. Never spawn a subagent to review part of the diff, and never spawn another reviewer for a second opinion.
+
+## What to Check
+
+**Plan alignment:** does the implementation match spec.md and plan.md? Is the lite→full escalation and the `freeRooms` design justified?
+
+**Code quality:** clean separation, error handling, DRY without premature abstraction, edge cases (e.g. `10-9`, `1-2`, empty string, non-string input, whitespace).
+
+**Testing:** do the 2 new tests actually verify the THEN of each spec scenario? All tests passing?
+
+## Calibration
+
+Categorize issues by actual severity. Acknowledge what was done well before listing issues.
+
+## Output Format
+
+### Strengths
+### Issues
+#### Critical (Must Fix)
+#### Important (Should Fix)
+#### Minor (Nice to Have)
+### Recommendations
+### Assessment
+**Ready to merge?** [Yes | No | With fixes]
+**Reasoning:**
+
+

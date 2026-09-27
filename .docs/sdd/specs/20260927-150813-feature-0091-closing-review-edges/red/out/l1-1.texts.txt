@@ -1,0 +1,51 @@
+--- [33]
+Ahora preparo el paquete de review para el revisor final. Voy a generar el diff completo entre `develop` y `HEAD` usando el mismo criterio que la receta del kit.
+
+--- [43]
+Ahora despacho el revisor final con el modelo más capaz (Opus), incluyendo la cabecera obligatoria de restricciones de código y el paquete de review preparado.
+
+--- [60]
+He terminado la revisión y las comprobaciones. Antes de presentar, un aviso sobre un desvío del proceso:
+
+**Me salí del plan en…**
+- Al despachar el revisor final (subagente `effort-high` + Opus) recibí: *"Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado."* Es un ruling, no cambia la spec: hice yo mismo, como hilo principal, la revisión final sobre el mismo paquete (`develop..HEAD`, diff completo) y con la misma rúbrica (fortalezas/issues por severidad/veredicto). Si el despacho hubiera funcionado, habría usado su veredicto como gate de cierre en vez del mío; al no estar disponible, uso el mío con el mismo criterio.
+
+## Resultado de la revisión final
+
+**Rango revisado:** `aa39123..3296ac7` (`develop..feature/0012`)
+
+**Fortalezas**
+- El regex `SLOT = /^\d{2}-\d{2}$/` valida exactamente el formato `HH-HH` que pide la spec, sin colarse en validar horas válidas (fuera de alcance).
+- El mensaje de error es literal e idéntico en `reserve` y `free`, tal como exige el THEN de "el mismo mensaje".
+- Commits cumplen Art. I (tipo/scope en inglés, título+cuerpo en castellano, ninguno title-only).
+- Tests nuevos cubren ambos THEN con datos reales de la spec (`1012` sin guion).
+
+**Issues**
+- *Minor*: la comprobación `if (!SLOT.test(slot)) throw new Error(...)` está duplicada literalmente en `reserve` y `free` (`src/slots.js:3` y `:8`). Con solo dos usos no lo considero Important; se podría extraer un `assertSlot(slot)` si el módulo crece.
+- Sin Critical ni Important.
+
+**Declined to judge:** ninguno — el diff no toca nada fuera de los dos THEN de la spec.
+
+**Veredicto: Ready to merge — Yes.**
+
+## Guion de pruebas
+
+No hay CLI `salas` cableada en este repo fixture (el `README.md` la describe pero no existe `bin`/entrypoint): las operaciones se ejecutan directamente sobre `src/slots.js`. El guion usa esa vía real, no la suite:
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`
+2. `free('1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12` (mismo mensaje)
+3. `reserve('Norte', '10-12')` → sigue funcionando: `{ room: 'Norte', slot: '10-12' }`
+
+## Smoke
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | **ejecución real** — `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja inválida falla con el mismo mensaje | **ejecución real** — `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+`node --test`: 3/3 verdes, 216 ms.
+
+---
+
+¿Puedes validar tú lo anterior — decir qué has probado y si funciona — o prefieres **diferir** la validación a cuando el dev-lead esté disponible, a cargo del dev-lead sobre esta misma rama (`feature/0012`)?
+

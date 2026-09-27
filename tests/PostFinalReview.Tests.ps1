@@ -5,6 +5,12 @@ BeforeAll {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
   }
 
+  function Get-SkillStep([string]$Skill, [int]$Step) {
+    $text = Get-KitFile "skills/$Skill/SKILL.md"
+    $pattern = "(?ms)^$Step\. (⛔ )?\*\*.*?(?=^\d+\. |^## )"
+    return [regex]::Match($text, $pattern).Value
+  }
+
   $script:Skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
   $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
 }
@@ -52,5 +58,33 @@ Describe 'Revisión en el hilo en los pasos' {
 
   It 'el paso 7 no empieza frase en minúscula tras la medida de p2' {
     $script:Skill | Should -Not -MatchExactly ([regex]::Escape('(`tests/post-final-review-red.md`, p2). si'))
+  }
+}
+
+Describe 'Bordes del cierre' {
+  It 'el cierre hace el paso 9 antes de escribir' {
+    Get-SkillStep 'sdd-end-feature' 0 | Should -Match ([regex]::Escape('haz el paso 9'))
+  }
+
+  It 'el paso 9 compara HEAD con el último commit revisado y lleva las condiciones del hilo' {
+    $step = Get-SkillStep 'sdd-end-feature' 9
+    foreach ($anchor in '`Pasada de fix:`', '`Re-revisión:`', '<último revisado>..HEAD', 'git diff --numstat', 'git show --remerge-diff', 'No lances otra') {
+      $step | Should -Match ([regex]::Escape($anchor))
+    }
+  }
+
+  It 'el paso 6 apunta la pasada de fix' {
+    $step = Get-SkillStep 'sdd-start-feature' 6
+    $step | Should -Match ([regex]::Escape('Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN'))
+  }
+
+  It 'el paso 7 no abre re-revisión por la pasada de fix y cuenta desde el último revisado' {
+    $step = Get-SkillStep 'sdd-start-feature' 7
+    $step | Should -Match ([regex]::Escape('La pasada de fix de la propia revisión final no abre la re-revisión'))
+    $step | Should -Match ([regex]::Escape('<último revisado>..HEAD'))
+  }
+
+  It 'el ruling saca la pasada de fix de la re-revisión del tramo' {
+    $script:Profiles | Should -Match ([regex]::Escape('La pasada de fix de la propia revisión final tampoco entra'))
   }
 }

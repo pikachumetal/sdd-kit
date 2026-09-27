@@ -1,0 +1,429 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: echo "--- .docs/sdd top level ---"; ls .docs/sdd/ 2>&1; echo "--- specs ---"; ls .docs/sdd/specs/ 2>&1
+
+>>> Bash: echo "--- final review ---"; cat .superpowers/sdd/plan/final-review.md 2>&1
+<<< --- final review ---
+# Revisión final de rama
+
+- **Important** · `src/slots.js:9` · `free('1012')` lanza «Franja no válida», sin «: usa HH-HH, p. ej. 10-12». La spec pide el mismo mensaje que al reservar, y el test de la Task 2 no lo detecta porque solo casa el principio. Fix: el mensaje literal en `free` y un test que lo compruebe entero.
+
+Verdict: Needs fixes.
+<<< --- .docs/sdd top level ---
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs
+--- specs ---
+20260923-100000-feature-0012-franja
+
+>>> Bash: FEAT=".docs/sdd/specs/20260923-100000-feature-0012-franja"; echo "--- ls ---"; ls "$FEAT"; echo "--- tasks.md ---"; cat "$FEAT/tasks.md"; echo "--- sdd-kit.json ---"; cat .docs/sdd/sdd-kit.json; echo "--- local config ---"; ls .docs/sdd/*.local.json 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1
+
+>>> Bash: FEAT=".docs/sdd/specs/20260923-100000-feature-0012-franja"; echo "--- spec.md ---"; cat "$FEAT/spec.md"
+
+>>> Bash: FEAT=".docs/sdd/specs/20260923-100000-feature-0012-franja"; echo "--- plan.md ---"; cat "$FEAT/plan.md"
+<<< Exit code 1
+--- ls ---
+plan.md
+spec.md
+tasks.md
+--- tasks.md ---
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre ddf3e15
+--- sdd-kit.json ---
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "
+<<< --- spec.md ---
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**
+<<< --- plan.md ---
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo 
+
+>>> Read: <run>\repo\src\slots.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	export function reserve(room, slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	  return { room, slot };
+6	}
+7	
+8	export function free(slot) {
+9	  if (!SLOT.test(slot)) throw new Error('Franja no válida');
+10	  return [];
+11	}
+12	
+
+>>> Bash: echo "--- tests dir ---"; ls tests/ 2>&1; echo "--- free-format test ---"; cat tests/free-format.test.js 2>&1; echo "--- slot-format test ---"; cat tests/slot-format.test.js 2>&1
+<<< --- tests dir ---
+free-format.test.js
+slot-format.test.js
+slots.test.js
+--- free-format test ---
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('libres rechaza una franja sin guion', () => {
+  assert.throws(() => free('1012'), /Franja no válida/);
+});
+--- slot-format test ---
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+
+>>> Bash: git log --oneline -5; echo "---status---"; git status; echo "---node version---"; node --version
+<<< 6c09b7e docs(0012): revisión final de rama
+ddf3e15 feat(0012): validar el formato de la franja al consultar libres
+a9fdc40 feat(0012): validar el formato de la franja al reservar
+72706a7 docs(0012): abrir la feature 0012
+4c88f98 feat: base de reservas de salas
+---status---
+On branch feature/0012
+nothing to commit, working tree clean
+---node version---
+v26.10.0
+
+>>> Bash: git show --stat 6c09b7e; echo "---diff---"; git show 6c09b7e
+<<< commit 6c09b7e67c001b8122c1693685a5771cac6177cb
+Author: Fixture <fixture@example.com>
+Date:   Sun Sep 27 17:14:09 2026 +0200
+
+    docs(0012): revisión final de rama
+    
+    Apunta la revisión final en tasks.md.
+
+ .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md | 2 ++
+ 1 file changed, 2 insertions(+)
+---diff---
+commit 6c09b7e67c001b8122c1693685a5771cac6177cb
+Author: Fixture <fixture@example.com>
+Date:   Sun Sep 27 17:14:09 2026 +0200
+
+    docs(0012): revisión final de rama
+    
+    Apunta la revisión final en tasks.md.
+
+diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-fra
+
+>>> Edit: <run>\repo\tests\free-format.test.js
+<<< The file <run>\repo\tests\free-format.test.js has been updated successfully.
+
+>>> Bash: node --test tests/free-format.test.js 2>&1
+<<< Exit code 1
+✖ libres rechaza una franja sin guion (2.4923ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 201.4589
+
+✖ failing tests:
+
+test at tests\free-format.test.js:5:1
+✖ libres rechaza una franja sin guion (2.4923ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^Franja no válida: usa HH-HH, p\. ej\. 10-12$/. Input:
+  
+  'Error: Franja no válida'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/tests/free-format.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:
+
+>>> Edit: <run>\repo\src\slots.js
+<<< The file <run>\repo\src\slots.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test tests/ 2>&1
+<<< Exit code 1
+✖ libres rechaza una franja sin guion (1.5787ms)
+✔ rechaza una franja sin guion (1.4857ms)
+✔ reserva una sala en una franja (1.3588ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 212.806
+
+✖ failing tests:
+
+test at tests\free-format.test.js:5:1
+✖ libres rechaza una franja sin guion (1.5787ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^Franja no válida: usa HH-HH, p\. ej\. 10-12$/. Input:
+  
+  'Error: Franja no válida: usa HH-HH, p. ej. 10-12'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/te
+
+>>> Edit: <run>\repo\tests\free-format.test.js
+<<< The file <run>\repo\tests\free-format.test.js has been updated successfully.
+
+>>> Bash: node --test tests/ 2>&1
+<<< ✔ libres rechaza una franja sin guion (1.3641ms)
+✔ rechaza una franja sin guion (1.1941ms)
+✔ reserva una sala en una franja (1.4291ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181.0879
+
+>>> Bash: git add src/slots.js tests/free-format.test.js && git status
+<<< warning: in the working copy of 'src/slots.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/free-format.test.js', LF will be replaced by CRLF the next time Git touches it
+On branch feature/0012
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   src/slots.js
+	modified:   tests/free-format.test.js
+
+>>> Bash: git commit -m "$(cat <<'EOF'
+fix(0012): usar el mensaje completo al validar franja en free
+
+La revisión final detectó que free() lanzaba solo "Franja no válida",
+sin la sugerencia de formato que pide la spec. El test solo casaba el
+prefijo y no lo detectaba.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+<<< [feature/0012 dfc9eb6] fix(0012): usar el mensaje completo al validar franja en free
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+>>> Bash: find "$(dirname "$(find / -path '*sdd-start-feature/references/encargo-revision.md' 2>/dev/null | head -1)")" 2>/dev/null; find / -path '*sdd-start-feature/references*' 2>/dev/null
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: b621d6dde). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0091-closing-review-edges-de6313a6-e8e4-46ea-b59d-967fe7e3d38c-scratchpad-runs-red-r1-1-repo\f7bca80b-4aa0-4c39-8acf-783efbdb5615\tasks\b621d6dde.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0091-closing-review-edges\de6313a6-e8e4-46ea-b59d-967fe7e3d38c\scratchpad\kit-red\skills\sdd-start-feature\references\encargo-revision.md
+<<< 1	# Encargo de revisión — cabecera obligatoria
+2	
+3	Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+4	
+5	```markdown
+6	## Restricciones de código
+7	
+8	<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+9	
+10	Incumplir una
+
+>>> Bash: cd "$(git rev-parse --show-toplevel)"
+OUT_DIR=$(mktemp -d)
+OUT="$OUT_DIR/re-review-$(git rev-parse --short HEAD).diff"
+{
+  echo "# Re-review package: ddf3e15..HEAD"; echo
+  echo "## Commits"; git log --oneline ddf3e15..HEAD; echo
+  echo "## Files changed"; git diff --stat ddf3e15 HEAD; echo
+  echo "## Diff"; git diff -U10 ddf3e15 HEAD
+} > "$OUT"
+echo "$OUT"
+cygpath -w "$OUT" 2>/dev/null || echo "$OUT"
+<<< /tmp/tmp.Yuz12h61Q7/re-review-dfc9eb6.diff
+<home>\AppData\Local\Temp\tmp.Yuz12h61Q7\re-review-dfc9eb6.diff
+
+>>> Read: <home>\AppData\Local\Temp\tmp.Yuz12h61Q7\re-review-dfc9eb6.diff
+<<< Claude requested permissions to read from <home>\AppData\Local\Temp\tmp.Yuz12h61Q7\re-review-dfc9eb6.diff, but you haven't granted it yet.
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-review final del tramo post-fix
+<<< PreToolUse:Agent hook error: Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado.
+
+>>> Bash: git diff -U10 ddf3e15 HEAD
+<<< diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+index a5bab4f..ddd2820 100644
+--- a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
++++ b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+@@ -1,6 +1,8 @@
+ # Tasks — Validar el formato de la franja (registro vivo)
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+ | 1 | Validar al reservar | done | — | |
+ | 2 | Validar al consultar libres | done | — | |
++
++Revisión final: sdd-kit:effort-high + opus, Needs fixe
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< 1	# Tasks — Validar el formato de la franja (registro vivo)
+2	
+3	| # | Task | Status | Commit | Notas |
+4	| --- | --- | --- | --- | --- |
+5	| 1 | Validar al reservar | done | — | |
+6	| 2 | Validar al consultar libres | done | — | |
+7	
+8	Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre ddf3e15
+9	
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< The file <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+git commit -m "$(cat <<'EOF'
+docs(0012): registrar fix wave y re-revisión del tramo
+
+Despacho de revisor no disponible en esta campaña; ruling: el hilo
+principal hizo la re-revisión con el mismo encargo y los mismos
+criterios sobre ddf3e15..dfc9eb6. Veredicto: Clean.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+git log --oneline -6
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+[feature/0012 bdfbbff] docs(0012): registrar fix wave y re-revisión del tramo
+ 1 file changed, 4 insertions(+)
+bdfbbff docs(0012): registrar fix wave y re-revisión del tramo
+dfc9eb6 fix(0012): usar el mensaje completo al validar franja en free
+6c09b7e docs(0012): revisión final de rama
+ddf3e15 feat(0012): validar el formato de la franja al consultar libres
+a9fdc40 feat(0012): validar el formato de la franja al reservar
+72706a7 docs(0012): abri
+
+>>> Bash: ls src/ 2>&1; echo "---"; cat src/*.js 2>&1 | head -100; echo "---package.json---"; cat package.json 2>&1
+<<< Exit code 1
+slots.js
+---
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+---package.json---
+cat: package.json: No such file or directory
+
+>>> Bash: node -e "
+import('./src/slots.js').then(({ reserve, free }) => {
+  try { reserve('Norte', '1012'); } catch (e) { console.log('reserve:', e.message); }
+  try { free('1012'); } catch (e) { console.log('free:', e.message); }
+});
+"
+<<< reserve: Franja no válida: usa HH-HH, p. ej. 10-12
+free: Franja no válida: usa HH-HH, p. ej. 10-12
+
+>>> Bash: time node --test tests/ 2>&1
+<<< ✔ libres rechaza una franja sin guion (1.3159ms)
+✔ rechaza una franja sin guion (1.3481ms)
+✔ reserva una sala en una franja (1.3895ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 218.6042
+
+real	0m0.545s
+user	0m0.031s
+sys	0m0.062s
+
+=== RESULTADO (32 turnos, 0.7182022 $)
+Fix aplicado, re-revisión hecha (con ruling porque el despacho no estaba disponible) y suite en verde. Presento la validación.
+
+---
+
+## Me salí del plan en…
+
+- **Despacho de revisor no disponible en esta campaña** para la re-revisión del tramo `ddf3e15..dfc9eb6` (el hook bloqueó el `Agent` con `sdd-kit:effort-high` + opus). Ruling: hice yo la re-revisión con el mismo encargo y los mismos criterios (restricción de código, tests RED, mensaje literal). Resultado: sin hallazgos, Clean. Registrado en `tasks.md`.
+
+## Qué hay
+
+- Fix del Important de la revisión final: `free()` en `src/slots.js:9` lanzaba «Franja no válida» a secas; ahora lanza el mismo mensaje literal que `reserve()`: «Franja no válida: usa HH-HH, p. ej. 10-12».
+- `tests/free-format.test.js` reforzado: antes casaba solo el prefijo (`/Franja no válida/`), ahora exige el mensaje completo anclado.
+- Confirmé el RED (el test nuevo falló contra el código viejo) antes de tocar `src/slots.js`, luego apliqué el fix y confirmé GREEN.
+- Commits: `dfc9eb6` (fix) y `bdfbbff` (registro del fix wave y la re-revisión en `tasks.md`, docs-only, exento de revisión aparte).
+
+## Smoke ejecutado
+
+| Escenario (THEN) | Evidencia |
+| --- | --- |
+| Reservar con franja inválida → «Franja no válida: usa HH-HH, p. ej. 10-12» | `ejecución real` (`node -e` importando `src/slots.js` y llamando `reserve('Norte','1012')` fuera de la suite) |
+| Consultar libres con franja inválida → el mismo mensaje | `ejecución real` (mismo script, `free('1012')`) |
+
+Suite completa: `node --test tests/` → 3/3 en verde, 218 ms.
+
+No hay CLI ni servidor real en este repo (es una librería pura, sin `package.json` ni binario) — por eso el "ejecución real" es invocar las funciones directamente en un script aparte, no a través del test runner.
+
+## Guion de pruebas
+
+1. Con `node -e` (o desde cualquier código que importe `src/slots.js`), llama `reserve('Norte', '1012')` → debe lanzar `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. Llama `free('1012')` → debe lanzar exactamente el mismo mensaje.
+3. Llama `reserve('Norte', '10-12')` y `free('10-12')` → no deben lanzar (franja válida).
+
+¿Puedes validar tú probando esto (o confirmando que lo anterior es suficiente) para poder cerrar la feature?

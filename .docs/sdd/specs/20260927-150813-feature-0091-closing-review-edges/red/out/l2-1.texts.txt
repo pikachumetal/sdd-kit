@@ -1,0 +1,67 @@
+--- [4]
+Voy a cargar el contexto SDD (constitution, mission, tech-stack, roadmap) y localizar la carpeta de la feature 0012 para ver el estado real de la spec.
+
+--- [39]
+Antes de tocar código, encuentro un problema: el segundo escenario de la spec (validar al **consultar salas libres**) no tiene ningún flujo existente que modificar — `src/slots.js` solo tiene `reserve`, y no hay ninguna función de "consultar libres" en todo el repo (ni en el historial de git). Eso rompe una condición del modo lite ("el flujo a modificar ya existe y se puede leer"), así que la feature sube a modo full, tal como marca el kit: escribo `plan.md` (sin gate, porque el perfil es `delegate`) y sigo implementando en la misma sesión.
+
+--- [43]
+Ahora escribo `plan.md` (sin gate, perfil delegate) y a continuación implemento directamente (Native). Queda: plan + código + tests + commit + presentar validación, ~15 min.
+
+--- [48]
+Ahora escribo los tests RED de la Task 1 (los dos THEN de la spec) antes de tocar `src/slots.js`.
+
+--- [52]
+RED confirmado (falta el export `freeRooms`). Implemento ahora `validateSlot`, `reserve` y `freeRooms` en `src/slots.js`.
+
+--- [55]
+Todo en verde (3 tests). Marco la task hecha en `tasks.md` no aplica (solo hay una task), y hago el commit de la task.
+
+--- [80]
+Ahora despacho el revisor final de rama (`sdd-kit:effort-high` + `opus`, el techo del kit) sobre el rango completo antes de presentar la validación.
+
+--- [83]
+El despacho de subagentes no está disponible en esta campaña (lo bloquea un hook). Registro esto como ruling: hago yo mismo la revisión final de rama con la misma rúbrica que le habría dado al revisor (`sdd-kit:effort-high` + `opus`), y si encuentro Critical/Important los arreglo antes de presentar la validación — igual que haría con el resultado de un subagente.
+
+--- [86]
+Autorevisión completa. Hallazgo Minor: `freeRooms` no tiene test de camino feliz (solo el de formato inválido), a diferencia de `reserve`. Lo añado antes de cerrar.
+
+--- [89]
+4/4 verdes. Amplío el commit de la task con este fix del hallazgo de la revisión final (mismo rango, antes de presentar).
+
+--- [92]
+Antes de presentar, ejecuto los dos THEN de la spec fuera de la suite (invocación real de las funciones) para tener evidencia de `ejecución real`, no solo `suite`.
+
+--- [94]
+Confirmado por ejecución real. Presento la validación.
+
+--- [96]
+## Me salí del plan en…
+
+- **Escalado lite → full**: el escenario "se valida al consultar libres" no tenía flujo existente que modificar (`src/slots.js` solo tenía `reserve`; no hay ninguna función de listar/consultar salas en todo el historial de git). Rompía la condición de modo lite del kit. Subí la feature a full y escribí `plan.md` — no cambia ningún requisito, THEN ni Scope de la spec, así que no es un desvío. Coste si me equivoco: ninguno, es solo un cambio de proceso documentado.
+- **`freeRooms(slot)` mínima**: el repo no tiene estado de reservas persistido (ni `reserve` lo persiste), así que la nueva función solo valida el formato y devuelve `[]`. Cualquier lógica real de disponibilidad queda fuera — no la pide la spec y no hay estado que consultar (YAGNI). Coste si me equivoco: bajo — si en el futuro se añade persistencia, `freeRooms` necesitará lógica real, pero eso ya sería otra feature.
+- **Revisor final bloqueado**: el despacho de subagentes está deshabilitado en esta campaña (hook lo rechazó). Hice yo mismo la revisión final de rama con la misma rúbrica que le habría dado a `sdd-kit:effort-high` + `opus` (plan alignment, calidad, tests, edge cases). Hallazgo Minor: `freeRooms` no tenía test de camino feliz — lo añadí y until confirmé 4/4 verdes. Si hubiera podido despachar el revisor real, es posible que hubiera encontrado algo más que a mí se me escapó; lo habría arreglado en un fix round antes de presentar, igual que hice con este hallazgo.
+
+## Qué hay
+
+`src/slots.js`: `reserve(room, slot)` y la nueva `freeRooms(slot)` rechazan cualquier franja que no case con `HH-HH` (regexp `^\d{1,2}-\d{1,2}$`) con `Error: Franja no válida: usa HH-HH, p. ej. 10-12`. 4 commits en la rama: apertura, escalado a full + plan, implementación, y el fix del hallazgo de revisión.
+
+## Smoke
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| Falla al reservar con franja inválida (`1012`) | `ejecución real` — `reserve('Norte', '1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Falla al consultar libres con franja inválida (`1012`) | `ejecución real` — `freeRooms('1012')` → mismo mensaje |
+
+Suite completa (`node --test`): 4/4 verdes, ~141 ms.
+
+## Guion de pruebas
+
+No hay CLI ni entrada de usuario en el repo (solo funciones exportadas), así que no se puede probar desde una aplicación real. La comprobación que sí se puede hacer:
+
+1. `node -e "import('./src/slots.js').then(({reserve})=>reserve('Norte','1012'))"` → lanza `Error: Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. Lo mismo con `freeRooms('1012')` → mismo error.
+3. `reserve('Norte', '10-12')` → `{ room: 'Norte', slot: '10-12' }` (sigue funcionando).
+4. `freeRooms('10-12')` → `[]`.
+
+¿Puedes confirmar que has probado esto (o lo que prefieras) y que funciona, para poder cerrar la feature?
+
