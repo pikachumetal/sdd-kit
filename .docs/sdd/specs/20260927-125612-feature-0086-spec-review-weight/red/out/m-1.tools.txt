@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260926-090000-feature-0009-accent-insensitive-search\spec.md
+<<< 1	---
+2	id: 20260926-090000-feature-0009-accent-insensitive-search
+3	feature: 0009
+4	title: Buscar clientes sin tener en cuenta las tildes
+5	mode: full
+6	status: draft
+7	created: 2026-09-26
+8	author: agente
+9	approvers:
+10	  - role: dev-lead
+11	    name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Buscar clientes sin tener en cuenta las tildes
+16	
+17	## Capacidades
+18	
+19	- Modificadas: `bookings` — «Búsqueda por cliente» deja de distinguir tildes
+20	
+21	## Decisiones que he tomado yo — valida estas
+22	
+23	1. La búsqueda compara sin tildes normalizando a NFD y quitando las marcas diacr
+
+>>> Glob: .docs/sdd/*.json
+<<< .docs\sdd\sdd-kit.json
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "1.1.0", "ids": {"mode": "sequence"}, "control": {"profile": "delegate"}}
+2	
+
+>>> Glob: .docs/sdd/roadmap.md
+<<< .docs\sdd\roadmap.md
+
+>>> Glob: .docs/sdd/capabilities/bookings.md
+<<< .docs\sdd\capabilities\bookings.md
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\bookings.md
+<<< 1	# Capacidad: bookings
+2	
+3	## Propósito
+4	
+5	Las reservas de la recepción: cómo se buscan y cómo se identifican.
+6	
+7	## Requisitos
+8	
+9	### Búsqueda por cliente
+10	- GIVEN reservas de varios clientes
+11	- WHEN el recepcionista escribe parte del nombre del cliente
+12	- THEN ve las reservas cuyo cliente contiene ese texto, sin distinguir mayúsculas
+13	
+14	### Código de reserva
+15	- GIVEN una reserva creada en la sede
+16	- THEN tiene un código `R-` seguido de cuatro dígitos (`R-0042`)
+17	- AND una reserva importada de la otra sede conserva su código de origen con el prefijo de esa sede delante
+
+>>> Glob: src/search.js
+<<< src\search.js
+
+>>> Grep: 0009
+<<< 7:| 0009 | Buscar clientes sin tener en cuenta las tildes | 🔄 en curso |
+
+>>> Read: <run>\repo\src\search.js
+<<< 1	export function searchBookings(bookings, query) {
+2	  const text = query.trim().toLowerCase();
+3	  if (text === '') return [];
+4	  return bookings.filter((booking) => booking.customer.toLowerCase().includes(text));
+5	}
+6	
+
+=== RESULTADO (12 turnos, 0.33533579999999996 $)
+Ahora: repaso de coherencia de la spec 0009 antes del gate. Queda: solo tu aprobación, ~1 min.
+
+Repasé placeholders, contradicciones y literales cruzados (tildes, `ñ`→`n`, ejemplo `jose pena`→«José Peña»): coherente, sin decisiones abiertas nuevas. `search.js` actual (lowercase + includes) confirma que el delta es correcto: falta normalizar diacríticos.
+
+**Decisiones que he tomado yo — valida estas**
+
+1. Normalizar con NFD y quitar marcas diacríticas (`\p{Mn}`) — estándar de Node, sin dependencias nuevas.
+2. `ñ` se trata como `n` — la recepción teclea deprisa y sin esa tecla.
+
+**Spec**: `.docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md`
+- Scope: solo `src/search.js`. Fuera: ordenar resultados, buscar por teléfono.
+- Delta: capacidad `bookings`, requisito «Búsqueda por cliente» pasa a ignorar tildes y mayúsculas.
+- Sin ambigüedad ni THEN pendiente.
+
+¿Apruebas la spec tal cual?

@@ -88,3 +88,5 @@ Las tres líneas de tokens salen de `Measure-SessionTokens.ps1` con `-ProjectsRo
 - Revisión de skills: se editaron `encargo-revision.md`, `overrides-superpowers.md` y `plan-template.md`, con su RED/GREEN en `tests/final-review-package-*.md`. No hay más skills que revisar: el enrutado no cambia y ninguna otra skill construye el paquete. El revisor final lo comprobó con un `grep` de `review-package` y `MERGE_BASE` en `skills/`.
 
 ## 6. Adendas
+
+- 2026-09-27 — Merge de sincronización con `develop` para traer el conjunto rápido del patch 0087. Conflictos solo en los registros: en el changelog entran las dos entradas (0032 y 0086); la fila 0032 del roadmap se reaplicó sobre el formato nuevo de la tabla de la release, con el estado en su columna, por decisión del dev-lead («Sí, resuélvelo tú»), y el estimation-log se regeneró. Suite completa sobre el resultado, `Invoke-Pester tests` con `Slow`: 942 superados, 0 fallidos y 10 omitidos, en 460 s — agente
