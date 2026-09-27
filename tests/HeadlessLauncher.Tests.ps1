@@ -107,7 +107,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SUPERPOWERS_DIR = 'C:/sp/6.4.1' }
 
     $run.ExitCode | Should -Be 0 -Because $run.Output
-    $claudeArgs = @(Get-Content (Join-Path $campaign.Runs 'a-1.args'))
+    $claudeArgs = @(Get-Content (Join-Path $campaign.Runs 'red/a-1.args'))
     $sources = [array]::IndexOf($claudeArgs, '--setting-sources')
     $sources | Should -BeGreaterThan -1
     $claudeArgs[$sources + 1] | Should -BeExactly ''
@@ -121,7 +121,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
 
     $run.ExitCode | Should -Be 0 -Because $run.Output
-    $argsFile = Join-Path $campaign.Runs 'a-1.args'
+    $argsFile = Join-Path $campaign.Runs 'red/a-1.args'
     $argsFile | Should -Exist
     Get-Content $argsFile | Should -Not -Contain '--setting-sources'
   }
@@ -154,6 +154,22 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
     $run.Output | Should -Match 'techo de 4 \$ alcanzado \(4\.50 \$\)'
     (Get-Subjects $campaign).Count | Should -Be 1
+  }
+
+  It 'dos fases con el mismo RUNS_DIR no comparten molde ni stream (ticket del patch 0082 §1)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'phases')
+    Copy-Item -Recurse (Join-Path $campaign.Spec 'red') (Join-Path $campaign.Spec 'green')
+
+    # En secuencia basta: con la ruta sin fase, la segunda borraba el molde de la primera (rm -rf en subject_init).
+    foreach ($phase in 'red', 'green') {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; PHASE = $phase; SUBJECT_SH = Join-Path $campaign.Spec "$phase/subject.sh" }
+      $run.ExitCode | Should -Be 0 -Because $run.Output
+    }
+
+    foreach ($phase in 'red', 'green') {
+      Join-Path $campaign.Runs "$phase/a-1/repo/README.md" | Should -Exist
+      Join-Path $campaign.Runs "$phase/a-1.jsonl" | Should -Exist
+    }
   }
 
   It 'para a petición si existe el fichero stop en RUNS_DIR' {
