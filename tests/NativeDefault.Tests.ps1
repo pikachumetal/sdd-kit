@@ -93,6 +93,11 @@ Describe 'Task 2 — init y migración' {
     Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves que el usuario respondió en la 19'
   }
 
+  It 'la estructura de greenfield saca ids.mode de la pregunta 19' {
+    Get-KitFile 'skills/sdd-init-greenfield/references/estructura.md' |
+      Should -Match ([regex]::Escape('con `ids.mode` de la pregunta 19 (`sdd-config`)'))
+  }
+
   It 'brownfield pregunta el método de ejecución a través de sdd-config' {
     $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 1 |'
     $row | Should -Match '`sdd-config`.*método de ejecución'

@@ -66,10 +66,10 @@ created: 2026-09-27
 - `skills/sdd-init-greenfield/SKILL.md` — filas 4 y 5, renumeración, «Las preguntas 6 a 10», «en la 19».
 - `tests/MigrationInitParity.Tests.ps1` — pregunta 20 y las filas nuevas.
 - `tests/NativeDefault.Tests.ps1` — `'| 19 |'` y «en la 19».
+- `skills/sdd-init-greenfield/references/estructura.md` — «pregunta 17» → 19 (enmienda de la spec tras la revisión final).
 
 **NO se tocan**:
 
-- `skills/sdd-init-greenfield/references/estructura.md` — «la pregunta 1» es la de `sdd-config`.
 - `.docs/sdd/capabilities/onboarding.md` — la fusión del delta es del cierre.
 - Repo `sdd-project-template` — su cambio va en su roadmap (decisión 6 de la spec).
 

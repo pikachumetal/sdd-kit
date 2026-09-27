@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Entrevista con fuera de alcance y dominio | done | — | ruling: recuento de la spec corregido a 4 de 4 |
-| 2 | GREEN sobre el template | done | — | 2/2, 4,57 $ |
+| 1 | Entrevista con fuera de alcance y dominio | done | 116cc68 | ruling: recuento de la spec corregido a 4 de 4 |
+| 2 | GREEN sobre el template | done | d706ea8 | 2/2, 4,57 $ |
 
 ## Verificación por task
 
@@ -30,3 +30,6 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+Revisión final: sdd-kit:effort-high + opus, con arreglos (2 Important, 5 Minor), sobre d706ea8
+Pasada de fix: 396a67a, 2 hallazgos RED→GREEN

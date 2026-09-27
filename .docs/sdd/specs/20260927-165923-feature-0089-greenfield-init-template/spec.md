@@ -51,11 +51,12 @@ Un proyecto instanciado desde `sdd-project-template` trae la documentación téc
 ## Scope
 
 - Entra: `skills/sdd-init-greenfield/SKILL.md`: filas 4 y 5 nuevas en la tabla del paso 1, renumeración, «Las preguntas 6 a 10» y «en la 19».
+- Entra (enmienda del 2026-09-27): `skills/sdd-init-greenfield/references/estructura.md`, «con `ids.mode` de la pregunta 17» → 19, con su aserción en `tests/NativeDefault.Tests.ps1`.
 - Entra: `tests/MigrationInitParity.Tests.ps1` (pregunta 18 → 20) y `tests/NativeDefault.Tests.ps1` (en la 17 → en la 19).
 - Entra: `tests/init-over-template-red.md` y `tests/init-over-template-green.md` (evidencia).
 - Entra: delta de `onboarding` (se fusiona al cerrar, con «pregunta 18 de greenfield» → 20).
 - Entra: el prompt para el repo del template, en el walkthrough.
-- No entra: guía de «modo sobre template» en la skill (el RED lo pasa sin ella); cambios en `sdd-init-brownfield`, `sdd-config` ni `estructura.md` (la pregunta 1 de `sdd-config` es suya, no de greenfield); ningún fichero del repo `sdd-project-template`; `migrations/`.
+- No entra: guía de «modo sobre template» en la skill (el RED lo pasa sin ella); cambios en `sdd-init-brownfield` ni `sdd-config`; ningún fichero del repo `sdd-project-template`; `migrations/`.
 
 ## Approach
 
@@ -72,7 +73,7 @@ Añadir las dos preguntas a la lista de greenfield, en el bloque de mission, y m
 - THEN el agente ha preguntado por las cinco reglas por nombre (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto) y la constitution propuesta lleva la sección «Reglas de producto» con las cinco: respondida, «pendiente» si el dev-lead no sabe, o «no aplica» si él lo dice
 - AND una regla que difiere por capacidad se lista por capacidad dentro de su entrada
 - AND el bloque de proceso ha decidido además el modo de ids del proyecto, que se escribe en `sdd-kit.json`
-- AND en greenfield el agente ha preguntado qué queda fuera de alcance y qué términos del dominio se fijan, y las secciones «Qué es y qué no es» y «Dominio» de `mission.md` llevan la respuesta, o «pendiente» si el dev-lead no sabe: con el dev-lead diciendo «no sé» a las dos, ninguna de las dos secciones lista un término ni una exclusión que él no dijo
+- AND en greenfield la entrevista incluye qué queda fuera de alcance y qué términos del dominio se fijan, y las secciones «Qué es y qué no es» y «Dominio» de `mission.md` (o las que el template marca para eso) llevan la respuesta, o «pendiente» o el marcador del template si el dev-lead no sabe: con el dev-lead diciendo «no sé» a las dos, ninguna de las dos secciones lista un término ni una exclusión que él no dijo
 
 **MODIFIED — La constitution nombra el proyecto de referencia** (antes: «la pregunta 18 de greenfield»)
 
@@ -89,6 +90,9 @@ Añadir las dos preguntas a la lista de greenfield, en el bloque de mission, y m
 - AND el contrato con el template es el texto `sdd-template: pending`: su posición y su número los decide el template
 
 ## Enmiendas
+
+- 2026-09-27 — El THEN de fuera de alcance y dominio mide lo escrito en `mission.md`, no que el agente pregunte, y admite el marcador del template como «pendiente» — el GREEN, con las respuestas de golpe, dejó los documentos bien 2/2 pero la pregunta 4 la hizo 1 de 2 (con una lista propia para confirmar) y la 5 ninguno (revisión final, Important 2) — aprobada: «Cerrar con lo medido (Recomendada)».
+- 2026-09-27 — `references/estructura.md` entra en el Scope: su «pregunta 17» es la fila de claves del kit, que pasa a 19; el «No entra» lo excluía por una lectura errónea de la línea (revisión final, Important 1) — aprobada: «Sí, entra (Recomendada)».
 
 ## Aprobaciones
 
