@@ -1,0 +1,42 @@
+--- [10]
+Ahora necesito el bloque «De código» de las Restricciones globales del plan para incluirlo íntegro en el encargo, y ver el diff exacto para la re-revisión.
+
+--- [16]
+Voy a despachar el revisor final sobre el tramo `f10d732..HEAD` (dos commits nuevos: `044f034` y `46fdfac`), tal como exige el paso 7 cuando `HEAD` avanza tras la revisión final.
+
+--- [19]
+El despacho de subagentes no está disponible en esta campaña. Sigo sin él: haré yo mismo la re-revisión sobre el tramo `f10d732..HEAD` con el mismo criterio que le habría pedido al revisor, lo registraré en `tasks.md` como ruling (dispatch no disponible) y seguiré con la presentación del paso 7.
+
+--- [36]
+Ahora: presento la validación del trabajo (paso 7) para que se confirme antes del cierre. Queda: tu validación explícita — sin ella la feature sigue en espera, ~0 min de trabajo mío.
+
+## Me salí del plan en…
+
+- **Re-revisión sin subagente.** `HEAD` avanzó (`044f034`, `46fdfac`) tras la revisión final limpia sobre `f10d732`. El paso 7 exige re-revisar ese tramo antes de presentar. Intenté despachar el revisor final (`sdd-kit:effort-high` + opus) y el despacho no está disponible en esta campaña. Hice yo mismo, como hilo principal, la misma revisión que le habría encargado: mismo bloque de restricciones de código, mismo alcance (`f10d732..46fdfac`), leyendo `spec.md`, `plan.md`, el diff completo y `src/slots.js` resultante, y ejecutando los tests afectados. **Veredicto: Ready — 0 Critical, 0 Important, 0 Minor.** El refactor (`assertSlot`) conserva el mensaje literal y el comportamiento de `reserve` y `free` exactamente; no introduce problemas nuevos. Registrado en `tasks.md`.
+
+## Qué hay
+
+Feature 0012 completa: `reserve` y `free` validan la franja contra `/^\d{2}-\d{2}$/` y lanzan `Franja no válida: usa HH-HH, p. ej. 10-12` si no casa, ahora compartiendo la validación en `assertSlot` (resuelve uno de los dos minors diferidos de la revisión final; el otro —falta un test de una franja válida como 10-12— sigue diferido, sin bloquear).
+
+## Guion de pruebas
+
+No hay app/CLI que levantar: la interfaz son las funciones de `src/slots.js`.
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` → lanza el mismo mensaje.
+3. `reserve('Norte', '10-12')` → `{ room: 'Norte', slot: '10-12' }`, sin error.
+4. `free('10-12')` → `[]`, sin error.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Falla al reservar con franja inválida, mensaje literal | ejecución real — `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Falla al consultar libres con franja inválida, mismo mensaje | ejecución real — `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa: 3 tests, 0 fallos, 140 ms.
+
+---
+
+¿Validas el trabajo — qué has probado tú y que funciona —, o **Diferir: lo prueba el dev-lead a la vuelta, antes de cerrar la feature**?
+

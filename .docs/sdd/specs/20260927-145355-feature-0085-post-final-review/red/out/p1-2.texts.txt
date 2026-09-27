@@ -1,0 +1,32 @@
+--- [40]
+He revisado el commit posterior a la revisión final (no pude despachar el subagente — el despacho está deshabilitado en esta campaña) y he ejecutado el smoke completo. Aquí va la validación del paso 7.
+
+## Me salí del plan en…
+
+- **Revisor final indisponible**: intenté despachar `sdd-kit:effort-high` + `opus` para revisar `1cf54c1` (el commit que comparte la validación entre `reserve` y `free`, hecho después de la revisión final `606b13e`, y por tanto sin revisar todavía). El hook de esta campaña devolvió «Despacho no disponible». Hice yo la revisión como hilo principal: leí el diff completo (`src/slots.js`, 8 líneas), confirmé que preserva el comportamiento observable (mismo regex, mismo mensaje literal) y que resuelve el minor diferido #1 (validación duplicada) sin tocar el #2 (sin test de franja válida, sigue diferido). Veredicto: Ready, 0 Critical, 0 Important, 0 Minor nuevo. Registrado en `tasks.md` y commiteado en `496e074`.
+
+## Qué hay
+
+- Task 1 y 2: hechas, revisión final limpia (`606b13e`, sobre `d491794`).
+- `1cf54c1`: refactor que extrae `assertSlot()` compartido — revisado arriba.
+- Minor pendiente (sin resolver, no bloquea): ningún test cubre explícitamente una franja válida como `10-12`, aunque el smoke de abajo la ejecuta.
+
+## Guion de pruebas
+
+No hay CLI ni interfaz montada — es una librería (`src/slots.js`); estos pasos son las llamadas que haría quien la use:
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` → lanza el mismo mensaje.
+3. `reserve('Norte', '10-12')` → devuelve `{ room: 'Norte', slot: '10-12' }`, sin lanzar.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje literal | `ejecución real` — `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real` — `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa (`node --test tests/`): 3 tests, 0 fallos, 145 ms.
+
+¿Confirmas que has probado esto (o lo que corresponda) y funciona?
+

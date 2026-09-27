@@ -1,0 +1,245 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: find .docs/sdd/specs -iname "tasks.md" -path "*0012*" 2>/dev/null
+<<< .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< 1	# Tasks — Validar el formato de la franja (registro vivo)
+2	
+3	| # | Task | Status | Commit | Notas |
+4	| --- | --- | --- | --- | --- |
+5	| 1 | Validar al reservar | done | — | |
+6	| 2 | Validar al consultar libres | done | — | |
+7	
+8	Revisión final: sdd-kit:effort-high + opus, Ready (0 Critical, 0 Important, 2 Minor), sobre f10d732
+9	Deferred minors: la validación y el mensaje se repiten en reserve y free; ningún test cubre una franja válida como 10-12
+10	
+
+>>> Bash: git log --oneline f10d732..HEAD && echo --- && git diff --stat f10d732..HEAD
+<<< 46fdfac refactor(0012): compartir la validación de la franja entre reserve y free
+044f034 docs(0012): revisión final de rama
+---
+ .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md | 7 +++++--
+ src/slots.js                                                 | 8 ++++++--
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-green\skills\sdd-start-feature\references\encargo-revision.md
+<<< 1	# Encargo de revisión — cabecera obligatoria
+2	
+3	Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+4	
+5	```markdown
+6	## Restricciones de código
+7	
+8	<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+9	
+10	Incumplir una
+
+>>> Bash: plan=".docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md"; if [ -f "$plan" ]; then echo FOUND; else find .docs/sdd/specs -iname "plan.md" -path "*0012*"; fi
+<<< FOUND
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\plan.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+22	
+23	## 2. Tasks
+24	
+25	### Task 1 — Validar al reservar
+26
+
+>>> Bash: git diff f10d732..HEAD -- src/slots.js .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+index a72fb01..4489d66 100644
+--- a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
++++ b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+@@ -2,5 +2,8 @@
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+-| 1 | Validar al reservar | pending | — | |
+-| 2 | Validar al consultar libres | pending | — | |
++| 1 | Validar al reservar | done | — | |
++| 2 | Validar al consultar libres | done | — | |
++
++Revisión final:
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión tramo f10d732..HEAD feature 0012
+<<< PreToolUse:Agent hook error: Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado.
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\spec.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Validar el formato de la franja
+5	mode: full
+6	status: approved
+7	created: 2026-09-23
+8	approvers:
+9	  - role: dev-lead
+10	    name: Dev Lead
+11	    approved_at: 2026-09-23
+12	---
+13	
+14	# Spec — Validar el formato de la franja
+15	
+16	## Intent
+17	
+18	`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+19	
+20	## Delta de comportamiento
+21	
+22	### Capacidad: `booking`
+23	
+24	**ADDED — La franja se valida al reservar**
+25	- GIVEN una franja que no casa con `HH-HH`
+26	- WHEN se reserva
+27	- THEN f
+
+>>> Bash: cat tests/slot-format.test.js 2>/dev/null; echo ---; cat tests/free-format.test.js 2>/dev/null; echo ---; cat src/slots.js
+<<< import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+---
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('libres rechaza una franja sin guion', () => {
+  assert.throws(() => free('1012'), /Franja no válida/);
+});
+---
+const SLOT = /^\d{2}-\d{2}$/;
+
+function assertSlot(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no vál
+
+>>> Bash: node --test tests/slot-format.test.js tests/free-format.test.js 2>&1
+<<< ✔ libres rechaza una franja sin guion (1.3906ms)
+✔ rechaza una franja sin guion (1.6054ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 161.2927
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< The file <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-green\skills\sdd-start-feature\references\commit-milestones.md
+<<< 1	# Un commit por hito
+2	
+3	La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+4	
+5	## Qué lleva cada hito
+6	
+7	| Hito | Lleva | Se junta | Base |
+8	| --- | --- | --- | --- |
+9	| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-green\skills\sdd-start-feature\references\control-profiles.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+>>> Bash: node -e "
+import('./src/slots.js').then(({reserve, free}) => {
+  try { reserve('Norte', '1012'); console.log('NO LANZÓ (reserve)'); }
+  catch (e) { console.log('reserve ->', e.message); }
+  try { free('1012'); console.log('NO LANZÓ (free)'); }
+  catch (e) { console.log('free ->', e.message); }
+  console.log('reserve OK ->', JSON.stringify(reserve('Norte', '10-12')));
+  console.log('free OK ->', JSON.stringify(free('10-12')));
+});
+"
+
+<<< reserve -> Franja no válida: usa HH-HH, p. ej. 10-12
+free -> Franja no válida: usa HH-HH, p. ej. 10-12
+reserve OK -> {"room":"Norte","slot":"10-12"}
+free OK -> []
+
+>>> Bash: time node --test 2>&1 | tail -20
+<<< ✔ libres rechaza una franja sin guion (0.9383ms)
+✔ rechaza una franja sin guion (0.8482ms)
+✔ reserva una sala en una franja (1.0157ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.1016
+
+real	0m0.368s
+user	0m0.030s
+sys	0m0.077s
+
+>>> Bash: git log --oneline -1 HEAD
+<<< 46fdfac refactor(0012): compartir la validación de la franja entre reserve y free
+
+=== RESULTADO (20 turnos, 0.6024766 $)
+Ahora: presento la validación del trabajo (paso 7) para que se confirme antes del cierre. Queda: tu validación explícita — sin ella la feature sigue en espera, ~0 min de trabajo mío.
+
+## Me salí del plan en…
+
+- **Re-revisión sin subagente.** `HEAD` avanzó (`044f034`, `46fdfac`) tras la revisión final limpia sobre `f10d732`. El paso 7 exige re-revisar ese tramo antes de presentar. Intenté despachar el revisor final (`sdd-kit:effort-high` + opus) y el despacho no está disponible en esta campaña. Hice yo mismo, como hilo principal, la misma revisión que le habría encargado: mismo bloque de restricciones de código, mismo alcance (`f10d732..46fdfac`), leyendo `spec.md`, `plan.md`, el diff completo y `src/slots.js` resultante, y ejecutando los tests afectados. **Veredicto: Ready — 0 Critical, 0 Important, 0 Minor.** El refactor (`assertSlot`) conserva el mensaje literal y el comportamiento de `reserve` y `free` exactamente; no introduce problemas nuevos. Registrado en `tasks.md`.
+
+## Qué hay
+
+Feature 0012 completa: `reserve` y `free` validan la franja contra `/^\d{2}-\d{2}$/` y lanzan `Franja no válida: usa HH-HH, p. ej. 10-12` si no casa, ahora compartiendo la validación en `assertSlot` (resuelve uno de los dos minors diferidos de la revisión final; el otro —falta un test de una franja válida como 10-12— sigue diferido, sin bloquear).
+
+## Guion de pruebas
+
+No hay app/CLI que levantar: la interfaz son las funciones de `src/slots.js`.
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` → lanza el mismo mensaje.
+3. `reserve('Norte', '10-12')` → `{ room: 'Norte', slot: '10-12' }`, sin error.
+4. `free('10-12')` → `[]`, sin error.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Falla al reservar con franja inválida, mensaje literal | ejecución real — `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Falla al consultar libres con franja inválida, mismo mensaje | ejecución real — `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa: 3 tests, 0 fallos, 140 ms.
+
+---
+
+¿Validas el trabajo — qué has probado tú y que funciona —, o **Diferir: lo prueba el dev-lead a la vuelta, antes de cerrar la feature**?

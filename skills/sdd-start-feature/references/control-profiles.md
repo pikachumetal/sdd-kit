@@ -75,7 +75,7 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No en
 
 **Ruling** (no cambia la spec):
 - El agente no para: decide, registra el ruling (qué decidió, por qué, qué cuesta si se equivoca) y sigue. Arbitra así la contradicción entre «decide con el usuario» y las «Rulings, not stalls» de `subagent-driven-development`: con el usuario ausente, el agente no se queda esperando una pregunta que nadie va a responder.
-- Todo commit del hilo principal —incluido un fix improvisado para esquivar un fichero vetado— entra en el alcance de la revisión de la task en curso o, si no queda ninguna abierta, en la de la revisión final de rama. Un fix sin commit propio, o mezclado sin marcar entre el resto de decisiones, no pasa por revisión.
+- Todo commit del hilo principal —incluido un fix improvisado para esquivar un fichero vetado— entra en el alcance de la revisión de la task en curso; si no queda ninguna abierta, en la de la revisión final de rama; y si la revisión final ya volvió, en la re-revisión del tramo `<revisión final>..HEAD`, antes de la validación o, si ya se presentó, antes del cierre. Un fix sin commit propio, o mezclado sin marcar entre el resto de decisiones, no pasa por revisión.
 - La presentación de la validación abre con el bloque «Me salí del plan en…», separado del resto de decisiones.
 - Lo de arriba vale para lo que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— y no cae en un freno de alcance. Si cae en uno, se trata como un desvío: ver «Frenos de alcance».
 
