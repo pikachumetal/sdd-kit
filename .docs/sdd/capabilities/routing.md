@@ -36,7 +36,34 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN una sesión que arranca con el plugin instalado
 - WHEN el directorio de trabajo no contiene `.docs/sdd/`
 - THEN el hook no inyecta ningún contexto
-- AND cuando sí lo contiene, inyecta el router, que nombra `sdd-start-feature`, `sdd-start-patch` y `sdd-consult`
+- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-start-feature`, `sdd-start-patch`, `sdd-consult`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init-greenfield` y `sdd-init-brownfield`
+
+### Una preferencia de cómo trabajar entra por `sdd-config`
+
+- GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
+- WHEN el usuario escribe «No me gusta que me pares tanto, quiero trabajar con menos preguntas.»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-config`
+- AND el agente no guarda la preferencia en su memoria
+
+### Los items asignados del gestor entran por `sdd-roadmap`
+
+- GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
+- WHEN el usuario escribe «Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona).»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-start-feature`
+
+### Algo grande entra por `sdd-roadmap`
+
+- GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
+- WHEN el usuario pide varias funcionalidades a la vez: «El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Ponte con ello.»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`
+
+### Una petición vaga se pregunta antes de elegir puerta
+
+- GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
+- WHEN el usuario escribe «Hay que mejorar las reservas, que se quejan los usuarios.»
+- THEN el agente no invoca `sdd-start-feature`, `sdd-start-patch` ni `sdd-roadmap` antes de preguntar
+- AND hace una sola pregunta sobre qué es y cuánto abarca, con su recomendación primero
+- AND no crea rama ni carpeta
 
 ### Un patch cuyo fallo no se reproduce no se abre
 
