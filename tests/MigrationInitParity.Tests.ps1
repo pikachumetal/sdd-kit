@@ -38,7 +38,7 @@ Describe 'Paridad migración–init' {
     $script:Migrations.Count | Should -BeGreaterOrEqual 3
   }
 
-  It '<_> declara lo que escribe en su línea **Escribe**' -ForEach @('v1.0.0.md', 'v1.1.0.md', 'v1.2.0.md') {
+  It '<_> declara lo que escribe en su línea **Escribe**' -ForEach @('v1.0.0.md', 'v1.1.0.md', 'v2.0.0.md') {
     Get-DeclaredTokens (Get-Content (Join-Path $script:MigrationsDir $_) -Raw) | Should -Not -BeNullOrEmpty
   }
 
@@ -83,14 +83,14 @@ Describe 'Configuración y log que deja la init' {
     $skill | Should -Match 'estimation-log nace con filas'
   }
 
-  It 'la migración a v1.2.0 ordena ids, control, configuración, memoria, la retirada de sdd-start-release y marcador' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
-    $steps = [regex]::Matches($migration, '(?m)^\d\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
-    $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', '`sdd-start-release` retirada', 'Marcador')
+  It 'la migración a v2.0.0 ordena ids, control, configuración, memoria, la retirada de sdd-start-release, capacidades, nombres de feature, marketplace y marcador' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $steps = [regex]::Matches($migration, '(?m)^\d+\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
+    $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', '`sdd-start-release` retirada', 'Historial de las capacidades', 'Propósito de las capacidades', 'Nombres de las skills de feature', 'Marketplace de superpowers', 'Marcador')
   }
 
   It 'el paso de memoria nombra la carpeta, el índice y el gate de borrado' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
     foreach ($literal in '~/.claude/projects/<project>/memory/', 'autoMemoryDirectory', 'MEMORY.md', 'pendiente explícito', 'la tabla va igual en el informe') {
       $migration.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }

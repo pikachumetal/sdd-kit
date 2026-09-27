@@ -71,6 +71,8 @@ Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, com
 
 Si antes lo tenías apuntando a un clon local, `/plugin marketplace add` falla con `Cannot add marketplace "sdd-kit": its network source differs from the one declared for it in settings`. Cambia la fuente de `extraKnownMarketplaces.sdd-kit` a `github` en tu `~/.claude/settings.json` antes de añadirlo. Un mismo nombre de marketplace no admite dos fuentes: la de usuario y la de proyecto tienen que ser idénticas, `ref` incluido.
 
+Fija también el modelo en tu `~/.claude/settings.json` (por ejemplo, `"model": "opus"`). Sin esa clave, una sesión puede arrancar en el modelo más caro, y el hilo principal se lleva cerca del 90 % del coste de una sesión. Antes de implementar un plan largo, el kit te ofrece bajar a Sonnet.
+
 Si solo quieres una skill suelta, o usas otro agente:
 
 ```bash
@@ -92,7 +94,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
-| `sdd-start-feature` | El carril completo: contexto, spec, plan, tasks, con gate de aprobación en cada paso. |
+| `sdd-start-feature` | El carril completo: contexto, spec, plan, tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
 | `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
 | `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria. |
 | `sdd-end-patch` | Cierre del patch. El merge lo decides tú. |
@@ -115,7 +117,7 @@ El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus relea
 
 ## Estado
 
-La 1.1.0 está cerrada. La 1.2.0 está abierta con 16 tasks que salieron de siete tickets de campo: agentes que usaron el kit en proyectos reales y reportaron dónde se rompía. Lo que más pesa ahí es `capabilities/`, el fichero por capacidad donde vive el comportamiento del producto; hoy el agente no siempre la crea cuando toca.
+La 2.0.0 está publicada. Salió de los tickets de campo de la 1.1.0 y trae menos paradas, el enrutado automático, la unidad de trabajo llamada feature y la puerta del roadmap. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
 
 Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastante.
 
@@ -156,7 +158,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 | [`superpowers`](https://github.com/obra/superpowers) | Sí | Se resuelve sola con el plugin. Manual: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
 | `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
 
-Las init y la migración a v1.2.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
+Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
 El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-09-27; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 

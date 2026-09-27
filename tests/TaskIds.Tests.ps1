@@ -83,8 +83,8 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
       Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match 'numera|secuencia propia'
     }
 
-    It 'la migración v1.2.0 existe con su verificación' {
-      $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    It 'la migración v2.0.0 existe con su verificación' {
+      $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
       $migration | Should -Match 'ids'
       $migration | Should -Match '(?m)^##\s+Verificación'
     }
