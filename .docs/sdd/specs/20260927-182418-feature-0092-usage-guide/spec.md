@@ -130,6 +130,8 @@ Confusiones de los tickets del 2026-09-27 que la guía responde, y dónde:
 
 ## Enmiendas
 
+- 2026-09-27 — La decisión 10 y la línea del Scope que nombra `.docs/sdd/roadmap.md` quedan sin efecto: el dev-lead añadió en `develop` (`3d81a55`) la fila 0092 y el alcance congelado, y el merge de sincronización se quedó con su versión — freno «fila cambiada en la base» antes de la Task 1; la fila coincide con esta spec — aprobada: «Sigue, con tu fila»
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
