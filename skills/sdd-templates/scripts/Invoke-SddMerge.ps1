@@ -94,6 +94,15 @@ function Find-BranchWorktree([string]$ProjectRoot, [string]$Into) {
   return $null
 }
 
+function Test-EmptyOrphanFolder([string]$ProjectRoot, [string]$Path) {
+  if (-not (Test-Path -LiteralPath $Path)) { return $false }
+  if (@(Get-ChildItem -LiteralPath $Path -Force).Count -gt 0) { return $false }
+  $registered = Invoke-IsolatedGit $ProjectRoot @('worktree', 'list', '--porcelain') | ForEach-Object {
+    if ($_ -match '^worktree (.+)$') { [System.IO.Path]::GetFullPath($Matches[1]) }
+  }
+  return $registered -notcontains [System.IO.Path]::GetFullPath($Path)
+}
+
 function Resolve-DestinationWorktree([string]$ProjectRoot, [pscustomobject]$Target, [string]$WorktreesParent) {
   $found = Find-BranchWorktree $ProjectRoot $Target.Into
   if ($null -ne $found) {
@@ -105,7 +114,10 @@ function Resolve-DestinationWorktree([string]$ProjectRoot, [pscustomobject]$Targ
   }
   $lastSegment = ($Target.Branch -split '/')[-1]
   $path = Join-Path $WorktreesParent "merge-$lastSegment"
-  if (Test-Path -LiteralPath $path) { throw "destino sacado: ya existe '$path'." }
+  if (Test-Path -LiteralPath $path) {
+    if (-not (Test-EmptyOrphanFolder $ProjectRoot $path)) { throw "destino sacado: ya existe '$path'." }
+    Remove-Item -LiteralPath $path
+  }
   Invoke-IsolatedGit $ProjectRoot @('worktree', 'add', $path, $Target.Into) | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "destino sacado: no se pudo crear el worktree de '$($Target.Into)' en '$path'." }
   return [pscustomobject]@{ Path = $path; Temporary = $true }
@@ -188,8 +200,9 @@ function Undo-FailedMerge([string]$Worktree, [string]$Before) {
 
 function Remove-MergeWorktree([string]$ProjectRoot, [string]$Path) {
   Invoke-IsolatedGit $ProjectRoot @('worktree', 'remove', $Path) | Out-Null
-  if ($LASTEXITCODE -eq 0) { return }
-  Invoke-IsolatedGit $ProjectRoot @('worktree', 'remove', '--force', $Path) | Out-Null
+  if ($LASTEXITCODE -ne 0) { Invoke-IsolatedGit $ProjectRoot @('worktree', 'remove', '--force', $Path) | Out-Null }
+  # Si un handle abierto en Windows impide borrar la carpeta, git quita el registro igual y la deja vacía.
+  if (Test-EmptyOrphanFolder $ProjectRoot $Path) { Remove-Item -LiteralPath $Path -ErrorAction SilentlyContinue }
 }
 
 if (-not (Test-Path -LiteralPath $ProjectRoot)) { throw "No existe la ruta de proyecto '$ProjectRoot'." }
