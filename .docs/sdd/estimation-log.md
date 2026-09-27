@@ -105,19 +105,20 @@
 | 2026-09-27 | 0032 | docs | 2.5 | 1.2 | 0.48 | 27265k | 1468k | 9.79 | 11.23 | 20260927-124940-feature-0032-final-review-scope |
 | 2026-09-27 | 0086 | docs | 2.5 | 1.5 | 0.6 | 29408k | 2443k | 9.65 | 11.74 | 20260927-125612-feature-0086-spec-review-weight |
 | 2026-09-27 | 0087 | patch | 0.5 | 1.3 | 2.6 | — | — | 3.07 | — | 20260927-131408-patch-0087-roadmap-header-fast-suite |
+| 2026-09-27 | 0085 | docs | 4 | 1.4 | 0.35 | 32497k | 1277k | 23.14 | 12.39 | 20260927-145355-feature-0085-post-final-review |
 
-**Factor de calibración** (ratio mediano real/estimado, 89 artefactos): **0.6** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 90 artefactos): **0.6** · media 0.72
 
-- p25–p75: 0.43–0.95
-- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p25–p75: 0.41–0.95
+- p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 29 % · sobreestimadas: 62 % · infraestimadas: 9 %
-- Error absoluto (h): media 0.86 · mediana 0.7
+- Error absoluto (h): media 0.88 · mediana 0.7
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.6
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 27 | 30 % |
-| 0.5–0.8 | 30 | 34 % |
+| <0.5 | 28 | 31 % |
+| 0.5–0.8 | 30 | 33 % |
 | 0.8–1.25 | 24 | 27 % |
 | 1.25–2 | 7 | 8 % |
 | ≥2 | 1 | 1 % |
@@ -125,7 +126,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 55 | 0.53 | 0.38–0.74 |
+| docs | 56 | 0.53 | 0.38–0.74 |
 | infra/tooling | 13 | 0.4 | 0.36–0.6 |
 | patch | 20 | 1.18 | 0.8–1.35 |
 
@@ -137,6 +138,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 72 | 83.5 | 0.65 | 269.76 | 169.62 |
+| sin publicar | 73 | 84.9 | 0.64 | 292.9 | 182.01 |
 
 > Ver `estimation.md`.

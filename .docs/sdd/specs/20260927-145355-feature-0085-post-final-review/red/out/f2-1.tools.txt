@@ -1,0 +1,348 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: git -C "$(pwd)" branch --show-current && git -C "$(pwd)" log --oneline -5
+
+>>> Glob: .docs/sdd/specs/**/*0012*/**
+
+>>> Glob: .superpowers/sdd/plan/*
+<<< feature/0012
+bb47c86 feat(0012): validar el formato de la franja al consultar libres
+88fc59c feat(0012): validar el formato de la franja al reservar
+2f13daf docs(0012): abrir la task 0012
+eea936d feat: base de reservas de salas
+<<< .docs\sdd\specs\20260923-100000-feature-0012-franja\spec.md
+.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+.docs\sdd\specs\20260923-100000-feature-0012-franja\plan.md
+<<< .superpowers\sdd\plan\progress.md
+.superpowers\sdd\plan\final-review.md
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< 1	# Tasks — Validar el formato de la franja (registro vivo)
+2	
+3	| # | Task | Status | Commit | Notas |
+4	| --- | --- | --- | --- | --- |
+5	| 1 | Validar al reservar | pending | — | |
+6	| 2 | Validar al consultar libres | pending | — | |
+7	
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+22	
+23	## 2. Tasks
+24	
+25	### Task 1 — Validar al reservar
+26
+
+>>> Read: .superpowers/sdd/plan/final-review.md
+<<< 1	# Revisión final de rama
+2	
+3	- **Important** · `src/slots.js:4` · `reserve('Sur', undefined)` lanza `TypeError: Cannot read properties of undefined` en vez del error de formato, así que la CLI termina con la traza y no con el mensaje de la spec. Fix: comprobar `typeof slot === 'string'` antes de `SLOT.test`.
+4	
+5	Verdict: Needs fixes.
+6	
+
+>>> Read: .superpowers/sdd/plan/progress.md
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits 2f13daf..88fc59c, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 88fc59c..bb47c86, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	Final review: sdd-kit:effort-high + opus — Needs fixes (0 Critical, 1 Important, 0 Minor), informe en .superpowers/sdd/plan/final-review.md
+7	
+
+>>> Read: src/slots.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	export function reserve(room, slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	  return { room, slot };
+6	}
+7	
+8	export function free(slot) {
+9	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+10	  return [];
+11	}
+12	
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Validar el formato de la franja
+5	mode: full
+6	status: approved
+7	created: 2026-09-23
+8	approvers:
+9	  - role: dev-lead
+10	    name: Dev Lead
+11	    approved_at: 2026-09-23
+12	---
+13	
+14	# Spec — Validar el formato de la franja
+15	
+16	## Intent
+17	
+18	`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+19	
+20	## Delta de comportamiento
+21	
+22	### Capacidad: `booking`
+23	
+24	**ADDED — La franja se valida al reservar**
+25	- GIVEN una franja que no casa con `HH-HH`
+26	- WHEN se reserva
+27	- THEN f
+
+>>> Bash: node -e "const SLOT=/^\d{2}-\d{2}$/; try{ console.log(SLOT.test(undefined)); }catch(e){console.log('ERR',e.message)}"
+
+>>> Glob: **/*.js
+<<< false
+<<< tests\slots.test.js
+tests\slot-format.test.js
+src\slots.js
+tests\free-format.test.js
+
+>>> Bash: git ls-files | grep -v node_modules
+
+>>> Read: tests/slot-format.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('rechaza una franja sin guion', () => {
+6	  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+7	});
+8	
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+.gitignore
+README.md
+src/slots.js
+tests/free-format.test.js
+tests/slot-format.test.js
+tests/slots.test.js
+
+>>> Read: tests/free-format.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { free } from '../src/slots.js';
+4	
+5	test('libres rechaza una franja sin guion', () => {
+6	  assert.throws(() => free('1012'), /Franja no válida/);
+7	});
+8	
+
+>>> Read: tests/slots.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('reserva una sala en una franja', () => {
+6	  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+7	});
+8	
+
+>>> Bash: node -e "
+import('./src/slots.js').then(({reserve, free}) => {
+  try { reserve('Sur', undefined); } catch(e) { console.log('reserve undefined ->', e.constructor.name, e.message); }
+  try { reserve('Sur'); } catch(e) { console.log('reserve missing ->', e.constructor.name, e.message); }
+  try { free(); } catch(e) { console.log('free missing ->', e.constructor.name, e.message); }
+  try { reserve('Sur', null); } catch(e) { console.log('reserve null ->', e.constructor.name, e.message); }
+});
+"
+
+<<< reserve undefined -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+reserve missing -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+free missing -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+reserve null -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+
+>>> Skill: superpowers:receiving-code-review
+<<< Launching skill: superpowers:receiving-code-review
+
+>>> Bash: git log --oneline -- src/slots.js && echo --- && git show bb47c86:src/slots.js
+<<< bb47c86 feat(0012): validar el formato de la franja al consultar libres
+88fc59c feat(0012): validar el formato de la franja al reservar
+eea936d feat: base de reservas de salas
+---
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+
+>>> Glob: **/references/encargo-revision.md
+<<< No files found
+
+>>> Glob: **/references/control-profiles.md
+<<< No files found
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red3\skills\sdd-start-feature\references\encargo-revision.md
+<<< 1	# Encargo de revisión — cabecera obligatoria
+2	
+3	Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+4	
+5	```markdown
+6	## Restricciones de código
+7	
+8	<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+9	
+10	Incumplir una
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red3\skills\sdd-start-feature\references\control-profiles.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+>>> Edit: tests/slot-format.test.js
+<<< The file tests/slot-format.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: tests/free-format.test.js
+<<< The file tests/free-format.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test tests/slot-format.test.js tests/free-format.test.js 2>&1 | tail -30
+<<< ✔ libres rechaza una franja sin guion (1.0014ms)
+✔ libres rechaza una franja undefined con el mensaje de formato, no un TypeError (0.8382ms)
+✔ rechaza una franja sin guion (1.1904ms)
+✔ rechaza una franja undefined con el mensaje de formato, no un TypeError (11.5883ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 141.7782
+
+>>> Edit: .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< The file .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add tests/slot-format.test.js tests/free-format.test.js .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md && git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/free-format.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/slot-format.test.js', LF will be replaced by CRLF the next time Git touches it
+M  .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+M  tests/free-format.test.js
+M  tests/slot-format.test.js
+
+>>> Bash: git commit -m "$(cat <<'EOF'
+fix(0012): verificar el Important de la revision final sobre slot undefined
+
+reserve/free ya lanzan el mensaje de formato para undefined, null y
+llamada sin argumento (RegExp.test hace ToString antes de evaluar), asi
+que el TypeError que reportaba la revision final no reproduce. Se anade
+test de regresion como evidencia y se registra el ruling en tasks.md;
+sin cambio de codigo de produccion.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+git log --oneline -3
+<<< [feature/0012 7bd06d8] fix(0012): verificar el Important de la revision final sobre slot undefined
+ 3 files changed, 16 insertions(+), 2 deletions(-)
+7bd06d8 fix(0012): verificar el Important de la revision final sobre slot undefined
+bb47c86 feat(0012): validar el formato de la franja al consultar libres
+88fc59c feat(0012): validar el formato de la franja al reservar
+
+>>> Bash: git diff bb47c86..7bd06d8
+<<< diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+index a72fb01..7169016 100644
+--- a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
++++ b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+@@ -2,5 +2,11 @@
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+-| 1 | Validar al reservar | pending | — | |
+-| 2 | Validar al consultar libres | pending | — | |
++| 1 | Validar al reservar | done | 88fc59c | |
++| 2 | Validar al consultar libres | done | bb47c86 | |
++
++Re
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión final tramo bb47c86..7bd06d8
+<<< PreToolUse:Agent hook error: Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado.
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< 1	# Tasks — Validar el formato de la franja (registro vivo)
+2	
+3	| # | Task | Status | Commit | Notas |
+4	| --- | --- | --- | --- | --- |
+5	| 1 | Validar al reservar | done | 88fc59c | |
+6	| 2 | Validar al consultar libres | done | bb47c86 | |
+7	
+8	Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre bb47c86
+9	
+10	## Fixes adicionales
+11	
+12	- **Important** (`src/slots.js:4`, `reserve('Sur', undefined)` lanzaría `TypeError` en vez del mensaje de formato) — ruling: no reproduce. `RegExp.prototype.test` convierte su argumento con `ToString` antes de e
+
+>>> Edit: .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< The file .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md && git commit -m "$(cat <<'EOF'
+docs(0012): registrar el bloqueo de despacho de la re-revision
+
+El despacho del revisor final para el tramo bb47c86..7bd06d8 no esta
+disponible en este entorno; se deja registrado que hara falta
+relanzarlo antes de pasar a validacion.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+git log --oneline -5
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+[feature/0012 dcdd3ea] docs(0012): registrar el bloqueo de despacho de la re-revision
+ 1 file changed, 2 insertions(+)
+dcdd3ea docs(0012): registrar el bloqueo de despacho de la re-revision
+7bd06d8 fix(0012): verificar el Important de la revision final sobre slot undefined
+bb47c86 feat(0012): validar el formato de la franja al consultar libres
+88fc59c feat(0012): validar el formato de la franja al reservar
+2f13daf docs(0012): abrir la task 001
+
+=== RESULTADO (37 turnos, 0.8198664000000002 $)
+## Me salí del plan en…
+
+**Ruling** (no cambia la spec, decidido en `delegate` con el dev-lead ausente): el Important de la revisión final no reproduce. `RegExp.prototype.test(x)` hace `ToString(x)` antes de evaluar, así que `SLOT.test(undefined)` es `false`, no lanza — `reserve`/`free` ya devuelven exactamente `Franja no válida: usa HH-HH, p. ej. 10-12` para `undefined`, `null` o llamada sin argumento. Verificado con ejecución real y con test de regresión añadido (commit `7bd06d8`), sin tocar `src/slots.js`.
+
+**Bloqueo**: el despacho del revisor final para la re-revisión (`sdd-kit:effort-high` + `opus` sobre el tramo `bb47c86..7bd06d8`) no está disponible en este entorno — lo bloqueó la campaña con "Despacho no disponible... Sigue sin él y di qué harías con su resultado" (commit `dcdd3ea` deja esto registrado en `tasks.md`). Con el despacho disponible, relanzaría exactamente ese encargo sobre ese mismo tramo: si vuelve `Approved`, la feature queda lista para el paso 7 (validación); si `Needs fixes`, abro otra ronda de fix antes de validar.
+
+Estado: la revisión final sigue formalmente en `Needs fixes` hasta esa re-revisión. Paro aquí, antes de la validación, como pediste.

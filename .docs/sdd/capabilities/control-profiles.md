@@ -50,7 +50,8 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### Salir del plan es un ruling visible
 - GIVEN una ejecución que se aparta del plan sin cambiar la spec (un fichero de «NO se tocan», un orden distinto, un fix del hilo principal) y sin caer en un freno de alcance
 - WHEN el agente decide
-- THEN no para: registra el ruling, y todo commit del hilo principal entra en el alcance de la revisión de la task en curso o, si no queda ninguna, de la revisión final de rama
+- THEN no para: registra el ruling, y todo commit del hilo principal entra en el alcance de la revisión de la task en curso; si no queda ninguna, de la revisión final de rama; y si la revisión final ya volvió, de la re-revisión del tramo `<revisión final>..HEAD`
+- AND un commit del hilo cuyos ficheros están todos bajo `.docs/` o son `*.md` de la raíz, y que cambia menos de 20 líneas (añadidas más borradas, `git diff --numstat`; en un merge, las de `git show --remerge-diff`), no despacha revisor: el hilo lee el diff y lo anota en «Me salí del plan en…» como `revisado en el hilo: <sha> · <ficheros> · <n> líneas`
 - AND la presentación de la validación abre con el bloque «Me salí del plan en…», separado del resto de decisiones
 
 ### El tercer fix descubierto abre un checkpoint de alcance

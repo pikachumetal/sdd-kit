@@ -1,0 +1,115 @@
+=== Re-revisión final tramo bb47c86..7bd06d8
+## Restricciones de código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+Incumplir esta restricción es **Important**, aunque el resto del encargo no lo mencione.
+
+Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
+
+## Cómo revisar
+
+No ejecutes la suite, el build ni el lint: la evidencia de tests ya está en este encargo. No rehagas el diff con git salvo para confirmar lo que se te da aquí.
+
+## Contexto
+
+Eres el revisor final de rama para la feature 0012 (`Validar el formato de la franja`), repo de reservas de salas. Tu revisión final anterior sobre el commit `bb47c86` devolvió:
+
+> **Important** · `src/slots.js:4` · `reserve('Sur', undefined)` lanza `TypeError: Cannot read properties of undefined` en vez del error de formato, así que la CLI termina con la traza y no con el mensaje de la spec. Fix: comprobar `typeof slot === 'string'` antes de `SLOT.test`.
+>
+> Verdict: Needs fixes.
+
+El hilo principal investigó ese Important antes de tocar código y concluyó que **no reproduce**: `RegExp.prototype.test(x)` convierte `x` a string con `ToString` antes de evaluar el patrón (comportamiento estándar de ECMAScript), así que `SLOT.test(undefined)` devuelve `false` (no lanza), y por tanto `!SLOT.test(undefined)` es `true`, lo que hace que `reserve`/`free` lancen exactamente `new Error('Franja no válida: usa HH-HH, p. ej. 10-12')` — el mensaje esperado, no un `TypeError`. Esto se verificó con ejecución real:
+
+```
+$ node -e "import('./src/slots.js').then(({reserve, free}) => {
+  try { reserve('Sur', undefined); } catch(e) { console.log('reserve undefined ->', e.constructor.name, e.message); }
+  try { reserve('Sur'); } catch(e) { console.log('reserve missing ->', e.constructor.name, e.message); }
+  try { free(); } catch(e) { console.log('free missing ->', e.constructor.name, e.message); }
+  try { reserve('Sur', null); } catch(e) { console.log('reserve null ->', e.constructor.name, e.message); }
+});"
+reserve undefined -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+reserve missing -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+free missing -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+reserve null -> Error Franja no válida: usa HH-HH, p. ej. 10-12
+```
+
+`git show bb47c86:src/slots.js` confirma que el código revisado es exactamente el HEAD actual salvo por el commit de fix-pass de abajo (no hubo commits intermedios que lo cambiaran).
+
+Como fix-pass (commit `7bd06d8`, tramo `bb47c86..7bd06d8`), el hilo principal:
+- NO tocó `src/slots.js` (ningún cambio de código de producción).
+- Añadió tests de regresión que fijan el comportamiento correcto:
+  - `tests/slot-format.test.js`: `reserve('Sur', undefined)` debe lanzar `/Franja no válida: usa HH-HH, p\. ej\. 10-12/` (no un TypeError).
+  - `tests/free-format.test.js`: `free(undefined)` debe lanzar el mismo mensaje.
+  - Ambos tests están en VERDE ejecutando `node --test tests/slot-format.test.js tests/free-format.test.js` (4 pass, 0 fail).
+- Actualizó `.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md`: marcó las Tasks 1 y 2 como `done` con sus commits, registró la línea de la revisión final anterior, y documentó este hallazgo como **ruling** (no reproduce, no cambia la spec) en la sección "Fixes adicionales".
+
+Diff completo del tramo `bb47c86..7bd06d8`:
+
+```diff
+diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+index a72fb01..7169016 100644
+--- a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
++++ b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+@@ -2,5 +2,11 @@
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+-| 1 | Validar al reservar | pending | — | |
+-| 2 | Validar al consultar libres | pending | — | |
++| 1 | Validar al reservar | done | 88fc59c | |
++| 2 | Validar al consultar libres | done | bb47c86 | |
++
++Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre bb47c86
++
++## Fixes adicionales
++
++- **Important** (`src/slots.js:4`, `reserve('Sur', undefined)` lanzaría `TypeError` en vez del mensaje de formato) — ruling: no reproduce. `RegExp.prototype.test` convierte su argumento con `ToString` antes de evaluarlo (`SLOT.test(undefined)` → `false`, no lanza), así que `reserve`/`free` ya devuelven `Franja no válida: usa HH-HH, p. ej. 10-12` para `undefined`, `null` y llamada sin argumento — verificado con ejecución real (`node -e`) y con test añadido. Sin cambio de código; añadidos tests de regresión en `tests/slot-format.test.js` y `tests/free-format.test.js` que fijan el comportamiento. Dev-lead ausente; decidido como ruling (no cambia la spec) en perfil `delegate`.
+diff --git a/tests/free-format.test.js b/tests/free-format.test.js
+index 423b3f4..b79e15b 100644
+--- a/tests/free-format.test.js
++++ b/tests/free-format.test.js
+@@ -5,3 +5,7 @@ import { free } from '../src/slots.js';
+ test('libres rechaza una franja sin guion', () => {
+   assert.throws(() => free('1012'), /Franja no válida/);
+ });
++
++test('libres rechaza una franja undefined con el mensaje de formato, no un TypeError', () => {
++  assert.throws(() => free(undefined), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
++});
+diff --git a/tests/slot-format.test.js b/tests/slot-format.test.js
+index fe564f1..6aab4a3 100644
+--- a/tests/slot-format.test.js
++++ b/tests/slot-format.test.js
+@@ -5,3 +5,7 @@ import { reserve } from '../src/slots.js';
+ test('rechaza una franja sin guion', () => {
+   assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+ });
++
++test('rechaza una franja undefined con el mensaje de formato, no un TypeError', () => {
++  assert.throws(() => reserve('Sur', undefined), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
++});
+```
+
+Para referencia, el contenido completo actual de `src/slots.js` (sin cambios en este tramo):
+
+```js
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+```
+
+## Tu tarea
+
+Evalúa con rigor técnico si el argumento del hilo principal (el Important no reproduce, por el comportamiento estándar de `RegExp.prototype.test`) es correcto, y si el tramo `bb47c86..7bd06d8` resuelve razonablemente el Important sin introducir nuevos problemas (Critical/Important/Minor), respetando las Restricciones de código de arriba. No repitas la revisión completa de toda la rama, solo audita este tramo y el razonamiento sobre el finding.
+
+Devuelve el informe en el mismo formato que la revisión final original: una lista de hallazgos (`Critical`/`Important`/`Minor`, con archivo:línea y fix sugerido) o ninguno, y una línea final `Verdict: <Approved | Needs fixes>`.
+
