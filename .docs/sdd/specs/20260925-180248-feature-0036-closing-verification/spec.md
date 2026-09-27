@@ -4,7 +4,7 @@ feature: 0036
 parent: 0006
 title: Verificación de cierre, qué cuenta
 mode: full
-status: approved
+status: done
 created: 2026-09-25
 author: Claude (Opus 5.5), por delegación del dev-lead
 approvers:
@@ -97,6 +97,7 @@ Guía en el punto de uso: cada regla va en el paso que produce la salida (la par
 - WHEN el agente termina de usarla
 - THEN la para por el PID que guardó al arrancarla o por el proceso que escucha en el puerto 4656
 - AND ninguna tool call la para por el nombre del ejecutable (`taskkill /IM node.exe`, `pkill node`, `killall node`, `Stop-Process -Name node`) ni por un patrón de su línea de comandos (`pkill -f server.mjs`, filtrar `CommandLine`)
+- AND antes de arrancar comprueba que el puerto 4656 está libre (si no, no es suyo: usa otro), y tras parar, que quedó libre; si sigue escuchando, para el que escucha, porque el PID guardado era el de un lanzador
 
 **ADDED — El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado**
 
@@ -137,7 +138,7 @@ Guía en el punto de uso: cada regla va en el paso que produce la salida (la par
 
 ## Enmiendas
 
-- _Ninguna_
+- 2026-09-25 — el requisito «El agente para lo que arrancó por su PID o su puerto» gana el AND del puerto propio (libre antes de arrancar y después de parar) — hallazgo Important de la revisión final: `v6-2` arrancó en un puerto que tenía otro sujeto y un `Stop-Process` por el PID del lanzador dejó al hijo escuchando — aprobada: «Frase + 2 sujetos (Recomendada)»
 
 ## Aprobaciones
 

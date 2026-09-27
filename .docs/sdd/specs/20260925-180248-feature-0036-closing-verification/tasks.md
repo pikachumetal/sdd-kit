@@ -10,7 +10,7 @@
 
 Evidencia de la campaña: `9dcfbf9` (GREEN y REFACTOR de las Tasks 3 y 4). Integración de `develop` (patch 0078): `2fd8a9b`.
 
-Revisión final: sdd-kit:effort-high + opus, «With fixes»: 0 Critical, 5 Important, 5 Minor.
+Revisión final: sdd-kit:effort-high + opus, «With fixes»: 0 Critical, 5 Important (arreglados en `de6fb50` y `cbf33b9`, el del puerto con GREEN 2/2), 5 Minor (2 corregidos en la evidencia, 3 diferidos a deuda).
 
 Rulings de la ejecución (del ledger):
 

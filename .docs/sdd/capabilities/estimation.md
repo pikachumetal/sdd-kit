@@ -114,3 +114,8 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
 - THEN `estimation-log.md` tiene dos filas, con ids `0063` y `0079`
 - AND la cabecera de la tabla es `| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |`
+
+### El log lee igual los walkthroughs de antes y de después de la evidencia por THEN
+- GIVEN un walkthrough cerrado con la tabla 4.2 vieja (`| # | Caso | Resultado |`) y otro con la forma nueva (fila por THEN con evidencia y duración de la suite en 4.1)
+- WHEN se ejecuta `Build-EstimationLog.ps1`
+- THEN los dos dan su fila con el mismo tipo, estimación, esfuerzo real, tokens y coste que declara su bloque «2. Tiempo y coste», sin aviso
