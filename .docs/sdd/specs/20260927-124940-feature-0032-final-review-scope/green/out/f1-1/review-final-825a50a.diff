@@ -1,0 +1,103 @@
+# Review package: 6a6afcc8c65cfbabba56af50e8198807ff1d2a30..HEAD
+
+## Commits
+825a50a feat(0012): validar el formato de la franja al consultar libres
+1d72191 merge: integrar develop en la feature 0012
+60b7412 test(0012): evidencia de la prueba manual
+1025b21 feat(0012): validar el formato de la franja al reservar
+8ee5751 docs(0012): spec lite de la feature 0012
+
+## Files changed
+ .../20260927-100000-feature-0012-franja/spec.md    | 38 ++++++++++++++++++++++
+ src/slots.js                                       |  8 +++++
+ tests/free-format.test.js                          |  7 ++++
+ tests/slot-format.test.js                          |  7 ++++
+ 4 files changed, 60 insertions(+)
+
+## Diff
+diff --git a/.docs/sdd/specs/20260927-100000-feature-0012-franja/spec.md b/.docs/sdd/specs/20260927-100000-feature-0012-franja/spec.md
+new file mode 100644
+index 0000000..cabd2f8
+--- /dev/null
++++ b/.docs/sdd/specs/20260927-100000-feature-0012-franja/spec.md
+@@ -0,0 +1,38 @@
++---
++id: 20260927-100000-feature-0012-franja
++feature: 0012
++title: Validar el formato de la franja
++mode: lite
++status: approved
++created: 2026-09-23
++approvers:
++  - role: dev-lead
++    name: Dev Lead
++    approved_at: 2026-09-23
++---
++
++# Spec — Validar el formato de la franja
++
++## Intent
++
++`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
++
++## Delta de comportamiento
++
++### Capacidad: `booking`
++
++**ADDED — La franja se valida al reservar**
++- GIVEN una franja que no casa con `HH-HH`
++- WHEN se reserva
++- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
++
++**ADDED — La franja se valida al consultar libres**
++- GIVEN una franja que no casa con `HH-HH`
++- WHEN se consultan las salas libres
++- THEN falla con el mismo mensaje
++
++## Aprobaciones
++
++| Rol | Nombre | Fecha | Estado |
++| --- | --- | --- | --- |
++| dev-lead | Dev Lead | 2026-09-23 | aprobada |
+diff --git a/src/slots.js b/src/slots.js
+index 5b2e730..54c9fd9 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -1,3 +1,11 @@
++const SLOT = /^\d{2}-\d{2}$/;
++
+ export function reserve(room, slot) {
++  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+   return { room, slot };
+ }
++
++export function free(slot) {
++  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++  return [];
++}
+diff --git a/tests/free-format.test.js b/tests/free-format.test.js
+new file mode 100644
+index 0000000..423b3f4
+--- /dev/null
++++ b/tests/free-format.test.js
+@@ -0,0 +1,7 @@
++import { test } from 'node:test';
++import assert from 'node:assert';
++import { free } from '../src/slots.js';
++
++test('libres rechaza una franja sin guion', () => {
++  assert.throws(() => free('1012'), /Franja no válida/);
++});
+diff --git a/tests/slot-format.test.js b/tests/slot-format.test.js
+new file mode 100644
+index 0000000..fe564f1
+--- /dev/null
++++ b/tests/slot-format.test.js
+@@ -0,0 +1,7 @@
++import { test } from 'node:test';
++import assert from 'node:assert';
++import { reserve } from '../src/slots.js';
++
++test('rechaza una franja sin guion', () => {
++  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
++});
