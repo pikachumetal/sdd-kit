@@ -1,0 +1,44 @@
+--- [4]
+Primero leo estado actual: config del kit, spec existente y contexto SDD.
+
+--- [33]
+Despacho el revisor único (los siete puntos), sin parar a confirmar: perfil `delegate`, usuario ausente y regla de paralelismo restringido de la skill.
+
+--- [44]
+Ahora añado un THEN al cierre de caja reflejando que es consulta en vivo, y la subsección de hallazgos.
+
+--- [46]
+Ahora la subsección de hallazgos, justo tras el bloque de decisiones.
+
+--- [55]
+Paso 4 completado: repaso de coherencia hecho, un revisor (los siete puntos) despachado y sus hallazgos incorporados. Spec lista para el gate.
+
+**Decisiones que he tomado yo — valida estas**
+
+Review de spec: un revisor, los siete puntos (paralelismo restringido + spec delegada) — señales: capacidad nueva `payments`, contrato público (`GET /api/bookings` añade `paid`), MODIFIED (2 requisitos de `bookings`), datos/migración (`paid_at`, `db/002-paid-at.sql`), reglas de visibilidad (rol «gestor de cobros»).
+
+1. Capacidad nueva `payments`: reglas propias de cobro, no de la reserva.
+2. Rol nuevo «gestor de cobros»: registra y anula — recepción solo consulta.
+3. Pago en columna `paid_at` de `bookings` (migración `db/002-paid-at.sql`, nula en reservas existentes).
+4. Portal recibe campo `paid` en `GET /api/bookings`.
+5. Cobro se anula el mismo día; después, solo con abono.
+6. Búsqueda por cliente tiene 2 entradas en código: `src/search.js` (mostrador, entra) y `src/phone.js` (ficha de llamada, no entra).
+7. `paid_at` viaja con la reserva en la importación entre sedes, igual que `code`/`customer`.
+8. Recepción ve «Pendiente de cobro» pero no importe, hora ni cierre de caja — eso es solo del gestor de cobros.
+9. Cierre de caja es consulta en el momento, no registro guardado — anular después no lo descuadra.
+10. «Gestor de cobros» es rol aditivo sobre un recepcionista; alta a mano, sin pantalla nueva.
+11. «Solo con un abono» es texto informativo — no se implementa abono en esta feature.
+
+**Hallazgos de la review** (revisor único, los siete puntos)
+- Rechazado ×2 — pedía ADDED en vez de MODIFIED para los dos requisitos de `bookings`; MODIFIED es correcto, amplían el THEN de un requisito existente.
+- Aceptado — «Solo con un abono» sin abono definido → decisión 11.
+- Aceptado — `paid_at` sin regla de sede → decisión 7.
+- Aceptado — complemento del rol sin declarar → decisión 8.
+- Aceptado — cierre de caja sin decir si es inmutable → decisión 9 + THEN nuevo en el delta.
+- Aceptado — rol aditivo/excluyente sin decidir → decisión 10 + línea en Scope.
+- Aceptado — Scope no aclaraba portal de solo lectura → línea en Intent.
+
+Fichero: `.docs/sdd/specs/20260926-090000-feature-0010-front-desk-payments/spec.md`.
+
+¿Apruebas la spec así, o quieres cambios?
+

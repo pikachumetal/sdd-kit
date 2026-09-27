@@ -1,0 +1,207 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Read: D:\code\worktrees\sdd-kit-0086-spec-review-weight\a04446dc-c3c4-4853-a4d1-d89544e7c199\scratchpad\runs-green\s-1\repo\.docs\sdd\specs\20260926-090000-feature-0011-site-code-field\spec.md
+<<< Claude requested permissions to read from D:\code\worktrees\sdd-kit-0086-spec-review-weight\a04446dc-c3c4-4853-a4d1-d89544e7c199\scratchpad\runs-green\s-1\repo\.docs\sdd\specs\20260926-090000-feature-0011-site-code-field\spec.md, but you haven't granted it yet.
+
+>>> Glob: .docs/sdd/*
+<<< .docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\tech-stack.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\roadmap.md
+
+>>> Read: .docs/sdd/specs/20260926-090000-feature-0011-site-code-field/spec.md
+<<< 1	---
+2	id: 20260926-090000-feature-0011-site-code-field
+3	feature: 0011
+4	title: La sede de origen como campo propio
+5	mode: full
+6	status: draft
+7	created: 2026-09-26
+8	author: agente
+9	approvers:
+10	  - role: dev-lead
+11	    name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — La sede de origen como campo propio
+16	
+17	## Capacidades
+18	
+19	- Modificadas: `bookings` — el portal recibe la sede de la reserva
+20	
+21	## Decisiones que he tomado yo — valida estas
+22	
+23	1. Columna nueva `site` en `bookings` (migración `db/002-site.sql`, con valor por defecto `local` para las reservas ya exi
+
+>>> Read: .docs/sdd/roadmap.md
+<<< 1	# Roadmap — agenda
+2	
+3	## Release 0.5.0
+4	
+5	| id | Feature | Estado |
+6	| --- | --- | --- |
+7	| 0011 | La sede de origen como campo propio | 🔄 en curso |
+8	
+
+>>> Read: .docs/sdd/sdd-kit.json
+<<< 1	{"version": "1.1.0", "ids": {"mode": "sequence"}, "control": {"profile": "delegate"}}
+2	
+
+>>> Glob: .docs/sdd/sdd-kit.local.json
+<<< No files found
+
+>>> Read: .docs/sdd/constitution.md
+<<< 1	# Constitution — agenda
+2	
+3	## Art. 1 — Calidad de código
+4	
+5	- Sin comentarios que repitan el código ni que citen documentos.
+6	- Clean Code: nombres en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación.
+7	
+8	## Art. 2 — Idioma
+9	
+10	Textos visibles en castellano con tildes; código en inglés.
+11	
+12	## Reglas de producto
+13	
+14	- Los datos de reservas viven en la base de datos de cada sede; la importación entre sedes copia la reserva con el código de origen.
+15	
+
+>>> Grep: bookingToJson|site|prefijo|MAD|local
+
+>>> Glob: src/**/*.js
+
+>>> Glob: db/**/*
+<<< Found 1 file
+src\api.js
+<<< src\search.js
+src\phone.js
+src\api.js
+<<< db\001-bookings.sql
+
+>>> Read: src/api.js
+<<< 1	export function bookingToJson(booking) {
+2	  return { code: booking.code, customer: booking.customer, day: booking.day, start: booking.start };
+3	}
+4	
+
+>>> Read: db/001-bookings.sql
+<<< 1	CREATE TABLE bookings (code TEXT PRIMARY KEY, customer TEXT NOT NULL, day TEXT NOT NULL, start INTEGER NOT NULL);
+2	
+
+>>> Read: src/search.js
+<<< 1	export function searchBookings(bookings, query) {
+2	  const text = query.trim().toLowerCase();
+3	  if (text === '') return [];
+4	  return bookings.filter((booking) => booking.customer.toLowerCase().includes(text));
+5	}
+6	
+
+>>> Grep: import|copia|origen|MAD|prefix|prefijo
+
+>>> Glob: **/*.test.js
+<<< No files found
+<<< No matches found
+
+>>> Glob: **/*
+<<< package.json
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\tech-stack.md
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor-watchman.sample
+.git\hooks\post-update.sample
+.git\hooks\pre-applypatch.sample
+.git\hooks\pre-commit.sample
+.git\hooks\pre-merge-commit.sample
+.git\hooks\pre-push.sample
+.git\hooks\pre-rebase.sample
+.git\hooks\pre-receive.sample
+.git\hooks\prepare-commit-msg.sample
+.git\hooks\push-to-checkout.sample
+.git\hooks\sendemail-validate.sample
+.git\hooks\update.sample
+.git\info\exclude
+.git\config
+
+
+>>> Read: .docs/sdd/capabilities/bookings.md
+<<< 1	# Capacidad: bookings
+2	
+3	## Propósito
+4	
+5	Las reservas de la recepción: cómo se buscan y cómo se identifican.
+6	
+7	## Requisitos
+8	
+9	### Búsqueda por cliente
+10	- GIVEN reservas de varios clientes
+11	- WHEN el recepcionista escribe parte del nombre del cliente
+12	- THEN ve las reservas cuyo cliente contiene ese texto, sin distinguir mayúsculas
+13	
+14	### Código de reserva
+15	- GIVEN una reserva creada en la sede
+16	- THEN tiene un código `R-` seguido de cuatro dígitos (`R-0042`)
+17	- AND una reserva importada de la otra sede conserva su código de origen con el prefijo de esa sede delante
+
+>>> Read: src/phone.js
+<<< 1	export function lookupCaller(bookings, spokenName) {
+2	  const name = spokenName.trim().toLowerCase();
+3	  if (name === '') return [];
+4	  return bookings.filter((booking) => booking.customer.toLowerCase().includes(name));
+5	}
+6	
+
+>>> Grep: R-|code
+<<< src\api.js:2:  return { code: booking.code, customer: booking.customer, day: booking.day, start: booking.start };
+
+>>> Read: package.json
+<<< 1	{
+2	  "name": "agenda",
+3	  "version": "0.3.0",
+4	  "type": "module",
+5	  "private": true,
+6	  "scripts": {
+7	    "test": "node --test",
+8	    "lint": "node scripts/lint.mjs"
+9	  }
+10	}
+11	
+
+>>> Read: README.md
+<<< 1	# agenda
+2	
+3	Recepción de un centro de fisioterapia con dos sedes.
+4	
+5	- Buscador del mostrador: `src/search.js`.
+6	- Ficha de llamada (atención telefónica): `src/phone.js`.
+7	- API que consume el portal del cliente: `src/api.js` (`GET /api/bookings`).
+8	
+
+>>> Grep: INSERT|createBooking|insert
+<<< No matches found
+
+>>> Grep: bookings\s*=|customer:|code:.*R-
+<<< Found 1 file
+src\api.js
+
+=== RESULTADO (26 turnos, 0.5136024000000001 $)
+Repasé coherencia del delta MODIFIED contra el código: `bookingToJson` en `src/api.js` es el único punto que arma el JSON de `GET /api/bookings` (confirmado en README, sin otro handler); no existe código de creación/importación de reservas en el repo (no hay INSERT ni fixtures), así que el Scope ya lista los dos únicos ficheros que implementan el cambio. Sin contradicciones entre Decisiones, Scope y el THEN del delta. No hizo falta tocar la spec.
+
+**Decisiones que he tomado yo — valida estas**
+
+1. Columna nueva `site` en `bookings` (migración `db/002-site.sql`, default `local` para reservas existentes).
+2. `GET /api/bookings` añade `site` en `bookingToJson`; resto de campos sin cambio.
+
+Sin review adicional de spec (rúbrica de complejidad no la pide: 2 ficheros de una línea, sin migración de datos existentes con riesgo).
+
+Spec en `.docs/sdd/specs/20260926-090000-feature-0011-site-code-field/spec.md`, lista para el gate.
+
+¿Apruebas la spec?

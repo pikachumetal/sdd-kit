@@ -1,0 +1,43 @@
+--- [28]
+No conflicto: rol nuevo, sin sistema previo. Corrijo el gap de Scope (phone.js) y sigo con el resto del paso 4.
+
+--- [35]
+Ahora despacho el revisor único (los siete puntos), efort-medium/sonnet, sin paralelizar.
+
+--- [37]
+Revisor despachado. Espero su vuelta antes de incorporar hallazgos y cerrar el paso 4.
+
+--- [43]
+Revisor de spec en marcha; te aviso al volver con los hallazgos.
+
+--- [46]
+1. Crítico · Delta payments / anulación · La regla «solo con un abono» y el corte «mismo día» no aparecen en `constitution.md` ni en `capabilities/bookings.md`; Scope dice explícitamente «No entra: abonos» pero el escenario de anulación depende de un abono para el día siguiente — se cita un mecanismo excluido del alcance como vía de solución. · Mover la regla de corte y el mensaje a «Reglas de la capacidad» de `payments`, o quitar la mención al abono y dejar solo «no se puede anular» si el abono no entra.
+
+2. Crítico · Capacidad `bookings` MODIFIED · «Código de reserva» (formato `R-0042`, prefijo de importación) sigue vigente en `capabilities/bookings.md` pero la spec no lo toca ni lo repite en el delta; el MODIFIED de «El portal del cliente lista sus reservas» añade `paid` sin decir si `code`/`customer`/`day`/`start` cambian de formato — está bien, pero el otro requisito («Código de reserva») no se menciona en absoluto, dejando sin decidir si sigue igual tras el cambio de esquema. · Añadir una línea explícita: «Código de reserva: no aplica / sin cambios».
+
+3. Importante · Rol nuevo «gestor de cobros» · Se dice qué hace (registra y anula) pero no qué le está prohibido: ¿puede buscar reservas como el recepcionista?, ¿ve datos de clientes de la otra sede?, ¿el recepcionista puede anular si es también gestor de cobros? El punto 2 de «Decisiones» solo afirma «recepción los consulta, no los registra», pero no dice si el gestor de cobros pierde acceso a otras funciones de recepción. · Añadir en Delta o Reglas de la capacidad qué no puede ver/hacer el rol nuevo (o remitir a `roles.js` con la restricción explícita).
+
+4. Importante · `paid_at` nula en reservas existentes · El punto 3 de «Decisiones» dice que la migración deja `paid_at` nula para reservas ya existentes, pero ningún escenario GIVEN/WHEN/THEN cubre qué ve el buscador o el portal para esas reservas migradas (¿aparecen como «Pendiente de cobro» igual que las nuevas sin pagar?). · Añadir un escenario o nota explícita: reservas con `paid_at` nulo se tratan como no pagadas.
+
+5. Importante · MODIFIED «El portal del cliente lista sus reservas» · Verificabilidad: el escenario no dice el tipo/formato de `paid` (¿booleano `true/false`, o presencia/ausencia del campo?) ni qué valor lleva una reserva con `paid_at` nulo — sin eso el escenario no es verificable de forma determinista. · Especificar el tipo y la regla de derivación de `paid` a partir de `paid_at`.
+
+6. Menor · Contrato tocado sin declarar consumidor completo · El campo `paid` se añade a `GET /api/bookings`, que consume el portal (fuera de Scope: «pagos en el portal»); no se dice si otros consumidores existentes de ese endpoint (además del portal) reciben el campo nuevo sin romperse. · Confirmar o descartar otros consumidores del endpoint en Scope/Approach.
+
+7. Menor · «Reglas de producto» de la constitution · La única regla de producto existente trata de sedes/importación de reservas; la spec no dice si un cobro registrado en una reserva importada (`MAD-R-0042`) se guarda en la sede de origen o en la sede donde se cobra — hueco de alcance dado que `payments` es capacidad nueva y `bookings` ya tiene esa regla de multi-sede. · Añadir una nota o marcarlo explícitamente «no aplica / fuera de alcance en esta iteración».
+
+--- [64]
+Spec 0010 aprobada, paso 4 cerrado. Resumen:
+
+- Repaso de coherencia: encontré hueco de Scope (`src/phone.js` `lookupCaller` hace mismo filtro que `search.js` pero es ficha de llamada, no buscador) — añadido a Scope con motivo, no entra.
+- Review de spec: 5 señales (capacidad nueva, contrato público, MODIFIED, datos/migración, rol con permisos) → tocaba dos revisores, pero regla de spec delegada + tus instrucciones de confirmar antes de paralelizar bajan a **un revisor** (`sdd-kit:effort-medium`, sonnet, siete puntos), sin preguntar. Decisión registrada en la spec.
+- Revisor devolvió 7 hallazgos (2 Crítico, 3 Importante, 2 Menor). Los 7 aceptados e incorporados:
+  - Regla de anulación no dependía ya de abono sin explicarlo (crítico, corregido).
+  - «Código de reserva» sin tocar en el delta (crítico, añadida línea explícita).
+  - Complemento del rol «gestor de cobros» (qué no puede hacer / recepción no registra ni anula).
+  - `paid` derivado de `paid_at` (reservas migradas con `paid_at` nulo = no pagadas).
+  - Consumidor único de `GET /api/bookings` confirmado (portal).
+  - Cobro sobre reserva importada: se registra en la sede que cobra, sincronización fuera de alcance.
+- Spec aprobada por delegación: frase literal y fecha registradas en frontmatter, «Decisiones tomadas con el dev-lead» y «Aprobaciones».
+
+Paro aquí, paso 4 cerrado. El plan (`superpowers:writing-plans`) queda para otra sesión, como pediste.
+
