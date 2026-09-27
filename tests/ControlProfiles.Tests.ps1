@@ -61,8 +61,8 @@ Describe 'Perfiles de control: cierre, release y migración' {
     Get-KitFile 'skills/sdd-end-release/SKILL.md' | Should -Match '🧪'
   }
 
-  It 'la migración a v1.2.0 pregunta las claves de control' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+  It 'la migración a v2.0.0 pregunta las claves de control' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
     $migration | Should -Match 'control\.profile'
     $migration | Should -Match 'merge'
   }
@@ -72,7 +72,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
     $block | Should -Match '(?m)^## Catálogo'
     ($block | Select-String -Pattern 'Recomendad[ao]' -AllMatches).Matches.Count | Should -BeGreaterOrEqual 3
     $consumers = 'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-      'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+      'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
     foreach ($consumer in $consumers) {
       Get-KitFile $consumer | Should -Match '`sdd-config`'
     }

@@ -2,7 +2,7 @@ BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:SkillPath = 'skills/sdd-config/SKILL.md'
   $script:Consumers = 'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-    'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
 
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
@@ -67,7 +67,7 @@ Describe 'Fuente única de la entrevista de claves' {
 
   It '<_> invoca sdd-config' -ForEach @(
     'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-    'skills/sdd-init-brownfield/references/migrations/v1.2.0.md'
+    'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
   ) {
     Get-KitFile $_ | Should -Match '`sdd-config`'
   }

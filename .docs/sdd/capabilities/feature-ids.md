@@ -7,7 +7,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 ## Requisitos
 
 ### El proyecto declara cómo numera su trabajo
-- GIVEN un proyecto inicializado o migrado con el kit v1.2.0 o posterior
+- GIVEN un proyecto inicializado o migrado con el kit v2.0.0 o posterior
 - WHEN se lee `.docs/sdd/sdd-kit.json`
 - THEN el fichero lleva `"ids": { "mode": "tracker" | "sequence" }`
 

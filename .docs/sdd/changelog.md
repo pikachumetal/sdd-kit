@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-27
+
+Abierta como 1.2.0 el 2026-09-20 y publicada como 2.0.0 por el corte del 2026-09-23. [Release notes](releases/v2.0.0/release-notes.md).
+
 ### Added
 
 - **Plantillas de los documentos de anclaje** — `sdd-templates` gana siete plantillas (`mission`, `constitution`, `tech-stack`, `architecture`, `roadmap`, `estimation`, `changelog`) que las dos init calcan en lugar de copiar de otro proyecto, con literales las tablas y cabeceras que leen otras skills. `sdd-end-task` crea desde su plantilla el destino de un aprendizaje que no existe (un `architecture.md` pospuesto) y lo dice en el informe, en vez de redirigirlo o perderlo en silencio. → [ref](specs/20260922-083703-task-0013-postponed-anchor/)
@@ -72,6 +76,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Feature 0086** — La review de la spec pesa el tamaño del delta (menos de ~50 líneas: un revisor con los siete puntos, nunca ninguno), con la spec delegada y el paralelismo restringido despacha un revisor sin preguntar, y el repaso de coherencia busca en el código cada fichero que implementa un `MODIFIED`. → [ref](specs/20260927-125612-feature-0086-spec-review-weight/)
 - **Feature 0091** — El cierre compara `HEAD` con el último commit revisado (`Re-revisión:`, `Pasada de fix:` o `Revisión final:`) y re-revisa el tramo antes del walkthrough; la pasada de fix de la propia revisión final no abre re-revisión, y un commit posterior a ella sí, desde la pasada. → [ref](specs/20260927-150813-feature-0091-closing-review-edges/)
 - **Feature 0089** — La entrevista de `sdd-init-greenfield` pregunta qué queda fuera de alcance (4) y qué términos del dominio se fijan (5), las dos que solo hacía `init-template` de `sdd-project-template`, y es la que manda también sobre un proyecto instanciado desde el template; las demás preguntas se renumeran (reglas de producto 6–10, claves del kit 19, proyecto de referencia 20). → [ref](specs/20260927-165923-feature-0089-greenfield-init-template/)
+
+- **Una sola migración para la 2.0.0** — `migrations/v1.2.0.md` se funde en `v2.0.0.md`, porque la 1.2.0 no llegó a publicarse: diez pasos en orden (ids, claves de control, configuración, memoria, retirada de `sdd-start-release`, historial y propósito de las capacidades, nombres de feature, marketplace de superpowers) y un solo marcador, `"version": "2.0.0"`. Los tests que leían la de v1.2.0 leen la de v2.0.0, y las capacidades `migration` y `feature-ids` dejan de nombrar la 1.2.0. El README pone al día el estado, la fila de `sdd-start-feature` y la recomendación de fijar `model` en `~/.claude/settings.json`. → [ref](releases/v2.0.0/release-notes.md)
 
 ### Removed
 
