@@ -226,10 +226,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN antes de despachar dice que el tipo falta, despacha con el `model` y la frase de respaldo «effort: no disponible en este harness, hereda el de la sesión», y lo registra como ruling
 
 ### El cierre no repite la revisión final de Native
-- GIVEN una feature Native cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama
-- WHEN se ejecuta el paso 9 de `sdd-end-feature`
+- GIVEN una feature cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama `sobre a1b2c3d`, y después de ese commit solo hay commits de los que se revisan en el hilo
+- WHEN se entra en `sdd-end-feature`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
-- AND solo sin esa línea (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
+- AND si después de `a1b2c3d` hay un commit del hilo `e4f5a6b` que cambia `src/slots.js`, antes de escribir el walkthrough despacha la re-revisión del tramo `a1b2c3d..HEAD` con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
+- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`
+- AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
 
 ### Los minors diferidos llegan al walkthrough
 - GIVEN una feature Native con líneas `Final: minor (deferred)` en el ledger
@@ -323,6 +325,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND apunta en `tasks.md` `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
 - AND si el commit llega con la validación ya presentada (un fix que sale de una pregunta del dev-lead), la re-revisión va antes de invocar `sdd-end-feature`, y el mensaje dice qué cambió y su veredicto
 - AND si el tramo solo tiene commits de solo docs de menos de 20 líneas (`.docs/sdd/roadmap.md`, 2 líneas), no despacha revisor: lo anota como `revisado en el hilo`
+- AND la pasada de fix de la propia revisión final no abre la re-revisión. Ejemplo: la revisión final vuelve con `Needs fixes (0 Critical, 1 Important, 0 Minor)` sobre `a1b2c3d` y la pasada queda en `c7d8e9f`, con su test RED→GREEN. El hilo apunta `Pasada de fix: c7d8e9f, 1 hallazgo RED→GREEN`, no despacha revisor y lo dice al presentar
+- AND un commit del hilo posterior a la pasada, en `src/`, sí abre la re-revisión, sobre el tramo `c7d8e9f..HEAD`
 
 ### Un hallazgo de ejecución se reproduce antes de arreglarse
 - GIVEN un revisor que marca como Important «`GetFullPath` lanza con una ruta inválida y el script no sale con 0»: un hallazgo Critical o Important que afirma algo de ejecución (una excepción, un código de salida, un valor en un entorno o una plataforma concretos)

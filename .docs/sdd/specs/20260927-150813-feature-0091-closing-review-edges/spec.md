@@ -22,7 +22,7 @@ approvers:
 
 ## Decisiones que he tomado yo — valida estas
 
-1. **Último commit revisado**: es el de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`. Los pasos 7 de `sdd-start-feature` y 9 de `sdd-end-feature` comparan `HEAD` con ese commit. Así las dos piezas usan una sola regla.
+1. **Último commit revisado**: es el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`. Los pasos 7 de `sdd-start-feature` y 9 de `sdd-end-feature` comparan `HEAD` con ese commit. Así las dos piezas usan una sola regla.
 2. **Línea nueva `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`**: va debajo de `Revisión final:` en `tasks.md`, o en la presentación si no hay `tasks.md`. La pone el hilo al terminar la pasada. Hace falta porque superpowers borra el ledger (`Final: fixed …`) cuando la revisión queda limpia, y sin la línea el cierre no sabe dónde acabó la pasada.
 3. **La pasada de fix no abre la re-revisión en los dos métodos**. En Native la verifica su TDD: `executing-plans` dice «Do not dispatch a re-review». En SDD ya lleva la re-revisión acotada de superpowers. Un commit del hilo posterior a la pasada sí abre la re-revisión, sobre el tramo `<pasada de fix>..HEAD`.
 4. **Paso 9 del cierre antes del walkthrough**: el paso 0 manda hacer el paso 9 antes de escribir nada. El paso 9 conserva su número, porque otras skills citan los pasos 10 y 12. Las condiciones de «revisado en el hilo» (docs, menos de 20 líneas, `numstat`, `--remerge-diff`) se copian en el paso 9: el ticket 0085 §1 midió que un resumen sin ellas falla 1 de 2.

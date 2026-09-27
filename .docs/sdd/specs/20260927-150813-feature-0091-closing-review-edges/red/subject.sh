@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Sujeto headless de la 0091 sobre el repo salas (feature 0012), con el lanzador de referencia y el hook de la 0085.
+# Sujeto headless sobre el repo salas (feature 0012), con el lanzador de referencia y el hook que deniega Agent.
 # Uso (desde tests/headless/run.sh): subject.sh <kit> <etiqueta> <escenario> <salida>
-#   e1 cierre: tras la revisión final, un commit del hilo en src/; el dev-lead valida y pide cerrar (ticket 0085 §2)
+#   e1 cierre: tras la revisión final, un commit del hilo en src/; el dev-lead valida y pide cerrar
 #   e0 control de e1: sin commits tras la revisión final salvo el de tasks.md, que se revisa en el hilo
-#   r1 pasada de fix de la revisión final con un Important real, y después el paso 7 (ticket 0085 §3)
+#   r1 pasada de fix de la revisión final con un Important real, y después el paso 7
 #   r2 pasada de fix ya hecha y apuntada, y después un commit del hilo en src/: sí abre la re-revisión
-#   l1 feature lite con la implementación terminada y sin revisión final (ticket 0086 §2)
-#   l2 como l1, pero el sujeto implementa la spec y sigue solo, como en la 0086
+#   l1 feature lite con la implementación terminada y sin revisión final
+#   l2 como l1, pero el sujeto implementa la spec y sigue solo
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
@@ -32,7 +32,7 @@ mark_tasks_done() {
   sed -i 's/| 1 | Validar al reservar | pending |/| 1 | Validar al reservar | done |/; s/| 2 | Validar al consultar libres | pending |/| 2 | Validar al consultar libres | done |/' "$R/$SPEC/tasks.md"
 }
 
-# Tasks 1 y 2 hechas y la revisión final limpia apuntada con el commit que revisó (molde de la 0085).
+# Tasks 1 y 2 hechas y la revisión final limpia apuntada con el commit que revisó.
 reviewed_feature() {
   open_native_feature; native_tasks_done; mark_tasks_done
   REVIEWED=$(g rev-parse --short HEAD)

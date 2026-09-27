@@ -16,9 +16,15 @@ BeforeAll {
 }
 
 Describe 'Re-revisión del tramo' {
-  It 'el paso 7 revisa el tramo posterior a la revisión final antes de la validación' {
-    $script:Skill | Should -Match ([regex]::Escape('<revisión final>..HEAD'))
-    $script:Skill | Should -Match ([regex]::Escape('Re-revisión: '))
+  It 'el paso 7 revisa el tramo desde el último commit revisado antes de la validación' {
+    $step = Get-SkillStep 'sdd-start-feature' 7
+    $step | Should -Match ([regex]::Escape('<último revisado>..HEAD'))
+    $step | Should -Match ([regex]::Escape('Re-revisión: '))
+  }
+
+  It 'ningún texto cuenta el tramo desde la revisión final' {
+    $script:Skill | Should -Not -Match ([regex]::Escape('<revisión final>..HEAD'))
+    $script:Profiles | Should -Not -Match ([regex]::Escape('<revisión final>..HEAD'))
   }
 
   It 'la línea de la revisión final guarda el commit revisado' {

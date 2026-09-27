@@ -39,6 +39,18 @@ Coste: 2,18 $ (r1: 0,53 + 0,56 $; r2: 0,61 + 0,48 $).
 
 Coste: 1,35 $ (l1: 0,72 $; p1: 0,63 $).
 
+## Controles tras la pasada de fix de la revisión final
+
+La revisión final pidió cambiar el literal viejo `<revisión final>..HEAD` del paso 6 y de «Ruling» por `<último revisado>..HEAD`. También pidió precisar que cuenta el segundo sha de la `Re-revisión:` y decir dónde se apunta sin `tasks.md`. Es una edición de la guía después del GREEN, así que lleva un sujeto de control por escenario afectado. Salidas en [`refactor/out/`](../.docs/sdd/specs/20260927-150813-feature-0091-closing-review-edges/refactor/out/).
+
+| Sujeto | Resultado |
+| --- | --- |
+| [e1-1](../.docs/sdd/specs/20260927-150813-feature-0091-closing-review-edges/refactor/out/e1-1.tools.txt) | ✅ `Agent` «Re-revisión tramo 1848882..HEAD» antes del walkthrough |
+| [r2-1](../.docs/sdd/specs/20260927-150813-feature-0091-closing-review-edges/refactor/out/r2-1/agent-prompts.txt) | ✅ tramo `0c10c59..823820e`, desde la pasada |
+| [p1-1](../.docs/sdd/specs/20260927-150813-feature-0091-closing-review-edges/refactor/out/p1-1.tools.txt) | ✅ «Re-revisión tramo 936ce6c..HEAD» antes de presentar |
+
+**3/3, sin regresión.** Coste: 1,52 $ (0,50 + 0,49 + 0,52 $).
+
 ## Total
 
-10 sujetos, 7,67 $. Campaña entera de la feature: 20 sujetos, 17,66 $, dentro del techo de la spec (24 sujetos, 22 $), sin contar el intento perdido del GREEN (RED, «Límites»).
+GREEN: 10 sujetos, 7,67 $, más 3 controles, 1,52 $. Campaña entera de la feature: 23 sujetos y 19,18 $, dentro del techo de la spec (24 sujetos, 22 $). No cuenta el intento perdido del GREEN (RED, «Límites»).

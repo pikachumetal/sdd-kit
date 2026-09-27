@@ -1,0 +1,40 @@
+--- [18]
+El despacho de subagentes no está disponible en esta campaña. Sigo sin él: reviso yo mismo el tramo `0c10c59..823820e` (el commit `823820e`, ya que `83b4365` es solo un cambio en `tasks.md`) contra la restricción de código del plan (mensaje literal) y correctness general.
+
+--- [34]
+Suite completa: 4/4, 0.31 s. Ahora ejecución real de cada THEN invocando las funciones directamente (no vía suite).
+
+--- [37]
+La re-revisión del tramo quedó limpia (Approved, 0 hallazgos). Presento la validación de la feature 0012.
+
+## Me salí del plan en…
+
+- **Despacho de subagentes no disponible en esta campaña** (bloqueado por el hook de la sesión). La re-revisión final del tramo `0c10c59..823820e` la hice yo mismo, inline, contra la restricción de código del plan (mensaje literal) y correctness general — no hubo un segundo par de ojos con `sdd-kit:effort-high + opus`. Registrado como ruling en `tasks.md`.
+
+## Qué hay
+
+Feature 0012: `reserve` y `free` validan que la franja case con `HH-HH` y fallan con «Franja no válida: usa HH-HH, p. ej. 10-12» si no. Historial relevante:
+- Revisión final de rama → 1 Important (mensaje/validación duplicados) → arreglado en `0c10c59`.
+- Diferido: la duplicación entre `reserve` y `free` se resolvió después, en `823820e`, extrayendo `assertSlot`.
+- Re-revisión del tramo `0c10c59..823820e`: Approved.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Reservar con franja sin `HH-HH` → falla con el mensaje | **ejecución real**: `reserve('Norte', '1012')` → `Error: Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja sin `HH-HH` → falla con el mismo mensaje | **ejecución real**: `free('1012')` → `Error: Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa: `node --test tests/` → 4/4 pass, 0.31 s.
+
+## Guion de pruebas
+
+1. `reserve('Norte', '1012')` → lanza `Error: Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` → lanza el mismo error.
+3. `reserve('Norte', '10-12')` → `{ room: 'Norte', slot: '10-12' }` (camino feliz, sigue funcionando).
+4. `free('10-12')` → `[]` (camino feliz, sigue funcionando).
+
+No hay CLI real en el repo (el README la describe pero no hay `bin/`), así que el guion invoca las funciones de `src/slots.js` directamente — es la interfaz real del proyecto hoy.
+
+**¿Puedes decirme qué has probado tú y si funciona, para dar por validada la feature?**
+

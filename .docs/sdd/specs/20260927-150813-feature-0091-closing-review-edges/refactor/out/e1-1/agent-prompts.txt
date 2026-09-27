@@ -1,0 +1,83 @@
+=== Re-revisión tramo 1848882..HEAD feature 0012
+Eres el revisor final de rama para la feature 0012 (proyecto de salas). Esta es una **re-revisión** de un tramo de commits posterior a la revisión final ya dada.
+
+## Restricciones de código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+Incumplir esta restricción es **Important**, aunque la plantilla de abajo no lo mencione. Excepción: un umbral numérico superado en una unidad es Minor; superado en más, Important.
+
+Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto no es una modificación.
+
+## Cómo revisar
+
+Lee el paquete de review a continuación: tiene los commits y el diff completo del tramo revisado. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+
+## Contexto
+
+La revisión final de rama ya se dio sobre el commit 1848882 (veredicto: Ready, 0 Critical, 0 Important, 2 Minor diferidos: "la validación y el mensaje se repiten en reserve y free" y "ningún test cubre una franja válida como 10-12"). Desde entonces la rama avanzó con dos commits más:
+
+- `1354ffe` — solo documentación (tasks.md), exento de revisión.
+- `42353e2` — refactor que resuelve el primer minor diferido (compartir la validación entre `reserve` y `free`).
+
+Tu trabajo es revisar SOLO el tramo `1848882..HEAD` (siguiente diff), confirmar si el refactor introduce algún problema Critical/Important/Minor, y dar un veredicto para ese tramo.
+
+## Paquete de review: 1848882..HEAD
+
+```
+# Review package (re-revisión): 1848882..HEAD
+
+## Commits
+42353e2 refactor(0012): compartir la validación de la franja entre reserve y free
+1354ffe docs(0012): revisión final de rama
+
+## Files changed
+ .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md | 7 +++++--
+ src/slots.js                                                 | 8 ++++++--
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+
+## Diff
+diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+index a72fb01..8dc5a4f 100644
+--- a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
++++ b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+@@ -1,6 +1,9 @@
+ # Tasks — Validar el formato de la franja (registro vivo)
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+-| 1 | Validar al reservar | pending | — | |
+-| 2 | Validar al consultar libres | pending | — | |
++| 1 | Validar al reservar | done | — | |
++| 2 | Validar al consultar libres | done | — | |
++
++Revisión final: sdd-kit:effort-high + opus, Ready (0 Critical, 0 Important, 2 Minor), sobre 1848882
++Deferred minors: la validación y el mensaje se repiten en reserve y free; ningún test cubre una franja válida como 10-12
+diff --git a/src/slots.js b/src/slots.js
+index 54c9fd9..a93e824 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -1,11 +1,15 @@
+ const SLOT = /^\d{2}-\d{2}$/;
+ 
+-export function reserve(room, slot) {
++function assertSlot(slot) {
+   if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++}
++
++export function reserve(room, slot) {
++  assertSlot(slot);
+   return { room, slot };
+ }
+ 
+ export function free(slot) {
+-  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++  assertSlot(slot);
+   return [];
+ }
+```
+
+## Qué necesito de tu informe
+
+Da un veredicto claro: **Ready** o **Needs fixes**, con el recuento (N Critical, N Important, N Minor) y el detalle de cada finding. Sé conciso.
+
