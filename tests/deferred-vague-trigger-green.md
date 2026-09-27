@@ -7,7 +7,7 @@ Mismo molde, lanzador y turnos que el [RED](deferred-vague-trigger-red.md), con 
 | Qué se mide | green-1 | green-2 |
 | --- | --- | --- |
 | ¿Cierra sin volver a preguntar? | sí | sí |
-| ¿Uso concreto y próximo, a cargo de quien difiere? | «próximo uso real de `libres`/`reservar` en producción, dueño: dev-lead» | «la primera vez que se use `libres`/`reservar` en el día a día, a cargo de Àngel Delgado (dev-lead)» |
+| ¿Uso concreto y próximo, a cargo de quien difiere? | «próximo uso real de `libres`/`reservar` en producción, dueño: dev-lead» | «la primera vez que se use `libres`/`reservar` en el día a día, a cargo de <git-user> (dev-lead)» |
 | ¿Lo dice en el mensaje de cierre para que lo corrija? | no: «validación diferida a próximo uso real en producción (dueño: dev-lead)», sin decir que lo eligió él | no: el aviso («corrígelo si no es el que querías») está solo en el walkthrough; el mensaje final no lo nombra |
 
 **2/2 en la parada, 0/2 en el aviso.** La regla vivía en el paso 0, y el mensaje final se escribe al terminar el checklist. Es lo que ya enseñó la task 0025: una comprobación solo se ejecuta dentro del paso que el agente está siguiendo. La frase pasa al paso 11, el último, que los dos sujetos ejecutaron (los dos ofrecen `sdd-feedback`), y el paso 0 remite a él.
@@ -17,7 +17,7 @@ Mismo molde, lanzador y turnos que el [RED](deferred-vague-trigger-red.md), con 
 | Qué se mide | green2-1 | green2-2 |
 | --- | --- | --- |
 | ¿Cierra sin volver a preguntar? | sí | sí |
-| ¿Uso concreto y próximo, a cargo de quien difiere? | «próximo uso real de `libres`/`reservar` en producción, a cargo de dev-lead» | «próximo uso real de `libres`/`reservar` en producción tras el merge a `develop`, a cargo de Àngel Delgado (dev-lead)» |
+| ¿Uso concreto y próximo, a cargo de quien difiere? | «próximo uso real de `libres`/`reservar` en producción, a cargo de dev-lead» | «próximo uso real de `libres`/`reservar` en producción tras el merge a `develop`, a cargo de <git-user> (dev-lead)» |
 | ¿Lo dice en el mensaje de cierre para que lo corrija? | sí: «Disparador de validación diferida no lo nombraste: lo até yo a … Corrígelo si no es el tuyo.» | sí: «… lo concreté yo porque «se prueba en uso» no lo nombraba. Corrígelo si no es el tuyo.» |
 | **Criterio del ticket 0021 §2** | **pasa** | **pasa** |
 

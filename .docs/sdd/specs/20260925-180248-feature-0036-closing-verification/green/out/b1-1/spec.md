@@ -5,10 +5,10 @@ title: check:changed comprueba solo los .js/.mjs cambiados en la rama
 mode: full
 status: approved
 created: 2026-09-25
-author: Àngel Delgado
+author: <git-user>
 approvers:
   - role: dev-lead
-    name: Àngel Delgado (por delegación)
+    name: <git-user> (por delegación)
     approved_at: 2026-09-25
 ---
 
@@ -108,4 +108,4 @@ _Ninguna._
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | 2026-09-25 | aprobada por delegación: «apruebo la spec por delegación, nos vemos en la validación» |
+| dev-lead | <git-user> | 2026-09-25 | aprobada por delegación: «apruebo la spec por delegación, nos vemos en la validación» |

@@ -61,4 +61,4 @@ _Ninguna todavía._
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | 2026-09-22 | aprobado: «Sí, apruebo la spec. Refleja correctamente lo que acordamos en el onboarding.» |
+| dev-lead | <git-user> | 2026-09-22 | aprobado: «Sí, apruebo la spec. Refleja correctamente lo que acordamos en el onboarding.» |

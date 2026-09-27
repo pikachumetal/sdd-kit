@@ -55,4 +55,4 @@ Añadir una constante `SLOT_RE` (regex del formato) y el mensaje de error en `sr
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | 2026-09-22 | aprobada |
+| dev-lead | <git-user> | 2026-09-22 | aprobada |
