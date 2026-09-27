@@ -43,6 +43,7 @@ Como plugin de Claude Code:
 ```text
 /plugin marketplace add obra/superpowers-marketplace
 /plugin marketplace add pikachumetal/sdd-kit
+/plugin install superpowers@superpowers-marketplace
 /plugin install sdd-kit@sdd-kit
 /reload-plugins
 ```
@@ -64,8 +65,10 @@ Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, com
     }
   },
   "enabledPlugins": {
-    "sdd-kit@sdd-kit": true
-  }
+    "sdd-kit@sdd-kit": true,
+    "superpowers@superpowers-marketplace": true
+  },
+  "autoMemoryEnabled": false
 }
 ```
 
