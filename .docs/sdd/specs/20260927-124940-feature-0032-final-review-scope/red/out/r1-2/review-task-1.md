@@ -1,0 +1,25 @@
+### Spec Compliance
+✅ Spec compliant
+- `reserve` en src/slots.js:19-21 valida la franja contra `/^\d{2}-\d{2}$/` (src/slots.js:17) y lanza `Error('Franja no válida: usa HH-HH, p. ej. 10-12')` — mensaje literal exacto, coincide carácter a carácter con la restricción.
+- Test RED en tests/slot-format.test.js:5-7 verifica el rechazo de una franja sin guion (`'1012'`) y comprueba el mensaje vía regex.
+- Un solo commit (316f319) con implementación + test, tal como pide Step 2 del brief.
+- Verificación ejecutada: `node --test tests/slot-format.test.js` → 1 test, pass 1, fail 0.
+
+### Strengths
+- Cambio mínimo y quirúrgico: 3 líneas en src/slots.js, ningún otro comportamiento tocado.
+- Regex y mensaje de error coinciden exactamente con lo exigido por spec y plan.
+- Test verifica comportamiento real (llama a `reserve`, no mockea nada).
+
+### Issues
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+Ninguno.
+
+#### Minor (Nice to Have)
+- tests/slot-format.test.js:5-7 — solo cubre el caso "sin guion" (`'1012'`). No hay test para una franja bien formada que debería pasar sin lanzar, ni para otras formas inválidas (un solo dígito, letras, guion sin dígitos). El brief solo exige que `reserve` lance el error cuando no casa el patrón, y eso está cubierto; una cobertura más amplia sería positiva pero no es requisito de esta task.
+
+### Assessment
+**Task quality:** Approved
+**Reasoning:** Implementación exacta y mínima que cumple el requisito literal (mensaje y regex), respaldada por un test que pasa; no hay sobre-ingeniería ni desviación del plan.
