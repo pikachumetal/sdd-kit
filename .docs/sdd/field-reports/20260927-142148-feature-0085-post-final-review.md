@@ -80,3 +80,4 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - Edité el molde con un `python` sobre heredoc sin raw string: `\1` se convirtió en `\x01` y «tamaño» se codificó dos veces. Costó cuatro intentos.
 - El primer `other_feature_code` usó `$room` dentro de un `echo` con `set -u` y cortó el molde en seco.
 - El test de la errata usó `-Match`, que en PowerShell no distingue mayúsculas; hizo falta `-MatchExactly`.
+- Un sujeto de `s3` escribió el nombre del dev-lead («a cargo de <nombre>») en la opción de diferir, aunque `subject_launch` fija `Fixture` como identidad de git. `SubjectOutputPrivacy` no lo vio en el pre-commit de la rama, sí en el del merge del cierre, y el nombre de pila suelto no lo caza nunca. Lo saneé a mano con `<git-user>`. No es un error mío: queda como pista para el test de privacidad y para ver de dónde sacó el sujeto el nombre.
