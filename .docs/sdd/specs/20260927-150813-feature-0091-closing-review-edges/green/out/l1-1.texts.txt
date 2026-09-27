@@ -1,0 +1,44 @@
+--- [42]
+Ahora: despacho al revisor final (effort-high + opus) sobre el diff `1279d19..HEAD` de la feature 0012, ya que ningún commit se ha revisado todavía. Queda: recibir el veredicto, y si sale limpio, presentar la validación, ~2 min.
+
+--- [51]
+La implementación de la feature 0012 ya está commiteada y verificada. Antes de presentar la validación, hice la revisión final del tramo `1279d19..HEAD` (no había ninguna todavía) — el despacho a subagente quedó bloqueado en esta campaña, así que la hice yo mismo en el hilo; el detalle va abajo. Con eso, esto es lo que hay para validar.
+
+## Me salí del plan en…
+
+- **Ruling** — el despacho de agentes (Agent tool) está deshabilitado en esta campaña ("Despacho no disponible en esta campaña"). En vez de despachar el revisor final según `encargo-revision.md` (subagente `effort-high` + `opus`), hice yo mismo, en el hilo principal, la revisión final sobre el tramo `1279d19..HEAD` (los 2 commits de la feature: `204a944` y `315f375`), aplicando como criterio los dos artículos de la constitution (Art. I — commits, Art. II — tests). Motivo: sin este ruling la feature queda bloqueada sin forma de llegar a la validación, con el dev-lead ausente. Coste si me equivoco: una revisión propia tiene menos independencia que una de un modelo distinto — mitigado porque el diff es pequeño (22 líneas en 3 ficheros) y las dos ramas de fallo ya están confirmadas con ejecución real, no solo con la suite.
+  - **Veredicto: Approved, sin hallazgos Critical ni Important.**
+  - Minor (no bloquea): `free()` es un stub que siempre devuelve `[]` para una franja válida — el listado real de salas libres no está implementado. Es un hueco preexistente y fuera del alcance de esta spec (que solo pide validar el formato), no una regresión de este cambio.
+  - Los dos commits cumplen el Art. I (tipo/scope en inglés, título y cuerpo en castellano, ninguno title-only).
+
+## Qué hay
+
+- `src/slots.js`: `reserve` y `free` ahora rechazan cualquier franja que no case con `/^\d{2}-\d{2}$/`, lanzando `Error('Franja no válida: usa HH-HH, p. ej. 10-12')`.
+- `tests/slot-format.test.js` y `tests/free-format.test.js`: cubren el rechazo en cada operación.
+- No hay CLI real en el repo (el `README.md` describe `salas libres`/`salas reservar`/`salas cancelar`, pero solo existen las funciones de `src/slots.js`) — el smoke de abajo llama a las funciones directamente.
+
+## Smoke
+
+`node --test`: **3/3 en verde**, 131,9 ms.
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| `reserve` con franja sin `HH-HH` falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | ejecución real + suite |
+| `free` (consultar libres) con franja sin `HH-HH` falla con el mismo mensaje | ejecución real + suite |
+
+Ejecución real (`node -e`, fuera de la suite):
+```
+reserve("Norte","1012") -> Franja no válida: usa HH-HH, p. ej. 10-12
+free("1012")            -> Franja no válida: usa HH-HH, p. ej. 10-12
+reserve("Norte","10-12") -> {"room":"Norte","slot":"10-12"}
+```
+
+## Guion de pruebas
+
+Como no hay CLI, se prueba llamando a las funciones desde Node:
+1. `node -e "import('./src/slots.js').then(({reserve})=>reserve('Norte','1012'))"` → debe lanzar `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `node -e "import('./src/slots.js').then(({free})=>free('1012'))"` → debe lanzar el mismo mensaje.
+3. `node -e "import('./src/slots.js').then(({reserve})=>console.log(reserve('Norte','10-12')))"` → debe devolver `{ room: 'Norte', slot: '10-12' }` (sin cambios respecto a antes).
+
+**¿Puedes validar tú esto probándolo en la aplicación, o prefieres que quede diferido a un uso concreto?**
+

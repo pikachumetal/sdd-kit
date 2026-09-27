@@ -1,0 +1,70 @@
+=== Re-revisión final tramo 2fdeff4..HEAD
+## Restricciones de código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+Incumplir esta restricción es **Important**, aunque la plantilla de abajo no lo mencione. Excepción: un umbral numérico superado en una unidad es Minor; superado en más, Important.
+
+Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto no es una modificación.
+
+---
+
+## Cómo revisar
+
+Eres el revisor final de rama para la feature 0012 (`.docs/sdd/specs/20260923-100000-feature-0012-franja/`), repo en `<run>\repo`.
+
+La revisión final de rama ya se hizo (limpia, Ready, 0 Critical / 0 Important / 2 Minor, sobre el commit 2fdeff4) y quedó registrada en `tasks.md`. Uno de los dos minors diferidos —"la validación y el mensaje se repiten en reserve y free"— se resolvió después en el commit `c4eded4` (precedido de un commit solo-docs `be0c1cc` que ya no necesita revisión). Tu tarea es una **re-revisión acotada** solo del tramo `2fdeff4..HEAD` (2 commits: `be0c1cc`, `c4eded4`), NO de toda la rama.
+
+No rehagas el diff con `git log`/`git diff` completo de la rama. Usa exactamente este diff, ya recortado al tramo:
+
+```
+diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+index a72fb01..503dc1e 100644
+--- a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
++++ b/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+@@ -1,6 +1,9 @@
+ # Tasks — Validar el formato de la franja (registro vivo)
+ 
+ | # | Task | Status | Commit | Notas |
+ | --- | --- | --- | --- | --- |
+-| 1 | Validar al reservar | pending | — | |
+-| 2 | Validar al consultar libres | pending | — | |
++| 1 | Validar al reservar | done | — | |
++| 2 | Validar al consultar libres | done | — | |
++
++Revisión final: sdd-kit:effort-high + opus, Ready (0 Critical, 0 Important, 2 Minor), sobre 2fdeff4
++Deferred minors: la validación y el mensaje se repiten en reserve y free; ningún test cubre una franja válida como 10-12
+diff --git a/src/slots.js b/src/slots.js
+index 54c9fd9..a93e824 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -1,11 +1,15 @@
+ const SLOT = /^\d{2}-\d{2}$/;
+ 
+-export function reserve(room, slot) {
++function assertSlot(slot) {
+   if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++}
++
++export function reserve(room, slot) {
++  assertSlot(slot);
+   return { room, slot };
+ }
+ 
+ export function free(slot) {
+-  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++  assertSlot(slot);
+   return [];
+ }
+```
+
+No ejecutes la suite, el build ni el lint: si crees que falta una verificación pesada, recomiéndala en tu informe, pero no la ejecutes tú.
+
+Comprueba en concreto:
+- Que el refactor conserva el mensaje de error literal exigido en ambas funciones (`reserve` y `free`).
+- Que `assertSlot` cubre exactamente el mismo caso que antes (misma regex, mismo lanzamiento de error), sin cambiar comportamiento observable.
+- Que no se ha introducido duplicación nueva ni se ha roto la exportación pública de `reserve`/`free`.
+- Cualquier otro problema de calidad, corrección o de las restricciones de código de arriba.
+
+Devuelve un veredicto (Ready / Needs fixes) con el conteo de Critical/Important/Minor y el detalle de cada hallazgo, si los hay.
+

@@ -1,0 +1,38 @@
+=== Revisión final feature 0012
+## Restricciones de código
+
+La constitution del proyecto (`.docs/sdd/constitution.md`) no declara un artículo dedicado de calidad de código. Los únicos artículos existentes son:
+
+- Art. I — Commits: tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+- Art. II — Tests: suite `node --test`, todo verde antes de fusionar.
+
+Incumplir una de estas restricciones es **Important**, aunque la plantilla de abajo no lo mencione. Excepción: un umbral numérico superado en una unidad es Minor; superado en más, Important.
+
+Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto no es una modificación. (En este caso los tests ya vienen commiteados junto con la implementación — no hay tests RED previos que comparar; revisa igualmente que los tests casan con los THEN de la spec.)
+
+## Cómo revisar
+
+Lee el paquete de review en `<home>\AppData\Local\Temp\review-final-a58c880.diff`: tiene los commits, el resumen y el diff completo desde la base de integración (`develop`) hasta `HEAD` de la rama `feature/0012`. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: ya se ejecutó `node --test` desde el hilo principal (3/3 tests, verde). Si crees que falta una verificación pesada, recomiéndala en tu informe.
+
+## Contexto
+
+Este es el revisor final de rama para la feature 0012 de un proyecto de gestión de reservas de salas (repo minúsculo, sin package.json, tests con `node --test`). La feature va en **modo lite** (sin plan.md ni tasks.md): la spec es `.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md`, ya aprobada por el dev-lead.
+
+Intent: `salas reservar Norte 1012` reserva una franja sin sentido (formato `1012` en vez de `10-12`). Se quiere un error claro.
+
+THEN de la spec a verificar que el código cumple:
+1. GIVEN una franja que no casa con `HH-HH`, WHEN se reserva (`reserve`), THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12».
+2. GIVEN una franja que no casa con `HH-HH`, WHEN se consultan las salas libres (`free`), THEN falla con el mismo mensaje.
+
+El diff añade una regex `SLOT = /^\d{2}-\d{2}$/` en `src/slots.js` y valida con ella en `reserve` y en la nueva función `free`, más dos tests que cubren cada THEN.
+
+## Encargo
+
+Revisa el diff completo del paquete como revisor final de rama antes de que esta feature se presente para validación del usuario. Evalúa:
+- Correctness: ¿el código realmente satisface los dos THEN de la spec? ¿la regex tiene algún caso borde relevante (p. ej. franjas de un dígito, con espacios, `HH-HH` con horas fuera de rango 00-23) que la spec no contempla pero que podría ser una regresión silenciosa?
+- Cumplimiento de las restricciones de código de arriba (Art. I y Art. II de la constitution).
+- Calidad general: nombres, duplicación (la validación se repite igual en `reserve` y `free` — ¿es un problema real o aceptable para el tamaño de la feature?), cobertura de tests frente a los THEN.
+- Cualquier Critical o Important que bloquee el cierre.
+
+Devuelve un informe breve con: veredicto (Approved / Needs fixes), y la lista de hallazgos clasificados Critical/Important/Minor (vacía si no hay ninguno). No apliques cambios, solo revisa.
+

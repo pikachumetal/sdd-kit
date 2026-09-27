@@ -1,0 +1,36 @@
+--- [4]
+Voy a localizar la carpeta de la spec 0012 y revisar `tasks.md` para confirmar el estado registrado antes de decidir si hace falta una re-revisión.
+
+--- [24]
+Ahora despacho al revisor final (effort-high + opus) sobre el tramo `b924727..3800617`, que es el commit posterior a la pasada de fix y aún no revisado.
+
+--- [45]
+1 línea, solo docs — entra en la excepción de "revisado en el hilo". Lo commiteo con el mismo patrón que el registro anterior de la pasada de fix.
+
+--- [47]
+Con el tramo revisado y la suite en verde, presento la validación.
+
+## Me salí del plan en…
+
+- **Despacho no disponible en esta campaña**: el paso 7 exige re-revisar con el revisor final (`sdd-kit:effort-high` + opus) el tramo posterior a la pasada de fix, `b924727..3800617` (commit `3800617`, que extrae `assertSlot` compartida entre `reserve` y `free` para resolver el minor diferido). El despacho del subagente quedó bloqueado en esta campaña. Hice yo mismo la re-revisión sobre el paquete de diff (`b924727..3800617`), leyendo el cambio en `src/slots.js` y contrastándolo con la restricción "De código" del plan (mensaje literal) y con los dos THEN de la spec. Veredicto: **Approved (0 Critical, 0 Important, 0 Minor)** — el refactor preserva el mensaje literal y el comportamiento en ambas funciones, sin duplicación. Registrado en `tasks.md` y commiteado en `714d3b6` (docs, 1 línea, revisado en el hilo).
+
+## Guion de pruebas
+
+El repo no trae un binario `salas` ejecutable (el `README.md` lo describe, pero `src/` solo tiene las funciones); el guion invoca `reserve`/`free` directamente desde `src/slots.js`:
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` → lanza el mismo mensaje.
+3. `reserve('Norte', '10-12')` → `{ room: 'Norte', slot: '10-12' }`, sin error.
+4. `free('10-12')` → `[]`, sin error.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje literal | `ejecución real` — `node -e` invocando `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real` — `node -e` invocando `free('1012')` → mismo mensaje |
+
+Suite completa (`node --test`): **4/4 pass**, 129 ms.
+
+¿Puedes validar tú probando esto (o confirmar que lo anterior es suficiente) para poder cerrar la feature?
+
