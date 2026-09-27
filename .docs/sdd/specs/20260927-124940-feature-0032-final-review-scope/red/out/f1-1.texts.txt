@@ -1,0 +1,68 @@
+--- [30]
+Mientras el agente busca la plantilla `code-reviewer.md` de superpowers, sigo preparando el resto del paquete de review (diff, commits, resumen) para poder completar `despacho-final.md` en cuanto vuelva.
+
+--- [35]
+Ahora escribo el paquete de review dentro de la carpeta de la spec.
+
+--- [41]
+Ya tengo listo el paquete de review manual. Estoy esperando a que vuelva el subagente que localiza la plantilla `code-reviewer.md` de superpowers, para poder incluirla (o su ausencia documentada) en el prompt exacto del `despacho-final.md`.
+
+--- [46]
+Sigo a la espera de que el agente Explore termine su búsqueda de la plantilla `code-reviewer.md` para completar el `despacho-final.md`.
+
+--- [51]
+Encontré las carpetas de superpowers. Vamos a explorar la estructura de skills dentro del plugin.
+
+--- [54]
+Encontrado. Hay dos versiones cacheadas (6.4.1 y 6.4.2). Voy a leer la versión más reciente (6.4.2).
+
+--- [60]
+## 1. Rutas exactas encontradas
+
+Cacheadas en dos versiones idénticas del plugin `superpowers-marketplace` (6.4.1 y 6.4.2), bajo `<home>\.claude\plugins\cache\superpowers-marketplace\superpowers\<version>\`:
+
+- `skills/requesting-code-review/code-reviewer.md` — plantilla del revisor final
+- `skills/subagent-driven-development/scripts/review-package` — script generador del paquete de review
+- `skills/subagent-driven-development/task-reviewer-prompt.md` y `re-review-prompt.md` (no leídos en detalle, mismo directorio)
+- `skills/subagent-driven-development/scripts/sdd-workspace` (invocado por `review-package`, no leído)
+
+(También existen copias equivalentes bajo `.claude-gco\plugins\cache\...` con la misma estructura.)
+
+## 2. Contenido de `code-reviewer.md`
+
+Es la plantilla para dispatchar un subagente "Senior Code Reviewer". Estructura del prompt que se le da:
+- Contexto: `[DESCRIPTION]` (qué se implementó) y `[PLAN_OR_REQUIREMENTS]`.
+- Rango git a revisar con `[BASE_SHA]`/`[HEAD_SHA]` y comandos `git diff --stat` / `git diff`.
+- **"The spec is a vision document"**: juzgar por lo que un usuario razonable esperaría, no solo lo que el spec enumera explícitamente.
+- **"Declined to judge"**: listar comportamientos descartados por estar fuera del plan, con motivo, antes del veredicto.
+- **"Read-Only Review"**: prohibido mutar el working tree/index/HEAD; usar `git show/diff/log`, y si necesita otra revisión usar `git worktree add` en directorio temporal aparte.
+- **"You Do Not Dispatch Subagents"**: el revisor debe hacer todo el trabajo él mismo, nunca delegar en subagentes.
+- Checklist: alineación con el plan, calidad de código, arquitectura, testing, production readiness.
+- Calibración de severidad (no todo es Critical), reconocer aciertos antes de listar problemas.
+- Formato de salida fijo: Strengths / Issues (Critical, Important, Minor con file:line) / Recommendations / Assessment (veredicto Ready to merge: Yes/No/With fixes + razonamiento).
+- Reglas DO/DON'T finales (ser específico, explicar el porqué, no decir "se ve bien" sin comprobar, etc.).
+- Incluye placeholders y un ejemplo de salida completo.
+
+## 3. `review-package` (script)
+
+Bash script (`review-package PLAN_FILE BASE HEAD [OUTFILE]`) que genera el paquete de revisión: valida BASE/HEAD como commits válidos y que HEAD desciende de BASE (rango no vacío), y escribe en `OUTFILE` (o ruta por defecto) el bloque `## Commits` (`git log --oneline`), `## Files changed` (`git diff --stat`) y `## Diff` (`git diff -U10`).
+
+Si no se pasa `OUTFILE`, la ruta por defecto se calcula invocando el script hermano `sdd-workspace` con el plan, y queda como:
+`<repo-root>/.superpowers/sdd/<plan-basename>/review-<base7>..<head7>.diff`
+
+Al terminar imprime la ruta con:
+```
+echo "wrote ${out}: ${commits} commit(s), $(wc -c < "$out" | tr -d ' ') bytes"
+```
+es decir, imprime literalmente `wrote <ruta_del_paquete>: N commit(s), M bytes` por stdout.
+
+--- [81]
+He preparado el paquete de review y escrito `despacho-final.md` en la raíz del repo, sin despachar nada. Me paro aquí, como se pidió.
+
+Resumen de lo hecho:
+- **Paquete de review**: `.docs/sdd/specs/20260927-100000-feature-0012-franja/review-cc36863..ee653eb.diff` — generado a mano con los mismos comandos que usa el script `review-package` (que no se pudo invocar tal cual porque exige un `PLAN_FILE` y en modo lite no hay `plan.md`), sobre el rango `cc36863` (merge-base con `develop`) `..ee653eb` (HEAD).
+- Verifiqué antes: `node --test` en verde (3/3), y que `sdd-kit:effort-high` está entre los agentes disponibles en esta sesión.
+- **`despacho-final.md`** contiene: `subagent_type: sdd-kit:effort-high`, `model: opus`, y el prompt completo (cabecera de Restricciones de código con el Art. II de la constitution + sección "Cómo revisar" + la plantilla `code-reviewer.md` de superpowers con los placeholders ya rellenos).
+
+Queda pendiente que autorices el despacho real del revisor final.
+

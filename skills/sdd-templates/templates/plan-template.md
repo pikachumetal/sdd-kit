@@ -15,7 +15,7 @@ created: <YYYY-MM-DD>
 
 ## Decisiones que he tomado yo — valida estas
 
-> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos** y **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero).
+> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué; el revisor final de rama no sigue esta política ni se quita en Native: va con `sdd-kit:effort-high` + `opus`, también con una sola task, y «no hay subagentes que auditar» no vale, porque es la única revisión independiente de Native), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos** y **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero).
 
 1. <decisión> — <por qué>
 

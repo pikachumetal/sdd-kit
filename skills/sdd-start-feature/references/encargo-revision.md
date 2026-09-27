@@ -28,12 +28,29 @@ El brief, el informe, el paquete de review y el ledger viven en el workspace de 
 
 Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`).
 
+El paquete lo prepara el hilo con esta receta, no con `review-package`, en los dos métodos. `review-package` corta el rango desde la base del arranque y no admite exclusiones: el revisor lee siempre la evidencia de las campañas y, si la rama integró la rama de integración, también el trabajo de otras features (9 MB frente a 179 KB en la feature 0070, 730 KB frente a 78 KB en la 0058). En Git Bash, con `<integración>` la rama de integración de la constitution (`develop` si no fija otra) y `sdd-workspace` el script que está junto a `review-package` en `subagent-driven-development/scripts/`:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+MERGE_BASE=$(git merge-base HEAD <integración> $(git rev-parse -q --verify origin/<integración>))
+EXCLUDE=(':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**')
+OUT="$(bash "<ruta de sdd-workspace>" "<PLAN_FILE>")/review-final-$(git rev-parse --short HEAD).diff"
+{
+  echo "# Review package: ${MERGE_BASE}..HEAD"; echo
+  echo "## Commits"; git log --oneline "${MERGE_BASE}..HEAD"; echo
+  echo "## Files changed"; git diff --stat "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"; echo
+  echo "## Diff"; git diff -U10 "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"
+} > "$OUT" && echo "$OUT"
+```
+
+El merge-base se calcula en el momento de la revisión, también si la rama integró la base a mitad: la base del arranque arrastra lo que trajo el merge. Con remoto, `git fetch` antes: si la rama integró `origin/<integración>` y la local está atrasada, la base local vuelve a traer lo de otras features; sin remoto, `rev-parse` no imprime nada y queda la local. Si las dos han divergido, git elige una sola base: sincronízalas antes. No uses `git diff <integración> HEAD`: si la rama de integración avanzó después del merge, mete al revés sus commits nuevos. En modo lite, sin plan, `PLAN_FILE` es `spec.md`. Si el tech-stack del proyecto declara otras carpetas de evidencia, añádelas a `EXCLUDE` con la misma forma. `$OUT` es una ruta de Git Bash: conviértela con `cygpath -w` antes de escribirla en el encargo. Sin la receta, 2 de 2 sujetos metieron en el paquete las 400 líneas de `red/out/` de la spec, y uno lo escribió dentro de la carpeta de la spec (`tests/final-review-package-red.md`).
+
 Tras la cabecera y antes de `code-reviewer.md`:
 
 ```markdown
 ## Cómo revisar
 
-Lee el paquete de review `<ruta que imprime review-package>`: tiene los commits, el resumen y el diff completo de la rama. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+Lee el paquete de review `<ruta del paquete que imprime la receta>`: tiene los commits, el resumen y el diff completo de la rama. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
 ```
 
 Por qué: la plantilla del revisor de task de superpowers ya lo dice; la del final da los comandos de `git diff` y pregunta «All tests passing?» sin decir cómo. Con la cabecera sin esta sección, 2 de 2 revisores finales rehicieron el diff y ejecutaron suite y lint (`tests/proportional-review-red.md`, R2); en un proyecto del equipo, 27 minutos por revisor frente a los 7 de uno que solo lee el diff.
