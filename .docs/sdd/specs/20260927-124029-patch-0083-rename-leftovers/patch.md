@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0083-rename-leftovers
-commit: <hash>
+commit: 221196c
 ---
 
 # Patch 0083 — restos del renombrado de la 0064
@@ -41,6 +41,8 @@ RED mecánico, sin sujetos (tech-stack T19 (2)): el test de la retirada ya solo 
 | 1 | RED: `FeatureRename` + `PlanEntry` sobre la base | ✅ 6 fallos, los esperados: dos títulos, dos ficheros viejos, el enlace de `release-flow.md` y la mención de `sdd-end-release` |
 | 2 | GREEN: suite entera | ✅ 931/1. El fallo es `FastSuiteBudget`, que mide tiempo y excede el umbral por la carga de la suite entera; aislado pasa (29 s) |
 | 3 | `Test-Capabilities.ps1 -Path .docs/sdd` y `Get-CapabilityIndex.ps1` | ✅ 14 válidas; el índice lista `feature-flow` y `feature-ids` |
+
+Validación diferida: 2026-09-27 · «Diferir: lo pruebo en el corte de la 2.0.0, a cargo del dev-lead» · disparador: el corte de la release 2.0.0 del kit, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 
