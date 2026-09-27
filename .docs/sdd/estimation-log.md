@@ -105,6 +105,7 @@
 | 2026-09-27 | 0032 | docs | 2.5 | 1.2 | 0.48 | 27265k | 1468k | 9.79 | 11.23 | 20260927-124940-feature-0032-final-review-scope |
 | 2026-09-27 | 0086 | docs | 2.5 | 1.5 | 0.6 | 29408k | 2443k | 9.65 | 11.74 | 20260927-125612-feature-0086-spec-review-weight |
 | 2026-09-27 | 0087 | patch | 0.5 | 1.3 | 2.6 | — | — | 3.07 | — | 20260927-131408-patch-0087-roadmap-header-fast-suite |
+| 2026-09-27 | 0088 | patch | — | 0.4 | — | — | — | — | — | 20260927-145156-patch-0088-merge-empty-folder |
 | 2026-09-27 | 0085 | docs | 4 | 1.4 | 0.35 | 32497k | 1277k | 23.14 | 12.39 | 20260927-145355-feature-0085-post-final-review |
 
 **Factor de calibración** (ratio mediano real/estimado, 90 artefactos): **0.6** · media 0.72
@@ -138,6 +139,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 73 | 84.9 | 0.64 | 292.9 | 182.01 |
+| sin publicar | 74 | 85.3 | 0.64 | 292.9 | 182.01 |
 
 > Ver `estimation.md`.
