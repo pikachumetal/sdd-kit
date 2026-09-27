@@ -114,6 +114,8 @@ El ticket de la task 0005 midió lo que cuesta ignorarlas: 12 ficheros en confli
 | --- | --- | --- |
 | B1 | Kit de nivel 2 como **segundo plugin** (skills técnicas por stack), cuando un proyecto lo pida | decisión 2026-09-09 |
 | B3 | Resumen para personas generado desde los artefactos al cerrar una release | research-hackaton §7, sin prioridad |
+| B4 | **Azure DevOps desde el kit** — conectar un MCP de Azure DevOps para que `sdd-roadmap` lea los items asignados, los cree y los edite (incluidos los hijos al partir un item grande) y mantenga el backlog del gestor al día con el roadmap, en vez de pegar los items a mano | dev-lead 2026-09-27 |
+| B5 | **`sdd-feedback` publica en GitHub** — que el ticket de mejora del kit se abra como issue en el repositorio del kit al terminarlo, como hace el feedback de Claude Code, en vez de quedarse en `.docs/sdd/kit-feedback/` y copiarse a mano; sin nombres de cliente, proyecto ni personas, igual que hoy | dev-lead 2026-09-27 |
 
 
 ## Deuda técnica
