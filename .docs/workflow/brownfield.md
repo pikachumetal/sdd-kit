@@ -47,13 +47,13 @@ El onboarding no bloquea: se crea la documentación mínima de anclaje y se empi
 
 El ciclo es el mismo que en greenfield, guiado por las skills:
 
-1. **Arranque** con `sdd-start-feature`, que carga el contexto del proyecto y enruta según lo que sea: consulta, patch, modo lite o ciclo completo.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta: consulta, patch, roadmap o `sdd-start-feature`, que carga el contexto del proyecto y confirma el modo (lite o ciclo completo) y el perfil de control.
 2. **Especificación**: brainstorming con Claude hasta llegar a `spec.md`, con el delta de comportamiento por capacidad, revisada y aprobada antes de continuar. En brownfield conviene activar la revisión adversarial de la spec más a menudo, porque el riesgo está en lo que la spec da por supuesto del sistema existente.
-3. **Plan** en `plan.md`, con la estimación de esfuerzo, el modelo por tarea y las restricciones globales.
+3. **Plan** en `plan.md`, con la estimación de esfuerzo, el método de ejecución y las restricciones globales. Solo para a que lo apruebes en el perfil `pair`.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos.
-5. **Implementación** con subagentes por defecto, y los tests en rojo escritos por el hilo principal antes de despachar: son el contrato del implementador.
+5. **Implementación** en la propia sesión por defecto, o con subagentes en los planes largos, y en los dos casos con los tests en rojo escritos antes del código de cada tarea: son el contrato de quien implementa.
 6. **Verificación**, que se detalla en el punto 2.2.
-7. **Validación**: el agente presenta lo hecho y espera a que digas qué has probado y que funciona.
+7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#3-qué-te-pregunta-el-agente-y-qué-contestar).
 8. **Cierre** con `walkthrough.md` y `sdd-end-feature`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
 
 Los artefactos viven en `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/`, como en greenfield.
@@ -86,9 +86,9 @@ Si el cambio se puede describir en una frase, se hace directamente. La planifica
 
 ## 3. Fase 3: presentar al cliente
 
-Igual que en el flujo original: presentación periódica, idealmente semanal, de lo implementado al cliente o a los stakeholders internos; recogida de feedback con notas, capturas y decisiones; y conversión de cada cambio en una tarea nueva que entra por el ciclo de la fase 2.
+Igual que en el flujo original: presentación periódica, idealmente semanal, de lo implementado al cliente o a los stakeholders internos, y recogida de feedback con notas, capturas y decisiones. Las notas pasan por `sdd-roadmap`, que propone qué cambia en el roadmap, y cada fila nueva entra después por el ciclo de la fase 2.
 
-Si el trabajo se agrupa en entregas, `sdd-end-release` cierra el hito con el acta de feedback triado, la retro con números, el changelog sellado y las notas para el cliente, y `sdd-roadmap` convierte todo eso en el scope de la siguiente. En brownfield el acta tiene una sección que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
+Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: changelog sellado, notas para el cliente, roadmap colapsado y el merge y el tag, que confirmas tú; la retro con números, si la pides. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
 
 ## 4. Trazabilidad y estimación
 
@@ -110,7 +110,7 @@ Reducir el tiempo necesario para entregar cambios validados sobre un sistema exi
 
 ---
 
-*Estos tres documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v1.1.0, septiembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.0.0, septiembre de 2026.*
 
 ## Referencias
 
