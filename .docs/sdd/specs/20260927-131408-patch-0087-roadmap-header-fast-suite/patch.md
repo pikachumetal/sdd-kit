@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0087-roadmap-header-fast-suite
-commit: <hash>
+commit: 205c0f7
 ---
 
 # Patch 0087 — cabecera de la release del roadmap y conjunto rápido del pre-commit
@@ -49,10 +49,13 @@ Dos piezas que decidió el dev-lead el 2026-09-27, antes del corte de la 2.0.0.
 
 Verificado por el agente: todo lo de la tabla. Nada lo reportó el usuario.
 
+Validación diferida: 2026-09-27 · «validacion diferida al uso» · disparador: el próximo patch del kit que cierre con la validación diferida y una release abierta, y el próximo commit con el pre-commit, a cargo del dev-lead
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h
-- Real: 1,1 h, sin contar los sujetos, que corrieron en headless (≈ 0,3 h de reloj)
+- Coste de sujetos: 3,07 $ (5 sujetos Sonnet)
+- Real: 1,3 h, sin contar los sujetos, que corrieron en headless (≈ 0,3 h de reloj)
 
 ## Decisiones tomadas sin el dev-lead
 
