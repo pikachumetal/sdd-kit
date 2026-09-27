@@ -1,6 +1,6 @@
 # sdd-kit
 
-Once skills para Claude Code que convierten «hazme esta feature» en un flujo con spec, plan, tests en rojo antes del código y un cierre que deja la documentación al día.
+Catorce skills para Claude Code que convierten «hazme esta feature» en un flujo con spec, plan, tests en rojo antes del código y un cierre que deja la documentación al día.
 
 La idea es sencilla: **el resultado debería depender del proceso, no de con qué pie se levantó el agente esa mañana**. Dos sesiones con la misma tarea deberían producir los mismos artefactos, pasar por los mismos gates y dejar el mismo rastro.
 
@@ -12,13 +12,15 @@ Esto es la parte de proceso, la que es igual en todos los proyectos, empaquetada
 
 ## Cómo se usa
 
+Si ya tienes el kit instalado en tu proyecto, empieza por la [guía de uso](.docs/workflow/usage-guide.md): qué pedir, qué te pregunta el agente en cada parada, qué contestar y qué hacer cuando algo falla.
+
 Le dices a Claude lo que quieres y él entra por el carril que toca:
 
 ```
 > añade autenticación con magic link
 ```
 
-Arranca `sdd-start-feature`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, otro gate, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
+Arranca `sdd-start-feature`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, que con el perfil por defecto escribe y sigue sin pararte, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
 
 ```
 > el contador de la home muestra un número de más
@@ -107,7 +109,7 @@ Ninguna skill se escribe a ojo. Antes de añadir una instrucción hay que demost
 
 Esto tiene una consecuencia que no esperaba cuando empecé: **más de la mitad de las veces el agente ya lo hacía bien sin que se lo dijeran**, y entonces la instrucción no se escribe. En la release 1.0.0 recortó el alcance nueve veces. Una skill corta que alguien lee entera vale más que una larga que se saltan.
 
-Si quieres entender el flujo antes de instalar nada, en [`.docs/workflow/`](.docs/workflow/) están los tres documentos que lo explican: el de [proyectos nuevos](.docs/workflow/greenfield.md), el de [codebases existentes](.docs/workflow/brownfield.md) y un [anexo](.docs/workflow/evidence-and-references.md) con la evidencia que lo sustenta, 25 fuentes verificadas una a una y etiquetadas según lo que valen.
+Si quieres entender el flujo antes de instalar nada, en [`.docs/workflow/`](.docs/workflow/) están los cuatro documentos que lo explican: la [guía de uso](.docs/workflow/usage-guide.md) del día a día, el de [proyectos nuevos](.docs/workflow/greenfield.md), el de [codebases existentes](.docs/workflow/brownfield.md) y un [anexo](.docs/workflow/evidence-and-references.md) con la evidencia que lo sustenta, 25 fuentes verificadas una a una y etiquetadas según lo que valen.
 
 El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus releases por el carril release, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [actas de release](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
 

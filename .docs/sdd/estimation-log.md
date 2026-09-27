@@ -110,18 +110,19 @@
 | 2026-09-27 | 0091 | docs | 2 | 1.6 | 0.8 | 23513k | 1646k | 19.18 | 10.17 | 20260927-150813-feature-0091-closing-review-edges |
 | 2026-09-27 | 0090 | patch | 0.5 | 0.7 | 1.4 | — | — | — | — | 20260927-151447-patch-0090-config-dir-mold-guard |
 | 2026-09-27 | 0089 | docs | 0.75 | 0.65 | 0.87 | 21733k | 1884k | 9.79 | 9.58 | 20260927-165923-feature-0089-greenfield-init-template |
+| 2026-09-27 | 0092 | docs | 4 | 0.6 | 0.15 | 31122k | 3162k | no aplica | 13.45 | 20260927-182418-feature-0092-usage-guide |
 
-**Factor de calibración** (ratio mediano real/estimado, 93 artefactos): **0.6** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 94 artefactos): **0.6** · media 0.72
 
-- p25–p75: 0.43–0.95
+- p25–p75: 0.41–0.95
 - p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 30 % · sobreestimadas: 60 % · infraestimadas: 10 %
-- Error absoluto (h): media 0.86 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.83
+- Dentro de ±25 %: 30 % · sobreestimadas: 61 % · infraestimadas: 10 %
+- Error absoluto (h): media 0.89 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.7
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 28 | 30 % |
+| <0.5 | 29 | 31 % |
 | 0.5–0.8 | 30 | 32 % |
 | 0.8–1.25 | 26 | 28 % |
 | 1.25–2 | 8 | 9 % |
@@ -130,7 +131,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 58 | 0.55 | 0.38–0.79 |
+| docs | 59 | 0.53 | 0.38–0.78 |
 | infra/tooling | 13 | 0.4 | 0.36–0.6 |
 | patch | 21 | 1.2 | 0.8–1.4 |
 
@@ -142,6 +143,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 77 | 88.25 | 0.66 | 321.87 | 201.76 |
+| sin publicar | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
 
 > Ver `estimation.md`.
