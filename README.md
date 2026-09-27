@@ -14,27 +14,37 @@ Esto es la parte de proceso, la que es igual en todos los proyectos, empaquetada
 
 Si ya tienes el kit instalado en tu proyecto, empieza por la [guía de uso](.docs/workflow/usage-guide.md): qué pedir, qué te pregunta el agente en cada parada, qué contestar y qué hacer cuando algo falla.
 
-Le dices a Claude lo que quieres y él entra por el carril que toca:
+Se trabaja con tres verbos: **planificar** con `sdd-roadmap`, **hacer** con `sdd-start-feature` o `sdd-start-patch` y **entregar** con `sdd-end-release`. No hace falta nombrar las skills: le dices a Claude lo que quieres y él entra por la que toca.
+
+```
+> apunta en el roadmap el pago a plazos, no lo arranques
+```
+
+Planificar. `sdd-roadmap` reconoce qué le traes: algo grande (te entrevista y lo parte en features con una propuesta), algo concreto, los items que el PM creó en Azure DevOps o Jira, las notas de una reunión con el cliente, un cambio de orden o la siguiente release. Deja las filas en el roadmap con su id y su orden, te dice cuál va primero y no arranca nada.
 
 ```
 > añade autenticación con magic link
 ```
 
-Arranca `sdd-start-feature`: te hace una entrevista, escribe una spec corta que empieza por las decisiones que ha tomado sin ti, y espera tu aprobación antes de tocar código. Luego el plan, que con el perfil por defecto escribe y sigue sin pararte, y la implementación en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes.
+Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Al final te pregunta qué has probado, y `sdd-end-feature` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
 
 ```
 > el contador de la home muestra un número de más
 ```
 
-Eso no necesita spec. Va por `sdd-start-patch`: causa raíz primero, un solo documento, cierre ligero.
+Un fallo pequeño y reproducible no necesita spec. Va por `sdd-start-patch`: causa raíz primero, un solo documento y un cierre corto con `sdd-end-patch`.
+
+```
+> cierra la release
+```
+
+Entregar. `sdd-end-release` sella el changelog, escribe las notas de la versión si se entregan a alguien, colapsa el roadmap y te presenta el merge a `main` y el tag, que esperan tu confirmación.
 
 ```
 > ¿por qué decidimos guardar los tokens en la tabla de sesiones?
 ```
 
-Tampoco es trabajo. `sdd-consult` lee la documentación de anclaje y responde, sin crear carpetas ni ramas.
-
-Cuando terminas, `sdd-end-feature` escribe el walkthrough, vuelca los aprendizajes a los documentos vivos, actualiza el changelog y el registro de estimaciones, y te pregunta qué has probado antes de dar nada por cerrado.
+Una pregunta no es trabajo. `sdd-consult` lee la documentación de anclaje y responde, sin crear carpetas ni ramas.
 
 ## Instalación
 
@@ -48,11 +58,11 @@ Como plugin de Claude Code:
 /reload-plugins
 ```
 
-Necesita [superpowers](https://github.com/obra/superpowers), que se resuelve solo porque el manifest lo declara contra `superpowers-marketplace`, el marketplace de su autor. Ese marketplace tiene que estar añadido antes: una dependencia de otro marketplace no se instala si Claude Code no lo conoce. Si falta, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
+El kit necesita [superpowers](https://github.com/obra/superpowers), que se instala desde `superpowers-marketplace`, el marketplace de su autor. Añade los dos marketplaces e instala superpowers antes que el kit, en ese orden. El manifest del kit declara la dependencia: si falta superpowers, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
 
 El kit no usa `claude-plugins-official`: ese marketplace fija superpowers a un commit y llega tarde a las versiones nuevas. Si tenías `superpowers@claude-plugins-official`, desinstálalo con `claude plugin uninstall superpowers@claude-plugins-official`; con los dos, las skills de superpowers salen duplicadas.
 
-Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea las dos claves en el `.claude/settings.json` del proyecto: de dónde salen los marketplaces, el del kit y el de superpowers, y qué plugin activar. Con solo `enabledPlugins`, el plugin aparece activado pero Claude Code no sabe de dónde sacarlo.
+Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde salen los dos marketplaces (`extraKnownMarketplaces`), qué plugins activar (`enabledPlugins`: el kit y superpowers) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, los plugins aparecen activados pero Claude Code no sabe de dónde sacarlos. Las init y la migración a v2.0.0 escriben `autoMemoryEnabled` y el marketplace de superpowers; el marketplace del kit y `enabledPlugins` los añades tú.
 
 ```json
 {
@@ -87,7 +97,7 @@ Este canal no instala los tipos de agente `agents/effort-*.md`: el plan escribe 
 
 ### Enrutado automático
 
-La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, pide una pregunta antes de elegir. Y en un proyecto SDD pasa por delante de `brainstorming` de superpowers. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. `npx skills add` no instala hooks: quien use ese canal recibe la `description` de `using-sdd` y las del resto.
+La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, hace una sola pregunta antes de elegir. En un proyecto SDD pasa por delante de `brainstorming` de superpowers. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. `npx skills add` no instala hooks: quien use ese canal recibe la `description` de `using-sdd` y las del resto.
 
 ## Las skills
 
@@ -98,10 +108,10 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
 | `sdd-start-feature` | El carril completo: contexto, spec, plan, tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
-| `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, estimaciones, changelog, roadmap, rama. |
-| `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria. |
-| `sdd-end-patch` | Cierre del patch. El merge lo decides tú. |
-| `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El tag lo confirmas tú. |
+| `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, capacidades, estimaciones, changelog, roadmap y merge a `develop` según la política del proyecto. |
+| `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria; si no reproduce el fallo, para sin abrir nada. |
+| `sdd-end-patch` | Cierre del patch: validación, `patch.md`, changelog, roadmap y merge a `develop` según la política del proyecto. |
+| `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El merge a `main` y el tag los confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
@@ -116,11 +126,11 @@ Esto tiene una consecuencia que no esperaba cuando empecé: **más de la mitad d
 
 Si quieres entender el flujo antes de instalar nada, en [`.docs/workflow/`](.docs/workflow/) están los cuatro documentos que lo explican: la [guía de uso](.docs/workflow/usage-guide.md) del día a día, el de [proyectos nuevos](.docs/workflow/greenfield.md), el de [codebases existentes](.docs/workflow/brownfield.md) y un [anexo](.docs/workflow/evidence-and-references.md) con la evidencia que lo sustenta, 25 fuentes verificadas una a una y etiquetadas según lo que valen.
 
-El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus releases por el carril release, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [actas de release](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
+El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus releases por `sdd-end-release`, y su propia documentación vive en [`.docs/sdd/`](.docs/sdd/). Si quieres ver cómo queda un proyecto que trabaja así, mira ahí: el [roadmap](.docs/sdd/roadmap.md), las [notas de cada versión](.docs/sdd/releases/) y los [tickets de campo](.docs/sdd/field-reports/) que escriben los agentes cuando algo les fricciona.
 
 ## Estado
 
-La 2.0.0 está publicada. Salió de los tickets de campo de la 1.1.0 y trae menos paradas, el enrutado automático, la unidad de trabajo llamada feature y la puerta del roadmap. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
+La 2.0.0 está publicada ([notas de la versión](.docs/sdd/releases/v2.0.0/release-notes.md)). Salió de los tickets de campo de la 1.1.0 y trae los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
 
 Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastante.
 
@@ -140,7 +150,7 @@ El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Los tests validan la anatomía de las skills, los manifests y el script de estimación. Necesitas Pester 5 o superior y `pwsh` 7+:
+Los tests validan la anatomía de las skills, los manifests y los scripts del kit. Necesitas Pester 5 o superior y `pwsh` 7+, y lánzalos desde PowerShell: desde Git Bash, tres tests fallan por la página de códigos de la consola.
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
@@ -158,7 +168,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 | Dependencia | ¿Obligatoria? | Instalación |
 | --- | --- | --- |
-| [`superpowers`](https://github.com/obra/superpowers) | Sí | Se resuelve sola con el plugin. Manual: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
+| [`superpowers`](https://github.com/obra/superpowers) | Sí | Antes que el kit (ver [Instalación](#instalación)). Desde la terminal: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
 | `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
