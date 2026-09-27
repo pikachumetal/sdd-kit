@@ -6,7 +6,7 @@
 #   subject_launch "$ASK"
 #   { echo "## git log"; g log --oneline --all; } | subject_save
 #   subject_keep "$R/.docs/sdd/roadmap.md" roadmap.md   # copia plana y limpia en <salida>/<etiqueta>/
-# Variables: RUNS_DIR (obligatoria, en el scratchpad), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
+# Variables: RUNS_DIR (obligatoria, en el scratchpad; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
 # que se suman a --allowedTools, como un servidor MCP),
@@ -27,7 +27,8 @@ subject_init() {
   case "$RUNS" in *scratchpad*) ;; *) die "RUNS_DIR fuera del scratchpad: $RUNS" ;; esac
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
   mkdir -p "$RUNS" "$OUT"
-  RUNS="$(cd "$RUNS" && pwd)"
+  # Una carpeta por fase: dos fases a la vez con el mismo RUNS_DIR se borraban el molde (ticket del patch 0082 §1).
+  RUNS="$(cd "$RUNS" && pwd)/${PHASE:-red}"
   # subject_launch hace cd al molde: un OUT relativo perdía las salidas (tickets 0077 §2 y 0064 §1).
   OUT="$(cd "$OUT" && pwd)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
