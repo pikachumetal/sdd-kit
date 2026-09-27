@@ -96,6 +96,12 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - THEN el hilo suma 2.605.005 tokens: `msg_C` queda fuera
 - AND sin `-Branch`, el hilo suma 3.505.005
 
+### Sin `-ProjectsRoot`, junta todas las configuraciones de Claude Code
+- GIVEN un home con `~/.claude/projects/<carpeta del worktree>/` y `~/.claude-gco/projects/<carpeta del worktree>/`, cada una con una sesión, y `CLAUDE_CONFIG_DIR` que apunta a `~/.claude-gco` o a otra carpeta
+- WHEN se ejecuta `Measure-SessionTokens.ps1` sin `-ProjectsRoot`
+- THEN el hilo suma las sesiones de `CLAUDE_CONFIG_DIR`, `~/.claude` y todas las `~/.claude-*` que tengan carpeta del worktree
+- AND una carpeta que nombran a la vez `CLAUDE_CONFIG_DIR` y el home cuenta una sola vez
+
 ### Sin transcripts, «no medido»
 - GIVEN un worktree sin carpeta en `<proyectos>/`
 - WHEN se ejecuta el script

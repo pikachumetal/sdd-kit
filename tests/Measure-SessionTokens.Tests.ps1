@@ -95,6 +95,44 @@ Describe 'Measure-SessionTokens.ps1' -Tag 'Slow' {
     }
   }
 
+  # Dos cuentas de Claude Code: las sesiones de un worktree quedan repartidas entre configuraciones (tickets 0032 §3, 0085 §4 y 0086 §6).
+  Context 'sin -ProjectsRoot' {
+    BeforeAll {
+      function Invoke-MeasureFromHome([hashtable]$Configs, [string]$ConfigDir) {
+        $worktree = Join-Path $TestDrive "wt-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+        $userHome = Join-Path $TestDrive "home-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+        New-Item -ItemType Directory -Path $worktree, $userHome | Out-Null
+        foreach ($config in $Configs.Keys) {
+          $folder = Join-Path $userHome "$config/projects/$($worktree -replace '[^A-Za-z0-9]', '-')"
+          New-Item -ItemType Directory -Path $folder -Force | Out-Null
+          Copy-Item -Path (Join-Path $script:Fixtures "$($Configs[$config])/*") -Destination $folder -Recurse
+        }
+        $saved = @{ USERPROFILE = $env:USERPROFILE; CLAUDE_CONFIG_DIR = $env:CLAUDE_CONFIG_DIR }
+        try {
+          $env:USERPROFILE = $userHome
+          $env:CLAUDE_CONFIG_DIR = if ($ConfigDir) { Join-Path $userHome $ConfigDir } else { $null }
+          return (pwsh -NoProfile -File $script:Script -Path $worktree) -join "`n"
+        }
+        finally { foreach ($key in $saved.Keys) { [Environment]::SetEnvironmentVariable($key, $saved[$key]) } }
+      }
+    }
+
+    It 'junta las sesiones de ~/.claude y ~/.claude-<cuenta>' {
+      $output = Invoke-MeasureFromHome @{ '.claude' = 'base'; '.claude-gco' = 'other-branch' }
+      Get-Line $output 'Tokens del hilo' | Should -Be '- Tokens del hilo: 3.505.005 — claude-sonnet-5 3.505.005'
+    }
+
+    It 'lee también CLAUDE_CONFIG_DIR aunque no se llame .claude*' {
+      $output = Invoke-MeasureFromHome @{ '.claude' = 'base'; 'otra/config' = 'other-branch' } 'otra/config'
+      Get-Line $output 'Tokens del hilo' | Should -Be '- Tokens del hilo: 3.505.005 — claude-sonnet-5 3.505.005'
+    }
+
+    It 'no cuenta dos veces la configuración que CLAUDE_CONFIG_DIR y el home nombran a la vez' {
+      $output = Invoke-MeasureFromHome @{ '.claude-gco' = 'base' } '.claude-gco/'
+      Get-Line $output 'Tokens del hilo' | Should -Be '- Tokens del hilo: 2.605.005 — claude-sonnet-5 2.605.005'
+    }
+  }
+
   Context 'no medido' {
     It 'sin carpeta de transcripts las tres líneas dicen no medido y sale con 0' {
       $worktree = Join-Path $TestDrive 'sin-transcripts'
