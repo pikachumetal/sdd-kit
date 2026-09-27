@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0081-subject-git-identity
-commit: <hash>
+commit: e767d78
 ---
 
 # Patch 0081 — los sujetos headless usan la identidad fixture de git
@@ -41,6 +41,8 @@ Medido (2026-09-27): la fuga es más ancha que la del ticket. El nombre está en
 | 3 | `git config user.name` con `GIT_AUTHOR_NAME` frente a `GIT_CONFIG_COUNT` (git 2.55) | global frente a `Fixture` |
 | 4 | Saneo: solo cambian las líneas con el nombre (`git diff --numstat` con inserciones = borrados en los 41) | ✅ |
 | 5 | Suite Pester completa | ✅ 919/0 (en una primera pasada falló una vez el umbral de tiempo del pre-commit, sin repetirse) |
+
+Validación diferida: 2026-09-27 · «Diferir: lo pruebo en la próxima campaña de sujetos» · disparador: la próxima campaña de sujetos con `tests/headless/run.sh`, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 
