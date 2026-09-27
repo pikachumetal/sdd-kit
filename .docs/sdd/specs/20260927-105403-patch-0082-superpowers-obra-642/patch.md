@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0082-superpowers-obra-642
-commit: <hash>
+commit: 9a3687e
 ---
 
 # Patch 0082 — superpowers desde el marketplace de obra y validación de la 6.4.2
@@ -49,6 +49,8 @@ Medido para la decisión 3 ([RED](../../../../tests/superpowers-642-red.md)): la
 | 7 | Suite Pester completa sin `Slow` | ✅ 841/0 (9 omitidos) |
 
 Sujetos headless con `tests/headless/run.sh`: 10 sujetos, 12,03 $. El techo empezó en 4 sujetos y 6 $, y el dev-lead lo subió para medir Opus. Evidencia: [RED](../../../../tests/superpowers-642-red.md) y [GREEN](../../../../tests/superpowers-642-green.md), que incluye cómo lo hacen Spec Kit, OpenSpec y Kiro. Lo que no se ha probado: instalar el kit desde cero en una máquina sin `superpowers-marketplace`, porque cambiaría la configuración de Claude Code del dev-lead.
+
+Validación diferida: 2026-09-27 · «Diferir: lo pruebo en la próxima sesión arrancada con ./Start-KitSession.ps1 en este worktree, a cargo del dev-lead» · disparador: la próxima sesión arrancada con `./Start-KitSession.ps1` en este worktree, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 

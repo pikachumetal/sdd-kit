@@ -57,6 +57,7 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 - GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
 - WHEN crea la estructura del proyecto
 - THEN `.claude/settings.json` tiene `"autoMemoryEnabled": false` y conserva las demás claves que ya tuviera
+- AND `.claude/settings.json` tiene `extraKnownMarketplaces.superpowers-marketplace` con la fuente `github` `obra/superpowers-marketplace`, sin tocar las demás entradas; si `claude plugin marketplace list` no muestra `superpowers-marketplace`, el agente ejecuta `claude plugin marketplace add obra/superpowers-marketplace`
 - AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` una sola vez cada una
 - AND si `.claude/settings.json` ya tenía `"autoMemoryEnabled": true`, el agente pregunta antes de cambiarlo; si el usuario dice que no, la clave se queda en `true` y el resumen de cierre lo anota
 

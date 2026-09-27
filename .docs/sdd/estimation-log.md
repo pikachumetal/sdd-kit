@@ -98,6 +98,7 @@
 | 2026-09-27 | 0074 | infra/tooling | 1.5 | 0.5 | 0.33 | 28814k | 1970k | 8.07 | 16.77 | 20260925-180228-feature-0074-using-sdd |
 | 2026-09-27 | 0036 | docs | 3 | 3.5 | 1.17 | 49384k | 2239k | 8.96 | 24.24 | 20260925-180248-feature-0036-closing-verification |
 | 2026-09-27 | 0080 | patch | — | 1.2 | — | — | — | — | — | 20260927-085723-patch-0080-defer-trigger |
+| 2026-09-27 | 0082 | patch | — | 2.5 | — | — | — | — | — | 20260927-105403-patch-0082-superpowers-obra-642 |
 
 **Factor de calibración** (ratio mediano real/estimado, 84 artefactos): **0.6** · media 0.7
 
@@ -130,6 +131,6 @@
 | 0.5.0 | 3 | 1.1 | 0.13 | — | — |
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
-| sin publicar | 65 | 75.5 | 0.65 | 247.25 | 146.65 |
+| sin publicar | 66 | 78 | 0.65 | 247.25 | 146.65 |
 
 > Ver `estimation.md`.
