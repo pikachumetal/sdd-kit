@@ -4,7 +4,7 @@
 ```text
 /
 ├── CLAUDE.md                 (corto: punteros + 3-5 reglas críticas)
-├── .claude/settings.json     ("autoMemoryEnabled": false, fusionado con lo que ya tenga)
+├── .claude/settings.json     ("autoMemoryEnabled": false y el marketplace superpowers-marketplace, fusionado con lo que ya tenga)
 ├── .gitignore                (+ .playwright-mcp/, .superpowers/ y `.docs/sdd/sdd-kit.local.json`)
 ├── .docs/
 │   └── sdd/

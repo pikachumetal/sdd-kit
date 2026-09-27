@@ -1,0 +1,121 @@
+--- [8]
+Leo contexto SDD y spec de 0012 antes de escribir el plan.
+
+--- [24]
+Miro código actual antes de fijar rutas y firmas en el plan.
+
+--- [26]
+Explorando código actual (entidad Booking, endpoints, tests, componente lista, docs/api.md) para fijar rutas y firmas exactas en el plan. Aviso cuando vuelva el explorador.
+
+--- [35]
+Esperando el resultado del agente explorador; te aviso en cuanto vuelva con los datos del código.
+
+--- [61]
+Ya tengo todo lo necesario. Aquí está el reporte de hechos.
+
+## Contexto importante
+
+Este repo es el esqueleto mínimo del proyecto (no hay `.csproj`, `Program.cs`, carpeta `Migrations/`, ni `SqlServerApiFactory` — este último se referencia en el test pero **no existe en el repo**). Tampoco hay otros componentes Angular con selects/inputs para usar como referencia de patrón — `booking-list.component` es el único componente de la app. Ya existe una spec aprobada para esta misma tarea en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md` (id tarea 0012), que fija las decisiones (3 estados cerrados, filtro en API no en cliente, componente `app-status-select` con opción "Todos" por defecto).
+
+## 1. Entidad Booking / DbContext / migraciones
+
+- **Entidad**: `backend/src/Bookings.Api/Data/Booking.cs:1-10`
+```csharp
+public class Booking
+{
+    public int Id { get; set; }
+    public string Room { get; set; } = "";
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public string Owner { get; set; } = "";
+}
+```
+No tiene campo `Status` todavía.
+
+- **DbContext**: `backend/src/Bookings.Api/Data/BookingsDb.cs:5-8`
+```csharp
+public class BookingsDb(DbContextOptions<BookingsDb> options) : DbContext(options)
+{
+    public DbSet<Booking> Bookings => Set<Booking>();
+}
+```
+
+- **Migraciones existentes**: no hay ninguna. No existe carpeta `Migrations/` en el repo (`Glob **/Migrations/**` no devolvió nada), por lo que no hay ningún ejemplo previo de estilo/naming para copiar. Solo consta el comando en `.docs/sdd/tech-stack.md:11`: `dotnet ef migrations add <Nombre>` ejecutado en `backend/src/Bookings.Api`.
+
+## 2. Endpoints de bookings
+
+- Fichero único: `backend/src/Bookings.Api/BookingsEndpoints.cs:1-17`
+```csharp
+public static class BookingsEndpoints
+{
+    public static void MapBookings(this WebApplication app)
+    {
+        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+            await db.Bookings
+                .OrderBy(b => b.Start)
+                .Skip((page - 1) * 20)
+                .Take(20)
+                .ToListAsync());
+    }
+}
+```
+- Paginación: parámetro de query `page` (int, default 1, binding implícito de minimal API), tamaño de página fijo hardcodeado en 20 (`Skip((page - 1) * 20).Take(20)`), sin parámro de tamaño de página configurable.
+- Shape de respuesta: lista JSON de `Booking` tal cual (serializados directamente por `MapGet`, sin envoltorio de paginación tipo `{items, total}`), ordenada por `Start`.
+- No existe `Program.cs` en el repo para ver dónde se invoca `MapBookings(...)` — no está presente en el esqueleto.
+
+## 3. Tests backend existentes para este endpoint
+
+- Fichero: `backend/tests/Bookings.Tests/BookingsEndpointsTests.cs:1-19`
+- Framework: xUnit (`[Fact]`, `Assert.Equal`), confirmado también en `tech-stack.md:8` ("xUnit con Testcontainers sobre SQL Server").
+- Patrón: fixture de clase `IClassFixture<SqlServerApiFactory>` inyectada por constructor (primary constructor `BookingsEndpointsTests(SqlServerApiFactory factory)`); el test llama a `factory.SeedAsync(...)` con instancias de `Booking` para poblar datos, luego `factory.CreateClient().GetFromJsonAsync<List<Booking>>("/bookings")` y comprueba orden con `Assert.Equal(...)`.
+- `SqlServerApiFactory` (con métodos `SeedAsync` y `CreateClient`) se usa pero **no está definido en el repo** — no hay match para `**/SqlServerApiFactory*`. Confirma uso de Testcontainers según `tech-stack.md:8` pero la clase concreta falta en este checkout.
+
+## 4. Frontend — lista de reservas y patrones de componentes
+
+- Componente de lista: `frontend/src/app/bookings/booking-list.component.ts:1-18`
+```typescript
+@Component({
+  selector: 'app-booking-list',
+  template: `
+    <ul class="booking-list">
+      @for (booking of bookings.value() ?? []; track booking.id) {
+        <li>{{ booking.room }} · {{ booking.start }}</li>
+      }
+    </ul>
+  `,
+  styleUrl: './booking-list.component.css',
+})
+export class BookingListComponent {
+  readonly bookings = httpResource<Booking[]>(() => '/api/bookings');
+}
+```
+- Consumo de API: no hay un servicio HTTP separado; usa directamente `httpResource` de `@angular/common/http` (Angular 20) apuntando a `/api/bookings`; es standalone (sin `standalone: false`, sin NgModule).
+- Modelo: `frontend/src/app/bookings/booking.ts:1-5` — interfaz `Booking { id, room, start }` (sin `status` todavía, y sin `end`/`owner` tampoco, pese a que el backend los tiene).
+- Estilos: `frontend/src/app/bookings/booking-list.component.css:1-4` — usa variables CSS de tema (`var(--text)`, `var(--surface)`) para claro/oscuro, confirmando lo dicho en `tech-stack.md:3`.
+- **No hay ningún otro componente en el frontend** (`Glob frontend/src/app/**/*.ts` solo devuelve los 3 ficheros de `bookings/`), por lo que no existe patrón previo de select/input a seguir; `app-status-select` sería el primer componente de este tipo en el repo.
+
+## 5. Tests frontend de ese componente
+
+- Fichero: `frontend/src/app/bookings/booking-list.component.spec.ts:1-18`
+- Framework: Vitest sobre TestBed de Angular (confirmado por `tech-stack.md:5`, "Vitest con jsdom").
+- Patrón: `TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] })`, crea el fixture con `TestBed.createComponent(BookingListComponent)`, dispara `fixture.detectChanges()`, intercepta la petición con `TestBed.inject(HttpTestingController).expectOne('/api/bookings').flush([...])`, espera `await fixture.whenStable()`, vuelve a `detectChanges()` y comprueba el DOM (`fixture.nativeElement.querySelectorAll('li').length`).
+
+## 6. docs/api.md actual
+
+- Fichero: `docs/api.md:1-9`
+```markdown
+# API de reservas
+
+## `GET /bookings`
+
+Lista las reservas ordenadas por inicio, 20 por página.
+
+| Parámetro | Tipo | Por defecto |
+| --- | --- | --- |
+| `page` | entero | 1 |
+```
+Solo documenta el parámetro `page`; no hay ninguna sección de `status` ni de otros endpoints.
+
+--- [76]
+Plan escrito en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`. 3 tasks: BD (enum `Status` + migración con backfill a `Confirmed`), API (parámetro `status`, 400 en valor inválido, `docs/api.md`), Frontend (`app-status-select` + integración en la lista). Ejecución recomendada: subagent-driven (nombres de estado duplicados en dos lenguajes + migración de datos piden revisión por task). Perfil `delegate` no exige gate aquí, pero paro sin implementar, como pediste.
+

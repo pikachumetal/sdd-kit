@@ -1,0 +1,315 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Glob: .docs/**/*
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\tech-stack.md
+.docs\sdd\mission.md
+.docs\sdd\specs\20260923-090000-task-0012-status-filter\spec.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\spec.md
+<<< 1	---
+2	id: 20260923-090000-task-0012-status-filter
+3	task: 0012
+4	title: Filtrar la lista de reservas por estado
+5	mode: full
+6	status: approved
+7	created: 2026-09-23
+8	author: agente
+9	approvers:
+10	  - role: dev-lead
+11	    name: dev-lead
+12	    approved_at: 2026-09-23
+13	---
+14	
+15	# Spec — Filtrar la lista de reservas por estado
+16	
+17	## Decisiones que he tomado yo — valida estas
+18	
+19	Review de spec propuesta: sin review — señales: datos (columna nueva con migración).
+20	
+21	1. Tres estados cerrados: `Confirmed`, `Pending`, `Cancelled`; las reservas existentes pasan a `Confirmed` en la
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — reservas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); fun
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — reservas
+2	
+3	- **Monorepo con moon**: `frontend/` (Angular 20, signals, tema claro y oscuro con variables CSS) y `backend/` (.NET 9, minimal API, EF Core 9 sobre SQL Server).
+4	- **Comandos**:
+5	  - `moon run frontend:test` — Vitest con jsdom, ~40 s.
+6	  - `moon run frontend:check` — lint y `tsc --noEmit`, ~30 s.
+7	  - `moon run frontend:serve` — servidor de desarrollo en `http://localhost:4200`.
+8	  - `moon run backend:test` — xUnit con Testcontainers sobre SQL Server; tarda entre 17 y 21 min.
+9	  - `moon run backend:run` — API en `http://localhost:5080`.
+10	  - `moon run :t
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — reservas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0011 | Avisos por correo antes de la reserva | ⏳ |
+8	| 0012 | Filtrar la lista de reservas por estado (confirmada, pendiente, cancelada): estado guardado en BD, filtro en la API y selector en la lista | 🔄 en curso |
+9	
+10	## Backlog
+11	
+12	| # | Ítem | Origen |
+13	| --- | --- | --- |
+14	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+15	
+16	## Releases cerradas
+17	
+18	### v0.4.0 (2026-09-10)
+19	
+20	Lista de reservas con paginación. [changelog](changelog.md)
+21	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — reservas
+2	
+3	Aplicación interna para reservar salas de reuniones: una lista de reservas en el navegador y una API que las guarda.
+4	
+
+>>> PowerShell: Get-ChildItem -Force .docs/sdd; git log --oneline -3; git branch -a; Get-ChildItem -Recurse -File -Force -Exclude node_modules | Where-Object { $_.FullName -notmatch '\\(\.git|node_modules)\\' } | Select-Object -ExpandProperty FullName
+<<<     Directory: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0082-superpowers-obra-642\862f50ff-6
+458-4978-b135-e13a4623fb84\scratchpad\runs-green2-opus\h-1\repo\.docs\sdd
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----          2026-09-27    13:44                specs
+-a---          2026-09-27    13:44            112 changelog.md
+-a---          2026-09-27    13:44            868 constitution.md
+-a---          2026-09-27    13:44            145 mission.md
+-a---          2026-09-27    13:44            54
+
+>>> Read: <run>\repo\backend\src\Bookings.Api\Data\Booking.cs
+<<< 1	namespace Bookings.Api.Data;
+2	
+3	public class Booking
+4	{
+5	    public int Id { get; set; }
+6	    public string Room { get; set; } = "";
+7	    public DateTime Start { get; set; }
+8	    public DateTime End { get; set; }
+9	    public string Owner { get; set; } = "";
+10	}
+11	
+
+>>> Read: <run>\repo\backend\src\Bookings.Api\Data\BookingsDb.cs
+<<< 1	using Microsoft.EntityFrameworkCore;
+2	
+3	namespace Bookings.Api.Data;
+4	
+5	public class BookingsDb(DbContextOptions<BookingsDb> options) : DbContext(options)
+6	{
+7	    public DbSet<Booking> Bookings => Set<Booking>();
+8	}
+9	
+
+>>> Read: <run>\repo\backend\src\Bookings.Api\BookingsEndpoints.cs
+<<< 1	using Bookings.Api.Data;
+2	using Microsoft.EntityFrameworkCore;
+3	
+4	namespace Bookings.Api;
+5	
+6	public static class BookingsEndpoints
+7	{
+8	    public static void MapBookings(this WebApplication app)
+9	    {
+10	        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+11	            await db.Bookings
+12	                .OrderBy(b => b.Start)
+13	                .Skip((page - 1) * 20)
+14	                .Take(20)
+15	                .ToListAsync());
+16	    }
+17	}
+18	
+
+>>> Read: <run>\repo\backend\tests\Bookings.Tests\BookingsEndpointsTests.cs
+<<< 1	using System.Net.Http.Json;
+2	using Bookings.Api.Data;
+3	
+4	namespace Bookings.Tests;
+5	
+6	public class BookingsEndpointsTests(SqlServerApiFactory factory) : IClassFixture<SqlServerApiFactory>
+7	{
+8	    [Fact]
+9	    public async Task Lists_bookings_ordered_by_start()
+10	    {
+11	        await factory.SeedAsync(
+12	            new Booking { Room = "Sala 2", Start = new(2026, 9, 1, 10, 0, 0), End = new(2026, 9, 1, 11, 0, 0) },
+13	            new Booking { Room = "Sala 1", Start = new(2026, 9, 1, 9, 0, 0), End = new(2026, 9, 1, 10, 0, 0) });
+14	
+15	        var bookings = await factory.CreateCli
+
+>>> Read: <run>\repo\docs\api.md
+<<< 1	# API de reservas
+2	
+3	## `GET /bookings`
+4	
+5	Lista las reservas ordenadas por inicio, 20 por página.
+6	
+7	| Parámetro | Tipo | Por defecto |
+8	| --- | --- | --- |
+9	| `page` | entero | 1 |
+10	
+
+>>> Read: <run>\repo\frontend\src\app\bookings\booking-list.component.ts
+<<< 1	import { Component, inject } from '@angular/core';
+2	import { httpResource } from '@angular/common/http';
+3	import { Booking } from './booking';
+4	
+5	@Component({
+6	  selector: 'app-booking-list',
+7	  template: `
+8	    <ul class="booking-list">
+9	      @for (booking of bookings.value() ?? []; track booking.id) {
+10	        <li>{{ booking.room }} · {{ booking.start }}</li>
+11	      }
+12	    </ul>
+13	  `,
+14	  styleUrl: './booking-list.component.css',
+15	})
+16	export class BookingListComponent {
+17	  readonly bookings = httpResource<Booking[]>(() => '/api/bookings');
+18	}
+19	
+
+>>> Read: <run>\repo\frontend\src\app\bookings\booking-list.component.spec.ts
+<<< 1	import { TestBed } from '@angular/core/testing';
+2	import { provideHttpClient } from '@angular/common/http';
+3	import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+4	import { BookingListComponent } from './booking-list.component';
+5	
+6	describe('BookingListComponent', () => {
+7	  it('lists the bookings returned by the API', async () => {
+8	    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+9	    const fixture = TestBed.createComponent(BookingListComponent);
+10	    fixture.detectChanges();
+11	
+12	   
+
+>>> Read: <run>\repo\frontend\src\app\bookings\booking.ts
+<<< 1	export interface Booking {
+2	  id: number;
+3	  room: string;
+4	  start: string;
+5	}
+6	
+
+>>> Read: <run>\repo\frontend\src\app\bookings\booking-list.component.css
+<<< 1	.booking-list {
+2	  color: var(--text);
+3	  background: var(--surface);
+4	}
+5	
+
+>>> Read: <run>\repo\moon.yml
+<<< 1	tasks:
+2	  test:
+3	    deps: ['frontend:test', 'backend:test']
+4	
+
+>>> Skill: superpowers:writing-plans
+<<< Launching skill: superpowers:writing-plans
+
+>>> Glob: skills/sdd-templates/**/plan-template.md
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0082-superpowers-obra-642\862f50ff-6458-4978-b135-e13a4623fb84\scratchpad\kit-green2\skills\sdd-templates\templates\plan-template.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0082-superpowers-obra-642\862f50ff-6458-4978-b135-e13a4623fb84\scratchpad\kit-green2\skills\sdd-start-feature\references\control-profiles.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0082-superpowers-obra-642\862f50ff-6458-4978-b135-e13a4623fb84\scratchpad\kit-green2\skills\sdd-templates\templates\plan-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>
+4	title: Plan de implementación — <título de la spec>
+5	spec: ./spec.md
+6	status: draft
+7	created: <YYYY-MM-DD>
+8	---
+9	
+10	# Plan de implementación — <título>
+11	
+12	> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+13	> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+14	> Borra los bloques de ayuda (`>`) al redactar.
+15	
+16	## Decisiones que he tomado yo — valida estas
+17	
+18	> Es lo único que el dev-lead neces
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0082-superpowers-obra-642\862f50ff-6458-4978-b135-e13a4623fb84\scratchpad\kit-green2\skills\sdd-start-feature\references\commit-milestones.md
+<<< 1	# Un commit por hito
+2	
+3	La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+4	
+5	## Qué lleva cada hito
+6	
+7	| Hito | Lleva | Se junta | Base |
+8	| --- | --- | --- | --- |
+9	| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks
+
+>>> Grep: SqlServerApiFactory|Migrat|EnsureCreated|status-select|JsonStringEnum
+<<< backend\tests\Bookings.Tests\BookingsEndpointsTests.cs:6:public class BookingsEndpointsTests(SqlServerApiFactory factory) : IClassFixture<SqlServerApiFactory>
+.docs\sdd\specs\20260923-090000-task-0012-status-filter\spec.md:23:3. El selector es un componente propio, `app-status-select`, con la opción «Todos» por defecto.
+
+>>> Read: <run>\repo\README.md
+<<< 1	# reservas
+2	
+3	Reserva de salas de reuniones. `frontend/` (Angular) y `backend/` (.NET + SQL Server), orquestados con moon. Comandos en `.docs/sdd/tech-stack.md`.
+4	
+
+>>> PowerShell: Get-Date -Format "yyyyMMdd-HHmmss"
+<<< 20260927-134630
+
+>>> Write: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\plan.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\plan.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (31 turnos, 1.4490542 $)
+Escribí el `plan.md` de la 0012 y paré ahí, sin implementar nada. El plan no está commiteado y `tasks.md` no existe todavía: los dos entran en el commit de apertura, al empezar la implementación.
+
+Ruta: `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`
+
+**Qué hay que hacer**, en dos tasks:
+1. **Estado en BD y filtro en la API:** el enum `BookingStatus`, la migración `AddBookingStatus` (las reservas existentes pasan a `Confirmed`), `GET /bookings?status=` y la sección de `docs/api.md`. Lleva 7 tests nuevos.
+2. **Selector en la lista:** el componente `app-status-select` con un `<select>` nativo, conectado al `httpResource` de la lista. Incluye una comprobación visual: estados normal, con foco y deshabilitado, en tema claro y oscuro, 6 capturas.
+
+**Decisiones que la spec no fija**, para que las valides:
+- **Valor inválido:** `status` no distingue mayúsculas y minúsculas, y un valor que no es un estado (`Foo`, `99`) responde **400**, no una lista vacía.
+- **Formato del estado:** `status` sale en el JSON como texto (`"Cancelled"`), no como número.
+- **Etiquetas del selector:** «Estado» como título, con las opciones «Todos», «Confirmada», «Pendiente» y «Cancelada». La lista no muestra el estado de cada reserva, porque la spec no lo pide.
+- **Riesgo alto:** en el repo no aparecen `Program.cs`, `SqlServerApiFactory` ni la carpeta `Migrations/`. Si no hay historial de migraciones, aplicar la migración en una BD real falla porque la tabla ya existe. Por eso la Task 1 empieza comprobándolo, y si falta, para y te pregunta.
+
+**Cómo se ejecuta:** recomiendo Native: la sesión hace las dos tasks y al final se despacha una revisión con `sdd-kit:effort-high` y Opus. Esta sesión va con Opus, y para implementar basta gama media: antes de la Task 1, cambia con `/model` a Sonnet con effort medium y di «sigue».
+
+Con el perfil `delegate` el plan no tiene parada propia, pero aquí paro porque lo pediste.
+
+Varios conectores de claude.ai (Figma, Atlassian, Notion, etc.) necesitan autorización en sus ajustes de conector para poder usarse. Este plan no los necesita.

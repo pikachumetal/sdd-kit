@@ -39,20 +39,26 @@ Cuando terminas, `sdd-end-feature` escribe el walkthrough, vuelca los aprendizaj
 Como plugin de Claude Code:
 
 ```text
+/plugin marketplace add obra/superpowers-marketplace
 /plugin marketplace add pikachumetal/sdd-kit
 /plugin install sdd-kit@sdd-kit
 /reload-plugins
 ```
 
-Necesita [superpowers](https://github.com/obra/superpowers), que se resuelve solo porque el manifest lo declara. Si falta, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
+Necesita [superpowers](https://github.com/obra/superpowers), que se resuelve solo porque el manifest lo declara contra `superpowers-marketplace`, el marketplace de su autor. Ese marketplace tiene que estar añadido antes: una dependencia de otro marketplace no se instala si Claude Code no lo conoce. Si falta, Claude Code deshabilita el kit y te dice cómo instalarlo. Es ruidoso a propósito: prefiero un error claro a un flujo que se ejecuta a medias sin que nadie se entere.
 
-Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea las dos claves en el `.claude/settings.json` del proyecto: de dónde sale el marketplace y qué plugin activar. Con solo `enabledPlugins`, el plugin aparece activado pero Claude Code no sabe de dónde sacarlo.
+El kit no usa `claude-plugins-official`: ese marketplace fija superpowers a un commit y llega tarde a las versiones nuevas. Si tenías `superpowers@claude-plugins-official`, desinstálalo con `claude plugin uninstall superpowers@claude-plugins-official`; con los dos, las skills de superpowers salen duplicadas.
+
+Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea las dos claves en el `.claude/settings.json` del proyecto: de dónde salen los marketplaces, el del kit y el de superpowers, y qué plugin activar. Con solo `enabledPlugins`, el plugin aparece activado pero Claude Code no sabe de dónde sacarlo.
 
 ```json
 {
   "extraKnownMarketplaces": {
     "sdd-kit": {
       "source": { "source": "github", "repo": "pikachumetal/sdd-kit" }
+    },
+    "superpowers-marketplace": {
+      "source": { "source": "github", "repo": "obra/superpowers-marketplace" }
     }
   },
   "enabledPlugins": {
@@ -145,12 +151,12 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 | Dependencia | ¿Obligatoria? | Instalación |
 | --- | --- | --- |
-| [`superpowers`](https://github.com/obra/superpowers) | Sí | Se resuelve sola con el plugin. Manual: `claude plugin install superpowers@claude-plugins-official` |
+| [`superpowers`](https://github.com/obra/superpowers) | Sí | Se resuelve sola con el plugin. Manual: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
 | `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
 
 Las init y la migración a v1.2.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.1, revisada el 2026-09-24; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-09-27; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 `grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
 

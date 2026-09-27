@@ -11,7 +11,7 @@ BeforeAll {
   }
 }
 
-Describe 'Compatibilidad con superpowers 6.4.1' {
+Describe 'Compatibilidad con superpowers 6.4.2' {
   It 'una fila de overrides integra el Execution Handoff en la tabla de gates' {
     $row = Get-OverrideRow 'Execution Handoff'
     $row | Should -Not -BeNullOrEmpty
@@ -28,11 +28,19 @@ Describe 'Compatibilidad con superpowers 6.4.1' {
     Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' | Should -Match '(?m)^## Rutas del workspace en Windows[\s\S]*cygpath -w'
   }
 
-  It 'el README declara validada la 6.4.1' {
-    Get-KitFile 'README.md' | Should -Match 'Versión validada: 6\.4\.1'
+  It 'el README declara validada la 6.4.2' {
+    Get-KitFile 'README.md' | Should -Match 'Versión validada: 6\.4\.2'
   }
 
-  It 'las referencias de vigilancia declaran validada la 6.4.1' {
-    Get-KitFile '.docs/sdd/roadmap.md' | Should -Match 'superpowers — .*Validado: 6\.4\.1'
+  It 'las referencias de vigilancia declaran validada la 6.4.2 en la caché de superpowers-marketplace' {
+    Get-KitFile '.docs/sdd/roadmap.md' | Should -Match 'superpowers — .*cache/superpowers-marketplace/superpowers/.*Validado: 6\.4\.2'
+  }
+
+  It 'el paso de implementación de plan-template sigue «What a Step Contains» de writing-plans 6.4.2' {
+    $step = (Get-KitFile 'skills/sdd-templates/templates/plan-template.md' -split "`n") | Where-Object { $_ -match '\*\*Step 1: Implementación\*\*' }
+    $step | Should -Not -Match 'código real cuando ayude'
+    foreach ($literal in 'firma', 'fichero', 'valores de la spec', 'asserts como código', 'algoritmo') {
+      $step | Should -Match $literal -Because "falta $literal"
+    }
   }
 }

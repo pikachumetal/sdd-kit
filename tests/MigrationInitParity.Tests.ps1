@@ -99,6 +99,23 @@ Describe 'Configuración y log que deja la init' {
   It 'el README cita autoMemoryEnabled' {
     Get-KitFile 'README.md' | Should -Match 'autoMemoryEnabled'
   }
+
+  It '<_> declara el marketplace de superpowers en el proyecto y lo añade si falta' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
+    $corpus = Get-InitCorpus $_
+    foreach ($literal in 'extraKnownMarketplaces.superpowers-marketplace', 'claude plugin marketplace add obra/superpowers-marketplace') {
+      $corpus.Contains($literal) | Should -BeTrue -Because "falta $literal"
+    }
+  }
+
+  It 'el README añade el marketplace de superpowers antes de instalar el kit' {
+    Get-KitFile 'README.md' | Should -Match '(?s)/plugin marketplace add obra/superpowers-marketplace\s*\r?\n/plugin marketplace add pikachumetal/sdd-kit'
+  }
+
+  It 'el README instala superpowers a mano desde superpowers-marketplace' {
+    $readme = Get-KitFile 'README.md'
+    $readme | Should -Match ([regex]::Escape('claude plugin install superpowers@superpowers-marketplace'))
+    $readme | Should -Not -Match 'plugin install superpowers@claude-plugins-official'
+  }
 }
 
 Describe 'Proyecto de referencia' {
@@ -144,6 +161,13 @@ Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
       $script:V2 | Should -Match ([regex]::Escape($literal))
     }
     $script:V2 | Should -Match 'no se renombra'
+  }
+
+  It 'tiene un paso que declara el marketplace de superpowers y lo añade si falta' {
+    $script:V2 | Should -Match '(?m)^\d\. \*\*Marketplace de superpowers\.\*\*'
+    foreach ($literal in 'extraKnownMarketplaces.superpowers-marketplace', 'claude plugin marketplace list', 'claude plugin marketplace add obra/superpowers-marketplace') {
+      $script:V2 | Should -Match ([regex]::Escape($literal))
+    }
   }
 
   It 'la verificación lleva el Select-String con AGENTS.md y el histórico excluido' {

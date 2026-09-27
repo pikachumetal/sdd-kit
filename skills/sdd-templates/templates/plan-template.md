@@ -147,10 +147,12 @@ Endpoints, shape request/response.
 
 **Ficheros**: crear/modificar `path/...`
 
-- [ ] **Step 1: Implementación** — descripción concreta; código real cuando ayude, sin placeholders.
+- [ ] **Step 1: Implementación** — por cada pieza, la firma exacta (nombre, parámetros, retorno), el fichero y los valores de la spec que fija; por cada test, su nombre y sus asserts como código, con esos valores. El cuerpo lo escribe el implementador: el plan lo lleva solo para un algoritmo que la firma y los tests no determinan, o para un texto exacto que fija la spec. Sin placeholders.
 - [ ] **Step 2: Build** — el build de las superficies de la task. Esperado: verde, sin errores.
 - [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
 - [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-start-feature/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
+
+> Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Medido con superpowers 6.4.2 (patch 0082): 2 de 4 planes copiaron el cuerpo entero de un endpoint (el parseo del filtro, el 400 y la paginación). Lo que tocaba era la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
 
 ---
 

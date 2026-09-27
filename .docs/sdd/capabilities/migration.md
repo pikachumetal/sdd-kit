@@ -98,6 +98,13 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
 - AND la verificación de la migración, con `Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task' -ErrorAction SilentlyContinue` (sin `AGENTS.md`, esa ruta no cuenta), no devuelve nada
 
+### La migración a v2.0.0 declara el marketplace de superpowers
+- GIVEN un proyecto que migra a v2.0.0 sin `extraKnownMarketplaces.superpowers-marketplace` en `.claude/settings.json`
+- WHEN se aplica `v2.0.0.md`
+- THEN `.claude/settings.json` gana esa entrada con la fuente `github` `obra/superpowers-marketplace`, sin tocar las demás claves ni entradas y sin gate
+- AND si `claude plugin marketplace list` no muestra `superpowers-marketplace`, el agente ejecuta `claude plugin marketplace add obra/superpowers-marketplace`
+- AND si la entrada ya está y el marketplace aparece en la lista, el paso se salta y lo dice
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.
