@@ -1,0 +1,51 @@
+=== Fix round Task 1 franja (Important)
+Estás en una ronda de fix de la Task 1 de la feature 0012 ("Validar el formato de la franja"). Un implementador anterior ya completó la task (commit 8bd655d43be05a5a0ed9ae49da985576a53d1842) y un revisor la devolvió "Needs fixes" con un hallazgo Important. Tú retomas el trabajo; no dispatches subagentes.
+
+## Restricciones de código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+- Commits: tipo/scope en inglés, título y cuerpo en castellano, nunca title-only (Art. I de la constitution).
+- Suite del proyecto: `node --test` (Art. II de la constitution).
+
+Incumplir una de estas restricciones es Important.
+
+## La task
+
+Lee el brief: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+
+`src/slots.js` ahora mismo:
+```js
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+```
+
+## El hallazgo Important a arreglar (de .superpowers/sdd/plan/task-1-review.md)
+
+> `src/slots.js:4` · `reserve('Sur', undefined)` lanza `TypeError: Cannot read properties of undefined` en vez del error de formato, así que la CLI termina con la traza y no con el mensaje de la spec. Fix: comprobar `typeof slot === 'string'` antes de `SLOT.test`.
+
+## Reproducir antes de arreglar (obligatorio)
+
+Antes de tocar `src/slots.js`:
+1. Añade a `tests/slot-format.test.js` un test nuevo que llame a `reserve('Sur', undefined)` y confirma que HOY lanza `TypeError` (no el mensaje de formato) — esto es tu RED de reproducción del hallazgo. No modifiques el test existente, solo añade uno.
+2. Ejecuta `node --test tests/slot-format.test.js` y confirma que el nuevo test falla tal como describe el hallazgo (por el TypeError, no por una aserción tuya que ya espere el mensaje correcto — primero compruébalo con una aserción provisional o observando la salida cruda).
+3. Si NO consigues reproducir el TypeError en un intento, PARA y reporta `NEEDS_CONTEXT` con el test que escribiste y la salida real, sin tocar `src/slots.js`.
+4. Si lo reproduces, cambia el test para que la aserción final espere el mensaje de formato («Franja no válida: usa HH-HH, p. ej. 10-12»), igual que el test existente, y aplica el fix en `src/slots.js`: comprobar `typeof slot === 'string'` antes de `SLOT.test(slot)` (o equivalente) para que una franja no-string dé el mismo error de formato, no una excepción nativa.
+
+## Verificación
+
+`node --test tests/slot-format.test.js` — todo verde, salida limpia.
+
+## Commit
+
+Un solo commit de fix (tipo `fix`, scope `0012`), con el test nuevo y el cambio en `src/slots.js`. Usa `git add` de las rutas explícitas (`src/slots.js`, `tests/slot-format.test.js`), nunca `--no-verify`.
+
+## Reporta
+
+Escribe tu informe completo en: <run>\repo\.superpowers\sdd\plan\task-1-report.md (créalo, no existe aún) con: qué hiciste, evidencia RED (comando + salida antes del fix, con el TypeError) y GREEN (comando + salida tras el fix), ficheros cambiados, commit (sha + subject).
+
+Luego responde en menos de 15 líneas con SOLO: Status (DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT), el commit (sha corto + subject), un resumen de test en una línea, dudas si las hay, y la ruta del informe.
+

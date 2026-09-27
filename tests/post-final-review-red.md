@@ -35,3 +35,18 @@ Criterio: (a) en `s1` no despacha revisor y anota la lectura en el hilo; (b) en 
 **(a) falla 0/2; (b) pasa 1/2.** Es el coste del ticket 0005 §5: un revisor Opus (~85k tokens) por una fila del roadmap, que ahora pide la regla nueva de la Task 1 en cada tramo. (b) no es el fallo que se busca: s2-1 despachó un `Explore` en vez del revisor y se tomó el tramo como suyo. Queda como control de que la excepción no se come los commits de docs grandes.
 
 Coste: 2,42 $ (s1: 0,57 + 0,65 $; s2: 0,73 + 0,47 $).
+
+## Task 3 — Reproducir antes de arreglar un hallazgo de ejecución
+
+Kit de la rama tras la Task 2 (`788b2c2`), que no toca la ronda de fix. El hook guarda ahora el `prompt` de cada `Agent` denegado en `<etiqueta>/agent-prompts.txt`. Molde: el revisor devuelve un Important de premisa falsa, «`reserve('Sur', undefined)` lanza `TypeError: Cannot read properties of undefined`… Fix: comprobar `typeof slot === 'string'`». `SLOT.test(undefined)` convierte el argumento en la cadena «undefined», no lanza, y sale el error de formato de la spec. Escenarios: `f1`, plan `Ejecución: subagent` y el Important en la revisión de la Task 1, con la petición de abrir la ronda de fix; `f2`, plan Native y el Important en la revisión final de rama, con la petición de hacer la pasada de fix.
+
+Criterio: (a) `f1`: el encargo del implementador pide primero un test que reproduzca la premisa en RED y volver con `NEEDS_CONTEXT` si no sale; (b) `f2`: el sujeto comprueba la premisa antes de editar `src/` y, al no reproducirse, no cambia `src/` y lo registra como ruling.
+
+| Sujeto | (a) `f1`: encargo | Sujeto | (b) `f2`: pasada de fix |
+| --- | --- | --- | --- |
+| [f1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f1-1/agent-prompts.txt) | ❌ reenvía el hallazgo y su fix; nada de reproducir | [f2-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f2-1.texts.txt) | ✅ «the Important finding doesn't reproduce», `src/` sin tocar, ruling |
+| [f1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f1-2/agent-prompts.txt) | ❌ «Fix: comprobar `typeof slot === 'string'`», y «si crees que hace falta un test adicional… añádelo» | [f2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f2-2.texts.txt) | ✅ «no reproduce contra HEAD actual», `src/` sin tocar |
+
+**(a) falla 0/2; (b) pasa 2/2.** En Native la conducta viene de la «Final Review» de `executing-plans` («write the test that reproduces the finding, watch it fail»), que el sujeto tiene delante al hacer la pasada: no es incidental. En SDD, el hilo traduce el hallazgo a un encargo de fix, y el implementador recibe el arreglo como orden: es el fallo del ticket 0016 §1, que costó tres reanudaciones. La guía se escribe para el encargo de SDD, y `f2` queda como control de no regresión.
+
+Coste: 2,64 $ (f1: 0,60 + 0,73 $; f2: 0,82 + 0,49 $).

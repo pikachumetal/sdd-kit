@@ -36,3 +36,10 @@ Describe 'Revisión en el hilo' {
     $script:Skill | Should -Match '(?i)revisado en el hilo'
   }
 }
+
+Describe 'Reproducir antes de arreglar' {
+  It 'la ronda de fix pide el RED de un hallazgo de ejecución' {
+    $script:Skill | Should -Match '(?i)afirma algo de ejecución'
+    $script:Skill | Should -Match ([regex]::Escape('NEEDS_CONTEXT'))
+  }
+}

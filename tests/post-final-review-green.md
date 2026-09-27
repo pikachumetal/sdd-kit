@@ -29,3 +29,14 @@ Dos tandas. La primera ([`green/out/`](../.docs/sdd/specs/20260927-145355-featur
 **(a) pasa de 0/2 a 2/2 en las dos tandas; (b) pasa a 2/2 con el umbral en el paso.** Con el tamaño solo en la referencia, el sujeto que no la abrió se quedó con «solo docs» y se comió el control: por eso el umbral va también en los pasos 6 y 7 (ruling de la Task 2). La línea literal `revisado en el hilo: …` sale 1 de 2 en la segunda tanda: el otro sujeto deja la misma información en prosa.
 
 Coste: 4,43 $ (tanda 1: 2,02 $; tanda 2: 2,41 $).
+
+## Task 3 — Reproducir antes de arreglar un hallazgo de ejecución
+
+| Sujeto | (a) `f1`: encargo | Sujeto | (b) `f2`: pasada de fix |
+| --- | --- | --- | --- |
+| [f1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green/out/f1-1/agent-prompts.txt) | ✅ «confirma que ese test sale en RED… Si en ese intento el test NO reproduce el `TypeError` descrito, PARA… `NEEDS_CONTEXT`» | [f2-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green/out/f2-1.texts.txt) | ✅ «El Important no reproduce… rechazo el hallazgo (ruling), sin cambio de código» |
+| [f1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green/out/f1-2/agent-prompts.txt) | ✅ «esto es tu RED de reproducción del hallazgo… Si NO consigues reproducir el TypeError en un intento, PARA y reporta `NEEDS_CONTEXT`» | [f2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green/out/f2-2.texts.txt) | ✅ «reproduje `reserve('Sur', undefined)` antes de tocar nada», `src/` sin tocar |
+
+**(a) pasa de 0/2 a 2/2; (b), control, sigue 2/2.** Los dos encargos ponen el test de reproducción antes del arreglo del revisor y la salida con `NEEDS_CONTEXT` sin tocar `src/`.
+
+Coste: 2,91 $ (f1: 0,84 + 0,80 $; f2: 0,57 + 0,70 $). Campaña entera de la feature: 28 sujetos, 20,85 $.

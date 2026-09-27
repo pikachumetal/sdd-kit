@@ -1,0 +1,58 @@
+=== Fix round 1/5 Task 1 feature 0012
+## Restricciones de código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+Incumplir esta restricción es Important.
+
+Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
+
+## Dónde encaja esto
+
+Estás en la rama `feature/0012` (repo: perfil delegate, feature "validar el formato de la franja"). La Task 1 ("Validar al reservar") ya se implementó y se commiteó (commit `4839234`), pero su revisión de task devolvió "Needs fixes" con 1 Important. Esta es la ronda de fix 1 de 5 sobre esa task: no hay un subagente implementador vivo en esta sesión que resumir (sesión nueva), así que entras en frío con el brief y el informe de revisión como memoria persistente.
+
+Lee primero el brief de la task — son tus requisitos originales, con los valores exactos:
+`<run>\repo\.superpowers\sdd\plan\task-1-brief.md`
+
+## Hallazgo abierto (Important)
+
+De `.superpowers/sdd/plan/task-1-review.md`:
+
+`src/slots.js:4` · `reserve('Sur', undefined)` lanza `TypeError: Cannot read properties of undefined` en vez del error de formato, así que la CLI termina con la traza y no con el mensaje de la spec. Fix: comprobar `typeof slot === 'string'` antes de `SLOT.test`.
+
+El fichero a tocar es `src/slots.js`:
+```js
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+```
+
+## Tests RED
+
+El test contrato es `tests/slot-format.test.js` — no lo modifiques (no cambies una aserción, un nombre de test ni un dato); el formato que exija el linter sí puedes aplicarlo. Si crees que hace falta un test adicional para cubrir el caso `slot` no-string, añádelo sin tocar los existentes.
+
+## Verificación
+
+Ejecuta: `node --test tests/slot-format.test.js`. No ejecutes la suite completa del proyecto ni superficies que esta task no toque.
+
+## Reglas del implementador
+
+- Si un gate o un checker te avisa y el aviso no se arregla con un cambio real del código, para y repórtalo con el mensaje literal. Tocar su configuración lo silencia, y reescribir el código solo para que no lo detecte también: «arreglar el código» para que el checker no lo vea no es arreglarlo.
+- Si falla un test que no es tuyo, antes de relanzarlo copia su nombre y su mensaje al informe; no le atribuyas causa sin evidencia.
+- Nunca `git stash`: la pila es común a todos los worktrees. Para apartar trabajo, un commit WIP; para ver la base, `git show <base>:<ruta>`.
+
+## Commit
+
+Haz el fix con un commit propio sobre el HEAD actual (`4839234`), con `git add` de las rutas explícitas, nunca `--no-verify`. No hagas squash del commit anterior de la task.
+
+## Informe
+
+Escribe tu informe de fix en:
+`<run>\repo\.superpowers\sdd\plan\task-1-report.md`
+(el fichero no existe aún — créalo). Incluye: qué cambiaste y por qué, los tests que ejecutaste con su salida, y el hash del commit del fix.
+
+Devuelve en tu respuesta final solo: status (DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED), el hash del commit, un resumen de una línea del resultado de los tests, y cualquier duda o concern.
+
