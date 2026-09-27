@@ -3,7 +3,8 @@
   Mide los tokens y el coste de las sesiones de Claude Code de un worktree, el hilo y los subagentes por separado.
 .DESCRIPTION
   Forma parte del kit SDD (skill sdd-templates). Lee los transcripts que Claude Code guarda en
-  ~/.claude/projects/<carpeta del worktree>/ y cuenta cada respuesta del modelo una sola vez por message.id.
+  <configuración>/projects/<carpeta del worktree>/ y cuenta cada respuesta del modelo una sola vez por message.id.
+  Sin -ProjectsRoot, junta todas las configuraciones: $env:CLAUDE_CONFIG_DIR, ~/.claude y ~/.claude-*.
   El coste sale de la tabla pricing de <worktree>/.docs/sdd/sdd-kit.json; sin tabla, o con un modelo que no
   está en ella, el coste es «sin precio». Imprime una tabla por ámbito y modelo, y las tres líneas de la
   sección de tiempo y coste del walkthrough. Sin transcripts (otro harness), las tres dicen «no medido».
@@ -14,14 +15,24 @@
 param(
   [string]$Path = (Get-Location).Path,
   [string]$Branch,
-  [string]$ProjectsRoot = (Join-Path $HOME '.claude/projects')
+  [string[]]$ProjectsRoot
 )
 $ErrorActionPreference = 'Stop'
 $script:Categories = @('input', 'cacheWrite5m', 'cacheWrite1h', 'cacheRead', 'output')
 $script:Invariant = [System.Globalization.CultureInfo]::InvariantCulture
 
-function Get-TranscriptFolder([string]$WorktreePath, [string]$Root) {
-  return Join-Path $Root ($WorktreePath -replace '[^A-Za-z0-9]', '-')
+# Con dos cuentas (CLAUDE_CONFIG_DIR en ~/.claude-<cuenta>), las sesiones de un worktree quedan repartidas (tickets 0032 §3, 0085 §4, 0086 §6).
+function Get-DefaultProjectsRoots {
+  $homeConfigs = Get-ChildItem -LiteralPath $HOME -Directory -Force -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -eq '.claude' -or $_.Name -like '.claude-*' } | ForEach-Object FullName
+  $configs = @($env:CLAUDE_CONFIG_DIR) + @($homeConfigs) | Where-Object { $_ }
+  $unique = $configs | ForEach-Object { [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]::GetFullPath($_)) } | Sort-Object -Unique
+  return @($unique | ForEach-Object { Join-Path $_ 'projects' })
+}
+
+function Get-TranscriptFolders([string]$WorktreePath, [string[]]$Roots) {
+  $name = $WorktreePath -replace '[^A-Za-z0-9]', '-'
+  return @($Roots | ForEach-Object { Join-Path $_ $name } | Where-Object { Test-Path -LiteralPath $_ })
 }
 
 function ConvertFrom-JsonLine([string]$Text) {
@@ -112,9 +123,9 @@ function Read-Dispatch([System.IO.FileInfo]$File, [string]$BranchName) {
   return [pscustomobject]@{ Description = $description; Totals = Get-ModelTotals $responses; Minutes = Get-Minutes $responses }
 }
 
-function Read-Session([string]$Folder, [string]$BranchName) {
-  $thread = @(Get-ChildItem -LiteralPath $Folder -Filter '*.jsonl' -File | ForEach-Object { Read-Responses $_.FullName $BranchName })
-  $agentFiles = Get-ChildItem -Path (Join-Path $Folder '*/subagents/agent-*.jsonl') -File -ErrorAction SilentlyContinue
+function Read-Session([string[]]$Folders, [string]$BranchName) {
+  $thread = @(Get-ChildItem -LiteralPath $Folders -Filter '*.jsonl' -File | ForEach-Object { Read-Responses $_.FullName $BranchName })
+  $agentFiles = $Folders | ForEach-Object { Get-ChildItem -Path (Join-Path $_ '*/subagents/agent-*.jsonl') -File -ErrorAction SilentlyContinue }
   $dispatches = @($agentFiles | Sort-Object FullName | ForEach-Object { Read-Dispatch $_ $BranchName } | Where-Object { $_ })
   return [pscustomobject]@{ Thread = Get-ModelTotals $thread; Dispatches = $dispatches }
 }
@@ -224,13 +235,13 @@ function Write-Report([object]$Session, [object]$Prices) {
   Write-Output (Format-CostLine $Session $Prices)
 }
 
-function Invoke-Measurement([string]$WorktreePath, [string]$Root, [string]$BranchName) {
-  $folder = Get-TranscriptFolder $WorktreePath $Root
-  if (-not (Test-Path -LiteralPath $folder)) {
+function Invoke-Measurement([string]$WorktreePath, [string[]]$Roots, [string]$BranchName) {
+  $folders = Get-TranscriptFolders $WorktreePath $Roots
+  if ($folders.Count -eq 0) {
     Write-NotMeasured "sin transcripts de Claude Code para $WorktreePath"
     return
   }
-  $session = Read-Session $folder $BranchName
+  $session = Read-Session $folders $BranchName
   if ($session.Thread.Count -eq 0 -and $session.Dispatches.Count -eq 0) {
     $subject = if ($BranchName) { $BranchName } else { 'ninguna rama' }
     Write-NotMeasured "sin respuestas de $subject en los transcripts"
@@ -243,5 +254,6 @@ $worktreePath = [System.IO.Path]::TrimEndingDirectorySeparator([System.IO.Path]:
 # Llamado desde Git Bash, la consola hereda una página de códigos OEM y la raya y las tildes llegan corruptas.
 $previousEncoding = [Console]::OutputEncoding
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+if (-not $ProjectsRoot) { $ProjectsRoot = Get-DefaultProjectsRoots }
 try { Invoke-Measurement $worktreePath $ProjectsRoot $Branch }
 finally { [Console]::OutputEncoding = $previousEncoding }
