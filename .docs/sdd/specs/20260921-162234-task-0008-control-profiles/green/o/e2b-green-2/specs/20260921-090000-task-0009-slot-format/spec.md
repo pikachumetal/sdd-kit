@@ -8,7 +8,7 @@ created: 2026-09-21
 author: agente
 approvers:
   - role: dev-lead
-    name: Àngel Delgado
+    name: <git-user>
     approved_at: 2026-09-22
 ---
 
@@ -43,4 +43,4 @@ Hoy una franja mal escrita devuelve salas libres que no lo están. Se quiere un 
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | 2026-09-22 | aprobado |
+| dev-lead | <git-user> | 2026-09-22 | aprobado |

@@ -83,6 +83,15 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $run.Output | Should -Match 'sujetos de la campaña: 1 '
   }
 
+  It 'el sujeto ve la identidad fixture en git config, no la de la máquina (ticket del patch 0080 §2)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'identity')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Out 'a-1.texts.txt') | Should -Match 'git: Fixture <fixture@example\.com>'
+  }
+
   It 'suma EXTRA_ALLOWED a las herramientas permitidas del sujeto (task 0077)' {
     $campaign = New-Campaign (Join-Path $TestDrive 'allowed')
 

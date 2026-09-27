@@ -9,7 +9,7 @@ created: 2026-09-22
 author: Claude
 approvers:
   - role: dev-lead
-    name: Àngel Delgado
+    name: <git-user>
     approved_at: 2026-09-22
 ---
 
@@ -67,4 +67,4 @@ _(sin enmiendas)_
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | 2026-09-22 | aprobada: «Apruebo la spec.» |
+| dev-lead | <git-user> | 2026-09-22 | aprobada: «Apruebo la spec.» |

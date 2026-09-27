@@ -6,7 +6,7 @@ mode: full
 profile: delegate
 status: draft
 created: 2026-09-22
-author: Àngel Delgado
+author: <git-user>
 approvers:
   - role: dev-lead
     name: TBD
@@ -44,4 +44,4 @@ Leer `src/app.js` y `test/app.test.js` como fuente de verdad, y calcar `architec
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
-| dev-lead | Àngel Delgado | | pendiente |
+| dev-lead | <git-user> | | pendiente |
