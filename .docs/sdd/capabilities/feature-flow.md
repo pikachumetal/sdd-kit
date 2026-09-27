@@ -1,4 +1,4 @@
-# Capacidad — task-flow
+# Capacidad — feature-flow
 
 ## Propósito
 
