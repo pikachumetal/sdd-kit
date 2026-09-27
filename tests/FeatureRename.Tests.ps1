@@ -94,6 +94,21 @@ Describe 'Renombrado task → feature' {
     }
   }
 
+  Context 'capacidades del kit' {
+    It 'capabilities/<_>.md existe con su título' -ForEach @('feature-flow', 'feature-ids') {
+      Get-KitFile ".docs/sdd/capabilities/$_.md" | Should -Match "(?m)^# Capacidad — $_\s*$"
+    }
+
+    It 'capabilities/<_>.md ya no existe' -ForEach @('task-flow', 'task-ids') {
+      Join-Path $script:KitRoot ".docs/sdd/capabilities/$_.md" | Should -Not -Exist
+    }
+
+    It 'ninguna capacidad enlaza los slugs viejos' {
+      $hits = git -C $script:KitRoot grep -l -E 'task-(flow|ids)\.md' -- .docs/sdd/capabilities
+      $hits | Should -BeNullOrEmpty
+    }
+  }
+
   Context 'guarda' {
     It 'no queda ningún nombre viejo fuera del histórico' {
       $allowed = '^(\.docs/sdd/(specs|field-reports|releases)/|\.docs/sdd/(changelog|roadmap|tech-stack|estimation-log|capabilities/migration)\.md$|tests/.*\.md$|skills/sdd-init-brownfield/references/migrations/|tests/(FeatureRename|MigrationInitParity)\.Tests\.ps1$)'
