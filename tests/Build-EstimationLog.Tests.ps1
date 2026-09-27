@@ -14,7 +14,8 @@ BeforeAll {
   }
 }
 
-Describe 'Build-EstimationLog.ps1' {
+# Slow porque ejecuta el script sobre ficheros temporales: sale del pre-commit (patch 0087) y lo corre la suite completa.
+Describe 'Build-EstimationLog.ps1' -Tag 'Slow' {
   BeforeAll { $script:Result = Invoke-Build (Join-Path $script:Fixtures 'proyecto') }
 
   It 'lleva cabecera AUTO-GENERADO' {
@@ -132,7 +133,7 @@ Describe 'Build-EstimationLog.ps1' {
   }
 }
 
-Describe 'Resolución de la carpeta de docs' {
+Describe 'Resolución de la carpeta de docs' -Tag 'Slow' {
   It 'usa docs/sdd cuando no existe .docs/sdd' {
     $r = Invoke-Build (Join-Path $script:Fixtures 'legacy')
     Get-Row $r.Text '20260801-100000-task-0009-old' | Should -Be '| 2026-08-01 | 0009 | backend | 3 | 6 | 2 | — | — | — | — | 20260801-100000-task-0009-old |'
@@ -196,7 +197,7 @@ Describe 'Resolución de la carpeta de docs' {
   }
 }
 
-Describe 'Resumen estadístico' {
+Describe 'Resumen estadístico' -Tag 'Slow' {
   BeforeAll {
     function New-Walkthrough([string]$Specs, [string]$Folder, [hashtable]$Time) {
       $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
@@ -321,7 +322,7 @@ Describe 'Resumen estadístico' {
   }
 }
 
-Describe 'Fecha de la fila' {
+Describe 'Fecha de la fila' -Tag 'Slow' {
   BeforeAll {
     function New-Artifact([string]$Specs, [string]$Folder, [string]$File, [string]$FrontMatter) {
       $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
@@ -356,7 +357,7 @@ Describe 'Fecha de la fila' {
   }
 }
 
-Describe 'Tolerancia de formato en el bloque de tiempo' {
+Describe 'Tolerancia de formato en el bloque de tiempo' -Tag 'Slow' {
   BeforeAll { $script:Tolerante = Invoke-Build (Join-Path $script:Fixtures 'tolerante') }
 
   It 'lee un patch.md escrito con las etiquetas largas del walkthrough' {
@@ -370,7 +371,7 @@ Describe 'Tolerancia de formato en el bloque de tiempo' {
   }
 }
 
-Describe 'Unidad del tiempo' {
+Describe 'Unidad del tiempo' -Tag 'Slow' {
   BeforeAll {
     function New-Patch([string]$Specs, [string]$Folder, [string]$Estimate, [string]$Real) {
       $dir = New-Item -ItemType Directory -Path (Join-Path $Specs $Folder) -Force
@@ -408,7 +409,7 @@ Describe 'Unidad del tiempo' {
   }
 }
 
-Describe 'Carpetas feature y task heredadas' {
+Describe 'Carpetas feature y task heredadas' -Tag 'Slow' {
   BeforeAll { $script:Mixed = Invoke-Build (Join-Path $script:Fixtures 'features') }
 
   It 'lee el id de una task heredada' {
@@ -428,7 +429,7 @@ Describe 'Carpetas feature y task heredadas' {
   }
 }
 
-Describe 'Walkthrough con evidencia por THEN' {
+Describe 'Walkthrough con evidencia por THEN' -Tag 'Slow' {
   BeforeAll {
     $root = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString())
     $specs = Join-Path $root '.docs/sdd/specs'
