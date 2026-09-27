@@ -55,7 +55,7 @@ Validación diferida: 2026-09-27 · «Diferir: lo pruebo en el próximo cierre»
 
 ## 5. Tiempo (ligero)
 
-- Estimación: S
+- Estimación: 0,5 h (tamaño S en la fila del roadmap)
 - Real: 0,7 h
 
 ## 6. Delta de capacidad
