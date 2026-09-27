@@ -39,6 +39,7 @@ Dos veces el mismo día. En la task 0077 (ticket §2), la primera tanda del RED 
 | 3 | `HeadlessLauncher`, `PathLength` y `SubjectOutputPrivacy` completos, incluido el límite de 140 caracteres con `OUT` ya absoluto | ✅ 18/18 |
 
 Validación diferida: 2026-09-25 · «Diferido a la ola 1» · disparador: la primera campaña de la ola 1 (0078, 0074 o 0036) lanzada con `run.sh`, cuyo recuento final de «sujetos de la campaña» y de coste tiene que coincidir con los sujetos que corrieron, a cargo del dev-lead
+Validado: 2026-09-25 · «Validado» · por el disparador: la campaña del patch 0078 lanzó 8 sujetos con `run.sh` y `SPEC_DIR` absoluto tras este patch; las salidas cayeron en `red/out/` y `green/out/` y los recuentos coincidieron ([ticket del patch 0078](../../field-reports/20260925-181620-patch-0078-split-threshold.md), «Funcionó, no tocar»)
 
 ## 5. Tiempo (ligero)
 
