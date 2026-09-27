@@ -49,6 +49,7 @@ Repaso de coherencia. Corregí una cosa: la primera redacción decía «`git dif
 - Modo lite — «Lite (Recomendada)» (2026-09-27).
 - Parar en la spec, perfil `delegate` del proyecto — «Sí, paras en la spec (Recomendada)» (2026-09-27).
 - Aprobación de la spec — «sigue», respuesta a «¿Apruebas la spec?» (2026-09-27).
+- Tras un RED limpio del trailer (0/1) y del techo (0/2), una tanda más antes de recortar: 1 sujeto del trailer y 2 del techo, con el techo de sujetos subido de 10 a 13 y el de coste en 10 $ — «Una tanda más de RED» (2026-09-27).
 
 ## Intent
 
@@ -56,12 +57,12 @@ El revisor final lee un paquete que hace hoy `review-package` de superpowers. Es
 
 ## Scope
 
-- Entra: la receta del paquete en «Revisor final» de `skills/sdd-start-feature/references/encargo-revision.md`, con el merge-base actual, las exclusiones de `red/` y `green/` y `PLAN_FILE` = `spec.md` en lite. También «Cómo revisar», que apunta al paquete nuevo, la frase del trailer en la cabecera común y la fila de `executing-plans`/SDD en `references/overrides-superpowers.md` (el final no usa `review-package`). En `skills/sdd-templates/templates/plan-template.md`, el campo `Modelo`. Además, la evidencia en `tests/final-review-package-red.md` y `-green.md`, el delta de `task-flow`, la entrada del changelog y, al cerrar, el recorte de la fila 0032.
-- No entra: lo de la 0085 (re-revisión de `<revisión final>..HEAD`, docs de menos de ~20 líneas en el hilo, reproducir antes de arreglar) ni lo de la 0086 (rúbrica, un revisor con los siete puntos, `MODIFIED` en el repaso). Tampoco un script del kit para el paquete, `tech-stack.md:133` (sigue como aprendizaje), el paquete del revisor de task y de la re-revisión, ni migración: no cambia `.docs/sdd/` de los proyectos.
+- Entra: la receta del paquete en «Revisor final» de `skills/sdd-start-feature/references/encargo-revision.md`, con el merge-base actual, las exclusiones de `red/` y `green/` y `PLAN_FILE` = `spec.md` en lite. También «Cómo revisar», que apunta al paquete nuevo y la fila de `executing-plans`/SDD en `references/overrides-superpowers.md` (el final no usa `review-package`). En `skills/sdd-templates/templates/plan-template.md`, el campo `Modelo`. Además, la evidencia en `tests/final-review-package-red.md` y `-green.md`, el delta de `task-flow`, la entrada del changelog y, al cerrar, el recorte de la fila 0032.
+- No entra: la frase del trailer `Co-Authored-By` (enmienda del 2026-09-27: RED limpio 0 de 2; vuelve al roadmap como deuda). Tampoco lo de la 0085 (re-revisión de `<revisión final>..HEAD`, docs de menos de ~20 líneas en el hilo, reproducir antes de arreglar) ni lo de la 0086 (rúbrica, un revisor con los siete puntos, `MODIFIED` en el repaso). Tampoco un script del kit para el paquete, `tech-stack.md:133` (sigue como aprendizaje), el paquete del revisor de task y de la re-revisión, ni migración: no cambia `.docs/sdd/` de los proyectos.
 
 ## Approach
 
-En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con la receta en Git Bash. `MERGE_BASE=$(git merge-base HEAD <integración>)` con la rama de integración de la constitution, las dos exclusiones `':(exclude,glob).docs/sdd/specs/**/red/**'` y `…/green/**`, y la salida en `$(bash <ruta de sdd-workspace> <PLAN_FILE>)/review-final-<head7>.diff`, con las secciones Commits, Files changed y Diff (`-U10`). Detrás va una línea con el porqué medido y otra que dice que en lite `PLAN_FILE` es `spec.md`. «Cómo revisar» pasa a nombrar «la ruta del paquete». En la cabecera común entra la frase: «El trailer `Co-Authored-By` de los commits es la atribución de la sesión, no el modelo que escribió el diff: no lo reportes». La fila de overrides dice que el revisor final lee el paquete del kit. El campo `Modelo` del plan gana la frase del techo. Primero el RED con la guía vigente, después la edición y el GREEN.
+En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con la receta en Git Bash. `MERGE_BASE=$(git merge-base HEAD <integración>)` con la rama de integración de la constitution, las dos exclusiones `':(exclude,glob).docs/sdd/specs/**/red/**'` y `…/green/**`, y la salida en `$(bash <ruta de sdd-workspace> <PLAN_FILE>)/review-final-<head7>.diff`, con las secciones Commits, Files changed y Diff (`-U10`). Detrás va una línea con el porqué medido y otra que dice que en lite `PLAN_FILE` es `spec.md`. «Cómo revisar» pasa a nombrar «la ruta del paquete». La fila de overrides dice que el revisor final lee el paquete del kit. El campo `Modelo` del plan gana la frase del techo. Primero el RED con la guía vigente, después la edición y el GREEN.
 
 ## Delta de comportamiento
 
@@ -73,11 +74,6 @@ En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con l
 - THEN la sección de diff del paquete no contiene `skills/otra/SKILL.md` ni ningún fichero bajo `red/` o `green/`
 - AND la sección de commits lista solo los de la feature y el merge
 - AND el paquete se genera a la primera, con `spec.md` como `PLAN_FILE`
-
-**ADDED — El trailer de atribución no es un hallazgo**
-- GIVEN un commit de un implementador despachado con `model: sonnet` que lleva `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`
-- WHEN un revisor de task lo revisa con la cabecera de `encargo-revision.md`
-- THEN no reporta el trailer ni el modelo del implementador como hallazgo
 
 **ADDED — El plan escribe al revisor final con el techo del kit**
 - GIVEN una spec aprobada en `delegate` y un plan Native de una sola task pequeña
@@ -93,6 +89,8 @@ En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con l
 - Confianza: media
 
 ## Enmiendas
+
+- 2026-09-27 — Sale del Scope la frase del trailer `Co-Authored-By` y su escenario — RED limpio en 2 de 2 revisores (`r1-1`, `r1-2`), y el techo del revisor final se queda, con 1 de 4 planes que lo quitaban (`p1-4`) — aprobada: «Una tanda más de RED», cuya opción decía «Si siguen limpias, se recortan igual»
 
 ## Aprobaciones
 
