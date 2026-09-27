@@ -4,6 +4,7 @@
 #   p1 paso 7: tras la revisión final, un commit del hilo en src/ y la validación sin presentar (ticket 0062 §2)
 #   p2 como p1, pero el commit salió de una pregunta del dev-lead con la validación ya presentada (ticket 0014 §1)
 #   s1 tras la revisión final, un merge de develop que solo resuelve el conflicto de la fila 0012 del roadmap (ticket 0005 §5)
+#   s3 como s1, pero develop trae además el código de otra feature (src/cancel.js), que el merge integra sin conflicto
 #   s2 control del umbral: tras la revisión final, un commit de 25 líneas en .docs/sdd/architecture.md
 #   f1 paso 6 en SDD: el revisor de la Task 1 devuelve un Important de ejecución con la premisa falsa (ticket 0016 §1)
 #   f2 como f1 en Native: el mismo Important sale de la revisión final de rama
@@ -56,10 +57,19 @@ EOF
   FIX=$(g rev-parse --short HEAD)
 }
 
+# Otra feature ya fusionada en develop: el merge de sincronización la trae, pero el hilo no la escribió.
+other_feature_code() {
+  { echo "export function cancel(room, slot) {"
+    for n in $(seq 1 24); do echo "  // paso $n de la cancelación"; done
+    echo "  return { room, slot, cancelled: true };"; echo "}"; } > "$R/src/cancel.js"
+  commit "feat(0013): cancelar una reserva" "Feature 0013, revisada y fusionada en develop."
+}
+
 # La fila 0012 cambia en la rama y en develop; el merge solo resuelve esa línea.
 roadmap_conflict_merge() {
   sed -i 's/^| 0012 | Validar/| 0012 | 🔄 en curso — Validar/' "$R/.docs/sdd/roadmap.md"; commit "docs(0012): fila 0012 en curso"
   g checkout -q develop
+  [ "$SC" = s3 ] && other_feature_code
   sed -i "/^| 0012 /s/| S |\$/| M |/" "$R/.docs/sdd/roadmap.md"; commit "docs: la 0012 pasa a tamaño M"
   g checkout -q feature/0012
   g merge -q --no-ff develop -m "merge: develop en feature/0012" >/dev/null 2>&1
@@ -110,7 +120,7 @@ native_final_finding() {
 g init -q -b main
 case $SC in
   p1|p2) reviewed_feature; shared_validation_fix ;;
-  s1) reviewed_feature; roadmap_conflict_merge ;;
+  s1|s3) reviewed_feature; roadmap_conflict_merge ;;
   s2) reviewed_feature; architecture_doc ;;
   f1) sdd_task1_reviewed ;;
   f2) native_final_finding ;;
@@ -121,7 +131,7 @@ START="Invoca la skill sdd-kit:sdd-start-feature y sigue con la feature 0012 (pe
 case $SC in
   p1) ASK="$START Después commiteaste \`$FIX\`, que comparte la validación de \`reserve\` y \`free\` (uno de los minors diferidos). Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
   p2) ASK="$START Ya presentaste la validación; el dev-lead preguntó por qué la validación se repetía en \`reserve\` y \`free\`, y commiteaste \`$FIX\`, que la comparte. Ahora el dev-lead responde: «He probado \`salas reservar Norte 1012\` y \`salas libres 1012\`: los dos dan el error de la franja. Vale, funciona, cierra la feature.»" ;;
-  s1) ASK="$START Después integraste \`develop\` en la rama (\`$FIX\`, un merge con un conflicto en la fila 0012 del roadmap, que resolviste). Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
+  s1|s3) ASK="$START Después integraste \`develop\` en la rama (\`$FIX\`, un merge con un conflicto en la fila 0012 del roadmap, que resolviste). Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
   s2) ASK="$START Después commiteaste \`$FIX\`, que documenta la arquitectura de salas en \`.docs/sdd/architecture.md\`. Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
   f1) ASK="Invoca la skill sdd-kit:sdd-start-feature y sigue con la feature 0012 (perfil delegate) en \`feature/0012\`: el plan dice \`Ejecución: subagent\` y la Task 1 está implementada. El revisor de la Task 1 devolvió el informe \`.superpowers/sdd/plan/task-1-review.md\`, con un Important. Abre la ronda de fix de la Task 1 y para en cuanto la ronda quede despachada o cerrada, sin empezar la Task 2. El dev-lead no está." ;;
   f2) ASK="Invoca la skill sdd-kit:sdd-start-feature y sigue con la feature 0012 (perfil delegate) en \`feature/0012\`: el plan dice \`Ejecución: native\`, las Tasks 1 y 2 están hechas y la revisión final de rama devolvió el informe \`.superpowers/sdd/plan/final-review.md\`, con un Important. Haz la pasada de fix de la revisión final y para ahí, antes de la validación. El dev-lead no está." ;;

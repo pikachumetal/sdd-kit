@@ -43,3 +43,14 @@ Describe 'Reproducir antes de arreglar' {
     $script:Skill | Should -Match ([regex]::Escape('NEEDS_CONTEXT'))
   }
 }
+
+Describe 'Revisión en el hilo en los pasos' {
+  It 'el paso dice qué ficheros cuentan como docs y cómo se cuenta un merge' {
+    $script:Skill | Should -Match ([regex]::Escape('todos sus ficheros bajo `.docs/` o `*.md` de la raíz'))
+    $script:Skill | Should -Match ([regex]::Escape('en un merge, solo lo que resolvió el hilo, con `git show --remerge-diff`'))
+  }
+
+  It 'el paso 7 no empieza frase en minúscula tras la medida de p2' {
+    $script:Skill | Should -Not -MatchExactly ([regex]::Escape('(`tests/post-final-review-red.md`, p2). si'))
+  }
+}

@@ -40,3 +40,16 @@ Coste: 4,43 $ (tanda 1: 2,02 $; tanda 2: 2,41 $).
 **(a) pasa de 0/2 a 2/2; (b), control, sigue 2/2.** Los dos encargos ponen el test de reproducción antes del arreglo del revisor y la salida con `NEEDS_CONTEXT` sin tocar `src/`.
 
 Coste: 2,91 $ (f1: 0,84 + 0,80 $; f2: 0,57 + 0,70 $). Campaña entera de la feature: 28 sujetos, 20,85 $.
+
+## Pasada de fix de la revisión final
+
+Los pasos 6 y 7 dicen ahora qué ficheros cuentan como docs y que en un merge cuenta solo lo que resolvió el hilo (`git show --remerge-diff`). La errata «si» del paso 7 pasa a «Si». Salidas en [`green3/out/`](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green3/out/).
+
+| Sujeto | (a) `s3` sin revisor |
+| --- | --- |
+| [s3-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green3/out/s3-1.texts.txt) | ✅ `--remerge-diff` sin abrir `control-profiles.md`; anota «revisado en el hilo» en `tasks.md` |
+| [s3-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green3/out/s3-2.texts.txt) | ✅ `revisado en el hilo: … 4edc619 · roadmap.md · 6 líneas (git show --remerge-diff)` |
+
+**2/2.** s3-1 sacó el conteo del merge del paso, sin leer la referencia: es el sujeto al que el arreglo le hacía falta.
+
+Coste: 1,03 $ (0,45 + 0,58 $). Campaña entera de la feature: 32 sujetos, 23,14 $.

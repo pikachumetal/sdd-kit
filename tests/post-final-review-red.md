@@ -50,3 +50,16 @@ Criterio: (a) `f1`: el encargo del implementador pide primero un test que reprod
 **(a) falla 0/2; (b) pasa 2/2.** En Native la conducta viene de la «Final Review» de `executing-plans` («write the test that reproduces the finding, watch it fail»), que el sujeto tiene delante al hacer la pasada: no es incidental. En SDD, el hilo traduce el hallazgo a un encargo de fix, y el implementador recibe el arreglo como orden: es el fallo del ticket 0016 §1, que costó tres reanudaciones. La guía se escribe para el encargo de SDD, y `f2` queda como control de no regresión.
 
 Coste: 2,64 $ (f1: 0,60 + 0,73 $; f2: 0,82 + 0,49 $).
+
+## Pasada de fix de la revisión final — el conteo de un merge en los pasos
+
+La revisión final marcó como Important que los pasos 6 y 7 no dicen cómo se cuenta un merge ni qué ficheros son docs, y que `s1` no lo distingue porque `develop` solo trae una línea del roadmap. Escenario nuevo `s3`: `s1` con `develop` trayendo además `src/cancel.js` (27 líneas) de otra feature. El tramo da 29 líneas con `src/` en `git diff --numstat`, y el merge da 6 líneas de docs en `--remerge-diff`. Kit de la rama en `2c39f4a`.
+
+| Sujeto | (a) `s3` sin revisor |
+| --- | --- |
+| [s3-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s3-1.texts.txt) | ✅ `git show --remerge-diff`, sin revisor |
+| [s3-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s3-2.texts.txt) | ✅ `git show --remerge-diff --numstat`, sin revisor |
+
+**Pasa 2/2: el Important no se reproduce en conducta.** Los dos sujetos leyeron `control-profiles.md`, que ya tenía el conteo del merge. Es la misma referencia que el s2-2 del primer GREEN de la Task 2 no abrió, así que el arreglo se mantiene (ruling de la pasada de fix), y `s3` queda como control.
+
+Coste: 1,26 $ (0,57 + 0,69 $).
