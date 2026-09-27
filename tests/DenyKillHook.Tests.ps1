@@ -8,7 +8,8 @@ BeforeAll {
   }
 }
 
-Describe 'deny-kill.mjs' {
+# Slow porque ejecuta el script sobre ficheros temporales: sale del pre-commit (patch 0087) y lo corre la suite completa.
+Describe 'deny-kill.mjs' -Tag 'Slow' {
   It 'deniega <Command>' -ForEach @(
     @{ Command = 'taskkill //F //IM node.exe' }
     @{ Command = 'pkill -f "node server.mjs"' }

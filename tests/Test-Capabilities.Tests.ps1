@@ -33,7 +33,8 @@ AfterAll {
   foreach ($root in $script:Roots) { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
 }
 
-Describe 'Test-Capabilities.ps1 sobre capabilities/' {
+# Slow porque ejecuta el script sobre ficheros temporales: sale del pre-commit (patch 0087) y lo corre la suite completa.
+Describe 'Test-Capabilities.ps1 sobre capabilities/' -Tag 'Slow' {
   It 'una capacidad bien formada pasa' {
     $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings })
     $result.Lines | Should -Be @('Capacidades válidas: 1')
@@ -140,7 +141,7 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' {
   }
 }
 
-Describe 'Test-Capabilities.ps1 exige el propósito' {
+Describe 'Test-Capabilities.ps1 exige el propósito' -Tag 'Slow' {
   BeforeAll {
     $script:Template = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../skills/sdd-templates/templates/capability-template.md')
     function Set-Purpose([string]$Content, [string]$Body) {
@@ -209,7 +210,7 @@ Describe 'Las capacidades del repo' {
   }
 }
 
-Describe 'La migración a 2.0.0' {
+Describe 'La migración a 2.0.0' -Tag 'Slow' {
   BeforeAll {
     $script:Migration = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../skills/sdd-init-brownfield/references/migrations/v2.0.0.md')
   }
@@ -241,7 +242,7 @@ Describe 'La migración a 2.0.0' {
   }
 }
 
-Describe 'Test-Capabilities.ps1 con -Artifact' {
+Describe 'Test-Capabilities.ps1 con -Artifact' -Tag 'Slow' {
   It 'un bloque que coincide con el delta pasa' {
     $spec = Get-Spec "## Capacidades`n`n- Modificadas: ``bookings`` — añade «Algo»`n" @('bookings')
     $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/t/spec.md' = $spec }) 'specs/t/spec.md'
