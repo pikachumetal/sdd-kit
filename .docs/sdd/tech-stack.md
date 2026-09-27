@@ -176,6 +176,8 @@ Para el código ejecutable, Pester con fixtures versionadas (arriba). Para las s
 
 **Antes de gastar en un experimento con `claude -p`, mira los streams de la campaña de origen** (patch 0084, 2026-09-27): si su scratchpad sigue en disco, sus `.jsonl` crudos responden gratis preguntas sobre el stream. El 0084 comprobó en 10 de 10 que el `total_cost_usd` de un turno con `--resume` es acumulado, sin lanzar un sujeto.
 
+**Un fallo de Windows que depende de un handle abierto se reproduce en un repo desechable** (patch 0088, 2026-09-27): `Start-Process pwsh -WorkingDirectory <worktree>` y después `git worktree remove`. Git borra el contenido y el registro, pero no la carpeta (`Permission denied`, salida 255), y el reintento con `--force` falla con `is not a working tree`. Un minuto de experimento convirtió en causa medida la sospecha del ticket del 0084.
+
 - **Una condición que el paso resume y remite a la referencia se pierde** (feature 0085): con el umbral de «revisado en el hilo» solo en `control-profiles.md` y el paso 6 diciendo «commit pequeño de solo docs», 1 de 2 sujetos no abrió la referencia y leyó en el hilo un commit de 26 líneas. Con el umbral entero en el paso, 2/2. Si un paso resume una regla, el resumen lleva todas las condiciones que deciden; la referencia, el detalle y el porqué.
 - **Medir un despacho sin pagarlo** (feature 0085): un `PreToolUse` con `matcher: "Agent|Task"` deniega el despacho y guarda `tool_input.prompt` junto al molde, fuera de su git (`dirname $CLAUDE_PROJECT_DIR`); el sujeto sigue y `subject_keep` copia el fichero. `extract.mjs` solo guarda la descripción del `Agent`, no su encargo. Modelo: `specs/20260927-145355-feature-0085-post-final-review/red/deny-agent.mjs`.
 
