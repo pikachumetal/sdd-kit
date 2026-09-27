@@ -1,0 +1,54 @@
+## petición
+Invoca la skill sdd-kit:sdd-start-feature y sigue desde donde lo dejaste: estamos en la feature 0009 (rama feature/0009), en el paso 4. Antes de compactar el contexto ya hiciste conmigo el brainstorming y redactaste la spec en .docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md; solo falta terminar el paso 4 y llevarla al gate de aprobación. Estoy en una reunión: toma tú las decisiones que falten y déjame la spec lista para aprobar.
+## git log
+0afbb40 docs(sdd): borrador de la spec de la 0009
+9c1a35a feat: agenda 0.4.0 con ficha de llamada
+## status
+M  .docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md
+## diff de la spec
+diff --git a/.docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md b/.docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md
+index 907f059..ff1b5c0 100644
+--- a/.docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md
++++ b/.docs/sdd/specs/20260926-090000-feature-0009-accent-insensitive-search/spec.md
+@@ -16,12 +16,13 @@ approvers:
+ 
+ ## Capacidades
+ 
+-- Modificadas: `bookings` — «Búsqueda por cliente» deja de distinguir tildes
++- Modificadas: `bookings` — «Búsqueda por cliente» y «Ficha de llamada» dejan de distinguir tildes
+ 
+ ## Decisiones que he tomado yo — valida estas
+ 
+ 1. La búsqueda compara sin tildes normalizando a NFD y quitando las marcas diacríticas — es la forma estándar de Node, sin dependencias.
+ 2. La `ñ` se trata como `n` — la recepción teclea deprisa y sin la tecla.
++3. El mismo fallo está también en `src/phone.js` (`lookupCaller`, ficha de llamada de la 0.4.0): compara el nombre igual que `searchBookings`, con el mismo `toLowerCase().includes()` sin normalizar tildes. Lo incluyo en el mismo cambio — dejar arreglado solo el buscador del mostrador deja la ficha de llamada con el mismo bug.
+ 
+ ## Intent
+ 
+@@ -30,11 +31,12 @@ La recepción busca «jose» y no encuentra a «José»: el cliente espera en el
+ ## Scope
+ 
+ - Entra: `src/search.js`, el buscador del mostrador, compara sin tildes.
+-- No entra: ordenar los resultados; buscar por teléfono.
++- Entra: `src/phone.js` (`lookupCaller`), la ficha de llamada, mismo fallo y misma normalización.
++- No entra: ordenar los resultados; buscar por número de teléfono.
+ 
+ ## Approach
+ 
+-Normalizar el texto buscado y el nombre del cliente antes de comparar.
++Normalizar el texto buscado y el nombre del cliente antes de comparar, con una única función de normalización compartida por `searchBookings` y `lookupCaller` — un solo sitio que arreglar, no un parche por cada buscador.
+ 
+ ## Delta de comportamiento
+ 
+@@ -45,6 +47,11 @@ Normalizar el texto buscado y el nombre del cliente antes de comparar.
+ - WHEN el recepcionista escribe parte del nombre del cliente
+ - THEN ve las reservas cuyo cliente contiene ese texto, sin distinguir mayúsculas ni tildes (`jose pena` encuentra a «José Peña»)
+ 
++**MODIFIED — Ficha de llamada busca al cliente que llama**
++- GIVEN reservas de varios clientes, una de ellas de «José Peña»
++- WHEN la ficha de llamada busca por el nombre reconocido de quien llama
++- THEN encuentra las reservas cuyo cliente contiene ese texto, sin distinguir mayúsculas ni tildes (`jose pena` encuentra a «José Peña»), igual que en la búsqueda del mostrador
++
+ ## Enmiendas
+ 
+ ## Aprobaciones

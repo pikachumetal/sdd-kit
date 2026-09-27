@@ -19,13 +19,15 @@ Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gat
 
 - **Por defecto, ninguna.** 0–3 señales no proponen review.
 - **4 señales o más, o contrato público + datos → recomienda dos revisores** en paralelo (una lente cada uno).
+- **Delta pequeño → un revisor con los siete puntos** en vez de dos: estima cuántas líneas cambia lo que lista el Scope, texto y código juntos, y si son menos de ~50, baja un escalón. Las señales dicen qué mirar; el tamaño, cuánto cuesta mirarlo: cuatro señales pidieron dos revisores para unos pocos párrafos (ticket 0040 §1b). Un delta pequeño con contrato público y datos baja a un revisor, nunca a ninguno: «es solo una línea» no quita la review de un contrato que consume otro sistema.
+- **Dos revisores, paralelismo restringido y spec delegada → un revisor con los siete puntos**, sin preguntar: si el nivel sería dos revisores, el dev-lead eligió en la primera pregunta «apruebo la spec por delegación» y las instrucciones del usuario piden confirmar antes de paralelizar, no despaches dos revisores ni pares a confirmarlo. Con un nivel de «ninguna», sigue siendo ninguna, y «toma tú las decisiones» sin esa opción no es una spec delegada. Un revisor no es paralelizar, y la segunda lente va en la línea del mínimo razonable. Con la regla solo en las instrucciones, 2 de 2 sujetos con la spec delegada pararon a pedir permiso para los dos revisores (`tests/spec-review-weight-red.md`, p).
 
 En `pair` y `delegate`, si toca recomendar, lo preguntas **antes de presentar la spec**, en una sola pregunta con su motivo. En `unattended` el agente decide él mismo, sin preguntar, y lo registra con el mismo bloque en «Decisiones que he tomado yo».
 
 El nivel se presenta como el **bloque que abre** «Decisiones que he tomado yo — valida estas», con esta forma:
 
 ```text
-Review de spec propuesta: <nivel> — señales: <las contadas>
+Review de spec propuesta: <nivel> — señales: <las contadas> · tamaño: ~<N> líneas en <M> ficheros
 - Dominio: <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
 - Técnica: <qué comprobaría en ESTA spec> (señal: <la que lo motiva>)
 - Mínimo razonable: <el nivel más bajo defendible> — deja sin cubrir <qué>
@@ -36,7 +38,7 @@ Cada línea de lente **cita un requisito, una sección o un valor de esta spec**
 Ejemplo, en una spec de facturación:
 
 ```text
-Review de spec propuesta: dos revisores — señales: contrato público (el webhook `invoice.paid` lo consume el portal del cliente), MODIFIED (dos requisitos de `invoicing`), datos (columna `tax_rate`), rol nuevo (gestor de cobros)
+Review de spec propuesta: dos revisores — señales: contrato público (el webhook `invoice.paid` lo consume el portal del cliente), MODIFIED (dos requisitos de `invoicing`), datos (columna `tax_rate`), rol nuevo (gestor de cobros) · tamaño: ~180 líneas en 6 ficheros
 - Dominio: si el MODIFIED de «La factura se emite al cerrar el mes» mantiene el aviso a contabilidad que hoy exige la capacidad, y qué NO puede hacer el gestor de cobros (señal: MODIFIED + rol nuevo)
 - Técnica: si el payload de `invoice.paid` queda versionado y si `tax_rate` necesita migración con valor por defecto para las facturas ya emitidas (señal: contrato público + datos)
 - Mínimo razonable: solo técnica — deja sin mirar el complemento del rol nuevo, el tipo de hueco que no se ve hasta que alguien accede a lo que no debía

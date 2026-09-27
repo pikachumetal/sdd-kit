@@ -33,7 +33,8 @@ BeforeAll {
   }
 }
 
-Describe 'Measure-SessionTokens.ps1' {
+# Slow porque ejecuta el script sobre ficheros temporales: sale del pre-commit (patch 0087) y lo corre la suite completa.
+Describe 'Measure-SessionTokens.ps1' -Tag 'Slow' {
   Context 'una sesión con un subagente y precios de los dos modelos' {
     BeforeAll {
       $script:Worktree = New-Worktree @('base') @{ 'claude-sonnet-5' = $script:Sonnet; 'claude-opus-5-5' = $script:Opus }

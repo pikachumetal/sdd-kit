@@ -19,7 +19,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La spec propone su propio nivel de review por complejidad
 - GIVEN una spec en modo full recién redactada
 - WHEN el agente cuenta las señales de la rúbrica
-- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
+- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
+- AND si el Scope cambia menos de ~50 líneas (texto y código), el nivel baja de dos revisores a uno con los siete puntos, nunca a ninguno: con contrato público + datos y dos líneas en `db/002-site.sql` y `src/api.js`, un revisor
+- AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción «apruebo la spec por delegación» de la primera pregunta) y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
+- AND con 4 señales o más y un delta grande (seis ficheros, uno de ellos una migración), sin esa restricción, siguen siendo dos revisores
 - AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
 - AND en `unattended` el agente decide y lo registra; en modo lite no se propone
 
@@ -128,6 +131,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN una spec redactada en la que un mismo literal (una expresión, un fichero, un umbral) aparece en una decisión y en un escenario que se contradicen
 - WHEN el agente termina el paso 4, con o sin review de spec
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
+- AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
 
 ### Cada task del plan verifica solo sus superficies

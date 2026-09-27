@@ -42,6 +42,17 @@ Describe 'Estructura del roadmap' {
     $problems | Should -BeNullOrEmpty -Because 'una fila fuera de su tabla no la encuentra ninguna skill, y Get-NextSddId.ps1 calcula el id sobre esas tablas'
   }
 
+  It 'las tablas de release llevan la cabecera literal de roadmap-template.md' {
+    # Las skills leen la tabla por sus columnas: la cabecera vieja (Task, Peticiones, Tamaño) hizo
+    # que el cierre del patch 0083 escribiera un estado en la columna del tamaño (ticket 0083 §1).
+    $template = Join-Path $script:KitRoot 'skills/sdd-templates/templates/roadmap-template.md'
+    $expected = (Get-Content -LiteralPath $template -Encoding utf8 | Where-Object { $_ -match '^> \| id \|' }) -replace '^> '
+    $expected | Should -Not -BeNullOrEmpty
+    $headers = Get-Content -LiteralPath $script:Roadmap -Encoding utf8 | Where-Object { $_ -match '^\| id \|' }
+    $headers | Should -Not -BeNullOrEmpty
+    $headers | Where-Object { $_ -ne $expected } | Should -BeNullOrEmpty
+  }
+
   It 'detecta los cuatro defectos del roadmap roto de 0fc231e^' {
     $problems = Get-RoadmapStructureProblems (Get-Content -LiteralPath $script:BrokenFixture -Encoding utf8)
     $problems | Should -Be @(
