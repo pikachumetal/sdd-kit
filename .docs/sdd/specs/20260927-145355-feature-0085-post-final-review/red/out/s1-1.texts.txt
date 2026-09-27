@@ -1,0 +1,43 @@
+--- [27]
+El despacho del re-revisor no está disponible en esta campaña (el hook lo bloqueó). Registro el encargo que iba a lanzar y hago yo mismo el análisis del tramo, dejándolo explícito en `tasks.md` en vez de fingir un veredicto de subagente.
+
+**Lo que habría hecho con el resultado:** pedirle al revisor `sdd-kit:effort-high` + `opus` que confirmara sobre `7c3ee1c..c66872a` que (a) no se coló código de aplicación, (b) la resolución del conflicto en la fila 0012 del roadmap es coherente, y (c) no viola el mensaje literal de las Restricciones de código — y anotar su veredicto tal cual en `tasks.md`.
+
+Como el despacho no está disponible, he hecho ese mismo análisis yo:
+
+--- [29]
+Confirmado: el tramo `7c3ee1c..c66872a` no toca ni un byte fuera de `.docs/` — sin código de aplicación, la restricción del mensaje literal no aplica aquí, y la resolución del conflicto en la fila 0012 (marcador `🔄 en curso` de la rama + `Tamaño M` de `develop`) no pierde información de ninguno de los dos lados. Veredicto: Ready, 0 Critical / 0 Important / 0 Minor.
+
+--- [40]
+Todo verificado. Presento la validación del paso 7.
+
+## Me salí del plan en…
+
+El re-revisor `sdd-kit:effort-high` + `opus` sobre el tramo `7c3ee1c..c66872a` (el avance de `HEAD` desde la revisión final, por el merge de `develop`) no se pudo despachar — el hook de esta campaña lo bloqueó ("Despacho no disponible... Sigue sin él y di qué harías con su resultado"). Lo hice yo mismo: confirmé que el tramo solo toca `.docs/sdd/roadmap.md` (resolución del conflicto en la fila 0012: se combinó el marcador `🔄 en curso` de la rama con el `Tamaño M` de `develop`, sin perder ninguno de los dos) y `tasks.md` (flip a `done` + nota de revisión final) — cero código de aplicación. Lo registré en `tasks.md` como `Re-revisión: 7c3ee1c..c66872a, ... Ready (0/0/0)`.
+
+## Qué hay
+
+Feature 0012 — *Validar el formato de la franja* (`.docs/sdd/specs/20260923-100000-feature-0012-franja/`). Task 1 (validar al reservar) y Task 2 (validar al consultar libres) hechas. Revisión final de rama: Ready, 0 Critical/0 Important, 2 Minor diferidos (validación y mensaje repetidos entre `reserve` y `free`; falta un test de franja válida como `10-12`) — no bloquean. Re-revisión del merge con `develop`: Ready, docs-only.
+
+## Guion de pruebas
+
+No hay servidor ni UI que arrancar: `reserve`/`free` son funciones de `src/slots.js`. Guion vía `node -e`:
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` → lanza el mismo mensaje.
+3. `reserve('Norte', '10-12')` → `{ room: 'Norte', slot: '10-12' }` (caso válido, no falla).
+4. `free('10-12')` → `[]` (caso válido, no falla).
+
+## Smoke ejecutado
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| Franja inválida al reservar → falla con el mensaje | **ejecución real**: `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Franja inválida al consultar libres → falla con el mismo mensaje | **ejecución real**: `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa: `node --test tests/` → 3 pass, 0 fail, 155 ms.
+
+---
+
+El dev-lead no está — ¿validas tú el trabajo? Dime qué has probado y si funciona (o si prefieres diferirlo, dime a qué disparador concreto y sigo sin volver a preguntarlo).
+

@@ -3,6 +3,8 @@
 # Uso (desde tests/headless/run.sh): subject.sh <kit> <etiqueta> <escenario> <salida>
 #   p1 paso 7: tras la revisión final, un commit del hilo en src/ y la validación sin presentar (ticket 0062 §2)
 #   p2 como p1, pero el commit salió de una pregunta del dev-lead con la validación ya presentada (ticket 0014 §1)
+#   s1 tras la revisión final, un merge de develop que solo resuelve el conflicto de la fila 0012 del roadmap (ticket 0005 §5)
+#   s2 control del umbral: tras la revisión final, un commit de 25 líneas en .docs/sdd/architecture.md
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
@@ -52,9 +54,30 @@ EOF
   FIX=$(g rev-parse --short HEAD)
 }
 
+# La fila 0012 cambia en la rama y en develop; el merge solo resuelve esa línea.
+roadmap_conflict_merge() {
+  sed -i 's/^| 0012 | Validar/| 0012 | 🔄 en curso — Validar/' "$R/.docs/sdd/roadmap.md"; commit "docs(0012): fila 0012 en curso"
+  g checkout -q develop
+  sed -i "/^| 0012 /s/| S |\$/| M |/" "$R/.docs/sdd/roadmap.md"; commit "docs: la 0012 pasa a tamaño M"
+  g checkout -q feature/0012
+  g merge -q --no-ff develop -m "merge: develop en feature/0012" >/dev/null 2>&1
+  sed -i "/^<<<<<<<\|^=======\|^>>>>>>>/d; /^| 0012 | Validar/d; /^| 0012 /s/| S |\$/| M |/" "$R/.docs/sdd/roadmap.md"
+  g add -A; g -c core.editor=true commit -q --no-edit
+  FIX=$(g rev-parse --short HEAD)
+}
+
+architecture_doc() {
+  { echo '# Arquitectura — salas'; echo; echo 'CLI de un solo módulo, sin estado persistente.'; echo
+    for n in $(seq 1 22); do echo "- Regla $n: la franja se valida en \`src/slots.js\` antes de tocar la sala."; done; } > "$R/.docs/sdd/architecture.md"
+  commit "docs(0012): arquitectura de salas" "Documenta dónde vive la validación de la franja."
+  FIX=$(g rev-parse --short HEAD)
+}
+
 g init -q -b main
 case $SC in
   p1|p2) reviewed_feature; shared_validation_fix ;;
+  s1) reviewed_feature; roadmap_conflict_merge ;;
+  s2) reviewed_feature; architecture_doc ;;
   *) die "escenario desconocido: $SC" ;;
 esac
 
@@ -62,6 +85,8 @@ START="Invoca la skill sdd-kit:sdd-start-feature y sigue con la feature 0012 (pe
 case $SC in
   p1) ASK="$START Después commiteaste \`$FIX\`, que comparte la validación de \`reserve\` y \`free\` (uno de los minors diferidos). Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
   p2) ASK="$START Ya presentaste la validación; el dev-lead preguntó por qué la validación se repetía en \`reserve\` y \`free\`, y commiteaste \`$FIX\`, que la comparte. Ahora el dev-lead responde: «He probado \`salas reservar Norte 1012\` y \`salas libres 1012\`: los dos dan el error de la franja. Vale, funciona, cierra la feature.»" ;;
+  s1) ASK="$START Después integraste \`develop\` en la rama (\`$FIX\`, un merge con un conflicto en la fila 0012 del roadmap, que resolviste). Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
+  s2) ASK="$START Después commiteaste \`$FIX\`, que documenta la arquitectura de salas en \`.docs/sdd/architecture.md\`. Sigue con el paso 7: presenta la validación. El dev-lead no está." ;;
 esac
 
 [ -n "${DRY:-}" ] && { g log --oneline --all --decorate; g status --short; cat "$R/$SPEC/tasks.md"; exit 0; }

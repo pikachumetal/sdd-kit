@@ -20,3 +20,18 @@ Criterio: (a) intenta despachar un revisor sobre el commit posterior antes de pr
 Límites: el hook impide ver lo que el sujeto apunta cuando vuelve el revisor, así que la línea `Re-revisión:` no se mide. La línea `Revisión final: …, sobre <sha>` la trae el molde, así que el RED no mide si un sujeto sin ella sabría calcular el tramo: esa pieza sale de la decisión 2 de la spec, no de un fallo medido.
 
 Coste: 4,41 $ (p1: 0,54 + 0,64 $; p2: 1,85 + 1,38 $).
+
+## Task 2 — Commit pequeño de solo docs revisado en el hilo
+
+Kit de la rama tras la Task 1 (`459a738`), para medir la excepción contra la regla nueva. Escenarios: `s1`, tras la revisión final el hilo integró `develop` con un merge cuyo único cambio propio resuelve el conflicto de la fila 0012 de `.docs/sdd/roadmap.md` (1 línea en `git show --remerge-diff`); `s2`, control del umbral, un commit que crea `.docs/sdd/architecture.md` con 26 líneas. En los dos, el tramo lleva también el commit que apunta la revisión final en `tasks.md` (3 líneas).
+
+Criterio: (a) en `s1` no despacha revisor y anota la lectura en el hilo; (b) en `s2` despacha la re-revisión del tramo.
+
+| Sujeto | (a) `s1` sin revisor | Sujeto | (b) `s2` con re-revisión |
+| --- | --- | --- | --- |
+| [s1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s1-1.texts.txt) | ❌ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión rango 7c3ee1c..c66872a» | [s2-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s2-1.texts.txt) | ❌ solo un `Explore` para buscar `review-package`; revisa él y reescribe `architecture.md` |
+| [s1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s1-2.texts.txt) | ❌ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión bd8d7ac..6aaf338» | [s2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s2-2.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión final tramo 6351b7a..HEAD» |
+
+**(a) falla 0/2; (b) pasa 1/2.** Es el coste del ticket 0005 §5: un revisor Opus (~85k tokens) por una fila del roadmap, que ahora pide la regla nueva de la Task 1 en cada tramo. (b) no es el fallo que se busca: s2-1 despachó un `Explore` en vez del revisor y se tomó el tramo como suyo. Queda como control de que la excepción no se come los commits de docs grandes.
+
+Coste: 2,42 $ (s1: 0,57 + 0,65 $; s2: 0,73 + 0,47 $).

@@ -23,3 +23,16 @@ Describe 'Re-revisión del tramo' {
     $script:Profiles | Should -Match '(?i)si la revisión final ya volvió, en la re-revisión del tramo'
   }
 }
+
+Describe 'Revisión en el hilo' {
+  It 'el ruling fija el umbral de solo docs' {
+    foreach ($anchor in 'bajo `.docs/` o son `*.md` de la raíz', 'menos de 20 líneas', 'git diff --numstat', 'git show --remerge-diff', 'revisado en el hilo: <sha> · <ficheros> · <n> líneas') {
+      $script:Profiles | Should -Match ([regex]::Escape($anchor))
+    }
+  }
+
+  It 'el paso 6 nombra el tamaño y enlaza la referencia' {
+    $script:Skill | Should -Match ([regex]::Escape('de solo docs y de menos de 20 líneas, contadas con `git diff --numstat`'))
+    $script:Skill | Should -Match '(?i)revisado en el hilo'
+  }
+}

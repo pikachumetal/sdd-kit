@@ -16,3 +16,16 @@ Mismos escenarios, molde y hook que el [RED](post-final-review-red.md), con el k
 Con el hook, los sujetos apuntaron la línea `Re-revisión:` con el hilo como revisor y el despacho denegado, en la forma `<sha>..<sha>, <revisor>, <veredicto>`.
 
 Coste: 4,02 $ (p1: 0,54 + 0,60 $; p2: 1,27 + 1,61 $).
+
+## Task 2 — Commit pequeño de solo docs revisado en el hilo
+
+Dos tandas. La primera ([`green/out/`](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green/out/)) con el umbral solo en `control-profiles.md` y el paso 6 diciendo «commit pequeño de solo docs»; la segunda ([`green2/out/`](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green2/out/)) con «de solo docs y de menos de 20 líneas, contadas con `git diff --numstat`» también en los pasos 6 y 7.
+
+| Tanda | (a) `s1` sin revisor | (b) `s2` con re-revisión |
+| --- | --- | --- |
+| 1 | ✅ 2/2; s1-2 anota `revisado en el hilo: 809673c · roadmap.md · 9 líneas` | ❌ 1/2: [s2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green/out/s2-2.texts.txt) lee en el hilo el commit de 26 líneas («son solo docs»), sin `numstat` |
+| 2 | ✅ 2/2, los dos con `git diff --numstat` del tramo; [s1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green2/out/s1-1.texts.txt) anota `revisado en el hilo` y [s1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/green2/out/s1-2.texts.txt) lo razona en prosa («9 líneas en total — por debajo del umbral de 20») sin la línea literal | ✅ 2/2: `numstat`, ve las 26 líneas y despacha `sdd-kit:effort-high` + `opus` |
+
+**(a) pasa de 0/2 a 2/2 en las dos tandas; (b) pasa a 2/2 con el umbral en el paso.** Con el tamaño solo en la referencia, el sujeto que no la abrió se quedó con «solo docs» y se comió el control: por eso el umbral va también en los pasos 6 y 7 (ruling de la Task 2). La línea literal `revisado en el hilo: …` sale 1 de 2 en la segunda tanda: el otro sujeto deja la misma información en prosa.
+
+Coste: 4,43 $ (tanda 1: 2,02 $; tanda 2: 2,41 $).

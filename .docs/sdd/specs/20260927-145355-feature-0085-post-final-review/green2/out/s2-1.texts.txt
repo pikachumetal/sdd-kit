@@ -1,0 +1,38 @@
+--- [28]
+El intento de despachar el revisor para la re-revisión del tramo `a61124b..9984aaf` ha sido bloqueado: *"Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado."* Registro el encargo y sigo con mi propia lectura del tramo, dejando anotado qué haría si el veredicto llegara.
+
+--- [35]
+Ahora ejecuto la suite (los dos comandos de Verificación de las tasks) y hago la ejecución real de cada THEN de la spec (reservar y consultar libres con franja inválida).
+
+--- [51]
+Ahora presento la validación al usuario.
+
+--- [53]
+## Me salí del plan en…
+
+- **Re-revisión del tramo `a61124b..9984aaf`**: al llegar aquí, `HEAD` había avanzado dos commits desde la revisión final (que fue sobre `a61124b`). Uno de los dos (`9984aaf`, 26 líneas en `.docs/sdd/architecture.md`) supera el umbral de 20 líneas que exime de re-revisión, así que intenté despachar un revisor final (`sdd-kit:effort-high` + `opus`) sobre el tramo completo. El despacho quedó bloqueado por la campaña («Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado»). Registré el encargo en `tasks.md` y hago la lectura yo mismo: el tramo es solo documentación, no toca `src/slots.js` ni el mensaje literal — 0 Critical, 0 Important. Un Minor propio: `architecture.md` repite la misma frase 22 veces («Regla 1..22»), contenido de relleno más que arquitectura real; no bloquea. Si el revisor llegara a ejecutarse y devolviera Critical/Important, abriría un fix wave antes de seguir; con Ready o solo Minor (como aquí), sigo.
+- Comité ese registro aparte (`8c189a5`, docs-only, 2 líneas) — revisado en el hilo, no abre otra re-revisión.
+
+## Qué hay
+
+Feature 0012 — Task 1 (validar al reservar) y Task 2 (validar al consultar libres), ambas `done`. Revisión final de rama: Ready (0 Critical, 0 Important, 2 Minor deferidos: el mensaje se repite en `reserve`/`free`, y falta test de una franja válida como `10-12`). `HEAD` actual: `8c189a5`.
+
+## Smoke ejecutado
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Reservar con franja que no casa `HH-HH` → falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | **ejecución real** — `reserve('Norte', '1012')` lanzó exactamente ese mensaje |
+| Consultar libres con franja que no casa `HH-HH` → falla con el mismo mensaje | **ejecución real** — `free('1012')` lanzó exactamente ese mensaje |
+
+Suite completa del proyecto (`node --test tests/`): 3/3 pasan, 0.45s.
+
+No hay CLI ni servidor que arrancar en este repo (solo `src/slots.js` con las funciones); no aplica arrancar/parar entorno.
+
+## Guion de pruebas
+
+1. Reservar una sala con una franja mal escrita, p. ej. `salas reservar Norte 1012` (o `reserve('Norte', '1012')` si se prueba a nivel de función) → debe fallar con «Franja no válida: usa HH-HH, p. ej. 10-12».
+2. Consultar salas libres con la misma franja mal escrita, p. ej. `salas libres 1012` (o `free('1012')`) → debe fallar con el mismo mensaje.
+3. Reservar o consultar con una franja bien escrita, p. ej. `10-12` → no debe lanzar ese error (no hay test que lo cubra todavía; es uno de los Minor deferidos).
+
+**¿Qué has probado tú y funciona?** El dev-lead no está — si puedes validar tú mismo estos pasos, dime qué probaste; si prefieres diferirlo, dime con qué frase y qué disparador (una feature, una release o un uso concreto) lo valida más adelante.
+
