@@ -1,0 +1,53 @@
+## HEAD antes: 335ebe4 · después: 556709f
+## git log
+* 556709f docs(0012): apertura de la task (spec, plan y registro de tasks)
+|     Juntan la spec aprobada, el plan (ejecución subagent) y el registro
+|     vivo de tasks de la task 0012, validar el formato de la franja.
+|     
+|     Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+| 
+* e88011a feat: base de reservas de salas
+      Cuerpo del commit.
+  
+## status
+## feature/0012
+?? tests/franja.test.js
+## tests en disco
+### franja.test.js
+7:test('reservar con una franja que no casa con HH-HH falla con el mensaje de la spec', () => {
+### slots.test.js
+5:test('reserva una sala en una franja', () => {
+## ledger
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Spec: ./spec.md (aprobada 2026-09-23). Perfil: delegate. Rama feature/0012. Integración: develop (== merge-base e88011a). Apertura juntada: 556709f.
+
+## Pre-flight (base y conflictos)
+
+- Base: `develop` sigue en e88011a = merge-base; sin remoto. Fila 0012 del roadmap sin cambios; ningún fichero cambiado en la base → sin freno de alcance.
+- Guardas de juntado: sin merges en el rango, sin ramas remotas → apertura juntada (2 commits → 1).
+
+| Comprobación | Filas | Resultado |
+| --- | --- | --- |
+| T1 ↔ T2 comparten `tests/franja.test.js` | T1 lo crea con el THEN de reservar; T2 añade el THEN de libres | sin conflicto: T2 se escribe tras el commit de T1 (hito) |
+| T1 ↔ T2 comparten `src/slots.js` | T1 valida en `reserve`; T2 crea `free(slot)` («misma validación») | posible duplicación de la regex; ver Ruling 2 |
+| T1 texto consigo mismo | RED (1 THEN) ↔ Step 1 (`reserve` lanza el error si no casa con `/^\d{2}-\d{2}$/`) ↔ Verificación `node --test tests/franja.test.js` | coherente; mensaje literal = Restricción de código |
+| T2 texto consigo mismo | «`free(slot)` en `src/slots.js`» pero `slots.js` solo tiene `reserve`: `free` no existe | ver Ruling 3 (se resuelve al despachar T2, no bloquea T1) |
+| Plan ↔ Restricciones globales | única restricción de código: mensaje literal; T1 y T2 la respetan | coherente |
+
+## Rulings
+
+- Ruling 1: `sdd-kit:effort-medium` no verificable entre los agentes de la sesión (el agente existe en `agents/` del kit; esta sesión no expone su lista de tipos) — se despacha con `model: sonnet` y la frase «effort: no disponible en este harness, hereda el de la sesión» si el tipo falla — coste si me equivoco: el implementador hereda el effort de la sesión, más caro, mismo resultado.
+- Ruling 2: T1 puede extraer la validación a una función no exportada de `src/slots.js` (p. ej. `assertValidSlot`) para que T2 la reutilice — evita duplicar la regex (0 duplicación) sin ampliar la spec ni ficheros — coste si me equivoco: una función privada de más en un fichero de 3 líneas.
+- Ruling 3 (a resolver en T2): `free` no existe; la spec solo fija que falla con el mismo mensaje ante franja inválida. T2 lo despacha con la firma mínima que necesite el THEN — coste: interfaz de `free` provisional. Si su salida válida cambia lo que el usuario ve, es freno de salida observable: parar.
+
+## Tasks
+
+- Task 1: dispatch listo, NO lanzado. BASE=556709f2d1d4c1b5ea5a25bd860493e16e7c5fbc. RED escrito sin commitear en `tests/franja.test.js` (falla: «Missing expected exception»); copia fuera del repo en `../red-0012-task1/franja.test.js` (hermano del repo).
+## tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | pending | — | |
+| 2 | Validar al consultar libres | pending | — | |

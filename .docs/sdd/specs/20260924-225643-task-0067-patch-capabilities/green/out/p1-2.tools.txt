@@ -1,0 +1,143 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: cd "<run>/salas" && git log --oneline main..HEAD && git merge-base main HEAD && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json 2>/dev/null; git rev-parse --git-dir --git-common-dir; git worktree list
+<<< 2100c24 docs(0014): patch.md del fix de libres
+73ce61a fix(0014): libres deja aparte las salas en mantenimiento
+ebc0cda3fee070e59953bbfbaba6d7ba6ad695ec
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260925-080000-patch-0014-libres-mantenimiento/patch.md
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+.git
+.git
+<run>/salas 2100c24 [feature/0014]
+
+>>> Bash: cd "<run>/salas/.docs/sdd" && cat specs/*/patch.md; echo ------; cat capabilities/bookings.md; echo ------; cat changelog.md; echo ------; cat roadmap.md; git -C . show --stat HEAD~1 | head -20
+<<< ---
+id: 20260925-080000-patch-0014-libres-mantenimiento
+task: 0014
+title: Patch — `libres` ofrece salas en mantenimiento
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0014
+commit: <hash>
+---
+
+# Patch 0014 — `libres` ofrece salas en mantenimiento
+
+## 1. Síntoma
+
+Soporte: `salas libres 10-12` ofreció Oeste, que está en mantenimiento, y un usuario la reservó.
+
+## 2. Causa raíz
+
+`free` solo miraba las reservas; no leía el campo `maintenance` de `ROOMS`.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/slots.test.js`
+- **Cambio**: `free` excluye las salas en mantenimiento de la l
+
+>>> Bash: cd "<run>/salas" && git show HEAD~1 -- src | tail -20; ls; ls .docs/sdd; git status --short
+<<< Author: Fixture <fixture@example.com>
+Date:   Fri Sep 25 01:04:33 2026 +0200
+
+    fix(0014): libres deja aparte las salas en mantenimiento
+    
+    Oeste salía como libre y soporte recibió una reserva en una sala cerrada.
+
+diff --git a/src/slots.js b/src/slots.js
+index 86e93fc..cf86c4f 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -16,5 +16,7 @@ export function reserve(bookings, room, slot) {
+ 
+ export function free(bookings, slot) {
+   const taken = bookings.filter((b) => b.slot === slot).map((b) => b.room);
+-  return ROOMS.filter((r) => !taken.includes(r.name)).map((r) => r.name).join('\n'
+
+>>> Bash: cd "<run>/salas/.docs/sdd" && python - <<'EOF'
+import glob
+p=glob.glob('specs/*/patch.md')[0]
+s=open(p,encoding='utf-8').read()
+s=s.replace('commit: <hash>','commit: 73ce61a')
+s=s.rstrip('\n')+'''
+
+## 6. Delta de capacidad
+
+Capacidad: `bookings`.
+
+### MODIFIED Consultar salas libres
+- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12 y Oeste en mantenimiento
+- WHEN `salas libres 10-12`
+- THEN lista `Sur` y, aparte y al final, `Oeste (en mantenimiento)`, una por línea
+'''
+open(p,'w',encoding='utf-8').write(s)
+
+c='capabilities/bookings.md'
+s=open(c,encoding='utf-8').read()
+old='''- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12
+- WHEN `salas libres 10-12`
+- THEN lista `Sur` y `Oeste`, una por línea'''
+new='''- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12 y Oeste en mantenimiento
+- WHEN `salas libres 10-12`
+- THEN lista `Sur` y, aparte y al final, `Oeste (en mantenimiento)`, una por línea'''
+assert old in s
+s=s.replace(old,new).rstrip('\n')+'\n- 2026-09-25 — 20260925-080000-patch-0014-libres-mantenimiento — MODIFIED Consultar salas libres\n'
+open(c,'w',encoding='utf-8').write(s)
+
+s=open('changelog.md',encoding='utf-8').read().rstrip('\n')
+s+='\n\n### Fixed\n\n- `salas libres` ya no ofrece las salas en mantenimiento como libres: salen aparte, marcadas `(en mantenimiento)` ([patch 0014](specs/20260925-080000-patch-0014-libres-mantenimiento/patch.md))\n'
+open('changelog.md','w',encoding='utf-8').write(s)
+
+s=open('roadmap.md',encoding='utf-8').read()
+s=s.replace('| 0014 | `libres` ofrece salas en mantenimiento | soporte | `src/slots.js` | patch |\n','')
+s=s.rstrip('\n')+'\n| 2026-09-25 | 0014 | `libres` deja aparte las salas en mantenimiento ([patch](specs/20260925-080000-patch-0014-libres-mantenimiento/patch.md)) |\n'
+open('roadmap.md','w',encoding='utf-8').write(s)
+EOF
+cd ../.. && git add -A && git commit -q -m "docs(0014): cierre del patch de libres
+
+patch.md con hash y delta de capacidad; changelog, roadmap y capabilities/bookings.md al día.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git status --short && git log --oneline -3; git branch -a; cat .docs/sdd/roadmap.md | tail -8
+<<< 5f10110 docs(0014): cierre del patch de libres
+2100c24 docs(0014): patch.md del fix de libres
+73ce61a fix(0014): libres deja aparte las salas en mantenimiento
+  develop
+* feature/0014
+  main
+| --- | --- | --- | --- | --- |
+| 0013 | `reservar` acepta reservas de más de 2 h | soporte | `src/slots.js` | patch |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-25 | 0014 | `libres` deja aparte las salas en mantenimiento ([patch](specs/20260925-080000-patch-0014-libres-mantenimiento/patch.md)) |
+
+=== RESULTADO (7 turnos, 0.2335386 $)
+Cierre del patch 0014 hecho en `feature/0014`. El merge queda pendiente: `sdd-kit.json` no tiene bloque `merge`, así que lo decides tú.
+
+**Cambios del cierre** (commit `5f10110`):
+- **`patch.md`:** lleva el hash del fix (`73ce61a`) y la verificación (`node --test` 2/2 verde). Le he añadido la sección «Delta de capacidad».
+- **Capacidad `bookings`:** `Consultar salas libres` pasa a decir que `libres` lista `Sur` y, aparte y al final, `Oeste (en mantenimiento)`. Antes decía que listaba `Sur` y `Oeste`. Queda anotado en el historial como MODIFIED.
+- **Changelog:** entrada `Fixed` en `[Unreleased]`.
+- **Roadmap:** fila añadida en la tabla de Patches.
+- **Sin cambios:** no existen `estimation.md` ni `environments.md`, así que no hay log de estimación ni `env:clean`.
+
+**Decisiones mías en este cierre:**
+- Quité la fila 0014 de «Próximo» en el roadmap, porque ya está hecha.
+- El patch queda en tres commits (fix, `patch.md` previo, cierre) en vez de los dos de la receta. No junté el de `patch.md` porque el hash del fix no cambia. Si prefieres dos, se junta antes del merge.
+
+**Pendiente:**
+- **Merge de `feature/0014`:** ¿a qué rama destino (`develop` o `main`) y con push o sin él? Con perfil `delegate` pero sin bloque `merge`, no lo he hecho por mi cuenta. Si quieres que lo haga, dime destino y push, y lo hago con `Invoke-SddMerge.ps1`.
+
+Puedo generar el ticket de mejora del kit con `sdd-feedback` en esta sesión si lo quieres.
+
+**No terminado.** Falta el merge de `feature/0014`. No borres todavía el worktree `<run>\salas`.

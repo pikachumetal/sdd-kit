@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd . && ls .docs/sdd/specs/*0012*/ && cat .docs/sdd/specs/*0012*/tasks.md && git branch -a && git remote -v && git log --oneline -8 && ls .docs/sdd
+<<< plan.md
+spec.md
+tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | e41c0e3 | |
+| 2 | Validar al consultar libres | pending | — | |
+  develop
+* feature/0012
+  main
+3818ae1 docs(0012): task 1 hecha en tasks.md
+e41c0e3 feat(0012): validar el formato de la franja al reservar
+03cd4e3 docs(0012): abrir la task 0012
+950fbf5 feat: base de reservas de salas
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+>>> Bash: cat .docs/sdd/specs/*0012*/plan.md; cat .docs/sdd/specs/*0012*/spec.md; cat .docs/sdd/sdd-kit.json; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md; echo ---; git diff --name-only $(git merge-base HEAD develop) develop; echo ---; git status --short; ls
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: subagent, porque cada task lleva su revisión.
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Implementadores y revisores Sonnet, effort medio.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: Sonnet, effort medio
+**Tests RED**: hilo principal · `tests/slot-format.test.js`, escritos antes de despachar y sin commitear
+
+>>> Bash: ls src tests bin; cat src/slots.js; cat tests/slot-format.test.js; cat package.json; git show --stat HEAD~1 | head -20; ls <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0060/4a3ac886-d053-4b87-a215-063196a2d726/scratchpad/kit-green/skills/sdd-start-task/references/
+<<< bin:
+salas.js*
+
+src:
+slots.js
+
+tests:
+slot-format.test.js
+slots.test.js
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+{ "name": "salas", "type": "module", "bin": { "salas": "bin/salas.js" } }
+commit e41c0e3f
+
+>>> Bash: cd <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0060/4a3ac886-d053-4b87-a215-063196a2d726/scratchpad/kit-green/skills/sdd-start-task/references/ && cat encargo-revision.md; grep -n -i "delegate" control-profiles.md | head -30
+<<< # Encargo de revisión — cabecera obligatoria
+
+Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+
+```markdown
+## Restricciones de código
+
+<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+
+Incumplir una de estas re
+
+>>> Bash: cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('rechaza una franja sin guion al consultar libres', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "SyntaxError|not ok|# (pass|fail)" | head
+D=/tmp/claude-red-0012; mkdir -p $D && cp tests/free-format.test.js $D/ && echo saved $D; git status --short
+<<< SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+saved /tmp/claude-red-0012
+?? tests/free-format.test.js
+
+=== RESULTADO (8 turnos, 0.26710459999999997 $)
+Paro aquí: el implementador de la Task 2 está listo para despachar y no lo he despachado.
+
+**Estado de la Task 2 (`free(slot)` con la misma validación)**
+- **Base:** `develop` no ha cambiado desde el punto de partida. `roadmap.md` no aparece en el diff y `git diff --name-only` sale vacío, así que no hay freno de alcance. El repo no tiene remoto.
+- **RED escrito y sin commitear:** `tests/free-format.test.js` cubre el único THEN de la spec, es decir, `free('1012')` lanza «Franja no válida: usa HH-HH, p. ej. 10-12». Falla por compilación: `SyntaxError: ... does not provide an export named 'free'`.
+- **Copia de comparación:** está en `/tmp/claude-red-0012/free-format.test.js`, fuera del repo. Al volver el implementador la comparo con `git diff --no-index`.
+- **Método:** el plan dice `subagent`, así que no hay ledger ni `task-start`. El registro es `tasks.md`.
+
+**Encargo del implementador (pendiente de despachar)**
+- `## Restricciones de código`, literal del plan: «Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».»
+- `## Tests RED`, con la ruta del contrato y la orden de commitearlos con `git add` explícito.
+- `## Verificación`: solo `node --test tests/free-format.test.js`, sin la suite completa.
+- Las reglas del implementador y el brief de la Task 2.
+- El bloque «De proceso» (Sonnet, effort medio) lo aplico yo y no viaja.
+
+**Ruling pendiente de registrar**
+Esta sesión no tiene herramienta para despachar subagentes. No puedo confirmar que exista el tipo `sdd-kit:effort-medium`. Al despachar usaré `model: sonnet` con la frase de respaldo «effort: no disponible en este harness, hereda el de la sesión» y lo dejaré anotado como ruling. Si el dev-lead prefiere ejecutar la Task 2 en Native, tampoco hay ledger de `executing-plans`. Le dejo esa decisión.
+
+**Sin cambios en git:** `tasks.md` sigue igual, con la Task 2 en `pending`. El único cambio nuevo es el test sin commitear.

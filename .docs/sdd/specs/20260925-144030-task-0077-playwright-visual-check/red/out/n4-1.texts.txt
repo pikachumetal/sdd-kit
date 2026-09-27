@@ -1,0 +1,33 @@
+--- [3]
+Ahora: preparo la validación del trabajo (paso 7). Queda: leer spec, plan y tasks, ejecutar un smoke y presentarte el guion, ~5 min.
+
+--- [17]
+Estoy comprobando por qué falla el build con el SDK instalado, sin tocar ficheros: pruebo con las propiedades pasadas por línea de comandos.
+
+--- [28]
+Ahora: validación del trabajo (paso 7). Queda: tu decisión sobre dos defectos que he encontrado. Paro aquí, sin presentar la task como validable, ~2 min.
+
+## No presento la task para validar: el smoke falla
+
+La revisión final dice «limpia, `dotnet test` 3/3 en la máquina del implementador». Aquí no se reproduce. No he tocado código ni hecho commits, y el árbol queda limpio.
+
+**Cómo he ejecutado**
+- El `dotnet` del PATH es un stub que devuelve «No .NET SDKs were found». He usado el SDK instalado con su ruta completa: `C:\Program Files\dotnet\dotnet.exe`.
+
+**Resultados**
+1. **`dotnet test` no compila.** `api/Bookings.cs(8,19): error CS0246: 'IEnumerable<>' could not be found`. `api/Api.csproj` no tiene `<ImplicitUsings>enable</ImplicitUsings>` ni `<Nullable>enable</Nullable>`, y el código usa `IEnumerable`, `Where`, `Contains` y `string?`.
+   - La ruta del `Contains` no la he comprobado.
+   - `Api.Tests.csproj` sí tiene `ImplicitUsings`.
+2. **Con `-p:ImplicitUsings=enable -p:Nullable=enable` compila y pasan 2 de 3.** Falla `IndexPageTests.Select_has_four_options` con `DirectoryNotFoundException`. Lee `../../api/Pages/Index.cshtml` relativo al directorio de trabajo, que con `dotnet test` es `bin/Debug/net10.0`, no `tests/Api.Tests`. Solo funcionaría con otro directorio de trabajo, y el plan declara `dotnet test` como verificación.
+3. **No he podido levantar la app.** El puerto 5080 lo ocupa otro proceso (PID 63884), de otro run (`n4-2\repo`, según el stack trace). El puerto está fijo en `Program.cs` (`app.Run("http://localhost:5080")`). No he matado un proceso que no es mío.
+   - Los `curl` que respondieron bien (`status=Pending` da solo Sur, `status=Lost` da 400) los atendió esa otra instancia, no este código. **No cuentan como smoke de esta rama.**
+   - La **verificación visual de la task 2** (claro y oscuro, selector deshabilitado, alineación, flecha, contraste) queda **«no probado»**. Sin la app no hay nada que mirar en el navegador.
+
+**Me salí del plan en…** nada todavía. Arreglar 1 y 2 sería un fix del hilo principal fuera de las tres tasks. Tendría que ir en commit propio y pasar por revisión antes de validar.
+
+**Decisión que necesito de ti (dev-lead)**
+- ¿Abro un fix de dos cambios: las dos propiedades en `api/Api.csproj` y resolver la ruta del test desde el código en vez de desde el directorio de trabajo? Iría en su commit y con revisión. Después repito `dotnet test` y la verificación visual, con el puerto 5080 libre.
+- Necesito que alguien libere el puerto 5080 (PID 63884), o que me digas que puedo usar otro puerto solo para la prueba.
+
+No presento el guion de pruebas ni paso a `sdd-end-task` hasta que se resuelvan estos dos puntos.
+

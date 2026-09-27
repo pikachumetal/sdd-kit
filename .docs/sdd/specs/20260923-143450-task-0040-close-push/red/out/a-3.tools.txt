@@ -1,0 +1,68 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> PowerShell: git status --short; git worktree list; git branch -a; Test-Path .docs/sdd/environments.md; Get-Content .docs/sdd/sdd-kit.json
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-start-task\references\control-profiles.md
+<<< The .git file or symlink here redirects to a location that cannot be verified as safe (it may have been planted by an untrusted archive). Git commands need approval.
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10	
+11	La primer
+
+>>> Read: <run>\wt\0009\.git
+<<< 1	gitdir: <run>/git/salas.git/worktrees/0009
+2	
+
+>>> Glob: .docs/sdd/{sdd-kit.json,environments.md}
+<<< .docs\sdd\sdd-kit.json
+
+>>> Read: <run>\wt\0009\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+2	
+
+=== RESULTADO (9 turnos, 0.2463324 $)
+Paso 10 sin completar: el merge a `develop` no se ha hecho. El paso 11 sí queda dicho al final.
+
+**Qué ha pasado**
+- `git worktree list` (mi primer comando de git en este paso) devolvió: «The .git file or symlink here redirects to a location that cannot be verified as safe (it may have been planted by an untrusted archive). Git commands need approval.»
+- La sesión no es interactiva y no hay nadie que apruebe. No he probado otra vía (Bash, `-C`, `safe.directory`) porque sería saltarme esa protección, y es una persona quien la levanta.
+- El `.git` del worktree apunta a `…/scratchpad/runs/a-3/git/salas.git/worktrees/0009`, es decir, al repo bare de la propia sesión.
+
+**Estado del paso 10**
+- `.docs/sdd/environments.md` no existe, así que `env:clean` no aplica.
+- La política de merge está completa en `sdd-kit.json`: `into: develop`, `noFf: true`, `removeWorktree: false`. El perfil es `delegate`, por lo que me tocaba aplicarla.
+- Sin `git` no he podido comprobar si `develop` está sacada en algún worktree. Solo se puede aplicar la [receta del merge](references/merge-recipe.md) si no lo está.
+- No he tocado nada: la rama `feature/0009` sigue como estaba, con los pasos 0 a 9 commiteados. Tampoco he hecho push ni PR.
+
+**Lo que queda, solo el merge**
+1. Una persona aprueba el acceso a git en este worktree.
+2. Se ejecuta `git worktree list`.
+3. Se fusiona `feature/0009` en `develop` con `--no-ff`: por la receta si `develop` no está sacada, o en su worktree si está limpia.
+4. Se corre la suite sobre el resultado del merge.
+5. El worktree de la feature se conserva, por `removeWorktree: false`.
+
+`sdd-kit.json` también trae `"push": true`. Esa clave no está en el contrato de `control-profiles.md`, y el push se confirma siempre, así que no lo hago.
+
+**Paso 11**
+- La validación no se difirió: la dio el dev-lead con lo que probó, así que no hay disparador que corregir.
+- Puedo generar el ticket de mejora del kit con `sdd-feedback` en esta sesión. Como no hay nadie para responder, no lo genero y no queda nada pendiente. Un hallazgo para ese ticket sería que el kit no cubre el caso de git bloqueado por un `.git` sin verificar.

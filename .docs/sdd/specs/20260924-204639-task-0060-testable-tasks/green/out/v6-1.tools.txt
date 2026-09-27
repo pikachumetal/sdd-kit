@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd . && ls .docs/sdd/specs/*0012*/ && cat .docs/sdd/specs/*0012*/tasks.md && cat .docs/sdd/specs/*0012*/plan.md && git log --oneline -6 && git status --short
+<<< plan.md
+spec.md
+tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | 654b3f6 | |
+| 2 | Validar al consultar libres | pending | — | |
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: subagent, porque cada task lleva su revisión.
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+
+>>> Bash: cat .docs/sdd/specs/*0012*/spec.md; ls; cat package.json; cat src/*.js | head -60; cat tests/slot-format.test.js
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+profile: pair
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**AD
+
+>>> Bash: cat bin/salas.js; node bin/salas.js reservar Norte 1012; echo "exit=$?"; node bin/salas.js reservar Norte 10-12; echo "exit=$?"
+<<< #!/usr/bin/env node
+import * as slots from '../src/slots.js';
+
+const [command, ...args] = process.argv.slice(2);
+const commands = { reservar: () => slots.reserve(...args), libres: () => slots.free(...args) };
+try {
+  console.log(JSON.stringify(commands[command]()));
+} catch (error) {
+  console.error(error.message);
+  process.exitCode = 1;
+}
+Franja no válida: usa HH-HH, p. ej. 10-12
+exit=1
+{"room":"Norte","slot":"10-12"}
+exit=0
+
+=== RESULTADO (6 turnos, 0.211423 $)
+**Task 1 cerrada** (`654b3f6`, revisión limpia, `tasks.md` al día). En `pair` paro aquí antes de la Task 2.
+
+Un apunte de proceso: el plan no trae la línea «Se prueba en la aplicación» para esta task. He sacado el guion de la spec y de la CLI (`bin/salas.js`).
+
+**Guion de pruebas de la Task 1** (desde la raíz del repo):
+
+1. `node bin/salas.js reservar Norte 1012` → stderr `Franja no válida: usa HH-HH, p. ej. 10-12` y código de salida 1.
+2. `node bin/salas.js reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}` y código de salida 0.
+3. `node --test tests/slot-format.test.js` → pasa.
+
+Los pasos 1 y 2 ya los he ejecutado yo y dieron ese resultado. El paso 3 lo ejecutó el implementador en la task; yo no lo he relanzado.
+
+**Pendiente en la Task 2:** `bin/salas.js` ya llama a `slots.free`, pero esa función aún no existe en `src/slots.js`. Hoy `salas libres` falla con un `TypeError`, no con el mensaje de franja. La Task 2 la crea.
+
+¿Continúo con la Task 2 (`free(slot)` con la misma validación)?

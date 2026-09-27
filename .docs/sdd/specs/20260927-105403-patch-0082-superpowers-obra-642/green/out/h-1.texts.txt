@@ -1,0 +1,44 @@
+--- [26]
+Explorador corriendo en background. Aviso: leyendo código de reservas para escribir el plan con rutas exactas. Queda: recibir resultado, redactar plan.md y presentarlo, ~10 min.
+
+--- [32]
+Esperando la notificación del Explore para seguir con el plan.
+
+--- [60]
+`SqlServerApiFactory` no está definida en ningún fichero del repo (solo se referencia en el test) — falta el fixture Testcontainers. No hay csproj, Program.cs, ni carpeta de Migrations en todo el repo: el backend es un esqueleto mínimo sin proyecto EF Core inicializado todavía.
+
+**1. Modelo `Booking`**
+- `backend/src/Bookings.Api/Data/Booking.cs:3-10` — clase POCO: `Id` (int), `Room` (string), `Start`/`End` (DateTime), `Owner` (string). No existe ningún enum de estado ni propiedad `Status` — hay que añadirlos desde cero.
+
+**2. Endpoint `GET /bookings` y DbContext**
+- `backend/src/Bookings.Api/BookingsEndpoints.cs:10-15` — `app.MapGet("/bookings", async (BookingsDb db, int page = 1) => ...)`, ordena por `Start`, pagina con `Skip((page-1)*20).Take(20)`. Único query param actual: `page` (int, default 1). No filtro por status.
+- `backend/src/Bookings.Api/Data/BookingsDb.cs:5-8` — `BookingsDb(DbContextOptions<BookingsDb>) : DbContext`, con `DbSet<Booking> Bookings`.
+
+**3. Migraciones EF Core**
+- No existe ninguna carpeta `Migrations` ni `*.csproj` en `backend/` (solo hay `BookingsEndpoints.cs`, `Data/Booking.cs`, `Data/BookingsDb.cs` y el test). No hay migración previa ni convención de nombres que seguir — el plan debe asumir que es la primera migración del proyecto (o señalar que falta el proyecto EF Core/csproj antes de poder generarla).
+
+**4. Componente Angular de listado**
+- `frontend/src/app/bookings/booking-list.component.ts:1-18` — standalone, usa `httpResource<Booking[]>(() => '/api/bookings')` (signal-based resource, sin servicio HTTP intermedio), pinta con `@for` sobre `bookings.value() ?? []`, `track booking.id`. Template inline (no `.html` separado — el intento de leer `booking-list.component.html` da "File does not exist").
+- No hay paginación pintada en el template actual (no usa el param `page` en absoluto, ni controles de paginación) — es donde encajaría añadir tanto el control de paginación como el `app-status-select`.
+- `frontend/src/app/bookings/booking-list.component.css:1-4` — estilos mínimos con custom properties `--text`/`--surface`.
+- `frontend/src/app/bookings/booking.ts:1-5` — interface `Booking { id, room, start }` (sin `status`).
+
+**5. Selector/dropdown reusable**
+- No existe ningún componente de selector/dropdown en `frontend/` (grep de `select|dropdown` solo devuelve el propio `booking-list.component.ts/.spec.ts`, sin coincidencias reales). `app-status-select` sería un componente nuevo.
+
+**6. `docs/api.md`**
+- `docs/api.md:1-9` — una sola sección `## GET /bookings`, descripción "Lista las reservas ordenadas por inicio, 20 por página", y tabla de parámetros con solo `page` (entero, default 1). Falta documentar `status` como nuevo parámetro y el nuevo campo en la respuesta.
+
+**7. Tests actuales**
+- Backend: `backend/tests/Bookings.Tests/BookingsEndpointsTests.cs:6-19` — xUnit, `IClassFixture<SqlServerApiFactory>` (Testcontainers, pero la clase fixture no está en el repo — falta implementarla/localizarla), usa `factory.SeedAsync(...)` y `factory.CreateClient().GetFromJsonAsync<List<Booking>>("/bookings")`.
+- Frontend: `frontend/src/app/bookings/booking-list.component.spec.ts:6-18` — Vitest + `TestBed`, `provideHttpClient()/provideHttpClientTesting()`, usa `HttpTestingController.expectOne('/api/bookings').flush([...])` y comprueba `querySelectorAll('li').length`.
+
+--- [92]
+Plan escrito. Paro aquí, sin implementar, como pediste.
+
+Aviso principal antes de que lo leas: el backend no tiene `.csproj` ni `Program.cs`, y el fixture `SqlServerApiFactory` que ya usa el test de paginación no existe en el repo — tampoco hay `.moon/workspace.yml` ni `moon.yml` por proyecto. Eso significa que hoy `moon run backend:test` no tiene nada que ejecutar, y el test de paginación ya mergeado no compila. Task 1 del plan crea ese proyecto mínimo y el fixture porque sin eso no hay dónde aplicar la migración; dejo fuera arreglar el workspace de moon (lo marco como riesgo para un chore aparte, no parte de esta feature).
+
+Plan guardado en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`, 2 tasks (backend con el bootstrap, frontend con el selector), ejecución Native.
+
+Dime si el bootstrap del backend te cuadra o si el proyecto real vive en otro sitio y me falta contexto.
+

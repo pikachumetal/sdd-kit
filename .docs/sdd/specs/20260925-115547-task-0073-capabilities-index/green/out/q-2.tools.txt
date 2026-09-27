@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: ls -R .docs/sdd 2>/dev/null | head -50; git ls-files | head -80
+<<< .docs/sdd:
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+
+.docs/sdd/capabilities:
+access.md
+billing.md
+bookings.md
+calendar-sync.md
+house-rules.md
+notifications.md
+quotas.md
+rooms.md
+usage-reports.md
+.docs/sdd/capabilities/access.md
+.docs/sdd/capabilities/billing.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/calendar-sync.md
+.docs/sdd/capabilities/house-rules.md
+.docs/sdd/capabilities/notifications.md
+.docs/sdd/capabilities/quotas.md
+.docs/sdd/capabilities/rooms.md
+.docs/sdd/capabilities/usage-reports.md
+.docs/sdd/changelog.md
+.docs/sdd/constituti
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0073-capabilities-index/67727309-6a15-4d6f-bdfc-fb77df5068f1/scratchpad/kit-green/skills/sdd-templates/scripts/Get-CapabilityIndex.ps1" -Path .docs/sdd; grep -rniE "s[áa]bado|saturday|weekend|guest|invitad" .docs src README.md
+<<< - `access` — Quién entra en la aplicación y con qué rol (empleado, invitado, administrador). No decide cuánto, cuándo ni qué días se reserva.
+- `billing` — Cobro por horas a los departamentos externos que reservan salas, y factura mensual a cada uno.
+- `bookings` — Reservar, consultar y cancelar salas por franja horaria desde el CLI.
+- `calendar-sync` — Exportación de las reservas a calendarios externos en formato .ics.
+- `house-rules` — Normas de uso de las salas según el rol de quien reserva: duración máxima, días y horas permitidos, antelación y penalización por no presentarse.
+- `noti
+
+>>> Bash: cat .docs/sdd/capabilities/house-rules.md; grep -niE "invitado|lunes|viernes|sabado|day|dia" src/cli.js tests/cli.test.js
+
+>>> Bash: cat .docs/sdd/roadmap.md
+<<< # Capacidad — house-rules
+
+## Propósito
+
+Normas de uso de las salas según el rol de quien reserva: duración máxima, días y horas permitidos, antelación y penalización por no presentarse.
+
+## Requisitos
+
+### Duración máxima por rol
+- GIVEN una sesión con rol `invitado`
+- WHEN `salas reservar Sur 10-13`
+- THEN responde `Máximo 2 h por reserva` y no guarda nada; un `empleado` tiene el mismo tope
+
+### Días permitidos por rol
+- GIVEN una sesión con rol `invitado`
+- WHEN `salas reservar Sur sabado 10-12`
+- THEN responde `Los invitados reservan de lunes a viernes`; un `empleado` puede reservar cualqu
+<<< # Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0021 | Los invitados solo pueden reservar 1 h seguida; hoy tienen las mismas 2 h que un empleado | recepción | `src/cli.js` | S |
+| 0022 | `salas informe` por trimestre | facility | `src/cli.js` | S |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+
+>>> Bash: wc -l src/cli.js; grep -niE "rol|role|rules|max|2 h" src/cli.js | head -20; ls data 2>&1 | head
+<<< 3 src/cli.js
+ls: cannot access 'data': No such file or directory
+
+=== RESULTADO (8 turnos, 0.19916340000000002 $)
+Estaba terminando de comprobar el código antes de responder.
+
+**Dónde tocaría**
+
+- **Regla (según el doc):** la capacidad `house-rules`, en `.docs/sdd/capabilities/house-rules.md`. El requisito «Días permitidos por rol» dice hoy que un `invitado` recibe `Los invitados reservan de lunes a viernes` si reserva en sábado. Habría que cambiar ese requisito, el mensaje y la línea de «Reglas de la capacidad» que tenga que ver con los días.
+- **Datos:** el doc dice que las normas viven en `data/rules.json`. Ese fichero no existe en el repo. Lo que infiero es que los días por rol saldrían de ahí, pero no puedo confirmarlo.
+- **Código:** `src/cli.js` tiene solo 3 líneas y no contiene ninguna lógica de roles, días ni normas. Hoy no hay ningún sitio en el código donde se aplique la restricción de sábados. La implementación real de la regla todavía no existe, o vive en otro sitio que no está en este repo.
+- **Tests:** `tests/cli.test.js` es donde iría el caso de un invitado reservando en sábado.
+
+**Otras capacidades a revisar**
+
+- `access` no cambia. Su propósito dice expresamente que no decide qué días se reserva.
+- `bookings` y `calendar-sync` no deberían necesitar cambios, salvo que quieras que el sábado se trate distinto en algo más.
+
+**Decisiones abiertas para ti**
+
+- ¿Se abre el sábado también para el domingo, o solo el sábado?
+- ¿Las salas abren realmente los sábados? Lo pregunto porque `rooms` no habla de horarios.
+- El código de invitado caduca a las 23:59 del día de emisión (`access`). Como recepción lo emite ese mismo día, no debería haber conflicto.
+
+No he modificado ningún fichero. Si quieres hacerlo, sería una petición nueva para `sdd-start-task`, porque cambia comportamiento.

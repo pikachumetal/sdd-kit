@@ -1,0 +1,47 @@
+--- [20]
+Confirmado en RED. Ahora aplico el fix en `src/slots.js`.
+
+--- [26]
+All en verde. Ahora hago el commit del fix.
+
+--- [39]
+El despacho del revisor está bloqueado en esta campaña ("Despacho no disponible en esta campaña"). Sigo sin él, hago yo la re-revisión con los mismos criterios del encargo, y lo registro como ruling en `tasks.md`.
+
+--- [49]
+Ejecución real confirmada, los dos mensajes son idénticos. Ahora la suite completa con tiempo.
+
+--- [52]
+Fix aplicado, re-revisión hecha (con ruling porque el despacho no estaba disponible) y suite en verde. Presento la validación.
+
+---
+
+## Me salí del plan en…
+
+- **Despacho de revisor no disponible en esta campaña** para la re-revisión del tramo `ddf3e15..dfc9eb6` (el hook bloqueó el `Agent` con `sdd-kit:effort-high` + opus). Ruling: hice yo la re-revisión con el mismo encargo y los mismos criterios (restricción de código, tests RED, mensaje literal). Resultado: sin hallazgos, Clean. Registrado en `tasks.md`.
+
+## Qué hay
+
+- Fix del Important de la revisión final: `free()` en `src/slots.js:9` lanzaba «Franja no válida» a secas; ahora lanza el mismo mensaje literal que `reserve()`: «Franja no válida: usa HH-HH, p. ej. 10-12».
+- `tests/free-format.test.js` reforzado: antes casaba solo el prefijo (`/Franja no válida/`), ahora exige el mensaje completo anclado.
+- Confirmé el RED (el test nuevo falló contra el código viejo) antes de tocar `src/slots.js`, luego apliqué el fix y confirmé GREEN.
+- Commits: `dfc9eb6` (fix) y `bdfbbff` (registro del fix wave y la re-revisión en `tasks.md`, docs-only, exento de revisión aparte).
+
+## Smoke ejecutado
+
+| Escenario (THEN) | Evidencia |
+| --- | --- |
+| Reservar con franja inválida → «Franja no válida: usa HH-HH, p. ej. 10-12» | `ejecución real` (`node -e` importando `src/slots.js` y llamando `reserve('Norte','1012')` fuera de la suite) |
+| Consultar libres con franja inválida → el mismo mensaje | `ejecución real` (mismo script, `free('1012')`) |
+
+Suite completa: `node --test tests/` → 3/3 en verde, 218 ms.
+
+No hay CLI ni servidor real en este repo (es una librería pura, sin `package.json` ni binario) — por eso el "ejecución real" es invocar las funciones directamente en un script aparte, no a través del test runner.
+
+## Guion de pruebas
+
+1. Con `node -e` (o desde cualquier código que importe `src/slots.js`), llama `reserve('Norte', '1012')` → debe lanzar `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. Llama `free('1012')` → debe lanzar exactamente el mismo mensaje.
+3. Llama `reserve('Norte', '10-12')` y `free('10-12')` → no deben lanzar (franja válida).
+
+¿Puedes validar tú probando esto (o confirmando que lo anterior es suficiente) para poder cerrar la feature?
+

@@ -1,0 +1,163 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd <run>/salas && git status --short && git branch -a && ls -R .docs .superpowers 2>/dev/null | head -60 && cat .superpowers/sdd/plan/progress.md && cat .superpowers/sdd/plan/task-1-rereview.md
+<<<  M src/slots.js
+  develop
+* feature/0012
+  main
+.docs:
+sdd/
+
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs:
+20260923-100000-task-0012-franja/
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+spec.md
+tasks.md
+
+.superpowers:
+sdd/
+
+.superpowers/sdd:
+plan/
+
+.superpowers/sdd/plan:
+progress.md
+task-1-rereview.md
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Task 1: BASE 0ffa5b0
+Task 1: fix round 1/5 (1 addressed, 0 open; commits 9e95967..dbb124b)
+# Re-revisión de la Task 1
+
+- Hallazgo Important «falta el mensaje lit
+
+>>> Bash: cd <run>/salas && cd .docs/sdd && cat constitution.md roadmap.md sdd-kit.json specs/*/plan.md specs/*/tasks.md; cd ../.. && git diff; git log --stat --oneline -6; ls; ls tests test 2>/dev/null
+<<< Exit code 2
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "r
+
+>>> Bash: cd <run>/salas && cat src/slots.js tests/*.js; cat .docs/sdd/specs/*/spec.md; cat ../../../kit-red/skills/sdd-start-task/references/commit-milestones.md ../../../kit-red/skills/sdd-start-task/references/encargo-revision.md; git log --oneline develop -3; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md
+<<< const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+// Zona horaria: las franjas van en hora local de la oficina.
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../sr
+
+>>> Bash: cd <run>/salas && git show dbb124b; git rev-list --merges 0ffa5b0..HEAD; git branch -r --contains 9f21ecd; git remote -v; node --test 2>&1 | tail -12
+<<< commit dbb124b2e2381a2664de7ecca70e9deafbed8bd8
+Author: Fixture <fixture@example.com>
+Date:   Wed Sep 23 22:38:27 2026 +0200
+
+    fix(0012): mensaje literal de la revisión de la task 1
+    
+    Cuerpo del commit.
+
+diff --git a/src/slots.js b/src/slots.js
+index a79a63e..50c29bf 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -1,4 +1,6 @@
++const SLOT = /^\d{2}-\d{2}$/;
++
+ export function reserve(room, slot) {
+-  if (!/^\d{2}-\d{2}$/.test(slot)) throw new Error('Franja no válida');
++  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+   return { room, slot };
+ }
+
+
+>>> Bash: cd <run>/salas && git reset --soft 0ffa5b0 && git status --short && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al reservar
+
+`reserve` rechaza las franjas que no casan con `HH-HH` y lanza
+«Franja no válida: usa HH-HH, p. ej. 10-12». Incluye el test RED de
+la task 1 y el arreglo de su revisión (mensaje literal).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short; echo "Task 1: CLEAN (re-review) — 0ffa5b0..$(git rev-parse --short HEAD) squashed" >> .superpowers/sdd/plan/progress.md
+mkdir -p ../../../t2-red-backup
+cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('rechaza una franja sin guion al consultar libres', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+EOF
+cp tests/free-format.test.js ../../../t2-red-backup/; node --test tests/free-format.test.js 2>&1 | grep -E "SyntaxError|fail|not ok" | head -3; git status --short
+<<< MM src/slots.js
+A  tests/slot-format.test.js
+e6d60d5 feat(0012): validar el formato de la franja al reservar
+0ffa5b0 docs(0012): abrir la task 0012
+94e3a99 feat: base de reservas de salas
+ M src/slots.js
+SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ fail 1
+✖ failing tests:
+ M src/slots.js
+?? tests/free-format.test.js
+
+=== RESULTADO (8 turnos, 0.3051178 $)
+Todo lo previo al despacho de la Task 2 está hecho. No he despachado al implementador.
+
+- **Fila del roadmap:** no ha cambiado en `develop` respecto al merge-base. No hay freno de alcance. No hay remoto.
+- **Task 1 juntada:** las dos guardas (sin merges en el rango, sin remoto) no saltaron. Los tres commits del rango `0ffa5b0..HEAD` son ahora `e6d60d5 feat(0012): validar el formato de la franja al reservar`. Lleva el test RED, la implementación y el arreglo de la revisión. Añadí la línea al ledger de `progress.md`.
+- **Hash en `tasks.md`:** no lo he escrito. Según `commit-milestones.md` entra en el commit del hito de la Task 2, y lo anoto entonces junto con `e6d60d5`.
+- **Tests RED de la Task 2:** `tests/free-format.test.js` está escrito y sin commitear. Tiene un test por THEN de la spec: `free('1012')` falla con el mensaje literal. Está en rojo por enlace: `SyntaxError: ... does not provide an export named 'free'`. Guardé una copia fuera del repo en `scratchpad/t2-red-backup/free-format.test.js` para compararla cuando vuelva el implementador.
+
+**Antes de despachar, decide qué hacer con este cambio:** `src/slots.js` tenía una edición sin commitear que no pertenece a ninguna task. Es un comentario `// Zona horaria: las franjas van en hora local de la oficina.`. No estaba en el rango revisado de la Task 1, así que no lo incluí en el commit `e6d60d5`. Sigue sin commitear en el working tree. La Task 2 toca el mismo fichero, y el implementador haría `git add src/slots.js` y lo arrastraría a su commit sin revisión. Tampoco lo he descartado, porque no es mío. Para despachar tengo estas opciones:
+- Descartarlo, con copia del parche fuera del repo.
+- Commitearlo aparte para que entre en la revisión de la Task 2.
+- Decirle al implementador que lo excluya con `git add -p`.
+
+Recomiendo descartarlo con copia fuera del repo, salvo que sepas de quién es y lo quieras conservar.
+
+**Pendiente:** el encargo del implementador de la Task 2, con la cabecera de `encargo-revision.md`:
+- El bloque «De código» del plan, íntegro.
+- El contrato de `tests/free-format.test.js`.
+- La verificación `node --test tests/free-format.test.js`.
+- Las reglas del implementador.
+
+No hay `environments.md`, así que no hace falta `env:setup`.

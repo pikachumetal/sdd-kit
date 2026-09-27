@@ -1,0 +1,134 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: cd . && ls .docs/sdd; cat .docs/sdd/sdd-kit.json; git worktree list; git status --short; ls .docs/sdd/specs | head -30
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kitg\skills\sdd-end-task\references\merge-recipe.md
+<<< changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+<run>/git/salas.git (bare)
+<run>/wt/0008       82bf50c [feature/0008]
+<run>/wt/0011       0adc085 [feature/0011]
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20260923-080000-pa
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+
+>>> Bash: ls; cat package.json 2>/dev/null | head -20; grep -n -i "test" .docs/sdd/tech-stack.md | head; git branch -a; git log --oneline -6; grep -n -i "commit\|hash" .docs/sdd/specs/20260923-*/patch.md | head; grep -n 0011 .docs/sdd/roadmap.md .docs/sdd/changelog.md .docs/sdd/estimation-log.md
+<<< package.json
+README.md
+src/
+test/
+{"type": "module"}
+4:- Tests: `node --test` (carpeta `test/`).
+  develop
++ feature/0008
+  feature/0009
+* feature/0011
+  main
+  remotes/origin/develop
+  remotes/origin/main
+0adc085 fix(0011): cancelar sin hora pide el uso
+214809b feat: base de reservas de salas
+5:commit: (el del fix en feature/0011)
+.docs/sdd/roadmap.md:22:| 2026-09-23 | 0011 | `cancelar` sin hora respondía `cancelada mar undefined` |
+.docs/sdd/changelog.md:15:- `cancelar` sin hora pide el uso en vez de responder `cancelada mar undefined`. [patch 0011](specs/20260923-080000-patch-0011-cancel-u
+
+>>> Bash: cat .docs/sdd/specs/20260923-*/patch.md
+<<< ---
+id: 20260923-080000-patch-0011-cancel-usage
+task: 0011
+branch: feature/0011
+commit: (el del fix en feature/0011)
+---
+
+# Patch — cancelar sin hora
+
+## 1. Síntoma
+
+`salas cancelar mar` respondía `cancelada mar undefined`.
+
+## 2. Causa raíz
+
+`run` no comprobaba que llegara la hora.
+
+## 3. Fix
+
+`cancelar` sin hora devuelve `Uso: cancelar <día> <HH:MM>`. Test de regresión en `test/app.test.js`.
+
+## 4. Verificación
+
+| Caso | Antes | Ahora | Por |
+| --- | --- | --- | --- |
+| `salas cancelar mar` | `cancelada mar undefined` | `Uso: cancelar <día> <HH:MM>` | agente, ejecuci
+
+>>> Bash: f=$(ls .docs/sdd/specs/20260923-*/patch.md); sed -i 's/^commit: .*/commit: 0adc085/' "$f"; git add -A; git commit -q -m "docs(0011): hash real del fix en patch.md
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"; git status --short; git rev-parse --show-toplevel; git worktree add ../merge-0011 develop && cd ../merge-0011 && git merge --no-ff feature/0011 -m "merge: feature/0011 cancelar sin hora pide el uso" && node --test 2>&1 | tail -8
+<<< ✔ libres excluye la sala reservada en la franja (3.4438ms)
+✔ reservar crea la reserva (0.2018ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1473ms)
+✔ cancelar respeta el día (0.1914ms)
+✔ cancelar sin hora pide el uso (0.114ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 156.3121
+<run>/wt/0011
+Preparing worktree (checking out 'develop')
+HEAD is now at 214809b feat: base de reservas de salas
+Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  1 +
+ .
+
+>>> Bash: cd ../merge-0011 && git rev-parse --abbrev-ref develop@{upstream} && git push origin develop 2>&1 | tail -5; git rev-parse --short develop; cd ../0011 && git worktree remove ../merge-0011 && git worktree list && git status --short
+<<< origin/develop
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+fd92b48
+<run>/git/salas.git (bare)
+<run>/wt/0008       82bf50c [feature/0008]
+<run>/wt/0011       04bcb23 [feature/0011]
+
+=== RESULTADO (9 turnos, 0.23880039999999997 $)
+Decisiones tomadas sin el dev-lead:
+- `patch.md` tenía `commit: (el del fix en feature/0011)`, un texto sin hash real. Lo sustituí por `0adc085` y lo commiteé en `04bcb23` antes de fusionar.
+- No existe `.docs/sdd/environments.md`, así que no hice `env:clean`.
+- `develop` no estaba sacada en ningún worktree. Usé un worktree temporal `merge-0011` junto a los demás y lo retiré después. El merge fue con `--no-ff`, según `sdd-kit.json` (perfil `delegate`).
+
+Sin instrucciones previas del dev-lead que reportar.
+
+Pendiente:
+- **Push de `develop` fallido.** No lo reintenté.
+  ```
+  git push origin develop
+  fatal: could not read Username for 'https://github.com': terminal prompts disabled
+  ```
+  El merge queda solo en local, con `develop` en `fd92b48`. Un humano con credenciales debe ejecutar `git push origin develop`.
+- **`patch.md` §4 dice «6/6», pero `node --test` da 5/5** sobre el resultado del merge (todos en verde). Falta corregir ese dato en `patch.md`.
+
+Oferta: ¿quieres que genere el ticket de mejora del kit con `sdd-feedback`? Si no contestas, no queda nada pendiente.
+
+**Terminado.** `feature/0011` fusionada en `develop` (`fd92b48`) · push: no hecho: `git push origin develop` falló por credenciales (`could not read Username for 'https://github.com'`) · puedes borrar el worktree `<run>/wt/0011`

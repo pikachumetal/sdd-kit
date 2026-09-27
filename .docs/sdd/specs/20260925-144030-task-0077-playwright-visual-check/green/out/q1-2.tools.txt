@@ -1,0 +1,118 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> PowerShell: Get-ChildItem -Force -Recurse .docs/sdd | Select-Object FullName | Format-Table -HideTableHeaders | Out-String -Width 300
+<<< <run>\repo\.docs\sdd\changelog.md
+<run>\repo\.docs\sdd\constitution.md
+<run>\repo\.docs\sdd\roadmap.md
+<run>\repo\.docs\sdd\sdd-kit.json
+<run>\repo\.docs\sdd\tech-stack.md
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	## Art. I — Commits
+4	
+5	Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+6	
+7	## Art. II — Tests
+8	
+9	Todo verde antes de fusionar.
+10	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+6	| --- | --- | --- | --- | --- |
+7	| 0012 | La API devuelve las reservas ordenadas por franja (`10-12` antes que `12-14`) | dev-lead | `src/bookings.js` | S |
+8	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech stack — salas
+2	
+3	- Node 22 sin dependencias: `server.mjs` sirve `web/` y la API `/api/bookings`.
+4	- Arrancar: `node server.mjs` (puerto 4704, `PORT` lo cambia). Tema oscuro con `?theme=dark`.
+5	- Tests: `node --test`.
+6	
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\changelog.md
+<<< 1	# Changelog
+2	
+3	## [Unreleased]
+4	
+
+>>> PowerShell: Test-Path .docs/sdd/sdd-kit.local.json; git branch -a; $k='<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0077-playwright-visual-check\a63deee4-b15d-4fbf-ad0b-4222cb4f2925\scratchpad\kit\skills\sdd-start-task\references'; Get-Content "$k\modo-lite.md"; Get-Content "$k\control-profiles.md" -TotalCount 60
+<<< False
+  develop
+* feature/0012
+  main
+## Modo lite — predicado observable, activación del usuario
+
+Una task **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No toca schema de datos ni exige migración.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y
+
+>>> PowerShell: git ls-files; Get-Content src/bookings.js
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+.gitignore
+README.md
+package.json
+server.mjs
+src/bookings.js
+tests/bookings.test.js
+web/app.js
+web/index.html
+web/styles.css
+const BOOKINGS = [
+  { room: 'Norte', slot: '10-12', status: 'Confirmed' },
+  { room: 'Sur', slot: '12-14', status: 'Pending' },
+  { room: 'Este', slot: '16-18', status: 'Cancelled' },
+];
+
+export function list() {
+  return BOOKINGS;
+}
+
+=== RESULTADO (11 turnos, 0.49952620000000003 $)
+Ahora: contexto cargado, confirmo carril, modo y perfil. Queda: tu respuesta a esta pregunta, y después brainstorming y spec hasta el gate de aprobación, ~10 min.
+
+**Enunciado propuesto** (sale de la rama `feature/0012` y de su fila pendiente en el roadmap): *«La API devuelve las reservas ordenadas por franja (`10-12` antes que `12-14`)»*, en `src/bookings.js`, tamaño S.
+
+**Carril:** task, no patch. Es un comportamiento nuevo que no existe hoy, así que no hay un fallo que arreglar.
+
+**Modo:** propongo **lite**. Cumple todas las condiciones del predicado:
+- El flujo ya existe y se puede leer: `list()` en `src/bookings.js` devuelve `BOOKINGS` tal cual, y lo sirve `/api/bookings` desde `server.mjs`.
+- No cambia el contrato público. La forma de la respuesta sigue igual y solo se garantiza el orden. Si para ti el orden forma parte del contrato, esta condición no se cumple y la task va en full.
+- No toca el schema ni exige migración, porque los datos están en memoria.
+- Cabe en un solo módulo, `src/bookings.js`, más su test.
+- La condición de estimación no aplica, porque no existe `.docs/sdd/estimation.md`.
+
+Prevé 1 task interna, así que no propongo partirla.
+
+**Perfil vigente:** `delegate`, que sale del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json` ni `profile:` a nivel de release.
+
+Hay un detalle para el brainstorming. Los datos de ejemplo ya salen ordenados. Además, ordenar la franja como texto falla con horas de un dígito, porque `9-10` queda detrás de `10-12`. Lo trato en la spec.
+
+**Elige una opción:**
+1. **Task 0012 en lite, perfil `delegate`** (recomendada)
+2. Task 0012 en lite, perfil `delegate`, y apruebo la spec por delegación: nos vemos en la validación
+3. Task 0012 en modo full (con perfil `delegate`, o el que digas)
+4. Otro perfil (`pair` o `unattended`) u otro enunciado

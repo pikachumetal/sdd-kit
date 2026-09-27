@@ -1,0 +1,23 @@
+--- [10]
+Reviso `src/cli.js` para ver dónde vive hoy la regla de días.
+
+--- [12]
+Hoy no hay código que tocar: la regla solo existe en la spec, y `src/cli.js` es un stub de 3 líneas (`run` devuelve `salas ${args}`). Tampoco existe `data/rules.json`.
+
+**Qué dice el doc**
+- `.docs/sdd/capabilities/house-rules.md:10-13`, requisito "Días permitidos por rol": un `invitado` que reserva en sábado recibe `Los invitados reservan de lunes a viernes`, y un `empleado` puede reservar cualquier día.
+- Ese mismo fichero (línea 22) fija que los datos de las normas viven en `data/rules.json`.
+
+**Dónde tocaría**
+1. **Spec.** Cambiar el requisito "Días permitidos por rol" en `house-rules.md`. Si sábado pasa a ser válido para invitados, el escenario actual queda contradictorio. Hay que reescribirlo, por ejemplo "invitado reserva en sábado → `Reservada Sur sabado 10-12`", o mover el ejemplo de rechazo a domingo.
+2. **Datos.** Añadir el sábado a los días permitidos del rol `invitado` en `data/rules.json`, que aún no está creado. Sería un cambio de datos, no de lógica.
+3. **Código.** Aquí es inferencia mía, porque no hay implementación. La validación de día por rol iría en `src/cli.js`, o en un módulo de reglas si se extrae. Debería leer los días permitidos de `rules.json` y no dejarlos fijos en el código. Así, la próxima ampliación de días es solo un cambio de datos.
+4. **Mensaje.** `Los invitados reservan de lunes a viernes` quedaría desactualizado. Habría que cambiarlo a `lunes a sábado`, o generarlo desde los datos.
+
+**Dudas que conviene aclarar antes**
+- ¿Los sábados aplican los mismos límites (máx. 2 h, antelación de 14 días)? Según el doc, sí.
+- ¿Los códigos de invitado los emite recepción "hoy" (`access.md:10-13`)? Si recepción no trabaja los sábados, el invitado no podría ni entrar ese día, y habría que revisar también `access`.
+- ¿Y el domingo? El mensaje y la spec deben dejar claro si sigue excluido.
+
+Si lo quieres hacer, es una petición nueva: lo llevaría a `sdd-start-task`. Es un cambio de comportamiento con impacto en la spec, así que no encaja como patch. No he modificado ningún fichero.
+

@@ -1,0 +1,83 @@
+--- [1]
+Invoco skill sdd-kit:sdd-start-feature para feature 0012.
+
+--- [5]
+Leo spec, constitution, tech-stack, roadmap y config antes de escribir plan.
+
+--- [22]
+Spec aprobada, contexto cargado. Invoco `superpowers:writing-plans` para construir el plan.
+
+--- [29]
+Explorando código de reservas (backend y frontend) para basar el plan en patrones reales, en segundo plano.
+
+--- [49]
+Confirmado: no hay `.csproj` ni carpeta `Migrations/` todavía en el repo (proyecto de ejemplo reducido). Aquí está todo lo encontrado.
+
+## Backend — `backend/src/Bookings.Api`
+
+- **Entidad** `backend/src/Bookings.Api/Data/Booking.cs:3-10` — sin enum de estado, sin value objects en el dominio:
+```csharp
+public class Booking
+{
+    public int Id { get; set; }
+    public string Room { get; set; } = "";
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public string Owner { get; set; } = "";
+}
+```
+- **DbContext** `backend/src/Bookings.Api/Data/BookingsDb.cs:5-8` — solo `DbSet<Booking> Bookings`, sin configuración fluent adicional.
+- **Endpoint actual** `backend/src/Bookings.Api/BookingsEndpoints.cs:10-15`:
+```csharp
+app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+    await db.Bookings
+        .OrderBy(b => b.Start)
+        .Skip((page - 1) * 20)
+        .Take(20)
+        .ToListAsync());
+```
+Paginación manual con `Skip/Take`, tamaño fijo 20, parámetro de query `page` como binding implícito de minimal API (mismo patrón que seguiría `status`, como `string? status = null` o el enum directamente).
+- **No existe carpeta `Migrations/`** ni `.csproj` en el repo — no hay convención previa de nombres de migración que replicar; en el plan hay que asumir la primera migración del proyecto (`dotnet ef migrations add <Nombre>` según `.docs/sdd/tech-stack.md:11`).
+- Test de referencia: `backend/tests/Bookings.Tests/BookingsEndpointsTests.cs` usa `SqlServerApiFactory` (Testcontainers) con `factory.SeedAsync(...)` y `GetFromJsonAsync<List<Booking>>`.
+
+## Frontend — `frontend/src/app/bookings`
+
+- **Modelo** `frontend/src/app/bookings/booking.ts:1-5` — sin campo `status` todavía:
+```ts
+export interface Booking {
+  id: number;
+  room: string;
+  start: string;
+}
+```
+- **Componente de lista** `frontend/src/app/bookings/booking-list.component.ts:1-18` — standalone, usa `httpResource`, sin servicio HTTP intermedio:
+```ts
+@Component({
+  selector: 'app-booking-list',
+  template: `...`,
+  styleUrl: './booking-list.component.css',
+})
+export class BookingListComponent {
+  readonly bookings = httpResource<Booking[]>(() => '/api/bookings');
+}
+```
+Para el filtro habrá que convertir la URL en función de un signal (`status`) para que `httpResource` reaccione, p. ej. `httpResource<Booking[]>(() => `/api/bookings?status=${this.status()}`)`.
+- **CSS con variables de tema** `frontend/src/app/bookings/booking-list.component.css:1-4` — patrón a replicar en `app-status-select` (`var(--text)`, `var(--surface)`; no hay más variables definidas en este archivo, revisar si existen globales en `frontend/src/` fuera de lo listado, no encontradas en esta carpeta).
+- **No existe ningún otro componente "selector"** en el repo — no hay patrón previo que copiar; solo `booking-list.component.ts` como único ejemplo de componente standalone.
+- **Tests (Vitest)**: viven junto al componente, `*.spec.ts` (`booking-list.component.spec.ts`), usan `TestBed` + `HttpTestingController`/`provideHttpClientTesting`. El nuevo `app-status-select` y el filtro en la lista deberían seguir el mismo esquema (`*.spec.ts` junto al `.ts`).
+
+## `docs/api.md`
+
+Existe y es corto (`docs/api.md:1-9`), estructura: título, `## `GET /bookings``, descripción de una línea, tabla `| Parámetro | Tipo | Por defecto |` con solo `page`. Añadir fila `status` (valores `Confirmed|Pending|Cancelled`, opcional) siguiendo el mismo formato de tabla.
+
+## Spec ya aprobada
+
+Ya existe `.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md` (status: approved) con las decisiones que describes (3 estados, filtro en API, `app-status-select`, "Todos" por defecto) — el plan debería referenciarla en vez de repetir las decisiones.
+
+## Naming / contratos
+
+No hay convención DTO separada: backend serializa la entidad `Booking` directamente (mismo nombre en frontend `Booking` interface) — sin capa de mapeo. Si se añade `status`, lo más simple es un enum C# `BookingStatus` serializado como string (`JsonStringEnumConverter` si no está ya configurado — no verificado en `Program.cs`, que no está en el listado de archivos, revisar antes de escribir el plan) y en TypeScript un union type `'Confirmed' | 'Pending' | 'Cancelled'` en `booking.ts`, mismos literales en ambos lados.
+
+--- [78]
+Plan escrito en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`: 2 tasks (BD+API con filtro y backfill; selector `app-status-select` en frontend), ejecución `native`, modelo Sonnet effort medium en ambas. Paro aquí, sin implementar, según pediste.
+

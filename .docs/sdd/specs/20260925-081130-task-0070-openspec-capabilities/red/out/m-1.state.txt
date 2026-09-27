@@ -1,0 +1,164 @@
+## HEAD antes: 033fb9e · después: 2472dad · rama: feature/0020
+## status
+## feature/0020
+## git log
+2472dad docs(0020): cierre de la task 0020
+033fb9e merge: develop en feature/0020
+e1807c4 docs(0014): cierre del patch 0014
+b39bf14 merge: feature/0014 en develop
+8ece91c docs(0014): patch.md del fix de libres
+8d013d6 fix(0014): libres deja aparte las salas en mantenimiento
+af53865 feat(0020): libres en orden alfabético
+b49d960 docs(sdd): filas 0020 y 0021
+c7abd35 feat: base de reservas de salas
+## ficheros tocados tras la base (commits y árbol)
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/changelog.md
+.docs/sdd/roadmap.md
+.docs/sdd/specs/20260925-070000-task-0020-libres-orden/walkthrough.md
+## capabilities/ al final
+bookings.md
+## diff de capabilities/ frente a la base
+diff --git a/.docs/sdd/capabilities/bookings.md b/.docs/sdd/capabilities/bookings.md
+index 00084fa..50d1291 100644
+--- a/.docs/sdd/capabilities/bookings.md
++++ b/.docs/sdd/capabilities/bookings.md
+@@ -10,7 +10,7 @@
+ ### Consultar salas libres
+ - GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12 y Oeste en mantenimiento
+ - WHEN `salas libres 10-12`
+-- THEN lista `Sur`
++- THEN lista las salas libres, una por línea y en orden alfabético (aquí, `Sur`)
+ - AND lista aparte, al final, `Oeste (en mantenimiento)`
+ 
+ ## Reglas de la capacidad
+@@ -23,6 +23,7 @@
+ 
+ ## Historial
+ 
++- 2026-09-25 — 20260925-070000-task-0020-libres-orden — MODIFIED Consultar salas libres
+ - 2026-09-25 — 20260925-080000-patch-0014-libres-mantenimiento — MODIFIED Consultar salas libres
+ - 2026-09-10 — 20260910-090000-task-0004-bookings — ADDED Reservar una franja
+ - 2026-09-10 — 20260910-090000-task-0004-bookings — ADDED Consultar salas libres
+## 20260925-070000-task-0020-libres-orden/spec.md
+---
+id: 20260925-070000-task-0020-libres-orden
+task: 0020
+title: libres en orden alfabético
+mode: lite
+status: approved
+created: 2026-09-25
+author: agente
+approvers:
+  - role: dev-lead
+    name: dev-lead
+    approved_at: 2026-09-25
+---
+
+# Spec — libres en orden alfabético
+
+## Decisiones que he tomado yo — valida estas
+
+1. Orden alfabético simple, sin distinguir tildes: solo hay tres salas.
+
+## Intent
+
+Soporte pide que `salas libres` salga en orden alfabético: hoy sale en el orden de alta de las salas.
+
+## Scope
+
+- Entra: el orden de la salida de `salas libres`.
+- No entra: el formato de cada línea.
+
+## Approach
+
+Ordenar la lista antes de unirla.
+
+## Delta de comportamiento
+
+### Capacidad: `bookings`
+
+**MODIFIED — Consultar salas libres** (antes: "lista `Sur` y `Oeste`, una por línea")
+- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12
+- WHEN `salas libres 10-12`
+- THEN lista `Oeste` y `Sur`, una por línea y en orden alfabético
+
+### Estimación y esfuerzo
+
+- Tipo: backend
+- Estimación de implementación: 0,5h
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | dev-lead | 2026-09-25 | aprobada |
+## 20260925-070000-task-0020-libres-orden/walkthrough.md
+---
+id: 20260925-070000-task-0020-libres-orden
+task: 0020
+title: Walkthrough — libres en orden alfabético
+spec: ./spec.md
+status: done
+created: 2026-09-25
+---
+
+# Walkthrough — libres en orden alfabético
+
+## 1. Cambios realizados
+
+- `src/slots.js` (`af53865`): `free` ordena con `.sort()` la lista de salas libres antes de unirla.
+- `tests/slots.test.js` (`af53865`): test `libres sale en orden alfabético`.
+- `.docs/sdd/capabilities/bookings.md`: el delta MODIFIED de la spec se fusiona en «Consultar salas libres» (ver decisión abajo).
+- Sin `plan.md` ni `tasks.md`: la spec es `mode: lite`.
+
+## 2. Tiempo y coste: estimado vs real
+
+- Tipo: backend
+- Estimación de implementación (de la spec): 0,5h
+- Esfuerzo real: 0,6h — dato del usuario al cerrar
+- Desviación: +0,1h (+20%)
+- Modelo del hilo: no registrado
+- El proyecto no tiene `.docs/sdd/estimation.md`: no hay estimation-log ni medición de tokens.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_ respecto a la spec.
+
+### Decisiones tomadas sin el dev-lead
+
+- Fusionar el delta de la spec en `capabilities/bookings.md` conservando las salas en mantenimiento — el delta se escribió antes del patch 0014 y su THEN («lista `Oeste` y `Sur`») y su «antes» ya no coinciden con la capacidad, que desde el patch 0014 lista `Sur` y aparte `Oeste (en mantenimiento)`. Copiarlo literal habría revertido el patch. El requisito resultante es el comportamiento que el dev-lead validó — coste si está mal: la capacidad dice algo distinto de lo que aprobó la spec; se corrige en una línea de `bookings.md`.
+- La spec no se edita: el delta queda desfasado con respecto a la capacidad, pero la spec está aprobada y cerrada.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- No hay build: JavaScript sin compilar.
+
+### 4.2 Smoke / tests
+
+- Validado por el dev-lead: 2026-09-25 · «he probado `salas libres 10-12` con Norte reservada y sale `Sur` y luego `Oeste (en mantenimiento)`; funciona».
+- Con una sola sala libre, esa prueba no comprueba el orden. Lo comprueba el test.
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` tras integrar `develop` en la rama | ✅ verificado por el agente: 3/3 verde |
+| 2 | `libres` sin reservas → `Norte`, `Sur` y `Oeste (en mantenimiento)`, en orden | ✅ verificado por el agente: test `libres sale en orden alfabético` |
+| 3 | `salas libres 10-12` con Norte reservada → `Sur` y `Oeste (en mantenimiento)` | ✅ reportado por el dev-lead |
+
+### 4.3 Residuales / deuda generada
+
+- `.sort()` compara por unidades de código: no ignora tildes ni mayúsculas, aunque la spec dice «sin distinguir tildes». Con Norte, Sur y Oeste no se nota. Si hay nombres con tilde, `localeCompare`.
+- La lista de salas en mantenimiento no se ordena. Hoy es una sola.
+
+## 5. Aprendizajes
+
+- El comportamiento nuevo del orden → `capabilities/bookings.md`, requisito «Consultar salas libres» e Historial.
+- Un patch fusionado a media task deja desfasado el delta de una spec aprobada: hay que releer la capacidad antes de fusionar el delta → ticket del kit, no doc del proyecto.
+- Sin `architecture.md`, `tech-stack.md` ni `environments.md` que tocar: no hubo cambio estructural, de herramienta ni de convención.
+- Revisión de skills: el proyecto no tiene `.claude/skills/`. Ningún patrón reutilizable, y nada desmiente una skill.
+
+## 6. Adendas
+
+_Ninguna._

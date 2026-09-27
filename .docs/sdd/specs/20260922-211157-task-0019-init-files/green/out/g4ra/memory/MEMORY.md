@@ -1,0 +1,3 @@
+- [Política de modelos](model-policy.md) — implementadores en Sonnet, Opus solo para revisar la spec
+- [Comando de tests](test-command.md) — la suite se lanza con npm test
+- [Ventana de despliegue](deploy-window.md) — solo martes y jueves por la tarde

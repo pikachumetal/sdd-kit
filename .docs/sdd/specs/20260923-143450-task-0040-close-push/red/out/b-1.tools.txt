@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: cd "<run>\wt\0011" && git log --oneline -5 && echo --- && git status && echo --- && ls .docs/sdd/ 2>/dev/null && echo --- && cat .docs/sdd/sdd-kit.json 2>/dev/null && echo --- && cat .docs/sdd/environments.md 2>/dev/null
+<<< Exit code 1
+d414a2e fix(0011): cancelar sin hora pide el uso
+45e4bfd feat: base de reservas de salas
+---
+On branch feature/0011
+nothing to commit, working tree clean
+---
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+---
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+---
+
+>>> Bash: cd "<run>\wt\0011" && git worktree list && echo --- && find .docs/sdd/specs -iname "*0011*" -o -iname "*patch*" | grep -i 0011
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       58b0485 [feature/0008]
+<run>/wt/0011       d414a2e [feature/0011]
+---
+.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage
+.docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md
+
+>>> Bash: cd "<run>\wt\0011" && cat "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-end-task\references\merge-recipe.md"
+<<< # Receta del merge en el cierre
+
+La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+
+## Cuándo
+
+`git worktree list` dice si la rama destino está sacada en algún worktree:
+
+- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: son de otra
+
+>>> Bash: cd "<run>\wt\0011" && git branch -a | grep -i develop
+<<<   develop
+  remotes/origin/develop
+
+>>> Bash: cd "<run>\wt" && git worktree add merge-0011 develop
+<<< Exit code 128
+fatal: not a git repository (or any of the parent directories): .git
+
+>>> Bash: cd "<run>\wt\0011" && git worktree add ../merge-0011 develop
+<<< Preparing worktree (checking out 'develop')
+HEAD is now at 45e4bfd feat: base de reservas de salas
+
+>>> Bash: cd "<run>\wt\merge-0011" && git merge --no-ff feature/0011 -m "$(cat <<'EOF'
+Merge feature/0011: cancelar sin hora pide el uso
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+<<< Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  1 +
+ .docs/sdd/roadmap.md                               |  1 +
+ .../patch.md                                       | 32 ++++++++++++++++++++++
+ src/app.js                                         |  2 +-
+ test/app.test.js                                   |  4 +++
+ 6 files changed, 40 insertions(+), 1 deletion(-)
+ create mode 100644 .docs/sdd/specs/20260923-080000-patch-0011-cancel-usage/patch.md
+
+>>> Bash: cd "<run>\wt\merge-0011" && cat package.json 2>/dev/null | head -30
+<<< {"type": "module"}
+
+>>> Bash: cd "<run>\wt\merge-0011" && ls && head -5 test/app.test.js && node --test 2>&1 | tail -30
+<<< package.json
+README.md
+src/
+test/
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+✔ libres excluye la sala reservada en la franja (2.661ms)
+✔ reservar crea la reserva (0.1477ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1138ms)
+✔ cancelar respeta el día (0.1082ms)
+✔ cancelar sin hora pide el uso (0.117ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 139.1953
+
+>>> Bash: cd "<run>\wt\0011" && git worktree remove ../merge-0011 && git worktree list
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       58b0485 [feature/0008]
+<run>/wt/0011       d414a2e [feature/0011]
+
+>>> Bash: cd "<run>\wt\0011" && git push origin develop
+<<< Exit code 128
+fatal: could not read Username for 'https://github.com': terminal prompts disabled
+
+>>> Bash: cd "<run>\wt\0011" && git log develop --oneline -3
+<<< 89d01be Merge feature/0011: cancelar sin hora pide el uso
+d414a2e fix(0011): cancelar sin hora pide el uso
+45e4bfd feat: base de reservas de salas
+
+>>> Bash: cd "<run>\wt\0011" && git worktree list
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       58b0485 [feature/0008]
+<run>/wt/0011       d414a2e [feature/0011]
+
+=== RESULTADO (16 turnos, 0.39736599999999994 $)
+Cierre del patch 0011 completo:
+
+- **Paso 6**: `develop` sin worktree sacado → seguí receta de merge. Worktree temporal `merge-0011`, `git merge --no-ff feature/0011`, sin conflictos. Suite en `merge-0011`: `node --test` → 5/5 pass. Worktree temporal retirado. `merge.removeWorktree: false` → worktree de `feature/0011` queda intacto.
+- **Push pendiente**: `merge.push: true`, pero push siempre se confirma contigo y aquí además falló por credenciales (`could not read Username for 'https://github.com'`). `develop` local trae el merge (`89d01be`); falta `git push origin develop`.
+
+¿Genero el ticket de mejora del kit (paso 7, `sdd-feedback`)?

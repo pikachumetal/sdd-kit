@@ -1,0 +1,194 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260925-090000-task-0012-status-filter && ls $D && for f in review-final.md tasks.md spec.md plan.md; do echo "=== $f"; cat $D/$f; done; ls .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+plan.md
+review-final.md
+spec.md
+tasks.md
+=== review-final.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos. Suite completa en verde.
+=== tasks.md
+# Tasks — Filtrar la lista de reservas por estado (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | La API filtra por estado | done | 227c667 | revisión limpia |
+| 2 | Selector de estado en la lista | done | 5d9c925 | revisión limpia |
+| 3 | Un estado desconocido da 400 | done | a9545fa | revisión limpia |
+
+Revisión final: general-purpose + sonnet, limpia
+=== spec.md
+---
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; git ls-files | grep -v .docs; cat package.json; cat server.mjs; ls; git status --short; (node --test 2>&1 | tail -15)
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+.gitignore
+README.md
+package.json
+server.mjs
+src/bookings.js
+tests/bookings.test.js
+tests/status-filter.test.js
+tests/status-invalid.test.js
+tests/status-select.test.js
+web/app.js
+web/index.html
+web/styles.css
+{ "name": "salas", "type": "module", "scripts": { "start": "node server.mjs", "test": "node --test" } }
+import { createServer } from 'node:http';
+import { readFile } from 'node:f
+
+>>> Bash: cd "<run>/repo" && cat web/index.html web/app.js web/styles.css; ls ../ ; ls node_modules 2>&1 | head -3; cat .gitignore
+
+>>> ToolSearch: {"query":"select:mcp__plugin_playwright_playwright__browser_navigate,mcp__plugin_playwright_playwright__browser_evaluate,mcp__plugin_playwright_playwright__browser_take_screenshot,mcp__plugin_playwright_playwright__browser_emulate_media,mcp__plugin_playwright_playwright__browser_wait_for,mcp__plugin_playwright_playwright__browser_run_code_unsafe","max_results":6}
+<<< <!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reservas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <h1>Reservas</h1>
+    <label class="filter">Estado
+      <select id="status" class="status-select" disabled>
+        <option value="">Todos</option>
+        <option value="Confirmed">Confirmada</option>
+        <option value="Pending">Pendiente</option>
+        <option value="Cancelled">Cancelada</option>
+      </select>
+    </label>
+    <ul id="bookings" class="bookings"></ul>
+  </main>
+  <script type="module" src="app.
+<<< 
+
+>>> Bash: cd "<run>/repo" && mkdir -p ../shots && (PORT=4890 node server.mjs > ../server.log 2>&1 &) ; sleep 1; curl -s "localhost:4890/api/bookings?status=Pending"; echo; curl -si "localhost:4890/api/bookings?status=Lost" | head -1; curl -s "localhost:4890/api/bookings?status=Lost"; echo; pwd -W
+<<< [{"room":"Sur","slot":"12-14","status":"Pending"}]
+HTTP/1.1 400 Bad Request
+Estado no válido: Lost
+<run>/repo
+
+>>> mcp__plugin_playwright_playwright__browser_run_code_unsafe: {"code":"async (page) => {\n  const dir = '<run>/shots/';\n  const lum = (c) => { const [r,g,b] = c.match(/[\\d.]+/g).slice(0,3).map(Number).map(v => { v/=255; return v<=0.03928? v/12.92 : ((v+0.055)/1.055)**2.4; }); return 0.2126*r+0.7152*g+0.0722*b; };\n  const ratio = (a,b) => { const [x,y] = [lum(a),lum(b)].sort((p,q)=>q-p); return ((x+0.05)/(y+0.05)).toFixed(2); };\n  const out = {};\n  await page.setViewportSize({ width: 800, height: 400 });\n  for (const theme of ['light','dark']) {\n    for (const state of ['normal','disabled']) {\n      let release;\n      if (state === 'disabled') {\n        await page.route('**/api/bookings*', async (route) => { await new Promise(r => release = r); route.continue(); });\n      }\n      await page.goto('http://localhost:4890/' + (theme === 'dark' ? '?theme=dark' : ''), { waitUntil: 'domcontentloaded' });\n      if (state === 'normal') await page.waitForSelector('#bookings li');\n      else await page.waitForTimeout(300);\n      out[theme+'/'+state] = await page.evaluate(() => {\n        const s = document.getElementById('status'), cs = getComputedStyle(s);\n        const sr = s.getBoundingClientRect(), lr = document.getElementById('bookings').getBoundingClientRect();\n        const bg = getComputedStyle(document.body).backgroundColor;\n        return { disabled: s.disabled, color: cs.color, bg, opacity: cs.opacity, padRight: cs.paddingRight, bgPos: cs.backgroundPosition, selLeft: sr.left, listLeft: lr.left, selRight: sr.right, listRight: lr.right, selWidth: sr.width };\n      });\n      const o = out[theme+'/'+state];\n      o.contrast = ratio(o.color, o.bg);\n      await page.screenshot({ path: dir + `${theme}-${state}.png` });\n      if (state === 'disabled') { release && release(); await page.unroute('**/api/bookings*'); }\n    }\n  }\n  return out;\n}"}
+<<< ### Error
+Error: route.continue: Route is already handled!
+
+route.continue: Route is already handled!
+    at evalmachine.<anonymous>:11:116
+
+>>> mcp__plugin_playwright_playwright__browser_run_code_unsafe: {"code":"async (page) => {\n  await page.unrouteAll({ behavior: 'ignoreErrors' });\n  const dir = '<run>/shots/';\n  const lum = (c) => { const [r,g,b] = c.match(/[\\d.]+/g).slice(0,3).map(Number).map(v => { v/=255; return v<=0.03928? v/12.92 : ((v+0.055)/1.055)**2.4; }); return 0.2126*r+0.7152*g+0.0722*b; };\n  const ratio = (a,b) => { const [x,y] = [lum(a),lum(b)].sort((p,q)=>q-p); return ((x+0.05)/(y+0.05)).toFixed(2); };\n  const out = {};\n  await page.setViewportSize({ width: 800, height: 400 });\n  for (const theme of ['light','dark']) {\n    for (const state of ['normal','disabled']) {\n      if (state === 'disabled') await page.route('**/api/bookings*', async (route) => { await new Promise(r => setTimeout(r, 2500)); try { await route.continue(); } catch {} });\n      await page.goto('http://localhost:4890/' + (theme === 'dark' ? '?theme=dark' : ''), { waitUntil: 'domcontentloaded' });\n      if (state === 'normal') await page.waitForSelector('#bookings li'); else await page.waitForTimeout(300);\n      const o = await page.evaluate(() => {\n        const s = document.getElementById('status'), cs = getComputedStyle(s);\n        const sr = s.getBoundingClientRect(), lr = document.getElementById('bookings').getBoundingClientRect();\n        return { disabled: s.disabled, color: cs.color, bg: getComputedStyle(document.body).backgroundColor, opacity: cs.opacity, padRight: cs.paddingRight, bgPos: cs.backgroundPosition, selLeft: sr.left, listLeft: lr.left, selWidth: sr.width };\n      });\n      o.contrast = ratio(o.color, o.bg);\n      out[theme+'/'+state] = o;\n      await page.screenshot({ path: dir + `${theme}-${state}.png` });\n      if (state === 'disabled') await page.unrouteAll({ behavior: 'ignoreErrors' });\n    }\n  }\n  return out;\n}"}
+<<< ### Error
+Error: ReferenceError: setTimeout is not defined
+
+route.continue: Route is already handled!
+    at evalmachine.<anonymous>:11:116
+
+ReferenceError: setTimeout is not defined
+
+>>> mcp__plugin_playwright_playwright__browser_run_code_unsafe: {"code":"async (page) => {\n  await page.unrouteAll({ behavior: 'ignoreErrors' });\n  const dir = '<run>/shots/';\n  const lum = (c) => { const [r,g,b] = c.match(/[\\d.]+/g).slice(0,3).map(Number).map(v => { v/=255; return v<=0.03928? v/12.92 : ((v+0.055)/1.055)**2.4; }); return 0.2126*r+0.7152*g+0.0722*b; };\n  const ratio = (a,b) => { const [x,y] = [lum(a),lum(b)].sort((p,q)=>q-p); return ((x+0.05)/(y+0.05)).toFixed(2); };\n  const out = {};\n  await page.setViewportSize({ width: 800, height: 400 });\n  for (const theme of ['light','dark']) {\n    for (const state of ['normal','disabled']) {\n      let release;\n      const gate = new Promise(r => { release = r; });\n      if (state === 'disabled') await page.route('**/api/bookings*', async (route) => { await gate; try { await route.continue(); } catch {} });\n      await page.goto('http://localhost:4890/' + (theme === 'dark' ? '?theme=dark' : ''), { waitUntil: 'domcontentloaded' });\n      if (state === 'normal') await page.waitForSelector('#bookings li'); else await page.waitForTimeout(300);\n      const o = await page.evaluate(() => {\n        const s = document.getElementById('status'), cs = getComputedStyle(s);\n        const sr = s.getBoundingClientRect(), lr = document.getElementById('bookings').getBoundingClientRect();\n        return { disabled: s.disabled, color: cs.color, bg: getComputedStyle(document.body).backgroundColor, opacity: cs.opacity, padRight: cs.paddingRight, bgPos: cs.backgroundPosition, selLeft: sr.left, listLeft: lr.left, selWidth: sr.width };\n      });\n      o.contrast = ratio(o.color, o.bg);\n      out[theme+'/'+state] = o;\n      await page.screenshot({ path: dir + `${theme}-${state}.png` });\n      release();\n      await page.unrouteAll({ behavior: 'ignoreErrors' });\n    }\n  }\n  return out;\n}"}
+<<< ### Error
+Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4890/
+Call log:
+[2m  - navigating to "http://localhost:4890/", waiting until "domcontentloaded"[22m
+
+>>> Bash: cd "<run>/repo" && PORT=4890 node server.mjs
+<<< Command running in background with ID: bh4t1cdee. Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0077-playwright-visual-check-a63deee4-b15d-4fbf-ad0b-4222cb4f2925-scratchpad-gruns-v7-2-repo\efbc0e31-827a-4823-8035-8824fa444d37\tasks\bh4t1cdee.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> mcp__plugin_playwright_playwright__browser_run_code_unsafe: {"code":"async (page) => {\n  await page.unrouteAll({ behavior: 'ignoreErrors' });\n  const dir = '<run>/shots/';\n  const lum = (c) => { const [r,g,b] = c.match(/[\\d.]+/g).slice(0,3).map(Number).map(v => { v/=255; return v<=0.03928? v/12.92 : ((v+0.055)/1.055)**2.4; }); return 0.2126*r+0.7152*g+0.0722*b; };\n  const ratio = (a,b) => { const [x,y] = [lum(a),lum(b)].sort((p,q)=>q-p); return ((x+0.05)/(y+0.05)).toFixed(2); };\n  const out = {};\n  await page.setViewportSize({ width: 800, height: 400 });\n  for (const theme of ['light','dark']) {\n    for (const state of ['normal','disabled']) {\n      let release;\n      const gate = new Promise(r => { release = r; });\n      if (state === 'disabled') await page.route('**/api/bookings*', async (route) => { await gate; try { await route.continue(); } catch {} });\n      await page.goto('http://localhost:4890/' + (theme === 'dark' ? '?theme=dark' : ''), { waitUntil: 'domcontentloaded' });\n      if (state === 'normal') await page.waitForSelector('#bookings li'); else await page.waitForTimeout(300);\n      const o = await page.evaluate(() => {\n        const s = document.getElementById('status'), cs = getComputedStyle(s);\n        const sr = s.getBoundingClientRect(), lr = document.getElementById('bookings').getBoundingClientRect();\n        return { disabled: s.disabled, color: cs.color, bg: getComputedStyle(document.body).backgroundColor, opacity: cs.opacity, padRight: cs.paddingRight, bgPos: cs.backgroundPosition, selLeft: sr.left, listLeft: lr.left, selWidth: sr.width };\n      });\n      o.contrast = ratio(o.color, o.bg);\n      out[theme+'/'+state] = o;\n      await page.screenshot({ path: dir + `${theme}-${state}.png` });\n      release();\n      await page.unrouteAll({ behavior: 'ignoreErrors' });\n    }\n  }\n  return out;\n}"}
+<<< ### Result
+{"light/normal":{"disabled":false,"color":"rgb(85, 85, 85)","bg":"rgb(255, 255, 255)","opacity":"1","padRight":"0px","bgPos":"100% 50%","selLeft":147.25,"listLeft":80,"selWidth":160,"contrast":"7.46"},"light/disabled":{"disabled":true,"color":"rgb(85, 85, 85)","bg":"rgb(255, 255, 255)","opacity":"0.6","padRight":"0px","bgPos":"100% 50%","selLeft":147.25,"listLeft":80,"selWidth":160,"contrast":"7.46"},"dark/normal":{"disabled":false,"color":"rgb(85, 85, 85)","bg":"rgb(30, 30, 30)","opacity":"1","padRight":"0px","bgPos":"100% 50%","selLeft":147.25,"listLeft":80,"selWidth":160,"contras
+
+>>> Read: <run>/shots/dark-normal.png
+<<< Claude requested permissions to read from <run>\shots\dark-normal.png, but you haven't granted it yet.
+
+>>> Read: <run>/shots/light-normal.png
+<<< Claude requested permissions to read from <run>\shots\light-normal.png, but you haven't granted it yet.
+
+>>> Bash: cd "<run>/repo" && sed -i 's|:root\[data-theme="dark"\] { --text: #eeeeee;|:root[data-theme="dark"] { --text: #eeeeee; --text-muted: #c8c8c8;|; s|margin: 0 0 0.75rem 0.75rem;|margin: 0 0 0.75rem;|; s|padding: 0.35rem 0 0.35rem 0.5rem;|padding: 0.35rem 1.75rem 0.35rem 0.5rem;|; s|no-repeat right center;|no-repeat right 0.6rem center;|' web/styles.css && git diff --stat && git diff | grep '^[+-]' 
+<<< warning: in the working copy of 'web/styles.css', LF will be replaced by CRLF the next time Git touches it
+ web/styles.css | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+warning: in the working copy of 'web/styles.css', LF will be replaced by CRLF the next time Git touches it
+--- a/web/styles.css
++++ b/web/styles.css
+-:root[data-theme="dark"] { --text: #eeeeee; --surface: #1e1e1e; --border: #444; }
++:root[data-theme="dark"] { --text: #eeeeee; --text-muted: #c8c8c8; --surface: #1e1e1e; --border: #444; }
+-.filter { display: flex; gap: 0.5rem; align-items: center; margin: 0 0 0.75r
+
+>>> mcp__plugin_playwright_playwright__browser_run_code_unsafe: {"code":"async (page) => {\n  await page.unrouteAll({ behavior: 'ignoreErrors' });\n  const dir = '<run>/shots/';\n  const lum = (c) => { const [r,g,b] = c.match(/[\\d.]+/g).slice(0,3).map(Number).map(v => { v/=255; return v<=0.03928? v/12.92 : ((v+0.055)/1.055)**2.4; }); return 0.2126*r+0.7152*g+0.0722*b; };\n  const ratio = (a,b) => { const [x,y] = [lum(a),lum(b)].sort((p,q)=>q-p); return ((x+0.05)/(y+0.05)).toFixed(2); };\n  const out = {};\n  await page.setViewportSize({ width: 800, height: 400 });\n  for (const theme of ['light','dark']) {\n    for (const state of ['normal','disabled']) {\n      let release; const gate = new Promise(r => { release = r; });\n      if (state === 'disabled') await page.route('**/api/bookings*', async (route) => { await gate; try { await route.continue(); } catch {} });\n      await page.goto('http://localhost:4890/' + (theme === 'dark' ? '?theme=dark' : ''), { waitUntil: 'domcontentloaded' });\n      if (state === 'normal') await page.waitForSelector('#bookings li'); else await page.waitForTimeout(300);\n      const o = await page.evaluate(() => {\n        const s = document.getElementById('status'), cs = getComputedStyle(s);\n        const lr = document.getElementById('bookings').getBoundingClientRect();\n        return { disabled: s.disabled, color: cs.color, bg: getComputedStyle(document.body).backgroundColor, padRight: cs.paddingRight, bgPos: cs.backgroundPosition, labelLeft: s.parentElement.getBoundingClientRect().left, listLeft: lr.left };\n      });\n      o.contrast = ratio(o.color, o.bg);\n      out[theme+'/'+state] = o;\n      await page.screenshot({ path: dir + `${theme}-${state}.png` });\n      release(); await page.unrouteAll({ behavior: 'ignoreErrors' });\n    }\n  }\n  await page.goto('http://localhost:4890/', { waitUntil: 'domcontentloaded' });\n  await page.waitForSelector('#bookings li');\n  await page.selectOption('#status', 'Pending');\n  await page.waitForFunction(() => document.querySelectorAll('#bookings li').length === 1);\n  out.pending = await page.locator('#bookings').innerText();\n  return out;\n}"}
+<<< ### Result
+{"light/normal":{"disabled":false,"color":"rgb(85, 85, 85)","bg":"rgb(255, 255, 255)","padRight":"28px","bgPos":"calc(100% - 9.6px) 50%","labelLeft":80,"listLeft":80,"contrast":"7.46"},"light/disabled":{"disabled":true,"color":"rgb(85, 85, 85)","bg":"rgb(255, 255, 255)","padRight":"28px","bgPos":"calc(100% - 9.6px) 50%","labelLeft":80,"listLeft":80,"contrast":"7.46"},"dark/normal":{"disabled":false,"color":"rgb(200, 200, 200)","bg":"rgb(30, 30, 30)","padRight":"28px","bgPos":"calc(100% - 9.6px) 50%","labelLeft":80,"listLeft":80,"contrast":"9.96"},"dark/disabled":{"disabled":true,"co
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "^ℹ (pass|fail)" && D=.docs/sdd/specs/20260925-090000-task-0012-status-filter && sed -i 's#^| 2 | Selector de estado en la lista | done | 5d9c925 | revisión limpia |#| 2 | Selector de estado en la lista | done | 5d9c925 + fix del hilo | revisión limpia; verificación visual hecha por el hilo tras la revisión final, con fix de estilos pendiente de revisar |#' $D/tasks.md && git add -A && git commit -q -m "fix(0012): el selector de estado se lee en oscuro y su flecha no toca el borde
+
+La verificación visual de la task 2 midió contraste 2,24:1 en tema oscuro
+(--text-muted sin override), padding-right 0 con la flecha pegada al borde y
+la etiqueta desalineada 12 px respecto a la lista. Ruling del hilo principal.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+
+>>> Bash: ls "<run>/shots"; taskkill //F //IM node.exe >/dev/null 2>&1; echo ok
+<<< ℹ pass 5
+ℹ fail 0
+warning: in the working copy of '.docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'web/styles.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.playwright-mcp/console-2026-09-25T15-06-07-230Z.log', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.playwright-mcp/console-2026-09-25T15-06-27-589Z.log', LF will be replaced by CRLF the next time Git touches it
+e32ad18 fix(0012): el select
+<<< dark-disabled.png
+dark-normal.png
+light-disabled.png
+light-normal.png
+ok
+
+>>> Bash: cd "<run>/repo" && git rm -r -q --cached .playwright-mcp && git commit -q --amend --no-edit && git show --stat --format=%h HEAD | cat; git status --short
+<<< eba8ee1
+
+ .docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md | 2 +-
+ web/styles.css                                                   | 8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+?? .playwright-mcp/
+
+=== RESULTADO (20 turnos, 0.571271 $)
+Paro antes de presentar la validación: la task 2 no estaba bien, y el arreglo que hice todavía no lo ha revisado nadie. Necesito tu confirmación para lanzar esa revisión.
+
+**Qué encontré.** La task 2 tiene «Verificación visual» y nadie la había ejecutado. `tasks.md` solo decía «revisión limpia», y la revisión final tampoco la cubría. La miré en un navegador real (Playwright MCP, `/` y `/?theme=dark`, selector normal y deshabilitado):
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del texto del selector en oscuro | 2,24:1 | ≥ 4,5:1 |
+| `padding-right` del selector, flecha a `100%` | 0 px, flecha pegada al borde | flecha separada del borde |
+| Etiqueta «Estado» frente a la lista | 92 px frente a 80 px | alineadas |
+
+La causa del contraste es que `--text-muted` no se redefinía en el tema oscuro.
+
+**Fix, commit `eba8ee1`, solo `web/styles.css`.** Es un ruling del hilo principal, no toca la spec.
+- `--text-muted: #c8c8c8` en oscuro.
+- `padding-right: 1.75rem` en el selector, con la flecha a `right 0.6rem`.
+- Sin margen izquierdo en `.filter`.
+
+**Medido tras el fix:**
+- Contraste: 9,96:1 en oscuro y 7,46:1 en claro.
+- Flecha: separada 9,6 px del borde.
+- Alineación: la etiqueta empieza en 80 px, igual que la lista.
+- Estado deshabilitado: comprobado en ambos temas con la petición retenida.
+- Elegir «Pendiente» deja solo `Sur · 12-14 · Pendiente`.
+- `node --test`: 5 de 5 en verde.
+- `curl ?status=Pending` devuelve solo Sur. `curl ?status=Lost` devuelve 400 con «Estado no válido: Lost».
+
+**Decisión mía a validar.** En «alineado con la lista» elegí alinear el borde izquierdo de la etiqueta con el de la lista. La spec no dice cuál de los dos bordes.
+
+**Capturas.** Las cuatro están fuera de git, en `…\scratchpad\gruns\v7-2\shots\`: `light-normal`, `light-disabled`, `dark-normal` y `dark-disabled`. No pude abrirlas yo porque la lectura de esa ruta me pide permiso. Las medidas son de estilos computados.
+
+**Pendiente de tu decisión.** Un commit del hilo principal no se presenta sin pasar por revisión. Propongo un revisor `sdd-kit:effort-low` con Sonnet sobre `eba8ee1`: es un diff de 4 líneas de CSS y no necesita más. ¿Lo lanzo? Con tu «sí» lo despacho y, si sale limpio, presento en el siguiente mensaje la validación con el guion de pruebas. No te la pido antes: sin esa revisión no la doy por presentable.
+
+Dos avisos:
+- `.playwright-mcp/` (logs del navegador) queda sin trackear en el repo. Lo dejo sin commitear; dime si lo añado a `.gitignore`.
+- No he tocado la spec, el roadmap ni `capabilities/`, y no he cerrado la task.

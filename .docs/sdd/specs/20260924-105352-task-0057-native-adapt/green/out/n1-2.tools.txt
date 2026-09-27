@@ -1,0 +1,297 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git status --short && ls .docs/sdd .docs/sdd/specs/* && git log --oneline | head
+<<< .docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+spec.md
+tasks.md
+2668441 docs(0012): abrir la task 0012
+486240e feat: base de reservas de salas
+
+>>> Bash: cd "<run>/salas/.docs/sdd" && cat specs/*/plan.md specs/*/tasks.md specs/*/spec.md sdd-kit.json constitution.md roadmap.md; ls -a ..; ls ../..
+
+>>> Skill: superpowers:executing-plans
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.
+
+## Restricciones globales
+
+### De código
+
+- Mensa
+<<< Launching skill: superpowers:executing-plans
+
+>>> Skill: superpowers:test-driven-development
+<<< Launching skill: superpowers:test-driven-development
+
+>>> Bash: cd "<run>/salas" && cat src/*.js; ls tests; head -30 tests/*; cat README.md; git branch -a; SK=$(ls -d ~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills); ls $SK/executing-plans/scripts $SK/subagent-driven-development/scripts
+<<< export function reserve(room, slot) {
+  return { room, slot };
+}
+slots.test.js
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+# salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+  develop
+* feature/0012
+  main
+<home>/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills//executing-plans/scripts:
+
+>>> Bash: cd "<run>/salas" && SK=~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills && PLAN=$(ls .docs/sdd/specs/*/plan.md) && echo $PLAN && WS=$(bash $SK/subagent-driven-development/scripts/sdd-workspace $PLAN) && echo "WS=$WS" && ls -a "$WS"; cat "$WS/progress.md" 2>/dev/null; ls package.json; node --version; git fetch 2>&1 | head -2; git remote -v
+<<< .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+WS=/tmp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n1-2/salas/.superpowers/sdd/plan
+./
+../
+plan-path
+ls: cannot access 'package.json': No such file or directory
+v26.10.0
+
+>>> Bash: cd "<run>/salas" && WS=.superpowers/sdd/plan && PLAN=.docs/sdd/specs/20260923-100000-task-0012-franja/plan.md && cat > $WS/progress.md <<EOF
+# SDD ledger — plan: $PLAN
+Spec: .docs/sdd/specs/20260923-100000-task-0012-franja/spec.md (aprobada)
+Pre-flight: Task 1 -> Task 2 comparten src/slots.js y la validación; T1 produce la validación de reserve, T2 la reutiliza en free. Sin conflicto; T1 la deja como helper interno para reutilizar (sin duplicar el regex ni el mensaje).
+EOF
+git check-ignore .superpowers; git status --short; SK=~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills; bash $SK/executing-plans/scripts/task-start $PLAN 1
+<<< .superpowers
+brief: /tmp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n1-2/salas/.superpowers/sdd/plan/task-1-brief.md
+base: 26684411b675d1e14713e7f7381bb194e881671d
+
+>>> Bash: cd "<run>/salas" && cat .superpowers/sdd/plan/task-1-brief.md | head -40; MB=$(git merge-base HEAD develop); echo MB=$MB; git diff $MB develop -- .docs/sdd/roadmap.md; git diff --name-only $MB develop
+<<< ### Task 1 — Validar al reservar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tests/slot-format.test.js`; Native: TDD del propio hilo
+**Superficies**: backend
+**Verificación**: `node --test tests/slot-format.test.js`
+
+- [ ] **Step 1: Implementación** — `reserve` lanza el error si la franja no casa con `/^\d{2}-\d{2}$/`.
+- [ ] **Step 2: Commit de la task** — uno solo por task.
+
+MB=486240e0ca515981642326d43b0460db00bd01a3
+
+>>> Bash: cd "<run>/salas" && cat > tests/slot-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+const MESSAGE = 'Franja no válida: usa HH-HH, p. ej. 10-12';
+
+test('reservar con una franja sin guion falla con el mensaje de formato', () => {
+  assert.throws(() => reserve('Norte', '1012'), { message: MESSAGE });
+});
+
+test('reservar con una franja de formato correcto no falla', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+EOF
+mkdir -p /tmp/sdd-red-0012 && cp tests/slot-format.test.js /tmp/sdd-red-0012/task1-slot-format.test.js
+node --test tests/slot-format.test.js 2>&1 | tail -25
+<<< ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.5181
+
+✖ failing tests:
+
+test at tests\slot-format.test.js:7:1
+✖ reservar con una franja sin guion falla con el mensaje de formato (1.2411ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/salas/tests/slot-format.test.js:8:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/te
+
+>>> Bash: cd "<run>/salas" && cat > src/slots.js <<'EOF'
+const SLOT_FORMAT = /^\d{2}-\d{2}$/;
+
+function assertValidSlot(slot) {
+  if (!SLOT_FORMAT.test(slot)) {
+    throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  }
+}
+
+export function reserve(room, slot) {
+  assertValidSlot(slot);
+  return { room, slot };
+}
+EOF
+node --test tests/slot-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; diff -u /tmp/sdd-red-0012/task1-slot-format.test.js tests/slot-format.test.js && echo RED-IGUAL
+<<< ℹ pass 2
+ℹ fail 0
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+RED-IGUAL
+
+>>> Bash: cd "<run>/salas" && git diff --no-index --exit-code /tmp/sdd-red-0012/task1-slot-format.test.js tests/slot-format.test.js && git add src tests && git commit -q -F - <<'EOF'
+feat(backend): validar el formato de la franja al reservar
+
+`reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja
+no casa con `HH-HH`. La validación queda en `assertValidSlot` para que
+`free` la reutilice en la task 2.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+SK=~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills; bash $SK/executing-plans/scripts/task-done .docs/sdd/specs/*/plan.md 1 26684411b675d1e14713e7f7381bb194e881671d -- node --test tests/slot-format.test.js 2>&1 | tail -8; cat .superpowers/sdd/plan/progress.md | tail -2
+<<< ✔ reservar con una franja sin guion falla con el mensaje de formato (1.1028ms)
+✔ reservar con una franja de formato correcto no falla (4.9724ms)
+✔ reserva una sala en una franja (1.6937ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 116.6437
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 136.4657
+ledger: Task 1: complete (commits 2668441..3c808fe, tests: node --test tests/slot-format.test.js → ℹ duration_ms 136.4657)
+Pre-flight: Task 1 -> Task 2 comparten src/slots.js y la validación; T1 produce la validación de reserve, T2 la reutiliza en
+
+>>> Bash: cd "<run>/salas" && SK=~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills; bash $SK/executing-plans/scripts/task-start .docs/sdd/specs/*/plan.md 2; MB=$(git merge-base HEAD develop); git diff $MB develop --stat; cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('consultar libres con una franja sin guion falla con el mensaje de formato', () => {
+  assert.throws(() => free('1012'), { message: 'Franja no válida: usa HH-HH, p. ej. 10-12' });
+});
+EOF
+cp tests/free-format.test.js /tmp/sdd-red-0012/task2-free-format.test.js; node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)|SyntaxError|not provide"
+<<< brief: /tmp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n1-2/salas/.superpowers/sdd/plan/task-2-brief.md
+base: 3c808fe6399ed684bb251930780dcbca3a28d150
+SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ pass 0
+ℹ fail 1
+
+>>> Bash: cd "<run>/salas" && cat >> src/slots.js <<'EOF'
+
+export function free(slot) {
+  assertValidSlot(slot);
+  // ponytail: sin almacén de reservas aún, devuelve [] hasta que exista; conectar cuando haya persistencia
+  return [];
+}
+EOF
+node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; git diff --no-index --exit-code /tmp/sdd-red-0012/task2-free-format.test.js tests/free-format.test.js && echo RED-IGUAL && git add src tests && git commit -q -F - <<'EOF'
+feat(backend): validar el formato de la franja al consultar libres
+
+`free(slot)` reutiliza `assertValidSlot` y falla con el mismo mensaje
+que `reserve`. Sin almacén de reservas devuelve `[]` para una franja
+válida.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+bash $SK/executing-plans/scripts/task-done .docs/sdd/specs/*/plan.md 2 3c808fe6399ed684bb251930780dcbca3a28d150 -- node --test tests/free-format.test.js 2>&1 | tail -1
+cat >> .superpowers/sdd/plan/progress.md <<'EOF'
+Task 2: Ruling: la spec no define el retorno de free() para una franja válida — devuelve [] (no hay almacén de reservas) con marcador ponytail — si es erróneo, cambia el retorno cuando exista persistencia
+Task 2: Ruling: el RED de la Task 2 falla por compilación (falta export free) — es RED válido por el plan
+EOF
+git status --short; git log --oneline | head -3
+<<< ℹ tests 4
+ℹ pass 4
+ℹ fail 0
+RED-IGUAL
+✔ consultar libres con una franja sin guion falla con el mensaje de formato (1.0344ms)
+✔ reservar con una franja sin guion falla con el mensaje de formato (1.1465ms)
+✔ reservar con una franja de formato correcto no falla (1.1225ms)
+✔ reserva una sala en una franja (1.0327ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.6311
+bash: /executing-plans/scripts/task-done: No such file or directory
+e77543f feat(backend): validar el formato de la franja al consultar libres
+3c808fe feat(backend): validar el formato de l
+
+>>> Bash: cd "<run>/salas" && SK=~/.claude/plugins/cache/claude-plugins-official/superpowers/6.4.1/skills; bash $SK/executing-plans/scripts/task-done .docs/sdd/specs/*/plan.md 2 3c808fe6399ed684bb251930780dcbca3a28d150 -- node --test tests/free-format.test.js 2>&1 | tail -2; tail -4 .superpowers/sdd/plan/progress.md
+<<< ℹ duration_ms 100.7613
+ledger: Task 2: complete (commits 3c808fe..e77543f, tests: node --test tests/free-format.test.js → ℹ duration_ms 100.7613)
+Task 1: complete (commits 2668441..3c808fe, tests: node --test tests/slot-format.test.js → ℹ duration_ms 136.4657)
+Task 2: Ruling: la spec no define el retorno de free() para una franja válida — devuelve [] (no hay almacén de reservas) con marcador ponytail — si es erróneo, cambia el retorno cuando exista persistencia
+Task 2: Ruling: el RED de la Task 2 falla por compilación (falta export free) — es RED válido por el plan
+Task 2: complete (commits 3c
+
+>>> Bash: cd "<run>/salas" && f=$(ls .docs/sdd/specs/*/tasks.md) && sed -i 's/| 1 | Validar al reservar | pending | — | |/| 1 | Validar al reservar | done | 3c808fe | |/; s/| 2 | Validar al consultar libres | pending | — | |/| 2 | Validar al consultar libres | done | e77543f | `free` devuelve `[]` con franja válida (ruling) |/' $f && cat $f && git add .docs && git commit -q -F - <<'EOF'
+docs(0012): registrar las tasks 1 y 2 como completas
+
+Actualiza tasks.md con los commits de la validación al reservar y al
+consultar libres.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git status --short; git log --oneline | head -2
+<<< # Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | 3c808fe | |
+| 2 | Validar al consultar libres | done | e77543f | `free` devuelve `[]` con franja válida (ruling) |
+✔ consultar libres con una franja sin guion falla con el mensaje de formato (1.1445ms)
+✔ reservar con una franja sin guion falla con el mensaje de formato (1.133ms)
+✔ reservar con una franja de formato correcto no falla (5.4505ms)
+✔ reserva una sala en una franja (1.2207ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ canc
+
+=== RESULTADO (20 turnos, 0.513498 $)
+Las Task 1 y Task 2 están completas y registradas en el ledger y en `tasks.md`. Paro aquí, antes de la revisión final de rama.
+
+| Task | Commit | Verificación |
+| --- | --- | --- |
+| 1, validar al reservar | `3c808fe` | `node --test tests/slot-format.test.js` pasa |
+| 2, validar al consultar libres | `e77543f` | `node --test tests/free-format.test.js` pasa |
+| Registro en `tasks.md` | `a7b00a5` | — |
+
+La suite completa da 4/4 en verde.
+
+- **Tests:** escribí cada test antes del código y lo vi fallar. En la Task 1 falló por «Missing expected exception»; en la Task 2 por compilación, porque no existía `free`. Guardé una copia de cada RED fuera del repo. El `git diff --no-index` contra el test final salió idéntico en las dos tasks.
+- **Código:** `src/slots.js` tiene `assertValidSlot` con el mensaje literal, usado por `reserve` y `free`. No dupliqué el regex ni el mensaje.
+- **Base:** comprobé antes de cada task que `develop` no había tocado el roadmap ni los ficheros de la task. No hay remoto.
+
+**Me salí del plan en…** (rulings del ledger, para la validación):
+- **Retorno de `free`:** la spec no dice qué devuelve `free(slot)` con una franja válida. Devuelve `[]` porque no hay almacén de reservas, y lleva un marcador `ponytail:` en el código. Si es erróneo, se cambia el retorno cuando exista persistencia.
+- **Task 2:** su RED falla por compilación, no por aserción. Lo registré como RED válido.
+
+Un fallo mío en el proceso: en una llamada lancé `task-done` sin la variable del script y no se ejecutó. Lo repetí bien y el ledger tiene la línea `Task 2: complete`.
+
+Falta la revisión final de rama con `superpowers:requesting-code-review`, y después la validación tuya.

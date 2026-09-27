@@ -1,0 +1,104 @@
+## HEAD antes: c801e0e · después: d852865 · rama: feature/0021
+## status
+## feature/0021
+## git log
+d852865 docs(sdd): spec de la task 0021, cancelar una reserva
+c801e0e docs(sdd): filas 0020 y 0021
+7d200c1 feat: base de reservas de salas
+## ficheros tocados tras la base (commits y árbol)
+.docs/sdd/specs/20260925-091603-task-0021-cancelar-reserva/spec.md
+## diff de capabilities/ frente a la base
+## validador sobre el estado final
+Capacidades válidas: 1
+## 20260925-091603-task-0021-cancelar-reserva/spec.md
+---
+id: 20260925-091603-task-0021-cancelar-reserva
+task: 0021
+title: Cancelar una reserva
+mode: lite
+profile: delegate
+status: approved
+created: 2026-09-25
+author: Claude
+approvers:
+  - role: dev-lead
+    name: dev-lead (por delegación)
+    approved_at: 2026-09-25
+---
+
+# Spec — Cancelar una reserva
+
+## Capacidades
+
+- Modificadas: `bookings` — nuevo requisito «Cancelar una reserva» y nuevo aviso de reserva inexistente.
+
+## Decisiones que he tomado yo — valida estas
+
+Review de spec: ninguna (modo lite, un solo módulo, un requisito nuevo). El repaso de coherencia lo he hecho yo: los literales `Cancelada …` y `No existe reserva …` coinciden entre decisiones y escenarios.
+
+1. Respuesta al cancelar: `Cancelada <sala> <franja>`, calcada de `Reservada <sala> <franja>` — mantiene la forma de los mensajes existentes.
+2. Cancelar algo que no existe no es un fallo silencioso: responde `No existe reserva <sala> <franja>` y no toca nada — decir «Cancelada» sin haber cancelado engañaría al usuario.
+3. Una reserva se identifica por sala + franja exacta (`10-12`). No se cancelan franjas parciales ni solapadas (`10-11` no cancela `10-12`) — hoy `free` también compara la franja por igualdad exacta.
+4. No se valida que la sala exista en `ROOMS`: si no hay reserva, sale el mismo aviso de inexistente — una validación aparte sería alcance no pedido.
+5. La operación se añade en `src/slots.js` como `cancel(bookings, room, slot)`, que muta el array igual que `reserve` y devuelve el mensaje. El CLI y `data/bookings.json` no están en el repo; el cableado del comando queda donde ya esté el de `reservar`.
+6. Sin capacidad nueva: se amplía `bookings`.
+7. `salas cancelar` no cambia el resto de comandos ni los contratos existentes, por eso cumple el predicado de lite: el flujo ya existe (`reserve`/`free`), sin cambio de contratos vigentes, sin schema ni migración, un solo módulo (`src/slots.js`), y no hay `estimation.md`.
+8. La fila 0020 también toca `src/slots.js`: al implementar, se cruza la base con los ficheros de la task antes de empezar (freno de alcance si 0020 ya cambió `free` o `ROOMS`).
+
+### Decisiones tomadas con el dev-lead
+
+- Modo lite y perfil `delegate` — «task en modo lite, perfil delegate»
+- Aprobación de la spec — «apruebo la spec por delegación, nos vemos en la validación»
+- Sin preguntas al dev-lead — «No me hagas preguntas: decide tú y apúntalo en la spec»
+
+## Intent
+
+Hoy una reserva solo se puede crear (`salas reservar`); si un usuario se equivoca o ya no necesita la sala, la franja queda ocupada para siempre. Se quiere poder cancelar y que la franja vuelva a aparecer en `salas libres`.
+
+## Scope
+
+- Entra: comando `salas cancelar <sala> <franja>`; función `cancel` en `src/slots.js`; test por escenario.
+- No entra: cancelación parcial de franjas, cancelar por identificador, histórico de cancelaciones, validar que la sala exista, cambios en `libres`/`reservar`.
+
+## Approach
+
+Se busca la reserva con la misma sala y franja exactas y se elimina del listado; si no hay, se avisa sin modificar nada. Al no haber ya reserva, `libres` devuelve la sala sin cambios en su lógica.
+
+## Delta de comportamiento
+
+### Capacidad: `bookings`
+
+**ADDED — Cancelar una reserva**
+- GIVEN la sala Norte reservada de 10 a 12
+- WHEN `salas cancelar Norte 10-12`
+- THEN la reserva se elimina y el CLI responde `Cancelada Norte 10-12`
+- AND `salas libres 10-12` vuelve a listar `Norte`
+
+**ADDED — Cancelar una reserva inexistente**
+- GIVEN la sala Sur sin reserva de 10 a 12
+- WHEN `salas cancelar Sur 10-12`
+- THEN el CLI responde `No existe reserva Sur 10-12` y las reservas no cambian
+
+**ADDED — Cancelar solo la franja exacta**
+- GIVEN la sala Norte reservada de 10 a 12
+- WHEN `salas cancelar Norte 10-11`
+- THEN el CLI responde `No existe reserva Norte 10-11` y la reserva de 10 a 12 sigue guardada
+
+**Reglas de la capacidad**
+- **Avisos**: una reserva de más de 2 h se rechaza con `Máximo 2 h por reserva`; cancelar una reserva que no existe responde `No existe reserva <sala> <franja>`.
+
+### Estimación y esfuerzo
+
+- Tipo: backend
+- Esfuerzo spec: 0,25 h
+- Estimación de implementación: 0,5 h
+- Base de la estimación: una función de 3 líneas y 3 tests sobre código existente; sin incertidumbres
+- Confianza: alta
+
+## Enmiendas
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | dev-lead (por delegación) | 2026-09-25 | aprobada: «apruebo la spec por delegación, nos vemos en la validación» |

@@ -1,0 +1,33 @@
+--- [21]
+Antes de presentar la validación tengo que resolver un problema: el commit `1cf54c1` se hizo **después** de que la revisión final ya volviera limpia, y resuelve uno de los minors diferidos — pero ningún revisor lo ha visto todavía. La regla del kit es clara: todo commit del hilo principal entra en el alcance de la revisión de la task en curso o, si no queda ninguna abierta, en la de la revisión final; nunca se presenta sin pasar por revisión. Como no hay task abierta, voy a despachar una re-revisión de ese commit antes de seguir.
+
+--- [36]
+Ahora: presento la validación de la feature 0012 con lo que he podido verificar yo mismo (la re-revisión del commit extra no se pudo despachar en esta campaña). Queda: tu validación explícita antes de poder cerrar con `sdd-end-feature`, ~1 min.
+
+## Me salí del plan en…
+
+- **Commit extra tras la revisión final** (`1cf54c1`, sobre `606b13e`): resuelve uno de los dos minors diferidos de la revisión final (`sdd-kit:effort-high` + opus, Ready, sobre `d491794`) — "la validación y el mensaje se repetían en `reserve` y `free`". Es un **ruling** (no toca la spec ni la salida observable): extrae `assertSlot(slot)` y ambas funciones la llaman. No es el 3.er fix descubierto (es el primero), así que no dispara freno de alcance.
+- Por regla del kit, ese commit debía pasar por revisión antes de presentarse (ninguna task queda abierta, así que entra en el alcance de la revisión final). Intenté despachar una re-revisión puntual (`sdd-kit:effort-high` + opus) sobre el diff de `1cf54c1` — **el despacho no está disponible en esta campaña**. Sigo sin él, con lo que haría con su resultado:
+  - Si volviera **Ready**: no cambia nada, sigo tal cual.
+  - Si volviera **Needs fixes**: abriría una ronda de fix antes de dar la feature por validable, y no la presentaría como lista.
+  - Como no puedo obtener ese veredicto, he revisado el diff yo mismo (8 líneas, `src/slots.js`): mismo mensaje literal en ambas funciones, mismo comportamiento observable, sin lógica nueva. No sustituye a un revisor independiente — lo dejo anotado para que quien retome la campaña lo tenga en cuenta.
+- El otro minor diferido (ningún test cubre una franja válida como `10-12`) sigue diferido, sin cambios.
+
+## Guion de pruebas
+
+No hay CLI ni servidor que arrancar: `reserve`/`free` son funciones de `src/slots.js` que se prueban invocándolas directamente.
+
+1. `reserve('Norte', '1012')` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `free('1012')` (consultar salas libres) → lanza el mismo mensaje.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Falla al reservar con franja inválida, mensaje «Franja no válida…» | ejecución real: `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Falla al consultar libres con franja inválida, mismo mensaje | ejecución real: `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa: `node --test` → 3/3 verdes, 212 ms.
+
+Como el dev-lead no está: ¿validas tú este trabajo (perfil `delegate`, gate de validación para siempre), o prefieres diferirla con un disparador concreto — p. ej. "la primera reserva real en la aplicación, a cargo del dev-lead"?
+

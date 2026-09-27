@@ -1,0 +1,110 @@
+## HEAD antes: 885002b · después: 885002b
+## git log
+* 885002b feat(0012): validar el formato de la franja al consultar libres
+|     La consulta de libres rechaza la franja mal formada con el mismo mensaje.
+| 
+* 2f54a3c feat(0012): validar el formato de la franja al reservar
+|     La reserva rechaza una franja que no casa con HH-HH, con el mensaje literal de la spec.
+| 
+* 51195bb docs(0012): abrir la task 0012
+|     Spec aprobada, plan y registro de tasks de la validación de la franja.
+| 
+* c2c21b8 feat: base de reservas de salas
+      Cuerpo del commit.
+  
+## status
+## feature/0012
+ M .docs/sdd/changelog.md
+ M .docs/sdd/roadmap.md
+ M .docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+?? .docs/sdd/specs/20260923-100000-task-0012-franja/walkthrough.md
+## ledger
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+Task 1: complete (commits 51195bb..2f54a3c, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+Task 2: complete (commits 2f54a3c..885002b, tests: node --test tests/free-format.test.js → ℹ pass 1)
+Final review: sdd-kit:effort-high + opus — Ready (0 Critical, 0 Important, 2 Minor)
+Final: minor (deferred): la validación y el mensaje se repiten en reserve y free; un helper común los juntaría
+Final: minor (deferred): ningún test cubre una franja válida como 10-12
+## workspace
+progress.md
+## tests en disco
+free-format.test.js
+slot-format.test.js
+slots.test.js
+## tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | 2f54a3c | |
+| 2 | Validar al consultar libres | done | 885002b | |
+## plan.md (Ejecución)
+11:**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero. Si retomas este plan tras una compactación y quedan dos o más tasks, sigue con subagent-driven-development sobre el mismo ledger.
+## walkthrough.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Walkthrough — Validar el formato de la franja
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-09-24
+---
+
+# Walkthrough — Validar el formato de la franja
+
+## 1. Cambios realizados
+
+- `src/slots.js`: `reserve` y `free` lanzan «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `/^\d{2}-\d{2}$/` (commits `2f54a3c` reservar, `885002b` libres).
+- `tests/slot-format.test.js` y `tests/free-format.test.js`: un test por requisito de la spec.
+- Apertura de la task: `51195bb` (spec, plan, tasks).
+
+## 2. Tiempo y coste: estimado vs real
+
+- No aplica: el proyecto no tiene `.docs/sdd/estimation.md`.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_. Ejecución en Native (`executing-plans`) como declara el plan; `tasks.md` quedó en `pending` durante la ejecución y se corrigió en el cierre con los hashes reales.
+
+### Decisiones tomadas sin el dev-lead
+
+- Dejar sin resolver la duplicación de la validación y del mensaje entre `reserve` y `free` — la revisión final la marcó como minor y un helper común queda fuera de lo que pide la spec — coste si está mal: un cambio de mensaje exige tocar dos sitios (registrado en la deuda técnica del roadmap).
+- Dejar sin test `free` con una franja válida (`10-12`) — minor de la revisión final — coste si está mal: una regresión que rechace franjas válidas en `free` no la detecta ningún test (registrado en la deuda técnica del roadmap). `reserve` con `10-12` sí lo cubre la base (`tests/slots.test.js`).
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- Sin paso de build (JS sin transpilar, sin `package.json`).
+
+### 4.2 Smoke / tests
+
+- Verificado por mí (2026-09-24): `node --test tests/` → `ℹ tests 3 · ℹ pass 3 · ℹ fail 0`.
+- Revisión final de rama: `sdd-kit:effort-high` + opus — Ready (0 Critical, 0 Important, 2 Minor), ver ledger `.superpowers/sdd/plan/progress.md`.
+- Validado por el dev-lead: 2026-09-24 · «he probado `salas reservar Norte 1012` y `salas libres 1012` y los dos dan el error de la spec; funciona». Reportado por el usuario; yo no ejecuté la CLI (el repo solo contiene `src/slots.js`, sin entrada de CLI), solo las funciones vía tests.
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `reserve('Norte', '1012')` lanza el mensaje literal | ✅ verificado (test) |
+| 2 | `free('1012')` lanza «Franja no válida» | ✅ verificado (test) |
+| 3 | `reserve('Norte', '10-12')` sigue reservando | ✅ verificado (test de la base) |
+| 4 | `salas reservar Norte 1012` y `salas libres 1012` | ✅ reportado por el dev-lead |
+
+### 4.3 Residuales / deuda generada
+
+- Validación y mensaje duplicados en `reserve` y `free` → fila en la deuda técnica del roadmap.
+- Falta test de `free` con franja válida → fila en la deuda técnica del roadmap.
+- El delta de la spec (capacidad `booking`) no se pudo fusionar: no existe `capabilities/booking.md` → fila en la deuda técnica del roadmap.
+
+## 5. Aprendizajes
+
+- Ninguno estructural: no hay convención, cambio de arquitectura ni de herramienta que volcar en `constitution.md`, `architecture.md` o `tech-stack.md` (los dos últimos no existen y no hay nada que escribir en ellos).
+- Delta de comportamiento de `booking` → pendiente: la capacidad no existe y la spec no la declaró en «Decisiones que he tomado yo», así que el cierre no la crea (regla 2 de `capability-template.md`). Ver deuda técnica.
+- Revisión de skills: `.claude/skills/` no existe en el proyecto; el trabajo no reveló ningún patrón reutilizable.
+
+## 6. Adendas
+
+- _Ninguna_

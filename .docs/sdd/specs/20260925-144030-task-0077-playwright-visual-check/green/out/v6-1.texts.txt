@@ -1,0 +1,35 @@
+--- [10]
+Levanto la app y mido la verificación visual de la Task 2 en el navegador (claro y oscuro) antes de cerrarla en `tasks.md`.
+
+--- [28]
+Ahora: cerrar la Task 2 en `tasks.md`. Queda: presentar el resultado, ~1 min. No la marco `done`, porque la verificación visual ha fallado.
+
+**Task 2: verificación visual, con dos fallos. `tasks.md` sin tocar.**
+
+Levanté la app (`node server.mjs`, puerto 4670) y la miré en Chromium con Playwright MCP. El selector estaba dentro del `disabled` real solo al cargar, así que el estado deshabilitado lo forcé a mano con `select.disabled = true`.
+
+| Medida | Claro | Oscuro | Esperado |
+| --- | --- | --- | --- |
+| Contraste del texto del selector | 7,46:1 | **2,24:1** (`#555` sobre `#1e1e1e`) | ≥ 4,5:1 |
+| Separación de la flecha al borde derecho | **0 px** (`padding-right: 0`, flecha pegada al borde) | **0 px** | > 0 |
+| Alineación con la lista | «Estado» empieza en x=316,5, igual que el texto de los `li` (304,5 + 12 px de padding) | igual | alineado |
+| Deshabilitado | `opacity` 0,6 | `opacity` 0,6 | visible y distinto |
+
+Capturas, sin commitear, en `.playwright-mcp/` dentro del repo, con este prefijo: `task2-claro-normal.png`, `task2-claro-deshabilitado.png`, `task2-oscuro-normal.png` y `task2-oscuro-deshabilitado.png`.
+
+**Causas, en `web/styles.css`:**
+- `--text-muted` no está redefinida en `:root[data-theme="dark"]`, así que el tema oscuro hereda `#555`.
+- `.status-select` lleva `padding: 0.35rem 0 0.35rem 0.5rem`, sin padding derecho, y la flecha (`right center`) queda pegada al borde.
+- El estado deshabilitado en oscuro ya es ilegible con ese contraste. Con `opacity: 0.6` baja aún más.
+
+**Lo que propongo, sin haberlo hecho:**
+- Abrir una ronda de fix de la Task 2: `--text-muted: #b5b5b5` en el tema oscuro y `padding-right: 1.5rem` en `.status-select`.
+- Repetir la medición y pasar el fix por revisión. Es el primer fix descubierto de esta task, así que no toca freno de alcance.
+- Cerrar entonces la Task 2 en `tasks.md`, con su commit y el resultado visual.
+
+Cerrarla ahora con los tests en verde sería marcar como hecha una UI que no cumple el contraste.
+
+Al cerrar la task, por `pair`, presentaré el guion de pruebas. Guion previsto, pendiente del fix: abrir `/`, elegir «Pendiente» en el selector y comprobar que la lista muestra solo «Sur · 12-14 · Pendiente». Repetir en `/?theme=dark`.
+
+**Pregunta para el dev-lead:** ¿lanzo la ronda de fix con un implementador Sonnet con effort medio, como fija el plan, y su revisión, o prefieres que el hilo principal aplique las dos líneas de CSS y lo pase por revisión?
+

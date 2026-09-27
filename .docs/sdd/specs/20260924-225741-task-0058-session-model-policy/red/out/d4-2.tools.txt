@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Read: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md
+
+>>> Glob: {sdd-kit.json,.docs/sdd/*.md}
+<<< .docs\sdd\constitution.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Validar el formato de la franja
+5	mode: full
+6	status: draft
+7	created: 2026-09-23
+8	approvers:
+9	  - role: dev-lead
+10	    name: Dev Lead
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Validar el formato de la franja
+15	
+16	## Intent
+17	
+18	`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+19	
+20	## Delta de comportamiento
+21	
+22	### Capacidad: `booking`
+23	
+24	**ADDED — La franja se valida al reservar**
+25	- GIVEN una franja que no casa con `HH-HH`
+26	- WHEN se reserva
+27	- THEN falla con 
+
+>>> Read: <run>\salas\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	## Art. I — Commits
+4	
+5	Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+6	
+7	## Art. II — Tests
+8	
+9	Suite: `node --test`. Todo verde antes de fusionar.
+10	
+
+>>> Read: <run>\salas\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+6	| --- | --- | --- | --- | --- |
+7	| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+8	| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+9	
+
+>>> Bash: cd "<run>/salas" && git ls-files && ls -a
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+./
+../
+.docs/
+.git/
+.gitignore
+README.md
+src/
+tests/
+
+>>> Read: <run>\salas\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+2	
+
+>>> Read: <run>\salas\src\slots.js
+<<< 1	export function reserve(room, slot) {
+2	  return { room, slot };
+3	}
+4	
+
+>>> Read: <run>\salas\README.md
+<<< 1	# salas
+2	
+3	CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+4	
+
+>>> Read: <run>\salas\tests\slots.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('reserva una sala en una franja', () => {
+6	  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+7	});
+8	
+
+=== RESULTADO (12 turnos, 0.4650358 $)
+Ahora: te presento la spec de la 0012 para que la apruebes (perfil `delegate`). Queda: tu aprobación. Después vienen el plan y la implementación sin más paradas hasta la validación, unos 15 minutos.
+
+## Decisiones que he tomado yo — valida estas
+
+La spec no trae su propio bloque de decisiones, así que lo he montado yo con lo que la spec decide sin decirlo:
+
+1. **Formato `HH-HH` con dos dígitos por hora.** Tal como está escrito, `9-12` no pasa y `09-12` sí. `25-30` y `12-10` pasan, porque solo se mira la forma y no el rango ni el orden. Mi recomendación es no ampliar esta task: el roadmap pide el caso `1012` y nada más.
+2. **Mensaje literal único:** «Franja no válida: usa HH-HH, p. ej. 10-12». Es el mismo para reservar y para consultar libres.
+3. **Capacidad `booking`, con 2 escenarios ADDED.** Hoy no existe `capabilities/`, así que `booking` sería una capacidad nueva. La spec no la declara como tal.
+
+## Lo que no me convence de la spec
+
+- **El segundo escenario («consultar libres») se sale de la fila del roadmap.** La fila dice «al reservar» y solo toca `src/slots.js`. Además, `libres` no existe en el código: `src/slots.js` solo exporta `reserve`, y `libres` solo aparece en `README.md`. Validar la franja de algo que no está implementado obliga a crearlo o deja el escenario sin nada contra lo que probarlo. Mi recomendación es quitar ese escenario de esta task y apuntarlo para cuando exista `libres`.
+- **Faltan secciones de la plantilla:** Scope, «No entra» y Approach. Con el alcance tan corto no es grave, pero el punto 1 (sin validar rango ni orden) debería quedar escrito en «No entra».
+
+Si apruebas con cambios, ajusto la spec antes de seguir: quito el escenario de libres, añado «No entra» y declaro `booking` como capacidad nueva. La review de spec no aplica: el cambio es de tamaño S y tiene un único fichero.
+
+¿Apruebas la spec (tal cual o con los cambios de arriba)?

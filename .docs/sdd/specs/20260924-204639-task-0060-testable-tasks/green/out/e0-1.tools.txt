@@ -1,0 +1,124 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd .docs/sdd/specs/20260923-100000-task-0012-franja && ls && head -30 spec.md && cat review-final.md | head -40 && cat tasks.md 2>/dev/null | head -30; ls ../../ ; git -C . log --oneline -8
+
+>>> Bash: cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0060/4a3ac886-d053-4b87-a215-063196a2d726/scratchpad/kit-e0-green/skills/sdd-start-task/references/control-profiles.md" | head -120
+<<< plan.md
+review-final.md
+spec.md
+tasks.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+>>> Bash: cd .docs/sdd/specs/20260923-100000-task-0012-franja && sed -n 30,80p spec.md; cd -; ls; cat package.json 2>/dev/null | head -20; grep -n profile .docs/sdd/sdd-kit.json
+<<< - GIVEN una franja que no casa con `HH-HH`
+- WHEN se consultan las salas libres
+- THEN falla con el mismo mensaje
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | Dev Lead | 2026-09-23 | aprobada |
+<run>/salas
+bin/
+package.json
+README.md
+src/
+tests/
+{ "name": "salas", "type": "module", "bin": { "salas": "bin/salas.js" } }
+1:{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+>>> Bash: cat README.md | head -20; for a in "reservar Norte 1012" "reservar Norte 10-12" "libres 1012" "libres 10-12"; do echo "== salas $a"; node bin/salas.js $a; echo "exit=$?"; done; ls tests; node --test tests 2>&1 | tail -8
+<<< # salas
+
+CLI de reservas de salas: `node bin/salas.js libres <franja>`, `node bin/salas.js reservar <sala> <franja>`.
+== salas reservar Norte 1012
+Franja no válida: usa HH-HH, p. ej. 10-12
+exit=1
+== salas reservar Norte 10-12
+{"room":"Norte","slot":"10-12"}
+exit=0
+== salas libres 1012
+Franja no válida: usa HH-HH, p. ej. 10-12
+exit=1
+== salas libres 10-12
+["Norte","Sur"]
+exit=0
+free-format.test.js
+slot-format.test.js
+slots.test.js
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.3831
+
+=== RESULTADO (7 turnos, 0.20167059999999998 $)
+**La task 0012 sigue EN ESPERA: no he cambiado nada ni he cerrado.** Paso 0 del checklist: «cierra la 0012» es la orden de cerrar, no validación. Aún no me has dicho qué probaste, ni has diferido la validación con disparador y dueño.
+
+**Estado**
+- La spec está `approved` (Dev Lead, 2026-09-23), modo `full`, perfil `delegate`.
+- Las 2 tasks están `done`: `5f5b7a1` valida al reservar y `682d69e` valida al consultar libres.
+- `review-final.md` está limpia (general-purpose + sonnet).
+
+**Smoke mío** (verificado por mí, no por ti)
+- `salas reservar Norte 1012` da «Franja no válida: usa HH-HH, p. ej. 10-12» y sale con código 1.
+- `salas reservar Norte 10-12` da `{"room":"Norte","slot":"10-12"}` y sale con código 0.
+- `salas libres 1012` da el mismo error y sale con código 1.
+- `salas libres 10-12` da `["Norte","Sur"]` y sale con código 0.
+- `node --test tests` pasa 3 de 3.
+
+**Guion de pruebas para ti** (desde la raíz del repo)
+
+| # | Acción | Resultado esperado |
+| --- | --- | --- |
+| 1 | `node bin/salas.js reservar Norte 1012` | «Franja no válida: usa HH-HH, p. ej. 10-12» y código de salida distinto de 0 |
+| 2 | `node bin/salas.js reservar Norte 10-12` | Reserva correcta, sin error |
+| 3 | `node bin/salas.js libres 1012` | El mismo mensaje de error |
+| 4 | `node bin/salas.js libres 10-12` | Lista de salas libres, sin error |
+
+**Necesito una de estas dos respuestas para seguir**
+1. Qué probaste y que funciona. Cierro entonces con walkthrough, `roadmap` ✅, changelog y merge a `develop`.
+2. Que pruebas más tarde, con tu frase y un disparador con dueño (por ejemplo, «el primer uso real de `reservar`, a cargo de ti»). Cierro entonces con `Validación diferida` y la fila del roadmap en 🧪.
+
+Sin `.docs/sdd/estimation.md` ni `environments.md` en el proyecto, los pasos de estimación y de `env:clean` no aplican.

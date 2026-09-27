@@ -4,20 +4,26 @@
 ```text
 /
 ├── CLAUDE.md                 (corto: punteros + 3-5 reglas críticas)
+├── .claude/settings.json     ("autoMemoryEnabled": false y el marketplace superpowers-marketplace, fusionado con lo que ya tenga)
+├── .gitignore                (+ .playwright-mcp/, .superpowers/ y `.docs/sdd/sdd-kit.local.json`)
 ├── .docs/
 │   └── sdd/
-│       ├── mission.md        (por qué existe, usuarios/roles, dominio)
-│       ├── constitution.md   (principios no negociables)
-│       ├── tech-stack.md     (tecnologías con versiones; decisiones abiertas, como abiertas)
-│       ├── architecture.md   (cómo se construye)
-│       ├── capabilities/         (vacía: una capacidad por fichero, las crean las tasks)
-│       ├── roadmap.md        (módulos identificados + deuda + tabla de patches)
-│       ├── estimation.md     (método) · estimation-log.md (VACÍO: se llena con las tareas)
-│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated" })
-│       └── specs/            (vacía)
+│       ├── mission.md        (por qué existe, usuarios/roles, dominio · calca mission-template.md)
+│       ├── constitution.md   (principios no negociables · calca constitution-template.md)
+│       ├── tech-stack.md     (tecnologías con versiones; decisiones abiertas, como abiertas · calca tech-stack-template.md)
+│       ├── architecture.md   (cómo se construye · calca architecture-template.md)
+│       ├── capabilities/     (no se crea: nace con la primera feature que declara una capacidad, o con el volcado inicial del paso 6)
+│       ├── roadmap.md        (módulos identificados + deuda + tabla de patches · calca roadmap-template.md)
+│       ├── estimation.md     (método · calca estimation-template.md) · estimation-log.md (lo genera Build-EstimationLog.ps1: cabecera y 0 filas)
+│       ├── changelog.md      (opcional, según entrevista · calca changelog-template.md)
+│       ├── sdd-kit.json      (versión del kit aplicada: { "version", "channel": "plugin"|"cli", "updated", "ids": { "mode" }, "control"?, "merge"?, "execution"? }, con `ids.mode` de la pregunta 19 (`sdd-config`); `control`, `merge` y `execution`, solo con lo respondido)
+│       ├── sources/          (opcional: el funcional que aporta el usuario, literal y sin editar · paso 3)
+│       └── specs/            (no se crea: nace con la primera feature o patch)
 ```
 
-Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates` del kit y se calcan al crear cada artefacto.
+Git no versiona carpetas vacías: ninguna carpeta de `.docs/sdd/` se crea vacía ni con `.gitkeep`.
+
+Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates` del kit y se calcan al crear cada documento. **Calcar** es seguir las secciones y las cabeceras de tabla de la plantilla con el contenido de la entrevista; nunca copiar el documento equivalente del `.docs/` del kit ni de otro proyecto, que arrastra notas y decisiones ajenas.
 
 Nunca `docs/`, `docs/superpowers/` ni taxonomías propias (ADRs sueltos, glosarios aparte): las decisiones técnicas viven en constitution/architecture y el lenguaje del dominio en mission.
 

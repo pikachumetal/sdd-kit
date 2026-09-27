@@ -1,0 +1,206 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/roadmap.md && cat .docs/sdd/sdd-kit.json
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | ---
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js tests/slots.test.js README.md; git log --stat -3 | head -40; cat package.json 2>&1 | head
+<<< export function reserve(room, slot) {
+  return { room, slot };
+}
+
+export function cancel(room, slot) {
+
+  return { room, slot, cancelled: true };
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+# salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+commit 35fa9e8be2dba8c53865cd4da8c1c441f51b987a
+Author: Fixture <fixture@e
+
+>>> Bash: cd "<run>/salas" && node --input-type=module -e "import {cancel} from './src/slots.js'; console.log(cancel('Norte'))"; cat .docs/sdd/constitution.md
+<<< { room: 'Norte', slot: undefined, cancelled: true }
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-green/skills" && cat sdd-templates/patch-template.md 2>/dev/null || find . -name "patch-template.md"; ls sdd-start-task/references; cd - >/dev/null; git -C "<run>/salas" branch -a; cat "<run>/salas/.docs/sdd/changelog.md"
+<<< ./sdd-templates/templates/patch-template.md
+commit-milestones.md
+control-profiles.md
+encargo-revision.md
+modo-lite.md
+nombrado.md
+overrides-superpowers.md
+review-spec.md
+* develop
+  main
+# Changelog
+
+## [Unreleased]
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-green/skills" && cat sdd-templates/templates/patch-template.md; cat sdd-start-task/references/control-profiles.md; grep -n -i "patch\|rama\|branch" sdd-start-task/references/nombrado.md | head -30
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+---
+
+# Patch <id> — <título corto>
+
+> Registr
+
+>>> Bash: cd "<run>/salas" && git checkout -q -b feature/0013 && date -u +%Y%m%d-%H%M%S && cat > tests/cancel.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { cancel } from '../src/slots.js';
+
+test('cancela una reserva con sala y franja', () => {
+  assert.deepStrictEqual(cancel('Norte', '10-12'), { room: 'Norte', slot: '10-12', cancelled: true });
+});
+
+test('cancelar sin franja pide el uso', () => {
+  assert.throws(() => cancel('Norte'), { message: 'Uso: salas cancelar <sala> <franja>' });
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< 20260924-064719
+
+>>> Bash: cd "<run>/salas" && node --test 2>&1 | tail -25
+<<< ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.7583
+
+✖ failing tests:
+
+test at tests\cancel.test.js:9:1
+✖ cancelar sin franja pide el uso (16.3264ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/salas/tests/cancel.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/tes
+
+>>> Bash: cd "<run>/salas" && cat > src/slots.js <<'EOF'
+export function reserve(room, slot) {
+  return { room, slot };
+}
+
+export function cancel(room, slot) {
+  if (!slot) throw new Error('Uso: salas cancelar <sala> <franja>');
+  return { room, slot, cancelled: true };
+}
+EOF
+D=.docs/sdd/specs/20260924-064719-patch-0013-cancelar-sin-franja; mkdir -p $D
+cat > $D/patch.md <<'EOF'
+---
+id: 20260924-064719-patch-0013-cancelar-sin-franja
+task: 0013
+title: Patch — cancelar sin franja pide el uso
+type: patch
+status: done
+created: 2026-09-24
+branch: feature/0013
+commit: pendiente
+---
+
+# Patch 0013 — cancelar sin franja pide el uso
+
+## 1. Síntoma
+
+Reportado (ticket de soporte 17, fila de deuda técnica): `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined`.
+
+Medido: no hay `TypeError`. `cancel('Norte')` devuelve `{ room: 'Norte', slot: undefined, cancelled: true }`, es decir, da por cancelada una reserva sin franja. Difiere del reporte: el fallo es silencioso, no una excepción.
+
+## 2. Causa raíz
+
+`cancel(room, slot)` en `src/slots.js` no valida `slot`; devuelve el objeto con `slot: undefined` y `cancelled: true`. Evidencia: reproducido con `node --input-type=module -e "import {cancel} from './src/slots.js'; console.log(cancel('Norte'))"`. El repo no tiene CLI: la función es el único punto por el que pasa toda llamada.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/cancel.test.js`
+- **Cambio**: `cancel` lanza `Error('Uso: salas cancelar <sala> <franja>')` si falta la franja. Test nuevo que falla antes del fix.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancel('Norte')` lanza el mensaje de uso (RED antes, verde después) | ✅ agente |
+| 2 | `cancel('Norte', '10-12')` sigue devolviendo `cancelled: true` | ✅ agente |
+| 3 | `node --test` completo | ✅ agente |
+EOF
+node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && git add -A && git commit -q -F - <<'EOF'
+fix(slots): cancelar sin franja pide el uso
+
+`cancel` daba por cancelada una reserva con `slot: undefined` en vez de
+fallar. Ahora lanza `Error("Uso: salas cancelar <sala> <franja>")`, con
+test en `tests/cancel.test.js` y registro en `patch.md` (patch 0013).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -1
+<<< 4eea909 fix(slots): cancelar sin franja pide el uso
+
+=== RESULTADO (12 turnos, 0.3575606 $)
+Fix hecho y commiteado en `feature/0013` (`4eea909`). Falta el cierre con `sdd-end-patch`, que no he ejecutado. Ahí se actualiza el `commit:` del `patch.md`, ahora en `pendiente`, además de la fila del roadmap y el changelog.
+
+- **Fallo distinto al del ticket:** `salas cancelar Norte` no lanza el `TypeError` del ticket de soporte 17. `cancel('Norte')` devuelve `{ slot: undefined, cancelled: true }`, o sea, da por cancelada una reserva sin franja. El patch sigue con ese fallo medido y `patch.md` recoge ambos síntomas.
+- **Causa raíz:** `cancel` en `src/slots.js` no valida `slot`. El repo no tiene CLI, así que esa función es el único punto de entrada.
+- **Fix:** `cancel` lanza `Error("Uso: salas cancelar <sala> <franja>")` si falta la franja. El test nuevo en `tests/cancel.test.js` falló antes del fix, y `node --test` da 3 pasan, 0 fallan.
+- **Id:** usé el `0013`, que ya estaba reservado en la fila del roadmap «`cancelar` sin hora…». El patch está en `.docs/sdd/specs/20260924-064719-patch-0013-cancelar-sin-franja/patch.md`.
+
+Con el dev-lead ausente no había nada que consultarle, y el merge a `develop` queda para el cierre.

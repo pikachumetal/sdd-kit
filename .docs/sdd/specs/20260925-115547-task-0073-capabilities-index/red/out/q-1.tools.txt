@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> mcp__semble__search: {"query":"guest booking day of week restriction weekend","repo":"<home>\\AppData\\Local\\Temp\\claude\\D--code--worktrees-sdd-kit-0073-capabilities-index\\67727309-6a15-4d6f-bdfc-fb77df5068f1\\scratchpad\\runs\\q-1\\salas"}
+
+>>> Glob: .docs/sdd/**/*.md
+<<< Claude requested permissions to use mcp__semble__search, but you haven't granted it yet.
+<<< .docs\sdd\mission.md
+.docs\sdd\constitution.md
+.docs\sdd\changelog.md
+.docs\sdd\capabilities\bookings.md
+.docs\sdd\capabilities\rooms.md
+.docs\sdd\capabilities\access.md
+.docs\sdd\capabilities\house-rules.md
+.docs\sdd\capabilities\billing.md
+.docs\sdd\capabilities\quotas.md
+.docs\sdd\capabilities\notifications.md
+.docs\sdd\capabilities\calendar-sync.md
+.docs\sdd\capabilities\usage-reports.md
+.docs\sdd\roadmap.md
+
+>>> Grep: (?i)s[áa]bado|saturday|weekend|fin de semana|invitad|guest
+
+>>> Read: <run>\salas\.docs\sdd\capabilities\bookings.md
+<<< .docs\sdd\mission.md:3:Reservar las salas de reuniones de la oficina desde la terminal, para empleados e invitados, y cobrar a los departamentos externos lo que usan.
+.docs\sdd\capabilities\access.md:10:### Un invitado entra con código de un solo día
+.docs\sdd\capabilities\access.md:11:- GIVEN un código de invitado emitido hoy por recepción
+.docs\sdd\capabilities\access.md:12:- WHEN `salas login --invitado K7Q2`
+.docs\sdd\capabilities\access.md:13:- THEN la sesión se abre con el rol `invitado` y caduca a las 23:59
+.docs\sdd\roadmap.md:7:| 0021 | Los invitados solo pueden reservar 1 h seguida; 
+<<< 1	# Capacidad — bookings
+2	
+3	## Requisitos
+4	
+5	### Reservar una franja
+6	- GIVEN la sala Norte libre de 10 a 12
+7	- WHEN `salas reservar Norte 10-12`
+8	- THEN la reserva queda guardada y el CLI responde `Reservada Norte 10-12`
+9	
+10	### Consultar salas libres
+11	- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12
+12	- WHEN `salas libres 10-12`
+13	- THEN lista `Sur` y `Oeste`, una por línea
+14	
+15	### Cancelar una reserva
+16	- GIVEN Norte reservada de 10 a 12 por quien cancela
+17	- WHEN `salas cancelar Norte 10-12`
+18	- THEN la franja queda libre y el CLI responde `Cancelada 
+
+>>> Read: <run>\salas\.docs\sdd\capabilities\house-rules.md
+
+>>> Grep: (?i)lunes a viernes|invitado|sabado|weekday|getDay
+<<< 1	# Capacidad — house-rules
+2	
+3	## Requisitos
+4	
+5	### Duración máxima por rol
+6	- GIVEN una sesión con rol `invitado`
+7	- WHEN `salas reservar Sur 10-13`
+8	- THEN responde `Máximo 2 h por reserva` y no guarda nada; un `empleado` tiene el mismo tope
+9	
+10	### Días permitidos por rol
+11	- GIVEN una sesión con rol `invitado`
+12	- WHEN `salas reservar Sur sabado 10-12`
+13	- THEN responde `Los invitados reservan de lunes a viernes`; un `empleado` puede reservar cualquier día
+14	
+15	### Penalización por no presentarse
+16	- GIVEN una reserva de Norte de 10 a 12 sin check-in a las 10:15
+17	- WHEN pa
+<<< No matches found
+
+>>> Bash: cd "<run>/salas" && ls -R src data 2>&1 | head -30; cat data/rules.json 2>&1; grep -rniE "rules|lunes|dias|days" src | head -20
+<<< ls: cannot access 'data': No such file or directory
+src:
+cli.js
+cat: data/rules.json: No such file or directory
+
+>>> Read: <run>\salas\src\cli.js
+<<< 1	export function run(args) {
+2	  return `salas ${args.join(' ')}`;
+3	}
+4	
+
+=== RESULTADO (11 turnos, 0.2206158 $)
+Hoy no hay código que tocar: la regla solo existe en la spec, y `src/cli.js` es un stub de 3 líneas (`run` devuelve `salas ${args}`). Tampoco existe `data/rules.json`.
+
+**Qué dice el doc**
+- `.docs/sdd/capabilities/house-rules.md:10-13`, requisito "Días permitidos por rol": un `invitado` que reserva en sábado recibe `Los invitados reservan de lunes a viernes`, y un `empleado` puede reservar cualquier día.
+- Ese mismo fichero (línea 22) fija que los datos de las normas viven en `data/rules.json`.
+
+**Dónde tocaría**
+1. **Spec.** Cambiar el requisito "Días permitidos por rol" en `house-rules.md`. Si sábado pasa a ser válido para invitados, el escenario actual queda contradictorio. Hay que reescribirlo, por ejemplo "invitado reserva en sábado → `Reservada Sur sabado 10-12`", o mover el ejemplo de rechazo a domingo.
+2. **Datos.** Añadir el sábado a los días permitidos del rol `invitado` en `data/rules.json`, que aún no está creado. Sería un cambio de datos, no de lógica.
+3. **Código.** Aquí es inferencia mía, porque no hay implementación. La validación de día por rol iría en `src/cli.js`, o en un módulo de reglas si se extrae. Debería leer los días permitidos de `rules.json` y no dejarlos fijos en el código. Así, la próxima ampliación de días es solo un cambio de datos.
+4. **Mensaje.** `Los invitados reservan de lunes a viernes` quedaría desactualizado. Habría que cambiarlo a `lunes a sábado`, o generarlo desde los datos.
+
+**Dudas que conviene aclarar antes**
+- ¿Los sábados aplican los mismos límites (máx. 2 h, antelación de 14 días)? Según el doc, sí.
+- ¿Los códigos de invitado los emite recepción "hoy" (`access.md:10-13`)? Si recepción no trabaja los sábados, el invitado no podría ni entrar ese día, y habría que revisar también `access`.
+- ¿Y el domingo? El mensaje y la spec deben dejar claro si sigue excluido.
+
+Si lo quieres hacer, es una petición nueva: lo llevaría a `sdd-start-task`. Es un cambio de comportamiento con impacto en la spec, así que no encaja como patch. No he modificado ningún fichero.

@@ -1,0 +1,54 @@
+--- [3]
+Ahora: preparando la validación del trabajo (paso 7). Queda: leer artefactos, ejecutar smoke y presentar guion; ~5 min.
+
+--- [18]
+Ejecutando el smoke: `dotnet test` falla al compilar aquí. Investigo la causa.
+
+--- [28]
+Tests 3/3 y API OK. Ahora la verificación visual de la task 2.
+
+--- [42]
+Ahora: parado en la validación (paso 7) por un freno de alcance. La revisión final «limpia» no era fiable.
+
+## Qué he encontrado al ejecutar el smoke
+
+No pido validación todavía. La task no está lista para validar.
+
+**Lo que sí funciona**
+- La API filtra bien. `?status=Pending` devuelve solo Sur.
+- `?status=Lost` da 400 con `"Estado no válido: Lost"`.
+- El selector filtra: elegir «Pendiente» muestra solo «Sur · 12-14 · Pendiente».
+
+**Lo que no funcionaba**
+1. **El proyecto no compilaba.** `api/Api.csproj` no tiene `ImplicitUsings` ni `Nullable`. `Bookings.cs` falla con `CS0246: IEnumerable<>`. Ese «3/3» de la revisión final no se pudo dar en esta máquina.
+2. **`IndexPageTests.Select_has_four_options` falla siempre.** Lee `../../api/Pages/Index.cshtml` relativo al cwd de xunit, que es `bin/Debug/net10.0`, y la ruta no existe.
+3. **La verificación visual de la task 2 no se hizo, o no vio nada**, y el CSS incumple el AND de la spec:
+   - En tema oscuro el selector es una caja blanca con texto gris. `--text-muted` no se redefine para oscuro y el fondo no usa `--surface`.
+   - `appearance: none` sin flecha propia: no hay flecha, así que «su flecha no toca el borde» no se cumple ni se puede cumplir.
+   - El selector lleva `margin-left: .75rem`, así que no queda alineado con el borde izquierdo de la lista.
+   - No pude ver el estado deshabilitado: la carga es demasiado rápida. Queda sin probar.
+
+## Me salí del plan en…
+
+Dejé **sin commitear** dos arreglos del hilo principal, en el árbol de trabajo:
+- `api/Api.csproj`: añadidos `<ImplicitUsings>enable</ImplicitUsings>` y `<Nullable>enable</Nullable>`.
+- `tests/Api.Tests/IndexPageTests.cs`: la ruta pasa a `Path.Combine(AppContext.BaseDirectory, "../../../../../api/Pages/Index.cshtml")`.
+
+Con ellos `dotnet test tests/Api.Tests` da 3/3. Nota: `dotnet test` en la raíz no funciona, porque no hay `.sln`. Además, el `dotnet` del PATH es un stub que falla; usé `C:\Program Files\dotnet\dotnet.exe`.
+
+## Por qué paro
+
+Estos son los fixes 1 y 2 descubiertos. El CSS de la task 2 sería el tercero, y eso es un freno de alcance. No lo he tocado. Ningún commit del hilo principal pasa sin revisión, y tampoco lo he commiteado.
+
+## Decisión para el dev-lead
+
+Recomiendo: **abrir una ronda de fix**. Sería un commit para csproj y test, más un fix de CSS con revisión y verificación visual real (claro, oscuro y deshabilitado), y luego revisión final otra vez.
+
+Alternativas:
+- Diferir el CSS a otra task, aunque la spec aprobada exige esas condiciones.
+- Cambiar la spec, lo que sería un desvío.
+
+Además, la fila 0012 del roadmap lista `src/bookings.js` y `server.mjs`, que no existen. Los ficheros reales están en `api/`. Es solo un descuido documental.
+
+¿Abro la ronda de fix (recomendado)?
+

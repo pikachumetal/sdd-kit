@@ -1,0 +1,178 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: git ls-files; cat data/usage.csv; cat .docs/sdd/sdd-kit.json; git branch --show-current
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+data/usage.csv
+src/report.js
+src/slots.js
+tests/slots.test.js
+room,duration
+Norte,2 h
+Sur,1.5 h
+Norte,1 h
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+develop
+
+>>> Bash: cat src/report.js src/slots.js tests/slots.test.js .docs/sdd/roadmap.md; git status --short; git log --stat -3 | head -30; ls .docs/sdd .docs/sdd/specs 2>&1; cat package.json 2>&1 | head
+<<< import { readFileSync } from 'node:fs';
+
+// Convierte la duración de una fila de data/usage.csv a horas.
+export function toHours(duration) {
+  return parseFloat(duration);
+}
+
+export function usageReport(csvPath) {
+  const rows = readFileSync(csvPath, 'utf8').trim().split('\n').slice(1);
+  const totals = {};
+  for (const row of rows) {
+    const [room, duration] = row.split(',');
+    totals[room] = (totals[room] ?? 0) + toHours(duration);
+  }
+  return Object.entries(totals).map(([room, hours]) => `${room} · ${hours} h`).join('\n');
+}
+export function reserve(room, slot) {
+  return { room, slot }
+
+>>> Bash: cat .docs/sdd/constitution.md; cd ../../../../..; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green"; ls "$K/skills/sdd-templates" "$K/skills/sdd-start-task/references" "$K/scripts" 2>&1 | head -40
+
+>>> Bash: node -e "import('./src/report.js').then(m=>console.log(m.toHours('90 min'), m.toHours('1.5 h')))"; git log --oneline -1
+<<< # Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+ls: cannot access '<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/scripts': No such file or directory
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-start-task/references:
+commit-milestones.md
+control-profiles.md
+encargo-revis
+<<< 90 1.5
+3a2349f feat: base de reservas de salas
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills"; ls "$K/sdd-templates/scripts" "$K/sdd-templates/templates"; cat "$K/sdd-templates/templates/patch-template.md"; cat "$K/sdd-start-task/references/nombrado.md"
+<<< <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/scripts:
+Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/templates:
+architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+environments-template.
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills"; pwsh -NoProfile -File "$K/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot . -Reserve; git status --short; pwsh -NoProfile -Command "Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'"
+<<< 0014
+20260925-082056
+
+>>> Bash: git switch -c feature/0014-duracion-minutos && D=.docs/sdd/specs/20260925-082056-patch-0014-duracion-minutos && mkdir -p $D && cat > $D/patch.md <<'EOF'
+---
+id: 20260925-082056-patch-0014-duracion-minutos
+task: 0014
+title: Patch — el informe cuenta los minutos como horas
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0014-duracion-minutos
+commit: pendiente
+---
+
+# Patch 0014 — el informe cuenta los minutos como horas
+
+## 1. Síntoma
+
+El informe de septiembre sacó «Sur · 91.5 h». Una reserva de 90 minutos, apuntada en `data/usage.csv` como «90 min», contó como 90 horas. La fila del CSV ya se corrigió a mano a «1.5 h» para poder mandar el informe.
+
+## 2. Causa raíz
+
+`toHours` (`src/report.js`) hacía `parseFloat(duration)`, que lee el número y descarta la unidad: `toHours('90 min')` devuelve `90` y `toHours('1.5 h')` devuelve `1.5` (reproducido con `node`). Cualquier duración que no esté en horas se sumaba como si lo estuviera. `usageReport` es el único llamador de `toHours`, así que el fallo vive solo ahí.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/report.js`, `tests/report.test.js`
+- **Cambio**: `toHours` interpreta la unidad (`h` o `min`, `min` se divide entre 60) y lanza un error con una unidad desconocida, en vez de adivinar.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `toHours('90 min')` → 1.5 (antes 90) | ✅ agente, `node --test` |
+| 2 | `toHours('1.5 h')` y `'2 h'` siguen igual | ✅ agente |
+| 3 | unidad desconocida lanza error | ✅ agente |
+| 4 | `usageReport` con una fila en «90 min» da «Sur · 1.5 h» | ✅ agente |
+
+## 5. Tiempo
+
+No hay `.docs/sdd/estimation.md`; no aplica.
+EOF
+cat > src/report.js.new <<'EOF'
+EOF
+rm src/report.js.new
+<<< Switched to a new branch 'feature/0014-duracion-minutos'
+
+>>> Edit: <run>\salas\src\report.js
+<<< The file <run>\salas\src\report.js has been updated successfully.
+
+>>> Write: <run>\salas\tests\report.test.js
+<<< File created successfully at: <run>\salas\tests\report.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test 2>&1 | tail -12; node -e "import('./src/report.js').then(m=>console.log(m.usageReport('data/usage.csv')))"
+<<< ✔ toHours convierte minutos y horas (0.9113ms)
+✔ toHours rechaza una unidad desconocida (0.3607ms)
+✔ usageReport suma una fila en minutos como horas (9.8733ms)
+✔ reserva una sala en una franja (1.3853ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 180.572
+Norte · 3 h
+Sur · 1.5 h
+
+>>> Bash: git add -A && git commit -q -F - <<'EOF'
+fix(report): interpretar la unidad de duración en toHours
+
+`toHours` usaba `parseFloat` y descartaba la unidad, así que «90 min»
+contaba como 90 horas («Sur · 91.5 h» en el informe de septiembre).
+Ahora convierte `min` a horas y lanza un error con una unidad
+desconocida en vez de adivinar. Patch 0014.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< 7ae7fa2 fix(report): interpretar la unidad de duración en toHours
+3a2349f feat: base de reservas de salas
+
+=== RESULTADO (14 turnos, 0.3077252000000001 $)
+Fix commiteado (`7ae7fa2`) en la rama `feature/0014-duracion-minutos`, y el patch queda abierto, sin cerrar.
+
+- **Causa:** `toHours` en `src/report.js` usaba `parseFloat`, que lee el número y descarta la unidad, así que `toHours('90 min')` devolvía 90. Lo reproduje con `node`. `usageReport` es su único llamador.
+- **Fix:** `toHours` acepta `h` y `min` (los minutos se dividen entre 60). Con cualquier otra unidad lanza un error, en vez de adivinar.
+- **Verificación:** `node --test` pasa con los 4 tests, 3 de ellos nuevos en `tests/report.test.js`. Con el CSV actual el informe da «Norte · 3 h» y «Sur · 1.5 h».
+- **Registro:** `patch.md` está en `.docs/sdd/specs/20260925-082056-patch-0014-duracion-minutos/`.
+- **Rama:** partí de `develop` y le puse el id `0014`, reservado con `Get-NextSddId.ps1`.
+- **Cierre pendiente:** `sdd-end-patch` no lo he lanzado. Hará falta poner la fila del patch en el roadmap y la entrada en el changelog, y escribir el hash del commit en `patch.md` (ahora pone `commit: pendiente`).
+
+Una consecuencia del error estricto: `usageReport` falla entero si alguna fila del CSV trae una unidad rara, en vez de dar un informe silenciosamente mal. Me pareció mejor eso que otro 91.5 h.
+
+¿Cierro el patch con `sdd-end-patch` cuando quieras?

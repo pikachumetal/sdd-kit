@@ -1,0 +1,181 @@
+diff --git a/.docs/sdd/specs/20260921-111104-task-0004-avisos-email/spec.md b/.docs/sdd/specs/20260921-111104-task-0004-avisos-email/spec.md
+new file mode 100644
+index 0000000..9da6ddb
+--- /dev/null
++++ b/.docs/sdd/specs/20260921-111104-task-0004-avisos-email/spec.md
+@@ -0,0 +1,175 @@
++---
++id: 20260921-111104-task-0004-avisos-email
++task: 0004
++title: Avisos por email al confirmar o cancelar una reserva
++mode: full
++status: in-review
++created: 2026-09-21
++author: Claude Sonnet 5 (sin el dev-lead disponible; decisiones tomadas por el agente)
++approvers:
++  - role: dev-lead
++    name: TBD
++    approved_at: null
++---
++
++# Spec — Avisos por email al confirmar o cancelar una reserva
++
++## Decisiones que he tomado yo — valida estas
++
++```text
++Review de spec propuesta: dos revisores — señales: capacidad nueva (`avisos`), contrato público (endpoints `/email-templates` y `/email-log` + `teacherEmail` en `POST /bookings`), datos (tablas nuevas + columna `teacher_email`), dependencia externa (`nodemailer`/SMTP), reglas de permiso (solo secretaría edita plantillas y ve el registro)
++- Dominio: si «Reintentos = 4 intentos» y «la cuota difiere en vez de descartar» respetan lo que el roadmap pide, y qué NO puede hacer/ver el profesor en «Solo secretaría gestiona plantillas y consulta el registro» (señal: reglas de permiso + capacidad nueva)
++- Técnica: si el token compartido `SECRETARIA_TOKEN` es un contrato aceptable mientras no haya autenticación, si la migración de `teacher_email` deja bien las reservas ya existentes, y el efecto de `nodemailer` en `tech-stack.md` (señal: contrato público + datos + dependencia)
++- Mínimo razonable: solo técnica — deja sin mirar si las interpretaciones de dominio (tres reintentos, cuota por centro, cuota diferida) son las que quiere secretaría, que son justo las decisiones 2-4 de abajo
++Estado: propuesta NO activada — no había usuario para activarla; esta spec se presenta sin review (regla de `review-spec.md`: sin respuesta, se anota y se sigue al gate).
++```
++
++Ordenadas por lo que más cambia el resultado si no estás de acuerdo:
++
++1. **Secretaría se identifica con un token compartido (`SECRETARIA_TOKEN`, cabecera `Authorization: Bearer`)** — hoy el proyecto no tiene autenticación ni roles (`src/app.js` no filtra nada; `teacherId` llega en el body), pero el roadmap exige «editables por secretaría» y «que secretaría puede consultar». Es el mínimo que hace cumplir la restricción; una autenticación real es otra task. Sin el token configurado en el servidor, esos endpoints responden `401` siempre (fallan cerrados).
++2. **«Tres reintentos» = 4 intentos en total** (1 inicial + 3 reintentos), con esperas de 1, 5 y 15 minutos. Lo del número es literal del roadmap; **las esperas son inventadas por mí**. Un envío que agota los cuatro queda `failed` y no se reintenta solo.
++3. **La cuota cuenta envíos exitosos por día UTC, y al agotarse los avisos se difieren, no se descartan** — siguen `pending`, no gastan intentos y salen al día siguiente en orden de creación. Descartar un aviso en silencio me parece peor que retrasarlo; el coste es que un aviso de cancelación puede llegar tarde. Día UTC (no `Europe/Madrid`) porque ni la constitution ni la misión fijan zona horaria.
++4. **«Por centro» = una sola cuota global de 500/día**: la misión dice que Aulario es de «un único centro» y no existe `center_id` en ninguna parte. Si algún día hay varios centros, es un `MODIFIED`.
++5. **El destinatario sale de un `teacherEmail` nuevo y opcional en `POST /bookings`**, guardado en la reserva — hoy no hay ninguna fuente de correos (solo `teacher_id`). Las reservas sin correo (incluidas las ya existentes) no bloquean la confirmación: se registra un envío `skipped` con motivo `no_recipient` para que secretaría vea por qué no salió nada. Un `teacherEmail` sin forma de dirección se rechaza con `400`.
++6. **Capacidad nueva `avisos`** (`.docs/sdd/capabilities/avisos.md`, la crea `sdd-end-task` al fusionar). Plantillas, cola, cuota y registro son un solo sustantivo del dominio. `aulario` no cambia (0 `MODIFIED`/`REMOVED`). El correo del profesor en la reserva se recoge también aquí: no existe capacidad de reservas y crearla no es de esta task.
++7. **Dependencia nueva: `nodemailer` sobre SMTP** (`SMTP_URL`, `MAIL_FROM`) y **cola persistente en SQLite con un worker dentro del proceso** — sin broker externo (Redis, etc.), coherente con el stack. La misma tabla es cola y registro, para que el registro no pueda divergir de lo que realmente se envió. No toco `tech-stack.md`; lo actualizará el cierre si procede.
++8. **Sin `SMTP_URL` la API arranca igual y los avisos quedan `pending`** — protege el requisito de `aulario` «`docker compose up` → `/health` 200» en un clon limpio, que no tiene SMTP.
++9. **Plantillas**: solo texto plano, dos (`booking_confirmed`, `booking_cancelled`), con textos por defecto en castellano sembrados por la migración para que la función sirva sin configurar nada. Marcadores permitidos: `{{bookingId}}`, `{{roomId}}`, `{{start}}`, `{{end}}` (los únicos datos que tiene una reserva hoy). Un marcador desconocido o un asunto vacío o con salto de línea se rechaza al editar. Se renderizan **al encolar**: editar una plantilla no cambia los avisos ya encolados.
++10. **Solo un cambio real de estado genera aviso**: reconfirmar una reserva ya `confirmed`, o confirmar un id que no existe, no encola nada. Confirmar y cancelar deprisa envía los dos avisos, en orden, sin fusionarlos ni cancelar el primero — por eso «Regla ante conflicto» queda en «no aplica». El envío es asíncrono: la respuesta de `confirm`/`cancel` no espera al SMTP.
++11. **Entrega «al menos una vez»**: si la API cae en pleno envío, ese aviso puede repetirse tras reiniciar. Evitarlo exige idempotencia del proveedor, que SMTP no ofrece; lo acepto.
++12. **Registro**: filtro solo por reserva (`?bookingId=`), como pide el roadmap; máximo 100 entradas, las más recientes primero; sin el cuerpo del mensaje, pero sí destinatario y asunto. El tope de 100 es mío.
++13. **No toco la constitution**: sus reglas «Límites» y «Avisos» siguen en «pendiente». Los valores de esta task (500/día, 4 intentos, esperas, tope de 100) viven en «Reglas de la capacidad» de `avisos`. Te propongo rellenar la constitution al cerrar; no lo hago yo porque son reglas de producto.
++14. **Una sola task, como pide el roadmap.** Si el plan pasa de ~6 tasks, propongo partir las plantillas editables en la task 0006 con `parent: 0004` y su fila propia en el roadmap.
++15. **Supuesto sobre el esquema**: en esta rama no hay runner de migraciones, ni `CREATE TABLE`, ni tests (solo `src/app.js` y `src/bookings.js`), aunque las capacidades de `aulario` los dan por hechos. Tomo esas capacidades como verdad; el plan debe comprobar el esquema real de `bookings` antes de escribir la migración.
++
++**Fuera de scope, no lo arreglo — pide tu decisión (no he podido preguntarte):** `POST /bookings/:id/confirm` y `/cancel` no tienen ninguna protección (cualquier profesor puede confirmar o cancelar), no devuelven `404` para ids inexistentes y no validan la transición de estado. Esta task depende de que el cambio de estado sea real (decisión 10), así que no cambia su comportamiento actual. ¿Se arregla ahora, en esta rama, o va a un ticket aparte? Hasta que respondas, queda como está.
++
++## Intent
++
++Hoy `confirm` y `cancel` solo cambian el estado de la reserva en la base de datos: el profesor no recibe ningún aviso de que su aula ha sido confirmada o cancelada. Se quiere que reciba un email en cada uno de los dos casos, con un texto que secretaría pueda ajustar, que un fallo del proveedor de correo no se lleve el aviso por delante, que el volumen de envíos tenga un tope diario, y que secretaría pueda comprobar qué se envió (o por qué no) para una reserva.
++
++## Scope
++
++- Entra:
++  - Aviso al profesor al confirmar y al cancelar una reserva.
++  - Dos plantillas de correo (confirmación y cancelación), editables por secretaría.
++  - Cola de envío persistente con tres reintentos.
++  - Cuota de 500 envíos diarios.
++  - Registro de envíos consultable por secretaría y filtrable por reserva.
++  - Campo `teacherEmail` opcional en `POST /bookings`.
++- No entra:
++  - Autenticación real, usuarios o roles (solo el token compartido de la decisión 1).
++  - Proteger o validar `confirm`/`cancel` (ver «Fuera de scope»).
++  - Avisos a secretaría o alertas cuando un envío falla: el registro es la única vía.
++  - Correo HTML, adjuntos, varios idiomas o más plantillas (creación, caducidad).
++  - Reenvío manual de un envío `failed`.
++  - Interfaz de usuario: solo API.
++  - Varias instancias de la API sobre la misma base de datos.
++  - Decidir si `docker compose` levanta un servidor SMTP de desarrollo (lo decide el plan).
++
++## Approach
++
++Al cambiar el estado de una reserva se renderiza la plantilla vigente y se guarda un aviso `pending` en una tabla persistente de SQLite, dentro de la misma transacción que el cambio de estado, de modo que no se puede confirmar sin encolar ni al revés. Un worker dentro del proceso recorre los avisos vencidos, respeta la cuota del día UTC en curso y entrega por SMTP con `nodemailer`. Cada intento fallido reprograma el siguiente; el cuarto lo deja `failed`. El transporte y el reloj son inyectables para poder probar reintentos, cuota y reinicio sin correo real ni esperas (Art. 3 de la constitution: cada escenario de abajo tiene su test).
++
++## Delta de comportamiento
++
++### Capacidad: `avisos` *(nueva)*
++
++**ADDED — La confirmación de una reserva avisa al profesor por email**
++- GIVEN una reserva `pending` con `teacher_email` y la plantilla `booking_confirmed` vigente
++- WHEN secretaría la confirma con `POST /bookings/:id/confirm`
++- THEN la respuesta es `200` sin esperar al envío
++- AND se encola un aviso para ese correo, con asunto y cuerpo de la plantilla renderizados con los datos de la reserva
++- AND `GET /email-log?bookingId=<id>` muestra un envío en `pending` con `template: booking_confirmed`
++
++**ADDED — La cancelación de una reserva avisa al profesor por email**
++- GIVEN una reserva con `teacher_email` y la plantilla `booking_cancelled` vigente
++- WHEN secretaría la cancela con `POST /bookings/:id/cancel`
++- THEN la respuesta es `200` sin esperar al envío
++- AND se encola un aviso para ese correo, renderizado con la plantilla `booking_cancelled`
++- AND `GET /email-log?bookingId=<id>` muestra un envío en `pending` con `template: booking_cancelled`
++
++**ADDED — Solo un cambio real de estado genera aviso**
++- GIVEN una reserva que ya está en el estado destino (por ejemplo, ya `confirmed`), o un id que no existe
++- WHEN se llama a `confirm` (o a `cancel`) sobre ella
++- THEN no se encola ningún aviso nuevo
++- AND la respuesta es la misma que antes de esta task
++
++**ADDED — La reserva guarda el correo del profesor**
++- GIVEN un `POST /bookings` con `teacherEmail: "profesora@example.com"`
++- WHEN se crea la reserva
++- THEN queda guardado y es el destinatario de todos sus avisos
++- AND un `POST /bookings` sin `teacherEmail` sigue respondiendo `201`
++- AND un `teacherEmail` sin forma de dirección de correo responde `400` con un mensaje en castellano y no crea la reserva
++
++**ADDED — Una reserva sin correo no bloquea el cambio de estado**
++- GIVEN una reserva sin `teacher_email`
++- WHEN secretaría la confirma
++- THEN la respuesta es `200` y el estado pasa a `confirmed`
++- AND el registro muestra un envío `skipped` con `lastError: no_recipient` y `recipient: null`
++
++**ADDED — Un envío fallido se reintenta tres veces**
++- GIVEN un aviso `pending` y el proveedor de correo rechazando los envíos
++- WHEN falla el primer intento
++- THEN se reintenta tras 1 minuto, tras 5 minutos más y tras 15 minutos más (cuatro intentos en total)
++- AND si el cuarto también falla, el aviso queda `failed` con `attempts: 4` y el último error, y no se vuelve a intentar
++- AND si algún intento tiene éxito, el aviso queda `sent`, con `sentAt`, y no se hacen más intentos
++
++**ADDED — La cola sobrevive a un reinicio**
++- GIVEN avisos `pending`, alguno con un reintento ya programado
++- WHEN la API se reinicia
++- THEN retoma el envío de los pendientes en su momento previsto
++- AND no reenvía los que ya estaban `sent`
++
++**ADDED — La cuota diaria limita los envíos a 500 por centro**
++- GIVEN 500 avisos `sent` en el día UTC en curso
++- WHEN hay otro aviso `pending` listo para enviarse
++- THEN no se envía ese día
++- AND sigue `pending`, con `lastError: quota_exceeded` y sin gastar intentos
++- AND sale al empezar el día UTC siguiente, en orden de creación
++- AND confirmar o cancelar con la cuota agotada sigue respondiendo `200`
++
++**ADDED — Sin proveedor de correo configurado la API arranca igual**
++- GIVEN un entorno sin `SMTP_URL`
++- WHEN arranca la API
++- THEN `/health` responde `200`
++- AND los avisos que se generen quedan `pending`, sin consumir intentos, hasta que haya proveedor
++
++**ADDED — Las plantillas de aviso las edita secretaría**
++- GIVEN las plantillas `booking_confirmed` y `booking_cancelled`, con su texto por defecto en castellano
++- WHEN secretaría hace `PUT /email-templates/booking_confirmed` con `subject` y `body`
++- THEN quedan guardados, y `GET /email-templates` los devuelve
++- AND los avisos que se encolen desde ese momento usan el texto nuevo
++- AND los avisos ya encolados conservan el texto con el que se encolaron
++
++**ADDED — Una plantilla solo admite marcadores conocidos y asunto de una línea**
++- GIVEN una edición cuyo cuerpo o asunto contiene un marcador que no es `{{bookingId}}`, `{{roomId}}`, `{{start}}` ni `{{end}}`, o cuyo asunto está vacío o contiene un salto de línea
++- WHEN secretaría hace el `PUT`
++- THEN responde `422` con un mensaje en castellano que nombra el marcador o el campo erróneo
++- AND la plantilla anterior no cambia
++
++**ADDED — Solo secretaría gestiona plantillas y consulta el registro**
++- GIVEN una petición sin cabecera `Authorization`, o con un token distinto de `SECRETARIA_TOKEN`
++- WHEN llama a cualquier endpoint de `/email-templates` o de `/email-log`, sea lectura o escritura
++- THEN responde `401` y no devuelve ninguna plantilla ni entrada del registro
++- AND si el servidor no tiene `SECRETARIA_TOKEN` configurado, esos endpoints responden `401` a todas las peticiones
++
++**ADDED — Secretaría consulta el registro de envíos y lo filtra por reserva**
++- GIVEN envíos de varias reservas, en distintos estados
++- WHEN secretaría pide `GET /email-log?bookingId=42` con su token
++- THEN recibe solo los envíos de la reserva 42, los más recientes primero
++- AND cada entrada trae `id`, `bookingId`, `template`, `recipient`, `subject`, `status` (`pending`, `sent`, `failed` o `skipped`), `attempts`, `lastError`, `createdAt` y `sentAt`
++- AND sin `bookingId` devuelve las 100 entradas más recientes
++
++**Reglas de la capacidad**
++- **Dónde viven los datos**: SQLite, en el mismo fichero que el resto (`data/aulario.db`, o `data/aulario-<worktree>.db` por worktree): plantillas, cola/registro y `teacher_email` de la reserva. Sin ficheros de log aparte.
++- **Idioma de los nombres**: API y claves en inglés (`booking_confirmed`, `bookingId`, `lastError`); textos por defecto de las plantillas y mensajes de error en castellano.
++- **Límites**: 500 envíos exitosos por día UTC, para toda la instalación (un único centro); 4 intentos por aviso (1 + 3 reintentos), con esperas de 1, 5 y 15 minutos; registro limitado a 100 entradas por consulta.
++- **Avisos**: un email al profesor cuando una reserva pasa a `confirmed` o a `cancelled`; a nadie más, y sin alertas cuando un envío falla.
++- **Regla ante conflicto**: no aplica — los avisos siguen el orden de los cambios de estado y no se fusionan ni se anulan entre sí.
++
++## Aprobaciones
++
++| Rol | Nombre | Fecha | Estado |
++| --- | --- | --- | --- |
++| dev-lead | | | pendiente |

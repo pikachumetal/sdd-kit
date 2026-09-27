@@ -1,0 +1,40 @@
+--- [10]
+Confirmado: `ee2840c` es solo docs (1 línea, `tasks.md`), pero `0fffe11` es un refactor de código (`src/slots.js`) que todavía no ha pasado por revisión. Voy a leer el plan y la spec para preparar el encargo de re-revisión sobre el tramo `7598412..HEAD`.
+
+--- [19]
+Ahora despacho el revisor final (`sdd-kit:effort-high` + opus) sobre el tramo `7598412..HEAD` — el commit `0fffe11` es un refactor de código que aún no pasó revisión.
+
+--- [34]
+Ahora presento la validación de la feature 0012.
+
+---
+
+## Me salí del plan en…
+
+- **Re-revisión no despachada.** `HEAD` (`0fffe11`) había avanzado sobre el último tramo revisado (`Pasada de fix: 7598412`) con un commit de código real (`0fffe11`, refactor de `src/slots.js`) — el `ee2840c` intermedio es solo docs (1 línea) y no cuenta. Tocaba despachar el revisor final (`sdd-kit:effort-high` + opus) sobre `7598412..HEAD` antes de presentar. El despacho de subagentes está deshabilitado en esta campaña («Despacho no disponible en esta campaña»), así que hice yo mismo la re-revisión en el hilo: leí el diff completo del tramo (2 commits, `src/slots.js` +6/-2, `tasks.md` +1), apliqué las Restricciones de código del plan (mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12») y re-ejecuté los tests. **Resultado: Approved, sin hallazgos** — el refactor extrae `assertSlot(slot)` y ambas funciones (`reserve`, `free`) siguen lanzando el mensaje literal exacto ante una franja inválida; no queda duplicación ni comportamiento roto. Lo dejé anotado en `tasks.md`: `Re-revisión: 7598412..0fffe11, hilo principal (despacho no disponible en esta campaña) + node --test, Approved (sin hallazgos)`. Si el despacho hubiera estado disponible, el resultado esperado con opus + effort-high sería el mismo veredicto, dado que es un refactor mecánico de extracción sin cambio de comportamiento.
+
+## Qué hay
+
+Feature 0012 — validar el formato de la franja (`HH-HH`) al reservar y al consultar libres, con mensaje de error literal compartido. Dos tasks (reservar / libres), revisión final de rama con 1 Important (mensaje no compartido entre `reserve` y `free`), pasada de fix (`7598412`) y un refactor posterior (`0fffe11`) que resuelve ese hallazgo extrayendo `assertSlot()`.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| `reserve` falla con «Franja no válida: usa HH-HH, p. ej. 10-12» ante franja inválida | **ejecución real** — `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| `free` falla con el mismo mensaje ante franja inválida | **ejecución real** — `free('1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa (`node --test tests/`): 4/4 pass, 0.3 s.
+
+## Guion de pruebas
+
+No hay CLI ni servidor levantado en este repo (es un módulo `src/slots.js` sin entrypoint de aplicación) — se prueba invocando las funciones directamente en Node:
+
+1. `node -e "import('./src/slots.js').then(({reserve})=>reserve('Norte','1012'))"` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`
+2. `node -e "import('./src/slots.js').then(({free})=>free('1012'))"` → lanza el mismo mensaje
+3. `node -e "import('./src/slots.js').then(({reserve})=>console.log(reserve('Norte','10-12')))"` → `{ room: 'Norte', slot: '10-12' }` (caso válido, sin error)
+
+---
+
+¿Puedes confirmar qué has probado tú y que funciona, para dar por validada la feature 0012?
+

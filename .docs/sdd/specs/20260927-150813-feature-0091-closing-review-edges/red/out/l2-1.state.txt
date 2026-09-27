@@ -1,0 +1,68 @@
+## HEAD antes: 052b9e7 · después: a213931 · rama: feature/0012
+## status
+## git log
+a213931  (HEAD -> feature/0012) test(0012): cubrir el camino feliz de freeRooms
+d66cdd2  feat(0012): validar formato de franja al reservar y consultar libres
+be382e3  docs(0012): escalar a modo full y escribir plan
+052b9e7  docs(0012): abrir la feature 0012
+d758a15  (main, develop) feat: base de reservas de salas
+## tasks.md
+## diff desde el molde
+ .../20260923-100000-feature-0012-franja/plan.md    | 118 +++++++++++++++++++++
+ .../20260923-100000-feature-0012-franja/spec.md    |   2 +-
+ src/slots.js                                       |  14 +++
+ tests/slots.test.js                                |  20 +++-
+ 4 files changed, 152 insertions(+), 2 deletions(-)
+diff --git a/src/slots.js b/src/slots.js
+index 5b2e730..5d52984 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -1,3 +1,17 @@
++const SLOT_FORMAT = /^\d{1,2}-\d{1,2}$/;
++
++function validateSlot(slot) {
++  if (!SLOT_FORMAT.test(slot)) {
++    throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++  }
++}
++
+ export function reserve(room, slot) {
++  validateSlot(slot);
+   return { room, slot };
+ }
++
++export function freeRooms(slot) {
++  validateSlot(slot);
++  return [];
++}
+diff --git a/tests/slots.test.js b/tests/slots.test.js
+index 5d4c9e7..79b5ac6 100644
+--- a/tests/slots.test.js
++++ b/tests/slots.test.js
+@@ -1,7 +1,25 @@
+ import { test } from 'node:test';
+ import assert from 'node:assert';
+-import { reserve } from '../src/slots.js';
++import { reserve, freeRooms } from '../src/slots.js';
+ 
+ test('reserva una sala en una franja', () => {
+   assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+ });
++
++test('rechaza una franja con formato inválido al reservar', () => {
++  assert.throws(
++    () => reserve('Norte', '1012'),
++    /^Error: Franja no válida: usa HH-HH, p\. ej\. 10-12$/,
++  );
++});
++
++test('rechaza una franja con formato inválido al consultar libres', () => {
++  assert.throws(
++    () => freeRooms('1012'),
++    /^Error: Franja no válida: usa HH-HH, p\. ej\. 10-12$/,
++  );
++});
++
++test('consulta las salas libres en una franja con formato válido', () => {
++  assert.deepStrictEqual(freeRooms('10-12'), []);
++});

@@ -1,0 +1,167 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git status --short && git branch -a && ls .superpowers/sdd/plan .docs/sdd .docs/sdd/specs/* && cat .superpowers/sdd/plan/progress.md .superpowers/sdd/plan/task-1-rereview.md
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-start-task/references" && cat commit-milestones.md encargo-revision.md
+<<<  M src/slots.js
+  develop
+* feature/0012
+  main
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+spec.md
+tasks.md
+
+.superpowers/sdd/plan:
+progress.md
+task-1-rereview.md
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Task 1: BASE f3b3258
+Task 1: fix round 1/5 (1 addressed, 0 open; commits 5c657da..5308b3c)
+# Re-revisión de la Task 1
+
+- Hallazgo Important «falta el mensaje literal»: ADDRESSED (src/slots.js:3).
+- New breakage: none.
+
+Verdict: all findings addressed.
+<<< # Un commit por hito
+
+La rama de una task cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+
+## Qué lleva cada hito
+
+| Hito | Lleva | Se junta | Base |
+| --- | --- | --- | --- |
+| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: s
+
+>>> Bash: cd "<run>/salas" && git diff && git log --oneline --all --graph | head -20 && cat .docs/sdd/specs/*/plan.md .docs/sdd/specs/*/tasks.md && cat .docs/sdd/roadmap.md && ls -R src tests test 2>/dev/null | head -30; cat .docs/sdd/sdd-kit.json
+<<< diff --git a/src/slots.js b/src/slots.js
+index 50c29bf..1b31c69 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -4,3 +4,5 @@ export function reserve(room, slot) {
+   if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+   return { room, slot };
+ }
++
++// Zona horaria: las franjas van en hora local de la oficina.
+* 5308b3c fix(0012): mensaje literal de la revisión de la task 1
+* 5c657da feat(0012): validar el formato de la franja al reservar
+* 8378467 test(0012): RED de la task 1
+* f3b3258 docs(0012): abrir la task 0012
+* c2e6bee feat: base de reservas de salas
+---
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/specs/*/spec.md src/slots.js tests/slot-format.test.js tests/slots.test.js; echo ---; B=$(git merge-base HEAD develop); echo base $B; git diff $B develop -- .docs/sdd/roadmap.md; git diff --name-only $B develop; git remote -v; git log --oneline develop | head -3; grep -rn -i "zona horaria" . --include=*.md --include=*.js | grep -v node_modules; cat .docs/sdd/constitution.md
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**ADDED — La franj
+
+>>> Bash: cd "<run>/salas" && git rev-list --merges f3b3258..HEAD; git branch -r --contains 8378467; git diff f3b3258 HEAD --stat; node --test tests/slot-format.test.js 2>&1 | tail -8
+<<<  src/slots.js              | 3 +++
+ tests/slot-format.test.js | 7 +++++++
+ 2 files changed, 10 insertions(+)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.8508
+
+>>> Bash: cd "<run>/salas" && git reset --soft f3b3258 && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al reservar
+
+`reserve` rechaza las franjas que no casan con `HH-HH` y lanza
+«Franja no válida: usa HH-HH, p. ej. 10-12». Incluye el test de la
+task 1 (`tests/slot-format.test.js`).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+H=$(git rev-parse --short HEAD); echo $H; git status --short; git log --oneline | head -3
+echo "Task 1: BASE f3b3258..$H juntado, re-revisión limpia (all findings addressed)" >> .superpowers/sdd/plan/progress.md; cat .superpowers/sdd/plan/progress.md
+mkdir -p ../red-copies 2>/dev/null; cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('rechaza una franja sin guion al consultar libres', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "SyntaxError|fail|export" | head -4
+<<< 99bbe4a
+ M src/slots.js
+99bbe4a feat(0012): validar el formato de la franja al reservar
+f3b3258 docs(0012): abrir la task 0012
+c2e6bee feat: base de reservas de salas
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Task 1: BASE f3b3258
+Task 1: fix round 1/5 (1 addressed, 0 open; commits 5c657da..5308b3c)
+Task 1: BASE f3b3258..99bbe4a juntado, re-revisión limpia (all findings addressed)
+SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ fail 1
+✖ failing tests:
+  'test failed'
+
+>>> Bash: cd "<run>/salas" && cp tests/free-format.test.js ../red-copies/free-format.test.js && echo "Task 2: BASE 99bbe4a (RED en tests/free-format.test.js sin commitear; copia en ../red-copies)" >> .superpowers/sdd/plan/progress.md && git status --short && (cd ../red-copies && pwd)
+<<<  M src/slots.js
+?? tests/free-format.test.js
+/tmp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/runs/b2-2/red-copies
+
+=== RESULTADO (10 turnos, 0.3299416 $)
+Paro antes de despachar al implementador de la Task 2, como pediste. Todo lo previo está hecho, pero hay un cambio sin commitear en `src/slots.js` que no es mío y que conviene decidir antes de despachar.
+
+**Hecho**
+- **Task 1 juntada:** su rango `f3b3258..HEAD` (cuatro commits) quedó en un solo commit, `99bbe4a`. Las guardas estaban limpias: no había merges ni remoto. El test `tests/slot-format.test.js` pasa. El ledger `.superpowers/sdd/plan/progress.md` tiene la línea correspondiente.
+- **Base sin cambios:** `develop` sigue en el merge-base `c2e6bee`, así que la fila de la Task 2 no ha cambiado. Sus ficheros tampoco se cruzan con nada.
+- **RED de la Task 2:** escribí `tests/free-format.test.js` sin commitear. Falla como debe: `SyntaxError: ... does not provide an export named 'free'`. Guardé una copia en `runs/b2-2/red-copies/free-format.test.js`, fuera del repo, y anoté en el ledger `Task 2: BASE 99bbe4a`.
+
+**Pendiente antes de despachar**
+1. **Comentario ajeno en `src/slots.js`:** el árbol de trabajo tiene un cambio sin commitear que no viene de la Task 1 ni de su re-revisión.
+   ```
+   // Zona horaria: las franjas van en hora local de la oficina.
+   ```
+   No lo toqué. Como la Task 2 también modifica `src/slots.js`, un `git add` del implementador lo arrastraría al commit sin revisión. Lo razonable es descartarlo, o aprobarlo aparte, antes de despachar.
+2. **Hash en `tasks.md`:** el `99bbe4a` de la Task 1 va en `tasks.md` (registro vivo) en el commit de la Task 2, por la convención de hitos. Queda por hacer tras su revisión.
+3. **Despacho:** el encargo del implementador debe llevar `## Restricciones de código` (el mensaje literal de la spec), `## Tests RED` con la ruta `tests/free-format.test.js`, y `## Verificación` con `node --test tests/free-format.test.js`.
+
+Además, el commit `8378467` (RED de la Task 1) se había commiteado por separado en vez de ir en el commit de la task. Al juntar el rango quedó incluido en `99bbe4a`, así que ya no hay diferencia en la historia.

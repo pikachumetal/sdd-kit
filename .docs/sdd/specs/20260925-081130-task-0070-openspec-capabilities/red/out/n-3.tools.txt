@@ -1,0 +1,266 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd "<run>/salas" && git status --short && git branch --show-current && find .docs .claude -type f 2>/dev/null | grep -v node_modules | head -80 && cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< feature/0020
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260925-070000-task-0020-libres-orden/spec.md
+.docs/sdd/specs/20260925-080000-patch-0014-libres-mantenimiento/patch.md
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/specs/*0020*/spec.md; echo ------; cat .docs/sdd/roadmap.md; echo -----; cat .docs/sdd/changelog.md; echo ----; cat .docs/sdd/capabilities/bookings.md; echo; git log --oneline -12; git worktree list; ls; git diff main --stat | tail -5
+<<< ---
+id: 20260925-070000-task-0020-libres-orden
+task: 0020
+title: libres en orden alfabético
+mode: lite
+status: approved
+created: 2026-09-25
+author: agente
+approvers:
+  - role: dev-lead
+    name: dev-lead
+    approved_at: 2026-09-25
+---
+
+# Spec — libres en orden alfabético
+
+## Decisiones que he tomado yo — valida estas
+
+1. Orden alfabético simple, sin distinguir tildes: solo hay tres salas.
+
+## Intent
+
+Soporte pide que `salas libres` salga en orden alfabético: hoy sale en el orden de alta de las salas.
+
+## Scope
+
+- Entra: el orden de la salida de `salas libres`.
+- No entra: el formato de cada l
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js; cat tests/slots.test.js; cat .docs/sdd/specs/*0014*/patch.md; ls src tests; node --test 2>&1 | tail -12
+<<< export const ROOMS = [
+  { name: 'Norte' },
+  { name: 'Sur' },
+  { name: 'Oeste', maintenance: true },
+];
+
+export function hours(slot) {
+  const [from, to] = slot.split('-').map(Number);
+  return to - from;
+}
+
+export function reserve(bookings, room, slot) {
+  bookings.push({ room, slot });
+  return `Reservada ${room} ${slot}`;
+}
+
+export function free(bookings, slot) {
+  const taken = bookings.filter((b) => b.slot === slot).map((b) => b.room);
+  const open = ROOMS.filter((r) => !r.maintenance && !taken.includes(r.name)).map((r) => r.name).sort();
+  const closed = ROOMS.filter((r) => r.maintenan
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0070-openspec-capabilities/4eeabe21-48b5-45f8-80d5-1535d483175d/scratchpad/kit-red/skills" && ls; ls sdd-templates sdd-templates/* | head -40; cat sdd-templates/walkthrough-template.md 2>/dev/null || find . -name "walkthrough-template.md"; cat add-to-changelog/SKILL.md; ls sdd-end-task/references; git -C ../../runs/n-3/salas branch -a
+<<< add-to-changelog/
+sdd-config/
+sdd-consult/
+sdd-end-patch/
+sdd-end-release/
+sdd-end-task/
+sdd-feedback/
+sdd-init-brownfield/
+sdd-init-greenfield/
+sdd-start-patch/
+sdd-start-release/
+sdd-start-task/
+sdd-templates/
+sdd-templates/SKILL.md
+
+sdd-templates:
+scripts/
+SKILL.md
+templates/
+
+sdd-templates/scripts:
+Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+
+sdd-templates/templates:
+architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+environments-template.m
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0070-openspec-capabilities/4eeabe21-48b5-45f8-80d5-1535d483175d/scratchpad/kit-red/skills" && cat sdd-templates/templates/walkthrough-template.md; cat sdd-end-task/references/aprendizajes-skills.md; cat sdd-templates/templates/roadmap-template.md; cd ../../runs/n-3/salas; git log --oneline develop -3; git log --format='%h %s' 57e6cc4 -1
+<<< ---
+id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
+task: <id>
+title: Walkthrough — <título de la spec>
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: <YYYY-MM-DD>
+---
+
+# Walkthrough — <título>
+
+> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), las desviaciones,
+> la verificación con evidencia y los aprendizajes que vuelven a los docs vivos. El cuerpo no se
+> reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra task) se
+> añade como entrada fechada en `## 6. Adendas`. Borra los bloques de ayuda (`>`) al redactar.
+
+>>> Bash: cd "<run>/salas" && cat > .docs/sdd/specs/20260925-070000-task-0020-libres-orden/walkthrough.md <<'EOF'
+---
+id: 20260925-070000-task-0020-libres-orden
+task: 0020
+title: Walkthrough — libres en orden alfabético
+spec: ./spec.md
+status: done
+created: 2026-09-25
+---
+
+# Walkthrough — libres en orden alfabético
+
+## 1. Cambios realizados
+
+- `src/slots.js`, `tests/slots.test.js` (`57e6cc4`): `free` ordena con `.sort()` los nombres de las salas libres antes de unirlos.
+- Tras integrar `develop` (patch 0014, `4f21475`), `free` deja las salas en mantenimiento aparte, al final. El orden alfabético se aplica solo a las salas libres; la línea `Oeste (en mantenimiento)` va después.
+- Capacidad `bookings`: requisito «Consultar salas libres» actualizado con la regla de orden, conservando el comportamiento del patch 0014 (ver decisiones).
+
+## 2. Tiempo y coste: estimado vs real
+
+- Tipo: backend
+- Estimación de implementación (de la spec): 0,5h
+- Esfuerzo real: 0,6h (dato del dev-lead)
+- Desviación: +0,1h (+20%)
+- Modelo del hilo: no registrado
+- Tokens y coste: no medidos (el proyecto no tiene `estimation.md`)
+
+## 3. Desviaciones del plan
+
+- Modo `lite`: sin `plan.md` ni `tasks.md`.
+- La spec se aprobó antes de que el patch 0014 entrase en `develop`. Su escenario dice que `salas libres 10-12` lista `Oeste` y `Sur`; con el patch 0014, `Oeste` está en mantenimiento y sale aparte. El escenario de la spec ha quedado desfasado. No se ha tocado la spec aprobada; el escenario vigente vive en la capacidad.
+
+### Decisiones tomadas sin el dev-lead
+
+- Al fusionar el delta en `capabilities/bookings.md` no he aplicado el MODIFIED al pie de la letra (habría borrado la regla del patch 0014). He conservado el escenario de 0014 (`Sur` + `Oeste (en mantenimiento)` al final) y le he añadido «las salas libres salen en orden alfabético, una por línea» — el escenario del delta no encajaba con el comportamiento ya integrado — coste si está mal: la capacidad describe un orden que el dev-lead no quería; se corrige en una línea.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- `node --test` en la rama tras integrar `develop`: 3 tests, 3 pasan, 0 fallos (ejecutado por el agente en el cierre).
+
+### 4.2 Smoke / tests
+
+- Validado por el dev-lead: 2026-09-25 · «he probado `salas libres 10-12` y las salas salen en orden alfabético; funciona».
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` (3 tests) | ✅ verificado por el agente |
+| 2 | `salas libres 10-12`: salas en orden alfabético | ✅ reportado por el dev-lead |
+
+### 4.3 Residuales / deuda generada
+
+- El test «libres sale en orden alfabético» no prueba el orden: `free([], '10-12')` devuelve `Norte, Sur`, que ya es el orden de alta de `ROOMS`; con `.sort()` o sin él pasa igual. Además, con `Oeste` en mantenimiento solo `Norte` y `Sur` pueden salir libres y el orden observable no cambia. Fila en la deuda técnica del roadmap.
+
+## 5. Aprendizajes
+
+- El comportamiento observable (orden alfabético de `libres`) → `capabilities/bookings.md`.
+- Un delta de spec aprobado puede quedar desfasado si otra task/patch modifica el mismo requisito antes de integrarse: se reconcilia al fusionar en la capacidad. Sin destino estructural (no hay `architecture.md` ni skills en el proyecto).
+
+## 6. Adendas
+
+_Ninguna._
+EOF
+python - <<'EOF'
+import re
+p='.docs/sdd/capabilities/bookings.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("- AND lista aparte, al final, `Oeste (en mantenimiento)`\n","- AND lista aparte, al final, `Oeste (en mantenimiento)`\n- AND las salas libres salen en orden alfabético, una por línea\n")
+s=s.replace("## Historial\n\n","## Historial\n\n- 2026-09-25 — 20260925-070000-task-0020-libres-orden — MODIFIED Consultar salas libres\n")
+open(p,'w',encoding='utf-8').write(s)
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| 0020 | `libres`","| 0020 | ✅ `libres`")
+s=s.replace("## Patches","""## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| El test «libres sale en orden alfabético» pasa sin `.sort()`: usa `Norte, Sur`, que ya es el orden de alta (task 0020) | bajo: el orden no está protegido contra regresiones | test con salas dadas de alta en desorden, en la próxima task que toque `src/slots.js` |
+
+## Patches""")
+open(p,'w',encoding='utf-8').write(s)
+p='.docs/sdd/changelog.md'
+s=open(p,encoding='utf-8').read().rstrip('\n')
+s+="\n\n### Changed\n\n- **Task 0020** — `salas libres` lista las salas libres en orden alfabético. → [ref](specs/20260925-070000-task-0020-libres-orden/)\n"
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git diff --stat; git add -A && git commit -q -F - <<'EOF'
+docs(0020): cierre de la task 0020
+
+Walkthrough, capacidad bookings, changelog y roadmap de la task 0020.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -1; git status --short
+<<<  .docs/sdd/capabilities/bookings.md | 58 ++++++++++++++++++++------------------
+ .docs/sdd/changelog.md             | 10 +++++--
+ .docs/sdd/roadmap.md               | 34 +++++++++++++---------
+ 3 files changed, 57 insertions(+), 45 deletions(-)
+514c656 docs(0020): cierre de la task 0020
+
+>>> Bash: cd "<run>/salas" && git show HEAD~1:.docs/sdd/roadmap.md | file - ; file .docs/sdd/roadmap.md; git show HEAD~1:.docs/sdd/changelog.md | file -
+<<< /dev/stdin: Unicode text, UTF-8 text
+.docs/sdd/roadmap.md: Unicode text, UTF-8 text, with CRLF line terminators
+/dev/stdin: ASCII text
+
+>>> Bash: cd "<run>/salas" && sed -i 's/\r$//' .docs/sdd/capabilities/bookings.md .docs/sdd/roadmap.md .docs/sdd/changelog.md && git diff HEAD~1 --stat && git add -A && git commit -q --amend --no-edit && git log --oneline -2 && git status --short && git diff HEAD~1 -- .docs/sdd/changelog.md .docs/sdd/capabilities/bookings.md | head -40
+<<<  .docs/sdd/capabilities/bookings.md                 |  2 +
+ .docs/sdd/changelog.md                             |  4 ++
+ .docs/sdd/roadmap.md                               |  8 ++-
+ .../walkthrough.md                                 | 62 ++++++++++++++++++++++
+ 4 files changed, 75 insertions(+), 1 deletion(-)
+66f053c docs(0020): cierre de la task 0020
+27cb3c7 merge: develop en feature/0020
+diff --git a/.docs/sdd/capabilities/bookings.md b/.docs/sdd/capabilities/bookings.md
+index 00084fa..4892636 100644
+--- a/.docs/sdd/capabilities/bookings.md
++++ b/.docs/sdd/capabilities/bookings.md
+@@ -12,6 +1
+
+=== RESULTADO (11 turnos, 0.3922722 $)
+Cierre documentado y commiteado en `feature/0020` (`66f053c`), pero **no he fusionado nada**.
+
+**Decisiones tomadas sin el dev-lead**
+- La spec aprobada dice que `salas libres 10-12` lista `Oeste` y `Sur`, pero el patch 0014 ya deja `Oeste` (en mantenimiento) aparte, al final. Al fusionar el delta en `capabilities/bookings.md` no lo apliqué al pie de la letra, porque habría borrado la regla del 0014. Conservé ese escenario y añadí «las salas libres salen en orden alfabético, una por línea». No toqué la spec aprobada. Si prefieres otra redacción, es una línea.
+
+**Hecho**
+- `walkthrough.md`: tiempo real 0,6 h frente a 0,5 h estimadas (+20 %), validación tuya literal y `node --test` 3/3 verificado por mí en el cierre. No hay `estimation.md`, así que no hay log ni medición de tokens.
+- Capacidad `bookings` actualizada, con línea de historial.
+- Changelog: entrada en Changed.
+- Roadmap: 0020 marcada ✅.
+- Sin `architecture.md` ni `.claude/skills/`: no había destino para aprendizajes estructurales.
+
+**Pendiente**
+- **Merge a `develop`**: `sdd-kit.json` no tiene bloque `merge`, así que según la política del kit lo presento y espero. No he lanzado `Invoke-SddMerge.ps1`.
+- **Revisión final de rama**: no hay constancia de ninguna en esta task. Solo revisé el diff yo mismo, que es lo que detectó el desfase de la spec. La skill pide `superpowers:requesting-code-review`, pero lanza un subagente y tu regla exige confirmar el coste antes.
+- **Deuda anotada en el roadmap**: el test «libres sale en orden alfabético» pasa igual sin `.sort()`, porque `Norte, Sur` ya es el orden de alta. Con `Oeste` en mantenimiento, el orden no se puede observar hoy.
+- Puedo generar el ticket de mejora del kit con `sdd-feedback` si lo quieres.
+
+**No terminado.** Falta el merge de `feature/0020` a `develop`. No borres todavía el worktree `<run>\salas`.
+
+**Preguntas** (respóndelas y sigo):
+1. ¿Lanzo la revisión final con un subagente Sonnet (mi recomendación, porque son unas 4 líneas de código) o la das por cubierta con mi lectura del diff?
+2. ¿Fusiono en `develop` con `--no-ff`? Si sí, ¿con push a `origin/develop`?

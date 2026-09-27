@@ -1,0 +1,42 @@
+diff --git a/src/slots.js b/src/slots.js
+new file mode 100644
+index 0000000..1cf1ce1
+--- /dev/null
++++ b/src/slots.js
+@@ -0,0 +1,15 @@
++const HOUR_PATTERN = '[01]\\d|2[0-3]';
++const MINUTE_PATTERN = '[0-5]\\d';
++const SLOT_PATTERN = new RegExp(`^(${HOUR_PATTERN}):(${MINUTE_PATTERN})-(${HOUR_PATTERN}):(${MINUTE_PATTERN})$`);
++const MINUTES_PER_HOUR = Number('60');
++
++export function parseSlot(slot) {
++  const match = SLOT_PATTERN.exec(slot);
++  if (!match) return null;
++
++  const [, startHour, startMinute, endHour, endMinute] = match;
++  return {
++    start: Number(startHour) * MINUTES_PER_HOUR + Number(startMinute),
++    end: Number(endHour) * MINUTES_PER_HOUR + Number(endMinute),
++  };
++}
+diff --git a/test/slots.test.js b/test/slots.test.js
+new file mode 100644
+index 0000000..a496a3f
+--- /dev/null
++++ b/test/slots.test.js
+@@ -0,0 +1,15 @@
++import { test } from 'node:test';
++import assert from 'node:assert/strict';
++import { parseSlot } from '../src/slots.js';
++
++test('parseSlot convierte una franja válida en minutos desde medianoche', () => {
++  assert.deepEqual(parseSlot('10:00-12:00'), { start: 600, end: 720 });
++});
++
++test('parseSlot rechaza una hora de un dígito', () => {
++  assert.equal(parseSlot('9:00-11:00'), null);
++});
++
++test('parseSlot rechaza la hora 24', () => {
++  assert.equal(parseSlot('24:00-24:30'), null);
++});

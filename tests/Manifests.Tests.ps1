@@ -14,7 +14,7 @@ BeforeAll {
   }
 }
 
-Describe 'claude plugin validate' -Skip:(-not $script:HasClaudeCli) {
+Describe 'claude plugin validate' -Tag 'Slow' -Skip:(-not $script:HasClaudeCli) {
   It 'acepta la carpeta skills/ en modo strict' {
     (Invoke-PluginValidate 'skills' -Strict).success | Should -BeTrue
   }

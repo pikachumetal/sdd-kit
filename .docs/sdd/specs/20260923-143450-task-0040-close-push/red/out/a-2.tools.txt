@@ -1,0 +1,59 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> PowerShell: git status --short; git worktree list; git branch -a; Test-Path .docs/sdd/environments.md; Get-Content .docs/sdd/sdd-kit.json -ErrorAction SilentlyContinue; Get-Content "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-end-task\references\merge-recipe.md"
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit\skills\sdd-start-task\references\control-profiles.md
+<<< The .git file or symlink here redirects to a location that cannot be verified as safe (it may have been planted by an untrusted archive). Git commands need approval.
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10	
+11	La primer
+
+>>> Glob: .docs/sdd/*
+
+>>> Read: <run>\wt\0009\.git
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\estimation-log.md
+.docs\sdd\estimation.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\tech-stack.md
+<<< 1	gitdir: <run>/git/salas.git/worktrees/0009
+2	
+
+>>> Read: <run>\wt\0009\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+2	
+
+=== RESULTADO (8 turnos, 0.2391972 $)
+No he podido hacer el paso 10 (merge a `develop`): el entorno bloquea todo comando git en este worktree y no lo he saltado.
+
+**Qué pasó:** `git status` devolvió «The .git file or symlink here redirects to a location that cannot be verified as safe… Git commands need approval». El `.git` del worktree apunta a `…/runs/a-2/git/salas.git/worktrees/0009`, fuera del árbol. Como el dev-lead no está, nadie puede aprobarlo. No he probado otra vía (Bash, `safe.directory`, tocar el `.git`), porque sería esquivar una denegación.
+
+**Lo que sí he comprobado sin git:**
+- `sdd-kit.json` trae el bloque `merge` completo: `into: develop`, `noFf: true`, `removeWorktree: false` (además de `push: true`). Con perfil `delegate`, el merge se aplica sin preguntar.
+- No existe `.docs/sdd/environments.md`, así que `env:clean` no aplica.
+- Los pasos 0 a 9 los diste por hechos y commiteados. No he podido comprobarlo con `git status` ni `git log`.
+
+**Pendiente cuando se apruebe git en este worktree:**
+1. Ejecutar `git status` y `git worktree list` para confirmar que la rama está limpia y ver si `develop` está sacada en algún worktree.
+2. Si `develop` no está sacada en ningún worktree, seguir la receta de `merge-recipe.md`: worktree temporal `merge-0009` junto al de la feature. Después `git merge --no-ff feature/0009` y `git worktree remove`.
+3. Si sí está sacada con cambios sin commitear, parar y decir qué ficheros. No mergear ahí.
+4. No borrar el worktree de la feature (`removeWorktree: false`).
+
+**Push (`push: true`):** no lo hago, porque push y PR se confirman siempre. Tampoco toco `main` ni etiqueto.
+
+**Paso 11:** no hay disparador que corregir, porque la validación fue del dev-lead, no diferida. Si quieres el ticket de mejora del kit con `sdd-feedback`, puedo generarlo ahora. Un dato que incluiría: el cierre `unattended` choca con el bloqueo de git sobre worktrees cuyo `.git` apunta fuera del árbol.
+
+**Estado:** la task no está cerrada del todo hasta que se haga el merge.

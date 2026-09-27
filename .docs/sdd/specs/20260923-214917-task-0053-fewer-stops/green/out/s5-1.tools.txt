@@ -1,0 +1,69 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/sdd-kit.json; grep -n -i "cancelar\|franja" .docs/sdd/roadmap.md
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+7:| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+8:| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+19:| `salas cancelar Norte`
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/roadmap.md src/slots.js tests/slots.test.js; git log --stat -3 | head -40; cat package.json 2>/dev/null; node tests/slots.test.js; node -e "
+const s=require('./src/slots.js');console.log(Object.keys(s))"
+<<< # Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (reproducido el 2026-09-10) | medio: el comando r
+
+>>> Bash: cd "<run>/salas" && node -e "import('./src/slots.js').then(m=>{try{m.cancel('Norte')}catch(e){console.log(e.constructor.name+': '+e.message)}try{m.cancel('Norte',undefined)}catch(e){console.log(e.constructor.name+': '+e.message)}})"; cat README.md; ls; git status --short
+<<< Error: Uso: salas cancelar <sala> <franja>
+Error: Uso: salas cancelar <sala> <franja>
+# salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+README.md
+src/
+tests/
+
+>>> Edit: <run>/salas/.docs/sdd/roadmap.md
+<<< The file <run>/salas/.docs/sdd/roadmap.md has been updated successfully.
+
+=== RESULTADO (7 turnos, 0.2066714 $)
+No abrí el patch: `salas cancelar` sin franja ya no falla como dice la fila de deuda.
+
+**Lo que medí sobre `develop` (1973e3e):**
+- `cancel('Norte')` y `cancel('Norte', undefined)` lanzan `Error: Uso: salas cancelar <sala> <franja>`.
+- No aparece ningún `TypeError`. El guard `if (!slot) throw …` de `src/slots.js` entró en 408ece1, después del 2026-09-10, la fecha en que se reprodujo.
+- Es lo que pide la fila: pide el uso en vez de reventar.
+- El repo no tiene CLI, solo `src/slots.js`. Probé la función `cancel` directamente.
+
+**Qué hice:**
+- No creé rama, carpeta, `patch.md` ni fix, y tampoco reservé id.
+- Reescribí la fila de deuda técnica en `.docs/sdd/roadmap.md` con la medición del 2026-09-24, el commit 408ece1 y el destino "sin patch; cerrar la fila si dev-lead lo confirma". El cambio queda sin commitear.
+
+**Pendiente para dev-lead:**
+- La fila 0013 de "Próximo" (`cancelar` sin hora debe pedir el uso) tiene el mismo problema. La dejé sin tocar porque pediste la fila de deuda.
+- Además, `tests/slots.test.js` no cubre `cancel`. Si dev-lead quiere un test de regresión, sería una task aparte.

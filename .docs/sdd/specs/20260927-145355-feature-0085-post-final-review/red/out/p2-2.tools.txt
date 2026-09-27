@@ -1,0 +1,623 @@
+
+>>> Skill: sdd-kit:sdd-end-feature
+<<< Launching skill: sdd-kit:sdd-end-feature
+
+>>> Bash: find .docs/sdd -iname "*0012*" 2>/dev/null; echo "---"; find .docs/sdd/specs -maxdepth 2 2>/dev/null
+<<< .docs/sdd/specs/20260923-100000-feature-0012-franja
+---
+.docs/sdd/specs
+.docs/sdd/specs/20260923-100000-feature-0012-franja
+.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+22	
+23	## 2. Tasks
+24	
+25	### Task 1 — Validar al reservar
+26
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Validar el formato de la franja
+5	mode: full
+6	status: approved
+7	created: 2026-09-23
+8	approvers:
+9	  - role: dev-lead
+10	    name: Dev Lead
+11	    approved_at: 2026-09-23
+12	---
+13	
+14	# Spec — Validar el formato de la franja
+15	
+16	## Intent
+17	
+18	`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+19	
+20	## Delta de comportamiento
+21	
+22	### Capacidad: `booking`
+23	
+24	**ADDED — La franja se valida al reservar**
+25	- GIVEN una franja que no casa con `HH-HH`
+26	- WHEN se reserva
+27	- THEN f
+
+>>> Read: .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< 1	# Tasks — Validar el formato de la franja (registro vivo)
+2	
+3	| # | Task | Status | Commit | Notas |
+4	| --- | --- | --- | --- | --- |
+5	| 1 | Validar al reservar | done | — | |
+6	| 2 | Validar al consultar libres | done | — | |
+7	
+8	Revisión final: sdd-kit:effort-high + opus, Ready (0 Critical, 0 Important, 2 Minor), sobre b6bcc64
+9	Deferred minors: la validación y el mensaje se repiten en reserve y free; ningún test cubre una franja válida como 10-12
+10	
+
+>>> Bash: echo "--- .docs/sdd top level ---"; ls .docs/sdd
+echo "--- capabilities ---"; ls .docs/sdd/capabilities 2>/dev/null
+echo "--- sdd-kit.json ---"; cat .docs/sdd/sdd-kit.json 2>/dev/null
+echo "--- roadmap grep 0012 ---"; grep -n "0012" .docs/sdd/roadmap.md 2>/dev/null
+echo "--- estimation.md exists? ---"; ls .docs/sdd/estimation.md 2>/dev/null
+echo "--- environments.md exists? ---"; ls .docs/sdd/environments.md 2>/dev/null
+echo "--- changelog.md exists? ---"; ls .docs/sdd/changelog.md 2>/dev/null
+echo "--- .claude/skills ---"; ls .claude/skills 2>/dev/null
+echo "--- tests dir ---"; ls tests 2>/dev/null
+echo "--- walkthrough exists? ---"; ls .docs/sdd/specs/20260923-100000-feature-0012-franja
+
+<<< --- .docs/sdd top level ---
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+--- capabilities ---
+--- sdd-kit.json ---
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+--- roadmap grep 0012 ---
+7:| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+--- estimation.md exists? ---
+--- environments.md exists? ---
+--- changelog.md exists? ---
+.docs/sdd/changelog.md
+--- .cla
+
+>>> Bash: find .docs/sdd -maxdepth 3 -type f | sort
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+
+>>> Read: tests/slot-format.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('rechaza una franja sin guion', () => {
+6	  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+7	});
+8	
+
+>>> Read: tests/free-format.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { free } from '../src/slots.js';
+4	
+5	test('libres rechaza una franja sin guion', () => {
+6	  assert.throws(() => free('1012'), /Franja no válida/);
+7	});
+8	
+
+>>> Read: tests/slots.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('reserva una sala en una franja', () => {
+6	  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+7	});
+8	
+
+>>> Bash: find src -iname "*.js" | sort
+<<< src/slots.js
+
+>>> Read: src/slots.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	function assertSlot(slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	}
+6	
+7	export function reserve(room, slot) {
+8	  assertSlot(slot);
+9	  return { room, slot };
+10	}
+11	
+12	export function free(slot) {
+13	  assertSlot(slot);
+14	  return [];
+15	}
+16	
+
+>>> Bash: git log --oneline --follow -- tests/slots.test.js; echo "---"; git log --oneline --follow -- tests/free-format.test.js; echo "---diff 09e9d1f---"; git show --stat 09e9d1f; echo "---full diff---"; git show 09e9d1f
+<<< 9ae2579 feat: base de reservas de salas
+---
+b6bcc64 feat(0012): validar el formato de la franja al consultar libres
+---diff 09e9d1f---
+commit 09e9d1f46e9520a37b41a87236c34e4cfda1baa4
+Author: Fixture <fixture@example.com>
+Date:   Sun Sep 27 15:02:24 2026 +0200
+
+    refactor(0012): compartir la validación de la franja entre reserve y free
+    
+    Resuelve el minor diferido de la revisión final: la validación y el mensaje se repetían.
+
+ src/slots.js | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+---full diff---
+commit 09e9d1f46e9520a37b41a87236c34e4cfda1baa4
+Author: Fixture <fixtu
+
+>>> Read: .docs/sdd/roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+6	| --- | --- | --- | --- | --- |
+7	| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+8	| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+9	
+
+>>> Read: .docs/sdd/changelog.md
+<<< 1	# Changelog
+2	
+3	## [Unreleased]
+4	
+
+>>> Read: .docs/sdd/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	## Art. I — Commits
+4	
+5	Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+6	
+7	## Art. II — Tests
+8	
+9	Suite: `node --test`. Todo verde antes de fusionar.
+10	
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: BASE="<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates"
+ls "$BASE"
+<<< architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+environments-template.md
+estimation-template.md
+feedback-template.md
+kit-feedback-template.md
+mission-template.md
+patch-template.md
+plan-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+tech-stack-template.md
+walkthrough-template.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\walkthrough-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>
+4	title: Walkthrough — <título de la spec>
+5	spec: ./spec.md
+6	plan: ./plan.md
+7	status: done
+8	created: <YYYY-MM-DD>
+9	---
+10	
+11	# Walkthrough — <título>
+12	
+13	> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), las desviaciones,
+14	> la verificación con evidencia y los aprendizajes que vuelven a los docs vivos. El cuerpo no se
+15	> reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra feature) se
+16	> añade como entrada fechada en `## 6. Adendas`. Borra los bl
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\roadmap-template.md
+<<< 1	# Roadmap — <proyecto>
+2	
+3	> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-end-feature` (marca la fila de la feature), `sdd-end-patch` (tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 🧪 validación 
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\capability-template.md
+<<< 1	# Capacidad — <nombre>
+2	
+3	> **Reglas anti-proliferación** (no se rompen sin pasar por esta lista):
+4	> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+5	> 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
+6	>    la crean `sdd-end-feature` ni `sdd-end-patch` por su cuenta.
+7	> 3. `sdd-end-feature` fusiona el delta de la spec, y `sdd-end-patch` el del `patch.md`: `A
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\changelog-template.md
+<<< 1	# Changelog — <proyecto>
+2	
+3	Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técnico del proyecto, backward-looking: `roadmap.md` es el forward-looking.
+4	
+5	> Su presencia activa el módulo de changelog: `add-to-changelog` añade una entrada al cerrar cada feature o patch, y `sdd-end-release` sella `[Unreleased]` con la versión. El formato de cada entrada y sus categorías (`Added` · `Changed` · `Deprecated` · `Removed` · `Fixed` · `Security`) los fija `add-to-changelog`. Nace sin entradas. Borra este bloque de ayuda al redactar.
+6	
+7	## [Unreleased]
+8	
+
+>>> Bash: BASE="<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills"
+find "$BASE/sdd-start-feature/references" -maxdepth 1 -type f 2>/dev/null
+echo "---"
+find "$BASE/sdd-end-feature/references" -maxdepth 1 -type f 2>/dev/null
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills/sdd-start-feature/references/commit-milestones.md
+<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills/sdd-start-feature/references/control-profiles.md
+<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills/sdd-start-feature/references/encargo-revision.md
+<home>\AppData
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-start-feature\references\control-profiles.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-end-feature\references\merge-recipe.md
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-feature` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base direct
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-end-feature\references\aprendizajes-skills.md
+<<< 1	# Aprendizajes a docs vivos y revisión de skills — detalle
+2	
+3	## Paso 4 — Aprendizajes
+4	
+5	4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive: convención nueva → `constitution.md`; cambio estructural → `architecture.md`; versión/herramienta → `tech-stack.md`; cambio de comportamiento observable → el delta de la spec se fusiona en `capabilities/<capability>.md` (ADDED añade, MODIFIED sustituye entero el requisito con ese título, REMOVED quita; las entradas de «Reglas de la capacidad» se sustituyen o añaden por su nombre, sin marcas; nunca una capacidad
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\tasks-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	title: Tasks — <título de la spec>
+4	spec: ./spec.md
+5	plan: ./plan.md
+6	created: <YYYY-MM-DD>
+7	---
+8	
+9	# Tasks — <título> (registro vivo)
+10	
+11	> Registro **vivo** de la ejecución del plan: se crea ANTES de empezar a implementar y se
+12	> actualiza al cerrar cada task: el status en el commit de la task y su hash —el del commit ya
+13	> juntado— en el del hito siguiente. La lista de todos del harness es efímera;
+14	> **este fichero es el registro durable**. Solo se crea si el plan tiene más de una task.
+15	> Borra los bloques de ayuda (`>`)
+
+>>> Bash: git log --oneline d23288c..09e9d1f
+echo "---show commits for tasks---"
+git show --stat f6e9e0d
+echo "---"
+git show --stat b6bcc64
+echo "---5b0a162 docs revision final---"
+git show 5b0a162
+<<< 09e9d1f refactor(0012): compartir la validación de la franja entre reserve y free
+5b0a162 docs(0012): revisión final de rama
+b6bcc64 feat(0012): validar el formato de la franja al consultar libres
+f6e9e0d feat(0012): validar el formato de la franja al reservar
+---show commits for tasks---
+commit f6e9e0d83d67a52f6003237caf9c55d6dd3b06f4
+Author: Fixture <fixture@example.com>
+Date:   Sun Sep 27 15:02:21 2026 +0200
+
+    feat(0012): validar el formato de la franja al reservar
+    
+    La reserva rechaza una franja que no casa con HH-HH, con el mensaje literal de la spec.
+
+ src/slots.js             
+
+>>> Bash: node --test tests/ 2>&1 | tail -40
+echo "=== git status ==="
+git status
+echo "=== git rev-parse dirs ==="
+git rev-parse --git-dir
+git rev-parse --git-common-dir
+<<< ✔ libres rechaza una franja sin guion (1.5635ms)
+✔ rechaza una franja sin guion (1.2784ms)
+✔ reserva una sala en una franja (1.7624ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 165.0996
+=== git status ===
+On branch feature/0012
+nothing to commit, working tree clean
+=== git rev-parse dirs ===
+.git
+.git
+
+>>> Bash: find . -maxdepth 2 -iname "*.js" -not -path "./node_modules/*" -not -path "./tests/*" -not -path "./src/*" 2>/dev/null
+echo "---package.json---"
+cat package.json 2>/dev/null
+echo "---bin dir---"
+find . -maxdepth 2 -iname "bin" -o -iname "cli*" 2>/dev/null | grep -v node_modules
+<<< ---package.json---
+---bin dir---
+
+>>> Bash: SCRIPTS="<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\scripts"
+ls "$SCRIPTS"
+<<< Build-EstimationLog.ps1
+CapabilitySections.ps1
+Get-CapabilityIndex.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+Test-Capabilities.ps1
+
+>>> Bash: mkdir -p .docs/sdd/capabilities
+<<< (Bash completed with no output)
+
+>>> Write: .docs/sdd/capabilities/booking.md
+<<< File created successfully at: .docs/sdd/capabilities/booking.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: pwsh -NoProfile -File "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\scripts\Test-Capabilities.ps1" -Path ".docs/sdd" -Artifact ".docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md"
+<<< Exit code 1
+spec.md: falta el bloque «## Capacidades»
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\spec-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+5	proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
+6	title: <título corto descriptivo>
+7	mode: full            # full | lite — lo lee sdd-end-feature; sin campo = full
+8	profile: <pair|delegate|unattended>   # opcional; omitido = hereda de
+
+>>> Edit: .docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+<<< The file .docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: pwsh -NoProfile -File "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\scripts\Test-Capabilities.ps1" -Path ".docs/sdd" -Artifact ".docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md"
+<<< Capacidades válidas: 1
+
+>>> Edit: .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+<<< The file .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\templates\constitution-template.md
+<<< 1	# Constitution — <proyecto>
+2	
+3	> Principios no negociables del proyecto. La constitution manda sobre cualquier spec. En greenfield sale del bloque de principios de la entrevista; en brownfield, de las convenciones observadas, marcadas como propuesta hasta que el dev-lead las apruebe. Borra los bloques de ayuda (`>`) al redactar.
+4	
+5	## Principios
+6	
+7	> Uno por artículo, con su porqué si no es evidente. Lo innegociable: datos, migraciones, commits, seguridad, tests.
+8	
+9	1. <principio>
+10	
+11	## Convenciones
+12	
+13	- **Idioma**: <idioma del texto humano (interfaz, docs, commits) y de los 
+
+>>> Skill: sdd-kit:add-to-changelog
+<<< Launching skill: sdd-kit:add-to-changelog
+
+>>> Edit: .docs/sdd/changelog.md
+<<< The file .docs/sdd/changelog.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: .docs/sdd/roadmap.md
+<<< The file .docs/sdd/roadmap.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Write: .docs/sdd/specs/20260923-100000-feature-0012-franja/walkthrough.md
+<<< File created successfully at: .docs/sdd/specs/20260923-100000-feature-0012-franja/walkthrough.md (file state is current in your context — no need to Read it back)
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-start-feature\references\commit-milestones.md
+<<< 1	# Un commit por hito
+2	
+3	La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+4	
+5	## Qué lleva cada hito
+6	
+7	| Hito | Lleva | Se junta | Base |
+8	| --- | --- | --- | --- |
+9	| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks
+
+>>> Bash: git remote -v
+echo "---"
+git branch -r --contains 5b0a162 2>&1
+echo "---rev-list merges---"
+git rev-list --merges b6bcc64..HEAD
+echo "---log b6bcc64..HEAD---"
+git log --oneline b6bcc64..HEAD
+echo "---status---"
+git status --short
+<<< ---
+---rev-list merges---
+---log b6bcc64..HEAD---
+09e9d1f refactor(0012): compartir la validación de la franja entre reserve y free
+5b0a162 docs(0012): revisión final de rama
+---status---
+ M .docs/sdd/changelog.md
+ M .docs/sdd/roadmap.md
+ M .docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+ M .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+?? .docs/sdd/capabilities/
+?? .docs/sdd/specs/20260923-100000-feature-0012-franja/walkthrough.md
+
+>>> Bash: git diff --stat b6bcc64 HEAD
+echo "=== working tree diff (uncommitted) ==="
+git diff --stat
+git status --short
+<<<  .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md | 7 +++++--
+ src/slots.js                                                 | 8 ++++++--
+ 2 files changed, 11 insertions(+), 4 deletions(-)
+=== working tree diff (uncommitted) ===
+warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next 
+
+>>> Bash: git reset --soft b6bcc64
+git status --short
+<<<  M .docs/sdd/changelog.md
+ M .docs/sdd/roadmap.md
+ M .docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+MM .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+M  src/slots.js
+?? .docs/sdd/capabilities/
+?? .docs/sdd/specs/20260923-100000-feature-0012-franja/walkthrough.md
+
+>>> Bash: git add -A
+git status --short
+echo "=== full staged diff stat ==="
+git diff --cached --stat
+<<< warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/capabilities/booking.md'
+
+>>> Bash: node --test tests/ 2>&1 | tail -10
+<<< ✔ rechaza una franja sin guion (1.4557ms)
+✔ reserva una sala en una franja (1.8294ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 193.6698
+
+>>> Bash: git commit -m "$(cat <<'EOF'
+docs(0012): cerrar la feature
+
+Comparte la validación de la franja entre reserve y free (resuelve el minor
+diferido de la revisión final) y documenta el cierre: fusiona la capacidad
+`booking`, añade el walkthrough con la validación del dev-lead, la entrada
+del changelog y la fila del roadmap, y deja como deuda técnica la falta de
+un test para una franja válida en `free`.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+git log --oneline -6
+<<< [feature/0012 09dd24e] docs(0012): cerrar la feature
+ 7 files changed, 107 insertions(+), 5 deletions(-)
+ create mode 100644 .docs/sdd/capabilities/booking.md
+ create mode 100644 .docs/sdd/specs/20260923-100000-feature-0012-franja/walkthrough.md
+09dd24e docs(0012): cerrar la feature
+b6bcc64 feat(0012): validar el formato de la franja al consultar libres
+f6e9e0d feat(0012): validar el formato de la franja al reservar
+d23288c docs(0012): abrir la task 0012
+9ae2579 feat: base de reservas de salas
+
+>>> Bash: git branch -a
+echo "---"
+git rev-parse --short develop 2>&1
+<<<   develop
+* feature/0012
+  main
+---
+9ae2579
+
+>>> Bash: pwsh -NoProfile -File "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0085-post-final-review\76f40676-5a1e-4089-ad8b-163063c24975\scratchpad\kit-red\skills\sdd-templates\scripts\Invoke-SddMerge.ps1" -ProjectRoot "$(pwd)" -VerifyCommand "node --test tests/" 2>&1
+<<< ✔ libres rechaza una franja sin guion (1.3948ms)
+✔ rechaza una franja sin guion (1.3978ms)
+✔ reserva una sala en una franja (1.6154ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 191.1837
+Fusionado feature/0012 en develop: c8905ff
+
+>>> Bash: git branch -a
+echo "---current branch---"
+git branch --show-current
+echo "---develop hash---"
+git rev-parse --short develop
+echo "---status---"
+git status --short
+echo "---log develop---"
+git log --oneline develop -5
+<<<   develop
+* feature/0012
+  main
+---current branch---
+feature/0012
+---develop hash---
+c8905ff
+---status---
+---log develop---
+c8905ff merge: feature/0012 en develop
+09dd24e docs(0012): cerrar la feature
+b6bcc64 feat(0012): validar el formato de la franja al consultar libres
+f6e9e0d feat(0012): validar el formato de la franja al reservar
+d23288c docs(0012): abrir la task 0012
+
+>>> Bash: git rev-parse --short develop
+<<< c8905ff
+
+=== RESULTADO (58 turnos, 1.375455 $)
+Cierre de la feature 0012 hecho. Un apunte antes del resumen: el mensaje pedía invocar `sdd-start-feature`, pero lo que describías (tasks hechas, revisión final limpia, y el dev-lead diciendo «cierra la feature») es justo el disparador de `sdd-end-feature` según `using-sdd`, así que apliqué ese checklist en su lugar.
+
+- Instrucción del dev-lead antes del cierre: probó `salas reservar Norte 1012` y `salas libres 1012` y ambos dan el error de la franja → validación registrada en el walkthrough, respaldada por `tests/slot-format.test.js` y `tests/free-format.test.js` (suite completa: 3 pass, 0 fail).
+- De paso, cerrando huecos que encontré: añadí `## Capacidades` a `spec.md` (faltaba y `Test-Capabilities.ps1` lo exige), creé `.docs/sdd/capabilities/booking.md` (primera feature que toca esa capacidad), y dejé como deuda técnica en el roadmap que `free()` no tiene test con una franja válida (`reserve` sí lo tiene, de antes de esta feature).
+- Todo el cierre (fix del minor diferido + revisión final + documentación) quedó en un solo commit `09dd24e`, según la convención de "un commit por hito".
+- ¿Genero también el ticket de mejora del kit con `sdd-feedback` en esta sesión? Aún no he generado ninguno.
+
+**Terminado.** feature/0012 fusionada en develop (`c8905ff`) · push: no hecho: sin remoto · puedes borrar el worktree cuando quieras (estás en el checkout principal, no hay worktree enlazado que retirar).

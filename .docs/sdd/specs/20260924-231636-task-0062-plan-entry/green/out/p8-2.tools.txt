@@ -1,0 +1,169 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Skill: superpowers:systematic-debugging
+
+>>> Read: <run>\salas\src\slots.js
+<<< Launching skill: superpowers:systematic-debugging
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs; cat package.json
+<<< 1	export function reserve(room, slot) {
+2	  return { room, slot };
+3	}
+4	
+<<< Exit code 1
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+data/usage.csv
+src/report.js
+src/slots.js
+tests/slots.test.js
+{"version": "1.1.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": true}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+cat: package.json: No such file or directo
+
+>>> Bash: cd "<run>/salas" && cat tests/slots.test.js src/report.js .docs/sdd/roadmap.md README.md; git branch -a; node -e "import('./src/slots.js').then(m=>console.log(m.reserve('', '10-12')))"; grep -rn "reserve" --include=*.js . ; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates" "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-start-task/references"
+<<< import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+import { readFileSync } from 'node:fs';
+
+// Convierte la duración de una fila de data/usage.csv a horas.
+export function toHours(duration) {
+  return parseFloat(duration);
+}
+
+export function usageReport(csvPath) {
+  const rows = readFileSync(csvPath, 'utf8').trim().split('\n').slice(1);
+  const totals = {};
+  for (const row of rows) {
+    const [ro
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills"; cat $K/sdd-start-task/references/nombrado.md; cat $K/sdd-templates/templates/patch-template.md; ls $K/sdd-templates/scripts; cat $K/sdd-start-task/references/commit-milestones.md; cd "<run>/salas"; git log --oneline --all; git status --short
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(task|patch|proposal)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `task`, `patch` o `proposal` según el carril. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-plan`).
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la ta
+
+>>> Bash: cd "<run>/salas"; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0062-plan-entry/be24c358-5880-40fc-bfb7-1f7e1b6bf0ea/scratchpad/kit-green/skills/sdd-templates/scripts"; pwsh -NoProfile -File $K/Get-NextSddId.ps1 -ProjectRoot . -Reserve; git status --short; git diff --stat; pwsh -NoProfile -Command "Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'"
+<<< 0014
+20260925-082053
+
+>>> Bash: cd "<run>/salas"
+git switch -c feature/0014-sala-obligatoria
+cat >> tests/slots.test.js <<'EOF'
+
+test('rechaza una sala vacía', () => {
+  assert.throws(() => reserve('', '10-12'), { message: 'Sala obligatoria' });
+});
+EOF
+node --test tests/ 2>&1 | grep -E "^# (pass|fail)"
+<<< Switched to a new branch 'feature/0014-sala-obligatoria'
+
+>>> Bash: cd "<run>/salas"
+node --test tests/ 2>&1 | tail -15
+<<<   AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/salas/tests/slots.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+ 
+
+>>> Bash: cd "<run>/salas"
+cat > src/slots.js <<'EOF'
+export function reserve(room, slot) {
+  if (!room?.trim()) throw new Error('Sala obligatoria');
+  return { room, slot };
+}
+EOF
+node --test tests/ 2>&1 | grep -E "^# (pass|fail)"
+D=.docs/sdd/specs/20260925-082053-patch-0014-sala-obligatoria; mkdir -p $D
+cat > $D/patch.md <<'EOF'
+---
+id: 20260925-082053-patch-0014-sala-obligatoria
+task: 0014
+title: Patch — reservar exige sala
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0014-sala-obligatoria
+commit: pendiente
+---
+
+# Patch 0014 — reservar exige sala
+
+## 1. Síntoma
+
+`reserve('', '10-12')` en `src/slots.js` reserva una sala sin nombre; debería lanzar el error «Sala obligatoria».
+
+## 2. Causa raíz
+
+`reserve` no validaba sus argumentos: `src/slots.js` devolvía `{ room, slot }` tal cual. Reproducido antes del fix: `reserve('', '10-12')` devolvía `{ room: '', slot: '10-12' }` sin error. `reserve` es la única función de reserva y su único uso es el test (`grep reserve`), así que la guarda va ahí y no hay otros llamadores que corregir.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/slots.test.js`
+- **Cambio**: guarda `if (!room?.trim()) throw new Error('Sala obligatoria')` al inicio de `reserve`; cubre cadena vacía, solo espacios y `undefined`. Test nuevo «rechaza una sala vacía».
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | Test nuevo en rojo antes del fix (`Missing expected exception`) | ✅ |
+| 2 | `node --test tests/`: test nuevo y el existente pasan tras el fix | ✅ |
+
+## 5. Tiempo
+
+No aplica (no existe `.docs/sdd/estimation.md`).
+EOF
+git add -A && git commit -q -F - <<'EOF'
+fix(slots): exigir sala al reservar
+
+`reserve('', '10-12')` reservaba una sala sin nombre. Ahora lanza
+«Sala obligatoria» cuando la sala está vacía o en blanco. Patch 0014.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short
+<<< 8e8751d fix(slots): exigir sala al reservar
+1c5c12f feat: base de reservas de salas
+
+>>> Bash: cd "<run>/salas"; node --test tests/ 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 2
+ℹ fail 0
+
+=== RESULTADO (14 turnos, 0.32989840000000004 $)
+Fix commiteado (`8e8751d`) y patch sin cerrar. `reserve('', '10-12')` ahora lanza «Sala obligatoria». Los 2 tests pasan.
+
+- **Causa raíz:** `reserve` en `src/slots.js` no validaba nada. Antes del fix devolvía `{ room: '', slot: '10-12' }`, y el test nuevo fallaba con `Missing expected exception`. Su único uso es el test, así que no hay otros llamadores.
+- **Fix:** guarda `if (!room?.trim()) throw new Error('Sala obligatoria')`. Cubre cadena vacía, solo espacios y `undefined`.
+- **Artefactos:** `patch.md` en `.docs/sdd/specs/20260925-082053-patch-0014-sala-obligatoria/`, con `commit: pendiente` hasta el cierre.
+- **Id y rama:** reservé el id `0014`. La rama `feature/0013` corresponde a la fila 0013 del roadmap (aforo), otro ítem. No la renombré: creé `feature/0014-sala-obligatoria` desde el mismo punto y dejé `feature/0013` intacta.
+
+Queda `sdd-end-patch` (hash del commit, fila del roadmap, changelog).
+
+Pregunta: ¿los nombres de sala de solo espacios también deben rechazarse? Lo hice así porque cuentan como «sin nombre». Si solo quieres rechazar la cadena vacía, cambio la guarda a `if (!room)`.

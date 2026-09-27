@@ -1,0 +1,50 @@
+## HEAD antes: ba5a423 · después: ba5a423
+## git log
+* ba5a423 docs(0012): plan y registro de tasks
+|     Plan de dos tasks con los tests RED en el mismo fichero.
+| 
+* b75c18f docs(0012): spec de la task 0012
+|     Spec aprobada de la validación de la franja.
+| 
+* 23b84e0 feat: base de reservas de salas
+      Cuerpo del commit.
+  
+## status
+## feature/0012
+?? tests/franja.test.js
+## tests en disco
+### franja.test.js
+7:test('reservar con una franja que no casa con HH-HH falla con el mensaje', () => {
+### slots.test.js
+5:test('reserva una sala en una franja', () => {
+## ledger
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Spec: ./spec.md (aprobada por delegación, dev-lead). Perfil: delegate. Ejecución: subagent.
+BASE Task 1: ba5a423f3b239d7772ae31df0735e75d335b2ce7 (HEAD de feature/0012, con tests/franja.test.js sin commitear).
+
+## Pre-flight: comprobación de la base (sin remoto; integración develop)
+- develop == merge-base (23b84e0): sin commits nuevos. `git diff` de roadmap.md vacío → la fila 0012 no cambió.
+- `git diff --name-only <merge-base> develop` vacío → ningún fichero de Task 1 (`src/slots.js`, `tests/franja.test.js`) cambió en la base. Sin freno de alcance.
+
+## Pre-flight: scan del plan
+| Par / task | Qué produce vs consume | Hallazgo |
+| --- | --- | --- |
+| Task 1 ↔ Task 2 | comparten `src/slots.js` y `tests/franja.test.js`; T1 valida en `reserve`, T2 añade `free(slot)` con la misma validación | Duplicación de la regex/mensaje si T2 la copia: el revisor de T2 lo verá; no se pre-juzga. `free` no existe hoy en `src/slots.js` (T2 lo crea). T2 no se despacha hasta cerrar T1 (nunca implementadores en paralelo). |
+| Task 1 | texto vs sí mismo: THEN de la spec (falla con el mensaje) ↔ Step 1 (regex `/^\d{2}-\d{2}$/`) ↔ Restricción de código (mensaje literal) ↔ RED | Coherente. |
+| Task 2 | texto vs sí mismo: THEN «consultar libres» ↔ Step 1 `free(slot)` | Coherente; la CLI `salas libres` no se toca (README la menciona; fuera de scope de la spec). |
+Scan sin conflictos que exijan ruling.
+
+## Rulings
+- Ruling: `sdd-kit:effort-medium` no verificable entre los agentes de la sesión — el hilo principal no tiene el tool Agent en este harness; el fichero `agents/effort-medium.md` existe en el kit — el encargo lleva `subagent_type: sdd-kit:effort-medium` + `model: sonnet`; si al despachar el tipo no existe, se despacha solo con `model` y la frase «effort: no disponible en este harness, hereda el de la sesión» — coste si me equivoco: el implementador corre con el effort de la sesión.
+- Ruling: copia de los RED fuera del repo en `C:\Users\<usuario>\AppData\Local\Temp\claude\red-0012\task-1-franja.test.js.txt` (extensión `.txt` para que `node --test` no la recoja) — el workspace `.superpowers/` está dentro del árbol y `node --test` del pre-commit descubre `*.test.js` — coste: ninguno.
+- Ruling: el hook pre-commit ejecuta `node --test` entero en el commit del implementador — es del repo, no del implementador; el encargo prohíbe `--no-verify` y ejecutar la suite a mano.
+
+Task 1: RED escrito (tests/franja.test.js, sin commitear): falla por «Missing expected exception». Encargo listo, NO despachado.
+## tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | pending | — | |
+| 2 | Validar al consultar libres | pending | — | |

@@ -1,0 +1,40 @@
+---
+id: 20260924-105352-task-0057-native-adapt
+title: Tasks — Adaptar el kit a Native
+spec: ./spec.md
+plan: ./plan.md
+created: 2026-09-24
+---
+
+# Tasks — Adaptar el kit a Native (registro vivo)
+
+- **Spec**: `./spec.md`
+- **Plan**: `./plan.md`
+- **Rama**: `feature/0057`
+
+## Estado de las tasks
+
+Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Bucle Native en el paso 6 | done | 5c26769 | ruling: ancla de NativeDefault.Tests.ps1:130 estrechada |
+| 2 | Historia de commits | done | f6a283e | |
+| 3 | Revisor final, tipo de effort y cierre | done | b97c72a | ruling: la comprobación del tipo, párrafo propio tras «En Native» |
+| 4 | Cambio a SDD tras una compactación | done | 75ba772 | |
+| 5 | GREEN | done | 5d7575b | 22 sujetos, 10,04 $; REFACTOR de tres textos tras la tanda 1 |
+
+## Verificación por task
+
+- [x] Task 1 — `Invoke-Pester` de NativeAdapt, NativeDefault, SuperpowersCompat y Skills
+- [x] Task 2 — `Invoke-Pester` de NativeAdapt, CommitMilestones y Skills
+- [x] Task 3 — `Invoke-Pester` de NativeAdapt, Skills, AgentDefinitions y CommitMilestones
+- [x] Task 4 — `Invoke-Pester` de NativeAdapt, NativeDefault y Skills
+- [x] Task 5 — campaña GREEN con `red/run.sh`
+
+## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
+
+| Descubierto | Causa raíz | Decisión | Commit |
+| --- | --- | --- | --- |
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 10 Minor); Important 1–3 arreglados en el pase de fix, 4 al dev-lead, minors diferidos en el walkthrough

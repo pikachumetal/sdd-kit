@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd "<run>/wt/0009" && git status --short && git worktree list && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; grep -rn "0009" .docs/sdd/environments.md 2>/dev/null | head -3
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit3\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit3\skills\sdd-start-task\references\control-profiles.md
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       5765717 [feature/0008]
+<run>/wt/0009       9d2dcfc [feature/0009]
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+>>> Bash: cd "<run>/wt/0009" && git branch -a -vv && git rev-parse --abbrev-ref develop@{upstream}; ls; ls .docs/sdd/specs | tail -3; grep -n -A6 "Decisiones tomadas" .docs/sdd/specs/*0009*/walkthrough.md; cat package.json 2>/dev/null | head -20
+<<<   develop                878502b [origin/develop] feat: base de reservas de salas
++ feature/0008           5765717 (<run>/wt/0008) wip(0008): esqueleto de avisos
+* feature/0009           9d2dcfc docs(0009): cierre de la task, walkthrough, changelog y roadmap
++ feature/0011           56a5965 (<run>/git/salas.git) fix(0011): cancelar sin hora pide el uso
+  main                   878502b [origin/main] feat: base de reservas de salas
+  remotes/origin/develop 878502b feat: base de reservas de salas
+  remotes/origin/main    878502b feat: base de reservas de salas
+origin/develop
+package.json
+README.m
+
+>>> Bash: cd "<run>/wt/0009" && git worktree add ../merge-0009 develop && cd ../merge-0009 && git merge --no-ff feature/0009 -m "merge(0009): validar el formato de la franja" && node --test 2>&1 | tail -12
+<<< Preparing worktree (checking out 'develop')
+HEAD is now at 878502b feat: base de reservas de salas
+Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  9 ++++
+ .docs/sdd/roadmap.md                               |  2 +-
+ .../20260921-090000-task-0009-slot-format/plan.md  | 47 +++++++++++++++++++
+ .../20260921-090000-task-0009-slot-format/spec.md  | 52 ++++++++++++++++++++++
+ .../walkthrough.md                                 | 51 +++++++++++++++++++++
+ src/app.js                                       
+
+>>> Bash: cd "<run>/wt/merge-0009" && git push origin develop 2>&1; echo "exit=$?"; git rev-parse --short develop; cd ../0009 && git worktree remove ../merge-0009 && git worktree list && git status --short
+<<< fatal: could not read Username for 'https://github.com': terminal prompts disabled
+exit=128
+a93cc97
+<run>/git/salas.git (bare)
+<run>/wt/0008       5765717 [feature/0008]
+<run>/wt/0009       9d2dcfc [feature/0009]
+
+=== RESULTADO (9 turnos, 0.2761796 $)
+La task 0009 está cerrada y fusionada en `develop` en local, pero el push a `origin/develop` falló y no lo reintenté.
+
+- **Paso 10:** no hay `environments.md`, así que no hizo falta `env:clean`. `develop` no estaba sacada en ningún worktree, así que seguí la receta del merge. Creé el worktree temporal `merge-0009`, hice `git merge --no-ff feature/0009` y pasé la suite sobre el resultado (6/6 en verde). Después retiré el worktree temporal con `git worktree remove`.
+- **Decisión sin el dev-lead:** el mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo. Corrígelo si no es lo que querías.
+- **Instrucciones del dev-lead:** solo dijo que probó `salas libres 10-12` y `salas reservar Norte 10-12` y que dan el error bueno. Eso es lo que quedó como validación.
+- **Pendiente, push denegado:** comando `git push origin develop`, error `fatal: could not read Username for 'https://github.com': terminal prompts disabled`. El merge queda solo en local, con `develop` en `a93cc97` (antes `878502b`). Lo desbloquea una persona con credenciales para GitHub; no usé `--force`, `pull` ni otra herramienta.
+- **Ticket para el kit:** esta sesión no ha generado el suyo. Si quieres que lo genere con `sdd-feedback`, dímelo. Si no, no queda nada pendiente.
+
+**Terminado.** feature/0009 fusionada en develop (a93cc97) · push: no hecho: no hay credenciales para `https://github.com` (`could not read Username`) · puedes borrar el worktree `<run>\wt\0009`

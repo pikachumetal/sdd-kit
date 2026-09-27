@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-green\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd; git status --short; git branch -a; git remote -v
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base directory
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-green\skills\sdd-start-task\references\control-profiles.md
+<<< {"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+  develop
+* feature/0009
+  main
+  remotes/origin/HEAD -> origin/feature/0009
+  remotes/origin/develop
+  remotes/origin/feature/0009
+  remotes/origin/main
+origin	<run>/git/origin.git (fetch)
+origin	<run>/git/origin.git (push)
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona.
+10	
+11	La primer
+
+>>> Bash: ls .docs/sdd/specs/*0009*/ ; grep -n -i -A6 "testing" .docs/sdd/tech-stack.md | head -30; ls; git log --oneline -3 develop; ls .git/hooks | grep -v sample
+<<< plan.md
+spec.md
+walkthrough.md
+package.json
+README.md
+src/
+test/
+7ec82b5 feat: base de reservas de salas
+ls: cannot access '.git/hooks': Not a directory
+
+>>> Bash: cat package.json; cat .docs/sdd/tech-stack.md | head -40; git status --short; git worktree list
+<<< {"type": "module"}
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+<run>/git/salas.git (bare)
+<run>/wt/0009       8b155e3 [feature/0009]
+
+>>> PowerShell: pwsh -NoProfile -File "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0042\45e8f883-19c4-4f94-8cbe-8c485b12f8e3\scratchpad\kit-green\skills\sdd-templates\scripts\Invoke-SddMerge.ps1" -ProjectRoot "<run>\wt\0009" -Push -VerifyCommand "node --test"
+<<< ✔ libres excluye la sala reservada en la franja (3.7356ms)
+✔ reservar crea la reserva (0.2379ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1334ms)
+✔ cancelar respeta el día (0.1455ms)
+✔ libres rechaza una franja mal formada (0.3213ms)
+✔ reservar rechaza una franja mal formada (0.1451ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 240.292
+Fusionado feature/0009 en develop: 9ac0921
+publicado en origin
+
+>>> Bash: git rev-parse --short develop origin/develop; git worktree list; git status --short
+<<< fatal: Needed a single revision
+<run>/git/salas.git (bare)
+<run>/wt/0009       8b155e3 [feature/0009]
+
+>>> Bash: git rev-parse --short develop; git rev-parse --short origin/develop
+<<< 9ac0921
+9ac0921
+
+=== RESULTADO (11 turnos, 0.2741842 $)
+Cierre de la task 0009 terminado: `feature/0009` está fusionada en `develop` con `--no-ff` y publicada en origin.
+
+- **Merge:** lo hizo `Invoke-SddMerge.ps1`, según el bloque `merge` de `sdd-kit.json` (`develop`, `noFf: true`) y el perfil `delegate`. `develop` y `origin/develop` están en `9ac0921`.
+- **Push:** con `-Push`, porque el dev-lead escribió «súbelo a origin».
+- **Verificación:** el script pasó `node --test` sobre el resultado del merge antes de publicar. 6 tests pasan, 0 fallan.
+- **Worktree:** sigue en `feature/0009` por `merge.removeWorktree: false`. Lo borra una persona.
+- **Sin `environments.md`:** no hizo falta `env:clean`.
+- **Sin code-review previo:** no consta en el walkthrough si la task se ejecutó en línea (paso 9), así que no lancé `requesting-code-review`.
+- **Sin ticket del kit:** el paso 11 pedía ofrecer el ticket `sdd-feedback`, pero no hay nadie para responder y no es un gate. Si el dev-lead lo quiere, se genera en otra sesión.
+- **Sin validación diferida:** el dev-lead validó la task probando `salas libres 10-12` y `salas reservar Norte 10-12`, así que no hay disparador que corregir.
+
+`main` y las etiquetas no se han tocado. Eso queda para el cierre de la release.

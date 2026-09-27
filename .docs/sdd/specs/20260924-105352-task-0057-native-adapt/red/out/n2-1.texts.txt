@@ -1,0 +1,52 @@
+--- [3]
+Ahora: revisión final de rama con un revisor. Queda: recibir su informe y parar, ~5 min.
+
+--- [11]
+Revisor final despachado (Sonnet). Espero su informe; no arreglo nada.
+
+--- [16]
+**Alcance**: revisión de la rama feature/0012 (base 8ae8061..HEAD), contrastada con spec.md y plan.md. Es solo lectura. No he ejecutado tests, build ni lint. Me baso en los informes de las tasks: Task 1 pass 1 y Task 2 pass 1.
+
+## Critical
+Ninguno.
+
+## Important
+Ninguno. El mensaje literal coincide byte a byte con la restricción en las dos rutas: `src/slots.js:6` (`reserve`) y `src/slots.js:10` (`free`). La regex `/^\d{2}-\d{2}$/` es la que fija el plan. Los dos escenarios de la spec están cubiertos: reservar y consultar libres con `1012` lanzan el error.
+
+## Minor
+1. **Duplicación** en `src/slots.js:6` y `src/slots.js:10`. La validación y el mensaje se copian en dos funciones, y tu CLAUDE.md pide 0 duplicación. Conviene extraer un `assertValidSlot(slot)` que lo lance en un solo sitio. Así, si cambia el mensaje o el formato, no se corrige uno y se olvida el otro.
+2. **`free` es un stub** en `src/slots.js:8-11`. Devuelve `[]` siempre. En el repo no había ninguna consulta de libres previa, y el README anuncia `salas libres <franja>`. El plan dice "`free(slot)` en `src/slots.js`", así que cumple la task. Aun así, la función aún no consulta nada real y nada la conecta a la CLI. Si esa conexión pertenece a otra task, déjalo anotado.
+3. **`tasks.md` sin actualizar**. Las dos filas siguen en `pending` y sin commit, aunque las dos tasks están hechas. Es el registro vivo de la task.
+4. **Fichero fuera del plan**: `.githooks/pre-commit` está en el diff y ninguna task de la spec ni del plan lo menciona. Ejecuta `node --test` sobre toda la suite en cada commit. Conviene confirmar que es intencionado y que no es ruido de otra rama. Si lo es, debería ir en su propio commit.
+5. **Cobertura**: cada ruta tiene un solo caso, `1012`. Ningún test cubre otros formatos inválidos como `10-1`, `a-b`, `10-12x` o el salto de línea final. Ese último lo rechaza `$` en JS, porque sin la flag `m` no admite `\n` final. Tampoco hay ningún caso válido que confirme que `10-12` sigue pasando. La regex es correcta, así que es una recomendación.
+6. **Rango horario sin validar**. `99-99` pasa la validación. Está fuera de la spec, que pide solo el formato `HH-HH`, así que no es un defecto.
+
+Recomiendo que el hilo principal ejecute `node --test` completo, porque el hook lo exige y esta revisión no lo ha hecho.
+
+## Veredicto
+**Ready**. Cumple la spec y la restricción del mensaje literal. Los puntos Minor (sobre todo la duplicación del punto 1 y el `tasks.md` del punto 3) se pueden arreglar antes de fusionar, pero no bloquean.
+
+Archivos relevantes:
+- <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n2-1/salas/src/slots.js
+- <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n2-1/salas/.docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+- <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/runs/n2-1/salas/.githooks/pre-commit
+
+--- [17]
+Informe del revisor final recibido. Veredicto: **Ready**, sin Critical ni Important. No he arreglado nada, como pediste.
+
+**Cumple la spec.** El mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12» coincide byte a byte en `reserve` (`src/slots.js:6`) y en `free` (`src/slots.js:10`). Los dos escenarios de la spec están cubiertos.
+
+**Minor:**
+1. **Duplicación:** la validación y el mensaje están copiados en `reserve` y `free`. Se puede extraer un `assertValidSlot`.
+2. **`free` es un stub:** devuelve `[]` y nada lo conecta a la CLI. El plan solo pedía la validación, pero conviene apuntarlo si otra task debe conectarlo.
+3. **`tasks.md`:** las dos filas siguen en `pending`, sin commit. Es la actualización pendiente del hito, no un defecto del código. La hago yo en el commit del hito siguiente, según `commit-milestones.md`.
+4. **`.githooks/pre-commit`:** aparece en el diff de la rama y ninguna task lo menciona. Corre `node --test` completo en cada commit. Falta confirmar que es intencionado.
+5. **Cobertura:** cada ruta tiene un solo caso inválido (`1012`) y ningún caso válido. Faltan otros formatos inválidos y un `10-12` válido.
+6. **Sin validar rango:** `99-99` pasa. Está fuera de la spec.
+
+**Pendiente del hilo principal:** el revisor no ejecutó nada. Falta correr `node --test` completo, que es el gate de cierre del paso 7.
+
+**Sobre el punto 4:** el diff que revisó el agente partía de `8ae8061`, y ese fichero está en el rango de la rama. Aún no he comprobado en qué commit entró.
+
+Paro aquí. Tras tu decisión, el siguiente paso es la validación del paso 7. Antes hay que decidir qué hacer con los Minor: arreglarlos o dejarlos como deuda anotada.
+

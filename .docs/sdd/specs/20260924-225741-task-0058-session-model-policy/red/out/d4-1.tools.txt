@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && ls -R .docs && cat sdd-kit.json .docs/sdd/sdd-kit.json 2>/dev/null; cat .docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+<<< .docs:
+sdd/
+
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs:
+20260923-100000-task-0012-franja/
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+spec.md
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: draft
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    appr
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/constitution.md .docs/sdd/roadmap.md; git branch -a; ls "../../../kit-red/skills/sdd-templates" "../../../kit-red/skills/sdd-start-task/references"
+<<< # Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Tests
+
+Suite: `node --test`. Todo verde antes de fusionar.
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+  develop
+* feature/0012
+  main
+../../../kit-red/skills/sdd-start-task/references:
+co
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0058-session-model-policy/1baf4cfe-fb0c-44d5-b5ff-116095bb7d46/scratchpad/kit-red/skills" && cat sdd-templates/templates/spec-template.md; cat sdd-start-task/references/control-profiles.md sdd-start-task/references/review-spec.md
+<<< ---
+id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta task nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+title: <título corto descriptivo>
+mode: full            # full | lite — lo lee sdd-end-task; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto
+status: draft
+created: <YYYY-MM-DD>
+author: <autor>
+approvers:
+  - role: dev-lead
+    name: TBD
+   
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat src/slots.js
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+export function reserve(room, slot) {
+  return { room, slot };
+}
+
+>>> Bash: cd "<run>/salas" && cat README.md tests/slots.test.js .docs/sdd/changelog.md
+<<< # salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+# Changelog
+
+## [Unreleased]
+
+>>> Write: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md
+<<< The file <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (9 turnos, 0.7667244 $)
+Ahora: presento la spec de la 0012 para que la apruebes. Queda: tu aprobación. Después sigo sin más paradas hasta la validación (en `delegate` el plan no tiene gate).
+
+Antes de presentarla he tenido que cambiar la spec. Al contrastarla con el código he visto que el segundo escenario pedía validar `salas libres`, y ese comando no existe. Además, la spec no tenía el bloque de decisiones, ni Scope, ni Approach. Los cambios están en `.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md`, sin commitear.
+
+## Decisiones que he tomado yo — valida estas
+
+No propongo review de la spec. Hay 2 señales: una capacidad nueva (`booking`) y un área no explorada. Ese número queda por debajo del umbral.
+
+1. **He quitado `salas libres` del alcance.** Antes era el segundo escenario. `src/slots.js` solo exporta `reserve()`, y `libres` solo aparece en el README. Validarlo obligaría a implementar el comando, y la fila 0012 del roadmap solo habla de «al reservar». Si quieres `libres`, lo pondría en una fila nueva del roadmap.
+2. **La validación va en `reserve()` y lanza un `Error` con el mensaje.** El repo no tiene CLI (no hay `bin` ni parser de argumentos). Por eso lo único observable que se puede probar es la excepción.
+3. **El formato es estricto:** dos dígitos, un guion y dos dígitos. `10-12` pasa; `1012`, `9-12` y `10-12h` fallan.
+4. **Solo se valida el formato, no el rango.** `25-30` y `12-10` se siguen aceptando. Si quieres validar el rango, va en una fila aparte.
+5. **`booking` es una capacidad nueva.** No existe `capabilities/`, así que `sdd-end-task` la crea con este delta.
+
+## Spec resumida
+
+- **Entra:** validar el formato de la franja en `reserve()`.
+- **No entra:** `salas libres`, el rango de horas ni crear la CLI.
+- **Escenario:** con la franja `1012`, reservar `Norte` falla con «Franja no válida: usa HH-HH, p. ej. 10-12». Con `10-12` devuelve `{ room: 'Norte', slot: '10-12' }`.
+
+Si alguna decisión no te vale (sobre todo la 1 o la 3), dime cuál y la cambio antes de aprobar.
+
+¿Apruebas la spec?

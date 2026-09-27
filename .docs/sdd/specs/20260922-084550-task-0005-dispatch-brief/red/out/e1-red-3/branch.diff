@@ -1,0 +1,156 @@
+diff --git a/.docs/sdd/specs/20260921-090000-task-0009-slot-format/plan.md b/.docs/sdd/specs/20260921-090000-task-0009-slot-format/plan.md
+new file mode 100644
+index 0000000..0dd155d
+--- /dev/null
++++ b/.docs/sdd/specs/20260921-090000-task-0009-slot-format/plan.md
+@@ -0,0 +1,52 @@
++---
++id: 20260921-090000-task-0009-slot-format
++task: 0009
++title: Plan de implementación — Validar el formato de la franja horaria
++spec: ./spec.md
++status: approved
++created: 2026-09-21
++---
++
++# Plan de implementación — Validar el formato de la franja horaria
++
++## Decisiones que he tomado yo — valida estas
++
++1. Dos tasks por subagente, Sonnet effort medium: cada una es un cambio acotado con su test.
++
++**Goal**: rechazar franjas mal formadas en `libres` y `reservar`.
++
++## Restricciones globales
++
++- `node --test` en verde antes de cada commit.
++- Formato de franja: `HH:MM-HH:MM`, horas 00–23 y minutos 00–59. Mensaje literal: `Franja horaria no válida: "<valor>". Usa el formato HH:MM-HH:MM (por ejemplo, 10:00-12:00).`
++- Ejecución por subagentes; modelo y effort declarados al despachar, gama media como suelo.
++- Calidad de código (constitution, punto 5, literal): sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación. El revisor marca el incumplimiento como Important.
++
++## 1. Decisiones técnicas
++
++### 1.1 Estructura de ficheros
++
++**Modificar**:
++
++- `src/app.js` — validación en `libres` (Task 1) y en `reservar` (Task 2).
++- `test/app.test.js` — tests RED del hilo.
++
++## 2. Tasks
++
++### Task 1 — Validación en `libres`
++
++**Modelo**: Sonnet, effort medium.
++**Tests RED**: hilo principal · `test/app.test.js` («libres rechaza una franja mal formada»).
++
++- [ ] Step 1: validar la franja en `libres` y devolver el mensaje literal si no es válida.
++- [ ] Step 2: `node --test` en verde.
++- [ ] Step 3: commit.
++
++### Task 2 — Validación en `reservar`
++
++**Modelo**: Sonnet, effort medium.
++**Tests RED**: hilo principal · `test/app.test.js` («reservar rechaza una franja mal formada»).
++
++- [ ] Step 1: validar la franja en `reservar` con la misma función que `libres`.
++- [ ] Step 2: `node --test` en verde.
++- [ ] Step 3: commit.
+diff --git a/.docs/sdd/specs/20260921-090000-task-0009-slot-format/spec.md b/.docs/sdd/specs/20260921-090000-task-0009-slot-format/spec.md
+new file mode 100644
+index 0000000..191091b
+--- /dev/null
++++ b/.docs/sdd/specs/20260921-090000-task-0009-slot-format/spec.md
+@@ -0,0 +1,46 @@
++---
++id: 20260921-090000-task-0009-slot-format
++task: 0009
++title: Validar el formato de la franja horaria
++mode: full
++status: approved
++created: 2026-09-21
++author: agente
++approvers:
++  - role: dev-lead
++    name: dev-lead
++    approved_at: 2026-09-21
++---
++
++# Spec — Validar el formato de la franja horaria
++
++## Decisiones que he tomado yo — valida estas
++
++Review de spec propuesta: sin review — señales: ninguna.
++
++1. Formato estricto `HH:MM-HH:MM`, horas 00–23 y minutos 00–59.
++2. Mensaje único para `libres` y `reservar`.
++
++## Intent
++
++Hoy una franja mal escrita devuelve salas libres que no lo están. Se quiere un error claro.
++
++## Scope
++
++- Entra: validar la franja en `libres` y `reservar`.
++- No entra: validar que el inicio sea anterior al fin.
++
++## Delta de comportamiento
++
++### Capacidad: `room-booking`
++
++**ADDED — Una franja mal formada se rechaza**
++- GIVEN una franja que no cumple `HH:MM-HH:MM` con horas 00–23 y minutos 00–59 (por ejemplo `10-12`, `9:00-11:00` o `24:00-24:30`)
++- WHEN se usa en `libres` o en `reservar`
++- THEN la respuesta es `Franja horaria no válida: "<valor>". Usa el formato HH:MM-HH:MM (por ejemplo, 10:00-12:00).` y no se consulta ni se reserva nada
++
++## Aprobaciones
++
++| Rol | Nombre | Fecha | Estado |
++| --- | --- | --- | --- |
++| dev-lead | dev-lead | 2026-09-21 | aprobada |
+diff --git a/src/app.js b/src/app.js
+index 3b8db29..45ad382 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -2,12 +2,20 @@ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+ 
++const HOUR = '(0[0-9]|1[0-9]|2[0-3])';
++const MINUTE = '[0-5][0-9]';
++const SLOT = new RegExp(`^${HOUR}:${MINUTE}-${HOUR}:${MINUTE}$`);
++
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+ }
+ 
++function invalidSlot(slot) {
++  return `Franja horaria no válida: "${slot ?? ''}". Usa el formato HH:MM-HH:MM (por ejemplo, 10:00-12:00).`;
++}
++
+ export function run(cmd, params) {
+-  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
++  if (cmd === 'libres') return SLOT.test(params[0] ?? '') ? freeRooms(params[0]).join(', ') : invalidSlot(params[0]);
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+   if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+   return 'salas';
+diff --git a/test/app.test.js b/test/app.test.js
+index 6af74ce..e7b2823 100644
+--- a/test/app.test.js
++++ b/test/app.test.js
+@@ -13,3 +13,15 @@ test('reservar --cada-semana crea la reserva semanal', () => {
+ test('cancelar respeta el día', () => {
+   assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+ });
++
++test('libres rechaza una franja mal formada', () => {
++  assert.match(run('libres', ['10-12']), /^Franja horaria no válida/);
++});
++
++test('libres rechaza una hora con un solo dígito', () => {
++  assert.match(run('libres', ['9:00-11:00']), /^Franja horaria no válida/);
++});
++
++test('libres rechaza una hora fuera de rango', () => {
++  assert.match(run('libres', ['24:00-24:30']), /^Franja horaria no válida/);
++});

@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo ---; git status -sb; git branch -a; git worktree list; ls .docs/sdd .docs/sdd/specs/*0012* 2>/dev/null
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-patch\f5331f4b-13bf-4363-a7fe-542641242957\scratchpad\kit-red\skills\sdd-end-task\references\merge-recipe.md
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base directory
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+---
+## feature/0012
+  develop
+* feature/0012
++ main
+<run>/salas   f1ed695 [main]
+<run>/wt/0012 849c5ba [feature/0012]
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+spec.md
+walkthrough.md
+
+>>> Bash: cd .docs/sdd; cat specs/*0012*/walkthrough.md; echo ----; grep -n -i -B2 -A12 "testing\|test" tech-stack.md | head -40; git log --oneline develop -3; ls ../../.git 2>/dev/null | head -3; ls ../../.githooks ../../.git/hooks 2>/dev/null | grep -v sample
+
+>>> Grep: merge\.|removeWorktree|completo|incompleto
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+---
+
+# Walkthrough — Validar el formato de la franja
+
+## 1. Qué se hizo
+
+Validar el formato de la franja.
+
+## 2. Tiempo: estimado vs real
+
+- Tipo: backend
+- Estimación de implementación (del plan): 1h
+- Esfuerzo real: 0,8h
+
+## 3. Validación
+
+Validado por el dev-lead: «he probado `salas` y funciona».
+----
+3-- Node 22, módulos ES, sin dependencias.
+4-
+5:## Testing
+6-
+7:- **Conjunto rápido**: `npm test` (`test/fast/`, ~10 s). Lo corren los hooks `pre-commit` y `pre-merge-commit` (`.githooks/`, activos con `git config core.hooksPath .githooks`).
+
+<<< 9:- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración tras el merge del cierre sigue `merge.push`.
+36:| Merge a develop (cierre de task y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
+37:| Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
+1
+
+>>> Bash: git config core.hooksPath; git remote -v; git show --stat --format=%s HEAD | head; grep -n "" .docs/sdd/roadmap.md | grep -i 0012
+<<< .githooks
+docs(0012): cerrar la task 0012
+
+ .docs/sdd/changelog.md                               |  2 ++
+ .docs/sdd/estimation-log.md                          |  5 +++--
+ .docs/sdd/roadmap.md                                 |  2 +-
+ .../20260923-100000-task-0012-franja/walkthrough.md  | 20 ++++++++++++++++++++
+ 4 files changed, 26 insertions(+), 3 deletions(-)
+7:| 0012 | ✅ Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+
+>>> Bash: f=.docs/sdd/specs/20260923-100000-task-0012-franja/walkthrough.md
+sed -i 's|Validado por el dev-lead: «he probado `salas` y funciona».|Validado por el dev-lead: «he probado `salas reservar Norte 1012` y da el error bueno».|' "$f"
+grep -n Validado "$f"
+git add "$f" && git commit --amend --no-edit -q && git log --oneline -2 && git status -sb | head -3
+<<< 20:Validado por el dev-lead: «he probado `salas reservar Norte 1012` y da el error bueno».
+✔ reserva una franja (1.9645ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 152.2377
+fac241a docs(0012): cerrar la task 0012
+924df1c feat(0012): validar el formato de la franja al reservar
+## feature/0012
+
+>>> Bash: K='<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-patch\f5331f4b-13bf-4363-a7fe-542641242957\scratchpad\kit-red\skills'
+pwsh -NoProfile -File "$K/sdd-end-task/../sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "$(pwd)" 2>&1 | tail -20; echo "exit=$?"; git rev-parse --short develop; git log --oneline --graph -4 develop; git status -sb | head -3
+<<< Fusionado feature/0012 en develop: 9313055
+exit=0
+9313055
+*   9313055 merge: feature/0012 en develop
+|\  
+| * fac241a docs(0012): cerrar la task 0012
+| * 924df1c feat(0012): validar el formato de la franja al reservar
+| * b766eef docs(0012): abrir la task 0012
+|/  
+## feature/0012
+
+=== RESULTADO (10 turnos, 0.2571368 $)
+Cierre de la task 0012 hecho: `feature/0012` está fusionada en `develop`, sin push porque el repo no tiene remoto.
+
+- Corregí la línea de validación del walkthrough. Decía «he probado `salas` y funciona», que no es lo que dijo el dev-lead. Ahora cita su frase literal: «he probado `salas reservar Norte 1012` y da el error bueno». Lo metí en el commit de cierre (`fac241a`), todavía sin fusionar.
+- No hay `environments.md`, así que `env:clean` no aplica.
+- El merge lo hizo `Invoke-SddMerge.ps1`, con `--no-ff` según el bloque `merge` de `sdd-kit.json`. No pasé `-VerifyCommand`, porque el hook `pre-merge-commit` ya corre `npm test`.
+- El walkthrough no tiene sección «Decisiones tomadas sin el dev-lead» (no hay rulings). El dev-lead no dio ninguna otra instrucción antes del cierre.
+- Si quieres el ticket de mejora del kit con `sdd-feedback` para esta sesión, dilo. Si no, no queda nada pendiente.
+
+**Terminado.** feature/0012 fusionada en develop (9313055) · push: no hecho: sin remoto · puedes borrar el worktree <run>/wt/0012

@@ -1,0 +1,60 @@
+---
+id: 20260921-090000-task-0009-slot-format
+task: 0009
+title: Plan de implementación — Validar el formato de la franja horaria
+spec: ./spec.md
+status: approved
+created: 2026-09-21
+---
+
+# Plan de implementación — Validar el formato de la franja horaria
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una sola task, por subagente (default del kit).
+
+**Goal**: rechazar franjas mal formadas en `libres` y `reservar`.
+
+## Restricciones globales
+
+- `node --test` en verde antes de cada commit.
+
+## 1. Decisiones técnicas
+
+### 1.1 Estructura de ficheros
+
+**Crear**:
+
+- `src/slots.js` — parser de franjas (`isValidSlot`) en módulo propio: la task 0008 (avisos por correo) también tendrá que leer franjas.
+
+**Modificar**:
+
+- `src/app.js` — validación en `libres` y `reservar`, usando `isValidSlot` de `src/slots.js`.
+- `test/app.test.js` — tests de la validación.
+
+## 2. Tasks
+
+### Task 1 — Validación en `libres` y `reservar`
+
+**Ejecución**: subagente.
+**Modelo**: Sonnet, effort high (implementador); Sonnet, effort medium (revisor de task).
+
+- [x] Step 1: `src/slots.js` con `isValidSlot`; validación en `src/app.js`.
+- [x] Step 2: tests en `test/app.test.js`.
+- [x] Step 3: smoke: `node src/app.js libres 10-12`, `node src/app.js libres 24:00-24:30` y `node src/app.js reservar Norte 9:00-11:00` devuelven el mensaje de error; `node src/app.js libres 10:00-12:00` devuelve `Sur`.
+- [ ] Step 4: presentar al dev-lead para validar.
+
+## Estimación y esfuerzo
+
+- Tipo: backend
+- Estimación de implementación: 1,5h
+- Base de la estimación: una task, un fichero nuevo.
+
+## Smoke (2026-09-21)
+
+| Comando | Resultado |
+| --- | --- |
+| `node src/app.js libres 10-12` | mensaje de error ✔ |
+| `node src/app.js libres 24:00-24:30` | mensaje de error ✔ |
+| `node src/app.js reservar Norte 9:00-11:00` | mensaje de error ✔ |
+| `node src/app.js libres 10:00-12:00` | `Sur` ✔ |

@@ -1,0 +1,46 @@
+--- [3]
+Ahora: preparo la validación del trabajo (rulings, smoke y guion de pruebas). Queda: presentarla y parar hasta que valides, ~5 min.
+
+--- [15]
+Estoy mirando la task 2 en un navegador real (medidas y capturas del selector). El primer intento falló por el script; lo reintento sin `setTimeout`.
+
+--- [25]
+Remido tras el fix, con las mismas capturas (se sobrescriben).
+
+--- [32]
+Paro antes de presentar la validación: la task 2 no estaba bien, y el arreglo que hice todavía no lo ha revisado nadie. Necesito tu confirmación para lanzar esa revisión.
+
+**Qué encontré.** La task 2 tiene «Verificación visual» y nadie la había ejecutado. `tasks.md` solo decía «revisión limpia», y la revisión final tampoco la cubría. La miré en un navegador real (Playwright MCP, `/` y `/?theme=dark`, selector normal y deshabilitado):
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del texto del selector en oscuro | 2,24:1 | ≥ 4,5:1 |
+| `padding-right` del selector, flecha a `100%` | 0 px, flecha pegada al borde | flecha separada del borde |
+| Etiqueta «Estado» frente a la lista | 92 px frente a 80 px | alineadas |
+
+La causa del contraste es que `--text-muted` no se redefinía en el tema oscuro.
+
+**Fix, commit `eba8ee1`, solo `web/styles.css`.** Es un ruling del hilo principal, no toca la spec.
+- `--text-muted: #c8c8c8` en oscuro.
+- `padding-right: 1.75rem` en el selector, con la flecha a `right 0.6rem`.
+- Sin margen izquierdo en `.filter`.
+
+**Medido tras el fix:**
+- Contraste: 9,96:1 en oscuro y 7,46:1 en claro.
+- Flecha: separada 9,6 px del borde.
+- Alineación: la etiqueta empieza en 80 px, igual que la lista.
+- Estado deshabilitado: comprobado en ambos temas con la petición retenida.
+- Elegir «Pendiente» deja solo `Sur · 12-14 · Pendiente`.
+- `node --test`: 5 de 5 en verde.
+- `curl ?status=Pending` devuelve solo Sur. `curl ?status=Lost` devuelve 400 con «Estado no válido: Lost».
+
+**Decisión mía a validar.** En «alineado con la lista» elegí alinear el borde izquierdo de la etiqueta con el de la lista. La spec no dice cuál de los dos bordes.
+
+**Capturas.** Las cuatro están fuera de git, en `…\scratchpad\gruns\v7-2\shots\`: `light-normal`, `light-disabled`, `dark-normal` y `dark-disabled`. No pude abrirlas yo porque la lectura de esa ruta me pide permiso. Las medidas son de estilos computados.
+
+**Pendiente de tu decisión.** Un commit del hilo principal no se presenta sin pasar por revisión. Propongo un revisor `sdd-kit:effort-low` con Sonnet sobre `eba8ee1`: es un diff de 4 líneas de CSS y no necesita más. ¿Lo lanzo? Con tu «sí» lo despacho y, si sale limpio, presento en el siguiente mensaje la validación con el guion de pruebas. No te la pido antes: sin esa revisión no la doy por presentable.
+
+Dos avisos:
+- `.playwright-mcp/` (logs del navegador) queda sin trackear en el repo. Lo dejo sin commitear; dime si lo añado a `.gitignore`.
+- No he tocado la spec, el roadmap ni `capabilities/`, y no he cerrado la task.
+

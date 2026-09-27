@@ -139,6 +139,14 @@ Describe 'Manifests del plugin' {
     @($script:Plugin.dependencies | Where-Object { $_.name -eq 'superpowers' }).Count | Should -Be 1
   }
 
+  It 'plugin.json resuelve superpowers desde el marketplace de obra' {
+    ($script:Plugin.dependencies | Where-Object { $_.name -eq 'superpowers' }).marketplace | Should -Be 'superpowers-marketplace'
+  }
+
+  It 'marketplace.json permite la dependencia de superpowers-marketplace y solo esa' {
+    $script:Marketplace.allowCrossMarketplaceDependenciesOn | Should -Be @('superpowers-marketplace')
+  }
+
   It 'marketplace.json publica el plugin desde la raíz del repo' {
     $entry = $script:Marketplace.plugins | Where-Object { $_.name -eq $script:Plugin.name }
     $entry.source | Should -Be '.'
@@ -146,5 +154,17 @@ Describe 'Manifests del plugin' {
 
   It 'marketplace.json lleva description' {
     $script:Marketplace.description | Should -Not -BeNullOrEmpty
+  }
+}
+
+Describe 'Frontmatter de las skills de arranque' {
+  It '<_> lleva argument-hint' -ForEach @('sdd-start-feature', 'sdd-start-patch', 'sdd-consult') {
+    $fields = Get-Frontmatter (Get-Content (Get-SkillFile $_) -Raw)
+    $fields['argument-hint'] | Should -Not -BeNullOrEmpty
+  }
+
+  It 'sdd-templates no aparece en el menú de comandos' {
+    $fields = Get-Frontmatter (Get-Content (Get-SkillFile 'sdd-templates') -Raw)
+    $fields['user-invocable'] | Should -Be 'false'
   }
 }

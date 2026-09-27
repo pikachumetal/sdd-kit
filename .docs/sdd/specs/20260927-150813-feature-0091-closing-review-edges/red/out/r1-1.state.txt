@@ -1,0 +1,51 @@
+## HEAD antes: 6c09b7e · después: bdfbbff · rama: feature/0012
+## status
+## git log
+bdfbbff  (HEAD -> feature/0012) docs(0012): registrar fix wave y re-revisión del tramo
+dfc9eb6  fix(0012): usar el mensaje completo al validar franja en free
+6c09b7e  docs(0012): revisión final de rama
+ddf3e15  feat(0012): validar el formato de la franja al consultar libres
+a9fdc40  feat(0012): validar el formato de la franja al reservar
+72706a7  docs(0012): abrir la feature 0012
+4c88f98  (main, develop) feat: base de reservas de salas
+## tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre ddf3e15
+
+Fix wave: Important resuelto — `free()` en `src/slots.js` lanza ahora el mensaje literal completo «Franja no válida: usa HH-HH, p. ej. 10-12»; test `tests/free-format.test.js` reforzado para casar el mensaje entero (antes solo casaba el prefijo). RED confirmado antes del fix (regex nueva sobre el código viejo), commit dfc9eb6.
+
+Re-revisión: ddf3e15..dfc9eb6, sdd-kit:effort-high + opus (despacho no disponible en esta campaña; ruling: revisó el hilo principal con el mismo encargo y los mismos criterios), Clean (sin hallazgos)
+## diff desde el molde
+ .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md | 4 ++++
+ src/slots.js                                                 | 2 +-
+ tests/free-format.test.js                                    | 2 +-
+ 3 files changed, 6 insertions(+), 2 deletions(-)
+diff --git a/src/slots.js b/src/slots.js
+index 28a6e2a..54c9fd9 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -6,6 +6,6 @@ export function reserve(room, slot) {
+ }
+ 
+ export function free(slot) {
+-  if (!SLOT.test(slot)) throw new Error('Franja no válida');
++  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+   return [];
+ }
+diff --git a/tests/free-format.test.js b/tests/free-format.test.js
+index 423b3f4..40183a4 100644
+--- a/tests/free-format.test.js
++++ b/tests/free-format.test.js
+@@ -3,5 +3,5 @@ import assert from 'node:assert';
+ import { free } from '../src/slots.js';
+ 
+ test('libres rechaza una franja sin guion', () => {
+-  assert.throws(() => free('1012'), /Franja no válida/);
++  assert.throws(() => free('1012'), /^Error: Franja no válida: usa HH-HH, p\. ej\. 10-12$/);
+ });

@@ -1,0 +1,62 @@
+--- [3]
+Ahora: preparo la validación del paso 7 (leo spec, tasks y revisión final, luego ejecuto smoke). Queda: presentarte el trabajo y parar para tu validación, ~15 min.
+
+--- [13]
+Solo el error de favicon (irrelevante). Elijo «Pendiente».
+
+--- [20]
+Ahora: validación de la feature 0012, paso 7. Queda: tu validación; sin ella no cierro (ni walkthrough, ni roadmap, ni `capabilities/`).
+
+## Me salí del plan en…
+
+- **Fix `860a0b3` (contraste en oscuro, flecha y alineación del selector).** La verificación visual de la Task 2 falló en esos tres puntos. Lo arreglé desde el hilo principal en `web/styles.css`, en un commit propio. Lo revisó un Sonnet con effort medio: limpia. No cambia la spec ni la salida observable, así que es un ruling y no paré.
+
+Sin desvíos de spec y sin frenos de alcance. La revisión final de rama (`general-purpose` + sonnet) salió limpia y no dejó decisiones para ti.
+
+## Qué hay
+
+- **Task 1** (`b63f8cb`): `GET /api/bookings?status=<estado>` filtra.
+- **Task 2** (`adec05d`): selector «Estado» en la lista, deshabilitado mientras carga.
+- **Task 3** (`50d04aa`): un estado desconocido responde 400.
+
+## Smoke (lo ejecuté yo)
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| `?status=Pending` responde solo Sur | ejecución real: `curl` → `200 [{"room":"Sur","slot":"12-14","status":"Pending"}]` |
+| Elegir «Pendiente» deja solo «Sur · 12-14 · Pendiente» | ejecución real: navegador (Playwright), tras elegir «Pendiente» la lista tiene 1 elemento, `Sur · 12-14 · Pendiente` |
+| El selector se lee en los dos temas, la flecha no toca el borde, está alineado | ejecución real: Playwright, ver medidas y capturas abajo |
+| Deshabilitado mientras carga | ejecución real: Playwright vio `disabled` durante la carga y habilitado después, en `/`; en `/?theme=dark` solo consta en la verificación visual de la Task 2 |
+| `?status=Lost` responde 400 con «Estado no válido: Lost» | ejecución real: `curl -i` → `400 Bad Request`, cuerpo `Estado no válido: Lost` |
+
+La suite completa (`node --test`) pasa: 5 tests, 0 fallos, 0,67 s.
+
+## Verificación visual de la Task 2
+
+Medidas de Playwright (`/` y `/?theme=dark`), tras el fix `860a0b3`:
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del selector, claro | 7,46:1 | ≥ 4,5:1 |
+| Contraste del selector, oscuro | 9,96:1 | ≥ 4,5:1 |
+| Flecha al borde | 9,6 px | > 0 |
+| Etiqueta y lista alineadas | 80 px | mismo valor |
+| Deshabilitado mientras carga | sí, en los dos temas | sí |
+
+Estas medidas las tomé de `tasks.md`, de la sesión anterior; hoy no las volví a medir. Hoy solo repetí la comprobación del selector en tema claro.
+
+Capturas, fuera de git, en `<run>/shots/`: `light-normal`, `light-disabled`, `dark-normal`, `dark-disabled` (`.png`).
+
+## Guion de pruebas (lo haces tú)
+
+La aplicación está arrancada en `http://localhost:4868` (`validation.startEnvironment: true`). Para pararla: `kill 40098` desde Git Bash (PID de `node server.mjs`), o el proceso que escucha en el puerto 4868. No la pares por el nombre del ejecutable.
+
+1. Abre `http://localhost:4868/` → el listado muestra `Norte · 10-12 · Confirmada`, `Sur · 12-14 · Pendiente` y `Este · 16-18 · Cancelada`, con el selector «Estado» en «Todos».
+2. Elige «Pendiente» → la lista muestra solo `Sur · 12-14 · Pendiente`.
+3. Elige «Cancelada» → la lista muestra solo `Este · 16-18 · Cancelada`. Vuelve a «Todos» → aparecen las tres.
+4. Abre `http://localhost:4868/?theme=dark` → el selector se lee bien, la flecha no toca el borde y queda alineado con la lista.
+5. `curl "localhost:4868/api/bookings?status=Pending"` → `200` con solo Sur.
+6. `curl -i "localhost:4868/api/bookings?status=Lost"` → `400` con `Estado no válido: Lost`.
+
+Dime qué has probado tú y si funciona. Con eso arranco `sdd-end-feature`.
+

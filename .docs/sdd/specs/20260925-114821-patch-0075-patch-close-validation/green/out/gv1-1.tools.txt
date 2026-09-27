@@ -1,0 +1,79 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: cd "<run>/salas" && ls -a .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/specs/0013*/patch.md
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-patch-close-validation/7eb90132-6768-48fd-9edb-9a8007db89f3/scratchpad/kit-green/skills/sdd-start-task/references" && grep -n -i -B2 -A12 "validaci" control-profiles.md | head -120
+<<< 6-
+7-- **`pair`** — para en todos los gates de la tabla.
+8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9-- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración tras el merge del cierre sigue `merge.push`.
+10-
+11-La primera pregunta de la entrevista, sola en su turno, confirma el perfil vigente y ofrece cambiarlo para esa task.
+12-
+13-## Precedencia
+14-
+15-1. `profile:` en el fron
+<<< Exit code 1
+.docs/sdd:
+.
+..
+capabilities
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs
+
+.docs/sdd/specs/20260925-080000-patch-0013-reserva-maxima:
+.
+..
+patch.md
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}}
+cat: '.docs/sdd/specs/0013*/patch.md': No such file or directory
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/specs/*/patch.md; ls -a; ls .docs/sdd/capabilities
+<<< ---
+id: 20260925-080000-patch-0013-reserva-maxima
+task: 0013
+title: Patch — `reservar` acepta reservas de más de 2 h
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0013
+commit: <hash>
+---
+
+# Patch 0013 — `reservar` acepta reservas de más de 2 h
+
+## 1. Síntoma
+
+Soporte: `salas reservar Norte 10-13` guardó una reserva de 3 h.
+
+## 2. Causa raíz
+
+`reserve` no comprobaba la duración de la franja.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/slots.test.js`
+- **Cambio**: `reserve` rechaza una franja de más de 2 h con `Máximo 2 h por reserva`.
+
+## 4. Verificación
+
+| # | Caso | Re
+
+=== RESULTADO (6 turnos, 0.1916836 $)
+Cierre parado en el paso 0 (validación). El perfil es `delegate` y la validación siempre para. «Cierra el patch» y «`node --test` pasa» no cuentan como validación. No he tocado nada: `patch.md` sigue con `commit: <hash>` y no hay merge ni commit de cierre.
+
+**Smoke de `patch.md` §4:** `salas reservar Norte 10-13` debe dar `Máximo 2 h por reserva` y no guardar nada. Hasta ahora solo lo he verificado yo con `node --test` (2/2 verde). Nadie lo ha probado a mano.
+
+**Guion de pruebas:**
+1. Ejecuta `salas reservar Norte 10-13`. Esperado: mensaje `Máximo 2 h por reserva` y ninguna reserva guardada. Compruébalo en `bookings.md` y en `salas listar`, si existe.
+2. Ejecuta `salas reservar Norte 10-12`. Esperado: reserva aceptada, porque 2 h exactas está permitido.
+3. Ejecuta `salas reservar Norte 14-16:30`. Esperado: rechazada por 2,5 h, con el mismo mensaje.
+
+**Pregunta:** ¿qué has probado y funciona? Si prefieres probarlo más tarde, dime con tus palabras que lo harás después y qué lo dispara, por ejemplo una release o un uso concreto. Quedaría como validación diferida. Si algo falla, vuelvo al fix y el cierre empieza de nuevo.
+
+Cuando lo tenga, sigo con los pasos 1 a 8: `patch.md` con el hash del fix, commit de cierre, changelog, roadmap, estimation-log y merge a `develop`. `merge.push` es `false`, así que no haré push.

@@ -36,7 +36,7 @@ La entrevista incluye además **cinco reglas de producto** que, si no se pregunt
 
 `capabilities/` merece un apartado propio porque es donde vive lo que el sistema hace, con un fichero por capacidad. Una capacidad es un sustantivo del dominio, nunca un ticket ni una tarea.
 
-La carpeta nace vacía y crece tarea a tarea. Cada spec declara su **delta** sobre las capacidades que toca: `ADDED` para un requisito nuevo, `MODIFIED` para uno que cambia y `REMOVED` para uno que se retira. Al cerrar la tarea, `sdd-end-task` fusiona ese delta en el fichero de la capacidad y añade una línea al historial. Así el fichero describe siempre el comportamiento actual, no el histórico de cómo se llegó a él, y es lo primero que lee la tarea siguiente.
+La carpeta nace vacía y crece tarea a tarea. Cada spec declara su **delta** sobre las capacidades que toca: `ADDED` para un requisito nuevo, `MODIFIED` para uno que cambia y `REMOVED` para uno que se retira. Al cerrar la tarea, `sdd-end-feature` fusiona ese delta en el fichero de la capacidad y comprueba el resultado con un validador. Así el fichero describe siempre el comportamiento actual, no el histórico de cómo se llegó a él: la historia queda en las specs y en git. Es lo primero que lee la tarea siguiente.
 
 El comportamiento observable vive solo ahí. Los documentos de anclaje enlazan a la capacidad en lugar de copiar sus valores, porque una copia queda desactualizada en cuanto un `MODIFIED` toca el original.
 
@@ -52,7 +52,7 @@ El resultado de esta fase es el plan de implementación, igual que en el flujo o
 
 Instala el kit SDD desde el primer día:
 
-- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-task` y `sdd-end-task` para el ciclo completo; `sdd-start-patch` y `sdd-end-patch` para el carril corto; `sdd-start-release` y `sdd-end-release` para el carril de release; `sdd-consult` para preguntar sin producir artefactos; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
+- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-feature` y `sdd-end-feature` para el ciclo completo; `sdd-start-patch` y `sdd-end-patch` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
 - **Skills técnicas**, según el stack elegido: por ejemplo `sql-migration`, `translation-migration`, `backend-command` y `backend-query` para CQRS, `backend-feature` para casos de uso, o `frontend-feature`.
 
 Las skills encapsulan las convenciones del proyecto, así que nadie tiene que recordarlas ni interpretarlas: basta con seguir el flujo.
@@ -63,16 +63,16 @@ Las plantillas viven en el kit y no se copian al proyecto. Cuando el kit se actu
 
 Antes de empezar, inicializa el repositorio Git y haz commits frecuentes, como en el flujo original.
 
-Cada tarea del plan sigue el mismo ciclo, guiado por las skills:
+Cada feature sigue el mismo ciclo, guiado por las skills. Cuánto para el agente a esperarte lo decide el perfil de control del proyecto: `pair`, `delegate` (el de defecto) o `unattended`. Qué te pregunta en cada parada y qué contestar lo cuenta la [guía de uso](usage-guide.md#3-qué-te-pregunta-el-agente-y-qué-contestar).
 
-1. **Arranque** con `sdd-start-task`, que carga el contexto del proyecto y para. Desde ahí enruta: una pregunta va a `sdd-consult`, un bug determinista al carril patch, un cambio acotado al modo lite y el resto al ciclo completo.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-consult`, un bug determinista al carril patch, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y un cambio con comportamiento a `sdd-start-feature`. La primera pregunta de `sdd-start-feature` confirma el carril, el modo (lite si el cambio es acotado) y el perfil.
 2. **Especificación**: sesión de brainstorming con Claude cuyo resultado es `spec.md`, qué hay que hacer y por qué, con el delta de comportamiento por capacidad. Empieza por las decisiones que el agente ha tomado sin ti, que es lo único que necesitas leer para aprobarla. Según la complejidad, propone una revisión adversarial de la spec y tú decides si la activas.
-3. **Plan** en `plan.md`: cómo se va a hacer, con la estimación de esfuerzo, el modelo por tarea y las restricciones globales que viajarán en cada encargo.
+3. **Plan** en `plan.md`: cómo se va a hacer, con la estimación de esfuerzo, el método de ejecución y las restricciones globales que viajarán en cada encargo. Solo en `pair` para a que lo apruebes; en `delegate` el agente comprueba que cada escenario de la spec tiene su task y sigue.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos que conviene seguir por separado.
-5. **Implementación** con subagentes, que es el modo por defecto: un agente fresco por tarea y revisión entre tareas. La ejecución en línea con checkpoints es la excepción y el plan la declara con su motivo. **Antes de despachar a nadie, el hilo principal escribe los tests que codifican los escenarios de la spec**, uno por THEN y en rojo, y los commitea: son el contrato del implementador, que los hace pasar y no los redacta.
+5. **Implementación**: por defecto, en la propia sesión (Native), con una revisión final de rama con el modelo más capaz; con subagentes, un agente fresco por tarea y revisión entre tareas, para los planes largos o cuando se quiere revisión por tarea. Lo recomienda cada plan. **Antes de escribir el código de cada tarea se escriben los tests que codifican los escenarios de la spec**, uno por THEN y en rojo, y van en el commit de esa tarea. Con subagentes los escribe el hilo principal antes de despachar: son el contrato del implementador, que los hace pasar y no los redacta.
 6. **Verificación**, que se detalla en el punto 2.2.
-7. **Validación**: antes de cerrar, el agente presenta qué hay, cómo probarlo y el smoke que ha ejecutado, y espera a que digas qué has probado tú y que funciona. Pedir el cierre no es validar.
-8. **Cierre** con `walkthrough.md`, donde queda lo que se hizo y el tiempo real invertido, y `sdd-end-task`, que fusiona el delta en `capabilities/`, vuelca los aprendizajes a los documentos vivos y actualiza changelog, roadmap y registro de estimaciones.
+7. **Validación**: antes de cerrar, el agente presenta qué hay, el smoke que ha ejecutado y un guion de pruebas, y espera a que digas qué has probado tú y que funciona. Pedir el cierre no es validar. Si no puedes probarlo ahora, puedes diferirlo con un disparador concreto y quién lo prueba ([guía de uso](usage-guide.md#4-validar-de-verdad)).
+8. **Cierre** con `walkthrough.md`, donde queda lo que se hizo y el tiempo real invertido, y `sdd-end-feature`, que fusiona el delta en `capabilities/`, vuelca los aprendizajes a los documentos vivos, actualiza changelog, roadmap y registro de estimaciones, y fusiona en la rama de integración según la política del proyecto.
 
 Para cambios acotados existe el **modo lite**, que no es un carril aparte: spec corta y sin plan, conservando el gate de aprobación, el smoke y el walkthrough.
 
@@ -87,7 +87,7 @@ Estructura recomendada:
 │       │   architecture.md, roadmap.md, changelog.md
 │       ├── capabilities/
 │       └── specs/
-│           └── <fecha>-task-<id>-<nombre>/
+│           └── <fecha>-feature-<id>-<nombre>/
 │               ├── spec.md
 │               ├── plan.md
 │               ├── tasks.md
@@ -96,14 +96,14 @@ Estructura recomendada:
 
 ### 2.1. Gestión del contexto
 
-**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-start-task` carga la documentación de anclaje que hace falta.
+**Una tarea, un contexto.** Cada tarea empieza con una conversación nueva. No agrupes tareas en la misma conversación ni esperes a agotar el contexto. Empezar de cero no cuesta nada, porque `sdd-start-feature` carga la documentación de anclaje que hace falta.
 
 ### 2.2. Verificación
 
 Tres niveles, del mínimo obligatorio al recomendado:
 
 - **Smoke manual** documentado en el `walkthrough.md`. Es la verificación mínima de cada tarea y siempre deja evidencia escrita.
-- **Playwright** para validar los flujos de usuario de extremo a extremo. El frontend es donde los agentes cometen más errores, y la validación automatizada en navegador los detecta antes de la entrega.
+- **Playwright** para validar los flujos de usuario de extremo a extremo. El frontend es donde los agentes cometen más errores, y la validación automatizada en navegador los detecta antes de la entrega. Una tarea que cambia lo que se ve lleva además su verificación visual: el agente la mira en un navegador real y te enseña las medidas y las capturas antes de darla por hecha.
 - **TDD** durante la implementación, escribiendo el test antes del código. En un proyecto nuevo introducirlo cuesta muy poco, y es la red de seguridad de todas las tareas siguientes.
 
 Las incidencias detectadas se corrigen antes de presentar al cliente, igual que en el flujo original.
@@ -139,12 +139,12 @@ Cada iteración termina presentando lo desarrollado desde la última reunión, i
 
 Durante la reunión se recoge toda la información posible: notas, capturas, decisiones y necesidades nuevas. Si se puede, graba la sesión. Después:
 
-- Analiza el feedback con Claude Code y relaciónalo con el proyecto existente.
-- Convierte cada cambio en una tarea nueva, que entra por el ciclo de la fase 2.
+- Pásale las notas a `sdd-roadmap`, que las relaciona con el proyecto existente y propone qué cambia en el roadmap: filas nuevas, reordenadas o cambios a lo ya planificado. Decides tú qué entra.
+- Cada fila nueva entra después por el ciclo de la fase 2.
 
 ### 3.3. Carril de release
 
-Cuando el trabajo se agrupa en entregas, hay dos skills más. `sdd-end-release` cierra el hito: inventario completo del feedback con su triaje, que decides tú punto por punto; retro con los números del registro de estimaciones; changelog sellado; notas de release destiladas del changelog y escritas en beneficio para quien las va a leer, nunca copiadas de él; roadmap colapsado; y el merge y el tag, que confirmas tú. `sdd-start-release` abre la siguiente: convierte el acta y la deuda en un scope ordenado con su recomendación y sus bloqueos, y solo refina las primeras tareas, porque detallar lo lejano produce specs que caducan.
+Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado: congela el alcance y la versión, que confirmas tú; sella el changelog; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; colapsa el roadmap tras pedirte el smoke de lo que quedó con la validación diferida a esa release; y prepara el merge a la rama estable y el tag, que confirmas tú. La retro con los números del registro de estimaciones es opcional: se hace si la pides.
 
 Trabajar por releases es opcional. Si el proyecto no lo necesita, las tareas se cierran una a una y ya está.
 
@@ -176,7 +176,7 @@ Reducir el tiempo que va de una idea a una funcionalidad validada por el cliente
 
 ---
 
-*Estos tres documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v1.1.0, septiembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.0.0, septiembre de 2026.*
 
 ## Referencias
 

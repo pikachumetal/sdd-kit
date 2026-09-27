@@ -1,0 +1,138 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo ---; git status --short; git branch -a; git worktree list; git rev-parse --git-dir --git-common-dir; ls .docs/sdd .docs/sdd/specs/*; git log --oneline --all | head
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0039\e85f6b4a-84d9-41f6-b848-730cbacc6db2\scratchpad\kit-green\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0039\e85f6b4a-84d9-41f6-b848-730cbacc6db2\scratchpad\kit-green\skills\sdd-start-task\references\control-profiles.md
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## El merge es un script
+6	
+7	El merge lo hace `Invoke-SddMerge.ps1`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+8	
+9	```text
+10	pwsh -NoProfile -File "<Base directory
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+---
+  develop
+* feature/0012
+  feature/0014
++ main
+<run>/salas   82a88a7 [main]
+<run>/wt/0012 0a5db0f [feature/0012]
+<run>/salas/.git/worktrees/0012
+<run>/salas/.git
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260901-000000-task-0001-base:
+walkthrough.md
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan
+
+>>> Bash: ls ../../scratchpad 2>/dev/null; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-templates/scripts/"; ls .githooks .git 2>/dev/null | head; git config core.hooksPath; ls; git remote -v
+<<< Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+.git
+README.md
+src/
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-green/skills/sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "$(pwd)" 2>&1; echo EXIT $?
+<<< [31;1mException: [0m<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0039\e85f6b4a-84d9-41f6-b848-730cbacc6db2\scratchpad\kit-green\skills\sdd-templates\scripts\Invoke-SddMerge.ps1:215[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 215 | [0m   [36;1mthrow "${StepName}: conflicto en $($conflicted -join ', ')."[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mmerge: conflicto en .docs/sdd/changelog.md,
+
+>>> Bash: git status --short; git rev-parse --short develop; git merge --no-edit develop 2>&1 | tail -5; for f in changelog roadmap estimation-log; do echo "=== $f"; cat .docs/sdd/$f.md; done
+<<< ecc8c92
+Auto-merging .docs/sdd/estimation-log.md
+CONFLICT (content): Merge conflict in .docs/sdd/estimation-log.md
+Auto-merging .docs/sdd/roadmap.md
+CONFLICT (content): Merge conflict in .docs/sdd/roadmap.md
+Automatic merge failed; fix conflicts and then commit the result.
+=== changelog
+# Changelog
+
+## [Unreleased]
+
+### Añadido
+
+<<<<<<< HEAD
+- `salas reservar` rechaza una franja mal escrita (task 0012).
+=======
+- `salas lista` muestra las salas (task 0014).
+>>>>>>> develop
+
+=== roadmap
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- |
+
+>>> Bash: git merge --abort; git status --short; git rev-parse --short develop; git log --oneline -1; git log develop --oneline -3 -- .docs/sdd/roadmap.md; git diff 82a88a7 develop -- .docs/sdd/roadmap.md
+<<< ecc8c92
+0a5db0f docs(0012): cerrar la task 0012
+578f61d feat(0014): listar las salas
+82a88a7 feat: base de reservas de salas
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index a455eeb..2502b63 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -4,5 +4,5 @@
+ 
+ | Id | Tarea | Origen | Ficheros que toca | Tamaño |
+ | --- | --- | --- | --- | --- |
+-| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+-| 0014 | Listar las salas con `salas lista` | dev-lead | `src/rooms.js` | S |
++| 0012 | Validar el formato de la franja
+
+=== RESULTADO (10 turnos, 0.28726739999999995 $)
+**No terminado.** Falta el merge de `feature/0012` en `develop`. No borres todavía el worktree `<run>/wt/0012`.
+
+**Pendiente**
+- El merge falló con este mensaje del script:
+  ```
+  pwsh -NoProfile -File .../sdd-templates/scripts/Invoke-SddMerge.ps1 -ProjectRoot <worktree 0012>
+  merge: conflicto en .docs/sdd/changelog.md, .docs/sdd/estimation-log.md, .docs/sdd/roadmap.md.
+  ```
+- `develop` sigue en `ecc8c92`, sin tocar. El worktree de la feature está limpio en `0a5db0f`.
+- Los conflictos vienen de que la task 0014 ya se fusionó en `develop` y tocó los mismos registros.
+- **`changelog.md` y `estimation-log.md`:** los conflictos son de filas distintas, las dos entran sin problema. El log se regenera con `Build-EstimationLog.ps1`.
+- **`roadmap.md`:** aquí paré, y la receta manda pararse en este caso. Los dos lados cambiaron la misma fila 0012.
+  - Nuestra rama le añade `✅`.
+  - `develop` cambió su texto a «Validar el formato de la franja al reservar **y al consultar libres**».
+  - Ese cambio amplía el alcance de la 0012 y llegó con el commit de la 0014, `578f61d`.
+  - La task 0012 cerrada solo valida al reservar, así que no cubre «al consultar libres».
+- **Decisión tuya:** ¿la 0012 se queda como está y la ampliación pasa a otra fila, o `develop` tiene razón y hay que reabrir la 0012 con esa parte?
+- No hay `environments.md`, así que no hubo `env:clean`. No hay remoto, así que no hay push: «push: no hecho: sin remoto».
+
+**Validación**
+- El dev-lead dijo que probó `salas reservar Norte 1012` y que da el error bueno. Eso queda como validación reportada por el usuario, no verificada por mí.
+
+**Ticket para el kit**
+- Puedo generar el ticket de mejora del kit con `sdd-feedback` en esta sesión. Dime si lo quieres.

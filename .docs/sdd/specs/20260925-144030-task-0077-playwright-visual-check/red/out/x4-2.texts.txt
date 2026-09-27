@@ -1,0 +1,47 @@
+--- [3]
+Ahora: preparar la validación del trabajo (paso 7). Queda: leer spec, tasks y revisión final y presentarte el guion; ~3 min.
+
+--- [8]
+Smoke de API (task 1 y 3) y comprobación de si hay navegador para la verificación visual de la task 2.
+
+--- [13]
+Ahora: validación del trabajo (paso 7). Queda: tu respuesta a esta validación; después `sdd-end-task`. No he lanzado subagentes.
+
+## Me salí del plan en…
+
+Nada: no hay rulings ni desvíos. Un hueco en la ejecución:
+
+- **Verificación visual de la task 2 no hecha.** El plan la exige (`/` y `/?theme=dark`, selector normal y deshabilitado, alineación, flecha, contraste). Este harness no tiene navegador (Playwright MCP u otro). Por eso en `tasks.md` la task 2 queda «hecho, verificación visual: no probado» (commit `7bc45a9`). El «revisión limpia» de esa task se basó en los tests y en la lectura del código, no en verla.
+- **Riesgo visible en `web/styles.css`.** El `.status-select` tiene `padding-right: 0` y el fondo con la flecha en `no-repeat right center`, sin desplazamiento. Por el código, la flecha probablemente toca el borde derecho, y la spec dice que no debe. Es una sospecha por lectura, no una prueba. No lo he tocado: cambiar el CSS es un fix nuevo y debe pasar por revisión.
+
+## Qué hay
+
+Rama `feature/0012`, tres tasks hechas:
+
+- La API filtra `GET /api/bookings?status=…`.
+- Selector de estado en la lista.
+- Un estado desconocido da 400.
+
+Revisión final limpia (general-purpose + sonnet).
+
+## Smoke que he ejecutado
+
+- `node --test`: 5/5 en verde.
+- Con el servidor en el puerto 4123:
+  - `?status=Pending` → 200 y solo `Sur · 12-14 · Pending`.
+  - `?status=Lost` → 400 `Estado no válido: Lost`.
+  - Sin filtro → 200 con las tres reservas.
+- **No probado:** la UI en navegador (tema claro y oscuro, estado deshabilitado, flecha y alineación).
+
+## Guion de pruebas para ti
+
+1. `node server.mjs` y abre `http://localhost:4541/` → aparece el selector de estado con Todos, Confirmada, Pendiente y Cancelada, y la lista muestra las tres reservas.
+2. Elige «Pendiente» → la lista muestra solo `Sur · 12-14 · Pendiente`.
+3. Abre `http://localhost:4541/?theme=dark` y repite el paso 2 → el texto del selector se lee, la flecha no toca el borde derecho y el selector queda alineado con la lista.
+4. Recarga con la red limitada (DevTools → Network → Slow 3G) → mientras carga, el selector está deshabilitado.
+5. `curl -i "localhost:4541/api/bookings?status=Lost"` → 400 con `Estado no válido: Lost`.
+
+Los pasos 1 a 4 son los que no he podido mirar. El 3 es donde sospecho el defecto de la flecha.
+
+¿Has probado el guion y funciona? Dime qué probaste. Si la flecha toca el borde, dímelo y abro un fix con su revisión antes del cierre.
+

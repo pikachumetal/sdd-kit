@@ -1,0 +1,280 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git status --short && git log --oneline -5 && ls .docs/sdd .docs/sdd/specs/* && cat sdd-kit.json 2>/dev/null
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills/sdd-start-task/references" && ls && cat commit-milestones.md
+<<< Exit code 1
+?? .githooks/
+1563df8 docs(0012): abrir la task 0012
+93e2599 feat: base de reservas de salas
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+spec.md
+tasks.md
+<<< commit-milestones.md
+control-profiles.md
+encargo-revision.md
+modo-lite.md
+nombrado.md
+overrides-superpowers.md
+review-spec.md
+# Un commit por hito
+
+La rama de una task cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+
+## Qué lleva cada hito
+
+| Hito | Lleva | S
+
+>>> Bash: cd "<run>/salas/.docs/sdd" && cat sdd-kit.json; cd specs/*0012*; cat spec.md plan.md tasks.md
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills/sdd-start-task/references" && cat control-profiles.md encargo-revision.md
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+>>> Skill: superpowers:executing-plans
+<<< Launching skill: superpowers:executing-plans
+
+>>> Bash: cd "<run>/salas" && git branch -a && git remote -v; git ls-files; cat .docs/sdd/roadmap.md; ls .githooks; cat .githooks/*
+<<<   develop
+* feature/0012
+  main
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin h
+
+>>> Skill: superpowers:test-driven-development
+<<< Launching skill: superpowers:test-driven-development
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js tests/slots.test.js .gitignore; git config core.hooksPath; git diff --name-only $(git merge-base HEAD develop) develop; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md; git log --oneline develop -3
+<<< export function reserve(room, slot) {
+  return { room, slot };
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+.superpowers/
+.githooks
+93e2599 feat: base de reservas de salas
+
+>>> Bash: cd "<run>/salas" && cat > tests/slot-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reservar con una franja que no casa con HH-HH falla con el mensaje de formato', () => {
+  assert.throws(() => reserve('Norte', '1012'), {
+    message: 'Franja no válida: usa HH-HH, p. ej. 10-12',
+  });
+});
+EOF
+node --test tests/slot-format.test.js 2>&1 | tail -25
+<<< ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.6539
+
+✖ failing tests:
+
+test at tests\slot-format.test.js:5:1
+✖ reservar con una franja que no casa con HH-HH falla con el mensaje de formato (1.0406ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/salas/tests/slot-format.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node
+
+>>> Write: <run>\salas\src\slots.js
+<<< The file <run>\salas\src\slots.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/salas" && node --test tests/slot-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)" && node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< ℹ pass 1
+ℹ fail 0
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && git add src/slots.js tests/slot-format.test.js && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al reservar
+
+reserve lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja
+no casa con HH-HH.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short
+<<< ✔ reservar con una franja que no casa con HH-HH falla con el mensaje de formato (1.1931ms)
+✔ reserva una sala en una franja (1.0955ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.1196
+8abff0f feat(0012): validar el formato de la franja al reservar
+1563df8 docs(0012): abrir la task 0012
+93e2599 feat: base de reservas de salas
+?? .githooks/
+
+>>> Bash: cd "<run>/salas" && cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('consultar libres con una franja que no casa con HH-HH falla con el mismo mensaje', () => {
+  assert.throws(() => free('1012'), {
+    message: 'Franja no válida: usa HH-HH, p. ej. 10-12',
+  });
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)|Error"
+<<< SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ pass 0
+ℹ fail 1
+
+>>> Bash: cd "<run>/salas" && cat >> src/slots.js <<'EOF'
+
+export function free(slot) {
+  assertValidSlot(slot);
+}
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< ℹ pass 1
+ℹ fail 0
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas/.docs/sdd/specs/20260923-100000-task-0012-franja" && python - <<'EOF'
+import re
+p='tasks.md'; s=open(p,encoding='utf-8').read()
+s=s.replace('| 1 | Validar al reservar | pending | — | |','| 1 | Validar al reservar | done | 8abff0f | `node --test tests/slot-format.test.js` 1/1; suite 2/2 |')
+open(p,'w',encoding='utf-8').write(s)
+p='plan.md'; s=open(p,encoding='utf-8').read()
+a,b=s.split('### Task 2')
+a=a.replace('- [ ]','- [x]')
+open(p,'w',encoding='utf-8').write(a+'### Task 2'+b)
+EOF
+cd ../../../.. && git add src/slots.js tests/free-format.test.js .docs && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al consultar libres
+
+free(slot) reutiliza la validación de reserve y falla con el mismo
+mensaje. Registra en tasks.md el commit de la task 1.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -1
+<<< ✔ consultar libres con una franja que no casa con HH-HH falla con el mismo mensaje (1.2505ms)
+✔ reservar con una franja que no casa con HH-HH falla con el mensaje de formato (1.0279ms)
+✔ reserva una sala en una franja (1.3505ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 118.8594
+0ad133c feat(0012): validar el formato de la franja al consultar libres
+
+>>> Bash: cd "<run>/salas/.docs/sdd/specs/20260923-100000-task-0012-franja" && python - <<'EOF'
+p='tasks.md'; s=open(p,encoding='utf-8').read()
+s=s.replace('| 2 | Validar al consultar libres | pending | — | |','| 2 | Validar al consultar libres | done | 0ad133c | `node --test tests/free-format.test.js` 1/1; suite 3/3. Ruling: `free` solo valida y no devuelve nada, porque no existe listado de salas y la spec solo pide el error; coste si falla: añadir el retorno cuando exista el listado |')
+open(p,'w',encoding='utf-8').write(s)
+p='plan.md'; s=open(p,encoding='utf-8').read().replace('- [ ]','- [x]')
+open(p,'w',encoding='utf-8').write(s)
+EOF
+cd ../../../.. && git status --short && cat .docs/sdd/specs/*/tasks.md
+<<<  M .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+ M .docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+?? .githooks/
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | 8abff0f | `node --test tests/slot-format.test.js` 1/1; suite 2/2 |
+| 2 | Validar al consultar libres | done | 0ad133c | `node --test tests/free-format.test.js` 1/1; suite 3/3. Ruling: `free` solo valida y no devuelve nada, porque no existe listado de salas y la spec solo pide el error; coste si
+
+=== RESULTADO (21 turnos, 0.5882576 $)
+Task 1 y Task 2 están hechas y registradas como completas en `tasks.md`. Paro aquí, antes de la revisión final de rama.
+
+- **Task 1** (`8abff0f`): `reserve` valida `HH-HH` con un helper `assertValidSlot`. Vi el test fallar (`Missing expected exception`) y luego pasar.
+- **Task 2** (`0ad133c`): `free(slot)` reutiliza el mismo helper. El test falló porque `slots.js` no exportaba `free` y después pasó.
+- **Verificación**: `node --test` da 3/3 en la suite entera. Corrí la suite completa aunque las tasks declaran solo su test, porque el hook `pre-commit` de `.githooks/` la lanza en cada commit.
+- **Comprobaciones previas**: la fila de la task y los ficheros no cambiaron en `develop` respecto a la base.
+
+**Me salí del plan en:**
+- **`free` solo valida y no devuelve nada.** No existe listado de salas y la spec solo pide el error. Si hace falta que devuelva algo, se añade cuando exista ese listado. Está como ruling en `tasks.md`.
+- **Extraje `assertValidSlot`.** El plan no lo nombraba, pero evita duplicar el literal del mensaje en `reserve` y en `free`.
+
+**Pendiente, para que lo sepas:**
+- **Cambios sin commitear.** `tasks.md` (hash de la Task 2) y `plan.md` (checkboxes de la Task 2) tienen cambios sin commitear. Un commit no puede contener su propio hash, así que van en el commit de cierre, como marca `commit-milestones.md`.
+- **Historia sin juntar.** No he juntado los commits de las tasks: no hubo revisión por task (Native). Lo decidirá el cierre.
+- **Sin ledger de superpowers.** No he creado el ledger de `.superpowers/`. El registro durable es `tasks.md`.
+- **`.githooks/` sigue sin seguimiento**, como al empezar.
+
+Siguiente paso: la revisión final de rama.

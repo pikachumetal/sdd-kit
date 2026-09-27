@@ -1,0 +1,112 @@
+
+>>> Read: <run>\salas\.docs\sdd\specs\20260923-100000-task-0012-franja\plan.md
+
+>>> Read: <run>\salas\.superpowers\sdd\plan\progress.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son cuatro tasks cortas sobre el mismo fichero y un error cuesta poco
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+22	
+23	## 2. Tasks
+24	
+25	### Task 1 — Validar al
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits 99051e5..2958e51, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 2958e51..8bd1606, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	
+
+>>> Read: <run>\salas\src\slots.js
+
+>>> Read: <run>\salas\tests\free-format.test.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	export function reserve(room, slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	  return { room, slot };
+6	}
+7	
+8	export function free(slot) {
+9	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+10	  return [];
+11	}
+12	
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { free } from '../src/slots.js';
+4	
+5	test('libres rechaza una franja sin guion', () => {
+6	  assert.throws(() => free('1012'), /Franja no válida/);
+7	});
+8	
+
+>>> Write: <run>\salas\tests\cancel-format.test.js
+<<< File created successfully at: <run>\salas\tests\cancel-format.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test tests/cancel-format.test.js 2>&1 | tail -15
+<<< ✖ tests\cancel-format.test.js (71.8207ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 79.3929
+
+✖ failing tests:
+
+test at tests\cancel-format.test.js:1:1
+✖ tests\cancel-format.test.js (71.8207ms)
+  'test failed'
+
+>>> Edit: <run>\salas\src\slots.js
+<<< The file <run>\salas\src\slots.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: node --test tests/ 2>&1 | grep -E "^ℹ (pass|fail)"; git add -A src tests && git commit -q -m "feat(0012): validar el formato de la franja al cancelar
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git log --oneline -1
+<<< ℹ pass 4
+ℹ fail 0
+✔ cancelar rechaza una franja sin guion (0.8964ms)
+✔ libres rechaza una franja sin guion (0.8584ms)
+✔ rechaza una franja sin guion (0.8098ms)
+✔ reserva una sala en una franja (1.329ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.8606
+5c780a2 feat(0012): validar el formato de la franja al cancelar
+
+>>> Bash: echo "Task 3: complete (commits 8bd1606..5c780a2, tests: node --test tests/cancel-format.test.js → ℹ pass 1)" >> .superpowers/sdd/plan/progress.md; tail -2 .superpowers/sdd/plan/progress.md; git status --short
+<<< Task 2: complete (commits 2958e51..8bd1606, tests: node --test tests/free-format.test.js → ℹ pass 1)
+Task 3: complete (commits 8bd1606..5c780a2, tests: node --test tests/cancel-format.test.js → ℹ pass 1)
+
+=== RESULTADO (10 turnos, 0.22602479999999994 $)
+Task 3 completa y registrada en el ledger (commit `5c780a2`). Su test falló primero (RED) y pasa ahora (GREEN). La suite entera pasa con 4 tests de 4, y el árbol queda limpio.
+
+Paro aquí, sin empezar la Task 4 (mover), como pediste.
+
+`cancel` repite la misma línea de validación y el mismo mensaje que `reserve` y `free`, y `move` la repetirá una cuarta vez. Extraer un helper `assertSlot` sería un refactor pequeño. No lo hice porque el plan no lo pide.

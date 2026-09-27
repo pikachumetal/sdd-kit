@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Campaña de la 0060: RED y GREEN comparten previsión y techo. En serie; antes de cada sujeto para si existe `stop`
+# junto a este lanzador, si el coste acumulado llega al techo o si los sujetos terminados llegan a SUBJECT_CAP.
+# Uso: KIT_DIR=<copia del kit> RUNS_DIR=<scratchpad> OUT_NAME=<red|green> SCENARIOS="p1 p2" run.sh
+set -u
+BASE="$(cd "$(dirname "$0")" && pwd)"
+TASK="$(dirname "$BASE")"
+O="$TASK/${OUT_NAME:-red}/out"
+CAP="${COST_CAP:-8}"
+SUBJECT_CAP="${SUBJECT_CAP:-13}"
+finished() { ls "$TASK"/*/out/*.tools.txt 2>/dev/null | wc -l; }
+spent() { for f in "$TASK"/*/out/*.tools.txt; do [ -f "$f" ] && grep -o '=== RESULTADO ([0-9]* turnos, [0-9.]* \$' "$f" | tail -n 1; done | awk '{ s += $(NF-1) } END { printf "%.2f", s }'; }
+for sc in ${SCENARIOS:?define SCENARIOS}; do
+  [ -f "$BASE/stop" ] && { echo "parada a petición"; exit 3; }
+  total=$(spent)
+  if awk -v t="$total" -v c="$CAP" 'BEGIN { exit !(t >= c) }'; then echo "techo de $CAP \$ alcanzado ($total \$): decide el dev-lead"; exit 2; fi
+  [ "$(finished)" -ge "$SUBJECT_CAP" ] && { echo "previsión de sujetos alcanzada ($SUBJECT_CAP): decide el dev-lead"; exit 4; }
+  bash "$BASE/subject.sh" "$KIT_DIR" "$sc-${SUBJECT:-1}" "$sc" "$O"
+done
+echo "coste acumulado de la campaña 0060: $(spent) \$ · sujetos: $(finished)"

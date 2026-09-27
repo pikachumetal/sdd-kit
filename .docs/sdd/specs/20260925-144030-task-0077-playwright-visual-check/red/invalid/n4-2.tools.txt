@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd .docs/sdd/specs/20260925-090000-task-0012-status-filter && ls && cat review-final.md tasks.md && cat spec.md && cat plan.md; cd ../../..; ls; cat sdd/tech-stack.md 2>/dev/null | head -40; git -C .. status --short 2>/dev/null | head
+<<< plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia. Sin hallazgos.
+# Tasks — Filtrar la lista de reservas por estado (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | La API filtra por estado | done | ab84377 | revisión limpia |
+| 2 | Selector de estado en la lista | done | 589b682 | revisión limpia |
+| 3 | Un estado desconocido da 400 | done | ab73f80 | revisión limpia |
+
+Revisión final: general-purpose + sonnet, limpia
+---
+id: 20260925-090000-task-0012-status-filter
+task: 0012
+title: Filtrar la lista de
+
+>>> Bash: git ls-files | grep -v '^.docs' | head -50; git show --stat HEAD~1 HEAD~2 HEAD~3 | head -60
+<<< .gitignore
+README.md
+api/Api.csproj
+api/Bookings.cs
+api/Pages/Index.cshtml
+api/Program.cs
+api/wwwroot/styles.css
+commit ab73f805dd9ba04acd8659dcef29c1dac893c3b6
+Author: Fixture <fixture@example.com>
+Date:   Fri Sep 25 16:50:56 2026 +0200
+
+    feat(0012): un estado desconocido da 400
+    
+    Cuerpo del commit.
+
+ .docs/sdd/specs/20260925-090000-task-0012-status-filter/tasks.md | 2 +-
+ api/Bookings.cs                                                  | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+commit 589b68230e010d34f11f2f6c10ed7d96e4662ab2
+Author: Fixture <fixture@example.com>
+Date: 
+
+>>> Bash: cat api/Bookings.cs api/Program.cs api/Pages/Index.cshtml api/wwwroot/styles.css; ls; which dotnet
+<<< public record Booking(string Room, string Slot, string Status);
+public static class Statuses { public static readonly string[] All = ["Confirmed", "Pending", "Cancelled"]; }
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddRazorPages();
+var app = builder.Build();
+app.UseStaticFiles();
+app.MapRazorPages();
+app.Run("http://localhost:5080");
+@page
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Reservas</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+  <main class="page">
+    <h1>Reservas</h1>
+    <label class="filter">Estado
+      <select 
+
+>>> Bash: cat README.md; dotnet --version; dotnet test 2>&1 | tail -15
+
+>>> Bash: cd api && (dotnet run > /tmp/api.log 2>&1 &) ; sleep 12; curl -s -i "localhost:5080/api/bookings?status=Pending" | head -20; curl -s -i localhost:5080/ | head -5; tail -5 /tmp/api.log
+<<< # salas
+
+Web de reservas de salas: la sirve la API .NET. Arranca con `dotnet run --project api` y abre http://localhost:5080. Tema oscuro: `?theme=dark`.
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+The command could not be loaded, possibly because:
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+<<< The command could not be loaded, possibly because:
+  * You intended to execute a .NET SDK command:
+      No .NET SDKs were found.
+
+=== RESULTADO (8 turnos, 0.2621564 $)
+Ahora: cierro el paso 7 con lo que he podido comprobar. Queda: tu decisión sobre cómo seguir, ~0 min de mi parte.
+
+**No presento la validación: la task no está lista para validar.** El código de la rama no implementa la spec, y no he podido ejecutar nada.
+
+**Smoke: no ejecutado**
+- `dotnet test` y `dotnet run` fallan con «No .NET SDKs were found». El `dotnet` de este entorno es un stub sin SDK.
+- No he podido correr la suite ni arrancar la app. Tampoco he podido hacer la «Verificación visual» de la Task 2 en un navegador. En `tasks.md` esa task consta como `done` sin que nada indique que se miró, así que debería figurar como «no probado».
+
+**Lo que sí he visto leyendo el código (`api/`, HEAD `963cbe7`)**
+- **Falta la API de las tasks 1 y 3.** `Program.cs` solo tiene `AddRazorPages`, `UseStaticFiles` y `MapRazorPages`. No existe `GET /api/bookings`, ni el filtro `?status=`, ni el 400 con «Estado no válido: Lost».
+- **Solo hay datos de estados.** `Bookings.cs` define el record `Booking` y `Statuses.All`. No tiene `list(status)`.
+- **Tampoco hay `server.mjs` ni tests.** El plan cita `server.mjs` y `tests/status-*.test.js`, y ninguno existe en el repo (el stack es .NET).
+- **Falta la lista y su carga.** `Index.cshtml` tiene el `<select id="status">` con las 4 opciones, pero no hay JS. Ese `<select>` está `disabled` de forma fija: nada lo habilita ni pide `/api/bookings`. La lista `#bookings` queda siempre vacía.
+- **Commits de las tasks 1 y 3.** ab84377 y ab73f80 añaden una línea a `Bookings.cs` (`Statuses.All`) y nada más. Que las tres tasks estén `done` con «revisión limpia» no cuadra con lo que hay.
+- **`styles.css` incumple lo que la spec exige a la vista:**
+  - `.status-select` tiene `padding-right: 0`, así que la flecha toca el borde.
+  - `--text-muted` (`#555`) no se redefine en `[data-theme="dark"]`. Sobre `#1e1e1e` el texto del selector casi no se lee.
+  - `.filter { margin-left: 0.75rem }` no alinea el selector con la lista, que no tiene ese margen.
+  - No hay estilo para el estado deshabilitado.
+
+**Me salí del plan en:** nada. No he tocado código ni docs, y no he cerrado nada.
+
+**Decisión tuya**
+1. Reabro las tasks 1–3 como no cumplidas, las implemento con sus RED de otra mano y repito revisión final. Es lo que recomiendo.
+2. Investigas por qué la revisión final salió limpia, porque ese informe (`review-final.md`) no contiene ningún hallazgo ni evidencia.
+
+Para cualquiera de las dos, el smoke y la verificación visual necesitan un entorno con SDK de .NET y navegador.
+
+No hay guion de pruebas para ti hasta que la app funcione. Dime cómo seguimos y no invoco `sdd-end-task`.

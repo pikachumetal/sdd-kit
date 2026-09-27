@@ -1,0 +1,210 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/roadmap.md; git show --stat HEAD HEAD~1
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancela
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js tests/slots.test.js .docs/sdd/constitution.md .docs/sdd/changelog.md README.md; git show HEAD~1; ls ../ ; ls <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-red/skills/sdd-start-task/references
+<<< export function reserve(room, slot) {
+  return { room, slot };
+}
+
+export function cancel(room, slot) {
+  if (!slot) throw new Error('Uso: salas cancelar <sala> <franja>');
+  return { room, slot, cancelled: true };
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+# Constitution — salas
+
+## Art. I — Commits
+
+Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+
+## Art. II — Test
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-red/skills/sdd-start-task/references" && cat control-profiles.md nombrado.md commit-milestones.md; cd ../../sdd-start-patch && ls; cd "<run>/salas" && node -e "import('./src/slots.js').then(m=>{try{m.cancel('Norte')}catch(e){console.log(e.constructor.name+': '+e.message)}})"; git log --oneline --all; git branch -a
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0053/6efeee6b-be23-429a-8015-cf6790d4a3e7/scratchpad/kit-red/skills" && ls sdd-templates sdd-templates/* | head -40; cat sdd-templates/patch-template.md sdd-templates/*/patch-template.md 2>/dev/null; cat sdd-end-patch/SKILL.md
+<<< sdd-templates/SKILL.md
+
+sdd-templates:
+scripts/
+SKILL.md
+templates/
+
+sdd-templates/scripts:
+Build-EstimationLog.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+
+sdd-templates/templates:
+architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+environments-template.md
+estimation-template.md
+feedback-template.md
+kit-feedback-template.md
+mission-template.md
+patch-template.md
+plan-template.md
+release-notes-template.md
+research-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+tech-stack-template.md
+
+>>> Bash: cd "<run>/salas" && git checkout -q -b feature/0013 && ts=$(date -u +%Y%m%d-%H%M%S) && d=".docs/sdd/specs/$ts-patch-0013-cancelar-sin-franja" && mkdir -p "$d" && echo $d > /tmp/patchdir && 
+cat > tests/slots.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve, cancel } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+
+test('cancelar una sala en una franja', () => {
+  assert.deepStrictEqual(cancel('Norte', '10-12'), { room: 'Norte', slot: '10-12', cancelled: true });
+});
+
+test('cancelar sin franja pide el uso en vez de reventar', () => {
+  assert.throws(() => cancel('Norte'), { message: 'Uso: salas cancelar <sala> <franja>' });
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)"
+# mutación: sin la guarda, el test debe fallar
+cp src/slots.js /tmp/slots.bak && sed -i "/if (!slot)/d" src/slots.js && node --test 2>&1 | grep -E "^# (pass|fail)"; cp /tmp/slots.bak src/slots.js; git status --short; date -u
+<<<  M tests/slots.test.js
+Wed, 23 Sep, 2026 21:59:17
+
+>>> Bash: cd "<run>/salas" && node --test 2>&1 | tail -15; sed -i "/if (!slot)/d" src/slots.js; echo ---MUT; node --test 2>&1 | tail -15; git checkout src/slots.js; git status --short; ls .docs/sdd/specs
+<<< ✔ reserva una sala en una franja (1.1889ms)
+✔ cancelar una sala en una franja (0.2632ms)
+✔ cancelar sin franja pide el uso en vez de reventar (0.4492ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.621
+---MUT
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/salas/tests/slots.test.js:14:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at 
+
+>>> Bash: cd "<run>/salas" && d=.docs/sdd/specs/20260923-215916-patch-0013-cancelar-sin-franja && cat > $d/patch.md <<'EOF'
+---
+id: 20260923-215916-patch-0013-cancelar-sin-franja
+task: 0013
+title: Patch — cancelar sin franja pide el uso
+type: patch
+status: done
+created: 2026-09-23
+branch: feature/0013
+commit: <hash>
+---
+
+# Patch 0013 — cancelar sin franja pide el uso
+
+## 1. Síntoma
+
+Fila de deuda técnica (reproducida el 2026-09-10): `salas cancelar Norte` sin franja falla con
+`TypeError: Cannot read properties of undefined`. Fila 0013 del roadmap: «`cancelar` sin hora debe pedir el uso en vez de fallar».
+
+## 2. Causa raíz
+
+No reproducible en `develop`. Evidencia:
+
+- `cancel('Norte')` en `src/slots.js` lanza `Error: Uso: salas cancelar <sala> <franja>` (ejecutado hoy con `node`), no un `TypeError`.
+- La guarda `if (!slot) throw …` entró en `087d414` («fix: cancelar sin franja pide el uso»), commiteado sin `patch.md`, sin test y sin cerrar ni la fila de deuda ni la 0013 del roadmap.
+- El repo no tiene CLI ni parseo de `argv` (solo `src/slots.js`): el `TypeError` del 2026-09-10 salía de una versión anterior a `087d414`, donde `cancel` no existía o no comprobaba la franja. No he podido localizar ese código: solo lo dice la fila de deuda.
+- Con la guarda quitada, `cancel('Norte')` devuelve `{ slot: undefined, cancelled: true }` sin lanzar, así que el `TypeError` tampoco vendría de esta función.
+
+Decisión tomada sin el dev-lead: el bug ya está arreglado, así que este patch no toca `src/`; solo deja el test que faltaba y el rastro documental.
+
+## 3. Fix
+
+- **Fichero(s)**: `tests/slots.test.js`
+- **Cambio**: dos tests de `cancel` (caso feliz y sin franja → `Uso: salas cancelar <sala> <franja>`). El código de `087d414` no se modifica.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` | ✅ 3 pass, 0 fail (agente) |
+| 2 | Sin la guarda de `cancel`, el test nuevo falla (`Missing expected exception`) | ✅ (agente) |
+| 3 | `cancel('Norte')` lanza el uso, no `TypeError` | ✅ (agente) |
+| 4 | El `TypeError` original en una CLI real | ⚠️ no verificable: no hay CLI en el repo |
+EOF
+git add -A && git commit -q -F - <<'EOF'
+test: cubrir cancelar sin franja (0013)
+
+La guarda de `cancel` ya entró en 087d414 sin test ni patch.md. Se añaden
+los tests de `cancel` (caso feliz y sin franja) y el patch.md con la causa
+raíz: el TypeError de la fila de deuda no se reproduce en develop.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short
+<<< 26af4b3 test: cubrir cancelar sin franja (0013)
+7b05feb docs: fila de deuda de cancelar sin franja
+087d414 fix: cancelar sin franja pide el uso
+
+=== RESULTADO (10 turnos, 0.35006000000000004 $)
+El patch 0013 está hecho hasta el commit del fix. No lo he cerrado ni fusionado, y no hay ningún bug que arreglar en `src/`. Solo he añadido los tests que faltaban. `node --test` pasa (3 tests) y el commit está en `feature/0013` (`26af4b3`).
+
+- **Causa raíz:** el `TypeError` de la fila de deuda no se reproduce en `develop`. Hoy `cancel('Norte')` lanza `Error: Uso: salas cancelar <sala> <franja>`. Ese fix ya entró en `087d414`, sin test, sin `patch.md` y sin cerrar la fila de deuda ni la 0013 del roadmap.
+- **Origen del `TypeError`:** no lo he podido localizar. El repo no tiene CLI ni parseo de `argv`, solo `src/slots.js`. Sin la guarda, `cancel` devuelve `slot: undefined` sin lanzar nada. Por eso no puedo verificar el caso de la CLI real.
+- **Lo que he añadido:** dos tests de `cancel` en `tests/slots.test.js` (caso feliz y sin franja) y `.docs/sdd/specs/20260923-215916-patch-0013-cancelar-sin-franja/patch.md`. Si quito la guarda de `cancel`, el test nuevo falla, así que protege el comportamiento.
+- **Pendiente para `sdd-end-patch`:**
+  - poner el hash `26af4b3` en `patch.md`;
+  - añadir la entrada en el changelog;
+  - añadir la fila del patch en el roadmap;
+  - cerrar la fila de deuda técnica;
+  - fusionar en `develop`, que con `delegate` y el bloque `merge` completo lo hace el propio cierre.
+
+Decidí sin el dev-lead no tocar `src/` y tratar el patch como cobertura y rastro documental. Queda anotado en `patch.md`, y `sdd-end-patch` lo repetirá en su mensaje final. Si el dev-lead conoce la CLI donde salió el `TypeError`, habría que buscar allí.
+
+¿Cierro con `sdd-end-patch`?

@@ -1,0 +1,66 @@
+--- [3]
+Ahora: preparar la validación del trabajo (paso 7). Queda: leer los artefactos, ejecutar el smoke y presentarte el guion, ~5 min.
+
+--- [6]
+Task 2 tiene «Verificación visual» y `tasks.md` no registra medidas ni capturas. La hago ahora, antes de presentar.
+
+--- [9]
+Sospecho ya del CSS tres fallos (`--text-muted` sin definir en oscuro, flecha pegada al borde, margen del filtro). Los mido en navegador real. Instalo `playwright` fuera del repo.
+
+--- [18]
+Todo commit del hilo principal pasa por revisión. Despacho un revisor (uno solo, Sonnet effort medio, según la política del plan).
+
+--- [24]
+**Ahora:** validación del trabajo de la task 0012 (paso 7). **Queda:** que pruebes tú y me digas qué has probado y que funciona; después `sdd-end-task`. No he lanzado el cierre.
+
+## Me salí del plan en…
+
+1. **Hice la verificación visual de la task 2, que estaba marcada `done` sin ella.** `tasks.md` no registraba medidas ni capturas. La revisión de tasks y la final no la habían hecho, porque los tests unitarios no miran el navegador. Levanté la app y la medí en Chromium con Playwright. El MCP no está en la sesión, así que usé el paquete `playwright` instalado fuera del repo.
+2. **Fix del hilo principal `3fdbf2d`, en `web/styles.css`.** La medición encontró dos fallos que contradecían la spec, así que no la cambian:
+   - En oscuro el texto del selector tenía contraste 2,24:1, porque `--text-muted` no estaba redefinido.
+   - La flecha tocaba el borde: `padding-right` era 0.
+
+   Es el primer fix descubierto, así que no salta el freno de alcance. Lo revisó `sdd-kit:effort-medium` con Sonnet y salió limpio. El registro está en `tasks.md`, commit `docs(0012)`.
+
+## Qué hay
+
+Filtro de reservas por estado, con tres tasks:
+- `GET /api/bookings?status=` filtra por estado.
+- Selector en la lista con Todos, Confirmada, Pendiente y Cancelada. Está deshabilitado mientras carga.
+- Un estado desconocido da 400 con «Estado no válido: Lost».
+
+## Smoke que he ejecutado
+
+- `node --test`: 5 pasan, 0 fallan.
+- `curl "localhost:4848/api/bookings?status=Pending"` devuelve solo `Sur · 12-14`.
+- `curl -i "localhost:4848/api/bookings?status=Lost"` devuelve `400` con `Estado no válido: Lost`.
+
+## Verificación visual (task 2, después del fix)
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del selector, claro | 7,46:1 | ≥ 4,5:1 |
+| Contraste del selector, oscuro | 8,40:1 (antes 2,24:1) | ≥ 4,5:1 |
+| Separación de la flecha al borde | 9,6 px (antes 0) | > 0 |
+| Texto del filtro respecto a la lista | 12 px de margen, igual que el padding del `li` | alineado |
+| Selector mientras carga | `disabled`, opacidad 0,6 | deshabilitado |
+
+El contraste se midió sobre el estado normal. La opacidad 0,6 del estado deshabilitado no entra en la medida (WCAG exime a los controles deshabilitados).
+
+Capturas, una por estado y tema, fuera de git (`%TEMP%` de tu usuario):
+- `<home>\AppData\Local\Temp\pw0012-light-normal.png`
+- `<home>\AppData\Local\Temp\pw0012-light-deshabilitado.png`
+- `<home>\AppData\Local\Temp\pw0012-dark-normal.png`
+- `<home>\AppData\Local\Temp\pw0012-dark-deshabilitado.png`
+
+## Guion de pruebas
+
+1. Ejecuta `npm start` y abre `http://localhost:4848/`. Verás las tres reservas («Norte · … · Confirmada», «Sur · 12-14 · Pendiente», «Este · … · Cancelada»), con el selector en «Todos».
+2. Elige «Pendiente». La lista muestra solo `Sur · 12-14 · Pendiente`.
+3. Elige «Todos». Vuelven las tres reservas.
+4. Abre `http://localhost:4848/?theme=dark`. El texto del selector se lee bien sobre fondo oscuro y la flecha queda separada del borde derecho. Compáralo con las capturas.
+5. Ejecuta `curl -i "localhost:4848/api/bookings?status=Lost"`. Responde `400` con «Estado no válido: Lost».
+6. Mientras carga, el selector está deshabilitado. En local carga demasiado rápido para verlo a ojo, y está cubierto por la captura `*-deshabilitado.png` y por el test.
+
+¿Has probado el guion y funciona? Dime qué has probado.
+

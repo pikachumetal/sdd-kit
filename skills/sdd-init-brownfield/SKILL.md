@@ -25,15 +25,31 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 
 1. **Inventario** — explorar el repo: stack real con versiones exactas (de los manifests: `.csproj`, `package.json`, `pom.xml`…), estructura de módulos, patrones observados, señales de deuda (duplicación, TODOs, documentación contradictoria, dependencias bloqueadas), y **scripts de entorno por worktree** (`env:*`, `worktree:*`, marcadores): si existen, son un contrato que hay que cosechar, no una nota de `tech-stack.md`.
 2. **Cosecha del `CLAUDE.md` existente** (si lo hay, incluido uno generado por `/init`): cada afirmación se clasifica — verificada en el código → va al documento de anclaje que corresponda; no verificada → va a la lista de discrepancias para el usuario. Nada se pierde en silencio.
-3. **Generar documento a documento, con gate de revisión** — cada documento se presenta al usuario antes
-   de darse por anclaje; si el usuario no está disponible, se entregan marcados **PENDIENTES DE REVISIÓN**,
-   nunca como aprobados. Orden de generación y qué lleva cada uno:
-   [generacion.md](references/generacion.md).
+3. **Generar documento a documento, con gate de revisión** — **cada turno termina con una sola pregunta
+   de esta lista o con un solo documento para aprobar**. Cada documento se presenta al usuario antes de
+   darse por anclaje; si el usuario no está disponible, se entregan marcados **PENDIENTES DE REVISIÓN**,
+   nunca como aprobados, y las preguntas quedan pendientes. Antes de la constitution, estas preguntas, en
+   su orden:
+
+   | # | Pregunta | Va a |
+   | --- | --- | --- |
+   | 1 | Claves del kit: invoca la skill [`sdd-config`](../sdd-config/SKILL.md) con la rama de integración que se ve en el repo. Hace, una por turno y con su recomendación, sus preguntas de cómo se numera el trabajo (`ids.mode`), perfil de control, política de merge y push (solo con una rama de integración distinta de la estable), frenos y método de ejecución | `sdd-kit.json` |
+   | 2 | ¿Llevamos changelog? | `changelog.md` |
+   | 3 | Solo si 2 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
+   | 4 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
+
+   Orden de generación y qué lleva cada documento: [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).
 5. **Estructura** — `.docs/sdd/` completa. Sin carpeta `templates/`: las plantillas viven en el skill
-   `sdd-templates`. Detalle: [generacion.md](references/generacion.md).
+   `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves que el usuario respondió a `sdd-config`
+   (solo esas: «no sé» no escribe la clave). Además, `.claude/settings.json` con `"autoMemoryEnabled": false`
+   (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo) y el marketplace de superpowers, `.gitignore` con los
+   temporales de las herramientas y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
+   `capabilities/` y `specs/` no se crean (git no versiona carpetas vacías), y las capacidades no se vuelcan
+   aunque el usuario lo pida: crecen feature a feature.
+   Detalle: [generacion.md](references/generacion.md).
 6. **`CLAUDE.md` corto**: reescribirlo como punteros a los documentos + 3-5 reglas críticas. El contenido largo vive en los docs de anclaje, no aquí.
-7. **Cierre**: resumen + discrepancias pendientes de confirmar + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
+7. **Cierre**: resumen + discrepancias y preguntas del paso 3 pendientes de confirmar + que las preferencias de cada persona (perfil, método, entorno en la validación) se fijan con `sdd-config` + siguientes pasos (skills de nivel 2/3 que capturen el conocimiento tribal: build, patrones backend/frontend).
 
 ## Red flags — STOP
 

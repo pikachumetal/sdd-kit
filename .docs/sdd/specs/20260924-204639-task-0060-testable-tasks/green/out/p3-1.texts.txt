@@ -1,0 +1,37 @@
+--- [17]
+Using writing-plans para crear el plan (plantilla del kit, en `.docs/sdd/specs/`).
+
+--- [22]
+Junto la apertura (spec + plan + tasks) en un solo commit, como pide el kit.
+
+--- [24]
+Ahora los RED de la Task 1, uno por THEN, sin commitear, y copia fuera del repo.
+
+--- [28]
+Paro aquí, sin despachar el implementador de la Task 1. El plan está escrito, la apertura commiteada y los RED de la Task 1 escritos, pero la Task 1 tiene un bloqueo de entorno que hay que resolver antes de despacharla. La Task 2 tiene dos puntos pendientes.
+
+## Qué queda hecho
+- **Plan**: `.docs/sdd/specs/20260924-093000-task-0016-favoritas/plan.md`, con 2 tasks: BD y API primero, luego la estrella en la web. Se ejecutan con subagentes: lo fijé yo, porque pediste parar antes de despachar el implementador. Modelo: `sonnet` con `effort-medium` en las dos tasks y `opus` con `effort-high` en el revisor final.
+- **Tasks registradas**: `tasks.md` con el estado de cada task y los rulings.
+- **Apertura**: un solo commit, `c40966b` (spec + plan + tasks). Junté el commit de la spec con el del plan; no había merges ni remoto.
+- **Comprobación de la base antes del despacho**: `develop` sigue en `24c72bc`. La fila de la 0016 y los ficheros de las tasks no cambiaron.
+- **Tests RED de la Task 1**: `api/tests/favorites.test.js` (6 tests, sin commitear). Hay copia fuera del repo, en `/tmp/claude/.../p3-1/red-0016-copy/`.
+
+## Lo que tienes que resolver antes de despachar la Task 1
+1. **El entorno no arranca.** Faltan `api/db.js`, `api/tests/helpers.js`, `scripts/migrate.js` y `node_modules`. `npm test` ya falla en la base: `rooms.test.js` no encuentra `helpers.js`. Mis RED fallan por el mismo motivo (`ERR_MODULE_NOT_FOUND`), no por comportamiento, así que todavía no prueban nada. No inventé esos ficheros porque exceden la spec.
+2. **`helpers.request` es una suposición.** Los RED asumen `helpers.request(method, path, { user, body })`, que devuelve el JSON parseado. Es la firma que se deduce de `rooms.test.js`, pero `helpers.js` no existe para confirmarla.
+3. **No puedo confirmar los agentes `sdd-kit:effort-*`.** Esta sesión no tiene el tool `Agent` ni lista esos tipos. Lo dejé como ruling: si falta el tipo al despachar, se usa `model` explícito y la frase de respaldo.
+
+## Puntos pendientes de la Task 2
+- **`X-User` en la web**: el componente no tiene de dónde sacar quién es el usuario para mandar la cabecera. Si hace falta un interceptor o una fuente de usuario, lo trato como freno de alcance y paro antes de despacharla.
+- **Tests de `web/`**: no hay `angular.json` ni infraestructura de tests, así que `npm run test:web` tampoco puede correr hoy.
+
+## Decisiones mías que conviene validar
+Están en el bloque de arriba del plan:
+- El contrato de API que la spec no fija. `GET /rooms` devuelve `favorite` y pone las favoritas primero. `PUT` y `DELETE /rooms/:id/favorite` son idempotentes y responden `204`.
+- Los bordes que la spec calla: sin `X-User`, la lista sale sin favoritas; `PUT` y `DELETE` sin `X-User` dan `400`; sala inexistente da `404`.
+
+Como cambian lo que recibe quien use la API, conviene que el dev-lead los confirme antes de que se implementen.
+
+Cuando el dev-lead resuelva lo del entorno, retomo con los RED en rojo por comportamiento y despacho la Task 1.
+

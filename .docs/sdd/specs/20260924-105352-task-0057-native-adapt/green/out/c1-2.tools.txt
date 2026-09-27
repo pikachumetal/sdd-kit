@@ -1,0 +1,214 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd "<run>/salas" && git status --short && find .docs .claude -type f 2>/dev/null | grep -v node_modules | head -80 && cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd; for f in $D/specs/*/spec.md $D/specs/*/plan.md $D/specs/*/tasks.md $D/roadmap.md $D/changelog.md $D/constitution.md; do echo "=== $f"; cat "$f"; done; git log --oneline --stat -8 | head -50; ls; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills/sdd-end-task/references"
+<<< === .docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «F
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills"; cat $K/sdd-end-task/references/aprendizajes-skills.md; ls $K/sdd-templates $K/sdd-templates/* | head -40; cat $K/add-to-changelog/SKILL.md; cd "<run>/salas"; cat src/slots.js README.md; ls .claude 2>&1 | head -3; git branch -a
+<<< # Aprendizajes a docs vivos y revisión de skills — detalle
+
+## Paso 4 — Aprendizajes
+
+4. **Aprendizajes → docs vivos** — cada aprendizaje del walkthrough se vuelca donde vive: convención nueva → `constitution.md`; cambio estructural → `architecture.md`; versión/herramienta → `tech-stack.md`; cambio de comportamiento observable → el delta de la spec se fusiona en `capabilities/<capability>.md` (ADDED añade, MODIFIED sustituye entero el requisito con ese título, REMOVED quita; las entradas de «Reglas de la capacidad» se sustituyen o añaden por su nombre, sin marcas; nunca una capacidad que l
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills/sdd-templates/templates"; cat $K/walkthrough-template.md $K/roadmap-template.md $K/capability-template.md $K/tasks-template.md; cat "$K/../../sdd-start-task/references/commit-milestones.md" | head -60; cd "<run>/salas"; git log -3 --format=%h%n%s%n%b | head; node --test 2>&1 | tail -8
+<<< ---
+id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
+task: <id>
+title: Walkthrough — <título de la spec>
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: <YYYY-MM-DD>
+---
+
+# Walkthrough — <título>
+
+> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), las desviaciones,
+> la verificación con evidencia y los aprendizajes que vuelven a los docs vivos. El cuerpo no se
+> reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra task) se
+> añade como entrada fechada en `## 6. Adendas`. Borra los bloques de ayuda (`>`) al redactar.
+
+>>> Bash: cd "<run>/salas" && S=.docs/sdd/specs/20260923-100000-task-0012-franja
+mkdir -p .docs/sdd/capabilities
+cat > .docs/sdd/capabilities/booking.md <<'EOF'
+# Capacidad — booking
+
+## Requisitos
+
+### La franja se valida al reservar
+
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+### La franja se valida al consultar libres
+
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se consultan las salas libres
+- THEN falla con el mismo mensaje
+
+## Historial
+
+- 2026-09-24 — task 0012 — ADDED La franja se valida al reservar
+- 2026-09-24 — task 0012 — ADDED La franja se valida al consultar libres
+EOF
+cat > $S/walkthrough.md <<'EOF'
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Walkthrough — Validar el formato de la franja
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-09-24
+---
+
+# Walkthrough — Validar el formato de la franja
+
+## 1. Cambios realizados
+
+- `src/slots.js`: `reserve` rechaza una franja que no casa con `/^\d{2}-\d{2}$/` (`b5242a9`, test `tests/slot-format.test.js`).
+- `src/slots.js`: `free(slot)` aplica la misma validación y el mismo mensaje (`79f959e`, test `tests/free-format.test.js`).
+- Revisión final de rama registrada en `tasks.md` (`cf12dfb`).
+
+## 3. Desviaciones del plan
+
+- _Ninguna_
+
+### Decisiones tomadas sin el dev-lead
+
+- Validación y mensaje duplicados en `reserve` y `free` (minor diferido de la ejecución Native) — el plan pedía «la misma validación» en dos tasks y se priorizó cerrar el alcance de la spec — si se toca el mensaje hay que cambiarlo en dos sitios; va a la deuda técnica del roadmap.
+- Ningún test cubre una franja válida como `10-12` (minor diferido) — la spec solo pide el caso de rechazo — una regresión que rechace franjas válidas no la vería ningún test; va a la deuda técnica del roadmap.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- Sin build (JavaScript sin compilación).
+
+### 4.2 Smoke / tests
+
+- Validado por el dev-lead: 2026-09-24 · «he probado `salas reservar Norte 1012` y `salas libres 1012` y los dos dan el error de la spec; funciona» (reportado por el usuario).
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` (suite completa: 3 tests) — verificado por el agente al cerrar | 3 pass, 0 fail |
+| 2 | Revisión final de rama: `sdd-kit:effort-high` + opus | Ready (0 Critical, 0 Important, 2 Minor) |
+
+### 4.3 Residuales / deuda generada
+
+- Los dos minors diferidos de arriba → tabla «Deuda técnica» del roadmap.
+
+## 5. Aprendizajes
+
+- El delta de la spec (dos requisitos ADDED) es comportamiento observable → `capabilities/booking.md`, creado desde la plantilla (no existía).
+- Sin aprendizajes de convención, estructura o herramientas → sin cambios en `constitution.md`, `architecture.md` ni `tech-stack.md`.
+
+## 6. Adendas
+
+_Ninguna._
+EOF
+python3 - <<'EOF'
+import re
+p='.docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md'
+t=open(p,encoding='utf-8').read()
+t=t.replace('| 1 | Validar al reservar | pending | — | |','| 1 | Validar al reservar | done | b5242a9 | |')
+t=t.replace('| 2 | Validar al consultar libres | pending | — | |','| 2 | Validar al consultar libres | done | 79f959e | |')
+t=t.replace('Revisión final:','Nota de cierre: filas 1 y 2 estaban en `pending` sin hash pese a estar hechas; corregidas al cerrar.\n\nRevisión final:',1)
+open(p,'w',encoding='utf-8').write(t)
+p='.docs/sdd/changelog.md'
+t=open(p,encoding='utf-8').read().rstrip('\n')
+t+='\n\n### Added\n\n- **Task 0012** — `reserve` y `free` rechazan una franja que no casa con `HH-HH` con «Franja no válida: usa HH-HH, p. ej. 10-12». → [ref](specs/20260923-100000-task-0012-franja/)\n'
+open(p,'w',encoding='utf-8').write(t)
+p='.docs/sdd/roadmap.md'
+t=open(p,encoding='utf-8').read()
+t=t.replace('| 0012 | Validar','| 0012 | ✅ Validar')
+t=t.rstrip('\n')+'''
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| La validación de la franja y su mensaje están duplicados en `reserve` y `free` (`src/slots.js`), descubierto en la task 0012 | bajo: cambiar el mensaje exige tocar dos sitios | extraer un helper cuando se toque `src/slots.js` |
+| Ningún test cubre una franja válida (`10-12`) en `reserve` ni en `free`, descubierto en la task 0012 | medio: una regresión que rechace franjas válidas pasaría la suite | test en la próxima task sobre `src/slots.js` |
+'''
+open(p,'w',encoding='utf-8').write(t)
+EOF
+git status --short; cat .docs/sdd/roadmap.md | head -8
+<<<  M .docs/sdd/changelog.md
+ M .docs/sdd/roadmap.md
+ M .docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+?? .docs/sdd/capabilities/
+?? .docs/sdd/specs/20260923-100000-task-0012-franja/walkthrough.md
+# Roadmap — salas
+
+## Próximo
+
+| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+| --- | --- | --- | --- | --- |
+| 0012 | ✅ Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+
+=== RESULTADO (8 turnos, 0.34756580000000004 $)
+Pasos 0 a 9 hechos. Paro antes del 10: sin commit de cierre, sin merge y sin push.
+
+**Cierre**
+- **Validación:** el dev-lead dijo qué probó (`salas reservar Norte 1012` y `salas libres 1012`). Consta en el walkthrough como «reportado por el usuario». Yo solo verifiqué `node --test`: 3 pass, 0 fail. La spec está aprobada.
+- **Walkthrough:** creado en `specs/20260923-100000-task-0012-franja/walkthrough.md`. No hay `estimation.md`, así que no hay sección de tiempo ni fila de log (pasos 2 y 3 no aplican).
+- **Aprendizajes:** los dos requisitos de la spec van a `capabilities/booking.md`. Ese fichero no existía y lo creé desde la plantilla. La spec no tiene sección «Decisiones que he tomado yo», así que el slug `booking` lo he dado por aprobado con la spec. Corrígelo si no es el que quieres. No hay aprendizajes para constitution, architecture ni tech-stack.
+- **Skills:** el proyecto no tiene `.claude/skills/`, y esta task no revela ningún patrón reutilizable.
+- **`tasks.md`:** las filas 1 y 2 seguían en `pending` sin hash. Las pasé a `done` con `b5242a9` y `79f959e`, y dejé una nota en el fichero.
+- **Changelog:** entrada en `Added` bajo `[Unreleased]`.
+- **Roadmap:** 0012 marcada con ✅. La tabla «Próximo» no tiene columna de estado, así que puse el ✅ como prefijo en la celda «Tarea» en vez de renombrar cabeceras. Añadí la sección «Deuda técnica» con dos filas: la validación duplicada y la falta de un test con franja válida.
+- **Revisión final:** ya constaba en `tasks.md` (`effort-high` + opus, Ready, 0 Critical, 0 Important, 2 Minor). No lancé otra.
+
+**Decisiones tomadas sin el dev-lead** (sección del walkthrough)
+- La validación y el mensaje siguen duplicados en `reserve` y `free`.
+- Ningún test cubre una franja válida como `10-12`.
+- Ambas van a la deuda técnica del roadmap.
+
+**Pendiente**
+- Los cambios de cierre están sin commitear: el modificado `changelog.md`, el `roadmap.md`, el `tasks.md` y los nuevos `walkthrough.md` y `capabilities/`.
+- El paso 10 sigue sin hacer: juntar el cierre en un commit desde `79f959e`, `finishing-a-development-branch` y el merge a `develop`. Con `delegate`, `merge.noFf: true` y `merge.into: develop`, eso lo haría `Invoke-SddMerge.ps1`. `merge.push` no está en `sdd-kit.json`, así que sin `-Push`.
+- Si quieres el ticket de mejora del kit con `sdd-feedback`, lo genero en esta sesión.
+
+**No terminado.** Falta el commit de cierre y el merge de `feature/0012` a `develop`. No borres todavía el worktree `<run>\salas`.

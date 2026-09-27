@@ -1,0 +1,66 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cd "<run>/salas" && git ls-files && grep -rniE "s[aá]bado|saturday|weekday|dayOfWeek|getDay|guest|invitad" --exclude-dir=.git . | head -50
+<<< .docs/sdd/capabilities/access.md
+.docs/sdd/capabilities/billing.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/calendar-sync.md
+.docs/sdd/capabilities/house-rules.md
+.docs/sdd/capabilities/notifications.md
+.docs/sdd/capabilities/quotas.md
+.docs/sdd/capabilities/rooms.md
+.docs/sdd/capabilities/usage-reports.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/cli.js
+tests/cli.test.js
+./.docs/sdd/capabilities/access.md:10:### Un invitado entra con código de un solo día
+./.docs/sdd/capabilities/
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/capabilities/house-rules.md && cat -n src/cli.js && grep -nE "invitado|sabado|lunes" tests/cli.test.js; cat .docs/sdd/capabilities/bookings.md
+<<< # Capacidad — house-rules
+
+## Requisitos
+
+### Duración máxima por rol
+- GIVEN una sesión con rol `invitado`
+- WHEN `salas reservar Sur 10-13`
+- THEN responde `Máximo 2 h por reserva` y no guarda nada; un `empleado` tiene el mismo tope
+
+### Días permitidos por rol
+- GIVEN una sesión con rol `invitado`
+- WHEN `salas reservar Sur sabado 10-12`
+- THEN responde `Los invitados reservan de lunes a viernes`; un `empleado` puede reservar cualquier día
+
+### Penalización por no presentarse
+- GIVEN una reserva de Norte de 10 a 12 sin check-in a las 10:15
+- WHEN pasa la franja
+- THEN la reserva cuenta como
+
+=== RESULTADO (5 turnos, 0.1756102 $)
+Tocaría la regla "Días permitidos por rol", y hoy solo existe como especificación, no como código.
+
+**Lo que dicen los documentos**
+- `.docs/sdd/capabilities/house-rules.md:9-13` (requisito "Días permitidos por rol") dice que un `invitado` que ejecuta `salas reservar Sur sabado 10-12` recibe `Los invitados reservan de lunes a viernes`. Un `empleado` puede reservar cualquier día.
+- Las reglas de la capacidad (línea 24) dicen que los datos viven en `data/rules.json`.
+- Esa es la línea que habría que cambiar. La regla sería, por ejemplo, "lunes a sábado", con el mensaje actualizado.
+
+**Lo que veo en el código (esto es inferencia mía)**
+- `src/cli.js` es un stub de 3 líneas y no valida días ni roles.
+- `data/rules.json` no está en el repo, así que la regla aún no está implementada.
+- Cuando se implemente, el cambio estará en `data/rules.json` (la lista de días por rol) y en la validación que lea ese fichero. No estará en un `if` suelto.
+- En `tests/cli.test.js` no hay ningún test de esta regla.
+
+**Puntos a decidir antes**
+1. **Códigos de invitado en sábado:** `access.md:10-13` dice que el código lo emite recepción "hoy" y caduca a las 23:59. Si recepción no emite códigos los sábados, la regla nueva no serviría de nada. Hay que confirmarlo con recepción.
+2. **Mensaje y test:** el texto `Los invitados reservan de lunes a viernes` cambia. Habría que actualizar el escenario, el mensaje y su test.
+3. **Otras reglas:** por la regla de conflicto ("manda la más restrictiva"), el tope de 2 h y los 14 días de antelación siguen aplicando igual.
+
+No he tocado ningún fichero. Si quieres hacerlo, es un cambio con comportamiento, así que va por `sdd-start-task`. Dime y lo arranco.

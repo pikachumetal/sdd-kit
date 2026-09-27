@@ -1,5 +1,5 @@
 ---
-id: <yyyyMMdd-HHmmss>-task-<id>-<slug>
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
 title: Research — <tema investigado>
 spec: ./spec.md
 status: draft

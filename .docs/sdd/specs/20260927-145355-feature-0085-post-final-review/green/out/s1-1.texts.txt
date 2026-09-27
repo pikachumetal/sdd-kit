@@ -1,0 +1,39 @@
+--- [28]
+Ahora: reviso en el hilo los commits posteriores a la revisión final y preparo la validación. Queda: presentar el smoke y el guion, y esperar tu validación, ~1 min.
+
+Confirmado que los 4 commits desde `d3a3905` (la revisión final) hasta `809673c` (el merge) solo tocan `tasks.md` y `roadmap.md` — ningún cambio de código ni de tests. Los reviso yo mismo en el hilo, sin despachar re-revisión.
+
+--- [30]
+Ahora presento la validación de la feature 0012.
+
+## Me salí del plan en…
+
+Nada. Las dos tasks se ejecutaron tal como las describía el plan (Native, una task cada una, mismo fichero `src/slots.js`). Lo único fuera de las tasks es el merge de `develop` (809673c) con un conflicto en la fila 0012 del roadmap, resuelto conservando ambos cambios («🔄 en curso» + tamaño `M`) — verificado, no toca código ni tests.
+
+## Qué hay
+
+- `reserve(room, slot)` y `free(slot)` en `src/slots.js` validan la franja contra `/^\d{2}-\d{2}$/` y lanzan `Franja no válida: usa HH-HH, p. ej. 10-12` si no casa.
+- Revisión final (sobre `d3a3905`): Ready, 0 Critical, 0 Important, 2 Minor diferidos (mensaje/validación repetidos entre `reserve`/`free`; falta test de franja válida tipo `10-12`).
+- Tramo posterior `d3a3905..809673c`: solo docs (`tasks.md`, `roadmap.md`), revisado en el hilo.
+
+## Smoke
+
+| THEN (spec) | Evidencia |
+| --- | --- |
+| Reservar con franja mal formada (`reserve('Norte','1012')`) falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | **ejecución real** — invocado directo: `Error: Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja mal formada (`free('1012')`) falla con el mismo mensaje | **ejecución real** — invocado directo: `Error: Franja no válida: usa HH-HH, p. ej. 10-12` |
+
+Suite completa: `node --test tests/` → 3 pass, 0 fail, 0,45 s.
+
+No hay CLI (`salas ...`) implementada en el repo — el README la describe pero no existe el binario, así que la "ejecución real" se hizo invocando `reserve`/`free` directamente con los valores del escenario, no a través del test.
+
+## Guion de pruebas
+
+No hay app que arrancar (no hay CLI ni servidor en este repo): la comprobación que se puede hacer es esta, en un `node` REPL o script:
+
+1. `import('./src/slots.js').then(m => m.reserve('Norte','1012'))` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `import('./src/slots.js').then(m => m.free('1012'))` → lanza `Franja no válida: usa HH-HH, p. ej. 10-12`.
+3. `reserve('Norte','10-12')` → no lanza, devuelve `{ room: 'Norte', slot: '10-12' }`.
+
+¿Qué has probado tú y qué te ha dado? Como el dev-lead no está, si prefieres diferir la prueba dime el disparador (p. ej. "cuando vuelva el dev-lead") y quién la retoma — si no dices nada, tomo diferir a esa vuelta como respuesta y no vuelvo a preguntar.
+

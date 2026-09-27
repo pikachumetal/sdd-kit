@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd "<run>/wt/0009" && git status --short && git worktree list && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; git rev-parse --git-dir --git-common-dir
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit4\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Grep: merge|unattended|delegate
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       78c5351 [feature/0008]
+<run>/wt/0009       8de868d [feature/0009]
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+<run>/git/salas.git/worktrees/0009
+<run>/git/salas.git
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9:- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de integración tras el merge del cierre sigue `merge.push`.
+17:3. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+25:| Punto | `pair` | `delegate` | `unattended` |
+30:| Plan | para | sin gate: comprueba escenario → task y sigue | igual que `delegate` |
+36:| Merge a dev
+
+>>> Bash: cd "<run>/wt/0009" && git branch -a -vv && git remote -v && git rev-parse --abbrev-ref develop@{upstream}; ls; cat package.json 2>/dev/null | head -20; git worktree add ../merge-0009 develop && git -C ../merge-0009 merge --no-ff feature/0009 -m "merge(0009): validar el formato de la franja en salas libres y reservar"
+<<<   develop                4d652fe [origin/develop] feat: base de reservas de salas
++ feature/0008           78c5351 (<run>/wt/0008) wip(0008): esqueleto de avisos
+* feature/0009           8de868d docs(0009): cierre de la task, walkthrough, changelog y roadmap
++ feature/0011           7cc0fc2 (<run>/git/salas.git) fix(0011): cancelar sin hora pide el uso
+  main                   4d652fe [origin/main] feat: base de reservas de salas
+  remotes/origin/develop 4d652fe feat: base de reservas de salas
+  remotes/origin/main    4d652fe feat: base de reservas de salas
+origin	https://github.com/acme-rooms
+
+>>> Bash: cd ../merge-0009 && node --test 2>&1 | tail -15; git rev-parse --short HEAD; sed -n '/Decisiones tomadas/,/^## /p' .docs/sdd/specs/*0009*/walkthrough.md
+<<< ✔ libres excluye la sala reservada en la franja (18.3109ms)
+✔ reservar crea la reserva (0.2857ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1432ms)
+✔ cancelar respeta el día (0.1573ms)
+✔ libres rechaza una franja mal formada (0.3354ms)
+✔ reservar rechaza una franja mal formada (0.1458ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 589.4275
+4465d19
+### Decisiones tomadas sin el dev-lead
+
+- El mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `re
+
+>>> Bash: cd ../merge-0009 && git push origin develop 2>&1; echo "exit=$?"; git rev-parse --short develop
+<<< fatal: could not read Username for 'https://github.com': terminal prompts disabled
+exit=128
+4465d19
+
+>>> Bash: cd ../0009 && git worktree remove ../merge-0009 && git worktree list && git status --short
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       78c5351 [feature/0008]
+<run>/wt/0009       8de868d [feature/0009]
+
+=== RESULTADO (10 turnos, 0.2637876 $)
+**Decisión sin el dev-lead:** el mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+
+**Instrucción del dev-lead:** «cuando fusiones, sube develop». Fusioné y lo intenté, pero el push falló (ver Pendiente).
+
+**Cierre:** no existe `environments.md`, así que no hubo `env:clean`. Fusioné con `--no-ff` en un worktree temporal `merge-0009`, que ya retiré. La suite pasa sobre el resultado: 6 de 6 tests. `develop` está ahora en `4465d19`.
+
+**Pendiente:** el push de `develop` falló por falta de credenciales. `merge.push` no está declarado en `sdd-kit.json`, así que el push lo autorizó solo la frase del dev-lead. No lo reintenté. Alguien con credenciales para `origin` tiene que lanzarlo:
+
+```
+git push origin develop
+```
+
+Error: `fatal: could not read Username for 'https://github.com': terminal prompts disabled`. `origin/develop` sigue en `4d652fe`.
+
+**Ticket para el kit:** puedo generarlo con `sdd-feedback` en esta sesión si quieres.
+
+**Terminado.** feature/0009 fusionada en develop (4465d19) · push: no hecho: fallo de credenciales en `https://github.com/acme-rooms/salas.git` · puedes borrar el worktree `<run>/wt/0009`

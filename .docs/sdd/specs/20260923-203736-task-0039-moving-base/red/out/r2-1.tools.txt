@@ -1,0 +1,179 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git status --short && git branch --show-current && cat .superpowers/sdd/plan/progress.md && echo ---- && cat .superpowers/sdd/plan/task-1-rereview.md && echo ---- && ls -R .docs/sdd .superpowers | head -60
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0039/e85f6b4a-84d9-41f6-b848-730cbacc6db2/scratchpad/kit-red/skills/sdd-start-task/references" && ls && cat commit-milestones.md encargo-revision.md control-profiles.md
+<<< feature/0012
+# SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Task 1: BASE 0ffa5b0
+Task 1: fix round 1/5 (1 addressed, 0 open; commits 9e95967..dbb124b)
+----
+# Re-revisión de la Task 1
+
+- Hallazgo Important «falta el mensaje literal»: ADDRESSED (src/slots.js:3).
+- New breakage: none.
+
+Verdict: all findings addressed.
+----
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs:
+20260923-100000-task-0012-franja/
+
+.docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+spec.md
+tasks.md
+
+.superpowers:
+sdd/
+
+.superpowers/sdd:
+plan/
+
+.
+<<< commit-milestones.md
+control-profiles.md
+encargo-revision.md
+modo-lite.md
+nombrado.md
+overrides-superpowers.md
+review-spec.md
+# Un commit por hito
+
+La rama de una task cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+
+## Qué lleva cada hito
+
+| Hito | Lleva | S
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-task-0012-franja; cat $D/plan.md; echo ----; cat $D/tasks.md; echo ----; cat $D/spec.md; echo ----; cat .docs/sdd/roadmap.md; cat .docs/sdd/sdd-kit.json; git log --oneline --graph --all; git remote -v; git branch -a; ls; ls src tests 2>/dev/null
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Implementadores y revisores Sonnet, effort medio.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: Sonnet, effort medio
+**Tests RED**: hilo principal · `tests/slot-format.test.js`, escritos antes de despachar y sin commitear: van en el commit de la task
+**Superficies**: backend
+**Verif
+
+>>> Bash: cd "<run>/salas" && echo "== roadmap diff"; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md; echo "== merge-base"; git merge-base HEAD develop; echo "== merges"; git rev-list --merges 0ffa5b0..HEAD; echo "== published"; git branch -r --contains 9f21ecd; echo "== files"; cat src/slots.js; echo ----; cat tests/slot-format.test.js; echo ----; cat tests/slots.test.js; echo ---; cat .docs/sdd/constitution.md; git show --stat HEAD~2 HEAD~1 HEAD | cat
+<<< == roadmap diff
+== merge-base
+94e3a99d90df0d4e983c5661231deac325e1a416
+== merges
+== published
+== files
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+----
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+----
+import { test } from 'node:test';
+import assert 
+
+>>> Bash: cd "<run>/salas" && git reset --soft 0ffa5b0 && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al reservar
+
+`reserve` rechaza las franjas que no casan con `HH-HH` y lanza el error
+«Franja no válida: usa HH-HH, p. ej. 10-12». Incluye el test de la task 1
+y el ajuste del mensaje literal de su revisión.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short; git check-ignore -v .superpowers/sdd/plan/progress.md; node --test tests/slot-format.test.js 2>&1 | tail -8
+<<< 01edbe5 feat(0012): validar el formato de la franja al reservar
+0ffa5b0 docs(0012): abrir la task 0012
+94e3a99 feat: base de reservas de salas
+.gitignore:1:.superpowers/	.superpowers/sdd/plan/progress.md
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.1355
+
+>>> Bash: cd "<run>/salas" && cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('rechaza una franja sin guion al consultar libres', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)|SyntaxError|does not provide" | head
+mkdir -p "$TEMP/sdd-red-0012" && cp tests/free-format.test.js "$TEMP/sdd-red-0012/free-format.test.js" && echo "copia: $TEMP/sdd-red-0012/free-format.test.js"
+cat >> .superpowers/sdd/plan/progress.md <<'EOF'
+Task 1: CLEAN, juntada 0ffa5b0..01edbe5 (hash pendiente de tasks.md en el commit de la task 2)
+Task 2: BASE 01edbe5
+EOF
+git status --short
+<<< SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ pass 0
+ℹ fail 1
+copia: <home>\AppData\Local\Temp/sdd-red-0012/free-format.test.js
+?? tests/free-format.test.js
+
+=== RESULTADO (9 turnos, 0.3234222 $)
+Parado antes de despachar al implementador de la Task 2, como pediste. Lo previo al despacho está hecho.
+
+**Hecho**
+- **Task 1 juntada:** `0ffa5b0..HEAD` (3 commits) queda en `01edbe5`. Las guardas no saltaron: no hay merges en el rango ni remotos. El commit lleva título, cuerpo en castellano y `Co-Authored-By`. `node --test tests/slot-format.test.js` pasa.
+- **Fila del roadmap:** el diff de `.docs/sdd/roadmap.md` contra `develop` sale vacío, así que no hay freno de alcance. `develop` sí se ha movido (`3139a6a feat(0014)`), pero no toca esa fila.
+- **RED de la Task 2:** `tests/free-format.test.js` cubre el escenario «franja no válida al consultar libres». Falla por compilación: `slots.js` no exporta `free`. Queda sin commitear, y hay copia en `%TEMP%\sdd-red-0012\free-format.test.js`.
+- **Ledger:** `.superpowers/` está en `.gitignore`, así que solo cambia en local. Le añadí la Task 1 como limpia y `Task 2: BASE 01edbe5`.
+
+**Pendiente**
+- **Hash de la Task 1 en `tasks.md`:** lo pondré en el commit de la Task 2, no ahora. Un commit no puede contener su propio hash, así que este `01edbe5` no puede entrar en el que lo produce.
+
+**Encargo del implementador (aún no despachado)**
+- **Cabecera:** `## Restricciones de código` con el bloque «De código» del plan, íntegro. Ese bloque es solo el mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12». «De proceso» no viaja: los Sonnet con effort medio los aplico yo al despachar.
+- **Tests RED:** el contrato es `tests/free-format.test.js`. No se modifica; se commitea con `git add` de su ruta explícita.
+- **Verificación:** solo `node --test tests/free-format.test.js`. Nada de suite completa, que va una vez en la validación final.
+- **Reglas del implementador:** las tres de la cabecera de `encargo-revision.md`.
+- **Cierre de la Task 2:** cuando vuelva, compararé su test con la copia de `%TEMP%` y juntaré su rango desde `01edbe5`.
+
+**Rulings o desvíos:** ninguno hasta ahora, así que «Me salí del plan en…» queda vacío.
+
+Nota menor: el plan declara un solo comando de verificación por task. La constitution pide `node --test` completo antes de fusionar, y eso queda para el paso 7.

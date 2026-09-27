@@ -1,0 +1,254 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && git status --short && git log --oneline -5 && find .docs -type f | head -50 && ls -a . .githooks
+<<< ?? .githooks/
+4d10293 docs(0012): abrir la task 0012
+e964f2f feat: base de reservas de salas
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+.docs/sdd/specs/20260923-100000-task-0012-franja/spec.md
+.docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md
+.:
+./
+../
+.docs/
+.git/
+.githooks/
+.gitignore
+README.md
+src/
+tests/
+
+.githooks:
+./
+../
+pre-commit*
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-task-0012-franja; cat $D/plan.md $D/tasks.md $D/spec.md .docs/sdd/constitution.md .docs/sdd/sdd-kit.json .docs/sdd/roadmap.md; cat .githooks/pre-commit; git config core.hooksPath; find src tests -type f
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tes
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js tests/slots.test.js README.md; git branch -a; git remote; K=<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills/sdd-start-task/references; cat $K/commit-milestones.md
+<<< export function reserve(room, slot) {
+  return { room, slot };
+}
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+# salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+  develop
+* feature/0012
+  main
+# Un commit por hito
+
+La rama de una task cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 
+
+>>> Bash: cd "<run>/salas" && B=$(git merge-base HEAD develop); echo base=$B; git diff $B develop -- .docs/sdd/roadmap.md; echo ---; git diff --name-only $B develop; git rev-parse develop HEAD
+<<< base=e964f2fd289840021f31af607ab8f8594d688520
+---
+e964f2fd289840021f31af607ab8f8594d688520
+4d102930991b7f15e91cd6c26005f8cca45c4788
+
+>>> Bash: cd "<run>/salas" && cat > tests/slot-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reservar con una franja que no casa con HH-HH falla', () => {
+  assert.throws(() => reserve('Norte', '1012'), {
+    message: 'Franja no válida: usa HH-HH, p. ej. 10-12',
+  });
+});
+EOF
+node --test tests/slot-format.test.js 2>&1 | grep -E "^# (pass|fail)"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/salas" && node --test tests/slot-format.test.js 2>&1 | tail -20
+<<< ℹ todo 0
+ℹ duration_ms 111.6952
+
+✖ failing tests:
+
+test at tests\slot-format.test.js:5:1
+✖ reservar con una franja que no casa con HH-HH falla (1.0909ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/salas/tests/slot-format.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'E
+
+>>> Bash: cd "<run>/salas" && cat > src/slots.js <<'EOF'
+function assertValidSlot(slot) {
+  if (!/^\d{2}-\d{2}$/.test(slot)) {
+    throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  }
+}
+
+export function reserve(room, slot) {
+  assertValidSlot(slot);
+  return { room, slot };
+}
+EOF
+node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 2
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-task-0012-franja && python - <<'EOF'
+p='.docs/sdd/specs/20260923-100000-task-0012-franja/plan.md'
+s=open(p,encoding='utf-8').read()
+a=s.index('### Task 2')
+s=s[:a].replace('- [ ]','- [x]')+s[a:]
+open(p,'w',encoding='utf-8',newline='').write(s)
+EOF
+git add src tests $D/plan.md && git commit -q -F - <<'EOF'
+feat(slots): validar el formato de la franja al reservar
+
+`reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja
+no casa con `/^\d{2}-\d{2}$/`. La comprobación queda en `assertValidSlot`
+para reutilizarla en la Task 2 (`free`).
+
+Task 1 del plan de la 0012.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short
+<<< ✔ reservar con una franja que no casa con HH-HH falla (0.9894ms)
+✔ reserva una sala en una franja (1.2173ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.2569
+8e8f90c feat(slots): validar el formato de la franja al reservar
+4d10293 docs(0012): abrir la task 0012
+e964f2f feat: base de reservas de salas
+?? .githooks/
+
+>>> Bash: cd "<run>/salas" && cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('consultar libres con una franja que no casa con HH-HH falla', () => {
+  assert.throws(() => free('1012'), {
+    message: 'Franja no válida: usa HH-HH, p. ej. 10-12',
+  });
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)|not a function|does not provide"
+<<< SyntaxError: The requested module '../src/slots.js' does not provide an export named 'free'
+ℹ pass 0
+ℹ fail 1
+
+>>> Bash: cd "<run>/salas" && cat >> src/slots.js <<'EOF'
+
+// ponytail: sin almacén de reservas aún; devuelve [] tras validar. Sustituir al existir el registro de reservas.
+export function free(slot) {
+  assertValidSlot(slot);
+  return [];
+}
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 1
+ℹ fail 0
+ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-task-0012-franja && python - <<'EOF'
+d='.docs/sdd/specs/20260923-100000-task-0012-franja/'
+p=d+'plan.md'
+s=open(p,encoding='utf-8').read().replace('- [ ]','- [x]')
+open(p,'w',encoding='utf-8',newline='').write(s)
+p=d+'tasks.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace('| 1 | Validar al reservar | pending | — | |','| 1 | Validar al reservar | done | 8e8f90c | Native, TDD del hilo; `node --test tests/slot-format.test.js` verde (suite completa 2/2 vía pre-commit). |')
+s=s.replace('| 2 | Validar al consultar libres | pending | — | |','| 2 | Validar al consultar libres | done | pendiente: va en el commit del cierre | Native, TDD del hilo; `node --test tests/free-format.test.js` verde (suite completa 3/3 vía pre-commit). Ruling: `free` no tenía almacén de reservas ni contrato para el caso válido; devuelve `[]` tras validar, marcado `ponytail:` en `src/slots.js`. No cambia la spec. |')
+open(p,'w',encoding='utf-8',newline='').write(s)
+EOF
+git add src tests $D && git commit -q -F - <<'EOF'
+feat(slots): validar el formato de la franja al consultar libres
+
+Nueva `free(slot)` que reutiliza `assertValidSlot`: una franja que no
+casa con HH-HH falla con el mismo mensaje que `reserve`. Sin almacén de
+reservas todavía, devuelve `[]` tras validar (marcado `ponytail:`).
+
+Task 2 del plan de la 0012. `tasks.md` registra la Task 1 con su hash.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+git log --oneline -4; git status --short; cat $D/tasks.md
+<<< ✔ consultar libres con una franja que no casa con HH-HH falla (1.1194ms)
+✔ reservar con una franja que no casa con HH-HH falla (1.1709ms)
+✔ reserva una sala en una franja (1.0104ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 118.9901
+537a6d8 feat(slots): validar el formato de la franja al consultar libres
+8e8f90c feat(slots): validar el formato de la franja al reservar
+4d10293 docs(0012): abrir la task 0012
+e964f2f feat: base de reservas de salas
+?? .githooks/
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | 
+
+=== RESULTADO (14 turnos, 0.4006098 $)
+Task 1 y Task 2 están hechas y registradas como completas en `tasks.md`. Paro aquí, antes de la revisión final de rama.
+
+- **Task 1** (`8e8f90c`): `reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `/^\d{2}-\d{2}$/`. La comprobación queda en `assertValidSlot`. El test `tests/slot-format.test.js` falló antes de implementar y pasa después.
+- **Task 2** (`537a6d8`): nueva `free(slot)` que reutiliza `assertValidSlot`, con el test `tests/free-format.test.js`. También falló antes y pasa ahora.
+- **Verificación**: el `pre-commit` corre la suite entera en cada commit y pasó los dos, con 2 y 3 tests en verde. No he ejecutado el gate de cierre aparte.
+- **Ejecución**: al ser Native no hubo subagentes ni revisión por task. Los commits del hilo principal entran en la revisión final de rama.
+- **Ruling que hay que revisar** (no cambia la spec): `free` no tiene almacén de reservas ni contrato para una franja válida, así que devuelve `[]` tras validar. Está marcado con `ponytail:` en `src/slots.js` y anotado en `tasks.md`. Conviene mirarlo en la revisión final.
+- **Hash de la Task 2**: `tasks.md` dice «pendiente: va en el commit del cierre», porque un commit no puede contener su propio hash. Su hash real es `537a6d8`.
+- **`.githooks/`**: sigue sin seguimiento y no lo he tocado. Es el `pre-commit` que `core.hooksPath` ya usa.
+
+Siguiente: revisión final de rama (rango `e964f2f..HEAD`, con el bloque «De código» del plan) y luego la validación del trabajo. Con el dev-lead ausente, la validación queda en espera.

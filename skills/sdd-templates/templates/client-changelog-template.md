@@ -5,7 +5,7 @@
 > mismo título, mismo Resumen y mismas Novedades. No se redacta aparte: dos textos de cliente por
 > release divergen; uno destilado del otro no. Lo escribe `sdd-end-release` al cerrar cada release,
 > solo si este fichero existe (opt-in del proyecto, decidido en la entrevista de init).
-> **Prohibido**: IDs de task, scopes de commit, jerga técnica. Borra los bloques de ayuda (`>`) al redactar.
+> **Prohibido**: IDs de feature, scopes de commit, jerga técnica. Borra los bloques de ayuda (`>`) al redactar.
 
 Qué ha cambiado en <producto>, versión a versión, contado para quien lo usa. La versión más reciente arriba.
 

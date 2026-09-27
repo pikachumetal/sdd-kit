@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0057/a763186e-4263-42ac-8e64-a3eca97dfce6/scratchpad/kit-full/skills/sdd-start-task/references" && cat commit-milestones.md
+
+>>> Bash: cat .superpowers/sdd/plan/progress.md; echo ----; git log --oneline -8; git status --short; ls .docs/sdd/specs/*
+<<< # Un commit por hito
+
+La rama de una task cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+
+## Qué lleva cada hito
+
+| Hito | Lleva | Se junta | Base |
+| --- | --- | --- | --- |
+| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: s
+<<< # SDD ledger — plan: .docs/sdd/specs/20260923-100000-task-0012-franja/plan.md
+
+Task 1: BASE 5544d5d
+Task 1: implementer DONE (commit bf709dd)
+Task 1: review clean (spec ✅, calidad ✅; sin hallazgos)
+----
+bf709dd feat(0012): validar el formato de la franja al reservar
+5544d5d docs(0012): abrir la task 0012
+007bb2b feat: base de reservas de salas
+plan.md
+spec.md
+tasks.md
+
+>>> Bash: B=5544d5d; git rev-list --merges $B..HEAD; echo "merges^"; git branch -r --contains $(git rev-list --reverse $B..HEAD | head -1); echo "remotes^"; git remote -v; git log -1 --format=%B bf709dd; git show --stat --format= bf709dd; cat .docs/sdd/specs/*/tasks.md; grep -n -A12 "Task 1" .docs/sdd/specs/*/plan.md | head -40; ls scripts 2>/dev/null
+<<< Exit code 2
+merges^
+remotes^
+feat(0012): validar el formato de la franja al reservar
+
+Anade la validacion del formato HH-HH en reserve y el test de la task 1. La franja mal formada lanza el mensaje de la spec.
+
+ src/slots.js              | 3 +++
+ tests/slot-format.test.js | 7 +++++++
+ 2 files changed, 10 insertions(+)
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | pending | — | |
+| 2 | Validar al consultar libres | pending | — | |
+25:### Task 1 — Validar al reservar
+26-
+27-**Modelo**:
+
+>>> Bash: node --test tests/slot-format.test.js 2>&1 | tail -8
+git reset --soft 5544d5d && git commit -q -F - <<'EOF'
+feat(0012): validar el formato de la franja al reservar
+
+Añade la validación del formato HH-HH en reserve, con el test de la task 1.
+Una franja mal formada lanza el mensaje de error que fija la spec.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+H=$(git rev-parse --short HEAD); echo "Task 1: milestone squashed 5544d5d..$H" >> .superpowers/sdd/plan/progress.md
+git log --oneline -3; git status --short; tail -2 .superpowers/sdd/plan/progress.md
+<<< ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 95.8964
+✔ rechaza una franja sin guion (0.9201ms)
+✔ reserva una sala en una franja (1.1021ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.7283
+ee730a3 feat(0012): validar el formato de la franja al reservar
+5544d5d docs(0012): abrir la task 0012
+007bb2b feat: base de reservas de salas
+Task 1: review clean (spec ✅, calidad ✅; sin hallazgos)
+Task 1: milestone squashed 5544d5d..ee730a3
+
+=== RESULTADO (7 turnos, 0.23643740000000002 $)
+Hito de la Task 1 cerrado en `ee730a3`, sobre la base `5544d5d`. No he despachado la Task 2.
+
+- **Guardas:** el rango no tenía merges y no hay remoto, así que no había nada publicado. Se podía juntar.
+- **Juntado:** el rango era un solo commit, `bf709dd`. Aun así reescribí el mensaje yo, porque el del implementador no llevaba tildes ("Anade", "validacion"). El mensaje nuevo sigue la convención del proyecto y lleva el `Co-Authored-By`.
+- **Test:** `node --test tests/slot-format.test.js` sale en verde (2 pass, 0 fail) sobre el commit del hito.
+- **Ledger:** `.superpowers/sdd/plan/progress.md` lleva ahora `Task 1: milestone squashed 5544d5d..ee730a3`.
+- **`tasks.md`:** no lo he tocado. Sigue con la Task 1 en `pending`. Según la regla de hitos, el hash `ee730a3` y el estado ✅ entran en el commit del hito de la Task 2, no en este. Ese mismo commit lleva el estado final de la Task 1, así que hasta entonces `tasks.md` no refleja el ledger.
+- **Ruling:** reescribir el mensaje del implementador no es un desvío del plan, así que no lo he registrado como ruling.
+
+**Pendiente para la Task 2**, que queda parada:
+1. Comprobar si la fila de la Task 2 cambió en la base, con `git diff` de `.docs/sdd/roadmap.md` contra `develop`. Con el dev-lead ausente, si aparece la fila es un freno de alcance y no despacho.
+2. Cruzar `git diff --name-only` de la base con los ficheros de «Crear» y «Modificar» de la Task 2. Si coincide alguno, es el mismo freno.
+3. Escribir los RED de la Task 2 sin commitear y guardar una copia fuera del repo.
+4. Comprobar que el tipo `sdd-kit:effort-medium` está entre los agentes de la sesión.
+5. Despachar con el bloque «De código» de las Restricciones globales al principio del encargo.

@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd "<run>/wt/0009" && git status --short && git worktree list && git branch -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; ls .docs/sdd/environments.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit3\skills\sdd-end-task\references\merge-recipe.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0040\98d9bc4d-1ac4-498b-b33e-2e1c3272dd77\scratchpad\kit3\skills\sdd-start-task\references\control-profiles.md
+<<< Exit code 2
+<run>/git/salas.git (bare)
+<run>/wt/0008       09a17d7 [feature/0008]
+<run>/wt/0009       ffa4093 [feature/0009]
+  develop
++ feature/0008
+* feature/0009
++ feature/0011
+  main
+  remotes/origin/develop
+  remotes/origin/main
+changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+<<< 1	# Receta del merge en el cierre
+2	
+3	La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+4	
+5	## Cuándo
+6	
+7	`git worktree list` dice si la rama destino está sacada en algún worktree:
+8	
+9	- **Sacada**: antes, `git -C <ese worktree> status --short`. Con cambios sin commitear no se fusiona ahí: s
+
+>>> Bash: cd "<run>/wt/0009" && git rev-parse --short develop && git worktree add ../merge-0009 develop && cd ../merge-0009 && git merge --no-ff feature/0009 -m "merge(0009): validar la franja en libres y reservar" 2>&1 | tail -15; git status --short; ls; cat package.json 2>/dev/null | head -20
+<<< 9c26471
+Preparing worktree (checking out 'develop')
+HEAD is now at 9c26471 feat: base de reservas de salas
+Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  9 ++++
+ .docs/sdd/roadmap.md                               |  2 +-
+ .../20260921-090000-task-0009-slot-format/plan.md  | 47 +++++++++++++++++++
+ .../20260921-090000-task-0009-slot-format/spec.md  | 52 ++++++++++++++++++++++
+ .../walkthrough.md                                 | 51 +++++++++++++++++++++
+ src/app.js                               
+
+>>> Bash: cd "<run>/wt/merge-0009" && node --test 2>&1 | tail -12; git rev-parse --abbrev-ref develop@{upstream}
+<<< ✔ reservar --cada-semana crea la reserva semanal (0.1386ms)
+✔ cancelar respeta el día (0.111ms)
+✔ libres rechaza una franja mal formada (0.2516ms)
+✔ reservar rechaza una franja mal formada (0.1018ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 157.2709
+origin/develop
+
+>>> Bash: cd "<run>/wt/merge-0009" && git push origin develop 2>&1 | tail -5; git rev-parse --short develop
+<<< fatal: could not read Username for 'https://github.com': terminal prompts disabled
+e2caab9
+
+>>> Bash: cd "<run>/wt/0009" && git worktree remove ../merge-0009 && git worktree list && git status --short && git rev-parse --short develop && grep -n "Decisiones tomadas" -A4 .docs/sdd/specs/*0009*/walkthrough.md
+<<< <run>/git/salas.git (bare)
+<run>/wt/0008       09a17d7 [feature/0008]
+<run>/wt/0009       ffa4093 [feature/0009]
+e2caab9
+34:### Decisiones tomadas sin el dev-lead
+35-
+36-- El mensaje de franja no válida incluye un ejemplo (`10:00-12:00`) y sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+37-
+38-## 4. Verificación
+
+=== RESULTADO (10 turnos, 0.286018 $)
+Paso 10 hecho: la rama está fusionada en `develop`, pero el push a `origin/develop` falló por credenciales.
+
+- **Merge:** `feature/0009` está en `develop` con `--no-ff`, hash `e2caab9`. Lo hice en un worktree temporal `merge-0009`, porque `develop` no estaba sacada en ningún worktree. Ya lo retiré.
+- **Suite:** 6 de 6 en verde sobre el resultado del merge.
+- **Entorno:** no existe `environments.md`, así que no hubo `env:clean`.
+- **Push:** `merge.push` lo autoriza, así que lo intenté y falló. No lo reintenté.
+
+  ```
+  git push origin develop
+  ```
+  ```
+  fatal: could not read Username for 'https://github.com': terminal prompts disabled
+  ```
+  `develop` queda solo en local en `e2caab9`. Alguien con credenciales tiene que lanzar ese push.
+- **Decisión tomada sin el dev-lead:** el mensaje de franja no válida incluye un ejemplo (`10:00-12:00`). Sale de una sola función, `invalidSlot` en `src/app.js`, compartida por `libres` y `reservar`. La spec fijaba el formato del mensaje, no el ejemplo.
+- **Instrucciones del dev-lead antes del cierre:** no hubo ninguna aparte de la validación.
+- **Ticket para el kit:** puedo generar el ticket de mejora con `sdd-feedback` en esta sesión. Dime si lo quieres.
+
+**Terminado.** feature/0009 fusionada en develop (e2caab9) · push: no hecho: falta de credenciales HTTPS para `origin` (`could not read Username`) · puedes borrar el worktree `<run>\wt\0009`

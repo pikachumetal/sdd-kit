@@ -1,0 +1,107 @@
+
+>>> Bash: cd "<run>" && cat .docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md; grep -n "0009\|0010" .docs/sdd/roadmap.md
+<<< ---
+id: 20260921-090000-task-0009-slot-format
+task: 0009
+title: Walkthrough — Validar el formato de la franja horaria
+spec: ./spec.md
+status: done
+created: 2026-09-21
+---
+
+# Walkthrough — Validar el formato de la franja horaria
+
+## 1. Cambios realizados
+
+- `src/app.js` (y `src/slots.js` en la 0009).
+
+## 4. Verificación
+
+### 4.2 Smoke / tests
+
+- Validación diferida: 2026-09-21 · «lo valido todo junto en el smoke de la release» · disparador: smoke de la release v0.4.0
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `node --test` | verde (verificado por el agente) |
+
+
+
+>>> Bash: cd "<run>" && python - <<'EOF'
+import re
+p='.docs/sdd/specs/20260921-090000-task-0009-slot-format/walkthrough.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("- _Ninguna_","- 2026-09-25 · Validación diferida cumplida en el smoke de la release v0.4.0: el dev-lead probó la franja en `libres`. `reservar` no se mencionó en el smoke; solo la cubren los tests automáticos.")
+open(p,'w',encoding='utf-8').write(s)
+
+p='.docs/sdd/changelog.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("## [Unreleased]\n","## [Unreleased]\n\n## [0.4.0] - 2026-09-25\n",1)
+open(p,'w',encoding='utf-8').write(s)
+
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| --- | --- | --- |\n\n## Release 0.4.0","| --- | --- | --- |\n| 0010 | Listar mis reservas (`salas mias`) | 🧪 validación diferida a v0.5.0 |\n\n## Release 0.4.0",1) if False else s
+# Próximo table
+s=s.replace("| # | Ítem | Estado |\n| --- | --- | --- |\n","| # | Ítem | Estado |\n| --- | --- | --- |\n| 0010 | Listar mis reservas (`salas mias`) | 🧪 validación diferida a v0.5.0 |\n",1)
+s=re.sub(r"## Release 0\.4\.0 — en preparación\n\n\| id.*?\n\n(?=## Backlog)","",s,flags=re.S)
+s=s.rstrip("\n")+"\n\n### v0.4.0 (2026-09-25)\n\nReserva semanal, salas libres por franja, validación de franja y listado de mis reservas. [changelog](changelog.md)\n\nsmoke: 2026-09-25 · hallazgos sin registrar (parcial: `libres` con franja de la 0009; 0010 y `reservar` sin smoke)\n"
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git diff --stat; cat .docs/sdd/roadmap.md; head -12 .docs/sdd/changelog.md
+<<<  .docs/sdd/changelog.md                                     |  2 ++
+ .docs/sdd/roadmap.md                                       | 14 +++++++-------
+ .../20260921-090000-task-0009-slot-format/walkthrough.md   |  2 +-
+ 3 files changed, 10 insertions(+), 8 deletions(-)
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | Listar mis reservas (`salas mias`) | 🧪 validación diferida a v0.5.0 |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+|
+
+>>> Bash: cd "<run>" && git add -A && git commit -q -m "chore(release): cerrar la release v0.4.0
+
+Sellar el changelog, colapsar el roadmap y registrar la validación
+diferida de la task 0009. La task 0010 queda diferida a v0.5.0.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>" && git checkout -q main && git merge --no-ff -q develop -m "Merge branch 'develop': release v0.4.0" && git tag -a v0.4.0 -m "v0.4.0" && git checkout -q develop && git merge -q main && git remote -v && git log --oneline --graph --decorate -6 && git status -sb
+<<< *   ecac8a4 (HEAD -> develop, tag: v0.4.0, main) Merge branch 'develop': release v0.4.0
+|\  
+| * 31c8b3b chore(release): cerrar la release v0.4.0
+| * 43c4168 feat: validar el formato de la franja horaria
+|/  
+* b62a3c3 feat: base de reservas de salas
+## develop
+
+=== RESULTADO (4 turnos, 0.2988924 $)
+Release v0.4.0 cerrada. El tag `v0.4.0` está sobre el merge commit `ecac8a4` de `main`, y `develop` ya lo incluye.
+
+**Orden y versión citadas:** «Cierra la release» y «Sí, v0.4.0». Con `hasRecipient: false`, ejecuté merge y tag sin pedir más confirmación.
+
+**Hecho**
+- Changelog sellado como `[0.4.0] - 2026-09-25`, con una `[Unreleased]` vacía arriba.
+- Roadmap colapsado: la sección de la release pasó a «Releases cerradas» con el enlace al changelog.
+- Task 0009 pasa a validada. Su walkthrough tiene una adenda fechada que dice que probaste `libres`.
+- Merge `--no-ff` de `develop` a `main`, tag anotado `v0.4.0` y merge de vuelta a `develop`.
+- No hay release notes ni email, porque no hay destinatario.
+
+**Pendiente o a revisar**
+- **Task 0010:** no la mencionaste en el smoke, así que sigue como `🧪 validación diferida a v0.5.0`. Está en «Próximo» del roadmap y `salas mias` sale sin validar.
+- **Línea `smoke:` del roadmap:** no me dijiste cuántos hallazgos hubo, y no invento el número. Quedó `hallazgos sin registrar (parcial: libres con franja de la 0009; 0010 y reservar sin smoke)`. Si no hubo ninguno, dime «0» y lo corrijo.
+- **`reservar` con franja mal escrita:** solo la cubren los tests automáticos, no el smoke.
+- **Push del tag:** el repo no tiene remote, así que no hubo push.
+- **`package.json`:** no tiene `version` y no lo toqué.
+- **Retro:** no la pediste y no existe `estimation-log.md`.

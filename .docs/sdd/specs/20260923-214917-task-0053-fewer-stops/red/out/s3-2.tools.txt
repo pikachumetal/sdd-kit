@@ -1,0 +1,140 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd ".docs/sdd/specs/20260923-100000-task-0012-franja" && ls && cat review-final.md && cat tasks.md && git status --short && git log --oneline -8
+<<< plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia, salvo una decisión que no es del revisor.
+
+- **Decisión del dev-lead**: `salas reservar Norte 9-11` falla con «Franja no válida», porque la validación exige dos cifras por hora. La spec no dice si una hora de una cifra (`9-11`) es válida. Es de producto: ¿se acepta `9-11` o se mantiene `HH-HH` estricto? Hoy el código mantiene el estricto.
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | don
+
+>>> Bash: cd ".docs/sdd/specs/20260923-100000-task-0012-franja" && cat spec.md plan.md; cd - >/dev/null; ls; cat package.json 2>/dev/null | head -30; git show --stat 06a362e | head -20
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**ADDED — La franj
+
+>>> Bash: git show 06a362e -- src | tail -15; ls src tests; cat README.md | head -20; node --test 2>&1 | tail -12; node src/cli.js reservar Norte 1012 2>&1 | head -3; node src/cli.js reservar Norte 9-11 2>&1 | head -3; node src/cli.js reservar Norte 10-12 2>&1 | head -3
+<<<     fix(0012): hallazgos de la revisión final de rama
+    
+    Cuerpo del commit.
+
+diff --git a/src/slots.js b/src/slots.js
+index 54c9fd9..f92f6d7 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -9,3 +9,5 @@ export function free(slot) {
+   if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+   return [];
+ }
++
++export const SLOT_FORMAT = SLOT;
+src:
+slots.js
+
+tests:
+free-format.test.js
+slot-format.test.js
+slots.test.js
+# salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+✔ libres rechaza un
+
+>>> Bash: cat src/slots.js; node -e "
+import('./src/slots.js').then(m=>{for(const s of ['1012','9-11','10-12'])for(const f of ['reserve','free']){try{console.log(f,s,'ok',m[f]('Norte',s))}catch(e){console.log(f,s,e.message)}}})"
+<<< const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+
+export const SLOT_FORMAT = SLOT;
+reserve 1012 Franja no válida: usa HH-HH, p. ej. 10-12
+free 1012 Franja no válida: usa HH-HH, p. ej. 10-12
+reserve 9-11 Franja no válida: usa HH-HH, p. ej. 10-12
+free 9-11 Franja no válida: usa HH-HH, p. ej. 10-12
+reserve 10-12 ok { room: 'Norte', slot:
+
+>>> Bash: node -e "
+import('./src/slots.js').then(m=>{for(const s of ['1012','9-11','10-12']){try{console.log('free',s,'ok',m.free(s))}catch(e){console.log('free',s,e.message)}}})"
+<<< free 1012 Franja no válida: usa HH-HH, p. ej. 10-12
+free 9-11 Franja no válida: usa HH-HH, p. ej. 10-12
+free 10-12 ok []
+
+=== RESULTADO (8 turnos, 0.25335460000000004 $)
+Task 0012 está en el paso 7 y queda EN ESPERA de tu validación. No he invocado `sdd-end-task` y no he tocado roadmap, walkthrough ni `capabilities/`.
+
+## Me salí del plan en…
+
+- **`06a362e` (fix del hilo principal tras la revisión final)**: añade `export const SLOT_FORMAT = SLOT;` en `src/slots.js`. No estaba en el plan. No cambia la spec ni la salida observable, así que es un ruling. Entró en el alcance de la revisión final de rama. Nada lo usa todavía, así que cuesta poco quitarlo si prefieres.
+- **`tasks.md`**: la task 2 tiene el commit en «—». Su hash es `a1337d5` y no lo he anotado.
+
+## Qué hay
+
+`reserve(room, slot)` y `free(slot)` en `src/slots.js` lanzan «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `/^\d{2}-\d{2}$/`. Esto cubre los dos escenarios de la spec.
+
+## Smoke ejecutado
+
+- `node --test`: 3 de 3 en verde.
+- Llamando al módulo directamente:
+
+| Franja | `reserve` | `free` |
+| --- | --- | --- |
+| `1012` | error con el mensaje literal | error con el mensaje literal |
+| `9-11` | error con el mensaje literal | error con el mensaje literal |
+| `10-12` | `{ room: 'Norte', slot: '10-12' }` | `[]` |
+
+- **No hay CLI en el repo.** Solo existe `src/slots.js`, así que `salas reservar …` no se puede ejecutar aquí. La prueba real por CLI queda pendiente, si existe en otro sitio.
+
+## Decisión de producto pendiente (del `review-final.md`)
+
+`9-11` se rechaza hoy porque se exige `HH-HH` con dos cifras. La spec no dice nada de las horas de una cifra. ¿Se mantiene `HH-HH` estricto o se acepta `9-11`?
+
+- **Si se mantiene:** no cambia nada.
+- **Si se acepta:** es un cambio de spec (un desvío), con enmienda y nuevo gate de aprobación.
+
+## Validación
+
+Dime qué has probado tú y si funciona, y qué haces con `9-11`. ¿Validas el trabajo?

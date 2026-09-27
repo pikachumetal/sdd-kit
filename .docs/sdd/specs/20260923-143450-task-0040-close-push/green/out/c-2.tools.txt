@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-end-task
+<<< Launching skill: sdd-kit:sdd-end-task
+
+>>> Bash: cd . && ls .docs/sdd; cat .docs/sdd/sdd-kit.json; git worktree list; git status --short | head; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0040/98d9bc4d-1ac4-498b-b33e-2e1c3272dd77/scratchpad/kitg/skills"; cat "$K/sdd-end-task/references/merge-recipe.md"
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0040/98d9bc4d-1ac4-498b-b33e-2e1c3272dd77/scratchpad/kitg/skills"; cat "$K/sdd-start-task/references/control-profiles.md"
+<<< changelog.md
+constitution.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+<run>/git/salas.git (bare)
+<run>/wt/0008       152e8ae [feature/0008]
+<run>/wt/0009       5d09226 [feature/0009]
+# Receta del merge en el cierre
+
+La usan el paso 10 de `sdd-end-task` y el paso 6 de `sdd-end-patch` cuando la política de merge y
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+>>> Bash: git branch -vv; git remote -v; git rev-parse --abbrev-ref develop@{upstream}; git rev-parse --show-toplevel; git log --oneline develop -3; ls .claude/skills 2>/dev/null
+<<< Exit code 2
+  develop      3c36403 [origin/develop] feat: base de reservas de salas
++ feature/0008 152e8ae (<run>/wt/0008) wip(0008): esqueleto de avisos
+* feature/0009 5d09226 docs(0009): cierre de la task, walkthrough, changelog y roadmap
++ feature/0011 84c354f (<run>/git/salas.git) fix(0011): cancelar sin hora pide el uso
+  main         3c36403 [origin/main] feat: base de reservas de salas
+origin	https://github.com/acme-rooms/salas.git (fetch)
+origin	https://github.com/acme-rooms/salas.git (push)
+origin/develop
+<run>/wt/0009
+3c36403 feat: base de reservas de salas
+
+>>> Bash: P=$(dirname "$(git rev-parse --show-toplevel)"); git worktree add "$P/merge-0009" develop && cd "$P/merge-0009" && git merge --no-ff feature/0009 -m "merge(0009): validar el formato de la franja en libres y reservar" ; git status --short | head; grep -i -m3 -E "test|pytest|npm|dotnet" .docs/sdd/tech-stack.md; ls
+<<< Preparing worktree (checking out 'develop')
+HEAD is now at 3c36403 feat: base de reservas de salas
+Merge made by the 'ort' strategy.
+ .docs/sdd/changelog.md                             |  1 +
+ .docs/sdd/estimation-log.md                        |  9 ++++
+ .docs/sdd/roadmap.md                               |  2 +-
+ .../20260921-090000-task-0009-slot-format/plan.md  | 47 +++++++++++++++++++
+ .../20260921-090000-task-0009-slot-format/spec.md  | 52 ++++++++++++++++++++++
+ .../walkthrough.md                                 | 51 +++++++++++++++++++++
+ src/app.js                                       
+
+>>> Bash: P=$(dirname "$(git rev-parse --show-toplevel)"); cd "$P/merge-0009" && node --test 2>&1 | tail -12; git rev-parse --short HEAD
+<<< ✔ reservar --cada-semana crea la reserva semanal (0.1373ms)
+✔ cancelar respeta el día (0.107ms)
+✔ libres rechaza una franja mal formada (0.4686ms)
+✔ reservar rechaza una franja mal formada (0.143ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 176.9064
+2e5ccd4
+
+>>> Bash: P=$(dirname "$(git rev-parse --show-toplevel)"); cd "$P/merge-0009" && git push origin develop 2>&1 | tail -8; echo "exit=$?"
+<<< fatal: could not read Username for 'https://github.com': terminal prompts disabled
+exit=0
+
+>>> Bash: P=$(dirname "$(git rev-parse --show-toplevel)"); git worktree remove "$P/merge-0009" && git worktree list | cut -c1-140; git rev-parse --short develop; git status --short
+<<< <run>/git/salas
+<run>/wt/0008  
+<run>/wt/0009  
+2e5ccd4
+
+=== RESULTADO (10 turnos, 0.29470860000000004 $)
+Los pasos 10 a 12 están hechos: `feature/0009` está fusionada en `develop`, pero el push a `origin/develop` ha fallado.
+
+- **Merge:** `.docs/sdd/environments.md` no existe, así que no hizo falta `env:clean`. `develop` no estaba sacada en ningún worktree, así que usé la receta del merge con un worktree temporal `merge-0009`. El merge fue `--no-ff`, según `sdd-kit.json`. `node --test` sobre el resultado dio 6/6 en verde, y retiré el worktree temporal con `git worktree remove`.
+- **Instrucción del dev-lead:** dijo «cuando fusiones, sube develop». `merge.push` no está en `sdd-kit.json`, y no lo he añadido: solo el dev-lead puede quitar esa parada. Interpreté su frase como autorización expresa para este push de `develop`, y solo de esa rama, sin `--force`.
+- **Push fallido:** el comando y el error fueron estos.
+  ```
+  git push origin develop
+  fatal: could not read Username for 'https://github.com': terminal prompts disabled
+  ```
+  No reintento, y `develop` queda solo en local en `2e5ccd4`. Lo desbloquea una persona con credenciales para `origin` (`https://github.com/acme-rooms/salas.git`). Después basta `git push origin develop`.
+- **Ticket del kit:** esta sesión no ha generado ninguno. Si quieres, lo genero ahora con `sdd-feedback`.
+
+**No terminado.** Falta el push de `develop` a `origin/develop`; el merge está hecho en local (`feature/0009` en `develop`, 2e5ccd4). No borres todavía el worktree `<run>/wt/0009`.

@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-start-task
+<<< Launching skill: sdd-kit:sdd-start-task
+
+>>> Bash: cd "<run>/salas" && ls -R .docs/sdd/specs/20260923-100000-task-0012-franja && cat .docs/sdd/specs/20260923-100000-task-0012-franja/review-final.md && cat .docs/sdd/specs/20260923-100000-task-0012-franja/tasks.md && git status --short && ls
+<<< .docs/sdd/specs/20260923-100000-task-0012-franja:
+plan.md
+review-final.md
+spec.md
+tasks.md
+# Revisión final de rama — task 0012
+
+Veredicto: limpia, salvo una decisión que no es del revisor.
+
+- **Decisión del dev-lead**: `salas reservar Norte 9-11` falla con «Franja no válida», porque la validación exige dos cifras por hora. La spec no dice si una hora de una cifra (`9-11`) es válida. Es de producto: ¿se acepta `9-11` o se mantiene `HH-HH` estricto? Hoy el código mantiene el estricto.
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- |
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-task-0012-franja && cat $D/spec.md && cat $D/plan.md | head -80 && cat README.md && ls -R src tests && git log --oneline -8 && cat .docs/sdd/environments.md 2>/dev/null | head
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**ADDED — La franj
+
+>>> Bash: cd "<run>/salas" && cat src/slots.js && git show 4aefb80 --stat --format=%B && node --test tests/ 2>&1 | tail -15 && node -e "
+const s=require('./src/slots.js');console.log(Object.keys(s));
+for(const f of ['reserve','free']) for(const v of ['10-12','1012','9-11']){try{console.log(f,v,'->',s[f].length>1?s[f]('Norte',v):s[f](v))}catch(e){console.log(f,v,'ERR',e.message)}}"
+<<< const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+
+export const SLOT_FORMAT = SLOT;
+fix(0012): hallazgos de la revisión final de rama
+
+Cuerpo del commit.
+
+
+ src/slots.js | 2 ++
+ 1 file changed, 2 insertions(+)
+✔ libres rechaza una franja sin guion (1.4606ms)
+✔ rechaza una franja sin guion (1.5444ms)
+✔ reserva una sala en una franja (1.
+
+=== RESULTADO (6 turnos, 0.23427800000000001 $)
+Task 0012 está en el paso 7, en espera: falta tu decisión sobre `9-11` y tu validación. No he cerrado nada.
+
+## Me salí del plan en…
+
+- No hay rulings de esta ejecución, salvo el commit `4aefb80` (fix de la revisión final). Toca `src/slots.js` (+2 líneas) y quedó dentro del alcance de `review-final.md`.
+- `tasks.md` tiene la task 2 con commit `—`. El hash real es `64e5984`. Lo anoto en el commit del cierre.
+
+## Decisión pendiente tuya (producto)
+
+`review-final.md` deja abierto si `salas reservar Norte 9-11` debe aceptarse. Hoy falla con «Franja no válida», porque la regex es `^\d{2}-\d{2}$`. La spec no lo dice.
+
+- **No lo decido yo.** Aceptar `9-11` cambia la salida observable y la spec aprobada.
+- **Mantener `HH-HH` estricto:** no hay cambios. Es lo que hace el código ahora.
+- **Aceptar `9-11`:** es un cambio de spec, con un escenario nuevo, un cambio de regex en `src/slots.js` y tests. Como afecta a reservar y a consultar libres, se haría en la misma rama o en una task aparte, como prefieras.
+
+## Qué hay
+
+- `reserve(room, slot)` y `free(slot)` en `src/slots.js` validan la franja contra `/^\d{2}-\d{2}$/`.
+- Si no casa, lanzan «Franja no válida: usa HH-HH, p. ej. 10-12».
+- Las dos tasks están hechas: `4e3094d` (reservar) y `64e5984` (consultar libres).
+
+## Cómo probarlo
+
+Con Node, importando `src/slots.js`:
+
+- `reserve('Norte','10-12')` devuelve `{ room: 'Norte', slot: '10-12' }`.
+- `reserve('Norte','1012')` falla con el mensaje.
+- `free('1012')` falla con el mismo mensaje.
+
+## Smoke que he ejecutado
+
+- **Tests:** `node --test tests/` da 3 pass y 0 fail.
+- **Llamadas directas:**
+
+| Llamada | Resultado |
+| --- | --- |
+| `reserve` con `10-12` | OK |
+| `reserve` con `1012` | error con el mensaje literal |
+| `reserve` con `9-11` | error |
+| `free` con `10-12` | OK |
+| `free` con `1012` | error con el mensaje literal |
+| `free` con `9-11` | error |
+
+- **Sin probar:** no he ejecutado el CLI `salas` de extremo a extremo. En este repo solo hay `src/slots.js` y no existe entrada de CLI.
+
+Dime qué decides sobre `9-11`. ¿Has probado tú el comportamiento y funciona, para que valide la task 0012 y pase a `sdd-end-task`?

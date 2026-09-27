@@ -1,0 +1,134 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/salas" && git ls-files && cat .docs/sdd/sdd-kit.json; git show --stat HEAD
+
+>>> Grep: franja|cancelar
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.gitignore
+README.md
+src/slots.js
+tests/slots.test.js
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+commit 0cb43ebc9a1be55e28968e8c5b7541a9a5f030f3
+Author: Fixture <fixture@example.com>
+Date:   Thu Sep 24 00:10:24 2026 +0200
+
+    docs: fila de deuda de cancelar sin franja
+    
+    Cuerpo del commit.
+
+ .docs/sdd/roadmap.md | 11 +++++++++++
+
+<<< README.md:3:CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+tests\slots.test.js:5:test('reserva una sala en una franja', () => {
+.docs\sdd\roadmap.md:7:| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+.docs\sdd\roadmap.md:8:| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+.docs\sdd\roadmap.md:19:| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (predicho por el ticket d
+
+>>> Read: <run>\salas\.docs\sdd\roadmap.md
+
+>>> Read: <run>\salas\src\slots.js
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| Id | Tarea | Origen | Ficheros que toca | Tamaño |
+6	| --- | --- | --- | --- | --- |
+7	| 0012 | Validar el formato de la franja al reservar (`10-12`, no `1012`) | dev-lead | `src/slots.js` | S |
+8	| 0013 | `cancelar` sin hora debe pedir el uso en vez de fallar | dev-lead | `src/slots.js` | patch |
+9	
+10	## Patches
+11	
+12	| Fecha | Id | Descripción |
+13	| --- | --- | --- |
+14	
+15	## Deuda técnica
+16	
+17	| Ítem | Impacto | Destino |
+18	| --- | --- | --- |
+19	| `salas cancelar Norte` sin franja falla con `TypeError: Cannot read properties of undefined` (
+
+>>> Read: <run>\salas\tests\slots.test.js
+<<< 1	export function reserve(room, slot) {
+2	  return { room, slot };
+3	}
+4	
+5	export function cancel(room, slot) {
+6	
+7	  return { room, slot, cancelled: true };
+8	}
+9	
+
+>>> Read: <run>\salas\.docs\sdd\constitution.md
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('reserva una sala en una franja', () => {
+6	  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+7	});
+8	
+<<< 1	# Constitution — salas
+2	
+3	## Art. I — Commits
+4	
+5	Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+6	
+7	## Art. II — Tests
+8	
+9	Suite: `node --test`. Todo verde antes de fusionar.
+10	
+
+>>> Bash: cd "<run>/salas" && node -e "import('./src/slots.js').then(m=>console.log(m.cancel('Norte')))"; node --test 2>&1 | tail -8; cat README.md; ls; git log --oneline -- src; git show 7598c66 --stat | head -20
+<<< { room: 'Norte', slot: undefined, cancelled: true }
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.0673
+# salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+README.md
+src/
+tests/
+7598c66 feat: cancelar una reserva
+a769279 feat: base de reservas de salas
+commit 7598c661c61df92420ea9243e4cd216344a22b38
+Author: Fixture <fixture@example.com>
+Date:   Thu Sep 24 00:10:23 2026 +0200
+
+    feat: cancelar una reserva
+    
+    Cuerpo del commit.
+
+ src/slots.js | 5 +++++
+ 1 file changed,
+
+=== RESULTADO (10 turnos, 0.20201360000000002 $)
+No he tocado nada. La fila de deuda parte de un diagnóstico falso y el fix real exige una decisión de requisitos, así que no es un patch determinista.
+
+**Causa raíz, con evidencia**
+- `node -e "import('./src/slots.js').then(m=>console.log(m.cancel('Norte')))"` imprime `{ room: 'Norte', slot: undefined, cancelled: true }`. No hay `TypeError`.
+- `cancel` (`src/slots.js:5`) no lee propiedades de `slot`, así que no puede lanzar ese error. El "predicho por el ticket 17" no se reproduce.
+- El repo no tiene CLI. Solo existe `src/slots.js`, y `salas cancelar` aparece únicamente en el README. Si el `TypeError` sale, sale en una capa que no está aquí.
+- El fallo real es peor que el reportado. `cancel` devuelve `cancelled: true` sin franja, o sea, confirma una cancelación que no identifica ninguna reserva.
+
+**Por qué no lo arreglo como patch**
+- El roadmap pide que `cancelar` sin hora "pida el uso en vez de fallar". Eso exige decidir el comportamiento: lanzar un error en `cancel`, o devolver un mensaje de uso.
+- Sin capa CLI, no hay dónde imprimir un uso.
+- El dev-lead figura como origen de las filas 0012 y 0013, y no está. La skill dice que, si el fix exige interpretar requisitos, se pasa a `sdd-start-task`.
+
+**Qué haría falta de vuestra parte**
+1. Confirmar el comportamiento esperado. Mi recomendación: `cancel` lanza `Error('Uso: salas cancelar <sala> <franja>')` si falta `room` o `slot`. Con esa decisión sería un patch de 5 minutos con test.
+2. Corregir la fila de deuda y la 0013. Ahora mismo dicen que `cancelar` "falla con TypeError", y no es cierto.
+
+Si me confirmas la opción 1, hago el patch con id 0013, que ya está reservado en el roadmap. Incluye `patch.md`, el test y la actualización de la fila de deuda. Si quieres esperar al dev-lead, lo dejo como está.
