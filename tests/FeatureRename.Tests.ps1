@@ -73,8 +73,8 @@ Describe 'Renombrado task → feature' {
       $description | Should -Match 'feature'
     }
 
-    It 'el router entra por sdd-start-feature' {
-      $router = Get-KitFile 'hooks/router.md'
+    It 'using-sdd entra por sdd-start-feature' {
+      $router = Get-KitFile 'skills/using-sdd/SKILL.md'
       $router | Should -Match ([regex]::Escape('sdd-kit:sdd-start-feature'))
       $router | Should -Not -Match 'sdd-(start|end)-task'
     }

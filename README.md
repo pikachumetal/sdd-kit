@@ -74,12 +74,13 @@ Este canal no instala los tipos de agente `agents/effort-*.md`: el plan escribe 
 
 ### Enrutado automático
 
-El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, recuerda al agente que una petición de trabajo entra por `sdd-start-feature` antes que por `brainstorming`, un bug pequeño por `sdd-start-patch` y una pregunta por `sdd-consult`. `npx skills add` no instala hooks: quien use ese canal recibe solo las frases de las `description`.
+La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, pide una pregunta antes de elegir. Y en un proyecto SDD pasa por delante de `brainstorming` de superpowers. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. `npx skills add` no instala hooks: quien use ese canal recibe la `description` de `using-sdd` y las del resto.
 
 ## Las skills
 
 | Skill | Qué hace |
 | --- | --- |
+| `using-sdd` | La puerta de entrada: qué skill toca para lo que acabas de escribir. La inyecta el hook al empezar cada sesión. |
 | `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
