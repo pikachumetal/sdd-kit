@@ -10,7 +10,7 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - GIVEN un proyecto que trabaja solo con feature y patch, sin sección de release abierta en el roadmap
 - WHEN se cierran features y patches
 - THEN sus entradas van a `[Unreleased]` y ninguna skill de feature o patch pide abrir una release
-- AND el id de una feature sin fila reservada sigue lo que declara [`task-ids.md`](task-ids.md) («Una feature no planificada obtiene su id con un script determinista»)
+- AND el id de una feature sin fila reservada sigue lo que declara [`feature-ids.md`](feature-ids.md) («Una feature no planificada obtiene su id con un script determinista»)
 
 ### Se puede cerrar una release que no se abrió
 - GIVEN un roadmap sin sección de la release y un `[Unreleased]` con entradas

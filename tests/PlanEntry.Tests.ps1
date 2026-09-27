@@ -136,10 +136,10 @@ Describe 'Retirada de sdd-start-release' {
     Join-Path $script:RepoRoot 'skills/sdd-start-release' | Should -Not -Exist
   }
 
-  It 'solo la nombran la migración que avisa y sdd-end-release, que es de otra task' {
+  It 'solo la nombra la migración que avisa' {
     $paths = @('skills', 'hooks', 'README.md', '.docs/workflow', '.docs/sdd/architecture.md', '.docs/sdd/mission.md')
     $mentions = @(git -C $script:RepoRoot grep -l 'sdd-start-release' -- @paths)
-    $mentions | Should -Be @('skills/sdd-end-release/SKILL.md', 'skills/sdd-init-brownfield/references/migrations/v1.2.0.md')
+    $mentions | Should -Be @('skills/sdd-init-brownfield/references/migrations/v1.2.0.md')
   }
 
   It 'la consulta pasa la planificación a sdd-roadmap' {

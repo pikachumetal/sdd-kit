@@ -7,9 +7,8 @@ description: Usar cuando hay que cerrar una release/entrega en un proyecto con .
 
 ## Overview
 
-Cerrar una release es el **corte de publicación** de lo hecho, como la rama de release de git-flow: se
-lanza haya habido apertura con `sdd-start-release` o no — el modo incremental (feature y patch sin abrir
-release) llega aquí igual. Se ejecuta SOBRE features ya cerradas (vía `sdd-end-feature`) y produce los
+Cerrar una release es el **corte de publicación** de lo hecho, como la rama de release de git-flow: el
+modo incremental (feature y patch sin abrir release) llega aquí igual. Se ejecuta SOBRE features ya cerradas (vía `sdd-end-feature`) y produce los
 artefactos que convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente
 (solo con destinatario), roadmap colapsado y tag.
 
