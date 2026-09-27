@@ -139,6 +139,14 @@ Describe 'Manifests del plugin' {
     @($script:Plugin.dependencies | Where-Object { $_.name -eq 'superpowers' }).Count | Should -Be 1
   }
 
+  It 'plugin.json resuelve superpowers desde el marketplace de obra' {
+    ($script:Plugin.dependencies | Where-Object { $_.name -eq 'superpowers' }).marketplace | Should -Be 'superpowers-marketplace'
+  }
+
+  It 'marketplace.json permite la dependencia de superpowers-marketplace y solo esa' {
+    $script:Marketplace.allowCrossMarketplaceDependenciesOn | Should -Be @('superpowers-marketplace')
+  }
+
   It 'marketplace.json publica el plugin desde la raíz del repo' {
     $entry = $script:Marketplace.plugins | Where-Object { $_.name -eq $script:Plugin.name }
     $entry.source | Should -Be '.'

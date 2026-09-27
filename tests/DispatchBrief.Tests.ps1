@@ -43,7 +43,7 @@ Describe 'La task del plan viaja sola' {
   }
 
   It 'task-brief de superpowers extrae las interfaces con la task' -Tag 'Slow' {
-    $taskBrief = Get-ChildItem (Join-Path $HOME '.claude/plugins/cache/claude-plugins-official/superpowers') -Recurse -Filter 'task-brief' -ErrorAction SilentlyContinue |
+    $taskBrief = Get-ChildItem (Join-Path $HOME '.claude/plugins/cache/superpowers-marketplace/superpowers') -Recurse -Filter 'task-brief' -ErrorAction SilentlyContinue |
       Select-Object -First 1
     $bash = Resolve-Bash
     if (-not $taskBrief -or -not $bash) { Set-ItResult -Skipped -Because 'sin bash ejecutable o sin superpowers instalado'; return }

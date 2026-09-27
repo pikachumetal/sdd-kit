@@ -241,7 +241,7 @@ El ticket de la task 0005 midió lo que cuesta ignorarlas: 12 ficheros en confli
 Se revisan al abrir cada release del kit (Art. V). No son dependencias: son el estado del arte con el que el kit se alinea por conceptos, no por layout.
 
 - `claude plugin eval` — RED/GREEN integrado en Claude Code con brazo baseline sin plugin (`--ablation with-without`), en early access el 2026-09-09; cuando salga, candidato a sustituir las campañas a mano del kit.
-- superpowers — `RELEASE-NOTES.md` del plugin instalado (`~/.claude/plugins/cache/claude-plugins-official/superpowers/<versión>/`). Validado: 6.4.1 (2026-09-24, [repaso](../../tests/superpowers-641-green.md)).
+- superpowers — `RELEASE-NOTES.md` del plugin instalado (`~/.claude/plugins/cache/superpowers-marketplace/superpowers/<versión>/`). Validado: 6.4.2 (2026-09-27, [repaso](../../tests/superpowers-642-green.md)).
 - OpenSpec — <https://openspec.dev/changelog/> · conceptos: <https://github.com/Fission-AI/OpenSpec/blob/main/docs/concepts.md> · instrucciones que recibe el agente (capabilities, `MODIFIED`): <https://github.com/Fission-AI/OpenSpec/blob/main/schemas/spec-driven/schema.yaml> y <https://github.com/Fission-AI/OpenSpec/blob/main/docs/writing-specs.md>. Visto: v1.11.0 (2026-08-26); reglas de capabilities revisadas el 2026-09-20.
 - Spec Kit — <https://github.com/github/spec-kit/releases>. Visto: v0.8.7 (2026-05-07).
 

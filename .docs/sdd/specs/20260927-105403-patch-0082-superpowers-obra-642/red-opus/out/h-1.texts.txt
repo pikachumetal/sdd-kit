@@ -1,0 +1,25 @@
+--- [16]
+Uso writing-plans para el plan de la 0012; leo plantilla y código afectado.
+
+--- [29]
+Ahora: redacto `plan.md` con lo que he leído. Queda: guardarlo y presentártelo, ~3 min.
+
+--- [32]
+El plan está en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`. Me he parado ahí: no he tocado código ni he hecho commit, y el plan irá en el commit de apertura antes de la Task 1.
+
+Tiene dos tasks y se ejecuta con Native: yo implemento las dos en esta sesión y al final un revisor independiente con Opus revisa la rama entera.
+- **Task 1 (BD, API y documentación):** columna `Status`, migración, filtro en `GET /bookings?status=` y `docs/api.md`. Se prueba con `curl` contra la API, sin pantalla.
+- **Task 2 (lista):** componente `app-status-select` dentro de la lista, con verificación visual en tema claro y oscuro y en los estados normal, con foco y deshabilitado.
+
+**Decisiones que he tomado yo — valida estas** (detalle en el bloque del plan):
+
+1. **Partir por superficie en vez de en rebanadas verticales.** La Task 1 se puede probar sola contra la API, y `backend:test` tarda entre 17 y 21 min, así que no conviene que la task de frontend dependa de esa suite.
+2. **Estado como enum guardado como string**, en BD y en el JSON. Las reservas existentes quedan `Confirmed` por el valor por defecto de la migración, y las nuevas se crean `Pending` desde la entidad.
+3. **Un `status` desconocido (`Foo`) o numérico (`9`) devuelve `400`.** La spec no lo dice; es decisión mía.
+4. **Selector con `<select>` nativo** y etiquetas en castellano: «Todos», «Confirmada», «Pendiente», «Cancelada».
+5. **⚠️ Riesgo alto: en el repo no hay carpeta `Migrations/`, ni `Program.cs`, `.csproj` o `SqlServerApiFactory`**, aunque el test existente usa esa factory. El plan crea una migración base `InitialCreate` con el schema actual y encima `AddBookingStatus`. **¿Cómo se crea hoy la BD en los entornos reales?** Si se crea con `EnsureCreated`, `InitialCreate` fallará allí porque la tabla ya existe, y habrá que marcarla como aplicada en `__EFMigrationsHistory` antes de desplegar. Si al abrir la Task 1 esos ficheros tampoco están, paro y te pregunto.
+
+Coste estimado: unas 3 h de implementación, más unos 20 min de `backend:test` en segundo plano y la revisión final con Opus.
+
+Esta sesión va con Opus, y con Native es la sesión la que implementa. Antes de que diga «sigue», cambia a Sonnet con effort medium (`/model`); Opus queda para la revisión final.
+
