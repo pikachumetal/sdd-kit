@@ -1,4 +1,4 @@
-# Capacidad — task-ids
+# Capacidad — feature-ids
 
 ## Propósito
 
