@@ -6,16 +6,16 @@ Para el porqué del flujo y sus fases, están los otros documentos: [proyectos n
 
 ## 1. La idea en una página
 
-Le pides las cosas al agente en lenguaje normal. Al empezar cada sesión, el kit le inyecta la skill `using-sdd`, que decide por qué carril entra lo que escribes. Tú no eliges la skill: la eliges con lo que pides.
+Le pides las cosas al agente en lenguaje normal. Al empezar cada sesión, el kit le inyecta la skill `using-sdd`, que decide por qué carril entra lo que escribes, así que no hace falta nombrar ninguna skill.
 
 Hay cuatro carriles de trabajo y dos ayudas:
 
 | Carril | Para qué | Qué deja y dónde |
 | --- | --- | --- |
-| **Consulta** (`sdd-consult`) | Preguntar, entender, probar si algo se puede hacer | Nada: la respuesta se queda en la conversación. Si hay que cambiar un documento, te lo propone y espera tu sí |
-| **Patch** (`sdd-start-patch`, `sdd-end-patch`) | Un fallo pequeño y reproducible | `.docs/sdd/specs/<fecha>-patch-<id>-<nombre>/patch.md` con el síntoma, la causa, el fix y cómo se verificó. En git, dos commits: el fix y el cierre |
-| **Feature** (`sdd-start-feature`, `sdd-end-feature`) | Cualquier cambio con comportamiento, aunque sea pequeño | `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/` con `spec.md`, `plan.md`, `tasks.md` si hay varias tasks y `walkthrough.md`. Lo que cambia del producto se fusiona en `.docs/sdd/capabilities/` |
-| **Release** (`sdd-end-release`) | Cortar una versión con lo que ya está cerrado | El changelog sellado, las notas para quien recibe la entrega en `.docs/sdd/releases/vX.Y.Z/` (si hay destinatario) y el roadmap colapsado. El merge a `main` y el tag los confirmas tú |
+| Consulta (`sdd-consult`) | Preguntar, entender, probar si algo se puede hacer | Nada: la respuesta se queda en la conversación. Si hay que cambiar un documento, te lo propone y espera tu sí |
+| Patch (`sdd-start-patch`, `sdd-end-patch`) | Un fallo pequeño y reproducible | `.docs/sdd/specs/<fecha>-patch-<id>-<nombre>/patch.md` con el síntoma, la causa, el fix y cómo se verificó. En git, dos commits: el fix y el cierre |
+| Feature (`sdd-start-feature`, `sdd-end-feature`) | Cualquier cambio con comportamiento, aunque sea pequeño | `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/` con `spec.md`, `plan.md`, `tasks.md` si hay varias tasks y `walkthrough.md`. Lo que cambia del producto se fusiona en `.docs/sdd/capabilities/` |
+| Release (`sdd-end-release`) | Cortar una versión con lo que ya está cerrado | El changelog sellado, las notas para quien recibe la entrega en `.docs/sdd/releases/vX.Y.Z/` (si hay destinatario) y el roadmap colapsado. El merge a `main` y el tag los confirmas tú |
 
 - **Planificar sin hacer** (`sdd-roadmap`): apunta trabajo en el roadmap, parte lo grande en features, procesa las notas de una reunión o prepara la siguiente release. No arranca nada; al acabar te dice qué fila va primero.
 - **Cómo quieres trabajar tú** (`sdd-config`): tus preferencias van a `.docs/sdd/sdd-kit.local.json`, que no va a git. Las del equipo, a `.docs/sdd/sdd-kit.json`.
@@ -36,7 +36,7 @@ Llega algo y lo escribes tal cual. El agente elige la puerta por lo que dices:
 | «Me paras mucho», «quiero trabajar en pair solo yo» | Configuración |
 | «Corrige la errata del botón» | Directo, sin skill: una edición sin comportamiento no abre carril |
 
-Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las reservas»), el agente te hace **una** pregunta sobre eso, con su recomendación, antes de elegir. Contéstala y sigue.
+Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las reservas»), el agente te hace una sola pregunta sobre eso, con su recomendación, y elige la puerta con tu respuesta.
 
 **Patch o feature.** Un patch es un fallo determinista, de menos de media hora y sin nada que interpretar: se sabe qué debería pasar y no pasa. En cuanto el arreglo exige decidir cómo debería comportarse algo, o toca varios sitios, es una feature, y el agente cambia de carril y te lo dice. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
 
@@ -48,7 +48,7 @@ Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las rese
 
 ### La primera pregunta
 
-Al arrancar una feature, el primer mensaje del agente es una sola pregunta que confirma varias cosas a la vez. Puede parecer mucho junto; esto es lo que significa cada parte:
+Al arrancar una feature, el primer mensaje del agente es una sola pregunta que confirma varias cosas a la vez:
 
 - **El carril**: feature, o el que le haya parecido (a veces te propone que sea un patch o una consulta).
 - **El modo, lite o full.** Lite es una spec corta y sin plan, para cambios acotados. Solo te lo ofrece si se cumplen todas estas condiciones, y te las cita una a una: el flujo que se toca ya existe y se puede leer, no cambia contratos públicos, no toca el esquema de datos ni exige migración, cabe en un módulo y, si el proyecto estima, la estimación no pasa de media jornada. Lite no se salta ni la aprobación de la spec ni la validación.
@@ -59,7 +59,7 @@ Al arrancar una feature, el primer mensaje del agente es una sola pregunta que c
 
 Si en tu petición ya dijiste «decide tú el método», la pregunta llega igual. Contéstala en un clic, con la opción de delegar la spec.
 
-Si una parte no la entiendes (por ejemplo, si te propone partir y no sabes si hablas de lo que pediste o de toda la fila del roadmap), pregúntaselo antes de elegir. Es más barato que corregir después.
+Si una parte no la entiendes (por ejemplo, si te propone partir y no sabes si habla de lo que pediste o de toda la fila del roadmap), pregúntaselo antes de elegir: aclararlo ahí cuesta un mensaje, y corregirlo con la spec escrita cuesta bastante más.
 
 ### Los perfiles
 
@@ -77,7 +77,7 @@ El perfil del proyecto está en `sdd-kit.json`. Si quieres otro para ti, díselo
 
 El agente te enseña la spec empezando por el bloque «Decisiones que he tomado yo — valida estas». Es lo único que necesitas leer para aprobar. La pregunta va sola al final.
 
-Aprueba con **«sí»**, **«apruebo»** o una opción cuyo texto diga que apruebas. Otras respuestas no cuentan:
+Aprueba con «sí», «apruebo» o una opción cuyo texto diga que apruebas. Otras respuestas no cuentan:
 
 - «Sigue», «adelante» u «ok» no están en esa lista, y el agente puede no tomarlas como aprobación. Si quieres aprobar, di «apruebo».
 - Elegir un alcance («que solo valide X») o contestar otra pregunta del mismo turno no aprueba la spec.
@@ -97,10 +97,10 @@ Lo demás lo decide él sin pararte (otro orden, un fichero que no pensaba tocar
 
 Cuando termina, el agente para lo que haya arrancado y te presenta el trabajo en este orden:
 
-1. **«Me salí del plan en…»**: las decisiones que tomó durante la ejecución.
+1. «Me salí del plan en…», con las decisiones que tomó durante la ejecución.
 2. Qué hay.
-3. **El smoke**: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
-4. **El guion de pruebas**: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Es lo que harás tú. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`).
+3. El smoke: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
+4. El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`).
 
 **Validar es decir qué has probado y que funciona**: «he filtrado por Pendiente y Enviado, y el listado cambia bien». Un «sí» a secas a esa pregunta también vale, y queda escrito tal cual, con la nota de que no detallaste.
 
