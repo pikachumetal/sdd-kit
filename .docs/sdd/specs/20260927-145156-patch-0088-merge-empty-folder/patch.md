@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-27
 branch: patch/0088-merge-empty-folder
-commit: <hash>
+commit: 675a3f1
 ---
 
 # Patch 0088 — una carpeta merge- vacía y huérfana ya no bloquea el merge del cierre
@@ -49,6 +49,8 @@ El reportante sospechaba de un handle, sin reproducirlo; el experimento lo confi
 | 2 | Control: «con una carpeta merge- con contenido falla con destino sacado: y no la toca», antes y después del fix | ✅ en los dos (verificado por el agente) |
 | 3 | GREEN: `tests/Invoke-SddMerge.Tests.ps1` completo tras el fix | ✅ 19/19 (verificado por el agente) |
 | 4 | Suite rápida `Invoke-Pester -Path tests -ExcludeTagFilter Slow` | ✅ 722 pasan, 0 fallan (verificado por el agente) |
+
+Validación diferida: 2026-09-27 · «Diferir: lo pruebo en el merge de este cierre, a cargo del dev-lead» · disparador: el merge de este cierre con `Invoke-SddMerge.ps1`, con la carpeta vacía `D:\code\.worktrees\sdd-kit\merge-0088-merge-empty-folder` creada antes
 
 ## 5. Tiempo (ligero)
 
