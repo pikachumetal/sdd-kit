@@ -357,6 +357,31 @@ Describe 'Rama destino sacada y política de merge' -Tag 'Slow' {
     Test-Path -LiteralPath (Join-Path $fx.Wt 'merge-0001') | Should -BeFalse
   }
 
+  It 'con una carpeta merge- vacía y sin registrar, la borra y fusiona' {
+    $fx = New-MergeFixture 'vacia'
+    New-Item -ItemType Directory -Path (Join-Path $fx.Wt 'merge-0001') | Out-Null
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001')
+
+    $result.ExitCode | Should -Be 0 -Because $result.Text
+    Get-Sha $fx.Repo 'develop^2' | Should -Be (Get-Sha $fx.Repo 'feature/0001')
+    Assert-CleanedUp $fx
+  }
+
+  It 'con una carpeta merge- con contenido falla con destino sacado: y no la toca' {
+    $fx = New-MergeFixture 'ocupada'
+    $leftover = Join-Path $fx.Wt 'merge-0001'
+    Write-FixtureFile $leftover 'ajeno.txt' "de otra sesión`n"
+    $before = Get-Sha $fx.Repo 'develop'
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001')
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'destino sacado: ya existe'
+    Test-Path -LiteralPath (Join-Path $leftover 'ajeno.txt') | Should -BeTrue
+    Get-Sha $fx.Repo 'develop' | Should -Be $before
+  }
+
   It 'ignora el GIT_INDEX_FILE que hereda de un hook' {
     $fx = New-MergeFixture 'hook'
     $foreignIndex = Join-Path $fx.Root 'indice-ajeno'
