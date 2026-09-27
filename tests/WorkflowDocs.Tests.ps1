@@ -92,6 +92,10 @@ Describe 'Guía de uso' {
     }
   }
 
+  It 'el README la enlaza como punto de entrada' {
+    Get-Content (Join-Path $script:KitRoot 'README.md') -Raw | Should -Match '\]\(\.docs/workflow/usage-guide\.md'
+  }
+
   It 'enlaza los otros tres documentos en vez de repetirlos' {
     foreach ($doc in @('greenfield.md', 'brownfield.md', 'evidence-and-references.md')) {
       $script:Guide | Should -Match ([regex]::Escape("]($doc"))
