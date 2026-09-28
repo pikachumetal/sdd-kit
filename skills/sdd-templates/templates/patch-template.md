@@ -13,7 +13,7 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 # Patch <id> — <título corto>
 
 > Registro lightweight de un fix pequeño (<30 min, determinista, sin interpretación de
-> requisitos). NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
+> requisitos) o de un ajuste solo de presentación del mismo tamaño. NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
 > vive aquí + una línea en el changelog (si existe) + la fila del roadmap; el diff exacto, en
 > el commit. Si el fix toca una feature con walkthrough propio aún abierto, NO crear este doc:
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
@@ -29,11 +29,14 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 
 Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
-## 2. Causa raíz
+## 2. Causa raíz (o intención, en un ajuste visual)
 
 > Resultado de `superpowers:systematic-debugging` (Fase 1). El **por qué** con su evidencia
 > en el código, no solo el dónde. La hipótesis de quien reporta no es la causa hasta que la
 > confirma la investigación.
+> En un ajuste solo de presentación no hay causa: la intención en una frase, sacada de la
+> petición («Guardar y Cancelar pasan de la cabecera a una columna derecha en `pedido-detalle`
+> y `albaran-detalle`»).
 
 ## 3. Fix
 
@@ -49,6 +52,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 | # | Caso | Resultado |
 | --- | --- | --- |
 | 1 | reproducir el síntoma → ahora OK | ✅ / ❌ + nota |
+| 1 | *(ajuste visual)* captura de `<pantalla>` en `<navegador>` | `<ruta de la captura, fuera de git>` · enseñada en la validación |
 
 ## 5. Tiempo (ligero) *(si existe `.docs/sdd/estimation.md`)*
 

@@ -1,0 +1,62 @@
+
+>>> Grep: Guardar|Cancelar
+<<< pages\pedido-detalle.html-3-<head><meta charset="utf-8"><title>Pedido</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+pages\pedido-detalle.html-4-<body>
+pages\pedido-detalle.html-5-  <main class="ficha">
+pages\pedido-detalle.html-6-    <header class="ficha-cabecera">
+pages\pedido-detalle.html-7-      <h1>Pedido PV-2026-0142</h1>
+pages\pedido-detalle.html-8-      <div class="ficha-acciones">
+pages\pedido-detalle.html:9:        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+pages\pedido-detalle.html:10:        <button type="button" class="b
+
+>>> Read: <run>\repo\styles\ficha.css
+<<< 1	.ficha { font-family: system-ui, sans-serif; max-width: 960px; margin: 24px auto; }
+2	.ficha-cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: 12px; }
+3	.ficha-acciones { display: flex; gap: 8px; }
+4	.btn { padding: 6px 14px; border: 1px solid #888; background: #fff; border-radius: 4px; }
+5	.btn-primario { background: #1f5fbf; color: #fff; border-color: #1f5fbf; }
+6	.btn-peligro { color: #b3261e; border-color: #b3261e; }
+7	.lineas { width: 100%; border-collapse: collapse; margin-top: 16px; }
+8	.lineas th, .lineas td 
+
+>>> Bash: cd pages && for f in pedido-detalle.html albaran-detalle.html; do
+sed -i 's|^        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>|        <div class="ficha-acciones-col">\n  &|; s|^        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>|  &\n        </div>|' $f; done
+sed -i 's|^  \( *\)<button|\1<button|' /dev/null; sed -n 6,16p pedido-detalle.html
+cat >> ../styles/ficha.css <<'EOF'
+.ficha-acciones-col { display: flex; flex-direction: column; gap: 8px; order: 1; }
+EOF
+<<< sed: couldn't edit /dev/null: not a regular file
+    <header class="ficha-cabecera">
+      <h1>Pedido PV-2026-0142</h1>
+      <div class="ficha-acciones">
+        <div class="ficha-acciones-col">
+          <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+          <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+        </div>
+        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+      </div>
+    </header>
+    <section class="ficha-cuerpo">
+
+>>> Bash: cd pages && sed -n 8,14p albaran-detalle.html; git status --short
+<<<       <div class="ficha-acciones">
+        <div class="ficha-acciones-col">
+          <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+          <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+        </div>
+        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+      </div>
+ M albaran-detalle.html
+ M pedido-detalle.html
+ M ../styles/ficha.css
+
+=== RESULTADO (5 turnos, 0.16245500000000002 $)
+He puesto Guardar y Cancelar apilados en una columna a la derecha de la cabecera, en las dos fichas. No he abierto las páginas en el navegador, así que el resultado visual está sin comprobar.
+
+- **HTML:** en `pages/pedido-detalle.html` y `pages/albaran-detalle.html` he envuelto los dos botones en un `div.ficha-acciones-col`. No he tocado su contenido ni sus `data-accion`.
+- **CSS:** en `styles/ficha.css` he añadido la regla `.ficha-acciones-col`, que los apila y los coloca al final de la fila con `order: 1`.
+- **Borrar:** queda a la izquierda de esa columna, en la misma fila. Como se ha usado `order`, el orden de tabulación sigue siendo Guardar, Cancelar, Borrar.
+
+Si quieres Borrar en otro sitio, por ejemplo debajo de los otros dos en la misma columna, lo cambio.
+
+Lo he hecho directamente, sin abrir un patch del kit SDD, porque es solo maquetación y no cambia el comportamiento.

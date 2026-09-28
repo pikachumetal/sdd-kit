@@ -1,6 +1,6 @@
 ---
 name: sdd-start-patch
-description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "hay un bug…, arréglalo", "métele un patch", un ticket de fallo puntual. No para features ni para bugs que exigen interpretar requisitos (eso es sdd-start-feature).
+description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) o un ajuste solo de presentación (mover, alinear o reestilar en plantillas o estilos, sin lógica, textos ni datos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "hay un bug…, arréglalo", "métele un patch", un ticket de fallo puntual, "pon estos botones a la derecha, es solo maquetación". No para features, bugs que exigen interpretar requisitos ni cambios de un texto visible (eso es sdd-start-feature).
 argument-hint: "<id o descripción del bug>"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "<id o descripción del bug>"
 
 ## Overview
 
-Un **patch** es un fix pequeño y **determinista** (sin interpretación de requisitos), típicamente de menos de 30 minutos. NO pasa por spec → plan → tasks → walkthrough — sería overengineering. Deja constancia legible y portable en un único `patch.md`.
+Un **patch** es un fix pequeño y **determinista** (sin interpretación de requisitos), típicamente de menos de 30 minutos, o un **ajuste solo de presentación** del mismo tamaño, que se verifica con una captura en lugar de con la causa raíz. NO pasa por spec → plan → tasks → walkthrough — sería overengineering. Deja constancia legible y portable en un único `patch.md`.
 
 > El nombre del carril (**patch**) es independiente del tipo de rama git-flow: un patch puede salir como `feature/*` o `hotfix/*` según lo que fije el git-flow del proyecto. El carril describe el *proceso ligero*, no de dónde ramificas.
 
@@ -17,28 +17,36 @@ Un **patch** es un fix pequeño y **determinista** (sin interpretación de requi
 ```dot
 digraph decision {
     "¿Toca una feature cuyo walkthrough sigue abierto?" [shape=diamond];
+    "¿Ajuste pedido, no un fallo? ¿Solo presentación (predicado)?" [shape=diamond];
     "¿Determinista, <30 min, sin interpretar requisitos?" [shape=diamond];
+    "PATCH visual: este flujo, con la variante del paso 1" [shape=box];
     "Apéndice 'Post-release fixes' en el walkthrough de esa feature" [shape=box];
     "Es una FEATURE: usa sdd-start-feature" [shape=box];
     "PATCH: este flujo" [shape=box];
 
     "¿Toca una feature cuyo walkthrough sigue abierto?" -> "Apéndice 'Post-release fixes' en el walkthrough de esa feature" [label="sí"];
-    "¿Toca una feature cuyo walkthrough sigue abierto?" -> "¿Determinista, <30 min, sin interpretar requisitos?" [label="no"];
+    "¿Toca una feature cuyo walkthrough sigue abierto?" -> "¿Ajuste pedido, no un fallo? ¿Solo presentación (predicado)?" [label="no"];
+    "¿Ajuste pedido, no un fallo? ¿Solo presentación (predicado)?" -> "PATCH visual: este flujo, con la variante del paso 1" [label="sí"];
+    "¿Ajuste pedido, no un fallo? ¿Solo presentación (predicado)?" -> "¿Determinista, <30 min, sin interpretar requisitos?" [label="no"];
     "¿Determinista, <30 min, sin interpretar requisitos?" -> "PATCH: este flujo" [label="sí"];
     "¿Determinista, <30 min, sin interpretar requisitos?" -> "Es una FEATURE: usa sdd-start-feature" [label="no"];
 }
 ```
 
+**Predicado del ajuste solo de presentación**: el cambio solo toca plantillas o estilos (`.html`, `.component.html`, `.razor`, `.cshtml`…; CSS, SCSS, LESS); en las plantillas solo mueve, envuelve o cambia la clase de elementos, sin añadir, quitar ni cambiar bindings, directivas de control (`@if`, `*ngIf`, `v-if`, `@for`), manejadores de eventos, texto visible ni claves de i18n; y no toca TypeScript ni otro código, API, datos ni capacidades. Si falla una condición, es feature. Un fallo que se arregla solo en CSS (un texto que no se lee, un modal tapado) no es un ajuste: es un bug, con `systematic-debugging`, causa raíz y `Fixed`, aunque su verificación lleve captura. «Solo toco la plantilla» no vale si la plantilla gana un `@if`: eso es lógica aunque no haya TypeScript. Tampoco es edición directa: sin carril, 4 de 4 sujetos movieron botones o cambiaron un texto sin abrir el navegador (`tests/visual-patch-red.md`, v1 y c2).
+
 Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la causa la determina tu investigación, no el reporte.
 
 ## Flujo (crea un todo por paso)
 
-1. **Causa raíz OBLIGATORIA** — `superpowers:systematic-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o el fix crece más allá de lo puntual → STOP: era una feature, cambia a `sdd-start-feature`.
+1. **Causa raíz OBLIGATORIA** (o la intención, en un ajuste visual) — `superpowers:systematic-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o el fix crece más allá de lo puntual → STOP: era una feature, cambia a `sdd-start-feature`.
 
    Si la investigación **no reproduce el fallo** sobre la base actual → STOP también, sin abrir el patch: ni rama, ni carpeta, ni `patch.md`, ni fix, ni id reservado. Si la petición viene de una fila del roadmap, déjala re-medida: las celdas que el resultado contradice se reescriben con la fecha y la evidencia nuevas, porque añadir la medición y dejar el texto viejo no basta. Díselo al usuario. Si reproduce un fallo **distinto** del que predice el ticket o la fila, no es este caso: el patch sigue con el fallo medido.
+
+   **Variante del ajuste visual** (el árbol dijo «solo presentación»): en lugar de la causa raíz, la **intención en una frase** sacada de la petición («Guardar y Cancelar pasan de la cabecera a una columna derecha en `pedido-detalle` y `albaran-detalle`»), sin `systematic-debugging`: no hay fallo que reproducir, y la verificación es la captura del paso 4. Si para escribir la frase tienes que decidir qué se mueve o adónde, eso es interpretar requisitos: es feature. Si al hacer el cambio cae una condición del predicado —hace falta un `@if`, un texto o una línea de TypeScript—, para y pasa a `sdd-start-feature`, dicho al usuario.
 2. **Carpeta** — `.docs/sdd/specs/<yyyyMMdd-HHmmss>-patch-<id>-<slug>/` (timestamp UTC: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'`; `<id>` según el modo de `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`): en `tracker`, el ticket y `0000` si no hay; en `sequence`, el id reservado en la fila del roadmap, o el que reserva `Get-NextSddId.ps1 -Reserve` si no tiene fila (sin `-Reserve` solo propone, y otro worktree puede coger el mismo) — comparte secuencia con las features y nunca reutiliza un id entre carriles (detalle en `sdd-start-feature/references/nombrado.md`)). Los artefactos viven SOLO ahí: no existe `.docs/sdd/patches/` ni ninguna otra ubicación, por ordenada que parezca. Si estás en una rama `feature/<slug>` sin id (`feature/fix-sala`) y sin commits propios frente a la rama de integración, renómbrala con `git branch -m feature/<id>-<slug>` antes del primer commit y dilo; nunca renombres la rama de integración ni la estable: sin esa regla, 2 de 2 sujetos commitearon en `feature/fix-sala` (`tests/sdd-roadmap-red.md`, p8b). Detalle en `nombrado.md`.
-3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal; si la investigación midió otro, también el medido y en qué difiere del reportado), causa raíz (lo que TÚ encontraste, con la evidencia), fix, verificación, tiempo.
-4. **Fix mínimo** — sin refactor oportunista, aunque la deuda esté a un renglón de distancia. Verificar que el build del proyecto pasa.
+3. **`patch.md`** — calcando `patch-template.md` del skill `sdd-templates`: síntoma (lo reportado, literal; si la investigación midió otro, también el medido y en qué difiere del reportado), causa raíz (lo que TÚ encontraste, con la evidencia; en un ajuste visual, la intención), fix, verificación, tiempo.
+4. **Fix mínimo** — sin refactor oportunista, aunque la deuda esté a un renglón de distancia. Verificar que el build del proyecto pasa. En un ajuste visual, la verificación es **una captura por pantalla tocada en un navegador real** —el MCP de Playwright o un script con el paquete `playwright`—, sin tests: un test unitario no ve el layout. La captura se guarda **fuera de git** (el scratchpad de la sesión, `%TEMP%`), nunca en la carpeta del patch ni en el repo, y su ruta va en §4 de `patch.md`: `sdd-end-patch` la enseña al usuario al pedirle la validación. En el RED, 1 de 2 sujetos commiteó las capturas en la carpeta del patch (`tests/visual-patch-red.md`, f1). Si arrancas la aplicación para mirarla, párala por su PID o por su puerto, nunca por el nombre del ejecutable. Si el cambio necesita un `@if`, un texto o una línea de código, para: borra la carpeta del patch y su `patch.md` sin commitear, díselo al usuario y arranca `sdd-start-feature` con el cambio a medias como punto de partida. La feature reserva su propio id y la rama pasa a `feature/<id nuevo>-<slug>`: el id reservado del patch queda consumido, porque un id no se repite entre carriles (`nombrado.md`).
 5. **Commit del fix** — un solo commit con el código, los tests y `patch.md`, con la convención del proyecto y referenciando el ticket; si hubo intermedios, se juntan ([commit-milestones.md](../sdd-start-feature/references/commit-milestones.md)).
 6. **Cierre** — `sdd-end-patch`.
 
@@ -47,8 +55,9 @@ Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la 
 - Estás implementando la hipótesis de quien reporta sin haberla confirmado en el código.
 - Vas a crear el documento fuera de `.docs/sdd/specs/` o en una carpeta sin prefijo `patch-`.
 - El "fix" ya toca varios módulos o interpreta requisitos → era una feature.
-- `patch.md` sin causa raíz con evidencia, o con el tiempo en blanco.
-- Vas a abrir rama o carpeta de un patch cuyo fallo no has reproducido.
+- `patch.md` sin causa raíz con evidencia (o sin la intención, en un ajuste visual), o con el tiempo en blanco.
+- Vas a commitear una captura, o a cerrar un ajuste visual sin la ruta de su captura en §4.
+- Vas a abrir rama o carpeta de un patch cuyo fallo no has reproducido (salvo en un ajuste visual, que no tiene fallo).
 
 | Racionalización | Realidad |
 | --- | --- |

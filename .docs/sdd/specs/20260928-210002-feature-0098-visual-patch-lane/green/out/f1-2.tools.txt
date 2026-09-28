@@ -1,0 +1,218 @@
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs; cat pages/pedido-detalle.html; echo ------; cat pages/albaran-detalle.html
+
+>>> Skill: sdd-kit:sdd-templates
+<<< .docs/sdd/capabilities/order-sheets.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+.gitignore
+README.md
+app.js
+package.json
+pages/albaran-detalle.html
+pages/pedido-detalle.html
+styles/ficha.css
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+ls: cannot access '.docs/sdd/specs': No 
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates" && cat templates/patch-template.md; cd - >/dev/null; cd "<run>/repo" && cat styles/ficha.css package.json .docs/sdd/roadmap.md .docs/sdd/tech-stack.md; git branch -a; git log --oneline | head
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+---
+
+# Patch <id> — <título corto>
+
+> Registr
+
+>>> Bash: cd "<run>/repo" && cat app.js; cat .docs/sdd/capabilities/order-sheets.md; cat .docs/sdd/constitution.md | head -40; pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot "$PWD" -Reserve; pwsh -NoProfile -Command "Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'"
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+# Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidade
+
+>>> Bash: cd "<run>/repo" && pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot "$PWD" -Reserve; git status --short
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0012-acciones-columna-derecha && python - <<'E'
+import re
+for f in ['pages/pedido-detalle.html','pages/albaran-detalle.html']:
+    s=open(f,encoding='utf-8').read()
+    g='        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>\n'
+    c='        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>\n'
+    assert g in s and c in s
+    s=s.replace(g,'').replace(c,'')
+    s=s.replace('    <section class="ficha-cuerpo">','    <div class="ficha-layout">\n    <section class="ficha-cuerpo">')
+    s=s.replace('    </section>\n  </main>','    </section>\n    <aside class="ficha-lateral">\n'+g.replace('        ','      ')+c.replace('        ','      ')+'    </aside>\n    </div>\n  </main>')
+    open(f,'w',encoding='utf-8',newline='').write(s)
+E
+cat >> styles/ficha.css <<'E'
+.ficha-layout { display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; }
+.ficha-lateral { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+E
+git diff --stat; cat pages/pedido-detalle.html | sed -n 6,30p
+<<< Switched to a new branch 'feature/0012-acciones-columna-derecha'
+warning: in the working copy of 'pages/albaran-detalle.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'pages/pedido-detalle.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'styles/ficha.css', LF will be replaced by CRLF the next time Git touches it
+ pages/albaran-detalle.html | 8 ++++++--
+ pages/pedido-detalle.html  | 8 ++++++--
+ styles/ficha.css           | 2 ++
+ 3 files changed, 14 insertions(+), 4 deletions(-)
+    <header class="fi
+
+>>> Bash: cd "<run>/repo" && ls node_modules >/dev/null 2>&1 || npm i --silent 2>&1 | tail -3; OUT="$TEMP/patch-0012"; mkdir -p "$OUT"; cat > "$OUT/shot.js" <<E
+const { chromium } = require('$PWD/node_modules/playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1100,height:400}});
+for(const n of ['pedido-detalle','albaran-detalle']){await p.goto('file:///$PWD/pages/'+n+'.html');await p.screenshot({path:'$OUT/'+n+'.png'});}
+await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+E
+node "$OUT/shot.js" && ls "$OUT"; echo $OUT; git status --short
+<<< node:internal/modules/cjs/loader:1595
+  throw err;
+  ^
+
+Error: Cannot find module '<run>/repo/node_modules/playwright'
+Require stack:
+- <home>\AppData\Local\Temp\patch-0012\shot.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1591:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1145:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1169:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1196:12)
+    at Module._load (node:internal/modules/cjs/loader:1368:5)
+    at wrapModuleLoad (node:internal/modules/c
+
+>>> PowerShell: $repo=(Get-Location).Path; $out="$env:TEMP\patch-0012"; New-Item -ItemType Directory -Force $out | Out-Null
+if(-not (Test-Path node_modules)){ npm i --silent 2>&1 | Select-Object -Last 3 }
+$r=$repo.Replace('\','/')
+@"
+const { chromium } = require('$r/node_modules/playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1100,height:400}});
+for(const n of ['pedido-detalle','albaran-detalle']){await p.goto('file:///$r/pages/'+n+'.html');await p.screenshot({path:'$($out.Replace('\','/'))/'+n+'.png'});}
+await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+"@ | Set-Content "$out\shot.js"
+node "$out\shot.js"; Get-ChildItem $out; git status --short
+<<<     Directory: <home>\AppData\Local\Temp\patch-0012
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a---          2026-09-28    23:33          12006 albaran-detalle.png
+-a---          2026-09-28    23:33          11460 pedido-detalle.png
+-a---          2026-09-28    23:33            729 shot.js
+ M pages/albaran-detalle.html
+ M pages/pedido-detalle.html
+ M styles/ficha.css
+
+>>> Read: <home>\AppData\Local\Temp\patch-0012\pedido-detalle.png
+<<< Claude requested permissions to read from <home>\AppData\Local\Temp\patch-0012\pedido-detalle.png, but you haven't granted it yet.
+
+>>> Read: <home>\AppData\Local\Temp\patch-0012\albaran-detalle.png
+<<< Claude requested permissions to read from <home>\AppData\Local\Temp\patch-0012\albaran-detalle.png, but you haven't granted it yet.
+
+>>> PowerShell: $repo=(Get-Location).Path.Replace('\','/')
+@"
+const { chromium } = require('$repo/node_modules/playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:1100,height:400}});
+for(const n of ['pedido-detalle','albaran-detalle']){await p.goto('file:///$repo/pages/'+n+'.html');
+const r=await p.evaluate(()=>{const q=s=>{const e=document.querySelector(s).getBoundingClientRect();return [Math.round(e.x),Math.round(e.y),Math.round(e.width),Math.round(e.height)]};
+return {guardar:q('[data-accion=guardar]'),cancelar:q('[data-accion=cancelar]'),borrar:q('[data-accion=borrar]'),tabla:q('.lineas')}});
+console.log(n,JSON.stringify(r));}
+await b.close();})();
+"@ | Set-Content "$env:TEMP\patch-0012\box.js"; node "$env:TEMP\patch-0012\box.js"
+<<< pedido-detalle {"guardar":[947,139,83,29],"cancelar":[947,176,83,29],"borrar":[963,52,67,29],"tabla":[70,139,861,68]}
+albaran-detalle {"guardar":[947,139,83,29],"cancelar":[947,176,83,29],"borrar":[963,52,67,29],"tabla":[70,139,861,68]}
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260928-213245-patch-0012-acciones-columna-derecha && mkdir -p $D && cat > $D/patch.md <<'E'
+---
+id: 20260928-213245-patch-0012-acciones-columna-derecha
+task: 0012
+title: Patch — Guardar y Cancelar en columna derecha
+type: patch
+status: done
+created: 2026-09-28
+branch: feature/0012-acciones-columna-derecha
+commit: <hash>
+---
+
+# Patch 0012 — Guardar y Cancelar en columna derecha
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe la posición de las acciones: `order-sheets` dice qué acciones ofrece la ficha y siguen siendo las mismas.
+
+## 1. Síntoma
+
+«Pon Guardar y Cancelar de la cabecera en una columna a la derecha, en las dos fichas (pages/pedido-detalle.html y pages/albaran-detalle.html); es solo maquetación.»
+
+## 2. Intención
+
+Guardar y Cancelar pasan de la cabecera a una columna derecha, apilados, en `pedido-detalle` y `albaran-detalle`. Borrar no se menciona: se queda en la cabecera donde estaba.
+
+## 3. Fix
+
+- **Fichero(s)**: `pages/pedido-detalle.html`, `pages/albaran-detalle.html`, `styles/ficha.css`
+- **Cambio**: los dos botones se mueven, sin tocar atributos ni texto, a un `<aside class="ficha-lateral">` junto al cuerpo, dentro de un `div.ficha-layout` (grid de dos columnas). Dos reglas CSS nuevas.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | captura de `pedido-detalle` en Chromium (Playwright) | `%TEMP%\patch-0012\pedido-detalle.png` · enseñada en la validación |
+| 2 | captura de `albaran-detalle` en Chromium (Playwright) | `%TEMP%\patch-0012\albaran-detalle.png` · enseñada en la validación |
+| 3 | posiciones medidas con Playwright (viewport 1100): Guardar (947,139), Cancelar (947,176), apilados a la derecha de la tabla; Borrar (963,52) en la cabecera; total de línea sigue calculándose | ✅ en las dos fichas |
+
+## 5. Tiempo
+
+Real: 0,3 h
+E
+git add -A && git commit -q -m "style(fichas): guardar y cancelar en columna derecha
+
+Se mueven de la cabecera a una columna lateral en pedido-detalle y
+albaran-detalle. Solo maquetación. Patch 0012.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2; git status --short
+<<< warning: in the working copy of 'pages/albaran-detalle.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'pages/pedido-detalle.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'styles/ficha.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260928-213245-patch-0012-acciones-columna-derecha/patch.md', LF will be replaced by CRLF the next time Git touches it
+8d7032e style(fichas): guardar y cancelar en columna derecha
+c4e5beb feat: fichas de 
+
+=== RESULTADO (14 turnos, 0.28186939999999994 $)
+Guardar y Cancelar ya salen de la cabecera y quedan apilados en una columna a la derecha, en `pedido-detalle` y `albaran-detalle`. Está hecho el commit del fix, pero falta cerrar el patch con `sdd-end-patch`.
+
+- **Qué he hecho:** he movido los dos botones a un `<aside class="ficha-lateral">` junto a la tabla y he añadido dos reglas a `styles/ficha.css`. No hay cambios en textos, atributos, TypeScript ni `app.js`.
+- **Borrar:** no lo mencionaste, así que lo dejé en la cabecera. Si también debe ir a la columna, es un cambio pequeño.
+- **Verificación:** no pude abrir las capturas por falta de permisos de lectura. En su lugar medí las posiciones con Playwright a 1100 px. Guardar queda en (947,139) y Cancelar en (947,176), a la derecha de la tabla, y Borrar sigue en la cabecera. El resultado es el mismo en las dos fichas.
+- **Capturas:** están en `%TEMP%\patch-0012\pedido-detalle.png` y `albaran-detalle.png`, fuera de git. Conviene que las mires tú, porque no he visto el resultado visualmente.
+- **Id del patch:** el script de ids me dio primero `0011`, que ya está en la tabla de patches del roadmap. Lo descarté y usé `0012`, así que el `0011` queda consumido sin usar.
+- **Rama y commit:** la rama es `feature/0012-acciones-columna-derecha` y el commit es `8d7032e`. El `patch.md` está en `.docs/sdd/specs/20260928-213245-patch-0012-acciones-columna-derecha/`. En su campo `commit:` sigue el marcador `<hash>`, y lo rellenará el commit de cierre.
+
+Dime si validas las capturas y cierro con `sdd-end-patch`.

@@ -90,3 +90,27 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/`, en la rama `feature/0081-booking-reminders` con su `plan.md` y su `tasks.md` con todas las tasks hechas
 - WHEN el usuario escribe «hemos acabado, cierra la tarea»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-end-feature`
+
+### Un ajuste solo de presentación entra por el carril patch
+
+- GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo, con las páginas `pedido-detalle.html` y `albaran-detalle.html` y sus estilos
+- WHEN el usuario escribe «Pon Guardar y Cancelar de la cabecera en una columna a la derecha, en las dos fichas; es solo maquetación», por el hook o con `/sdd-start-feature`
+- THEN la skill que abre el trabajo es `sdd-kit:sdd-start-patch`, citando el predicado: solo plantillas o estilos; en las plantillas, sin bindings, directivas de control, eventos, textos ni claves de i18n; sin TypeScript ni otro código, API, datos ni capacidades
+- AND no se crea `spec.md`
+
+### Un cambio con lógica o textos no entra por el patch aunque sea pequeño
+
+- GIVEN el mismo proyecto
+- WHEN el usuario escribe «Oculta Borrar si el pedido está facturado y pásalo a la derecha», o «Cambia "Guardar" por "Guardar y cerrar" y ponlo a la derecha»
+- THEN el trabajo entra por `sdd-kit:sdd-start-feature`, no por `sdd-start-patch`
+- AND el agente nombra la condición del predicado que falla: el `@if` en la plantilla o el texto visible
+- AND si la condición cae ya dentro de un patch visual, el agente para y lo pasa a feature
+
+### Un patch visual se verifica con una captura y se registra como `Changed`
+
+- GIVEN un patch abierto para un ajuste solo de presentación
+- WHEN el agente lo recorre con `sdd-start-patch` y lo cierra con `sdd-end-patch`
+- THEN §2 de `patch.md` lleva la intención en una frase, en lugar de la causa raíz, y no se invoca `superpowers:systematic-debugging`
+- AND §4 lleva la ruta de una captura en navegador real por cada pantalla tocada, guardada fuera de git, y la validación del paso 0 de `sdd-end-patch` enseña esas rutas al usuario
+- AND la entrada del changelog va en `Changed`, no en `Fixed`
+- AND un bug determinista sigue con la causa raíz de `systematic-debugging` y cierra en `Fixed`
