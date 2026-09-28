@@ -48,7 +48,7 @@ Review de spec propuesta: dos revisores — señales: contrato público (el webh
 
 ## 3. Despacha el revisor (si se activa: por el usuario, o por el agente en `unattended`)
 
-Subagente `subagent_type: sdd-kit:effort-medium` con `model: sonnet`, uno por lente. Los puntos del encargo **se reparten según cuántos revisores despaches**:
+Subagente `subagent_type: sdd-kit:effort-medium` con `model: sonnet`, uno por lente, cada uno con su vigía de silencio ([control-profiles.md](control-profiles.md#vigía-de-silencio)). Los puntos del encargo **se reparten según cuántos revisores despaches**:
 
 - **Un revisor**: su lente recibe los **siete puntos**.
 - **Dos revisores**: **dominio** recibe 1, 3, 5, 5 bis y 7; **técnica** recibe 2, 4 y 6, y además lee `architecture.md`. Cada encargo cierra con la frontera: «si un hallazgo pertenece a un punto que no está en tu lista, no lo reportes: lo mira el otro revisor».

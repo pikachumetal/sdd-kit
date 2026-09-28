@@ -18,17 +18,21 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | El script del vigía | done | (en el commit del hito siguiente) | 10 tests nuevos; smoke `TERMINADO` sobre un transcript real |
-| 2 | La guía del vigía, con su campaña | pending | — | |
+| 1 | El script del vigía | done | `0f286e4b` | 10 tests nuevos; smoke `TERMINADO` sobre un transcript real |
+| 2 | La guía del vigía, con su campaña | done | (en el commit del hito siguiente) | RED 0/12, GREEN 13/13; 13,45 $ |
 
 Plan sin gate (`delegate`): cada escenario de la spec tiene su task (plan §4).
 
 Ruling: la previsión de la campaña pasa de 22 a 23 sujetos, con uno de control para `sdd-config` P5; queda dentro del techo de la spec (28 sujetos o 18 $).
 
+Ruling: la campaña son 25 sujetos (12 RED + 13 GREEN, con el control de sdd-config P5) y 13,45 $ con los 2 descartados por el entorno; la tabla de racionalizaciones no suma la de s5d/s5u porque el GREEN la cierra sin ella.
+Ruling: el paso 7 de sdd-start-feature no se edita: la re-revisión usa el encargo del revisor final, que ya lleva el vigía (ncargo-revision.md).
+Ruling: tests estáticos en 	ests/SilenceWatch.Tests.ps1, nuevo, en vez de ampliar ControlProfiles.Tests.ps1.
+
 ## Verificación por task
 
 - [x] Task 1 — `Invoke-Pester tests/Watch-SubagentSilence.Tests.ps1, tests/Measure-SessionTokens.Tests.ps1`
-- [ ] Task 2 — `Invoke-Pester tests/ControlProfiles.Tests.ps1, tests/WorkflowDocs.Tests.ps1` + GREEN de la campaña
+- [x] Task 2 — `Invoke-Pester tests/ControlProfiles.Tests.ps1, tests/WorkflowDocs.Tests.ps1` + GREEN de la campaña
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

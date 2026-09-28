@@ -140,7 +140,46 @@ Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el 
 - La spec la aprueba el agente, con las decisiones registradas en «Decisiones que he tomado yo».
 - Si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, la feature queda `⏸️ aparcada: <pregunta>` en el roadmap y el agente sigue con la siguiente feature de la release.
 - Al terminar la release, un solo informe: features cerradas, decisiones, enmiendas sin aprobar y features aparcadas.
-- Los frenos (reintentos, tope de agentes en paralelo, vigía de silencio) no son de esta capacidad: los define la task 0022. Aquí solo se fijan las claves `control.maxParallelAgents` y `control.silence.*` que esa task lee.
+- Los reintentos y el tope de agentes en paralelo no son de esta capacidad: los define la task 0022, que lee `control.maxParallelAgents`. El vigía de silencio sí: [Vigía de silencio](#vigía-de-silencio).
+
+## Vigía de silencio
+
+Un subagente en segundo plano puede colgarse sin error: la herramienta de subagentes no tiene timeout y el harness solo avisa cuando termina. El vigía es `Watch-SubagentSilence.ps1`, en `scripts/` de `sdd-templates` (desde el `Base directory` de `sdd-start-feature`, `../sdd-templates/scripts/`), y los umbrales los lee él de `control.silence` en `sdd-kit.json`: no los escribas en la orden.
+
+**Cuándo se lanza.** En el mismo turno de cada despacho —implementador, revisor de task, fix wave, re-revisión, revisor final, revisor de spec—, con la herramienta de shell en segundo plano (`run_in_background`):
+
+```text
+pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Watch-SubagentSilence.ps1" -Description "<la description del despacho, literal>"
+```
+
+Y al lanzar una verificación lenta en segundo plano, otro con `-Path <fichero de salida de ese comando>` en vez de `-Description`. Cada despacho lleva una `description` distinta: el vigía encuentra el transcript por ella.
+
+**Qué hacer con lo que devuelve.** El vigía termina con una sola notificación; su primera línea dice cuál:
+
+| Primera línea | Qué haces |
+| --- | --- |
+| `TERMINADO:` | Nada: el resultado del subagente llega por su lado. |
+| `SIN TRANSCRIPT:` | Dile al usuario, en tu siguiente mensaje, que en esta sesión el vigía de silencio no funciona. No lo sustituyas por otra cosa. |
+| `SILENCIO:` | Es un cuelgue. Sigue abajo. |
+
+Al recibir el resultado de un subagente, para su vigía si sigue corriendo.
+
+**Ante un `SILENCIO:`**, en este orden, sin esperar a que el usuario pregunte:
+
+1. Para el subagente (`TaskStop`) y su vigía.
+2. Si el aviso dice `petición de permiso pendiente`, no lo relances: en tu siguiente mensaje dile al usuario qué herramienta esperaba el permiso. En `unattended`, la feature queda además `⏸️ aparcada: permiso pendiente de <herramienta>` al instante.
+3. Si no, y es el primer cuelgue de ese encargo, relánzalo una vez con el mismo encargo y un vigía nuevo. Si era un implementador y dejó cambios sin commitear, el encargo del relanzado los lista (`git status --short`) y le dice que parta de ellos o los descarte con motivo; no los borres tú.
+4. Si es el segundo cuelgue del mismo encargo: en `pair` y `delegate`, para y pregunta al usuario cómo seguir, sin relanzarlo; en `unattended`, la feature queda `⏸️ aparcada: cuelgue repetido del <tipo>` y sigues con la siguiente de la release.
+5. En tu siguiente mensaje, dile al usuario qué se colgó, con las líneas del aviso, y qué has hecho.
+6. Registra el ruling en `tasks.md` (en Native, también en el ledger): `Cuelgue: <tipo de subagente o comando>, <herramienta> sin respuesta, <minutos> min, <relanzado | no relanzado: permiso | parado: segundo cuelgue>`.
+
+Una verificación lenta colgada sigue los mismos pasos, con su proceso en vez del subagente.
+
+| Racionalización | Realidad |
+| --- | --- |
+| «Entre 15 y 30 minutos es normal para una revisión» | Sin mirar, es una suposición: así se perdieron 26 min con un revisor que llevaba 25 parado. Lo que no escribe su transcript no está trabajando. |
+| «Monto yo un bucle con `sleep` y un umbral razonable» | El umbral es del proyecto, no tuyo: un agente eligió 300 s cuando el proyecto había fijado otro. Lanza el script, que lo lee. |
+| «Le relanzo otra vez, a la tercera irá» | Un segundo cuelgue del mismo encargo es repetir sin avanzar: para y pregunta, o aparca en `unattended`. |
 
 ## Estados del roadmap
 
@@ -175,7 +214,7 @@ Conjunto cerrado:
 
 `merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
-`control.maxParallelAgents` y `control.silence.*` solo se declaran aquí: su conducta la define la task 0022.
+`control.maxParallelAgents` solo se declara aquí: su conducta la define la task 0022. `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
 
 El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 
