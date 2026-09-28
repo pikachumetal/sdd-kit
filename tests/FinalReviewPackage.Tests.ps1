@@ -24,6 +24,19 @@ Describe 'Paquete del revisor final' {
     $script:FinalReviewer | Should -Match ([regex]::Escape("':(exclude,glob).docs/sdd/specs/**/green/**'"))
   }
 
+  It 'excluye la carpeta de la propia feature' {
+    $script:FinalReviewer | Should -Match ([regex]::Escape("':(exclude,glob).docs/sdd/specs/<carpeta de la feature>/**'"))
+  }
+
+  It 'deja los ficheros borrados fuera del diff y los lista por nombre' {
+    $script:FinalReviewer | Should -Match ([regex]::Escape('echo "## Ficheros borrados"; git diff --name-only --diff-filter=D "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"'))
+    $script:FinalReviewer | Should -Match ([regex]::Escape('git diff -U10 --diff-filter=d "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"'))
+  }
+
+  It 'el revisor lee el paquete en tramos de 400 líneas' {
+    $script:FinalReviewer | Should -Match 'tramos de 400 líneas con `offset` y `limit`'
+  }
+
   It 'escribe el paquete en el workspace de superpowers' {
     $script:FinalReviewer | Should -Match 'OUT="\$\(bash "<ruta de sdd-workspace>" "<PLAN_FILE>"\)/review-final-'
   }
