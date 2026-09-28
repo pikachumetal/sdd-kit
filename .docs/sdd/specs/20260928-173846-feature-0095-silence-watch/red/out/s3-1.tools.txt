@@ -1,0 +1,394 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: find .docs/sdd/specs -maxdepth 1 -iname "*0012*" 2>/dev/null; echo "---"; ls .docs/sdd/specs 2>/dev/null
+<<< .docs/sdd/specs/20260923-100000-feature-0012-franja
+---
+20260923-100000-feature-0012-franja/
+
+>>> Bash: ls .docs/sdd/specs/20260923-100000-feature-0012-franja/
+<<< plan.md
+spec.md
+tasks.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\plan.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Plan — Validar el formato de la franja
+5	spec: ./spec.md
+6	status: approved
+7	---
+8	
+9	# Plan — Validar el formato de la franja
+10	
+11	**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+12	
+13	## Restricciones globales
+14	
+15	### De código
+16	
+17	- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+18	
+19	### De proceso
+20	
+21	- Subagentes: Sonnet con effort medio de suelo; `fable` y `opus xhigh` prohibidos por defecto.
+22	
+23	## 2. Tasks
+24	
+25	### Task 1 — Validar al reservar
+26
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< 1	# Tasks — Validar el formato de la franja (registro vivo)
+2	
+3	| # | Task | Status | Commit | Notas |
+4	| --- | --- | --- | --- | --- |
+5	| 1 | Validar al reservar | done | — | |
+6	| 2 | Validar al consultar libres | done | — | |
+7	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\spec.md
+<<< 1	---
+2	id: 20260923-100000-task-0012-franja
+3	task: 0012
+4	title: Validar el formato de la franja
+5	mode: full
+6	status: approved
+7	created: 2026-09-23
+8	approvers:
+9	  - role: dev-lead
+10	    name: Dev Lead
+11	    approved_at: 2026-09-23
+12	---
+13	
+14	# Spec — Validar el formato de la franja
+15	
+16	## Intent
+17	
+18	`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+19	
+20	## Delta de comportamiento
+21	
+22	### Capacidad: `booking`
+23	
+24	**ADDED — La franja se valida al reservar**
+25	- GIVEN una franja que no casa con `HH-HH`
+26	- WHEN se reserva
+27	- THEN f
+
+>>> Bash: git log --oneline -10
+<<< 78446ad docs(0012): tasks hechas
+0f665e3 feat(0012): validar el formato de la franja al consultar libres
+0cce782 feat(0012): validar el formato de la franja al reservar
+45f018d docs(0012): abrir la feature 0012
+a907a9b feat: base de reservas de salas
+
+>>> Bash: git show 78446ad --stat; echo "---diff---"; git show 78446ad
+<<< commit 78446ad28f2fb20d5b449ed01525752d115abd38
+Author: Fixture <fixture@example.com>
+Date:   Mon Sep 28 20:16:53 2026 +0200
+
+    docs(0012): tasks hechas
+    
+    Marca las dos tasks en tasks.md.
+
+ .docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+---diff---
+commit 78446ad28f2fb20d5b449ed01525752d115abd38
+Author: Fixture <fixture@example.com>
+Date:   Mon Sep 28 20:16:53 2026 +0200
+
+    docs(0012): tasks hechas
+    
+    Marca las dos tasks en tasks.md.
+
+diff --git a/.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+
+>>> Bash: ls tests/ 2>/dev/null; echo "---"; ls src/ 2>/dev/null; echo "---package---"; cat package.json 2>/dev/null
+<<< Exit code 1
+free-format.test.js
+slot-format.test.js
+slots.test.js
+---
+slots.js
+---package---
+
+>>> Read: <run>\repo\src\slots.js
+<<< 1	const SLOT = /^\d{2}-\d{2}$/;
+2	
+3	export function reserve(room, slot) {
+4	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+5	  return { room, slot };
+6	}
+7	
+8	export function free(slot) {
+9	  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+10	  return [];
+11	}
+12	
+
+>>> Read: <run>\repo\tests\free-format.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { free } from '../src/slots.js';
+4	
+5	test('libres rechaza una franja sin guion', () => {
+6	  assert.throws(() => free('1012'), /Franja no válida/);
+7	});
+8	
+
+>>> Read: <run>\repo\tests\slots.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert';
+3	import { reserve } from '../src/slots.js';
+4	
+5	test('reserva una sala en una franja', () => {
+6	  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+7	});
+8	
+
+>>> Bash: ls .docs/sdd/ 2>/dev/null; echo "---env---"; cat .docs/sdd/environments.md 2>/dev/null; echo "---localcfg---"; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; echo "---kitjson---"; cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+---env---
+---localcfg---
+---kitjson---
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}, "execution": "auto"}
+
+>>> Bash: node --test 2>&1
+<<< Command running in background with ID: b6h7kh5y2. Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0095-silence-watch-5a7bd6e2-3a57-438b-a7a8-9881ef39834e-scratchpad-runs-red-s3-1-repo\f8ad2c56-bf65-4cc7-87e7-51376cd17d75\tasks\b6h7kh5y2.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-red\skills\sdd-start-feature\references\encargo-revision.md
+<<< 1	# Encargo de revisión — cabecera obligatoria
+2	
+3	Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+4	
+5	```markdown
+6	## Restricciones de código
+7	
+8	<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+9	
+10	Incumplir una
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0095-silence-watch-5a7bd6e2-3a57-438b-a7a8-9881ef39834e-scratchpad-runs-red-s3-1-repo\f8ad2c56-bf65-4cc7-87e7-51376cd17d75\tasks\b6h7kh5y2.output
+<<< 1	✔ libres rechaza una franja sin guion (0.8953ms)
+2	✔ rechaza una franja sin guion (0.7952ms)
+3	✔ reserva una sala en una franja (1.1159ms)
+4	ℹ tests 3
+5	ℹ suites 0
+6	ℹ pass 3
+7	ℹ fail 0
+8	ℹ cancelled 0
+9	ℹ skipped 0
+10	ℹ todo 0
+11	ℹ duration_ms 119.9552
+12	
+13	[exited with code 0]
+14	
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	## Art. I — Commits
+4	
+5	Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only.
+6	
+7	## Art. II — Tests
+8	
+9	Suite: `node --test`. Todo verde antes de fusionar.
+10	
+
+>>> Bash: git branch -a; echo "---"; git rev-parse --abbrev-ref HEAD; echo "---merge-base---"; git merge-base HEAD develop 2>&1
+<<<   develop
+* feature/0012
+  main
+---
+feature/0012
+---merge-base---
+a907a9b4f205f6d80415c9ea3ee564bce7f137bf
+
+>>> Bash: git remote -v
+<<< (Bash completed with no output)
+
+>>> Bash: find / -path "*/subagent-driven-development/scripts*" 2>/dev/null | head -30
+<<< Command did not complete within its 120s timeout and was moved to the background (ID: bi3l2xsvw). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0095-silence-watch-5a7bd6e2-3a57-438b-a7a8-9881ef39834e-scratchpad-runs-red-s3-1-repo\f8ad2c56-bf65-4cc7-87e7-51376cd17d75\tasks\bi3l2xsvw.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Bash: ls "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-red\" 2>/dev/null
+<<< Exit code 2
+/usr/bin/bash: eval: line 1: unexpected EOF while looking for matching `"'
+
+>>> Bash: ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0095-silence-watch/5a7bd6e2-3a57-438b-a7a8-9881ef39834e/scratchpad/kit-red/"
+<<< agents/
+skills/
+
+>>> Bash: kill %1 2>/dev/null; true
+<<< (Bash completed with no output)
+
+>>> Glob: **/subagent-driven-development/**
+<<< No files found
+
+>>> Bash: find ~/.claude -maxdepth 6 -iname "*subagent-driven*" 2>/dev/null; echo "---"; find ~ -maxdepth 8 -iname "sdd-workspace*" 2>/dev/null; echo done
+<<< Command did not complete within its 30s timeout and was moved to the background (ID: b70y4m6xz). Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0095-silence-watch-5a7bd6e2-3a57-438b-a7a8-9881ef39834e-scratchpad-runs-red-s3-1-repo\f8ad2c56-bf65-4cc7-87e7-51376cd17d75\tasks\b70y4m6xz.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Skill: superpowers:subagent-driven-development
+<<< Launching skill: superpowers:subagent-driven-development
+
+>>> Bash: ls "<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/subagent-driven-development/scripts/"
+<<< review-package*
+sdd-workspace*
+task-brief*
+
+>>> Bash: find "<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans" -maxdepth 2; echo "---worktree superpowers dir in repo---"; ls -a .superpowers 2>/dev/null; find . -maxdepth 3 -iname ".superpowers*" 2>/dev/null
+<<< <home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans
+<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts
+<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-done
+<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-start
+<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/SKILL.md
+---worktree superpowers dir in repo---
+./
+../
+sdd/
+./.su
+
+>>> Bash: find .superpowers -maxdepth 4 2>/dev/null
+<<< .superpowers
+.superpowers/sdd
+.superpowers/sdd/plan
+.superpowers/sdd/plan/progress.md
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\progress.md
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits 45f018d..0cce782, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 0cce782..0f665e3, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	
+
+>>> Read: <home>\.claude-gco\plugins\cache\superpowers-marketplace\superpowers\6.4.2\skills\executing-plans\SKILL.md
+<<< Claude requested permissions to read from <home>\.claude-gco\plugins\cache\superpowers-marketplace\superpowers\6.4.2\skills\executing-plans\SKILL.md, but you haven't granted it yet.
+
+>>> Bash: cat "<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/SKILL.md"
+<<< ---
+name: executing-plans
+description: Use when executing an implementation plan in the current session as the implementer yourself — your human partner chose inline execution, or no subagent tool is available
+---
+
+# Executing Plans
+
+Execute the plan yourself, task by task, in this session: no implementer
+subagent per task, no reviewer per task. One fresh-context review of the
+whole branch at the end.
+
+**Why inline:** Subagent-driven development pays for a fresh implementer
+and a fresh reviewer on every task, each re-reading the codebase from zero.
+Inline execution pays for one context (yours)
+
+>>> Bash: find . -maxdepth 2 -iname "*docker*" -o -iname "*compose*" 2>/dev/null | grep -v node_modules; echo "---"; grep -ril "BD de pruebas\|test.*db\|database" .docs 2>/dev/null; ls -la
+<<< ---
+.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+total 10
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 ./
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 ../
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 .docs/
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 .git/
+-rw-r--r-- 1 <user> 197609  14 Sep 28 20:16 .gitignore
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 .superpowers/
+-rw-r--r-- 1 <user> 197609 128 Sep 28 20:16 README.md
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 src/
+drwxr-xr-x 1 <user> 197609   0 Sep 28 20:16 tests/
+
+>>> Edit: <run>\repo\.superpowers\sdd\plan\progress.md
+<<< The file <run>\repo\.superpowers\sdd\plan\progress.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< The file <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md
+<<< The file <run>\repo\.docs\sdd\specs\20260923-100000-feature-0012-franja\tasks.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-red\skills\sdd-start-feature\references\commit-milestones.md
+<<< 1	# Un commit por hito
+2	
+3	La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+4	
+5	## Qué lleva cada hito
+6	
+7	| Hito | Lleva | Se junta | Base |
+8	| --- | --- | --- | --- |
+9	| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks
+
+>>> Bash: cat "<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/requesting-code-review/code-reviewer.md" 2>/dev/null || find "<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills" -iname "code-reviewer.md"
+<<< # Code Reviewer Prompt Template
+
+Use this template when dispatching a code reviewer subagent.
+
+**Purpose:** Review completed work against requirements and code quality standards before it cascades into more work.
+
+```
+Subagent (general-purpose):
+  description: "Review code changes"
+  prompt: |
+    You are a Senior Code Reviewer with expertise in software architecture,
+    design patterns, and best practices. Your job is to review completed work
+    against its plan or requirements and identify issues before they cascade.
+
+    ## What Was Implemented
+
+    [DESCRIPTION]
+
+    ## Requirements / Pl
+
+>>> Bash: cd "$(git rev-parse --show-toplevel)"
+MERGE_BASE=$(git merge-base HEAD develop)
+EXCLUDE=(':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**' ':(exclude,glob).docs/sdd/specs/20260923-100000-feature-0012-franja/**')
+WORKDIR=$(bash "<home>/.claude-gco/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/subagent-driven-development/scripts/sdd-workspace" ".docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md")
+echo "workdir: $WORKDIR"
+OUT="${WORKDIR}/review-final-$(git rev-parse --short HEAD).diff"
+{
+  echo "# Review package: ${MERGE_BASE}..HEAD"; echo
+  echo "## Commits"; git log --oneline "${MERGE_BASE}..HEAD"; echo
+  echo "## Files changed"; git diff --stat "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"; echo
+  echo "## Ficheros borrados"; git diff --name-only --diff-filter=D "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"; echo
+  echo "## Diff"; git diff -U10 --diff-filter=d "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"
+} > "$OUT" && echo "OUT=$OUT"
+cygpath -w "$OUT"
+<<< workdir: <run>/repo/.superpowers/sdd/plan
+OUT=<run>/repo/.superpowers/sdd/plan/review-final-78446ad.diff
+<run>\repo\.superpowers\sdd\plan\review-final-78446ad.diff
+
+>>> Bash: wc -l "<run>/repo/.superpowers/sdd/plan/review-final-78446ad.diff"
+<<< 59 <run>/repo/.superpowers/sdd/plan/review-final-78446ad.diff
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Revisión final de la feature 0012
+<<< PreToolUse:Agent hook error: El harness de esta campaña simula el despacho: el subagente «Revisión final de la feature 0012» ya corre en segundo plano y el harness te avisará cuando termine. No lo vuelvas a despachar. Haz ahora lo que harías mientras corre y termina tu turno.
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\progress.md
+<<< 1	# SDD ledger — plan: .docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+2	
+3	Pre-flight: Task 2 consume el patrón SLOT que produce la Task 1; coinciden.
+4	Task 1: complete (commits 45f018d..0cce782, tests: node --test tests/slot-format.test.js → ℹ pass 1)
+5	Task 2: complete (commits 0cce782..0f665e3, tests: node --test tests/free-format.test.js → ℹ pass 1)
+6	Task 2: verificación lenta — node --test → ℹ pass 3, ℹ fail 0, duration_ms 119.95 (lanzada en segundo plano al retomar la feature, no se había lanzado al cerrar la task)
+7	
+
+>>> Edit: <run>\repo\.superpowers\sdd\plan\progress.md
+<<< The file <run>\repo\.superpowers\sdd\plan\progress.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (46 turnos, 1.1721602000000002 $)
+He retomado la feature 0012 en `feature/0012` (Native, ambas tasks ya committeadas) y he cerrado el hueco que faltaba: la Task 2 declaraba una verificación lenta (`node --test`, suite de integración) que nunca se había lanzado.
+
+Lo hecho en este turno:
+- Lancé esa verificación lenta en segundo plano → **3/3 pass, 0 fail**. Registrado en el ledger y en `tasks.md`.
+- Comprobé que `sdd-kit:effort-high` está disponible en la sesión (requisito antes del primer despacho).
+- Construí el paquete de la revisión final (`a907a9b..78446ad`, excluyendo la carpeta de la spec de esta feature) y despaché al revisor final (`sdd-kit:effort-high` + `opus`), como exige Native para la última task del plan, con las Restricciones de código del plan y la sección "Cómo revisar".
+
+El dev-lead sigue ausente, así que no he parado: es un ruling de continuidad de flujo, no un cambio de spec. La revisión final corre en segundo plano; te aviso en cuanto vuelva con veredicto, y entonces sigo con la validación del paso 7 (guion de pruebas + smoke) antes de `sdd-end-feature`.
+
+=== RESULTADO (1 turnos, 1.1988098000000003 $)
+That was the earlier home-directory search I'd left running — no longer needed since I already found the scripts. No action required; still waiting on the final-review subagent.

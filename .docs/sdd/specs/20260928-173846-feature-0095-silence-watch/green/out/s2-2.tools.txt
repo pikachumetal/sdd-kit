@@ -1,0 +1,171 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd . && ls .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/specs/*0012*/plan.md && git log --oneline -5 && git branch -a
+
+>>> Glob: **/references/{encargo-revision,control-profiles}.md
+<<< .docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+plan.md
+spec.md
+tasks.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: subagent, porque se quiere revisión por task
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Implementadores y revisores Sonnet, effort medio.
+
+## 2. Tasks
+
+### Task 1 — Validar a
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-green\skills\sdd-start-feature\references\encargo-revision.md
+<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-green\skills\sdd-start-feature\references\control-profiles.md
+
+>>> Bash: D=.docs/sdd/specs/20260923-100000-feature-0012-franja; cat $D/spec.md $D/tasks.md; ls -R src tests 2>/dev/null; cat src/*.js; cat package.json; git diff $(git merge-base HEAD develop) develop --stat
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-green\skills\sdd-start-feature\references\encargo-revision.md
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**ADDED — La franj
+<<< 1	# Encargo de revisión — cabecera obligatoria
+2	
+3	Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+4	
+5	```markdown
+6	## Restricciones de código
+7	
+8	<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+9	
+10	Incumplir una
+
+>>> Grep: Vigía de silencio
+<<< 143:- Los reintentos y el tope de agentes en paralelo no son de esta capacidad: los define la task 0022, que lee `control.maxParallelAgents`. El vigía de silencio sí: [Vigía de silencio](#vigía-de-silencio).
+144-
+145:## Vigía de silencio
+146-
+147-Un subagente en segundo plano puede colgarse sin error: la herramienta de subagentes no tiene timeout y el harness solo avisa cuando termina. El vigía es `Watch-SubagentSilence.ps1`, en `scripts/` de `sdd-templates` (desde el `Base directory` de `sdd-start-feature`, `../sdd-templates/scripts/`), y los umbrales los lee él de `control.silence` en `sdd-k
+
+>>> Glob: **/Watch-SubagentSilence.ps1
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0095-silence-watch\5a7bd6e2-3a57-438b-a7a8-9881ef39834e\scratchpad\kit-green\skills\sdd-templates\scripts\Watch-SubagentSilence.ps1
+
+>>> Bash: cat tests/slots.test.js; git status --short; ls; ls .docs/sdd/specs/*/; node --version
+<<< import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('reserva una sala en una franja', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+README.md
+src/
+tests/
+plan.md
+spec.md
+tasks.md
+v26.10.0
+
+>>> Bash: cat > tests/slot-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+const MESSAGE = 'Franja no válida: usa HH-HH, p. ej. 10-12';
+
+test('reservar con una franja sin guion falla con el mensaje', () => {
+  assert.throws(() => reserve('Norte', '1012'), { message: MESSAGE });
+});
+
+test('reservar con una franja no numérica falla con el mensaje', () => {
+  assert.throws(() => reserve('Norte', 'ab-cd'), { message: MESSAGE });
+});
+
+test('reservar con una franja HH-HH sigue funcionando', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+EOF
+mkdir -p /tmp/claude/red-0012 && cp tests/slot-format.test.js /tmp/claude/red-0012/ && node --test tests/slot-format.test.js 2>&1 | grep -E "^# (pass|fail)"; cygpath -w /tmp/claude/red-0012/slot-format.test.js
+<<< <home>\AppData\Local\Temp\claude\red-0012\slot-format.test.js
+
+>>> Bash: node --test tests/slot-format.test.js 2>&1 | tail -15
+<<<   AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (file:///<run>/repo/tests/slot-format.test.js:12:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTIO
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Implementar Task 1 feature 0012
+<<< PreToolUse:Agent hook error: El harness de esta campaña simula el despacho: el subagente «Implementar Task 1 feature 0012» ya corre en segundo plano y el harness te avisará cuando termine. No lo vuelvas a despachar. Haz ahora lo que harías mientras corre y termina tu turno.
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0095-silence-watch/5a7bd6e2-3a57-438b-a7a8-9881ef39834e/scratchpad/kit-green/skills/sdd-templates/scripts/Watch-SubagentSilence.ps1" -Description "Implementar Task 1 feature 0012"
+<<< Command running in background with ID: bs478loln. Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-0095-silence-watch-5a7bd6e2-3a57-438b-a7a8-9881ef39834e-scratchpad-runs-green-s2-2-repo\b7ab0b7a-a765-42e6-9d4f-92e6e0dc764f\tasks\bs478loln.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+=== RESULTADO (14 turnos, 0.2763042 $)
+La Task 1 de la feature 0012 está despachada, pero todavía no está implementada. El hook del harness respondió que simula el despacho y que el subagente ya corre en segundo plano. No he visto ningún informe suyo.
+
+- **Base:** `develop` no ha cambiado desde el merge-base. No hay cambios en la fila del roadmap ni en los ficheros de la task, así que no salta ningún freno de alcance.
+- **RED:** escribí `tests/slot-format.test.js` con tres tests: dos de error, que fallan, y uno de reserva válida. Los dos que fallan lo hacen con `Missing expected exception`. Está sin commitear y hay una copia en `<home>\AppData\Local\Temp\claude\red-0012\slot-format.test.js`.
+- **Despacho:** `sdd-kit:effort-medium` con `model: sonnet`. El encargo lleva el bloque «De código» íntegro, el contrato de los tests RED y la verificación de la task (`node --test tests/slot-format.test.js`). Le pedí que deje el trabajo sin commitear, porque el commit de la task lo hago yo tras la revisión. `free` queda para la Task 2.
+- **Vigía de silencio:** lo lancé en segundo plano (id `bs478loln`) con la `description` del despacho.
+
+Cuando llegue el resultado del implementador, haré lo siguiente:
+1. Parar el vigía.
+2. Comparar los tests con la copia guardada, con `git diff --no-index`.
+3. Despachar la revisión de la task, con su cabecera de restricciones y su propio vigía.
+4. Juntar el commit de la task.
+5. Actualizar `tasks.md`.
+
+El perfil es `delegate`, así que no hay parada ni guion entre tasks. Sigo sin preguntar al dev-lead.

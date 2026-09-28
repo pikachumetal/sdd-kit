@@ -1,0 +1,166 @@
+
+>>> Skill: superpowers:systematic-debugging
+<<< Launching skill: superpowers:systematic-debugging
+
+>>> Grep: iva|IVA|vat
+<<< Found 7 files
+app.js
+.docs\sdd\capabilities\order-sheets.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+pages\albaran-detalle.html
+pages\pedido-detalle.html
+package.json
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs; git status --short | head
+<<< {"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+
+>>> Read: <run>\repo\app.js
+<<< 1	function lineTotal(quantity, price, vat) {
+2	  return Math.round(quantity * price) * (1 + vat);
+3	}
+4	
+5	document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+6	  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+7	  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+8	});
+9	
+
+>>> Bash: cat package.json; cat .docs/sdd/roadmap.md; cat .docs/sdd/capabilities/order-sheets.md; git log -3 --stat
+<<< { "name": "ventas", "private": true, "devDependencies": { "playwright": "1.63.0" } }
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 0010 | Fichas de pedido y albarán | ✅ |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-20 | 0011 | El total de la línea no mostraba el símbolo del euro |
+# Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- 
+
+>>> Bash: git show 039b69e -- app.js | tail -8; node -e "const f=(q,p,v)=>Math.round(q*p)*(1+v);console.log(f(3,9.99,0.21).toFixed(2), (3*9.99*1.21).toFixed(2))"; grep -n "data-" pages/*.html; git ls-files; cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md
+<<< +++ b/app.js
+@@ -1,5 +1,5 @@
+ function lineTotal(quantity, price, vat) {
+-  return Math.round(quantity * price * (1 + vat) * 100) / 100;
++  return Math.round(quantity * price) * (1 + vat);
+ }
+ 
+ document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+36.30 36.26
+pages/albaran-detalle.html:9:        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+pages/albaran-detalle.html:10:        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+pages/albaran-detalle.html:11:        <button type="button" class="btn btn-peligro" data-acc
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2"; find "$K" -name "Get-NextSddId.ps1" -o -name "patch-template.md" -o -name nombrado.md -o -name commit-milestones.md; git branch --show-current
+<<< <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-start-feature/references/commit-milestones.md
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-start-feature/references/nombrado.md
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/scripts/Get-NextSddId.ps1
+<home>/AppData/Local/T
+
+>>> Read: <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/templates/patch-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+3	task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+5	title: Patch — <título corto>
+6	type: patch
+7	status: done
+8	created: <YYYY-MM-DD>
+9	branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+10	commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+11	---
+12	
+13	# Patch <id> — <título c
+
+>>> Read: <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-start-feature/references/nombrado.md
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/scripts/Get-NextSddId.ps1" -Reserve 2>&1 | tail -20; git status --short
+<<< 0011
+
+>>> Bash: cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/scripts/Get-NextSddId.ps1"; git status --short; git branch -a; git worktree list; git ls-remote . 2>/dev/null | head
+<<< <#
+.SYNOPSIS
+  Reserva (con -Reserve) o propone el siguiente id SDD (feature/patch/proposal) para un proyecto en modo ids.mode=sequence.
+.DESCRIPTION
+  Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
+  Con -Reserve toma un cerrojo en el directorio común de git y consume los ids en el contador sdd-ids, que comparten
+  todos los worktrees de la máquina: un id reservado no vuelve a salir aunque el trabajo se abandone. Sin -Reserve
+  solo propone el id y no escribe nada.
+  El escaneo inicializa o corrige el contador: lee spe
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0098-visual-patch-lane/150bf769-b398-4c73-bc1d-0fcf56219403/scratchpad/kit-green2/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot "$(pwd -W)" -Reserve; pwsh -NoProfile -Command "Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'"
+<<< 0012
+20260928-213139
+
+>>> Bash: git switch -c feature/0012-total-linea-iva && mkdir -p .docs/sdd/specs/20260928-213139-patch-0012-total-linea-iva && sed -i 's|return Math.round(quantity \* price) \* (1 + vat);|return Math.round(quantity * price * (1 + vat) * 100) / 100;|' app.js && cat app.js | head -3 && node -e "
+const src=require('fs').readFileSync('app.js','utf8').split('\n').slice(0,3).join('\n');
+const f=new Function(src+';return lineTotal')();
+console.log(f(3,9.99,0.21).toFixed(2).replace('.',',')+' €')"
+<<< Switched to a new branch 'feature/0012-total-linea-iva'
+function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+36,26 €
+
+>>> Write: <run>\repo\.docs\sdd\specs\20260928-213139-patch-0012-total-linea-iva\patch.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20260928-213139-patch-0012-total-linea-iva\patch.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add app.js .docs/sdd/specs && git commit -q -F - <<'EOF'
+fix(order-sheets): redondear el total de la línea tras aplicar el IVA
+
+El refactor 039b69e redondeaba a euros enteros antes del IVA: 3 × 9,99 € con
+IVA del 21 % daba 36,30 € en vez de 36,26 €. Se restaura el redondeo a
+céntimos sobre el total con IVA. Patch 0012.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< warning: in the working copy of 'app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260928-213139-patch-0012-total-linea-iva/patch.md', LF will be replaced by CRLF the next time Git touches it
+d3ef5b4 fix(order-sheets): redondear el total de la línea tras aplicar el IVA
+039b69e refactor: simplificar el total de la línea
+
+=== RESULTADO (17 turnos, 0.28914680000000004 $)
+Arreglado en el commit `d3ef5b4`, en la rama `feature/0012-total-linea-iva`: 3 × 9,99 € con IVA del 21 % ahora da 36,26 €. Lo comprobé ejecutando la función real de `app.js` con `node`, que devuelve `36,26 €`. No abrí la página en un navegador.
+
+- **Causa:** el refactor `039b69e` («simplificar el total de la línea») redondeaba el importe a euros enteros antes de aplicar el IVA. Salía 3 × 9,99 = 29,97 → 30 → 36,30. Es una regresión propia de ese commit, no algo que dijera el reporte.
+- **Fix:** en `app.js`, `lineTotal` vuelve a redondear a céntimos el total con IVA. Afecta a las dos fichas, `pedido-detalle` y `albaran-detalle`, que comparten ese fichero.
+- **Capacidad:** `order-sheets` ya exigía `36,26 €`, así que no hay cambio de capacidad.
+- **Documentación:** dejé el rastro en `.docs/sdd/specs/20260928-213139-patch-0012-total-linea-iva/patch.md`.
+
+**Id reservado:** el patch usa el `0012`, no el `0011`. El script `Get-NextSddId.ps1` propuso `0011`, pero ese id ya lo tiene el patch del símbolo del euro en el roadmap. El script solo lee las filas que empiezan por el id, y la tabla de Patches empieza por la fecha. Reservé de nuevo y salió el `0012`. El `0011` queda gastado en el contador; el fallo del script lo dejo señalado, sin arreglarlo aquí.
+
+**Pendiente:** el cierre con `sdd-end-patch` (fila en el roadmap, changelog, hash del commit y validación tuya). Aún no lo he ejecutado.
