@@ -162,7 +162,7 @@ Y al lanzar una verificación lenta en segundo plano, otro con `-Path <fichero d
 | `SIN TRANSCRIPT:` | Dile al usuario, en tu siguiente mensaje, que en esta sesión el vigía de silencio no funciona. No lo sustituyas por otra cosa. |
 | `SILENCIO:` | Es un cuelgue. Sigue abajo. |
 
-Al recibir el resultado de un subagente, para su vigía si sigue corriendo.
+Al recibir el resultado de un subagente, o el aviso de que terminó el comando de una verificación lenta, para su vigía si sigue corriendo: el de una verificación lenta no sabe cuándo acaba su comando, y daría `SILENCIO:` sobre uno ya terminado.
 
 **Ante un `SILENCIO:`**, en este orden, sin esperar a que el usuario pregunte:
 

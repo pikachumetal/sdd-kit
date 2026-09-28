@@ -4,7 +4,9 @@
 .DESCRIPTION
   Forma parte del kit SDD (skill sdd-templates). Con -Description busca el transcript del subagente cuyo
   agent-<id>.meta.json lleva esa descripción, en <configuración>/projects/<carpeta del worktree>/*/subagents/.
-  Con -Path vigila la última escritura de ese fichero: la salida de un comando.
+  Con -Path vigila la última escritura de ese fichero: la salida de un comando. Ese modo no sabe cuándo acaba el comando:
+  quien lo lanza lo para al terminar el comando. Sin -Worktree, toma la raíz del repo git del directorio actual.
+  Solo cuentan los despachos de hasta 60 s antes de arrancar el vigía: un relanzado puede repetir la description.
   Los umbrales salen de control.silence en <worktree>/.docs/sdd/sdd-kit.json, con 8 y 20 minutos si falta la clave:
   longCommandMinutes si el subagente espera un Bash o un PowerShell, o con -Path; betweenStepsMinutes en cualquier otra espera.
   Mira cada 30 s y termina con una primera línea SILENCIO:, TERMINADO: o SIN TRANSCRIPT: (a los 2 min sin encontrarlo).
@@ -18,7 +20,7 @@
 param(
   [Parameter(Mandatory, ParameterSetName = 'Subagent')][string]$Description,
   [Parameter(Mandatory, ParameterSetName = 'Command')][string]$Path,
-  [string]$Worktree = (Get-Location).Path,
+  [string]$Worktree,
   [string[]]$ProjectsRoot,
   [switch]$Once
 )
@@ -27,25 +29,43 @@ $ErrorActionPreference = 'Stop'
 $script:ShellTools = @('Bash', 'PowerShell')
 $script:PollSeconds = 30
 $script:TranscriptGraceSeconds = 120
+$script:DispatchMarginSeconds = 60
+$script:StartedAt = [datetime]::UtcNow
+
+function Read-JsonFile([string]$File) {
+  try { return Get-Content -LiteralPath $File -Raw | ConvertFrom-Json -AsHashtable } catch { return $null }
+}
+
+function Test-ValidMinutes([object]$Value) {
+  return $Value -is [ValueType] -and $Value -isnot [bool] -and [double]$Value -gt 0
+}
 
 function Read-Thresholds([string]$WorktreePath) {
-  $thresholds = @{ betweenStepsMinutes = 8; longCommandMinutes = 20 }
+  $thresholds = @{ betweenStepsMinutes = [double]8; longCommandMinutes = [double]20 }
   $configPath = Join-Path $WorktreePath '.docs/sdd/sdd-kit.json'
   if (-not (Test-Path -LiteralPath $configPath)) { return $thresholds }
-  $config = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json -AsHashtable
-  $silence = if ($config.control -is [System.Collections.IDictionary]) { $config.control.silence } else { $null }
+  $config = Read-JsonFile $configPath
+  $control = if ($config -is [System.Collections.IDictionary]) { $config.control } else { $null }
+  $silence = if ($control -is [System.Collections.IDictionary]) { $control.silence } else { $null }
   if ($silence -isnot [System.Collections.IDictionary]) { return $thresholds }
   foreach ($key in @($thresholds.Keys)) {
-    if ($silence.ContainsKey($key)) { $thresholds[$key] = [int]$silence[$key] }
+    if (Test-ValidMinutes $silence[$key]) { $thresholds[$key] = [double]$silence[$key] }
   }
   return $thresholds
+}
+
+function Resolve-Worktree {
+  $root = git rev-parse --show-toplevel 2>$null
+  if ($LASTEXITCODE -eq 0 -and $root) { return [System.IO.Path]::GetFullPath($root) }
+  return (Get-Location).Path
 }
 
 function Find-Transcript([string]$DispatchDescription, [string]$WorktreePath, [string[]]$Roots) {
   $metas = Get-TranscriptFolders $WorktreePath $Roots | ForEach-Object {
     Get-ChildItem -Path (Join-Path $_ '*/subagents/agent-*.meta.json') -File -ErrorAction SilentlyContinue
   }
-  $match = $metas | Where-Object { (Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json).description -eq $DispatchDescription } |
+  $notBefore = $script:StartedAt.AddSeconds(-$script:DispatchMarginSeconds)
+  $match = $metas | Where-Object { $_.LastWriteTimeUtc -ge $notBefore -and (Read-JsonFile $_.FullName).description -eq $DispatchDescription } |
     Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
   if ($null -eq $match) { return $null }
   $transcript = $match.FullName -replace '\.meta\.json$', '.jsonl'
@@ -67,12 +87,12 @@ function Get-ContentBlocks([object]$TranscriptEvent, [string]$BlockType) {
   return @(@($TranscriptEvent.message.content) | Where-Object { $_ -isnot [string] -and $_.type -eq $BlockType })
 }
 
-function Get-LastToolUse([object[]]$Events) {
-  for ($index = $Events.Count - 1; $index -ge 0; $index--) {
-    $call = Get-ContentBlocks $Events[$index] 'tool_use' | Select-Object -Last 1
-    if ($call) { return [pscustomobject]@{ Call = $call; Index = $index; Timestamp = $Events[$index].timestamp } }
+function Get-ToolUses([object[]]$Events) {
+  for ($index = 0; $index -lt $Events.Count; $index++) {
+    foreach ($call in Get-ContentBlocks $Events[$index] 'tool_use') {
+      [pscustomobject]@{ Call = $call; Index = $index; Timestamp = $Events[$index].timestamp }
+    }
   }
-  return $null
 }
 
 function Test-LaterEvent([object[]]$Events, [int]$Index, [scriptblock]$Predicate) {
@@ -84,17 +104,26 @@ function Test-Finished([object[]]$Events) {
   return $null -ne $lastAnswer -and $lastAnswer.message.stop_reason -eq 'end_turn'
 }
 
-function Test-Pending([object[]]$Events, [object]$LastToolUse) {
-  if ($null -eq $LastToolUse) { return $false }
-  $id = $LastToolUse.Call.id
-  return -not (Test-LaterEvent $Events $LastToolUse.Index {
+function Test-Pending([object[]]$Events, [object]$ToolUse) {
+  $id = $ToolUse.Call.id
+  return -not (Test-LaterEvent $Events $ToolUse.Index {
       @(Get-ContentBlocks $_ 'tool_result' | Where-Object { $_.tool_use_id -eq $id }).Count -gt 0
     })
 }
 
+function Select-WatchedToolUse([object[]]$ToolUses, [object[]]$Pending) {
+  $shell = $Pending | Where-Object { $_.Call.name -in $script:ShellTools } | Select-Object -Last 1
+  if ($shell) { return $shell }
+  if ($Pending) { return $Pending[-1] }
+  if ($ToolUses) { return $ToolUses[-1] }
+  return $null
+}
+
 function Format-EventTime([object]$Timestamp) {
-  $utc = if ($Timestamp -is [datetime]) { $Timestamp.ToUniversalTime() } else { ([datetimeoffset]$Timestamp).UtcDateTime }
-  return $utc.ToString('HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture) + 'Z'
+  try {
+    $utc = if ($Timestamp -is [datetime]) { $Timestamp.ToUniversalTime() } else { ([datetimeoffset]$Timestamp).UtcDateTime }
+    return $utc.ToString('HH:mm:ss', [System.Globalization.CultureInfo]::InvariantCulture) + 'Z'
+  } catch { return 'hora desconocida' }
 }
 
 function Format-InputValue([string]$Name, [object]$Value) {
@@ -150,11 +179,13 @@ function Format-Head([string]$Label, [double]$Minutes, [string]$Key, [hashtable]
 function Get-SubagentVerdict([string]$File, [string]$Label, [hashtable]$Thresholds) {
   $events = Read-Events $File
   if (Test-Finished $events) { return New-Verdict 'TERMINADO' @("TERMINADO: $Label devolvió su resultado") }
-  $lastToolUse = Get-LastToolUse $events
-  $pending = Test-Pending $events $lastToolUse
-  $key = if ($pending -and $lastToolUse.Call.name -in $script:ShellTools) { 'longCommandMinutes' } else { 'betweenStepsMinutes' }
+  $toolUses = @(Get-ToolUses $events)
+  $pendingUses = @($toolUses | Where-Object { Test-Pending $events $_ })
+  $watched = Select-WatchedToolUse $toolUses $pendingUses
+  $pending = $null -ne $watched -and $pendingUses -contains $watched
+  $key = if ($pending -and $watched.Call.name -in $script:ShellTools) { 'longCommandMinutes' } else { 'betweenStepsMinutes' }
   $verdict = Format-Head $Label (Get-SilenceMinutes $File) $key $Thresholds
-  if ($verdict.Status -eq 'SILENCIO' -and $events.Count -gt 0) { $verdict.Lines += Get-Diagnosis $events $lastToolUse $pending }
+  if ($verdict.Status -eq 'SILENCIO' -and $events.Count -gt 0) { $verdict.Lines += Get-Diagnosis $events $watched $pending }
   return $verdict
 }
 
@@ -169,11 +200,11 @@ function Get-Verdict([hashtable]$Thresholds, [bool]$GraceOver) {
   return Get-SubagentVerdict $file $label $Thresholds
 }
 
+if (-not $PSBoundParameters.ContainsKey('Worktree')) { $Worktree = Resolve-Worktree }
 if (-not $ProjectsRoot) { $ProjectsRoot = Get-DefaultProjectsRoots }
 $thresholds = Read-Thresholds $Worktree
-$startedAt = [datetime]::UtcNow
 while ($true) {
-  $graceOver = $Once -or ([datetime]::UtcNow - $startedAt).TotalSeconds -ge $script:TranscriptGraceSeconds
+  $graceOver = $Once -or ([datetime]::UtcNow - $script:StartedAt).TotalSeconds -ge $script:TranscriptGraceSeconds
   $verdict = Get-Verdict $thresholds $graceOver
   if ($Once -or $verdict.Status -notin @('EN MARCHA', 'BUSCANDO')) { break }
   Start-Sleep -Seconds $script:PollSeconds

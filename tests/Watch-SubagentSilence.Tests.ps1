@@ -1,4 +1,6 @@
 BeforeAll {
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
   $script:Watcher = Join-Path $PSScriptRoot '..' 'skills' 'sdd-templates' 'scripts' 'Watch-SubagentSilence.ps1'
   $script:Description = 'Revisor final 0095'
 
@@ -56,7 +58,11 @@ BeforeAll {
   $script:PesterCall = New-ToolUse 'PowerShell' @{ command = 'Invoke-Pester tests/' }
 }
 
-Describe 'Watch-SubagentSilence' {
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
+}
+
+Describe 'Watch-SubagentSilence' -Tag 'Slow' {
   It 'avisa con un Read sin tool_result a los 8 min 30 s' {
     $repo = New-Worktree $script:DefaultConfig
     New-Transcript $repo @($script:ReadCall) 8.5
@@ -129,6 +135,69 @@ Describe 'Watch-SubagentSilence' {
     $output = Invoke-Watcher $repo @('-Path', $log)
     $output[0] | Should -BeLike 'SILENCIO:*'
     $output[0] | Should -BeLike '*umbral 20 min*'
+  }
+
+  It 'no toma un despacho anterior con la misma description' {
+    $repo = New-Worktree $script:DefaultConfig
+    New-Transcript $repo @($script:ReadCall) 30
+    (Get-Item -LiteralPath (Join-Path (Get-SubagentFolder $repo) 'agent-t1.meta.json')).LastWriteTimeUtc = [datetime]::UtcNow.AddMinutes(-30)
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'SIN TRANSCRIPT:*'
+  }
+
+  It 'aplica longCommandMinutes si hay un PowerShell pendiente en paralelo con un Read ya respondido' {
+    $repo = New-Worktree $script:DefaultConfig
+    $shell = New-ToolUse 'PowerShell' @{ command = 'Invoke-Pester tests/' } 'toolu_shell'
+    $read = New-ToolUse 'Read' @{ file_path = 'C:\repo\plan.md' } 'toolu_read'
+    New-Transcript $repo @($shell, $read, (New-ToolResult 'toolu_read')) 9
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'EN MARCHA:*umbral 20 min*'
+  }
+
+  It 'aplica el default con un umbral <Value> en sdd-kit.json' -ForEach @(
+    @{ Value = 'null'; Silence = @{ betweenStepsMinutes = $null; longCommandMinutes = 20 } }
+    @{ Value = 'cero'; Silence = @{ betweenStepsMinutes = 0; longCommandMinutes = 20 } }
+    @{ Value = 'negativo'; Silence = @{ betweenStepsMinutes = -3; longCommandMinutes = 20 } }
+    @{ Value = 'de texto'; Silence = @{ betweenStepsMinutes = 'abc'; longCommandMinutes = 20 } }
+  ) {
+    $repo = New-Worktree @{ control = @{ silence = $Silence } }
+    New-Transcript $repo @($script:ReadCall) 5
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'EN MARCHA:*umbral 8 min*'
+  }
+
+  It 'aplica los defaults con un sdd-kit.json que no es JSON' {
+    $repo = New-Worktree $null
+    '{ control: ' | Set-Content -LiteralPath (Join-Path $repo '.docs/sdd/sdd-kit.json')
+    New-Transcript $repo @($script:ReadCall) 8.5
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'SILENCIO:*umbral 8 min*'
+  }
+
+  It 'avisa aunque el último evento no tenga timestamp' {
+    $repo = New-Worktree $script:DefaultConfig
+    $call = New-ToolUse 'Read' @{ file_path = 'C:\repo\plan.md' }
+    $call.Remove('timestamp')
+    New-Transcript $repo @($call) 9
+    $text = (Invoke-Watcher $repo) -join "`n"
+    $text | Should -BeLike 'SILENCIO:*'
+    $text | Should -BeLike '*hora desconocida*'
+  }
+
+  It 'ignora un meta.json corrupto de otro despacho' {
+    $repo = New-Worktree $script:DefaultConfig
+    New-Transcript $repo @($script:ReadCall) 8.5
+    '{ "descr' | Set-Content -LiteralPath (Join-Path (Get-SubagentFolder $repo) 'agent-t2.meta.json')
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'SILENCIO:*'
+  }
+
+  It 'toma el worktree de la raíz del repo aunque se lance desde un subdirectorio' {
+    $repo = New-Worktree $script:DefaultConfig
+    git -C $repo init -q
+    New-Transcript $repo @($script:ReadCall) 8.5
+    $sub = Join-Path $repo 'src'
+    New-Item -ItemType Directory -Path $sub | Out-Null
+    Push-Location $sub
+    try {
+      $output = @(& pwsh -NoProfile -File $script:Watcher -ProjectsRoot (Join-Path $TestDrive 'projects') -Once -Description $script:Description)
+    } finally { Pop-Location }
+    $output[0] | Should -BeLike 'SILENCIO:*'
   }
 
   It 'dice SIN TRANSCRIPT si no encuentra el despacho' {

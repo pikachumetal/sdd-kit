@@ -21,3 +21,9 @@ La racionalización de s5d y s5u en el RED («es un ruling operativo, dev-lead a
 ## Coste
 
 13 sujetos, 5,66 $. La campaña entera: 25 sujetos, 13,02 $, más los 0,43 $ descartados del RED (13,45 $), dentro del techo de la spec (28 sujetos o 18 $). Previsión: 13 $.
+
+## Control tras la revisión final
+
+La pasada de fix añadió a la sección que el vigía de una verificación lenta se para al terminar su comando. Sujeto de control s3 (0,48 $, salidas en `control/out/`): lanza el vigía del revisor final con `-Description` igual a la del despacho; ejecuta la verificación lenta en primer plano, porque el comando del molde termina en segundos, y no la vigila con `-Path`. En el GREEN, 2/2 la lanzaron en segundo plano con su vigía. Queda como riesgo, sin otra tanda.
+
+Campaña total: 26 sujetos, 13,50 $ más 0,43 $ descartados (13,93 $).

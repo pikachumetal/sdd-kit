@@ -19,7 +19,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | El script del vigía | done | `0f286e4b` | 10 tests nuevos; smoke `TERMINADO` sobre un transcript real |
-| 2 | La guía del vigía, con su campaña | done | (en el commit del hito siguiente) | RED 0/12, GREEN 13/13; 13,45 $ |
+| 2 | La guía del vigía, con su campaña | done | `73f30c29` | RED 0/12, GREEN 13/13; 13,45 $ |
 
 Plan sin gate (`delegate`): cada escenario de la spec tiene su task (plan §4).
 
@@ -38,3 +38,6 @@ Ruling: tests estáticos en 	ests/SilenceWatch.Tests.ps1, nuevo, en vez de ampli
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 8 Minor), sobre 73f30c2
+Pasada de fix: 13b19739, 7 hallazgos RED→GREEN (uno de guía, con sujeto de control)
