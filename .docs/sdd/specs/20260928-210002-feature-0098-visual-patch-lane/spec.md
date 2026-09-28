@@ -61,6 +61,7 @@ Review de spec propuesta: ninguna — señales: ninguna (el delta solo añade re
 ### Decisiones tomadas con el dev-lead
 
 - Carril feature, modo full, perfil `delegate` del proyecto, sin aprobación delegada: la spec se para en el gate — «Full · delegate (Recomendada)».
+- Techo de la campaña de 32 a 36 sujetos, para el RED/GREEN de los arreglos de la revisión final (b1 bug de CSS, h1 botones con handler, t1 errata, control c2) — «Subir el techo a 36 (Recomendada)» (2026-09-28).
 - Sin carril nuevo: el patch se amplía — fila 0098 del roadmap (dev-lead, 2026-09-28).
 - Aprobación de la spec, con la condición de que los sujetos de la campaña no se encallen y acaben rápido: la petición de cada escenario cierra de antemano las dudas de alcance (trampa de fixture de T11/T12), cada sujeto lleva tope de turnos y de tiempo en el lanzador y su vigía de silencio, y un sujeto que llega al tope cuenta como «sin llegar», no se relanza a ciegas — «Apruebo, pero vamos a ser muy cuidadosos con los sujetos, que no se encallen, que acaben rapido» (2026-09-28).
 

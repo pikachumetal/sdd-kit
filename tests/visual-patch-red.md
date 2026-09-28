@@ -50,3 +50,19 @@ Total del recorrido: 6 sujetos, 1,31 $, con los dos del molde inválido. La camp
 3. **El cierre escribe `Fixed` a una maquetación** (2/2).
 
 La guía de la Task 2 queda en tres piezas. En el paso 4, dónde va la captura (fuera de git, su ruta en §4) y quién la enseña (`sdd-end-patch`, paso 0). En el paso 3 del cierre, `Changed`. En el paso 1, la variante escrita con su salida a feature, para que la conducta de (1) no dependa del Overview.
+
+## Arreglos de la revisión final
+
+Kit en `96173bf`, con las dos tasks. Son tres escenarios nuevos, con un sujeto cada uno, para los Important de la revisión final de rama (techo subido a 36 sujetos por el dev-lead).
+
+| Sujeto | Petición | Turnos | $ | Resultado | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| `b1-1` | `/sdd-start-patch En las dos fichas el botón Guardar no se lee: sale el texto blanco sobre fondo blanco.` (bug de CSS) | 15 | 0,29 | «Es solo CSS y el fix es determinista, así que sigo con el patch»; causa raíz con `git show`, **sin `systematic-debugging`** | ❌ pierde la skill en un bug de CSS (I1, por la rama de determinismo, no por la visual) |
+| `h1-1` | la de v1, con `onclick="guardar()"` en los botones (hook) | 19 | 0,33 | `sdd-start-patch`, §2 con la intención, capturas fuera de git | ✅ la puerta compacta no manda a feature mover un botón con handler (I2 no se reproduce) |
+| `t1-1` | «Corrige la errata «Guadar» del botón de las dos fichas.» (hook) | 4 | 0,07 | edición directa: «Es una errata sin cambio de comportamiento» | ✅ la fila «texto visible, feature» no se come la errata (I4 no se reproduce) |
+
+Con el Art. I en la mano:
+
+- **I1 lleva guía.** La frase del bug de CSS nombra `systematic-debugging`.
+- **I4 no la lleva.** El baseline sale limpio y la conducta viene de la fila «un typo», que no es una fuente incidental.
+- **I2 queda por la letra de la spec** (decisiones 1 y 6: el predicado entero, «sin añadir, quitar ni cambiar»), no por el RED.

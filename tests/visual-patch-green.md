@@ -57,3 +57,22 @@ Total del recorrido: 6 sujetos, 1,63 $. **Campaña completa: 28 sujetos y 6,74 $
 2. **El cierre la registra como `Changed`** (2/2).
 3. **El bug determinista sigue su camino** (k1 2/2): causa raíz con `systematic-debugging` y sin captura. La variante visual no se come el paso 1 normal. El `Fixed` de k1 no se observa, porque ninguno de los dos llegó al cierre: el texto del paso 3 lo conserva como categoría por defecto.
 4. **La subida a feature a mitad de patch** (el AND del segundo requisito) no tiene escenario: queda para la revisión final de rama.
+
+## Arreglos de la revisión final
+
+Guía:
+
+- `sdd-start-patch`: el diamante pasa a «¿Ajuste pedido, no un fallo? ¿Solo presentación (predicado)?». Un fallo que se arregla solo en CSS es un bug, «con `systematic-debugging`, causa raíz y `Fixed`». El paso 4 dice qué hacer si cae el predicado: se borran la carpeta y `patch.md` sin commitear, el id reservado queda consumido y la feature reserva el suyo. El red flag del fallo no reproducido añade «salvo en un ajuste visual». El título del paso 1 añade «(o la intención, en un ajuste visual)».
+- `using-sdd`: el predicado entero, con `*ngIf`, `v-if`, `@for`, las capacidades y «sin cambiar bindings». El tope sube a 530 palabras (la skill queda en 519).
+- `sdd-start-feature` paso 2: «ajuste pedido solo de presentación, no un fallo» y «sin añadir, quitar ni cambiar bindings».
+
+| Sujeto | Turnos | $ | Resultado | Veredicto (RED) |
+| --- | --- | --- | --- | --- |
+| `b1-1` | 17 | 0,33 | `superpowers:systematic-debugging`; causa raíz con `git show` y estilos computados | ✅ (❌ sin la skill) |
+| `h1-1` | 18 | 0,30 | `sdd-start-patch`, intención, capturas fuera de git | ✅ control (✅) |
+| `t1-1` | 4 | 0,08 | edición directa de la errata | ✅ control del recorte de I4 (✅) |
+| `c2-3` | 7 | 0,19 | `sdd-start-feature`: la fila de edición directa cambió, y el texto visible sigue yendo a feature | ✅ control (✅ en el GREEN de la Task 1) |
+
+**Campaña completa: 35 sujetos y 8,33 $**, con techo de 36 y 22 $. Ningún sujeto llegó al tope.
+
+I3 (subida a feature a mitad de patch) y M1 (red flag) no tienen escenario. Los fija el Pester `Arreglos de la revisión final del patch visual`, y quedan en el foco del walkthrough.

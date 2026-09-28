@@ -55,3 +55,37 @@ Describe 'Recorrido y cierre del patch visual' {
     $template | Should -Match '## 5\. Tiempo'
   }
 }
+
+Describe 'Arreglos de la revisión final del patch visual' {
+  BeforeAll {
+    $script:Door = Get-KitFile 'skills/using-sdd/SKILL.md'
+    $script:Routing = Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '2. **Enrutado**' '3. **Branch**'
+    $script:Patch = Get-KitFile 'skills/sdd-start-patch/SKILL.md'
+  }
+
+  It 'el árbol separa el ajuste pedido de un fallo que se arregla en CSS' {
+    Get-Section $script:Patch '```dot' '## Flujo' | Should -Match 'no un fallo'
+  }
+
+  It 'las puertas dejan mover un elemento que ya lleva binding o evento' {
+    $script:Door | Should -Match 'sin cambiar bindings'
+    $script:Routing | Should -Match 'sin añadir, quitar ni cambiar bindings'
+  }
+
+  It 'using-sdd lleva el predicado entero, con las directivas y las capacidades' {
+    foreach ($literal in @('`*ngIf`', '`v-if`', '`@for`', 'capacidades', 'mueve, envuelve o cambia la clase')) {
+      $script:Door | Should -Match ([regex]::Escape($literal))
+    }
+  }
+
+  It 'el paso 4 del patch visual para y pasa a feature, y dice qué pasa con la carpeta y el id' {
+    $step = Get-Section $script:Patch '4. **Fix mínimo**' '5. **Commit del fix**'
+    $step | Should -Match 'sdd-start-feature'
+    $step | Should -Match 'borra la carpeta del patch'
+    $step | Should -Match 'id reservado'
+  }
+
+  It 'el red flag de fallo no reproducido no para un ajuste visual' {
+    $script:Patch | Should -Match 'cuyo fallo no has reproducido \(salvo en un ajuste visual'
+  }
+}

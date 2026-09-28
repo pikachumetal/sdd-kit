@@ -15,10 +15,10 @@ Describe 'skills/using-sdd' {
     $script:SkillPath | Should -Exist
   }
 
-  It 'cabe en 510 palabras, porque el hook la carga en cada sesión' {
+  It 'cabe en 530 palabras, porque el hook la carga en cada sesión' {
     $words = $script:Skill -split '\s+' | Where-Object { $_ }
     $words.Count | Should -BeGreaterThan 0
-    $words.Count | Should -BeLessOrEqual 510
+    $words.Count | Should -BeLessOrEqual 530
   }
 
   It 'nombra la puerta <_>' -ForEach @(

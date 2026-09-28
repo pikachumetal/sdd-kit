@@ -17,7 +17,7 @@ Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del pro
 | Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-consult` |
 | Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-start-feature` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente | `sdd-kit:sdd-roadmap` |
 | Una funcionalidad concreta o un cambio con comportamiento, aunque sea pequeño: «añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido» | `sdd-kit:sdd-start-feature`, antes que `brainstorming` |
-| Un fallo pequeño y reproducible, o un ajuste solo de presentación: solo plantillas o estilos, sin bindings, `@if`, eventos, texto visible, claves de i18n, TypeScript, API ni datos | `sdd-kit:sdd-start-patch` |
+| Un fallo pequeño y reproducible, o un ajuste pedido solo de presentación: solo plantillas o estilos, que mueve, envuelve o cambia la clase de elementos sin cambiar bindings, `@if`, `*ngIf`, `v-if`, `@for`, eventos, texto visible ni claves de i18n, y sin TypeScript, API, datos ni capacidades | `sdd-kit:sdd-start-patch` |
 | Cerrar la entrega de una versión, mandar las notas al cliente | `sdd-kit:sdd-end-release` |
 | Cómo quiere trabajar cada uno: «me paras mucho», «quiero menos preguntas», «déjamelo configurado para mí» | `sdd-kit:sdd-config`, nunca la memoria del agente: la memoria se queda en un PC y el kit no la lee |
 | Una edición sin comportamiento: un typo, un renombrado, un formato del código. Mover lo que se ve es patch; cambiar un texto visible, feature | directa, sin skill |
