@@ -29,3 +29,31 @@ Total de las puertas: 8 sujetos, 2,36 $; la campaña va en 16 sujetos y 3,80 $. 
 2. **La puerta trasera se cierra** (c2 de 0/2 a 2/2): el texto visible va a feature y el `@if` sigue yendo (c1 2/2, control). Ninguno de los cuatro contra-escenarios entró por el patch.
 3. **Con solo la guía de las puertas, los sujetos ya miran el navegador** (4/4 con Playwright y medidas; 2/4 dejan la captura en el run, fuera de git. `v1-2` dice haberla generado, pero no está ni en el molde ni en el run, y `v1-1` solo mide). Ninguno invoca `systematic-debugging`, y el §2 de `patch.md` ya dice «No es un fallo: es un ajuste de presentación» bajo el título «Causa raíz». Lo que la Task 2 tiene que medir es el resto del recorrido: qué ponen en §2 de `patch.md`, si invocan `systematic-debugging` y cómo cierra el changelog.
 4. **Ruido del molde, no del kit**: 3 de 4 sujetos de patch recibieron de `Get-NextSddId.ps1` el 0011, que el molde tiene en la tabla de patches sin su carpeta en `specs/`. El script solo lee las filas de la tabla de features y las carpetas. En un proyecto real, el patch 0011 tendría su carpeta. Se anota para el walkthrough.
+
+## Recorrido y cierre (Task 2)
+
+Guía:
+
+- `sdd-start-patch`: en el paso 1, la variante de la intención en una frase, sin `systematic-debugging` y con salida a feature. En los pasos 3 y 4, §2 con la intención y la captura por pantalla en un navegador real, fuera de git y con su ruta en §4. Un red flag nuevo.
+- `sdd-end-patch`: el paso 0 enseña la ruta de cada captura, y el paso 3 usa `Changed` en un ajuste visual.
+- `patch-template.md`: §2 «Causa raíz (o intención, en un ajuste visual)» y una fila de captura en §4.
+
+El kit de esta tanda se copió antes de corregir en `sdd-start-patch` la cita de la evidencia del RED («1 de 2 sujetos commiteó las capturas…»). Es solo el recuento de la cita, sin cambio de conducta, así que no lleva sujeto de control.
+
+| Sujeto | Turnos | $ | Resultado | Veredicto (RED) |
+| --- | --- | --- | --- | --- |
+| `f1-1` | 17 | 0,30 | §2 con la intención; sin `systematic-debugging`; dos capturas en `%TEMP%\tmp.…\`, con su ruta en §4 y «fuera de git»; «te pedirá la validación, con las capturas a la vista» | ✅ (✅ intención · ✅ captura) |
+| `f1-2` | 14 | 0,28 | §2 «Intención»; sin `systematic-debugging`; capturas en `%TEMP%\patch-0012\`, «enseñada en la validación»; 0 PNG en git | ✅ (✅ · ❌ captura en git) |
+| `f2-1` | 8 | 0,19 | changelog `### Changed`; merge a `develop` | ✅ (❌ `Fixed`) |
+| `f2-2` | 7 | 0,19 | changelog `### Changed`; merge a `develop` | ✅ (❌ `Fixed`) |
+| `k1-1` | 17 | 0,29 | `superpowers:systematic-debugging`; §2 con la causa raíz (redondeo antes del IVA); sin captura; no llega al cierre | ✅ control |
+| `k1-2` | 22 | 0,37 | `superpowers:systematic-debugging`; reproduce en Chromium, §2 con la causa raíz; sin captura; no llega al cierre | ✅ control |
+
+Total del recorrido: 6 sujetos, 1,63 $. **Campaña completa: 28 sujetos y 6,74 $**, frente a la previsión de 26 y ~16 $ y el techo de 32 y 22 $. Ningún sujeto llegó al tope de turnos ni de reloj.
+
+### Lo que dice el GREEN
+
+1. **La captura tiene sitio** (2/2): fuera de git, con su ruta en §4, y ningún PNG en la rama.
+2. **El cierre la registra como `Changed`** (2/2).
+3. **El bug determinista sigue su camino** (k1 2/2): causa raíz con `systematic-debugging` y sin captura. La variante visual no se come el paso 1 normal. El `Fixed` de k1 no se observa, porque ninguno de los dos llegó al cierre: el texto del paso 3 lo conserva como categoría por defecto.
+4. **La subida a feature a mitad de patch** (el AND del segundo requisito) no tiene escenario: queda para la revisión final de rama.

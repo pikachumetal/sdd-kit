@@ -37,3 +37,21 @@ Describe 'Puertas del patch visual' {
     ($script:StartPatch -split "`n" | Where-Object { $_ -like 'description:*' }) | Should -Match 'solo de presentación'
   }
 }
+
+Describe 'Recorrido y cierre del patch visual' {
+  It 'el paso 1 de sdd-start-patch tiene la variante de intención' {
+    $step = Get-Section (Get-KitFile 'skills/sdd-start-patch/SKILL.md') '1. **Causa raíz' '2. **Carpeta**'
+    $step | Should -Match 'intención en una frase'
+    $step | Should -Match 'captura'
+  }
+
+  It 'el cierre registra el ajuste visual como Changed' {
+    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '`Changed`'
+  }
+
+  It 'la plantilla admite la intención en §2' {
+    $template = Get-KitFile 'skills/sdd-templates/templates/patch-template.md'
+    $template | Should -Match '## 2\. Causa raíz \(o intención, en un ajuste visual\)'
+    $template | Should -Match '## 5\. Tiempo'
+  }
+}

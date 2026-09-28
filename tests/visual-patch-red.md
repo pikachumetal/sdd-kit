@@ -28,3 +28,25 @@ La guía de la Task 1 tiene que hacer tres cosas:
 - Dar al ajuste visual su puerta en `using-sdd` y en el paso 2, con el predicado.
 - Sacarlo de la edición directa: mover o reestilar no es un formato.
 - Decir que cambiar un texto visible, que no es corregir su ortografía, no es una edición sin comportamiento.
+
+## Recorrido y cierre (Task 2)
+
+Kit en `d6b4255`, con la guía de las puertas (Task 1) y sin la del recorrido.
+
+| Sujeto | Petición | Turnos | $ | Resultado | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| `f1-1` | `/sdd-start-patch` + la de v1 | 14 | 0,28 | sin `systematic-debugging`; §2 «Ajuste solo de presentación, sin causa raíz que investigar»; capturas en `%TEMP%\shots\`, y §4 dice «Falta la mirada de quien lo pidió» | ✅ intención · ✅ captura fuera de git con su ruta en §4 |
+| `f1-2` | ídem | 20 | 0,35 | sin `systematic-debugging`; §2 «No es un fallo, es un cambio de layout»; **4 PNG commiteados** en `.docs/sdd/specs/<patch>/capturas/` | ✅ intención · ❌ captura en git |
+| `f2-1-molde`, `f2-2-molde` | `/sdd-end-patch cierra el patch`, con la validación ya escrita en §4 | 6 y 4 | 0,16 y 0,15 | los dos paran en el paso 0: la frase escrita no es la del usuario | molde inválido: no llegan al changelog |
+| `f2-1` | `/sdd-end-patch Validado: lo he probado y funciona. He abierto las dos fichas en Chromium…` | 10 | 0,20 | changelog `### Fixed`, merge a `develop` | ❌ `Fixed` |
+| `f2-2` | ídem | 6 | 0,17 | changelog `### Fixed`, merge a `develop` | ❌ `Fixed` |
+
+Total del recorrido: 6 sujetos, 1,31 $, con los dos del molde inválido. La campaña va en 22 sujetos y 5,11 $.
+
+### Lo que dice el baseline
+
+1. **La intención ya sale sola** con la guía de las puertas (2/2): el Overview y el árbol dicen «se verifica con una captura en lugar de con la causa raíz», y ningún sujeto invoca `systematic-debugging`. El §2 sigue titulado «Causa raíz», pero el contenido es la intención.
+2. **La captura no tiene sitio fijo** (1/2 bien): uno la deja en `%TEMP%` con su ruta en §4; el otro la commitea en la carpeta del patch.
+3. **El cierre escribe `Fixed` a una maquetación** (2/2).
+
+La guía de la Task 2 queda en tres piezas. En el paso 4, dónde va la captura (fuera de git, su ruta en §4) y quién la enseña (`sdd-end-patch`, paso 0). En el paso 3 del cierre, `Changed`. En el paso 1, la variante escrita con su salida a feature, para que la conducta de (1) no dependa del Overview.

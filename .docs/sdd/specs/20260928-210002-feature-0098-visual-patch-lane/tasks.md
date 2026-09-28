@@ -18,13 +18,13 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Las puertas admiten el ajuste solo de presentación | done | — | GREEN 8/8 (v1, v2 2/2 al patch; c1, c2 2/2 a feature) |
-| 2 | El patch visual se recorre con la intención y la captura, y cierra en `Changed` | pending | — | |
+| 1 | Las puertas admiten el ajuste solo de presentación | done | d6b4255 | GREEN 8/8 (v1, v2 2/2 al patch; c1, c2 2/2 a feature) |
+| 2 | El patch visual se recorre con la intención y la captura, y cierra en `Changed` | done | — | GREEN 6/6 (f1 captura fuera de git, f2 Changed, k1 control); campaña 28 sujetos, 6,74 $ |
 
 ## Verificación por task
 
 - [x] Task 1 — `Invoke-Pester -Path tests/VisualPatch.Tests.ps1` + GREEN de v1, v2, c1 y c2 (verificación lenta)
-- [ ] Task 2 — `Invoke-Pester -Path tests/VisualPatch.Tests.ps1` + GREEN de f1, f2 y k1 (verificación lenta)
+- [x] Task 2 — `Invoke-Pester -Path tests/VisualPatch.Tests.ps1` + GREEN de f1, f2 y k1 (verificación lenta)
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

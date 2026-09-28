@@ -19,7 +19,7 @@ case "$3" in
   c1) ASK="Oculta Borrar si el pedido está facturado y pásalo a la derecha, en las dos fichas."; TURNS=25 ;;
   c2) ASK="Cambia «Guardar» por «Guardar y cerrar» y ponlo a la derecha, en las dos fichas."; TURNS=25 ;;
   f1) ASK="/sdd-kit:sdd-start-patch $MOVE"; TURNS=40 ;;
-  f2) ASK="/sdd-kit:sdd-end-patch cierra el patch"; TURNS=40 ;;
+  f2) ASK="/sdd-kit:sdd-end-patch Validado: lo he probado y funciona. He abierto las dos fichas en Chromium y los botones quedan en la columna derecha. Cierra el patch."; TURNS=40 ;;
   k1) ASK="/sdd-kit:sdd-start-patch El total de la línea sale mal: 3 × 9,99 € con IVA del 21 % da 36,30 € y debería dar 36,26 €."; TURNS=40 ;;
   *) die "escenario desconocido: $3" ;;
 esac
