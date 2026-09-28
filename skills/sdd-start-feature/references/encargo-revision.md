@@ -33,24 +33,25 @@ El paquete lo prepara el hilo con esta receta, no con `review-package`, en los d
 ```bash
 cd "$(git rev-parse --show-toplevel)"
 MERGE_BASE=$(git merge-base HEAD <integración> $(git rev-parse -q --verify origin/<integración>))
-EXCLUDE=(':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**')
+EXCLUDE=(':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**' ':(exclude,glob).docs/sdd/specs/<carpeta de la feature>/**')
 OUT="$(bash "<ruta de sdd-workspace>" "<PLAN_FILE>")/review-final-$(git rev-parse --short HEAD).diff"
 {
   echo "# Review package: ${MERGE_BASE}..HEAD"; echo
   echo "## Commits"; git log --oneline "${MERGE_BASE}..HEAD"; echo
   echo "## Files changed"; git diff --stat "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"; echo
-  echo "## Diff"; git diff -U10 "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"
+  echo "## Ficheros borrados"; git diff --name-only --diff-filter=D "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"; echo
+  echo "## Diff"; git diff -U10 --diff-filter=d "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"
 } > "$OUT" && echo "$OUT"
 ```
 
-El merge-base se calcula en el momento de la revisión, también si la rama integró la base a mitad: la base del arranque arrastra lo que trajo el merge. Con remoto, `git fetch` antes: si la rama integró `origin/<integración>` y la local está atrasada, la base local vuelve a traer lo de otras features; sin remoto, `rev-parse` no imprime nada y queda la local. Si las dos han divergido, git elige una sola base: sincronízalas antes. No uses `git diff <integración> HEAD`: si la rama de integración avanzó después del merge, mete al revés sus commits nuevos. En modo lite, sin plan, `PLAN_FILE` es `spec.md`. Si el tech-stack del proyecto declara otras carpetas de evidencia, añádelas a `EXCLUDE` con la misma forma. `$OUT` es una ruta de Git Bash: conviértela con `cygpath -w` antes de escribirla en el encargo. Sin la receta, 2 de 2 sujetos metieron en el paquete las 400 líneas de `red/out/` de la spec, y uno lo escribió dentro de la carpeta de la spec (`tests/final-review-package-red.md`).
+El merge-base se calcula en el momento de la revisión, también si la rama integró la base a mitad: la base del arranque arrastra lo que trajo el merge. Con remoto, `git fetch` antes: si la rama integró `origin/<integración>` y la local está atrasada, la base local vuelve a traer lo de otras features; sin remoto, `rev-parse` no imprime nada y queda la local. Si las dos han divergido, git elige una sola base: sincronízalas antes. No uses `git diff <integración> HEAD`: si la rama de integración avanzó después del merge, mete al revés sus commits nuevos. En modo lite, sin plan, `PLAN_FILE` es `spec.md`. `<carpeta de la feature>` es el nombre de la carpeta de la spec en `.docs/sdd/specs/`: la spec y el plan le llegan al revisor en los requisitos de `code-reviewer.md`. Los ficheros borrados van solo por nombre. Con el cuerpo de los borrados y la carpeta de la feature dentro, el paquete de la feature 0000 de LegalRep pesó 235.524 bytes y el primer `Read` del revisor falló con `File content (28006 tokens) exceeds maximum allowed tokens (25000)` (su ticket de campo, §3). Si el tech-stack del proyecto declara otras carpetas de evidencia, añádelas a `EXCLUDE` con la misma forma. `$OUT` es una ruta de Git Bash: conviértela con `cygpath -w` antes de escribirla en el encargo. Sin la receta, 2 de 2 sujetos metieron en el paquete las 400 líneas de `red/out/` de la spec, y uno lo escribió dentro de la carpeta de la spec (`tests/final-review-package-red.md`).
 
 Tras la cabecera y antes de `code-reviewer.md`:
 
 ```markdown
 ## Cómo revisar
 
-Lee el paquete de review `<ruta del paquete que imprime la receta>`: tiene los commits, el resumen y el diff completo de la rama. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
+Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de 400 líneas con `offset` y `limit`: tiene los commits, el resumen, los ficheros borrados por nombre y el diff del resto de la rama, sin la carpeta de la spec. No rehagas el diff con git. No ejecutes la suite, el build ni el lint: la evidencia de tests la traen los informes de cada task, y la suite completa la ejecuta el hilo principal. Si crees que falta una verificación pesada, recomiéndala en tu informe.
 ```
 
 Por qué: la plantilla del revisor de task de superpowers ya lo dice; la del final da los comandos de `git diff` y pregunta «All tests passing?» sin decir cómo. Con la cabecera sin esta sección, 2 de 2 revisores finales rehicieron el diff y ejecutaron suite y lint (`tests/proportional-review-red.md`, R2); en un proyecto del equipo, 27 minutos por revisor frente a los 7 de uno que solo lee el diff.
