@@ -10,7 +10,7 @@
 
 ## Versión siguiente
 
-Salieron de la 2.0.0 en el corte del 2026-09-23. Se replanifican al preparar la versión siguiente con `sdd-roadmap`; lo que traigan los tickets de campo del uso de la 2.0.0 entra aquí.
+Salieron de la 2.0.0 en el corte del 2026-09-23. Se replanifican al preparar la versión siguiente con `sdd-roadmap`; lo que traigan los tickets de campo del uso de la 2.0.0 entra aquí. **Tras el corte de la 2.1.0** (2026-09-29), «2.0.1» en las filas de deuda quiere decir la versión siguiente.
 
 **Criterio de orden** (dev-lead, 2026-09-28): primero lo que retrasa el kit **en uso** en los proyectos; lo que solo retrasa el desarrollo del kit o sus tests (la 0045, el arnés headless) va detrás. Orden, en serie:
 
@@ -338,6 +338,12 @@ Se revisan al abrir cada release del kit (Art. V). No son dependencias: son el e
 
 ## Releases cerradas
 
+### v2.1.0 — 2026-09-29
+
+Primeros tickets de uso de la 2.0.0 en proyectos del equipo, cortada el 2026-09-29 con lo cerrado desde la 2.0.0: la feature 0095 (vigía de silencio), la 0098 (el carril patch acepta ajustes visuales) y el patch 0094 (paquete del revisor final legible), más el triaje de los tickets del 2026-09-28 y el orden de la versión siguiente por lo que retrasa el kit en uso. Sin migración. [Changelog](changelog.md#210---2026-09-29) · [release notes](releases/v2.1.0/release-notes.md).
+
+smoke: pendiente (pre-commit desde PowerShell el 2026-09-29 en verde; el uso real lo difiere el dev-lead: la 0095 y la 0098 al primer uso en un proyecto del equipo, y el patch 0094 a la primera revisión final de rama con la 2.1.0)
+
 ### v2.0.0 — 2026-09-27
 
 Abierta como 1.2.0 el 2026-09-20 con las 39 peticiones del [acta de la v1.1.0](releases/v1.1.0/feedback.md) y los tickets de campo; cortada el 2026-09-23 y publicada como **2.0.0** porque cambia cómo trabajan los proyectos. 50 features y 28 patches: perfiles de control y menos paradas, enrutado con `using-sdd`, `sdd-roadmap` y `sdd-config`, ids en secuencia reservados, merge del cierre con `Invoke-SddMerge.ps1`, un commit por hito, Native por defecto, verificación por task y visual, coste de la sesión medido, capacidades al estilo OpenSpec, renombrado task → feature y superpowers desde `superpowers-marketplace`. Una sola migración, `v2.0.0.md`. [Release notes](releases/v2.0.0/release-notes.md) · [changelog](changelog.md) · [tickets de campo](field-reports/).
@@ -380,7 +386,7 @@ Las 7 skills de proceso iniciales + plantillas + manifests. Sin acta (el carril 
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
-| 2026-09-28 | [20260928-154618-patch-0094-review-package-slim](specs/20260928-154618-patch-0094-review-package-slim/patch.md) | 🧪 validación diferida a la primera revisión final de rama con el kit v2.0.1, a cargo del dev-lead — el paquete del revisor final deja fuera el cuerpo de los ficheros borrados (`--diff-filter=d` y sección «Ficheros borrados» por nombre) y la carpeta de la spec de la feature, y «Cómo revisar» pide leerlo en tramos de 400 líneas; en el molde que calca la rama de LegalRep, de 235.036 a 19.965 bytes (ticket de la feature 0000 de LegalRep §3). El error de `Read` no salió en el RED (0 de 1): la guía de los tramos se apoya en el fallo de campo |
+| 2026-09-28 | [20260928-154618-patch-0094-review-package-slim](specs/20260928-154618-patch-0094-review-package-slim/patch.md) | 🧪 validación diferida a la primera revisión final de rama con el kit v2.1.0 (el `patch.md` dice v2.0.1, el nombre que llevaba la release antes del corte), a cargo del dev-lead — el paquete del revisor final deja fuera el cuerpo de los ficheros borrados (`--diff-filter=d` y sección «Ficheros borrados» por nombre) y la carpeta de la spec de la feature, y «Cómo revisar» pide leerlo en tramos de 400 líneas; en el molde que calca la rama de LegalRep, de 235.036 a 19.965 bytes (ticket de la feature 0000 de LegalRep §3). El error de `Read` no salió en el RED (0 de 1): la guía de los tramos se apoya en el fallo de campo |
 | 2026-09-27 | [20260927-151447-patch-0090-config-dir-mold-guard](specs/20260927-151447-patch-0090-config-dir-mold-guard/patch.md) | ✅ validada el 2026-09-27 en el cierre de la feature 0089: `Measure-SessionTokens.ps1` sin `-ProjectsRoot` midió la sesión con `CLAUDE_CONFIG_DIR` fuera de `~/.claude` ([ticket de la feature 0089](field-reports/20260927-180811-feature-0089-greenfield-init-template.md), «Funcionó») — `Measure-SessionTokens.ps1` sin `-ProjectsRoot` junta los transcripts de `CLAUDE_CONFIG_DIR`, `~/.claude` y `~/.claude-*` (antes daba «no medido» con otra configuración); `g` de `lib.sh` aborta si el molde no es su propio repo git |
 | 2026-09-27 | [20260927-145156-patch-0088-merge-empty-folder](specs/20260927-145156-patch-0088-merge-empty-folder/patch.md) | 🧪 validación diferida al merge de este cierre, con la carpeta vacía `merge-0088-merge-empty-folder` creada antes, a cargo del dev-lead — `Invoke-SddMerge.ps1` borra la carpeta `merge-<id>` vacía y sin registrar que deja `git worktree remove` cuando un handle abierto en Windows le impide borrarla, en lugar de fallar con `destino sacado: ya existe`; con contenido o registrada, falla como antes (ticket del patch 0084 §2) |
 | 2026-09-27 | [20260927-131408-patch-0087-roadmap-header-fast-suite](specs/20260927-131408-patch-0087-roadmap-header-fast-suite/patch.md) | ✅ validada el 2026-09-27 en el cierre del patch 0088: su fila entró con 🧪 en la tabla de la release y en la de Patches, y el pre-commit tardó unos 25 s ([ticket del patch 0088](field-reports/20260927-145833-patch-0088-merge-empty-folder.md), «Funcionó») — las tablas de la release llevan la cabecera de `roadmap-template.md` y `RoadmapStructure` lo vigila; `sdd-end-patch` paso 4 pone en la tabla de la release el patch diferido (RED 2/2 → GREEN 1/1); el conjunto rápido baja de 35,2 s a unos 25,6 s con cuatro ficheros más en `Slow`, y `FastSuiteBudget` se queda con la mejor de dos mediciones |

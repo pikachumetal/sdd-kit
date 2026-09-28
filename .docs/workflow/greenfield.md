@@ -65,7 +65,7 @@ Antes de empezar, inicializa el repositorio Git y haz commits frecuentes, como e
 
 Cada feature sigue el mismo ciclo, guiado por las skills. Cuánto para el agente a esperarte lo decide el perfil de control del proyecto: `pair`, `delegate` (el de defecto) o `unattended`. Qué te pregunta en cada parada y qué contestar lo cuenta la [guía de uso](usage-guide.md#3-qué-te-pregunta-el-agente-y-qué-contestar).
 
-1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-consult`, un bug determinista al carril patch, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y un cambio con comportamiento a `sdd-start-feature`. La primera pregunta de `sdd-start-feature` confirma el carril, el modo (lite si el cambio es acotado) y el perfil.
+1. **Arranque**: pides lo que quieres en lenguaje natural y `using-sdd` elige la puerta. Una pregunta va a `sdd-consult`, un bug determinista o un ajuste solo de presentación al carril patch, lo que se apunta sin hacerlo todavía a `sdd-roadmap`, y un cambio con comportamiento a `sdd-start-feature`. La primera pregunta de `sdd-start-feature` confirma el carril, el modo (lite si el cambio es acotado) y el perfil.
 2. **Especificación**: sesión de brainstorming con Claude cuyo resultado es `spec.md`, qué hay que hacer y por qué, con el delta de comportamiento por capacidad. Empieza por las decisiones que el agente ha tomado sin ti, que es lo único que necesitas leer para aprobarla. Según la complejidad, propone una revisión adversarial de la spec y tú decides si la activas.
 3. **Plan** en `plan.md`: cómo se va a hacer, con la estimación de esfuerzo, el método de ejecución y las restricciones globales que viajarán en cada encargo. Solo en `pair` para a que lo apruebes; en `delegate` el agente comprueba que cada escenario de la spec tiene su task y sigue.
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos que conviene seguir por separado.
@@ -110,7 +110,7 @@ Las incidencias detectadas se corrigen antes de presentar al cliente, igual que 
 
 ### 2.3. Carril rápido: patch
 
-Para bugs pequeños y deterministas, de menos de media hora, no hace falta el ciclo completo. `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación. Mantiene la trazabilidad sin añadir burocracia.
+Para bugs pequeños y deterministas, de menos de media hora, no hace falta el ciclo completo. `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
 
 ```text
 /
@@ -176,7 +176,7 @@ Reducir el tiempo que va de una idea a una funcionalidad validada por el cliente
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.0.0, septiembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.1.0, septiembre de 2026.*
 
 ## Referencias
 

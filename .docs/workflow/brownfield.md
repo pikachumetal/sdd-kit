@@ -74,7 +74,7 @@ En brownfield el riesgo principal es la **regresión**: cambios plausibles y sin
 
 ### 2.3. Carril rápido: patch
 
-En un sistema en producción los bugs pequeños son frecuentes. Para los deterministas de menos de media hora, `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación: trazabilidad completa sin el ciclo entero.
+En un sistema en producción los bugs pequeños son frecuentes. Para los deterministas de menos de media hora, `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación: trazabilidad completa sin el ciclo entero. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos), con la intención en una frase y una captura como verificación.
 
 ### 2.4. Carril de consulta
 
@@ -110,7 +110,7 @@ Reducir el tiempo necesario para entregar cambios validados sobre un sistema exi
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.0.0, septiembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.1.0, septiembre de 2026.*
 
 ## Referencias
 

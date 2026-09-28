@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-29
+
+Primeros tickets de uso de la 2.0.0 en proyectos del equipo. [Release notes](releases/v2.1.0/release-notes.md).
+
 ### Added
 
 - **Feature 0095** — el vigía de silencio ya funciona: tras cada despacho y cada verificación lenta, el hilo lanza `Watch-SubagentSilence.ps1` en segundo plano, que lee `control.silence` de `sdd-kit.json` y avisa de un subagente o comando colgado con su diagnóstico, y la sección «Vigía de silencio» de `control-profiles.md` dice qué hacer (parar, relanzar una vez salvo permiso pendiente, avisar y registrar; un segundo cuelgue para o aparca). → [ref](specs/20260928-173846-feature-0095-silence-watch/)

@@ -11,7 +11,7 @@ Con el kit se trabaja con tres verbos, siempre en este orden:
 | Verbo | Skill | Qué haces | Qué queda escrito |
 | --- | --- | --- | --- |
 | **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `.docs/sdd/roadmap.md` con su id y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/specs/<fecha>-proposal-<id>-<nombre>/proposal.md` |
-| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: una feature si tiene comportamiento, un patch si es un fallo pequeño y reproducible | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
+| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: una feature si tiene comportamiento, un patch si es un fallo pequeño y reproducible o un ajuste solo de presentación | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
 | **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, las notas de la versión si hay destinatario, el roadmap colapsado y, cuando tú lo confirmas, el merge a `main` y el tag |
 
 Planificar no hace nada: deja el roadmap listo para que alguien arranque. Hacer arranca una fila y termina con ella fusionada. Entregar publica lo hecho.
@@ -62,6 +62,8 @@ Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las rese
 
 **Patch o feature.** Un patch es un fallo determinista, de menos de media hora y sin nada que interpretar: se sabe qué debería pasar y no pasa. En cuanto el arreglo exige decidir cómo debería comportarse algo, o toca varios módulos, es una feature, y el agente cambia de carril y te lo dice. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
 
+**Ajuste visual.** El patch también acepta un cambio pedido solo de presentación: toca plantillas o estilos y nada más, sin cambiar bindings, eventos, textos visibles, claves de i18n, TypeScript, API, datos ni capacidades. En lugar de la causa raíz, el `patch.md` lleva la intención en una frase, y la verificación es una captura que el agente te enseña al validar. Si el ajuste toca cualquiera de esas cosas, es una feature.
+
 **Algo grande no se hace de golpe.** Si pides varias cosas a la vez, o una que el agente partiría en varias features, te propondrá pasarla por el roadmap (sección 2) y arrancar después cada feature por separado.
 
 **Una sesión por tarea.** Cada feature o patch empieza en una conversación nueva, en su worktree: el agente vuelve a leer los documentos de anclaje, y el contexto limpio le sale más barato que arrastrar la tarea anterior.
@@ -74,7 +76,7 @@ Lo que pasa en una feature, en orden:
 4. **La validación**: te presenta lo hecho con un guion de pruebas y te pregunta qué has probado (sección 5).
 5. **El cierre**: walkthrough, changelog, roadmap y merge en `develop` (sección 5).
 
-Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación), sin spec ni plan, y su validación al cerrar.
+Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa), sin spec ni plan, y su validación al cerrar.
 
 ## 4. Qué te pregunta el agente y qué contestar
 
@@ -122,6 +124,8 @@ Una vez aprobada la spec, el agente vuelve a parar si algo cambiaría lo aprobad
 También para en cuatro casos que no cambian la spec, pero conviene que los decidas tú: el tercer arreglo que descubre fuera del plan, una decisión que cambia lo que ve el usuario y la spec no fija, que otra rama haya cambiado en la base la fila de tu feature en el roadmap, o que la base haya cambiado un fichero que va a tocar la task. Estos dos últimos salen mucho en paralelo (sección 7).
 
 Lo demás lo decide él sin pararte (otro orden, un fichero que no pensaba tocar, un arreglo pequeño) y te lo cuenta al final en «Me salí del plan en…».
+
+Mientras espera a un subagente o a un comando largo, el agente vigila que no se haya colgado. Si pasan los minutos de `control.silence` (en `sdd-kit.json`) sin señales, lo para, lo relanza una vez salvo que esté esperando un permiso, y te avisa con el diagnóstico. Un segundo cuelgue ya no se relanza: el agente para o aparca la task.
 
 ## 5. Validar y cerrar
 
@@ -227,4 +231,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.0.0, septiembre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.1.0, septiembre de 2026.*
