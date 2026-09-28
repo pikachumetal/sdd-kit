@@ -18,7 +18,7 @@ Salieron de la 2.0.0 en el corte del 2026-09-23. Se replanifican al preparar la 
 2. 0096 — el cierre fuera del camino crítico y el revisor final proporcional.
 3. 0097 — tests afectados y §Testing del proyecto.
 4. 0098 — el carril patch acepta ajustes visuales.
-5. Patch de la verificación visual del paso 6 de `sdd-start-feature` (filas de deuda «La verificación visual no reutiliza la sesión de la aplicación» y «La verificación visual del paso 6 fija el método máximo»); no comparte ficheros con la 0098.
+5. Patch de la verificación visual del paso 6 de `sdd-start-feature` (filas de deuda «La verificación visual no reutiliza la sesión de la aplicación» y «La verificación visual del paso 6 fija el método máximo»); comparte con la 0098 `skills/sdd-start-feature/SKILL.md` (la 0098 toca el paso 2; este patch, el paso 6), y van en serie.
 6. El resto de esta tabla, con la 0045 y la 0007 al final.
 
 | id | Feature | Origen | Ficheros que toca | Estado |

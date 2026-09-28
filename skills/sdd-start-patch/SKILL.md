@@ -1,6 +1,6 @@
 ---
 name: sdd-start-patch
-description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "hay un bug…, arréglalo", "métele un patch", un ticket de fallo puntual. No para features ni para bugs que exigen interpretar requisitos (eso es sdd-start-feature).
+description: Usar cuando llega un bug pequeño y determinista (<30 min, sin interpretación de requisitos) o un ajuste solo de presentación (mover, alinear o reestilar en plantillas o estilos, sin lógica, textos ni datos) en un proyecto con carpeta .docs/sdd/ — "arregla este bug", "hay un bug…, arréglalo", "métele un patch", un ticket de fallo puntual, "pon estos botones a la derecha, es solo maquetación". No para features, bugs que exigen interpretar requisitos ni cambios de un texto visible (eso es sdd-start-feature).
 argument-hint: "<id o descripción del bug>"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "<id o descripción del bug>"
 
 ## Overview
 
-Un **patch** es un fix pequeño y **determinista** (sin interpretación de requisitos), típicamente de menos de 30 minutos. NO pasa por spec → plan → tasks → walkthrough — sería overengineering. Deja constancia legible y portable en un único `patch.md`.
+Un **patch** es un fix pequeño y **determinista** (sin interpretación de requisitos), típicamente de menos de 30 minutos, o un **ajuste solo de presentación** del mismo tamaño, que se verifica con una captura en lugar de con la causa raíz. NO pasa por spec → plan → tasks → walkthrough — sería overengineering. Deja constancia legible y portable en un único `patch.md`.
 
 > El nombre del carril (**patch**) es independiente del tipo de rama git-flow: un patch puede salir como `feature/*` o `hotfix/*` según lo que fije el git-flow del proyecto. El carril describe el *proceso ligero*, no de dónde ramificas.
 
@@ -17,17 +17,23 @@ Un **patch** es un fix pequeño y **determinista** (sin interpretación de requi
 ```dot
 digraph decision {
     "¿Toca una feature cuyo walkthrough sigue abierto?" [shape=diamond];
+    "¿Solo presentación (predicado)?" [shape=diamond];
     "¿Determinista, <30 min, sin interpretar requisitos?" [shape=diamond];
+    "PATCH visual: este flujo, con la variante del paso 1" [shape=box];
     "Apéndice 'Post-release fixes' en el walkthrough de esa feature" [shape=box];
     "Es una FEATURE: usa sdd-start-feature" [shape=box];
     "PATCH: este flujo" [shape=box];
 
     "¿Toca una feature cuyo walkthrough sigue abierto?" -> "Apéndice 'Post-release fixes' en el walkthrough de esa feature" [label="sí"];
-    "¿Toca una feature cuyo walkthrough sigue abierto?" -> "¿Determinista, <30 min, sin interpretar requisitos?" [label="no"];
+    "¿Toca una feature cuyo walkthrough sigue abierto?" -> "¿Solo presentación (predicado)?" [label="no"];
+    "¿Solo presentación (predicado)?" -> "PATCH visual: este flujo, con la variante del paso 1" [label="sí"];
+    "¿Solo presentación (predicado)?" -> "¿Determinista, <30 min, sin interpretar requisitos?" [label="no"];
     "¿Determinista, <30 min, sin interpretar requisitos?" -> "PATCH: este flujo" [label="sí"];
     "¿Determinista, <30 min, sin interpretar requisitos?" -> "Es una FEATURE: usa sdd-start-feature" [label="no"];
 }
 ```
+
+**Predicado del ajuste solo de presentación**: el cambio solo toca plantillas o estilos (`.html`, `.component.html`, `.razor`, `.cshtml`…; CSS, SCSS, LESS); en las plantillas solo mueve, envuelve o cambia la clase de elementos, sin añadir, quitar ni cambiar bindings, directivas de control (`@if`, `*ngIf`, `v-if`, `@for`), manejadores de eventos, texto visible ni claves de i18n; y no toca TypeScript ni otro código, API, datos ni capacidades. Si falla una condición, es feature. «Solo toco la plantilla» no vale si la plantilla gana un `@if`: eso es lógica aunque no haya TypeScript. Tampoco es edición directa: sin carril, 4 de 4 sujetos movieron botones o cambiaron un texto sin abrir el navegador (`tests/visual-patch-red.md`, v1 y c2).
 
 Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la causa la determina tu investigación, no el reporte.
 

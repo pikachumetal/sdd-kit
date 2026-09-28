@@ -18,12 +18,12 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Las puertas admiten el ajuste solo de presentación | pending | — | |
+| 1 | Las puertas admiten el ajuste solo de presentación | done | — | GREEN 8/8 (v1, v2 2/2 al patch; c1, c2 2/2 a feature) |
 | 2 | El patch visual se recorre con la intención y la captura, y cierra en `Changed` | pending | — | |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester -Path tests/VisualPatch.Tests.ps1` + GREEN de v1, v2, c1 y c2 (verificación lenta)
+- [x] Task 1 — `Invoke-Pester -Path tests/VisualPatch.Tests.ps1` + GREEN de v1, v2, c1 y c2 (verificación lenta)
 - [ ] Task 2 — `Invoke-Pester -Path tests/VisualPatch.Tests.ps1` + GREEN de f1, f2 y k1 (verificación lenta)
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)

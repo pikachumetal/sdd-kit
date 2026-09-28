@@ -17,10 +17,10 @@ Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del pro
 | Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-consult` |
 | Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-start-feature` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente | `sdd-kit:sdd-roadmap` |
 | Una funcionalidad concreta o un cambio con comportamiento, aunque sea pequeño: «añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido» | `sdd-kit:sdd-start-feature`, antes que `brainstorming` |
-| Un fallo pequeño y reproducible | `sdd-kit:sdd-start-patch` |
+| Un fallo pequeño y reproducible, o un ajuste solo de presentación: solo plantillas o estilos, sin bindings, `@if`, eventos, texto visible, claves de i18n, TypeScript, API ni datos | `sdd-kit:sdd-start-patch` |
 | Cerrar la entrega de una versión, mandar las notas al cliente | `sdd-kit:sdd-end-release` |
 | Cómo quiere trabajar cada uno: «me paras mucho», «quiero menos preguntas», «déjamelo configurado para mí» | `sdd-kit:sdd-config`, nunca la memoria del agente: la memoria se queda en un PC y el kit no la lee |
-| Una edición sin comportamiento: un typo, un renombrado, un formato | directa, sin skill |
+| Una edición sin comportamiento: un typo, un renombrado, un formato del código. Mover lo que se ve es patch; cambiar un texto visible, feature | directa, sin skill |
 
 ## Regla de duda
 
@@ -30,4 +30,5 @@ Si la petición no dice qué es ni cuánto abarca («hay que mejorar las reserva
 | --- | --- |
 | «Quiere que se haga, así que es una feature» | Querer que se haga no dice el tamaño. Sin saber qué es, la puerta es una suposición: pregunta. |
 | «Lo guardo en memoria para próximas sesiones» | La preferencia es del kit: `sdd-config` la escribe en `sdd-kit.local.json`, que leen todas las skills. |
+| «Solo toco la plantilla: edición directa» | Lo que se ve se valida en una captura: patch. Con un `@if` o un texto nuevo, feature. |
 | «Me los han asignado: los hago uno detrás de otro» | Sin fila en el roadmap no hay enunciado ni id. `sdd-roadmap` los apunta y después arrancan. |
