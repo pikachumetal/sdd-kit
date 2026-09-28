@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | El script del vigía | pending | — | |
+| 1 | El script del vigía | done | (en el commit del hito siguiente) | 10 tests nuevos; smoke `TERMINADO` sobre un transcript real |
 | 2 | La guía del vigía, con su campaña | pending | — | |
 
 Plan sin gate (`delegate`): cada escenario de la spec tiene su task (plan §4).
@@ -27,7 +27,7 @@ Ruling: la previsión de la campaña pasa de 22 a 23 sujetos, con uno de control
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester tests/Watch-SubagentSilence.Tests.ps1, tests/Measure-SessionTokens.Tests.ps1`
+- [x] Task 1 — `Invoke-Pester tests/Watch-SubagentSilence.Tests.ps1, tests/Measure-SessionTokens.Tests.ps1`
 - [ ] Task 2 — `Invoke-Pester tests/ControlProfiles.Tests.ps1, tests/WorkflowDocs.Tests.ps1` + GREEN de la campaña
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
