@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Fixed
+
+- **Paquete del revisor final legible** — la receta de `encargo-revision.md` deja fuera del diff el cuerpo de los ficheros borrados, que salen por nombre en «Ficheros borrados», y la carpeta de la spec de la feature, que el revisor ya recibe en los requisitos; «Cómo revisar» pide leerlo en tramos de 400 líneas con `offset` y `limit`. En LegalRep el paquete pesó 235.524 bytes y el primer `Read` falló por pasar de 25.000 tokens. → [ref](specs/20260928-154618-patch-0094-review-package-slim/)
+
 ## [2.0.0] - 2026-09-27
 
 Abierta como 1.2.0 el 2026-09-20 y publicada como 2.0.0 por el corte del 2026-09-23. [Release notes](releases/v2.0.0/release-notes.md).

@@ -343,6 +343,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND la sección de commits lista solo los de la feature y el merge
 - AND el paquete se genera a la primera, con `spec.md` como `PLAN_FILE`
 
+### El paquete del revisor final deja fuera los borrados y la carpeta de la feature
+- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/specs/`
+- WHEN el hilo prepara el paquete del revisor final
+- THEN el paquete no contiene el cuerpo de los ficheros borrados ni ningún fichero de la carpeta de la feature
+- AND lista los borrados por nombre en su sección «Ficheros borrados»
+- AND el revisor lo lee en tramos de 400 líneas con `offset` y `limit`, y ningún `Read` devuelve `exceeds maximum allowed tokens (25000)`
+
 ### El plan escribe al revisor final con el techo del kit
 - GIVEN una spec aprobada en `delegate` y un plan Native de una sola task pequeña
 - WHEN el agente escribe `plan.md`

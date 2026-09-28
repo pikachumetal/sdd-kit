@@ -6,14 +6,14 @@ type: patch
 status: done
 created: 2026-09-28
 branch: patch/0094-review-package-slim
-commit: <hash>
+commit: fb996a5
 ---
 
 # Patch 0094 — el paquete del revisor final sin los ficheros borrados ni la carpeta de la feature
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — el paquete del revisor final deja fuera el cuerpo de los borrados y la carpeta de la feature, y el revisor lo lee en tramos de 400 líneas
+- Modificadas: `feature-flow` — añade «El paquete del revisor final deja fuera los borrados y la carpeta de la feature»
 
 ## 1. Síntoma
 
@@ -39,12 +39,16 @@ La receta hace `git diff -U10 "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"` con `EXCL
 | 3 | Revisor Sonnet sobre ese paquete: ningún `Read` con el error de 25.000 tokens | ✅ 0 errores, lee con `limit: 400` y cubre el paquete entero ([GREEN](../../../../tests/review-package-slim-green.md)) |
 | 4 | Suite rápida del kit | ✅ 986/986 en 4 min 55 s |
 
+Validado: 2026-09-28 · «he visto el state, y ok, el resto diferido al uso de la v2.0.1» · el dev-lead validó el `state.txt` del GREEN (caso 2)
+
+Validación diferida: 2026-09-28 · «he visto el state, y ok, el resto diferido al uso de la v2.0.1» · disparador: la primera revisión final de rama con el kit v2.0.1, a cargo del dev-lead (casos 3 y la lectura en tramos)
+
 Decisión tomada sin el dev-lead: la guía de los tramos de 400 líneas se escribe aunque el RED no reprodujo el error (0 de 1), por el fallo de campo y porque la pedía el enunciado. Medirla con un revisor Opus, el de campo, pasaba del techo de la campaña (2 sujetos, 2,5 $).
 
 ## 5. Tiempo (ligero)
 
-- Estimación: 30 min
-- Real: ~1 h 10 min (molde y campaña de 2 sujetos incluidos; un primer sujeto se repitió porque el workspace quedaba fuera del molde)
+- Estimación: 0.5h
+- Real: 1.3h (molde y campaña de 2 sujetos incluidos; un primer sujeto se repitió porque el workspace quedaba fuera del molde)
 
 ## 6. Delta de capacidad
 
