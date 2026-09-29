@@ -108,12 +108,18 @@ Describe 'Measure-SessionTokens.ps1' -Tag 'Slow' {
           Copy-Item -Path (Join-Path $script:Fixtures "$($Configs[$config])/*") -Destination $folder -Recurse
         }
         $saved = @{ USERPROFILE = $env:USERPROFILE; CLAUDE_CONFIG_DIR = $env:CLAUDE_CONFIG_DIR }
+        $previousEncoding = [Console]::OutputEncoding
         try {
           $env:USERPROFILE = $userHome
           $env:CLAUDE_CONFIG_DIR = if ($ConfigDir) { Join-Path $userHome $ConfigDir } else { $null }
+          # El hijo escribe UTF-8; desde Git Bash la consola del padre no lo es y «—» llega roto.
+          [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
           return (pwsh -NoProfile -File $script:Script -Path $worktree) -join "`n"
         }
-        finally { foreach ($key in $saved.Keys) { [Environment]::SetEnvironmentVariable($key, $saved[$key]) } }
+        finally {
+          [Console]::OutputEncoding = $previousEncoding
+          foreach ($key in $saved.Keys) { [Environment]::SetEnvironmentVariable($key, $saved[$key]) }
+        }
       }
     }
 
