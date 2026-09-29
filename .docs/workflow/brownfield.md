@@ -36,7 +36,7 @@ Reglas que protegen el sistema en producción y que la constitution del proyecto
 
 ### 1.3. Kit de skills
 
-- **Skills de proceso**: desde el día cero, como en greenfield. `sdd-init-brownfield` es además la vía de actualización: cuando el kit publica una versión nueva, lee la que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json` y aplica en orden las migraciones posteriores, preguntando antes de borrar o renombrar nada.
+- **Skills de proceso**: desde el día cero, como en greenfield. `sdd-init-brownfield` es además la vía de actualización: cuando el kit publica una versión nueva, lee la que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json` y aplica en orden las migraciones posteriores, preguntando antes de borrar o renombrar nada. Cada versión del kit trae su migración, aunque no cambie nada del proyecto, y el arranque de la sesión avisa cuando hay alguna pendiente.
 - **Skills técnicas**: en brownfield conviene crearlas pronto, porque capturan el conocimiento tribal del proyecto, como se compila, qué patrón siguen backend y frontend o cómo se hacen las migraciones. Cada skill escrita es conocimiento que deja de depender de la memoria de una persona.
 
 ### 1.4. No hace falta parar el desarrollo
@@ -110,7 +110,7 @@ Reducir el tiempo necesario para entregar cambios validados sobre un sistema exi
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.1.0, septiembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.2.0, septiembre de 2026.*
 
 ## Referencias
 

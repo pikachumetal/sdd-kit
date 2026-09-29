@@ -130,7 +130,7 @@ El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus relea
 
 ## Estado
 
-La 2.1.0 está publicada ([notas de la versión](.docs/sdd/releases/v2.1.0/release-notes.md)): los retoques visuales entran como patch, el asistente vigila a los agentes que se cuelgan y la revisión final ya no se atasca en ramas grandes. Sale de los primeros tickets de la [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md), que trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
+La 2.2.0 está publicada ([notas de la versión](.docs/sdd/releases/v2.2.0/release-notes.md)): el cierre ya no espera a la revisión final, el frontend se verifica con método, varias sesiones pueden cerrar a la vez y el arranque avisa de un kit viejo o de una migración pendiente. Antes, la [2.1.0](.docs/sdd/releases/v2.1.0/release-notes.md) trajo los retoques visuales por el carril patch y el vigía de agentes colgados, y salió de los primeros tickets de la [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md), que trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
 
 Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastante.
 
