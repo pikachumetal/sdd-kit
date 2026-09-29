@@ -1,0 +1,134 @@
+## HEAD antes: 45bdaaf · después: 45bdaaf
+## status
+ M backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+## git log
+45bdaaf  (HEAD -> feature/0012) docs(0012): abrir la feature 0012
+4d0d4fd  docs(sdd): spec de la feature 0012
+742cd07  (main, develop) feat: lista de reservas con paginación
+## diff sin commitear
+diff --git a/backend/tests/Bookings.Tests/BookingsEndpointsTests.cs b/backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+index 528fe9e..934b860 100644
+--- a/backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
++++ b/backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+@@ -1,19 +1,102 @@
+-using System.Net.Http.Json;
+-using Bookings.Api.Data;
+-
+-namespace Bookings.Tests;
+-
+-public class BookingsEndpointsTests(SqlServerApiFactory factory) : IClassFixture<SqlServerApiFactory>
+-{
+-    [Fact]
+-    public async Task Lists_bookings_ordered_by_start()
+-    {
+-        await factory.SeedAsync(
+-            new Booking { Room = "Sala 2", Start = new(2026, 9, 1, 10, 0, 0), End = new(2026, 9, 1, 11, 0, 0) },
+-            new Booking { Room = "Sala 1", Start = new(2026, 9, 1, 9, 0, 0), End = new(2026, 9, 1, 10, 0, 0) });
+-
+-        var bookings = await factory.CreateClient().GetFromJsonAsync<List<Booking>>("/bookings");
+-
+-        Assert.Equal("Sala 1", bookings![0].Room);
+-    }
+-}
++using System.Net;
++using System.Net.Http.Json;
++using System.Text.Json;
++using System.Text.Json.Serialization;
++using Bookings.Api.Data;
++using Microsoft.EntityFrameworkCore;
++using Microsoft.Extensions.DependencyInjection;
++
++namespace Bookings.Tests;
++
++public class BookingsEndpointsTests(SqlServerApiFactory factory) : IClassFixture<SqlServerApiFactory>
++{
++    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
++    {
++        Converters = { new JsonStringEnumConverter() }
++    };
++
++    [Fact]
++    public async Task Lists_bookings_ordered_by_start()
++    {
++        await ResetAsync();
++        await factory.SeedAsync(
++            new Booking { Room = "Sala 2", Start = new(2026, 9, 1, 10, 0, 0), End = new(2026, 9, 1, 11, 0, 0) },
++            new Booking { Room = "Sala 1", Start = new(2026, 9, 1, 9, 0, 0), End = new(2026, 9, 1, 10, 0, 0) });
++
++        var bookings = await GetBookingsAsync("/bookings");
++
++        Assert.Equal("Sala 1", bookings[0].Room);
++    }
++
++    [Fact]
++    public async Task Filters_by_status_and_applies_pagination_after_filtering()
++    {
++        await ResetAsync();
++        var cancelled = Enumerable.Range(0, 25).Select(i => NewBooking($"C{i:00}", BookingStatus.Cancelled, i));
++        var others = new[]
++        {
++            NewBooking("Confirmada", BookingStatus.Confirmed, 100),
++            NewBooking("Pendiente", BookingStatus.Pending, 101),
++        };
++        await factory.SeedAsync(cancelled.Concat(others).ToArray());
++
++        var page2 = await GetBookingsAsync("/bookings?status=Cancelled&page=2");
++
++        Assert.Equal(["C20", "C21", "C22", "C23", "C24"], page2.Select(b => b.Room));
++        Assert.All(page2, b => Assert.Equal(BookingStatus.Cancelled, b.Status));
++    }
++
++    [Fact]
++    public async Task Returns_all_bookings_when_status_is_omitted()
++    {
++        await ResetAsync();
++        await factory.SeedAsync(
++            NewBooking("Confirmada", BookingStatus.Confirmed, 0),
++            NewBooking("Pendiente", BookingStatus.Pending, 1),
++            NewBooking("Cancelada", BookingStatus.Cancelled, 2));
++
++        var bookings = await GetBookingsAsync("/bookings");
++
++        Assert.Equal(["Confirmada", "Pendiente", "Cancelada"], bookings.Select(b => b.Room));
++    }
++
++    [Fact]
++    public async Task Rejects_unknown_status_with_400()
++    {
++        var response = await factory.CreateClient().GetAsync("/bookings?status=Foo");
++
++        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
++    }
++
++    [Fact]
++    public async Task Column_default_sets_confirmed_for_rows_inserted_without_status()
++    {
++        await ResetAsync();
++        using var scope = factory.Services.CreateScope();
++        var db = scope.ServiceProvider.GetRequiredService<BookingsDb>();
++
++        await db.Database.ExecuteSqlRawAsync(
++            "INSERT INTO Bookings (Room, Start, [End], Owner) VALUES ('Sala 9', '2026-09-01T09:00:00', '2026-09-01T10:00:00', 'ana')");
++
++        var booking = await db.Bookings.AsNoTracking().SingleAsync();
++        Assert.Equal(BookingStatus.Confirmed, booking.Status);
++    }
++
++    private async Task ResetAsync()
++    {
++        using var scope = factory.Services.CreateScope();
++        var db = scope.ServiceProvider.GetRequiredService<BookingsDb>();
++        await db.Bookings.ExecuteDeleteAsync();
++    }
++
++    private async Task<List<Booking>> GetBookingsAsync(string url) =>
++        (await factory.CreateClient().GetFromJsonAsync<List<Booking>>(url, Json))!;
++
++    private static Booking NewBooking(string room, BookingStatus status, int hoursFromStart) => new()
++    {
++        Room = room,
++        Status = status,
++        Start = new DateTime(2026, 9, 1, 0, 0, 0).AddHours(hoursFromStart),
++        End = new DateTime(2026, 9, 1, 0, 0, 0).AddHours(hoursFromStart + 1),
++    };
++}

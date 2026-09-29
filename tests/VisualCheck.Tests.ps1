@@ -18,12 +18,12 @@ Describe 'Verificación visual' {
   }
 
   It 'el paso 6 conserva las capturas hasta la validación' {
-    Assert-Literal (Get-Step 6) @('guárdala fuera de git hasta la validación', 'sin borrarla al limpiar')
+    Assert-Literal (Get-Step 6) @('Guarda las capturas fuera de git hasta la validación', 'sin borrarlas al limpiar')
   }
 
   It 'la parada de pair y la validación enseñan medidas y capturas antes del guion' {
-    Assert-Literal (Get-Step 6) @('antes del guion enseña cada medida con su valor y el esperado y la ruta de cada captura')
-    Assert-Literal (Get-Step 7) @('antes del guion van sus medidas', 'la ruta de cada captura', '«no probado» con su motivo')
+    Assert-Literal (Get-Step 6) @('antes del guion enseña el criterio, la salida del detector por viewport', 'cada medida con su valor y el esperado si el criterio fija un valor, y la ruta de cada captura')
+    Assert-Literal (Get-Step 7) @('antes del guion van su criterio, la salida del detector por viewport', 'sus medidas solo si el criterio fija un valor', 'la ruta de cada captura', '«no probado» con su motivo')
   }
 
   It 'la tabla de racionalizaciones responde al «no tengo el MCP»' {

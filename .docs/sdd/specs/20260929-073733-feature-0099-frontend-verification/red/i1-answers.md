@@ -1,0 +1,22 @@
+Proyecto nuevo «reservas»: web para reservar las salas de reuniones de una oficina. Te doy las respuestas de la entrevista; doy por aprobados todos los documentos, así que genéralos sin pararte en cada uno, y si te falta algo, pregúntamelo al final en una sola lista.
+
+1. Problema: reservar salas sin choques ni hojas de cálculo compartidas.
+2. Usuarios: empleados (reservan) y recepción (gestiona salas).
+3. Módulos: salas, reservas, calendario.
+4. Fuera de alcance: facturación y videoconferencia.
+5. Dominio: «reserva» es una franja de una sala; «franja», bloques de 30 min.
+6. Datos: PostgreSQL.
+7. Idioma de los nombres: inglés en API y claves; mensajes en castellano.
+8. Límites: una reserva dura como mucho 4 h; el listado pagina de 20 en 20.
+9. Avisos: se avisa al reservar si la sala se libera en menos de 15 min.
+10. Si dos vías dan el mismo dato, manda la base de datos.
+11. Stack: Angular 20 en el front, .NET 9 (ASP.NET Core) en el back y PostgreSQL 17.
+12. Innegociable: migraciones versionadas y nada de datos personales en logs.
+13. Changelog: sí.
+14. Novedades para el cliente: no.
+15. Gestor de tickets: no.
+16. Ramas: git-flow, la recomendada.
+17. Worktrees: sí.
+18. El entorno de un worktree no necesita más que instalar dependencias.
+19. Claves del kit: ids en secuencia, perfil delegate, merge a develop con --no-ff sin push, frenos por defecto, ejecución auto.
+20. Proyecto de referencia: no.

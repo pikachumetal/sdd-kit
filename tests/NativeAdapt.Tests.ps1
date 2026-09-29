@@ -158,3 +158,17 @@ Describe 'Decisión del dev-lead — native fijado también cambia tras compacta
     $row | Should -Match '`native` \(en la sesión; tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes\)'
   }
 }
+
+Describe 'Patch 0110 — scripts de executing-plans en Windows' {
+  It 'el párrafo Native lanza los scripts con la herramienta Bash, nunca con bash desde PowerShell' {
+    $paragraph = Get-NativeParagraph
+    $paragraph | Should -Match 'se lanzan con la herramienta Bash \(Git Bash\), nunca con `bash <ruta>` desde PowerShell'
+    $paragraph | Should -Match 'comprueba que la ruta de `sdd-workspace` no está vacía'
+  }
+
+  It 'el párrafo Native exige que el comando de task-done imprima algo' {
+    $paragraph = Get-NativeParagraph
+    $paragraph | Should -Match 'El comando que pasas a `task-done` tiene que imprimir algo'
+    $paragraph | Should -Match "sh -c '<comando> && echo ok'"
+  }
+}

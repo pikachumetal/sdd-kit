@@ -7,7 +7,8 @@
   capacidad», que «Propósito» sea la primera y diga en 300 caracteres como máximo qué cubre la capacidad, que cada
   requisito tenga líneas - GIVEN, - WHEN y - THEN, que no queden marcas de delta y que la sección de reglas tenga sus
   cinco entradas por nombre. Con -Artifact, que se ejecuta después de fusionar el delta, comprueba además que el
-  bloque «## Capacidades» del artefacto nombra las mismas capacidades que su delta. Escribe una línea por fallo y
+  bloque «## Capacidades» del artefacto nombra las mismas capacidades que su delta, y que cada ADDED o MODIFIED
+  del delta está en su capacidad con las mismas líneas de escenario. Escribe una línea por fallo y
   sale con 1; sin fallos, «Capacidades válidas: <n>» y sale con 0.
 .EXAMPLE
   pwsh -NoProfile -File Test-Capabilities.ps1 -Path .docs/sdd -Artifact .docs/sdd/specs/<carpeta>/spec.md
@@ -137,6 +138,48 @@ function Test-BlockAgainstDelta([object[]]$Declared, [string[]]$DeltaNames, [str
   }
 }
 
+function Get-ScenarioLines([string[]]$Lines) {
+  @($Lines | ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^- (GIVEN|WHEN|THEN|AND)\b' })
+}
+
+function Get-DeltaRequirements([string[]]$Lines) {
+  $capability = $null
+  $current = $null
+  for ($i = 0; $i -lt $Lines.Count; $i++) {
+    $line = $Lines[$i]
+    if ($line -match '^#{1,3} ') {
+      if ($current) { $current; $current = $null }
+      $capability = if ($line -match '^### Capacidad: `([^`]+)`') { $Matches[1] } else { $null }
+      continue
+    }
+    if ($capability -and $line -match '^\*\*(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b') {
+      if ($current) { $current; $current = $null }
+      if ($Matches[1] -notin 'ADDED', 'MODIFIED') { continue }
+      # El encabezado puede partirse en varias líneas: se une hasta cerrar la negrita.
+      $header = $line
+      while ($header -notmatch '^\*\*[^*]+\*\*' -and $i + 1 -lt $Lines.Count) { $header += ' ' + $Lines[++$i].Trim() }
+      $title = ([regex]::Match($header, '^\*\*\w+ —\s*([^*]+?)\s*\*\*').Groups[1].Value) -replace '\s+', ' '
+      $current = [pscustomobject]@{ Capability = $capability; Title = $title; Lines = [System.Collections.Generic.List[string]]::new() }
+      continue
+    }
+    if ($current) { $current.Lines.Add($line) }
+  }
+  if ($current) { $current }
+}
+
+function Test-DeltaApplied([string[]]$Lines, [string]$CapabilitiesDir) {
+  foreach ($delta in Get-DeltaRequirements $Lines) {
+    $file = Join-Path $CapabilitiesDir "$($delta.Capability).md"
+    if (-not (Test-Path $file)) { continue }
+    $target = "capabilities/$($delta.Capability).md"
+    $requirement = Get-Requirements (Get-Content -Encoding utf8 -Path $file) | Where-Object Title -eq $delta.Title | Select-Object -First 1
+    if (-not $requirement) { "«$($delta.Title)» del delta no está en $target"; continue }
+    if (((Get-ScenarioLines $delta.Lines) -join "`n") -ne ((Get-ScenarioLines $requirement.Lines) -join "`n")) {
+      "«$($delta.Title)» del delta no coincide con $target"
+    }
+  }
+}
+
 function Test-IsPatch([System.IO.FileInfo]$File, [string[]]$Lines) {
   return $File.Name -eq 'patch.md' -or [bool]($Lines | Where-Object { $_ -match '^type:\s*patch\s*$' })
 }
@@ -151,6 +194,7 @@ function Test-ArtifactBlock([System.IO.FileInfo]$File, [string]$CapabilitiesDir)
     Test-EmptyBlock $block $declared
     Test-NoneLine $block $deltaNames
     Test-BlockAgainstDelta $declared $deltaNames $CapabilitiesDir
+    Test-DeltaApplied $lines $CapabilitiesDir
     if ((Test-IsPatch $File $lines) -and ($declared | Where-Object Kind -eq 'Nuevas')) { 'un patch no crea capacidades: quita «Nuevas»' }
   )
   $problems | ForEach-Object { "$($File.Name): $_" }

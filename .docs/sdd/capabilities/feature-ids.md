@@ -49,6 +49,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 - WHEN se invoca `Get-NextSddId.ps1`, con `-Reserve` o sin él
 - THEN escribe el id duplicado y las rutas implicadas por salida de error, y no devuelve ningún id por salida estándar
 - AND el contador no cambia
+- AND las carpetas con sufijo alfabético heredadas (`…-task-0006a-…`, `…-task-0006b-…`) no cuentan como duplicado: el script las nombra en un aviso por salida de error, cuenta su número como ocupado y devuelve el siguiente id libre
 
 ### El script avisa si el proyecto no está en modo secuencia
 - GIVEN un proyecto en modo `tracker` (declarado o por ausencia del campo `ids`)

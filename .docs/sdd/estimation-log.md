@@ -114,29 +114,44 @@
 | 2026-09-28 | 0094 | patch | 0.5 | 1.3 | 2.6 | — | — | — | — | 20260928-154618-patch-0094-review-package-slim |
 | 2026-09-28 | 0095 | infra/tooling | 4.5 | 2.2 | 0.49 | 38395k | 1869k | 13.93 | 14.46 | 20260928-173846-feature-0095-silence-watch |
 | 2026-09-29 | 0098 | docs | 3.5 | 1.5 | 0.43 | 42244k | 1959k | 8.33 | 15.72 | 20260928-210002-feature-0098-visual-patch-lane |
+| 2026-09-29 | 0100 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-073507-patch-0100-kit-version-warning |
+| 2026-09-29 | 0099 | docs | 5 | 1.3 | 0.26 | 52856k | 2970k | 11.71 | sin precio | 20260929-073733-feature-0099-frontend-verification |
+| 2026-09-29 | 0104 | patch | — | 0.3 | — | — | — | — | — | 20260929-113400-patch-0104-next-id-legacy-suffix |
+| 2026-09-29 | 0101 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-113414-patch-0101-headless-harness-guards |
+| 2026-09-29 | 0102 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-113507-patch-0102-subject-git-user-clean |
+| 2026-09-29 | 0103 | patch | — | 0.4 | — | — | — | — | — | 20260929-113512-patch-0103-silence-watch-once-message |
+| 2026-09-29 | 0105 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-113747-patch-0105-capabilities-delta-applied |
+| 2026-09-29 | 0106 | patch | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260929-113747-patch-0106-session-tokens-tests-isolation |
+| 2026-09-29 | 0107 | patch | — | 0.4 | — | — | — | — | — | 20260929-131000-patch-0107-merge-registry-union |
+| 2026-09-29 | 0096 | docs | 4 | 1.7 | 0.43 | 43882k | 3419k | 9.39 | 16.83 | 20260929-133151-feature-0096-closing-off-critical-path |
+| 2026-09-29 | 0109 | infra/tooling | 1.25 | 0.6 | 0.48 | 24045k | 945k | 0.52 | 9.25 | 20260929-160116-feature-0109-pending-migration-notice |
+| 2026-09-29 | 0110 | patch | — | 1.1 | — | — | — | — | — | 20260929-165746-patch-0110-native-scripts-windows |
+| 2026-09-29 | 0112 | patch | — | 0.8 | — | — | — | — | — | 20260929-170203-patch-0112-merge-push-no-remote |
+| 2026-09-29 | 0114 | patch | — | 1.5 | — | — | — | — | — | 20260929-170710-patch-0114-walkthrough-literal-cspell |
+| 2026-09-29 | 0113 | docs | 4 | 1.3 | 0.33 | 37885k | 4275k | 12.03 | 15.4 | 20260929-170930-feature-0113-plan-review-focus |
 
-**Factor de calibración** (ratio mediano real/estimado, 97 artefactos): **0.6** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 106 artefactos): **0.6** · media 0.74
 
-- p25–p75: 0.43–0.95
-- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 61 % · infraestimadas: 10 %
-- Error absoluto (h): media 0.91 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.7
+- p25–p75: 0.43–1
+- p80: 1.08 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 30 % · sobreestimadas: 60 % · infraestimadas: 9 %
+- Error absoluto (h): media 0.93 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.54
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 31 | 32 % |
-| 0.5–0.8 | 30 | 31 % |
-| 0.8–1.25 | 26 | 27 % |
+| <0.5 | 35 | 33 % |
+| 0.5–0.8 | 31 | 29 % |
+| 0.8–1.25 | 30 | 28 % |
 | 1.25–2 | 8 | 8 % |
 | ≥2 | 2 | 2 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 60 | 0.53 | 0.38–0.76 |
-| infra/tooling | 14 | 0.42 | 0.36–0.58 |
-| patch | 22 | 1.2 | 0.8–1.4 |
+| docs | 63 | 0.52 | 0.37–0.74 |
+| infra/tooling | 15 | 0.43 | 0.37–0.57 |
+| patch | 27 | 1.2 | 0.8–1.37 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
 | --- | --- | --- | --- | --- | --- |
@@ -147,6 +162,6 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| sin publicar | 3 | 5 | 0.49 | 22.26 | 30.18 |
+| 2.1.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
 
 > Ver `estimation.md`.

@@ -186,3 +186,10 @@ Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
     $script:V2 | Should -Match ([regex]::Escape("Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task'"))
   }
 }
+
+Describe 'Cada versión del kit tiene su migración' {
+  It 'la versión de plugin.json tiene su fichero en migrations/' {
+    $version = (Get-KitFile '.claude-plugin/plugin.json' | ConvertFrom-Json).version
+    Join-Path $script:MigrationsDir "v$version.md" | Should -Exist
+  }
+}

@@ -26,7 +26,7 @@ Planificar. `sdd-roadmap` reconoce qué le traes: algo grande (te entrevista y l
 > añade autenticación con magic link
 ```
 
-Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Al final te pregunta qué has probado, y `sdd-end-feature` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
+Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Cuando termina la última task lanza la revisión final en segundo plano y, mientras tanto, verifica lo que se ve y prepara el cierre. Después te pregunta qué has probado, y `sdd-end-feature` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
 
 ```
 > el contador de la home muestra un número de más
@@ -130,13 +130,17 @@ El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus relea
 
 ## Estado
 
-La 2.1.0 está publicada ([notas de la versión](.docs/sdd/releases/v2.1.0/release-notes.md)): los retoques visuales entran como patch, el asistente vigila a los agentes que se cuelgan y la revisión final ya no se atasca en ramas grandes. Sale de los primeros tickets de la [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md), que trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
+La versión publicada es la 2.2.0 ([notas](.docs/sdd/releases/v2.2.0/release-notes.md)). El cierre ya no espera a la revisión final, el frontend se verifica con un detector y una rúbrica, varias sesiones pueden cerrar a la vez y el arranque avisa de un kit viejo o de una migración pendiente.
+
+La [2.1.0](.docs/sdd/releases/v2.1.0/release-notes.md) trajo los retoques visuales por el carril patch y el vigía de agentes colgados. La [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md) trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature.
+
+Cada cambio se prueba con agentes de prueba y en este repositorio, pero la validación de verdad es el uso en proyectos del equipo. Lo que falle allí llega como ticket de `sdd-feedback` y entra en la versión siguiente.
 
 Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastante.
 
 ## Actualizar un proyecto que ya lo usa
 
-Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes.
+Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes. Si el proyecto va por detrás de las migraciones del kit instalado, la sesión te avisa al arrancar con las dos versiones. Cada release del kit trae su migración, aunque no cambie nada del proyecto: entonces solo avanza el marcador.
 
 ## Desarrollo
 
@@ -150,7 +154,7 @@ El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Los tests validan la anatomía de las skills, los manifests y los scripts del kit. Necesitas Pester 5 o superior y `pwsh` 7+, y lánzalos desde PowerShell: desde Git Bash, tres tests fallan por la página de códigos de la consola.
+Los tests validan la anatomía de las skills, los manifests y los scripts del kit. Necesitas Pester 5 o superior y `pwsh` 7+.
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
@@ -170,10 +174,14 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 | --- | --- | --- |
 | [`superpowers`](https://github.com/obra/superpowers) | Sí | Antes que el kit (ver [Instalación](#instalación)). Desde la terminal: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
 | `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
+| [impeccable](https://www.npmjs.com/package/impeccable) | No, recomendada si el proyecto tiene interfaz | Sin instalar: `npx impeccable@<versión> detect <url> --viewport 390x844`. Necesita Chrome, Chromium o Edge |
+| [Playwright](https://playwright.dev) | No, recomendada si el proyecto tiene interfaz | El MCP de Playwright o el paquete `playwright` en el proyecto |
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
 El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-09-27; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+
+impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 
 `grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
 

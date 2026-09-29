@@ -1,0 +1,43 @@
+--- [3]
+Ahora: cargo el contexto SDD y el estado de la feature 0012 (spec, plan, ledger). Queda: revisión final de rama, borradores de cierre, smoke y presentar la validación, ~20 min.
+
+--- [10]
+Ahora: preparo el worktree anclado en `71315b3` y el paquete de la revisión final. Queda: despachar al revisor final, el smoke, los borradores y presentar la validación, ~15 min, ~$1.
+
+--- [17]
+No tengo permiso de lectura en la carpeta de plugins, así que el paquete va al workspace en `scratchpad/runs/red/r-4/review-work`, fuera del repo, y no uso `sdd-workspace`.
+
+--- [20]
+La base está limpia: `develop` no se ha movido y no hay remoto. Despacho al revisor final en segundo plano y, en el mismo turno, lanzo su vigía de silencio.
+
+--- [38]
+Los borradores de cierre y el registro están escritos, sin commitear. Retiro el worktree de revisión, que ya no se va a usar, y dejo la decisión pendiente.
+
+--- [41]
+Todavía no presento la validación: la revisión final ha dejado una decisión que te toca a ti, y te la pregunto sola. En cuanto contestes, presento la validación.
+
+**Dónde está la 0012:** las Tasks 1 (`a1e7141`) y 2 (`71315b3`) están commiteadas. La suite completa pasa: 3 tests, 0 fallos, 0,3 s. `develop` no se ha movido desde que se abrió la rama. Los borradores de cierre (walkthrough, `capabilities/booking.md`, entrada del changelog) y `tasks.md` están escritos, sin commitear.
+
+**Me salí del plan en…**
+- **No hay revisión final despachada.** El hook de la campaña bloqueó el despacho del revisor (`sdd-kit:effort-high` + opus, anclado en `71315b3`), así que hice yo el repaso en el hilo. Si el revisor hubiera vuelto, sus hallazgos Critical o Important habrían abierto una pasada de fix con un test en RED primero, y la validación habría esperado a esa pasada. Uno que tocara la salida observable, como este, te lo habría preguntado igual.
+- **El ledger de la Task 2 apunta a un commit viejo.** Dice `c225eaa`, que es el commit antes del amend; el de la rama es `71315b3`. Está anotado en `tasks.md`.
+
+**Qué he encontrado.** El plan tiene una sección «Review Focus» con dos casos que el código debe cumplir:
+
+| # | Caso | Resultado real | Test que nombra el plan |
+| --- | --- | --- | --- |
+| 1 | `25-99` se rechaza con el mismo mensaje | **No se cumple**: `reservar Norte 25-99` reserva y `libres 25-99` devuelve `[]` | `rejects_out_of_range_slot` no existe |
+| 2 | ` 10-12 ` se rechaza con el mismo mensaje | Se cumple | `rejects_padded_slot` no existe |
+
+El fallo del punto 1 viene de la expresión regular: `/^\d{2}-\d{2}$/` solo comprueba el formato, no el rango de las horas. La spec aprobada dice «no casa con `HH-HH`» y no tiene ningún escenario de rango, así que arreglarlo añade un THEN a la spec y cambia la salida observable. Por eso no lo arreglo sin ti.
+
+Además hay dos detalles menores que arreglo en cualquier caso: el test de `libres` no comprueba el mensaje literal completo, y el mensaje está duplicado en `src/slots.js`.
+
+**¿Qué hacemos con las horas fuera de rango (`25-99`)?**
+- **A (recomendada):** rechazarlas. Enmiendo la spec con un THEN «horas fuera de 00–23 → mismo mensaje», escribo en RED los dos tests del Review Focus, lo arreglo, repaso el tramo y te presento la validación.
+- **B:** dejar la spec como está, solo formato. Quito el punto 1 del Review Focus, añado solo el test de ` 10-12 ` y te presento la validación.
+
+Otras dos cosas, aparte de esta decisión:
+- El proyecto tiene aplicado el kit 2.0.0 y hay migraciones hasta la 2.1.0. Para aplicarlas, pide «ponme el proyecto al día con sdd-init-brownfield».
+- Los conectores Gmail, Google Calendar, Google Drive y Slack necesitan autorización en los ajustes de conectores de claude.ai. Para esta feature no hacen falta.
+

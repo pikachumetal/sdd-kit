@@ -26,6 +26,12 @@ BeforeAll {
     [System.IO.File]::WriteAllText($path, $Content, [System.Text.UTF8Encoding]::new($false))
   }
 
+  function Edit-FixtureFile([string]$Dir, [string]$RelativePath, [string]$Old, [string]$New) {
+    $path = Join-Path $Dir $RelativePath
+    $content = [System.IO.File]::ReadAllText($path)
+    [System.IO.File]::WriteAllText($path, $content.Replace($Old, $New), [System.Text.UTF8Encoding]::new($false))
+  }
+
   function Save-All([string]$Dir, [string]$Message) {
     Invoke-FixtureGit $Dir @('add', '-A') | Out-Null
     Invoke-FixtureGit $Dir @('commit', '-q', '-m', $Message) | Out-Null
@@ -48,6 +54,8 @@ BeforeAll {
     Set-FixtureConfig $Seed $HooksDir
     Write-FixtureFile $Seed '.docs/sdd/sdd-kit.json' '{"merge": {"into": "develop", "noFf": true, "removeWorktree": false}}'
     Write-FixtureFile $Seed 'README.md' "base`n"
+    Write-FixtureFile $Seed '.docs/sdd/roadmap.md' "# Roadmap`n`n## Patches`n`n| Id | Fix |`n| --- | --- |`n| 0100 | base |`n`n## Deuda`n"
+    Write-FixtureFile $Seed '.docs/sdd/changelog.md' "# Changelog`n`n## [Unreleased]`n`n### Fixed`n`n- base`n`n## [0.1.0]`n"
     Write-PatchSpec $Seed '0100'
     Save-All $Seed 'chore: base'
     foreach ($id in '0001', '0002') {
@@ -212,6 +220,50 @@ Describe 'El merge del cierre parte de la rama destino publicada' -Tag 'Slow' {
     $log | Should -Not -Match '<<<<<<<'
   }
 
+  It 'une las filas y líneas que dos ramas añaden a los registros' {
+    $fx = New-MergeFixture 'registros'
+    foreach ($id in '0001', '0002') {
+      $feature = Join-Path $fx.Wt $id
+      Edit-FixtureFile $feature '.docs/sdd/roadmap.md' '| 0100 | base |' "| 0100 | base |`n| $id | fila $id |"
+      Edit-FixtureFile $feature '.docs/sdd/changelog.md' '- base' "- base`n- línea $id"
+      Write-PatchSpec $feature $id
+      Save-All $feature "docs: cierre del patch $id"
+    }
+
+    $first = Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push')
+    $second = Invoke-Merge (Join-Path $fx.Wt '0002') @('-Push')
+
+    $first.ExitCode | Should -Be 0 -Because $first.Text
+    $second.ExitCode | Should -Be 0 -Because $second.Text
+    $roadmap = (Invoke-FixtureGit $fx.Repo @('show', 'develop:.docs/sdd/roadmap.md')) -join "`n"
+    $roadmap | Should -Match '\| 0100 \| base \|\n\| 0001 \| fila 0001 \|\n\| 0002 \| fila 0002 \|\n\n## Deuda'
+    $changelog = (Invoke-FixtureGit $fx.Repo @('show', 'develop:.docs/sdd/changelog.md')) -join "`n"
+    $changelog | Should -Match '- base\n- línea 0001\n- línea 0002\n\n## \[0\.1\.0\]'
+    $log = (Invoke-FixtureGit $fx.Repo @('show', 'develop:.docs/sdd/estimation-log.md')) -join "`n"
+    $log | Should -Match 'patch-0001-fixture'
+    $log | Should -Match 'patch-0002-fixture'
+    "$roadmap$changelog$log" | Should -Not -Match '<<<<<<<|>>>>>>>'
+    Get-Sha $fx.Remote 'develop' | Should -Be (Get-Sha $fx.Repo 'develop')
+  }
+
+  It 'si las dos ramas cambian la misma fila de un registro falla con merge: conflicto en' {
+    $fx = New-MergeFixture 'misma-fila'
+    foreach ($id in '0001', '0002') {
+      $feature = Join-Path $fx.Wt $id
+      Edit-FixtureFile $feature '.docs/sdd/roadmap.md' '| 0100 | base |' "| 0100 | cambiada por $id |"
+      Save-All $feature "docs: fila de $id"
+    }
+    Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push') | Out-Null
+    $before = Get-Sha $fx.Repo 'develop'
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0002') @('-Push')
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'merge: conflicto en .*roadmap\.md'
+    Get-Sha $fx.Repo 'develop' | Should -Be $before
+    Get-Sha $fx.Remote 'develop' | Should -Be $before
+  }
+
   It 'con otro conflicto falla con la lista de ficheros y deja develop en la base integrada' {
     $fx = New-MergeFixture 'conflicto'
     $remoteSha = Push-RemoteCommit $fx 'README.md' "remoto`n"
@@ -287,16 +339,18 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' -Tag '
     Assert-CleanedUp $fx
   }
 
-  It 'con -Push y sin remoto falla con push: en vez de saltarse el push' {
+  It 'con -Push y sin remoto fusiona en local y avisa de que no hay push' {
     $fx = New-MergeFixture 'sin-remoto'
     Invoke-FixtureGit $fx.Repo @('remote', 'remove', 'origin') | Out-Null
     $before = Get-Sha $fx.Repo 'develop'
 
     $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push')
 
-    $result.ExitCode | Should -Not -Be 0
-    $result.Text | Should -Match 'push:'
-    Get-Sha $fx.Repo 'develop' | Should -Be $before
+    $result.ExitCode | Should -Be 0
+    $result.Text | Should -Match 'Fusionado feature/0001 en develop'
+    $result.Text | Should -Match 'push: no hecho: sin remoto'
+    Get-Sha $fx.Repo 'develop' | Should -Not -Be $before
+    Invoke-FixtureGit $fx.Repo @('merge-base', '--is-ancestor', 'feature/0001', 'develop') | Out-Null
     Assert-CleanedUp $fx
   }
   It 'con el push rechazado devuelve develop a su commit y limpia' {

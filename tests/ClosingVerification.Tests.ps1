@@ -52,6 +52,10 @@ Describe 'Evidencia por THEN' {
   It 'la tabla 4.2 es una fila por THEN con su evidencia' {
     Assert-Literal $script:Walkthrough @('| THEN | Evidencia | Resultado |', '`suite` · `ejecución real` · `no probado`')
   }
+
+  It 'la frase del dev-lead no se corrige y sus palabras se excluyen del corrector al escribirla' {
+    Assert-Literal $script:Walkthrough @('la frase del dev-lead no se corrige, erratas incluidas', 'al escribirlo y no después del lint', 'todas las palabras de la frase, no solo las que','`<!-- cspell:ignore <palabras> -->`')
+  }
 }
 
 Describe 'Native: task-done tras el commit' {

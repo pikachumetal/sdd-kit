@@ -45,6 +45,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND en `pair` lo presenta en el gate; en `delegate` y `unattended` no hay gate: el agente comprueba que cada escenario de la spec tiene su task, lo anota en el plan y sigue
 - AND el resto del plan es para el ejecutor
 
+### El plan lleva su Review Focus y viaja al revisor final
+- GIVEN la spec de la 0012 aprobada (filtro de reservas por `status`, que no dice qué pasa con `status=Foo`) y un plan escrito con `plan-template.md`
+- WHEN el agente termina el plan
+- THEN el plan tiene una sección `## Review Focus` entre «Restricciones globales» y «Phase -1», con una línea por entrada o fallo que ningún test de las tasks ejercita, con su comportamiento esperado y su task (p. ej. «`status=Foo` → 400 con los estados válidos · Task 1, `Rejects_unknown_status`»), o «ninguna: comprobado»
+- AND «Decisiones que he tomado yo» lleva una línea que la resume («Review Focus: 3 entradas que la spec no fija, con su comportamiento esperado; ver la sección»)
+- AND el self-review §4 lleva una fila por línea del Review Focus con su task y su test
+- AND al despachar el revisor final, su encargo lleva la sección `## Review Focus` del plan, copiada literal
+
 ### El artículo de calidad de código viaja a implementadores y revisores
 - GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una feature en modo lite, que no tiene plan
 - WHEN se despacha un implementador, un revisor de task, un re-revisor o el revisor final
@@ -82,7 +90,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Los tests de la spec preceden al implementador
 - GIVEN una task cuya implementación se despacha a un subagente
 - WHEN el hilo principal prepara el despacho
-- THEN los tests que codifican los escenarios de la task existen antes del primer encargo, escritos por el hilo, uno por THEN, en RED, sin commitear
+- THEN los tests que codifican los escenarios de la task existen antes del primer encargo, escritos por el hilo, uno por THEN y uno por cada línea del Review Focus del plan que nombra esa task, en RED, sin commitear
 - AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica; los commitea con su implementación con `git add` de rutas explícitas y nunca con `--no-verify`
 - AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
 
@@ -149,14 +157,21 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Una task que cambia la UI se mira en un navegador
 - GIVEN una task con superficie frontend que cambia lo que se ve
 - WHEN se escribe el plan y, después, cuando esa task termina su revisión
-- THEN la task lleva una verificación visual con la pantalla o ruta, los estados y los temas que se miran y qué se mira en ellos (alineación, separación a bordes, contraste)
-- AND el hilo principal la abre en un navegador real con Playwright —el MCP si está en la sesión, un script del paquete `playwright` si no—, mide en estilos computados cada cosa que el campo declara y saca una captura por estado y tema, que guarda fuera de git hasta la validación, antes de darla por terminada en `tasks.md`
-- AND sin navegador con el que ejecutar Playwright o sin forma de levantar la aplicación, lo dice con el error concreto y la task queda «no probado» en lo visual, nunca «verificado» ni sustituida por la suite; «el MCP de Playwright no está en la sesión» y «faltan dependencias» no son ninguno de los dos
+- THEN la task lleva una verificación visual con la pantalla o ruta, los estados, los temas, el criterio en frases medibles y la pantalla de referencia (la de `§Frontend` si la task no nombra otra), escritos en el plan antes de tocar el código
+- AND el hilo principal la abre en un navegador real con Playwright —el MCP si está en la sesión, un script del paquete `playwright` si no—, sobre el entorno que el usuario tenga levantado si lo hay, sin build dedicado ni suite de specs nueva
+- AND pasa el detector que declara `§Frontend` de `tech-stack.md` en sus dos viewports, y saca una captura por estado y tema, que mira con la rúbrica de composición (jerarquía, ritmo de espaciado, densidad, alineación) contra la referencia, con 3 rondas de arreglo de composición como máximo, y guarda fuera de git sin borrarla hasta la validación, antes de darla por terminada en `tasks.md`
+- AND con la tarjeta de resumen de la Task 2 con borde y 0 px de padding, y un criterio que no nombra el padding, el detector da `cramped-padding` y la task no se da por terminada hasta que el hallazgo se arregla o se justifica por escrito; «ya estaba antes» no justifica un hallazgo del elemento que la task toca, y «falso positivo» o «es intencional» no valen sin citar la frase del criterio o el rasgo de la referencia que lo exige
+- AND mide en estilos computados solo lo que el criterio fija con un valor numérico
+- AND si la task cambia comportamiento, recorre el flujo real con sus estados de carga, error y deshabilitado, con la consola y la red sin errores, con el usuario de pruebas de `§Frontend`, nunca contra producción y sin borrar ni modificar datos que no creó la verificación
+- AND si el detector declarado no ejecuta, o no hay navegador con el que ejecutar Playwright, o no hay forma de levantar la aplicación, lo dice con el error concreto y la task queda «no probado» en lo visual, nunca «verificado» ni sustituida por la suite; «el MCP de Playwright no está en la sesión» y «faltan dependencias» no son ninguno de los tres
 
 ### La verificación visual se enseña con medidas y capturas
-- GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, contraste del texto y separación de la flecha al borde
+- GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, el criterio «el selector filtra la lista por estado» y contraste del texto ≥ 4,5:1
 - WHEN el agente para tras la task en `pair`, o presenta la validación del paso 7 en `delegate`
-- THEN antes del guion de pruebas enseña cada medida con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1») y la ruta de cada captura
+- THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
+- AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
+- AND sin detector declarado, el aviso literal «composición no medida: `tech-stack.md` no declara detector en §Frontend»
+- AND si la composición sigue mal tras la tercera ronda, lo dice ahí, para que decida el dev-lead
 - AND una task que quedó «no probado» lo dice en ese sitio, con su motivo
 
 ### Una verificación de más de 10 minutos la lanza el hilo principal en segundo plano
@@ -203,6 +218,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el hilo ejecuta cada task
 - THEN la abre con `task-start` y la cierra con `task-done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
 
+### Los scripts de Native se lanzan con la herramienta Bash y con salida
+- GIVEN un plan con `Ejecución: native` en Windows, con PowerShell como shell principal, y una «Verificación» que no imprime nada si pasa
+- WHEN el hilo abre y cierra cada task con `task-start` y `task-done`
+- THEN los lanza con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell, y comprueba que la ruta de `sdd-workspace` no está vacía antes de escribir en el ledger
+- AND pasa a `task-done` un comando que imprime algo (`sh -c '<comando> && echo ok'`), y la línea `Task <N>: complete` queda en el ledger a la primera
+
 ### La base se comprueba antes de cada task Native
 - GIVEN un plan con `Ejecución: native` y dos o más tasks
 - WHEN el hilo va a empezar cada task
@@ -230,7 +251,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se entra en `sdd-end-feature`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
 - AND si después de `a1b2c3d` hay un commit del hilo `e4f5a6b` que cambia `src/slots.js`, antes de escribir el walkthrough despacha la re-revisión del tramo `a1b2c3d..HEAD` con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
-- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`
+- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
+- AND la pasada de fix exime solo sus propios commits: si entre el `sobre a1b2c3d` y el primer commit de la pasada hay un commit del hilo `b2c3d4e` que cambia `src/slots.js`, hecho mientras el revisor trabajaba, el último revisado es `a1b2c3d` y la re-revisión cubre `a1b2c3d..HEAD`
 - AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
 
 ### Los minors diferidos llegan al walkthrough
@@ -400,10 +422,57 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN pasan 2 min desde que se lanzó el vigía
 - THEN el vigía termina con «sin transcript», y el hilo le dice al usuario que en esta sesión el vigía de silencio no funciona
 
+### Una feature lite que cambia la UI se verifica en el navegador
+- GIVEN una feature lite aprobada que añade el badge «Urgente» con un `@if` y una línea de CSS, ya implementada, y el usuario con la aplicación levantada en el puerto 4700
+- WHEN el agente la verifica antes de presentar la validación
+- THEN la spec lite lleva en su Approach el criterio en frases medibles y la pantalla de referencia
+- AND la verifica sobre el entorno del puerto 4700, sin arrancar otro, sin build dedicado y sin escribir una suite de specs nueva
+- AND pasa el detector en los dos viewports y saca una captura por estado (pedido urgente y pedido sin urgencia), y la presentación las enseña
+- AND no presenta la validación con un hallazgo del detector abierto sin justificar, con los mismos contraejemplos que una task full, y si el detector declarado no ejecuta, lo visual queda «no probado» con el error
+- AND no mide estilos computados, porque la spec no fija ningún valor numérico
+
+### El agente entra en la aplicación solo como declara el proyecto
+- GIVEN una aplicación que pide login y un `§Frontend` que declara la página `/dev/impersonate`, el usuario de pruebas `demo@example.test` y la sesión en `.auth/state.json`, ignorada por git
+- WHEN el agente verifica una pantalla detrás del login más de una vez
+- THEN el runner y el detector entran por la URL de entrada `/dev/impersonate?user=demo@example.test&next={path}` con el `{path}` de cada pantalla, sin gastar accesos
+- AND si la entrada declarada gasta algo con límite (un enlace mágico, un código), el runner entra una vez, guarda la sesión y la reutiliza en las ejecuciones siguientes; si la aplicación lo devuelve al login, la rehace una vez
+- AND si la ruta de la sesión no está ignorada por git, no guarda la sesión ahí y lo dice
+- AND si `§Frontend` no dice cómo entrar y la aplicación entra con enlace mágico, no pide ningún enlace ni intenta el login: lo visual queda «no probado: falta el acceso en §Frontend», y la presentación propone el acceso con la recomendación de una página de desarrollo y `storageState`, sin parada nueva en ningún perfil
+
+### Una spec que cambia lo que se ve propone `§Frontend` si falta
+- GIVEN un proyecto ya inicializado con interfaz cuyo `tech-stack.md` no tiene `§Frontend`, y una fila que pide una pantalla nueva
+- WHEN el agente escribe la spec
+- THEN «Decisiones que he tomado yo» lleva la propuesta de `§Frontend` con sus campos rellenos, recomendando impeccable y Playwright, y el acceso que se ve en el código
+- AND al aprobar la spec, `tech-stack.md` gana esa `§Frontend`, sin parada nueva
+- AND si el dev-lead no quiere detector, queda `Detector: ninguno`, la verificación sigue con capturas y rúbrica y el aviso «composición no medida», y la propuesta no se repite en las features siguientes
+
+### El revisor final sale en segundo plano con el commit de la última task
+- GIVEN una feature Native con una task que cambia la UI, cuyo commit `a1b2c3d` acaba de hacerse, y su «Verificación visual» pendiente
+- WHEN el hilo cierra esa task
+- THEN el siguiente despacho es el revisor final en segundo plano sobre `a1b2c3d`, antes de arrancar la aplicación para la verificación visual
+- AND mientras el revisor trabaja, el hilo hace la verificación visual y escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
+- AND la validación se presenta cuando vuelve el revisor sin Critical ni Important abiertos (tras su pasada de fix, si la hay), no antes
+- AND en SDD el disparador es el commit juntado de la última task, tras su revisión limpia
+
+### El revisor final trabaja aislado en el sha que revisa
+- GIVEN el revisor final despachado sobre `a1b2c3d` y el hilo que commitea después `e4f5a6b` (un fix de la verificación visual)
+- WHEN el revisor lee el código y el historial
+- THEN trabaja en un worktree desanclado `review-0096-a1b2c3d` creado con `git worktree add --detach` en `a1b2c3d`, con el paquete construido allí, y su encargo le dice que no mire ramas ni commits posteriores
+- AND su informe no cita `e4f5a6b`
+- AND lo mismo vale para la re-revisión de un tramo: su worktree se ancla en el último sha del tramo
+- AND el hilo retira el worktree con `git worktree remove` al volver el revisor
+
+### Lo cambiado tras la validación se separa de lo validado
+- GIVEN una feature validada con «probé borrar un fichero y funciona» y, después, a petición del dev-lead, un commit `c7d8e9f` que cambia el texto del error «No se pudo borrar» por «El fichero ya no existe»
+- WHEN se cierra
+- THEN el commit pasa por la re-revisión del tramo antes del walkthrough
+- AND la verificación del walkthrough y el mensaje final dicen que el dev-lead probó la versión anterior y qué verificó el agente del cambio (`c7d8e9f`), separado de la línea de validación
+- AND el hilo no para a pedir otra validación
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad.
+- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
-- **Límites**: no aplica.
-- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos.
-- **Regla ante conflicto**: no aplica.
+- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución.
+- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
+- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`.

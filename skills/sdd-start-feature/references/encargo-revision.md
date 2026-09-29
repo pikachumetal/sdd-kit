@@ -28,6 +28,16 @@ El brief, el informe, el paquete de review y el ledger viven en el workspace de 
 
 Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`). Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](control-profiles.md#vigía-de-silencio).
 
+Sale en segundo plano en cuanto existe el commit de la última task, y el hilo sigue trabajando y commiteando mientras revisa. Por eso el revisor no trabaja en el árbol del hilo, sino en un worktree desanclado en el sha que revisa, `review-<id>-<sha corto>`, junto a los demás worktrees del repo:
+
+```bash
+SHA=$(git rev-parse --short HEAD)
+REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-<id>-$SHA"
+git worktree add --detach "$REVIEW_DIR" "$SHA"
+```
+
+La receta del paquete se ejecuta dentro de `$REVIEW_DIR`, y el encargo nombra ese directorio como el único en el que trabaja, con esta frase: «Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama)». Al volver el revisor, el hilo lo retira con `git worktree remove "$REVIEW_DIR"`. La re-revisión de un tramo `<a>..<b>` se ancla igual, en `<b>`. Revisando un sha antiguo desde el árbol que avanza, 3 de 4 revisores vieron el commit que ya arreglaba el fallo (ticket de la feature 0027 de document-manager, §2); en el RED de la 0096, 2 de 2 hilos commitearon después del despacho (`tests/closing-off-critical-path-red.md`, c1).
+
 El paquete lo prepara el hilo con esta receta, no con `review-package`, en los dos métodos. `review-package` corta el rango desde la base del arranque y no admite exclusiones: el revisor lee siempre la evidencia de las campañas y, si la rama integró la rama de integración, también el trabajo de otras features (9 MB frente a 179 KB en la feature 0070, 730 KB frente a 78 KB en la 0058). En Git Bash, con `<integración>` la rama de integración de la constitution (`develop` si no fija otra) y `sdd-workspace` el script que está junto a `review-package` en `subagent-driven-development/scripts/`:
 
 ```bash
@@ -55,6 +65,18 @@ Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de
 ```
 
 Por qué: la plantilla del revisor de task de superpowers ya lo dice; la del final da los comandos de `git diff` y pregunta «All tests passing?» sin decir cómo. Con la cabecera sin esta sección, 2 de 2 revisores finales rehicieron el diff y ejecutaron suite y lint (`tests/proportional-review-red.md`, R2); en un proyecto del equipo, 27 minutos por revisor frente a los 7 de uno que solo lee el diff.
+
+Si el plan tiene `## Review Focus`, tras «Cómo revisar» va esta sección:
+
+```markdown
+## Review Focus
+
+<copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>
+
+Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test o la verificación que la fija. Una línea sin test ni verificación nombrada, o cuyo código no da ese comportamiento, es un hallazgo.
+```
+
+Es lo que pide `executing-plans` («the plan's Review Focus section verbatim»), y no basta con remitir al plan: con la remisión («el plan tiene una sección Review Focus, compruébala»), 1 de 2 encargos en Opus salió sin sus líneas (`tests/plan-review-focus-red.md`).
 
 ## Encargo del implementador
 

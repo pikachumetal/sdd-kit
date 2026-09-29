@@ -11,10 +11,31 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN termina la inicialización
 - THEN existe `.docs/sdd/sdd-kit.json` con `version`, `channel`, `updated` e `ids`
 
-### Cada release con cambio estructural lleva su migración
-- GIVEN una release del kit que cambia la estructura de `.docs/sdd/` o retira algo del proyecto
+### La sesión avisa cuando carga un kit menor que el del proyecto
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y una sesión de Claude Code que carga el plugin `sdd-kit` `1.1.0`
+- WHEN arranca la sesión
+- THEN el usuario ve un aviso con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar Claude Code, porque `/reload-plugins` no aplica una actualización de ámbito proyecto
+- AND el agente recibe el mismo aviso al principio de su contexto
+- AND con la versión cargada igual o mayor, o sin `sdd-kit.json`, no hay aviso
+
+### Cada release lleva su migración
+- GIVEN una release del kit, cambie o no la estructura de `.docs/sdd/`
 - WHEN se cierra la release
-- THEN existe `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md` con pasos verificables por predicado
+- THEN existe `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md` con pasos verificables por predicado, o, si la release no cambia nada del proyecto, con la frase «sin cambios en el proyecto», su «Verificación» y su línea `**Escribe**:`
+- AND la suite del kit falla si la `version` de `.claude-plugin/plugin.json` no tiene su fichero en esa carpeta
+
+### Una migración sin cambios solo avanza el marcador
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y el kit 2.1.0, cuyo `v2.1.0.md` dice «sin cambios en el proyecto»
+- WHEN el usuario pide «ponme el proyecto al día con sdd-init-brownfield»
+- THEN `sdd-kit.json` queda con `version` `2.1.0` y la fecha del día, y ningún otro fichero del proyecto cambia
+- AND hay un commit `chore(sdd): migrar al kit v2.1.0`
+
+### La sesión avisa cuando el proyecto tiene migraciones pendientes
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y una sesión de Claude Code que carga el plugin `sdd-kit` con `v2.1.0.md` como mayor migración
+- WHEN arranca la sesión
+- THEN el usuario ve «AVISO sdd-kit: el proyecto tiene aplicado el kit 2.0.0 (.docs/sdd/sdd-kit.json) y el kit cargado trae migraciones hasta la 2.1.0. Para aplicarlas, pide «ponme el proyecto al día con sdd-init-brownfield».»
+- AND el agente recibe el mismo aviso al principio de su contexto, y no arranca la migración si el usuario no la pide
+- AND con el marcador en `2.1.0`, sin `sdd-kit.json` o sin carpeta de migraciones en el kit cargado, no hay aviso, y el hook sigue inyectando `using-sdd`
 
 ### Un proyecto ya inicializado se migra, no se re-inicializa
 - GIVEN un proyecto con `.docs/sdd/` y la petición «actualízame al kit»
@@ -110,5 +131,5 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.
 - **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case.
 - **Límites**: no aplica.
-- **Avisos**: un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado.
+- **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado (migrar el proyecto); un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado.
 - **Regla ante conflicto**: no aplica.

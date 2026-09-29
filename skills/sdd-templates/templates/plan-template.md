@@ -15,7 +15,7 @@ created: <YYYY-MM-DD>
 
 ## Decisiones que he tomado yo — valida estas
 
-> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué; el revisor final de rama no sigue esta política ni se quita en Native: va con `sdd-kit:effort-high` + `opus`, también con una sola task, y «no hay subagentes que auditar» no vale, porque es la única revisión independiente de Native), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos** y **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero).
+> Es lo único que el dev-lead necesita leer para aprobar el plan; el resto es para el ejecutor. Una línea por decisión: **modelo y effort por task** (y por qué; el revisor final de rama no sigue esta política ni se quita en Native: va con `sdd-kit:effort-high` + `opus`, también con una sola task, y «no hay subagentes que auditar» no vale, porque es la única revisión independiente de Native), **ejecución** (el método que recomienda el handoff y por qué), **decisiones técnicas que la spec no fija**, **riesgos altos**, **coste estimado** (horas y, si se despacha, orden de magnitud en tokens o dinero) y el **Review Focus** en una línea que lo resume («Review Focus: <n> entradas que la spec no fija, con su comportamiento esperado; ver la sección»): cada entrada fija un comportamiento que la spec calla.
 
 1. <decisión> — <por qué>
 
@@ -48,6 +48,12 @@ created: <YYYY-MM-DD>
 > El bloque «De proceso» es para quien despacha: no viaja al encargo de ningún revisor, porque un revisor audita lo que lee y convierte en hallazgo una regla que no es del código (medido en `tests/proportional-review-red.md`). Aquí van la **política de modelos** del proyecto (criterio de asignación y modelos prohibidos por defecto), el **modo de ejecución** por defecto y las reglas de atribución de commits.
 
 - <regla de proceso>
+
+## Review Focus
+
+> La pide `superpowers:writing-plans` en todo plan, y `executing-plans` se la pasa literal al revisor final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero (el criterio, en `writing-plans`). Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda. Sin ella en la plantilla, 1 de 2 planes en Opus la escribió como «Foco de revisión» entre las decisiones técnicas, donde el revisor final no la recibe (`tests/plan-review-focus-red.md`).
+
+- <entrada o condición> → <comportamiento esperado> · Task <n>, `<nombre del test>` — p. ej. `GET /bookings?status=Foo` → 400 con los estados válidos, no la lista entera · Task 1, `Rejects_unknown_status`
 
 ---
 
@@ -133,11 +139,11 @@ Endpoints, shape request/response.
 
 **Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
 **Verificación**: <los comandos de esas superficies y ninguno más>
-**Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · qué mirar>
+**Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · criterio en frases medibles, p. ej. «la tarjeta muestra cliente, total y estado» · pantalla de referencia, si no es la de `§Frontend`>
 **Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
 **Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>
 
-> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve: qué mirar es alineación, separación a bordes y contraste, en cada estado y tema; la hace el hilo principal en un navegador. Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
+> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve, con el criterio escrito antes del código; la hace el hilo principal en un navegador, con el método de `sdd-start-feature/references/frontend-verification.md` (detector de `§Frontend`, capturas con rúbrica). Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
 
 **Interfaces**:
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
@@ -181,3 +187,4 @@ Endpoints, shape request/response.
 
 - <requisito de la spec> → Task <n>. ✓
 - <aspecto sin cambios> → N/A (confirmado en spec). ✓
+- <línea del Review Focus> → Task <n>, test <nombre> (o la verificación que la cubre). ✓

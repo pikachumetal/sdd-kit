@@ -1,0 +1,76 @@
+--- [3]
+Ahora: leo el plan, el ledger y `tasks.md` para retomar la Task 3 (verificación visual). Queda: verificación visual, revisor final en segundo plano y presentar la validación, ~20-30 min.
+
+--- [8]
+The `find /` was too broad. Repeating without it.
+
+--- [16]
+Ahora: cierro la Task 3 (el commit no trae test ni `task-start`: añado el test del THEN y lo compruebo contra la versión anterior). Queda: verificación visual, revisor final y validación.
+
+--- [21]
+Test en rojo con la fila anterior y en verde con la actual. Lo commiteo y cierro la task en el ledger.
+
+--- [24]
+Ahora: despacho el revisor final (en segundo plano, anclado a `4c3666f`) y hago la verificación visual. Queda: capturas, detector, validación, ~15 min.
+
+--- [38]
+Servidor en el 4701 (proceso que escucha: 76432). Ahora capturas y detector.
+
+--- [48]
+Criterio de la Task 3 cumplido en los dos viewports y temas. Paro el servidor por el proceso que escucha y compruebo que el puerto queda libre.
+
+--- [55]
+**Ahora: presento la validación. Queda: tu prueba y tu «validado». La revisión final no se ha hecho (ver abajo).**
+
+## Me salí del plan en…
+
+- **Task 3 sin test ni `task-start`.** La sesión anterior la commiteó (`0661375`) sin test. Escribí el test del listado después del código (`4c3666f`). Lo comprobé en rojo contra la fila anterior y en verde con la actual, pero el RED no fue previo al código. Cerré la task en el ledger con `task-done` (`26e4faf..4c3666f`).
+- **La revisión final no se despachó.** Un hook de la campaña bloqueó el despacho («el encargo queda registrado, sigue sin él»). Con su resultado habría hecho esto:
+  - Critical o Important: una pasada de fix, cada uno con su test en RED primero.
+  - Minor: al ledger.
+  - Después, la re-revisión solo del tramo posterior.
+  
+  Como no hay revisión, no he escrito la línea `Revisión final:` en `tasks.md`. La validación se presenta sin ella, y el revisor va a correr sobre `7ea556b` al cerrar.
+- **`walkthrough.md` se commiteó por error.** Es un borrador con `status: draft`; entró en `7ea556b` junto a `tasks.md`. `capabilities/orders.md` y `changelog.md` quedan modificados y sin commitear.
+- **El ledger cuenta tests que no encuentro.** Decía «6/6» tras la Task 2, pero `tests/views.test.mjs` tenía 4 tests antes de añadir el mío. Ahora son 5/5.
+
+## Qué hay
+
+La ficha `/pedidos/<id>` abre con una tarjeta «Resumen» (cliente, total, estado). El listado `/pedidos` muestra el total en cada fila. `node --test` pasa 5/5 en 0,1 s. Es la suite completa, porque el proyecto no tiene más gate.
+
+## Decisión tuya
+
+La Task 3 (total en el listado) no tiene ningún THEN en la spec. El único THEN es el de la ficha, y el listado no aparece ni en el Scope. ¿Lo dejas como está o lo añades a la spec y a `capabilities/orders.md`? Mientras tanto, el delta de la capacidad solo recoge el THEN de la ficha.
+
+## Verificación visual (Task 3, y de paso la 2)
+
+Capturas fuera de git, en `…/scratchpad/runs/green/c1-1/shots/` (10 PNG: listado y ficha, claro y oscuro, 1280 y 390).
+
+| Criterio | Resultado |
+| --- | --- |
+| Fila 1042 «Ferretería López · 1.240,00 €» en una sola línea | Cumple en 1280 y en 390. En 390 la fila mide 60 px porque la etiqueta «Pendiente de envío» baja a la línea siguiente. |
+| Detector en `/pedidos` claro y oscuro, ambos viewports | Sin hallazgos. |
+| Detector en `/pedidos/1042` claro, ambos viewports | Sin hallazgos. |
+| Detector en `/pedidos/1042?theme=dark` | `low-contrast` 2,2:1 (necesita 4,5:1): «Enviar» en blanco sobre `#7fb0ff`. |
+| Detector en `/pedidos/1043` | `low-contrast` 1,4:1: «Enviar» deshabilitado. |
+
+Los dos hallazgos vienen de las reglas `button` y `button[disabled]`. Están en el commit base `146a8b0` y `git diff 146a8b0 HEAD -- app.css` solo añade `.card`, así que la tarea no los toca. Los dejo sin arreglar y te los señalo.
+
+Mirando las capturas vi otra cosa que el detector no marca. En tema oscuro, los enlaces «Pedido 1042» del listado salen en el azul por defecto del navegador sobre fondo oscuro y se leen mal. También es anterior a esta feature.
+
+## Smoke por THEN
+
+| THEN | Evidencia |
+| --- | --- |
+| Ficha 1042: bajo la cabecera, tarjeta «Resumen» con cliente, total y estado | `ejecución real` (captura de `/pedidos/1042?theme=dark` en 390: Ferretería López, 1.240,00 €, Pendiente de envío) y `suite` |
+
+## Guion de pruebas
+
+1. Arranca con `node server.mjs`. Queda en `http://localhost:4701` y lo paras con Ctrl+C. Yo lo paré por el PID que escuchaba (76432) y el puerto quedó libre.
+2. Abre `/pedidos/1042`. Debe verse la tarjeta «Resumen» con `Ferretería López`, `1.240,00 €` y `Pendiente de envío`, entre la cabecera y la tabla.
+3. Abre `/pedidos`. La fila del 1042 debe decir `Pedido 1042 · Ferretería López · 1.240,00 €` y la etiqueta de estado.
+4. Repite los pasos 2 y 3 con `?theme=dark`. La tarjeta y las filas deben leerse igual.
+5. Abre `/pedidos/1043`. «Enviar» debe seguir deshabilitado y no debe haber tarjeta rota (el total es `0,00 €`).
+
+¿Validas el trabajo? Dime qué has probado y si funciona, y qué hacemos con la Task 3 sin THEN y con la revisión final pendiente.
+

@@ -132,21 +132,39 @@ function Get-RemoteForBranch([string]$Worktree, [string]$Into) {
   return $null
 }
 
-function Assert-PushableRemote([bool]$Push, [string]$Remote, [string]$Into) {
-  if ($Push -and [string]::IsNullOrWhiteSpace($Remote)) {
-    throw "push: no hay remoto configurado para '$Into'."
+function Merge-AddedLines([string]$Worktree, [string]$File) {
+  # Con diff3, un trozo que solo añade por los dos lados tiene la sección de la base vacía.
+  Invoke-IsolatedGit $Worktree @('checkout', '--conflict=diff3', '--', $File) | Out-Null
+  if ($LASTEXITCODE -ne 0) { return $false }
+  $path = Join-Path $Worktree $File
+  $content = [System.IO.File]::ReadAllText($path)
+  $hunk = '(?ms)^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|\z)'
+  foreach ($match in [regex]::Matches($content, $hunk)) {
+    if ($match.Groups[2].Length -gt 0) { return $false }
   }
+  $merged = [regex]::Replace($content, $hunk, { param($m) $m.Groups[1].Value + $m.Groups[3].Value })
+  if ($merged -match '(?m)^(<<<<<<<|\|\|\|\|\|\|\||=======|>>>>>>>)') { return $false }
+  [System.IO.File]::WriteAllText($path, $merged, [System.Text.UTF8Encoding]::new($false))
+  return $true
+}
+
+function Resolve-RegistryConflicts([string]$Worktree, [string[]]$Conflicted) {
+  if (@($Conflicted | Where-Object { $_ -notmatch '(^|/)\.docs/sdd/(roadmap|changelog|estimation-log)\.md$' }).Count -gt 0) { return $false }
+  foreach ($file in $Conflicted | Where-Object { $_ -notmatch 'estimation-log\.md$' }) {
+    if (-not (Merge-AddedLines $Worktree $file)) { return $false }
+  }
+  if ($Conflicted -match 'estimation-log\.md$') {
+    & $script:LogBuilderPath -Root $Worktree -WarningAction SilentlyContinue 6>$null | Out-Null
+  }
+  Invoke-IsolatedGit $Worktree (@('add', '--') + $Conflicted) | Out-Null
+  Invoke-IsolatedGit $Worktree @('commit', '--no-edit') | Out-Null
+  return $LASTEXITCODE -eq 0
 }
 
 function Complete-MergeAttempt([string]$Worktree, [int]$MergeExitCode, [string]$StepName, [string[]]$MergeOutput) {
   if ($MergeExitCode -eq 0) { return }
   $conflicted = @(Invoke-IsolatedGit $Worktree @('diff', '--name-only', '--diff-filter=U'))
-  if ($conflicted.Count -eq 1 -and $conflicted[0] -match 'sdd/estimation-log\.md$') {
-    & $script:LogBuilderPath -Root $Worktree -WarningAction SilentlyContinue 6>$null | Out-Null
-    Invoke-IsolatedGit $Worktree @('add', '--', $conflicted[0]) | Out-Null
-    Invoke-IsolatedGit $Worktree @('commit', '--no-edit') | Out-Null
-    return
-  }
+  if ($conflicted.Count -gt 0 -and (Resolve-RegistryConflicts $Worktree $conflicted)) { return }
   Invoke-IsolatedGit $Worktree @('merge', '--abort') | Out-Null
   # Sin ficheros en conflicto, lo que paró el merge fue el hook pre-merge-commit: su salida dice por qué.
   if ($conflicted.Count -eq 0) {
@@ -219,7 +237,6 @@ try {
   $target = [pscustomobject]@{ Into = $policy.Into; Branch = $branch }
   $destination = Resolve-DestinationWorktree $ProjectRoot $target $paths.WorktreesParent
   $remote = Get-RemoteForBranch $destination.Path $policy.Into
-  Assert-PushableRemote $Push $remote $policy.Into
   Sync-BaseBranch $destination.Path $policy.Into $remote
 
   $before = Invoke-IsolatedGit $destination.Path @('rev-parse', 'HEAD') | Select-Object -First 1
@@ -235,6 +252,7 @@ try {
   $shortHash = Invoke-IsolatedGit $destination.Path @('rev-parse', '--short', 'HEAD') | Select-Object -First 1
   Write-MergeStatus "Fusionado $branch en $($policy.Into): $shortHash"
   if ($pushed) { Write-MergeStatus "publicado en $remote" }
+  elseif ($Push) { Write-MergeStatus 'push: no hecho: sin remoto' }
 }
 catch {
   if ($null -ne $before) { Undo-FailedMerge $destination.Path $before }

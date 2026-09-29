@@ -1,0 +1,177 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/specs && ls .docs/sdd/specs/*0012* && git log --oneline -5 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch -a
+<<< .docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+./
+../
+20260923-090000-task-0012-status-filter/
+plan.md
+spec.md
+8d7450b docs(0012): abrir la feature 0012
+9827108 docs(sdd): spec de la feature 0012
+a9ecccd feat: lista de reservas con paginación
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+  develop
+* feature/0012
+  main
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-090000-task-0012-status-filter; cat $D/spec.md; echo ======; cat $D/plan.md; echo =====; cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md .docs/sdd/mission.md; git ls-files | grep -v '^.docs'
+<<< ---
+id: 20260923-090000-task-0012-status-filter
+task: 0012
+title: Filtrar la lista de reservas por estado
+mode: full
+status: approved
+created: 2026-09-23
+author: agente
+approvers:
+  - role: dev-lead
+    name: dev-lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Filtrar la lista de reservas por estado
+
+## Decisiones que he tomado yo — valida estas
+
+Review de spec propuesta: sin review — señales: datos (columna nueva con migración).
+
+1. Tres estados cerrados: `Confirmed`, `Pending`, `Cancelled`; las reservas existentes pasan a `Confirmed` en la migración.
+2. El filtro va en la
+
+>>> Bash: cd "<run>/repo" && for f in backend/src/Bookings.Api/BookingsEndpoints.cs backend/src/Bookings.Api/Data/Booking.cs backend/src/Bookings.Api/Data/BookingsDb.cs backend/tests/Bookings.Tests/BookingsEndpointsTests.cs docs/api.md moon.yml README.md; do echo "=== $f"; cat "$f"; done; echo; git diff $(git merge-base HEAD develop) develop --stat; git status --short
+<<< === backend/src/Bookings.Api/BookingsEndpoints.cs
+using Bookings.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api;
+
+public static class BookingsEndpoints
+{
+    public static void MapBookings(this WebApplication app)
+    {
+        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+            await db.Bookings
+                .OrderBy(b => b.Start)
+                .Skip((page - 1) * 20)
+                .Take(20)
+                .ToListAsync());
+    }
+}
+=== backend/src/Bookings.Api/Data/Booking.cs
+namespace Bookings.Api.Data;
+
+public class Boo
+
+>>> Skill: superpowers:executing-plans
+<<< Launching skill: superpowers:executing-plans
+
+>>> Skill: superpowers:test-driven-development
+<<< Launching skill: superpowers:test-driven-development
+
+>>> Bash: cd "<run>/repo" && P=.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md; S=<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills; W=$(bash $S/subagent-driven-development/scripts/sdd-workspace $P); echo "WS=$W"; ls "$W"; cat "$W/progress.md" 2>/dev/null; bash $S/executing-plans/scripts/task-start $P 1; which dotnet moon 2>&1; git check-ignore -v .superpowers
+<<< Exit code 1
+WS=<run>/repo/.superpowers/sdd/plan
+plan-path
+brief: <run>/repo/.superpowers/sdd/plan/task-1-brief.md
+base: 8d7450b01b2c923f55e8f731978b9fbf1b4d662a
+/c/Program Files/dotnet/dotnet
+<home>/.proto/shims/moon
+
+>>> Bash: cd "<run>/repo" && W=.superpowers/sdd/plan; cat $W/plan-path; echo; wc -l $W/task-1-brief.md; git status --short --ignored; ls backend backend/tests backend/tests/Bookings.Tests; cat .gitignore 2>/dev/null
+<<< Exit code 1
+<run>/repo/.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md
+
+32 .superpowers/sdd/plan/task-1-brief.md
+!! .superpowers/
+backend:
+src/
+tests/
+
+backend/tests:
+Bookings.Tests/
+
+backend/tests/Bookings.Tests:
+BookingsEndpointsTests.cs
+
+>>> Grep: bookings|proxy
+<<< frontend\src\app\bookings\booking-list.component.spec.ts:7:  it('lists the bookings returned by the API', async () => {
+frontend\src\app\bookings\booking-list.component.spec.ts:12:    TestBed.inject(HttpTestingController).expectOne('/api/bookings').flush([{ id: 1, room: 'Sala 1', start: '09:00' }]);
+frontend\src\app\bookings\booking-list.component.ts:9:      @for (booking of bookings.value() ?? []; track booking.id) {
+frontend\src\app\bookings\booking-list.component.ts:17:  readonly bookings = httpResource<Booking[]>(() => '/api/bookings');
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Estado de la reserva en BD y filtro en la API
+2	
+3	**Modelo**: `subagent_type: sdd-kit:effort-medium` + `model: sonnet`
+4	**Tests RED**: hilo principal · `backend/tests/Bookings.Tests/BookingsEndpointsTests.cs`, escritos antes de despachar y sin commitear (van en el commit de la task)
+5	
+6	- `Filters_by_status_and_applies_pagination_after_filtering` — siembra reservas en los tres estados más de 20 `Cancelled`; pide `GET /bookings?status=Cancelled&page=2`; espera solo canceladas y el `Skip` aplicado sobre el subconjunto ya filtrado.
+7	- `Returns_all_bookings_when_status_is_omitte
+
+>>> Write: <run>\repo\backend\tests\Bookings.Tests\BookingsEndpointsTests.cs
+<<< The file <run>\repo\backend\tests\Bookings.Tests\BookingsEndpointsTests.cs has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && W=.superpowers/sdd/plan; timeout 600 moon run backend:test > $W/task-1-red.log 2>&1; echo "exit=$?"; tail -30 $W/task-1-red.log
+<<< exit=1
+Error: app::missing_workspace
+
+  × Unable to determine workspace root. Please create a .moon or .config/moon
+  │ configuration folder.
+
+>>> Bash: cd "<run>/repo" && find . -path ./.git -prune -o \( -name '*.csproj' -o -name '*.sln*' -o -name 'Program.cs' -o -name '.moon' -o -name 'SqlServerApiFactory*' -o -name 'package.json' \) -print; grep -rn "SqlServerApiFactory\|SeedAsync" --include=*.cs . | grep -v BookingsEndpointsTests
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo" && C=../red-copies/0012/task-1; mkdir -p $C && cp backend/tests/Bookings.Tests/BookingsEndpointsTests.cs $C/ && W=.superpowers/sdd/plan && cat > $W/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md
+Spec: .docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md (aprobada 2026-09-23)
+Pre-flight: Task 1 produce `GET /bookings?status=` con `status` en texto; Task 2 consume `/api/bookings?status=` — el frontend ya llama a `/api/bookings` hoy (booking-list.component.ts), mismo prefijo que la paginación existente; sin conflicto.
+Task 1: base 8d7450b; base de integración sin cambios (roadmap 0012 y ficheros de la task intactos en develop).
+Task 1: RED escritos en el hilo, sin commitear; copia en ../red-copies/0012/task-1/BookingsEndpointsTests.cs (fuera del repo).
+Task 1: Ruling: añadido `Rejects_unknown_status_with_400` — el Review Focus 1 del plan lo nombra como test de Task 1 y la lista de tests lo omitía; §1.4 fija el 400 — coste si es erróneo: un test de más.
+Task 1: Ruling: añadido `New_bookings_are_created_as_pending` — la spec (THEN 1) exige `Pending` en las nuevas y ningún test del plan lo cubría — coste si es erróneo: un test de más.
+Task 1: Ruling: el test de filtro deserializa `status` como string — cubre el riesgo §1.7 (enum serializado como número) sin test aparte — coste si es erróneo: ninguno.
+Task 1: Ruling: RED no observado — `moon run backend:test` → `app::missing_workspace`; el repo no tiene `.moon/`, `.csproj`, `Program.cs` ni `SqlServerApiFactory`. RED esperado por compilación (`BookingStatus` y `Booking.Status` no existen) — coste si es erróneo: tests que no compilan por otra causa.
+EOF
+git status --short
+<<<  M backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+
+=== RESULTADO (18 turnos, 0.9575845999999999 $)
+He escrito los tests RED de la Task 1 y he parado antes del código de producción, como pediste. Pero **no he podido ver que fallan**: la verificación de la task no llega a ejecutarse en este repo.
+
+**Por qué no se ejecutan.** `moon run backend:test` acaba con `app::missing_workspace`: no hay `.moon/`. Tampoco hay `.csproj`, `Program.cs` ni `SqlServerApiFactory`, que es el fixture que ya usaba el test anterior. Deberían fallar al compilar, porque aún no existen `BookingStatus` ni `Booking.Status`, pero no lo he comprobado.
+
+Esto también bloquea lo que viene después. Sin proyecto .NET, el GREEN de la Task 1 (paso 9), la migración (paso 6) y el `task-done` tampoco se pueden ejecutar. El plan cuenta con infraestructura que el repo no tiene. Hay que decidir si alguien añade la base del backend (workspace de moon, proyectos y fixture de Testcontainers) o si se toca el plan.
+
+**Tests escritos** en `backend/tests/Bookings.Tests/BookingsEndpointsTests.cs`, sin commitear porque van en el commit de la task:
+
+| Test | Qué comprueba de la spec |
+| --- | --- |
+| `Filters_by_status_and_applies_pagination_after_filtering` | Con 25 canceladas, las páginas 1 y 2 de `?status=Cancelled` traen solo canceladas, no se repiten y entre las dos están todas. Así se ve que se pagina después de filtrar. |
+| `Returns_all_bookings_when_status_is_omitted` | Sin `status` vuelven los tres estados. |
+| `Column_default_sets_confirmed_for_rows_inserted_without_status` | Una fila insertada con SQL directo sin `Status` queda en `Confirmed`. |
+| `Rejects_unknown_status_with_400` | `?status=Foo` responde 400. |
+| `New_bookings_are_created_as_pending` | Una reserva nueva creada con EF queda en `Pending`. |
+
+**Me salí del plan en** (está apuntado en el ledger):
+- **`Rejects_unknown_status_with_400`:** el Review Focus 1 del plan lo pone como test de la Task 1, pero la lista de tests de la task no lo incluía.
+- **`New_bookings_are_created_as_pending`:** la spec pide que las reservas nuevas se creen con `Pending` y ningún test del plan lo cubría.
+- **`status` leído como texto:** en los tests de filtro y de "todas", `status` se lee como texto. Si la API lo devolviera como número, fallarían; así cubren ese riesgo del plan sin un test aparte.
+
+**Lo demás:**
+- `develop` no trae cambios desde la base de la rama (`8d7450b`): ni la fila 0012 del roadmap ni los ficheros de la task.
+- La Task 1 está abierta con `task-start`. El ledger está en `.superpowers/sdd/plan/progress.md`.
+- Hay una copia de los tests fuera del repo, en `../red-copies/0012/task-1/`, para compararla con los tests cuando se implemente la task.

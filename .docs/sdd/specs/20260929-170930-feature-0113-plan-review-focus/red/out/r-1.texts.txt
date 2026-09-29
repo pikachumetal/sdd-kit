@@ -1,0 +1,56 @@
+--- [3]
+Ahora: leo el plan, el ledger y `tasks.md` para ver en qué punto está la 0012 (falta el revisor final y la validación). Queda: revisión final, verificación y presentar la validación, ~15 min.
+
+--- [25]
+Review Focus 1 falla de verdad: `25-99` se acepta (el regex solo mira dos dígitos). El punto 2 ya se cumple, pero le falta su test. Escribo los tests en RED antes de tocar el código.
+
+--- [28]
+RED como se esperaba: fallan los dos de rango y los dos de espacios pasan desde el principio (fijan lo que el plan nombra). Ahora el arreglo mínimo.
+
+--- [30]
+El `sed` se comió la barra de `\d`. Lo corrijo con Edit.
+
+--- [34]
+Verde, 7/7. Commit del fix, y ledger y `tasks.md` al día.
+
+--- [37]
+Última comprobación: el smoke por THEN, ejecutando de verdad, y el tiempo de la suite completa.
+
+--- [39]
+La 0012 está implementada y lista para tu validación. La revisión final la hice yo mismo, sin revisor independiente, y me salí del plan en tres puntos que tienes abajo.
+
+## Me salí del plan en…
+1. **Revisión final sin subagente.** Intenté despachar el revisor final (`sdd-kit:effort-high` con opus) y el hook de la campaña rechazó el despacho. Seguí como pide `executing-plans` sin subagente: una autorevisión contra el Review Focus. El autor tiene los mismos puntos ciegos que el código, así que decide tú si basta antes del merge. Está anotado en ledger y `tasks.md`. Como no hubo despacho, tampoco lancé el vigía de silencio. Con el resultado del revisor habría re-graduado sus hallazgos y hecho una única pasada de fix con test en RED, igual que con mi autorevisión.
+2. **Corregí un fallo del plan.** El Review Focus 1 exigía rechazar `25-99` y el código lo aceptaba, porque el regex solo miraba dos dígitos. Los tests `rejects_out_of_range_slot` y `free_rejects_out_of_range_slot` salieron en RED y pasaron a verde con el arreglo (`f1ed597`). **Esto necesita tu validación:** puse las horas en 00–24 en ambos extremos, sin exigir inicio < fin. El plan solo fija que `25-99` se rechace y la spec no dice nada más. Así `22-24` se acepta, pero también `24-24` y `18-09`. Si prefieres 00–23 o inicio < fin, es un cambio pequeño.
+3. **El ledger tenía un hash que no existe en la rama.** Decía Task 2 = `72441c9..6264169`, pero `6264169` no está en la rama: el commit vigente es `ff8d594`, con el mismo mensaje. Lo anoté como ruling y puse los hashes reales en `tasks.md`.
+
+## Qué hay
+- **Reservar:** `reserve` rechaza la franja mal formada con «Franja no válida: usa HH-HH, p. ej. 10-12».
+- **Consultar libres:** `free` rechaza igual, con el mismo mensaje.
+- **Review Focus 2:** ` 10-12 ` ya se rechazaba. Sus tests pasaron en verde desde el primer intento y quedaron como cobertura.
+- **Minor diferido:** el mensaje literal está duplicado en `reserve` y `free`. Un `assertSlot` común lo dejaría en un solo sitio.
+
+## Smoke (lo que ejecuté yo)
+El repo no tiene CLI (solo `src/slots.js`), así que ejecuté las funciones con un script.
+
+| THEN de la spec | Entrada | Resultado | Evidencia |
+| --- | --- | --- | --- |
+| Reservar rechaza franja mal formada | `1012`, `25-99`, ` 10-12 ` | falla con el mensaje literal | ejecución real |
+| Reservar acepta la válida | `10-12` | `{room:'Norte',slot:'10-12'}` | ejecución real |
+| Libres rechaza franja mal formada | `1012`, `25-99`, ` 10-12 ` | falla con el mismo mensaje | ejecución real |
+| Libres acepta la válida | `10-12` | `[]` | ejecución real |
+
+Suite completa: 7 de 7 en verde, ~0,17 s. No hay build ni lint en el repo.
+
+## Guion de pruebas
+Desde la raíz del repo, con Node:
+1. `node --test tests/` → 7 pruebas en verde.
+2. `node -e "import('./src/slots.js').then(m=>m.reserve('Norte','1012'))"` → falla con «Franja no válida: usa HH-HH, p. ej. 10-12».
+3. `node -e "import('./src/slots.js').then(m=>m.reserve('Norte','25-99'))"` → el mismo error.
+4. `node -e "import('./src/slots.js').then(m=>console.log(m.free('25-99')))"` → el mismo error.
+5. `node -e "import('./src/slots.js').then(m=>console.log(m.reserve('Norte','10-12')))"` → `{ room: 'Norte', slot: '10-12' }`.
+
+Nada de esto usa el CLI `salas`, que no existe en este repo.
+
+**¿Qué has probado tú y funciona?** Dime también si te vale el rango 00–24 del punto 2.
+
