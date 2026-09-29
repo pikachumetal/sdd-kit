@@ -10,6 +10,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **`Watch-SubagentSilence.ps1 -Once` con despachos antiguos** — con `-Once` el vigía toma el despacho más reciente con esa description, sin el margen de 60 s del vigía continuo. Antes, un subagente despachado hace 5 min y en marcha daba «SIN TRANSCRIPT: …; el vigía de silencio no funciona en esta sesión» (ticket de la feature 0027 de document-manager §4). → [ref](specs/20260929-113512-patch-0103-silence-watch-once-message/)
 - **Aviso de versión del kit** — el hook `SessionStart` compara la versión del plugin cargado con la de `.docs/sdd/sdd-kit.json` y, si es menor, avisa al usuario y al agente con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar (`/reload-plugins` no basta). Antes, una caché vieja corría las skills de otra versión sin que nadie lo notara (ticket de la feature 0021 del template §4). → [ref](specs/20260929-073507-patch-0100-kit-version-warning/)
 
 ## [2.1.0] - 2026-09-29

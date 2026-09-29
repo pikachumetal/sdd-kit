@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0103-silence-watch-once-message
-commit: <hash>
+commit: ddc478a1
 ---
 
 # Patch 0103 — `Watch-SubagentSilence.ps1 -Once` no encuentra un despacho de hace más de 60 s
@@ -43,6 +43,8 @@ Igual al reportado.
 | 1 | `-Once` con despacho de hace 5 min en marcha (test nuevo) | ✅ RED `SIN TRANSCRIPT:` antes del fix; GREEN `EN MARCHA:` después |
 | 2 | `-Once` con dos despachos de igual description: uno de hace 30 min callado y otro reciente | ✅ `EN MARCHA:` (toma el reciente) |
 | 3 | Suite completa `Invoke-Pester tests/` | ✅ 1050 verdes, 10 skipped; 1 rojo en `FastSuiteBudget` (35 s frente a 30 s, `SubjectOutputPrivacy.Tests.ps1`, fichero no tocado) que pasa en 2 de 2 repeticiones sueltas: tiempo con carga, no del fix |
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en el próximo -Once del vigía en una feature, a cargo del dev-lead» · disparador: el próximo `-Once` del vigía en una feature, a cargo del dev-lead
 
 Sin cobertura automática: el margen de 60 s del vigía continuo. Probarlo exige correr sin `-Once` y esperar la gracia de 2 min.
 
