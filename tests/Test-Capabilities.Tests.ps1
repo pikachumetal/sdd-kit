@@ -2,6 +2,7 @@ BeforeAll {
   $script:Validator = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Test-Capabilities.ps1'
   $script:Bookings = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot 'fixtures/capabilities/bookings.md')
   $script:Roots = [System.Collections.Generic.List[string]]::new()
+  $script:ReserveScenario = "- GIVEN la sala Norte libre de 10 a 12`n- WHEN ``salas reservar Norte 10-12```n- THEN la reserva queda guardada y el CLI responde ``Reservada Norte 10-12``"
 
   function New-SddFolder([hashtable]$Files) {
     $root = Join-Path ([System.IO.Path]::GetTempPath()) "caps-$([guid]::NewGuid().ToString('N'))"
@@ -24,7 +25,7 @@ BeforeAll {
   }
 
   function Get-Spec([string]$Block, [string[]]$DeltaNames) {
-    $delta = ($DeltaNames | ForEach-Object { "### Capacidad: ``$_```n`n**ADDED — Algo**`n- GIVEN a`n- WHEN b`n- THEN c`n" }) -join "`n"
+    $delta = ($DeltaNames | ForEach-Object { "### Capacidad: ``$_```n`n**MODIFIED — Reservar una franja**`n$script:ReserveScenario`n" }) -join "`n"
     return "---`nid: x`n---`n`n# Spec — prueba`n`n$Block`n## Decisiones que he tomado yo — valida estas`n`n1. nada`n`n## Delta de comportamiento`n`n$delta"
   }
 }
@@ -299,6 +300,35 @@ Describe 'Test-Capabilities.ps1 con -Artifact' -Tag 'Slow' {
     $patch = (Get-Spec "## Capacidades`n`n- Nuevas: ``bookings`` — reservas`n" @('bookings')) -replace 'id: x', "id: x`ntype: patch"
     (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/p/patch.md' = $patch }) 'specs/p/patch.md').Lines |
       Should -Contain 'patch.md: un patch no crea capacidades: quita «Nuevas»'
+  }
+
+  It 'un MODIFIED sin fusionar, con el encabezado en varias líneas, falla nombrando el título' {
+    $block = "## Capacidades`n`n- Modificadas: ``bookings`` — cambia «Reservar una franja»`n"
+    $delta = "### Capacidad: ``bookings```n`n**MODIFIED — Reservar una franja** (antes: «la reserva queda`nguardada»)`n- GIVEN la sala Norte libre de 10 a 12`n- WHEN ``salas reservar Norte 10-12```n- THEN el CLI pide confirmación`n"
+    $spec = (Get-Spec $block @()) + $delta
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/t/spec.md' = $spec }) 'specs/t/spec.md'
+    $result.Lines | Should -Contain 'spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md'
+    $result.Code | Should -Be 1
+  }
+
+  It 'un MODIFIED fusionado, con el encabezado en varias líneas, pasa' {
+    $block = "## Capacidades`n`n- Modificadas: ``bookings`` — cambia «Reservar una franja»`n"
+    $delta = "### Capacidad: ``bookings```n`n**MODIFIED — Reservar una franja** (antes: «la reserva queda`nguardada»)`n`n> Copia el bloque entero.`n`n- GIVEN la sala Norte libre de 10 a 12`n- WHEN ``salas reservar Norte 10-12```n- THEN el CLI pide confirmación`n"
+    $merged = $script:Bookings -replace '- THEN la reserva queda guardada[^\r\n]*','- THEN el CLI pide confirmación'
+    $spec = (Get-Spec $block @()) + $delta
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $merged; 'specs/t/spec.md' = $spec }) 'specs/t/spec.md'
+    $result.Lines | Should -Be @('Capacidades válidas: 1')
+    $result.Code | Should -Be 0
+  }
+
+  It 'un ADDED sin fusionar falla nombrando el título, y un título partido en dos líneas cuenta entero' {
+    $block = "## Capacidades`n`n- Modificadas: ``bookings`` — añade «Cancelar una reserva» y «Anular todas las reservas de una sala»`n"
+    $delta = "### Capacidad: ``bookings```n`n**ADDED — Cancelar una reserva**`n- GIVEN a`n- WHEN b`n- THEN c`n`n**ADDED — Anular todas las reservas`nde una sala**`n- GIVEN a`n- WHEN b`n- THEN c`n"
+    $spec = (Get-Spec $block @()) + $delta
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/t/spec.md' = $spec }) 'specs/t/spec.md'
+    $result.Lines | Should -Contain 'spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md'
+    $result.Lines | Should -Contain 'spec.md: «Anular todas las reservas de una sala» del delta no está en capabilities/bookings.md'
+    $result.Code | Should -Be 1
   }
 
   It 'un patch que devuelve el comportamiento pasa con «Ninguna, porque…» y sin delta' {
