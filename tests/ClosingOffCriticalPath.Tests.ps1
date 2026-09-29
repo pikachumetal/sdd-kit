@@ -48,3 +48,21 @@ Describe 'Borradores de cierre' {
     Assert-Literal (Get-Step $script:EndSkill 0) @('borradores')
   }
 }
+
+Describe 'Sha alcanzable' {
+  It 'commit-milestones reescribe las líneas del tramo juntado' {
+    Assert-Literal (Get-Reference 'commit-milestones.md') @('juntada en el cierre', 'git merge-base --is-ancestor')
+  }
+
+  It 'el paso 10 reescribe antes de juntar' {
+    Assert-Literal (Get-Step $script:EndSkill 10) @('juntada en el cierre')
+  }
+
+  It 'el último revisado cubre la línea juntada en <Where>' -ForEach @(
+    @{ Where = 'el paso 7 de sdd-start-feature'; Text = { Get-Step $script:StartSkill 7 } }
+    @{ Where = 'el paso 9 de sdd-end-feature'; Text = { Get-Step $script:EndSkill 9 } }
+    @{ Where = 'control-profiles.md'; Text = { Get-Reference 'control-profiles.md' } }
+  ) {
+    Assert-Literal (& $Text) @('si la línea dice «juntada en el cierre», el commit de cierre')
+  }
+}
