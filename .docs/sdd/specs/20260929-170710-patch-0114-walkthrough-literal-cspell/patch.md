@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0114-walkthrough-literal-cspell
-commit: <hash>
+commit: 6e3b2bd1
 ---
 
 # Patch 0114 — la cita literal del dev-lead rompe el corrector de docs del proyecto
@@ -39,6 +39,8 @@ Medido ([RED](../../../../tests/walkthrough-literal-cspell-red.md), escenario w2
 | 3 | `tests/ClosingVerification.Tests.ps1`, test nuevo | ✅ RED: 14 verdes y 1 rojo sin la línea; GREEN: 15 verdes |
 | 4 | Suite completa `Invoke-Pester tests/` | ✅ 1081 verdes, 10 skipped, 0 rojos · 7 min 37 s |
 
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en el próximo cierre de feature de document-manager con cspell, a cargo del dev-lead» · disparador: el próximo cierre de feature de document-manager con cspell, a cargo del dev-lead
+
 Campaña: 5 sujetos Sonnet y 1,14 $. La previsión era 3 sujetos y 2 $. El GREEN y el REFACTOR la superaron, y el dev-lead autorizó cada sujeto por separado.
 
 Fuera de alcance, como pidió la petición: MD013 y las palabras de `Build-EstimationLog.ps1`, que siguen en la fila de deuda. `patch-template.md` §4 también pide la frase literal, pero ningún ticket de patch ha reportado el fallo (Art. II): no se toca.
@@ -46,4 +48,4 @@ Fuera de alcance, como pidió la petición: MD013 y las palabras de `Build-Estim
 ## 5. Tiempo (ligero)
 
 - Estimación: —
-- Real: 1h
+- Real: 1.5h
