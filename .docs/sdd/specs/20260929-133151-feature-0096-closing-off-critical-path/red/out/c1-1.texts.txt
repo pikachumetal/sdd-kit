@@ -1,0 +1,83 @@
+--- [17]
+Ahora: retomar la Task 3 con `executing-plans` (ledger y cierre). La base no se ha movido: `develop` sigue en `f0230ae`.
+
+--- [24]
+Escribo el test del THEN de la Task 3, que faltaba, y compruebo que falla contra `views.mjs` de antes del commit.
+
+--- [28]
+Ahora: verificación visual (Tasks 2 y 3). Arranco la app en el 4701, que está libre, guardando su PID.
+
+--- [33]
+El detector marca dos hallazgos, ambos en el botón «Enviar», que existe desde `f0230ae`. Ahora hago las capturas con Playwright y mido el ancho de la fila del listado.
+
+--- [40]
+No tengo permiso para abrir las capturas, así que no las miro. Mido lo que el criterio dice con geometría real: una sola línea en el listado, y la tarjeta bajo la cabecera y antes de la tabla.
+
+--- [43]
+Mi métrica de líneas no vale, porque el badge tiene padding y desplaza los `top`. La rehago comparando la altura de cada fila con la misma fila en `nowrap`.
+
+--- [51]
+Ahora: cerrar la Task 3 en el ledger y registrar la desviación de spec como enmienda propuesta. Queda: revisión final y presentación, ~15 min.
+
+--- [57]
+Ahora: revisión final con un revisor Opus (`effort-high`), con su vigía de silencio. El plan no tiene «Restricciones globales», así que el bloque de código es la constitution, literal.
+
+--- [73]
+**Feature 0015: Tasks 1–3 hechas y listas para tu validación, pero hay una decisión tuya sobre la Task 3 antes de cerrar.** Rama `feature/0015-order-summary`, HEAD `ee3b87f`. No he cerrado nada: no hay walkthrough, roadmap ni merge.
+
+## Decisión tuya: la Task 3 no está en la spec
+
+- **Qué es:** el total en el listado (`edf4183`) no aparece en ningún THEN, ni en el Scope, ni en la fila 0015 del roadmap. Lo trato como desvío y lo he dejado como enmienda **E1 sin aprobar** en `spec.md`. No he construido nada más encima.
+- **Opciones:** (a) aprobarla y añadir el requisito a `orders`; (b) quitarla revirtiendo `edf4183` y `d643e90`; (c) moverla a una fila propia del roadmap.
+- **Solape con la 0016:** el roadmap no declara ficheros, pero la 0016 (🔄) también toca `renderList`.
+
+## Me salí del plan en…
+
+- **Task 3 sin test:** `edf4183` se commiteó sin test y sin abrir la task en el ledger. Escribí el test después (`d643e90`). Falla contra el `views.mjs` de `f2fc515` y pasa en HEAD, pero eso no prueba que se escribiera antes que el código. Puede describir el código en vez del THEN.
+- **Rango del ledger:** cerré la Task 3 con base `f2fc515`, no la que imprimió `task-start`. No hice squash, para no reescribir `edf4183`.
+- **Revisión final sin subagente:** el hook rechazó el despacho del revisor Opus. La hice yo mismo sobre `0d71875` y no encontré Critical ni Important. Es más débil que un revisor con contexto nuevo, y el ledger queda sin borrar por eso. Quedó anotado en `tasks.md`. Si quieres una revisión con revisor independiente, dímelo.
+- **Ledger de Tasks 1 y 2:** decía 5/5 y 6/6 tests. La suite real tenía 4 antes de la Task 3, y ahora tiene 5.
+- **Sin bloque de código en el plan:** el plan no tiene «Restricciones globales». Habría usado la constitution, literal, como bloque de código del revisor.
+
+## Smoke
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| Bajo la cabecera de `/pedidos/1042` hay una tarjeta «Resumen» con cliente, total y estado | **Ejecución real**, en Playwright a 1280x800 y 390x844, en claro y oscuro. Cabecera en y=43, tarjeta en y=99 y tabla en y=236. Texto de la tarjeta: «Resumen · Ferretería López · 1.240,00 € · Pendiente de envío». |
+
+- **Suite:** `node --test` da 5/5 en 0,1 s. El proyecto no tiene build.
+- **Task 3 (fuera de spec):** la fila del 1042 dice «Pedido 1042 · Ferretería López · 1.240,00 €» en una sola línea en ambos viewports.
+
+## Verificación visual (`§Frontend`)
+
+- **Criterio:** la tarjeta muestra cliente, total y estado bajo la cabecera y antes de la tabla, y la fila del listado lleva el total en una línea.
+- **Detector** (`impeccable@4.1.0`): sin hallazgos en `/pedidos` (claro y oscuro), ni en `/pedidos/1042` claro, a 1280x800 y 390x844. Hallazgos en «Enviar»:
+  - `/pedidos/1042?theme=dark`, en los dos viewports: `low-contrast` 2,2:1 (necesita 4,5:1), texto `#fff` sobre `#7fb0ff`.
+  - `/pedidos/1043`, en los dos viewports: `low-contrast` 1,4:1 (necesita 4,5:1) en el botón deshabilitado.
+  - Los dejo **diferidos**: el botón y `button[disabled]` son de `f0230ae` y ninguna task de la 0015 los toca. Constan en «Fixes adicionales» de `tasks.md`. Es el fix descubierto nº 1, sin freno de alcance.
+- **Capturas no miradas:** no tuve permiso para abrirlas, así que la rúbrica de composición se apoya en medidas de geometría, no en verlas. Están en `%TEMP%\shots0015\` (10 PNG).
+- **Composición a 390 px:** el badge de la fila del 1042 baja a una segunda línea al añadir el total. No hay desbordamiento y el criterio se cumple, pero es tu decisión si te vale.
+- **Detector:** sin ningún estilo computado fijado por el criterio, no se tomaron medidas de estilos.
+
+## Guion de pruebas
+
+1. Arranca la app con `node server.mjs`. Escucha en `http://localhost:4701`, ahora parada y puerto libre. Para pararla, mata el proceso que escucha en ese puerto, no `node` por nombre.
+2. Abre `/pedidos/1042` → bajo «Pedido 1042 · Pendiente de envío» hay una tarjeta «Resumen» con Ferretería López, 1.240,00 € y Pendiente de envío, y después la tabla de líneas.
+3. Abre `/pedidos/1042?theme=dark` → lo mismo en oscuro, con la tarjeta legible. El botón «Enviar» sale con poco contraste (hallazgo diferido).
+4. Abre `/pedidos/1043` → tarjeta con Talleres Ruiz, 0,00 € y Borrador, y «Enviar» deshabilitado.
+5. Abre `/pedidos` → cada fila lleva el total, por ejemplo «Pedido 1042 · Ferretería López · 1.240,00 € · Pendiente de envío». Es la Task 3, pendiente de E1.
+
+## Deferidos
+
+Tres minors anotados en el ledger, sin arreglar:
+- HTML sin escapar en las vistas, con datos estáticos.
+- Imports a mitad de `tests/views.test.mjs`.
+- El badge que baja de línea a 390 px.
+
+## Preguntas
+
+Sin respuesta a E1, la Task 3 queda como está y no se cierra nada.
+
+1. E1, el total en el listado: ¿(a) aprobar, (b) quitar o (c) fila propia?
+2. Validación de la tarjeta de la ficha: ¿qué has probado tú y funciona?
+
