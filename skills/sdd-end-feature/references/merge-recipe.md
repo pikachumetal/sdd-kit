@@ -32,7 +32,7 @@ El push lo hace el script con `-Push`: publica solo la rama destino, por su nomb
 3. `merge.push: true` (perfil `delegate` o `unattended`): `-Push`, sin preguntar.
 4. `merge.push` ausente o `false`: sin `-Push`, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
 
-Si la rama destino no tiene remoto, no se pasa `-Push` (el script fallaría con `push:` antes de fusionar), y el mensaje final dice «push: no hecho: sin remoto». Si el push falla, se sigue «Si el script falla»: nunca `--force`, `pull`, `rebase` ni `git push` a mano. El mensaje final cita en un bloque el comando del script, cita su error y da el hash de la rama destino.
+Si la rama destino no tiene remoto, `-Push` se decide igual: el script fusiona en local, no publica y acaba con `push: no hecho: sin remoto`, que el mensaje final cita. Si el push falla, se sigue «Si el script falla»: nunca `--force`, `pull`, `rebase` ni `git push` a mano. El mensaje final cita en un bloque el comando del script, cita su error y da el hash de la rama destino.
 
 ## Cuándo no se llama
 

@@ -132,12 +132,6 @@ function Get-RemoteForBranch([string]$Worktree, [string]$Into) {
   return $null
 }
 
-function Assert-PushableRemote([bool]$Push, [string]$Remote, [string]$Into) {
-  if ($Push -and [string]::IsNullOrWhiteSpace($Remote)) {
-    throw "push: no hay remoto configurado para '$Into'."
-  }
-}
-
 function Merge-AddedLines([string]$Worktree, [string]$File) {
   # Con diff3, un trozo que solo añade por los dos lados tiene la sección de la base vacía.
   Invoke-IsolatedGit $Worktree @('checkout', '--conflict=diff3', '--', $File) | Out-Null
@@ -243,7 +237,6 @@ try {
   $target = [pscustomobject]@{ Into = $policy.Into; Branch = $branch }
   $destination = Resolve-DestinationWorktree $ProjectRoot $target $paths.WorktreesParent
   $remote = Get-RemoteForBranch $destination.Path $policy.Into
-  Assert-PushableRemote $Push $remote $policy.Into
   Sync-BaseBranch $destination.Path $policy.Into $remote
 
   $before = Invoke-IsolatedGit $destination.Path @('rev-parse', 'HEAD') | Select-Object -First 1
@@ -259,6 +252,7 @@ try {
   $shortHash = Invoke-IsolatedGit $destination.Path @('rev-parse', '--short', 'HEAD') | Select-Object -First 1
   Write-MergeStatus "Fusionado $branch en $($policy.Into): $shortHash"
   if ($pushed) { Write-MergeStatus "publicado en $remote" }
+  elseif ($Push) { Write-MergeStatus 'push: no hecho: sin remoto' }
 }
 catch {
   if ($null -ne $before) { Undo-FailedMerge $destination.Path $before }

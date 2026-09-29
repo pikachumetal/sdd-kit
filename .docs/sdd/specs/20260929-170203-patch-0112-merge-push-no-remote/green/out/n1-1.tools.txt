@@ -1,0 +1,186 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: cd "<run>/salas" && git status --short && git log --oneline main..HEAD && cat .docs/sdd/sdd-kit.json && ls -R .docs/sdd | head -50 && cat .docs/sdd/specs/0013*/patch.md && git worktree list && git remote -v
+<<< Exit code 1
+e6eeb26 docs(0013): patch.md del fix de reservar
+17c87ab fix(0013): reservar rechaza más de 2 h
+{"version": "2.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+.docs/sdd:
+capabilities/
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/capabilities:
+bookings.md
+
+.docs/sdd/specs:
+20260925-080000-patch-0013-reserva-maxima/
+
+.docs/sdd/specs/20260925-080000-patch-0013-reserva-maxima:
+patch.md
+cat: '.docs/sd
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/specs/*/patch.md; echo ----; cat .docs/sdd/changelog.md .docs/sdd/roadmap.md .docs/sdd/capabilities/bookings.md; git worktree list; git remote -v; git branch -a; ls
+<<< ---
+id: 20260925-080000-patch-0013-reserva-maxima
+task: 0013
+title: Patch — `reservar` acepta reservas de más de 2 h
+type: patch
+status: done
+created: 2026-09-25
+branch: feature/0013
+commit: <hash>
+---
+
+# Patch 0013 — `reservar` acepta reservas de más de 2 h
+
+## 1. Síntoma
+
+Soporte: `salas reservar Norte 10-13` guardó una reserva de 3 h.
+
+## 2. Causa raíz
+
+`reserve` no comprobaba la duración de la franja.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/slots.js`, `tests/slots.test.js`
+- **Cambio**: `reserve` rechaza una franja de más de 2 h con `Máximo 2 h por reserva`.
+
+## 4. Verificación
+
+| # | Caso | Re
+
+>>> Bash: cd D:/code/.worktrees/sdd-kit/merge-push-no-remote/skills && cat sdd-start-feature/references/commit-milestones.md; cat sdd-end-feature/references/merge-recipe.md; ls sdd-templates/scripts sdd-end-feature/references
+<<< # Un commit por hito
+
+La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del plan** y **cierre** — 2 + N commits desde el `merge-base`, 3 en lite. La de un patch, dos: **fix** y **cierre**. Mientras un hito está abierto se commitea lo que haga falta: la revisión de `subagent-driven-development` trabaja por rangos `BASE..HEAD`. Cuando la revisión del hito queda limpia, su rango se junta en un commit.
+
+## Qué lleva cada hito
+
+| Hito | Lleva | Se junta | Base |
+| --- | --- | --- | --- |
+| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite
+
+>>> Bash: cd "<run>/salas" && B=$(git merge-base HEAD develop) && echo base $B && git rev-list --merges $B..HEAD && git branch -r --contains $(git rev-list --reverse $B..HEAD | head -1) && git log --format='%h %s%n%b' $B..HEAD && git rev-parse develop main
+<<< base eb2d39276ebeed7bd0a35330d726bf2a2999ba07
+e6eeb26 docs(0013): patch.md del fix de reservar
+Cuerpo del commit.
+
+17c87ab fix(0013): reservar rechaza más de 2 h
+reserve no comprobaba la duración.
+
+eb2d39276ebeed7bd0a35330d726bf2a2999ba07
+eb2d39276ebeed7bd0a35330d726bf2a2999ba07
+
+>>> Bash: cd "<run>/salas" && git reset --soft eb2d392 && git commit -q -F - <<'EOF'
+fix(0013): reservar rechaza más de 2 h
+
+`reserve` no comprobaba la duración de la franja. Ahora rechaza más de 2 h
+con `Máximo 2 h por reserva` sin guardar. Incluye test y patch.md.
+EOF
+git rev-parse --short HEAD; git status --short
+<<< 54a4135
+
+>>> Bash: cd "<run>/salas" && P=$(ls .docs/sdd/specs/*/patch.md) && python3 - "$P" <<'EOF'
+import sys
+p=sys.argv[1]
+s=open(p,encoding='utf-8').read()
+s=s.replace("commit: <hash>","commit: 54a4135")
+s=s.replace("2/2 verde |\n","2/2 verde |\n\nValidado: 2026-09-29 · «He probado `salas reservar Norte 10-13` y da `Máximo 2 h por reserva` sin guardar. Validado.»\n",1)
+s=s.replace("## 5. Tiempo","## Capacidades\n\nNinguna, porque el fix devuelve `salas reservar` a lo que ya dice bookings (límite de 2 h y aviso `Máximo 2 h por reserva`).\n\n## 5. Tiempo")
+open(p,'w',encoding='utf-8').write(s)
+c=open('.docs/sdd/changelog.md',encoding='utf-8').read().rstrip('\n')
+c+="\n\n### Fixed\n\n- `reservar` rechaza reservas de más de 2 h con `Máximo 2 h por reserva` ([patch 0013](specs/20260925-080000-patch-0013-reserva-maxima/))\n"
+open('.docs/sdd/changelog.md','w',encoding='utf-8').write(c)
+r=open('.docs/sdd/roadmap.md',encoding='utf-8').read().rstrip('\n')
+r+="\n| 2026-09-29 | 0013 | `reservar` rechaza reservas de más de 2 h ([patch](specs/20260925-080000-patch-0013-reserva-maxima/patch.md)) |\n"
+r=r.replace("| 0013 | `reservar` acepta reservas de más de 2 h | soporte | `src/slots.js` | patch |\n","")
+open('.docs/sdd/roadmap.md','w',encoding='utf-8').write(r)
+EOF
+git diff --stat; git diff .docs | head -70
+<<<  .docs/sdd/changelog.md                             | 10 ++-
+ .docs/sdd/roadmap.md                               | 26 ++++----
+ .../patch.md                                       | 76 ++++++++++++----------
+ 3 files changed, 61 insertions(+), 51 deletions(-)
+diff --git a/.docs/sdd/changelog.md b/.docs/sdd/changelog.md
+index 1a58814..e585a2d 100644
+--- a/.docs/sdd/changelog.md
++++ b/.docs/sdd/changelog.md
+@@ -1,3 +1,7 @@
+-# Changelog
+-
+-## [Unreleased]
++# Changelog
++
++## [Unreleased]
++
++### Fixed
++
++- `reservar` rechaza reservas de más de 2 h con `Máximo 2 h por reserva` ([patch 0013](spe
+
+>>> Bash: cd "<run>/salas" && for f in .docs/sdd/changelog.md .docs/sdd/roadmap.md .docs/sdd/specs/*/patch.md; do sed -i 's/\r$//; s/$/\r/' "$f"; done && git diff --stat && git diff .docs/sdd/specs | cat -A | grep -c '\^M\$' ; git diff .docs/sdd/specs
+<<<  .docs/sdd/changelog.md                             | 10 ++-
+ .docs/sdd/roadmap.md                               | 26 ++++----
+ .../patch.md                                       | 76 ++++++++++++----------
+ 3 files changed, 61 insertions(+), 51 deletions(-)
+41
+diff --git a/.docs/sdd/specs/20260925-080000-patch-0013-reserva-maxima/patch.md b/.docs/sdd/specs/20260925-080000-patch-0013-reserva-maxima/patch.md
+index 0efb96e..96c5ab8 100644
+--- a/.docs/sdd/specs/20260925-080000-patch-0013-reserva-maxima/patch.md
++++ b/.docs/sdd/specs/20260925-080000-patch-0013-reserva-maxima/patch.md
+@@ -1,35 +1,4
+
+>>> Bash: cd "<run>/salas" && for f in .docs/sdd/changelog.md .docs/sdd/roadmap.md .docs/sdd/specs/*/patch.md; do sed -i 's/\r$//' "$f"; done && git diff --stat && node --test 2>&1 | grep -E '^# (pass|fail)'
+<<<  .docs/sdd/changelog.md                                            | 4 ++++
+ .docs/sdd/roadmap.md                                              | 2 +-
+ .../sdd/specs/20260925-080000-patch-0013-reserva-maxima/patch.md  | 8 +++++++-
+ 3 files changed, 12 insertions(+), 2 deletions(-)
+
+>>> Bash: cd "<run>/salas" && node --test 2>&1 | tail -8; pwsh -NoProfile -File "D:/code/.worktrees/sdd-kit/merge-push-no-remote/skills/sdd-templates/scripts/Test-Capabilities.ps1" -Path .docs/sdd -Artifact "$(ls .docs/sdd/specs/*/patch.md)" 2>&1 | tail -5
+<<< ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.938
+bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0
+bookings.md: falta la sección «Propósito»
+
+>>> Bash: cd "<run>/salas" && git add -A && git commit -q -F - <<'EOF'
+docs(0013): cierre del patch de reservar
+
+patch.md con hash y validación, changelog (Fixed) y fila en el roadmap.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git status --short; git log --oneline -3; pwsh -NoProfile -File "D:/code/.worktrees/sdd-kit/merge-push-no-remote/skills/sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "$(pwd)" -Push 2>&1 | tail -20
+<<< 8d36d5a docs(0013): cierre del patch de reservar
+54a4135 fix(0013): reservar rechaza más de 2 h
+eb2d392 feat: base de reservas de salas
+Fusionado feature/0013 en develop: 008472b
+push: no hecho: sin remoto
+
+=== RESULTADO (13 turnos, 0.42205899999999996 $)
+Patch 0013 cerrado y fusionado en `develop`.
+
+**Decisiones tomadas sin ti**
+- Junté el fix y su `patch.md` en un solo commit (`54a4135`), como pide la receta de hitos, y dejé el cierre en otro (`8d36d5a`).
+- Quité la fila 0013 de «Próximo» en el roadmap y añadí la fila en «Patches».
+- El bloque «Capacidades» de `patch.md` dice `Ninguna`: `bookings.md` ya decía el límite de 2 h y el aviso `Máximo 2 h por reserva`, así que no hay delta.
+
+**Pendiente**
+- El validador de capacidades falla en `bookings.md`: `sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0` y `falta la sección «Propósito»`. El patch no toca esa parte, así que no la edité. Queda para el dev-lead.
+- El kit avisa de que el proyecto está en 2.0.0 y hay migraciones hasta la 2.1.0. Se aplican con «ponme el proyecto al día con sdd-init-brownfield».
+- No hay `.docs/sdd/estimation.md`, así que no toqué el estimation-log.
+
+**Ticket para el kit:** ¿quieres que genere el ticket de mejora con `sdd-feedback` antes de limpiar el contexto?
+
+**Terminado.** feature/0013 fusionada en develop (008472b) · push: no hecho: sin remoto
