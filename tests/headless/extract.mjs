@@ -2,6 +2,7 @@
 // Uso: node extract.mjs tools <stream.jsonl> <run>   tool calls con el principio de su resultado, y el mensaje final
 //      node extract.mjs texts <stream.jsonl> <run>   mensajes de texto del agente, numerados por turno
 //      node extract.mjs clean <run> < entrada         la misma limpieza sobre la entrada estándar (state.txt)
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const [mode, ...rest] = process.argv.slice(2);
@@ -28,8 +29,16 @@ const escaped = user.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Home en sus formas Windows (\, \\ de JSON, /) y Git Bash (/c/…); luego el usuario suelto (ls -l, C--Users-<user>).
 const homePattern = new RegExp(`(?:[A-Za-z]:|/[A-Za-z])(?:\\\\{1,2}|/)Users(?:\\\\{1,2}|/)${escaped}\\b`, 'gi');
 const userPattern = new RegExp(`\\b${escaped}\\b`, 'g');
+// El user.name de git de la máquina: el sujeto lo copia del contexto de la sesión (ticket de la feature 0099 §1).
+// Sin los GIT_CONFIG_* que exporta subject_launch, que lo tapan con Fixture.
+const machineEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^GIT_CONFIG_(COUNT|KEY_\d+|VALUE_\d+)$/.test(key)));
+let gitUser = '';
+try {
+  gitUser = execFileSync('git', ['config', 'user.name'], { cwd: import.meta.dirname, env: machineEnv, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+} catch {} // sin user.name, git sale con 1: no hay nada que limpiar
 const clean = (text) => {
   let out = String(text);
+  if (gitUser) out = out.replaceAll(gitUser, '<git-user>');
   for (const variant of runVariants) out = out.replaceAll(variant, '<run>');
   return user ? out.replace(homePattern, '<home>').replace(userPattern, '<user>') : out;
 };
