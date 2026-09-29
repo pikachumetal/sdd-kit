@@ -1,0 +1,38 @@
+--- [3]
+Ahora: cargo el contexto SDD y el estado de la feature 0012 para retomar tras las Tasks 1 y 2. Queda: revisión final, borradores de cierre, smoke y presentar la validación, ~20 min, ~$2.
+
+--- [12]
+Ahora: preparo el paquete del revisor final en un worktree anclado en `f45649a`. Queda: despachar revisión (Opus effort high), smoke y borradores de cierre en paralelo, ~15 min, ~$1,5.
+
+--- [18]
+`sdd-kit:effort-high` está entre los agentes de la sesión. Despacho el revisor final en segundo plano, con su vigía.
+
+--- [22]
+El hook ha bloqueado el despacho del revisor final («Despacho no disponible en esta campaña»). Paro su vigía y sigo sin él; al presentar diré qué haría con su resultado.
+
+--- [27]
+Ahora: smoke — suite completa cronometrada y ejecución real de cada THEN y de las dos líneas del Review Focus. Queda: borradores de cierre y presentar la validación, ~8 min.
+
+--- [32]
+Todavía no te presento la validación. La revisión final no se ha podido hacer, y el smoke ha encontrado un hueco que te toca decidir a ti. Ese punto va solo al final de este mensaje; la validación irá en el mensaje siguiente, ya con tu respuesta.
+
+**Dónde estamos**
+- Las Tasks 1 y 2 están commiteadas (`4978d43`, `f45649a`) y la base (`develop`) no ha cambiado. La suite completa (`node --test`) pasa: 3 de 3 tests en 0,33 s.
+- **La revisión final no se ha hecho.** El encargo iba a Opus con effort high, anclado en `f45649a` y con las dos líneas del Review Focus copiadas tal cual. El hook de la sesión bloqueó el despacho («Despacho no disponible en esta campaña»). He parado su vigía, he quitado el worktree de revisión y lo he dejado anotado en `tasks.md` y en el ledger. Si se hubiera hecho, sus hallazgos Critical o Important habrían abierto una pasada de fix con un test RED primero. Una revisión limpia me habría dejado presentar la validación.
+- **Me salí del plan en:** el commit de la Task 2 se enmendó para meter `tasks.md`. Por eso el ledger apunta `6f55a1d` y el commit real es `f45649a`, con el mismo código.
+
+**Lo que ha encontrado el smoke** (llamé a `reserve` y `free` directamente; el repo no tiene ejecutable de la CLI):
+
+| Entrada | reservar | libres | Review Focus |
+| --- | --- | --- | --- |
+| `10-12` | reserva | `[]` | — |
+| `1012` | error con el mensaje literal | error con el mensaje literal | THEN de la spec ✔ |
+| `25-99` | **se acepta** | **se acepta** | Línea 1: pedía que se rechazara. El código no lo hace y el test `rejects_out_of_range_slot` no existe. |
+| ` 10-12 ` | error con el mensaje literal | error con el mensaje literal | Línea 2: el comportamiento es correcto, pero el test `rejects_padded_slot` no existe. |
+
+El plan se contradice. El Review Focus pide rechazar `25-99`, pero el Step 1 de la Task 1 fija la expresión `/^\d{2}-\d{2}$/`, que lo acepta. La spec solo dice «no casa con `HH-HH`». Rechazarlo cambia lo que devuelve la CLI, y eso es un freno de alcance: en `delegate` paro y te lo pregunto.
+
+En la pasada de fix añado los dos tests del Review Focus, que primero fallan. Si eliges rechazar, también cambio la expresión en `src/slots.js`. Después despacho otra vez la revisión final y te presento la validación con el guion de pruebas.
+
+**¿Rechazamos las franjas con horas imposibles como `25-99` (fuera de 00–23, o con la hora de inicio no menor que la de fin) con el mismo mensaje? Recomiendo que sí, porque es lo que pide el Review Focus. La otra opción es aceptarlas, quitar esa línea del Review Focus y dejar solo el test de los espacios.**
+

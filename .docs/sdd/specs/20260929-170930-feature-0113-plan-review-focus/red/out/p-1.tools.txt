@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; ls -a .docs/sdd
+
+>>> Glob: **/sdd-templates/**/plan-template.md
+<<< feature/0012
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md
+.docs/sdd/tech-stack.md
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-plan-review-focus\663c0781-d184-4fa4-9a79-feb3d4ba2f1f\scratchpad\kit-red\skills\sdd-templates\templates\plan-template.md
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md; done; echo "=== spec"; cat .docs/sdd/specs/*/spec.md; ls -a .docs/sdd/specs/*; git ls-files | head -40
+<<< === constitution
+# Constitution — reservas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capaci
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-plan-review-focus\663c0781-d184-4fa4-9a79-feb3d4ba2f1f\scratchpad\kit-red\skills\sdd-templates\templates\plan-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>
+4	title: Plan de implementación — <título de la spec>
+5	spec: ./spec.md
+6	status: draft
+7	created: <YYYY-MM-DD>
+8	---
+9	
+10	# Plan de implementación — <título>
+11	
+12	> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+13	> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+14	> Borra los bloques de ayuda (`>`) al redactar.
+15	
+16	## Decisiones que he tomado yo — valida estas
+17	
+18	> Es lo único que el dev-lead neces
+
+>>> Skill: superpowers:writing-plans
+<<< Launching skill: superpowers:writing-plans
+
+>>> Bash: cd "<run>/repo" && for f in backend/src/Bookings.Api/BookingsEndpoints.cs backend/src/Bookings.Api/Data/Booking.cs backend/src/Bookings.Api/Data/BookingsDb.cs backend/tests/Bookings.Tests/BookingsEndpointsTests.cs docs/api.md frontend/src/app/bookings/booking-list.component.ts frontend/src/app/bookings/booking.ts frontend/src/app/bookings/booking-list.component.css frontend/src/app/bookings/booking-list.component.spec.ts moon.yml; do echo "=== $f"; cat -n $f; done; cat .docs/sdd/changelog.md | head -20
+<<< === backend/src/Bookings.Api/BookingsEndpoints.cs
+     1	using Bookings.Api.Data;
+     2	using Microsoft.EntityFrameworkCore;
+     3	
+     4	namespace Bookings.Api;
+     5	
+     6	public static class BookingsEndpoints
+     7	{
+     8	    public static void MapBookings(this WebApplication app)
+     9	    {
+    10	        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+    11	            await db.Bookings
+    12	                .OrderBy(b => b.Start)
+    13	                .Skip((page - 1) * 20)
+    14	                .Take(20)
+    15	                .ToListAsync());
+
+>>> Write: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\plan.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\plan.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (11 turnos, 0.4771676 $)
+El plan de la 0012 está escrito en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md`. No he implementado nada ni he hecho commit. Es un borrador: falta tu OK, porque la apertura (spec y plan) se junta en un commit antes de la Task 1.
+
+Antes de escribirlo invoqué `sdd-start-feature` y `writing-plans`. No pasé por la pregunta de carril, modo y perfil: dijiste que la spec está aprobada y que parara tras el plan. El perfil es `delegate`, así que el plan no tiene gate de aprobación propio.
+
+El plan tiene dos tasks verticales, con ejecución Native:
+- **Task 1:** enum `BookingStatus`, migración que rellena `Confirmed`, filtro `GET /bookings?status=` y `docs/api.md`.
+- **Task 2:** `app-status-select` cableado en la lista, con su verificación visual.
+
+Lo que conviene que mires:
+- **Decisiones que la spec no fija:**
+  - `status` no distingue mayúsculas y minúsculas.
+  - `status` vacío significa sin filtro.
+  - Cualquier otro valor da 400, incluidos `1`, `99` y `Confirmed,Pending`, porque `Enum.TryParse` los aceptaría. Ese 400 es salida observable nueva y no lo dice la spec, así que conviene que lo valides.
+  - El estado viaja y se guarda como texto.
+- **Falta la migración base en el repo:** no hay `Migrations/` ni `Program.cs`. El Step 1 de la Task 1 lo comprueba y, si no hay migración base, para en lugar de generar el esquema entero como si fuera este cambio.
+- **Falta `§Frontend` en `tech-stack.md`:** la spec toca lo que se ve y no propuso esa sección, así que la verificación visual saldrá «composición no medida». Proponerla es decisión tuya.
+- **Coste:** unas 2,5 h, de las que unos 40 min son esperar `backend:test`, que tarda entre 17 y 21 min y corre en segundo plano en la Task 1 y otra vez en el gate final.
+- **Sección añadida:** el plan lleva una «Review Focus» con cinco entradas que la spec no nombra, cada una con su test. Es un añadido de `writing-plans` que la plantilla del kit no trae.
+
+Cuando digas «sigue» empiezo por la Task 1. La sesión va con Sonnet, que es el modelo previsto para Native.

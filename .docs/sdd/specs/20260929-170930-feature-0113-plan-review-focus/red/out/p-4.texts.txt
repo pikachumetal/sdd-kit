@@ -1,0 +1,35 @@
+--- [9]
+Ahora: escribiendo el plan de la 0012 (spec ya aprobada, perfil `delegate`). Queda: leer la plantilla del plan y redactarlo, ~5 min.
+
+--- [17]
+He escrito el plan de la 0012 en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md` y me he parado ahí: no he tocado código y no he hecho commit.
+
+**Hay dos cosas que bloquean la implementación y que tienes que resolver tú:**
+
+1. **Falta la infraestructura de tests del backend.** `BookingsEndpointsTests.cs` usa `SqlServerApiFactory` y `SeedAsync`, pero ni esa clase ni los `.csproj`, `Program.cs` o una carpeta `Migrations/` están en el repo. Sin eso, lo primero del plan (estado en BD y filtro en la API) no compila ni se puede probar. ¿Dónde viven esos ficheros?
+2. **Puede que no haya ninguna migración anterior.** Si la base se creó sin migraciones, la nueva `AddBookingStatus` intentaría crear la tabla entera y fallaría sobre las bases que ya existen. Si se confirma, el plan dice que me pare en vez de escribir una migración base.
+
+**Decisiones que la spec no fijaba, a validar:**
+- El estado se guarda en la base como texto y viaja en el JSON como texto (`"Cancelled"`, no un número).
+- La migración rellena las reservas existentes con `Confirmed`. Las nuevas salen `Pending`, pero hoy no hay forma de crear reservas desde la API, así que eso se prueba guardando directamente en la base.
+- Filtro en la API:
+  - `status` no distingue mayúsculas de minúsculas.
+  - Vacío o ausente devuelve todas.
+  - Un valor desconocido responde 400.
+  - Se filtra antes de paginar.
+- El selector se etiqueta «Estado», con las opciones «Todos», «Confirmada», «Pendiente» y «Cancelada».
+- **Falta cómo verificar la pantalla.** La feature cambia lo que se ve, pero `tech-stack.md` no tiene la sección `§Frontend` y la spec no la propuso. Propongo el detector impeccable, Playwright y acceso sin login. Si no la apruebas, la revisión visual del selector queda como «composición no medida».
+
+**El plan:**
+- **Dos tasks.** La primera es estado en BD, filtro en la API y `docs/api.md`. La segunda es el selector en la lista.
+- **Cinco casos de riesgo, cada uno con su test:**
+  - filtrar con paginación;
+  - un `status` en minúsculas o inválido;
+  - el estado serializado como número en el JSON;
+  - el selector bloqueado tras un error de la API;
+  - volver a «Todos».
+- **Ejecución: Native** (lo implemento yo en esta sesión y al final revisa la rama un revisor independiente). Son 2 tasks conectadas solo por el contrato de la API. Antes de decir «sigue», baja la sesión con `/model` a Sonnet con effort medium. La revisión final va con Opus.
+- **Estimación:** unas 3,5 h de implementación, más los 17–21 min de la suite del backend en la validación final.
+
+Aparte: el proyecto está en la versión 1.2.0 del kit y hay migraciones hasta la 2.1.0. Para aplicarlas, pide «ponme el proyecto al día con sdd-init-brownfield».
+
