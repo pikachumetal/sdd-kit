@@ -37,6 +37,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    | 2 | ¿Llevamos changelog? | `changelog.md` |
    | 3 | Solo si 2 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
    | 4 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
+   | 5 | Solo si el inventario encontró interfaz web: ¿con qué se verifica lo que se ve? Detector, runner E2E y cómo entra el agente en la aplicación (la URL de entrada si hay login); recomendados, impeccable y Playwright. Se calca `§Frontend` de `tech-stack-template.md`, y «sin detector» queda como `Detector: ninguno` | tech-stack, §Frontend |
 
    Orden de generación y qué lleva cada documento: [generacion.md](references/generacion.md).
 4. **Reglas de oro brownfield** — van a la constitution. Cuáles son: [generacion.md](references/generacion.md).
@@ -44,7 +45,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves que el usuario respondió a `sdd-config`
    (solo esas: «no sé» no escribe la clave). Además, `.claude/settings.json` con `"autoMemoryEnabled": false`
    (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo) y el marketplace de superpowers, `.gitignore` con los
-   temporales de las herramientas y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
+   temporales de las herramientas (y la ruta de la sesión de `§Frontend`, si la 5 la declara) y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
    `capabilities/` y `specs/` no se crean (git no versiona carpetas vacías), y las capacidades no se vuelcan
    aunque el usuario lo pida: crecen feature a feature.
    Detalle: [generacion.md](references/generacion.md).

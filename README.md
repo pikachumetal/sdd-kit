@@ -170,10 +170,14 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 | --- | --- | --- |
 | [`superpowers`](https://github.com/obra/superpowers) | Sí | Antes que el kit (ver [Instalación](#instalación)). Desde la terminal: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
 | `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
+| [impeccable](https://www.npmjs.com/package/impeccable) | No, recomendada si el proyecto tiene interfaz | Sin instalar: `npx impeccable@<versión> detect <url> --viewport 390x844`. Necesita Chrome, Chromium o Edge |
+| [Playwright](https://playwright.dev) | No, recomendada si el proyecto tiene interfaz | El MCP de Playwright o el paquete `playwright` en el proyecto |
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
 El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-09-27; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+
+impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 
 `grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
 

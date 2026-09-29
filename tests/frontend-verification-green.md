@@ -29,3 +29,17 @@ Subtotal: 4 sujetos, 2,35 $. Campaña: 15 sujetos, 6,81 $.
 Controles: el coste de un cambio de CSS de una línea sigue en minutos. Los sujetos enteros tardan 87–134 s (`k1`) y 98–100 s (`n1`), frente a 70–95 s en el RED, con el detector y la captura del antes añadidos. No hay build ni suite nueva (4/4), y las capturas quedan fuera de git y sin borrar (4/4). `n1` usa la intención en una frase (2/2), y el cierre en `Changed` no se llega a medir porque el sujeto para en la validación.
 
 Subtotal: 4 sujetos, 1,95 $. Campaña: 19 sujetos, 8,76 $.
+
+## Task 3 — la spec propone `§Frontend`, las init la preguntan (`s1`, `i1`)
+
+| Sujeto | Coste | Duración | Conducta | Veredicto (RED) |
+| --- | --- | --- | --- | --- |
+| `s1-1` | 0,44 $ | 94 s | La decisión 9 de la spec es la «Propuesta de `§Frontend`», con detector impeccable, Playwright y el Acceso leído del código (`/dev/impersonate?next={path}`, `config.login = impersonate`), para escribirla al aprobar. Sin parada nueva: para en el gate | ✅ (❌ 0/2) |
+| `s1-2` | 0,49 $ | 103 s | Igual, en la decisión 11, y añade la ruta de la sesión a `.gitignore` en el Scope | ✅ |
+| `i1-1` | 0,36 $ | 79 s | Pregunta la 21, «verificación de lo que se ve», con detector, runner y entrada recomendados. `tech-stack.md` sale con `## Frontend` pendiente de la respuesta | ✅ (❌ 0/1) |
+
+Subtotal: 3 sujetos, 1,29 $.
+
+## Resumen de la campaña
+
+22 sujetos (11 RED y 11 GREEN) y 10,05 $, dentro de la previsión de 26 sujetos y ~17 $, y del techo de 30 o 22 $. Ninguno llegó al tope de turnos ni de reloj. La partida de controles de la pasada de fix (4 sujetos) sigue libre.

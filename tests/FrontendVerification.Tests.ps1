@@ -87,3 +87,28 @@ Describe 'Puertas de lite y del patch' {
     Get-Section (Get-KitFile 'skills/sdd-templates/templates/patch-template.md') '## 4.' '## 5.' | Should -Match 'detector'
   }
 }
+
+Describe 'Arranque e init' {
+  It 'el paso 4 propone §Frontend si falta' {
+    Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '4. **Spec**' '5. **Plan**' | Should -Match '§Frontend'
+  }
+
+  It 'greenfield pregunta la verificación en la fila 21' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '\| 21 \| Solo si el stack de la 11 tiene interfaz'
+  }
+
+  It 'brownfield pregunta la verificación en la fila 5' {
+    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '\| 5 \| Solo si el inventario encontró interfaz web'
+  }
+
+  It 'las filas 20 de greenfield y 4 de brownfield no cambian' {
+    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '\| 20 \| ¿Replica los patrones'
+    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '\| 4 \| ¿Replica los patrones'
+  }
+
+  It 'el README recomienda impeccable y Playwright' {
+    $dependencies = Get-Section (Get-KitFile 'README.md') '## Dependencias' "`n## "
+    $dependencies | Should -Match 'impeccable'
+    $dependencies | Should -Match 'Playwright'
+  }
+}
