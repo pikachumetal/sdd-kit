@@ -21,16 +21,32 @@ BeforeAll {
 
   $script:LoadedVersion = (Get-Content (Join-Path $script:KitRoot '.claude-plugin/plugin.json') -Raw | ConvertFrom-Json).version
 
+  $script:LatestMigration = Get-ChildItem (Join-Path $script:KitRoot 'skills/sdd-init-brownfield/references/migrations') -Filter 'v*.md' |
+    ForEach-Object { [version]$_.BaseName.Substring(1) } | Sort-Object -Descending | Select-Object -First 1 | ForEach-Object ToString
+
+  function New-KitCopyWithoutMigrations {
+    $root = Join-Path ([IO.Path]::GetTempPath()) ('kit-' + [guid]::NewGuid().ToString('N'))
+    foreach ($relative in 'hooks', '.claude-plugin', 'skills/using-sdd') {
+      $target = Join-Path $root $relative
+      New-Item -ItemType Directory -Path (Split-Path $target) -Force | Out-Null
+      Copy-Item -Path (Join-Path $script:KitRoot $relative) -Destination $target -Recurse
+    }
+    return $root
+  }
+
   $script:HookCommand = (Get-Content (Join-Path $script:HooksDir 'hooks.json') -Raw | ConvertFrom-Json).hooks.SessionStart[0].hooks[0].command
 
-  function Invoke-SessionStart([string]$ProjectDir) {
-    $previous = @{ Project = $env:CLAUDE_PROJECT_DIR; Plugin = $env:CLAUDE_PLUGIN_ROOT }
+  function Invoke-SessionStart([string]$ProjectDir, [string]$PluginRoot = $script:KitRoot) {
+    $previous = @{ Project = $env:CLAUDE_PROJECT_DIR; Plugin = $env:CLAUDE_PLUGIN_ROOT; Encoding = [Console]::OutputEncoding }
     $env:CLAUDE_PROJECT_DIR = $ProjectDir
-    $env:CLAUDE_PLUGIN_ROOT = $script:KitRoot -replace '\\', '/'
+    $env:CLAUDE_PLUGIN_ROOT = $PluginRoot -replace '\\', '/'
+    # Lanzado desde Git Bash, pwsh decodifica la salida del hijo con la página de códigos ibm437 y rompe las tildes.
+    [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
     try { $output = & $script:Bash -c $script:HookCommand }
     finally {
       $env:CLAUDE_PROJECT_DIR = $previous.Project
       $env:CLAUDE_PLUGIN_ROOT = $previous.Plugin
+      [Console]::OutputEncoding = $previous.Encoding
     }
     return [pscustomobject]@{ Output = ($output -join "`n"); ExitCode = $LASTEXITCODE }
   }
@@ -116,6 +132,37 @@ Describe 'hooks/session-start' {
       $result.Output | Should -Not -Match 'plugin update'
       ($result.Output | ConvertFrom-Json).hookSpecificOutput.additionalContext | Should -Match 'name: using-sdd'
     }
+  }
+
+  It 'avisa de migraciones pendientes con las dos versiones y la frase de migrar' -Tag 'Slow' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
+    $result = Invoke-SessionStart (New-ProjectDir $true '2.0.0')
+    $result.ExitCode | Should -Be 0
+    $json = $result.Output | ConvertFrom-Json
+    foreach ($text in $json.systemMessage, $json.hookSpecificOutput.additionalContext) {
+      $text | Should -Match 'el proyecto tiene aplicado el kit 2\.0\.0'
+      $text | Should -Match ('migraciones hasta la ' + [regex]::Escape($script:LatestMigration))
+      $text | Should -Match 'ponme el proyecto al día con sdd-init-brownfield'
+    }
+    $json.hookSpecificOutput.additionalContext | Should -Match 'name: using-sdd'
+  }
+
+  It 'no avisa de migraciones con el proyecto al día o sin sdd-kit.json' -Tag 'Slow' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
+    foreach ($version in $script:LatestMigration, $null) {
+      $result = Invoke-SessionStart (New-ProjectDir $true $version)
+      $result.ExitCode | Should -Be 0
+      $result.Output | Should -Not -Match 'migraciones hasta'
+      ($result.Output | ConvertFrom-Json).hookSpecificOutput.additionalContext | Should -Match 'name: using-sdd'
+    }
+  }
+
+  It 'no avisa ni se cae sin carpeta de migraciones en el kit cargado' -Tag 'Slow' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
+    $result = Invoke-SessionStart (New-ProjectDir $true '2.0.0') (New-KitCopyWithoutMigrations)
+    $result.ExitCode | Should -Be 0
+    $result.Output | Should -Not -Match 'migraciones hasta'
+    ($result.Output | ConvertFrom-Json).hookSpecificOutput.additionalContext | Should -Match 'name: using-sdd'
   }
 }
 

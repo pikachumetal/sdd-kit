@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Cada release lleva su migración | done | — | RED 0,23 $ · GREEN 0,14 $ |
-| 2 | Aviso de migraciones pendientes en el hook | pending | — | |
+| 1 | Cada release lleva su migración | done | 6bdba368 | RED 0,23 $ · GREEN 0,14 $ |
+| 2 | Aviso de migraciones pendientes en el hook | done | — | GREEN headless 0,03 $ |
 
 ## Verificación por task
 
