@@ -132,6 +132,46 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     Get-Content $argsFile | Should -Not -Contain '--setting-sources'
   }
 
+  It 'sin SUPERPOWERS_DIR aborta antes del primer claude -p si el kit declara dependencies (ticket de la feature 0095 §2)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dependencies')
+    New-Item -ItemType Directory -Force (Join-Path $campaign.Kit '.claude-plugin') | Out-Null
+    Set-Content -LiteralPath (Join-Path $campaign.Kit '.claude-plugin/plugin.json') -Value '{"name":"sdd-kit","dependencies":[{"name":"superpowers"}]}'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'define SUPERPOWERS_DIR'
+    Join-Path $campaign.Runs 'red/a-1.args' | Should -Not -Exist
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'deja al sujeto leer su carpeta de ejecución, junto al molde (ticket de la feature 0099 §4)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'add-dir')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $claudeArgs = @(Get-Content (Join-Path $campaign.Runs 'red/a-1.args'))
+    $dirs = for ($i = 0; $i -lt $claudeArgs.Count - 1; $i++) { if ($claudeArgs[$i] -eq '--add-dir') { $claudeArgs[$i + 1] } }
+    # Ruta Windows, como la del kit: con la de Git Bash, claude no resolvía el --plugin-dir (task 0009).
+    @($dirs) -match '^[A-Za-z]:/.*/red/a-1$' | Should -HaveCount 1
+  }
+
+  It 'con SUBJECT_TIMEOUT corta al sujeto encallado y sigue con el siguiente escenario (ticket de la feature 0098 §4)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'timeout')
+    $bin = Join-Path $TestDrive 'bin'
+    New-Item -ItemType Directory -Force $bin | Out-Null
+    # Un claude falso que se encalla: el tope tiene que alcanzar al ejecutable, no a un builtin (timeout 720 command claude falló).
+    Set-Content -LiteralPath (Join-Path $bin 'claude') -Value "#!/usr/bin/env bash`nexec sleep 60" -NoNewline
+
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b'; DRY_RUN = $null; SUBJECT_TIMEOUT = '3'; PATH = "$bin;$env:PATH" }
+    $clock.Stop()
+
+    $clock.Elapsed.TotalSeconds | Should -BeLessThan 40 -Because $run.Output
+    $run.Output | Should -Match 'tope de 3 s'
+    (Get-Subjects $campaign).Count | Should -Be 2
+  }
+
   It 'aborta si SETTINGS no deshabilita el kit instalado' {
     $campaign = New-Campaign (Join-Path $TestDrive 'settings')
 
