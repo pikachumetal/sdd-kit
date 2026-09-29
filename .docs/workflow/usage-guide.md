@@ -131,10 +131,10 @@ Mientras espera a un subagente o a un comando largo, el agente vigila que no se 
 
 ### Validar de verdad
 
-Si la revisión final del agente deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, empezando por «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
+El agente lanza la revisión final en segundo plano en cuanto commitea la última task, sobre ese commit, y mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, empezando por «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
 
 - Qué hay.
-- El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Si alguna task cambió lo que se ve, antes del guion van sus medidas y las capturas.
+- El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Si alguna task cambió lo que se ve, antes del guion van las capturas y, si el proyecto declara un detector en `tech-stack.md` §Frontend, su salida en escritorio y en móvil; sin detector, el agente te avisa de que la composición no está medida.
 - El smoke, que es lo que ya hizo él: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
 
 **Validar es decir qué has probado y que funciona**: «he filtrado por Pendiente y Enviado, y el listado cambia bien». Un «sí» a secas también vale, y queda escrito tal cual, con la nota de que no detallaste.
@@ -161,7 +161,7 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-end-feature` de un tir�
 - escribe el `walkthrough.md` con lo que se hizo, cómo se verificó, el tiempo real, el coste de la sesión y las decisiones que tomó sin ti;
 - lleva los aprendizajes a los documentos que los guardan y fusiona el comportamiento nuevo en `capabilities/`;
 - actualiza el changelog, la fila del roadmap y el registro de estimaciones, si el proyecto los tiene;
-- fusiona en `develop` con el script del kit, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite. Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
+- fusiona en `develop` con el script del kit, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
 El patch cierra igual, más corto, con `sdd-end-patch`: primero te pide la validación con tres opciones (validado, diferir o no funciona) y después fusiona. Ningún cierre fusiona a `main` ni pone tags: eso es entregar (sección 6).
@@ -198,7 +198,7 @@ El feedback de una demo o una reunión no se procesa en el corte: eso es planifi
 
 **Cuando la base se mueve.** Antes de cada task, el agente mira si `develop` ha cambiado la fila de tu feature o algún fichero que la task va a tocar. Si pasa, para y te lo enseña con los commits que lo cambiaron. Si el solapamiento era el previsto, díselo y sigue.
 
-**Conflictos en los registros.** `changelog.md`, `roadmap.md` y `estimation-log.md` los tocan todas las features, y chocan a menudo al fusionar. El agente los resuelve solo: en el changelog y el roadmap, cada línea se queda con el cambio de su lado y las filas nuevas entran todas; el `estimation-log.md` se regenera. Después relanza el merge una vez. Si los dos lados tocaron la misma línea, o el conflicto está en otro fichero, para y te lo deja a ti.
+**Conflictos en los registros.** `changelog.md`, `roadmap.md` y `estimation-log.md` los tocan todas las features, y chocan a menudo al fusionar. El script del merge los resuelve solo, sin soltar su turno: cuando cada lado solo añade filas o líneas nuevas, entran todas, y el `estimation-log.md` se regenera. Así varias sesiones pueden cerrar a la vez. Si los dos lados cambiaron la misma línea, o el conflicto está en otro fichero, para y te lo deja a ti.
 
 ### Uso otra carpeta de configuración (`CLAUDE_CONFIG_DIR`)
 
@@ -210,7 +210,7 @@ Al medir los tokens de la sesión en el cierre, el script busca los transcripts 
 
 - **El kit aparece deshabilitado**: falta superpowers o su marketplace. Añade `obra/superpowers-marketplace` antes que el del kit y reinstala (pasos en el [README](../../README.md#instalación)). Si tenías `superpowers@claude-plugins-official`, desinstálalo: con los dos, las skills salen duplicadas.
 - **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si instalaste las skills con `npx skills add`, no hay hook: nombra la skill en la petición («con `sdd-start-feature`, añade…»).
-- **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 2.0.0 renombró las skills de «task» a «feature»): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con `/plugin marketplace update`, abre una sesión nueva y, si el proyecto viene de una versión anterior, pide «ponme el proyecto al día con `sdd-init-brownfield`».
+- **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 2.0.0 renombró las skills de «task» a «feature»): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con `/plugin marketplace update`, abre una sesión nueva y, si el proyecto viene de una versión anterior, pide «ponme el proyecto al día con `sdd-init-brownfield`». Desde la 2.2.0, el arranque de la sesión te avisa de los dos casos: si el kit cargado es más viejo que el del proyecto, con el comando para actualizarlo, y si el proyecto tiene migraciones pendientes, con esa misma frase.
 
 ### El merge del cierre falla
 
@@ -218,7 +218,7 @@ El merge lo hace un script, y su mensaje empieza por el paso que falló. La rama
 
 | Empieza por | Qué pasa | Qué haces |
 | --- | --- | --- |
-| `merge: conflicto en` solo `changelog.md`, `roadmap.md` o `estimation-log.md` | Otra feature fusionó antes | Nada: el agente sincroniza y relanza una vez |
+| `merge: conflicto en` solo `changelog.md`, `roadmap.md` o `estimation-log.md` | Los dos lados cambiaron la misma línea de un registro (las filas nuevas ya las une el script) | Decide con el agente cómo combinar esa línea |
 | `merge: conflicto en` otro fichero | Dos features tocaron lo mismo | Lo resuelves tú o decides con el agente |
 | `push:` o `base:` | Otra sesión publicó mientras tanto | Nada: el agente relanza una vez, desde el remoto nuevo |
 | `destino sacado:` con una lista de ficheros | `develop` está sacada con cambios sin commitear | Commitea o descarta esos cambios donde estén, y pide el merge otra vez |
@@ -231,4 +231,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.1.0, septiembre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.2.0, septiembre de 2026.*

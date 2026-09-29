@@ -381,6 +381,12 @@ Se revisan al abrir cada release del kit (Art. V). No son dependencias: son el e
 
 ## Releases cerradas
 
+### v2.2.0 — 2026-09-29
+
+Tickets de los primeros días con la 2.0.0 y la 2.1.0 en proyectos del equipo, cortada el 2026-09-29 con lo cerrado desde la 2.1.0: las features 0096 (el cierre fuera del camino crítico), 0099 (verificación de frontend), 0109 (aviso de migraciones pendientes, y una migración por release) y 0113 (Review Focus del plan), y los patches 0100 a 0107, 0110, 0112 y 0114 (el 0111 paró sin fix). Con migración sin cambios en el proyecto (`v2.2.0.md`, solo el marcador). [Changelog](changelog.md#220---2026-09-29) · [release notes](releases/v2.2.0/release-notes.md).
+
+smoke: pendiente (pre-commit desde PowerShell el 2026-09-29 en verde; el uso real lo difiere el dev-lead a los proyectos del equipo, con las validaciones diferidas de cada feature y patch)
+
 ### v2.1.0 — 2026-09-29
 
 Primeros tickets de uso de la 2.0.0 en proyectos del equipo, cortada el 2026-09-29 con lo cerrado desde la 2.0.0: la feature 0095 (vigía de silencio), la 0098 (el carril patch acepta ajustes visuales) y el patch 0094 (paquete del revisor final legible), más el triaje de los tickets del 2026-09-28 y el orden de la versión siguiente por lo que retrasa el kit en uso. Sin migración. [Changelog](changelog.md#210---2026-09-29) · [release notes](releases/v2.1.0/release-notes.md).

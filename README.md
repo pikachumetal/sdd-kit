@@ -26,7 +26,7 @@ Planificar. `sdd-roadmap` reconoce qué le traes: algo grande (te entrevista y l
 > añade autenticación con magic link
 ```
 
-Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Al final te pregunta qué has probado, y `sdd-end-feature` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
+Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Cuando termina la última task lanza la revisión final en segundo plano y, mientras tanto, verifica lo que se ve y prepara el cierre. Después te pregunta qué has probado, y `sdd-end-feature` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
 
 ```
 > el contador de la home muestra un número de más
@@ -130,7 +130,11 @@ El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus relea
 
 ## Estado
 
-La 2.1.0 está publicada ([notas de la versión](.docs/sdd/releases/v2.1.0/release-notes.md)): los retoques visuales entran como patch, el asistente vigila a los agentes que se cuelgan y la revisión final ya no se atasca en ramas grandes. Sale de los primeros tickets de la [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md), que trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature. Casi todo se ha probado con agentes de prueba y en este repositorio; la validación de verdad es el uso en proyectos del equipo, y lo que falle llega como ticket de `sdd-feedback` a una 2.0.x.
+La versión publicada es la 2.2.0 ([notas](.docs/sdd/releases/v2.2.0/release-notes.md)). El cierre corre en paralelo con la revisión final, el frontend se verifica con un detector y una rúbrica, varias sesiones pueden cerrar a la vez y el arranque avisa de un kit viejo o de una migración pendiente.
+
+La [2.1.0](.docs/sdd/releases/v2.1.0/release-notes.md) trajo los retoques visuales por el carril patch y el vigía de agentes colgados. La [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md) trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature.
+
+Pruebo cada cambio con agentes de prueba y en este repositorio, pero la validación de verdad es el uso en proyectos del equipo. Lo que falle allí llega como ticket de `sdd-feedback` y entra en la versión siguiente.
 
 Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastante.
 
@@ -150,7 +154,7 @@ El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Los tests validan la anatomía de las skills, los manifests y los scripts del kit. Necesitas Pester 5 o superior y `pwsh` 7+, y lánzalos desde PowerShell: desde Git Bash, tres tests fallan por la página de códigos de la consola.
+Los tests validan la anatomía de las skills, los manifests y los scripts del kit. Necesitas Pester 5 o superior y `pwsh` 7+.
 
 ```powershell
 pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"

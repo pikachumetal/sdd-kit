@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-09-29
+
+Tickets de los primeros días con la 2.0.0 y la 2.1.0 en proyectos del equipo. [Release notes](releases/v2.2.0/release-notes.md).
+
 ### Added
 
 - **Feature 0109** — Aviso de migraciones pendientes: el hook `SessionStart` compara el marcador de `.docs/sdd/sdd-kit.json` con la mayor migración del kit cargado y, si el proyecto va por detrás, avisa al usuario y al agente con las dos versiones y la frase «ponme el proyecto al día con sdd-init-brownfield». Cada release del kit lleva ya su `migrations/vX.Y.Z.md`, con «sin cambios en el proyecto» si no cambia nada, y un test lo exige contra `plugin.json`; se añade `v2.1.0.md`, que faltaba y dejaba los proyectos en 2.0.0 con el plugin en 2.1.0. → [ref](specs/20260929-160116-feature-0109-pending-migration-notice/)
