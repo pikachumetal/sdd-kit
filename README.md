@@ -136,7 +136,7 @@ Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastan
 
 ## Actualizar un proyecto que ya lo usa
 
-Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes.
+Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes. Si el proyecto va por detrás de las migraciones del kit instalado, la sesión te avisa al arrancar con las dos versiones. Cada release del kit trae su migración, aunque no cambie nada del proyecto: entonces solo avanza el marcador.
 
 ## Desarrollo
 
