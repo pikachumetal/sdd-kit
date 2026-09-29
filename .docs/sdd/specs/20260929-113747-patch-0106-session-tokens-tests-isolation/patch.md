@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0106-session-tokens-tests-isolation
-commit: <hash>
+commit: 792972d1
 ---
 
 # Patch 0106 — los tests «sin -ProjectsRoot» de Measure-SessionTokens leen la salida del hijo en UTF-8
@@ -55,6 +55,10 @@ Los tres fallos del ticket de la 0098 coinciden con los tres de Git Bash. Lo má
 | 1 | `Invoke-Pester -Path tests/Measure-SessionTokens.Tests.ps1` desde Git Bash (`pwsh -NoProfile -Command …`), antes del fix | ❌ 21/24 (reproducido) |
 | 2 | Lo mismo tras el fix, desde Git Bash | ✅ 24/24 |
 | 3 | Lo mismo tras el fix, desde PowerShell, con `~/.claude` y `~/.claude-gco` reales | ✅ 24/24 |
+
+Los tres casos los verificó el agente; el dev-lead no lo ha probado todavía.
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en el próximo gate de cierre con la suite completa, a cargo del dev-lead» · disparador: el próximo cierre de una feature que corra `Invoke-Pester -Path tests`, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 

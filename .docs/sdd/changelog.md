@@ -10,6 +10,8 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Tests de `Measure-SessionTokens` desde Git Bash** — los tests «sin -ProjectsRoot» leen en UTF-8 la salida del `pwsh` hijo. Desde Git Bash la consola del padre no era UTF-8, «—» llegaba roto y la suite daba 21/24 (tickets de las features 0089 §4 y 0098 §5). → [ref](specs/20260929-113747-patch-0106-session-tokens-tests-isolation/)
+
 - **Aviso de versión del kit** — el hook `SessionStart` compara la versión del plugin cargado con la de `.docs/sdd/sdd-kit.json` y, si es menor, avisa al usuario y al agente con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar (`/reload-plugins` no basta). Antes, una caché vieja corría las skills de otra versión sin que nadie lo notara (ticket de la feature 0021 del template §4). → [ref](specs/20260929-073507-patch-0100-kit-version-warning/)
 
 ## [2.1.0] - 2026-09-29
