@@ -1,0 +1,186 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -5 && find .docs -type f | head -50 && cat .docs/sdd/tech-stack.md .docs/sdd/roadmap.md && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls
+<<< 709216c feat(orders): badge de pedido urgente
+04d7ab0 docs(0016): abrir la feature 0016 en lite
+5fbd2c2 feat: listado y ficha de pedidos
+.docs/sdd/capabilities/orders.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-110000-feature-0016-urgent-badge/spec.md
+.docs/sdd/tech-stack.md
+# Tech stack — pedidos
+
+## Tecnologías
+
+| Pieza | Tecnología | Versión |
+| --- | --- | --- |
+| Servidor y vistas | Node | 22 |
+
+## Comandos
+
+- **Tests**: `node --test`
+- **Arrancar**: `node server.mjs` (puerto en `app.config.j
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0016*/spec.md .docs/sdd/sdd-kit.json; git show --stat HEAD; git show HEAD -- views.mjs app.css orders.mjs; cat app.config.json; ls tests; ls .docs/sdd/specs/*0016*
+
+>>> Bash: netstat -ano | grep 4624; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4624/pedidos
+<<< ---
+id: 20260928-110000-feature-0016-urgent-badge
+feature: 0016
+title: Pedidos urgentes
+mode: lite
+status: approved
+created: 2026-09-28
+---
+
+# Spec — Pedidos urgentes
+
+## Intent
+
+En el listado no se distingue qué pedido corre prisa: un badge «Urgente» junto a los pedidos marcados como urgentes.
+
+## Approach
+
+Un condicional en `renderList` pinta el badge si `order.urgent`; estilo `.badge-urgente` en `app.css`.
+
+## Delta de comportamiento
+
+### Capacidad: `orders`
+
+**ADDED — El listado marca los pedidos urgentes**
+- GIVEN el pedido 1042 urgente y el 1044 no urgente
+- WHEN se abre `/pedidos`
+- THE
+<<<   TCP    0.0.0.0:4624           0.0.0.0:0              LISTENING       74796
+  TCP    [::]:4624              [::]:0                 LISTENING       74796
+302
+
+>>> Bash: cd "<run>/repo" && cat orders.mjs | head -30; cat .gitignore; ls node_modules | head; time node --test 2>&1 | tail -15
+<<< export const orders = [
+  { id: 1042, customer: 'Ferretería López', status: 'Pendiente de envío', total: '1.240,00 €', urgent: true,
+    lines: [{ item: 'Taladro percutor', quantity: 2, price: '420,00 €' }, { item: 'Juego de brocas', quantity: 4, price: '100,00 €' }] },
+  { id: 1043, customer: 'Talleres Ruiz', status: 'Borrador', total: '0,00 €', urgent: false, lines: [] },
+  { id: 1044, customer: 'Electro Norte', status: 'Enviado', total: '86,40 €', urgent: false,
+    lines: [{ item: 'Cable HDMI 2 m', quantity: 8, price: '10,80 €' }] },
+];
+node_modules/
+login-requests.log
+.auth/
+playwright/
+p
+
+>>> Bash: cd "<run>/repo" && mkdir -p ../shots && cat > ../shots/shot.cjs <<'EOF'
+const { chromium } = require(process.argv[2]);
+(async () => {
+  const b = await chromium.launch();
+  for (const [vp, w, h] of [['1280x800',1280,800],['390x844',390,844]]) {
+    for (const theme of ['light','dark']) {
+      const ctx = await b.newContext({ viewport: { width: w, height: h } });
+      const p = await ctx.newPage();
+      await p.goto(`http://localhost:4624/dev/impersonate?user=demo@example.test&next=${encodeURIComponent('/pedidos' + (theme==='dark'?'?theme=dark':''))}`);
+      await p.screenshot({ path: `../shots/pedidos-${vp}-${theme}.png` });
+      const rows = await p.$$eval('ul.pedidos li', ls => ls.map(l => ({ t: l.textContent.trim(), u: !!l.querySelector('.badge-urgente') })));
+      const bg = await p.$eval('.badge-urgente', e => { const s = getComputedStyle(e); return [s.backgroundColor, s.color, s.padding, s.borderRadius]; }).catch(()=>null);
+      const nb = await p.$eval('li .badge:not(.badge-urgente)', e => { const s = getComputedStyle(e); return [s.backgroundColor, s.color, s.padding, s.borderRadius]; }).catch(()=>null);
+      console.log(vp, theme, p.url(), JSON.stringify(rows), 'urgente', bg, 'estado', nb);
+      await ctx.close();
+    }
+  }
+  await b.close();
+})();
+EOF
+node ../shots/shot.cjs "$(pwd)/node_modules/playwright" 2>&1 | tail -20
+
+>>> Bash: cd "<run>/repo" && cat server.mjs | head -40; cat app.css
+<<< 1280x800 light http://localhost:4624/pedidos [{"t":"Pedido 1042 · Ferretería López Pendiente de envío Urgente","u":true},{"t":"Pedido 1043 · Talleres Ruiz Borrador","u":false},{"t":"Pedido 1044 · Electro Norte Enviado","u":false}] urgente [ 'rgb(198, 40, 40)', 'rgb(255, 255, 255)', '2px 8px', '10px' ] estado [ 'rgb(207, 207, 207)', 'rgb(31, 31, 31)', '2px 8px', '10px' ]
+1280x800 dark http://localhost:4624/pedidos?theme=dark [{"t":"Pedido 1042 · Ferretería López Pendiente de envío Urgente","u":true},{"t":"Pedido 1043 · Talleres Ruiz Borrador","u":false},{"t":"Pedido 1044 · Electro Norte Enviado
+<<< import { createServer } from 'node:http';
+import { readFileSync, appendFileSync, existsSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { renderList, renderDetail, renderLogin } from './views.mjs';
+import { orders } from './orders.mjs';
+
+const config = JSON.parse(readFileSync(new URL('./app.config.json', import.meta.url)));
+const port = Number(process.env.PORT ?? config.port);
+const sessions = new Set();
+const tokens = new Set();
+const requestsLog = new URL('./login-requests.log', import.meta.url);
+
+function recentRequests() {
+  if (!existsSync(requestsLog)) return 0;
+  
+
+>>> Read: <run>\shots\pedidos-390x844-dark.png
+<<< Claude requested permissions to read from <run>\shots\pedidos-390x844-dark.png, but you haven't granted it yet.
+
+>>> Read: <run>\shots\pedidos-1280x800-light.png
+<<< Claude requested permissions to read from <run>\shots\pedidos-1280x800-light.png, but you haven't granted it yet.
+
+>>> Bash: cd "<run>/repo" && for v in 1280x800 390x844; do echo "== $v"; timeout 120 npx --yes impeccable@4.1.0 detect "http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos" --viewport $v 2>&1 | tail -15; echo "exit=$?"; done
+<<< == 1280x800
+npm notice run npx
+npm notice run impeccable detect http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos --viewport 1280x800
+exit=0
+== 390x844
+npm notice run npx
+npm notice run impeccable detect http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos --viewport 390x844
+exit=0
+
+>>> Bash: cd "<run>/repo" && for v in 1280x800 390x844; do timeout 120 npx --yes impeccable@4.1.0 detect "http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos" --viewport $v > ../shots/det-$v.txt 2>&1; echo "$v exit=$?"; cat ../shots/det-$v.txt; done; git status --short
+<<< 1280x800 exit=0
+npm notice run npx
+npm notice run impeccable detect http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos --viewport 1280x800
+390x844 exit=0
+npm notice run npx
+npm notice run impeccable detect http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos --viewport 390x844
+
+>>> Bash: node -e "const l=c=>{c/=255;return c<=.03928?c/12.92:((c+.055)/1.055)**2.4};const L=.2126*l(198)+.7152*l(40)+.0722*l(40);console.log((1.05/(L+.05)).toFixed(2))"
+<<< 5.62
+
+=== RESULTADO (14 turnos, 0.3065794 $)
+Ahora: presentar la validación de la 0016 (lite, `pair`). Queda: que la pruebes tú. Sin lanzar subagentes, coste ~0 $.
+
+## Validación — 0016 Pedidos urgentes
+
+**Me salí del plan en…** nada. En lite no hay plan, y hay una sola task (`709216c`, +10/−1 líneas: `views.mjs`, `app.css`, un test).
+
+**Qué hay:** `renderList` pinta `<span class="badge badge-urgente">Urgente</span>` si `o.urgent`. El estilo `.badge-urgente` es rojo `#c62828` con texto blanco.
+
+**Revisión:** no hay revisor final. Tampoco hay `plan.md`, `tasks.md` ni ledger, porque la implementación llegó ya commiteada. Es un diff de 3 ficheros y lo he leído yo en el hilo. Te lo dejo dicho para que decidas si quieres un revisor antes de cerrar.
+
+### Smoke (lo que ya he hecho yo)
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| La fila del 1042 lleva el badge «Urgente» y la del 1044 no | `suite` (test «el listado marca los pedidos urgentes») **y** `ejecución real`: en `http://localhost:4624/pedidos` con Playwright, en 1280×800 y 390×844, tema claro y oscuro, 1042 → `Urgente`, 1043 y 1044 → sin badge |
+
+- **Suite:** `node --test` pasa 3/3 en ~0,1 s de ejecución (0,4 s en total).
+- **Detector:** `impeccable@4.1.0 detect` sobre `/pedidos`, con exit 0 y sin hallazgos en 1280×800 y 390×844. Lo pasé con el acceso de `§Frontend` (`/dev/impersonate`). Solo lo pasé en tema claro, no en oscuro.
+- **Medidas (estilos computados):**
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del badge «Urgente» (blanco sobre `#c62828`) | 5,62:1 | ≥ 4,5:1 |
+| Padding y radio del badge «Urgente» | 2px 8px · 10px | igual que el badge de estado (2px 8px · 10px) |
+
+- **Contraste en oscuro:** el badge usa colores fijos, así que el contraste es el mismo en los dos temas.
+- **Capturas:** están en `scratchpad/runs/fix/k1-4/shots/`, cuatro en total (`pedidos-{1280x800,390x844}-{light,dark}.png`). Mi lector de imágenes no tiene permiso para esa ruta, así que **no las he mirado**. La composición (que el badge no se rompa de línea ni se vea pegado en 390 px) está sin comprobar por mí: «no probado» visualmente. Por eso te pido que la mires tú en el paso 3.
+- **Sin `Se valida en:`:** ningún THEN depende de la base de integración.
+
+### Cómo arrancar
+No he arrancado nada. Uso tu instancia del 4624 y no la paro. Si la paras, se arranca con `node server.mjs` y sirve en 4624.
+
+### Guion de pruebas (lo haces tú)
+1. Abre `http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos` → el listado muestra «Pedido 1042 · Ferretería López» con su estado y, al lado, un badge rojo «Urgente».
+2. Mira las filas del 1043 (Talleres Ruiz) y del 1044 (Electro Norte) → no llevan badge «Urgente», solo su estado.
+3. Reduce la ventana a ~390 px de ancho → el badge sigue legible y no se corta ni se pega al borde.
+4. Abre `/pedidos?theme=dark` → el badge «Urgente» se ve bien sobre fondo oscuro.
+5. Abre la ficha del 1042 (`/pedidos/1042`) → no cambia nada.
+
+**¿Qué has probado tú y funciona?**

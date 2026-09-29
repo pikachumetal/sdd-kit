@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Feature 0099** — Verificación de frontend: referencia `frontend-verification.md` con criterio previo, detector en dos viewports, capturas con rúbrica y proporción por carril, cargada por la task full, lite y el patch visual; `§Frontend` en `tech-stack.md` (detector, runner E2E, acceso) que la spec propone y las init preguntan. → [ref](specs/20260929-073733-feature-0099-frontend-verification/)
+
 ### Fixed
 
 - **Aviso de versión del kit** — el hook `SessionStart` compara la versión del plugin cargado con la de `.docs/sdd/sdd-kit.json` y, si es menor, avisa al usuario y al agente con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar (`/reload-plugins` no basta). Antes, una caché vieja corría las skills de otra versión sin que nadie lo notara (ticket de la feature 0021 del template §4). → [ref](specs/20260929-073507-patch-0100-kit-version-warning/)

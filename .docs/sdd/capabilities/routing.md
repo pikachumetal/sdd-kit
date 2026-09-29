@@ -111,6 +111,9 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un patch abierto para un ajuste solo de presentación
 - WHEN el agente lo recorre con `sdd-start-patch` y lo cierra con `sdd-end-patch`
 - THEN §2 de `patch.md` lleva la intención en una frase, en lugar de la causa raíz, y no se invoca `superpowers:systematic-debugging`
-- AND §4 lleva la ruta de una captura en navegador real por cada pantalla tocada, guardada fuera de git, y la validación del paso 0 de `sdd-end-patch` enseña esas rutas al usuario
+- AND §4 lleva la ruta de una captura en navegador real de cada pantalla tocada antes y después del cambio, guardadas fuera de git, y la salida del detector en los dos viewports con cada hallazgo resuelto o justificado, con los mismos contraejemplos que una task full
+- AND sin detector declarado, el aviso «composición no medida», y con el detector declarado sin ejecutar, «no probado» con el error concreto
+- AND con «sube el badge de estado a 14px», la verificación visual (capturas y detector) dura menos de 5 minutos, sin build dedicado ni suite de specs nueva
+- AND la validación del paso 0 de `sdd-end-patch` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `tech-stack.md` no la tiene
 - AND la entrada del changelog va en `Changed`, no en `Fixed`
 - AND un bug determinista sigue con la causa raíz de `systematic-debugging` y cierra en `Fixed`

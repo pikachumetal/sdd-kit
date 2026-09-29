@@ -1,0 +1,79 @@
+--- [3]
+Ahora: cargo el contexto SDD y la spec de la 0016 para verificarla. Queda: verificación en la aplicación y presentarte la validación, ~10 min.
+
+--- [28]
+Sigo: la verificación visual está hecha y ahora despacho la revisión final del diff, que aún no tenía. Preparo el paquete y arranco el vigía de silencio.
+
+--- [33]
+Ahora: la revisión final de la 0016 está corriendo en segundo plano, con su vigía. Queda: recibir el veredicto y presentarte la validación, ~5 min. Hasta que vuelva no presento nada.
+
+--- [41]
+**Veredicto: Approved.** No hay hallazgos Critical ni Important, solo tres Minor. Leí el paquete de review, la spec, `orders.mjs` y el fichero de test completo. Consulté los mensajes de commit con `git log` porque el paquete no los traía. No ejecuté nada más.
+
+**Cumplimiento de la spec**
+- `views.mjs:7`: el badge sale con un condicional sobre `o.urgent` dentro de `renderList`, como pide el Approach. `app.css:13` añade `.badge-urgente`. No hay alcance de más: no cambian la ficha, los datos ni las rutas.
+- El campo `urgent` ya existía en los datos de `orders.mjs` (1042 `true`, 1043 y 1044 `false`). No hacía falta tocar ese fichero.
+- Restricciones:
+  - No se añaden dependencias.
+  - El texto visible «Urgente» está en castellano.
+  - El test usa `node:test`.
+  - Los commits (`feat(orders): …` y `docs(0016): …`) tienen tipo y scope en inglés y el cuerpo en castellano.
+
+**El test y el THEN**
+- Positivo (`tests/views.test.mjs:20`): comprueba que el badge está en la fila exacta del 1042, anclado a su cliente y a su estado. Codifica bien el THEN.
+- Negativo (`tests/views.test.mjs:21`): sí puede fallar. Si el 1044 recibiera el badge, su fila quedaría como `Pedido 1044</a> · Electro Norte <span class="badge">Enviado</span> <span class="badge badge-urgente">…`, que casa con la regex, y `doesNotMatch` fallaría. Hoy detecta tanto «pintar siempre» como «ignorar `urgent`».
+
+**Minor**
+1. `tests/views.test.mjs:21`: el negativo solo detecta el badge en una posición exacta: tras `<span class="badge">Enviado</span>` y con un solo espacio. Con otro orden de los spans, otro espaciado u otro estado del 1044 en los datos, la aserción pasaría aunque el 1044 llevase el badge. Sería más robusto aislar el `<li>` del 1044 y comprobar que no contiene «Urgente» ni `badge-urgente`. Ahora mismo no invalida el test.
+2. `tests/views.test.mjs:16`: hay un segundo `import` desde `../views.mjs` a mitad de fichero. Funciona, porque los imports ESM se elevan, pero debería juntarse con el de la línea 3 (`import { renderDetail, renderList } …`).
+3. `app.css:13`: `.badge-urgente` fija los colores (`#c62828` y `#fff`), mientras el resto de la hoja usa variables de tema (`var(--border)`, `var(--accent)`…). El contraste del blanco sobre ese rojo es de unos 5,6:1, así que se lee bien en claro y en oscuro. Es solo coherencia con el sistema de variables.
+
+--- [43]
+Ahora: presento la validación de la 0016. Queda: tu prueba en la aplicación y tu respuesta, ~3 min. La revisión final ha vuelto sin Critical ni Important.
+
+## Validación 0016 — Pedidos urgentes (lite, perfil `pair`)
+
+**Me salí del plan en…**
+- La spec no traía el criterio visual en el Approach. Lo fijé yo: «la fila del 1042 muestra el badge «Urgente» tras el estado, legible en claro y en oscuro, sin romper la fila en móvil». La referencia es `/pedidos`.
+- El tipo `sdd-kit:effort-high` no está entre los agentes de esta sesión. Despaché el revisor final con `model: opus` y la frase «effort: no disponible en este harness, hereda el de la sesión».
+- No guardé la sesión en `.auth/state.json` porque no está ignorada por git (`git check-ignore` no lo reconoce). Entré por `/dev/impersonate` en cada ejecución.
+- Los Minor de la revisión no los arreglé (detalle más abajo). No cambian el comportamiento.
+
+**Qué hay**
+- `renderList` pinta `<span class="badge badge-urgente">Urgente</span>` tras el estado si `order.urgent` (`views.mjs:7`).
+- `.badge-urgente` en `app.css:13`.
+- Un test en `tests/views.test.mjs` que cubre el THEN en positivo (1042) y en negativo (1044).
+
+**Revisión final:** `Revisión final: opus (sin effort dedicado), Approved, sobre f65399a`. Tres Minor, sin arreglar:
+1. El negativo del 1044 solo detecta el badge en una posición exacta de la fila.
+2. Hay un `import` duplicado de `views.mjs` a mitad del fichero de test.
+3. `.badge-urgente` fija colores en lugar de usar variables de tema.
+
+**Smoke, por THEN**
+
+| THEN | Evidencia |
+| --- | --- |
+| La fila del 1042 lleva el badge «Urgente» | `ejecución real`: en `localhost:4622/pedidos`, 1042 tiene `.badge-urgente` en los 2 viewports y los 2 temas. También `suite`. |
+| La fila del 1044 no lleva el badge | `ejecución real`: 1043 y 1044 sin `.badge-urgente` en los 4 casos. También `suite`. |
+
+- **Suite completa:** `node --test`, 3/3 en verde, 0,3 s.
+- **Consola y red:** sin errores en la aplicación.
+- **Detector** (`impeccable@4.1.0`, por `/dev/impersonate?…&next=/pedidos`): `1280x800` código de salida 0, sin hallazgos. `390x844` código de salida 0, sin hallazgos.
+- **Medidas:** el criterio no fija ningún valor numérico, así que no tomé medidas del criterio. De referencia, el badge lleva fondo `rgb(198,40,40)`, texto blanco y padding `2px 8px`, igual que los demás badges.
+- **Capturas** (copias fuera de git en `node_modules/.verif-0016/` del repo; originales en `%TEMP%\verif-0016`): `pedidos-desktop-claro.png`, `pedidos-desktop-oscuro.png`, `pedidos-movil-claro.png`, `pedidos-movil-oscuro.png`.
+- **Rúbrica:** en escritorio el badge queda alineado junto al estado. En móvil, con «Pendiente de envío» delante, el «Urgente» salta a una segunda línea. Se ve limpio, pero no está en la misma línea. Lo dejo a tu criterio.
+- **Enlaces en oscuro:** los enlaces «Pedido 104x» se ven azul sobre casi negro y con poco contraste. Ya estaba así antes: es el estilo de enlace del navegador, que esta feature no toca. Lo dejo fuera de esta feature.
+
+**Guion de pruebas** (la aplicación es la tuya en `http://localhost:4622`; no arranqué ni paré nada)
+1. Abre `http://localhost:4622/dev/impersonate?user=demo@example.test&next=/pedidos` → el listado muestra `Pedido 1042 · Ferretería López · Pendiente de envío · Urgente` con el «Urgente» en rojo.
+2. Mira las filas del 1043 y del 1044 → `Borrador` y `Enviado`, sin badge «Urgente».
+3. Abre `/pedidos?theme=dark` → el badge «Urgente» sigue en rojo con texto blanco, legible.
+4. Estrecha la ventana a unos 390 px de ancho → el «Urgente» del 1042 pasa a la línea de debajo.
+
+¿Qué has probado tú y funciona?
+
+--- [44]
+El vigía de silencio ha terminado con normalidad, porque el revisor final ya había acabado. No es una respuesta tuya, y la feature sigue esperando tu validación.
+
+Sin ella no cierro la 0016: ni `walkthrough.md`, ni ✅ en el roadmap, ni fusión en `capabilities/orders.md`. Sigo esperando a que me digas qué has probado tú y que funciona. Si prefieres diferir la prueba, dímelo y te propongo el disparador.
+

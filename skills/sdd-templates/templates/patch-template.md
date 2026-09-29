@@ -52,7 +52,8 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 | # | Caso | Resultado |
 | --- | --- | --- |
 | 1 | reproducir el síntoma → ahora OK | ✅ / ❌ + nota |
-| 1 | *(ajuste visual)* captura de `<pantalla>` en `<navegador>` | `<ruta de la captura, fuera de git>` · enseñada en la validación |
+| 1 | *(ajuste visual)* captura de `<pantalla>` en `<navegador>`, antes y después del cambio | `<rutas de las capturas, fuera de git>` · enseñadas en la validación |
+| 2 | *(ajuste visual)* detector de `§Frontend` en `<viewports>` | `<hallazgos: resueltos · justificados>` · o «composición no medida» |
 
 ## 5. Tiempo (ligero) *(si existe `.docs/sdd/estimation.md`)*
 

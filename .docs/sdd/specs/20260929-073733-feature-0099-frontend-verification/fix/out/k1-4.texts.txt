@@ -1,0 +1,48 @@
+--- [3]
+Ahora: leer el contexto SDD y la spec de la 0016. Queda: verificar en la aplicación y presentarte la validación, ~10 min.
+
+--- [8]
+La aplicación en el 4624 es la tuya: la uso, pero no la paro. Ahora: suite, detector y capturas en navegador real.
+
+--- [21]
+Ahora: presentar la validación de la 0016 (lite, `pair`). Queda: que la pruebes tú. Sin lanzar subagentes, coste ~0 $.
+
+## Validación — 0016 Pedidos urgentes
+
+**Me salí del plan en…** nada. En lite no hay plan, y hay una sola task (`709216c`, +10/−1 líneas: `views.mjs`, `app.css`, un test).
+
+**Qué hay:** `renderList` pinta `<span class="badge badge-urgente">Urgente</span>` si `o.urgent`. El estilo `.badge-urgente` es rojo `#c62828` con texto blanco.
+
+**Revisión:** no hay revisor final. Tampoco hay `plan.md`, `tasks.md` ni ledger, porque la implementación llegó ya commiteada. Es un diff de 3 ficheros y lo he leído yo en el hilo. Te lo dejo dicho para que decidas si quieres un revisor antes de cerrar.
+
+### Smoke (lo que ya he hecho yo)
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| La fila del 1042 lleva el badge «Urgente» y la del 1044 no | `suite` (test «el listado marca los pedidos urgentes») **y** `ejecución real`: en `http://localhost:4624/pedidos` con Playwright, en 1280×800 y 390×844, tema claro y oscuro, 1042 → `Urgente`, 1043 y 1044 → sin badge |
+
+- **Suite:** `node --test` pasa 3/3 en ~0,1 s de ejecución (0,4 s en total).
+- **Detector:** `impeccable@4.1.0 detect` sobre `/pedidos`, con exit 0 y sin hallazgos en 1280×800 y 390×844. Lo pasé con el acceso de `§Frontend` (`/dev/impersonate`). Solo lo pasé en tema claro, no en oscuro.
+- **Medidas (estilos computados):**
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Contraste del badge «Urgente» (blanco sobre `#c62828`) | 5,62:1 | ≥ 4,5:1 |
+| Padding y radio del badge «Urgente» | 2px 8px · 10px | igual que el badge de estado (2px 8px · 10px) |
+
+- **Contraste en oscuro:** el badge usa colores fijos, así que el contraste es el mismo en los dos temas.
+- **Capturas:** están en `scratchpad/runs/fix/k1-4/shots/`, cuatro en total (`pedidos-{1280x800,390x844}-{light,dark}.png`). Mi lector de imágenes no tiene permiso para esa ruta, así que **no las he mirado**. La composición (que el badge no se rompa de línea ni se vea pegado en 390 px) está sin comprobar por mí: «no probado» visualmente. Por eso te pido que la mires tú en el paso 3.
+- **Sin `Se valida en:`:** ningún THEN depende de la base de integración.
+
+### Cómo arrancar
+No he arrancado nada. Uso tu instancia del 4624 y no la paro. Si la paras, se arranca con `node server.mjs` y sirve en 4624.
+
+### Guion de pruebas (lo haces tú)
+1. Abre `http://localhost:4624/dev/impersonate?user=demo@example.test&next=/pedidos` → el listado muestra «Pedido 1042 · Ferretería López» con su estado y, al lado, un badge rojo «Urgente».
+2. Mira las filas del 1043 (Talleres Ruiz) y del 1044 (Electro Norte) → no llevan badge «Urgente», solo su estado.
+3. Reduce la ventana a ~390 px de ancho → el badge sigue legible y no se corta ni se pega al borde.
+4. Abre `/pedidos?theme=dark` → el badge «Urgente» se ve bien sobre fondo oscuro.
+5. Abre la ficha del 1042 (`/pedidos/1042`) → no cambia nada.
+
+**¿Qué has probado tú y funciona?**
+
