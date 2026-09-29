@@ -160,7 +160,13 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND si el único conflicto es `estimation-log.md`, lo regenera con `Build-EstimationLog.ps1`; con cualquier otro conflicto, falla con la lista de ficheros
+- AND si los únicos conflictos son de `changelog.md`, `roadmap.md` o `estimation-log.md` y en los dos primeros cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `Build-EstimationLog.ps1`; con cualquier otro conflicto, falla con la lista de ficheros
+
+### El merge del cierre une los registros que solo añaden líneas
+- GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md` y una línea a `changelog.md` en el mismo sitio, y la primera ya se ha fusionado
+- WHEN el cierre de la segunda ejecuta `Invoke-SddMerge.ps1`
+- THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
+- AND si en algún trozo los dos lados cambian una línea que ya existía, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
 
 ### El push del cierre publica la rama destino
 - GIVEN un merge del cierre cuyo push ha confirmado una persona o autoriza `merge.push` (perfil `delegate` o `unattended`)

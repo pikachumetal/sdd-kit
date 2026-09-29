@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0107-merge-registry-union
-commit: <hash>
+commit: 9fc8cb4c
 ---
 
 # Patch 0107 — Invoke-SddMerge.ps1 une dentro del cerrojo los registros que solo añaden líneas
@@ -46,6 +46,8 @@ Fuera de alcance, como pedía la fila: la variante del ticket 0105 que resuelve 
 | 4 | `Invoke-Pester tests/Invoke-SddMerge.Tests.ps1` completo | ✅ 21/21 |
 
 Lo verificó el agente; el dev-lead no lo ha probado todavía.
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en el próximo cierre en paralelo de dos patches, a cargo del dev-lead» · disparador: el próximo cierre en paralelo de dos patches, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 
