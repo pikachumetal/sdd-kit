@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0101-headless-harness-guards
-commit: <hash>
+commit: fa0b8125
 ---
 
 # Patch 0101 — tres guardas del arnés headless
@@ -45,6 +45,10 @@ Medido: los tres tests nuevos de `tests/HeadlessLauncher.Tests.ps1` en rojo ante
 | 3 | Pester: el `.args` lleva `--add-dir <C:/…/red/a-1>` | ✅ RED → verde |
 | 4 | `HeadlessLauncher.Tests.ps1` y `SubjectOutputPrivacy.Tests.ps1` completos | ✅ 24/24, 1 skip (máquina sin `user.name`) |
 | 5 | Sujeto real que abre con `Read` una captura en `<run>/shots/` (criterio del ticket 0099 §4) | ⏳ no lanzado: lo mide la próxima campaña con capturas |
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en la próxima campaña headless con capturas, a cargo del dev-lead» · disparador: la próxima campaña headless con capturas, a cargo del dev-lead (caso 5)
+
+Decisión tomada sin el dev-lead: `SUBJECT_TIMEOUT` sin valor no pone tope (`timeout 0`), en lugar de un tope por omisión: la fila no fijaba ninguno, y uno inventado cortaría campañas largas que hoy terminan.
 
 ## 5. Tiempo (ligero)
 
