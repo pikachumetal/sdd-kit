@@ -6,14 +6,14 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0104-next-id-legacy-suffix
-commit: <hash>
+commit: 62d78765
 ---
 
 # Patch 0104 — `Get-NextSddId.ps1 -Reserve` no aborta con ids heredados con sufijo
 
 ## Capacidades
 
-- Modificadas: `feature-ids` — el aviso de id duplicado deja fuera las carpetas con sufijo heredadas
+- Modificadas: `feature-ids` — cambia «El script avisa de un id duplicado y no devuelve ninguno»
 
 ## 1. Síntoma
 
@@ -37,7 +37,9 @@ Medido: igual que el reportado. Con el fixture `legacy-suffix` ampliado con `tas
 | 1 | RED: `legacy-suffix` con `0006a` y `0006b`, sin `-Reserve` y con `-Reserve` en un repo | ❌ antes del fix: los dos tests sin id |
 | 2 | GREEN: mismos casos → `0007`, código 0, aviso con `0006a` por stderr | ✅ |
 | 3 | `duplicate-ids` y `mixed-duplicate` (mismo id sin sufijo) siguen siendo error | ✅ (tests existentes) |
-| 4 | Suite completa `tests/Get-NextSddId.Tests.ps1` | ✅ 47/47 |
+| 4 | Suite completa `tests/Get-NextSddId.Tests.ps1` (agente) y suite rápida del hook de commit | ✅ 47/47 · 794 en verde |
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en el próximo -Reserve del template, a cargo del dev-lead» · disparador: el próximo `Get-NextSddId.ps1 -Reserve` en el proyecto template, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 

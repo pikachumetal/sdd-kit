@@ -10,6 +10,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Reserva de id con carpetas heredadas con sufijo** — `Get-NextSddId.ps1` ya no aborta con «Dos artefactos distintos comparten el id 0006» cuando `specs/` tiene `task-0006a` y `task-0006b`, anteriores a la regla de «nunca sufijos»: las nombra en un aviso, cuenta su número como ocupado y reserva el siguiente libre. Dos carpetas con el mismo id sin sufijo siguen siendo error (ticket de la feature 0010b del template §4). → [ref](specs/20260929-113400-patch-0104-next-id-legacy-suffix/)
 - **Aviso de versión del kit** — el hook `SessionStart` compara la versión del plugin cargado con la de `.docs/sdd/sdd-kit.json` y, si es menor, avisa al usuario y al agente con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar (`/reload-plugins` no basta). Antes, una caché vieja corría las skills de otra versión sin que nadie lo notara (ticket de la feature 0021 del template §4). → [ref](specs/20260929-073507-patch-0100-kit-version-warning/)
 
 ## [2.1.0] - 2026-09-29
