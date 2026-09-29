@@ -9,12 +9,17 @@ BeforeAll {
   . (Join-Path $PSScriptRoot 'Resolve-Bash.ps1')
   $script:Bash = Resolve-Bash
 
-  function New-ProjectDir([bool]$WithSdd) {
+  function New-ProjectDir([bool]$WithSdd, [string]$KitVersion) {
     $dir = Join-Path ([IO.Path]::GetTempPath()) ('hook-' + [guid]::NewGuid().ToString('N'))
     $target = if ($WithSdd) { Join-Path $dir '.docs/sdd' } else { $dir }
     New-Item -ItemType Directory -Path $target -Force | Out-Null
+    if ($KitVersion) {
+      Set-Content -Path (Join-Path $target 'sdd-kit.json') -Value ('{"version":"' + $KitVersion + '","channel":"plugin","ids":{"mode":"sequence"}}') -NoNewline
+    }
     return $dir
   }
+
+  $script:LoadedVersion = (Get-Content (Join-Path $script:KitRoot '.claude-plugin/plugin.json') -Raw | ConvertFrom-Json).version
 
   $script:HookCommand = (Get-Content (Join-Path $script:HooksDir 'hooks.json') -Raw | ConvertFrom-Json).hooks.SessionStart[0].hooks[0].command
 
@@ -85,6 +90,32 @@ Describe 'hooks/session-start' {
     $context.additionalContext | Should -Match 'name: using-sdd'
     $context.additionalContext | Should -Match 'sdd-kit:sdd-config'
     $context.additionalContext | Should -Match 'sdd-kit:sdd-roadmap'
+  }
+
+  It 'avisa con las dos versiones y los comandos cuando el proyecto pide un kit mayor' -Tag 'Slow' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
+    # 10.0.0 frente a 2.x: una comparación de texto diría que es menor.
+    $result = Invoke-SessionStart (New-ProjectDir $true '10.0.0')
+    $result.ExitCode | Should -Be 0
+    $json = $result.Output | ConvertFrom-Json
+    foreach ($text in $json.systemMessage, $json.hookSpecificOutput.additionalContext) {
+      $text | Should -Match '10\.0\.0'
+      $text | Should -Match ([regex]::Escape($script:LoadedVersion))
+      $text | Should -Match ([regex]::Escape('claude plugin update sdd-kit@sdd-kit --scope project'))
+      $text | Should -Match 'reinici'
+      $text | Should -Match '/reload-plugins'
+    }
+    $json.hookSpecificOutput.additionalContext | Should -Match 'name: using-sdd'
+  }
+
+  It 'no avisa cuando el proyecto pide la versión cargada o una menor' -Tag 'Slow' {
+    if (-not $script:Bash) { Set-ItResult -Skipped -Because 'no hay bash ejecutable'; return }
+    foreach ($version in $script:LoadedVersion, '1.9.9', $null) {
+      $result = Invoke-SessionStart (New-ProjectDir $true $version)
+      $result.ExitCode | Should -Be 0
+      $result.Output | Should -Not -Match 'plugin update'
+      ($result.Output | ConvertFrom-Json).hookSpecificOutput.additionalContext | Should -Match 'name: using-sdd'
+    }
   }
 }
 
