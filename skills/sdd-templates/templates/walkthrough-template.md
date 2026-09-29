@@ -61,6 +61,9 @@ created: <YYYY-MM-DD>
 - Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
   disparador: <feature, release o uso con dueño> *(obligatorio: sin uno de los dos no hay cierre; si validó
   sobre lo reportado por el agente, dilo)*
+  *(la frase del dev-lead no se corrige, erratas incluidas; si el proyecto pasa un corrector sobre los `.md`,
+  excluye en este fichero, al escribirlo y no después del lint, todas las palabras de la frase, no solo las que
+  te parezcan erratas: en cspell, `<!-- cspell:ignore <palabras> -->`)*
 
 | THEN | Evidencia | Resultado |
 | --- | --- | --- |
