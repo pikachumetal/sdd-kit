@@ -137,11 +137,21 @@ Describe 'Watch-SubagentSilence' -Tag 'Slow' {
     $output[0] | Should -BeLike '*umbral 20 min*'
   }
 
-  It 'no toma un despacho anterior con la misma description' {
+  It 'con -Once toma el despacho más reciente de los que repiten description' {
     $repo = New-Worktree $script:DefaultConfig
     New-Transcript $repo @($script:ReadCall) 30
-    (Get-Item -LiteralPath (Join-Path (Get-SubagentFolder $repo) 'agent-t1.meta.json')).LastWriteTimeUtc = [datetime]::UtcNow.AddMinutes(-30)
-    (Invoke-Watcher $repo)[0] | Should -BeLike 'SIN TRANSCRIPT:*'
+    $folder = Get-SubagentFolder $repo
+    (Get-Item -LiteralPath (Join-Path $folder 'agent-t1.meta.json')).LastWriteTimeUtc = [datetime]::UtcNow.AddMinutes(-30)
+    ($script:ReadCall | ConvertTo-Json -Depth 16 -Compress) | Set-Content -LiteralPath (Join-Path $folder 'agent-t2.jsonl')
+    @{ description = $script:Description } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $folder 'agent-t2.meta.json')
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'EN MARCHA:*'
+  }
+
+  It 'con -Once encuentra un despacho de hace 5 min que sigue en marcha' {
+    $repo = New-Worktree $script:DefaultConfig
+    New-Transcript $repo @($script:ReadCall) 1
+    (Get-Item -LiteralPath (Join-Path (Get-SubagentFolder $repo) 'agent-t1.meta.json')).LastWriteTimeUtc = [datetime]::UtcNow.AddMinutes(-5)
+    (Invoke-Watcher $repo)[0] | Should -BeLike 'EN MARCHA:*'
   }
 
   It 'aplica longCommandMinutes si hay un PowerShell pendiente en paralelo con un Read ya respondido' {
