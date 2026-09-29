@@ -131,7 +131,7 @@ Mientras espera a un subagente o a un comando largo, el agente vigila que no se 
 
 ### Validar de verdad
 
-La revisión final no te hace esperar al final: el agente la lanza en segundo plano en cuanto commitea la última task, sobre ese commit, y mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, empezando por «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
+El agente lanza la revisión final en segundo plano en cuanto commitea la última task, sobre ese commit, y mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, empezando por «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
 
 - Qué hay.
 - El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Si alguna task cambió lo que se ve, antes del guion van las capturas y, si el proyecto declara un detector en `tech-stack.md` §Frontend, su salida en escritorio y en móvil; sin detector, el agente te avisa de que la composición no está medida.

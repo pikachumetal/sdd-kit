@@ -10,12 +10,12 @@ created: 2026-09-29
 
 ## Resumen
 
-La 2.2.0 sale de los tickets de los primeros días con la 2.0.0 y la 2.1.0 en proyectos del equipo. El cierre de una feature ya no te deja esperando después de validar, el frontend se verifica con un método en vez de a ojo, y varias sesiones pueden cerrar a la vez sin pisarse. Además, el asistente te avisa al arrancar cuando la sesión va con un kit viejo o cuando el proyecto tiene una actualización pendiente.
+La 2.2.0 sale de los tickets de los primeros días con la 2.0.0 y la 2.1.0 en proyectos del equipo. El cierre de una feature sigue en cuanto validas, el asistente verifica el frontend con un detector y una rúbrica, y varias sesiones pueden cerrar a la vez sin pisarse. Además, el asistente te avisa al arrancar cuando la sesión va con un kit viejo o cuando el proyecto tiene una actualización pendiente.
 
 ## Novedades
 
-- **Para quien cierra una feature**: el asistente lanza la revisión final en segundo plano en cuanto termina la última tarea y, mientras tanto, hace la verificación visual y prepara los documentos del cierre. La validación te llega cuando vuelve la revisión, y el cierre sigue en cuanto la das. En un proyecto del equipo, ese tramo pasaba de 25 minutos.
-- **Para quien trabaja en frontend**: cuando un cambio toca lo que se ve, el asistente escribe antes qué debe cumplir la pantalla, mide la página renderizada con el detector que declare el proyecto, en escritorio y en móvil, y mira las capturas con una rúbrica de composición. Te enseña todo eso al validar. Si el proyecto no declara detector, te avisa de que la composición no está medida. La regresión visual por píxeles deja de ser un freno del día a día.
+- **Para quien cierra una feature**: el asistente lanza la revisión final en segundo plano en cuanto termina la última tarea y, mientras tanto, hace la verificación visual y prepara los documentos del cierre. La validación te llega cuando vuelve la revisión, y el cierre sigue en cuanto la das. Antes, en un proyecto del equipo, pasaban 25 minutos desde la validación hasta el merge.
+- **Para quien trabaja en frontend**: cuando un cambio toca lo que se ve, el asistente escribe antes qué debe cumplir la pantalla, mide la página renderizada con el detector que declare el proyecto, en escritorio y en móvil, y mira las capturas con una rúbrica de composición. Te enseña todo eso al validar. Si el proyecto no declara detector, te avisa de que la composición no está medida. El kit ya no propone la regresión visual por píxeles como control del día a día.
 - **Para quien lanza varias sesiones a la vez**: cuando dos cierres chocan solo porque los dos añaden su línea al changelog o su fila al roadmap, el merge los une solo. Antes, en una tarde con seis cierres a la vez, cuatro acabaron pidiendo que alguien los desatascara.
 - **Para quien actualiza el kit**: al arrancar una sesión, el asistente avisa si ha cargado un kit más viejo que el del proyecto, con el comando para actualizarlo, y si el proyecto tiene una actualización pendiente, con la frase para aplicarla.
 - **Para quien escribe el plan**: el plan lleva una sección con lo que ningún test comprueba, y el revisor final la mira a propósito.
@@ -23,8 +23,8 @@ La 2.2.0 sale de los tickets de los primeros días con la 2.0.0 y la 2.1.0 en pr
 
 ## Problemas conocidos
 
-- La revisión final sigue yendo siempre con el modelo más caro, también en cambios pequeños, y un commit que solo toca documentación fuera de `.docs/` abre otra revisión completa. Es lo siguiente que se va a medir.
-- Los tests se siguen pasando enteros varias veces al cerrar. Ejecutar solo lo afectado está planificado para una versión próxima.
+- La revisión final usa siempre el modelo más caro, también en cambios pequeños, y un commit que solo toca documentación fuera de `.docs/` abre otra revisión completa. Es lo siguiente que vamos a medir.
+- El cierre pasa los tests enteros varias veces. Ejecutar solo lo afectado está planificado para una versión próxima.
 
 ## Fuera de alcance de esta entrega
 
