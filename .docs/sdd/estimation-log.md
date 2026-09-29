@@ -122,6 +122,7 @@
 | 2026-09-29 | 0103 | patch | — | 0.4 | — | — | — | — | — | 20260929-113512-patch-0103-silence-watch-once-message |
 | 2026-09-29 | 0105 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-113747-patch-0105-capabilities-delta-applied |
 | 2026-09-29 | 0106 | patch | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260929-113747-patch-0106-session-tokens-tests-isolation |
+| 2026-09-29 | 0107 | patch | — | 0.4 | — | — | — | — | — | 20260929-131000-patch-0107-merge-registry-union |
 
 **Factor de calibración** (ratio mediano real/estimado, 103 artefactos): **0.6** · media 0.75
 
@@ -155,6 +156,6 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| 2.1.0 | 11 | 9.7 | 1.2 | 33.97 | 30.18 |
+| 2.1.0 | 12 | 10.1 | 1.2 | 33.97 | 30.18 |
 
 > Ver `estimation.md`.
