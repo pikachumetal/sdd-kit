@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | La referencia, `§Frontend` y la verificación de una task full | pending | | incluye la campaña RED de los seis escenarios |
+| 1 | La referencia, `§Frontend` y la verificación de una task full | done | 7461d95 | incluye la campaña RED de los seis escenarios |
 | 2 | Lite y patch visual cargan la referencia | pending | | |
 | 3 | La spec propone `§Frontend`, las init la preguntan y el README la recomienda | pending | | |
 

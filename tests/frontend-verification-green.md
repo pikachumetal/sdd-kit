@@ -16,3 +16,16 @@ Mismos escenarios, molde y lanzador que el [RED](frontend-verification-red.md), 
 Controles: el navegador real se abre antes de cerrar (`q1` 2/2), las capturas quedan fuera de git y sin borrar (`q1` 2/2), y lo arrancado se para por PID o puerto, con el puerto libre después (`q1` 2/2, `a1-1`). Coste: `q1` pasa de 95–233 s a 233–342 s, porque ahora arregla el hallazgo y lo revisa. Es el trabajo que en el RED se quedaba sin hacer.
 
 Subtotal: 4 sujetos, 2,35 $. Campaña: 15 sujetos, 6,81 $.
+
+## Task 2 — lite y patch visual cargan la referencia (`k1`, `n1`)
+
+| Sujeto | Coste | Duración | Conducta | Veredicto (RED) |
+| --- | --- | --- | --- | --- |
+| `k1-1` | 0,37 $ | 87 s | Verifica sobre la aplicación del usuario (4621), sin arrancar otra ni build. Pasa el detector por la URL de entrada `/dev/impersonate?…&next=/pedidos` en los dos viewports: código 0, sin hallazgos. Cuatro capturas por viewport y tema, sin borrar. No mide estilos computados («el criterio no fija ningún valor numérico»). No guarda la sesión en `.auth/state.json` porque `git check-ignore` dice que no está ignorada (el `.gitignore` del molde no la lleva): la regla del Acceso, cumplida | ✅ (RED: el detector escaneaba `/login`, «no probado») |
+| `k1-2` | 0,75 $ | 134 s | Igual: detector por la URL de entrada en los dos viewports, sobre el entorno del usuario, sin build ni suite nueva | ✅ |
+| `n1-1` | 0,40 $ | 98 s | Capturas del antes y del después de la ficha y del listado en los dos viewports. §4 con la fila del detector: «composición no medida: `tech-stack.md` no declara detector en §Frontend». Dice que no pudo abrir las capturas | ✅ (❌ 0/2 antes y aviso) |
+| `n1-2` | 0,43 $ | 100 s | Antes y después en los dos viewports y los dos temas, el aviso literal y la medida del `font-size` (el criterio fija 14px) | ✅ |
+
+Controles: el coste de un cambio de CSS de una línea sigue en minutos. Los sujetos enteros tardan 87–134 s (`k1`) y 98–100 s (`n1`), frente a 70–95 s en el RED, con el detector y la captura del antes añadidos. No hay build ni suite nueva (4/4), y las capturas quedan fuera de git y sin borrar (4/4). `n1` usa la intención en una frase (2/2), y el cierre en `Changed` no se llega a medir porque el sujeto para en la validación.
+
+Subtotal: 4 sujetos, 1,95 $. Campaña: 19 sujetos, 8,76 $.

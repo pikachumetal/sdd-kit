@@ -64,3 +64,26 @@ Describe 'Puerta de una task full' {
     $field | Should -Match 'pantalla de referencia'
   }
 }
+
+Describe 'Puertas de lite y del patch' {
+  It 'lite carga la referencia y conserva la regla de cierre' {
+    $lite = Get-KitFile 'skills/sdd-start-feature/references/modo-lite.md'
+    $lite | Should -Match 'frontend-verification\.md'
+    $lite | Should -Match 'sin justificar'
+  }
+
+  It 'el patch visual carga la referencia con la captura del antes' {
+    $step = Get-Section (Get-KitFile 'skills/sdd-start-patch/SKILL.md') '4. **Fix mínimo**' '5. '
+    $step | Should -Match '\.\./sdd-start-feature/references/frontend-verification\.md'
+    $step | Should -Match 'antes del cambio'
+    $step | Should -Match 'sin justificar'
+  }
+
+  It 'la validación del patch enseña el detector' {
+    Get-Section (Get-KitFile 'skills/sdd-end-patch/SKILL.md') '0. **Validación**' '1. ' | Should -Match 'detector'
+  }
+
+  It 'la plantilla del patch tiene la fila del detector' {
+    Get-Section (Get-KitFile 'skills/sdd-templates/templates/patch-template.md') '## 4.' '## 5.' | Should -Match 'detector'
+  }
+}
