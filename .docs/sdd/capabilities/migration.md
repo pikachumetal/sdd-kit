@@ -11,6 +11,13 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN termina la inicialización
 - THEN existe `.docs/sdd/sdd-kit.json` con `version`, `channel`, `updated` e `ids`
 
+### La sesión avisa cuando carga un kit menor que el del proyecto
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.0.0` y una sesión de Claude Code que carga el plugin `sdd-kit` `1.1.0`
+- WHEN arranca la sesión
+- THEN el usuario ve un aviso con las dos versiones, `claude plugin update sdd-kit@sdd-kit --scope project` y que hay que reiniciar Claude Code, porque `/reload-plugins` no aplica una actualización de ámbito proyecto
+- AND el agente recibe el mismo aviso al principio de su contexto
+- AND con la versión cargada igual o mayor, o sin `sdd-kit.json`, no hay aviso
+
 ### Cada release con cambio estructural lleva su migración
 - GIVEN una release del kit que cambia la estructura de `.docs/sdd/` o retira algo del proyecto
 - WHEN se cierra la release

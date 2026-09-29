@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: patch/0100-kit-version-warning
-commit: <hash>
+commit: 0a7b1244
 ---
 
 # Patch 0100 — aviso cuando la sesión carga un kit menor que el del proyecto
@@ -39,7 +39,12 @@ La fila proponía sacar la versión cargada de la carpeta del «Base directory»
 | 1 | Pester `Hook.Tests.ps1`: proyecto a `10.0.0` (una comparación de texto lo daría menor que `2.1.0`) avisa con las dos versiones y los comandos, en `systemMessage` y en el contexto | ✅ RED 1 fallo antes de editar → verde |
 | 2 | Pester `Hook.Tests.ps1`: proyecto a la versión cargada, a `1.9.9` y sin `sdd-kit.json`, sin aviso y con `using-sdd` inyectada | ✅ 12/12. La primera versión del fix salía con código 2 sin `sdd-kit.json` (`sed` sobre un fichero inexistente con `pipefail`); este caso lo cazó |
 | 3 | Sesión headless real (`claude -p`, Haiku) con una copia del plugin a `1.0.0` por `--plugin-dir` en este repo (`sdd-kit.json` a `2.0.0`) | ✅ el `hook_response` trae el `systemMessage` y el agente cita el aviso literal |
-| 4 | Suite rápida del kit (pre-commit) | ✅ |
+| 4 | Suite rápida del kit (pre-commit del fix) | ✅ 775/775 en 23,8 s |
+| 5 | Sesión interactiva: el `systemMessage` se ve en el terminal | ⏳ diferido (headless no lo enseña) |
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en la próxima sesión interactiva con caché menor que el proyecto, a cargo del dev-lead» · disparador: la próxima sesión interactiva con una caché del kit menor que el `sdd-kit.json` del proyecto, a cargo del dev-lead (caso 5)
+
+Decisión tomada sin el dev-lead: la versión cargada se lee del `plugin.json` de la raíz del plugin, no del nombre de la carpeta del «Base directory» que proponía la fila (§2).
 
 ## 5. Tiempo (ligero)
 
