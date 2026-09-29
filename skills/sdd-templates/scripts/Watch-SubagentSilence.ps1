@@ -7,6 +7,7 @@
   Con -Path vigila la última escritura de ese fichero: la salida de un comando. Ese modo no sabe cuándo acaba el comando:
   quien lo lanza lo para al terminar el comando. Sin -Worktree, toma la raíz del repo git del directorio actual.
   Solo cuentan los despachos de hasta 60 s antes de arrancar el vigía: un relanzado puede repetir la description.
+  Con -Once no hay margen: toma el despacho más reciente con esa description.
   Los umbrales salen de control.silence en <worktree>/.docs/sdd/sdd-kit.json, con 8 y 20 minutos si falta la clave:
   longCommandMinutes si el subagente espera un Bash o un PowerShell, o con -Path; betweenStepsMinutes en cualquier otra espera.
   Mira cada 30 s y termina con una primera línea SILENCIO:, TERMINADO: o SIN TRANSCRIPT: (a los 2 min sin encontrarlo).
@@ -64,7 +65,7 @@ function Find-Transcript([string]$DispatchDescription, [string]$WorktreePath, [s
   $metas = Get-TranscriptFolders $WorktreePath $Roots | ForEach-Object {
     Get-ChildItem -Path (Join-Path $_ '*/subagents/agent-*.meta.json') -File -ErrorAction SilentlyContinue
   }
-  $notBefore = $script:StartedAt.AddSeconds(-$script:DispatchMarginSeconds)
+  $notBefore = if ($Once) { [datetime]::MinValue } else { $script:StartedAt.AddSeconds(-$script:DispatchMarginSeconds) }
   $match = $metas | Where-Object { $_.LastWriteTimeUtc -ge $notBefore -and (Read-JsonFile $_.FullName).description -eq $DispatchDescription } |
     Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
   if ($null -eq $match) { return $null }
