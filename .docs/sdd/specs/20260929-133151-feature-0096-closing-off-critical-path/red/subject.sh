@@ -4,13 +4,15 @@
 # Uso (desde tests/headless/run.sh): subject.sh <kit> <etiqueta> <escenario> <salida>
 #   c1 molde pedidos: la última task de la 0015, que cambia la UI, commiteada con su verificación visual pendiente
 #   c2 molde salas: feature validada; el dev-lead pide cambiar el texto de un error antes de cerrar
+#   c4 molde salas: un commit del hilo mientras revisaba el revisor final, y después su pasada de fix por un Important;
+#      la petición no nombra ese commit (c4-2 la nombraba y el sujeto lo vio por ella)
 #   c3 molde salas: pasada de fix y re-revisión apuntadas con shas del tramo que el cierre junta
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
 SPECS="$REPO/.docs/sdd/specs"
 . "$REPO/tests/headless/lib.sh"
-case $3 in c1) SKILL=sdd-start-feature ;; *) SKILL=sdd-end-feature ;; esac
+case $3 in c1|c4) SKILL=sdd-start-feature ;; *) SKILL=sdd-end-feature ;; esac
 subject_init "$1" "$2" "$4" "$SKILL"
 SC="$3"
 case $3 in
@@ -89,10 +91,33 @@ fix_pass_and_rereview_in_closing_range() {
   ASK="Invoca la skill sdd-kit:sdd-end-feature y cierra $NATIVE. La revisión final, su pasada de fix y la re-revisión del tramo posterior están apuntadas en \`tasks.md\`, y presentaste la validación. $VALIDATED «Cierra la feature.» $WAIT"
 }
 
+commit_during_review_then_fix_pass() {
+  salas_mold
+  sed -i "/^export function free/,/^}/ s/new Error('[^']*')/new Error('Franja no válida')/" "$R/src/slots.js"
+  g commit -q --amend --no-edit -a
+  REVIEWED=$(g rev-parse --short HEAD)
+  sed -i 's/if (!SLOT.test(slot)) throw/if (!isSlot(slot)) throw/' "$R/src/slots.js"
+  printf '\nfunction isSlot(slot) {\n  return SLOT.test(slot);\n}\n' >> "$R/src/slots.js"
+  commit "refactor(0012): nombrar la comprobación de la franja" "Visto en la verificación, mientras el revisor final trabajaba sobre la última task. Sin cambio de comportamiento."
+  MID=$(g rev-parse --short HEAD)
+  printf '
+%s, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre %s
+' "$FINAL_LINE" "$REVIEWED" >> "$R/$SPEC/tasks.md"
+  commit "docs(0012): revisión final de rama" "Apunta la revisión final en tasks.md."
+  sed -i "/^export function free/,/^}/ s/new Error('[^']*')/new Error('Franja no válida: usa HH-HH, p. ej. 10-12')/" "$R/src/slots.js"
+  commit "fix(0012): mensaje literal de la franja en libres" "Pasada de fix de la revisión final, con su test RED→GREEN."
+  PASS=$(g rev-parse --short HEAD)
+  printf 'Pasada de fix: %s, 1 hallazgo RED→GREEN
+' "$PASS" >> "$R/$SPEC/tasks.md"
+  commit "docs(0012): pasada de fix en tasks.md" "Apunta el commit de la pasada de fix."
+  ASK="Invoca la skill sdd-kit:sdd-start-feature y sigue con $NATIVE. La revisión final de rama volvió con un Important y su pasada de fix quedó en \`$PASS\`; las dos están apuntadas en \`tasks.md\`. Sigue con el paso 7: presenta la validación. $WAIT"
+}
+
 case $SC in
   c1) last_ui_task_pending_visual ;;
   c2) validated_then_text_change ;;
   c3) fix_pass_and_rereview_in_closing_range ;;
+  c4) commit_during_review_then_fix_pass ;;
   *) die "escenario desconocido: $SC" ;;
 esac
 

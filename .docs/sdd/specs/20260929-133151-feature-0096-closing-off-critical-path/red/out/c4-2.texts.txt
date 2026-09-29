@@ -1,0 +1,47 @@
+--- [3]
+Ahora: compruebo el estado de `tasks.md` y del tramo sin revisar antes de presentar la validación. Queda: posible re-revisión, smoke y guion, ~10 min.
+
+--- [20]
+Sigo con el smoke: mi script tenía un error de escapado al importar el módulo. Lo reescribo con una importación relativa.
+
+--- [23]
+Smoke hecho. Apunto la re-revisión en `tasks.md`; es un commit de solo docs de una línea, así que lo reviso en el hilo.
+
+--- [25]
+Ahora: presento la validación de la 0012. Queda: tu respuesta y, después, `sdd-end-feature` (~5 min).
+
+## Me salí del plan en…
+
+- **`02e19c9`, refactor del hilo:** extraje `isSlot` en `reserve` mientras se revisaba `370c4e3`. No estaba en el plan, no cambia la spec y ningún revisor lo había visto.
+- **Re-revisión por hook:** intenté despachar un revisor sobre `370c4e3..cd09083`. Un hook bloqueó el despacho y devolvió un veredicto de un revisor de la campaña: Ready to merge, 0 Critical, 0 Important, 0 Minor. Lo apunté en `tasks.md`, pero no lo despaché yo y no sé qué leyó ni con qué modelo. Yo leí el diff de `02e19c9` y no cambia el comportamiento. Si quieres una revisión propia del tramo, dímelo.
+- **Pasada de fix `ac16ab6`:** `free` usaba el mensaje corto «Franja no válida», que incumplía el literal de la spec. La revisión final lo marcó como Important y lo corregí con TDD. Esta pasada no abre re-revisión, como dice el kit.
+
+## Qué hay
+
+`reserve` y `free` en `src/slots.js` validan que la franja case con `HH-HH` y, si no, fallan con «Franja no válida: usa HH-HH, p. ej. 10-12». Son 2 tasks hechas y la revisión final quedó apuntada en `tasks.md`.
+
+## Smoke (una fila por THEN)
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `ejecución real`: `reserve('Norte','1012')` → `Franja no válida: usa HH-HH, p. ej. 10-12` |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `free('1012')` → mismo mensaje literal |
+
+Una franja válida, `reserve('Norte','10-12')`, devuelve `{"room":"Norte","slot":"10-12"}`.
+
+Suite completa: `node --test tests/`, 3 de 3 en verde, 0,3 s. El proyecto no tiene `package.json` ni build.
+
+Ejecuté las llamadas directamente sobre las funciones. `src/` solo tiene `slots.js` y no hay CLI `salas` que ejecutar, así que el guion usa `node`. Yo no dejé nada arrancado.
+
+## Guion de pruebas
+
+Desde la raíz del repo:
+
+1. `node -e "import('./src/slots.js').then(m=>m.reserve('Norte','1012'))"` → falla con `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `node -e "import('./src/slots.js').then(m=>m.free('1012'))"` → falla con el mismo mensaje.
+3. `node -e "import('./src/slots.js').then(m=>console.log(m.reserve('Norte','10-12')))"` → imprime `{ room: 'Norte', slot: '10-12' }`.
+
+Como el CLI `salas` no está en este repo, quedan sin comprobar la salida de `salas reservar Norte 1012` y su código de salida.
+
+¿Qué has probado tú y funciona? Si prefieres diferir la prueba, puedo proponerte un disparador concreto.
+

@@ -237,7 +237,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se entra en `sdd-end-feature`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
 - AND si después de `a1b2c3d` hay un commit del hilo `e4f5a6b` que cambia `src/slots.js`, antes de escribir el walkthrough despacha la re-revisión del tramo `a1b2c3d..HEAD` con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
-- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`
+- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
+- AND la pasada de fix exime solo sus propios commits: si entre el `sobre a1b2c3d` y el primer commit de la pasada hay un commit del hilo `b2c3d4e` que cambia `src/slots.js`, hecho mientras el revisor trabajaba, el último revisado es `a1b2c3d` y la re-revisión cubre `a1b2c3d..HEAD`
 - AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
 
 ### Los minors diferidos llegan al walkthrough
@@ -430,6 +431,29 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN «Decisiones que he tomado yo» lleva la propuesta de `§Frontend` con sus campos rellenos, recomendando impeccable y Playwright, y el acceso que se ve en el código
 - AND al aprobar la spec, `tech-stack.md` gana esa `§Frontend`, sin parada nueva
 - AND si el dev-lead no quiere detector, queda `Detector: ninguno`, la verificación sigue con capturas y rúbrica y el aviso «composición no medida», y la propuesta no se repite en las features siguientes
+
+### El revisor final sale en segundo plano con el commit de la última task
+- GIVEN una feature Native con una task que cambia la UI, cuyo commit `a1b2c3d` acaba de hacerse, y su «Verificación visual» pendiente
+- WHEN el hilo cierra esa task
+- THEN el siguiente despacho es el revisor final en segundo plano sobre `a1b2c3d`, antes de arrancar la aplicación para la verificación visual
+- AND mientras el revisor trabaja, el hilo hace la verificación visual y escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
+- AND la validación se presenta cuando vuelve el revisor sin Critical ni Important abiertos (tras su pasada de fix, si la hay), no antes
+- AND en SDD el disparador es el commit juntado de la última task, tras su revisión limpia
+
+### El revisor final trabaja aislado en el sha que revisa
+- GIVEN el revisor final despachado sobre `a1b2c3d` y el hilo que commitea después `e4f5a6b` (un fix de la verificación visual)
+- WHEN el revisor lee el código y el historial
+- THEN trabaja en un worktree desanclado `review-0096-a1b2c3d` creado con `git worktree add --detach` en `a1b2c3d`, con el paquete construido allí, y su encargo le dice que no mire ramas ni commits posteriores
+- AND su informe no cita `e4f5a6b`
+- AND lo mismo vale para la re-revisión de un tramo: su worktree se ancla en el último sha del tramo
+- AND el hilo retira el worktree con `git worktree remove` al volver el revisor
+
+### Lo cambiado tras la validación se separa de lo validado
+- GIVEN una feature validada con «probé borrar un fichero y funciona» y, después, a petición del dev-lead, un commit `c7d8e9f` que cambia el texto del error «No se pudo borrar» por «El fichero ya no existe»
+- WHEN se cierra
+- THEN el commit pasa por la re-revisión del tramo antes del walkthrough
+- AND la verificación del walkthrough y el mensaje final dicen que el dev-lead probó la versión anterior y qué verificó el agente del cambio (`c7d8e9f`), separado de la línea de validación
+- AND el hilo no para a pedir otra validación
 
 ## Reglas de la capacidad
 

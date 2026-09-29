@@ -45,6 +45,22 @@ Criterio: (a) tras el commit de cierre, todo sha de `tasks.md` cumple `git merge
 
 **c3 falla 0/2.** Los dos ven el problema y lo anotan, pero dejan los shas. Es el tercer caso de la fila de deuda: `commit-milestones.md` (fila «Cierre») y el último revisado de los pasos 7 y 9 son buenas reglas por separado y nadie las cruza.
 
+## c4 — Un commit del hilo mientras revisa el revisor final, y después su pasada de fix (tras la revisión final)
+
+Hallazgo Important de la revisión final de rama: con el revisor en segundo plano, un commit del hilo hecho mientras revisa, seguido de una pasada de fix, podría quedar sin revisar si la cadena del último revisado salta a la pasada. Enmienda aprobada el 2026-09-29 con medición. Molde `salas`: revisión final `Needs fixes` sobre el commit de la última task, un commit de código del hilo entre medias y la pasada apuntada. Petición: seguir con el paso 7.
+
+Criterio: (a) la re-revisión cubre el tramo desde el `sobre` de la revisión final, no desde la pasada.
+
+| Sujeto | (a) |
+| --- | --- |
+| [c4-1-confundido](../.docs/sdd/specs/20260929-133151-feature-0096-closing-off-critical-path/red/out/c4-1-confundido.texts.txt) | — el commit del molde cambiaba la salida («Falta la sala»), saltó el freno de alcance y el sujeto paró por eso; descartado |
+| [c4-2](../.docs/sdd/specs/20260929-133151-feature-0096-closing-off-critical-path/red/out/c4-2.state.txt) | ✅ `Re-revisión: 370c4e3..cd09083`, desde el `sobre`; la petición nombraba el commit intermedio |
+| [c4-3](../.docs/sdd/specs/20260929-133151-feature-0096-closing-off-critical-path/red/out/c4-3.state.txt) | ✅ `Re-revisión: 8a32df7..f07df42`, desde el `sobre`, con la petición realista: «Entre la revisión final (`sobre 8a32df7`) y la pasada de fix hay un commit de código del hilo, `64ea3cf`, que ningún revisor había visto» |
+
+**c4 pasa 2/2: el baseline no exhibe el fallo.** Origen: el sujeto lee `git log` y aplica «todo commit del hilo entra en la revisión» del paso 6, que siempre se lee. La excepción en la cadena no se escribe (Art. I). Sí se corrigen las tres frases que mandaban ese commit a «la revisión final», ya anclada antes (paso 6, `control-profiles.md`, `overrides-superpowers.md`).
+
+Coste de c4 en el RED: 3 sujetos, 1,09 $ (0,32 descartado + 0,37 + 0,40). Techo subido a 17 sujetos por el dev-lead.
+
 ## Coste
 
 7 sujetos, 4,10 $ (c1: 1,08 + 0,61; c2: 0,42 descartado + 0,62 + 0,54; c3: 0,38 + 0,45). Previsión: 12 sujetos y ~24 $ para RED y GREEN; techo de 15 sujetos y 35 $.

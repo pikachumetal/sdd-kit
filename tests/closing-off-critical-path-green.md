@@ -33,6 +33,14 @@ Control no observable: «la pasada de fix de la revisión final no abre re-revis
 
 **c3 pasa 2/2** (RED: 0/2).
 
+## c4 — Commit del hilo durante la revisión y pasada de fix (control, tras la pasada de fix de la revisión final)
+
+| Sujeto | (a) re-revisión desde el `sobre` |
+| --- | --- |
+| [c4-1](../.docs/sdd/specs/20260929-133151-feature-0096-closing-off-critical-path/green/out/c4-1.state.txt) | ✅ `Re-revisión: 045d57c..1bf8080`, desde el `sobre`, con el worktree desanclado |
+
+**c4 se mantiene** con las tres frases corregidas (kit de la pasada de fix).
+
 ## Coste
 
-6 sujetos, 3,82 $ (c1: 0,75 + 0,93; c2: 0,61 + 0,63; c3: 0,42 + 0,48). Campaña entera: 13 sujetos y 7,92 $, frente a una previsión de 12 sujetos y ~24 $ y un techo de 15 sujetos y 35 $.
+6 sujetos, 3,82 $ (c1: 0,75 + 0,93; c2: 0,61 + 0,63; c3: 0,42 + 0,48). Tras la pasada de fix de la revisión final, c4: 1 sujeto más en el GREEN (0,38 $). Campaña entera: 17 sujetos y 9,39 $, frente a una previsión de 12 sujetos y ~24 $ y un techo de 35 $, con el de sujetos subido de 15 a 17 por el dev-lead.

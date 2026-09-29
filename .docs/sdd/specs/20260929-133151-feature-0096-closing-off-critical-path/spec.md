@@ -95,6 +95,7 @@ Se reordena el tramo entre el commit de la última task y la presentación de la
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
 - AND si después de `a1b2c3d` hay un commit del hilo `e4f5a6b` que cambia `src/slots.js`, antes de escribir el walkthrough despacha la re-revisión del tramo `a1b2c3d..HEAD` con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
 - AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
+- AND la pasada de fix exime solo sus propios commits: si entre el `sobre a1b2c3d` y el primer commit de la pasada hay un commit del hilo `b2c3d4e` que cambia `src/slots.js`, hecho mientras el revisor trabajaba, el último revisado es `a1b2c3d` y la re-revisión cubre `a1b2c3d..HEAD`
 - AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
 
 ### Capacidad: `commit-history`
@@ -109,6 +110,8 @@ Se reordena el tramo entre el commit de la última task y la presentación de la
 - AND tras el commit de cierre, `git merge-base --is-ancestor <sha> HEAD` sale bien para todo sha de `tasks.md`
 
 ## Enmiendas
+
+- 2026-09-29 — La pasada de fix de la revisión final exime solo sus propios commits: si entre el `sobre` de `Revisión final:` y el primer commit de la pasada hay commits del hilo que no se revisan en el hilo (un fix de la verificación visual hecho mientras el revisor trabajaba), la re-revisión del paso 7 cubre `<sobre>..HEAD` y no `<pasada>..HEAD`. Y un commit del hilo sin task abierta ya no «entra en la revisión final», anclada antes: entra en la re-revisión del tramo. Cambia la cadena del último revisado del MODIFIED «El cierre no repite la revisión final de Native» (un AND nuevo) y las frases de `SKILL.md` paso 6 («Desvío y ruling»), `control-profiles.md` y `overrides-superpowers.md` — hallazgo Important de la revisión final: con el revisor en segundo plano, un commit hecho mientras revisa y seguido de una pasada de fix no lo revisa nadie — aprobada: «Apruebo y se mide (Recomendada)», con el escenario c4 (1 sujeto RED y 1 GREEN)
 
 - 2026-09-29 — Se retira la guía de «cambiado después de tu prueba» (decisiones 6 y 7, requisito ADDED «Lo cambiado tras la validación se separa de lo validado»). El requisito pasa a describir la conducta vigente, sin literal fijo: el walkthrough y el mensaje final dicen que el dev-lead probó la versión anterior y qué verificó el agente del cambio. Se mide como control en el GREEN (c2). Se quitan del Scope la plantilla del walkthrough y los pasos 1 y 12 de `sdd-end-feature`, y de `overrides-superpowers.md` la frase de la enmienda de proceso, que no se midió — el RED c2 pasa 2/2: el paso 1 de `sdd-end-feature` ya separa «verificado por ti» de «reportado por el usuario», y sin fallo no se escribe guía (Art. I) — aprobada: «Apruebo la enmienda (Recomendada)»
 

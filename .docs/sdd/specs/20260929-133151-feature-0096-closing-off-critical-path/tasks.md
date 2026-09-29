@@ -22,15 +22,18 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 2 | Revisor final en segundo plano y aislado | done | 65804fa | |
 | 3 | Borradores de cierre mientras revisa | done | 5347902 | |
 | 4 | Todo sha de `tasks.md` alcanzable tras el cierre | done | c0255d0 | |
-| 5 | GREEN | pending | — | |
+| 5 | GREEN | done | 3a9b503 | |
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 1 Important, 5 Minor), sobre 3a9b503
+Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN
 
 ## Verificación por task
 
-- [ ] Task 1 — cada `state.txt` con coste > 0; evidencia con tabla por escenario y coste
-- [ ] Task 2 — `Invoke-Pester -Path tests/ClosingOffCriticalPath.Tests.ps1,tests/Skills.Tests.ps1`
-- [ ] Task 3 — ídem
-- [ ] Task 4 — ídem
-- [ ] Task 5 — evidencia GREEN con controles; coste acumulado ≤ 35 $
+- [x] Task 1 — cada `state.txt` con coste > 0; evidencia con tabla por escenario y coste
+- [x] Task 2 — `Invoke-Pester -Path tests/ClosingOffCriticalPath.Tests.ps1,tests/Skills.Tests.ps1`
+- [x] Task 3 — ídem
+- [x] Task 4 — ídem
+- [x] Task 5 — evidencia GREEN con controles; coste acumulado ≤ 35 $
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

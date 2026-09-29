@@ -66,3 +66,16 @@ Describe 'Sha alcanzable' {
     Assert-Literal (& $Text) @('si la línea dice «juntada en el cierre», el commit de cierre')
   }
 }
+
+Describe 'Commit del hilo mientras revisa el revisor final' {
+  It 'va a la re-revisión del tramo si la revisión final ya salió, en <Where>' -ForEach @(
+    @{ Where = 'el paso 6 de sdd-start-feature'; Text = { Get-Step $script:StartSkill 6 } }
+    @{ Where = 'control-profiles.md'; Text = { Get-Reference 'control-profiles.md' } }
+  ) {
+    Assert-Literal (& $Text) @('y la revisión final aún no ha salido, en la de la revisión final de rama; y si ya salió, aunque no haya vuelto, en la re-revisión')
+  }
+
+  It 'overrides no lo manda a la final ya despachada' {
+    Assert-Literal (Get-OverridesRow 'subagent-driven-development') @('en la final si aún no ha salido, y si ya salió, en la re-revisión del tramo')
+  }
+}
