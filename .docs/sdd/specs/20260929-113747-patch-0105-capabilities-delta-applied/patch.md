@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0105-capabilities-delta-applied
-commit: <hash>
+commit: a807b8d7
 ---
 
 # Patch 0105 — el validador comprueba que el delta de capacidades se fusionó
@@ -41,6 +41,8 @@ Mirar solo el título no basta para el fallo del ticket: un `MODIFIED` conserva 
 | 3 | Pester: dos `ADDED` sin fusionar, uno con el título partido en dos líneas, fallan con el título entero | ✅ RED → verde |
 | 4 | Suite completa del kit | ✅ 1052/1053; el fallo, `FastSuiteBudget` (35,5 s por carga de la suite completa, culpa a `SubjectOutputPrivacy`), pasa solo en otra ejecución |
 | 5 | `-Artifact` sobre los 12 artefactos más recientes del repo | ✅ 8 pasan; 0085 y 0098 fallan en requisitos que la 0091 y la 0099 modificaron después (esperado: se ejecuta al cerrar); 0091 falla por «el segundo sha», una edición de `feature-flow.md` posterior sin delta: fallo real, no falso positivo |
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en el próximo cierre con delta, a cargo del dev-lead» · disparador: el próximo cierre de una feature o un patch con delta de capacidades, a cargo del dev-lead
 
 Decisión tomada sin el dev-lead: la fila pedía nombrar el título que «no está en su capacidad»; se comparan también las líneas de escenario, porque un `MODIFIED` sin fusionar deja su título en la capacidad y solo así se detecta (§2).
 
