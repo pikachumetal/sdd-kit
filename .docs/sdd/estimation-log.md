@@ -119,19 +119,20 @@
 | 2026-09-29 | 0104 | patch | — | 0.3 | — | — | — | — | — | 20260929-113400-patch-0104-next-id-legacy-suffix |
 | 2026-09-29 | 0101 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-113414-patch-0101-headless-harness-guards |
 | 2026-09-29 | 0103 | patch | — | 0.4 | — | — | — | — | — | 20260929-113512-patch-0103-silence-watch-once-message |
+| 2026-09-29 | 0106 | patch | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260929-113747-patch-0106-session-tokens-tests-isolation |
 
-**Factor de calibración** (ratio mediano real/estimado, 100 artefactos): **0.6** · media 0.74
+**Factor de calibración** (ratio mediano real/estimado, 101 artefactos): **0.6** · media 0.74
 
-- p25–p75: 0.42–1
+- p25–p75: 0.43–1
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 30 % · sobreestimadas: 60 % · infraestimadas: 10 %
 - Error absoluto (h): media 0.92 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.83
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.73
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 32 | 32 % |
-| 0.5–0.8 | 30 | 30 % |
+| 0.5–0.8 | 31 | 31 % |
 | 0.8–1.25 | 28 | 28 % |
 | 1.25–2 | 8 | 8 % |
 | ≥2 | 2 | 2 % |
@@ -141,7 +142,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 61 | 0.53 | 0.38–0.75 |
 | infra/tooling | 14 | 0.42 | 0.36–0.58 |
-| patch | 24 | 1.2 | 0.8–1.4 |
+| patch | 25 | 1.2 | 0.8–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
 | --- | --- | --- | --- | --- | --- |
@@ -152,6 +153,6 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| 2.1.0 | 8 | 8.2 | 0.84 | 33.97 | 30.18 |
+| 2.1.0 | 9 | 8.5 | 0.6 | 33.97 | 30.18 |
 
 > Ver `estimation.md`.
