@@ -173,6 +173,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - WHEN el script empuja
 - THEN empuja la rama destino por su nombre (`git push <remoto> <destino>`), nunca `HEAD:<destino>`, y al terminar la rama local y la remota apuntan al mismo commit
 - AND sin la confirmación ni `merge.push`, el script fusiona en local y no empuja
+- AND si la rama destino no tiene remoto, el script fusiona en local, no empuja y acaba con `push: no hecho: sin remoto`, que el mensaje final del cierre cita
 
 ### Un merge del cierre que falla deja la rama destino como estaba
 - GIVEN un merge del cierre que falla: conflicto que no es el del log, verificación en rojo, push rechazado o error de git

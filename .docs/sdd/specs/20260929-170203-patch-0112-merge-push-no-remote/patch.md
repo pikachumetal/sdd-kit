@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0112-merge-push-no-remote
-commit: <hash>
+commit: abee0029
 ---
 
 # Patch 0112 — Invoke-SddMerge.ps1 -Push sin remoto fusiona en local y avisa
@@ -45,7 +45,9 @@ Reproducido en Pester antes del fix, con el test reescrito a lo esperado: el scr
 | 3 | `tests/Invoke-SddMerge.Tests.ps1` completo | ✅ 21/21 |
 | 4 | RED/GREEN de la receta ([red](../../../../tests/merge-push-no-remote-red.md), [green](../../../../tests/merge-push-no-remote-green.md)): cierre con `delegate`, `merge.push: true` y sin remoto | ✅ 2/2 sujetos Sonnet (0,73 $): `-Push` en una sola ejecución, sin `git push` a mano, y la línea de terminado cita `push: no hecho: sin remoto` (RED 0/3) |
 
-Lo verificó el agente; el dev-lead no lo ha probado todavía.
+Lo verificó el agente (casos 1-4). El dev-lead lo validó en la parada del cierre.
+
+Validado: 2026-09-29 · «Validado: lo he probado y funciona» · no detalló qué probó
 
 ## 5. Tiempo (ligero)
 
