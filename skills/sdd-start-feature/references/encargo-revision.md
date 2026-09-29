@@ -28,6 +28,16 @@ El brief, el informe, el paquete de review y el ledger viven en el workspace de 
 
 Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`). Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](control-profiles.md#vigía-de-silencio).
 
+Sale en segundo plano en cuanto existe el commit de la última task, y el hilo sigue trabajando y commiteando mientras revisa. Por eso el revisor no trabaja en el árbol del hilo, sino en un worktree desanclado en el sha que revisa, `review-<id>-<sha corto>`, junto a los demás worktrees del repo:
+
+```bash
+SHA=$(git rev-parse --short HEAD)
+REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-<id>-$SHA"
+git worktree add --detach "$REVIEW_DIR" "$SHA"
+```
+
+La receta del paquete se ejecuta dentro de `$REVIEW_DIR`, y el encargo nombra ese directorio como el único en el que trabaja, con esta frase: «Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama)». Al volver el revisor, el hilo lo retira con `git worktree remove "$REVIEW_DIR"`. La re-revisión de un tramo `<a>..<b>` se ancla igual, en `<b>`. Revisando un sha antiguo desde el árbol que avanza, 3 de 4 revisores vieron el commit que ya arreglaba el fallo (ticket de la feature 0027 de document-manager, §2); en el RED de la 0096, 2 de 2 hilos commitearon después del despacho (`tests/closing-off-critical-path-red.md`, c1).
+
 El paquete lo prepara el hilo con esta receta, no con `review-package`, en los dos métodos. `review-package` corta el rango desde la base del arranque y no admite exclusiones: el revisor lee siempre la evidencia de las campañas y, si la rama integró la rama de integración, también el trabajo de otras features (9 MB frente a 179 KB en la feature 0070, 730 KB frente a 78 KB en la 0058). En Git Bash, con `<integración>` la rama de integración de la constitution (`develop` si no fija otra) y `sdd-workspace` el script que está junto a `review-package` en `subagent-driven-development/scripts/`:
 
 ```bash

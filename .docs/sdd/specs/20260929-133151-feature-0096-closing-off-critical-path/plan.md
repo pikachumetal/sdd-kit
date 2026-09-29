@@ -33,7 +33,7 @@ created: 2026-09-29
 ### De código
 
 - Texto humano en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case (Art. III).
-- Literales exactos de la spec: `review-<id>-<sha corto>`, «juntada en el cierre», «cambiado después de tu prueba», `Cambiado después de tu prueba: <sha> · <qué cambia>`.
+- Literales exactos de la spec: `review-<id>-<sha corto>`, «juntada en el cierre».
 - Un paso que resume una regla de una referencia lleva todas las condiciones que deciden; la referencia se queda con el porqué (`architecture.md`).
 - Art. X: sin comentarios que repitan el código. Sin comentarios que citen documentos (constitution, spec, task, requisito, `capabilities/`). Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano en castellano con tildes. El revisor marca el incumplimiento como Important, salvo un umbral numérico superado en una unidad, que es Minor.
 - Todo test que cree repos git, lance procesos o espere lleva `-Tag 'Slow'`.
@@ -71,8 +71,7 @@ created: 2026-09-29
 - `skills/sdd-start-feature/references/control-profiles.md` — viñeta de la pasada de fix y último revisado.
 - `skills/sdd-start-feature/references/overrides-superpowers.md` — filas `executing-plans` y `subagent-driven-development`.
 - `skills/sdd-start-feature/references/commit-milestones.md` — fila «Cierre» y «El hash en los artefactos».
-- `skills/sdd-end-feature/SKILL.md` — pasos 0, 1, 9, 10 y 12.
-- `skills/sdd-templates/templates/walkthrough-template.md` — §4 Verificación.
+- `skills/sdd-end-feature/SKILL.md` — pasos 0, 9 y 10.
 
 **NO se tocan**:
 
@@ -145,27 +144,27 @@ Ninguna.
 - [ ] **Step 4: Verificación** — verde.
 - [ ] **Step 5: Commit de la task**.
 
-### Task 3 — Borradores de cierre y «cambiado después de tu prueba»
+### Task 3 — Borradores de cierre mientras revisa
+
+> Recortada por la enmienda del 2026-09-29: «cambiado después de tu prueba» sale (el RED c2 pasa 2/2).
 
 **Modelo**: hilo (sesión)
-**Tests RED**: hilo · `Describe 'Lo cambiado tras la validación'`, que vuelve al fichero desde fuera del repo al empezar la task
-**Superficies**: docs (skills, plantilla)
+**Tests RED**: hilo · `Describe 'Borradores de cierre'`, que vuelve al fichero desde fuera del repo al empezar la task
+**Superficies**: docs (skills)
 **Verificación**: `pwsh -NoProfile -Command "Invoke-Pester -Path tests/ClosingOffCriticalPath.Tests.ps1,tests/Skills.Tests.ps1"`
-**Se prueba en la aplicación**: no, porque el kit no tiene aplicación: se prueba en el GREEN (c1, c2)
+**Se prueba en la aplicación**: no, porque el kit no tiene aplicación: se prueba en el GREEN (c1)
 
 **Interfaces**:
 - Consume: el paso 6 de la task 2 (los borradores se escriben mientras revisa).
-- Produce: la línea `Cambiado después de tu prueba: <sha> · <qué cambia>` de la plantilla, que el paso 12 de `sdd-end-feature` lista.
+- Produce: nada.
 
-**Ficheros**: modificar `skills/sdd-start-feature/SKILL.md` (paso 7: borradores sin commitear en vez de «ni walkthrough ni fusión»), `skills/sdd-end-feature/SKILL.md` (pasos 0, 1 y 12), `references/control-profiles.md` (pasada pedida tras la validación), `references/overrides-superpowers.md` (fila `executing-plans`: enmienda de proceso), `skills/sdd-templates/templates/walkthrough-template.md` (§4)
+**Ficheros**: modificar `skills/sdd-start-feature/SKILL.md` (paso 7: borradores sin commitear en vez de «ni walkthrough ni fusión»), `skills/sdd-end-feature/SKILL.md` (paso 0: parte de los borradores)
 
 - [ ] **Step 1: Tests RED**:
-  - `el paso 7 escribe los borradores sin commitear`: `Get-Step 7` contiene `sin commitear` y `walkthrough.md` sin la verificación ni el tiempo.
-  - `el walkthrough separa lo cambiado tras la validación`: la plantilla contiene `Cambiado después de tu prueba: <sha> · <qué cambia>`.
-  - `el mensaje final lista lo cambiado después de tu prueba`: el paso 12 de `sdd-end-feature` contiene `Cambiado después de tu prueba`.
-  - `una pasada pedida tras la validación no es el second fix pass`: `overrides-superpowers.md` contiene `enmienda de proceso` y `second fix pass`.
-- [ ] **Step 2: Correrlos** — esperado: 4 fallos.
-- [ ] **Step 3: Editar**. El paso 1 de `sdd-end-feature` dice cuándo va la línea: un commit posterior a la validación con salida observable, uno por commit; sin salida observable, no. No se pide otra validación.
+  - `el paso 7 escribe los borradores sin commitear`: `Get-Step 7` contiene `sin commitear` y `` `walkthrough.md` sin la verificación ni el tiempo ``.
+  - `el cierre parte de los borradores`: el paso 0 de `sdd-end-feature` contiene `borradores`.
+- [ ] **Step 2: Correrlos** — esperado: 2 fallos.
+- [ ] **Step 3: Editar**.
 - [ ] **Step 4: Verificación** — verde.
 - [ ] **Step 5: Commit de la task**.
 
@@ -236,7 +235,7 @@ Ninguna.
 
 - ADDED «El revisor final sale en segundo plano con el commit de la última task» → Task 2 (disparador, orden), Task 3 (borradores); GREEN c1. ✓
 - ADDED «El revisor final trabaja aislado en el sha que revisa» → Task 2; GREEN c1. ✓
-- ADDED «Lo cambiado tras la validación se separa de lo validado» → Task 3; GREEN c2. ✓
+- ADDED «Lo cambiado tras la validación se separa de lo validado» → conducta vigente, sin guía (enmienda del 2026-09-29); control en el GREEN c2. ✓
 - MODIFIED «El cierre no repite la revisión final de Native» → Task 4 (último revisado); GREEN c3. ✓
 - MODIFIED «El cierre de una feature queda en un commit» → Task 4; GREEN c3. ✓
 - Decisión 9 (gate en paralelo) → N/A, fuera de scope. ✓
