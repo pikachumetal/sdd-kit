@@ -210,6 +210,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el hilo ejecuta cada task
 - THEN la abre con `task-start` y la cierra con `task-done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
 
+### Los scripts de Native se lanzan con la herramienta Bash y con salida
+- GIVEN un plan con `Ejecución: native` en Windows, con PowerShell como shell principal, y una «Verificación» que no imprime nada si pasa
+- WHEN el hilo abre y cierra cada task con `task-start` y `task-done`
+- THEN los lanza con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell, y comprueba que la ruta de `sdd-workspace` no está vacía antes de escribir en el ledger
+- AND pasa a `task-done` un comando que imprime algo (`sh -c '<comando> && echo ok'`), y la línea `Task <N>: complete` queda en el ledger a la primera
+
 ### La base se comprueba antes de cada task Native
 - GIVEN un plan con `Ejecución: native` y dos o más tasks
 - WHEN el hilo va a empezar cada task

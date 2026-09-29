@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0110-native-scripts-windows
-commit: <hash>
+commit: e6119d3e
 ---
 
 # Patch 0110 — el paso 6 lanza los scripts de executing-plans con la herramienta Bash y con salida
@@ -46,7 +46,9 @@ RED y GREEN con sujetos headless Sonnet sobre el mismo molde Native: [RED](../..
 | 3 | Lanza los scripts con la herramienta Bash | RED y GREEN 4/4 con Bash, 0 llamadas a PowerShell: **disparador ausente** en `claude -p`. El frente de WSL se apoya en el ticket y en la resolución de `bash` de la máquina |
 | 4 | Ancla Pester «Patch 0110 — scripts de executing-plans en Windows» | ✅ 27/27 con el fix · ❌ 2 fallos sobre la copia del kit anterior |
 
-Lo verificó el agente; el dev-lead no lo ha probado todavía.
+Lo verificó el agente; el dev-lead lo validó sin detallar qué probó.
+
+Validado: 2026-09-29 · «Validado: lo he probado y funciona» · no detalló qué probó
 
 ## 5. Tiempo (ligero)
 
