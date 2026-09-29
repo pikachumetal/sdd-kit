@@ -11,6 +11,7 @@
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
 # que se suman a --allowedTools, como un servidor MCP),
 # SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
+# SUBJECT_TIMEOUT (segundos de reloj por sujeto; 0, el valor por omisión, sin tope),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5).
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
@@ -26,6 +27,10 @@ subject_init() {
   RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
   case "$RUNS" in *scratchpad*) ;; *) die "RUNS_DIR fuera del scratchpad: $RUNS" ;; esac
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
+  # Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency» (ticket de la feature 0095 §2).
+  if [ -z "${SUPERPOWERS_DIR:-}" ] && grep -q '"dependencies"' "$KIT/.claude-plugin/plugin.json" 2>/dev/null; then
+    die "el kit declara dependencies: define SUPERPOWERS_DIR (ruta de superpowers)"
+  fi
   mkdir -p "$RUNS" "$OUT"
   # Una carpeta por fase: dos fases a la vez con el mismo RUNS_DIR se borraban el molde (ticket del patch 0082 §1).
   RUNS="$(cd "$RUNS" && pwd)/${PHASE:-red}"
@@ -72,12 +77,18 @@ subject_launch() {
     return
   fi
   # Sin < /dev/null, un aviso de stdin precede al JSON.
-  claude "${CLAUDE_ARGS[@]}" "$1" < /dev/null > "$JSONL" 2> "$RUNS/$LABEL.err"
+  # timeout no ejecuta builtins: `timeout 720 command claude` no arrancó la tanda (ticket de la feature 0098 §4).
+  timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" "${CLAUDE_ARGS[@]}" "$1" < /dev/null > "$JSONL" 2> "$RUNS/$LABEL.err"
+  local rc=$?
+  [ $rc -eq 124 ] && echo "[$LABEL] tope de $SUBJECT_TIMEOUT s: sujeto cortado" >&2
+  return $rc
 }
 
 # Los argumentos de claude -p en CLAUDE_ARGS; subject_launch los deja en <etiqueta>.args para poder comprobarlos.
 build_claude_args() {
   CLAUDE_ARGS=(-p --model "${MODEL:-sonnet}" --settings "$1" --plugin-dir "$KIT" --add-dir "$KIT")
+  # La carpeta de ejecución, junto al molde: sin ella, los sujetos no abrían sus capturas (ticket de la feature 0099 §4).
+  CLAUDE_ARGS+=(--add-dir "$(cygpath -m "$RUN" 2>/dev/null || echo "$RUN")")
   # El CLAUDE.md del dev-lead ya enruta al kit: medir con él da por buena una puerta que un dev sin él no tiene.
   if [ -n "${SUPERPOWERS_DIR:-}" ]; then
     CLAUDE_ARGS+=(--setting-sources "" --plugin-dir "$SUPERPOWERS_DIR")
