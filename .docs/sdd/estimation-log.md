@@ -125,27 +125,28 @@
 | 2026-09-29 | 0107 | patch | — | 0.4 | — | — | — | — | — | 20260929-131000-patch-0107-merge-registry-union |
 | 2026-09-29 | 0096 | docs | 4 | 1.7 | 0.43 | 43882k | 3419k | 9.39 | 16.83 | 20260929-133151-feature-0096-closing-off-critical-path |
 | 2026-09-29 | 0109 | infra/tooling | 1.25 | 0.6 | 0.48 | 24045k | 945k | 0.52 | 9.25 | 20260929-160116-feature-0109-pending-migration-notice |
+| 2026-09-29 | 0113 | docs | 4 | 1.3 | 0.33 | 37885k | 4275k | 12.03 | 15.4 | 20260929-170930-feature-0113-plan-review-focus |
 
-**Factor de calibración** (ratio mediano real/estimado, 105 artefactos): **0.6** · media 0.74
+**Factor de calibración** (ratio mediano real/estimado, 106 artefactos): **0.6** · media 0.74
 
 - p25–p75: 0.43–1
 - p80: 1.08 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 30 % · sobreestimadas: 60 % · infraestimadas: 10 %
-- Error absoluto (h): media 0.91 · mediana 0.7
+- Dentro de ±25 %: 30 % · sobreestimadas: 60 % · infraestimadas: 9 %
+- Error absoluto (h): media 0.93 · mediana 0.7
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.54
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 34 | 32 % |
-| 0.5–0.8 | 31 | 30 % |
-| 0.8–1.25 | 30 | 29 % |
+| <0.5 | 35 | 33 % |
+| 0.5–0.8 | 31 | 29 % |
+| 0.8–1.25 | 30 | 28 % |
 | 1.25–2 | 8 | 8 % |
 | ≥2 | 2 | 2 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 62 | 0.53 | 0.38–0.75 |
+| docs | 63 | 0.52 | 0.37–0.74 |
 | infra/tooling | 15 | 0.43 | 0.37–0.57 |
 | patch | 27 | 1.2 | 0.8–1.37 |
 
@@ -158,6 +159,6 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| 2.1.0 | 14 | 12.4 | 0.6 | 43.88 | 56.26 |
+| 2.1.0 | 15 | 13.7 | 0.54 | 55.91 | 71.66 |
 
 > Ver `estimation.md`.

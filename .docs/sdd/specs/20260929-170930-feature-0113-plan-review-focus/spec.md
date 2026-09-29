@@ -3,7 +3,7 @@ id: 20260929-170930-feature-0113-plan-review-focus
 feature: 0113
 title: El plan lleva su Review Focus y el revisor final lo recibe
 mode: full
-status: approved
+status: done
 created: 2026-09-29
 author: Claude (sesión del dev-lead)
 approvers:
@@ -48,6 +48,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED, contrato público (el 
 - Los tests de cada línea del Review Focus los escribe el hilo, como un RED más, antes del despacho y sin commitear — «El hilo, como un RED más (Recomendada)»
 - «Decisiones que he tomado yo» del plan lleva una línea que resume el Review Focus y remite a la sección, sin copiar sus líneas — «Una línea que la resume (Recomendada)»
 - 2026-09-29, tras el RED con Sonnet limpio (0 de 6, 2,98 $): RED con Opus 5.5 en p y r, dos sujetos de cada, dentro del mismo techo — «RED con Opus: p y r, 2 y 2 (Recomendada)»
+- 2026-09-29, tras la pasada de fix de la revisión final: un sujeto r de control con Opus, el 15.º, por encima del techo de 14 sujetos y dentro del de 16 \$ — «Sí, un sujeto más (Recomendada)»
 
 ## Intent
 
@@ -90,6 +91,8 @@ El kit adopta la sección de superpowers con su nombre y su sitio, y aporta solo
 - AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
 
 ## Enmiendas
+
+- 2026-09-29 — Salen del Scope el paso 6 y la racionalización de `sdd-start-feature/SKILL.md`, la frase del implementador de `encargo-revision.md` y la ayuda de «Tests RED» de la plantilla; la decisión 10 queda en los tests de lo que entra — el RED no mostró ese fallo (e 2/2 con Sonnet; control e del GREEN con Opus 1/1; tests en la task dueña 4/4), y el Approach pedía guía solo donde el escenario falla (Art. I). El MODIFIED «Los tests de la spec preceden al implementador» se mantiene: describe la conducta medida — aprobada: «Apruebo la enmienda (Recomendada)»
 
 ## Aprobaciones
 

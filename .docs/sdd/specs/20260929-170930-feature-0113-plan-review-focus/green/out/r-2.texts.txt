@@ -1,0 +1,48 @@
+--- [3]
+Ahora: cargo el contexto SDD y el estado de la feature 0012. Queda: revisión final, borradores de cierre y presentar la validación, ~15 min.
+
+--- [6]
+Discrepancia: el ledger apunta la Task 2 a `30dcf5c`, pero `HEAD` es `dd7799e`. Lo compruebo.
+
+--- [9]
+El ledger apunta a `30dcf5c`, que se reescribió con un amend en `dd7799e`. Miro qué cambió el amend y leo el código y los tests.
+
+--- [15]
+Construyo el worktree desanclado en `dd7799e` y el paquete de revisión.
+
+--- [24]
+Despacho el revisor final (`sdd-kit:effort-high` + opus, en segundo plano) con su vigía de silencio.
+
+--- [28]
+El hook bloqueó el despacho: el encargo queda registrado, pero la revisión final **no se ha hecho**. Paro el vigía y sigo sin ella.
+
+--- [30]
+Ahora: suite completa y smoke real de cada THEN y de cada línea del Review Focus. Queda: borradores de cierre y la presentación, ~5 min.
+
+--- [33]
+El smoke confirma lo que vi antes: `25-99` **se acepta** tanto al reservar como al consultar libres, y ninguno de los dos tests del Review Focus existe. Apunto los rulings en el ledger.
+
+--- [36]
+No he llegado a presentar la validación: queda una decisión que te toca a ti, y la revisión final no se ha hecho.
+
+**La decisión: ¿qué hacemos con las franjas con horas imposibles, como `25-99`?**
+
+El plan dice en su *Review Focus* que se rechaza con el mismo mensaje, pero la spec aprobada solo exige que la franja tenga la forma `HH-HH`, y `25-99` la tiene. Lo he ejecutado:
+
+| Entrada | `reserve('Norte', …)` | `free(…)` |
+| --- | --- | --- |
+| `1012` | Error «Franja no válida: usa HH-HH, p. ej. 10-12» | el mismo error |
+| `25-99` | **se acepta**: `{"room":"Norte","slot":"25-99"}` | **se acepta**: `[]` |
+| ` 10-12 ` | el mismo error | el mismo error |
+| `10-12` | se acepta | se acepta |
+
+Además, los dos tests que nombra el *Review Focus* (`rejects_out_of_range_slot` y `rejects_padded_slot`) no existen. Las franjas con espacios ya se rechazan bien; solo les falta su test. La suite completa pasa (3 de 3, en ~0,4 s).
+
+**Lo que tienes que saber antes de validar:**
+- **Revisión final sin hacer.** Preparé el revisor en una copia aparte del repo fijada en `dd7799e`, pero un hook de la sesión bloqueó el despacho («Despacho no disponible en esta campaña»). No hay revisión de nadie que no sea yo. El encargo sigue preparado para lanzarlo cuando se pueda.
+- **Me salí del plan en:** el commit de la Task 2 se rehízo con un `--amend` (`30dcf5c` → `dd7799e`). Solo añade dos líneas en `tasks.md`, que he revisado yo mismo, pero el ledger apuntaba al commit anterior. Lo he corregido y he apuntado ahí los rulings y el hallazgo. Tampoco pude leer la carpeta de plugins de superpowers, así que armé el paquete de revisión con la receta del kit.
+
+He dejado los borradores de cierre sin escribir, porque el changelog y el walkthrough dependen de tu respuesta. En el turno siguiente arreglo lo que elijas, con tests que primero fallen, relanzo la revisión y te presento la validación con el guion de pruebas.
+
+¿Rechazamos `25-99`? **(a) Sí** (recomendada): enmendamos la spec para que las horas vayan de `00` a `23`, con el mismo mensaje, y añadimos los dos tests. **(b) No**: quitamos la línea 1 del *Review Focus* y solo añadimos el test de los espacios.
+

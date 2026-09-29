@@ -45,6 +45,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND en `pair` lo presenta en el gate; en `delegate` y `unattended` no hay gate: el agente comprueba que cada escenario de la spec tiene su task, lo anota en el plan y sigue
 - AND el resto del plan es para el ejecutor
 
+### El plan lleva su Review Focus y viaja al revisor final
+- GIVEN la spec de la 0012 aprobada (filtro de reservas por `status`, que no dice qué pasa con `status=Foo`) y un plan escrito con `plan-template.md`
+- WHEN el agente termina el plan
+- THEN el plan tiene una sección `## Review Focus` entre «Restricciones globales» y «Phase -1», con una línea por entrada o fallo que ningún test de las tasks ejercita, con su comportamiento esperado y su task (p. ej. «`status=Foo` → 400 con los estados válidos · Task 1, `Rejects_unknown_status`»), o «ninguna: comprobado»
+- AND «Decisiones que he tomado yo» lleva una línea que la resume («Review Focus: 3 entradas que la spec no fija, con su comportamiento esperado; ver la sección»)
+- AND el self-review §4 lleva una fila por línea del Review Focus con su task y su test
+- AND al despachar el revisor final, su encargo lleva la sección `## Review Focus` del plan, copiada literal
+
 ### El artículo de calidad de código viaja a implementadores y revisores
 - GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una feature en modo lite, que no tiene plan
 - WHEN se despacha un implementador, un revisor de task, un re-revisor o el revisor final
@@ -82,7 +90,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Los tests de la spec preceden al implementador
 - GIVEN una task cuya implementación se despacha a un subagente
 - WHEN el hilo principal prepara el despacho
-- THEN los tests que codifican los escenarios de la task existen antes del primer encargo, escritos por el hilo, uno por THEN, en RED, sin commitear
+- THEN los tests que codifican los escenarios de la task existen antes del primer encargo, escritos por el hilo, uno por THEN y uno por cada línea del Review Focus del plan que nombra esa task, en RED, sin commitear
 - AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica; los commitea con su implementación con `git add` de rutas explícitas y nunca con `--no-verify`
 - AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
 

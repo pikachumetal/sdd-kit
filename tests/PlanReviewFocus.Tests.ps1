@@ -41,7 +41,7 @@ Describe 'Plantilla del plan' {
 
   It 'plan-template self-review lists each Review Focus line' {
     $selfReview = [regex]::Match($script:Plan, '(?s)## 4\. Self-review.*').Value
-    Assert-Literal $selfReview @('<línea del Review Focus> → Task <n>, test <nombre>. ✓')
+    Assert-Literal $selfReview @('<línea del Review Focus> → Task <n>, test <nombre>')
   }
 }
 
@@ -49,5 +49,15 @@ Describe 'Encargo del revisor final' {
   It 'final reviewer brief carries the Review Focus verbatim' {
     $finalReviewer = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'), '(?s)## Revisor final.*?(?=\n## Encargo del implementador)').Value
     Assert-Literal $finalReviewer @('## Review Focus', 'copia literal de la sección `## Review Focus` del plan', 'no basta con remitir al plan')
+  }
+
+  It 'final reviewer accepts a named verification instead of a test' {
+    $finalReviewer = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'), '(?s)## Revisor final.*?(?=\n## Encargo del implementador)').Value
+    Assert-Literal $finalReviewer @('el test o la verificación que la fija', 'sin test ni verificación nombrada')
+  }
+
+  It 'plan-template self-review accepts the verification that covers a line' {
+    $selfReview = [regex]::Match((Get-KitFile 'skills/sdd-templates/templates/plan-template.md'), '(?s)## 4\. Self-review.*').Value
+    Assert-Literal $selfReview @('test <nombre> (o la verificación que la cubre). ✓')
   }
 }

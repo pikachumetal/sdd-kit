@@ -187,4 +187,4 @@ Endpoints, shape request/response.
 
 - <requisito de la spec> → Task <n>. ✓
 - <aspecto sin cambios> → N/A (confirmado en spec). ✓
-- <línea del Review Focus> → Task <n>, test <nombre>. ✓
+- <línea del Review Focus> → Task <n>, test <nombre> (o la verificación que la cubre). ✓

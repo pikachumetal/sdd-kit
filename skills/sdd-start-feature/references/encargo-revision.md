@@ -73,7 +73,7 @@ Si el plan tiene `## Review Focus`, tras «Cómo revisar» va esta sección:
 
 <copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>
 
-Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test que la fija. Una línea sin su test, o cuyo código no da ese comportamiento, es un hallazgo.
+Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test o la verificación que la fija. Una línea sin test ni verificación nombrada, o cuyo código no da ese comportamiento, es un hallazgo.
 ```
 
 Es lo que pide `executing-plans` («the plan's Review Focus section verbatim»), y no basta con remitir al plan: con la remisión («el plan tiene una sección Review Focus, compruébala»), 1 de 2 encargos en Opus salió sin sus líneas (`tests/plan-review-focus-red.md`).
