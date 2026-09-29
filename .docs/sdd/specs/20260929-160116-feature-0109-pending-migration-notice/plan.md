@@ -129,7 +129,7 @@ Ninguna.
 **Tests RED**: Native, TDD del propio hilo · `tests/Hook.Tests.ps1`.
 **Superficies**: tooling (hook) · docs
 **Verificación**: `pwsh -NoProfile -Command "Invoke-Pester -Path tests/Hook.Tests.ps1 -Output Detailed"`
-**Se prueba en la aplicación**: una sesión de Claude Code en un proyecto con `sdd-kit.json` a `2.0.0` y el kit de la rama muestra «AVISO sdd-kit: el proyecto tiene aplicado el kit 2.0.0 … hasta la 2.1.0 …» al arrancar (en este repo, con el marcador en `1.1.0`, lo verá el dev-lead al abrir sesión con `Start-KitSession.ps1`).
+**Se prueba en la aplicación**: una sesión de Claude Code en un proyecto con `sdd-kit.json` a `2.0.0` y el kit de la rama muestra «AVISO sdd-kit: el proyecto tiene aplicado el kit 2.0.0 … hasta la 2.1.0 …» al arrancar (en este repo, con el marcador en `2.0.0`, lo verá el dev-lead al abrir sesión con `Start-KitSession.ps1`).
 
 **Interfaces**:
 - Consume: `v2.1.0.md` de la Task 1 (mayor migración).

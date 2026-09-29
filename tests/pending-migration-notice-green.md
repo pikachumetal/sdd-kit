@@ -20,6 +20,12 @@ Spec: [`spec.md`](../.docs/sdd/specs/20260929-160116-feature-0109-pending-migrat
   - ✅ El agente responde a la pregunta en un turno, sin tool calls: no invoca `sdd-init-brownfield` ni toca `sdd-kit.json`.
   - Observación: el agente no menciona el aviso en su respuesta. La spec no lo pide (el usuario ya lo ve como `systemMessage`), así que no es un fallo; se anota por si un ticket de campo pide que el agente lo repita.
 
+## Control tras la revisión final
+
+La revisión final marcó que la «Verificación» de `v2.1.0.md` (`git diff --stat HEAD~1` de la migración solo lista `.docs/sdd/sdd-kit.json`) da un fallo falso si se ejecuta antes del commit en una migración encadenada. Reproducido en un repo simulado 1.1.0 → 2.0.0 → 2.1.0: con la v2.1.0 aún sin commitear, `git diff --stat HEAD~1` lista también el `.gitignore` de la v2.0.0. La línea pasa a «Antes del commit de la migración, `git status --short` solo lista `.docs/sdd/sdd-kit.json`», que en el mismo repo solo lista `sdd-kit.json`.
+
+- **m1-2** (control, Sonnet, kit con la verificación nueva): ✅ igual que m1-1 — marcador en `2.1.0`, solo `sdd-kit.json` cambiado, commit `chore(sdd): migrar al kit v2.1.0`; el sujeto ejecuta `git status --short` antes del commit y lo cita en su informe. 0,12 $.
+
 ## Coste acumulado de la campaña
 
-3 sujetos, 0,40 $, dentro de la previsión (3 sujetos, ~1,5 $).
+4 sujetos, 0,52 $: uno más que la previsión (3 sujetos, ~1,5 $) por el control tras la revisión final, dentro del techo (5 sujetos o 4 $).
