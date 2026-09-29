@@ -112,3 +112,28 @@ Describe 'Arranque e init' {
     $dependencies | Should -Match 'Playwright'
   }
 }
+
+Describe 'Arreglos de la revisión final' {
+  BeforeAll {
+    $script:StepSix = Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '6. **Implementación**' '7. ⛔'
+  }
+
+  It 'el paso 6 admite «no probado» por el detector que no ejecuta y por el acceso que falta' {
+    $script:StepSix | Should -Match 'detector declarado no ejecuta'
+    $script:StepSix | Should -Match 'falta el acceso en §Frontend'
+  }
+
+  It 'el paso 6 acepta justificar con el rasgo de la pantalla de referencia' {
+    $script:StepSix | Should -Match '«es intencional», solo citando el criterio o el rasgo de la pantalla de referencia'
+  }
+
+  It 'la referencia no da «no está instalado» como causa de «no probado»' {
+    Get-KitFile $script:ReferencePath | Should -Not -Match 'no está instalado'
+  }
+}
+
+Describe 'Enmienda del acceso' {
+  It 'la referencia reutiliza la sesión solo si la entrada tiene límite' {
+    Get-KitFile $script:ReferencePath | Should -Match 'si esa entrada gasta algo con límite'
+  }
+}

@@ -43,3 +43,17 @@ Subtotal: 3 sujetos, 1,29 $.
 ## Resumen de la campaña
 
 22 sujetos (11 RED y 11 GREEN) y 10,05 $, dentro de la previsión de 26 sujetos y ~17 $, y del techo de 30 o 22 $. Ninguno llegó al tope de turnos ni de reloj. La partida de controles de la pasada de fix (4 sujetos) sigue libre.
+
+## Pasada de fix de la revisión final
+
+La revisión final (Opus, effort high) dejó 4 Important. Los dos primeros son contradicciones del paso 6 con la referencia: «no probado» limitado a dos causas, y el contraejemplo de «es intencional» sin «el rasgo de la pantalla de referencia». Se arreglan con RED→GREEN en el Pester, bloque `Arreglos de la revisión final`: 3 fallos → 23/23 en verde. El cuarto es que el molde no ignoraba `.auth/`, y va al `.gitignore` del molde. El tercero, la URL de entrada del detector frente al THEN «entra una vez y reutiliza», es un desvío de la spec y lo decide el dev-lead.
+
+| Sujeto | Coste | Duración | Conducta |
+| --- | --- | --- | --- |
+| `q1-3` (control del paso 6) | 0,56 $ | 316 s | Detector en los dos viewports, `cramped-padding` cazado y arreglado ✅ |
+| `k1-3` | 0,80 $ | 177 s | Detector por la URL de entrada, sobre el entorno del usuario. **No guarda la sesión**: abre un contexto nuevo por ejecución y entra por `/dev/impersonate` cada vez |
+| `k1-4` | 0,31 $ | 77 s | Igual: entra por la URL de entrada en cada ejecución, sin `storageState` |
+
+Con `.auth/` ya ignorada, 0 de 2 sujetos reutilizaron la sesión: con una página de desarrollo, entrar cada vez no gasta nada. El THEN «reutiliza la sesión guardada» sigue sin evidencia positiva y entra en la enmienda que decide el dev-lead.
+
+Campaña total: 25 sujetos y 11,71 $, con techo de 30 o 22 $.

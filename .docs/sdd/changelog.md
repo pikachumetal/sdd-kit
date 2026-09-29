@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Feature 0099** — Verificación de frontend: referencia `frontend-verification.md` con criterio previo, detector en dos viewports, capturas con rúbrica y proporción por carril, cargada por la task full, lite y el patch visual; `§Frontend` en `tech-stack.md` (detector, runner E2E, acceso) que la spec propone y las init preguntan. → [ref](specs/20260929-073733-feature-0099-frontend-verification/)
+
 ## [2.1.0] - 2026-09-29
 
 Primeros tickets de uso de la 2.0.0 en proyectos del equipo. [Release notes](releases/v2.1.0/release-notes.md).

@@ -87,6 +87,13 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 - AND `mission.md` lo enlaza, y cada fila de módulo del roadmap que sale de él cita su sección
 - AND ninguna capacidad nace de él
 
+### La entrevista pregunta cómo se verifica el frontend
+- GIVEN una init de un proyecto con interfaz web: greenfield con un stack Angular + .NET, o brownfield cuyo inventario encuentra un framework de UI
+- WHEN la entrevista llega a la última fila de su tabla: la 21 de greenfield o la 5 de brownfield
+- THEN pregunta con qué se verifica el frontend (detector, runner E2E y cómo entra el agente en la aplicación), recomendando impeccable y Playwright
+- AND `tech-stack.md` sale con `§Frontend` calcada de `tech-stack-template.md` y rellena con la respuesta, y si declara una ruta de sesión, `.gitignore` la contiene una sola vez
+- AND en un proyecto sin interfaz no se pregunta y `tech-stack.md` no lleva `§Frontend`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar.

@@ -20,7 +20,11 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | La referencia, `§Frontend` y la verificación de una task full | done | 7461d95 | incluye la campaña RED de los seis escenarios |
 | 2 | Lite y patch visual cargan la referencia | done | 80dc132 | |
-| 3 | La spec propone `§Frontend`, las init la preguntan y el README la recomienda | pending | | |
+| 3 | La spec propone `§Frontend`, las init la preguntan y el README la recomienda | done | b4620b6 | |
 
 ## Rulings
 
+
+Revisión final: sdd-kit:effort-high + opus, con arreglos (0 Critical, 4 Important, 7 Minor), sobre b4620b6
+Pasada de fix: 7ea5c376, 2 hallazgos RED→GREEN (Important 1 y 2; el 4 en el molde; el 3 va a enmienda)
+Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, con arreglos (1 Important: la spec sin alinear con la enmienda; resuelto en 6715b88, solo docs, revisado en el hilo)

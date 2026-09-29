@@ -143,6 +143,7 @@ EOF
   put .gitignore <<'EOF'
 node_modules/
 login-requests.log
+.auth/
 EOF
   put README.md <<'EOF'
 # pedidos
