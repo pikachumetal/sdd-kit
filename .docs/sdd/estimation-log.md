@@ -114,21 +114,22 @@
 | 2026-09-28 | 0094 | patch | 0.5 | 1.3 | 2.6 | — | — | — | — | 20260928-154618-patch-0094-review-package-slim |
 | 2026-09-28 | 0095 | infra/tooling | 4.5 | 2.2 | 0.49 | 38395k | 1869k | 13.93 | 14.46 | 20260928-173846-feature-0095-silence-watch |
 | 2026-09-29 | 0098 | docs | 3.5 | 1.5 | 0.43 | 42244k | 1959k | 8.33 | 15.72 | 20260928-210002-feature-0098-visual-patch-lane |
+| 2026-09-29 | 0100 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-073507-patch-0100-kit-version-warning |
 | 2026-09-29 | 0099 | docs | 5 | 1.3 | 0.26 | 52856k | 2970k | 11.71 | sin precio | 20260929-073733-feature-0099-frontend-verification |
 
-**Factor de calibración** (ratio mediano real/estimado, 98 artefactos): **0.6** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 99 artefactos): **0.6** · media 0.73
 
-- p25–p75: 0.41–0.95
-- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p25–p75: 0.41–0.98
+- p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 29 % · sobreestimadas: 61 % · infraestimadas: 10 %
-- Error absoluto (h): media 0.94 · mediana 0.75
+- Error absoluto (h): media 0.93 · mediana 0.7
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.64
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 32 | 33 % |
-| 0.5–0.8 | 30 | 31 % |
-| 0.8–1.25 | 26 | 27 % |
+| <0.5 | 32 | 32 % |
+| 0.5–0.8 | 30 | 30 % |
+| 0.8–1.25 | 27 | 27 % |
 | 1.25–2 | 8 | 8 % |
 | ≥2 | 2 | 2 % |
 
@@ -137,7 +138,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 61 | 0.53 | 0.38–0.75 |
 | infra/tooling | 14 | 0.42 | 0.36–0.58 |
-| patch | 22 | 1.2 | 0.8–1.4 |
+| patch | 23 | 1.2 | 0.8–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
 | --- | --- | --- | --- | --- | --- |
@@ -148,6 +149,6 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| 2.1.0 | 4 | 6.3 | 0.46 | 33.97 | 30.18 |
+| 2.1.0 | 5 | 6.9 | 0.49 | 33.97 | 30.18 |
 
 > Ver `estimation.md`.
