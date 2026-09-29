@@ -47,6 +47,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED, contrato público (el 
 - Carril feature full, perfil `delegate` del proyecto (sin `sdd-kit.local.json`), con la fila de deuda como enunciado — «Sí, full + delegate (Recomendada)»
 - Los tests de cada línea del Review Focus los escribe el hilo, como un RED más, antes del despacho y sin commitear — «El hilo, como un RED más (Recomendada)»
 - «Decisiones que he tomado yo» del plan lleva una línea que resume el Review Focus y remite a la sección, sin copiar sus líneas — «Una línea que la resume (Recomendada)»
+- 2026-09-29, tras el RED con Sonnet limpio (0 de 6, 2,98 $): RED con Opus 5.5 en p y r, dos sujetos de cada, dentro del mismo techo — «RED con Opus: p y r, 2 y 2 (Recomendada)»
 
 ## Intent
 

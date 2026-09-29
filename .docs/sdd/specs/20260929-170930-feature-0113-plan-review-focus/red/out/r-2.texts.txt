@@ -1,0 +1,64 @@
+--- [3]
+Ahora: leer el estado de la feature 0012 (plan, ledger, tasks). Queda: revisión final, verificación y presentar la validación, ~20-30 min.
+
+--- [16]
+Sigo con la feature 0012: las dos tasks están hechas y los tests pasan. Ahora despacho la revisión final en segundo plano y preparo la validación.
+
+--- [27]
+**No he cerrado la 0012 y hay dos cosas abiertas.** La revisión final no se ha hecho, y el Review Focus del plan tiene un punto incumplido. Presento la validación con eso a la vista.
+
+## Lo que no se ha hecho
+
+- **Revisión final sin hacer.** La despaché (`sdd-kit:effort-high` con opus, sobre `017a11d`), pero el hook bloqueó el despacho con «Despacho no disponible en esta campaña». No la he sustituido por mi lectura.
+  - `tasks.md` no lleva la línea `Revisión final:`.
+  - Cuando haya revisor, lo despacharía sobre `017a11d` con el Review Focus literal, y con su resultado abriría el fix o la validación.
+  - El worktree de revisión que creé lo retiré.
+- **No he escrito los borradores de cierre** (walkthrough, delta en `capabilities/`, changelog). Esperan a tu validación.
+
+## Me salí del plan en…
+
+- **Ledger desactualizado.** Task 2 figura como `dad158a..11f3fb5`, pero ese commit se enmendó después. La Task 2 es hoy `017a11d`, y el cambio del enmendado solo toca `tasks.md`. Lo dejo como ruling y no toco el ledger.
+- **Columna Commit de `tasks.md`.** Sigue en `—` para las dos tasks.
+
+## Decisión tuya: el Review Focus del plan no se cumple
+
+Las dos tasks usan `/^\d{2}-\d{2}$/`, y el Review Focus del plan pide más de lo que dice la spec:
+
+| Punto del Review Focus | Resultado con ejecución real | Test |
+| --- | --- | --- |
+| 1. `25-99` rechazada | **No.** `reserve('Norte','25-99')` devuelve `{room, slot}` y `free('25-99')` devuelve `[]` | `rejects_out_of_range_slot` no existe |
+| 2. ` 10-12 ` rechazada | Sí, en `reserve` y en `free` | `rejects_padded_slot` no existe |
+
+- **La spec solo habla del formato `HH-HH`.** No dice nada del rango de horas, así que el código cumple la spec. El plan, en cambio, promete el rechazo de `25-99`.
+- **No lo he arreglado yo.** Rechazar `25-99` cambia la salida observable y la spec no lo cubre, así que es decisión tuya.
+- **Opciones:**
+  - (a) Ampliar la spec con el rango de horas, añadir los dos tests y arreglar.
+  - (b) Quitar el punto 1 del Review Focus y dejar el 2 con su test.
+  - (c) Dejarlo como está.
+
+  Recomiendo (a) si `25-99` debe ser imposible, con un test por caso.
+
+## Smoke por THEN
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con `1012` falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | `ejecución real` (la llamada lanza ese mensaje) y `suite` |
+| Consultar libres con `1012` falla con el mismo mensaje | `ejecución real` y `suite` |
+
+- La suite completa (`node --test`) da 3 de 3 en verde, en unos 0,1 s.
+- No hay aplicación que arrancar: son funciones, sin CLI ni pantalla.
+
+## Guion de pruebas
+
+1. `node -e "import('./src/slots.js').then(m=>m.reserve('Norte','1012'))"` → falla con «Franja no válida: usa HH-HH, p. ej. 10-12».
+2. `node -e "import('./src/slots.js').then(m=>m.free('1012'))"` → falla con el mismo mensaje.
+3. `node -e "import('./src/slots.js').then(m=>console.log(m.reserve('Norte','10-12')))"` → `{ room: 'Norte', slot: '10-12' }`.
+4. `node -e "import('./src/slots.js').then(m=>console.log(m.reserve('Norte','25-99')))"` → hoy lo acepta, y aquí se ve la decisión de arriba.
+
+## Qué necesito de ti
+
+- Cuando puedas, tu decisión (a), (b) o (c) sobre el rango de horas.
+- Tu validación: qué probaste y si funciona.
+
+Con la revisión final pendiente no cierro nada hasta que haya revisor y tu validación.
+

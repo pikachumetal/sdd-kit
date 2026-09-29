@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && find .docs -type f | head -50 && git log --oneline -5 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 1
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260923-090000-task-0012-status-filter/spec.md
+.docs/sdd/tech-stack.md
+9367317 docs(sdd): spec de la feature 0012
+1abae63 feat: lista de reservas con paginación
+{"version": "1.2.0", "channel": "plugin", "updated": "2026-09-21", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap changelog; do echo "=== $f"; cat .docs/sdd/$f.md; done; echo "=== SPEC"; cat .docs/sdd/specs/*/spec.md; echo "=== TREE"; git ls-files | grep -v '^.docs'
+<<< === constitution
+# Constitution — reservas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capaci
+
+>>> Bash: cd "<run>/repo" && for f in $(git ls-files | grep -v '^.docs'); do echo "=== $f"; cat "$f"; done; git branch -a
+<<< === README.md
+# reservas
+
+Reserva de salas de reuniones. `frontend/` (Angular) y `backend/` (.NET + SQL Server), orquestados con moon. Comandos en `.docs/sdd/tech-stack.md`.
+=== backend/src/Bookings.Api/BookingsEndpoints.cs
+using Bookings.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api;
+
+public static class BookingsEndpoints
+{
+    public static void MapBookings(this WebApplication app)
+    {
+        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+            await db.Bookings
+                .OrderBy(b => b.Start)
+                .Skip((page
+
+>>> Skill: superpowers:writing-plans
+<<< Launching skill: superpowers:writing-plans
+
+>>> Glob: **/plan-template.md
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-plan-review-focus\663c0781-d184-4fa4-9a79-feb3d4ba2f1f\scratchpad\kit-red\skills\sdd-templates\templates\plan-template.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-plan-review-focus\663c0781-d184-4fa4-9a79-feb3d4ba2f1f\scratchpad\kit-red\skills\sdd-templates\templates\plan-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>
+4	title: Plan de implementación — <título de la spec>
+5	spec: ./spec.md
+6	status: draft
+7	created: <YYYY-MM-DD>
+8	---
+9	
+10	# Plan de implementación — <título>
+11	
+12	> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+13	> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+14	> Borra los bloques de ayuda (`>`) al redactar.
+15	
+16	## Decisiones que he tomado yo — valida estas
+17	
+18	> Es lo único que el dev-lead neces
+
+>>> Bash: date +%Y%m%d-%H%M%S
+<<< 20260929-192656
+
+>>> Write: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\plan.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20260923-090000-task-0012-status-filter\plan.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (12 turnos, 0.959351 $)
+He escrito el plan de la 0012 en `.docs/sdd/specs/20260923-090000-task-0012-status-filter/plan.md` y me he parado ahí: no he tocado código y no he hecho commit.
+
+**Hay dos cosas que bloquean la implementación y que tienes que resolver tú:**
+
+1. **Falta la infraestructura de tests del backend.** `BookingsEndpointsTests.cs` usa `SqlServerApiFactory` y `SeedAsync`, pero ni esa clase ni los `.csproj`, `Program.cs` o una carpeta `Migrations/` están en el repo. Sin eso, lo primero del plan (estado en BD y filtro en la API) no compila ni se puede probar. ¿Dónde viven esos ficheros?
+2. **Puede que no haya ninguna migración anterior.** Si la base se creó sin migraciones, la nueva `AddBookingStatus` intentaría crear la tabla entera y fallaría sobre las bases que ya existen. Si se confirma, el plan dice que me pare en vez de escribir una migración base.
+
+**Decisiones que la spec no fijaba, a validar:**
+- El estado se guarda en la base como texto y viaja en el JSON como texto (`"Cancelled"`, no un número).
+- La migración rellena las reservas existentes con `Confirmed`. Las nuevas salen `Pending`, pero hoy no hay forma de crear reservas desde la API, así que eso se prueba guardando directamente en la base.
+- Filtro en la API:
+  - `status` no distingue mayúsculas de minúsculas.
+  - Vacío o ausente devuelve todas.
+  - Un valor desconocido responde 400.
+  - Se filtra antes de paginar.
+- El selector se etiqueta «Estado», con las opciones «Todos», «Confirmada», «Pendiente» y «Cancelada».
+- **Falta cómo verificar la pantalla.** La feature cambia lo que se ve, pero `tech-stack.md` no tiene la sección `§Frontend` y la spec no la propuso. Propongo el detector impeccable, Playwright y acceso sin login. Si no la apruebas, la revisión visual del selector queda como «composición no medida».
+
+**El plan:**
+- **Dos tasks.** La primera es estado en BD, filtro en la API y `docs/api.md`. La segunda es el selector en la lista.
+- **Cinco casos de riesgo, cada uno con su test:**
+  - filtrar con paginación;
+  - un `status` en minúsculas o inválido;
+  - el estado serializado como número en el JSON;
+  - el selector bloqueado tras un error de la API;
+  - volver a «Todos».
+- **Ejecución: Native** (lo implemento yo en esta sesión y al final revisa la rama un revisor independiente). Son 2 tasks conectadas solo por el contrato de la API. Antes de decir «sigue», baja la sesión con `/model` a Sonnet con effort medium. La revisión final va con Opus.
+- **Estimación:** unas 3,5 h de implementación, más los 17–21 min de la suite del backend en la validación final.
+
+Aparte: el proyecto está en la versión 1.2.0 del kit y hay migraciones hasta la 2.1.0. Para aplicarlas, pide «ponme el proyecto al día con sdd-init-brownfield».

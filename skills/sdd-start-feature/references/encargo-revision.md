@@ -66,6 +66,18 @@ Lee el paquete de review `<ruta del paquete que imprime la receta>` en tramos de
 
 Por qué: la plantilla del revisor de task de superpowers ya lo dice; la del final da los comandos de `git diff` y pregunta «All tests passing?» sin decir cómo. Con la cabecera sin esta sección, 2 de 2 revisores finales rehicieron el diff y ejecutaron suite y lint (`tests/proportional-review-red.md`, R2); en un proyecto del equipo, 27 minutos por revisor frente a los 7 de uno que solo lee el diff.
 
+Si el plan tiene `## Review Focus`, tras «Cómo revisar» va esta sección:
+
+```markdown
+## Review Focus
+
+<copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>
+
+Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test que la fija. Una línea sin su test, o cuyo código no da ese comportamiento, es un hallazgo.
+```
+
+Es lo que pide `executing-plans` («the plan's Review Focus section verbatim»), y no basta con remitir al plan: con la remisión («el plan tiene una sección Review Focus, compruébala»), 1 de 2 encargos en Opus salió sin sus líneas (`tests/plan-review-focus-red.md`).
+
 ## Encargo del implementador
 
 Su brief (`task-brief`) es solo el texto de la task. Delante van el mismo bloque, el contrato de tests y las reglas del implementador:

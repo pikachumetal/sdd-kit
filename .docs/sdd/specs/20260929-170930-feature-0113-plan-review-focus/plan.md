@@ -51,7 +51,7 @@ created: 2026-09-29
 
 1. Un plan de una sola task o de solo documentación, donde ninguna entrada queda sin test → la sección dice «ninguna: comprobado» y no se borra con los bloques de ayuda · Task 1, `plan-template keeps an empty Review Focus instead of deleting it`
 2. Una línea del Review Focus que ninguna task puede probar (visual, de entorno) → nombra la verificación que la cubre en lugar del test, sin quedar fuera del contrato · Task 1, `plan-template names the verification when a line has no test`
-3. Native, donde no hay despacho y el hilo escribe el test y el código → el test de la línea se escribe antes del código, como los de los THEN · Task 2, `step 6 names Review Focus tests in Native too`
+3. Native, donde no hay despacho y el hilo escribe el test y el código → el test de la línea se escribe antes del código, como los de los THEN · control e del GREEN, con Opus (Task 2 cancelada por el RED)
 
 ---
 
@@ -133,6 +133,8 @@ Ninguna.
 
 ### Task 2 — El hilo escribe los tests del Review Focus como un RED más
 
+> **Cancelada por el RED** (2026-09-29): el baseline e escribe el test de la línea 2 de 2; ruling en el ledger y en `tests/plan-review-focus-red.md`.
+
 **Modelo**: la sesión (Native)
 **Tests RED**: hilo principal · `tests/PlanReviewFocus.Tests.ps1` (Describe «sdd-start-feature»); Native: TDD del propio hilo
 **Superficies**: docs, tooling
@@ -183,5 +185,5 @@ Ninguna.
 - Decisión 10 (tests estáticos) → Tasks 1 y 2, `tests/PlanReviewFocus.Tests.ps1`. ✓
 - Review Focus 1 → Task 1, `plan-template keeps an empty Review Focus instead of deleting it`. ✓
 - Review Focus 2 → Task 1, `plan-template names the verification when a line has no test`. ✓
-- Review Focus 3 → Task 2, `step 6 names Review Focus tests in Native too`. ✓
+- Review Focus 3 → control e del GREEN (Task 2 cancelada por el RED). ✓
 - Scope «No entra» (lite, 0108, resto de la 0054) → ninguna task los toca. ✓

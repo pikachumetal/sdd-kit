@@ -1,0 +1,36 @@
+--- [19]
+Construyo el worktree desanclado y el paquete de review para el revisor final.
+
+--- [22]
+Despacho el revisor final (Opus, effort high) en segundo plano, con su vigía de silencio.
+
+--- [31]
+El hook bloqueó el despacho del revisor. Paro su vigía y hago yo la revisión de la rama, comprobando cada punto del Review Focus contra el código real, y además el smoke.
+
+--- [37]
+Me he detenido antes de presentar la validación: la revisión final ha sacado a la luz una decisión que te toca a ti, y el kit me pide preguntártela sola, en su propio turno. La validación va en el mensaje siguiente, con tu respuesta.
+
+**Cómo ha ido la revisión final.** El hook bloqueó el revisor Opus con effort high («Despacho no disponible en esta campaña»). Por eso la he hecho yo sobre `de29fc1`, con el mismo paquete y el Review Focus del plan. Queda apuntado en el ledger y en `tasks.md`. Al ser del mismo autor, esta revisión vale menos que la de un revisor externo. Tú decides si te basta antes del merge.
+
+**Lo que ha encontrado.** El plan no se cumple en su primer punto de Review Focus:
+
+| Entrada | `reserve` / `free` | Lo que decía el plan |
+| --- | --- | --- |
+| `1012` | rechaza con «Franja no válida: usa HH-HH, p. ej. 10-12» | ✔ |
+| ` 10-12 ` | rechaza con el mismo mensaje | ✔ (pero el test `rejects_padded_slot` no existe) |
+| `25-99` | **acepta**: `{room:'Norte', slot:'25-99'}` y `[]` | rechazar · el test `rejects_out_of_range_slot` **no existe** |
+| `12-10` | **acepta** | no lo decía |
+
+La expresión `/^\d{2}-\d{2}$/` solo comprueba la forma (dos cifras, guion, dos cifras), no que sean horas válidas. La he clasificado como **Important**, porque `25-99` es justo la «franja sin sentido» que describe el Intent. La spec, en cambio, solo dice «no casa con HH-HH», así que rechazarla cambia la salida sin que la spec lo fije. Es un freno de alcance y en `delegate` no lo decido yo.
+
+**Lo demás:**
+- La suite completa pasa: `node --test`, 3/3, en unos 0,4 s.
+- Los THEN de la spec funcionan al ejecutarlos de verdad con `1012` (llamando al módulo con `node`, porque el repo no tiene ejecutable `salas`).
+- El ledger apuntaba la Task 2 a `e8da2ed`, que después se enmendó a `de29fc1`. El amend solo cambia el estado de `tasks.md`; lo he registrado en el ledger.
+- Los borradores de cierre (walkthrough, capacidad `booking`, changelog) aún no están escritos, porque dependen de lo que decidas.
+
+¿Qué hago con las franjas que tienen buena forma pero no son horas válidas (`25-99`, `12-10`)?
+- **A (Recomendada):** también se rechazan con el mismo mensaje. Horas de 00 a 23 (o 24 como fin) y el inicio antes del fin. Se añade como enmienda a la spec, con un test RED→GREEN por caso en `reserve` y `free`.
+- **B:** solo se rechazan las horas fuera de rango (`25-99`), y `12-10` se sigue aceptando.
+- **C:** se queda como está, validando solo la forma. Corrijo el Review Focus del plan y el caso pasa a otra fila del roadmap.
+

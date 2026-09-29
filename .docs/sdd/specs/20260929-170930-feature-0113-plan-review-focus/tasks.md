@@ -18,12 +18,12 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | La plantilla del plan lleva el Review Focus y el revisor final lo recibe | pending | — | |
-| 2 | El hilo escribe los tests del Review Focus como un RED más | pending | — | |
+| 1 | La plantilla del plan lleva el Review Focus y el revisor final lo recibe | done | — | Alcance recortado por el RED (ruling) |
+| 2 | El hilo escribe los tests del Review Focus como un RED más | skipped | — | Baseline e limpio 2/2 (ruling) |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester tests/PlanReviewFocus.Tests.ps1` y los que leen la plantilla
+- [x] Task 1 — `Invoke-Pester tests/PlanReviewFocus.Tests.ps1` y los que leen la plantilla
 - [ ] Task 2 — `Invoke-Pester tests/PlanReviewFocus.Tests.ps1` y los del paso 6
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
