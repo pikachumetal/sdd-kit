@@ -339,16 +339,18 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' -Tag '
     Assert-CleanedUp $fx
   }
 
-  It 'con -Push y sin remoto falla con push: en vez de saltarse el push' {
+  It 'con -Push y sin remoto fusiona en local y avisa de que no hay push' {
     $fx = New-MergeFixture 'sin-remoto'
     Invoke-FixtureGit $fx.Repo @('remote', 'remove', 'origin') | Out-Null
     $before = Get-Sha $fx.Repo 'develop'
 
     $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push')
 
-    $result.ExitCode | Should -Not -Be 0
-    $result.Text | Should -Match 'push:'
-    Get-Sha $fx.Repo 'develop' | Should -Be $before
+    $result.ExitCode | Should -Be 0
+    $result.Text | Should -Match 'Fusionado feature/0001 en develop'
+    $result.Text | Should -Match 'push: no hecho: sin remoto'
+    Get-Sha $fx.Repo 'develop' | Should -Not -Be $before
+    Invoke-FixtureGit $fx.Repo @('merge-base', '--is-ancestor', 'feature/0001', 'develop') | Out-Null
     Assert-CleanedUp $fx
   }
   It 'con el push rechazado devuelve develop a su commit y limpia' {
