@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-29
 branch: feature/0102-subject-git-user-clean
-commit: <hash>
+commit: d0e01810
 ---
 
 # Patch 0102 — el user.name de git de la máquina sale limpio de los sujetos y el pre-commit lo caza
@@ -44,9 +44,13 @@ La tercera parte de la propuesta de la fila («el `pre-commit` ejecuta `SubjectO
 | 3 | Test nuevo «lee el user.name de git en UTF-8 aunque la consola no lo sea»: consola en IBM437 y nombre `Àlice Liddell` | ✅ RED (sin la línea de UTF-8) → verde |
 | 4 | `extract.mjs clean` sobre la sonda con el nombre real | ✅ `Aprobada por <git-user>` |
 | 5 | `HeadlessLauncher.Tests.ps1` (lanzador que usa `extract.mjs`) | ✅ 15/15 |
-| 6 | Suite rápida del kit (`pre-commit` del fix) | ✅ en el commit del fix |
+| 6 | Suite rápida del kit (`pre-commit` del fix) | ✅ 796/0 en el `pre-commit` del fix (27,3 s) |
 
 La primera versión del helper de los tests restauraba las variables con `[Environment]::SetEnvironmentVariable($name, $null)`: PowerShell pasa `""`, `GIT_CONFIG_GLOBAL` quedaba vacía y git dejaba de leer la config global, así que el test del nombre se **saltaba** (`Skipped`) con la sonda dentro. Lo cazó la sonda del caso 1. Se usa `Restore-GitEnv`, que ya borra la variable cuando no existía.
+
+Validación diferida: 2026-09-29 · «Diferir: lo pruebo en la próxima campaña de sujetos con tests/headless/run.sh, a cargo del dev-lead» · disparador: la próxima campaña de sujetos con `tests/headless/run.sh`, a cargo del dev-lead
+
+Decisión tomada sin el dev-lead: no se añade al `pre-commit` la ejecución de `SubjectOutputPrivacy.Tests.ps1` que proponía la fila, porque ya la hacía; el fix va a la lectura del nombre (§2).
 
 Ningún fichero commiteado contiene el nombre real: la sonda vivió solo en el working tree y los tests usan `Alice Liddell` y `Àlice Liddell`.
 
