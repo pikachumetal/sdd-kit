@@ -132,6 +132,15 @@ Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
     It 'cuenta el id de una carpeta con sufijo alfabético' {
       (Invoke-NextId (Join-Path $script:Fixtures 'legacy-suffix')).Id | Should -Be '0007'
     }
+
+    It 'reserva el siguiente id y solo avisa cuando dos carpetas con sufijo comparten número' {
+      # Ticket de la feature 0010b del template §4: task-0006a y task-0006b abortaban la reserva.
+      $repo = Copy-FixtureToRepo 'legacy-suffix' @()
+      $result = Invoke-NextId $repo @('-Reserve')
+      $result.Id | Should -Be '0007'
+      $result.ExitCode | Should -Be 0
+      $result.Error | Should -Match '0006a'
+    }
   }
 
   Context 'carril proposal' {

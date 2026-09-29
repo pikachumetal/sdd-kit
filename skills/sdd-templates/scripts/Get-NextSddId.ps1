@@ -145,7 +145,13 @@ function Get-GitIds([string]$ProjectRoot) {
 }
 
 function Assert-NoSharedIds([object[]]$SpecArtifacts) {
-  foreach ($group in ($SpecArtifacts | Group-Object Id)) {
+  # Las carpetas con sufijo (task-0006a, task-0006b) son anteriores a la regla de «nunca sufijos»:
+  # su id cuenta como ocupado, pero no bloquean la reserva (ticket de la feature 0010b del template §4).
+  $legacy = @($SpecArtifacts | Where-Object { $_.Folder -match '-\d{4}[a-z]+-' })
+  if ($legacy.Count -gt 0) {
+    Write-Error "Carpetas con sufijo anteriores a la secuencia (no se reutiliza su número): $($legacy.Folder -join ', ')." -ErrorAction Continue
+  }
+  foreach ($group in ($SpecArtifacts | Where-Object { $legacy -notcontains $_ } | Group-Object Id)) {
     $folders = $group.Group.Folder | Select-Object -Unique
     if ($folders.Count -gt 1) {
       throw "Dos artefactos distintos comparten el id $($group.Name): $($folders -join ', ')."
