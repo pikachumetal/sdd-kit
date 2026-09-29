@@ -16,7 +16,36 @@ escape_for_json() {
   printf '%s' "$text"
 }
 
-doors="$(escape_for_json "$(cat "${SCRIPT_DIR}/../skills/using-sdd/SKILL.md")")"
+json_version() {
+  [ -f "$1" ] || return 0
+  sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1" 2>/dev/null | head -n 1
+}
+
+# Compara X.Y.Z por números: como texto, 10.0.0 saldría menor que 2.1.0.
+version_lt() {
+  local IFS=.
+  local -a a=($1) b=($2)
+  local i x y
+  for i in 0 1 2; do
+    x="${a[i]:-0}"; x="${x%%[!0-9]*}"
+    y="${b[i]:-0}"; y="${y%%[!0-9]*}"
+    (( 10#${x:-0} < 10#${y:-0} )) && return 0
+    (( 10#${x:-0} > 10#${y:-0} )) && return 1
+  done
+  return 1
+}
+
+# La versión cargada sale del plugin.json de la raíz que corre el hook: la carpeta de la caché lleva la versión en el nombre, pero un --plugin-dir no.
+loaded="$(json_version "${SCRIPT_DIR}/../.claude-plugin/plugin.json")"
+wanted="$(json_version "${PROJECT_DIR}/.docs/sdd/sdd-kit.json")"
+
+context="$(cat "${SCRIPT_DIR}/../skills/using-sdd/SKILL.md")"
+system_message=""
+if [ -n "$loaded" ] && [ -n "$wanted" ] && version_lt "$loaded" "$wanted"; then
+  warning="AVISO sdd-kit: esta sesión carga el kit ${loaded} y el proyecto pide el ${wanted} (.docs/sdd/sdd-kit.json), así que las skills pueden ser las de una versión vieja. Actualiza con \`claude plugin update sdd-kit@sdd-kit --scope project\` y reinicia Claude Code: /reload-plugins no aplica una actualización de ámbito proyecto."
+  context="${warning}"$'\n\n'"${context}"
+  system_message="  \"systemMessage\": \"$(escape_for_json "$warning")\","$'\n'
+fi
 
 # Solo el campo anidado: Claude Code también lee additional_context sin deduplicar y el texto entraría dos veces.
-printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$doors"
+printf '{\n%s  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$system_message" "$(escape_for_json "$context")"
