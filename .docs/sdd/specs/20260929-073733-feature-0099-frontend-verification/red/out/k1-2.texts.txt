@@ -1,0 +1,55 @@
+--- [3]
+Ahora: leer el contexto SDD y la spec de la 0016. Queda: verificar en la app real y presentarte la validación, ~10 min.
+
+--- [23]
+# Validación de la 0016: Pedidos urgentes (lite, `pair`)
+
+Está implementada en `1daab37` y funciona en la app real. No he abierto ninguna de las capturas; el veredicto sale de estilos computados y texto del DOM. No he lanzado un revisor independiente sobre el commit: solo he leído yo el diff (`views.mjs`, `app.css` y un test, 10 líneas). Si quieres revisión formal antes de cerrar, dímelo.
+
+## Me salí del plan en…
+Nada. No hay plan en modo lite y no hubo desvíos ni rulings.
+
+## Qué hay
+- `renderList` pinta `<span class="badge badge-urgente">Urgente</span>` si `order.urgent`.
+- `.badge-urgente` en `app.css`: fondo `#c62828`, texto blanco.
+- Un test nuevo en `tests/views.test.mjs`.
+- No he tocado tu servidor de `localhost:4622`. Lo he usado tal cual y no lo he parado. Su proceso no lo arranqué yo, y no he lanzado ninguno propio.
+
+## Smoke que he ejecutado
+`node --test` pasa 3 de 3 y tarda unos 0,3 s.
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| La fila del 1042 lleva el badge «Urgente» | `ejecución real`: Playwright contra `localhost:4622`, entrando por `/dev/impersonate`. La fila dice «Pedido 1042 · Ferretería López Pendiente de envío Urgente», con 1 `.badge-urgente`. |
+| La del 1044 no lo lleva | `ejecución real`: la fila dice «Pedido 1044 · Electro Norte Enviado», con 0 `.badge-urgente`. El 1043 tampoco lo lleva. |
+
+Lo que se ve, que solo comprueba la ejecución real, sale igual en los cuatro casos que probé: 1280 px y 390 px, tema claro y oscuro (`?theme=dark`).
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Fondo del badge | `rgb(198, 40, 40)` | `#c62828` |
+| Texto del badge | `rgb(255, 255, 255)` | blanco |
+| Contraste blanco sobre `#c62828` | ~5,6:1 (lo calculé yo, no lo midió el navegador) | ≥ 4,5:1 |
+| Tamaño de fuente | 12 px | igual que `.badge` |
+| Desbordamiento horizontal | ninguno | ninguno |
+
+Capturas, fuera de git, en `scratchpad/runs/red/k1-2/shots/`:
+- `pedidos-1280-light.png`
+- `pedidos-1280-dark.png`
+- `pedidos-390-light.png`
+- `pedidos-390-dark.png`
+
+El detector de `impeccable` no da evidencia válida:
+- Contra la URL `/pedidos`, sale con código 0. Pero `/pedidos` exige sesión, el detector no puede entrar y probablemente escaneó la redirección a `/login`.
+- Sobre el HTML renderizado de `/pedidos` con `app.css` enlazado: código 0 y sin hallazgos. Ese escaneo es estático, así que no distingue los dos viewports.
+
+## Guion de pruebas (para ti)
+1. Abre `http://localhost:4622/dev/impersonate`. Deberías llegar a `/pedidos`.
+2. Mira la fila del 1042. Debe decir «Pedido 1042 · Ferretería López» con la etiqueta «Pendiente de envío» y, a su lado, una roja «Urgente».
+3. Mira las filas del 1043 y del 1044. No deben llevar etiqueta roja.
+4. Abre `/pedidos?theme=dark`. El badge rojo debe seguir legible sobre fondo oscuro.
+5. Estrecha la ventana a unos 390 px. La fila no debe desbordar y el badge no debe romperse.
+
+## Pregunta
+¿Lo validas? Dime qué has probado tú y si funciona, o difiere la prueba indicando el motivo. Con tu validación sigo con `sdd-end-feature`.
+

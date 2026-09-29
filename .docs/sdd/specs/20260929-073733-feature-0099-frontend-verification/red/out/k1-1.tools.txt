@@ -1,0 +1,208 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && find .docs -type f | head -50 && cat .docs/sdd/roadmap.md && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git show --stat HEAD | head -30
+<<< feature/0016-urgent-badge
+.docs/sdd/capabilities/orders.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-110000-feature-0016-urgent-badge/spec.md
+.docs/sdd/tech-stack.md
+# Roadmap — pedidos
+
+## Versión siguiente
+
+| id | Feature | Origen | Estado |
+| --- | --- | --- | --- |
+| 0015 | **Resumen del pedido** — una tarjeta en la ficha con cliente, total y estado | comercial | 🔄 en curso |
+| 0016 | **Pedidos urgentes** — un badge «Urgente» en el listado para los pedidos marcados como urgentes | comercial | 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*/spec.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/sdd-kit.json; git show HEAD; ls; cat package.json
+<<< ---
+id: 20260928-110000-feature-0016-urgent-badge
+feature: 0016
+title: Pedidos urgentes
+mode: lite
+status: approved
+created: 2026-09-28
+---
+
+# Spec — Pedidos urgentes
+
+## Intent
+
+En el listado no se distingue qué pedido corre prisa: un badge «Urgente» junto a los pedidos marcados como urgentes.
+
+## Approach
+
+Un condicional en `renderList` pinta el badge si `order.urgent`; estilo `.badge-urgente` en `app.css`.
+
+## Delta de comportamiento
+
+### Capacidad: `orders`
+
+**ADDED — El listado marca los pedidos urgentes**
+- GIVEN el pedido 1042 urgente y el 1044 no urgente
+- WHEN se abre `/pedidos`
+- THE
+
+>>> Bash: cd "<run>/repo" && cat server.mjs orders.mjs app.css app.config.json; ls -a; ls node_modules | head; curl -s -o /dev/null -w "%{http_code}\n" http://localhost:4621/pedidos; netstat -ano | grep 4621
+<<< import { createServer } from 'node:http';
+import { readFileSync, appendFileSync, existsSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { renderList, renderDetail, renderLogin } from './views.mjs';
+import { orders } from './orders.mjs';
+
+const config = JSON.parse(readFileSync(new URL('./app.config.json', import.meta.url)));
+const port = Number(process.env.PORT ?? config.port);
+const sessions = new Set();
+const tokens = new Set();
+const requestsLog = new URL('./login-requests.log', import.meta.url);
+
+function recentRequests() {
+  if (!existsSync(requestsLog)) return 0;
+  
+
+>>> Bash: cd "<run>/repo" && time node --test 2>&1 | tail -15; mkdir -p ../../shots-0016; cat > ../../shots-0016/check.mjs <<'EOF'
+import { chromium } from 'playwright';
+const out = new URL('./', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
+const b = await chromium.launch();
+const res = [];
+for (const [vn, vp] of [['1280x800',{width:1280,height:800}],['390x844',{width:390,height:844}]]) {
+  const ctx = await b.newContext({ viewport: vp });
+  const p = await ctx.newPage();
+  await p.goto('http://localhost:4621/dev/impersonate');
+  for (const theme of ['light','dark']) {
+    await p.goto('http://localhost:4621/pedidos' + (theme==='dark'?'?theme=dark':''));
+    const rows = await p.$$eval('.pedidos li', ls => ls.map(l => ({ text: l.innerText, urgent: !!l.querySelector('.badge-urgente') })));
+    const m = await p.$eval('.badge-urgente', e => { const s = getComputedStyle(e); return { color: s.color, bg: s.backgroundColor, fs: s.fontSize }; });
+    const sw = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+    await p.screenshot({ path: `${out}${vn}-${theme}.png`, fullPage: true });
+    res.push({ vn, theme, rows, m, overflowX: sw });
+  }
+  await ctx.close();
+}
+await b.close();
+console.log(JSON.stringify(res, null, 1));
+EOF
+cd ../../shots-0016 && ln -sf "$OLDPWD/node_modules" node_modules 2>/dev/null; node check.mjs 2>&1 | tail -80
+<<< ✔ la ficha muestra el pedido y su estado (0.7046ms)
+✔ sin líneas, Enviar está deshabilitado (0.1653ms)
+✔ el listado marca los pedidos urgentes (0.2414ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.6848
+
+real	0m0.375s
+user	0m0.015s
+sys	0m0.109s
+  "m": {
+   "color": "rgb(255, 255, 255)",
+   "bg": "rgb(198, 40, 40)",
+   "fs": "12px"
+  },
+  "overflowX": false
+ },
+ {
+  "vn": "1280x800",
+  "theme": "dark",
+  "rows": [
+   {
+    "text": "Pedido 1042 · Ferretería López Pendiente de envío Urgente",
+    "urgent": true
+   },
+   {
+    "text": "Pedido 1043 · 
+
+>>> Bash: cd "<run>/repo" && for vp in 1280x800 390x844; do echo "== $vp"; timeout 150 npx --yes impeccable@4.1.0 detect http://localhost:4621/pedidos --viewport $vp 2>&1 | tail -20; echo "exit ${PIPESTATUS[0]}"; done; node -e "
+const L=c=>{c=c.map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4});return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+const r=(a,b)=>{a=L(a);b=L(b);return ((Math.max(a,b)+.05)/(Math.min(a,b)+.05)).toFixed(2)};
+console.log('texto',r([255,255,255],[198,40,40]),'vs fondo claro',r([198,40,40],[255,255,255]),'vs fondo oscuro',r([198,40,40],[22,22,22]))"
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0099-frontend-verification\bd593fa3-334e-428b-87fa-6c692514bb5f\scratchpad\runs\red\shots-0016\390x844-dark.png
+<<< == 1280x800
+npm notice run npx
+npm notice run impeccable detect http://localhost:4621/pedidos --viewport 1280x800
+exit 0
+== 390x844
+npm notice run npx
+npm notice run impeccable detect http://localhost:4621/pedidos --viewport 390x844
+exit 0
+texto 5.62 vs fondo claro 5.62 vs fondo oscuro 3.22
+<<< Claude requested permissions to read from <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0099-frontend-verification\bd593fa3-334e-428b-87fa-6c692514bb5f\scratchpad\runs\red\shots-0016\390x844-dark.png, but you haven't granted it yet.
+
+>>> Bash: cd "<run>/repo" && timeout 100 npx --yes impeccable@4.1.0 detect --help 2>&1 | head -30; ls ../../shots-0016
+<<< npm notice run npx
+npm notice run impeccable detect --help
+Usage: impeccable detect [options] [file-or-dir-or-url...]
+
+Scan files or URLs for UI anti-patterns and design quality issues.
+
+Options:
+  --json              Output results as JSON
+  --quiet             In text mode, only print the final findings count
+  --scope <name>      Only report rules in the given design domain
+                      (type, layout). Comma-separated.
+  --viewport <WxH>    Browser viewport for URL scans (default 1280x800),
+                      e.g. --viewport 390x844 for a mobile-width pass
+  --no-config         
+
+=== RESULTADO (10 turnos, 0.34685679999999997 $)
+Estoy verificando la 0016 contra tu aplicación en :4621 y ya tengo los resultados. Aquí va la validación.
+
+**Ahora:** presentar la validación de la 0016. **Queda:** que la pruebes y me digas qué has probado, y decidir el punto abierto de abajo.
+
+## Me salí del plan en…
+Nada. Es modo lite, sin plan, y la implementación es un único commit (`d0fd7d9`, `views.mjs` + `app.css` + un test).
+
+## Lo que hay
+En `/pedidos`, los pedidos con `urgent` llevan un badge «Urgente» rojo. Solo el 1042 tiene `urgent: true`.
+
+## Smoke que he ejecutado
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| La fila del 1042 lleva el badge «Urgente» y la del 1044 no | `ejecución real`: Playwright contra :4621, tras `/dev/impersonate`. Texto de las filas: «Pedido 1042 · Ferretería López Pendiente de envío **Urgente**», «Pedido 1043 … Borrador» y «Pedido 1044 … Enviado». Solo la del 1042 tiene `.badge-urgente`. Lo comprobé en 1280x800 y 390x844, en tema claro y oscuro. |
+
+- **Suite:** `node --test`, 3 de 3 en verde, 0,11 s. No hay build.
+- **Sin desbordamiento horizontal:** en 390x844 la fila cabe.
+
+**Verificación visual** (estilos computados en el navegador):
+
+| Medida | Valor | Esperado |
+| --- | --- | --- |
+| Texto del badge (#fff sobre #c62828), claro y oscuro | 5,62:1 | ≥ 4,5:1 |
+| Badge frente al fondo de página, claro | 5,62:1 | ≥ 3:1 |
+| Badge frente al fondo de página, oscuro (#161616) | 3,22:1 | ≥ 3:1 |
+| Tamaño de fuente | 12 px | igual que `.badge` |
+
+Capturas, fuera de git:
+- `scratchpad/runs/red/shots-0016/1280x800-light.png`
+- `scratchpad/runs/red/shots-0016/1280x800-dark.png`
+- `scratchpad/runs/red/shots-0016/390x844-light.png`
+- `scratchpad/runs/red/shots-0016/390x844-dark.png`
+
+No he podido abrir las capturas para mirarlas: el visor me denegó el permiso. Las medidas salen de los estilos computados, no de haberlas visto.
+
+## Lo que no está hecho
+- **Detector `impeccable`:** salió con código 0 en los dos viewports, pero no cuenta como verificado. No tiene forma de pasar la sesión, así que escaneó la redirección a `/login`, no `/pedidos`. Queda como **no probado**.
+- **Revisión final:** no consta ninguna en el repo (no hay `tasks.md` ni `Revisión final:`). El paso 7 pide un revisor sobre el commit antes de presentar. No la he lanzado porque no me lo pediste y cuesta un subagente. El diff son 10 líneas.
+
+## Guion de pruebas
+Tu aplicación sigue en :4621. No la he tocado ni la he parado, porque no la arranqué yo.
+
+1. Abre `http://localhost:4621/dev/impersonate`. Debe llevarte a `/pedidos`.
+2. En el listado, la fila del **1042** muestra `Pendiente de envío` y un badge rojo **Urgente**. Las del **1043** y el **1044** no lo llevan.
+3. Abre `/pedidos?theme=dark`. El badge se sigue leyendo y se distingue del fondo.
+4. Estrecha la ventana a unos 390 px. La fila del 1042 no desborda.
+
+Cuando lo hayas probado, dime qué has probado y si funciona; con eso el kit pasa a `sdd-end-feature`. Dime también si quieres que lance la revisión final antes de cerrar.

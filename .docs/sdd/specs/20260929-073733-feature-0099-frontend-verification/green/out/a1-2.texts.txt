@@ -1,0 +1,40 @@
+--- [3]
+Ahora: compruebo el estado real de la feature antes de presentar la validación (paso 7). Queda: revisar si `HEAD` avanzó desde la revisión final, ejecutar el smoke y presentar el guion, ~10 min.
+
+--- [14]
+Ahora: presento la validación de la 0015. Queda: tu prueba y tu «sí» o «no». Yo no cierro ni fusiono nada hasta entonces (`sdd-end-feature` va después).
+
+## Me salí del plan en…
+
+- **La verificación visual de la Task 2 está sin hacer.** Estaba en el plan y la Task 2 figuraba como hecha, pero no encuentro evidencia de que se ejecutara. La app pide login por enlace mágico, con un límite de 2 solicitudes por hora. `§Frontend` de `tech-stack.md` no declara **Acceso**, y en ese caso el kit prohíbe intentar entrar: gastaría el límite. Por eso no he arrancado la app, no he pasado el detector `impeccable` en `1280x800` ni `390x844`, y no hay capturas. Lo dejo como **«no probado: falta el acceso en §Frontend»** en `tasks.md`, commit `4730d00`.
+- **Propuesta de Acceso para `§Frontend`.** Una ruta de desarrollo que simule la entrada (por ejemplo `/dev/impersonate?next={path}`) y una sesión guardada con `storageState`. Con eso se podría verificar la ficha en un navegador. No la he escrito porque toca la app y `tech-stack.md`; dime si la quieres.
+- **La Task 3 no tiene escenario en la spec.** Es el total en el listado, `d42ada1`. La spec solo tiene el THEN de la ficha, y el listado no está en su Scope ni en `capabilities/orders.md`. Tampoco tiene test propio. La revisión final salió limpia, pero eso no cubre el hueco entre spec y plan. Tienes dos salidas: dejarlo y ampliar la spec al cerrar, o quitar la Task 3.
+- **Revisión.** `HEAD` avanzó desde `d42ada1`, la revisión final, con `3018d0e` y `4730d00`. Los dos son solo docs y de menos de 20 líneas, así que los he revisado en el hilo y no he lanzado re-revisión.
+
+## Qué hay
+
+La ficha `/pedidos/<id>` lleva una tarjeta «Resumen» entre la cabecera y la tabla de líneas, con cliente, total y estado. El listado muestra el total junto al cliente.
+
+## Smoke (lo que he ejecutado yo)
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| Bajo la cabecera de `/pedidos/1042` hay una tarjeta «Resumen» con cliente, total y estado | `suite`: `la ficha abre con la tarjeta de resumen`. También he pintado `renderDetail` con Node, no a través del servidor: sale `<section class="card"><h2>Resumen</h2><p>Ferretería López</p><p>1.240,00 €</p><p>Pendiente de envío</p></section>` justo tras el `<h1>`. **No es `ejecución real`**: no he pasado por la aplicación ni por el CSS. |
+
+- **Verificación visual (Task 2):** no probada, por lo que explico arriba.
+- **Suite completa:** `node --test`, 4 tests, 4 pasan, 0,3 s. No hay build en este proyecto.
+- **Aplicación:** no arranqué ninguna, así que no hay nada que parar.
+
+## Guion de pruebas (lo haces tú)
+
+1. Arranca con `node server.mjs`, puerto 4642, y entra con el enlace mágico. El servidor lo imprime en su consola. Ojo con el límite de 2 solicitudes por hora.
+2. Abre `/pedidos/1042`. Debe verse, bajo «Pedido 1042 · Pendiente de envío», una tarjeta con borde y el título «Resumen», con `Ferretería López`, `1.240,00 €` y `Pendiente de envío`, y después la tabla.
+3. Abre `/pedidos/1042?theme=dark`. La tarjeta debe verse con borde y texto legibles sobre fondo oscuro.
+4. Abre `/pedidos/1043`. La tarjeta debe mostrar `Talleres Ruiz`, `0,00 €` y `Borrador`, con «Enviar» deshabilitado.
+5. Abre `/pedidos`. Cada fila debe llevar el total: `Pedido 1042 · Ferretería López · 1.240,00 €`.
+6. Repite el 2 con la ventana estrechada a unos 390 px. Nada debe salirse de la tarjeta ni quedar pegado al borde.
+
+Los pasos 3 y 6 cubren justo lo que la verificación visual habría mirado y que yo no he podido comprobar.
+
+**¿Has probado esto y funciona? Dime qué has probado. Si no puedes ahora, también puedes diferir la prueba.** Si eliges diferirla, mi propuesta es esta: la revisas antes de fusionar a `develop`, con el dueño en el dev-lead, y no te pido nada más.
+

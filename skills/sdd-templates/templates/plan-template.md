@@ -133,11 +133,11 @@ Endpoints, shape request/response.
 
 **Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
 **Verificación**: <los comandos de esas superficies y ninguno más>
-**Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · qué mirar>
+**Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · criterio en frases medibles, p. ej. «la tarjeta muestra cliente, total y estado» · pantalla de referencia, si no es la de `§Frontend`>
 **Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
 **Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>
 
-> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve: qué mirar es alineación, separación a bordes y contraste, en cada estado y tema; la hace el hilo principal en un navegador. Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
+> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve, con el criterio escrito antes del código; la hace el hilo principal en un navegador, con el método de `sdd-start-feature/references/frontend-verification.md` (detector de `§Frontend`, capturas con rúbrica). Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
 
 **Interfaces**:
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
