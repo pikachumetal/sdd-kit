@@ -19,7 +19,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | RED de conducta | done | c9c4ff9 | c2 pasa 2/2: enmienda aprobada |
-| 2 | Revisor final en segundo plano y aislado | pending | — | |
+| 2 | Revisor final en segundo plano y aislado | done | 65804fa | |
 | 3 | Borradores de cierre mientras revisa | pending | — | |
 | 4 | Todo sha de `tasks.md` alcanzable tras el cierre | pending | — | |
 | 5 | GREEN | pending | — | |

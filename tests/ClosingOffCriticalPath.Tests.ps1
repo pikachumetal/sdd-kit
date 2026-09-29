@@ -38,3 +38,13 @@ Describe 'Revisor en segundo plano' {
     Assert-Literal (Get-OverridesRow 'executing-plans') @('en segundo plano')
   }
 }
+
+Describe 'Borradores de cierre' {
+  It 'el paso 7 escribe los borradores sin commitear' {
+    Assert-Literal (Get-Step $script:StartSkill 7) @('sin commitear', '`walkthrough.md` sin la verificación ni el tiempo')
+  }
+
+  It 'el cierre parte de los borradores' {
+    Assert-Literal (Get-Step $script:EndSkill 0) @('borradores')
+  }
+}
