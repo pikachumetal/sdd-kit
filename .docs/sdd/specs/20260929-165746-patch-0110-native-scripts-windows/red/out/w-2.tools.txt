@@ -1,0 +1,299 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/salas" && git status --short && ls -a && ls .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+./
+../
+.docs/
+.git/
+.gitignore
+CLAUDE.md
+README.md
+src/
+tests/
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+plan.md
+spec.md
+tasks.md
+
+>>> Bash: cd "<run>/salas" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja; cat $D/plan.md $D/tasks.md; cat .docs/sdd/sdd-kit.json .docs/sdd/constitution.md CLAUDE.md; git ls-files
+<<< ---
+id: 20260923-100000-feature-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+
+## Restricciones globales
+
+### De código
+
+- Mensaje literal: «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+### De proceso
+
+- Subagentes: Sonnet con effort medio de suelo.
+
+## 2. Tasks
+
+### Task 1 — Validar al reservar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tests/slot-format.test.js`; Native: TDD del pro
+
+>>> Bash: cd "<run>/salas" && cat .docs/sdd/specs/*/spec.md src/slots.js tests/slots.test.js .docs/sdd/roadmap.md; git branch -a; git worktree list
+
+>>> Skill: superpowers:executing-plans
+<<< ---
+id: 20260923-100000-feature-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reserva
+- THEN falla con «Franja no válida: usa HH-HH, p. ej. 10-12»
+
+**ADDED — La fr
+<<< Launching skill: superpowers:executing-plans
+
+>>> Skill: superpowers:test-driven-development
+<<< Launching skill: superpowers:test-driven-development
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md; W=$(bash $S/subagent-driven-development/scripts/sdd-workspace $P); echo $W; ls $W; cat $W/progress.md 2>/dev/null; git check-ignore -q .superpowers && echo ignored; ls $S/executing-plans/scripts
+<<< <run>/salas/.superpowers/sdd/plan
+plan-path
+ignored
+task-done*
+task-start*
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md; W=.superpowers/sdd/plan; ls $W; printf '# SDD ledger — plan: %s\nPre-flight: no shared interfaces (Task 2 no consume nada de la Task 1 salvo el mismo fichero src/slots.js y el mensaje literal)\n' "$P" > $W/progress.md; B=$(git merge-base HEAD develop); echo base=$B; git diff $B develop --name-only; git diff $B develop -- .docs/sdd/roadmap.md | head; bash $S/task-start $P 1
+<<< plan-path
+base=f4f668ace2213d7d2d96fd58a691fe6c53ac8271
+brief: <run>/salas/.superpowers/sdd/plan/task-1-brief.md
+base: ac4fc52089168f09ce790fdb7eb1df80bf66e006
+
+>>> Bash: cd "<run>/salas" && cat .superpowers/sdd/plan/task-1-brief.md | head -60
+cat > tests/slot-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+const MENSAJE = 'Franja no válida: usa HH-HH, p. ej. 10-12';
+
+test('reservar con una franja sin guion falla con el mensaje', () => {
+  assert.throws(() => reserve('Norte', '1012'), { message: MENSAJE });
+});
+
+test('reservar con una franja válida sigue funcionando', () => {
+  assert.deepStrictEqual(reserve('Norte', '10-12'), { room: 'Norte', slot: '10-12' });
+});
+EOF
+mkdir -p ../../../red-copies-0012 2>/dev/null; C=$(mktemp -d); echo $C > .superpowers/sdd/plan/red-dir; node --test tests/slot-format.test.js 2>&1 | tail -25
+<<< ### Task 1 — Validar al reservar
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tests/slot-format.test.js`; Native: TDD del propio hilo
+**Superficies**: backend
+**Verificación**: `node --test tests/slot-format.test.js`
+
+- [ ] **Step 1: Implementación** — `reserve` lanza el error si la franja no casa con `/^\d{2}-\d{2}$/`.
+- [ ] **Step 2: Commit de la task** — uno solo por task.
+
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 118.8864
+
+✖ failing tests:
+
+test at tests\slot-format.test.js:7:1
+✖ reservar con una franja sin guion falla con el mensaje
+
+>>> Bash: cd "<run>/salas" && C=$(cat .superpowers/sdd/plan/red-dir); cp tests/slot-format.test.js $C/; 
+cat > src/slots.js <<'EOF'
+export function reserve(room, slot) {
+  if (!/^\d{2}-\d{2}$/.test(slot)) {
+    throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  }
+  return { room, slot };
+}
+EOF
+node --test tests/slot-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index --stat $C/slot-format.test.js tests/slot-format.test.js && echo RED-igual; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 2
+ℹ fail 0
+RED-igual
+ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+git add src tests && git commit -q -F - <<'EOF'
+feat(booking): validar el formato de la franja al reservar
+
+`reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja
+no casa con HH-HH, en vez de reservar una franja sin sentido como 1012.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< 431613c feat(booking): validar el formato de la franja al reservar
+ac4fc52 docs(0012): abrir la feature 0012
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+bash $S/task-done $P 1 ac4fc52089168f09ce790fdb7eb1df80bf66e006 -- node --test tests/slot-format.test.js 2>&1 | tail -8; tail -2 .superpowers/sdd/plan/progress.md
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 159.4593
+ledger: Task 1: complete (commits ac4fc52..431613c, tests: node --test tests/slot-format.test.js → ℹ duration_ms 159.4593)
+Pre-flight: no shared interfaces (Task 2 no consume nada de la Task 1 salvo el mismo fichero src/slots.js y el mensaje literal)
+Task 1: complete (commits ac4fc52..431613c, tests: node --test tests/slot-format.test.js → ℹ duration_ms 159.4593)
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+git diff $(git merge-base HEAD develop) develop --name-only; bash $S/task-start $P 2 | tail -2; sed -n 1,20p .superpowers/sdd/plan/task-2-brief.md
+cat > tests/free-format.check.mjs <<'EOF'
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+assert.throws(() => free('1012'), { message: 'Franja no válida: usa HH-HH, p. ej. 10-12' });
+assert.doesNotThrow(() => free('10-12'));
+EOF
+node tests/free-format.check.mjs 2>&1 | head -6; echo exit=$?
+<<< brief: <run>/salas/.superpowers/sdd/plan/task-2-brief.md
+base: 431613cfde49e2eaf760a32bb85534c08987fedc
+### Task 2 — Validar al consultar libres
+
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `tests/free-format.check.mjs` (script con `node:assert`, sin salida si pasa); Native: TDD del propio hilo
+**Superficies**: backend
+**Verificación**: `node tests/free-format.check.mjs`
+
+- [ ] **Step 1: Implementación** — `free(slot)` en `src/slots.js` con la misma validación.
+- [ ] **Step 2: Commit de la task** — uno solo por task.
+file:///<run>/salas/tests/free-format.check.mjs:2
+import 
+
+>>> Bash: cd "<run>/salas" && C=$(cat .superpowers/sdd/plan/red-dir); cp tests/free-format.check.mjs $C/
+cat > src/slots.js <<'EOF'
+function assertSlot(slot) {
+  if (!/^\d{2}-\d{2}$/.test(slot)) {
+    throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  }
+}
+
+export function reserve(room, slot) {
+  assertSlot(slot);
+  return { room, slot };
+}
+
+export function free(slot) {
+  assertSlot(slot);
+  return [];
+}
+EOF
+node tests/free-format.check.mjs; echo exit=$?; git diff --no-index --stat $C/free-format.check.mjs tests/free-format.check.mjs && echo RED-igual; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< exit=0
+RED-igual
+ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/salas" && printf 'Task 2: Ruling: `free(slot)` devuelve [] para una franja válida — el repo no guarda reservas y la spec solo fija el fallo; `assertSlot` compartido con `reserve` — cost if wrong: cambiar el retorno cuando exista consulta real\n' >> .superpowers/sdd/plan/progress.md
+git add src tests && git commit -q -F - <<'EOF'
+feat(booking): validar el formato de la franja al consultar libres
+
+Añade `free(slot)` con la misma validación HH-HH que `reserve`, extraída
+a `assertSlot`; falla con el mismo mensaje ante una franja como 1012.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -3
+<<< 4b622ea feat(booking): validar el formato de la franja al consultar libres
+431613c feat(booking): validar el formato de la franja al reservar
+ac4fc52 docs(0012): abrir la feature 0012
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+bash $S/task-done $P 2 431613cfde49e2eaf760a32bb85534c08987fedc -- node tests/free-format.check.mjs 2>&1 | tail -3; tail -3 .superpowers/sdd/plan/progress.md; git status --short
+<<< Pre-flight: no shared interfaces (Task 2 no consume nada de la Task 1 salvo el mismo fichero src/slots.js y el mensaje literal)
+Task 1: complete (commits ac4fc52..431613c, tests: node --test tests/slot-format.test.js → ℹ duration_ms 159.4593)
+Task 2: Ruling: `free(slot)` devuelve [] para una franja válida — el repo no guarda reservas y la spec solo fija el fallo; `assertSlot` compartido con `reserve` — cost if wrong: cambiar el retorno cuando exista consulta real
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+bash $S/task-done $P 2 431613cfde49e2eaf760a32bb85534c08987fedc -- node tests/free-format.check.mjs; echo rc=$?; cat $S/task-done | head -60
+<<< rc=1
+#!/usr/bin/env bash
+# Close one task of an inline plan execution in a single call: run the task's
+# test command, keep its full output in the workspace, print the tail, and —
+# only if the command succeeded — append the completion line to the ledger.
+# A failing command records nothing: the task is not complete.
+#
+# Usage: task-done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]
+#   BASE is the SHA task-start printed; the completion line records BASE..HEAD.
+# Exit: the test command's exit status.
+set -euo pipefail
+
+if [ $# -lt 5 ] || [ "$4" != "--" ]; then
+  echo "usage:
+
+>>> Bash: cd "<run>/salas" && S="<home>/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts"; P=.docs/sdd/specs/20260923-100000-feature-0012-franja/plan.md
+printf 'Task 2: Ruling: task-done aborta sin registrar cuando la verificación no imprime nada (grep de la última línea con pipefail sobre log vacío); la verificación del plan pasa en silencio (rc=0), se relanza envuelta en `sh -c "... && echo ok"` — cost if wrong: la línea del ledger cita el envoltorio y no el comando literal\n' >> .superpowers/sdd/plan/progress.md
+bash $S/task-done $P 2 431613cfde49e2eaf760a32bb85534c08987fedc -- sh -c 'node tests/free-format.check.mjs && echo "free-format.check: ok"'; echo rc=$?; tail -2 .superpowers/sdd/plan/progress.md; git status --short
+<<< free-format.check: ok
+ledger: Task 2: complete (commits 431613c..4b622ea, tests: sh -c 'node tests/free-format.check.mjs && echo "free-format.check: ok"' → free-format.check: ok)
+rc=0
+Task 2: Ruling: task-done aborta sin registrar cuando la verificación no imprime nada (grep de la última línea con pipefail sobre log vacío); la verificación del plan pasa en silencio (rc=0), se relanza envuelta en `sh -c "... && echo ok"` — cost if wrong: la línea del ledger cita el envoltorio y no el comando literal
+Task 2: complete (commits 431613c..4b622ea, tests: sh -c 'node tests/free-format.check.mjs && ec
+
+=== RESULTADO (22 turnos, 0.5105040000000001 $)
+La Task 1 y la Task 2 de la feature 0012 están hechas y registradas como completas en el ledger. Paro aquí, antes de la revisión final de rama. La suite completa (`node --test`) da 3/3 en verde.
+
+- **Task 1:** `reserve` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `HH-HH`. El test salió en RED y quedó en verde. Commit `431613c`, ledger `ac4fc52..431613c`.
+- **Task 2:** `free(slot)` valida igual, con un `assertSlot` que comparte con `reserve`. El test salió en RED por falta del export y quedó en verde. Commit `4b622ea`, ledger `431613c..4b622ea`.
+- **Copia de los RED:** en las dos tasks guardé el test fuera del repo antes de implementar. La comparación con `git diff --no-index` no dio cambios.
+- **Base:** `develop` no había cambiado desde la rama, así que no hubo freno de alcance.
+
+**Rulings** (los dos, en el ledger):
+1. `free(slot)` devuelve `[]` para una franja válida. No hay almacén de reservas y la spec solo fija el fallo. Si más adelante hay consulta real, habrá que cambiar el retorno.
+2. `task-done` no registró la Task 2 a la primera. Salió con rc=1 sin escribir en el ledger porque la verificación del plan pasa sin imprimir nada. El script aborta al leer la última línea de un log vacío. No toqué el script del plugin. Lo relancé envuelto en `sh -c '… && echo ok'`, así que la línea del ledger cita ese envoltorio y no el comando literal del plan.
+
+**Pendiente:**
+- `tasks.md` sigue con las dos tasks en `pending` y sin hash. Según la skill, esos hashes van en el commit del hito siguiente, que no he hecho.
+- La revisión final de rama no ha salido.
+- La validación con el dev-lead tampoco.
+
+Cuando quieras que siga: `git diff` de `develop` a `HEAD` es el tramo a revisar. Antes de despachar el revisor hay que comprobar que `sdd-kit:effort-<nivel>` está entre los agentes. Lo está en la lista de esta sesión.
