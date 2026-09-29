@@ -117,6 +117,7 @@
 | 2026-09-29 | 0100 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-073507-patch-0100-kit-version-warning |
 | 2026-09-29 | 0099 | docs | 5 | 1.3 | 0.26 | 52856k | 2970k | 11.71 | sin precio | 20260929-073733-feature-0099-frontend-verification |
 | 2026-09-29 | 0101 | patch | 0.5 | 0.6 | 1.2 | — | — | — | — | 20260929-113414-patch-0101-headless-harness-guards |
+| 2026-09-29 | 0103 | patch | — | 0.4 | — | — | — | — | — | 20260929-113512-patch-0103-silence-watch-once-message |
 | 2026-09-29 | 0106 | patch | 0.5 | 0.3 | 0.6 | — | — | — | — | 20260929-113747-patch-0106-session-tokens-tests-isolation |
 
 **Factor de calibración** (ratio mediano real/estimado, 101 artefactos): **0.6** · media 0.74
@@ -151,6 +152,6 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| 2.1.0 | 7 | 7.8 | 0.6 | 33.97 | 30.18 |
+| 2.1.0 | 8 | 8.2 | 0.6 | 33.97 | 30.18 |
 
 > Ver `estimation.md`.
