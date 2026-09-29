@@ -8,6 +8,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 - **Feature 0099** — Verificación de frontend: referencia `frontend-verification.md` con criterio previo, detector en dos viewports, capturas con rúbrica y proporción por carril, cargada por la task full, lite y el patch visual; `§Frontend` en `tech-stack.md` (detector, runner E2E, acceso) que la spec propone y las init preguntan. → [ref](specs/20260929-073733-feature-0099-frontend-verification/)
 
+### Changed
+
+- **Feature 0096** — El cierre fuera del camino crítico: el revisor final de rama sale en segundo plano en cuanto existe el commit de la última task, antes de la verificación visual, y trabaja en un worktree desanclado en ese sha (`review-<id>-<sha corto>`), sin ver los commits que el hilo hace mientras tanto. Mientras revisa, el hilo escribe sin commitear los borradores del walkthrough, la capacidad y el changelog, y la validación se presenta cuando vuelve. Al juntar el cierre, las líneas de revisión de `tasks.md` cuyo sha desaparece se reescriben como «juntada en el cierre», y todo sha que queda es alcanzable. Antes, la revisión y los registros de cierre iban en serie tras la validación (~25 min hasta el merge en una feature de un proyecto del equipo) y el cierre dejaba shas perdidos en `tasks.md` (tres tickets). → [ref](specs/20260929-133151-feature-0096-closing-off-critical-path/)
+
 ### Fixed
 
 - **Conflictos de los registros en el merge del cierre** — `Invoke-SddMerge.ps1` une dentro del cerrojo los conflictos de `roadmap.md` y `changelog.md` en los que cada trozo solo añade líneas por los dos lados (primero la rama destino, después la rama) y regenera `estimation-log.md`. Antes solo resolvía el log cuando era el único conflicto: con una fila o una línea nueva por cada lado fallaba con `merge: conflicto en`, soltaba el cerrojo y la receta sincronizaba fuera de él, y 4 de 6 cierres en paralelo acabaron en «No terminado» (tickets de los patches 0102, 0104, 0105 y 0106 §1). Si un trozo cambia una línea existente, sigue fallando. → [ref](specs/20260929-131000-patch-0107-merge-registry-union/)

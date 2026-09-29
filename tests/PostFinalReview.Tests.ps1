@@ -32,7 +32,7 @@ Describe 'Re-revisión del tramo' {
   }
 
   It 'el ruling manda el commit posterior a la re-revisión del tramo' {
-    $script:Profiles | Should -Match '(?i)si la revisión final ya volvió, en la re-revisión del tramo'
+    $script:Profiles | Should -Match '(?i)si ya salió, aunque no haya vuelto, en la re-revisión del tramo'
   }
 }
 

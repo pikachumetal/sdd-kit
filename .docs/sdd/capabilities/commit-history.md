@@ -24,6 +24,8 @@ La historia de la rama de una feature o de un patch: qué commits quedan al fusi
 - THEN desde el commit de la última task la rama tiene un solo commit, con la documentación de cierre y los arreglos de la revisión final y de la validación
 - AND una rama sin merges de sincronización tiene 2 + N commits desde el `merge-base`, con N tasks en el plan (3 en lite)
 - AND si el cierre necesita un merge de sincronización, va después del commit de cierre y es el último commit de la rama; el cierre no se vuelve a juntar
+- AND antes de juntar, cada línea `Pasada de fix:`, `Re-revisión:` o `Revisión final:` de `tasks.md` cuyo sha cae en el tramo que se junta se reescribe sin sha: `Pasada de fix: 7ea5c37, 1 hallazgo RED→GREEN` pasa a `Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN`, y `Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, limpia` pasa a `Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia`
+- AND tras el commit de cierre, `git merge-base --is-ancestor <sha> HEAD` sale bien para todo sha de `tasks.md`
 
 ### El patch queda en dos commits
 - GIVEN un patch con el fix verificado

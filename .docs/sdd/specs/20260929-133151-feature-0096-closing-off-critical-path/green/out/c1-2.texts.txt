@@ -1,0 +1,62 @@
+--- [3]
+Ahora: leo el plan, el ledger y `tasks.md` para ver qué falta de la Task 3. Queda: verificación visual, revisor final en segundo plano, borradores de cierre y presentar la validación, ~20-30 min.
+
+--- [41]
+Digo lo que hago: el harness no me deja escribir en `%TEMP%`, así que dejo el script de capturas y las imágenes en el directorio de la sesión, fuera del repo, y las ejecuto desde ahí.
+
+--- [49]
+Capturas miradas. Paro el servidor por PID (el lanzador era 73640 y quien escuchaba, 68908) y compruebo que el puerto queda libre.
+
+--- [52]
+Ahora: escribo los borradores de cierre (walkthrough, delta en la capacidad `orders`, changelog) sin commitear. Queda: la validación, ~5 min.
+
+--- [58]
+## Validación de la 0015 (resumen del pedido) — pendiente de revisión final
+
+**No está lista para cerrar: la revisión final no se ha hecho.** El entorno bloqueó el despacho del revisor (`sdd-kit:effort-high` + opus) y no lo reintenté. Lo apunté en `tasks.md` y en el ledger como «no despachada». Cuando pueda despacharse, sale sobre `43fe195`, en un worktree desanclado. Si vuelve con Critical o Important, hago una pasada de fix con cada hallazgo RED→GREEN antes de pedir la validación. Si vuelve limpia, esta presentación pasa a definitiva.
+
+### Me salí del plan en…
+1. **Task 3 sin test.** El commit `5354ca0` llegó sin test del listado, sin `task-start` y sin copia de RED.
+   - Escribí el test después del código y comprobé que falla contra `views.mjs` de `3c9a0a3`.
+   - Junté el rango en `43fe195` y cerré con `task-done` (`node --test`, 5/5). Ese commit reemplaza a `5354ca0`, que queda sin referencia.
+   - Si el test se ajustó al código, la copia RED no lo prueba.
+2. **Task 3 sin escenario en la spec.** La spec solo tiene el escenario de la ficha; el total en el listado está solo en el plan. Lo ejecuté tal cual. Decide si sube a la spec como un THEN nuevo de `orders`.
+3. **Sin bloque «De código» en el plan.** No lo tiene en Restricciones globales; el encargo del revisor lleva las cuatro reglas de la constitution, literales.
+
+### Smoke (por THEN de la spec)
+| THEN | Evidencia |
+| --- | --- |
+| `/pedidos/1042` abre con tarjeta «Resumen» bajo la cabecera, con cliente, total y estado | `ejecución real` (capturas claro y oscuro, dos viewports) y suite |
+
+La suite completa (`node --test`) pasa 5/5 en 0,3 s.
+
+### Verificación visual (Task 3, y de paso la ficha de la Task 2)
+- **Criterio:** la fila del 1042 dice «Ferretería López · 1.240,00 €» en una sola línea.
+- **Detector** (`impeccable@4.1.0`, los dos viewports):
+  - `/pedidos` claro y oscuro: limpio en 1280x800 y en 390x844.
+  - `/pedidos/1042` claro: limpio.
+  - `/pedidos/1042?theme=dark`, ambos viewports: `low-contrast` 2,2:1 en «Enviar» (`#fff` sobre `#7fb0ff`).
+  - `/pedidos/1043`, ambos viewports: `low-contrast` 1,4:1 en «Enviar» deshabilitado (`opacity: .5`).
+  - Los dos hallazgos son del botón, que existía desde `fd8308d`. El diff de `app.css` desde entonces solo añade `.card`, así que no los toca ninguna task y no los arreglo.
+- **Medida:** en los tres pedidos, cliente y total ocupan una línea a 1280 y a 390. Sin errores de consola.
+- **Capturas** (fuera de git): `scratchpad\runs\green\c1-2\visual-0015\`.
+- **A 390 px**, la fila 1042 baja el badge «Pendiente de envío» a una segunda línea. Cumple el criterio y no lo toqué; dime si lo quieres compacto.
+- **Fuera de alcance:** en tema oscuro el enlace «Pedido N» sale azul del navegador sobre fondo oscuro (casi ilegible). Ya estaba antes.
+
+La app queda parada y el puerto 4702 libre. La paré por PID (el listener era el proceso hijo, no el lanzador).
+
+### Guion de pruebas
+Para arrancar la app: `node server.mjs`, que escucha en `http://localhost:4702`; se para con Ctrl+C.
+1. Abre `/pedidos/1042` → bajo «Pedido 1042 · Pendiente de envío» hay una tarjeta «Resumen» con `Ferretería López`, `1.240,00 €` y `Pendiente de envío`, antes de la tabla.
+2. Abre `/pedidos/1042?theme=dark` → la misma tarjeta, legible sobre fondo oscuro.
+3. Abre `/pedidos/1043` → tarjeta con `Talleres Ruiz`, `0,00 €` y `Borrador`, y «Enviar» deshabilitado.
+4. Abre `/pedidos` → cada fila lleva el total: `Pedido 1042 · Ferretería López · 1.240,00 €` con su badge.
+
+### Borradores de cierre (sin commitear)
+- `walkthrough.md` (falta el tiempo y la validación).
+- El delta en `capabilities/orders.md`.
+- La entrada del changelog.
+- El roadmap, sin tocar.
+
+**¿Qué has probado tú, y funciona?** Si prefieres validar con la revisión aún pendiente, dilo aparte: yo no cierro sin ella.
+

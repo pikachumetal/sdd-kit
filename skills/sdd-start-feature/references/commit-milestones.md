@@ -8,7 +8,7 @@ La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del 
 | --- | --- | --- | --- |
 | Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | antes de escribir los RED de la primera task (en Native, antes de su `task-start`); lite: antes de implementar | `git merge-base HEAD <integración>` |
 | Task N | sus tests RED, su implementación, los arreglos de su revisión, su evidencia | con su revisión (y re-revisión) limpia, antes de despachar la siguiente o la revisión final; en Native, con su contrato de cierre cumplido y antes de `task-done` | el `BASE` que apuntaste antes de despacharla (en Native, el que imprime `task-start`) |
-| Cierre | documentación de `sdd-end-feature`, arreglos de la revisión final de rama y de la validación | tras la documentación de cierre, antes del merge | el commit de la última task |
+| Cierre | documentación de `sdd-end-feature`, arreglos de la revisión final de rama y de la validación, y `tasks.md` con las líneas de revisión del tramo reescritas sin sha | tras la documentación de cierre, antes del merge | el commit de la última task |
 | Fix (patch) | código, tests y `patch.md` | con el fix verificado | `git merge-base HEAD <integración>` |
 | Cierre (patch) | `patch.md` con hash y tiempo, changelog, roadmap, estimation-log | antes del merge | el commit del fix |
 | Merge de sincronización | la rama destino integrada en la feature, con los registros resueltos | no se junta | — |
@@ -40,6 +40,8 @@ El hito queda como está, y el walkthrough (o `patch.md`) dice cuál quedó sin 
 ## El hash en los artefactos
 
 Un commit no puede contener su propio hash. El de la task N se escribe en `tasks.md` en el commit del hito siguiente —la task N+1 o, para la última, el cierre—, y el del fix de un patch, en `patch.md` en el commit de cierre. Es siempre el hash del commit ya juntado; la línea del ledger de `subagent-driven-development` también usa `<base>..<hash juntado>`.
+
+El cierre no tiene hito siguiente, y el squash borra los shas de su tramo. Antes de juntarlo, cada línea `Pasada de fix:`, `Re-revisión:` o `Revisión final:` de `tasks.md` cuyo sha cae en ese tramo se reescribe sin él: `Pasada de fix: 7ea5c37, 1 hallazgo RED→GREEN` pasa a `Pasada de fix: juntada en el cierre, 1 hallazgo RED→GREEN`, y `Re-revisión: 7ea5c37..21c1f70, sdd-kit:effort-high + opus, limpia` pasa a `Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia`. Desde ahí, el último revisado es el commit de cierre. Criterio: tras el commit de cierre, `git merge-base --is-ancestor <sha> HEAD` sale bien para todo sha de `tasks.md` (tickets de las features 0089 §3 y 0099 §3, y de la 0029 de document-manager).
 
 ## Tests RED sin commitear
 
