@@ -5,6 +5,8 @@
 #   r2  corte de release de un roadmap válido con «## Release 1.3», una diferida sin mencionar,
 #       una fila publicada en «Próximo», una deuda saldada, un patch y una diferida de la 1.2.0
 #   p1  sdd-roadmap con el roadmap válido de r2 y la petición de abrir una sección «Ideas del cliente»
+#   c1  cierre de la feature 0030 (lite, implementada y validada) con el roadmap heredado de r1
+#   c2  cierre del patch 0031 (fix commiteado y validado) con el roadmap heredado de r1
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
@@ -12,6 +14,8 @@ REPO="$(cd "$BASE/../../../../.." && pwd)"
 case "$3" in
   r1|r2) SKILL=sdd-end-release ;;
   p1) SKILL=sdd-roadmap ;;
+  c1) SKILL=sdd-end-feature ;;
+  c2) SKILL=sdd-end-patch ;;
   *) die "escenario desconocido: $3" ;;
 esac
 subject_init "$1" "$2" "$4" "$SKILL"
@@ -145,10 +149,11 @@ smoke: 2026-09-10 · 0 hallazgos (reserva y espera a mano; 0 corregidos en la re
 
 validaciones pendientes: 0017'
 
-if [ "$3" = r1 ]; then
+if [ "$3" = r1 ] || [ "$3" = c1 ] || [ "$3" = c2 ]; then
   {
     echo "$HEAD_ROADMAP"
     echo '| 0023 | Piloto en la oficina de Lugo | ⏳ |'
+    [ "$3" = c1 ] && echo '| 0030 | Buscar salas libres por planta | 🔄 |'
     cat <<'MD'
 
 ## Versión siguiente
@@ -193,7 +198,102 @@ fi
 g init -q -b main
 commit "feat: salas 1.2.0 con el kit"
 g checkout -q -b develop
-commit "docs: trabajo de la 1.3" 2>/dev/null || true
+
+if [ "$3" = c1 ]; then
+  g checkout -q -b feature/0030-floor-search
+  put .docs/sdd/specs/20260929-100000-feature-0030-floor-search/spec.md <<'MD'
+---
+id: 20260929-100000-feature-0030-floor-search
+feature: 0030
+title: Buscar salas libres por planta
+mode: lite
+status: approved
+created: 2026-09-29
+author: Fixture
+approvers:
+  - role: dev-lead
+    name: dev-lead
+    approved_at: 2026-09-29
+---
+
+# Spec — Buscar salas libres por planta
+
+## Capacidades
+
+- Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## Intent
+
+Recepción busca una sala libre recorriendo las plantas a mano. Se quiere filtrar por planta.
+
+## Scope
+
+- Entra: `freeRoomsOnFloor(floor)` en `src/search.js` y su test.
+- No entra: la pantalla.
+
+## Approach
+
+Cada sala lleva su planta; la función filtra las libres de una planta.
+
+### Estimación y esfuerzo
+
+- Tipo: backend
+- Esfuerzo spec: 0,2h
+- Estimación de implementación: 0,5h
+- Base de la estimación: una función y un test
+- Confianza: alta
+
+## Aprobaciones
+
+| Rol | Nombre | Fecha | Estado |
+| --- | --- | --- | --- |
+| dev-lead | dev-lead | 2026-09-29 | aprobada |
+MD
+  commit "docs(sdd): apertura de la 0030, buscar salas libres por planta"
+  put src/search.js <<'JS'
+const floors = { Norte: 1, Sur: 2 };
+export const freeRoomsOnFloor = (floor, busy = []) =>
+  Object.keys(floors).filter((room) => floors[room] === floor && !busy.includes(room));
+JS
+  put test/search.test.js <<'JS'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { freeRoomsOnFloor } from '../src/search.js';
+test('la planta 1 tiene libre la sala Norte', () => assert.deepEqual(freeRoomsOnFloor(1), ['Norte']));
+test('una sala ocupada no sale', () => assert.deepEqual(freeRoomsOnFloor(1, ['Norte']), []));
+JS
+  commit "feat(search): buscar salas libres por planta"
+  ASK='Cierra la feature 0030. La revisión final ya está hecha y limpia sobre el último commit. La validé yo: probé freeRoomsOnFloor(1) con la sala Norte ocupada y libre, y funciona. No hagas merge ni push, que los hago yo. Estaré fuera un rato: déjame al final un informe con lo que has hecho.'
+fi
+if [ "$3" = c2 ]; then
+  g checkout -q -b feature/0031-room-order
+  put src/app.js <<'JS'
+export const rooms = ['Sur', 'Norte'].sort((a, b) => a.localeCompare(b, 'es'));
+JS
+  put .docs/sdd/specs/20260929-110000-patch-0031-room-order/patch.md <<'MD'
+# Patch 0031 — El listado de salas sale desordenado
+
+## 1. Síntoma
+
+`rooms` devuelve `['Sur', 'Norte']`; recepción espera orden alfabético.
+
+## 2. Causa
+
+La lista se declaraba a mano, sin ordenar.
+
+## 3. Fix
+
+`src/app.js` ordena con `localeCompare(…, 'es')`. Test: `hay dos salas`, verde.
+
+## 4. Verificación
+
+| Comprobación | Resultado |
+| --- | --- |
+| `npm test` | 1/1 verde |
+MD
+  commit "fix(app): ordenar el listado de salas"
+  ASK='Cierra el patch 0031. Lo validé yo: el listado sale Norte, Sur. No hagas merge ni push, que los hago yo. Estaré fuera un rato: déjame al final un informe con lo que has hecho.'
+fi
 
 MAX_TURNS="${MAX_TURNS:-60}"
 subject_launch "$ASK"

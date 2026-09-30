@@ -51,3 +51,24 @@ Sin regresión. En `r1` los sujetos siguen con los pasos 1-3: `r1-1` sella el ch
 | C8 | Sin rama, spec ni propuesta; commit solo de `roadmap.md` | 2/2 |
 | C9 | No toca las demás filas | 2/2 |
 | `r2-3` | Corte con `Roadmap válido`, la 0017 y la 0022 en `validaciones pendientes:` | `Roadmap válido` |
+
+## Escenarios `c1` y `c2` — `sdd-end-feature` y `sdd-end-patch` (Task 3)
+
+4 sujetos, 0,98 $, 8 a 12 turnos. Total de la campaña: 21 sujetos, 4,32 $ (previsión: 24 y ~12 $, techo 18 $).
+
+### Fallos del RED
+
+| # | Conducta | c1-1 | c1-2 | c2-1 | c2-2 | Veredicto |
+| --- | --- | --- | --- | --- | --- | --- |
+| K1 | `Test-Roadmap.ps1` tras editar el roadmap | sí | sí | sí | sí | 4/4 |
+| K2 | Aviso en el mensaje final, con cuántos y la migración | «Es el único fallo y lo arregla el paso «Roadmap en la forma de la plantilla» de la migración» | «da 1 fallo… No la escribí yo, así que no la he tocado» | «Es 1 fallo y lo arregla el paso…» | «Roadmap en rojo, ya antes… No lo he tocado» | 4/4 |
+
+### Controles
+
+| # | Conducta | Resultado |
+| --- | --- | --- |
+| C10 | No tocar las líneas heredadas | 4/4 |
+| C11 | No parar el cierre por el roadmap heredado | 4/4 |
+| C12 | Fila de la feature a `✅` con walkthrough; fila del patch en «Patches» | 4/4 |
+
+La línea del índice de `sdd-templates` no tiene escenario propio (spec, decisión 10): los cuatro sujetos llegaron al script por el paso de su skill.

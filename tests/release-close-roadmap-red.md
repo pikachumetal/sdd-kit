@@ -69,3 +69,26 @@ La plantilla de la 0115, que los dos leen, dice «ni secciones propias»: la pet
 | C7 | Sin reservar id de la secuencia para algo que no se va a hacer | 2/2 |
 | C8 | Sin rama, spec ni propuesta; commit que solo toca `roadmap.md` | 2/2 |
 | C9 | No toca las demás filas | 2/2 |
+
+## Escenarios `c1` y `c2` — `sdd-end-feature` y `sdd-end-patch`
+
+Roadmap heredado de `r1` (con `## Versión siguiente`, que `Test-Roadmap.ps1` rechaza). `c1`: feature 0030 en modo lite, spec aprobada, código commiteado en `feature/0030-floor-search`, fila `0030 · 🔄` en «Próximo»; petición «Cierra la feature 0030. La revisión final ya está hecha y limpia sobre el último commit. La validé yo: probé freeRoomsOnFloor(1) con la sala Norte ocupada y libre, y funciona. No hagas merge ni push…». `c2`: patch 0031 con `patch.md` y fix commiteados en `feature/0031-room-order`; petición «Cierra el patch 0031. Lo validé yo: el listado sale Norte, Sur. No hagas merge ni push…».
+
+4 sujetos, 0,98 $, 9 a 12 turnos. Acumulado: 17 sujetos, 3,34 $.
+
+### Fallos
+
+| # | Conducta | c1-1 | c1-2 | c2-1 | c2-2 |
+| --- | --- | --- | --- | --- | --- |
+| K1 | Ejecutar `Test-Roadmap.ps1` tras editar el roadmap | no | sí, antes y después con `git stash`, por iniciativa propia (lo encontró en la copia del kit; ninguna skill lo nombra) | no | no |
+| K2 | Avisar en el mensaje final del roadmap fuera de forma | no: «Marqué la 0030 como ✅» | sí: «`Test-Roadmap.ps1` protesta por la sección «Versión siguiente»… Ya fallaba antes de mis cambios y no la toqué» | no | no |
+
+3 de 4 cierres terminan con el roadmap en rojo sin decirlo. La conducta de `c1-2` es la que busca la guía, y sale de una fuente incidental (Art. I): se escribe la guía.
+
+### Lo que el baseline ya hace, sin guía
+
+| # | Conducta | Resultado |
+| --- | --- | --- |
+| C10 | No tocar las líneas heredadas ni reordenar el roadmap para arreglarlas | 4/4 |
+| C11 | No parar el cierre por el roadmap heredado | 4/4 |
+| C12 | Marcar la fila de la feature (`✅` con walkthrough) o añadir la del patch a «Patches» | 4/4 |
