@@ -1,6 +1,6 @@
 # Gate de la migración del roadmap de este repo (paso 1 de `v2.3.0.md`)
 
-Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-before.md`, en esta carpeta, y en `git show e344b79f:.docs/sdd/roadmap.md`. Nada de lo que «sale» se pierde: está en esos dos sitios.
+Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-before.md`, en esta carpeta: es el de `develop` en `488bdbdc` con las dos filas de la partición de esta feature (0115 y 0123). Nada de lo que «sale» se pierde: está en esos dos sitios.
 
 ## Decisiones del dev-lead
 
@@ -18,7 +18,7 @@ Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-bef
 | «Próximo», fila 3 (✅ cerrada) | 1 | Sale |
 | «Versión siguiente», tres párrafos (corte, criterio de orden, repaso del 2026-09-29) | — | Salen. El orden ya está en «tras NNNN» de cada fila |
 | «Versión siguiente», filas 0099, 0096 y 0098 (publicadas en la 2.1.0 y la 2.2.0) | 3 | Salen. Validación en campo |
-| «Versión siguiente», 20 filas pendientes: 0115, 0123, 0118, 0116, 0117, 0120, 0121, 0122, 0108, 0097, 0045, 0007, 0034, 0022, 0047, 0048, 0049, 0050, 0054, 0093 | 20 | Decisión 1 |
+| «Versión siguiente», 21 filas pendientes (la 0124 entró por `develop` tras la aprobación): 0115, 0123, 0118, 0124, 0116, 0117, 0120, 0121, 0122, 0108, 0097, 0045, 0007, 0034, 0022, 0047, 0048, 0049, 0050, 0054, 0093 | 21 | Decisión 1: `## Release 2.3.0` |
 | «Versión siguiente», fila 0015 | 1 | Se disuelve: ver abajo |
 | «Pendientes rescatados», 1 (repaso de la deuda) | — | Sale: lo hace esta migración |
 | «Pendientes rescatados», 2 (piloto y primera valoración) | — | Sale: es historia; el piloto sigue en la fila 1 de «Próximo» |
@@ -125,6 +125,10 @@ La fila está rota como tabla: su texto contiene `| <id> |` y parte las celdas. 
 | Una spec anterior al bloque «Capacidades» lo gana desde su delta | 0062 §4 |
 
 **Salen por duplicadas con filas de deuda que ya existen**: la comparación de la línea que empieza por el id (0019 §2) y el solape de fichero frente al de sección (0031 §2), que ya tienen fila propia en la deuda.
+
+## Integración de `develop` tras la aprobación
+
+`develop` avanzó cinco commits mientras se ejecutaba la feature (hasta `488bdbdc`): triaje de cuatro tickets de document-manager, reserva de la 0124 y cambio de orden. El dev-lead eligió integrar y volver a aplicar esta tabla sobre su roadmap («Integrar y re-migrar ahora», 2026-09-30). La fila 0124 va a `## Release 2.3.0`, las cinco filas de deuda nuevas se quedan y el texto ampliado en `develop` se conserva. Comprobado fila a fila: de las filas de tabla del roadmap de `develop`, 188 se quedan literales (con «2.0.1» → «versión siguiente» en «Destino» y el ancla nueva), y las demás salen por un motivo de esta tabla.
 
 ## Filas nuevas
 
