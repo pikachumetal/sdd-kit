@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-30
 branch: feature/0125-re-review-exception-by-change
-commit: <hash>        # se rellena en el commit de cierre
+commit: 6d2aef62
 ---
 
 # Patch 0125 — La excepción de re-revisión se decide por lo que cambia, no por la ruta
@@ -70,7 +70,9 @@ Propuestas de los tickets, contrastadas antes de fijar el alcance y decididas po
 | 3 | GREEN `a1` y `a2`: guía y comentario, tabla de evidencia | ✅ 4/4 sin revisor, `revisado en el hilo` (RED 0/4), `tests/re-review-exception-green.md` |
 | 4 | GREEN controles `c1`, `c2`, `a3` y `c3`: `SKILL.md` de proyecto, `eslint-disable`, diccionario, `.md` más código | ✅ 6/6 despachan la re-revisión |
 
-Campaña: 22 sujetos Sonnet, 7,35 $ (RED 4,08 $, GREEN 3,27 $).
+Campaña: 22 sujetos Sonnet, 7,35 $ (RED 4,08 $, GREEN 3,27 $). Los casos 1 a 4 los verificó el agente.
+
+Validado: 2026-09-30 · «Validado: lo he probado y funciona» · no detalló qué probó
 
 ## 5. Tiempo (ligero)
 
