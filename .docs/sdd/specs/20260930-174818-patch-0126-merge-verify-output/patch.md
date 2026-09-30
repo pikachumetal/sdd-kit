@@ -6,7 +6,7 @@ type: patch
 status: done
 created: 2026-09-30
 branch: feature/0126-merge-verify-output
-commit: <hash>
+commit: 7000b3dc
 ---
 
 # Patch 0126 — El fallo de -VerifyCommand cita el log y la cola de la salida del gate
@@ -41,6 +41,8 @@ Medido con el test nuevo de `tests/Invoke-SddMerge.Tests.ps1` antes del fix (`-V
 | 3 | suite completa desde PowerShell (`Invoke-Pester -Path tests`) | ✅ 1132 pasan, 0 fallan, 10 saltados |
 
 Los casos 1 a 3 los verificó el agente.
+
+Validación diferida: 2026-09-30 · «Diferir: lo pruebo en el próximo cierre con -VerifyCommand en rojo, a cargo del dev-lead» · disparador: el próximo cierre con `-VerifyCommand` en rojo, a cargo del dev-lead
 
 ## 5. Tiempo (ligero)
 

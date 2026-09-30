@@ -10,6 +10,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **El fallo de `-VerifyCommand` trae la salida del gate** — `Invoke-SddMerge.ps1` guarda la salida de la verificación en `%TEMP%\sdd-merge-verify-<fecha>-<pid>.log` y, si falla, el mensaje cita su ruta y sus últimas 20 líneas, como el rechazo del hook. Antes decía solo `verificación: código de salida <n>.` y el agente relanzaba el script para ver por qué ([patch 0126](specs/20260930-174818-patch-0126-merge-verify-output/patch.md)).
 - **Revisado en el hilo por lo que cambia, no por la ruta** — la excepción que evita la re-revisión cubre ahora el commit de menos de 20 líneas que solo cambia documentación o comentarios: `.docs/`, `*.md` de cualquier ruta y líneas de comentario. Siguen despachando los `.md` que son instrucciones de un agente o plantillas, los comentarios que una herramienta interpreta y cualquier otra línea. Antes una guía fuera de `.docs/`, la evidencia en `tests/*.md` o un comentario abrían una re-revisión con Opus: seis casos en tres proyectos ([patch 0125](specs/20260930-170633-patch-0125-re-review-exception-by-change/patch.md)).
 
 ## [2.2.0] - 2026-09-29
