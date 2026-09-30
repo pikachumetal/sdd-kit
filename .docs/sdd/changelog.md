@@ -7,6 +7,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Added
 
 - **Feature 0115** — El roadmap en la forma de la plantilla: `Test-Roadmap.ps1` valida que `roadmap.md` solo tiene las secciones y tablas de `roadmap-template.md`, que ahora dice qué va en cada una y que las filas saldadas y los patches salen en el corte; la migración `v2.3.0` lleva un roadmap existente a esa forma con gate; y el Art. XI de la constitution fija que todo documento tiene tipo, dueño y cota. → [ref](specs/20260930-095620-feature-0115-roadmap-template-shape/)
+- **Feature 0123** — El cierre que mantiene el roadmap en la forma de la plantilla: `sdd-end-release` ejecuta `Test-Roadmap.ps1` antes de colapsar (con una sección como «Versión siguiente» no corta desde ella: lo dice y propone el paso de la migración `v2.3.0` con su gate) y no pasa al merge y el tag sin `Roadmap válido`; la diferida no mencionada sale de la sección abierta a `validaciones pendientes:`, y el smoke pregunta también por las diferidas de releases anteriores que dispara. `sdd-roadmap` no crea secciones fuera de la plantilla, y `sdd-roadmap`, `sdd-end-feature` y `sdd-end-patch` pasan el validador tras escribir y avisan de lo heredado sin bloquear. → [ref](specs/20260930-175003-feature-0123-release-close-keeps-roadmap/)
 
 ### Fixed
 

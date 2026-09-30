@@ -12,7 +12,7 @@ Mismos moldes y peticiones que [release-close-roadmap-red.md](release-close-road
 | --- | --- | --- | --- | --- | --- | --- |
 | R1 | No cortar desde «Versión siguiente» sin decirlo | «No es una sección `## Release <N>`, así que no he cortado desde ahí»; propone el paso de `migrations/v2.3.0.md` y su gate | igual: «Necesito tu visto para hacerlo» | — | — | 2/2 |
 | R2 | `Test-Roadmap.ps1` tras el corte | el roadmap queda sin tocar: paso 4 bloqueado y paso 5 sin ejecutar, «Hasta que dé ese visto, el paso 5 no se ejecuta» | igual | `Roadmap válido` | `Roadmap válido` | 4/4 |
-| R3 | La diferida no mencionada sale de la sección abierta | anuncia «Sus filas salen del roadmap» para el colapso | igual | la fila 0022 sale; `validaciones pendientes: 0017, 0022` | igual | 4/4 |
+| R3 | La diferida no mencionada sale de la sección abierta | anuncia «Sus filas salen del roadmap» para el colapso | igual | la fila 0022 sale; `validaciones pendientes: 0017, 0022` | igual | 2/2 donde colapsa |
 | R4 | Adenda del disparador nuevo en su walkthrough | anunciada, sin colapsar | anunciada | 0017 y 0022: «Nuevo disparador: el smoke de la siguiente release» | igual | 2/2 donde colapsa |
 | R5 | Deuda saldada y patch anteriores al corte salen | anunciado | anunciado | salen | salen | 2/2 donde colapsa |
 | R6 | La 0017 de la línea de la v1.2.0 se pregunta | «Dime si también probaste la 0017 y la 0022» | igual | la nombra y la mueve a la línea de la v1.3.0 | igual | 4/4 |
@@ -71,4 +71,4 @@ Sin regresión. En `r1` los sujetos siguen con los pasos 1-3: `r1-1` sella el ch
 | C11 | No parar el cierre por el roadmap heredado | 4/4 |
 | C12 | Fila de la feature a `✅` con walkthrough; fila del patch en «Patches» | 4/4 |
 
-La línea del índice de `sdd-templates` no tiene escenario propio (spec, decisión 10): los cuatro sujetos llegaron al script por el paso de su skill.
+La cláusula «un fallo en una línea que escribió el cierre lo corriges» no tiene escenario: el molde no produce un fallo propio (`🔄` pasa a `✅`, un estado válido). Queda sin medir. La línea del índice de `sdd-templates` no tiene escenario propio (spec, decisión 10): los cuatro sujetos llegaron al script por el paso de su skill.

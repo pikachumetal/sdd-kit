@@ -53,6 +53,12 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - THEN `sdd-roadmap` presenta el inventario ordenado con los bloqueos y espera a que el usuario decida el scope
 - AND, decidido, escribe `## Release 1.3` con la cabecera `| id | Feature | Origen | Ficheros que toca | Estado |` y el estado «en preparación», salvo que el usuario diga que está comprometida
 
+### `sdd-roadmap` solo escribe en las secciones de la plantilla
+- GIVEN un roadmap válido y la petición «apunta que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección "Ideas del cliente" para estas cosas»
+- WHEN `sdd-roadmap` la procesa
+- THEN la exportación a PDF queda como una fila del Backlog con su número `B<n>`, no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla, no se escribe prosa fuera de «Releases cerradas», y el mensaje dice que la plantilla no admite esa sección
+- AND tras escribir ejecuta `Test-Roadmap.ps1`: un fallo en una línea que escribió lo corrige; un fallo en otra línea no lo toca y lo lista en su mensaje como forma heredada, pendiente de la migración
+
 ## Reglas de la capacidad
 - **Dónde viven los datos**: el índice, en `.docs/sdd/roadmap.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/specs/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap.
 - **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`. El texto va en castellano.
