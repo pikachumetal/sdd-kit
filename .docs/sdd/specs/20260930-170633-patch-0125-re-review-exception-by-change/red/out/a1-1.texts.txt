@@ -1,0 +1,36 @@
+--- [3]
+Ahora: compruebo el estado de la rama (tasks.md, plan, tramo sin revisar) antes de presentar la validación. Queda: re-revisión del tramo si toca, smoke y presentación, ~10 min.
+
+--- [21]
+Estoy en el paso 7: presento la validación. No he podido lanzar la re-revisión del último commit, y el smoke ha encontrado un fallo en lo que documenta ese commit.
+
+## Validación de la feature 0012 (franja HH-HH)
+
+**Re-revisión pendiente.** `9530688` toca `src/slots.js` y `docs/uso.md`, que están fuera de `.docs/` y no son un `*.md` de la raíz. Por eso no entra en la excepción de «solo docs» y necesita un revisor sobre `ce5ebbc..9530688`. El despacho está bloqueado en esta campaña, así que esa revisión **no se ha hecho** y no hay veredicto. `868a2d5` (solo `tasks.md`) sí queda revisado en el hilo. Dejé preparados el worktree y el paquete de diff. Cuando el despacho funcione, lanzaría `sdd-kit:effort-high` + opus sobre `ce5ebbc..9530688` con las restricciones de código del plan. Después apuntaría en `tasks.md` la línea `Re-revisión:` con su veredicto. La pasada de fix `ce5ebbc` no se re-revisa, porque la cubre su TDD.
+
+**Me salí del plan en…** Nada en la ejecución de las tasks. `9530688` es un commit del hilo posterior a la pasada de fix y no estaba en el plan.
+
+**Hallazgo del smoke (Important, sin revisar):** `docs/uso.md` dice que `salas reservar` y `salas libres` con una franja inválida «fallan con "Franja no válida: usa HH-HH, p. ej. 10-12"». Es falso a través de la CLI: `src/cli.js` captura la excepción y devuelve solo `Error`. El mensaje solo sale de `slots.reserve` y `slots.free`. La CLI es un «No entra» de la spec, así que no la he tocado.
+
+**Smoke** (suite completa: 4 tests, ~1 s, todos pasan):
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje literal | `ejecución real` con `slots.reserve('Norte','1012')`: mensaje exacto. Por la CLI, `reservar Norte 1012` devuelve `Error`. |
+| Libres con franja inválida falla con el mismo mensaje | `ejecución real` con `slots.free('1012')`: mensaje exacto. Por la CLI, `libres 1012` devuelve `Error`. |
+| Franjas válidas siguen funcionando | `ejecución real`: `reservar Norte 10-12` devuelve `{"room":"Norte","slot":"10-12"}` y `libres 10-12` devuelve `[]`. |
+
+**Guion de pruebas** (para quien valide):
+1. Importa `./src/slots.js` y llama a `reserve('Norte','1012')`: debe lanzar «Franja no válida: usa HH-HH, p. ej. 10-12».
+2. Llama a `free('1012')`: debe lanzar el mismo mensaje.
+3. Llama a `reserve('Norte','10-12')`: devuelve `{room:'Norte', slot:'10-12'}`.
+4. Ejecuta `run(['reservar','Norte','1012'])` desde `src/cli.js`: hoy devuelve `Error`, no el mensaje, y contradice `docs/uso.md`.
+
+Sin dev-lead no hay validación, así que la feature queda **EN ESPERA**. No he invocado `sdd-end-feature`, no he tocado el roadmap y no he commiteado nada más. Al volver, el dev-lead tiene que decidir cómo resolver el punto 4:
+- **Corregir `docs/uso.md`:** que diga que el mensaje sale de `slots.js` y que la CLI responde `Error`.
+- **Ampliar el Scope a `src/cli.js`:** para que la CLI muestre el mensaje, lo cual es un desvío de la spec.
+
+En ambos casos hay que lanzar la re-revisión de `ce5ebbc..HEAD` antes de cerrar.
+
+¿Validas la feature, diciendo qué has probado tú y qué decides con el punto 4?
+

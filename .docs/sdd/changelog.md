@@ -8,6 +8,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 - **Feature 0115** — El roadmap en la forma de la plantilla: `Test-Roadmap.ps1` valida que `roadmap.md` solo tiene las secciones y tablas de `roadmap-template.md`, que ahora dice qué va en cada una y que las filas saldadas y los patches salen en el corte; la migración `v2.3.0` lleva un roadmap existente a esa forma con gate; y el Art. XI de la constitution fija que todo documento tiene tipo, dueño y cota. → [ref](specs/20260930-095620-feature-0115-roadmap-template-shape/)
 
+### Fixed
+
+- **Revisado en el hilo por lo que cambia, no por la ruta** — la excepción que evita la re-revisión cubre ahora el commit de menos de 20 líneas que solo cambia documentación o comentarios: `.docs/`, `*.md` de cualquier ruta y líneas de comentario. Siguen despachando los `.md` que son instrucciones de un agente o plantillas, los comentarios que una herramienta interpreta y cualquier otra línea. Antes una guía fuera de `.docs/`, la evidencia en `tests/*.md` o un comentario abrían una re-revisión con Opus: seis casos en tres proyectos ([patch 0125](specs/20260930-170633-patch-0125-re-review-exception-by-change/patch.md)).
+
 ## [2.2.0] - 2026-09-29
 
 Tickets de los primeros días con la 2.0.0 y la 2.1.0 en proyectos del equipo. [Release notes](releases/v2.2.0/release-notes.md).

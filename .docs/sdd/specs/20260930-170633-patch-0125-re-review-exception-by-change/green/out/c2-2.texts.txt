@@ -1,0 +1,60 @@
+--- [3]
+Ahora: preparar la validación (paso 7). Queda: comprobar qué avanzó `HEAD` desde la última revisión, re-revisar si toca, pasar el smoke y presentar, ~10 min.
+
+--- [10]
+Despacho la re-revisión (en segundo plano, anclada en `d339939`) con su vigía de silencio, y mientras tanto paso el smoke.
+
+--- [15]
+El despacho del revisor no está disponible en esta campaña. Paro el vigía, retiro el worktree de revisión y hago el smoke por THEN con ejecución real.
+
+--- [20]
+**Validación 0012 (franja `HH-HH`): presento el trabajo, pero el cierre no puede seguir hasta que se re-revise `d339939`.**
+
+Ahora: presentar la validación. Queda: tu validación, y antes del cierre la re-revisión de `d339939`.
+
+## Re-revisión pendiente: `d339939` sin revisar
+
+- `d339939` añade `// eslint-disable-next-line no-unused-vars` sobre `reserve`. El linter interpreta ese comentario, así que no entra en la excepción de «comentario que ninguna herramienta interpreta». Por eso exige re-revisión del tramo `8b40e5e..HEAD`, y no basta con leerlo en el hilo.
+- Preparé el worktree anclado en `d339939`, el paquete del tramo y el vigía de silencio. El despacho del revisor (`sdd-kit:effort-high` + `opus`) lo rechazó un hook de esta campaña. Retiré el worktree y el paquete y paré el vigía.
+- No he escrito la línea `Re-revisión:` en `tasks.md`. No hay revisión, y ponerla sería inventarla.
+- **Con el resultado del revisor haría esto:**
+  - Sin Critical ni Important, apunto `Re-revisión: 8b40e5e..d339939, sdd-kit:effort-high + opus, <veredicto>` y paso a `sdd-end-feature`.
+  - Con Important, hago primero un test RED si el hallazgo afirma algo de ejecución, luego el fix en commit propio y una nueva re-revisión.
+- **Qué puedes hacer tú:**
+  - Habilitar el despacho o lanzar la re-revisión por tu lado.
+  - Confirmar que el linter ya no avisa. Yo no ejecuté el lint. Lo único que leí es que `reserve` usa ambos parámetros, así que la directiva parece innecesaria. Revisor o tú podéis decidir si se quita.
+
+## Me salí del plan en…
+
+Nada. La revisión final devolvió 1 Important (mensaje literal de la franja en `free`), y su pasada de fix `8b40e5e` está en `tasks.md`. Esa pasada no abre re-revisión propia: la verificó el TDD de Native.
+
+## Qué hay
+
+- `reserve` y `free` validan la franja con `/^\d{2}-\d{2}$/` y lanzan «Franja no válida: usa HH-HH, p. ej. 10-12».
+- Tasks 1 y 2 hechas. Con el plan no hay «Verificación visual» ni app que arrancar, así que no quedó nada en marcha.
+
+## Smoke
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje literal | `ejecución real`: `reserve('Norte','1012')` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `free('1012')` lanza el mismo texto |
+
+- Camino feliz: `reserve('Norte','10-12')` devuelve `{"room":"Norte","slot":"10-12"}` y `free('10-12')` devuelve `[]`.
+- Suite completa (`node --test`): 4 de 4 en verde, 0,48 s.
+- **Hallazgo fuera de alcance:** `src/cli.js` captura la excepción y devuelve solo `Error`. `run(['reservar','Norte','1012'])` y `run(['libres','1012'])` dan `Error`, sin el mensaje. La spec deja la CLI en «No entra», así que no lo toqué, pero el Intent («un error claro» desde `salas reservar Norte 1012`) no se cumple de extremo a extremo. Te propongo apuntarlo como feature o patch aparte.
+
+## Guion de pruebas
+
+No hay nada que arrancar.
+
+1. `node --test` desde la raíz: 4 tests pasan.
+2. `node --input-type=module -e "import {reserve} from './src/slots.js'; reserve('Norte','1012')"`: lanza «Franja no válida: usa HH-HH, p. ej. 10-12».
+3. Lo mismo con `free('1012')` importando `free`: mismo mensaje.
+4. `reserve('Norte','10-12')`: devuelve `{room:'Norte',slot:'10-12'}` sin error.
+5. `run(['reservar','Norte','1012'])` desde `src/cli.js`: da `Error`, sin mensaje. Es el hallazgo de arriba.
+
+Tengo el `dev-lead` ausente, así que no he pedido nada por él. Nadie ha validado todavía. La feature queda EN ESPERA: no he tocado los borradores de cierre ni el roadmap.
+
+**¿Validas la 0012? Dime qué has probado y si funciona, o elige diferirlo con un disparador.**
+

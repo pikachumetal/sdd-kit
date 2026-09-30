@@ -1,0 +1,46 @@
+--- [3]
+Ahora: compruebo el estado de la rama (tasks.md, revisión final, commits posteriores) para preparar la validación. Queda: re-revisión si hace falta, smoke y presentación, ~10 min.
+
+--- [9]
+Ejecuto la suite completa y el smoke real de cada THEN (con la CLI, sin arrancar ningún proceso de larga duración).
+
+--- [13]
+Ahora: presento la validación del trabajo (paso 7). Queda: que valides tú; el cierre (`sdd-end-feature`) no arranca hasta entonces, ~5 min por tu parte.
+
+## Validación — feature 0012, validar el formato de la franja
+
+**Estado:** implementación terminada. La revisión final (effort-high + opus) devolvió 2 Important, y los dos están arreglados con test RED→GREEN. Registrado en `tasks.md`: `Revisión final … sobre 1855577` y `Pasada de fix: 1be1572`.
+
+**No he abierto re-revisión.** Los dos commits posteriores a la revisión (`76d48ec`, `1be1572`) son la pasada de fix de la propia revisión final. Según el kit los verifica el TDD de Native y no abren re-revisión. El único commit posterior es `f249484`, de solo docs, de 3 líneas, leído en el hilo: «revisado en el hilo».
+
+### Me salí del plan en…
+- **`src/cli.js` (fuera del Scope):** la spec lo excluía. El `catch` de `run` devolvía «Error» y descartaba el mensaje, así que el THEN no se cumplía para quien usa la CLI. Lo aprobó el dev-lead el 2026-09-24 («sí, arréglalo») y está en la tabla de Enmiendas de la spec. Fix en `1be1572`.
+- **Línea de Scope sin actualizar:** la spec sigue diciendo «No entra: la CLI». La enmienda la pisa, pero el texto queda contradictorio. No lo he tocado para no editar una spec aprobada sin avisar. Si quieres, lo dejo coherente.
+- **Tasks 1 y 2:** el plan las daba por hechas y `tasks.md` tenía `—` en sus commits. Ahora llevan `40e35fa` y `1855577`.
+
+### Qué hay
+- `src/slots.js`: `reserve` y `free` lanzan «Franja no válida: usa HH-HH, p. ej. 10-12» si la franja no casa con `HH-HH`.
+- `src/cli.js`: `run` devuelve `error.message`.
+- Tests nuevos: `slot-format`, `free-format` (mensaje completo) y `cli`.
+
+### Smoke (ya ejecutado por mí)
+Suite completa: `node --test tests/` → 5 pasan, 0 fallan, 0,23 s. El proyecto no tiene `package.json`; uso `node --test` directamente.
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `ejecución real`: `run(['reservar','Norte','1012'])` → «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `run(['libres','1012'])` → el mismo mensaje |
+| Franja válida sigue funcionando (no regresión) | `ejecución real`: `reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`; `libres 10-12` → `[]` |
+
+Las dos filas de THEN de fallo las provoqué con la entrada que falla, pasando por `run`. No es solo lo que cubre el test.
+
+### Guion de pruebas (lo haces tú)
+No hay aplicación que arrancar: es una CLI sin binario empaquetado, y se prueba con `run` desde la raíz del repo.
+1. `node --input-type=module -e "import {run} from './src/cli.js'; console.log(run(['reservar','Norte','1012']))"` → `Franja no válida: usa HH-HH, p. ej. 10-12`
+2. Lo mismo con `['libres','1012']` → el mismo mensaje.
+3. `['reservar','Norte','10-12']` → `{"room":"Norte","slot":"10-12"}`
+4. `['libres','10-12']` → `[]`
+5. `['reservar','Norte','ab-cd']` → el mensaje de error.
+
+**¿Qué has probado tú y funciona?** Si prefieres diferirlo, dímelo y propongo un disparador concreto. Sin tu respuesta, la feature queda EN ESPERA: no cierro, no toco el roadmap y los borradores de cierre siguen sin commitear.
+

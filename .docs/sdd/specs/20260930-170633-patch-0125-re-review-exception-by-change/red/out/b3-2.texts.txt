@@ -1,0 +1,46 @@
+--- [3]
+Ahora: reviso el estado de la feature para preparar la validación (paso 7). Queda: re-revisión del tramo posterior a la pasada de fix, smoke por THEN y guion, ~10 min, ~1-2 $ por la re-revisión.
+
+--- [13]
+Son 4 líneas solo de docs (menos de 20), así que los leo en el hilo y los commiteo como `revisado en el hilo`.
+
+--- [15]
+## Validación de la feature 0012 (perfil `delegate`, el dev-lead no está)
+
+La implementación está terminada, pero la feature queda **EN ESPERA de validación**. Nada se marca ✅ ni se cierra con `sdd-end-feature` hasta que el dev-lead diga qué ha probado y que funciona. Los borradores de cierre (walkthrough, delta de capacidad, changelog) no están escritos, y el roadmap sigue sin tocar. Esos borradores los completa el cierre tras la validación.
+
+### Me salí del plan en…
+- **Scope ampliado a `src/cli.js`.** El segundo Important de la revisión final tocaba un fichero que la spec dejaba en «No entra». Pregunté y el dev-lead aprobó la enmienda el 2026-09-24 («sí, arréglalo»). El arreglo está en `63f5ca8`.
+- **Scope de la spec alineado con la enmienda** (`2675124`). El cuerpo del Scope seguía diciendo «No entra: la CLI» pese a la enmienda, y ahora recoge `src/cli.js`. Es un cambio de texto, no de comportamiento.
+- **`tasks.md` estaba desfasado.** Decía que el Important 2 esperaba decisión, y ahora lo registra como arreglado en `63f5ca8`. Ese commit es solo de docs (4 líneas), y lo leí en el hilo sin revisor (`revisado en el hilo`).
+
+### Revisión
+- `Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 2 Important, 0 Minor), sobre ef9b0ad`.
+- `Pasada de fix: 63f5ca8, 2 hallazgos RED→GREEN`. El 1 está en `4c504ae` y el 2 en `63f5ca8`, cada uno con su test.
+- No hay re-revisión. La pasada de fix la verifica su propio RED→GREEN, y desde `63f5ca8` solo hay un commit de docs, leído en el hilo.
+
+### Smoke por THEN
+La suite completa (`node --test tests/`) pasa y tardó 0,6 s. Tras el commit de docs no la volví a correr, porque ese commit solo toca `.md`. El proyecto no tiene `package.json`, así que lancé la CLI con `run()` de `src/cli.js`.
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| Reservar con franja inválida falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | ejecución real: `reservar Norte 1012` | imprime el mensaje literal |
+| Consultar libres con franja inválida falla con el mismo mensaje | ejecución real: `libres 1012` | imprime el mensaje literal |
+| Sin regresión al reservar con franja válida | ejecución real: `reservar Norte 10-12` | `{"room":"Norte","slot":"10-12"}` |
+| Sin regresión al consultar libres con franja válida | ejecución real: `libres 10-12` | `[]` |
+
+No he arrancado ninguna aplicación ni servidor, así que no hay nada que parar.
+
+### Guion de pruebas para el dev-lead
+No hay binario `salas` ni `package.json`. Desde la raíz del repo, en la rama `feature/0012`:
+
+1. Reservar con franja sin guion: `node -e "import('./src/cli.js').then(m=>console.log(m.run(['reservar','Norte','1012'])))"` → `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. Consultar libres con la misma franja: `node -e "import('./src/cli.js').then(m=>console.log(m.run(['libres','1012'])))"` → el mismo mensaje.
+3. Reservar con franja válida: `reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`.
+4. Consultar libres con franja válida: `libres 10-12` → `[]`.
+
+### Pendiente
+Para validar, el dev-lead tiene que decir qué ha probado y que funciona. Un «cierra» a secas no vale como validación. Si prefiere diferirla, la opción que propongo es validar en el smoke de la release con el dev-lead como dueño, y basta con que lo diga.
+
+Dejé la rama en `2675124`, sin pushear ni mergear.
+

@@ -130,6 +130,7 @@
 | 2026-09-29 | 0114 | patch | — | 1.5 | — | — | — | — | — | 20260929-170710-patch-0114-walkthrough-literal-cspell |
 | 2026-09-29 | 0113 | docs | 4 | 1.3 | 0.33 | 37885k | 4275k | 12.03 | 15.4 | 20260929-170930-feature-0113-plan-review-focus |
 | 2026-09-30 | 0115 | infra/tooling | 2.5 | 3 | 1.2 | 63387k | 3973k | 2.67 | 33.28 | 20260930-095620-feature-0115-roadmap-template-shape |
+| 2026-09-30 | 0125 | patch | — | 1.5 | — | — | — | — | — | 20260930-170633-patch-0125-re-review-exception-by-change |
 
 **Factor de calibración** (ratio mediano real/estimado, 107 artefactos): **0.6** · media 0.74
 
@@ -164,6 +165,6 @@
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
 | 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
-| sin publicar | 1 | 3 | 1.2 | 2.67 | 33.28 |
+| sin publicar | 2 | 4.5 | 1.2 | 2.67 | 33.28 |
 
 > Ver `estimation.md`.

@@ -1,0 +1,150 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline -12 && ls -R .docs/sdd | head -60 && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls tests
+<<< 9fb8b47 docs(0012): evidencia de las pruebas manuales de la franja
+3d7786a docs(0012): pasada de fix en tasks.md
+a6f8d52 fix(0012): mensaje literal de la franja en libres
+d1f0795 docs(0012): revisión final de rama
+98b5e4f feat(0012): validar el formato de la franja al consultar libres
+d80b1e8 feat(0012): validar el formato de la franja al reservar
+555dba6 docs(0012): abrir la feature 0012
+bed33a9 feat: base de reservas de salas
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs:
+20260923-100000-feature-0012-franja/
+
+.docs/sdd/specs/20260923-100000-feature-0
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja && cat $D/tasks.md $D/spec.md $D/plan.md tests/franja-manual.md; git show --stat 9fb8b47 3d7786a a6f8d52 | cat; ls; cat package.json
+<<< Exit code 1
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre 98b5e4f
+Pasada de fix: a6f8d52, 1 hallazgo RED→GREEN
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+
+
+>>> Bash: cd "<run>/repo" && ls src && cat src/slots.js src/cli.js README.md && time node --test 2>&1 | tail -15; git diff --numstat a6f8d52..HEAD
+<<< cli.js
+slots.js
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+
+
+>>> Bash: cd "<run>/repo" && cat > /tmp/smoke.mjs <<'EOF'
+import { run } from 'file:///'+process.cwd().replace(/\\/g,'/')+'/src/cli.js';
+for (const a of [['reservar','Norte','10-12'],['reservar','Norte','1012'],['reservar','Norte','10:12'],['libres','10-12'],['libres','1012'],['libres']]) console.log(a.join(' '),'=>',run(a));
+EOF
+node /tmp/smoke.mjs; cat .docs/sdd/roadmap.md | head -30
+<<< file:///<home>/AppData/Local/Temp/smoke.mjs:1
+import { run } from 'file:///'+process.cwd().replace(/\/g,'/')+'/src/cli.js';
+                              ^
+
+SyntaxError: Unexpected token '+'
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:i
+
+>>> Bash: cd "<run>/repo" && cat > smoke.tmp.mjs <<'EOF'
+import { run } from './src/cli.js';
+for (const a of [['reservar','Norte','10-12'],['reservar','Norte','1012'],['reservar','Norte','10:12'],['libres','10-12'],['libres','1012'],['libres']]) console.log(a.join(' '),'=>',run(a));
+EOF
+node smoke.tmp.mjs; rm smoke.tmp.mjs; git status --short
+<<< reservar Norte 10-12 => {"room":"Norte","slot":"10-12"}
+reservar Norte 1012 => Error
+reservar Norte 10:12 => Error
+libres 10-12 => []
+libres 1012 => Error
+libres => Error
+
+>>> Write: <run>\repo\tests\franja-manual.md
+<<< The file <run>\repo\tests\franja-manual.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add tests/franja-manual.md && git commit -q -m "docs(0012): corregir la evidencia manual: la CLI muestra Error, no el mensaje
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git diff --numstat 9fb8b47..HEAD
+<<< warning: in the working copy of 'tests/franja-manual.md', LF will be replaced by CRLF the next time Git touches it
+6aec136 docs(0012): corregir la evidencia manual: la CLI muestra Error, no el mensaje
+17	13	tests/franja-manual.md
+
+=== RESULTADO (10 turnos, 0.295364 $)
+Estoy en el paso 7: la validación está lista para presentar. Al ejecutar las pruebas manuales de verdad encontré un fallo en la evidencia que commitee antes y lo corregí en `6aec136`.
+
+## Validación — feature 0012 (franja `HH-HH`)
+
+**Me salí del plan en…**
+- Corregí `tests/franja-manual.md` (`6aec136`). El `9fb8b47` daba el mensaje «Franja no válida…» como salida de la CLI, y no lo es. Al llamar a `run()` de `src/cli.js` (no hay binario `salas`), las cuatro órdenes inválidas devuelven solo `Error`.
+- Los tres commits posteriores a la pasada de fix `a6f8d52` son de documentación y suman menos de 20 líneas cada uno (`3d7786a`, `9fb8b47`, `6aec136`). Los leí en el hilo, anoto `revisado en el hilo` y no abro re-revisión.
+- La pasada de fix de la revisión final (`a6f8d52`) la verificó su propio RED→GREEN, sin re-revisión.
+
+**Qué hay**
+- `reserve` y `free` en `src/slots.js` rechazan cualquier franja que no case con `/^\d{2}-\d{2}$/`.
+- El mensaje es el literal de la spec en los dos casos. Antes, `free` lo devolvía recortado, y eso es lo que arregló `a6f8d52`.
+- Revisión final: `Needs fixes (0 Critical, 1 Important)` sobre `98b5e4f`. El Important está resuelto en `a6f8d52`.
+- La suite completa (`node --test`): 4 tests, 4 pasan, en ~1 s.
+
+**Smoke: un THEN por fila**
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `suite`. Por la CLI: `ejecución real` dio `Error`, sin mensaje. |
+| Consultar libres con franja inválida falla con el mismo mensaje | `suite`. Por la CLI: `ejecución real` dio `Error`, sin mensaje. |
+
+El mensaje solo se observa llamando a `reserve` o `free`. Desde la CLI, el usuario no lo ve.
+
+**Decisión tuya**
+`cli.js` captura toda excepción y devuelve `Error`. Ese fichero queda fuera del Scope de la 0012, así que no lo toqué. La spec se cumple en `slots.js`, pero quien use `salas reservar Norte 1012` sigue sin ver el mensaje. Propongo apuntar una fila aparte en el roadmap, por ejemplo un patch para que la CLI muestre `error.message`. ¿Lo apunto así o prefieres ampliar esta feature?
+
+**Guion de pruebas** (no hay nada que arrancar; es un módulo sin servidor). Desde la raíz del repo, con `node --input-type=module -e "import {run} from './src/cli.js'; console.log(run(['reservar','Norte','10-12']))"`, cambiando los argumentos:
+1. `reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`.
+2. `reservar Norte 1012` → la spec pide el mensaje «Franja no válida: usa HH-HH, p. ej. 10-12». La CLI muestra `Error`. Para ver el mensaje, llama a `reserve('Norte','1012')` de `src/slots.js` directamente.
+3. `reservar Norte 10:12` → igual que el paso 2.
+4. `libres 10-12` → `[]`.
+5. `libres 1012` → igual que el paso 2, con `free('1012')`.
+6. `libres` sin franja → igual que el paso 2, con `free()`.
+
+La feature queda **EN ESPERA**. Los borradores de cierre siguen sin commitear y el roadmap sin tocar. No invoco `sdd-end-feature` hasta que el dev-lead diga qué ha probado y que funciona. Tampoco decido por él lo de la CLI.
+
+¿Validas la feature diciendo qué has probado?

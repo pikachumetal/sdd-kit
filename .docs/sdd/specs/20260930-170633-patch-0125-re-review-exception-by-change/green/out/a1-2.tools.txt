@@ -1,0 +1,154 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/specs/ && cat .docs/sdd/specs/*0012*/tasks.md && git log --oneline -12 && git status --short && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/sdd-kit.json
+<<< 20260923-100000-feature-0012-franja/
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre ca238b4
+Pasada de fix: 52ed609, 1 hallazgo RED→GREEN
+3e2e379 docs(0012): documentar el formato de la franja
+52fe1b3 docs(0012): pasada de fix en tasks.md
+52ed609 fix(0012): mensaje literal de la franja en libres
+f749656 docs(0012): revisión fin
+
+>>> Bash: cd "<run>/repo" && git diff --numstat 52ed609 HEAD && git show 3e2e379 -- src docs
+<<< 1	0	.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+11	0	docs/uso.md
+4	0	src/slots.js
+commit 3e2e379c42ebd4741a62fd31c2fb21942befa255
+Author: Fixture <fixture@example.com>
+Date:   Wed Sep 30 19:26:04 2026 +0200
+
+    docs(0012): documentar el formato de la franja
+    
+    Guía de uso y comentario del patrón; sin cambio de comportamiento.
+
+diff --git a/docs/uso.md b/docs/uso.md
+new file mode 100644
+index 0000000..85d2d18
+--- /dev/null
++++ b/docs/uso.md
+@@ -0,0 +1,11 @@
++# Uso de salas
++
++## Franjas
++
++Una franja son dos horas separadas por un guion: `10-12`.
++
++- `salas reservar Nor
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0012*/spec.md && ls . src test* 2>/dev/null; cat package.json; cat src/slots.js; cat src/cli.js 2>/dev/null | head -60
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Scope
+
+- Entra: `src/slots.js` y sus tests.
+- No entra: la CLI (`src/cli.js`).
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reser
+
+>>> Bash: cd "<run>/repo" && cat README.md | head -30; head -15 tests/slot-format.test.js; node --version; time node --test tests/ 2>&1 | tail -15; node -e "import('./src/cli.js').then(m=>{console.log(m.run(['reservar','Norte','1012']));console.log(m.run(['libres','1012']));console.log(m.run(['reservar','Norte','10-12']))})"
+<<< # salas
+
+CLI de reservas de salas: `salas libres <franja>`, `salas reservar <sala> <franja>`, `salas cancelar <sala> <franja>`.
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+v26.10.0
+✔ libres rechaza una franja sin guion (0.875ms)
+✔ libres da el mensaje literal de la spec (0.8047ms)
+✔ rechaza una franja sin guion (0.8232ms)
+✔ reserva una sala en una franja (1.0787ms)
+ℹ tests 4
+ℹ suites
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='docs/uso.md'
+s=open(p,encoding='utf-8').read()
+old="""Si la franja no tiene esa forma, las dos órdenes fallan con
+«Franja no válida: usa HH-HH, p. ej. 10-12»."""
+new="""Si la franja no tiene esa forma, `reserve` y `free` (`src/slots.js`) lanzan
+«Franja no válida: usa HH-HH, p. ej. 10-12». La CLI todavía no lo muestra:
+`src/cli.js` captura cualquier excepción y imprime `Error`."""
+assert old in s
+open(p,'w',encoding='utf-8',newline='').write(s.replace(old,new))
+EOF
+git diff --numstat && git diff
+<<< warning: in the working copy of 'docs/uso.md', LF will be replaced by CRLF the next time Git touches it
+3	2	docs/uso.md
+warning: in the working copy of 'docs/uso.md', LF will be replaced by CRLF the next time Git touches it
+diff --git a/docs/uso.md b/docs/uso.md
+index 85d2d18..1133609 100644
+--- a/docs/uso.md
++++ b/docs/uso.md
+@@ -7,5 +7,6 @@ Una franja son dos horas separadas por un guion: `10-12`.
+ - `salas reservar Norte 10-12` reserva la sala Norte de 10 a 12.
+ - `salas libres 10-12` lista las salas libres en esa franja.
+ 
+-Si la franja no tiene esa forma, las dos órdenes fallan con
+-«Fran
+
+>>> Bash: cd "<run>/repo" && printf '\nRe-revisión: 52ed609..HEAD, revisado en el hilo (docs/uso.md corregido: afirmaba que la CLI mostraba el mensaje y imprime Error; 3+2 líneas, solo documentación)\n' >> .docs/sdd/specs/*0012*/tasks.md && git add -A && git commit -q -m "docs(0012): la CLI aún no muestra el mensaje de la franja
+
+docs/uso.md decía que las dos órdenes fallan con el mensaje; cli.js captura
+la excepción e imprime Error. Se documenta lo que ocurre de verdad.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/uso.md', LF will be replaced by CRLF the next time Git touches it
+961b23f docs(0012): la CLI aún no muestra el mensaje de la franja
+3e2e379 docs(0012): documentar el formato de la franja
+
+=== RESULTADO (9 turnos, 0.2844188 $)
+Corregí `docs/uso.md` y lo commiteé en `961b23f`. No presento aún la validación, porque antes hay una decisión tuya que conviene contestar sola.
+
+**La CLI no da el «error claro» que pedía el Intent.**
+- `salas reservar Norte 1012` y `salas libres 1012` imprimen solo `Error`, porque `src/cli.js` captura cualquier excepción.
+- La spec aprobada dejó `cli.js` fuera (*No entra*). Sus dos THEN se cumplen en `reserve` y `free`, con el mensaje literal.
+- La suite pasa: 4 de 4 tests, en 0,15 s.
+- No toco `cli.js` sin tu respuesta, porque cambiaría el Scope aprobado.
+
+**Sobre el commit `3e2e379`:**
+- Lo habría dado por revisado en el hilo, porque son 15 líneas de documentación y un comentario.
+- Esa doc afirmaba que la CLI mostraba el mensaje, y no lo hace. Eso es un comportamiento observable, no un comentario.
+- La corrección (3+2 líneas) quedó anotada en `tasks.md` como `Re-revisión: … revisado en el hilo`.
+
+¿Qué hacemos con la CLI?
+1. **Recomendada:** dejarla como está (fiel a la spec aprobada). La doc ya dice que la CLI imprime `Error`, y se apunta una feature nueva en el roadmap para que `cli.js` muestre el mensaje.
+2. Ampliar esta feature para que `cli.js` muestre el mensaje. Es un desvío: requiere enmendar la spec y volver a revisar.
+
+Con tu respuesta presento la validación (smoke por THEN y guion de pruebas) en el turno siguiente.

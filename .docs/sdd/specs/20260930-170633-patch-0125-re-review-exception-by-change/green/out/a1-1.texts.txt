@@ -1,0 +1,40 @@
+--- [17]
+Ahora: presento la validación de la feature 0012. Queda: tu respuesta (el dev-lead no está, así que la feature queda EN ESPERA), ~0 min por mi parte.
+
+## Me salí del plan en…
+
+- **`docs/uso.md` y comentario de `src/slots.js` (`734551b`).** El plan no los preveía. Son 15 líneas de documentación y comentario, así que los leí yo (`revisado en el hilo`) y no pasaron por revisor.
+- **Corregí mi propio doc en `9f987ed` (5 líneas).** Decía que las dos órdenes de la CLI fallan con el mensaje de la franja. No es cierto: `src/cli.js` captura el error y imprime `Error`. Ahora el doc dice que `reserve` y `free` lanzan el mensaje y que la CLI todavía no lo muestra. Revisado en el hilo.
+- **No hay re-revisión del tramo `b189ba3..HEAD`.** Los tres commits (`af915fe`, `734551b`, `9f987ed`) solo tocan docs y comentarios, todos bajo 20 líneas. La pasada de fix (`b189ba3`) no abre re-revisión: la verificó su TDD en Native.
+
+## Qué hay
+
+- `reserve` y `free` en `src/slots.js` validan la franja con `/^\d{2}-\d{2}$/` y lanzan «Franja no válida: usa HH-HH, p. ej. 10-12».
+- La revisión final (`effort-high` + opus, sobre `bea8c21`) devolvió 1 Important. Lo arregló `b189ba3`: mensaje literal en `libres`.
+
+## Smoke (ejecutado por mí)
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `ejecución real`: `reserve('Norte','1012')` lanza el mensaje exacto |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `free('1012')` lanza el mismo mensaje |
+
+- **Suite completa:** 4 tests, 4 pasan, 0.65 s.
+- **El mensaje solo se observa en `slots.js`.** Por la CLI, `reservar Norte 1012` y `libres 1012` dan `Error`; `reservar Norte 10-12` y `libres 10-12` funcionan. La spec deja la CLI fuera, así que el mensaje cumple los THEN.
+
+## Guion de pruebas
+
+Desde la raíz del repo, sin arrancar nada:
+1. `node --test tests/` → 4 tests pasan.
+2. `node -e "import('./src/slots.js').then(s=>s.reserve('Norte','1012'))"` → lanza «Franja no válida: usa HH-HH, p. ej. 10-12».
+3. `node -e "import('./src/slots.js').then(s=>s.free('1012'))"` → lanza el mismo mensaje.
+4. `node -e "import('./src/cli.js').then(c=>console.log(c.run(['reservar','Norte','10-12'])))"` → `{"room":"Norte","slot":"10-12"}`.
+
+## Decisión tuya, fuera de la spec
+
+Un usuario de la CLI no ve el mensaje, solo `Error`. Arreglarlo cambia `src/cli.js`, que la spec excluye, y cambia lo que imprime la CLI. No lo he tocado. Queda como feature aparte si la quieres.
+
+Además, el comentario de `slots.js` dice que comprobar que las horas existan y estén en orden «queda para la feature de horarios». Esa feature no está en el roadmap.
+
+¿Has probado el guion y valida la feature 0012, o prefieres diferir la validación al smoke de la release (dueño: dev-lead)?
+
