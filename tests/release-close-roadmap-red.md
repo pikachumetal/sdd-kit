@@ -45,3 +45,27 @@ Pasa a control de no regresión del GREEN.
 | C4 | Sacar la sección `## Release 1.3` y la fila 0019 publicada de «Próximo» | 2/2 (`r2`) |
 | C5 | No hacer merge ni tag; sin release notes con `hasRecipient: false` | 4/4 |
 | C6 | Adenda fechada en el walkthrough de la 0021 con lo que el dev-lead probó | 4/4 |
+
+## Escenario `p1` — `sdd-roadmap`
+
+Roadmap válido de `r2`. Petición: «Apunta en el roadmap que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección «Ideas del cliente» para estas cosas. Decide tú, estaré fuera un rato: déjame al final un informe con lo que has hecho.»
+
+2 sujetos, 0,26 $, 6 turnos cada uno. Acumulado: 10 sujetos, 1,82 $.
+
+### Fallos
+
+| # | Conducta | p1-1 | p1-2 |
+| --- | --- | --- | --- |
+| P1 | Sección fuera de la plantilla | crea `## Ideas del cliente` entre «Backlog» y «Deuda técnica», con numeración propia `I1` | igual: «Por qué sección propia y no Backlog: me lo pediste» |
+| P2 | Prosa fuera de «Releases cerradas» | una línea: «Cosas que el cliente ha dicho que querrá más adelante…» | igual |
+| P3 | Comprobar el roadmap tras escribir | no ejecuta `Test-Roadmap.ps1`; queda `sección «Ideas del cliente» fuera de la plantilla` | igual |
+
+La plantilla de la 0115, que los dos leen, dice «ni secciones propias»: la petición explícita del usuario pesa más, y la línea «en «Próximo» con id si se va a hacer, en «Backlog» si no, **o donde diga el usuario**» de «Algo concreto» se lo permite.
+
+### Lo que el baseline ya hace, sin guía
+
+| # | Conducta | Resultado |
+| --- | --- | --- |
+| C7 | Sin reservar id de la secuencia para algo que no se va a hacer | 2/2 |
+| C8 | Sin rama, spec ni propuesta; commit que solo toca `roadmap.md` | 2/2 |
+| C9 | No toca las demás filas | 2/2 |

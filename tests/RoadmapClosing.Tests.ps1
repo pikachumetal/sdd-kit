@@ -74,3 +74,15 @@ Describe 'Roadmap de este repo con el formato de cierre' {
     $items | Where-Object { $_ -match '^\*\*\[' -and $_ -notmatch $script:ClosingPrefix } | Should -BeNullOrEmpty
   }
 }
+
+Describe 'sdd-roadmap no saca el roadmap de la forma' {
+  BeforeAll { $script:Roadmapper = Get-KitFile 'skills/sdd-roadmap/SKILL.md' }
+
+  It 'ejecuta el validador tras escribir' {
+    $script:Roadmapper | Should -Match 'Test-Roadmap\.ps1'
+  }
+
+  It 'no admite una sección que pide el usuario' {
+    $script:Roadmapper | Should -Not -Match 'o donde diga el usuario'
+  }
+}

@@ -30,3 +30,24 @@ Mismos moldes y peticiones que [release-close-roadmap-red.md](release-close-road
 | C6 | Adenda en el walkthrough de la 0021 | 2/2 en `r2` |
 
 Sin regresión. En `r1` los sujetos siguen con los pasos 1-3: `r1-1` sella el changelog sin commitear, como permite el paso 4 pendiente.
+
+## Escenario `p1` — `sdd-roadmap` (Task 2), y control de `r2`
+
+3 sujetos (`p1-1`, `p1-2` y `r2-3` como control de la Task 1 con la guía de la Task 2 en el kit), 0,54 $. Acumulado: 13 sujetos, 2,35 $.
+
+### Fallos del RED
+
+| # | Conducta | p1-1 | p1-2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| P1 | Sin sección fuera de la plantilla | `B2` en el Backlog: «No he abierto la sección «Ideas del cliente». La plantilla del roadmap tiene una forma cerrada» | `B2`: «Si quieres la sección de todos modos, dímelo. Habría que cambiarlo en la plantilla del kit» | 2/2 |
+| P2 | Sin prosa fuera de «Releases cerradas» | sin prosa | sin prosa | 2/2 |
+| P3 | `Test-Roadmap.ps1` tras escribir | «`Test-Roadmap.ps1` da «Roadmap válido»» | igual | 2/2 |
+
+### Controles
+
+| # | Conducta | Resultado |
+| --- | --- | --- |
+| C7 | Sin id de la secuencia para algo que no se va a hacer | 2/2 |
+| C8 | Sin rama, spec ni propuesta; commit solo de `roadmap.md` | 2/2 |
+| C9 | No toca las demás filas | 2/2 |
+| `r2-3` | Corte con `Roadmap válido`, la 0017 y la 0022 en `validaciones pendientes:` | `Roadmap válido` |

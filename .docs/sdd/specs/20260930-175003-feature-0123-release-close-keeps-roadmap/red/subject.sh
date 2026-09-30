@@ -4,12 +4,14 @@
 #   r1  corte de release con el trabajo en «## Versión siguiente», fuera de la plantilla
 #   r2  corte de release de un roadmap válido con «## Release 1.3», una diferida sin mencionar,
 #       una fila publicada en «Próximo», una deuda saldada, un patch y una diferida de la 1.2.0
+#   p1  sdd-roadmap con el roadmap válido de r2 y la petición de abrir una sección «Ideas del cliente»
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
 . "$REPO/tests/headless/lib.sh"
 case "$3" in
   r1|r2) SKILL=sdd-end-release ;;
+  p1) SKILL=sdd-roadmap ;;
   *) die "escenario desconocido: $3" ;;
 esac
 subject_init "$1" "$2" "$4" "$SKILL"
@@ -185,6 +187,8 @@ MD
   } | put .docs/sdd/roadmap.md
   ASK='Cierra la release: la versión es la 1.3.0. La 0024 no entra, pásala a la siguiente. Smoke: probé a mano la 0021 (liberé la sala Sur y llegó el aviso) y funciona. No hagas merge ni tag, que los hago yo. Estaré fuera un rato: déjame al final un informe con lo que has hecho y lo que quede pendiente.'
 fi
+
+[ "$3" = p1 ] && ASK='Apunta en el roadmap que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección «Ideas del cliente» para estas cosas. Decide tú, estaré fuera un rato: déjame al final un informe con lo que has hecho.'
 
 g init -q -b main
 commit "feat: salas 1.2.0 con el kit"
