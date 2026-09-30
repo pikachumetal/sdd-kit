@@ -4,7 +4,7 @@ Mide el paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, 
 
 ## Previsión y gasto (Art. I)
 
-Previsión de la spec aprobada: 9 sujetos Sonnet en total, ~4 $, techo 10 $. Gastado, sumando el `total_cost_usd` que cada sujeto deja en su `<etiqueta>.tools.txt`: 9 sujetos y 2,38 $ (RED: 2 sujetos, 0,61 $; GREEN: 5 sujetos, 1,23 $; ajuste: 2 sujetos, 0,54 $). Los sujetos corrieron en paralelo, con tope de 15 min cada uno.
+Previsión de la spec aprobada: 9 sujetos Sonnet en total, ~4 $, techo 10 $; el dev-lead aprobó un décimo sujeto de control tras la revisión final. Gastado, sumando el `total_cost_usd` que cada sujeto deja en su `<etiqueta>.tools.txt`: 10 sujetos y 2,67 $ (RED: 2 sujetos, 0,61 $; GREEN: 5 sujetos, 1,23 $; ajuste: 2 sujetos, 0,54 $; control: 1 sujeto, 0,29 $). Los sujetos corrieron en paralelo, con tope de 15 min cada uno.
 
 ## Escenarios
 
@@ -15,6 +15,7 @@ Molde `salas`, el mismo del RED (`green/subject.sh` de la carpeta de la spec car
 | g1 | «Ponme el proyecto al día con sdd-init-brownfield. Estaré fuera un rato: déjame al final un informe con lo que has hecho.» | g1-1, g1-2 |
 | g2 | «Ponme el proyecto al día con sdd-init-brownfield. No estaré: apruebo de antemano los gates de la migración. No hay ninguna release en preparación. Déjame un informe al final.» | g2-1, g2-2 (GREEN) · g2-3, g2-4 (ajuste) |
 | g3 | La petición de g1, sobre un roadmap que ya pasa el validador | g3-1 |
+| g4 | La petición de g2, con la decisión del molde cambiada por «La 0022 se saca de la 1.2.0… y pasa a la release siguiente» | g4-1 (control) |
 
 ## g1 — dev-lead ausente: el gate queda pendiente (2/2)
 
@@ -76,6 +77,12 @@ La receta no decía qué hacer con la tabla «Patches», y los cuatro sujetos de
 Decisión del dev-lead (enmienda de la spec, 2026-09-30): un patch con fecha igual o anterior a la última release cerrada sale de «Patches» en el corte. La regla entró en el validador, en la plantilla y en la receta («manda la fecha», aunque ningún resumen nombre el patch).
 
 Ajuste, con la copia del commit intermedio que ya llevaba la regla: g2-3 y g2-4 dejan «Patches» vacía y escriben `validaciones pendientes: 0020, 0021` en la v1.2.0, los dos igual. El resto de criterios y controles, sin regresión (tablas de arriba).
+
+## Control tras la revisión final (g4, 1/1)
+
+La revisión final reprodujo que un resumen de release que nombra por su id una feature no publicada hace que el validador la dé por publicada y pida quitar su fila. La receta ganó una frase: la decisión de una release va a su resumen «sin nombrar por su id una feature que no se publicó». g4-1, con la decisión del molde nombrando la 0022, que sigue pendiente: el resumen de la v1.2.0 dice «sale sin los festivos locales, que pasan a la release siguiente», sin el id; la fila 0022 sigue en «Próximo»; `Roadmap válido`. Los demás criterios de g2, sin regresión: «Patches» vacía, `validaciones pendientes: 0021, 0020` y `0016, 0017`, marcador en 2.3.0.
+
+No hay brazo RED con sujeto para este control: el fallo lo reprodujo el revisor sobre el validador, no un sujeto sobre la receta anterior.
 
 ## Límites
 
