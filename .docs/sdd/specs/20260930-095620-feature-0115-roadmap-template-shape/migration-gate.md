@@ -1,6 +1,6 @@
 # Gate de la migración del roadmap de este repo (paso 1 de `v2.3.0.md`)
 
-Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-before.md`, en esta carpeta: es el de `develop` en `488bdbdc` con las dos filas de la partición de esta feature (0115 y 0123). Nada de lo que «sale» se pierde: está en esos dos sitios.
+Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-before.md`, en esta carpeta: es el de `develop` en `488bdbdc` con las dos filas de la partición de esta feature (0115 y 0123). Nada de lo que «sale» se pierde: está ahí.
 
 ## Decisiones del dev-lead
 
@@ -30,7 +30,7 @@ Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-bef
 | «Backlog», B1 a B7 | 6 | Se quedan |
 | «Deuda técnica», filas saldadas | 42 | Salen |
 | «Deuda técnica», filas parciales | 2 | Se quedan |
-| «Deuda técnica», «Destino» con «2.0.1» | 59 | «versión siguiente», solo en esa celda |
+| «Deuda técnica», «Destino» con «2.0.1» | 58 | «versión siguiente», solo en esa celda |
 | «Referencias de vigilancia» | 4 | `tech-stack.md`, sección propia, con CodeMySpec, MySpec y `spec-driven-with-adr` de OpenSpec |
 | «Decisiones tomadas» | 24 | Ver abajo |
 | «Decisiones pendientes» (una, ya resuelta) | 1 | Sale |
@@ -43,9 +43,9 @@ Tabla de destinos para aprobar. El roadmap anterior queda entero en `roadmap-bef
 
 | Par | Propuesta |
 | --- | --- |
-| «Un lote… / Un sujeto headless lanzado en paralelo acaba en el repo del kit y no en el molde» (líneas 222 y 249 del roadmap anterior) | Queda la 249, que cita el ticket; sale la 222 |
-| «`run.sh` no limita cuántos sujetos corren a la vez» (líneas 247 y 259) | Queda la 247; sale la 259 |
-| «El trailer `Co-Authored-By`…» (línea 189) y «…no se reproduce» (línea 151) | Queda la 151, que es la re-medición; sale la 189 |
+| «Un lote… / Un sujeto headless lanzado en paralelo acaba en el repo del kit y no en el molde» (líneas 223 y 252 de `roadmap-before.md`) | Queda la 252, que cita el ticket; sale la 223 |
+| «`run.sh` no limita cuántos sujetos corren a la vez» (líneas 250 y 262) | Queda la 250; sale la 262 |
+| «El trailer `Co-Authored-By`…» (línea 190) y «…no se reproduce» (línea 152) | Queda la 152, que es la re-medición; sale la 190 |
 
 ## Decisiones tomadas
 
@@ -128,12 +128,12 @@ La fila está rota como tabla: su texto contiene `| <id> |` y parte las celdas. 
 
 ## Integración de `develop` tras la aprobación
 
-`develop` avanzó cinco commits mientras se ejecutaba la feature (hasta `488bdbdc`): triaje de cuatro tickets de document-manager, reserva de la 0124 y cambio de orden. El dev-lead eligió integrar y volver a aplicar esta tabla sobre su roadmap («Integrar y re-migrar ahora», 2026-09-30). La fila 0124 va a `## Release 2.3.0`, las cinco filas de deuda nuevas se quedan y el texto ampliado en `develop` se conserva. Comprobado fila a fila: de las filas de tabla del roadmap de `develop`, 188 se quedan literales (con «2.0.1» → «versión siguiente» en «Destino» y el ancla nueva), y las demás salen por un motivo de esta tabla.
+`develop` avanzó cinco commits mientras se ejecutaba la feature (hasta `488bdbdc`): triaje de cuatro tickets de document-manager, reserva de la 0124 y cambio de orden. El dev-lead eligió integrar y volver a aplicar esta tabla sobre su roadmap («Integrar y re-migrar ahora», 2026-09-30). La fila 0124 va a `## Release 2.3.0`, las cinco filas de deuda nuevas se quedan y el texto ampliado en `develop` se conserva. Comprobado fila a fila: de las filas de tabla del roadmap de `develop`, 188 se quedan literales (con «2.0.1» → «versión siguiente» en «Destino» y el ancla nueva), la 0120 se queda ampliada (ver «Filas nuevas») y las demás salen por un motivo de esta tabla.
 
 ## Filas nuevas
 
 | Sección | Fila |
 | --- | --- |
-| Pendientes (decisión 1) | Propuesta «documentos acotados»: arquitectura y stack por temas al estilo ADR, umbral de partición en capacidades, constitution y `CLAUDE.md` sin anécdotas. Se escribe con `sdd-roadmap` tras esta feature |
+| «Backlog», fila B10, sin id: lo reserva `sdd-roadmap` al escribirla | Propuesta «documentos acotados»: arquitectura y stack por temas al estilo ADR, umbral de partición en capacidades, constitution y `CLAUDE.md` sin anécdotas. Se escribe con `sdd-roadmap` tras esta feature |
 | Pendientes, fila 0120 | Se amplía su celda: los topes de palabras cubren también los documentos de anclaje |
 | «Deuda técnica» | Fila del roadmap de una línea, con el enunciado en un fichero de `specs/`. Destino: feature, tras la 0123 |

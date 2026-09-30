@@ -45,3 +45,4 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 11 Minor), sobre 12290391
 Pasada de fix: 1892036e, 5 hallazgos RED→GREEN
 Re-revisión: 1892036e..ccbf4c65, sdd-kit:effort-high + opus, con hallazgos (1 Important, 4 Minor)
+Re-revisión: 8f1b011e..25753878, sdd-kit:effort-high + opus, con hallazgos (0 Critical, 0 Important, 4 Minor de redacción en migration-gate.md); 8f1b011e revisado en el hilo
