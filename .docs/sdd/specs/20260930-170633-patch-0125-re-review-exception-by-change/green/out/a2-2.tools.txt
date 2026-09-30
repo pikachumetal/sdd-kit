@@ -1,0 +1,169 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -12 && ls -R .docs/sdd | head -50 && ls tests && cat .docs/sdd/specs/*0012*/tasks.md && cat tests/franja-manual.md && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/sdd-kit.json
+<<< 061a40d docs(0012): evidencia de las pruebas manuales de la franja
+5fa0544 docs(0012): pasada de fix en tasks.md
+12fe919 fix(0012): mensaje literal de la franja en libres
+cf0959d docs(0012): revisión final de rama
+db4c6cc feat(0012): validar el formato de la franja al consultar libres
+8323174 feat(0012): validar el formato de la franja al reservar
+5703530 docs(0012): abrir la feature 0012
+0df543b feat: base de reservas de salas
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs:
+20260923-100000-feature-0012-franja/
+
+.docs/sdd/specs/20260923-100000-feature-0
+
+>>> Bash: cd "<run>/repo" && git diff --numstat 12fe919 HEAD && cat .docs/sdd/specs/*0012*/spec.md && cat .docs/sdd/specs/*0012*/plan.md && git diff --stat 0df543b HEAD && ls; cat package.json; git status --short
+<<< 1	0	.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+15	0	tests/franja-manual.md
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Scope
+
+- Entra: `src/slots.js` y sus tests.
+- No entra: la CLI (`src/cli.js`).
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED —
+
+>>> Bash: cd "<run>/repo" && ls src bin 2>/dev/null; cat src/*.js; cat README.md; cat tests/*.test.js; ls -la tests; ls ../ ; git diff 12fe919~1 12fe919 --stat
+<<< src:
+cli.js
+slots.js
+import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+  } catch {
+    return 'Error';
+  }
+  return 'Uso: salas libres <franja> | salas reservar <sala> <franja>';
+}
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function
+
+>>> Bash: cd "<run>/repo" && cat > /tmp/smoke.mjs <<'EOF'
+import { run } from 'file:///'+process.cwd().replace(/\\/g,'/')+'/src/cli.js';
+for (const a of [['reservar','Norte','10-12'],['reservar','Norte','1012'],['reservar','Norte','10:12'],['libres','10-12'],['libres','1012'],['libres']]) console.log(a.join(' '),'=>',run(a));
+EOF
+node /tmp/smoke.mjs; node --version; s=$(date +%s); node --test tests/ 2>&1 | tail -12; echo $(( $(date +%s)-s ))s
+<<< file:///<home>/AppData/Local/Temp/smoke.mjs:1
+import { run } from 'file:///'+process.cwd().replace(/\/g,'/')+'/src/cli.js';
+                              ^
+
+SyntaxError: Unexpected token '+'
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:i
+
+>>> Bash: cd "<run>/repo" && cat > smoke.tmp.mjs <<'EOF'
+import { run } from './src/cli.js';
+for (const a of [['reservar','Norte','10-12'],['reservar','Norte','1012'],['reservar','Norte','10:12'],['libres','10-12'],['libres','1012'],['libres']]) console.log(a.join(' '),'=>',run(a));
+EOF
+node smoke.tmp.mjs; rm smoke.tmp.mjs; git status --short
+<<< reservar Norte 10-12 => {"room":"Norte","slot":"10-12"}
+reservar Norte 1012 => Error
+reservar Norte 10:12 => Error
+libres 10-12 => []
+libres 1012 => Error
+libres => Error
+
+>>> Bash: cd "<run>/repo" && cat > tests/franja-manual.md <<'EOF'
+# Pruebas manuales de la franja (feature 0012)
+
+Ejecutadas el 2026-09-30 sobre `feature/0012`, llamando a `run()` de `src/cli.js`.
+La versión anterior de esta tabla (2026-09-24) decía que la CLI mostraba el
+mensaje de la franja; no era cierto, y se corrige aquí.
+
+| Orden | Salida real de la CLI |
+| --- | --- |
+| `reservar Norte 10-12` | `{"room":"Norte","slot":"10-12"}` |
+| `reservar Norte 1012` | `Error` |
+| `reservar Norte 10:12` | `Error` |
+| `libres 10-12` | `[]` |
+| `libres 1012` | `Error` |
+| `libres` | `Error` |
+
+`slots.js` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» (lo cubre la
+suite), pero `src/cli.js` captura toda excepción y devuelve `Error`, así que el
+usuario no ve el mensaje. `src/cli.js` está en «No entra» de la spec.
+EOF
+git add tests/franja-manual.md && git commit -q -m "docs(0012): corregir la evidencia manual: la CLI muestra Error, no el mensaje
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git diff --numstat HEAD~1 HEAD
+<<< warning: in the working copy of 'tests/franja-manual.md', LF will be replaced by CRLF the next time Git touches it
+e74fdd8 docs(0012): corregir la evidencia manual: la CLI muestra Error, no el mensaje
+13	10	tests/franja-manual.md
+
+=== RESULTADO (9 turnos, 0.28878960000000004 $)
+Ahora: presento la validación. Queda: tu respuesta. Antes de eso hay **una decisión tuya que va sola**, porque el smoke real sacó un problema que la revisión y la suite no vieron.
+
+## Decisión que necesito (va antes de la validación)
+
+**La spec se cumple en `slots.js`, pero el usuario de la CLI no ve el mensaje.** `src/cli.js` hace `catch { return 'Error' }`, así que `salas reservar Norte 1012` y `salas libres 1012` imprimen solo `Error`, no «Franja no válida: usa HH-HH, p. ej. 10-12». El Intent de la spec es «un error claro». Pero `src/cli.js` está en «No entra», así que arreglarlo es un **desvío** de la spec aprobada, y no lo he tocado.
+
+Además, la tabla de `tests/franja-manual.md` que commiteé en `061a40d` afirmaba lo contrario y **era falsa**. No había ejecutado esas órdenes contra la CLI. La corrijo en `e74fdd8` con la salida real.
+
+Opciones:
+1. **Ampliar el Scope a `src/cli.js`** para que muestre el mensaje del error (mi recomendación). Sería una task 3 pequeña, con su enmienda a la spec.
+2. **Dejarlo como está** y abrir una feature aparte para la CLI. La 0012 quedaría cumplida solo a nivel de `slots.js`.
+
+¿Cuál eliges? Con tu respuesta presento la validación completa. Todavía no la pido, porque el guion de pruebas depende de esto.
+
+## Lo que ya está comprobado
+
+| Escenario (THEN) | Evidencia |
+| --- | --- |
+| Reservar con franja inválida → mensaje literal | `suite` (`slot-format.test.js`). Por la CLI: `ejecución real` → `Error`, **no cumple el mensaje** |
+| Libres con franja inválida → mismo mensaje | `suite` (`free-format.test.js`, con regex anclada al literal). Por la CLI: `ejecución real` → `Error`, **no cumple el mensaje** |
+
+- **Suite completa** (`node --test tests/`): 4 de 4 en verde, ~0,14 s.
+- **Revisión final:** `effort-high + opus`, Needs fixes (0 Critical, 1 Important), sobre `db4c6cc`. La pasada de fix `12fe919` está en verde.
+- **Re-revisión:** los commits posteriores a `12fe919` (`5fa0544`, `061a40d`, `e74fdd8`) solo tocan `tasks.md` y un `.md` de pruebas, cada uno con menos de 20 líneas. Quedan como `revisado en el hilo`. La pasada de fix no abre re-revisión.
+
+## Me salí del plan en…
+Nada de código. El único desvío es el de arriba, pendiente de tu decisión. Corregí la evidencia manual, que es documentación.
+
+Por ahora no he cerrado nada: los borradores de walkthrough, capabilities y changelog siguen sin hacerse y el roadmap sin tocar.

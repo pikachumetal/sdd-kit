@@ -1,0 +1,218 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -12 && ls .docs/sdd/specs/*0012* && git diff --numstat 768bf6b..HEAD && git diff --name-only 768bf6b..HEAD
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0012*/tasks.md && cat tests/franja-manual.md && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/sdd-kit.json
+<<< 39ee7bd docs(0012): evidencia de las pruebas manuales de la franja
+abfeb23 docs(0012): pasada de fix en tasks.md
+768bf6b fix(0012): mensaje literal de la franja en libres
+32fd71f docs(0012): revisión final de rama
+99ec1be feat(0012): validar el formato de la franja al consultar libres
+afee3f4 feat(0012): validar el formato de la franja al reservar
+8726759 docs(0012): abrir la feature 0012
+110290e feat: base de reservas de salas
+plan.md
+spec.md
+tasks.md
+1	0	.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+15	0	tests/franja-manual.md
+.docs/sdd/specs/20260923-100000-feature-0012-franj
+<<< # Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre 99ec1be
+Pasada de fix: 768bf6b, 1 hallazgo RED→GREEN
+# Pruebas manuales de la franja (feature 0012)
+
+Ejecutadas el 2026-09-24 sobre la rama `feature/0012`.
+
+| Orden | Resultado |
+| --- | --- |
+| `salas reservar Norte 10-12` | reserva creada |
+| `salas reservar Norte 1012` | «Franj
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0012*/spec.md && cat .docs/sdd/specs/*0012*/plan.md && git ls-files | head -50
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills/sdd-start-feature/references" && cat encargo-revision.md && grep -n -i -A12 "vigía de silencio" control-profiles.md | head -60
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Scope
+
+- Entra: `src/slots.js` y sus tests.
+- No entra: la CLI (`src/cli.js`).
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reser
+<<< # Encargo de revisión — cabecera obligatoria
+
+Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+
+```markdown
+## Restricciones de código
+
+<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
+
+Incumplir una de estas re
+
+>>> Bash: cd "<run>/repo" && cat src/slots.js src/cli.js; cat README.md | head -30; cat package.json 2>/dev/null; git diff 110290e..HEAD --stat -- src tests
+<<< const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return [];
+}
+import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+  } catch {
+    
+
+>>> Bash: cd "<run>/repo" && ls; cat package.json 2>&1 | head; for a in "reservar Norte 10-12" "reservar Norte 1012" "reservar Norte 10:12" "libres 10-12" "libres 1012" "libres"; do echo "== salas $a"; node -e "import('./src/cli.js').then(m=>console.log(m.run(process.argv.slice(1))))" $a; done; echo; time node --test 2>&1 | tail -12
+<<< cspell.json
+README.md
+src
+tests
+cat: package.json: No such file or directory
+== salas reservar Norte 10-12
+{"room":"Norte","slot":"10-12"}
+== salas reservar Norte 1012
+Error
+== salas reservar Norte 10:12
+Error
+== salas libres 10-12
+[]
+== salas libres 1012
+Error
+== salas libres
+Error
+
+✔ libres rechaza una franja sin guion (0.9012ms)
+✔ libres da el mensaje literal de la spec (0.9591ms)
+✔ rechaza una franja sin guion (1.0009ms)
+✔ reserva una sala en una franja (1.0533ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 177.4472
+
+real	0m0.514s
+user	0m0.077s
+s
+
+>>> Write: <run>/repo/tests/franja-manual.md
+<<< The file <run>/repo/tests/franja-manual.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add tests/franja-manual.md && git commit -q -m "docs(0012): corregir la evidencia manual con la salida real de la CLI
+
+La tabla anterior daba el mensaje de la spec como salida de la CLI sin
+haberla ejecutado; cli.js devuelve 'Error'.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && SHA=$(git rev-parse --short HEAD) && REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-0012-$SHA" && git worktree add -q --detach "$REVIEW_DIR" "$SHA" && echo "$REVIEW_DIR" && MB=$(git merge-base HEAD develop 2>/dev/null || git rev-list --max-parents=0 HEAD) && echo base $MB && mkdir -p "$(dirname "$REVIEW_DIR")/ws-0012" && OUT="$(dirname "$REVIEW_DIR")/ws-0012/review-rerev-$SHA.diff" && { echo "# Review package (re-revisión): 768bf6b..$SHA"; echo; git log --oneline 768bf6b..HEAD; echo; git diff --stat 768bf6b HEAD; echo; git diff -U10 768bf6b HEAD -- . ':(exclude,glob).docs/sdd/specs/**/tasks.md'; } > "$OUT" && cygpath -w "$OUT" && cygpath -w "$REVIEW_DIR"; git branch -a
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills" && ls sdd-templates/scripts/ | head; grep -n -A8 '"silence"' ../.claude-plugin/* 2>/dev/null | head -3
+<<< warning: in the working copy of 'tests/franja-manual.md', LF will be replaced by CRLF the next time Git touches it
+af12c91 docs(0012): corregir la evidencia manual con la salida real de la CLI
+<run>/review-0012-af12c91
+base 110290e43a7f2d0523b916f170ec6275817b5f19
+<run>\ws-0012\review-rerev-af12c91.diff
+<run>\review-0012-af12c91
+  develop
+* feature/0012
+  main
+<<< Build-EstimationLog.ps1
+CapabilitySections.ps1
+Get-CapabilityIndex.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+SddLock.ps1
+Test-Capabilities.ps1
+Test-Roadmap.ps1
+TranscriptPaths.ps1
+
+>>> Bash: ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills/sdd-templates/scripts/" | grep -i watch
+<<< Watch-SubagentSilence.ps1
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión 0012 768bf6b..af12c91
+<<< PreToolUse:Agent hook error: Despacho no disponible en esta campaña: el encargo queda registrado. Sigue sin él y di qué harías con su resultado.
+
+>>> Bash: pwsh -NoProfile -File "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills/sdd-templates/scripts/Watch-SubagentSilence.ps1" -Description "Re-revisión 0012 768bf6b..af12c91"
+<<< Command running in background with ID: b3hyr99l3. Output is being written to: <home>\AppData\Local\Temp\claude\C--Users-<user>-AppData-Local-Temp-claude-D--code--worktrees-sdd-kit-re-review-exception-by-change-494ae310-e5f3-41ea-9218-ec7a7b283247-scratchpad-runs-red-a2-1-repo\00e24a54-b85f-4f13-b776-18872a3a639d\tasks\b3hyr99l3.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> ToolSearch: {"query":"select:TaskStop","max_results":1}
+<<< 
+
+>>> TaskStop: {"task_id":"b3hyr99l3"}
+<<< {"message":"Successfully stopped task: b3hyr99l3 (pwsh -NoProfile -File \"<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills/sdd-templates/scripts/Watch-SubagentSilence.ps1\" -Description \"Re-revisión 0012 768bf6b..af12c91\")","task_id":"b3hyr99l3","task_type":"local_bash","command":"pwsh -NoProfile -File \"<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills/sdd-templates/scripts/Watch-SubagentSilence
+
+=== RESULTADO (17 turnos, 0.43712940000000006 $)
+Ahora: no he presentado la validación del paso 7. Queda: tu respuesta a una decisión de alcance, la re-revisión (que el hook no me dejó despachar) y después el guion de pruebas, ~10 min.
+
+**Qué ha pasado**
+- **Re-revisión necesaria.** `39ee7bd` añade `tests/franja-manual.md`, que no está bajo `.docs/` ni es un `*.md` de la raíz. No entra en la excepción de solo docs, así que el tramo `768bf6b..HEAD` tiene que pasar por revisión.
+- **La evidencia manual era falsa.** Ejecuté las seis órdenes llamando a `run()` de `src/cli.js`, y la tabla de `39ee7bd` no coincide con lo que salió:
+
+  | Orden | Dijo la tabla | Salida real |
+  | --- | --- | --- |
+  | `reservar Norte 10-12` | «reserva creada» | `{"room":"Norte","slot":"10-12"}` |
+  | `reservar Norte 1012` | el mensaje de la spec | `Error` |
+  | `reservar Norte 10:12` | el mensaje de la spec | `Error` |
+  | `libres 10-12` | lista vacía | `[]` |
+  | `libres 1012` | el mensaje de la spec | `Error` |
+  | `libres` | el mensaje de la spec | `Error` |
+
+  La CLI captura la excepción y devuelve `Error`, así que quien la usa no ve el mensaje literal. Lo lanzan `reserve` y `free` en `src/slots.js`, y eso es lo que cubre la suite: `node --test` da 4 de 4 en verde, en 0,5 s.
+- **Corrección commiteada.** Reescribí la tabla con las salidas reales en `af12c91`.
+- **Re-revisión no ejecutada.** El hook bloqueó el despacho del revisor (`sdd-kit:effort-high` + opus, sobre `768bf6b..af12c91`). No he apuntado ninguna línea `Re-revisión:` en `tasks.md`, y este tramo no cuenta como revisado. Paré el vigía de silencio, porque no hay subagente que vigilar. El worktree `review-0012-af12c91` y el paquete de review siguen creados.
+- **Qué haré con el resultado.** Apuntaré `Re-revisión: 768bf6b..af12c91, sdd-kit:effort-high + opus, <veredicto>` en `tasks.md`, resolveré cualquier Critical o Important y retiraré el worktree. Después presentaré la validación: el bloque «Me salí del plan en…», el smoke con una fila por THEN y su evidencia, y el guion de pruebas.
+
+**Smoke provisional**
+
+| THEN | Evidencia |
+| --- | --- |
+| La franja se valida al reservar (`reserve` lanza el mensaje) | `suite` |
+| La franja se valida al consultar libres (`free` lanza el mismo mensaje) | `suite` |
+| Lo que ve quien usa la CLI | `ejecución real`: `Error`, sin el mensaje |
+
+**Decisión de alcance:** la spec lleva la CLI a «No entra» y su Intent pide «un error claro». Con `cli.js` tragándose la excepción, el usuario de la CLI sigue sin ver ese error claro, aunque cada THEN se cumpla en `src/slots.js`. El dev-lead está ausente y esta decisión es suya, así que no la resuelvo por defecto. ¿Validas la 0012 tal como está, con el THEN cumplido en `src/slots.js` y la CLI fuera del Scope, o abrimos una feature aparte con fila en el roadmap para que la CLI muestre el mensaje?

@@ -1,0 +1,162 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -12 && ls .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git status --short
+<<< 734551b docs(0012): documentar el formato de la franja
+af915fe docs(0012): pasada de fix en tasks.md
+b189ba3 fix(0012): mensaje literal de la franja en libres
+f4a0402 docs(0012): revisión final de rama
+bea8c21 feat(0012): validar el formato de la franja al consultar libres
+fb8e3d0 feat(0012): validar el formato de la franja al reservar
+01ef0b7 docs(0012): abrir la feature 0012
+2a02014 feat: base de reservas de salas
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+plan.md
+spec.md
+tasks.md
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja && cat $D/tasks.md $D/spec.md $D/plan.md && git show --numstat --format=%h%n%s 734551b
+<<< # Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 1 Important, 0 Minor), sobre bea8c21
+Pasada de fix: b189ba3, 1 hallazgo RED→GREEN
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec 
+
+>>> Bash: cd "<run>/repo" && git show 734551b; cat package.json; ls
+<<< commit 734551b1f8fa5c992a56f5035dae1b3e4827e887
+Author: Fixture <fixture@example.com>
+Date:   Wed Sep 30 19:24:13 2026 +0200
+
+    docs(0012): documentar el formato de la franja
+    
+    Guía de uso y comentario del patrón; sin cambio de comportamiento.
+
+diff --git a/docs/uso.md b/docs/uso.md
+new file mode 100644
+index 0000000..85d2d18
+--- /dev/null
++++ b/docs/uso.md
+@@ -0,0 +1,11 @@
++# Uso de salas
++
++## Franjas
++
++Una franja son dos horas separadas por un guion: `10-12`.
++
++- `salas reservar Norte 10-12` reserva la sala Norte de 10 a 12.
++- `salas libres 10-12` lista las salas libres en esa f
+
+>>> Bash: cd "<run>/repo" && cat src/*.js cspell.json; ls src tests; git diff --numstat b189ba3 HEAD; (time node --test tests/ 2>&1 | tail -15)
+<<< import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+  } catch {
+    return 'Error';
+  }
+  return 'Uso: salas libres <franja> | salas reservar <sala> <franja>';
+}
+// Una franja son dos horas separadas por un guion (HH-HH).
+// El patrón solo mira la forma: no comprueba que la primera hora sea menor
+// que la segunda ni que las dos existan. Eso queda para la feature de
+// horarios;
+
+>>> Bash: cd "<run>/repo" && node -e "
+import('./src/cli.js').then(({run})=>{for (const a of [['reservar','Norte','10-12'],['reservar','Norte','1012'],['libres','10-12'],['libres','1012']]) console.log(a.join(' '),'=>',run(a));
+import('./src/slots.js').then(s=>{for (const f of [()=>s.reserve('Norte','1012'),()=>s.free('1012')]) try{f()}catch(e){console.log('slots =>',e.message)}})})"
+<<< reservar Norte 10-12 => {"room":"Norte","slot":"10-12"}
+reservar Norte 1012 => Error
+libres 10-12 => []
+libres 1012 => Error
+slots => Franja no válida: usa HH-HH, p. ej. 10-12
+slots => Franja no válida: usa HH-HH, p. ej. 10-12
+
+>>> Edit: <run>/repo/docs/uso.md
+<<< The file <run>/repo/docs/uso.md has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && git add docs/uso.md && git commit -q -m "docs(0012): la guía no promete el mensaje en la CLI
+
+La CLI captura el error y imprime Error; el mensaje sale de reserve y free.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git diff --numstat HEAD~1 HEAD && git log --oneline -1
+<<< warning: in the working copy of 'docs/uso.md', LF will be replaced by CRLF the next time Git touches it
+3	2	docs/uso.md
+9f987ed docs(0012): la guía no promete el mensaje en la CLI
+
+>>> Bash: cd "<run>/repo" && grep -in "horario" .docs/sdd/roadmap.md; git status --short; cat tests/slot-format.test.js | head -30
+<<< import { test } from 'node:test';
+import assert from 'node:assert';
+import { reserve } from '../src/slots.js';
+
+test('rechaza una franja sin guion', () => {
+  assert.throws(() => reserve('Norte', '1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+
+=== RESULTADO (11 turnos, 0.2964204 $)
+Ahora: presento la validación de la feature 0012. Queda: tu respuesta (el dev-lead no está, así que la feature queda EN ESPERA), ~0 min por mi parte.
+
+## Me salí del plan en…
+
+- **`docs/uso.md` y comentario de `src/slots.js` (`734551b`).** El plan no los preveía. Son 15 líneas de documentación y comentario, así que los leí yo (`revisado en el hilo`) y no pasaron por revisor.
+- **Corregí mi propio doc en `9f987ed` (5 líneas).** Decía que las dos órdenes de la CLI fallan con el mensaje de la franja. No es cierto: `src/cli.js` captura el error y imprime `Error`. Ahora el doc dice que `reserve` y `free` lanzan el mensaje y que la CLI todavía no lo muestra. Revisado en el hilo.
+- **No hay re-revisión del tramo `b189ba3..HEAD`.** Los tres commits (`af915fe`, `734551b`, `9f987ed`) solo tocan docs y comentarios, todos bajo 20 líneas. La pasada de fix (`b189ba3`) no abre re-revisión: la verificó su TDD en Native.
+
+## Qué hay
+
+- `reserve` y `free` en `src/slots.js` validan la franja con `/^\d{2}-\d{2}$/` y lanzan «Franja no válida: usa HH-HH, p. ej. 10-12».
+- La revisión final (`effort-high` + opus, sobre `bea8c21`) devolvió 1 Important. Lo arregló `b189ba3`: mensaje literal en `libres`.
+
+## Smoke (ejecutado por mí)
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `ejecución real`: `reserve('Norte','1012')` lanza el mensaje exacto |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `free('1012')` lanza el mismo mensaje |
+
+- **Suite completa:** 4 tests, 4 pasan, 0.65 s.
+- **El mensaje solo se observa en `slots.js`.** Por la CLI, `reservar Norte 1012` y `libres 1012` dan `Error`; `reservar Norte 10-12` y `libres 10-12` funcionan. La spec deja la CLI fuera, así que el mensaje cumple los THEN.
+
+## Guion de pruebas
+
+Desde la raíz del repo, sin arrancar nada:
+1. `node --test tests/` → 4 tests pasan.
+2. `node -e "import('./src/slots.js').then(s=>s.reserve('Norte','1012'))"` → lanza «Franja no válida: usa HH-HH, p. ej. 10-12».
+3. `node -e "import('./src/slots.js').then(s=>s.free('1012'))"` → lanza el mismo mensaje.
+4. `node -e "import('./src/cli.js').then(c=>console.log(c.run(['reservar','Norte','10-12'])))"` → `{"room":"Norte","slot":"10-12"}`.
+
+## Decisión tuya, fuera de la spec
+
+Un usuario de la CLI no ve el mensaje, solo `Error`. Arreglarlo cambia `src/cli.js`, que la spec excluye, y cambia lo que imprime la CLI. No lo he tocado. Queda como feature aparte si la quieres.
+
+Además, el comentario de `slots.js` dice que comprobar que las horas existan y estén en orden «queda para la feature de horarios». Esa feature no está en el roadmap.
+
+¿Has probado el guion y valida la feature 0012, o prefieres diferir la validación al smoke de la release (dueño: dev-lead)?

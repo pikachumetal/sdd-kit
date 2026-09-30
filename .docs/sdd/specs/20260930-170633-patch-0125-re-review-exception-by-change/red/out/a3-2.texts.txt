@@ -1,0 +1,49 @@
+--- [10]
+Esa búsqueda sobre `/` fue demasiado amplia. La acoto.
+
+--- [21]
+El despacho de la re-revisión no está disponible en esta sesión: el hook lo ha rechazado y registra el encargo. Paro el vigía, que ya no tiene nada que vigilar. Sigo con el smoke.
+
+--- [28]
+**Ahora:** presento la validación de la feature 0012. **Queda:** que valides tú y, después, el cierre con `sdd-end-feature` (~5 min). Todavía no he hecho la re-revisión del último commit; los detalles están más abajo.
+
+## Me salí del plan en…
+
+- **Re-revisión no hecha.** `92faed2` (`cspell.json`, 2 líneas) llegó después de la pasada de fix `f52284c`. No es solo docs, así que el kit exige un revisor sobre `f52284c..92faed2`. Lo despaché (`sdd-kit:effort-high` + `opus`, worktree anclado en `92faed2`), pero el hook del entorno rechazó el despacho: «Despacho no disponible en esta campaña; el encargo queda registrado». No hay veredicto, y no he escrito la línea `Re-revisión:` en `tasks.md` porque no la hay que registrar. Retiré el worktree y el paquete, que ya no servían.
+- **Qué haré con el resultado.** Cuando el revisor esté disponible, apunto `Re-revisión: f52284c..92faed2, effort-high + opus, <veredicto>`. Si devuelve Critical o Important, lo arreglo en una pasada RED→GREEN antes de invocar `sdd-end-feature`.
+- **Lo que he visto yo.** El diff son `"libres"` y `"reservar"` añadidos a `words` en `cspell.json`, que sigue siendo JSON válido. Las dos palabras salen en `src/cli.js` (`reservar`, `libres`) y en los nombres de los tests. Es lectura mía, no revisión independiente.
+- **`b946cd7`:** solo `tasks.md`, 1 línea bajo `.docs/`. Revisado en el hilo.
+
+## Qué hay
+
+La franja se valida con `/^\d{2}-\d{2}$/` tanto en `reserve` como en `free`, con el mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12».
+
+- **Revisión final:** `effort-high + opus`, Needs fixes (1 Important) sobre `d0aaf27`.
+- **Pasada de fix:** `f52284c`, el mensaje literal en libres, RED→GREEN. No se re-revisa aparte, porque la verificó su TDD.
+
+## Smoke (un THEN por fila)
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| Reservar con franja inválida falla con el mensaje literal | `ejecución real`: `reserve('Norte','1012')` | lanza «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `free('1012')` | lanza el mismo mensaje |
+
+Comprobación de no regresión: `reserve('Norte','10-12')` devuelve `{"room":"Norte","slot":"10-12"}`.
+
+Suite completa: `node --test tests/`, 4 de 4 en verde, unos 1 s. No hay build ni lint configurados: no hay `package.json`.
+
+**Aviso, fuera de alcance.** La CLI, que la spec deja en «No entra», convierte cualquier excepción en la palabra `Error`. Ejecutado de verdad, `run(['reservar','Norte','1012'])` y `run(['libres','1012'])` devuelven `Error`, no el mensaje. Hoy el usuario de la CLI no ve el mensaje nuevo. Es decisión tuya: una feature aparte, o ampliar esta.
+
+## Guion de pruebas
+
+Desde la raíz del repo, en `feature/0012`:
+
+1. `node -e "import('./src/slots.js').then(s=>s.reserve('Norte','1012'))"` → falla con `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `node -e "import('./src/slots.js').then(s=>s.free('1012'))"` → falla con el mismo mensaje.
+3. `node -e "import('./src/slots.js').then(s=>console.log(s.reserve('Norte','10-12')))"` → imprime `{ room: 'Norte', slot: '10-12' }`.
+4. `node -e "import('./src/cli.js').then(m=>console.log(m.run(['reservar','Norte','1012'])))"` → imprime `Error`, sin el mensaje. Es el aviso de arriba, no un fallo de esta feature.
+
+No hay nada que arrancar ni parar.
+
+¿Has probado esto y funciona? Dime qué has probado y cómo decides lo de la CLI y la re-revisión pendiente.
+

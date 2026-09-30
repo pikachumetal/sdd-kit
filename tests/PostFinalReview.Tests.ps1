@@ -38,14 +38,28 @@ Describe 'Re-revisión del tramo' {
 
 Describe 'Revisión en el hilo' {
   It 'el ruling fija el umbral de solo docs' {
-    foreach ($anchor in 'bajo `.docs/` o son `*.md` de la raíz', 'menos de 20 líneas', 'git diff --numstat', 'git show --remerge-diff', 'revisado en el hilo: <sha> · <ficheros> · <n> líneas') {
+    foreach ($anchor in 'menos de 20 líneas', 'git diff --numstat', 'git show --remerge-diff', 'revisado en el hilo: <sha> · <ficheros> · <n> líneas') {
       $script:Profiles | Should -Match ([regex]::Escape($anchor))
     }
   }
 
   It 'el paso 6 nombra el tamaño y enlaza la referencia' {
-    $script:Skill | Should -Match ([regex]::Escape('de solo docs y de menos de 20 líneas, contadas con `git diff --numstat`'))
+    $script:Skill | Should -Match ([regex]::Escape('de menos de 20 líneas, contadas con `git diff --numstat`'))
     $script:Skill | Should -Match '(?i)revisado en el hilo'
+  }
+
+  It 'la excepción se decide por lo que cambia, no por la ruta' {
+    $texts = $script:Profiles, (Get-SkillStep 'sdd-start-feature' 6), (Get-SkillStep 'sdd-end-feature' 9)
+    foreach ($text in $texts) {
+      $text | Should -Not -Match ([regex]::Escape('`*.md` de la raíz'))
+      foreach ($anchor in '`*.md` de cualquier ruta', 'líneas de comentario', 'instrucciones', 'plantilla') {
+        $text | Should -Match ([regex]::Escape($anchor))
+      }
+    }
+  }
+
+  It 'el ruling saca de la excepción el comentario que una herramienta interpreta' {
+    $script:Profiles | Should -Match ([regex]::Escape('eslint-disable'))
   }
 }
 
@@ -57,8 +71,7 @@ Describe 'Reproducir antes de arreglar' {
 }
 
 Describe 'Revisión en el hilo en los pasos' {
-  It 'el paso dice qué ficheros cuentan como docs y cómo se cuenta un merge' {
-    $script:Skill | Should -Match ([regex]::Escape('todos sus ficheros bajo `.docs/` o `*.md` de la raíz'))
+  It 'el paso dice cómo se cuenta un merge' {
     $script:Skill | Should -Match ([regex]::Escape('en un merge, solo lo que resolvió el hilo, con `git show --remerge-diff`'))
   }
 
