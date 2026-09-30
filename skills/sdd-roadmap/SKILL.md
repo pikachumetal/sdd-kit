@@ -31,8 +31,9 @@ Frente a `sdd-start-feature` decide el verbo: hacerlo ya («añade», «hazme»,
 2. **Lo que deja cada entrada** — la sección de abajo que corresponda.
 3. **Propón y espera** — en `pair` y `delegate`, presenta las filas, la propuesta y la partición antes de escribirlas, y espera la decisión del usuario. Un «decide tú» o «no hay nadie a quien preguntar» es una decisión delegada: escribe y deja las decisiones que tomaste en la propuesta o en el cuerpo del commit. En `unattended`, la opción más conservadora, registrada igual.
 4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-NextSddId.ps1" -ProjectRoot "<raíz>" -Reserve -Count N`. Sin `-Reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
-5. **Publica la reserva** — commitea en la rama de integración las filas nuevas en un commit que solo toca `roadmap.md` (y el `proposal.md` si lo hay): en el worktree donde está sacada (`git worktree list`) o, si no está en ninguno, en un worktree temporal en la misma carpeta que los demás y con nombre corto (en Windows, una ruta larga falla con `Filename too long`). Hasta ese commit la reserva no existe para los demás worktrees.
-6. **Cierra** — di qué fila va primero y con qué se arranca (`sdd-start-feature` o `sdd-start-patch`). No la arranques.
+5. **Comprueba la forma** — tras escribir en el roadmap y antes de commitear, ejecuta `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Roadmap.ps1" -Path .docs/sdd`. Un fallo en una línea que escribiste lo corriges en el roadmap, nunca en el validador. Un fallo en una línea que no tocaste no lo arreglas: lo listas en tu mensaje como forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0. En el RED, 2 de 2 sujetos no lo ejecutaron y dejaron el roadmap en rojo (P3).
+6. **Publica la reserva** — commitea en la rama de integración las filas nuevas en un commit que solo toca `roadmap.md` (y el `proposal.md` si lo hay): en el worktree donde está sacada (`git worktree list`) o, si no está en ninguno, en un worktree temporal en la misma carpeta que los demás y con nombre corto (en Windows, una ruta larga falla con `Filename too long`). Hasta ese commit la reserva no existe para los demás worktrees.
+7. **Cierra** — di qué fila va primero y con qué se arranca (`sdd-start-feature` o `sdd-start-patch`). No la arranques.
 
 ## Lo que deja cada entrada
 
@@ -48,7 +49,9 @@ Entrevista con la técnica de `superpowers:brainstorming` —una pregunta por tu
 
 ### Algo concreto
 
-Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog» si no, o donde diga el usuario. Una épica de una sola feature es una feature.
+Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog» si no, o en la sección de la plantilla que diga el usuario. Una épica de una sola feature es una feature.
+
+Si el usuario pide una sección que no está en `roadmap-template.md` («abre una sección "Ideas del cliente"»), no la creas: la fila va a la sección de la plantilla equivalente —lo que aún no se ha decidido hacer, al Backlog— y tu mensaje dice que la plantilla no la admite y dónde ha ido. En el RED, 2 de 2 sujetos crearon la sección con su línea de prosa porque «me lo pediste» (`tests/release-close-roadmap-red.md`, P1).
 
 ### Items del gestor
 
@@ -82,6 +85,7 @@ Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog»
 ## Red flags — STOP
 
 - Vas a crear una rama, una carpeta de feature o una `spec.md` desde esta skill.
+- Vas a abrir una sección que no está en `roadmap-template.md` porque el usuario la pidió, o a commitear sin que `Test-Roadmap.ps1` haya pasado por lo que escribiste.
 - Vas a borrar una fila, sustituirla por un item del gestor o fusionar dos sin que el usuario lo diga.
 - Vas a dejar las reglas de negocio de algo grande en un bloque del roadmap.
 - Vas a apuntar un item grande del gestor con «trocear al arrancarlo» en vez de proponer ya la partición.

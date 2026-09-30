@@ -83,10 +83,16 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN la subsección `### v1.1.0 — 2026-09-05` lleva la línea `validaciones pendientes: 0016, 0017`, y el disparador y el dueño de cada una siguen en su walkthrough
 - AND una release sin validaciones pendientes no lleva la línea
 
+### Los cierres de feature y de patch avisan del roadmap fuera de forma sin bloquear
+- GIVEN un roadmap con la sección heredada `## Versión siguiente`, que `Test-Roadmap.ps1` rechaza, y la feature 0030 (o el patch 0031) que se cierra
+- WHEN `sdd-end-feature` marca su fila (o `sdd-end-patch` añade la suya a «Patches»)
+- THEN tras editar el roadmap y antes del commit de cierre ejecuta `Test-Roadmap.ps1`, y un fallo en una línea que escribió el cierre lo corrige
+- AND los fallos de líneas que el cierre no escribió no se tocan ni paran el cierre: el mensaje final dice cuántos son y que los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el formato de cierre, en el bloque de ayuda de «Deuda técnica» de `roadmap-template.md` de `sdd-templates`; los cierres lo citan. La cabecera de la tabla de release, en el bloque de ayuda de la sección «Release N» de la misma plantilla. Qué va en cada sección, en los bloques de ayuda de esa plantilla; lo comprueba `Test-Roadmap.ps1` de `sdd-templates/scripts/`.
 - **Idioma de los nombres**: estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
 - **Límites**: el roadmap solo lleva las secciones de la plantilla y, fuera de «Releases cerradas», solo tablas. Una fila saldada y una fila de «Patches» duran hasta el corte de la release siguiente.
-- **Avisos**: una línea por fallo del validador, con la regla incumplida.
+- **Avisos**: una línea por fallo del validador, con la regla incumplida. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.
 - **Regla ante conflicto**: una fila lleva un solo prefijo; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada.

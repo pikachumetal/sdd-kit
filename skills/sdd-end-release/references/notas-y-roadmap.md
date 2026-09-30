@@ -11,8 +11,16 @@
 ## Paso 4 — Colapsar el roadmap
 
 4. **Colapsar el roadmap** — ANTES de sustituir nada, enumera los pendientes vivos de la sección de la
-   release y reubícalos (siguiente release / backlog); DESPUÉS colapsa la sección a resumen + enlaces:
-   changelog siempre, release notes solo con destinatario, retro solo si existe. Añade también la línea de
+   release y reubícalos (siguiente release / backlog); DESPUÉS colapsa la sección a una subsección
+   `### vX.Y.Z — AAAA-MM-DD` **arriba del todo** de «Releases cerradas» (más reciente arriba: el
+   validador toma la primera como la última release), con resumen + enlaces: changelog siempre, release
+   notes solo con destinatario, retro solo si existe. El resumen nombra por su id solo lo que la release
+   publica. Si quedan validaciones diferidas, la subsección lleva la línea `validaciones pendientes: <ids>`,
+   y esas features no conservan fila en ninguna sección abierta. En el mismo colapso salen del roadmap las
+   filas que la release publica fuera de su sección (las de «Próximo»), las filas saldadas de «Backlog» y
+   «Deuda técnica» y los patches de «Patches» con fecha no posterior al corte: quedan en el changelog
+   sellado, con su walkthrough o su `patch.md` enlazado. Sin sección de la release (release que no se
+   abrió), el paso solo añade la subsección y saca esas filas. Añade también la línea de
    smoke de la release: **smoke** = lo que se ejecuta sobre la rama integrada antes del cierre para
    comprobar que lo entregado funciona (la suite más un uso real: arrancar, instalar, invocar);
    **hallazgo** = defecto del comportamiento entregado que detecta ese smoke, se corrija o no dentro de la
