@@ -3,7 +3,7 @@ id: 20260930-095620-feature-0115-roadmap-template-shape
 feature: 0115
 title: El roadmap en la forma de la plantilla
 mode: full
-status: approved
+status: done
 created: 2026-09-30
 author: Claude (Opus 5.5)
 approvers:
