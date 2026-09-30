@@ -38,8 +38,10 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 ## Rulings
 
 - 2026-09-30 — RED sin vigía de silencio: `SUBJECT_TIMEOUT=900` del lanzador ya corta a cada sujeto.
+- 2026-09-30 — Los tests de `Test-Roadmap.Tests.ps1` van con `Slow`, contra la decisión 5 del plan: el conjunto rápido llegó a 28 s con un tope de 30 y `FastSuiteBudget` falló dentro de la suite completa. El roadmap del repo y la paridad de la cabecera siguen en el conjunto rápido, en `RoadmapStructure.Tests.ps1`.
 
 ## Revisión
 
 Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 11 Minor), sobre 12290391
 Pasada de fix: 1892036e, 5 hallazgos RED→GREEN
+Re-revisión: 1892036e..ccbf4c65, sdd-kit:effort-high + opus, con hallazgos (1 Important, 4 Minor)

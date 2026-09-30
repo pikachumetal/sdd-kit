@@ -8,7 +8,7 @@ Previsión de la spec aprobada: 9 sujetos Sonnet en total, ~4 $, techo 10 $; el 
 
 ## Escenarios
 
-Molde `salas`, el mismo del RED (`green/subject.sh` de la carpeta de la spec carga el de `red/subject.sh`). Copia limpia del kit sacada con `git archive` de dos commits intermedios de la Task 2, el del GREEN y el del ajuste, que después se juntaron en el commit de la task. Todos los sujetos entraron por `sdd-init-brownfield` y leyeron `v2.3.0.md`, comprobado en `<etiqueta>.tools.txt`.
+Molde `salas`, el mismo del RED (`green/subject.sh` de la carpeta de la spec carga el de `red/subject.sh`). Copia limpia del kit sacada con `git archive` de dos commits intermedios de la Task 2, el del GREEN y el del ajuste, que después se juntaron en el commit de la task; la de g4, del commit que lleva la receta enmendada tras la revisión final. Todos los sujetos entraron por `sdd-init-brownfield` y leyeron `v2.3.0.md`, comprobado en `<etiqueta>.tools.txt`.
 
 | Escenario | Petición | Sujetos |
 | --- | --- | --- |
@@ -82,7 +82,7 @@ Ajuste, con la copia del commit intermedio que ya llevaba la regla: g2-3 y g2-4 
 
 La revisión final reprodujo que un resumen de release que nombra por su id una feature no publicada hace que el validador la dé por publicada y pida quitar su fila. La receta ganó una frase: la decisión de una release va a su resumen «sin nombrar por su id una feature que no se publicó». g4-1, con la decisión del molde nombrando la 0022, que sigue pendiente: el resumen de la v1.2.0 dice «sale sin los festivos locales, que pasan a la release siguiente», sin el id; la fila 0022 sigue en «Próximo»; `Roadmap válido`. Los demás criterios de g2, sin regresión: «Patches» vacía, `validaciones pendientes: 0021, 0020` y `0016, 0017`, marcador en 2.3.0.
 
-No hay brazo RED con sujeto para este control: el fallo lo reprodujo el revisor sobre el validador, no un sujeto sobre la receta anterior.
+El control no aísla la frase de la receta: g4-1 leyó también `roadmap-template.md`, cuya ayuda de «Releases cerradas» dice lo mismo. No hay brazo RED con sujeto: el fallo lo reprodujo el revisor sobre el validador, no un sujeto sobre la receta anterior.
 
 ## Límites
 

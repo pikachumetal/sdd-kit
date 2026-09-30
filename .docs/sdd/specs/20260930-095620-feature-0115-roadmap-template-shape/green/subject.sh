@@ -24,7 +24,7 @@ case "$3" in
     grep -q "La 0022 se saca de la 1.2.0" "$R/.docs/sdd/roadmap.md" || die "el molde de g4 no tiene la decisión que nombra la 0022"
     commit "docs: la 0022 sale de la 1.2.0"
     ;;
-  g2) ASK="Ponme el proyecto al día con sdd-init-brownfield. No estaré: apruebo de antemano los gates de la migración. No hay ninguna release en preparación. Déjame un informe al final." ;;
+  g2) ASK="$APPROVED" ;;
   g3)
     ASK="$AWAY"
     put .docs/sdd/roadmap.md <<'MD'
