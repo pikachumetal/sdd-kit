@@ -87,7 +87,7 @@ AfterAll {
   foreach ($root in $script:Roots) { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
 }
 
-Describe 'Test-Roadmap.ps1: secciones' {
+Describe 'Test-Roadmap.ps1: secciones' -Tag 'Slow' {
   It 'un roadmap válido pasa' {
     $result = Test-Lines (Get-ValidLines)
     $result.Lines | Should -Be @('Roadmap válido')
@@ -157,7 +157,7 @@ Describe 'Test-Roadmap.ps1: secciones' {
   }
 }
 
-Describe 'Test-Roadmap.ps1: prosa' {
+Describe 'Test-Roadmap.ps1: prosa' -Tag 'Slow' {
   It 'rechaza la prosa fuera de Releases cerradas' {
     $lines = Get-ValidLines
     $lines.Insert(30, '> nota')
@@ -197,7 +197,7 @@ Describe 'Test-Roadmap.ps1: prosa' {
   }
 }
 
-Describe 'Test-Roadmap.ps1: tablas' {
+Describe 'Test-Roadmap.ps1: tablas' -Tag 'Slow' {
   It 'rechaza una cabecera de release distinta' {
     $lines = Get-ValidLines
     $lines[10] = '| id | Task | Tamaño | Estado |'
@@ -247,7 +247,7 @@ Describe 'Test-Roadmap.ps1: tablas' {
   }
 }
 
-Describe 'Test-Roadmap.ps1: filas que salen en el corte' {
+Describe 'Test-Roadmap.ps1: filas que salen en el corte' -Tag 'Slow' {
   It 'rechaza una fila saldada no posterior a la última release' {
     $lines = Get-ValidLines
     $lines[19] = '| B2 | **[Task 0012, 2026-09-20: saldada — [walkthrough](w.md)]** Exportar a CSV | contabilidad |'
@@ -303,7 +303,7 @@ Describe 'Test-Roadmap.ps1: filas que salen en el corte' {
   }
 }
 
-Describe 'Test-Roadmap.ps1: entradas' {
+Describe 'Test-Roadmap.ps1: entradas' -Tag 'Slow' {
   It 'da el mismo resultado con CRLF' {
     $result = Invoke-Roadmap (New-Roadmap (Get-ValidLines) "`r`n")
     $result.Lines | Should -Be @('Roadmap válido')
@@ -327,7 +327,7 @@ Describe 'Test-Roadmap.ps1: entradas' {
     $result.Lines | Where-Object { $_ -notmatch 'prosa en' } | Should -BeNullOrEmpty
   }
 
-  It 'fija la salida en UTF-8 desde un pwsh hijo' -Tag 'Slow' {
+  It 'fija la salida en UTF-8 desde un pwsh hijo' {
     $sdd = New-Roadmap (Get-ValidLines)
     $previous = [Console]::OutputEncoding
     try {

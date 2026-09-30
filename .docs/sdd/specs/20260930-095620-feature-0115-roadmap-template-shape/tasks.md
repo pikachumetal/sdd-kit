@@ -42,3 +42,4 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 ## Revisión
 
 Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 11 Minor), sobre 12290391
+Pasada de fix: 1892036e, 5 hallazgos RED→GREEN

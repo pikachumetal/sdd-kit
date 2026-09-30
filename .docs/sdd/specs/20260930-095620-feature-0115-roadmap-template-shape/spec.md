@@ -149,6 +149,13 @@ La plantilla fija la forma y el script la comprueba con mensajes que dicen la re
 - AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
 
+**ADDED — El título de una release cerrada lleva versión y fecha**
+- GIVEN un roadmap con `### v1.2.0 - 2026-09-20` (guion corto) en la línea 37, bajo «Releases cerradas»
+- WHEN se ejecuta `Test-Roadmap.ps1`
+- THEN escribe `roadmap.md: línea 37: «v1.2.0 - 2026-09-20» no es «### v<versión> — <AAAA-MM-DD>»` y sale con 1
+- AND `### v1.2.0 — 20 de septiembre` y `### Notas` dan el mismo fallo, cada uno con su título
+- AND `### v1.2.0 — 2026-09-20` no da fallo
+
 **ADDED — Un patch publicado sale de «Patches» en el corte**
 - GIVEN una fila de «Patches» con fecha `2026-09-20`, otra con `2026-09-22`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
 - WHEN se ejecuta `Test-Roadmap.ps1`
@@ -235,6 +242,8 @@ La plantilla fija la forma y el script la comprueba con mensajes que dicen la re
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración.
 
 ## Enmiendas
+
+- 2026-09-30 — El validador exige que cada título bajo «Releases cerradas» sea `### v<versión> — <AAAA-MM-DD>` (requisito nuevo «El título de una release cerrada lleva versión y fecha»), y la receta de la migración dice que el resumen de una release no nombra por su id lo que no se publicó — la revisión final reprodujo que un título con guion corto apagaba en silencio las reglas de corte, y que un resumen que nombra una feature no publicada hace que el validador pida quitar su fila pendiente — aprobada: «Sí, enmienda (Recomendada)» y «Sí, 1 sujeto más (Recomendada)»; la campaña pasa a 10 sujetos
 
 - 2026-09-30 — Un patch ya publicado sale de «Patches» en el corte, con la regla de fecha de las filas saldadas, y el validador lo comprueba (requisito nuevo «Un patch publicado sale de «Patches» en el corte» y una fila más en la receta de la migración) — el GREEN dio cuatro tratamientos de la tabla en cuatro sujetos, y en este repo tiene 45 filas sin cota — aprobada: «Sí, enmienda (Recomendada)»
 

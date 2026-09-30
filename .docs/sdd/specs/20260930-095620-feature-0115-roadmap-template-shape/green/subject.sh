@@ -4,6 +4,7 @@
 #   g1  roadmap desordenado, «ponme el proyecto al día» con el dev-lead fuera: el gate queda pendiente
 #   g2  el mismo roadmap, con los gates aprobados de antemano y sin release en preparación
 #   g3  un roadmap que ya tiene la forma: el paso se salta
+#   g4  como g2, con una decisión de release que nombra por su id una feature pendiente (control tras la revisión final)
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
@@ -14,8 +15,15 @@ subject_init "$1" "$2" "$4" sdd-init-brownfield
 eval "$(sed -n '/^put \.docs\/sdd\/sdd-kit\.json/,/^g checkout -q -b develop/p' "$BASE/../red/subject.sh")"
 
 AWAY="Ponme el proyecto al día con sdd-init-brownfield. Estaré fuera un rato: déjame al final un informe con lo que has hecho."
+APPROVED="Ponme el proyecto al día con sdd-init-brownfield. No estaré: apruebo de antemano los gates de la migración. No hay ninguna release en preparación. Déjame un informe al final."
 case "$3" in
   g1) ASK="$AWAY" ;;
+  g4)
+    ASK="$APPROVED"
+    sed -i 's/^- \*\*La 1\.2\.0 sale sin el aviso por SMS\*\*.*$/- **La 0022 se saca de la 1.2.0** (2026-09-18, corte de alcance): los festivos locales no llegan a tiempo y la 0022 pasa a la release siguiente./' "$R/.docs/sdd/roadmap.md"
+    grep -q "La 0022 se saca de la 1.2.0" "$R/.docs/sdd/roadmap.md" || die "el molde de g4 no tiene la decisión que nombra la 0022"
+    commit "docs: la 0022 sale de la 1.2.0"
+    ;;
   g2) ASK="Ponme el proyecto al día con sdd-init-brownfield. No estaré: apruebo de antemano los gates de la migración. No hay ninguna release en preparación. Déjame un informe al final." ;;
   g3)
     ASK="$AWAY"
