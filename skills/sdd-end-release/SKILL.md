@@ -50,14 +50,31 @@ gate en solitario.
    envío lo hace el usuario; tú preparas. Sin destinatario, el paso se omite: basta el changelog sellado.
    Receta, prohibiciones y la entrada del roadmap sin destinatario:
    [notas-y-roadmap.md](references/notas-y-roadmap.md).
-4. **Colapsar el roadmap** — ANTES de sustituir nada, rescata los pendientes vivos de la sección de la
-   release. Si hay features `🧪 validación diferida a <esta release>`, antes de colapsar pide al dev-lead que
-   valide el smoke diciendo qué probó: cada feature que menciona gana una adenda fechada en su
-   `walkthrough.md` con lo que le toca y su fila pasa a `✅`; la que no menciona **conserva la forma**
-   `🧪 validación diferida a <disparador nuevo>` — la siguiente release, salvo que el dev-lead nombre otro
-   disparador — y el resumen de cierre la lista. Estados del roadmap:
-   [control-profiles.md](../sdd-start-feature/references/control-profiles.md).
-   Procedimiento del colapso: [notas-y-roadmap.md](references/notas-y-roadmap.md).
+4. **Colapsar el roadmap** — antes de tocarlo, ejecuta
+   `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Roadmap.ps1" -Path .docs/sdd`
+   (desde el `Base directory` de esta skill, el script está en `../sdd-templates/scripts/`). Con
+   `Sin roadmap que validar`, el paso se salta. Si da un fallo de forma —una sección, prosa o una tabla
+   fuera de la plantilla, como una «Versión siguiente» con el trabajo de la release—, **no cortes desde
+   ella**: di que no es una sección `## Release <N>`, nombra la sección y propón llevar el roadmap a la
+   forma con el paso «Roadmap en la forma de la plantilla» de
+   [migrations/v2.3.0.md](../sdd-init-brownfield/references/migrations/v2.3.0.md), con su gate. Sin el visto
+   del dev-lead a ese gate, el paso 4 queda pendiente y el paso 5 no se ejecuta. En el RED, 2 de 2 sujetos
+   cortaron desde «Versión siguiente» sin decirlo y la dejaron en el roadmap (`tests/release-close-roadmap-red.md`, R1).
+   ANTES de sustituir nada, rescata los pendientes vivos de la sección de la release. Las diferidas que
+   dispara esta release son las filas `🧪 validación diferida a <esta release>` **y** los ids de las líneas
+   `validaciones pendientes:` de releases cerradas cuyo walkthrough (o `patch.md`) pone el disparador en
+   esta release: antes de colapsar pide al dev-lead que valide el smoke diciendo qué probó, nombrándolas
+   todas. Cada una que menciona gana una adenda fechada en su `walkthrough.md` con lo que le toca y sale de
+   las pendientes: su fila, en el colapso; su id, de la línea de la release anterior, que se borra si queda
+   vacía. La que no menciona gana una adenda fechada con el disparador nuevo —la siguiente release, salvo
+   que el dev-lead nombre otro—, **su fila sale igual** y su id va a la línea `validaciones pendientes:` de
+   la release que cierras; el resumen de cierre la lista. En el RED, 4 de 4 sujetos dejaron la diferida
+   como fila de una sección abierta además de en la línea, y ninguno preguntó por la de la release
+   anterior (R3, R6). Procedimiento del colapso: [notas-y-roadmap.md](references/notas-y-roadmap.md).
+   Tras colapsar, y antes del commit del cierre, vuelve a ejecutar el validador: tiene que escribir
+   `Roadmap válido`. Cada línea de fallo se corrige en el roadmap, nunca en el validador; hasta que lo
+   escriba, el paso 5 no se ejecuta. En el RED, 4 de 4 sujetos dejaron el roadmap en rojo sin ejecutarlo:
+   la deuda saldada y el patch ya publicados seguían en sus tablas (R2, R5).
 5. **Versión, tag y merge** — bump con el tooling del proyecto y deja la rama lista. ⛔ **GATE: el merge al
    branch estable y el tag son SIEMPRE decisión del usuario** — prepáralos, preséntalos y espera su
    confirmación explícita; usuario ausente → quedan PENDIENTES en tu informe final. **Atajo, solo si se
@@ -84,6 +101,12 @@ gate en solitario.
   respondiera, o disparaste `sdd-end-release` sin una orden de cierre suya en la conversación.
 - Hay features "cerradas" sin walkthrough/patch.md y has seguido con el cierre sin decisión del usuario.
 - Has colapsado la sección del roadmap sin rescatar antes sus pendientes vivos.
+- Vas a cortar desde una sección que no es `## Release <N>` («Versión siguiente») sin decirlo, o a
+  colapsar con el validador dando un fallo de forma.
+- Vas a commitear el cierre, o a proponer merge y tag, sin que `Test-Roadmap.ps1` haya escrito
+  `Roadmap válido` sobre el roadmap colapsado.
+- Una feature publicada en esta release sigue como fila de «Próximo» o de otra sección abierta, también
+  una `🧪`: su sitio es la línea `validaciones pendientes:`.
 - `.docs/sdd/releases/vX.Y.Z/` no existe al terminar, habiendo destinatario o habiendo retro (sin
   ninguno de los dos, la carpeta no es obligatoria).
 
@@ -96,4 +119,7 @@ gate en solitario.
 | "El usuario ya nombró la versión en su encargo: la doy por confirmada y ejecuto merge+tag" | Nombrar el hito describe el encargo. La confirmación se pide sobre la propuesta final de cierre; merge y tag esperan al usuario. |
 | "Que me des la versión no cuenta como confirmación de estos pasos, así que pregunto otra vez" | Cuenta si citas la orden de cierre y la versión respondiendo a tu propuesta del paso 1, y `hasRecipient: false` lo escribió el usuario sin mover scope: con las tres condiciones, la segunda ronda sobra. |
 | "Escribo yo `hasRecipient: false`: el proyecto es claramente de una persona" | El campo solo lo escribe el usuario, por respuesta o petición explícita suya. Sin eso, ninguna condición es válida y el gate sigue completo. |
+| "«Versión siguiente» hace de sección de la release: colapso desde ahí" | Es la forma que dejó los cortes de la 2.1.0 y la 2.2.0 del kit con las filas publicadas dentro. Un fallo de forma del validador se dice y se lleva a la migración, con su gate. |
+| "La 0022 no se validó: la dejo con 🧪 en «Próximo» para que no se pierda" | No se pierde: su id queda en `validaciones pendientes:` y el disparador en su walkthrough. Como fila, el validador la da por publicada y en una sección abierta (R3, 4/4). |
+| "El roadmap se ve bien, no hace falta pasar el validador" | 4 de 4 sujetos lo dieron por bueno con la deuda saldada y el patch publicado aún en sus tablas. `Roadmap válido` es la prueba, no la lectura. |
 | "El trabajo está entregado y demostrado; el walkthrough que falta no bloquea" | Evidencia faltante = gate de entrada fallido. Se regulariza o lo decide el usuario; documentarlo y seguir es la racionalización, no el remedio. |

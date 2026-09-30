@@ -43,3 +43,31 @@ Describe 'sdd-end-release es solo el corte' {
     $script:EndRelease | Should -Match 'sdd-roadmap'
   }
 }
+
+Describe 'sdd-end-release mantiene el roadmap en la forma' {
+  BeforeAll {
+    $script:EndRelease = Get-KitFile 'skills/sdd-end-release/SKILL.md'
+    $script:RoadmapStep = [regex]::Match($script:EndRelease, '(?ms)^4\. \*\*Colapsar el roadmap\*\*.*?(?=^5\. \*\*)').Value
+    $script:CollapseRecipe = Get-KitFile 'skills/sdd-end-release/references/notas-y-roadmap.md'
+  }
+
+  It 'ejecuta el validador en el paso del roadmap' {
+    $script:RoadmapStep | Should -Match 'Test-Roadmap\.ps1'
+  }
+
+  It 'manda a la migración un roadmap fuera de la forma' {
+    $script:RoadmapStep | Should -Match 'migrations/v2\.3\.0\.md'
+  }
+
+  It 'no ejecuta el paso 5 con el roadmap en rojo' {
+    $script:RoadmapStep | Should -Match 'Roadmap válido'
+  }
+
+  It 'deja las validaciones pendientes en su línea' {
+    $script:CollapseRecipe | Should -Match 'validaciones pendientes:'
+  }
+
+  It 'el paso del roadmap de sdd-end-release acepta un proyecto sin roadmap' {
+    $script:RoadmapStep | Should -Match 'Sin roadmap que validar'
+  }
+}
