@@ -196,10 +196,17 @@ function Invoke-FeatureMerge([string]$Worktree, [string]$Branch, [pscustomobject
 }
 
 function Invoke-Verification([string]$Worktree, [string]$Command) {
+  # El log va fuera del worktree temporal, que se retira al fallar: sin él, ver por qué falló el gate obliga a relanzarlo.
+  $log = Join-Path ([System.IO.Path]::GetTempPath()) "sdd-merge-verify-$(Get-Date -Format 'yyyyMMdd-HHmmss')-$PID.log"
+  # Tee-Object no crea el fichero si el gate no escribe nada.
+  New-Item -ItemType File -Path $log | Out-Null
   Push-Location -LiteralPath $Worktree
   try {
-    & pwsh -NoProfile -Command $Command
-    if ($LASTEXITCODE -ne 0) { throw "verificación: código de salida $LASTEXITCODE." }
+    & pwsh -NoProfile -Command $Command 2>&1 | ForEach-Object { "$_" } | Tee-Object -LiteralPath $log
+    if ($LASTEXITCODE -ne 0) {
+      throw "verificación: código de salida $LASTEXITCODE; salida completa en $log`n$((Get-Content -LiteralPath $log -Tail 20) -join "`n")"
+    }
+    Remove-Item -LiteralPath $log
   }
   finally {
     Pop-Location
