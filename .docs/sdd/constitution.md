@@ -71,9 +71,11 @@ Aplica al código ejecutable del kit (scripts, tests) y viaja **literal** en las
 
 ## Art. XI — Documentos acotados
 
-Todo documento de `.docs/sdd/` es de uno de dos tipos, y no los mezcla:
+Todo documento de `.docs/sdd/` que escribe una persona o un agente es de uno de dos tipos, y no los mezcla:
 
 - **Documento de estado**: dice cómo es el proyecto hoy. Se reescribe; no se le añade. Lo nuevo sustituye a lo viejo, y por eso está acotado. No guarda la historia de cómo llegó a ser así.
-- **Artefacto de evento**: dice qué pasó y por qué. Es un fichero por evento, no se edita después y vive en una carpeta que nadie tiene que leer entera.
+- **Artefacto de evento**: dice qué pasó y por qué. Es un fichero por evento y vive en una carpeta que nadie tiene que leer entera. Su cuerpo no se reescribe después: lo posterior se añade como adenda fechada.
+
+Dos documentos quedan fuera de esa pareja, y la tabla lo dice: el changelog, que es un diario que solo crece por arriba y del que solo se lee la cabecera, y el log de estimación, que lo genera un script y nadie escribe a mano.
 
 Cada documento declara quién lo escribe, quién lo lee y qué lo acota; la tabla vive en `architecture.md`. Un documento sin dueño o sin lector no se crea. Lo que no cabe en un documento de estado es un evento, y va al artefacto del evento que lo produjo: el porqué de una feature, a su spec; lo que se decidió para una release, a su resumen; una decisión de una consulta, a una propuesta. Una regla o un descarte sí son estado, y van al documento de anclaje de su tema.

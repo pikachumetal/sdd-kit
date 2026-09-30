@@ -21,7 +21,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 1 | Validador y plantilla | done | fdcabcc1 | |
 | 2 | Migración a v2.3.0 y GREEN | done | 700f394a | |
 | 3 | Documentos acotados: principio y tabla | done | c3543159 | |
-| 4 | Este roadmap, migrado | done | — | gate del dev-lead en el Step 4 |
+| 4 | Este roadmap, migrado | done | 12290391 | gate del dev-lead en el Step 4 |
 
 ## Verificación por task
 
@@ -38,3 +38,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 ## Rulings
 
 - 2026-09-30 — RED sin vigía de silencio: `SUBJECT_TIMEOUT=900` del lanzador ya corta a cada sujeto.
+
+## Revisión
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (0 Critical, 4 Important, 11 Minor), sobre 12290391

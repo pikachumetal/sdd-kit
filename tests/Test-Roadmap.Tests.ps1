@@ -182,6 +182,14 @@ Describe 'Test-Roadmap.ps1: prosa' {
     $result.Code | Should -Be 1
   }
 
+  It 'rechaza una release cerrada cuyo título no es versión y fecha: <_>' -ForEach @('v1.2.0 - 2026-09-20', 'v1.2.0 — 20 de septiembre', 'Notas') {
+    $lines = Get-ValidLines
+    $lines[36] = "### $_"
+    $result = Test-Lines $lines
+    $result.Lines | Should -Contain "roadmap.md: línea 37: «$_» no es «### v<versión> — <AAAA-MM-DD>»"
+    $result.Code | Should -Be 1
+  }
+
   It 'no valida tablas bajo Releases cerradas' {
     $lines = Get-ValidLines
     $lines.InsertRange(40, [string[]]@('| Id | Qué | Disparador |', '| --- | --- | --- |', '| 0021 | Aviso | 🧪 al primer correo |', ''))
@@ -215,8 +223,9 @@ Describe 'Test-Roadmap.ps1: tablas' {
 
   It 'no cuenta la barra escapada como celda' {
     $lines = Get-ValidLines
-    $lines[6] = '| 3 | Contar con `grep -E ''\| \*\*\[Feature''` | ⏳ |'
-    (Test-Lines $lines).Code | Should -Be 0
+    $lines[6] = '| 3 | Piloto en la oficina de Lugo | pendiente \| ⏳ |'
+    $result = Test-Lines $lines
+    $result.Lines | Should -Be @('roadmap.md: línea 7: estado «pendiente \| ⏳» no admitido: ⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …')
   }
 
   It 'conserva los mensajes de estructura' {
@@ -257,9 +266,10 @@ Describe 'Test-Roadmap.ps1: filas que salen en el corte' {
     (Test-Lines $lines).Code | Should -Be 0
   }
 
-  It 'sin releases cerradas no rechaza ninguna fila saldada' {
+  It 'sin releases cerradas no rechaza ninguna fila saldada ni ningún patch' {
     $lines = Get-ValidLines
     $lines[25] = '| **[Patch 0018, 2026-09-10: saldada — [patch](p.md)]** Bloqueo de SQLite | alto | patch |'
+    $lines[32] = '| 2026-09-10 | 0018 | Bloqueo de SQLite — [patch](p.md) |'
     $lines.RemoveRange(36, 11)
     (Test-Lines $lines).Code | Should -Be 0
   }

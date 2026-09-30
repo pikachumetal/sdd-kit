@@ -4,11 +4,11 @@ Mide el paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, 
 
 ## Previsión y gasto (Art. I)
 
-Previsión de la spec aprobada: 9 sujetos Sonnet en total, ~4 $, techo 10 $. Gastado: 9 sujetos y 2,38 $ (RED: 2 sujetos, 0,61 $; GREEN: 5 sujetos, 1,23 $; ajuste: 2 sujetos, 0,54 $). Los sujetos corrieron en paralelo, con tope de 15 min cada uno.
+Previsión de la spec aprobada: 9 sujetos Sonnet en total, ~4 $, techo 10 $. Gastado, sumando el `total_cost_usd` que cada sujeto deja en su `<etiqueta>.tools.txt`: 9 sujetos y 2,38 $ (RED: 2 sujetos, 0,61 $; GREEN: 5 sujetos, 1,23 $; ajuste: 2 sujetos, 0,54 $). Los sujetos corrieron en paralelo, con tope de 15 min cada uno.
 
 ## Escenarios
 
-Molde `salas`, el mismo del RED (`green/subject.sh` de la carpeta de la spec carga el de `red/subject.sh`). Copia limpia del kit sacada con `git archive` de `c4e705c0` (GREEN) y de `8aebec65` (ajuste). Todos los sujetos entraron por `sdd-init-brownfield` y leyeron `v2.3.0.md`, comprobado en `<etiqueta>.tools.txt`.
+Molde `salas`, el mismo del RED (`green/subject.sh` de la carpeta de la spec carga el de `red/subject.sh`). Copia limpia del kit sacada con `git archive` de dos commits intermedios de la Task 2, el del GREEN y el del ajuste, que después se juntaron en el commit de la task. Todos los sujetos entraron por `sdd-init-brownfield` y leyeron `v2.3.0.md`, comprobado en `<etiqueta>.tools.txt`.
 
 | Escenario | Petición | Sujetos |
 | --- | --- | --- |
@@ -41,7 +41,7 @@ Resuelve F4 del RED (0/2 dejaron pendiente lo que borraban).
 | F3 · lo que sale del roadmap | 2/2: el cuerpo del commit lleva `git show 4b1eff9:.docs/sdd/roadmap.md` | 2/2 igual |
 | F5 · decisiones pendientes | 2/2 al Backlog como `B3` y `B4`; ningún id de la secuencia reservado | 2/2 igual |
 | F6 · decisión de una release | 2/2 al resumen de la v1.2.0 | 2/2 igual |
-| F7 · comprobar el resultado | 2/2 ejecutaron el validador (2 y 4 llamadas) | 2/2 (1 y 2 llamadas) |
+| F7 · comprobar el resultado | 2/2 ejecutaron el validador antes y después de migrar | 2/2 igual |
 | F8 · fila saldada anterior a la última release y fila ✅ de «Próximo» | 2/2 salen | 2/2 salen |
 
 Controles de lo que el RED ya cumplía:
@@ -75,7 +75,7 @@ La receta no decía qué hacer con la tabla «Patches», y los cuatro sujetos de
 
 Decisión del dev-lead (enmienda de la spec, 2026-09-30): un patch con fecha igual o anterior a la última release cerrada sale de «Patches» en el corte. La regla entró en el validador, en la plantilla y en la receta («manda la fecha», aunque ningún resumen nombre el patch).
 
-Ajuste, con la copia de `8aebec65`: g2-3 y g2-4 dejan «Patches» vacía y escriben `validaciones pendientes: 0020, 0021` en la v1.2.0, los dos igual. El resto de criterios y controles, sin regresión (tablas de arriba).
+Ajuste, con la copia del commit intermedio que ya llevaba la regla: g2-3 y g2-4 dejan «Patches» vacía y escriben `validaciones pendientes: 0020, 0021` en la v1.2.0, los dos igual. El resto de criterios y controles, sin regresión (tablas de arriba).
 
 ## Límites
 

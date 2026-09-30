@@ -52,4 +52,4 @@
 
 ## Releases cerradas
 
-> Las releases ya colapsadas por `sdd-end-release`, más reciente arriba: una subsección `### vX.Y.Z — <AAAA-MM-DD>` por release, con su resumen, sus enlaces y su línea de smoke. Es la única sección con prosa. Si a la release le quedan validaciones diferidas, lleva además la línea `validaciones pendientes: <ids>`; el disparador y el dueño de cada una siguen en su walkthrough o su `patch.md`. Nace vacía.
+> Las releases ya colapsadas por `sdd-end-release`, más reciente arriba: una subsección `### vX.Y.Z — <AAAA-MM-DD>` por release, con su resumen, sus enlaces y su línea de smoke. Es la única sección con prosa. El resumen nombra por su id solo lo que la release publicó: el validador da por publicada toda fila abierta cuyo id aparece aquí, así que lo que se quedó fuera se dice sin su id («sale sin el aviso por SMS»). Si a la release le quedan validaciones diferidas, lleva además la línea `validaciones pendientes: <ids>`; el disparador y el dueño de cada una siguen en su walkthrough o su `patch.md`. Nace vacía.

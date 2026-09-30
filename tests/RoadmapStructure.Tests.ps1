@@ -11,12 +11,10 @@ Describe 'Estructura del roadmap' {
     $LASTEXITCODE | Should -Be 0
   }
 
-  It 'las tablas de release llevan la cabecera literal de roadmap-template.md' {
+  It 'la cabecera de release del validador es la de roadmap-template.md' {
     $template = Join-Path $script:KitRoot 'skills/sdd-templates/templates/roadmap-template.md'
     $expected = (Get-Content -LiteralPath $template -Encoding utf8 | Where-Object { $_ -match '^> \| id \|' }) -replace '^> '
     $expected | Should -Not -BeNullOrEmpty
-    $headers = Get-Content -LiteralPath $script:Roadmap -Encoding utf8 | Where-Object { $_ -match '^\| id \|' }
-    $headers | Should -Not -BeNullOrEmpty
-    $headers | Where-Object { $_ -ne $expected } | Should -BeNullOrEmpty
+    (Get-Content -LiteralPath $script:Validator -Raw -Encoding utf8).Contains("'$expected'") | Should -BeTrue
   }
 }

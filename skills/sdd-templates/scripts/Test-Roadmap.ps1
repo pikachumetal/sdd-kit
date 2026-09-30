@@ -189,6 +189,15 @@ function Get-ClosedReleases([string[]]$Lines, [object[]]$Sections) {
   if ($current) { $current }
 }
 
+function Test-ClosedTitles([string[]]$Lines, [object[]]$Sections) {
+  foreach ($section in $Sections | Where-Object Kind -eq $script:ClosedSection) {
+    foreach ($i in $section.Line..$section.Last) {
+      if ($Lines[$i] -notmatch '^#{3,} (.+?)\s*$' -or $Lines[$i] -match '^### v\S+ — \d{4}-\d{2}-\d{2}\s*$') { continue }
+      "línea $($i + 1): «$($Matches[1])» no es «### v<versión> — <AAAA-MM-DD>»"
+    }
+  }
+}
+
 function Test-SettledRows([string[]]$Lines, [object[]]$Sections, $LastRelease) {
   if (-not $LastRelease) { return }
   foreach ($section in $Sections | Where-Object { $_.Kind -in 'Backlog', 'Deuda técnica' }) {
@@ -225,6 +234,7 @@ function Get-RoadmapProblems([string[]]$Lines) {
   if ($Lines[0] -notmatch '^# Roadmap\b') { 'línea 1: no empieza por «# Roadmap»' }
   Test-SectionSet $sections
   Test-Subsections $Lines $sections
+  Test-ClosedTitles $Lines $sections
   Test-Prose $Lines $sections
   $blocks | ForEach-Object { Test-TableBlock $Lines $_; Test-TableHeader $Lines $_ }
   $rows | ForEach-Object { Test-State $_ }
