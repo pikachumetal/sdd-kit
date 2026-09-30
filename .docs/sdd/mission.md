@@ -38,7 +38,7 @@ Los interruptores por gate sueltos quedan fuera: cuatro gates opcionales son 16 
 
 ## Dominio (lenguaje del equipo)
 
-- **Documentos de anclaje**: mission, constitution, tech-stack, architecture, `capabilities/` (una capacidad por fichero), roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico.
+- **Documentos de anclaje**: mission, constitution, tech-stack, architecture, `capabilities/` (una capacidad por fichero), roadmap — el contexto por capas que sustituye al CLAUDE.md monolítico. **`capabilities/` va primero**: es la idea central del kit, y cualquier hallazgo que la toque se prioriza sobre el resto de la deuda.
 - **Carril feature / carril patch**: flujo completo con spec y plan vs registro ligero para bugs deterministas y ajustes solo de presentación.
 - **Modo lite**: variante del carril feature —no un carril nuevo: sin skills propias ni prefijo de carpeta— para cambios acotados que cumplen un predicado observable. Spec corta y sin plan; el gate de la spec, el smoke y el walkthrough se conservan intactos. Lo habilita el predicado y lo activa la confirmación del usuario.
 - **Carril release**: apertura (el acta triada se convierte en scope que decide el usuario) y cierre (Definition of Done del hito: acta + triage, retro con evidencia, changelog sellado, release notes de cliente, roadmap colapsado; merge y tag los confirma el usuario). **Es opcional** (task 0004): la apertura es la vía ideal para generar features, y en un equipo con gestor de tickets es herramienta del PM o PO, o no se usa. El cierre es el corte de publicación y funciona sin apertura previa.

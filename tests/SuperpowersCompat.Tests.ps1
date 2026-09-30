@@ -33,7 +33,7 @@ Describe 'Compatibilidad con superpowers 6.4.2' {
   }
 
   It 'las referencias de vigilancia declaran validada la 6.4.2 en la caché de superpowers-marketplace' {
-    Get-KitFile '.docs/sdd/roadmap.md' | Should -Match 'superpowers — .*cache/superpowers-marketplace/superpowers/.*Validado: 6\.4\.2'
+    Get-KitFile '.docs/sdd/tech-stack.md' | Should -Match 'superpowers — .*cache/superpowers-marketplace/superpowers/.*Validado: 6\.4\.2'
   }
 
   It 'el paso de implementación de plan-template sigue «What a Step Contains» de writing-plans 6.4.2' {

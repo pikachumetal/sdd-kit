@@ -5,10 +5,10 @@ BeforeAll {
 }
 
 Describe 'Estructura del roadmap' {
-  It 'el roadmap del repo no tiene filas sueltas, cabeceras descuadradas ni filas vacías' {
+  It 'el roadmap del repo tiene la forma de la plantilla' {
     $output = & $script:Validator -Path (Join-Path $script:KitRoot '.docs/sdd')
-    $output | Where-Object { $_ -match 'fila fuera de una tabla|fila vacía|la cabecera tiene|no empieza por' } |
-      Should -BeNullOrEmpty -Because 'una fila fuera de su tabla no la encuentra ninguna skill, y Get-NextSddId.ps1 calcula el id sobre esas tablas'
+    $output | Should -Be @('Roadmap válido') -Because 'el roadmap solo lleva las secciones y las tablas de roadmap-template.md'
+    $LASTEXITCODE | Should -Be 0
   }
 
   It 'las tablas de release llevan la cabecera literal de roadmap-template.md' {
