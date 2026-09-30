@@ -18,15 +18,15 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Validador y plantilla | done | — | |
-| 2 | Migración a v2.3.0 y GREEN | pending | — | |
+| 1 | Validador y plantilla | done | fdcabcc1 | |
+| 2 | Migración a v2.3.0 y GREEN | done | — | |
 | 3 | Documentos acotados: principio y tabla | pending | — | |
 | 4 | Este roadmap, migrado | pending | — | gate del dev-lead en el Step 4 |
 
 ## Verificación por task
 
 - [x] Task 1 — Pester de `Test-Roadmap`, `RoadmapStructure`, `Skills` y `AnchorTemplates`
-- [ ] Task 2 — Pester de `MigrationInitParity`, `PathLength` y `SubjectOutputPrivacy`; GREEN g1, g2 y g3
+- [x] Task 2 — Pester de `MigrationInitParity`, `PathLength` y `SubjectOutputPrivacy`; GREEN g1, g2 y g3
 - [ ] Task 3 — conjunto rápido de Pester
 - [ ] Task 4 — conjunto rápido de Pester y `Test-Roadmap.ps1` sobre `.docs/sdd`
 

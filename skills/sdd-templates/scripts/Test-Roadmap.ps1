@@ -7,7 +7,8 @@
   «Deuda técnica», «Patches», «Releases cerradas»); que fuera de «Releases cerradas» solo hay tablas, salvo una línea
   con el estado de la release en una sección «Release <versión>»; que cada tabla tiene cabecera, separador y la
   cabecera literal de su sección; que los estados de «Próximo» y de las releases son los de la plantilla; que ninguna
-  fila saldada de «Backlog» o «Deuda técnica» es anterior o igual a la última release cerrada; y que ninguna fila de
+  fila saldada de «Backlog» o «Deuda técnica», ni ningún patch de «Patches», es anterior o igual a la última release
+  cerrada; y que ninguna fila de
   una sección abierta es de una feature que ya nombra una release cerrada. Escribe una línea por fallo, con la regla
   incumplida, y sale con 1; sin fallos, «Roadmap válido» y sale con 0.
 .EXAMPLE
@@ -198,6 +199,16 @@ function Test-SettledRows([string[]]$Lines, [object[]]$Sections, $LastRelease) {
   }
 }
 
+function Test-ReleasedPatches([string[]]$Lines, [object[]]$Sections, $LastRelease) {
+  if (-not $LastRelease) { return }
+  foreach ($section in $Sections | Where-Object Kind -eq 'Patches') {
+    foreach ($i in $section.Line..$section.Last) {
+      if ($Lines[$i] -notmatch '^\|\s*(\d{4}-\d{2}-\d{2})\s*\|' -or $Matches[1] -gt $LastRelease.Date) { continue }
+      "línea $($i + 1): patch del $($Matches[1]), no posterior a la v$($LastRelease.Version) ($($LastRelease.Date)): sale en el corte"
+    }
+  }
+}
+
 function Test-Published($Row, [object[]]$Releases) {
   $id = $Row.Cells[0]
   if ($id.Length -lt $script:MinPublishedIdLength) { return }
@@ -217,7 +228,9 @@ function Get-RoadmapProblems([string[]]$Lines) {
   Test-Prose $Lines $sections
   $blocks | ForEach-Object { Test-TableBlock $Lines $_; Test-TableHeader $Lines $_ }
   $rows | ForEach-Object { Test-State $_ }
-  Test-SettledRows $Lines $sections ($releases | Select-Object -First 1)
+  $lastRelease = $releases | Select-Object -First 1
+  Test-SettledRows $Lines $sections $lastRelease
+  Test-ReleasedPatches $Lines $sections $lastRelease
   $rows | ForEach-Object { Test-Published $_ $releases }
 }
 

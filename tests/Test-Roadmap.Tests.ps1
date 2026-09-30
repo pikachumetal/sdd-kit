@@ -37,7 +37,7 @@ BeforeAll {
     ''
     '| Fecha | Id | Descripción |'
     '| --- | --- | --- |'
-    '| 2026-09-19 | 0020 | La franja de las 23:30 — [patch](specs/y/patch.md) |'
+    '| 2026-09-22 | 0023 | El aviso no salía en festivo — [patch](specs/y/patch.md) |'
     ''
     '## Releases cerradas'
     ''
@@ -262,6 +262,14 @@ Describe 'Test-Roadmap.ps1: filas que salen en el corte' {
     $lines[25] = '| **[Patch 0018, 2026-09-10: saldada — [patch](p.md)]** Bloqueo de SQLite | alto | patch |'
     $lines.RemoveRange(36, 11)
     (Test-Lines $lines).Code | Should -Be 0
+  }
+
+  It 'rechaza un patch no posterior a la última release' {
+    $lines = Get-ValidLines
+    $lines.Insert(33, '| 2026-09-20 | 0020 | 🧪 validación diferida a la primera reserva nocturna — La franja de las 23:30 — [patch](specs/z/patch.md) |')
+    $result = Test-Lines $lines
+    $result.Lines | Should -Be @('roadmap.md: línea 34: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte')
+    $result.Code | Should -Be 1
   }
 
   It 'rechaza la fila de una feature ya publicada' {

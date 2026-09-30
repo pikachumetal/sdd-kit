@@ -100,6 +100,8 @@ Técnica:
 - Los ADR y `tech-stack.md`, después de esta feature — «ok, vamos con el roadmap, y luego miraremos lo del adr», 2026-09-30
 - Campaña de la migración aceptada con 6 sujetos, ~6 $ y techo 10 $ — la misma frase, 2026-09-30
 - Review de spec con dos revisores — «Dos revisores en paralelo», 2026-09-30
+- Las features pendientes de este repo van a `## Release 2.3.0` — «## Release 2.3.0 (Recomendada)», 2026-09-30
+- Tabla de destinos de la migración de este roadmap (`migration-gate.md`) — «Apruebo la tabla (Recomendada)», 2026-09-30
 - Las 🧪 de este repo se cierran en bloque como «validación en campo» — fila 0115 del roadmap, dev-lead, 2026-09-29
 
 ## Intent
@@ -147,6 +149,13 @@ La plantilla fija la forma y el script la comprueba con mensajes que dicen la re
 - AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
 
+**ADDED — Un patch publicado sale de «Patches» en el corte**
+- GIVEN una fila de «Patches» con fecha `2026-09-20`, otra con `2026-09-22`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
+- WHEN se ejecuta `Test-Roadmap.ps1`
+- THEN escribe `roadmap.md: línea <n>: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y sale con 1
+- AND la fila del 2026-09-22 no da fallo
+- AND sin ninguna subsección en «Releases cerradas», ninguna fila de «Patches» da fallo
+
 **ADDED — El roadmap solo lleva las secciones de la plantilla**
 - GIVEN un roadmap con las secciones «Próximo», «Versión siguiente», «Backlog», «Deuda técnica», «Decisiones tomadas», «Patches» y «Releases cerradas»
 - WHEN se ejecuta `Test-Roadmap.ps1`
@@ -185,7 +194,7 @@ La plantilla fija la forma y el script la comprueba con mensajes que dicen la re
 **Reglas de la capacidad**
 - **Dónde viven los datos**: el formato de cierre, en el bloque de ayuda de «Deuda técnica» de `roadmap-template.md` de `sdd-templates`; los cierres lo citan. La cabecera de la tabla de release, en el bloque de ayuda de la sección «Release N» de la misma plantilla. Qué va en cada sección, en los bloques de ayuda de esa plantilla; lo comprueba `Test-Roadmap.ps1` de `sdd-templates/scripts/`.
 - **Idioma de los nombres**: estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
-- **Límites**: el roadmap solo lleva las secciones de la plantilla y, fuera de «Releases cerradas», solo tablas. Una fila saldada dura hasta el corte de la release siguiente.
+- **Límites**: el roadmap solo lleva las secciones de la plantilla y, fuera de «Releases cerradas», solo tablas. Una fila saldada y una fila de «Patches» duran hasta el corte de la release siguiente.
 - **Avisos**: una línea por fallo del validador, con la regla incumplida.
 - **Regla ante conflicto**: una fila lleva un solo prefijo; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada.
 
@@ -226,6 +235,8 @@ La plantilla fija la forma y el script la comprueba con mensajes que dicen la re
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración.
 
 ## Enmiendas
+
+- 2026-09-30 — Un patch ya publicado sale de «Patches» en el corte, con la regla de fecha de las filas saldadas, y el validador lo comprueba (requisito nuevo «Un patch publicado sale de «Patches» en el corte» y una fila más en la receta de la migración) — el GREEN dio cuatro tratamientos de la tabla en cuatro sujetos, y en este repo tiene 45 filas sin cota — aprobada: «Sí, enmienda (Recomendada)»
 
 ## Aprobaciones
 

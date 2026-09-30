@@ -45,6 +45,8 @@
 
 ## Patches
 
+> Los patches cerrados desde la última release. Un patch con fecha igual o anterior a la última release cerrada sale en el corte: queda en el changelog sellado, con su `patch.md` enlazado.
+
 | Fecha | Id | Descripción |
 | --- | --- | --- |
 
