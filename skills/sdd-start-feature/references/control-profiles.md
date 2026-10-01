@@ -53,13 +53,13 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
 | Freno de alcance (3.er fix, salida observable, fila de la feature o fichero de la task cambiados en la base) | para | para | opción conservadora, enmienda sin aprobar |
 | Salida del plan | ruling + «Me salí del plan en…» | ruling + «Me salí del plan en…» | ruling + informe |
-| Validación (cierre de feature y de patch) | para | para | diferida al smoke de la release (🧪) |
+| Validación (cierre de feature y de patch) | para | para | diferida al smoke de la release (🧪) · con `validation.mode: field` en `sdd-kit.json`, en los tres: no para, [validación en campo](#validación-en-campo) |
 | Merge a develop (cierre de feature y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
 | Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
 | Merge a main, tag, cualquier otro push, PR, publicar | persona | persona | persona |
 
 Más:
-- La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada.
+- La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada.
 - «EN ESPERA» no es un estado del roadmap: es la feature en curso esperando al usuario.
 - La ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow` no se deroga: ahí la decisión ya la tomó una persona.
 - En `unattended`, una pregunta de la entrevista sin respuesta en los documentos del proyecto aparca la feature, y al acabar la release hay un solo informe.
@@ -135,6 +135,18 @@ En `unattended` el disparador es siempre el smoke de la release: no hacen falta 
 
 Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el walkthrough (en un patch, en `patch.md` §4) con solo lo que él dice que probó, y pasa la fila a ✅ (en un patch, quita el prefijo 🧪).
 
+## Validación en campo
+
+Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Sin la clave, o con `manual`, la validación es la de siempre.
+
+En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature`, paso 0 de `sdd-end-feature` y de `sdd-end-patch`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección (en el RED, 6 de 6 sujetos con la clave pararon a pedir la validación, `tests/field-validation-red.md`). Lo que no cambia es la verificación del agente: revisión final y re-revisión, smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
+
+Forma, y solo esta:
+- Walkthrough (en un patch, `patch.md` §4, debajo de la tabla): `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutaste (p. ej. `Validación en campo: 2026-10-06 · suite 412/412 en 96 s · smoke 5/5 THEN con ejecución real · revisión final opus limpia sobre a1b2c3d`). Un THEN o una verificación visual `no probado` van tal cual, con su motivo: la línea no los da por verificados.
+- Roadmap: ✅, sin 🧪. La fila del patch en «Patches» no lleva el prefijo 🧪 ni tiene fila en la tabla de la release.
+
+Si el usuario, aun así, dice qué ha probado, registras `Validado` con su frase: cuando hay validación humana, manda.
+
 ## unattended
 
 - La spec la aprueba el agente, con las decisiones registradas en «Decisiones que he tomado yo».
@@ -209,6 +221,7 @@ Conjunto cerrado:
 | `merge.push` | booleano | `false` |
 | `execution` | `auto` \| `native` \| `subagent` | `"auto"` |
 | `validation.startEnvironment` | booleano (solo en `sdd-kit.local.json`) | `false` |
+| `validation.mode` | `manual` \| `field` (solo en `sdd-kit.json`) | `"manual"` |
 
 `execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `writing-plans` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro. No tiene nivel de release (precedencia en «sdd-kit.local.json»): el método queda escrito en el plan de cada feature, y un método que el dev-lead nombra para una feature concreta cuenta como dado.
 
@@ -216,7 +229,7 @@ Conjunto cerrado:
 
 `control.maxParallelAgents` solo se declara aquí: su conducta la define la task 0022. `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
 
-El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
+El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 
 ## Preguntas de las claves
 

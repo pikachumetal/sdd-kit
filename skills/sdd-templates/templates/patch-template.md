@@ -46,8 +46,9 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 ## 4. Verificación
 
 > Distinguir lo verificado por el agente de lo reportado por el usuario. Debajo de la tabla, la
-> validación del paso 0 de `sdd-end-patch`: `Validado: <fecha> · «<frase literal>»` o
-> `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>`.
+> validación del paso 0 de `sdd-end-patch`: `Validado: <fecha> · «<frase literal>»`,
+> `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>` o, con `validation.mode: field`,
+> `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>`.
 
 | # | Caso | Resultado |
 | --- | --- | --- |

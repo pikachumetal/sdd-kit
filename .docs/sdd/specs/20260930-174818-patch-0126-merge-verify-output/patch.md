@@ -44,6 +44,8 @@ Los casos 1 a 3 los verificó el agente.
 
 Validación diferida: 2026-09-30 · «Diferir: lo pruebo en el próximo cierre con -VerifyCommand en rojo, a cargo del dev-lead» · disparador: el próximo cierre con `-VerifyCommand` en rojo, a cargo del dev-lead
 
+Validación en campo: 2026-10-01 · adenda: este repo pasa a `validation.mode: field` con la feature 0118 (decisión del dev-lead del 2026-09-29); vale la verificación del agente de la tabla de arriba
+
 ## 5. Tiempo (ligero)
 
 - Real: 0,5h

@@ -91,3 +91,8 @@ Verificado por el agente, con los sujetos headless del GREEN (`green/out/`):
 
 - Un molde que mide un corte por fechas tiene que llevar fechas anteriores a hoy: la spec usaba el 2026-10-05 como ejemplo, pero los sujetos cortan con la fecha real, y un patch del 2026-10-02 no habría salido en un corte del 2026-09-30 → `tech-stack.md` (campañas headless).
 - Un sujeto del RED puede dar la conducta buscada por iniciativa propia: `c1-2` ejecutó el validador que encontró en la copia del kit. Con 1 de 4 se escribió la guía, porque salía de una fuente incidental (Art. I) → sin destino nuevo: la regla ya está en el Art. I.
+
+## 6. Adendas
+
+- 2026-10-01 · Validación en campo: este repo pasa a `validation.mode: field` con la feature 0118 (decisión del dev-lead del 2026-09-29). La validación diferida de arriba se cierra con la verificación del agente que ya consta en la sección 4; el uso real llega por los tickets de `sdd-feedback`.
+
