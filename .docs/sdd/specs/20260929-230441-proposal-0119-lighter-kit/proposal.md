@@ -41,9 +41,12 @@ El kit nació como «superpowers con la documentación que queremos» y ha creci
 | 1 | 0120 | Baterías de regresión por skill, topes de palabras y «una entra, otra sale» | — |
 | 2 | 0121 | Adelgazar las skills: spike de lenguaje y alineación con superpowers, piloto en `using-sdd`, después `sdd-start-feature` | 0120 |
 | 3 | 0122 | `sdd-upgrade`: la actualización del proyecto fuera de `sdd-init-brownfield` | 0115 |
+| 4 | 0128 | `sdd-grilling`: el método de preguntas del kit, adaptado de `grilling` de Matt Pocock | 0120 |
 
 ## Acta
 
 No aplica: entrevista (consulta con grilling del 2026-09-29).
 
 ## Enmiendas
+
+- 2026-10-01 — reparto: nueva feature 0128, `sdd-grilling`, tras la 0120 y antes de la 0121, que se lleva el punto (4) de la 0121 («cómo pregunta el kit»). Ejemplo: hoy `sdd-roadmap`, las init y `sdd-config` dicen cada una «una pregunta por turno», y `sdd-consult` invoca `grilling` de un plugin que el kit no declara; con la 0128, las cinco invocan `sdd-grilling` y la regla repetida sale de ellas. Es sub-skill por la regla de esta propuesta: la invocan varias skills en un paso fijo, como `add-to-changelog`; una referencia compartida se descartó porque se salta más (en el GREEN de la 0026, 1 de 2 sujetos no abrió `overrides-superpowers.md`). — pedido por el dev-lead — re-parte: 0121 (sin el punto 4).
