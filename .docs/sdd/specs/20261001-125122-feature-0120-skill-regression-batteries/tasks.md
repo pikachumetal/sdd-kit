@@ -9,3 +9,5 @@
 
 Revisión final: sdd-kit:effort-high + opus, With fixes (4 Important, 12 Minor), sobre eba42959
 Pasada de fix: 5fc5dff2, 4 hallazgos (1 RED→GREEN; el Art. V queda para el dev-lead)
+Re-revisión: 5fc5dff2..HEAD revisado en el hilo (solo docs, <20 líneas)
+Re-revisión: 5fc5dff2..bab57041, sdd-kit:effort-high + opus, limpia (1 Minor: margen de 4 palabras en sdd-end-feature y tech-stack.md)
