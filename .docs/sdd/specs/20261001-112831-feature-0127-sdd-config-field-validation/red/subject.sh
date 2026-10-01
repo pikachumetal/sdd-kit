@@ -6,14 +6,16 @@
 #   c2  «quiero validación en campo solo para mí»
 #   m1  «ponme el proyecto al día con sdd-init-brownfield» desde 2.2.0, roadmap válido, dev-lead presente
 #   m2  m1 con el dev-lead fuera
+#   c3  c1 con la respuesta field y su frase (fix de la revisión final)
+#   m3  m1 con la respuesta field y su frase (fix de la revisión final)
 #   g1  init greenfield en un repo vacío, con todas las respuestas salvo la de quién valida
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
 . "$REPO/tests/headless/lib.sh"
 case "$3" in
-  c1|k1|c2) SKILL=sdd-config ;;
-  m1|m2) SKILL=sdd-init-brownfield ;;
+  c1|k1|c2|c3) SKILL=sdd-config ;;
+  m1|m2|m3) SKILL=sdd-init-brownfield ;;
   g1) SKILL=sdd-init-greenfield ;;
   *) die "escenario desconocido: $3" ;;
 esac
@@ -111,6 +113,8 @@ JS
     c1|k1) ASK='Revisa la configuración del kit y ponla al día.' ;;
     c2) ASK='Quiero validación en campo solo para mí: no me pares a validar al cerrar. Configúramelo.' ;;
     m1) ASK='Ponme el proyecto al día con sdd-init-brownfield. Estoy aquí para lo que necesites.' ;;
+    c3) ASK='Revisa la configuración del kit y ponla al día. A la pregunta de quién valida te respondo ya: field, «aquí validamos en uso, no hay quien pruebe cada cierre». Commitea tú lo que cambies.' ;;
+    m3) ASK='Ponme el proyecto al día con sdd-init-brownfield. Si me preguntas quién valida al cerrar: field, «aquí validamos en uso, no hay quien pruebe cada cierre».' ;;
     m2) ASK='Ponme el proyecto al día con sdd-init-brownfield. Estaré fuera un rato: déjame al final un informe con lo que has hecho.' ;;
   esac
 fi
@@ -121,6 +125,7 @@ subject_launch "$ASK"
 {
   echo "## HEAD antes: $BEFORE · después: $(g rev-parse --short HEAD) · rama: $(g branch --show-current)"
   echo "## git log"; g log --oneline --all
+  echo "## cuerpo de los commits nuevos"; g log --format="--- %h%n%B" "$BEFORE..HEAD" 2>/dev/null
   echo "## status"; g status --short --untracked-files=all
   echo "## diff desde el molde"; g diff "$BEFORE"
   echo "## sdd-kit.json"; cat "$R/.docs/sdd/sdd-kit.json" 2>/dev/null

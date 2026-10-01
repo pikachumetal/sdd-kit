@@ -134,7 +134,14 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND el informe y el cuerpo del commit de la migración llevan `git show 284d195:.docs/sdd/roadmap.md` como la forma de ver el roadmap anterior
 - AND si el dev-lead cambia un destino de la tabla, se aplica el suyo; si la rechaza, `roadmap.md` queda sin tocar y el paso, pendiente
 - AND con `roadmap.md` sin commitear, el paso para antes de la tabla y lo dice
-- AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md` y el marcador, y `tests/MigrationInitParity.Tests.ps1` sigue en verde sin cambiar las init
+- AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md`, `validation.mode` y el marcador, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
+
+### La migración a v2.3.0 pregunta quién valida
+- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `Test-Roadmap.ps1` y cuyo `sdd-kit.json` no tiene `validation.mode`, con el dev-lead presente
+- WHEN pide «ponme el proyecto al día»
+- THEN el agente invoca `sdd-config`, que hace su pregunta de quién valida con la recomendación de su catálogo, y escribe en `sdd-kit.json` solo lo que responde el dev-lead
+- AND con `validation.mode` ya escrito, el paso se salta y el informe lo dice
+- AND con el dev-lead ausente no escribe la clave, y nunca `field`: el informe la lista como pendiente, con cómo reanudarla (invocar `sdd-config`), el proyecto sigue en `manual` y el marcador sube a 2.3.0
 
 ### Con el dev-lead ausente, la migración del roadmap queda pendiente
 - GIVEN el mismo proyecto y una petición que dice que el dev-lead no está

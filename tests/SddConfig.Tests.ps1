@@ -51,6 +51,16 @@ Describe 'Anatomía de sdd-config' {
     $row | Should -Match 'Recomendado `manual`'
   }
 
+  It 'una respuesta field deja su frase y la fecha para el commit de sdd-kit.json' {
+    Get-KitFile $script:SkillPath | Should -Match 'frase literal y la fecha van al cuerpo del commit que lleve `sdd-kit\.json`'
+  }
+
+  It 'la migración a v2.3.0 guarda la frase de field en el informe y en el commit, también al reanudar' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.3.0.md'
+    $migration | Should -Match 'van al informe y al cuerpo del commit que lleve la clave, aunque sea el de otra sesión'
+    $migration | Should -Match 'el cuerpo del commit que la escribió cita la respuesta del dev-lead y la fecha'
+  }
+
   It 'una init o una migración hacen de la 1 a la 7' {
     Get-KitFile $script:SkillPath | Should -Match 'hacen de la 1 a la 7'
   }

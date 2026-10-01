@@ -42,3 +42,19 @@ RED: 0/6 → GREEN: 6/6.
 ## Veredicto
 
 La guía cierra los tres fallos del RED (6/6) y los controles pasan (9/9). Sin REFACTOR.
+
+## Pasada de fix de la revisión final
+
+La revisión final (`sdd-kit:effort-high` + opus, sobre `bb13a5ea`) dejó un Important: la frase del dev-lead que autoriza `field` solo tenía sitio en el commit de una migración que se cierra en la misma sesión. Con el paso 1 pendiente, o al reanudar con `sdd-config`, la clave llegaba a un commit sin la frase que pide la regla del atajo de `control-profiles.md`. El arreglo:
+- En `sdd-config` (paso 3), una respuesta `field` lleva su frase literal y la fecha al cuerpo del commit que lleve `sdd-kit.json`, o se las da a quien lo haga.
+- En `v2.3.0.md`, la frase va al informe y al commit que lleve la clave, aunque sea el de otra sesión, y la verificación lo comprueba.
+
+RED→GREEN estático: dos tests nuevos en `SddConfig.Tests.ps1`. Como la edición de la guía es posterior al GREEN, lleva un sujeto de control por escenario afectado (Art. I), en `fix/out/`:
+
+| Medida | c3-1 (`sdd-config`, responde `field` en la petición) | m3-1 (migración, responde `field` en la petición) |
+| --- | --- | --- |
+| Escribe `validation.mode: field` en `sdd-kit.json` | ✅ | ✅ |
+| El cuerpo del commit cita la frase literal y la fecha | ✅ `d9df755`: «field, aquí validamos en uso, no hay quien pruebe cada cierre» (2026-10-01) | ✅ `af4fa17`: la misma frase y la fecha |
+| No vuelve a preguntar lo que ya tiene valor | ✅ | ✅ |
+
+Gasto: 2 sujetos, 0,36 $. Campaña entera: 17 sujetos y 3,49 $ (techo: 19 y 8 $). `c3-1` también puso `updated` a la fecha del día en `sdd-kit.json`. Esa clave es del marcador, pero el cambio no hace daño: se anota sin guía nueva.

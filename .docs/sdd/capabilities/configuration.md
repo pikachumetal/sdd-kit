@@ -31,10 +31,18 @@ La configuración del kit en un proyecto: qué va en `sdd-kit.json` (del equipo,
 - THEN hace una sola pregunta cerrada por turno, con la opción recomendada primero y su motivo, sacados de su catálogo
 - AND no vuelve a preguntar una clave que ya tiene valor, salvo que el usuario pida cambiarla
 
+### `sdd-config` pregunta quién valida el trabajo
+- GIVEN el proyecto `salas`, una aplicación web de reservas, con un `sdd-kit.json` que tiene `ids`, `control`, `merge` y `execution` y no tiene `validation.mode`
+- WHEN el usuario pide «revisa la configuración del kit y ponla al día»
+- THEN la tabla de `sdd-config` enseña `validation.mode` como «falta» y que rige `manual`
+- AND su pregunta va sola en su turno, con `manual` como recomendada primero y su motivo: con `field` nadie para a probar, y la pantalla de `salas` sí se puede probar al cerrar
+- AND con «`manual`» o «`field`» escribe `validation.mode` en `sdd-kit.json`; con «no sé» no escribe nada y rige `manual`
+- AND en un proyecto que es un kit de skills sin aplicación, que solo se prueba usándolo en otros proyectos, la recomendada es `field`
+
 ### `sdd-config` escribe solo lo respondido, en el fichero que toca
 - GIVEN una respuesta del usuario a una pregunta de `sdd-config`
 - WHEN la escribe
-- THEN una clave de política (`ids`, `merge`, frenos de `control`) va a `sdd-kit.json`; `validation.startEnvironment` va a `sdd-kit.local.json`; `control.profile` y `execution` van donde el usuario diga (invocada por una init o por la migración, siempre a `sdd-kit.json`)
+- THEN una clave de política (`ids`, `merge`, frenos de `control`, `validation.mode`) va a `sdd-kit.json`; `validation.startEnvironment` va a `sdd-kit.local.json`; `control.profile` y `execution` van donde el usuario diga (invocada por una init o por la migración, siempre a `sdd-kit.json`)
 - AND «no sé» no escribe la clave y rige su default; lo que no se preguntó no se escribe
 - AND invocada por una init o por una migración no escribe: devuelve las respuestas y quien la invocó las escribe en `sdd-kit.json`, en su paso de estructura o de marcador (enmienda del 2026-09-25)
 - AND sin usuario no escribe nada: las preguntas quedan como pendientes explícitas en el informe de quien la invocó
