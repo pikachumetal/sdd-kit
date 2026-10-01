@@ -4,6 +4,7 @@ task: <id>            # id del gestor de tickets (0000 si no hay) · id de la se
 parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
 title: Patch — <título corto>
 type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
 status: done
 created: <YYYY-MM-DD>
 branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
@@ -12,8 +13,9 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 
 # Patch <id> — <título corto>
 
-> Registro lightweight de un fix pequeño (<30 min, determinista, sin interpretación de
-> requisitos) o de un ajuste solo de presentación del mismo tamaño. NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
+> Registro lightweight de un cambio pequeño con la solución ya fijada: un fallo determinista
+> (la causa raíz), un ajuste o una retirada solo de presentación (la petición) o una petición
+> cerrada (el ticket o el dev-lead). NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
 > vive aquí + una línea en el changelog (si existe) + la fila del roadmap; el diff exacto, en
 > el commit. Si el fix toca una feature con walkthrough propio aún abierto, NO crear este doc:
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
@@ -29,7 +31,7 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 
 Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
-## 2. Causa raíz (o intención, en un ajuste visual)
+## 2. Causa raíz (o intención, en un ajuste visual; o solución fijada, en una petición cerrada)
 
 > Resultado de `superpowers:systematic-debugging` (Fase 1). El **por qué** con su evidencia
 > en el código, no solo el dónde. La hipótesis de quien reporta no es la causa hasta que la
@@ -37,11 +39,18 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 > En un ajuste solo de presentación no hay causa: la intención en una frase, sacada de la
 > petición («Guardar y Cancelar pasan de la cabecera a una columna derecha en `pedido-detalle`
 > y `albaran-detalle`»).
+> En una petición cerrada tampoco: la solución fijada, con la frase literal del ticket o del
+> dev-lead y su autor, y lo que da por existente, comprobado.
 
 ## 3. Fix
 
 - **Fichero(s)**: <rutas>
 - **Cambio**: qué se cambió, 1-2 frases.
+- **Decisiones** *(omite si no hubo)*: una por línea, con su autor.
+  - <decisión> — <ticket | dev-lead | sin el dev-lead>
+
+> Una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` no cabe en
+> un patch: es feature.
 
 ## 4. Verificación
 

@@ -18,13 +18,13 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Criterio por quién fija la solución y petición cerrada | pending | — | |
+| 1 | Criterio por quién fija la solución y petición cerrada | done | — | GREEN tras tres rondas de REFACTOR; techo a 55 |
 | 2 | Retirada en el patch visual | pending | — | |
 | 3 | Lite con migración de datos y deuda parcial | pending | — | |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester tests/PatchLane.Tests.ps1` y GREEN `p1 p2 b1 b2 c1 c2 k1 d1`
+- [x] Task 1 — `Invoke-Pester tests/PatchLane.Tests.ps1` y GREEN `p1 p2 b1 b2 c1 c2 k1 d1`
 - [ ] Task 2 — Pester y GREEN `r1 r2 r3`
 - [ ] Task 3 — Pester y GREEN `l1 e1`
 

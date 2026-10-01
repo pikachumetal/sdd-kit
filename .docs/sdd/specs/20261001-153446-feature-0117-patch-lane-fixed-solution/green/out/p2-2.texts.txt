@@ -1,0 +1,29 @@
+--- [2]
+Uso `sdd-start-patch` para la petición cerrada VEN-31. Primero compruebo que existe lo que el ticket da por existente.
+
+--- [13]
+El script reservó `0011`, pero ese id ya está en la tabla de Patches del roadmap (el escáner solo lee ids en la primera columna). Los ids no se reutilizan, así que reservo otro.
+
+--- [16]
+Aplico el cambio y lo verifico en un navegador real. Playwright no está instalado, así que lo compruebo primero.
+
+--- [22]
+Antes del cambio, Cancelar se queda en la ficha. Después, lleva a `index.html` («Pedidos») en las dos fichas. Reviso las capacidades y el changelog para el `patch.md`.
+
+--- [26]
+El patch 0012 (VEN-31) está implementado y commiteado (`5e2ac90`) en `feature/0012-cancelar-al-listado`, pero falta cerrarlo con `sdd-end-patch`. Con Cancelar ya se llega al listado de pedidos desde las dos fichas.
+
+- **Clase de patch:** petición cerrada. La solución la fija el ticket, así que no hubo causa raíz que investigar. Comprobé que existen los botones `[data-accion="cancelar"]`, `app.js` cargado en ambas fichas y `index.html`, cuyo título es «Pedidos».
+- **Cambio:** solo `app.js`, con un listener de click por cada `[data-accion="cancelar"]` que hace `location.assign('../index.html')`. No toqué las plantillas.
+- **Verificación:** el proyecto no tiene tests, así que lo probé en Chromium con Playwright (el script está en `%TEMP%\ven31-verify.js`, fuera de git). Antes del cambio, Cancelar se quedaba en la ficha. Después, en `pedido-detalle` y en `albaran-detalle` acaba en `index.html` («Pedidos»), sin errores de página y con el total `36,26 €` intacto.
+- **Registro:** `.docs/sdd/specs/20261001-161243-patch-0012-cancelar-al-listado/patch.md` incluye el delta de la capacidad `order-sheets` (Cancelar vuelve al listado), que `sdd-end-patch` fusionará.
+
+**Id 0012 en vez de 0011:** `Get-NextSddId.ps1 -Reserve` devolvió primero `0011`. Ese id ya está en la tabla de Patches del roadmap, porque el script solo lee ids en la primera columna y ahí el id va en la segunda. Como un id no se reutiliza, reservé otro y salió `0012`. El `0011` queda consumido en el contador, sin ningún artefacto.
+
+**Pendiente en `sdd-end-patch`:**
+- Validación por parte del usuario.
+- Fila del roadmap y entrada del changelog.
+- El hash del commit, que sigue como `<hash>` en `patch.md`.
+
+`npm install` creó un `package-lock.json` que borré para no meterlo en el commit. `node_modules/` está ignorado por git.
+

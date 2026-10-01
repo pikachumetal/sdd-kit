@@ -11,7 +11,7 @@ Con el kit se trabaja con tres verbos, siempre en este orden:
 | Verbo | Skill | Qué haces | Qué queda escrito |
 | --- | --- | --- | --- |
 | **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `.docs/sdd/roadmap.md` con su id y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/specs/<fecha>-proposal-<id>-<nombre>/proposal.md` |
-| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: una feature si tiene comportamiento, un patch si es un fallo pequeño y reproducible o un ajuste solo de presentación | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
+| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
 | **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, las notas de la versión si hay destinatario, el roadmap colapsado y, cuando tú lo confirmas, el merge a `main` y el tag |
 
 Planificar no hace nada: deja el roadmap listo para que alguien arranque. Hacer arranca una fila y termina con ella fusionada. Entregar publica lo hecho.
@@ -60,9 +60,15 @@ Llega algo, o arrancas una fila, y lo escribes tal cual. El agente elige la puer
 
 Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las reservas»), el agente te hace una sola pregunta sobre eso, con su recomendación, y elige la puerta con tu respuesta.
 
-**Patch o feature.** Un patch es un fallo determinista, de menos de media hora y sin nada que interpretar: se sabe qué debería pasar y no pasa. En cuanto el arreglo exige decidir cómo debería comportarse algo, o toca varios módulos, es una feature, y el agente cambia de carril y te lo dice. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
+**Patch o feature.** Lo decide quién fija la solución, no los minutos. Un patch es un cambio pequeño cuya solución ya está fijada antes de empezar. Hay tres casos:
 
-**Ajuste visual.** El patch también acepta un cambio pedido solo de presentación: toca plantillas o estilos y nada más, sin cambiar bindings, eventos, textos visibles, claves de i18n, TypeScript, API, datos ni capacidades. En lugar de la causa raíz, el `patch.md` lleva la intención en una frase, y la verificación es una captura que el agente te enseña al validar. Si el ajuste toca cualquiera de esas cosas, es una feature.
+- **Un fallo determinista**: la solución la fija la causa raíz. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
+- **Un ajuste o una retirada solo de presentación**: la solución la fija tu petición.
+- **Una petición cerrada**: un ticket o tú decís qué cambia en lo que el usuario ve o puede hacer («que Cancelar lleve al listado», «cambia "Guardar" por "Guardar y cerrar"»).
+
+Si el agente tendría que decidir algo que se ve (qué texto, dónde, con qué regla), es una feature, aunque sea pequeña y aunque pidas un patch: «avisa cuando el total pase de 1.000 €» lo es. Cada decisión del patch queda en `patch.md` con su autor (el ticket, tú, o el agente sin ti), y una decisión visible que el agente tomó sin ti lo pasa a feature. Si el diff pasa de 10 ficheros o de 300 líneas de código, el agente para y te pregunta si sigue como patch.
+
+**Ajuste visual.** Toca plantillas o estilos y nada más: mueve, envuelve o cambia la clase de elementos, sin añadir bindings, eventos, textos, claves de i18n, TypeScript, API, datos ni capacidades. En lugar de la causa raíz, el `patch.md` lleva la intención en una frase, y la verificación es una captura que el agente te enseña al validar.
 
 **Algo grande no se hace de golpe.** Si pides varias cosas a la vez, o una que el agente partiría en varias features, te propondrá pasarla por el roadmap (sección 2) y arrancar después cada feature por separado.
 
@@ -76,7 +82,7 @@ Lo que pasa en una feature, en orden:
 4. **La validación**: te presenta lo hecho con un guion de pruebas y te pregunta qué has probado (sección 5).
 5. **El cierre**: walkthrough, changelog, roadmap y merge en `develop` (sección 5).
 
-Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa), sin spec ni plan, y su validación al cerrar.
+Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa, y en una petición cerrada, la solución fijada con su autor), sin spec ni plan, y su validación al cerrar.
 
 ## 4. Qué te pregunta el agente y qué contestar
 

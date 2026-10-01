@@ -45,6 +45,10 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` / `REMOVED` (cuatro y
 - Se parte: la estimación previa del patch pasa a la 0130, con fila propia — «Partir estimación (Recomendada)», 2026-10-01.
 - Perfil `delegate` con parada en la spec — «Delegate, paro en la spec (Recomendada)», 2026-10-01.
 - Campaña con techo de 15 $ para RED + GREEN — «Lanza con techo 15 $ (Recomendada)», 2026-10-01.
+- Topes de palabras: retirar el predicado duplicado y subir los topes a lo medido — «Retirar duplicado y subir topes (Recomendada)», 2026-10-01.
+- Techo de sujetos de 40 a 50, mismo techo de 15 $, para el REFACTOR de los rojos de la Task 1 — «Subir a 50 sujetos (Recomendada)», 2026-10-01.
+- `using-sdd` conserva el predicado compacto junto al criterio nuevo y su tope sube de 530 a lo medido — «Devolver el predicado y subir tope (Recomendada)», 2026-10-01.
+- La description de `sdd-start-patch` excluye mostrar u ocultar según un dato, avisos y reglas nuevas; techo a 55 sujetos; si no basta, se acepta el rebote — «Probar la description (Recomendada)», 2026-10-01.
 
 ## Intent
 
@@ -174,7 +178,17 @@ Kit de la rama en `cf239794`, sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 
 | `using-sdd` contra el árbol | estructural | `using-sdd/SKILL.md:19` manda «un cambio con comportamiento, aunque sea pequeño» a feature | reproduce 0037 §1 |
 | Formato `parcial` | estructural | `sdd-end-patch/SKILL.md:31` solo cita «prefijo al principio y texto original intacto»; `roadmap-template.md` ya tiene `parcial — …; queda: …` | reproduce 0036 §5 |
 
+## Retira o adelgaza
+
+> Art. I desde la 0120, integrada en esta rama tras aprobar la spec.
+
+- Sale el predicado visual copiado en el paso 2 de `sdd-start-feature`: dice el criterio en una frase y remite a `sdd-start-patch`, su sitio, sin crecer. En `using-sdd` se quedó: sin él, el router mandó primero a `sdd-start-patch` lo que era feature (c1w 0 de 1 y 0 de 1, bt1 0 de 2 y 1 de 2; la skill los rebotaba bien), y su tope sube a lo medido.
+- Sale la regla «un cambio con lógica o textos no entra por el patch» (el `REMOVED` del delta).
+- Topes de `tests/WordBudget.Tests.ps1` que suben, a lo medido tras el GREEN: `sdd-start-patch`, `sdd-end-patch`, `sdd-templates` y el kit entero (~+600 palabras previstas). El adelgazamiento de fondo de esas skills es de la 0121.
+
 ## Enmiendas
+
+- 2026-10-01 — Sección «Retira o adelgaza» y subida de topes de palabras — la 0120 entró en `develop` durante la feature con la regla «una pieza entra, otra sale» y márgenes de 11 a 85 palabras en las skills que toca — aprobada: «Retirar duplicado y subir topes (Recomendada)»
 
 ## Aprobaciones
 

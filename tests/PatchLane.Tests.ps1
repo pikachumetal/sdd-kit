@@ -1,0 +1,112 @@
+BeforeAll {
+  $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
+
+  function Get-KitFile([string]$RelativePath) {
+    Get-Content -LiteralPath (Join-Path $script:KitRoot $RelativePath) -Raw
+  }
+
+  function Get-Section([string]$Text, [string]$From, [string]$To) {
+    $start = $Text.IndexOf($From)
+    if ($start -lt 0) { return '' }
+    $end = $Text.IndexOf($To, $start + 1)
+    if ($end -lt 0) { $end = $Text.Length }
+    $Text.Substring($start, $end - $start)
+  }
+
+  function Get-TableRow([string]$Text, [string]$Door) {
+    ($Text -split '\r?\n') | Where-Object { $_ -match '^\|' -and $_ -match [regex]::Escape($Door) } | Select-Object -First 1
+  }
+
+  $script:StartPatch = Get-KitFile 'skills/sdd-start-patch/SKILL.md'
+  $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
+  $script:Template = Get-KitFile 'skills/sdd-templates/templates/patch-template.md'
+  $script:Door = Get-KitFile 'skills/using-sdd/SKILL.md'
+  $script:StartFeature = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+}
+
+Describe 'criterio: lo decide quién fija la solución' {
+  It 'el árbol de sdd-start-patch pregunta quién fija la solución' {
+    Get-Section $script:StartPatch '```dot' '## Flujo' | Should -Match 'petición cerrada'
+    $script:StartPatch | Should -Match 'solución fijada'
+  }
+
+  It 'la guía nombra el contraejemplo de la puerta trasera' {
+    $script:StartPatch | Should -Match 'avisa cuando el total pase de 1\.000 €'
+  }
+
+  It 'una solución propuesta para un fallo no lo convierte en petición cerrada' {
+    $script:StartPatch | Should -Match 'Una solución propuesta para un fallo no lo convierte en petición cerrada'
+  }
+
+  It 'la petición cerrada comprueba lo que da por existente antes de abrir' {
+    $step = Get-Section $script:StartPatch '1. **' '2. **Carpeta**'
+    $step | Should -Match 'da por existente'
+  }
+
+  It 'el freno de tamaño va en el paso 4' {
+    Get-Section $script:StartPatch '4. **Fix mínimo**' '5. **Commit' | Should -Match 'más de 10 ficheros o más de 300 líneas'
+  }
+
+  It 'el tipo fix es solo para un fallo' {
+    Get-Section $script:StartPatch '5. **Commit' '6. **Cierre**' | Should -Match '`fix` solo para un fallo'
+  }
+
+  It 'la description de sdd-start-patch habla de la solución fijada' {
+    ($script:StartPatch -split '\r?\n' | Where-Object { $_ -like 'description:*' }) | Should -Match 'solución'
+  }
+}
+
+Describe 'criterio: patch.md registra quién decidió' {
+  It 'la plantilla lleva solution en el frontmatter con sus tres valores' {
+    $script:Template | Should -Match '(?m)^solution: <causa raíz \| ticket \| dev-lead>'
+  }
+
+  It 'la plantilla lleva la lista Decisiones con autor en §3' {
+    $fix = Get-Section $script:Template '## 3. Fix' '## 4.'
+    $fix | Should -Match '\*\*Decisiones\*\*'
+    $fix | Should -Match 'ticket \| dev-lead \| sin el dev-lead'
+  }
+
+  It 'sdd-start-patch saca del carril una decisión visible sin el dev-lead' {
+    Get-Section $script:StartPatch '3. **`patch.md`**' '4. **Fix mínimo**' | Should -Match 'sin el dev-lead'
+  }
+
+  It 'la escalada de sdd-end-patch cuenta decisiones sin el dev-lead, no módulos' {
+    $clause = Get-Section $script:EndPatch '**Cláusula de escalada**' '## Checklist'
+    $clause | Should -Match 'sin el dev-lead'
+    $clause | Should -Not -Match 'varios módulos'
+  }
+
+  It 'el mensaje final de sdd-end-patch lee la lista Decisiones' {
+    Get-Section $script:EndPatch '8. **Mensaje final**' '## Red flags' | Should -Match 'lista `Decisiones`'
+  }
+
+  It 'el changelog de una petición cerrada va en Added o Changed' {
+    Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match 'petición cerrada'
+    Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match '`Added`'
+  }
+}
+
+Describe 'criterio: las puertas dicen lo mismo' {
+  It 'using-sdd manda a patch un cambio con la solución ya fijada' {
+    Get-TableRow $script:Door 'sdd-kit:sdd-start-patch' | Should -Match 'solución ya fijada'
+  }
+
+  It 'using-sdd manda a feature lo que hay que decidir' {
+    Get-TableRow $script:Door 'sdd-kit:sdd-start-feature' | Should -Match 'decidir cómo es'
+  }
+
+  It 'el paso 2 de sdd-start-feature nombra la petición cerrada' {
+    Get-Section $script:StartFeature '2. **Enrutado**' '3. **Branch**' | Should -Match 'petición cerrada'
+  }
+
+  It 'una lectura propia de lo que dijo el dev-lead es sin el dev-lead' {
+    $script:StartPatch | Should -Match 'tu lectura de lo que dijo el dev-lead es tuya'
+  }
+
+  It 'el predicado visual va en sdd-start-patch y en la puerta, no en el paso 2 de sdd-start-feature' {
+    Get-TableRow $script:Door 'sdd-kit:sdd-start-patch' | Should -Match 'claves de i18n'
+    Get-Section $script:StartFeature '2. **Enrutado**' '3. **Branch**' | Should -Not -Match 'claves de i18n'
+    $script:StartPatch | Should -Match 'claves de i18n'
+  }
+}

@@ -1,0 +1,106 @@
+
+>>> Glob: .docs/sdd/*
+<<< .docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\tech-stack.md
+.docs\sdd\sdd-kit.json
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Grep: Guardar
+<<< pages\albaran-detalle.html:9:        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+pages\pedido-detalle.html:9:        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+.docs\sdd\capabilities\order-sheets.md:19:- THEN ofrece las acciones Guardar, Cancelar y Borrar
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.3.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+2	
+
+>>> Read: <run>\repo\pages\pedido-detalle.html
+<<< 1	<!doctype html>
+2	<html lang="es">
+3	<head><meta charset="utf-8"><title>Pedido</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+4	<body>
+5	  <main class="ficha">
+6	    <header class="ficha-cabecera">
+7	      <h1>Pedido PV-2026-0142</h1>
+8	      <div class="ficha-acciones">
+9	        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+10	        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+11	        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+12	      </div>
+13	    </header>
+
+>>> Read: <run>\repo\pages\albaran-detalle.html
+<<< 1	<!doctype html>
+2	<html lang="es">
+3	<head><meta charset="utf-8"><title>Albarán</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+4	<body>
+5	  <main class="ficha">
+6	    <header class="ficha-cabecera">
+7	      <h1>Albarán PV-2026-0142</h1>
+8	      <div class="ficha-acciones">
+9	        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+10	        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+11	        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+12	      </div>
+13	    </heade
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat .docs/sdd/tech-stack.md && cat .docs/sdd/roadmap.md
+<<< .docs/sdd/capabilities/order-sheets.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+.gitignore
+README.md
+app.js
+package.json
+pages/albaran-detalle.html
+pages/pedido-detalle.html
+styles/ficha.css
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 0010 | Fichas de pedido y albarán | ✅ |
+
+## Patches
+
+| Fec
+
+>>> Bash: cd "<run>/repo" && cat app.js styles/ficha.css .docs/sdd/capabilities/order-sheets.md
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+.ficha { font-family: system-ui, sans-serif; max-width: 960px; margin: 24px auto; }
+.ficha-cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom:
+
+=== RESULTADO (10 turnos, 0.15475699999999998 $)
+No he cambiado nada. Este cambio no entra como patch: hay una decisión que no está fijada y tendría que tomarla yo.
+
+- **«A la derecha» no está claro.** El grupo de acciones ya está en el extremo derecho de la cabecera, porque `.ficha-cabecera` usa `justify-content: space-between`. Solo puede significar mover «Guardar y cerrar» al final del grupo, después de Cancelar y Borrar. Quedaría pegado al borde derecho, y Cancelar y Borrar se desplazarían a la izquierda. También podría significar sacarlo del grupo, o cambiar el orden de los tres botones. Cada opción deja una ficha distinta.
+- **El texto «Guardar y cerrar» promete un comportamiento que no existe.** Ningún botón tiene manejador en `app.js`, y ninguna ficha tiene a dónde cerrarse. Además, la capability `order-sheets.md` dice que la ficha ofrece «Guardar, Cancelar y Borrar», así que cambiar la etiqueta cambia un requisito, no solo la presentación.
+
+Mi recomendación es llevarlo como feature, con una spec corta. Tendría estas decisiones:
+1. El orden de los botones: Cancelar, Borrar y Guardar y cerrar, con este último en el extremo derecho.
+2. Si «cerrar» es solo la etiqueta o hay que implementar el cierre, y a dónde navega.
+3. La actualización de `order-sheets.md`.
+
+Si lo que quieres es solo la etiqueta y el orden, sin comportamiento, dímelo. Confirma también el orden exacto de los tres botones, y lo hago como patch de petición cerrada con captura antes y después en las dos fichas (`pedido-detalle` y `albaran-detalle`).
