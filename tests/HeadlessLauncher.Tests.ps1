@@ -8,7 +8,7 @@ BeforeAll {
   $script:Node = node -e 'console.log(process.execPath)'
 
   # Una campaña mínima: un subject.sh que usa lib.sh y un molde de un commit, en seco (DRY_RUN=1).
-  function New-Campaign([string]$Root, [string]$KeepName = 'readme.md', [string]$Init = 'g init -q -b main; ') {
+  function New-Campaign([string]$Root, [string]$KeepName = 'readme.md', [string]$Init = 'g init -q -b main; ', [string]$Launch = 'subject_launch "Invoca la skill sdd-kit:sdd-plan."') {
     $spec = Join-Path $Root 'spec'
     $runs = Join-Path $Root 'scratchpad/runs'
     $kit = Join-Path $Root 'kit'
@@ -22,7 +22,7 @@ set -u
 subject_init "`$1" "`$2" "`$4" sdd-plan
 put README.md <<< 'salas'
 ${Init}commit "feat: base"
-subject_launch "Invoca la skill sdd-kit:sdd-plan."
+$Launch
 { echo "## home: `$HOME/.claude"; echo "-rw-r--r-- 1 alice 197609 12 f"; } | subject_save
 subject_keep "`$R/README.md" $KeepName
 "@
@@ -270,5 +270,61 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
     $run.ExitCode | Should -Not -Be 0
     (Get-Subjects $campaign).Count | Should -Be 0
+  }
+}
+
+Describe 'Marcador del molde con la versión del kit (lib.sh)' -Tag 'Slow' {
+  BeforeAll {
+    $launch = "put_kit_marker '`"channel`": `"plugin`"'; subject_launch `"x`""
+    $script:Marker = New-Campaign (Join-Path $TestDrive 'marker') 'marker.json' -Launch $launch
+    $script:Marker.Kit | ForEach-Object {
+      $migrations = Join-Path $_ 'skills/sdd-init-brownfield/references/migrations'
+      New-Item -ItemType Directory -Force $migrations, (Join-Path $_ '.claude-plugin') | Out-Null
+      Set-Content (Join-Path $migrations 'v2.9.0.md') '# v2.9.0'
+      Set-Content (Join-Path $migrations 'v2.10.0.md') '# v2.10.0'
+      Set-Content (Join-Path $_ '.claude-plugin/plugin.json') '{"name":"sdd-kit","version":"2.9.1"}'
+    }
+    $subject = Join-Path $script:Marker.Spec 'red/subject.sh'
+    (Get-Content -Raw $subject).Replace('subject_keep "$R/README.md" marker.json', 'subject_keep "$R/.docs/sdd/sdd-kit.json" marker.json') |
+      Set-Content -LiteralPath $subject -NoNewline
+    $script:MarkerRun = Invoke-Campaign $script:Marker @{ SCENARIOS = 'a' }
+    $script:MarkerJson = Get-Content -Raw (Join-Path $script:Marker.Out 'a-1/marker.json') -ErrorAction SilentlyContinue
+  }
+
+  It 'kit_version compara por SemVer' {
+    $script:MarkerJson | Should -Match '"version": "2\.10\.0"' -Because $script:MarkerRun.Output
+  }
+
+  It 'put_kit_marker escribe la versión del kit' {
+    $script:MarkerJson | Should -Match '^\{"version": "2\.10\.0", "channel": "plugin"\}' -Because $script:MarkerRun.Output
+  }
+}
+
+Describe 'Segundo turno real (lib.sh)' -Tag 'Slow' {
+  It 'TURN2 reanuda la sesión del primer turno' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'turn2')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; TURN2 = 'Sigue.'; SUPERPOWERS_DIR = 'C:/sp/6.4.2' }
+
+    $first = @(Get-Content (Join-Path $campaign.Runs 'red/a-1.args'))
+    $second = @(Get-Content (Join-Path $campaign.Runs 'red/a-1.resume.args'))
+    $second[[array]::IndexOf($second, '--resume') + 1] | Should -Be 'dry-a-1' -Because $run.Output
+    $second | Should -Contain 'C:/sp/6.4.2'
+    $second[[array]::IndexOf($second, '--setting-sources') + 1] | Should -BeExactly ''
+    $second[-1] | Should -Be 'Sigue.'
+    $first[-1] | Should -Be 'Invoca la skill sdd-kit:sdd-plan.'
+    $tools = Get-Content -Raw (Join-Path $campaign.Out 'a-1.tools.txt')
+    ([regex]::Matches($tools, '=== RESULTADO')).Count | Should -Be 2
+    $run.Output | Should -Match 'coste acumulado: 1\.00 \$'
+  }
+
+  It 'subject_resume sin session_id muere con su mensaje' {
+    $launch = 'subject_launch "x"; : > "$JSONL"; subject_resume "y"'
+    $campaign = New-Campaign (Join-Path $TestDrive 'nosession') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'sin session_id: no se puede reanudar'
+    Join-Path $campaign.Runs 'red/a-1.resume.args' | Should -Not -Exist
   }
 }

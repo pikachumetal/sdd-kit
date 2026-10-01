@@ -1,0 +1,77 @@
+--- [3]
+Ahora: leer el informe de la revisión final, el plan y `tasks.md` para la pasada de fix. Queda: fix con TDD, re-verificación y presentar la validación, ~15 min.
+
+--- [7]
+El segundo Important toca `src/cli.js`, que la spec deja en «No entra». Miro qué dice la tabla de gates para un desvío en `delegate`.
+
+--- [13]
+RED confirmado: el mensaje real es «Franja no válida», sin la ayuda. Ahora el GREEN, con el mensaje en una sola constante.
+
+--- [17]
+Suite en verde (3/3). Ahora escribo la enmienda del Important 2 en `spec.md` y dejo el estado en `tasks.md`.
+
+--- [19]
+Ahora: la pasada de fix está a medias. Queda: tu decisión sobre la enmienda E1 y, después, el fix de la CLI, la validación y el cierre (~10 min).
+
+**Hecho**
+- **Important 1 (arreglado):** `free('1012')` lanzaba «Franja no válida», sin la ayuda «usa HH-HH, p. ej. 10-12».
+  - Escribí primero el test, que comprueba el mensaje entero, y falló como decía el informe.
+  - Luego puse el mensaje en una constante compartida con `reserve`, y el test pasó.
+  - La suite completa da 3 de 3 en verde. Commit `b633330`.
+
+**Parado: necesito tu decisión**
+- **Important 2 (`src/cli.js`):** el `catch` de `run` devuelve «Error» y descarta el mensaje. `salas reservar Norte 1012` imprime «Error», así que los THEN de la spec no se cumplen para quien usa la CLI.
+- **Por qué paro:** la spec aprobada deja `src/cli.js` en «No entra». Arreglarlo cambia el Scope, es decir, un desvío. En `delegate` lo propongo como enmienda y espero tu respuesta. La enmienda E1 está en `spec.md` (commit `9fc2b84`).
+- **Opciones:**
+  1. **Aprobar E1 (recomendada):** `src/cli.js` entra en el Scope, y el `catch` de `run` devuelve `error.message`. Lo hago con un test de `run` para `reservar` y `libres`.
+  2. **Diferir a otra feature:** esta rama se queda como está, y la CLI sigue imprimiendo «Error» para este caso.
+- **Solape:** el roadmap no declara `src/cli.js` en ninguna otra feature abierta (0012 y 0013 solo declaran `src/slots.js`).
+- **Efecto observable:** todo error de `run` mostraría su mensaje, no solo el de la franja.
+
+**Después de tu respuesta:** cierro la pasada de fix y apunto en `tasks.md` `Pasada de fix: <sha>, 2 hallazgos RED→GREEN` (o 1 si difieres). No se despacha re-revisión del tramo de la pasada, porque la verifica su TDD. Después paso a la validación: smoke con una fila por THEN y guion de pruebas. Para el THEN de la CLI, el smoke ejecuta de verdad `salas reservar Norte 1012`.
+
+¿Apruebas la enmienda E1 (opción 1)?
+
+--- [21]
+Enmienda aprobada. Empiezo por el test RED de `run`.
+
+--- [23]
+RED reproducido: la CLI imprime «Error». Ahora el GREEN y la actualización de los artefactos.
+
+--- [28]
+Commit de los docs y smoke con ejecución real de la CLI.
+
+--- [30]
+Ahora: la pasada de fix está cerrada y presento la validación. Queda: tu validación y luego el cierre con `sdd-end-feature`, ~5 min.
+
+## Me salí del plan en…
+- **Enmienda E1 (aprobada por ti, 2026-10-01):** `src/cli.js` entra en el Scope. Lo registré en la spec y en la fila 0012 del roadmap, y no solapa con ninguna otra feature abierta.
+- **Pasada de fix de la revisión final:** commits `b633330` (Important 1) y `62502bf` (Important 2), 2 hallazgos RED→GREEN, apuntada en `tasks.md`. No abre re-revisión del tramo, porque la verifica su TDD. El `HEAD` actual `6498a12` solo añade documentación (spec, roadmap y `tasks.md`), que revisé en el hilo.
+- **Reproducción antes del arreglo:** los dos tests salieron en RED. Para el Important 2, `run` devolvía «Error».
+
+## Qué hay
+- `free` y `reserve` comparten el mensaje «Franja no válida: usa HH-HH, p. ej. 10-12».
+- `run` devuelve `error.message`. Esto afecta a todo error de la CLI, no solo al de la franja.
+- La suite completa da 5 de 5 en verde y tarda ~0,3 s.
+
+## Smoke (una fila por THEN)
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `ejecución real`: `salas reservar Norte 1012` → «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `salas libres 1012` → el mismo mensaje |
+| Caso válido sin regresión | `ejecución real`: `reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`; `libres 10-12` → `[]` |
+
+El repo no tiene `bin` ni `package.json`. Ejecuté `run` con `node -e "import('./src/cli.js')…"`, no un binario `salas`.
+
+## Guion de pruebas
+Desde la raíz del repo, en la rama `feature/0012`:
+1. `node -e "import('./src/cli.js').then(m=>console.log(m.run(['reservar','Norte','1012'])))"` → imprime `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `node -e "import('./src/cli.js').then(m=>console.log(m.run(['libres','1012'])))"` → imprime el mismo mensaje.
+3. `node -e "import('./src/cli.js').then(m=>console.log(m.run(['reservar','Norte','10-12'])))"` → imprime `{"room":"Norte","slot":"10-12"}`.
+4. `node --test` → 5 tests, todos pasan.
+
+No hay aplicación que arrancar: no dejé ningún proceso en marcha.
+
+Cuéntame qué has probado tú y si funciona. Con eso invoco `sdd-end-feature`.
+
