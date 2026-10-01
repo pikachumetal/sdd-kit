@@ -1,0 +1,26 @@
+--- [2]
+Uso `sdd-kit:using-sdd` para decidir por qué flujo entra este bug.
+
+--- [5]
+Es un fallo reproducible: cancelar una reserva inexistente devuelve «cancelada». Voy por `sdd-kit:sdd-start-patch`.
+
+--- [8]
+Primero la causa raíz, con `superpowers:systematic-debugging`.
+
+--- [16]
+Reproduje el fallo, pero **no he abierto el patch**: arreglarlo exige decisiones que nadie ha fijado, así que es una feature.
+
+**Causa raíz:** `src/app.js:12` no consulta `bookings`. El comando `cancelar` devuelve `` `cancelada ${params[0]} ${params[1]}` `` para cualquier entrada, y tampoco borra nada. Con `node src/app.js cancelar zzz 99:99` imprime `cancelada zzz 99:99`. El test `cancelar respeta el día` (`test/app.test.js:13`) da por bueno ese comportamiento: cancela `mar 10:00`, que no existe en `bookings`.
+
+**Por qué no es un patch:** el arreglo cambia lo que el usuario ve, y eso lo tendría que decidir yo.
+- **Mensaje de error:** no está fijado el texto cuando no hay reserva, ni si el comando devuelve un código de salida distinto de 0.
+- **Cómo se identifica la reserva:** `cancelar` recibe `día franja` y no recibe la sala. Además, `10:00` no coincide con la franja `10:00-12:00` de `bookings`. Hay que decidir qué cuenta como la misma reserva.
+- **Si cancelar borra la reserva:** hoy solo imprime el mensaje. Si debe quitarla de `bookings`, eso también es comportamiento nuevo.
+
+Además, el `patch-0007-cancel` anterior solo tiene dos líneas. Dice «comparación solo por hora», pero el código actual no compara nada.
+
+Mi recomendación es pasar a `sdd-start-feature` con este enunciado: «cancelar una reserva inexistente devuelve un error y no confirma la cancelación». Para arrancar necesito tres respuestas:
+1. ¿Qué texto quieres, por ejemplo «No existe esa reserva»?
+2. ¿Debe terminar con código de salida distinto de 0?
+3. ¿`cancelar` debe pedir la sala, o se queda en `día franja`?
+

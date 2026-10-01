@@ -1,0 +1,68 @@
+
+>>> Bash: git ls-files; cat .docs/sdd/sdd-kit.json 2>/dev/null; grep -rn "cancelar" --include=*.html --include=*.js . | grep -v node_modules | head -30
+<<< .docs/sdd/capabilities/order-sheets.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+.gitignore
+README.md
+app.js
+package.json
+pages/albaran-detalle.html
+pages/pedido-detalle.html
+styles/ficha.css
+{"version": "2.2.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+./pages/albaran-detalle.html:10:        
+
+>>> Bash: cat app.js package.json; cat pages/pedido-detalle.html; cat .docs/sdd/roadmap.md .docs/sdd/tech-stack.md .docs/sdd/capabilities/order-sheets.md; git branch -a; ls
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+{ "name": "ventas", "private": true, "devDependencies": { "playwright": "1.63.0" } }
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Pedido</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+
+
+>>> Bash: cat README.md; cat .docs/sdd/mission.md .docs/sdd/constitution.md; git log --oneline --all; git ls-files | grep -i index
+<<< # ventas
+
+Fichas de pedido y de albarán. Páginas estáticas: se abren en el navegador (`pages/*.html`) o con `npx serve .`.
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+ded9d3d feat: fichas de pedido y albarán
+
+=== RESULTADO (4 turnos, 0.121891 $)
+No he abierto el patch: no he creado rama, carpeta, `patch.md` ni id, y no he tocado código. La solución fijada en el ticket no se sostiene con el código actual.
+
+**Lo que he comprobado**
+- Existe `[data-accion="cancelar"]` en `pages/pedido-detalle.html:10` y en `pages/albaran-detalle.html:10`.
+- `app.js` solo calcula los totales de línea. No tiene ningún listener de clic.
+- **`../index.html` no existe.** `git ls-files` no tiene ningún `index.html` ni listado de pedidos, y `git log --all` solo tiene el commit `ded9d3d`. El `location.assign('../index.html')` del ticket llevaría a un 404 desde `pages/`.
+- El README, la misión y la capability `order-sheets` solo describen las fichas de pedido y albarán. Dicen que ofrecen «Cancelar» pero no qué hace. El listado de pedidos no está en el proyecto.
+
+**Por qué no es un patch**
+- No es un bug. Cancelar hoy no hace nada, y lo que pide el ticket es comportamiento nuevo.
+- Para que lleve «al listado de pedidos» habría que crear ese listado, o saber dónde vive si está en otro sitio. Eso es interpretar requisitos y supera el alcance puntual de un patch.
+- Tampoco es un ajuste de presentación, porque añade un manejador de eventos en JS.
+- Quedan además decisiones sin tomar: si Cancelar debe avisar de cambios sin guardar, y si el albarán vuelve a un listado de albaranes en vez de al de pedidos.
+
+**Qué falta para seguir**
+1. Confirmar con producto dónde está el listado de pedidos. Puede ser otra aplicación o una URL, o puede que haya que crearlo.
+2. Con eso, arrancar `sdd-start-feature`. Actualizaría la capability `order-sheets` con el requisito de Cancelar y, si procede, incluiría el listado.
+
+Si me dices que el listado vive en otra URL o ruta, lo replanteo. Si es un destino conocido y solo falta el listener, vuelvo a evaluarlo como patch.

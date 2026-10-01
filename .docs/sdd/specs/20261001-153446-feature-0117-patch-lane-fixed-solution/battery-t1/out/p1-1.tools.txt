@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:using-sdd
+<<< Launching skill: sdd-kit:using-sdd
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Skill: superpowers:systematic-debugging
+<<< Launching skill: superpowers:systematic-debugging
+
+>>> Grep: cancel|cancelad
+<<< Found 5 files
+test\app.test.js
+src\app.js
+.docs\sdd\changelog.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+
+>>> Read: <run>\repo\src\app.js
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Bash: cd "<run>/repo" && node src/app.js cancelar zzz 99:99
+<<< cancelada zzz 99:99
+
+=== RESULTADO (12 turnos, 0.1665924 $)
+Reproduje el fallo, pero **no he abierto el patch**: arreglarlo exige decisiones que nadie ha fijado, así que es una feature.
+
+**Causa raíz:** `src/app.js:12` no consulta `bookings`. El comando `cancelar` devuelve `` `cancelada ${params[0]} ${params[1]}` `` para cualquier entrada, y tampoco borra nada. Con `node src/app.js cancelar zzz 99:99` imprime `cancelada zzz 99:99`. El test `cancelar respeta el día` (`test/app.test.js:13`) da por bueno ese comportamiento: cancela `mar 10:00`, que no existe en `bookings`.
+
+**Por qué no es un patch:** el arreglo cambia lo que el usuario ve, y eso lo tendría que decidir yo.
+- **Mensaje de error:** no está fijado el texto cuando no hay reserva, ni si el comando devuelve un código de salida distinto de 0.
+- **Cómo se identifica la reserva:** `cancelar` recibe `día franja` y no recibe la sala. Además, `10:00` no coincide con la franja `10:00-12:00` de `bookings`. Hay que decidir qué cuenta como la misma reserva.
+- **Si cancelar borra la reserva:** hoy solo imprime el mensaje. Si debe quitarla de `bookings`, eso también es comportamiento nuevo.
+
+Además, el `patch-0007-cancel` anterior solo tiene dos líneas. Dice «comparación solo por hora», pero el código actual no compara nada.
+
+Mi recomendación es pasar a `sdd-start-feature` con este enunciado: «cancelar una reserva inexistente devuelve un error y no confirma la cancelación». Para arrancar necesito tres respuestas:
+1. ¿Qué texto quieres, por ejemplo «No existe esa reserva»?
+2. ¿Debe terminar con código de salida distinto de 0?
+3. ¿`cancelar` debe pedir la sala, o se queda en `día franja`?

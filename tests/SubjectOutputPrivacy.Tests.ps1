@@ -120,14 +120,20 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
     $root = Join-Path $script:KitRoot '.docs/sdd/specs'
     # green1, red2…: las rondas extra de una campaña también son salidas de sujetos (patch 0080).
     $script:Evidence = @(Get-ChildItem -LiteralPath $root -Directory |
-      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -match '^(red|green|refactor)' } |
+      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -match '^(red|green|refactor|battery|fix)' } |
       ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse }) +
       @(Get-ChildItem -Path (Join-Path $script:KitRoot 'tests/*') -File -Include '*-red.md', '*-green.md')
+    # Leído una vez: con un Select-String por fichero y patrón, el pre-commit pasó de su tope de 30 s.
+    $script:EvidenceText = @($script:Evidence | ForEach-Object {
+        [pscustomobject]@{ Path = [IO.Path]::GetRelativePath($script:KitRoot, $_.FullName); Text = [IO.File]::ReadAllText($_.FullName) }
+      })
     function Find-Leak([string]$Pattern) {
-      $script:Evidence |
-        Where-Object { Select-String -LiteralPath $_.FullName -Pattern $Pattern -Quiet } |
-        ForEach-Object { [IO.Path]::GetRelativePath($script:KitRoot, $_.FullName) }
+      $script:EvidenceText | Where-Object { $_.Text -match $Pattern } | ForEach-Object Path
     }
+  }
+
+  It 'revisa también las salidas de las baterías y de las pasadas de fix' {
+    $script:Evidence | Where-Object FullName -match '[\\/](battery|fix)[^\\/]*[\\/]out[\\/]' | Should -Not -BeNullOrEmpty
   }
 
   It 'ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario' {

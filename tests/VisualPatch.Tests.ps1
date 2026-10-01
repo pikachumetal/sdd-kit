@@ -11,7 +11,7 @@ BeforeAll {
     return $Text.Substring($start, $end - $start)
   }
 
-  $script:PredicateLiterals = @('solo plantillas o estilos', '`@if`', 'claves de i18n', 'TypeScript', 'solo toco la plantilla')
+  $script:PredicateLiterals = @('solo toca plantillas o estilos','`@if`', 'claves de i18n', 'TypeScript', 'solo toco la plantilla')
 }
 
 Describe 'Puertas del patch visual' {
@@ -19,14 +19,17 @@ Describe 'Puertas del patch visual' {
     $script:StartPatch = Get-KitFile 'skills/sdd-start-patch/SKILL.md'
   }
 
-  It 'la puerta de using-sdd lleva el predicado entero' {
-    $door = Get-KitFile 'skills/using-sdd/SKILL.md'
-    foreach ($literal in $script:PredicateLiterals) { $door | Should -Match ([regex]::Escape($literal)) }
+  It 'sdd-start-patch lleva el predicado entero' {
+    foreach ($literal in $script:PredicateLiterals) { $script:StartPatch | Should -Match ([regex]::Escape($literal)) }
   }
 
-  It 'el paso 2 de sdd-start-feature lleva el predicado entero' {
-    $step = Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '2. **Enrutado**' '3. **Branch**'
-    foreach ($literal in $script:PredicateLiterals) { $step | Should -Match ([regex]::Escape($literal)) }
+  It 'la puerta de using-sdd lleva el predicado compacto' {
+    $door = Get-KitFile 'skills/using-sdd/SKILL.md'
+    foreach ($literal in @('solo plantillas o estilos', '`@if`', 'claves de i18n', 'TypeScript')) { $door | Should -Match ([regex]::Escape($literal)) }
+  }
+
+  It 'el paso 2 de sdd-start-feature remite al predicado de sdd-start-patch' {
+    Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '2. **Enrutado**' '3. **Branch**' | Should -Match 'que tiene el predicado'
   }
 
   It 'el árbol de sdd-start-patch pregunta por la presentación' {
@@ -51,7 +54,7 @@ Describe 'Recorrido y cierre del patch visual' {
 
   It 'la plantilla admite la intención en §2' {
     $template = Get-KitFile 'skills/sdd-templates/templates/patch-template.md'
-    $template | Should -Match '## 2\. Causa raíz \(o intención, en un ajuste visual\)'
+    $template | Should -Match '## 2\. Causa raíz \(o intención, en un ajuste visual;'
     $template | Should -Match '## 5\. Tiempo'
   }
 }
@@ -67,14 +70,13 @@ Describe 'Arreglos de la revisión final del patch visual' {
     Get-Section $script:Patch '```dot' '## Flujo' | Should -Match 'no un fallo'
   }
 
-  It 'las puertas dejan mover un elemento que ya lleva binding o evento' {
-    $script:Door | Should -Match 'sin cambiar bindings'
-    $script:Routing | Should -Match 'sin añadir, quitar ni cambiar bindings'
+  It 'el predicado deja mover un elemento que ya lleva binding o evento' {
+    $script:Patch | Should -Match 'sin añadir, quitar ni cambiar bindings'
   }
 
-  It 'using-sdd lleva el predicado entero, con las directivas y las capacidades' {
+  It 'sdd-start-patch lleva el predicado entero, con las directivas y las capacidades' {
     foreach ($literal in @('`*ngIf`', '`v-if`', '`@for`', 'capacidades', 'mueve, envuelve o cambia la clase')) {
-      $script:Door | Should -Match ([regex]::Escape($literal))
+      $script:Patch | Should -Match ([regex]::Escape($literal))
     }
   }
 

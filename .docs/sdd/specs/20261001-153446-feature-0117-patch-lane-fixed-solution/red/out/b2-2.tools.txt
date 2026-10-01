@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:using-sdd
+<<< Launching skill: sdd-kit:using-sdd
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; echo "=== local"; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1
+<<< Exit code 1
+develop
+.docs/sdd:
+./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+
+.docs/sdd/capabilities:
+./
+../
+order-sheets.md
+=== constitution
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+=== mission
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+=== tech-stack
+# Tech stack — ventas
+
+- HTML + CSS en 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/order-sheets.md; ls pages styles; wc -l app.js pages/*
+<<< # Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- WHEN se abre la ficha
+- THEN la columna «Total con IVA» muestra `36,26 €`
+
+### La ficha ofrece guardar, cancelar y borrar
+
+- GIVEN una ficha de pedido o de albarán
+- WHEN se abre
+- THEN ofrece las acciones Guardar, Cancelar y Borrar
+pages:
+albaran-detalle.html
+pedido-detalle.html
+
+styles:
+ficha.css
+   8 app.js
+  23 pages/albaran-detalle.html
+ 
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-red\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No toca schema de datos ni exige migración.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmació
+
+>>> Read: <run>\repo\app.js
+<<< 1	function lineTotal(quantity, price, vat) {
+2	  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+3	}
+4	
+5	document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+6	  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+7	  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+8	});
+9	
+
+=== RESULTADO (9 turnos, 0.2254396 $)
+Ahora: confirmar carril y modo antes de arrancar. Queda: tu respuesta (~1 min), luego rama, spec y su aprobación.
+
+Aunque lo pidas como «patch rápido», esto es una **feature**, no un patch. El aviso añade un texto visible nuevo y una condición (total > 1.000 €), y `sdd-start-patch` solo admite bugs deterministas y ajustes de maquetación. La rama es `develop` y no hay fila pendiente en el roadmap, así que la feature llevará el id `0012`. Está pendiente de que me lo confirmes.
+
+Lo que he comprobado:
+- **Perfil:** `delegate`, del proyecto (`.docs/sdd/sdd-kit.json`). No hay `sdd-kit.local.json`, así que no ignoro ninguna clave.
+- **Tamaño:** prevé 1 task, así que no propongo partirla.
+- **Modo lite:** cumple las condiciones.
+  - El flujo ya existe y se puede leer (`app.js` y las dos fichas).
+  - No cambia contratos públicos.
+  - No toca datos ni migración.
+  - Cabe en un solo área (HTML estático + `app.js`).
+  - No hay `estimation.md`, así que esa condición no aplica.
+  - En lite la spec es corta, sin `plan.md` ni `tasks.md`. El gate de la spec, la validación y el walkthrough se mantienen.
+
+¿Cómo seguimos?
+1. **Feature en modo lite, aprobando la spec en el gate (recomendada).** La opción de aprobar por delegación no la recomiendo, porque la spec decide cosas que conviene que veas (ver abajo).
+2. Feature en modo full.
+3. Feature en modo lite, y «apruebo la spec por delegación, nos vemos en la validación». Así me salto la parada de la spec.
+4. Cambiar el perfil para esta feature.
+
+Los puntos que dejaría en la spec para que valides son: cómo se avisa (texto en la propia ficha frente a `alert`), si «pase de 1.000 €» es estrictamente mayor, y si el total es el de las líneas con IVA.

@@ -1,0 +1,305 @@
+
+>>> Skill: superpowers:systematic-debugging
+<<< Launching skill: superpowers:systematic-debugging
+
+>>> Grep: iva|vat|tax
+<<< Found 7 files
+app.js
+.docs\sdd\capabilities\order-sheets.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+pages\albaran-detalle.html
+pages\pedido-detalle.html
+package.json
+
+>>> Read: <run>\repo\app.js
+<<< 1	function lineTotal(quantity, price, vat) {
+2	  return Math.round(quantity * price) * (1 + vat);
+3	}
+4	
+5	document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+6	  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+7	  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+8	});
+9	
+
+>>> Bash: cd "<run>/repo" && cat package.json && ls -a . .docs/sdd && git log -3 -p --stat -- app.js | head -80
+<<< { "name": "ventas", "private": true, "devDependencies": { "playwright": "1.63.0" } }
+.:
+./
+../
+.docs/
+.git/
+.gitignore
+app.js
+index.html
+package.json
+pages/
+README.md
+styles/
+
+.docs/sdd:
+./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+commit 83821941000063bb02b9eedfb34622f9e5812335
+Author: Fixture <fixture@example.com>
+Date:   Thu Oct 1 18:10:07 2026 +0200
+
+    refactor: simplificar el total de la línea
+    
+    Redondeo del importe antes del IVA.
+---
+ app.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/app.js b/app.js
+i
+
+>>> Bash: cd "<run>/repo" && node -e "
+const f=(q,p,v)=>Math.round(q*p)*(1+v);console.log(f(3,9.99,0.21));
+const g=(q,p,v)=>Math.round(q*p*(1+v)*100)/100;console.log(g(3,9.99,0.21).toFixed(2))" && cat .docs/sdd/sdd-kit.json .docs/sdd/tech-stack.md && cat .docs/sdd/roadmap.md | head -30 && grep -n "cantidad\|iva" pages/*.html | head; ls .docs/sdd/specs 2>&1; git branch --show-current
+
+>>> Glob: **/patch-template.md
+<<< 36.3
+36.26
+{"version": "2.2.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. `playwright` está en `devDependencies` para capturas.
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 0010 | Fichas de pedido 
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t1\skills\sdd-templates\templates\patch-template.md
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t1\skills\sdd-templates\templates\patch-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+3	task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+5	title: Patch — <título corto>
+6	type: patch
+7	solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+8	status: done
+9	created: <YYYY-MM-DD>
+10	branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+11	commit: <hash>  
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t1" && find . -name "Get-NextSddId.ps1" -o -name nombrado.md; cat "<run>/repo/.docs/sdd/constitution.md"
+<<< ./skills/sdd-start-feature/references/nombrado.md
+./skills/sdd-templates/scripts/Get-NextSddId.ps1
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t1\skills\sdd-start-feature\references\nombrado.md
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/order-sheets.md; cat .docs/sdd/changelog.md; git branch -a
+<<< # Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- WHEN se abre la ficha
+- THEN la columna «Total con IVA» muestra `36,26 €`
+
+### La ficha ofrece guardar, cancelar y borrar
+
+- GIVEN una ficha de pedido o de albarán
+- WHEN se abre
+- THEN ofrece las acciones Guardar, Cancelar y Borrar
+# Changelog — ventas
+
+## [Unreleased]
+
+## [1.0.0] — 2026-09-20
+
+### Added
+
+- Fichas de pedido y de albarán con t
+
+>>> PowerShell: $s='<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t1\skills\sdd-templates\scripts\Get-NextSddId.ps1'
+$r='<run>\repo'
+& $s -ProjectRoot $r -Reserve; Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'; git -C $r status --short
+<<< 0011
+20261001-161043
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t1/skills/sdd-templates/scripts" && cat Get-NextSddId.ps1; cd - >/dev/null; git status --short; git worktree list; git config --get-regexp 'sdd|reserve' ; ls .git | head -30
+<<< <#
+.SYNOPSIS
+  Reserva (con -Reserve) o propone el siguiente id SDD (feature/patch/proposal) para un proyecto en modo ids.mode=sequence.
+.DESCRIPTION
+  Forma parte del kit SDD (skill sdd-templates). No se copia al proyecto: se ejecuta desde el kit con -ProjectRoot.
+  Con -Reserve toma un cerrojo en el directorio común de git y consume los ids en el contador sdd-ids, que comparten
+  todos los worktrees de la máquina: un id reservado no vuelve a salir aunque el trabajo se abandone. Sin -Reserve
+  solo propone el id y no escribe nada.
+  El escaneo inicializa o corrige el contador: lee spe
+
+>>> PowerShell: $s='<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t1\skills\sdd-templates\scripts\Get-NextSddId.ps1'
+$r='<run>\repo'
+& $s -ProjectRoot $r -Reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0012-total-linea-redondeo && D=.docs/sdd/specs/20261001-161043-patch-0012-total-linea-redondeo && mkdir -p $D && sed -i 's|return Math.round(quantity \* price) \* (1 + vat);|return Math.round(quantity * price * (1 + vat) * 100) / 100;|' app.js && git diff && node -e "
+const src=require('fs').readFileSync('app.js','utf8').split('\n').slice(0,3).join('\n');
+const lineTotal=new Function(src+';return lineTotal')();
+console.log(lineTotal(3,9.99,0.21).toFixed(2).replace('.',',')+' €')"
+<<< Switched to a new branch 'feature/0012-total-linea-redondeo'
+warning: in the working copy of 'app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/app.js b/app.js
+index fef1c2a..03cd3a7 100644
+--- a/app.js
++++ b/app.js
+@@ -1,5 +1,5 @@
+ function lineTotal(quantity, price, vat) {
+-  return Math.round(quantity * price) * (1 + vat);
++  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+ }
+ 
+ document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+36,26 €
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261001-161043-patch-0012-total-linea-redondeo && cat > $D/patch.md <<'EOF'
+---
+id: 20261001-161043-patch-0012-total-linea-redondeo
+task: 0012
+title: Patch — El total de la línea redondea antes del IVA
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-01
+branch: feature/0012-total-linea-redondeo
+commit: <hash>
+---
+
+# Patch 0012 — El total de la línea redondea antes del IVA
+
+## Capacidades
+
+- Ninguna, porque el fix devuelve `lineTotal` a lo que ya dice `order-sheets` («El total de la línea incluye el IVA»: `36,26 €`).
+
+## 1. Síntoma
+
+Reportado: «El total de la línea sale mal: 3 × 9,99 € con IVA del 21 % da 36,30 € y debería dar 36,26 €.»
+
+Medido: coincide. En `pedido-detalle.html` y `albaran-detalle.html` (`data-cantidad="3" data-precio="9.99" data-iva="0.21"`), `lineTotal(3, 9.99, 0.21)` devuelve `36.3` → se pinta `36,30 €`.
+
+## 2. Causa raíz
+
+El commit `8382194` («refactor: simplificar el total de la línea») cambió en `app.js`:
+
+```
+- return Math.round(quantity * price * (1 + vat) * 100) / 100;
++ return Math.round(quantity * price) * (1 + vat);
+```
+
+El refactor movió el redondeo antes del IVA y, al quitar el `* 100 / 100`, lo dejó en euros enteros en vez de céntimos: `Math.round(3 × 9,99 = 29,97) = 30`, y `30 × 1,21 = 36,30`. El importe correcto es `29,97 × 1,21 = 36,2637 → 36,26`. Evidencia: ejecutadas ambas fórmulas con `node`, la anterior da `36.26` y la actual `36.3`. Un refactor no debía cambiar el resultado. La capacidad `order-sheets` ya fija `36,26 €`.
+
+## 3. Fix
+
+- **Fichero(s)**: `app.js`
+- **Cambio**: `lineTotal` vuelve a redondear a céntimos el importe con IVA: `Math.round(quantity * price * (1 + vat) * 100) / 100`.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `lineTotal(3, 9.99, 0.21)` evaluando `app.js` con `node`, y su formato de pantalla | ✅ antes `36,30 €`, ahora `36,26 €` |
+EOF
+python - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8',newline='').read()
+nl='\r\n' if '\r\n' in s else '\n'
+s=s.rstrip('\r\n')+nl+'| 2026-10-01 | 0012 | El total de la línea redondeaba antes del IVA (36,30 € en vez de 36,26 €) |'+nl
+open(p,'w',encoding='utf-8',newline='').write(s)
+EOF
+git diff --numstat; git status --short
+<<< Auto-install is enabled, attempting to install Python 3.14.8
+{"type":"progress","id":"python","message":"Installing Python with specification 3.14.8"}
+{"type":"progress","id":"python","message":"Installing Python 3.14.8"}
+{"type":"error","code":"plugin::wasm::failed_function_call","message":"Failed to request https://registry.moonrepo.app/releases/python/3.14.8 (404)"}
+warning: in the working copy of 'app.js', LF will be replaced by CRLF the next time Git touches it
+1	1	app.js
+ M app.js
+?? .docs/sdd/specs/
+
+>>> PowerShell: Set-Location '<run>\repo'
+$p='.docs/sdd/roadmap.md'; $t=[IO.File]::ReadAllText($p); $nl= if($t.Contains("`r`n")){"`r`n"}else{"`n"}
+$t=$t.TrimEnd("`r","`n")+$nl+'| 2026-10-01 | 0012 | El total de la línea redondeaba antes del IVA (36,30 € en vez de 36,26 €) |'+$nl
+[IO.File]::WriteAllText($p,$t,[Text.UTF8Encoding]::new($false))
+git diff .docs/sdd/roadmap.md
+git add app.js .docs
+git commit -q -F - @'
+fix(order-sheets): redondear a céntimos el total de la línea con IVA
+
+El refactor 8382194 movió el redondeo antes del IVA y lo dejó en euros
+enteros: 3 × 9,99 € con IVA del 21 % daba 36,30 € en vez de 36,26 €.
+Se restaura la fórmula anterior. Patch 0012.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+'@
+git log --oneline -2; git status --short
+<<< warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index e90d98b..bedf95d 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -11,3 +11,4 @@
+ | Fecha | Id | Descripción |
+ | --- | --- | --- |
+ | 2026-09-20 | 0011 | El total de la línea no mostraba el símbolo del euro |
++| 2026-10-01 | 0012 | El total de la línea redondeaba antes del IVA (36,30 € en vez de 36,26 €) |
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Gi
+
+>>> PowerShell: Set-Location '<run>\repo'
+$m=@'
+fix(order-sheets): redondear a céntimos el total de la línea con IVA
+
+El refactor 8382194 movió el redondeo antes del IVA y lo dejó en euros
+enteros: 3 × 9,99 € con IVA del 21 % daba 36,30 € en vez de 36,26 €.
+Se restaura la fórmula anterior. Patch 0012.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+'@
+$f=New-TemporaryFile; [IO.File]::WriteAllText($f,$m,[Text.UTF8Encoding]::new($false))
+git commit -q -F $f; Remove-Item $f
+git log --oneline -2; git status --short
+<<< 962ed95 fix(order-sheets): redondear a céntimos el total de la línea con IVA
+8382194 refactor: simplificar el total de la línea
+
+=== RESULTADO (19 turnos, 0.3563162 $)
+El fix está en el commit `962ed95` de la rama `feature/0012-total-linea-redondeo`. Ahora `lineTotal(3, 9.99, 0.21)` da `36,26 €` y no `36,30 €`. Falta cerrarlo con `sdd-end-patch`.
+
+- **Causa raíz:** el refactor `8382194` («simplificar el total de la línea») movió el redondeo antes del IVA y lo dejó en euros enteros. `Math.round(29,97)` da 30 y 30 × 1,21 = 36,30. Con la fórmula anterior sale 29,97 × 1,21 = 36,2637, que redondea a 36,26.
+- **Fix:** en `app.js`, `lineTotal` vuelve a `Math.round(quantity * price * (1 + vat) * 100) / 100`. Es una línea.
+- **Verificación:** evalué `app.js` con `node` y el total mostrado es `36,26 €`. El proyecto no tiene tests ni build, así que no hay nada más que ejecutar. No abrí las páginas en un navegador.
+- **Capacidad:** `order-sheets` ya decía `36,26 €`, así que el fix no cambia ninguna capacidad.
+- **Documentación:** `patch.md` está en `.docs/sdd/specs/20261001-161043-patch-0012-total-linea-redondeo/` y la fila del 0012 está añadida a la tabla de patches del roadmap. El campo `commit:` de `patch.md` sigue como `<hash>`, y la validación va en el cierre.
+- **Id:** `Get-NextSddId.ps1` propuso primero el 0011, que el roadmap ya usa para otro patch. No leyó la tabla de patches porque ahí el id está en la segunda columna. Reservé otro y quedó el 0012, así que el 0011 de la secuencia queda consumido sin usar. Conviene avisar a quien mantenga el kit.
+- **Rama:** estaba en `develop`, así que creé `feature/0012-total-linea-redondeo`.
