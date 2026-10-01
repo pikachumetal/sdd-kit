@@ -110,3 +110,6 @@ created: 2026-09-30
 - Todo documento tiene tipo, dueño y cota → `constitution.md`, Art. XI, y `architecture.md` (hecho en la feature).
 
 ## 6. Adendas
+
+- 2026-10-01 · Validación en campo: este repo pasa a `validation.mode: field` con la feature 0118 (decisión del dev-lead del 2026-09-29). La validación diferida de arriba se cierra con la verificación del agente que ya consta en la sección 4; el uso real llega por los tickets de `sdd-feedback`.
+
