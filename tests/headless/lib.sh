@@ -87,7 +87,7 @@ subject_launch() {
 }
 
 # Sin < /dev/null, un aviso de stdin precede al JSON.
-# timeout no ejecuta builtins: `timeout 720 command claude` no arrancó la tanda (ticket de la feature 0098 §4).
+# timeout no ejecuta builtins: con `timeout 720 command claude` no arranca ningún sujeto.
 run_claude() {
   timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" "${CLAUDE_ARGS[@]}" "$@" < /dev/null 2>> "$RUNS/$LABEL.err"
   local rc=$?
@@ -96,7 +96,7 @@ run_claude() {
 }
 
 # Segundo turno sobre la sesión real del primero: su molde es lo que el primero dejó, no el relato de un ticket.
-# --resume da un total_cost_usd acumulado; run.sh ya cuenta solo el último RESULTADO (patch 0084).
+# --resume da un total_cost_usd acumulado; run.sh ya cuenta solo el último RESULTADO.
 subject_resume() {
   local session
   session=$(grep -o '"session_id":"[^"]*"' "$JSONL" | head -n 1 | cut -d'"' -f4)

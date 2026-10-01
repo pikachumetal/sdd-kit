@@ -2,7 +2,7 @@
 
 Puerta de entrada del kit: una frase de dev, vaga y en castellano, en un proyecto con `.docs/sdd/` y superpowers. Cada escenario mide la primera skill que invoca el sujeto (la primera línea `>>> Skill:` de su `tools.txt`), o que no invoca ninguna. El **paso** es la fila de la tabla de puertas de `skills/using-sdd/SKILL.md` que decide la frase: una edición de esa fila lanza el tramo de su paso (`STEPS=<paso>`) más un escenario del fallo que la motiva.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=using-sdd`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 8 turnos como máximo. Dos moldes: `salas` (`mold-salas/`, la app de reservas de la 0014) y `ventas` (`ventas.sh`, las fichas estáticas de la 0098). Los dos llevan el marcador con la versión del kit que se prueba (`put_kit_marker`).
+Se lanza con `tests/headless/battery.sh` (`BATTERY=using-sdd`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 8 turnos como máximo. Dos moldes: `salas` (`mold-salas/`, la app de reservas de la 0014) y `ventas` (`mold-ventas/`, las fichas estáticas de la 0098). Los dos llevan el marcador con la versión del kit que se prueba (`put_kit_marker`).
 
 `d1` pasa con «ninguna», pero la conducta completa es una sola pregunta sobre qué es y cuánto abarca, con la recomendación primero: se lee en su `texts.txt`.
 

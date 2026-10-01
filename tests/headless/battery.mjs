@@ -38,10 +38,13 @@ function firstSkill(toolsPath) {
   return skills.find((skill) => skill !== ROUTER) ?? 'ninguna';
 }
 
+// Un sujeto cortado por tiempo o que no arrancó también deja tools.txt, pero sin RESULTADO: no ha medido nada.
+const finished = (toolsPath) => existsSync(toolsPath) && readFileSync(toolsPath, 'utf8').includes('=== RESULTADO');
+
 function judge(row, outDir) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
-  const runs = Array.from({ length: n }, (_, i) => join(outDir, `${row.Id}-${i + 1}.tools.txt`)).filter(existsSync);
+  const runs = Array.from({ length: n }, (_, i) => join(outDir, `${row.Id}-${i + 1}.tools.txt`)).filter(finished);
   const passed = runs.filter((path) => firstSkill(path) === row.Esperado).length;
   const missing = n - runs.length;
   const green = missing === 0 && passed >= needed;

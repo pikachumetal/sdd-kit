@@ -69,6 +69,10 @@ echo '## estado' | subject_save
     } finally { [Console]::OutputEncoding = $encoding }
   }
 
+  function Set-FinishedTools([string]$Path, [string]$Text) {
+    Set-Content -LiteralPath $Path -Value "$Text`n=== RESULTADO (1 turnos, 0.1 $)"
+  }
+
   function Get-ArgsFiles($Battery) { @(Get-ChildItem -Path (Join-Path $Battery.Runs 'battery/*.args') -ErrorAction SilentlyContinue | ForEach-Object Name | Sort-Object) }
 }
 
@@ -85,9 +89,9 @@ Describe 'Veredicto de una batería (tests/headless/battery.mjs)' -Tag 'Slow' {
   It 'verdict da verde y rojo por escenario' {
     $out = Join-Path $TestDrive 'verdict-out'
     New-Item -ItemType Directory -Force $out | Out-Null
-    foreach ($label in 'r1-1', 'r1-2', 'r2-1') { Set-Content (Join-Path $out "$label.tools.txt") ">>> Skill: sdd-kit:sdd-roadmap" }
-    Set-Content (Join-Path $out 'f1-1.tools.txt') ">>> Skill: sdd-kit:sdd-start-patch"
-    Set-Content (Join-Path $out 't1-1.tools.txt') ">>> Edit: README.md"
+    foreach ($label in 'r1-1', 'r1-2', 'r2-1') { Set-FinishedTools (Join-Path $out "$label.tools.txt") ">>> Skill: sdd-kit:sdd-roadmap" }
+    Set-FinishedTools (Join-Path $out 'f1-1.tools.txt') ">>> Skill: sdd-kit:sdd-start-patch"
+    Set-FinishedTools (Join-Path $out 't1-1.tools.txt') ">>> Edit: README.md"
 
     $run = Invoke-Verdict $script:TablePath $out
 
@@ -100,8 +104,8 @@ Describe 'Veredicto de una batería (tests/headless/battery.mjs)' -Tag 'Slow' {
   It 'verdict no cuenta como puerta la invocación de using-sdd, que es el enrutador' {
     $out = Join-Path $TestDrive 'router-out'
     New-Item -ItemType Directory -Force $out | Out-Null
-    Set-Content (Join-Path $out 'f1-1.tools.txt') ">>> Skill: sdd-kit:using-sdd`n>>> Skill: sdd-kit:sdd-start-feature"
-    Set-Content (Join-Path $out 't1-1.tools.txt') ">>> Skill: sdd-kit:using-sdd`n>>> Edit: README.md"
+    Set-FinishedTools (Join-Path $out 'f1-1.tools.txt') ">>> Skill: sdd-kit:using-sdd`n>>> Skill: sdd-kit:sdd-start-feature"
+    Set-FinishedTools (Join-Path $out 't1-1.tools.txt') ">>> Skill: sdd-kit:using-sdd`n>>> Edit: README.md"
 
     $run = Invoke-Verdict $script:TablePath $out
 
@@ -112,12 +116,25 @@ Describe 'Veredicto de una batería (tests/headless/battery.mjs)' -Tag 'Slow' {
   It 'verdict cuenta como rojo un escenario con sujetos de menos' {
     $out = Join-Path $TestDrive 'missing-out'
     New-Item -ItemType Directory -Force $out | Out-Null
-    Set-Content (Join-Path $out 'r1-1.tools.txt') ">>> Skill: sdd-kit:sdd-roadmap"
-    Set-Content (Join-Path $out 'd1-1.tools.txt') ">>> Read: README.md"
+    Set-FinishedTools (Join-Path $out 'r1-1.tools.txt') ">>> Skill: sdd-kit:sdd-roadmap"
+    Set-FinishedTools (Join-Path $out 'd1-1.tools.txt') ">>> Read: README.md"
 
     $run = Invoke-Verdict $script:TablePath $out
 
     $run.Output | Should -Match 'r1 · 1/2 · umbral 2/2 · rojo · faltan 1'
+    $run.Output | Should -Match 'd1 · 1/2 · umbral 1/2 · rojo · faltan 1'
+  }
+
+  It 'verdict cuenta como faltan los sujetos que no terminaron, sin RESULTADO' {
+    $out = Join-Path $TestDrive 'cut-out'
+    New-Item -ItemType Directory -Force $out | Out-Null
+    Set-Content (Join-Path $out 't1-1.tools.txt') ''
+    Set-Content (Join-Path $out 'd1-1.tools.txt') ">>> Read: README.md`n=== RESULTADO (3 turnos, 0.07 $)"
+    Set-Content (Join-Path $out 'd1-2.tools.txt') '>>> Read: README.md'
+
+    $run = Invoke-Verdict $script:TablePath $out
+
+    $run.Output | Should -Match 't1 · 0/1 · umbral 1/1 · rojo · faltan 1'
     $run.Output | Should -Match 'd1 · 1/2 · umbral 1/2 · rojo · faltan 1'
   }
 }

@@ -3,7 +3,7 @@
 # Uso: BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
 #      [SUPERPOWERS_DIR=…] bash tests/headless/battery.sh
 # La batería vive en tests/batteries/<skill>/ (battery.md y subject.sh); BATTERY_DIR la sustituye.
-# Cada escenario se lanza n veces con su modelo; las tandas van de 5 como máximo (feature 0091).
+# Cada escenario se lanza n veces con su modelo; las tandas van de 5 como máximo: con más, Git Bash agota los procesos.
 # Sale con el código del veredicto: 0 si todos los escenarios pasan su umbral.
 set -u
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
