@@ -2,6 +2,7 @@
 # Sujeto de la feature 0118 (validación en campo como modo del proyecto), con el lanzador de referencia.
 # Uso (desde tests/headless/run.sh): subject.sh <kit> <etiqueta> <escenario> <salida>
 #   f1   la feature 0030 implementada y con la revisión final limpia; sigue sdd-start-feature (paso 7), con field
+#   f3   f1 entrando por el paso 7 de sdd-start-feature con una decisión de producto pendiente de la revisión final
 #   f2   «cierra la feature 0030» sin validación del usuario, con field (paso 0 de sdd-end-feature)
 #   f2m  f2 sin la clave (control: manual)
 #   p1   «cierra el patch 0031» sin validación del usuario, con field y una release abierta
@@ -12,7 +13,7 @@ BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
 . "$REPO/tests/headless/lib.sh"
 case "$3" in
-  f1) SKILL=sdd-start-feature ;;
+  f1|f3) SKILL=sdd-start-feature ;;
   f2|f2m|d1) SKILL=sdd-end-feature ;;
   p1|p1m) SKILL=sdd-end-patch ;;
   *) die "escenario desconocido: $3" ;;
@@ -20,7 +21,7 @@ esac
 subject_init "$1" "$2" "$4" "$SKILL"
 
 case "$3" in
-  f1|f2|p1) VALIDATION=', "validation": {"mode": "field"}' ;;
+  f1|f3|f2|p1) VALIDATION=', "validation": {"mode": "field"}' ;;
   *) VALIDATION='' ;;
 esac
 put .docs/sdd/sdd-kit.json <<JSON
@@ -150,7 +151,7 @@ en preparación
 | id | Feature | Origen | Ficheros que toca | Estado |
 | --- | --- | --- | --- | --- |
 MD
-    case "$3" in f1|f2|f2m) echo '| 0030 | **Buscar salas libres por planta** — recepción filtra las salas libres de una planta | recepción, 2026-10-06 | `src/search.js` | 🔄 en curso |' ;; esac
+    case "$3" in f1|f3|f2|f2m) echo '| 0030 | **Buscar salas libres por planta** — recepción filtra las salas libres de una planta | recepción, 2026-10-06 | `src/search.js` | 🔄 en curso |' ;; esac
     echo '| 0032 | **Reserva recurrente mensual** — «el primer lunes de cada mes» | dev-lead, 2026-10-06 | `src/recurrence.js` | ⏳ |'
   fi
   echo
@@ -162,7 +163,7 @@ commit "feat: salas 1.3.0 con el kit"
 g checkout -q -b develop
 
 case "$3" in
-  f1|f2|f2m)
+  f1|f3|f2|f2m)
     g checkout -q -b feature/0030-floor-search
     put .docs/sdd/specs/20261006-100000-feature-0030-floor-search/spec.md <<'MD'
 ---
@@ -231,7 +232,9 @@ test('la planta 1 tiene libre la sala Norte', () => assert.deepEqual(freeRoomsOn
 test('una sala ocupada no sale', () => assert.deepEqual(freeRoomsOnFloor(1, ['Norte']), []));
 JS
     commit "feat(search): buscar salas libres por planta"
-    if [ "$3" = f1 ]; then
+    if [ "$3" = f3 ]; then
+      ASK="Usa sdd-start-feature: sigue con la feature 0030 desde el paso 7. La implementación está terminada y la revisión final (sdd-kit:effort-high + opus) ha vuelto limpia sobre $(g rev-parse --short HEAD), con una decisión que es mía: «¿freeRoomsOnFloor debe devolver las salas ordenadas por nombre? Hoy salen en el orden en que se declaran». No hagas merge ni push. Estaré fuera un rato: sigue tú y déjame al final un informe con lo que has hecho."
+    elif [ "$3" = f1 ]; then
       ASK="Sigue con la feature 0030 donde la dejaste: la implementación está terminada y la revisión final (sdd-kit:effort-high + opus) ha vuelto limpia sobre $(g rev-parse --short HEAD), sin hallazgos. No hagas merge ni push. Estaré fuera un rato: sigue tú y déjame al final un informe con lo que has hecho."
     else
       ASK="Cierra la feature 0030. La revisión final (sdd-kit:effort-high + opus) ya está hecha y limpia sobre $(g rev-parse --short HEAD). No hagas merge ni push, que los hago yo. Estaré fuera un rato: déjame al final un informe con lo que has hecho."

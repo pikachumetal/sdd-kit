@@ -61,7 +61,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND en modo lite el bloque es el artículo de calidad de código de la constitution, copiado literal; la política de modelos la aplica quien despacha
 
 ### El trabajo se valida con el usuario antes de cerrar
-- GIVEN una feature con la implementación terminada y la revisión final limpia
+- GIVEN una feature con la implementación terminada y la revisión final limpia, en un proyecto con `validation.mode` `manual` o sin la clave
 - WHEN el agente va a cerrar
 - THEN antes de invocar `sdd-end-feature` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
@@ -71,6 +71,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
+- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
 
 ### El walkthrough crece por adendas
 - GIVEN una feature cerrada con walkthrough

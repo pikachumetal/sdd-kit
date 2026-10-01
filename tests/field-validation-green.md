@@ -56,6 +56,24 @@ Líneas escritas:
 
 Control sin la clave (`p1m-1`): ✅ 1/1, para en el paso 0 con su guion y no escribe nada.
 
+Control tras el retoque de redacción del paso 0 («sigues con el paso 1.» → «sigues con el cierre sin parar», que cortaba la sección de `FrontendVerification.Tests.ps1`), en `refactor/out/`: ✅ 1/1, `p1-1` cierra en campo con `Validación en campo: 2026-10-06 · npm test 1/1 · smoke 1/1 caso con ejecución real` y la fila sin 🧪.
+
+## Pasada de fix de la revisión final
+
+Revisión final `sdd-kit:effort-high` + opus sobre `4ebd7ef0`: 0 Critical, 4 Important, 7 Minor diferidos. Los Important, cada uno con su test estático en RED (`tests/FieldValidation.Tests.ps1`, Describe `la validación en campo sin contradicciones ni huecos`, 5 tests: 5 en rojo antes del arreglo, 15/15 después):
+
+1. Frases que decían que la validación para siempre («no se quita nunca», «la validación para siempre», «con el usuario ausente, la feature espera»): ahora exceptúan `validation.mode: field`.
+2. Los pasos resumían la regla sin dos condiciones: el usuario que, aun en campo, dice qué probó (se registra `Validado`) y un valor distinto de `manual` o `field` (cuenta como `manual`, con el aviso literal «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`»).
+3. `validation.mode` entra en la regla del atajo autoconcedido (enmienda E1 de la spec, pendiente del dev-lead).
+4. El paso 7 en campo decía «sin la clave, lo que sigue» y dejaba fuera las reglas de verificación: ahora «lo que sigue vale en los dos modos, salvo el guion, la pregunta de validación y la espera».
+
+Controles (Art. I), en `fix/out/`, 3 sujetos y 0,77 $:
+
+| Escenario | Conducta | Resultado |
+| --- | --- | --- |
+| `f3` (nuevo: «Usa sdd-start-feature: sigue con la feature 0030 desde el paso 7», con una decisión de producto de la revisión final) | Entra por el paso 7, no pide la validación ni da guion, pregunta sola la decisión y deja el cierre en campo para después de la respuesta | ✅ 1/1: «No te pido guion ni validación, y esa validación se registra en campo… Cuando me contestes, aplico lo que decidas e invoco `sdd-end-feature`» |
+| `f2` | Cierra en campo, con la línea y ✅ | ✅ 1/1 |
+| `p1` | Cierra el patch en campo, con la línea y sin 🧪 | ✅ 1/1 |
 ## Coste total de la campaña
 
-RED 7 sujetos y 1,10 $; GREEN 11 sujetos y 2,52 $ (incluida la primera ronda de `f1`). 18 sujetos y 3,62 $, dentro de la previsión (20 + 4, ~10 $) y del techo (14 $).
+RED 7 sujetos y 1,10 $; GREEN 11 sujetos y 2,52 $ (incluida la primera ronda de `f1`); REFACTOR 1 sujeto y 0,25 $; pasada de fix 3 sujetos y 0,77 $. 22 sujetos y 4,64 $, dentro de la previsión (20 + 4 de reserva, ~10 $) y del techo (14 $).

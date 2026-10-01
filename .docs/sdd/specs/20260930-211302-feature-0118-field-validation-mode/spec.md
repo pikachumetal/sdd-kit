@@ -122,8 +122,16 @@ Un modo nuevo en la tabla de gates, con su sección en `control-profiles.md`, ig
 
 ## Enmiendas
 
+### E1 — `validation.mode` entra en la regla del atajo autoconcedido (2026-10-01, aprobada por el dev-lead: «Apruebo E1 (Recomendada)»)
+
+La revisión final (Important 3) encontró que `validation.mode: field` quita la parada de validación y no estaba en la regla «el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada». En el RED, `p1-1` ya ofreció «Si con él querías validar en campo, dímelo y lo aplico». La pasada de fix lo añade en `control-profiles.md` (las dos enumeraciones). Cambia una regla de la capacidad `control-profiles` que el delta no tocaba:
+
+**MODIFIED — regla de la capacidad `control-profiles`, «el agente nunca escribe sin la frase literal»** (antes: `profile`, `control.*` o `merge`)
+- El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada.
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
 | --- | --- | --- | --- |
 | dev-lead | Àngel Delgado | 2026-09-30 | aprobada por delegación: «Apruebo la spec por delegación, nos vemos en la validación» |
+| dev-lead | Àngel Delgado | 2026-10-01 | enmienda E1 aprobada: «Apruebo E1 (Recomendada)» |

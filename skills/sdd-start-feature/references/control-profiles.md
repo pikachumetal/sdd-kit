@@ -59,7 +59,7 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | Merge a main, tag, cualquier otro push, PR, publicar | persona | persona | persona |
 
 Más:
-- La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada.
+- La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada.
 - «EN ESPERA» no es un estado del roadmap: es la feature en curso esperando al usuario.
 - La ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow` no se deroga: ahí la decisión ya la tomó una persona.
 - En `unattended`, una pregunta de la entrevista sin respuesta en los documentos del proyecto aparca la feature, y al acabar la release hay un solo informe.
@@ -137,7 +137,7 @@ Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el 
 
 ## Validación en campo
 
-Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso. Sin la clave, o con `manual`, la validación es la de siempre.
+Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Sin la clave, o con `manual`, la validación es la de siempre.
 
 En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature`, paso 0 de `sdd-end-feature` y de `sdd-end-patch`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección (en el RED, 6 de 6 sujetos con la clave pararon a pedir la validación, `tests/field-validation-red.md`). Lo que no cambia es la verificación del agente: revisión final y re-revisión, smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
 
@@ -229,7 +229,7 @@ Conjunto cerrado:
 
 `control.maxParallelAgents` solo se declara aquí: su conducta la define la task 0022. `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
 
-El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*` o un `merge` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
+El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 
 ## Preguntas de las claves
 
