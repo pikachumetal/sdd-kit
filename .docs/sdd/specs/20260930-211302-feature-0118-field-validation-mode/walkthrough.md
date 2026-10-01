@@ -89,3 +89,5 @@ created: 2026-10-01
 - Los tests estáticos que cortan un paso por su número (`'0. **Validación**' '1. '`) se rompen con una frase de la guía que contiene «paso 1.»: al escribir guía en un paso numerado, no citar otro paso con número y punto → `tech-stack.md` (campañas headless).
 
 ## 6. Adendas
+
+- **2026-10-01 · corte de la 2.3.0**: la validación diferida sigue pendiente. El disparador anterior (la primera feature de este repo con `validation.mode: field`) ya ocurrió con las features 0127, 0050, 0124 y 0117, sin que el dev-lead dijera qué probó. Disparador nuevo, decidido con el dev-lead al cortar: la release siguiente a la 2.3.0, a cargo del dev-lead. La fila sale del roadmap y el id queda en `validaciones pendientes:` de la v2.3.0.

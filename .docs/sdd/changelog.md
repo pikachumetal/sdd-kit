@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-01
+
+El roadmap en la forma de su plantilla, la validación en campo y el carril patch decidido por quién fija la solución. [Release notes](releases/v2.3.0/release-notes.md).
+
 ### Added
 
 - **Feature 0115** — El roadmap en la forma de la plantilla: `Test-Roadmap.ps1` valida que `roadmap.md` solo tiene las secciones y tablas de `roadmap-template.md`, que ahora dice qué va en cada una y que las filas saldadas y los patches salen en el corte; la migración `v2.3.0` lleva un roadmap existente a esa forma con gate; y el Art. XI de la constitution fija que todo documento tiene tipo, dueño y cota. → [ref](specs/20260930-095620-feature-0115-roadmap-template-shape/)
