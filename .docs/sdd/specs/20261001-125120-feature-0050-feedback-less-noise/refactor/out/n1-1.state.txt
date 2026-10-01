@@ -1,0 +1,122 @@
+## HEAD antes: f2e42be · después: f2e42be
+## status
+?? .docs/sdd/kit-feedback/20261001-130833-feature-0032-etiquetas.md
+## diff del ticket de la 0031
+## 20261001-073000-feature-0031-exportar-csv.md · 50 palabras · lint:
+lint ok
+---
+kit_version: 2.2.0
+lane: feature
+id: 20261001-073000-feature-0031-exportar-csv
+task: 0031
+mode: lite
+date: 2026-10-01
+---
+
+# Ticket para el kit — feature 0031: exportar notas a CSV
+
+## Contexto
+
+- Carril y modo: feature lite
+
+## Hallazgos
+
+Sin hallazgos
+
+## Funcionó, no tocar
+
+- El modo lite con su predicado citado.
+## 20261001-130833-feature-0032-etiquetas.md · 1097 palabras · lint:
+lint ok
+---
+kit_version: 2.2.0
+superpowers_version: 6.4.2
+lane: feature
+id: 20261001-130833-feature-0032-etiquetas
+task: 0032
+mode: lite
+date: 2026-10-01
+---
+
+# Ticket para el kit — feature 0032: etiquetas en las notas
+
+## Contexto
+
+- Carril y modo: feature lite, ejecución en Native
+- Skills del kit usadas: sdd-start-feature, sdd-end-feature, sdd-feedback
+- Proyecto: aplicación pequeña con interfaz web y login, JavaScript, una persona con el dev-lead
+- Modelo del hilo: Opus 5.5
+- Modelos de los subagentes: revisor final Opus (`sdd-kit:effort-high`)
+- Coste en reloj: 3,5 h frente a 2 h estimadas (+75 %, por encima del techo)
+- Coste en tokens: no medido (el hilo no tiene contador)
+
+## Cómo leer este ticket
+
+Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y van ordenados por coste observado.
+
+## Hallazgos
+
+### 1. Verificación visual sin receta de acceso: tres intentos hasta dar con la sesión
+
+- **Qué pasó**: la pantalla a verificar exige login y la sección de verificación visual del `tech-stack` del proyecto no declara el «Acceso». Probé
+  tres formas de entrar desde un script de Playwright hasta dar con la cookie de sesión.
+- **Dónde en el kit**: `skills/sdd-start-feature/references/frontend-verification.md:19` (campo «Acceso») y `:33` (solo dice que sin URL de entrada el
+  detector queda «no probado»; no dice qué hacer con las capturas ni cuándo parar).
+- **Por qué el kit no lo evitó**: la regla de `:33` cubre al detector, no a las capturas ni a la prueba del THEN. Nada acota el esfuerzo de entrar ni
+  manda parar a proponer el campo «Acceso» al dev-lead.
+- **Coste**: ~45 min, respaldado por el walkthrough de la feature (`.docs/sdd/specs/20261001-080000-feature-0032-etiquetas/walkthrough.md`, «Tiempo»).
+- **Propuesta**: si §Frontend no declara «Acceso» y la pantalla tiene login, un solo intento razonable; si falla, marcar la verificación visual «no
+  probado» con su motivo y proponer en una línea el campo «Acceso» para el `tech-stack`, en vez de seguir explorando.
+- **Verificada**: sin verificar
+- **Criterio de aceptación**: GIVEN un proyecto con login y sin «Acceso» en §Frontend, WHEN la task tiene verificación visual, THEN el agente, tras un
+  intento, deja las capturas «no probado» con motivo y propone el campo «Acceso», y el RED actual (sujeto que sigue probando formas de entrar) pasa a
+  GREEN.
+
+### 2. `bash <ruta>` desde PowerShell para `task-done`, dos veces, con la regla ya escrita
+
+- **Qué pasó**: `bash ~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-done 1 "node --test"` en
+  PowerShell → `bash: <ruta>/task-done: No such file or directory` (el `bash` de PowerShell es el de WSL). Repetido con la herramienta Bash (Git Bash)
+  funcionó. Me pasó dos veces en la sesión.
+- **Dónde en el kit**: `skills/sdd-start-feature/SKILL.md:48` (paso de ejecución en Native). La regla existe y dice exactamente esto; no la apliqué.
+- **Por qué el kit no lo evitó**: es una regla que no aguantó: va enterrada a mitad de un párrafo de un solo bloque muy largo y se lee antes de la
+  primera task, no al lanzar el script. Con el hilo ya en PowerShell por costumbre, no se vuelve a mirar.
+- **Coste**: ~15 min en total, sin respaldo (ni spec, ni walkthrough ni commit lo recogen).
+- **Propuesta**: sacar la regla del párrafo a una línea propia junto al comando de `task-done`/`task-start`: «con la herramienta Bash, nunca `bash <ruta>` desde PowerShell».
+- **Verificada**: sí — contrastado con `skills/sdd-start-feature/SKILL.md:48` (la regla está, y es la misma causa)
+- **Criterio de aceptación**: GIVEN una sesión en Windows con PowerShell como shell principal, WHEN llega el cierre de la primera task en Native, THEN
+  el sujeto lanza `task-done` con la herramienta Bash a la primera; el RED es el sujeto que lo lanza con `bash <ruta>` desde PowerShell.
+
+### 3. El repaso de coherencia no contrasta lo que la spec cita del modelo de datos
+
+- **Qué pasó**: el ejemplo de la spec lite incluía un campo que el modelo de datos del proyecto no tiene. No abrí el código al escribirla; el repaso
+  de coherencia no me llevó a hacerlo. Lo cazó la revisión final y costó una enmienda y una pregunta al dev-lead.
+- **Dónde en el kit**: `skills/sdd-start-feature/SKILL.md:42` (repaso de coherencia). Contrasta literales repetidos dentro de la spec y, para cada
+  `MODIFIED`, busca en el código dónde se implementa; no pide contrastar con el código lo que un `ADDED` o un ejemplo da por existente.
+- **Por qué el kit no lo evitó**: el requisito era un `ADDED` con un dato en el ejemplo, fuera de la regla de los `MODIFIED`.
+- **Coste**: ~20 min, sin respaldo: el walkthrough dice «La spec no tuvo enmiendas», lo contrario de lo que pasó (la enmienda no figura en el
+  walkthrough, que además suma solo ~75 de los 90 min de desviación). El dev-lead atribuyó el sobrecoste a «huecos de la spec»; la única parte
+  comprobable es esta, ~20 min de 90.
+- **Propuesta**: ampliar el repaso: cada campo, columna o fichero que un escenario o ejemplo da por existente se contrasta con el código antes del
+  gate, y se anota en «Decisiones que he tomado yo». Y que la «Causa de la desviación» del walkthrough se cierre contra las enmiendas y rulings de la
+  feature (`skills/sdd-templates/templates/walkthrough-template.md:28`, `:36`).
+- **Verificada**: sin verificar
+- **Criterio de aceptación**: GIVEN una spec lite cuyo ejemplo nombra un campo que el modelo de datos no tiene, WHEN se hace el repaso de coherencia,
+  THEN el campo se detecta antes del gate; el RED es el sujeto que presenta la spec con ese campo.
+
+## Lo que hice por iniciativa propia
+
+- Intenté repartir el tiempo con las marcas de hora de los commits para explicar la desviación del walkthrough. No funcionó como evidencia: en este
+  repo los commits están a segundos unos de otros, así que no respaldan ningún reparto y las cifras del walkthrough salen de mi cuenta. Candidato a
+  regla solo si el kit pide commits con marca real, o un registro del tiempo por paso.
+
+## Funcionó, no tocar
+
+- El modo lite y la spec aprobada a la primera.
+- La revisión final: encontró un Important (etiquetas repetidas) y la pasada de fix con su RED lo cerró (`fix(notes): no repetir una etiqueta`).
+
+## Menores
+
+- No encontré a la primera cómo se lanza el script de estimación: el paso del cierre remite a la referencia y la ruta está una pulsación más allá —
+  `skills/sdd-end-feature/SKILL.md` pasos 2-3 → `references/estimation.md:9`.
+- No entendí si el placeholder de fase de la plantilla del walkthrough era la fase del plan o de la campaña (~5 min); no localizo ningún `<fase>`
+  literal, lo más cercano es la línea del modelo del hilo — `skills/sdd-templates/templates/walkthrough-template.md:29`.

@@ -17,7 +17,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
       $step | Should -Match '\.docs/sdd/capabilities/'
       $step | Should -Match 'ya decía, no hay delta'
-      $step | Should -Match 'aprendizajes-skills\.md'
+      $step | Should -Match 'Merge-CapabilityDelta\.ps1'
     }
 
     It 'sdd-end-patch mete la capacidad en el commit de cierre' {
