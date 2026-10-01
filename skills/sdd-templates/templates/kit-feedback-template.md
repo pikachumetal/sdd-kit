@@ -15,6 +15,16 @@ date: <YYYY-MM-DD>
 > código ni reglas de negocio. Si un hallazgo no se entiende sin un dato del dominio, sustitúyelo
 > por un descriptor genérico («una regla de cálculo de precios», «el interlocutor del cliente»);
 > el hallazgo nunca se omite por privacidad. Borra los bloques de ayuda (`>`) al redactar.
+>
+> **Ticket mínimo** — si el cierre fue limpio (ningún hallazgo por encima de un menor y el coste
+> en reloj dentro del techo de la estimación), el ticket es la cabecera y estas tres líneas, y
+> nada más que la sección «Menores» si los hubo:
+>
+> - Contexto: <feature lite, Sonnet 5.5, sin subagentes>
+> - Coste: <1,5 h frente a 2 h estimadas; tokens no medidos>
+> - Nada que reportar | <lo hecho por iniciativa propia, una línea>
+>
+> Con cualquier hallazgo, el ticket completo de abajo.
 
 ## Contexto
 
@@ -23,7 +33,7 @@ date: <YYYY-MM-DD>
 - Proyecto: <tipo, stack, tamaño, nº de personas — genérico, sin nombre>
 - Modelo del hilo: <modelo>
 - Modelos de los subagentes: <modelo(s) o "no aplica">
-- Coste en reloj: <tiempo, o "no medido">
+- Coste en reloj: <tiempo frente a la estimación, o "no medido">
 - Coste en tokens: <tokens, o "no medido">
 
 ## Cómo leer este ticket
@@ -32,17 +42,18 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ## Hallazgos
 
-> Uno por subsección, ordenados por coste observado. Si no hay ninguno, se escribe literalmente
-> «Sin hallazgos» y la sección se queda así: es un resultado válido, no se buscan fricciones para
-> rellenar.
+> Uno por subsección, ordenados por coste observado. Un error tuyo que una regla del kit pudo
+> evitar es un hallazgo, también si la regla existía y no la aplicaste; uno que ninguna regla del
+> kit cubriría, o un fallo del harness o del shell, no va al ticket.
 
 ### 1. <título>
 
-- **Qué pasó**: <evidencia de la sesión>
+- **Qué pasó**: <evidencia de la sesión; si cita un fallo de ejecución, el comando exacto, el shell y la línea de error: «`./scripts/check-docs.sh` en PowerShell → `The term './scripts/check-docs.sh' is not recognized`»>
 - **Dónde en el kit**: <ruta del kit y paso — `skills/<skill>/SKILL.md` paso N, una plantilla, una referencia; nunca un fichero del proyecto; si no se localiza, dilo>
-- **Por qué el kit no lo evitó**: <…>
-- **Coste**: <…>
+- **Por qué el kit no lo evitó**: <…; si la regla existía y no la aplicaste, dilo>
+- **Coste**: <cifra; una causa, solo con la spec, el walkthrough o el commit que la respalda (ruta o sha), o marcada «sin respaldo»>
 - **Propuesta**: <…>
+- **Verificada**: <sí — reproducido con `<comando>` en <shell> | sí — contrastado con `skills/<skill>/SKILL.md:<línea>` | sin verificar>
 - **Criterio de aceptación**: <escenario GIVEN/WHEN/THEN, o el RED que hoy falla y pasaría con la propuesta>
 
 ## Lo que hice por iniciativa propia
@@ -55,8 +66,9 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 - <…>
 
-## Errores míos, no huecos del kit
+## Menores
 
-> Fallos del ejecutor que ninguna regla escrita habría evitado. No llevan propuesta.
+> Fricciones de menos de ~10 min que no se repitieron en la sesión, una línea cada una, sin
+> criterio de aceptación. Si no hay, borra la sección.
 
-- <…>
+- <qué pasó> — <ruta del kit, o «no localizado»>

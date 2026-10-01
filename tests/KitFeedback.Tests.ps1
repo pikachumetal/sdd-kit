@@ -28,13 +28,32 @@ Describe 'Plantilla kit-feedback-template.md' {
     Test-Path $script:TemplateFile | Should -BeTrue
   }
 
-  It 'lleva las cuatro secciones que el baseline no producía' -ForEach @(
-    @{ Section = 'Sin hallazgos' }
+  It 'lleva <Section>' -ForEach @(
+    @{ Section = 'Ticket mínimo' }
     @{ Section = 'Funcionó' }
     @{ Section = 'iniciativa propia' }
-    @{ Section = 'Errores' }
+    @{ Section = '## Menores' }
+    @{ Section = '**Verificada**' }
   ) {
     Get-KitFileContent $script:TemplateFile | Should -Match ([regex]::Escape($Section))
+  }
+
+  It 'ya no lleva la sección de errores del agente' {
+    Get-KitFileContent $script:TemplateFile | Should -Not -Match 'Errores míos'
+  }
+}
+
+Describe 'Un ticket por feature o patch' {
+  It 'la skill solo amplía el ticket de la misma feature o patch' {
+    Get-KitFileContent $script:SkillFile | Should -Match 'Un ticket por feature o patch'
+  }
+
+  It 'la skill pasa el lint de docs del proyecto' {
+    Get-KitFileContent $script:SkillFile | Should -Match 'lint de docs'
+  }
+
+  It '<_> no condiciona la oferta a la sesión' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
+    Get-KitFileContent (Join-Path $script:KitRoot "skills/$_/SKILL.md") | Should -Not -Match 'esta sesión ya haya generado el suyo'
   }
 }
 
