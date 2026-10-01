@@ -1,0 +1,147 @@
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+>>> Bash: cd "<run>/repo" && git log --oneline --stat main..HEAD | head -30; cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs; ls .docs/sdd/specs/*0031*; git status --short
+<<< b52971e fix(app): ordenar el listado de salas
+ .../20261006-110000-patch-0031-room-order/patch.md   | 20 ++++++++++++++++++++
+ src/app.js                                           |  2 +-
+ 2 files changed, 21 insertions(+), 1 deletion(-)
+{"version": "2.2.0", "channel": "plugin", "updated": "2026-09-29", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto", 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0031*/patch.md; cat .docs/sdd/changelog.md .docs/sdd/roadmap.md; git show HEAD -- src; ls; cat package.json; git branch -a; ls tests test 2>/dev/null
+<<< Exit code 2
+# Patch 0031 — El listado de salas sale desordenado
+
+## 1. Síntoma
+
+`rooms` devuelve `['Sur', 'Norte']`; recepción espera orden alfabético.
+
+## 2. Causa
+
+La lista se declaraba a mano, sin ordenar.
+
+## 3. Fix
+
+`src/app.js` ordena con `localeCompare(…, 'es')`. Test: `hay dos salas`, verde.
+
+## 4. Verificación
+
+| Comprobación | Resultado |
+| --- | --- |
+| `npm test` | 1/1 verde |
+| `node -e "import('./src/app.js').then(m => console.log(m.rooms))"` | `[ 'Norte', 'Sur' ]` |
+# Changelog
+
+## [Unreleased]
+
+## [1.3.0] - 2026-10-05
+
+### Added
+
+- Aviso por correo al liberar una sala (0021). →
+
+>>> Bash: cd "<run>/repo" && sed -n 1,200p "../../../kit-green/skills/sdd-start-feature/references/control-profiles.md" | grep -n -i -A25 "validación en campo"
+<<< sed: can't read ../../../kit-green/skills/sdd-start-feature/references/control-profiles.md: No such file or directory
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0118-field-validation-mode/241a28f0-f0a1-4cc5-b470-a1605ddef4a7/scratchpad/kit-green" && grep -n -i -A30 "^## Validación en campo\|^### Validación en campo" skills/sdd-start-feature/references/control-profiles.md | head -60; grep -n -A12 "## 4\|## 5" skills/sdd-templates/*patch* 2>/dev/null | head -40; ls skills/sdd-templates skills/sdd-templates/scripts; cat /dev/null
+<<< 138:## Validación en campo
+139-
+140-Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso. Sin la clave, o con `manual`, la validación es la de siempre.
+141-
+142-En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature`, paso 0 de `sdd-end-feature
+
+>>> Bash: cd "<run>/repo" && npm test 2>&1 | tail -12; node -e "import('./src/app.js').then(m => console.log(m.rooms))"; git worktree list; cat CLAUDE.md
+<<< npm notice run salas@1.2.0 test
+npm notice run node --test
+✔ hay dos salas (0.5714ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88.1516
+[ 'Norte', 'Sur' ]
+<run>/repo b52971e [feature/0031-room-order]
+# Salas — guía para Claude
+
+Proyecto con el kit SDD. Documentos de anclaje en `.docs/sdd/`.
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0118-field-validation-mode/241a28f0-f0a1-4cc5-b470-a1605ddef4a7/scratchpad/kit-green/skills/sdd-templates" && cat templates/patch-template.md 2>/dev/null || ls templates; sed -n 1,40p scripts/Build-EstimationLog.ps1
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash del commit del fix; se escribe en el commit de cierre
+---
+
+# Patch <id> — <título corto>
+
+> Registr
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+import glob,re
+p=glob.glob('.docs/sdd/specs/*0031*/patch.md')[0]
+s=open(p,encoding='utf-8').read()
+s=s.replace("`npm test` | 1/1 verde |","`npm test` | ✅ 1/1 verde (ejecutado por el agente) |").replace("| `[ 'Norte', 'Sur' ]` |","| ✅ `[ 'Norte', 'Sur' ]` (ejecutado por el agente) |")
+s=s.rstrip('\n')+"\n\nValidación en campo: 2026-10-06 · npm test 1/1 · smoke 1/1 caso con ejecución real (`rooms` devuelve `['Norte', 'Sur']`)\n\n## 5. Tiempo (ligero)\n\n- Real: no medido (el proyecto no tiene `estimation.md`)\n"
+s="---\nid: 20261006-110000-patch-0031-room-order\ntask: 0031\ntitle: Patch — orden del listado de salas\ntype: patch\nstatus: done\ncreated: 2026-10-06\nbranch: feature/0031-room-order\ncommit: b52971e\n---\n\n"+s
+open(p,'w',encoding='utf-8').write(s)
+c=open('.docs/sdd/changelog.md',encoding='utf-8').read()
+c=c.replace("## [Unreleased]\n","## [Unreleased]\n\n### Fixed\n\n- El listado de salas sale en orden alfabético (0031). → [ref](specs/20261006-110000-patch-0031-room-order/)\n",1)
+open('.docs/sdd/changelog.md','w',encoding='utf-8').write(c)
+r=open('.docs/sdd/roadmap.md',encoding='utf-8').read()
+r=r.replace("| Fecha | Id | Descripción |\n| --- | --- | --- |\n","| Fecha | Id | Descripción |\n| --- | --- | --- |\n| 2026-10-06 | 0031 | ✅ El listado de salas sale ordenado alfabéticamente. [patch](specs/20261006-110000-patch-0031-room-order/patch.md) |\n",1)
+open('.docs/sdd/roadmap.md','w',encoding='utf-8').write(r)
+E
+git diff --stat; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0118-field-validation-mode/241a28f0-f0a1-4cc5-b470-a1605ddef4a7/scratchpad/kit-green/skills/sdd-templates/scripts"; pwsh -NoProfile -File "$K/Test-Roadmap.ps1" -Path .docs/sdd
+<<<  .docs/sdd/changelog.md                              |  4 ++++
+ .docs/sdd/roadmap.md                                |  1 +
+ .../20261006-110000-patch-0031-room-order/patch.md  | 21 +++++++++++++++++++--
+ 3 files changed, 24 insertions(+), 2 deletions(-)
+Roadmap válido
+
+>>> Bash: cd "<run>/repo" && git add -A && git commit -q -m "docs(0031): cierre del patch
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git status --short && git log --oneline -3; git worktree list; git status --short -b | head -2; git -C . rev-parse --git-dir --git-common-dir
+<<< 5974145 docs(0031): cierre del patch
+b52971e fix(app): ordenar el listado de salas
+0990d55 feat: salas 1.3.0 con el kit
+<run>/repo 5974145 [feature/0031-room-order]
+## feature/0031-room-order
+.git
+.git
+
+=== RESULTADO (11 turnos, 0.278433 $)
+## Informe de cierre del patch 0031
+
+**Estado:** la rama `feature/0031-room-order` está lista, con el working tree limpio. No he hecho merge ni push, como pediste.
+
+**Qué he hecho**
+- **Validación (`validation.mode: field`):** no he parado ni preguntado nada. He ejecutado yo el smoke:
+  - `npm test` da 1/1 verde.
+  - `rooms` devuelve `['Norte', 'Sur']`.
+  - Lo he anotado en `patch.md` §4 como `Validación en campo: 2026-10-06 · …`. No hay 🧪 ni fila en la tabla de la release.
+- **`patch.md`:** he añadido el frontmatter con el commit del fix (`b52971e`) y marcado la verificación como ejecutada por el agente. El tiempo real lo he dejado como «no medido», porque no sé cuánto se tardó y el proyecto no tiene `estimation.md`.
+- **Changelog:** entrada `Fixed` en `[Unreleased]` con enlace al patch.
+- **Roadmap:** fila 0031 en la tabla de Patches, con ✅. `Test-Roadmap.ps1` da «Roadmap válido».
+- **Commits:** el fix (`b52971e`) y el de cierre (`5974145`).
+
+**Qué he omitido y por qué**
+- **Capacidades, estimation-log y `env:clean`:** el proyecto no tiene `capabilities/`, `estimation.md` ni `environments.md`.
+
+**Pendiente**
+- **Merge a `develop`:** la configuración lo permitiría con `--no-ff` y sin push, pero lo dejas tú.
+  - Para hacerlo con la receta del kit hay que usar `Invoke-SddMerge.ps1`, no `git merge` a mano.
+  - La rama está en el checkout principal, así que no hay worktree que borrar.
+- **Aviso del kit:** el proyecto está en la 2.2.0 y el kit trae migraciones hasta la 2.3.0. Se aplican con «ponme el proyecto al día con sdd-init-brownfield».
+- **Ticket de mejora del kit:** puedo generarlo con `sdd-feedback` si lo quieres.
+
+**No terminado.** Falta el merge de `feature/0031-room-order` en `develop`. No borres todavía el checkout `repo`.

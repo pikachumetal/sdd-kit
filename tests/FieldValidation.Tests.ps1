@@ -61,3 +61,20 @@ Describe 'el cierre de feature en campo' {
     Get-Step $script:EndFeature 8 | Should -Match 'validación en campo'
   }
 }
+
+Describe 'el cierre de patch en campo' {
+  BeforeAll {
+    $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
+  }
+
+  It 'el paso 0 del patch nombra el modo de campo' {
+    $step = Get-Step $script:EndPatch 0
+    $step | Should -Match 'validation\.mode: field'
+    $step | Should -Match 'Validación en campo:'
+  }
+
+  It 'la red flag admite la línea de campo' {
+    $redFlag = ($script:EndPatch -split "`n") | Where-Object { $_ -match '^- Vas a fusionar sin la línea' }
+    $redFlag | Should -Match 'Validación en campo:'
+  }
+}

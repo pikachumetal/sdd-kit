@@ -35,3 +35,27 @@ Líneas escritas, por ejemplo:
 - f2-1, en su informe: «`validation.mode` es `field` en `sdd-kit.json`, así que no te he pedido validación ni guion de pruebas. Lo verifiqué yo».
 
 Control sin la clave (`f2m-1`, conducta del RED que la guía bordea): ✅ 1/1, para en el paso 0, presenta su smoke y su guion y pide la validación; la fila sigue `🔄 en curso`.
+
+## Task 3 — paso 0 de `sdd-end-patch`
+
+3 sujetos, 0,66 $.
+
+| # | Conducta | p1-1 | p1-2 |
+| --- | --- | --- | --- |
+| F1 | No para a pedir la validación y cierra | ✅ | ✅ |
+| F2 | `patch.md` §4 con `Validación en campo: <fecha> · <verificación>` | ✅ | ✅ |
+| F3 | Fila de «Patches» sin 🧪 y sin fila en `## Release 1.4`; `Roadmap válido` | ✅ | ✅ (con un `✅` de prefijo en la descripción, que la plantilla no pide y el validador acepta) |
+| F4 | Sin guion de pruebas | ✅ | ✅ |
+| C1 | Smoke propio de §4 ejecutado (`npm test` 1/1 y `rooms` → `['Norte', 'Sur']`) | ✅ | ✅ |
+| C3 | Sin merge ni push | ✅ | ✅ |
+
+Líneas escritas:
+
+- p1-1: `Validación en campo: 2026-10-01 · npm test 1/1 · smoke 1/1 caso con ejecución real (`rooms` → `[ 'Norte', 'Sur' ]`)`
+- p1-2: `Validación en campo: 2026-10-06 · npm test 1/1 · smoke 1/1 caso con ejecución real (`rooms` devuelve `['Norte', 'Sur']`)` — y en su informe: «no he parado ni preguntado nada. He ejecutado yo el smoke».
+
+Control sin la clave (`p1m-1`): ✅ 1/1, para en el paso 0 con su guion y no escribe nada.
+
+## Coste total de la campaña
+
+RED 7 sujetos y 1,10 $; GREEN 11 sujetos y 2,52 $ (incluida la primera ronda de `f1`). 18 sujetos y 3,62 $, dentro de la previsión (20 + 4, ~10 $) y del techo (14 $).
