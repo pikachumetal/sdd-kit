@@ -30,9 +30,12 @@ function selectSteps(rows, steps) {
   return rows.filter((row) => steps.includes(row.Paso));
 }
 
+// using-sdd es el enrutador que inyecta el hook: invocarlo no elige ninguna puerta.
+const ROUTER = 'sdd-kit:using-sdd';
+
 function firstSkill(toolsPath) {
-  const match = readFileSync(toolsPath, 'utf8').match(/^>>> Skill: (\S+)/m);
-  return match ? match[1] : 'ninguna';
+  const skills = [...readFileSync(toolsPath, 'utf8').matchAll(/^>>> Skill: (\S+)/gm)].map((match) => match[1]);
+  return skills.find((skill) => skill !== ROUTER) ?? 'ninguna';
 }
 
 function judge(row, outDir) {

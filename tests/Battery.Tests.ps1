@@ -97,6 +97,18 @@ Describe 'Veredicto de una batería (tests/headless/battery.mjs)' -Tag 'Slow' {
     $run.ExitCode | Should -Be 1
   }
 
+  It 'verdict no cuenta como puerta la invocación de using-sdd, que es el enrutador' {
+    $out = Join-Path $TestDrive 'router-out'
+    New-Item -ItemType Directory -Force $out | Out-Null
+    Set-Content (Join-Path $out 'f1-1.tools.txt') ">>> Skill: sdd-kit:using-sdd`n>>> Skill: sdd-kit:sdd-start-feature"
+    Set-Content (Join-Path $out 't1-1.tools.txt') ">>> Skill: sdd-kit:using-sdd`n>>> Edit: README.md"
+
+    $run = Invoke-Verdict $script:TablePath $out
+
+    $run.Output | Should -Match 'f1 · 1/1 · umbral 1/1 · verde'
+    $run.Output | Should -Match 't1 · 1/1 · umbral 1/1 · verde'
+  }
+
   It 'verdict cuenta como rojo un escenario con sujetos de menos' {
     $out = Join-Path $TestDrive 'missing-out'
     New-Item -ItemType Directory -Force $out | Out-Null
@@ -132,6 +144,27 @@ Describe 'Lanzador de baterías (tests/headless/battery.sh)' -Tag 'Slow' {
     $run.ExitCode | Should -Not -Be 0
     $run.Output | Should -Match 'paso desconocido: nope'
     Get-ArgsFiles $toy | Should -BeNullOrEmpty
+  }
+
+  It 'la batería de using-sdd monta su molde con el marcador del kit' {
+    $root = Join-Path $TestDrive 'using-sdd'
+    $kit = Join-Path $root 'kit'
+    $migrations = Join-Path $kit 'skills/sdd-init-brownfield/references/migrations'
+    New-Item -ItemType Directory -Force $migrations, (Join-Path $kit 'skills/using-sdd'), (Join-Path $kit '.claude-plugin'), (Join-Path $root 'spec'), (Join-Path $root 'scratchpad/runs') | Out-Null
+    Set-Content (Join-Path $kit 'skills/using-sdd/SKILL.md') '# using-sdd'
+    Set-Content (Join-Path $kit '.claude-plugin/plugin.json') '{"name":"sdd-kit","version":"2.2.0"}'
+    Set-Content (Join-Path $migrations 'v2.3.0.md') '# v2.3.0'
+    $real = [pscustomobject]@{ Battery = (Join-Path $PSScriptRoot 'batteries/using-sdd'); Kit = $kit; Spec = Join-Path $root 'spec'; Runs = Join-Path $root 'scratchpad/runs' }
+
+    $run = Invoke-Battery $real @{ STEPS = 'sdd-config sdd-start-patch' }
+
+    Get-ArgsFiles $real | Should -Be @('c1w-1.args', 'p1-1.args', 's1-1.args', 's1-2.args', 'v1-1.args', 'v1-2.args') -Because $run.Output
+    foreach ($label in 's1-1', 'v1-1') {
+      Get-Content -Raw (Join-Path $real.Runs "battery/$label/repo/.docs/sdd/sdd-kit.json") | Should -Match '^\{"version": "2\.3\.0", "channel": "plugin"'
+    }
+    Join-Path $real.Runs 'battery/s1-1/repo/src/app.js' | Should -Exist
+    Join-Path $real.Runs 'battery/v1-1/repo/pages/pedido-detalle.html' | Should -Exist
+    @(Get-Content (Join-Path $real.Runs 'battery/v1-1.args') -Encoding utf8)[-1] | Should -Match '^Pon Guardar y Cancelar'
   }
 
   It 'la petición llega intacta con comillas latinas y tildes' {
