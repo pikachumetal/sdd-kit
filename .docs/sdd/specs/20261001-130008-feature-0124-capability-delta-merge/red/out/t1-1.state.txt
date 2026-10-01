@@ -1,0 +1,91 @@
+## HEAD antes: c83c826 · después: c83c826 · rama: feature/0031-cancelar-reserva
+## status
+ M .docs/sdd/specs/20261001-090000-feature-0031-cancelar-reserva/spec.md
+## diff desde el molde
+diff --git a/.docs/sdd/specs/20261001-090000-feature-0031-cancelar-reserva/spec.md b/.docs/sdd/specs/20261001-090000-feature-0031-cancelar-reserva/spec.md
+index 5fc7518..69de78d 100644
+--- a/.docs/sdd/specs/20261001-090000-feature-0031-cancelar-reserva/spec.md
++++ b/.docs/sdd/specs/20261001-090000-feature-0031-cancelar-reserva/spec.md
+@@ -38,6 +38,42 @@ Un subcomando nuevo en `src/app.js` que lee y escribe `data/bookings.json`.
+ 
+ ### Capacidad: `bookings`
+ 
++**ADDED — Cancelar una reserva**
++- GIVEN la sala Norte reservada de 10 a 12 por Ana, y son las 08:00
++- WHEN Ana ejecuta `salas cancelar Norte 10-12`
++- THEN la reserva se elimina de `data/bookings.json`
++- AND la franja Norte 10-12 queda libre al momento
++
++**ADDED — Rechazar la cancelación de una reserva ajena**
++- GIVEN la sala Norte reservada de 10 a 12 por Ana
++- WHEN Luis, que no es de recepción, ejecuta `salas cancelar Norte 10-12`
++- THEN el CLI responde `No es tu reserva`
++- AND la reserva sigue guardada
++
++**ADDED — Rechazar la cancelación con menos de 1 h de antelación**
++- GIVEN la sala Norte reservada de 10 a 12 por Ana, y son las 09:30
++- WHEN Ana ejecuta `salas cancelar Norte 10-12`
++- THEN el CLI responde `Demasiado tarde para cancelar`
++- AND la reserva sigue guardada
++
++**ADDED — Cancelar cualquier reserva desde recepción**
++- GIVEN la sala Norte reservada de 10 a 12 por Ana
++- WHEN recepción ejecuta `salas cancelar Norte 10-12`
++- THEN la reserva se elimina y la franja Norte 10-12 queda libre
++
++**MODIFIED — Reservar una franja** (antes: "la sala Norte libre de 10 a 12")
++
++- GIVEN la sala Norte libre de 10 a 12, o cuya reserva de 10 a 12 acaba de cancelarse
++- WHEN `salas reservar Norte 10-12`
++- THEN la reserva queda guardada y el CLI responde `Reservada Norte 10-12`
++
++**REMOVED — Consultar salas libres**
++- motivo: el comando `salas libres` deja de formar parte de la capacidad
++
++**Reglas de la capacidad**
++- **Límites**: una reserva dura como máximo 4 h; solo se cancela con 1 h de antelación o más.
++- **Avisos**: aviso si la reserva pisa un festivo; `No es tu reserva` si quien cancela no hizo la reserva y no es de recepción; `Demasiado tarde para cancelar` si faltan menos de 1 h para la franja.
++
+ ## Aprobaciones
+ 
+ | Rol | Nombre | Fecha | Estado |
+## capabilities/bookings.md
+# Capacidad — bookings
+
+## Propósito
+
+Reservar y consultar salas por franja horaria desde el CLI.
+
+## Requisitos
+
+### Reservar una franja
+
+- GIVEN la sala Norte libre de 10 a 12
+- WHEN `salas reservar Norte 10-12`
+- THEN la reserva queda guardada y el CLI responde `Reservada Norte 10-12`
+
+### Consultar salas libres
+
+- GIVEN las salas Norte, Sur y Oeste, con Norte reservada de 10 a 12
+- WHEN `salas libres 10-12`
+- THEN lista `Sur` y `Oeste`, una por línea
+
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: `data/bookings.json`.
+- **Idioma de los nombres**: comandos y mensajes en castellano.
+- **Límites**: una reserva dura como máximo 4 h.
+- **Avisos**: aviso si la reserva pisa un festivo.
+- **Regla ante conflicto**: no aplica.
+## líneas en blanco dobles
+0
+## títulos sin línea en blanco detrás
+0
+## citas de decisiones en el delta o la capacidad
+## validador de la rama
+spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md
+spec.md: «Rechazar la cancelación de una reserva ajena» del delta no está en capabilities/bookings.md
+spec.md: «Rechazar la cancelación con menos de 1 h de antelación» del delta no está en capabilities/bookings.md
+spec.md: «Cancelar cualquier reserva desde recepción» del delta no está en capabilities/bookings.md
+spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md
+exit 1

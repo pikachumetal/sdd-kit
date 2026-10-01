@@ -28,7 +28,8 @@ El cierre de una feature es una **Definition of Done**: un checklist que garanti
    (un `architecture.md` pospuesto en el init): créalo calcando su plantilla de `sdd-templates`, vuelca el
    aprendizaje y dilo en el informe final. Nunca lo dejes solo en el walkthrough ni lo lleves a otro documento. Sin plantilla
    para ese destino, no lo inventes: dilo y añade una fila a la deuda técnica del roadmap.
-   Tras fusionar el delta en `capabilities/` y antes del commit de cierre, ejecuta `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Capabilities.ps1" -Path .docs/sdd -Artifact <ruta de spec.md>`:
+   El delta de la spec se fusiona en `capabilities/` con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Merge-CapabilityDelta.ps1" -Path .docs/sdd -Artifact <ruta de spec.md>`, nunca a mano: deja fuera lo que es del delta (`- Se valida en:`, `- motivo:`, el `(antes: …)`), que copiando el bloque acaba en la capacidad viva (3 de 3 sujetos en `tests/capability-merge-red.md`). Si falla, no escribe nada: corrige en la spec lo que dice su mensaje —una cita «por la decisión 1» se reescribe con el valor— y vuelve a ejecutarlo.
+   Después, y antes del commit de cierre, ejecuta `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Capabilities.ps1" -Path .docs/sdd -Artifact <ruta de spec.md>`:
    si falla en lo que fusionaste o en el bloque «Capacidades» de la spec, corrígelo, nunca el validador. Un fallo en una capacidad que el delta no toca no bloquea el cierre: no la edites y dilo en el informe final como pendiente del dev-lead.
 5. **Revisión de skills** — "no aplica" se decide mirando, no por omisión.
    Cómo: [aprendizajes-skills.md](references/aprendizajes-skills.md).
