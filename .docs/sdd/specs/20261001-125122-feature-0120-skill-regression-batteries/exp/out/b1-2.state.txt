@@ -1,0 +1,96 @@
+## HEAD antes: c062900 · después: 6498a12 · rama: feature/0012
+## status
+## git log
+6498a12  (HEAD -> feature/0012) docs(0012): aprobar la enmienda E1 y cerrar la pasada de fix
+62502bf  fix(0012): la CLI muestra el mensaje de franja no válida
+9fc2b84  docs(0012): proponer la enmienda E1 para la CLI
+b633330  fix(0012): mismo mensaje de franja no válida al consultar libres
+c062900  docs(0012): revisión final de rama
+063bef5  feat(0012): validar el formato de la franja al consultar libres
+418bd2d  feat(0012): validar el formato de la franja al reservar
+d509eb9  docs(0012): abrir la feature 0012
+e1258da  (main, develop) feat: base de reservas de salas
+## tasks.md
+# Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Pasada de fix: 62502bf, 2 hallazgos RED→GREEN (Important 1 en b633330; Important 2 en 62502bf, con la enmienda E1 aprobada)
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 2 Important, 0 Minor), sobre 063bef5
+## diff desde el molde
+ .docs/sdd/roadmap.md                                       |  2 +-
+ .../sdd/specs/20260923-100000-feature-0012-franja/spec.md  | 14 ++++++++++++--
+ .../sdd/specs/20260923-100000-feature-0012-franja/tasks.md |  2 ++
+ src/cli.js                                                 |  4 ++--
+ src/slots.js                                               |  5 +++--
+ tests/cli.test.js                                          | 13 +++++++++++++
+ tests/free-format.test.js                                  |  2 +-
+ 7 files changed, 34 insertions(+), 8 deletions(-)
+diff --git a/src/cli.js b/src/cli.js
+index 4ccddd5..c3943db 100644
+--- a/src/cli.js
++++ b/src/cli.js
+@@ -5,8 +5,8 @@ export function run(argv) {
+   try {
+     if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+     if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+-  } catch {
+-    return 'Error';
++  } catch (error) {
++    return error.message;
+   }
+   return 'Uso: salas libres <franja> | salas reservar <sala> <franja>';
+ }
+diff --git a/src/slots.js b/src/slots.js
+index 28a6e2a..4e266d5 100644
+--- a/src/slots.js
++++ b/src/slots.js
+@@ -1,11 +1,12 @@
+ const SLOT = /^\d{2}-\d{2}$/;
++const INVALID_SLOT = 'Franja no válida: usa HH-HH, p. ej. 10-12';
+ 
+ export function reserve(room, slot) {
+-  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
++  if (!SLOT.test(slot)) throw new Error(INVALID_SLOT);
+   return { room, slot };
+ }
+ 
+ export function free(slot) {
+-  if (!SLOT.test(slot)) throw new Error('Franja no válida');
++  if (!SLOT.test(slot)) throw new Error(INVALID_SLOT);
+   return [];
+ }
+diff --git a/tests/cli.test.js b/tests/cli.test.js
+new file mode 100644
+index 0000000..0240bac
+--- /dev/null
++++ b/tests/cli.test.js
+@@ -0,0 +1,13 @@
++import { test } from 'node:test';
++import assert from 'node:assert';
++import { run } from '../src/cli.js';
++
++const INVALID_SLOT = 'Franja no válida: usa HH-HH, p. ej. 10-12';
++
++test('reservar muestra el mensaje de franja no válida', () => {
++  assert.strictEqual(run(['reservar', 'Norte', '1012']), INVALID_SLOT);
++});
++
++test('libres muestra el mensaje de franja no válida', () => {
++  assert.strictEqual(run(['libres', '1012']), INVALID_SLOT);
++});
+diff --git a/tests/free-format.test.js b/tests/free-format.test.js
+index 423b3f4..637d6a5 100644
+--- a/tests/free-format.test.js
++++ b/tests/free-format.test.js
+@@ -3,5 +3,5 @@ import assert from 'node:assert';
+ import { free } from '../src/slots.js';
+ 
+ test('libres rechaza una franja sin guion', () => {
+-  assert.throws(() => free('1012'), /Franja no válida/);
++  assert.throws(() => free('1012'), { message: 'Franja no válida: usa HH-HH, p. ej. 10-12' });
+ });

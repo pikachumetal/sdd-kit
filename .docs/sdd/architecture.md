@@ -26,7 +26,7 @@
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)
 ├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, que inyecta skills/using-sdd/SKILL.md — solo canal plugin)
 ├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
-├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/ de los scripts y headless/, el lanzador de sujetos)
+├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
 └── .docs/
     ├── workflow/                (documentación temprana del flujo: greenfield, brownfield, anexo de evidencia)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)
@@ -52,6 +52,7 @@
 - `<skill>-green.md`: mismos escenarios con la skill; veredicto contra cada fallo del RED. El GREEN también puede exhibir huecos de la PROPIA skill (una instrucción que contradice la constitution, un caso sin cubrir): el REFACTOR y su re-verificación se documentan en el mismo fichero.
 - `<skill>-ab.md`: campaña de no-regresión de un recorte (Art. I). Registra los cortes probados, los aceptados y **los descartados con su motivo** — el descarte es el dato caro: evita que la siguiente campaña repita el experimento.
 - Las fixtures de las campañas de skills se construyen en el scratchpad de sesión; lo que se versiona, en la carpeta de la spec (`red/`, `green/`), es el molde, el `subject.sh` de la campaña (desde el patch 0076, sobre el lanzador de referencia de `tests/headless/`) y lo que produjo cada sujeto, para que la narrativa verificada de `tests/*.md` apunte a ficheros que se pueden abrir (desde la task 0002).
+- `batteries/<skill>/`: la batería de regresión de la skill (`battery.md`, `subject.sh` y molde), que usan todas sus ediciones; método en `tech-stack.md`, «Baterías por skill».
 - `<script>.Tests.ps1`: tests Pester del código ejecutable del kit. Sus fixtures en `tests/fixtures/<tema>/` **sí se versionan**: son el contrato del formato que el script lee (líneas reales de walkthroughs y patches del kit y de Alybo). Todo `<script>.Tests.ps1` que ejecute git dot-sourcea `tests/Clear-GitEnv.ps1`, guarda `Clear-GitEnv` en `BeforeAll` y llama a `Restore-GitEnv` en `AfterAll`: dentro del pre-commit, git exporta `GIT_INDEX_FILE` y compañía, y una fixture de la task 0042 escribió en el índice del worktree real. Lo exige `tests/GitEnvConvention.Tests.ps1`.
 - **Scripts portables**: el código ejecutable del kit es PowerShell 7 porque todo el equipo usa Windows, pero sin APIs exclusivas de Windows (rutas con `\` fijas, `cmd.exe`, el registro): llevarlo a macOS o Linux tiene que ser instalar `pwsh`, no reescribir. Se descarta portar scripts o tests a Python o Node: lo lento de la suite es crear procesos en Windows, no el lenguaje. Se revisa si entra alguien fuera de Windows (decisión del 2026-09-25).
 - **Un script que lee un artefacto del kit se prueba contra su plantilla**: un test con la plantilla de `sdd-templates` calcada sin tocar y otro con la plantilla calcada y rellenada a medias (task 0070: `Test-Capabilities.ps1` pasó 24 tests y el GREEN, y rechazaba la cabecera de la propia `capability-template.md`).
@@ -64,9 +65,9 @@ Cada documento es de estado o un artefacto de evento (constitution, Art. XI), y 
 | --- | --- | --- | --- | --- |
 | `roadmap.md` | estado | `sdd-roadmap` y los cierres de feature, patch y release | los arranques, `sdd-roadmap` y los cierres | `Test-Roadmap.ps1`: solo las secciones de la plantilla, solo tablas, y las filas saldadas salen en el corte |
 | `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-consult`, por el índice | la forma, con `Test-Capabilities.ps1`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
-| `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | **sin cota** (2.266 palabras, 21 citas de task o fecha): misma propuesta |
-| `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | **sin cota** (900 a 1.600 palabras): misma propuesta |
-| `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | **sin cota** (17.917 palabras, 173 entradas fechadas; no cabe en una lectura): misma propuesta |
+| `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
+| `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
+| `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`; no cabe en una lectura): un aprendizaje nuevo sustituye o condensa otro |
 | `changelog.md` | diario por release | `add-to-changelog` y `sdd-end-release` | `sdd-end-release`, y las personas | solo se lee `[Unreleased]` y la última versión; se parte por versión mayor si pesa |
 | `estimation-log.md` | generado | `Build-EstimationLog.ps1` | `writing-plans`, para estimar | una fila por cierre; nadie lo edita |
 | `sdd-kit.json` | estado | `sdd-config`, las init y las migraciones | todas las skills | sus claves son las del catálogo de `sdd-config` |

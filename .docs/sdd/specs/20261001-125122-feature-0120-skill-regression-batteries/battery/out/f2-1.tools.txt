@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && find .docs -type f | head -50
+<<< develop
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap sdd-kit.json; do echo "=== $f"; cat $f* 2>/dev/null | head -80; done; ls -a; cat sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. 
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0120-skill-regression-batteries/73e72262-edb8-4edf-8093-6818540c74d1/scratchpad/kit/skills/sdd-start-feature/references" && cat modo-lite.md nombrado.md; sed -n 1,60p control-profiles.md; cd ../../sdd-templates && ls scripts
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No toca schema de datos ni exige migración.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmación explícita de
+
+>>> Bash: cd "<run>/repo" && git ls-files | grep -v '^.docs' && wc -l src/*.js && ls .docs/sdd/specs/*/ && cat .docs/sdd/changelog.md | head -20
+<<< README.md
+package.json
+src/app.js
+test/app.test.js
+16 src/app.js
+.docs/sdd/specs/20260915-090000-task-0005-weekly/:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free/:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/:
+patch.md
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja (`salas libres 10:00-12:00`). [tas
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && wc -l test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (8 turnos, 0.25495160000000006 $)
+Ahora: confirmar carril, modo y perfil (una sola pregunta). Queda: spec con brainstorming y su aprobación, ~10 min hasta tu primera parada.
+
+He leído constitution, mission, tech-stack y roadmap. No hay `architecture.md`, `capabilities/` ni `sdd-kit.local.json`. La waitlist no tiene fila en el roadmap y estás en `develop`, así que la feature se queda sin id hasta reservarlo.
+
+**Carril:** feature, no patch ni spike. Añade comportamiento nuevo.
+
+**Modo:** lo recomendado es **full**. Las condiciones de lite, una por una:
+- **Flujo existente y legible:** dudosa. `src/app.js` tiene 16 líneas y `reservar` y `cancelar` son casi stubs, sin lista de reservas que mutar. La waitlist crearía el flujo de «sala llena» desde cero.
+- **Sin cambio de contratos públicos:** no se cumple si añade comandos de CLI como `salas espera` o `salas salir-espera`.
+- **Sin schema ni migración:** se cumple. Todo vive en memoria.
+- **Un solo módulo:** se cumple. Todo cabe en `src/app.js`.
+- **Estimación ≤ media jornada:** no aplica, no hay `estimation.md`.
+
+Como lite exige las cinco y dos fallan o dudan, propongo full. Prevé unas 3 tasks (unirse a la lista, promover al cancelar, listar o salir), todas en la misma superficie y sin migración, así que no propongo partirla. Si prefieres lite, dímelo y lo uso.
+
+**Perfil:** `delegate`, que sale del default de proyecto (`sdd-kit.json` no fija `control.profile`). Paro en la spec, en los desvíos y en la validación, y no hay gate de plan.
+
+**Ids:** `ids.mode` es `sequence`. Crearé la rama `feature/<id>-waitlist` con el id que reserve `Get-NextSddId.ps1 -Reserve`, antes de la carpeta de la spec.
+
+Opciones, con la primera recomendada:
+1. Full, `delegate`, para la spec y me esperas.
+2. Full, `delegate`, y apruebo la spec por delegación, nos vemos en la validación.
+3. Lite, con las condiciones de arriba confirmadas por ti.
+4. Cambiar el perfil a `pair` o `unattended` para esta feature.
+
+¿Cuál eliges?
