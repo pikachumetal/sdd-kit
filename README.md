@@ -32,7 +32,7 @@ Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, mo
 > el contador de la home muestra un número de más
 ```
 
-Un fallo pequeño y reproducible no necesita spec. Va por `sdd-start-patch`: causa raíz primero, un solo documento y un cierre corto con `sdd-end-patch`.
+Un cambio pequeño con la solución ya fijada no necesita spec: un fallo reproducible, un ajuste o una retirada de presentación, o una petición que dice qué cambia. Va por `sdd-start-patch`: un solo documento y un cierre corto con `sdd-end-patch`. Si la solución la tendría que decidir el agente, es una feature.
 
 ```
 > cierra la release
@@ -109,7 +109,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
 | `sdd-start-feature` | El carril completo: contexto, spec, plan, tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
 | `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, capacidades, estimaciones, changelog, roadmap y merge a `develop` según la política del proyecto. |
-| `sdd-start-patch` | Carril corto para bugs deterministas de menos de media hora. Causa raíz obligatoria; si no reproduce el fallo, para sin abrir nada. |
+| `sdd-start-patch` | Carril corto para un cambio con la solución ya fijada: un fallo determinista (causa raíz obligatoria; si no lo reproduce, para sin abrir nada), un ajuste o una retirada de presentación, o una petición cerrada. |
 | `sdd-end-patch` | Cierre del patch: validación, `patch.md`, changelog, roadmap y merge a `develop` según la política del proyecto. |
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El merge a `main` y el tag los confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
@@ -130,9 +130,9 @@ El kit se usa a sí mismo. Sus features salen por `sdd-start-feature`, sus relea
 
 ## Estado
 
-La versión publicada es la 2.2.0 ([notas](.docs/sdd/releases/v2.2.0/release-notes.md)). El cierre corre en paralelo con la revisión final, el frontend se verifica con un detector y una rúbrica, varias sesiones pueden cerrar a la vez y el arranque avisa de un kit viejo o de una migración pendiente.
+La versión publicada es la 2.3.0 ([notas](.docs/sdd/releases/v2.3.0/release-notes.md)). El roadmap tiene una forma fija que se comprueba en cada cierre, un proyecto sin pantalla que probar puede validar en el uso y el carril patch lo decide quién fija la solución.
 
-La [2.1.0](.docs/sdd/releases/v2.1.0/release-notes.md) trajo los retoques visuales por el carril patch y el vigía de agentes colgados. La [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md) trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature.
+La [2.2.0](.docs/sdd/releases/v2.2.0/release-notes.md) trajo el cierre en paralelo con la revisión final, la verificación del frontend, los cierres simultáneos y los avisos de arranque. La [2.1.0](.docs/sdd/releases/v2.1.0/release-notes.md) trajo los retoques visuales por el carril patch y el vigía de agentes colgados. La [2.0.0](.docs/sdd/releases/v2.0.0/release-notes.md) trajo los tres verbos, la puerta del roadmap, el enrutado automático, menos paradas y la unidad de trabajo llamada feature.
 
 Pruebo cada cambio con agentes de prueba y en este repositorio, pero la validación de verdad es el uso en proyectos del equipo. Lo que falle allí llega como ticket de `sdd-feedback` y entra en la versión siguiente.
 
@@ -179,7 +179,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-09-27; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-10-01; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 

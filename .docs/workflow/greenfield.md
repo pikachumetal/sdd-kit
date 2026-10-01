@@ -110,7 +110,7 @@ Las incidencias detectadas se corrigen antes de presentar al cliente, igual que 
 
 ### 2.3. Carril rápido: patch
 
-Para bugs pequeños y deterministas, de menos de media hora, no hace falta el ciclo completo. `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
+Para un cambio pequeño con la solución ya fijada no hace falta el ciclo completo: un fallo determinista (la fija la causa raíz), un ajuste o una retirada solo de presentación (la fija la petición) o una petición cerrada (la fija el ticket o el dev-lead). Lo decide quién fija la solución, no los minutos: si la tendría que fijar el agente, es una feature. `sdd-start-patch` genera un único `patch.md` con síntoma, causa raíz y verificación, y las decisiones con su autor. Mantiene la trazabilidad sin añadir burocracia. El mismo carril acepta un ajuste pedido solo de presentación (plantillas o estilos, sin lógica, textos, API ni datos): el `patch.md` lleva la intención en una frase y la verificación es una captura.
 
 ```text
 /
@@ -176,7 +176,7 @@ Reducir el tiempo que va de una idea a una funcionalidad validada por el cliente
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.2.0, septiembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.3.0, octubre de 2026.*
 
 ## Referencias
 

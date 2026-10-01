@@ -152,6 +152,8 @@ No es validar:
 
 Si no contestas, la feature se queda en espera con el smoke escrito. No se cierra, no se fusiona y no se marca en el roadmap.
 
+**Validación en campo.** Si el proyecto no tiene una pantalla ni un uso que puedas probar al cerrar, como el propio kit, puede declararlo con `"validation": {"mode": "field"}` en `sdd-kit.json` (`sdd-config` te lo pregunta, y recomienda `manual` salvo en ese caso). Entonces el agente no para a pedirte la validación: hace la misma verificación de siempre (revisión final, smoke por escenario y suite), la registra como «Validación en campo» y cierra; la validación humana llega con el uso, por los tickets de `sdd-feedback`.
+
 ### Diferir con disparador
 
 Si no puedes probarlo ahora, puedes diferir. Vale si estás delante con el trabajo presentado, dices que lo probarás más tarde y hay un disparador con dueño: una feature, una release o un uso concreto, y quién lo prueba.
@@ -174,7 +176,7 @@ El patch cierra igual, más corto, con `sdd-end-patch`: primero te pide la valid
 
 ### El ticket para el kit
 
-Al cerrar, el agente te ofrece escribir un ticket de mejora del kit con `sdd-feedback`: dónde se atascó, qué regla no cubría el caso, qué funcionó. Se escribe en la misma sesión porque al limpiar el contexto se pierde lo aprendido. Queda en `.docs/sdd/kit-feedback/`, sin nombres de cliente, de proyecto ni de personas.
+Al cerrar, el agente te ofrece escribir un ticket de mejora del kit con `sdd-feedback`: dónde se atascó, qué regla no cubría el caso, qué funcionó. Se escribe en la misma sesión porque al limpiar el contexto se pierde lo aprendido. Queda en `.docs/sdd/kit-feedback/`, sin nombres de cliente, de proyecto ni de personas. Si el cierre fue limpio, el ticket tiene tres líneas; si no, cada propuesta dice si se comprobó.
 
 Si no lo quieres, dile que no. Lo que no conviene es pedir «no generes más tickets» cuando lo que quieres es que el trabajo salga limpio: el agente puede leerlo como «no ofrezcas el ticket» y perderse lo que el kit tenía que aprender de esa sesión. Para que llegue a quien mantiene el kit, abre un issue en su repositorio con el ticket.
 
@@ -185,7 +187,7 @@ Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la e
 1. **Alcance y versión.** Te propone qué entra y qué pasa a la siguiente, y la versión. La confirmas tú. Si el proyecto no tiene decidido si la release se entrega a alguien distinto de quien la hace (`release.hasRecipient`), te lo pregunta una vez. Si hay registro de estimaciones, te ofrece la retro en una línea: solo se hace si la pides.
 2. **Changelog sellado.** `[Unreleased]` pasa a `[X.Y.Z] - fecha`.
 3. **Notas de la versión y email**, solo si hay destinatario. Van en `.docs/sdd/releases/vX.Y.Z/`, destiladas del changelog y contadas por lo que gana quien la usa, sin ids ni jerga. El email es un borrador: lo envías tú.
-4. **Roadmap colapsado.** Antes de resumir la sección de la release, rescata lo que sigue vivo. Si hay features con la validación diferida a esta release, te pregunta qué probaste: las que nombras pasan a ✅; las que no, siguen 🧪 con un disparador nuevo.
+4. **Roadmap colapsado.** Antes de tocarlo pasa el validador del roadmap: si una sección no es de la plantilla (por ejemplo, una «Versión siguiente» con el trabajo de la release), no corta desde ella; te lo dice y te propone ordenarlo con la migración, que espera tu visto bueno. Antes de resumir la sección de la release, rescata lo que sigue vivo. Si hay features con la validación diferida a esta release, o a esta release desde una anterior, te pregunta qué probaste: las que nombras quedan validadas; las que no, ganan un disparador nuevo y su id pasa a la línea `validaciones pendientes:` del resumen de la release. Lo publicado sale de las tablas, y el corte no sigue hasta que el validador dice `Roadmap válido`.
 5. **Versión, merge y tag.** Sube la versión, deja la rama lista y te presenta el merge a `main`, el tag y el push. Esperan tu «sí». Después fusiona `main` de vuelta en `develop`.
 
 El feedback de una demo o una reunión no se procesa en el corte: eso es planificar (sección 2).
@@ -237,4 +239,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.2.0, septiembre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.3.0, octubre de 2026.*
