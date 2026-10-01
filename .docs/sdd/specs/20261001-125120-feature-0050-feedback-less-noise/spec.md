@@ -134,6 +134,9 @@ Se cambia la forma en la plantilla y la conducta en la skill. La plantilla gana 
 
 ## Enmiendas
 
+- 2026-10-01 — Decisión 9: el tope de `SKILL.md` pasa de ~500 a ~650 palabras. Queda en 611, con las reglas nuevas, las dos frases del REFACTOR y el predicado de cierre limpio de la pasada de fix. Recortar sin batería arriesga las fronteras que cerró el REFACTOR, y los topes los fija la 0120 — aprobada: opción «Enmienda: tope ~650 (Recomendada)».
+- 2026-10-01 — Decisión 10: la campaña sube de 10 a 12 sujetos para el control `n1` + `l1` con la plantilla alineada tras la revisión final; el techo de 12 $ no cambia — aprobada: opción «Sí, 12 sujetos (Recomendada)».
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |

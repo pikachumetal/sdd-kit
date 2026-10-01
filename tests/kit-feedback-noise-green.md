@@ -51,3 +51,33 @@ Los dos dicen en el hallazgo 2 que la regla ya estaba escrita, y lo marcan como 
 
 - **Tope de palabras**: `SKILL.md` queda en 589 palabras frente al tope de ~500 que fijó la decisión 9 (eran 337). El REFACTOR sumó 32 palabras. Recortar sin un A/B (Art. I) arriesga las dos fronteras que acaba de cerrar, así que queda como dato para la batería de la 0120.
 - **Salida del entorno del sujeto**: l1-2 apunta como menor el aviso de migraciones pendientes de su propia sesión headless. Lo saca del entorno del sujeto, no del molde, y no es conducta de la skill.
+
+## Pasada de fix de la revisión final
+
+La revisión final (Opus, effort high, sobre `d0a5d3d4`) dio «Sí, con dos arreglos», con dos Important:
+
+- **La plantilla conservaba la frase de errores que el REFACTOR corrigió en la skill.** Se alinea con la skill. `KitFeedback.Tests.ps1` gana la aserción, que falla contra la plantilla anterior al fix y pasa con la nueva.
+- **El tope de palabras de la decisión 9 se superaba sin enmienda.** Enmienda aprobada por el dev-lead: el tope pasa a ~650. `SKILL.md` queda en 611 palabras.
+
+Minor aplicados:
+
+- «Sin inventar fricciones» en la ayuda del ticket mínimo.
+- El predicado de cierre limpio cubre «sin estimación» y la lista de la decisión 1 (ruling, desvío, paso rodeado, decisión sin paso).
+- El ejemplo de «Qué pasó» va partido por debajo de 200 caracteres.
+- Pester protege las siete reglas nuevas de la skill y la frase positiva de la oferta.
+
+Queda diferido un Minor: los menores mal clasificados de las salidas del GREEN (una atribución «sin respaldo» como menor). Es ruido residual, para la batería de la 0120.
+
+Control con la plantilla alineada (enmienda del dev-lead: 12 sujetos, [fix/out/](../.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/fix/out/)), 2 sujetos y 0,57 $:
+
+| Medida | n1-1 | l1-1 |
+| --- | --- | --- |
+| Ticket mínimo en el cierre limpio | — | ✅ 52 palabras, `lint ok` |
+| `task-done` desde PowerShell y campo inventado (~20 min), como hallazgos | ✅ hallazgos 2 y 3 | — |
+| `git commit -F -` fuera del ticket | ✅ | — |
+| Menores en una línea, los dos de ~3 y ~5 min | ✅ | — |
+| «Verificada», coste respaldado o «sin respaldo», lint, un ticket por feature, privacidad | ✅ | ✅ |
+
+Residual: n1-1 escribe «sin verificar (contrastado con `…:48`)», y contrastar con `fichero:línea` es justo lo que la regla llama verificada. Lo marca de menos, no de más. Queda como dato para la 0120.
+
+Campaña total: 12 sujetos y 3,09 $.

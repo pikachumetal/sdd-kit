@@ -13,7 +13,7 @@ El ticket es el conocimiento que esta sesión ha aprendido sobre el kit, escrito
 
 1. **Versiones** — leer `.docs/sdd/sdd-kit.json` (versión del kit y `ids.mode`) y la versión de superpowers instalada.
 2. **Recorrer la sesión** — skills y pasos del kit que se ejecutaron, gates, rodeos, decisiones sin respaldo. No el código del proyecto.
-3. **Plantilla** — calcar `kit-feedback-template.md` del skill `sdd-templates`. Cierre limpio —ningún hallazgo por encima de un menor y el reloj dentro del techo de la estimación— → el **ticket mínimo** de la plantilla: cabecera y tres líneas, más los menores.
+3. **Plantilla** — calcar `kit-feedback-template.md` del skill `sdd-templates`. Cierre limpio —ningún hallazgo por encima de un menor y el reloj dentro del techo de la estimación, o sin estimación— → el **ticket mínimo** de la plantilla: cabecera y tres líneas, más los menores. Un ruling, un desvío del plan, un paso rodeado o una decisión que ningún paso cubría ya son hallazgo.
 4. **Guardar** — en `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>.md`, timestamp UTC, id y slug como las carpetas de spec. Un ticket por feature o patch: se amplía solo el de esta misma; si la sesión escribió el de otra, nace el suyo y aquel no se toca. Si la carpeta no existe, se crea y se avisa **una vez** de que puede ignorarse en git; **no** se edita `.gitignore`.
 5. **Repaso de privacidad** — antes de guardar, repasar el ticket entero buscando nombres propios y datos del dominio del proyecto.
 6. **Lint** — pasar al ticket el lint de docs del proyecto (el de `tech-stack.md`, su gate de docs o su pre-commit) y arreglarlo hasta que pase, antes de que el cierre lo commitee. Sin lint de docs, dilo en una línea.

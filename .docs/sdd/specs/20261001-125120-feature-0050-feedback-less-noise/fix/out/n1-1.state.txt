@@ -1,0 +1,131 @@
+## HEAD antes: 40ea629 · después: 40ea629
+## status
+?? .docs/sdd/kit-feedback/20261001-131749-feature-0032-etiquetas.md
+## diff del ticket de la 0031
+## 20261001-073000-feature-0031-exportar-csv.md · 50 palabras · lint:
+lint ok
+---
+kit_version: 2.2.0
+lane: feature
+id: 20261001-073000-feature-0031-exportar-csv
+task: 0031
+mode: lite
+date: 2026-10-01
+---
+
+# Ticket para el kit — feature 0031: exportar notas a CSV
+
+## Contexto
+
+- Carril y modo: feature lite
+
+## Hallazgos
+
+Sin hallazgos
+
+## Funcionó, no tocar
+
+- El modo lite con su predicado citado.
+## 20261001-131749-feature-0032-etiquetas.md · 1223 palabras · lint:
+lint ok
+---
+kit_version: 2.2.0
+superpowers_version: 6.4.2
+lane: feature
+id: 20261001-131749-feature-0032-etiquetas
+task: 0032
+mode: lite
+date: 2026-10-01
+---
+
+# Ticket para el kit — feature 0032: etiquetas en las notas (lite, 3,5 h frente a 2 h)
+
+## Contexto
+
+- Carril y modo: feature lite
+- Skills del kit usadas: sdd-start-feature, sdd-end-feature, sdd-feedback (más superpowers: brainstorming, executing-plans)
+- Proyecto: aplicación pequeña de notas en JavaScript (`node --test`), con pantalla con login; nº de personas no consta
+- Modelo del hilo: Opus 5.5
+- Modelos de los subagentes: Opus (sdd-kit:effort-high), solo la revisión final
+- Coste en reloj: 3,5 h frente a 2 h estimadas (+1,5 h; fuera del techo)
+- Coste en tokens: no medido
+
+## Cómo leer este ticket
+
+Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y van ordenados por coste observado.
+
+## Hallazgos
+
+### 1. Intento de entrar a la pantalla con login pese a que la regla lo prohíbe
+
+- **Qué pasó**: la verificación visual pedía login y `§Frontend` no decía cómo entrar. Probé tres formas de entrar hasta dar con la cookie de sesión.
+- **Dónde en el kit**: `skills/sdd-start-feature/references/frontend-verification.md:56` (la regla existe: sin Acceso en `§Frontend`, no intentes entrar; lo visual queda
+  «no probado» y la presentación propone el Acceso).
+- **Por qué el kit no lo evitó**: la regla existía y no la apliqué. Vive en el último apartado de una referencia; no localizo que el paso de verificación de
+  `skills/sdd-start-feature/SKILL.md` la repita en su línea.
+- **Coste**: ~45 min. Respaldo: `.docs/sdd/specs/20261001-080000-feature-0032-etiquetas/walkthrough.md`, sección Tiempo.
+- **Propuesta**: que el paso de verificación visual del SKILL lleve una línea literal («pide login y §Frontend no da Acceso → no entres: «no probado» y propón el Acceso»)
+  con enlace a la referencia.
+- **Verificada**: sin verificar (contrastado con `frontend-verification.md:56`; no probado si la línea corta el intento).
+- **Criterio de aceptación**: GIVEN una feature lite que cambia lo que se ve, con login y sin Acceso en `§Frontend` · WHEN el agente llega a la verificación visual · THEN
+  no hace ningún intento de entrada, marca «no probado: falta el acceso en §Frontend» y propone el Acceso en la presentación.
+
+### 2. `task-done` lanzado con `bash <ruta>` desde PowerShell, dos veces
+
+- **Qué pasó**: `bash ~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-done 1 "node --test"` en PowerShell → `bash:
+  /home/dev/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-done: No such file or directory` (el `bash` de PowerShell
+  es el de WSL). Repetido con la herramienta Bash (Git Bash) funcionó. Ocurrió dos veces.
+- **Dónde en el kit**: `skills/sdd-start-feature/SKILL.md:48` («En Native»): la regla existe («con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell»).
+- **Por qué el kit no lo evitó**: la regla existía y no la apliqué. Está enterrada en un párrafo muy largo, entre el ledger, la comparación de RED y la comprobación de base.
+- **Coste**: ~15 min en total. Respaldo: solo la bitácora de la sesión; sin respaldo en spec, walkthrough ni commit.
+- **Propuesta**: sacar la regla del shell a una línea propia, al principio del párrafo de Native, con el comando correcto de ejemplo.
+- **Verificada**: sin verificar (contrastado con `skills/sdd-start-feature/SKILL.md:48`).
+- **Criterio de aceptación**: GIVEN Native en Windows con sesión de PowerShell · WHEN el agente cierra una task · THEN lanza `task-done` con la herramienta Bash y el
+  primer intento registra la task.
+
+### 3. Ejemplo de la spec lite con un campo que el modelo de datos no tiene
+
+- **Qué pasó**: en el ejemplo de un escenario ADDED puse un campo que el modelo de datos no tiene, sin mirar el código. El repaso de coherencia no me pidió contrastarlo.
+  Lo cazó la revisión final: una enmienda y una pregunta al dev-lead. Además, la spec no cubría el caso de un elemento repetido; la misma revisión lo marcó como Important
+  y costó una pasada de fix con su RED (commit `5fee051`).
+- **Dónde en el kit**: `skills/sdd-start-feature/SKILL.md:42` (repaso de coherencia): el contraste con el código se pide para cada `MODIFIED`, no para los datos que usa
+  el ejemplo de un `ADDED`.
+- **Por qué el kit no lo evitó**: el repaso contrasta literales entre sitios de la spec y busca en el código lo que cambia un `MODIFIED`. Un `ADDED` cuyo ejemplo nombra
+  campos queda sin cubrir. Es laguna del kit, no regla desaplicada.
+- **Coste**: ~20 min de la enmienda (sin respaldo: la bitácora la cuenta, pero el walkthrough dice «La spec no tuvo enmiendas» y la spec cerrada no tiene sección de
+  enmiendas) + ~30 min del fix de duplicados (respaldo: commit `5fee051` y el walkthrough).
+- **Propuesta**: ampliar el repaso de coherencia: todo campo o dato que nombre un ejemplo se contrasta con el modelo de datos del código, también en `ADDED`.
+- **Verificada**: sin verificar.
+- **Criterio de aceptación**: GIVEN una spec lite cuyo ejemplo usa un campo inexistente en el modelo de datos · WHEN se hace el repaso de coherencia · THEN lo marca antes
+  del gate, sin esperar a la revisión final.
+
+### 4. El walkthrough no recoge la enmienda de la spec y la atribución de la desviación queda sin respaldo
+
+- **Qué pasó**: el walkthrough atribuye la desviación (+1,5 h) a ~45 min de verificación visual y ~30 min de fix, y dice «La spec no tuvo enmiendas». La bitácora registra
+  además ~20 min de enmienda. Los commits del repo están a segundos de distancia y no permiten reconstruir el reparto. El dev-lead resumió el sobrecoste como «es porque
+  la spec tenía huecos»; esa causa no tiene respaldo en la spec, el walkthrough ni un commit.
+- **Dónde en el kit**: `skills/sdd-templates/templates/walkthrough-template.md`, bloque de tiempo; no localizo un paso de `skills/sdd-end-feature/SKILL.md` que obligue a
+  contrastar «sin enmiendas» con lo ocurrido en la sesión.
+- **Por qué el kit no lo evitó**: la plantilla pide la desviación, pero no exige que cada causa apunte a un commit o a una entrada de enmiendas, ni que el walkthrough declare la enmienda.
+- **Coste**: no medible aparte (afecta a la calibración del `estimation-log`). Sin respaldo.
+- **Propuesta**: que el bloque de tiempo pida, por cada causa de desviación, su respaldo (sha o enmienda), y que «sin enmiendas» se escriba solo si la spec no las tiene.
+- **Verificada**: sin verificar.
+- **Criterio de aceptación**: GIVEN una feature con una enmienda de spec durante la sesión · WHEN se escribe el walkthrough · THEN la enmienda figura en el bloque de
+  tiempo con su causa, o el walkthrough no afirma «sin enmiendas».
+
+## Lo que hice por iniciativa propia
+
+- Medí el reparto del tiempo con las marcas de hora de los commits para sacar la desviación del walkthrough. Según la bitácora funcionó, pero aquí los commits están a
+  segundos entre sí, así que no es reproducible; candidato a regla solo si los commits de task llevan hora real.
+
+## Funcionó, no tocar
+
+- La revisión final con subagente (effort-high) cazó la incoherencia de la spec y el caso de duplicados antes del cierre.
+- La spec lite se aprobó a la primera.
+
+## Menores
+
+- Tardé en encontrar `Build-EstimationLog.ps1`: la ruta (relativa al Base directory de la skill) está en `skills/sdd-end-feature/references/estimation.md:9`, no en el
+  paso del SKILL — `skills/sdd-end-feature/SKILL.md`.
+- No supe si el placeholder «<fase>» de la plantilla del walkthrough era fase del plan o de la campaña — no localizado: `walkthrough-template.md` solo menciona «fase» en
+  la línea del modelo del hilo (:29).

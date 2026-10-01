@@ -24,7 +24,7 @@ date: <YYYY-MM-DD>
 > - Coste: <1,5 h frente a 2 h estimadas; tokens no medidos>
 > - Nada que reportar | <lo hecho por iniciativa propia, una línea>
 >
-> Con cualquier hallazgo, el ticket completo de abajo.
+> Sin inventar fricciones para rellenar. Con cualquier hallazgo, el ticket completo de abajo.
 
 ## Contexto
 
@@ -42,13 +42,14 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ## Hallazgos
 
-> Uno por subsección, ordenados por coste observado. Un error tuyo que una regla del kit pudo
-> evitar es un hallazgo, también si la regla existía y no la aplicaste; uno que ninguna regla del
-> kit cubriría, o un fallo del harness o del shell, no va al ticket.
+> Uno por subsección, ordenados por coste observado. Un error tuyo, o un fallo del shell o del
+> harness, que una regla del kit pudo evitar es un hallazgo, también si la regla existía y no la
+> aplicaste; solo el que ninguna regla del kit cubriría no va al ticket.
 
 ### 1. <título>
 
-- **Qué pasó**: <evidencia de la sesión; si cita un fallo de ejecución, el comando exacto, el shell y la línea de error: «`./scripts/check-docs.sh` en PowerShell → `The term './scripts/check-docs.sh' is not recognized`»>
+- **Qué pasó**: <evidencia de la sesión; si cita un fallo de ejecución, el comando exacto, el shell
+  y la línea de error: «`./scripts/check-docs.sh` en PowerShell → `The term './scripts/check-docs.sh' is not recognized`»>
 - **Dónde en el kit**: <ruta del kit y paso — `skills/<skill>/SKILL.md` paso N, una plantilla, una referencia; nunca un fichero del proyecto; si no se localiza, dilo>
 - **Por qué el kit no lo evitó**: <…; si la regla existía y no la aplicaste, dilo>
 - **Coste**: <cifra; una causa, solo con la spec, el walkthrough o el commit que la respalda (ruta o sha), o marcada «sin respaldo»>

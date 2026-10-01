@@ -43,17 +43,29 @@ Describe 'Plantilla kit-feedback-template.md' {
   }
 }
 
-Describe 'Un ticket por feature o patch' {
-  It 'la skill solo amplía el ticket de la misma feature o patch' {
-    Get-KitFileContent $script:SkillFile | Should -Match 'Un ticket por feature o patch'
+Describe 'Reglas de ruido de la skill' {
+  It 'la skill lleva la regla de <Rule>' -ForEach @(
+    @{ Rule = 'ticket mínimo'; Pattern = 'ticket mínimo' }
+    @{ Rule = 'un ticket por feature o patch'; Pattern = 'Un ticket por feature o patch' }
+    @{ Rule = 'propuesta verificada'; Pattern = 'sin verificar' }
+    @{ Rule = 'coste respaldado'; Pattern = 'sin respaldo' }
+    @{ Rule = 'menores'; Pattern = '«Menores»' }
+    @{ Rule = 'lint de docs'; Pattern = 'lint de docs' }
+    @{ Rule = 'fallo de shell cubierto por el kit'; Pattern = 'que una regla del kit cubre también es hallazgo' }
+  ) {
+    Get-KitFileContent $script:SkillFile | Should -Match ([regex]::Escape($Pattern))
   }
 
-  It 'la skill pasa el lint de docs del proyecto' {
-    Get-KitFileContent $script:SkillFile | Should -Match 'lint de docs'
+  It 'la plantilla trata igual que la skill el fallo de shell cubierto por el kit' {
+    Get-KitFileContent $script:TemplateFile | Should -Match 'un fallo del shell o del\s+(>\s*)?harness, que una regla del kit pudo evitar es un hallazgo'
   }
+}
 
-  It '<_> no condiciona la oferta a la sesión' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
-    Get-KitFileContent (Join-Path $script:KitRoot "skills/$_/SKILL.md") | Should -Not -Match 'esta sesión ya haya generado el suyo'
+Describe 'Oferta por feature o patch' {
+  It '<_> ofrece el ticket salvo que ya tenga el suyo' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
+    $content = Get-KitFileContent (Join-Path $script:KitRoot "skills/$_/SKILL.md")
+    $content | Should -Match 'ya tenga el suyo'
+    $content | Should -Not -Match 'esta sesión ya haya generado el suyo'
   }
 }
 
