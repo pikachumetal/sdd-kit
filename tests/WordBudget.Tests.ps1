@@ -20,12 +20,12 @@ BeforeAll {
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
       'sdd-start-feature'   = @{ SkillMd = 8400; Total = 20200 }
-      'sdd-start-patch'     = @{ SkillMd = 2150; Total = 2150 }
-      'sdd-templates'       = @{ SkillMd = 1500; Total = 11940 }
+      'sdd-start-patch'     = @{ SkillMd = 2260; Total = 2260 }
+      'sdd-templates'       = @{ SkillMd = 1500; Total = 11960 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 53660
+    Kit     = 53800
     Anchors = @{
       'constitution.md' = 2800
       'mission.md'      = 1700

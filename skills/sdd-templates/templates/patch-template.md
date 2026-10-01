@@ -48,6 +48,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 - **Cambio**: qué se cambió, 1-2 frases.
 - **Decisiones** *(omite si no hubo)*: una por línea, con su autor.
   - <decisión> — <ticket | dev-lead | sin el dev-lead>
+- **Retirado** *(solo en una retirada)*: <cada elemento y lo que quedó muerto con él> · Lo que el usuario deja de poder hacer: <una línea, o «nada»>
 
 > Una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` no cabe en
 > un patch: es feature.

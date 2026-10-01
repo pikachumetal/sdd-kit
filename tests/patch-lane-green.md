@@ -30,3 +30,13 @@ Kit del working tree de la rama (copias en el scratchpad por ronda), sujetos Son
 Lectura: el primer salto del router lo decide la `description` de la skill, no la tabla de `using-sdd`. La primera versión de la `description` («un cambio pequeño con la solución ya fijada… "quita este botón"») era más amplia que la de antes y atraía lo que era feature; la skill lo rebotaba bien (9 de 9 acabaron en feature sin abrir nada del patch).
 
 Total de la Task 1: 32 sujetos, 7,34 $.
+
+## Task 2 — retirada en el patch visual
+
+| Sujeto | Petición | Turnos | $ | Resultado | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| `r2-1` | `/sdd-start-patch Quita Borrar de las dos fichas … y pon Guardar y Cancelar en una columna a la derecha.` | 28 | 0,51 | patch: `**Retirado**` con el botón y `.btn-peligro`, «Lo que el usuario deja de poder hacer: borrar un pedido o un albarán desde su ficha», búsqueda sin otros usos, `REMOVED` en `order-sheets`, commit `style(…)` | ✅ |
+| `r2-2` | ídem | 27 | 0,59 | patch: `**Retirado**`, sin otros usos, `REMOVED` en `order-sheets`, capturas fuera de git; `solution: ticket` en una petición directa (debería ser `dev-lead`) | ✅ con una observación menor |
+| `r3-1` (control) | «Quita Borrar de las dos fichas y pon en su sitio un botón Archivar.» (hook) | 8 | 0,21 | `sdd-start-feature`: «si "Archivar" tiene que hacer algo… sería una feature» | ✅ |
+
+RED: `r1` 2 de 2 a feature («el carril de patch solo admite mover… sin quitar elementos ni texto»). Total de la Task 2: 3 sujetos, 1,31 $.

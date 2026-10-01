@@ -110,3 +110,34 @@ Describe 'criterio: las puertas dicen lo mismo' {
     $script:StartPatch | Should -Match 'claves de i18n'
   }
 }
+
+Describe 'retirada en el patch visual' {
+  It 'el predicado admite la retirada y lo que queda muerto' {
+    $predicate = Get-Section $script:StartPatch '**Predicado del ajuste solo de presentación**' '## Flujo'
+    $predicate | Should -Match 'retirada'
+    $predicate | Should -Match 'lo que queda muerto'
+  }
+
+  It 'la retirada solo quita lo que nadie más usa' {
+    $script:StartPatch | Should -Match 'la retirada solo quita lo que nadie más usa'
+  }
+
+  It 'una retirada no añade nada, con su contraejemplo' {
+    $script:StartPatch | Should -Match 'una retirada no añade nada'
+    $script:StartPatch | Should -Match 'Quita Borrar y añade Archivar'
+  }
+
+  It 'el paso 4 verifica cada símbolo retirado' {
+    Get-Section $script:StartPatch '4. **Fix mínimo**' '5. **Commit' | Should -Match 'sin otros usos'
+  }
+
+  It 'la plantilla lista lo retirado y lo que el usuario deja de poder hacer' {
+    $fix = Get-Section (Get-KitFile 'skills/sdd-templates/templates/patch-template.md') '## 3. Fix' '## 4.'
+    $fix | Should -Match '\*\*Retirado\*\*'
+    $fix | Should -Match 'Lo que el usuario deja de poder hacer'
+  }
+
+  It 'el cierre registra la retirada como Removed' {
+    Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match '`Removed`'
+  }
+}
