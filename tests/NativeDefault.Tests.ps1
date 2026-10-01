@@ -106,7 +106,7 @@ Describe 'Task 2 — init y migración' {
   It 'brownfield escribe execution en el marcador solo si se respondió' {
     $generation = Get-KitFile 'skills/sdd-init-brownfield/references/generacion.md'
     $generation | Should -Match '"execution"\?'
-    $generation | Should -Match 'con `control`, `merge` y `execution` solo con lo respondido'
+    $generation | Should -Match 'con `control`, `merge`, `execution` y `validation.mode` solo con lo respondido'
   }
 
   It 'la migración a v2.0.0 pregunta execution si falta y la escribe' {

@@ -207,8 +207,8 @@ Describe 'Migración a v2.3.0 — roadmap' {
     }
   }
 
-  It 'ordena el paso del roadmap antes del marcador' {
+  It 'ordena el roadmap y quién valida antes del marcador' {
     $steps = [regex]::Matches($script:V23, '(?m)^\d+\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
-    $steps | Should -Be @('Roadmap en la forma de la plantilla', 'Marcador')
+    $steps | Should -Be @('Roadmap en la forma de la plantilla', 'Quién valida', 'Marcador')
   }
 }
