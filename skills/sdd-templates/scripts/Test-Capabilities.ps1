@@ -5,8 +5,9 @@
   Forma parte del kit SDD (skill sdd-templates). Lee <Path>/capabilities/*.md y comprueba en cada una: el título
   «# Capacidad — <nombre del fichero>», que solo haya las secciones «Propósito», «Requisitos» y «Reglas de la
   capacidad», que «Propósito» sea la primera y diga en 300 caracteres como máximo qué cubre la capacidad, que cada
-  requisito tenga líneas - GIVEN, - WHEN y - THEN, que no queden marcas de delta y que la sección de reglas tenga sus
-  cinco entradas por nombre. Con -Artifact, que se ejecuta después de fusionar el delta, comprueba además que el
+  requisito tenga líneas - GIVEN, - WHEN y - THEN, que bajo un requisito no quede ninguna línea suelta (ni «- …», ni
+  cita «>», ni sangrada, ni en blanco), que no queden marcas de delta (tampoco «- Se valida en:») y que la sección de
+  reglas tenga sus cinco entradas por nombre. Con -Artifact, que se ejecuta después de fusionar el delta, comprueba además que el
   bloque «## Capacidades» del artefacto nombra las mismas capacidades que su delta, y que cada ADDED o MODIFIED
   del delta está en su capacidad con las mismas líneas de escenario. Escribe una línea por fallo y
   sale con 1; sin fallos, «Capacidades válidas: <n>» y sale con 0.
@@ -50,19 +51,6 @@ function Test-CapabilityPurpose([string[]]$Lines) {
   }
 }
 
-function Get-Requirements([string[]]$Lines) {
-  $current = $null
-  foreach ($line in $Lines) {
-    if ($line -match '^### (.+)$') {
-      if ($current) { $current }
-      $current = [pscustomobject]@{ Title = $Matches[1].Trim(); Lines = [System.Collections.Generic.List[string]]::new() }
-      continue
-    }
-    if ($current) { $current.Lines.Add($line) }
-  }
-  if ($current) { $current }
-}
-
 function Test-RequirementScenarios([string[]]$Lines) {
   $requirements = Get-SectionLines $Lines 'Requisitos'
   if ($null -eq $requirements) { return }
@@ -72,9 +60,22 @@ function Test-RequirementScenarios([string[]]$Lines) {
   }
 }
 
+function Test-LooseLines([string[]]$Lines) {
+  $title = $null
+  $inRequirements = $false
+  for ($i = 0; $i -lt $Lines.Count; $i++) {
+    $line = $Lines[$i]
+    if ($line -match '^## ') { $inRequirements = (Get-SectionTitle $line) -eq 'Requisitos'; $title = $null; continue }
+    if ($line -match '^### (.+)$') { $title = $Matches[1].Trim(); continue }
+    if (-not $inRequirements -or -not $title -or -not $line.Trim()) { continue }
+    if ($line -notmatch '^(- |>|\s)') { "línea suelta en «$title» (línea $($i + 1)): «$($line.Trim())»" }
+  }
+}
+
 function Test-DeltaLeftovers([string[]]$Lines) {
   for ($i = 0; $i -lt $Lines.Count; $i++) {
     if ($Lines[$i] -match '^\*\*(ADDED|MODIFIED|REMOVED) —') { "resto de delta «**$($Matches[1]) —» en la línea $($i + 1)" }
+    if ($Lines[$i] -match '^- Se valida en:') { "resto de delta «Se valida en:» en la línea $($i + 1)" }
     if ($Lines[$i] -match '^\*\*Reglas de la capacidad\*\*') {
       "resto de delta «**Reglas de la capacidad**» en la línea $($i + 1): sus entradas van en «## Reglas de la capacidad»"
     }
@@ -96,21 +97,11 @@ function Test-CapabilityFile([System.IO.FileInfo]$File) {
     Test-CapabilitySections $lines
     Test-CapabilityPurpose $lines
     Test-RequirementScenarios $lines
+    Test-LooseLines $lines
     Test-DeltaLeftovers $lines
     Test-CapabilityRules $lines
   )
   $problems | ForEach-Object { "$($File.Name): $_" }
-}
-
-function Get-DeclaredCapabilities([string[]]$Block) {
-  foreach ($line in $Block) {
-    if ($line -notmatch '^(?:-\s*)?(Nuevas|Modificadas):(.*)$') { continue }
-    $kind = $Matches[1]
-    $names = ($Matches[2] -split '—', 2)[0]
-    foreach ($match in [regex]::Matches($names, '`([^`]+)`')) {
-      [pscustomobject]@{ Kind = $kind; Name = $match.Groups[1].Value }
-    }
-  }
 }
 
 function Test-NoneLine([string[]]$Block, [string[]]$DeltaNames) {
@@ -142,33 +133,8 @@ function Get-ScenarioLines([string[]]$Lines) {
   @($Lines | ForEach-Object { $_.Trim() } | Where-Object { $_ -match '^- (GIVEN|WHEN|THEN|AND)\b' })
 }
 
-function Get-DeltaRequirements([string[]]$Lines) {
-  $capability = $null
-  $current = $null
-  for ($i = 0; $i -lt $Lines.Count; $i++) {
-    $line = $Lines[$i]
-    if ($line -match '^#{1,3} ') {
-      if ($current) { $current; $current = $null }
-      $capability = if ($line -match '^### Capacidad: `([^`]+)`') { $Matches[1] } else { $null }
-      continue
-    }
-    if ($capability -and $line -match '^\*\*(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b') {
-      if ($current) { $current; $current = $null }
-      if ($Matches[1] -notin 'ADDED', 'MODIFIED') { continue }
-      # El encabezado puede partirse en varias líneas: se une hasta cerrar la negrita.
-      $header = $line
-      while ($header -notmatch '^\*\*[^*]+\*\*' -and $i + 1 -lt $Lines.Count) { $header += ' ' + $Lines[++$i].Trim() }
-      $title = ([regex]::Match($header, '^\*\*\w+ —\s*([^*]+?)\s*\*\*').Groups[1].Value) -replace '\s+', ' '
-      $current = [pscustomobject]@{ Capability = $capability; Title = $title; Lines = [System.Collections.Generic.List[string]]::new() }
-      continue
-    }
-    if ($current) { $current.Lines.Add($line) }
-  }
-  if ($current) { $current }
-}
-
 function Test-DeltaApplied([string[]]$Lines, [string]$CapabilitiesDir) {
-  foreach ($delta in Get-DeltaRequirements $Lines) {
+  foreach ($delta in Get-DeltaEntries $Lines | Where-Object Kind -in 'ADDED', 'MODIFIED') {
     $file = Join-Path $CapabilitiesDir "$($delta.Capability).md"
     if (-not (Test-Path $file)) { continue }
     $target = "capabilities/$($delta.Capability).md"

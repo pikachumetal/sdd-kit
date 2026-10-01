@@ -61,6 +61,30 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' -Tag 'Slow' {
       Should -Contain 'bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)'
   }
 
+  It 'una línea suelta bajo un requisito falla con requisito, línea y texto' {
+    $content = $script:Bookings -replace '(?m)^(- THEN la reserva queda guardada[^\r\n]*)', "`$1`nguardada»)"
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })
+    $result.Lines | Should -Contain 'bookings.md: línea suelta en «Reservar una franja» (línea 13): «guardada»)»'
+    $result.Code | Should -Be 1
+  }
+
+  It 'una cita, una línea sangrada y una línea en blanco bajo un requisito no son sueltas' {
+    $content = $script:Bookings -replace '(?m)^(- THEN la reserva queda guardada[^\r\n]*)', "`$1`n  sigue el THEN`n`n> nota"
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines | Should -Be @('Capacidades válidas: 1')
+  }
+
+  It 'un párrafo entre Requisitos y el primer requisito no es una línea suelta' {
+    $content = $script:Bookings -replace '(?m)^(## Requisitos[^\r\n]*)', "`$1`n`nLos comandos del CLI de reservas."
+    (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines | Should -Be @('Capacidades válidas: 1')
+  }
+
+  It 'una línea Se valida en en la capacidad es resto de delta' {
+    $content = $script:Bookings -replace '(?m)^(- THEN la reserva queda guardada[^\r\n]*)', "`$1`n- Se valida en: worktree con la base al día"
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })
+    $result.Lines | Should -Contain 'bookings.md: resto de delta «Se valida en:» en la línea 13'
+    $result.Code | Should -Be 1
+  }
+
   It 'la cabecera de reglas calcada de la plantilla, con su nota, se admite y se comprueba' {
     $content = ($script:Bookings -replace '## Reglas de la capacidad', '## Reglas de la capacidad *(opcional; presente obliga a decidir)*') -replace '(?m)^- \*\*Límites\*\*:.*\r?\n', ''
     $lines = (Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })).Lines
