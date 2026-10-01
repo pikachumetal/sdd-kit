@@ -33,7 +33,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
 
    | # | Pregunta | Va a |
    | --- | --- | --- |
-   | 1 | Claves del kit: invoca la skill [`sdd-config`](../sdd-config/SKILL.md) con la rama de integración que se ve en el repo. Hace, una por turno y con su recomendación, sus preguntas de cómo se numera el trabajo (`ids.mode`), perfil de control, política de merge y push (solo con una rama de integración distinta de la estable), frenos y método de ejecución | `sdd-kit.json` |
+   | 1 | Claves del kit: invoca la skill [`sdd-config`](../sdd-config/SKILL.md) con la rama de integración que se ve en el repo. Hace, una por turno y con su recomendación, sus preguntas de cómo se numera el trabajo (`ids.mode`), perfil de control, política de merge y push (solo con una rama de integración distinta de la estable), frenos, método de ejecución y quién valida el trabajo al cerrar (`validation.mode`) | `sdd-kit.json` |
    | 2 | ¿Llevamos changelog? | `changelog.md` |
    | 3 | Solo si 2 es sí: ¿también novedades para el cliente? | `client-changelog.md` |
    | 4 | ¿Replica los patrones de otro proyecto? Si es sí, ¿cuál? (proyecto de referencia; «no» deja «no aplica») | constitution, «Convenciones» |
