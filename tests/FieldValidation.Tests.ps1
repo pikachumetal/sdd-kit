@@ -43,3 +43,21 @@ Describe 'la validación en campo en control-profiles y en el paso 7' {
     Get-KitFile 'skills/sdd-templates/templates/patch-template.md' | Should -Match 'Validación en campo:'
   }
 }
+
+Describe 'el cierre de feature en campo' {
+  BeforeAll {
+    $script:EndFeature = Get-KitFile 'skills/sdd-end-feature/SKILL.md'
+  }
+
+  It 'el paso 0 acepta la validación en campo' {
+    Get-Step $script:EndFeature 0 | Should -Match 'validation\.mode: field'
+  }
+
+  It 'el walkthrough registra la línea de campo' {
+    Get-Step $script:EndFeature 1 | Should -Match 'Validación en campo:'
+  }
+
+  It 'el roadmap marca ✅ en campo' {
+    Get-Step $script:EndFeature 8 | Should -Match 'validación en campo'
+  }
+}
