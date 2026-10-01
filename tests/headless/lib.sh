@@ -6,12 +6,15 @@
 #   subject_launch "$ASK"
 #   { echo "## git log"; g log --oneline --all; } | subject_save
 #   subject_keep "$R/.docs/sdd/roadmap.md" roadmap.md   # copia plana y limpia en <salida>/<etiqueta>/
+#   put_kit_marker '"ids": {"mode": "sequence"}'           # sdd-kit.json del molde con la versión del kit (kit_version)
+#   subject_resume "<mensaje>"                            # segundo turno sobre la misma sesión
 # Variables: RUNS_DIR (obligatoria, en el scratchpad; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
 # que se suman a --allowedTools, como un servidor MCP),
 # SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
 # SUBJECT_TIMEOUT (segundos de reloj por sujeto; 0, el valor por omisión, sin tope),
+# TURN2 (mensaje del segundo turno: subject_launch reanuda la sesión con subject_resume),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5).
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
@@ -69,19 +72,56 @@ subject_launch() {
   # Sin esa clave, el sujeto carga también el kit instalado, y mide la caché en vez de la copia.
   case "$settings" in *'"sdd-kit@sdd-kit":false'*) ;; *) die "SETTINGS sin deshabilitar el kit instalado: $settings" ;; esac
   build_claude_args "$settings"
-  printf '%s\n' "${CLAUDE_ARGS[@]}" > "$RUNS/$LABEL.args"
+  printf '%s\n' "${CLAUDE_ARGS[@]}" "$1" > "$RUNS/$LABEL.args"
   if [ "${DRY_RUN:-}" = 1 ]; then
     printf '%s\n' \
+      '{"type":"system","subtype":"init","session_id":"dry-'"$LABEL"'"}' \
       '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}"' · git: '"$(git config user.name) <$(git config user.email)>"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \
       '{"type":"result","num_turns":1,"total_cost_usd":'"${DRY_COST:-0.5}"',"result":"hecho"}' > "$JSONL"
-    return
+  else
+    : > "$RUNS/$LABEL.err"
+    run_claude "$1" > "$JSONL" || return $?
   fi
-  # Sin < /dev/null, un aviso de stdin precede al JSON.
-  # timeout no ejecuta builtins: `timeout 720 command claude` no arrancó la tanda (ticket de la feature 0098 §4).
-  timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" "${CLAUDE_ARGS[@]}" "$1" < /dev/null > "$JSONL" 2> "$RUNS/$LABEL.err"
+  [ -n "${TURN2:-}" ] && subject_resume "$TURN2"
+  return 0
+}
+
+# Sin < /dev/null, un aviso de stdin precede al JSON.
+# timeout no ejecuta builtins: `timeout 720 command claude` no arrancó la tanda (ticket de la feature 0098 §4).
+run_claude() {
+  timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" "${CLAUDE_ARGS[@]}" "$@" < /dev/null 2>> "$RUNS/$LABEL.err"
   local rc=$?
   [ $rc -eq 124 ] && echo "[$LABEL] tope de $SUBJECT_TIMEOUT s: sujeto cortado" >&2
   return $rc
+}
+
+# Segundo turno sobre la sesión real del primero: su molde es lo que el primero dejó, no el relato de un ticket.
+# --resume da un total_cost_usd acumulado; run.sh ya cuenta solo el último RESULTADO (patch 0084).
+subject_resume() {
+  local session
+  session=$(grep -o '"session_id":"[^"]*"' "$JSONL" | head -n 1 | cut -d'"' -f4)
+  [ -n "$session" ] || die "sin session_id: no se puede reanudar"
+  printf '%s\n' "${CLAUDE_ARGS[@]}" --resume "$session" "$1" > "$RUNS/$LABEL.resume.args"
+  if [ "${DRY_RUN:-}" = 1 ]; then
+    local cost
+    cost=$(awk -v c="${DRY_COST:-0.5}" 'BEGIN { print c * 2 }')
+    echo '{"type":"result","num_turns":2,"total_cost_usd":'"$cost"',"result":"hecho"}' >> "$JSONL"
+    return
+  fi
+  run_claude --resume "$session" "$1" >> "$JSONL"
+}
+
+# La versión que el hook exige al proyecto: la mayor entre plugin.json y la última migración del kit.
+kit_version() {
+  local plugin migrations
+  plugin=$(grep -o '"version"[^,}]*' "$KIT/.claude-plugin/plugin.json" 2>/dev/null | grep -o '[0-9][0-9.]*')
+  migrations=$(ls "$KIT/skills/sdd-init-brownfield/references/migrations" 2>/dev/null | sed -n 's/^v\([0-9.]*\)\.md$/\1/p')
+  printf '%s\n' $plugin $migrations | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1
+}
+
+# Un marcador copiado de otra campaña envejece: con uno menor que la última migración, el hook manda a migrar.
+put_kit_marker() {
+  echo "{\"version\": \"$(kit_version)\", $1}" | put .docs/sdd/sdd-kit.json
 }
 
 # Los argumentos de claude -p en CLAUDE_ARGS; subject_launch los deja en <etiqueta>.args para poder comprobarlos.
