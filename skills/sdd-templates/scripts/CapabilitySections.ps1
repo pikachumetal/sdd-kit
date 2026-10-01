@@ -7,6 +7,7 @@
 #>
 
 $script:DeltaHeaderPattern = '^\*\*(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b'
+$script:RuleNames = @('Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto')
 
 function Get-SectionTitle([string]$Line) {
   if ($Line -notmatch '^## (.+)$') { return $null }
@@ -59,9 +60,13 @@ function Test-DeltaHeaderClosed([string]$Header) {
   return ([regex]::Matches($Header, '\(').Count -le [regex]::Matches($Header, '\)').Count)
 }
 
+function Test-HeaderContinuation([string[]]$Lines, [int]$Index) {
+  return $Index -lt $Lines.Count -and $Lines[$Index].Trim() -and $Lines[$Index] -notmatch '^(- |#|\*\*)'
+}
+
 function Join-DeltaHeader([string[]]$Lines, [ref]$Index) {
   $header = $Lines[$Index.Value]
-  while (-not (Test-DeltaHeaderClosed $header) -and $Index.Value + 1 -lt $Lines.Count) {
+  while (-not (Test-DeltaHeaderClosed $header) -and (Test-HeaderContinuation $Lines ($Index.Value + 1))) {
     $Index.Value++
     $header += ' ' + $Lines[$Index.Value].Trim()
   }
@@ -72,7 +77,7 @@ function New-DeltaEntry([string]$Capability, [string]$Header) {
   $kind = [regex]::Match($Header, $script:DeltaHeaderPattern).Groups[1].Value
   if ($kind -eq 'Reglas de la capacidad') { $kind = 'RULES' }
   $title = ([regex]::Match($Header, '^\*\*\w+ —\s*([^*]+?)\s*\*\*').Groups[1].Value) -replace '\s+', ' '
-  return [pscustomobject]@{ Capability = $Capability; Kind = $kind; Title = $title; Lines = [System.Collections.Generic.List[string]]::new() }
+  return [pscustomobject]@{ Capability = $Capability; Kind = $kind; Title = $title; Header = $Header; Lines = [System.Collections.Generic.List[string]]::new() }
 }
 
 function Get-DeltaEntries([string[]]$Lines) {
@@ -93,4 +98,8 @@ function Get-DeltaEntries([string[]]$Lines) {
     if ($current) { $current.Lines.Add($line) }
   }
   if ($current) { $current }
+}
+
+function Test-IsPatch([System.IO.FileInfo]$File, [string[]]$Lines) {
+  return $File.Name -eq 'patch.md' -or [bool]($Lines | Where-Object { $_ -match '^type:\s*patch\s*$' })
 }

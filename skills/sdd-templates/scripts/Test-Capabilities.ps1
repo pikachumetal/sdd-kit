@@ -21,7 +21,6 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'CapabilitySections.ps1')
-$script:RuleNames = @('Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto')
 $script:AllowedSections = @('Propósito', 'Requisitos', 'Reglas de la capacidad')
 $script:ScenarioKeywords = @('GIVEN', 'WHEN', 'THEN')
 $script:PurposeMaxLength = 300
@@ -144,10 +143,6 @@ function Test-DeltaApplied([string[]]$Lines, [string]$CapabilitiesDir) {
       "«$($delta.Title)» del delta no coincide con $target"
     }
   }
-}
-
-function Test-IsPatch([System.IO.FileInfo]$File, [string[]]$Lines) {
-  return $File.Name -eq 'patch.md' -or [bool]($Lines | Where-Object { $_ -match '^type:\s*patch\s*$' })
 }
 
 function Test-ArtifactBlock([System.IO.FileInfo]$File, [string]$CapabilitiesDir) {

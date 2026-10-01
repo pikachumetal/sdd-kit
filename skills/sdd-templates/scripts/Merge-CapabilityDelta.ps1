@@ -22,7 +22,6 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'CapabilitySections.ps1')
-$script:RuleNames = @('Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto')
 
 function Remove-InlineCode([string]$Text) { return $Text -replace '`[^`]*`', '' }
 
@@ -39,8 +38,11 @@ function Get-MergeableLines([string[]]$Lines) {
 }
 
 function Test-DeltaEntry([object]$Entry, [string]$ArtifactName) {
+  if ($Entry.Kind -ne 'RULES' -and -not $Entry.Title) {
+    return "${ArtifactName}: no leo el título de «$($Entry.Header)»: escríbelo como «**$($Entry.Kind) — <título>**», con raya"
+  }
   $body = Get-MergeableLines $Entry.Lines
-  $gap = @($Entry.Capability, $Entry.Title) + $body | ForEach-Object { Find-Pattern $_ '<[^>]+>' } | Select-Object -First 1
+  $gap = @($Entry.Capability, $Entry.Title) + $body | ForEach-Object { Find-Pattern $_ '<[^<>\s][^<>]*>' } | Select-Object -First 1
   if ($gap) { return "${ArtifactName}: «$gap» es un hueco de la plantilla: rellénalo o borra lo que no aplique" }
   $citation = $body | ForEach-Object { Find-Pattern $_ '(?i)decisi[oó]n(es)?\s+\d+' } | Select-Object -First 1
   if (-not $citation) { return }
@@ -214,6 +216,7 @@ function Format-CapabilityLines([string[]]$Lines) {
 
 function Save-Document([object]$Document) {
   $content = ((Format-CapabilityLines $Document.Lines) -join $Document.Newline) + $Document.Newline
+  New-Item -ItemType Directory -Force -Path (Split-Path $Document.File) | Out-Null
   [System.IO.File]::WriteAllText($Document.File, $content, [System.Text.UTF8Encoding]::new($false))
 }
 
@@ -223,7 +226,7 @@ function New-MergeRun([string]$SddPath, [string]$ArtifactPath) {
   $block = Get-SectionLines $lines 'Capacidades'
   return [pscustomobject]@{
     CapabilitiesDir = Join-Path $SddPath 'capabilities'; ArtifactName = $file.Name
-    IsPatch = $file.Name -eq 'patch.md' -or [bool]($lines -match '^type:\s*patch\s*$')
+    IsPatch = Test-IsPatch $file $lines
     Declared = @(if ($null -ne $block) { Get-DeclaredCapabilities $block })
     Entries = @(Get-DeltaEntries $lines)
     Errors = [System.Collections.Generic.List[string]]::new(); Messages = [System.Collections.Generic.List[string]]::new()

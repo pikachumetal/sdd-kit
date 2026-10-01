@@ -201,6 +201,37 @@ Describe 'Merge-CapabilityDelta.ps1' -Tag 'Slow' {
     $lines[0..8] | Should -Be @('# Capacidad — rooms', '', '## Propósito', '', 'Salas, su aforo y su mantenimiento', '', '## Requisitos', '', '### Consultar el aforo')
   }
 
+  It 'la primera capacidad de un proyecto sin carpeta capabilities se crea' {
+    $delta = "### Capacidad: ``rooms```n`n**ADDED — Consultar el aforo**`n- GIVEN la sala Norte con aforo 8`n- WHEN ``salas aforo Norte```n- THEN responde ``Norte: 8 personas``"
+    $sdd = New-SddFolder @{ 'specs/x/spec.md' = (Get-Spec '- Nuevas: `rooms` — Salas, su aforo y su mantenimiento' @($delta)) }
+    $result = Invoke-Merge $sdd
+    $result.Lines | Should -Be @('rooms.md: añadido «Consultar el aforo»')
+    $result.Code | Should -Be 0
+    Read-Capability $sdd 'rooms' | Should -Match '^# Capacidad — rooms'
+  }
+
+  It 'un paréntesis sin cerrar en el encabezado no se traga el resto del delta' {
+    $unbalanced = $script:Modified -replace '\(antes: «la reserva queda\nguardada»\)', '(antes: «abre con ( el valor»)'
+    $sdd = New-BookingsFolder @($unbalanced, $script:Added)
+    $result = Invoke-Merge $sdd
+    $result.Lines | Should -Be @('bookings.md: sustituido «Reservar una franja»', 'bookings.md: añadido «Cancelar una reserva»')
+    Read-Capability $sdd | Should -Match 'a nombre del usuario'
+  }
+
+  It 'un encabezado sin título legible falla sin escribir' {
+    $hyphen = $script:Added -replace 'ADDED — ', 'ADDED - '
+    $sdd = New-BookingsFolder @($hyphen)
+    $result = Invoke-Merge $sdd
+    $result.Lines | Should -Contain 'spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «**ADDED — <título>**», con raya'
+    $result.Code | Should -Be 1
+    Read-Capability $sdd | Should -BeExactly $script:Bookings
+  }
+
+  It 'un menor que y un mayor que con espacios no son un hueco de la plantilla' {
+    $comparison = $script:Added -replace 'la franja queda libre', 'la franja queda libre si dura < 4 h y el aforo es > 2'
+    (Invoke-Merge (New-BookingsFolder @($comparison))).Code | Should -Be 0
+  }
+
   It 'sin Nuevas falla' {
     $delta = "### Capacidad: ``rooms```n`n**ADDED — Consultar el aforo**`n- GIVEN una sala`n- WHEN se consulta`n- THEN responde"
     $sdd = New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/x/spec.md' = (Get-Spec '- Modificadas: `rooms` — aforo' @($delta)) }
