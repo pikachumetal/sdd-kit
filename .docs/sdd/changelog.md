@@ -12,6 +12,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Feature 0127** — `sdd-config` pregunta quién valida el trabajo al cerrar: `validation.mode` es la pregunta 7 de su catálogo, con `manual` recomendado y `field` solo para un proyecto sin pantalla ni uso que el dev-lead pueda probar al cerrar. Las init la hacen al invocar `sdd-config`, y la migración `v2.3.0` la pregunta si falta; sin el dev-lead queda pendiente, nunca `field`, y el proyecto sigue en `manual`. La pregunta del entorno arrancado pasa a ser la 8. → [ref](specs/20261001-112831-feature-0127-sdd-config-field-validation/)
 - **Feature 0124** — `Merge-CapabilityDelta.ps1` fusiona el delta de una spec o un `patch.md` en `capabilities/`, todo o nada y sin pasar lo que es del delta (`Se valida en:`, citas «decisión N»); los cierres lo ejecutan en vez de fusionar a mano, y `Test-Capabilities.ps1` falla además con una línea suelta bajo un requisito y con `- Se valida en:` en una capacidad. → [ref](specs/20261001-130008-feature-0124-capability-delta-merge/)
 
+### Changed
+
+- **Feature 0050** — Tickets de `sdd-feedback` con menos ruido: ticket mínimo de tres líneas si el cierre fue limpio, «Verificada» en cada propuesta (con comando, shell y línea de error si cita un fallo), la causa de un coste respaldada por la spec, el walkthrough o un commit, lista final de «Menores», fuera «Errores míos» (lo que una regla del kit pudo evitar es un hallazgo, también si la regla existía), un ticket por feature o patch y el lint de docs del proyecto antes del commit. → [ref](specs/20261001-125120-feature-0050-feedback-less-noise/)
+
 ### Fixed
 
 - **El fallo de `-VerifyCommand` trae la salida del gate** — `Invoke-SddMerge.ps1` guarda la salida de la verificación en `%TEMP%\sdd-merge-verify-<fecha>-<pid>.log` y, si falla, el mensaje cita su ruta y sus últimas 20 líneas, como el rechazo del hook. Antes decía solo `verificación: código de salida <n>.` y el agente relanzaba el script para ver por qué ([patch 0126](specs/20260930-174818-patch-0126-merge-verify-output/patch.md)).
