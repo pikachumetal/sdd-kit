@@ -1,0 +1,70 @@
+--- [3]
+Ahora: leo el plan, `tasks.md` y el informe de la revisión final para hacer la pasada de fix. Queda: fix RED→GREEN, commit y presentar la validación (paso 7), ~15 min.
+
+--- [14]
+Estoy a mitad de la pasada de fix. El fix 1 salió RED→GREEN. El 2 lo reproduje («Error») y lo dejo como enmienda en la spec, porque toca `src/cli.js`, que la spec excluye.
+
+--- [16]
+Paro antes del paso 7: el segundo Important cambia la spec aprobada y necesito tu respuesta.
+
+**Hecho (Important 1, dentro del Scope)**
+- `free('1012')` devolvía «Franja no válida» a secas.
+- Ahora lanza el mensaje completo, igual que al reservar.
+- El test comprueba el mensaje entero. Salió en RED (`pass 0 / fail 1`) y luego en GREEN.
+- Las 3 suites de `tests/` pasan (`pass 3 / fail 0`).
+- Commit `e9e95f8`.
+
+**Parado (Important 2, `src/cli.js`)**
+- Lo reproduje: `run(['reservar','Norte','1012'])` devuelve `Error`, no el mensaje. Es real.
+- La spec lista `src/cli.js` en «No entra». Arreglarlo cambia el Scope y la salida observable de la CLI. Eso es un desvío, y en `delegate` paro y espero tu aprobación.
+- Lo dejé como enmienda E1 sin aprobar en `## Enmiendas` de `spec.md` (commit `5ec04dd`). El roadmap no declara ficheros por feature, así que el solape con otras features no se puede comprobar.
+
+**Tengo que preguntarte**
+
+¿Qué hacemos con E1?
+- **a) Aprobar E1 y arreglarlo en esta feature (recomendada).** El `catch` devuelve `error.message`, con un test de `run`. Cierra la pasada de fix y paso a la validación (paso 7).
+- **b) Diferirlo** a otra feature con fila en el roadmap.
+- **c) Dejar la CLI como está** y cambiar el THEN de la spec a «la función falla con…».
+
+**Pendiente**
+- Falta apuntar `Pasada de fix: <sha>, 2 hallazgos RED→GREEN` en `tasks.md`. Lo hago cuando se cierre el segundo fix.
+- Con (a), la pasada la verifica su propio TDD y no abre re-revisión.
+
+--- [18]
+Ahora: aprobar E1 en la spec, arreglar `cli.js` con su test en RED primero y apuntar la pasada de fix. Queda: smoke por THEN y presentar la validación, ~5 min.
+
+--- [23]
+## Validación — feature 0012 (franja HH-HH)
+
+**Me salí del plan en…**
+- **E1, aprobada por ti:** `src/cli.js` entra en el Scope y el `catch` de `run` devuelve `error.message`. La enmienda y su fecha están en `spec.md`.
+- **Pasada de fix:** `e9e95f8` (`free`) y `f85d029` (CLI), con 2 hallazgos RED→GREEN.
+  - Los tests de `run` salieron en RED (`fail 2`) antes del código y no cambiaron entre el RED y el commit.
+  - El RED del `free` lo reescribí en el mismo paso que el código, así que ese no tiene copia aparte que comparar.
+  - La pasada no abre re-revisión: en Native la verifica el TDD del propio hilo. No hay más commits de código tras ella.
+- **Documentación:** `5ec04dd` propone la enmienda y `7ec7e91` apunta la pasada de fix en `tasks.md`.
+
+**Qué hay**
+- `reserve` y `free` rechazan una franja que no casa con `HH-HH` con el mismo mensaje completo.
+- La CLI ya muestra ese mensaje en vez de «Error».
+
+**Smoke (lo ejecuté yo; la suite completa tardó ~0,13 s, 5 tests en verde)**
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja mala falla con el mensaje | `ejecución real`: `run(['reservar','Norte','1012'])` → «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Libres con franja mala falla con el mismo mensaje | `ejecución real`: `run(['libres','1012'])` → el mismo mensaje |
+| Franja válida sigue reservando (no regresión) | `ejecución real`: `run(['reservar','Norte','10-12'])` → `{"room":"Norte","slot":"10-12"}` |
+
+Los tests no usan el binario `salas`: ejecuté `run()` directamente con Node y sin proceso de CLI aparte.
+
+**Guion de pruebas** (desde la raíz del repo, sin nada que arrancar)
+1. `node --input-type=module -e "import {run} from './src/cli.js'; console.log(run(['reservar','Norte','1012']))"` → `Franja no válida: usa HH-HH, p. ej. 10-12`
+2. Igual con `['libres','1012']` → el mismo mensaje.
+3. Igual con `['reservar','Norte','10-12']` → `{"room":"Norte","slot":"10-12"}`
+4. `node --test tests/` → 5 pass, 0 fail.
+
+**Revisión final:** `sdd-kit:effort-high + opus`, Needs fixes (0 Critical, 2 Important), sobre `af81703`. Los dos Important están resueltos como se describe arriba. No hay decisiones de producto pendientes.
+
+¿Qué has probado tú y funciona? Con tu respuesta paso a `sdd-end-feature`.
+

@@ -1,0 +1,258 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -a . .docs/sdd .docs/sdd/specs/* .superpowers/sdd/* 2>&1 | head -60; cat .superpowers/sdd/plan/final-review.md
+<<< .:
+./
+../
+.docs/
+.git/
+.gitignore
+.superpowers/
+cspell.json
+README.md
+src/
+tests/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+./
+../
+plan.md
+spec.md
+tasks.md
+
+.superpowers/sdd/plan:
+./
+../
+final-review.md
+progress.md
+# Revisión final de rama
+
+- **Important** · `src/slots.js:9` · `free('1012')` lanza «Franja no válida», sin «: usa HH-HH, p. ej. 10-12». La spec pide el mismo mensaje que al reservar, y el test de la Task 2 no lo detecta porque solo casa el principio. Fix: el mensaje literal en `free` y un tes
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja; cat $D/tasks.md $D/plan.md $D/spec.md; cat .superpowers/sdd/plan/progress.md; cat .docs/sdd/sdd-kit.json; ls -R src tests; cat src/*.js tests/*; cat .gitignore; git log --stat -3 | head -30
+<<< # Tasks — Validar el formato de la franja (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Validar al reservar | done | — | |
+| 2 | Validar al consultar libres | done | — | |
+
+Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 2 Important, 0 Minor), sobre af81703
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Plan — Validar el formato de la franja
+spec: ./spec.md
+status: approved
+---
+
+# Plan — Validar el formato de la franja
+
+**Ejecución**: native, porque son dos tasks cortas y encadenadas sobre el mismo fichero
+
+## Res
+
+>>> Bash: cd "<run>" && grep -n -i -E "desv|enmienda|freno" kit/skills/sdd-start-feature/references/control-profiles.md | head -50
+<<< grep: kit/skills/sdd-start-feature/references/control-profiles.md: No such file or directory
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0120-skill-regression-batteries/73e72262-edb8-4edf-8093-6818540c74d1/scratchpad" && F=$(find kit -name control-profiles.md | head -1); echo $F; grep -n -i -E "desv|enmienda|freno" "$F" | head -50
+<<< kit/skills/sdd-start-feature/references/control-profiles.md
+8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+32:Todo lo demás —`merge`, `ids`, `release`, los frenos de `control`, cualquier nivel o suelo de tests, una clave desconocida o un nombre de persona— es del proyecto o no existe: no se aplica, rige el siguiente nivel de la precedencia, y se avisa una vez por clave, con esta línea literal:
+53:| Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `
+
+>>> Bash: cd "<run>/repo" && cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('libres rechaza una franja sin guion', () => {
+  assert.throws(() => free('1012'), { message: 'Franja no válida: usa HH-HH, p. ej. 10-12' });
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^# (pass|fail)"
+echo ---repro cli
+node -e "import('./src/cli.js').then(m=>console.log(m.run(['reservar','Norte','1012'])))"
+<<< ---repro cli
+Error
+
+>>> Bash: cd "<run>/repo" && node --test tests/free-format.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+sed -i "s/throw new Error('Franja no válida');/throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');/" src/slots.js
+node --test tests/free-format.test.js tests/slot-format.test.js tests/slots.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 0
+ℹ fail 1
+ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja
+git add src/slots.js tests/free-format.test.js && git commit -q -m "fix(0012): mensaje completo de franja no válida en libres
+
+La revisión final detectó que free() lanzaba el mensaje sin la pista de formato; el test lo comprueba entero.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && S=$(git rev-parse --short HEAD)
+cat >> $D/spec.md <<'EOF'
+
+## Enmiendas
+
+### E1 — La CLI muestra el mensaje de la franja (sin aprobar)
+
+- Origen: revisión final de rama, Important en `src/cli.js:8`. Reproducido: `run(['reservar','Norte','1012'])` devuelve `Error`, no «Franja no válida: usa HH-HH, p. ej. 10-12»; el THEN de la spec no se cumple para quien usa la CLI.
+- Cambia el Scope: `src/cli.js` pasa de «No entra» a «Entra» (`catch` devuelve `error.message`, con un test de `run`). Cambia la salida observable de la CLI.
+- Solape: el roadmap no declara ficheros por feature; solape no comprobable.
+- Alternativas: (a) aprobar E1 y arreglarlo en esta feature (recomendada); (b) diferir a otra feature con fila en el roadmap; (c) dejar la CLI como está y cambiar el THEN a «la función falla con…».
+- Estado: pendiente de aprobación del dev-lead.
+EOF
+git add $D/spec.md && git commit -q -m "docs(0012): proponer la enmienda E1 para la CLI
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && echo $S && git log --oneline -3
+<<< warning: in the working copy of 'src/slots.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/free-format.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+e9e95f8
+5ec04dd docs(0012): proponer la enmienda E1 para la CLI
+e9e95f8 fix(0012): mensaje completo de franja no válida en libres
+ebbae1b docs(0012): revisión final de rama
+
+=== RESULTADO (10 turnos, 0.29594080000000006 $)
+Paro antes del paso 7: el segundo Important cambia la spec aprobada y necesito tu respuesta.
+
+**Hecho (Important 1, dentro del Scope)**
+- `free('1012')` devolvía «Franja no válida» a secas.
+- Ahora lanza el mensaje completo, igual que al reservar.
+- El test comprueba el mensaje entero. Salió en RED (`pass 0 / fail 1`) y luego en GREEN.
+- Las 3 suites de `tests/` pasan (`pass 3 / fail 0`).
+- Commit `e9e95f8`.
+
+**Parado (Important 2, `src/cli.js`)**
+- Lo reproduje: `run(['reservar','Norte','1012'])` devuelve `Error`, no el mensaje. Es real.
+- La spec lista `src/cli.js` en «No entra». Arreglarlo cambia el Scope y la salida observable de la CLI. Eso es un desvío, y en `delegate` paro y espero tu aprobación.
+- Lo dejé como enmienda E1 sin aprobar en `## Enmiendas` de `spec.md` (commit `5ec04dd`). El roadmap no declara ficheros por feature, así que el solape con otras features no se puede comprobar.
+
+**Tengo que preguntarte**
+
+¿Qué hacemos con E1?
+- **a) Aprobar E1 y arreglarlo en esta feature (recomendada).** El `catch` devuelve `error.message`, con un test de `run`. Cierra la pasada de fix y paso a la validación (paso 7).
+- **b) Diferirlo** a otra feature con fila en el roadmap.
+- **c) Dejar la CLI como está** y cambiar el THEN de la spec a «la función falla con…».
+
+**Pendiente**
+- Falta apuntar `Pasada de fix: <sha>, 2 hallazgos RED→GREEN` en `tasks.md`. Lo hago cuando se cierre el segundo fix.
+- Con (a), la pasada la verifica su propio TDD y no abre re-revisión.
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja
+cat > tests/cli.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { run } from '../src/cli.js';
+
+test('reservar con una franja mal formada muestra el mensaje', () => {
+  assert.strictEqual(run(['reservar', 'Norte', '1012']), 'Franja no válida: usa HH-HH, p. ej. 10-12');
+});
+
+test('libres con una franja mal formada muestra el mensaje', () => {
+  assert.strictEqual(run(['libres', '1012']), 'Franja no válida: usa HH-HH, p. ej. 10-12');
+});
+EOF
+cp tests/cli.test.js "$TEMP/cli.test.red.js"
+node --test tests/cli.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+sed -i "s/  } catch {/  } catch (error) {/; s/    return 'Error';/    return error.message;/" src/cli.js
+node --test tests/ 2>&1 | grep -E "^ℹ (pass|fail|duration)"
+git diff --no-index --stat "$TEMP/cli.test.red.js" tests/cli.test.js && echo "RED sin cambios"
+sed -i "s/^- No entra: la CLI (\`src\/cli.js\`)\./- Entra (enmienda E1): \`src\/cli.js\`, solo para mostrar el mensaje del error./; s/^- Estado: pendiente de aprobación del dev-lead\./- Estado: aprobada por el dev-lead el 2026-10-01 («Apruebo la enmienda: arregla también el segundo Important en src\/cli.js»)./; s/^### E1 — La CLI muestra el mensaje de la franja (sin aprobar)/### E1 — La CLI muestra el mensaje de la franja (aprobada)/" $D/spec.md
+git diff --stat; sed -n '/## Scope/,/## Delta/p' $D/spec.md
+<<< ℹ pass 0
+ℹ fail 2
+ℹ pass 5
+ℹ fail 0
+ℹ duration_ms 138.978
+warning: in the working copy of '<home>\AppData\Local\Temp/cli.test.red.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/cli.test.js', LF will be replaced by CRLF the next time Git touches it
+RED sin cambios
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/cli.js', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20260923-1
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20260923-100000-feature-0012-franja
+sed -i "s/^| dev-lead | Dev Lead | 2026-09-23 | aprobada |/&\n| dev-lead | Dev Lead | 2026-10-01 | enmienda E1 aprobada |/" $D/spec.md
+git add src/cli.js tests/cli.test.js $D/spec.md && git commit -q -m "fix(0012): la CLI muestra el mensaje de franja no válida
+
+Enmienda E1 aprobada: el catch de run devuelve error.message en vez de «Error». Cierra el segundo Important de la revisión final.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>/dev/null
+S=$(git rev-parse --short HEAD)
+printf 'Pasada de fix: %s, 2 hallazgos RED→GREEN\n' "$S" >> $D/tasks.md
+git add $D/tasks.md && git commit -q -m "docs(0012): apuntar la pasada de fix
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>/dev/null
+echo $S; git status --short; git log --oneline -4
+echo "--- smoke real"
+cat > "$TEMP/smoke.mjs" <<EOF
+import { run } from '$(pwd -W)/src/cli.js';
+console.log('reservar 1012 ->', run(['reservar','Norte','1012']));
+console.log('libres 1012   ->', run(['libres','1012']));
+console.log('reservar 10-12->', run(['reservar','Norte','10-12']));
+EOF
+node "$TEMP/smoke.mjs"
+node --test tests/ 2>&1 | grep -E "^ℹ (pass|fail|duration)"
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/cli.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/cli.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+f85d029
+7ec7e91 docs(0012): apuntar la pasada de fix
+f85d029 fix(0012): la CLI mue
+
+>>> Bash: cd "<run>/repo" && node --input-type=module -e "
+import { run } from './src/cli.js';
+console.log('reservar 1012 ->', run(['reservar','Norte','1012']));
+console.log('libres 1012   ->', run(['libres','1012']));
+console.log('reservar 10-12->', run(['reservar','Norte','10-12']));"; rm -f "$TEMP/smoke.mjs" "$TEMP/cli.test.red.js"; git status --short
+<<< reservar 1012 -> Franja no válida: usa HH-HH, p. ej. 10-12
+libres 1012   -> Franja no válida: usa HH-HH, p. ej. 10-12
+reservar 10-12-> {"room":"Norte","slot":"10-12"}
+
+=== RESULTADO (4 turnos, 0.39502180000000003 $)
+## Validación — feature 0012 (franja HH-HH)
+
+**Me salí del plan en…**
+- **E1, aprobada por ti:** `src/cli.js` entra en el Scope y el `catch` de `run` devuelve `error.message`. La enmienda y su fecha están en `spec.md`.
+- **Pasada de fix:** `e9e95f8` (`free`) y `f85d029` (CLI), con 2 hallazgos RED→GREEN.
+  - Los tests de `run` salieron en RED (`fail 2`) antes del código y no cambiaron entre el RED y el commit.
+  - El RED del `free` lo reescribí en el mismo paso que el código, así que ese no tiene copia aparte que comparar.
+  - La pasada no abre re-revisión: en Native la verifica el TDD del propio hilo. No hay más commits de código tras ella.
+- **Documentación:** `5ec04dd` propone la enmienda y `7ec7e91` apunta la pasada de fix en `tasks.md`.
+
+**Qué hay**
+- `reserve` y `free` rechazan una franja que no casa con `HH-HH` con el mismo mensaje completo.
+- La CLI ya muestra ese mensaje en vez de «Error».
+
+**Smoke (lo ejecuté yo; la suite completa tardó ~0,13 s, 5 tests en verde)**
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja mala falla con el mensaje | `ejecución real`: `run(['reservar','Norte','1012'])` → «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Libres con franja mala falla con el mismo mensaje | `ejecución real`: `run(['libres','1012'])` → el mismo mensaje |
+| Franja válida sigue reservando (no regresión) | `ejecución real`: `run(['reservar','Norte','10-12'])` → `{"room":"Norte","slot":"10-12"}` |
+
+Los tests no usan el binario `salas`: ejecuté `run()` directamente con Node y sin proceso de CLI aparte.
+
+**Guion de pruebas** (desde la raíz del repo, sin nada que arrancar)
+1. `node --input-type=module -e "import {run} from './src/cli.js'; console.log(run(['reservar','Norte','1012']))"` → `Franja no válida: usa HH-HH, p. ej. 10-12`
+2. Igual con `['libres','1012']` → el mismo mensaje.
+3. Igual con `['reservar','Norte','10-12']` → `{"room":"Norte","slot":"10-12"}`
+4. `node --test tests/` → 5 pass, 0 fail.
+
+**Revisión final:** `sdd-kit:effort-high + opus`, Needs fixes (0 Critical, 2 Important), sobre `af81703`. Los dos Important están resueltos como se describe arriba. No hay decisiones de producto pendientes.
+
+¿Qué has probado tú y funciona? Con tu respuesta paso a `sdd-end-feature`.
