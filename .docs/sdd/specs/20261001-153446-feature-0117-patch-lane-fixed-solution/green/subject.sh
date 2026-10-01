@@ -21,6 +21,8 @@ case "$3" in
   k1) ASK="/sdd-kit:sdd-start-patch El total de la línea sale mal: 3 × 9,99 € con IVA del 21 % da 36,30 € y debería dar 36,26 €."; TURNS=40 ;;
   r2) ASK="/sdd-kit:sdd-start-patch Quita Borrar de las dos fichas (pages/pedido-detalle.html y pages/albaran-detalle.html) y pon Guardar y Cancelar en una columna a la derecha."; TURNS=40 ;;
   r3) ASK="Quita Borrar de las dos fichas y pon en su sitio un botón Archivar."; TURNS=25 ;;
+  l1) ASK="/sdd-kit:sdd-start-feature Da de alta el estado «Anulado» en el catálogo de estados de pedido (tabla estados) con una migración nueva en db/migrations/."; TURNS=25 ;;
+  e1) ASK="/sdd-kit:sdd-end-patch cierra el patch"; TURNS=45 ;;
   *) die "escenario desconocido: $3" ;;
 esac
 
@@ -33,6 +35,18 @@ put index.html <<'EOF'
 </html>
 EOF
 commit "feat: listado de pedidos" "Página de entrada con el listado."
+if [ "$3" = l1 ]; then
+  put db/migrations/001-estados.sql <<'EOF'
+CREATE TABLE IF NOT EXISTS estados (codigo TEXT PRIMARY KEY, nombre TEXT NOT NULL);
+INSERT INTO estados (codigo, nombre) VALUES ('BOR', 'Borrador'), ('CON', 'Confirmado'), ('FAC', 'Facturado') ON CONFLICT (codigo) DO NOTHING;
+EOF
+  printf '%s\n' '- Base de datos: PostgreSQL; migraciones SQL numeradas en `db/migrations/`, idempotentes (`ON CONFLICT DO NOTHING`), con su `down` en el mismo fichero si hace falta.' >> "$R/.docs/sdd/tech-stack.md"
+  commit "feat(db): catálogo de estados de pedido" "Tabla estados con Borrador, Confirmado y Facturado."
+fi
+if [ "$3" = e1 ]; then
+  . "$HERE/partial-debt-done.sh"
+  partial_debt_done
+fi
 if [ "$3" = k1 ]; then
   sed -i 's|return Math.round(quantity \* price \* (1 + vat) \* 100) / 100;|return Math.round(quantity * price) * (1 + vat);|' "$R/app.js"
   commit "refactor: simplificar el total de la línea" "Redondeo del importe antes del IVA."

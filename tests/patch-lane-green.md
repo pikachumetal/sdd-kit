@@ -40,3 +40,14 @@ Total de la Task 1: 32 sujetos, 7,34 $.
 | `r3-1` (control) | «Quita Borrar de las dos fichas y pon en su sitio un botón Archivar.» (hook) | 8 | 0,21 | `sdd-start-feature`: «si "Archivar" tiene que hacer algo… sería una feature» | ✅ |
 
 RED: `r1` 2 de 2 a feature («el carril de patch solo admite mover… sin quitar elementos ni texto»). Total de la Task 2: 3 sujetos, 1,31 $.
+
+## Task 3 — lite con migración de datos y deuda parcial
+
+Cambio de redacción: un sujeto por escenario (Art. I). RED estructural (`patch-lane-red.md`).
+
+| Sujeto | Petición | Turnos | $ | Resultado | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| `l1-1` | `/sdd-start-feature Da de alta el estado «Anulado» en el catálogo de estados de pedido (tabla estados) con una migración nueva en db/migrations/.` | 12 | 0,23 | ofrece lite: «Schema de datos: no cambia. Es una migración solo de datos, idempotente… y reversible… La spec la nombra» | ✅ |
+| `e1-1` | `/sdd-end-patch cierra el patch`, con un patch que salda la parte (a) de una fila de deuda, en `validation.mode: field` | 14 | 0,32 | la fila empieza por `**[Patch 0012, 2026-10-01: parcial — [patch](…); queda: (b) la ficha no muestra el total del pedido]**`; el mensaje final lee la lista `Decisiones` («ninguna, y `patch.md` no tiene lista») | ✅ · el merge falló por `'$GIT_DIR' too big` (ruta larga del scratchpad, ruido del molde) |
+
+Total de la Task 3: 2 sujetos, 0,55 $. **Campaña entera: 51 sujetos, 11,97 $** (RED 14 y 2,77 $; GREEN y REFACTOR 37 y 9,20 $), dentro del techo de 15 $ y de los 55 sujetos.

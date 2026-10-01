@@ -4,7 +4,7 @@ Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
 
 - El flujo a modificar ya existe en el repo y se puede leer.
 - No cambia contratos públicos (API, interfaces que consume otro módulo).
-- No toca schema de datos ni exige migración.
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
 - Cabe en un solo módulo o área.
 - Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
 

@@ -141,3 +141,23 @@ Describe 'retirada en el patch visual' {
     Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match '`Removed`'
   }
 }
+
+Describe 'lite con migración de datos y deuda parcial' {
+  It 'lite solo se descarta por un cambio de schema' {
+    $lite = Get-KitFile 'skills/sdd-start-feature/references/modo-lite.md'
+    $lite | Should -Match 'No cambia el schema de datos'
+    $lite | Should -Not -Match 'ni exige migración'
+  }
+
+  It 'una migración solo de datos, idempotente y reversible, no descarta lite y se nombra' {
+    $lite = Get-KitFile 'skills/sdd-start-feature/references/modo-lite.md'
+    $lite | Should -Match 'solo de datos, idempotente y reversible'
+    $lite | Should -Match 'la spec la nombra'
+  }
+
+  It 'el paso 4 de sdd-end-patch nombra el formato parcial' {
+    $step = Get-Section (Get-KitFile 'skills/sdd-end-patch/SKILL.md') '4. **`roadmap.md`**' '5. **estimation-log**'
+    $step | Should -Match 'parcial —'
+    $step | Should -Match 'queda:'
+  }
+}
