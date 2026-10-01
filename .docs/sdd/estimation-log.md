@@ -129,28 +129,38 @@
 | 2026-09-29 | 0112 | patch | — | 0.8 | — | — | — | — | — | 20260929-170203-patch-0112-merge-push-no-remote |
 | 2026-09-29 | 0114 | patch | — | 1.5 | — | — | — | — | — | 20260929-170710-patch-0114-walkthrough-literal-cspell |
 | 2026-09-29 | 0113 | docs | 4 | 1.3 | 0.33 | 37885k | 4275k | 12.03 | 15.4 | 20260929-170930-feature-0113-plan-review-focus |
+| 2026-09-30 | 0115 | infra/tooling | 2.5 | 3 | 1.2 | 63387k | 3973k | 2.67 | 33.28 | 20260930-095620-feature-0115-roadmap-template-shape |
+| 2026-09-30 | 0125 | patch | — | 1.5 | — | — | — | — | — | 20260930-170633-patch-0125-re-review-exception-by-change |
+| 2026-09-30 | 0126 | patch | — | 0.5 | — | — | — | — | — | 20260930-174818-patch-0126-merge-verify-output |
+| 2026-09-30 | 0123 | docs | 3 | 2.4 | 0.8 | 31068k | 1916k | 4.32 | 15.46 | 20260930-175003-feature-0123-release-close-keeps-roadmap |
+| 2026-10-01 | 0118 | docs | 2.5 | 1.6 | 0.64 | 37865k | 2839k | 4.64 | 19.49 | 20260930-211302-feature-0118-field-validation-mode |
+| 2026-10-01 | 0127 | docs | 1.5 | 0.5 | 0.33 | 26222k | 1580k | 3.49 | 10.61 | 20261001-112831-feature-0127-sdd-config-field-validation |
+| 2026-10-01 | 0050 | docs | 1.5 | 0.6 | 0.4 | 18823k | 838k | 3.09 | 8.27 | 20261001-125120-feature-0050-feedback-less-noise |
+| 2026-10-01 | 0120 | infra/tooling | 4 | 1.5 | 0.38 | 46753k | 6118k | 4.95 | 19.22 | 20261001-125122-feature-0120-skill-regression-batteries |
+| 2026-10-01 | 0124 | infra/tooling | 3 | 0.7 | 0.23 | 35595k | 2218k | 1.68 | 15.49 | 20261001-130008-feature-0124-capability-delta-merge |
+| 2026-10-01 | 0117 | docs | 2.5 | 2.3 | 0.92 | 68419k | 1808k | 12.55 | 23.36 | 20261001-153446-feature-0117-patch-lane-fixed-solution |
 
-**Factor de calibración** (ratio mediano real/estimado, 106 artefactos): **0.6** · media 0.74
+**Factor de calibración** (ratio mediano real/estimado, 114 artefactos): **0.6** · media 0.73
 
-- p25–p75: 0.43–1
-- p80: 1.08 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 30 % · sobreestimadas: 60 % · infraestimadas: 9 %
-- Error absoluto (h): media 0.93 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.54
+- p25–p75: 0.4–0.99
+- p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 31 % · sobreestimadas: 61 % · infraestimadas: 9 %
+- Error absoluto (h): media 0.94 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.44
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 35 | 33 % |
-| 0.5–0.8 | 31 | 29 % |
-| 0.8–1.25 | 30 | 28 % |
-| 1.25–2 | 8 | 8 % |
+| <0.5 | 39 | 34 % |
+| 0.5–0.8 | 33 | 29 % |
+| 0.8–1.25 | 32 | 28 % |
+| 1.25–2 | 8 | 7 % |
 | ≥2 | 2 | 2 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 63 | 0.52 | 0.37–0.74 |
-| infra/tooling | 15 | 0.43 | 0.37–0.57 |
+| docs | 68 | 0.53 | 0.37–0.76 |
+| infra/tooling | 18 | 0.42 | 0.36–0.58 |
 | patch | 27 | 1.2 | 0.8–1.37 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -162,6 +172,7 @@
 | 1.0.0 | 19 | 16.55 | 0.58 | — | — |
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
-| 2.1.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
+| 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
+| sin publicar | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
 
 > Ver `estimation.md`.

@@ -193,3 +193,22 @@ Describe 'Cada versión del kit tiene su migración' {
     Join-Path $script:MigrationsDir "v$version.md" | Should -Exist
   }
 }
+
+Describe 'Migración a v2.3.0 — roadmap' {
+  BeforeAll { $script:V23 = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.3.0.md' }
+
+  It 'declara roadmap.md en su línea **Escribe**' {
+    Get-DeclaredTokens $script:V23 | Should -Contain 'roadmap.md'
+  }
+
+  It 'el paso del roadmap nombra el validador, el gate, el sha y el pendiente' {
+    foreach ($literal in 'Test-Roadmap.ps1', '**gate**', 'git show', 'pendiente explícito', 'Roadmap válido') {
+      $script:V23.Contains($literal) | Should -BeTrue -Because "falta $literal"
+    }
+  }
+
+  It 'ordena el roadmap y quién valida antes del marcador' {
+    $steps = [regex]::Matches($script:V23, '(?m)^\d+\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
+    $steps | Should -Be @('Roadmap en la forma de la plantilla', 'Quién valida', 'Marcador')
+  }
+}

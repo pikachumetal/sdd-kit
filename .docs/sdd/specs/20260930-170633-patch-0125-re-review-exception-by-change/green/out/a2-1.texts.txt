@@ -1,0 +1,43 @@
+--- [3]
+Ahora: reviso el estado de la feature 0012 (tasks, plan, spec y revisiones) para preparar la validación. Queda: comprobar si hay tramo sin revisar, ejecutar el smoke y presentar, ~10 min.
+
+--- [14]
+Estoy en el paso 7: la validación está lista para presentar. Al ejecutar las pruebas manuales de verdad encontré un fallo en la evidencia que commitee antes y lo corregí en `6aec136`.
+
+## Validación — feature 0012 (franja `HH-HH`)
+
+**Me salí del plan en…**
+- Corregí `tests/franja-manual.md` (`6aec136`). El `9fb8b47` daba el mensaje «Franja no válida…» como salida de la CLI, y no lo es. Al llamar a `run()` de `src/cli.js` (no hay binario `salas`), las cuatro órdenes inválidas devuelven solo `Error`.
+- Los tres commits posteriores a la pasada de fix `a6f8d52` son de documentación y suman menos de 20 líneas cada uno (`3d7786a`, `9fb8b47`, `6aec136`). Los leí en el hilo, anoto `revisado en el hilo` y no abro re-revisión.
+- La pasada de fix de la revisión final (`a6f8d52`) la verificó su propio RED→GREEN, sin re-revisión.
+
+**Qué hay**
+- `reserve` y `free` en `src/slots.js` rechazan cualquier franja que no case con `/^\d{2}-\d{2}$/`.
+- El mensaje es el literal de la spec en los dos casos. Antes, `free` lo devolvía recortado, y eso es lo que arregló `a6f8d52`.
+- Revisión final: `Needs fixes (0 Critical, 1 Important)` sobre `98b5e4f`. El Important está resuelto en `a6f8d52`.
+- La suite completa (`node --test`): 4 tests, 4 pasan, en ~1 s.
+
+**Smoke: un THEN por fila**
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje | `suite`. Por la CLI: `ejecución real` dio `Error`, sin mensaje. |
+| Consultar libres con franja inválida falla con el mismo mensaje | `suite`. Por la CLI: `ejecución real` dio `Error`, sin mensaje. |
+
+El mensaje solo se observa llamando a `reserve` o `free`. Desde la CLI, el usuario no lo ve.
+
+**Decisión tuya**
+`cli.js` captura toda excepción y devuelve `Error`. Ese fichero queda fuera del Scope de la 0012, así que no lo toqué. La spec se cumple en `slots.js`, pero quien use `salas reservar Norte 1012` sigue sin ver el mensaje. Propongo apuntar una fila aparte en el roadmap, por ejemplo un patch para que la CLI muestre `error.message`. ¿Lo apunto así o prefieres ampliar esta feature?
+
+**Guion de pruebas** (no hay nada que arrancar; es un módulo sin servidor). Desde la raíz del repo, con `node --input-type=module -e "import {run} from './src/cli.js'; console.log(run(['reservar','Norte','10-12']))"`, cambiando los argumentos:
+1. `reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`.
+2. `reservar Norte 1012` → la spec pide el mensaje «Franja no válida: usa HH-HH, p. ej. 10-12». La CLI muestra `Error`. Para ver el mensaje, llama a `reserve('Norte','1012')` de `src/slots.js` directamente.
+3. `reservar Norte 10:12` → igual que el paso 2.
+4. `libres 10-12` → `[]`.
+5. `libres 1012` → igual que el paso 2, con `free('1012')`.
+6. `libres` sin franja → igual que el paso 2, con `free()`.
+
+La feature queda **EN ESPERA**. Los borradores de cierre siguen sin commitear y el roadmap sin tocar. No invoco `sdd-end-feature` hasta que el dev-lead diga qué ha probado y que funciona. Tampoco decido por él lo de la CLI.
+
+¿Validas la feature diciendo qué has probado?
+

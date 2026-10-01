@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1 | head -40
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done
+<<< develop
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+{"version": "2.3.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+<<< Exit code 1
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. 
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t1/skills/sdd-start-feature/references" && cat modo-lite.md nombrado.md; sed -n 1,60p control-profiles.md; ls "<run>/repo/.docs/sdd/specs" "<run>/repo/src"
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No toca schema de datos ni exige migración.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmación explícita de
+
+>>> Bash: cd "<run>/repo" && wc -l src/app.js && cat src/app.js && ls test && cat .gitignore 2>&1
+<<< Exit code 1
+16 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+=== RESULTADO (7 turnos, 0.2344128 $)
+Ahora: confirmar carril, modo y perfil antes de nada más. Queda: esa respuesta, luego la spec (~10 min hasta el gate de aprobación).
+
+I read the SDD docs (constitution, mission, tech-stack, roadmap) and `src/app.js`. The project has no `architecture.md` or `capabilities/`. It has no `sdd-kit.local.json`, so I'm ignoring no keys.
+
+- **Lane: feature, not patch.** Who gets promoted, in what order, and what the user sees are rules I would be deciding. A patch needs the solution to be fixed already.
+- **Mode: full (recommended), not lite.** Lite needs all five conditions. Here is what I checked:
+  - **Existing flow:** doubtful. `reservar` is only a stub and bookings are an in-memory array.
+  - **No public contract change:** fails. A waitlist adds CLI commands, and the CLI is the only interface.
+  - **No schema or migration:** holds, since there is no persistence.
+  - **Single module:** holds, everything is in `src/app.js`.
+  - **Estimation ≤ half a day:** doesn't apply, because there is no `estimation.md`.
+
+  With one condition failing and one doubtful, I'd go full.
+- **Size: no split.** I foresee about 3 tasks (join the waitlist when a room is full, promote on cancel, list/leave), all on the same surface with no migration.
+- **Profile: `delegate`.** It comes from the project default, since `sdd-kit.json` has no `control.profile` and there is no local file. It stops at spec approval, deviations and validation, with no plan gate.
+
+Which do you want?
+
+1. **Feature, full, `delegate` (recommended).**
+2. Feature, full, `pair`, which also stops at the plan and after each task.
+3. Feature, full, `delegate`, and you approve the spec by delegation: "I approve the spec by delegation, see you at validation." I wouldn't stop at the spec gate, but validation is never skipped.
+4. Feature in lite mode, if you think the failing condition doesn't matter.

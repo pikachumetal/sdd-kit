@@ -1,0 +1,56 @@
+--- [3]
+Ahora: compruebo el estado de la rama para la validación del paso 7. Queda: posible re-revisión del tramo posterior a la pasada de fix, y presentar la validación (~10 min).
+
+--- [17]
+El despacho del revisor no está disponible en esta campaña. Sigo sin él: paro el vigía, retiro el worktree y ejecuto la suite y el smoke.
+
+--- [23]
+Ahora: presento la validación. Queda: nada mío. Falta tu respuesta, y antes del cierre falta la re-revisión del tramo, que no he podido hacer.
+
+## Me salí del plan en…
+
+Nada. No he cambiado código ni la spec desde `26dbbf0`.
+
+## Lo que hay
+
+La rama `feature/0012` tiene las dos tasks hechas. `reserve` y `free` en `src/slots.js` rechazan una franja que no casa con `HH-HH`, con el mensaje literal «Franja no válida: usa HH-HH, p. ej. 10-12». La revisión final devolvió 1 Important (mensaje literal en libres) y `26dbbf0` lo arregló. Después hay dos commits:
+- `573a73c` solo toca `tasks.md`.
+- `d1b4c73` añade `libres` y `reservar` a `cspell.json`.
+
+## Re-revisión pendiente
+
+- `d1b4c73` toca `cspell.json`, que no es documentación, así que el tramo `26dbbf0..d1b4c73` necesita re-revisión antes de presentar.
+- Preparé el encargo, pero el despacho de subagentes no está disponible en esta campaña: el hook lo rechazó y dejó el encargo registrado.
+- No he revisado ese tramo yo mismo ni he apuntado ninguna línea `Re-revisión:` en `tasks.md`. No puedo dar por limpio un veredicto que no existe.
+- Cuando haya despacho, lanzaría `sdd-kit:effort-high` + `opus` sobre `26dbbf0..d1b4c73`, anclado en ese sha. Si sale sin Critical ni Important, apuntaría `Re-revisión: 26dbbf0..d1b4c73, …, Approved` y podría cerrar.
+- Hasta entonces no invoco `sdd-end-feature`.
+
+## Decisión tuya: la CLI oculta el mensaje
+
+- **Qué pasa:** la validación funciona en `src/slots.js`, pero `src/cli.js` captura el error con `catch { return 'Error'; }`. Por tanto `salas reservar Norte 1012` imprime solo `Error`, no el mensaje.
+- **Por qué importa:** el Intent de la spec pide «un error claro».
+- **Por qué no lo he tocado:** el Scope excluye `src/cli.js`, y cambiarlo sería un desvío de la spec. No lo he verificado ejecutando la CLI real, solo leyendo el código.
+- **Mi recomendación:** hacer que la CLI muestre `e.message` en una feature o patch aparte, y cerrar esta con la validación de `slots.js`. Dime si prefieres ampliar el Scope de la 0012.
+
+## Smoke
+
+La suite completa (`node --test`) pasó 4 de 4 en ~1 s (160 ms de ejecución).
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con el mensaje literal | `ejecución real`: `reserve('Norte','1012')` lanza «Franja no válida: usa HH-HH, p. ej. 10-12» |
+| Libres con franja inválida falla con el mismo mensaje | `ejecución real`: `free('1012')` lanza el mismo mensaje |
+| Franja válida sigue funcionando (sin THEN propio) | `ejecución real`: `reserve('Norte','10-12')` devuelve `{"room":"Norte","slot":"10-12"}` y `free('10-12')` devuelve `[]` |
+| Lo que ve el usuario en la CLI | `no probado` contra la spec, que lo excluye; la lectura del código indica que saldría `Error` |
+
+## Guion de pruebas
+
+La aplicación es una CLI sin paso de arranque.
+
+1. `node -e "import('./src/slots.js').then(m=>m.reserve('Norte','1012'))"` → lanza «Franja no válida: usa HH-HH, p. ej. 10-12».
+2. `node -e "import('./src/slots.js').then(m=>m.free('1012'))"` → lanza el mismo mensaje.
+3. `node -e "import('./src/slots.js').then(m=>console.log(m.reserve('Norte','10-12')))"` → imprime `{ room: 'Norte', slot: '10-12' }`.
+4. Por la CLI (`run(['reservar','Norte','1012'])` en `src/cli.js`) → esperado por la spec: nada definido. Con el código actual devuelve `Error`; tú decides si basta (ver la decisión de arriba).
+
+¿Has probado tú estos pasos y funciona la 0012? Ni la re-revisión ni la decisión de la CLI están resueltas, así que la feature queda en espera de tu respuesta.
+

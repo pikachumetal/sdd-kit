@@ -1,0 +1,149 @@
+
+>>> Skill: sdd-kit:sdd-end-release
+<<< Launching skill: sdd-kit:sdd-end-release
+
+>>> Bash: cd "<run>/repo" && git status --short && git branch -a && find .docs -type f | head -100 && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/roadmap.md && cat .docs/sdd/changelog.md && ls; cat package.json 2>/dev/null | head -30
+<<< * develop
+  main
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260902-090000-feature-0017-waiting-list/walkthrough.md
+.docs/sdd/specs/20260915-090000-feature-0019-weekly-recurrence/walkthrough.md
+.docs/sdd/specs/20260918-090000-feature-0021-release-mail/walkthrough.md
+.docs/sdd/specs/20260922-090000-patch-0020-late-slot/patch.md
+.docs/sdd/specs/20260924-090000-feature-0022-local-holidays/walkthrough.md
+.docs/sdd/tech-stack.md
+{"version": "2.2.0", "channel": "plugin", "updated": "2026-09-29", "ids": {"mode": "
+
+>>> Bash: cd "<run>/repo" && cat CLAUDE.md; for f in .docs/sdd/specs/*/*.md; do echo "=== $f"; cat "$f"; done; git log --oneline | head; ls src test
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/0123-release-close-keeps-roadmap/skills" && cat sdd-end-release/references/notas-y-roadmap.md sdd-end-release/references/versionado.md; ls sdd-templates/scripts
+<<< # Salas — guía para Claude
+
+Proyecto con el kit SDD. Documentos de anclaje en `.docs/sdd/`. `release.hasRecipient: false` lo escribió el dev-lead al preparar la 1.2.0: las releases no se entregan a nadie.
+=== .docs/sdd/specs/20260902-090000-feature-0017-waiting-list/walkthrough.md
+# Walkthrough — 0017 Lista de espera
+
+Validación diferida: 2026-09-08 · «lo pruebo en el smoke de la 1.3» · disparador: el smoke de la 1.3, a cargo del dev-lead.
+=== .docs/sdd/specs/20260915-090000-feature-0019-weekly-recurrence/walkthrough.md
+# Walkthrough — 0019 Reserva recurrente semanal
+
+Validado por el dev-lead 
+<<< # Release notes y colapso del roadmap — detalle
+
+## Paso 3 — Release notes y comunicación
+
+3. **Release notes y comunicación** *(solo con `release.hasRecipient: true`)* — `.docs/sdd/releases/vX.Y.Z/release-notes.md`,
+   calcando `release-notes-template.md` del skill `sdd-templates`, destiladas del changelog sellado en
+   **outcome para el usuario**, no entregable de ingeniería. **Prohibido**: IDs de feature, scopes de commit,
+   jerga técnica. El email de entrega se deriva de las release notes y vive como borrador en la misma
+   carpeta. Sin destinatario, no hay release notes ni email:
+
+>>> Bash: cd "<run>/repo" && npm test 2>&1 | tail -15; pwsh -NoProfile -File "D:/code/.worktrees/sdd-kit/0123-release-close-keeps-roadmap/skills/sdd-templates/scripts/Test-Roadmap.ps1" -Path .docs/sdd
+<<< npm notice run salas@1.2.0 test
+npm notice run node --test
+✔ hay dos salas (0.9366ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 196.9441
+Roadmap válido
+
+>>> Bash: cd "<run>/repo" && 
+python - <<'EOF'
+import re
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+# Próximo: quitar 0019 (publicada), añadir 0024
+s=s.replace("| 0019 | Reserva recurrente semanal — [walkthrough](specs/20260915-090000-feature-0019-weekly-recurrence/walkthrough.md) | ✅ |\n","")
+s=s.replace("| 0025 | Piloto en la oficina de Lugo | ⏳ |\n","| 0024 | **Reserva recurrente mensual** — tras 0022. «El primer lunes de cada mes», con aviso si cae en festivo (movida de la 1.3 al cierre: no entra) | ⏳ |\n| 0025 | Piloto en la oficina de Lugo | ⏳ |\n")
+# quitar sección Release 1.3
+a=s.index("## Release 1.3"); b=s.index("## Backlog")
+s=s[:a]+s[b:]
+# deuda saldada
+s=re.sub(r"\| \*\*\[Patch 0020.*\n","",s)
+# patches
+s=re.sub(r"\| 2026-09-22 \| 0020 .*\n","",s)
+new="""## Releases cerradas
+
+### v1.3.0 — 2026-09-30
+
+Reserva recurrente semanal (0019), aviso por correo al liberar una sala (0021), festivos locales por oficina (0022) y la franja de las 23:30 en su día (patch 0020). [Changelog](changelog.md#130---2026-09-30).
+
+smoke: 2026-09-30 · 0 hallazgos (suite y 0021 a mano: liberada la sala Sur, llegó el aviso; 0 corregidos en la release)
+
+validaciones pendientes: 0017, 0022
+"""
+s=s.replace("## Releases cerradas\n",new,1)
+s=s.replace("\nvalidaciones pendientes: 0017\n","\n") if False else s
+# quitar línea de 1.2.0
+s=s.replace("smoke: 2026-09-10 · 0 hallazgos (reserva y espera a mano; 0 corregidos en la release)\n\nvalidaciones pendientes: 0017\n","smoke: 2026-09-10 · 0 hallazgos (reserva y espera a mano; 0 corregidos en la release)\n")
+open(p,'w',encoding='utf-8').write(s)
+
+p='.docs/sdd/changelog.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("## [Unreleased]\n","## [Unreleased]\n\n## [1.3.0] - 2026-09-30\n",1)
+open(p,'w',encoding='utf-8').write(s)
+
+p='package.json'
+s=open(p).read().replace('"version": "1.2.0"','"version": "1.3.0"'); open(p,'w').write(s)
+
+add="\n\nAdenda 2026-09-30: no se probó en el smoke de la 1.3 (el dev-lead solo probó la 0021). Nuevo disparador: el smoke de la siguiente release, a cargo del dev-lead. Sigue en `validaciones pendientes` de la v1.3.0.\n"
+for d in ['20260902-090000-feature-0017-waiting-list','20260924-090000-feature-0022-local-holidays']:
+    p=f'.docs/sdd/specs/{d}/walkthrough.md'
+    s=open(p,encoding='utf-8').read().rstrip('\n')+add
+    open(p,'w',encoding='utf-8').write(s)
+EOF
+cat .docs/sdd/roadmap.md; head -12 .docs/sdd/changelog.md; pwsh -NoProfile -File "D:/code/.worktrees/sdd-kit/0123-release-close-keeps-roadmap/skills/sdd-templates/scripts/Test-Roadmap.ps1" -Path .docs/sdd; git status --short
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0024 | **Reserva recurrente mensual** — tras 0022. «El primer lunes de cada mes», con aviso si cae en festivo (movida de la 1.3 al cierre: no entra) | ⏳ |
+| 0025 | Piloto en la oficina de Lugo | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Reservar desde el móvil con un código QR pegado en la puerta de la sala | oficina de Vigo, 2026-09-12 |
+
+## Deuda técnica
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| `src/bookings.js` pasa de 600 líneas y junta la validación y el acceso 
+
+>>> Bash: cd "<run>/repo" && git add -A && git commit -q -m "chore(release): cierre de la v1.3.0
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -3 && git status --short
+<<< 651e203 chore(release): cierre de la v1.3.0
+27c1152 feat: salas 1.2.0 con el kit
+
+=== RESULTADO (9 turnos, 0.2164106 $)
+He preparado el cierre de la 1.3.0 y lo he dejado commiteado en `develop` (651e203). No he hecho merge ni tag. La suite (`npm test`) pasa y `Test-Roadmap.ps1` da `Roadmap válido` tras colapsar.
+
+**Lo que he hecho**
+- **Changelog:** `[Unreleased]` queda sellado como `[1.3.0] - 2026-09-30`, con una `[Unreleased]` vacía encima.
+- **Versión:** `package.json` pasa a 1.3.0. No he tocado la versión de `sdd-kit.json`, que es la del kit.
+- **Notas de cliente:** no hay release notes ni email, porque `release.hasRecipient` es `false`.
+- **0024:** sale de la release y queda en «Próximo», con la nota «tras 0022».
+- **Roadmap:** la sección «Release 1.3» se colapsa en `### v1.3.0 — 2026-09-30`, encima de la 1.2.0. Salen también la deuda saldada del patch 0020 y su fila de «Patches».
+- **Smoke:** he escrito `smoke: 2026-09-30 · 0 hallazgos (suite y 0021 a mano: liberada la sala Sur, llegó el aviso)`. El «0 hallazgos» lo deduzco de que dices que funciona, así que corrígelo si no es cierto.
+
+**Decisiones mías que conviene que revises**
+- **0017 y 0022:** solo probaste la 0021, así que sus validaciones diferidas se quedan sin validar. Las dos tenían como disparador el smoke de la 1.3. Les he añadido una adenda fechada en su `walkthrough.md` con el smoke de la siguiente release como nuevo disparador. Sus ids van en `validaciones pendientes: 0017, 0022` de la v1.3.0, y he quitado esa línea de la 1.2.0. Si las probaste también, dímelo y las doy por validadas.
+- **0019:** estaba como ✅ en «Próximo» y en `[Unreleased]`, pero no en la sección de la 1.3. La he tratado como publicada en la 1.3.0 y he quitado su fila. Si no debía entrar, hay que sacarla del changelog sellado.
+
+**Pendiente (tuyo)**
+- **Merge y tag:** `merge.into` es `develop` con `noFf`. Falta el merge al branch estable, el tag anotado `v1.3.0` sobre ese merge commit, el push del tag y el merge de vuelta a `develop`. No te he pedido confirmar la versión sobre una propuesta de cierre aparte: la tomé de tu mensaje. La confirmas tú al hacer el tag.
+- **Migraciones del kit:** el proyecto está en el kit 2.2.0 y hay migraciones hasta la 2.3.0. No las he aplicado, porque no era lo que pedías. Se hace con «ponme el proyecto al día con sdd-init-brownfield».

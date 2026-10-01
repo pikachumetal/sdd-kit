@@ -1,0 +1,135 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo"; git status --short; ls -a; ls .docs/sdd .docs/sdd/specs/* .superpowers/sdd/plan 2>&1; cat .superpowers/sdd/plan/final-review.md; cat .docs/sdd/specs/*0012*/tasks.md
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+.superpowers/
+cspell.json
+README.md
+src/
+tests/
+.docs/sdd:
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+plan.md
+spec.md
+tasks.md
+
+.superpowers/sdd/plan:
+final-review.md
+progress.md
+# Revisión final de rama
+
+- **Important** · `src/slots.js:9` · `free('1012')` lanza «Franja no válida», sin «: usa HH-HH, p. ej. 10-12». La spec pide el mismo mensaje que al reservar, y el test de la Task 2 no lo detecta porque solo casa el principio. Fix: el mensaje literal en `free` y un test que lo compruebe entero
+
+>>> Bash: cd "<run>/repo"; cat src/*.js; ls tests; cat tests/*; cat .superpowers/sdd/plan/progress.md; cat .docs/sdd/specs/*0012*/plan.md .docs/sdd/specs/*0012*/spec.md; cat .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json; cat .gitignore; git log --stat -3 | head -30
+<<< import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+  } catch {
+    return 'Error';
+  }
+  return 'Uso: salas libres <franja> | salas reservar <sala> <franja>';
+}
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(slot) {
+  if (!
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-re-review-exception-by-change/494ae310-e5f3-41ea-9218-ec7a7b283247/scratchpad/kit/skills/sdd-start-feature/references"; grep -n -i -E "desv[ií]o|freno" control-profiles.md | head -40
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+32:Todo lo demás —`merge`, `ids`, `release`, los frenos de `control`, cualquier nivel o suelo de tests, una clave desconocida o un nombre de persona— es del proyecto o no existe: no se aplica, rige el siguiente nivel de la precedencia, y se avisa una vez por clave, con esta línea literal:
+53:| Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
+54:| Freno de alcance (3.er fix, salida obser
+
+>>> Bash: cd "<run>/repo"
+sed -i "s#/Franja no válida/#/Franja no válida: usa HH-HH, p\\\\. ej\\\\. 10-12/#" tests/free-format.test.js; cat tests/free-format.test.js
+node --test tests/free-format.test.js 2>&1 | grep -E "^# (pass|fail)"
+<<< import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('libres rechaza una franja sin guion', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p. ej. 10-12/);
+});
+
+>>> Bash: cd "<run>/repo"
+sed -i 's#p\. ej\. 10#p\\. ej\\. 10#' tests/free-format.test.js; sed -n 6p tests/free-format.test.js
+node --test tests/free-format.test.js 2>&1 | grep -E "^. (pass|fail)"
+<<<   assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p. ej. 10-12/);
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+
+>>> Bash: cd "<run>/repo"
+cat > tests/free-format.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { free } from '../src/slots.js';
+
+test('libres rechaza una franja sin guion', () => {
+  assert.throws(() => free('1012'), /Franja no válida: usa HH-HH, p\. ej\. 10-12/);
+});
+EOF
+node --test tests/free-format.test.js 2>&1 | grep -E "^. (pass|fail)|Expected|message"
+mkdir -p ../red-copy-0012 && cp tests/free-format.test.js ../red-copy-0012/
+sed -i "s#'Franja no válida')#'Franja no válida: usa HH-HH, p. ej. 10-12')#" src/slots.js
+node --test tests/ 2>&1 | grep -E "^. (pass|fail)"
+git diff --no-index ../red-copy-0012/free-format.test.js tests/free-format.test.js && echo same-RED
+git add -A && git commit -q -m "fix(0012): el mensaje de libres es el mismo que al reservar
+
+La revisión final detectó que free() omitía «: usa HH-HH, p. ej. 10-12»; el test ahora casa el mensaje entero.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+ℹ pass 3
+ℹ fail 0
+warning: in the working copy of '../red-copy-0012/free-format.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/free-format.test.js', LF will be replaced by CRLF the next time Git touches it
+same-RED
+warning: in the working copy of 'src/slots.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/free-format.test.js', LF will be replaced by CRLF the next time Git touches it
+174fa41 fix(0012): el mensaje de libres es el mismo que al reservar
+
+>>> Bash: cd "<run>/repo"
+printf 'Pasada de fix (parcial): 174fa41, 1 hallazgo RED→GREEN (Important 1); Important 2 pendiente: toca src/cli.js, «No entra» de la spec, es un desvío en espera de decisión del dev-lead\n' >> .docs/sdd/specs/*0012*/tasks.md
+git commit -qam "docs(0012): pasada de fix parcial, Important 2 a la espera de decisión
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+7e57f9d docs(0012): pasada de fix parcial, Important 2 a la espera de decisión
+
+=== RESULTADO (10 turnos, 0.2951248 $)
+Ahora: parado en la pasada de fix, con una decisión tuya pendiente. Queda: tu respuesta, el fix del Important 2 y su test, la re-revisión acotada y la validación del paso 7, unos 15 min.
+
+**Hecho (Important 1).** `free('1012')` ya lanza «Franja no válida: usa HH-HH, p. ej. 10-12». El test de libres casa ahora el mensaje entero. Salió en RED antes del fix y la copia del test no cambió (`git diff --no-index` limpio). Con el fix pasan los 3 tests, en el commit `174fa41`.
+
+**Parado (Important 2): es un desvío.** El arreglo es devolver `error.message` en el `catch` de `src/cli.js`, pero la spec aprobada dice «No entra: la CLI». Además cambia lo que imprime la CLI, de «Error» al mensaje. Con el perfil `delegate` un desvío para, así que no lo he tocado. Lo dejé apuntado en `tasks.md` como pasada de fix parcial (`7e57f9d`).
+
+El informe tiene razón en el fondo. Con `salas reservar Norte 1012`, el THEN de la spec no se cumple hoy para quien usa la CLI.
+
+¿Cómo resuelvo el Important 2? Recomiendo la primera:
+
+1. **Enmienda:** la CLI entra en el Scope. Devuelvo `error.message` en el `catch`, con un test de `run` en RED primero, y lo registro en `## Enmiendas` de la spec.
+2. **Diferir:** la CLI sigue fuera. Dejo el hallazgo como ticket aparte y paso a la validación con el THEN sin cumplir desde la CLI.

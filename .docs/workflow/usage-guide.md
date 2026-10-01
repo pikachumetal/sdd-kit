@@ -11,7 +11,7 @@ Con el kit se trabaja con tres verbos, siempre en este orden:
 | Verbo | Skill | Qué haces | Qué queda escrito |
 | --- | --- | --- | --- |
 | **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `.docs/sdd/roadmap.md` con su id y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/specs/<fecha>-proposal-<id>-<nombre>/proposal.md` |
-| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: una feature si tiene comportamiento, un patch si es un fallo pequeño y reproducible o un ajuste solo de presentación | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
+| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
 | **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, las notas de la versión si hay destinatario, el roadmap colapsado y, cuando tú lo confirmas, el merge a `main` y el tag |
 
 Planificar no hace nada: deja el roadmap listo para que alguien arranque. Hacer arranca una fila y termina con ella fusionada. Entregar publica lo hecho.
@@ -60,9 +60,15 @@ Llega algo, o arrancas una fila, y lo escribes tal cual. El agente elige la puer
 
 Si lo que escribes no dice qué es ni cuánto abarca («hay que mejorar las reservas»), el agente te hace una sola pregunta sobre eso, con su recomendación, y elige la puerta con tu respuesta.
 
-**Patch o feature.** Un patch es un fallo determinista, de menos de media hora y sin nada que interpretar: se sabe qué debería pasar y no pasa. En cuanto el arreglo exige decidir cómo debería comportarse algo, o toca varios módulos, es una feature, y el agente cambia de carril y te lo dice. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
+**Patch o feature.** Lo decide quién fija la solución, no los minutos. Un patch es un cambio pequeño cuya solución ya está fijada antes de empezar. Hay tres casos:
 
-**Ajuste visual.** El patch también acepta un cambio pedido solo de presentación: toca plantillas o estilos y nada más, sin cambiar bindings, eventos, textos visibles, claves de i18n, TypeScript, API, datos ni capacidades. En lugar de la causa raíz, el `patch.md` lleva la intención en una frase, y la verificación es una captura que el agente te enseña al validar. Si el ajuste toca cualquiera de esas cosas, es una feature.
+- **Un fallo determinista**: la solución la fija la causa raíz. «Es un bug» no lo convierte en patch: lo decide lo que encuentra la investigación. Si el agente no consigue reproducir el fallo, para ahí y te lo cuenta, sin abrir rama ni carpeta.
+- **Un ajuste o una retirada solo de presentación**: la solución la fija tu petición.
+- **Una petición cerrada**: un ticket o tú decís qué cambia en lo que el usuario ve o puede hacer («que Cancelar lleve al listado», «cambia "Guardar" por "Guardar y cerrar"»).
+
+Si el agente tendría que decidir algo que se ve (qué texto, dónde, con qué regla), es una feature, aunque sea pequeña y aunque pidas un patch: «avisa cuando el total pase de 1.000 €» lo es. Cada decisión del patch queda en `patch.md` con su autor (el ticket, tú, o el agente sin ti), y una decisión visible que el agente tomó sin ti lo pasa a feature. Si el diff pasa de 10 ficheros o de 300 líneas de código, el agente para y te pregunta si sigue como patch.
+
+**Ajuste visual.** Toca plantillas o estilos y nada más: mueve, envuelve o cambia la clase de elementos, sin añadir bindings, eventos, textos, claves de i18n, TypeScript, API, datos ni capacidades. En lugar de la causa raíz, el `patch.md` lleva la intención en una frase, y la verificación es una captura que el agente te enseña al validar.
 
 **Algo grande no se hace de golpe.** Si pides varias cosas a la vez, o una que el agente partiría en varias features, te propondrá pasarla por el roadmap (sección 2) y arrancar después cada feature por separado.
 
@@ -76,7 +82,7 @@ Lo que pasa en una feature, en orden:
 4. **La validación**: te presenta lo hecho con un guion de pruebas y te pregunta qué has probado (sección 5).
 5. **El cierre**: walkthrough, changelog, roadmap y merge en `develop` (sección 5).
 
-Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa), sin spec ni plan, y su validación al cerrar.
+Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa, y en una petición cerrada, la solución fijada con su autor), sin spec ni plan, y su validación al cerrar.
 
 ## 4. Qué te pregunta el agente y qué contestar
 
@@ -85,7 +91,7 @@ Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, 
 Al arrancar una feature, el primer mensaje del agente es una sola pregunta que confirma varias cosas a la vez:
 
 - **El carril**: feature, o el que le haya parecido (a veces te propone que sea un patch o una consulta).
-- **El modo, lite o full.** Lite es una spec corta y sin plan, para cambios acotados. Solo te lo ofrece si se cumplen todas estas condiciones, y te las cita una a una: el flujo que se toca ya existe y se puede leer, no cambia contratos públicos, no toca el esquema de datos ni exige migración, cabe en un módulo y, si el proyecto estima, la estimación no pasa de media jornada. Lite no se salta ni la aprobación de la spec ni la validación.
+- **El modo, lite o full.** Lite es una spec corta y sin plan, para cambios acotados. Solo te lo ofrece si se cumplen todas estas condiciones, y te las cita una a una: el flujo que se toca ya existe y se puede leer, no cambia contratos públicos, no cambia el esquema de datos (una migración solo de datos, idempotente y reversible, no lo descarta, pero la spec la nombra), cabe en un módulo y, si el proyecto estima, la estimación no pasa de media jornada. Lite no se salta ni la aprobación de la spec ni la validación.
 - **El perfil de control** (abajo), y de dónde sale: de la feature, de tu `sdd-kit.local.json`, de la release o del proyecto.
 - **Partir la feature**, si el agente prevé muchas tasks. Con 3 o menos no lo propone nunca; con más de 5, siempre; con 4 o 5, solo si tocan capacidades o superficies distintas (base de datos, interfaz, API) o llevan migración. Partir crea filas nuevas en el roadmap. Si lo propone, «seguir entera» también es una respuesta válida, y no te lo vuelve a preguntar.
 - **Aprobar la spec por delegación**: «apruebo la spec por delegación, nos vemos en la validación». Elígela si te vas a ausentar. El agente aprueba la spec por ti, apunta tu frase y la fecha, y no vuelve a pararte por la spec. El resto de paradas de tu perfil sigue igual.
@@ -146,6 +152,8 @@ No es validar:
 
 Si no contestas, la feature se queda en espera con el smoke escrito. No se cierra, no se fusiona y no se marca en el roadmap.
 
+**Validación en campo.** Si el proyecto no tiene una pantalla ni un uso que puedas probar al cerrar, como el propio kit, puede declararlo con `"validation": {"mode": "field"}` en `sdd-kit.json` (`sdd-config` te lo pregunta, y recomienda `manual` salvo en ese caso). Entonces el agente no para a pedirte la validación: hace la misma verificación de siempre (revisión final, smoke por escenario y suite), la registra como «Validación en campo» y cierra; la validación humana llega con el uso, por los tickets de `sdd-feedback`.
+
 ### Diferir con disparador
 
 Si no puedes probarlo ahora, puedes diferir. Vale si estás delante con el trabajo presentado, dices que lo probarás más tarde y hay un disparador con dueño: una feature, una release o un uso concreto, y quién lo prueba.
@@ -168,7 +176,7 @@ El patch cierra igual, más corto, con `sdd-end-patch`: primero te pide la valid
 
 ### El ticket para el kit
 
-Al cerrar, el agente te ofrece escribir un ticket de mejora del kit con `sdd-feedback`: dónde se atascó, qué regla no cubría el caso, qué funcionó. Se escribe en la misma sesión porque al limpiar el contexto se pierde lo aprendido. Queda en `.docs/sdd/kit-feedback/`, sin nombres de cliente, de proyecto ni de personas.
+Al cerrar, el agente te ofrece escribir un ticket de mejora del kit con `sdd-feedback`: dónde se atascó, qué regla no cubría el caso, qué funcionó. Se escribe en la misma sesión porque al limpiar el contexto se pierde lo aprendido. Queda en `.docs/sdd/kit-feedback/`, sin nombres de cliente, de proyecto ni de personas. Si el cierre fue limpio, el ticket tiene tres líneas; si no, cada propuesta dice si se comprobó.
 
 Si no lo quieres, dile que no. Lo que no conviene es pedir «no generes más tickets» cuando lo que quieres es que el trabajo salga limpio: el agente puede leerlo como «no ofrezcas el ticket» y perderse lo que el kit tenía que aprender de esa sesión. Para que llegue a quien mantiene el kit, abre un issue en su repositorio con el ticket.
 
@@ -179,7 +187,7 @@ Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la e
 1. **Alcance y versión.** Te propone qué entra y qué pasa a la siguiente, y la versión. La confirmas tú. Si el proyecto no tiene decidido si la release se entrega a alguien distinto de quien la hace (`release.hasRecipient`), te lo pregunta una vez. Si hay registro de estimaciones, te ofrece la retro en una línea: solo se hace si la pides.
 2. **Changelog sellado.** `[Unreleased]` pasa a `[X.Y.Z] - fecha`.
 3. **Notas de la versión y email**, solo si hay destinatario. Van en `.docs/sdd/releases/vX.Y.Z/`, destiladas del changelog y contadas por lo que gana quien la usa, sin ids ni jerga. El email es un borrador: lo envías tú.
-4. **Roadmap colapsado.** Antes de resumir la sección de la release, rescata lo que sigue vivo. Si hay features con la validación diferida a esta release, te pregunta qué probaste: las que nombras pasan a ✅; las que no, siguen 🧪 con un disparador nuevo.
+4. **Roadmap colapsado.** Antes de tocarlo pasa el validador del roadmap: si una sección no es de la plantilla (por ejemplo, una «Versión siguiente» con el trabajo de la release), no corta desde ella; te lo dice y te propone ordenarlo con la migración, que espera tu visto bueno. Antes de resumir la sección de la release, rescata lo que sigue vivo. Si hay features con la validación diferida a esta release, o a esta release desde una anterior, te pregunta qué probaste: las que nombras quedan validadas; las que no, ganan un disparador nuevo y su id pasa a la línea `validaciones pendientes:` del resumen de la release. Lo publicado sale de las tablas, y el corte no sigue hasta que el validador dice `Roadmap válido`.
 5. **Versión, merge y tag.** Sube la versión, deja la rama lista y te presenta el merge a `main`, el tag y el push. Esperan tu «sí». Después fusiona `main` de vuelta en `develop`.
 
 El feedback de una demo o una reunión no se procesa en el corte: eso es planificar (sección 2).
@@ -231,4 +239,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.2.0, septiembre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v2.3.0, octubre de 2026.*

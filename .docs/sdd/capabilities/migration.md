@@ -126,9 +126,47 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND si `claude plugin marketplace list` no muestra `superpowers-marketplace`, el agente ejecuta `claude plugin marketplace add obra/superpowers-marketplace`
 - AND si la entrada ya está y el marketplace aparece en la lista, el paso se salta y lo dice
 
+### La migración a v2.3.0 lleva el roadmap a la forma de la plantilla
+- GIVEN un proyecto en 2.2.0 con `roadmap.md` commiteado en `284d195`, que falla `Test-Roadmap.ps1` (sección «Versión siguiente», decisiones en prosa, una fila saldada antes de la última release), y el dev-lead presente
+- WHEN pide «ponme el proyecto al día»
+- THEN el agente presenta una tabla con cada bloque que sale o se mueve y su destino, y espera la aprobación antes de cambiar `roadmap.md`
+- AND tras aprobar, `Test-Roadmap.ps1` escribe `Roadmap válido` y sale con 0
+- AND el informe y el cuerpo del commit de la migración llevan `git show 284d195:.docs/sdd/roadmap.md` como la forma de ver el roadmap anterior
+- AND si el dev-lead cambia un destino de la tabla, se aplica el suyo; si la rechaza, `roadmap.md` queda sin tocar y el paso, pendiente
+- AND con `roadmap.md` sin commitear, el paso para antes de la tabla y lo dice
+- AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md`, `validation.mode` y el marcador, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
+
+### La migración a v2.3.0 pregunta quién valida
+- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `Test-Roadmap.ps1` y cuyo `sdd-kit.json` no tiene `validation.mode`, con el dev-lead presente
+- WHEN pide «ponme el proyecto al día»
+- THEN el agente invoca `sdd-config`, que hace su pregunta de quién valida con la recomendación de su catálogo, y escribe en `sdd-kit.json` solo lo que responde el dev-lead
+- AND con `validation.mode` ya escrito, el paso se salta y el informe lo dice
+- AND con el dev-lead ausente no escribe la clave, y nunca `field`: el informe la lista como pendiente, con cómo reanudarla (invocar `sdd-config`), el proyecto sigue en `manual` y el marcador sube a 2.3.0
+
+### Con el dev-lead ausente, la migración del roadmap queda pendiente
+- GIVEN el mismo proyecto y una petición que dice que el dev-lead no está
+- WHEN el agente llega al paso del roadmap
+- THEN deja `roadmap.md` sin tocar y pone la tabla de destinos en el informe como pendiente, con cómo reanudarla
+- AND no hay commit de la migración ni cambia el marcador de `sdd-kit.json`, como fija el procedimiento de migraciones para un gate sin resolver
+- AND la sesión siguiente sigue avisando de migraciones pendientes hasta la 2.3.0
+
+### Un roadmap que ya tiene la forma no se migra
+- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `Test-Roadmap.ps1`
+- WHEN se aplica `v2.3.0.md`
+- THEN el paso del roadmap se salta, el informe lo dice, `roadmap.md` no cambia y el marcador sube a 2.3.0
+
+### La migración del roadmap no inventa datos
+- GIVEN un roadmap con la 0022 y la 0024 pendientes en «Versión siguiente», en una tabla de cinco columnas y sin versión decidida; la 0021 con 🧪 y publicada en la 1.2.0; y la decisión pendiente «si las reservas de más de 4 horas necesitan aprobación de recepción»
+- WHEN la migración propone los destinos
+- THEN la tabla pregunta si hay una release en preparación y con qué versión: con «sí, la 1.3», la 0022 y la 0024 van a `## Release 1.3` con sus cinco columnas; con «no», van a «Próximo» con «Origen: …» y «Ficheros: …» al final de su celda «Ítem»
+- AND el agente no propone un número de versión por su cuenta
+- AND la 0021 sale de la sección abierta y su id entra en `validaciones pendientes:` de la v1.2.0
+- AND la decisión pendiente es una fila de «Backlog» con el número siguiente del Backlog, sin id de la secuencia de features
+- AND una celda que la tabla destino exige y el roadmap anterior no traía lleva `—`
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`.
+- **Dónde viven los datos**: las migraciones viven en `skills/sdd-init-brownfield/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración.
 - **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case.
 - **Límites**: no aplica.
 - **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado (migrar el proyecto); un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado.

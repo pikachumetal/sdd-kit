@@ -59,8 +59,10 @@ created: <YYYY-MM-DD>
 > con `ejecución real`; un THEN de fallo se provoca con la entrada que falla.
 
 - Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
-  disparador: <feature, release o uso con dueño> *(obligatorio: sin uno de los dos no hay cierre; si validó
-  sobre lo reportado por el agente, dilo)*
+  disparador: <feature, release o uso con dueño> **o**, con `validation.mode: field` en `sdd-kit.json`,
+  Validación en campo: <fecha> · <verificación del agente, p. ej. «suite 412/412 · smoke 5/5 THEN con
+  ejecución real · revisión final opus limpia sobre a1b2c3d»> *(obligatorio: sin una de las tres no hay
+  cierre; si validó sobre lo reportado por el agente, dilo)*
   *(la frase del dev-lead no se corrige, erratas incluidas; si el proyecto pasa un corrector sobre los `.md`,
   excluye en este fichero, al escribirlo y no después del lint, todas las palabras de la frase, no solo las que
   te parezcan erratas: en cspell, `<!-- cspell:ignore <palabras> -->`)*

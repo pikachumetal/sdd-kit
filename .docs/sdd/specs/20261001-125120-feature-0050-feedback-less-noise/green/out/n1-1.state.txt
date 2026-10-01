@@ -1,0 +1,107 @@
+## HEAD antes: 84991ca · después: 84991ca
+## status
+?? .docs/sdd/kit-feedback/20261001-130643-feature-0032-etiquetas.md
+## diff del ticket de la 0031
+## 20261001-073000-feature-0031-exportar-csv.md · 50 palabras · lint:
+lint ok
+---
+kit_version: 2.2.0
+lane: feature
+id: 20261001-073000-feature-0031-exportar-csv
+task: 0031
+mode: lite
+date: 2026-10-01
+---
+
+# Ticket para el kit — feature 0031: exportar notas a CSV
+
+## Contexto
+
+- Carril y modo: feature lite
+
+## Hallazgos
+
+Sin hallazgos
+
+## Funcionó, no tocar
+
+- El modo lite con su predicado citado.
+## 20261001-130643-feature-0032-etiquetas.md · 867 palabras · lint:
+lint ok
+---
+kit_version: 2.2.0
+superpowers_version: 6.4.2
+lane: feature
+id: 20261001-130643-feature-0032-etiquetas
+task: 0032
+mode: lite
+date: 2026-10-01
+---
+
+# Ticket para el kit — feature 0032: etiquetas en las notas
+
+## Contexto
+
+- Carril y modo: feature lite
+- Skills del kit usadas: sdd-start-feature, sdd-end-feature, sdd-feedback
+- Proyecto: aplicación Node 22 sin framework, pequeña, un desarrollador y un dev-lead; tiene pantalla con login
+- Modelo del hilo: Opus 5.5
+- Modelos de los subagentes: Opus (`sdd-kit:effort-high`), solo en la revisión final
+- Coste en reloj: 3,5 h frente a 2 h estimadas (+1,5 h)
+- Coste en tokens: no medido
+
+## Cómo leer este ticket
+
+Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y van ordenados por coste observado.
+
+## Hallazgos
+
+### 1. Entrar en una pantalla con login por sesión de cookie no tiene regla
+
+- **Qué pasó**: la verificación visual pedía login y `§Frontend` no decía cómo entrar. Probé tres formas hasta dar con la cookie de sesión.
+- **Dónde en el kit**: `.docs/sdd/capabilities/feature-flow.md` escenario «El agente entra en la aplicación solo como declara el proyecto», último AND (líneas 436-441); la regla
+  correspondiente de `skills/sdd-start-feature/SKILL.md`, no localizada con precisión.
+- **Por qué el kit no lo evitó**: el AND de «`§Frontend` no dice cómo entrar» solo cubre la aplicación que entra con enlace mágico: ahí manda no intentar el login y dejar lo visual
+  «no probado: falta el acceso». Con una aplicación de sesión por cookie no dice qué hacer, y el agente improvisó.
+- **Coste**: ~45 min, respaldado por el walkthrough de la feature (`.docs/sdd/specs/20261001-080000-feature-0032-etiquetas/walkthrough.md`, sección Tiempo).
+- **Propuesta**: que el AND valga para cualquier aplicación con login sin acceso declarado: nada de adivinar la entrada; lo visual queda «no probado: falta el acceso en
+  `§Frontend`» tras un único intento de leer el acceso del código, y la presentación propone el acceso.
+- **Verificada**: sin verificar.
+- **Criterio de aceptación**: GIVEN una aplicación que pide login con sesión por cookie y un `§Frontend` sin acceso declarado, WHEN el agente verifica una pantalla, THEN no prueba
+  formas de entrar más allá de leer el acceso del código, deja lo visual «no probado: falta el acceso en §Frontend» y propone el acceso en la presentación.
+
+### 2. Lancé `task-done` con `bash <ruta>` desde PowerShell, dos veces, aunque la regla existía
+
+- **Qué pasó**: `bash ~/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-done 1 "node --test"` desde PowerShell → `bash:
+  /home/dev/.claude/plugins/cache/superpowers-marketplace/superpowers/6.4.2/skills/executing-plans/scripts/task-done: No such file or directory` (el `bash` de PowerShell es el de
+  WSL). Repetido con la herramienta Bash (Git Bash) funcionó. Me pasó dos veces.
+- **Dónde en el kit**: `skills/sdd-start-feature/SKILL.md` línea 48, párrafo «En Native»: ya dice «nunca con `bash <ruta>` desde PowerShell».
+- **Por qué el kit no lo evitó**: la regla existía y no la apliqué. Está enterrada en un párrafo muy largo, sin el comando listo para copiar, y la skill de superpowers de la que
+  sale el comando no la menciona.
+- **Coste**: ~15 min en total, sin respaldo (ni la spec, ni el walkthrough, ni un commit lo recogen).
+- **Propuesta**: poner el comando de lanzamiento correcto en una línea propia, antes del párrafo («con la herramienta Bash: `<ruta>/task-done <n> "<comando>"`»), en vez de solo
+  prohibir la forma errónea.
+- **Verificada**: sí — contrastado con `skills/sdd-start-feature/SKILL.md:48`.
+- **Criterio de aceptación**: GIVEN una sesión en Windows con PowerShell y WSL y una feature Native, WHEN el agente cierra la primera task, THEN lanza `task-done` con la
+  herramienta Bash y no vuelve a salir `No such file or directory` de WSL.
+
+## Lo que hice por iniciativa propia
+
+- Medí el reparto del tiempo con las marcas de hora de los commits y de ahí salió la desviación del walkthrough. Funcionó, pero las marcas de hora de los commits de esta sesión no
+  eran fiables para ello (los commits salen con la misma hora al segundo), así que el reparto real salió de la bitácora. Candidato a paso del cierre: «reparte la desviación por
+  causas, con la evidencia que la respalda».
+
+## Funcionó, no tocar
+
+- La revisión final con revisor aparte cazó una etiqueta repetida (un Important) y un campo de la spec que el modelo de datos no tiene; el RED de la pasada de fix quedó en el
+  commit `4c432d3`.
+- El ticket de la feature anterior se escribió y se commiteó sin fricción, y el ticket de esta nace aparte.
+
+## Menores
+
+- Escribí en el ejemplo de la spec un campo que el modelo de datos no tiene; el repaso de coherencia de `skills/sdd-start-feature/SKILL.md` paso 4 contrasta con el código solo los
+  `MODIFIED` del delta, no los literales nuevos de un ejemplo (~20 min, lo cazó la revisión final; el walkthrough dice «sin enmiendas», sin respaldo para la cifra).
+- Tardé ~3 min en el script de estimación del cierre: `skills/sdd-end-feature/references/estimation.md` paso 3 sí da la ruta, pero el paso 3 de `skills/sdd-end-feature/SKILL.md` no
+  la repite.
+- El placeholder `<fase>` de `skills/sdd-templates/templates/walkthrough-template.md` (línea 29) no aclara si es la fase del plan o de la campaña (~5 min).
+- El dev-lead atribuyó la desviación a «huecos de la spec»; el walkthrough la atribuye a la verificación visual y a la pasada de fix, así que esa causa queda sin respaldo — no localizado.

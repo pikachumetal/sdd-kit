@@ -321,6 +321,21 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' -Tag '
     Assert-CleanedUp $fx
   }
 
+  It 'con la verificación en rojo el mensaje cita la ruta del log y la cola de la salida del gate' {
+    $fx = New-MergeFixture 'verificacion-log'
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-VerifyCommand', "Write-Output 'Tests Failed: 3'; exit 1")
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'verificación: código de salida 1; salida completa en\s[\s\S]*Tests Failed: 3'
+    # La vista de errores de pwsh parte la línea tras «en» y le pone su margen «| »: la ruta se busca por su nombre.
+    $log = [regex]::Match($result.Text, '\S+sdd-merge-verify-\S+\.log').Value
+    $log | Should -Not -BeNullOrEmpty -Because $result.Text
+    Get-Content -LiteralPath $log -Raw | Should -Match 'Tests Failed: 3'
+    Remove-Item -LiteralPath $log
+    Assert-CleanedUp $fx
+  }
+
   It 'con el hook pre-merge-commit en rojo falla con verificación: y la salida del hook, no con conflicto' {
     $fx = New-MergeFixture 'hook'
     $before = Get-Sha $fx.Repo 'develop'

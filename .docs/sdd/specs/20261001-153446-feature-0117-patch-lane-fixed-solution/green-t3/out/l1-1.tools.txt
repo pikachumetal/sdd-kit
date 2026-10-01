@@ -1,0 +1,131 @@
+
+>>> Glob: .docs/sdd/**/*
+
+>>> Bash: git branch --show-current; ls db/migrations 2>/dev/null | tail -5
+<<< .docs\sdd\sdd-kit.json
+.docs\sdd\mission.md
+.docs\sdd\constitution.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+.docs\sdd\capabilities\order-sheets.md
+.docs\sdd\tech-stack.md
+<<< develop
+001-estados.sql
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — ventas
+2	
+3	- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+4	- Textos de la interfaz en castellano.
+5	- Commits: tipo/scope en inglés, cuerpo en castellano.
+6	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — ventas
+2	
+3	Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech stack — ventas
+2	
+3	- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+4	- Sin tests automáticos: la verificación es abrir la página en el navegador. `playwright` está en `devDependencies` para capturas.
+5	- Base de datos: PostgreSQL; migraciones SQL numeradas en `db/migrations/`, idempotentes (`ON CONFLICT DO NOTHING`), con su `down` en el mismo fichero si hace falta.
+6	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — ventas
+2	
+3	## Features
+4	
+5	| id | Feature | Estado |
+6	| --- | --- | --- |
+7	| 0010 | Fichas de pedido y albarán | ✅ |
+8	
+9	## Patches
+10	
+11	| Fecha | Id | Descripción |
+12	| --- | --- | --- |
+13	| 2026-09-20 | 0011 | El total de la línea no mostraba el símbolo del euro |
+14	
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.2.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\order-sheets.md
+<<< 1	# Capacidad — order-sheets
+2	
+3	## Propósito
+4	
+5	Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+6	
+7	## Requisitos
+8	
+9	### El total de la línea incluye el IVA
+10	
+11	- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+12	- WHEN se abre la ficha
+13	- THEN la columna «Total con IVA» muestra `36,26 €`
+14	
+15	### La ficha ofrece guardar, cancelar y borrar
+16	
+17	- GIVEN una ficha de pedido o de albarán
+18	- WHEN se abre
+19	- THEN ofrece las acciones Guardar, Cancelar y Borrar
+20	
+
+>>> Bash: ls -a .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+
+>>> Read: <run>\repo\db\migrations\001-estados.sql
+<<< 1	CREATE TABLE IF NOT EXISTS estados (codigo TEXT PRIMARY KEY, nombre TEXT NOT NULL);
+2	INSERT INTO estados (codigo, nombre) VALUES ('BOR', 'Borrador'), ('CON', 'Confirmado'), ('FAC', 'Facturado') ON CONFLICT (codigo) DO NOTHING;
+3	
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t3\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+=== RESULTADO (12 turnos, 0.2269222 $)
+Ahora: confirmar carril, modo y perfil (una sola pregunta). Queda: tras tu respuesta, rama, spec (brainstorming) y gate de aprobación, ~10 min.
+
+**Carril.** Es una **feature**, no un patch. La petición fija el nombre «Anulado», pero el `codigo` de la fila lo tendría que fijar yo. Las filas actuales usan 3 letras (`BOR`, `CON`, `FAC`), así que propongo `ANU`. No es un bug determinista ni un ajuste de presentación.
+
+**Modo.** Propongo **lite**. Estas son las condiciones del predicado que he comprobado:
+- **Flujo existente y legible:** la tabla `estados` y su migración `db/migrations/001-estados.sql` ya están en el repo.
+- **Contratos públicos:** no cambia ninguno. Es solo una fila de catálogo.
+- **Schema de datos:** no cambia. Es una migración solo de datos, idempotente (`ON CONFLICT (codigo) DO NOTHING`) y reversible con un `down` que borra la fila. La spec la nombra.
+- **Un solo módulo:** solo `db/migrations/` (`002-…sql`).
+- **Estimación:** no existe `estimation.md`, así que esta condición no aplica.
+
+Prevé 1 task, así que no propongo partirla.
+
+**Perfil.** Vigente: `delegate`, tomado del nivel proyecto (`.docs/sdd/sdd-kit.json`). No hay `sdd-kit.local.json` ni claves de política que ignorar. Puedes cambiarlo para esta feature.
+
+**Id y enunciado.** No hay fila en el roadmap (solo la 0010 ✅) y la rama es `develop`. Con `ids.mode: sequence`, el id lo saco de `Get-NextSddId.ps1` y apunto la fila.
+
+¿Cómo seguimos?
+1. **Lite, perfil `delegate`, spec con tu aprobación** (recomendada).
+2. **Lite, y apruebo la spec por delegación, nos vemos en la validación.**
+3. **Full** en vez de lite.
+4. **Cambiar el perfil** para esta feature (`pair` o `unattended`).

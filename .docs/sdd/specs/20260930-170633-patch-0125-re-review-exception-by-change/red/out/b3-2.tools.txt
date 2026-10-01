@@ -1,0 +1,170 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -12 && ls -a .docs/sdd .docs/sdd/specs/* .superpowers/sdd/plan 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/specs/*0012*/tasks.md
+<<< 63f5ca8 fix(0012): la CLI muestra el mensaje de la franja
+622a6ee docs(0012): apuntar la pasada de fix de la revisión final
+4c504ae fix(0012): mensaje literal de la franja en libres
+e46e9f3 docs(0012): revisión final de rama
+ef9b0ad feat(0012): validar el formato de la franja al consultar libres
+4b6040d feat(0012): validar el formato de la franja al reservar
+020209a docs(0012): abrir la feature 0012
+99397d2 feat: base de reservas de salas
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+.
+..
+plan.md
+spec.md
+tasks.m
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0012*/spec.md; echo =====; cat .docs/sdd/specs/*0012*/plan.md | head -60; echo =====; cat .superpowers/sdd/plan/final-review.md; echo ====; cat .superpowers/sdd/plan/progress.md; git show --stat 622a6ee 63f5ca8 4c504ae | cat; ls; cat package.json
+<<< Exit code 1
+---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Scope
+
+- Entra: `src/slots.js` y sus tests.
+- No entra: la CLI (`src/cli.js`).
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- W
+
+>>> Bash: cd "<run>/repo" && cat src/*.js; ls tests; cat README.md; git status --short; node -v
+<<< import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+  } catch (error) {
+    return error.message;
+  }
+  return 'Uso: salas libres <franja> | salas reservar <sala> <franja>';
+}
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(s
+
+>>> Bash: cd "<run>/repo" && time node --test tests/ 2>&1 | tail -12; for a in "reservar Norte 1012" "libres 1012" "reservar Norte 10-12" "libres 10-12"; do echo "\$ run $a"; node -e "import('./src/cli.js').then(m=>console.log(m.run(process.argv.slice(1))))" $a; done
+<<< ✔ libres rechaza una franja sin guion (1.3042ms)
+✔ libres da el mensaje literal de la spec (15.9054ms)
+✔ rechaza una franja sin guion (1.3035ms)
+✔ reserva una sala en una franja (1.2271ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.8514
+
+real	0m0.606s
+user	0m0.140s
+sys	0m0.076s
+$ run reservar Norte 1012
+Franja no válida: usa HH-HH, p. ej. 10-12
+$ run libres 1012
+Franja no válida: usa HH-HH, p. ej. 10-12
+$ run reservar Norte 10-12
+{"room":"Norte","slot":"10-12"}
+$ run libres 10-12
+[]
+
+>>> Bash: cd "<run>/repo" && d=.docs/sdd/specs/20260923-100000-feature-0012-franja && sed -i '$d' $d/tasks.md && echo 'Pasada de fix: 63f5ca8, 2 hallazgos RED→GREEN (Important 1: mensaje de `free`, 4c504ae; Important 2: mensaje en la CLI, 63f5ca8, con la enmienda del Scope aprobada por el dev-lead el 2026-09-24)' >> $d/tasks.md && sed -i 's|^- Entra: `src/slots.js` y sus tests.|- Entra: `src/slots.js`, `src/cli.js` (enmienda 2026-09-24) y sus tests.|; s|^- No entra: la CLI (`src/cli.js`).|- No entra: nada más.|' $d/spec.md && git diff --numstat && git diff | cat
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+2	2	.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md
+1	1	.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in th
+
+>>> Bash: cd "<run>/repo" && git add .docs && git commit -q -F - <<'EOF'
+docs(0012): registrar la pasada de fix completa y alinear el Scope
+
+Revisado en el hilo (solo docs, 4 líneas). El Scope de la spec recoge la enmienda ya aprobada.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -1; git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20260923-100000-feature-0012-franja/tasks.md', LF will be replaced by CRLF the next time Git touches it
+2675124 docs(0012): registrar la pasada de fix completa y alinear el Scope
+
+=== RESULTADO (9 turnos, 0.2907936 $)
+## Validación de la feature 0012 (perfil `delegate`, el dev-lead no está)
+
+La implementación está terminada, pero la feature queda **EN ESPERA de validación**. Nada se marca ✅ ni se cierra con `sdd-end-feature` hasta que el dev-lead diga qué ha probado y que funciona. Los borradores de cierre (walkthrough, delta de capacidad, changelog) no están escritos, y el roadmap sigue sin tocar. Esos borradores los completa el cierre tras la validación.
+
+### Me salí del plan en…
+- **Scope ampliado a `src/cli.js`.** El segundo Important de la revisión final tocaba un fichero que la spec dejaba en «No entra». Pregunté y el dev-lead aprobó la enmienda el 2026-09-24 («sí, arréglalo»). El arreglo está en `63f5ca8`.
+- **Scope de la spec alineado con la enmienda** (`2675124`). El cuerpo del Scope seguía diciendo «No entra: la CLI» pese a la enmienda, y ahora recoge `src/cli.js`. Es un cambio de texto, no de comportamiento.
+- **`tasks.md` estaba desfasado.** Decía que el Important 2 esperaba decisión, y ahora lo registra como arreglado en `63f5ca8`. Ese commit es solo de docs (4 líneas), y lo leí en el hilo sin revisor (`revisado en el hilo`).
+
+### Revisión
+- `Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 2 Important, 0 Minor), sobre ef9b0ad`.
+- `Pasada de fix: 63f5ca8, 2 hallazgos RED→GREEN`. El 1 está en `4c504ae` y el 2 en `63f5ca8`, cada uno con su test.
+- No hay re-revisión. La pasada de fix la verifica su propio RED→GREEN, y desde `63f5ca8` solo hay un commit de docs, leído en el hilo.
+
+### Smoke por THEN
+La suite completa (`node --test tests/`) pasa y tardó 0,6 s. Tras el commit de docs no la volví a correr, porque ese commit solo toca `.md`. El proyecto no tiene `package.json`, así que lancé la CLI con `run()` de `src/cli.js`.
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| Reservar con franja inválida falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | ejecución real: `reservar Norte 1012` | imprime el mensaje literal |
+| Consultar libres con franja inválida falla con el mismo mensaje | ejecución real: `libres 1012` | imprime el mensaje literal |
+| Sin regresión al reservar con franja válida | ejecución real: `reservar Norte 10-12` | `{"room":"Norte","slot":"10-12"}` |
+| Sin regresión al consultar libres con franja válida | ejecución real: `libres 10-12` | `[]` |
+
+No he arrancado ninguna aplicación ni servidor, así que no hay nada que parar.
+
+### Guion de pruebas para el dev-lead
+No hay binario `salas` ni `package.json`. Desde la raíz del repo, en la rama `feature/0012`:
+
+1. Reservar con franja sin guion: `node -e "import('./src/cli.js').then(m=>console.log(m.run(['reservar','Norte','1012'])))"` → `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. Consultar libres con la misma franja: `node -e "import('./src/cli.js').then(m=>console.log(m.run(['libres','1012'])))"` → el mismo mensaje.
+3. Reservar con franja válida: `reservar Norte 10-12` → `{"room":"Norte","slot":"10-12"}`.
+4. Consultar libres con franja válida: `libres 10-12` → `[]`.
+
+### Pendiente
+Para validar, el dev-lead tiene que decir qué ha probado y que funciona. Un «cierra» a secas no vale como validación. Si prefiere diferirla, la opción que propongo es validar en el smoke de la release con el dev-lead como dueño, y basta con que lo diga.
+
+Dejé la rama en `2675124`, sin pushear ni mergear.

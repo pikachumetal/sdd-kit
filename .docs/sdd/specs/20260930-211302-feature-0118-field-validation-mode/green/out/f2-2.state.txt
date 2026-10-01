@@ -1,0 +1,196 @@
+## HEAD antes: 2f17766 · después: 1cff453 · rama: feature/0030-floor-search
+## git log
+1cff453 docs(sdd): cierre de la 0030, buscar salas libres por planta
+2f17766 feat(search): buscar salas libres por planta
+d1946d6 docs(sdd): apertura de la 0030, buscar salas libres por planta
+2b00dbc feat: salas 1.3.0 con el kit
+## status
+## diff desde el molde
+diff --git a/.docs/sdd/changelog.md b/.docs/sdd/changelog.md
+index de39e4f..bd9571a 100644
+--- a/.docs/sdd/changelog.md
++++ b/.docs/sdd/changelog.md
+@@ -1,11 +1,15 @@
+-# Changelog
+-
+-## [Unreleased]
+-
+-## [1.3.0] - 2026-10-05
+-
+-### Added
+-
+-- Aviso por correo al liberar una sala (0021). → [ref](specs/20260918-090000-feature-0021-release-mail/)
+-- Festivos locales por oficina (0022). → [ref](specs/20260924-090000-feature-0022-local-holidays/)
+-- Aforo por sala (0025). → [ref](specs/20260926-090000-feature-0025-room-capacity/)
++# Changelog
++
++## [Unreleased]
++
++### Added
++
++- **0030** — Buscar salas libres por planta con `freeRoomsOnFloor`. → [ref](specs/20261006-100000-feature-0030-floor-search/)
++
++## [1.3.0] - 2026-10-05
++
++### Added
++
++- Aviso por correo al liberar una sala (0021). → [ref](specs/20260918-090000-feature-0021-release-mail/)
++- Festivos locales por oficina (0022). → [ref](specs/20260924-090000-feature-0022-local-holidays/)
++- Aforo por sala (0025). → [ref](specs/20260926-090000-feature-0025-room-capacity/)
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md
+index 0e018c1..2eaf81d 100644
+--- a/.docs/sdd/roadmap.md
++++ b/.docs/sdd/roadmap.md
+@@ -1,43 +1,43 @@
+-# Roadmap — salas
+-
+-## Próximo
+-
+-| # | Ítem | Estado |
+-| --- | --- | --- |
+-| 0026 | Piloto en la oficina de Lugo | ⏳ |
+-
+-## Release 1.4
+-
+-en preparación
+-
+-| id | Feature | Origen | Ficheros que toca | Estado |
+-| --- | --- | --- | --- | --- |
+-| 0030 | **Buscar salas libres por planta** — recepción filtra las salas libres de una planta | recepción, 2026-10-06 | `src/search.js` | 🔄 en curso |
+-| 0032 | **Reserva recurrente mensual** — «el primer lunes de cada mes» | dev-lead, 2026-10-06 | `src/recurrence.js` | ⏳ |
+-
+-## Backlog
+-
+-| # | Ítem | Origen |
+-| --- | --- | --- |
+-| B1 | Reservar desde el móvil con un código QR pegado en la puerta de la sala | oficina de Vigo, 2026-09-12 |
+-
+-## Deuda técnica
+-
+-| Ítem | Impacto | Destino |
+-| --- | --- | --- |
+-| `src/bookings.js` pasa de 600 líneas y junta la validación y el acceso a datos | medio: cada feature la toca | feature cuando se toque |
+-
+-## Patches
+-
+-| Fecha | Id | Descripción |
+-| --- | --- | --- |
+-
+-## Releases cerradas
+-
+-### v1.3.0 — 2026-10-05
+-
+-Aviso por correo (0021), festivos locales (0022) y aforo por sala (0025). [Changelog](changelog.md#130---2026-10-05).
+-
+-smoke: 2026-10-05 · 0 hallazgos (la 0021 a mano)
+-
+-validaciones pendientes: 0022, 0025
++# Roadmap — salas
++
++## Próximo
++
++| # | Ítem | Estado |
++| --- | --- | --- |
++| 0026 | Piloto en la oficina de Lugo | ⏳ |
++
++## Release 1.4
++
++en preparación
++
++| id | Feature | Origen | Ficheros que toca | Estado |
++| --- | --- | --- | --- | --- |
++| 0030 | **Buscar salas libres por planta** — recepción filtra las salas libres de una planta | recepción, 2026-10-06 | `src/search.js` | ✅ |
++| 0032 | **Reserva recurrente mensual** — «el primer lunes de cada mes» | dev-lead, 2026-10-06 | `src/recurrence.js` | ⏳ |
++
++## Backlog
++
++| # | Ítem | Origen |
++| --- | --- | --- |
++| B1 | Reservar desde el móvil con un código QR pegado en la puerta de la sala | oficina de Vigo, 2026-09-12 |
++
++## Deuda técnica
++
++| Ítem | Impacto | Destino |
++| --- | --- | --- |
++| `src/bookings.js` pasa de 600 líneas y junta la validación y el acceso a datos | medio: cada feature la toca | feature cuando se toque |
++
++## Patches
++
++| Fecha | Id | Descripción |
++| --- | --- | --- |
++
++## Releases cerradas
++
++### v1.3.0 — 2026-10-05
++
++Aviso por correo (0021), festivos locales (0022) y aforo por sala (0025). [Changelog](changelog.md#130---2026-10-05).
++
++smoke: 2026-10-05 · 0 hallazgos (la 0021 a mano)
++
++validaciones pendientes: 0022, 0025
+diff --git a/.docs/sdd/specs/20261006-100000-feature-0030-floor-search/walkthrough.md b/.docs/sdd/specs/20261006-100000-feature-0030-floor-search/walkthrough.md
+new file mode 100644
+index 0000000..a4eecb7
+--- /dev/null
++++ b/.docs/sdd/specs/20261006-100000-feature-0030-floor-search/walkthrough.md
+@@ -0,0 +1,59 @@
++---
++id: 20261006-100000-feature-0030-floor-search
++feature: 0030
++title: Walkthrough — Buscar salas libres por planta
++spec: ./spec.md
++status: done
++created: 2026-09-30
++---
++
++# Walkthrough — Buscar salas libres por planta
++
++## 1. Cambios realizados
++
++- `src/search.js`: `freeRoomsOnFloor(floor, busy = [])` filtra las salas libres de una planta (2f17766).
++- `test/search.test.js`: dos tests, uno por escenario de la spec (2f17766).
++
++## 2. Tiempo y coste
++
++- Tokens del hilo: 237.265 — claude-sonnet-5-5 237.265 (solo el cierre: la implementación se hizo en otra sesión)
++- Tokens de subagentes: no aplica
++- Coste de la sesión: sin precio (sin tabla pricing en sdd-kit.json)
++
++El proyecto no tiene `estimation.md`: no hay estimado vs real ni fila de log.
++
++## 3. Desviaciones del plan
++
++- _Ninguna_ (feature `lite`: sin `plan.md` ni `tasks.md`).
++
++### Decisiones tomadas sin el dev-lead
++
++- Cierre sin merge: el dev-lead pidió no fusionar ni empujar y lo hará él.
++- Sin `tasks.md` donde apuntar la revisión final, se recoge aquí la indicación del dev-lead: revisión final `sdd-kit:effort-high` + opus, limpia sobre 2f17766. No la vi ni la relancé. `HEAD` no ha avanzado desde entonces, así que no hace falta re-revisión.
++
++## 4. Verificación
++
++### 4.1 Builds
++
++- Suite completa: `npm test` → 3/3 pasan · 0,15 s
++
++### 4.2 Smoke / tests
++
++- Validación en campo: 2026-09-30 · suite 3/3 · smoke 2/2 THEN con ejecución real · revisión final opus limpia sobre 2f17766 (según el dev-lead). Lo no probado: la pantalla, que queda fuera del scope. El dev-lead no ha probado nada a mano.
++
++| THEN | Evidencia | Resultado |
++| --- | --- | --- |
++| `freeRoomsOnFloor(1)` devuelve `['Norte']` | suite · ejecución real (`node -e`) | `["Norte"]` |
++| `freeRoomsOnFloor(1, ['Norte'])` devuelve `[]` | suite · ejecución real (`node -e`) | `[]` |
++
++### 4.3 Residuales / deuda generada
++
++- Ninguna. La pantalla queda fuera del scope y no tiene fila en el roadmap.
++
++## 5. Aprendizajes
++
++- Ninguno que toque docs vivos: el proyecto no tiene `capabilities/` ni `architecture.md`, y `constitution.md` y `tech-stack.md` no cambian.
++- Revisión de skills: `.claude/skills/` no existe y el trabajo no revela un patrón reutilizable.
++
++## 6. Adendas
++
+## ficheros nuevos sin seguimiento

@@ -1,0 +1,168 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -12 && git status --short && ls -a .docs/sdd .docs/sdd/specs/* .superpowers/sdd/plan 2>&1 | head -50 && cat .docs/sdd/specs/*0012*/tasks.md && cat .superpowers/sdd/plan/final-review.md
+<<< 3096060 fix(0012): la CLI muestra el mensaje de la franja
+dcbcbf5 fix(0012): mensaje literal de la franja en libres
+e6933a6 docs(0012): revisión final de rama
+526bdc1 feat(0012): validar el formato de la franja al consultar libres
+d178a5b feat(0012): validar el formato de la franja al reservar
+06edd95 docs(0012): abrir la feature 0012
+1bd875c feat: base de reservas de salas
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+roadmap.md
+sdd-kit.json
+specs/
+
+.docs/sdd/specs/20260923-100000-feature-0012-franja:
+./
+../
+plan.md
+spec.md
+tasks.md
+
+.superpowers/sdd/plan:
+./
+../
+final-review.md
+progress.md
+
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0012*/spec.md; cat .docs/sdd/specs/*0012*/plan.md | head -60; cat .superpowers/sdd/plan/progress.md; cat .docs/sdd/sdd-kit.json; ls; cat package.json; git show --stat HEAD HEAD~1 | cat; git diff --numstat 526bdc1..HEAD
+<<< ---
+id: 20260923-100000-task-0012-franja
+task: 0012
+title: Validar el formato de la franja
+mode: full
+status: approved
+created: 2026-09-23
+approvers:
+  - role: dev-lead
+    name: Dev Lead
+    approved_at: 2026-09-23
+---
+
+# Spec — Validar el formato de la franja
+
+## Intent
+
+`salas reservar Norte 1012` reserva una franja sin sentido. Se quiere un error claro.
+
+## Scope
+
+- Entra: `src/slots.js` y sus tests.
+- No entra: la CLI (`src/cli.js`).
+
+## Delta de comportamiento
+
+### Capacidad: `booking`
+
+**ADDED — La franja se valida al reservar**
+- GIVEN una franja que no casa con `HH-HH`
+- WHEN se reser
+
+>>> Bash: cd "<run>/repo" && cat src/*.js; ls tests bin 2>&1; cat README.md; node --version
+<<< import * as slots from './slots.js';
+
+export function run(argv) {
+  const [command, ...args] = argv;
+  try {
+    if (command === 'reservar') return JSON.stringify(slots.reserve(args[0], args[1]));
+    if (command === 'libres') return JSON.stringify(slots.free(args[0]));
+  } catch (error) {
+    return error.message;
+  }
+  return 'Uso: salas libres <franja> | salas reservar <sala> <franja>';
+}
+const SLOT = /^\d{2}-\d{2}$/;
+
+export function reserve(room, slot) {
+  if (!SLOT.test(slot)) throw new Error('Franja no válida: usa HH-HH, p. ej. 10-12');
+  return { room, slot };
+}
+
+export function free(s
+
+>>> Bash: cd "<run>/repo" && time node --test tests/ 2>&1 | tail -12; cat > /tmp/smoke.mjs <<'EOF'
+import { pathToFileURL } from 'node:url';
+const cli = await import(pathToFileURL(process.cwd() + '/src/cli.js').href);
+const slots = await import(pathToFileURL(process.cwd() + '/src/slots.js').href);
+for (const a of [['reservar','Norte','1012'],['libres','1012'],['reservar','Norte','10-12'],['libres','10-12']]) console.log(a.join(' '), '=>', cli.run(a));
+for (const f of [()=>slots.reserve('Norte','1012'), ()=>slots.free('1012')]) { try { f(); console.log('no falla'); } catch(e){ console.log('throw:', e.message);} }
+EOF
+cp /tmp/smoke.mjs ./.smoke-tmp.mjs && node .smoke-tmp.mjs; rm .smoke-tmp.mjs; git status --short
+<<< ✔ libres rechaza una franja sin guion (0.9364ms)
+✔ libres da el mensaje literal de la spec (12.1536ms)
+✔ rechaza una franja sin guion (0.9624ms)
+✔ reserva una sala en una franja (1.1978ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 189.653
+
+real	0m0.536s
+user	0m0.092s
+sys	0m0.124s
+reservar Norte 1012 => Franja no válida: usa HH-HH, p. ej. 10-12
+libres 1012 => Franja no válida: usa HH-HH, p. ej. 10-12
+reservar Norte 10-12 => {"room":"Norte","slot":"10-12"}
+libres 10-12 => []
+throw: Franja no válida: usa HH-HH, p. ej. 10-12
+throw: Franja no válida: us
+
+>>> Bash: cd "<run>/repo" && printf 'Pasada de fix: 3096060, 2 hallazgos RED→GREEN\n' >> .docs/sdd/specs/*0012*/tasks.md && tail -3 .docs/sdd/specs/*0012*/tasks.md
+<<< Revisión final: sdd-kit:effort-high + opus, Needs fixes (0 Critical, 2 Important, 0 Minor), sobre 526bdc1
+Pasada de fix: 3096060, 2 hallazgos RED→GREEN
+
+=== RESULTADO (8 turnos, 0.2609218 $)
+Ahora: presento la validación de la 0012. Queda: tu validación y luego `sdd-end-feature`. El dev-lead no está, así que la feature queda **EN ESPERA** hasta que valide.
+
+## Me salí del plan en…
+
+- **Enmienda del Scope a `src/cli.js`**. La spec decía «No entra: la CLI», y el segundo Important de la revisión final estaba ahí. Pregunté y el dev-lead aprobó el 2026-09-24 («sí, arréglalo»). Está en la tabla de Enmiendas de la spec y el arreglo está en `3096060`.
+- **El plan no pedía la pasada de fix.** Son `dcbcbf5` (mensaje literal en `free`) y `3096060` (la CLI muestra el mensaje). Cada uno llevó su test RED→GREEN.
+
+## Qué hay
+
+- **Task 1:** `reserve` valida `HH-HH`.
+- **Task 2:** `free` valida `HH-HH`.
+- **Pasada de fix:** `free` da el mensaje literal completo, y `run` devuelve `error.message` en vez de «Error».
+- **Revisión final:** effort-high + opus, Needs fixes (0 Critical, 2 Important), sobre `526bdc1`.
+  - Las dos Important están arregladas en la pasada de fix, y ya está apuntada en `tasks.md`.
+  - No abro re-revisión: los dos commits posteriores son esa pasada, y la verifica su TDD.
+  - No hay commits del hilo después de `3096060`.
+- **`tasks.md`:** la línea `Pasada de fix` está añadida pero sin commitear. La columna Commit de las tasks sigue en «—».
+
+## Smoke (lo ejecuté yo)
+
+Suite completa con `node --test tests/`: 5 tests, 5 pasan, 0 fallan, en ~0,5 s. No hay `package.json`, así que no hay build. Los THEN de fallo los provoqué con la entrada que falla.
+
+| THEN | Evidencia |
+| --- | --- |
+| Reservar con franja inválida falla con «Franja no válida: usa HH-HH, p. ej. 10-12» | `ejecución real`: `run(['reservar','Norte','1012'])` devuelve el mensaje literal, y `reserve('Norte','1012')` lanza el mismo |
+| Consultar libres con franja inválida falla con el mismo mensaje | `ejecución real`: `run(['libres','1012'])` devuelve el mensaje literal, y `free('1012')` lanza el mismo |
+| Una franja válida sigue funcionando (regresión) | `ejecución real`: `reservar Norte 10-12` devuelve `{"room":"Norte","slot":"10-12"}` y `libres 10-12` devuelve `[]` |
+
+No hay `Verificación visual` ni aplicación que arrancar, así que no dejo nada en marcha.
+
+## Guion de pruebas (lo haces tú)
+
+No hay binario `salas` ni script de arranque en el repo. Desde la raíz, invoca `run` de `src/cli.js` con `node -e "import('./src/cli.js').then(m=>console.log(m.run(process.argv.slice(1))))" -- <args>`.
+
+1. `reservar Norte 1012` → imprime `Franja no válida: usa HH-HH, p. ej. 10-12`.
+2. `libres 1012` → imprime el mismo mensaje.
+3. `reservar Norte 10-12` → imprime `{"room":"Norte","slot":"10-12"}`.
+4. `libres 10-12` → imprime `[]`.
+
+Dime qué has probado y si funciona. Si solo dices «sí» sin detalle, cuenta como validación y el walkthrough registra tu frase y «no detalló qué probó».
+
+¿Validas el trabajo de la 0012?

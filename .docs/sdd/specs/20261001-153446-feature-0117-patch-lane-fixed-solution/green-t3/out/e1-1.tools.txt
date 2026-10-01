@@ -1,0 +1,213 @@
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline -6 && git merge-base HEAD main && ls .docs/sdd .docs/sdd/specs && cat .docs/sdd/sdd-kit.json && git diff --stat main...HEAD
+<<< 5cc3f11 fix(order-sheets): redondear a céntimos el total de la línea
+e0f5ff0 docs(sdd): deuda de los totales de la ficha
+2738ff1 feat: listado de pedidos
+e6ec58b feat: fichas de pedido y albarán
+e6ec58b9d6e34ea2f2ccc233471eedb04e43c0c7
+.docs/sdd:
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20261001-090000-patch-0012-total-linea-centimos/
+{"version": "2.3.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "d
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*/patch.md && cat .docs/sdd/roadmap.md .docs/sdd/changelog.md && ls .docs/sdd/capabilities && git diff main...HEAD -- index.html .docs/sdd/sdd-kit.json && git branch -a && git worktree list && ls; ls package.json 2>$null
+<<< Exit code 1
+---
+id: 20261001-090000-patch-0012-total-linea-centimos
+task: 0012
+title: Patch — el total de la línea se redondea a céntimos
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-01
+branch: feature/0012-total-linea-centimos
+commit: <hash>
+---
+
+# Patch 0012 — el total de la línea se redondea a céntimos
+
+## Capacidades
+
+- Ninguna, porque el fix devuelve el total de la línea a lo que ya dice `order-sheets`
+
+## 1. Síntoma
+
+Parte (a) de la fila de deuda «Fichas con dos defectos de presentación del total»: el total con IVA de la línea no se redondea a céntimos.
+
+## 2. Causa raí
+
+>>> Bash: cd "<run>/repo" && git log --oneline develop..HEAD && git merge-base HEAD develop && git show --stat HEAD | head -20 && cat .docs/sdd/capabilities/order-sheets.md && cat package.json && cat app.js && ls .docs/sdd/estimation.md .docs/sdd/environments.md
+<<< Exit code 2
+5cc3f11 fix(order-sheets): redondear a céntimos el total de la línea
+e0f5ff05ae668f62cc0a316f3b29b947bdb33566
+commit 5cc3f1141b114e18b2f6ccd23d18809727db023e
+Author: Fixture <fixture@example.com>
+Date:   Thu Oct 1 19:08:53 2026 +0200
+
+    fix(order-sheets): redondear a céntimos el total de la línea
+    
+    Parte (a) de la fila de deuda de los totales.
+
+ .../patch.md                                       | 40 ++++++++++++++++++++++
+ app.js                                             |  2 +-
+ 2 files changed, 41 insertions(+), 1 deletion(-)
+# Capacidad — order-sheets
+
+## Propósito
+
+
+
+>>> Bash: cd "<run>/repo" && ls node_modules 2>&1 | head -3; cat pages/*.html | head -30; node -e "
+const f=(q,p,v)=>Math.round(q*p*(1+v)*100)/100;console.log(f(3,9.99,0.21).toFixed(2))"
+<<< ls: cannot access 'node_modules': No such file or directory
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Albarán</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+<body>
+  <main class="ficha">
+    <header class="ficha-cabecera">
+      <h1>Albarán PV-2026-0142</h1>
+      <div class="ficha-acciones">
+        <button type="button" class="btn btn-primario" data-accion="guardar">Guardar</button>
+        <button type="button" class="btn" data-accion="cancelar">Cancelar</button>
+        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</bu
+
+>>> Bash: cd "<run>/repo" && node -e "
+const fs=require('fs'),vm=require('vm');
+for(const p of fs.readdirSync('pages')){
+ const h=fs.readFileSync('pages/'+p,'utf8');
+ const m=[...h.matchAll(/data-cantidad=\"([^\"]+)\" data-precio=\"([^\"]+)\" data-iva=\"([^\"]+)\"/g)];
+ for(const [,c,pr,iva] of m){
+  const el={textContent:''};
+  const row={dataset:{cantidad:c,precio:pr,iva},querySelector:()=>el};
+  vm.runInNewContext(fs.readFileSync('app.js','utf8'),{Number,Math,document:{querySelectorAll:()=>[row]}});
+  console.log(p,c,pr,iva,'->',el.textContent);
+ }}"
+<<< albaran-detalle.html 3 9.99 0.21 -> 36,26 €
+pedido-detalle.html 3 9.99 0.21 -> 36,26 €
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+import glob
+p=glob.glob('.docs/sdd/specs/*/patch.md')[0]
+s=open(p,encoding='utf-8').read()
+s=s.replace('commit: <hash>','commit: 5cc3f1141b114e18b2f6ccd23d18809727db023e')
+s=s.replace('| 1 | 3 × 9,99 € con IVA del 21 % → `36,26 €` | ✅ abierto en Chromium |\n','| 1 | 3 × 9,99 € con IVA del 21 % → `36,26 €` | ✅ abierto en Chromium (reportado en el patch, no repetido en el cierre) |\n| 2 | `app.js` ejecutado con `pages/pedido-detalle.html` → `36,26 €` | ✅ ejecución real en el cierre (node, DOM simulado) |\n| 3 | `app.js` ejecutado con `pages/albaran-detalle.html` → `36,26 €` | ✅ ejecución real en el cierre (node, DOM simulado) |\n\nValidación en campo: 2026-10-01 · smoke 2/2 casos con ejecución real (pedido y albarán, `36,26 €`; node con DOM simulado, sin navegador; no hay `npm test`)\n')
+open(p,'w',encoding='utf-8',newline='').write(s)
+E
+git diff --stat
+<<< Auto-install is enabled, attempting to install Python 3.14.8
+{"type":"progress","id":"python","message":"Installing Python with specification 3.14.8"}
+{"type":"progress","id":"python","message":"Installing Python 3.14.8"}
+{"type":"error","code":"plugin::wasm::failed_function_call","message":"Failed to request https://registry.moonrepo.app/releases/python/3.14.8 (404)"}
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261001-090000-patch-0012-total-linea-centimos\patch.md
+<<< The file <run>\repo\.docs\sdd\specs\20261001-090000-patch-0012-total-linea-centimos\patch.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261001-090000-patch-0012-total-linea-centimos\patch.md
+<<< The file <run>\repo\.docs\sdd\specs\20261001-090000-patch-0012-total-linea-centimos\patch.md has been updated successfully.
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills"; ls $K/sdd-templates $K/sdd-templates/scripts; grep -n -i -B2 -A8 "parcial" $K/sdd-templates/*roadmap-template.md | head -50
+<<< <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills/sdd-templates:
+scripts/
+SKILL.md
+templates/
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills/sdd-templates/scripts:
+Build-EstimationLog.ps1
+CapabilitySections.ps1
+Get-CapabilityIndex.ps1
+Get-NextSddId.ps1
+Invoke-SddMerge.ps1
+Measure-SessionTokens.ps1
+Merge-CapabilityDelta.ps1
+SddLock.ps1
+Test-Capabilities.ps1
+Test-Roadmap.ps
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills"; grep -n -i -B3 -A6 "parcial" $K/sdd-templates/templates/roadmap-template.md | head -60
+<<< 35->
+36-> **Formato de cierre** (esta tabla y el Backlog): cuando una feature o un patch salda una fila, la celda «Ítem» empieza por un prefijo y el texto con que se abrió la fila sigue detrás, sin reescribir. Un cierre posterior sustituye el prefijo; nunca lleva dos.
+37-> - Saldada entera: `**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`
+38:> - Saldada en parte: `**[<Feature|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**`
+39->
+40-> `<enlace>` es un enlace Markdown, no una ruta suelta: `[walkthrough](specs/<carpeta>/walkthrough.md)` para una feature, `[pa
+
+>>> Bash: cd "<run>/repo" && node -e "
+const fs=require('fs');
+let r=fs.readFileSync('.docs/sdd/roadmap.md','utf8');
+r=r.replace('| 2026-09-20 | 0011 | El total de la línea no mostraba el símbolo del euro |','| 2026-09-20 | 0011 | El total de la línea no mostraba el símbolo del euro |\n| 2026-10-01 | 0012 | El total de la línea se redondea a céntimos |');
+r=r.replace('| **Fichas con dos defectos','| **[Patch 0012, 2026-10-01: parcial — [patch](specs/20261001-090000-patch-0012-total-linea-centimos/patch.md); queda: (b) la ficha no muestra el total del pedido]** **Fichas con dos defectos');
+fs.writeFileSync('.docs/sdd/roadmap.md',r);
+let c=fs.readFileSync('.docs/sdd/changelog.md','utf8');
+c=c.replace('## [Unreleased]\n','## [Unreleased]\n\n### Fixed\n\n- El total con IVA de la línea se redondea a céntimos ([patch 0012](specs/20261001-090000-patch-0012-total-linea-centimos/patch.md)).\n');
+fs.writeFileSync('.docs/sdd/changelog.md',c);
+"
+K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills/sdd-templates/scripts"
+pwsh -NoProfile -File "$K/Test-Roadmap.ps1" -Path .docs/sdd; echo rc=$?
+pwsh -NoProfile -File "$K/Test-Capabilities.ps1" -Path .docs/sdd -Artifact .docs/sdd/specs/20261001-090000-patch-0012-total-linea-centimos/patch.md; echo rc=$?
+git diff --stat
+<<< roadmap.md: falta la sección «Próximo»
+roadmap.md: falta la sección «Backlog»
+roadmap.md: falta la sección «Releases cerradas»
+roadmap.md: línea 3: sección «Features» fuera de la plantilla
+roadmap.md: línea 16: «Deuda técnica» va antes que «Patches»
+rc=1
+Capacidades válidas: 1
+rc=0
+warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261001-090000-patch-0012-total-l
+
+>>> Bash: cd "<run>/repo" && git add -A && git commit -q -m "docs(sdd): cierre del patch 0012
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills"; sed -n 1,60p $K/sdd-end-feature/references/merge-recipe.md; grep -n "param" -A12 $K/sdd-templates/scripts/Invoke-SddMerge.ps1 | head -30
+<<< warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261001-090000-patch-0012-total-linea-centimos/patch.md', LF will be replaced by CRLF the next time Git touches it
+641414d docs(sdd): cierre del patch 0012
+5cc3f11 fix(order-sheets): redondear a céntimos el total de la línea
+# Receta del merge en el cierre
+
+La usan el paso 10 de `sdd-end-feature` y el paso 6 de `sdd-end-
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution/0ea380e3-6019-49fa-aee0-189c5aca2a80/scratchpad/kit-t3/skills"; pwsh -NoProfile -File "$K/sdd-templates/scripts/Invoke-SddMerge.ps1" -ProjectRoot "$PWD"; echo rc=$?; git rev-parse --short develop; git status --short; git rev-parse --git-dir --git-common-dir
+<<< [31;1mException: [0m<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0117-patch-lane-fixed-solution\0ea380e3-6019-49fa-aee0-189c5aca2a80\scratchpad\kit-t3\skills\sdd-templates\scripts\Invoke-SddMerge.ps1:171[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 171 | [0m     [36;1mthrow "verificaci�n: el hook rechaz� el merge.`n$(($MergeOutput |[0m .[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     |
+
+=== RESULTADO (14 turnos, 0.3179676000000001 $)
+**No terminado.** El patch 0012 está cerrado en la rama, pero la fusión en `develop` falló y queda pendiente. No borres nada.
+
+**Cierre hecho**
+- **Validación en campo** (`validation.mode: field`): no paré ni pregunté. Ejecuté `app.js` con `pedido-detalle.html` y con `albaran-detalle.html`, y las dos dan `36,26 €`. Fue en node con un DOM simulado, sin navegador, y no hay `npm test`. Quedó escrito en `patch.md` §4 como `Validación en campo: 2026-10-01 · …`. El caso de Chromium que ya estaba en el patch lo marqué como reportado, no repetido por mí.
+- **`patch.md`**: lleva el hash del commit del fix (`5cc3f11…`) y el tiempo (0,3 h).
+- **Capacidades**: el bloque dice `Ninguna`, porque el fix devuelve el total a lo que ya dice `order-sheets`. `Test-Capabilities` pasa.
+- **Changelog**: entrada `Fixed` en `[Unreleased]`.
+- **Roadmap**: fila 0012 en Patches. La fila de deuda quedó como `parcial — [patch]…; queda: (b)`.
+- **Commit de cierre**: `641414d`. El patch queda en dos commits, fix y cierre.
+- **Sin estimation-log ni entorno**: no existe `estimation.md` ni `environments.md`, así que se omiten.
+
+**Pendiente**
+- **Merge a `develop` fallido.** Lo lancé con `Invoke-SddMerge.ps1`, sin `-Push` porque `merge.push` es `false`. Falló con:
+  ```
+  verificación: el hook rechazó el merge. fatal: '$GIT_DIR' too big fatal: stash failed
+  ```
+  `develop` sigue en `e0f5ff0` y el working tree está limpio. Según la receta, una `verificación:` en rojo no se reintenta ni se rehace a mano con `git merge`. Lo resuelve una persona, y parece un problema del entorno o del hook de git, no del patch.
+- **`Test-Roadmap.ps1` falla con 5 avisos** en líneas que no toqué. Faltan las secciones «Próximo», «Backlog» y «Releases cerradas», «Features» está fuera de plantilla y «Deuda técnica» va antes que «Patches». Los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0.
+
+**Decisiones sin el dev-lead:** ninguna, y `patch.md` no tiene lista de `Decisiones`. No hubo instrucciones previas al cierre.
+
+**Ticket del kit:** este patch no tiene el suyo. ¿Quieres que genere el ticket de mejora con `sdd-feedback`? Si no contestas, no queda nada pendiente.
+
+**No terminado.** Falta fusionar `feature/0012-total-linea-centimos` en `develop`. No borres todavía el worktree: la rama está en el checkout principal del repo.

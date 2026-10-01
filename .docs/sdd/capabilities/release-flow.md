@@ -13,10 +13,10 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - AND el id de una feature sin fila reservada sigue lo que declara [`feature-ids.md`](feature-ids.md) («Una feature no planificada obtiene su id con un script determinista»)
 
 ### Se puede cerrar una release que no se abrió
-- GIVEN un roadmap sin sección de la release y un `[Unreleased]` con entradas
+- GIVEN un roadmap válido sin sección de la release y un `[Unreleased]` con entradas
 - WHEN el usuario lanza `sdd-end-release` para publicar
 - THEN el scope que se congela es el contenido de `[Unreleased]`, el agente propone la versión y espera a que el usuario la confirme
-- AND el paso del roadmap añade la entrada a «Releases cerradas» sin colapsar ninguna sección
+- AND el paso del roadmap añade la entrada a «Releases cerradas» y saca las filas que el corte publica —las de «Próximo» de lo que entra en la versión, las filas saldadas y los patches con fecha no posterior al corte— sin colapsar ninguna sección `## Release <N>`, y `Test-Roadmap.ps1` escribe `Roadmap válido`
 
 ### El proyecto declara si sus releases tienen destinatario
 - GIVEN un `.docs/sdd/sdd-kit.json` sin `release.hasRecipient`
@@ -92,10 +92,24 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - AND si no se ejecutó smoke, la línea es `smoke: pendiente`
 
 ### El smoke de la release valida las features diferidas a él
-- GIVEN una release con features `🧪 validación diferida a <esta release>`
-- WHEN el dev-lead valida el smoke de la release en `sdd-end-release`, diciendo qué probó
-- THEN cada una de esas features gana una adenda fechada en su walkthrough con lo que el dev-lead probó que le toca, y su fila pasa a ✅
-- AND una feature que el dev-lead no menciona sigue como `🧪 validación diferida a <disparador nuevo>` (la siguiente release, salvo que el dev-lead diga otro), y el cierre la lista
+- GIVEN una release con la 0022 en `🧪 validación diferida a la 1.3` en su tabla, y la 0017 en la línea `validaciones pendientes: 0017` de `### v1.2.0 — 2026-09-20`, con su walkthrough diciendo `disparador: el smoke de la 1.3, a cargo del dev-lead`
+- WHEN el dev-lead valida el smoke de la 1.3 en `sdd-end-release`, diciendo qué probó
+- THEN el agente pregunta por la 0022 y por la 0017 en el mismo smoke; cada feature que el dev-lead menciona gana una adenda fechada en su walkthrough (en un patch, en `patch.md` §4) con lo que el dev-lead probó que le toca, y sale de las validaciones pendientes: la fila, en el colapso; el id, de la línea de la v1.2.0, que desaparece si queda vacía
+- AND una feature que el dev-lead no menciona gana en su walkthrough una adenda fechada con el disparador nuevo (la siguiente release, salvo que el dev-lead diga otro), su id pasa a la línea `validaciones pendientes:` de la v1.3.0, y el resumen de cierre la lista
+
+### El corte no arranca desde una sección fuera de la plantilla sin decirlo
+- GIVEN un roadmap con el trabajo de la release en `## Versión siguiente` (la 0021 ✅, la 0022 `🧪 validación diferida a la 1.3.0` y la 0023 ⏳), sobre el que `Test-Roadmap.ps1` escribe `roadmap.md: línea 9: sección «Versión siguiente» fuera de la plantilla`
+- WHEN el usuario ordena «cierra la release» y `sdd-end-release` llega al paso del roadmap
+- THEN antes de colapsar ejecuta `Test-Roadmap.ps1`, dice que «Versión siguiente» no es una sección `## Release <N>` y que el roadmap no tiene la forma de la plantilla, y propone llevarlo a la forma con el paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, con su gate
+- AND no borra ni mueve nada del roadmap sin el visto del dev-lead a ese gate; sin él, el resumen de cierre da el paso del roadmap como pendiente y el merge y el tag del paso 5 no se ejecutan
+- AND con un roadmap que pasa el validador, el corte desde `## Release 1.3` o desde «Próximo» no da este aviso
+
+### El corte deja el roadmap válido
+- GIVEN un roadmap válido con `## Release 1.3` (la 0021 ✅, la 0022 `🧪 validación diferida a la 1.3` y la 0024 ⏳, que el usuario mueve a la siguiente), una fila `0019` ✅ en «Próximo» que entra en esta release, una fila de deuda que empieza por `**[Patch 0020, 2026-10-02: saldada — …]**`, un patch `2026-10-02` en «Patches», `### v1.2.0 — 2026-09-20` como última release cerrada, el corte de la 1.3.0 el 2026-10-05, y el dev-lead que valida el smoke sin mencionar la 0022
+- WHEN `sdd-end-release` colapsa el roadmap
+- THEN «Releases cerradas» empieza por `### v1.3.0 — 2026-10-05`, con un resumen que nombra la 0019, la 0021, la 0022 y el patch 0020, el enlace al changelog, la línea de smoke y `validaciones pendientes: 0022`
+- AND sale la sección `## Release 1.3`, la 0024 queda como fila ⏳ en «Próximo», y salen la fila 0019 de «Próximo», la fila de deuda saldada y la fila del patch
+- AND antes del commit del cierre `Test-Roadmap.ps1` escribe `Roadmap válido`; con otra salida, el agente corrige el roadmap, nunca el validador, y el paso 5 espera a que lo escriba
 
 ### Replanificar parte del estado real de la release
 - GIVEN una release en curso en el roadmap, con la rama de integración por delante del worktree del agente o con ramas `feature/*` abiertas

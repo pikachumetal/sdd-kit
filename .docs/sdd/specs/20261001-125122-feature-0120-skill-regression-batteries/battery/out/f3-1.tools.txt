@@ -1,0 +1,93 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd .docs/sdd 2>/dev/null && ls -a . capabilities 2>/dev/null; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat $f.md 2>/dev/null; done; cat sdd-kit.local.json sdd-kit.json 2>/dev/null; git branch --show-current
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0120-skill-regression-batteries\73e72262-edb8-4edf-8093-6818540c74d1\scratchpad\kit\skills\sdd-start-feature\references\modo-lite.md
+<<< .:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de l
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No toca schema de datos ni exige migración.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita** el modo; NO lo activa. Propón el modo lite **citando una por una las condiciones que has comprobado** y espera la confirmació
+
+>>> Bash: wc -l src/app.js; cat src/app.js; ls test; ls .docs/sdd/specs; git branch -a
+<<< 16 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (comm
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0120-skill-regression-batteries/73e72262-edb8-4edf-8093-6818540c74d1/scratchpad/kit/skills/sdd-start-feature/references"; grep -n -i -m8 "por defecto\|default" control-profiles.md
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+18:4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+30:- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+212:| Clave | Tipo | Default |
+228:`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que na
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0120-skill-regression-batteries/73e72262-edb8-4edf-8093-6818540c74d1/scratchpad/kit/skills/sdd-start-feature/references"; grep -n -i -m6 "sequence" nombrado.md
+<<< 7:- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la feature o el patch, o, si no tiene fila, el que reserva `Get-NextSddId.ps1 -ProjectRoot <raíz del proyecto> -Reserve`. Sin `-Reserve` el script solo propone un id, y otro worktree que calcule a la vez se lleva el mismo. **Nunca el nombre de un módulo** ("M4" no es un id).
+
+=== RESULTADO (8 turnos, 0.20697279999999998 $)
+Ahora: confirmar carril y modo antes de abrir la rama y la spec. Queda: spec, aprobación tuya, implementación y validación, ~15 min en total.
+
+No es un patch, porque añade comportamiento. Lo he leído contra `src/app.js` (16 líneas) y encaja en **modo lite**:
+
+- **El flujo ya existe y se puede leer:** `reservar` está en `run()`, aunque ahora solo devuelve texto fijo.
+- **No cambia contratos públicos:** es una CLI de un solo fichero y nadie más la consume.
+- **No toca schema ni migración:** no hay BD; `bookings` es un array en memoria.
+- **Cabe en un solo módulo:** solo `src/app.js` y `test/app.test.js`.
+- **Estimación:** no hay `estimation.md`, así que esa condición no aplica. Preveo 1 task, así que no propongo partirla.
+
+En lite la spec es corta, sin `plan.md` ni `tasks.md`. El gate de la spec, el smoke y el walkthrough no se abaratan.
+
+**Perfil vigente:** `delegate`, que sale del proyecto porque `sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`. Paro en la spec, en los desvíos y en la validación. Puedes cambiarlo para esta feature.
+
+**Id y rama:** el proyecto usa ids `sequence` y esta tarea no tiene fila en el roadmap. Reservo el id con `Get-NextSddId.ps1 -Reserve` y creo `feature/<id>` desde `develop` antes que la carpeta.
+
+¿Vamos en modo lite con perfil `delegate`, o prefieres full o cambiar de perfil?
+
+Opciones:
+1. **Lite + `delegate`** (recomendada)
+2. Lite + «apruebo la spec por delegación, nos vemos en la validación»
+3. Full
+4. Otro perfil

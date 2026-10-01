@@ -1,0 +1,13 @@
+# Tasks — feature 0120
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 — Topes de palabras y reglas de la constitution | hecha | 24b8df5a |
+| 2 — Lanzador de baterías y segundo turno real | hecha | 9de6bdcb |
+| 3 — Batería de `using-sdd` y su pasada | hecha | d02c1ba5 |
+| 4 — Experimento de dos turnos y documentos de anclaje | hecha | eba42959 |
+
+Revisión final: sdd-kit:effort-high + opus, With fixes (4 Important, 12 Minor), sobre eba42959
+Pasada de fix: 5fc5dff2, 4 hallazgos (1 RED→GREEN; el Art. V queda para el dev-lead)
+Re-revisión: 5fc5dff2..HEAD revisado en el hilo (solo docs, <20 líneas)
+Re-revisión: 5fc5dff2..bab57041, sdd-kit:effort-high + opus, limpia (1 Minor: margen de 4 palabras en sdd-end-feature y tech-stack.md)

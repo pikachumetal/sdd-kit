@@ -27,20 +27,42 @@ Describe 'Anatomía de sdd-config' {
     $skill | Should -Match '(?m)^## Overview'
   }
 
-  It 'el catálogo tiene siete preguntas, en su orden' {
+  It 'el catálogo tiene ocho preguntas, en su orden' {
     $rows = Get-CatalogRows
-    $rows.Count | Should -Be 7
+    $rows.Count | Should -Be 8
     $rows[0] | Should -Match 'ids\.mode'
     $rows[1] | Should -Match 'control\.profile'
     $rows[2] | Should -Match '`merge`'
     $rows[3] | Should -Match 'merge\.push'
     $rows[4] | Should -Match 'control\.maxParallelAgents'
     $rows[5] | Should -Match '`execution`'
-    $rows[6] | Should -Match 'validation\.startEnvironment'
+    $rows[6] | Should -Match 'validation\.mode'
+    $rows[7] | Should -Match 'validation\.startEnvironment'
   }
 
   It 'la pregunta del entorno escribe solo en el fichero local' {
-    (Get-CatalogRows)[6] | Should -Match 'sdd-kit\.local\.json'
+    (Get-CatalogRows)[7] | Should -Match 'sdd-kit\.local\.json'
+  }
+
+  It 'la pregunta de quién valida escribe en sdd-kit.json y recomienda manual' {
+    $row = (Get-CatalogRows)[6]
+    $row | Should -Match '\| `sdd-kit\.json` \|\s*$'
+    $row | Should -Not -Match 'sdd-kit\.local\.json'
+    $row | Should -Match 'Recomendado `manual`'
+  }
+
+  It 'una respuesta field deja su frase y la fecha para el commit de sdd-kit.json' {
+    Get-KitFile $script:SkillPath | Should -Match 'frase literal y la fecha van al cuerpo del commit que lleve `sdd-kit\.json`'
+  }
+
+  It 'la migración a v2.3.0 guarda la frase de field en el informe y en el commit, también al reanudar' {
+    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.3.0.md'
+    $migration | Should -Match 'van al informe y al cuerpo del commit que lleve la clave, aunque sea el de otra sesión'
+    $migration | Should -Match 'el cuerpo del commit que la escribió cita la respuesta del dev-lead y la fecha'
+  }
+
+  It 'una init o una migración hacen de la 1 a la 7' {
+    Get-KitFile $script:SkillPath | Should -Match 'hacen de la 1 a la 7'
   }
 
   It 'enseña cada clave con su valor, su fichero o el default antes de preguntar' {
@@ -67,7 +89,8 @@ Describe 'Fuente única de la entrevista de claves' {
 
   It '<_> invoca sdd-config' -ForEach @(
     'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-    'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    'skills/sdd-init-brownfield/references/migrations/v2.0.0.md',
+    'skills/sdd-init-brownfield/references/migrations/v2.3.0.md'
   ) {
     Get-KitFile $_ | Should -Match '`sdd-config`'
   }

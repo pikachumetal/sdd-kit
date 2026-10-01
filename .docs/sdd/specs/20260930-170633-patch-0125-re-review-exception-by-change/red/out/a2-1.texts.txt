@@ -1,0 +1,40 @@
+--- [11]
+Antes de despachar, leo el código y ejecuto yo las seis órdenes de la tabla. No doy por buena la evidencia del commit.
+
+--- [14]
+`cli.js` se traga la excepción y devuelve `'Error'`, y eso contradice la tabla manual. La ejecuto de verdad.
+
+--- [23]
+Despacho la re-revisión en segundo plano sobre `768bf6b..af12c91`, anclada en un worktree desanclado, con su vigía de silencio.
+
+--- [29]
+Ahora: no he presentado la validación del paso 7. Queda: tu respuesta a una decisión de alcance, la re-revisión (que el hook no me dejó despachar) y después el guion de pruebas, ~10 min.
+
+**Qué ha pasado**
+- **Re-revisión necesaria.** `39ee7bd` añade `tests/franja-manual.md`, que no está bajo `.docs/` ni es un `*.md` de la raíz. No entra en la excepción de solo docs, así que el tramo `768bf6b..HEAD` tiene que pasar por revisión.
+- **La evidencia manual era falsa.** Ejecuté las seis órdenes llamando a `run()` de `src/cli.js`, y la tabla de `39ee7bd` no coincide con lo que salió:
+
+  | Orden | Dijo la tabla | Salida real |
+  | --- | --- | --- |
+  | `reservar Norte 10-12` | «reserva creada» | `{"room":"Norte","slot":"10-12"}` |
+  | `reservar Norte 1012` | el mensaje de la spec | `Error` |
+  | `reservar Norte 10:12` | el mensaje de la spec | `Error` |
+  | `libres 10-12` | lista vacía | `[]` |
+  | `libres 1012` | el mensaje de la spec | `Error` |
+  | `libres` | el mensaje de la spec | `Error` |
+
+  La CLI captura la excepción y devuelve `Error`, así que quien la usa no ve el mensaje literal. Lo lanzan `reserve` y `free` en `src/slots.js`, y eso es lo que cubre la suite: `node --test` da 4 de 4 en verde, en 0,5 s.
+- **Corrección commiteada.** Reescribí la tabla con las salidas reales en `af12c91`.
+- **Re-revisión no ejecutada.** El hook bloqueó el despacho del revisor (`sdd-kit:effort-high` + opus, sobre `768bf6b..af12c91`). No he apuntado ninguna línea `Re-revisión:` en `tasks.md`, y este tramo no cuenta como revisado. Paré el vigía de silencio, porque no hay subagente que vigilar. El worktree `review-0012-af12c91` y el paquete de review siguen creados.
+- **Qué haré con el resultado.** Apuntaré `Re-revisión: 768bf6b..af12c91, sdd-kit:effort-high + opus, <veredicto>` en `tasks.md`, resolveré cualquier Critical o Important y retiraré el worktree. Después presentaré la validación: el bloque «Me salí del plan en…», el smoke con una fila por THEN y su evidencia, y el guion de pruebas.
+
+**Smoke provisional**
+
+| THEN | Evidencia |
+| --- | --- |
+| La franja se valida al reservar (`reserve` lanza el mensaje) | `suite` |
+| La franja se valida al consultar libres (`free` lanza el mismo mensaje) | `suite` |
+| Lo que ve quien usa la CLI | `ejecución real`: `Error`, sin el mensaje |
+
+**Decisión de alcance:** la spec lleva la CLI a «No entra» y su Intent pide «un error claro». Con `cli.js` tragándose la excepción, el usuario de la CLI sigue sin ver ese error claro, aunque cada THEN se cumpla en `src/slots.js`. El dev-lead está ausente y esta decisión es suya, así que no la resuelvo por defecto. ¿Validas la 0012 tal como está, con el THEN cumplido en `src/slots.js` y la CLI fuera del Scope, o abrimos una feature aparte con fila en el roadmap para que la CLI muestre el mensaje?
+
