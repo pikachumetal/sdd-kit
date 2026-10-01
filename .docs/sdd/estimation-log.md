@@ -138,27 +138,28 @@
 | 2026-10-01 | 0050 | docs | 1.5 | 0.6 | 0.4 | 18823k | 838k | 3.09 | 8.27 | 20261001-125120-feature-0050-feedback-less-noise |
 | 2026-10-01 | 0120 | infra/tooling | 4 | 1.5 | 0.38 | 46753k | 6118k | 4.95 | 19.22 | 20261001-125122-feature-0120-skill-regression-batteries |
 | 2026-10-01 | 0124 | infra/tooling | 3 | 0.7 | 0.23 | 35595k | 2218k | 1.68 | 15.49 | 20261001-130008-feature-0124-capability-delta-merge |
+| 2026-10-01 | 0117 | docs | 2.5 | 2.3 | 0.92 | 68419k | 1808k | 12.55 | 23.36 | 20261001-153446-feature-0117-patch-lane-fixed-solution |
 
-**Factor de calibración** (ratio mediano real/estimado, 113 artefactos): **0.6** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 114 artefactos): **0.6** · media 0.73
 
-- p25–p75: 0.4–1
+- p25–p75: 0.4–0.99
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 30 % · sobreestimadas: 61 % · infraestimadas: 9 %
-- Error absoluto (h): media 0.95 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.41
+- Dentro de ±25 %: 31 % · sobreestimadas: 61 % · infraestimadas: 9 %
+- Error absoluto (h): media 0.94 · mediana 0.7
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.44
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 39 | 35 % |
+| <0.5 | 39 | 34 % |
 | 0.5–0.8 | 33 | 29 % |
-| 0.8–1.25 | 31 | 27 % |
+| 0.8–1.25 | 32 | 28 % |
 | 1.25–2 | 8 | 7 % |
 | ≥2 | 2 | 2 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 67 | 0.52 | 0.37–0.74 |
+| docs | 68 | 0.53 | 0.37–0.76 |
 | infra/tooling | 18 | 0.42 | 0.36–0.58 |
 | patch | 27 | 1.2 | 0.8–1.37 |
 
@@ -172,6 +173,6 @@
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
 | 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
-| sin publicar | 9 | 12.3 | 0.4 | 24.84 | 121.82 |
+| sin publicar | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
 
 > Ver `estimation.md`.

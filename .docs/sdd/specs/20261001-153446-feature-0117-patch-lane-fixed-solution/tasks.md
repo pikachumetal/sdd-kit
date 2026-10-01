@@ -20,7 +20,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | --- | --- | --- | --- | --- |
 | 1 | Criterio por quién fija la solución y petición cerrada | done | 456f8191 | GREEN tras tres rondas de REFACTOR; techo a 55 |
 | 2 | Retirada en el patch visual | done | f3e1b4f0 | r2 2/2, r3 1/1 |
-| 3 | Lite con migración de datos y deuda parcial | done | — | l1 1/1, e1 1/1 |
+| 3 | Lite con migración de datos y deuda parcial | done | 4302cce5 | l1 1/1, e1 1/1 |
 
 ## Verificación por task
 
@@ -28,7 +28,13 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 - [x] Task 2 — Pester y GREEN `r1 r2 r3`
 - [x] Task 3 — Pester y GREEN `l1 e1`
 
+Revisión final: sdd-kit:effort-high + opus, con arreglos (2 Important, 8 Minor), sobre 4302cce5
+Pasada de fix: juntada en el cierre, 3 hallazgos RED→GREEN
+Re-revisión: juntada en el cierre, sdd-kit:effort-high + opus, limpia (3 Minor)
+
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+| `FastSuiteBudget` en rojo: el conjunto rápido tarda 30,8-34,6 s (tope 30) | `Find-Leak` de `SubjectOutputPrivacy.Tests.ps1` pasaba `Select-String` por fichero y patrón; la campaña añadió ~200 salidas | arreglado en la rama: cada fichero se lee una vez | cierre |
+| `SubjectOutputPrivacy` no revisaba las salidas de `battery/` ni `fix/` | el filtro de carpetas era `^(red\|green\|refactor)` | arreglado en la rama: entran `battery` y `fix`, con su test RED→GREEN | cierre |

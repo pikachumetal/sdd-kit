@@ -3,7 +3,7 @@ id: 20261001-153446-feature-0117-patch-lane-fixed-solution
 feature: 0117
 title: Carril patch — lo decide quién fijó la solución
 mode: full
-status: approved
+status: done
 created: 2026-10-01
 author: Claude (Opus 5.5) con el dev-lead
 approvers:

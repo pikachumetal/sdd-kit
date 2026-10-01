@@ -161,3 +161,28 @@ Describe 'lite con migración de datos y deuda parcial' {
     $step | Should -Match 'queda:'
   }
 }
+
+Describe 'pasada de fix de la revisión final' {
+  It 'el paso 3 solo deja preguntar cerrado si las opciones ya están escritas' {
+    Get-Section $script:StartPatch '3. **`patch.md`**' '4. **Fix mínimo**' | Should -Match 'si el ticket o la fila ya escriben las opciones'
+  }
+
+  It 'el paso 1 dice la misma salida que el paso 3' {
+    Get-Section $script:StartPatch '1. **' '2. **Carpeta**' | Should -Match 'opciones ya escritas'
+  }
+
+  It 'el paso 4 solo saca a feature un ajuste visual que no es retirada' {
+    Get-Section $script:StartPatch '4. **Fix mínimo**' '5. **Commit' | Should -Match 'En un ajuste visual que no es retirada, si el cambio necesita'
+  }
+
+  It 'la guía de uso da la condición de lite nueva' {
+    $guide = Get-KitFile '.docs/workflow/usage-guide.md'
+    $guide | Should -Not -Match 'ni exige migración'
+    $guide | Should -Match 'migración solo de datos'
+  }
+}
+Describe 'pasada de fix: control c2' {
+  It 'dar a elegir opciones que escribe el agente no fija la solución' {
+    $script:StartPatch | Should -Match 'escribir tú las opciones es diseñar la solución'
+  }
+}

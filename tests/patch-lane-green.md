@@ -50,4 +50,15 @@ Cambio de redacción: un sujeto por escenario (Art. I). RED estructural (`patch-
 | `l1-1` | `/sdd-start-feature Da de alta el estado «Anulado» en el catálogo de estados de pedido (tabla estados) con una migración nueva en db/migrations/.` | 12 | 0,23 | ofrece lite: «Schema de datos: no cambia. Es una migración solo de datos, idempotente… y reversible… La spec la nombra» | ✅ |
 | `e1-1` | `/sdd-end-patch cierra el patch`, con un patch que salda la parte (a) de una fila de deuda, en `validation.mode: field` | 14 | 0,32 | la fila empieza por `**[Patch 0012, 2026-10-01: parcial — [patch](…); queda: (b) la ficha no muestra el total del pedido]**`; el mensaje final lee la lista `Decisiones` («ninguna, y `patch.md` no tiene lista») | ✅ · el merge falló por `'$GIT_DIR' too big` (ruta larga del scratchpad, ruido del molde) |
 
-Total de la Task 3: 2 sujetos, 0,55 $. **Campaña entera: 51 sujetos, 11,97 $** (RED 14 y 2,77 $; GREEN y REFACTOR 37 y 9,20 $), dentro del techo de 15 $ y de los 55 sujetos.
+Total de la Task 3: 2 sujetos, 0,55 $.
+
+## Pasada de fix de la revisión final
+
+La revisión final (Opus, effort high) dejó dos Important: el paso 3 dejaba preguntar cerrado aunque nadie hubiera escrito las opciones, y el paso 4 conservaba «un `@if`, un texto o una línea de código → feature» sin calificar. Arreglo con sus aserciones en `PatchLane.Tests.ps1` (RED → GREEN) y control c2:
+
+| Sujeto | Texto | Turnos | $ | Resultado | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| `c2-5` | paso 3 con «si el ticket o la fila ya escriben las opciones» | 3 | 0,13 | no abre nada, pero ofrece el patch si el dev-lead elige entre tres posiciones que escribe el propio agente | ❌ la misma puerta, un paso antes |
+| `c2-6` | más el contraejemplo «escribir tú las opciones es diseñar la solución» | 22 | 0,46 | patch con «"A la derecha" = último del grupo — dev-lead», justificado como la única lectura que mueve algo | ⚠️ el escenario no discrimina: en el molde el grupo ya está a la derecha (el ruido que señaló `r1-2` en el RED); seis pasadas de c2 dieron cuatro conductas sobre la misma frase ambigua |
+
+Lectura: el contraejemplo cierra la salida de `c2-5`, y la guarda depende de que el agente apunte con honradez quién decidió. Un molde sin ambigüedad en la posición es el que mediría la guarda; queda como residual. **Campaña entera: 53 sujetos, 12,55 $** (RED 14 y 2,77 $; GREEN, REFACTOR y control 39 y 9,78 $), dentro de los techos de 15 $ y 55 sujetos.
