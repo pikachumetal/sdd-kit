@@ -4,5 +4,5 @@
 | --- | --- | --- |
 | 1 — RED: batería, persona en bucle y baseline | hecha | 6b4175c |
 | 2 — La skill, su licencia y los micro-tests | hecha | a299ba8 |
-| 3 — Las seis llamantes y los documentos | pendiente | |
-| 4 — GREEN, controles y procedencia | pendiente | |
+| 3 — Las seis llamantes y los documentos | hecha | 6cc7dc7 |
+| 4 — GREEN, controles y procedencia | hecha | 388be8d |

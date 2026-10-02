@@ -6,7 +6,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-grilling`); el método, e
 
 **Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo: un juez automático sería otro modelo, con su propio ruido.
 
-Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: feature full con delegate», para llegar a la primera decisión de diseño; g4 lleva `TURN2` «mantengo lo que dije»; g5, «decide tú lo que puedas»; g6, «no, espera, explícamelo mejor». g7 conversa con la persona de `persona-g7.md` (Haiku, hasta 8 respuestas). g9 lleva `WebSearch` y `WebFetch` permitidos. Los escenarios del paso `control` solo van en el GREEN.
+Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: feature full con delegate», para llegar a la primera decisión de diseño; g4 lleva `TURN2` «mantengo lo que dije»; g5, «decide tú lo que puedas»; g6, «sí, adelante: feature full con delegate» y un tercer turno «no, espera, explícamelo mejor», para rechazar la primera decisión de diseño y no la de carril. g7 conversa con la persona de `persona-g7.md` (Haiku, hasta 8 respuestas). g9 lleva `WebSearch` y `WebFetch` permitidos. Los escenarios del paso `control` solo van en el GREEN.
 
 ## Escenarios
 
@@ -22,7 +22,7 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 | g8 | sdd-init-brownfield | Quiero empezar a trabajar con SDD en este proyecto. | salas-sin-docs | `sdd-kit:sdd-init-brownfield` | 1 | 1/1 | sonnet | 0128: descubrimiento con un hecho y su fuente |
 | g9 | sdd-consult | Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8? | salas | `sdd-kit:sdd-consult` | 2 | 2/2 | sonnet | 0128: buscar fuera del repo antes de preguntar |
 | k1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | 0128, control: una pregunta puntual no abre entrevista |
-| u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta |
+| u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta |
 
 ## Rúbrica
 
@@ -53,3 +53,15 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Una decisión por turno («tres cosas juntas» son tres; una pregunta tras ➡️ es otra) | RED R1 4 de 16; GREEN g9-2 | g1, g2, g3, g8, g9 |
+| Buscar fuera antes de preguntar; probarlo en otra versión no cuenta; «no verificado» solo sin MCP ni web | RED R11 2 de 2; GREEN 2 de 2 antes del contra; dev-lead 2026-10-02 | g9 + micro-test m3 |
+| Formato fijo en texto para el diseño; diálogo para lo operativo | dev-lead 2026-10-02; RED R2 | todos |
+| Alternativas reales; «no creo que la quieras» es relleno | dev-lead 2026-10-01 (relleno en el brainstorm); GREEN g1-1 | g1, g3, g9 |
+| La recomendada con razón del caso; empate → preguntar de qué depende | RED R4 («son los defaults del kit») | g1, g3, g7, g8, g9 |
+| Escena con datos en las decisiones de producto | RED R6 2 de 2; ticket de la feature 0035 de document-manager | g3, g6 |
+| Descubrimiento abierto, sin recomendación, hipótesis ni menú; con hecho, el hecho y su fuente | RED R5 4 de 4; micro-test m2 5 de 5 sin guía | g2, g5, g8 |
+| Rebatir una vez | dev-lead 2026-10-01 (abogado del diablo); RED limpio por una regla de `sdd-roadmap` | g4 (control) |
+| «Decide tú»: decide método, el descubrimiento queda pendiente | RED R8 2 de 2 («Esta es mi propuesta») | g5 |
+| Rechazo: prosa hasta que conteste, sin volver a las opciones | RED R9 1 de 2; ticket de la feature 0115 §10 | g6 |
+| Cierre en tres listas; la confirmación es el gate del llamante | RED R10 2 de 2 | g7 |
+| Todo en el idioma del usuario, también los anuncios | RED R12 3 de 17 | todos |

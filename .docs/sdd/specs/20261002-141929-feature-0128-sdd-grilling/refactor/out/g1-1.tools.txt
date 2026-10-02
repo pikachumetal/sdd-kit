@@ -1,0 +1,134 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Glob: .docs/sdd/**/*.md
+<<< .docs\sdd\tech-stack.md
+.docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<<< 1	# Spec — free
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+<<< 1	# Spec — weekly
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+=== RESULTADO (14 turnos, 0.15913879999999997 $)
+Antes de proponer nada he leído `mission`, `roadmap`, `tech-stack`, `constitution`, las specs 0005/0006, el patch 0007 y `src/app.js`. Esto es lo que encontré, y no he tocado nada.
+
+- **Los tramos son texto opaco.** Hoy un tramo es la cadena `'10:00-12:00'` y `freeRooms` compara por igualdad (`src/app.js:6`). Una reserva `10:30-11:00` no chocaría con `10:00-12:00`, porque son cadenas distintas.
+- **Reservar a medias horas obliga a cambiar la comparación.** Hay que pasar de igualdad a solapamiento de intervalos. Es consecuencia directa de la petición, no una decisión.
+- **Ya tienes una deuda relacionada.** El roadmap apunta «Sin validación del formato de franja horaria». Con medias horas, validar que el tramo cae en la rejilla de 30 minutos pasa a ser necesario.
+- **`reservar` a secas no existe.** `run` solo maneja `reservar … --cada-semana`, que devuelve un texto fijo. Las reservas viven en memoria con una de ejemplo.
+- **Esto es una feature, no un patch.** Hay que decidir cómo se ve y cómo se comporta. Cuando lo decidamos, entraría por `sdd-start-feature`.
+
+❓ **¿Qué es una reserva de media hora?**
+🅰️ **Intervalo libre sobre una rejilla de 30 min.** Se mantiene el formato actual `inicio-fin`, y el inicio y el fin deben caer en :00 o :30.
+- `reservar Norte lun 10:30-11:00` → reservada.
+- `reservar Norte lun 10:30-11:30` → `Norte ocupada de 10:00 a 12:00`, porque `Norte` ya tiene `10:00-12:00`.
+- `libres 10:30-11:00` → `Sur`.
+- `reservar Sur lun 10:10-10:40` → `Franja no válida: usa medias horas (10:00, 10:30…)`.
+- Coste: hay que implementar el solapamiento y la validación de la rejilla. Las reservas, `libres` y `cancelar` actuales siguen valiendo tal cual.
+
+🅱️ **Bloques fijos de 30 min.** Una reserva es siempre un solo bloque, con un único `10:30` en lugar de un rango.
+- `reservar Norte lun 10:30` → reservada de 10:30 a 11:00.
+- Una reunión de 2 h son 4 reservas: `10:00`, `10:30`, `11:00` y `11:30`.
+- `cancelar Norte lun 10:00` → cancela solo el bloque de 10:00 a 10:30.
+- Coste: se cambia el formato de la franja, y con él `libres`, `cancelar` y la reserva de ejemplo. Una reunión larga son varios comandos y varias cancelaciones.
+
+➡️ **Recomiendo 🅰️**, porque `libres` y `cancelar` ya funcionan con rangos `inicio-fin` y el patch 0007 acaba de arreglar su comparación. Con 🅰️ ese contrato no cambia, solo se añade la rejilla. En cambio 🅱️ convierte una reunión normal de una o dos horas en varias reservas. A cambio, 🅰️ exige escribir el solapamiento de intervalos, que es la parte delicada.
