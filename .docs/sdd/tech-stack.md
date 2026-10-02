@@ -26,7 +26,7 @@ Dual:
 - **Release de GitHub** (dev-lead, corte de la 2.0.0): el título es solo la versión (`v2.0.0`), y el cuerpo, las release notes sin frontmatter ni título, con los enlaces relativos pasados a URL absoluta.
 - Los tipos de agente `agents/effort-*.md` (task 0031) también **solo llegan por el canal plugin**: con `npx skills add` no se instalan, y el plan escribe «effort: no disponible en este harness, hereda el de la sesión».
 
-**Dependencias**: declaradas en el [README](../../README.md#dependencias), que es la fuente única — `superpowers` (obligatoria, resuelta por `plugin.json` contra el marketplace `superpowers-marketplace` de obra, que hay que añadir antes; `claude-plugins-official` la fija a un commit y llega tarde a las versiones nuevas, patch 0082) y `grilling` (opcional, `npx skills add`). Aquí no se repite la lista: dos copias divergen, y de hecho lo hicieron — este documento listaba 6 skills invocadas y el README 4 (aprendizaje de la task dependencias-declaradas, 2026-09-02).
+**Dependencias**: declaradas en el [README](../../README.md#dependencias), que es la fuente única — `superpowers` (obligatoria, resuelta por `plugin.json` contra el marketplace `superpowers-marketplace` de obra, que hay que añadir antes; `claude-plugins-official` la fija a un commit y llega tarde a las versiones nuevas, patch 0082). Aquí no se repite la lista: dos copias divergen, y de hecho lo hicieron — este documento listaba 6 skills invocadas y el README 4 (aprendizaje de la task dependencias-declaradas, 2026-09-02).
 
 ## Cómo se testean las skills
 
