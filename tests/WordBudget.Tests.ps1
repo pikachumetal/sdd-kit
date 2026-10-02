@@ -16,6 +16,7 @@ BeforeAll {
       'sdd-end-patch'       = @{ SkillMd = 2460; Total = 2460 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
       'sdd-feedback'        = @{ SkillMd = 700; Total = 700 }
+      'sdd-grilling'        = @{ SkillMd = 600; Total = 600 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
@@ -25,7 +26,7 @@ BeforeAll {
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 53880
+    Kit     = 54480
     Anchors = @{
       'constitution.md' = 2800
       'mission.md'      = 1700
