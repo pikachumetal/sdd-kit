@@ -1,0 +1,50 @@
+--- [2]
+Es una funcionalidad concreta con comportamiento por decidir, así que uso `sdd-kit:sdd-start-feature` para arrancarla.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto (docs, no código). Queda: la pregunta de enrutado y la spec, ~5 min.
+
+--- [18]
+Ahora: confirmar carril, modo y perfil antes de redactar la spec. Queda: la spec con sus decisiones a validar (donde te pido aprobación), luego plan e implementación, ~10 min.
+
+He leído constitution, misión, tech-stack y roadmap, y el código mínimo para contar tasks (`src/app.js` tiene 16 líneas, y `test/app.test.js` 15). No hay `capabilities/` ni `sdd-kit.local.json`, así que no ignoro ninguna clave.
+
+- **Carril:** feature, no patch. Hay que decidir cómo se comporta la lista: cuándo te apuntas, cómo avanza, qué se ve. No es una fila del roadmap, porque «Avisos por correo» (#1) es otra cosa. El id saldrá de `Get-NextSddId.ps1` (modo `sequence`), con la rama `feature/<id>` desde `develop`.
+- **Tamaño:** prevé 3 tasks (apuntarse, avanzar la lista al cancelar y consultarla). Son de la misma superficie (CLI) y sin migración, así que no propongo partirla.
+- **Modo lite:** cumple las condiciones que he comprobado, pero ninguna decide si conviene.
+  - El flujo existe y se lee: `reservar`, `cancelar` y `libres` en `src/app.js`.
+  - Hay un contrato nuevo: un comando `espera` en la CLI. No es API pública de otro módulo, porque la única consumidora eres tú.
+  - No hay schema de datos: las reservas están en memoria.
+  - Cabe en un solo módulo.
+  - No existe `estimation.md`.
+  
+  Aun así, recomiendo **full**: el comportamiento de la lista es casi todo decisión de diseño, y quiero el plan con su gate.
+- **Perfil vigente:** `delegate`, que sale del proyecto (default de `sdd-kit.json`, sin `control.profile`).
+
+¿Vamos en modo full con perfil `delegate` (recomendado), en modo lite, o prefieres «apruebo la spec por delegación, nos vemos en la validación» para que no pare en el gate de la spec?
+
+--- [20]
+Ahora: crear la rama con su id y arrancar el diseño de la spec. Queda: la spec presentada para tu aprobación, ~5 min.
+
+--- [26]
+Clasifico esto como **arquitectónico en pequeño** y sigo el camino completo, que es lo que elegiste. Hay un flujo existente, pero el comportamiento de la lista de espera es nuevo y casi todo son decisiones de diseño.
+
+**Lo que entiendo (corrígeme si algo no es así):**
+- **Dicho por ti:** cuando la sala que quieres está ocupada, quieres quedarte en una lista de espera en vez de que la reserva falle sin más.
+- **Lo que he visto en el código:**
+  - `src/app.js` guarda las reservas en memoria (`bookings`) y solo conoce `libres`, `reservar` (de momento solo la rama `--cada-semana`) y `cancelar`.
+  - Tú eres el único usuario (misión).
+  - No hay base de datos ni correo (los avisos por correo son el #1 del roadmap, aún sin hacer).
+- **Supongo, sin que lo hayas dicho:**
+  - La clave de una reserva es sala + día + franja.
+  - La lista de espera es por sala y franja.
+  - Hace falta un comando para apuntarse y otro para ver la lista.
+
+Antes de proponer enfoques necesito una sola decisión, que es la que más cambia el diseño: **¿qué debe pasar cuando se cancela la reserva que te tapaba la sala?**
+
+- **A (recomendada):** la reserva pasa automáticamente al primero de la lista y `cancelar` lo dice en su salida («reserva pasada a …»). Es lo más simple y encaja con ser el único usuario. No depende de los avisos por correo, que aún no existen.
+- **B:** la sala queda libre y la lista solo avisa de que había alguien esperando. Tienes que reservar a mano, y otro puede colarse antes.
+- **C:** la sala queda «ofrecida» al primero hasta que la confirme. Es más complejo y necesita expiración y avisos que todavía no existen.
+
+¿A, B o C?
+
