@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-03
 branch: hotfix/v2.3.1
-commit: <hash>
+commit: 4d4bcf16
 ---
 
 # Patch 0137 — Test-Capabilities.ps1 omite un documento marcado «No es una capacidad.»
@@ -47,6 +47,8 @@ Lo que da por existente, comprobado: `Test-Capabilities.ps1` valida cada `*.md` 
 | 2 | `tests/Test-Capabilities.Tests.ps1` y `tests/CapabilityRules.Tests.ps1` tras el fix | ✅ 77/77 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-03 · tests nuevos en RED antes del fix y 77/77 tras él · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 

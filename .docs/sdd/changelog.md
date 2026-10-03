@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **`Test-Capabilities.ps1` omite un documento marcado «No es una capacidad.»** — un documento funcional heredado o un puntero dentro de `capabilities/` dejaba el validador en rojo permanente. Con la línea `> **No es una capacidad.**` justo tras su título, el validador no lo valida y lo nombra en la línea de éxito; si tiene escenarios, falla ([patch 0137](specs/20261003-142456-patch-0137-capabilities-not-capability-mark/patch.md)).
+
 ### Fixed
 
 - **`Get-NextSddId.ps1` lee el id de la tabla de Patches** — el roadmap lleva en «Patches» la fecha en la primera columna y el id en la segunda, y el script solo leía la primera: un patch sin carpeta en `specs/` dejaba su id libre para otra reserva. Ahora cuenta también el id de la segunda columna cuando la primera es una fecha ([patch 0133](specs/20261003-135752-patch-0133-next-id-patches-column/patch.md)).
