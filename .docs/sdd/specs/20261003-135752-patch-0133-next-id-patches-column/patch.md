@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-03
 branch: hotfix/v2.3.1
-commit: <hash>
+commit: 868c98e5
 ---
 
 # Patch 0133 — Get-NextSddId.ps1 lee el id de la tabla de Patches
@@ -42,6 +42,8 @@ Medido sobre `main` (2.3.0): un proyecto en `sequence` cuyo roadmap solo tiene `
 | 2 | `tests/Get-NextSddId.Tests.ps1` y `tests/TaskIds.Tests.ps1` tras el fix | ✅ 66/66 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-03 · test nuevo en RED antes del fix y 66/66 tras él · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 

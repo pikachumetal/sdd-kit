@@ -139,6 +139,7 @@
 | 2026-10-01 | 0120 | infra/tooling | 4 | 1.5 | 0.38 | 46753k | 6118k | 4.95 | 19.22 | 20261001-125122-feature-0120-skill-regression-batteries |
 | 2026-10-01 | 0124 | infra/tooling | 3 | 0.7 | 0.23 | 35595k | 2218k | 1.68 | 15.49 | 20261001-130008-feature-0124-capability-delta-merge |
 | 2026-10-01 | 0117 | docs | 2.5 | 2.3 | 0.92 | 68419k | 1808k | 12.55 | 23.36 | 20261001-153446-feature-0117-patch-lane-fixed-solution |
+| 2026-10-03 | 0133 | patch | — | 0.3 | — | — | — | — | — | 20261003-135752-patch-0133-next-id-patches-column |
 
 **Factor de calibración** (ratio mediano real/estimado, 114 artefactos): **0.6** · media 0.73
 
@@ -173,6 +174,7 @@
 | 1.1.0 | 3 | 2.3 | 0.8 | — | — |
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
 | 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
-| sin publicar | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
+| 2.3.0 | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
+| sin publicar | 1 | 0.3 | — | — | — |
 
 > Ver `estimation.md`.

@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Fixed
+
+- **`Get-NextSddId.ps1` lee el id de la tabla de Patches** — el roadmap lleva en «Patches» la fecha en la primera columna y el id en la segunda, y el script solo leía la primera: un patch sin carpeta en `specs/` dejaba su id libre para otra reserva. Ahora cuenta también el id de la segunda columna cuando la primera es una fecha ([patch 0133](specs/20261003-135752-patch-0133-next-id-patches-column/patch.md)).
+
 ## [2.3.0] - 2026-10-01
 
 El roadmap en la forma de su plantilla, la validación en campo y el carril patch decidido por quién fija la solución. [Release notes](releases/v2.3.0/release-notes.md).
