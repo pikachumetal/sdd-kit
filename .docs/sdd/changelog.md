@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-10-03
+
+Hotfix de la 2.3.0, sacado de `main`: los scripts de ids, estimación, merge, capacidades y tokens, y el código de salida del comando de `task-done`. Sin cambios en el proyecto: la migración `v2.3.1` solo avanza el marcador.
+
 ### Added
 
 - **`Test-Capabilities.ps1` omite un documento marcado «No es una capacidad.»** — un documento funcional heredado o un puntero dentro de `capabilities/` dejaba el validador en rojo permanente. Con la línea `> **No es una capacidad.**` justo tras su título, el validador no lo valida y lo nombra en la línea de éxito; si tiene escenarios, falla ([patch 0137](specs/20261003-142456-patch-0137-capabilities-not-capability-mark/patch.md)).
