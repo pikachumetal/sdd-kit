@@ -385,6 +385,9 @@ Describe 'Unidad del tiempo' -Tag 'Slow' {
     New-Patch $specs '20260924-110000-patch-0070-horas' '1 hora' '2 horas'
     New-Patch $specs '20260924-120000-patch-0071-dias' '2 días' '3 h'
     New-Patch $specs '20260924-130000-patch-0072-real-semanas' '1 h' '1 semana'
+    New-Patch $specs '20260924-140000-patch-0094-horas-y-minutos' '1h 30min' '~1 h 20 min'
+    $dir = New-Item -ItemType Directory -Path (Join-Path $specs '20260924-150000-patch-0132-una-linea') -Force
+    [System.IO.File]::WriteAllText((Join-Path $dir 'patch.md'), "## 4. Verificación`n`nEstimado: 0,5 h · Real: 0,7 h`n", [System.Text.UTF8Encoding]::new($false))
     $script:Unidades = Invoke-Build (Join-Path $TestDrive 'unidades')
   }
 
@@ -406,6 +409,16 @@ Describe 'Unidad del tiempo' -Tag 'Slow' {
   It 'avisa y excluye un real en otra unidad' {
     Get-Row $script:Unidades.Text '20260924-130000-patch-0072-real-semanas' | Should -BeNullOrEmpty
     $script:Unidades.Warnings -join ' ' | Should -Match 'semana.*patch-0072-real-semanas'
+  }
+
+  It 'suma los minutos que siguen a las horas' {
+    Get-Row $script:Unidades.Text '20260924-140000-patch-0094-horas-y-minutos' | Should -Be '| 2026-09-24 | 0094 | patch | 1.5 | 1.33 | 0.89 | — | — | — | — | 20260924-140000-patch-0094-horas-y-minutos |'
+    $script:Unidades.Warnings -join ' ' | Should -Not -Match 'horas-y-minutos'
+  }
+
+  It 'avisa y excluye un patch con tiempo fuera del bloque de la plantilla' {
+    Get-Row $script:Unidades.Text '20260924-150000-patch-0132-una-linea' | Should -BeNullOrEmpty
+    $script:Unidades.Warnings -join ' ' | Should -Match 'patch-0132-una-linea'
   }
 }
 
