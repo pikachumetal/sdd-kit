@@ -318,6 +318,47 @@ Describe 'Segundo turno real (lib.sh)' -Tag 'Slow' {
     $run.Output | Should -Match 'coste acumulado: 1\.00 \$'
   }
 
+  It 'subject_converse reanuda hasta que el sujeto deja de preguntar' {
+    $launch = 'echo "Contesta sí." > "$RUNS/hoja.md"; DRY_RESULT="¿Seguimos?" subject_launch "x"; subject_converse "$RUNS/hoja.md" 5'
+    $campaign = New-Campaign (Join-Path $TestDrive 'converse') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $second = @(Get-Content (Join-Path $campaign.Runs 'red/a-1.resume.args'))
+    $second[-1] | Should -Be 'Respuesta de la persona.' -Because $run.Output
+    @(Get-ChildItem (Join-Path $campaign.Runs 'red') -Filter 'a-1.persona-*.txt').Count | Should -Be 1
+  }
+
+  It 'subject_converse para en el tope de turnos' {
+    $launch = 'echo "Contesta sí." > "$RUNS/hoja.md"; export DRY_RESULT="¿Seguimos?"; subject_launch "x"; subject_converse "$RUNS/hoja.md" 3'
+    $campaign = New-Campaign (Join-Path $TestDrive 'cap') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    @(Get-ChildItem (Join-Path $campaign.Runs 'red') -Filter 'a-1.persona-*.txt').Count | Should -Be 3 -Because $run.Output
+  }
+
+  It 'subject_converse suma el coste de la persona al último RESULTADO' {
+    $launch = 'echo "Contesta sí." > "$RUNS/hoja.md"; DRY_RESULT="¿Seguimos?" subject_launch "x"; subject_converse "$RUNS/hoja.md" 5'
+    $campaign = New-Campaign (Join-Path $TestDrive 'cost') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; DRY_PERSONA_COST = '0.25' }
+
+    $run.Output | Should -Match 'coste acumulado: 1\.25 \$'
+  }
+
+  It 'extract.mjs last devuelve el texto del último resultado' {
+    $stream = Join-Path $TestDrive 'last.jsonl'
+    Set-Content -LiteralPath $stream -Value @(
+      '{"type":"result","num_turns":1,"total_cost_usd":0.5,"result":"¿Primera?"}',
+      '{"type":"result","num_turns":2,"total_cost_usd":1,"result":"Ultima respuesta."}'
+    )
+
+    $last = & $script:Node (Join-Path $script:Headless 'extract.mjs') last $stream
+
+    $last | Should -Be 'Ultima respuesta.'
+  }
+
   It 'subject_resume sin session_id muere con su mensaje' {
     $launch = 'subject_launch "x"; : > "$JSONL"; subject_resume "y"'
     $campaign = New-Campaign (Join-Path $TestDrive 'nosession') -Launch $launch

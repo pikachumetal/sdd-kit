@@ -1,0 +1,14 @@
+❓ **¿Dónde se guardan las reservas entre ejecuciones?**
+
+Lo que he encontrado:
+- `tech-stack.md` dice: «Node 22, sin dependencias externas». Esto descarta paquetes como `better-sqlite3` mientras no se cambie esa regla.
+- Node 22 trae SQLite de serie (`node:sqlite`). Según su documentación, desde la v22.13.0 ya no hace falta el flag `--experimental-sqlite`, pero el módulo sigue siendo experimental (estabilidad 1.1, «Active development»). Fuente: https://nodejs.org/docs/latest-v22.x/api/sqlite.html. La documentación no dice si muestra un aviso al arrancar, y no lo he podido comprobar porque aquí tengo Node 26, no 22.
+- Hoy cada reserva tiene solo tres datos: sala, día y franja.
+
+🅰️ **Un archivo JSON**, leído y escrito con `node:fs`. Funciona en cualquier Node 22, sin flags ni módulos experimentales, y el archivo se puede abrir y leer a mano. A cambio, si dos personas reservan a la vez, la segunda escritura puede pisar a la primera:
+`reservar Norte lunes 10-11` (Ana) y `reservar Sur lunes 10-11` (Luis) al mismo tiempo → los dos ven «reservada», pero al día siguiente `libres 10-11` muestra Sur libre. La reserva de Luis se ha perdido sin que nadie se entere.
+
+🅱️ **SQLite con `node:sqlite`**. Si dos personas reservan a la vez, la base de datos lo resuelve:
+Ana y Luis lanzan `reservar Norte lunes 10-11` al mismo tiempo → Ana ve «reservada» y Luis «Norte ya está ocupada el lunes 10-11». No se pierde nada. A cambio, obliga a usar Node 22.13 o posterior, depende de un módulo que todavía puede cambiar entre versiones, y el archivo no se puede leer a mano.
+
+➡️ **Te recomiendo 🅰️**, porque con tres datos por reserva y la regla de no tener dependencias, un JSON es lo que menos riesgo trae, y no te ata a una API experimental. A cambio, si varias personas usan `salas` a la vez sobre el mismo archivo, pueden perderse reservas sin aviso. En ese caso conviene 🅱️.

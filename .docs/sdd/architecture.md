@@ -23,6 +23,7 @@
 │   ├── sdd-config/SKILL.md
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
+│   ├── sdd-grilling/SKILL.md      (en inglés, + NOTICE MIT: sub-skill de preguntas)
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)
 ├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, que inyecta skills/using-sdd/SKILL.md — solo canal plugin)
 ├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)

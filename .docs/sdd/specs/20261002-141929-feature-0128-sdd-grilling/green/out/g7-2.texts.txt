@@ -1,0 +1,129 @@
+--- [2]
+Uso `sdd-kit:sdd-config` para revisar y poner al día la configuración del kit.
+
+--- [10]
+Aún no he cambiado nada. Esta es la configuración actual:
+
+| Clave | Valor | Fichero |
+| --- | --- | --- |
+| `version` | `2.3.0` | `sdd-kit.json` |
+| `channel` | `plugin` | `sdd-kit.json` |
+| `ids.mode` | `sequence` | `sdd-kit.json` |
+| `release.hasRecipient` | `false` | `sdd-kit.json` |
+| `control.profile` | falta, rige `delegate` | no declarada |
+| `merge` (`into`, `noFf`, `removeWorktree`) | falta, el cierre pregunta | no declarada |
+| `merge.push` | falta, rige `false` | no declarada |
+| `control.maxParallelAgents` | falta, rige `3` | no declarada |
+| `control.silence.betweenStepsMinutes` | falta, rige `8` | no declarada |
+| `control.silence.longCommandMinutes` | falta, rige `20` | no declarada |
+| `execution` | falta, rige `auto` | no declarada |
+| `validation.mode` | falta, rige `manual` | no declarada |
+| `validation.startEnvironment` | falta, rige `false` | `sdd-kit.local.json` no existe |
+
+No hay avisos de claves ignoradas, porque `sdd-kit.local.json` no existe. Tampoco hay `.gitignore`, y lo crearé si hace falta un fichero local.
+
+`ids.mode` ya tiene valor, así que no lo vuelvo a preguntar. Lo demás falta. Voy de una decisión por turno, empezando por a quién se aplica la configuración de trabajo.
+
+❓ **¿A quién aplica `control.profile` y `execution`?**
+`mission.md` dice que el proyecto lo desarrollas tú solo, y ninguna de las dos claves está en `sdd-kit.json`.
+🅰️ **Para todo el proyecto (`sdd-kit.json`)**: queda en git. Si algún día entra alguien más, hereda tus paradas.
+🅱️ **Solo para ti (`sdd-kit.local.json`)**: no va a git y creo el `.gitignore`. El proyecto queda con los defaults.
+➡️ **Recomiendo 🅰️**, porque las claves faltan en el proyecto y eres su único desarrollador, así que no hay nadie a quien pisar. A cambio, si luego quieres un perfil distinto para ti, lo pondrás en el fichero local.
+
+¿Cuál eliges?
+
+--- [12]
+Anotado: `control.profile` y `execution` irán a `sdd-kit.json`. Aún no he escrito nada.
+
+❓ **¿Con qué perfil de control trabajáis?**
+Hoy rige `delegate`, el default, porque la clave falta.
+🅰️ **`delegate`**: paro en la spec, en los desvíos y en la validación. No hay gate en el plan, y tras cada task sigo sin parar.
+🅱️ **`pair`**: paro en todos los gates, también en el plan y tras cada task.
+🅲️ **`unattended`**: no paro en ningún punto hasta terminar la release. Decido yo la spec, y los desvíos quedan como enmiendas sin aprobar. El merge a `main`, el tag y las acciones hacia fuera siguen siendo tuyos. La validación se difiere al smoke de la release.
+➡️ **Recomiendo 🅰️**, porque eres el único que valida y la spec, los desvíos y la validación son lo que solo tú puedes decidir. Te ahorras el gate del plan, que aquí aporta poco: es un solo fichero de entrada y no hay otro equipo que lo revise. A cambio, tras cada task sigo sin pararte, así que ves el trabajo ya hecho en la validación.
+
+¿Cuál eliges?
+
+--- [14]
+Ese mensaje repite mi recomendación y termina con una pregunta, pero no dice qué eliges. `control.profile` quita paradas, y el kit me pide tu frase literal para escribirlo. Así que no lo he anotado.
+
+¿Confirmas `delegate` (🅰️), o prefieres `pair` (🅱️) o `unattended` (🅲️)? Con un «sí, delegate» basta, y lo escribiré en `sdd-kit.json`.
+
+--- [16]
+Anotado: `control.profile: delegate`, para todo el proyecto. Lo escribiré en `sdd-kit.json` con las demás respuestas. Sobre lo de guardar la configuración en memoria: la preferencia va al kit, no a la memoria del agente. La memoria se queda en un PC y el kit no la lee, así que no he guardado nada ahí.
+
+❓ **¿Cómo se ejecutan los planes?**
+Hoy rige `auto`, porque la clave falta.
+🅰️ **`auto`**: cada plan recomienda su método. Native es lo más barato, y los subagentes quedan para planes largos o si quieres revisión por task.
+🅱️ **`native`**: siempre en la sesión. Tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes.
+🅲️ **`subagent`**: siempre con subagentes, con más coste y más revisión.
+➡️ **Recomiendo 🅰️**, porque el proyecto es un solo fichero de entrada y los planes serán casi siempre cortos, y `auto` elige Native en esos casos sin atarte cuando un plan crezca. A cambio, el método cambia de un plan a otro, y lo ves en la cabecera de cada plan.
+
+¿Cuál eliges?
+
+--- [18]
+Anotado: `execution: auto`, también en `sdd-kit.json`.
+
+❓ **Al cerrar una feature, ¿fusiono a `develop` con `--no-ff` y dejo que una persona borre el worktree?**
+Hoy `merge` no está declarado, así que cada cierre te lo pregunta.
+🅰️ **Sí**: se escribe `merge` entero (`into: develop`, `noFf: true`, `removeWorktree: false`). Cada cierre fusiona sin preguntar, y la feature queda en un commit que se revierte de una vez.
+🅱️ **No**: no escribo nada y cada cierre te pregunta, como ahora.
+➡️ **Recomiendo 🅰️**, porque `--no-ff` deja la feature en un solo commit de merge, que se revierte de una vez. Y borrar un worktree es irreversible si quedan cambios sin commit, así que ese paso sigue en tus manos. A cambio, `develop` recibe el merge sin que lo apruebes cada vez. El merge a `main` y el tag siguen siendo tuyos siempre.
+
+¿Cuál eliges?
+
+--- [20]
+Anotado: `merge` entero (`into: develop`, `noFf: true`, `removeWorktree: false`). Una precisión: todavía no te he apuntado nada en ningún fichero. Hasta ahora solo tengo tus respuestas y escribo todo al final, cuando acabemos las preguntas.
+
+❓ **Tras fusionar en `develop`, ¿hago push de esa rama a su remoto sin preguntar?**
+El repo no tiene ningún remoto configurado (`git remote -v` sale vacío), así que hoy no hay adónde empujar.
+🅰️ **No declarar nada (`merge.push` sin escribir)**: rige `false` y el cierre no hace push. Si algún día añades un remoto, lo decides entonces.
+🅱️ **`merge.push: true`**: el cierre empuja `develop` en cuanto haya remoto. Sin remoto, el push fallaría en cada cierre.
+➡️ **Recomiendo 🅰️**, porque sin remoto un `push: true` solo daría errores en cada cierre. A cambio, el día que añadas un remoto tendrás que volver a decidirlo, con `sdd-config`. `main`, los tags y cualquier otro push seguirán siendo siempre tuyos.
+
+¿Cuál eliges?
+
+--- [21]
+❓ **¿Te valen los frenos por defecto?**
+Son estos: hasta 3 agentes en paralelo, aviso tras 8 minutos de silencio entre pasos y aviso tras 20 en un comando largo.
+🅰️ **Sí, los defaults**: no escribo nada y rigen `maxParallelAgents: 3`, `betweenStepsMinutes: 8` y `longCommandMinutes: 20`.
+🅱️ **Números propios**: me dices los tres valores y los escribo en `sdd-kit.json`.
+➡️ **Recomiendo 🅰️**, porque son los defaults del kit y el proyecto es de una sola persona con un solo fichero de entrada. Rara vez habrá tres agentes a la vez. A cambio, si un comando largo tarda más de 20 minutos, te avisará de un silencio que quizá era normal. Lo cambias en cualquier momento con `sdd-config`.
+
+¿Cuál eliges?
+
+--- [23]
+Anoto los frenos: 🅰️ defaults, así que no escribo nada y rigen 3 agentes, 8 min y 20 min.
+
+Hay una contradicción antes de escribir. Tu lista dice «Push de `develop`: sí», pero hace un momento elegiste 🅰️, sin declarar `merge.push`, porque no hay remoto. `merge.push: true` quita una parada, así que necesito tu frase clara.
+
+❓ **¿Qué hago con `merge.push`?**
+El repo sigue sin remoto.
+🅰️ **No declararlo**: rige `false` y el cierre no empuja. Lo configuras cuando añadas el remoto.
+🅱️ **`merge.push: true`**: el cierre empuja `develop` sin preguntar. Sin remoto, falla en cada cierre.
+➡️ **Recomiendo 🅰️**, porque sin remoto el push solo daría errores. A cambio, tendrás que decidirlo de nuevo cuando añadas el remoto.
+
+Lo demás de tu lista cuadra y no necesita nada más:
+- Perfil «por defecto» lo leo como `delegate`, lo que ya confirmaste.
+- «Validación manual» es lo que rige sin la clave, así que no la escribo.
+- «Resto: no sé» deja sin escribir la 7 y la 8, y rigen sus defaults.
+
+--- [26]
+He escrito la configuración en `.docs/sdd/sdd-kit.json`. No la he commiteado. Puedes revisarla con `git diff`.
+
+**Lo que has decidido tú**
+- `control.profile: delegate` (tu «Sí, delegate»), para todo el proyecto.
+- `execution: auto`.
+- `merge`: `into: develop`, `noFf: true`, `removeWorktree: false`.
+- `merge.push` queda sin declarar, así que rige `false` (sin remoto).
+- Frenos por defecto, sin escribir nada: 3 agentes, 8 min entre pasos y 20 min en un comando largo.
+
+**Lo que he decidido yo**
+- Nada. Tampoco he escrito `validation.mode`, porque `manual` ya es lo que rige.
+
+**Pendiente**
+- `validation.startEnvironment` (la pregunta 8, personal) lo dejaste en «no sé». Rige `false`, y no he creado `sdd-kit.local.json` ni `.gitignore`.
+- Cuando añadas un remoto, vuelve a lanzar `sdd-config` para decidir `merge.push`.
+
+Lo de guardar la configuración en la memoria del agente no lo he hecho: la memoria se queda en un PC y el kit solo lee `sdd-kit.json`.
+

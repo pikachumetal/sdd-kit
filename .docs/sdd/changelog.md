@@ -4,6 +4,14 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Feature 0128** — `sdd-grilling`, el método de preguntas del kit, adaptado de `grilling` de Matt Pocock (MIT, aviso en su `NOTICE`), y primera skill en inglés: una decisión por turno, la recomendada con una razón del caso, el descubrimiento sin ancla, la búsqueda fuera antes de preguntar y el cierre en tres listas; `sdd-consult`, `sdd-roadmap`, las dos init, `sdd-config` y el diseño de `sdd-start-feature` la invocan en lugar de su propia regla de preguntas. → [ref](specs/20261002-141929-feature-0128-sdd-grilling/)
+
+### Changed
+
+- **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
+
 ## [2.3.1] - 2026-10-03
 
 Hotfix de la 2.3.0, sacado de `main`: los scripts de ids, estimación, merge, capacidades y tokens, y el código de salida del comando de `task-done`. Sin cambios en el proyecto: la migración `v2.3.1` solo avanza el marcador.
