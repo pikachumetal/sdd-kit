@@ -12,6 +12,25 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 - **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
 
+## [2.3.1] - 2026-10-03
+
+Hotfix de la 2.3.0, sacado de `main`: los scripts de ids, estimación, merge, capacidades y tokens, y el código de salida del comando de `task-done`. Sin cambios en el proyecto: la migración `v2.3.1` solo avanza el marcador.
+
+### Added
+
+- **`Test-Capabilities.ps1` omite un documento marcado «No es una capacidad.»** — un documento funcional heredado o un puntero dentro de `capabilities/` dejaba el validador en rojo permanente. Con la línea `> **No es una capacidad.**` justo tras su título, el validador no lo valida y lo nombra en la línea de éxito; si tiene escenarios, falla ([patch 0137](specs/20261003-142456-patch-0137-capabilities-not-capability-mark/patch.md)).
+
+### Changed
+
+- **El comando de `task-done` sale con distinto de 0 si algo falla** — `Invoke-Pester` sin `-CI` termina con 0 con un test en rojo, y `task-done` dio por completa una task con un fallo. El paso 6 de `sdd-start-feature` y el campo «Verificación» de `plan-template.md` lo piden ahora; con Pester, `-CI` ([patch 0138](specs/20261003-144033-patch-0138-task-done-exit-code/patch.md)).
+
+### Fixed
+
+- **`Get-NextSddId.ps1` lee el id de la tabla de Patches** — el roadmap lleva en «Patches» la fecha en la primera columna y el id en la segunda, y el script solo leía la primera: un patch sin carpeta en `specs/` dejaba su id libre para otra reserva. Ahora cuenta también el id de la segunda columna cuando la primera es una fecha ([patch 0133](specs/20261003-135752-patch-0133-next-id-patches-column/patch.md)).
+- **`Build-EstimationLog.ps1` lee los minutos y avisa del patch que no puede leer** — «~1 h 20 min» salía como 1 h porque el parser se quedaba con la primera cifra; ahora los minutos que siguen a las horas suman. Un `patch.md` sin sección «Tiempo» que escribe el tiempo en otra parte («Estimado: … · Real: …» en una línea) se saltaba en silencio; ahora avisa con su ruta ([patch 0134](specs/20261003-140114-patch-0134-estimation-log-minutes-warning/patch.md)).
+- **`Invoke-SddMerge.ps1` poda los worktrees registrados sin carpeta** — un registro cuya carpeta ya no existe dejaba la rama destino «sacada» en ninguna parte: el merge siguiente fallaba con «el hook rechazó el merge» y otras herramientas no cargaban `develop`. Ahora el script ejecuta `git worktree prune` antes de buscar la rama destino y al retirar el worktree temporal ([patch 0135](specs/20261003-140839-patch-0135-merge-prune-stale-worktree/patch.md)).
+- **`Measure-SessionTokens.ps1` marca en curso un despacho sin mensaje final** — medido con un subagente aún trabajando (la re-revisión del paso 9), el despacho salía con cifras parciales como si hubiera terminado. Ahora, si su última respuesta no acaba en texto ni en `SubagentHandback`, sale con «, en curso» detrás de los minutos ([patch 0136](specs/20261003-141528-patch-0136-session-tokens-in-progress/patch.md)).
+
 ## [2.3.0] - 2026-10-01
 
 El roadmap en la forma de su plantilla, la validación en campo y el carril patch decidido por quién fija la solución. [Release notes](releases/v2.3.0/release-notes.md).

@@ -57,13 +57,14 @@ function Merge-Response([hashtable]$Responses, [object]$Line) {
   $usage = ConvertTo-Usage $Line.message.usage
   $existing = $Responses[$key]
   if ($null -eq $existing) {
-    $Responses[$key] = [pscustomobject]@{ Model = Get-ModelKey $Line.message; Usage = $usage; Times = @($Line.timestamp) }
+    $Responses[$key] = [pscustomobject]@{ Model = Get-ModelKey $Line.message; Usage = $usage; Times = @($Line.timestamp); LastBlock = @($Line.message.content)[-1] }
     return
   }
   foreach ($category in $script:Categories) {
     $existing.Usage[$category] = [math]::Max($existing.Usage[$category], $usage[$category])
   }
   $existing.Times += $Line.timestamp
+  $existing.LastBlock = @($Line.message.content)[-1]
 }
 
 function Read-Responses([string]$File, [string]$BranchName) {
@@ -99,6 +100,13 @@ function Get-Minutes([object[]]$Responses) {
   return [math]::Round(($times[-1] - $times[0]).TotalMinutes)
 }
 
+# Un subagente que terminó acaba en texto o en SubagentHandback; si su último bloque es otra herramienta o un
+# razonamiento, sigue trabajando y lo medido es parcial. stop_reason no sirve: muchas líneas no lo llevan.
+function Test-InProgress([object[]]$Responses) {
+  $last = $Responses | Sort-Object { ($_.Times | Where-Object { $_ } | ForEach-Object { [datetimeoffset]$_ } | Measure-Object -Maximum).Maximum } | Select-Object -Last 1
+  return $last.LastBlock.type -ne 'text' -and $last.LastBlock.name -ne 'SubagentHandback'
+}
+
 function Read-Dispatch([System.IO.FileInfo]$File, [string]$BranchName) {
   $responses = Read-Responses $File.FullName $BranchName
   if ($responses.Count -eq 0) { return $null }
@@ -108,7 +116,7 @@ function Read-Dispatch([System.IO.FileInfo]$File, [string]$BranchName) {
     $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
     if ($meta.description) { $description = $meta.description }
   }
-  return [pscustomobject]@{ Description = $description; Totals = Get-ModelTotals $responses; Minutes = Get-Minutes $responses }
+  return [pscustomobject]@{ Description = $description; Totals = Get-ModelTotals $responses; Minutes = Get-Minutes $responses; InProgress = Test-InProgress $responses }
 }
 
 function Read-Session([string[]]$Folders, [string]$BranchName) {
@@ -181,7 +189,8 @@ function Format-DispatchLine([object[]]$Dispatches) {
   $total = ($Dispatches | ForEach-Object { Get-TotalTokens $_.Totals } | Measure-Object -Sum).Sum
   $noun = if ($Dispatches.Count -eq 1) { 'despacho' } else { 'despachos' }
   $items = $Dispatches | ForEach-Object {
-    "$($_.Description) $(Get-MainModel $_.Totals) $(Format-Tokens (Get-TotalTokens $_.Totals)) / $($_.Minutes) min"
+    $state = if ($_.InProgress) { ', en curso' } else { '' }
+    "$($_.Description) $(Get-MainModel $_.Totals) $(Format-Tokens (Get-TotalTokens $_.Totals)) / $($_.Minutes) min$state"
   }
   return "- Tokens de subagentes: $(Format-Tokens $total) en $($Dispatches.Count) $noun — $($items -join '; ')"
 }

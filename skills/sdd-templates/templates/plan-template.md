@@ -138,7 +138,7 @@ Endpoints, shape request/response.
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
 
 **Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
-**Verificación**: <los comandos de esas superficies y ninguno más>
+**Verificación**: <los comandos de esas superficies y ninguno más; cada uno sale con un código distinto de 0 si algo falla (con Pester, `-CI`)>
 **Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · criterio en frases medibles, p. ej. «la tarjeta muestra cliente, total y estado» · pantalla de referencia, si no es la de `§Frontend`>
 **Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
 **Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>

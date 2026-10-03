@@ -141,6 +141,12 @@
 | 2026-10-01 | 0117 | docs | 2.5 | 2.3 | 0.92 | 68419k | 1808k | 12.55 | 23.36 | 20261001-153446-feature-0117-patch-lane-fixed-solution |
 | 2026-10-03 | 0128 | infra/tooling | 6 | 3.5 | 0.58 | 87988k | 7891k | 14.2 | 41.13 | 20261002-141929-feature-0128-sdd-grilling |
 | 2026-10-03 | 0132 | patch | 0.5 | 1 | 2 | — | — | — | — | 20261003-113240-patch-0132-grilling-template-count |
+| 2026-10-03 | 0133 | patch | — | 0.3 | — | — | — | — | — | 20261003-135752-patch-0133-next-id-patches-column |
+| 2026-10-03 | 0134 | patch | — | 0.4 | — | — | — | — | — | 20261003-140114-patch-0134-estimation-log-minutes-warning |
+| 2026-10-03 | 0135 | patch | — | 0.5 | — | — | — | — | — | 20261003-140839-patch-0135-merge-prune-stale-worktree |
+| 2026-10-03 | 0136 | patch | — | 0.5 | — | — | — | — | — | 20261003-141528-patch-0136-session-tokens-in-progress |
+| 2026-10-03 | 0137 | patch | — | 0.4 | — | — | — | — | — | 20261003-142456-patch-0137-capabilities-not-capability-mark |
+| 2026-10-03 | 0138 | patch | — | 0.7 | — | — | — | — | — | 20261003-144033-patch-0138-task-done-exit-code |
 
 **Factor de calibración** (ratio mediano real/estimado, 116 artefactos): **0.6** · media 0.74
 
@@ -176,6 +182,6 @@
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
 | 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
 | 2.3.0 | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
-| sin publicar | 2 | 4.5 | 1.29 | 14.2 | 41.13 |
+| 2.3.1 | 8 | 7.3 | 1.29 | 14.2 | 41.13 |
 
 > Ver `estimation.md`.

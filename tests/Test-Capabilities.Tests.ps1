@@ -42,6 +42,20 @@ Describe 'Test-Capabilities.ps1 sobre capabilities/' -Tag 'Slow' {
     $result.Code | Should -Be 0
   }
 
+  It 'omite y nombra un documento marcado «No es una capacidad.» tras el título' {
+    $legacy = "# Documento funcional heredado`n`n> **No es una capacidad.** Documento funcional anterior al troceo.`n`n## Pantallas`n`nTexto.`n"
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'capabilities/funcional.md' = $legacy })
+    $result.Lines | Should -Be @('Capacidades válidas: 1 · omitidas por «No es una capacidad.»: funcional.md')
+    $result.Code | Should -Be 0
+  }
+
+  It 'un documento marcado «No es una capacidad.» con escenarios falla' {
+    $marked = "# Capacidad — auth`n`n> **No es una capacidad.**`n`n## Requisitos`n`n### Entrar`n$script:ReserveScenario`n"
+    $result = Invoke-Validator (New-SddFolder @{ 'capabilities/auth.md' = $marked })
+    $result.Lines | Should -Be @('auth.md: marcado «No es una capacidad.» y con escenarios: quita la marca o los escenarios')
+    $result.Code | Should -Be 1
+  }
+
   It 'un requisito sin THEN falla con fichero y requisito' {
     $content = $script:Bookings -replace '(?m)^- THEN lista `Sur` y `Oeste`, una por línea\r?\n', ''
     $result = Invoke-Validator (New-SddFolder @{ 'capabilities/bookings.md' = $content })

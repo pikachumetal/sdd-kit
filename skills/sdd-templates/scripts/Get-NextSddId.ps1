@@ -51,7 +51,8 @@ function Get-SpecArtifactIds([string]$ProjectRoot) {
 
 function Get-RoadmapLineIds([string[]]$Lines) {
   foreach ($line in $Lines) {
-    if ($line -match '^\|\s*(\d{4})\s*\|') { $Matches[1] }
+    # La tabla de Patches lleva la fecha en la primera columna y el id en la segunda.
+    if ($line -match '^\|\s*(?:\d{4}-\d{2}-\d{2}\s*\|\s*)?(\d{4})\s*\|') { $Matches[1] }
   }
 }
 
