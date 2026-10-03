@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-03
 branch: hotfix/v2.3.1
-commit: <hash>
+commit: 146415b7
 ---
 
 # Patch 0134 — Build-EstimationLog.ps1 lee los minutos y avisa del patch que no puede leer
@@ -51,6 +51,8 @@ Medido sobre `main` (2.3.0) con dos `patch.md` sintéticos: `- Real: ~1 h 20 min
 | 3 | regenerar el `estimation-log.md` de este repo | ✅ sin cambios y sin avisos: ningún `patch.md` del repo tenía el tiempo fuera del bloque |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-03 · tests nuevos en RED antes del fix y 70/70 tras él · estimation-log del repo regenerado sin cambios · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 

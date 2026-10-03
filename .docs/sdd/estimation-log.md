@@ -140,6 +140,7 @@
 | 2026-10-01 | 0124 | infra/tooling | 3 | 0.7 | 0.23 | 35595k | 2218k | 1.68 | 15.49 | 20261001-130008-feature-0124-capability-delta-merge |
 | 2026-10-01 | 0117 | docs | 2.5 | 2.3 | 0.92 | 68419k | 1808k | 12.55 | 23.36 | 20261001-153446-feature-0117-patch-lane-fixed-solution |
 | 2026-10-03 | 0133 | patch | — | 0.3 | — | — | — | — | — | 20261003-135752-patch-0133-next-id-patches-column |
+| 2026-10-03 | 0134 | patch | — | 0.4 | — | — | — | — | — | 20261003-140114-patch-0134-estimation-log-minutes-warning |
 
 **Factor de calibración** (ratio mediano real/estimado, 114 artefactos): **0.6** · media 0.73
 
@@ -175,6 +176,6 @@
 | 2.0.0 | 78 | 88.85 | 0.65 | 321.87 | 215.21 |
 | 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
 | 2.3.0 | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
-| sin publicar | 1 | 0.3 | — | — | — |
+| sin publicar | 2 | 0.7 | — | — | — |
 
 > Ver `estimation.md`.

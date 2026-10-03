@@ -7,6 +7,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Fixed
 
 - **`Get-NextSddId.ps1` lee el id de la tabla de Patches** — el roadmap lleva en «Patches» la fecha en la primera columna y el id en la segunda, y el script solo leía la primera: un patch sin carpeta en `specs/` dejaba su id libre para otra reserva. Ahora cuenta también el id de la segunda columna cuando la primera es una fecha ([patch 0133](specs/20261003-135752-patch-0133-next-id-patches-column/patch.md)).
+- **`Build-EstimationLog.ps1` lee los minutos y avisa del patch que no puede leer** — «~1 h 20 min» salía como 1 h porque el parser se quedaba con la primera cifra; ahora los minutos que siguen a las horas suman. Un `patch.md` sin sección «Tiempo» que escribe el tiempo en otra parte («Estimado: … · Real: …» en una línea) se saltaba en silencio; ahora avisa con su ruta ([patch 0134](specs/20261003-140114-patch-0134-estimation-log-minutes-warning/patch.md)).
 
 ## [2.3.0] - 2026-10-01
 
