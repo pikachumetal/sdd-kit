@@ -266,6 +266,7 @@
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-10-03 | 0132 | La plantilla de la pregunta de `sdd-grilling` muestra de 1 a N alternativas: «dos más una 🔀» pasa de 3 de 12 a 0 de 12 en Opus ([patch](specs/20261003-113240-patch-0132-grilling-template-count/patch.md)) |
 
 ## Releases cerradas
 

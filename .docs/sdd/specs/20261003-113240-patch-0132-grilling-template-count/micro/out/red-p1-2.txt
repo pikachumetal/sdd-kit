@@ -1,0 +1,14 @@
+❓ **¿Dónde se guardan las reservas entre ejecuciones?**
+
+Lo que encontré:
+- `tech-stack.md` dice: «Node 22, sin dependencias externas». Hoy las reservas viven en memoria y se pierden al salir. `package.json` solo declara `"type":"module"` y no fija ninguna versión menor de Node.
+- Node 22 trae SQLite incorporado (`node:sqlite`), así que usarlo no añade dependencias. Pero solo funciona sin flag desde **v22.13.0**, y la propia documentación lo sigue marcando como experimental (estabilidad 1.1, «Active development»), lo que significa que su API puede cambiar ([docs de Node 22, sqlite](https://nodejs.org/docs/latest-v22.x/api/sqlite.html)).
+
+🅰️ **Un archivo JSON, leído y escrito con `node:fs`.** Funciona en cualquier Node 22 y no requiere nada nuevo. Cuesta en un caso: si se lanzan dos comandos a la vez, el último que escribe borra al otro.
+`reservar Norte lunes 10-11` y `reservar Sur lunes 10-11` en dos terminales a la vez → los dos responden «reservada», pero después `libres 10-11` muestra Sur libre.
+
+🅱️ **Una base SQLite con `node:sqlite`.** Las dos reservas simultáneas se guardan bien, sin tener que programar bloqueos. Cuesta otras dos cosas: exige Node ≥ 22.13 (con 22.12 o anterior, `salas` no arranca), y como el módulo es experimental, una actualización de Node podría obligar a tocar el código.
+
+➡️ **Te recomiendo 🅰️**, porque es una CLI de reservas que se lanza comando a comando, y el stack pide funcionar en Node 22 sin atarse a una versión menor ni a una API experimental. A cambio, dos reservas lanzadas en el mismo instante pueden pisarse. Si eso te preocupa, se evita escribiendo en un archivo temporal y renombrándolo, con un archivo de bloqueo.
+
+¿Cuál eliges?

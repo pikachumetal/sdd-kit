@@ -26,12 +26,13 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 ```text
 ❓ **<title>**
 <what you found, with sources>
-🅰️ **<recommended>** <what happens, what it costs>
-🅱️ **<other>** <what happens, what it costs>
-➡️ **I recommend 🅰️**, because <a fact, cost or evidence from this case>. In exchange, <its cost>.
+1️⃣ **<recommended>** <what happens, what it costs>
+… from 1 to N, as the decision has
+<N>️⃣ **<other>** <what happens, what it costs>
+➡️ **I recommend 1️⃣**, because <a fact, cost or evidence from this case>. In exchange, <its cost>.
 ```
 
-- The decision sets the count: one defensible path: say it, confirm it; three or more, mixes apart, get 1️⃣ 2️⃣ 3️⃣…; 🔀 marks a mix defensible alone. A habitual mix is filler, like one you say «I don't think you want».
+- The decision sets the count: one defensible path: say it, confirm it; 🔀 marks a mix defensible alone. A habitual mix is filler, like one you say «I don't think you want».
 - «They're the defaults» or «it's simpler» is not a reason. With no reason to prefer one, say «tie, it depends on X» and ask X.
 - A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause. For how a screen looks or feels, offer a sketch instead of asking.
 - Icons mark only this question's alternatives; name earlier ones. If the user answers with an icon this question doesn't have, ask which one they meant.

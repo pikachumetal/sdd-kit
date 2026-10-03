@@ -1,0 +1,39 @@
+Esta es la pregunta que le haría ahora:
+
+---
+
+❓ **¿En qué formato se exportan las reservas?**
+
+Lo que he encontrado:
+- `tech-stack.md`: Node 22 sin dependencias externas, y cada reserva tiene sala, día y franja. El repositorio no tiene código todavía, así que los valores de abajo (`Norte`, `lunes`, `mañana`) son ejemplos inventados.
+- `tech-stack.md`: las reservas viven en memoria y se pierden al salir. Lo señalo como dato y lo dejo como decisión aparte: si cada `salas …` es un proceso nuevo, lo que se exporte en esa ejecución está vacío.
+- JSON viene incluido en Node (`JSON.stringify`). CSV (RFC 4180) e iCalendar (RFC 5545) habría que escribirlos a mano, y es poco código.
+
+Usos que pediste: hojas de cálculo, calendarios, otros scripts y leerlas sin más.
+
+1️⃣ **CSV**. Una fila por reserva:
+```
+sala,dia,franja
+Norte,lunes,mañana
+```
+Se abre en una hoja de cálculo, cualquier script lo lee línea a línea y se entiende a simple vista. A cambio, un calendario no lo importa como eventos.
+
+2️⃣ **JSON**:
+```
+[{"sala":"Norte","dia":"lunes","franja":"mañana"}]
+```
+Es lo más cómodo para otros scripts y sale sin escribir código de formato. A cambio, una hoja de cálculo no lo abre directamente, y con muchas reservas cuesta más leerlo que una tabla.
+
+3️⃣ **iCalendar (.ics)**:
+```
+BEGIN:VEVENT
+SUMMARY:Sala Norte
+DTSTART:20261005T090000
+DTEND:20261005T130000
+END:VEVENT
+```
+Se importa en Google Calendar, Outlook, etc. como eventos. A cambio, exige una fecha y unas horas concretas, y «lunes mañana» no dice qué lunes ni a qué hora. Para eso habría que decidir cómo se traduce cada franja a horas. Además, no sirve para hojas de cálculo ni para leerlo a simple vista.
+
+4️⃣ 🔀 **CSV + iCalendar**, con una opción para elegir el formato (`--formato csv|ics`). Cubre los cuatro usos. A cambio, son dos formatos que mantener, y el de calendario sigue necesitando la traducción franja → fecha y horas.
+
+➡️ **Te recomiendo 1️⃣**, porque con un solo formato y sin traducir nada cubre tres de tus cuatro usos: hojas de cálculo, scripts y leerlas. A cambio, para meterlas en un calendario te quedas sin exportación directa hasta que se decida cómo una franja pasa a fecha y horas. Entonces se puede añadir `.ics` (4️⃣) sin cambiar el CSV.
