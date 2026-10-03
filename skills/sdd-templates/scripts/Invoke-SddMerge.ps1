@@ -104,6 +104,8 @@ function Test-EmptyOrphanFolder([string]$ProjectRoot, [string]$Path) {
 }
 
 function Resolve-DestinationWorktree([string]$ProjectRoot, [pscustomobject]$Target, [string]$WorktreesParent) {
+  # Un registro cuya carpeta ya no existe deja la rama destino «sacada» en ninguna parte.
+  Invoke-IsolatedGit $ProjectRoot @('worktree', 'prune') | Out-Null
   $found = Find-BranchWorktree $ProjectRoot $Target.Into
   if ($null -ne $found) {
     $status = @(Invoke-IsolatedGit $found @('status', '--porcelain'))
@@ -228,6 +230,8 @@ function Remove-MergeWorktree([string]$ProjectRoot, [string]$Path) {
   if ($LASTEXITCODE -ne 0) { Invoke-IsolatedGit $ProjectRoot @('worktree', 'remove', '--force', $Path) | Out-Null }
   # Si un handle abierto en Windows impide borrar la carpeta, git quita el registro igual y la deja vacía.
   if (Test-EmptyOrphanFolder $ProjectRoot $Path) { Remove-Item -LiteralPath $Path -ErrorAction SilentlyContinue }
+  # Y el caso contrario: la carpeta se fue y el registro se quedó.
+  Invoke-IsolatedGit $ProjectRoot @('worktree', 'prune') | Out-Null
 }
 
 if (-not (Test-Path -LiteralPath $ProjectRoot)) { throw "No existe la ruta de proyecto '$ProjectRoot'." }

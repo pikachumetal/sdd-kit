@@ -114,6 +114,16 @@ Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
       (Invoke-NextId (Join-Path $script:Fixtures 'sequence-project')).Id | Should -Be '0006'
     }
 
+    It 'cuenta el id de la tabla de Patches del roadmap, en su segunda columna' {
+      $project = Join-Path (New-TempDirectory) 'project'
+      New-Item -ItemType Directory -Force -Path "$project/.docs/sdd" | Out-Null
+      Set-Content -LiteralPath "$project/.docs/sdd/sdd-kit.json" -Value '{"ids":{"mode":"sequence"}}'
+      Set-Content -LiteralPath "$project/.docs/sdd/roadmap.md" -Value @(
+        '## Patches', '', '| Fecha | Id | Descripción |', '| --- | --- | --- |', '| 2026-10-01 | 0011 | Un patch sin carpeta |'
+      )
+      (Invoke-NextId $project).Id | Should -Be '0012'
+    }
+
     It 'avisa y no devuelve id cuando dos carpetas comparten id entre carriles' {
       $result = Invoke-NextId (Join-Path $script:Fixtures 'duplicate-ids')
       $result.Id | Should -BeNullOrEmpty

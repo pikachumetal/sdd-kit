@@ -7,7 +7,9 @@
   capacidad», que «Propósito» sea la primera y diga en 300 caracteres como máximo qué cubre la capacidad, que cada
   requisito tenga líneas - GIVEN, - WHEN y - THEN, que bajo un requisito no quede ninguna línea suelta (ni «- …», ni
   cita «>», ni sangrada, ni en blanco), que no queden marcas de delta (tampoco «- Se valida en:») y que la sección de
-  reglas tenga sus cinco entradas por nombre. Con -Artifact, que se ejecuta después de fusionar el delta, comprueba además que el
+  reglas tenga sus cinco entradas por nombre. Un fichero cuya línea tras el título empieza por «> **No es una
+  capacidad.**» (un documento funcional heredado, un puntero) no se valida: se nombra en la salida, y falla solo si
+  tiene escenarios. Con -Artifact, que se ejecuta después de fusionar el delta, comprueba además que el
   bloque «## Capacidades» del artefacto nombra las mismas capacidades que su delta, y que cada ADDED o MODIFIED
   del delta está en su capacidad con las mismas líneas de escenario. Escribe una línea por fallo y
   sale con 1; sin fallos, «Capacidades válidas: <n>» y sale con 0.
@@ -24,6 +26,7 @@ $ErrorActionPreference = 'Stop'
 $script:AllowedSections = @('Propósito', 'Requisitos', 'Reglas de la capacidad')
 $script:ScenarioKeywords = @('GIVEN', 'WHEN', 'THEN')
 $script:PurposeMaxLength = 300
+$script:NotCapabilityMark = '> **No es una capacidad.**'
 
 function Test-CapabilityTitle([string]$Slug, [string[]]$Lines) {
   $title = $Lines | Where-Object { $_.Trim() } | Select-Object -First 1
@@ -89,8 +92,18 @@ function Test-CapabilityRules([string[]]$Lines) {
   }
 }
 
+function Test-NotCapability([System.IO.FileInfo]$File) {
+  # Un documento funcional heredado o un puntero lo declara en la línea que sigue al título.
+  $second = @(Get-Content -Encoding utf8 -Path $File.FullName | Where-Object { $_.Trim() } | Select-Object -First 2)[1]
+  return $second -like "$script:NotCapabilityMark*"
+}
+
 function Test-CapabilityFile([System.IO.FileInfo]$File) {
   $lines = @(Get-Content -Encoding utf8 -Path $File.FullName)
+  if (Test-NotCapability $File) {
+    if (Get-ScenarioLines $lines) { "$($File.Name): marcado «No es una capacidad.» y con escenarios: quita la marca o los escenarios" }
+    return
+  }
   $problems = @(
     Test-CapabilityTitle $File.BaseName $lines
     Test-CapabilitySections $lines
@@ -173,7 +186,10 @@ function Get-ValidationResult([string]$SddPath, [string]$ArtifactPath) {
   if ($ArtifactPath) { $problems += @(Test-ArtifactBlock (Get-Item $ArtifactPath) $capabilitiesDir) }
   if ($problems) { return [pscustomobject]@{ Lines = $problems; Code = 1 } }
   if (-not $files -and -not $ArtifactPath) { return [pscustomobject]@{ Lines = @('Sin capacidades que validar'); Code = 0 } }
-  return [pscustomobject]@{ Lines = @("Capacidades válidas: $($files.Count)"); Code = 0 }
+  $skipped = @($files | Where-Object { Test-NotCapability $_ })
+  $summary = "Capacidades válidas: $($files.Count - $skipped.Count)"
+  if ($skipped) { $summary += " · omitidas por «No es una capacidad.»: $(($skipped.Name) -join ', ')" }
+  return [pscustomobject]@{ Lines = @($summary); Code = 0 }
 }
 
 $previousEncoding = [Console]::OutputEncoding

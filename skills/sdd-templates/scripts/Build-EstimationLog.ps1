@@ -53,7 +53,13 @@ function ConvertTo-Hours([string]$Text, [string]$Source) {
   if ($Text -notmatch '^[\s*~≈≃]*(\d+(?:[.,]\d+)?)\s*\**\s*([^\W\d_]+)?') { return $null }
   $amount = [double]($Matches[1] -replace ',', '.')
   $unit = $Matches[2]
-  if (-not $unit -or $unit -match '^(?:h|horas?)$') { return $amount }
+  if (-not $unit -or $unit -match '^(?:h|horas?)$') {
+    # «1 h 20 min»: los minutos que siguen a las horas también cuentan.
+    if ($Text -match '^[\s*~≈≃]*\d+(?:[.,]\d+)?\s*\**\s*(?:h|horas?)\s*(?:y\s+)?(\d+)\s*(?:min|mins|minutos?)\b') {
+      return $amount + [double]$Matches[1] / 60
+    }
+    return $amount
+  }
   if ($unit -match '^(?:min|mins|minutos?)$') { return $amount / 60 }
   # Otra unidad (días, semanas…): sin adivinar la conversión, celda vacía y aviso.
   Write-Warning "Unidad de tiempo no reconocida en '$($Text.Trim())': $Source. Celda vacía."
@@ -141,7 +147,13 @@ function Read-Walkthrough([string]$Path) {
 function Read-Patch([string]$Path, [string]$Type) {
   $content = Get-Content $Path -Raw
   $section = Get-TimeSection $content '(?m)^#+\s*(?:\d+\.\s*)?Tiempo\b'
-  if ($null -eq $section) { return $null }
+  if ($null -eq $section) {
+    # Un tiempo escrito fuera del bloque de la plantilla («Estimado: … · Real: …» en una línea) no se lee: se avisa.
+    if ($content -match '(?m)\b(?:Real|Estimaci[oó]n|Estimado)\s*:') {
+      Write-Warning "Tiempo fuera del bloque «Tiempo» de la plantilla, sin leer: $Path. Fila excluida."
+    }
+    return $null
+  }
   return [pscustomobject]@{
     Content  = $content
     Type     = $Type

@@ -437,6 +437,20 @@ Describe 'Rama destino sacada y política de merge' -Tag 'Slow' {
     Assert-CleanedUp $fx
   }
 
+  It 'con develop registrada en un worktree cuya carpeta ya no existe, lo poda, fusiona y no deja registro' {
+    $fx = New-MergeFixture 'podable'
+    $stale = Join-Path $fx.Wt 'merge-0090'
+    Invoke-FixtureGit $fx.Repo @('worktree', 'add', '-q', $stale, 'develop') | Out-Null
+    Remove-Item -LiteralPath $stale -Recurse -Force
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001')
+
+    $result.ExitCode | Should -Be 0 -Because $result.Text
+    Get-Sha $fx.Repo 'develop^2' | Should -Be (Get-Sha $fx.Repo 'feature/0001')
+    (Invoke-FixtureGit $fx.Repo @('worktree', 'list', '--porcelain')) -join "`n" | Should -Not -Match 'prunable'
+    Assert-CleanedUp $fx
+  }
+
   It 'con una carpeta merge- con contenido falla con destino sacado: y no la toca' {
     $fx = New-MergeFixture 'ocupada'
     $leftover = Join-Path $fx.Wt 'merge-0001'

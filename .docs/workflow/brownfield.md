@@ -110,7 +110,7 @@ Reducir el tiempo necesario para entregar cambios validados sobre un sistema exi
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.3.0, octubre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v2.3.1, octubre de 2026.*
 
 ## Referencias
 
