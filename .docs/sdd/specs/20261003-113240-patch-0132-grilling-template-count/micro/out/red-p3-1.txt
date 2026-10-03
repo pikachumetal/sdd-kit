@@ -1,0 +1,35 @@
+Esta es la pregunta que le haría ahora:
+
+---
+
+❓ **Formato de la exportación**
+Según `tech-stack.md`, `salas` usa Node 22 sin dependencias externas, así que el formato que elijamos lo tendremos que generar nosotros. Hay tres formatos que cubren lo que pides, y cada uno sirve bien a una parte:
+
+Ejemplo con dos reservas: `reservar Norte lunes mañana` y `reservar Sur martes tarde`.
+
+1️⃣ **CSV** (RFC 4180): se abre directamente en una hoja de cálculo, cualquier script lo lee línea a línea y se entiende a simple vista. Los calendarios no lo importan como eventos.
+```
+sala,día,franja
+Norte,lunes,mañana
+Sur,martes,tarde
+```
+2️⃣ **iCalendar `.ics`** (RFC 5545): lo importan Google Calendar, Outlook y Calendario de Apple. Pide fecha y hora concretas, y ahora mismo `salas` solo guarda «lunes» y «mañana». Habría que decidir qué fecha es «lunes» y a qué horas corresponde «mañana». Además, en una hoja de cálculo no se lee bien.
+```
+BEGIN:VEVENT
+SUMMARY:Sala Norte
+DTSTART:20261005T090000
+DTEND:20261005T140000
+END:VEVENT
+```
+3️⃣ **JSON**: Node lo genera con `JSON.stringify`, sin código extra, y es lo más cómodo para otros scripts. Para leerlo sin más resulta pesado, y una hoja de cálculo no lo abre directamente.
+```
+[{"sala":"Norte","dia":"lunes","franja":"mañana"},
+ {"sala":"Sur","dia":"martes","franja":"tarde"}]
+```
+🔀 **CSV + `.ics`**: cubre los cuatro usos que mencionas, pero arrastra todo el coste del `.ics`, es decir, decidir cómo convertir día y franja en fechas y horas.
+
+➡️ **Te recomiendo 1️⃣ CSV**, porque cubre tres de tus cuatro usos (hojas de cálculo, scripts y leerlo sin más) con los datos que `salas` ya tiene, sin inventar fechas ni horas. A cambio, no podrás meter las reservas en un calendario hasta que añadamos el `.ics`, y eso depende de decidir antes cómo convertir día y franja en fechas y horas.
+
+---
+
+**Algo que hay que resolver antes:** según `tech-stack.md`, las reservas viven en memoria y se pierden al salir. Si la exportación es un comando aparte (`salas exportar`), se ejecutará en un proceso nuevo y exportará un archivo vacío. Esa decisión (guardar las reservas o exportar dentro de la misma ejecución) condiciona la exportación más que el formato. Conviene planteársela al usuario antes que esta pregunta, o justo después si quieres mantener el orden.

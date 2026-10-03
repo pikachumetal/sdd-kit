@@ -1,0 +1,13 @@
+❓ **¿Dónde se guardan las reservas entre ejecuciones?**
+
+Lo que he encontrado:
+- `tech-stack.md`: Node 22, sin dependencias externas. Hoy las reservas viven en memoria y se pierden al salir.
+- `package.json`: solo tiene `{"type":"module"}` y no fija ninguna versión menor de Node.
+- Node trae SQLite integrado (`node:sqlite`). Según la [doc de Node 22](https://nodejs.org/docs/latest-v22.x/api/sqlite.html), llegó en la v22.5.0 y desde la v22.13.0 ya no hace falta activarlo con un flag, pero sigue siendo experimental («Stability 1.1 – Active development»). No he podido ejecutar `node` aquí para ver si muestra un aviso por pantalla.
+
+1️⃣ **Un archivo JSON** (`fs` de Node). Cada `reservar` o `cancelar` lee el archivo y lo vuelve a escribir entero. Funciona con cualquier Node 22 y es texto legible. El coste es la simultaneidad: si dos personas ejecutan `salas reservar` exactamente a la vez, una de las dos reservas puede perderse sin aviso:
+`A: reservar Norte lunes 10-11` y `B: reservar Sur lunes 10-11` → ✅ las dos responden «reservada», pero en el archivo solo queda `Sur`.
+
+2️⃣ **SQLite integrado** (`node:sqlite`). Cada reserva se guarda en una transacción, así que dos ejecuciones simultáneas no se pisan, y la base de datos impide reservar dos veces la misma sala, día y franja. El coste: hace falta Node 22.13 o posterior (en versiones anteriores, `salas` falla al arrancar), la API es experimental y puede cambiar, y el archivo no se puede leer a simple vista.
+
+➡️ **Te recomiendo 1️⃣**, porque es una CLI local con pocos datos (salas × días × franjas) y el proyecto pide no depender de nada externo ni experimental. A cambio, si varias personas la usan a la vez sobre el mismo archivo, alguna reserva puede perderse. Si ese es tu caso, te conviene 2️⃣.
