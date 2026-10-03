@@ -258,6 +258,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el hilo abre y cierra cada task con `task-start` y `task-done`
 - THEN los lanza con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell, y comprueba que la ruta de `sdd-workspace` no está vacía antes de escribir en el ledger
 - AND pasa a `task-done` un comando que imprime algo (`sh -c '<comando> && echo ok'`), y la línea `Task <N>: complete` queda en el ledger a la primera
+- AND el comando sale con un código distinto de 0 si algo falla: con Pester, `Invoke-Pester … -CI`, y la «Verificación» del plan ya lo trae así; con un test en rojo, `task-done` no escribe `Task <N>: complete`
 
 ### La base se comprueba antes de cada task Native
 

@@ -259,6 +259,7 @@
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-10-03 | 0138 | El comando de `task-done` y la «Verificación» del plan salen con distinto de 0 si algo falla (con Pester, `-CI`) ([patch](specs/20261003-144033-patch-0138-task-done-exit-code/patch.md)) |
 | 2026-10-03 | 0137 | `Test-Capabilities.ps1` omite y nombra un documento marcado `> **No es una capacidad.**` ([patch](specs/20261003-142456-patch-0137-capabilities-not-capability-mark/patch.md)) |
 | 2026-10-03 | 0136 | `Measure-SessionTokens.ps1` marca «en curso» un despacho sin mensaje final ([patch](specs/20261003-141528-patch-0136-session-tokens-in-progress/patch.md)) |
 | 2026-10-03 | 0135 | `Invoke-SddMerge.ps1` poda los worktrees registrados sin carpeta antes de buscar la rama destino y al retirar el temporal ([patch](specs/20261003-140839-patch-0135-merge-prune-stale-worktree/patch.md)) |

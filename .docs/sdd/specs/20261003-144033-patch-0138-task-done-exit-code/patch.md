@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-03
 branch: hotfix/v2.3.1
-commit: <hash>
+commit: d9f78fca
 ---
 
 # Patch 0138 — El comando de task-done sale con distinto de 0 si algo falla
@@ -53,6 +53,8 @@ Lo que da por existente, comprobado: el paso 6 de `sdd-start-feature` ya dice qu
 | 6 | `tests/WordBudget.Tests.ps1`, `tests/Skills.Tests.ps1`, `tests/AnchorTemplates.Tests.ps1` | ✅ 222/222 |
 
 Los casos los verificó el agente. Método y lectura en `tests/task-done-exit-code-red.md`; las 36 salidas, en `micro/out/`.
+
+Validación en campo: 2026-10-03 · micro-test Opus n=6 por mensaje (plan: 0 → 6 de 6; copia literal en task-done: 4 → 6 de 6; control td 6 → 6 de 6) · WordBudget, Skills y AnchorTemplates 222/222 · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 
