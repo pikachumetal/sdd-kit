@@ -1,0 +1,191 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Glob: .docs/sdd/**/*
+<<< .docs\sdd\tech-stack.md
+.docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+
+>>> Bash: git branch --show-current; ls -a
+<<< develop
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.3.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+2	
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0128-sdd-grilling\5e1aac50-82eb-4217-ba3b-390e5cebfb24\scratchpad\kit-red\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0128-sdd-grilling/5e1aac50-82eb-4217-ba3b-390e5cebfb24/scratchpad/kit-red/skills/sdd-start-feature/references" && grep -n -i -E "perfil|profile" control-profiles.md | head -40; cat /dev/null; ls "<run>/repo/src" 
+<<< 1:# Perfiles de control y gates
+3:Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+5:## Perfiles
+11:La primera pregunta de la entrevista, sola en su turno, confirma el perfil vigente y ofrece cambiarlo para esa feature.
+15:1. `profile:` en el frontmatter de `spec.md` — la feature. Omitido, hereda.
+16:2. `control.profile` en `.docs/sdd/sdd-kit.local.json` — la persona. Fuera de git: ver la sección siguiente.
+17:3. `Perfil de control: <perfil>` justo bajo el en
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+=== RESULTADO (13 turnos, 0.251598 $)
+Ahora: confirmar carril, modo y perfil antes de abrir rama y spec. Queda: tu respuesta a esta pregunta y después la rama y la spec con decisiones a validar, ~10 min.
+
+He leído constitution, mission, tech-stack, roadmap y `sdd-kit.json`. No hay `capabilities/`, ni `architecture.md`, ni `sdd-kit.local.json`. Estás en `develop`, sin rama `feature/<id>` ni fila en el roadmap, así que el enunciado es el que me has dado.
+
+**Carril:** feature, no patch. Qué pasa al liberarse la sala, a quién se avisa y cómo se sale de la lista son decisiones que tendría que fijar yo.
+
+**Modo:** recomiendo **full**. Lite exige cumplir todas las condiciones, y aquí fallan dos:
+- *El flujo ya existe y se puede leer:* se cumple a medias. `cancelar` existe, pero `reservar` en `src/app.js` es un stub que solo reconoce `--cada-semana`.
+- *No cambia contratos públicos:* **no se cumple.** Hace falta un comando nuevo de la CLI (apuntarse a la espera) y probablemente otro para consultarla o salir.
+- *No cambia el schema de datos:* **no se cumple.** Hay una estructura nueva, la lista de espera, y hoy `bookings` es un array en memoria.
+- *Cabe en un solo módulo:* sí, es `src/app.js`.
+- *Estimación:* no hay `estimation.md`, no aplica.
+
+**Tamaño:** prevé unas 3 tasks (apuntarse, promover al cancelar, consultar o salir), todas en la misma superficie, sin migración. No propongo partirla.
+
+**Perfil:** `delegate`, que sale del proyecto (`sdd-kit.json` no fija `control.profile`, así que rige el default). Puedes cambiarlo solo para esta feature.
+
+**Id:** modo `sequence` y sin fila en el roadmap, así que lo saco de `Get-NextSddId.ps1` y creo la rama antes de la carpeta.
+
+¿Sigo así: feature en modo full, perfil `delegate`, 3 tasks sin partir? También puedes elegir una de estas:
+- **Lite:** lo apruebas tú aunque falle lo del contrato y el schema.
+- **Otro perfil:** `pair` o `unattended`.
+- **Aprobar la spec por delegación:** «apruebo la spec por delegación, nos vemos en la validación». Te quita la parada de la spec si te vas a ausentar; la validación final no se quita.
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0128-sdd-grilling\5e1aac50-82eb-4217-ba3b-390e5cebfb24\scratchpad\kit-red\skills\sdd-start-feature\references\nombrado.md
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+
+>>> Glob: **/Get-NextSddId.ps1
+<<< <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0128-sdd-grilling\5e1aac50-82eb-4217-ba3b-390e5cebfb24\scratchpad\kit-red\skills\sdd-templates\scripts\Get-NextSddId.ps1
+
+>>> PowerShell: pwsh -NoProfile -File "<home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0128-sdd-grilling\5e1aac50-82eb-4217-ba3b-390e5cebfb24\scratchpad\kit-red\skills\sdd-templates\scripts\Get-NextSddId.ps1" -ProjectRoot "<run>\repo" -Reserve
+<<< 0008
+
+>>> Bash: git checkout -b feature/0008-lista-espera && git branch --show-current && git status --short
+<<< Switched to a new branch 'feature/0008-lista-espera'
+feature/0008-lista-espera
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+=== RESULTADO (7 turnos, 0.37181059999999994 $)
+Esto lo clasifico como **arquitectónico**, el camino pesado: añade comandos nuevos a la CLI y una estructura de datos nueva. Si lo ves más pequeño, dímelo y lo cambio. Antes de proponer enfoques, esto es lo que he entendido y lo que me falta.
+
+**Lo que has dicho**
+- Quieres una lista de espera para cuando la sala que quieres está ocupada.
+
+**Lo que he sacado de los docs y del código**
+- Solo tú usas la herramienta, y todo es en memoria (`bookings` es un array).
+- `cancelar` ya existe, y es lo único que libera una sala.
+- El aviso por correo es el ítem 1 del roadmap y todavía no existe.
+- Node 22 sin dependencias, un solo fichero (`src/app.js`) y tests con `node --test`.
+
+**Lo que supongo, por si me equivoco**
+- «Ocupada» significa que ya hay una reserva en esa sala, día y franja.
+- La lista es de salas, días y franjas que tú quieres y no pudiste reservar.
+
+**Una pregunta, la que decide el diseño: ¿qué quieres que pase cuando la sala se libera?** Mi recomendación es la **a**:
+
+- **a) Se te avisa.** Al hacer `cancelar` sobre esa franja, la CLI imprime que la sala X está libre y que estabas en espera. Tú reservas a mano. Es lo más pequeño, y el correo del ítem 1 podría enchufarse después.
+- **b) Se reserva sola.** La reserva se crea automáticamente a tu nombre al liberarse. Es más cómodo, pero actúa sin que lo pidas.
+- **c) Solo se consulta.** Un comando te dice qué esperas y qué se ha liberado, sin que `cancelar` haga nada.

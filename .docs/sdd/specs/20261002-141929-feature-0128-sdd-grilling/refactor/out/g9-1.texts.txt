@@ -1,0 +1,28 @@
+--- [2]
+Uso `sdd-kit:sdd-consult` para esta pregunta, porque es una duda de enfoque y no una feature.
+
+--- [9]
+**Recomendación: nos vale lo que trae Node. No metería c8.**
+
+**Por qué**
+- `tech-stack.md` dice «sin dependencias externas» y `package.json` ni siquiera tiene `devDependencies`. c8 sería la primera dependencia del proyecto, y hoy no tiene nada que justifique romper esa regla.
+- Ya funciona. Lo he probado con `node --test --experimental-test-coverage` y da el informe por fichero: líneas 93,75 %, ramas 83,33 %, funciones 100 %. También da las líneas sin cubrir (la 13 de `src/app.js`).
+- Es el mismo motor V8 que usa c8, así que los números son equivalentes. Con un solo fichero de entrada y 3 tests no se nota ninguna diferencia.
+
+**Lo que c8 aportaría y aquí no hace falta**
+- Informes HTML y lcov, para subirlos a Codecov, Sonar o similar.
+- Fusionar la cobertura de varios procesos.
+- Reglas de inclusión y exclusión más cómodas.
+
+Si algún día se quiere un informe HTML o integrarlo con un servicio externo, ahí sí tendría sentido c8. Es un cambio pequeño y se puede hacer entonces.
+
+**Dos cosas a tener en cuenta**
+1. **Versión de Node.** `tech-stack.md` dice Node 22, y aquí corre Node 26. En 22 la cobertura sigue siendo experimental: hay que mantener el flag `--experimental-test-coverage` y el aviso puede cambiar. Si el equipo usa 22, el flag es obligatorio. Lo que no he comprobado es qué ofrece cada versión intermedia.
+2. **Umbral.** Con `--test-coverage-lines=90` (también hay `--test-coverage-branches` y `--test-coverage-functions`) el comando falla si no se llega. Eso permitiría cumplir de verdad la regla 2 de la constitución («`node --test` en verde antes de cada commit») también para la cobertura. Hay que elegir el umbral y, sobre todo, decidir si es bloqueante o solo informativo. Con 3 tests, un umbral alto bloquearía cualquier función nueva sin test.
+
+**Decisiones que quedan abiertas (son tuyas):**
+- ¿Bloqueante o solo informe? Yo empezaría solo informando, con un script `npm test` que ponga el flag.
+- ¿Qué métrica y qué número? Yo pondría líneas, con el umbral cerca de lo actual si luego se quiere bloquear.
+
+Todo lo anterior es consulta: no he tocado nada. Si quieres dejarlo hecho, serían tres cosas: el script `test` en `package.json`, una línea en `tech-stack.md` y, si hay umbral, una línea en la constitución. Es trabajo nuevo, así que pasaría por `sdd-start-feature`. Dime si lo quieres.
+

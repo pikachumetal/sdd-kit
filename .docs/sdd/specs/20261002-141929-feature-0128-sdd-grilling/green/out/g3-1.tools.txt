@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -50
+<<< develop
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap sdd-kit.json; do echo "=== $f"; cat $f* 2>/dev/null | head -80; done; ls -a . specs; ls sdd-kit.local.json 2>&1
+<<< Exit code 2
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. 
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0128-sdd-grilling/5e1aac50-82eb-4217-ba3b-390e5cebfb24/scratchpad/kit-green/skills/sdd-start-feature/references" && head -60 control-profiles.md; echo ======; head -40 modo-lite.md; echo =====; head -40 nombrado.md
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.2534066 $)
+**Contexto leído:** constitution, mission, tech-stack, roadmap y `sdd-kit.json`. No hay `capabilities/` ni `architecture.md`, y la rama es `develop`, así que el enunciado sale de tu mensaje. No he mirado el código.
+
+❓ **¿Lo llevamos como feature en modo full, con perfil `delegate`?**
+
+- **Carril:** feature, no patch. Una lista de espera es una regla nueva. Hay que decidir cosas que la petición no fija: el orden de la cola, qué pasa cuando se libera la sala y qué ve quien se apunta. Esas decisiones no las puedo tomar yo por ti.
+- **Modo:** full. Lite no cabe: la espera es un dato nuevo, lo que cambia el schema de datos, y eso incumple una de las condiciones del predicado. Las otras cuatro (flujo existente que se puede leer, sin contratos públicos cambiados, un solo módulo y, por no existir `estimation.md`, sin tope de estimación) no las he comprobado, porque no he abierto el código.
+- **Perfil:** `delegate`. Sale del nivel de proyecto: `sdd-kit.json` no fija `control.profile`, así que rige el default. No hay `sdd-kit.local.json` ni línea de perfil en la release del roadmap. En `delegate` paro en la spec, en los desvíos y en la validación. El plan no lleva gate.
+- **Tamaño:** prevo unas 3 tasks, así que no propongo partirla.
+- **Id:** el proyecto usa ids en `sequence` y no hay fila en el roadmap para esto. Reservaré el id con `Get-NextSddId.ps1 -Reserve` y crearé `feature/<id>-lista-espera` desde `develop`.
+
+🅰️ **Sí: feature, full, `delegate`.** Sigo con la spec, empezando por brainstorming.
+🅱️ **Cambiar algo:** perfil (`pair` o `unattended`), o apuntarla solo en el roadmap sin arrancarla.
+➡️ **Recomiendo 🅰️**, porque la regla de la cola tiene decisiones abiertas que solo tú puedes cerrar. A cambio, hay una parada en la spec antes de tocar código.
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0128-sdd-grilling/5e1aac50-82eb-4217-ba3b-390e5cebfb24/scratchpad" && find kit-green -name 'Get-NextSddId.ps1'; cd runs/green/g3-1/repo && pwsh -NoProfile -File "../../../../kit-green/skills/sdd-templates/scripts/Get-NextSddId.ps1" -ProjectRoot . -Reserve
+<<< kit-green/skills/sdd-templates/scripts/Get-NextSddId.ps1
+0008
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0008-lista-espera && git status --short && git branch --show-current
+
+>>> Skill: superpowers:brainstorming
+<<< Switched to a new branch 'feature/0008-lista-espera'
+feature/0008-lista-espera
+<<< Launching skill: superpowers:brainstorming
+
+>>> Bash: cd "<run>/repo" && cat package.json README.md; wc -l src/* test/*; cat src/app.js; ls .docs/sdd/specs/*; cat .docs/sdd/changelog.md
+<<< {"type": "module"}
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+  16 src/app.js
+  15 test/app.test.js
+  31 total
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semana
+
+=== RESULTADO (6 turnos, 0.3595906 $)
+He leído el código. Esto es lo que hay y lo que entiendo por ahora.
+
+**Lo que hay** (`src/app.js`, 16 líneas):
+- Las reservas son un array en memoria, `bookings`. No hay persistencia entre ejecuciones.
+- `reservar` solo existe con `--cada-semana`, y devuelve un texto fijo. No hay una reserva puntual que pueda fallar por ocupación.
+- `cancelar` devuelve un texto fijo. El changelog dice que cancela una reserva propia.
+- La misión dice que solo la usas tú.
+
+**Lo que entiendo:** quieres apuntarte para una sala y franja que ahora están ocupadas, y que la herramienta te lo gestione cuando se libere. Todavía no sé qué significa «gestionar» para ti.
+
+❓ **¿Qué quieres que pase en el momento en que la sala ocupada se libera?** Cuéntamelo con un caso concreto tuyo: sala, franja, quién la ocupa y cómo te enteras hoy de que ha quedado libre.

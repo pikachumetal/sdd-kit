@@ -548,6 +548,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN lo ofrece como lite y nombra la migración
 - AND con una migración que añade una columna no lo ofrece: cambia el schema
 
+### El diseño de una feature pregunta con `sdd-grilling`
+
+- GIVEN el paso de spec de `sdd-start-feature`, con `brainstorming` llevando el diseño de una feature que cambia lo que ve el usuario
+- WHEN `brainstorming` necesita una decisión del usuario
+- THEN la pregunta sigue `sdd-grilling` ([`interviewing`](interviewing.md)): una por turno, en texto con el formato fijo, con escena concreta si es de producto
+- AND el flujo (enfoques, diseño por secciones, spec) sigue siendo el de `brainstorming`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

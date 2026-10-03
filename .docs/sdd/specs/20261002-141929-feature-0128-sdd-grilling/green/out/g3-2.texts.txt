@@ -1,0 +1,41 @@
+--- [2]
+Uso `sdd-kit:sdd-start-feature` para arrancar esta funcionalidad.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto. Queda: confirmar carril, modo y perfil con una pregunta, ~2 min.
+
+--- [13]
+Ahora: confirmo carril, modo y perfil. Queda: una pregunta tuya, luego la entrevista de la spec y el gate de aprobación, ~10 min.
+
+He leído `constitution`, `mission`, `tech-stack`, `roadmap` y `sdd-kit.json`. No hay `capabilities/` ni `sdd-kit.local.json`, y la rama es `develop`, así que no hay fila de roadmap que dé el enunciado. Tomo como enunciado: **«lista de espera cuando la sala que quiero está ocupada»**.
+
+- **Carril:** es una feature, no un patch. Hay que decidir comportamiento: qué pasa al apuntarse, cuándo se avisa y qué ocurre cuando la sala se libera. Tampoco es consulta ni roadmap, porque pides que se haga.
+- **Modo:** recomiendo **full**. El modo lite exige que el flujo ya exista en el repo y que no cambie el schema de datos. La lista de espera es un flujo nuevo y guarda datos nuevos, así que esas condiciones no se cumplen.
+- **Tamaño:** prevé unas 2 o 3 tasks, todas en el mismo CLI (`src/app.js`) y sin migración. No propongo partirla.
+- **Perfil:** `delegate`, que viene del default del proyecto. No hay perfil en `sdd-kit.local.json`, en el roadmap ni en `sdd-kit.json`. Eso significa que paro en la spec, en los desvíos y en la validación, y no hay gate en el plan.
+
+¿Seguimos así, en modo **full** con perfil `delegate` (recomendado)? Las otras opciones son cambiar el perfil para esta feature (`pair` o `unattended`) o aprobar la spec por delegación («apruebo la spec por delegación, nos vemos en la validación»).
+
+--- [15]
+Ahora: creo la rama y reservo el id. Queda: la entrevista de la spec y el gate de aprobación, ~10 min.
+
+--- [25]
+Ahora: leo el código y las specs anteriores para fundamentar las preguntas. Queda: la entrevista, una decisión por turno.
+
+--- [28]
+Una cosa que he visto en el código, antes de preguntar. `src/app.js` guarda las reservas en un array fijo en memoria, y `reservar` todavía no crea ninguna reserva (solo devuelve un texto). Cada ejecución del CLI empieza de cero y no hay ningún proceso que siga corriendo. Esto limita cómo puede reaccionar la lista de espera cuando una sala se libera.
+
+❓ **¿Qué pasa cuando se libera la sala en la que estás en espera?**
+La liberación solo ocurre dentro de `cancelar`, porque no hay ningún proceso en segundo plano. Hay que decidir qué hace `cancelar` con tu entrada en espera.
+
+🅰️ **Se reserva sola.** Es la opción más cercana a una lista de espera de verdad.
+- `reservar Norte lun 10:00-12:00` → `Norte ocupada; te apunto en espera (1.º)`
+- `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte pasa a tu nombre (estabas 1.º en espera)`
+- Coste: `cancelar` pasa a tener un efecto que no pediste en esa orden. Además hay que decidir qué hacer si estabas en espera de dos salas a la vez.
+
+🅱️ **Solo se avisa.** `cancelar` se limita a avisarte y reservas tú a mano.
+- `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte libre: tienes espera (1.º), reserva con «reservar Norte lun 10:00-12:00»`
+- Coste: no hay ninguna garantía de que nadie te la quite entre el aviso y tu reserva. Mientras no haya más usuarios, ese riesgo es casi nulo.
+
+➡️ **Recomiendo 🅰️**, porque es lo que normalmente se entiende por «lista de espera». Si solo hay un usuario, no hay nadie con quien competir por el turno, y el aviso de 🅱️ te obligaría a escribir tú el `reservar` que el propio CLI ya sabe hacer. A cambio, `cancelar` deja de ser inocuo.
+

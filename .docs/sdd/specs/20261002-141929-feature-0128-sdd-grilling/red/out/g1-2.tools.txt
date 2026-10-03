@@ -1,0 +1,63 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd 2>/dev/null
+
+>>> Skill: grilling
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+<<< <tool_use_error>Unknown skill: grilling</tool_use_error>
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/mission.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md .docs/sdd/specs/*weekly/spec.md .docs/sdd/specs/*free/spec.md .docs/sdd/specs/*cancel/patch.md src/app.js README.md; do echo "=== $f"; cat "$f"; done
+<<< === .docs/sdd/mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+=== .docs/sdd/constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integració
+
+=== RESULTADO (6 turnos, 0.12320199999999999 $)
+No existe la skill `grilling` en este entorno, así que hago el interrogatorio a mano: una pregunta cada vez, con mi recomendación por delante. No toco nada.
+
+**Lo que dice el código y los docs**
+- `src/app.js` guarda la franja como texto libre (`'10:00-12:00'`). Los conflictos se detectan por igualdad exacta de ese texto (`b.slot === slot`).
+- El roadmap ya apunta como deuda que no hay validación del formato de franja. El patch 0007 salió de comparar solo por hora.
+- La misión te sitúa como único usuario y desarrollador.
+
+**Lo que infiero yo**
+Reservar medias horas no es solo aceptar `10:00-10:30`. Con la comparación por igualdad, `10:00-10:30` y `10:00-12:00` no chocarían, y se podría doble-reservar una sala. Así que la decisión de fondo es cómo se modela el tiempo.
+
+**Primera pregunta: ¿cómo quieres modelar la franja?**
+
+- **A (mi recomendación):** guardar `inicio` y `fin` como minutos del día, validar el formato y detectar conflicto por solapamiento de intervalos (`a.inicio < b.fin && b.inicio < a.fin`). Admite medias horas y cualquier duración. Además cierra la deuda de validación y evita otra variante del bug 0007.
+- **B:** rejilla fija de bloques de 30 minutos (`10:00`, `10:30`…) y una reserva es una lista de bloques. Es más simple de razonar, pero rígido.
+- **C:** mantener el texto y solo permitir un formato más, sin solapamientos. Es lo más barato, pero deja el hueco del doble-reserva.
+
+¿Vas con A? Si sí, la siguiente pregunta es si las reservas de 2 horas existentes (`10:00-12:00`) y la reserva semanal (`--cada-semana`) deben seguir funcionando tal cual.
+
+Cuando lo tengamos claro, esto es una feature. La pasaría por `sdd-start-feature` (o por `sdd-roadmap` si prefieres solo apuntarla). Entonces se le asignaría el id, y no antes.
