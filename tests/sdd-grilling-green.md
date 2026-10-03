@@ -25,7 +25,7 @@ Kit en `6cc7dc7c` (con `sdd-grilling` y las seis llamantes), superpowers 6.4.2 a
 
 ## REFACTOR
 
-Kit en el commit `fix(sdd-grilling): cerrar huecos del GREEN`. 6 sujetos (g9 ×2, g6 ×2, g1, g2) y 2,57 $. Contras añadidos:
+Kit con los contras del REFACTOR (juntados después en el commit `69909936`). 6 sujetos (g9 ×2, g6 ×2, g1, g2) y 2,57 $. Contras añadidos:
 
 - R11: probarlo en otra versión que la del proyecto no cuenta, y «no verificado» solo vale sin MCP ni web.
 - R1: una pregunta tras ➡️ es una segunda decisión.
@@ -61,4 +61,25 @@ g6 pasa a rechazar la primera decisión de diseño (tercer turno).
 - **La invocación no carga siempre**: `sdd-consult` contestó g9 sin entrevista 2 de 4 veces, y en el diseño de `sdd-start-feature` 1 de 6 pasó por `brainstorming` sin `sdd-grilling` (refactor g6-2).
 - **`sdd-roadmap` hace varias preguntas a la vez fuera de su entrevista** (g4: RED 2 de 2, GREEN 1 de 2), en un paso que la congelación no deja tocar.
 
-Coste total de la campaña: RED 3,74 $ + GREEN 4,44 $ + REFACTOR 2,57 $ + micro-tests ~1 $ ≈ **11,8 $**, 44 sujetos en la batería y 26 llamadas de micro-test (previsión: ~48 $ y techo de 60 $).
+Coste total de la campaña: RED 3,74 $ + GREEN 4,44 $ + REFACTOR 2,57 $ + micro-tests ~1,5 $ + controles de las enmiendas ~1,9 $ ≈ **14,2 $**, 49 sujetos en la batería y 32 llamadas de micro-test (previsión: ~48 $ y techo de 60 $).
+
+## Control tras la enmienda del 2026-10-03
+
+Un sujeto por escenario afectado (Art. I), kit con las tres piezas recuperadas de `grilling` y la regla «el número de alternativas lo pone la decisión». Salidas en `enmienda/out/`, ~1,5 $.
+
+| Escenario | Resultado |
+| --- | --- |
+| g1 | carga `sdd-grilling`; una decisión, 🅰️/🅱️, sin 🔀 |
+| g3 | carga `sdd-grilling` dentro de `brainstorming`; una decisión, 🅰️/🅱️, sin 🔀 |
+| g7 | cierra con «Decidido por ti / Decidido por mí / Pendiente» y no vuelve a preguntar `ids.mode` |
+| g9 | `sdd-consult` contesta sin cargar `sdd-grilling` (deuda «no carga siempre»): R11 no se mide por el camino real |
+| g3 (paso 4 con «invócala con `Skill`») | carga `sdd-grilling` dentro de `brainstorming`; sin 🔀 |
+
+Estos controles son **de no regresión**: la batería nunca reprodujo el «dos más una 🔀» (salió una sola vez, en `refactor/out/g6-2`, en la pregunta de carril). Su RED es la observación del dev-lead en la sesión de la 0128, con el agente en Opus: 5 de 7 preguntas con esa forma. En g7-1 el sujeto usa 1️⃣ 2️⃣ 3️⃣ en el turno del perfil ([10]), pero en el de `execution` ([20]) numera tres opciones con 🅰️ 🅱️ 🅲: es la regla que la re-revisión pidió devolver a la skill.
+
+## Micro-tests tras la re-revisión (texto de la pasada de fix de la primera re-revisión, juntada en el cierre)
+
+| Frase | Mensaje | Control (sin guía) | Con la skill |
+| --- | --- | --- | --- |
+| Buscar fuera (m3, párrafo reescrito por la enmienda) | Node 22 frente a c8, con `WebSearch` permitido | 0 de 3 buscan | **3 de 3 buscan**: R11 está probado con el texto de la pasada de fix de la primera re-revisión, juntada en el cierre en micro-test (los tres buscan directamente). El disparador del subagente cambió después, en la pasada de la segunda re-revisión («if it needs a web search»), y no se ha medido; por el camino real, `sdd-consult` no cargó la skill en g9 |
+| Mezcla por costumbre (m4) | `salas`: dónde va el día en `libres`; el formato del día ya está fijado en `tech-stack.md`, la posición no | 0 de 3 con mezcla; 3 de 3 con una segunda pregunta al final («Si eliges A o B, falta saber…», «Dime también…») | 0 de 3 con mezcla; 3 de 3 con una sola decisión sobre la forma de `libres` (la posición del día en skill-1 y skill-3, si es obligatorio en skill-2), con dos alternativas defendibles y sin repreguntar el formato fijado. Ninguno de los seis reproduce el «dos más una 🔀» con Sonnet: queda como evidencia de campo. «Una sola alternativa defendible» no se ejercita. Salidas en `.docs/sdd/specs/20261002-141929-feature-0128-sdd-grilling/micro/out/` |

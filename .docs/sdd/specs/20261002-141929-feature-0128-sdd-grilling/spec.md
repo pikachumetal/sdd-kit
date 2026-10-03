@@ -63,13 +63,13 @@ Review de spec propuesta: dos revisores — señales: capacidad nueva (`intervie
    - Micro-tests: 2 frases × 2 variantes × 5 = 20 llamadas de un turno, ~2 $, ~20 min.
    - GREEN: los mismos 17 + 4 de control (filas que el RED cumpla en los pasos que se tocan: tabla de claves antes de la primera pregunta en `sdd-config`, ramas y worktrees en turnos distintos en greenfield, la entrevista de `sdd-roadmap` no acaba en spec, `sdd-consult` no interroga una pregunta puntual) + `u1` de enrutado = 22 sujetos, ~25 $, ~1,5 h.
    - **Total ~59 ejecuciones, ~48 $, ~3,5 h. Techo: 70 ejecuciones y 60 $**, una tanda de REFACTOR incluida. Si se supera, paro y decides tú.
-   - Pasos cambiados y su escenario: `sdd-consult` paso de pensar/estructurar → g1; `sdd-init-greenfield` entrevista → g2, g5; `sdd-start-feature` paso 4 y `overrides-superpowers.md` → g3, g5, g6; `sdd-roadmap` entrevista → g4; `sdd-config` paso 2 → g7; `sdd-init-brownfield` paso 3 → g8, en un molde con código y sin `.docs/sdd/` (el descubrimiento con hecho y su fuente). Sin cambio, comprobado: `sdd-init-brownfield/references/generacion.md`, `sdd-init-greenfield/references/estructura.md` y `migrations/` no llevan regla de preguntas; `using-sdd` no lista skills por nombre en una tabla que cambie, y su control es `u1`.
+   - Pasos cambiados y su escenario: `sdd-consult` paso de pensar/estructurar → g1; `sdd-init-greenfield` entrevista → g2, g5; `sdd-start-feature` paso 4 → g3, g5, g6 (la fila de `overrides-superpowers.md` sale por la enmienda del 2026-10-03); `sdd-roadmap` entrevista → g4; `sdd-config` paso 2 → g7; `sdd-init-brownfield` paso 3 → g8, en un molde con código y sin `.docs/sdd/` (el descubrimiento con hecho y su fuente). Sin cambio, comprobado: `sdd-init-brownfield/references/generacion.md`, `sdd-init-greenfield/references/estructura.md` y `migrations/` no llevan regla de preguntas; `using-sdd` no lista skills por nombre en una tabla que cambie, y su control es `u1`.
 7. **Una pieza entra, otra sale** (Art. I). Entra `sdd-grilling` (~500 palabras). Sale la regla de preguntas repetida en `sdd-consult`, `sdd-roadmap`, `sdd-init-greenfield`, `sdd-init-brownfield`, `sdd-config` y `sdd-start-feature` (paso 4), sustituida por una línea que invoca `sdd-grilling`; sale la dependencia opcional de `grilling` de Matt del README y de `tech-stack.md`; salen las dos filas de deuda que absorbe (decisión de producto sin escena concreta; reapertura del diálogo tras un rechazo).
-8. **Topes de palabras**: `sdd-grilling` con `SkillMd = 600; Total = 600`, y el kit de 53.880 a 54.480 (medido hoy: 53.875). Los topes de las 6 skills no suben: la línea de invocación sustituye a la regla; si alguna pasa de su tope, se recorta dentro de la propia línea.
+8. **Topes de palabras**: `sdd-grilling` con `SkillMd = 650; Total = 650`, y el kit de 53.880 a 54.530 (enmienda 2026-10-03; antes 600 y 54.480; medido al aprobar: 53.875); `sdd-start-feature` de 20.210 a 20.215 (enmienda 2026-10-03). Los topes de las 6 skills no suben: la línea de invocación sustituye a la regla; si alguna pasa de su tope, se recorta dentro de la propia línea.
 9. **Formato de la pregunta** (adaptado del de Matt para una sola): ❓ título y cuerpo; cada alternativa con su icono (🅰️ 🅱️ con dos; 1️⃣ 2️⃣ 3️⃣… con tres o más; 🔀 para la mezcla), la recomendada primero; ➡️ la recomendada con su razón. «Primero» mantiene vigentes los requisitos de `configuration` que dicen «la recomendada primero» (la pregunta de quién valida, entre otros) sin otro MODIFIED; repaso de coherencia: la primera redacción la ponía solo al final, y contradecía esos requisitos. Los iconos solo marcan las opciones de la pregunta en curso; para nombrar algo de fuera se usa su nombre.
 10. **Lo que no se toca por la congelación de la 0121**: en las 6 skills, solo la regla de preguntas. Las aprobaciones con `AskUserQuestion` de esas skills (gates de spec, plan, validación) siguen igual.
 11. **La devolución no cambia ninguna plantilla**: `sdd-grilling` devuelve las dos listas y lo pendiente en su texto, y cada llamante lo pone donde ya lo pone hoy. En `sdd-start-feature`, «Decisiones que he tomado yo» y «Decisiones tomadas con el dev-lead» de la spec. En las init, la entrada del documento o «pendiente». En `sdd-roadmap`, la propuesta. En `sdd-config`, las respuestas que devuelve o escribe. En `sdd-consult`, la respuesta.
-12. **«Decide tú» y `delegate` no son dos reglas para lo mismo.** Las paradas las fija `control-profiles.md`, y `sdd-grilling` no las cambia. «Lo que es del usuario» (alcance, nivel, dinero) lo cita de allí, sin redefinirlo (Art. IX).
+12. **«Decide tú» y `delegate` no son dos reglas para lo mismo.** Las paradas las fija `control-profiles.md`, y `sdd-grilling` no las cambia. «Lo que es del usuario» (alcance, nivel, dinero) sale de la regla 6 del `CLAUDE.md` del repo y del THEN de «Decide tú»: `control-profiles.md` no lo define, así que la skill lo lista (corregido el 2026-10-03, tercera re-revisión).
 13. **Las claves del catálogo de `sdd-config` son decisiones de método**: la recomendada y su motivo los pone el catálogo, que es la razón del caso. La clave que el catálogo dice que va sin recomendada (push con una convención distinta de git-flow) es el «empate» de `interviewing`, no una excepción.
 14. **«Decide tú» en `sdd-config`** escribe la recomendada del catálogo y la apunta en «decidido por mí»: el usuario delegó la respuesta, así que contestar «decide tú» es responder, no callar. «No sé» sigue sin escribir nada.
 
@@ -126,7 +126,7 @@ Hoy cada skill que entrevista al usuario repite su propia regla de preguntas («
 ## Scope
 
 - Entra: `skills/sdd-grilling/SKILL.md` (inglés) y `skills/sdd-grilling/NOTICE`; `THIRD_PARTY_NOTICES.md` en la raíz.
-- Entra: en `sdd-consult`, `sdd-roadmap`, `sdd-init-greenfield`, `sdd-init-brownfield`, `sdd-config` y `sdd-start-feature` (paso 4), la regla de preguntas sustituida por la invocación de `sdd-grilling`; `sdd-start-feature/references/overrides-superpowers.md`, una fila: durante `brainstorming`, las preguntas siguen `sdd-grilling`.
+- Entra: en `sdd-consult`, `sdd-roadmap`, `sdd-init-greenfield`, `sdd-init-brownfield`, `sdd-config` y `sdd-start-feature` (paso 4), la regla de preguntas sustituida por la invocación de `sdd-grilling`; ~~`overrides-superpowers.md`, una fila~~ (sale por la enmienda del 2026-10-03: el paso 4 dice «(invócala con `Skill`)»).
 - Entra: batería `tests/batteries/sdd-grilling/` (escenarios, rúbrica y procedencia), el script de persona en bucle sobre `tests/headless/lib.sh` con su test, y la evidencia `tests/sdd-grilling-red.md` y `tests/sdd-grilling-green.md`.
 - Entra: `tests/WordBudget.Tests.ps1` (tope de la skill y del kit).
 - Entra: `.docs/sdd/mission.md` («Flujo por defecto»: la entrevista ya no va con `AskUserQuestion`; «Es»: el recuento de skills).
@@ -148,6 +148,8 @@ Se adopta `grilling` de Matt como base y se cambia lo que el brainstorm decidió
 - WHEN el agente pregunta
 - THEN el turno termina con una sola decisión, la que más cambia el resto (la que reabre otras ramas va primero)
 - AND si el usuario pide en la sesión «pregúntamelo todo de golpe», en esa sesión pregunta por rondas
+- AND en otra entrevista, una decisión que depende de otra todavía abierta espera a que esa se cierre (enmienda 2026-10-03)
+- AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
 
 **ADDED — Una decisión de diseño va en texto con formato fijo; una operativa, con diálogo**
 - GIVEN una decisión cuyas alternativas solo se entienden con su consecuencia explicada (más de una línea por alternativa: un coste, una escena, un argumento), como el diseño del RED con o sin persona en bucle
@@ -162,6 +164,7 @@ Se adopta `grilling` de Matt como base y se cambia lo que el brainstorm decidió
 - WHEN el agente la pregunta
 - THEN ofrece solo las dos defendibles, y la mezcla de ambas si combinarlas es defendible
 - AND con cinco alternativas defendibles ofrece las cinco: no hay número fijo
+- AND con una sola alternativa defendible la dice y pide confirmarla, y no añade una mezcla 🔀 que no defendería sola (enmienda 2026-10-03)
 
 **ADDED — La recomendada se gana con una razón del caso**
 - GIVEN una decisión de método, técnica o alcance
@@ -261,6 +264,10 @@ Se adopta `grilling` de Matt como base y se cambia lo que el brainstorm decidió
 - AND convención de ramas, worktrees y entorno del worktree son preguntas distintas, en turnos distintos
 
 ## Enmiendas
+
+- 2026-10-03 — Scope: sale la fila de `overrides-superpowers.md` y el paso 4 de `sdd-start-feature` dice «sus preguntas siguen `sdd-grilling` (invócala con `Skill`)»; tope de `sdd-start-feature` de 20.210 a 20.215 (cambia la decisión 8) — la fila pasaba el tope por 12 palabras y duplicaba la regla del paso 4; la revisión final lo señaló como desvío, no ruling, y en el GREEN 1 de 6 diseños no cargó la skill con la frase sin «invócala» — aprobada: «ok, 1»
+
+- 2026-10-03 — `sdd-grilling` recupera tres piezas de `grilling` que se habían caído al recortar para el tope: interrogar sin descanso hasta que nada quede supuesto en silencio (cada suposición, pregunta o «decidido por mí»), la pregunta que depende de otra abierta espera, y buscar los hechos sin bloquear (subagente si tarda). Tope de `sdd-grilling` de 600 a 650 y kit de 54.480 a 54.530 (cambia la decisión 8). Y la regla de alternativas pasa a «el número lo pone la decisión»: «dos más una 🔀» por costumbre es relleno, y una sola alternativa defendible se dice y se confirma — el dev-lead notó al comparar con la original que «se parecen muy poco», y que el agente, con el formato, cae en «presentar 2 soluciones y una híbrida» (5 de 7 preguntas de esta sesión) — aprobada: «A»
 
 ## Aprobaciones
 

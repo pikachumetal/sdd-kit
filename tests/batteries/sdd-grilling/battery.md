@@ -65,3 +65,5 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 | Rechazo: prosa hasta que conteste, sin volver a las opciones | RED R9 1 de 2; ticket de la feature 0115 §10 | g6 |
 | Cierre en tres listas; la confirmación es el gate del llamante | RED R10 2 de 2 | g7 |
 | Todo en el idioma del usuario, también los anuncios | RED R12 3 de 17 | todos |
+| Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill) |
+| El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g1, g3 (no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |

@@ -1,0 +1,68 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cat package.json; node --version; ls -a; ls .docs/sdd 2>/dev/null; cat .docs/sdd/tech-stack.md 2>/dev/null | head -60
+<<< {"type": "module"}
+v26.10.0
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+>>> Bash: cat .docs/sdd/constitution.md; ls src test; cat README.md | head -30
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+src:
+app.js
+
+test:
+app.test.js
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+
+=== RESULTADO (5 turnos, 0.1718638 $)
+Nos vale lo que trae Node, y no metería c8.
+
+**Lo que dicen los docs del proyecto**
+- El `tech-stack` fija «Node 22, sin dependencias externas» y tests con `node --test`.
+- Con `c8` rompemos esa línea: `package.json` es hoy solo `{"type": "module"}`, sin `devDependencies`, y `c8` traería `node_modules` y un lockfile.
+
+**Lo que infiero yo**
+- **Versión de Node:** la cobertura nativa (`--experimental-test-coverage`) existe desde Node 20 y 22. Aquí tenemos Node 26 en local, así que la tenemos de sobra. No he comprobado en esta sesión cómo se comporta en 22, que es lo que declara el `tech-stack`.
+- **Estado de la bandera:** la bandera ha cambiado entre versiones, así que conviene comprobar en Node 22 que no sigue marcada como experimental.
+- **Lo que da:** cobertura de líneas, ramas y funciones, y un informe por terminal. También da umbrales con `--test-coverage-lines`, `--test-coverage-branches` y `--test-coverage-functions`, que en Node 22 pueden no estar disponibles.
+- **Formatos:** puede sacar `lcov` con `--test-reporter=lcov`, que sirve si algún día hay CI o Sonar.
+- **Dónde gana `c8`:** informes HTML, ficheros de configuración, `--check-coverage` más maduro y compatibilidad con versiones antiguas. Hoy no necesitamos nada de eso: tenemos un solo fichero en `src/app.js` y un solo fichero de tests.
+
+**Mi recomendación**
+1. Usar el nativo: `node --test --experimental-test-coverage` como script `npm test:coverage`, sin dependencias.
+2. Decidir un umbral solo cuando haya algo que proteger. Con un fichero de código, un número fijado ahora sería arbitrario.
+3. Si más adelante necesitamos HTML o una compatibilidad que Node no da, entonces sí, `c8` como `devDependency`. Sería una decisión registrada en el `tech-stack`.
+
+**Lo que falta decidir**
+- ¿La cobertura es solo una medida informativa o queremos que falle el commit por debajo de un umbral? Eso lo hace relevante para la constitución, que ya exige `node --test` en verde antes de cada commit.
+- ¿Queremos apuntarlo como trabajo? Si sí, sería una entrada en el roadmap (`sdd-roadmap`) o una feature (`sdd-start-feature`).
+
+No he tocado nada. Si quieres, pruebo ahora mismo en un spike desechable que el nativo funciona con el test actual.
