@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-03
 branch: hotfix/v2.3.1
-commit: <hash>
+commit: 16b7a8d7
 ---
 
 # Patch 0135 — Invoke-SddMerge.ps1 poda los worktrees registrados sin carpeta
@@ -48,6 +48,8 @@ Medido sobre `main` (2.3.0), con el test nuevo de `tests/Invoke-SddMerge.Tests.p
 | 3 | `tests/Invoke-SddMerge.Tests.ps1` tras el fix | ✅ 23/23 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-03 · test nuevo en RED antes del fix y 23/23 tras él · pre-commit 949/0 · el origen del registro sin carpeta no se reprodujo (§1)
 
 ## 5. Tiempo (ligero)
 
