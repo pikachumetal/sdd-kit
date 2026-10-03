@@ -95,6 +95,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - WHEN se ejecuta el script
 - THEN la línea empieza por `Tokens de subagentes: 510.010 en 1 despacho — Revisión final de rama claude-opus-5-5 510.010 / 12 min` (con dos o más, «despachos» y los despachos separados por `; `)
 - AND los tokens del subagente no se suman a los del hilo
+- AND un despacho cuya última respuesta no acaba en texto ni en `SubagentHandback` (sigue trabajando) sale con `, en curso` detrás de los minutos: `… 510.010 / 12 min, en curso`
 
 ### El coste sale de la tabla de precios del proyecto
 

@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-03
 branch: hotfix/v2.3.1
-commit: <hash>
+commit: 914d4890
 ---
 
 # Patch 0136 — Measure-SessionTokens.ps1 marca en curso un despacho sin mensaje final
@@ -48,6 +48,8 @@ Medido sobre `main` (2.3.0) con el test nuevo de `tests/Measure-SessionTokens.Te
 | 3 | regla contra los 60 transcripts de subagente más recientes de esta máquina, todos terminados | ✅ 0 marcados en curso (con `stop_reason`, 21 de 40) |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-03 · test nuevo en RED sin el fix (24/1) y 25/25 con él · 0 falsos «en curso» en 60 transcripts reales terminados · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 
