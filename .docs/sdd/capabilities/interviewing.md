@@ -19,10 +19,10 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 
 - GIVEN una decisión cuyas alternativas solo se entienden con su consecuencia explicada (más de una línea por alternativa: un coste, una escena, un argumento), como el diseño del RED con o sin persona en bucle
 - WHEN el agente la pregunta
-- THEN la escribe en texto, no con `AskUserQuestion`: ❓ título y cuerpo, cada alternativa con su icono (🅰️, 🅱️, 🔀 para una mezcla), la recomendada como primera alternativa, y ➡️ la recomendada con su razón
+- THEN la escribe en texto, no con `AskUserQuestion`: ❓ título y cuerpo, las alternativas numeradas de 1 a N, tantas como tenga la decisión (1️⃣, 2️⃣…; 🔀 para una mezcla que se defiende sola), la recomendada como primera alternativa, y ➡️ la recomendada con su razón
 - AND los iconos solo marcan alternativas de esa pregunta: para referirse a una de una pregunta anterior usa su nombre («primer turno»), no su icono
 - AND una decisión operativa, cuyas alternativas se entienden en una línea sin explicar nada (aprobar o pedir cambios, seguir o parar, confirmar carril y perfil), va con `AskUserQuestion`, la recomendada primero
-- AND unas etiquetas cortas no hacen operativa una decisión de diseño: «¿🅰️ o 🅱️?» con costes distintos detrás va en texto
+- AND unas etiquetas cortas no hacen operativa una decisión de diseño: «¿1️⃣ o 2️⃣?» con costes distintos detrás va en texto
 
 ### Alternativas reales, mezclas incluidas
 

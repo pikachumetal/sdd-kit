@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-03
 branch: feature/0132-grilling-template-count
-commit: <hash del fix>
+commit: bfef7b00
 ---
 
 # Patch 0132 — La plantilla de `sdd-grilling` muestra de 1 a N alternativas
@@ -47,6 +47,8 @@ El dev-lead: «es dar a entender en el ejemplo que se de 1 a N, o de A a Z… el
 | Dónde guardar (dos opciones reales) | micro-test Opus, n=4 | 2 alternativas en 4 de 4 con las dos plantillas |
 | Topes y anatomía | `Invoke-Pester tests/WordBudget.Tests.ps1, tests/Skills.Tests.ps1 -CI` | verde |
 
+Validación en campo: 2026-10-03 · micro-test Opus n=12 por celda (dos más 🔀: 3 de 12 → 0 de 12; camino único 10 → 9 de 12) · WordBudget y Skills en verde · el uso real lo dirán los tickets de `sdd-feedback`
+
 Coste: ~8 $ en 56 llamadas de Opus. El método y el detalle están en `tests/sdd-grilling-template.md`.
 
 ## Delta de capacidad
@@ -61,6 +63,7 @@ Coste: ~8 $ en 56 llamadas de Opus. El método y el detalle están en `tests/sdd
 - AND una decisión operativa, cuyas alternativas se entienden en una línea sin explicar nada (aprobar o pedir cambios, seguir o parar, confirmar carril y perfil), va con `AskUserQuestion`, la recomendada primero
 - AND unas etiquetas cortas no hacen operativa una decisión de diseño: «¿1️⃣ o 2️⃣?» con costes distintos detrás va en texto
 
-## 5. Tiempo
+## 5. Tiempo (ligero)
 
-- Estimado: 0,5h · Real: 1h (micro-tests en dos tandas, la segunda pedida por el dev-lead).
+- Estimación: 0,5h
+- Real: 1h (micro-tests en dos tandas, la segunda pedida por el dev-lead)
