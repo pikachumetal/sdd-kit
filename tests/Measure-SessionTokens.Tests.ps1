@@ -179,6 +179,15 @@ Describe 'Measure-SessionTokens.ps1' -Tag 'Slow' {
     }
   }
 
+  Context 'despacho en curso' {
+    It 'marca en curso un despacho cuyo último mensaje no es el final' {
+      $worktree = New-Worktree @('base') $null
+      $agent = Join-Path $worktree.Folder 's1/subagents/agent-x1.jsonl'
+      (Get-Content -LiteralPath $agent -Raw).Replace('[{"type":"text","text":"..."}],"stop_reason":"end_turn"', '[{"type":"tool_use","name":"Bash"}],"stop_reason":null') | Set-Content -LiteralPath $agent
+      Get-Line (Invoke-Measure $worktree) 'Tokens de subagentes' | Should -BeLike '*— Revisión final de rama claude-opus-5-5 510.010 / 12 min, en curso'
+    }
+  }
+
   Context 'entradas que la spec no nombra' {
     It 'sin meta.json el despacho se nombra por su fichero' {
       $worktree = New-Worktree @('base') $null
