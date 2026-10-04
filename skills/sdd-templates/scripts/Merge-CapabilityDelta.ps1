@@ -10,7 +10,7 @@
 
   Todo o nada: con cualquier fallo (un MODIFIED que no está, un ADDED con otro texto ya presente, una cita de una
   decisión de la spec por número, un hueco <…> de la plantilla, una capacidad sin fichero que el bloque «Capacidades»
-  no declara en «Nuevas») escribe una línea por fallo, sale con 1 y no cambia ningún fichero. Sin fallos, una línea
+  no declara en «Nuevas», un MODIFIED que perdería un «- AND» del vivo) escribe una línea por fallo, sale con 1 y no cambia ningún fichero. Sin fallos, una línea
   por cambio y sale con 0. Volver a ejecutarlo sobre lo ya fusionado no cambia nada.
 .EXAMPLE
   pwsh -NoProfile -File Merge-CapabilityDelta.ps1 -Path .docs/sdd -Artifact .docs/sdd/specs/<carpeta>/spec.md
@@ -33,8 +33,22 @@ function Find-Pattern([string]$Text, [string]$Pattern) {
 function Format-Title([string]$Title) { return ($Title -replace '\s+', ' ').Trim() }
 
 function Get-MergeableLines([string[]]$Lines) {
-  return @($Lines | Where-Object { $_.Trim() -and $_ -notmatch '^\s*>' -and $_ -notmatch '^- (Se valida en|motivo):' } |
+  return @($Lines | Where-Object { $_.Trim() -and $_ -notmatch '^\s*>' -and $_ -notmatch '^- (Se valida en|motivo):' -and $_ -notmatch '^- REMOVED ' } |
       ForEach-Object { $_.TrimEnd() })
+}
+
+function Get-OutcomeLines([string[]]$Lines) {
+  return @($Lines | Where-Object { $_ -match '^- (THEN|AND)\b' } | ForEach-Object { Format-Title $_ })
+}
+
+function Get-LostLines([object]$Existing, [object]$Entry) {
+  # ponytail: cuenta, no empareja; editar una línea no la pierde. Si el delta quita una y añade otra, no lo ve.
+  $live = Get-OutcomeLines $Existing.Body
+  $kept = Get-OutcomeLines $Entry.Lines
+  $retired = @($Entry.Lines | Where-Object { $_ -match '^- REMOVED (.+)$' } | ForEach-Object { '- ' + (Format-Title $Matches[1]) } |
+      Where-Object { $live -ccontains $_ })
+  if ($kept.Count + $retired.Count -ge $live.Count) { return }
+  return @($live | Where-Object { $kept -cnotcontains $_ -and $retired -cnotcontains $_ })
 }
 
 function Test-DeltaEntry([object]$Entry, [string]$ArtifactName) {
@@ -125,6 +139,11 @@ function Set-Requirement([object]$Run, [object]$Document, [object]$Entry) {
   if (-not $existing) {
     return $Run.Errors.Add("$($Run.ArtifactName): «$($Entry.Title)» del MODIFIED no está en capabilities/$($Document.Name)")
   }
+  $lost = Get-LostLines $existing $Entry
+  foreach ($line in $lost) {
+    $Run.Errors.Add("$($Run.ArtifactName): «$($Entry.Title)» del MODIFIED perdería «$line» de capabilities/$($Document.Name): cópiala en el delta o retírala con «- REMOVED $($line.Substring(2))»")
+  }
+  if ($lost) { return }
   $Document.Lines.RemoveRange($existing.Start, $existing.End - $existing.Start)
   $Document.Lines.InsertRange($existing.Start, (New-RequirementBlock $Entry))
   $Run.Messages.Add("$($Document.Name): sustituido «$($Entry.Title)»")
