@@ -10,7 +10,9 @@
   fila saldada de «Backlog» o «Deuda técnica», ni ningún patch de «Patches», es anterior o igual a la última release
   cerrada; y que ninguna fila de
   una sección abierta es de una feature que ya nombra una release cerrada. Escribe una línea por fallo, con la regla
-  incumplida, y sale con 1; sin fallos, «Roadmap válido» y sale con 0.
+  incumplida, y sale con 1; sin fallos, «Roadmap válido» y sale con 0. Avisa, sin fallar, de una fila de «Deuda
+  técnica» cuyo «Destino» no empieza por Actuar, Esperar 2.º ticket o Descartada, y de una celda «Ítem» de «Backlog» o
+  «Deuda técnica» que empieza por «**[» sin el formato de cierre de la plantilla; los avisos van antes de la última línea.
 .EXAMPLE
   pwsh -NoProfile -File Test-Roadmap.ps1 -Path .docs/sdd
 #>
@@ -34,7 +36,12 @@ $script:StateHelp = '⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ apar
 $script:ProseRule = 'fuera de «Releases cerradas» el roadmap solo lleva tablas'
 $script:SeparatorPattern = '^\|(\s*:?-{3,}:?\s*\|)+\s*$'
 $script:EmptyRowPattern = '^\|[\s|]*$'
-$script:SettledPattern = '^\|(?:[^|]*\|)?\s*\*\*\[(?:Feature|Task|Patch) [^],]+, (\d{4}-\d{2}-\d{2}): saldada — '
+$script:ClosingPrefix = '\*\*\[(?:Feature|Task|Patch) [^],]+, (\d{4}-\d{2}-\d{2}): '
+$script:SettledPattern = "^\|(?:[^|]*\|)?\s*$script:ClosingPrefix" + 'saldada — '
+$script:ClosingCellPattern = "^$script:ClosingPrefix" + '(?:saldada — |parcial — .*; queda: )'
+$script:ClosingHelp = '«**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»'
+$script:Destinations = @('Actuar', 'Esperar 2.º ticket', 'Descartada')
+$script:ItemColumn = @{ 'Backlog' = 1; 'Deuda técnica' = 0 }
 # Un número corto de «Próximo» («3») aparece en cualquier resumen de release sin ser un id.
 $script:MinPublishedIdLength = 4
 
@@ -226,6 +233,27 @@ function Test-Published($Row, [object[]]$Releases) {
   if ($release) { "línea $($Row.Index + 1): la $id ya está en la v$($release.Version): su fila sale de «$($Row.Section.Title)»" }
 }
 
+function Get-DebtWarning([string[]]$Cells, [string]$Kind) {
+  $item = $Cells[$script:ItemColumn[$Kind]]
+  if ($item.StartsWith('**[') -and $item -notmatch $script:ClosingCellPattern) { "el prefijo de cierre no casa con $script:ClosingHelp" }
+  if ($Kind -ne 'Deuda técnica') { return }
+  $destination = $Cells[-1]
+  if ($script:Destinations | Where-Object { $destination.TrimStart('*').StartsWith($_) }) { return }
+  $shown = if ($destination.Length -gt 60) { $destination.Substring(0, 60) + '…' } else { $destination }
+  "«Destino» «$shown» no empieza por $($script:Destinations[0..1] -join ', ') o $($script:Destinations[2])"
+}
+
+# Avisos, no fallos: un proyecto con estas filas no puede quedar en rojo en una release de patch (Art. V).
+function Get-RoadmapWarnings([string[]]$Lines, [object[]]$Blocks) {
+  foreach ($block in $Blocks | Where-Object { $_.Section -and $_.Section.Kind -in 'Backlog', 'Deuda técnica' }) {
+    if (-not (Test-HeaderMatches $Lines $block)) { continue }
+    for ($n = $block.Header + 2; $n -le $block.End; $n++) {
+      if ($Lines[$n] -match $script:EmptyRowPattern) { continue }
+      Get-DebtWarning (Get-Cells $Lines[$n]) $block.Section.Kind | ForEach-Object { "línea $($n + 1): $_" }
+    }
+  }
+}
+
 function Get-RoadmapProblems([string[]]$Lines) {
   $sections = @(Get-RoadmapSections $Lines)
   $blocks = @(Get-TableBlocks $Lines $sections)
@@ -247,9 +275,11 @@ function Get-RoadmapProblems([string[]]$Lines) {
 function Get-ValidationResult([string]$SddPath) {
   $file = Join-Path $SddPath 'roadmap.md'
   if (-not (Test-Path -LiteralPath $file)) { return [pscustomobject]@{ Lines = @('Sin roadmap que validar'); Code = 0 } }
-  $problems = @(Get-RoadmapProblems @(Get-Content -LiteralPath $file -Encoding utf8))
-  if ($problems) { return [pscustomobject]@{ Lines = @($problems | ForEach-Object { "roadmap.md: $_" }); Code = 1 } }
-  return [pscustomobject]@{ Lines = @('Roadmap válido'); Code = 0 }
+  $lines = @(Get-Content -LiteralPath $file -Encoding utf8)
+  $problems = @(Get-RoadmapProblems $lines | ForEach-Object { "roadmap.md: $_" })
+  $warnings = @(Get-RoadmapWarnings $lines @(Get-TableBlocks $lines @(Get-RoadmapSections $lines)) | ForEach-Object { "roadmap.md: aviso: $_" })
+  if ($problems) { return [pscustomobject]@{ Lines = $problems + $warnings; Code = 1 } }
+  return [pscustomobject]@{ Lines = $warnings + @('Roadmap válido'); Code = 0 }
 }
 
 $previousEncoding = [Console]::OutputEncoding

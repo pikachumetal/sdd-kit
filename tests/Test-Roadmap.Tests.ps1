@@ -30,8 +30,8 @@ BeforeAll {
     ''
     '| Ítem | Impacto | Destino |'
     '| --- | --- | --- |'
-    '| **[Feature 0030, 2026-09-25: saldada — [walkthrough](specs/x/walkthrough.md)]** El correo no reintenta | medio | patch |'
-    '| Los tests dependen de la fecha del sistema | medio | versión siguiente |'
+    '| **[Feature 0030, 2026-09-25: saldada — [walkthrough](specs/x/walkthrough.md)]** El correo no reintenta | medio | Actuar con un patch |'
+    '| Los tests dependen de la fecha del sistema | medio | Esperar 2.º ticket |'
     ''
     '## Patches'
     ''
@@ -247,11 +247,55 @@ Describe 'Test-Roadmap.ps1: tablas' -Tag 'Slow' {
   }
 }
 
+Describe 'Test-Roadmap.ps1: avisos de destino y de cierre' -Tag 'Slow' {
+  It 'avisa de un destino de deuda fuera de la plantilla y sigue siendo válido' {
+    $lines = Get-ValidLines
+    $lines[25] = '| El correo no reintenta | medio | Decidir dev-lead: patch |'
+    $result = Test-Lines $lines
+    $result.Lines | Should -Be @(
+      'roadmap.md: aviso: línea 26: «Destino» «Decidir dev-lead: patch» no empieza por Actuar, Esperar 2.º ticket o Descartada'
+      'Roadmap válido'
+    )
+    $result.Code | Should -Be 0
+  }
+
+  It 'admite el destino «<_>»' -ForEach @('**Actuar** con un patch', 'Actuar en el lienzo 0131', 'Esperar 2.º ticket: no localizado', '**Descartada**: lo cubre la 0040') {
+    $lines = Get-ValidLines
+    $lines[25] = "| El correo no reintenta | medio | $_ |"
+    (Test-Lines $lines).Lines | Should -Be @('Roadmap válido')
+  }
+
+  It 'avisa de un prefijo de cierre fuera del formato, en deuda y en backlog' {
+    $lines = Get-ValidLines
+    $lines[19] = '| B2 | **[Feature 0031, 2026-09-25: saldada, salvo el GO — [walkthrough](w.md)]** Exportar a CSV | contabilidad |'
+    $lines[25] = '| **[Feature 0001, 2026-09-26: parcial — [walkthrough](w.md)]** El correo no reintenta | medio | Actuar |'
+    $result = Test-Lines $lines
+    $result.Lines | Should -Be @(
+      'roadmap.md: aviso: línea 20: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»'
+      'roadmap.md: aviso: línea 26: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»'
+      'Roadmap válido'
+    )
+    $result.Code | Should -Be 0
+  }
+
+  It 'el prefijo que el aviso da por bueno es el que saca el corte, y el que no, avisa' {
+    $lines = Get-ValidLines
+    $lines[19] = '| B2 | **[Feature 0031, 2026-09-10: saldada — [walkthrough](w.md)]** Exportar a CSV | contabilidad |'
+    $lines[25] = '| **[Feature 0032, 2026-09-10: saldada, salvo el GO — [walkthrough](w.md)]** El correo no reintenta | medio | Actuar |'
+    $result = Test-Lines $lines
+    $result.Lines | Should -Be @(
+      'roadmap.md: línea 20: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte'
+      'roadmap.md: aviso: línea 26: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»'
+    )
+    $result.Code | Should -Be 1
+  }
+}
+
 Describe 'Test-Roadmap.ps1: filas que salen en el corte' -Tag 'Slow' {
   It 'rechaza una fila saldada no posterior a la última release' {
     $lines = Get-ValidLines
     $lines[19] = '| B2 | **[Task 0012, 2026-09-20: saldada — [walkthrough](w.md)]** Exportar a CSV | contabilidad |'
-    $lines[25] = '| **[Patch 0018, 2026-09-10: saldada — [patch](p.md)]** Bloqueo de SQLite | alto | patch |'
+    $lines[25] = '| **[Patch 0018, 2026-09-10: saldada — [patch](p.md)]** Bloqueo de SQLite | alto | Actuar |'
     $result = Test-Lines $lines
     $result.Lines | Should -Be @(
       'roadmap.md: línea 20: fila saldada el 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte'
@@ -262,13 +306,13 @@ Describe 'Test-Roadmap.ps1: filas que salen en el corte' -Tag 'Slow' {
 
   It 'admite una fila parcial de cualquier fecha' {
     $lines = Get-ValidLines
-    $lines[25] = '| **[Feature 0019, 2026-09-01: parcial — [walkthrough](w.md); queda: el borrado]** La recurrencia | bajo | patch |'
+    $lines[25] = '| **[Feature 0019, 2026-09-01: parcial — [walkthrough](w.md); queda: el borrado]** La recurrencia | bajo | Actuar |'
     (Test-Lines $lines).Code | Should -Be 0
   }
 
   It 'sin releases cerradas no rechaza ninguna fila saldada ni ningún patch' {
     $lines = Get-ValidLines
-    $lines[25] = '| **[Patch 0018, 2026-09-10: saldada — [patch](p.md)]** Bloqueo de SQLite | alto | patch |'
+    $lines[25] = '| **[Patch 0018, 2026-09-10: saldada — [patch](p.md)]** Bloqueo de SQLite | alto | Actuar |'
     $lines[32] = '| 2026-09-10 | 0018 | Bloqueo de SQLite — [patch](p.md) |'
     $lines.RemoveRange(36, 11)
     (Test-Lines $lines).Code | Should -Be 0
