@@ -151,6 +151,14 @@ Describe 'Get-NextSddId.ps1' -Tag 'Slow' {
       $result.ExitCode | Should -Be 0
       $result.Error | Should -Match '0006a'
     }
+
+    It 'avisa de las carpetas con sufijo en una línea, sin formato de error' {
+      # Ticket del patch 0057 de un proyecto, menores: el aviso salía con el marco de un error de PowerShell.
+      $repo = Copy-FixtureToRepo 'legacy-suffix' @()
+      $result = Invoke-NextId $repo @('-Reserve')
+      $result.Error.Trim() | Should -BeExactly 'aviso: carpetas con sufijo anteriores a la secuencia (su número cuenta como ocupado): 20260901-120000-task-0006a-old-split, 20260902-120000-task-0006b-old-split.'
+      $result.ExitCode | Should -Be 0
+    }
   }
 
   Context 'carril proposal' {
