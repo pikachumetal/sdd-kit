@@ -260,6 +260,7 @@
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-10-05 | 0141 | `Get-NextSddId.ps1` avisa de las carpetas con sufijo en una línea por stderr, sin el formato de error de `Write-Error` ([patch](specs/20261004-232806-patch-0141-next-id-suffix-warning/patch.md)) |
 | 2026-10-05 | 0140 | `Test-Roadmap.ps1` avisa, sin fallar, de un «Destino» de deuda que no empieza por `Actuar`, `Esperar 2.º ticket` o `Descartada`, y de un prefijo de cierre fuera del formato ([patch](specs/20261004-232210-patch-0140-roadmap-destination-warnings/patch.md)) |
 | 2026-10-05 | 0139 | `Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas `- THEN`/`- AND` del requisito vivo; se retiran con `- REMOVED AND <texto>` ([patch](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)) |
 | 2026-10-03 | 0138 | El comando de `task-done` y la «Verificación» del plan salen con distinto de 0 si algo falla (con Pester, `-CI`) ([patch](specs/20261003-144033-patch-0138-task-done-exit-code/patch.md)) |

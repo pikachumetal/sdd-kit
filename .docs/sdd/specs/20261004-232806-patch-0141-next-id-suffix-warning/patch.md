@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-05
 branch: hotfix/v2.3.2
-commit: <hash>
+commit: f0770b2d
 ---
 
 # Patch 0141 — Get-NextSddId.ps1 avisa de las carpetas con sufijo sin formato de error
@@ -46,6 +46,8 @@ Lo que da por existente, comprobado con el fixture `tests/fixtures/task-ids/lega
 | 3 | `tests/Get-NextSddId.Tests.ps1` | ✅ 49/0 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-05 · RED/GREEN en Get-NextSddId.Tests.ps1 (1 caso nuevo, 49/0) · reserva real con el fixture: 0007, exit 0 · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 

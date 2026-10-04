@@ -11,6 +11,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Fixed
 
 - **`Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas del requisito vivo** — un delta copiado de una lectura parcial de la capacidad sustituía el requisito y borraba en silencio sus últimos `AND`. Ahora, si el bloque nuevo tiene menos líneas `- THEN` y `- AND` que el vivo, falla nombrando cada una que se perdería y no escribe; para quitarla a propósito, `- REMOVED AND <texto literal>` en el bloque ([patch 0139](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)).
+- **`Get-NextSddId.ps1` avisa de las carpetas con sufijo sin formato de error** — con carpetas como `task-0006a` y `task-0006b`, la reserva salía bien, pero stderr llevaba el marco de un error de PowerShell (`Assert-NoSharedIds: …`, `Line |`). Ahora es una línea `aviso: carpetas con sufijo anteriores a la secuencia (su número cuenta como ocupado): …` ([patch 0141](specs/20261004-232806-patch-0141-next-id-suffix-warning/patch.md)).
 
 ## [2.3.1] - 2026-10-03
 
