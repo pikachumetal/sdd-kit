@@ -259,6 +259,7 @@
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-10-05 | 0139 | `Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas `- THEN`/`- AND` del requisito vivo; se retiran con `- REMOVED AND <texto>` ([patch](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)) |
 | 2026-10-03 | 0138 | El comando de `task-done` y la «Verificación» del plan salen con distinto de 0 si algo falla (con Pester, `-CI`) ([patch](specs/20261003-144033-patch-0138-task-done-exit-code/patch.md)) |
 | 2026-10-03 | 0137 | `Test-Capabilities.ps1` omite y nombra un documento marcado `> **No es una capacidad.**` ([patch](specs/20261003-142456-patch-0137-capabilities-not-capability-mark/patch.md)) |
 | 2026-10-03 | 0136 | `Measure-SessionTokens.ps1` marca «en curso» un despacho sin mensaje final ([patch](specs/20261003-141528-patch-0136-session-tokens-in-progress/patch.md)) |

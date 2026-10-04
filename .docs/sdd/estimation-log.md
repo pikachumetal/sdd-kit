@@ -145,6 +145,7 @@
 | 2026-10-03 | 0136 | patch | — | 0.5 | — | — | — | — | — | 20261003-141528-patch-0136-session-tokens-in-progress |
 | 2026-10-03 | 0137 | patch | — | 0.4 | — | — | — | — | — | 20261003-142456-patch-0137-capabilities-not-capability-mark |
 | 2026-10-03 | 0138 | patch | — | 0.7 | — | — | — | — | — | 20261003-144033-patch-0138-task-done-exit-code |
+| 2026-10-05 | 0139 | patch | — | 0.5 | — | — | — | — | — | 20261004-231556-patch-0139-merge-modified-lost-lines |
 
 **Factor de calibración** (ratio mediano real/estimado, 114 artefactos): **0.6** · media 0.73
 
@@ -181,5 +182,6 @@
 | 2.2.0 | 18 | 17.1 | 0.54 | 55.91 | 71.66 |
 | 2.3.0 | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
 | 2.3.1 | 6 | 2.8 | — | — | — |
+| sin publicar | 1 | 0.5 | — | — | — |
 
 > Ver `estimation.md`.

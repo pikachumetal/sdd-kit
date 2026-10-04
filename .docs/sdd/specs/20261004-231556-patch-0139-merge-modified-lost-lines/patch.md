@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-05
 branch: hotfix/v2.3.2
-commit: <hash>
+commit: 3e673dd1
 ---
 
 # Patch 0139 — Merge-CapabilityDelta.ps1 falla si un MODIFIED pierde líneas del requisito vivo
@@ -52,6 +52,8 @@ Lo que da por existente, comprobado: `Set-Requirement` borra el bloque vivo y po
 | 5 | `Merge-CapabilityDelta`, `Test-Capabilities`, `WordBudget`, `AnchorTemplates`, `Skills` | ✅ 298/0 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-05 · RED/GREEN en Merge-CapabilityDelta.Tests.ps1 (3 casos nuevos, 27/27) · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 
