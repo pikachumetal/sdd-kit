@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-05
 branch: hotfix/v2.3.2
-commit: <hash>
+commit: 436cb6c2
 ---
 
 # Patch 0140 — Test-Roadmap.ps1 avisa de destinos y prefijos de cierre fuera de la plantilla
@@ -54,6 +54,8 @@ Lo que da por existente, comprobado: `Test-Roadmap.ps1` no mira ni «Destino» n
 | 6 | roadmap del repo | ✅ 98 avisos de «Destino», ninguno de prefijo; última línea `Roadmap válido`, sale con 0 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-05 · RED/GREEN en Test-Roadmap.Tests.ps1 (4 casos nuevos) · 147/0 en los tests del roadmap y las plantillas · pre-commit 949/0
 
 ## 5. Tiempo (ligero)
 

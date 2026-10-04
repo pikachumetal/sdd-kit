@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **`Test-Roadmap.ps1` avisa de destinos y prefijos de cierre fuera de la plantilla** — daba `Roadmap válido` con destinos de deuda como `Decidir dev-lead: …` y con prefijos como `saldada, salvo X — `, que el corte de la release no saca. Ahora escribe `roadmap.md: aviso: línea <n>: …` por cada fila, antes de la línea final, y sigue saliendo con 0: un fallo pondría en rojo el pre-commit de un proyecto que ya tiene esas filas. El fallo queda para la 3.0.0 ([patch 0140](specs/20261004-232210-patch-0140-roadmap-destination-warnings/patch.md)).
+
 ### Fixed
 
 - **`Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas del requisito vivo** — un delta copiado de una lectura parcial de la capacidad sustituía el requisito y borraba en silencio sus últimos `AND`. Ahora, si el bloque nuevo tiene menos líneas `- THEN` y `- AND` que el vivo, falla nombrando cada una que se perdería y no escribe; para quitarla a propósito, `- REMOVED AND <texto literal>` en el bloque ([patch 0139](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)).
