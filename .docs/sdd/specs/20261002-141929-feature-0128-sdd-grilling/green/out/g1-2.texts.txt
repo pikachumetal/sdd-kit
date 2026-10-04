@@ -1,0 +1,29 @@
+--- [2]
+Es una pregunta de enfoque, así que entra por `sdd-consult`.
+
+--- [21]
+Lo que he encontrado en el código (`src/app.js`):
+
+- **Las franjas son texto.** `libres` descarta una sala solo si la franja de la reserva es idéntica a la consultada (`b.slot === slot`). No hay parseo ni validación. Es la deuda técnica del roadmap, «Sin validación del formato de franja horaria».
+- **Las medias horas rompen esa comparación.** Con `Norte lun 10:00-10:30` reservada, `libres 10:00-12:00` diría que Norte está libre, y eso permitiría una doble reserva. Hoy no se nota porque todas las franjas son de 2 h.
+- **`reservar` aún no guarda nada.** Solo devuelve el texto «reserva semanal creada». Las reservas viven en un array fijo en memoria.
+- **`cancelar` compara por día y hora de inicio.** Es lo que arregló el patch 0007, así que también le afecta la elección.
+
+Este cambio tiene comportamiento, así que acabaría en `sdd-start-feature`. Por ahora es solo pensarlo, sin tocar nada.
+
+❓ **¿Cómo decide el sistema que una sala está ocupada?**
+Es la decisión que más condiciona las demás: validación, `cancelar`, la reserva semanal y los tests.
+
+🅰️ **Intervalos con solape.** Se guarda inicio y fin, en múltiplos de 30 min. Una sala está ocupada si algún tramo se solapa con la consulta.
+- `libres 10:00-12:00` con `Norte lun 10:00-10:30` reservada → `Sur` (Norte ocupada 30 min).
+- `libres 10:30-11:00` → `Norte, Sur`.
+- Coste: hay que parsear y validar el formato. Eso paga de paso la deuda técnica, pero toca `cancelar` y la reserva semanal.
+
+🅱️ **Rejilla de bloques de 30 min.** Una reserva de `10:00-12:00` se guarda como 4 bloques, y la comparación sigue siendo igualdad exacta por bloque.
+- `libres 10:00-12:00` → `Sur`. `libres 10:30-11:00` → `Norte, Sur`.
+- Coste: el resultado es el mismo, pero cada reserva se multiplica en bloques. Cancelar una reserva de 2 h pasa a ser cancelar 4 bloques, o hay que guardar un id de reserva.
+
+➡️ **Recomiendo 🅰️**, porque guardar inicio y fin mantiene una reserva como un solo registro y `cancelar` sigue sencillo. El solape son dos comparaciones. A cambio, hay que escribir el parser de franjas, y eso alarga un poco el cambio.
+
+¿Vas por 🅰️ o por 🅱️?
+

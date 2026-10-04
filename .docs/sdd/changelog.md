@@ -4,6 +4,14 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Feature 0128** — `sdd-grilling`, el método de preguntas del kit, adaptado de `grilling` de Matt Pocock (MIT, aviso en su `NOTICE`), y primera skill en inglés: una decisión por turno, la recomendada con una razón del caso, el descubrimiento sin ancla, la búsqueda fuera antes de preguntar y el cierre en tres listas; `sdd-consult`, `sdd-roadmap`, las dos init, `sdd-config` y el diseño de `sdd-start-feature` la invocan en lugar de su propia regla de preguntas. → [ref](specs/20261002-141929-feature-0128-sdd-grilling/)
+
+### Changed
+
+- **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
+
 ## [2.3.2] - 2026-10-05
 
 Hotfix de la 2.3.1, sacado de `main`: la fusión del delta ya no pierde requisitos en silencio, el validador del roadmap avisa de destinos y cierres fuera de la plantilla, y la reserva de ids deja de imprimir un aviso como error. Sin cambios en el proyecto: la migración `v2.3.2` solo avanza el marcador. [Release notes](releases/v2.3.2/release-notes.md).
@@ -16,6 +24,7 @@ Hotfix de la 2.3.1, sacado de `main`: la fusión del delta ya no pierde requisit
 
 - **`Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas del requisito vivo** — un delta copiado de una lectura parcial de la capacidad sustituía el requisito y borraba en silencio sus últimos `AND`. Ahora, si el bloque nuevo tiene menos líneas `- THEN` y `- AND` que el vivo, falla nombrando cada una que se perdería y no escribe; para quitarla a propósito, `- REMOVED AND <texto literal>` en el bloque ([patch 0139](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)).
 - **`Get-NextSddId.ps1` avisa de las carpetas con sufijo sin formato de error** — con carpetas como `task-0006a` y `task-0006b`, la reserva salía bien, pero stderr llevaba el marco de un error de PowerShell (`Assert-NoSharedIds: …`, `Line |`). Ahora es una línea `aviso: carpetas con sufijo anteriores a la secuencia (su número cuenta como ocupado): …` ([patch 0141](specs/20261004-232806-patch-0141-next-id-suffix-warning/patch.md)).
+
 
 ## [2.3.1] - 2026-10-03
 

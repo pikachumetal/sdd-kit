@@ -28,7 +28,7 @@ Para un **recorte o reestructuración de una skill existente**, el baseline vac�
 
 ## Art. III — Idioma
 
-Texto humano (skills, docs, tests, commits-cuerpo) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case. No se traducen las skills al inglés por ahorro de tokens: el ahorro es marginal y rompe la validación y la legibilidad del equipo (decisión 2026-07-09).
+Texto humano (docs, tests, commits-cuerpo) en castellano con ortografía correcta; nombres de skill y de fichero en inglés kebab-case. Las skills se escriben en inglés: es el idioma del ecosistema de skills y gasta menos tokens por instrucción, y cada skill le dice al agente que hable con el usuario en su idioma. Las que siguen en castellano se traducen al reescribirlas (0121); hasta entonces conviven. Se descarta la decisión del 2026-07-09 («no se traducen»): se tomó sin plantear el idioma al empezar, no midiéndolo (dev-lead, 2026-10-02).
 
 ## Art. IV — Convenciones que el kit fija a los proyectos
 

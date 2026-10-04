@@ -9,7 +9,7 @@ description: Usar cuando arranca un proyecto nuevo (sin código o casi) y hay qu
 
 Deja un proyecto nuevo preparado para el flujo SDD: documentación de anclaje por capas en `.docs/sdd/`, `CLAUDE.md` corto con punteros, plantillas y estructura. El contenido sale de una **entrevista con el usuario** — no de tus suposiciones.
 
-El motor de la entrevista es `superpowers:brainstorming` (o `grilling` si el usuario lo prefiere): preguntas de una en una, y cada documento se aprueba antes de darse por anclaje.
+El motor de la entrevista es `superpowers:brainstorming`, con las preguntas de `sdd-grilling`, y cada documento se aprueba antes de darse por anclaje.
 
 ## ⛔ Gate: sin entrevista no hay documentos
 
@@ -21,7 +21,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 
 ## Flujo (crea un todo por paso)
 
-1. **Entrevista** — `superpowers:brainstorming`, con esta lista. **Cada turno termina con una sola pregunta de la lista**, en su orden. «No sé» deja la entrada pendiente; «no aplica» la cierra. Lo que ya existe (código, un documento de anclaje) se presenta como propuesta para confirmar, y lo que ya fijan las instrucciones del usuario (`CLAUDE.md` global o del proyecto) no se pregunta: se referencia.
+1. **Entrevista** — `superpowers:brainstorming`, con esta lista. **Pregunta con la skill `sdd-grilling`** (invócala con `Skill`), en el orden de la lista. «No sé» deja la entrada pendiente; «no aplica» la cierra. Lo que ya existe (código, un documento de anclaje) se presenta como propuesta para confirmar, y lo que ya fijan las instrucciones del usuario (`CLAUDE.md` global o del proyecto) no se pregunta: se referencia.
 
    | # | Pregunta | Va a |
    | --- | --- | --- |

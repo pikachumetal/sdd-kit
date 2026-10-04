@@ -114,6 +114,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El merge a `main` y el tag los confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
+| `sdd-grilling` | Cómo te pregunta el kit: una decisión por turno, la recomendada con su razón, sin sugerirte lo que solo sabes tú, y buscando antes lo que puede comprobar. La invocan las demás skills; adaptada de `grilling` de Matt Pocock (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
 | `sdd-templates` | Las 21 plantillas canónicas y el script que regenera el registro de estimaciones. |
@@ -173,7 +174,6 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 | Dependencia | ¿Obligatoria? | Instalación |
 | --- | --- | --- |
 | [`superpowers`](https://github.com/obra/superpowers) | Sí | Antes que el kit (ver [Instalación](#instalación)). Desde la terminal: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
-| `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
 | [impeccable](https://www.npmjs.com/package/impeccable) | No, recomendada si el proyecto tiene interfaz | Sin instalar: `npx impeccable@<versión> detect <url> --viewport 390x844`. Necesita Chrome, Chromium o Edge |
 | [Playwright](https://playwright.dev) | No, recomendada si el proyecto tiene interfaz | El MCP de Playwright o el paquete `playwright` en el proyecto |
 
@@ -183,11 +183,9 @@ El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subage
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 
-`grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
-
 ## Idioma
 
-El texto está en castellano porque es la lengua del equipo donde nació esto. Los nombres de skill, los identificadores y todo lo que el kit fija a los proyectos van en inglés. Si alguien lo quiere en otro idioma, se puede hablar.
+La documentación está en castellano porque es la lengua del equipo donde nació esto. Las skills se escriben en inglés, la primera `sdd-grilling`; las demás se traducen al reescribirlas, y todas hablan contigo en tu idioma. Los nombres de skill, los identificadores y todo lo que el kit fija a los proyectos van en inglés. Si alguien lo quiere en otro idioma, se puede hablar.
 
 ## Licencia
 

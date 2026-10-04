@@ -2,10 +2,16 @@
 // Uso: node extract.mjs tools <stream.jsonl> <run>   tool calls con el principio de su resultado, y el mensaje final
 //      node extract.mjs texts <stream.jsonl> <run>   mensajes de texto del agente, numerados por turno
 //      node extract.mjs clean <run> < entrada         la misma limpieza sobre la entrada estándar (state.txt)
+//      node extract.mjs last <stream.jsonl>           el texto del último result, sin limpiar: lo lee la persona, no se commitea
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const [mode, ...rest] = process.argv.slice(2);
+if (mode === 'last') {
+  const results = readFileSync(rest[0], 'utf8').split('\n').filter((line) => line.trim()).map((line) => JSON.parse(line)).filter((event) => event.type === 'result');
+  process.stdout.write(results.at(-1)?.result ?? '');
+  process.exit(0);
+}
 const [streamPath, runPath] = mode === 'clean' ? [0, rest[0]] : rest;
 if (!['tools', 'texts', 'clean'].includes(mode) || !runPath) {
   console.error('uso: extract.mjs tools|texts <stream> <run> · extract.mjs clean <run>');
