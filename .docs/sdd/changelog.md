@@ -12,6 +12,20 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 - **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
 
+## [2.3.2] - 2026-10-05
+
+Hotfix de la 2.3.1, sacado de `main`: la fusión del delta ya no pierde requisitos en silencio, el validador del roadmap avisa de destinos y cierres fuera de la plantilla, y la reserva de ids deja de imprimir un aviso como error. Sin cambios en el proyecto: la migración `v2.3.2` solo avanza el marcador. [Release notes](releases/v2.3.2/release-notes.md).
+
+### Added
+
+- **`Test-Roadmap.ps1` avisa de destinos y prefijos de cierre fuera de la plantilla** — daba `Roadmap válido` con destinos de deuda como `Decidir dev-lead: …` y con prefijos como `saldada, salvo X — `, que el corte de la release no saca. Ahora escribe `roadmap.md: aviso: línea <n>: …` por cada fila, antes de la línea final, y sigue saliendo con 0: un fallo pondría en rojo el pre-commit de un proyecto que ya tiene esas filas. El fallo queda para la 3.0.0 ([patch 0140](specs/20261004-232210-patch-0140-roadmap-destination-warnings/patch.md)).
+
+### Fixed
+
+- **`Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas del requisito vivo** — un delta copiado de una lectura parcial de la capacidad sustituía el requisito y borraba en silencio sus últimos `AND`. Ahora, si el bloque nuevo tiene menos líneas `- THEN` y `- AND` que el vivo, falla nombrando cada una que se perdería y no escribe; para quitarla a propósito, `- REMOVED AND <texto literal>` en el bloque ([patch 0139](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)).
+- **`Get-NextSddId.ps1` avisa de las carpetas con sufijo sin formato de error** — con carpetas como `task-0006a` y `task-0006b`, la reserva salía bien, pero stderr llevaba el marco de un error de PowerShell (`Assert-NoSharedIds: …`, `Line |`). Ahora es una línea `aviso: carpetas con sufijo anteriores a la secuencia (su número cuenta como ocupado): …` ([patch 0141](specs/20261004-232806-patch-0141-next-id-suffix-warning/patch.md)).
+
+
 ## [2.3.1] - 2026-10-03
 
 Hotfix de la 2.3.0, sacado de `main`: los scripts de ids, estimación, merge, capacidades y tokens, y el código de salida del comando de `task-done`. Sin cambios en el proyecto: la migración `v2.3.1` solo avanza el marcador.

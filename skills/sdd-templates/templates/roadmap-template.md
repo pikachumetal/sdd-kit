@@ -41,7 +41,7 @@
 
 | Ítem | Impacto | Destino |
 | --- | --- | --- |
-| <qué falta o está mal, con la evidencia> | <alto · medio · bajo, y por qué> | <feature, patch o cuándo> |
+| <qué falta o está mal, con la evidencia> | <alto · medio · bajo, y por qué> | **Actuar**: <feature o patch> |
 
 ## Patches
 

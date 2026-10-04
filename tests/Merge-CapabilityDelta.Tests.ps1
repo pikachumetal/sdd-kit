@@ -307,4 +307,47 @@ Describe 'Merge-CapabilityDelta.ps1' -Tag 'Slow' {
     $result.Code | Should -Be 1
     Read-Capability $sdd | Should -BeExactly $script:Bookings
   }
+
+  Context 'un MODIFIED que copia menos AND y THEN que el requisito vivo' {
+    BeforeAll {
+      $script:FourAnds = $script:Bookings -replace '(?m)^(- THEN la reserva queda guardada.*)$', "`$1`n- AND la sala aparece ocupada`n- AND el CLI avisa si pisa un festivo`n- AND la franja dura como máximo 4 h`n- AND el CLI lo apunta en el historial"
+      $script:ThreeAnds = @'
+**MODIFIED — Reservar una franja**
+- GIVEN la sala Norte libre de 10 a 12
+- WHEN `salas reservar Norte 10-12`
+- THEN la reserva queda guardada y el CLI responde `Reservada Norte 10-12`
+- AND la sala aparece ocupada
+- AND el CLI avisa si pisa un festivo
+- AND la franja dura como máximo 4 h
+'@ -replace '\r\n', "`n"
+    }
+
+    It 'falla nombrando la línea que se perdería y no escribe' {
+      $sdd = New-BookingsFolder @($script:ThreeAnds) $script:FourAnds
+      $result = Invoke-Merge $sdd
+      $result.Lines | Should -Be @('spec.md: «Reservar una franja» del MODIFIED perdería «- AND el CLI lo apunta en el historial» de capabilities/bookings.md: cópiala en el delta o retírala con «- REMOVED AND el CLI lo apunta en el historial»')
+      $result.Code | Should -Be 1
+      Read-Capability $sdd | Should -BeExactly $script:FourAnds
+    }
+
+    It 'con la línea retirada con - REMOVED la quita, y volver a ejecutarlo no cambia nada' {
+      $sdd = New-BookingsFolder @("$script:ThreeAnds`n- REMOVED AND el CLI lo apunta en el historial") $script:FourAnds
+      $result = Invoke-Merge $sdd
+      $result.Lines | Should -Be @('bookings.md: sustituido «Reservar una franja»')
+      $result.Code | Should -Be 0
+      $content = Read-Capability $sdd
+      $content | Should -Not -Match 'historial'
+      $content | Should -Match '(?m)^- AND la franja dura como máximo 4 h$'
+      (Invoke-Merge $sdd).Code | Should -Be 0
+      Read-Capability $sdd | Should -BeExactly $content
+      (Invoke-Script $script:Validator $sdd 'specs/x/spec.md').Lines | Should -Be @('Capacidades válidas: 1')
+    }
+
+    It 'una retirada que no casa con ninguna línea del vivo no cuenta' {
+      $sdd = New-BookingsFolder @("$script:ThreeAnds`n- REMOVED AND el CLI lo apunta") $script:FourAnds
+      $result = Invoke-Merge $sdd
+      ($result.Lines -join "`n") | Should -Match 'perdería «- AND el CLI lo apunta en el historial»'
+      $result.Code | Should -Be 1
+    }
+  }
 }
