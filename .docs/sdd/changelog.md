@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-10-05
+
+Hotfix de la 2.3.1, sacado de `main`: la fusión del delta ya no pierde requisitos en silencio, el validador del roadmap avisa de destinos y cierres fuera de la plantilla, y la reserva de ids deja de imprimir un aviso como error. Sin cambios en el proyecto: la migración `v2.3.2` solo avanza el marcador. [Release notes](releases/v2.3.2/release-notes.md).
+
 ### Added
 
 - **`Test-Roadmap.ps1` avisa de destinos y prefijos de cierre fuera de la plantilla** — daba `Roadmap válido` con destinos de deuda como `Decidir dev-lead: …` y con prefijos como `saldada, salvo X — `, que el corte de la release no saca. Ahora escribe `roadmap.md: aviso: línea <n>: …` por cada fila, antes de la línea final, y sigue saliendo con 0: un fallo pondría en rojo el pre-commit de un proyecto que ya tiene esas filas. El fallo queda para la 3.0.0 ([patch 0140](specs/20261004-232210-patch-0140-roadmap-destination-warnings/patch.md)).
