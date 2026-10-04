@@ -7,6 +7,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 ## Requisitos
 
 ### Cerrar una fila de deuda o de backlog deja un prefijo contable
+
 - GIVEN una fila de «Deuda técnica» o de «Backlog» del roadmap que una feature o un patch salda entera o en parte
 - WHEN se cierra con `sdd-end-feature` o con `sdd-end-patch`
 - THEN la celda «Ítem» empieza por `**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, o por `**[<Feature|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**` si queda algo, con el enlace al `walkthrough.md` o al `patch.md`
@@ -16,18 +17,21 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND el prefijo `Task` de antes de la 2.0.0 se sigue leyendo igual que `Feature` y ya no se escribe
 
 ### Cada feature de una release declara los ficheros que toca
+
 - GIVEN un `sdd-roadmap` que escribe la sección «Release N» del roadmap
 - WHEN añade la fila de una feature
 - THEN la tabla sigue la cabecera de `roadmap-template.md`, `| id | Feature | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» nombra los ficheros o módulos previstos
 - AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra esa columna
 
 ### Una re-medición que contradice una fila la reescribe
+
 - GIVEN una fila de «Deuda técnica» o de «Backlog» que un patch re-mide, al abrirse o en su cierre, sin saldarla
 - WHEN el resultado contradice lo que la fila afirma (su evidencia, su recuento, su propuesta)
 - THEN las celdas que lo afirman se reescriben con la medición nueva, su fecha y su evidencia
 - AND la fila ya no afirma el estado contradicho: añadir la re-medición y dejar el texto viejo no cuenta
 
 ### Una fila saldada antes de la última release está de más
+
 - GIVEN una fila de «Deuda técnica» que empieza por `**[Patch 0018, 2026-09-10: saldada — …]**`, una de «Backlog» por `**[Task 0012, 2026-09-20: saldada — …]**`, otra de «Deuda técnica» por `**[Feature 0030, 2026-09-25: saldada — …]**`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
 - WHEN se ejecuta `pwsh -NoProfile -File Test-Roadmap.ps1 -Path .docs/sdd`
 - THEN escribe `roadmap.md: línea <n>: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y la misma línea para la del 2026-09-20, y sale con 1
@@ -35,6 +39,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
 
 ### El título de una release cerrada lleva versión y fecha
+
 - GIVEN un roadmap con `### v1.2.0 - 2026-09-20` (guion corto) en la línea 37, bajo «Releases cerradas»
 - WHEN se ejecuta `Test-Roadmap.ps1`
 - THEN escribe `roadmap.md: línea 37: «v1.2.0 - 2026-09-20» no es «### v<versión> — <AAAA-MM-DD>»` y sale con 1
@@ -42,6 +47,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND `### v1.2.0 — 2026-09-20` no da fallo
 
 ### Un patch publicado sale de «Patches» en el corte
+
 - GIVEN una fila de «Patches» con fecha `2026-09-20`, otra con `2026-09-22`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
 - WHEN se ejecuta `Test-Roadmap.ps1`
 - THEN escribe `roadmap.md: línea <n>: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y sale con 1
@@ -49,6 +55,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila de «Patches» da fallo
 
 ### El roadmap solo lleva las secciones de la plantilla
+
 - GIVEN un roadmap con las secciones «Próximo», «Versión siguiente», «Backlog», «Deuda técnica», «Decisiones tomadas», «Patches» y «Releases cerradas»
 - WHEN se ejecuta `Test-Roadmap.ps1`
 - THEN escribe `roadmap.md: línea <n>: sección «Versión siguiente» fuera de la plantilla` y la misma línea para «Decisiones tomadas», y sale con 1
@@ -58,6 +65,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND `## Release próxima` o `## Release` a secas escriben `roadmap.md: línea <n>: «Release próxima» no lleva versión: «## Release <versión>»`
 
 ### El roadmap no lleva prosa fuera de las releases cerradas
+
 - GIVEN un roadmap con el párrafo «Criterio de orden (dev-lead, 2026-09-21): primero lo que ven los usuarios» en la línea 13, bajo `## Backlog`, y una cita `> nota` en la línea 30, bajo `## Patches`
 - WHEN se ejecuta `Test-Roadmap.ps1`
 - THEN escribe `roadmap.md: línea 13: prosa en «Backlog»; fuera de «Releases cerradas» el roadmap solo lleva tablas` y la misma línea para la 30 en «Patches», y sale con 1
@@ -65,6 +73,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND una sola línea «en preparación» entre `## Release 1.3` y su tabla no da fallo; una segunda línea de texto en esa sección, sí
 
 ### Las cabeceras de tabla y los estados son los de la plantilla
+
 - GIVEN una sección de release cuya tabla empieza por `| id | Task | Tamaño | Estado |`, una fila de «Próximo» con el estado `pendiente` y otra con `❌ descartado`
 - WHEN se ejecuta `Test-Roadmap.ps1`
 - THEN escribe `roadmap.md: línea <n>: la cabecera de «Release 1.3» debe ser «| id | Feature | Origen | Ficheros que toca | Estado |»`, y para cada una de las dos filas `roadmap.md: línea <n>: estado «<texto>» no admitido: ⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …`, y sale con 1
@@ -72,22 +81,34 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND los tests fijan el número de línea exacto de cada fixture
 
 ### Una feature publicada no sigue como fila de una sección abierta
+
 - GIVEN una fila `| 0021 | … | 🧪 validación diferida al primer correo real |` en `## Release 1.3`, una fila `| 0024 | … tras 0021 … | ⏳ |` en la misma sección, y `### v1.2.0 — 2026-09-20` con el resumen «Aviso por correo al liberar una sala (0021) y el patch 0020»
 - WHEN se ejecuta `Test-Roadmap.ps1`
 - THEN escribe `roadmap.md: línea <n>: la 0021 ya está en la v1.2.0: su fila sale de «Release 1.3»` y sale con 1
 - AND la fila 0024 no da fallo
 
 ### Una release cerrada guarda sus validaciones pendientes en una línea
+
 - GIVEN un roadmap con la 0016 y la 0017 en `🧪 validación diferida`, las dos publicadas en la 1.1.0, ya cerrada
 - WHEN la migración a v2.3.0 termina
 - THEN la subsección `### v1.1.0 — 2026-09-05` lleva la línea `validaciones pendientes: 0016, 0017`, y el disparador y el dueño de cada una siguen en su walkthrough
 - AND una release sin validaciones pendientes no lleva la línea
 
 ### Los cierres de feature y de patch avisan del roadmap fuera de forma sin bloquear
+
 - GIVEN un roadmap con la sección heredada `## Versión siguiente`, que `Test-Roadmap.ps1` rechaza, y la feature 0030 (o el patch 0031) que se cierra
 - WHEN `sdd-end-feature` marca su fila (o `sdd-end-patch` añade la suya a «Patches»)
 - THEN tras editar el roadmap y antes del commit de cierre ejecuta `Test-Roadmap.ps1`, y un fallo en una línea que escribió el cierre lo corrige
 - AND los fallos de líneas que el cierre no escribió no se tocan ni paran el cierre: el mensaje final dice cuántos son y que los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0
+
+### El roadmap avisa de un destino o un cierre fuera de la plantilla
+
+- GIVEN una fila de «Deuda técnica» con «Destino» `Decidir dev-lead: patch` en la línea 26, y una de «Backlog» que empieza por `**[Feature 0031, 2026-09-25: saldada, salvo el GO — …]**` en la línea 20
+- WHEN se ejecuta `Test-Roadmap.ps1`
+- THEN escribe `roadmap.md: aviso: línea 26: «Destino» «Decidir dev-lead: patch» no empieza por Actuar, Esperar 2.º ticket o Descartada` y, para la línea 20, `roadmap.md: aviso: línea 20: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»`
+- AND sin fallos, la última línea es `Roadmap válido` y sale con 0; con fallos, los avisos van tras ellos y sale con 1
+- AND un «Destino» que empieza por `Actuar`, `Esperar 2.º ticket` o `Descartada`, con o sin negrita, no avisa; «Backlog» no tiene «Destino» y solo avisa del prefijo
+- AND el prefijo `saldada — ` que no avisa es el mismo que el corte saca: con fecha no posterior a la última release, falla con «sale en el corte»
 
 ## Reglas de la capacidad
 

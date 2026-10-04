@@ -76,6 +76,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 > Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: el bloque
 > «Capacidades» lo dice con «Ninguna, porque el fix devuelve…» y esta sección se borra. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
 > la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-end-patch`.
+> Quitar un `- AND` o `- THEN` del vivo: `- REMOVED AND <texto literal>`.
 
 ### Capacidad: `<nombre>`
 

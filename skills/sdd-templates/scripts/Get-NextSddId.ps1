@@ -150,7 +150,8 @@ function Assert-NoSharedIds([object[]]$SpecArtifacts) {
   # su id cuenta como ocupado, pero no bloquean la reserva (ticket de la feature 0010b del template §4).
   $legacy = @($SpecArtifacts | Where-Object { $_.Folder -match '-\d{4}[a-z]+-' })
   if ($legacy.Count -gt 0) {
-    Write-Error "Carpetas con sufijo anteriores a la secuencia (no se reutiliza su número): $($legacy.Folder -join ', ')." -ErrorAction Continue
+    # Aviso, no error: la reserva sigue. Una línea por stderr, sin el marco de Write-Error; stdout lleva solo el id.
+    [Console]::Error.WriteLine("aviso: carpetas con sufijo anteriores a la secuencia (su número cuenta como ocupado): $($legacy.Folder -join ', ').")
   }
   foreach ($group in ($SpecArtifacts | Where-Object { $legacy -notcontains $_ } | Group-Object Id)) {
     $folders = $group.Group.Folder | Select-Object -Unique
