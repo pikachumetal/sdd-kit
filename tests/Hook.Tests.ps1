@@ -33,8 +33,7 @@ BeforeAll {
     }
     return $root
   }
-
-  $script:HookCommand = (Get-Content (Join-Path $script:HooksDir 'hooks.json') -Raw | ConvertFrom-Json).hooks.SessionStart[0].hooks[0].command
+  $script:HookCommand = '"${CLAUDE_PLUGIN_ROOT}/hooks/session-start"'
 
   function Invoke-SessionStart([string]$ProjectDir, [string]$PluginRoot = $script:KitRoot) {
     $previous = @{ Project = $env:CLAUDE_PROJECT_DIR; Plugin = $env:CLAUDE_PLUGIN_ROOT; Encoding = [Console]::OutputEncoding }
@@ -62,16 +61,14 @@ Describe 'hooks/hooks.json' {
     $script:Command = $script:Config.hooks.SessionStart[0].hooks[0].command
   }
 
-  It 'declara un hook SessionStart que ejecuta session-start' {
-    $script:Command | Should -Match 'hooks/session-start'
+  It 'declara un hook SessionStart que ejecuta la CLI en forma exec' {
+    $hook = $script:Config.hooks.SessionStart[0].hooks[0]
+    $hook.command | Should -Be 'node'
+    $hook.args | Should -Be @('${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js', 'hook', 'session-start')
   }
 
-  It 'no antepone un bash literal al comando' {
-    $script:Command | Should -Not -Match '^\s*"?bash(\.exe)?"?\s'
-  }
-
-  It 'delega la resolución del intérprete en el campo shell' {
-    $script:Config.hooks.SessionStart[0].hooks[0].shell | Should -Be 'bash'
+  It 'no declara shell' {
+    $script:Config.hooks.SessionStart[0].hooks[0].PSObject.Properties.Name | Should -Not -Contain 'shell'
   }
 }
 

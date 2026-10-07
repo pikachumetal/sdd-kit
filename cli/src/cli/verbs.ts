@@ -6,6 +6,7 @@ import { roadmapCheckVerb, roadmapPublishVerb } from '../roadmap/verbs.ts';
 import { mergeVerb } from '../merge/verbs.ts';
 import { watchCommandVerb, watchSubagentVerb } from '../watch/verbs.ts';
 import { sessionTokensVerb } from '../session/verbs.ts';
+import { hookSessionStartVerb } from '../hook/verbs.ts';
 import type { Io } from './io.ts';
 
 export type VerbArgs = { values: Record<string, unknown>; positionals: string[] };
@@ -19,4 +20,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, estimationLogVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, estimationLogVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb];
