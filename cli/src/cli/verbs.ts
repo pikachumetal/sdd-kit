@@ -3,6 +3,7 @@ import { capabilityCheckVerb, capabilityIndexVerb, capabilityMergeVerb } from '.
 import { idNextVerb } from '../ids/verbs.ts';
 import { estimationLogVerb } from '../estimation/verbs.ts';
 import { roadmapCheckVerb } from '../roadmap/verbs.ts';
+import { mergeVerb } from '../merge/verbs.ts';
 import type { Io } from './io.ts';
 
 export type VerbArgs = { values: Record<string, unknown>; positionals: string[] };
@@ -16,4 +17,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb, idNextVerb, estimationLogVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb, idNextVerb, estimationLogVerb, mergeVerb];

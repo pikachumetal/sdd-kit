@@ -8,7 +8,7 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | 2 — `capability index/check/merge` | hecha | 176d14ab |
 | 3 — `roadmap check` | hecha | f4b4117d |
 | 4 — Cerrojo e `id next` | hecha | fd855c0e |
-| 5 — `estimation log` | pendiente | |
+| 5 — `estimation log` | hecha | b71a1d6e |
 | 6 — `merge` | pendiente | |
 | 7 — `roadmap publish` | pendiente | |
 | 8 — `session tokens` y `watch` | pendiente | |
