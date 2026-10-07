@@ -10,7 +10,7 @@ rutas:
 
 ## Contexto y problema
 
-Las primeras skills mezclaban prohibiciones, recetas y cláusulas de excepción sin criterio, y el agente fallaba de formas distintas según el tipo de texto: saltaba una regla que conocía cuando había presión, cumplía la regla con la forma equivocada, o se aplicaba una excepción redactada como cláusula. En la task 0060, «si no puedes, di por qué» dejó pasar «es una base común» como motivo para partir por capas lo que debía ir en vertical, hasta que la guía escribió el motivo que no vale.
+El agente falla de formas distintas según el tipo de texto de la guía: saltaba una regla que conocía cuando había presión, cumplía la regla con la forma equivocada, o se aplicaba una excepción redactada como cláusula. En la task 0060, «si no puedes, di por qué» dejó pasar «es una base común» como motivo para partir por capas lo que debía ir en vertical, hasta que la guía escribió el motivo que no vale.
 
 ## Opciones consideradas
 

@@ -9,7 +9,7 @@ rutas:
 
 ## Contexto y problema
 
-Hasta la 0.3.0 cada proyecto instalaba una copia de las plantillas en su propia carpeta `templates/`, y las copias derivaban de las del kit: un artefacto nuevo se calcaba de la copia vieja y nadie se enteraba de los cambios.
+Hasta la 0.2.0 cada proyecto instalaba una copia de las plantillas en su propia carpeta `templates/`, y las copias derivaban de las del kit: un artefacto nuevo se calcaba de la copia vieja y nadie se enteraba de los cambios.
 
 ## Opciones consideradas
 

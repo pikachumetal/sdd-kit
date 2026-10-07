@@ -21,7 +21,7 @@ Desde la 0.1.0 el Art. I exigía, para toda skill nueva o editada, una campaña 
 - **Renombrar es editar** (task 0062: con `sdd-plan` 2/2 sujetos llegaban, con `sdd-roadmap` 0/1; una regla de la skill retirada quedó sin destino).
 - **La previsión cuenta todo lo que el agente ejecuta** (task 0073: un paso nuevo de una migración solo tenía test estático).
 
-La feature 0120 introdujo las baterías por skill (`tests/batteries/<skill>/`). En el lienzo 0131 el dev-lead constató que la campaña por edición encarece cada cambio y que 66 filas 🧪 cruzaron sin validar a mano (feature 0118).
+La feature 0120 introdujo las baterías por skill (`tests/batteries/<skill>/`). El 2026-09-29, tras cruzar 66 filas 🧪 sin ninguna validada a mano, el dev-lead decidió que el kit se valida en uso (feature 0118), y en el lienzo 0131 que la campaña por edición encarece cada cambio más de lo que paga.
 
 ## Opciones consideradas
 
@@ -36,7 +36,7 @@ Batería completa en las skills de entrada, propose, verify y archive; humo (1-2
 ### Consecuencias
 
 - Sale como regla el A/B obligatorio en todo recorte.
-- Los matices de campaña (fuente incidental, el recorte no quita la medición, conductas vecinas como escenarios de control, la previsión lista cada paso) pasan a método en `tech-stack.md` §Baterías por skill.
+- Los matices de campaña (fuente incidental, el recorte no quita la medición, conductas vecinas como escenarios de control, el sujeto de control tras editar una guía ya medida) pasan a método en `tech-stack.md` §Baterías por skill; la previsión que lista cada paso se queda en el artículo, porque la comprueba la lente técnica de la review de spec.
 - Una skill sin batería (las de humo) puede regresar en un paso que nadie mide; lo recoge el campo.
 
 ### Confirmación

@@ -11,7 +11,7 @@ rutas:
 
 ## Contexto y problema
 
-Un subagente no hereda el `CLAUDE.md` del dev-lead, así que las reglas de calidad no le llegaban (T7, 2026-09-09): la regla tiene que viajar literal en las restricciones globales del plan y en cada encargo. En los dos retos del equipo aparecieron 110 comentarios que citaban la constitution, una spec o una task: envejecen con el documento y no explican ningún porqué (T14, 2026-09-09). En la task 0021, un revisor marcó como Important una función de 21 líneas con un límite de 20 (dev-lead, 2026-09-22).
+Un subagente no hereda el `CLAUDE.md` del dev-lead, así que las reglas de calidad no le llegaban (T7, 2026-09-09): la regla tiene que viajar literal en las restricciones globales del plan y en cada encargo. En los dos retos del equipo aparecieron 110 comentarios que citaban la constitution, una spec o una task: envejecen con el documento y no explican ningún porqué (T14, 2026-09-09). En la task 0021 los revisores de task devolvían Important sobre diffs correctos; el dev-lead fijó que un umbral superado en una unidad (21 líneas con un límite de 20) es Minor (2026-09-22).
 
 ## Opciones consideradas
 

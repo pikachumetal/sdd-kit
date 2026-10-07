@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-09-27
+date: 2026-09-25
 rutas:
   - skills/sdd-start-feature/**
   - skills/sdd-end-feature/**

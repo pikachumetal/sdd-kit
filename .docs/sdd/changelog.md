@@ -10,6 +10,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0142** — Constitution corta para la 3.0.0: preámbulo con los cinco principios de la propuesta 0131 y once artículos con su regla y su porqué en una frase; la historia de cada regla pasa a diez ADR en `.docs/sdd/decisions/` (MADR 4.0.0 mínima con `status`, `date`, `rutas` y «Confirmación»). Art. I cambia la campaña RED/GREEN por edición por batería en entrada, propose, verify y archive y humo en todas, con A/B puntual; Art. IX permite el fork de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator con aviso en `THIRD_PARTY_NOTICES.md`; Art. XI añade las ADR. `CLAUDE.md` enlaza la constitution en vez de repetirla. → [ref](specs/20261007-135805-feature-0142-new-constitution/)
 - **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
 
 ## [2.3.2] - 2026-10-05

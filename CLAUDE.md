@@ -18,7 +18,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/specs/` — artefactos SDD de las tareas del propio kit (spec, plan, walkthrough por carpeta).
 - `.docs/workflow/` — documentación del flujo en castellano: la [guía de uso](.docs/workflow/usage-guide.md) para el dev con el kit instalado (punto de entrada desde el README), [greenfield](.docs/workflow/greenfield.md), [brownfield](.docs/workflow/brownfield.md) y el [anexo de evidencia](.docs/workflow/evidence-and-references.md). Es **de este repo**, no algo que el kit fije a los proyectos: ninguna skill la nombra. La guía, greenfield y brownfield describen el kit y se releen al subir de versión; lo vigila `tests/WorkflowDocs.Tests.ps1`, que exige que su marcador «Última revisión: kit vX.Y.Z» sea igual o posterior a la versión de `plugin.json`.
 - `skills/<nombre>/SKILL.md` — las 15 skills del kit. `skills/sdd-templates/templates/` es la **fuente única** de las plantillas.
-- `tests/` — evidencia RED/GREEN de cada skill (baseline sin skill → verificación con skill).
+- `tests/` — pruebas de cada skill (baterías, evidencia RED/GREEN y A/B) y tests Pester del código ejecutable.
 - `.claude-plugin/` — manifests del plugin (versión) y del marketplace.
 
 ## Reglas de la sesión

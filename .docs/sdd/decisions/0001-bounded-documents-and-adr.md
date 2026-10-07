@@ -10,7 +10,7 @@ rutas:
 
 ## Contexto y problema
 
-Los documentos de `.docs/sdd/` crecían sin freno: `tech-stack.md` hacía de diario de aprendizajes, `capabilities/feature-flow.md` llegó a 7.927 palabras y la constitution mezclaba cada regla con su historia (tasks, tickets, fechas, mediciones), hasta 2.766 palabras que toda sesión de feature lee enteras. La feature 0120 (2026-09-30) separó los documentos en estado y evento y puso topes de palabras; quedaba sin sitio el porqué de una regla, que no es estado (no describe el proyecto hoy) ni evento de una feature concreta (una regla se forma en varias). `CLAUDE.md` repetía además cuatro artículos de la constitution.
+Los documentos de `.docs/sdd/` crecían sin freno: `tech-stack.md` hacía de diario de aprendizajes, `capabilities/feature-flow.md` llegó a 7.927 palabras y la constitution mezclaba cada regla con su historia (tasks, tickets, fechas, mediciones), hasta 2.766 palabras que toda sesión de feature lee enteras. La feature 0115 separó los documentos en estado y evento (Art. XI, 2026-09-30) y la 0120 puso topes de palabras (2026-10-01); quedaba sin sitio el porqué de una regla, que no es estado (no describe el proyecto hoy) ni evento de una feature concreta (una regla se forma en varias). `CLAUDE.md` repetía además cuatro artículos de la constitution.
 
 ## Opciones consideradas
 
@@ -24,14 +24,14 @@ Todo documento de `.docs/sdd/` es de estado (se reescribe; no se le añade) o ar
 
 - Nombre `NNNN-<slug-en-inglés>.md`, con secuencia propia desde `0001`.
 - Frontmatter: `status` (`proposed | accepted | rejected | deprecated | superseded by NNNN`), `date` (la de la última decisión que la formó) y `rutas` (globs del repo a los que aplica).
-- Secciones, en castellano: «Contexto y problema», «Opciones consideradas», «Decisión», «Consecuencias» y «Confirmación».
+- Secciones, en castellano y en este orden: `## Contexto y problema`, `## Opciones consideradas`, `## Decisión`, `### Consecuencias` y `### Confirmación`.
 - Inmutable: una decisión nueva escribe otra ADR y la vieja solo cambia su `status` a `superseded by NNNN`.
 
 La constitution queda en un preámbulo de principios y un artículo por regla, con su porqué en una frase y el enlace a su ADR. `CLAUDE.md` la enlaza en vez de repetirla.
 
 ### Consecuencias
 
-- La constitution baja de 2.766 a ~2.000 palabras (el Art. IV, que conserva toda su normativa, es casi la mitad), y la historia la lee solo quien toca las rutas de la ADR.
+- La constitution baja de 2.766 a ~2.000 palabras (el Art. IV, que conserva toda su normativa, es una cuarta parte), y la historia la lee solo quien toca las rutas de la ADR.
 - Hasta que la CLI de la 0143 construya el índice que cruza `rutas` con los ficheros de un cambio, encontrar la ADR que aplica depende del enlace del artículo.
 - La plantilla de ADR para los proyectos llega con las plantillas de la 0144; estas diez se escribieron a mano siguiendo esta forma.
 
