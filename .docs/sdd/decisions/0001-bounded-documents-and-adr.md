@@ -31,7 +31,7 @@ La constitution queda en un preámbulo de principios y un artículo por regla, c
 
 ### Consecuencias
 
-- La constitution baja de 2.766 palabras a menos de la mitad, y la historia la lee solo quien toca las rutas de la ADR.
+- La constitution baja de 2.766 a ~2.000 palabras (el Art. IV, que conserva toda su normativa, es casi la mitad), y la historia la lee solo quien toca las rutas de la ADR.
 - Hasta que la CLI de la 0143 construya el índice que cruza `rutas` con los ficheros de un cambio, encontrar la ADR que aplica depende del enlace del artículo.
 - La plantilla de ADR para los proyectos llega con las plantillas de la 0144; estas diez se escribieron a mano siguiendo esta forma.
 
