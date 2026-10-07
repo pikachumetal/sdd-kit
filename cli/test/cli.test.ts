@@ -88,3 +88,14 @@ describe('package', () => {
     expect(pkg.dependencies).toBeUndefined();
   });
 });
+
+describe('unexpected errors', () => {
+  it('prints only the message and exits 1', async () => {
+    const failing = { noun: 'boom', summary: 'Falla', options: {}, run: async () => Promise.reject(new Error('ENOENT: no such file')) };
+    const io = memoryIo();
+    const code = await run(['boom'], io, [failing]);
+    expect(code).toBe(1);
+    expect(io.stderr).toEqual(['ENOENT: no such file']);
+    expect(io.stderr.join('\n')).not.toMatch(/\n\s+at /);
+  });
+});

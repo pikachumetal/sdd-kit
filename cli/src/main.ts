@@ -43,7 +43,10 @@ export async function run(argv: string[], io: Io, verbs: Verb[] = VERBS): Promis
       io.err(error.message);
       return 1;
     }
-    if (!(error instanceof UsageError)) throw error;
+    if (!(error instanceof UsageError)) {
+      io.err(error instanceof Error ? error.message : String(error));
+      return 1;
+    }
     io.err(error.message);
     io.err(usageLine(argv[0], verbs));
     return 2;

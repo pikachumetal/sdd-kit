@@ -7,7 +7,7 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | 1 — Herramientas, esqueleto y pre-commit | hecha | 2db22128 |
 | 2 — `capability index/check/merge` | hecha | 176d14ab |
 | 3 — `roadmap check` | hecha | f4b4117d |
-| 4 — Cerrojo e `id next` | pendiente | |
+| 4 — Cerrojo e `id next` | hecha | fd855c0e |
 | 5 — `estimation log` | pendiente | |
 | 6 — `merge` | pendiente | |
 | 7 — `roadmap publish` | pendiente | |
@@ -18,3 +18,4 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | 12 — Documentos y ADR 0011 | pendiente | |
 | 13 — Humo de las skills | pendiente | |
 | 14 — Evaluación de `claude plugin eval` | pendiente | |
+- Cuelgue: implementador de la task 5 (Sonnet), sin respuesta tras un Bash, 8 min, relanzado

@@ -1,6 +1,6 @@
 BeforeAll {
   $script:Script = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Build-EstimationLog.ps1'
-  $script:Fixtures = Join-Path $PSScriptRoot 'fixtures/estimation-log'
+  $script:Fixtures = Join-Path $PSScriptRoot '../cli/test/fixtures/estimation-log'
 
   function Invoke-Build([string]$Root) {
     $out = Join-Path $TestDrive ([guid]::NewGuid().ToString() + '.md')
