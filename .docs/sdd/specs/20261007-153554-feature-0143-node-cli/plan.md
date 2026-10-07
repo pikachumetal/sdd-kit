@@ -36,7 +36,7 @@ created: 2026-10-07
 
 - Node ≥ 22.18.0. `cli/bin/sdd.js` es JS plano y no importa nada de `src/` antes de comprobar la versión.
 - TypeScript solo con sintaxis que se borra (`erasableSyntaxOnly`): sin `enum`, `namespace` ni propiedades de parámetro; imports relativos con extensión `.ts`.
-- `cli/package.json` sin `dependencies`. `devDependencies`: solo `typescript` y `vitest`. Solo módulos `node:*`.
+- `cli/package.json` sin `dependencies`. `devDependencies`: solo `typescript`, `vitest` y `@types/node`. Solo módulos `node:*`.
 - Ningún import de moon, pnpm ni proto en `cli/src/`.
 - Opciones en inglés kebab-case; mensajes al usuario en castellano con tildes, idénticos a los del script que se porta (los de los bash de superpowers, en inglés, idénticos a los suyos).
 - Códigos de salida: 0 bien, 1 fallo del dominio, 2 uso incorrecto. `sdd task done` sale con el código del comando, y con 127 si no existe.
@@ -131,7 +131,7 @@ Ninguna. El Art. X se ajusta en T12 por la decisión 21 de la spec.
 **Modelo**: `subagent_type: sdd-kit:effort-high` + `model: sonnet` — fija las interfaces que usan las otras 13.
 **Tests RED**: hilo principal · `cli/test/cli.test.ts` (THEN de «La CLI se ejecuta…», «Node demasiado viejo…», «Un verbo, una opción o un valor fuera de tope…»).
 **Superficies**: tooling.
-**Verificación**: `pnpm install` · `moon run cli:typecheck cli:test` · `proto run node 22.18.0 -- node cli/bin/sdd.js --help` (sale 0).
+**Verificación**: `pnpm install` · `moon run cli:typecheck cli:test` · `proto run node 22.18.0 -- cli/bin/sdd.js --help` (sale 0).
 
 **Interfaces**:
 - Consume: nada.
@@ -188,7 +188,7 @@ Ninguna. El Art. X se ajusta en T12 por la decisión 21 de la spec.
 
 **Interfaces**:
 - Consume: T1.
-- Produce: verbo `roadmap check` (`--path`, `--json`); JSON `{ "valid": boolean, "errors": string[], "warnings": string[] }`. `kit:roadmap` pasa a `node cli/bin/sdd.js roadmap check --path .docs/sdd/roadmap.md`.
+- Produce: verbo `roadmap check` (`--path`, `--json`); JSON `{ "valid": boolean, "errors": string[], "warnings": string[] }`. `kit:roadmap` pasa a `node cli/bin/sdd.js roadmap check --path .docs/sdd` (como el script, `--path` es la carpeta `.docs/sdd`).
 
 **Ficheros**: `cli/src/roadmap/check.ts`, sus tests; mover `tests/fixtures/roadmap-structure/`; `moon.yml`.
 
