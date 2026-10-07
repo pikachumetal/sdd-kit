@@ -16,6 +16,13 @@ function parseConfig(configPath: string): { merge?: { into?: unknown; noFf?: unk
   }
 }
 
+export function configuredMergeInto(projectRoot: string): string | null {
+  const configPath = join(projectRoot, '.docs/sdd/sdd-kit.json');
+  if (!existsSync(configPath)) return null;
+  const into = parseConfig(configPath)?.merge?.into;
+  return typeof into === 'string' && into.trim() !== '' ? into : null;
+}
+
 export function resolveMergePolicy(projectRoot: string): MergePolicy {
   const configPath = join(projectRoot, '.docs/sdd/sdd-kit.json');
   if (!existsSync(configPath)) throw new DomainError(`política: no existe '${configPath}'.`);

@@ -1,21 +1,6 @@
-import { UsageError } from '../cli/args.ts';
-import type { Verb, VerbArgs } from '../cli/verbs.ts';
+import { lockTimeoutOption, text } from '../cli/args.ts';
+import type { Verb } from '../cli/verbs.ts';
 import { mergeBranch } from './run.ts';
-
-const DEFAULT_LOCK_TIMEOUT_MINUTES = 30;
-
-function text(args: VerbArgs, name: string): string | null {
-  const value = args.values[name];
-  return typeof value === 'string' ? value : null;
-}
-
-function lockTimeoutOption(args: VerbArgs): number {
-  const raw = text(args, 'lock-timeout');
-  if (raw === null) return DEFAULT_LOCK_TIMEOUT_MINUTES;
-  const minutes = Number(raw);
-  if (raw === '' || !Number.isFinite(minutes) || minutes < 0) throw new UsageError('--lock-timeout debe ser un número de minutos');
-  return minutes;
-}
 
 export const mergeVerb: Verb = {
   noun: 'merge',

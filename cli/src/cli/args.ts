@@ -36,3 +36,19 @@ export function requiredOption(args: VerbArgs, name: string): string {
   if (typeof value !== 'string') throw new UsageError(`falta la opción --${name}`);
   return value;
 }
+
+const DEFAULT_LOCK_TIMEOUT_MINUTES = 30;
+
+export function text(args: VerbArgs, name: string): string | null {
+  const value = args.values[name];
+  return typeof value === 'string' ? value : null;
+}
+
+export function lockTimeoutOption(args: VerbArgs): number {
+  const raw = text(args, 'lock-timeout');
+  if (raw === null) return DEFAULT_LOCK_TIMEOUT_MINUTES;
+  const minutes = Number(raw);
+  if (raw === '' || !Number.isFinite(minutes) || minutes < 0) throw new UsageError('--lock-timeout debe ser un número de minutos');
+  return minutes;
+}
+
