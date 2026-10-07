@@ -18,7 +18,7 @@ export function processIo(): Io {
   return {
     out,
     err: (line) => writeUtf8(process.stderr, line),
-    json: (value) => out(JSON.stringify(value, null, 2)),
+    json: (value) => out(JSON.stringify(value)),
   };
 }
 
@@ -30,6 +30,6 @@ export function memoryIo(): MemoryIo {
     stderr,
     out: (line) => void stdout.push(line),
     err: (line) => void stderr.push(line),
-    json: (value) => void stdout.push(JSON.stringify(value, null, 2)),
+    json: (value) => void stdout.push(JSON.stringify(value)),
   };
 }

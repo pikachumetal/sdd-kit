@@ -1,6 +1,6 @@
 BeforeAll {
   $script:Validator = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Test-Capabilities.ps1'
-  $script:Bookings = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot 'fixtures/capabilities/bookings.md')
+  $script:Bookings = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../cli/test/fixtures/capabilities/bookings.md')
   $script:Roots = [System.Collections.Generic.List[string]]::new()
   $script:ReserveScenario = "- GIVEN la sala Norte libre de 10 a 12`n- WHEN ``salas reservar Norte 10-12```n- THEN la reserva queda guardada y el CLI responde ``Reservada Norte 10-12``"
 

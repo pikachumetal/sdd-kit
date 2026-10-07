@@ -1,6 +1,6 @@
 BeforeAll {
   $script:Index = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Get-CapabilityIndex.ps1'
-  $script:Bookings = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot 'fixtures/capabilities/bookings.md')
+  $script:Bookings = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../cli/test/fixtures/capabilities/bookings.md')
   $script:Template = Get-Content -Raw -Encoding utf8 (Join-Path $PSScriptRoot '../skills/sdd-templates/templates/capability-template.md')
   $script:Roots = [System.Collections.Generic.List[string]]::new()
 
