@@ -3,6 +3,8 @@ import type { Verb, VerbArgs } from './verbs.ts';
 
 export class UsageError extends Error {}
 
+export class DomainError extends Error {}
+
 const PARSE_ERRORS: Record<string, string> = {
   ERR_PARSE_ARGS_UNKNOWN_OPTION: 'opción desconocida',
   ERR_PARSE_ARGS_INVALID_OPTION_VALUE: 'valor no válido para la opción',

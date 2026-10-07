@@ -1,5 +1,6 @@
 import type { ParseArgsOptionsConfig } from 'node:util';
 import { capabilityCheckVerb, capabilityIndexVerb, capabilityMergeVerb } from '../capabilities/verbs.ts';
+import { idNextVerb } from '../ids/verbs.ts';
 import { roadmapCheckVerb } from '../roadmap/verbs.ts';
 import type { Io } from './io.ts';
 
@@ -14,4 +15,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb, idNextVerb];

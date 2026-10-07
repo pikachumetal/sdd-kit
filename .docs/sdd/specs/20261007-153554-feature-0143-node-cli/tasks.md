@@ -5,8 +5,8 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | Task | Estado | Commit |
 | --- | --- | --- |
 | 1 — Herramientas, esqueleto y pre-commit | hecha | 2db22128 |
-| 2 — `capability index/check/merge` | pendiente | |
-| 3 — `roadmap check` | pendiente | |
+| 2 — `capability index/check/merge` | hecha | 176d14ab |
+| 3 — `roadmap check` | hecha | f4b4117d |
 | 4 — Cerrojo e `id next` | pendiente | |
 | 5 — `estimation log` | pendiente | |
 | 6 — `merge` | pendiente | |

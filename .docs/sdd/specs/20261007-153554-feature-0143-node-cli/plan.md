@@ -204,7 +204,7 @@ Ninguna. El Art. X se ajusta en T12 por la decisión 21 de la spec.
 
 **Interfaces**:
 - Consume: T1.
-- Produce: `cli/src/git/git.ts`: `git(cwd: string, args: string[]): Promise<GitResult>` con el entorno `GIT_*` limpio y salida UTF-8; `worktrees(cwd: string): Promise<Worktree[]>` (`{ path, branch | null }`); `commonDir(cwd: string): Promise<string>`. `cli/src/git/lock.ts`: `withLock<T>(lockPath: string, label: string, timeoutMinutes: number, io: Io, body: () => Promise<T>): Promise<T>` con los mensajes de `SddLock.ps1` (`Esperando el cerrojo de <label>: lo tiene …`, `Cerrojo huérfano: lo tenía …`, `cerrojo: no se libera; lo tiene …`). Verbo `id next` (`--project-root`, `--reserve`, `--count` 1–99, `--lock-timeout` por defecto 2, `--json`); JSON `{ "ids": string[], "reserved": boolean }`.
+- Produce: `cli/src/git/git.ts`: `git(cwd: string, args: string[]): Promise<GitResult>` con el entorno `GIT_*` limpio y salida UTF-8; `worktrees(cwd: string): Promise<Worktree[]>` (`{ path, branch | null }`); `commonDir(cwd: string): Promise<string>`. `cli/src/git/lock.ts`: `withLock<T>(lock: Lock, timeoutMinutes: number, body: () => Promise<T>): Promise<T>`, con `Lock = { path: string; label: string; io: Io; owner: { branch: string; worktree: string } }` con los mensajes de `SddLock.ps1` (`Esperando el cerrojo de <label>: lo tiene …`, `Cerrojo huérfano: lo tenía …`, `cerrojo: no se libera; lo tiene …`). Verbo `id next` (`--project-root`, `--reserve`, `--count` 1–99, `--lock-timeout` por defecto 2, `--json`); JSON `{ "ids": string[], "reserved": boolean }`.
 
 **Ficheros**: `cli/src/git/*.ts`, `cli/src/ids/next.ts`, tests; mover `tests/fixtures/task-ids/`.
 

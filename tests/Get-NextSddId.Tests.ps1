@@ -1,6 +1,6 @@
 BeforeAll {
   $script:Script = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Get-NextSddId.ps1'
-  $script:Fixtures = Join-Path $PSScriptRoot 'fixtures/task-ids'
+  $script:Fixtures = Join-Path $PSScriptRoot '../cli/test/fixtures/task-ids'
   $script:RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
   . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')

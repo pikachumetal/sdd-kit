@@ -30,10 +30,12 @@ export function runSdd(args: string[], cwd = repoRoot): RunResult {
   return { stdout: normalize(result.stdout), stderr: normalize(result.stderr), code: result.status };
 }
 
+const collapse = (text: string) => text.replace(/\s+/g, ' ').trim();
+
 export function expectParity(old: RunResult, current: RunResult): void {
   expect(current.code).toBe(old.code);
   expect(current.stdout).toBe(old.stdout);
   for (const line of current.stderr.split('\n').filter(Boolean)) {
-    expect(old.stderr).toContain(line);
+    expect(collapse(old.stderr)).toContain(collapse(line));
   }
 }

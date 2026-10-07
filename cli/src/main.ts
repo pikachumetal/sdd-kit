@@ -1,4 +1,4 @@
-import { UsageError, parseVerbArgs } from './cli/args.ts';
+import { DomainError, UsageError, parseVerbArgs } from './cli/args.ts';
 import type { Io } from './cli/io.ts';
 import { VERBS, type Verb } from './cli/verbs.ts';
 
@@ -39,6 +39,10 @@ export async function run(argv: string[], io: Io, verbs: Verb[] = VERBS): Promis
     const { verb, rest } = resolveVerb(argv, verbs);
     return await verb.run(parseVerbArgs(verb, rest), io);
   } catch (error) {
+    if (error instanceof DomainError) {
+      io.err(error.message);
+      return 1;
+    }
     if (!(error instanceof UsageError)) throw error;
     io.err(error.message);
     io.err(usageLine(argv[0], verbs));
