@@ -1,6 +1,6 @@
 BeforeAll {
   $script:Script = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Measure-SessionTokens.ps1'
-  $script:Fixtures = Join-Path $PSScriptRoot 'fixtures/session-tokens'
+  $script:Fixtures = Join-Path $PSScriptRoot '../cli/test/fixtures/session-tokens'
   $script:Sonnet = @{ input = 2; cacheWrite5m = 2.5; cacheWrite1h = 4; cacheRead = 0.2; output = 10 }
   $script:Opus = @{ input = 4; cacheWrite5m = 5; cacheWrite1h = 8; cacheRead = 0.2; output = 20 }
 

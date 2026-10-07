@@ -10,7 +10,7 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | 4 — Cerrojo e `id next` | hecha | fd855c0e |
 | 5 — `estimation log` | hecha | b71a1d6e |
 | 6 — `merge` | hecha | fd74e477 |
-| 7 — `roadmap publish` | pendiente | |
+| 7 — `roadmap publish` | hecha | 71145c5f |
 | 8 — `session tokens` y `watch` | pendiente | |
 | 9 — `hook session-start` | pendiente | |
 | 10 — Bash de superpowers y `ledger rulings` | pendiente | |
