@@ -128,4 +128,4 @@ No aplica: entrevista del lienzo 0131 con el dev-lead, 2026-10-05 a 2026-10-07 (
 
 ## Enmiendas
 
-- (ninguna)
+- 2026-10-07 — Revisión de la spec: los dos revisores (dominio y técnica) en Sonnet → el modelo del revisor de dominio se elige en cada spec: la última ronda de la entrevista ofrece «revisor de dominio en Opus» con su recomendación (p. ej. Opus si la spec toca reglas de negocio o roles: «permisos por rol del gestor de cobros» → recomienda Opus; «renombrar una columna del listado» → Sonnet); si la petición o el prompt de arranque lo dice, se aplica sin preguntar; sin entrevista, Sonnet; técnica, siempre Sonnet; sin parada nueva — pedido por el dev-lead (lo usa en campo desde hace días) — re-parte: 0146
