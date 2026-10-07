@@ -28,3 +28,9 @@ export function parseVerbArgs(verb: Verb, argv: string[]): VerbArgs {
     throw toUsageError(error);
   }
 }
+
+export function requiredOption(args: VerbArgs, name: string): string {
+  const value = args.values[name];
+  if (typeof value !== 'string') throw new UsageError(`falta la opción --${name}`);
+  return value;
+}

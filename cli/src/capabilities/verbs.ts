@@ -1,16 +1,10 @@
 import { existsSync } from 'node:fs';
-import { UsageError } from '../cli/args.ts';
+import { requiredOption } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { validateCapabilities } from './check.ts';
 import { capabilityIndex, indexLines } from './index.ts';
 import { mergeDelta } from './merge.ts';
-
-function requiredOption(args: VerbArgs, name: string): string {
-  const value = args.values[name];
-  if (typeof value !== 'string') throw new UsageError(`falta la opción --${name}`);
-  return value;
-}
 
 function artifactOption(args: VerbArgs, io: Io): string | undefined {
   const artifact = args.values.artifact;

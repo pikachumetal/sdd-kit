@@ -1,7 +1,7 @@
 BeforeAll {
   $script:Validator = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Test-Roadmap.ps1'
   $script:Template = Join-Path $PSScriptRoot '../skills/sdd-templates/templates/roadmap-template.md'
-  $script:BrokenFixture = Join-Path $PSScriptRoot 'fixtures/roadmap-structure/roadmap-0fc231e-parent.md'
+  $script:BrokenFixture = Join-Path $PSScriptRoot '../cli/test/fixtures/roadmap-structure/roadmap-0fc231e-parent.md'
   $script:Roots = [System.Collections.Generic.List[string]]::new()
   $script:ProseRule = 'fuera de «Releases cerradas» el roadmap solo lleva tablas'
   $script:ValidLines = @(
