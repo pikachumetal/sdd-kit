@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Diez ADR iniciales | pending | — | |
+| 1 | Diez ADR iniciales | done | — | |
 | 2 | Constitution nueva | pending | — | |
 | 3 | `CLAUDE.md` y `architecture.md` | pending | — | |
 
