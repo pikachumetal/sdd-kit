@@ -143,8 +143,8 @@ Describe 'Perfiles de control: la opción de diferir trae su disparador (patch 0
 }
 
 Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
-  It 'la regla 6 nombra las paradas de delegate: spec, desvío y validación final' {
-    $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^6\. .+$').Value
+  It 'la regla de delegate nombra sus paradas: spec, desvío y validación final' {
+    $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^\d+\. \*\*Cuando el dev-lead delega.+$').Value
     $rule | Should -Match 'control-profiles\.md'
     foreach ($stop in 'aprobación de la spec', 'desvío', 'validación final') { $rule | Should -Match $stop }
   }

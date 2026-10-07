@@ -4,7 +4,7 @@
 
 ```text
 /
-├── CLAUDE.md                    (punteros + reglas críticas)
+├── CLAUDE.md                    (punteros + reglas de la sesión)
 ├── README.md                    (instalación y catálogo)
 ├── .claude-plugin/
 │   ├── plugin.json              (manifest del plugin, versión)
@@ -31,7 +31,8 @@
 └── .docs/
     ├── workflow/                (documentación temprana del flujo: greenfield, brownfield, anexo de evidencia)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)
-        └── capabilities/           (verdad viva por capacidad: un fichero por sustantivo del dominio, fusionado desde el delta de cada spec)
+        ├── capabilities/           (verdad viva por capacidad: un fichero por sustantivo del dominio, fusionado desde el delta de cada spec)
+        └── decisions/              (ADR: el porqué de cada regla, NNNN-<slug>.md, inmutables)
 ```
 
 ## Anatomía de una skill del kit
@@ -45,7 +46,7 @@
 3. **Gates/checklist**: pasos numerados; los ⛔ marcan puntos de parada que requieren al usuario.
 4. **Predicados**: los módulos opcionales se condicionan a ficheros observables, no a configuración — `estimation.md` (estimación y tiempo real), `changelog.md` (entrada al cerrar), `architecture.md` (se lee en el contexto), `capabilities/<capability>.md` (desde T5: verdad viva del comportamiento, fusionada desde el delta de cada spec al cerrar) y, desde T4, `environments.md` (entorno por worktree: `env:setup` tras crear el worktree, `env:clean` antes de borrarlo; el worktree en sí lo gestiona superpowers). Un predicado bien escrito no solo clasifica: **da forma al trabajo**. En el GREEN del modo lite, el agente acotó el alcance de la spec para dejar fuera un fichero de contrato público y así cumplir una de las condiciones — el predicado se usó como herramienta de diseño, no solo como filtro de entrada. Cuando el predicado habilita un atajo, quien lo activa es el usuario: **habilitar y activar son cosas distintas**, y esa separación es lo que impide que el agente se autoconceda el atajo. Un fichero de configuración que el agente debe leer se **nombra en la skill que lo lee**, con su ruta: en el RED de la task 0061, 2 de 2 sujetos aplicaron `sdd-kit.local.json` solo porque lo vieron al listar `.docs/sdd/`, y en otro worktree nada los habría llevado a buscarlo.
 5. **Red flags + tabla de racionalizaciones**: construidas con las frases textuales de los baselines (solo skills de disciplina; las de forma usan receta/contrato).
-6. **Ficheros auxiliares (`references/`)**: la unidad de descomposición de una skill es el fichero auxiliar, no otra skill, porque cada skill nueva suma su `description` a la lista cargada en todas las sesiones y añade un salto de invocación que el agente puede saltarse. Un bloque baja a `references/<tema>.md` solo si **(a)** aplica a un subconjunto de invocaciones, no a todas, y **(b)** se necesita después de decidir, no para decidir. Cumplir (a)+(b) lo hace *candidato*; quien decide es el A/B (Art. I). Se referencia con enlace relativo en el punto exacto del flujo, nunca con `@`, que fuerza la carga y quema contexto. El harness inyecta `Base directory for this skill` al invocar y **no** carga los auxiliares por su cuenta: lo que gobierna la decisión se queda en el `SKILL.md`. Medido en la task 0013: con la regla del destino que falta solo en `sdd-end-feature/references/aprendizajes-skills.md`, 0/2 sujetos leyeron el fichero; al subirla al paso 4 del `SKILL.md`, 3/3. Segunda medición en la task 0026: `overrides-superpowers.md`, que el paso 6 solo nombra al pie, no la abrió 1 de 2 sujetos, y los dos leyeron los auxiliares que el paso nombra donde se usan. Con un puntero en uno de esos (`encargo-revision.md`), 2/2. El estado del arte respalda ese reparto — en superpowers 6.3.0 las skills con auxiliares son las más largas (`subagent-driven-development` 4823 palabras con 6 auxiliares), y sus auxiliares son contenido condicional (mapeo por harness), no troceado del flujo; lo que se mantiene pequeño es lo cargado en toda sesión (`using-superpowers`, 485 palabras).
+6. **Ficheros auxiliares (`references/`)**: la unidad de descomposición de una skill es el fichero auxiliar, no otra skill, porque cada skill nueva suma su `description` a la lista cargada en todas las sesiones y añade un salto de invocación que el agente puede saltarse. Un bloque baja a `references/<tema>.md` solo si **(a)** aplica a un subconjunto de invocaciones, no a todas, y **(b)** se necesita después de decidir, no para decidir. Cumplir (a)+(b) lo hace *candidato*; quien decide es el A/B (Art. I). Se referencia con enlace relativo en el punto exacto del flujo, nunca con `@`, que fuerza la carga y quema contexto. El harness inyecta `Base directory for this skill` al invocar y **no** carga los auxiliares por su cuenta: lo que gobierna la decisión se queda en el `SKILL.md`. Medido en la task 0013: con la regla del destino que falta solo en `sdd-end-feature/references/aprendizajes-skills.md`, 0/2 sujetos leyeron el fichero; al subirla al paso 4 del `SKILL.md`, 3/3. Segunda medición en la task 0026: `overrides-superpowers.md`, que el paso 6 solo nombra al pie, no la abrió 1 de 2 sujetos, y los dos leyeron los auxiliares que el paso nombra donde se usan. Con un puntero en uno de esos (`encargo-revision.md`), 2/2.
 
 ## Anatomía de la evidencia (tests/)
 
@@ -60,7 +61,7 @@
 
 ## Documentos de `.docs/sdd/`
 
-Cada documento es de estado o un artefacto de evento (constitution, Art. XI), y tiene quien lo escribe, quien lo lee y una cota. Medidas del 2026-09-30, en palabras. Donde dice «sin cota», el documento crece con cada cierre y nada lo frena todavía.
+Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art. XI), y tiene quien lo escribe, quien lo lee y una cota. Medidas del 2026-09-30, en palabras. Donde dice «sin cota», el documento crece con cada cierre y nada lo frena todavía.
 
 | Documento | Tipo | Lo escribe | Lo lee | Cota |
 | --- | --- | --- | --- | --- |
@@ -72,6 +73,7 @@ Cada documento es de estado o un artefacto de evento (constitution, Art. XI), y 
 | `changelog.md` | diario por release | `add-to-changelog` y `sdd-end-release` | `sdd-end-release`, y las personas | solo se lee `[Unreleased]` y la última versión; se parte por versión mayor si pesa |
 | `estimation-log.md` | generado | `Build-EstimationLog.ps1` | `writing-plans`, para estimar | una fila por cierre; nadie lo edita |
 | `sdd-kit.json` | estado | `sdd-config`, las init y las migraciones | todas las skills | sus claves son las del catálogo de `sdd-config` |
+| `decisions/NNNN-<slug>.md` | ADR | la feature que toma o sustituye la decisión | quien toca sus `rutas`, por el enlace de la constitution | inmutable: solo cambia `status` al sustituirse |
 | `specs/<carpeta>/` | evento | el arranque y el cierre de cada feature, patch o propuesta | su propia sesión, y quien busca un porqué | una carpeta por evento; no se edita tras el cierre, salvo adendas fechadas |
 | `field-reports/` | evento | `sdd-feedback`, copiado literal | el triaje del roadmap | un fichero por ticket; no se edita |
 | `releases/vX.Y.Z/` | evento | `sdd-end-release` | las personas | una carpeta por release |
