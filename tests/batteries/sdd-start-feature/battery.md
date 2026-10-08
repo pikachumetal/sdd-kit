@@ -44,3 +44,6 @@ Cada regla que la 0146 añade a `skills/sdd-start-feature/`, de dónde viene y q
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Paso 4: la presentación empieza por el 🦆 (de `sdd-rubber-duck`, también bajo el título) y por «✋ Decisiones que he tomado yo», con todo valor que no salió de la entrevista ni del roadmap | RED S1 y S2 2/2 | s1 |
+| `spec-template.md`: el ✋ exhaustivo, cada texto con su literal | RED S2 2/2; GREEN ronda 0, S2 1/2 (el aviso descrito sin su literal) | s1 |
+| `spec-template.md`: secciones «Dónde se prueba» y «Términos y ADR» | RED S3 2/2 | s1 |
