@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-10-08
+
+Hotfix de la 2.3.2, sacado de `main`: el validador del roadmap y el estimation-log ya no dan por publicado un patch fusionado tras el corte del mismo día, y la fusión del delta deja pasar los `<!-- … -->` y `<…>` propios del proyecto. Sin cambios en el proyecto: la migración `v2.3.3` solo avanza el marcador.
+
 ### Fixed
 
 - **`Test-Roadmap.ps1` y `Build-EstimationLog.ps1` deciden lo publicado por ascendencia en git** — un patch fusionado después del corte de una release, el mismo día, se rechazaba con `patch del <fecha>, no posterior a la v<versión> (<fecha>): sale en el corte`, y el log lo asignaba a esa release. Ahora, con el tag `v<versión>` de la release, una fila con enlace `specs/…` sale en el corte solo si el commit que añadió su artefacto es ascendiente del tag, y el log lleva cada artefacto a la primera versión cuyo tag lo contiene; sin tag, decide la fecha como antes ([patch 0153](specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md))
