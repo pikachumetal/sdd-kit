@@ -160,3 +160,10 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN el mismo proyecto
 - WHEN el usuario escribe «Cambia "Guardar" por "Guardar y cerrar" y ponlo a la derecha, en las dos fichas»
 - THEN la skill que abre el trabajo es `sdd-kit:sdd-start-patch`, como petición cerrada: `patch.md` lleva `solution: dev-lead` y la entrada del changelog va en `Changed`
+
+### Una petición de explicar en llano entra por `sdd-rubber-duck`
+
+- GIVEN un proyecto con `.docs/sdd/` y el kit instalado
+- WHEN el dev-lead escribe «Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-rubber-duck`
+- AND «Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo.» sigue entrando por `sdd-kit:sdd-consult`

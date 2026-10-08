@@ -1,0 +1,43 @@
+--- [7]
+Esto es lo que hace el código hoy. Lo que dicen los documentos va aparte, al final.
+
+## Recorrido
+
+**1. Pides la exportación: `src/cli.js`**
+Ejecutas `exportar --mes 2026-03`. El CLI toma el valor que sigue a `--mes` y llama a `exportMonth(month)`. Cuando termina, imprime la ruta del fichero.
+
+**2. Orquestación: `src/export/index.js`**
+`exportMonth` encadena cuatro pasos:
+`loadBookings()` → `bookingsBySlot(…, month)` → `toIcs(…)` → `writeExport(month, ics)`
+
+**3. Lectura de datos: `src/bookings/repository.js`**
+Lee y parsea `data/bookings.json` entero. Es un JSON plano con `room`, `day`, `slot` (`"10:00-12:00"`) y `status`.
+
+**4. Filtrado y orden: `src/export/filter.js`**
+- Se queda con las reservas cuyo `day` empieza por el mes pedido (`startsWith("2026-03")`).
+- Descarta las que tienen `status === 'cancelled'`.
+- Las ordena por `day slot`.
+
+**5. Conversión a calendario: `src/export/ics.js`**
+- Cada reserva pasa a un `VEVENT` con `SUMMARY:Sala <room>`.
+- La franja se parte en inicio y fin.
+- Cada hora se interpreta con un desfase fijo `+02:00` (`COWORKING_OFFSET`) y se convierte a UTC. `DTSTART` y `DTEND` salen con ese formato.
+- Todo va dentro de un `VCALENDAR` 2.0 con saltos `\r\n`.
+
+**6. Escritura: `src/export/writer.js`**
+Crea la carpeta `exports/` si no existe. Escribe `exports/<mes>.ics`, por ejemplo `exports/2026-03.ics`, y devuelve la ruta. Esa ruta es lo que ves impreso. Importas el fichero en tu calendario.
+
+## Cosas que se desprenden del código (son inferencias mías)
+
+- **Desfase fijo `+02:00`.** Es el horario de verano. Las reservas de invierno (por ejemplo marzo antes del cambio de hora) saldrían una hora desplazada. No lo he probado. Tampoco hay `UID` ni `DTSTAMP` en los eventos, que RFC 5545 exige. Algunos calendarios son tolerantes y otros no.
+- **Sin validación de entrada.** Si falta `--mes`, `args.indexOf('--mes') + 1` da `0` y se toma el primer argumento. No hay comprobación del formato del mes. Un mes sin reservas produce un `.ics` vacío, pero válido en estructura.
+- **Rutas relativas al directorio actual.** `exports/` cuelga del directorio desde el que ejecutas el comando, no de la raíz del proyecto.
+
+## Lo que dicen los documentos
+
+- **0012** (`specs/…feature-0012-ics-export`) describe este flujo: las canceladas no salen y la reserva aparece de 10:00 a 12:00. En el roadmap figura como implementada y sin cerrar.
+- **0013** (`specs/…feature-0013-export-by-room`) está en borrador y todavía no está en el código. Añadiría un `--sala` opcional y un fichero `exports/2026-03-norte.ics`.
+- El roadmap anota como deuda la falta de validación de la franja, con impacto bajo.
+
+No he tocado nada. Si quieres tratar alguna de las inferencias (el desfase horario, por ejemplo), dime si es un fallo para un patch o un cambio de comportamiento para otra feature.
+

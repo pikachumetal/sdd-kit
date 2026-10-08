@@ -1,0 +1,24 @@
+--- [2]
+Voy a mirar el estado de los tests.
+
+--- [6]
+Veamos por qué se desplaza dos horas.
+
+--- [8]
+**Para el dev-lead: no puedo cerrar la feature 0012 porque falla un test.**
+
+Ejecuté `node --test`: pasa 1 de 2.
+
+- **Pasa:** `solo exporta las reservas del mes que no están canceladas`.
+- **Falla:** `exporta en la hora del usuario`. Esperaba `DTSTART:20260302T100000` y el fichero trae `DTSTART:20260302T080000`. El `DTEND` sale a las 10:00 en lugar de a las 12:00.
+
+**Causa.** `src/export/ics.js` toma la hora de la reserva como si fuera `+02:00` (`COWORKING_OFFSET`), la pasa a UTC con `toISOString()` y la escribe sin la `Z` final. Un calendario que lee ese valor como hora local muestra la reserva dos horas antes. Eso contradice el spec, que pide que el calendario muestre la reserva el 2 de marzo de 10:00 a 12:00.
+
+**Qué hace falta decidir.** Hay dos arreglos posibles y no he elegido ninguno:
+- Escribir la hora local tal cual, sin conversión.
+- Mantener UTC y añadir la `Z`. Entonces habría que cambiar el test, y la zona fija `+02:00` seguiría siendo dudosa porque en marzo el huso puede variar con el horario de verano.
+
+El spec dice "en la hora del usuario", pero el código usa una zona fija del coworking. Hace falta que alguien decida cuál de las dos es la hora de referencia. Para eso el spec debería cubrir la zona horaria, y ahora no lo hace.
+
+No he tocado código ni he cerrado nada. La feature sigue en `status: implementing`, y no he empezado el walkthrough ni el changelog.
+

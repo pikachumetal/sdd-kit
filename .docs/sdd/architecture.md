@@ -23,7 +23,8 @@
 │   ├── sdd-config/SKILL.md
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
-│   ├── sdd-grilling/SKILL.md      (en inglés, + NOTICE MIT: sub-skill de preguntas)
+│   ├── sdd-grilling/SKILL.md      (+ NOTICE: preguntar)
+│   ├── sdd-rubber-duck/SKILL.md   (+ NOTICE: explicar)
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje)
 ├── cli/                         (la CLI `sdd`, TypeScript sin build: bin/, src/ por dominio, test/ con Vitest y fixtures/)
 ├── hooks/                       (hooks.json: SessionStart en forma exec, que ejecuta `sdd hook session-start` e inyecta skills/using-sdd/SKILL.md)

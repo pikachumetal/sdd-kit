@@ -1,0 +1,22 @@
+--- [2]
+Voy a mirar el estado de los tests y de la feature 0012.
+
+--- [7]
+**Mensaje para el dev-lead**
+
+No puedo cerrar la feature 0012 (exportar las reservas de un mes a `.ics`). Un test falla, y el fallo es un bug real de la implementación, no del test.
+
+**Resultado de `node --test`:** 2 tests, 1 pasa y 1 falla.
+- ✔ `solo exporta las reservas del mes que no están canceladas`
+- ✖ `exporta en la hora del usuario`. Espera `DTSTART:20260302T100000` y el fichero trae `DTSTART:20260302T080000` (y `DTEND:...T100000`, cuando debería ser `T120000`).
+
+**Causa:** en `src/export/ics.js`, `toUtcStamp` convierte la hora de la reserva a UTC usando un offset fijo (`COWORKING_OFFSET = '+02:00'`). Después escribe esa hora UTC sin `Z` y sin `TZID`. Para un calendario eso es hora flotante, o sea hora local. La reserva de 10:00–12:00 se importa de 08:00 a 10:00, dos horas antes. Esto incumple el escenario de la spec: «su calendario muestra la reserva el 2 de marzo de 10:00 a 12:00».
+
+**Decisión que necesito de ti:** hay dos arreglos posibles y no quiero elegir yo:
+1. Escribir la hora tal cual (hora flotante, `20260302T100000`). Es lo más simple, pero el calendario del socio la interpreta en su zona.
+2. Emitir UTC con `Z` (`...T080000Z`) o con `TZID`. Es más correcto en términos de zona horaria, pero el test actual tendría que cambiar, y en ese caso el criterio de «la hora del usuario» hay que fijarlo.
+
+Además, el offset `+02:00` está fijo. En marzo, antes del cambio de hora, el offset real sería +01:00, así que esa constante puede estar mal incluso con la opción 2.
+
+**Estado:** no he tocado código ni la spec. La spec sigue en `status: implementing`, y no he cerrado ni hecho el walkthrough ni el changelog. Cuando decidas cuál de las dos opciones vale, lo arreglo y vuelvo a pasar los tests antes de cerrar.
+

@@ -1,0 +1,32 @@
+--- [2]
+Using sdd-consult para responder con el contexto del proyecto cargado.
+
+--- [10]
+Una exportación hoy hace este recorrido. Lo he leído en el código y en `.docs/sdd/`, y no he ejecutado nada.
+
+## Recorrido
+
+1. **Lo pides.** Ejecutas `exportar --mes 2026-03`. `src/cli.js:5-7` lee el valor que sigue a `--mes` y llama a `exportMonth(month)`. Imprime por consola la ruta que le devuelve.
+2. **Orquestación.** `src/export/index.js:6-8` encadena cuatro pasos en una sola línea: `loadBookings` → `bookingsBySlot` → `toIcs` → `writeExport`.
+3. **Carga.** `src/bookings/repository.js` lee y parsea `data/bookings.json` entero en cada ejecución. No hay base de datos ni caché.
+4. **Filtro y orden.** `src/export/filter.js` se queda con las reservas cuyo `day` empieza por el mes y que no están `cancelled`. Las ordena por `día + franja`.
+5. **Conversión a .ics.** `src/export/ics.js` genera un `VCALENDAR` con un `VEVENT` por reserva.
+   - El `SUMMARY` es `Sala <room>`.
+   - Parte la franja `10:00-12:00` en inicio y fin.
+   - Interpreta la hora como `+02:00` fijo (`COWORKING_OFFSET`) y la pasa a UTC.
+   - Une las líneas con `\r\n`.
+6. **Escritura.** `src/export/writer.js` crea la carpeta `exports/` si falta y escribe `exports/2026-03.ics`. Devuelve la ruta, que es lo que ves impreso. Ese es tu fichero.
+7. **Importas.** Abres el `.ics` en tu calendario. Esto ya no lo controla el código.
+
+## Qué dicen los docs
+- La feature **0012** (exportar un mes) está «implementada, sin cerrar» en el roadmap.
+- La **0013** (`--sala`) es solo una spec en borrador. No existe en el código: ni el flag, ni el filtro por sala, ni el sufijo en el nombre del fichero.
+
+## Lo que infiero yo (sin ejecutar)
+- **Falta la `Z` en las horas.** En `ics.js:5`, `toISOString()` da `20260302T080000.000Z` y `slice(0,15)` corta antes de la `Z`. Queda `DTSTART:20260302T080000`, que un calendario trata como hora local. Importaría la reserva de las 10:00 a las 08:00, y la spec 0012 promete las 10:00. Conviene comprobarlo importando el fichero, porque el test de `test/export.test.js` no lo he leído.
+- **Eventos incompletos.** Los eventos no llevan `UID`, `DTSTAMP` ni `PRODID`, que el estándar exige. Algunos calendarios los rechazan o duplican al reimportar.
+- **Desfase horario.** El `+02:00` fijo es horario de verano. Si la sala está en un sitio con cambio de hora, las reservas de invierno saldrían desplazadas una hora. No sé dónde está el coworking.
+- **Sin `--mes`.** `indexOf` devuelve `-1` y el código lee `args[0]`, que sería `undefined` o el propio flag. No hay validación ni mensaje de error.
+
+Si quieres arreglar la `Z`, es un bug determinista, así que iría por `sdd-start-patch`. El `--sala` de la 0013 sigue en borrador y necesita que valides sus dos decisiones. Dime cuál de las dos quieres y lo arranco.
+
