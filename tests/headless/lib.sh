@@ -8,6 +8,7 @@
 #   subject_keep "$R/.docs/sdd/roadmap.md" roadmap.md   # copia plana y limpia en <salida>/<etiqueta>/
 #   put_kit_marker '"ids": {"mode": "sequence"}'           # sdd-kit.json del molde con la versión del kit (kit_version)
 #   subject_resume "<mensaje>"                            # segundo turno sobre la misma sesión
+#   subject_converse <hoja de la persona> <turnos máximos> # la persona (haiku) contesta hasta que el sujeto deja de preguntar
 # Variables: RUNS_DIR (obligatoria, en el scratchpad; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
@@ -15,6 +16,7 @@
 # SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
 # SUBJECT_TIMEOUT (segundos de reloj por sujeto; 0, el valor por omisión, sin tope),
 # TURN2 (mensaje del segundo turno: subject_launch reanuda la sesión con subject_resume),
+# DRY_RESULT (texto del result en seco; con «?», subject_converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5).
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
@@ -77,7 +79,7 @@ subject_launch() {
     printf '%s\n' \
       '{"type":"system","subtype":"init","session_id":"dry-'"$LABEL"'"}' \
       '{"type":"assistant","message":{"content":[{"type":"text","text":"En seco desde '"$HOME"' · permitidas extra: '"${EXTRA_ALLOWED:-}"' · git: '"$(git config user.name) <$(git config user.email)>"'"},{"type":"tool_use","name":"Bash","input":{"command":"ls '"$R"'"}}]}}' \
-      '{"type":"result","num_turns":1,"total_cost_usd":'"${DRY_COST:-0.5}"',"result":"hecho"}' > "$JSONL"
+      '{"type":"result","num_turns":1,"total_cost_usd":'"${DRY_COST:-0.5}"',"result":"'"${DRY_RESULT:-hecho}"'"}' > "$JSONL"
   else
     : > "$RUNS/$LABEL.err"
     run_claude "$1" > "$JSONL" || return $?
@@ -105,10 +107,41 @@ subject_resume() {
   if [ "${DRY_RUN:-}" = 1 ]; then
     local cost
     cost=$(awk -v c="${DRY_COST:-0.5}" 'BEGIN { print c * 2 }')
-    echo '{"type":"result","num_turns":2,"total_cost_usd":'"$cost"',"result":"hecho"}' >> "$JSONL"
+    echo '{"type":"result","num_turns":2,"total_cost_usd":'"$cost"',"result":"'"${DRY_RESULT:-hecho}"'"}' >> "$JSONL"
     return
   fi
   run_claude --resume "$session" "$1" >> "$JSONL"
+}
+
+# Conversación con una persona: un modelo barato contesta con su hoja hasta que el sujeto deja de preguntar o llega al tope.
+# Su coste va al último RESULTADO, que es el único que cuenta run.sh.
+subject_converse() {
+  local sheet="$1" max="$2" turn=0 asked answer persona_cost=0
+  while [ "$turn" -lt "$max" ]; do
+    asked=$("$NODE" "$HEADLESS/extract.mjs" last "$JSONL")
+    case "$asked" in *'?'*) ;; *) break ;; esac
+    turn=$((turn + 1))
+    answer=$(persona_reply "$sheet" "$asked" "$RUNS/$LABEL.persona-$turn.txt") || return $?
+    persona_cost=$(awk -v a="$persona_cost" -v b="$(cat "$RUNS/$LABEL.persona-$turn.txt")" 'BEGIN { print a + b }')
+    subject_resume "$answer"
+  done
+  [ "$turn" -gt 0 ] && append_persona_cost "$persona_cost" "$turn"
+  return 0
+}
+
+# Imprime la respuesta y deja el coste de la llamada en el fichero del tercer argumento.
+persona_reply() {
+  local prompt="Eres el usuario de esta hoja: $(cat "$1"). Contesta en castellano solo lo que el agente pregunta, en una o dos frases; lo que la hoja no dice, «no sé». El agente dice: $2"
+  if [ "${DRY_RUN:-}" = 1 ]; then echo "${DRY_PERSONA_COST:-0}" > "$3"; echo "Respuesta de la persona."; return; fi
+  local reply
+  reply=$(timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" -p --model haiku --output-format json --max-turns 1 "$prompt" < /dev/null 2>> "$RUNS/$LABEL.err") || return $?
+  echo "$reply" | "$NODE" -e 'const r = JSON.parse(require("fs").readFileSync(0, "utf8")); require("fs").writeFileSync(process.argv[1], String(r.total_cost_usd ?? 0)); process.stdout.write(r.result ?? "")' "$3"
+}
+
+append_persona_cost() {
+  local subject_cost
+  subject_cost=$(grep -o '"total_cost_usd":[0-9.]*' "$JSONL" | tail -n 1 | cut -d: -f2)
+  echo '{"type":"result","num_turns":'"$2"',"total_cost_usd":'"$(awk -v a="$subject_cost" -v b="$1" 'BEGIN { print a + b }')"',"result":"conversación con persona: '"$2"' respuestas"}' >> "$JSONL"
 }
 
 # La versión que el hook exige al proyecto: la mayor entre plugin.json y la última migración del kit.

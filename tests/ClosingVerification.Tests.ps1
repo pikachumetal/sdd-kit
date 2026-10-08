@@ -58,9 +58,9 @@ Describe 'Evidencia por THEN' {
   }
 }
 
-Describe 'Native: task-done tras el commit' {
-  It 'task-done va en su propia orden y solo si HEAD cambió' {
-    Assert-Literal (Get-Step 6) @('`task-done` va en su propia orden, después de comprobar que el commit existe', 'si `HEAD` sigue en la base de la task, el pre-commit lo rechazó', 'lee su mensaje y arregla la causa')
+Describe 'Native: sdd task done tras el commit' {
+  It 'sdd task done va en su propia orden y solo si HEAD cambió' {
+    Assert-Literal (Get-Step 6) @('`sdd task done` va en su propia orden, después de comprobar que el commit existe', 'si `HEAD` sigue en la base de la task, el pre-commit lo rechazó', 'lee su mensaje y arregla la causa')
   }
 }
 

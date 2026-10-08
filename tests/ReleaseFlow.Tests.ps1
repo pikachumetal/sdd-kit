@@ -52,7 +52,7 @@ Describe 'sdd-end-release mantiene el roadmap en la forma' {
   }
 
   It 'ejecuta el validador en el paso del roadmap' {
-    $script:RoadmapStep | Should -Match 'Test-Roadmap\.ps1'
+    $script:RoadmapStep | Should -Match 'roadmap check'
   }
 
   It 'manda a la migración un roadmap fuera de la forma' {

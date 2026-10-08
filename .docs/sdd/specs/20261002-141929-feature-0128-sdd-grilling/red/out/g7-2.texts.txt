@@ -1,0 +1,125 @@
+--- [2]
+Uso `sdd-kit:sdd-config` para revisar y poner al día la configuración del kit.
+
+--- [7]
+Estado actual de la configuración del kit (no existe `sdd-kit.local.json`, y `.gitignore` tampoco existe):
+
+| Clave | Valor | Fichero |
+| --- | --- | --- |
+| `ids.mode` | `sequence` | `sdd-kit.json` |
+| `control.profile` | falta, rige `delegate` | — |
+| `merge` (`into`, `noFf`, `removeWorktree`) | falta, el cierre de feature pregunta | — |
+| `merge.push` | falta, rige `false` | — |
+| `control.maxParallelAgents` | falta, rige `3` | — |
+| `control.silence.betweenStepsMinutes` | falta, rige `8` | — |
+| `control.silence.longCommandMinutes` | falta, rige `20` | — |
+| `execution` | falta, rige `auto` | — |
+| `validation.mode` | falta, rige `manual` | — |
+| `validation.startEnvironment` | falta, rige `false` | — |
+
+Además `sdd-kit.json` lleva `version`, `channel` y `release.hasRecipient`, que no son del catálogo y no los toco. No hay claves del fichero local, así que no hay avisos.
+
+Voy con una pregunta por turno. La primera es el perfil de control. ¿Con qué perfil trabajáis: `pair`, `delegate` o `unattended`?
+
+- **Recomendado: `delegate`.** Para en la spec, en los desvíos y en la validación, y se ahorra el gate del plan.
+- `pair` para en todos los gates.
+- `unattended` no para hasta cerrar la release.
+
+Antes, ¿a quién aplica la respuesta: **para todo el equipo** (`sdd-kit.json`) o **solo para ti** (`sdd-kit.local.json`)? Recomiendo para el equipo, porque el proyecto aún no tiene la clave.
+
+Cuando me contestes, sigo con las preguntas del merge, los frenos, `execution` y `validation.mode`. Lo que respondas «no sé» no se escribe y rige el default.
+
+--- [10]
+Escrito `control.profile: "delegate"` en `.docs/sdd/sdd-kit.json`. No he hecho commit.
+
+Siguiente pregunta, la del merge al cerrar una feature. El proyecto usa git-flow (`main`, `develop`, `feature/<id>`), así que la rama de integración es `develop`.
+
+Al cerrar una feature, ¿fusiono a `develop` con `--no-ff` y dejo que una persona borre el worktree?
+
+- **Recomendado: sí.** `--no-ff` deja la feature en un único commit que se revierte de una vez. Borrar un worktree es irreversible si quedan cambios sin commit.
+- Con «sí» escribo `merge: {into: "develop", noFf: true, removeWorktree: false}`.
+- Con «no» o «no sé» no escribo nada, y el cierre de feature pregunta cada vez.
+- Si prefieres otra combinación, dímela entera.
+
+--- [13]
+Escrito `merge: {into: "develop", noFf: true, removeWorktree: true}` en `sdd-kit.json`. Con `removeWorktree: true` el cierre borrará el worktree sin preguntar. Si quedaran cambios sin commit, se perderían. Lo he escrito tal como lo dices, con tu frase como respaldo. La frase y la fecha irán en el cuerpo del commit que lleve `sdd-kit.json`.
+
+Siguiente pregunta, la del push. Tras fusionar en `develop`, ¿hago push de esa rama a su remoto sin preguntar?
+
+- **Recomendado: sí.** El proyecto usa git-flow, y `develop` es la rama de integración compartida: un merge sin push no lo ve nadie más.
+- `main`, los tags y cualquier otro push, PR o publicación siguen siendo decisión de una persona.
+- «Sí» escribe `merge.push: true`.
+- «No» escribe `merge.push: false`.
+- «No sé» no escribe nada, y el cierre no hace push.
+
+--- [16]
+Escrito en `sdd-kit.json`:
+- `merge.push: true`, así que el cierre empuja `develop` tras el merge.
+- `validation.mode: "manual"`, así que el dev-lead valida al cerrar, como rige por defecto.
+
+Quedan dos preguntas del proyecto. Esta es la de los frenos. ¿Os valen los frenos por defecto: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o tras 20 en un comando largo?
+
+- **Recomendado: sí.** Son los defaults del kit.
+- «Sí» escribe `control.maxParallelAgents: 3`, `control.silence.betweenStepsMinutes: 8` y `control.silence.longCommandMinutes: 20`.
+- Si prefieres números propios, dímelos.
+- «No sé» no escribe nada y rigen los defaults.
+
+Después te preguntaré por `execution`, y al final por la preferencia personal de arrancar el entorno antes de la validación.
+
+--- [18]
+Escritos los frenos en `sdd-kit.json`: `control.maxParallelAgents: 3`, `control.silence.betweenStepsMinutes: 8` y `control.silence.longCommandMinutes: 20`.
+
+Siguiente pregunta, la de `execution`. ¿Cómo se ejecutan los planes?
+
+- **`auto` (recomendado).** Cada plan recomienda su método. Native es lo más barato, y los subagentes quedan para los planes largos o cuando se quiere revisión por task.
+- **`native`.** Se ejecuta en la sesión. Tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes.
+- **`subagent`.** Siempre con subagentes.
+
+Como la clave falta en el proyecto, ¿la fijo para todo el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`)? Recomiendo para el equipo. Si respondes «no sé», no escribo nada y rige `auto`.
+
+--- [20]
+Escrito `execution: "auto"` en `sdd-kit.json`.
+
+Queda la última pregunta, que es personal y va a `sdd-kit.local.json`. Cuando te toque validar una feature, ¿quieres que arranque el entorno antes de darte el guion de pruebas?
+
+- **Recomendado: no.** Es el default, y la validación te dice cómo arrancarlo.
+- Elige sí si prefieres encontrarte la aplicación ya levantada.
+- «Sí» escribe `validation.startEnvironment: true`.
+- «No» escribe `false`.
+- «No sé» no escribe nada.
+
+Si respondes sí o no, creo `sdd-kit.local.json` y añado esa línea a `.gitignore` (hoy no existe) para que no se commitee.
+
+--- [22]
+El resumen es correcto. Todo eso ya está escrito en `sdd-kit.json`. En el merge, el cierre borra el worktree sin preguntar, como pediste.
+
+Solo necesito tu respuesta a la última pregunta: ¿quieres que arranque el entorno antes del guion de pruebas cuando te toque validar?
+
+- **No** (recomendado, es el default): escribe `validation.startEnvironment: false`.
+- **Sí**: escribe `true`.
+- **No sé**: no escribo nada y rige `false`.
+
+Si contestas sí o no, creo `.docs/sdd/sdd-kit.local.json` y añado esa línea a `.gitignore`. Si contestas «no sé», no se crea ningún fichero local.
+
+Al terminar, `sdd-kit.json` queda sin commitear. Cuando lo commitees, el cuerpo del commit puede recoger tus respuestas literales sobre el merge y el push como constancia de que las decidiste tú.
+
+--- [24]
+La configuración del kit está al día. No he hecho commit.
+
+**`.docs/sdd/sdd-kit.json`** (del proyecto), con todo lo que respondiste:
+- `control.profile: delegate`
+- `control.maxParallelAgents: 3`
+- `control.silence.betweenStepsMinutes: 8`
+- `control.silence.longCommandMinutes: 20`
+- `merge: {into: develop, noFf: true, removeWorktree: true, push: true}`
+- `execution: auto`
+- `validation.mode: manual`
+
+Se mantienen `version`, `channel`, `ids.mode: sequence` y `release.hasRecipient`.
+
+**`.docs/sdd/sdd-kit.local.json`** (personal): `validation.startEnvironment: false`. Es un fichero nuevo, y lo he añadido a un `.gitignore` nuevo para que no se commitee.
+
+El worktree se borra sin preguntar al cerrar. Si queda algo sin commit, se pierde. Cuando commitees `sdd-kit.json`, mete en el cuerpo del commit tu frase sobre `removeWorktree: true` y la fecha, 2026-10-02.
+
+`.gitignore` queda como cambio sin commitear, junto con `sdd-kit.json`.
+

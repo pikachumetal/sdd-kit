@@ -4,6 +4,25 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Feature 0143** — CLI `sdd` en TypeScript sin build (Node ≥ 22.18.0, sin dependencias de runtime) dentro del plugin: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <sustantivo> <verbo>`. Sustituye los 12 scripts PowerShell (`capability index|check|merge`, `roadmap check`, `id next`, `merge`, `estimation log`, `session tokens`, `watch subagent|command`) con la misma salida, comprobada con tests de paridad; el hook de sesión (`hook session-start`, en forma exec), y los bash de superpowers que usa el kit (`task start|done|brief`, `review package`, `workspace`), que ahora corren desde cualquier shell y registran la task aunque la verificación no imprima nada. Nuevos: `roadmap publish` publica la reserva en la rama de integración con el cerrojo del merge, y `ledger rulings` cosecha los rulings y los minors diferidos antes de borrar el workspace. `--json` en los verbos de datos. ADR 0011.
+- **Feature 0128** — `sdd-grilling`, el método de preguntas del kit, adaptado de `grilling` de Matt Pocock (MIT, aviso en su `NOTICE`), y primera skill en inglés: una decisión por turno, la recomendada con una razón del caso, el descubrimiento sin ancla, la búsqueda fuera antes de preguntar y el cierre en tres listas; `sdd-consult`, `sdd-roadmap`, las dos init, `sdd-config` y el diseño de `sdd-start-feature` la invocan en lugar de su propia regla de preguntas. → [ref](specs/20261002-141929-feature-0128-sdd-grilling/)
+
+### Changed
+
+- **Feature 0143** — Las skills, sus referencias, las plantillas, las migraciones viejas y las capacidades llaman a los verbos de `sdd`. Node ≥ 22.18.0 pasa a ser dependencia obligatoria y `pwsh` deja de serlo en los proyectos. El repo del kit fija con proto Node 26.10.0, pnpm 12.9.1 y moon 2.6.0, y prueba la CLI con Vitest.
+- **Feature 0142** — Constitution corta para la 3.0.0: preámbulo con los cinco principios de la propuesta 0131 y once artículos con su regla y su porqué en una frase; la historia de cada regla pasa a diez ADR en `.docs/sdd/decisions/` (MADR 4.0.0 mínima con `status`, `date`, `rutas` y «Confirmación»). Art. I cambia la campaña RED/GREEN por edición por batería en entrada, propose, verify y archive y humo en todas, con A/B puntual; Art. IX permite el fork de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator con aviso en `THIRD_PARTY_NOTICES.md`; Art. XI añade las ADR. `CLAUDE.md` enlaza la constitution en vez de repetirla. → [ref](specs/20261007-135805-feature-0142-new-constitution/)
+- **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
+
+### Removed
+
+- **Feature 0143** — Los scripts PowerShell de `skills/sdd-templates/scripts/`, el hook bash `hooks/session-start` y el canal de instalación `npx skills add` (no instala `cli/`).
+
+### Fixed
+
+- **`sdd roadmap check`, `sdd estimation log` y `sdd capability merge` traen los arreglos de la 2.3.3** — la CLI arrastraba los dos fallos de los scripts PowerShell que sustituye. `roadmap check` y `estimation log` deciden lo publicado por ascendencia en git respecto al tag `v<versión>` de la release, y `capability merge` solo marca como hueco los `<…>` literales de `spec-template.md` ([patch 0153](specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md), [patch 0154](specs/20261008-125035-patch-0154-template-literal-gaps/patch.md))
+
 ## [2.3.3] - 2026-10-08
 
 Hotfix de la 2.3.2, sacado de `main`: el validador del roadmap y el estimation-log ya no dan por publicado un patch fusionado tras el corte del mismo día, y la fusión del delta deja pasar los `<!-- … -->` y `<…>` propios del proyecto. Sin cambios en el proyecto: la migración `v2.3.3` solo avanza el marcador.
@@ -25,6 +44,7 @@ Hotfix de la 2.3.1, sacado de `main`: la fusión del delta ya no pierde requisit
 
 - **`Merge-CapabilityDelta.ps1` falla si un `MODIFIED` pierde líneas del requisito vivo** — un delta copiado de una lectura parcial de la capacidad sustituía el requisito y borraba en silencio sus últimos `AND`. Ahora, si el bloque nuevo tiene menos líneas `- THEN` y `- AND` que el vivo, falla nombrando cada una que se perdería y no escribe; para quitarla a propósito, `- REMOVED AND <texto literal>` en el bloque ([patch 0139](specs/20261004-231556-patch-0139-merge-modified-lost-lines/patch.md)).
 - **`Get-NextSddId.ps1` avisa de las carpetas con sufijo sin formato de error** — con carpetas como `task-0006a` y `task-0006b`, la reserva salía bien, pero stderr llevaba el marco de un error de PowerShell (`Assert-NoSharedIds: …`, `Line |`). Ahora es una línea `aviso: carpetas con sufijo anteriores a la secuencia (su número cuenta como ocupado): …` ([patch 0141](specs/20261004-232806-patch-0141-next-id-suffix-warning/patch.md)).
+
 
 ## [2.3.1] - 2026-10-03
 

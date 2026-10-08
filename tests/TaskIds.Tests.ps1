@@ -28,13 +28,13 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
     }
   }
 
-  Context 'script de la secuencia' {
-    It 'el script existe en la fuente única de plantillas' {
-      Join-Path $script:RepoRoot 'skills/sdd-templates/scripts/Get-NextSddId.ps1' | Should -Exist
+  Context 'verbo de la secuencia' {
+    It 'el verbo existe en la CLI' {
+      Join-Path $script:RepoRoot 'cli/src/ids/verbs.ts' | Should -Exist
     }
 
     It 'el índice de sdd-templates lo nombra' {
-      Get-KitFile 'skills/sdd-templates/SKILL.md' | Should -Match 'Get-NextSddId\.ps1'
+      Get-KitFile 'skills/sdd-templates/SKILL.md' | Should -Match 'sdd id next'
     }
   }
 
@@ -57,20 +57,20 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
       Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'sequence'
     }
 
-    It 'los arranques sin fila reservan el id con -Reserve, no lo calculan' -ForEach @(
+    It 'los arranques sin fila reservan el id con --reserve, no lo calculan' -ForEach @(
       @{ File = 'skills/sdd-start-feature/references/nombrado.md' }
       @{ File = 'skills/sdd-start-patch/SKILL.md' }
       @{ File = 'skills/sdd-roadmap/SKILL.md' }
     ) {
-      Get-KitFile $File | Should -Match 'Get-NextSddId\.ps1[^`]*-Reserve'
+      Get-KitFile $File | Should -Match '(sdd|sdd\.js") id next[^`]*--reserve'
     }
 
     It 'sdd-roadmap reserva los N ids en una sola llamada' {
-      Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match '-Reserve -Count'
+      Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match '--reserve --count'
     }
 
     It 'sdd-consult puede proponer un id pero no reservarlo' {
-      Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'Get-NextSddId|sequence'
+      Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'sdd id next|sequence'
     }
   }
 

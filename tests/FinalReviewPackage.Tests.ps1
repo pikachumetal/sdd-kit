@@ -38,15 +38,15 @@ Describe 'Paquete del revisor final' {
   }
 
   It 'escribe el paquete en el workspace de superpowers' {
-    $script:FinalReviewer | Should -Match 'OUT="\$\(bash "<ruta de sdd-workspace>" "<PLAN_FILE>"\)/review-final-'
+    $script:FinalReviewer | Should -Match 'WORKSPACE="\$\(sdd workspace "<plan>"\)"\r?\nOUT="\$WORKSPACE/review-final-'
   }
 
-  It 'en lite usa spec.md como PLAN_FILE' {
-    $script:FinalReviewer | Should -Match 'lite[^\n]*`PLAN_FILE`[^\n]*`spec\.md`'
+  It 'en lite usa spec.md como plan' {
+    $script:FinalReviewer | Should -Match 'lite[^\n]*`<plan>`[^\n]*`spec\.md`'
   }
 
-  It 'el revisor lee el paquete del kit, no el de review-package' {
-    $script:FinalReviewer | Should -Not -Match '<ruta que imprime review-package>'
+  It 'el revisor lee el paquete del kit, no el de sdd review package' {
+    $script:FinalReviewer | Should -Not -Match '<ruta que imprime sdd review package>'
     $script:FinalReviewer | Should -Match 'Lee el paquete de review `<ruta del paquete que imprime la receta>`'
   }
 

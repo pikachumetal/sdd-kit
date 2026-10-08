@@ -9,7 +9,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 ### El estimation-log se genera desde los artefactos de cierre
 
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo
-- WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
+- WHEN se ejecuta `sdd estimation log --root <proyecto>`
 - THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
 - AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
 - AND `Sesión ($)` es la cifra de `Coste de la sesión`; «sin precio» y «no medido» aparecen tal cual, y sin la línea la celda es `—`
@@ -19,7 +19,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y el kit instalado
 - WHEN `sdd-end-feature` o `sdd-end-patch` llegan al paso estimation-log
-- THEN ejecutan el script desde el Base directory de `sdd-templates`, sin buscar ni crear copia en el proyecto
+- THEN ejecutan `sdd estimation log` desde el kit, sin buscar ni crear copia en el proyecto
 - AND solo si `pwsh` no está disponible añaden la fila a mano
 
 ### El parseo tolera el formato real de las plantillas
@@ -85,7 +85,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 ### La sesión se mide desde los transcripts
 
 - GIVEN un worktree `D:\w\t1` y, en `<proyectos>/D--w-t1/`, una sesión con dos respuestas de `claude-sonnet-5`: la `msg_A` en tres líneas con salida 8, 8 y 4.000 (entrada 2, escritura en caché 1h 100.000, lectura 1.000.000 en las tres), y la `msg_B` en una línea (entrada 3, lectura 1.500.000, salida 1.000), más una línea `<synthetic>`
-- WHEN se ejecuta `Measure-SessionTokens.ps1 -Path D:\w\t1`
+- WHEN se ejecuta `sdd session tokens --path D:\w\t1`
 - THEN el hilo suma, para `claude-sonnet-5`: entrada 5, escritura 1h 100.000, lectura 2.500.000 y salida 5.000, en total 2.605.005 tokens
 - AND la línea `<synthetic>` no aparece en ningún modelo
 
@@ -105,17 +105,17 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - AND sin la clave `pricing`, o con un modelo que tiene tokens y no está en la tabla, la línea es `Coste de la sesión: sin precio (<motivo>)` y nombra los modelos que faltan
 - AND una respuesta con `usage.speed: "fast"` cuenta con el modelo `claude-sonnet-5:fast`, que necesita su propia fila
 
-### Con `-Branch` solo cuenta la rama de la feature
+### Con `--branch` solo cuenta la rama de la feature
 
 - GIVEN la sesión del primer requisito, con todas sus líneas en la rama `feature/0068`, y una segunda sesión con la respuesta `msg_C` de `claude-sonnet-5` (lectura 900.000) en la rama `develop`
-- WHEN se ejecuta el script con `-Branch feature/0068`
+- WHEN se ejecuta el script con `--branch feature/0068`
 - THEN el hilo suma 2.605.005 tokens: `msg_C` queda fuera
-- AND sin `-Branch`, el hilo suma 3.505.005
+- AND sin `--branch`, el hilo suma 3.505.005
 
-### Sin `-ProjectsRoot`, junta todas las configuraciones de Claude Code
+### Sin `--projects-root`, junta todas las configuraciones de Claude Code
 
 - GIVEN un home con `~/.claude/projects/<carpeta del worktree>/` y `~/.claude-gco/projects/<carpeta del worktree>/`, cada una con una sesión, y `CLAUDE_CONFIG_DIR` que apunta a `~/.claude-gco` o a otra carpeta
-- WHEN se ejecuta `Measure-SessionTokens.ps1` sin `-ProjectsRoot`
+- WHEN se ejecuta `sdd session tokens` sin `--projects-root`
 - THEN el hilo suma las sesiones de `CLAUDE_CONFIG_DIR`, `~/.claude` y todas las `~/.claude-*` que tengan carpeta del worktree
 - AND una carpeta que nombran a la vez `CLAUDE_CONFIG_DIR` y el home cuenta una sola vez
 
@@ -131,18 +131,18 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN una feature en Claude Code que llega al paso de tiempo real de `sdd-end-feature`, en un proyecto con `.docs/sdd/estimation.md`
 - WHEN se rellena la sección 2 del walkthrough
-- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `Measure-SessionTokens.ps1 -Path <worktree> -Branch <rama de la feature>`, ejecutado desde el Base directory de `sdd-templates`
+- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama de la feature>`, ejecutado desde el kit
 - AND en otro harness, las tres dicen «no medido», con el motivo
 
 ### El log lee las features y las tasks heredadas
 
 - GIVEN `specs/20260920-100000-task-0063-a/walkthrough.md` con `task: 0063` y `specs/20261001-091500-feature-0079-b/walkthrough.md` con `feature: 0079`, los dos con su bloque de tiempo
-- WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
+- WHEN se ejecuta `sdd estimation log --root <proyecto>`
 - THEN `estimation-log.md` tiene dos filas, con ids `0063` y `0079`
 - AND la cabecera de la tabla es `| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |`
 
 ### El log lee igual los walkthroughs de antes y de después de la evidencia por THEN
 
 - GIVEN un walkthrough cerrado con la tabla 4.2 vieja (`| # | Caso | Resultado |`) y otro con la forma nueva (fila por THEN con evidencia y duración de la suite en 4.1)
-- WHEN se ejecuta `Build-EstimationLog.ps1`
+- WHEN se ejecuta `sdd estimation log`
 - THEN los dos dan su fila con el mismo tipo, estimación, esfuerzo real, tokens y coste que declara su bloque «2. Tiempo y coste», sin aviso

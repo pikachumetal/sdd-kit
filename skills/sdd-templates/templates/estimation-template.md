@@ -1,6 +1,6 @@
 # Método de estimación — <proyecto>
 
-> Su presencia activa el módulo de estimación: el plan de cada feature estima, el walkthrough registra el tiempo real y `sdd-end-feature` regenera `estimation-log.md` con `Build-EstimationLog.ps1` de `sdd-templates`. El método es el mismo en todos los proyectos; la calibración, no: nace vacía y la escribe este proyecto con sus propias features. Borra los bloques de ayuda (`>`) al redactar.
+> Su presencia activa el módulo de estimación: el plan de cada feature estima, el walkthrough registra el tiempo real y `sdd-end-feature` regenera `estimation-log.md` con `sdd estimation log` de `sdd-templates`. El método es el mismo en todos los proyectos; la calibración, no: nace vacía y la escribe este proyecto con sus propias features. Borra los bloques de ayuda (`>`) al redactar.
 
 ## Método
 

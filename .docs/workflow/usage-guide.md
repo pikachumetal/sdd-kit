@@ -169,7 +169,7 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-end-feature` de un tir�
 - escribe el `walkthrough.md` con lo que se hizo, cómo se verificó, el tiempo real, el coste de la sesión y las decisiones que tomó sin ti;
 - lleva los aprendizajes a los documentos que los guardan y fusiona el comportamiento nuevo en `capabilities/`;
 - actualiza el changelog, la fila del roadmap y el registro de estimaciones, si el proyecto los tiene;
-- fusiona en `develop` con el script del kit, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
+- fusiona en `develop` con `sdd merge`, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
 El patch cierra igual, más corto, con `sdd-end-patch`: primero te pide la validación con tres opciones (validado, diferir o no funciona) y después fusiona. Ningún cierre fusiona a `main` ni pone tags: eso es entregar (sección 6).
@@ -198,7 +198,7 @@ El feedback de una demo o una reunión no se procesa en el corte: eso es planifi
 
 **Un worktree por feature o por patch.** Cada tarea en su carpeta y su rama, `feature/<id>-<nombre>`, sacada de `develop`. Así dos sesiones no se pisan los ficheros.
 
-**Los ids se reservan, no se calculan a ojo.** En un proyecto con secuencia propia, el id sale de la fila del roadmap o, si no tiene fila, de `Get-NextSddId.ps1 -Reserve`. Lo hace el agente. Sin `-Reserve` el script solo propone un número, y otro worktree que calcule a la vez se llevaría el mismo.
+**Los ids se reservan, no se calculan a ojo.** En un proyecto con secuencia propia, el id sale de la fila del roadmap o, si no tiene fila, de `sdd id next --reserve`. Lo hace el agente. Sin `--reserve` el verbo solo propone un número, y otro worktree que calcule a la vez se llevaría el mismo.
 
 **La rama tiene que llevar su id.** Si abres el worktree con una rama sin id (`feature/filtro-pedidos`) y sin commits, el agente la renombra a `feature/<id>-filtro-pedidos` antes del primer commit y te lo dice. Si la rama trae un número que no es el suyo, díselo antes de empezar.
 
@@ -212,12 +212,12 @@ El feedback de una demo o una reunión no se procesa en el corte: eso es planifi
 
 Si arrancas Claude Code con `CLAUDE_CONFIG_DIR` apuntando a otra carpeta (por ejemplo, una por cuenta), esa carpeta tiene sus propios plugins. El kit y superpowers tienen que estar instalados en la configuración con la que abres la sesión, no solo en `~/.claude`. Fija también ahí `model` en `settings.json`: sin él, una sesión puede arrancar en el modelo más caro.
 
-Al medir los tokens de la sesión en el cierre, el script busca los transcripts en `CLAUDE_CONFIG_DIR`, en `~/.claude` y en cualquier `~/.claude-*`. Si aun así el walkthrough sale con «no medido», pídele al agente que lo repita pasando `-ProjectsRoot <tu carpeta de configuración>/projects`.
+Al medir los tokens de la sesión en el cierre, `sdd session tokens` busca los transcripts en `CLAUDE_CONFIG_DIR`, en `~/.claude` y en cualquier `~/.claude-*`. Si aun así el walkthrough sale con «no medido», pídele al agente que lo repita pasando `--projects-root <tu carpeta de configuración>/projects`.
 
 ### Las skills no cargan, o llegan viejas
 
 - **El kit aparece deshabilitado**: falta superpowers o su marketplace. Añade `obra/superpowers-marketplace` antes que el del kit y reinstala (pasos en el [README](../../README.md#instalación)). Si tenías `superpowers@claude-plugins-official`, desinstálalo: con los dos, las skills salen duplicadas.
-- **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si instalaste las skills con `npx skills add`, no hay hook: nombra la skill en la petición («con `sdd-start-feature`, añade…»).
+- **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si el hook no llegó a correr (sin Node, Claude Code enseña el error del hook; el kit pide Node 22.18 o posterior), nombra la skill en la petición («con `sdd-start-feature`, añade…»).
 - **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 2.0.0 renombró las skills de «task» a «feature»): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con `/plugin marketplace update`, abre una sesión nueva y, si el proyecto viene de una versión anterior, pide «ponme el proyecto al día con `sdd-init-brownfield`». Desde la 2.2.0, el arranque de la sesión te avisa de los dos casos: si el kit cargado es más viejo que el del proyecto, con el comando para actualizarlo, y si el proyecto tiene migraciones pendientes, con esa misma frase.
 
 ### El merge del cierre falla

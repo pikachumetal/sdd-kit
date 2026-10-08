@@ -51,8 +51,8 @@ Describe 'Skill <_>' -ForEach $script:SkillFolders {
     $script:Skill | Should -Match '^[a-z0-9]+(-[a-z0-9]+)*$'
   }
 
-  It 'tiene description que dice cuándo usarla (empieza por «Usar»)' {
-    $script:Frontmatter['description'] | Should -Match '^Usar '
+  It 'tiene description que dice cuándo usarla (empieza por «Usar» o «Use when»)' {
+    $script:Frontmatter['description'] | Should -Match '^(Usar|Use when) '
   }
 
   It 'tiene description de 1024 caracteres como máximo' {

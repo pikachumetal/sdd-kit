@@ -106,7 +106,7 @@ Describe 'sdd-roadmap' {
   It 'fija las reglas del roadmap' {
     $script:Plan | Should -Match 'tras NNNN'
     $script:Plan | Should -Match '⏸️ aparcada: descartada por'
-    $script:Plan | Should -Match '-Reserve -Count'
+    $script:Plan | Should -Match '--reserve --count'
     $script:Plan | Should -Match 'sin preguntar'
   }
 

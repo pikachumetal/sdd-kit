@@ -16,9 +16,9 @@ Describe 'Vigía de silencio' {
   }
 
   It 'la sección lanza el script por la description del despacho y por la salida de la verificación lenta' {
-    $script:Section | Should -Match 'Watch-SubagentSilence\.ps1'
-    $script:Section | Should -Match '-Description'
-    $script:Section | Should -Match '-Path'
+    $script:Section | Should -Match 'sdd watch subagent'
+    $script:Section | Should -Match '--description'
+    $script:Section | Should -Match '--path'
     $script:Section | Should -Match 'run_in_background'
   }
 
@@ -40,7 +40,7 @@ Describe 'Vigía de silencio' {
 
   It 'el paso 6 de sdd-start-feature lanza el vigía y enlaza la sección' {
     $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
-    $skill | Should -Match 'Watch-SubagentSilence\.ps1'
+    $skill | Should -Match 'sdd.js" watch subagent'
     $skill | Should -Match '\(references/control-profiles\.md#vigía-de-silencio\)'
   }
 

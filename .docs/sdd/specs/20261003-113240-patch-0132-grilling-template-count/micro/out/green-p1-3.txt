@@ -1,0 +1,12 @@
+❓ **¿Dónde se guardan las reservas entre ejecuciones?**
+Lo que he encontrado:
+- `tech-stack.md` dice que el proyecto usa Node 22 sin dependencias externas y que ahora las reservas «viven en memoria y se pierden al salir». `package.json` solo contiene `{"type":"module"}`.
+- `node:sqlite` viene incluido en Node 22. Desde la 22.13.0 funciona sin el flag `--experimental-sqlite`, pero en la documentación de v22 sigue marcado como experimental (estabilidad 1.1, «Active development»). Fuentes: https://nodejs.org/docs/latest-v22.x/api/sqlite.html y https://nodejs.org/en/blog/release/v22.13.0. No he podido comprobar si al cargarlo imprime un `ExperimentalWarning`. Además, aquí tengo Node 26, no 22, así que no lo he probado en local.
+
+1️⃣ **Un archivo JSON leído y escrito con `node:fs`**
+`salas reservar Norte lunes 10-11` lee el archivo, añade la reserva y lo vuelve a escribir. No hace falta ninguna dependencia y el archivo se puede abrir para ver las reservas. A cambio, si dos personas reservan exactamente a la vez, se puede perder una de las dos reservas sin ningún aviso.
+
+2️⃣ **Una base de datos con `node:sqlite`**
+Tampoco añade dependencias, y las transacciones evitan que dos reservas simultáneas se pisen. A cambio, depende de un módulo experimental en Node 22, que puede cambiar entre versiones menores. También exige Node 22.13 o posterior, o el flag en versiones anteriores. Y para ver las reservas fuera de la CLI hace falta una herramienta de SQLite.
+
+➡️ **Te recomiendo 1️⃣**, porque el proyecto se define «sin dependencias externas» con Node 22, y en esa versión `node:sqlite` sigue siendo experimental. Con un JSON no hay riesgo de que algo deje de funcionar al actualizar Node. A cambio, si varias personas usan la CLI a la vez sobre el mismo archivo, puede perderse una reserva.

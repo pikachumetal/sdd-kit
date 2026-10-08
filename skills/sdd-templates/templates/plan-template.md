@@ -149,7 +149,7 @@ Endpoints, shape request/response.
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
 - Produce: <lo que las tasks siguientes usan de esta: nombres, firmas y formatos exactos>
 
-> La task viaja sola: `task-brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»). Copia aquí las firmas, tablas y textos que necesita.
+> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»). Copia aquí las firmas, tablas y textos que necesita.
 
 **Ficheros**: crear/modificar `path/...`
 

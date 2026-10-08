@@ -143,8 +143,8 @@ Describe 'Perfiles de control: la opción de diferir trae su disparador (patch 0
 }
 
 Describe 'Perfiles de control: el CLAUDE.md del repo no contradice la tabla' {
-  It 'la regla 6 nombra las paradas de delegate: spec, desvío y validación final' {
-    $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^6\. .+$').Value
+  It 'la regla de delegate nombra sus paradas: spec, desvío y validación final' {
+    $rule = [regex]::Match((Get-KitFile 'CLAUDE.md'), '(?m)^\d+\. \*\*Cuando el dev-lead delega.+$').Value
     $rule | Should -Match 'control-profiles\.md'
     foreach ($stop in 'aprobación de la spec', 'desvío', 'validación final') { $rule | Should -Match $stop }
   }
@@ -165,7 +165,7 @@ Describe 'Merge en el cierre' {
   }
 
   It 'la receta regenera el log con el script' {
-    Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md' | Should -Match 'Build-EstimationLog\.ps1'
+    Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md' | Should -Match 'sdd estimation log'
   }
 
   It 'la receta fija los tres datos del informe de denegación' {
@@ -173,25 +173,25 @@ Describe 'Merge en el cierre' {
     foreach ($item in 'comando', 'texto de la denegación', 'hash') { $recipe | Should -Match $item }
   }
 
-  It 'la receta y los dos pasos de rama fusionan con Invoke-SddMerge.ps1' {
-    Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md' | Should -Match 'sdd-templates/scripts/Invoke-SddMerge\.ps1'
+  It 'la receta y los dos pasos de rama fusionan con sdd merge' {
+    Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md' | Should -Match 'sdd merge --project-root'
     foreach ($skill in 'sdd-end-feature', 'sdd-end-patch') {
-      Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'Invoke-SddMerge\.ps1'
+      Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'sdd\.js" merge'
     }
   }
 
-  It 'la receta pasa como -VerifyCommand el gate de merge y la suite completa corre antes del script' {
+  It 'la receta pasa como --verify el gate de merge y la suite completa corre antes del script' {
     # Patch 0051: con «la suite del proyecto» y un hook que corre el conjunto rápido, 0/2 sujetos ejecutaron la completa.
     $recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
-    $recipe | Should -Match '-VerifyCommand "<gate de merge>"'
-    $recipe | Should -Match '\*\*`-VerifyCommand`\*\*: el gate de merge que declara `tech-stack\.md` §Testing'
+    $recipe | Should -Match '--verify "<gate de merge>"'
+    $recipe | Should -Match '\*\*`--verify`\*\*: el gate de merge que declara `tech-stack\.md` §Testing'
     $recipe | Should -Match 'la suite completa se ejecuta antes de llamar al script'
   }
 
-  It 'la receta pasa -Push con el push confirmado o autorizado por merge.push y no rehace el merge a mano' {
+  It 'la receta pasa --push con el push confirmado o autorizado por merge.push y no rehace el merge a mano' {
     $recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
     $recipe | Should -Match '(?m)^2\. Una frase del usuario en esta sesión que confirma el push'
-    $recipe | Should -Match '(?m)^3\. `merge\.push: true` \(perfil `delegate` o `unattended`\): `-Push`'
+    $recipe | Should -Match '(?m)^3\. `merge\.push: true` \(perfil `delegate` o `unattended`\): `--push`'
     $recipe | Should -Match 'No se rehace a mano'
     $recipe | Should -Not -Match 'git worktree add'
   }
@@ -244,9 +244,9 @@ Describe 'Push autorizado en el cierre: paso de rama' {
     foreach ($skill in 'sdd-end-feature', 'sdd-end-patch') { Get-KitFile "skills/$skill/SKILL.md" | Should -Match 'merge\.push' }
   }
 
-  It 'la receta empuja con -Push del script y prohíbe forzar' {
+  It 'la receta empuja con --push del script y prohíbe forzar' {
     $section = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'), '(?ms)^## Push\r?$.*?(?=^## |\z)').Value
-    $section | Should -Match '`-Push`'
+    $section | Should -Match '`--push`'
     $section | Should -Match '--force'
     $section | Should -Match 'en un bloque'
   }

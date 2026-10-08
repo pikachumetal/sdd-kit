@@ -48,7 +48,7 @@ Una pregunta no es trabajo. `sdd-consult` lee la documentación de anclaje y res
 
 ## Instalación
 
-Como plugin de Claude Code:
+El kit se distribuye solo como plugin de Claude Code, y necesita [Node](https://nodejs.org) 22.18.0 o posterior en el `PATH` (ver [Dependencias](#dependencias)):
 
 ```text
 /plugin marketplace add obra/superpowers-marketplace
@@ -86,18 +86,9 @@ Si antes lo tenías apuntando a un clon local, `/plugin marketplace add` falla c
 
 Fija también el modelo en tu `~/.claude/settings.json` (por ejemplo, `"model": "opus"`). Sin esa clave, una sesión puede arrancar en el modelo más caro, y el hilo principal se lleva cerca del 90 % del coste de una sesión. Antes de implementar un plan largo, el kit te ofrece bajar a Sonnet.
 
-Si solo quieres una skill suelta, o usas otro agente:
-
-```bash
-npx skills add pikachumetal/sdd-kit -a claude-code            # todas
-npx skills add pikachumetal/sdd-kit --skill sdd-start-feature    # una
-```
-
-Este canal no instala los tipos de agente `agents/effort-*.md`: el plan escribe «effort: no disponible en este harness, hereda el de la sesión».
-
 ### Enrutado automático
 
-La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, hace una sola pregunta antes de elegir. En un proyecto SDD pasa por delante de `brainstorming` de superpowers. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. `npx skills add` no instala hooks: quien use ese canal recibe la `description` de `using-sdd` y las del resto.
+La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, algo grande o una reunión, una funcionalidad concreta, un fallo, el cierre de una entrega, tus preferencias o una edición sin más. Si la petición es vaga, hace una sola pregunta antes de elegir. En un proyecto SDD pasa por delante de `brainstorming` de superpowers. El plugin trae un hook `SessionStart` que, solo en proyectos con `.docs/sdd/`, inyecta esa skill al empezar cada sesión, sin que tengas que tocar tu `CLAUDE.md`. Con una versión de Node anterior a la 22.18.0 el hook inyecta igual y añade un aviso; sin Node, Claude Code enseña el error del hook.
 
 ## Las skills
 
@@ -114,9 +105,10 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El merge a `main` y el tag los confirmas tú. |
 | `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
+| `sdd-grilling` | Cómo te pregunta el kit: una decisión por turno, la recomendada con su razón, sin sugerirte lo que solo sabes tú, y buscando antes lo que puede comprobar. La invocan las demás skills; adaptada de `grilling` de Matt Pocock (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 21 plantillas canónicas y el script que regenera el registro de estimaciones. |
+| `sdd-templates` | Las 21 plantillas canónicas. |
 
 ## Cómo está escrito
 
@@ -154,13 +146,13 @@ El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Los tests validan la anatomía de las skills, los manifests y los scripts del kit. Necesitas Pester 5 o superior y `pwsh` 7+.
+Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI son Vitest; los de anatomía de las skills y los manifests, Pester 5 o superior con `pwsh` 7+.
 
 ```powershell
-pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
+moon run cli:typecheck cli:test kit:test
 ```
 
-El hook de pre-commit los ejecuta, salvo los marcados con `-Tag 'Slow'`, y bloquea el commit si fallan. El comando de arriba los ejecuta todos. Se activa una vez por clon:
+El hook de pre-commit ejecuta el conjunto rápido (`cli:typecheck cli:test kit:test-fast kit:roadmap`) y bloquea el commit si falla. `cli:test-slow` y `kit:test` añaden los lentos. Se activa una vez por clon:
 
 ```bash
 git config core.hooksPath .githooks
@@ -172,8 +164,8 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 | Dependencia | ¿Obligatoria? | Instalación |
 | --- | --- | --- |
+| [Node](https://nodejs.org) 22.18.0 o posterior | Sí | El hook de sesión y los verbos de la CLI `sdd` que usan las skills se ejecutan con él. Sin Node, Claude Code enseña el error del hook. Descarga o gestor de versiones (`proto`, `fnm`, `nvm`); `node --version` lo comprueba |
 | [`superpowers`](https://github.com/obra/superpowers) | Sí | Antes que el kit (ver [Instalación](#instalación)). Desde la terminal: `claude plugin marketplace add obra/superpowers-marketplace` y `claude plugin install superpowers@superpowers-marketplace` |
-| `grilling` | No | `npx skills add mattpocock/skills --skill grilling` |
 | [impeccable](https://www.npmjs.com/package/impeccable) | No, recomendada si el proyecto tiene interfaz | Sin instalar: `npx impeccable@<versión> detect <url> --viewport 390x844`. Necesita Chrome, Chromium o Edge |
 | [Playwright](https://playwright.dev) | No, recomendada si el proyecto tiene interfaz | El MCP de Playwright o el paquete `playwright` en el proyecto |
 
@@ -183,11 +175,9 @@ El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subage
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 
-`grilling` solo la usa el carril consult y es prescindible: sin ella el interrogatorio se hace igual, una pregunta cada vez. Lo comprobé con dos baselines en [`tests/sdd-consult-degradacion-red.md`](tests/sdd-consult-degradacion-red.md), y es la razón de que el kit no lleve instrucciones para ese caso.
-
 ## Idioma
 
-El texto está en castellano porque es la lengua del equipo donde nació esto. Los nombres de skill, los identificadores y todo lo que el kit fija a los proyectos van en inglés. Si alguien lo quiere en otro idioma, se puede hablar.
+La documentación está en castellano porque es la lengua del equipo donde nació esto. Las skills se escriben en inglés, la primera `sdd-grilling`; las demás se traducen al reescribirlas, y todas hablan contigo en tu idioma. Los nombres de skill, los identificadores y todo lo que el kit fija a los proyectos van en inglés. Si alguien lo quiere en otro idioma, se puede hablar.
 
 ## Licencia
 

@@ -79,7 +79,7 @@ Describe 'sdd-roadmap no saca el roadmap de la forma' {
   BeforeAll { $script:Roadmapper = Get-KitFile 'skills/sdd-roadmap/SKILL.md' }
 
   It 'ejecuta el validador tras escribir' {
-    $script:Roadmapper | Should -Match 'Test-Roadmap\.ps1'
+    $script:Roadmapper | Should -Match 'roadmap check'
   }
 
   It 'no admite una sección que pide el usuario' {
@@ -91,15 +91,15 @@ Describe 'los cierres avisan del roadmap fuera de forma' {
   BeforeAll {
     $script:FeatureStep = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?ms)^8\. \*\*`roadmap\.md`\*\*.*?(?=^9\. \*\*)').Value
     $script:PatchStep = [regex]::Match((Get-KitFile 'skills/sdd-end-patch/SKILL.md'), '(?ms)^4\. \*\*`roadmap\.md`\*\*.*?(?=^5\. \*\*)').Value
-    $script:TemplatesIndex = (Get-KitFile 'skills/sdd-templates/SKILL.md') -split "`n" | Where-Object { $_ -match '^\| \[scripts/Test-Roadmap\.ps1\]' }
+    $script:TemplatesIndex = (Get-KitFile 'skills/sdd-templates/SKILL.md') -split "`n" | Where-Object { $_ -match '^\| `sdd roadmap check` \|' }
   }
 
   It 'sdd-end-feature ejecuta el validador en el paso del roadmap' {
-    $script:FeatureStep | Should -Match 'Test-Roadmap\.ps1'
+    $script:FeatureStep | Should -Match 'roadmap check'
   }
 
   It 'sdd-end-patch ejecuta el validador en el paso del roadmap' {
-    $script:PatchStep | Should -Match 'Test-Roadmap\.ps1'
+    $script:PatchStep | Should -Match 'roadmap check'
   }
 
   It 'el índice de sdd-templates nombra quién ejecuta el validador' {

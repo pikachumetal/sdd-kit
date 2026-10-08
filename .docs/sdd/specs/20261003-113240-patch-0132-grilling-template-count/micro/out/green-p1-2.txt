@@ -1,0 +1,17 @@
+❓ **¿Dónde se guardan las reservas entre ejecuciones?**
+Esto es lo que hay ahora:
+- `tech-stack.md`: Node 22, **sin dependencias externas**, y las reservas «viven en memoria y se pierden al salir».
+- `package.json` solo contiene `{"type":"module"}`. No fija ninguna versión menor de Node 22.
+- Según la [documentación de Node 22](https://nodejs.org/docs/latest-v22.x/api/sqlite.html), `node:sqlite` llegó en la v22.5.0. Hasta la v22.12 solo funciona con el flag `--experimental-sqlite`. Desde la v22.13 ya no hace falta el flag, pero el módulo sigue siendo experimental (*Stability 1.1, Active development*).
+
+1️⃣ **Un fichero JSON leído y reescrito con `node:fs`**
+Cada comando carga el fichero entero y lo guarda de nuevo. Para que un corte a mitad de escritura no lo corrompa, se escribe a un temporal y luego se renombra. Funciona en cualquier Node 22.
+El coste aparece si dos personas reservan a la vez. Ana ejecuta `reservar Norte lunes 10-11` y Luis ejecuta lo mismo en el mismo instante. Los dos ven `Norte reservada`, pero en el fichero solo queda la reserva del último que escribió.
+
+2️⃣ **Una base de datos SQLite con `node:sqlite`, el módulo que trae Node**
+Una restricción `UNIQUE(sala, día, franja)` impide dos reservas iguales. Con el mismo caso, Ana ve `Norte reservada` y Luis ve `Norte ocupada`.
+El coste: hace falta Node ≥ 22.13, o el flag en todas las llamadas por debajo de esa versión. Además, la API es experimental y puede cambiar entre versiones menores.
+
+➡️ **Te recomiendo 1️⃣**, porque el proyecto exige «sin dependencias externas» y no fija la versión menor de Node. Con 2️⃣ funcionaría o fallaría según el Node 22 que tenga instalado cada uno, y dependeríamos de una API experimental. A cambio, no evita las reservas duplicadas si dos personas reservan exactamente a la vez.
+
+¿Suelen usar la CLI varias personas a la vez sobre las mismas reservas? Si es así, 2️⃣ pasa a ser la mejor opción.

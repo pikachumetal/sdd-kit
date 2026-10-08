@@ -111,7 +111,7 @@ Describe 'Renombrado task → feature' {
 
   Context 'guarda' {
     It 'no queda ningún nombre viejo fuera del histórico' {
-      $allowed = '^(\.docs/sdd/(specs|field-reports|releases)/|\.docs/sdd/(changelog|roadmap|tech-stack|estimation-log|capabilities/migration)\.md$|tests/.*\.md$|skills/sdd-init-brownfield/references/migrations/|tests/(FeatureRename|MigrationInitParity)\.Tests\.ps1$)'
+      $allowed = '^(\.docs/sdd/(specs|field-reports|releases)/|\.docs/sdd/(changelog|roadmap|tech-stack|estimation-log|capabilities/migration)\.md$|tests/.*\.md$|cli/test/fixtures/.*\.md$|skills/sdd-init-brownfield/references/migrations/|tests/(FeatureRename|MigrationInitParity)\.Tests\.ps1$)'
       $files = git -C $script:KitRoot ls-files | Where-Object { $_ -notmatch $allowed }
       $hits = $files | Where-Object { Select-String -LiteralPath (Join-Path $script:KitRoot $_) -Pattern 'sdd-(start|end)-task' -Quiet }
       $hits | Should -BeNullOrEmpty

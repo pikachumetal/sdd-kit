@@ -9,7 +9,7 @@ description: Usar cuando arranca un proyecto nuevo (sin código o casi) y hay qu
 
 Deja un proyecto nuevo preparado para el flujo SDD: documentación de anclaje por capas en `.docs/sdd/`, `CLAUDE.md` corto con punteros, plantillas y estructura. El contenido sale de una **entrevista con el usuario** — no de tus suposiciones.
 
-El motor de la entrevista es `superpowers:brainstorming` (o `grilling` si el usuario lo prefiere): preguntas de una en una, y cada documento se aprueba antes de darse por anclaje.
+El motor de la entrevista es `superpowers:brainstorming`, con las preguntas de `sdd-grilling`, y cada documento se aprueba antes de darse por anclaje.
 
 ## ⛔ Gate: sin entrevista no hay documentos
 
@@ -21,7 +21,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 
 ## Flujo (crea un todo por paso)
 
-1. **Entrevista** — `superpowers:brainstorming`, con esta lista. **Cada turno termina con una sola pregunta de la lista**, en su orden. «No sé» deja la entrada pendiente; «no aplica» la cierra. Lo que ya existe (código, un documento de anclaje) se presenta como propuesta para confirmar, y lo que ya fijan las instrucciones del usuario (`CLAUDE.md` global o del proyecto) no se pregunta: se referencia.
+1. **Entrevista** — `superpowers:brainstorming`, con esta lista. **Pregunta con la skill `sdd-grilling`** (invócala con `Skill`), en el orden de la lista. «No sé» deja la entrada pendiente; «no aplica» la cierra. Lo que ya existe (código, un documento de anclaje) se presenta como propuesta para confirmar, y lo que ya fijan las instrucciones del usuario (`CLAUDE.md` global o del proyecto) no se pregunta: se referencia.
 
    | # | Pregunta | Va a |
    | --- | --- | --- |
@@ -51,7 +51,7 @@ Invocar esta skill arranca la entrevista, no la generación. Si el usuario no es
 2. **Generar documento a documento, con gate**: mission → presentar → aprobar; después constitution (con la sección «Reglas de producto»: las cinco por nombre, cada una respondida · pendiente · no aplica; si difiere por capacidad, por capacidad dentro de la entrada) → … Nada se da por anclaje sin aprobación explícita del usuario.
 3. **Estructura**: crear `.docs/sdd/` completa y `sdd-kit.json` con la versión del kit instalada (la mayor de `sdd-init-brownfield/references/migrations/`), el campo `ids` y las claves que el usuario respondió en la 19 (solo esas: «no sé» no escribe la clave). Las preferencias de cada persona no se preguntan aquí: el resumen de cierre dice que se fijan con `sdd-config`. Cada documento se **calca** de su plantilla de `sdd-templates` (lista en [estructura.md](references/estructura.md)): la forma es la de la plantilla y el contenido, el de la entrevista. Nunca se copia un documento del `.docs/` del kit ni de otro proyecto, y no se crea carpeta `templates/`. Además:
    - **Funcional aportado**: si el usuario aporta un funcional (un documento, un correo o texto pegado en el chat), se guarda literal en `.docs/sdd/sources/`: con su nombre original si es un fichero, o como `<yyyyMMdd>-functional-brief.md` si llegó pegado. No se edita nunca: los documentos de anclaje lo resumen y lo enlazan — `mission.md` lo enlaza en una línea, y cada fila de módulo del roadmap que sale de él cita su sección (`sources/<fichero> §<n>`). Ninguna capacidad nace de él: describe lo que se quiere construir, no lo construido.
-   - `estimation-log.md` no se escribe a mano: se genera con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas. El script vive en el kit y no se copia al proyecto.
+   - `estimation-log.md` no se escribe a mano: se genera con `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" estimation log --root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas. El script vive en el kit y no se copia al proyecto.
    - `.claude/settings.json`: se crea, o se fusiona sin tocar las demás claves, con `"autoMemoryEnabled": false`. La memoria automática vive en una sola máquina, y lo que se aprende va a los docs. Si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo; si el usuario dice que no, se deja y el resumen de cierre lo anota. Lleva también `extraKnownMarketplaces.superpowers-marketplace` con la fuente `{"source": "github", "repo": "obra/superpowers-marketplace"}`, sin tocar las demás entradas: quien clone el proyecto necesita ese marketplace para que se instale superpowers, la dependencia del kit. Si `claude plugin marketplace list` no muestra `superpowers-marketplace`, ejecuta `claude plugin marketplace add obra/superpowers-marketplace`.
    - `.gitignore`: se añaden `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` (las preferencias de cada persona, que no van a git), y la ruta de la sesión de `§Frontend` si la 21 la declara, si faltan, sin duplicar líneas; se crea si no existe.
    - `capabilities/` y `specs/` no se crean: git no versiona carpetas vacías, y ninguna se crea vacía ni con `.gitkeep`. Nacen con su primer fichero (la primera feature, o el volcado del paso 6).
