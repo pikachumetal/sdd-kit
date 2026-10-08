@@ -7,6 +7,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Fixed
 
 - **`Test-Roadmap.ps1` y `Build-EstimationLog.ps1` deciden lo publicado por ascendencia en git** — un patch fusionado después del corte de una release, el mismo día, se rechazaba con `patch del <fecha>, no posterior a la v<versión> (<fecha>): sale en el corte`, y el log lo asignaba a esa release. Ahora, con el tag `v<versión>` de la release, una fila con enlace `specs/…` sale en el corte solo si el commit que añadió su artefacto es ascendiente del tag, y el log lleva cada artefacto a la primera versión cuyo tag lo contiene; sin tag, decide la fecha como antes ([patch 0153](specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md))
+- **`Merge-CapabilityDelta.ps1` solo marca como hueco los literales de `spec-template.md`** — tomaba por hueco de la plantilla cualquier `<!-- … -->` o `<…>`, y rechazaba un delta que copiaba líneas terminadas en un tag de dialecto (`<!-- db:sqlite -->`) o con un marcador propio del proyecto (`<destino>`). Ahora solo falla con un `<…>` literal de la plantilla, como `<título estable>`, y el resto pasa tal cual a la capacidad ([patch 0154](specs/20261008-125035-patch-0154-template-literal-gaps/patch.md))
 
 ## [2.3.2] - 2026-10-05
 

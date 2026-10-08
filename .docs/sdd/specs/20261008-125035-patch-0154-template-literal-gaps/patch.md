@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-08
 branch: patch/fix-same-day-release-and-template-gaps
-commit:
+commit: ababb595
 ---
 
 # Patch 0154 — Merge-CapabilityDelta.ps1 solo marca como hueco los literales de spec-template.md
@@ -46,6 +46,8 @@ Lo que da por existente, comprobado: `Test-DeltaEntry` marca como hueco cualquie
 | 4 | `tests/Merge-CapabilityDelta.Tests.ps1` | ✅ 28/0 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-08 · RED/GREEN en Merge-CapabilityDelta.Tests.ps1 (1 caso nuevo, 28/0) · pre-commit 955/0
 
 ## 5. Tiempo (ligero)
 
