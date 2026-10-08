@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { SECTIONS, adr, docsWith, emptyDocs, sdd } from './helpers.ts';
 
-const template = readFileSync(new URL('../fixtures/decisions/adr-template.md', import.meta.url), 'utf8');
+const template = readFileSync(new URL('../../../skills/sdd-templates/templates/adr-template.md', import.meta.url), 'utf8');
 const check = (docs: string) => sdd(['decision', 'check', '--path', docs]);
 const notStatus = (value: string) =>
   `0001-use-postgres.md: status «${value}» no es proposed, accepted, rejected, deprecated ni superseded by NNNN`;

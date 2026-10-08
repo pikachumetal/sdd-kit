@@ -108,7 +108,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-grilling` | Cómo te pregunta el kit: una decisión por turno, la recomendada con su razón, sin sugerirte lo que solo sabes tú, y buscando antes lo que puede comprobar. La invocan las demás skills; adaptada de `grilling` de Matt Pocock (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 21 plantillas canónicas. |
+| `sdd-templates` | Las 24 plantillas canónicas. |
 
 ## Cómo está escrito
 

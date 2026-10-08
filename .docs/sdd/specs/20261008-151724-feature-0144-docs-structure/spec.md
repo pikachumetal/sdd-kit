@@ -261,6 +261,8 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 
 ## Enmiendas
 
+- 2026-10-08 — Decisión 16 («el tope se queda; si no cabe, recorto»): con las cuatro plantillas 2.x conviviendo con las tres nuevas, `sdd-templates` mide 13.221 de 11.990 y el kit 55.557 de 54.595 → se suspenden en `tests/WordBudget.Tests.ps1` los topes de `sdd-templates` (`SKILL.md` y total) y del kit entero, sin tocar los del resto de skills, y los restaura la 0157 con valores re-medidos (anotado en su fila) — la convivencia de la decisión 11 hace imposible el recorte sin retirar las 2.x — aprobada: «Puedes quitar los topes hasta que acabemos las 3? o minimo hasta qu elimpiemos?» (el agente acota la suspensión a los tres topes afectados)
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
