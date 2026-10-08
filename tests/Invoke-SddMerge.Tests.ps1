@@ -54,6 +54,7 @@ BeforeAll {
     Set-FixtureConfig $Seed $HooksDir
     Write-FixtureFile $Seed '.docs/sdd/sdd-kit.json' '{"merge": {"into": "develop", "noFf": true, "removeWorktree": false}}'
     Write-FixtureFile $Seed 'README.md' "base`n"
+    Write-FixtureFile $Seed '.cspell/custom-words.txt' "base`n"
     Write-FixtureFile $Seed '.docs/sdd/roadmap.md' "# Roadmap`n`n## Patches`n`n| Id | Fix |`n| --- | --- |`n| 0100 | base |`n`n## Deuda`n"
     Write-FixtureFile $Seed '.docs/sdd/changelog.md' "# Changelog`n`n## [Unreleased]`n`n### Fixed`n`n- base`n`n## [0.1.0]`n"
     Write-PatchSpec $Seed '0100'
@@ -246,6 +247,41 @@ Describe 'El merge del cierre parte de la rama destino publicada' -Tag 'Slow' {
     Get-Sha $fx.Remote 'develop' | Should -Be (Get-Sha $fx.Repo 'develop')
   }
 
+  It 'une lo que dos ramas añaden al final de cualquier fichero, sin tocar sus líneas' {
+    $fx = New-MergeFixture 'solo-anadir'
+    foreach ($id in '0001', '0002') {
+      $feature = Join-Path $fx.Wt $id
+      Edit-FixtureFile $feature 'README.md' "base`n" "base`n`n## Aprendizajes de $id`n`n- uno de $id`n"
+      Write-FixtureFile $feature '.cspell/custom-words.txt' "base`npalabra$id`n"
+      Save-All $feature "docs: aprendizajes de $id"
+    }
+
+    $first = Invoke-Merge (Join-Path $fx.Wt '0001') @('-Push')
+    $second = Invoke-Merge (Join-Path $fx.Wt '0002') @('-Push')
+
+    $first.ExitCode | Should -Be 0 -Because $first.Text
+    $second.ExitCode | Should -Be 0 -Because $second.Text
+    $readme = (Invoke-FixtureGit $fx.Repo @('show', 'develop:README.md')) -join "`n"
+    $readme | Should -Match '## Aprendizajes de 0001\n\n- uno de 0001\n\n## Aprendizajes de 0002\n\n- uno de 0002'
+    $words = (Invoke-FixtureGit $fx.Repo @('show', 'develop:.cspell/custom-words.txt')) -join "`n"
+    $words | Should -Be "base`npalabra0001`npalabra0002"
+  }
+
+  It 'si las dos ramas crean el mismo fichero con contenido distinto falla con merge: conflicto en' {
+    $fx = New-MergeFixture 'add-add'
+    foreach ($id in '0001', '0002') {
+      $feature = Join-Path $fx.Wt $id
+      Write-FixtureFile $feature 'nuevo.txt' "versión de $id`n"
+      Save-All $feature "feat: nuevo de $id"
+    }
+    Invoke-Merge (Join-Path $fx.Wt '0001') | Out-Null
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0002')
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'merge: conflicto en .*nuevo\.txt'
+  }
+
   It 'si las dos ramas cambian la misma fila de un registro falla con merge: conflicto en' {
     $fx = New-MergeFixture 'misma-fila'
     foreach ($id in '0001', '0002') {
@@ -333,6 +369,38 @@ Describe 'Un merge del cierre que falla deja la rama destino como estaba' -Tag '
     $log | Should -Not -BeNullOrEmpty -Because $result.Text
     Get-Content -LiteralPath $log -Raw | Should -Match 'Tests Failed: 3'
     Remove-Item -LiteralPath $log
+    Assert-CleanedUp $fx
+  }
+
+  It 'con un fichero bloqueado por otro proceso falla con bloqueado: y el fichero, no con verificación:' {
+    $fx = New-MergeFixture 'bloqueado'
+    $before = Get-Sha $fx.Repo 'develop'
+    $locked = Join-Path $fx.Root 'App.dll'
+    $stream = [System.IO.File]::Open($locked, 'Create', 'ReadWrite', 'None')
+    try {
+      $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-VerifyCommand', "[IO.File]::WriteAllText('$locked', 'x')")
+    }
+    finally {
+      $stream.Dispose()
+    }
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'bloqueado: '
+    $result.Text | Should -Match 'App\.dll'
+    $result.Text | Should -Not -Match 'verificación: código de salida'
+    Get-Sha $fx.Repo 'develop' | Should -Be $before
+    Assert-CleanedUp $fx
+  }
+
+  It 'con el fichero bloqueado que MSBuild atribuye a un proceso, nombra el proceso' {
+    $fx = New-MergeFixture 'bloqueado-msbuild'
+    $gate = "Write-Output 'warning MSB3026: Could not copy ""obj\App.dll"" to ""bin\App.dll"". The process cannot access the file ''bin\App.dll'' because it is being used by another process. The file is locked by: ""App.Api (4242)""'; exit 1"
+
+    $result = Invoke-Merge (Join-Path $fx.Wt '0001') @('-VerifyCommand', $gate)
+
+    $result.ExitCode | Should -Not -Be 0
+    $result.Text | Should -Match 'bloqueado: .*bin\\App\.dll'
+    $result.Text | Should -Match 'App\.Api \(4242\)'
     Assert-CleanedUp $fx
   }
 

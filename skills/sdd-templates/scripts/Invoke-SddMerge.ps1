@@ -135,13 +135,19 @@ function Get-RemoteForBranch([string]$Worktree, [string]$Into) {
 }
 
 function Merge-AddedLines([string]$Worktree, [string]$File) {
+  # Sin versión en la base (los dos lados crean el fichero) no hay líneas existentes que respetar: decide una persona.
+  Invoke-IsolatedGit $Worktree @('rev-parse', '--verify', '--quiet', ":1:$File") | Out-Null
+  if ($LASTEXITCODE -ne 0) { return $false }
   # Con diff3, un trozo que solo añade por los dos lados tiene la sección de la base vacía.
   Invoke-IsolatedGit $Worktree @('checkout', '--conflict=diff3', '--', $File) | Out-Null
   if ($LASTEXITCODE -ne 0) { return $false }
   $path = Join-Path $Worktree $File
   $content = [System.IO.File]::ReadAllText($path)
   $hunk = '(?ms)^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|\z)'
-  foreach ($match in [regex]::Matches($content, $hunk)) {
+  $hunks = [regex]::Matches($content, $hunk)
+  # Un binario no lleva marcas: no hay nada que unir.
+  if ($hunks.Count -eq 0) { return $false }
+  foreach ($match in $hunks) {
     if ($match.Groups[2].Length -gt 0) { return $false }
   }
   $merged = [regex]::Replace($content, $hunk, { param($m) $m.Groups[1].Value + $m.Groups[3].Value })
@@ -150,8 +156,8 @@ function Merge-AddedLines([string]$Worktree, [string]$File) {
   return $true
 }
 
-function Resolve-RegistryConflicts([string]$Worktree, [string[]]$Conflicted) {
-  if (@($Conflicted | Where-Object { $_ -notmatch '(^|/)\.docs/sdd/(roadmap|changelog|estimation-log)\.md$' }).Count -gt 0) { return $false }
+function Resolve-AddOnlyConflicts([string]$Worktree, [string[]]$Conflicted) {
+  # Cualquier fichero en el que los dos lados solo añaden se une; estimation-log.md se regenera.
   foreach ($file in $Conflicted | Where-Object { $_ -notmatch 'estimation-log\.md$' }) {
     if (-not (Merge-AddedLines $Worktree $file)) { return $false }
   }
@@ -166,7 +172,7 @@ function Resolve-RegistryConflicts([string]$Worktree, [string[]]$Conflicted) {
 function Complete-MergeAttempt([string]$Worktree, [int]$MergeExitCode, [string]$StepName, [string[]]$MergeOutput) {
   if ($MergeExitCode -eq 0) { return }
   $conflicted = @(Invoke-IsolatedGit $Worktree @('diff', '--name-only', '--diff-filter=U'))
-  if ($conflicted.Count -gt 0 -and (Resolve-RegistryConflicts $Worktree $conflicted)) { return }
+  if ($conflicted.Count -gt 0 -and (Resolve-AddOnlyConflicts $Worktree $conflicted)) { return }
   Invoke-IsolatedGit $Worktree @('merge', '--abort') | Out-Null
   # Sin ficheros en conflicto, lo que paró el merge fue el hook pre-merge-commit: su salida dice por qué.
   if ($conflicted.Count -eq 0) {
@@ -197,6 +203,15 @@ function Invoke-FeatureMerge([string]$Worktree, [string]$Branch, [pscustomobject
   Complete-MergeAttempt $Worktree $LASTEXITCODE 'merge' $output
 }
 
+function Find-LockedFile([string]$Output) {
+  # ponytail: reconoce los mensajes de .NET/MSBuild (inglés y castellano) y de Node; otro idioma o herramienta cae en verificación:.
+  $file = [regex]::Match($Output, "(?:cannot access the file|no tiene acceso al archivo) '(?<file>[^']+)'|EBUSY: [^']*'(?<file>[^']+)'")
+  if (-not $file.Success) { return $null }
+  $process = [regex]::Match($Output, '(?:locked by|bloqueado por): "(?<process>[^"]+)"')
+  $holder = if ($process.Success) { $process.Groups['process'].Value } else { 'otro proceso' }
+  return "'$($file.Groups['file'].Value)' lo tiene abierto $holder"
+}
+
 function Invoke-Verification([string]$Worktree, [string]$Command) {
   # El log va fuera del worktree temporal, que se retira al fallar: sin él, ver por qué falló el gate obliga a relanzarlo.
   $log = Join-Path ([System.IO.Path]::GetTempPath()) "sdd-merge-verify-$(Get-Date -Format 'yyyyMMdd-HHmmss')-$PID.log"
@@ -206,6 +221,10 @@ function Invoke-Verification([string]$Worktree, [string]$Command) {
   try {
     & pwsh -NoProfile -Command $Command 2>&1 | ForEach-Object { "$_" } | Tee-Object -LiteralPath $log
     if ($LASTEXITCODE -ne 0) {
+      $locked = Find-LockedFile (Get-Content -LiteralPath $log -Raw)
+      if ($null -ne $locked) {
+        throw "bloqueado: $locked; ciérralo y relanza el merge. Salida completa en $log"
+      }
       throw "verificación: código de salida $LASTEXITCODE; salida completa en $log`n$((Get-Content -LiteralPath $log -Tail 20) -join "`n")"
     }
     Remove-Item -LiteralPath $log
