@@ -12,3 +12,9 @@ GREEN de las reglas que sobrevivieron al RED (`tests/sdd-start-feature-0146-red.
 
 - **g1** (Opus): **G1 2/2**. g1-1 busca la herramienta (`ToolSearch: select:AskUserQuestion`) y, al no encontrarla, presenta «1. **Apruebo (Recomendada).** … 2. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que bajes la sesión a gama media.** … 3. **Cambios.**». g1-2 no la busca: dice que «esta sesión no tiene la herramienta de preguntas con opciones» (no está en su lista) y presenta las mismas tres opciones literales. Se cuenta como intento: la regla no tiene otra salida en `claude -p`.
 - **r1**: **R1 2/2**. r1-1: «1. **Dos revisores: dominio en Opus + técnica en Sonnet (Recomendada).** 2. Dos revisores, dominio en Sonnet…»; r1-2: «Recomiendo **un revisor con Opus**, porque la spec decide quién puede hacer qué».
+
+## Task 4 — El plan declara `Tras` (`p1`)
+
+- **Ronda 0** (`green/out-p1-r0/`): `Tras` 2/2, pero **P1 0/2** en «en orden, sin paralelo»: la frase iba en un bloque de ayuda (`>`) que la plantilla manda borrar al redactar.
+- **REFACTOR**: la frase pasa a una línea de contenido bajo «## 2. Tasks».
+- **Ronda 1** (`green/out/p1-*`): p1-2, «Las tasks se ejecutan en orden, sin paralelo.» y `**Tras**: —` / `**Tras**: Task 1`. p1-1 hace un plan de una sola task con `**Tras**: —` y sin la frase: con una task no hay nada que ejecutar en paralelo, y se cuenta como no aplicable. **P1: `Tras` 2/2; «sin paralelo» 1/1 aplicable.** P2 sigue 2/2 como control (`node --test test/cancel.test.js` en cada task).

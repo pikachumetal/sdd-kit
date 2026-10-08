@@ -49,3 +49,4 @@ Cada regla que la 0146 añade a `skills/sdd-start-feature/`, de dónde viene y q
 | `spec-template.md`: secciones «Dónde se prueba» y «Términos y ADR» | RED S3 2/2 | s1 |
 | Paso 4: la pregunta del gate es `AskUserQuestion` con «Apruebo (Recomendada)» y «Cambios»; en `delegate` con el modelo más capaz, también la de parar antes de la Task 1 | RED G1 2/2 en prosa (la opción de bajar de modelo salió 2/2: el fallo de campo no se reprodujo) | g1 |
 | `review-spec.md`: las opciones de la pregunta de review llevan el modelo del revisor de dominio, con recomendación; sin pregunta, Sonnet; técnica, siempre Sonnet | RED R1 2/2 | r1 |
+| `plan-template.md`: cada task lleva `**Tras**:`; las tasks se ejecutan en orden, sin paralelo, dicho en una línea de contenido de «## 2. Tasks» | RED P1 2/2; GREEN ronda 0 sin la frase 0/2 (iba en un bloque de ayuda) | p1 |
