@@ -17,7 +17,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
       $step | Should -Match '\.docs/sdd/capabilities/'
       $step | Should -Match 'ya decía, no hay delta'
-      $step | Should -Match 'Merge-CapabilityDelta\.ps1'
+      $step | Should -Match 'sdd\.js" capability merge'
     }
 
     It 'sdd-end-patch mete la capacidad en el commit de cierre' {
@@ -60,7 +60,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $block.Contains('- Nuevas: `<nombre>`') | Should -BeTrue
       $block.Contains('- Modificadas: `<nombre>`') | Should -BeTrue
       $block.Contains('Ninguna, porque') | Should -BeTrue
-      $block | Should -Match 'Get-CapabilityIndex\.ps1'
+      $block | Should -Match 'sdd capability index'
       $block | Should -Match 'nombre exacto'
     }
 
@@ -81,14 +81,14 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
 
     It 'sdd-end-feature ejecuta el validador con la spec en el paso 4' {
       $step = Get-NumberedStep (Read-SkillFile 'sdd-end-feature/SKILL.md') 4
-      $step | Should -Match 'Test-Capabilities\.ps1'
-      $step | Should -Match '-Artifact'
+      $step | Should -Match 'capability check'
+      $step | Should -Match '--artifact'
     }
 
     It 'sdd-end-patch ejecuta el validador con el patch y escribe el bloque en el paso 1' {
       $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
-      $step | Should -Match 'Test-Capabilities\.ps1'
-      $step | Should -Match '-Artifact'
+      $step | Should -Match 'capability check'
+      $step | Should -Match '--artifact'
       $step | Should -Match 'Ninguna, porque el fix devuelve'
     }
 
@@ -100,7 +100,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
 
     It 'la regla de fusión nombra el validador' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md') 4 | Should -Match 'Test-Capabilities\.ps1'
+      Get-NumberedStep (Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md') 4 | Should -Match 'capability check'
     }
   }
 
@@ -161,19 +161,19 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
 }
 
 Describe 'Las skills eligen capacidades con el índice generado' {
-  It '<Skill> ejecuta Get-CapabilityIndex.ps1 en su paso de contexto, antes de abrir capacidades' -ForEach @(
+  It '<Skill> ejecuta sdd capability index en su paso de contexto, antes de abrir capacidades' -ForEach @(
     @{ Skill = 'sdd-start-feature'; Step = 'Contexto' }
     @{ Skill = 'sdd-roadmap'; Step = 'Estado real' }
     @{ Skill = 'sdd-consult'; Step = 'Primar contexto' }
   ) {
     $step = [regex]::Match((Read-SkillFile "$Skill/SKILL.md"), "(?ms)^1\. \*\*$Step.*?(?=^\d+\. |^## |\z)").Value
-    $step | Should -Match 'pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-CapabilityIndex\.ps1" -Path'
+    $step | Should -Match 'node "\$\{CLAUDE_PLUGIN_ROOT\}/cli/bin/sdd\.js" capability index --path'
     $step | Should -Match 'propósito'
   }
 
   It 'la plantilla de capacidad dice que el índice se genera, sin index.md' {
     $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
-    $content | Should -Match 'Índice: lo genera `Get-CapabilityIndex\.ps1` al vuelo; no hay `index\.md`\.'
+    $content | Should -Match 'Índice: lo genera `sdd capability index` al vuelo; no hay `index\.md`\.'
     $content | Should -Not -Match 'el listado de ficheros de `capabilities/` es el índice'
   }
 }

@@ -68,7 +68,7 @@ Describe 'Paridad migración–init' {
 Describe 'Configuración y log que deja la init' {
   It '<_> deja autoMemoryEnabled a false, los temporales ignorados y el log del script' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
     $corpus = Get-InitCorpus $_
-    foreach ($literal in '"autoMemoryEnabled": false', '.claude/settings.json', '.playwright-mcp/', '.superpowers/', 'Build-EstimationLog.ps1') {
+    foreach ($literal in '"autoMemoryEnabled": false', '.claude/settings.json', '.playwright-mcp/', '.superpowers/', 'sdd estimation log') {
       $corpus.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }
   }
@@ -202,7 +202,7 @@ Describe 'Migración a v2.3.0 — roadmap' {
   }
 
   It 'el paso del roadmap nombra el validador, el gate, el sha y el pendiente' {
-    foreach ($literal in 'Test-Roadmap.ps1', '**gate**', 'git show', 'pendiente explícito', 'Roadmap válido') {
+    foreach ($literal in 'sdd roadmap check', '**gate**', 'git show', 'pendiente explícito', 'Roadmap válido') {
       $script:V23.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }
   }

@@ -6,12 +6,18 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Added
 
+- **Feature 0143** — CLI `sdd` en TypeScript sin build (Node ≥ 22.18.0, sin dependencias de runtime) dentro del plugin: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <sustantivo> <verbo>`. Sustituye los 12 scripts PowerShell (`capability index|check|merge`, `roadmap check`, `id next`, `merge`, `estimation log`, `session tokens`, `watch subagent|command`) con la misma salida, comprobada con tests de paridad; el hook de sesión (`hook session-start`, en forma exec), y los bash de superpowers que usa el kit (`task start|done|brief`, `review package`, `workspace`), que ahora corren desde cualquier shell y registran la task aunque la verificación no imprima nada. Nuevos: `roadmap publish` publica la reserva en la rama de integración con el cerrojo del merge, y `ledger rulings` cosecha los rulings y los minors diferidos antes de borrar el workspace. `--json` en los verbos de datos. ADR 0011.
 - **Feature 0128** — `sdd-grilling`, el método de preguntas del kit, adaptado de `grilling` de Matt Pocock (MIT, aviso en su `NOTICE`), y primera skill en inglés: una decisión por turno, la recomendada con una razón del caso, el descubrimiento sin ancla, la búsqueda fuera antes de preguntar y el cierre en tres listas; `sdd-consult`, `sdd-roadmap`, las dos init, `sdd-config` y el diseño de `sdd-start-feature` la invocan en lugar de su propia regla de preguntas. → [ref](specs/20261002-141929-feature-0128-sdd-grilling/)
 
 ### Changed
 
+- **Feature 0143** — Las skills, sus referencias, las plantillas, las migraciones viejas y las capacidades llaman a los verbos de `sdd`. Node ≥ 22.18.0 pasa a ser dependencia obligatoria y `pwsh` deja de serlo en los proyectos. El repo del kit fija con proto Node 26.10.0, pnpm 12.9.1 y moon 2.6.0, y prueba la CLI con Vitest.
 - **Feature 0142** — Constitution corta para la 3.0.0: preámbulo con los cinco principios de la propuesta 0131 y once artículos con su regla y su porqué en una frase; la historia de cada regla pasa a diez ADR en `.docs/sdd/decisions/` (MADR 4.0.0 mínima con `status`, `date`, `rutas` y «Confirmación»). Art. I cambia la campaña RED/GREEN por edición por batería en entrada, propose, verify y archive y humo en todas, con A/B puntual; Art. IX permite el fork de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator con aviso en `THIRD_PARTY_NOTICES.md`; Art. XI añade las ADR. `CLAUDE.md` enlaza la constitution en vez de repetirla. → [ref](specs/20261007-135805-feature-0142-new-constitution/)
 - **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
+
+### Removed
+
+- **Feature 0143** — Los scripts PowerShell de `skills/sdd-templates/scripts/`, el hook bash `hooks/session-start` y el canal de instalación `npx skills add` (no instala `cli/`).
 
 ## [2.3.2] - 2026-10-05
 

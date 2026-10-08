@@ -20,18 +20,18 @@ BeforeAll {
 }
 
 Describe 'Task 1 — bucle Native' {
-  It 'el párrafo Native dice que los scripts son de executing-plans y no del kit' {
-    Get-NativeParagraph | Should -Match 'son de esa skill de superpowers, no del kit'
+  It 'el párrafo Native dice que los verbos llevan el ledger de executing-plans' {
+    Get-NativeParagraph | Should -Match 'llevan el ledger del workspace de `executing-plans`'
   }
 
-  It 'el paso 6 tiene un párrafo Native con task-start y task-done' {
+  It 'el paso 6 tiene un párrafo Native con sdd task start y sdd task done' {
     $paragraph = Get-NativeParagraph
-    $paragraph | Should -Match 'scripts/task-start'
-    $paragraph | Should -Match 'scripts/task-done'
+    $paragraph | Should -Match 'sdd\.js" task start'
+    $paragraph | Should -Match 'sdd\.js" task done'
   }
 
   It 'el párrafo Native comprueba la base antes de cada task' {
-    Get-NativeParagraph | Should -Match 'Cada task, también la segunda y las siguientes, se abre en este orden: `task-start`, la comprobación de la base'
+    Get-NativeParagraph | Should -Match 'Cada task, también la segunda y las siguientes, se abre en este orden: `sdd task start`, la comprobación de la base'
   }
 
   It 'el párrafo Native aparta y compara los RED' {
@@ -41,12 +41,12 @@ Describe 'Task 1 — bucle Native' {
   }
 
   It 'el párrafo Native fija el orden del cierre de la task' {
-    Get-NativeParagraph | Should -Match 'comparar los RED, el commit de la task y `task-done`'
+    Get-NativeParagraph | Should -Match 'comparar los RED, el commit de la task y `sdd task done`'
   }
 
-  It 'las rutas de Windows cubren task-start en overrides y en el encargo' {
-    Get-KitFile $script:Overrides | Should -Match '`task-start` de `executing-plans`, en Windows'
-    Get-KitFile $script:Dispatch | Should -Match '`sdd-workspace`, `task-brief`, `task-start` y `review-package` imprimen'
+  It 'los verbos no dejan rutas POSIX que traducir en overrides ni en el encargo' {
+    Get-KitFile $script:Overrides | Should -Not -Match 'cygpath'
+    Get-KitFile $script:Dispatch | Should -Not -Match 'cygpath'
   }
 }
 
@@ -60,7 +60,7 @@ Describe 'Task 2 — historia de commits' {
 
   It 'la fila Task N dice cuándo se junta en Native' {
     $row = $script:Recipe -split "`r?`n" | Where-Object { $_.StartsWith('| Task N |') }
-    $row | Should -Match 'en Native, con su contrato de cierre cumplido y antes de `task-done`'
+    $row | Should -Match 'en Native, con su contrato de cierre cumplido y antes de `sdd task done`'
   }
 
   It 'con un RED en el árbol, el hilo lo aparta para commitear' {
@@ -130,14 +130,14 @@ Describe 'Task 5 — REFACTOR del GREEN' {
 }
 
 Describe 'Revisión final — pase de fix' {
-  It 'la fila Apertura se junta antes de los RED y, en Native, antes de task-start' {
+  It 'la fila Apertura se junta antes de los RED y, en Native, antes de sdd task start' {
     $row = (Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md') -split "`r?`n" | Where-Object { $_.StartsWith('| Apertura |') }
     $row | Should -Not -Match 'justo antes del primer despacho'
-    $row | Should -Match 'antes de escribir los RED de la primera task \(en Native, antes de su `task-start`\)'
+    $row | Should -Match 'antes de escribir los RED de la primera task \(en Native, antes de su `sdd task start`\)'
   }
 
-  It 'el paso 5 junta la apertura antes del task-start de la primera task en Native' {
-    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'en Native, antes de su `task-start`'
+  It 'el paso 5 junta la apertura antes del sdd task start de la primera task en Native' {
+    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'en Native, antes de su `sdd task start`'
   }
 
   It 'el paso 6 apunta la revisión final en tasks.md' {
@@ -159,16 +159,14 @@ Describe 'Decisión del dev-lead — native fijado también cambia tras compacta
   }
 }
 
-Describe 'Patch 0110 — scripts de executing-plans en Windows' {
-  It 'el párrafo Native lanza los scripts con la herramienta Bash, nunca con bash desde PowerShell' {
+Describe 'Patch 0110 — los verbos de task desde cualquier shell' {
+  It 'el párrafo Native lanza los verbos con node, desde cualquier shell' {
     $paragraph = Get-NativeParagraph
-    $paragraph | Should -Match 'se lanzan con la herramienta Bash \(Git Bash\), nunca con `bash <ruta>` desde PowerShell'
-    $paragraph | Should -Match 'comprueba que la ruta de `sdd-workspace` no está vacía'
+    $paragraph | Should -Match 'desde cualquier shell'
+    $paragraph | Should -Not -Match 'Git Bash|cygpath'
   }
 
-  It 'el párrafo Native exige que el comando de task-done imprima algo' {
-    $paragraph = Get-NativeParagraph
-    $paragraph | Should -Match 'El comando que pasas a `task-done` tiene que imprimir algo'
-    $paragraph | Should -Match "sh -c '<comando> && echo ok'"
+  It 'el párrafo Native dice que sdd task done registra la task aunque el comando no imprima nada' {
+    Get-NativeParagraph | Should -Match '`sdd task done` registra la task aunque el comando no imprima nada'
   }
 }

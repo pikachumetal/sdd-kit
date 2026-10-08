@@ -12,7 +12,7 @@
 
 5. **Estructura**: `.docs/sdd/` con:
    - `estimation.md` calcando `estimation-template.md`, con la calibración vacía.
-   - `estimation-log.md` generado con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Build-EstimationLog.ps1" -Root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas (el script vive en el kit y no se copia al proyecto).
+   - `estimation-log.md` generado con `sdd estimation log --root "<raíz del proyecto>"`, que lo deja con su cabecera y sin filas (el script vive en el kit y no se copia al proyecto).
    - `sdd-kit.json` con la versión del kit instalada, el modo de ids y las claves de control que respondió la entrevista (`{ "version", "channel": "plugin"|"cli", "updated", "ids": { "mode": "tracker"|"sequence" }, "control"?, "merge"?, "execution"?, "validation"?: { "mode": "manual"|"field" } }`, con `ids.mode` de la pregunta 1 (`sdd-config`), con `control`, `merge`, `execution` y `validation.mode` solo con lo respondido; la versión es la mayor de `references/migrations/` de esta skill).
    - **`capabilities/` y `specs/` no se crean**: git no versiona carpetas vacías, y ninguna se crea vacía ni con `.gitkeep`. `specs/` nace con la primera feature o patch; `capabilities/`, con la primera feature que toque una capacidad. **Brownfield no vuelca capacidades, aunque el usuario lo pida**: volcar el comportamiento de golpe produce ficheros que nadie revisa. Si lo pide, explícale que crecen feature a feature.
    - Sin carpeta `templates/`: las plantillas viven en el skill `sdd-templates`.

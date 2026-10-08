@@ -42,8 +42,8 @@ Describe 'Merge de sincronización ante un conflicto solo en los registros' {
     $script:Section | Should -Match '(?i)una vez'
   }
 
-  It 'la sección regenera el log con el script y no lo edita' {
-    $script:Section | Should -Match ([regex]::Escape('Build-EstimationLog.ps1'))
+  It 'la sección regenera el log con la CLI y no lo edita' {
+    $script:Section | Should -Match ([regex]::Escape('sdd estimation log'))
   }
 
   It 'la sección prohíbe --no-verify' {

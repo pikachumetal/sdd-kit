@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que usan el kit, y cómo se valida y se lista (`Test-Capabilities.ps1`, `Get-CapabilityIndex.ps1`).
+Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que usan el kit, y cómo se valida y se lista (`sdd capability check`, `sdd capability index`).
 
 ## Requisitos
 
@@ -25,7 +25,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - WHEN se escribe su sección de delta
 - THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
 - AND un escenario de una regla de negocio lleva datos concretos de entrada y de salida («bolsa FR, IT, PT; oferta en DE → no cubre»), no una frase abstracta («una oferta fuera de la bolsa no cubre»)
-- AND un THEN o un AND no cita las decisiones de la spec por número (`- THEN se rechaza, por la decisión 10`): la capacidad no tiene esas decisiones, y `Merge-CapabilityDelta.ps1` lo rechaza
+- AND un THEN o un AND no cita las decisiones de la spec por número (`- THEN se rechaza, por la decisión 10`): la capacidad no tiene esas decisiones, y `sdd capability merge` lo rechaza
 - AND un `MODIFIED` copia el bloque entero del requisito con los cambios; `(antes: …)` es opcional y señala la cláusula que cambia
 - AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
 - AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto), cada una con su valor completo: con **Avisos**: A y B vigentes y una feature que añade C, la entrada dice A, B y C, porque `sdd-end-feature` sustituye o añade cada entrada entera por su nombre
@@ -35,11 +35,11 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 
 - GIVEN una feature cerrándose vía `sdd-end-feature` con un delta en su spec
 - WHEN se ejecuta el paso de fusión
-- THEN el agente ejecuta `Merge-CapabilityDelta.ps1 -Path .docs/sdd -Artifact <spec.md>`, que añade cada `ADDED` a `capabilities/<capability>.md`, sustituye entero con cada `MODIFIED` el requisito con ese título, quita cada `REMOVED` y sustituye o añade por su nombre cada entrada de «Reglas de la capacidad»; el walkthrough referencia los escenarios del delta como casos del smoke
+- THEN el agente ejecuta `sdd capability merge --path .docs/sdd --artifact <spec.md>`, que añade cada `ADDED` a `capabilities/<capability>.md`, sustituye entero con cada `MODIFIED` el requisito con ese título, quita cada `REMOVED` y sustituye o añade por su nombre cada entrada de «Reglas de la capacidad»; el walkthrough referencia los escenarios del delta como casos del smoke
 - AND si el script falla, el agente corrige lo que dice su mensaje (el delta de la spec, o la línea «Nuevas» del bloque) y lo vuelve a ejecutar; no fusiona a mano
 - AND el borrador del delta fusionado que el paso 7 de `sdd-start-feature` escribe mientras trabaja el revisor final sale del mismo script
 - AND la capacidad no gana ninguna línea de historial
-- AND tras fusionar y antes del commit de cierre, `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <spec.md>` pasa; si falla en lo fusionado o en el bloque, se corrige eso, no el validador
+- AND tras fusionar y antes del commit de cierre, `sdd capability check --path .docs/sdd --artifact <spec.md>` pasa; si falla en lo fusionado o en el bloque, se corrige eso, no el validador
 - AND un fallo en una capacidad que el delta no toca (`rooms.md` con un requisito sin THEN, mientras la 0020 fusiona en `bookings`) no bloquea el cierre: `rooms.md` no se edita y el informe final lo lista como pendiente del dev-lead
 - AND `sdd-end-feature` no crea ningún fichero de capacidad que la spec no haya declarado
 
@@ -48,8 +48,8 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - GIVEN un proyecto con `.docs/sdd/capabilities/bookings.md`, cuyo requisito «Consultar salas libres» dice que `salas libres 10-12` lista las salas sin reserva en esa franja
 - WHEN se cierra con `sdd-end-patch` el patch 0014, cuyo fix hace que `salas libres 10-12` deje fuera las salas en mantenimiento y las liste aparte con `(en mantenimiento)`
 - THEN `patch.md` abre con `## Capacidades` y `- Modificadas: \`bookings\` — cambia «Consultar salas libres»`, y lleva la sección «Delta de capacidad» con `MODIFIED — Consultar salas libres` y el bloque entero del requisito con el cambio
-- AND `Merge-CapabilityDelta.ps1 -Path .docs/sdd -Artifact <patch.md>` sustituye ese requisito en `bookings.md`, sin línea de historial
-- AND `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <patch.md>` pasa antes del commit de cierre, salvo en una capacidad que el delta no toca: esa no se edita y el mensaje final la lista como pendiente del dev-lead
+- AND `sdd capability merge --path .docs/sdd --artifact <patch.md>` sustituye ese requisito en `bookings.md`, sin línea de historial
+- AND `sdd capability check --path .docs/sdd --artifact <patch.md>` pasa antes del commit de cierre, salvo en una capacidad que el delta no toca: esa no se edita y el mensaje final la lista como pendiente del dev-lead
 - AND el cambio de `bookings.md` va en el commit de cierre del patch, y el fix con su `patch.md` queda en un solo commit
 - AND si ninguna capacidad describe la pieza que cambió, no se crea ninguna, el bloque dice `Ninguna, porque ninguna capacidad describe <pieza>` y el mensaje final lo dice
 
@@ -93,13 +93,13 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 
 - GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-consult`
 - WHEN existe `capabilities/`
-- THEN la consulta ejecuta `Get-CapabilityIndex.ps1`, elige por su propósito la capacidad que cubre X y ancla la respuesta en ese fichero, no en la reconstrucción a partir de specs históricas
+- THEN la consulta ejecuta `sdd capability index`, elige por su propósito la capacidad que cubre X y ancla la respuesta en ese fichero, no en la reconstrucción a partir de specs históricas
 
 ### La spec y el patch declaran sus capacidades al principio
 
 - GIVEN un proyecto con `capabilities/bookings.md` y la fila 0021 «Cancelar una reserva: `salas cancelar <sala> <franja>` libera la franja»
 - WHEN se escribe la spec de la 0021
-- THEN la spec abre, tras el título, con `## Capacidades` y la línea `- Modificadas: \`bookings\` — añade «Cancelar una reserva»`, escrita tras ejecutar `Get-CapabilityIndex.ps1` y con el nombre exacto que da el índice (`bookings`, no `reservations` ni `booking`)
+- THEN la spec abre, tras el título, con `## Capacidades` y la línea `- Modificadas: \`bookings\` — añade «Cancelar una reserva»`, escrita tras ejecutar `sdd capability index` y con el nombre exacto que da el índice (`bookings`, no `reservations` ni `booking`)
 - AND cada capacidad del bloque tiene su subsección `### Capacidad: \`<nombre>\`` en el delta, y ninguna subsección del delta falta en el bloque
 - AND una capacidad que no existe en `capabilities/` va como `- Nuevas: \`<nombre>\` — <qué cubre>`, y su creación aparece también en «Decisiones que he tomado yo»
 - AND un cambio sin comportamiento observable lleva `Ninguna, porque <motivo>` (refactor, herramientas, docs) y no lleva delta
@@ -115,16 +115,16 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 ### El validador de capacidades
 
 - GIVEN `.docs/sdd/capabilities/bookings.md` cuyo requisito `### Consultar salas libres` tiene GIVEN y WHEN pero no `- THEN`
-- WHEN se ejecuta `pwsh -NoProfile -File <sdd-templates>/scripts/Test-Capabilities.ps1 -Path .docs/sdd`
+- WHEN se ejecuta `sdd capability check --path .docs/sdd`
 - THEN sale con código 1 y escribe `bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)`
 - AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Propósito`, `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) en la capacidad; un bloque `**Reglas de la capacidad**` en negrita, que es la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
 - AND ante una línea suelta bajo un requisito —ni `- …`, ni `>`, ni sangrada, ni en blanco—, como la segunda línea de un «(antes: …)» partido, escribe `bookings.md: línea suelta en «Reservar una franja» (línea 14): «guardada»)»`
 - AND ante una línea `- Se valida en:` en la capacidad escribe `bookings.md: resto de delta «Se valida en:» en la línea 15`
 - AND ante `## Historial` el mensaje es `bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0`
 - AND sin `## Propósito` escribe `bookings.md: falta la sección «Propósito»`; con la sección vacía, o solo con la ayuda `>` y el hueco `<…>` de la plantilla, `bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad`; con un propósito de 412 caracteres, medidos sobre el propósito en una sola línea como lo escribe el índice, `bookings.md: «Propósito» tiene 412 caracteres; el máximo es 300 (una o dos frases)`; y con `## Propósito` detrás de otra sección, `bookings.md: «Propósito» debe ser la primera sección`
-- AND con `-Artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
-- AND con `-Artifact`, un `**ADDED — Cancelar una reserva**` del delta de `bookings` sin fusionar falla con `spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md`, y un `**MODIFIED — Reservar una franja**` cuyas líneas `- GIVEN`, `- WHEN`, `- THEN` y `- AND` no son, en orden, las de ese requisito en la capacidad, con `spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md`; el título cuenta entero aunque el encabezado, con su `(antes: «…»)`, ocupe varias líneas
-- AND sin fallos escribe `Capacidades válidas: <n>` y sale con 0; sin carpeta `capabilities/`, o con la carpeta vacía, y sin `-Artifact`, escribe `Sin capacidades que validar` y sale con 0
+- AND con `--artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
+- AND con `--artifact`, un `**ADDED — Cancelar una reserva**` del delta de `bookings` sin fusionar falla con `spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md`, y un `**MODIFIED — Reservar una franja**` cuyas líneas `- GIVEN`, `- WHEN`, `- THEN` y `- AND` no son, en orden, las de ese requisito en la capacidad, con `spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md`; el título cuenta entero aunque el encabezado, con su `(antes: «…»)`, ocupe varias líneas
+- AND sin fallos escribe `Capacidades válidas: <n>` y sale con 0; sin carpeta `capabilities/`, o con la carpeta vacía, y sin `--artifact`, escribe `Sin capacidades que validar` y sale con 0
 
 ### Cada capacidad declara su propósito
 
@@ -137,7 +137,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 ### El índice de capacidades se genera al vuelo
 
 - GIVEN `.docs/sdd/capabilities/` con `bookings.md`, cuyo propósito es «Reservar, consultar y cancelar salas por franja horaria.», y `rooms.md`, sin `## Propósito`
-- WHEN se ejecuta `pwsh -NoProfile -File <sdd-templates>/scripts/Get-CapabilityIndex.ps1 -Path .docs/sdd`
+- WHEN se ejecuta `sdd capability index --path .docs/sdd`
 - THEN escribe, en orden de nombre, `` - `bookings` — Reservar, consultar y cancelar salas por franja horaria. `` y `` - `rooms` — (sin propósito) ``, y sale con 0
 - AND un propósito escrito en varias líneas sale en una sola, y las líneas de ayuda `>` no salen
 - AND un propósito de más de 300 caracteres sale entero: el índice no valida
@@ -149,18 +149,18 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 
 - GIVEN `capabilities/bookings.md` con los requisitos «Consultar salas libres» y «Reservar una franja», y la regla «**Avisos**: aviso si la reserva pisa un festivo»
 - AND una spec cuyo delta de `bookings` trae `**ADDED — Cancelar una reserva**` con la línea `- Se valida en: worktree con la base al día`, `**MODIFIED — Reservar una franja** (antes: «la reserva queda⏎guardada»)` con el encabezado en dos líneas, `**REMOVED — Consultar salas libres**` y la regla `**Avisos**: aviso si la reserva pisa un festivo o dura más de 4 h`
-- WHEN se ejecuta `pwsh -NoProfile -File <sdd-templates>/scripts/Merge-CapabilityDelta.ps1 -Path .docs/sdd -Artifact <spec.md>`
+- WHEN se ejecuta `sdd capability merge --path .docs/sdd --artifact <spec.md>`
 - THEN `bookings.md` tiene «Reservar una franja» con las líneas de escenario del delta, «Cancelar una reserva» al final de `## Requisitos` sin la línea «Se valida en:», y ya no tiene «Consultar salas libres»
 - AND su entrada «Avisos» dice «aviso si la reserva pisa un festivo o dura más de 4 h», y las otras cuatro reglas no cambian
 - AND ninguna línea del «(antes: …)» ni ninguna línea de ayuda `>` del delta llega a la capacidad
 - AND el fichero queda con una línea en blanco tras cada título y entre bloques, sin líneas en blanco dobles
 - AND el script escribe una línea por cambio (`bookings.md: añadido «Cancelar una reserva»`, `bookings.md: sustituido «Reservar una franja»`, `bookings.md: quitado «Consultar salas libres»`, `bookings.md: regla «Avisos» sustituida`) y sale con 0
-- AND justo después, `Test-Capabilities.ps1 -Path .docs/sdd -Artifact <spec.md>` escribe `Capacidades válidas: 1` y sale con 0
+- AND justo después, `sdd capability check --path .docs/sdd --artifact <spec.md>` escribe `Capacidades válidas: 1` y sale con 0
 
 ### La fusión del delta falla sin escribir nada
 
 - GIVEN la spec del requisito anterior con un `**MODIFIED — Anular una reserva**` más, que no está en `bookings.md`
-- WHEN se ejecuta `Merge-CapabilityDelta.ps1`
+- WHEN se ejecuta `sdd capability merge`
 - THEN escribe `spec.md: «Anular una reserva» del MODIFIED no está en capabilities/bookings.md`, sale con 1 y no cambia ningún fichero de `capabilities/`, tampoco por el ADDED y el REMOVED que sí podía aplicar
 - AND con un `- THEN se rechaza, por la decisión 10` en «Cancelar una reserva», escribe `spec.md: «Cancelar una reserva» cita la spec («decisión 10»): reescríbelo en el delta sin la referencia y vuelve a ejecutar`, sale con 1 y no escribe
 - AND la misma frase entre comillas invertidas (`` `por la decisión 10` ``), como ejemplo, no cuenta como cita
@@ -172,14 +172,14 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 ### Un documento marcado «No es una capacidad.» no se valida
 
 - GIVEN `capabilities/funcional.md`, un documento funcional heredado o un puntero, cuya primera línea no vacía tras el título empieza por `> **No es una capacidad.**`
-- WHEN se ejecuta `Test-Capabilities.ps1 -Path .docs/sdd`
+- WHEN se ejecuta `sdd capability check --path .docs/sdd`
 - THEN no informa errores de ese fichero, sí de las capacidades reales, y la línea de éxito lo cuenta fuera y lo nombra: `Capacidades válidas: 1 · omitidas por «No es una capacidad.»: funcional.md`
 - AND si el fichero marcado tiene líneas de escenario, falla con `funcional.md: marcado «No es una capacidad.» y con escenarios: quita la marca o los escenarios`
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el índice lo genera `Get-CapabilityIndex.ps1` al vuelo y no se guarda en ningún fichero.
+- **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el índice lo genera `sdd capability index` al vuelo y no se guarda en ningún fichero.
 - **Idioma de los nombres**: slug en inglés kebab-case; el contenido, en el idioma que fija la constitution del proyecto.
 - **Límites**: el propósito de una capacidad, una o dos frases de 300 caracteres como máximo.
-- **Avisos**: `Test-Capabilities.ps1` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`, seguida de `· omitidas por «No es una capacidad.»: <ficheros>` si omitió alguno. `Merge-CapabilityDelta.ps1` escribe una línea por cambio, `<fichero>: añadido|sustituido|quitado «<requisito>»` o `<fichero>: regla «<nombre>» sustituida|añadida`, y sale con 0; con fallos, una línea por fallo, sale con 1 y no escribe ningún fichero. `Get-CapabilityIndex.ps1` marca con `(sin propósito)` la capacidad que no lo tiene, y sale con 0.
+- **Avisos**: `sdd capability check` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`, seguida de `· omitidas por «No es una capacidad.»: <ficheros>` si omitió alguno. `sdd capability merge` escribe una línea por cambio, `<fichero>: añadido|sustituido|quitado «<requisito>»` o `<fichero>: regla «<nombre>» sustituida|añadida`, y sale con 0; con fallos, una línea por fallo, sale con 1 y no escribe ningún fichero. `sdd capability index` marca con `(sin propósito)` la capacidad que no lo tiene, y sale con 0.
 - **Regla ante conflicto**: entre una capacidad y un documento de anclaje, manda la capacidad.

@@ -51,8 +51,7 @@ gate en solitario.
    Receta, prohibiciones y la entrada del roadmap sin destinatario:
    [notas-y-roadmap.md](references/notas-y-roadmap.md).
 4. **Colapsar el roadmap** — antes de tocarlo, ejecuta
-   `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Roadmap.ps1" -Path .docs/sdd`
-   (desde el `Base directory` de esta skill, el script está en `../sdd-templates/scripts/`). Con
+   `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`. Con
    `Sin roadmap que validar`, el paso se salta. Si da un fallo de forma —una sección, prosa o una tabla
    fuera de la plantilla, como una «Versión siguiente» con el trabajo de la release—, **no cortes desde
    ella**: di que no es una sección `## Release <N>`, nombra la sección y propón llevar el roadmap a la
@@ -103,7 +102,7 @@ gate en solitario.
 - Has colapsado la sección del roadmap sin rescatar antes sus pendientes vivos.
 - Vas a cortar desde una sección que no es `## Release <N>` («Versión siguiente») sin decirlo, o a
   colapsar con el validador dando un fallo de forma.
-- Vas a commitear el cierre, o a proponer merge y tag, sin que `Test-Roadmap.ps1` haya escrito
+- Vas a commitear el cierre, o a proponer merge y tag, sin que `sdd roadmap check` haya escrito
   `Roadmap válido` sobre el roadmap colapsado.
 - Una feature publicada en esta release sigue como fila de «Próximo» o de otra sección abierta, también
   una `🧪`: su sitio es la línea `validaciones pendientes:`.

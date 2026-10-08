@@ -89,12 +89,12 @@ El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/sk
 
 Aplica al código ejecutable del kit (scripts, tests) y viaja **literal** en las Restricciones globales de todo plan y en el encargo de todo implementador y revisor.
 
-- **Sin comentarios que repitan el código.** Un comentario existe solo si sin él la línea no se entiende, y antes se intenta que el nombre o una extracción lo hagan innecesario. Lo que se conserva es el *porqué* no deducible (una convención heredada, un límite externo). El bloque de ayuda de `Get-Help` no es un comentario.
+- **Sin comentarios que repitan el código.** Un comentario existe solo si sin él la línea no se entiende, y antes se intenta que el nombre o una extracción lo hagan innecesario. Lo que se conserva es el *porqué* no deducible (una convención heredada, un límite externo). La ayuda de `--help` no es un comentario.
 - **Sin comentarios que citen documentos.** Un comentario nunca referencia la constitution, una spec, una task, un requisito ni `capabilities/`; la trazabilidad vive en el commit y en el walkthrough.
 - Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano (mensajes, warnings, ayuda) en castellano con tildes (Art. III).
 - El revisor marca el incumplimiento como Important, no como estilo, salvo un umbral numérico superado en una unidad (21 líneas con un límite de 20), que es Minor.
 
-*Por qué*: un subagente no hereda el `CLAUDE.md` del dev-lead, y un comentario que cita un documento envejece con él sin explicar nada. [ADR 0010](decisions/0010-executable-code-quality.md)
+*Por qué*: un subagente no hereda el `CLAUDE.md` del dev-lead, y un comentario que cita un documento envejece con él sin explicar nada. [ADR 0010](decisions/0010-executable-code-quality.md), [ADR 0011](decisions/0011-node-cli.md)
 
 ## Art. XI — Documentos acotados
 

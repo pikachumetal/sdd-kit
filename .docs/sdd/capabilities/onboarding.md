@@ -74,7 +74,7 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 
 - GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield`
 - WHEN crea `estimation-log.md`
-- THEN lo genera `Build-EstimationLog.ps1` ejecutado desde `sdd-templates/scripts/` del kit: la primera línea empieza por `<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit)` y la tabla no tiene filas
+- THEN lo genera `sdd estimation log` ejecutado desde el kit: la primera línea empieza por `<!-- AUTO-GENERADO por sdd estimation log (sdd-kit)` y la tabla no tiene filas
 - AND el proyecto no contiene ninguna copia del script
 
 ### La constitution nombra el proyecto de referencia

@@ -6,8 +6,8 @@ La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del 
 
 | Hito | Lleva | Se junta | Base |
 | --- | --- | --- | --- |
-| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | antes de escribir los RED de la primera task (en Native, antes de su `task-start`); lite: antes de implementar | `git merge-base HEAD <integración>` |
-| Task N | sus tests RED, su implementación, los arreglos de su revisión, su evidencia | con su revisión (y re-revisión) limpia, antes de despachar la siguiente o la revisión final; en Native, con su contrato de cierre cumplido y antes de `task-done` | el `BASE` que apuntaste antes de despacharla (en Native, el que imprime `task-start`) |
+| Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | antes de escribir los RED de la primera task (en Native, antes de su `sdd task start`); lite: antes de implementar | `git merge-base HEAD <integración>` |
+| Task N | sus tests RED, su implementación, los arreglos de su revisión, su evidencia | con su revisión (y re-revisión) limpia, antes de despachar la siguiente o la revisión final; en Native, con su contrato de cierre cumplido y antes de `sdd task done` | el `BASE` que apuntaste antes de despacharla (en Native, el que imprime `sdd task start`) |
 | Cierre | documentación de `sdd-end-feature`, arreglos de la revisión final de rama y de la validación, y `tasks.md` con las líneas de revisión del tramo reescritas sin sha | tras la documentación de cierre, antes del merge | el commit de la última task |
 | Fix (patch) | código, tests y `patch.md` | con el fix verificado | `git merge-base HEAD <integración>` |
 | Cierre (patch) | `patch.md` con hash y tiempo, changelog, roadmap, estimation-log | antes del merge | el commit del fix |

@@ -1,4 +1,4 @@
-<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) — no editar a mano. Regenerar: pwsh -NoProfile -File <sdd-templates>/scripts/Build-EstimationLog.ps1 -Root <proyecto> -->
+<!-- AUTO-GENERADO por sdd estimation log (sdd-kit) — no editar a mano. Regenerar: sdd estimation log --root <proyecto> -->
 # Estimation log (estimado vs real)
 
 | Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |
@@ -151,18 +151,19 @@
 | 2026-10-05 | 0140 | patch | — | 0.6 | — | — | — | — | — | 20261004-232210-patch-0140-roadmap-destination-warnings |
 | 2026-10-05 | 0141 | patch | — | 0.2 | — | — | — | — | — | 20261004-232806-patch-0141-next-id-suffix-warning |
 | 2026-10-07 | 0142 | docs | 2 | 0.8 | 0.4 | 15243k | 5272k | no aplica | 9.39 | 20261007-135805-feature-0142-new-constitution |
+| 2026-10-08 | 0143 | infra/tooling | 12 | 5.5 | 0.46 | 181265k | 104711k | 2.71 | sin precio | 20261007-153554-feature-0143-node-cli |
 
-**Factor de calibración** (ratio mediano real/estimado, 117 artefactos): **0.6** · media 0.74
+**Factor de calibración** (ratio mediano real/estimado, 118 artefactos): **0.6** · media 0.73
 
-- p25–p75: 0.4–1
-- p80: 1.08 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p25–p75: 0.4–0.99
+- p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 30 % · sobreestimadas: 61 % · infraestimadas: 9 %
-- Error absoluto (h): media 0.95 · mediana 0.7
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.49
+- Error absoluto (h): media 1 · mediana 0.75
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.43
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 40 | 34 % |
+| <0.5 | 41 | 35 % |
 | 0.5–0.8 | 34 | 29 % |
 | 0.8–1.25 | 32 | 27 % |
 | 1.25–2 | 8 | 7 % |
@@ -172,7 +173,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 69 | 0.52 | 0.38–0.75 |
-| infra/tooling | 19 | 0.43 | 0.37–0.59 |
+| infra/tooling | 20 | 0.45 | 0.37–0.59 |
 | patch | 28 | 1.2 | 0.8–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -188,6 +189,6 @@
 | 2.3.0 | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
 | 2.3.1 | 8 | 7.3 | 1.29 | 14.2 | 41.13 |
 | 2.3.2 | 3 | 1.3 | — | — | — |
-| sin publicar | 1 | 0.8 | 0.4 | — | 9.39 |
+| sin publicar | 2 | 6.3 | 0.43 | 2.71 | 9.39 |
 
 > Ver `estimation.md`.

@@ -97,7 +97,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - GIVEN un proyecto en el kit v1.1.0 con `capabilities/bookings.md` terminado en `## Historial` con dos líneas
 - WHEN se migra al kit v2.0.0
 - THEN `bookings.md` pierde la sección `## Historial` entera, con su ayuda y sus líneas, y nada más, sin gate
-- AND la verificación de la migración ejecuta `Test-Capabilities.ps1 -Path .docs/sdd`; si falla por otra cosa que el historial (un bloque de reglas del delta pegado, un requisito sin escenario), el informe lo lista como pendiente del dev-lead, sin tocarlo
+- AND la verificación de la migración ejecuta `sdd capability check --path .docs/sdd`; si falla por otra cosa que el historial (un bloque de reglas del delta pegado, un requisito sin escenario), el informe lo lista como pendiente del dev-lead, sin tocarlo
 - AND `tests/MigrationInitParity.Tests.ps1` sigue en verde con `v2.0.0.md` en la carpeta
 - AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
@@ -107,7 +107,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN `bookings.md` lleva tras el título `## Propósito` con una o dos frases de 300 caracteres como máximo sacadas de ese párrafo sin la procedencia («Reservas de salas por franja.»), y el párrafo desaparece
 - AND si la capacidad no tiene párrafo bajo el título, el propósito sale de los títulos de sus requisitos
 - AND va sin gate, y el informe lista las capacidades a las que se ha escrito el propósito, para que el dev-lead lo revise en el diff
-- AND la verificación de la migración ejecuta `Test-Capabilities.ps1 -Path .docs/sdd`, y no queda ningún fallo del propósito
+- AND la verificación de la migración ejecuta `sdd capability check --path .docs/sdd`, y no queda ningún fallo del propósito
 - AND la línea `**Escribe**:` de `v2.0.0.md` no gana tokens: el paso va en su frase «Además…», como el del historial, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
 - AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
@@ -127,17 +127,17 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND si la entrada ya está y el marketplace aparece en la lista, el paso se salta y lo dice
 
 ### La migración a v2.3.0 lleva el roadmap a la forma de la plantilla
-- GIVEN un proyecto en 2.2.0 con `roadmap.md` commiteado en `284d195`, que falla `Test-Roadmap.ps1` (sección «Versión siguiente», decisiones en prosa, una fila saldada antes de la última release), y el dev-lead presente
+- GIVEN un proyecto en 2.2.0 con `roadmap.md` commiteado en `284d195`, que falla `sdd roadmap check` (sección «Versión siguiente», decisiones en prosa, una fila saldada antes de la última release), y el dev-lead presente
 - WHEN pide «ponme el proyecto al día»
 - THEN el agente presenta una tabla con cada bloque que sale o se mueve y su destino, y espera la aprobación antes de cambiar `roadmap.md`
-- AND tras aprobar, `Test-Roadmap.ps1` escribe `Roadmap válido` y sale con 0
+- AND tras aprobar, `sdd roadmap check` escribe `Roadmap válido` y sale con 0
 - AND el informe y el cuerpo del commit de la migración llevan `git show 284d195:.docs/sdd/roadmap.md` como la forma de ver el roadmap anterior
 - AND si el dev-lead cambia un destino de la tabla, se aplica el suyo; si la rechaza, `roadmap.md` queda sin tocar y el paso, pendiente
 - AND con `roadmap.md` sin commitear, el paso para antes de la tabla y lo dice
 - AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md`, `validation.mode` y el marcador, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
 
 ### La migración a v2.3.0 pregunta quién valida
-- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `Test-Roadmap.ps1` y cuyo `sdd-kit.json` no tiene `validation.mode`, con el dev-lead presente
+- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `sdd roadmap check` y cuyo `sdd-kit.json` no tiene `validation.mode`, con el dev-lead presente
 - WHEN pide «ponme el proyecto al día»
 - THEN el agente invoca `sdd-config`, que hace su pregunta de quién valida con la recomendación de su catálogo, y escribe en `sdd-kit.json` solo lo que responde el dev-lead
 - AND con `validation.mode` ya escrito, el paso se salta y el informe lo dice
@@ -151,7 +151,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND la sesión siguiente sigue avisando de migraciones pendientes hasta la 2.3.0
 
 ### Un roadmap que ya tiene la forma no se migra
-- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `Test-Roadmap.ps1`
+- GIVEN un proyecto en 2.2.0 cuyo roadmap pasa `sdd roadmap check`
 - WHEN se aplica `v2.3.0.md`
 - THEN el paso del roadmap se salta, el informe lo dice, `roadmap.md` no cambia y el marcador sube a 2.3.0
 

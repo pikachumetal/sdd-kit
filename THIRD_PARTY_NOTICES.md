@@ -2,6 +2,8 @@
 
 - `skills/sdd-grilling/` adapta `grilling` de Matt Pocock ([mattpocock/skills](https://github.com/mattpocock/skills)), con licencia MIT. El aviso y el texto de la licencia van en su [`NOTICE`](skills/sdd-grilling/NOTICE), que viaja con la skill también cuando se instala sola (`npx skills add … --skill sdd-grilling`).
 
+- `cli/src/tasks/` porta a Node los scripts `task-start`, `task-done`, `task-brief`, `review-package` y `sdd-workspace` de [obra/superpowers](https://github.com/obra/superpowers) 6.4.2 — MIT, Copyright (c) 2025 Jesse Vincent.
+
 ## Skills de desarrollo de este repo
 
 Solo para editar el kit; no forman parte del plugin. Viven en `.agents/skills/` (enlazadas desde `.claude/skills/`) y las fija `skills-lock.json`.
