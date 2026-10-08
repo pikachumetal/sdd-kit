@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-08
 branch: patch/fix-same-day-release-and-template-gaps
-commit:
+commit: 236e171a
 ---
 
 # Patch 0153 — Test-Roadmap.ps1 y Build-EstimationLog.ps1 deciden lo publicado por ascendencia en git
@@ -54,6 +54,8 @@ Lo que da por existente, comprobado: `Test-ReleasedPatches` y `Test-SettledRows`
 | 6 | `tests/Test-Roadmap.Tests.ps1`, `tests/Build-EstimationLog.Tests.ps1` | ✅ 43/0 y 71/0 |
 
 Los casos los verificó el agente.
+
+Validación en campo: 2026-10-08 · RED/GREEN en Test-Roadmap.Tests.ps1 y Build-EstimationLog.Tests.ps1 (2 casos nuevos, 43/0 y 71/0) · log de este repo contrastado tag a tag con `git merge-base --is-ancestor` · pre-commit 955/0
 
 ## 5. Tiempo (ligero)
 
