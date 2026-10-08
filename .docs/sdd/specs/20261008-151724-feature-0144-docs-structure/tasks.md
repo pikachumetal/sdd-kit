@@ -18,17 +18,17 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Rutas de la CLI para la estructura 3.0.0 y la 2.x | pending | — | |
-| 2 | Sustantivo `decision`: `check` e `index` | pending | — | |
-| 3 | Plantillas de la 3.0.0 e índice de `sdd-templates`, con su humo | pending | — | |
-| 4 | Constitution y ADR 0012 | pending | — | |
+| 1 | Rutas de la CLI para la estructura 3.0.0 y la 2.x | done | `a8e9d61` | |
+| 2 | Sustantivo `decision`: `check` e `index` | done | `815153f` | Las 11 ADR del repo pasan `decision check` sin cambios |
+| 3 | Plantillas de la 3.0.0 e índice de `sdd-templates`, con su humo | done | `4523e14` | Humo 2/2, 0,41 $; topes de `sdd-templates` y del kit suspendidos (enmienda) |
+| 4 | Constitution y ADR 0012 | done | — | |
 
 ## Verificación por task
 
-- [ ] Task 1 — `tsc --noEmit` y Vitest de `layout`, `roadmap`, `estimation` e `ids`
-- [ ] Task 2 — `tsc --noEmit`, Vitest de `decisions`, `cli` y `docs-claims`, y `sdd decision check` sobre el repo
-- [ ] Task 3 — Pester de `AnchorTemplates`, `WordBudget` y `FrontendVerification`; Vitest de `decisions` y `docs-claims`; humo h1 y h2
-- [ ] Task 4 — Pester de `WordBudget` y `sdd decision check` sobre el repo
+- [x] Task 1 — `tsc --noEmit` y Vitest de `layout`, `roadmap`, `estimation` e `ids`
+- [x] Task 2 — `tsc --noEmit`, Vitest de `decisions`, `cli` y `docs-claims`, y `sdd decision check` sobre el repo
+- [x] Task 3 — Pester de `AnchorTemplates`, `WordBudget` y `FrontendVerification`; Vitest de `decisions` y `docs-claims`; humo h1 y h2
+- [x] Task 4 — Pester de `WordBudget` y `sdd decision check` sobre el repo
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 
