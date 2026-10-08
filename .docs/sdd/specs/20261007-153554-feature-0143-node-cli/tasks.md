@@ -16,6 +16,6 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | 10 — Bash de superpowers y `ledger rulings` | hecha | 951728d5 |
 | 11 — Skills y capacidades a los verbos | hecha | bb9f588e |
 | 12 — Documentos y ADR 0011 | hecha | 07ba89d0 |
-| 13 — Humo de las skills | pendiente | |
+| 13 — Humo de las skills | hecha | 566e2033 |
 | 14 — Evaluación de `claude plugin eval` | pendiente | |
 - Cuelgue: implementador de la task 5 (Sonnet), sin respuesta tras un Bash, 8 min, relanzado
