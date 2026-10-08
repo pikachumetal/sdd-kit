@@ -12,7 +12,7 @@ Registro vivo: estado y commit de cada task del [plan](plan.md).
 | 6 — `merge` | hecha | fd74e477 |
 | 7 — `roadmap publish` | hecha | 71145c5f |
 | 8 — `session tokens` y `watch` | hecha | 7d313dbd |
-| 9 — `hook session-start` | pendiente | |
+| 9 — `hook session-start` | hecha | 80cdba06 |
 | 10 — Bash de superpowers y `ledger rulings` | pendiente | |
 | 11 — Skills y capacidades a los verbos | pendiente | |
 | 12 — Documentos y ADR 0011 | pendiente | |

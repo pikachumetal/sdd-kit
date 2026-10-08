@@ -19,13 +19,14 @@ function toUsageError(error: unknown): UsageError {
 
 export function parseVerbArgs(verb: Verb, argv: string[]): VerbArgs {
   try {
-    const { values, positionals } = parseArgs({
+    const { values, positionals, tokens } = parseArgs({
       args: argv,
       options: verb.options,
       allowPositionals: verb.positionals !== undefined,
       strict: true,
+      tokens: true,
     });
-    return { values, positionals };
+    return { values, positionals, hasSeparator: tokens.some((token) => token.kind === 'option-terminator') };
   } catch (error) {
     throw toUsageError(error);
   }
