@@ -1,10 +1,11 @@
 import { existsSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   findRequirement, findRule, formatTitle, newDocument, readDocument, requirementsEnd, ruleInsertIndex,
   saveDocument, type Document,
 } from './document.ts';
-import { readLines } from '../cli/files.ts';
+import { readLines, readText } from '../cli/files.ts';
 import { capabilitiesDir } from './files.ts';
 import {
   declaredCapabilities, deltaEntries, equalsIgnoringCase, isPatch, sectionLines, type Declared, type Delta,
@@ -23,6 +24,12 @@ interface Run {
 }
 
 type Rule = { name: string; lines: string[] };
+
+const GAP = /<[^<>\s][^<>]*>/g;
+// Solo es hueco un <…> literal de la plantilla: los <!-- … --> y <…> del proyecto (tags de dialecto, marcadores) pasan.
+const TEMPLATE_GAPS = new Set(
+  readText(fileURLToPath(new URL('../../../skills/sdd-templates/templates/spec-template.md', import.meta.url))).match(GAP) ?? [],
+);
 
 function removeInlineCode(text: string): string {
   return text.replace(/`[^`]*`/g, '');
@@ -58,7 +65,9 @@ function entryProblem(entry: Delta, artifactName: string): string | undefined {
     return `${artifactName}: no leo el título de «${entry.header}»: escríbelo como «**${entry.writtenKind} — <título>**», con raya`;
   }
   const body = mergeableLines(entry.lines);
-  const gap = [entry.capability, entry.title, ...body].map((text) => findPattern(text, /<[^<>\s][^<>]*>/)).find(Boolean);
+  const gap = [entry.capability, entry.title, ...body]
+    .flatMap((text) => removeInlineCode(text).match(GAP) ?? [])
+    .find((candidate) => TEMPLATE_GAPS.has(candidate));
   if (gap) return `${artifactName}: «${gap}» es un hueco de la plantilla: rellénalo o borra lo que no aplique`;
   const citation = body.map((line) => findPattern(line, /decisi[oó]n(es)?\s+\d+/i)).find(Boolean);
   if (!citation) return undefined;

@@ -225,6 +225,22 @@ describe('sdd capability merge', () => {
     expect((await merge(bookingsFolder([comparison]))).code).toBe(0);
   });
 
+  it('a dialect tag and a project marker are not a template gap; a template literal is', async () => {
+    const tagged = bookings.replace(/^(- THEN la reserva queda guardada.*)$/m, '$1 <!-- db:sqlite -->');
+    const delta = `${modified.replace(/^(- THEN .*)$/m, '$1 <!-- db:sqlite -->')}\n- AND el aviso sale en <destino>`;
+    const sdd = bookingsFolder([delta], tagged);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+    expect(result.code).toBe(0);
+    const content = readCapability(sdd);
+    expect(content).toMatch(/^- THEN la reserva queda guardada a nombre del usuario .* <!-- db:sqlite -->$/m);
+    expect(content).toMatch(/^- AND el aviso sale en <destino>$/m);
+
+    const gap = await merge(bookingsFolder([added.replace('Cancelar una reserva', '<título estable>')]));
+    expect(gap.lines).toContain('spec.md: «<título estable>» es un hueco de la plantilla: rellénalo o borra lo que no aplique');
+    expect(gap.code).toBe(1);
+  });
+
   it('without Nuevas fails', async () => {
     const files = { 'capabilities/bookings.md': bookings, 'specs/x/spec.md': spec('- Modificadas: `rooms` — aforo', [genericRoomsDelta]) };
     const sdd = sddFolder(files);

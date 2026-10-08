@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { normalize, resolve } from 'node:path';
 
@@ -29,6 +29,18 @@ export function git(cwd: string, args: string[]): Promise<GitResult> {
       done({ code, stdout, stderr });
     });
   });
+}
+
+// Para los verbos síncronos; null si git no está o el comando sale con error.
+export function gitSync(cwd: string, args: string[]): string[] | null {
+  try {
+    const stdout = execFileSync('git', ['-c', 'core.quotePath=false', ...args], {
+      cwd, env: isolatedEnv(), encoding: 'utf8', maxBuffer: MAX_OUTPUT_BYTES, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return stdout.split(/\r?\n/).filter((line) => line !== '');
+  } catch {
+    return null;
+  }
 }
 
 export async function gitLines(cwd: string, args: string[]): Promise<string[]> {
