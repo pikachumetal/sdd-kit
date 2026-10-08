@@ -20,6 +20,7 @@ BeforeAll {
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
+      'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
       'sdd-start-feature'   = @{ SkillMd = 8430; Total = 20255 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }

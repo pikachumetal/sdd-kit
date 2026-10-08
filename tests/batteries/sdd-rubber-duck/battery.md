@@ -35,7 +35,19 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 
 ## Procedencia de las reglas
 
-Cada regla de `skills/sdd-rubber-duck/SKILL.md`, de dónde viene y qué escenario la cubre. Quien edita la skill lee esta tabla antes. Se rellena en el GREEN.
+Cada regla de `skills/sdd-rubber-duck/SKILL.md`, de dónde viene y qué escenario la cubre. Quien edita la skill lee esta tabla antes.
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| `description`: explicar cómo funciona o viaja algo, en llano o paso a paso; el 🦆 que pide otra skill | propuesta 0131 (B13); GREEN C1 2 de 2 y C2 1 de 1 | l1, c1 |
+| Overview: todo en el idioma del usuario, también los anuncios | RED R7 1 de 6 («Using sdd-consult para responder…») | todos |
+| Palabras: el glosario de `PRODUCT.md`, nunca una de _Evitar_ aunque la use el código | RED R2 3 de 6 (`room`, `slot`, `booking.room`) | s1, s2, l1 |
+| Palabras: sin rutas, identificadores, comandos ni jerga del kit; el término técnico, explicado en la misma frase por su efecto | RED R1 6 de 6; tickets de las tasks 0010 y 0012, de la feature 6298 y de la 0038 de document-manager | s1, s2, l1 |
+| Modo corto: el material técnico es entrada, no salida | RED s1-2 (el Approach copiado al párrafo) | s1 |
+| Modo corto: un párrafo con 🦆, cinco frases como mucho, primero qué y después cómo | RED R3 4 de 4 | s1, s2 |
+| Modo corto: lo hecho y lo que hay que decidir, después del párrafo | GREEN s2-2 (sexta frase); control s2-3 | s2 |
+| Modo largo: leer el camino real antes de escribir; lo de fuera del código, después de los pasos | RED R4 1 de 2 (paso 7 «Importas») | l1 |
+| Modo largo: un ejemplo con datos de principio a fin | RED R5 2 de 2 | l1 |
+| Modo largo: de 3 a 9 pasos numerados | `teach` (memoria de trabajo pequeña); control: el RED ya numeraba | l1 |
+| Modo largo: rutas solo en «Dónde mirar», también la del fichero resultante | RED R1 2 de 2 en l1; GREEN l1-2 (`exports/2026-03.ics` en un paso); control l1-3 | l1 |
+| Modo largo: terminar ofreciendo resolver dudas, no más trabajo | RED R6 2 de 2 | l1 |

@@ -6,6 +6,8 @@
 
 - `skills/sdd-templates/templates/PRODUCT-template.md` toma el formato de glosario (`GLOSSARY-FORMAT.md`) y `adr-template.md` las condiciones para ofrecer una ADR (`ADR-FORMAT.md`) de la skill `domain-modeling` de [mattpocock/skills](https://github.com/mattpocock/skills) en `b0618bc` — MIT, Copyright (c) 2026 Matt Pocock. `PRODUCT-template.md` usa además los encabezados del registro `PRODUCT.md` de [impeccable](https://github.com/pbakaus/impeccable) 4.3.1 (`reference/init.md`), para que las dos herramientas compartan el fichero.
 
+- `skills/sdd-rubber-duck/` adapta `teach` y `wait-what` de [mattpocock/skills](https://github.com/mattpocock/skills) 1.2.3 — MIT, Copyright (c) 2026 Matt Pocock. El aviso y el texto de la licencia van en su [`NOTICE`](skills/sdd-rubber-duck/NOTICE).
+
 ## Skills de desarrollo de este repo
 
 Solo para editar el kit; no forman parte del plugin. Viven en `.agents/skills/` (enlazadas desde `.claude/skills/`) y las fija `skills-lock.json`.
