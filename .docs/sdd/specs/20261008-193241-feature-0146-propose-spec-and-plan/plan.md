@@ -217,7 +217,7 @@ Ninguna.
 - Consume: `## Dónde se prueba` de la Task 2.
 - Produce: la línea `**Tras**: <Task N | —>` de cada task, que usa la Task 5.
 
-**Ficheros**: `plan-template.md` (línea `Tras`, «sin paralelo», «Verificación» desde «Dónde se prueba» y §Testing, párrafo de tasks verticales en dos frases con lo de `to-tickets`, `Tras` como excepción de «la task viaja sola»), `SKILL.md` paso 5 (una frase: sin §Testing, comando de la superficie o `no probado`; el gate de la constitution, solo en la validación final).
+**Ficheros**: `plan-template.md` (línea `Tras`, «sin paralelo», párrafo de tasks verticales en dos frases con lo de `to-tickets`, `Tras` como excepción de «la task viaja sola»), `SKILL.md` paso 5 (una frase: cada task lleva `Tras` y se ejecutan en orden, sin paralelo). La «Verificación» desde «Dónde se prueba» sale por el RED (`p1`, P2 2/2 limpio).
 
 - [ ] **Step 1: Plantilla y paso 5.**
 - [ ] **Step 2: GREEN** de `p1`; evidencia.
@@ -260,6 +260,8 @@ Ninguna.
 - [ ] **Step 3: Commit de la task.**
 
 ### Task 7 — `sdd-grilling` contrasta el lenguaje
+
+> **Sale por el RED** (enmienda del 2026-10-08, aprobada): `t1` pasó 2/2 sin la regla. No se ejecuta.
 
 **Tras**: Task 2
 **Modelo**: sesión (Native). Sujetos: `MODEL=sonnet`.

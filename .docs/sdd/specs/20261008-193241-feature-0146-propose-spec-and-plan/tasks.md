@@ -24,7 +24,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 4 | El plan declara `Tras` y su verificación sale de «Dónde se prueba» | pending | — | |
 | 5 | Acción update | pending | — | |
 | 6 | La validación abre con 🦆 y ✋ | pending | — | |
-| 7 | `sdd-grilling` contrasta el lenguaje | pending | — | |
+| 7 | `sdd-grilling` contrasta el lenguaje | skipped | — | sale por el RED (`t1` 2/2 limpio); enmienda del 2026-10-08 |
 | 8 | Ajustes de `sdd-rubber-duck` | pending | — | |
 
 ## Verificación por task
@@ -35,8 +35,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 - [ ] Task 4 — `PlanReviewFocus` y `WordBudget` con `-CI`; GREEN de `p1`
 - [ ] Task 5 — `WordBudget` con `-CI`; GREEN de `u1`
 - [ ] Task 6 — `WordBudget` con `-CI`; GREEN de `v1a` y `v1b`
-- [ ] Task 7 — `WordBudget` con `-CI`; GREEN de `t1` y tramo de `sdd-grilling`
-- [ ] Task 8 — `WordBudget` con `-CI`; GREEN de `s2` y `l2`
+- [x] Task 7 — skipped: sale por el RED
+- [ ] Task 8 — `WordBudget` con `-CI`; GREEN de `s2`, y `l2` como control
 
 ## Fixes adicionales (trabajo descubierto fuera de scope; el tercero abre el freno de alcance)
 

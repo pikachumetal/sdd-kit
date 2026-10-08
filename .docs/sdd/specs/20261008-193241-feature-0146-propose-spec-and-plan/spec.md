@@ -22,8 +22,7 @@ approvers:
 
 - Modificadas: `feature-flow` — la spec abre con 🦆 y ✋ y dice dónde se prueba; el plan declara de qué task depende cada una y de dónde sale su verificación; el gate de la spec pregunta con opciones fijas; el modelo del revisor de dominio se elige al preguntar la review; la validación abre con 🦆 y ✋.
 - Modificadas: `control-profiles` — un cambio a la spec aprobada se resuelve con la acción update: la spec se corrige en su sitio y el trabajo afectado va a una task nueva; el bloque de rulings pasa a ✋.
-- Modificadas: `interviewing` — la entrevista contrasta el lenguaje con el glosario y con el código, y devuelve términos resueltos y candidatas a ADR.
-- Modificadas: `explaining` — lo pendiente tras el 🦆 de una parada va como afirmación, y la lista de ficheros de la explicación larga se titula en el idioma del usuario.
+- Modificadas: `explaining` — lo pendiente tras el 🦆 de una parada va como afirmación.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -39,17 +38,17 @@ Review de spec: dos revisores, dominio en Opus y técnica en Sonnet (elegida por
 3. **El ✋ es el bloque que ya existe, con otro nombre y otra regla.** En la spec, el encabezado pasa a `## ✋ Decisiones que he tomado yo — valida estas`; lo nuevo es que es **exhaustivo**: cada decisión de la spec sale de la entrevista, del roadmap o del agente, y las del agente están todas ahí. `CapabilityRules.Tests.ps1` (línea 58) busca `## Decisiones que he tomado yo` y dejaría de encontrarlo: el test pasa a buscar `Decisiones que he tomado yo` sin el prefijo. El encargo del revisor ya marca hoy «decisiones tomadas en el cuerpo que no están en "Decisiones a validar"» (punto 4); `review-spec.md` pasa a citar el nombre nuevo, sin regla nueva. **El plan conserva su bloque como está** (`## Decisiones que he tomado yo — valida estas`, sin ✋): el ✋ es de lo que lee el dev-lead en una parada, y en `delegate` el plan no tiene parada. Así `PlanReviewFocus.Tests.ps1` no cambia.
 4. **El 🦆 va justo debajo del título** de la spec, antes de «Capacidades». Lo escribe `sdd-rubber-duck` en modo corto al presentar la spec, y el gate lo enseña primero, seguido del ✋. Una spec aprobada por delegación lo lleva igual, porque es la explicación que leerá quien la abra.
 5. **«Dónde se prueba» es una sección de la spec**, después de «Approach»: una línea por comportamiento con la superficie donde se prueba y el patrón que sigue. Cambiarla durante la implementación es un desvío, y el requisito del desvío la nombra.
-6. **La parte de la 0097 que salda esta feature**: la «Verificación» de cada task sale de «Dónde se prueba» y del comando de lo afectado de §Testing (`operations.md` desde la 3.0.0, `tech-stack.md` antes). Sin §Testing, la task declara el comando de su superficie que dice «Dónde se prueba», o `no probado` con su motivo; el gate de la constitution va solo a la validación final, una vez, como hoy. Sin ninguna forma de verificar una superficie, la pregunta va dentro de la entrevista, nunca como turno propio; con la spec aprobada por delegación o en `unattended`, el agente elige la opción más conservadora (la verificación más cercana que falle sin el cambio) y la apunta en ✋. La pasada de fix y el gate de merge, que la 0097 también nombra, son de la 0148 y la 0149.
+6. *Sale por el RED (ver «Enmiendas»): el plan ya saca la verificación de cada task de su superficie; la parte de la 0097 vuelve a su fila.* **La parte de la 0097 que salda esta feature**: la «Verificación» de cada task sale de «Dónde se prueba» y del comando de lo afectado de §Testing (`operations.md` desde la 3.0.0, `tech-stack.md` antes). Sin §Testing, la task declara el comando de su superficie que dice «Dónde se prueba», o `no probado` con su motivo; el gate de la constitution va solo a la validación final, una vez, como hoy. Sin ninguna forma de verificar una superficie, la pregunta va dentro de la entrevista, nunca como turno propio; con la spec aprobada por delegación o en `unattended`, el agente elige la opción más conservadora (la verificación más cercana que falle sin el cambio) y la apunta en ✋. La pasada de fix y el gate de merge, que la 0097 también nombra, son de la 0148 y la 0149.
 7. **Las tasks declaran su dependencia con una línea `**Tras**:`** (`Task 1`, o `—` si no depende de ninguna), y el plan dice que se ejecutan en orden, sin paralelo. `Tras` es la única referencia a otra task que admite la regla «la task viaja sola» de la plantilla, porque `sdd task brief` la copia literal y no necesita el texto de la otra. Quitar el paralelo de la ejecución (la misión dice «un máximo de tres en paralelo») es de la 0147, que reescribe implement; aquí solo deja de proponerlo el plan.
 8. **La pregunta del gate de la spec, en `pair` y `delegate`, es siempre `AskUserQuestion` con opciones fijas**: «Apruebo (Recomendada)» y «Cambios». En `delegate`, con la sesión en el modelo más capaz, se añade «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media». En `pair` esa opción no va aquí, porque `pair` ya la ofrece en su gate del plan. Sale del paso 4 la prosa que describía cómo formular la pregunta. Salda la fila de deuda del gate en `delegate` (ticket de la feature 0060 del template, §3). No reproduzco el fallo antes de la spec: el ticket lo verificó contra el paso 4, y el RED de la batería lo mide antes de escribir la regla.
 9. **El modelo del revisor de dominio se elige en la pregunta de review que ya existe**, sin ronda nueva. Sus opciones llevan el modelo, con recomendación: Opus si la spec toca reglas de negocio, roles o reglas del flujo; Sonnet si no. Vale para la lente de dominio de dos revisores y para el revisor único de siete puntos, que la incluye. Si la petición o el prompt de arranque nombran el modelo, no se pregunta. Si no hay pregunta (spec aprobada por delegación o `unattended`), Sonnet. La lente técnica, siempre Sonnet. Cambian dos requisitos vigentes: «El revisor de spec se despacha con su effort» (hoy, siempre `sonnet`) y «La spec propone su propio nivel de review por complejidad» (la pregunta lleva el modelo).
 10. **La acción update.** Ante un cambio a la spec aprobada, el agente para (la parada se queda) con el 🦆 del cambio y su ✋. Deja escrita, sin commitear, la corrección en su sitio de la spec (el requisito o el THEN corregido) más su línea en «Enmiendas». Con la aprobación, commitea la spec y añade al plan una task nueva con el trabajo de la enmienda (`Task N — enmienda <fecha>: <qué>`, con su `Tras`). En `tasks.md`, cada task afectada lleva la nota `afectada por enmienda <fecha> → Task N`. Las tasks cerradas no se reabren ni se reescribe su commit: la historia sigue con un commit por task (Art. IV), el ledger cuenta la task nueva como cualquier otra, y su commit entra en la revisión que toque. La task nueva no se da por hecha sin su verificación ni su `sdd task done`. Sin aprobación no sigue. La misma acción vale cuando la respuesta a un freno de alcance (salida observable, tercer fix, fila o ficheros cambiados en la base) cambia el texto de la spec; si la respuesta no lo cambia, se apunta en «Enmiendas» como hoy. En `unattended`, la opción más conservadora se aplica igual en su sitio, con su línea marcada `sin aprobar`.
 11. **Corregir la spec en su sitio no choca con el Art. XI.** La tabla de `architecture.md` acota la carpeta de una feature como artefacto de evento que «no se edita tras el cierre, salvo adendas fechadas». Hasta el cierre es el contrato vivo de la feature, y «Enmiendas» es su historial. Rechazo así el hallazgo de la revisión que pedía enmendar el Art. XI. Tampoco la propongo como ADR: es fácil de deshacer.
 12. **La validación abre con 🦆 y ✋**: el bloque «Me salí del plan en…» pasa a `✋ Me salí del plan en…`, con los rulings de la ejecución, y va tras el 🦆 de lo hecho. Con `validation.mode: field` no hay parada: los dos van en el mensaje con el que el paso 7 pasa al cierre. Cambian «El trabajo se valida con el usuario antes de cerrar» y «Salir del plan es un ruling visible», que nombran el bloque.
-13. **El contraste de lenguaje de `sdd-grilling`**: si `PRODUCT.md` tiene «Terminology», contrasta cada término del usuario con su definición y con el código; sin glosario, solo con el código. Ante una discrepancia, la dice y pregunta el término canónico; sin usuario, la deja como pendiente. Devuelve a quien la invoca, además de sus tres listas, los **términos resueltos** y las **candidatas a ADR** (difícil de deshacer, sorprende sin contexto y hubo una alternativa real). La spec los recoge en una sección nueva, «Términos y ADR», y las ADR las escribe el cierre de la 0149.
-14. **Los ajustes de `sdd-rubber-duck`** que dejó la revisión final de la 0145: el ejemplo «decide cómo se escribe la hora» pasa a afirmación sin pregunta, y la lista final de la explicación larga se titula en el idioma del usuario. El tercer ajuste (el escenario c2 de enrutado frente a «¿cómo funciona…?») va a la 0161, que rehace la entrada de explore.
+13. *Sale por el RED (ver «Enmiendas»): la entrevista ya contrasta con el glosario y el código; se queda la sección «Términos y ADR» de la spec.* **El contraste de lenguaje de `sdd-grilling`**: si `PRODUCT.md` tiene «Terminology», contrasta cada término del usuario con su definición y con el código; sin glosario, solo con el código. Ante una discrepancia, la dice y pregunta el término canónico; sin usuario, la deja como pendiente. Devuelve a quien la invoca, además de sus tres listas, los **términos resueltos** y las **candidatas a ADR** (difícil de deshacer, sorprende sin contexto y hubo una alternativa real). La spec los recoge en una sección nueva, «Términos y ADR», y las ADR las escribe el cierre de la 0149.
+14. **Los ajustes de `sdd-rubber-duck`** que dejó la revisión final de la 0145: el ejemplo «decide cómo se escribe la hora» pasa a afirmación sin pregunta, y la lista final de la explicación larga se titula en el idioma del usuario (esta sale por el RED: ver «Enmiendas»). El tercer ajuste (el escenario c2 de enrutado frente a «¿cómo funciona…?») va a la 0161, que rehace la entrada de explore.
 15. **Una pieza entra, otra sale**: sale del paso 4 la prosa de cómo formular la pregunta del gate, que sustituyen las opciones fijas; sale el párrafo largo de «Tasks verticales» de `plan-template.md`, que pasa a dos frases con `Tras`. El `CLAUDE.md` del repo **no** pierde «explicando antes los términos que das por sabidos»: el 🦆 solo sale en la spec, el desvío y la validación, y las demás decisiones del dev-lead siguen necesitándolo.
-16. **Topes de palabras, decisión tuya** (Art. I). `sdd-grilling` está en su tope, 650 de 650, y el contraste añade ~90: propongo 750. A `sdd-start-feature` le quedan 237 palabras en su total (20.018 de 20.255), y la spec añade reglas en los pasos 4, 5 y 7, en `control-profiles.md` y en `review-spec.md`. El plan compensa con los recortes de la decisión 15, y si el saldo no cabe, propongo subir el total a 20.600 y dejar `SKILL.md` en sus 8.430. Si no apruebas una subida, recorto otra regla de esa skill con su A/B.
+16. **Topes de palabras, decisión tuya** (Art. I). `sdd-grilling` no cambia, porque el contraste sale por el RED. A `sdd-start-feature` le quedan 237 palabras en su total (20.018 de 20.255), y la spec añade reglas en los pasos 4, 5 y 7, en `control-profiles.md` y en `review-spec.md`. El plan compensa con los recortes de la decisión 15, y si el saldo no cabe, propongo subir el total a 20.600 y dejar `SKILL.md` en sus 8.430. Si no apruebas una subida, recorto otra regla de esa skill con su A/B.
 17. **Previsión de coste** (Art. I), con Sonnet salvo `g1`, que mide la variante del modelo más capaz y va en Opus:
 
     | Paso nuevo o cambiado | Escenario | RED | GREEN |
@@ -112,8 +111,8 @@ La spec y el plan de hoy se leen mal y se cambian mal. No hay una explicación l
 - Entra: `spec-template.md` (🦆, encabezado ✋, «Dónde se prueba», «Términos y ADR», ayuda de «Enmiendas» con la acción update).
 - Entra: `plan-template.md` (`Tras` por task, sin paralelo, «Verificación» desde «Dónde se prueba» y §Testing, párrafo de tasks verticales acortado) y `tasks-template.md` (nota `afectada por enmienda <fecha> → Task N`).
 - Entra: `sdd-start-feature/SKILL.md` pasos 4, 5 y 7; `references/control-profiles.md` (Desvío, frenos de alcance, tabla de gates, «✋ Me salí del plan en…»); `references/review-spec.md` (modelo del revisor de dominio y nombre del bloque ✋).
-- Entra: `sdd-grilling/SKILL.md` (contraste de lenguaje y lo que devuelve) y `sdd-rubber-duck/SKILL.md` (los dos ajustes).
-- Entra: baterías — nueva `tests/batteries/sdd-start-feature/`; `t1` en la de `sdd-grilling`; `l2` en la de `sdd-rubber-duck` con su `subject.sh`, las filas R2 y R7 de la rúbrica y la tabla de procedencia.
+- Entra: `sdd-rubber-duck/SKILL.md` (lo pendiente tras el 🦆, como afirmación).
+- Entra: baterías — nueva `tests/batteries/sdd-start-feature/`; `t1` en la de `sdd-grilling` y `l2` en la de `sdd-rubber-duck` (R2, R7 y R8 de su rúbrica), como controles: sus reglas salieron por el RED.
 - Entra: `tests/CapabilityRules.Tests.ps1` (busca el bloque sin el prefijo `## `) y `tests/WordBudget.Tests.ps1` (los topes de la decisión 16, si los apruebas).
 - No entra: la skill de propose, la entrada única, los carriles y el spike (0160); explore y el prompt de arranque (0161); quitar el paralelo de la ejecución y el resto de implement (0147); la pasada de fix y el gate de merge de la 0097 (0148, 0149); escribir las ADR que lista la spec (0149); el 🦆 en las paradas de patch (0160); el bloque de decisiones del plan, que no cambia; el `CLAUDE.md` del repo.
 
@@ -148,16 +147,13 @@ Cada regla nueva entra donde ya vive su vecina: la forma de los artefactos, en l
 - THEN lo primero que lee el dev-lead es un párrafo que empieza por 🦆, escrito por `sdd-rubber-duck` en modo corto, y después «✋ Decisiones que he tomado yo — valida estas», con una línea por decisión
 - AND en la `spec.md`, el 🦆 va bajo el título, antes de «Capacidades», y el ✋ va justo después de «Capacidades»
 - AND si la spec fija un tope de 50 filas, ese tope está en ✋, porque no salió de la entrevista ni del roadmap
-- AND la spec lleva la sección «Términos y ADR» con lo que devolvió la entrevista, o «ninguno» y «ninguna»
+- AND la spec lleva la sección «Términos y ADR»: los términos que la entrevista resolvió y las ADR candidatas (difícil de deshacer, sorprende sin contexto y hubo una alternativa real), o «ninguno» y «ninguna»
 
 **ADDED — La spec dice dónde se prueba cada comportamiento**
 
 - GIVEN una feature que añade cancelar una reserva por el endpoint y por la pantalla, en un proyecto cuyos tests de reservas van contra el endpoint
 - WHEN el agente escribe la spec
 - THEN la sección «Dónde se prueba» dice «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
-- AND la «Verificación» de cada task del plan sale de esa línea y del comando de lo afectado de §Testing
-- AND sin §Testing, la task declara el comando de su superficie que da «Dónde se prueba», o `no probado` con su motivo; el gate de la constitution corre solo en la validación final
-- AND si una superficie no tiene con qué verificarse, la pregunta va dentro de la entrevista; con la spec aprobada por delegación o en `unattended`, el agente elige la verificación más cercana que falle sin el cambio y la apunta en ✋
 
 **MODIFIED — Cada task de producto acaba en algo que se prueba en la aplicación** (antes: sin dependencias declaradas)
 
@@ -242,41 +238,6 @@ Cada regla nueva entra donde ya vive su vecina: la forma de los artefactos, en l
 - AND la pasada de fix de la propia revisión final tampoco entra en la re-revisión del tramo: en Native la verifica su TDD, y en SDD su re-revisión acotada. Un commit posterior a la pasada sí entra
 - AND la presentación de la validación abre con el 🦆 y el bloque «✋ Me salí del plan en…», separado del resto de decisiones
 
-### Capacidad: `interviewing`
-
-**ADDED — La entrevista contrasta el lenguaje con el glosario y con el código**
-
-- GIVEN un `PRODUCT.md` cuya «Terminology» dice «**Cancelación**: la reserva que anula el cliente antes de 24 h. _Evitar_: baja», y un código con `cancelBooking` y `voidBooking`
-- WHEN el usuario dice en la entrevista «cuando el admin da de baja una reserva, se libera la sala»
-- THEN el agente dice la discrepancia antes de seguir: el glosario define cancelación como la que anula el cliente, y lo que describe la anula el admin; y pregunta si es una cancelación u otra cosa con nombre propio
-- AND sin `PRODUCT.md`, contrasta solo con el código
-- AND al terminar devuelve, con lo demás, los términos resueltos y las candidatas a ADR (difícil de deshacer, sorprende sin contexto y hubo una alternativa real)
-
-**MODIFIED — Cuándo para la entrevista** (antes: devolvía dos listas más lo pendiente)
-
-- GIVEN una entrevista en la que no queda ninguna decisión por preguntar
-- WHEN el agente termina
-- THEN devuelve a la skill que la invocó lo que decidió el usuario, lo que decidió el agente (con su motivo), lo pendiente, los términos resueltos y las candidatas a ADR
-- AND si la skill que invoca tiene gate (spec, documento de la init, propuesta), la confirmación es ese gate: no pide una confirmación propia antes
-- AND invocada desde `sdd-consult`, que no tiene gate, confirma con una sola pregunta
-- AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
-
-**MODIFIED — Sin usuario, no pregunta** (antes: devolvía dos listas y lo pendiente, sin contraste de lenguaje)
-
-- GIVEN una entrevista sin usuario presente (perfil `unattended`, o la skill que invoca dice que no hay nadie)
-- WHEN `sdd-grilling` llega a una decisión
-- THEN no la pregunta: decide las de método con su motivo, deja las demás como pendientes y devuelve a quien la invocó lo mismo que «Cuándo para la entrevista»
-- AND una discrepancia de lenguaje con el glosario o el código queda como pendiente, con las dos lecturas
-- AND las paradas de cada perfil siguen siendo las de `control-profiles`: `sdd-grilling` no añade ni quita ninguna
-
-**Reglas de la capacidad**
-
-- **Dónde viven los datos**: `sdd-grilling` no escribe ficheros; lee la sección «Terminology» de `PRODUCT.md` y el código para el contraste, y lo que devuelve lo escribe quien la invoca, en sus documentos de siempre (los términos resueltos y las candidatas a ADR, en «Términos y ADR» de la spec).
-- **Idioma de los nombres**: el texto que ve el usuario (preguntas, listas «decidido por ti», «decidido por mí», «pendiente», «términos resueltos», «candidatas a ADR») va en su idioma; la skill, en inglés.
-- **Límites**: una decisión por turno; sin tope de preguntas por entrevista (para con la frontera vacía); rebatir, una vez por respuesta.
-- **Avisos**: no aplica.
-- **Regla ante conflicto**: si el usuario pide rondas en la sesión, gana su petición en esa sesión; las paradas de `control-profiles` mandan sobre la entrevista; ante un término del usuario que contradice el glosario, gana el que el usuario confirme, y el glosario no se edita desde la entrevista.
-
 ### Capacidad: `explaining`
 
 **MODIFIED — El 🦆 de un bloqueo lo cuenta en palabras del producto** (antes: sin regla para lo que queda por decidir)
@@ -287,26 +248,9 @@ Cada regla nueva entra donde ya vive su vecina: la forma de los artefactos, en l
 - AND un término técnico que necesita, como UTC, se explica en la misma frase por su efecto
 - AND lo que queda por decidir va después del párrafo como afirmación («falta decidir en qué hora se escribe»), sin pregunta
 
-**MODIFIED — Una explicación larga sigue el camino real, paso a paso** (antes: la lista final se titulaba «Dónde mirar» en cualquier idioma)
-
-- GIVEN el molde `exportes`
-- WHEN el dev-lead pide «Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero»
-- THEN la respuesta son de 3 a 9 pasos numerados, cada uno respaldado por un fichero del molde, que siguen una exportación concreta (marzo, sala Norte) desde la orden hasta el fichero `.ics`
-- AND usa las palabras del glosario («franja», «reserva»), no las del código (`slot`, `booking`)
-- AND las rutas de fichero van solo en una lista final, titulada en el idioma del usuario: «Dónde mirar» si escribe en castellano, «Where to look» si escribe en inglés
-- AND termina ofreciendo resolver dudas
-
-**Reglas de la capacidad**
-
-- **Dónde viven los datos**: no aplica; `sdd-rubber-duck` no escribe ficheros, y el párrafo 🦆 lo coloca la skill que lo pidió.
-- **Idioma de los nombres**: todo lo que lee el usuario, el título de la lista final incluido, va en su idioma; los términos, los del glosario de `PRODUCT.md`; la skill, en inglés.
-- **Límites**: el 🦆, un párrafo de cinco frases como máximo; la explicación larga, sin tope de pasos escrito en la skill.
-- **Avisos**: no aplica.
-- **Regla ante conflicto**: si el código usa una palabra de _Evitar_ del glosario, gana el glosario en la explicación.
-
 ## Enmiendas
 
-- (ninguna)
+- 2026-10-08 — Salen tres reglas cuyo RED pasó sin ellas (Art. I y decisión 17), con su delta: el contraste de lenguaje de `sdd-grilling` y lo que devolvería (`t1`, 2/2 contrastan ya con el glosario y el código), la lista final de la explicación larga en el idioma del usuario (`l2`, 2/2 ya en inglés) y la «Verificación» de cada task sacada de «Dónde se prueba» y de §Testing, con la parte de la 0097 (`p1`, 2/2 ya usan el comando de la superficie). Fuera: la capacidad `interviewing`, la Task 7 del plan, el tope de 750 de `sdd-grilling` y la parte de la 0097, que vuelve a su fila. Se quedan sus escenarios como controles. Evidencia: `tests/sdd-start-feature-0146-red.md` — aprobada: «Apruebo (Recomendada)»
 
 ## Aprobaciones
 
