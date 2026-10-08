@@ -1,4 +1,6 @@
 BeforeAll {
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
   $script:Script = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Build-EstimationLog.ps1'
   $script:Fixtures = Join-Path $PSScriptRoot 'fixtures/estimation-log'
 
@@ -13,6 +15,8 @@ BeforeAll {
     return ($Text -split "`n" | ForEach-Object { $_.TrimEnd("`r") } | Where-Object { $_ -like "*| $Folder |*" } | Select-Object -First 1)
   }
 }
+
+AfterAll { Restore-GitEnv $script:SavedGitEnv }
 
 # Slow porque ejecuta el script sobre ficheros temporales: sale del pre-commit (patch 0087) y lo corre la suite completa.
 Describe 'Build-EstimationLog.ps1' -Tag 'Slow' {
@@ -354,6 +358,32 @@ Describe 'Fecha de la fila' -Tag 'Slow' {
 
   It 'usa la carpeta si el campo no trae una fecha' {
     Get-Row $script:Fechas '20260923-231000-task-0062-plantilla' | Should -BeLike '| 2026-09-23 | 0062 |*'
+  }
+}
+
+Describe 'Release de la fila con el tag en git' -Tag 'Slow' {
+  It 'un patch fusionado tras el corte del mismo día queda sin publicar, y dos releases del mismo día no se confunden' {
+    $root = Join-Path $TestDrive 'mismo-dia'
+    $specs = Join-Path $root '.docs/sdd/specs'
+    function Invoke-Git { git -C $root -c user.name=t -c user.email=t@t -c commit.gpgsign=false @args 2>&1 | Out-Null }
+    function Add-Patch([string]$Folder) {
+      $dir = New-Item -ItemType Directory -Path (Join-Path $specs $Folder) -Force
+      $text = "---`ncreated: 2026-10-08`n---`n`n## 5. Tiempo`n`n- Tipo: patch`n- Estimación: 1h`n- Real: 1h`n"
+      [System.IO.File]::WriteAllText((Join-Path $dir 'patch.md'), $text, [System.Text.UTF8Encoding]::new($false))
+      Invoke-Git add -A; Invoke-Git commit -m $Folder
+    }
+    New-Item -ItemType Directory -Path $specs -Force | Out-Null
+    [System.IO.File]::WriteAllText((Join-Path $root '.docs/sdd/changelog.md'), "# Changelog`n`n## [0.1.1] - 2026-10-08`n`n- algo`n`n## [0.1.0] - 2026-10-08`n`n- algo`n", [System.Text.UTF8Encoding]::new($false))
+    Invoke-Git init -q
+    Add-Patch '20261008-080000-patch-0056-primera'
+    Invoke-Git tag v0.1.0
+    Add-Patch '20261008-090000-patch-0057-antes'
+    Invoke-Git tag v0.1.1
+    Add-Patch '20261008-110000-patch-0058-despues'
+    $text = (Invoke-Build $root).Text
+    $text | Should -Match '(?m)^\| 0\.1\.0 \| 1 \|'
+    $text | Should -Match '(?m)^\| 0\.1\.1 \| 1 \|'
+    $text | Should -Match '(?m)^\| sin publicar \| 1 \|'
   }
 }
 

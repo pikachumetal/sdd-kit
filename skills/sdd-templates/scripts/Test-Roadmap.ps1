@@ -7,8 +7,9 @@
   «Deuda técnica», «Patches», «Releases cerradas»); que fuera de «Releases cerradas» solo hay tablas, salvo una línea
   con el estado de la release en una sección «Release <versión>»; que cada tabla tiene cabecera, separador y la
   cabecera literal de su sección; que los estados de «Próximo» y de las releases son los de la plantilla; que ninguna
-  fila saldada de «Backlog» o «Deuda técnica», ni ningún patch de «Patches», es anterior o igual a la última release
-  cerrada; y que ninguna fila de
+  fila saldada de «Backlog» o «Deuda técnica», ni ningún patch de «Patches», está en la última release cerrada (con su tag
+  v<versión> en git y el enlace specs/… de la fila, si el commit que añadió el artefacto es ascendiente del tag; sin
+  ellos, si su fecha no es posterior a la de la release); y que ninguna fila de
   una sección abierta es de una feature que ya nombra una release cerrada. Escribe una línea por fallo, con la regla
   incumplida, y sale con 1; sin fallos, «Roadmap válido» y sale con 0. Avisa, sin fallar, de una fila de «Deuda
   técnica» cuyo «Destino» no empieza por Actuar, Esperar 2.º ticket o Descartada, y de una celda «Ítem» de «Backlog» o
@@ -205,22 +206,43 @@ function Test-ClosedTitles([string[]]$Lines, [object[]]$Sections) {
   }
 }
 
-function Test-SettledRows([string[]]$Lines, [object[]]$Sections, $LastRelease) {
+function Get-CutCommit([string]$SddPath, $Release) {
+  if (-not $Release -or -not (Get-Command git -ErrorAction SilentlyContinue)) { return }
+  $commit = git -C $SddPath rev-parse -q --verify "v$($Release.Version)^{commit}" 2>$null
+  if ($LASTEXITCODE -eq 0) { return $commit }
+}
+
+# El día no ordena un patch fusionado tras el corte del mismo día: con el tag de la release y el enlace al artefacto,
+# manda la ascendencia en git; sin tag (el corte aún sin taggear) o sin enlace, la fecha.
+function Test-InRelease([string]$SddPath, [string]$Line, [string]$Date, $Release, [string]$Cut) {
+  if ($Date -gt $Release.Date) { return $false }
+  if (-not $Cut -or $Line -notmatch '\]\((specs/[^)\s]+)\)') { return $true }
+  $added = @(git -C $SddPath log --no-renames --diff-filter=A --format=%H -- $Matches[1] 2>$null)
+  if (-not $added) { return $false }
+  git -C $SddPath merge-base --is-ancestor $added[-1] $Cut 2>$null
+  return $LASTEXITCODE -eq 0
+}
+
+function Test-SettledRows([string[]]$Lines, [object[]]$Sections, $LastRelease, [string]$SddPath, [string]$Cut) {
   if (-not $LastRelease) { return }
   foreach ($section in $Sections | Where-Object { $_.Kind -in 'Backlog', 'Deuda técnica' }) {
     foreach ($i in $section.Line..$section.Last) {
-      if ($Lines[$i] -notmatch $script:SettledPattern -or $Matches[1] -gt $LastRelease.Date) { continue }
-      "línea $($i + 1): fila saldada el $($Matches[1]), no posterior a la v$($LastRelease.Version) ($($LastRelease.Date)): sale en el corte"
+      if ($Lines[$i] -notmatch $script:SettledPattern) { continue }
+      $date = $Matches[1]
+      if (-not (Test-InRelease $SddPath $Lines[$i] $date $LastRelease $Cut)) { continue }
+      "línea $($i + 1): fila saldada el $date, no posterior a la v$($LastRelease.Version) ($($LastRelease.Date)): sale en el corte"
     }
   }
 }
 
-function Test-ReleasedPatches([string[]]$Lines, [object[]]$Sections, $LastRelease) {
+function Test-ReleasedPatches([string[]]$Lines, [object[]]$Sections, $LastRelease, [string]$SddPath, [string]$Cut) {
   if (-not $LastRelease) { return }
   foreach ($section in $Sections | Where-Object Kind -eq 'Patches') {
     foreach ($i in $section.Line..$section.Last) {
-      if ($Lines[$i] -notmatch '^\|\s*(\d{4}-\d{2}-\d{2})\s*\|' -or $Matches[1] -gt $LastRelease.Date) { continue }
-      "línea $($i + 1): patch del $($Matches[1]), no posterior a la v$($LastRelease.Version) ($($LastRelease.Date)): sale en el corte"
+      if ($Lines[$i] -notmatch '^\|\s*(\d{4}-\d{2}-\d{2})\s*\|') { continue }
+      $date = $Matches[1]
+      if (-not (Test-InRelease $SddPath $Lines[$i] $date $LastRelease $Cut)) { continue }
+      "línea $($i + 1): patch del $date, no posterior a la v$($LastRelease.Version) ($($LastRelease.Date)): sale en el corte"
     }
   }
 }
@@ -254,7 +276,7 @@ function Get-RoadmapWarnings([string[]]$Lines, [object[]]$Blocks) {
   }
 }
 
-function Get-RoadmapProblems([string[]]$Lines) {
+function Get-RoadmapProblems([string[]]$Lines, [string]$SddPath) {
   $sections = @(Get-RoadmapSections $Lines)
   $blocks = @(Get-TableBlocks $Lines $sections)
   $releases = @(Get-ClosedReleases $Lines $sections)
@@ -267,8 +289,9 @@ function Get-RoadmapProblems([string[]]$Lines) {
   $blocks | ForEach-Object { Test-TableBlock $Lines $_; Test-TableHeader $Lines $_ }
   $rows | ForEach-Object { Test-State $_ }
   $lastRelease = $releases | Select-Object -First 1
-  Test-SettledRows $Lines $sections $lastRelease
-  Test-ReleasedPatches $Lines $sections $lastRelease
+  $cut = Get-CutCommit $SddPath $lastRelease
+  Test-SettledRows $Lines $sections $lastRelease $SddPath $cut
+  Test-ReleasedPatches $Lines $sections $lastRelease $SddPath $cut
   $rows | ForEach-Object { Test-Published $_ $releases }
 }
 
@@ -276,7 +299,7 @@ function Get-ValidationResult([string]$SddPath) {
   $file = Join-Path $SddPath 'roadmap.md'
   if (-not (Test-Path -LiteralPath $file)) { return [pscustomobject]@{ Lines = @('Sin roadmap que validar'); Code = 0 } }
   $lines = @(Get-Content -LiteralPath $file -Encoding utf8)
-  $problems = @(Get-RoadmapProblems $lines | ForEach-Object { "roadmap.md: $_" })
+  $problems = @(Get-RoadmapProblems $lines $SddPath | ForEach-Object { "roadmap.md: $_" })
   $warnings = @(Get-RoadmapWarnings $lines @(Get-TableBlocks $lines @(Get-RoadmapSections $lines)) | ForEach-Object { "roadmap.md: aviso: $_" })
   if ($problems) { return [pscustomobject]@{ Lines = $problems + $warnings; Code = 1 } }
   return [pscustomobject]@{ Lines = $warnings + @('Roadmap válido'); Code = 0 }

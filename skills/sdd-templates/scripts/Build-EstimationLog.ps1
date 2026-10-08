@@ -338,19 +338,49 @@ function Add-TypeTable([System.Text.StringBuilder]$Builder, [object[]]$WithRatio
   }
 }
 
-function Get-ReleaseVersions([string]$ChangelogPath) {
+# Commits de la versión con tag v<versión>; sin tag o sin git, $null y la versión se decide por fecha.
+function Get-TaggedCommits([string]$DocsPath, [string]$Version) {
+  if (-not (Get-Command git -ErrorAction SilentlyContinue)) { return $null }
+  $commits = @(git -C $DocsPath rev-list "v$Version^{commit}" 2>$null)
+  if ($LASTEXITCODE -ne 0) { return $null }
+  return [System.Collections.Generic.HashSet[string]]::new([string[]]$commits)
+}
+
+# Commit que añadió cada «<carpeta>/<fichero>» de specs/: el log va del más nuevo al más viejo y gana el último.
+# ponytail: un fichero renombrado (renumerar una carpeta) cuenta desde el renombrado; si se renombra tras el corte, cae en la versión siguiente.
+function Get-AddedCommits([string]$SpecsPath) {
+  $added = @{}
+  if (-not (Get-Command git -ErrorAction SilentlyContinue)) { return $added }
+  $commit = $null
+  foreach ($line in @(git -C $SpecsPath log --no-renames --diff-filter=A --format=%H --name-only -- . 2>$null)) {
+    if ($line -match '^[0-9a-f]{40}$') { $commit = $line }
+    elseif ($line -match '([^/]+/[^/]+)$') { $added[$Matches[1]] = $commit }
+  }
+  return $added
+}
+
+function Get-ReleaseVersions([string]$ChangelogPath, [string]$DocsPath) {
   if (-not (Test-Path -LiteralPath $ChangelogPath)) { return @() }
   $content = Get-Content -LiteralPath $ChangelogPath -Raw
   $found = [regex]::Matches($content, '(?m)^##\s*\[([^\]]+)\]\s*[-—]\s*(\d{4}-\d{2}-\d{2})\s*$')
   $versions = foreach ($item in $found) {
-    [pscustomobject]@{ Name = $item.Groups[1].Value; Date = $item.Groups[2].Value }
+    $name = $item.Groups[1].Value
+    [pscustomobject]@{ Name = $name; Date = $item.Groups[2].Value; Commits = Get-TaggedCommits $DocsPath $name }
   }
-  return @($versions | Sort-Object Date)
+  # Dos versiones del mismo día: la anterior tiene menos commits, porque su tag es ascendiente del otro.
+  return @($versions | Sort-Object Date, { $_.Commits.Count })
 }
 
-function Get-ReleaseLabel([object]$Row, [object[]]$Versions) {
+# El día no ordena un artefacto fusionado tras el corte del mismo día: con el tag de la versión, manda la ascendencia en git.
+function Test-InVersion([object]$Version, [object]$Row, [string]$Commit) {
+  if ($null -eq $Version.Commits) { return $Version.Date -ge $Row.Date }
+  return [bool]$Commit -and $Version.Commits.Contains($Commit)
+}
+
+function Get-ReleaseLabel([object]$Row, [object[]]$Versions, [hashtable]$Added) {
   if ($Row.Date -eq '—') { return 'sin fecha' }
-  $match = $Versions | Where-Object { $_.Date -ge $Row.Date } | Select-Object -First 1
+  $commit = @('walkthrough.md', 'patch.md', 'hotfix.md') | ForEach-Object { $Added["$($Row.Folder)/$_"] } | Where-Object { $_ } | Select-Object -First 1
+  $match = $Versions | Where-Object { Test-InVersion $_ $Row $commit } | Select-Object -First 1
   if ($null -eq $match) { return 'sin publicar' }
   return $match.Name
 }
@@ -371,10 +401,11 @@ function Add-ReleaseRow([System.Text.StringBuilder]$Builder, [string]$Label, [ob
 }
 
 function Add-ReleaseTable([System.Text.StringBuilder]$Builder, [object[]]$Rows, [string]$DocsPath) {
-  $versions = Get-ReleaseVersions (Join-Path $DocsPath 'changelog.md')
+  $versions = Get-ReleaseVersions (Join-Path $DocsPath 'changelog.md') $DocsPath
   if ($versions.Count -eq 0) { return }
+  $added = Get-AddedCommits (Join-Path $DocsPath 'specs')
   $labels = @($versions | ForEach-Object { $_.Name }) + @('sin publicar', 'sin fecha')
-  $byLabel = $Rows | Group-Object { Get-ReleaseLabel $_ $versions }
+  $byLabel = $Rows | Group-Object { Get-ReleaseLabel $_ $versions $added }
   [void]$Builder.AppendLine('')
   [void]$Builder.AppendLine('| Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |')
   [void]$Builder.AppendLine('| --- | --- | --- | --- | --- | --- |')
