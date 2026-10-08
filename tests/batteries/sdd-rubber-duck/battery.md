@@ -44,10 +44,15 @@ Cada regla de `skills/sdd-rubber-duck/SKILL.md`, de dónde viene y qué escenari
 | Palabras: el glosario de `PRODUCT.md`, nunca una de _Evitar_ aunque la use el código | RED R2 3 de 6 (`room`, `slot`, `booking.room`) | s1, s2, l1 |
 | Palabras: sin rutas, identificadores, comandos ni jerga del kit; el término técnico, explicado en la misma frase por su efecto | RED R1 6 de 6; tickets de las tasks 0010 y 0012, de la feature 6298 y de la 0038 de document-manager | s1, s2, l1 |
 | Modo corto: el material técnico es entrada, no salida | RED s1-2 (el Approach copiado al párrafo) | s1 |
+| Overview: el lector conoce el producto, no el código ni el kit | `wait-what` (re-pitch con el lenguaje del proyecto); RED R1 6 de 6 | s1, s2, l1 |
 | Modo corto: un párrafo con 🦆, cinco frases como mucho, primero qué y después cómo | RED R3 4 de 4 | s1, s2 |
+| Modo corto: un ejemplo con datos en el qué | THEN de la spec (s1); RED s1-1 sin ningún dato del caso. Ninguna fila de la rúbrica lo mide aparte: lo lee R3 | s1 |
+| Modo corto: devolver el párrafo sin preguntas | THEN de la spec (s1); RED s2-1 y s2-2 metieron la decisión dentro de la explicación («Decisión que necesito de ti», «Qué hace falta decidir»). Lo lee R3 | s1, s2 |
 | Modo corto: lo hecho y lo que hay que decidir, después del párrafo | GREEN s2-2 (sexta frase); control s2-3 | s2 |
 | Modo largo: leer el camino real antes de escribir; lo de fuera del código, después de los pasos | RED R4 1 de 2 (paso 7 «Importas») | l1 |
 | Modo largo: un ejemplo con datos de principio a fin | RED R5 2 de 2 | l1 |
-| Modo largo: de 3 a 9 pasos numerados | `teach` (memoria de trabajo pequeña); control: el RED ya numeraba | l1 |
+| Modo largo: cada paso numerado dice quién actúa y qué le pasa al ejemplo | RED R5 2 de 2. El tope de 3 a 9 pasos del THEN no es guía: el RED ya numeraba 6 y 7 pasos, y queda como control de R4 | l1 |
 | Modo largo: rutas solo en «Dónde mirar», también la del fichero resultante | RED R1 2 de 2 en l1; GREEN l1-2 (`exports/2026-03.ics` en un paso); control l1-3 | l1 |
 | Modo largo: terminar ofreciendo resolver dudas, no más trabajo | RED R6 2 de 2 | l1 |
+
+**Recortadas** en la pasada de fix de la revisión final, por no tener un fallo del RED detrás (Art. I): «frases cortas en voz activa, una idea cada una» (ninguna fila la mide), «ids» en la lista de lo prohibido (el GREEN da por buena «la feature 0012»), «si no cambia nada para quien usa el producto, dilo en una frase» (sin escenario, solo Review Focus) y «de 3 a 9 pasos» (el RED ya numeraba). Si un ticket de campo trae uno de estos fallos, vuelve con su escenario.

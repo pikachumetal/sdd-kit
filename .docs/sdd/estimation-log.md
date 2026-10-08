@@ -156,19 +156,20 @@
 | 2026-10-08 | 0154 | patch | — | 0.2 | — | — | — | — | — | 20261008-125035-patch-0154-template-literal-gaps |
 | 2026-10-08 | 0155 | patch | — | 0.5 | — | — | — | — | — | 20261008-132135-patch-0155-merge-append-only-and-locked-files |
 | 2026-10-08 | 0144 | infra/tooling | 5 | 0.7 | 0.14 | 62706k | 3665k | 0.41 | 23.19 | 20261008-151724-feature-0144-docs-structure |
+| 2026-10-08 | 0145 | infra/tooling | 3 | 1.1 | 0.37 | 31336k | 2422k | 2.23 | 13.15 | 20261008-164456-feature-0145-sdd-rubber-duck |
 
-**Factor de calibración** (ratio mediano real/estimado, 119 artefactos): **0.6** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 120 artefactos): **0.6** · media 0.72
 
-- p25–p75: 0.4–0.98
+- p25–p75: 0.4–0.96
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 61 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.03 · mediana 0.8
+- Dentro de ±25 %: 29 % · sobreestimadas: 62 % · infraestimadas: 9 %
+- Error absoluto (h): media 1.04 · mediana 0.8
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.4
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 42 | 35 % |
-| 0.5–0.8 | 34 | 29 % |
+| <0.5 | 43 | 36 % |
+| 0.5–0.8 | 34 | 28 % |
 | 0.8–1.25 | 32 | 27 % |
 | 1.25–2 | 8 | 7 % |
 | ≥2 | 3 | 3 % |
@@ -177,7 +178,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 69 | 0.52 | 0.38–0.75 |
-| infra/tooling | 21 | 0.43 | 0.36–0.58 |
+| infra/tooling | 22 | 0.42 | 0.36–0.57 |
 | patch | 28 | 1.2 | 0.8–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -196,6 +197,6 @@
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
-| sin publicar | 5 | 11.5 | 0.46 | 17.32 | 73.71 |
+| sin publicar | 6 | 12.6 | 0.43 | 19.55 | 86.86 |
 
 > Ver `estimation.md`.
