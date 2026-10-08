@@ -47,3 +47,5 @@ Cada regla que la 0146 añade a `skills/sdd-start-feature/`, de dónde viene y q
 | Paso 4: la presentación empieza por el 🦆 (de `sdd-rubber-duck`, también bajo el título) y por «✋ Decisiones que he tomado yo», con todo valor que no salió de la entrevista ni del roadmap | RED S1 y S2 2/2 | s1 |
 | `spec-template.md`: el ✋ exhaustivo, cada texto con su literal | RED S2 2/2; GREEN ronda 0, S2 1/2 (el aviso descrito sin su literal) | s1 |
 | `spec-template.md`: secciones «Dónde se prueba» y «Términos y ADR» | RED S3 2/2 | s1 |
+| Paso 4: la pregunta del gate es `AskUserQuestion` con «Apruebo (Recomendada)» y «Cambios»; en `delegate` con el modelo más capaz, también la de parar antes de la Task 1 | RED G1 2/2 en prosa (la opción de bajar de modelo salió 2/2: el fallo de campo no se reprodujo) | g1 |
+| `review-spec.md`: las opciones de la pregunta de review llevan el modelo del revisor de dominio, con recomendación; sin pregunta, Sonnet; técnica, siempre Sonnet | RED R1 2/2 | r1 |

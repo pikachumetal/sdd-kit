@@ -46,8 +46,8 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | Punto | `pair` | `delegate` | `unattended` |
 | --- | --- | --- | --- |
 | Primera pregunta (carril, modo, lite, perfil, enunciado desde la rama) | pregunta | pregunta | decide y registra |
-| Review de spec recomendada | pregunta antes de presentar; con la spec delegada, decide y registra | pregunta antes de presentar; con la spec delegada, decide y registra | decide y registra |
-| Spec | para, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | para, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
+| Review de spec recomendada | pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) | pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) | decide y registra (dominio en Sonnet) |
+| Spec | para con `AskUserQuestion` y opciones fijas, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | para con `AskUserQuestion` y opciones fijas, salvo la spec delegada en la primera pregunta: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
 | Plan | para: una sola pregunta aprueba el plan y elige el método, con la recomendación del handoff primero; con `execution` fijado, solo aprueba | sin gate: comprueba escenario → task, escribe el método que recomienda el handoff (o el fijado en `execution`) y sigue | igual que `delegate` |
 | Tras cada task | para | sigue | sigue |
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
