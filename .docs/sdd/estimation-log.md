@@ -154,6 +154,7 @@
 | 2026-10-08 | 0143 | infra/tooling | 12 | 5.5 | 0.46 | 181265k | 104711k | 2.71 | sin precio | 20261007-153554-feature-0143-node-cli |
 | 2026-10-08 | 0153 | patch | — | 0.6 | — | — | — | — | — | 20261008-125035-patch-0153-same-day-release-ancestry |
 | 2026-10-08 | 0154 | patch | — | 0.2 | — | — | — | — | — | 20261008-125035-patch-0154-template-literal-gaps |
+| 2026-10-08 | 0155 | patch | — | 0.5 | — | — | — | — | — | 20261008-132135-patch-0155-merge-append-only-and-locked-files |
 
 **Factor de calibración** (ratio mediano real/estimado, 118 artefactos): **0.6** · media 0.73
 
@@ -194,6 +195,6 @@
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 2 | 0.8 | — | — | — |
-| sin publicar | 4 | 10.8 | 0.52 | 16.91 | 50.52 |
+| sin publicar | 5 | 11.3 | 0.52 | 16.91 | 50.52 |
 
 > Ver `estimation.md`.

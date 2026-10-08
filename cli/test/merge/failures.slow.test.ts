@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { cleanedUp, git, isWindows, mergeFixture, runMerge, sha, write } from './helpers.ts';
@@ -55,6 +56,26 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
     expect(readFileSync(log, 'utf8')).toContain('Tests Failed: 3');
     rmSync(log);
     expect(cleanedUp(fx)).toBe(true);
+  });
+
+  // Fuera de Windows abrir un fichero no lo bloquea para otro proceso.
+  it.runIf(isWindows)('con un fichero bloqueado por otro proceso falla con bloqueado: y el fichero, no con verificación:', async () => {
+    const fx = mergeFixture('bloqueado');
+    const before = sha(fx.repo, 'develop');
+    const locked = join(fx.root, 'App.dll');
+    const holder = spawn('pwsh', ['-NoProfile', '-Command', `$s = [IO.File]::Open('${locked}', 'Create', 'ReadWrite', 'None'); 'abierto'; Start-Sleep 120`]);
+    await new Promise((done) => holder.stdout.once('data', done));
+    try {
+      const result = await runMerge(join(fx.wt, '0001'), ['--verify', `[IO.File]::WriteAllText('${locked}', 'x')`]);
+
+      expect(result.code).not.toBe(0);
+      expect(result.text).toMatch(/bloqueado: .*App\.dll/);
+      expect(result.text).not.toMatch(/verificación: código de salida/);
+      expect(sha(fx.repo, 'develop')).toBe(before);
+      expect(cleanedUp(fx)).toBe(true);
+    } finally {
+      holder.kill();
+    }
   });
 
   it('con el hook pre-merge-commit en rojo falla con verificación: y la salida del hook, no con conflicto', async () => {

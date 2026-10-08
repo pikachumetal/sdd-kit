@@ -70,10 +70,24 @@ function runTee({ worktree, command, io }: Verification, log: string): Promise<n
   });
 }
 
+// ponytail: reconoce los mensajes de .NET/MSBuild (inglés y castellano) y de Node; otro idioma o herramienta cae en verificación:.
+const LOCKED_FILE = /(?:cannot access the file|no tiene acceso al archivo) '(?<file>[^']+)'|EBUSY: [^']*'(?<busy>[^']+)'/;
+const LOCKING_PROCESS = /(?:locked by|bloqueado por): "(?<process>[^"]+)"/;
+
+export function findLockedFile(output: string): string | undefined {
+  const file = LOCKED_FILE.exec(output)?.groups;
+  if (file === undefined) return undefined;
+  const holder = LOCKING_PROCESS.exec(output)?.groups?.process ?? 'otro proceso';
+  return `'${file.file ?? file.busy}' lo tiene abierto ${holder}`;
+}
+
 export async function runVerification(verification: Verification): Promise<void> {
   const log = logPath();
   const code = await runTee(verification, log);
   if (code === 0) return void rmSync(log, { force: true });
-  const tail = readFileSync(log, 'utf8').split(LINE_BREAK).filter((line) => line !== '').slice(-20);
+  const output = readFileSync(log, 'utf8');
+  const locked = findLockedFile(output);
+  if (locked !== undefined) throw new DomainError(`bloqueado: ${locked}; ciérralo y relanza el merge. Salida completa en ${log}`);
+  const tail = output.split(LINE_BREAK).filter((line) => line !== '').slice(-20);
   throw new DomainError(`verificación: código de salida ${code}; salida completa en ${log}\n${tail.join('\n')}`);
 }

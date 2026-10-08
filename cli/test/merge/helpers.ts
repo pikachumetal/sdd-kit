@@ -58,6 +58,7 @@ function seedRepo(seed: string, hooks: string): void {
   configure(seed, hooks);
   write(seed, '.docs/sdd/sdd-kit.json', '{"merge": {"into": "develop", "noFf": true, "removeWorktree": false}}');
   write(seed, 'README.md', 'base\n');
+  write(seed, '.cspell/custom-words.txt', 'base\n');
   write(seed, '.docs/sdd/roadmap.md', '# Roadmap\n\n## Patches\n\n| Id | Fix |\n| --- | --- |\n| 0100 | base |\n\n## Deuda\n');
   write(seed, '.docs/sdd/changelog.md', '# Changelog\n\n## [Unreleased]\n\n### Fixed\n\n- base\n\n## [0.1.0]\n');
   writePatchSpec(seed, '0100');
