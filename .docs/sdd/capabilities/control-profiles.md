@@ -182,26 +182,26 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN un merge del cierre con conflicto en `estimation-log.md`
 - WHEN el agente resuelve los conflictos
-- THEN regenera `estimation-log.md` con `Build-EstimationLog.ps1` de `sdd-templates/scripts/`, y no lo edita a mano
+- THEN regenera `estimation-log.md` con `sdd estimation log`, y no lo edita a mano
 
 ### El merge del cierre espera su turno
 
 - GIVEN dos cierres del mismo repo que fusionan en `merge.into` a la vez, desde worktrees distintos
-- WHEN los dos ejecutan `Invoke-SddMerge.ps1`
+- WHEN los dos ejecutan `sdd merge`
 - THEN el segundo espera y dice quién tiene el cerrojo (rama y worktree); fusiona cuando el primero lo suelta, sobre la rama destino que dejó el primero
-- AND si el cerrojo no se libera en `-LockTimeoutMinutes`, el script falla nombrando al dueño y no toca nada; un cerrojo de un proceso que ya no existe en la misma máquina se toma, y el script lo dice
+- AND si el cerrojo no se libera en `--lock-timeout`, el script falla nombrando al dueño y no toca nada; un cerrojo de un proceso que ya no existe en la misma máquina se toma, y el script lo dice
 
 ### El merge del cierre parte de la rama destino publicada
 
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND si los únicos conflictos son de `changelog.md`, `roadmap.md` o `estimation-log.md` y en los dos primeros cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `Build-EstimationLog.ps1`; con cualquier otro conflicto, falla con la lista de ficheros
+- AND si los únicos conflictos son de `changelog.md`, `roadmap.md` o `estimation-log.md` y en los dos primeros cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `sdd estimation log`; con cualquier otro conflicto, falla con la lista de ficheros
 
 ### El merge del cierre une los registros que solo añaden líneas
 
 - GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md` y una línea a `changelog.md` en el mismo sitio, y la primera ya se ha fusionado
-- WHEN el cierre de la segunda ejecuta `Invoke-SddMerge.ps1`
+- WHEN el cierre de la segunda ejecuta `sdd merge`
 - THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
 - AND si en algún trozo los dos lados cambian una línea que ya existía, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
 
@@ -224,16 +224,16 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### La verificación del merge es el gate de merge, no la suite completa
 
 - GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
-- WHEN el cierre fusiona con `Invoke-SddMerge.ps1`
-- THEN `-VerifyCommand` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
+- WHEN el cierre fusiona con `sdd merge`
+- THEN `--verify` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
 - AND la suite completa ya corrió antes del script, en la validación final, y el mensaje final da su resultado
-- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `-VerifyCommand` se omite; la suite completa no se omite nunca
+- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; la suite completa no se omite nunca
 
 ### Un conflicto solo en los registros se resuelve con un merge de sincronización
 
-- GIVEN un cierre de feature o de patch cuyo `Invoke-SddMerge.ps1` falla con `merge: conflicto en` y una lista formada solo por `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
+- GIVEN un cierre de feature o de patch cuyo `sdd merge` falla con `merge: conflicto en` y una lista formada solo por `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
 - WHEN el agente sigue la receta del merge
-- THEN en el worktree de la feature hace `git merge --no-edit <merge.into>`, en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `Build-EstimationLog.ps1`, commitea el merge y relanza el script una vez, sin parar a preguntar
+- THEN en el worktree de la feature hace `git merge --no-edit <merge.into>`, en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `sdd estimation log`, commitea el merge y relanza el script una vez, sin parar a preguntar
 - AND la rama destino acaba con las entradas de las dos features en cada registro y el log regenerado
 
 ### Un conflicto que no se puede conservar entero es de una persona

@@ -13,12 +13,12 @@ BeforeAll {
 Describe 'El cierre mide la sesión' {
   It 'el paso de tiempo real de sdd-end-feature ejecuta el script con la rama de la task' {
     $step = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?s)2\. \*\*Tiempo real\*\*.*?(?=\n3\. )').Value
-    Assert-Literal $step @('scripts/Measure-SessionTokens.ps1', '-Branch', 'Base directory', 'no medido')
+    Assert-Literal $step @('sdd.js" session tokens', '--branch', 'no medido')
   }
 
   It 'la plantilla del walkthrough lleva el coste de la sesión y dice de dónde salen las cifras' {
     $section = [regex]::Match((Get-KitFile 'skills/sdd-templates/templates/walkthrough-template.md'), '(?s)## 2\. .*?(?=\n## 3\. )').Value
-    Assert-Literal $section @('- Coste de la sesión:', 'Measure-SessionTokens.ps1', 'sin precio', 'no medido')
+    Assert-Literal $section @('- Coste de la sesión:', 'sdd session tokens', 'sin precio', 'no medido')
     $section | Should -Not -Match 'no tiene contador expuesto'
   }
 }

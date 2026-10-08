@@ -20,10 +20,6 @@ Por qué así: las plantillas de superpowers solo tienen hueco para restriccione
 
 Solo viaja el bloque «De código». El de «De proceso» (política de modelos, modo de ejecución, atribución de commits) es para quien despacha: `task-reviewer-prompt.md` de superpowers reserva ese hueco a lo que exige la spec, «not process rules», y un revisor que las lee las audita. Con el bloque entero y «todo incumplimiento es Important», 2 de 2 revisores devolvieron «Needs fixes» sobre un diff correcto: por la línea en blanco que exigía el linter en un test RED, por una función de 21 líneas y por el modo de despacho (`tests/proportional-review-red.md`, R1).
 
-## Rutas del workspace en Windows
-
-El brief, el informe, el paquete de review y el ledger viven en el workspace de `subagent-driven-development`. En Windows, `sdd-workspace`, `task-brief`, `task-start` y `review-package` imprimen la ruta de Git Bash (`/tmp/claude/…`, `/d/code/…`). Conviértela con `cygpath -w <ruta>` antes del primer `Write` o `Read` en el workspace, ledger incluido, y antes de escribirla en un encargo ([overrides](overrides-superpowers.md)). Con la ruta POSIX, el `Write` apunta a `C:\tmp\…` y pide un permiso que un sujeto sin usuario no puede conceder: así quedó bloqueado 1 de 2 sujetos que no leyeron la fila de overrides (`tests/superpowers-641-green.md`).
-
 ## Revisor final
 
 Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`). Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](control-profiles.md#vigía-de-silencio).
@@ -38,13 +34,14 @@ git worktree add --detach "$REVIEW_DIR" "$SHA"
 
 La receta del paquete se ejecuta dentro de `$REVIEW_DIR`, y el encargo nombra ese directorio como el único en el que trabaja, con esta frase: «Revisas `<sha>` como si fuera el último commit: trabaja solo en `<REVIEW_DIR>`, y no mires ramas ni commits posteriores (`git log` sin `--all` ni nombres de rama)». Al volver el revisor, el hilo lo retira con `git worktree remove "$REVIEW_DIR"`. La re-revisión de un tramo `<a>..<b>` se ancla igual, en `<b>`. Revisando un sha antiguo desde el árbol que avanza, 3 de 4 revisores vieron el commit que ya arreglaba el fallo (ticket de la feature 0027 de document-manager, §2); en el RED de la 0096, 2 de 2 hilos commitearon después del despacho (`tests/closing-off-critical-path-red.md`, c1).
 
-El paquete lo prepara el hilo con esta receta, no con `review-package`, en los dos métodos. `review-package` corta el rango desde la base del arranque y no admite exclusiones: el revisor lee siempre la evidencia de las campañas y, si la rama integró la rama de integración, también el trabajo de otras features (9 MB frente a 179 KB en la feature 0070, 730 KB frente a 78 KB en la 0058). En Git Bash, con `<integración>` la rama de integración de la constitution (`develop` si no fija otra) y `sdd-workspace` el script que está junto a `review-package` en `subagent-driven-development/scripts/`:
+El paquete lo prepara el hilo con esta receta, no con `sdd review package`, en los dos métodos. `sdd review package` corta el rango desde la base del arranque y no admite exclusiones: el revisor lee siempre la evidencia de las campañas y, si la rama integró la rama de integración, también el trabajo de otras features (9 MB frente a 179 KB en la feature 0070, 730 KB frente a 78 KB en la 0058). Con `<integración>` la rama de integración de la constitution (`develop` si no fija otra):
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
 MERGE_BASE=$(git merge-base HEAD <integración> $(git rev-parse -q --verify origin/<integración>))
 EXCLUDE=(':(exclude,glob).docs/sdd/specs/**/red/**' ':(exclude,glob).docs/sdd/specs/**/green/**' ':(exclude,glob).docs/sdd/specs/<carpeta de la feature>/**')
-OUT="$(bash "<ruta de sdd-workspace>" "<PLAN_FILE>")/review-final-$(git rev-parse --short HEAD).diff"
+WORKSPACE="$(sdd workspace "<plan>")"
+OUT="$WORKSPACE/review-final-$(git rev-parse --short HEAD).diff"
 {
   echo "# Review package: ${MERGE_BASE}..HEAD"; echo
   echo "## Commits"; git log --oneline "${MERGE_BASE}..HEAD"; echo
@@ -54,7 +51,7 @@ OUT="$(bash "<ruta de sdd-workspace>" "<PLAN_FILE>")/review-final-$(git rev-pars
 } > "$OUT" && echo "$OUT"
 ```
 
-El merge-base se calcula en el momento de la revisión, también si la rama integró la base a mitad: la base del arranque arrastra lo que trajo el merge. Con remoto, `git fetch` antes: si la rama integró `origin/<integración>` y la local está atrasada, la base local vuelve a traer lo de otras features; sin remoto, `rev-parse` no imprime nada y queda la local. Si las dos han divergido, git elige una sola base: sincronízalas antes. No uses `git diff <integración> HEAD`: si la rama de integración avanzó después del merge, mete al revés sus commits nuevos. En modo lite, sin plan, `PLAN_FILE` es `spec.md`. `<carpeta de la feature>` es el nombre de la carpeta de la spec en `.docs/sdd/specs/`: la spec y el plan le llegan al revisor en los requisitos de `code-reviewer.md`. Los ficheros borrados van solo por nombre. Con el cuerpo de los borrados y la carpeta de la feature dentro, el paquete de la feature 0000 de LegalRep pesó 235.524 bytes y el primer `Read` del revisor falló con `File content (28006 tokens) exceeds maximum allowed tokens (25000)` (su ticket de campo, §3). Si el tech-stack del proyecto declara otras carpetas de evidencia, añádelas a `EXCLUDE` con la misma forma. `$OUT` es una ruta de Git Bash: conviértela con `cygpath -w` antes de escribirla en el encargo. Sin la receta, 2 de 2 sujetos metieron en el paquete las 400 líneas de `red/out/` de la spec, y uno lo escribió dentro de la carpeta de la spec (`tests/final-review-package-red.md`).
+El merge-base se calcula en el momento de la revisión, también si la rama integró la base a mitad: la base del arranque arrastra lo que trajo el merge. Con remoto, `git fetch` antes: si la rama integró `origin/<integración>` y la local está atrasada, la base local vuelve a traer lo de otras features; sin remoto, `rev-parse` no imprime nada y queda la local. Si las dos han divergido, git elige una sola base: sincronízalas antes. No uses `git diff <integración> HEAD`: si la rama de integración avanzó después del merge, mete al revés sus commits nuevos. En modo lite, sin plan, `<plan>` es `spec.md`. `<carpeta de la feature>` es el nombre de la carpeta de la spec en `.docs/sdd/specs/`: la spec y el plan le llegan al revisor en los requisitos de `code-reviewer.md`. Los ficheros borrados van solo por nombre. Con el cuerpo de los borrados y la carpeta de la feature dentro, el paquete de la feature 0000 de LegalRep pesó 235.524 bytes y el primer `Read` del revisor falló con `File content (28006 tokens) exceeds maximum allowed tokens (25000)` (su ticket de campo, §3). Si el tech-stack del proyecto declara otras carpetas de evidencia, añádelas a `EXCLUDE` con la misma forma. Sin la receta, 2 de 2 sujetos metieron en el paquete las 400 líneas de `red/out/` de la spec, y uno lo escribió dentro de la carpeta de la spec (`tests/final-review-package-red.md`).
 
 Tras la cabecera y antes de `code-reviewer.md`:
 
@@ -80,7 +77,7 @@ Es lo que pide `executing-plans` («the plan's Review Focus section verbatim»),
 
 ## Encargo del implementador
 
-Su brief (`task-brief`) es solo el texto de la task. Delante van el mismo bloque, el contrato de tests y las reglas del implementador:
+Su brief (`sdd task brief`) es solo el texto de la task. Delante van el mismo bloque, el contrato de tests y las reglas del implementador:
 
 ```markdown
 ## Restricciones de código
@@ -103,7 +100,7 @@ Ejecuta los comandos del campo «Verificación» de tu task: `<comandos>`. No ej
 
 ---
 
-<task-brief de superpowers a partir de aquí>
+<sdd task brief a partir de aquí>
 ```
 
 Las tres reglas salen de incidentes de campo y del RED de la task 0005: con la cabecera sin ellas, 4 de 4 implementadores silenciaron un checker (uno editó su configuración, tres disfrazaron el valor), 3 de 4 usaron `git stash` y 1 de 2 relanzó un test rojo ajeno y lo dio por «puntual» sin causa (`tests/dispatch-brief-red.md`).

@@ -27,12 +27,12 @@ Frente a `sdd-start-feature` decide el verbo: hacerlo ya («añade», «hazme»,
 
 ## Checklist (crea un todo por paso)
 
-1. **Estado real** — lee `.docs/sdd/roadmap.md` de la rama de integración (`git show develop:.docs/sdd/roadmap.md`, o la que fije la constitution) y, **por cada rama `feature/*`** que liste `git branch --all`, su roadmap (`git show <rama>:.docs/sdd/roadmap.md`): lo que una rama partió o reservó solo está en su roadmap. Lee también `ids.mode` y, si vas a escribir reglas o nombrar capacidades, ejecuta `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-CapabilityIndex.ps1" -Path .docs/sdd` y lee las que, por su propósito, tocan: el nombre del fichero no dice dónde vive una regla, y sin índice 1 de 2 sujetos repartió en `bookings` la regla de no presentarse, que ya vivía en `house-rules` (`tests/capabilities-index-red.md`, r). Con ese estado, en **cualquier** entrada: una feature en marcha (rama `feature/<id>` abierta o 🔄) no se toca —ni su fila ni su spec—, aunque lo nuevo sea de su tema: va a una fila nueva «tras» ella. Una feature cerrada (✅ o 🧪) en la rama de integración tampoco recibe trabajo nuevo: va a una fila nueva.
+1. **Estado real** — lee `.docs/sdd/roadmap.md` de la rama de integración (`git show develop:.docs/sdd/roadmap.md`, o la que fije la constitution) y, **por cada rama `feature/*`** que liste `git branch --all`, su roadmap (`git show <rama>:.docs/sdd/roadmap.md`): lo que una rama partió o reservó solo está en su roadmap. Lee también `ids.mode` y, si vas a escribir reglas o nombrar capacidades, ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` y lee las que, por su propósito, tocan: el nombre del fichero no dice dónde vive una regla, y sin índice 1 de 2 sujetos repartió en `bookings` la regla de no presentarse, que ya vivía en `house-rules` (`tests/capabilities-index-red.md`, r). Con ese estado, en **cualquier** entrada: una feature en marcha (rama `feature/<id>` abierta o 🔄) no se toca —ni su fila ni su spec—, aunque lo nuevo sea de su tema: va a una fila nueva «tras» ella. Una feature cerrada (✅ o 🧪) en la rama de integración tampoco recibe trabajo nuevo: va a una fila nueva.
 2. **Lo que deja cada entrada** — la sección de abajo que corresponda.
 3. **Propón y espera** — en `pair` y `delegate`, presenta las filas, la propuesta y la partición antes de escribirlas, y espera la decisión del usuario. Un «decide tú» o «no hay nadie a quien preguntar» es una decisión delegada: escribe y deja las decisiones que tomaste en la propuesta o en el cuerpo del commit. En `unattended`, la opción más conservadora, registrada igual.
-4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-NextSddId.ps1" -ProjectRoot "<raíz>" -Reserve -Count N`. Sin `-Reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
-5. **Comprueba la forma** — tras escribir en el roadmap y antes de commitear, ejecuta `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Test-Roadmap.ps1" -Path .docs/sdd`. Un fallo en una línea que escribiste lo corriges en el roadmap, nunca en el validador. Un fallo en una línea que no tocaste no lo arreglas: lo listas en tu mensaje como forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0. En el RED, 2 de 2 sujetos no lo ejecutaron y dejaron el roadmap en rojo (P3).
-6. **Publica la reserva** — commitea en la rama de integración las filas nuevas en un commit que solo toca `roadmap.md` (y el `proposal.md` si lo hay): en el worktree donde está sacada (`git worktree list`) o, si no está en ninguno, en un worktree temporal en la misma carpeta que los demás y con nombre corto (en Windows, una ruta larga falla con `Filename too long`). Hasta ese commit la reserva no existe para los demás worktrees.
+4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<raíz>" --reserve --count N`. Sin `--reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
+5. **Comprueba la forma** — tras escribir en el roadmap y antes de commitear, ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`. Un fallo en una línea que escribiste lo corriges en el roadmap, nunca en el validador. Un fallo en una línea que no tocaste no lo arreglas: lo listas en tu mensaje como forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0. En el RED, 2 de 2 sujetos no lo ejecutaron y dejaron el roadmap en rojo (P3).
+6. **Publica la reserva** — ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap publish --project-root "<raíz>" --message "<mensaje>" .docs/sdd/roadmap.md` (más el `proposal.md` si lo hay): commitea en la rama de integración solo esos ficheros, con el cerrojo de `sdd merge`, en el worktree donde está sacada o en uno temporal si no está en ninguno. La rama sale de `merge.into` de `sdd-kit.json`, o de `--into`. Hasta ese commit la reserva no existe para los demás worktrees.
 7. **Cierra** — di qué fila va primero y con qué se arranca (`sdd-start-feature` o `sdd-start-patch`). No la arranques.
 
 ## Lo que deja cada entrada
@@ -85,7 +85,7 @@ Si el usuario pide una sección que no está en `roadmap-template.md` («abre un
 ## Red flags — STOP
 
 - Vas a crear una rama, una carpeta de feature o una `spec.md` desde esta skill.
-- Vas a abrir una sección que no está en `roadmap-template.md` porque el usuario la pidió, o a commitear sin que `Test-Roadmap.ps1` haya pasado por lo que escribiste.
+- Vas a abrir una sección que no está en `roadmap-template.md` porque el usuario la pidió, o a commitear sin que `sdd roadmap check` haya pasado por lo que escribiste.
 - Vas a borrar una fila, sustituirla por un item del gestor o fusionar dos sin que el usuario lo diga.
 - Vas a dejar las reglas de negocio de algo grande en un bloque del roadmap.
 - Vas a apuntar un item grande del gestor con «trocear al arrancarlo» en vez de proponer ya la partición.
@@ -93,7 +93,7 @@ Si el usuario pide una sección que no está en `roadmap-template.md` («abre un
 - Vas a reescribir una regla de una propuesta en vez de añadir una enmienda fechada.
 - Vas a reabrir una feature cerrada o en marcha porque la definición cambió.
 - Vas a editar la fila o la spec de una feature en marcha para meterle trabajo nuevo.
-- Vas a escribir en el roadmap un id que no viene del gestor ni de `Get-NextSddId.ps1 -Reserve`.
+- Vas a escribir en el roadmap un id que no viene del gestor ni de `sdd id next --reserve`.
 - Vas a marcar una release «comprometida» sin que el usuario lo diga, o con bloqueos externos abiertos.
 - Estás planificando con el roadmap de tu worktree sin haber leído el de la rama de integración y el de las ramas `feature/*`.
 
@@ -113,4 +113,4 @@ Si el usuario pide una sección que no está en `roadmap-template.md` («abre un
 | «Congelo el scope en un documento aparte» | El roadmap versionado ya es auditable. La propuesta es la definición de lo grande, no una copia del scope. |
 | «La nota es del tema de la feature en marcha; la agrupo en su fila» | Su rama está editando esa fila y esa spec. Agruparla ahí provoca el conflicto al cerrarla y le cambia un scope aprobado: va a una fila nueva «tras» ella. |
 | «El roadmap de mi worktree es el estado real» | Es el de tu base. Otra rama puede haber cerrado, partido o reservado; sin leerla, repites ids o amplías features cerradas. |
-| «Pongo el siguiente número libre para adelantar» | Un id inventado se confunde con uno reservado para siempre. El id lo da el gestor o `Get-NextSddId.ps1 -Reserve`. |
+| «Pongo el siguiente número libre para adelantar» | Un id inventado se confunde con uno reservado para siempre. El id lo da el gestor o `sdd id next --reserve`. |

@@ -8,12 +8,12 @@ La historia de la rama de una feature o de un patch: qué commits quedan al fusi
 
 ### La apertura de una feature queda en un commit
 - GIVEN una feature con la spec aprobada y, en full, `plan.md` y `tasks.md` escritos, con uno o más commits desde el `merge-base` con la rama de integración
-- WHEN el hilo va a escribir los RED de la primera task (en Native, antes de su `task-start`; en lite, a empezar la implementación)
+- WHEN el hilo va a escribir los RED de la primera task (en Native, antes de su `sdd task start`; en lite, a empezar la implementación)
 - THEN desde el `merge-base` la rama tiene un solo commit, con spec, hallazgos de la review de spec, `plan.md` y `tasks.md` (en lite, solo la spec)
 
 ### Cada task del plan queda en un commit
 - GIVEN la task N con uno o más commits desde el BASE que el hilo apuntó al empezarla, y su revisión limpia (SDD) o su contrato de cierre cumplido (Native)
-- WHEN el hilo va a empezar o despachar la task siguiente, o la revisión final de rama (en Native, antes de `task-done`)
+- WHEN el hilo va a empezar o despachar la task siguiente, o la revisión final de rama (en Native, antes de `sdd task done`)
 - THEN desde ese BASE la rama tiene un solo commit, con los tests RED, la implementación, los arreglos de la revisión y la evidencia de la task
 - AND el mensaje de ese commit lo escribe el hilo con la convención del proyecto, también cuando el rango ya tenía un solo commit
 - AND el hash que `tasks.md` apunta para la task N es el de ese commit, escrito en el commit del hito siguiente

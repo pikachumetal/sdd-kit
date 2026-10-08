@@ -23,7 +23,7 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 
 ## Capacidades
 
-> Se escribe al cerrar, tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `Test-Capabilities.ps1` al cerrar.
+> Se escribe al cerrar, tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `sdd capability check` al cerrar.
 
 - Modificadas: `<nombre>` — <qué requisito cambia>
 

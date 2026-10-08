@@ -14,7 +14,7 @@ A diferencia del Gate 1 de `sdd-start-feature`, aquí **la pregunta ES el enunci
 
 ## Cómo se trabaja (ligero, sin gates)
 
-1. **Primar contexto proporcional a la pregunta** — leer los documentos de anclaje relevantes (`mission`, `constitution`, `tech-stack`, `roadmap`, `architecture`, `capabilities/<capability>`, actas de `releases/`) antes de responder, y el código si la pregunta lo pide. Si la pregunta toca comportamiento y existe `capabilities/`, elige la capacidad con `pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Get-CapabilityIndex.ps1" -Path .docs/sdd` antes de abrir ninguna, y lee la que su propósito señala. Proporcionalidad: una duda de estructura lee `architecture` + el código; un "¿qué hacemos ahora?" lee `roadmap` + el acta. **Distingue siempre lo que dice el doc de lo que infieres tú.**
+1. **Primar contexto proporcional a la pregunta** — leer los documentos de anclaje relevantes (`mission`, `constitution`, `tech-stack`, `roadmap`, `architecture`, `capabilities/<capability>`, actas de `releases/`) antes de responder, y el código si la pregunta lo pide. Si la pregunta toca comportamiento y existe `capabilities/`, elige la capacidad con `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` antes de abrir ninguna, y lee la que su propósito señala. Proporcionalidad: una duda de estructura lee `architecture` + el código; un "¿qué hacemos ahora?" lee `roadmap` + el acta. **Distingue siempre lo que dice el doc de lo que infieres tú.**
 2. **Elige el modo:**
    - **Entender / explicar** ("¿por qué…?", "¿dónde tocaría…?", "¿esto cómo va?") → lee y responde. **Nada de interrogatorio**: lanzar un grilling a una pregunta puntual molesta tanto como sobre-disparar.
    - **Sondear / probar viabilidad** ("¿se puede…?", "pruébalo rápido", salida = una respuesta) → es un spike: explora y prueba lo que haga falta, pero todo lo que construyas es **desechable y se etiqueta así**; la salida es una recomendación en la conversación. Nada persiste: ni carpeta de spec, ni rama, ni código conservado. Si la respuesta es "sí, y lo queremos", eso es una petición nueva: handoff al carril (paso 5).
@@ -35,7 +35,7 @@ A diferencia del Gate 1 de `sdd-start-feature`, aquí **la pregunta ES el enunci
 | Racionalización | Realidad |
 | --- | --- |
 | "Me pide 'arréglalo' directamente, así que creo yo el patch.md" | "Arréglalo" es el disparo del handoff, no permiso para fabricar el artefacto. Se transiciona al carril, que gatea la causa raíz y el id — o, si hay que interpretar el enfoque, es feature, no patch. |
-| "Elijo el id de ticket siguiente libre y lo marco tentativo" | La consulta puede **calcular y proponer** el siguiente id con `Get-NextSddId.ps1`, pero no lo reserva ni lo escribe en ningún artefacto: la reserva es del carril. |
+| "Elijo el id de ticket siguiente libre y lo marco tentativo" | La consulta puede **calcular y proponer** el siguiente id con `sdd id next`, pero no lo reserva ni lo escribe en ningún artefacto: la reserva es del carril. |
 | "Reproduzco la convención de naming a mano, total la sé" | Reproducir el carril a mano se salta sus gates. Si es trabajo, se invoca el carril; si no, no hay artefacto. |
 | "Ya que he mirado el roadmap y está desfasado, lo actualizo de paso" | La salida durable se propone y se aprueba. Editar "de paso" es exactamente lo que este carril no hace. |
 | "Para estructurar esto uso brainstorming" | Brainstorming construye features (acaba en spec). Para estructurar/tensar una dirección sin artefactos: `sdd-grilling`. |

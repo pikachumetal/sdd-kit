@@ -156,15 +156,15 @@ Si el usuario, aun así, dice qué ha probado, registras `Validado` con su frase
 
 ## Vigía de silencio
 
-Un subagente en segundo plano puede colgarse sin error: la herramienta de subagentes no tiene timeout y el harness solo avisa cuando termina. El vigía es `Watch-SubagentSilence.ps1`, en `scripts/` de `sdd-templates` (desde el `Base directory` de `sdd-start-feature`, `../sdd-templates/scripts/`), y los umbrales los lee él de `control.silence` en `sdd-kit.json`: no los escribas en la orden.
+Un subagente en segundo plano puede colgarse sin error: la herramienta de subagentes no tiene timeout y el harness solo avisa cuando termina. El vigía es `sdd watch subagent`, y los umbrales los lee él de `control.silence` en `sdd-kit.json`: no los escribas en la orden.
 
 **Cuándo se lanza.** En el mismo turno de cada despacho —implementador, revisor de task, fix wave, re-revisión, revisor final, revisor de spec—, con la herramienta de shell en segundo plano (`run_in_background`):
 
 ```text
-pwsh -NoProfile -File "<Base directory de sdd-templates>/scripts/Watch-SubagentSilence.ps1" -Description "<la description del despacho, literal>"
+sdd watch subagent --description "<la description del despacho, literal>"
 ```
 
-Y al lanzar una verificación lenta en segundo plano, otro con `-Path <fichero de salida de ese comando>` en vez de `-Description`. Cada despacho lleva una `description` distinta: el vigía encuentra el transcript por ella.
+Y al lanzar una verificación lenta en segundo plano, otro, `sdd watch command --path <fichero de salida de ese comando>`. Cada despacho lleva una `description` distinta: el vigía encuentra el transcript por ella.
 
 **Qué hacer con lo que devuelve.** El vigía termina con una sola notificación; su primera línea dice cuál:
 

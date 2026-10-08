@@ -11,7 +11,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/decisions/` — ADR: el porqué y la historia de cada regla, una por fichero (`NNNN-<slug>.md`), inmutables; se sustituyen con otra ADR.
 - `.docs/sdd/tech-stack.md` — distribución dual (plugin de Claude Code + `npx skills add`), dependencia de superpowers, cómo se testean las skills.
 - `.docs/sdd/architecture.md` — estructura del repo, anatomía de una skill y de su evidencia de test, y la tabla de los documentos de `.docs/sdd/`: tipo, quién escribe cada uno, quién lo lee y qué lo acota.
-- `.docs/sdd/roadmap.md` — próximo, release en preparación, backlog, deuda técnica, patches y releases cerradas. Solo tablas, con la forma de `roadmap-template.md`; lo comprueba `Test-Roadmap.ps1` en el pre-commit.
+- `.docs/sdd/roadmap.md` — próximo, release en preparación, backlog, deuda técnica, patches y releases cerradas. Solo tablas, con la forma de `roadmap-template.md`; lo comprueba `sdd roadmap check` en el pre-commit.
 - `.docs/sdd/changelog.md` — historial de releases (Keep a Changelog, SemVer).
 - `.docs/sdd/estimation.md` y `.docs/sdd/estimation-log.md` — método de estimación y registro estimado-vs-real.
 - `.docs/sdd/field-reports/` — tickets de campo escritos por agentes que usaron el kit en proyectos reales, copiados literales. Desde la task 0002 nacen en `.docs/sdd/kit-feedback/` del proyecto vía `sdd-feedback`; los anteriores, en scratchpads efímeros. Son la evidencia de origen de las filas de deuda del roadmap; no se editan. **En este repo, el ticket de una feature del kit va directo a `field-reports/`**, sin pasar por `kit-feedback/`.

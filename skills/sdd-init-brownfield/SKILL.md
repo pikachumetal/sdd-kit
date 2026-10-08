@@ -45,7 +45,7 @@ Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **
    `sdd-templates`. El marcador `sdd-kit.json` incluye el campo `ids` y las claves que el usuario respondió a `sdd-config`
    (solo esas: «no sé» no escribe la clave). Además, `.claude/settings.json` con `"autoMemoryEnabled": false`
    (fusionado; si ya tiene `"autoMemoryEnabled": true`, pregunta antes de cambiarlo) y el marketplace de superpowers, `.gitignore` con los
-   temporales de las herramientas (y la ruta de la sesión de `§Frontend`, si la 5 la declara) y `estimation-log.md` generado con `Build-EstimationLog.ps1`, nunca a mano.
+   temporales de las herramientas (y la ruta de la sesión de `§Frontend`, si la 5 la declara) y `estimation-log.md` generado con `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" estimation log --root "<raíz>"` (el `sdd <verbo>` de las migraciones y referencias se lanza así), nunca a mano.
    `capabilities/` y `specs/` no se crean (git no versiona carpetas vacías), y las capacidades no se vuelcan
    aunque el usuario lo pida: crecen feature a feature.
    Detalle: [generacion.md](references/generacion.md).

@@ -13,7 +13,7 @@
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
 >    duplica.
 >
-> Índice: lo genera `Get-CapabilityIndex.ps1` al vuelo; no hay `index.md`.
+> Índice: lo genera `sdd capability index` al vuelo; no hay `index.md`.
 
 ## Propósito
 

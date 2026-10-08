@@ -257,9 +257,9 @@ describe('the 2.0.0 migration', () => {
     expect(step).toMatch(/se salta/i);
   });
 
-  it('verifies with Test-Capabilities.ps1 and leaves the rest as pending', () => {
+  it('verifies with sdd capability check and leaves the rest as pending', () => {
     const verification = /## Verificación[\s\S]*/.exec(migration)?.[0] ?? '';
-    expect(verification).toMatch(/Test-Capabilities\.ps1/i);
+    expect(verification).toMatch(/sdd capability check/i);
     expect(verification).toMatch(/pendiente/i);
   });
 

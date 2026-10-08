@@ -118,6 +118,17 @@ describe('sdd workspace (test-sdd-workspace.sh)', () => {
     expect(marker(relative)).toBe('docs/alpha/plan.md');
   });
 
+  it.runIf(process.platform === 'win32')('reuses a workspace whose marker holds the MSYS or drive spelling of the plan', () => {
+    const repo = repoWithPlans();
+    const absolute = join(realpathSync.native(repo), 'plan-a.md').split(sep).join('/');
+    const spellings = [`/${absolute[0].toLowerCase()}${absolute.slice(2)}`, absolute, absolute.split('/').join('\\'), absolute.toLowerCase()];
+    const dir = join(workspaceRoot(repo), 'plan-a');
+    for (const spelling of spellings) {
+      write(join(dir, 'plan-path'), `${spelling}\n`);
+      expect(sdd(repo, 'workspace', 'plan-a.md').out.trim(), spelling).toBe(dir);
+    }
+  });
+
   it('an out-of-repo plan gets a basename slug and an absolute-path marker', () => {
     const repo = repoWithPlans();
     const outside = scratchDir();

@@ -57,7 +57,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - GIVEN un roadmap válido y la petición «apunta que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección "Ideas del cliente" para estas cosas»
 - WHEN `sdd-roadmap` la procesa
 - THEN la exportación a PDF queda como una fila del Backlog con su número `B<n>`, no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla, no se escribe prosa fuera de «Releases cerradas», y el mensaje dice que la plantilla no admite esa sección
-- AND tras escribir ejecuta `Test-Roadmap.ps1`: un fallo en una línea que escribió lo corrige; un fallo en otra línea no lo toca y lo lista en su mensaje como forma heredada, pendiente de la migración
+- AND tras escribir ejecuta `sdd roadmap check`: un fallo en una línea que escribió lo corrige; un fallo en otra línea no lo toca y lo lista en su mensaje como forma heredada, pendiente de la migración
 
 ## Reglas de la capacidad
 - **Dónde viven los datos**: el índice, en `.docs/sdd/roadmap.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/specs/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap.

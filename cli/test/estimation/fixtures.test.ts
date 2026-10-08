@@ -13,7 +13,7 @@ describe('proyecto fixture', () => {
   const { text, warnings } = buildFixture('proyecto');
 
   it('lleva cabecera AUTO-GENERADO', () => {
-    expect(text).toMatch(/^<!-- AUTO-GENERADO por Build-EstimationLog\.ps1 \(sdd-kit\)/);
+    expect(text).toMatch(/^<!-- AUTO-GENERADO por sdd estimation log \(sdd-kit\)/);
   });
 
   it.each([

@@ -24,7 +24,7 @@ export async function syncBaseBranch(worktree: string, into: string, remote: str
 
 export async function mergeFeature(worktree: string, branch: string, policy: MergePolicy): Promise<void> {
   const flags = policy.noFf ? ['--no-ff'] : [];
-  const message = ['-m', `merge: ${branch} en ${policy.into}`, '-m', 'Fusión hecha con Invoke-SddMerge.ps1 (sdd-kit).'];
+  const message = ['-m', `merge: ${branch} en ${policy.into}`, '-m', 'Fusión hecha con sdd merge (sdd-kit).'];
   const merged = await gitWithOutput(worktree, ['merge', ...flags, ...message, branch]);
   await completeMergeAttempt({ worktree, stepName: 'merge', output: merged.output }, merged.code);
 }
