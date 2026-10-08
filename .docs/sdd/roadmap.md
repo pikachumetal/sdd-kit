@@ -260,6 +260,7 @@
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-10-08 | 0155 | `Invoke-SddMerge.ps1` une los conflictos en los que los dos lados solo añaden líneas en cualquier fichero, no solo en los tres registros, y una verificación que falla por un fichero en uso sale como `bloqueado:` con el fichero y el proceso ([patch](specs/20261008-132135-patch-0155-merge-append-only-and-locked-files/patch.md)) |
 | 2026-10-08 | 0154 | `Merge-CapabilityDelta.ps1` solo marca como hueco los `<…>` literales de `spec-template.md`: los `<!-- … -->` y `<…>` propios del proyecto pasan a la capacidad ([patch](specs/20261008-125035-patch-0154-template-literal-gaps/patch.md)) |
 | 2026-10-08 | 0153 | `Test-Roadmap.ps1` y `Build-EstimationLog.ps1` deciden si un patch o una fila saldada está publicada por ascendencia en git respecto al tag de la release, no por la fecha del día ([patch](specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md)) |
 | 2026-10-05 | 0141 | `Get-NextSddId.ps1` avisa de las carpetas con sufijo en una línea por stderr, sin el formato de error de `Write-Error` ([patch](specs/20261004-232806-patch-0141-next-id-suffix-warning/patch.md)) |
