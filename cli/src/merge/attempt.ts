@@ -1,6 +1,6 @@
 import { DomainError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
-import { resolveRegistryConflicts } from './registries.ts';
+import { resolveAddOnlyConflicts } from './registries.ts';
 
 export interface MergeAttempt {
   worktree: string;
@@ -18,7 +18,7 @@ export async function completeMergeAttempt(attempt: MergeAttempt, mergeCode: num
   if (mergeCode === 0) return;
   const { worktree, stepName, output } = attempt;
   const conflicted = await gitLines(worktree, ['diff', '--name-only', '--diff-filter=U']);
-  if (conflicted.length > 0 && (await resolveRegistryConflicts(worktree, conflicted))) return;
+  if (conflicted.length > 0 && (await resolveAddOnlyConflicts(worktree, conflicted))) return;
   await git(worktree, ['merge', '--abort']);
   if (conflicted.length === 0) throw new DomainError(`verificación: el hook rechazó el merge.\n${output.slice(-20).join('\n')}`);
   throw new DomainError(`${stepName}: conflicto en ${conflicted.join(', ')}.`);

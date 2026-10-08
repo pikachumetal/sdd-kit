@@ -196,14 +196,14 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND si los únicos conflictos son de `changelog.md`, `roadmap.md` o `estimation-log.md` y en los dos primeros cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `sdd estimation log`; con cualquier otro conflicto, falla con la lista de ficheros
+- AND si en cada fichero en conflicto cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `sdd estimation log`; con cualquier otro conflicto, falla con la lista de ficheros
 
 ### El merge del cierre une los registros que solo añaden líneas
 
-- GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md` y una línea a `changelog.md` en el mismo sitio, y la primera ya se ha fusionado
+- GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md`, una línea a `changelog.md`, una sección al final de otro documento o una palabra a `.cspell/custom-words.txt` en el mismo sitio, y la primera ya se ha fusionado
 - WHEN el cierre de la segunda ejecuta `sdd merge`
 - THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
-- AND si en algún trozo los dos lados cambian una línea que ya existía, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
+- AND si en algún trozo los dos lados cambian una línea que ya existía, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
 
 ### El push del cierre publica la rama destino
 
@@ -220,6 +220,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
 - AND el script sale con error y nombra el paso que falló y el motivo
 - AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de las últimas 20 líneas de la salida del hook, no un conflicto
+- AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
 
 ### La verificación del merge es el gate de merge, no la suite completa
 

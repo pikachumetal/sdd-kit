@@ -22,6 +22,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 ### Fixed
 
 - **`sdd roadmap check`, `sdd estimation log` y `sdd capability merge` traen los arreglos de la 2.3.3** — la CLI arrastraba los dos fallos de los scripts PowerShell que sustituye. `roadmap check` y `estimation log` deciden lo publicado por ascendencia en git respecto al tag `v<versión>` de la release, y `capability merge` solo marca como hueco los `<…>` literales de `spec-template.md` ([patch 0153](specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md), [patch 0154](specs/20261008-125035-patch-0154-template-literal-gaps/patch.md))
+- **`sdd merge` trae los arreglos del patch 0155** — une los conflictos en los que los dos lados solo añaden líneas en cualquier fichero, no solo en los tres registros, y una verificación que falla por un fichero en uso sale como `bloqueado: '<fichero>' lo tiene abierto <proceso>`, no como `verificación:` ([patch 0155](specs/20261008-132135-patch-0155-merge-append-only-and-locked-files/patch.md))
 
 ## [2.3.3] - 2026-10-08
 

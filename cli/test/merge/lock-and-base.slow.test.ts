@@ -105,6 +105,38 @@ describe('el merge del cierre parte de la rama destino publicada', () => {
     expect(sha(fx.remote, 'develop')).toBe(sha(fx.repo, 'develop'));
   });
 
+  it('une lo que dos ramas añaden al final de cualquier fichero, sin tocar sus líneas', async () => {
+    const fx = mergeFixture('solo-anadir');
+    for (const id of ['0001', '0002']) {
+      const feature = join(fx.wt, id);
+      edit(feature, 'README.md', 'base\n', `base\n\n## Aprendizajes de ${id}\n\n- uno de ${id}\n`);
+      write(feature, '.cspell/custom-words.txt', `base\npalabra${id}\n`);
+      saveAll(feature, `docs: aprendizajes de ${id}`);
+    }
+
+    const first = await runMerge(join(fx.wt, '0001'), ['--push']);
+    const second = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+    expect(first.code, first.text).toBe(0);
+    expect(second.code, second.text).toBe(0);
+    expect(fileAt(fx.repo, 'README.md')).toMatch(/## Aprendizajes de 0001\n\n- uno de 0001\n\n## Aprendizajes de 0002\n\n- uno de 0002/);
+    expect(fileAt(fx.repo, '.cspell/custom-words.txt')).toBe('base\npalabra0001\npalabra0002');
+  });
+
+  it('si las dos ramas crean el mismo fichero con contenido distinto falla con merge: conflicto en', async () => {
+    const fx = mergeFixture('add-add');
+    for (const id of ['0001', '0002']) {
+      write(join(fx.wt, id), 'nuevo.txt', `versión de ${id}\n`);
+      saveAll(join(fx.wt, id), `feat: nuevo de ${id}`);
+    }
+    await runMerge(join(fx.wt, '0001'));
+
+    const result = await runMerge(join(fx.wt, '0002'));
+
+    expect(result.code).not.toBe(0);
+    expect(result.text).toMatch(/merge: conflicto en .*nuevo\.txt/);
+  });
+
   it('si las dos ramas cambian la misma fila de un registro falla con merge: conflicto en', async () => {
     const fx = mergeFixture('misma-fila');
     for (const id of ['0001', '0002']) {
