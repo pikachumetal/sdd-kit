@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-08
 branch: patch/merge-append-only-and-locked-files
-commit: <hash>
+commit: bbe6018b
 ---
 
 # Patch 0155 — Invoke-SddMerge.ps1 une lo que solo añaden los dos lados y nombra el fichero bloqueado

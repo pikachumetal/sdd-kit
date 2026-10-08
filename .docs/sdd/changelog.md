@@ -4,6 +4,11 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Fixed
+
+- **`Invoke-SddMerge.ps1` une lo que solo añaden los dos lados en cualquier fichero** — solo unía los conflictos de `roadmap.md`, `changelog.md` y `estimation-log.md`, y paraba con `merge: conflicto en` cuando dos features añadían cada una una sección al final del mismo documento o una palabra a `.cspell/custom-words.txt`. Ahora une los trozos en los que los dos lados solo añaden, en cualquier fichero de texto; si los dos tocan una línea existente o crean el mismo fichero, sigue parando ([patch 0155](specs/20261008-132135-patch-0155-merge-append-only-and-locked-files/patch.md))
+- **`Invoke-SddMerge.ps1` dice qué fichero está bloqueado** — una verificación que fallaba porque otro proceso tenía abierto un fichero (una DLL del build en uso por una API levantada) salía como `verificación: código de salida`, igual que el código en rojo. Ahora falla con `bloqueado: '<fichero>' lo tiene abierto <proceso>`, con el proceso si la salida del gate lo nombra (MSBuild) ([patch 0155](specs/20261008-132135-patch-0155-merge-append-only-and-locked-files/patch.md))
+
 ## [2.3.3] - 2026-10-08
 
 Hotfix de la 2.3.2, sacado de `main`: el validador del roadmap y el estimation-log ya no dan por publicado un patch fusionado tras el corte del mismo día, y la fusión del delta deja pasar los `<!-- … -->` y `<…>` propios del proyecto. Sin cambios en el proyecto: la migración `v2.3.3` solo avanza el marcador.
