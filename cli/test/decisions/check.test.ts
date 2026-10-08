@@ -46,6 +46,11 @@ describe('sdd decision check', () => {
     expect(await check(docs)).toEqual({ lines: ['Decisiones válidas'], code: 0 });
   });
 
+  it('rutas en bloque sin sangría es válida', async () => {
+    const docs = docsWith({ '0001-use-postgres.md': adr({ rutas: 'rutas:\n- src/db/**' }) });
+    expect(await check(docs)).toEqual({ lines: ['Decisiones válidas'], code: 0 });
+  });
+
   it('falta una sección o va fuera de orden', async () => {
     const missing = await check(docsWith({ '0001-use-postgres.md': adr({ sections: SECTIONS.slice(0, 4) }) }));
     expect(missing.code).toBe(1);

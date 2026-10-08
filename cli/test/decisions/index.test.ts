@@ -22,6 +22,14 @@ describe('sdd decision index', () => {
     });
   });
 
+  it('acepta la forma de la spec: --files con varios ficheros seguidos', async () => {
+    const result = await index(docsWith(files), '--files', 'src/db/cache.ts', 'README.md');
+    expect(result).toEqual({
+      lines: [line('0001', 'Usar Postgres', 'accepted', '0001-use-postgres.md'), line('0004', 'Caché en memoria', 'proposed', '0004-cache.md')],
+      code: 0,
+    });
+  });
+
   it('con barras de Windows casa igual; sin coincidencias no escribe nada', async () => {
     const docs = docsWith(files);
     const windows = await index(docs, '--files', 'skills\\x\\scripts\\run.ts');

@@ -155,18 +155,19 @@
 | 2026-10-08 | 0153 | patch | — | 0.6 | — | — | — | — | — | 20261008-125035-patch-0153-same-day-release-ancestry |
 | 2026-10-08 | 0154 | patch | — | 0.2 | — | — | — | — | — | 20261008-125035-patch-0154-template-literal-gaps |
 | 2026-10-08 | 0155 | patch | — | 0.5 | — | — | — | — | — | 20261008-132135-patch-0155-merge-append-only-and-locked-files |
+| 2026-10-08 | 0144 | infra/tooling | 5 | 0.7 | 0.14 | 62706k | 3665k | 0.41 | 23.19 | 20261008-151724-feature-0144-docs-structure |
 
-**Factor de calibración** (ratio mediano real/estimado, 118 artefactos): **0.6** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 119 artefactos): **0.6** · media 0.73
 
-- p25–p75: 0.4–0.99
+- p25–p75: 0.4–0.98
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 30 % · sobreestimadas: 61 % · infraestimadas: 9 %
-- Error absoluto (h): media 1 · mediana 0.75
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.43
+- Dentro de ±25 %: 29 % · sobreestimadas: 61 % · infraestimadas: 9 %
+- Error absoluto (h): media 1.03 · mediana 0.8
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.4
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 41 | 35 % |
+| <0.5 | 42 | 35 % |
 | 0.5–0.8 | 34 | 29 % |
 | 0.8–1.25 | 32 | 27 % |
 | 1.25–2 | 8 | 7 % |
@@ -176,7 +177,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 69 | 0.52 | 0.38–0.75 |
-| infra/tooling | 20 | 0.45 | 0.37–0.59 |
+| infra/tooling | 21 | 0.43 | 0.36–0.58 |
 | patch | 28 | 1.2 | 0.8–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -194,6 +195,7 @@
 | 2.3.0 | 10 | 14.6 | 0.52 | 37.39 | 145.18 |
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
-| 2.3.3 | 7 | 12.1 | 0.52 | 16.91 | 50.52 |
+| 2.3.3 | 3 | 1.3 | — | — | — |
+| sin publicar | 5 | 11.5 | 0.46 | 17.32 | 73.71 |
 
 > Ver `estimation.md`.

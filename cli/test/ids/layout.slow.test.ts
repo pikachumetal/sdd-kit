@@ -37,11 +37,11 @@ describe('id next con la estructura 3.0.0', () => {
     commit(project, 'base');
     git(project, ['switch', '-qc', 'otra']);
     writeFileSync(join(project, 'ROADMAP.md'), row('0090'));
-    mkdirSync(join(project, '.docs/sdd/changes/20261010-090000-feature-0088-x'), { recursive: true });
-    writeFileSync(join(project, '.docs/sdd/changes/20261010-090000-feature-0088-x/spec.md'), '');
+    mkdirSync(join(project, '.docs/sdd/changes/20261010-090000-feature-0095-x'), { recursive: true });
+    writeFileSync(join(project, '.docs/sdd/changes/20261010-090000-feature-0095-x/spec.md'), '');
     commit(project, 'raíz');
     git(project, ['switch', '-q', 'main']);
-    expect((await runNext(project)).lines).toEqual(['0091']);
+    expect((await runNext(project)).lines).toEqual(['0096']);
   });
 
   it('una carpeta en changes y otra en specs con el mismo id son duplicado', async () => {

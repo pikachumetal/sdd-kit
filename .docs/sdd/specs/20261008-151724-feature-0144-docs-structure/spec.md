@@ -5,7 +5,7 @@ proposal: 0131
 title: Documentos de la 3.0.0 — estructura nueva, plantillas y rutas de la CLI
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-08
 author: Claude (Opus 5.5)
 approvers:
@@ -206,6 +206,10 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 - AND sin changelog, o sin versiones con fecha, la tabla no aparece
 
 **Reglas de la capacidad**
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos; el log, generado, en la carpeta de `estimation.md`.
+- **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
+- **Límites**: no aplica.
+- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas.
 - **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.
 
 ### Capacidad: `feature-ids`
@@ -261,6 +265,7 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 
 ## Enmiendas
 
+- 2026-10-08 — «Reglas de la capacidad» de `estimation`: la capacidad no tenía la sección y `sdd capability check` exige las cinco entradas → se completan las otras cuatro con lo que ya dicen sus requisitos vivos, sin comportamiento nuevo — lo pide el validador al fusionar — ruling del cierre, sin cambio de comportamiento
 - 2026-10-08 — Decisión 16 («el tope se queda; si no cabe, recorto»): con las cuatro plantillas 2.x conviviendo con las tres nuevas, `sdd-templates` mide 13.221 de 11.990 y el kit 55.557 de 54.595 → se suspenden en `tests/WordBudget.Tests.ps1` los topes de `sdd-templates` (`SKILL.md` y total) y del kit entero, sin tocar los del resto de skills, y los restaura la 0157 con valores re-medidos (anotado en su fila) — la convivencia de la decisión 11 hace imposible el recorte sin retirar las 2.x — aprobada: «Puedes quitar los topes hasta que acabemos las 3? o minimo hasta qu elimpiemos?» (el agente acota la suspensión a los tres topes afectados)
 
 ## Aprobaciones

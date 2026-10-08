@@ -15,7 +15,7 @@ export interface Decision {
 const NUMBER = /^(\d{4})-/;
 const SECTION = /^#{2,3} \S/;
 const INLINE_LIST = /^\[(.*)\]$/;
-const BLOCK_ITEM = /^\s+- /;
+const BLOCK_ITEM = /^\s*- /;
 
 function frontmatter(lines: string[]): string[] {
   if (lines[0] !== '---') return [];

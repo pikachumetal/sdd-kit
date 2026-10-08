@@ -21,8 +21,11 @@ export const decisionIndexVerb: Verb = {
   verb: 'index',
   summary: 'Lista las ADR y, con --files, las vigentes que gobiernan esos ficheros',
   options: { path: { type: 'string' }, files: { type: 'string', multiple: true }, json: { type: 'boolean' } },
+  positionals: ['files'],
   async run(args, io) {
-    const files = Array.isArray(args.values.files) ? (args.values.files as string[]) : undefined;
+    const named = Array.isArray(args.values.files) ? (args.values.files as string[]) : [];
+    const listed = [...named, ...args.positionals];
+    const files = listed.length > 0 ? listed : undefined;
     const lines = decisionIndex(requiredOption(args, 'path'), files);
     if (args.values.json) io.json(lines);
     else lines.forEach((line) => io.out(line));

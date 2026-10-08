@@ -8,12 +8,16 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### El estimation-log se genera desde los artefactos de cierre
 
-- GIVEN un proyecto con `.docs/sdd/estimation.md` y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo
+- GIVEN un proyecto con `estimation.md` en `.docs/sdd/steering/` (3.0.0) o en `.docs/sdd/` (2.x) y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo en `.docs/sdd/changes/` o en `.docs/sdd/specs/`
 - WHEN se ejecuta `sdd estimation log --root <proyecto>`
-- THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
+- THEN `estimation-log.md` se regenera entero, en la carpeta de `estimation.md`, con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
+- AND un proyecto con `specs/20260920-100000-feature-0079-b/walkthrough.md` y `changes/20261010-090000-feature-0160-c/walkthrough.md` tiene las dos filas, `0079` y `0160`
+- AND con `estimation.md` en las dos rutas, el log va a `steering/` y escribe por stderr que también existe `.docs/sdd/estimation.md`
+- AND `sdd merge`, cuando regenera el log tras un conflicto, lo escribe en esa misma carpeta
 - AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
 - AND `Sesión ($)` es la cifra de `Coste de la sesión`; «sin precio» y «no medido» aparecen tal cual, y sin la línea la celda es `—`
 - AND el fichero lleva cabecera "AUTO-GENERADO — no editar a mano"
+- AND sin `changes/` ni `specs/` bajo `.docs/sdd/` ni `docs/sdd/`, sale con error y dice qué carpetas buscó
 
 ### El script vive en el kit y las skills de cierre lo invocan
 
@@ -68,12 +72,13 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### El log agrupa por release
 
-- GIVEN un `<docs>/changelog.md` con versiones `## [X.Y.Z] - AAAA-MM-DD` (o con `—`)
+- GIVEN un `CHANGELOG.md` en la raíz del proyecto (3.0.0) o un `<docs>/changelog.md` (2.x) con versiones `## [X.Y.Z] - AAAA-MM-DD` (o con `—`)
 - WHEN se genera el log
 - THEN aparece una tabla Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($), de la release más antigua a la más reciente
+- AND con los dos changelogs, manda `CHANGELOG.md` y escribe por stderr que también existe `<docs>/changelog.md`
 - AND `Sesión ($)` suma las cifras de los artefactos de la release que la tienen; sin ninguna, `—`
 - AND cada artefacto va a la primera versión cuyo tag `vX.Y.Z` contiene el commit que lo añadió, y a la primera con fecha igual o posterior a la de su fila (la de cierre) si la versión no tiene tag; dos versiones del mismo día van de la anterior a la siguiente; los que no caen en ninguna van a «sin publicar», y los que no tienen fecha, a «sin fecha»
-- AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
+- AND sin changelog, o sin versiones con fecha, la tabla no aparece
 
 ### El walkthrough registra el modelo y el effort del hilo en cada fase
 
@@ -146,3 +151,11 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - GIVEN un walkthrough cerrado con la tabla 4.2 vieja (`| # | Caso | Resultado |`) y otro con la forma nueva (fila por THEN con evidencia y duración de la suite en 4.1)
 - WHEN se ejecuta `sdd estimation log`
 - THEN los dos dan su fila con el mismo tipo, estimación, esfuerzo real, tokens y coste que declara su bloque «2. Tiempo y coste», sin aviso
+
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos; el log, generado, en la carpeta de `estimation.md`.
+- **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
+- **Límites**: no aplica.
+- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas.
+- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.

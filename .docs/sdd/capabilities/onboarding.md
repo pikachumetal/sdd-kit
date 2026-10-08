@@ -107,6 +107,28 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 - AND `tech-stack.md` sale con `§Frontend` calcada de `tech-stack-template.md` y rellena con la respuesta, y si declara una ruta de sesión, `.gitignore` la contiene una sola vez
 - AND en un proyecto sin interfaz no se pregunta y `tech-stack.md` no lleva `§Frontend`
 
+### `sdd-templates` ofrece las plantillas de los documentos de la 3.0.0
+
+- GIVEN el skill `sdd-templates`
+- WHEN se lista su índice de plantillas de documentos
+- THEN tiene `PRODUCT-template.md` → `PRODUCT.md` en la raíz, `constitution-template.md` → `.docs/sdd/steering/constitution.md`, `operations-template.md` → `.docs/sdd/steering/operations.md`, `architecture-template.md` → `.docs/sdd/steering/architecture.md`, `estimation-template.md` → `.docs/sdd/steering/estimation.md`, `roadmap-template.md` → `ROADMAP.md` en la raíz, `changelog-template.md` → `CHANGELOG.md` en la raíz y `adr-template.md` → `.docs/sdd/decisions/`
+- AND `mission-template.md`, `tech-stack-template.md`, `environments-template.md` y `client-changelog-template.md` siguen, marcadas «2.x» con la feature que las retira (0156; 0150 la de cliente)
+
+### `PRODUCT.md` comparte la forma de impeccable
+
+- GIVEN `PRODUCT-template.md`
+- WHEN se lee
+- THEN tiene, en este orden, `## Users`, `## Product Purpose`, `## Capabilities and Constraints` y `## Terminology`, y no lleva el marcador `impeccable:product-schema`
+- AND `## Terminology` muestra el formato del glosario con un ejemplo inventado: `**<Término>**:` con una definición de una o dos frases, y debajo `_Evitar_:` con los sinónimos que no se usan
+
+### `operations.md` dice cómo se ejecuta y se verifica el proyecto
+
+- GIVEN `operations-template.md`
+- WHEN se lee
+- THEN tiene `## Comandos`, `## Testing`, `## Frontend` y `## Entornos`, y no tiene tabla de versiones ni «Decisiones abiertas»
+- AND `## Testing` pide cada suite con su comando y su duración, el comando de lo afectado, el gate de cierre y el de merge, cómo entra el agente en la aplicación y si los tests usan el motor de producción
+- AND `## Frontend` tiene los mismos campos que `tech-stack-template.md` (URL, Detector, Viewports, Runner E2E, Acceso, Temas, Pantalla de referencia y Skills de apoyo)
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar.
