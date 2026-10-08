@@ -1,0 +1,29 @@
+
+>>> Bash: cd .docs/sdd 2>/dev/null && ls -R specs | head -50; cat specs/20261005-090000-feature-0013-export-by-room/spec.md; grep -n "0013" -r roadmap.md | head
+<<< specs:
+20260928-090000-feature-0012-ics-export/
+20261005-090000-feature-0013-export-by-room/
+
+specs/20260928-090000-feature-0012-ics-export:
+spec.md
+
+specs/20261005-090000-feature-0013-export-by-room:
+spec.md
+---
+id: 20261005-090000-feature-0013-export-by-room
+feature: 0013
+title: Exportar solo las reservas de una sala
+mode: lite
+status: draft
+created: 2026-10-05
+---
+
+# Spec — Exportar solo las reservas de una sala
+
+## Decisiones que he tomado yo — valida estas
+
+1. El parámetro de sala es opcional: sin él, la exportación sigue sacando las dos salas.
+2. El fichero lleva la sala en el nombre par
+
+=== RESULTADO (2 turnos, 0.087203 $)
+Hoy `exportar --mes` vuelca al `.ics` todas las reservas del mes, y quien solo usa una sala tiene que borrar a mano las de la otra en su calendario. Vamos a añadir un flag opcional `--sala` al comando `exportar`, de modo que `exportar --mes 2026-03 --sala Norte` escriba solo las reservas de Norte. Sin el flag, la exportación sigue sacando las dos salas como ahora. Para hacerlo, `src/cli.js` lee `--sala` del argv y lo pasa a `exportMonth(month, room)` en `src/export/index.js`. Este lo reenvía a `bookingsBySlot(bookings, month, room)` en `src/export/filter.js`, que filtra por `booking.room` solo cuando `room` viene definido. `writeExport` añade al nombre el slug de la sala en minúsculas (`exports/2026-03-norte.ics`), para no pisar el fichero del mes completo. Se cubre con un test nuevo en `test/export.test.js` sobre `bookingsBySlot`, usando el fixture de marzo. Quedan fuera exportar varias salas a la vez. Lo que tiene que aprobar el dev-lead son las dos decisiones ya tomadas: que `--sala` sea opcional y que el nombre del fichero lleve la sala.
