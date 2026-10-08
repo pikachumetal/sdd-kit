@@ -5,6 +5,7 @@ import type { Io } from '../cli/io.ts';
 import { commonDir, git, gitLines, toplevel, worktrees } from '../git/git.ts';
 import { withLock } from '../git/lock.ts';
 import { withTempWorktree } from '../merge/temp-worktree.ts';
+import { ROOT_DOCUMENTS } from '../cli/layout.ts';
 
 const DOCS_DIR = '.docs/sdd';
 
@@ -17,9 +18,11 @@ export interface PublishOptions {
 }
 
 function docsRelativePath(projectRoot: string, file: string): string {
+  const fromRoot = relative(projectRoot, resolve(projectRoot, file)).split(sep).join('/');
+  if (ROOT_DOCUMENTS.includes(fromRoot)) return fromRoot;
   const inside = relative(join(projectRoot, DOCS_DIR), resolve(projectRoot, file)).split(sep);
   if (inside[0] === '..' || inside[0] === '' || /^[a-z]:$/i.test(inside[0])) {
-    throw new UsageError(`el fichero '${file}' no está bajo ${DOCS_DIR}/`);
+    throw new UsageError(`el fichero '${file}' no está bajo ${DOCS_DIR}/ ni es ${ROOT_DOCUMENTS.join(', ')} de la raíz`);
   }
   return `${DOCS_DIR}/${inside.join('/')}`;
 }

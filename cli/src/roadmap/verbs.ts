@@ -20,7 +20,7 @@ export const roadmapCheckVerb: Verb = {
 export const roadmapPublishVerb: Verb = {
   noun: 'roadmap',
   verb: 'publish',
-  summary: 'Publica ficheros de .docs/sdd/ en la rama de integración con un commit, bajo el cerrojo de merge',
+  summary: 'Publica ficheros de .docs/sdd/ y los documentos de la raíz en la rama de integración, bajo el cerrojo de merge',
   options: { message: { type: 'string' }, into: { type: 'string' }, 'project-root': { type: 'string' }, 'lock-timeout': { type: 'string' } },
   positionals: ['files'],
   async run(args, io) {

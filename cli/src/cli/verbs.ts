@@ -1,5 +1,6 @@
 import type { ParseArgsOptionsConfig } from 'node:util';
 import { capabilityCheckVerb, capabilityIndexVerb, capabilityMergeVerb } from '../capabilities/verbs.ts';
+import { decisionCheckVerb, decisionIndexVerb } from '../decisions/verbs.ts';
 import { idNextVerb } from '../ids/verbs.ts';
 import { estimationLogVerb } from '../estimation/verbs.ts';
 import { roadmapCheckVerb, roadmapPublishVerb } from '../roadmap/verbs.ts';
@@ -21,4 +22,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, estimationLogVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, ledgerRulingsVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, estimationLogVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, ledgerRulingsVerb];

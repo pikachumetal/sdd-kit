@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { estimationLogPath } from '../cli/layout.ts';
 import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts';
 import { git } from '../git/git.ts';
 
@@ -24,7 +25,7 @@ async function mergeAddedLines(worktree: string, file: string): Promise<boolean>
 
 function regenerateLog(worktree: string): void {
   const { text, docsPath } = generateEstimationLog(worktree, () => undefined);
-  writeEstimationLog(text, join(docsPath, 'estimation-log.md'), () => undefined);
+  writeEstimationLog(text, estimationLogPath(docsPath), () => undefined);
 }
 
 // Cualquier fichero en el que los dos lados solo añaden se une; estimation-log.md se regenera.

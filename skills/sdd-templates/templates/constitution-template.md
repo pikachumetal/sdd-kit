@@ -4,9 +4,19 @@
 
 ## Principios
 
-> Uno por artículo, con su porqué si no es evidente. Lo innegociable: datos, migraciones, commits, seguridad, tests.
+> El preámbulo: de tres a cinco principios que orientan todo lo demás, uno por línea, sin explicación larga.
 
 1. <principio>
+
+## Artículos
+
+> Lo innegociable (datos, migraciones, commits, seguridad, tests), un artículo por regla: la regla en una o dos frases y su porqué en una sola. La historia de la regla (cuándo y por qué se fue formando, qué se descartó) no va aquí: va a una ADR de `.docs/sdd/decisions/`, que el artículo enlaza.
+
+### Art. I — <nombre de la regla>
+
+<la regla>
+
+*Por qué*: <una frase>. [ADR NNNN](../decisions/NNNN-<slug>.md)
 
 ## Convenciones
 

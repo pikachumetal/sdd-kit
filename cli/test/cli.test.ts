@@ -42,6 +42,14 @@ describe('sdd --help', () => {
     expect(text).toContain('sdd capability check');
     expect(text).toContain('sdd merge');
   });
+
+  it('--help lista decision check y decision index', async () => {
+    const io = memoryIo();
+    expect(await run(['--help'], io)).toBe(0);
+    const text = io.stdout.join('\n');
+    expect(text).toContain('sdd decision check');
+    expect(text).toContain('sdd decision index');
+  });
 });
 
 describe('node version', () => {

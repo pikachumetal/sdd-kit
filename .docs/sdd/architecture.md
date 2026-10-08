@@ -74,7 +74,7 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 | `changelog.md` | diario por release | `add-to-changelog` y `sdd-end-release` | `sdd-end-release`, y las personas | solo se lee `[Unreleased]` y la última versión; se parte por versión mayor si pesa |
 | `estimation-log.md` | generado | `sdd estimation log` | `writing-plans`, para estimar | una fila por cierre; nadie lo edita |
 | `sdd-kit.json` | estado | `sdd-config`, las init y las migraciones | todas las skills | sus claves son las del catálogo de `sdd-config` |
-| `decisions/NNNN-<slug>.md` | ADR | la feature que toma o sustituye la decisión | quien toca sus `rutas`, por el enlace de la constitution | inmutable: solo cambia `status` al sustituirse |
+| `decisions/NNNN-<slug>.md` | ADR | la feature que toma o sustituye la decisión | quien toca sus `rutas`, con `sdd decision index --files` | inmutable: solo cambia `status` al sustituirse; forma: `sdd decision check` |
 | `specs/<carpeta>/` | evento | el arranque y el cierre de cada feature, patch o propuesta | su propia sesión, y quien busca un porqué | una carpeta por evento; no se edita tras el cierre, salvo adendas fechadas |
 | `field-reports/` | evento | `sdd-feedback`, copiado literal | el triaje del roadmap | un fichero por ticket; no se edita |
 | `releases/vX.Y.Z/` | evento | `sdd-end-release` | las personas | una carpeta por release |

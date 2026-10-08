@@ -43,8 +43,10 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 
 - GIVEN un proyecto en modo `sequence` y una feature o patch sin fila en el roadmap
 - WHEN se invoca `sdd id next --reserve` desde la raíz del proyecto
-- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en `.docs/sdd/specs/` y `.docs/sdd/roadmap.md` del working tree; en el roadmap y las carpetas de `specs/` de cada rama local y remota, y en su nombre salvo el de la rama actual; y en el roadmap y las carpetas de `specs/` del disco de cada worktree de `git worktree list`, más uno
-- AND lo que otro worktree tiene reservado sin fusionar cuenta aunque no esté en ninguna rama: una fila del roadmap en *staged* o una carpeta de `specs/` sin commitear
+- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en las carpetas de `.docs/sdd/changes/` y `.docs/sdd/specs/` y en los dos roadmaps (`ROADMAP.md` de la raíz y `.docs/sdd/roadmap.md`) del working tree; en esos mismos roadmaps y carpetas de cada rama local y remota, y en su nombre salvo el de la rama actual; y en esos roadmaps y carpetas del disco de cada worktree de `git worktree list`, más uno
+- AND cada rama y cada worktree se leen con lo que tengan: una rama con solo `ROADMAP.md` y `changes/` cuenta igual que una con solo `.docs/sdd/roadmap.md` y `specs/`
+- AND con `.docs/sdd/specs/20260920-100000-feature-0079-b/`, `.docs/sdd/changes/20261010-090000-feature-0081-c/`, la fila `0083` en `ROADMAP.md` y la fila `0085` en `.docs/sdd/roadmap.md`, sin contador ni ramas con un id mayor, propone `0086`
+- AND lo que otro worktree tiene reservado sin fusionar cuenta aunque no esté en ninguna rama: una fila de un roadmap en *staged* o una carpeta de `changes/` o `specs/` sin commitear
 - AND deja ese id consumido en el contador
 - AND no hace `git fetch`: lee las referencias tal como están en el repositorio
 - AND `0000` no cuenta como id ocupado: un proyecto cuyo histórico es todo `0000` recibe `0001`
@@ -52,7 +54,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 
 ### El script avisa de un id duplicado y no devuelve ninguno
 
-- GIVEN un proyecto en modo `sequence` donde dos carpetas de `specs/` distintas llevan el mismo id
+- GIVEN un proyecto en modo `sequence` donde dos carpetas de artefactos distintas llevan el mismo id, en `specs/`, en `changes/` o una en cada una
 - WHEN se invoca `sdd id next`, con `--reserve` o sin él
 - THEN escribe el id duplicado y las rutas implicadas por salida de error, y no devuelve ningún id por salida estándar
 - AND el contador no cambia
@@ -69,7 +71,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 
 - GIVEN un proyecto en modo `sequence` cuya raíz no es la raíz de su repositorio (un proyecto dentro de un monorepo)
 - WHEN se invoca `sdd id next`
-- THEN devuelve el id calculado con `specs/` y el roadmap del working tree, sin leer ramas ni el disco de otros worktrees, y avisa por salida de error de que omite las ramas, nombrando el repositorio que encontró
+- THEN devuelve el id calculado con las carpetas de `changes/` y `specs/` y los dos roadmaps del working tree, sin leer ramas ni el disco de otros worktrees, y avisa por salida de error de que omite las ramas, nombrando el repositorio que encontró
 - AND no lee las ramas del repositorio padre: sus ids no son ids de este proyecto
 
 ### Una feature partida toma el siguiente id, no un sufijo
@@ -157,4 +159,4 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 - **Límites**: cuatro dígitos con ceros a la izquierda (`0001`–`9999`); `0000` reservado como comodín de «sin ticket» en modo `tracker`. Una reserva que pasaría de `9999` falla sin reservar. `--count` va de 1 a 99. Una sola máquina: con varias máquinas en `sequence` haría falta un cerrojo en el remoto o el modo `tracker`. Hay un contador por proyecto: `sdd-ids` en la raíz del repositorio y `sdd-ids-<ruta relativa>` en una subcarpeta.
 - **Avisos**: ids duplicados entre artefactos, proyecto en modo `tracker` y ramas omitidas por no ser raíz del repositorio se avisan por salida de error; en los dos primeros casos el script no devuelve id ni toca el contador. El script avisa además por salida de error si el contador no se puede leer (y lo reinicializa) y si no hay repositorio git donde reservar (sin reservar). También avisa si el cerrojo no se libera en el plazo, nombrando al dueño y sin reservar.
 - **Regla ante conflicto**: la fila del roadmap manda. El contador nunca baja: si el escaneo ve un id mayor, gana el escaneo. Si aun así dos trabajos acaban con el mismo id, el segundo en darse cuenta renumera su carpeta y su rama y lo anota en el roadmap.
-- **Contrato de lectura del roadmap**: el script reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en la segunda si la primera es una fecha (`| 2026-10-01 | 0001 |`, la forma de la tabla de Patches), en los nombres de artefacto (`feature-<id>-`, `task-<id>-`, `patch-<id>-`, `proposal-<id>-`) y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.
+- **Contrato de lectura del roadmap**: el script lee `ROADMAP.md` de la raíz del proyecto y `.docs/sdd/roadmap.md`, los dos si existen, y reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en la segunda si la primera es una fecha (`| 2026-10-01 | 0001 |`, la forma de la tabla de Patches), en los nombres de artefacto (`feature-<id>-`, `task-<id>-`, `patch-<id>-`, `proposal-<id>-`) de `changes/` y `specs/`, y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.

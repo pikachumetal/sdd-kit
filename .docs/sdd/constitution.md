@@ -43,7 +43,7 @@ Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía 
 
 ## Art. IV — Convenciones que el kit fija a los proyectos
 
-- **Artefactos**: `.docs/sdd/` como raíz; naming `<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>` en UTC (las carpetas `-task-` anteriores a la v2.0.0 se leen y no se renombran); artefactos de release en `.docs/sdd/releases/vX.Y.Z/`; módulos por predicado observable.
+- **Documentos y artefactos**: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md` en la raíz del proyecto; el resto en `.docs/sdd/` (`steering/`, `decisions/`, `capabilities/`, `changes/`, `releases/vX.Y.Z/`); naming `<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>` en UTC, en `changes/` (las carpetas de `specs/` anteriores a la 3.0.0 y las `-task-` anteriores a la v2.0.0 se leen y no se mueven); módulos por predicado observable.
 - **Ids**, según `ids.mode` en `.docs/sdd/sdd-kit.json`: en `tracker`, el id del gestor de tickets (0000 si no hay; el de la épica para una propuesta); en `sequence`, la secuencia única de features, patches y propuestas del proyecto.
 - **Merge**: a la rama de integración, según la política que el usuario declara en `sdd-kit.json` y aplican las skills que la leen (el cierre de feature y el de patch); sin política declarada, lo decide el usuario. El merge a la rama estable y el tag los decide siempre una persona.
 - **Historia de la rama**: en una feature, un commit de apertura, uno por task del plan y uno de cierre; en un patch, fix y cierre; los intermedios se juntan al quedar limpia la revisión de cada hito (`sdd-start-feature/references/commit-milestones.md`).
@@ -53,7 +53,7 @@ Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía 
 
 Cambiar cualquiera de estas convenciones es un cambio mayor: spec dedicada y revisión de las skills afectadas. Un proyecto consumidor puede desviarse, por escrito en su propia constitution.
 
-*Por qué*: el resultado debe depender del proceso y no de quien ejecuta, y el coste lo deciden el método y los modelos, medidos en turnos y no en precio por token. [ADR 0005](decisions/0005-artifact-and-branch-conventions.md) · [ADR 0006](decisions/0006-model-policy-and-execution.md)
+*Por qué*: el resultado debe depender del proceso y no de quien ejecuta, y el coste lo deciden el método y los modelos, medidos en turnos y no en precio por token. [ADR 0005](decisions/0005-artifact-and-branch-conventions.md) · [ADR 0012](decisions/0012-documents-by-reader.md) · [ADR 0006](decisions/0006-model-policy-and-execution.md)
 
 ## Art. V — Versionado
 
@@ -98,7 +98,7 @@ Aplica al código ejecutable del kit (scripts, tests) y viaja **literal** en las
 
 ## Art. XI — Documentos acotados
 
-Todo documento de `.docs/sdd/` es de uno de estos tipos, y no los mezcla:
+Todo documento de `.docs/sdd/` y de la raíz que fija el Art. IV es de uno de estos tipos, y no los mezcla:
 
 - **Documento de estado**: dice cómo es el proyecto hoy. Se reescribe; no se le añade.
 - **Artefacto de evento**: dice qué pasó y por qué, un fichero por evento. Su cuerpo no se reescribe: lo posterior se añade como adenda fechada.

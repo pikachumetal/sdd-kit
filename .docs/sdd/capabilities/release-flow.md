@@ -156,9 +156,10 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - AND lo hace antes de arrancar ninguna de las features nuevas, y el `proposal.md` de la propuesta, si la hay, va en el mismo commit
 - AND si `develop` no está sacada en ningún worktree, el commit se hace en un worktree temporal de nombre corto junto a los demás, que se retira al acabar
 - AND si otro proceso tiene `sdd-merge.lock`, escribe `Esperando el cerrojo de merge: lo tiene <rama> (<worktree>, PID <pid>) desde <hora>.`, espera y después publica; si a los 30 min no se libera, escribe `cerrojo: no se libera; lo tiene …`, sale con 1 y `develop` no cambia
-- AND si `develop` cambió `roadmap.md` desde la base de la sesión (`git merge-base`), escribe `develop cambió .docs/sdd/roadmap.md desde tu base: integra develop antes de publicar`, sale con 1 y `develop` no cambia
-- AND si `D:\code\salas` tiene cambios sin commitear en `roadmap.md`, escribe `destino con cambios: .docs/sdd/roadmap.md en D:\code\salas`, sale con 1 y `develop` no cambia
-- AND sin `merge.into` en `sdd-kit.json` ni `--into`, o con una ruta fuera de `.docs/sdd/`, sale con 2 sin escribir
+- AND si `develop` cambió el fichero publicado desde la base de la sesión (`git merge-base`), escribe `develop cambió <ruta publicada> desde tu base: integra develop antes de publicar` (`.docs/sdd/roadmap.md` en este caso), sale con 1 y `develop` no cambia
+- AND si `D:\code\salas` tiene cambios sin commitear en el fichero publicado, escribe `destino con cambios: <ruta publicada> en D:\code\salas`, sale con 1 y `develop` no cambia
+- AND en un proyecto con la estructura 3.0.0, `node sdd.js roadmap publish --message "…" ROADMAP.md` publica igual el `ROADMAP.md` de la raíz del proyecto, y también se aceptan `CHANGELOG.md` y `PRODUCT.md` de esa raíz
+- AND sin `merge.into` en `sdd-kit.json` ni `--into`, o con una ruta que no está bajo `.docs/sdd/` ni es `ROADMAP.md`, `CHANGELOG.md` o `PRODUCT.md` de la raíz del proyecto (`docs/ROADMAP.md`, `README.md` o `src/app.ts`), sale con 2 sin escribir
 
 ### El cierre no procesa el feedback de una reunión
 

@@ -37,7 +37,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: línea <n>: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y la misma línea para la del 2026-09-20, y sale con 1
 - AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
-- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza `specs/<carpeta>/patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo
+- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza el artefacto da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo. El enlace cuenta igual si es `specs/<carpeta>/…`, `changes/<carpeta>/…` o, desde `ROADMAP.md`, `.docs/sdd/changes/<carpeta>/…` o `.docs/sdd/specs/<carpeta>/…`
 
 ### El título de una release cerrada lleva versión y fecha
 
@@ -54,7 +54,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: línea <n>: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y sale con 1
 - AND la fila del 2026-09-22 no da fallo
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila de «Patches» da fallo
-- AND con el tag `v1.2.0` en git, la fila del 2026-09-20 que enlaza `specs/<carpeta>/patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag: un patch fusionado tras el corte del mismo día da `Roadmap válido`; sin tag o sin enlace, decide la fecha
+- AND con el tag `v1.2.0` en git, la fila del 2026-09-20 que enlaza su `patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag: un patch fusionado tras el corte del mismo día da `Roadmap válido`; sin tag o sin enlace, decide la fecha. El enlace cuenta igual con las cuatro formas de «Una fila saldada antes de la última release está de más»
 
 ### El roadmap solo lleva las secciones de la plantilla
 
@@ -112,10 +112,18 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND un «Destino» que empieza por `Actuar`, `Esperar 2.º ticket` o `Descartada`, con o sin negrita, no avisa; «Backlog» no tiene «Destino» y solo avisa del prefijo
 - AND el prefijo `saldada — ` que no avisa es el mismo que el corte saca: con fecha no posterior a la última release, falla con «sale en el corte»
 
+### El roadmap vive en `ROADMAP.md`, en la raíz del proyecto
+
+- GIVEN un proyecto `<x>` con `<x>/ROADMAP.md` y sin `<x>/.docs/sdd/roadmap.md`
+- WHEN se ejecuta `sdd roadmap check --path <x>/.docs/sdd`
+- THEN valida `ROADMAP.md` con las mismas reglas que hoy y cada línea de fallo y de aviso empieza por `ROADMAP.md:`
+- AND con solo `.docs/sdd/roadmap.md` (un proyecto en la 2.x) lo valida como hoy, con `roadmap.md:`
+- AND con los dos, valida `ROADMAP.md`, escribe `ROADMAP.md: aviso: también existe .docs/sdd/roadmap.md, que no se lee` y, sin fallos, termina con `Roadmap válido` y sale con 0
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el formato de cierre, en el bloque de ayuda de «Deuda técnica» de `roadmap-template.md` de `sdd-templates`; los cierres lo citan. La cabecera de la tabla de release, en el bloque de ayuda de la sección «Release N» de la misma plantilla. Qué va en cada sección, en los bloques de ayuda de esa plantilla; lo comprueba `sdd roadmap check`.
 - **Idioma de los nombres**: estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
 - **Límites**: el roadmap solo lleva las secciones de la plantilla y, fuera de «Releases cerradas», solo tablas. Una fila saldada y una fila de «Patches» duran hasta el corte de la release siguiente.
 - **Avisos**: una línea por fallo del validador, con la regla incumplida. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.
-- **Regla ante conflicto**: una fila lleva un solo prefijo; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada.
+- **Regla ante conflicto**: una fila lleva un solo prefijo; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada. Con `ROADMAP.md` y `.docs/sdd/roadmap.md` a la vez, `roadmap check` lee `ROADMAP.md` y avisa del otro; `id next` lee los dos (`feature-ids`).
