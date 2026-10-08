@@ -232,6 +232,23 @@ Describe 'Merge-CapabilityDelta.ps1' -Tag 'Slow' {
     (Invoke-Merge (New-BookingsFolder @($comparison))).Code | Should -Be 0
   }
 
+  It 'un tag de dialecto y un marcador propio del proyecto no son un hueco de la plantilla; uno de la plantilla sí' {
+    $tagged = $script:Bookings -replace '(?m)^(- THEN la reserva queda guardada.*)$', '$1 <!-- db:sqlite -->'
+    $delta = ($script:Modified -replace '(?m)^(- THEN .*)$', '$1 <!-- db:sqlite -->') + "`n- AND el aviso sale en <destino>"
+    $sdd = New-BookingsFolder @($delta) $tagged
+    $result = Invoke-Merge $sdd
+    $result.Lines | Should -Be @('bookings.md: sustituido «Reservar una franja»')
+    $result.Code | Should -Be 0
+    $content = Read-Capability $sdd
+    $content | Should -Match '(?m)^- THEN la reserva queda guardada a nombre del usuario .* <!-- db:sqlite -->$'
+    $content | Should -Match '(?m)^- AND el aviso sale en <destino>$'
+
+    $gap = $script:Added -replace 'Cancelar una reserva', '<título estable>'
+    $result = Invoke-Merge (New-BookingsFolder @($gap))
+    $result.Lines | Should -Contain 'spec.md: «<título estable>» es un hueco de la plantilla: rellénalo o borra lo que no aplique'
+    $result.Code | Should -Be 1
+  }
+
   It 'sin Nuevas falla' {
     $delta = "### Capacidad: ``rooms```n`n**ADDED — Consultar el aforo**`n- GIVEN una sala`n- WHEN se consulta`n- THEN responde"
     $sdd = New-SddFolder @{ 'capabilities/bookings.md' = $script:Bookings; 'specs/x/spec.md' = (Get-Spec '- Modificadas: `rooms` — aforo' @($delta)) }

@@ -1,4 +1,6 @@
 BeforeAll {
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
   $script:Validator = Join-Path $PSScriptRoot '../skills/sdd-templates/scripts/Test-Roadmap.ps1'
   $script:Template = Join-Path $PSScriptRoot '../skills/sdd-templates/templates/roadmap-template.md'
   $script:BrokenFixture = Join-Path $PSScriptRoot 'fixtures/roadmap-structure/roadmap-0fc231e-parent.md'
@@ -85,6 +87,7 @@ BeforeAll {
 
 AfterAll {
   foreach ($root in $script:Roots) { Remove-Item -Recurse -Force $root -ErrorAction SilentlyContinue }
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'Test-Roadmap.ps1: secciones' -Tag 'Slow' {
@@ -322,6 +325,31 @@ Describe 'Test-Roadmap.ps1: filas que salen en el corte' -Tag 'Slow' {
     $lines = Get-ValidLines
     $lines.Insert(33, '| 2026-09-20 | 0020 | 🧪 validación diferida a la primera reserva nocturna — La franja de las 23:30 — [patch](specs/z/patch.md) |')
     $result = Test-Lines $lines
+    $result.Lines | Should -Be @('roadmap.md: línea 34: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte')
+    $result.Code | Should -Be 1
+  }
+
+  It 'con el tag de la release, un patch del mismo día decide por ascendencia en git, no por la fecha' {
+    $sdd = New-SddFolder
+    function Invoke-Git { git -C $sdd -c user.name=t -c user.email=t@t -c commit.gpgsign=false @args 2>&1 | Out-Null }
+    function Add-Patch([string]$Folder) {
+      New-Item -ItemType Directory -Force -Path (Join-Path $sdd "specs/$Folder") | Out-Null
+      Set-Content -LiteralPath (Join-Path $sdd "specs/$Folder/patch.md") -Value $Folder
+      Invoke-Git add -A; Invoke-Git commit -m $Folder
+    }
+    Invoke-Git init -q
+    Add-Patch 'antes'
+    Invoke-Git tag v1.2.0
+    Add-Patch 'despues'
+    $lines = Get-ValidLines
+    $lines.Insert(33, '| 2026-09-20 | 0026 | Fusionado tras el corte — [patch](specs/despues/patch.md) |')
+    $lines[25] = '| **[Patch 0026, 2026-09-20: saldada — [patch](specs/despues/patch.md)]** Bloqueo de SQLite | alto | Actuar |'
+    [System.IO.File]::WriteAllText((Join-Path $sdd 'roadmap.md'), ($lines -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+    (Invoke-Roadmap $sdd).Lines | Should -Be @('Roadmap válido')
+
+    $lines[33] = '| 2026-09-20 | 0025 | En el corte — [patch](specs/antes/patch.md) |'
+    [System.IO.File]::WriteAllText((Join-Path $sdd 'roadmap.md'), ($lines -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
+    $result = Invoke-Roadmap $sdd
     $result.Lines | Should -Be @('roadmap.md: línea 34: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte')
     $result.Code | Should -Be 1
   }

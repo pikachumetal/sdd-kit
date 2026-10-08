@@ -72,7 +72,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - WHEN se genera el log
 - THEN aparece una tabla Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($), de la release más antigua a la más reciente
 - AND `Sesión ($)` suma las cifras de los artefactos de la release que la tienen; sin ninguna, `—`
-- AND cada artefacto va a la primera versión con fecha igual o posterior a la de su fila (la de cierre); los posteriores a la última versión van a «sin publicar», y los que no tienen fecha, a «sin fecha»
+- AND cada artefacto va a la primera versión cuyo tag `vX.Y.Z` contiene el commit que lo añadió, y a la primera con fecha igual o posterior a la de su fila (la de cierre) si la versión no tiene tag; dos versiones del mismo día van de la anterior a la siguiente; los que no caen en ninguna van a «sin publicar», y los que no tienen fecha, a «sin fecha»
 - AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
 
 ### El walkthrough registra el modelo y el effort del hilo en cada fase

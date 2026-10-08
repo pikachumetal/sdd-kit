@@ -37,6 +37,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: línea <n>: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y la misma línea para la del 2026-09-20, y sale con 1
 - AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
+- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza `specs/<carpeta>/patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo
 
 ### El título de una release cerrada lleva versión y fecha
 
@@ -53,6 +54,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: línea <n>: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y sale con 1
 - AND la fila del 2026-09-22 no da fallo
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila de «Patches» da fallo
+- AND con el tag `v1.2.0` en git, la fila del 2026-09-20 que enlaza `specs/<carpeta>/patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag: un patch fusionado tras el corte del mismo día da `Roadmap válido`; sin tag o sin enlace, decide la fecha
 
 ### El roadmap solo lleva las secciones de la plantilla
 
