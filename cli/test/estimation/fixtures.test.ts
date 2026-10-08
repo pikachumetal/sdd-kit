@@ -110,7 +110,7 @@ describe('resolución de la carpeta de docs', () => {
   });
 
   it('falla con mensaje si no hay specs', () => {
-    expect(() => build(mkdtempSync(join(tmpdir(), 'sdd-sin-specs-')))).toThrow(/No se encuentra '\.docs\/sdd\/specs' ni 'docs\/sdd\/specs'/);
+    expect(() => build(mkdtempSync(join(tmpdir(), 'sdd-sin-specs-')))).toThrow(/No se encuentra changes\/ ni specs\/ bajo \.docs\/sdd ni docs\/sdd/);
   });
 });
 

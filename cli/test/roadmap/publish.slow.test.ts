@@ -164,4 +164,28 @@ describe('sdd roadmap publish', () => {
     expect(result.code).toBe(2);
     expect(existsSync(join(repo.main, 'README.md'))).toBe(false);
   });
+
+  it('publish acepta ROADMAP.md de la raíz', async () => {
+    const repo = newRepo();
+    write(repo.session, 'ROADMAP.md', '# Roadmap\n\n| 0152 | Raíz |\n');
+    const result = await publish(repo.session, '--message', message, 'ROADMAP.md');
+    expect(result.code).toBe(0);
+    expect(lastCommit(repo.main).files).toEqual(['ROADMAP.md']);
+  });
+
+  it('publish acepta ./ROADMAP.md', async () => {
+    const repo = newRepo();
+    write(repo.session, 'ROADMAP.md', '# Roadmap\n\n| 0152 | Raíz |\n');
+    const result = await publish(repo.session, '--message', message, './ROADMAP.md');
+    expect(result.code).toBe(0);
+    expect(lastCommit(repo.main).files).toEqual(['ROADMAP.md']);
+  });
+
+  it('publish rechaza docs/ROADMAP.md con 2', async () => {
+    const repo = newRepo();
+    write(repo.session, 'docs/ROADMAP.md', '# Roadmap\n');
+    const result = await publish(repo.session, '--message', message, 'docs/ROADMAP.md');
+    expect(result.code).toBe(2);
+    expect(lastCommit(repo.main).subject).toBe('base');
+  });
 });

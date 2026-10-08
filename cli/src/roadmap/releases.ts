@@ -7,7 +7,7 @@ export const CLOSING_PREFIX = String.raw`\*\*\[(?:Feature|Task|Patch) [^\],]+, (
 const SETTLED = new RegExp(String.raw`^\|(?:[^|]*\|)?\s*${CLOSING_PREFIX}saldada — `, 'i');
 const PATCH_ROW = /^\|\s*(\d{4}-\d{2}-\d{2})\s*\|/;
 const MIN_PUBLISHED_ID_LENGTH = 4;
-const ARTIFACT_LINK = /\]\((specs\/[^)\s]+)\)/;
+const ARTIFACT_LINK = /\]\(((?:\.docs\/sdd\/)?(?:specs|changes)\/[^)\s]+)\)/;
 
 export interface Release {
   version: string;
@@ -22,7 +22,7 @@ interface DatedLine {
 }
 
 export interface Cut {
-  sddPath: string;
+  dir: string;
   commit: string;
 }
 
@@ -59,9 +59,9 @@ function datedLines(lines: string[], sections: Section[], rows: DatedRows): Date
   return found;
 }
 
-export function cutCommit(sddPath: string, last: Release | undefined): Cut | undefined {
-  const commit = last && gitSync(sddPath, ['rev-parse', '-q', '--verify', `v${last.version}^{commit}`])?.[0];
-  return commit ? { sddPath, commit } : undefined;
+export function cutCommit(dir: string, last: Release | undefined): Cut | undefined {
+  const commit = last && gitSync(dir, ['rev-parse', '-q', '--verify', `v${last.version}^{commit}`])?.[0];
+  return commit ? { dir, commit } : undefined;
 }
 
 // El día no ordena un patch fusionado tras el corte del mismo día: con el tag de la release y el enlace al artefacto,
@@ -70,9 +70,9 @@ function inRelease({ date, text }: DatedLine, last: Release, cut: Cut | undefine
   if (date > last.date) return false;
   const link = ARTIFACT_LINK.exec(text)?.[1];
   if (!cut || link === undefined) return true;
-  const added = gitSync(cut.sddPath, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--', link]) ?? [];
+  const added = gitSync(cut.dir, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--', link]) ?? [];
   if (added.length === 0) return false;
-  return gitSync(cut.sddPath, ['merge-base', '--is-ancestor', added[added.length - 1], cut.commit]) !== null;
+  return gitSync(cut.dir, ['merge-base', '--is-ancestor', added[added.length - 1], cut.commit]) !== null;
 }
 
 export function settledRowProblems(lines: string[], sections: Section[], last: Release | undefined, cut?: Cut): string[] {

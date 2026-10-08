@@ -1,6 +1,6 @@
-import { existsSync } from 'node:fs';
 import { readLines } from '../cli/files.ts';
-import { join } from 'node:path';
+import { basename, dirname } from 'node:path';
+import { resolveDocument, shadowWarning } from '../cli/layout.ts';
 import { lineAt, parseSections, tableBlocks } from './parse.ts';
 import { closedReleases, cutCommit, publishedProblem, releasedPatchProblems, settledRowProblems } from './releases.ts';
 import { closedTitleProblems, proseProblems, sectionSetProblems, subsectionProblems } from './structure.ts';
@@ -14,13 +14,13 @@ export interface RoadmapResult {
   code: number;
 }
 
-function roadmapProblems(lines: string[], sddPath: string): string[] {
+function roadmapProblems(lines: string[], roadmapDir: string): string[] {
   const sections = parseSections(lines);
   const blocks = tableBlocks(lines, sections);
   const releases = closedReleases(lines, sections);
   const rows = openRows(lines, blocks);
   const last = releases[0];
-  const cut = cutCommit(sddPath, last);
+  const cut = cutCommit(roadmapDir, last);
   return [
     ...(/^# Roadmap\b/i.test(lineAt(lines, 0)) ? [] : ['línea 1: no empieza por «# Roadmap»']),
     ...sectionSetProblems(sections),
@@ -36,12 +36,14 @@ function roadmapProblems(lines: string[], sddPath: string): string[] {
 }
 
 export function checkRoadmap(sddPath: string): RoadmapResult {
-  const file = join(sddPath, 'roadmap.md');
-  if (!existsSync(file)) return { errors: [], warnings: [], lines: ['Sin roadmap que validar'], code: 0 };
+  const { file, shadowed } = resolveDocument(sddPath, 'roadmap');
+  if (file === null) return { errors: [], warnings: [], lines: ['Sin roadmap que validar'], code: 0 };
+  const prefix = `${basename(file)}:`;
   const lines = readLines(file);
-  const errors = roadmapProblems(lines, sddPath).map((problem) => `roadmap.md: ${problem}`);
+  const errors = roadmapProblems(lines, dirname(file)).map((problem) => `${prefix} ${problem}`);
   const blocks = tableBlocks(lines, parseSections(lines));
-  const warnings = roadmapWarnings(lines, blocks).map((warning) => `roadmap.md: aviso: ${warning}`);
+  const shadow = shadowed === null ? [] : [shadowWarning(sddPath, shadowed)];
+  const warnings = [...shadow, ...roadmapWarnings(lines, blocks).map((warning) => `aviso: ${warning}`)].map((warning) => `${prefix} ${warning}`);
   if (errors.length) return { errors, warnings, lines: [...errors, ...warnings], code: 1 };
   return { errors, warnings, lines: [...warnings, 'Roadmap válido'], code: 0 };
 }
