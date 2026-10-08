@@ -9,7 +9,7 @@
   «(antes: …)» del encabezado. Los ficheros que toca quedan con una línea en blanco tras cada título y entre bloques.
 
   Todo o nada: con cualquier fallo (un MODIFIED que no está, un ADDED con otro texto ya presente, una cita de una
-  decisión de la spec por número, un hueco <…> de la plantilla, una capacidad sin fichero que el bloque «Capacidades»
+  decisión de la spec por número, un hueco <…> literal de spec-template.md, una capacidad sin fichero que el bloque «Capacidades»
   no declara en «Nuevas», un MODIFIED que perdería un «- AND» del vivo) escribe una línea por fallo, sale con 1 y no cambia ningún fichero. Sin fallos, una línea
   por cambio y sale con 0. Volver a ejecutarlo sobre lo ya fusionado no cambia nada.
 .EXAMPLE
@@ -22,6 +22,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'CapabilitySections.ps1')
+$script:GapPattern = '<[^<>\s][^<>]*>'
+# Solo es hueco un <…> literal de la plantilla: los <!-- … --> y <…> del proyecto (tags de dialecto, marcadores) pasan.
+$script:TemplateGaps = [System.Collections.Generic.HashSet[string]]::new([string[]][regex]::Matches(
+    [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot '../templates/spec-template.md')), $script:GapPattern).Value)
 
 function Remove-InlineCode([string]$Text) { return $Text -replace '`[^`]*`', '' }
 
@@ -56,7 +60,8 @@ function Test-DeltaEntry([object]$Entry, [string]$ArtifactName) {
     return "${ArtifactName}: no leo el título de «$($Entry.Header)»: escríbelo como «**$($Entry.Kind) — <título>**», con raya"
   }
   $body = Get-MergeableLines $Entry.Lines
-  $gap = @($Entry.Capability, $Entry.Title) + $body | ForEach-Object { Find-Pattern $_ '<[^<>\s][^<>]*>' } | Select-Object -First 1
+  $gap = @($Entry.Capability, $Entry.Title) + $body | ForEach-Object { [regex]::Matches((Remove-InlineCode $_), $script:GapPattern).Value } |
+    Where-Object { $script:TemplateGaps.Contains($_) } | Select-Object -First 1
   if ($gap) { return "${ArtifactName}: «$gap» es un hueco de la plantilla: rellénalo o borra lo que no aplique" }
   $citation = $body | ForEach-Object { Find-Pattern $_ '(?i)decisi[oó]n(es)?\s+\d+' } | Select-Object -First 1
   if (-not $citation) { return }
