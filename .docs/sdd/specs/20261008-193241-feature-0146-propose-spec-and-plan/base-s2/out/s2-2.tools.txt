@@ -1,0 +1,57 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: git ls-files | head -80; ls .docs/sdd/specs 2>/dev/null; cat package.json 2>/dev/null | head -30
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+20260928-090000-feature-0012-ics-export/
+20261005-090000-feature-0013-export-by-room/
+{"type": "module"}
+
+>>> Bash: cat PRODUCT.md .docs/sdd/specs/*0012*/spec.md test/export.test.js src/export/ics.js src/export/index.js; node --test 2>&1 | tail -50
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+- **No es**: un calendario compartido ni una sincronización en vivo.
+
+## Terminology
+
+**Reserva**:
+El uso de una s
+
+=== RESULTADO (5 turnos, 0.113711 $)
+🦆 Hoy, si una socia exporta su reserva de la sala Norte del 2 de marzo de 10:00 a 12:00 e importa el fichero, su calendario la muestra de 08:00 a 10:00, dos horas antes de lo que reservó. La exportación convierte la franja a la hora universal, un reloj dos horas por detrás del coworking, pero escribe esa hora sin avisar de que es universal. Por eso el calendario la lee como si fuera la hora de la socia y la reserva sale desplazada. Lo que pide la feature es que se vea a las 10:00, y el segundo test falla justo por esto. Las reservas canceladas sí se quedan fuera, y eso lo comprueba el primer test, que pasa.
+
+**Para el dev-lead:** no puedo cerrar la feature 0012 porque el test "exporta en la hora del usuario" falla: espera `DTSTART:20260302T100000` y el fichero trae `DTSTART:20260302T080000`. Es el único escenario de la spec que cuenta, así que no hay forma honesta de darla por terminada. No he tocado nada.
+
+Necesito que decidas cómo se escribe la hora en el fichero, porque la spec no lo fija. Hay dos opciones:
+- **Hora local sin convertir:** se escribe 10:00 tal cual. Es lo que espera el test, pero la reserva saldría a las 10:00 en el calendario de quien esté en otra zona horaria.
+- **Hora universal marcada como tal:** se escribe 08:00 con la marca de que es universal. Cada calendario lo ajusta a su zona y es correcto para todos. Es mi recomendación, pero obligaría a cambiar el test, que ahora afirma lo contrario.

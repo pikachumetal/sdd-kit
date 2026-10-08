@@ -1,0 +1,109 @@
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Grep: (?i)espera|waitlist|waiting|reserva|booking|notif
+
+>>> Glob: **/*
+<<< Found 8 files
+README.md
+PRODUCT.md
+test\cancel.test.js
+test\app.test.js
+src\app.js
+.docs\sdd\roadmap.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+<<< .docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\tech-stack.md
+src\app.js
+test\app.test.js
+test\cancel.test.js
+package.json
+PRODUCT.md
+README.md
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Terminology
+6	
+7	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9	- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10	- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+11	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+8	| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+9	| 1 | Avisos por correo antes de la reserva | ⏳ |
+10	
+11	## Backlog
+12	
+13	| # | Ítem | Origen |
+14	| --- | --- | --- |
+15	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+16	
+17	## Deuda técnica
+18	
+19	| Deuda | Impacto | Plan |
+20	| --- | --- | --- |
+
+
+=== RESULTADO (8 turnos, 0.1272318 $)
+Antes de preguntar he mirado el repo, y hay tres hechos que cambian el diseño:
+
+- **«Dar de baja» no es un término del proyecto.** `PRODUCT.md:9-10` lo marca como _Evitar_ en los dos casos: **Cancelación** es la que hace el propio cliente antes de 24 h, y **Anulación** es la que hace el responsable de sala.
+- **«Admin» no existe como rol.** El roadmap (0011) habla del «responsable de cada sala», y esa fila sigue en ⏳.
+- **Liberar la sala ya ocurre.** En `src/app.js:6`, `freeRooms` solo cuenta las reservas con `status === 'active'`. Tanto `cancelBooking` como `voidBooking` cambian el estado, así que la sala vuelve a salir en `libres`.
+- **La lista de espera no existe.** Tampoco hay usuarios ni canal de aviso: la app es una CLI sin identidad de persona. La fila 1 del roadmap solo prevé avisos por correo antes de la reserva.
+
+Lo que falta es la lista de espera y el aviso, y ambos dependen de qué baja dispara esto.
+
+❓ **¿Qué baja dispara «liberar y avisar al siguiente»?**
+Tu frase habla de un «admin», que en el glosario es el responsable de sala, es decir, la **anulación** (`anular`). La cancelación del cliente también libera la sala, y alguien en espera querría saberlo igual.
+
+1️⃣ **Solo la anulación del responsable** (`anular Norte lun`): libera y avisa al 1.º de la espera. La cancelación del cliente sigue como hasta ahora (libera sin avisar). Cuesta que quien cancela a tiempo no beneficia a la lista.
+2️⃣ **Las dos bajas** (`anular` y `cancelar`): cualquier reserva que se libere avisa al siguiente. Cuesta tocar `cancelBooking`, que acaba de arreglarse en el patch 0007, y los dos flujos quedan acoplados a la lista.
+3️⃣ **Solo la cancelación del cliente**: avisa al siguiente solo cuando se cancela. No encaja con lo que dices del admin, y lo incluyo para descartarlo.
+
+➡️ **Recomiendo 2️⃣**, porque desde la lista de espera el motivo de la baja da igual: la sala queda libre en ambos casos y el siguiente la querría. Con 1️⃣ alguien podría esperar para siempre una sala que un cliente ya canceló. A cambio, la feature toca los dos caminos y hay que cubrir ambos con tests.

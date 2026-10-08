@@ -2,7 +2,7 @@
 
 Cómo pregunta el kit cuando una skill necesita decisiones del usuario. Cada escenario lanza una petición que lleva a una de las seis skills que entrevistan (`sdd-consult`, `sdd-init-greenfield`, `sdd-init-brownfield`, `sdd-start-feature`, `sdd-roadmap`, `sdd-config`) y mide la forma de sus preguntas. El **paso** es la skill que llama: una edición de su regla de preguntas lanza su tramo.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`) o carpeta vacía.
+Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-start-feature/mold-reservas`, con glosario en `PRODUCT.md`) o carpeta vacía.
 
 **Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo: un juez automático sería otro modelo, con su propio ruido.
 
@@ -23,6 +23,7 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 | g9 | sdd-consult | Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8? | salas | `sdd-kit:sdd-consult` | 2 | 2/2 | sonnet | 0128: buscar fuera del repo antes de preguntar |
 | k1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | 0128, control: una pregunta puntual no abre entrevista |
 | u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta |
+| t1 | language | Invoca la skill sdd-kit:sdd-grilling: diseñamos la feature de liberar salas. Yo te digo: cuando el admin da de baja una reserva, se libera la sala y se avisa al siguiente de la lista. | reservas | `sdd-kit:sdd-grilling` | 2 | 2/2 | sonnet | propuesta 0131, §propose: contraste de lenguaje con el glosario y el código (feature 0146) |
 
 ## Rúbrica
 
@@ -46,6 +47,7 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | C2 Sin spec | g4 | `state.txt` muestra una carpeta de spec o una rama de feature nuevas |
 | C3 Pregunta puntual | k1 | contesta con preguntas en vez de contestar |
 | C4 Enrutado | u1 | la primera skill invocada es `sdd-kit:sdd-grilling` |
+| T1 Contraste de lenguaje | t1 | antes de seguir con el diseño, no dice que el glosario de `PRODUCT.md` llama «Cancelación» a la que anula el cliente y «Anulación» a la del responsable de sala, y que «dar de baja» (_Evitar_) por el admin encaja con Anulación, ni pregunta cuál quiere decir |
 
 ## Procedencia de las reglas
 

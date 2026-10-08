@@ -1,0 +1,37 @@
+--- [15]
+Here is how the March calendar file gets made, from your request to the file on disk. I read the code first, and every step below matches it.
+
+**The example:** you ask for the March 2026 export. The reservations on file are:
+
+| Meeting room | Date | Time | Status |
+|---|---|---|---|
+| Norte | 2 Mar | 10:00–12:00 | confirmed |
+| Sur | 5 Mar | 16:00–17:00 | confirmed |
+| Norte | 12 Mar | 09:00–10:00 | cancelled |
+| Norte | 19 Mar | 12:00–13:30 | confirmed |
+| Sur | 1 Apr | 10:00–11:00 | confirmed |
+
+1. **You make the request.** You run the tool's export command in the terminal and give it the month, "2026-03". The tool reads that text and hands it to the export routine. It doesn't check that you typed a month, so a missing or wrong one would give an empty or odd file instead of an error.
+2. **The tool loads every reservation.** It reads the single list of all reservations from the project's data file, as a whole. All five rows above are now in memory.
+3. **It keeps only the right ones.** It keeps the reservations whose date starts with "2026-03" and drops the cancelled ones. The 1 April reservation falls out for the month, and the cancelled 12 March one falls out for its status. That leaves three: 2, 5 and 19 March.
+4. **It puts them in order.** It sorts them by date and then by time period, so the 2 March reservation comes first and the 19 March one last.
+5. **It turns each one into a calendar entry.** Each entry gets the title "Sala Norte" or "Sala Sur", plus a start and end time. The times in the data are the coworking's local time, and the code treats that as two hours ahead of the universal clock, so 2 March 10:00–12:00 becomes 08:00–10:00 in universal time. Calendars convert it back to your own timezone when you import.
+6. **It wraps the entries in a calendar file.** The three entries go between the opening and closing lines that every calendar program, such as Google Calendar and Outlook, understands.
+7. **It saves the file and tells you where.** It creates the exports folder if it doesn't exist and writes one file there, named after the month. The tool prints that file's location and finishes.
+
+**After the steps (outside the code):** you open Google Calendar or Outlook, choose "import", and pick that file. Your three March meetings appear. It's a one-time copy, so later changes to a reservation don't update your calendar. You have to export again.
+
+**Two things I noticed and haven't changed:**
+- **The universal-time marker is dropped.** The code builds a time like "20260302T080000" and cuts off the final "Z" that marks it as universal. A calendar may then read it as your local time instead of converting it, which could shift the meeting by hours. I haven't tested this in a real calendar.
+- **The two-hour offset is fixed all year.** Whatever the date, the code uses the same offset, so any day on winter time would be off by an hour. 2 March in the example is one such day, if the coworking follows daylight saving.
+
+**Where to look:**
+- Step 1: `src/cli.js`
+- The order of steps 2–7: `src/export/index.js`
+- Step 2: `src/bookings/repository.js`, reading `data/bookings.json`
+- Steps 3–4: `src/export/filter.js`
+- Steps 5–6: `src/export/ics.js`
+- Step 7: `src/export/writer.js`, which writes to `exports/<month>.ics`
+
+Ask me if you want any step in more detail.
+

@@ -18,7 +18,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Batería de `sdd-start-feature`, escenarios nuevos y RED | pending | — | |
+| 1 | Batería de `sdd-start-feature`, escenarios nuevos y RED | done | — | RED: 7 reglas fallan, 3 salen limpias (T1, l2, P2) |
 | 2 | La spec abre con 🦆 y ✋, y dice dónde se prueba | pending | — | |
 | 3 | Gate con opciones fijas y modelo del revisor de dominio | pending | — | |
 | 4 | El plan declara `Tras` y su verificación sale de «Dónde se prueba» | pending | — | |
