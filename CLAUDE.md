@@ -9,7 +9,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/mission.md` — por qué existe el kit, usuarios, y el glosario del equipo (documentos de anclaje, carriles, predicados, walkthrough).
 - `.docs/sdd/constitution.md` — las reglas del kit: preámbulo de cinco principios y once artículos, cada uno con su porqué en una frase y el enlace a su ADR.
 - `.docs/sdd/decisions/` — ADR: el porqué y la historia de cada regla, una por fichero (`NNNN-<slug>.md`), inmutables; se sustituyen con otra ADR.
-- `.docs/sdd/tech-stack.md` — distribución dual (plugin de Claude Code + `npx skills add`), dependencia de superpowers, cómo se testean las skills.
+- `.docs/sdd/tech-stack.md` — distribución (solo plugin de Claude Code), dependencia de superpowers, cómo se testean las skills.
 - `.docs/sdd/architecture.md` — estructura del repo, anatomía de una skill y de su evidencia de test, y la tabla de los documentos de `.docs/sdd/`: tipo, quién escribe cada uno, quién lo lee y qué lo acota.
 - `.docs/sdd/roadmap.md` — próximo, release en preparación, backlog, deuda técnica, patches y releases cerradas. Solo tablas, con la forma de `roadmap-template.md`; lo comprueba `sdd roadmap check` en el pre-commit.
 - `.docs/sdd/changelog.md` — historial de releases (Keep a Changelog, SemVer).
@@ -18,7 +18,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/specs/` — artefactos SDD de las tareas del propio kit (spec, plan, walkthrough por carpeta).
 - `.docs/workflow/` — documentación del flujo en castellano: la [guía de uso](.docs/workflow/usage-guide.md) para el dev con el kit instalado (punto de entrada desde el README), [greenfield](.docs/workflow/greenfield.md), [brownfield](.docs/workflow/brownfield.md) y el [anexo de evidencia](.docs/workflow/evidence-and-references.md). Es **de este repo**, no algo que el kit fije a los proyectos: ninguna skill la nombra. La guía, greenfield y brownfield describen el kit y se releen al subir de versión; lo vigila `tests/WorkflowDocs.Tests.ps1`, que exige que su marcador «Última revisión: kit vX.Y.Z» sea igual o posterior a la versión de `plugin.json`.
 - `skills/<nombre>/SKILL.md` — las 15 skills del kit. `skills/sdd-templates/templates/` es la **fuente única** de las plantillas.
-- `tests/` — pruebas de cada skill (baterías, evidencia RED/GREEN y A/B) y tests Pester del código ejecutable.
+- `tests/` — pruebas de cada skill (baterías, evidencia RED/GREEN y A/B) y tests del código ejecutable (Vitest en `cli/test/`; los Pester que quedan son de frases y anatomía de skills).
 - `.claude-plugin/` — manifests del plugin (versión) y del marketplace.
 
 ## Reglas de la sesión

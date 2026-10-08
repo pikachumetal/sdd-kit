@@ -24,8 +24,9 @@
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
 │   ├── sdd-grilling/SKILL.md      (en inglés, + NOTICE MIT: sub-skill de preguntas)
-│   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje + scripts/)
-├── hooks/                       (hook SessionStart del plugin: hooks.json, session-start en bash con LF, que inyecta skills/using-sdd/SKILL.md — solo canal plugin)
+│   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje)
+├── cli/                         (la CLI `sdd`, TypeScript sin build: bin/, src/ por dominio, test/ con Vitest y fixtures/)
+├── hooks/                       (hooks.json: SessionStart en forma exec, que ejecuta `sdd hook session-start` e inyecta skills/using-sdd/SKILL.md)
 ├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
 ├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
 └── .docs/
@@ -55,9 +56,9 @@
 - `<skill>-ab.md`: A/B de no-regresión, puntual ante una duda concreta (Art. I). Registra los cortes probados, los aceptados y **los descartados con su motivo** — el descarte es el dato caro: evita que la siguiente campaña repita el experimento.
 - Las fixtures de las campañas de skills se construyen en el scratchpad de sesión; lo que se versiona, en la carpeta de la spec (`red/`, `green/`), es el molde, el `subject.sh` de la campaña (desde el patch 0076, sobre el lanzador de referencia de `tests/headless/`) y lo que produjo cada sujeto, para que la narrativa verificada de `tests/*.md` apunte a ficheros que se pueden abrir (desde la task 0002).
 - `batteries/<skill>/`: la batería de regresión de la skill (`battery.md`, `subject.sh` y molde), que usan todas sus ediciones; método en `tech-stack.md`, «Baterías por skill».
-- `<script>.Tests.ps1`: tests Pester del código ejecutable del kit. Sus fixtures en `tests/fixtures/<tema>/` **sí se versionan**: son el contrato del formato que el script lee (líneas reales de walkthroughs y patches del kit y de Alybo). Todo `<script>.Tests.ps1` que ejecute git dot-sourcea `tests/Clear-GitEnv.ps1`, guarda `Clear-GitEnv` en `BeforeAll` y llama a `Restore-GitEnv` en `AfterAll`: dentro del pre-commit, git exporta `GIT_INDEX_FILE` y compañía, y una fixture de la task 0042 escribió en el índice del worktree real. Lo exige `tests/GitEnvConvention.Tests.ps1`.
-- **Scripts portables**: el código ejecutable del kit es PowerShell 7 porque todo el equipo usa Windows, pero sin APIs exclusivas de Windows (rutas con `\` fijas, `cmd.exe`, el registro): llevarlo a macOS o Linux tiene que ser instalar `pwsh`, no reescribir. Se descarta portar scripts o tests a Python o Node: lo lento de la suite es crear procesos en Windows, no el lenguaje. Se revisa si entra alguien fuera de Windows (decisión del 2026-09-25).
-- **Un script que lee un artefacto del kit se prueba contra su plantilla**: un test con la plantilla de `sdd-templates` calcada sin tocar y otro con la plantilla calcada y rellenada a medias (task 0070: `Test-Capabilities.ps1` pasó 24 tests y el GREEN, y rechazaba la cabecera de la propia `capability-template.md`).
+- `cli/test/`: tests Vitest, un directorio por dominio de `cli/src/`; los que crean repos git o lanzan procesos van en `*.slow.test.ts`. Sus fixtures en `cli/test/fixtures/<tema>/` **sí se versionan**: son el contrato del formato que el verbo lee (líneas reales de walkthroughs y patches del kit y de Alybo, la salida literal del hook). Todo código que llame a git limpia `GIT_DIR` y compañía del entorno del hijo: dentro del pre-commit, git las exporta.
+- **Un solo lenguaje para lo ejecutable** ([ADR 0011](decisions/0011-node-cli.md)): el código del kit es la CLI `sdd`, en TypeScript que Node ≥ 22.18.0 ejecuta sin compilar ni dependencias, y el hook es uno de sus verbos. Un proyecto consumidor solo necesita Node. proto, pnpm, moon y Vitest son del repo del kit: no viajan en el plugin.
+- **Un verbo que lee un artefacto del kit se prueba contra su plantilla**: un test con la plantilla de `sdd-templates` calcada sin tocar y otro con la plantilla calcada y rellenada a medias (task 0070: el validador de capacidades pasó 24 tests y el GREEN, y rechazaba la cabecera de la propia `capability-template.md`).
 
 ## Documentos de `.docs/sdd/`
 
@@ -65,13 +66,13 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 
 | Documento | Tipo | Lo escribe | Lo lee | Cota |
 | --- | --- | --- | --- | --- |
-| `roadmap.md` | estado | `sdd-roadmap` y los cierres de feature, patch y release | los arranques, `sdd-roadmap` y los cierres | `Test-Roadmap.ps1`: solo las secciones de la plantilla, solo tablas, y las filas saldadas salen en el corte |
-| `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-consult`, por el índice | la forma, con `Test-Capabilities.ps1`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
+| `roadmap.md` | estado | `sdd-roadmap` y los cierres de feature, patch y release | los arranques, `sdd-roadmap` y los cierres | `sdd roadmap check`: solo las secciones de la plantilla, solo tablas, y las filas saldadas salen en el corte |
+| `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-consult`, por el índice | la forma, con `sdd capability check`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
 | `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
 | `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
 | `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`; no cabe en una lectura): un aprendizaje nuevo sustituye o condensa otro |
 | `changelog.md` | diario por release | `add-to-changelog` y `sdd-end-release` | `sdd-end-release`, y las personas | solo se lee `[Unreleased]` y la última versión; se parte por versión mayor si pesa |
-| `estimation-log.md` | generado | `Build-EstimationLog.ps1` | `writing-plans`, para estimar | una fila por cierre; nadie lo edita |
+| `estimation-log.md` | generado | `sdd estimation log` | `writing-plans`, para estimar | una fila por cierre; nadie lo edita |
 | `sdd-kit.json` | estado | `sdd-config`, las init y las migraciones | todas las skills | sus claves son las del catálogo de `sdd-config` |
 | `decisions/NNNN-<slug>.md` | ADR | la feature que toma o sustituye la decisión | quien toca sus `rutas`, por el enlace de la constitution | inmutable: solo cambia `status` al sustituirse |
 | `specs/<carpeta>/` | evento | el arranque y el cierre de cada feature, patch o propuesta | su propia sesión, y quien busca un porqué | una carpeta por evento; no se edita tras el cierre, salvo adendas fechadas |
@@ -81,4 +82,4 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 
 ## Relación con los proyectos consumidores
 
-El kit se instala (plugin o CLI); cada proyecto añade encima sus skills de nivel 2 (por stack) y nivel 3 (propias), y sus documentos de anclaje en `.docs/sdd/`. Las skills del kit leen el proyecto por predicados — el mismo kit sirve para un greenfield con TDD y un legacy sin tests sin tocar una línea.
+El kit se instala (plugin de Claude Code); cada proyecto añade encima sus skills de nivel 2 (por stack) y nivel 3 (propias), y sus documentos de anclaje en `.docs/sdd/`. Las skills del kit leen el proyecto por predicados — el mismo kit sirve para un greenfield con TDD y un legacy sin tests sin tocar una línea.
