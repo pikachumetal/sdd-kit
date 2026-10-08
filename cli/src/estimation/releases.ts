@@ -2,7 +2,8 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { formatNumber, median, sum } from './numbers.ts';
 import type { Row } from './artifacts.ts';
-import { MISSING, readText } from './text.ts';
+import { readText } from '../cli/files.ts';
+import { MISSING } from './text.ts';
 
 const UNPUBLISHED = 'sin publicar';
 const UNDATED = 'sin fecha';

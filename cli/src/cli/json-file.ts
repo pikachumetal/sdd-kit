@@ -1,4 +1,4 @@
-import { readText } from '../estimation/text.ts';
+import { readText } from './files.ts';
 import { DomainError } from './args.ts';
 
 export function parseJsonFile(file: string): unknown {

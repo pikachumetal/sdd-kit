@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { readLines } from '../cli/files.ts';
 import { join } from 'node:path';
 import { lineAt, parseSections, tableBlocks } from './parse.ts';
 import { closedReleases, publishedProblem, releasedPatchProblems, settledRowProblems } from './releases.ts';
@@ -11,12 +12,6 @@ export interface RoadmapResult {
   warnings: string[];
   lines: string[];
   code: number;
-}
-
-function readLines(file: string): string[] {
-  const lines = readFileSync(file, 'utf8').replace(/^﻿/, '').split(/\r\n|\r|\n/);
-  if (lines.at(-1) === '') lines.pop();
-  return lines;
 }
 
 function roadmapProblems(lines: string[]): string[] {

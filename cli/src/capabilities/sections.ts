@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readLines } from '../cli/files.ts';
 import { basename, extname } from 'node:path';
 
 export const RULE_NAMES = ['Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto'];
@@ -18,16 +18,6 @@ export function equalsIgnoringCase(left: string, right: string): boolean {
 
 export function includesIgnoringCase(items: string[], wanted: string): boolean {
   return items.some((item) => equalsIgnoringCase(item, wanted));
-}
-
-export function splitLines(text: string): string[] {
-  const lines = text.replace(/^﻿/, '').split(/\r\n|\n|\r/);
-  if (lines.at(-1) === '') lines.pop();
-  return lines;
-}
-
-export function readLines(path: string): string[] {
-  return splitLines(readFileSync(path, 'utf8'));
 }
 
 export function sectionTitle(line: string): string | null {

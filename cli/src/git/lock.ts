@@ -1,6 +1,7 @@
-import { closeSync, openSync, readFileSync, unlinkSync, writeSync } from 'node:fs';
+import { closeSync, openSync, unlinkSync, writeSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { DomainError } from '../cli/args.ts';
+import { readText } from '../cli/files.ts';
 import type { Io } from '../cli/io.ts';
 
 const POLL_MILLISECONDS = 500;
@@ -57,7 +58,7 @@ function tryCreate(path: string, owner: LockOwner): number | null {
 
 function readOwner(path: string): LockOwner | null {
   try {
-    const owner = JSON.parse(readFileSync(path, 'utf8').replace(/^﻿/, ''));
+    const owner = JSON.parse(readText(path));
     return typeof owner?.pid === 'number' && typeof owner.host === 'string' ? owner : null;
   } catch {
     return null;

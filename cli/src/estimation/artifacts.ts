@@ -14,7 +14,8 @@ import {
   toThousands,
 } from './fields.ts';
 import type { Warn } from './fields.ts';
-import { MISSING, readText } from './text.ts';
+import { readText } from '../cli/files.ts';
+import { MISSING } from './text.ts';
 
 const WALKTHROUGH_HEADING = String.raw`^#+[^\n]*estimado vs real`;
 const PATCH_HEADING = String.raw`^#+\s*(?:\d+\.\s*)?Tiempo(?![\p{L}\p{N}_])`;

@@ -137,7 +137,7 @@ Esqueleto primero (`sdd.js`, comprobación de versión, despacho de verbos con `
 **ADDED — La CLI se ejecuta con Node y sin dependencias**
 - GIVEN el plugin instalado y Node 22.18.0 o posterior en el `PATH`, sin pnpm, moon ni proto
 - WHEN se ejecuta `node "<raíz del plugin>/cli/bin/sdd.js" --help`
-- THEN lista los verbos de la tabla de la decisión 4 con una línea de ayuda cada uno, y sale con 0
+- THEN lista cada verbo (`capability index|check|merge`, `roadmap check|publish`, `id next`, `merge`, `estimation log`, `session tokens`, `watch subagent|command`, `hook session-start`, `task start|done|brief`, `review package`, `workspace`, `ledger rulings`) con una línea de ayuda, y sale con 0
 - AND `cli/package.json` no tiene `dependencies`, y el plugin no necesita `pnpm install` para ejecutar ningún verbo
 
 **ADDED — Node demasiado viejo se dice antes de ejecutar nada**
@@ -218,6 +218,7 @@ Esqueleto primero (`sdd.js`, comprobación de versión, despacho de verbos con `
 
 ## Enmiendas
 
+- 2026-10-08 — El THEN de «La CLI se ejecuta con Node y sin dependencias» enumera los verbos en vez de remitir a «la tabla de la decisión 4»: una capacidad no puede citar la spec y la fusión lo rechaza. Misma regla, solo redacción — ruling del agente, no cambia el comportamiento
 - 2026-10-07 — TypeScript sin build (type stripping de Node, mínimo 22.18.0) y Vitest como `devDependency`, en lugar de JS plano y `node:test`: cambian las decisiones 1, 2, 3, 11 y 14, el Scope y los THEN de versión y de dependencias de `cli` — el dev-lead prefiere TypeScript, Node lo ejecuta sin compilar desde la 22.18.0, y los tests no viajan al proyecto — aprobada: «la verdad preferiria typescript pero una cosa ... no veo cual seria el problema de usar vitest» · «nada nada paro de preguntar sigue»
 
 ## Aprobaciones

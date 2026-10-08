@@ -1,5 +1,5 @@
 import { isRecord, sameText, toCount, type Json } from '../cli/records.ts';
-import { readText } from '../estimation/text.ts';
+import { readText } from '../cli/files.ts';
 
 export interface ToolUse {
   call: Json;

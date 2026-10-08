@@ -226,12 +226,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el hilo despacha cada revisor
 - THEN el despacho lleva `subagent_type: sdd-kit:effort-medium` y `model: sonnet`
 
-### En Windows, el workspace de ejecución se usa en su ruta Windows
-
-- GIVEN Windows y la ruta que imprimen `sdd workspace`, `sdd task brief` o `sdd task start` de superpowers en forma POSIX (empieza por `/`, por ejemplo `/tmp/claude/…` o `/d/code/…`)
-- WHEN el agente va a escribir o leer por primera vez en ese workspace (el ledger, un brief, un informe)
-- THEN usa la ruta en forma Windows, y el `Write` no pide un permiso que un sujeto sin usuario no puede conceder
-
 ### Cada cambio de paso lleva un aviso en llano
 
 - GIVEN una feature en curso con `sdd-start-feature`
@@ -251,14 +245,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN un plan con `Ejecución: native`
 - WHEN el hilo ejecuta cada task
 - THEN la abre con `sdd task start` y la cierra con `sdd task done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
-
-### Los scripts de Native se lanzan con la herramienta Bash y con salida
-
-- GIVEN un plan con `Ejecución: native` en Windows, con PowerShell como shell principal, y una «Verificación» que no imprime nada si pasa
-- WHEN el hilo abre y cierra cada task con `sdd task start` y `sdd task done`
-- THEN los lanza con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell, y comprueba que la ruta de `sdd workspace` no está vacía antes de escribir en el ledger
-- AND pasa a `sdd task done` un comando que imprime algo (`sh -c '<comando> && echo ok'`), y la línea `Task <N>: complete` queda en el ledger a la primera
-- AND el comando sale con un código distinto de 0 si algo falla: con Pester, `Invoke-Pester … -CI`, y la «Verificación» del plan ya lo trae así; con un test en rojo, `sdd task done` no escribe `Task <N>: complete`
 
 ### La base se comprueba antes de cada task Native
 
@@ -300,7 +286,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una feature Native con líneas `Final: minor (deferred)` en el ledger
 - WHEN se escribe el walkthrough
-- THEN «Decisiones tomadas sin el dev-lead» lleva los «Rulings I made» y los «Deferred minors» del mensaje final de `executing-plans`
+- THEN «Decisiones tomadas sin el dev-lead» lleva las líneas `Ruling:` y `minor (deferred)` que da `sdd ledger rulings`, ejecutado antes de que el workspace se borre
 
 ### Cada task de producto acaba en algo que se prueba en la aplicación
 
@@ -555,6 +541,21 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN `brainstorming` necesita una decisión del usuario
 - THEN la pregunta sigue `sdd-grilling` ([`interviewing`](interviewing.md)): una por turno, en texto con el formato fijo, con escena concreta si es de producto
 - AND el flujo (enfoques, diseño por secciones, spec) sigue siendo el de `brainstorming`
+
+### Los rulings del ledger se cosechan antes de borrar el workspace
+
+- GIVEN el ledger de un plan con `Task 2: Ruling: el umbral queda en 30 s — el plan decía 20 y el test tarda 24`, `Final: minor (deferred) nombre de variable poco claro en parse()` y `Final: Ruling: no se renombra Foo — fuera de alcance`
+- WHEN el cierre ejecuta `node sdd.js ledger rulings <plan.md>`
+- THEN escribe esas tres líneas en el orden del ledger y sale con 0
+- AND sin ledger escribe `Sin rulings` y sale con 0
+
+### Las tasks Native se abren y cierran desde cualquier shell
+
+- GIVEN un plan con `Ejecución: native` en Windows, con PowerShell como shell principal, y una «Verificación» que no imprime nada si pasa
+- WHEN el hilo abre y cierra cada task con `sdd task start` y `sdd task done <plan> <n> <base> -- pwsh -NoProfile -Command "Invoke-Pester -Path tests/Foo.Tests.ps1 -CI"` desde la herramienta PowerShell
+- THEN `sdd task start` imprime la ruta del workspace en forma Windows (`D:\…`), y la línea `Task <N>: complete (…, tests: <comando> → (sin salida))` queda en el ledger a la primera
+- AND si `sdd task start` falla o no imprime ruta, sale con un código distinto de 0 y el hilo no escribe en el ledger
+- AND con un test en rojo, `sdd task done` no escribe `Task <N>: complete` y sale con el código del comando; con un comando que no existe, sale con 127 y tampoco lo escribe
 
 ## Reglas de la capacidad
 

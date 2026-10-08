@@ -4,9 +4,10 @@ import {
   findRequirement, findRule, formatTitle, newDocument, readDocument, requirementsEnd, ruleInsertIndex,
   saveDocument, type Document,
 } from './document.ts';
+import { readLines } from '../cli/files.ts';
 import { capabilitiesDir } from './files.ts';
 import {
-  declaredCapabilities, deltaEntries, equalsIgnoringCase, isPatch, readLines, sectionLines, type Declared, type Delta,
+  declaredCapabilities, deltaEntries, equalsIgnoringCase, isPatch, sectionLines, type Declared, type Delta,
 } from './sections.ts';
 
 export type MergeResult = { lines: string[]; code: number };

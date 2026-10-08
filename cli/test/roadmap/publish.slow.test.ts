@@ -25,21 +25,24 @@ function write(root: string, path: string, content: string): void {
 interface Repo {
   main: string;
   session: string;
+  top: string;
 }
 
-function newRepo(withMergeInto = true): Repo {
+function newRepo(withMergeInto = true, subdir = ''): Repo {
   const base = mkdtempSync(join(tmpdir(), 'sdd-publish-'));
-  const main = join(base, 'salas');
-  mkdirSync(main);
-  git(main, 'init', '-q', '-b', 'develop');
+  const top = join(base, 'salas');
+  const main = join(top, subdir);
+  mkdirSync(main, { recursive: true });
+  git(top, 'init', '-q', '-b', 'develop');
   write(main, '.docs/sdd/sdd-kit.json', withMergeInto ? '{"merge":{"into":"develop"}}\n' : '{}\n');
   write(main, roadmap, '# Roadmap\n\n| id | Feature |\n| --- | --- |\n| 0149 | Salas |\n');
-  git(main, 'add', '-A');
-  git(main, 'commit', '-q', '-m', 'base');
-  const session = join(base, 'f0150');
-  git(main, 'worktree', 'add', '-q', '-b', 'feature/0150', session);
+  git(top, 'add', '-A');
+  git(top, 'commit', '-q', '-m', 'base');
+  const sessionTop = join(base, 'f0150');
+  git(top, 'worktree', 'add', '-q', '-b', 'feature/0150', sessionTop);
+  const session = join(sessionTop, subdir);
   write(session, roadmap, '# Roadmap\n\n| id | Feature |\n| --- | --- |\n| 0149 | Salas |\n| 0150 | Filtro |\n| 0151 | Exportar |\n');
-  return { main, session };
+  return { main, session, top };
 }
 
 async function publish(cwd: string, ...extra: string[]) {
@@ -72,6 +75,14 @@ describe('sdd roadmap publish', () => {
     expect(commit.subject).toBe(message);
     expect(commit.files).toEqual([roadmap]);
     expect(commit.roadmap).toContain('| 0151 | Exportar |');
+    expect(readFileSync(join(repo.main, roadmap), 'utf8')).toContain('| 0151 | Exportar |');
+  });
+
+  it('publishes a project that lives in a repository subfolder', async () => {
+    const repo = newRepo(true, 'apps/salas');
+    const result = await publish(repo.session, '--message', message, roadmap);
+    expect(result.code).toBe(0);
+    expect(git(repo.top, 'show', '--name-only', '--format=', 'develop').split('\n')).toEqual([`apps/salas/${roadmap}`]);
     expect(readFileSync(join(repo.main, roadmap), 'utf8')).toContain('| 0151 | Exportar |');
   });
 

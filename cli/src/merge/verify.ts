@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createWriteStream, readFileSync, rmSync, type WriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -14,8 +14,21 @@ export interface Verification {
 
 const LINE_BREAK = /\r?\n/;
 
-function shellCommand(command: string): [string, string[]] {
-  return process.platform === 'win32' ? ['pwsh', ['-NoProfile', '-Command', command]] : ['sh', ['-c', command]];
+const WINDOWS_SHELLS = ['pwsh', 'powershell.exe'];
+
+type ShellProbe = (program: string) => boolean;
+
+function runs(program: string): boolean {
+  return spawnSync(program, ['-NoProfile', '-Command', 'exit 0'], { stdio: 'ignore', windowsHide: true }).error === undefined;
+}
+
+export function shellCommand(command: string, platform = process.platform, probe: ShellProbe = runs): [string, string[]] {
+  if (platform !== 'win32') return ['sh', ['-c', command]];
+  const program = WINDOWS_SHELLS.find(probe);
+  if (program === undefined) {
+    throw new DomainError(`verificación: no hay shell para ejecutar el gate; se probó ${WINDOWS_SHELLS.join(' y ')}`);
+  }
+  return [program, ['-NoProfile', '-Command', command]];
 }
 
 function logPath(): string {

@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { basename, dirname } from 'node:path';
+import { readText } from '../cli/files.ts';
 import { equalsIgnoringCase, RULE_NAMES, sectionTitle } from './sections.ts';
 
 export interface Document {
@@ -21,7 +22,7 @@ export function newDocument(file: string, lines: string[], newline: string): Doc
 }
 
 export function readDocument(file: string): Document {
-  const raw = readFileSync(file, 'utf8').replace(/^﻿/, '');
+  const raw = readText(file);
   return newDocument(file, raw.split(/\r?\n/), raw.includes('\r\n') ? '\r\n' : '\n');
 }
 

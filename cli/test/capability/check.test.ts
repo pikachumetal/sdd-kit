@@ -170,16 +170,28 @@ describe('sdd capability check on capabilities/', () => {
     expect(result.code).toBe(0);
   });
 
-  it('--json reports the valid count and the errors', async () => {
+  it('--json reports validCount and the errors', async () => {
     const good = await checkBookings(bookings);
     const sdd = sddFolder({ 'capabilities/bookings.md': bookings.replace(thenLine, '') });
     const bad = await runSdd(['capability', 'check', '--path', sdd, '--json']);
     expect(good.code).toBe(0);
     expect(JSON.parse(bad.lines.join('\n'))).toEqual({
-      valid: 0,
+      validCount: 0,
       errors: ['bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)'],
     });
     expect(bad.code).toBe(1);
+  });
+});
+
+describe('sdd capability check --json with a missing artifact', () => {
+  it('prints the error as JSON and exits 1', async () => {
+    const sdd = sddFolder({ 'capabilities/bookings.md': bookings });
+    const result = await runSdd(['capability', 'check', '--path', sdd, '--artifact', join(sdd, 'no-existe.md'), '--json']);
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({
+      validCount: 0,
+      errors: [`no existe el artefacto: ${join(sdd, 'no-existe.md')}`],
+    });
+    expect(result.code).toBe(1);
   });
 });
 

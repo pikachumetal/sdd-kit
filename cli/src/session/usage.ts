@@ -1,5 +1,5 @@
 import { compare, sameText, toCount, type Json } from '../cli/records.ts';
-import { readText } from '../estimation/text.ts';
+import { readText } from '../cli/files.ts';
 
 export const CATEGORIES = ['input', 'cacheWrite5m', 'cacheWrite1h', 'cacheRead', 'output'] as const;
 export type Category = (typeof CATEGORIES)[number];

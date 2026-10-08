@@ -1,4 +1,4 @@
-import { DomainError, UsageError, parseVerbArgs } from './cli/args.ts';
+import { UsageError, parseVerbArgs } from './cli/args.ts';
 import type { Io } from './cli/io.ts';
 import { VERBS, type Verb } from './cli/verbs.ts';
 
@@ -29,6 +29,17 @@ function helpLines(verbs: Verb[]): string[] {
   return verbs.map((verb, index) => `${commands[index].padEnd(width)}  ${verb.summary}`);
 }
 
+function reportFailure(error: unknown, context: { argv: string[]; verbs: Verb[]; io: Io }): number {
+  const { argv, verbs, io } = context;
+  if (error instanceof UsageError) {
+    io.err(error.message);
+    io.err(usageLine(argv[0], verbs));
+    return 2;
+  }
+  io.err(error instanceof Error ? error.message : String(error));
+  return 1;
+}
+
 export async function run(argv: string[], io: Io, verbs: Verb[] = VERBS): Promise<number> {
   if (argv[0] === '--help') {
     io.out('uso: sdd <sustantivo> <verbo> [opciones]');
@@ -39,16 +50,6 @@ export async function run(argv: string[], io: Io, verbs: Verb[] = VERBS): Promis
     const { verb, rest } = resolveVerb(argv, verbs);
     return await verb.run(parseVerbArgs(verb, rest), io);
   } catch (error) {
-    if (error instanceof DomainError) {
-      io.err(error.message);
-      return 1;
-    }
-    if (!(error instanceof UsageError)) {
-      io.err(error instanceof Error ? error.message : String(error));
-      return 1;
-    }
-    io.err(error.message);
-    io.err(usageLine(argv[0], verbs));
-    return 2;
+    return reportFailure(error, { argv, verbs, io });
   }
 }

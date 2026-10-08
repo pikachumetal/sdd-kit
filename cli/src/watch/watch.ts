@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { caseInsensitiveGet, isRecord } from '../cli/records.ts';
-import { readText } from '../estimation/text.ts';
+import { readText } from '../cli/files.ts';
 import { defaultProjectsRoots, transcriptFolders } from '../session/transcripts.ts';
 import { toplevel } from '../git/git.ts';
 import { sameText } from '../cli/records.ts';

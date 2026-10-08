@@ -26,6 +26,8 @@ function removeQuietly(path: string): void {
   }
 }
 
+const warnToStderr = (message: string) => void process.stderr.write(`${message}\n`);
+
 const REMOVE_ATTEMPTS = 3;
 const REMOVE_RETRY_MILLISECONDS = 100;
 
@@ -65,8 +67,7 @@ export async function withWorktreeFolder<T>(repo: string, spec: TempWorktreeSpec
   try {
     return await body(path);
   } finally {
-    await removeWorktree(repo, path, spec.warn ?? ((message) => void process.stderr.write(`${message}
-`)));
+    await removeWorktree(repo, path, spec.warn ?? warnToStderr);
   }
 }
 

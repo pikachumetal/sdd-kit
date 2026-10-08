@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, realpathSync, rmSync } from 'node:
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { commonDir, git, gitLines, worktrees } from '../git/git.ts';
+import { commonDir, git, gitLines, toplevel, worktrees } from '../git/git.ts';
 import { withLock } from '../git/lock.ts';
 import { withTempWorktree } from '../merge/temp-worktree.ts';
 
@@ -56,18 +56,26 @@ async function rollback(target: string, files: string[]): Promise<void> {
   }
 }
 
+async function pathsInRepository(projectRoot: string, files: string[]): Promise<string[]> {
+  const top = await toplevel(projectRoot);
+  if (top === null) throw new DomainError(`'${projectRoot}' no es un repositorio git.`);
+  const prefix = relative(realpathSync.native(top), projectRoot).split(sep).join('/');
+  return prefix === '' ? files : files.map((file) => `${prefix}/${file}`);
+}
+
 async function commitFiles(target: string, options: PublishOptions): Promise<void> {
   const { projectRoot, files, message } = options;
-  await assertTargetClean(target, files);
+  const targetFiles = await pathsInRepository(projectRoot, files);
+  await assertTargetClean(target, targetFiles);
   try {
-    for (const file of files) {
-      mkdirSync(dirname(join(target, file)), { recursive: true });
-      copyFileSync(join(projectRoot, file), join(target, file));
-    }
-    await runGit(target, ['add', '--', ...files]);
-    await runGit(target, ['commit', '-m', message, '--', ...files]);
+    targetFiles.forEach((targetFile, index) => {
+      mkdirSync(dirname(join(target, targetFile)), { recursive: true });
+      copyFileSync(join(projectRoot, files[index]!), join(target, targetFile));
+    });
+    await runGit(target, ['add', '--', ...targetFiles]);
+    await runGit(target, ['commit', '-m', message, '--', ...targetFiles]);
   } catch (error) {
-    await rollback(target, files);
+    await rollback(target, targetFiles);
     throw error;
   }
 }

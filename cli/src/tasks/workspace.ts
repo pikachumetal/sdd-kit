@@ -50,19 +50,39 @@ function owns(dir: string, claim: Claim): boolean {
   return true;
 }
 
+function candidate(base: string, slug: string, claim: Claim, index: number): string {
+  if (index === 0) return join(base, slug);
+  if (index === 1) return join(base, `${slug}-${claim.parent}`);
+  return join(base, `${slug}-${claim.parent}-${index}`);
+}
+
 function chooseDirectory(base: string, slug: string, claim: Claim): string {
-  const candidates = [slug, `${slug}-${claim.parent}`];
-  for (const name of candidates) if (owns(join(base, name), claim)) return join(base, name);
-  for (let n = 2; ; n++) if (owns(join(base, `${candidates[1]}-${n}`), claim)) return join(base, `${candidates[1]}-${n}`);
+  for (let index = 0; ; index++) {
+    const dir = candidate(base, slug, claim, index);
+    if (owns(dir, claim)) return dir;
+  }
+}
+
+async function planContext(plan: string): Promise<{ base: string; slug: string; claim: Claim }> {
+  planFile(plan);
+  const root = await toplevel(process.cwd());
+  if (root === null) throw new UsageError('fatal: not a git repository');
+  return { base: join(root, '.superpowers', 'sdd'), slug: slugOf(plan), claim: planIdentity(plan, root) };
 }
 
 export async function workspaceFor(plan: string): Promise<string> {
-  planFile(plan);
-  const slug = slugOf(plan);
-  const root = await toplevel(process.cwd());
-  if (root === null) throw new UsageError('fatal: not a git repository');
-  const base = join(root, '.superpowers', 'sdd');
-  const dir = chooseDirectory(base, slug, planIdentity(plan, root));
+  const { base, slug, claim } = await planContext(plan);
+  const dir = chooseDirectory(base, slug, claim);
   writeFileSync(join(base, '.gitignore'), '*\n');
   return dir;
+}
+
+export async function existingWorkspace(plan: string): Promise<string | null> {
+  const { base, slug, claim } = await planContext(plan);
+  for (let index = 0; ; index++) {
+    const dir = candidate(base, slug, claim, index);
+    const marker = join(dir, 'plan-path');
+    if (!existsSync(marker)) return null;
+    if (namesSamePlan(readFileSync(marker, 'utf8'), claim)) return dir;
+  }
 }

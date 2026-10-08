@@ -1,5 +1,5 @@
 import { afterAll } from 'vitest';
-import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -34,8 +34,11 @@ export function commit(repo: string, message: string): void {
 }
 
 export function copyFixtureToRepo(name: string, branches: string[] = [], folderName = 'project'): string {
-  const repo = join(tempDir(), folderName);
-  cpSync(join(fixtures, name), repo, { recursive: true });
+  const parent = tempDir();
+  const repo = join(parent, folderName);
+  // Node 22.18 cpSync no copia nada si el destino tiene caracteres no ASCII: se copia a una ruta ASCII y se renombra.
+  cpSync(join(fixtures, name), join(parent, 'staging'), { recursive: true });
+  renameSync(join(parent, 'staging'), repo);
   git(repo, ['init', '-q', '-b', 'main']);
   commit(repo, 'fixture');
   branches.forEach((branch) => git(repo, ['branch', branch]));

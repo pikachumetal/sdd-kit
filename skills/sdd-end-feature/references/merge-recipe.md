@@ -20,7 +20,7 @@ El script hace, en este orden:
 6. Retira el worktree temporal.
 
 - **`--push`**: según «Push», abajo. Sin él, el script fusiona en local y no publica nada.
-- **`--verify`**: el gate de merge que declara `tech-stack.md` §Testing, que se ejecuta sobre el resultado del merge y antes del push. Si el proyecto tiene una sola suite, es esa. Si separa un conjunto rápido de la suite completa, el gate es el rápido, y la suite completa se ejecuta antes de llamar al script, como parte de la validación final; el mensaje final da su resultado. Se omite si un hook `pre-merge-commit` del repo ya ejecuta el gate, pero la suite completa no se omite nunca.
+- **`--verify`**: el gate de merge que declara `tech-stack.md` §Testing, y se ejecuta sobre el resultado del merge, antes del push. Con una sola suite, es esa. Si separa un conjunto rápido, el gate es el rápido, y la suite completa se ejecuta antes de llamar al script, en la validación final; el mensaje final da su resultado. Se omite si un hook `pre-merge-commit` del repo ya ejecuta el gate; la suite completa, nunca. Shell: `pwsh` en Windows, o `powershell.exe` si falta; en el resto, `sh -c`.
 - El worktree de la feature sigue en su rama. Lo decide `merge.removeWorktree`, no esta receta.
 
 ## Push

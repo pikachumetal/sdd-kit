@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { DomainError } from '../cli/args.ts';
-import { readText } from '../estimation/text.ts';
+import { kitConfigPath, readText } from '../cli/files.ts';
 
 export interface MergePolicy {
   into: string;
@@ -17,14 +16,14 @@ function parseConfig(configPath: string): { merge?: { into?: unknown; noFf?: unk
 }
 
 export function configuredMergeInto(projectRoot: string): string | null {
-  const configPath = join(projectRoot, '.docs/sdd/sdd-kit.json');
+  const configPath = kitConfigPath(projectRoot);
   if (!existsSync(configPath)) return null;
   const into = parseConfig(configPath)?.merge?.into;
   return typeof into === 'string' && into.trim() !== '' ? into : null;
 }
 
 export function resolveMergePolicy(projectRoot: string): MergePolicy {
-  const configPath = join(projectRoot, '.docs/sdd/sdd-kit.json');
+  const configPath = kitConfigPath(projectRoot);
   if (!existsSync(configPath)) throw new DomainError(`política: no existe '${configPath}'.`);
   const { into, noFf } = parseConfig(configPath)?.merge ?? {};
   if (typeof into !== 'string' || into.trim() === '' || noFf === undefined || noFf === null) {

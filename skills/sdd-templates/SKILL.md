@@ -56,7 +56,7 @@ El código ejecutable del kit es una CLI en Node, `cli/bin/sdd.js`, que viaja co
 | `sdd task done` | Ejecuta la «Verificación» de una task y, si pasa, la anota en el ledger: `task done <plan> <n> <base> -- <comando…>`. |
 | `sdd task brief` | Extrae el texto de una task del plan a un fichero: `task brief <plan> <n> <out>`. |
 | `sdd review package` | Genera el paquete de revisión de un rango de commits: `review package <plan> <base> <head> <out>`. |
-| `sdd ledger rulings` | Lista los rulings y los minor diferidos del ledger de un plan: `ledger rulings <plan>`. Lo usa `sdd-end-feature`. |
+| `sdd ledger rulings` | Lista los rulings y los minor diferidos del ledger de un plan: `ledger rulings <plan>`. Lo usan `sdd-start-feature` y `sdd-end-feature`. |
 | `sdd hook session-start` | Escribe el contexto de arranque de sesión; lo ejecuta `hooks/hooks.json`, no las skills. |
 
 Reglas al usarlas:

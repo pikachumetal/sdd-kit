@@ -5,7 +5,7 @@ import { writeBrief } from './brief.ts';
 import { finishTask } from './done.ts';
 import { writePackage } from './package.ts';
 import { listRulings } from './rulings.ts';
-import { workspaceFor } from './workspace.ts';
+import { existingWorkspace, workspaceFor } from './workspace.ts';
 
 function positional(args: VerbArgs, index: number, usage: string): string {
   const value = args.positionals[index];
@@ -109,7 +109,8 @@ export const ledgerRulingsVerb: Verb = {
   options: { json: { type: 'boolean' } },
   positionals: ['plan'],
   async run(args, io) {
-    const rulings = listRulings(await workspaceFor(positional(args, 0, 'sdd ledger rulings PLAN_FILE [--json]')));
+    const workspace = await existingWorkspace(positional(args, 0, 'sdd ledger rulings PLAN_FILE [--json]'));
+    const rulings = workspace === null ? [] : listRulings(workspace);
     if (args.values.json) io.json(rulings);
     else if (rulings.length === 0) io.out('Sin rulings');
     else rulings.forEach((line) => io.out(line));

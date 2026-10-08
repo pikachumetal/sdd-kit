@@ -4,13 +4,13 @@ import type { Block } from './parse.ts';
 const EMPTY_ROW = /^\|[\s|]*$/;
 const STATE_PREFIXES = ['⏳', '🔄', '✅', '🧪 validación diferida a', '⏸️ aparcada:'];
 const STATE_HELP = '⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …';
-const HEADERS: Record<string, string> = {
-  Próximo: '| # | Ítem | Estado |',
-  Release: '| id | Feature | Origen | Ficheros que toca | Estado |',
-  Backlog: '| # | Ítem | Origen |',
-  'Deuda técnica': '| Ítem | Impacto | Destino |',
-  Patches: '| Fecha | Id | Descripción |',
-};
+const HEADERS = new Map([
+  ['Próximo', '| # | Ítem | Estado |'],
+  ['Release', '| id | Feature | Origen | Ficheros que toca | Estado |'],
+  ['Backlog', '| # | Ítem | Origen |'],
+  ['Deuda técnica', '| Ítem | Impacto | Destino |'],
+  ['Patches', '| Fecha | Id | Descripción |'],
+]);
 
 export interface Row {
   index: number;
@@ -24,7 +24,7 @@ function isEmptyRow(line: string): boolean {
 
 export function headerMatches(lines: string[], block: Block): boolean {
   if (block.header === null || !block.section) return false;
-  return lineAt(lines, block.header).trim() === HEADERS[block.section.kind];
+  return lineAt(lines, block.header).trim() === HEADERS.get(block.section.kind);
 }
 
 function cellCountProblems(lines: string[], header: number): string[] {
@@ -46,7 +46,7 @@ export function tableBlockProblems(lines: string[], block: Block): string[] {
 
 export function tableHeaderProblems(lines: string[], block: Block): string[] {
   if (block.header === null || !block.section) return [];
-  const expected = HEADERS[block.section.kind];
+  const expected = HEADERS.get(block.section.kind);
   if (!expected || headerMatches(lines, block)) return [];
   return [`línea ${block.header + 1}: la cabecera de «${block.section.title}» debe ser «${expected}»`];
 }

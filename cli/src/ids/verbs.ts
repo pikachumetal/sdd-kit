@@ -1,8 +1,8 @@
-import { UsageError } from '../cli/args.ts';
+import { UsageError, lockTimeoutOption } from '../cli/args.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { nextIds } from './next.ts';
 
-const DEFAULT_LOCK_TIMEOUT_MINUTES = 2;
+const ID_LOCK_TIMEOUT_MINUTES = 2;
 
 function countOption(args: VerbArgs): number {
   const text = args.values.count;
@@ -10,14 +10,6 @@ function countOption(args: VerbArgs): number {
   const count = Number(text);
   if (!Number.isInteger(count) || count < 1 || count > 99) throw new UsageError('--count debe estar entre 1 y 99');
   return count;
-}
-
-function lockTimeoutOption(args: VerbArgs): number {
-  const text = args.values['lock-timeout'];
-  if (text === undefined) return DEFAULT_LOCK_TIMEOUT_MINUTES;
-  const minutes = Number(text);
-  if (text === '' || !Number.isFinite(minutes) || minutes < 0) throw new UsageError('--lock-timeout debe ser un número de minutos');
-  return minutes;
 }
 
 export const idNextVerb: Verb = {
@@ -34,7 +26,7 @@ export const idNextVerb: Verb = {
   async run(args, io) {
     const projectRoot = typeof args.values['project-root'] === 'string' ? args.values['project-root'] : '.';
     const reserve = args.values.reserve === true;
-    const options = { projectRoot, reserve, count: countOption(args), lockTimeoutMinutes: lockTimeoutOption(args) };
+    const options = { projectRoot, reserve, count: countOption(args), lockTimeoutMinutes: lockTimeoutOption(args, ID_LOCK_TIMEOUT_MINUTES) };
     const ids = await nextIds(options, io);
     if (args.values.json) io.json({ ids, reserved: reserve });
     else ids.forEach((id) => io.out(id));

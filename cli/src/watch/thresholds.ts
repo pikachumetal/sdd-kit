@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { caseInsensitiveGet, isRecord } from '../cli/records.ts';
-import { readText } from '../estimation/text.ts';
+import { kitConfigPath, readText } from '../cli/files.ts';
 import type { Thresholds } from './verdict.ts';
 
 const DEFAULT_THRESHOLDS: Thresholds = { betweenStepsMinutes: 8, longCommandMinutes: 20 };
@@ -20,7 +19,7 @@ function readSilence(configPath: string): unknown {
 
 export function readThresholds(worktreePath: string): Thresholds {
   const thresholds = { ...DEFAULT_THRESHOLDS };
-  const configPath = join(worktreePath, '.docs/sdd/sdd-kit.json');
+  const configPath = kitConfigPath(worktreePath);
   const silence = existsSync(configPath) ? readSilence(configPath) : undefined;
   if (!isRecord(silence)) return thresholds;
   for (const key of Object.keys(thresholds) as Array<keyof Thresholds>) {

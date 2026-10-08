@@ -1,8 +1,9 @@
 import { existsSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { readLines } from '../cli/files.ts';
 import { capabilitiesDir, capabilityFiles } from './files.ts';
 import {
-  declaredCapabilities, deltaEntries, equalsIgnoringCase, includesIgnoringCase, isPatch, readLines,
+  declaredCapabilities, deltaEntries, equalsIgnoringCase, includesIgnoringCase, isPatch,
   requirementsOf, sectionLines, sectionTitle, sectionTitles, purposeOf, RULE_NAMES, type Declared,
 } from './sections.ts';
 
@@ -12,7 +13,7 @@ const PURPOSE_MAX_LENGTH = 300;
 const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
 const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
 
-export type Validation = { lines: string[]; code: number; valid: number };
+export type Validation = { lines: string[]; code: number; validCount: number };
 
 function titleProblems(slug: string, lines: string[]): string[] {
   const title = lines.find((line) => line.trim());
@@ -182,8 +183,8 @@ export function validateCapabilities(sddPath: string, artifactPath?: string): Va
   const perFile = files.map((file) => fileProblems(file.name, file.lines).map((problem) => `${file.name}: ${problem}`));
   const problems = [...perFile.flat(), ...(artifactPath ? artifactProblems(artifactPath, capabilitiesDir(sddPath)) : [])];
   const skipped = files.filter((file) => isNotCapability(file.lines)).map((file) => file.name);
-  const valid = files.filter((file, index) => !perFile[index].length && !skipped.includes(file.name)).length;
-  if (problems.length) return { lines: problems, code: 1, valid };
-  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, valid };
-  return { lines: [summaryLine(files.length - skipped.length, skipped)], code: 0, valid };
+  const validCount = files.filter((file, index) => !perFile[index].length && !skipped.includes(file.name)).length;
+  if (problems.length) return { lines: problems, code: 1, validCount };
+  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount };
+  return { lines: [summaryLine(files.length - skipped.length, skipped)], code: 0, validCount };
 }

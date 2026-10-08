@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -88,6 +88,19 @@ describe('sdd task start / task done', () => {
     const result = sdd(repo, 'ledger', 'rulings', plan);
     expect(result.code).toBe(0);
     expect(result.out.trim()).toBe('Sin rulings');
+  });
+
+  it('rulings does not create the workspace', () => {
+    const repo = newRepo();
+    sdd(repo, 'ledger', 'rulings', plan);
+    expect(existsSync(join(repo, '.superpowers'))).toBe(false);
+  });
+
+  it('rulings reads the ledger of an existing workspace', () => {
+    const repo = newRepo();
+    const workspace = sdd(repo, 'workspace', plan).out.trim();
+    writeFileSync(join(workspace, 'progress.md'), 'Task 1: Ruling: se queda como está\n');
+    expect(sdd(repo, 'ledger', 'rulings', plan).out.trim()).toBe('Task 1: Ruling: se queda como está');
   });
 
   it('start fails without a plan', () => {

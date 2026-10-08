@@ -7,7 +7,8 @@ import { calibrationSection } from './calibration.ts';
 import type { Warn } from './fields.ts';
 import { formatNumber } from './numbers.ts';
 import { releaseTable } from './releases.ts';
-import { MISSING, readText } from './text.ts';
+import { readText } from '../cli/files.ts';
+import { MISSING } from './text.ts';
 
 const HEADER =
   '<!-- AUTO-GENERADO por sdd estimation log (sdd-kit) — no editar a mano. Regenerar: sdd estimation log --root <proyecto> -->';

@@ -31,11 +31,19 @@ export function closedReleases(lines: string[], sections: Section[]): Release[] 
   return releases;
 }
 
-function datedLines(lines: string[], sections: Section[], kinds: string[], pattern: RegExp): DatedLine[] {
+interface DatedRows {
+  kinds: string[];
+  pattern: RegExp;
+}
+
+const SETTLED_ROWS: DatedRows = { kinds: ['Backlog', 'Deuda técnica'], pattern: SETTLED };
+const PATCH_ROWS: DatedRows = { kinds: ['Patches'], pattern: PATCH_ROW };
+
+function datedLines(lines: string[], sections: Section[], rows: DatedRows): DatedLine[] {
   const found: DatedLine[] = [];
-  for (const section of sections.filter((candidate) => kinds.includes(candidate.kind))) {
+  for (const section of sections.filter((candidate) => rows.kinds.includes(candidate.kind))) {
     for (const index of indices(section.line, section.last)) {
-      const date = pattern.exec(lineAt(lines, index))?.[1];
+      const date = rows.pattern.exec(lineAt(lines, index))?.[1];
       if (date !== undefined) found.push({ index, date });
     }
   }
@@ -44,14 +52,14 @@ function datedLines(lines: string[], sections: Section[], kinds: string[], patte
 
 export function settledRowProblems(lines: string[], sections: Section[], last: Release | undefined): string[] {
   if (!last) return [];
-  return datedLines(lines, sections, ['Backlog', 'Deuda técnica'], SETTLED)
+  return datedLines(lines, sections, SETTLED_ROWS)
     .filter(({ date }) => date <= last.date)
     .map(({ index, date }) => `línea ${index + 1}: fila saldada el ${date}, no posterior a la v${last.version} (${last.date}): sale en el corte`);
 }
 
 export function releasedPatchProblems(lines: string[], sections: Section[], last: Release | undefined): string[] {
   if (!last) return [];
-  return datedLines(lines, sections, ['Patches'], PATCH_ROW)
+  return datedLines(lines, sections, PATCH_ROWS)
     .filter(({ date }) => date <= last.date)
     .map(({ index, date }) => `línea ${index + 1}: patch del ${date}, no posterior a la v${last.version} (${last.date}): sale en el corte`);
 }

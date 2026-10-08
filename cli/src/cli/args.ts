@@ -45,9 +45,9 @@ export function text(args: VerbArgs, name: string): string | null {
   return typeof value === 'string' ? value : null;
 }
 
-export function lockTimeoutOption(args: VerbArgs): number {
+export function lockTimeoutOption(args: VerbArgs, defaultMinutes = DEFAULT_LOCK_TIMEOUT_MINUTES): number {
   const raw = text(args, 'lock-timeout');
-  if (raw === null) return DEFAULT_LOCK_TIMEOUT_MINUTES;
+  if (raw === null) return defaultMinutes;
   const minutes = Number(raw);
   if (raw === '' || !Number.isFinite(minutes) || minutes < 0) throw new UsageError('--lock-timeout debe ser un número de minutos');
   return minutes;

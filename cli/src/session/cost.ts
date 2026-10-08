@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { caseInsensitiveGet, isRecord, type Json } from '../cli/records.ts';
+import { kitConfigPath } from '../cli/files.ts';
 import { parseJsonFile } from '../cli/json-file.ts';
 import type { Session } from './session.ts';
 import { CATEGORIES, mergeTotals, type ModelTotals, type Usage } from './usage.ts';
@@ -11,7 +11,7 @@ export type SessionCost =
   | { kind: 'priced'; thread: number; subagents: number; hasDispatches: boolean };
 
 export function readPrices(worktreePath: string): Json | null {
-  const configPath = join(worktreePath, '.docs/sdd/sdd-kit.json');
+  const configPath = kitConfigPath(worktreePath);
   if (!existsSync(configPath)) return null;
   const config = parseJsonFile(configPath);
   const pricing = isRecord(config) ? caseInsensitiveGet(config, 'pricing') : undefined;

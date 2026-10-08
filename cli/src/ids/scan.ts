@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { DomainError } from '../cli/args.ts';
+import { kitConfigPath, readText } from '../cli/files.ts';
 import type { Io } from '../cli/io.ts';
 import { gitLines, samePath, toplevel, worktrees } from '../git/git.ts';
 
@@ -32,10 +33,10 @@ const ROADMAP_ROW_ID = /^\|\s*(?:[0-9]{4}-[0-9]{2}-[0-9]{2}\s*\|\s*)?([0-9]{4})\
 const NO_GIT_IDS: GitIds = { usedIds: [], currentBranchId: null };
 
 function readIdsMode(root: string): unknown {
-  const configPath = join(root, '.docs/sdd/sdd-kit.json');
+  const configPath = kitConfigPath(root);
   if (!existsSync(configPath)) return undefined;
   try {
-    return JSON.parse(readFileSync(configPath, 'utf8').replace(/^﻿/, ''))?.ids?.mode;
+    return JSON.parse(readText(configPath))?.ids?.mode;
   } catch {
     throw new DomainError(`No se puede leer '${configPath}': no es JSON válido.`);
   }

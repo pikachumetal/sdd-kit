@@ -6,12 +6,11 @@ import { validateCapabilities } from './check.ts';
 import { capabilityIndex, indexLines } from './index.ts';
 import { mergeDelta } from './merge.ts';
 
-function artifactOption(args: VerbArgs, io: Io): string | undefined {
-  const artifact = args.values.artifact;
-  if (typeof artifact !== 'string') return undefined;
-  if (existsSync(artifact)) return artifact;
-  io.err(`no existe el artefacto: ${artifact}`);
-  return undefined;
+function reportMissingArtifact(artifact: string, asJson: boolean, io: Io): number {
+  const message = `no existe el artefacto: ${artifact}`;
+  if (asJson) io.json({ validCount: 0, errors: [message] });
+  else io.err(message);
+  return 1;
 }
 
 export const capabilityIndexVerb: Verb = {
@@ -34,11 +33,11 @@ export const capabilityCheckVerb: Verb = {
   options: { path: { type: 'string' }, artifact: { type: 'string' }, json: { type: 'boolean' } },
   async run(args, io) {
     const path = requiredOption(args, 'path');
-    const artifact = artifactOption(args, io);
-    if (typeof args.values.artifact === 'string' && !artifact) return 1;
-    const { lines, code, valid } = validateCapabilities(path, artifact);
+    const artifact = typeof args.values.artifact === 'string' ? args.values.artifact : undefined;
+    if (artifact !== undefined && !existsSync(artifact)) return reportMissingArtifact(artifact, args.values.json === true, io);
+    const { lines, code, validCount } = validateCapabilities(path, artifact);
     if (!args.values.json) lines.forEach((line) => io.out(line));
-    else io.json({ valid, errors: code ? lines : [] });
+    else io.json({ validCount, errors: code ? lines : [] });
     return code;
   },
 };

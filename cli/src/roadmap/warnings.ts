@@ -7,7 +7,10 @@ const CLOSING_CELL = new RegExp(`^${CLOSING_PREFIX}(?:saldada — |parcial — .
 const CLOSING_HELP = '«**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»';
 const DESTINATIONS = ['Actuar', 'Esperar 2.º ticket', 'Descartada'];
 const DEBT = 'Deuda técnica';
-const ITEM_COLUMN: Record<string, number> = { Backlog: 1, [DEBT]: 0 };
+const ITEM_COLUMN = new Map([
+  ['Backlog', 1],
+  [DEBT, 0],
+]);
 const MAX_SHOWN_DESTINATION = 60;
 
 function closingWarning(item: string): string[] {
@@ -23,7 +26,7 @@ function destinationWarning(destination: string): string[] {
 }
 
 function rowWarnings(row: Row, kind: string): string[] {
-  const warnings = closingWarning(row.cells[ITEM_COLUMN[kind]] ?? '');
+  const warnings = closingWarning(row.cells[ITEM_COLUMN.get(kind) ?? 0] ?? '');
   if (kind !== DEBT) return warnings;
   return [...warnings, ...destinationWarning(row.cells.at(-1) ?? '')];
 }

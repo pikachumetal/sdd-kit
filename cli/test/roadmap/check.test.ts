@@ -113,6 +113,12 @@ describe('sdd roadmap check: secciones', () => {
     expect(result.code).toBe(1);
   });
 
+  it('treats a section named like an Object property as unknown, without header complaints', async () => {
+    const content = insert(lines(), 28, '## constructor', '', '| # | Ítem |', '| --- | --- |', '| 1 | x |', '');
+    const result = await check(content);
+    expect(result.lines).toEqual(['roadmap.md: línea 29: sección «constructor» fuera de la plantilla']);
+  });
+
   it('rejects a missing section', async () => {
     const result = await check(remove(lines(), 28, 6));
     expect(result.lines).toEqual(['roadmap.md: falta la sección «Patches»']);
