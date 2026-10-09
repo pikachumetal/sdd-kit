@@ -21,8 +21,8 @@ BeforeAll {
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
       'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
-      'sdd-propose'         = @{ SkillMd = 4700; Total = 4700 }
-      'sdd-start-feature'   = @{ SkillMd = 5400; Total = 17500 }
+      'sdd-propose'         = @{ SkillMd = 4800; Total = 4800 }
+      'sdd-start-feature'   = @{ SkillMd = 5400; Total = 17400 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.

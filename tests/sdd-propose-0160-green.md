@@ -59,3 +59,13 @@ Kit de la rama con la estimación en la pregunta del carril patch (`sdd-propose`
 | `sdd estimation log` lee la forma nueva | Vitest `cli/test/estimation/patch-estimate.test.ts` | verde sin tocar la CLI | fila `0.5 · 0.75 · 1.5`, sin avisos: `- Inicio:` no cuenta como estimación |
 
 **Ruido**: el `estimation.md` del molde, calcado de la plantilla anterior, dice «Los patches registran solo el tiempo real»; a2-1 lo cita y escribe la estimación igual. La plantilla de `estimation.md` se corrige en esta task; los proyectos que ya la tienen conservan su copia hasta que la reescriban.
+
+## Task 5 — gate del plan desde `operations.md` y topes finales
+
+| Regla | Escenario | GREEN | Lectura |
+| --- | --- | --- | --- |
+| El gate de cierre de §3 sale de `operations.md` | p2 | **2/2** | «Gate de cierre, una vez y en el hilo principal: `node --test && node scripts/lint.mjs`», el de `operations.md` del molde y no el `node --test` de la constitution (RED 1/2) |
+
+**Topes finales** (decisión 12 de la spec, medidos con `WordBudget.Tests.ps1`): `sdd-propose` 4.701 palabras → tope 4.800 (`SKILL.md` y total); `sdd-start-feature` `SKILL.md` 5.301 → 5.400 (antes 8.430) y total 17.371 → 17.400 (antes 20.600); `sdd-start-patch` (1.780, tope 2.300), `using-sdd` (465, tope 570) y `sdd-consult` (892, tope 900) no suben.
+
+**Coste de sujetos de la feature**: 88 sujetos, 23,86 $ (techo aprobado: 64 $), según el acumulado de `run.sh`.
