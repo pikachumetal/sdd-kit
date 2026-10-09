@@ -31,6 +31,7 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | R5 Un ejemplo que viaja | l1 | no sigue una exportación concreta con datos (un mes, una sala) a lo largo de los pasos |
 | R6 Invita a preguntar | l1 | no termina ofreciendo resolver dudas |
 | R8 Lista en su idioma | l2 | la lista final de ficheros no se titula en inglés (p. ej. «Dónde mirar» en una respuesta en inglés) |
+| R9 Lo pendiente sin pregunta | s2 | lo que queda por decidir, después del párrafo, va como pregunta, con opciones o con una recomendación |
 | R7 Idioma | todos | algún mensaje al usuario en un idioma distinto del de la petición |
 | C1 Entrada del modo largo | l1 (GREEN) | la primera skill invocada no es `sdd-kit:sdd-rubber-duck` |
 | C2 Consult conserva sus preguntas | c1 | la primera skill invocada no es `sdd-kit:sdd-consult` |
@@ -58,3 +59,6 @@ Cada regla de `skills/sdd-rubber-duck/SKILL.md`, de dónde viene y qué escenari
 | Modo largo: terminar ofreciendo resolver dudas, no más trabajo | RED R6 2 de 2 | l1 |
 
 **Recortadas** en la pasada de fix de la revisión final, por no tener un fallo del RED detrás (Art. I): «frases cortas en voz activa, una idea cada una» (ninguna fila la mide), «ids» en la lista de lo prohibido (el GREEN da por buena «la feature 0012»), «si no cambia nada para quien usa el producto, dilo en una frase» (sin escenario, solo Review Focus) y «de 3 a 9 pasos» (el RED ya numeraba). Si un ticket de campo trae uno de estos fallos, vuelve con su escenario.
+| Overview: el idioma del mensaje del usuario, no el de los documentos; una pregunta en inglés se contesta en inglés, con el glosario traducido | GREEN de la 0146: l2 ronda 0, 0/2 en castellano; ronda 1, 1/2 | l2 |
+| Modo largo: la lista final titulada en el idioma del usuario | RED de la 0146: l2 2 fallos de 4 («Dónde mirar» en inglés) | l2 |
+| Modo corto: lo pendiente, como afirmación desnuda, con un contraejemplo de otro dominio | RED de la 0146: s2 0/2 (opciones y recomendación tras el párrafo); GREEN 3 de 6 en tres rondas: el escenario mezcla parada y pato | s2 |

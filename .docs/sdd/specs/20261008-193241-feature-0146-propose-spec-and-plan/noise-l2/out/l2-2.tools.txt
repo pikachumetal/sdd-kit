@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: git ls-files | head -100; ls -a; cat PRODUCT.md .docs/sdd/PRODUCT.md 2>/dev/null | head -60
+
+>>> Grep: export|exportar|exporta
+<<< Found 15 files
+test\export.test.js
+src\cli.js
+src\export\writer.js
+src\export\ics.js
+src\export\filter.js
+src\export\index.js
+src\bookings\repository.js
+PRODUCT.md
+.docs\sdd\roadmap.md
+.docs\sdd\mission.md
+.docs\sdd\tech-stack.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\constitution.md
+README.md
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+./
+../
+.docs/
+.git/
+data/
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+# exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas 
+
+>>> Bash: cd src; cat cli.js export/index.js export/filter.js export/ics.js export/writer.js bookings/repository.js; head -c 700 ../data/bookings.json
+<<< import { exportMonth } from './export/index.js';
+
+const [command, ...args] = process.argv.slice(2);
+
+if (command === 'exportar') {
+  const month = args[args.indexOf('--mes') + 1];
+  console.log(exportMonth(month));
+}
+import { loadBookings } from '../bookings/repository.js';
+import { bookingsBySlot } from './filter.js';
+import { toIcs } from './ics.js';
+import { writeExport } from './writer.js';
+
+export function exportMonth(month) {
+  return writeExport(month, toIcs(bookingsBySlot(loadBookings(), month)));
+}
+export function bookingsBySlot(bookings, month) {
+  return bookings
+ 
+
+=== RESULTADO (6 turnos, 0.12155079999999999 $)
+Te lo explico con un ejemplo: pides la exportación de marzo de 2026.
+
+1. **Pides la exportación.** Desde la terminal indicas que quieres exportar y el mes, "2026-03". La herramienta pasa ese mes al resto del proceso.
+2. **Se leen todas las reservas.** Se cargan las 5 reservas guardadas, de todos los meses y de las dos salas.
+3. **Se queda lo que toca.** Solo pasan las reservas de marzo que no están canceladas. La del 12 de marzo (sala Norte, cancelada) y la del 1 de abril se descartan. Quedan 3, ordenadas por día y franja:
+   - 2 de marzo, sala Norte, 10:00-12:00
+   - 5 de marzo, sala Sur, 16:00-17:00
+   - 19 de marzo, sala Norte, 12:00-13:30
+4. **Cada reserva se convierte en un evento de calendario.** El título es "Sala Norte" o "Sala Sur". El inicio y el fin se pasan a hora UTC, la hora de referencia que entienden todos los calendarios. La herramienta supone que el coworking va siempre dos horas por delante de UTC. Así, la reserva del 2 de marzo de 10:00 a 12:00 queda de 08:00 a 10:00 UTC.
+5. **Se escribe el fichero.** Los 3 eventos se juntan en un único fichero de calendario que lleva el mes en el nombre. Se guarda en una carpeta de exportaciones, que se crea si no existe. La herramienta te imprime dónde ha quedado.
+
+Después, fuera de la herramienta, tú abres Google Calendar u Outlook e importas ese fichero. Tus 3 reservas de marzo aparecen en tu calendario.
+
+**Una cosa que he visto al leer el código:** esas dos horas de diferencia están fijas para todo el año. Si el coworking sigue la hora de Madrid, a principios de marzo la diferencia real es de una hora, así que esas reservas saldrían una hora antes de lo que toca. Es un fallo posible, no lo he comprobado ejecutándolo.
+
+**Dónde mirar**
+- Paso 1: `src/cli.js`
+- Paso 2: `src/bookings/repository.js` (los datos están en `data/bookings.json`)
+- Paso 3: `src/export/filter.js`
+- Paso 4: `src/export/ics.js`
+- Paso 5: `src/export/writer.js`, que deja el fichero en `exports/2026-03.ics`
+- El orden de los pasos lo marca `src/export/index.js`
+
+¿Quieres que profundice en algún paso?

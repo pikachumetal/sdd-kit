@@ -25,7 +25,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 5 | Acción update | done | — | GREEN u1 2/2 tras subir la regla al paso 6 y afinarla (enmienda del 2026-10-09) |
 | 6 | La validación abre con 🦆 y ✋ | done | — | GREEN v1a 2/2; v1b 2/2 tras dos rondas de REFACTOR (la forma va también al mensaje final de sdd-end-feature) |
 | 7 | `sdd-grilling` contrasta el lenguaje | skipped | — | sale por el RED (`t1` 2/2 limpio); enmienda del 2026-10-08 |
-| 8 | Ajustes de `sdd-rubber-duck` | pending | — | |
+| 8 | Ajustes de `sdd-rubber-duck` | done | — | GREEN l2 2/2 y s2 3 de 6 tras dos rondas de REFACTOR; s2, a deuda |
 
 ## Verificación por task
 
