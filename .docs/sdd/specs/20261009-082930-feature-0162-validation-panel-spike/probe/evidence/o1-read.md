@@ -25,7 +25,31 @@ App desechable Vite 8.3.4 + React en el scratchpad de la sesión (fuera del repo
 - El comentario se guardaba en `change`, es decir, al salir del campo: si el dev escribía y decía «listo» sin salir, se perdía. Corregido en `panel.js` (se guarda en `input`, sin repintar para no perder el foco) tras la medida; la reinyección de la Ronda B usó aún la versión con `change`.
 - **Resultado: cumple con clics simulados.** Falta confirmarlo con el dev-lead marcando a mano: no se ha comprobado que una persona lo use sin explicación.
 
+## O1 — a mano, con el dev-lead (2026-10-09, 11:34-11:37 hora local)
+
+- El dev-lead marcó a mano en el panel y escribió «listo». Claude leyó sin que pegara nada:
+
+```json
+[{"id":"h1","status":"ok","comment":"","markedAt":"2026-10-09T09:36:25.078Z"},
+ {"id":"h2","status":"ok","comment":"","markedAt":"2026-10-09T09:37:18.943Z"},
+ {"id":"h3","status":"ko","comment":"","markedAt":"2026-10-09T09:37:24.322Z"}]
+```
+
+- Junto al KO: `GET /api/missing · 500` (red armada antes de la prueba) y la captura `C:\Users\pikac\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791538672171-2.jpg`. La consola devolvió también el error de las 10:48, de la medida anterior: hay que leerla con `clear: true` al armarla, o filtrar por hora.
+- Durante la prueba, el panel desapareció **dos veces** y el dev-lead tuvo que avisar: «el 2 perdona pero le di actualizar :D y se perdio» y «al hacer cerrar sesion y cvolver a entrar se pierde la ventanita». Las dos veces, la reinyección de una línea lo recuperó con las marcas intactas.
+- **Resultado: cumple**: cero copia y pega de resultados. Pero el dev tiene que avisar cada vez que una recarga se lleva el panel.
+
 ## O4 — espera sin tokens
 
-- **No medido**: necesita al dev-lead probando ≥ 5 min con el turno de Claude terminado. Por construcción, terminar el turno no hace llamadas al modelo hasta el siguiente mensaje del dev; falta comprobar el contador.
+`/cost` antes y después, pegados por el dev-lead:
+
+| Lectura | Coste | Peticiones (main) | Salida Opus | Reloj de la sesión |
+| --- | --- | --- | --- | --- |
+| antes | $5.37 | 67 | 55.2k | 1h 11m 15s |
+| después | $5.75 | 72 | 56.3k | 1h 13m 44s |
+
+- Las 5 peticiones salen todas de mensajes del dev: 1 por la respuesta al primer `/cost` y 2 + 2 por los dos avisos de «se perdió el panel» (reinyección y respuesta). **Ninguna petición sin un mensaje del dev**: la espera en sí cuesta 0.
+- Cada interrupción cuesta ~$0,08 con un contexto de ~140k tokens en caché: los $0,38 del tramo son de los avisos, no de la espera.
+- La prueba duró ~2,5 min de reloj, no los ≥ 5 min que pedía la spec. Con 0 peticiones sin mensaje, la duración no cambia el resultado, pero queda dicho.
+- **Resultado: cumple para la espera, con un coste por cada recarga que el dev tenga que avisar.**
 - Coste medido de lo que no es espera: la inyección completa son ~2,8 KB de código (~1,5k tokens de entrada por inyección); la reinyección desde `localStorage`, una línea (< 100 tokens); cada lectura de `read()` devuelve ~400 bytes.

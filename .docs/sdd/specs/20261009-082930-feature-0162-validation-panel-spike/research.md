@@ -19,10 +19,10 @@ App de las medidas: Vite + React desechable en `http://127.0.0.1:3456/` (enmiend
 
 | Objetivo | Resultado | Evidencia |
 | --- | --- | --- |
-| O1 — inyectar y leer sin copiar | **cumple, simulado**: clics reales de ratón hechos por Claude; falta un dev marcando a mano | [o1-read.md](probe/evidence/o1-read.md) |
+| O1 — inyectar y leer sin copiar | **cumple**: el dev-lead marcó a mano 2 OK y 1 KO, y Claude los leyó sin que pegara nada; tuvo que avisar dos veces de que el panel había desaparecido | [o1-read.md](probe/evidence/o1-read.md) |
 | O2 — 10 recargas y una redirección | **cumple con reinyección**: el panel se pierde 10/10, el estado se recupera 10/10 y en la redirección; reinyectar es una línea | [o2-reloads.md](probe/evidence/o2-reloads.md) |
 | O3 — KO con captura, consola y red | **cumple en parte**: consola con hora, red sin hora y solo desde la primera lectura, captura en disco pero del momento de leer | [o3-ko-context.md](probe/evidence/o3-ko-context.md) |
-| O4 — espera sin tokens | **no medido**: necesita al dev-lead probando ≥ 5 min | [o1-read.md](probe/evidence/o1-read.md) |
+| O4 — espera sin tokens | **cumple para la espera**: 0 peticiones sin un mensaje del dev; cada aviso de recarga cuesta ~$0,08 (prueba de ~2,5 min, no ≥ 5) | [o1-read.md](probe/evidence/o1-read.md) |
 | O5 — Orca en Windows | **cumple** tras conectar la extensión (primer intento: ningún navegador conectado); Mac en la lista de §4 | [o1-read.md](probe/evidence/o1-read.md) |
 
 ## 2. Opciones evaluadas
@@ -57,17 +57,17 @@ App de las medidas: Vite + React desechable en `http://127.0.0.1:3456/` (enmiend
 
 ## 3. Recomendación
 
-- **Elegida, provisional**: **A, Claude in Chrome**, para la validación manual de la 3.0.0, condicionada a medir O4 con el dev-lead. Con lo medido sustituye el copia y pega (O1, O2 y O5) y adjunta consola y red al KO (O3 en parte). Tres reglas para la skill que salen de lo medido:
+- **Elegida**: **A, Claude in Chrome**, para la validación manual de la 3.0.0. Con lo medido sustituye el copia y pega (O1, O2, O4 y O5) y adjunta consola y red al KO (O3 en parte). Su punto débil, medido con el dev-lead: en una prueba de 3 pasos, el panel desapareció 2 veces (F5 y login) y cada vez hizo falta un aviso y un turno. Tres reglas para la skill que salen de lo medido:
   1. Llamar a `read_network_requests` justo después de inyectar, para armar el registro de red.
   2. Al recibir «listo», o si el dev avisa de que el panel ha desaparecido, reinyectar con la línea de `localStorage` antes de leer.
   3. Decir en la validación que la captura es la del momento de leer.
 - **Por qué**: es la única opción medida, cumple los objetivos que se pudieron medir y no añade código fuera del plugin.
 - **Plan B**: **C**, la página servida por la CLI, si Claude in Chrome no está disponible (plan, política de la empresa o SO). Pierde el contexto automático del KO, pero no depende de nada externo.
-- **Antes de cerrar la decisión**: medir D en un spike corto. Si cumple, sustituiría a A como opción principal, porque no depende de una extensión y la captura es la del KO.
+- **Siguiente paso recomendado**: medir D en un spike corto antes de escribir la skill. Si cumple, sustituiría a A como opción principal: el remontado tras cada carga sin aviso es justo lo que falló con el dev-lead, y además no depende de una extensión y la captura es la del KO.
 
 ## 4. Spike
 
-- **Branch**: `feature/0162-validation-panel-spike` · **Duración real**: ~1h (sin O4) · **Resultado**: [`probe/`](probe/) (`panel.js` desechable y evidencia)
+- **Branch**: `feature/0162-validation-panel-spike` · **Duración real**: ~1h 15m · **Resultado**: [`probe/`](probe/) (`panel.js` desechable y evidencia)
 - **Aprendizajes clave**:
   - La reinyección barata existe: el panel guarda su propio código en `localStorage` y vuelve con `eval(localStorage.getItem('sdd-validation-panel-src'))`.
   - `read_network_requests` solo ve lo que pasa desde su primera llamada, y sin hora.
