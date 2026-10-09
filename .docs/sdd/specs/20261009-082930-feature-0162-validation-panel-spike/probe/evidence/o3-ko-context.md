@@ -18,4 +18,4 @@
 
 ## Resultado
 
-**Cumple en parte**: el KO trae su consola con hora, su petición fallida (sin hora) y una captura en disco, pero de cuando lee Claude, no de cuando marca el dev.
+**No cumple**: el THEN pide cada pieza con su hora y la captura del momento. Sí llegan la consola con hora, la petición fallida (sin hora) y una captura en disco, pero de cuando lee Claude, no de cuando marca el dev.

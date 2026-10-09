@@ -88,7 +88,7 @@ Cada objetivo se mide con la app que levante el dev-lead, en la URL que él dé.
 
 ## Enmiendas
 
-- 2026-10-09 — La app de las medidas es una app desechable Vite + React que levanta Claude en el scratchpad (fuera del repo), con una página de login simulado, un error de consola y un 404 provocables, en vez de la app Angular del dev-lead. Además, mientras el dev-lead está ausente (~1 h), Claude simula sus clics en O1 y O3; O1 y O4 se confirman con el dev-lead probando a mano a su vuelta — el dev-lead no tenía app a mano y se va una hora — aprobada: «puedes levantar una? para el test.. tambien puede susar react si va mas raduiiipo con un new vite» y «estas una hora solo, vete avanzando»
+- 2026-10-09 — La app de las medidas es una app desechable Vite + React que levanta Claude en el scratchpad (fuera del repo), con una página de login simulado, un error de consola y un 404 provocables, en vez de la app Angular del dev-lead. Además, mientras el dev-lead está ausente (~1 h), Claude simula sus clics en O1 y O3 y hace él las recargas y la redirección de O2; O1 y O4 se confirman con el dev-lead probando a mano a su vuelta — el dev-lead no tenía app a mano y se va una hora — aprobada: «puedes levantar una? para el test.. tambien puede susar react si va mas raduiiipo con un new vite» y «estas una hora solo, vete avanzando»
 
 ## Aprobaciones
 

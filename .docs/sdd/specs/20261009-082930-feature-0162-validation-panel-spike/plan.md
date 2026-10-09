@@ -25,7 +25,7 @@ created: 2026-10-09
 
 **Architecture**: Claude in Chrome navega a la URL que da el dev-lead, inyecta `probe/panel.js` y lee el estado de `localStorage`. La consola y la red se leen con `read_console_messages` y `read_network_requests`, y la captura con `computer` (screenshot) o `gif_creator`. Las medidas se guardan como Markdown en `probe/evidence/`.
 
-**Tech Stack**: Claude in Chrome (extensión y MCP `claude-in-chrome`), JavaScript del navegador sin dependencias, app Angular del dev-lead.
+**Tech Stack**: Claude in Chrome (extensión y MCP `claude-in-chrome`), JavaScript del navegador sin dependencias, app Angular del dev-lead (enmendado en la spec: app Vite + React desechable que levanta Claude).
 
 **Spec**: `./spec.md`
 
@@ -82,7 +82,7 @@ created: 2026-10-09
 
 ### 1.6 Dependencias
 
-La extensión Claude in Chrome conectada a la sesión, con permiso sobre el origen de la app. La app la levanta el dev-lead.
+La extensión Claude in Chrome conectada a la sesión, con permiso sobre el origen de la app. La app la levanta el dev-lead (enmendado en la spec: la levanta Claude, desechable).
 
 ### 1.7 Riesgos
 

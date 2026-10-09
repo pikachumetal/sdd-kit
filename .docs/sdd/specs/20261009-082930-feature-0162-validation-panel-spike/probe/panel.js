@@ -7,15 +7,16 @@
   const loadTests = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
   const saveTests = (tests) => localStorage.setItem(STORAGE_KEY, JSON.stringify(tests));
 
+  const saveChanges = (id, changes) => {
+    saveTests(loadTests().map((test) => (test.id === id ? { ...test, ...changes } : test)));
+  };
+
   const updateTest = (id, changes) => {
-    const tests = loadTests().map((test) => (test.id === id ? { ...test, ...changes } : test));
-    saveTests(tests);
+    saveChanges(id, changes);
     render();
   };
 
-  const saveComment = (id, comment) => {
-    saveTests(loadTests().map((test) => (test.id === id ? { ...test, comment } : test)));
-  };
+  const saveComment = (id, comment) => saveChanges(id, { comment });
 
   const markTest = (id, status) => updateTest(id, { status, markedAt: new Date().toISOString() });
 
