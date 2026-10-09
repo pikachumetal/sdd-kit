@@ -49,3 +49,23 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN cada `sdd <sustantivo> <verbo>` (o `sdd merge`, `sdd workspace`) que aparece, con o sin `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js"` delante, es un verbo de la CLI, y cada `--opción` que le sigue en la misma línea es una opción de ese verbo; los huecos `<…>` no se analizan
 - AND falla si esos ficheros nombran un `.ps1` del kit, `hooks/session-start`, `task-start`, `task-done`, `task-brief`, `review-package` o `sdd-workspace` sin `sdd` delante, `cygpath` o `PLAN_FILE`
 - AND no mira `.docs/sdd/specs/`, `.docs/sdd/decisions/`, `.docs/sdd/field-reports/`, `changelog.md` ni `tests/*.md`: son eventos y no se reescriben
+
+### Cada verbo enseña su uso con `--help` sin ejecutarse
+
+- GIVEN la CLI
+- WHEN se ejecuta `node sdd.js <sustantivo> <verbo> --help` (o `node sdd.js merge --help`, `node sdd.js workspace --help`) con cualquier verbo registrado
+- THEN escribe `uso: sdd <sustantivo> <verbo>` con sus opciones y argumentos y su línea de ayuda, sale con 0 y no ejecuta el verbo
+- AND `node sdd.js <sustantivo> --help` lista los verbos de ese sustantivo
+- AND un `--help` detrás de `--` en `sdd task done` es del comando de tests, no de la CLI
+
+### `sdd merge` sin argumentos no fusiona
+
+- GIVEN un worktree con una rama por fusionar
+- WHEN se ejecuta `node sdd.js merge` sin ninguna opción
+- THEN escribe en stderr que necesita al menos una opción y el uso de `sdd merge`, sale con 2 y no fusiona
+
+### `sdd task done` no registra una task sin commits
+
+- GIVEN un plan y `HEAD` en el mismo commit que la `BASE` de la task, por ejemplo porque el pre-commit rechazó su commit
+- WHEN se ejecuta `node sdd.js task done <plan> <n> <base> -- <comando>`
+- THEN escribe en stderr `Task <n> NOT recorded: sin commits en el rango: ¿falló el pre-commit?`, sale con 1, no ejecuta el comando y no escribe en el ledger

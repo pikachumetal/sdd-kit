@@ -159,6 +159,7 @@
 | 2026-10-08 | 0145 | infra/tooling | 3 | 1.1 | 0.37 | 31336k | 2422k | 2.23 | 13.15 | 20261008-164456-feature-0145-sdd-rubber-duck |
 | 2026-10-09 | 0146 | docs | 7 | 5.75 | 0.82 | 153419k | 5221k | 28 | 49.52 | 20261008-193241-feature-0146-propose-spec-and-plan |
 | 2026-10-09 | 0162 | docs | 2 | 1.3 | 0.65 | 17098k | 354k | no aplica | 8 | 20261009-082930-feature-0162-validation-panel-spike |
+| 2026-10-09 | 0164 | patch | — | 0.5 | — | — | — | — | — | 20261009-115120-patch-0164-cli-merge-help-guard |
 
 **Factor de calibración** (ratio mediano real/estimado, 122 artefactos): **0.6** · media 0.72
 
@@ -199,6 +200,6 @@
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
-| sin publicar | 8 | 19.65 | 0.52 | 47.55 | 144.38 |
+| sin publicar | 9 | 20.15 | 0.52 | 47.55 | 144.38 |
 
 > Ver `estimation.md`.

@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-09
 branch: patch/0164-cli-merge-help-guard
-commit: <hash>
+commit: d3f3ba17
 ---
 
 # Patch 0164 — salvaguardas de la CLI sdd: --help en todos los verbos, merge sin argumentos y task done sin commits
