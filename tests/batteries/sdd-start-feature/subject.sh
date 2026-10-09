@@ -41,11 +41,13 @@ case "$SC" in
   g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
   r1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
   p1) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | put "$F10/spec.md" ;;
-  u1)
+  u1|u2)
     g checkout -q -b feature/0010-cancel-reason; open_0010
     task_commit task1 "feat(bookings): cancelar con un motivo de la lista"
     put "$F10/tasks.md" < "$FIX/tasks-0010-u1.md"
-    export TURN2='Apruebo la enmienda.' ;;
+    TURN2='Apruebo la enmienda.'
+    [ "$SC" = u2 ] && TURN2='Apruebo guardar quién cancela con --por <nombre> en cancelar.'
+    export TURN2 ;;
   v1a|v1b)
     g checkout -q -b feature/0010-cancel-reason; open_0010 without_who
     task_commit task1 "feat(bookings): cancelar con un motivo de la lista"

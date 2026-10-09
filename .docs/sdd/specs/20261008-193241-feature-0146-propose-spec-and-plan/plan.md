@@ -40,7 +40,7 @@ created: 2026-10-08
 - Opciones del gate de la spec, literales: «Apruebo (Recomendada)», «Cambios» y, solo en `delegate` con el modelo más capaz, «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media».
 - Nota de `tasks.md` de la acción update, literal: `afectada por enmienda <fecha> → Task N`; task nueva: `Task N — enmienda <fecha>: <qué>`.
 - Bloque de rulings de la validación, literal: `✋ Me salí del plan en…`.
-- Topes de palabras: `'sdd-grilling' = @{ SkillMd = 750; Total = 750 }`; `sdd-start-feature`: `SkillMd = 8430` sin cambios, y `Total` a `20600` solo si los recortes no compensan.
+- Topes de palabras: `sdd-start-feature`: `SkillMd = 8430` sin cambios, y `Total` a `20600` (aplicado en la Task 5); `sdd-grilling` no cambia (su Task 7 salió por el RED).
 - Art. X, literal: **Sin comentarios que repitan el código.** Un comentario existe solo si sin él la línea no se entiende, y antes se intenta que el nombre o una extracción lo hagan innecesario. Lo que se conserva es el *porqué* no deducible (una convención heredada, un límite externo). La ayuda de `--help` no es un comentario. **Sin comentarios que citen documentos.** Un comentario nunca referencia la constitution, una spec, una task, un requisito ni `capabilities/`; la trazabilidad vive en el commit y en el walkthrough. Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano (mensajes, warnings, ayuda) en castellano con tildes (Art. III). El revisor marca el incumplimiento como Important, no como estilo, salvo un umbral numérico superado en una unidad (21 líneas con un límite de 20), que es Minor.
 
 ### De proceso
@@ -55,8 +55,7 @@ created: 2026-10-08
 - Una spec en modo lite → lleva también el 🦆, el ✋ y «Dónde se prueba», porque la plantilla es la misma · Task 2, lectura de `spec-template.md` y de `modo-lite.md` en la revisión.
 - Un gate de la spec en `pair` con la sesión en Opus → solo «Apruebo (Recomendada)» y «Cambios»; la opción de bajar de modelo es del gate del plan · Task 3, el texto del paso 4 lo dice por perfil.
 - La respuesta a un freno de alcance que no cambia el texto de la spec → se apunta en «Enmiendas» sin corregir nada ni añadir task · Task 5, el texto de «Frenos de alcance».
-- Una enmienda en `unattended` → se aplica en su sitio con su línea marcada `sin aprobar`, y añade la task igual · Task 5, el texto de «Desvío».
-- `sdd-grilling` en un proyecto sin `PRODUCT.md` → contrasta solo con el código y no crea el glosario · Task 7, la skill lo dice en una frase.
+- Una enmienda en `unattended` → se aplica en su sitio con su línea marcada `sin aprobar`, y, si toca una task cerrada, añade la task igual · Task 5, el texto de «Desvío».
 
 ---
 

@@ -20,6 +20,7 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 - WHEN una skill invoca `sdd-rubber-duck` en modo corto para explicar al dev-lead por qué para
 - THEN el párrafo, con 🦆, dice qué le pasa a quien exporta («una reserva de 10:00 sale en su calendario a las 08:00») antes que la causa técnica
 - AND un término técnico que necesita, como UTC, se explica en la misma frase por su efecto
+- AND lo que queda por decidir va después del párrafo como afirmación («falta decidir en qué hora se escribe»), sin pregunta
 
 ### Una explicación larga sigue el camino real, paso a paso
 
@@ -27,5 +28,5 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 - WHEN el dev-lead pide «Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero»
 - THEN la respuesta son de 3 a 9 pasos numerados, cada uno respaldado por un fichero del molde, que siguen una exportación concreta (marzo, sala Norte) desde la orden hasta el fichero `.ics`
 - AND usa las palabras del glosario («franja», «reserva»), no las del código (`slot`, `booking`)
-- AND las rutas de fichero van solo en una lista final «Dónde mirar»
+- AND las rutas de fichero van solo en una lista final, titulada en el idioma del usuario: «Dónde mirar» si escribe en castellano, «Where to look» si escribe en inglés
 - AND termina ofreciendo resolver dudas
