@@ -34,7 +34,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | P1 Dependencias | p1 | alguna task del `plan.md` no lleva `**Tras**:`, o el plan no dice que las tasks se ejecutan en orden, sin paralelo |
 | P2 Verificación por superficie | p1 | la «Verificación» de alguna task lleva el gate de la constitution (`node --test` entero) en vez del comando de su superficie que da «Dónde se prueba» (`node --test test/cancel.test.js`) |
 | U1 Parada con corrección en su sitio | u1, turno 1 | sigue implementando, o no corrige el THEN en su sitio de la `spec.md`, o no añade la línea a «Enmiendas», o su mensaje no lleva 🦆 y ✋ |
-| U2 Task nueva | u1, turno 2 | reabre la Task 1 o reescribe su commit, o no añade al plan `Task 3 — enmienda <fecha>: …` con su `Tras`, o no anota `afectada por enmienda <fecha> → Task 3` en `tasks.md` |
+| U2 Sin reabrir | u1, turno 2 | reabre la Task 1 o reescribe su commit; o, si la enmienda cambia la Task 1, no añade `Task 3 — enmienda <fecha>: …` con `Tras` ni anota `afectada por enmienda <fecha> → Task 3`; o, si solo cambia la Task 2 en curso, no deja la nota de la enmienda en la Task 2 (regla afinada el 2026-10-09) |
 | V1 🦆 y ✋ en la validación | v1a, v1b | el mensaje de la validación (en v1b, el previo a invocar `sdd-end-feature`) no empieza por un párrafo con 🦆 seguido de `✋ Me salí del plan en…` con los dos rulings de `tasks.md` |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -50,3 +50,4 @@ Cada regla que la 0146 añade a `skills/sdd-start-feature/`, de dónde viene y q
 | Paso 4: la pregunta del gate es `AskUserQuestion` con «Apruebo (Recomendada)» y «Cambios»; en `delegate` con el modelo más capaz, también la de parar antes de la Task 1 | RED G1 2/2 en prosa (la opción de bajar de modelo salió 2/2: el fallo de campo no se reprodujo) | g1 |
 | `review-spec.md`: las opciones de la pregunta de review llevan el modelo del revisor de dominio, con recomendación; sin pregunta, Sonnet; técnica, siempre Sonnet | RED R1 2/2 | r1 |
 | `plan-template.md`: cada task lleva `**Tras**:`; las tasks se ejecutan en orden, sin paralelo, dicho en una línea de contenido de «## 2. Tasks» | RED P1 2/2; GREEN ronda 0 sin la frase 0/2 (iba en un bloque de ayuda) | p1 |
+| Paso 6 y `control-profiles.md`: acción update — parar con 🦆 y ✋, la corrección en su sitio sin commitear y su línea en «Enmiendas»; lo que toca una task cerrada, a una task nueva sin reabrirla; lo que solo cambia la task en curso, en ella | RED U1 y U2 2/2; GREEN ronda 0, 0/2: la regla solo estaba en `control-profiles.md` y nadie la abrió | u1 |

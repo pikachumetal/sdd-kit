@@ -66,11 +66,12 @@ Más:
 
 ## Desvío
 
-Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No entra». Todo lo demás que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— es un **ruling**, no un desvío, salvo que caiga en un freno de alcance (ver «Frenos de alcance»): entonces se trata como un desvío.
+Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba». Todo lo demás que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— es un **ruling**, no un desvío, salvo que caiga en un freno de alcance (ver «Frenos de alcance»): entonces se trata como un desvío.
 
-**Desvío** (cambia la spec):
-- `pair` y `delegate`: el agente para, propone el cambio como entrada de `## Enmiendas` en `spec.md` y espera la aprobación. No sigue con la enmienda sin aprobar.
-- `unattended`: elige la opción más conservadora, la registra como enmienda sin aprobar y sigue. Si ninguna opción evita bloquear la feature, la aparca (`⏸️ aparcada: <motivo>`).
+**Desvío** (cambia la spec) — la **acción update**:
+- `pair` y `delegate`: el agente para con el 🦆 del cambio (de `sdd-rubber-duck` en modo corto) y su ✋ (lo que decidió él), deja escrita sin commitear la corrección **en su sitio** de `spec.md` —el requisito, el THEN o la sección corregidos— más su línea en `## Enmiendas`, y espera la aprobación. No sigue con la enmienda sin aprobar.
+- Con la aprobación: commitea la spec. Si la enmienda obliga a cambiar una task ya cerrada, su trabajo va a una task nueva, `Task N — enmienda <fecha>: <qué>`, con su `Tras`, y en `tasks.md` cada task cerrada afectada lleva la nota `afectada por enmienda <fecha> → Task N`: no reabre ninguna ni reescribe su commit, la historia sigue con un commit por task, la task nueva pasa por `sdd task start` y `sdd task done` como cualquier otra, y su commit entra en la revisión que toque. Si solo cambia la task en curso, el trabajo sigue en ella, con la nota de la enmienda. Sin esta forma, 1 de 2 sujetos metió en la task en curso el cambio a una task cerrada, y ninguno paró con 🦆 ni ✋ (`tests/sdd-start-feature-0146-red.md`, u1).
+- `unattended`: elige la opción más conservadora, la aplica igual en su sitio con su línea de `## Enmiendas` marcada `sin aprobar`, añade la task y sigue. Si ninguna opción evita bloquear la feature, la aparca (`⏸️ aparcada: <motivo>`).
 - Si la enmienda añade ficheros, antes de pedir la aprobación la entrada nombra las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno de esos ficheros en «Ficheros que toca», o dice «solape no comprobable: el roadmap no declara ficheros» si el roadmap no la declara. Con la aprobación, la fila de la feature añade esos ficheros.
 
 **Ruling** (no cambia la spec):
@@ -83,7 +84,7 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope o un «No en
 
 ## Frenos de alcance
 
-Cuatro situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: en `pair` y `delegate` su fila de la tabla para como la de «Desvío»; en `unattended` sigue con la opción conservadora y no aparca, porque ninguno de los cuatro bloquea la feature. Sin estado nuevo del roadmap.
+Cuatro situaciones que no cambian la letra de la spec y aun así se tratan como un desvío: en `pair` y `delegate` su fila de la tabla para como la de «Desvío»; en `unattended` sigue con la opción conservadora y no aparca, porque ninguno de los cuatro bloquea la feature. Sin estado nuevo del roadmap. Si la respuesta cambia el texto de la spec, se aplica con la acción update de «Desvío»; si no, solo entra en `## Enmiendas`.
 
 ### 3.er fix descubierto
 
