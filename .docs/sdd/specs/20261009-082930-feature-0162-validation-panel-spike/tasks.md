@@ -7,6 +7,7 @@
 | 3 — research.md | hecha | `2b36eeb6`, `2c377bfa` |
 
 Revisión final: sdd-kit:effort-high + opus, con hallazgos (1 Critical, 8 Important, 1 Minor), sobre 2c377bf
+Pasada de fix: fe666d4, 10 hallazgos aplicados (docs y panel desechable, sin RED: ninguno afirmaba algo de ejecución)
 
 ## Rulings
 
