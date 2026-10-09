@@ -25,6 +25,15 @@ function newRepo(): string {
   return repo;
 }
 
+// La base de una task con un commit encima, como tras hacerla.
+function baseWithCommit(repo: string): string {
+  const base = git(repo, 'rev-parse', 'HEAD');
+  writeFileSync(join(repo, 'work.txt'), 'x\n');
+  git(repo, 'add', '-A');
+  git(repo, 'commit', '-q', '-m', 'task');
+  return base;
+}
+
 function sdd(repo: string, ...args: string[]) {
   const result = spawnSync(process.execPath, [bin, ...args], { cwd: repo, env: cleanEnv, encoding: 'utf8' });
   return { code: result.status, out: result.stdout, err: result.stderr };
@@ -46,7 +55,7 @@ describe('sdd task start / task done', () => {
 
   it('done records a silent command', () => {
     const repo = newRepo();
-    const base = git(repo, 'rev-parse', 'HEAD');
+    const base = baseWithCommit(repo);
     const result = sdd(repo, 'task', 'done', plan, '1', base, '--', process.execPath, '-e', '');
     expect(result.code).toBe(0);
     expect(ledger(repo)).toMatch(/^Task 1: complete \(commits [0-9a-f]{7}\.\.[0-9a-f]{7}, tests: .* → \(sin salida\)\)$/m);
@@ -54,7 +63,7 @@ describe('sdd task start / task done', () => {
 
   it('done does not record a failing command', () => {
     const repo = newRepo();
-    const base = git(repo, 'rev-parse', 'HEAD');
+    const base = baseWithCommit(repo);
     const result = sdd(repo, 'task', 'done', plan, '1', base, '--', process.execPath, '-e', 'process.exit(3)');
     expect(result.code).toBe(3);
     expect(sdd(repo, 'workspace', plan).code).toBe(0);
@@ -67,16 +76,26 @@ describe('sdd task start / task done', () => {
     expect(text).not.toContain('Task 1: complete');
   });
 
+  it('done refuses a task whose range is empty', () => {
+    const repo = newRepo();
+    const head = git(repo, 'rev-parse', 'HEAD');
+    const result = sdd(repo, 'task', 'done', plan, '1', head, '--', process.execPath, '-e', 'console.log("ran")');
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('sin commits en el rango: ¿falló el pre-commit?');
+    expect(result.out).not.toContain('ran');
+    expect(existsSync(join(sdd(repo, 'workspace', plan).out.trim(), 'progress.md'))).toBe(false);
+  });
+
   it('done exits 127 for a missing command', () => {
     const repo = newRepo();
-    const base = git(repo, 'rev-parse', 'HEAD');
+    const base = baseWithCommit(repo);
     const result = sdd(repo, 'task', 'done', plan, '1', base, '--', 'no-existe-este-comando-sdd');
     expect(result.code).toBe(127);
   });
 
   it('done keeps quoted arguments intact', () => {
     const repo = newRepo();
-    const base = git(repo, 'rev-parse', 'HEAD');
+    const base = baseWithCommit(repo);
     const result = sdd(repo, 'task', 'done', plan, '1', base, '--', process.execPath, '-e', 'console.log(process.argv[1])', 'a b');
     expect(result.code).toBe(0);
     expect(result.out).toContain('a b');

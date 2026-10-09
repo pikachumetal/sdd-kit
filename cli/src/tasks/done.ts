@@ -1,5 +1,6 @@
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { DomainError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git } from '../git/git.ts';
 import { requireRevision } from './revision.ts';
@@ -41,8 +42,14 @@ function appendToLedger(workspace: string, request: DoneRequest, line: string): 
   appendFileSync(ledger, `${line}\n`);
 }
 
+async function requireCommitsSince(request: DoneRequest): Promise<void> {
+  const [base, head] = await Promise.all([`${request.base}^{commit}`, 'HEAD'].map(async (rev) => (await git(process.cwd(), ['rev-parse', rev])).stdout.trim()));
+  if (base === head) throw new DomainError(`Task ${request.task} NOT recorded: sin commits en el rango: ¿falló el pre-commit?`);
+}
+
 export async function finishTask(request: DoneRequest, io: Io): Promise<number> {
   await requireRevision(request.base, 'BASE');
+  await requireCommitsSince(request);
   const workspace = await workspaceFor(request.plan);
   const log = join(workspace, `task-${request.task}-tests.log`);
   const code = await runToLog(request.command, log);

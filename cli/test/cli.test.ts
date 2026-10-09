@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { run } from '../src/main.ts';
 import { memoryIo } from '../src/cli/io.ts';
-import type { Verb } from '../src/cli/verbs.ts';
+import { VERBS, type Verb } from '../src/cli/verbs.ts';
 import { nodeVersionProblem } from '../bin/node-version.js';
 
 const testVerbs: Verb[] = [
@@ -49,6 +49,21 @@ describe('sdd --help', () => {
     const text = io.stdout.join('\n');
     expect(text).toContain('sdd decision check');
     expect(text).toContain('sdd decision index');
+  });
+
+  it('a verb with --help prints its usage without running', async () => {
+    const io = memoryIo();
+    expect(await run(['capability', 'index', '--help'], io, testVerbs)).toBe(0);
+    expect(io.stdout).toEqual(['uso: sdd capability index [--path <valor>] [--json]', 'Lista las capacidades con su propósito']);
+  });
+
+  it('every registered verb accepts --help', async () => {
+    for (const verb of VERBS) {
+      const io = memoryIo();
+      const command = [verb.noun, verb.verb].filter((part): part is string => part !== undefined);
+      expect(await run([...command, '--help'], io), command.join(' ')).toBe(0);
+      expect(io.stdout[0]).toMatch(new RegExp(`^uso: sdd ${command.join(' ')}\\b`));
+    }
   });
 });
 

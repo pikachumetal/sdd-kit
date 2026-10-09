@@ -22,7 +22,7 @@ export const roadmapPublishVerb: Verb = {
   verb: 'publish',
   summary: 'Publica ficheros de .docs/sdd/ y los documentos de la raíz en la rama de integración, bajo el cerrojo de merge',
   options: { message: { type: 'string' }, into: { type: 'string' }, 'project-root': { type: 'string' }, 'lock-timeout': { type: 'string' } },
-  positionals: ['files'],
+  positionals: ['FILES...'],
   async run(args, io) {
     const projectRoot = resolveProjectRoot(text(args, 'project-root') ?? '.');
     const into = text(args, 'into') ?? configuredMergeInto(projectRoot);
