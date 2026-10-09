@@ -45,8 +45,8 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
       $nombrado | Should -Match 'sequence'
     }
 
-    It 'sdd-start-feature dice de dónde sale el id en cada modo' {
-      Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'sequence'
+    It 'sdd-propose dice de dónde sale el id en cada modo' {
+      Get-KitFile 'skills/sdd-propose/SKILL.md' | Should -Match 'sequence'
     }
 
     It 'sdd-start-patch declara la secuencia compartida con las tasks' {

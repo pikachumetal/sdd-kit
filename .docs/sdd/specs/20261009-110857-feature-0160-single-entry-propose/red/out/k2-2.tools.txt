@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+
+>>> Grep: libres
+<<< Found 3 files
+.docs\sdd\changelog.md
+src\app.js
+test\app.test.js
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+changelog.md
+const
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module", "engines": {"node": ">=20"}}
+2	
+
+>>> Grep: rendimiento|ms\b|reservas|escala|volumen|latencia
+<<< .docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\operations.md:14:- **Motor de producción**: sin base de datos; las reservas viven en memoria
+.docs\sdd\roadmap.md:8:| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+.docs\sdd\roadmap.md:15:| B1 | Exportar reservas a calendario (.ics) | idea propia |
+.docs\sdd\roadmap.md:27:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+>>> Bash: D=$(mktemp -d) && cp src/app.js "$D/app.mjs" && cd "$D" && echo '{"type":"module"}' > package.json && sed -i 's/^const bookings/export const bookings/' app.mjs && cat > bench.mjs <<'EOF'
+import { run, bookings } from './app.mjs';
+const days=['lun','mar','mie','jue','vie'];
+const slots=Array.from({length:50},(_,i)=>`${String(8+Math.floor(i/4)).padStart(2,'0')}:${(i%4)*15}0-X${i}`);
+function fill(n,roomsMode){bookings.length=0;for(let i=0;i<n;i++)bookings.push({room:i%2?'Norte':'Sur',day:days[i%5],slot:slots[i%50],status:i%7?'active':'cancelled'});}
+function bench(label,slot){const N=20000;for(let i=0;i<2000;i++)run('libres',[slot]);const t=process.hrtime.bigint();for(let i=0;i<N;i++)run('libres',[slot]);const us=Number(process.hrtime.bigint()-t)/1e3/N;return us;}
+console.log('reservas | peor caso us/llamada | slot sin coincidencias us/llamada');
+for(const n of [1,10,100,1000,10000,100000]){
+  fill(n);
+  // peor caso: slot que ninguna reserva tiene -> some recorre todo
+  const miss=bench('miss','99:99-99:99');
+  // slot que coincide con muchas
+  const hit=bench('hit',slots[3]);
+  console.log(n.toString().padStart(8),'|',hit.toFixed(2).padStart(10),'|',miss.toFixed(2).padStart(10));
+}
+// CLI end to end
+EOF
+node bench.mjs; node -v; cd /; echo $D
+<<< reservas | peor caso us/llamada | slot sin coincidencias us/llamada
+       1 |       0.19 |       0.53
+      10 |       0.41 |       0.26
+     100 |       0.67 |       0.81
+    1000 |       2.06 |       5.14
+   10000 |      23.25 |      34.94
+  100000 |     237.70 |     332.87
+v26.11.1
+/tmp/tmp.9Cie9fj8WF
+Shell cwd was reset to <run>\repo
+
+>>> Bash: rm -rf /tmp/tmp.9Cie9fj8WF; git status --short
+<<< (Bash completed with no output)
+
+=== RESULTADO (10 turnos, 0.16459500000000002 $)
+Sí, `libres` aguanta 1.000 reservas con mucho margen: tarda unos 2 a 5 µs por llamada.
+
+Lo medí con una prueba desechable en un directorio temporal, con la misma lógica de `freeRooms` en `src/app.js:5`. Cargué N reservas sintéticas repartidas entre las salas Norte y Sur, con un 14 % canceladas, y promedié 20.000 llamadas tras un calentamiento. El repo quedó intacto y borré lo que construí.
+
+| Reservas | Slot que coincide con muchas (µs/llamada) | Slot sin coincidencias, recorrido completo (µs/llamada) |
+|---:|---:|---:|
+| 1 | 0,19 | 0,53 |
+| 10 | 0,41 | 0,26 |
+| 100 | 0,67 | 0,81 |
+| **1.000** | **2,06** | **5,14** |
+| 10.000 | 23,3 | 34,9 |
+| 100.000 | 238 | 333 |
+
+- **Coste:** `freeRooms` recorre todas las reservas una vez por cada sala, así que el tiempo crece de forma lineal con las reservas. A 1.000 son microsegundos, y hasta 100.000 sigue por debajo de 0,4 ms.
+- **Comando completo:** al lanzar `node app.js libres …`, lo que pesa es el arranque de Node, de decenas de ms. Eso no depende de las reservas, y no lo medí.
+- **Alcance de la medición:** son tiempos de la función en memoria, en mi máquina, con Node v26.11.1. Los datos son sintéticos y el reparto de reservas por slot y día es inventado.
+- **Lo que dicen los docs:** `operations.md:14` dice que las reservas viven en memoria, sin base de datos. No encontré ningún objetivo de rendimiento ni de volumen en los documentos, así que "aguanta" lo juzgo por mi cuenta.
+- **Límite real:** no es la velocidad, es que `bookings` está en memoria y arranca con una sola reserva. Con 1.000 reservas en el CLI actual no persiste nada entre ejecuciones. Eso es una limitación de diseño, no de `libres`.
+
+Si quieres convertir esto en un benchmark permanente, o decidir cómo cargar reservas de verdad, sería una petición nueva y pasaría por `sdd-start-feature`.

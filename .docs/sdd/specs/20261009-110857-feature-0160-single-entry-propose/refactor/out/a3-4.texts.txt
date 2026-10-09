@@ -1,0 +1,40 @@
+--- [14]
+Reproducido: `cancelar Norte mar` devuelve «cancelada Norte mar» y deja sin reserva el lunes. Ahora creo la rama y la carpeta con el id 0012, y leo la plantilla del patch.
+
+--- [18]
+Reproducido y con rama `feature/0012-cancelar-otro-dia`. Primero el test de regresión, que debe fallar antes del arreglo.
+
+--- [21]
+RED confirmado: fallan los dos tests nuevos. Ahora el arreglo mínimo.
+
+--- [28]
+El test falla sin el arreglo y pasa con él, y el gate de cierre está en verde. Escribo `patch.md` y hago el commit.
+
+--- [30]
+Paso 6: cierre con `sdd-end-patch`.
+
+--- [33]
+El cierre se para en la validación (paso 0). El proyecto no declara `validation.mode: field`, así que en `delegate` te toca validarlo a ti antes de fusionar. No he tocado changelog, roadmap ni la rama.
+
+**Qué he verificado yo**
+- Reproduje el fallo: `cancelar Norte mar` devolvía «cancelada Norte mar» y dejaba sin reserva el lunes.
+- La causa es que `findBooking` ignoraba `day`. `anular` tenía el mismo fallo.
+- El test nuevo `test/cancel-day.test.js` falla sin el arreglo y pasa con él.
+- El gate `node --test && node scripts/lint.mjs` da 5/5 tests y lint sin hallazgos.
+- El fix está en el commit `a54d633`, rama `feature/0012-cancelar-otro-dia`.
+
+**Guion de pruebas** (la aplicación guarda las reservas en memoria, así que cada comando de `node src/app.js` arranca con solo Norte reservada el lunes. Lo de abajo se puede probar con `node --input-type=module -e` o con un único proceso):
+
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js anular Norte mar` → debe decir `sin reserva Norte mar`.
+3. En un mismo proceso, `cancelar Norte mar` y después `libres 10:00-12:00` → debe devolver `Sur`, o sea, la reserva del lunes sigue activa.
+4. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+
+**¿Qué has probado?** Elige una:
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar, a cargo del dev-lead`
+- `No funciona`
+
+Con tu respuesta sigo con el cierre: `patch.md` con el hash, changelog (`Fixed`), fila en el roadmap, estimation-log, commit de cierre y merge a `develop`.
+

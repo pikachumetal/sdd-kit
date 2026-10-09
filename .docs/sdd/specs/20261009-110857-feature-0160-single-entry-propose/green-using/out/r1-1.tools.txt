@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/roadmap.md; ls .docs/sdd .docs/sdd/specs 2>&1 | head -40
+<<< * develop
+  main
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| F
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md; cat package.json; find src test -type f | head -30; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Exit code 1
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la 
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls .docs/sdd/specs/*; cat README.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (8 turnos, 0.16976180000000002 $)
+Todavía no he escrito nada. Esto son tres funcionalidades y no solo una, así que acabará en una propuesta (`proposal.md`) con tres filas en el roadmap. Antes necesito cerrar una decisión que condiciona las otras.
+
+**Lo que he encontrado**
+- `src/app.js` es una CLI sin dependencias. No tiene proceso residente ni scheduler. Las reservas están en memoria: `{room, day, slot}`.
+- La fila 1 del roadmap, «Avisos por correo antes de la reserva» (⏳), ya prevé un canal de correo que no existe todavía.
+- `.docs/sdd/mission.md` dice que la herramienta la usa una sola persona. Un «responsable» y un cliente son por tanto algo nuevo.
+- `sdd roadmap check` ya falla hoy en 2 líneas que no son mías: la cabecera de «Deuda técnica» y el título `### v0.3.0 (…)`. Es forma heredada, pendiente de la migración a v2.3.0, y no la toco.
+
+❓ **¿Por qué canal llega el aviso semanal a los responsables?**
+1️⃣ **Dos pasos: comando y envío.**
+- Primero un comando (`salas aviso-semanal`) que genera el resumen de ocupación de la semana.
+- La entrega la hace el canal de correo de la fila 1, y el aviso semanal va «tras» ella.
+- La programación semanal la pone el cron del servidor, no la herramienta.
+- Coste: el aviso no sale hasta que exista el correo.
+
+2️⃣ **Correo propio dentro de este módulo.** Funciona antes, pero duplica el canal de la fila 1 y mete configuración de SMTP en una herramienta sin dependencias.
+
+3️⃣ **Solo comando, sin envío.** El resumen se imprime o se guarda en un fichero y alguien lo reenvía a mano. Es lo más barato, pero no es un «aviso» a los responsables.
+
+➡️ **Recomiendo 1️⃣**, porque la fila 1 ya reserva el canal de correo y 2️⃣ lo construiría dos veces. A cambio, el aviso queda bloqueado hasta que se haga la fila 1.
+
+Después de esto me falta saber quiénes son los «responsables» y de dónde sale su lista. Eso solo lo sabes tú y lo preguntaré aparte.

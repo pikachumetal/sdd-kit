@@ -30,3 +30,11 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 - AND usa las palabras del glosario («franja», «reserva»), no las del código (`slot`, `booking`)
 - AND las rutas de fichero van solo en una lista final, titulada en el idioma del usuario: «Dónde mirar» si escribe en castellano, «Where to look» si escribe en inglés
 - AND termina ofreciendo resolver dudas
+
+### La pregunta de un carril que pregunta abre con su 🦆
+
+- GIVEN `sdd-propose` con un cambio clasificado como patch, lite o config
+- WHEN pregunta el carril
+- THEN antes de la pregunta va un párrafo con 🦆, escrito por `sdd-rubber-duck` en modo corto, que dice qué cambiará para quien usa el producto
+- AND en config, que no cambia nada para quien usa el producto, dice qué se toca y qué pruebas pasan antes de guardarlo: «la versión mínima de Node que pide el proyecto pasa a la 22.18; antes de guardarlo pasan todas sus pruebas»
+- AND lo que queda por decidir va en la pregunta, no en el párrafo

@@ -1,0 +1,48 @@
+--- [3]
+Ahora: leo la spec aprobada y la plantilla del plan. Queda: escribir `plan.md` y pasar a la implementación, ~5 min.
+
+--- [15]
+Ahora: implemento la Task 1 en Native, con TDD. Queda: la task, la revisión final y la validación, ~15 min.
+
+--- [19]
+Escribo los tests RED.
+
+--- [33]
+Ahora: compruebo que los tests pasan, comparo los RED con la copia y commiteo la task.
+
+--- [45]
+Ahora: te presento el trabajo para validar. Queda: tu validación, y después `sdd-end-feature`.
+
+🦆 Antes, `cancelar` liberaba una reserva sin dejar rastro. Ahora exige un motivo de la lista cerrada (cambio de planes, sala ocupada, otro) y lo guarda con la reserva. El comando nuevo `canceladas` enseña cada cancelada con su motivo.
+
+**✋ Me salí del plan en…** nada. No hay rulings. Las decisiones 4 y 5 del plan siguen siendo mías, y la revisión final señala la 4 como la que más necesita tu validación:
+- Cancelar sin `--motivo` responde «motivo no válido: …» y no cancela.
+- `canceladas` sin ninguna cancelada responde `sin canceladas`.
+- Las reservas anuladas no salen en `canceladas`.
+
+**Qué hay**
+- `plan.md` está escrito, con una sola task, y el commit de apertura con la spec y el plan es `2445918`.
+- La implementación va en `fcb58dc`, en `src/app.js` y `test/cancel.test.js`.
+- Los tests RED se escribieron antes que el código. La copia guardada fuera del repo es idéntica a la que se commiteó.
+- La revisión final (Opus, effort high) no encontró nada Critical ni Important.
+- Los tres Minor quedan diferidos:
+  1. `test/cancel.test.js` pasó de CRLF a LF y el diff reescribe el fichero entero.
+  2. `cancelar Norte --motivo otro` responde `sin reserva Norte --motivo`.
+  3. Los tests dependen del orden por el estado en memoria, y ningún test cubre que las anuladas no salgan en `canceladas`.
+
+**Smoke, una fila por THEN** (gate `node --test && node scripts/lint.mjs`: 9 de 9 en verde, lint sin hallazgos, suite en ~0,1 s)
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | suite; la revisión final lo provocó por CLI |
+| `canceladas` → «Norte lun — sala ocupada» | suite; no se puede ver por CLI porque el estado no persiste entre ejecuciones |
+
+**Guion de pruebas** (desde la raíz del repo)
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → el mismo mensaje.
+4. `node --test test/cancel.test.js` → 7 de 7. Es la única forma de ver «Norte lun — sala ocupada», porque cada ejecución arranca con las reservas en memoria.
+
+¿Validas? Dime qué has probado y que funciona. Hasta entonces no cierro la feature ni toco el roadmap.
+

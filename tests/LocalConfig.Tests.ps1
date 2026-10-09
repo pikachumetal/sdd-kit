@@ -11,7 +11,7 @@ BeforeAll {
   }
 
   function Get-SkillStep([int]$Number) {
-    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+    $skill = Get-KitFile 'skills/sdd-propose/SKILL.md'
     return [regex]::Match($skill, "(?ms)^$Number\. \*\*.*?(?=^$($Number + 1)\. \*\*)").Value
   }
 
@@ -61,11 +61,11 @@ Describe 'Sección del fichero local' {
   }
 }
 
-Describe 'sdd-start-feature lee el fichero local' {
+Describe 'sdd-propose lee el fichero local' {
   It 'el paso 2 nombra el fichero local y el nivel del que sale el perfil' {
     $step = Get-SkillStep 2
     $step | Should -Match 'sdd-kit\.local\.json'
-    $step | Should -Match 'nivel'
+    $step | Should -Match 'level'
   }
 
   It 'el paso 5 nombra el fichero local como sitio donde se fija execution' {
@@ -75,7 +75,7 @@ Describe 'sdd-start-feature lee el fichero local' {
   It 'el paso 5 dice que la cabecera nombra el fichero que fija el método, aunque la plantilla solo nombre sdd-kit.json' {
     $step = Get-SkillStep 5
     $step | Should -Match 'fijado en <fichero>'
-    $step | Should -Match '`auto` en `sdd-kit\.local\.json`'
+    $step | Should -Match 'An `auto` in `sdd-kit\.local\.json`'
   }
 
   It 'los cierres de task y de patch también leen el fichero local' {

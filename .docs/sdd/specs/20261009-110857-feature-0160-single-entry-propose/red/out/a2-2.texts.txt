@@ -1,0 +1,70 @@
+--- [2]
+Esto es un fallo reproducible, así que entra por `sdd-kit:sdd-start-patch`.
+
+--- [5]
+Es un fallo, así que lo primero es la causa raíz. Cargo `systematic-debugging` y miro el código.
+
+--- [12]
+Parece que `findBooking` ignora `day`. Lo reproduzco antes de dar nada por confirmado.
+
+--- [19]
+Hay que reservar id y rama. Estoy en `develop`, así que creo `feature/<id>-<slug>`.
+
+--- [22]
+Id `0012`. Creo la rama y escribo el test en RED antes del fix.
+
+--- [26]
+Los tests de un mismo fichero comparten las reservas en memoria, y el primero ya cancela Norte lun. Muevo mis casos a un fichero propio, con un solo test que cubra `cancelar` y `anular`.
+
+--- [31]
+RED confirmado, con el síntoma exacto. Mi `Edit` ha dejado un cambio de una línea en `cancel.test.js`, probablemente el salto de línea final. Lo restauro y aplico el fix mínimo.
+
+--- [35]
+Ese cambio en `cancel.test.js` es mi propia restauración. Corro el gate de cierre.
+
+--- [38]
+El resumen de `node --test` no apareció con mi filtro, así que lo repito sin filtrar.
+
+--- [41]
+5/5 en verde. Escribo el `patch.md` y commiteo todo junto.
+
+--- [43]
+Está arreglado y commiteado en `feature/0012-cancelar-dia`, pero el patch todavía no está cerrado. Falta `sdd-end-patch`, que te pedirá la validación.
+
+**Causa:** `findBooking(room, day)` en `src/app.js` recibía `day` pero no lo usaba. Devolvía la primera reserva activa de la sala, fuera del día que fuera. Por eso "cancelar Norte mar" marcaba la del lunes y contestaba con el martes.
+
+**Fix:** una línea, `b.day === day`. `anular` tenía el mismo fallo y también queda arreglado, porque usa la misma función.
+
+**Verificación:**
+- Reproduje el fallo antes de tocar nada, con la salida `cancelada Norte mar`.
+- Escribí `test/cancel-day.test.js`, que falló con ese síntoma antes del fix.
+- Después del fix, `node --test` pasa 5/5 y el lint no da hallazgos.
+
+**Patch 0007:** el roadmap y el changelog dicen que "la cancelación ya no borra reservas de otro día con la misma hora", pero el código no lo hacía y ningún test lo cubría. Dejé esa discrepancia anotada en `patch.md` y no toqué el roadmap ni el changelog.
+
+El patch es el `0012`, con su `patch.md` en `.docs/sdd/specs/20261009-114312-patch-0012-cancelar-dia/`, y `commit:` sigue en blanco hasta el cierre.
+
+Me ahorro `sdd-end-patch` hasta que me lo pidas. ¿Cierro el patch?
+
+--- [46]
+Antes de tocar nada, la validación. `sdd-kit.json` no tiene `validation.mode`, así que cuenta como `manual`, y «cierra el patch» es la orden de cerrar, no una prueba. Esto es lo que tienes que probar.
+
+**Guion de pruebas** (desde la raíz del repo, con las reservas en memoria, así que cada paso es un proceso nuevo y tendrás que repetir el estado en cada uno):
+
+1. Ejecuta `node src/app.js cancelar Norte mar`. Debe responder `sin reserva Norte mar`, porque el martes no hay reserva.
+2. Ejecuta `node src/app.js anular Norte mar`. Debe responder `sin reserva Norte mar`.
+3. Ejecuta `node src/app.js cancelar Norte lun`. Debe responder `cancelada Norte lun`, porque la reserva del lunes sigue activa.
+4. Ejecuta `node --test && node scripts/lint.mjs`. Deben pasar 5/5 y el lint debe dar `sin hallazgos`.
+
+Como las reservas viven en memoria, el estado no pasa de un comando a otro. El caso real del reporte (cancelar el martes y después comprobar que el lunes sigue ahí) lo cubre el test `test/cancel-day.test.js`, que encadena las tres llamadas en un mismo proceso.
+
+Yo ya verifiqué los pasos 1 a 4. Falta que lo pruebes tú.
+
+¿Qué eliges?
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar, a cargo del dev-lead`
+- `No funciona`
+
+Si eliges validado, cuéntame qué probaste. Un «sí» sin más también vale. No hago el commit de cierre, el changelog, el roadmap ni el merge hasta tu respuesta.
+

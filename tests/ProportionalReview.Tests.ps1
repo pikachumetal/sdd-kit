@@ -46,9 +46,9 @@ Describe 'Constitution' {
 
 Describe 'Paso 4' {
   It 'repasa la coherencia de la spec antes del gate' {
-    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+    $skill = Get-KitFile 'skills/sdd-propose/SKILL.md'
     $skill | Should -Match 'Spec Self-Review'
-    $skill | Should -Match 'literal[^\n]*más de un sitio'
-    $skill | Should -Match 'busca todas sus apariciones'
+    $skill | Should -Match 'literal[^\n]*more than one place'
+    $skill | Should -Match 'search all its occurrences'
   }
 }

@@ -1,6 +1,6 @@
 ---
 name: sdd-consult
-description: Usar cuando el usuario quiere preguntar, entender, planificar o estructurar algo del proyecto con el contexto cargado, sin arrancar el flujo SDD — "una duda", "¿por qué…?", "¿cómo funciona…?", "¿se puede…?", "¿dónde tocaría…?", "¿cómo enfocarías…?", "¿qué hacemos ahora?". No para implementar una feature (sdd-start-feature), arreglar un bug determinista (sdd-start-patch) ni investigar un fallo (superpowers:systematic-debugging).
+description: Usar cuando el usuario quiere preguntar, entender, planificar o estructurar algo del proyecto con el contexto cargado, sin arrancar el flujo SDD — "una duda", "¿por qué…?", "¿cómo funciona…?", "¿se puede…?", "¿dónde tocaría…?", "¿cómo enfocarías…?", "¿qué hacemos ahora?". No para hacer un cambio, de cualquier tamaño (sdd-propose), ni investigar un fallo (superpowers:systematic-debugging).
 argument-hint: "<pregunta>"
 ---
 
@@ -10,7 +10,7 @@ argument-hint: "<pregunta>"
 
 El **anti-carril**: preguntar, entender, planificar o estructurar **con el contexto del proyecto cargado**, sin producir artefactos. No es SDD clásico — no hay spec, plan, rama ni cierre. Su valor es doble: **respuestas ancladas en los documentos de anclaje** (no en suposiciones) y **la disciplina de no sobre-disparar** el proceso ante lo que solo era una pregunta.
 
-A diferencia del Gate 1 de `sdd-start-feature`, aquí **la pregunta ES el enunciado**: explorar el código (semble/Grep/Read) está permitido desde el inicio, en la medida que la pregunta lo pida.
+A diferencia del Gate 1 de `sdd-propose`, aquí **la pregunta ES el enunciado**: explorar el código (semble/Grep/Read) está permitido desde el inicio, en la medida que la pregunta lo pida.
 
 ## Cómo se trabaja (ligero, sin gates)
 
@@ -21,12 +21,12 @@ A diferencia del Gate 1 de `sdd-start-feature`, aquí **la pregunta ES el enunci
    - **Pensar / estructurar / tensar una dirección** ("¿cómo enfocarías X?", "pensémoslo bien") → `sdd-grilling` (invócala con `Skill`; sin artefactos, no ligado a SDD). **NUNCA `superpowers:brainstorming`**: ese es el motor de construir features y acaba en spec → plan → implementación; aplicado a una consulta, la convierte en lo que no era.
 3. **Cero artefactos por defecto** — sin carpeta de spec, sin rama, sin tocar código, sin editar `roadmap`/docs "de paso". La respuesta vive en la conversación.
 4. **Salida durable opcional (con aprobación)** — si la consulta destapa un doc de anclaje desactualizado o produce una decisión que merece registrarse, **proponlo** y espera el OK del usuario; solo entonces se escribe, en el doc que le corresponde. Actualizar un doc **no** es "aprovechar y dejarlo hecho".
-5. **Handoff cuando se vuelve trabajo** — si la conversación pide hacerlo de verdad, **anúncialo y transiciona al carril**: feature/cambio no trivial → `sdd-start-feature`; bug determinista → `sdd-start-patch`; planificar, meter algo en el roadmap o preparar una release → `sdd-roadmap`; investigar un fallo → `superpowers:systematic-debugging`. El carril destino **gatea y asigna el id**. La consulta **no** ejecuta el trabajo por su cuenta.
+5. **Handoff cuando se vuelve trabajo** — si la conversación pide hacerlo de verdad, o dejar la evidencia (una tabla de medidas), **anúncialo y transiciona al carril**: un cambio de cualquier tamaño → `sdd-propose`, que lo clasifica; planificar, meter algo en el roadmap o preparar una release → `sdd-roadmap`; investigar un fallo → `superpowers:systematic-debugging`. El carril destino **gatea y asigna el id**. La consulta **no** ejecuta el trabajo por su cuenta.
 
 ## Red flags — STOP, esto ya no es consulta
 
 - Vas a crear una carpeta en `.docs/sdd/specs/` (o un `patch.md`, o una rama) desde la consulta.
-- Estás **reproduciendo un carril a mano** (calcando el naming de una spec/patch) en vez de invocar `sdd-start-feature`/`-patch`.
+- Estás **reproduciendo un carril a mano** (calcando el naming de una spec/patch) en vez de invocar `sdd-propose`.
 - Vas a escribir un **id de ticket que te has inventado** porque "es el siguiente libre".
 - Vas a editar `roadmap`/`changelog`/un doc de anclaje sin que el usuario lo haya aprobado.
 - Has lanzado un interrogatorio (`sdd-grilling`) a una pregunta que se contestaba leyendo y respondiendo.

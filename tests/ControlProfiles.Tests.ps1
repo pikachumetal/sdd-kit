@@ -90,15 +90,15 @@ Describe 'Perfiles de control: cierre, release y migración' {
 
 Describe 'Perfiles de control: propuesta de partir una task grande' {
   It 'la primera pregunta propone partir según el umbral con tramo 4-5 (patch 0078)' {
-    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
-    $skill | Should -Match 'Con 3 o menos no propongas partir nunca; con más de 5, siempre; con 4 o 5, solo si tocan capacidades o superficies distintas \(BD, UI, API\) o alguna lleva migración'
+    $skill = Get-KitFile 'skills/sdd-propose/SKILL.md'
+    $skill | Should -Match 'With 3 or fewer never propose splitting; with more than 5, always; with 4 or 5, only if they touch different capabilities or surfaces \(DB, UI, API\) or one carries a migration'
     $skill | Should -Not -Match 'más de 3 tasks internas'
   }
 }
 
 Describe 'Perfiles de control: aprobación explícita y 🧪 sin validar en la release' {
   It 'elegir un alcance no cuenta como aprobar la spec' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match '(?i)elegir un alcance'
+    Get-KitFile 'skills/sdd-propose/SKILL.md' | Should -Match '(?i)choosing a scope'
   }
 
   It 'la task 🧪 que el smoke no valida conserva la forma con disparador nuevo' {

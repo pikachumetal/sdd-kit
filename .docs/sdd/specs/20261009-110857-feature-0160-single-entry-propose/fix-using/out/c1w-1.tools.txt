@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd 2>&1 | head -30 && git branch --show-current
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+develop
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md .docs/sdd/sdd-kit.json; ls .docs/sdd/capabilities .docs/sdd -a; ls pages styles; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && cat app.js pages/* styles/*; grep -rn -i "borrar\|factur" . --include=* --exclude-dir=.git | head -40
+<<< # Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 001
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Albarán</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+<body>
+  <main class="ficha">
+    <header class="ficha-cabecera">
+    
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.225095 $)
+Esto es lo que he entendido (corrígeme si algo no es así):
+
+- **Lo que dijiste:** en las fichas de pedido y de albarán, el botón Borrar se oculta cuando el pedido está facturado. Cuando se muestra, pasa a la derecha.
+- **Lo que he visto en el código:** las dos fichas (`pages/pedido-detalle.html` y `pages/albaran-detalle.html`) llevan los botones Guardar, Cancelar y Borrar seguidos en `.ficha-acciones`. No hay ningún dato de facturación en ellas: ni atributo `data-*` ni estado. Tampoco hay backend, porque son páginas estáticas con un `app.js`.
+- **Lo que supongo:** «a la derecha» significa que Borrar queda separado de Guardar y Cancelar, al extremo derecho de la cabecera de acciones. El albarán también depende de si su pedido está facturado.
+
+❓ **¿De dónde sale que el pedido está facturado?**
+Hoy las fichas no saben nada de facturación y no hay backend que lo diga. Las líneas ya leen sus datos de atributos `data-*` (`data-cantidad`, `data-precio`, `data-iva`), así que el dato tiene que entrar por algún sitio parecido.
+1️⃣ **Atributo `data-facturado="true"` en el `<main class="ficha">` de cada ficha.** `app.js` lo lee y oculta Borrar. Sigue el patrón de las líneas y no necesita backend. Cuesta que, mientras no haya backend, la marca se escriba a mano en cada HTML.
+2️⃣ **Un dato en `app.js` (por ejemplo, la lista de pedidos facturados).** Está centralizado, pero mezcla datos con lógica y no encaja con el patrón actual.
+3️⃣ **Hay otra fuente que yo no veo (un sistema externo, una cabecera, otra página).** Dime cuál.
+➡️ **Recomiendo 1️⃣**, porque reutiliza el patrón `data-*` que ya usa el código y no inventa estructura nueva. A cambio, hoy la marca se pone a mano en el HTML.

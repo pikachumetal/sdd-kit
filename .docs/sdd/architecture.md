@@ -13,6 +13,7 @@
 │   ├── using-sdd/SKILL.md          (puerta de entrada: la inyecta el hook SessionStart)
 │   ├── sdd-init-greenfield/SKILL.md
 │   ├── sdd-init-brownfield/SKILL.md
+│   ├── sdd-propose/SKILL.md
 │   ├── sdd-start-feature/SKILL.md
 │   ├── sdd-end-feature/SKILL.md
 │   ├── sdd-start-patch/SKILL.md

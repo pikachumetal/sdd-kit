@@ -98,7 +98,8 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
 | `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
-| `sdd-start-feature` | El carril completo: contexto, spec, plan, tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
+| `sdd-propose` | La entrada de un cambio: lee el proyecto, clasifica el carril y escribe lo que va antes de implementar (spec y plan, o la apertura del patch). |
+| `sdd-start-feature` | El carril completo desde la implementación: tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
 | `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, capacidades, estimaciones, changelog, roadmap y merge a `develop` según la política del proyecto. |
 | `sdd-start-patch` | Carril corto para un cambio con la solución ya fijada: un fallo determinista (causa raíz obligatoria; si no lo reproduce, para sin abrir nada), un ajuste o una retirada de presentación, o una petición cerrada. |
 | `sdd-end-patch` | Cierre del patch: validación, `patch.md`, changelog, roadmap y merge a `develop` según la política del proyecto. |

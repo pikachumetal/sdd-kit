@@ -1,0 +1,33 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y anunciar el carril, ~2 min.
+
+--- [16]
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Aviso: se ignora `merge.push` de `sdd-kit.local.json`: solo admite `control.profile`, `execution` y `validation.startEnvironment`; lo demás es del proyecto y va en `sdd-kit.json`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+Rama `feature/0011` creada desde `develop`. La fila 0011 del roadmap es el enunciado. Por brainstorming esto es arquitectónico: el código no tiene ningún flujo de permisos que modificar. Escribiré la spec en `.docs/sdd/specs/` y la dejaré para tu aprobación.
+
+**Lo que he entendido**
+- Dijiste: el responsable de sala debe poder anular reservas de otras personas.
+- Roadmap 0011: «solo el responsable de cada sala anula reservas de otras personas».
+- Encontré en `src/app.js`:
+  - `anular <sala> <día>` ya existe, pero lo puede ejecutar cualquiera y no comprueba nada.
+  - No hay noción de persona, de dueño de una reserva ni de responsable de sala.
+  - `tech-stack.md` y `operations.md` no declaran ningún acceso: `sin login`.
+- Suposición mía, por confirmar: «anular» es lo que ya hace `voidBooking` (estado `voided`), distinto de `cancelar`, que es la cancelación propia.
+
+Decisiones abiertas, una por turno:
+1. cómo sabe el programa quién ejecuta el comando;
+2. quién es el responsable de cada sala y dónde se guarda;
+3. de quién es una reserva;
+4. qué pasa cuando alguien sin permiso intenta anular.
+
+❓ **¿Cómo sabe el programa quién ejecuta el comando?**
+Hoy `run(cmd, params)` solo recibe el comando y sus argumentos. No hay login ni sesión, y las reservas viven en memoria.
+1️⃣ **Argumento `--como <nombre>` en cada comando.** `anular Norte lun --como ana` → `anulada Norte lun`; `anular Norte lun --como luis` → `sin permiso: Norte la gestiona ana`. Se prueba directo con `run()`. A cambio, cualquiera puede escribir el nombre de otro: es una convención, no seguridad.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** `SALAS_USUARIO=ana anular Norte lun` → `anulada Norte lun`. Se escribe una vez por sesión. A cambio, la identidad queda oculta en el entorno y los tests tienen que tocar `process.env`.
+3️⃣ **Un fichero local de «usuario actual».** Cómodo, pero añade estado en disco a una herramienta que hoy vive solo en memoria.
+➡️ **Recomiendo 1️⃣**, porque `run(cmd, params)` ya recibe todo por argumentos y la identidad visible en el comando se prueba sin preparar el entorno. A cambio, no impide suplantar a nadie, algo que `Acceso: sin login` ya asume.
+

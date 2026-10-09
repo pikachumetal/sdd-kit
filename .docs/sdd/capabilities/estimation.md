@@ -152,9 +152,17 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - WHEN se ejecuta `sdd estimation log`
 - THEN los dos dan su fila con el mismo tipo, estimación, esfuerzo real, tokens y coste que declara su bloque «2. Tiempo y coste», sin aviso
 
+### La estimación de un patch se escribe antes del fix
+
+- GIVEN un proyecto con `.docs/sdd/estimation.md` y un patch clasificado por `sdd-propose`
+- WHEN el agente abre el patch
+- THEN si pregunta el carril, la pregunta lleva la estimación en horas
+- AND, pregunte o no, `patch.md` §5 la escribe antes del fix, y la hora de inicio en UTC en la línea siguiente: `- Estimación: 0,5h` y `- Inicio: 2026-10-09T11:20Z`, con `- Real:` debajo
+- AND `sdd estimation log` lee `- Estimación: 0,5h` como hoy, y `- Inicio:` no cuenta como estimación ni como real
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos; el log, generado, en la carpeta de `estimation.md`.
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix; el log, generado, en la carpeta de `estimation.md`.
 - **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
 - **Límites**: no aplica.
 - **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas.

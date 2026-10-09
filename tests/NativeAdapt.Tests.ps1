@@ -70,7 +70,7 @@ Describe 'Task 2 — historia de commits' {
   }
 
   It 'el paso 5 junta la apertura antes de los RED' {
-    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'Antes de escribir los RED de la primera task, junta la apertura'
+    Get-SkillStep 'sdd-propose' 5 | Should -Match "Before writing the first task's RED tests, put the opening in a commit"
   }
 
   It 'el paso 6 pide escribir el mensaje del hito aunque haya un solo commit' {
@@ -114,7 +114,7 @@ Describe 'Task 4 — cambio tras compactar' {
   }
 
   It 'el paso 5 dice que tras compactar se relee el plan y no la skill' {
-    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'tras compactar, la sesión relee el plan y el ledger'
+    Get-SkillStep 'sdd-propose' 5 | Should -Match 'after compaction, the session rereads the plan and the ledger'
   }
 
   It 'la fila de executing-plans en overrides cambia a subagentes tras compactar' {
@@ -137,7 +137,7 @@ Describe 'Revisión final — pase de fix' {
   }
 
   It 'el paso 5 junta la apertura antes del sdd task start de la primera task en Native' {
-    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'en Native, antes de su `sdd task start`'
+    Get-SkillStep 'sdd-propose' 5 | Should -Match 'in Native, before its `sdd task start`'
   }
 
   It 'el paso 6 apunta la revisión final en tasks.md' {

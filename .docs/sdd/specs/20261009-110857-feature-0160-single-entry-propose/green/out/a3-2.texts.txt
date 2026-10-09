@@ -1,0 +1,21 @@
+--- [4]
+Ahora: leer el contexto SDD del proyecto. Queda: localizar el fallo en el código y preguntarte para confirmar el patch, ~3 min.
+
+--- [9]
+Ahora: confirmar el patch contigo antes de crear rama o carpeta. Queda: abrir el patch (rama, `patch.md`, test rojo, fix, verificación), ~10 min.
+
+🦆 **Qué pasa:** `findBooking` en `src/app.js:10` busca por sala y estado activo, pero **ignora el día**. Al cancelar «Norte mar» encuentra la única reserva activa de Norte, la del lunes, la cancela y responde con el día que le pasaste, así que el mensaje parece correcto aunque la reserva era otra. Lo comprobé leyendo el código, no solo tu informe. El mismo error afecta a `anular`, que usa la misma función. El patch 0007 describía un fallo parecido, pero el código actual sigue sin comparar el día.
+
+**Lo que propongo (carril patch, causa raíz determinista, sin decidir nada visible):**
+- Test de regresión en `test/cancel.test.js`: con Norte reservada el lunes, `cancelar Norte mar` devuelve `sin reserva Norte mar` y la del lunes sigue activa. Otro igual para `anular`.
+- Fix: `findBooking` también compara `b.day === day`.
+- Cierre con el gate `node --test && node scripts/lint.mjs`, y entrada en el roadmap (Patches).
+- Perfil `delegate` (`sdd-kit.local.json` no existe, viene de `sdd-kit.json`).
+
+**Opciones:**
+1. **Patch (recomendada):** arreglo `cancelar` y `anular` con la misma causa raíz.
+2. **Patch solo para `cancelar`:** dejo `anular` para otro patch. Te lo desaconsejo: comparten función y quedaría el mismo fallo a medias.
+3. **Feature completa:** solo si quieres cambiar también los mensajes o el comportamiento.
+
+¿Confirmas la 1 para que cree la rama y el `patch.md`? No he creado nada todavía.
+

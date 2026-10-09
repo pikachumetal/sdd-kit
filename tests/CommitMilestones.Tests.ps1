@@ -46,7 +46,7 @@ Describe 'Referencia commit-milestones' {
 
 Describe 'Carril task' {
   It 'el paso 5 junta la apertura antes del primer despacho' {
-    Get-SkillStep 'sdd-start-feature' 5 | Should -Match 'junta la apertura[^\n]*commit-milestones\.md'
+    Get-SkillStep 'sdd-propose' 5 | Should -Match 'put the opening in a commit[^\n]*commit-milestones\.md'
   }
 
   It 'el paso 6 deja los RED sin commitear y junta cada task' {

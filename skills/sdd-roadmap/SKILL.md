@@ -1,13 +1,13 @@
 ---
 name: sdd-roadmap
-description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos, las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta", "prepara la release N", "qué entra en la siguiente entrega". No para hacer el trabajo ya (eso es sdd-start-feature o sdd-start-patch) ni para cerrar una release (eso es sdd-end-release).
+description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos, las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta", "prepara la release N", "qué entra en la siguiente entrega". No para hacer el trabajo ya (eso es sdd-propose) ni para cerrar una release (eso es sdd-end-release).
 ---
 
 # sdd-roadmap
 
 ## Overview
 
-El kit tiene tres verbos: **planificar** (`sdd-roadmap`) → **hacer** (`sdd-start-feature`, `sdd-start-patch`) → **entregar** (`sdd-end-release`). Esta skill es la única puerta de entrada al roadmap: el usuario trae algo, la skill reconoce qué es y deja el roadmap listo para que otro lo arranque, con la definición de lo grande en una propuesta (`proposal.md`) que no se reescribe.
+El kit tiene tres verbos: **planificar** (`sdd-roadmap`) → **hacer** (`sdd-propose`) → **entregar** (`sdd-end-release`). Esta skill es la única puerta de entrada al roadmap: el usuario trae algo, la skill reconoce qué es y deja el roadmap listo para que otro lo arranque, con la definición de lo grande en una propuesta (`proposal.md`) que no se reescribe.
 
 **Principio central: proponer no es decidir.** Traes los cambios ordenados con tu recomendación; qué entra, en qué orden y qué se descarta lo decide el usuario.
 
@@ -21,9 +21,9 @@ Mira lo que trae la petición, en este orden:
 2. **Una reunión** — notas o acta de una reunión con el cliente.
 3. **Preparar una release** — «prepara la release N», «qué entra en la siguiente entrega».
 4. **Reordenar o cambiar** — solo habla de filas que ya existen: «reordena», «la X va tras la Y», «quita la Z», o cambia la definición de una propuesta existente.
-5. Lo demás, por tamaño: **Algo concreto** si cabe en una feature; **Algo grande** si prevé más de una (el mismo umbral que usa `sdd-start-feature` para proponer partir: más de 5 tasks internas, o 4 o 5 que tocan capacidades o superficies distintas —BD, UI, API— o alguna con migración; con 3 o menos, nunca).
+5. Lo demás, por tamaño: **Algo concreto** si cabe en una feature; **Algo grande** si prevé más de una (el mismo umbral que usa `sdd-propose` para proponer partir: más de 5 tasks internas, o 4 o 5 que tocan capacidades o superficies distintas —BD, UI, API— o alguna con migración; con 3 o menos, nunca).
 
-Frente a `sdd-start-feature` decide el verbo: hacerlo ya («añade», «hazme», «arréglalo») es `sdd-start-feature`; dejarlo apuntado («apunta», «organízalo», «planifica», «no lo arranques») es esta skill.
+Frente a `sdd-propose` decide el verbo: hacerlo ya («añade», «hazme», «arréglalo») es `sdd-propose`; dejarlo apuntado («apunta», «organízalo», «planifica», «no lo arranques») es esta skill.
 
 ## Checklist (crea un todo por paso)
 
@@ -33,7 +33,7 @@ Frente a `sdd-start-feature` decide el verbo: hacerlo ya («añade», «hazme»,
 4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<raíz>" --reserve --count N`. Sin `--reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
 5. **Comprueba la forma** — tras escribir en el roadmap y antes de commitear, ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`. Un fallo en una línea que escribiste lo corriges en el roadmap, nunca en el validador. Un fallo en una línea que no tocaste no lo arreglas: lo listas en tu mensaje como forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0. En el RED, 2 de 2 sujetos no lo ejecutaron y dejaron el roadmap en rojo (P3).
 6. **Publica la reserva** — ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap publish --project-root "<raíz>" --message "<mensaje>" .docs/sdd/roadmap.md` (más el `proposal.md` si lo hay): commitea en la rama de integración solo esos ficheros, con el cerrojo de `sdd merge`, en el worktree donde está sacada o en uno temporal si no está en ninguno. La rama sale de `merge.into` de `sdd-kit.json`, o de `--into`. Hasta ese commit la reserva no existe para los demás worktrees.
-7. **Cierra** — di qué fila va primero y con qué se arranca (`sdd-start-feature` o `sdd-start-patch`). No la arranques.
+7. **Cierra** — di qué fila va primero y que se arranca con `sdd-propose`. No la arranques.
 
 ## Lo que deja cada entrada
 

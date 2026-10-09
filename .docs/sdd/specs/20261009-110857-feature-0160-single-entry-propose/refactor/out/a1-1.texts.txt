@@ -1,0 +1,34 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y anunciar el carril, ~2 min.
+
+--- [17]
+Esto es lo que entiendo, para que lo corrijas.
+
+- **Quieres:** que `anular` (hoy lo puede ejecutar cualquiera) lo ejecute solo el responsable de cada sala, y solo sobre reservas de otras personas. Es la fila 0011.
+- **Lo que encuentro en el código** (`src/app.js`):
+  - `voidBooking(room, day)` anula sin comprobar nada.
+  - Las reservas no guardan a nombre de quién están. Solo tienen `room`, `day`, `slot` y `status`.
+  - No existe el concepto de usuario, ni de responsable de sala.
+  - `cancelar` tampoco sabe quién lo pide. El glosario del `PRODUCT.md` dice «la que anula el propio cliente».
+
+Sin identidad no se puede decidir quién es «otro» ni quién es «responsable». Esa es la decisión que condiciona todas las demás:
+
+❓ **¿Cómo sabe la herramienta quién la usa?**
+
+1️⃣ **Un parámetro explícito `--como <nombre>`.** Cada comando lleva quién lo ejecuta, y la herramienta confía en él.
+   - `anular Norte lun --como marta` → `anulada Norte lun`
+   - `anular Norte lun --como pepe` → `solo el responsable de Norte puede anular`
+   - Es lo mínimo para una CLI sin login. Cualquiera puede escribir el nombre de otro, y es una comprobación de cortesía, no de seguridad.
+
+2️⃣ **Una variable de entorno `SALAS_USUARIO`.** Se fija una vez por sesión y los comandos no cambian.
+   - Hace lo mismo que 1️⃣ sin repetir el nombre en cada comando.
+   - Es igual de fácil de falsear.
+
+3️⃣ **Usuario del sistema operativo** (`os.userInfo().username`). No se puede escribir a mano en el comando.
+   - Se acerca más a una identidad real.
+   - Obliga a que el nombre de la sala y el del usuario del sistema coincidan, y es más difícil de probar.
+
+➡️ **Recomiendo 1️⃣**, porque el `PRODUCT.md` habla de «equipos de una oficina» pero la herramienta no tiene login. 1️⃣ es lo más pequeño que hace testeable la regla, y se puede cambiar por 2️⃣ o 3️⃣ más adelante tocando un solo punto. A cambio, no es seguridad real: solo evita errores, no suplantaciones.
+
+¿Cuál eliges?
+

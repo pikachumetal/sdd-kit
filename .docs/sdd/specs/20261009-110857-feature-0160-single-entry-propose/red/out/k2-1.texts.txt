@@ -1,0 +1,19 @@
+--- [14]
+Sí, aguanta de sobra. `libres` con 1.000 reservas tarda unos 0,006 ms.
+
+Es una medición desechable. Copié `src/app.js` a un directorio temporal, sustituí el array `bookings` por uno generado y lo borré después. No toqué el repo. Hice 200 repeticiones por tamaño tras 20 de calentamiento, en Node v26.11.1 en este PC.
+
+| Reservas | Mediana | p95 | Máx |
+| --- | --- | --- | --- |
+| 1.000 | 0,006 ms | 0,008 ms | 0,065 ms |
+| 10.000 | 0,063 ms | 0,085 ms | 0,096 ms |
+| 100.000 | 0,658 ms | 0,893 ms | 1,383 ms |
+
+- **Por qué:** `freeRooms` (`src/app.js:5`) recorre las reservas una vez por sala, y solo hay 2 salas. El coste crece de forma lineal con las reservas: 10 veces más reservas son unas 10 veces más tiempo.
+- **Proceso completo:** ejecutar `node app.mjs libres s1` con 1.000 reservas tarda 275 ms, y un `node -e 0` vacío tarda 270 ms. Casi todo es el arranque de Node.
+- **Datos:** la medición usó reservas repartidas en 500 franjas, con un 14 % canceladas. Con otra distribución cambiarían los decimales, pero no el orden de magnitud.
+- **Límites reales:** hoy `bookings` es un array en memoria con una única reserva de ejemplo (`src/app.js:3`). No hay persistencia, así que 1.000 reservas reales no pueden existir todavía. Si llega una base de datos o un fichero, el coste de leerlos sería el que habría que medir.
+- **Docs:** el repo no tiene ningún presupuesto de rendimiento que comparar. Ninguno de los `.md` menciona latencia ni volúmenes.
+
+Si quieres dejar un benchmark o un test de rendimiento en el repo, eso ya es trabajo y lo arrancaría por `sdd-start-feature`.
+

@@ -1,0 +1,41 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` porque es una petición de cambio.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto. Queda: clasificar el cambio y arrancar la spec.
+
+--- [17]
+Esta rama es `feature/0011`, para la fila 0011 del roadmap. En brainstorming la trato como arquitectónica, no acotada: hay que introducir quién es quién, y eso hoy no existe.
+
+**Lo que he entendido (corrígeme)**
+- **Lo que dijiste:** el responsable de una sala puede anular reservas de otras personas. La fila 0011 añade «solo el responsable de cada sala»: el resto de personas no puede anular las de otros.
+- **Lo que he encontrado en el código:**
+  - `anular <sala> <día>` ya existe en `src/app.js:19` y lo puede ejecutar cualquiera.
+  - Las reservas no guardan a nombre de quién están, aunque `PRODUCT.md` define la reserva «a nombre de quien la pide».
+  - No hay ninguna noción de usuario ni de responsable de sala.
+  - `cancelar` tampoco comprueba de quién es la reserva.
+- **Lo que supongo:** la feature convierte `anular` en una acción restringida. Para eso hacen falta dos cosas: saber quién ejecuta el comando y saber quién es el responsable de cada sala. No cubre el motivo al cancelar (fila 0010).
+
+Primera decisión, la que más condiciona las demás: cómo sabe el comando quién eres.
+
+❓ **Identidad de quien ejecuta el comando**
+Hoy `run(cmd, params)` no recibe ninguna identidad (`src/app.js:27`). Es un CLI de un solo fichero, sin dependencias y sin login (`tech-stack.md`).
+
+1️⃣ **Parámetro explícito `--como <nombre>`.** Es un argumento más del comando.
+- `anular Norte lun --como ana` → `anulada Norte lun` (si Ana es responsable de Norte).
+- `anular Norte lun --como luis` → `solo el responsable de Norte puede anular`.
+- Sin `--como` → `falta --como <nombre>`.
+- Coste: es declarativo, cualquiera puede escribir el nombre de otra persona. No es seguridad real.
+
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Se fija una vez por sesión y el comando no cambia.
+- `anular Norte lun` con `SALAS_USUARIO=ana` → `anulada Norte lun`.
+- Con otro usuario → `solo el responsable de Norte puede anular`.
+- Coste: es igual de falsificable, y quien llama al comando ve menos de quién actúa.
+
+3️⃣ **Usuario del sistema operativo** (`os.userInfo().username`). Es más difícil de falsificar en un servidor compartido.
+- Coste: ata los nombres a cuentas del sistema y complica los tests y la demo.
+
+➡️ **Recomiendo 1️⃣**, porque `run` ya recibe los argumentos como parámetros, es lo más fácil de testear con `node --test` y no añade configuración fuera del repo. A cambio, no impide suplantar a nadie: sirve para evitar errores, no para proteger.
+
+¿Cuál eliges?
+

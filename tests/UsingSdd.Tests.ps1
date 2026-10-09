@@ -17,15 +17,15 @@ Describe 'skills/using-sdd' {
 
   It 'nombra la puerta <_>' -ForEach @(
     'sdd-kit:sdd-init-greenfield', 'sdd-kit:sdd-init-brownfield', 'sdd-kit:sdd-consult', 'sdd-kit:sdd-roadmap',
-    'sdd-kit:sdd-start-feature', 'sdd-kit:sdd-start-patch', 'sdd-kit:sdd-end-release', 'sdd-kit:sdd-config'
+    'sdd-kit:sdd-propose', 'sdd-kit:sdd-end-release', 'sdd-kit:sdd-config'
   ) {
     $script:Skill | Should -Match ([regex]::Escape($_))
   }
 
-  It 'define lo grande con el criterio de partir de sdd-start-feature, sin números de tamaño' {
+  It 'define lo grande con el criterio de partir de sdd-propose, sin números de tamaño' {
     $row = ($script:Skill -split '\r?\n') | Where-Object { $_ -match '^\|' -and $_ -match 'sdd-kit:sdd-roadmap' } | Select-Object -First 1
     $row | Should -Match 'partir'
-    $row | Should -Match 'sdd-start-feature'
+    $row | Should -Match 'sdd-propose'
     $row | Should -Not -Match '\d'
   }
 

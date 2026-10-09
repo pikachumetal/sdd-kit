@@ -1,0 +1,28 @@
+--- [2]
+Es una pregunta sobre el proyecto, así que entro por `sdd-consult`.
+
+--- [12]
+Los documentos no fijan ningún objetivo de rendimiento. Hago una prueba desechable en un directorio temporal, fuera del repo.
+
+--- [16]
+Sí, `libres` aguanta 1.000 reservas con mucho margen: tarda unos 2 a 5 µs por llamada.
+
+Lo medí con una prueba desechable en un directorio temporal, con la misma lógica de `freeRooms` en `src/app.js:5`. Cargué N reservas sintéticas repartidas entre las salas Norte y Sur, con un 14 % canceladas, y promedié 20.000 llamadas tras un calentamiento. El repo quedó intacto y borré lo que construí.
+
+| Reservas | Slot que coincide con muchas (µs/llamada) | Slot sin coincidencias, recorrido completo (µs/llamada) |
+|---:|---:|---:|
+| 1 | 0,19 | 0,53 |
+| 10 | 0,41 | 0,26 |
+| 100 | 0,67 | 0,81 |
+| **1.000** | **2,06** | **5,14** |
+| 10.000 | 23,3 | 34,9 |
+| 100.000 | 238 | 333 |
+
+- **Coste:** `freeRooms` recorre todas las reservas una vez por cada sala, así que el tiempo crece de forma lineal con las reservas. A 1.000 son microsegundos, y hasta 100.000 sigue por debajo de 0,4 ms.
+- **Comando completo:** al lanzar `node app.js libres …`, lo que pesa es el arranque de Node, de decenas de ms. Eso no depende de las reservas, y no lo medí.
+- **Alcance de la medición:** son tiempos de la función en memoria, en mi máquina, con Node v26.11.1. Los datos son sintéticos y el reparto de reservas por slot y día es inventado.
+- **Lo que dicen los docs:** `operations.md:14` dice que las reservas viven en memoria, sin base de datos. No encontré ningún objetivo de rendimiento ni de volumen en los documentos, así que "aguanta" lo juzgo por mi cuenta.
+- **Límite real:** no es la velocidad, es que `bookings` está en memoria y arranca con una sola reserva. Con 1.000 reservas en el CLI actual no persiste nada entre ejecuciones. Eso es una limitación de diseño, no de `libres`.
+
+Si quieres convertir esto en un benchmark permanente, o decidir cómo cargar reservas de verdad, sería una petición nueva y pasaría por `sdd-start-feature`.
+

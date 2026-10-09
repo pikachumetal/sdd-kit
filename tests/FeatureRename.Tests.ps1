@@ -67,15 +67,15 @@ Describe 'Renombrado task → feature' {
       Get-KitFile 'skills/sdd-end-feature/SKILL.md' | Should -Match '(?m)^description:.*cierra la tarea'
     }
 
-    It 'la description de sdd-start-feature conserva «tarea» y nombra la feature' {
+    It 'la description de sdd-start-feature nombra la feature y la entrada' {
       $description = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/SKILL.md'), '(?m)^description:.*$').Value
-      $description | Should -Match 'tarea'
+      $description | Should -Match 'sdd-propose'
       $description | Should -Match 'feature'
     }
 
-    It 'using-sdd entra por sdd-start-feature' {
+    It 'using-sdd entra por sdd-propose' {
       $router = Get-KitFile 'skills/using-sdd/SKILL.md'
-      $router | Should -Match ([regex]::Escape('sdd-kit:sdd-start-feature'))
+      $router | Should -Match ([regex]::Escape('sdd-kit:sdd-propose'))
       $router | Should -Not -Match 'sdd-(start|end)-task'
     }
 

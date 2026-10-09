@@ -85,7 +85,7 @@ Describe 'sdd-roadmap' {
   }
 
   It 'separa planificar de hacer por el verbo' {
-    $script:Plan | Should -Match 'sdd-start-feature'
+    $script:Plan | Should -Match 'sdd-propose'
     $script:Plan | Should -Match 'no lo arranques'
   }
 
@@ -213,10 +213,10 @@ Describe 'Revisión final' {
 }
 
 Describe 'Enrutado de un cambio de planificación' {
-  It 'el paso 2 de sdd-start-feature tiene una salida a sdd-roadmap' {
-    $step2 = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/SKILL.md'), '(?ms)^2\. \*\*Enrutado\*\*.*?(?=^3\. )').Value
+  It 'el paso 2 de sdd-propose tiene una salida a sdd-roadmap' {
+    $step2 = [regex]::Match((Get-KitFile 'skills/sdd-propose/SKILL.md'), '(?ms)^2\. \*\*Classify\*\*.*?(?=^3\. )').Value
     $step2 | Should -Match 'sdd-roadmap'
-    $step2 | Should -Match 'definición de una propuesta'
+    $step2 | Should -Match 'definition of an already split proposal'
   }
 
   It 'la description de sdd-roadmap recoge el cambio de algo ya planificado' {

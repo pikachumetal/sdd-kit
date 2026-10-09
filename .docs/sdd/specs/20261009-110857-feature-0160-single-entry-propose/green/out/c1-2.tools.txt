@@ -1,0 +1,98 @@
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/specs 2>&1; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; echo ===; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1
+<<< Exit code 1
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+./
+../
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integraci
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/skills/sdd-start-feature/references" && cat modo-lite.md; cd "<run>/repo" && ls -R src test* 2>&1 | head -30; wc -l src/app.js; grep -n -i cancel src/app.js | head -30
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat .docs/sdd/estimation.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (5 turnos, 0.1785274 $)
+Ahora: confirmar carril, modo y perfil con una sola pregunta. Queda: tras tu respuesta, el brainstorming de la spec y su aprobación, ~10 min.
+
+La rama es `feature/0010-cancel-reason` y el roadmap tiene la fila **0010 pendiente**, así que tomo esta como el enunciado:
+
+> **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña.
+
+**Carril: feature.** La solución no está fijada. Hay que decidir la lista de motivos, cómo se elige y cómo se ve el listado, así que no es un patch.
+
+**Modo: full, sin lite.** Lite exige cumplir todas estas condiciones. Las he comprobado una por una:
+
+| Condición | ¿Se cumple? |
+| --- | --- |
+| El flujo a modificar ya existe | **No del todo.** `cancelar` existe en `src/app.js`, pero no hay ningún listado de canceladas. |
+| No cambia contratos públicos | **No.** El comando `cancelar` ganaría un parámetro de motivo. |
+| No cambia el schema de datos | **No.** La reserva gana un campo `reason`. |
+| Cabe en un solo módulo | Sí, todo está en `src/app.js`. |
+| Estimación ≤ media jornada | Probablemente sí. |
+
+Fallan tres condiciones, así que no te propongo lite.
+
+**Tamaño: no propongo partirla.** Preveo 3 tareas, todas sobre la misma superficie y sin migración:
+1. Elegir el motivo al cancelar.
+2. Guardarlo en la reserva.
+3. Mostrarlo en el listado de canceladas.
+
+**Perfil: `delegate`.** Viene del proyecto (`.docs/sdd/sdd-kit.json`). No existe `sdd-kit.local.json`. Todas las claves del fichero son conocidas, así que no hay avisos.
+
+**¿Cómo seguimos?**
+1. **Feature en modo full, perfil `delegate` (Recomendada).** Escribo la spec y te la presento para que la apruebes antes del plan.
+2. **Lo mismo, y apruebo la spec por delegación, nos vemos en la validación.** Apruebo yo la spec, escribo el plan y sigo hasta la validación sin parar antes.
+3. **Cambiar el perfil solo para esta feature** (`pair` o `unattended`).
+4. **Otra cosa**, por ejemplo partirla o cambiar el enunciado.
+
+Hasta que respondas no toco la spec ni el código.

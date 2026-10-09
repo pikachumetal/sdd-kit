@@ -21,21 +21,21 @@ BeforeAll {
   $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
   $script:Template = Get-KitFile 'skills/sdd-templates/templates/patch-template.md'
   $script:Door = Get-KitFile 'skills/using-sdd/SKILL.md'
-  $script:StartFeature = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+  $script:Propose = Get-KitFile 'skills/sdd-propose/SKILL.md'
 }
 
 Describe 'criterio: lo decide quién fija la solución' {
   It 'el árbol de sdd-start-patch pregunta quién fija la solución' {
-    Get-Section $script:StartPatch '```dot' '## Flujo' | Should -Match 'petición cerrada'
-    $script:StartPatch | Should -Match 'solución fijada'
+    Get-Section $script:Propose '```dot' '## Red flags' | Should -Match 'CLOSED-REQUEST PATCH'
+    $script:Propose | Should -Match '\*\*Fixed solution\*\*'
   }
 
   It 'la guía nombra el contraejemplo de la puerta trasera' {
-    $script:StartPatch | Should -Match 'avisa cuando el total pase de 1\.000 €'
+    $script:Propose | Should -Match 'avisa cuando el total pase de 1\.000 €'
   }
 
   It 'una solución propuesta para un fallo no lo convierte en petición cerrada' {
-    $script:StartPatch | Should -Match 'Una solución propuesta para un fallo no lo convierte en petición cerrada'
+    $script:Propose | Should -Match "A proposed solution for a failure doesn't turn it into a closed request"
   }
 
   It 'la petición cerrada comprueba lo que da por existente antes de abrir' {
@@ -88,43 +88,39 @@ Describe 'criterio: patch.md registra quién decidió' {
 }
 
 Describe 'criterio: las puertas dicen lo mismo' {
-  It 'using-sdd manda a patch un cambio con la solución ya fijada' {
-    Get-TableRow $script:Door 'sdd-kit:sdd-start-patch' | Should -Match 'solución ya fijada'
+  It 'using-sdd manda a sdd-propose todo cambio, también el que pide un patch' {
+    Get-TableRow $script:Door 'sdd-kit:sdd-propose' | Should -Match 'pidan un patch'
+    $script:Door | Should -Not -Match 'sdd-kit:sdd-start-(patch|feature)'
   }
 
-  It 'using-sdd manda a feature lo que hay que decidir' {
-    Get-TableRow $script:Door 'sdd-kit:sdd-start-feature' | Should -Match 'decidir cómo es'
-  }
-
-  It 'el paso 2 de sdd-start-feature nombra la petición cerrada' {
-    Get-Section $script:StartFeature '2. **Enrutado**' '3. **Branch**' | Should -Match 'petición cerrada'
+  It 'el paso 2 de sdd-propose nombra la petición cerrada' {
+    Get-Section $script:Propose '2. **Classify**' '3. **Branch**' | Should -Match 'closed request'
   }
 
   It 'una lectura propia de lo que dijo el dev-lead es sin el dev-lead' {
     $script:StartPatch | Should -Match 'tu lectura de lo que dijo el dev-lead es tuya'
   }
 
-  It 'el predicado visual va en sdd-start-patch y en la puerta, no en el paso 2 de sdd-start-feature' {
-    Get-TableRow $script:Door 'sdd-kit:sdd-start-patch' | Should -Match 'claves de i18n'
-    Get-Section $script:StartFeature '2. **Enrutado**' '3. **Branch**' | Should -Not -Match 'claves de i18n'
-    $script:StartPatch | Should -Match 'claves de i18n'
+  It 'el predicado visual va en sdd-propose y en la puerta, no en el paso 2 de sdd-propose' {
+    Get-Section $script:Propose '2. **Classify**' '3. **Branch**' | Should -Not -Match 'i18n keys'
+    $script:Propose | Should -Match 'i18n keys'
   }
 }
 
 Describe 'retirada en el patch visual' {
   It 'el predicado admite la retirada y lo que queda muerto' {
-    $predicate = Get-Section $script:StartPatch '**Predicado del ajuste solo de presentación**' '## Flujo'
-    $predicate | Should -Match 'retirada'
-    $predicate | Should -Match 'lo que queda muerto'
+    $predicate = Get-Section $script:Propose '**Presentation-only adjustment predicate**' '## Red flags'
+    $predicate | Should -Match 'Removal'
+    $predicate | Should -Match 'becomes dead'
   }
 
   It 'la retirada solo quita lo que nadie más usa' {
-    $script:StartPatch | Should -Match 'la retirada solo quita lo que nadie más usa'
+    $script:Propose | Should -Match 'removal only removes what nobody else uses'
   }
 
   It 'una retirada no añade nada, con su contraejemplo' {
-    $script:StartPatch | Should -Match 'una retirada no añade nada'
-    $script:StartPatch | Should -Match 'Quita Borrar y añade Archivar'
+    $script:Propose | Should -Match 'a removal adds nothing'
+    $script:Propose | Should -Match 'Quita Borrar y añade Archivar'
   }
 
   It 'el paso 4 verifica cada símbolo retirado' {
@@ -183,6 +179,6 @@ Describe 'pasada de fix de la revisión final' {
 }
 Describe 'pasada de fix: control c2' {
   It 'dar a elegir opciones que escribe el agente no fija la solución' {
-    $script:StartPatch | Should -Match 'escribir tú las opciones es diseñar la solución'
+    $script:Propose | Should -Match 'writing the options yourself is designing the solution'
   }
 }
