@@ -1,0 +1,25 @@
+--- [17]
+Ahora: entrevista de diseño para la feature 0011. Queda: unas pocas decisiones, la spec con su 🦆 y la aprobación, ~15 min.
+
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Aviso: se ignora `merge.push` de `sdd-kit.local.json`: solo admite `control.profile`, `execution` y `validation.startEnvironment`; lo demás es del proyecto y va en `sdd-kit.json`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+**Lo que he entendido** (corrígeme):
+- Tu petición coincide con la fila 0011 del roadmap: *solo el responsable de cada sala anula reservas de otras personas*. He creado la rama `feature/0011` desde `develop`.
+- Lo he tratado como feature completa, no como patch. La solución no está fijada: hay que decidir cómo se identifica quién llama y quién es el responsable de cada sala.
+- Hallazgos en `src/app.js`:
+  - `anular <sala> <día>` ya existe y marca la reserva como `voided`. No comprueba a nadie: hoy cualquiera anula cualquier reserva.
+  - Las reservas no guardan quién las hizo (`room`, `day`, `slot`, `status`).
+  - No hay ninguna noción de usuario ni de responsable. La constitución y `operations.md` dicen que no hay login.
+  - No hay capacidades documentadas en `capabilities/`.
+- Suposición mía: «anular reservas de otros» significa que el responsable puede anular reservas de su sala hechas por otras personas. Las reservas propias se siguen cancelando con `cancelar`.
+
+❓ **¿Cómo sabe la herramienta quién está ejecutando el comando?**
+Hoy `node src/app.js anular Norte lun` no lleva identidad, y sin ella no se puede distinguir al responsable de los demás.
+1️⃣ **Un parámetro `--como <nombre>` en el comando**: `anular Norte lun --como ana` → `anulada Norte lun`; `anular Norte lun --como luis` (luis no es responsable de Norte) → `solo el responsable de Norte puede anular reservas de otras personas`. Es explícito y fácil de probar. A cambio, cualquiera puede escribir el nombre de otro: no es seguridad real, solo una convención.
+2️⃣ **Una variable de entorno `SALAS_USUARIO`**: la defines una vez en tu sesión o en tu servidor y el comando queda como hoy (`anular Norte lun`). Menos escritura. A cambio, la identidad no se ve en el comando y es más fácil olvidarla o confundirla al probar.
+3️⃣ **Sin identidad: otra forma de distinguir al responsable**, por ejemplo una clave o un comando aparte. Es más complejo y la misión no pide seguridad.
+➡️ **Recomiendo 1️⃣**, porque la herramienta es de un solo usuario sin login y un parámetro visible deja cada caso de prueba legible en una línea. A cambio, no impide que alguien se haga pasar por otro.
+

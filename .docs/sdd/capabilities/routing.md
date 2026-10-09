@@ -10,14 +10,14 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario pide una feature o un cambio con comportamiento sin nombrar ninguna skill («añade…», «hazme…», «let's build…», «es un cambio pequeño, hazlo rápido»)
-- THEN la primera skill que se invoca es `sdd-kit:sdd-start-feature`
-- AND `superpowers:brainstorming` se invoca después, desde el paso 4 de `sdd-start-feature`, nunca antes
+- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`
+- AND `superpowers:brainstorming` se invoca después, desde el paso de la spec de `sdd-propose`, nunca antes
 
 ### Un bug pequeño y determinista entra por el carril patch
 
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario reporta un bug acotado y pide arreglarlo
-- THEN la primera skill que se invoca es `sdd-kit:sdd-start-patch`
+- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como patch y, con la confirmación, sigue con `sdd-start-patch`
 - AND `patch.md` lleva `solution: causa raíz`, la causa con su evidencia en §2, la entrada del changelog en `Fixed` y el commit del fix con el tipo `fix`
 
 ### Una pregunta entra por consult
@@ -26,18 +26,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el usuario pregunta cómo funciona algo, o si algo es posible
 - THEN la primera skill que se invoca es `sdd-kit:sdd-consult`
 
-### Una edición trivial no lleva ceremonia
-
-- GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
-- WHEN el usuario pide una edición sin comportamiento (un typo, un renombrado, un formato)
-- THEN no se invoca ninguna skill del kit ni `superpowers:brainstorming`, y el cambio se hace directo
-
 ### El router solo existe donde hay SDD
 
 - GIVEN una sesión que arranca con el plugin instalado
 - WHEN el directorio de trabajo no contiene `.docs/sdd/`
 - THEN el hook no inyecta ningún contexto
-- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-start-feature`, `sdd-start-patch`, `sdd-consult`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init-greenfield` y `sdd-init-brownfield`
+- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-consult`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init-greenfield` y `sdd-init-brownfield`
 
 ### Una preferencia de cómo trabajar entra por `sdd-config`
 
@@ -50,7 +44,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
 - WHEN el usuario escribe «Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona).»
-- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-start-feature`
+- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-propose`
 
 ### Algo grande entra por `sdd-roadmap`
 
@@ -62,7 +56,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
 - WHEN el usuario escribe «Hay que mejorar las reservas, que se quejan los usuarios.»
-- THEN el agente no invoca `sdd-start-feature`, `sdd-start-patch` ni `sdd-roadmap` antes de preguntar
+- THEN el agente no invoca `sdd-propose` ni `sdd-roadmap` antes de preguntar
 - AND hace una sola pregunta sobre qué es y cuánto abarca, con su recomendación primero
 - AND no crea rama ni carpeta
 
@@ -85,7 +79,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/` y el hook de sesión activo
 - WHEN el usuario trae algo para el roadmap sin nombrar ninguna skill: «organízalo para el equipo», «apunta en el roadmap», items del gestor, notas de una reunión, «reordena», «prepara la release 1.3»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`
-- AND con «prepara la release 1.3», no `sdd-end-release`; con «organízalo para el equipo», no `sdd-start-feature`
+- AND con «prepara la release 1.3», no `sdd-end-release`; con «organízalo para el equipo», no `sdd-propose`
 
 ### El cierre de una feature entra por `sdd-end-feature`
 
@@ -96,8 +90,8 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 ### Un ajuste solo de presentación entra por el carril patch
 
 - GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo, con las páginas `pedido-detalle.html` y `albaran-detalle.html` y sus estilos
-- WHEN el usuario escribe «Pon Guardar y Cancelar de la cabecera en una columna a la derecha, en las dos fichas; es solo maquetación», por el hook o con `/sdd-start-feature`
-- THEN la skill que abre el trabajo es `sdd-kit:sdd-start-patch`, citando el predicado: solo plantillas o estilos; en las plantillas, sin añadir bindings, directivas de control, eventos, textos ni claves de i18n; sin TypeScript ni otro código, API, datos ni capacidades, salvo lo que retira una retirada
+- WHEN el usuario escribe «Pon Guardar y Cancelar de la cabecera en una columna a la derecha, en las dos fichas; es solo maquetación», por el hook o con `/sdd-propose`
+- THEN la skill que abre el trabajo es `sdd-kit:sdd-propose`, que lo clasifica como patch citando el predicado: solo plantillas o estilos; en las plantillas, sin añadir bindings, directivas de control, eventos, textos ni claves de i18n; sin TypeScript ni otro código, API, datos ni capacidades, salvo lo que retira una retirada
 - AND no se crea `spec.md`
 
 ### Un patch visual se verifica con una captura y se registra como `Changed`
@@ -116,8 +110,8 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 ### Un cambio con la solución fijada entra por el carril patch
 
 - GIVEN el proyecto `ventas`, con `pages/pedido-detalle.html`, `pages/albaran-detalle.html`, `app.js` e `index.html`
-- WHEN el usuario escribe, por el hook o con `/sdd-start-patch`, «Ticket VEN-31, cambio pedido por producto: Cancelar tiene que llevar al listado de pedidos. Solución fijada en el ticket: en app.js, un listener de click en [data-accion="cancelar"] que haga location.assign('../index.html'), en las dos fichas.»
-- THEN la skill que abre el trabajo es `sdd-kit:sdd-start-patch`, no `sdd-start-feature`
+- WHEN el usuario escribe, por el hook o con `/sdd-propose`, «Ticket VEN-31, cambio pedido por producto: Cancelar tiene que llevar al listado de pedidos. Solución fijada en el ticket: en app.js, un listener de click en [data-accion="cancelar"] que haga location.assign('../index.html'), en las dos fichas.»
+- THEN la skill que abre el trabajo es `sdd-kit:sdd-propose`, que lo clasifica como patch, no como feature
 - AND `patch.md` lleva `solution: ticket` y en §2 la frase del ticket literal, sin causa raíz ni `superpowers:systematic-debugging`
 - AND el changelog lleva la entrada en `Changed` o `Added`, nunca en `Fixed`, y el commit no es de tipo `fix`
 - AND si `index.html` no existe, para sin abrir rama, carpeta ni id, y lo dice
@@ -125,18 +119,18 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 ### Un cambio cuya solución tendría que fijar el agente no entra por el patch
 
 - GIVEN el mismo proyecto
-- WHEN el usuario escribe «/sdd-start-patch Es pequeño: en las dos fichas, avisa al usuario cuando el total del pedido pase de 1.000 €» o «Métele un patch rápido: en las dos fichas, avisa al usuario cuando el total del pedido pase de 1.000 €»
-- THEN el trabajo entra por `sdd-kit:sdd-start-feature`, no por `sdd-start-patch`, aunque la petición diga patch
+- WHEN el usuario escribe «/sdd-propose patch: es pequeño: en las dos fichas, avisa al usuario cuando el total del pedido pase de 1.000 €» o «Métele un patch rápido: en las dos fichas, avisa al usuario cuando el total del pedido pase de 1.000 €»
+- THEN `sdd-propose` lo clasifica como feature, no como patch, aunque la petición diga patch, y lo pregunta con feature recomendada
 - AND el agente nombra lo que tendría que decidir él: el texto del aviso, dónde sale y si 1.000 € entra en el umbral
 - AND con «Oculta Borrar si el pedido está facturado y pásalo a la derecha» también es feature: de dónde sale «facturado» lo tendría que decidir el agente
-- AND si dentro de un patch hace falta decidir algo que el usuario ve y que nadie fijó, el agente para y lo pasa a feature
+- AND si dentro de un patch hace falta decidir algo que el usuario ve y que nadie fijó, el agente para y lo sube a feature
 
 ### El patch registra quién fijó la solución y quién decidió cada cosa
 
 - GIVEN un patch abierto con `sdd-start-patch`
 - WHEN el agente escribe `patch.md`
 - THEN el frontmatter lleva `solution: ticket | dev-lead | causa raíz`, y §3 una lista `Decisiones` con el autor en cada línea: `ticket`, `dev-lead` o `sin el dev-lead`
-- AND una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` para el patch y lo pasa a `sdd-start-feature`, dicho al usuario
+- AND una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` hace que el agente pare el patch y lo suba a feature por el paso de la spec de `sdd-propose`, y se lo diga al usuario
 - AND el mensaje final de `sdd-end-patch` lista las decisiones con autor `sin el dev-lead` leídas de esa lista
 
 ### Un patch muy grande para y pregunta
@@ -150,7 +144,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN el mismo proyecto
 - WHEN el usuario escribe «Quita Borrar de las dos fichas y pon Guardar y Cancelar en una columna a la derecha»
-- THEN la skill que abre el trabajo es `sdd-kit:sdd-start-patch`, no `sdd-start-feature`
+- THEN la skill que abre el trabajo es `sdd-kit:sdd-propose`, que lo clasifica como patch, no como feature
 - AND §3 de `patch.md` lista lo retirado (el botón Borrar de las dos fichas y lo que solo él usaba) y una línea con lo que el usuario deja de poder hacer: borrar la ficha desde ella
 - AND el delta de `order-sheets` cambia «La ficha ofrece guardar, cancelar y borrar», y el changelog lleva la entrada en `Removed`
 - AND con «Quita Borrar y añade Archivar en su sitio» es feature: una retirada no añade nada
@@ -159,7 +153,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN el mismo proyecto
 - WHEN el usuario escribe «Cambia "Guardar" por "Guardar y cerrar" y ponlo a la derecha, en las dos fichas»
-- THEN la skill que abre el trabajo es `sdd-kit:sdd-start-patch`, como petición cerrada: `patch.md` lleva `solution: dev-lead` y la entrada del changelog va en `Changed`
+- THEN la skill que abre el trabajo es `sdd-kit:sdd-propose`, que lo clasifica como patch de petición cerrada: `patch.md` lleva `solution: dev-lead` y la entrada del changelog va en `Changed`
 
 ### Una petición de explicar en llano entra por `sdd-rubber-duck`
 
@@ -167,3 +161,53 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el dev-lead escribe «Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-rubber-duck`
 - AND «Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo.» sigue entrando por `sdd-kit:sdd-consult`
+
+### Un cambio sin comportamiento entra por el carril config
+
+- GIVEN el molde `reservas`, con `operations.md` §Testing «Gate de cierre: `node --test`»
+- WHEN el usuario escribe «sube `node` a 22.18 en los `engines` de `package.json`», o «corrige el typo "recervas" del README»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como config y pregunta con `AskUserQuestion` antes de tocar nada
+- AND con la confirmación hace el cambio, corre el «Build» si `operations.md` lo declara y `node --test`, y commitea en la rama en la que está con el comando y su resultado en el cuerpo del commit, sin spec, plan, carpeta, id, fila, changelog ni estimación
+- AND si el gate falla, no commitea y lo dice
+- AND en la rama estable del git-flow de la constitution (`main`) no commitea: en `pair` y `delegate` para y pregunta; en `unattended` lo deja sin commitear y lo cuenta en el informe final
+- AND «corrige "Cancelacion" en el mensaje de `cancelar`» no es config: un texto que ve el usuario del producto, dado literal, es patch
+
+### Full y spike anuncian y siguen; patch, lite y config preguntan
+
+- GIVEN el molde `reservas` en `delegate`
+- WHEN el usuario pide «que el responsable de sala pueda anular reservas de otros», que es feature full
+- THEN `sdd-propose` anuncia el carril, el perfil y de qué nivel sale, y la frase para aprobar la spec por delegación, y sigue con la entrevista en el mismo mensaje, sin pregunta de confirmación
+- AND con «si cancelo una reserva que no existe me dice "cancelada" igual», que es patch, pregunta con `AskUserQuestion` antes de abrir rama, carpeta o id, con el 🦆 de lo que hará y, si existe `estimation.md`, la estimación en horas
+- AND con un cambio que cumple el predicado de lite, la pregunta ofrece lite citando sus condiciones una por una
+- AND si la feature prevé más de 5 tasks, la pregunta de partir sustituye al anuncio y lleva la opción de aprobar la spec por delegación
+- AND en `unattended` no pregunta: patch y config siguen, lite va en full y spike va como full
+
+### El carril que trae la petición se respeta si concuerda
+
+- GIVEN el molde `reservas`
+- WHEN el usuario escribe «patch: si cancelo una reserva que no existe me dice "cancelada" igual» y la investigación confirma un fallo determinista
+- THEN `sdd-propose` no pregunta el carril y sigue con el patch
+- AND con «patch: avisa cuando una sala pase de 10 reservas en un día», que deja sin fijar el texto y el sitio del aviso, pregunta, con feature como opción recomendada y lo que tendría que decidir él
+- AND con «feature: corrige el typo del README», sigue como feature, y puede ofrecer config en una pregunta, nunca bajarlo solo
+
+### El carril solo sube
+
+- GIVEN un cambio que va por config, patch o lite
+- WHEN al hacerlo aparece algo que su predicado excluye (un cambio de comportamiento en config, una decisión sobre lo que el usuario ve en un patch, una condición de lite que cae)
+- THEN para, lo dice y sube: config a patch o feature, patch a feature, lite a full
+- AND nunca baja de carril a mitad de un cambio
+
+### Una investigación con evidencia entra por el carril spike
+
+- GIVEN el molde `reservas`
+- WHEN el usuario escribe «¿aguanta `libres` con 1.000 reservas? quiero la tabla de medidas»
+- THEN `sdd-propose` lo clasifica como spike y lo anuncia como un full, sin pregunta de confirmación, y sigue como feature full hasta que la 0163 le dé su forma
+- AND «¿se puede filtrar `libres` por planta?», sin pedir evidencia, entra por `sdd-consult`
+
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: no aplica.
+- **Idioma de los nombres**: los carriles se llaman `config`, `patch`, `lite`, `feature` y `spike`, en inglés, igual en castellano.
+- **Límites**: no aplica.
+- **Avisos**: no aplica.
+- **Regla ante conflicto**: entre el carril que trae la petición y el que ve la investigación, manda el pedido si concuerda o si es más pesado; si el investigado es más pesado, se pregunta con él recomendado. El carril solo sube.

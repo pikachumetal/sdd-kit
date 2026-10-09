@@ -10,22 +10,23 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN un proyecto con `control.profile` en `sdd-kit.json`, o sin él (default `delegate`)
 - WHEN el agente recorre una feature
-- THEN para en estos puntos y en ningún otro: `pair` en la spec, el plan, tras cada task, los desvíos, la validación y antes del merge; `delegate` en la spec, los desvíos y la validación; `unattended` en ninguno hasta terminar la release
+- THEN para en estos puntos y en ningún otro: `pair` en el arranque, la spec, el plan, tras cada task, los desvíos, la validación y antes del merge; `delegate` en el arranque, la spec, los desvíos y la validación; `unattended` en ninguno hasta terminar la release
+- AND el arranque para solo con la pregunta del carril de patch, lite y config, o con la de partir una feature grande; en full y spike sin partir, `sdd-propose` anuncia y sigue
 - AND en `pair` se confirman siempre las acciones hacia fuera (push, PR, publicar); en `delegate` y `unattended` también, salvo el push de la rama de integración tras el merge del cierre cuando `merge.push` es `true`; en los tres, el merge a `main` y el tag los decide una persona
 
 ### La primera pregunta confirma carril, modo y perfil
 
-- GIVEN una feature que arranca con usuario presente
-- WHEN el agente termina de leer el contexto
-- THEN su primera pregunta, sola en su turno, confirma carril y modo, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta feature
-- AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, la pregunta propone esa fila como enunciado
-- AND en `pair` y `delegate`, una de sus opciones aprueba la spec por delegación con la frase «apruebo la spec por delegación, nos vemos en la validación»
-- AND con la sesión en el modelo más capaz y más de una task prevista, otra opción aprueba igual y añade «…y paras antes de la Task 1 para que baje la sesión a gama media», con las tasks que prevé («prevé 3 tasks») y el motivo: en Native la sesión implementa todas las tasks y va bien en Sonnet con effort medium; con una sola task prevista no se ofrece, porque rehacer la caché al cambiar de modelo no compensa
-- AND si el usuario la elige, el agente escribe el plan, junta la apertura en su commit y para antes de la Task 1, sea cual sea el método
+- GIVEN un cambio que arranca con usuario presente
+- WHEN `sdd-propose` termina de clasificar
+- THEN en full y spike no pregunta: anuncia carril, perfil vigente y de qué nivel sale, avisa de cada clave de `sdd-kit.local.json` que ignora, y sigue
+- AND en patch, lite y config pregunta, sola, el carril con su 🦆, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta feature
+- AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, el anuncio o la pregunta toman esa fila como enunciado
+- AND en `pair` y `delegate`, el anuncio de full y spike dice las frases con las que el dev-lead aprueba la spec por delegación («apruebo la spec por delegación, nos vemos en la validación»), con la sesión en el modelo más capaz y más de una task prevista su variante «…y paras antes de la Task 1 para que baje la sesión a gama media», y cambia el perfil para esta feature («perfil pair para esta feature»); la pregunta de lite las lleva como opciones
+- AND si el dev-lead dice o elige la variante, el agente escribe el plan, junta la apertura en su commit y para antes de la Task 1, sea cual sea el método
 
 ### La spec aprobada por delegación en la primera pregunta no para
 
-- GIVEN el usuario eligió en la primera pregunta la opción que aprueba la spec por delegación
+- GIVEN el usuario eligió la opción que aprueba la spec por delegación en la pregunta de `sdd-propose`, o escribió la frase «apruebo la spec por delegación»
 - WHEN la spec está escrita y repasada
 - THEN el agente la aprueba sin parar, registra la frase literal y la fecha en «Decisiones tomadas con el dev-lead» y en «Aprobaciones», decide él la review de spec y la registra, y sigue
 - AND el resto de paradas del perfil vigente sigue igual: la validación final no se quita nunca
@@ -33,8 +34,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### La primera pregunta propone partir una feature grande
 
 - GIVEN una feature cuyo enunciado, leído con el código que toca, prevé más de 5 tasks internas en el plan, o 4 o 5 que tocan capacidades o superficies distintas (BD, UI, API) o alguna con migración
-- WHEN el agente formula la primera pregunta de la entrevista
-- THEN propone partirla en features con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera
+- WHEN `sdd-propose` termina de clasificar
+- THEN pregunta si partirla en features con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera, aunque el carril sea full
+- AND en `pair` y `delegate`, la misma llamada ofrece aprobar la spec por delegación y, con la sesión en el modelo más capaz, su variante de parar antes de la Task 1 para bajar la sesión a gama media
 - AND con 3 tasks o menos no lo propone; con 4 o 5 de la misma superficie y sin migración, tampoco, y dice el recuento
 - AND el usuario decide; si sigue entera, no se vuelve a proponer en esa feature
 
@@ -275,7 +277,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN un perfil en el `profile:` de la spec, `control.profile` en `.docs/sdd/sdd-kit.local.json`, una línea `Perfil de control: <perfil>` justo bajo el encabezado de la release en el roadmap o `control.profile` en `sdd-kit.json`
 - WHEN el agente determina el perfil vigente
 - THEN manda la feature sobre la persona, la persona sobre la release y la release sobre el proyecto; una spec sin `profile:` hereda
-- AND la primera pregunta de `sdd-start-feature` nombra el perfil vigente y de qué nivel sale
+- AND el anuncio o la pregunta del carril de `sdd-propose` nombran el perfil vigente y de qué nivel sale
 - AND el agente solo escribe un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada si el usuario lo pidió, con su frase literal y la fecha en una fila de «Aprobaciones» (o en el commit, si es `sdd-kit.json`; en `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`)
 
 ### Un método fijado en `sdd-kit.local.json` manda sobre el del proyecto
@@ -291,5 +293,5 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap; el método de un plan, en la línea `Ejecución:` de su cabecera.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
 - **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la define la task 0022. `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después.
-- **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); y el bloque de un push fallido (comando literal y error).
+- **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); el bloque de un push fallido (comando literal y error); y el aviso de cada clave de `sdd-kit.local.json` que el agente ignora, en el anuncio o en la pregunta del carril de `sdd-propose`.
 - **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.

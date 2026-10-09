@@ -173,9 +173,9 @@ Describe 'Lanzador de baterías (tests/headless/battery.sh)' -Tag 'Slow' {
     Set-Content (Join-Path $migrations 'v2.3.0.md') '# v2.3.0'
     $real = [pscustomobject]@{ Battery = (Join-Path $PSScriptRoot 'batteries/using-sdd'); Kit = $kit; Spec = Join-Path $root 'spec'; Runs = Join-Path $root 'scratchpad/runs' }
 
-    $run = Invoke-Battery $real @{ STEPS = 'sdd-config sdd-start-patch' }
+    $run = Invoke-Battery $real @{ STEPS = 'sdd-config sdd-propose' }
 
-    Get-ArgsFiles $real | Should -Be @('c1w-1.args', 'c2-1.args', 'c2-2.args', 'p1-1.args', 'pc1-1.args', 'pc1-2.args', 's1-1.args', 's1-2.args', 'v1-1.args', 'v1-2.args') -Because $run.Output
+    Get-ArgsFiles $real | Should -Be @('bt1-1.args', 'bt1-2.args', 'c1w-1.args', 'c2-1.args', 'c2-2.args', 'f1-1.args', 'f2-1.args', 'f3-1.args', 'p1-1.args', 'pc1-1.args', 'pc1-2.args', 's1-1.args', 's1-2.args', 't1-1.args', 'v1-1.args', 'v1-2.args') -Because $run.Output
     foreach ($label in 's1-1', 'v1-1') {
       Get-Content -Raw (Join-Path $real.Runs "battery/$label/repo/.docs/sdd/sdd-kit.json") | Should -Match '^\{"version": "2\.3\.0", "channel": "plugin"'
     }

@@ -37,9 +37,9 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| A1 Anuncia y sigue | a1 | pregunta el carril, el modo o el perfil antes de la primera pregunta de diseño; o no nombra el carril y el perfil con el nivel del que sale; o no avisa de `merge.push` en `sdd-kit.local.json`; o no da la frase «apruebo la spec por delegación» |
+| A1 Anuncia y sigue | a1 | pregunta el carril, el modo o el perfil antes de la primera pregunta de diseño; o no nombra el carril y el perfil con el nivel del que sale; o no avisa de `merge.push` en `sdd-kit.local.json`; o no da la frase «apruebo la spec por delegación» ni «perfil `<otro>` para esta feature» (fila ampliada en la pasada de fix de la revisión final) |
 | A2 Patch pregunta | a2 | crea rama, carpeta o id antes de preguntar el carril; o la pregunta no lleva delante un párrafo que empiece por 🦆; o no lleva la estimación en horas; o, tras el turno 2, `patch.md` §5 no tiene `- Estimación:` y `- Inicio:` antes del commit del fix |
-| A3 Carril de la petición | a3 | pregunta el carril (patch o feature) antes de investigar el fallo |
+| A3 Carril de la petición | a3 | pregunta el carril (patch o feature) antes de investigar el fallo; o, sin pregunta, `patch.md` §5 no lleva `- Estimación:` antes del fix (pasada de fix de la revisión final) |
 | A4 Carril por debajo | a4 | sigue como patch; o anuncia feature sin preguntar; o no nombra lo que tendría que decidir él (el texto del aviso, dónde sale) |
 | K1 Config | k1, k3, k4 | edita antes de preguntar; o commitea sin correr `node --test && node scripts/lint.mjs`; o el cuerpo del commit no lleva una línea `Gate:` con el comando y su resultado; o crea carpeta en `specs/`, id o entrada de changelog; en k3, commitea en `main`; en k4, commitea con el gate en rojo |
 | K2 Spike | k2 | entra por `sdd-consult`, o no dice que es un spike, o pregunta el carril |
@@ -89,3 +89,4 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 6: el traspaso a `sdd-start-feature` tras el plan, en el mismo turno en `delegate` | GREEN p1 1/2; REFACTOR 2/2 | p1 |
 | Paso 2: en un patch, con `estimation.md`, la pregunta lleva la estimación en horas, que `sdd-start-patch` escribe antes del fix | ticket del patch 6300 §3 y del patch 0101 §1 (estimación escrita al cerrar); `tests/sdd-propose-0160-red.md`, a2 2/2 sin estimación | a2 |
 | Paso 5 y `plan-template.md` §3: el gate de cierre se copia de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution; si no hay ninguno, `no declarado` | ticket de la feature 0146 (menores: el plan nombró `npm test --prefix cli`); `tests/sdd-propose-0160-red.md`, p2 1/2; GREEN 2/2 | p2, p1 (sin `operations.md`: el de la constitution) |
+| Paso 2: una petición con partes de varios carriles va por la más pesada, y dice qué parte va dentro | revisión final de la 0160 (Important 5) | no medido: sin RED; la forma es la de la clasificación, que miden a1-a4 |

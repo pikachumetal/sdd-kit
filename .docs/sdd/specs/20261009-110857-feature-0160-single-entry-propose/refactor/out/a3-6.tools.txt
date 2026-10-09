@@ -1,0 +1,281 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a && ls -a .docs/sdd && cat .docs/sdd/constitution.md .docs/sdd/roadmap.md .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -150; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-fix/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< develop
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto d
+
+>>> Bash: cd "<run>/repo" && git ls-files src test && cat src/*.js | head -150; cat .docs/sdd/estimation.md; ls .docs/sdd/specs; grep -rn "cancel" -i src | head -30
+<<< src/app.js
+test/app.test.js
+test/cancel.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${
+
+>>> Bash: cd "<run>/repo" && cat test/cancel.test.js; ls .docs/sdd/specs/*patch-0007*; cat .docs/sdd/specs/*patch-0007*/patch.md; git log --oneline
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+patch.md
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+eeda2f1 feat: base del molde
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/repo" && cat package.json; node -e "import('./src/app.js').then(m=>console.log(m.run('cancelar',['Norte','mar']), '|', m.run('cancelar',['Norte','lun'])))"; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-fix"; find "$K/skills/sdd-templates" -name "patch-template*" | xargs cat; node "$K/cli/bin/sdd.js" id next
+<<< {"type": "module", "engines": {"node": ">=20"}}
+cancelada Norte mar | sin reserva Norte lun
+---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de 
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-fix"; node "$K/cli/bin/sdd.js" id next --reserve; date -u +%Y%m%d-%H%M%S; date -u +%Y-%m-%dT%H:%MZ
+<<< 0012
+20261009-134212
+2026-10-09T13:42Z
+
+>>> Bash: cd "<run>/repo" && git status --short && git checkout -b feature/0012-cancel-day && mkdir .docs/sdd/specs/20261009-134212-patch-0012-cancel-day
+cat >> test/cancel.test.js <<'EOF'
+
+test('cancelar otro día sin reserva no toca la reserva de otro día', () => {
+  assert.equal(run('cancelar', ['Norte', 'mar']), 'sin reserva Norte mar');
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('anular otro día sin reserva no toca la reserva de otro día', () => {
+  assert.equal(run('anular', ['Norte', 'mar']), 'sin reserva Norte mar');
+  assert.equal(run('anular', ['Norte', 'lun']), 'anulada Norte lun');
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< Switched to a new branch 'feature/0012-cancel-day'
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -30
+<<<     generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cancel.test.js:18:1
+✖ anular otro día sin reserva no toca la reserva de otro día (0.203ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sin reserva Norte lun'
+  - 'anulada Norte lun'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:20:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:in
+
+>>> Bash: cd "<run>/repo" && git checkout test/cancel.test.js && cat >> test/cancel.test.js <<'EOF'
+
+test('cancelar un día sin reserva no toca la reserva de otro día', () => {
+  const antes = run('libres', ['10:00-12:00']);
+  assert.equal(run('cancelar', ['Norte', 'mar']), 'sin reserva Norte mar');
+  assert.equal(run('anular', ['Norte', 'mar']), 'sin reserva Norte mar');
+  assert.equal(run('libres', ['10:00-12:00']), antes);
+});
+EOF
+node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|^✖|actual|expected"
+<<< Updated 1 path from the index
+
+>>> Bash: cd "<run>/repo" && git checkout test/cancel.test.js && cat > test/cancel.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+// Va primero: el estado es compartido y 'cancelar Norte lun' consume la reserva.
+test('cancelar un día sin reserva no toca la reserva de otro día', () => {
+  const antes = run('libres', ['10:00-12:00']);
+  assert.equal(run('cancelar', ['Norte', 'mar']), 'sin reserva Norte mar');
+  assert.equal(run('anular', ['Norte', 'mar']), 'sin reserva Norte mar');
+  assert.equal(run('libres', ['10:00-12:00']), antes);
+});
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+EOF
+node --test 2>&1 | grep -E "^ℹ (pass|fail)|^✖"
+<<< Updated 1 path from the index
+✖ cancelar un día sin reserva no toca la reserva de otro día (1.3307ms)
+✖ cancelar una reserva activa (0.9094ms)
+ℹ pass 3
+ℹ fail 2
+✖ failing tests:
+✖ cancelar un día sin reserva no toca la reserva de otro día (1.3307ms)
+✖ cancelar una reserva activa (0.9094ms)
+
+>>> Bash: cd "<run>/repo" && sed -i "s/b.room === room && b.status === 'active');/b.room === room \&\& b.day === day \&\& b.status === 'active');/" src/app.js && git diff src && node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index df21173..edefb61 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -7,7 +7,7 @@ function freeRooms(slot) {
+ }
+ 
+ function findBooking(room, day) {
+-  return bookings.find((b) => b.room === room && b.status === 'active');
++  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+ }
+ 
+ export function cancelBooking(room, day) {
+ℹ pass 5
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && cat > .docs/sdd/specs/20261009-134212-patch-0012-cancel-day/patch.md <<'EOF'
+---
+id: 20261009-134212-patch-0012-cancel-day
+task: 0012
+title: Patch — cancelar y anular ignoran el día
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-09
+branch: feature/0012-cancel-day
+commit: pendiente
+---
+
+# Patch 0012 — cancelar y anular ignoran el día
+
+## 1. Síntoma
+
+«Si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes.»
+Reproducido sobre `develop`: `run('cancelar', ['Norte', 'mar'])` → `cancelada Norte mar`, y la reserva de `lun` queda cancelada.
+
+## 2. Causa raíz
+
+`findBooking(room, day)` (`src/app.js:9`) recibe `day` pero no lo compara: devuelve la primera reserva activa de la sala. `cancelBooking` y `voidBooking` comparten esa función, así que `anular` tiene el mismo fallo. Es el mismo defecto que el patch 0007 corrigió en otra comparación (por hora) sin llegar a esta.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/app.js`, `test/cancel.test.js`
+- **Cambio**: `findBooking` compara también `b.day === day`. Test de regresión que cancela y anula un día sin reserva y comprueba que la reserva de `lun` sigue activa (`libres` no cambia).
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancelar Norte mar` → `sin reserva Norte mar`, `lun` intacta | ✅ RED antes (2 fallos), verde después |
+| 2 | `anular Norte mar` → `sin reserva Norte mar`, `lun` intacta | ✅ |
+| 3 | Gate: `node --test` entero | ✅ 5/5 |
+
+## 5. Tiempo (ligero)
+
+- Estimación: 0,5h
+- Inicio: 2026-10-09T13:42Z
+- Real: 0,3h (aprox.)
+EOF
+git add -A && git commit -q -m "fix(0012): cancelar y anular ignoraban el día de la reserva
+
+findBooking no comparaba day y devolvía la primera reserva activa de la sala.
+
+Gate: \`node --test\` → 5/5
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261009-134212-patch-0012-cancel-day/patch.md', LF will be replaced by CRLF the next time Git touches it
+bc577fb fix(0012): cancelar y anular ignoraban el día de la reserva
+eeda2f1 feat: base del molde
+
+>>> Skill: sdd-kit:sdd-end-patch
+<<< Launching skill: sdd-kit:sdd-end-patch
+
+=== RESULTADO (18 turnos, 0.4197252 $)
+El patch está arreglado y commiteado, pero no lo cierro ni lo fusiono hasta que lo valides. Tu perfil es `delegate` y `sdd-kit.json` no tiene `validation.mode: field`, así que la validación es manual.
+
+**Qué cambié** (commit `bc577fb`, rama `feature/0012-cancel-day`)
+- La causa estaba en `findBooking` (`src/app.js:9`): recibía `day` pero no lo comparaba. Devolvía la primera reserva activa de la sala, así que cancelar `Norte mar` cancelaba la de `lun`.
+- `anular` usa la misma función y tenía el mismo fallo. También queda arreglado.
+- Ahora `findBooking` compara también el día.
+
+**Lo que he verificado yo**
+- Con los tests nuevos y sin el fix, fallaban 2 de 5.
+- Con el fix, `node --test` pasa 5/5.
+
+**Guion de pruebas** (desde la raíz del repo, con la reserva inicial `Norte lun 10:00-12:00`)
+1. Ejecuta `node src/app.js cancelar Norte mar`. Esperado: `sin reserva Norte mar`.
+2. Ejecuta `node src/app.js anular Norte mar`. Esperado: `sin reserva Norte mar`.
+3. Ejecuta `node src/app.js libres 10:00-12:00`. Esperado: `Sur`, porque Norte sigue ocupada por la reserva del lunes.
+4. Ejecuta `node src/app.js cancelar Norte lun`. Esperado: `cancelada Norte lun`.
+
+Las reservas viven en memoria y cada comando arranca de cero. Por eso el paso 3 solo muestra el estado inicial, no el efecto de los pasos 1 y 2. Esa comprobación la cubre el test de regresión en `test/cancel.test.js`.
+
+**¿Qué has probado?**
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar/anular, a cargo del dev-lead`
+- `No funciona`
+
+Cuando me contestes sigo con el cierre: `patch.md`, changelog si existe, roadmap, estimation-log y merge. El merge depende de si `sdd-kit.json` lo autoriza, y ahora mismo no tiene bloque `merge`, así que te lo consultaré.

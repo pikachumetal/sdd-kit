@@ -69,3 +69,18 @@ Kit de la rama con la estimación en la pregunta del carril patch (`sdd-propose`
 **Topes finales** (decisión 12 de la spec, medidos con `WordBudget.Tests.ps1`): `sdd-propose` 4.701 palabras → tope 4.800 (`SKILL.md` y total); `sdd-start-feature` `SKILL.md` 5.301 → 5.400 (antes 8.430) y total 17.371 → 17.400 (antes 20.600); `sdd-start-patch` (1.780, tope 2.300), `using-sdd` (465, tope 570) y `sdd-consult` (892, tope 900) no suben.
 
 **Coste de sujetos de la feature**: 88 sujetos, 23,86 $ (techo aprobado: 64 $), según el acumulado de `run.sh`.
+
+## Pasada de fix de la revisión final
+
+Revisión final: `sdd-kit:effort-high` + Opus sobre `e9b4248b`, «con arreglos»: 0 Critical, 6 Important y 6 Minor (diferidos). Cada Important lleva su test en `tests/SingleEntry.Tests.ps1`, 9 de 9 en RED antes del arreglo y en verde después; la suite rápida, 974.
+
+| Arreglo | Re-medida | Resultado |
+| --- | --- | --- |
+| I1: la estimación del patch también sin pregunta, y aunque el `estimation.md` del proyecto diga «los patches registran solo el tiempo real» | a3 | primera forma 0/2 (a3-3 sin estimación; a3-4 «Estimación: no aplica», citando el `estimation.md` del molde); con la frase en el paso 3 de `sdd-start-patch`, **2/2** (`- Estimación: 0,5h` y `- Inicio:`, a3-5 y a3-6) |
+| I3: el aviso de clave local con el literal de `control-profiles.md`, y el bloque del anuncio con «Para otro perfil» y la variante de la Task 1 | a1 | **2/4** con el bloque de cuatro líneas (a1-10 y a1-11 sí; a1-9 y a1-5 van del aviso de fase a la nota de entendimiento sin las líneas). Con la regla final, 4 de 6 en dos rondas (2/2 con tres líneas, a1-7 y a1-8) |
+| I6: `sdd-roadmap` y `sdd-consult` nombran `sdd-propose` en su `description` | batería de `using-sdd`, entera | **20/20** |
+| I2, I4, I5 | lectura y Pester | verdes |
+
+**Anuncio**: la regla se queda con 4 de 6 y la medida va a una fila de deuda, como el s2 del pato en la 0146: seis rondas no lo llevan a 2/2 estable, y el modo de fallo es siempre el mismo (la nota de entendimiento de `brainstorming` sin las líneas).
+
+**Etiqueta reutilizada**: la re-medida de a1 con `SUBJECT=5` sobrescribió el a1-5 de la tercera ronda de REFACTOR (0/2 con a1-6); el veredicto de esa ronda queda en este fichero y en a1-6.

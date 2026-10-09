@@ -143,7 +143,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND un propósito de más de 300 caracteres sale entero: el índice no valida
 - AND sin carpeta `capabilities/`, o con la carpeta vacía, escribe `Sin capacidades` y sale con 0
 - AND el índice no se guarda en ningún fichero
-- AND `sdd-start-feature`, `sdd-roadmap` y `sdd-consult` lo ejecutan en su paso de contexto, antes de decidir qué capacidades leer o tocar, y abren solo las que eligen con él
+- AND `sdd-propose`, `sdd-roadmap` y `sdd-consult` lo ejecutan en su paso de contexto, antes de decidir qué capacidades leer o tocar, y abren solo las que eligen con él
 
 ### La fusión del delta es un script
 

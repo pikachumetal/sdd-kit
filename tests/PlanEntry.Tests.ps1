@@ -85,7 +85,7 @@ Describe 'sdd-roadmap' {
   }
 
   It 'separa planificar de hacer por el verbo' {
-    $script:Plan | Should -Match 'sdd-start-feature'
+    $script:Plan | Should -Match 'sdd-propose'
     $script:Plan | Should -Match 'no lo arranques'
   }
 

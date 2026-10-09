@@ -27,7 +27,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente cuenta las señales de la rúbrica
 - THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec, la opción mínima con lo que deja sin cubrir y el modelo del revisor de dominio
 - AND si el Scope cambia menos de ~50 líneas (texto y código), el nivel baja de dos revisores a uno con los siete puntos, nunca a ninguno: con contrato público + datos y dos líneas en `db/002-site.sql` y `src/api.js`, un revisor
-- AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción «apruebo la spec por delegación» de la primera pregunta) y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
+- AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción o la frase «apruebo la spec por delegación») y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
 - AND con 4 señales o más y un delta grande (seis ficheros, uno de ellos una migración), sin esa restricción, siguen siendo dos revisores
 - AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
 - AND en `unattended` el agente decide y lo registra; en modo lite no se propone
@@ -235,7 +235,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Cada cambio de paso lleva un aviso en llano
 
-- GIVEN una feature en curso con `sdd-start-feature`
+- GIVEN una feature en curso con `sdd-propose` o `sdd-start-feature`
 - WHEN el agente pasa de un paso del flujo al siguiente
 - THEN su mensaje dice, en lenguaje llano, qué hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará cuando el paso lanza subagentes o sujetos
 - AND un contador («van 7 de 15») o un número de paso sin esa frase no cuentan como aviso
@@ -335,7 +335,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La carpeta de una feature nueva lleva `-feature-`
 
 - GIVEN un proyecto en modo `sequence` con la fila 0081 «Avisos de reserva» pendiente en el roadmap
-- WHEN `sdd-start-feature` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
+- WHEN `sdd-propose` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
 - THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
 - AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
 
@@ -540,13 +540,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Una migración solo de datos no descarta el modo lite
 
 - GIVEN una feature que quita un botón de una pantalla y cuya única migración da de baja sus dos textos con un procedimiento idempotente y reversible
-- WHEN `sdd-start-feature` cita el predicado de lite en la primera pregunta
+- WHEN `sdd-propose` cita el predicado de lite en la pregunta del carril
 - THEN lo ofrece como lite y nombra la migración
 - AND con una migración que añade una columna no lo ofrece: cambia el schema
 
 ### El diseño de una feature pregunta con `sdd-grilling`
 
-- GIVEN el paso de spec de `sdd-start-feature`, con `brainstorming` llevando el diseño de una feature que cambia lo que ve el usuario
+- GIVEN el paso de spec de `sdd-propose`, con `brainstorming` llevando el diseño de una feature que cambia lo que ve el usuario
 - WHEN `brainstorming` necesita una decisión del usuario
 - THEN la pregunta sigue `sdd-grilling` ([`interviewing`](interviewing.md)): una por turno, en texto con el formato fijo, con escena concreta si es de producto
 - AND el flujo (enfoques, diseño por secciones, spec) sigue siendo el de `brainstorming`
@@ -579,10 +579,25 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN la pregunta del gate es una llamada a `AskUserQuestion` con, al menos, «Apruebo (Recomendada)» y «Cambios»
 - AND no es una pregunta en prosa al final del mensaje
 
+### El gate de cierre del plan sale de `operations.md`
+
+- GIVEN el molde `reservas`, con `operations.md` §Testing «Gate de cierre: `node --test`» y sin script `test` en `package.json`
+- WHEN `sdd-propose` escribe el plan
+- THEN la línea del gate de cierre de §3 dice `node --test`, literal
+- AND sin `operations.md`, toma el de `tech-stack.md` §Testing; sin ninguno, el de la constitution; y si no hay ninguno, escribe `no declarado` y lo apunta en las decisiones del plan, sin inventar un comando como `npm test`
+
+### `sdd-propose` entrega el cambio a la skill que lo sigue
+
+- GIVEN la feature 0010 en `delegate`, con la spec aprobada y el plan escrito por `sdd-propose`
+- WHEN `sdd-propose` termina el plan
+- THEN invoca `sdd-start-feature`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
+- AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-start-patch` con la clase del patch y la estimación de la pregunta
+- AND si se invoca `sdd-start-feature` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
 - **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución.
 - **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
-- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`.
+- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution.

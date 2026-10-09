@@ -2,12 +2,11 @@
 >>> Skill: sdd-kit:sdd-propose
 <<< Launching skill: sdd-kit:sdd-propose
 
->>> Bash: cd .docs/sdd && ls -a . capabilities 2>/dev/null; cat sdd-kit.local.json sdd-kit.json 2>/dev/null; git branch --show-current; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path . 
-
->>> Bash: cd .docs/sdd && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>/dev/null; done
-<<< .:
-./
-../
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-fix/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+.
+..
 changelog.md
 constitution.md
 estimation.md
@@ -16,82 +15,81 @@ operations.md
 roadmap.md
 sdd-kit.json
 sdd-kit.local.json
-specs/
+specs
 tech-stack.md
 {"merge": {"push": true}}
 {"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
-develop
 Sin capacidades
-<<< Exit code 1
-=== constitution.md
-# Constitution — salas
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md; ls .docs/sdd/specs; git ls-files | head -80
+<<< # Constitution — salas
 
 1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
 2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
 3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
 4. Texto de la interfaz y de los documentos en castellano.
-=== mission.md
 # Misión — salas
 
-Herramienta de línea de comandos para reservar las salas de reuniones del coworking d
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la prue
 
->>> Bash: cat .docs/sdd/operations.md; ls .docs/sdd/specs; ls -R src test* 2>/dev/null | head -30; wc -l src/app.js; cat src/app.js
-<<< # Operations — salas
+>>> Bash: cd "<run>/repo" && cat src/app.js PRODUCT.md README.md; cat test/cancel.test.js | head -40; cat .docs/sdd/specs/*0007*/patch.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
 
-## Comandos
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
 
-- **Arrancar**: `node src/app.js <comando> <argumentos>`
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
 
-## Testing
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
 
-- **Suites**: `unit` · `node --test` · ~1 s
-- **Lo afectado**: `node --test <fichero de test>`
-- **Gate de cierre**: `node --test && node scripts/lint.mjs`
-- **Gate de merge**: `node --test && node scripts/lint.mjs`
-- **Acceso a la aplicación**: `sin login`
-- **Motor de producción**: sin base de datos; las reservas viven en memoria
-20260915-090000-task-0005-weekly/
-20260917-090000-task-0006-free/
-20260918-090000-patch-0007-cancel/
-src:
-app.js
-
-test:
-app.test.js
-cancel.test.js
-35 src/app.js
-
-
->>> Bash: git checkout -b feature/0011 develop && git branch --show-current
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011 develop 2>&1
 
 >>> Skill: superpowers:brainstorming
 <<< Switched to a new branch 'feature/0011'
-feature/0011
 <<< Launching skill: superpowers:brainstorming
 
 >>> Skill: sdd-kit:sdd-grilling
 <<< Launching skill: sdd-kit:sdd-grilling
 
-=== RESULTADO (11 turnos, 0.225511 $)
-**Lo que entiendo (corrígeme si falla):**
-- **Lo que dijiste:** el responsable de cada sala puede anular reservas de otras personas, y nadie más puede.
-- **Lo que encontré:** `voidBooking` ya existe en `src/app.js` y anula cualquier reserva sin comprobar nada. Las reservas no guardan quién las hizo, no existe el concepto de usuario ni de responsable, y el comando `anular` solo recibe sala y día.
-- **Tensión con la misión:** `mission.md` dice que la usas solo tú, sin más usuarios. Para que «de otros» tenga sentido, la herramienta tiene que distinguir personas.
+=== RESULTADO (11 turnos, 0.2366982 $)
+Esta rama es `feature/0011`, para la fila 0011 del roadmap. En brainstorming la trato como arquitectónica, no acotada: hay que introducir quién es quién, y eso hoy no existe.
 
-Antes de poder escribir los escenarios hace falta saber cómo se sabe quién ejecuta el comando.
+**Lo que he entendido (corrígeme)**
+- **Lo que dijiste:** el responsable de una sala puede anular reservas de otras personas. La fila 0011 añade «solo el responsable de cada sala»: el resto de personas no puede anular las de otros.
+- **Lo que he encontrado en el código:**
+  - `anular <sala> <día>` ya existe en `src/app.js:19` y lo puede ejecutar cualquiera.
+  - Las reservas no guardan a nombre de quién están, aunque `PRODUCT.md` define la reserva «a nombre de quien la pide».
+  - No hay ninguna noción de usuario ni de responsable de sala.
+  - `cancelar` tampoco comprueba de quién es la reserva.
+- **Lo que supongo:** la feature convierte `anular` en una acción restringida. Para eso hacen falta dos cosas: saber quién ejecuta el comando y saber quién es el responsable de cada sala. No cubre el motivo al cancelar (fila 0010).
 
-❓ **¿Cómo se identifica quién ejecuta `anular`?**
-Hoy `node src/app.js anular Norte lun` no lleva ninguna identidad.
+Primera decisión, la que más condiciona las demás: cómo sabe el comando quién eres.
 
-1️⃣ **Parámetro `--como <nombre>` en cada comando.** Las reservas guardan su autor, y cada sala tiene un responsable fijo en el código.
-   - Ejemplo: `anular Norte lun --como ana` → `anulada Norte lun`.
-   - Ejemplo: `anular Norte lun --como luis` → `sin permiso: solo ana, responsable de Norte, anula reservas de otros`.
-   - No hay autenticación real: cualquiera puede escribir el nombre de otra persona.
-2️⃣ **Variable de entorno `SALAS_USUARIO`.** Lo mismo, pero la identidad se fija una vez por sesión y no se repite en cada comando.
-   - Es más cómodo.
-   - Tampoco autentica.
-3️⃣ **Fuera de la herramienta.** El permiso lo da el servidor, por ejemplo con el usuario del sistema operativo, y la herramienta lee ese usuario.
-   - Es más seguro.
-   - Ata la herramienta al sistema donde la despliegas.
+❓ **Identidad de quien ejecuta el comando**
+Hoy `run(cmd, params)` no recibe ninguna identidad (`src/app.js:27`). Es un CLI de un solo fichero, sin dependencias y sin login (`tech-stack.md`).
 
-➡️ **Recomiendo 1️⃣**, porque en tu despliegue la herramienta es de un solo fichero sin dependencias ni estado. Un parámetro explícito es lo más fácil de probar con `node --test` y deja claros los escenarios de la spec. A cambio, no impide que alguien se haga pasar por otro, aunque eso ya pasa en una herramienta sin login (`operations.md`: «Acceso: sin login»).
+1️⃣ **Parámetro explícito `--como <nombre>`.** Es un argumento más del comando.
+- `anular Norte lun --como ana` → `anulada Norte lun` (si Ana es responsable de Norte).
+- `anular Norte lun --como luis` → `solo el responsable de Norte puede anular`.
+- Sin `--como` → `falta --como <nombre>`.
+- Coste: es declarativo, cualquiera puede escribir el nombre de otra persona. No es seguridad real.
+
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Se fija una vez por sesión y el comando no cambia.
+- `anular Norte lun` con `SALAS_USUARIO=ana` → `anulada Norte lun`.
+- Con otro usuario → `solo el responsable de Norte puede anular`.
+- Coste: es igual de falsificable, y quien llama al comando ve menos de quién actúa.
+
+3️⃣ **Usuario del sistema operativo** (`os.userInfo().username`). Es más difícil de falsificar en un servidor compartido.
+- Coste: ata los nombres a cuentas del sistema y complica los tests y la demo.
+
+➡️ **Recomiendo 1️⃣**, porque `run` ya recibe los argumentos como parámetros, es lo más fácil de testear con `node --test` y no añade configuración fuera del repo. A cambio, no impide suplantar a nadie: sirve para evitar errores, no para proteger.
+
+¿Cuál eliges?

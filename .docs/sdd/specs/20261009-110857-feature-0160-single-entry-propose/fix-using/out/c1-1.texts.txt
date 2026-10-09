@@ -1,0 +1,26 @@
+--- [10]
+Por ahora lo de cancelar es casi un esqueleto, y el código no cuadra con lo que dicen los docs.
+
+**Qué hay en el código** (`src/app.js:12`)
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+- `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`, solo devuelve el texto `cancelada mar 10:00`.
+- No toca el array `bookings`. No busca ninguna reserva ni borra nada.
+- El único test (`test/app.test.js:13`, "cancelar respeta el día") comprueba que ese texto sale con el día incluido. No comprueba que se borre nada.
+
+**Qué dicen los docs**
+- El changelog (línea 14) y el roadmap (línea 25) registran el patch 0007: "La cancelación borraba reservas de otro día con la misma hora". El `patch.md` dice: "Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado."
+- El changelog (línea 20) y el roadmap (línea 31) anotan como entregada la funcionalidad "Cancelar una reserva propia".
+
+**Por qué no lo pillas**
+- El patch habla de una comparación por hora, pero en `app.js` no existe ninguna comparación en la cancelación. Lo único parecido es `freeRooms`, que compara sala y franja y se usa en `libres`.
+- Las reservas tampoco tienen dueño. Cada una es `{ room, day, slot }`, sin usuario, así que "cancelar una reserva propia" no se puede implementar con este modelo.
+- `cancelar` no recibe sala, y las reservas se identifican por sala, día y franja. Además la franja es `10:00-12:00` y el comando recibe `10:00`.
+
+**Lo que infiero yo** (los docs no lo dicen)
+- Lo más probable es que esto sea un repo de ejemplo o de prueba, donde `cancelar` es un stub y el patch se documentó sin que el código llegara a tener la lógica real.
+- Otra posibilidad es que el fix viviera en otra rama o se perdiera. No he mirado el historial de git para confirmarlo.
+
+Si quieres, miro el historial (`git log -p -- src/app.js`) para ver si alguna vez hubo lógica real. Si lo que quieres es que cancelar funcione de verdad, es un cambio nuevo y lo llevaría por `sdd-propose`. No he tocado nada.
+

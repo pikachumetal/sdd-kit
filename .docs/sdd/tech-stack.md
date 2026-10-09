@@ -103,6 +103,10 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 - **En `claude -p` no existe `AskUserQuestion`** (feature 0146): el sujeto la busca con `ToolSearch`, no la encuentra y pregunta en prosa. Un escenario que mide un diálogo de opciones puntúa el intento o las opciones literales, y la rúbrica lo dice antes del RED.
 - **Un emoji en un `grep` de Git Bash puede no casar** (feature 0146): el primer veredicto de `v1b` salió falso. La rúbrica que busca 🦆 o ✋ se puntúa con una lectura UTF-8 (Python con `-X utf8` o Node).
 
+- **Una regla de forma que sale en un mensaje que otra skill estructura va dentro de ese mensaje** (feature 0160): el anuncio de feature salió 0 de 6 en su paso y en el aviso de fase, y 4 de 6 en la cabeza de la nota de entendimiento de `brainstorming`.
+- **«/sdd-kit:<skill>» en `claude -p` carga la skill sin `>>> Skill:`** (feature 0160): la puerta de `battery.sh` sale roja; se puntúa la conducta.
+- **Lo que deja un sujeto se busca por la carpeta que crea, no por fecha** (feature 0160): con `-newer`, el `subject.sh` guardaba ficheros del molde.
+
 ### Entrega de la skill al sujeto
 
 - **Con subagentes** (método hasta T9): la skill se pega por prompt desde el working tree; el plugin instalado resuelve a una copia en cache (`installPath` de la versión publicada), así que un run que dependa del harness prueba la versión vieja. **Las skills de superpowers NO se pegan**: las resuelve el harness, y así el RED prueba la integración real entre la versión instalada de superpowers y la del working tree del kit (T1, 2026-09-07). El sujeto puede invocar con `Skill` la copia en cache de la misma skill que se le pega (2/3 GREEN de `sdd-consult` v0.5.0) y aun así seguir el texto pegado: la entrega por prompt gobierna; se anota cuando ocurre.
