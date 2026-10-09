@@ -68,7 +68,8 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ## 5. Tiempo (ligero) *(si existe `.docs/sdd/estimation.md`)*
 
-- Estimación: <Xh> (si la hubo)
+- Estimación: <Xh, la de la pregunta del carril de `sdd-propose`, escrita antes del fix>
+- Inicio: <hora UTC en que se abrió el patch, p. ej. 2026-10-09T11:20Z>
 - Real: <Yh>
 
 ## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*

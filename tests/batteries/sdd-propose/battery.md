@@ -87,3 +87,4 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 2: spike se clasifica y se anuncia como full | RED k2 2/2 a `sdd-consult` | k2 |
 | Paso 2: el carril solo sube | sin escenario: la forma de las subidas vigentes de lite (`modo-lite.md`) y de patch (`sdd-start-patch`, paso 1) | no medido |
 | Paso 6: el traspaso a `sdd-start-feature` tras el plan, en el mismo turno en `delegate` | GREEN p1 1/2; REFACTOR 2/2 | p1 |
+| Paso 2: en un patch, con `estimation.md`, la pregunta lleva la estimación en horas, que `sdd-start-patch` escribe antes del fix | ticket del patch 6300 §3 y del patch 0101 §1 (estimación escrita al cerrar); `tests/sdd-propose-0160-red.md`, a2 2/2 sin estimación | a2 |

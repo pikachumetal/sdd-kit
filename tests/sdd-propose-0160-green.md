@@ -47,3 +47,15 @@ Kit de la rama con las reglas del paso 2 (ceremonia, carril de la petición, con
   4. Las tres líneas abren la nota de entendimiento que pide `brainstorming`, el único mensaje entre clasificar y la primera pregunta: a1-7, a1-8 **2/2** («Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)», «Ignoro de sdd-kit.local.json: merge.push…», «Si te vas a ausentar: «apruebo la spec por delegación…»»).
 
 **Lección**: una regla de forma que tiene que salir en un mensaje que otra skill ya estructura (`brainstorming` y su nota de entendimiento) no se escribe en el mensaje que la precede: va dentro del que la otra skill hace escribir.
+
+## Task 4 — estimación previa del patch
+
+Kit de la rama con la estimación en la pregunta del carril patch (`sdd-propose`), el paso 3 de `sdd-start-patch` y §5 de `patch-template.md` con `- Estimación:`, `- Inicio:` y `- Real:`. 2026-10-09, ~1 $.
+
+| Regla | Escenario | GREEN | Lectura |
+| --- | --- | --- | --- |
+| Patch pregunta, con 🦆 y estimación, antes de rama, carpeta o id | a2 | **2/2** | los dos acaban el turno 1 con la pregunta, sin rama ni id, abierta por el 🦆 y con «Estimación: ~0,5 h» (a2-1) / «unos 0,5 h, como el 0007» (a2-2) |
+| §5 con la estimación y la hora de inicio antes del fix | a2 | **2/2** | `- Estimación: 0,5h` y `- Inicio: 2026-10-09T13:03Z` / `13:05Z` en el `patch.md` del commit del fix; «Escribo `patch.md` con la estimación antes del fix y aplico el arreglo» (a2-2) |
+| `sdd estimation log` lee la forma nueva | Vitest `cli/test/estimation/patch-estimate.test.ts` | verde sin tocar la CLI | fila `0.5 · 0.75 · 1.5`, sin avisos: `- Inicio:` no cuenta como estimación |
+
+**Ruido**: el `estimation.md` del molde, calcado de la plantilla anterior, dice «Los patches registran solo el tiempo real»; a2-1 lo cita y escribe la estimación igual. La plantilla de `estimation.md` se corrige en esta task; los proyectos que ya la tienen conservan su copia hasta que la reescriban.
