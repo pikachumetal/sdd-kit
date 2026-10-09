@@ -10,6 +10,8 @@ function repoWithPlan(): { repo: string; base: string; ledger: string } {
   const repo = emptyRepo();
   write(join(repo, plan), twoTasks);
   const base = commitAll(repo, 'fixture');
+  write(join(repo, 'task.txt'), 'x\n');
+  commitAll(repo, 'task');
   return { repo, base, ledger: join(repo, '.superpowers', 'sdd', 'plan', 'progress.md') };
 }
 
@@ -19,11 +21,12 @@ describe('sdd task start / done (test-executing-plans-scripts.sh)', () => {
   });
 
   it('task start prints the brief path, BASE as HEAD and writes the brief', () => {
-    const { repo, base } = repoWithPlan();
+    const { repo } = repoWithPlan();
+    const head = git(repo, 'rev-parse', 'HEAD');
     const result = sdd(repo, 'task', 'start', plan, '1');
     const briefPath = join(repo, '.superpowers', 'sdd', 'plan', 'task-1-brief.md');
     expect(result.out).toContain(`brief: ${briefPath}`);
-    expect(result.out).toContain(`base: ${base}`);
+    expect(result.out).toContain(`base: ${head}`);
     expect(readFileSync(briefPath, 'utf8')).toContain('Do the first thing.');
   });
 

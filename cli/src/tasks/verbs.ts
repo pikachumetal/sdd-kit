@@ -33,7 +33,7 @@ export const workspaceVerb: Verb = {
   noun: 'workspace',
   summary: 'Resuelve y crea el workspace de SDD de un plan',
   options: {},
-  positionals: ['plan'],
+  positionals: ['PLAN_FILE'],
   async run(args, io) {
     const [plan] = exactly(args, 1, 'sdd workspace PLAN_FILE');
     io.out(await workspaceFor(plan));
@@ -46,7 +46,7 @@ export const taskStartVerb: Verb = {
   verb: 'start',
   summary: 'Extrae el brief de una task y registra el commit base',
   options: {},
-  positionals: ['plan', 'n'],
+  positionals: ['PLAN_FILE', 'TASK_NUMBER'],
   async run(args, io) {
     const usage = 'sdd task start PLAN_FILE TASK_NUMBER';
     const [plan, number] = exactly(args, 2, usage);
@@ -63,7 +63,7 @@ export const taskBriefVerb: Verb = {
   verb: 'brief',
   summary: 'Extrae el texto de una task del plan a un fichero',
   options: {},
-  positionals: ['plan', 'n', 'out'],
+  positionals: ['PLAN_FILE', 'TASK_NUMBER', '[OUTFILE]'],
   async run(args, io) {
     const usage = 'sdd task brief PLAN_FILE TASK_NUMBER [OUTFILE]';
     const [plan, number, out] = between(args, [2, 3], usage);
@@ -79,7 +79,7 @@ export const taskDoneVerb: Verb = {
   verb: 'done',
   summary: 'Ejecuta los tests de una task y, si pasan, la anota en el ledger',
   options: {},
-  positionals: ['plan', 'n', 'base', 'command'],
+  positionals: ['PLAN_FILE', 'TASK_NUMBER', 'BASE', '--', 'TEST_COMMAND', '[ARGS...]'],
   async run(args, io) {
     const usage = 'sdd task done PLAN_FILE TASK_NUMBER BASE -- TEST_COMMAND [ARGS...]';
     const [plan, number, base, ...command] = args.positionals;
@@ -93,7 +93,7 @@ export const reviewPackageVerb: Verb = {
   verb: 'package',
   summary: 'Genera el paquete de revisión de un rango de commits',
   options: {},
-  positionals: ['plan', 'base', 'head', 'out'],
+  positionals: ['PLAN_FILE', 'BASE', 'HEAD', '[OUTFILE]'],
   async run(args, io) {
     const [plan, base, head, out] = between(args, [3, 4], 'sdd review package PLAN_FILE BASE HEAD [OUTFILE]');
     const written = await writePackage({ plan, base, head, out });
@@ -107,7 +107,7 @@ export const ledgerRulingsVerb: Verb = {
   verb: 'rulings',
   summary: 'Lista los rulings y los minor diferidos del ledger de un plan',
   options: { json: { type: 'boolean' } },
-  positionals: ['plan'],
+  positionals: ['PLAN_FILE'],
   async run(args, io) {
     const workspace = await existingWorkspace(positional(args, 0, 'sdd ledger rulings PLAN_FILE [--json]'));
     const rulings = workspace === null ? [] : listRulings(workspace);
