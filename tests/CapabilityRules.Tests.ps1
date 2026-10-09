@@ -55,7 +55,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     It 'spec-template lo lleva antes de las decisiones, con sus tres formas' {
       $content = Read-SkillFile 'sdd-templates/templates/spec-template.md'
       $content.IndexOf("`n## Capacidades") | Should -BeGreaterThan 0
-      $content.IndexOf("`n## Capacidades") | Should -BeLessThan $content.IndexOf('## Decisiones que he tomado yo')
+      $content.IndexOf("`n## Capacidades") | Should -BeLessThan $content.IndexOf('## ✋ Decisiones que he tomado yo')
       $block = [regex]::Match($content, '(?s)\n## Capacidades.*?\n## ').Value
       $block.Contains('- Nuevas: `<nombre>`') | Should -BeTrue
       $block.Contains('- Modificadas: `<nombre>`') | Should -BeTrue

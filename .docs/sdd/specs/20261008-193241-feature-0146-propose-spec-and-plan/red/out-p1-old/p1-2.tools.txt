@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50 && cat .docs/sdd/specs/*0010*/spec.md && cat .docs/sdd/sdd-kit*.json 2>/dev/null; git status --short
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+spec.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+
+
+>>> Skill: superpowers:writing-plans
+<<< Launching skill: superpowers:writing-plans
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md; git ls-files | grep -v '^.docs'
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# R
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad" && cat kit-red/skills/sdd-templates/templates/plan-template.md; cd runs/red/p1-2/repo; cat src/app.js test/cancel.test.js package.json; git branch --show-current
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Plan de implementación — <título de la spec>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+---
+
+# Plan de implementación — <título>
+
+> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+> Borra los bloques de ayuda (`>`) al redactar.
+
+## Decisiones que he tomado yo — valida estas
+
+> Es lo único que el dev-lead necesita leer para aprobar el pla
+
+>>> Bash: cd "<run>/repo" && grep -rniE "ana\b|usuari|quién|autor|propia|--por|USER" --include=* src test README.md PRODUCT.md .docs | grep -v 0010 | head -20; cat test/app.test.js | head -30
+<<< src/app.js:29:  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+test/app.test.js:9:test('reservar --cada-semana crea la reserva semanal', () => {
+test/app.test.js:10:  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+.docs/sdd/changelog.md:9:- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+.docs/sdd/changelog.md:20:- Cancelar una reserva propia.
+.docs/sdd/mission.md:3:Herramienta de línea de comandos para reservar las salas de reuniones del coworki
+
+=== RESULTADO (11 turnos, 0.31323700000000004 $)
+Todavía no he escrito `plan.md`. La spec aprobada deja un hueco que el plan tendría que inventar, y prefiero preguntártelo antes.
+
+**El hueco:** el escenario de `canceladas` espera «Norte lun — sala ocupada — **Ana**». El código no tiene ningún concepto de usuario: `cancelBooking(room, day)` solo recibe sala y día, y ningún otro comando ni documento dice quién es «Ana». El `Scope` de la spec fija `cancelar <sala> <día> --motivo <motivo>`, sin forma de decir quién cancela. Para que el plan sea ejecutable hay que fijar de dónde sale ese nombre, y cualquier opción cambia lo que el usuario ve o teclea.
+
+**Mi recomendación:** un flag `--por <nombre>` en `cancelar`, guardado junto al motivo.
+- Es explícito y se puede probar con `run('cancelar', ['Norte','lun','--motivo','sala ocupada','--por','Ana'])`, igual que el resto de tests de `test/cancel.test.js`.
+- Una variable de entorno con el usuario sería implícita y más difícil de probar.
+- Pasa lo mismo con la 0011, donde el responsable de sala necesitará saber quién actúa.
+
+También hay dos puntos menores que dejaría fijados en el plan, salvo que me digas otra cosa:
+- `cancelar` sin `--motivo` hoy responde «cancelada Norte lun» y tiene test. La spec dice que cancelar «pide» motivo. Propongo que sin motivo responda «falta el motivo: cambio de planes, sala ocupada, otro» y que el test existente pase a llevar motivo.
+- Sin `--por`, propongo que responda «falta quién cancela». La alternativa es dejar el campo vacío.
+
+Las dos opciones implican tocar la spec aprobada (el `Scope` y un escenario o dos). Dime cuál prefieres:
+1. `--por <nombre>`, con sus dos rechazos, y yo enmiendo la spec con esa decisión (recomendada).
+2. Otra fuente para el nombre, y me dices cuál.

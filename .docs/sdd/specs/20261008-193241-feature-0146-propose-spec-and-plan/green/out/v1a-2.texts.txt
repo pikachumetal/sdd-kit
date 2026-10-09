@@ -1,0 +1,47 @@
+--- [3]
+Ahora: preparo la validación de la 0010 (re-revisión del tramo si hace falta, smoke por THEN y guion). Queda: presentarte el trabajo y esperar tu validación, ~10 min.
+
+--- [23]
+Ahora: te presento la 0010 para que la valides. Queda: tu respuesta (qué probaste y si funciona), y después el cierre con `sdd-end-feature`.
+
+## 🦆 Lo hecho
+
+Antes, cancelar una reserva no dejaba rastro de por qué. Ahora `cancelar <sala> <día> --motivo <motivo>` exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). Lo guarda con la reserva, y `canceladas` lista cada reserva cancelada con su motivo. Todo está en `src/app.js`, en dos commits: `7e309cc` (cancelar con motivo) y `ace3416` (listado).
+
+## ✋ Me salí del plan en…
+
+No hubo desvíos del plan ni cambios a la spec. Hay dos rulings de la Task 2, que decidí yo porque la spec no los fija:
+
+- **Orden de `canceladas`:** una línea por reserva, en el orden en que se cancelaron. Si prefieres ordenar por sala, es un cambio de una línea.
+- **Anuladas fuera:** las reservas anuladas con `anular` no salen en `canceladas`. La spec no lo dice y el glosario separa cancelación de anulación. Si te equivoco, el listado de la 0011 tendrá que sumarlas.
+
+## Estado de la revisión
+
+- La revisión final del código quedó limpia, sin Critical ni Important.
+- Desde ese commit solo avanzó `c6b8fa3`, que toca únicamente `tasks.md` (21 líneas). Es una línea por encima del límite para leerlo en el hilo sin revisor, y lo leí yo, no un revisor. Si prefieres un revisor para esas 21 líneas, dímelo.
+- En `tasks.md`, la línea `Revisión final: … sobre (HEAD)` sigue con el sha sin rellenar, porque no sé con seguridad sobre qué commit revisó. Casi seguro es `ace3416`, pero no lo he escrito.
+- Rellené los hashes de las dos tasks y añadí la entrada del changelog. Siguen sin commitear.
+
+## Smoke (lo que ejecuté yo)
+
+La suite completa (`node --test`) pasa: 5 de 5, en 0,46 s.
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | ✅ |
+| Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real, con `--motivo "porque sí"` | ✅ |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real, en una sola sesión de Node | ✅ |
+
+La app no guarda estado entre ejecuciones (las reservas viven en memoria), así que `cancelar` y `canceladas` solo se ven juntos dentro de un mismo proceso. No hay nada que arrancar ni parar.
+
+## Guion de pruebas para ti
+
+Desde la raíz del repo:
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → responde `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → responde lo mismo que el paso 2.
+4. `node --input-type=module -e "const {run}=await import('./src/app.js');run('cancelar',['Norte','lun','--motivo','sala ocupada']);console.log(run('canceladas',[]))"` → imprime `Norte lun — sala ocupada`. Lo hago así porque son dos comandos que necesitan el mismo proceso.
+
+**¿Validas?** Dime qué has probado tú y si funciona. «Cierra la tarea» no cuenta como validación. Hasta que me respondas, la feature queda en espera con los borradores sin commitear y el roadmap sin tocar.
+

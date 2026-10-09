@@ -13,6 +13,7 @@ SALAS_MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"has
 
 case "$(cell Molde)" in
   salas) cp -r "$SALAS/." "$R/"; put_kit_marker "$SALAS_MARKER" ;;
+  reservas) cp -r "$HERE/../sdd-start-feature/mold-reservas/." "$R/"; put_kit_marker "$SALAS_MARKER" ;;
   salas-sin-docs) cp -r "$SALAS/." "$R/"; rm -r "$R/.docs" ;;
   vacio) echo '# citas' | put README.md ;;
   *) die "molde desconocido en battery.md: $SC" ;;

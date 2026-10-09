@@ -1,0 +1,42 @@
+--- [2]
+Using sdd-kit:sdd-rubber-duck to explain how an export travels from request to file.
+
+--- [16]
+Here is how an Exportación travels, using one example: you ask for March 2026.
+
+The tool's saved reservas are:
+
+- Norte, 2 March, 10:00-12:00, confirmed.
+- Sur, 5 March, 16:00-17:00, confirmed.
+- Norte, 12 March, 09:00-10:00, cancelled.
+- Norte, 19 March, 12:00-13:30, confirmed.
+- Sur, 1 April, 10:00-11:00, confirmed.
+
+1. **You ask from the terminal.** You run the export command and give it the month, `2026-03`. The tool takes that text as the month to export.
+2. **The tool loads all saved reservas.** It reads the whole list, for every month, from a single data file. That is the five above.
+3. **It keeps only the March reservas that are still active.**
+   - The cancelled 12 March reserva goes.
+   - The 1 April reserva goes because it's another month.
+   - Three remain, sorted by day and then by franja: 2 March Norte, 5 March Sur, 19 March Norte.
+4. **Each remaining reserva becomes a calendar event.**
+   - The title is "Sala Norte" or "Sala Sur".
+   - The start and end come from the franja. Calendars expect UTC, so the tool converts from the coworking's time. It treats the coworking as two hours ahead of UTC, so the 2 March 10:00-12:00 reserva becomes 08:00-10:00 UTC.
+5. **The events are wrapped in one calendar file.** The file has a header, the three events and a footer. This is the format Google Calendar and Outlook know how to import.
+6. **The file is saved and its location is printed.** The tool creates a folder for Exportaciones if it doesn't exist, saves the file named after the month, and prints where it is.
+
+After that, the tool's part is done. You open the file in Google Calendar or Outlook and import it, and the three reservas appear in your calendar.
+
+**Two things I noticed while reading the code:**
+- The two-hours-ahead conversion is fixed all year. On 2 March the coworking is probably only one hour ahead of UTC, because summer time starts at the end of March. If so, the March events would land an hour off in your calendar. I haven't tested this. I can check whether that's intended.
+- The events carry only the sala and the times, not the socio's name.
+
+**Where to look:**
+- Step 1, reading the command and the month: `src/cli.js`
+- The order of the steps: `src/export/index.js`
+- Step 2, loading the reservas: `src/bookings/repository.js`, reading `data/bookings.json`
+- Step 3, filtering and sorting: `src/export/filter.js`
+- Steps 4 and 5, events, time conversion and the calendar file: `src/export/ics.js`
+- Step 6, saving: `src/export/writer.js`, which writes `exports/2026-03.ics`
+
+Ask me if you want any step explained further.
+

@@ -8,9 +8,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### La spec presenta primero las decisiones tomadas sin el usuario
 
-- GIVEN una feature en modo full o lite
+- GIVEN una feature en modo full o lite, con una entrevista que fijó el filtro por sala y en la que nadie habló de cuántas filas enseña la exportación
 - WHEN el agente presenta la spec en el gate
-- THEN el primer bloque que el dev-lead lee es "Decisiones que he tomado yo — valida estas", con una línea por decisión, y el resto de la spec cabe en una pantalla
+- THEN lo primero que lee el dev-lead es un párrafo que empieza por 🦆, escrito por `sdd-rubber-duck` en modo corto, y después «✋ Decisiones que he tomado yo — valida estas», con una línea por decisión
+- AND en la `spec.md`, el 🦆 va bajo el título, antes de «Capacidades», y el ✋ va justo después de «Capacidades»
+- AND si la spec fija un tope de 50 filas, ese tope está en ✋, porque no salió de la entrevista ni del roadmap
+- AND la spec lleva la sección «Términos y ADR»: los términos que la entrevista resolvió y las ADR candidatas (difícil de deshacer, sorprende sin contexto y hubo una alternativa real), o «ninguno» y «ninguna»
 
 ### Lo técnico no vive en la spec
 
@@ -22,7 +25,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una spec en modo full recién redactada
 - WHEN el agente cuenta las señales de la rúbrica
-- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
+- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec, la opción mínima con lo que deja sin cubrir y el modelo del revisor de dominio
 - AND si el Scope cambia menos de ~50 líneas (texto y código), el nivel baja de dos revisores a uno con los siete puntos, nunca a ninguno: con contrato público + datos y dos líneas en `db/002-site.sql` y `src/api.js`, un revisor
 - AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción «apruebo la spec por delegación» de la primera pregunta) y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
 - AND con 4 señales o más y un delta grande (seis ficheros, uno de ellos una migración), sin esa restricción, siguen siendo dos revisores
@@ -72,7 +75,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una feature con la implementación terminada y la revisión final limpia, en un proyecto con `validation.mode` `manual` o sin la clave
 - WHEN el agente va a cerrar
-- THEN antes de invocar `sdd-end-feature` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- THEN antes de invocar `sdd-end-feature` presenta, empezando por un párrafo con 🦆 sobre lo que cambia para quien usa el producto y siguiendo con «✋ Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
 - AND el smoke da una fila por THEN de la spec con su evidencia, que es uno de tres valores: `suite`, `ejecución real` o `no probado`. Un THEN que se observa en una interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado con `ejecución real`.
 - AND un THEN de fallo (un error, un rechazo, un 400) se provoca de verdad con la entrada que falla: con la feature 0012, `curl -i localhost:<puerto>/api/bookings?status=Lost` → `400` con «Estado no válido: Lost», no «lo cubre el test de la task 3»
@@ -80,7 +83,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
-- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
+- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, el mensaje con el que pasa al cierre empieza por el 🦆 y el ✋ de los rulings, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
 
 ### El walkthrough crece por adendas
 
@@ -222,9 +225,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El revisor de spec se despacha con su effort
 
-- GIVEN una spec con review de uno o dos revisores
-- WHEN el hilo despacha cada revisor
-- THEN el despacho lleva `subagent_type: sdd-kit:effort-medium` y `model: sonnet`
+- GIVEN una spec de permisos por rol del gestor de cobros, con review de uno o dos revisores
+- WHEN el agente pregunta la review
+- THEN las opciones llevan el modelo del revisor de dominio, y la recomendada es Opus porque la spec toca roles; para «renombrar una columna del listado», la recomendada es Sonnet
+- AND con un solo revisor de siete puntos, su modelo se elige igual, porque incluye la lente de dominio
+- AND si la petición o el prompt de arranque dicen «revisor de dominio en Opus», no lo pregunta y lo aplica
+- AND sin esa pregunta (spec aprobada por delegación, `unattended`), el revisor de dominio va en Sonnet
+- AND cada despacho lleva `subagent_type: sdd-kit:effort-medium` y el modelo elegido; el revisor técnico, siempre `model: sonnet`
 
 ### Cada cambio de paso lleva un aviso en llano
 
@@ -293,7 +300,9 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN un plan para las salas favoritas, que tocan la migración `favorite_rooms`, la API y la estrella de la pantalla de salas
 - WHEN se parte en tasks
 - THEN la task «Marcar Sur como favorita» atraviesa migración, API y estrella, y su línea «Se prueba en la aplicación» dice «Ana pulsa la estrella de Sur y la ve llena tras recargar». No sale una task «BD y API» seguida de otra «web».
-- AND una task que no deja nada probable (una migración de datos previa, un refactor) lleva en esa línea «no, porque <motivo>»
+- AND una task que no deja nada que se pueda probar (una migración de datos previa, un refactor) lleva en esa línea «no, porque <motivo>»
+- AND cada task lleva `**Tras**:` con la task de la que depende, o `—`: «Quitar Sur de favoritas» lleva `Tras: Task 1`
+- AND el plan dice que las tasks se ejecutan en orden, sin paralelo
 - AND el plan no fija un tamaño en horas por task
 
 ### En `pair`, cada task cerrada para con su guion de pruebas
@@ -314,7 +323,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
 - WHEN el agente presenta la spec
-- THEN entre las opciones está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
+- THEN entre las opciones de `AskUserQuestion` está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
 - AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
 
 ### Con Native, el plan registra el modelo recomendado para la sesión
@@ -556,6 +565,19 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN `sdd task start` imprime la ruta del workspace en forma Windows (`D:\…`), y la línea `Task <N>: complete (…, tests: <comando> → (sin salida))` queda en el ledger a la primera
 - AND si `sdd task start` falla o no imprime ruta, sale con un código distinto de 0 y el hilo no escribe en el ledger
 - AND con un test en rojo, `sdd task done` no escribe `Task <N>: complete` y sale con el código del comando; con un comando que no existe, sale con 127 y tampoco lo escribe
+
+### La spec dice dónde se prueba cada comportamiento
+
+- GIVEN una feature que añade cancelar una reserva por el endpoint y por la pantalla, en un proyecto cuyos tests de reservas van contra el endpoint
+- WHEN el agente escribe la spec
+- THEN la sección «Dónde se prueba» dice «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
+
+### La pregunta del gate de la spec lleva opciones fijas
+
+- GIVEN una feature en `pair` o `delegate`, con la spec lista para el gate
+- WHEN el agente presenta la spec
+- THEN la pregunta del gate es una llamada a `AskUserQuestion` con, al menos, «Apruebo (Recomendada)» y «Cambios»
+- AND no es una pregunta en prosa al final del mensaje
 
 ## Reglas de la capacidad
 

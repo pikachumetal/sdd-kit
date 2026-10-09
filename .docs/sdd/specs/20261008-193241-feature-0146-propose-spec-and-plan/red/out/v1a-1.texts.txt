@@ -1,0 +1,36 @@
+--- [11]
+Sigo con el paso 7: la suite pasa y ya probé los comandos de verdad. Ahora compruebo qué cubrió la revisión final y si `HEAD` avanzó desde entonces.
+
+--- [27]
+Ahora: te presento la validación de la 0010. Queda: tu respuesta, y con ella cierro con `sdd-end-feature`.
+
+La re-revisión del tramo de documentación encontró dos rulings falsos en `tasks.md`. Los he retirado y está commiteado (`ce46088`, 10 líneas de docs, revisado en el hilo). Lo que ya no puedo comprobar es el sha de la revisión final: no se anotó al volver, así que lo reconstruí como `007479b`, el último commit de código.
+
+## Me salí del plan en…
+- No hay desvíos del plan. Los dos rulings que figuraban (hacer la Task 2 antes de acabar los mensajes de la Task 1, y arreglar `test/app.test.js`) no coinciden con el historial. `6dacb06` ya traía los mensajes de error, y ningún commit de la feature toca `test/app.test.js`.
+- No pude despachar con `sdd-kit:effort-high`: ese tipo de agente no está en la sesión. Usé `model: opus` y el effort que hereda la sesión.
+
+## Qué hay
+- `cancelar <sala> <día> --motivo <motivo>` acepta solo `cambio de planes`, `sala ocupada` y `otro`.
+- `canceladas` lista las reservas canceladas con su motivo.
+- Todo está en `src/app.js` y `test/cancel.test.js`.
+
+## Smoke (suite completa: 5 tests, 0,33 s, 15 pasadas seguidas sin fallos)
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real: `node src/app.js cancelar Norte lun --motivo "sala ocupada"` |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real: lo provoqué con `--motivo "me aburro"` |
+| `canceladas` → «Norte lun — sala ocupada» | `suite` solamente |
+
+El tercero no pude verificarlo ejecutando el comando. Las reservas viven en memoria de cada proceso, así que un `node src/app.js canceladas` suelto no ve la cancelación hecha en otra llamada y sale vacío. Es una limitación de la spec tal como está escrita, no un fallo del código.
+
+Hay un segundo punto débil en `test/cancel.test.js`. El test «canceladas» solo pasa si antes corre el de cancelar con motivo. Suelto, con `--test-name-pattern`, falla. No lo he tocado porque los tests RED son contrato.
+
+## Guion de pruebas (en la raíz del repo)
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"` → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`. Va en un solo proceso por lo que explico arriba.
+4. `node --test` → 5 pasan, 0 fallan.
+
+¿Has probado esto y funciona? Dime qué probaste. Si prefieres decidir antes qué hacer con la limitación de `canceladas` (estado en memoria) o con el test dependiente del orden, dímelo y lo resolvemos antes de cerrar.
+

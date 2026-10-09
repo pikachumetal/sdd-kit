@@ -17,6 +17,10 @@ approvers:
 
 # Spec — <título>
 
+🦆 <qué cambia para quien usa el producto, con un ejemplo con datos, y después cómo>
+
+> El párrafo 🦆 lo escribe `sdd-rubber-duck` en modo corto al presentar la spec: cinco frases como mucho, sin rutas ni jerga.
+
 > **Estado**: draft / in-review / approved / implementing / done / superseded / cancelled.
 > **Siguiente paso**: modo full → `plan.md` con `superpowers:writing-plans`; modo lite → implementación directa.
 > **Modo lite** = rellenar el bloque «Estimación y esfuerzo» de esta misma plantilla; no existe ni se crea un `spec-lite-template.md` (Art. VIII).
@@ -31,9 +35,9 @@ approvers:
 - Nuevas: `<nombre>` — <qué cubre>
 - Modificadas: `<nombre>` — <qué requisito cambia>
 
-## Decisiones que he tomado yo — valida estas
+## ✋ Decisiones que he tomado yo — valida estas
 
-> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-start-feature/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
+> Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-start-feature/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
 
@@ -61,6 +65,19 @@ approvers:
 > Qué enfoque se toma, no cómo se implementa — el cómo es contenido de `plan.md`.
 
 <texto>
+
+## Dónde se prueba
+
+> Una línea por comportamiento: dónde se prueba y como qué prueba existente, en la costura existente más alta, y cuantas menos costuras mejor. Cambiarla durante la implementación es un desvío.
+
+- <comportamiento>: <superficie y patrón> — p. ej. «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
+
+## Términos y ADR
+
+> Términos que la entrevista resolvió (el canónico y el que se evita) y ADR candidatas: solo una decisión difícil de deshacer, que sorprendería sin contexto y con una alternativa real. Las escribe el cierre.
+
+- Términos resueltos: <término — definición> | ninguno
+- ADR candidatas: <decisión — alternativa descartada> | ninguna
 
 ## Delta de comportamiento
 
@@ -103,7 +120,7 @@ approvers:
 
 ## Enmiendas
 
-> Un cambio a la spec aprobada durante la ejecución: un requisito, un THEN, el Scope o un «No entra». Una entrada por cambio, más reciente arriba.
+> Un cambio a la spec aprobada durante la ejecución: un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba». Se corrige en su sitio del cuerpo (acción update) y aquí queda su línea, con la task que lo implementa. Una entrada por cambio, más reciente arriba.
 
 - <fecha> — <qué cambia> — <por qué> — aprobada: «<frase>» | sin aprobar (unattended)
 

@@ -1,0 +1,48 @@
+--- [3]
+Ahora: preparo la validación de la 0010 (estado, re-revisión si hace falta, smoke por THEN y guion de pruebas). Queda: presentarte el guion y esperar tu validación, ~10 min.
+
+--- [17]
+Sigo con la validación de la 0010: el smoke y la suite ya están hechos, y ahora presento el resultado e invoco el cierre, porque `validation.mode: field` hace que este paso no pare a esperarte.
+
+🦆 Al cancelar una reserva ahora hay que decir por qué, y solo vale uno de tres motivos: cambio de planes, sala ocupada u otro. Si cancelas la reserva de la sala Norte del lunes con «sala ocupada», responde «cancelada Norte lun (sala ocupada)»; con un motivo que no está en la lista, o sin motivo, responde «motivo no válido: cambio de planes, sala ocupada, otro» y no cancela. El comando nuevo `canceladas` lista cada cancelación con su motivo, por ejemplo «Norte lun — sala ocupada». Las anulaciones del responsable de sala no salen en ese listado.
+
+✋ **Me salí del plan en…** nada de la spec ni del plan. Lo que sí hice:
+- **Registro de tareas:** `tasks.md` tenía marcadores sin rellenar (`(commit de la task N)` y `(HEAD)`). Los sustituí por los hashes reales: `c886e40`, `a62db37`, y la revisión final sobre `a62db37`.
+- **Re-revisión:** el commit `fdff62d` solo toca `tasks.md`, no código, pero tiene 21 líneas y el umbral para leerlo sin revisor es 20. No despaché re-revisión: lo leí yo y lo dejé anotado como ruling. Si prefieres que lo revise un revisor, dímelo.
+
+**Smoke, una fila por THEN** (ejecuté la aplicación de verdad, no solo la suite):
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real |
+| Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real: lo provoqué con «porque sí» y también sin `--motivo` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real, pero solo dentro de un mismo proceso (ver abajo) |
+
+La suite completa (`node --test`) pasa: 5 de 5 en 0,4 s.
+
+**Limitación que conviene que conozcas:** las reservas viven solo en memoria. Si cancelas con un comando y lanzas `canceladas` en otra invocación, el listado sale vacío. Lo comprobé. Es cómo está construida la base, no algo de esta feature, y la spec se cumple tal como está escrita. Pero hoy `canceladas` solo es útil si algo guarda las reservas entre ejecuciones. No lo he tocado porque ampliaría el alcance.
+
+Cierro con `sdd-end-feature`: registra «Validación en campo» con esta verificación mía y marca la fila ✅.
+
+--- [29]
+Estoy cerrando la 0010: la capacidad `bookings` ya está fusionada y validada, y ahora escribo el walkthrough, el changelog y el roadmap.
+
+--- [40]
+🦆 Cancelar una reserva ahora exige uno de tres motivos (cambio de planes, sala ocupada u otro). El comando `canceladas` los lista, por ejemplo «Norte lun — sala ocupada».
+
+✋ **Me salí del plan en…** nada de la spec ni del plan. Estas decisiones las tomé sin ti, y están en el walkthrough:
+- **Orden del listado:** `canceladas` va en el orden en que se cancelaron, porque la spec no lo fija. Ordenar por sala es un cambio de una línea.
+- **Anulaciones:** las del responsable de sala no salen en `canceladas`. La 0011 tendrá que sumarlas si se quiere.
+- **Capacidad `bookings`:** no existía en `capabilities/`, y la spec la declaraba como modificada, así que la fusión del delta fallaba. La pasé a «Nuevas» en la spec, con una decisión 4 que lo dice. Ahora `capabilities/bookings.md` solo describe estos dos requisitos, no el resto del comportamiento de reservas.
+- **Commit `fdff62d`:** solo toca `tasks.md`, con 21 líneas, una más que el umbral de 20 para leerlo sin revisor. Lo leí yo, sin re-revisión. En `tasks.md` sustituí los marcadores `(commit de la task N)` y `(HEAD)` por los hashes reales. Si prefieres un revisor para ese commit, dímelo.
+- **Tokens de subagentes:** el script los midió con un despacho «Re-revisión tramo 0010» (Opus, 76.513 tokens), y `tasks.md` no tiene ninguna línea `Re-revisión:` que lo respalde. Pegué la cifra tal cual la dio el script, sin retocarla.
+
+**Cerrado y commiteado:** `b34cf4c` incluye el walkthrough con «Validación en campo» (suite 5/5, 3 de 3 THEN con ejecución real, revisión final Opus limpia sobre `a62db37`). También recoge la capacidad `bookings`, la entrada del changelog y la fila 0010 en ✅. Añadí una fila de deuda técnica porque las reservas solo viven en memoria: `canceladas` lanzado en otra invocación sale vacío.
+
+**Pendiente:**
+- **Merge a `develop`:** `sdd-kit.json` no tiene el bloque `merge`, así que no lo hago solo. ¿Fusiono `feature/0010-cancel-reason` en `develop` con `--no-ff` y sin push?
+- **`roadmap check`:** da 2 fallos, en la cabecera de «Deuda técnica» y en la de «Releases cerradas». Son de líneas que no escribí yo y no los toqué. Los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0.
+- **Ticket de mejora del kit (`sdd-feedback`):** la sesión ha dejado varias fricciones con el kit. ¿Quieres que lo genere?
+
+**No terminado.** Falta el merge a `develop`. Estás en el checkout principal, así que no hay worktree que borrar.
+

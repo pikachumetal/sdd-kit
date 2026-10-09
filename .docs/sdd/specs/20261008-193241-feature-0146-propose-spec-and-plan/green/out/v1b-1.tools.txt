@@ -1,0 +1,361 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git log --oneline -8 && ls .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40
+<<< fdff62d docs(sdd): registro de tasks de la 0010
+a62db37 feat(bookings): listado de canceladas con su motivo
+c886e40 feat(bookings): cancelar con un motivo de la lista
+f011ddf docs(sdd): abrir la feature 0010 con su spec y su plan
+c889703 feat: base del molde
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-featu
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && cat tasks.md spec.md; sed -n 1,200p plan.md; cat ../../tech-stack.md; ls ../../../..; git -C ../../../.. status --short
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+spec: ./spec.md
+plan: ./plan.md
+created: 2026-10-08
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | (commit de la task 1) | |
+| 2 | Listado de canceladas | done | (commit de la task 2) | |
+
+Revisión final: code-reviewer + opus, limpia, sobre (HEAD)
+
+## Rulings
+
+- Task 2: Ruling: `canceladas` escribe una línea por reserva, en el orden en que se cancelaron — la spec no fija el orden — si me equivoco, orde
+
+>>> Bash: cd "<run>/repo" && cat package.json README.md; cat src/app.js; git show --stat --format=%h%n%s HEAD a62db37 | head -30; time node --test 2>&1 | tail -15
+<<< {"type": "module"}
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function r
+
+>>> Bash: cd "<run>/repo" && echo "--- THEN1 (CLI real)"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; echo "--- THEN2 fallo (CLI real)"; node src/app.js cancelar Norte lun --motivo "porque sí"; echo "--- sin --motivo"; node src/app.js cancelar Norte lun; echo "--- THEN3 canceladas (un proceso: el estado vive en memoria)"; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; echo "--- canceladas en proceso nuevo"; node src/app.js canceladas; echo "[exit $?]"; git status --short
+<<< --- THEN1 (CLI real)
+cancelada Norte lun (sala ocupada)
+--- THEN2 fallo (CLI real)
+motivo no válido: cambio de planes, sala ocupada, otro
+--- sin --motivo
+motivo no válido: cambio de planes, sala ocupada, otro
+--- THEN3 canceladas (un proceso: el estado vive en memoria)
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+--- canceladas en proceso nuevo
+
+[exit 0]
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && sed -i 's/(commit de la task 1)/c886e40/; s/(commit de la task 2)/a62db37/; s/^Revisión final: code-reviewer + opus, limpia, sobre (HEAD)/Revisión final: code-reviewer + opus, limpia, sobre a62db37/' tasks.md && cat >> tasks.md <<'EOF'
+- Cierre: `fdff62d` (solo `tasks.md`, 21 líneas, una por encima del umbral de 20) cambia documentación y no código; leído en el hilo, sin re-revisión. Sus marcadores `(commit de la task N)` y `(HEAD)` se sustituyen por los hashes reales.
+EOF
+sed -n 10,30p tasks.md
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< | # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | c886e40 | |
+| 2 | Listado de canceladas | done | a62db37 | |
+
+Revisión final: code-reviewer + opus, limpia, sobre a62db37
+
+## Rulings
+
+- Task 2: Ruling: `canceladas` escribe una línea por reserva, en el orden en que se cancelaron — la spec no fija el orden — si me equivoco, ordenar por sala es un cambio de una línea.
+- Task 2: Ruling: las reservas anuladas (`anular`) no salen en `canceladas` — la spec no lo dice, y el glosario separa Cancelación de Anulación — si me equivoco, el listado de
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+
+>>> Skill: sdd-kit:sdd-end-feature
+<<< Launching skill: sdd-kit:sdd-end-feature
+
+>>> Bash: cd "<run>/repo" && ls -a . .claude 2>&1 | head -20; cat .docs/sdd/roadmap.md .docs/sdd/changelog.md; cat .docs/sdd/specs/*0007-cancel/patch.md | head -30; sed -n 1,200p .docs/sdd/specs/*0006-free/walkthrough.md; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green"; ls $K/skills/sdd-templates $K/skills/add-to-changelog $K/skills/sdd-end-feature/references
+<<< ls: cannot access '.claude': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.i
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/skills"; cat $K/add-to-changelog/SKILL.md; cat $K/sdd-templates/templates/walkthrough-template.md; sed -n 1,60p $K/sdd-end-feature/references/aprendizajes-skills.md; cd "<run>/repo"; cat .docs/sdd/constitution.md | head -40; git branch -a
+<<< ---
+name: add-to-changelog
+description: Usar al cerrar una feature o patch en un proyecto con .docs/sdd/changelog.md, o cuando el usuario pide poner al día el changelog — normalmente invocada desde sdd-end-feature o sdd-end-patch.
+---
+
+# add-to-changelog
+
+## Overview
+
+`changelog.md` es el changelog **técnico** del proyecto (Keep a Changelog 1.1.0) y la base del changelog de cliente. Es *backward-looking*: registra lo ya hecho. El `roadmap.md` es *forward-looking*: son registros distintos que se actualizan por razones distintas — tocar uno no sustituye al otro.
+
+## Formato de entrada
+
+>>> Bash: cd "<run>/repo" && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js"; node $S capability merge --path .docs/sdd --artifact .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; echo "exit $?"; git status --short; node $S roadmap check --path .docs/sdd; echo "roadmap exit $?"
+<<< spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+exit 1
+ M .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+roadmap.md: línea 31: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 19: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+roadmap exit 1
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green"; grep -n -i -B2 -A8 "Capacidades" $K/skills/sdd-templates/templates/spec-template.md | head -50; ls $K/skills/sdd-templates/templates | head -30
+<<< 29-> Borra los bloques de ayuda (`>`) al redactar.
+30-
+31:## Capacidades
+32-
+33-> Se escribe con la salida de `sdd capability index`, que ejecuta el paso 1 de `sdd-start-feature`, con el nombre exacto que da el índice. Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo». Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta. Lo comprueba `sdd capability check` al cerrar
+
+>>> Bash: cd "<run>/repo" && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js"; D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; sed -i 's/^- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña\./- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña./' $D/spec.md && node $S capability merge --path .docs/sdd --artifact $D/spec.md; echo "merge $?"; node $S capability check --path .docs/sdd --artifact $D/spec.md; echo "check $?"; ls .docs/sdd/capabilities; cat .docs/sdd/capabilities/bookings.md
+<<< bookings.md: añadido «Cancelar pide un motivo de la lista»
+bookings.md: añadido «El listado de canceladas enseña el motivo»
+merge 0
+Capacidades válidas: 1
+check 0
+bookings.md
+# Capacidad — bookings
+
+## Propósito
+
+cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Requisitos
+
+### Cancelar pide un motivo de la lista
+
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+### El list
+
+>>> Bash: cd "<run>/repo" && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js"; node $S session tokens --path "$PWD" --branch feature/0010-cancel-reason; git rev-parse --git-dir --git-common-dir; git log --format='%h %ad' --date=iso -5
+<<< | Ámbito | Modelo | Entrada | Escritura 5m | Escritura 1h | Lectura | Salida | Total | Coste ($) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hilo | claude-sonnet-5-5 | 110 | 0 | 230.177 | 3.657.030 | 37.558 | 3.924.875 | sin precio |
+| Subagentes | claude-opus-5-5 | 6 | 27.595 | 0 | 46.977 | 1.935 | 76.513 | sin precio |
+
+- Tokens del hilo: 3.924.875 — claude-sonnet-5-5 3.924.875
+- Tokens de subagentes: 76.513 en 1 despacho — Re-revisión tramo 0010 claude-opus-5-5 76.513 / 0 min
+- Coste de la sesión: sin precio (sin tabla pricing en sdd-kit.json)
+.git
+.git
+fdff62d 2026-10-09 10
+
+>>> Bash: cd "<run>/repo" && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js"; D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason
+cat > $D/walkthrough.md <<'EOF'
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Walkthrough — Motivo al cancelar
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-10-09
+---
+
+# Walkthrough — Motivo al cancelar
+
+## 1. Cambios realizados
+
+- `cancelar <sala> <día> --motivo <motivo>` exige un motivo de la lista cerrada (cambio de planes, sala ocupada, otro); sin motivo o con otro, responde «motivo no válido: …» y no cancela. `c886e40`, `src/app.js`.
+- Comando `canceladas`: una línea «sala día — motivo» por reserva cancelada. `a62db37`, `src/app.js`.
+- Tests de ambos en `test/cancel.test.js`.
+
+## 2. Tiempo y coste
+
+- Esfuerzo real: no medido — no hay `estimation.md` y los commits del hilo llevan marcas del mismo minuto, así que no se puede aproximar con ellas.
+- Modelo del hilo: Sonnet 5.5, effort no registrado
+- Tokens del hilo: 3.924.875 — claude-sonnet-5-5 3.924.875
+- Tokens de subagentes: 76.513 en 1 despacho — Re-revisión tramo 0010 claude-opus-5-5 76.513 / 0 min
+- Coste de la sesión: sin precio (sin tabla pricing en sdd-kit.json)
+- Review de spec: no · hallazgos 0, aceptados 0
+
+## 3. Desviaciones del plan
+
+- _Ninguna_ respecto a la spec y el plan.
+
+### Decisiones tomadas sin el dev-lead
+
+- `canceladas` lista en el orden en que se cancelaron — la spec no fija el orden — ordenar por sala es un cambio de una línea.
+- Las anulaciones (`anular`) no salen en `canceladas` — la spec no lo dice y el glosario separa Cancelación de Anulación — la 0011 tendrá que sumarlas si se quiere.
+- Cierre: `bookings` no tenía fichero en `capabilities/` y la spec la declaraba «Modificadas», así que `sdd capability merge` fallaba. La moví a «Nuevas» en la spec y la fusión creó `capabilities/bookings.md` con solo estos dos requisitos; el resto del comportamiento de reservas (libres, semanal, cancelar propia, anular) no está descrito ahí — si hay que documentarlo, es trabajo aparte.
+- Cierre: `fdff62d` (solo `tasks.md`, 21 líneas, una sobre el umbral de 20) se leyó en el hilo sin re-revisión; en `tasks.md` sustituí los marcadores por los hashes reales.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- Suite completa: `node --test` → 5/5 en verde · 0,4 s
+
+### 4.2 Smoke / tests
+
+- Validación en campo: 2026-10-09 · suite 5/5 · smoke 3/3 THEN con ejecución real · revisión final code-reviewer + opus limpia sobre a62db37
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real | ok |
+| Motivo fuera de la lista (y sin `--motivo`) → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real | ok |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, en un solo proceso | ok |
+
+### 4.3 Residuales / deuda generada
+
+- Las reservas viven solo en memoria: `canceladas` lanzado en otra invocación que `cancelar` sale vacío. Es de la base, no de esta feature; sin persistencia el comando solo es útil dentro de un proceso. Pasa a la deuda técnica del roadmap.
+
+## 5. Aprendizajes
+
+- Comportamiento nuevo de cancelar con motivo y de `canceladas` → `capabilities/bookings.md`.
+- Revisión de skills: el proyecto no tiene `.claude/skills/`; ningún patrón reutilizable → no aplica.
+
+## 6. Adendas
+
+- (ninguna)
+EOF
+sed -i 's/^| 0010 | \(.*\) | ⏳ |$/| 0010 | \1 | ✅ |/' .docs/sdd/roadmap.md
+sed -i 's/^| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |$/&\n| Las reservas viven solo en memoria: `canceladas` no ve lo cancelado en otra invocación | Medio | Feature de persistencia antes de usarlo en serio |/' .docs/sdd/roadmap.md
+sed -i 's/^### Added$/&/' .docs/sdd/changelog.md
+awk 'BEGIN{d=0} {print} /task 0006\]/ && !d {print "- **0010** — Cancelar pide un motivo de una lista cerrada y el comando `canceladas` lo enseña. → [ref](specs/20261008-100000-feature-0010-cancel-reason/)"; d=1}' .docs/sdd/changelog.md > /tmp/cl && cp /tmp/cl .docs/sdd/changelog.md
+git diff -- .docs/sdd/roadmap.md .docs/sdd/changelog.md | grep '^[+-]' ; node $S roadmap check --path .docs/sdd; node $S capability check --path .docs/sdd --artifact $D/spec.md
+<<< warning: in the working copy of '.docs/sdd/changelog.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+--- a/.docs/sdd/changelog.md
++++ b/.docs/sdd/changelog.md
+-# Changelog
+-
+-Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+-
+-## [Unreleased]
+-
+-### Added
+-
+-- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+-- Listado de salas libres por franja (`salas libres 10:00-
+
+>>> Bash: cd "<run>/repo" && git diff --stat -- .docs/sdd/roadmap.md .docs/sdd/changelog.md 2>/dev/null; git diff --ignore-space-at-eol --stat 2>/dev/null; git config core.autocrlf; git ls-files --eol .docs/sdd/roadmap.md .docs/sdd/changelog.md; file .docs/sdd/roadmap.md
+<<<  .docs/sdd/changelog.md | 41 +++++++++++++++---------------
+ .docs/sdd/roadmap.md   | 67 +++++++++++++++++++++++++-------------------------
+ 2 files changed, 55 insertions(+), 53 deletions(-)
+ .docs/sdd/changelog.md                                             | 1 +
+ .docs/sdd/roadmap.md                                               | 3 ++-
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 2 +-
+ .../sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md  | 7 ++++---
+ 4 files changed, 8 insertions(+), 5 deletions(-)
+true
+i/crlf  w/lf    attr/                 	.docs/sdd
+
+>>> Bash: cd "<run>/repo" && sed -i 's/$/\r/' .docs/sdd/roadmap.md .docs/sdd/changelog.md && git ls-files --eol -m . ; git diff --stat 2>/dev/null; git ls-files --eol .docs/sdd/specs/*0010*/spec.md; file .docs/sdd/specs/*0010*/walkthrough.md .docs/sdd/capabilities/bookings.md
+<<< i/crlf  w/crlf  attr/                 	.docs/sdd/changelog.md
+i/crlf  w/crlf  attr/                 	.docs/sdd/roadmap.md
+i/lf    w/lf    attr/                 	.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+i/lf    w/lf    attr/                 	.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+ .docs/sdd/changelog.md                                             | 1 +
+ .docs/sdd/roadmap.md                                               | 3 ++-
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 2 +-
+ .../sdd/specs/20261008-100000-feature-0
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && sed -i 's/^3\. Sin review de spec: dos señales (MODIFIED, datos)\.$/&\n4. Capacidad nueva `bookings`, añadida al cerrar: no existía en `capabilities\/` y la fusión del delta la necesitaba (antes figuraba como modificada)./' $D/spec.md && grep -n "^[0-9]\." $D/spec.md && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js" && node $S capability check --path .docs/sdd --artifact $D/spec.md && git add -A && git commit -q -F - <<'EOF'
+docs(sdd): cerrar la feature 0010 (motivo al cancelar)
+
+Walkthrough con validación en campo, capacidad bookings, changelog y
+roadmap al día, y deuda técnica por la falta de persistencia.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -3; git status --short; cat .docs/sdd/sdd-kit.json | grep -c merge
+<<< 24:1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+25:3. Sin review de spec: dos señales (MODIFIED, datos).
+26:4. Capacidad nueva `bookings`, añadida al cerrar: no existía en `capabilities/` y la fusión del delta la necesitaba (antes figuraba como modificada).
+Capacidades válidas: 1
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-rea
+
+=== RESULTADO (23 turnos, 0.6958254000000001 $)
+🦆 Cancelar una reserva ahora exige uno de tres motivos (cambio de planes, sala ocupada u otro). El comando `canceladas` los lista, por ejemplo «Norte lun — sala ocupada».
+
+✋ **Me salí del plan en…** nada de la spec ni del plan. Estas decisiones las tomé sin ti, y están en el walkthrough:
+- **Orden del listado:** `canceladas` va en el orden en que se cancelaron, porque la spec no lo fija. Ordenar por sala es un cambio de una línea.
+- **Anulaciones:** las del responsable de sala no salen en `canceladas`. La 0011 tendrá que sumarlas si se quiere.
+- **Capacidad `bookings`:** no existía en `capabilities/`, y la spec la declaraba como modificada, así que la fusión del delta fallaba. La pasé a «Nuevas» en la spec, con una decisión 4 que lo dice. Ahora `capabilities/bookings.md` solo describe estos dos requisitos, no el resto del comportamiento de reservas.
+- **Commit `fdff62d`:** solo toca `tasks.md`, con 21 líneas, una más que el umbral de 20 para leerlo sin revisor. Lo leí yo, sin re-revisión. En `tasks.md` sustituí los marcadores `(commit de la task N)` y `(HEAD)` por los hashes reales. Si prefieres un revisor para ese commit, dímelo.
+- **Tokens de subagentes:** el script los midió con un despacho «Re-revisión tramo 0010» (Opus, 76.513 tokens), y `tasks.md` no tiene ninguna línea `Re-revisión:` que lo respalde. Pegué la cifra tal cual la dio el script, sin retocarla.
+
+**Cerrado y commiteado:** `b34cf4c` incluye el walkthrough con «Validación en campo» (suite 5/5, 3 de 3 THEN con ejecución real, revisión final Opus limpia sobre `a62db37`). También recoge la capacidad `bookings`, la entrada del changelog y la fila 0010 en ✅. Añadí una fila de deuda técnica porque las reservas solo viven en memoria: `canceladas` lanzado en otra invocación sale vacío.
+
+**Pendiente:**
+- **Merge a `develop`:** `sdd-kit.json` no tiene el bloque `merge`, así que no lo hago solo. ¿Fusiono `feature/0010-cancel-reason` en `develop` con `--no-ff` y sin push?
+- **`roadmap check`:** da 2 fallos, en la cabecera de «Deuda técnica» y en la de «Releases cerradas». Son de líneas que no escribí yo y no los toqué. Los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0.
+- **Ticket de mejora del kit (`sdd-feedback`):** la sesión ha dejado varias fricciones con el kit. ¿Quieres que lo genere?
+
+**No terminado.** Falta el merge a `develop`. Estás en el checkout principal, así que no hay worktree que borrar.

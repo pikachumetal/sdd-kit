@@ -1,0 +1,47 @@
+--- [12]
+Estoy revisando la spec de la 0010 contra el código antes de presentarla. Perfil `delegate` (de `sdd-kit.json`; no hay `sdd-kit.local.json`), modo full, ejecución `native` fijada en `sdd-kit.json`.
+
+Ahora: presentarte la spec para que la apruebes. Queda: tu respuesta. Después escribo el plan (~5 min).
+
+## Spec 0010 · Motivo al cancelar
+
+### Decisiones que he tomado yo — valida estas
+
+**Review de spec: ninguna.** Hay 2 señales: requisito modificado de `bookings` y datos nuevos (motivo y titular). El cambio son unas ~40 líneas en `src/app.js` y `test/cancel.test.js`.
+
+1. **Lista de motivos cerrada:** cambio de planes, sala ocupada y otro. Lo decidisteis en la entrevista.
+2. **`canceladas` muestra sala, día, motivo y quién canceló.** Sale de la petición: «saber quién y por qué».
+
+**Dos huecos que encontré al comparar la spec con el código.** Antes de aprobar hay que cerrarlos. Te propongo una solución para cada uno:
+
+3. **No se sabe de dónde sale «quién canceló».** El THEN espera «Norte lun — sala ocupada — Ana», pero ni las reservas ni la CLI guardan a ninguna persona (`src/app.js:3`). **Propuesta:** añadir un `titular` a cada reserva (la de prueba, Norte lun, sería de Ana) y que `canceladas` muestre ese titular. Según `PRODUCT.md`, una cancelación es «la reserva que anula el propio cliente», así que quien cancela siempre es el titular. Las anulaciones del responsable de sala quedan para la 0011.
+4. **No se dice qué pasa con `cancelar` sin `--motivo`.** Hoy `cancelar Norte lun` responde «cancelada Norte lun» y hay un test que lo comprueba (`test/cancel.test.js:5`). **Propuesta:** sin motivo, la reserva no se cancela y el comando responde «falta el motivo: cambio de planes, sala ocupada, otro». Esto cambia un requisito que ya existe, así que en el delta pasa de `ADDED` a `MODIFIED` y el test actual se actualiza. Así también se corrige la decisión 3 de la spec, que menciona MODIFIED aunque el delta no tenía ninguno.
+
+### Intent
+Hoy cancelar no deja rastro y nadie sabe por qué se liberó una sala. Se quiere guardar el motivo de cada cancelación.
+
+### Scope
+- **Entra:** `cancelar <sala> <día> --motivo <motivo>` y un comando nuevo, `canceladas`.
+- **No entra:** las anulaciones del responsable de sala (0011).
+
+### Delta en `bookings`
+- **Cancelar pide un motivo de la lista**
+  - `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+  - Con un motivo que no está en la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+  - *(con la propuesta 4)* Sin `--motivo` → «falta el motivo: …» y la reserva no se cancela
+- **`canceladas` muestra el motivo y quién canceló**
+  - Norte lun cancelada por Ana con «sala ocupada» → «Norte lun — sala ocupada — Ana»
+
+Se prueba en `test/cancel.test.js`, ejecutando los comandos `cancelar` y `canceladas`.
+
+Cuando apruebes, pondré las propuestas 3 y 4 en `spec.md`, registraré tu aprobación y escribiré el plan. Prevé 2 tasks.
+
+Si la sesión sigue en Opus, puedo parar antes de la Task 1 para que cambies a Sonnet con effort medium (`/model`). En Native, la sesión implementa ella misma todas las tasks y eso va bien con un modelo intermedio. Yo no puedo cambiar mi propio modelo, y después de aprobar no hay otra parada donde puedas hacerlo.
+
+Opciones:
+- **«Apruebo con las propuestas 3 y 4»** (recomendada)
+- **«Apruebo con las propuestas 3 y 4; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media»**
+- **«Cambios»**, diciendo cuáles
+
+¿Apruebas la spec de la 0010?
+

@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Grep: (?i)reserva|booking|waitlist|lista de espera|espera|sala|room
+
+>>> Glob: **/*
+<<< Found 10 files
+README.md
+PRODUCT.md
+test\cancel.test.js
+test\app.test.js
+src\app.js
+.docs\sdd\tech-stack.md
+.docs\sdd\roadmap.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+.docs\sdd\constitution.md
+<<< .docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\tech-stack.md
+src\app.js
+test\app.test.js
+test\cancel.test.js
+package.json
+PRODUCT.md
+README.md
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+8	| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+9	| 1 | Avisos por correo antes de la reserva | ⏳ |
+10	
+11	## Backlog
+12	
+13	| # | Ítem | Origen |
+14	| --- | --- | --- |
+15	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+16	
+17	## Deuda técnica
+18	
+19	| Deuda | Impacto | Plan |
+20	| --- | --- | --- |
+
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Terminology
+6	
+7	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9	- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10	- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+11	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+=== RESULTADO (9 turnos, 0.1317116 $)
+Esto es lo que he encontrado en el repo antes de preguntar:
+
+- **No existe lista de espera.** En `src/app.js`, `reservar` solo crea reservas semanales (`--cada-semana`). Una sala ocupada no admite a nadie en espera. El roadmap tampoco recoge ese concepto.
+- **Tampoco hay avisos.** El único aviso previsto es el 1 del roadmap, «Avisos por correo antes de la reserva», y está sin hacer. Hoy no se envía nada a nadie.
+- **«Baja» no es un término del proyecto.** `PRODUCT.md` lo marca como «evitar» y distingue **cancelación** (la hace quien reservó) de **anulación** (la hace el responsable de sala). El código tiene `cancelBooking` y `voidBooking`. Dejo para más adelante cuál de las dos dispara esto.
+- **«Admin» tampoco existe aún.** El roadmap 0011 («Anular reservas de otros») está sin hacer y habla de «responsable de sala».
+
+Hay una decisión previa a todas las demás.
+
+❓ **¿Esta feature incluye crear la lista de espera?**
+Liberar la sala y avisar «al siguiente de la lista» necesita que esa lista exista. Hoy nadie puede ponerse en espera.
+
+1️⃣ **Sí, la feature incluye apuntarse a la lista.**
+- `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`.
+- Cuando se anula la reserva, el 1.º pasa a tener la sala y se le avisa.
+- Es más grande: añade el modelo de la lista, el orden y los avisos. Probablemente haya que partirla.
+
+2️⃣ **No, la lista ya la hará otro ítem.**
+- Esta feature se limita a liberar la sala al anular y a avisar al primero que haya en la lista.
+- Mientras la lista no exista, el aviso no tiene destinatario y la feature no tendría efecto visible.
+- Habría que apuntar primero la lista en el roadmap y ordenarla antes de esta feature.
+
+➡️ **Recomiendo 1️⃣**, porque sin lista el aviso no tiene a quién llegar y la feature entera quedaría sin efecto visible. A cambio, es una feature grande y quizá toque partirla, por ejemplo en «lista de espera» y «liberar al anular».

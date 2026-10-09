@@ -123,15 +123,20 @@ Endpoints, shape request/response.
 
 ## 2. Tasks
 
+Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada una.
+
 > Cada task es ejecutable y acotada, y verifica solo lo que toca: sus superficies dicen qué
 > comandos corre (`tech-stack.md` §Testing: TDD si hay tests automáticos; smoke manual documentado
 > si no los hay). El gate completo corre una vez, en §3. Si hay más de una task → crear `tasks.md`
 > (registro vivo).
 >
 > **Tasks verticales** (orientación, no regla): en un plan que cambia una aplicación, cada task acaba en algo que el usuario puede probar en ella: una rebanada que atraviesa las capas que necesita (migración, API, pantalla), no una capa. «BD y API» seguida de «pantalla» deja la primera task sin nada que probar ni que enseñar en la parada tras la task. Si una task no puede, su línea «Se prueba en la aplicación» dice por qué: una base común que usan varias funcionalidades, una migración de datos sin cambio visible o un refactor. Las capas de una sola funcionalidad no son base común: «BD y API de facturas» con la pantalla de subida en la task siguiente es partir por capas; la primera task lleva la subida de punta a punta, de la tabla al botón. Sin tamaño fijo en horas.
+>
+> **Dependencias**: las tasks se ejecutan en orden, sin paralelo. Cada una declara en `**Tras**:` la task que la bloquea, o `—` si no la bloquea ninguna: «Quitar Sur de favoritas» lleva `Tras: Task 1` si la Task 1 es «Marcar Sur como favorita».
 
 ### Task 1 — <nombre>
 
+**Tras**: <Task N que la bloquea | —>
 **Modelo**: <modelo **y** effort, los dos explícitos, con el despacho literal: `subagent_type: sdd-kit:effort-<low|medium|high>` + `model: <sonnet|opus>` — `Agent` no tiene parámetro de effort y, sin tipo, el subagente hereda el de la sesión. Con Haiku, que no admite effort: `general-purpose` + `model: haiku`. Si el harness no expone el effort (kit sin sus agentes, otro harness): «effort: no disponible en este harness, hereda el de la sesión». Gama media como suelo si hay que interpretar prosa; el tier más barato solo si esta task ya trae el código escrito o es un arreglo mecánico. `fable` y `opus xhigh` exigen justificación escrita aquí mismo>
 **Tests RED**: <hilo principal · `ruta/del/test`, escritos antes de despachar y sin commitear: van en el commit de la task; Native: TDD del propio hilo>
 
@@ -149,7 +154,7 @@ Endpoints, shape request/response.
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
 - Produce: <lo que las tasks siguientes usan de esta: nombres, firmas y formatos exactos>
 
-> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»). Copia aquí las firmas, tablas y textos que necesita.
+> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»); `Tras` es la única excepción, porque solo nombra la task que la bloquea. Copia aquí las firmas, tablas y textos que necesita.
 
 **Ficheros**: crear/modificar `path/...`
 

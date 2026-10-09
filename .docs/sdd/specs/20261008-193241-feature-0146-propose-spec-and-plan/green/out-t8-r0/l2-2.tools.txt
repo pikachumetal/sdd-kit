@@ -1,0 +1,87 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: git ls-files | head -100; grep -rli export --exclude-dir=.git --exclude-dir=node_modules . | head -30
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+./.docs/sdd/constitution.md
+./.docs/sdd/mission.md
+./.docs/sdd/roadmap.md
+./.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+./.docs/sdd/specs/2026
+
+>>> Bash: cat PRODUCT.md src/cli.js src/export/*.js src/bookings/repository.js; head -c 800 data/bookings.json; cat .docs/sdd/specs/*/spec.md | head -80
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+- **No es**: un calendario compartido ni una sincronización en vivo.
+
+## Terminology
+
+**Reserva**:
+El uso de una s
+
+=== RESULTADO (5 turnos, 0.12375340000000001 $)
+Here is how an export travels, using March 2026 as the example.
+
+**What you start with.** You type `exportar --mes 2026-03` in the terminal. The saved reservas for March are:
+- Norte, 2 March, 10:00–12:00
+- Sur, 5 March, 16:00–17:00
+- Norte, 12 March, 09:00–10:00 (cancelled)
+- Norte, 19 March, 12:00–13:30
+- Sur, 1 April (a different month)
+
+**The steps**
+
+1. **The command reads your request.** It sees "exportar" and takes the text after `--mes`, which is `2026-03`. It hands that month to the exportación machinery.
+2. **All reservas are loaded.** The tool reads the single file where every reserva is kept. The example gives all five reservas, from both salas and both months.
+3. **The list is narrowed.** Only reservas whose day starts with `2026-03` are kept, and cancelled ones are dropped. The Sur reserva on 1 April goes, and so does the cancelled 12 March one. What remains is sorted by day and then by franja: Norte 2 March, Sur 5 March, Norte 19 March.
+4. **Each reserva becomes a calendar entry.** Each one gets a title ("Sala Norte"), a start and an end. The franja is written in coworking time, which the tool treats as always two hours ahead of UTC. UTC is the universal clock that calendars expect. So Norte on 2 March, 10:00–12:00, is written as 08:00–10:00 UTC. Your calendar converts it back to your own timezone when you import it.
+5. **The entries are wrapped into one calendar file.** A header and footer go around the three entries, which makes a single `.ics` file. That is the format Google Calendar and Outlook import.
+6. **The file is saved.** The tool creates the exports folder if it's missing and writes the file there, named after the month. The command prints that location in the terminal.
+
+**After the steps (outside the tool).** You open Google Calendar or Outlook, import that file, and the three reservas appear on 2, 5 and 19 March. Nothing stays linked afterwards. If a reserva changes later, you export again and re-import, because this is a one-off file and not a live sync.
+
+**Two things I noticed while reading the code**
+- The two-hours-ahead offset is fixed. It doesn't change with daylight saving, so reservas in months where the coworking clock shifts could land an hour off.
+- The start and end times are written without the marker that says "this is UTC". A calendar may therefore read 08:00 as its own local 08:00 instead of converting it. I haven't run an import to confirm this.
+
+The feature that exports only one sala (`--sala`) is still a draft. Today every export contains both salas.
+
+**Dónde mirar**
+- Step 1: `src/cli.js`
+- Step 2: `src/bookings/repository.js`, with the data in `data/bookings.json`
+- Step 3: `src/export/filter.js`
+- Steps 4–5: `src/export/ics.js`
+- Step 6: `src/export/writer.js`
+- The order of the steps: `src/export/index.js`
+
+If any step is unclear, ask and I'll go into it.

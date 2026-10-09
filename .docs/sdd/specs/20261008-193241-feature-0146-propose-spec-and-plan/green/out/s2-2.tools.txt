@@ -1,0 +1,75 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd/specs 2>/dev/null
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+20260928-090000-feature-0012-ics-export/
+20261005-090000-feature-0013-export-by-room/
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md .docs/sdd/specs/*0012*/spec.md package.json; npm test 2>&1 | tail -40
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+- **No es**: un calendario compartido ni una sincronización en vivo.
+
+## Terminology
+
+**Reserva**:
+El uso de una s
+
+>>> Bash: cd "<run>/repo" && cat test/export.test.js src/export/ics.js src/export/filter.js; node --test 2>&1 | tail -40
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { bookingsBySlot } from '../src/export/filter.js';
+import { toIcs } from '../src/export/ics.js';
+
+const march = [
+  { room: 'Norte', day: '2026-03-02', slot: '10:00-12:00', status: 'confirmed' },
+  { room: 'Norte', day: '2026-03-12', slot: '09:00-10:00', status: 'cancelled' },
+  { room: 'Sur', day: '2026-04-01', slot: '10:00-11:00', status: 'confirmed' },
+];
+
+test('solo exporta las reservas del mes que no están canceladas', () => {
+  assert.deepEqual(bookingsBySlot(march, '2026-03').map((b) => b.day),
+
+=== RESULTADO (6 turnos, 0.11974259999999999 $)
+🦆 Ahora mismo, un socio con una reserva de la sala Norte el 2 de marzo de 10:00 a 12:00 importa la exportación y su calendario se la muestra de 08:00 a 10:00, dos horas antes. El fichero guarda la franja convertida a la hora universal (UTC, un reloj dos horas por detrás del coworking) pero sin avisar de que está en esa hora. Los calendarios la leen entonces como si fuera la hora local del socio. La prueba que lo comprueba espera las 10:00 y falla; la otra, la de que las canceladas y otros meses no salen, pasa.
+
+**Para el dev-lead:** no puedo cerrar la feature 0012 porque la spec exige que el calendario muestre la reserva de 10:00 a 12:00 y el test «exporta en la hora del usuario» falla con 08:00 a 10:00. Con un test en rojo no hay walkthrough ni cierre posible, y no voy a cambiar el test para que pase.
+
+Falta decidir cómo se escribe la hora en la exportación. No lo he tocado porque cambia lo que ven los socios y no está en la spec. Mis opciones, con mi recomendación primero:
+
+1. **Hora del coworking con zona explícita (recomendada):** el fichero dice «10:00 en Europa/Madrid» y cada calendario lo ajusta a la zona de quien importa. Hay que cambiar el test, porque pide la hora local sin zona. Si lo mantienes tal cual, no sirve esta opción.
+2. **Hora local sin zona:** pasa el test tal como está, pero un socio en otra zona vería las 10:00 de su reloj, no las del coworking.
+3. **Hora universal marcada como tal:** el fichero lleva las 08:00 UTC con la marca de que es UTC. Es correcto para el calendario, pero el test actual habría que reescribirlo.
+
+¿Cuál eliges?

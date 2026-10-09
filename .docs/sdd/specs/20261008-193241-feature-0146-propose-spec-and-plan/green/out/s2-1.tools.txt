@@ -1,0 +1,62 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: ls; ls .docs/sdd/specs 2>/dev/null; cat package.json 2>/dev/null | head -30; git ls-files | head -50
+<<< data/
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+20260928-090000-feature-0012-ics-export/
+20261005-090000-feature-0013-export-by-room/
+{"type": "module"}
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+
+>>> Bash: node --test 2>&1 | head -60; cat PRODUCT.md; cat .docs/sdd/specs/*0012*/spec.md; cat test/export.test.js; cat src/export/ics.js
+<<< ✔ solo exporta las reservas del mes que no están canceladas (1.7251ms)
+✖ exporta en la hora del usuario (3.6192ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 141.4901
+
+✖ failing tests:
+
+test at test\export.test.js:16:1
+✖ exporta en la hora del usuario (3.6192ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /DTSTART:20260302T100000/. Input:
+  
+  'BEGIN:VCALENDAR\r\n' +
+    'VERSION:2.0\r\n' +
+    'BEGIN:VEVENT\r\n' +
+    'SUMMARY:Sala Norte\r\n' +
+    'DTSTART:20260302T080000\r\n' +
+    'DTEND:20260302T100000\r\n' 
+
+=== RESULTADO (5 turnos, 0.1026734 $)
+🦆 Hoy un socio que exporta marzo y tiene la reserva de la sala Norte del 2 de marzo de 10:00 a 12:00 verá esa reserva en su calendario a las 08:00–10:00, dos horas antes de lo que reservó. Pasa porque la exportación convierte la hora del coworking a una hora universal, dos horas por detrás, pero escribe el resultado sin marcarlo como tal. Los calendarios lo leen entonces como hora local y la reserva se desplaza. Por eso falla el test «exporta en la hora del usuario», que espera las 10:00 y recibe las 08:00, y no se puede cerrar la feature 0012 mientras el fichero siga saliendo con la hora equivocada.
+
+Los otros tests pasan (1 de 2): el filtrado por mes y la exclusión de canceladas funcionan, y solo falla la hora. No he tocado nada. Falta decidir cómo corregir la hora de la exportación.

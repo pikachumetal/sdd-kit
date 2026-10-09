@@ -98,6 +98,10 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 - **La batería de una skill nueva pasa a la guarda del RED una skill que exista** (feature 0145): `subject_init` aborta si la skill de «Esperado» no está en la copia del kit, y en el RED no está. El `subject.sh` pasa `using-sdd` en las fases `red*` y la skill esperada en las demás.
 - **El RED se lee por regla del `SKILL.md`, no por fila de la rúbrica** (feature 0145): una fila falla por una parte y deja pasar la regla vecina que se escribe con ella. Cuatro reglas sin fallo detrás llegaron así a la revisión final. La tabla «Procedencia de las reglas» de la batería lista cada regla con su fallo, o la recorta.
 - **Un mutante restaura con ruta absoluta**: `Invoke-Pester` deja el directorio en su módulo, y una restauración con ruta relativa sobrescribió `Pester.ScriptScope.ps1` del dev-lead (feature 0120; repuesto con `Save-Module Pester`).
+- **Un RED limpio con n=2 puede ser suerte** (feature 0146): `l2` salió 2/2 limpio y, repetido con el mismo kit, 0/2 («Dónde mirar» en respuestas en inglés). Antes de sacar una regla por un baseline limpio cuya conducta depende del idioma o del tono de la respuesta, se repite el baseline.
+- **Una regla que solo vive en una referencia no se lee** (feature 0146): en `u1`, 0 de 2 sujetos abrieron `control-profiles.md`, y la acción update no se aplicó; funcionó al subir una frase al paso que la dispara, con el detalle en la referencia.
+- **En `claude -p` no existe `AskUserQuestion`** (feature 0146): el sujeto la busca con `ToolSearch`, no la encuentra y pregunta en prosa. Un escenario que mide un diálogo de opciones puntúa el intento o las opciones literales, y la rúbrica lo dice antes del RED.
+- **Un emoji en un `grep` de Git Bash puede no casar** (feature 0146): el primer veredicto de `v1b` salió falso. La rúbrica que busca 🦆 o ✋ se puntúa con una lectura UTF-8 (Python con `-X utf8` o Node).
 
 ### Entrega de la skill al sujeto
 

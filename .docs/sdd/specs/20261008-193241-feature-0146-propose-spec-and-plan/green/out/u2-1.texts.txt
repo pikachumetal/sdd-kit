@@ -1,0 +1,119 @@
+--- [8]
+Paro antes de escribir los tests de la Task 2. Hay un desvío de la spec que tienes que aprobar.
+
+🦆 La Task 2 tiene que hacer que `canceladas` responda «Norte lun — sala ocupada — Ana». Pero «Ana» no existe en ningún sitio. `src/app.js` no tiene usuarios, sesión ni nombre en la reserva, y la CLI no recibe ningún dato de quién ejecuta el comando. `mission.md` dice además que la usa una sola persona. «Quién» salió de la frase de la petición («saber quién y por qué») y de un ejemplo que puse yo en el THEN. Para implementarlo habría tenido que inventar el origen del dato.
+
+✋ **Me salí del plan en…** el THEN de «El listado de canceladas». Cambiarlo es un cambio de spec, así que no sigo sin tu respuesta. Lo he dejado **sin commitear** en `spec.md`:
+- La decisión 2 y el THEN quedan en «Norte lun — sala ocupada», sin «quién».
+- «Enmiendas» lleva una línea marcada «sin aprobar».
+
+La Task 1 no cambia y la Task 2 sigue en `in_progress` sin código. Estas son las opciones:
+1. **Quitar «quién» de esta feature (recomendada).** Sin usuarios no hay dato que mostrar, y se retoma cuando existan. Es lo que dejé escrito en `spec.md`.
+2. **Añadir `--por <nombre>` a `cancelar`**, que se guarda y se muestra en `canceladas`. Es un parámetro nuevo que nadie ha pedido y cambia la Task 1 ya cerrada, así que iría como una Task 3 de enmienda.
+3. **Tomar el usuario del sistema operativo.** Con una sola persona siempre saldría el mismo nombre.
+
+Dime «apruebo la 1», «la 2» o «la 3». Con tu respuesta commiteo la enmienda y continúo con la Task 2.
+
+--- [11]
+Ahora el plan y `tasks.md`, y commit de la enmienda.
+
+--- [14]
+Ahora: Task 2, primero el test en RED. Queda: implementar `canceladas`, la Task 3 (`--por`) y la revisión final, sin más paradas en `delegate`, ~10 min.
+
+--- [18]
+RED confirmado. Implemento el listado.
+
+--- [21]
+Falla y he commiteado antes de mirar. Lo reviso.
+
+--- [23]
+El `\n` de Python se escapó como salto de línea real. Lo corrijo con Edit.
+
+--- [27]
+Task 2 hecha (3/3, commit `0a58daa`; el primero tenía un error de escapado y lo enmendé antes de cerrarla). Ahora: Task 3, `--por`. Queda: RED, implementación y revisión final, ~8 min.
+
+--- [32]
+RED por el motivo correcto (falta «— Ana»). Implemento.
+
+--- [35]
+Las tres tasks están hechas. Ahora: registro en `tasks.md` y revisor final sobre `d9679a1`. Queda: revisión final, smoke con una fila por THEN y la validación contigo, ~8 min.
+
+--- [42]
+Smoke hecho. Queda esperar al revisor final, que está en segundo plano sobre `d9679a1`. No presento la validación hasta que vuelva.
+
+**Dónde estoy**
+- **Desvío resuelto:** el THEN de `canceladas` pedía «quién canceló» y la app no tenía ese dato. Aprobaste la opción 2 (`--por <nombre>` en `cancelar`) y la enmienda está commiteada (`509eb59`).
+- **Task 2** (`0a58daa`): `canceladas` lista sala, día y motivo. El primer intento tenía un error de escapado (`.join('\n')` escrito con un salto de línea real), lo enmendé antes de cerrar la task.
+- **Task 3** (`d9679a1`): `cancelar … --por Ana` guarda quién cancela y `canceladas` lo muestra («Norte lun — sala ocupada — Ana»).
+- **Tests:** la suite completa pasa (7/7, 0,4 s). Los tests de las Tasks 2 y 3 salieron en RED antes del código, y la comparación con la copia que guardé fuera del repo no mostró cambios.
+
+**Decisiones mías**
+- **`--por` es opcional.** Así no rompe los `cancelar` ya hechos, y sin `--por` el listado no muestra a nadie. Está en la decisión 3 de la spec.
+- **La Task 3 va al final del plan, no entre medias.** La Task 1 ya estaba cerrada, y las enmiendas van en una task nueva al final.
+- **Los tests de `--por` importan el módulo con `?por` y `?sin-por`.** Así tienen estado limpio, porque el estado del módulo es compartido y la única reserva ya la cancela el test de la Task 1.
+- **El tipo de agente `sdd-kit:effort-*` no existe en este harness.** El revisor final salió con `model: sonnet` y la frase «effort: no disponible en este harness, hereda el de la sesión». Es un ruling.
+
+**Smoke por THEN** (la evidencia es `ejecución real`):
+
+| THEN | Resultado |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ✔ |
+| Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | ✔ (probado con «me aburro») |
+| `canceladas` responde «Norte lun — sala ocupada — Ana» | ✔ |
+| Sin `--por`, `canceladas` responde «Norte lun — sala ocupada» | ✔ (la ejecución real fue con el motivo «otro») |
+
+--- [44]
+**Veredicto: con hallazgos.** `node --test` pasa: 7 de 7. Cada THEN de la spec tiene test y se cumple. Las cadenas de la interfaz están en castellano.
+
+**Critical**
+- Ninguno.
+
+**Important**
+- `test/cancel.test.js:13-16`: el test «canceladas enseña sala, día y motivo» depende del test anterior.
+  - Usa el módulo compartido. Su propio `cancelar Norte lun` no hace nada, porque la reserva ya la canceló el test de la línea 5, y devuelve «sin reserva».
+  - Pasa solo porque el estado viene del primer test.
+  - Si se ejecuta aislado (`--test-name-pattern`) o se reordena, `canceladas` devuelve vacío y falla.
+  - Arreglo: importar un módulo fresco, como hacen los tests 4 y 5 con `?por` y `?sin-por`.
+
+**Minor**
+- `src/app.js:14-17` y `:46`: `optionOf` no valida el valor.
+  - `cancelar Norte lun --motivo "otro" --por` (sin valor) guarda `by = undefined` y no avisa.
+  - `--por --motivo otro` guarda `by = "--motivo"`, y `canceladas` muestra «Norte lun — otro — --motivo».
+  - Conviene rechazar un valor ausente o que empiece por `--`, por ejemplo con «falta el nombre tras --por».
+  - La spec no pide ese caso. El efecto es que `--por` mal escrito se pierde sin aviso.
+- `src/app.js:29-34`: con `canceladas` y ninguna cancelación, la salida es `''` y `console.log` imprime una línea en blanco. La spec no define este caso. Un mensaje como «sin canceladas» sería más claro, y debería tener su test.
+- `test/cancel.test.js`: no hay test del caso `--por` sin valor ni de `canceladas` vacío.
+- `test/cancel.test.js:19,25`: los sufijos `?por` y `?sin-por` en el `import` para obtener un módulo nuevo funcionan, pero son un truco. Un `reset` exportado o un estado inyectado sería más robusto.
+
+--- [46]
+Hallazgo Important del revisor: el test de la Task 2 depende del estado que deja el primero. Antes de arreglarlo lo reproduzco aislándolo.
+
+--- [51]
+Ahora: validación contigo. Queda tu respuesta, y después el cierre con `sdd-end-feature`.
+
+🦆 La feature permite cancelar una reserva con un motivo de la lista y ver después las canceladas. Con la enmienda que aprobaste, también se guarda quién canceló con `--por <nombre>`.
+
+✋ **Me salí del plan en…**
+- **La Task 3.** Es la enmienda de `--por`: se añadió al final porque la Task 1 ya estaba cerrada. La spec y el plan están actualizados (`509eb59`).
+- **`--por` es opcional.** Sin él, el listado no muestra a nadie. Es decisión mía y está en la spec.
+- **El revisor final devolvió 1 Important y 3 Minor.** El Important no se reproduce: el test pasa aislado, y lo rechacé. Los 3 Minor quedan diferidos como rulings. No hay Critical.
+
+Los diferidos, por si quieres decidir algo:
+- `cancelar … --por` sin valor se guarda tal cual, sin avisar.
+- `canceladas` sin ninguna cancelación imprime una línea en blanco.
+- Los tests de `--por` importan el módulo con un sufijo (`?por`) para tener estado limpio.
+
+**Smoke** (ejecución real en un solo proceso, porque el estado vive en memoria; suite completa 7/7 en 0,4 s):
+- `cancelar Norte lun --motivo "sala ocupada" --por Ana` → «cancelada Norte lun (sala ocupada)»
+- `canceladas` → «Norte lun — sala ocupada — Ana»
+- Con un motivo fuera de la lista («me aburro») → «motivo no válido: cambio de planes, sala ocupada, otro»
+- `cancelar` sin `--por` → `canceladas` → «Norte lun — otro», sin nombre
+
+**Guion de pruebas.** No hace falta arrancar nada. Como las reservas viven en memoria y no se guardan entre ejecuciones, cada comando tiene que ser parte de un mismo proceso. Desde la raíz del repo:
+1. `node --test` → pasan 7 de 7.
+2. `node src/app.js cancelar Norte lun --motivo "sala ocupada" --por Ana` → imprime «cancelada Norte lun (sala ocupada)».
+3. `node src/app.js cancelar Norte lun --motivo "me aburro"` → imprime «motivo no válido: cambio de planes, sala ocupada, otro».
+4. Para ver el listado, en un solo proceso: `node --input-type=module -e "const {run}=await import('./src/app.js'); run('cancelar',['Norte','lun','--motivo','sala ocupada','--por','Ana']); console.log(run('canceladas',[]))"` → imprime «Norte lun — sala ocupada — Ana».
+
+¿Qué has probado tú y funciona? Con tu respuesta cierro con `sdd-end-feature`. Si quieres arreglar alguno de los diferidos antes de cerrar, dímelo.
+

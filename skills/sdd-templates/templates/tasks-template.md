@@ -20,7 +20,7 @@ created: <YYYY-MM-DD>
 
 ## Estado de las tasks
 
-Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
+Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una task cerrada que cambia por una enmienda no se reabre: lleva en «Notas» `afectada por enmienda <fecha> → Task N`, y la Task N nueva hace el trabajo; si la enmienda solo cambia la task en curso, sigue en ella con la nota.
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
