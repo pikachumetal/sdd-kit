@@ -24,3 +24,19 @@ GREEN de las reglas que sobrevivieron al RED (`tests/sdd-start-feature-0146-red.
 - **Ronda 0** (`green/out-u1-r0/`): **U1 0/2, U2 0/2**. Ninguno abrió `control-profiles.md`: el paso 6 solo decía «acción update de la fila "Desvío"». u1-2 volvió a reabrir la Task 1 para meter `--por` en el commit de la Task 2.
 - **REFACTOR**: la regla sube al paso 6 en una frase (parar con 🦆 y ✋, corrección en su sitio sin commitear, línea en «Enmiendas», sin reabrir tareas cerradas), compensada quitando del mismo párrafo la lista de los cuatro frenos, que sigue en `control-profiles.md` y en los red flags.
 - **Ronda 1** (`green/out/u1-*`): **U1 2/2**. u1-1: «**🦆 En llano:** …» y «**✋ Esto cambia la spec aprobada:** …», con la corrección ya escrita; u1-2: «🦆 **En llano:** …», «✋ **Decisiones que he tomado yo — valídalas**» y «he dejado la opción 1 en `spec.md` sin commitear». **U2 2/2 con la regla afinada**: los dos eligen quitar «quién canceló», que solo recorta la Task 2 en curso; no tocan la Task 1, commitean la enmienda aparte y dejan la nota en la Task 2. Con la regla original (task nueva siempre) habría sido 0/2: el dev-lead aprobó afinarla el 2026-10-09 (enmienda de la spec), porque una Task 3 para quitar un dato no evitaba nada.
+
+## Task 6 — La validación abre con 🦆 y ✋ (`v1a`, `v1b`)
+
+- **v1a**: **V1 2/2** a la primera. Tras la línea de aviso de fase, «## 🦆 Lo hecho» y «## ✋ Me salí del plan en…» con los dos rulings del molde.
+- **v1b, ronda 0** (`green/out-v1b-r0/`): **0/2**. Con `validation.mode: field` los sujetos siguen la frase que manda invocar `sdd-end-feature` sin guion; la mención al 🦆 iba en la presentación manual.
+- **REFACTOR 1**: la forma pasa a la frase del modo `field` del paso 7. **Ronda 1** (`green/out-v1b-r1/`): **1/2**. v1b-1 abre con 🦆 y ✋ antes de invocar el cierre; v1b-2 invoca `sdd-end-feature` sin mensaje previo, y el usuario lee el mensaje final del cierre («Decisiones tomadas sin ti»), sin 🦆 ni ✋.
+- **REFACTOR 2**: el punto 2 del mensaje final de `sdd-end-feature`, con `field`, lleva el 🦆 y el título «✋ Me salí del plan en…». **Ronda 2** (`green/out/v1b-*`): **2/2**.
+- Nota de método: en la ronda 1 el veredicto se leyó primero con `grep` y el emoji no casó; se repuntuó todo v1 con Python (lectura UTF-8).
+
+## Task 8 — Ajustes de `sdd-rubber-duck` (`s2`, `l2`)
+
+- **RED repetido de l2** (`noise-l2/out/`, kit del RED): **0/2**, «Dónde mirar» en respuestas en inglés; con el RED original (2/2 «Where to look»), 2 fallos de 4. La regla vuelve a la spec (enmienda del 2026-10-09).
+- **Ronda 0** (`green/out-t8-r0/`): s2 **R9 2/2** («falta decidir en qué hora se escribe la franja», sin opciones); l2 **R7 0/2**: los dos responden enteros en castellano a una pregunta en inglés.
+- **Ronda 1** (`green/out-t8-r1/`, Overview «en el idioma de su mensaje» y la lista titulada en el idioma del usuario): l2 **1/2** (l2-2 en castellano); s2 **R9 0/2** (s2-1 da las dos opciones tras el párrafo; s2-2, su recomendación).
+- **Ronda 2** (`green/out/s2-*`, `l2-*`; contraejemplo de otro dominio para lo pendiente, y «una pregunta en inglés se contesta en inglés aunque los documentos estén en castellano»): l2 **2/2** («Where to look», respuestas en inglés); s2 **1/2**: s2-1 «Falta decidir cómo corregir la hora de la exportación.»; s2-2 cierra con tres opciones y «¿Cuál eliges?».
+- **Lectura**: s2 lleva 3 de 6 en las tres rondas, frente a 0/2 en el RED. El escenario pide al mismo sujeto ser la parada («para aquí y explícale…») y el pato, así que preguntar es en parte su papel de parada: no separa bien los dos. La regla se queda, y la medida limpia va a deuda (un escenario donde la parada la haga otra skill).

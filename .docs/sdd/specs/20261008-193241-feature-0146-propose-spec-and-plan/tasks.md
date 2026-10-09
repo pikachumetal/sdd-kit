@@ -23,7 +23,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 | 3 | Gate con opciones fijas y modelo del revisor de dominio | done | — | GREEN g1 y r1 2/2 |
 | 4 | El plan declara `Tras` y su verificación sale de «Dónde se prueba» | done | — | GREEN p1: Tras 2/2 tras una ronda de REFACTOR; la verificación salió por el RED |
 | 5 | Acción update | done | — | GREEN u1 2/2 tras subir la regla al paso 6 y afinarla (enmienda del 2026-10-09) |
-| 6 | La validación abre con 🦆 y ✋ | pending | — | |
+| 6 | La validación abre con 🦆 y ✋ | done | — | GREEN v1a 2/2; v1b 2/2 tras dos rondas de REFACTOR (la forma va también al mensaje final de sdd-end-feature) |
 | 7 | `sdd-grilling` contrasta el lenguaje | skipped | — | sale por el RED (`t1` 2/2 limpio); enmienda del 2026-10-08 |
 | 8 | Ajustes de `sdd-rubber-duck` | pending | — | |
 

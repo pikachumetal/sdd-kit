@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls && ls .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/specs/*0010*/tasks.md && cat .docs/sdd/specs/*0010*/spec.md && git log --oneline -8 && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -30
+<<< package.json
+PRODUCT.md
+README.md
+src/
+test/
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+spec: ./spec.md
+plan: ./plan.md
+created: 2026-10-08
+---
+
+# Tasks — Motivo al canc
+
+>>> Bash: cd "<run>/repo" && cat package.json && ls src test && git show --stat HEAD | tail -5 && git diff --numstat 47c74ae HEAD && time npm test 2>&1 | tail -15
+<<< {"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+    
+    Cuerpo del commit.
+
+ .../tasks.md                                        | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+21	0	.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+npm error Missing script: "test"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: <home>\AppData\Local\npm-cache\_logs\2026-10-09T08_29_06_802Z-debug-0.log
+
+real	0m0.664s
+user	0m0.045s
+sys	0m0.061s
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat test/cancel.test.js && grep -i -A5 "test\|build" .docs/sdd/tech-stack.md | head -30; time node --test 2>&1 | tail -15
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  return index === -
+
+>>> Bash: cd "<run>/repo" && node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "me aburro"; node src/app.js cancelar Norte lun; echo "--- canceladas en proceso nuevo:"; node src/app.js canceladas; echo "[fin]"; echo "--- misma sesión:"; node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"; git status --short
+<<< cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+--- canceladas en proceso nuevo:
+
+[fin]
+--- misma sesión:
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+=== RESULTADO (7 turnos, 0.3161176 $)
+Ahora: la validación de la 0010 está lista para que la pruebes. Queda: tu validación. Después va `sdd-end-feature`, que no he lanzado.
+
+## 🦆 Lo hecho
+`cancelar` ahora exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). Si el motivo no está en la lista, rechaza la cancelación. `canceladas` lista cada reserva cancelada con su sala, su día y su motivo.
+
+## ✋ Me salí del plan en…
+Dos rulings de la Task 2. Ninguno cambia la spec.
+- `canceladas` lista en el orden en que se cancelaron. La spec no fija el orden.
+- Las anuladas (`anular`) no salen en `canceladas`. La spec no lo dice, y la 0011 tendrá que sumarlas si quiere verlas.
+
+## Antes de validar
+- **Re-revisión.** El único commit posterior al código es `d96088b`, que solo toca `tasks.md`. Son 21 líneas, así que supera el límite de 20 para revisarlo en el hilo.
+- **Registro de revisión.** La línea `Revisión final: … sobre (HEAD)` de `tasks.md` tiene un marcador sin sha, y las dos tasks tienen `(commit de la task N)` en vez del hash. No he inventado los hashes.
+- **Qué falta.** No he lanzado el revisor de ese tramo, ni he rellenado el sha y los hashes: lo hago antes del cierre.
+
+## Smoke (un THEN por fila)
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (`node src/app.js …`) |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real, con «me aburro». Sin `--motivo` da el mismo mensaje. |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, pero solo en el mismo proceso que `cancelar`. Ver el aviso de abajo. |
+
+La suite (`node --test`, 5 tests) pasa entera en 0,35 s. El proyecto no tiene script `test` ni build.
+
+## ⚠️ Lo que he visto al ejecutarlo
+Las reservas viven en memoria (`src/app.js`), y la spec no lo toca. Por eso `node src/app.js canceladas` en un proceso nuevo sale vacío, aunque antes hayas cancelado desde otra terminal. El listado solo funciona dentro de un mismo proceso, como en el test. Si esperabas verlo desde la línea de comandos, falta persistencia y sería otra feature. No lo he arreglado.
+
+## Guion de pruebas
+No hay nada que arrancar ni puerto que parar. Desde la raíz del repo:
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"` → `cancelada Norte lun (sala ocupada)` y, en la línea siguiente, `Norte lun — sala ocupada`
+4. `node src/app.js canceladas` → sale vacío (el límite de arriba)
+
+Dime qué has probado y si funciona. Sin esa respuesta la feature queda en espera, con el roadmap sin tocar.
