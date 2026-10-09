@@ -58,8 +58,9 @@ for kept in spec plan tasks; do
     [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"
   done
 done
-newspec=$(find "$R/.docs/sdd/specs" -name spec.md -newer "$R/README.md" 2>/dev/null | grep -v -e "$F10" -e "$F11" | head -n 1)
-[ -n "$newspec" ] && subject_keep "$newspec" spec-new.md
-newpatch=$(find "$R/.docs/sdd/specs" -name patch.md -newer "$R/README.md" 2>/dev/null | head -n 1)
-[ -n "$newpatch" ] && subject_keep "$newpatch" patch-new.md
+# Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
+newest=$(ls -d "$R"/.docs/sdd/specs/*/ 2>/dev/null | sort | tail -n 1)
+case "$newest" in *"$F10"*|*"$F11"*|*task-000*|*patch-0007*) newest="" ;; esac
+[ -n "$newest" ] && [ -f "$newest/spec.md" ] && subject_keep "$newest/spec.md" spec-new.md
+[ -n "$newest" ] && [ -f "$newest/patch.md" ] && subject_keep "$newest/patch.md" patch-new.md
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --all --format='%h %d %s%n%b'; echo "## ficheros"; g ls-files --others --exclude-standard; echo "## package.json"; cat "$R/package.json"; } | subject_save

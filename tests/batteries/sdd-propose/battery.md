@@ -57,3 +57,26 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Gate 1: sin enunciado, leer el contexto y parar; con rama `feature/<id>` y fila pendiente, la fila es el enunciado | `tests/control-profiles-red.md`, E1: 2 de 2 sujetos pararon con «¿qué tarea arrancamos?» | c1 |
+| Gate 1: no explorar el código antes del enunciado | task 0008 (las dos racionalizaciones del Gate 1) | a1 |
+| Aviso de fase: qué hace, lo que queda hasta la próxima parada, minutos y dólares | `tests/fewer-stops-red.md`, s1: 2 de 2 avisos decían qué se hacía y nunca cuánto quedaba | s1 |
+| Paso 1: `sdd capability index` antes de abrir capacidades | `tests/capabilities-index-red.md`, s: los 2 sujetos abrieron 9 y 4 capacidades de 9 | s1 |
+| Paso 2: planificar sin hacer va a `sdd-roadmap` | `tests/sdd-roadmap-green.md`, p10-3: 1 de 1 reescribió lo planificado | batería de `using-sdd` (r1-r5) |
+| Paso 2: «es maquetación con criterio» y «añade un evento» con la solución en el ticket siguen siendo patch | `tests/visual-patch-red.md`, v2: 2 de 2 a feature lite; `tests/patch-lane-red.md`, p1 y p2: 6 de 6 a feature | batería de `using-sdd` (v1, pc1) |
+| Paso 2: la primera pregunta, sola, lee `sdd-kit.local.json` y avisa de cada clave que ignora | `tests/sdd-config-red.md`, c2: 2 de 2 aplicaron el fichero solo porque lo vieron, y ninguno avisó de las claves de política | a1 |
+| Paso 2: umbral de partir (3, 4-5, más de 5) | `tests/control-profiles-red.md`, E11: 2 de 2 sin proponer partir un tema grande; `tests/split-threshold-red.md`, h: 1 de 2 propuso partir cinco consultas del mismo CLI | x1 |
+| Paso 2: opción de aprobar la spec por delegación | `tests/fewer-stops-red.md`, s2: 2 de 2 no la ofrecieron y una feature quedó ~4 h parada | x1 |
+| Paso 2: variante de parar antes de la Task 1 para bajar a gama media | `tests/visual-check-red.md`, q5: 0 de 2 sujetos en Opus mencionaron el modelo de la sesión | x1 |
+| Paso 4: `brainstorming` y `sdd-grilling` con `Skill` | task modo-lite (2026-09-02): 2 de 2 omitieron `brainstorming` | s1 |
+| Paso 4: propuesta de `§Frontend` | `tests/frontend-verification-red.md`, s1: 0 de 2 specs de una pantalla nueva dijeron con qué se verificaría | no medido: el molde es una CLI |
+| Paso 4: `Se valida en:` | `tests/closing-verification-green.md`: con la línea solo en la plantilla, 0 de 2 la escribieron | no medido: regla sin cambio |
+| Paso 4: abrir `review-spec.md` antes de decidir el nivel | `tests/spec-review-weight-green.md`: 4 de 7 no la abrieron, y 2 decidieron «ninguna» con 3 y 6 señales | r1 |
+| Paso 4: repaso de coherencia y búsqueda de cada `MODIFIED` fuera de la spec | `tests/spec-review-weight-red.md`, m: 0 de 2; `tests/proportional-review-red.md`, R3: 1 de 2 llegó al gate con un literal que contradecía su decisión | s1 |
+| Paso 4: la presentación empieza por el 🦆 y por «✋ Decisiones que he tomado yo», con todo valor que no salió de la entrevista ni del roadmap | `tests/sdd-start-feature-0146-red.md`, S1 y S2 2/2 | s1 |
+| `spec-template.md`: el ✋ exhaustivo, cada texto con su literal; secciones «Dónde se prueba» y «Términos y ADR» | `tests/sdd-start-feature-0146-red.md`, S2 y S3 2/2; GREEN ronda 0, S2 1/2 | s1 |
+| Paso 4: la pregunta del gate es `AskUserQuestion` con «Apruebo (Recomendada)» y «Cambios»; en `delegate` con el modelo más capaz, la de parar antes de la Task 1 | `tests/sdd-start-feature-0146-red.md`, G1 2/2 en prosa; `tests/session-model-red.md`, d4: 0 de 2 en Opus la ofrecieron | g1 |
+| `review-spec.md`: las opciones de la pregunta de review llevan el modelo del revisor de dominio | `tests/sdd-start-feature-0146-red.md`, R1 2/2 | r1 |
+| Paso 5: la línea `Ejecución` dice `fijado en <fichero>`, y con Native la frase del cambio de método tras compactar | `tests/native-adapt-red.md`: 2 de 2 | p1 |
+| Paso 5: el gate del plan en `pair` aprueba y elige método a la vez, con la opción de bajar a gama media | `tests/session-model-red.md`, p5: 0 de 2 en Opus lo dijeron | no medido en esta batería: el molde va en `delegate` |
+| `plan-template.md`: cada task lleva `**Tras**:`; las tasks se ejecutan en orden, sin paralelo | `tests/sdd-start-feature-0146-red.md`, P1 2/2; GREEN ronda 0 sin la frase 0/2 | p1 |
+| Is it really a patch?: árbol, solución fijada, predicado del ajuste de presentación, retirada | `tests/patch-lane-red.md` y `tests/visual-patch-red.md` (v1 y c2: 4 de 4 sujetos movieron botones o cambiaron un texto sin abrir el navegador) | batería de `using-sdd` (p1, v1, c1w, pc1, bt1, c2) |

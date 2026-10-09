@@ -28,16 +28,16 @@ BeforeAll {
 
 Describe 'Task 1 — carril de task' {
   It 'el checklist abre con el aviso de fase antes del primer paso' {
-    $header = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/SKILL.md'), '(?ms)^## Checklist por tarea.*?(?=^1\. )').Value
-    Assert-Literal $header @('**Aviso de fase**', 'Ahora:', 'Queda:', '~<minutos>', '~<dólares>', '«van 7 de 15»')
+    $header = [regex]::Match((Get-KitFile 'skills/sdd-propose/SKILL.md'), '(?ms)^## Checklist per change.*?(?=^1\. )').Value
+    Assert-Literal $header @('**Phase notice**', 'Ahora:', 'Queda:', '~<minutos>', '~<dólares>', '«van 7 de 15»')
   }
 
   It 'la primera pregunta ofrece aprobar la spec por delegación' {
-    Assert-Literal (Get-SkillStep 'sdd-start-feature' 2) @('`pair` y `delegate`', '«apruebo la spec por delegación, nos vemos en la validación»')
+    Assert-Literal (Get-SkillStep 'sdd-propose' 2) @('`pair` and `delegate`', '«apruebo la spec por delegación, nos vemos en la validación»')
   }
 
   It 'el gate de la spec no para con la spec delegada y conserva la validación' {
-    Assert-Literal (Get-SkillStep 'sdd-start-feature' 4) @('aprueba la spec por delegación', 'Decisiones tomadas con el dev-lead', 'la validación del paso 7 no se quita nunca')
+    Assert-Literal (Get-SkillStep 'sdd-propose' 4) @('approves the spec by delegation', 'Decisiones tomadas con el dev-lead', 'the validation in step 7 of `sdd-start-feature` is never removed')
   }
 
   It 'el paso 7 pregunta sola la decisión del usuario antes de la validación' {

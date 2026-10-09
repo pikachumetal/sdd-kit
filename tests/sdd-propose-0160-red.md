@@ -20,4 +20,4 @@ Ninguna regla sale: las seis que fallan se escriben con su GREEN, y `a3`, `a4` y
 ## Ruido del molde
 
 - La fila «Patch 0007: la cancelación borraba reservas de otro día» del roadmap del molde contradice el fallo plantado en `a2` y `a3`; los cuatro sujetos lo señalan como discrepancia y no tocan el roadmap. No cambia la conducta medida.
-- `spec-new.md` de `a2` es la spec de la task 0005 del molde (su fecha es posterior a la del `README.md` copiado), no una spec que escribiera el sujeto.
+- El `subject.sh` del RED guardaba como `spec-new.md` y `patch-new.md` los del molde (la task 0005 y el patch 0007), elegidos por fecha de modificación. En la Task 2 se sacaron de `red/out/` y `patch-new.md` de `a2` se repuso con el `patch.md` que escribió cada sujeto: §5 lleva solo `- Real: 0,3h`, sin estimación ni hora de inicio. Desde la Task 2 el `subject.sh` guarda la carpeta de fecha mayor.

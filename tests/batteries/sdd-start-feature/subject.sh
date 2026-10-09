@@ -37,10 +37,6 @@ task_commit() {
 }
 
 case "$SC" in
-  s1) g checkout -q -b feature/0010-cancel-reason ;;
-  g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
-  r1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
-  p1) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | put "$F10/spec.md" ;;
   u1|u2)
     g checkout -q -b feature/0010-cancel-reason; open_0010
     task_commit task1 "feat(bookings): cancelar con un motivo de la lista"
@@ -57,7 +53,6 @@ case "$SC" in
 esac
 
 case "$SC" in
-  g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
   v1b) MAX_TURNS="${MAX_TURNS:-20}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac

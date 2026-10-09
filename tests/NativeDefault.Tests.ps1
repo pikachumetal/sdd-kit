@@ -75,7 +75,7 @@ Describe 'Task 1 — contrato del método' {
   }
 
   It 'el paso 5 nombra el método del handoff y la clave execution' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'El método lo recomienda el handoff de `writing-plans`, salvo que `execution` lo fije en `.docs/sdd/sdd-kit.local.json` o en `sdd-kit.json`'
+    Get-KitFile 'skills/sdd-propose/SKILL.md' | Should -Match 'The method is recommended by `writing-plans`'' handoff, unless `execution` fixes it in `.docs/sdd/sdd-kit.local.json` or in `sdd-kit.json`'
   }
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {
@@ -124,9 +124,9 @@ Describe 'Task 2 — init y migración' {
 
 Describe 'REFACTOR — la pregunta del gate del plan en pair' {
   It 'el paso 5 da la forma de la pregunta con el método y la recomendada primero' {
-    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
-    $skill | Should -Match 'En `pair`, la pregunta del gate aprueba el plan y elige el método a la vez'
-    $skill | Should -Match '«Apruebo, con <método recomendado> \(Recomendada\)», «Apruebo, con <el otro método>» y «Cambios»'
+    $skill = Get-KitFile 'skills/sdd-propose/SKILL.md'
+    $skill | Should -Match 'In `pair`, the gate question approves the plan and chooses the method at once'
+    $skill | Should -Match '«Apruebo, con <método recomendado> \(Recomendada\)», «Apruebo, con <el otro método>» and «Cambios»'
   }
 }
 
@@ -149,7 +149,7 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'con `execution` fijado \(`native` o `subagent` que ningún `auto` de `sdd-kit.local.json` pisa\), o un método que el dev-lead ya nombró para la feature, solo «Apruebo» y «Cambios»'
+    Get-KitFile 'skills/sdd-propose/SKILL.md' | Should -Match 'with `execution` fixed \(`native` or `subagent` that no `auto` in `sdd-kit.local.json` overrides\), or a method the dev-lead already named for the feature, only «Apruebo» and «Cambios»'
   }
 
   It 'la celda de pair dice que con execution fijado solo se aprueba' {

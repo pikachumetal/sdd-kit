@@ -116,9 +116,9 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       ($content -split "`n" | Where-Object { $_ -match '^> 1\. ' }) | Should -Match 'inglés'
     }
 
-    It 'sdd-start-feature lo dice en el paso 4' {
-      $step = Get-NumberedStep (Read-SkillFile 'sdd-start-feature/SKILL.md') 4
-      $step | Should -Match 'inglés kebab-case'
+    It 'sdd-propose lo dice en el paso 4' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-propose/SKILL.md') 4
+      $step | Should -Match 'English kebab-case'
     }
   }
 
@@ -162,13 +162,13 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
 
 Describe 'Las skills eligen capacidades con el índice generado' {
   It '<Skill> ejecuta sdd capability index en su paso de contexto, antes de abrir capacidades' -ForEach @(
-    @{ Skill = 'sdd-start-feature'; Step = 'Contexto' }
-    @{ Skill = 'sdd-roadmap'; Step = 'Estado real' }
-    @{ Skill = 'sdd-consult'; Step = 'Primar contexto' }
+    @{ Skill = 'sdd-propose'; Step = 'Context'; Purpose = 'purpose' }
+    @{ Skill = 'sdd-roadmap'; Step = 'Estado real'; Purpose = 'propósito' }
+    @{ Skill = 'sdd-consult'; Step = 'Primar contexto'; Purpose = 'propósito' }
   ) {
     $step = [regex]::Match((Read-SkillFile "$Skill/SKILL.md"), "(?ms)^1\. \*\*$Step.*?(?=^\d+\. |^## |\z)").Value
     $step | Should -Match 'node "\$\{CLAUDE_PLUGIN_ROOT\}/cli/bin/sdd\.js" capability index --path'
-    $step | Should -Match 'propósito'
+    $step | Should -Match $Purpose
   }
 
   It 'la plantilla de capacidad dice que el índice se genera, sin index.md' {

@@ -11,16 +11,17 @@ BeforeAll {
     return $Text.Substring($start, $end - $start)
   }
 
-  $script:PredicateLiterals = @('solo toca plantillas o estilos','`@if`', 'claves de i18n', 'TypeScript', 'solo toco la plantilla')
+  $script:PredicateLiterals = @('only touches templates or styles', '`@if`', 'i18n keys', 'TypeScript', 'I only touch the template')
 }
 
 Describe 'Puertas del patch visual' {
   BeforeAll {
     $script:StartPatch = Get-KitFile 'skills/sdd-start-patch/SKILL.md'
+    $script:Propose = Get-KitFile 'skills/sdd-propose/SKILL.md'
   }
 
-  It 'sdd-start-patch lleva el predicado entero' {
-    foreach ($literal in $script:PredicateLiterals) { $script:StartPatch | Should -Match ([regex]::Escape($literal)) }
+  It 'sdd-propose lleva el predicado entero' {
+    foreach ($literal in $script:PredicateLiterals) { $script:Propose | Should -Match ([regex]::Escape($literal)) }
   }
 
   It 'la puerta de using-sdd lleva el predicado compacto' {
@@ -28,12 +29,12 @@ Describe 'Puertas del patch visual' {
     foreach ($literal in @('solo plantillas o estilos', '`@if`', 'claves de i18n', 'TypeScript')) { $door | Should -Match ([regex]::Escape($literal)) }
   }
 
-  It 'el paso 2 de sdd-start-feature remite al predicado de sdd-start-patch' {
-    Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '2. **Enrutado**' '3. **Branch**' | Should -Match 'que tiene el predicado'
+  It 'el paso 2 de sdd-propose remite al predicado' {
+    Get-Section $script:Propose '2. **Classify**' '3. **Branch**' | Should -Match 'Is it really a patch\?'
   }
 
-  It 'el árbol de sdd-start-patch pregunta por la presentación' {
-    Get-Section $script:StartPatch '```dot' '## Flujo' | Should -Match '¿Solo presentación'
+  It 'el árbol de sdd-propose pregunta por la presentación' {
+    Get-Section $script:Propose '```dot' '## Red flags' | Should -Match 'Presentation only or removal'
   }
 
   It 'la description de sdd-start-patch admite el ajuste visual' {
@@ -62,21 +63,22 @@ Describe 'Recorrido y cierre del patch visual' {
 Describe 'Arreglos de la revisión final del patch visual' {
   BeforeAll {
     $script:Door = Get-KitFile 'skills/using-sdd/SKILL.md'
-    $script:Routing = Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '2. **Enrutado**' '3. **Branch**'
+    $script:Propose = Get-KitFile 'skills/sdd-propose/SKILL.md'
+    $script:Routing = Get-Section $script:Propose '2. **Classify**' '3. **Branch**'
     $script:Patch = Get-KitFile 'skills/sdd-start-patch/SKILL.md'
   }
 
   It 'el árbol separa el ajuste pedido de un fallo que se arregla en CSS' {
-    Get-Section $script:Patch '```dot' '## Flujo' | Should -Match 'no un fallo'
+    Get-Section $script:Propose '```dot' '## Red flags' | Should -Match 'not a failure'
   }
 
   It 'el predicado deja mover un elemento que ya lleva binding o evento' {
-    $script:Patch | Should -Match 'sin añadir, quitar ni cambiar bindings'
+    $script:Propose | Should -Match 'without adding, removing or changing bindings'
   }
 
-  It 'sdd-start-patch lleva el predicado entero, con las directivas y las capacidades' {
-    foreach ($literal in @('`*ngIf`', '`v-if`', '`@for`', 'capacidades', 'mueve, envuelve o cambia la clase')) {
-      $script:Patch | Should -Match ([regex]::Escape($literal))
+  It 'sdd-propose lleva el predicado entero, con las directivas y las capacidades' {
+    foreach ($literal in @('`*ngIf`', '`v-if`', '`@for`', 'capabilities', 'moves, wraps or changes the class')) {
+      $script:Propose | Should -Match ([regex]::Escape($literal))
     }
   }
 

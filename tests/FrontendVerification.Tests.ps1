@@ -90,7 +90,7 @@ Describe 'Puertas de lite y del patch' {
 
 Describe 'Arranque e init' {
   It 'el paso 4 propone §Frontend si falta' {
-    Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '4. **Spec**' '5. **Plan**' | Should -Match '§Frontend'
+    Get-Section (Get-KitFile 'skills/sdd-propose/SKILL.md') '4. **Spec**' '5. **Plan**' | Should -Match '§Frontend'
   }
 
   It 'greenfield pregunta la verificación en la fila 21' {

@@ -1,3 +1,0 @@
-# Spec — weekly
-
-status: done

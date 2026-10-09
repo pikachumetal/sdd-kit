@@ -18,8 +18,8 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Batería de `sdd-propose` y RED de las reglas nuevas | done | — | RED 6 de 8 fallan; a3 y a4, control |
-| 2 | `sdd-propose` nace con lo movido, sin cambiar reglas | pending | — | |
+| 1 | Batería de `sdd-propose` y RED de las reglas nuevas | done | `fb01b014` | RED 6 de 8 fallan; a3 y a4, control |
+| 2 | `sdd-propose` nace con lo movido, sin cambiar reglas | done | — | controles 7 de 7 en conducta |
 | 3 | Entrada única: ceremonia asimétrica, carril de la petición, config y spike | pending | — | |
 | 4 | Estimación previa del patch | pending | — | |
 | 5 | Gate del plan desde `operations.md` y topes finales | pending | — | |

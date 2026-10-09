@@ -78,7 +78,9 @@ Describe 'Se valida en' {
 
 Describe 'Se valida en, en el paso que escribe los escenarios' {
   It 'el paso 4 pide la línea bajo el escenario, también sin delta de capacidad' {
-    Assert-Literal (Get-Step 4) @('escribe bajo su escenario `Se valida en:`', 'también si los escenarios no van en un delta de capacidad')
+    $propose = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-propose/SKILL.md') -Raw
+    $step = [regex]::Match($propose, "(?ms)^4\. .*?(?=^\d+\. |^## )").Value
+    Assert-Literal $step @('write under its scenario `Se valida en:`', "also if the scenarios aren't in a capability delta")
   }
 }
 

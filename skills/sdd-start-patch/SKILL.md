@@ -14,32 +14,7 @@ Un **patch** es un cambio pequeño cuya **solución ya está fijada** antes de e
 
 ## ¿Es de verdad un patch?
 
-```dot
-digraph decision {
-    wt [label="¿Toca una feature cuyo walkthrough sigue abierto?" shape=diamond];
-    fallo [label="¿Es un fallo?" shape=diamond];
-    det [label="¿Determinista, sin interpretar requisitos?" shape=diamond];
-    vis [label="¿Ajuste pedido, no un fallo? ¿Solo presentación o retirada (predicado)?" shape=diamond];
-    cerrada [label="¿El ticket o el dev-lead fijan qué cambia en lo que el usuario ve o puede hacer?" shape=diamond];
-    apendice [label="Apéndice 'Post-release fixes' en el walkthrough de esa feature" shape=box];
-    pfallo [label="PATCH de fallo: la causa raíz fija la solución" shape=box];
-    pvis [label="PATCH visual: variante del paso 1" shape=box];
-    pcerrada [label="PATCH de petición cerrada: variante del paso 1" shape=box];
-    feature [label="Es una FEATURE: usa sdd-start-feature" shape=box];
-
-    wt -> apendice [label="sí"]; wt -> fallo [label="no"];
-    fallo -> det [label="sí"]; fallo -> vis [label="no"];
-    det -> pfallo [label="sí"]; det -> feature [label="no"];
-    vis -> pvis [label="sí"]; vis -> cerrada [label="no"];
-    cerrada -> pcerrada [label="sí"]; cerrada -> feature [label="no"];
-}
-```
-
-**Solución fijada**: la petición dice qué cambia en lo que el usuario ve o puede hacer, y a ti solo te queda lo que no se ve. Elegir entre propuestas ya escritas (en el ticket o en la fila) con preguntas cerradas al dev-lead sigue siendo patch; proponer una opción que nadie escribió, no, aunque se la des a elegir: escribir tú las opciones es diseñar la solución. «Avisa cuando el total pase de 1.000 €» deja sin fijar el texto, el sitio y el umbral: es feature, aunque sea pequeño y aunque pidan un patch. Una solución propuesta para un fallo no lo convierte en petición cerrada: sigue siendo un fallo, y la causa raíz confirma que la propuesta lo arregla.
-
-**Predicado del ajuste solo de presentación**: el cambio solo toca plantillas o estilos (`.html`, `.component.html`, `.razor`, `.cshtml`…; CSS, SCSS, LESS); en las plantillas solo mueve, envuelve o cambia la clase de elementos, sin añadir, quitar ni cambiar bindings, directivas de control (`@if`, `*ngIf`, `v-if`, `@for`), manejadores de eventos, texto visible ni claves de i18n; y no toca TypeScript ni otro código, API, datos ni capacidades. La **retirada** es la excepción: quita elementos visibles y lo que queda muerto por quitarlos —sus manejadores, su estado, sus textos y claves de i18n, y la migración solo de datos que los da de baja—. Pero la retirada solo quita lo que nadie más usa, y una retirada no añade nada: «Quita Borrar y añade Archivar en su sitio» es feature. Si lo retirado era algo que el usuario podía hacer, `patch.md` lo dice en una línea y lleva el delta de la capacidad. Si falla una condición, no es un ajuste visual: sigue el árbol. Un fallo que se arregla solo en CSS (un texto que no se lee, un modal tapado) no es un ajuste: es un bug, con `systematic-debugging`, causa raíz y `Fixed`, aunque su verificación lleve captura. «Solo toco la plantilla» no lo hace ajuste visual si la plantilla gana un `@if` o un texto: es petición cerrada si el ticket o el dev-lead fijan la condición o el texto literal, y feature si no. Tampoco es edición directa: sin carril, 4 de 4 sujetos movieron botones o cambiaron un texto sin abrir el navegador (`tests/visual-patch-red.md`, v1 y c2).
-
-Que quien reporta "crea saber la causa" NO convierte el bug en determinista: la causa la determina tu investigación, no el reporte.
+La clasificación —el árbol, la solución fijada y el predicado del ajuste solo de presentación— vive en `sdd-propose`, [Is it really a patch?](../sdd-propose/SKILL.md#is-it-really-a-patch): llegas aquí con el carril ya decidido.
 
 ## Flujo (crea un todo por paso)
 
