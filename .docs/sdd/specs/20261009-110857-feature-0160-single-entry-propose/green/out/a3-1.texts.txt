@@ -1,0 +1,40 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto. Queda: localizar el fallo en el código y clasificar el cambio, ~2 min.
+
+--- [14]
+Reproducido: `cancelar Norte mar` devuelve `cancelada Norte mar`. Reservo id y rama antes de crear la carpeta, porque el modo es `sequence` y no hay fila en el roadmap.
+
+--- [18]
+Rojo por la causa esperada. Ahora el arreglo mínimo.
+
+--- [24]
+Sin el arreglo el test falla, y con él pasa todo el gate. Escribo `patch.md` y hago el commit.
+
+--- [28]
+Ahora: validación del patch. Queda: tu respuesta; con ella cierro `patch.md`, changelog, roadmap y estimación y hago el merge, ~3 min.
+
+El fix está en el commit `4f2f379` de `feature/0012-cancel-day`. No hay `validation.mode: field` en `sdd-kit.json`, así que la validación es manual. Aunque el perfil sea `delegate`, no cierro ni fusiono sin ella.
+
+**Qué he verificado yo**
+- Reproduje el fallo: `cancelar Norte mar` devolvía `cancelada Norte mar` y dejaba `Norte lun` en `cancelled`.
+- El test de regresión nuevo, `test/cancel-day.test.js`, falla sin el arreglo y pasa con él.
+- El gate `node --test && node scripts/lint.mjs` pasa: 5 de 5 tests y lint sin hallazgos.
+
+**Guion de pruebas**
+
+Las reservas viven en memoria, así que cada orden arranca de cero. Hay que encadenar los dos pasos en un solo proceso:
+
+1. `node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','mar']));console.log(m.run('cancelar',['Norte','lun']))})"`
+   Esperado: `sin reserva Norte mar` y luego `cancelada Norte lun`. Antes del arreglo salía `cancelada Norte mar` y luego `sin reserva Norte lun`.
+2. `node -e "import('./src/app.js').then(m=>{console.log(m.run('anular',['Norte','mar']));console.log(m.run('anular',['Norte','lun']))})"`
+   Esperado: `sin reserva Norte mar` y luego `anulada Norte lun`. `anular` tenía el mismo fallo.
+3. `node src/app.js cancelar Norte lun`
+   Esperado: `cancelada Norte lun`.
+
+**¿Qué has probado?** Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar, a cargo del dev-lead`
+- `No funciona`
+
+Hasta que contestes, la rama queda con los commits hechos y el merge a `develop` **PENDIENTE**.
+

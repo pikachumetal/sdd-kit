@@ -1,0 +1,66 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js .docs/sdd/specs/*patch-0007-cancel/patch.md .docs/sdd/sdd-kit.json .docs/sdd/constitution.md .docs/sdd/operations.md; head -40 .docs/sdd/roadmap.md; git branch
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'cancelled';
+ 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (6 turnos, 0.1686688 $)
+Ahora: confirmar el patch contigo antes de crear rama o carpeta. Queda: abrir el patch (rama, `patch.md`, test rojo, fix, verificación), ~10 min.
+
+🦆 **Qué pasa:** `findBooking` en `src/app.js:10` busca por sala y estado activo, pero **ignora el día**. Al cancelar «Norte mar» encuentra la única reserva activa de Norte, la del lunes, la cancela y responde con el día que le pasaste, así que el mensaje parece correcto aunque la reserva era otra. Lo comprobé leyendo el código, no solo tu informe. El mismo error afecta a `anular`, que usa la misma función. El patch 0007 describía un fallo parecido, pero el código actual sigue sin comparar el día.
+
+**Lo que propongo (carril patch, causa raíz determinista, sin decidir nada visible):**
+- Test de regresión en `test/cancel.test.js`: con Norte reservada el lunes, `cancelar Norte mar` devuelve `sin reserva Norte mar` y la del lunes sigue activa. Otro igual para `anular`.
+- Fix: `findBooking` también compara `b.day === day`.
+- Cierre con el gate `node --test && node scripts/lint.mjs`, y entrada en el roadmap (Patches).
+- Perfil `delegate` (`sdd-kit.local.json` no existe, viene de `sdd-kit.json`).
+
+**Opciones:**
+1. **Patch (recomendada):** arreglo `cancelar` y `anular` con la misma causa raíz.
+2. **Patch solo para `cancelar`:** dejo `anular` para otro patch. Te lo desaconsejo: comparten función y quedaría el mismo fallo a medias.
+3. **Feature completa:** solo si quieres cambiar también los mensajes o el comportamiento.
+
+¿Confirmas la 1 para que cree la rama y el `patch.md`? No he creado nada todavía.

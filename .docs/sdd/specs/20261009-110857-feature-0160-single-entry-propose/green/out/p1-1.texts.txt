@@ -1,72 +1,23 @@
 --- [3]
-Ahora: leer la spec aprobada y el contexto del proyecto. Queda: escribir `plan.md` y dejarlo listo para el handoff, ~5 min.
+Ahora: leo la spec aprobada de la 0010 y el contexto del proyecto para escribir el plan. Queda: el `plan.md` y la entrega a la implementación, ~5 min.
 
---- [10]
-Ahora: escribir `plan.md`. Queda: commitear la apertura y pasar a implementar con `sdd-start-feature`, ~3 min.
-
-Estoy usando la skill writing-plans para crear el plan de implementación.
-
---- [14]
-Ahora: pasar a la implementación. Queda: Task 1 (tests, código, verificación), revisión final y cierre.
+--- [7]
+Using the writing-plans skill to create the implementation plan. La ruta la fija el kit: `.docs/sdd/specs/<carpeta>/plan.md`, no `docs/superpowers/`.
 
 --- [19]
-Ahora: abrir la Task 1 (ledger y base). Queda: tests RED, código, verificación, revisión final y validación.
+El plan de la 0010 está escrito y commiteado (`a39671a`). Me he parado aquí, sin implementar: me pediste el paso 5, y la implementación empieza en el paso 6.
 
---- [21]
-Escribo los tests RED.
+El plan está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`. Tiene una sola task, que modifica `src/app.js` y `test/cancel.test.js`. Va en native, como fija `sdd-kit.json`, y con el perfil `delegate` no hay parada de aprobación.
 
---- [25]
-RED como se esperaba (el 2 pasa, previsto en el plan). Implemento.
+La spec no cubre algunos casos, y el plan los resuelve así. Son decisiones mías, no de Laura:
+- **Sin `--motivo`:** `cancelar Norte lun` responde «falta el motivo: cambio de planes, sala ocupada, otro» y no cancela. Lo mismo pasa con `--motivo` sin valor.
+- **Motivo fuera de la lista:** la reserva sigue activa.
+- **`canceladas`:** solo lista las de estado `cancelled`, así que las anuladas no salen. Sin ninguna responde «sin canceladas».
+- **Test actual:** `cancelar una reserva activa` espera «cancelada Norte lun» sin motivo. La spec lo cambia, así que pasa a llevar `--motivo`.
 
---- [28]
-Mi escape del `\n` salió mal en el script; lo corrijo.
+Los tests comparten el estado de `bookings`, así que su orden en `test/cancel.test.js` importa.
 
---- [31]
-Verde (9/9), tests sin cambios respecto a la copia RED. Commit y cierre de la task.
+No hay test de que las anuladas queden fuera de `canceladas`. Con una sola reserva de partida no se puede sembrar sin exportar el estado, y lo dejé anotado en el plan.
 
---- [34]
-Ahora: revisión final de rama (revisor independiente en Opus). Queda: arreglos si los hay, validación contigo y cierre.
-
---- [42]
-El hallazgo Important es real (`indexOf` = -1 lee la sala). Lo arreglo con test en RED primero.
-
---- [44]
-RED confirmado. Implemento el arreglo.
-
---- [47]
-Ahora: validación contigo. Queda: que pruebes y me digas qué has probado; después, el cierre con `sdd-end-feature`.
-
-🦆 Cancelar ya no deja la reserva sin rastro: el comando exige uno de tres motivos y guarda el elegido junto a la reserva. Un comando nuevo, `canceladas`, lista las reservas canceladas con su motivo.
-
-**✋ Me salí del plan en…** (no cambia la spec, pero conviene que lo valides)
-- **Fix de la revisión final.** Al leer `--motivo`, si el flag faltaba, el código leía la sala como motivo. `cancelar otro lun` habría dado «sin reserva» en vez de «motivo no válido». Lo arreglé con test en RED primero. Está en el commit `a411c57`. La pasada de fix no abre re-revisión, porque la cubre su propio test.
-- **Decisiones del plan que la spec no fija:**
-  - Sin `--motivo`, o con `--motivo` sin valor, responde «motivo no válido: …» y no cancela.
-  - El motivo se valida antes de buscar la reserva.
-  - `canceladas` sin ninguna cancelada responde «sin canceladas».
-  - Con varias canceladas, una línea por reserva.
-- **Minors de la revisión, sin tocar:**
-  - El test «sin motivo» no afirma explícitamente que la reserva sigue activa.
-  - Ningún test cubre varias canceladas a la vez.
-  - `test/cancel.test.js` pasó de CRLF a LF, por lo que el diff reescribe el fichero entero.
-- **Tests que cambié:** `cancel.test.js` ya no pasa sin `--motivo`.
-
-**Smoke (lo que ejecuté yo)**
-
-| THEN | Evidencia |
-| --- | --- |
-| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) y suite |
-| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (CLI con `--motivo x`) y suite |
-| `canceladas` → «Norte lun — sala ocupada» | suite (`run`, porque el estado es en memoria y cada ejecución de la CLI parte de cero) |
-
-La suite completa da 10 de 10 en ~0,2 s, y el lint sale limpio. La revisión final (Opus, effort high) sobre `125cf3f` no dejó Critical; el Important está arreglado.
-
-**Guion de pruebas** (no hay nada que arrancar: es una CLI)
-1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
-2. `node src/app.js cancelar Norte lun --motivo aburrimiento` → `motivo no válido: cambio de planes, sala ocupada, otro`.
-3. `node src/app.js cancelar Norte lun` → el mismo mensaje de motivo no válido.
-4. `node src/app.js canceladas` → `sin canceladas`. Cada ejecución parte de cero.
-5. `node --test` → 10 de 10 en verde. El test `canceladas enseña el motivo` comprueba `Norte lun — sala ocupada`.
-
-¿Qué has probado y funciona? Dime también si apruebas las decisiones de arriba. Con tu validación sigo con `sdd-end-feature`.
+Si quieres que siga, di «sigue» y arranco con la Task 1. La sesión de implementación puede correr en Sonnet con effort medium.
 

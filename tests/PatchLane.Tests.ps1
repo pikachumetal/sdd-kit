@@ -88,12 +88,9 @@ Describe 'criterio: patch.md registra quién decidió' {
 }
 
 Describe 'criterio: las puertas dicen lo mismo' {
-  It 'using-sdd manda a patch un cambio con la solución ya fijada' {
-    Get-TableRow $script:Door 'sdd-kit:sdd-start-patch' | Should -Match 'solución ya fijada'
-  }
-
-  It 'using-sdd manda a feature lo que hay que decidir' {
-    Get-TableRow $script:Door 'sdd-kit:sdd-start-feature' | Should -Match 'decidir cómo es'
+  It 'using-sdd manda a sdd-propose todo cambio, también el que pide un patch' {
+    Get-TableRow $script:Door 'sdd-kit:sdd-propose' | Should -Match 'pidan un patch'
+    $script:Door | Should -Not -Match 'sdd-kit:sdd-start-(patch|feature)'
   }
 
   It 'el paso 2 de sdd-propose nombra la petición cerrada' {
@@ -105,7 +102,6 @@ Describe 'criterio: las puertas dicen lo mismo' {
   }
 
   It 'el predicado visual va en sdd-propose y en la puerta, no en el paso 2 de sdd-propose' {
-    Get-TableRow $script:Door 'sdd-kit:sdd-start-patch' | Should -Match 'claves de i18n'
     Get-Section $script:Propose '2. **Classify**' '3. **Branch**' | Should -Not -Match 'i18n keys'
     $script:Propose | Should -Match 'i18n keys'
   }

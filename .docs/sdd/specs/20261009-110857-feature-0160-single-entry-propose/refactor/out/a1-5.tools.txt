@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd && ls -a . capabilities 2>/dev/null; cat sdd-kit.local.json sdd-kit.json 2>/dev/null; git branch --show-current; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path . 
+
+>>> Bash: cd .docs/sdd && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>/dev/null; done
+<<< .:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+{"merge": {"push": true}}
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+develop
+Sin capacidades
+<<< Exit code 1
+=== constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking d
+
+>>> Bash: cat .docs/sdd/operations.md; ls .docs/sdd/specs; ls -R src test* 2>/dev/null | head -30; wc -l src/app.js; cat src/app.js
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+35 src/app.js
+
+
+>>> Bash: git checkout -b feature/0011 develop && git branch --show-current
+
+>>> Skill: superpowers:brainstorming
+<<< Switched to a new branch 'feature/0011'
+feature/0011
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.225511 $)
+**Lo que entiendo (corrígeme si falla):**
+- **Lo que dijiste:** el responsable de cada sala puede anular reservas de otras personas, y nadie más puede.
+- **Lo que encontré:** `voidBooking` ya existe en `src/app.js` y anula cualquier reserva sin comprobar nada. Las reservas no guardan quién las hizo, no existe el concepto de usuario ni de responsable, y el comando `anular` solo recibe sala y día.
+- **Tensión con la misión:** `mission.md` dice que la usas solo tú, sin más usuarios. Para que «de otros» tenga sentido, la herramienta tiene que distinguir personas.
+
+Antes de poder escribir los escenarios hace falta saber cómo se sabe quién ejecuta el comando.
+
+❓ **¿Cómo se identifica quién ejecuta `anular`?**
+Hoy `node src/app.js anular Norte lun` no lleva ninguna identidad.
+
+1️⃣ **Parámetro `--como <nombre>` en cada comando.** Las reservas guardan su autor, y cada sala tiene un responsable fijo en el código.
+   - Ejemplo: `anular Norte lun --como ana` → `anulada Norte lun`.
+   - Ejemplo: `anular Norte lun --como luis` → `sin permiso: solo ana, responsable de Norte, anula reservas de otros`.
+   - No hay autenticación real: cualquiera puede escribir el nombre de otra persona.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Lo mismo, pero la identidad se fija una vez por sesión y no se repite en cada comando.
+   - Es más cómodo.
+   - Tampoco autentica.
+3️⃣ **Fuera de la herramienta.** El permiso lo da el servidor, por ejemplo con el usuario del sistema operativo, y la herramienta lee ese usuario.
+   - Es más seguro.
+   - Ata la herramienta al sistema donde la despliegas.
+
+➡️ **Recomiendo 1️⃣**, porque en tu despliegue la herramienta es de un solo fichero sin dependencias ni estado. Un parámetro explícito es lo más fácil de probar con `node --test` y deja claros los escenarios de la spec. A cambio, no impide que alguien se haga pasar por otro, aunque eso ya pasa en una herramienta sin login (`operations.md`: «Acceso: sin login»).

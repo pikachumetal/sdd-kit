@@ -80,3 +80,10 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 5: el gate del plan en `pair` aprueba y elige método a la vez, con la opción de bajar a gama media | `tests/session-model-red.md`, p5: 0 de 2 en Opus lo dijeron | no medido en esta batería: el molde va en `delegate` |
 | `plan-template.md`: cada task lleva `**Tras**:`; las tasks se ejecutan en orden, sin paralelo | `tests/sdd-start-feature-0146-red.md`, P1 2/2; GREEN ronda 0 sin la frase 0/2 | p1 |
 | Is it really a patch?: árbol, solución fijada, predicado del ajuste de presentación, retirada | `tests/patch-lane-red.md` y `tests/visual-patch-red.md` (v1 y c2: 4 de 4 sujetos movieron botones o cambiaron un texto sin abrir el navegador) | batería de `using-sdd` (p1, v1, c1w, pc1, bt1, c2) |
+| Paso 2: feature y spike anuncian y siguen, sin pregunta de confirmación; las tres líneas del anuncio abren la nota de entendimiento de `brainstorming` (paso 4) | `tests/sdd-propose-0160-red.md`, a1 2/2 en la pregunta de confirmación; GREEN 0/2 y tres rondas de REFACTOR 0/6 hasta poner las líneas en la nota (2/2), `tests/sdd-propose-0160-green.md` | a1 |
+| Paso 2: patch, lite y config preguntan, con el 🦆 delante, antes de rama, carpeta o id | `tests/sdd-propose-0160-red.md`, a2 2/2 sin preguntar, k1 2/2 sin preguntar | a2, k1 |
+| Paso 2: el carril de la petición se respeta si concuerda; si se ve uno más pesado, se pregunta con él recomendado | RED a3 y a4 limpios: la presión la crea la regla de la ceremonia; GREEN 2/2 y 2/2 como control | a3, a4 |
+| Paso 2 y «Config lane»: config pregunta, corre el gate de `operations.md`, commitea con `Gate:`; no commitea en rojo ni en la rama estable | RED k1 y k3 2/2 (edición directa sin gate); GREEN k1, k3 y k4 2/2 | k1, k3, k4 |
+| Paso 2: spike se clasifica y se anuncia como full | RED k2 2/2 a `sdd-consult` | k2 |
+| Paso 2: el carril solo sube | sin escenario: la forma de las subidas vigentes de lite (`modo-lite.md`) y de patch (`sdd-start-patch`, paso 1) | no medido |
+| Paso 6: el traspaso a `sdd-start-feature` tras el plan, en el mismo turno en `delegate` | GREEN p1 1/2; REFACTOR 2/2 | p1 |

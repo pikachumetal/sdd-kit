@@ -1,0 +1,87 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/* | head -60; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1 | head -40; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/sdd-kit.local.json
+.docs/sdd/tech-stack.md
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+./
+../
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+{"merge": {"push": true}}
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": 
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat constitution.md mission.md tech-stack.md roadmap.md; ls specs/*; cat specs/*cancel/patch.md; cd ../..; git ls-files | head -50
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la prue
+
+>>> Bash: cd "<run>/repo" && cat src/app.js PRODUCT.md; head -40 test/cancel.test.js; cat .docs/sdd/operations.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011 develop && git branch --show-current
+
+>>> Skill: superpowers:brainstorming
+<<< Switched to a new branch 'feature/0011'
+feature/0011
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.2391846 $)
+Entiendo esto, y corrígeme si me equivoco. Hoy `anular Norte lun` anula la reserva de quien sea, sin comprobar nada (`src/app.js`, `voidBooking`). La fila 0011 pide que solo el responsable de esa sala pueda anular reservas de otras personas. Para eso la app necesita dos datos que no tiene: quién ejecuta el comando y quién es el responsable de cada sala. Las reservas tampoco guardan a nombre de quién están, aunque `PRODUCT.md` las define «a nombre de quien la pide».
+
+❓ **¿Cómo sabe la app quién ejecuta el comando?**
+Ahora no hay usuarios ni sesión (`operations.md`: «sin login»), y `mission.md` dice que solo la usas tú.
+1️⃣ **Un parámetro `--como <nombre>` en cada comando.** `anular Norte lun --como ana` → `anulada Norte lun` si Ana es la responsable de Norte. `anular Norte lun --como luis` → `solo el responsable de Norte puede anular reservas de otros`. Es lo que menos cambia: no hay sesión ni ficheros nuevos. A cambio, cualquiera puede escribir el nombre de otro, así que sirve para ordenar el flujo pero no es seguridad.
+2️⃣ **Una variable de entorno `SALAS_USUARIO`.** `SALAS_USUARIO=ana anular Norte lun` → `anulada Norte lun`. No hay que repetir el nombre en cada comando. A cambio, el comportamiento depende de algo que no se ve en la línea de comandos, y es más difícil de probar y de explicar.
+3️⃣ **El usuario del sistema operativo (`os.userInfo().username`).** `anular Norte lun` lo ejecuta quien tenga la sesión abierta. No hay que escribir nada, pero cada comando depende de la máquina donde se ejecute y los tests se complican.
+
+➡️ **Recomiendo 1️⃣**, porque las reservas viven en memoria y no hay fichero de configuración que lea otra opción. Con 1️⃣, los tests llaman a `run('anular', [...])` con los parámetros a la vista. A cambio, la identidad es declarada y no verificada.

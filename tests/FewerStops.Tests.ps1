@@ -50,7 +50,7 @@ Describe 'Task 1 — carril de task' {
 
   It 'la tabla de gates recoge la spec delegada en la review y en la spec' {
     Assert-Literal (Get-GateRow 'Review de spec recomendada') @('con la spec delegada, decide y registra')
-    Assert-Literal (Get-GateRow 'Spec') @('salvo la spec delegada en la primera pregunta')
+    Assert-Literal (Get-GateRow 'Spec') @('salvo la spec delegada en el arranque')
   }
 
   It 'sdd-end-feature acepta el «sí» sin detalle y fija su línea en el walkthrough' {

@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && git branch --show-current && cat .docs/sdd/sdd-kit.local.json; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>/dev/null; done
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+develop
+{"merge": {"push": true}}
+Sin capacidades
+<<< Exit code 1
+=== constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking d
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; ls .docs/sdd/specs src test 2>/dev/null; wc -l src/app.js; cat src/app.js; cat .docs/sdd/operations.md | head -30
+<<< {"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+35 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) 
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/skills/sdd-start-feature/references" && cat nombrado.md | head -80
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011-anular-reservas-de-otros && git branch --show-current
+
+>>> Skill: superpowers:brainstorming
+<<< Switched to a new branch 'feature/0011-anular-reservas-de-otros'
+feature/0011-anular-reservas-de-otros
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.24067420000000003 $)
+Antes de la spec, esto es lo que he entendido, para que lo corrijas:
+
+- **Lo que dijiste:** el responsable de cada sala puede anular reservas de otras personas, y la fila 0011 del roadmap añade que solo él puede.
+- **Lo que he visto en `src/app.js`:**
+  - `anular <sala> <día>` anula cualquier reserva activa sin comprobar quién lo pide.
+  - Las reservas (`bookings`) no guardan quién las hizo.
+  - No existe el concepto de usuario ni el de responsable.
+- **Lo que supongo:** que «anular» sigue siendo el estado `voided`, distinto de `cancelled`, y que cancelar tu propia reserva queda como está.
+
+Para decidir lo demás falta saber cómo se sabe quién ejecuta el comando.
+
+❓ **¿Cómo se identifica quién ejecuta `anular`?**
+Hoy no hay identidad en ningún comando. Las reservas ni siquiera tienen autor, así que «de otros» no se puede distinguir sin introducir la identidad.
+1️⃣ **Opción `--como <nombre>` en `anular`.** Ejemplo: `anular Norte lun --como ana`. Con ana responsable de Norte, devuelve `anulada Norte lun`. Con `--como luis`, devuelve `solo el responsable de Norte puede anular`. Sin `--como`, devuelve `indica quién eres con --como`. Es una declaración sin autenticación, que es lo que una herramienta de un solo usuario en tu servidor soporta.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Es la misma comprobación, pero no hay que repetir el nombre en cada comando. A cambio, el comportamiento depende de un estado oculto y los tests tienen que fijarlo.
+3️⃣ **Sin identidad: solo el responsable ejecuta `anular` y el programa no lo comprueba.** No haría falta ningún cambio de código. La regla «solo el responsable» quedaría como convención, no como regla del producto, así que la fila 0011 no se cumpliría.
+
+➡️ **Recomiendo 1️⃣**, porque deja la identidad visible en cada comando y se prueba con una línea sin tocar el entorno. A cambio, hay que escribir `--como` cada vez, y cualquiera puede declararse responsable, porque no hay autenticación.
+
+Después te preguntaré dónde se define quién es responsable de cada sala.

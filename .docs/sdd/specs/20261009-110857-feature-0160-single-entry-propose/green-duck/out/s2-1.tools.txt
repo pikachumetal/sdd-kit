@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd/specs 2>/dev/null; grep -n -i -A8 "terminolog" PRODUCT.md .docs/sdd/PRODUCT.md 2>/dev/null | head -30
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+20260928-090000-feature-0012-ics-export/
+20261005-090000-feature-0013-export-by-room/
+PRODUCT.md:17:## Terminology
+PRODUCT.md-18-
+PRODUCT.md-19-**Reserva**:
+PRODU
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md .docs/sdd/specs/*0012*/spec.md test/export.test.js src/export/ics.js package.json; head -c 600 data/bookings.json; (npm test 2>&1 | tail -40)
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+- **No es**: un calendario compartido ni una sincronización en vivo.
+
+## Terminology
+
+**Reserva**:
+El uso de una s
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -40
+<<< ✔ solo exporta las reservas del mes que no están canceladas (1.1398ms)
+✖ exporta en la hora del usuario (2.7356ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 128.849
+
+✖ failing tests:
+
+test at test\export.test.js:16:1
+✖ exporta en la hora del usuario (2.7356ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /DTSTART:20260302T100000/. Input:
+  
+  'BEGIN:VCALENDAR\r\n' +
+    'VERSION:2.0\r\n' +
+    'BEGIN:VEVENT\r\n' +
+    'SUMMARY:Sala Norte\r\n' +
+    'DTSTART:20260302T080000\r\n' +
+    'DTEND:20260302T100000\r\n' +
+
+=== RESULTADO (6 turnos, 0.1253342 $)
+🦆 La feature 0012 no se puede cerrar porque la exportación pone las reservas a otra hora: la reserva de la sala Norte del 2 de marzo, de 10:00 a 12:00, sale en el fichero de 08:00 a 10:00, así que el socio la vería dos horas antes en su calendario. La exportación convierte cada franja a UTC (la hora de referencia mundial, dos horas por detrás de la del coworking) y escribe la hora convertida sin marcarla como UTC, así que Google Calendar y Outlook la toman como hora local. La comprobación «exporta en la hora del usuario» falla por eso, y el resto de comprobaciones pasa: el filtrado por mes y la exclusión de las canceladas funcionan.
+
+Queda por decidir si el fichero lleva la franja tal cual, en la hora del coworking, o la hora convertida marcada como UTC.

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y superpowers: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-start-feature`.
+Cómo entra una petición en lenguaje natural por el carril que le toca del kit, en un proyecto con `.docs/sdd/` y superpowers: qué skill se invoca primero. Las salidas finas las decide después el paso 2 de `sdd-propose`.
 
 ## Requisitos
 

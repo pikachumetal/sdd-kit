@@ -24,9 +24,10 @@ Describe 'Puertas del patch visual' {
     foreach ($literal in $script:PredicateLiterals) { $script:Propose | Should -Match ([regex]::Escape($literal)) }
   }
 
-  It 'la puerta de using-sdd lleva el predicado compacto' {
+  It 'la puerta de using-sdd manda el ajuste de presentación a sdd-propose, que tiene el predicado' {
     $door = Get-KitFile 'skills/using-sdd/SKILL.md'
-    foreach ($literal in @('solo plantillas o estilos', '`@if`', 'claves de i18n', 'TypeScript')) { $door | Should -Match ([regex]::Escape($literal)) }
+    $door | Should -Match 'un ajuste o una retirada de presentación'
+    $door | Should -Not -Match 'claves de i18n'
   }
 
   It 'el paso 2 de sdd-propose remite al predicado' {
@@ -84,7 +85,7 @@ Describe 'Arreglos de la revisión final del patch visual' {
 
   It 'el paso 4 del patch visual para y pasa a feature, y dice qué pasa con la carpeta y el id' {
     $step = Get-Section $script:Patch '4. **Fix mínimo**' '5. **Commit del fix**'
-    $step | Should -Match 'sdd-start-feature'
+    $step | Should -Match 'sdd-propose'
     $step | Should -Match 'borra la carpeta del patch'
     $step | Should -Match 'id reservado'
   }

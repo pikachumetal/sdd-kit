@@ -15,12 +15,10 @@ Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del pro
 | --- | --- |
 | Sin `.docs/sdd/`, quiere trabajar con SDD: proyecto nuevo · con código | `sdd-kit:sdd-init-greenfield` · `sdd-kit:sdd-init-brownfield` |
 | Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-consult` |
-| Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-start-feature` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente | `sdd-kit:sdd-roadmap` |
-| Una funcionalidad concreta o un cambio en el que hay que decidir cómo es (qué se ve, de dónde sale un dato), aunque sea pequeño o pidan un patch: «añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido» | `sdd-kit:sdd-start-feature`, antes que `brainstorming` |
-| Un cambio pequeño con la solución ya fijada: un fallo reproducible; un ajuste solo de presentación (solo plantillas o estilos, que mueve, envuelve o cambia la clase de elementos sin añadir bindings, `@if`, `*ngIf`, `v-if`, `@for`, eventos, textos ni claves de i18n, y sin TypeScript, API, datos ni capacidades) o una retirada de elementos; o un ticket o dev-lead que dicen, literal, qué cambia | `sdd-kit:sdd-start-patch` |
+| Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-propose` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente | `sdd-kit:sdd-roadmap` |
+| Un cambio, aunque sea pequeño o pidan un patch: una funcionalidad («añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido»), un fallo, un ajuste o una retirada de presentación, un cambio de dependencias, CI o configuración, un typo o un renombrado, una investigación que deja medidas | `sdd-kit:sdd-propose`, antes que `brainstorming` |
 | Cerrar la entrega de una versión, mandar las notas al cliente | `sdd-kit:sdd-end-release` |
 | Cómo quiere trabajar cada uno: «me paras mucho», «quiero menos preguntas», «déjamelo configurado para mí» | `sdd-kit:sdd-config`, nunca la memoria del agente: la memoria se queda en un PC y el kit no la lee |
-| Una edición sin comportamiento: un typo, un renombrado, un formato del código. Mover lo que se ve, o cambiar un texto visible por otro dado literal, es patch | directa, sin skill |
 
 ## Regla de duda
 
@@ -30,5 +28,5 @@ Si la petición no dice qué es ni cuánto abarca («hay que mejorar las reserva
 | --- | --- |
 | «Quiere que se haga, así que es una feature» | Querer que se haga no dice el tamaño. Sin saber qué es, la puerta es una suposición: pregunta. |
 | «Lo guardo en memoria para próximas sesiones» | La preferencia es del kit: `sdd-config` la escribe en `sdd-kit.local.json`, que leen todas las skills. |
-| «Solo toco la plantilla: edición directa» | Lo que se ve se valida en una captura: patch. Con un `@if` o un texto que nadie fijó, feature. |
+| «Es un typo o subir una versión: edición directa» | No hay edición directa: `sdd-propose` lo clasifica, y config corre las pruebas antes del commit. |
 | «Me los han asignado: los hago uno detrás de otro» | Sin fila en el roadmap no hay enunciado ni id. `sdd-roadmap` los apunta y después arrancan. |

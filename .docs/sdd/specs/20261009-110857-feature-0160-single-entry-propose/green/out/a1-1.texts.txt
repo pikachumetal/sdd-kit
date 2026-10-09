@@ -1,0 +1,25 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y decirte el carril, ~2 min.
+
+--- [17]
+Antes de la spec, esto es lo que he entendido, para que lo corrijas:
+
+- **Lo que dijiste:** el responsable de cada sala puede anular reservas de otras personas, y la fila 0011 del roadmap añade que solo él puede.
+- **Lo que he visto en `src/app.js`:**
+  - `anular <sala> <día>` anula cualquier reserva activa sin comprobar quién lo pide.
+  - Las reservas (`bookings`) no guardan quién las hizo.
+  - No existe el concepto de usuario ni el de responsable.
+- **Lo que supongo:** que «anular» sigue siendo el estado `voided`, distinto de `cancelled`, y que cancelar tu propia reserva queda como está.
+
+Para decidir lo demás falta saber cómo se sabe quién ejecuta el comando.
+
+❓ **¿Cómo se identifica quién ejecuta `anular`?**
+Hoy no hay identidad en ningún comando. Las reservas ni siquiera tienen autor, así que «de otros» no se puede distinguir sin introducir la identidad.
+1️⃣ **Opción `--como <nombre>` en `anular`.** Ejemplo: `anular Norte lun --como ana`. Con ana responsable de Norte, devuelve `anulada Norte lun`. Con `--como luis`, devuelve `solo el responsable de Norte puede anular`. Sin `--como`, devuelve `indica quién eres con --como`. Es una declaración sin autenticación, que es lo que una herramienta de un solo usuario en tu servidor soporta.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Es la misma comprobación, pero no hay que repetir el nombre en cada comando. A cambio, el comportamiento depende de un estado oculto y los tests tienen que fijarlo.
+3️⃣ **Sin identidad: solo el responsable ejecuta `anular` y el programa no lo comprueba.** No haría falta ningún cambio de código. La regla «solo el responsable» quedaría como convención, no como regla del producto, así que la fila 0011 no se cumpliría.
+
+➡️ **Recomiendo 1️⃣**, porque deja la identidad visible en cada comando y se prueba con una línea sin tocar el entorno. A cambio, hay que escribir `--como` cada vez, y cualquiera puede declararse responsable, porque no hay autenticación.
+
+Después te preguntaré dónde se define quién es responsable de cada sala.
+

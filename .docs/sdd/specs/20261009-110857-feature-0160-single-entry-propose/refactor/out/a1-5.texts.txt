@@ -1,0 +1,30 @@
+--- [4]
+Ahora: leer el contexto SDD del proyecto. Queda: clasificar el cambio y anunciar el carril, ~2 min.
+
+--- [14]
+Esto parece de ruta arquitectónica: no hay ningún concepto de usuario ni de rol que cambiar, así que escribiré una spec. Las preguntas siguen `sdd-grilling`.
+
+--- [17]
+**Lo que entiendo (corrígeme si falla):**
+- **Lo que dijiste:** el responsable de cada sala puede anular reservas de otras personas, y nadie más puede.
+- **Lo que encontré:** `voidBooking` ya existe en `src/app.js` y anula cualquier reserva sin comprobar nada. Las reservas no guardan quién las hizo, no existe el concepto de usuario ni de responsable, y el comando `anular` solo recibe sala y día.
+- **Tensión con la misión:** `mission.md` dice que la usas solo tú, sin más usuarios. Para que «de otros» tenga sentido, la herramienta tiene que distinguir personas.
+
+Antes de poder escribir los escenarios hace falta saber cómo se sabe quién ejecuta el comando.
+
+❓ **¿Cómo se identifica quién ejecuta `anular`?**
+Hoy `node src/app.js anular Norte lun` no lleva ninguna identidad.
+
+1️⃣ **Parámetro `--como <nombre>` en cada comando.** Las reservas guardan su autor, y cada sala tiene un responsable fijo en el código.
+   - Ejemplo: `anular Norte lun --como ana` → `anulada Norte lun`.
+   - Ejemplo: `anular Norte lun --como luis` → `sin permiso: solo ana, responsable de Norte, anula reservas de otros`.
+   - No hay autenticación real: cualquiera puede escribir el nombre de otra persona.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Lo mismo, pero la identidad se fija una vez por sesión y no se repite en cada comando.
+   - Es más cómodo.
+   - Tampoco autentica.
+3️⃣ **Fuera de la herramienta.** El permiso lo da el servidor, por ejemplo con el usuario del sistema operativo, y la herramienta lee ese usuario.
+   - Es más seguro.
+   - Ata la herramienta al sistema donde la despliegas.
+
+➡️ **Recomiendo 1️⃣**, porque en tu despliegue la herramienta es de un solo fichero sin dependencias ni estado. Un parámetro explícito es lo más fácil de probar con `node --test` y deja claros los escenarios de la spec. A cambio, no impide que alguien se haga pasar por otro, aunque eso ya pasa en una herramienta sin login (`operations.md`: «Acceso: sin login»).
+
