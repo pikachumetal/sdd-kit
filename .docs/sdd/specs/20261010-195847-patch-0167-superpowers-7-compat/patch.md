@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-10
 branch: patch/0167-superpowers-7-compat
-commit: <hash>
+commit: 4da56991
 ---
 
 # Patch 0167 — el kit con superpowers 7.0.0
@@ -55,12 +55,13 @@ Lo que da por existente, comprobado en `~/.claude/plugins/cache/superpowers-mark
 | 4 | GREEN: feature sin spec por tamaño · builder check | 0 de 6 · 0 de 6 |
 | 5 | `tests/SuperpowersCompat.Tests.ps1`, `ProportionalReview.Tests.ps1`, `MigrationInitParity.Tests.ps1`, `PathLength.Tests.ps1` | en verde |
 
+Validación en campo: 2026-10-10 · RED 6 sujetos y GREEN 6 sujetos con superpowers 7.0.0 (oferta de saltarse las preguntas 5/5 → 0/5) · `SuperpowersCompat.Tests.ps1` 10/10 · pre-commit en verde
+
 Coste de la campaña: 4,61 $ (RED 2,38 $, GREEN 2,23 $), dentro de los ~6-10 $ previstos.
 
 ## 5. Tiempo (ligero)
 
-- Estimación: —
-- Real: <Yh>
+- Real: 0,3h
 
 ## 6. Delta de capacidad
 
