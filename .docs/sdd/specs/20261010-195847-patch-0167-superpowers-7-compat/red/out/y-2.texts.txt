@@ -1,0 +1,41 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, roadmap y fila 0011). Queda: spec y su gate de aprobación, ~10 min.
+
+--- [18]
+Ahora: aclarar qué significa «avisos por correo antes de la reserva» antes de escribir la spec. Queda: spec lista para tu aprobación, ~10 min tras tu respuesta.
+
+Esto es lo que he visto en el código, porque condiciona la feature:
+
+- No hay nada de correo ni de tareas programadas en el proyecto (ni SMTP, ni servicio en segundo plano).
+- `Booking` solo tiene `Room`, `Start`, `End` y `Owner` (texto libre): no hay dirección de correo de nadie.
+
+Si prefieres que no te pregunte y decida yo con valores por defecto razonables (los dejaría todos en «Decisiones que he tomado yo» para que los valides), dímelo y sigo directamente.
+
+Si no, una pregunta: ¿qué momento concreto tienes en mente en el que alguien debería recibir ese aviso, quién es esa persona y cuánto antes de la reserva?
+
+--- [20]
+Entendido, sin más preguntas: decido yo y lo dejo todo en «Decisiones que he tomado yo». Elección de base: backend .NET con un servicio en segundo plano y envío por SMTP, tecnología ya presente en el stack.
+
+Ahora: leo la plantilla de spec y el código que toca. Queda: spec presentada para tu aprobación, ~8 min.
+
+--- [32]
+Ahora: spec redactada y repasada, pendiente de tu aprobación. Queda: plan y ejecución tras tu «apruebo», ~5 min para el plan.
+
+He escrito `.docs/sdd/specs/20261010-200028-feature-0011-booking-reminders/spec.md` (modo full, sin commitear todavía: la apertura se junta con el plan). Lo único que necesitas leer son estas decisiones mías:
+
+1. **Capacidad nueva `booking-reminders`**: no hay `capabilities/` en el proyecto y el aviso no encaja en nada vigente.
+2. **Destinatario**: columna nueva `OwnerEmail` (opcional) en `Booking`, con migración; hoy `Owner` es texto libre sin correo. Sin `OwnerEmail` no hay aviso y no es un error.
+3. **Un solo aviso, 60 min antes de `Start`**, configurable (`Reminders:LeadMinutes`).
+4. **`ReminderSentAt`** en la reserva, para no repetir el aviso tras reiniciar la API.
+5. **Servicio hospedado en la API, comprobación cada minuto**: el proyecto no tiene planificador.
+6. **Reserva creada dentro de la ventana** recibe el aviso una vez; una ya empezada no recibe nada.
+7. **Si el envío falla**, no se marca y se reintenta cada minuto hasta que empieza la reserva; se registra en el log.
+8. **Correo en castellano**, asunto `Recordatorio: reserva de <sala> a las <HH:mm>`, con la hora de `Start` tal cual está guardada (sin zona horaria).
+9. **SMTP por configuración** (`Smtp:Host`, `Smtp:Port`, `Smtp:From`); sin `Smtp:Host` no envía y avisa en el log al arrancar. Sin credenciales en el repo.
+10. **Sin frontend**: no hace falta `§Frontend`.
+11. **⚠ La API no tiene alta de reservas** (solo `GET /bookings`), así que nada en la aplicación rellena `OwnerEmail`. Lo dejo fuera de la 0011 para no inventar un contrato público; hoy los avisos solo saldrían con `OwnerEmail` puesto directamente en la base. Si prefieres incluir el alta o un campo en pantalla, dímelo y cambio el Scope.
+
+Review de spec: ninguna (3 señales, ~60 líneas). Hice el repaso de coherencia: el 60 min y los horarios de los 8 escenarios son consistentes con las decisiones.
+
+¿Apruebas la spec?
+

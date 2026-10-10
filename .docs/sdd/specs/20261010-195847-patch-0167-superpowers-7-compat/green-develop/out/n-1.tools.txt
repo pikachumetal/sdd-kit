@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -la .docs/sdd .docs/sdd/specs 2>&1; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; echo "=== cfg"; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; echo "=== idx"; node "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-dev/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+<<< ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+total 16
+drwxr-xr-x 1 <user> 197609   0 Oct 10 22:38 ./
+drwxr-xr-x 1 <user> 197609   0 Oct 10 22:38 ../
+-rw-r--r-- 1 <user> 197609 112 Oct 10 22:38 changelog.md
+-rw-r--r-- 1 <user> 197609 868 Oct 10 22:38 constitution.md
+-rw-r--r-- 1 <user> 197609 145 Oct 10 22:38 mission.md
+-rw-r--r-- 1 <user> 197609 487 Oct 10 22:38 roadmap.md
+-rw-r--r-- 1 <user> 197609 143 Oct 10 22:38 sdd-kit.json
+-rw-r--r-- 1 <user> 197609 807 Oct 10 22:38 tech-stack.md
+=== constitution
+# Constitution — reservas
+
+1. Los cambios no triviales pasan 
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.18090130000000001 $)
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+
+- La fila 0011 del roadmap pide «Avisos por correo antes de la reserva». La rama `feature/0011` ya está abierta y la fila está pendiente.
+- Hoy el sistema es una lista de reservas en el navegador (Angular) y una API (.NET 9 con EF Core sobre SQL Server) que las guarda.
+- En `tech-stack.md` no aparece ningún envío de correo, ni servicio ni configuración de SMTP. Es lo primero que tendré que mirar en el código.
+- Todo lo demás (a quién se avisa, cuánto antes, qué dice el correo, qué pasa si el envío falla) está sin decidir. No lo voy a suponer: lo iremos fijando de una decisión en una.
+
+Para empezar, cuéntame con tus palabras: ¿qué situación concreta ha pasado, o quieres evitar, que hace que estos avisos hagan falta?
+
+>>> Bash: cd "<run>/repo" && git ls-files | grep -v -E 'node_modules|/bin/|/obj/|package-lock' | head -100; echo ---; grep -rniE "email|correo|smtp|mail|HostedService|BackgroundService|status|cancel|confirm" --include=*.cs --include=*.ts --include=*.json -l . 2>/dev/null | grep -v -E 'node_modules|/bin/|/obj/' | head -30
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+README.md
+backend/src/Bookings.Api/BookingsEndpoints.cs
+backend/src/Bookings.Api/Data/Booking.cs
+backend/src/Bookings.Api/Data/BookingsDb.cs
+backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+docs/api.md
+frontend/src/app/bookings/booking-list.component.css
+frontend/src/app/bookings/booking-list.component.spec.ts
+frontend/src/app/bookings/booking-list.component.ts
+frontend/src/app/bookings/booking.ts
+moon.yml
+---
+
+>>> Bash: cd "<run>/repo" && for f in backend/src/Bookings.Api/BookingsEndpoints.cs backend/src/Bookings.Api/Data/Booking.cs backend/src/Bookings.Api/Data/BookingsDb.cs docs/api.md README.md frontend/src/app/bookings/booking.ts; do echo "=== $f"; cat "$f"; done; ls backend/src/Bookings.Api
+<<< === backend/src/Bookings.Api/BookingsEndpoints.cs
+using Bookings.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api;
+
+public static class BookingsEndpoints
+{
+    public static void MapBookings(this WebApplication app)
+    {
+        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+            await db.Bookings
+                .OrderBy(b => b.Start)
+                .Skip((page - 1) * 20)
+                .Take(20)
+                .ToListAsync());
+    }
+}
+=== backend/src/Bookings.Api/Data/Booking.cs
+namespace Bookings.Api.Data;
+
+public class Boo
+
+>>> Bash: cd "<run>/repo" && git branch -a; git log --oneline --all | head; grep -rniE "estado|status" frontend/src docs backend --include=* -l 2>/dev/null | grep -v -E 'node_modules|/bin/|/obj/'
+<<<   develop
+* feature/0011
+  main
+66b8a4f feat: lista de reservas con paginación
+
+=== RESULTADO (4 turnos, 0.24134060000000002 $)
+Lo que dices está claro: aviso 24 h antes, solo reservas confirmadas, con fecha, hora y sala, y sin aviso si se cancela antes. El cómo enviarlo lo decido yo y lo dejaré anotado como decisión mía.
+
+Antes de seguir he mirado el código, y hay un hecho que cambia el alcance:
+
+- `Booking` solo tiene `Id`, `Room`, `Start`, `End` y `Owner`. No hay estado «confirmada» ni «cancelada», ni dirección de correo.
+- La API solo tiene `GET /bookings`. No hay crear, ni cancelar, ni borrar.
+- La fila 0012 («filtrar por estado») figura ✅ en el roadmap, pero ni en esta rama ni en `develop` hay rastro de un estado.
+
+❓ **¿Qué significa «confirmada» y «cancelada» para el aviso?**
+Hoy una reserva es una fila en `Bookings` y no hay forma de cancelarla desde la API. Escena con la reserva `Norte, mañana 10:00`:
+
+1️⃣ **Existir = confirmada, cancelar = borrar la fila.** Esta feature solo envía: a las 10:00 de hoy mira las reservas que empiezan en 24 h y avisa a cada una. Si alguien borra la fila antes, no hay aviso, porque no hay fila. Coste: «cancelada» no deja rastro, y cuando 0012 u otra feature añada estados, el envío tendrá que revisarse.
+
+2️⃣ **Añadir un estado a `Booking` (Confirmada/Cancelada) en esta feature**, y avisar solo las confirmadas. Escena: `Norte, mañana 10:00` pasa a `Cancelada` → no sale aviso; sigue visible en la lista. Coste: abre un cambio de modelo con migración y, probablemente, el endpoint para cancelar, que hoy no existe. Es bastante más grande que «enviar un correo».
+
+➡️ **Recomiendo 1️⃣**, porque el código no tiene estado ni forma de cancelar, y la fila 0012 es la que lo introduce. Meterlo aquí duplicaría su trabajo. A cambio, «cancelar» queda reducido a «la reserva ya no existe».

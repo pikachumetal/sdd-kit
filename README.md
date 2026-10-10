@@ -173,7 +173,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 6.4.2, revisada el 2026-10-01; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 8 skills de superpowers: `brainstorming`, `writing-plans`, `subagent-driven-development`, `executing-plans`, `systematic-debugging`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 

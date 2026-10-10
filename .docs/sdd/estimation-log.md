@@ -162,6 +162,7 @@
 | 2026-10-09 | 0160 | docs | 7.5 | 2.5 | 0.33 | 134514k | 7243k | 31 | 43.68 | 20261009-110857-feature-0160-single-entry-propose |
 | 2026-10-09 | 0164 | patch | — | 0.5 | — | — | — | — | — | 20261009-115120-patch-0164-cli-merge-help-guard |
 | 2026-10-10 | 0161 | docs | 7 | 2.7 | 0.39 | 94404k | 4858k | 16.3 | 32.99 | 20261009-153540-feature-0161-explore-launch-prompt |
+| 2026-10-10 | 0167 | patch | — | 0.3 | — | — | — | — | — | 20261010-195847-patch-0167-superpowers-7-compat |
 
 **Factor de calibración** (ratio mediano real/estimado, 124 artefactos): **0.6** · media 0.72
 
@@ -202,6 +203,6 @@
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
-| sin publicar | 11 | 25.35 | 0.43 | 94.85 | 221.05 |
+| sin publicar | 12 | 25.65 | 0.43 | 94.85 | 221.05 |
 
 > Ver `estimation.md`.

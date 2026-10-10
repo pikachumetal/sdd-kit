@@ -1,0 +1,89 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -la .docs/sdd .docs/sdd/capabilities .docs/sdd/specs 2>&1; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; echo "=== local"; cat .docs/sdd/sdd-kit.local.json 2>&1; echo "=== kit"; cat .docs/sdd/sdd-kit.json 2>&1
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+total 16
+drwxr-xr-x 1 <user> 197609   0 Oct 10 21:59 ./
+drwxr-xr-x 1 <user> 197609   0 Oct 10 21:59 ../
+-rw-r--r-- 1 <user> 197609 112 Oct 10 21:59 changelog.md
+-rw-r--r-- 1 <user> 197609 868 Oct 10 21:59 constitution.md
+-rw-r--r-- 1 <user> 197609 145 Oct 10 21:59 mission.md
+-rw-r--r-- 1 <user> 197609 487 Oct 10 21:59 roadmap.md
+-rw-r--r-- 1 <user> 197609 143 Oct 10 21:59 sdd-kit.json
+-rw-r--r-- 1 <user> 197609 807 Oct 10 21:59 tech-stack.md
+=== consti
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+=== RESULTADO (6 turnos, 0.2667365 $)
+Ahora: aclarar qué es la 0011 antes de escribir la spec. Queda: unas pocas preguntas, la spec con sus decisiones a validar y su gate de aprobación, ~10 min de tu parte.
+
+Si prefieres saltarte las preguntas y que redacte la spec con mis propias decisiones, dímelo y la dejo lista para validar, marcando cada decisión como mía.
+
+El roadmap solo dice «Avisos por correo antes de la reserva». ¿Qué situación concreta quieres evitar con estos avisos: qué le pasa hoy a quien reserva una sala y qué quieres que ocurra en su lugar?
+
+>>> Bash: cd "<run>/repo" && git ls-files | grep -v -E 'node_modules|/bin/|/obj/' | head -150; echo; cat .docs/sdd/changelog.md
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+README.md
+backend/src/Bookings.Api/BookingsEndpoints.cs
+backend/src/Bookings.Api/Data/Booking.cs
+backend/src/Bookings.Api/Data/BookingsDb.cs
+backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+docs/api.md
+frontend/src/app/bookings/booking-list.component.css
+frontend/src/app/bookings/booking-list.component.spec.ts
+frontend/src/app/bookings/booking-list.component.ts
+frontend/src/app/bookings/booking.ts
+moon.yml
+
+# Changelog
+
+## [Unreleased]
+
+## [0.4.0] 
+
+>>> Bash: cd "<run>/repo" && for f in backend/src/Bookings.Api/Data/Booking.cs backend/src/Bookings.Api/Data/BookingsDb.cs backend/src/Bookings.Api/BookingsEndpoints.cs docs/api.md README.md frontend/src/app/bookings/booking.ts moon.yml; do echo "=== $f"; cat $f; done; ls backend/src/Bookings.Api backend/src/Bookings.Api/Data; sed -n 1,60p backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+<<< === backend/src/Bookings.Api/Data/Booking.cs
+namespace Bookings.Api.Data;
+
+public class Booking
+{
+    public int Id { get; set; }
+    public string Room { get; set; } = "";
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public string Owner { get; set; } = "";
+}
+=== backend/src/Bookings.Api/Data/BookingsDb.cs
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api.Data;
+
+public class BookingsDb(DbContextOptions<BookingsDb> options) : DbContext(options)
+{
+    public DbSet<Booking> Bookings => Set<Booking>();
+}
+=== backend/src/Bookings.Api
+
+=== RESULTADO (3 turnos, 0.3156142 $)
+He mirado el código y hay tres huecos entre lo que pides y lo que existe hoy:
+
+- **Correo:** `Booking` solo tiene `Room`, `Start`, `End` y `Owner` (texto). No hay ningún campo de correo.
+- **Estado y cancelación:** no hay estado «confirmada»/«cancelada» ni forma de cancelar. La API solo tiene `GET /bookings`; no hay endpoints de escritura.
+- **Envío:** no hay proceso en segundo plano ni envío de correo. El cómo lo decido yo, como dijiste.
+
+Mi propuesta para la spec, que marcaré como mía: añadir `OwnerEmail` y `Status` (confirmada/cancelada) a la reserva con su migración, un endpoint para cancelar y un proceso periódico que envía el aviso a las reservas confirmadas que empiezan en menos de 24 horas, una sola vez por reserva. Una reserva sin correo no genera aviso.
+
+También me llama la atención que el roadmap da por hecha la 0012 («filtrar por estado»), pero el código no tiene estado. Lo tendré en cuenta para no duplicar esa parte.
+
+Con esto, la pregunta que solo puedes contestar tú: ¿el campo `Owner` guarda hoy el correo del cliente, o hay que añadir un campo de correo nuevo?

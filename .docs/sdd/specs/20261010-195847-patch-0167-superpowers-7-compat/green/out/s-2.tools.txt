@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/specs .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git branch --show-current
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< ls: cannot access '.docs/sdd/specs': No such file or directory
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+feature/0013
+<<< 1	# Roadmap — reservas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0011 | Avisos por correo antes de la reserva | ⏳ |
+8	| 0012 | Filtrar la lista de reservas por estado | ✅ |
+9	| 0013 | Que la lista de reservas diga cuántas reservas hay | ⏳ |
+10	
+11	## Backlog
+12	
+13	| # | Ítem | Origen |
+14	| --- | --- | --- |
+15	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+16	
+17	## Releases cerradas
+18	
+19	### v0.4.0 (2026-09-10)
+20	
+21	Lista de reservas con paginación. [changelog](changelog.md)
+22	
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md; cat "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-green/skills/sdd-start-feature/references/modo-lite.md"; git ls-files | head -50
+<<< # Constitution — reservas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); funciones ≤
+
+>>> Bash: cd "<run>/repo" && cat backend/src/Bookings.Api/BookingsEndpoints.cs frontend/src/app/bookings/booking-list.component.ts frontend/src/app/bookings/booking.ts docs/api.md .docs/sdd/changelog.md
+<<< using Bookings.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api;
+
+public static class BookingsEndpoints
+{
+    public static void MapBookings(this WebApplication app)
+    {
+        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+            await db.Bookings
+                .OrderBy(b => b.Start)
+                .Skip((page - 1) * 20)
+                .Take(20)
+                .ToListAsync());
+    }
+}
+import { Component, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { Booking } from './booking';
+
+=== RESULTADO (7 turnos, 0.22222099999999997 $)
+Ahora: confirmo carril, modo y perfil (la primera pregunta). Queda: tras tu respuesta, rama y spec con `superpowers:brainstorming`, ~10 min.
+
+Antes, un aviso: esta sesión carga el kit 2.3.3 y el proyecto pide el 2.3.4. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code, porque `/reload-plugins` no aplica una actualización de ámbito proyecto. Sigo con lo que tengo cargado.
+
+**Enunciado.** La rama es `feature/0013` y la fila 0013 está pendiente en el roadmap: «Que la lista de reservas diga cuántas reservas hay». Lo tomo como enunciado.
+
+**Carril y perfil.**
+- **Carril:** feature, entera y sin partir, como dijiste.
+- **Perfil:** `delegate`. Sale del nivel proyecto (`.docs/sdd/sdd-kit.json`). No hay `sdd-kit.local.json` ni claves de política que ignorar.
+
+**Modo lite: no cumple el predicado, así que no lo ofrezco.** Estas son las condiciones del kit, una por una:
+- **El flujo ya existe y se puede leer:** cumple (`GET /bookings` y `BookingListComponent`).
+- **No cambia contratos públicos:** no cumple. `GET /bookings` devuelve hoy un array de 20 como máximo y no da el total, así que el frontend no puede saber cuántas reservas hay. Hay que ampliar el contrato (cabecera, envoltorio o endpoint nuevo) y actualizar `docs/api.md`.
+- **No cambia el schema de datos:** cumple (basta un `Count`, sin migración).
+- **Cabe en un solo módulo:** no cumple. Toca `backend/` y `frontend/`.
+- **Estimación ≤ media jornada:** no aplica, porque no existe `estimation.md`.
+
+Va en **modo full**: spec, plan y tasks.
+
+**Tamaño.** Prevé 2 o 3 tasks (backend con el total y su test, frontend que lo muestra, y la doc de la API), así que no propongo partirla.
+
+**Opción de delegación.** Como vas a delegar, ¿quieres también «apruebo la spec por delegación, nos vemos en la validación»? La spec no pararía en el gate: la apruebo yo con tu frase literal, decido la review sin preguntarte y sigo. La validación del final no se quita, y el backend tarda 17–21 min en `moon run backend:test`.
+
+¿Cuál eliges?
+1. **Full, y la spec te la presento para aprobar** (recomendada).
+2. **Full, y apruebo la spec por delegación, nos vemos en la validación.**

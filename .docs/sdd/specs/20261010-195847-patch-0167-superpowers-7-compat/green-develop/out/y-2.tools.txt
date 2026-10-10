@@ -1,0 +1,179 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/specs 2>/dev/null; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-dev/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md; done
+<<< .docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+Sin capacidades
+<<< === constitution
+# Constitution — reservas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capaci
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && git ls-files backend | head -60; grep -rniE "smtp|mail|notif|BackgroundService|IHostedService" backend --include=*.cs --include=*.csproj --include=*.json -l | head
+<<< backend/src/Bookings.Api/BookingsEndpoints.cs
+backend/src/Bookings.Api/Data/Booking.cs
+backend/src/Bookings.Api/Data/BookingsDb.cs
+backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+
+>>> Bash: cd "<run>/repo" && cat backend/src/Bookings.Api/Data/Booking.cs; head -50 backend/src/Bookings.Api/BookingsEndpoints.cs
+<<< namespace Bookings.Api.Data;
+
+public class Booking
+{
+    public int Id { get; set; }
+    public string Room { get; set; } = "";
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public string Owner { get; set; } = "";
+}
+using Bookings.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api;
+
+public static class BookingsEndpoints
+{
+    public static void MapBookings(this WebApplication app)
+    {
+        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+            await db.Bookings
+                .OrderBy(b => b.
+
+=== RESULTADO (11 turnos, 0.20541020000000001 $)
+Ahora: abrir la entrevista de la spec. Queda: unas pocas decisiones de diseño, spec, aprobación, plan e implementación, ~15 min hasta la primera parada.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** la fila 0011 del roadmap dice «Avisos por correo antes de la reserva», y quieres hacerla entera, en una sola feature.
+
+**Lo que he encontrado en el código** (`backend/src/Bookings.Api/`):
+- `Data/Booking.cs` tiene `Id`, `Room`, `Start`, `End` y `Owner` (un `string`), y nada más: no hay campo de correo ni de contacto.
+- `BookingsEndpoints.cs` solo expone `GET /bookings` con paginación. No hay endpoint para crear reservas.
+- No existe nada de envío de correo, ni servicio en segundo plano, ni configuración SMTP.
+
+Así que esta feature parte de cero en correo, y de momento ni siquiera sabemos a qué dirección enviar.
+
+❓ **¿Qué quieres que ocurra, en tus palabras?**
+Cuéntame el momento concreto: ¿quién recibe el correo, cuándo, y qué debería poder hacer o saber esa persona al leerlo?
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-dev\skills\sdd-start-feature\references\nombrado.md
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-dev\skills\sdd-templates\templates\spec-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+5	proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
+6	title: <título corto descriptivo>
+7	mode: full            # full | lite — lo lee sdd-end-feature; sin campo = full
+8	profile: <pair|delegate|unattended>   # opcional; omitido = hereda de
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls .docs/sdd/specs 2>/dev/null; date -u +%Y%m%d-%H%M%S
+<<< feature/0011
+20261010-203931
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-dev\skills\sdd-start-feature\references\review-spec.md
+<<< 1	# Review de la spec — rúbrica de complejidad y revisor adversarial
+2	
+3	Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gate. En modo lite no se aplica.
+4	
+5	## 1. Cuenta las señales (observables en la spec)
+6	
+7	| Señal | Se cumple si… |
+8	| --- | --- |
+9	| Capacidad nueva | «✋ Decisiones que he tomado yo» declara una capacidad nueva en `capabilities/` |
+10	| Contrato público | el delta toca una API, un formato de fichero o una interfaz que consume otro módulo o sistema |
+11	| `MODIFIED` / `REMOVED` | el delta cambia o quita un requisito existente |
+12	| Tres o 
+
+>>> Bash: cd "<run>/repo" && cat backend/src/Bookings.Api/Data/BookingsDb.cs; head -40 backend/tests/Bookings.Tests/BookingsEndpointsTests.cs; git ls-files | grep -iE "program|csproj|migrat"
+<<< using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api.Data;
+
+public class BookingsDb(DbContextOptions<BookingsDb> options) : DbContext(options)
+{
+    public DbSet<Booking> Bookings => Set<Booking>();
+}
+using System.Net.Http.Json;
+using Bookings.Api.Data;
+
+namespace Bookings.Tests;
+
+public class BookingsEndpointsTests(SqlServerApiFactory factory) : IClassFixture<SqlServerApiFactory>
+{
+    [Fact]
+    public async Task Lists_bookings_ordered_by_start()
+    {
+        await factory.SeedAsync(
+            new Booking { Room = "Sala 2", Start = new(2026, 9, 1, 10, 0, 0), End
+
+>>> Write: <run>\repo\.docs\sdd\specs\20261010-203931-feature-0011-reminder-emails\spec.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20261010-203931-feature-0011-reminder-emails\spec.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (9 turnos, 0.39464180000000004 $)
+Spec escrita en `.docs/sdd/specs/20261010-203931-feature-0011-reminder-emails/spec.md`. Hice el repaso de coherencia: el umbral de 30 minutos, el aviso tardío y el reintento coinciden en decisiones y escenarios, sin contradicciones.
+
+Que me pidieras saltarme las preguntas no aprueba la spec, así que me paro aquí.
+
+## 🦆 Qué cambia
+
+Quien reserva una sala recibe un correo 30 minutos antes de que empiece. Ejemplo: la reserva de «Sala 2» de `ana@empresa.test` empieza a las 10:00, y a las 09:30 le llega «Recordatorio: tu reserva de Sala 2 empieza a las 10:00». Por dentro, una tarea en segundo plano revisa cada minuto las reservas próximas y marca cada una como avisada para no repetir el correo.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+Todo es suposición mía, porque no hubo entrevista:
+
+1. **Destinatario**: campo nuevo `OwnerEmail` (opcional). `Owner` es texto libre y no lo uso como dirección. Sin `OwnerEmail` no hay aviso.
+2. **Antelación**: 30 minutos antes de `Start`, fija.
+3. **Texto**: asunto «Recordatorio: tu reserva de {sala} empieza a las {HH:mm}»; cuerpo «Tu reserva de {sala} es de {HH:mm} a {HH:mm}.»
+4. **Una sola vez**: `ReminderSentAt` en cada reserva evita repetir el aviso.
+5. **No avisar tarde**: si la reserva ya empezó, no se envía. Si faltan menos de 30 minutos pero no ha empezado, se envía en la primera revisión.
+6. **Mecanismo**: servicio en segundo plano que revisa cada 60 s y un `IEmailSender` por SMTP (`Smtp:Host`, `Smtp:Port`, `Smtp:From`). Sin `Smtp:Host` no envía ni marca nada.
+7. **Fallo de envío**: no se marca, se reintenta en la siguiente revisión hasta que empiece, y se registra en el log sin tumbar la API.
+8. **Migración**: dos columnas nuevas, `OwnerEmail` y `ReminderSentAt`, ambas opcionales.
+9. **Sin alta de correo**: no hay endpoint para crear reservas ni para rellenar `OwnerEmail`, y esta feature no lo añade. En la práctica, nadie podrá recibir avisos hasta que exista una vía para rellenarlo.
+10. **Capacidad nueva** `booking-reminders`.
+11. **Hora mostrada**: tal como está guardada, sin conversión de zona horaria.
+
+**Review de spec**: ninguna. Hay 3 señales (capacidad nueva, datos, SMTP), y con 0–3 no se recomienda. Lo que queda sin mirar son las decisiones 5 y 7.
+
+La decisión 9 es la que más puede cambiar el alcance: sin ella la feature solo se puede probar con datos sembrados. Si quieres incluir el alta de `OwnerEmail`, dímelo en los cambios.
+
+**¿Apruebo la spec y escribo el plan, o quieres cambios?** (Con «apruebo» en `delegate` sigo hasta la validación sin más paradas.)

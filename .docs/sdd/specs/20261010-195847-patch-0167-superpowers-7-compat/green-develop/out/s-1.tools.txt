@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/specs 2>&1; git branch --show-current; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; node "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-dev/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+<<< Exit code 1
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+feature/0013
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+<<< === constitution
+# Constitution — reservas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capaci
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-dev/skills/sdd-start-feature/references" && cat modo-lite.md; echo ======; cat control-profiles.md | head -120
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Bash: cd "<run>/repo" && git ls-files | grep -v node_modules | head -80; git log --oneline | head
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+README.md
+backend/src/Bookings.Api/BookingsEndpoints.cs
+backend/src/Bookings.Api/Data/Booking.cs
+backend/src/Bookings.Api/Data/BookingsDb.cs
+backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+docs/api.md
+frontend/src/app/bookings/booking-list.component.css
+frontend/src/app/bookings/booking-list.component.spec.ts
+frontend/src/app/bookings/booking-list.component.ts
+frontend/src/app/bookings/booking.ts
+moon.yml
+3c627de feat: lista de reservas con paginación
+
+>>> Bash: cd "<run>/repo" && cat frontend/src/app/bookings/booking-list.component.ts frontend/src/app/bookings/booking.ts backend/src/Bookings.Api/BookingsEndpoints.cs docs/api.md; head -60 frontend/src/app/bookings/booking-list.component.spec.ts
+<<< import { Component, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { Booking } from './booking';
+
+@Component({
+  selector: 'app-booking-list',
+  template: `
+    <ul class="booking-list">
+      @for (booking of bookings.value() ?? []; track booking.id) {
+        <li>{{ booking.room }} · {{ booking.start }}</li>
+      }
+    </ul>
+  `,
+  styleUrl: './booking-list.component.css',
+})
+export class BookingListComponent {
+  readonly bookings = httpResource<Booking[]>(() => '/api/bookings');
+}
+export interface Booking {
+  id: number;
+  roo
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.27199629999999997 $)
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** la fila 0013 pide que la lista de reservas diga cuántas reservas hay. Hoy `GET /bookings` devuelve solo un array con las 20 de la página pedida. El componente `booking-list.component.ts` llama a `/api/bookings` sin `page` y pinta esas 20 sin más.
+
+Tres cosas más que he visto:
+- Para saber cuántas hay en total, la API tiene que contarlas y devolver ese número. Eso es un cambio en el contrato de `GET /bookings`, documentado en `docs/api.md`.
+- Los tests que lo cubren están en `BookingsEndpointsTests.cs` y `booking-list.component.spec.ts`.
+- La constitución pide texto de interfaz en castellano.
+
+Corrígeme si algo de esto no es así.
+
+❓ **¿Qué número tiene que ver quien abre la lista?**
+Hoy, con 47 reservas guardadas, la lista enseña 20 y nada indica que hay más. Dime cuál de estas tres lecturas es la tuya:
+
+1️⃣ **El total de reservas guardadas.** Con 47 reservas la lista muestra `47 reservas` encima de las 20 filas. Con 3 muestra `3 reservas`; con 1, `1 reserva`. Exige que la API devuelva el total.
+2️⃣ **Total y tramo visible.** Con 47 muestra `Mostrando 1–20 de 47`. Exige el mismo total de la API más el tramo de la página, y hace evidente que la lista está cortada.
+3️⃣ **Solo las que se ven.** Con 47 reservas muestra `20 reservas`. No toca la API, pero el número nunca pasa de 20 y no responde a «¿cuántas hay?».
+
+➡️ **Recomiendo 1️⃣**, porque es lo que dice la fila del roadmap, «cuántas reservas hay», y la pantalla aún no tiene paginación visible a la que le sirva el tramo de 2️⃣. A cambio, con más de 20 reservas el número no coincide con las filas que se ven, y la lista no avisa de que está cortada.
