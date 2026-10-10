@@ -1,0 +1,201 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Glob: .docs/sdd/**/*
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\tech-stack.md
+.docs\sdd\sdd-kit.json
+.docs\sdd\roadmap.md
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — reservas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0011 | Avisos por correo antes de la reserva | ⏳ |
+8	| 0012 | Filtrar la lista de reservas por estado | ✅ |
+9	| 0013 | Que la lista de reservas diga cuántas reservas hay | ⏳ |
+10	
+11	## Backlog
+12	
+13	| # | Ítem | Origen |
+14	| --- | --- | --- |
+15	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+16	
+17	## Releases cerradas
+18	
+19	### v0.4.0 (2026-09-10)
+20	
+21	Lista de reservas con paginación. [changelog](changelog.md)
+22	
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — reservas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); fun
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — reservas
+2	
+3	Aplicación interna para reservar salas de reuniones: una lista de reservas en el navegador y una API que las guarda.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — reservas
+2	
+3	- **Monorepo con moon**: `frontend/` (Angular 20, signals, tema claro y oscuro con variables CSS) y `backend/` (.NET 9, minimal API, EF Core 9 sobre SQL Server).
+4	- **Comandos**:
+5	  - `moon run frontend:test` — Vitest con jsdom, ~40 s.
+6	  - `moon run frontend:check` — lint y `tsc --noEmit`, ~30 s.
+7	  - `moon run frontend:serve` — servidor de desarrollo en `http://localhost:4200`.
+8	  - `moon run backend:test` — xUnit con Testcontainers sobre SQL Server; tarda entre 17 y 21 min.
+9	  - `moon run backend:run` — API en `http://localhost:5080`.
+10	  - `moon run :t
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+2	
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Grep: (?i)mail|smtp|notif|reminder|BackgroundService|IHostedService
+<<< No files found
+
+>>> Glob: backend/src/**/*.cs
+<<< backend\src\Bookings.Api\BookingsEndpoints.cs
+backend\src\Bookings.Api\Data\Booking.cs
+backend\src\Bookings.Api\Data\BookingsDb.cs
+
+>>> Read: <run>\repo\backend\src\Bookings.Api\Data\Booking.cs
+<<< 1	namespace Bookings.Api.Data;
+2	
+3	public class Booking
+4	{
+5	    public int Id { get; set; }
+6	    public string Room { get; set; } = "";
+7	    public DateTime Start { get; set; }
+8	    public DateTime End { get; set; }
+9	    public string Owner { get; set; } = "";
+10	}
+11	
+
+=== RESULTADO (14 turnos, 0.3029138 $)
+Ahora: aclarar qué significa «avisos por correo antes de la reserva» antes de escribir la spec. Queda: spec lista para tu aprobación, ~10 min tras tu respuesta.
+
+Esto es lo que he visto en el código, porque condiciona la feature:
+
+- No hay nada de correo ni de tareas programadas en el proyecto (ni SMTP, ni servicio en segundo plano).
+- `Booking` solo tiene `Room`, `Start`, `End` y `Owner` (texto libre): no hay dirección de correo de nadie.
+
+Si prefieres que no te pregunte y decida yo con valores por defecto razonables (los dejaría todos en «Decisiones que he tomado yo» para que los valides), dímelo y sigo directamente.
+
+Si no, una pregunta: ¿qué momento concreto tienes en mente en el que alguien debería recibir ese aviso, quién es esa persona y cuánto antes de la reserva?
+
+>>> Glob: **/sdd-templates/**/spec-template.md
+<<< <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-red\skills\sdd-templates\templates\spec-template.md
+
+>>> Read: <run>\repo\backend\src\Bookings.Api\BookingsEndpoints.cs
+<<< 1	using Bookings.Api.Data;
+2	using Microsoft.EntityFrameworkCore;
+3	
+4	namespace Bookings.Api;
+5	
+6	public static class BookingsEndpoints
+7	{
+8	    public static void MapBookings(this WebApplication app)
+9	    {
+10	        app.MapGet("/bookings", async (BookingsDb db, int page = 1) =>
+11	            await db.Bookings
+12	                .OrderBy(b => b.Start)
+13	                .Skip((page - 1) * 20)
+14	                .Take(20)
+15	                .ToListAsync());
+16	    }
+17	}
+18	
+
+>>> Read: <run>\repo\backend\src\Bookings.Api\Data\BookingsDb.cs
+<<< 1	using Microsoft.EntityFrameworkCore;
+2	
+3	namespace Bookings.Api.Data;
+4	
+5	public class BookingsDb(DbContextOptions<BookingsDb> options) : DbContext(options)
+6	{
+7	    public DbSet<Booking> Bookings => Set<Booking>();
+8	}
+9	
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-red\skills\sdd-templates\templates\spec-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+5	proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
+6	title: <título corto descriptivo>
+7	mode: full            # full | lite — lo lee sdd-end-feature; sin campo = full
+8	profile: <pair|delegate|unattended>   # opcional; omitido = hereda de
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-red\skills\sdd-start-feature\references\review-spec.md
+<<< 1	# Review de la spec — rúbrica de complejidad y revisor adversarial
+2	
+3	Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gate. En modo lite no se aplica.
+4	
+5	## 1. Cuenta las señales (observables en la spec)
+6	
+7	| Señal | Se cumple si… |
+8	| --- | --- |
+9	| Capacidad nueva | «Decisiones a validar» declara una capacidad nueva en `capabilities/` |
+10	| Contrato público | el delta toca una API, un formato de fichero o una interfaz que consume otro módulo o sistema |
+11	| `MODIFIED` / `REMOVED` | el delta cambia o quita un requisito existente |
+12	| Tres o más capac
+
+>>> Read: <home>\AppData\Local\Temp\claude\C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat\aab6c02b-1da9-4941-a74d-d75c4acfbc91\scratchpad\kit-red\skills\sdd-start-feature\references\nombrado.md
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+
+>>> Bash: cd "<run>/repo" && git ls-files backend | head -30 && git log --oneline | head -5 && date -u +%Y%m%d-%H%M%S
+<<< backend/src/Bookings.Api/BookingsEndpoints.cs
+backend/src/Bookings.Api/Data/Booking.cs
+backend/src/Bookings.Api/Data/BookingsDb.cs
+backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+b8273ae feat: lista de reservas con paginación
+20261010-200028
+
+>>> Write: <run>\repo\.docs\sdd\specs\20261010-200028-feature-0011-booking-reminders\spec.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20261010-200028-feature-0011-booking-reminders\spec.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (9 turnos, 0.477423 $)
+Ahora: spec redactada y repasada, pendiente de tu aprobación. Queda: plan y ejecución tras tu «apruebo», ~5 min para el plan.
+
+He escrito `.docs/sdd/specs/20261010-200028-feature-0011-booking-reminders/spec.md` (modo full, sin commitear todavía: la apertura se junta con el plan). Lo único que necesitas leer son estas decisiones mías:
+
+1. **Capacidad nueva `booking-reminders`**: no hay `capabilities/` en el proyecto y el aviso no encaja en nada vigente.
+2. **Destinatario**: columna nueva `OwnerEmail` (opcional) en `Booking`, con migración; hoy `Owner` es texto libre sin correo. Sin `OwnerEmail` no hay aviso y no es un error.
+3. **Un solo aviso, 60 min antes de `Start`**, configurable (`Reminders:LeadMinutes`).
+4. **`ReminderSentAt`** en la reserva, para no repetir el aviso tras reiniciar la API.
+5. **Servicio hospedado en la API, comprobación cada minuto**: el proyecto no tiene planificador.
+6. **Reserva creada dentro de la ventana** recibe el aviso una vez; una ya empezada no recibe nada.
+7. **Si el envío falla**, no se marca y se reintenta cada minuto hasta que empieza la reserva; se registra en el log.
+8. **Correo en castellano**, asunto `Recordatorio: reserva de <sala> a las <HH:mm>`, con la hora de `Start` tal cual está guardada (sin zona horaria).
+9. **SMTP por configuración** (`Smtp:Host`, `Smtp:Port`, `Smtp:From`); sin `Smtp:Host` no envía y avisa en el log al arrancar. Sin credenciales en el repo.
+10. **Sin frontend**: no hace falta `§Frontend`.
+11. **⚠ La API no tiene alta de reservas** (solo `GET /bookings`), así que nada en la aplicación rellena `OwnerEmail`. Lo dejo fuera de la 0011 para no inventar un contrato público; hoy los avisos solo saldrían con `OwnerEmail` puesto directamente en la base. Si prefieres incluir el alta o un campo en pantalla, dímelo y cambio el Scope.
+
+Review de spec: ninguna (3 señales, ~60 líneas). Hice el repaso de coherencia: el 60 min y los horarios de los 8 escenarios son consistentes con las decisiones.
+
+¿Apruebas la spec?

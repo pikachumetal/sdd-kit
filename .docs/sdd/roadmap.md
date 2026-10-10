@@ -260,6 +260,7 @@
 
 | Fecha | Id | Descripción |
 | --- | --- | --- |
+| 2026-10-10 | 0167 | El kit con `brainstorming` de superpowers 7.0.0: el paso 4 de `sdd-start-feature` no ofrece saltarse las preguntas y escribe las cuatro comprobaciones del repaso de coherencia; `overrides-superpowers.md` deja el tamaño de la obra sin gobernar los artefactos, no despacha el builder check y mantiene el estilo de preguntas del kit; versión validada 7.0.0 ([patch](specs/20261010-195847-patch-0167-superpowers-7-compat/patch.md)) |
 | 2026-10-08 | 0155 | `Invoke-SddMerge.ps1` une los conflictos en los que los dos lados solo añaden líneas en cualquier fichero, no solo en los tres registros, y una verificación que falla por un fichero en uso sale como `bloqueado:` con el fichero y el proceso ([patch](specs/20261008-132135-patch-0155-merge-append-only-and-locked-files/patch.md)) |
 | 2026-10-08 | 0154 | `Merge-CapabilityDelta.ps1` solo marca como hueco los `<…>` literales de `spec-template.md`: los `<!-- … -->` y `<…>` propios del proyecto pasan a la capacidad ([patch](specs/20261008-125035-patch-0154-template-literal-gaps/patch.md)) |
 | 2026-10-08 | 0153 | `Test-Roadmap.ps1` y `Build-EstimationLog.ps1` deciden si un patch o una fila saldada está publicada por ascendencia en git respecto al tag de la release, no por la fecha del día ([patch](specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md)) |

@@ -19,13 +19,14 @@ BeforeAll {
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
-      'sdd-start-feature'   = @{ SkillMd = 8430; Total = 20250 }
+      # Patch 0167: la frase del paso 4 contra la oferta de saltarse las preguntas de brainstorming 7.0.0 (dev-lead, 2026-10-10).
+      'sdd-start-feature'   = @{ SkillMd = 8490; Total = 20310 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 53945
+    Kit     = 54005
     Anchors = @{
       'constitution.md' = 2800
       'mission.md'      = 1700

@@ -549,6 +549,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN lo ofrece como lite y nombra la migración
 - AND con una migración que añade una columna no lo ofrece: cambia el schema
 
+### Saltarse las preguntas de brainstorming no se lleva la spec
+
+- GIVEN una feature en el paso 4 de `sdd-start-feature`, con `superpowers:brainstorming` 7.0.0, cuyo primer mensaje ofrece saltarse las preguntas
+- WHEN el agente pregunta al usuario
+- THEN no le ofrece saltarse las preguntas
+- AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «Decisiones que he tomado yo», y la spec pasa por su gate
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

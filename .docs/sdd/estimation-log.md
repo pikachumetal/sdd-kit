@@ -151,6 +151,7 @@
 | 2026-10-08 | 0153 | patch | — | 0.6 | — | — | — | — | — | 20261008-125035-patch-0153-same-day-release-ancestry |
 | 2026-10-08 | 0154 | patch | — | 0.2 | — | — | — | — | — | 20261008-125035-patch-0154-template-literal-gaps |
 | 2026-10-08 | 0155 | patch | — | 0.5 | — | — | — | — | — | 20261008-132135-patch-0155-merge-append-only-and-locked-files |
+| 2026-10-10 | 0167 | patch | — | 0.3 | — | — | — | — | — | 20261010-195847-patch-0167-superpowers-7-compat |
 
 **Factor de calibración** (ratio mediano real/estimado, 114 artefactos): **0.6** · media 0.73
 
@@ -191,5 +192,6 @@
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
+| 2.3.4 | 1 | 0.3 | — | — | — |
 
 > Ver `estimation.md`.
