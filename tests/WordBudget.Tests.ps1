@@ -19,7 +19,7 @@ BeforeAll {
       'sdd-grilling'        = @{ SkillMd = 650; Total = 650 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
-      'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
+      'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
       'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
       'sdd-propose'         = @{ SkillMd = 4900; Total = 4900 }
       'sdd-start-feature'   = @{ SkillMd = 5400; Total = 17400 }

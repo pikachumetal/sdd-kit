@@ -30,3 +30,17 @@ Sin regresión de lo traducido. Ruling: fila u1 de la batería de `sdd-grilling`
 | e3-2 | `sdd-explore` → `sdd-roadmap` | E3 pasa: propone la fila 0008 en «Próximo» y espera; sin rama ni carpeta |
 
 RED → GREEN: e2 0/2 → 2/2, e3 0/2 → 2/2.
+
+## Task 4 — `sdd-roadmap`: «dame el prompt», el patch como fila y el prompt en el cierre
+
+10 sujetos (6 de GREEN y 4 de A/B), 2,36 $.
+
+| Escenario | Puerta | Conducta |
+| --- | --- | --- |
+| m1-1, m1-2 | 2/2 `sdd-roadmap` | M1 pasa 2/2: «**0013 — Aviso semanal a los responsables**», `Base: develop`, `feature/0013-weekly-manager-notice` sola en su bloque, `Carril: feature`, prompt que arranca la 0013 con `sdd-propose`, requisitos en la propuesta 0010 «§Reglas de negocio (Aviso semanal) y §Enmiendas», «los lunes a las 8:00 (enmienda del 2026-10-03…)», «Nada que saldar.», «Perfil delegate. Al fusionar, `sdd merge --push`.» y la frase «arráncalo»; `git status` limpio |
+| m2-1, m2-2 | 2/2 `sdd-roadmap` | M2 pasa 2/2: el cierre da el prompt de la 0009 (`feature/0009-room-occupancy-report`) con la forma fija y la frase «arráncalo» |
+| m3-1, m3-2 | 0/2: `sdd-propose` | entran por `sdd-propose`, que propone partir en 3 filas. Ver el A/B |
+
+**A/B de m3** (`ab/out/`): con el kit de la Task 3, antes de tocar `sdd-roadmap`, m3 entra 2 de 2 por `sdd-propose`; con el de la Task 4, también 2 de 2; con el kit de la apertura, que en el RED entró 2 de 2 por `sdd-roadmap`, ahora entra 2 de 2 por `sdd-propose`. El enrutado de esta frase varía sin cambio del kit (2 de 6 por roadmap y 4 de 6 por propose), y las dos puertas son defendibles: `using-sdd` manda a roadmap «una que el criterio de partir partiría», y x1 de la batería de `sdd-propose` espera propose. m3 solo medía el dimensionado, que salió por el RED: se retira de la batería y sus salidas de GREEN se descartan.
+
+RED → GREEN: m1 0/2 → 2/2, m2 (prompt en el cierre) 0/2 → 2/2.

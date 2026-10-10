@@ -33,7 +33,7 @@ Describe 'Quién da el prompt de arranque' {
     Get-KitFile 'skills/sdd-explore/SKILL.md' | Should -Match 'launch-prompt-template\.md'
   }
 
-  It 'sdd-roadmap nombra la plantilla' -Skip {
+  It 'sdd-roadmap nombra la plantilla' {
     Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'launch-prompt-template\.md'
   }
 }
