@@ -55,7 +55,7 @@ created: 2026-10-10
 
 - Una conversación de explore que acaba en algo grande («informes: ocupación, Excel y aviso semanal») → explore no lo parte él: lo pasa a `sdd-roadmap`, que propone la partición · Task 3, paso 5 de `sdd-explore`; lectura en la revisión.
 - «Dame el prompt de la 0013» en un proyecto sin `merge.*` en `sdd-kit.json` → «Al fusionar» dice la política que decide el usuario, sin inventar `--push` · Task 4, regla de la plantilla; lectura en la revisión.
-- Una fila de reparto que el roadmap no sabe dimensionar sin leer código (módulo que no existe) → prevé por las superficies que nombra, sin abrir rama ni explorar el código a fondo · Task 4, `m2`; lectura en la revisión.
+- Una conversación de explore que acaba en un spike («quiero la tabla de medidas») → pasa por `sdd-roadmap` como fila con carril spike, no da un prompt sin fila · Task 3, paso 5 de `sdd-explore`; lectura en la revisión. (Sustituye a la línea del dimensionado, que salió por el RED: enmienda del 2026-10-10.)
 - «Arráncalo» tras un prompt de config en la rama `develop` → `sdd-propose` lo clasifica config y aplica su regla de rama, sin saltarse el gate · Task 3, frase del paso 5; lectura en la revisión.
 - Un prompt de arranque que trae un carril más ligero que el que ve `sdd-propose` → pregunta con el pesado recomendado, como cualquier petición (0160) · Task 5, la frase de decisiones no toca la regla del carril; lectura en la revisión.
 
