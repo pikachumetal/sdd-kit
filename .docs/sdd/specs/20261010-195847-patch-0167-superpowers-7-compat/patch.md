@@ -38,12 +38,13 @@ Lo que da por existente, comprobado en `~/.claude/plugins/cache/superpowers-mark
 
 ## 3. Fix
 
-- **Fichero(s)**: `skills/sdd-start-feature/SKILL.md`, `skills/sdd-start-feature/references/overrides-superpowers.md`, `skills/sdd-roadmap/SKILL.md`, `README.md`, `.docs/sdd/tech-stack.md`, `tests/SuperpowersCompat.Tests.ps1`, `tests/ProportionalReview.Tests.ps1`, `tests/superpowers-700-red.md`, `tests/superpowers-700-green.md`
+- **Fichero(s)**: `skills/sdd-start-feature/SKILL.md`, `skills/sdd-start-feature/references/overrides-superpowers.md`, `skills/sdd-roadmap/SKILL.md`, `README.md`, `.docs/sdd/tech-stack.md`, `tests/SuperpowersCompat.Tests.ps1`, `tests/ProportionalReview.Tests.ps1`, `tests/superpowers-700-red.md`, `tests/superpowers-700-green.md`, `tests/WordBudget.Tests.ps1`
 - **Cambio**: el paso 4 prohíbe ofrecer saltarse las preguntas y dice qué hacer si el usuario pide empezar ya (lo único que reprodujo el RED), y su repaso de coherencia escribe las cuatro comprobaciones. En `overrides-superpowers.md`, la fila de «Size the Work» y la oferta sustituye a la de la clasificación vieja, hay filas nuevas del builder check y del estilo de preguntas, y la del Execution Handoff deja de citar la HARD-GATE. La entrevista de `sdd-roadmap` dice su técnica sin atribuírsela a brainstorming. Versión validada: 7.0.0.
 - **Decisiones**:
   - Toda feature tiene `spec.md` y gate; no se ofrece saltarse las preguntas — dev-lead
   - Si el usuario pide empezar ya sin que se le ofrezca, la spec se escribe con lo que hay y los huecos van a «Decisiones que he tomado yo» — sin el dev-lead (no cambia lo que el usuario ve ni puede hacer en su proyecto: es lo que ya hacían 2 de 2 sujetos del RED)
   - La frase va en el paso 4 además de en la fila de overrides, porque 0 de 6 sujetos leyeron la tabla — sin el dev-lead (método)
+  - Los topes de palabras de `sdd-start-feature` suben a 8490 (`SKILL.md`) y 20310 (la skill), y el del kit a 54005, para que la frase del paso 4 quede como se midió; el repaso de coherencia nombra sus cuatro comprobaciones sin glosarlas y las filas de overrides se comprimen — dev-lead, 2026-10-10 («Subir los topes»)
 
 ## 4. Verificación
 
