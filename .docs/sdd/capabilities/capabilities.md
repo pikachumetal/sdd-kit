@@ -89,12 +89,6 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - WHEN se lee el contexto SDD
 - THEN la referencia es a la carpeta `capabilities/` y a sus capacidades
 
-### La consulta lee la capacidad, no las specs
-
-- GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-consult`
-- WHEN existe `capabilities/`
-- THEN la consulta ejecuta `sdd capability index`, elige por su propósito la capacidad que cubre X y ancla la respuesta en ese fichero, no en la reconstrucción a partir de specs históricas
-
 ### La spec y el patch declaran sus capacidades al principio
 
 - GIVEN un proyecto con `capabilities/bookings.md` y la fila 0021 «Cancelar una reserva: `salas cancelar <sala> <franja>` libera la franja»
@@ -143,7 +137,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND un propósito de más de 300 caracteres sale entero: el índice no valida
 - AND sin carpeta `capabilities/`, o con la carpeta vacía, escribe `Sin capacidades` y sale con 0
 - AND el índice no se guarda en ningún fichero
-- AND `sdd-propose`, `sdd-roadmap` y `sdd-consult` lo ejecutan en su paso de contexto, antes de decidir qué capacidades leer o tocar, y abren solo las que eligen con él
+- AND `sdd-propose`, `sdd-roadmap` y `sdd-explore` lo ejecutan en su paso de contexto, antes de decidir qué capacidades leer o tocar, y abren solo las que eligen con él
 
 ### La fusión del delta es un script
 
@@ -175,6 +169,12 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - WHEN se ejecuta `sdd capability check --path .docs/sdd`
 - THEN no informa errores de ese fichero, sí de las capacidades reales, y la línea de éxito lo cuenta fuera y lo nombra: `Capacidades válidas: 1 · omitidas por «No es una capacidad.»: funcional.md`
 - AND si el fichero marcado tiene líneas de escenario, falla con `funcional.md: marcado «No es una capacidad.» y con escenarios: quita la marca o los escenarios`
+
+### Explore lee la capacidad, no las specs
+
+- GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-explore`
+- WHEN existe `capabilities/`
+- THEN explore ejecuta `sdd capability index`, elige por su propósito la capacidad que cubre X y ancla la respuesta en ese fichero, no en la reconstrucción a partir de specs históricas
 
 ## Reglas de la capacidad
 

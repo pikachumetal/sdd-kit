@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cat package.json; echo ---; ls -a; echo ---; cat .nvmrc .node-version .tool-versions 2>/dev/null; echo ---; grep -rnIi "node" --include=*.yml --include=*.yaml --include=Dockerfile* --include=*.md --include=*.json -l . 2>/dev/null | grep -v node_modules | head -30
+
+>>> Bash: node --version; ls .docs/sdd 2>/dev/null; cat .docs/sdd/tech-stack.md 2>/dev/null | head -60
+<<< v26.11.1
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+<<< {"type": "module", "engines": {"node": ">=22"}}
+---
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+---
+---
+./.docs/sdd/constitution.md
+./.docs/sdd/tech-stack.md
+./package.json
+
+>>> Bash: cat .docs/sdd/constitution.md; echo ---; cat README.md; echo ---; ls -R src test; echo ---; cat .docs/sdd/roadmap.md | head -40; ls .docs/sdd/specs
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+---
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+---
+src:
+app.js
+
+test:
+app.test.js
+---
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado 
+
+>>> Bash: cat src/app.js test/app.test.js; node --test 2>&1 | tail -12; git ls-files | grep -iE "github|azure|gitlab|docker|lock"
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.1100814 $)
+**No rompe nada, siempre que uses un rango y no una versión exacta.**
+
+Lo que he visto:
+- **Código:** `src/app.js` y los tests solo usan `node:test`, `node:assert` y ESM. No hay dependencias, ni lockfile, ni `.nvmrc`, ni CI, ni Dockerfile que fijen otra versión.
+- **Tests:** `node --test` pasa 3/3 con tu Node local (v26.11.1).
+- **Docs:** `.docs/sdd/tech-stack.md` dice «Node 22», que sigue siendo cierto con 22.18. Aun así, convendría dejarlo como «Node ≥ 22.18».
+
+Dos cosas a tener en cuenta:
+- Hoy `engines` es `">=22"`. Ponerlo como `"22.18"` o `"^22.18"` excluiría Node 24/26, que es lo que tienes instalado. Usa `">=22.18.0"`.
+- Sin `engine-strict`, npm solo avisa (no bloquea) si la versión no cumple.
+
+Prompt para el otro worktree (te lo dejo para que lo pegues; según la constitución, un cambio de configuración entra por `sdd-propose`):
+
+```
+Sube el mínimo de Node en package.json a 22.18.
+
+- En `engines.node` cambia ">=22" por ">=22.18.0" (rango, no versión exacta: no debe excluir Node 24+).
+- Actualiza `.docs/sdd/tech-stack.md`: "Node 22" → "Node ≥ 22.18".
+- No toques nada más (no hay lockfile, CI ni .nvmrc en el proyecto).
+- Verifica con `node --test` en verde antes del commit.
+- Trabaja desde `develop` en una rama `feature/<id>` / patch según te clasifique sdd-propose.
+```
+
+Si quieres, puedo ejecutar yo este cambio vía `sdd-propose` en este mismo worktree.

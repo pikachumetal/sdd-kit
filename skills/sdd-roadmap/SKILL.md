@@ -1,6 +1,6 @@
 ---
 name: sdd-roadmap
-description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos, las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta", "prepara la release N", "qué entra en la siguiente entrega". No para hacer el trabajo ya (eso es sdd-propose) ni para cerrar una release (eso es sdd-end-release).
+description: Usar cuando hay que meter algo en el roadmap de un proyecto con .docs/sdd/ sin hacerlo todavía — "organízalo para el equipo", "apunta en el roadmap", "no lo arranques", items que el PM creó en el gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos, las notas de una reunión con el cliente, "reordena", "la X va tras la Y", "el cliente ha cambiado una regla de algo ya planificado, actualiza lo que haga falta", "prepara la release N", "qué entra en la siguiente entrega", "dame el prompt de la <id>". No para hacer el trabajo ya (eso es sdd-propose) ni para cerrar una release (eso es sdd-end-release).
 ---
 
 # sdd-roadmap
@@ -11,17 +11,18 @@ El kit tiene tres verbos: **planificar** (`sdd-roadmap`) → **hacer** (`sdd-pro
 
 **Principio central: proponer no es decidir.** Traes los cambios ordenados con tu recomendación; qué entra, en qué orden y qué se descarta lo decide el usuario.
 
-**`sdd-roadmap` no arranca nada: ni rama, ni carpeta de feature, ni spec, ni código.** Termina en el roadmap, y en `proposal.md` si toca. El mensaje final dice qué fila va primero y con qué skill se arranca.
+**`sdd-roadmap` no arranca nada: ni rama, ni carpeta de feature, ni spec, ni código.** Termina en el roadmap, y en `proposal.md` si toca. El mensaje final dice qué fila va primero y da su prompt de arranque; con «dame el prompt de la <id>», da solo ese prompt.
 
 ## Qué entrada es (lo decides tú, sin preguntarlo)
 
 Mira lo que trae la petición, en este orden:
 
-1. **Items del gestor** — `ids.mode: tracker` en `.docs/sdd/sdd-kit.json` e ids de tickets en la petición.
-2. **Una reunión** — notas o acta de una reunión con el cliente.
-3. **Preparar una release** — «prepara la release N», «qué entra en la siguiente entrega».
-4. **Reordenar o cambiar** — solo habla de filas que ya existen: «reordena», «la X va tras la Y», «quita la Z», o cambia la definición de una propuesta existente.
-5. Lo demás, por tamaño: **Algo concreto** si cabe en una feature; **Algo grande** si prevé más de una (el mismo umbral que usa `sdd-propose` para proponer partir: más de 5 tasks internas, o 4 o 5 que tocan capacidades o superficies distintas —BD, UI, API— o alguna con migración; con 3 o menos, nunca).
+1. **Dar el prompt de una fila** — «dame el prompt de la <id>»: lee la fila, su propuesta con sus enmiendas y `.docs/sdd/sdd-kit.json`, mira con el paso 1 si su rama está abierta, y da el prompt de arranque calcado de [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nada más: no escribes, no reservas, no publicas ni commiteas. Si la fila está cerrada (✅, 🧪) o en marcha (🔄 o rama `feature/<id>-*` abierta), dilo en vez de dar el prompt (`tests/sdd-explore-0161-red.md`, m1).
+2. **Items del gestor** — `ids.mode: tracker` en `.docs/sdd/sdd-kit.json` e ids de tickets en la petición.
+3. **Una reunión** — notas o acta de una reunión con el cliente.
+4. **Preparar una release** — «prepara la release N», «qué entra en la siguiente entrega».
+5. **Reordenar o cambiar** — solo habla de filas que ya existen: «reordena», «la X va tras la Y», «quita la Z», o cambia la definición de una propuesta existente.
+6. Lo demás, por tamaño: **Algo concreto** si cabe en una feature; **Algo grande** si prevé más de una (el mismo umbral que usa `sdd-propose` para proponer partir: más de 5 tasks internas, o 4 o 5 que tocan capacidades o superficies distintas —BD, UI, API— o alguna con migración; con 3 o menos, nunca).
 
 Frente a `sdd-propose` decide el verbo: hacerlo ya («añade», «hazme», «arréglalo») es `sdd-propose`; dejarlo apuntado («apunta», «organízalo», «planifica», «no lo arranques») es esta skill.
 
@@ -33,7 +34,7 @@ Frente a `sdd-propose` decide el verbo: hacerlo ya («añade», «hazme», «arr
 4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<raíz>" --reserve --count N`. Sin `--reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
 5. **Comprueba la forma** — tras escribir en el roadmap y antes de commitear, ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`. Un fallo en una línea que escribiste lo corriges en el roadmap, nunca en el validador. Un fallo en una línea que no tocaste no lo arreglas: lo listas en tu mensaje como forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0. En el RED, 2 de 2 sujetos no lo ejecutaron y dejaron el roadmap en rojo (P3).
 6. **Publica la reserva** — ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap publish --project-root "<raíz>" --message "<mensaje>" .docs/sdd/roadmap.md` (más el `proposal.md` si lo hay): commitea en la rama de integración solo esos ficheros, con el cerrojo de `sdd merge`, en el worktree donde está sacada o en uno temporal si no está en ninguno. La rama sale de `merge.into` de `sdd-kit.json`, o de `--into`. Hasta ese commit la reserva no existe para los demás worktrees.
-7. **Cierra** — di qué fila va primero y que se arranca con `sdd-propose`. No la arranques.
+7. **Cierra** — di qué fila va primero y da su prompt de arranque, calcado de [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md), también con «apunta, no lo arranques»: el prompt no arranca nada. Termina con «si prefieres hacerlo en esta sesión, di "arráncalo"»; con «arráncalo», invoca `sdd-propose` con esa fila. Sin esa frase, no la arranques (`tests/sdd-explore-0161-red.md`, m2).
 
 ## Lo que deja cada entrada
 
@@ -49,7 +50,7 @@ Entrevista con la técnica de `superpowers:brainstorming` —sus preguntas, con 
 
 ### Algo concreto
 
-Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog» si no, o en la sección de la plantilla que diga el usuario. Una épica de una sola feature es una feature.
+Una fila, sin propuesta: en «Próximo» con id si se va a hacer, en «Backlog» si no, o en la sección de la plantilla que diga el usuario. Una épica de una sola feature es una feature. Un patch pendiente es una fila de «Próximo» con «Patch:» al inicio del ítem; la sección «Patches» es el registro de los cerrados.
 
 Si el usuario pide una sección que no está en `roadmap-template.md` («abre una sección "Ideas del cliente"»), no la creas: la fila va a la sección de la plantilla equivalente —lo que aún no se ha decidido hacer, al Backlog— y tu mensaje dice que la plantilla no la admite y dónde ha ido. En el RED, 2 de 2 sujetos crearon la sección con su línea de prosa porque «me lo pediste» (`tests/release-close-roadmap-red.md`, P1).
 

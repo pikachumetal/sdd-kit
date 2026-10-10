@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50 && git ls-files | head -50
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/s
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/mission.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md .docs/sdd/changelog.md .docs/sdd/specs/*/*.md src/app.js README.md; do echo "=== $f"; cat "$f"; done
+<<< === .docs/sdd/mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+=== .docs/sdd/constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integració
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.12991729999999999 $)
+Todavía no toco nada. Esto es lo que he encontrado y la única decisión que necesito de ti antes de proponer un enfoque.
+
+## Qué dicen los documentos y qué infiero
+
+**Documentado**
+- La misión es un CLI personal para reservar salas del coworking, con un solo usuario.
+- El stack es Node 22 sin dependencias, con todo en `src/app.js`.
+- En el roadmap hay una deuda técnica: «Sin validación del formato de franja horaria», con impacto bajo y un patch «cuando moleste».
+- El patch 0007 fue un bug de comparar solo por hora.
+
+**Visto en el código** (`src/app.js`)
+- Una franja es un texto libre, como `'10:00-12:00'`.
+- La disponibilidad se decide por **igualdad de texto**: `b.slot === slot`.
+- `reservar` no guarda nada todavía y `cancelar` solo devuelve un mensaje.
+- No hay validación de formato ni de granularidad.
+
+**Inferencia mía** (no está escrita en ningún sitio)
+- Hoy nada impide escribir `10:00-10:30`. Lo que falla es que no se detecta el solapamiento.
+- Con la comparación por igualdad, `10:30-11:00` se vería «libre» aunque esté ocupada por `10:00-12:00`.
+- Por eso, si reservas en medias horas, la comparación tiene que pasar de «mismo texto» a «intervalos que se solapan».
+- La deuda de validación del formato pasaría a ser un requisito, no algo que pueda esperar.
+
+## El enfoque en grueso, sin decidir
+
+1. **Modelo.** Convertir la franja a un intervalo (inicio y fin en minutos) y validar que cae en :00 o :30.
+2. **Disponibilidad.** `libres` y `reservar` usarían solapamiento de intervalos en vez de igualdad de texto.
+3. **Tests primero.** Casos de borde: media hora dentro de una reserva grande, medias horas contiguas, y el caso de 0007 (mismo intervalo, distinto día).
+
+Todo esto es un cambio de comportamiento, así que cuando lo quieras hacer pasaría por `sdd-propose`.
+
+## ❓ La decisión que reordena todo lo demás
+
+Lo que solo sabes tú es **qué quieres poder hacer que hoy no puedes**. Dime en tus palabras qué situación real del coworking te lleva a querer reservar medias horas.
+
+Por ejemplo: ¿reservas reuniones cortas que ahora te obligan a bloquear una hora entera? ¿O es otra cosa?

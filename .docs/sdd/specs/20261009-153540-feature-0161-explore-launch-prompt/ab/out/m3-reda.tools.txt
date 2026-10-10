@@ -1,0 +1,86 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -60; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md sdd-kit.json changelog.md; do echo "=== $f"; cat $f; done; ls -R specs | head; ls -a; cat ../../package.json; find ../../src ../../test -type f | head -40
+<<< === constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso
+
+>>> Bash: cd "<run>/repo" && wc -l src/app.js test/app.test.js && cat src/app.js && cat README.md && git branch -a
+<<<   16 src/app.js
+  15 test/app.test.js
+  31 total
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (7 turnos, 0.1752451 $)
+Ahora: clasifico el cambio y te planteo cómo partirlo. Queda: tu respuesta; después anuncio, brainstorming y spec con las decisiones marcadas para validar, ~10 min.
+
+**Carril:** feature, modo full · **Perfil:** `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`, así que no se ignora ninguna clave.
+
+**Qué he visto:** el contexto SDD está en `.docs/sdd/` y no hay capabilities todavía. El código es un único `src/app.js` de 16 líneas, sin usuarios, sin sesión y con reservas en memoria que no guardan autor. Ninguna de las dos cosas es un patch ni una config: cambia lo que el usuario ve y puede hacer.
+
+**Antes de seguir, una pregunta (la de partir):** prevo 5 tasks en el plan: usuarios y login, rol de responsable de sala, autor en cada reserva, migración al usuario genérico y control por rol. Con una migración de por medio, el criterio del kit manda proponer el reparto.
+
+Mi recomendación es **partirlo en dos features**, cada una con su fila en el roadmap:
+
+1. **Usuarios, login y rol de responsable de sala.** Identidad y permisos, sin tocar las reservas.
+2. **Autoría de reservas y migración.** Cada reserva guarda quién la hizo y las actuales pasan a un usuario genérico. Depende de la 1.
+
+La razón es que la migración es la parte irreversible y conviene validarla aparte, con la identidad ya estable.
+
+Opciones:
+- **Partir en dos (recomendada).** Arranco por la 1 y apunto la 2 en el roadmap.
+- **Mantenerlo entero** como una sola feature.
+
+Los detalles (formato de usuarios, cómo se hace el login por CLI, qué puede hacer el responsable de sala, nombre del usuario genérico) los decido yo y te los dejo marcados en «✋ Decisiones que he tomado yo» para que los valides.
+
+Si te vas a ausentar, di: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+
+Respóndeme «partir» o «entero» y sigo.

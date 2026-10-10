@@ -20,18 +20,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como patch y, con la confirmación, sigue con `sdd-start-patch`
 - AND `patch.md` lleva `solution: causa raíz`, la causa con su evidencia en §2, la entrada del changelog en `Fixed` y el commit del fix con el tipo `fix`
 
-### Una pregunta entra por consult
-
-- GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
-- WHEN el usuario pregunta cómo funciona algo, o si algo es posible
-- THEN la primera skill que se invoca es `sdd-kit:sdd-consult`
-
 ### El router solo existe donde hay SDD
 
 - GIVEN una sesión que arranca con el plugin instalado
 - WHEN el directorio de trabajo no contiene `.docs/sdd/`
 - THEN el hook no inyecta ningún contexto
-- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-consult`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init-greenfield` y `sdd-init-brownfield`
+- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-explore`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init-greenfield` y `sdd-init-brownfield`
 
 ### Una preferencia de cómo trabajar entra por `sdd-config`
 
@@ -160,7 +154,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/` y el kit instalado
 - WHEN el dev-lead escribe «Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-rubber-duck`
-- AND «Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo.» sigue entrando por `sdd-kit:sdd-consult`
+- AND «Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo.» y «¿Cómo funciona la exportación?» entran por `sdd-kit:sdd-explore`
 
 ### Un cambio sin comportamiento entra por el carril config
 
@@ -202,7 +196,37 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN el molde `reservas`
 - WHEN el usuario escribe «¿aguanta `libres` con 1.000 reservas? quiero la tabla de medidas»
 - THEN `sdd-propose` lo clasifica como spike y lo anuncia como un full, sin pregunta de confirmación, y sigue como feature full hasta que la 0163 le dé su forma
-- AND «¿se puede filtrar `libres` por planta?», sin pedir evidencia, entra por `sdd-consult`
+- AND «¿se puede filtrar `libres` por planta?», sin pedir evidencia, entra por `sdd-explore`
+
+### Una pregunta entra por explore
+
+- GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
+- WHEN el usuario pregunta cómo funciona algo, o si algo es posible
+- THEN la primera skill que se invoca es `sdd-kit:sdd-explore`
+
+### El trabajo que sale de explore pasa por el roadmap
+
+- GIVEN el molde `salas`, sin fila en el roadmap para filtrar por planta, en `ids.mode: sequence`
+- WHEN el usuario escribe «¿Se podría filtrar `libres` por planta? Si se puede, lo quiero.»
+- THEN `sdd-explore` responde si se puede y dónde tocaría, y después invoca `sdd-roadmap` con lo hablado: qué, por qué, las decisiones tomadas con su literal y el carril que ve
+- AND explore no crea rama, carpeta ni fila, no reserva id ni invoca `sdd-propose`
+- AND en la misma conversación, con «y si cancelo una reserva que no existe me dice "cancelada" igual: ¿por qué pasa? Si es un fallo, lo quiero arreglado», tras ver la causa también invoca `sdd-roadmap`, con carril patch
+
+### Un config que sale de explore da su prompt directo
+
+- GIVEN el molde `salas`, con `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
+- WHEN el usuario escribe «Estoy pensando en subir `node` a 22.18 en los `engines` de `package.json`. ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree.»
+- THEN `sdd-explore` responde y termina con el prompt de arranque en la forma de `launch-prompt-template.md`: el título «Subir el mínimo de Node a 22.18», sin id; `Base: develop`; la rama `feature/<slug>` sola en su bloque; `Carril: config`; y en otro bloque el prompt, que arranca con `sdd-propose` y su carril, con «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
+- AND no escribe fila en el roadmap ni reserva id
+- AND «¿Podemos subir `node` a 22.18? Si se puede, lo quiero.», sin pedir el prompt, es una petición de cambio: entra por `sdd-propose` como config (0160)
+- AND termina con «si prefieres hacerlo en esta sesión, di "arráncalo"», y con «arráncalo» invoca `sdd-propose`
+
+### Un config en una rama de feature se fusiona al terminar
+
+- GIVEN el molde `reservas` en `delegate`, con `merge.into: develop` y `merge.push: false`, en la rama `feature/bump-node-22-18` que abrió un prompt de arranque
+- WHEN el usuario escribe «Arranca este cambio con sdd-propose, carril config: sube el mínimo de node a 22.18 en los engines de package.json.»
+- THEN tras el commit con su línea `Gate:`, `sdd-propose` fusiona la rama en `develop` con `sdd merge`, según las filas «Merge a develop» y «Push» de la tabla de gates (en `delegate`, con `--push` si `merge.push` es `true`)
+- AND en una rama con más commits que el del config (una feature a medias), o en la de integración, no fusiona y lo dice
 
 ## Reglas de la capacidad
 

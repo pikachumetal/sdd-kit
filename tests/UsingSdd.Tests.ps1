@@ -16,7 +16,7 @@ Describe 'skills/using-sdd' {
   }
 
   It 'nombra la puerta <_>' -ForEach @(
-    'sdd-kit:sdd-init-greenfield', 'sdd-kit:sdd-init-brownfield', 'sdd-kit:sdd-consult', 'sdd-kit:sdd-roadmap',
+    'sdd-kit:sdd-init-greenfield', 'sdd-kit:sdd-init-brownfield', 'sdd-kit:sdd-explore', 'sdd-kit:sdd-roadmap',
     'sdd-kit:sdd-propose', 'sdd-kit:sdd-end-release', 'sdd-kit:sdd-config'
   ) {
     $script:Skill | Should -Match ([regex]::Escape($_))

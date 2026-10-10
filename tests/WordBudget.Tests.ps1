@@ -11,7 +11,7 @@ BeforeAll {
     Skills  = @{
       'add-to-changelog'    = @{ SkillMd = 500; Total = 500 }
       'sdd-config'          = @{ SkillMd = 1400; Total = 1400 }
-      'sdd-consult'         = @{ SkillMd = 900; Total = 900 }
+      'sdd-explore'         = @{ SkillMd = 1100; Total = 1100 }
       'sdd-end-feature'     = @{ SkillMd = 3000; Total = 4500 }
       'sdd-end-patch'       = @{ SkillMd = 2460; Total = 2460 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
@@ -19,9 +19,9 @@ BeforeAll {
       'sdd-grilling'        = @{ SkillMd = 650; Total = 650 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
-      'sdd-roadmap'         = @{ SkillMd = 2600; Total = 2600 }
+      'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
       'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
-      'sdd-propose'         = @{ SkillMd = 4900; Total = 4900 }
+      'sdd-propose'         = @{ SkillMd = 5000; Total = 5000 }
       'sdd-start-feature'   = @{ SkillMd = 5400; Total = 17400 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }

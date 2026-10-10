@@ -161,27 +161,28 @@
 | 2026-10-09 | 0162 | docs | 2 | 1.3 | 0.65 | 17098k | 354k | no aplica | 8 | 20261009-082930-feature-0162-validation-panel-spike |
 | 2026-10-09 | 0160 | docs | 7.5 | 2.5 | 0.33 | 134514k | 7243k | 31 | 43.68 | 20261009-110857-feature-0160-single-entry-propose |
 | 2026-10-09 | 0164 | patch | — | 0.5 | — | — | — | — | — | 20261009-115120-patch-0164-cli-merge-help-guard |
+| 2026-10-10 | 0161 | docs | 7 | 2.7 | 0.39 | 94404k | 4858k | 16.3 | 32.99 | 20261009-153540-feature-0161-explore-launch-prompt |
 
-**Factor de calibración** (ratio mediano real/estimado, 123 artefactos): **0.6** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 124 artefactos): **0.6** · media 0.72
 
 - p25–p75: 0.4–0.94
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 29 % · sobreestimadas: 62 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.07 · mediana 0.8
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.52
+- Error absoluto (h): media 1.09 · mediana 0.8
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.43
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 44 | 36 % |
+| <0.5 | 45 | 36 % |
 | 0.5–0.8 | 35 | 28 % |
 | 0.8–1.25 | 33 | 27 % |
-| 1.25–2 | 8 | 7 % |
+| 1.25–2 | 8 | 6 % |
 | ≥2 | 3 | 2 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 72 | 0.53 | 0.37–0.76 |
+| docs | 73 | 0.52 | 0.38–0.75 |
 | infra/tooling | 22 | 0.42 | 0.36–0.57 |
 | patch | 28 | 1.2 | 0.8–1.4 |
 
@@ -201,6 +202,6 @@
 | 2.3.1 | 6 | 2.8 | — | — | — |
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
-| sin publicar | 10 | 22.65 | 0.46 | 78.55 | 188.06 |
+| sin publicar | 11 | 25.35 | 0.43 | 94.85 | 221.05 |
 
 > Ver `estimation.md`.

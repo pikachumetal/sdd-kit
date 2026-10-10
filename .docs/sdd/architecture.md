@@ -20,7 +20,7 @@
 │   ├── sdd-end-patch/SKILL.md
 │   ├── sdd-roadmap/SKILL.md
 │   ├── sdd-end-release/SKILL.md
-│   ├── sdd-consult/SKILL.md
+│   ├── sdd-explore/SKILL.md
 │   ├── sdd-config/SKILL.md
 │   ├── sdd-feedback/SKILL.md
 │   ├── add-to-changelog/SKILL.md
@@ -69,7 +69,7 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 | Documento | Tipo | Lo escribe | Lo lee | Cota |
 | --- | --- | --- | --- | --- |
 | `roadmap.md` | estado | `sdd-roadmap` y los cierres de feature, patch y release | los arranques, `sdd-roadmap` y los cierres | `sdd roadmap check`: solo las secciones de la plantilla, solo tablas, y las filas saldadas salen en el corte |
-| `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-consult`, por el índice | la forma, con `sdd capability check`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
+| `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-explore`, por el índice | la forma, con `sdd capability check`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
 | `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
 | `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
 | `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`; no cabe en una lectura): un aprendizaje nuevo sustituye o condensa otro |

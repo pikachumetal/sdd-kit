@@ -158,7 +158,7 @@ Describe 'Manifests del plugin' {
 }
 
 Describe 'Frontmatter de las skills de arranque' {
-  It '<_> lleva argument-hint' -ForEach @('sdd-propose', 'sdd-start-feature', 'sdd-start-patch', 'sdd-consult') {
+  It '<_> lleva argument-hint' -ForEach @('sdd-propose', 'sdd-start-feature', 'sdd-start-patch', 'sdd-explore') {
     $fields = Get-Frontmatter (Get-Content (Get-SkillFile $_) -Raw)
     $fields['argument-hint'] | Should -Not -BeNullOrEmpty
   }

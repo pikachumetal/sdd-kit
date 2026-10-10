@@ -1,6 +1,6 @@
 # Batería de regresión — `sdd-grilling`
 
-Cómo pregunta el kit cuando una skill necesita decisiones del usuario. Cada escenario lanza una petición que lleva a una de las seis skills que entrevistan (`sdd-consult`, `sdd-init-greenfield`, `sdd-init-brownfield`, `sdd-start-feature`, `sdd-roadmap`, `sdd-config`) y mide la forma de sus preguntas. El **paso** es la skill que llama: una edición de su regla de preguntas lanza su tramo.
+Cómo pregunta el kit cuando una skill necesita decisiones del usuario. Cada escenario lanza una petición que lleva a una de las seis skills que entrevistan (`sdd-explore`, `sdd-init-greenfield`, `sdd-init-brownfield`, `sdd-start-feature`, `sdd-roadmap`, `sdd-config`) y mide la forma de sus preguntas. El **paso** es la skill que llama: una edición de su regla de preguntas lanza su tramo.
 
 Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-grilling`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo: las skills leen los documentos del proyecto antes de la primera pregunta. Molde `salas` (el de `tests/batteries/using-sdd/mold-salas`), `reservas` (el de `tests/batteries/sdd-start-feature/mold-reservas`, con glosario en `PRODUCT.md`) o carpeta vacía.
 
@@ -12,7 +12,7 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 
 | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| g1 | sdd-consult | Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas? | salas | `sdd-kit:sdd-consult` | 2 | 2/2 | sonnet | 0128: una decisión por turno, recomendada con razón, sin paja |
+| g1 | sdd-explore | Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas? | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | 0128: una decisión por turno, recomendada con razón, sin paja |
 | g2 | sdd-init-greenfield | Empezamos un proyecto nuevo: una app para que las clínicas gestionen sus citas. Prepara el proyecto para trabajar con SDD. | vacio | `sdd-kit:sdd-init-greenfield` | 2 | 2/2 | sonnet | 0128: descubrimiento sin ancla |
 | g3 | sdd-start-feature | Añade una lista de espera para cuando la sala que quiero está ocupada. | salas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | 0128 y ticket de la feature 0035 de document-manager: escena concreta |
 | g4 | sdd-roadmap | Apunta en el roadmap, sin arrancarlo: reservas semanales, que todavía no existen, y un aviso por correo al responsable de cada sala. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | 0128: rebatir una vez (`src/app.js` ya acepta `--cada-semana`) |
@@ -20,9 +20,9 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 | g6 | sdd-start-feature | Añade una lista de espera para cuando la sala que quiero está ocupada. | salas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | 0128 y ticket de la feature 0115 §10: el rechazo sigue en texto |
 | g7 | sdd-config | Revisa la configuración del kit y ponla al día. | salas | `sdd-kit:sdd-config` | 2 | 2/2 | sonnet | 0128: cuándo para y las dos listas |
 | g8 | sdd-init-brownfield | Quiero empezar a trabajar con SDD en este proyecto. | salas-sin-docs | `sdd-kit:sdd-init-brownfield` | 1 | 1/1 | sonnet | 0128: descubrimiento con un hecho y su fuente |
-| g9 | sdd-consult | Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8? | salas | `sdd-kit:sdd-consult` | 2 | 2/2 | sonnet | 0128: buscar fuera del repo antes de preguntar |
-| k1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | 0128, control: una pregunta puntual no abre entrevista |
-| u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta |
+| g9 | sdd-explore | Pensemos cómo medir la cobertura de los tests: ¿nos vale lo que trae Node o metemos c8? | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | 0128: buscar fuera del repo antes de preguntar |
+| k1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control: una pregunta puntual no abre entrevista |
+| u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta; desde la 0161, pensar entra por `sdd-explore` (antes `sdd-start-feature`, que dejó de ser puerta en la 0160) |
 | t1 | language | Invoca la skill sdd-kit:sdd-grilling: diseñamos la feature de liberar salas. Yo te digo: cuando el admin da de baja una reserva, se libera la sala y se avisa al siguiente de la lista. | reservas | `sdd-kit:sdd-grilling` | 2 | 2/2 | sonnet | propuesta 0131, §propose: contraste de lenguaje con el glosario y el código (feature 0146) |
 
 ## Rúbrica

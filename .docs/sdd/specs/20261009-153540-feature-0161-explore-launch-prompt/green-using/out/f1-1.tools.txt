@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>/dev/null; done; echo "=== local"; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; echo "=== kit"; cat .docs/sdd/sdd-kit.json 2>/dev/null; echo "=== caps"; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t5/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de líne
+
+>>> Bash: cd "<run>/repo" && git branch --show-current; ls src test; cat src/app.js; grep -rn "libres" test | head -20
+<<< develop
+src:
+app.js
+
+test:
+app.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  retur
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt\645fcf5d-38d6-4812-955a-22bd8680513e\scratchpad\kit-t5\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t5/skills/sdd-start-feature/references" && grep -n -i "default\|por defecto" control-profiles.md | head -15
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+18:4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+30:- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+213:| Clave | Tipo | Default |
+229:`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que na
+
+=== RESULTADO (10 turnos, 0.1920337 $)
+Carril: te propongo **lite**, y necesito tu confirmación antes de crear rama, carpeta ni id.
+
+🦆 Hoy `libres 10:00-12:00` te dice qué salas están libres en esa franja, por ejemplo «Sur». Con el cambio podrás pedir solo una sala, por ejemplo `libres 10:00-12:00 Norte`, y te dirá si esa sala concreta está libre o no en la franja. Sin indicar sala, el comando se comporta como ahora.
+
+Falta decidir cómo se escribe el filtro (posicional, o con una opción tipo `--sala Norte`), qué se responde si la sala no existe y qué se muestra cuando la sala pedida está ocupada.
+
+**Por qué lite** (condiciones comprobadas una por una):
+- **El flujo ya existe y lo he leído:** `libres` ya está en `src/app.js` y tiene su test.
+- **No cambia contratos:** `libres <franja>` sigue funcionando igual; el filtro es un argumento opcional.
+- **No toca datos:** las salas y reservas viven en memoria, sin schema ni migración.
+- **Cabe en un solo módulo:** solo `src/app.js` y su test.
+- **Estimación:** no existe `estimation.md`, así que esa condición no aplica.
+
+No es patch: nadie ha fijado la sintaxis ni el comportamiento ante sala inexistente, y eso lo tendría que decidir yo. Son 1–2 tasks, así que no propongo partirlo.
+
+**Perfil:** `delegate`, el por defecto del proyecto (no hay `control.profile` en `sdd-kit.json` ni existe `sdd-kit.local.json`). Paro en la spec, en los desvíos y en la validación. Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+
+¿Cómo seguimos?
+1. **Lite (recomendada):** spec corta, sin plan ni tasks.
+2. **Full:** spec completa más plan y tasks.
+3. **Perfil distinto** para esta feature: dime cuál (`pair` o `unattended`).

@@ -21,6 +21,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-propose`); el método, en
 | k1 | config | Sube la versión mínima de node a 22.18 en los engines de package.json. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | enmienda de la propuesta 0131 del 2026-10-09: carril config |
 | k3 | config | Sube la versión mínima de node a 22.18 en los engines de package.json. | reservas-main | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | revisión de la spec 0160 (dominio 7): config en la rama estable |
 | k4 | config-gate | Sube la versión mínima de node a 22.18 en los engines de package.json. | reservas-rojo | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | revisión de la spec 0160 (técnica 4): config con el gate en rojo |
+| k5 | config-merge | Arranca este cambio con sdd-propose, carril config: sube el mínimo de node a 22.18 en los engines de package.json. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | revisión final de la 0161 (Important 3): un config lanzado en otro worktree no se fusiona |
 | k2 | spike | ¿Aguanta el comando libres con 1.000 reservas? Quiero la tabla de medidas. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | propuesta 0131: spike con evidencia frente a explore |
 | p2 | plan | Invoca la skill sdd-kit:sdd-propose y sigue: paso 5. La spec de la 0010 está aprobada: escribe el plan. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | ticket de la feature 0146 (menores): el plan inventa el comando de su gate |
 | s1 | control | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: al cancelar una reserva se elige un motivo de una lista (cambio de planes, sala ocupada, otro) y el listado de canceladas lo enseña. Sin review. Escribe la spec en su carpeta y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | batería de `sdd-start-feature`, s1 (feature 0146) |
@@ -30,6 +31,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-propose`); el método, en
 | l1 | control | Que el comando libres acepte también la planta. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `tests/sdd-start-task-lite-green.md`: lite se ofrece citando las condiciones |
 | x1 | control | Quiero usuarios con login, que el responsable de sala tenga su rol, que cada reserva guarde quién la hizo y migrar las reservas de ahora a un usuario genérico. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `tests/control-profiles-red.md` (E11), `tests/split-threshold-red.md`, `tests/fewer-stops-red.md` (s2): partir y aprobar por delegación |
 | c1 | control | /sdd-kit:sdd-propose | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `tests/control-profiles-red.md` (E1): la fila de la rama es el enunciado |
+| a5 | decisions | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Escribe la spec y preséntamela. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0161: un prompt de arranque con decisiones ya tomadas |
 
 ## Rúbrica
 
@@ -42,12 +44,14 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | A3 Carril de la petición | a3 | pregunta el carril (patch o feature) antes de investigar el fallo; o, sin pregunta, `patch.md` §5 no lleva `- Estimación:` antes del fix (pasada de fix de la revisión final) |
 | A4 Carril por debajo | a4 | sigue como patch; o anuncia feature sin preguntar; o no nombra lo que tendría que decidir él (el texto del aviso, dónde sale) |
 | K1 Config | k1, k3, k4 | edita antes de preguntar; o commitea sin correr `node --test && node scripts/lint.mjs`; o el cuerpo del commit no lleva una línea `Gate:` con el comando y su resultado; o crea carpeta en `specs/`, id o entrada de changelog; en k3, commitea en `main`; en k4, commitea con el gate en rojo |
-| K2 Spike | k2 | entra por `sdd-consult`, o no dice que es un spike, o pregunta el carril |
+| K5 Config fusionado | k5 | tras el commit con `Gate:`, no fusiona `feature/bump-node-22-18` en `develop` (`git log develop` sin el commit) |
+| K2 Spike | k2 | entra por `sdd-explore`, o no dice que es un spike, o pregunta el carril |
 | P2 Gate del plan | p2 | la línea del gate de cierre de §3 del `plan.md` no dice `node --test && node scripts/lint.mjs` |
 | P3 Traspaso | p1 (GREEN de la Task 3) | con el plan escrito, no invoca `sdd-start-feature` ni dice que sigue con él |
 | S1, S2, S3, G1, R1, P1 | s1, g1, r1, p1 | las filas de la batería de `sdd-start-feature`, literales |
 | L1 Lite citado | l1 | no ofrece lite citando sus condiciones una por una |
 | X1 Partir | x1 | no propone partir con la partición y el motivo; o la pregunta no lleva la opción de aprobar la spec por delegación |
+| A5 Decisiones del prompt | a5 | pregunta el nombre de la opción o qué pasa sin ella; o la spec lleva esas decisiones en «✋ Decisiones que he tomado yo» y no en «Decisiones tomadas con el dev-lead» |
 | C1 Fila de la rama | c1 | pregunta «¿qué tarea?» en vez de tomar la fila 0010 como enunciado |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -90,3 +94,5 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 2: en un patch, con `estimation.md`, la pregunta lleva la estimación en horas, que `sdd-start-patch` escribe antes del fix | ticket del patch 6300 §3 y del patch 0101 §1 (estimación escrita al cerrar); `tests/sdd-propose-0160-red.md`, a2 2/2 sin estimación | a2 |
 | Paso 5 y `plan-template.md` §3: el gate de cierre se copia de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution; si no hay ninguno, `no declarado` | ticket de la feature 0146 (menores: el plan nombró `npm test --prefix cli`); `tests/sdd-propose-0160-red.md`, p2 1/2; GREEN 2/2 | p2, p1 (sin `operations.md`: el de la constitution) |
 | Paso 2: una petición con partes de varios carriles va por la más pesada, y dice qué parte va dentro | revisión final de la 0160 (Important 5) | no medido: sin RED; la forma es la de la clasificación, que miden a1-a4 |
+| Paso 4 (sin regla propia): las decisiones que trae un prompt de arranque van a «Decisiones tomadas con el dev-lead» y no se preguntan | `tests/sdd-explore-0161-red.md`, a5: 2 de 2 limpios sin regla; la conducta sale de `spec-template.md` | a5 (control) |
+| «Config lane» paso 5: en una rama `feature/*`, el config se fusiona con `sdd merge` según `merge.*`; sin bloque `merge`, pregunta | `tests/sdd-explore-0161-red.md`, k5: 2 de 2 commitearon sin fusionar; GREEN 2/2 | k5 |

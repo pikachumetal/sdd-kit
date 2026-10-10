@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd 2>/dev/null && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t5/cli/bin/sdd.js" capability index --path .docs/sdd; git ls-files | head -80; grep -rli "cancel" --exclude-dir=.git . | head -30
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; echo ----; cat .docs/sdd/specs/*patch-0007-cancel/patch.md; echo ----; grep -n -i -B1 -A1 cancel .docs/sdd/changelog.md .docs/sdd/roadmap.md test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (5 turnos, 0.11141709999999999 $)
+Lo de cancelar está montado de forma muy mínima, y lo que hay no encaja del todo con lo que dice la documentación.
+
+**Lo que hay en el código** (`src/app.js:12`)
+
+- El comando `cancelar <día> <franja>` es una sola línea en `run()`:
+  ```js
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  ```
+- Solo devuelve el texto «cancelada mar 10:00». **No toca el array `bookings`**: no busca ni borra nada.
+- No hay validación (si la reserva no existe, igual dice «cancelada»), ni usuario, ni sala.
+- El test (`test/app.test.js:13`) solo comprueba que ese texto sale bien con `mar 10:00`.
+
+**Lo que dice la documentación**
+
+- El changelog y el roadmap recogen la capacidad «Cancelar una reserva propia».
+- También recogen el patch 0007: «La cancelación ya no borra reservas de otro día con la misma hora». Su causa raíz fue «comparación solo por hora».
+- El `patch.md` (`specs/20260918-090000-patch-0007-cancel/`) es muy escueto: causa raíz, fix, test de regresión y 0,5 h de esfuerzo.
+
+**Dónde no cuadra (esto es inferencia mía, no lo dice ningún doc)**
+
+- El código actual no compara ni por hora ni por día, porque no borra nada. El «fix» del patch 0007 no se refleja en una lógica real de cancelación.
+- Lo más probable es que `cancelar` sea un stub del molde (el último commit es «base del molde salas») y que el patch describa un comportamiento que en este repo todavía no existe.
+- Tampoco existe «propia»: no hay concepto de usuario, así que la reserva «propia» del changelog no se puede garantizar.
+- `capability index` devuelve «Sin capacidades», así que no hay una capacidad documentada que describa el flujo de cancelación.
+
+No he tocado nada. Si quieres dejarlo bien, hay dos caminos:
+
+- **Cancelar de verdad:** implementar el borrado en `bookings` por sala, día y franja. Sería trabajo y entraría por el roadmap.
+- **Alinear la documentación:** corregir changelog y roadmap para que no prometan lo que el código no hace. Te lo propongo y lo escribo solo si me dices que sí.
+
+¿Quieres que lo apunte en el roadmap como patch, o prefieres que de momento lo dejemos como aclaración?

@@ -1,0 +1,79 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -60; for f in constitution mission tech-stack roadmap architecture sdd-kit.json sdd-kit.local.json; do echo "=== $f"; cat .docs/sdd/$f* 2>/dev/null | head -80; done; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t6/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls test; cat package.json; cat ../../../../kit-t6/skills/sdd-start-feature/references/modo-lite.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t6/skills/sdd-start-feature/references" && grep -n -i "default\|por defecto" control-profiles.md | head -15; cat ../../../../runs/green-desc/f3-1/repo/test/app.test.js | head -30
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+18:4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+30:- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+213:| Clave | Tipo | Default |
+229:`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que na
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+=== RESULTADO (8 turnos, 0.2072692 $)
+**Lo que he entendido** (corrígeme si algo no es así):
+
+- **Qué quieres:** que `reservar` acepte una nota de texto libre (por ejemplo «proyector para 6 personas») y que quede asociada a esa reserva.
+- **Para quién:** solo tú, en la CLI de `salas`. No hay más usuarios.
+- **Lo que he visto en el código:**
+  - `reservar` hoy no crea ninguna reserva. Solo devuelve el texto fijo `reserva semanal creada` si lleva `--cada-semana`.
+  - `bookings` es un array en memoria con una reserva de ejemplo. Cada ejecución arranca de cero, así que no se guarda nada entre ejecuciones.
+  - No hay ningún sitio donde ver una nota después de reservar.
+- **Lo que supongo yo, sin que lo hayas dicho:** que la nota es opcional, de una línea, y que se pasa con un flag `--nota "texto"`.
+
+**Una pregunta, que decide el alcance:** ¿cómo debe ser observable la nota?
+
+- **A (recomendada):** `reservar <sala> --nota "texto"` responde con la nota incluida en la confirmación (`reserva semanal creada · nota: texto`). Solo toca el formato de la respuesta de `reservar`. Es lo único comprobable hoy, porque no hay persistencia.
+- **B:** además, `reservar` guarda la reserva en `bookings` con su nota. Dentro de una misma ejecución, `libres` la vería ocupada. Sin persistencia a disco, la nota se pierde al terminar el proceso, así que no te aporta más que A, y me obliga a definir qué es reservar.
+- **C:** persistir las reservas con sus notas en un fichero. Es lo que haría útil la nota de verdad, pero es otra feature mayor (formato, ubicación, migración). La apuntaría en el roadmap como feature aparte.
+
+Dime A, B o C (o corrígeme el flag o la longitud de la nota) y escribo la spec.

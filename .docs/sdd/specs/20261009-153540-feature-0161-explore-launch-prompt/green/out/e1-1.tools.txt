@@ -1,0 +1,73 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls .docs/sdd 2>&1; ls .docs/sdd/capabilities 2>&1; git ls-files | head -80
+
+>>> Grep: cancel|anula
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+.docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserv
+<<< changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+=== RESULTADO (6 turnos, 0.09577839999999999 $)
+Las reservas se cancelan en un único punto: `src/app.js:12`, dentro de `run()`.
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+Lo que dice el código:
+- El comando `cancelar` recibe día y hora (`params[0]`, `params[1]`), por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada <día> <hora>`. **No toca el array `bookings`**, así que en la práctica no elimina nada.
+- El test que lo cubre es `test/app.test.js:13` («cancelar respeta el día»), y solo comprueba ese texto.
+
+Lo que dicen los documentos:
+- El roadmap (línea 25) y el changelog (línea 14) registran el patch 0007: «La cancelación borraba reservas de otro día con la misma hora». Está en `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`.
+- El changelog (línea 20) lista «Cancelar una reserva propia» como capacidad entregada.
+
+Lo que infiero: el patch 0007 describe un borrado real que filtraba por día y hora. El `src/app.js` actual solo imprime el mensaje. Es posible que la lógica de borrado no esté en esta versión del código, o que la cancelación nunca haya sido más que una simulación. No he leído `patch.md` para confirmarlo.
+
+¿Quieres que lo revise?

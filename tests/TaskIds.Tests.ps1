@@ -69,8 +69,8 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
       Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match '--reserve --count'
     }
 
-    It 'sdd-consult puede proponer un id pero no reservarlo' {
-      Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'sdd id next|sequence'
+    It 'sdd-explore puede proponer un id pero no reservarlo' {
+      Get-KitFile 'skills/sdd-explore/SKILL.md' | Should -Match 'sdd id next|sequence'
     }
   }
 
