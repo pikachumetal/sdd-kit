@@ -26,7 +26,7 @@ created: <YYYY-MM-DD>
 - Esfuerzo real: <Zh> — reloj del hilo (aproximado si no hay medición exacta — nunca en blanco). Los minutos de los subagentes NO se suman aquí: van en su línea. Sin reloj exacto, aproxima con las marcas de los commits y dilo; «no tengo reloj del hilo, sumo los despachos» convierte el ratio en el de los subagentes.
 - Desviación: <±h> (<±%>)
 - Causa de la desviación (obligatoria si |desviación| > 30%): <…>
-- Compactación: <`no` · `sí, en la Task <N> → <Native | SDD> desde la Task <M>`, sacado de la línea `Ruling: compactación` del ledger>
+- Compactación: <`no` · `sí, en la Task <N> → <Native | SDD> desde la Task <M>` · `sí, en la Task <N> → Native` si no quedaba ninguna después, sacado de la línea `Ruling: compactación` del ledger>
 - Modelo del hilo: <modelo y effort; si cambiaron durante la feature, los de cada fase en esta misma línea: «Opus 5.5, effort medium (spec y plan) → Sonnet 5, effort medium (ejecución)»; «effort no registrado» en la fase cuyo effort no sabes, nunca uno supuesto>
 - Tokens del hilo: <N> — <modelo> <N>; … | no medido (<motivo>) *(esta línea, la de subagentes y la del coste se pegan tal cual de `sdd session tokens --path <worktree> --branch <rama de la feature>`, que lee los transcripts de Claude Code. Fuera de Claude Code no hay transcripts: «no medido (sin transcripts de Claude Code)»)*
 - Tokens de subagentes: <total> en <n> despachos — <descripción> <modelo> <tokens> / <min> min; … | no aplica *(la línea abre con el total sumado: el log lee esa primera cifra, no la lista)*

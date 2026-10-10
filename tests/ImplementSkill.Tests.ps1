@@ -86,3 +86,28 @@ Describe 'Piezas de la 0007' {
     $prompt | Should -Match '`Ajustes de espera`'
   }
 }
+
+Describe 'Pasada de fix de la revisión final' {
+  It 'los implementadores nuevos de las rondas de fix llevan el prompt completo' {
+    ([regex]::Matches($script:Skill, 'implementer-prompt\.md\]\(references/implementer-prompt\.md\) filled as in step 1')).Count | Should -BeGreaterOrEqual 2
+    $script:Skill | Should -Match 'dispatch an implementer, a final reviewer, a fix wave or a re-review without the `## Restricciones de código`'
+  }
+
+  It 'el mensaje final nombra «Rulings I made» y «Deferred minors»' {
+    $script:Skill | Should -Match '«Rulings I made»'
+    $script:Skill | Should -Match '«Deferred minors»'
+  }
+
+  It 'fija los literales de la spec: queda 1 task, retomo y las formas de Compactación' {
+    $script:Skill | Should -Match ([regex]::Escape('`queda 1 task`'))
+    $script:Skill | Should -Match ([regex]::Escape('`· retomo en la Task <N>`'))
+    $walk = Get-KitFile 'skills/sdd-templates/templates/walkthrough-template.md'
+    $walk | Should -Match ([regex]::Escape('`no`'))
+    $walk | Should -Match ([regex]::Escape('`sí, en la Task <N> → <Native | SDD> desde la Task <M>`'))
+    $walk | Should -Match ([regex]::Escape('`sí, en la Task <N> → Native`'))
+  }
+
+  It 'subagent es el método SDD' {
+    $script:Skill | Should -Match '\*\*SDD\*\* \(`Ejecución: subagent`\)'
+  }
+}

@@ -10,7 +10,7 @@
 | `brainstorming`: «Size the Work» y la oferta de saltarse las preguntas | El tamaño no gobierna los artefactos: toda feature tiene `spec.md` y su gate, en los dos modos. No se ofrece saltarse las preguntas. `spike` no es una feature: es un carril de `sdd-propose` cuando deja su evidencia (una tabla de medidas), y va como feature full; un sondeo cuya salida es una respuesta en el chat sale a `sdd-explore`. |
 | `brainstorming`: «Builder check» | No se despacha: lo sustituye [review-spec.md](review-spec.md). |
 | `brainstorming`: «no list of example answers» | Las preguntas siguen `sdd-grilling`. |
-| `writing-plans`: «Frequent commits» · `sdd-implement`: el ledger por rango `BASE..HEAD` | Los commits frecuentes siguen valiendo mientras un hito está abierto; al quedar limpia su revisión se juntan en uno (`commit-milestones.md`), y el ledger apunta `BASE..<hash juntado>`. La historia final es apertura, una por task y cierre. |
+| `writing-plans`: «Frequent commits» | Los commits frecuentes siguen valiendo mientras un hito está abierto; al quedar limpia su revisión se juntan en uno (`commit-milestones.md`), y el ledger de `sdd-implement` apunta `BASE..<hash juntado>`. La historia final es apertura, una por task y cierre. |
 
 ## Cuándo NO aplicar SDD
 

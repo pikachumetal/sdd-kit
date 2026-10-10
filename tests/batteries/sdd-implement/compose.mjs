@@ -1,4 +1,4 @@
-// Compone el encargo del implementador de r1 y r5 con el texto del kit que se prueba:
+// Compone el encargo del implementador de r1, r1b y r5 con el texto del kit que se prueba:
 // el fork de sdd-implement si existe; si no, la cabecera de encargo-revision.md más el prompt de superpowers.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -7,7 +7,9 @@ const [kit, superpowers, values] = process.argv.slice(2);
 const fill = JSON.parse(readFileSync(values, 'utf8'));
 
 function fencedAfter(text, marker, fence) {
-  const start = text.indexOf(fence, text.indexOf(marker));
+  const at = text.indexOf(marker);
+  const start = at < 0 ? -1 : text.indexOf(fence, at);
+  if (start < 0) throw new Error(`sin «${marker}» seguido de «${fence}»: el encargo saldría vacío`);
   const end = text.indexOf('\n```', start + fence.length);
   return text.slice(text.indexOf('\n', start) + 1, end);
 }
