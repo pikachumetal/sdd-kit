@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && node --version && ls -a && ls .docs/sdd 2>/dev/null && cat package.json 2>/dev/null && git ls-files | head -50
+<<< v26.11.1
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"type": "module"}
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/tech-stack.md .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/roadmap.md README.md; head -30 test/app.test.js; wc -l src/app.js test/app.test.js
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la int
+
+>>> Bash: cd "<run>/repo" && node --test --experimental-test-coverage --test-coverage-include="src/**" --test-coverage-lines=80 2>&1 | tail -25; git status --short
+<<< ✔ libres excluye la sala reservada en la franja (0.8561ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1179ms)
+✔ cancelar respeta el día (0.0843ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.9483
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ---------------------------------------------
+
+=== RESULTADO (6 turnos, 0.1202223 $)
+**Recomendación: te vale lo que trae Node. No metas c8.**
+
+**Lo que dice el proyecto**
+- `tech-stack.md`: "Node 22, sin dependencias externas" y tests con `node --test`. Es una decisión documentada.
+- `mission.md`: lo usas, desarrollas y despliegas tú solo. No hay CI de equipo ni informes que compartir.
+- `package.json` es solo `{"type": "module"}`. c8 sería la primera dependencia, y habría que crear un `devDependencies`.
+
+**Lo que he probado (descartable, no he tocado nada)**
+
+```
+node --test --experimental-test-coverage --test-coverage-include="src/**" --test-coverage-lines=80
+```
+
+Funciona y da líneas, ramas y funciones, con las líneas sin cubrir:
+
+| Fichero | Líneas | Ramas | Funciones | Sin cubrir |
+| --- | --- | --- | --- | --- |
+| `src/app.js` | 93,75 % | 83,33 % | 100 % | línea 13 |
+
+Con `--test-coverage-lines=80` (y sus equivalentes para ramas y funciones) el comando falla por debajo del umbral, así que ya tienes una puerta sin dependencias.
+
+**Dónde c8 sí aportaría** (nada de esto aplica hoy)
+- Informes lcov o HTML, para subirlos a Codecov o similar.
+- Cobertura sobre procesos hijo o scripts fuera de `node --test`.
+- Fusionar varias ejecuciones.
+- Un formato estable. En Node, `--experimental-test-coverage` lleva el prefijo `experimental`, aunque el motor es el mismo V8 que usa c8.
+
+**Dos cosas a tener en cuenta**
+1. **Versión.** Esta máquina tiene Node 26 y el stack dice 22. Los flags `--test-coverage-include` y `--test-coverage-lines` existen desde Node 22.8 aproximadamente, pero conviene confirmarlo en el servidor de despliegue si vas a depender de ellos.
+2. **Cobertura no es calidad.** Con 3 tests, el 93 % solo dice que se ejecutan casi todas las líneas, no que haya aserciones útiles. La rama sin cubrir (línea 13) es lo interesante. Encaja con la deuda técnica anotada, "sin validación de la franja horaria".
+
+**Si quieres dejarlo fijado**, hay dos posibles salidas duraderas. Dime si quieres alguna y paso al carril que toca:
+- Añadir a `tech-stack.md` una línea con el criterio ("cobertura: `node --test --experimental-test-coverage`, sin c8").
+- Añadir un script `"test:cov"` en `package.json` y, si quieres, un umbral. Es un cambio de configuración, así que entra por `sdd-propose`.

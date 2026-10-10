@@ -143,7 +143,7 @@ Describe 'Retirada de sdd-start-release' {
   }
 
   It 'la consulta pasa la planificación a sdd-roadmap' {
-    Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Match 'sdd-roadmap'
+    Get-KitFile 'skills/sdd-explore/SKILL.md' | Should -Match 'sdd-roadmap'
   }
 
   It 'la migración avisa de la retirada' {

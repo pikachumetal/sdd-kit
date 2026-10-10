@@ -44,7 +44,7 @@ Entregar. `sdd-end-release` sella el changelog, escribe las notas de la versión
 > ¿por qué decidimos guardar los tokens en la tabla de sesiones?
 ```
 
-Una pregunta no es trabajo. `sdd-consult` lee la documentación de anclaje y responde, sin crear carpetas ni ramas.
+Una pregunta no es trabajo. `sdd-explore` lee la documentación de anclaje y responde, sin crear carpetas ni ramas.
 
 ## Instalación
 
@@ -104,7 +104,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-start-patch` | Carril corto para un cambio con la solución ya fijada: un fallo determinista (causa raíz obligatoria; si no lo reproduce, para sin abrir nada), un ajuste o una retirada de presentación, o una petición cerrada. |
 | `sdd-end-patch` | Cierre del patch: validación, `patch.md`, changelog, roadmap y merge a `develop` según la política del proyecto. |
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El merge a `main` y el tag los confirmas tú. |
-| `sdd-consult` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
+| `sdd-explore` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
 | `sdd-grilling` | Cómo te pregunta el kit: una decisión por turno, la recomendada con su razón, sin sugerirte lo que solo sabes tú, y buscando antes lo que puede comprobar. La invocan las demás skills; adaptada de `grilling` de Matt Pocock (MIT). |
 | `sdd-rubber-duck` | Cómo te explica el kit las cosas: en palabras del producto y con su glosario, sin rutas ni jerga. En corto, el párrafo 🦆 de una parada; en largo, a petición («explícame cómo viaja un pedido de punta a punta»), por pasos y siguiendo un ejemplo. Adaptada de `teach` y `wait-what` de Matt Pocock (MIT). |

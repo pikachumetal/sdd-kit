@@ -34,9 +34,9 @@ Describe 'Entrada única: sin la primera pregunta de antes' {
 
   It 'las referencias y las otras puertas nombran sdd-propose, no las puertas viejas' {
     Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md' | Should -Not -Match 'la primera pregunta y el plan'
-    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Not -Match 'sale por el enrutado \(paso 2\) a `sdd-consult`'
+    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Not -Match 'sale por el enrutado \(paso 2\) a `sdd-explore`'
     Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Not -Match 'sdd-start-feature o sdd-start-patch|`sdd-start-feature`, `sdd-start-patch`'
-    Get-KitFile 'skills/sdd-consult/SKILL.md' | Should -Not -Match 'implementar una feature \(sdd-start-feature\)'
+    Get-KitFile 'skills/sdd-explore/SKILL.md' | Should -Not -Match 'implementar una feature \(sdd-start-feature\)'
   }
 }
 

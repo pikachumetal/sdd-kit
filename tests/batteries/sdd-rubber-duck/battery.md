@@ -16,7 +16,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-rubber-duck`); el método
 | s2 | rubber-duck | La parada la hace sdd-propose con su propia pregunta al dev-lead: tú devuelves el párrafo que le explica por qué no se puede cerrar la feature 0012 (mira los tests). | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | tickets de la feature 6298 y de la 0038 de document-manager: un bloqueo explicado con jerga; rehecho en la 0160 (fila de deuda «El escenario s2 mezcla la parada y el pato»): la parada la hace la skill que invoca y se mide solo el pato |
 | l1 | rubber-duck | Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | propuesta 0131, B13 |
 | l2 | language | Explain to me how an export travels end to end, from when I ask for it until I have the file. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | walkthrough de la feature 0145 §4.3: «Dónde mirar» va literal en castellano (feature 0146) |
-| c1 | control | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | batería de `using-sdd`, c1: `sdd-consult` conserva sus preguntas |
+| c1 | control | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | batería de `using-sdd`, c1: la puerta de las preguntas conserva sus preguntas (`sdd-explore` desde la 0161) |
 
 ## Rúbrica
 
@@ -34,7 +34,7 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | R9 Lo pendiente sin pregunta | s2 | lo que queda por decidir, después del párrafo, va como pregunta, con opciones o con una recomendación |
 | R7 Idioma | todos | algún mensaje al usuario en un idioma distinto del de la petición |
 | C1 Entrada del modo largo | l1 (GREEN) | la primera skill invocada no es `sdd-kit:sdd-rubber-duck` |
-| C2 Consult conserva sus preguntas | c1 | la primera skill invocada no es `sdd-kit:sdd-consult` |
+| C2 Explore conserva sus preguntas | c1 | la primera skill invocada no es `sdd-kit:sdd-explore` |
 
 ## Procedencia de las reglas
 

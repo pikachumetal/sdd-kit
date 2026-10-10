@@ -43,7 +43,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | A3 Carril de la petición | a3 | pregunta el carril (patch o feature) antes de investigar el fallo; o, sin pregunta, `patch.md` §5 no lleva `- Estimación:` antes del fix (pasada de fix de la revisión final) |
 | A4 Carril por debajo | a4 | sigue como patch; o anuncia feature sin preguntar; o no nombra lo que tendría que decidir él (el texto del aviso, dónde sale) |
 | K1 Config | k1, k3, k4 | edita antes de preguntar; o commitea sin correr `node --test && node scripts/lint.mjs`; o el cuerpo del commit no lleva una línea `Gate:` con el comando y su resultado; o crea carpeta en `specs/`, id o entrada de changelog; en k3, commitea en `main`; en k4, commitea con el gate en rojo |
-| K2 Spike | k2 | entra por `sdd-consult`, o no dice que es un spike, o pregunta el carril |
+| K2 Spike | k2 | entra por `sdd-explore`, o no dice que es un spike, o pregunta el carril |
 | P2 Gate del plan | p2 | la línea del gate de cierre de §3 del `plan.md` no dice `node --test && node scripts/lint.mjs` |
 | P3 Traspaso | p1 (GREEN de la Task 3) | con el plan escrito, no invoca `sdd-start-feature` ni dice que sigue con él |
 | S1, S2, S3, G1, R1, P1 | s1, g1, r1, p1 | las filas de la batería de `sdd-start-feature`, literales |

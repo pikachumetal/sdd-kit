@@ -51,4 +51,4 @@ What only the user knows (who uses it, what problem it solves) is asked open: no
 
 ## Ending
 
-Stop when no decision is left. Return to the caller: decided by the user, decided by me (with reason), pending. The caller's gate is the confirmation; from `sdd-consult`, confirm with one question.
+Stop when no decision is left. Return to the caller: decided by the user, decided by me (with reason), pending. The caller's gate is the confirmation; from `sdd-explore`, confirm with one question.

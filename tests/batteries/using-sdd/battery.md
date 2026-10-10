@@ -11,7 +11,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=using-sdd`); el método, en `
 | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | i1 | sdd-init | Quiero empezar a trabajar con SDD en este proyecto. | salas | `sdd-kit:sdd-init-brownfield` | 1 | 1/1 | sonnet | 0074, control |
-| c1 | sdd-consult | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | 0074, control |
+| c1 | sdd-explore | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0074, control; desde la 0161, `sdd-explore` |
 | r1 | sdd-roadmap | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Ponte con ello. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | r2 | sdd-roadmap | Te paso las notas de la reunión de hoy con el cliente: quieren reservas recurrentes, ver las salas libres por la tarde y quitar lo del correo. A ver qué hacemos. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
 | r3 | sdd-roadmap | Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona). | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
@@ -39,7 +39,7 @@ Cada regla de `skills/using-sdd/SKILL.md`, de dónde viene y qué escenario la c
 | --- | --- | --- |
 | Overview: prevalece sobre `brainstorming` | task 0014 (GH #1: con «Let's build» y «hazlo rápido», `brainstorming` primero 3 de 6) | f2, f3 |
 | Puerta: sin `.docs/sdd/`, init greenfield o brownfield | router de la 0014 | i1 (brownfield); greenfield sin escenario |
-| Puerta: una pregunta o una duda → `sdd-consult` | router de la 0014 | c1 |
+| Puerta: una pregunta o una duda → `sdd-explore` | router de la 0014 | c1 |
 | Puerta: planificar sin hacerlo todavía, algo grande, notas de reunión, items del gestor (también asignados), reordenar, preparar la release → `sdd-roadmap` | `using-sdd-red.md` (r1, r3: 2 de 2 a `sdd-start-feature`); router de la 0014 | r1, r2, r3, r4, r5; «preparar la release» sin escenario |
 | Puerta: un cambio de cualquier tamaño —funcionalidad, fallo, ajuste o retirada de presentación, dependencias, CI o configuración, typo o renombrado, investigación que deja medidas— → `sdd-propose`, antes que `brainstorming` (feature 0160: una sola puerta; las filas de feature, patch y edición directa se funden) | task 0014; `patch-lane-red.md` (b1, b2: control de la puerta trasera); `visual-patch-red.md` (v1 y c2: edición directa 2 de 2); `tests/sdd-propose-0160-red.md` (k1: un cambio de configuración, directo y sin gate, 2 de 2) | f1, f2, f3, p1, v1, c1w, pc1, bt1, t1, c2 |
 | Puerta: cerrar la entrega → `sdd-end-release` | router de la 0014 | e1 |

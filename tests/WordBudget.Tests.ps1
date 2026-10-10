@@ -11,7 +11,7 @@ BeforeAll {
     Skills  = @{
       'add-to-changelog'    = @{ SkillMd = 500; Total = 500 }
       'sdd-config'          = @{ SkillMd = 1400; Total = 1400 }
-      'sdd-consult'         = @{ SkillMd = 900; Total = 900 }
+      'sdd-explore'         = @{ SkillMd = 900; Total = 900 }
       'sdd-end-feature'     = @{ SkillMd = 3000; Total = 4500 }
       'sdd-end-patch'       = @{ SkillMd = 2460; Total = 2460 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }

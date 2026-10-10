@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -a && cat package.json 2>/dev/null; ls .docs/sdd; node --version; cat .docs/sdd/tech-stack.md .docs/sdd/constitution.md 2>/dev/null | head -120
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+{"type": "module"}
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+v26.11.1
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en ver
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/roadmap.md; ls src test; node --test --experimental-test-coverage 2>&1 | tail -25
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> ToolSearch: {"query":"select:WebFetch","max_results":1}
+<<< 
+
+>>> WebFetch: {"url":"https://nodejs.org/docs/latest-v22.x/api/test.html","prompt":"In the Node.js 22 test runner docs: (1) Is code coverage (--experimental-test-coverage) stable or experimental? (2) Which flags exist for coverage thresholds (--test-coverage-lines/branches/functions) and include/exclude, and in which version were they added? (3) Which coverage reporters are available (lcov, etc.) and how to set them (--test-reporter / --test-reporter-destination)? (4) Any caveats such as source maps or coverage of files never loaded by tests."}
+<<< **1. Stability:** Experimental. The page marks code coverage as "[Stability: 1](documentation.html#stability-index) - Experimental."
+
+**2. Thresholds and include/exclude:**
+
+The coverage options are documented under `run([options])`, which says "Added coverage options" in **v22.10.0**. The page does not document `--test-coverage-lines`, `--test-coverage-branches`, or `--test-coverage-functions` as CLI flags, so I can't confirm those names from this content. The documented run options are:
+
+- `coverage` (boolean, default `false`): enables collection.
+- `lineCoverage`, `branchCoverage`, `functio
+
+=== RESULTADO (9 turnos, 0.15422829999999998 $)
+❓ **¿Cobertura nativa de Node o `c8`?**
+
+Esto es lo que he encontrado, con su fuente:
+
+- **Lo que dice el proyecto** (`tech-stack.md`): «Node 22, sin dependencias externas» y tests con `node --test`. `c8` sería la primera dependencia del repo.
+- **Lo que ya funciona** (lo he ejecutado, sin tocar nada): `node --test --experimental-test-coverage` mide hoy `src/app.js` con 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones. La línea sin cubrir es la 13.
+- **Lo que dice la documentación de Node 22**:
+  - La cobertura sigue marcada como **experimental** (Stability 1).
+  - Tiene reporter `lcov`, globs de inclusión y exclusión, y umbrales mínimos (líneas, ramas, funciones) que hacen fallar con código 1. Esos umbrales están documentados en la API `run()` desde v22.10.0.
+  - **No he podido confirmar** que los umbrales existan como flags de línea de comandos en 22; la página solo documenta `--test-coverage-include` y `--experimental-test-coverage`.
+- **Lo que infiero**: tu Node local es la v26.11.1, no la 22 del stack. Mientras no verifiquemos en 22, lo que medimos aquí podría no reproducirse allí.
+
+1️⃣ **Nativo de Node.** No añade dependencias y cumple el stack tal cual. Para un solo fichero de entrada y 3 tests, ya da el número. A cambio, está marcado como experimental y puede cambiar entre versiones. Si queremos umbrales que rompan el build, hay que pasarlos por `run()` en un pequeño script, porque los flags de CLI en 22 no están confirmados.
+
+2️⃣ **`c8`.** Es el estándar de facto: umbrales por CLI, `.c8rc` y reportes HTML, y no depende de que la función de Node sea estable. A cambio, rompe el «sin dependencias externas» (hay que enmendar `tech-stack.md`) y añade `package.json` con `devDependencies` y `node_modules` a un repo que hoy no los tiene. Por debajo usa la misma cobertura V8, así que los números salen casi iguales.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto se define por no tener dependencias, y el medidor nativo ya produce el número sobre el único fichero que tiene. A cambio, aceptamos que la API sea experimental y que haya que verificar los umbrales en Node 22 real.
+
+**¿Vamos con 1️⃣ (nativo) o prefieres 2️⃣ (`c8`)?**
+
+Cuando lo decidas, el siguiente paso sería pasarlo por `sdd-propose` para clasificarlo y darle id (yo no he creado nada ni tocado el roadmap).

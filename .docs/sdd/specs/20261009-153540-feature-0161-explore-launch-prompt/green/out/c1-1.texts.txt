@@ -1,0 +1,32 @@
+--- [10]
+Lo de cancelar es muy pequeño y, ojo, **está a medio hacer** (o más bien simulado). Te separo lo que dice la documentación de lo que veo en el código.
+
+## En el código (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- El comando es `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**: no borra nada ni comprueba que la reserva exista, ni de quién es, ni la sala.
+- Tampoco hay persistencia. `bookings` es un array en memoria con una única reserva de ejemplo (`Norte`, `lun`, `10:00-12:00`), y se reinicia en cada ejecución.
+
+## En la documentación (`.docs/sdd/`)
+
+- **Changelog y roadmap**: dicen que existe «Cancelar una reserva propia».
+- **Patch 0007** (`specs/20260918-090000-patch-0007-cancel/patch.md`): dice que la cancelación borraba reservas de otro día con la misma hora, que la causa era comparar solo por hora, y que se arregló con test de regresión.
+- **Test** (`test/app.test.js:13`, «cancelar respeta el día»): solo comprueba que la cadena devuelta es `cancelada mar 10:00`.
+
+## Lo que no cuadra (esto es inferencia mía)
+
+- El código actual no compara nada, ni por hora ni por día, así que el fix del patch 0007 no se ve en `app.js`. O se perdió en algún commit (solo hay uno, `feat: base del molde`), o la «cancelación» es un esqueleto del molde y el patch describe un comportamiento que aquí no existe.
+- El test pasa, pero no demuestra lo que su nombre promete: solo comprueba que se devuelve el texto, no que se respete el día.
+- «Reserva propia» no tiene reflejo en el código: no hay usuarios ni propietario en `bookings`.
+- No hay carpeta `capabilities/` ni `architecture.md`, así que no hay más documentación de comportamiento que consultar.
+
+## Cómo está montado, en una frase
+
+Hoy es una orden de CLI que imprime una confirmación; la lógica real de cancelación (buscar en `bookings` por sala, día y hora, y quitarla) no está implementada.
+
+Si quieres, puedo mirar cómo debería enfocarse, o si prefieres corregirlo, eso ya sería un cambio y pasaría por `sdd-propose`, que lo clasifica y le asigna id. Dime cuál de las dos cosas.
+

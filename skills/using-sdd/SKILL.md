@@ -14,7 +14,7 @@ Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del pro
 | Lo que escribe el usuario | Puerta |
 | --- | --- |
 | Sin `.docs/sdd/`, quiere trabajar con SDD: proyecto nuevo · con código | `sdd-kit:sdd-init-greenfield` · `sdd-kit:sdd-init-brownfield` |
-| Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-consult` |
+| Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-explore` |
 | Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-propose` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente | `sdd-kit:sdd-roadmap` |
 | Un cambio, aunque sea pequeño o pidan un patch: una funcionalidad («añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido»), un fallo, un ajuste o una retirada de presentación, un cambio de dependencias, CI o configuración, un typo o un renombrado, una investigación que deja medidas | `sdd-kit:sdd-propose`, antes que `brainstorming` |
 | Cerrar la entrega de una versión, mandar las notas al cliente | `sdd-kit:sdd-end-release` |
