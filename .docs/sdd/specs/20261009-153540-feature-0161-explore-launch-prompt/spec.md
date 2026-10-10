@@ -21,8 +21,8 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `routing` — la puerta de las preguntas pasa a `sdd-explore`; una conversación de explore que acaba en una feature o un patch pasa por el roadmap, y un config da su prompt directo; `sdd-propose` no vuelve a preguntar las decisiones que trae la petición; «¿cómo funciona la exportación?» entra por explore, no por `sdd-rubber-duck`.
-- Modificadas: `planning` — cada fila que escribe `sdd-roadmap` nace del tamaño de una feature; su cierre da el prompt de arranque de la fila que va primero; «dame el prompt de la <id>» lo da sin escribir nada; un patch pendiente es una fila de «Próximo».
+- Modificadas: `routing` — la puerta de las preguntas pasa a `sdd-explore`; una conversación de explore que acaba en una feature o un patch pasa por el roadmap, y un config da su prompt directo; «¿cómo funciona la exportación?» entra por explore, no por `sdd-rubber-duck`.
+- Modificadas: `planning` — el cierre de `sdd-roadmap` da el prompt de arranque de la fila que va primero; «dame el prompt de la <id>» lo da sin escribir nada; un patch pendiente es una fila de «Próximo».
 - Modificadas: `capabilities` — explore lee la capacidad por el índice, como la consulta.
 - Modificadas: `feature-ids` — explore propone un id sin reservarlo, como la consulta.
 - Modificadas: `interviewing` — invocada desde explore, la entrevista confirma con una pregunta, como desde la consulta.
@@ -60,15 +60,15 @@ Review de spec propuesta: ninguna — señales: contrato público (el nombre de 
 
    El tipo de rama: `feature` para todo lo que sale de `develop` (también patch y config), `hotfix` para lo que sale de `main`. El perfil sale de lo que dijo el dev-lead para el cambio o, si no, de `sdd-kit.json`; «al fusionar», de `merge.*` de `sdd-kit.json` (`push: true` → `sdd merge --push`). La plantilla lleva su ejemplo relleno con tu caso de la 0144.
 7. **Cómo se redacta, mientras no exista `sdd-agent-writing` (0151)**: la plantilla lleva cuatro reglas sacadas de `writing-for-agents`, porque esa skill vive solo en `.agents/skills` de este repo y no viaja a los proyectos: en imperativo y en positivo; cada decisión con su literal; rutas y secciones de los requisitos en vez de copiarlos; nada que el agente lea solo del proyecto. La 0151 las sustituye por invocar su skill (ya lo dice la propuesta: «la invocan… el prompt de arranque»), sin tocar su fila.
-8. **`sdd-roadmap` dimensiona cada fila que escribe**, también las de un reparto: prevé sus tasks con el umbral de partir de `sdd-propose` (3 o menos, nunca; más de 5, siempre; 4 o 5, si tocan superficies distintas o llevan migración) y parte la que lo pase antes de escribirla. Su propuesta de filas dice las tasks previstas de cada una («0156 — prevé 3 tasks»).
+8. **Sale por el RED** (enmienda del 2026-10-10): `sdd-roadmap` dimensionaba cada fila que escribe. En m2 y m3, 0 de 4 sujetos escribieron una fila que pasara el umbral; queda como fila de deuda «Esperar 2.º ticket», con la 0131 como primer caso.
 9. **Un patch pendiente es una fila de «Próximo»** con «Patch:» al inicio del ítem; la sección «Patches» de la plantilla sigue siendo el registro de los cerrados. El carril de la fila llega al prompt y `sdd-propose` lo respeta si concuerda (0160).
 10. **«Dame el prompt de la <id>»** es una entrada nueva de `sdd-roadmap`, la primera de «Qué entrada es»: lee la fila, su propuesta con sus enmiendas y `sdd-kit.json`, y da el prompt. No escribe, no reserva, no publica ni commitea. Si la fila está cerrada (✅, 🧪) o en marcha (🔄 o rama `feature/<id>-*` abierta), lo dice en vez de dar el prompt.
 11. **`using-sdd`**: la fila de la pregunta nombra `sdd-kit:sdd-explore`; la de planificar suma «dame el prompt de la <id>».
-12. **`sdd-propose` respeta las decisiones que trae la petición**, si el RED lo pide (Art. I): una frase junto a «Lane in the request»: las decisiones de un prompt de arranque son del dev-lead, van a «Decisiones tomadas con el dev-lead» y no se preguntan; si la investigación contradice una, se pregunta con lo encontrado. Si el RED a5 no exhibe el fallo, la regla y su THEN salen y te vuelvo a pedir la aprobación.
+12. **Sale por el RED** (enmienda del 2026-10-10): `sdd-propose` ya deja las decisiones del prompt en «Decisiones tomadas con el dev-lead» sin preguntarlas (a5, 2 de 2 limpios).
 13. **El escenario c2 de `sdd-rubber-duck`** (fila de deuda de la 0145, parte pendiente): control de enrutado «¿cómo funciona la exportación?» en el molde `exportes`, esperado `sdd-kit:sdd-explore`; c1 cambia su esperado a `sdd-kit:sdd-explore`. Si c2 entra por `sdd-rubber-duck`, se ajusta la `description` que solape.
 14. **Baterías**: nace `tests/batteries/sdd-explore/` (humo, Art. I: renombrar es editar y se vuelve a medir su entrada) con e1, e2 y e3 sobre el molde `salas` de `using-sdd`; nace `tests/batteries/sdd-roadmap/` con m1 y m2 (humo; `sdd-roadmap` no tenía batería); `sdd-propose` gana a5; `sdd-rubber-duck` gana c2; las de `using-sdd` y `sdd-grilling` cambian `sdd-consult` por `sdd-explore`. La de `using-sdd` se lanza entera, más r6, porque cambian dos `description` de entrada (lección de la 0117).
 15. **Topes de palabras** (Art. I, decisión tuya): `sdd-explore` estrena el suyo, medido al terminar y redondeado a la centena de arriba; sale el de `sdd-consult` (900). `sdd-roadmap` (2.600) sube a la centena de arriba de lo medido (dos reglas y una entrada nuevas). `sdd-propose` (4.900), solo si lo pasa. `using-sdd` (570) y `mission.md` (1.700) no suben.
-16. **Lo que entra y lo que sale** (Art. I): entran la plantilla, la entrada «dame el prompt» y el dimensionado por fila; salen la regla 4 de `CLAUDE.md` de este repo, que pasa a una línea que apunta a la plantilla, «planificar» de la `description` de explore y el traspaso directo de explore a `sdd-propose`.
+16. **Lo que entra y lo que sale** (Art. I): entran la plantilla, la entrada «dame el prompt» y el prompt en el cierre del roadmap; salen la regla 4 de `CLAUDE.md` de este repo, que pasa a una línea que apunta a la plantilla, «planificar» de la `description` de explore y el traspaso directo de explore a `sdd-propose`.
 17. **Referencias que cambian de nombre**: `sdd-propose` (description, paso 2 y una racionalización), `sdd-grilling`, `sdd-templates` (índice de la CLI y fila nueva de la plantilla), `overrides-superpowers.md`, el README (dos líneas), la `description` de `plugin.json`, `mission.md` (glosario: «Carril consult» pasa a «Explore» y nace «Prompt de arranque»; el texto sustituye, no se añade), `architecture.md` (árbol y tabla de documentos) y los Pester `CapabilityRules`, `PlanEntry`, `SingleEntry`, `Skills`, `TaskIds`, `UsingSdd` y `WordBudget`. No se tocan `.docs/workflow/` (0152), las evidencias `tests/sdd-consult-*.md` (artefactos de evento) ni la migración: la v3.0.0 es de la 0157, y el cambio de nombre queda en la entrada del changelog para que la lea.
 18. **Un Pester de forma** (principio 4): la plantilla existe con sus partes (título, base, rama, carril, prompt, decisiones) y la nombran `sdd-explore` y `sdd-roadmap`.
 19. **Previsión de coste** (Art. I), todo con Sonnet:
@@ -80,8 +80,8 @@ Review de spec propuesta: ninguna — señales: contrato público (el nombre de 
     | explore: control de lo traducido (entender sin artefactos ni interrogatorio) | `e1` («¿Dónde se cancelan las reservas?») | — | 2 |
     | explore: control de pensar con `sdd-grilling` | `g1`, `g9`, `k1` de la batería de `sdd-grilling` | — | 5 |
     | roadmap: «dame el prompt de la 0013» en la forma de la plantilla | `m1` | 2 | 2 |
-    | roadmap: cada fila del reparto prevé sus tasks y ninguna pasa el umbral; el cierre da el prompt de la primera | `m2` (algo grande con los detalles delegados) | 2 | 2 |
-    | propose: decisiones del prompt sin volver a preguntarlas | `a5` (un prompt de arranque con dos decisiones, perfil `delegate`) | 2 | 2 |
+    | roadmap: el cierre da el prompt de la primera fila (el dimensionado sale por el RED) | `m2`, `m3` (algo grande con los detalles delegados) | 4 | 4 |
+    | propose: decisiones del prompt sin volver a preguntarlas (sale por el RED) | `a5` | 2 | — |
     | rubber-duck: c1 y c2 con el nombre nuevo | `c1`, `c2` | — | 2 |
     | `using-sdd`: batería entera + `r6` («dame el prompt de la 0013») | 21 escenarios | — | 30 |
     | Plantilla y nombres | Pester | — | — |
@@ -105,18 +105,18 @@ Review de spec propuesta: ninguna — señales: contrato público (el nombre de 
 
 ## Intent
 
-Hoy una conversación de `sdd-consult` que acaba en trabajo lo arranca en la misma sesión, sin fila en el roadmap, y quien abre un worktree en Orca redacta a mano el prompt, cada vez distinto: la sesión nueva no sabe qué está decidido y repite la entrevista. Además, `sdd-roadmap` escribe filas sin dimensionarlas, y en la 0131 tres de once se partieron al arrancar. La 3.0.0 llama explore a la consulta: el trabajo que sale de ella pasa por el roadmap, que lo deja en filas del tamaño de una feature y da el prompt de arranque con la forma fija. Pegarlo en un worktree arranca el cambio con el carril y las decisiones que ya traía.
+Hoy una conversación de `sdd-consult` que acaba en trabajo lo arranca en la misma sesión, sin fila en el roadmap, y quien abre un worktree en Orca redacta a mano el prompt, cada vez distinto: la sesión nueva no sabe qué está decidido y repite la entrevista. La 3.0.0 llama explore a la consulta: el trabajo que sale de ella pasa por el roadmap, que lo deja en filas y da el prompt de arranque con la forma fija. Pegarlo en un worktree arranca el cambio con el carril y las decisiones que ya traía.
 
 ## Scope
 
 - Entra: renombrar y reescribir `sdd-consult` como `sdd-explore`, con su salida al roadmap (feature, patch, spike) o a su prompt (config).
 - Entra: `launch-prompt-template.md` en `sdd-templates`, con su fila en el índice.
-- Entra: en `sdd-roadmap`, la entrada «dame el prompt de la <id>», el dimensionado de cada fila, el patch como fila de «Próximo» y el prompt en el cierre; la frase nueva de su `description`.
-- Entra: `using-sdd` (dos filas), `sdd-propose` (decisiones de la petición, si el RED lo pide, y el nombre nuevo), `sdd-grilling`, `sdd-templates`, `overrides-superpowers.md`.
+- Entra: en `sdd-roadmap`, la entrada «dame el prompt de la <id>», el patch como fila de «Próximo» y el prompt en el cierre; la frase nueva de su `description`.
+- Entra: `using-sdd` (dos filas), `sdd-propose` (el nombre nuevo), `sdd-grilling`, `sdd-templates`, `overrides-superpowers.md`.
 - Entra: `mission.md`, `architecture.md`, README, `plugin.json`, la regla 4 de `CLAUDE.md`.
 - Entra: los Pester que nombran `sdd-consult` y uno nuevo de la plantilla; los topes de `WordBudget.Tests.ps1`.
 - Entra: baterías nuevas de `sdd-explore` y `sdd-roadmap`; escenarios nuevos en `sdd-propose` (a5), `sdd-rubber-duck` (c2) y `using-sdd` (r6); esperados de `using-sdd`, `sdd-grilling` y `sdd-rubber-duck`.
-- No entra: sincronizar el roadmap con Azure DevOps, GitHub o Jira (propuesta propia); el carril spike y su `research.md` (0163); `sdd-agent-writing` (0151); la migración v3.0.0 (0157); `.docs/workflow/` (0152); una clave de configuración para elegir sesión o worktree.
+- No entra: el dimensionado de cada fila del roadmap y la regla de decisiones de `sdd-propose` (salen por el RED, enmienda del 2026-10-10); sincronizar el roadmap con Azure DevOps, GitHub o Jira (propuesta propia); el carril spike y su `research.md` (0163); `sdd-agent-writing` (0151); la migración v3.0.0 (0157); `.docs/workflow/` (0152); una clave de configuración para elegir sesión o worktree.
 
 ## Approach
 
@@ -126,8 +126,7 @@ Renombrar con `git mv` para conservar la historia y reescribir el texto en ingl�
 
 - Explore pasa una feature al roadmap y da el prompt de un config: sujetos headless de la batería `sdd-explore` (e2, e3), como las baterías de `sdd-propose`.
 - Explore conserva lo traducido: e1 y los controles de la batería de `sdd-grilling`.
-- «Dame el prompt de la <id>», el dimensionado y el prompt del cierre: sujetos headless de la batería `sdd-roadmap` (m1, m2).
-- Propose respeta las decisiones del prompt: a5 de la batería de `sdd-propose`, leyendo la spec que escribe.
+- «Dame el prompt de la <id>» y el prompt del cierre: sujetos headless de la batería `sdd-roadmap` (m1, m2).
 - Enrutado: batería entera de `using-sdd` y c1, c2 de `sdd-rubber-duck`.
 - La plantilla y los nombres: Pester, como `PlanEntry.Tests.ps1`.
 
@@ -204,19 +203,7 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 - AND no escribe fila en el roadmap ni reserva id
 - AND termina con «si prefieres hacerlo en esta sesión, di "arráncalo"», y con «arráncalo» invoca `sdd-propose`
 
-**ADDED — Las decisiones que trae la petición no se vuelven a preguntar**
-- GIVEN el molde `reservas` en `delegate` y la petición «Arranca este cambio con sdd-propose: filtrar `libres` por planta. Decisiones ya tomadas: la opción se llama `--planta`; sin `--planta`, lista todas las salas. Perfil delegate.»
-- WHEN `sdd-propose` escribe la spec
-- THEN no pregunta el nombre de la opción ni qué pasa sin ella, y la spec lleva las dos en «Decisiones tomadas con el dev-lead» con su literal, no en «✋ Decisiones que he tomado yo»
-- AND si la investigación contradice una (`--planta` ya existe con otro sentido), la pregunta con lo que encontró
-
 ### Capacidad: `planning`
-
-**ADDED — Cada fila que escribe el roadmap es del tamaño de una feature**
-- GIVEN el molde `salas` y «El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles.»
-- WHEN `sdd-roadmap` propone las filas
-- THEN cada fila dice sus tasks previstas («0015 — prevé 3 tasks»), y ninguna pasa el umbral de partir de `sdd-propose`: más de 5 tasks, o 4 o 5 que tocan superficies distintas (BD, UI, API) o llevan migración
-- AND una fila que lo pasaría se parte antes de escribirla, y el mensaje lo dice
 
 **ADDED — Un patch pendiente es una fila de «Próximo»**
 - GIVEN un patch que llega a `sdd-roadmap` (desde explore o pedido: «apunta el arreglo de "cancelada" en reservas que no existen»)
@@ -277,6 +264,8 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
 
 ## Enmiendas
+
+- 2026-10-10 — Salen dos reglas y sus THEN: el dimensionado de cada fila en `sdd-roadmap` (ADDED «Cada fila que escribe el roadmap es del tamaño de una feature») y las decisiones del prompt en `sdd-propose` (ADDED «Las decisiones que trae la petición no se vuelven a preguntar») — sus RED salieron limpios: m2 y m3, 0 de 4 filas grandes; a5, 2 de 2 sin repreguntar (Art. I; `tests/sdd-explore-0161-red.md`). Se añade m3 a la batería de `sdd-roadmap` y e2 pasa a pregunta explícita («dame el prompt»): «si se puede, lo quiero» entra con razón por `sdd-propose` — Task 1 — aprobada: «Sácalas»
 
 ## Aprobaciones
 

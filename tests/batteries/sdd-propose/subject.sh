@@ -7,13 +7,12 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SC="$3"
 FIX="$HERE/fixtures"
 cell() { "$NODE" "$HEADLESS/battery.mjs" field "$HERE/battery.md" "$SC" "$1" || die "sin el escenario $SC en battery.md"; }
-# En el RED la skill que se mide aún no existe: la guarda comprueba la copia del kit con la puerta de entrada.
+# Si el kit que se prueba aún no tiene sdd-propose (el RED de la 0160), la guarda comprueba la puerta de entrada
+# y los pasos de spec y plan se piden a sdd-start-feature, donde vivían.
 GUARD="$(cell Esperado | sed 's/^sdd-kit://')"
-case "${PHASE:-red}" in red*) GUARD=using-sdd ;; esac
-subject_init "$1" "$2" "$4" "$GUARD"
+subject_init "$1" "$2" "$4" "$([ -d "$1/skills/$GUARD" ] && echo "$GUARD" || echo using-sdd)"
 ASK="$(cell Petición)"
-# En el RED, los pasos de spec y plan viven en sdd-start-feature.
-case "${PHASE:-red}" in red*) ASK="${ASK//sdd-propose/sdd-start-feature}" ;; esac
+[ -d "$1/skills/sdd-propose" ] || ASK="${ASK//sdd-propose/sdd-start-feature}"
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
 F11=".docs/sdd/specs/20261008-110000-feature-0011-void-others"
