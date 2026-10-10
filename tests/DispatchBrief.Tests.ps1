@@ -7,8 +7,7 @@ BeforeAll {
   }
 
   function Get-ImplementerBrief {
-    $brief = Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'
-    return $brief.Substring($brief.IndexOf('## Encargo del implementador'))
+    return Get-KitFile 'skills/sdd-implement/references/implementer-prompt.md'
   }
 }
 
@@ -22,11 +21,12 @@ Describe 'Encargo del implementador' {
   }
 
   It 'dice de dónde sale el bloque de restricciones en modo lite' {
-    foreach ($path in 'skills/sdd-start-feature/references/encargo-revision.md', 'skills/sdd-start-feature/SKILL.md') {
-      $text = Get-KitFile $path
-      $text | Should -Match 'modo lite[^\n]*artículo de calidad de código'
-      $text | Should -Not -Match 'modo lite[^\n]*artículo de calidad de código y la política de modelos'
-    }
+    $prompt = Get-KitFile 'skills/sdd-implement/references/implementer-prompt.md'
+    $prompt | Should -Match 'modo lite[^\n]*artículo de calidad de código'
+    $prompt | Should -Not -Match 'modo lite[^\n]*artículo de calidad de código y la política de modelos'
+    $skill = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $skill | Should -Match 'in lite mode, the constitution''s code-quality article'
+    $skill | Should -Not -Match 'in lite mode, the constitution''s code-quality article and the model policy'
   }
 }
 

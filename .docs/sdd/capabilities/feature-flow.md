@@ -138,6 +138,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN un plan cuyas tasks usan firmas, formatos o valores que fija otra task o una sección del plan
 - WHEN se extrae una task para su encargo
 - THEN el texto de la task lleva `Interfaces: Consume / Produce` con los nombres y firmas exactos, y los valores que necesita copiados, sin remitir a otras secciones
+- AND ninguna task pide leer otra task ni el plan entero: un implementador con el contexto vacío la hace con su texto, los ficheros que nombra y las Restricciones globales
 
 ### Un umbral superado en una unidad es Minor
 
@@ -246,12 +247,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente llega al paso 7
 - THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
 - AND no la resuelve por defecto ni la mete en el mensaje de la validación
-
-### Una task Native se registra en el ledger de `executing-plans`
-
-- GIVEN un plan con `Ejecución: native`
-- WHEN el hilo ejecuta cada task
-- THEN la abre con `sdd task start` y la cierra con `sdd task done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
 
 ### La base se comprueba antes de cada task Native
 
@@ -593,12 +588,62 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN invoca `sdd-start-feature`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
 - AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-start-patch` con la clase del patch y la estimación de la pregunta
 - AND si se invoca `sdd-start-feature` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
+
 ### Saltarse las preguntas de brainstorming no se lleva la spec
 
 - GIVEN una feature en el paso de spec de `sdd-propose`, con `superpowers:brainstorming` 7.0.0, cuyo primer mensaje ofrece saltarse las preguntas
 - WHEN el agente pregunta al usuario
 - THEN no le ofrece saltarse las preguntas
 - AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «Decisiones que he tomado yo», y la spec pasa por su gate
+
+### La implementación la lleva `sdd-implement`
+
+- GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
+- WHEN `sdd-start-feature` llega al paso 6
+- THEN invoca `sdd-implement`, que ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, sigue en el paso 7 de `sdd-start-feature`
+- AND ningún fichero de `skills/` invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
+- AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
+
+### Una task Native se registra en el ledger de `sdd-implement`
+
+- GIVEN un plan con `Ejecución: native`
+- WHEN el hilo ejecuta cada task
+- THEN la abre con `sdd task start` y la cierra con `sdd task done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
+
+### El encargo del implementador lleva el decálogo de calidad
+
+- GIVEN un plan con el bloque «De código» en sus Restricciones globales
+- WHEN se despacha el implementador de una task, o el hilo prepara la ejecución en Native
+- THEN el encargo lleva, tras «Restricciones de código», la sección `## Quality decalogue` con las diez reglas y la frase de que, si una choca con las Restricciones de código, mandan las Restricciones
+- AND en Native el hilo la lee una vez, al preparar la ejecución
+- AND el encargo del revisor de task y el del re-revisor no la llevan
+
+### El workspace del plan se anuncia
+
+- GIVEN un plan sin workspace en `.superpowers/sdd/`
+- WHEN `sdd-implement` lo crea
+- THEN dice al dev-lead `Workspace del plan: .superpowers/sdd/plan/ — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
+- AND con un ledger del mismo plan con `Task 1: complete …`, la línea acaba en `· retomo en la Task 2`
+
+### Tras una caída o un corte por cuota, la ejecución sigue desde el ledger
+
+- GIVEN un plan SDD con `Task 1: complete (commits a1b2c3d..d4e5f6a, review clean)` en el ledger, `task-2-report.md` con `Status: DONE` y su commit `b7c8d9e`, y la notificación de fallo del implementador de la Task 2 por cuota agotada
+- WHEN el hilo retoma
+- THEN no relanza la Task 1 ni la Task 2: despacha la revisión de la Task 2 sobre `d4e5f6a..b7c8d9e` y deja `Task 2: Ruling: recuperación tras corte por cuota — informe completo, sigue a revisión`
+- AND si la Task 2 no tuviera informe, la relanza una vez con el mismo brief y el mismo modelo, y el encargo nombra los ficheros que `git status` da cambiados
+
+### El walkthrough dice si la ejecución compactó
+
+- GIVEN una feature en Native de 4 tasks cuya sesión compactó en la Task 2 con dos tasks pendientes
+- WHEN el hilo retoma
+- THEN escribe en el ledger `Task 2: Ruling: compactación — sigo con SDD — quedan 2 tasks`
+- AND el walkthrough lleva en «Lo que se hizo» `Compactación: sí, en la Task 2 → SDD desde la Task 3`, y en una feature que no compactó, `Compactación: no`
+
+### Un E2E rojo por tiempo se ajusta sin tocar sus aserciones
+
+- GIVEN un RED de E2E que espera 500 ms a un guardado que tarda 2 s, con el código de la task ya correcto
+- WHEN el implementador lo ve fallar por tiempo
+- THEN cambia la espera por la señal de guardado, sin cambiar aserciones ni datos, y lo lista en su informe bajo `Ajustes de espera`
 
 ## Reglas de la capacidad
 

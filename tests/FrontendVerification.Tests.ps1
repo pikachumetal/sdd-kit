@@ -46,10 +46,10 @@ Describe 'Puerta de una task full' {
     $script:StartFeature = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
   }
 
-  It 'el paso 6 carga la referencia y conserva la regla de cierre' {
-    $step = Get-Section $script:StartFeature '6. **Implementación**' '7. ⛔'
+  It 'sdd-implement carga la referencia y conserva la regla de cierre' {
+    $step = Get-Section (Get-KitFile 'skills/sdd-implement/SKILL.md') '## After each task' '## Deviations'
     $step | Should -Match 'references/frontend-verification\.md'
-    $step | Should -Match 'sin justificar'
+    $step | Should -Match 'open and unjustified'
   }
 
   It 'el paso 7 enseña la salida del detector' {
@@ -115,16 +115,16 @@ Describe 'Arranque e init' {
 
 Describe 'Arreglos de la revisión final' {
   BeforeAll {
-    $script:StepSix = Get-Section (Get-KitFile 'skills/sdd-start-feature/SKILL.md') '6. **Implementación**' '7. ⛔'
+    $script:StepSix = Get-Section (Get-KitFile 'skills/sdd-implement/SKILL.md') '## After each task' '## Deviations'
   }
 
-  It 'el paso 6 admite «no probado» por el detector que no ejecuta y por el acceso que falta' {
-    $script:StepSix | Should -Match 'detector declarado no ejecuta'
+  It 'sdd-implement admite «no probado» por el detector que no ejecuta y por el acceso que falta' {
+    $script:StepSix | Should -Match 'if the declared detector doesn''t run'
     $script:StepSix | Should -Match 'falta el acceso en §Frontend'
   }
 
-  It 'el paso 6 acepta justificar con el rasgo de la pantalla de referencia' {
-    $script:StepSix | Should -Match '«es intencional», solo citando el criterio o el rasgo de la pantalla de referencia'
+  It 'sdd-implement acepta justificar con el rasgo de la pantalla de referencia' {
+    $script:StepSix | Should -Match '«intentional» only citing the criterion or the reference screen'
   }
 
   It 'la referencia no da «no está instalado» como causa de «no probado»' {

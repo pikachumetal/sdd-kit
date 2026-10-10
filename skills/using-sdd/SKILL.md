@@ -7,7 +7,7 @@ description: Usar al empezar cualquier conversación en un proyecto con .docs/sd
 
 ## Overview
 
-Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del proyecto y **prevalece** sobre la regla de superpowers de invocar `brainstorming` primero: las puertas de entrada son las skills del kit, y `brainstorming`, `writing-plans` y `executing-plans` se usan dentro de ellas, cuando la skill del kit las invoca.
+Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del proyecto y **prevalece** sobre la regla de superpowers de invocar `brainstorming` primero: las puertas de entrada son las skills del kit, y `brainstorming` y `writing-plans` se usan dentro de ellas, cuando la skill del kit las invoca.
 
 ## Puertas
 

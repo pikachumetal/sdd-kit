@@ -1,6 +1,7 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:Skill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-start-feature/SKILL.md') -Raw
+  $script:Implement = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-implement/SKILL.md') -Raw
 
   function Get-Step([int]$Step) {
     return [regex]::Match($script:Skill, "(?ms)^$Step\. .*?(?=^\d+\. |^## )").Value
@@ -13,20 +14,20 @@ BeforeAll {
 }
 
 Describe 'Parar lo arrancado' {
-  It 'el paso 6 para por PID o por puerto y nunca por nombre ni por línea de comandos' {
-    Assert-Literal (Get-Step 6) @('párala por ese PID o por el proceso que escucha en ese puerto', 'nunca por el nombre del ejecutable', 'ni por un patrón de su línea de comandos', '`taskkill /IM`', '`pkill -f`')
+  It 'sdd-implement para por PID o por puerto y nunca por nombre ni por línea de comandos' {
+    Assert-Literal $script:Implement @('stop it by that PID or by the process listening on that port', 'never by executable name', 'or a command-line pattern', '`taskkill /IM`', '`pkill -f`')
   }
 
   It 'el paso 7 para antes del guion salvo validation.startEnvironment' {
-    Assert-Literal (Get-Step 7) @('Antes de presentar el guion, para lo que arrancaste, con la regla del paso 6', '`validation.startEnvironment: true`', 'en qué puerto está y cómo pararla')
+    Assert-Literal (Get-Step 7) @('Antes de presentar el guion, para lo que arrancaste, con la regla de `sdd-implement`', '`validation.startEnvironment: true`', 'en qué puerto está y cómo pararla')
   }
 
   It 'la tabla de racionalizaciones responde a matar todos los procesos del ejecutable' {
-    $script:Skill | Should -Match '(?m)^\| "Mato todos los `node\.exe`[^\n]*por su PID o por el puerto'
+    $script:Implement | Should -Match '(?m)^\| "I kill every `node\.exe`[^\n]*by its PID or port'
   }
 
   It 'hay red flag de parar por nombre' {
-    $script:Skill | Should -Match '(?m)^- Vas a parar un proceso por su nombre o por un patrón de su línea de comandos'
+    $script:Implement | Should -Match '(?m)^- You''re about to stop a process by its name or a command-line pattern'
   }
 }
 
@@ -60,7 +61,7 @@ Describe 'Evidencia por THEN' {
 
 Describe 'Native: sdd task done tras el commit' {
   It 'sdd task done va en su propia orden y solo si HEAD cambió' {
-    Assert-Literal (Get-Step 6) @('`sdd task done` va en su propia orden, después de comprobar que el commit existe', 'si `HEAD` sigue en la base de la task, el pre-commit lo rechazó', 'lee su mensaje y arregla la causa')
+    Assert-Literal $script:Implement @('check the commit exists — if `HEAD` is still at the task''s base, the pre-commit rejected it', 'read its message and fix the cause', 'then, in its own call')
   }
 }
 
@@ -85,7 +86,7 @@ Describe 'Se valida en, en el paso que escribe los escenarios' {
 }
 
 Describe 'El puerto es tuyo' {
-  It 'el paso 6 comprueba el puerto libre antes de arrancar y libre después de parar' {
-    Assert-Literal (Get-Step 6) @('antes de arrancar, comprueba que el puerto está libre', 'si no lo está, no es tuyo: usa otro', 'tras parar, comprueba que quedó libre', 'si sigue escuchando, para el que escucha')
+  It 'sdd-implement comprueba el puerto libre antes de arrancar y libre después de parar' {
+    Assert-Literal $script:Implement @('Before starting, check the port is free', 'if not, it isn''t yours: use another', 'after stopping, check it''s free again', 'if something still listens, stop that one')
   }
 }

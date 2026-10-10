@@ -37,13 +37,6 @@ task_commit() {
 }
 
 case "$SC" in
-  u1|u2)
-    g checkout -q -b feature/0010-cancel-reason; open_0010
-    task_commit task1 "feat(bookings): cancelar con un motivo de la lista"
-    put "$F10/tasks.md" < "$FIX/tasks-0010-u1.md"
-    TURN2='Apruebo la enmienda.'
-    [ "$SC" = u2 ] && TURN2='Apruebo guardar quién cancela con --por <nombre> en cancelar.'
-    export TURN2 ;;
   v1a|v1b)
     g checkout -q -b feature/0010-cancel-reason; open_0010 without_who
     task_commit task1 "feat(bookings): cancelar con un motivo de la lista"

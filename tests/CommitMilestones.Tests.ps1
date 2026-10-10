@@ -49,11 +49,10 @@ Describe 'Carril task' {
     Get-SkillStep 'sdd-propose' 5 | Should -Match 'put the opening in a commit[^\n]*commit-milestones\.md'
   }
 
-  It 'el paso 6 deja los RED sin commitear y junta cada task' {
-    $step = Get-SkillStep 'sdd-start-feature' 6
-    $step | Should -Not -Match 'y los commitea;'
-    $step | Should -Match 'sin commitearlos'
-    $step | Should -Match 'junta su rango en un commit[^\n]*commit-milestones\.md'
+  It 'sdd-implement deja los RED sin commitear y junta cada task' {
+    $skill = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $skill | Should -Match 'without committing them: they go in the task''s commit'
+    $skill | Should -Match 'Squash the task''s range into one commit[^\n]*commit-milestones\.md'
   }
 
   It 'el cierre junta su commit antes del merge' {
@@ -65,7 +64,7 @@ Describe 'Carril task' {
   }
 
   It 'el encargo del implementador commitea los RED con la implementación' {
-    Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' | Should -Match 'sin commitear: commitéalos con tu implementación[^\n]*--no-verify'
+    Get-KitFile 'skills/sdd-implement/references/implementer-prompt.md' | Should -Match 'sin commitear: commitéalos con tu implementación[^\n]*--no-verify'
   }
 
   It 'la plantilla del plan ya no commitea los RED antes de despachar' {

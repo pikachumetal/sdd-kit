@@ -1,0 +1,94 @@
+--- [20]
+La revisión final de `dab4a1c` está en marcha en segundo plano, con su vigía de silencio. Mientras tanto, nada más que hacer en el hilo: no hay UI que verificar visualmente y los borradores de cierre dependen de `sdd-end-feature`.
+
+**Dónde está la 0010**
+- **Task 1** (`b9057ec`) y **Task 2** (`dab4a1c`) están commiteadas. El aviso de «usage limit» llegó después del commit de la Task 2, que existe.
+- Verificado en el hilo: `node --test` pasa 5/5 y el código cubre los THEN de la spec.
+- Dos cosas no puedo afirmarlas tras el corte: que cada task tuviera revisión de task, y que los tests se escribieran antes del código. Quedan como rulings en `tasks.md` (sin commitear) y las cubre la revisión final sobre `19de6b5..HEAD`.
+
+**Siguiente**
+1. Cuando vuelva el revisor final: apunto `Revisión final: …` en `tasks.md` y, si trae Critical o Important, hago la pasada de fix (con test en RED primero si afirman algo de ejecución).
+2. Re-revisión del tramo si `HEAD` avanza.
+3. Paso 7: smoke con una fila por THEN (provocando de verdad el «motivo no válido»), la suite completa y el guion de pruebas, y espero tu validación.
+4. Retiro el worktree de revisión y cierro con `sdd-end-feature`.
+
+--- [28]
+# Review de `dab4a1c`: Feature 0010 «Motivo al cancelar»
+
+**Veredicto: listo para merge con cambios.** No hay nada Critical, pero conviene resolver los tres Important antes de cerrar la feature. Los cuatro THEN de la spec se cumplen en el código y los cubre un test. Los fallos están en la cobertura y en un cambio de comportamiento que la spec no declara.
+
+## Los THEN de la spec, uno a uno
+
+| THEN | Código (`src/app.js`) | Test (`test/cancel.test.js`) |
+| --- | --- | --- |
+| Motivo de la lista cerrada | `reasons` con los 3 valores; `reasonOf` lee `--motivo` | sí |
+| «cancelada Norte lun (sala ocupada)» | `cancelBooking` guarda `booking.reason` y responde con el formato de la spec | sí |
+| «motivo no válido: cambio de planes, sala ocupada, otro» | `reasons.join(', ')`, el orden coincide | sí (`Sur mar --motivo "me aburro"`) |
+| `canceladas` → «Norte lun — sala ocupada» | `cancelledList` filtra `status === 'cancelled'` y usa la raya «—» | sí, pero solo pasa si otro test cancela antes (ver Important 1) |
+
+Fuera de scope: `voidBooking` y `anular` no cambian. `canceladas` no lista las anuladas (`voided`), así que no se mete en la 0011. Ojo: `anular` no tiene ningún test en la suite, ni antes ni ahora; viene de antes y no lo introduce este commit. `libres` y `reservar` no se tocan. Todo el texto nuevo de la interfaz está en castellano.
+
+## Critical
+
+Ninguno.
+
+## Important
+
+1. **El test de `canceladas` depende del estado de otro test** (`test/cancel.test.js`, test «canceladas enseña sala, día y motivo»). La spec pone como GIVEN «la reserva de Norte del lunes cancelada con "sala ocupada"», pero el test no lo prepara. Pasa porque el primer test del fichero cancela la reserva en el array `bookings` del módulo, y `node --test` ejecuta los tests de un fichero en orden y en el mismo proceso. Cuándo falla:
+   - Ejecutado solo (`--test-name-pattern canceladas`), devuelve `''` en vez de la línea esperada.
+   - Si se reordenan los tests o se borra el primero, también falla.
+
+   Arreglo: que el test cancele la reserva antes de llamar a `canceladas`, o que el estado se pueda reiniciar entre tests.
+
+2. **`cancelar` sin `--motivo` ya no funciona igual, y ni la spec ni un test lo recogen.**
+   - Antes: `cancelar Norte lun` → «cancelada Norte lun».
+   - Ahora: `reasonOf` devuelve `undefined` y la respuesta es «motivo no válido: cambio de planes, sala ocupada, otro».
+   - Que el motivo sea obligatorio encaja con «cancelar pide un motivo» (Capacidades), pero la spec solo trae deltas ADDED, ninguno MODIFIED, y «Enmiendas» dice «ninguna». La spec misma menciona «MODIFIED» en la decisión 3.
+   - Además, el test que cubría el comportamiento anterior se reescribió en vez de dejar un THEN para el caso sin motivo.
+
+   Arreglo: un delta MODIFIED o una enmienda con su THEN (sin `--motivo` → rechazo con un mensaje concreto) y su test. Hoy el caso sin motivo queda sin especificar y sin test.
+
+3. **Se borró el test de regresión «cancelar sin reserva lo dice»** (venía de la base `033f439`). El código sigue respondiendo «sin reserva …», pero ya solo si el motivo es válido, y ningún test cubre ese camino. La spec no lo retira. Arreglo: recuperar el test con un motivo válido, por ejemplo `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+
+## Minor
+
+1. **El motivo se valida antes de comprobar si existe la reserva.** `cancelar Sur mar` (sin reserva y sin motivo) responde «motivo no válido…» en vez de «sin reserva Sur mar». Es defendible, pero lo decidió el implementador y no está en la spec.
+2. **Lista vacía.** Si no hay ninguna cancelada, `canceladas` imprime una línea vacía. Un «sin canceladas» sería más claro. No está en la spec.
+3. **`reasonOf` y los argumentos por posición.** La sala y el día se toman siempre de `params[0]` y `params[1]`. Con `cancelar --motivo otro Norte lun`, la sala sería `--motivo`. Si `--motivo` va al final sin valor, se rechaza bien.
+4. **Mensajes de commit.** Los dos de la feature llevan como cuerpo «Cuerpo del commit.», un texto de relleno.
+
+## Ficheros
+
+- `<run>/review-0010-dab4a1c/src/app.js`
+- `<run>/review-0010-dab4a1c/test/cancel.test.js`
+- `<run>/review-0010-dab4a1c/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+--- [30]
+La revisión final volvió con 3 Important y ningún Critical. Antes de arreglar, reproduzco el #1, que afirma algo de ejecución.
+
+--- [33]
+Reproducido: en solitario `canceladas` devuelve `''`. Aplico los fixes de los Important 1 y 3, que son solo de tests y no tocan la spec.
+
+--- [35]
+Python no está disponible, así que el test no se modificó y sigue en RED (que es lo esperado). Aplico el cambio con Edit.
+
+--- [39]
+Ahora: la revisión final está resuelta salvo una decisión tuya. Queda: tu respuesta a una pregunta, y después la validación (smoke y guion), ~10 min.
+
+🦆 En llano: hoy `cancelar Norte lun`, sin `--motivo`, responde «motivo no válido…» y no cancela. Antes cancelaba. La spec dice «cancelar pide un motivo», pero no recoge ese caso con un THEN ni un test.
+
+✋ **Me salí del plan en:** la revisión final encontró este caso sin especificar. Es un cambio a la spec aprobada, así que no lo he tocado.
+
+**Estado**
+- **Revisión final** (opus, sobre `dab4a1c`): 0 Critical, 3 Important.
+- **Important 1:** `canceladas` dependía de que otro test hubiera cancelado antes. Reproducido en RED (en solitario devolvía `''`) y arreglado en `23594e4`.
+- **Important 3:** recuperado el test «cancelar sin reserva lo dice», ahora con motivo válido. También en `23594e4`.
+- **Suite:** 6/6 en verde. `tasks.md` queda sin commitear con la revisión y los rulings.
+- **Pendiente:** el Important 2.
+
+**Pregunta para ti (Important 2):** ¿qué debe pasar con `cancelar <sala> <día>` sin `--motivo`? Mi recomendación es **rechazarlo, con el mensaje actual** («motivo no válido: cambio de planes, sala ocupada, otro»). Encaja con «cancelar pide un motivo» y es lo que hace el código hoy. Habría que añadir a la spec un THEN explícito (`cancelar Norte lun` sin motivo → ese rechazo), una línea en «Enmiendas» y su test.
+
+Alternativa: permitirlo y guardar el motivo como «otro». Es más suave, pero rompe la lista cerrada.
+
+Con tu respuesta aplico la enmienda en la spec, añado el test, hago la re-revisión del tramo, ejecuto el smoke con una fila por THEN y te presento la validación.
+

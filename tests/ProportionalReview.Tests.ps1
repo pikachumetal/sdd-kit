@@ -13,8 +13,8 @@ Describe 'Restricciones globales en dos bloques' {
     $template | Should -Match 'De proceso[^\n]*no viaja[^\n]*revisor'
   }
 
-  It 'el paso 6 despacha solo el bloque de código' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'bloque «De código»'
+  It 'sdd-implement despacha solo el bloque de código' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match '«De código» block'
   }
 }
 

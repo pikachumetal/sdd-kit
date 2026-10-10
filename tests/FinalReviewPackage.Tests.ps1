@@ -50,10 +50,8 @@ Describe 'Paquete del revisor final' {
     $script:FinalReviewer | Should -Match 'Lee el paquete de review `<ruta del paquete que imprime la receta>`'
   }
 
-  It 'las filas de executing-plans y subagent-driven-development dicen que la revisión final usa el paquete del kit' {
-    $overrides = Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md'
-    $overrides | Should -Match '`executing-plans` \(Native\)[^\n]*paquete del revisor final'
-    $overrides | Should -Match '\| `subagent-driven-development` \|[^\n]*paquete del revisor final'
+  It 'sdd-implement dice que la revisión final usa el paquete del kit en los dos métodos' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'package recipe —not `sdd review package`'
   }
 }
 

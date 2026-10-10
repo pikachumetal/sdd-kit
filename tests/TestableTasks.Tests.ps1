@@ -46,7 +46,7 @@ Describe 'sdd-start-feature' {
   }
 
   It 'en pair, cada task cerrada para con su guion' {
-    Assert-Literal (Get-SkillStep 6) @('**En `pair`, al cerrar cada task', 'guion de pruebas de esa task', 'Se prueba en la aplicación', 'En `delegate` y `unattended` no paras aquí')
+    Assert-Literal (Get-KitFile 'skills/sdd-implement/SKILL.md') @('**In `pair`**, with the task''s commit done', 'present that task''s test script', 'Se prueba en la aplicación', '`delegate` and `unattended` don''t stop here')
   }
 }
 Describe 'sdd-end-feature' {

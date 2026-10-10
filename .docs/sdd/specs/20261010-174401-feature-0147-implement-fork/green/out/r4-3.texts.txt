@@ -1,0 +1,243 @@
+--- [2]
+Ahora: retomar el paso 6 invocando `sdd-implement` para continuar la 0010 tras el corte por cuota. Queda: terminar las tasks pendientes y la revisión final, hasta la validación, ~15 min.
+
+--- [15]
+Estoy retomando la 0010: la Task 2 quedó implementada y commiteada antes del corte, así que despacho ahora su revisión de task y la vigía de silencio.
+
+--- [22]
+`Workspace del plan: <run>\repo\.superpowers\sdd\plan — ledger, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia · retomo en la Task 2`
+
+Estado de la 0010 tras el corte por cuota:
+
+- **Task 1:** completa en el ledger (`d163544..263c0af`, revisión limpia). No se toca.
+- **Task 2:** el informe del implementador llegó completo (`Status: DONE`, commit `1f62eac`) antes de que se cortara la sesión. Lo cuento como devuelto y no relanzo al implementador. Lo dejé en el ledger como `Ruling` de recuperación.
+- **Discrepancia anotada:** el informe dice 4/4 tests y `node --test test/cancel.test.js` da 3/3 ahora mismo. Se la pasé al revisor para que la compruebe.
+- **Ahora corre en segundo plano:** la revisión de la Task 2 (spec + calidad, sonnet effort medium) sobre `263c0af..1f62eac`, con su vigía de silencio.
+
+Cuando vuelva la revisión: si sale limpia, marco la Task 2 como completa y paso a la revisión final de toda la rama. Si trae hallazgos, entra en el bucle de fix.
+
+--- [24]
+### Spec Compliance
+- ✅ Spec compliant. `canceladas` returns one line per booking with status `cancelled`, formatted `${room} ${day} — ${reason}`. The test asserts exactly «Norte lun — sala ocupada» (`src/app.js:27-29,35`, `test/cancel.test.js:57-59`). The output text is in Spanish and the em dash matches the spec.
+- No extras: the commit touches only the two files in the brief, and it does not touch voiding, which is out of scope for 0011.
+- The 4/4 vs 3/3 discrepancy: the diff shows `test/cancel.test.js` going from 2 tests to 3 (2 existing, 1 added at lines 57-59). The controller's 3/3 is correct and the report's 4/4 is false. It does not change the behavior or the verdict, but the report cannot be trusted as evidence. The suite has no fourth test, so a claimed fourth test (for example the empty list) does not exist.
+- ⚠️ Cannot verify from the diff:
+  - Whether `cancelBooking` can mark a booking `cancelled` without a reason. The upper part of the function and `reasonOf` are outside the diff. The spec's invalid-motivo test suggests it is rejected before the status is set.
+  - Whether `bookings` and the Norte/lun fixture are what the test assumes. They are outside the diff.
+
+### Strengths
+- Minimal change: a small `cancelledList` helper, a single dispatch line, and the filter by `status === 'cancelled'` naturally excludes `voided` bookings.
+- The test uses the real `run` entry point and asserts the exact spec string, as the "Dónde se prueba" section requires.
+
+### Issues
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+#### Minor (Nice to Have)
+- `test/cancel.test.js:57-59`: the test does not set up its GIVEN. It passes only because the first test (line 49) already cancelled Norte lun on shared module state, so it fails if run alone (`--test-name-pattern`) or reordered. Cancel Norte lun inside the test, or state the dependency explicitly.
+- `src/app.js:27-29`: with no cancelled bookings, `canceladas` returns `''` and `console.log` prints a blank line. This is not covered by the spec or a test. Consider an explicit message such as «sin canceladas», and add a test for it.
+- `src/app.js:28`: the chained filter/map/join is long on one line. This is cosmetic.
+- `task-2-report.md`: the 4/4 claim is wrong (see above). Correct it so the evidence matches the 3 tests that exist.
+
+### Assessment
+**Task quality:** Approved
+**Reasoning:** The implementation matches the ADDED requirement exactly and is minimal and clean, with no spec or restriction violations. The only defects are a test coupled to shared state and an inaccurate test count in the report.
+
+--- [26]
+La revisión sale aprobada, sin Critical ni Important. Cierro la Task 2 en el ledger con `sdd task done` y dejo los Minor como diferidos.
+
+--- [29]
+Ahora: revisión final de la rama (las dos tasks). Queda: su veredicto, la pasada de fix si hace falta y la validación con su guion, ~10 min.
+
+--- [34]
+La vigía de la revisión de la Task 2 terminó sin avisos. Sigo con la revisión final; la integración es `develop` y no hay remoto.
+
+--- [41]
+La revisión final de la rama está en marcha en segundo plano. Mientras tanto, el estado:
+
+- **Task 2:** completa en el ledger (`263c0af..1f62eac`). Su revisión salió aprobada y sus 3 Minor quedaron como diferidos.
+- **Revisor final:** opus con effort high, sobre `1f62eac`, en un worktree desanclado (`review-0010-1f62eac`) y con su vigía de silencio.
+- **Pendiente tras su veredicto:**
+  - La pasada de fix, si trae Critical o Important.
+  - Retirar el worktree de revisión.
+  - Pegar los `Ruling:` y los Minor diferidos en `## Rulings`.
+  - Correr la suite completa (`node --test`).
+  - Presentar la validación con el 🦆, el smoke por THEN y el guion de pruebas.
+
+Todavía no sé qué dirá el revisor.
+
+--- [51]
+### Veredicto
+- ❌ Hallazgos que arreglar
+
+### Strengths
+- Los dos THENs de la spec están cubiertos y los tests comparan la salida exacta.
+  - `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»: `src/app.js:19-25`, `test/cancel.test.js:5-7`.
+  - Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»: `src/app.js:20`, `test/cancel.test.js:9-11`.
+  - `canceladas` → «Norte lun — sala ocupada», con el mismo guion largo que pide la spec: `src/app.js:35-37`, `test/cancel.test.js:13-15`.
+- Las dos tasks encajan. `cancelBooking` comprueba el motivo antes de tocar la reserva (`src/app.js:20`). El estado `cancelled` solo se pone en ese punto, siempre con `booking.reason` (`src/app.js:23-24`). Por eso, dentro del proceso, ninguna reserva cancelada puede salir en `canceladas` con «— undefined».
+- El Scope se respeta. `voidBooking` sigue igual (`src/app.js:28-33`) y `canceladas` filtra solo `cancelled` (`src/app.js:36`), así que las anulaciones (0011) no salen en el listado.
+- Toda la interfaz está en castellano (`src/app.js:20,22,25,36`). No hay trabajo fuera de los ficheros que marca el plan.
+
+### Issues
+#### Critical (Must Fix)
+- (ninguno)
+
+#### Important (Should Fix)
+- **Se ha borrado sin reemplazo el único test del camino «sin reserva»** (`test/cancel.test.js:9-11`, commit `263c0af`).
+  - La Task 1 cambió `test('cancelar sin reserva lo dice')` (`['Sur', 'mar']` → `'sin reserva Sur mar'`) por el test del motivo no válido, que usa los mismos `Sur mar`.
+  - Como ahora el motivo se valida primero (`src/app.js:20`), ese test corta antes de `findBooking`. Ningún test ejercita ya `src/app.js:21-22`, ni que `cancelar` no encuentre una reserva que no coincide en sala y día.
+  - Es justo lo que protegía el patch 0007 (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md:3`: «comparación solo por hora. Fix y test de regresión»). La spec no autoriza retirar esa cobertura.
+  - Hoy el comportamiento es correcto. Pero si esa comparación vuelve a fallar, `cancelar` podría cancelar la reserva de otra persona y la suite no lo detectaría.
+  - Arreglo: añadir `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+
+#### Minor (Nice to Have)
+- **El test del motivo no válido no comprueba que la reserva quede intacta** (`test/cancel.test.js:9-11`). Usa `Sur mar`, que no tiene reserva. Nada aserta que `cancelar Norte lun --motivo "me aburro"` deje Norte lun activa y fuera de `canceladas`. El código lo hace bien por el orden de `src/app.js:20`, pero ningún test lo fija.
+- **El motivo se compara de forma estricta** (`src/app.js:16,20`).
+  - `--motivo sala ocupada` sin comillas solo recoge `sala`. «Sala ocupada» y «sala ocupada » también se rechazan.
+  - La persona usuaria recibe la lista de motivos válidos, así que puede corregirlo, pero el mensaje no avisa de que hacen falta comillas.
+  - Con una lista cerrada es aceptable. Se puede valorar normalizar mayúsculas y espacios.
+- **Las referencias de línea del ledger no coinciden con el código** (`progress.md:5-6`).
+  - Cita `test/cancel.test.js:57-59`, pero el fichero tiene 15 líneas: el test está en `13-15`.
+  - Cita `src/app.js:27-29`, pero `cancelledList` está en `35-37`.
+  - Los dos minors diferidos de la Task 2 siguen siendo válidos y no los re-gradúo: son el estado compartido entre tests y el `''` cuando no hay canceladas.
+
+### Declined to judge
+- **Si `canceladas` sirve de algo desde la terminal.**
+  - `bookings` vive en memoria del módulo (`src/app.js:4`) y cada `node src/app.js …` es un proceso nuevo. Si se ejecuta `cancelar Norte lun --motivo "sala ocupada"` y luego `canceladas` en otra invocación, la segunda siempre imprime una línea vacía.
+  - El GIVEN de `canceladas` solo se da dentro de un mismo proceso, como en los tests vía `run()`.
+  - Esto ya pasaba en la base (`03f7119`) con `cancelar` y `libres`, y la spec no pide persistencia. Por eso no lo gradúo como defecto de esta rama.
+  - Aun así, para la persona usuaria el listado nunca enseña nada. Recomiendo que el hilo principal confirme con el dev-lead si es lo esperado del molde.
+- **Si la suite pasa.** No la he ejecutado, como pide el encargo. El ledger anota 3/3 frente al 4/4 del informe, y el diff contiene 3 tests en `cancel.test.js`. Falta el gate de cierre `node --test` entero, que incluye `test/app.test.js`. Le toca al hilo principal.
+
+### Assessment
+**Ready to merge:** With fixes
+**Reasoning:** Los dos THENs están implementados y probados con aserciones exactas, y cancelar y `canceladas` comparten bien el motivo. Pero la rama retiró sin reemplazo el test del camino «sin reserva», que protegía la regresión del patch 0007, y conviene recuperarlo antes de validar.
+
+--- [53]
+El revisor final devuelve un Important y tres Minor. Dejo el ledger al día, retiro el worktree de revisión y despacho un único subagente de fix con la lista entera, como pide SDD.
+
+--- [60]
+Estado de la 0010 mientras corre el fix:
+
+- **Revisión final** (opus, effort high, sobre `1f62eac`): 0 Critical, 1 Important, 3 Minor y 1 punto que declinó graduar.
+- **Important:** el commit `263c0af` retiró el único test del camino «sin reserva», que protegía el patch 0007, y nada lo ejercita ya.
+- **Pasada de fix:** un único subagente (sonnet, effort medium) añade ese test con un motivo válido. Tiene que demostrar el RED rompiendo la guarda de forma temporal, restaurarla y correr `node --test` entero.
+- **Ledger:** anotados el Important, los Minor diferidos y un `Ruling` sobre lo declinado. El worktree de revisión ya está retirado.
+- **Ruling que llegará al usuario:** `canceladas` desde la terminal imprime una línea vacía, porque `bookings` vive en memoria del proceso y cada invocación de `node src/app.js` es nueva. Ya pasaba en la base y la spec no pide persistencia; solo se prueba vía `run()` en un mismo proceso.
+
+Cuando vuelva el fix: una re-revisión acotada de ese rango (SDD), después `node --test` entero, el 🦆 con «✋ Me salí del plan en…», el smoke por THEN y el guion de pruebas. No doy la validación por hecha: esa es del usuario.
+
+--- [62]
+Es solo la vigía de la revisión final, que terminó sin avisos; no cambia nada. Sigo esperando el informe del fix.
+
+--- [65]
+**Commit:** `2c71d9c` — `test(bookings): recuperar la cobertura de cancelar sin reserva`. Solo toca `test/cancel.test.js`; `src/app.js` queda intacto y el árbol limpio.
+
+**Test añadido:** `cancelar sin reserva lo dice, con un motivo válido`, con `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` y aserción exacta `'sin reserva Sur mar'`.
+
+**RED:** rompí temporalmente `src/app.js:22`, cambiando `if (!booking) return \`sin reserva ...\`` por `if (!booking) { booking = { room, day }; }` (con `let booking` en la línea 21). El test falló en `test/cancel.test.js:14`:
+- actual: `'cancelada Sur mar (otro)'`
+- expected: `'sin reserva Sur mar'`
+
+Los otros 5 tests pasaban. Restauré el fichero con `git checkout -- src/app.js`.
+
+**GREEN:** con `src/app.js` restaurado, `node --test` entero da tests 6, pass 6, fail 0.
+
+--- [67]
+El informe del fix llegó completo. Verifico el commit y la suite yo mismo antes de despachar la re-revisión acotada.
+
+--- [70]
+Commit verificado: solo toca `test/cancel.test.js`, `src/app.js` queda intacto y `node --test` da 6/6. Despacho la única re-revisión acotada de `1f62eac..2c71d9c`.
+
+--- [75]
+La vigía del fix terminó sin avisos; no cambia nada. La re-revisión acotada de `1f62eac..2c71d9c` sigue corriendo y espero su veredicto antes de seguir.
+
+--- [77]
+### Finding Verdicts
+- **Se borró sin reemplazo el único test del camino «sin reserva» (src/app.js:21-22)** — ADDRESSED. `test/cancel.test.js:26-28` añade `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` con la aserción `'sin reserva Sur mar'`, exactamente el arreglo pedido. Como el motivo `otro` es válido, la llamada llega a la guarda de `src/app.js:21-22`. El informe nombra el test que cubre el camino y da el RED real: con la guarda rota falla en `test/cancel.test.js:14`, y con todo restaurado pasan 6 de 6.
+
+### New Breakage in the Fix Diff
+None. El diff solo añade un test (4 líneas) en `test/cancel.test.js`. No modifica ninguna aserción, nombre ni dato de los tests existentes. El texto del test está en castellano.
+
+### Out-of-Scope Observations
+None
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [79]
+La re-revisión sale limpia. Antes de borrar el workspace, saco los `Ruling:` y los Minor diferidos para llevarlos a la presentación (esta feature no tiene `tasks.md`), y miro cómo está configurada la validación.
+
+--- [82]
+`validation.mode` no está en `sdd-kit.json`, así que cuenta `manual`: presento y espero. Antes ejecuto de verdad cada THEN de la spec para el smoke.
+
+--- [88]
+Ahora: presento la validación de la 0010 y espero tu respuesta. Queda: tu prueba y tu «validado»; con eso cierro con `sdd-end-feature`, ~10 min.
+
+## 🦆 Cómo viaja una cancelación
+
+`cancelar Norte lun --motivo "sala ocupada"` entra en `run`, que saca el motivo con `reasonOf` y llama a `cancelBooking`. Esta comprueba primero que el motivo esté en la lista cerrada. Si no lo está, responde «motivo no válido…» y no toca nada. Si lo está, busca la reserva activa de esa sala y día. Si no hay, responde «sin reserva…». Si la hay, la marca `cancelled` con su motivo. `canceladas` filtra las reservas `cancelled` y escribe `sala día — motivo`. Todo vive en memoria del proceso.
+
+## ✋ Me salí del plan en…
+
+- **Nada que cambie la spec.** No hay enmiendas ni deviations.
+- **Un commit fuera del plan:** `2c71d9c` añade un test («cancelar sin reserva lo dice, con un motivo válido»). Lo pidió la revisión final: la Task 1 había sustituido el único test del camino «sin reserva», que protegía el patch 0007.
+- **Un freno que quiero que veas** (ruling, ver abajo): `canceladas` por la terminal siempre imprime una línea vacía.
+- **Tras el corte por cuota:** la Task 2 ya estaba implementada y commiteada; no relancé al implementador, pasé a su revisión. Su informe decía 4/4 tests y son 3 (ahora 6/6 en total).
+
+## Qué hay
+
+Rama `feature/0010-cancel-reason`, HEAD `2c71d9c`, árbol limpio. `src/app.js` y `test/cancel.test.js` son los únicos ficheros de código tocados.
+
+| Task | Commit | Revisión |
+| --- | --- | --- |
+| 1 · cancelar con motivo | `263c0af` | limpia |
+| 2 · listado de canceladas | `1f62eac` | aprobada, 3 Minor diferidos |
+| fix de la revisión final | `2c71d9c` | acotada, sin hallazgos |
+
+- **Revisión final:** opus + effort high, sobre `1f62eac`. Dio 1 Important (arreglado en `2c71d9c`), 3 Minor y 1 punto declinado.
+- **Re-revisión de la pasada de fix:** no la repito aquí; su verificación fue la re-revisión acotada de SDD (`1f62eac..2c71d9c`, sin hallazgos). HEAD no ha avanzado desde entonces.
+- **Squash:** cada task es un solo commit, no hay nada que juntar.
+- **Suite completa:** `node --test` → 6/6, 91 ms.
+
+## Smoke (lo que ya ejecuté yo)
+
+| THEN de la spec | Entrada | Salida | Evidencia |
+| --- | --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | `run('cancelar', ['Norte','lun','--motivo','sala ocupada'])` | `cancelada Norte lun (sala ocupada)` | ejecución real |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | `--motivo "me aburro"` sobre `Sur mar` | `motivo no válido: cambio de planes, sala ocupada, otro` | ejecución real (provocado con la entrada que falla) |
+| `canceladas` → «Norte lun — sala ocupada» | `run('canceladas', [])` tras la primera cancelación, en el mismo proceso | `Norte lun — sala ocupada` | ejecución real |
+| camino «sin reserva» (no es THEN, es regresión del patch 0007) | `cancelar Sur mar --motivo otro` | `sin reserva Sur mar` | ejecución real + RED provocado |
+| no probado | `--motivo` sin comillas, mayúsculas, espacios finales | — | no probado (Minor diferido) |
+
+## Guion de pruebas para ti
+
+No he dejado nada arrancado: no hay puerto ni proceso que parar. Como el estado vive en memoria, los pasos 1-3 van **en un solo proceso**; ejecútalo en la raíz del repo:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('cancelar',['Norte','lun','--motivo','me aburro'])); console.log(run('canceladas',[]))"
+```
+
+1. `cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `cancelar … --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `canceladas` → `Norte lun — sala ocupada`.
+4. En la terminal, en dos procesos: `node src/app.js cancelar Norte lun --motivo "sala ocupada"` y luego `node src/app.js canceladas` → la segunda sale **vacía**. Es la limitación del ruling, no un fallo nuevo.
+
+## Decisiones tomadas sin ti (los `Ruling:` y diferidos del ledger)
+
+- **Recuperación tras el corte por cuota:** conté el informe de la Task 2 como devuelto en vez de relanzarlo. Coste si me equivoqué: ninguno medible, la suite y la revisión lo confirman.
+- **`canceladas` y la persistencia (decisión tuya):** `bookings` vive en memoria del proceso. Ya pasaba en la base con `cancelar` y `libres`, y la spec no pide persistencia. Coste si esperabas persistencia: en uso real el listado nunca enseña nada y haría falta una feature de almacenamiento.
+- **Minor diferidos:**
+  - El test de `canceladas` no monta su GIVEN y depende del test anterior (`test/cancel.test.js:13-15`).
+  - Sin canceladas devuelve `''` (línea en blanco), sin spec ni test (`src/app.js:35-37`).
+  - El test del motivo no válido no comprueba que la reserva quede intacta (`test/cancel.test.js:9-11`).
+  - El motivo se compara de forma estricta: `--motivo sala ocupada` sin comillas solo recoge `sala` y el mensaje no avisa de las comillas (`src/app.js:16,20`).
+
+## Qué te pido
+
+Prueba el guion y dime **qué has probado y si funciona**. Una cosa más, aparte: ¿vale la limitación de memoria como está, o quieres que la 0010 se quede en «no entra» para persistencia y la apuntemos al roadmap? Hasta que respondas, la feature queda en espera; no cierro ni toco el roadmap, y los borradores de cierre (walkthrough, changelog) los escribo con `sdd-end-feature` cuando valides.
+

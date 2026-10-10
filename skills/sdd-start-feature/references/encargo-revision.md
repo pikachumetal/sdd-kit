@@ -1,6 +1,6 @@
 # Encargo de revisión — cabecera obligatoria
 
-Todo encargo de revisión que despaches durante la implementación —**revisor de task, revisor final de rama, fix wave y re-revisión**— empieza así, antes de la plantilla de superpowers que corresponda (`task-reviewer-prompt.md`, `code-reviewer.md`, `re-review-prompt.md`):
+El encargo del **revisor final de rama** y el de su **fix wave** empiezan así, antes de `code-reviewer.md` de superpowers. Los del revisor de task y del re-revisor ya la llevan dentro: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) y [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) de `sdd-implement`.
 
 ```markdown
 ## Restricciones de código
@@ -22,7 +22,7 @@ Solo viaja el bloque «De código». El de «De proceso» (política de modelos,
 
 ## Revisor final
 
-Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `executing-plans` pide «the most capable available model»: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`). Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](control-profiles.md#vigía-de-silencio).
+Se despacha con `subagent_type: sdd-kit:effort-high` + `model: opus`, también en Native, donde `sdd-implement` lo despacha él: es el techo del kit. Sin esta frase, 2 de 2 sujetos en Native lo despacharon con el modelo de los subagentes del plan y sin effort (`tests/native-adapt-red.md`). Como todo despacho, lleva su vigía de silencio, también en la re-revisión: [Vigía de silencio](control-profiles.md#vigía-de-silencio).
 
 Sale en segundo plano en cuanto existe el commit de la última task, y el hilo sigue trabajando y commiteando mientras revisa. Por eso el revisor no trabaja en el árbol del hilo, sino en un worktree desanclado en el sha que revisa, `review-<id>-<sha corto>`, junto a los demás worktrees del repo:
 
@@ -73,38 +73,8 @@ Si el plan tiene `## Review Focus`, tras «Cómo revisar» va esta sección:
 Comprueba cada línea a propósito: la entrada, el comportamiento esperado y el test o la verificación que la fija. Una línea sin test ni verificación nombrada, o cuyo código no da ese comportamiento, es un hallazgo.
 ```
 
-Es lo que pide `executing-plans` («the plan's Review Focus section verbatim»), y no basta con remitir al plan: con la remisión («el plan tiene una sección Review Focus, compruébala»), 1 de 2 encargos en Opus salió sin sus líneas (`tests/plan-review-focus-red.md`).
+Es lo que pedía `executing-plans` de superpowers («the plan's Review Focus section verbatim»), y no basta con remitir al plan: con la remisión («el plan tiene una sección Review Focus, compruébala»), 1 de 2 encargos en Opus salió sin sus líneas (`tests/plan-review-focus-red.md`).
 
 ## Encargo del implementador
 
-Su brief (`sdd task brief`) es solo el texto de la task. Delante van el mismo bloque, el contrato de tests y las reglas del implementador:
-
-```markdown
-## Restricciones de código
-
-<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
-
-## Tests RED
-
-Los tests de `<ruta>` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo. Están escritos y sin commitear: commitéalos con tu implementación, con `git add` de sus rutas explícitas, y nunca con `--no-verify`.
-
-## Verificación
-
-Ejecuta los comandos del campo «Verificación» de tu task: `<comandos>`. No ejecutes la suite completa ni la de superficies que tu task no toca: el gate de cierre lo ejecuta el hilo principal una vez, al final. <Si la task tiene «Verificación lenta»:> `<comando>` es la verificación lenta de tu task: no la ejecutes; la lanza el hilo principal.
-
-## Reglas del implementador
-
-- Si un gate o un checker te avisa y el aviso no se arregla con un cambio real del código, para y repórtalo con el mensaje literal. Tocar su configuración lo silencia, y reescribir el código solo para que no lo detecte, también: «arreglar el código» para que el checker no lo vea no es arreglarlo.
-- Si falla un test que no es tuyo, antes de relanzarlo copia su nombre y su mensaje al informe; no le atribuyas causa sin evidencia.
-- Nunca `git stash`: la pila es común a todos los worktrees. Para apartar trabajo, un commit WIP; para ver la base, `git show <base>:<ruta>`.
-
----
-
-<sdd task brief a partir de aquí>
-```
-
-Las tres reglas salen de incidentes de campo y del RED de la task 0005: con la cabecera sin ellas, 4 de 4 implementadores silenciaron un checker (uno editó su configuración, tres disfrazaron el valor), 3 de 4 usaron `git stash` y 1 de 2 relanzó un test rojo ajeno y lo dio por «puntual» sin causa (`tests/dispatch-brief-red.md`).
-
-La frase corta es la que funcionó en un proyecto real del equipo; la versión larga («sin investigar fuera del repo…») no bastó. Los tests los escribe el hilo principal desde los THEN de la spec antes de despachar, sin commitearlos (paso 6 de `sdd-start-feature`); el implementador los hace pasar, no los redacta.
-
-La sección «Verificación» sustituye el «run the full suite once before committing» de `implementer-prompt.md`: `subagent-driven-development/implementer-prompt.md:48` (6.4.1) lo pide para toda task, y con el gate completo en cada task una suite de backend corrió ~12 veces en una task de solo frontend (RED previo 2/2, `tests/task-verification-red.md`). Sin la frase «no ejecutes… suite completa» el sujeto usa el texto por defecto de superpowers y arrastra `backend:test` a una task de backend aunque el plan ya declare `Verificación: dotnet build backend` (RED del paso 6, medida «el encargo dice que no ejecute backend:test», falla 1/1).
+Vive en [implementer-prompt.md](../../sdd-implement/references/implementer-prompt.md) de `sdd-implement`, con la misma sección «Restricciones de código» y, además, el contrato de los tests RED, la «Verificación» de la task y las reglas del implementador.

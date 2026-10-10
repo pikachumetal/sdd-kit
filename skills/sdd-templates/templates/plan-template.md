@@ -27,13 +27,13 @@ created: <YYYY-MM-DD>
 
 **Spec**: `./spec.md`
 
-**Ejecución**: <native | subagent>, porque <motivo del plan> · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json · con native, añade: Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger. · con native, añade también: La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.
+**Ejecución**: <native | subagent>, porque <motivo del plan> (el motivo pesa la dependencia entre las interfaces de las tasks, cuántas son, el coste de un error que llegue a la rama y si el plan cabe en un contexto, sin umbral: «native, porque 3 tasks encadenadas por la interfaz de Ledger, un error lo caza el test de su task y el plan cabe en un contexto») · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json · con native, añade: Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con el método SDD de sdd-implement sobre el mismo ledger. · con native, añade también: La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.
 
 ## Restricciones globales
 
 > Dos bloques. Una línea por restricción; "ninguna" si un bloque no tiene.
 >
-> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha le entrega el bloque «De código» — ver el paso de implementación de `sdd-start-feature`.
+> ⚠️ Una task NO hereda esta sección por su cuenta: un ejecutor que solo ve su task no la lee. Quien despacha le entrega el bloque «De código» — ver `sdd-implement`.
 
 ### De código
 
@@ -51,7 +51,7 @@ created: <YYYY-MM-DD>
 
 ## Review Focus
 
-> La pide `superpowers:writing-plans` en todo plan, y `executing-plans` se la pasa literal al revisor final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero (el criterio, en `writing-plans`). Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda. Sin ella en la plantilla, 1 de 2 planes en Opus la escribió como «Foco de revisión» entre las decisiones técnicas, donde el revisor final no la recibe (`tests/plan-review-focus-red.md`).
+> La pide `superpowers:writing-plans` en todo plan, y `sdd-implement` se la pasa literal al revisor final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero (el criterio, en `writing-plans`). Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda. Sin ella en la plantilla, 1 de 2 planes en Opus la escribió como «Foco de revisión» entre las decisiones técnicas, donde el revisor final no la recibe (`tests/plan-review-focus-red.md`).
 
 - <entrada o condición> → <comportamiento esperado> · Task <n>, `<nombre del test>` — p. ej. `GET /bookings?status=Foo` → 400 con los estados válidos, no la lista entera · Task 1, `Rejects_unknown_status`
 
@@ -154,7 +154,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
 - Produce: <lo que las tasks siguientes usan de esta: nombres, firmas y formatos exactos>
 
-> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»); `Tras` es la única excepción, porque solo nombra la task que la bloquea. Copia aquí las firmas, tablas y textos que necesita.
+> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4») ni pide leer otra task o el plan entero: tras una compactación, un implementador con el contexto vacío la hace con su texto, los ficheros que nombra y las Restricciones globales; `Tras` es la única excepción, porque solo nombra la task que la bloquea. Copia aquí las firmas, tablas y textos que necesita.
 
 **Ficheros**: crear/modificar `path/...`
 

@@ -1,0 +1,150 @@
+--- [17]
+Retomé la 0010 y la Task 2 ya estaba implementada y commiteada; lo que falta es su revisión, que acabo de lanzar.
+
+- **Qué encontré:** el commit `4c66c35` (listado de canceladas) existe, el árbol está limpio y `node --test` pasa 5/5. Los dos commits de las tasks (`674402c`, `4c66c35`) están en la rama. El fallo por cuota ocurrió después de commitear, así que el código no se perdió; sí se perdió el informe del implementador.
+- **Qué hice:** creé un worktree desanclado en `4c66c35` y despaché en segundo plano un revisor de la Task 2, con su vigía de silencio. Le pedí que mire en particular si el test de `canceladas` depende del estado que deja el test anterior.
+- **Pendiente:** cuando vuelva el revisor, sigo con el revisor final de rama, `tasks.md`, el smoke por THEN y la validación. No hay `tasks.md` ni ledger en el repo; lo creo al cerrar, con la revisión de la Task 2 y esta nota como ruling.
+
+Rulings que registraré:
+- El implementador escribió los tests de la Task 2, no el hilo principal, y no se guardó copia previa. No se puede rehacer; el revisor contrasta el test con la spec.
+- La Task 1 borró el test «cancelar sin reserva lo dice», y `cancelar` sin `--motivo` ahora responde «motivo no válido». Lo llevo al revisor final para decidir si es regresión o intención de la spec.
+
+--- [20]
+**Veredicto: NEEDS FIXES**
+
+Revisado `git diff 674402c 4c66c35` (`src/app.js`, `test/cancel.test.js`). Resultados de ejecución:
+- `node --test test/cancel.test.js` completo: pasa, 3 tests. El `grep` no mostró el resumen, pero no hubo fallos.
+- El test de `canceladas` aislado (`--test-name-pattern="canceladas"`): falla con `actual: ''`, `expected: 'Norte lun — sala ocupada'`.
+
+## Hallazgos
+
+**Important — `test/cancel.test.js:13-15`: el test no prepara su GIVEN y depende del test anterior.**
+- La spec dice GIVEN «la reserva de Norte del lunes cancelada con "sala ocupada"». El test llama directamente a `run('canceladas', [])` sin cancelar nada.
+- Solo pasa porque el test 1 (línea 6-8) cancela `Norte lun` sobre el estado compartido de módulo (`bookings` en `src/app.js:4`).
+- Entrada que lo rompe: ejecutarlo solo, con `--test-name-pattern`, `.only`, reordenar tests, o añadir un test que cancele otra cosa antes. En el caso aislado devuelve `''`.
+- Hay acoplamiento oculto: el test 1 es en la práctica el GIVEN del test 3.
+- Corrección: el test debe hacer su propio GIVEN, por ejemplo `run('cancelar', ['Norte','lun','--motivo','sala ocupada'])`, y luego `canceladas`. Como `bookings` es estado global de módulo, esa llamada solo funciona una vez por proceso (la segunda da «sin reserva»). Conviene reiniciar el estado entre tests, con un `reset` exportado o `bookings` reconstruible, o aceptar que el GIVEN lo cubre el test 1 y documentarlo. Es la raíz del problema y no se arregla solo con el test.
+
+**Minor — `src/app.js:36-38`: listado vacío.**
+- Sin cancelaciones devuelve `''` y el CLI imprime una línea en blanco. La spec no define este caso (huecos de spec, no del implementador), pero no hay test ni mensaje.
+- Si se quiere un texto, p. ej. «sin canceladas», hay que decidirlo en la spec antes. Si no, queda indefinido.
+
+**Minor — `src/app.js:36-38`: el CLI nunca puede listar nada.**
+- `node src/app.js canceladas` imprime una línea en blanco, porque el estado vive en memoria y cada invocación arranca vacía.
+- Es una limitación preexistente del molde (`cancelar` tampoco persiste), no regresión de este commit. La spec se verifica por `run`, así que no bloquea.
+
+## Comprobaciones sin hallazgo
+
+1. **THEN de la spec:** `cancelledList` produce `Norte lun — sala ocupada`, con la raya larga (—) y la separación exactas. Se obtiene con el estado que deja el test 1.
+2. **Scope:** no entra nada de anulaciones ni de 0011. Solo se añade el comando `canceladas`. `voidBooking` y `anular` ya existían y no se tocan.
+3. **Reservas anuladas:** `voidBooking` pone `status='voided'` y `cancelledList` filtra por `'cancelled'`, así que no las lista. Correcto. Una cancelada tampoco puede anularse después, porque `findBooking` solo busca activas.
+4. **Texto en castellano:** cumple la restricción de código.
+5. **Test RED:** el diff no modifica aserciones, nombres ni datos de los tests 1 y 2. Solo añade el test 3. El nombre «canceladas enseña sala, día y motivo» y la aserción reflejan el THEN de la spec, no solo el código. El fallo está en el GIVEN ausente.
+
+Sin cambios en el repo.
+
+--- [22]
+Ahora: aplico el arreglo del Important (el test de `canceladas` sin su GIVEN) y lo reproduzco antes en RED. Queda: arreglo, commit, revisión del tramo y revisor final, ~10 min.
+
+--- [25]
+Reproducido: aislado, el test falla con `actual: ''`. Arreglo la raíz, que es el estado global de módulo sin reinicio.
+
+--- [28]
+Python no existe aquí, así que no se aplicó ningún cambio. Lo hago con Edit.
+
+--- [34]
+Arreglo hecho y commiteado (`9715938`, RED→GREEN, suite 5/5). Ahora lanzo el revisor final de rama, anclado en ese sha.
+
+--- [46]
+Ahora: el revisor final está revisando `9715938` en segundo plano. Queda: su veredicto, el smoke por THEN y presentarte la validación, ~5 min. Mientras tanto, nada más que hacer en el árbol: espero a que vuelva.
+
+--- [56]
+## Veredicto: NEEDS FIXES
+
+Hay un hallazgo Important, que se arregla en una línea: el camino «sin reserva» de `cancelar` se ha quedado sin test. Lo demás son Minor y huecos de spec. No he ejecutado nada ni he tocado el repo.
+
+### Punto 1: cobertura de la spec y Scope
+
+| Escenario de la spec | Código | Test |
+|---|---|---|
+| ADDED 1, THEN «cancelada Norte lun (sala ocupada)» | `src/app.js:24-31`, `:47` | `test/cancel.test.js:7` |
+| ADDED 1, AND «motivo no válido: cambio de planes, sala ocupada, otro» | `src/app.js:25` | `test/cancel.test.js:11` (con una entrada distinta del GIVEN, ver M1) |
+| ADDED 2, THEN «Norte lun — sala ocupada» | `src/app.js:40-42`, `:48` | `test/cancel.test.js:15` |
+
+- El Scope se respeta: `voidBooking` no cambia y no se le añade motivo. `canceladas` filtra por `status === 'cancelled'`, así que las anuladas (0011) no salen en el listado.
+- Toda la interfaz está en castellano («motivo no válido», «cancelada», «sin reserva»), así que la restricción se cumple.
+
+### Punto 2: el test borrado «cancelar sin reserva lo dice»
+
+**I1 (Important): `test/cancel.test.js`. El commit `674402c` borró el único test del camino «sin reserva» de `cancelar` y no lo sustituyó.**
+- **El comportamiento no se ha roto.** `cancelar Sur mar --motivo otro` sigue respondiendo «sin reserva Sur mar» (`src/app.js:27`). Lo que se ha perdido es el test.
+- **La spec no pide quitar ese comportamiento.** La capacidad está declarada como «Modificada» y ningún escenario dice que desaparezca. Al hacer obligatorio el motivo, la entrada del test viejo dejó de valer, pero bastaba con añadirle un motivo válido en vez de borrarlo.
+- **Entrada que lo provoca:** ahora mismo, si alguien rompe `src/app.js:27` (o `findBooking`), la suite no se entera.
+- **Arreglo propuesto:** recuperar el test con `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`. Es un test de un comportamiento que ya existía, no un RED nuevo.
+
+**S1 (hueco de spec, decisión de producto; no es un bug del implementador): el orden de validación, motivo antes que reserva (`src/app.js:25` antes de `:27`).**
+- **Entradas afectadas:**
+  - `cancelar Sur mar` antes respondía «sin reserva Sur mar» y ahora responde «motivo no válido: …».
+  - `cancelar Sur mar --motivo "me aburro"` responde «motivo no válido» y oculta que tampoco hay reserva.
+- La spec no dice qué error gana cuando fallan las dos cosas. Es un cambio de comportamiento que viene de hacer obligatorio el motivo, no una regresión que haya metido el implementador por su cuenta.
+
+**S2 (hueco de spec): cancelar sin `--motivo` responde «motivo no válido».**
+- **Entrada:** `cancelar Norte lun` responde «motivo no válido: …».
+- La spec dice que cancelar «pide un motivo», pero no qué contestar cuando falta. Un «falta el motivo» podría ser más claro. Lo decide producto.
+
+**S3 (hueco de spec, Minor): el escenario viejo no consta como MODIFIED/REMOVED.**
+- El escenario «cancelar una reserva activa» → «cancelada Norte lun» ha cambiado de salida.
+- La spec solo trae escenarios ADDED aunque la capacidad está declarada como «Modificada». Convendría registrarlo en Enmiendas o en el delta.
+
+### Punto 3: la pasada de fix (`9715938`)
+
+- Las aserciones de los tests 1, 2 y 3, y sus nombres, no cambian. El test 3 solo gana su línea de GIVEN (`test/cancel.test.js:16`), que es justo el GIVEN de la spec. Está bien.
+- `beforeEach(resetBookings)` (`:5`) aísla bien cada test.
+- `let bookings` se reasigna dentro de `resetBookings`, y `findBooking`, `freeRooms` y `cancelledList` leen esa variable del módulo. No queda ninguna referencia antigua apuntando al estado viejo.
+- `test/app.test.js` no usa el reset y no hace falta: `node --test` ejecuta cada fichero en su propio proceso.
+
+**M2 (Minor): `src/app.js:7`. `resetBookings` es un export de producción que solo existe para los tests.** En este molde se acepta. Si el código crece, sería mejor inyectar el estado o crear la app con una función factoría.
+
+### Punto 4: ¿los tests codifican la spec o solo el código?
+
+**M1 (Minor): `test/cancel.test.js:11-12`. El test del AND no usa el GIVEN de la spec.**
+- **Entrada del test:** `['Sur', 'mar', '--motivo', 'me aburro']`. Sur mar no tiene reserva, así que el test pasa solo porque el motivo se valida antes que la reserva. Fija el orden de validación del código (S1), no el escenario de la spec.
+- **Lo que no fija:** si `cancelBooking` marcase la reserva como cancelada antes de rechazar el motivo, el test seguiría en verde.
+- **Arreglo propuesto:** usar `['Norte', 'lun', '--motivo', 'me aburro']` y comprobar después que `run('canceladas', [])` devuelve `''`, o sea, que la reserva sigue activa. Eso cambia el dato de un test, así que lo tiene que aprobar el hilo principal.
+
+**M3 (Minor, hueco de spec): `src/app.js:41`. Hay casos de `canceladas` que ni la spec ni los tests cubren.** Con varias canceladas, las líneas se unen con `'\n'`; sin ninguna, el comando devuelve la cadena vacía. Producto tiene que decidir si quiere un mensaje del tipo «no hay canceladas».
+
+Los tests 1 y 3 sí calcan la spec: GIVEN, WHEN y THEN literales.
+
+### Verificación recomendada
+
+Ejecutar `node --test test/cancel.test.js --test-name-pattern "canceladas"` para confirmar que el test 3 pasa solo, que era el motivo de la pasada de fix. No la he ejecutado.
+
+### Ficheros
+
+- `<run>/review-0010-9715938/src/app.js`
+- `<run>/review-0010-9715938/test/cancel.test.js`
+- `<run>/review-0010-9715938/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+--- [58]
+Aplico el único Important (recuperar el test de «sin reserva»); no hace falta reproducirlo en RED porque el hallazgo es de lectura del diff (un test borrado) y el comportamiento ya existe.
+
+--- [62]
+La implementación de la 0010 está completa y verde (6/6 tests, `cc21434`), pero queda una decisión tuya antes de presentarte la validación.
+
+La revisión final de rama devolvió NEEDS FIXES con un Important, que ya arreglé: el test de «cancelar sin reserva» se había borrado en la Task 1 y lo recuperé. Los otros hallazgos son huecos de la spec, que solo puedes decidir tú:
+
+1. **Orden de validación.** `cancelar Sur mar --motivo "me aburro"` responde «motivo no válido» aunque tampoco haya reserva. Antes, `cancelar Sur mar` respondía «sin reserva». ¿Qué error gana cuando fallan las dos cosas?
+2. **Cancelar sin `--motivo`.** Hoy `cancelar Norte lun` responde «motivo no válido: cambio de planes, sala ocupada, otro». ¿Vale ese texto o prefieres uno propio, por ejemplo «falta el motivo»?
+3. **`canceladas` sin ninguna cancelada.** Hoy devuelve una cadena vacía. ¿Quieres un mensaje, por ejemplo «no hay canceladas»?
+4. **El delta de la spec.** El escenario viejo «cancelar una reserva activa → cancelada Norte lun» ya no existe tal cual, y la spec solo lista escenarios ADDED. ¿Lo registro en Enmiendas como REMOVED/MODIFIED?
+
+Mi recomendación es dejar 1 y 2 como están, que es el comportamiento actual y ya está cubierto por test, y registrar 4 en Enmiendas. En 3, lo defino como «sin canceladas» solo si lo quieres; si no, queda indefinido y lo anoto como pendiente.
+
+Con tu respuesta sigo con el smoke por THEN (con ejecución real del CLI) y la presentación de la validación, que irá en el turno siguiente.
+
+--- [63]
+Es solo el aviso de que el vigía del revisor final terminó, porque el revisor ya había vuelto; no cambia nada.
+
+Sigo esperando tu respuesta a las cuatro decisiones (orden de validación, cancelar sin motivo, `canceladas` vacío y el delta en Enmiendas). Hasta entonces dejo sin commitear `tasks.md` y no toco el roadmap. Cuando contestes, hago el smoke por THEN y te presento la validación.
+
