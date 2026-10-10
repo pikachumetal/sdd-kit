@@ -1,0 +1,86 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd 2>&1; git branch --show-current; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t5/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+
+>>> Grep: cancel|cancelad
+<<< .
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+develop
+Sin capacidades
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md sdd-kit.json; ls specs; ls -a . | grep local
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/20260918-090000-patch-0007-cancel/*.md | head -60; cat changelog.md | head -30
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](specs/20260917-090000-task-0006-free/)
+
+### Fixed
+
+- La cancelación ya no borra reservas de otro día con la misma hora. [patch 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (8 turnos, 0.1746143 $)
+Ahora: clasificar el cambio, que es lo único que me queda antes de que decidas. Queda: abrir el carril elegido, ~5 min.
+
+🦆 **Qué pasa hoy.** En `src/app.js:12`, `cancelar` no mira las reservas: devuelve siempre `cancelada <día> <hora>`, exista o no. Tampoco borra nada de `bookings`. Como el mensaje sale siempre igual, no hay forma de distinguir el caso que describes. Es un fallo reproducible, y la causa está localizada.
+
+**Por qué no lo abro como patch sin preguntarte.** Arreglarlo exige fijar cosas que nadie ha escrito, y cada una cambia lo que ves en pantalla:
+
+- **El texto** cuando no existe, por ejemplo «no existe la reserva mar 10:00».
+- **La regla de coincidencia.** Las reservas guardan `{room, day, slot: '10:00-12:00'}`, pero `cancelar` recibe `['mar', '10:00']`: sin sala y con la hora de inicio. Hay que decidir si se casa por día y hora de inicio, y qué pasa si hay dos salas a la misma hora.
+- **Si además debe cancelar de verdad**, es decir, quitarla de `bookings`.
+
+Por el criterio del kit, decidir el texto o la regla lo convierte en feature aunque sea pequeño.
+
+**Opciones:**
+
+1. **Feature en modo lite (recomendada).** Spec corta, donde fijamos contigo el texto y la regla de coincidencia. Después viene el plan mínimo y un test en rojo antes del código. Es un cambio acotado a una sola función.
+2. **Patch.** Solo si me dices tú el texto exacto y la regla de coincidencia, con lo que la solución queda cerrada. Entonces va por `patch.md` con su test de regresión.
+3. **Feature completa.** Si prefieres spec y plan completos.
+
+Perfil actual: el del proyecto (`sdd-kit.json`, sin override local). Dime número y, si eliges la 2, el texto y la regla.

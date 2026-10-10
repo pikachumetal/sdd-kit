@@ -17,6 +17,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=using-sdd`); el método, en `
 | r3 | sdd-roadmap | Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona). | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | r4 | sdd-roadmap | Lo de exportar a calendario tiene que ir antes que los avisos por correo. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
 | r5 | sdd-roadmap | Apunta en el roadmap lo del filtro por sala, no lo arranques todavía. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | `using-sdd-green.md`, control tras la revisión final |
+| r6 | sdd-roadmap | Dame el prompt de la 0013. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161: «dame el prompt de la <id>» entraba por `sdd-consult` (`tests/sdd-explore-0161-red.md`, m1) |
 | f1 | sdd-propose | Mete un filtro por sala en el comando libres. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control |
 | f2 | sdd-propose | Let's build a waitlist for when a room is full. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 1 de 3 |
 | f3 | sdd-propose | Es una tontería: que al reservar se pueda poner una nota. Hazlo rápido. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 2 de 3 |
@@ -49,3 +50,4 @@ Cada regla de `skills/using-sdd/SKILL.md`, de dónde viene y qué escenario la c
 | Racionalización «Lo guardo en memoria para próximas sesiones» | `using-sdd-red.md` (s1) | s1 |
 | Racionalización «Es un typo o subir una versión: edición directa» | `visual-patch-red.md` (v1, c2); `tests/sdd-propose-0160-red.md` (k1) | t1, c2 |
 | Racionalización «Me los han asignado: los hago uno detrás de otro» | `using-sdd-red.md` (r3) | r3 |
+| Puerta: «dame el prompt de la <id>» → `sdd-roadmap` | `tests/sdd-explore-0161-red.md`, m1: 2 de 2 entraron por `sdd-consult`; GREEN r6 2/2 | r6 |

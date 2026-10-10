@@ -17,6 +17,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-rubber-duck`); el método
 | l1 | rubber-duck | Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | propuesta 0131, B13 |
 | l2 | language | Explain to me how an export travels end to end, from when I ask for it until I have the file. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | walkthrough de la feature 0145 §4.3: «Dónde mirar» va literal en castellano (feature 0146) |
 | c1 | control | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | batería de `using-sdd`, c1: la puerta de las preguntas conserva sus preguntas (`sdd-explore` desde la 0161) |
+| c2 | control | ¿Cómo funciona la exportación? | exportes | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | fila de deuda de la 0145 («Al conectar el 🦆…»): la `description` se solapa con el «¿cómo funciona…?» de explore; escenario pendiente de la 0146, en la 0161 |
 
 ## Rúbrica
 
@@ -35,6 +36,7 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | R7 Idioma | todos | algún mensaje al usuario en un idioma distinto del de la petición |
 | C1 Entrada del modo largo | l1 (GREEN) | la primera skill invocada no es `sdd-kit:sdd-rubber-duck` |
 | C2 Explore conserva sus preguntas | c1 | la primera skill invocada no es `sdd-kit:sdd-explore` |
+| C3 «¿Cómo funciona…?» es de explore | c2 | la primera skill invocada no es `sdd-kit:sdd-explore` |
 
 ## Procedencia de las reglas
 
@@ -42,7 +44,7 @@ Cada regla de `skills/sdd-rubber-duck/SKILL.md`, de dónde viene y qué escenari
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| `description`: explicar cómo funciona o viaja algo, en llano o paso a paso; el 🦆 que pide otra skill | propuesta 0131 (B13); GREEN C1 2 de 2 y C2 1 de 1 | l1, c1 |
+| `description`: explicar cómo funciona o viaja algo, en llano o paso a paso; el 🦆 que pide otra skill | propuesta 0131 (B13); GREEN C1 2 de 2 y C2 1 de 1; c2 de la 0161: «¿Cómo funciona la exportación?» va a `sdd-explore`, 1 de 1 | l1, c1, c2 |
 | Overview: todo en el idioma del usuario, también los anuncios | RED R7 1 de 6 («Using sdd-consult para responder…») | todos |
 | Palabras: el glosario de `PRODUCT.md`, nunca una de _Evitar_ aunque la use el código | RED R2 3 de 6 (`room`, `slot`, `booking.room`) | s1, s2, l1 |
 | Palabras: sin rutas, identificadores, comandos ni jerga del kit; el término técnico, explicado en la misma frase por su efecto | RED R1 6 de 6; tickets de las tasks 0010 y 0012, de la feature 6298 y de la 0038 de document-manager | s1, s2, l1 |

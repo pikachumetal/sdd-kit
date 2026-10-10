@@ -44,3 +44,16 @@ RED → GREEN: e2 0/2 → 2/2, e3 0/2 → 2/2.
 **A/B de m3** (`ab/out/`): con el kit de la Task 3, antes de tocar `sdd-roadmap`, m3 entra 2 de 2 por `sdd-propose`; con el de la Task 4, también 2 de 2; con el kit de la apertura, que en el RED entró 2 de 2 por `sdd-roadmap`, ahora entra 2 de 2 por `sdd-propose`. El enrutado de esta frase varía sin cambio del kit (2 de 6 por roadmap y 4 de 6 por propose), y las dos puertas son defendibles: `using-sdd` manda a roadmap «una que el criterio de partir partiría», y x1 de la batería de `sdd-propose` espera propose. m3 solo medía el dimensionado, que salió por el RED: se retira de la batería y sus salidas de GREEN se descartan.
 
 RED → GREEN: m1 0/2 → 2/2, m2 (prompt en el cierre) 0/2 → 2/2.
+
+## Task 5 — c2 de `sdd-rubber-duck` y batería entera de `using-sdd`
+
+La regla de decisiones de `sdd-propose` no se escribe: su RED (a5) salió limpio 2 de 2 (enmienda del 2026-10-10). 32 sujetos, 5,92 $. Salidas en `green-duck/out/` y `green-using/out/`: las dos baterías tienen escenarios `c1` y `c2` distintos.
+
+| Batería | Resultado |
+| --- | --- |
+| `sdd-rubber-duck` (`control`) | c1 1/1 y c2 1/1 `sdd-explore`: «¿Cómo funciona la exportación?» entra por explore, no por el pato. Salda el escenario c2 pendiente de la 0146 |
+| `using-sdd` (entera) | 21 de 21 escenarios en verde, con r6 («Dame el prompt de la 0013.» → `sdd-roadmap` 2/2). El renombrado y las `description` nuevas de `sdd-explore` y `sdd-roadmap` no mueven ninguna puerta |
+
+## Coste de la campaña
+
+66 sujetos, 11,80 $ y unas 2,5 h de reloj, frente a la previsión de 59 sujetos y ~32 $ (techo 39 $). Hay más sujetos y menos dinero de lo previsto: cuatro de RED más (e2 rehecho y m3), seis de A/B por la varianza de m3, y sujetos más baratos de lo estimado (~0,18 $ de media).
