@@ -20,7 +20,7 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — la implementación pasa a `sdd-implement`; el encargo del implementador lleva el decálogo; el workspace se anuncia; recuperación tras caída o corte por cuota; commits por ruta; el walkthrough dice si hubo compactación; y, si su RED lo confirma, tres piezas de la 0007 (THEN universal, refactor, esperas de un E2E).
+- Modificadas: `feature-flow` — la implementación pasa a `sdd-implement`; el encargo del implementador lleva el decálogo; el workspace se anuncia; recuperación tras caída o corte por cuota; el walkthrough dice si hubo compactación; un E2E rojo por tiempo se ajusta sin tocar sus aserciones.
 - Modificadas: `control-profiles` — el motivo del método nombra los cuatro factores; el rescate tras compactar se registra con una línea fija y va con `sdd-implement`.
 
 ## ✋ Decisiones que he tomado yo — valida estas
@@ -138,12 +138,6 @@ Fork por fusión: se parte del texto de las dos skills de superpowers 7.0.0 y se
 - THEN no relanza la Task 1 ni la Task 2: despacha la revisión de la Task 2 sobre `d4e5f6a..b7c8d9e` y deja `Task 2: Ruling: recuperación tras corte por cuota — informe completo, sigue a revisión`
 - AND si la Task 2 no tuviera informe, la relanza una vez con el mismo brief y el mismo modelo, y el encargo nombra los ficheros que `git status` da cambiados
 
-**ADDED — Los commits de la implementación van por ruta**
-- GIVEN un worktree con `testResults.xml` sin seguimiento, generado por la suite
-- WHEN el hilo o el implementador commitean una task
-- THEN añaden las rutas de la task con `git add <rutas>`, y `testResults.xml` sigue sin seguimiento
-- AND ni el hilo ni el encargo del implementador usan `git add -A`, `git add .` ni `git commit -a`
-
 **ADDED — El walkthrough dice si la ejecución compactó**
 - GIVEN una feature en Native de 4 tasks cuya sesión compactó en la Task 2 con dos tasks pendientes
 - WHEN el hilo retoma
@@ -156,18 +150,7 @@ Fork por fusión: se parte del texto de las dos skills de superpowers 7.0.0 y se
 - THEN el texto de la task lleva `Interfaces: Consume / Produce` con los nombres y firmas exactos, y los valores que necesita copiados, sin remitir a otras secciones
 - AND ninguna task pide leer otra task ni el plan entero: un implementador con el contexto vacío la hace con su texto, los ficheros que nombra y las Restricciones globales
 
-**ADDED — Un THEN universal pide un test por elemento** *(solo si `r2` falla en RED)*
-- GIVEN el THEN «cada reserva cancelada aparece en el informe con su motivo» y un molde con tres reservas canceladas
-- WHEN el hilo escribe los RED de la task
-- THEN el test comprueba las tres reservas, no una ni «alguna»
-
-**ADDED — Una task de refactor fija la suite como invariante** *(solo si `r3` falla en RED)*
-- GIVEN la task «extrae `PriceCalculator` de `BookingService` sin cambiar comportamiento» y una suite de 48 tests en verde
-- WHEN el hilo la prepara
-- THEN apunta en la task `Invariante: 48/48` y escribe antes un test estructural que falla (`BookingService` delega el precio en `PriceCalculator`)
-- AND la task se da por hecha con la suite en 48/48 y el test estructural en verde
-
-**ADDED — Un E2E rojo por tiempo se ajusta sin tocar sus aserciones** *(solo si `r5` falla en RED)*
+**ADDED — Un E2E rojo por tiempo se ajusta sin tocar sus aserciones**
 - GIVEN un RED de E2E que espera 500 ms a un guardado que tarda 2 s, con el código de la task ya correcto
 - WHEN el implementador lo ve fallar por tiempo
 - THEN cambia la espera por la señal de guardado, sin cambiar aserciones ni datos, y lo lista en su informe bajo `Ajustes de espera`
@@ -188,6 +171,9 @@ Fork por fusión: se parte del texto de las dos skills de superpowers 7.0.0 y se
 - AND con una sola task pendiente sigue en Native y lo registra como `Task <N>: Ruling: compactación — sigo con Native — queda 1 task`; sin compactación, sigue en Native sin línea
 
 ## Enmiendas
+
+- 2026-10-11 — Salen del delta «Los commits de la implementación van por ruta», «Un THEN universal pide un test por elemento» y «Una task de refactor fija la suite como invariante», y la decisión 12 queda sin regla — su RED salió limpio (h1/h2 y 15 sujetos sin `git add -A`; `r2` 0/2; `r3` 0/2, [evidencia](../../../../tests/sdd-implement-red.md)) y la propia spec (decisiones 14 y 20) dice que entonces no se escriben; van a filas de deuda — aprobada por la spec: «se escriben solo si el baseline falla»
+- 2026-10-10 — El decálogo se mide con `r1b`, una task más grande sobre un `run` enredado, tras salir limpio `r1` — RED de `r1` sin fallo claro — aprobada: «Un RED más duro (Recomendada)»
 
 ## Aprobaciones
 

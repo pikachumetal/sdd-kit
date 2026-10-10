@@ -251,9 +251,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### El método de ejecución lo elige el handoff del plan
 
-- GIVEN una feature en modo full con la spec aprobada, superpowers ≥ 6.4.1, `execution` ausente o `auto` en `sdd-kit.json` y sin `native` ni `subagent` en `sdd-kit.local.json`, o `execution: auto` en `sdd-kit.local.json`
+- GIVEN una feature en modo full con la spec aprobada, `execution` ausente o `auto` en `sdd-kit.json` y sin `native` ni `subagent` en `sdd-kit.local.json`, o `execution: auto` en `sdd-kit.local.json`
 - WHEN el agente guarda el plan
-- THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff de `writing-plans` y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo sacado del plan>`
+- THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo>`, y el motivo pesa por su nombre la dependencia entre las interfaces de las tasks, cuántas son, el coste de un error que llegue a la rama y si el plan cabe en un contexto, sin umbral numérico (`Ejecución: native, porque 3 tasks encadenadas por la interfaz de Ledger, un error lo caza el test de su task y el plan cabe en un contexto`)
 - AND en `pair` la parada del plan es una sola pregunta que aprueba el plan y elige el método, con la recomendación del handoff como primera opción; no hay una parada aparte para el método
 - AND ninguna task del plan lleva un campo `Ejecución` propio: el método es del plan entero, salvo el cambio a SDD tras una compactación
 
@@ -269,8 +269,8 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN un plan con `Ejecución: native` (recomendado por el handoff o fijado en `sdd-kit.json`), una sesión retomada tras una compactación y dos o más tasks sin su línea `complete` en el ledger
 - WHEN el hilo retoma la ejecución
-- THEN sigue con `subagent-driven-development` sobre el mismo ledger y lo registra como ruling, sin parar en `delegate` ni en `unattended`
-- AND con una sola task pendiente, o sin compactación, sigue en Native
+- THEN sigue con el método SDD de `sdd-implement` sobre el mismo ledger y lo registra como `Task <N>: Ruling: compactación — sigo con SDD — quedan <k> tasks`, sin parar en `delegate` ni en `unattended`
+- AND con una sola task pendiente sigue en Native y lo registra como `Task <N>: Ruling: compactación — sigo con Native — queda 1 task`; sin compactación, sigue en Native sin línea
 
 ### El perfil se hereda de la feature, de la persona, de la release o del proyecto
 
