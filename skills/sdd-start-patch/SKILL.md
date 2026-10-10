@@ -1,6 +1,6 @@
 ---
 name: sdd-start-patch
-description: Usar cuando sdd-propose clasifica un cambio como patch —con la solución ya fijada: un bug determinista, un ajuste o una retirada solo de presentación, o una petición cerrada— y el usuario lo confirma, o al retomar un patch abierto con su patch.md. No es la entrada de un cambio: eso es sdd-propose.
+description: Usar cuando sdd-propose clasifica un cambio como patch —con la solución ya fijada, sea un bug determinista, un ajuste o una retirada solo de presentación, o una petición cerrada— y el usuario lo confirma, o al retomar un patch abierto con su patch.md. No es la entrada de un cambio (eso es sdd-propose).
 argument-hint: "<id o descripción del bug>"
 ---
 

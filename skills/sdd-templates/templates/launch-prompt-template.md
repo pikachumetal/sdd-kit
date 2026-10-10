@@ -17,7 +17,7 @@
 
 Base: `<develop | main>`
 
-> `develop` para todo lo que sale de la rama de integración (feature, patch, config); `main` para un hotfix. Si la constitution fija otro git-flow, el suyo.
+> `develop` para todo lo que sale de la rama de integración (feature, patch, config): la de `merge.into` en `.docs/sdd/sdd-kit.json`, o la del git-flow de la constitution; `main` para un hotfix.
 
 ```text
 <feature | hotfix>/<id>-<slug en inglés kebab-case>
@@ -27,16 +27,18 @@ Base: `<develop | main>`
 
 Carril: <config | patch | lite | feature | spike>
 
+> El de la fila («Patch:» → patch) o el que pasó `sdd-explore`; sin ninguno, el que ves al leer la fila. Va también en la primera línea del prompt: quien lo pega en otro worktree pega solo el segundo bloque.
+
 ```text
-Arranca <la <id> | este cambio> con sdd-propose: <enunciado en una o dos frases, con los datos de la fila>.
-Requisitos en <ruta>, <sección>[, y en la fila <id> del roadmap].
+Arranca <la <id> | este cambio> con sdd-propose, carril <carril>: <enunciado en una o dos frases, con los datos de la fila>.
+Requisitos en <ruta>, <sección>[, y en la fila <id> del roadmap] | Requisitos: los de este prompt (un config sin fila ni propuesta).
 Decisiones ya tomadas:
 - <decisión con su literal>
 Salda <fila de deuda y qué parte> | Nada que saldar.
 Perfil <pair | delegate | unattended>. Al fusionar, <`sdd merge --push` | `sdd merge` | lo decide el dev-lead>.
 ```
 
-> «Perfil»: el que dijo el dev-lead para este cambio o, si no, `control.profile` de `.docs/sdd/sdd-kit.json`. «Al fusionar»: `merge.*` de ese fichero (`push: true` → `` `sdd merge --push` ``); sin `merge`, «lo decide el dev-lead».
+> «Perfil»: el que dijo el dev-lead para este cambio o, si no, `control.profile` de `.docs/sdd/sdd-kit.json`. «Al fusionar»: `merge.*` de ese fichero (`push: true` → `` `sdd merge --push` ``); sin `merge`, o con `merge` sin `push`, «lo decide el dev-lead».
 
 ## Ejemplo
 
@@ -51,7 +53,7 @@ feature/0144-docs-and-migration
 Carril: feature
 
 ```text
-Arranca la 0144 con sdd-propose: la estructura nueva de documentos de la 3.0.0, sus plantillas y las rutas de la CLI.
+Arranca la 0144 con sdd-propose, carril feature: la estructura nueva de documentos de la 3.0.0, sus plantillas y las rutas de la CLI.
 Requisitos en .docs/sdd/specs/20261007-144256-proposal-0131-kit-rework/proposal.md, §Documentos, y en la fila 0144 del roadmap.
 Decisiones ya tomadas:
 - PRODUCT.md, ROADMAP.md y CHANGELOG.md van en la raíz; el resto, en .docs/sdd/ en minúsculas.

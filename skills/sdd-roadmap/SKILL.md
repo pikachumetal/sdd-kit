@@ -11,13 +11,13 @@ El kit tiene tres verbos: **planificar** (`sdd-roadmap`) → **hacer** (`sdd-pro
 
 **Principio central: proponer no es decidir.** Traes los cambios ordenados con tu recomendación; qué entra, en qué orden y qué se descarta lo decide el usuario.
 
-**`sdd-roadmap` no arranca nada: ni rama, ni carpeta de feature, ni spec, ni código.** Termina en el roadmap, y en `proposal.md` si toca. El mensaje final dice qué fila va primero y da su prompt de arranque.
+**`sdd-roadmap` no arranca nada: ni rama, ni carpeta de feature, ni spec, ni código.** Termina en el roadmap, y en `proposal.md` si toca. El mensaje final dice qué fila va primero y da su prompt de arranque; con «dame el prompt de la <id>», da solo ese prompt.
 
 ## Qué entrada es (lo decides tú, sin preguntarlo)
 
 Mira lo que trae la petición, en este orden:
 
-1. **Dar el prompt de una fila** — «dame el prompt de la <id>»: lee la fila, su propuesta con sus enmiendas y `.docs/sdd/sdd-kit.json`, y da el prompt de arranque calcado de [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nada más: no escribes, no reservas, no publicas ni commiteas. Si la fila está cerrada (✅, 🧪) o en marcha (🔄 o rama `feature/<id>-*` abierta), dilo en vez de dar el prompt (`tests/sdd-explore-0161-red.md`, m1).
+1. **Dar el prompt de una fila** — «dame el prompt de la <id>»: lee la fila, su propuesta con sus enmiendas y `.docs/sdd/sdd-kit.json`, mira con el paso 1 si su rama está abierta, y da el prompt de arranque calcado de [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md). Nada más: no escribes, no reservas, no publicas ni commiteas. Si la fila está cerrada (✅, 🧪) o en marcha (🔄 o rama `feature/<id>-*` abierta), dilo en vez de dar el prompt (`tests/sdd-explore-0161-red.md`, m1).
 2. **Items del gestor** — `ids.mode: tracker` en `.docs/sdd/sdd-kit.json` e ids de tickets en la petición.
 3. **Una reunión** — notas o acta de una reunión con el cliente.
 4. **Preparar una release** — «prepara la release N», «qué entra en la siguiente entrega».
@@ -34,7 +34,7 @@ Frente a `sdd-propose` decide el verbo: hacerlo ya («añade», «hazme», «arr
 4. **Ids** — en `sequence`, los N ids nuevos (N + 1 si hay propuesta) salen de **una sola** reserva: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<raíz>" --reserve --count N`. Sin `--reserve` el script solo propone, y otro worktree puede coger el mismo. En `tracker`, el id lo pone el gestor. Nunca un número a ojo.
 5. **Comprueba la forma** — tras escribir en el roadmap y antes de commitear, ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`. Un fallo en una línea que escribiste lo corriges en el roadmap, nunca en el validador. Un fallo en una línea que no tocaste no lo arreglas: lo listas en tu mensaje como forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0. En el RED, 2 de 2 sujetos no lo ejecutaron y dejaron el roadmap en rojo (P3).
 6. **Publica la reserva** — ejecuta `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap publish --project-root "<raíz>" --message "<mensaje>" .docs/sdd/roadmap.md` (más el `proposal.md` si lo hay): commitea en la rama de integración solo esos ficheros, con el cerrojo de `sdd merge`, en el worktree donde está sacada o en uno temporal si no está en ninguno. La rama sale de `merge.into` de `sdd-kit.json`, o de `--into`. Hasta ese commit la reserva no existe para los demás worktrees.
-7. **Cierra** — di qué fila va primero y da su prompt de arranque, calcado de [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md), también con «apunta, no lo arranques»: el prompt no arranca nada. Termina con «si prefieres hacerlo en esta sesión, di "arráncalo"»; con «arráncalo», invoca `sdd-propose` con esa fila. Sin esa frase, no la arranques (`tests/sdd-explore-0161-red.md`, m2 y m3: 4 de 4 cerraron nombrando la skill, sin prompt).
+7. **Cierra** — di qué fila va primero y da su prompt de arranque, calcado de [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md), también con «apunta, no lo arranques»: el prompt no arranca nada. Termina con «si prefieres hacerlo en esta sesión, di "arráncalo"»; con «arráncalo», invoca `sdd-propose` con esa fila. Sin esa frase, no la arranques (`tests/sdd-explore-0161-red.md`, m2).
 
 ## Lo que deja cada entrada
 

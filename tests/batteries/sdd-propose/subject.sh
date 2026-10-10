@@ -7,7 +7,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SC="$3"
 FIX="$HERE/fixtures"
 cell() { "$NODE" "$HEADLESS/battery.mjs" field "$HERE/battery.md" "$SC" "$1" || die "sin el escenario $SC en battery.md"; }
-# Si el kit que se prueba aún no tiene sdd-propose (el RED de la 0160), la guarda comprueba la puerta de entrada
+# Si el kit que se prueba aún no tiene sdd-propose, la guarda comprueba la puerta de entrada
 # y los pasos de spec y plan se piden a sdd-start-feature, donde vivían.
 GUARD="$(cell Esperado | sed 's/^sdd-kit://')"
 subject_init "$1" "$2" "$4" "$([ -d "$1/skills/$GUARD" ] && echo "$GUARD" || echo using-sdd)"

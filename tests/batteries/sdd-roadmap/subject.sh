@@ -16,6 +16,7 @@ put_kit_marker "$MARKER"
 case "$(cell Molde)" in
   salas) ;;
   salas-0013)
+    grep -q '^| 1 | Avisos por correo antes de la reserva | ⏳ |$' "$R/.docs/sdd/roadmap.md" || die "el roadmap del molde salas cambió: no hay dónde poner la fila 0013"
     sed -i 's/^| 1 | Avisos por correo antes de la reserva | ⏳ |$/&\n| 0013 | Aviso semanal a los responsables — `proposal: 0010`, tras 0012 | ⏳ |/' "$R/.docs/sdd/roadmap.md"
     put "$P10/proposal.md" < "$HERE/proposal-0010.md" ;;
   *) die "molde desconocido en battery.md: $SC" ;;

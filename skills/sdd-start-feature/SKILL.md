@@ -1,6 +1,6 @@
 ---
 name: sdd-start-feature
-description: Usar cuando sdd-propose entrega una feature con la spec aprobada (y el plan escrito, en modo full) para implementarla, validarla y cerrarla, o al retomar una feature en implementación en una rama con su spec.md aprobada — «sigue con la Task 3», «retoma la feature». No es la entrada de un cambio: eso es sdd-propose.
+description: Usar cuando sdd-propose entrega una feature con la spec aprobada (y el plan escrito, en modo full) para implementarla, validarla y cerrarla, o al retomar una feature en implementación en una rama con su spec.md aprobada — «sigue con la Task 3», «retoma la feature». No es la entrada de un cambio (eso es sdd-propose).
 argument-hint: "<id de la feature>"
 ---
 

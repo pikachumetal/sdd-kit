@@ -166,7 +166,10 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 
 ### Capacidad: `routing`
 
-**MODIFIED — Una pregunta entra por explore** (antes: «Una pregunta entra por consult»)
+**REMOVED — Una pregunta entra por consult**
+- motivo: `sdd-consult` pasa a llamarse `sdd-explore`; el requisito sigue como «Una pregunta entra por explore»
+
+**ADDED — Una pregunta entra por explore**
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario pregunta cómo funciona algo, o si algo es posible
 - THEN la primera skill que se invoca es `sdd-kit:sdd-explore`
@@ -198,9 +201,10 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 
 **ADDED — Un config que sale de explore da su prompt directo**
 - GIVEN el molde `salas`, con `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
-- WHEN el usuario escribe «¿Podemos subir `node` a 22.18 en los `engines`? Si se puede, lo quiero.»
-- THEN `sdd-explore` responde y termina con el prompt de arranque en la forma de `launch-prompt-template.md`: el título «Subir `node` a 22.18», sin id; `Base: develop`; la rama `feature/bump-node-22-18` sola en su bloque; `Carril: config`; y en otro bloque el prompt, que arranca con `sdd-propose`, con «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
+- WHEN el usuario escribe «Estoy pensando en subir `node` a 22.18 en los `engines` de `package.json`. ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree.»
+- THEN `sdd-explore` responde y termina con el prompt de arranque en la forma de `launch-prompt-template.md`: el título «Subir el mínimo de Node a 22.18», sin id; `Base: develop`; la rama `feature/<slug>` sola en su bloque; `Carril: config`; y en otro bloque el prompt, que arranca con `sdd-propose` y su carril, con «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
 - AND no escribe fila en el roadmap ni reserva id
+- AND «¿Podemos subir `node` a 22.18? Si se puede, lo quiero.», sin pedir el prompt, es una petición de cambio: entra por `sdd-propose` como config (0160)
 - AND termina con «si prefieres hacerlo en esta sesión, di "arráncalo"», y con «arráncalo» invoca `sdd-propose`
 
 ### Capacidad: `planning`
@@ -216,7 +220,7 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 - THEN su mensaje final da el prompt de arranque de la fila que va primero, en la forma de `launch-prompt-template.md`, también con «apunta, no lo arranques»
 - AND termina con «si prefieres hacerlo en esta sesión, di "arráncalo"», y con «arráncalo» invoca `sdd-propose` con esa fila
 
-**ADDED — «Dame el prompt de la <id>» da el prompt de arranque de esa fila**
+**ADDED — Dame el prompt de una fila da su prompt de arranque**
 - GIVEN el molde `salas` con la fila pendiente 0013 «Aviso semanal a los responsables», `proposal: 0010`, `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
 - WHEN el usuario escribe «dame el prompt de la 0013»
 - THEN `sdd-roadmap` da el prompt de arranque en la forma de `launch-prompt-template.md`: el título «0013 — Aviso semanal a los responsables»; `Base: develop`; la rama `feature/0013-<slug en inglés>` sola en su bloque; el carril; y el prompt, que arranca la 0013 con `sdd-propose`, con los requisitos en la propuesta 0010 y la fila, las decisiones de la propuesta y sus enmiendas que tocan a la 0013, las filas que salda o «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
@@ -225,7 +229,10 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 
 ### Capacidad: `capabilities`
 
-**MODIFIED — Explore lee la capacidad, no las specs** (antes: «La consulta lee la capacidad, no las specs»)
+**REMOVED — La consulta lee la capacidad, no las specs**
+- motivo: `sdd-consult` pasa a llamarse `sdd-explore`; el requisito sigue como «Explore lee la capacidad, no las specs»
+
+**ADDED — Explore lee la capacidad, no las specs**
 - GIVEN una pregunta de comportamiento ("¿qué hace hoy X?") en `sdd-explore`
 - WHEN existe `capabilities/`
 - THEN explore ejecuta `sdd capability index`, elige por su propósito la capacidad que cubre X y ancla la respuesta en ese fichero, no en la reconstrucción a partir de specs históricas
@@ -264,6 +271,10 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
 
 ## Enmiendas
+
+- 2026-10-10 — El ADDED «Un config que sale de explore da su prompt directo» pasa a la petición vigente de e2 («¿Rompe algo? Si no, dame el prompt…») y dice que «si se puede, lo quiero» entra por `sdd-propose`; el carril va también en la primera línea del prompt, porque quien lo pega en otro worktree pega solo el segundo bloque — hallazgos 4 y 1 de la revisión final — ruling del agente (corrige la spec a lo que el RED ya fijó)
+
+- 2026-10-10 — Forma del delta: los dos MODIFIED que renombraban su requisito («Una pregunta entra por consult», «La consulta lee la capacidad, no las specs») pasan a REMOVED + ADDED, porque `sdd capability merge` no admite renombrar (fila de deuda del marcador RENAMED), y el título del requisito de «dame el prompt» pierde el hueco del id. Sin cambio de comportamiento — cierre — ruling del agente
 
 - 2026-10-10 — Salen dos reglas y sus THEN: el dimensionado de cada fila en `sdd-roadmap` (ADDED «Cada fila que escribe el roadmap es del tamaño de una feature») y las decisiones del prompt en `sdd-propose` (ADDED «Las decisiones que trae la petición no se vuelven a preguntar») — sus RED salieron limpios: m2 y m3, 0 de 4 filas grandes; a5, 2 de 2 sin repreguntar (Art. I; `tests/sdd-explore-0161-red.md`). Se añade m3 a la batería de `sdd-roadmap` y e2 pasa a pregunta explícita («dame el prompt»): «si se puede, lo quiero» entra con razón por `sdd-propose` — Task 1 — aprobada: «Sácalas»
 
