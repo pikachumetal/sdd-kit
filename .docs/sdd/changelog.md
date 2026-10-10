@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-10-10
+
+Hotfix de la 2.3.3, sacado de `main`: el kit con superpowers 7.0.0, que reescribe `brainstorming`. Toda feature sigue teniendo `spec.md` y su gate, aunque brainstorming ofrezca saltarse las preguntas o dé la obra por pequeña. Sin cambios en el proyecto: la migración `v2.3.4` solo avanza el marcador. [Release notes](releases/v2.3.4/release-notes.md).
+
 ### Changed
 
 - **El kit funciona con `brainstorming` de superpowers 7.0.0** — la 7.0.0 reescribe la skill: su primer mensaje ofrece saltarse las preguntas («the skill is done and the gate goes with it»), dimensiona la obra («quick task», «small change», «project»), despacha un builder check y quita el «Spec Self-Review» que citaba el paso 4. Ahora el paso 4 de `sdd-start-feature` no ofrece saltarse las preguntas, y si el usuario pide empezar ya, la spec se escribe con los huecos en «Decisiones que he tomado yo» y pasa por su gate; el repaso de coherencia escribe sus cuatro comprobaciones. `overrides-superpowers.md` deja el tamaño sin gobernar los artefactos, sustituye el builder check por la review de spec del kit y mantiene su estilo de preguntas; versión validada: 7.0.0 ([patch 0167](specs/20261010-195847-patch-0167-superpowers-7-compat/patch.md))
