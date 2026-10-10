@@ -2,8 +2,24 @@
 >>> Skill: sdd-kit:sdd-explore
 <<< Launching skill: sdd-kit:sdd-explore
 
->>> Bash: ls .docs/sdd/ .docs/sdd/capabilities 2>/dev/null; git ls-files | head -50; grep -rliE "cancel" --exclude-dir=.git . | head -30
-<<< .docs/sdd/:
+>>> Bash: ls -a; ls .docs/sdd 2>/dev/null; git ls-files | head -80
+
+>>> Grep: cancel|anula
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+.docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserv
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
 changelog.md
 constitution.md
 mission.md
@@ -24,31 +40,38 @@ tech-stack.md
 .docs/sdd/tech-stack.md
 README.md
 package.json
-src/app.js
-test/app.test.js
-./.docs/sdd/chang
+src
 
->>> Bash: grep -niE "cancel" src/app.js test/app.test.js .docs/sdd/changelog.md .docs/sdd/roadmap.md; cat .docs/sdd/specs/*patch-0007-cancel/patch.md
-<<< src/app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
-test/app.test.js:13:test('cancelar respeta el día', () => {
-test/app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
-.docs/sdd/changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
-.docs/sdd/changelog.md:20:- Cancelar una reserva propia.
-.docs/sdd/roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
-.docs/sdd/roadmap.md:31:Cancelar una reserv
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
 
-=== RESULTADO (5 turnos, 0.097465 $)
-Las reservas se cancelan en `src/app.js:12`, en el comando `cancelar`:
+=== RESULTADO (6 turnos, 0.09637390000000001 $)
+Las reservas se cancelan en un único sitio: `src/app.js:12`, dentro de `run()`.
 
 ```js
 if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
 ```
 
-Recibe el día y la hora (`params[0]`, `params[1]`) y devuelve `cancelada <día> <hora>`.
+**Lo que hace el código (leído):** recibe el comando `cancelar` con dos parámetros (día y hora, p. ej. `mar 10:00`) y devuelve el texto `cancelada mar 10:00`. No modifica el array `bookings` (`src/app.js:3`), así que en realidad no borra nada: solo devuelve el mensaje.
 
-- **Test:** `test/app.test.js:13` ("cancelar respeta el día") comprueba que `cancelar mar 10:00` devuelve `cancelada mar 10:00`.
-- **Documentado:**
-  - `changelog.md` y `roadmap.md` recogen el patch 0007 (`specs/20260918-090000-patch-0007-cancel/`).
-  - Ese patch corrigió que la cancelación borraba reservas de otro día con la misma hora, porque comparaba solo por hora.
-  - El `patch.md` no incluye el diff.
-- **Observación mía, no de la documentación:** el código actual solo devuelve la cadena. No veo ahí ninguna lista de reservas ni borrado, así que la lógica de comparación que describe el patch no aparece en `app.js` tal como está.
+**Lo que dice la documentación:**
+- `changelog.md` y `roadmap.md` recogen el patch 0007 («La cancelación borraba reservas de otro día con la misma hora»), con su detalle en `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`.
+- La capacidad «Cancelar una reserva propia» figura en el changelog y en el roadmap.
+- El test que lo cubre es `test/app.test.js:13` («cancelar respeta el día»).
+
+**Lo que infiero:** el arreglo del patch 0007 parece reducirse a incluir el día en el mensaje. Como `cancelar` no toca `bookings`, la cancelación es hoy solo de cara a la salida. Si lo esperado es que quite la reserva de la lista, no está implementado. No he abierto el `patch.md` en detalle; si quieres, lo leo para confirmar qué se arregló exactamente.

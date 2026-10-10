@@ -2,26 +2,37 @@
 >>> Skill: sdd-kit:sdd-explore
 <<< Launching skill: sdd-kit:sdd-explore
 
->>> Grep: cancel
+>>> Bash: ls .docs/sdd 2>&1; ls .docs/sdd/capabilities 2>&1; git ls-files | head -80
 
->>> Glob: .docs/sdd/**/*.md
-<<< src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
-test\app.test.js:13:test('cancelar respeta el día', () => {
+>>> Grep: cancel|anula
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
 test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
 .docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
 .docs\sdd\changelog.md:20:- Cancelar una reserva propia.
 .docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
 .docs\sdd\roadmap.md:31:Cancelar una reserv
-<<< .docs\sdd\specs\20260917-090000-task-0006-free\spec.md
-.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
-.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
-.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
-.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
-.docs\sdd\constitution.md
-.docs\sdd\mission.md
-.docs\sdd\changelog.md
-.docs\sdd\roadmap.md
-.docs\sdd\tech-stack.md
+<<< changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+
 
 >>> Read: <run>\repo\src\app.js
 <<< 1	const [command, ...args] = process.argv.slice(2);
@@ -41,29 +52,22 @@ test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada
 15	
 1
 
->>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
-<<< 1	# Patch — cancel
-2	
-3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
-4	
-5	## Tiempo
-6	
-7	- Esfuerzo real: 0,5h
-8	
-
-=== RESULTADO (7 turnos, 0.10398740000000001 $)
-Las reservas se cancelan en el comando `cancelar`, en `src/app.js:12`:
+=== RESULTADO (6 turnos, 0.09577839999999999 $)
+Las reservas se cancelan en un único punto: `src/app.js:12`, dentro de `run()`.
 
 ```js
 if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
 ```
 
-Se invoca como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`, y lo cubre `test/app.test.js:13` («cancelar respeta el día»).
+Lo que dice el código:
+- El comando `cancelar` recibe día y hora (`params[0]`, `params[1]`), por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada <día> <hora>`. **No toca el array `bookings`**, así que en la práctica no elimina nada.
+- El test que lo cubre es `test/app.test.js:13` («cancelar respeta el día»), y solo comprueba ese texto.
 
-Lo que dicen los docs y lo que infiero del código:
+Lo que dicen los documentos:
+- El roadmap (línea 25) y el changelog (línea 14) registran el patch 0007: «La cancelación borraba reservas de otro día con la misma hora». Está en `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`.
+- El changelog (línea 20) lista «Cancelar una reserva propia» como capacidad entregada.
 
-- **Docs:** el patch 0007 (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`) corrigió que la cancelación borraba reservas de otro día con la misma hora. La causa era comparar solo por hora. El changelog también lo recoge.
-- **Código, lo que infiero:** ahora mismo `cancelar` no borra nada. Solo devuelve el texto `cancelada <día> <hora>` y no toca el array `bookings`. El test solo comprueba ese texto, así que no verifica que se borre la reserva.
-- **Posible desajuste:** el changelog dice «Cancelar una reserva propia», pero el código no tiene noción de propietario. No hay ningún campo de usuario en `bookings`.
+Lo que infiero: el patch 0007 describe un borrado real que filtraba por día y hora. El `src/app.js` actual solo imprime el mensaje. Es posible que la lógica de borrado no esté en esta versión del código, o que la cancelación nunca haya sido más que una simulación. No he leído `patch.md` para confirmarlo.
 
-Si quieres corregir que `cancelar` borre de verdad la reserva, eso ya es un cambio y pasaría por `sdd-propose`.
+¿Quieres que lo revise?

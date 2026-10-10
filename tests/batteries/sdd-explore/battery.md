@@ -31,3 +31,7 @@ Cada regla de `skills/sdd-explore/SKILL.md`, de dónde viene y qué escenario la
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Overview, pasos 1-4, red flags y tabla: traducción de `sdd-consult` | tabla «Reglas que se mueven» de la spec de la 0161; evidencia de cada regla en `tests/sdd-consult-red.md` y `-green.md` | e1, y g1, g9, k1 de `sdd-grilling` |
+| Paso 5: feature, patch y spike pasan por `sdd-roadmap`; explore no escribe la fila ni invoca `sdd-propose` | `tests/sdd-explore-0161-red.md`, e3: 2 de 2 traspasaron a `sdd-propose` sin fila; GREEN 2/2 | e3 |
+| Paso 5: un config da su prompt de arranque con la plantilla, sin id, y la frase «arráncalo» | `tests/sdd-explore-0161-red.md`, e2: 2 de 2 dieron un prompt sin la forma fija; GREEN 2/2 | e2 |
+| Red flag: invocar `sdd-propose` para una feature o un patch sin fila | RED e3 (la conducta del traspaso) | e3 |
