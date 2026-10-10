@@ -2,6 +2,7 @@ BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:StartSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-start-feature/SKILL.md') -Raw
   $script:EndSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-end-feature/SKILL.md') -Raw
+  $script:ImplementSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-implement/SKILL.md') -Raw
 
   function Get-Reference([string]$Name) {
     return Get-Content (Join-Path $script:RepoRoot "skills/sdd-start-feature/references/$Name") -Raw
@@ -22,8 +23,8 @@ BeforeAll {
 }
 
 Describe 'Revisor en segundo plano' {
-  It 'el paso 6 despacha el revisor final en segundo plano con el commit de la última task' {
-    Assert-Literal (Get-Step $script:StartSkill 6) @('en segundo plano', 'en cuanto existe el commit de la última task', 'antes de arrancar la aplicación')
+  It 'sdd-implement despacha el revisor final en segundo plano con el commit de la última task' {
+    Assert-Literal $script:ImplementSkill @('Dispatch it in the background as soon as the last task''s commit exists', 'before starting the app for its «Verificación visual»')
   }
 
   It 'el paso 7 presenta la validación cuando vuelve el revisor' {
@@ -34,8 +35,8 @@ Describe 'Revisor en segundo plano' {
     Assert-Literal (Get-Reference 'encargo-revision.md') @('git worktree add --detach', 'review-<id>-<sha corto>', 'no mires ramas ni commits posteriores', 'git worktree remove')
   }
 
-  It 'overrides dice que la revisión final de Native sale en segundo plano' {
-    Assert-Literal (Get-OverridesRow 'executing-plans') @('en segundo plano')
+  It 'la revisión final sale en segundo plano con los dos métodos' {
+    Assert-Literal $script:ImplementSkill @('in Native, the last task''s; in SDD, the squashed one after its clean review')
   }
 }
 
@@ -69,13 +70,12 @@ Describe 'Sha alcanzable' {
 
 Describe 'Commit del hilo mientras revisa el revisor final' {
   It 'va a la re-revisión del tramo si la revisión final ya salió, en <Where>' -ForEach @(
-    @{ Where = 'el paso 6 de sdd-start-feature'; Text = { Get-Step $script:StartSkill 6 } }
     @{ Where = 'control-profiles.md'; Text = { Get-Reference 'control-profiles.md' } }
   ) {
     Assert-Literal (& $Text) @('y la revisión final aún no ha salido, en la de la revisión final de rama; y si ya salió, aunque no haya vuelto, en la re-revisión')
   }
 
-  It 'overrides no lo manda a la final ya despachada' {
-    Assert-Literal (Get-OverridesRow 'subagent-driven-development') @('en la final si aún no ha salido, y si ya salió, en la re-revisión del tramo')
+  It 'sdd-implement no lo manda a la final ya despachada' {
+    Assert-Literal $script:ImplementSkill @('with no task open and the final review not yet out, the final review''s; and once it''s out, even if not back, the re-review of the range')
   }
 }

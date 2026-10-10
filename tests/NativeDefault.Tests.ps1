@@ -56,7 +56,7 @@ Describe 'Task 1 — contrato del método' {
   It 'overrides: subagent-driven-development deja de ser el default' {
     $overrides = Get-KitFile $script:Overrides
     $overrides | Should -Not -Match 'Es el default del kit'
-    $overrides | Should -Match 'Es el método de los planes largos o con revisión por task'
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'Use it when a review gate per task is wanted, or when the plan is long enough'
   }
 
   It 'overrides: el handoff se adopta y solo se sobrescribe dónde se para' {
@@ -79,7 +79,7 @@ Describe 'Task 1 — contrato del método' {
   }
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match '6\. \*\*Implementación\*\* — según la línea `Ejecución` del plan: `superpowers:executing-plans` \(Native\) o `superpowers:subagent-driven-development`'
+    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'es invocar `sdd-implement` con `Skill`[^\n]*Ejecuta el plan con el método de su línea `Ejecución`'
   }
 }
 
@@ -131,11 +131,11 @@ Describe 'REFACTOR — la pregunta del gate del plan en pair' {
 }
 
 Describe 'Revisión final — huecos del método' {
-  It 'overrides: executing-plans para en los frenos y en pair tras cada task aunque diga only these' {
-    $row = Get-TableRow $script:Overrides '| `executing-plans` (Native) |'
-    $row | Should -Match 'Four things stop you, and only these'
-    $row | Should -Match 'frenos de alcance'
-    $row | Should -Match 'tras cada task'
+  It 'sdd-implement para en los frenos y en pair tras cada task además de las cuatro paradas' {
+    $row = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $row | Should -Match 'a fifth class, not an exception to the four'
+    $row | Should -Match 'scope brake'
+    $row | Should -Match 'the stop after each task'
   }
 
   It 'greenfield escribe execution en el marcador solo si se respondió' {
@@ -145,7 +145,7 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'el paso 6 dice cómo se ejecuta una task lite' {
-    Get-KitFile 'skills/sdd-start-feature/SKILL.md' | Should -Match 'En modo lite, sin plan: el valor de `execution` si está fijado; con `auto`, Native'
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`'
   }
 
   It 'un método que el dev-lead nombró para la task también deja solo Apruebo y Cambios' {

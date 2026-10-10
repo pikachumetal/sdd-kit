@@ -1,6 +1,7 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:Skill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-start-feature/SKILL.md') -Raw
+  $script:Implement = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-implement/SKILL.md') -Raw
 
   function Get-Step([int]$Step) {
     return [regex]::Match($script:Skill, "(?ms)^$Step\. .*?(?=^\d+\. |^## )").Value
@@ -13,21 +14,21 @@ BeforeAll {
 }
 
 Describe 'Verificación visual' {
-  It 'el paso 6 da el script de Playwright cuando falta el MCP, con su contraejemplo' {
-    Assert-Literal (Get-Step 6) @('un script con el paquete `playwright`', '«El MCP de Playwright no está en la sesión» no es estar sin navegador', 'con el error concreto')
+  It 'sdd-implement da el script de Playwright cuando falta el MCP, con su contraejemplo' {
+    Assert-Literal $script:Implement @('a script with the `playwright` package', '«The Playwright MCP isn''t in the session» is not «no browser»', 'said with the concrete error')
   }
 
-  It 'el paso 6 conserva las capturas hasta la validación' {
-    Assert-Literal (Get-Step 6) @('Guarda las capturas fuera de git hasta la validación', 'sin borrarlas al limpiar')
+  It 'sdd-implement conserva las capturas hasta la validación' {
+    Assert-Literal $script:Implement @('Keep the screenshots outside git until validation', 'don''t delete them when cleaning')
   }
 
   It 'la parada de pair y la validación enseñan medidas y capturas antes del guion' {
-    Assert-Literal (Get-Step 6) @('antes del guion enseña el criterio, la salida del detector por viewport', 'cada medida con su valor y el esperado si el criterio fija un valor, y la ruta de cada captura')
+    Assert-Literal $script:Implement @('before the script show the criterion, the detector output per viewport', 'each measurement with its value and the expected one if the criterion fixes a value, and each screenshot''s path')
     Assert-Literal (Get-Step 7) @('antes del guion van su criterio, la salida del detector por viewport', 'sus medidas solo si el criterio fija un valor', 'la ruta de cada captura', '«no probado» con su motivo')
   }
 
   It 'la tabla de racionalizaciones responde al «no tengo el MCP»' {
-    $script:Skill | Should -Match '(?m)^\| "No tengo el MCP de Playwright[^\n]*script con el paquete `playwright`'
+    $script:Implement | Should -Match '(?m)^\| "No Playwright MCP: the visual check stays «no probado»"[^\n]*script with the `playwright` package'
   }
 }
 

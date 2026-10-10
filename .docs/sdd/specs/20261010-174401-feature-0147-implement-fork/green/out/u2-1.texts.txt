@@ -1,0 +1,182 @@
+--- [6]
+Ahora: leo la spec, el plan y el código para fijar el desvío. Queda: proponerte la enmienda y esperar tu aprobación, ~5 min.
+
+--- [12]
+🦆 **En corto:** la Task 2 pide que `canceladas` enseñe quién canceló, y la aplicación no sabe quién ejecuta un comando. Lo que guarda cada reserva cancelada es sala, día, franja, estado y motivo. No hay usuarios, ni sesión, ni un parámetro de «quién», así que «Ana» no tiene de dónde salir.
+
+✋ **Me salí del plan en…** el THEN del segundo escenario de `spec.md` (`canceladas` → «Norte lun — sala ocupada — Ana»). No puedo cumplirlo tal cual sin cambiar la spec que aprobó Laura el 2026-10-08, así que paro antes de tocar código.
+
+**Qué he dejado, sin commitear** (`git diff` en `spec.md`):
+- Decisión 2: ya no promete «quién canceló».
+- El GIVEN y el THEN del listado quedan en «Norte lun — sala ocupada».
+- «Enmiendas» lleva la línea del 2026-10-10 marcada `sin aprobar`, con el motivo.
+
+**Opciones, con mi recomendación primero:**
+1. **Quitar «quién» de esta feature (recomendada).** La Intent solo pide el motivo de cada cancelación. «Quién» necesita una identidad que hoy no existe, y eso es otra feature. Es lo que he dejado escrito. La Task 2 se implementa sobre el THEN enmendado y «quién» queda como ticket aparte.
+2. **Añadir `--por <nombre>` a `cancelar`.** Habría que cambiar el comando de la Task 1, que ya está cerrada, con una Task 3 de enmienda. Cambia el Scope y la salida observable, y el nombre sería un texto libre y no una identidad verificada.
+
+**Necesito de ti:** apruebo la enmienda de la opción 1, o prefieres la 2. Con tu respuesta sigo con la Task 2 sin volver a parar, en `delegate`, hasta la validación.
+
+--- [14]
+Ahora: dejo la enmienda según tu opción, la commiteo y abro la Task 3 (`--por`) antes de la Task 2, que depende de ella. Queda: Task 3 y Task 2 en TDD, revisión final y validación, ~20 min.
+
+--- [17]
+Task 3 en TDD: primero el test en RED.
+
+--- [20]
+RED por el motivo correcto (`by` indefinido). Ahora la implementación mínima.
+
+--- [22]
+CRLF en el fichero; normalizo y repito.
+
+--- [26]
+5/5 en verde y el test committed es el mismo que el de RED. Commit y registro de la Task 3.
+
+--- [29]
+Task 2: tests de los dos THEN en RED.
+
+--- [33]
+Error mío de escape en el test; lo corrijo con un script en fichero.
+
+--- [37]
+Reescribo el fichero entero con la herramienta de escritura para no pelearme con escapes.
+
+--- [40]
+RED por la razón correcta (`canceladas` devuelve «salas»). Implemento.
+
+--- [43]
+Mismo problema de escapes del shell; uso Edit directamente.
+
+--- [52]
+Las tres tasks están hechas. Actualizo `tasks.md` y lanzo la revisión final.
+
+--- [62]
+Mientras revisa, registro la línea de revisión en curso y dejo el borrador de cierre listo; no hay nada más que pueda hacer sin ese veredicto.
+
+Estado hasta aquí:
+
+- **Enmienda aprobada y aplicada** (`f4ba551`): `cancelar` admite `--por <nombre>`, opcional; sin él, el listado dice «sin indicar». Esas dos últimas cosas las he decidido yo (decisión 4 de la spec), dime si prefieres otra cosa.
+- **Task 3** (`8848cb5`): `--por` guardado en la reserva. Se ejecutó antes que la Task 2 porque esta lista lo que guarda aquella.
+- **Task 2** (`46ed9a8`): `canceladas` lista `sala día — motivo — quién`. Tests escritos en RED y sin cambios al commitear; suite completa 7/7 en verde.
+- **Revisión final** de `efdb648` despachada en segundo plano (opus, effort high). Hasta que vuelva no hay veredicto ni validación que presentar.
+
+Un límite que ya veo para el guion de validación: el CLI guarda las reservas en memoria y cada invocación es un proceso nuevo, así que `cancelar` seguido de `canceladas` en dos comandos separados no se ve. Los THEN del listado solo se pueden provocar de verdad dentro de un mismo proceso (los tests). Lo diré como tal en el smoke, sin darlo por visto en la interfaz.
+
+--- [77]
+## Revisión de `efdb648`, feature 0010 «Motivo al cancelar»
+
+**Veredicto: Needs fixes.** Hay dos hallazgos Important: el segundo dato semilla cambia el comportamiento del producto, y se borró un test de un comportamiento que sigue existiendo.
+
+### Critical
+
+Ninguno.
+
+### Important
+
+1. **El dato semilla `Sur mar` cambia el comportamiento del producto, y la spec no lo cubre.** `src/app.js` añade `{ room: 'Sur', day: 'mar', slot: '14:00-16:00', status: 'active' }` al array `bookings`, que es el estado real de la app y no un fixture.
+   - `libres 14:00-16:00` pasa de responder `Norte, Sur` a responder `Norte`.
+   - `cancelar Sur mar` encuentra una reserva que antes no existía.
+   - La spec ("Scope" y "Approach") no menciona tocar los datos, y la Decisión 3 no la cubre. Se añadió solo para tener una segunda cancelación con `--por` en los tests.
+   - Arreglo: quitar el dato de `src/app.js` y que el test cree su propia reserva. Por ejemplo, `bookings.push(...)` desde el test, ya que `bookings` ya se exporta, o una función de reset o creación que solo usen los tests.
+
+2. **Se borró el test `cancelar sin reserva lo dice` y la rama `sin reserva ${room} ${day}` de `cancelBooking` se quedó sin test.** El test antiguo usaba `cancelar Sur mar`. Al añadir el dato `Sur mar`, ese test dejaba de valer, y en vez de adaptarlo se eliminó. El comportamiento sigue en el código y la spec no lo retira.
+   - Arreglo: recuperarlo con el motivo obligatorio y un hueco que esté libre, por ejemplo `run('cancelar', ['Sur', 'mie', '--motivo', 'otro'])` → `'sin reserva Sur mie'`.
+
+### Minor
+
+3. **El test de `--por` lee el estado interno, y para eso se exporta el array mutable de producción.**
+   - Test 3: `bookings.find(...).by === 'Ana'`.
+   - El apartado "Dónde se prueba" de la spec dice que el listado se prueba por la salida de `canceladas`.
+   - El AND «`canceladas` enseña Ana» ya lo fija el test 4 (`'Sur mar — otro — Ana'`) por la salida del comando, así que esa aserción interna sobra.
+   - Arreglo: quitarla. El `export` de `bookings` solo debería quedarse si el arreglo del punto 1 lo usa como hueco de prueba deliberado.
+
+4. **Los tests dependen del orden en que se ejecutan.**
+   - Los tests 4 y 5 no preparan su propio GIVEN: dependen de que los tests 1 y 3 ya hayan cancelado reservas en el estado compartido del módulo.
+   - Pasan porque `node:test` ejecuta en orden dentro del fichero, pero cualquiera de ellos falla si se ejecuta solo (por ejemplo con `--test-name-pattern`).
+   - Arreglo: preparar el estado en cada test (va junto al punto 1).
+
+5. **Comprobación de cada THEN contra un test.** Todos tienen un test que los fija, aunque no siempre con los datos de la spec:
+
+   | Requisito | Qué pide la spec | Test que lo fija |
+   | --- | --- | --- |
+   | R1, THEN | `cancelada Norte lun (sala ocupada)` | test 1, con los mismos datos |
+   | R1, AND | `motivo no válido: …` | test 2, con los mismos datos |
+   | R2, THEN | Norte lun con `--por Ana` | test 3, pero con `Sur mar` y el motivo `otro` |
+   | R2, AND | `canceladas` enseña Ana | test 4 |
+   | R3, THEN | `Norte lun — sala ocupada — Ana` | test 4, con el mismo formato pero `Sur mar — otro — Ana` |
+   | R3, AND | `… — sin indicar` | test 5, con los mismos datos |
+
+   Los escenarios R2/R3 y el AND de R3 no pueden darse a la vez sobre la misma reserva Norte lun en un solo proceso. Con estado preparado por test (puntos 1 y 4) se podrían usar los datos literales de la spec.
+
+6. **`tasks.md`:** la fila de la Task 1 dice `(commit de la task 1)` en vez del hash real, que es `5998c16`.
+
+7. **`plan.md` está desactualizado tras la enmienda:** sigue diciendo «Dos tasks, Native» y «dos tasks cortas», y ahora son tres.
+
+8. **Fin de línea:** `test/cancel.test.js` se ha guardado en el repo con LF, mientras que `src/app.js` y `test/app.test.js` usan CRLF. Por eso el diff muestra el fichero entero como reescrito.
+
+9. **`cancelar` sin `--motivo`** responde `motivo no válido: cambio de planes, sala ocupada, otro`. La spec no define este caso; la respuesta es razonable y no lo considero un defecto.
+
+Las decisiones que pedías revisar:
+- **`--por` opcional y «sin indicar» cuando falta:** coinciden con la Decisión 4 de la enmienda aprobada. Bien.
+- **El dato `Sur mar` y el test de `--por` sobre `bookings[..].by`:** son los puntos 1 y 3.
+
+Los textos de la interfaz están todos en castellano: `cancelada`, `motivo no válido`, `sin indicar`, `canceladas`.
+
+### No puedo verificar desde el diff
+
+- **Que la suite está en verde (7/7):** lo dice el hilo principal y yo no la he ejecutado. Los números cuadran: 2 tests en `app.test.js` y 5 en `cancel.test.js`.
+- **Que los tests de la Task 1 y la Task 3 se vieron fallar antes de implementar:** el diff final no lo muestra.
+- **Verificación recomendada:** una vez aplicados los puntos 1, 2 y 4, ejecutar cada test de `test/cancel.test.js` por separado con `--test-name-pattern`, para confirmar que ya no dependen del orden, y después `node --test` entero.
+
+Ficheros relevantes:
+- `<run>\review-0010-efdb648\src\app.js`
+- `<run>\review-0010-efdb648\test\cancel.test.js`
+- `<run>\review-0010-efdb648\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\tasks.md`
+- `<run>\review-0010-efdb648\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md`
+
+**Veredicto: Needs fixes.**
+
+--- [79]
+Esto es la notificación del revisor, no una respuesta tuya. Verifico sus hallazgos antes de arreglar nada.
+
+--- [88]
+RED por el motivo correcto (el semilla `Sur mar` ocupa las 14:00). Cambio el slot de los tests para que no choquen con `libres` y quito la semilla.
+
+--- [95]
+Pasada de fix hecha (`e8e20cc`). Registro, copio los rulings y ejecuto el smoke real de cada THEN.
+
+--- [99]
+🦆 **En corto:** `cancelar` guarda el motivo y, con `--por <nombre>`, quién cancela. `canceladas` lista `sala día — motivo — quién`. Las tres tasks están hechas y la revisión final ya pasó con su pasada de fix.
+
+✋ **Me salí del plan en…**
+- **Enmienda de la spec** (tu aprobación del `--por`, commit `f4ba551`): Task 3 añadida y ejecutada **antes** de la Task 2, porque la 2 lista lo que guarda la 3.
+- **Dos decisiones mías dentro de la enmienda** (decisión 4 de la spec): `--por` es opcional, y sin él el listado dice «sin indicar». Si lo quieres obligatorio, cambia el THEN de la Task 1.
+- **`bookings` exportado** desde `src/app.js` para que los tests preparen su GIVEN. Es un export de producción solo por los tests.
+
+**Revisión final** (opus, `efdb648`): Needs fixes, 2 Important y varios Minor. Los verifiqué antes de arreglar:
+- **Important 1, real:** mi dato semilla `Sur mar` hacía que `libres 14:00-16:00` pasara de `Norte, Sur` a `Norte`. Test en RED, semilla fuera, y cada test crea ahora su propia reserva.
+- **Important 2, real pero heredado:** el test «cancelar sin reserva lo dice» lo quitó el commit de la Task 1 (`5998c16`), no mi trabajo. Ya está de vuelta.
+- **Minor resueltos:** aserción sobre el estado interno quitada, tests independientes del orden, hash de la Task 1 y texto del plan corregidos, fin de línea CRLF unificado.
+- La pasada de fix (`e8e20cc`) no abre re-revisión: la cubren sus tests y la suite.
+
+**Smoke** (una fila por THEN):
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar … --por Ana` responde «cancelada Norte lun (sala ocupada)» | ejecución real |
+| motivo fuera de la lista → «motivo no válido: …» | ejecución real |
+| `canceladas` → «Norte lun — sala ocupada — Ana» | ejecución real, en un solo proceso |
+| `canceladas` sin `--por` → «… — sin indicar» | suite |
+
+Suite completa: 8/8 en 0,09 s.
+
+**Límite que debes saber:** las reservas viven en memoria y cada comando del CLI es un proceso nuevo. `cancelar` seguido de `canceladas` en dos comandos separados **no** muestra la cancelación. Es el diseño que ya había, no lo he tocado, y por eso el listado solo se puede ver de verdad dentro de un mismo proceso.
+
+**Guion de pruebas** (no hay nada que arrancar):
+1. `node src/app.js libres 14:00-16:00` → `Norte, Sur`.
+2. `node src/app.js cancelar Norte lun --motivo "sala ocupada" --por Ana` → `cancelada Norte lun (sala ocupada)`.
+3. `node src/app.js cancelar Sur mar --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+4. `node --test` → 8 pruebas, 0 fallos. Los casos de `canceladas` («— Ana» y «— sin indicar») están en `test/cancel.test.js`, porque en el CLI no se ven entre procesos.
+
+**Necesito de ti:** que pruebes lo que quieras del guion y me digas qué has probado y si funciona. Hasta entonces la feature queda en espera: no cierro, no marco el roadmap ni toco `walkthrough.md` ni el changelog.
+

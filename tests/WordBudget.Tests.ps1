@@ -22,7 +22,8 @@ BeforeAll {
       'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
       'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
       'sdd-propose'         = @{ SkillMd = 5000; Total = 5000 }
-      'sdd-start-feature'   = @{ SkillMd = 5400; Total = 17400 }
+      'sdd-implement'       = @{ SkillMd = 5600; Total = 9100 }
+      'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.

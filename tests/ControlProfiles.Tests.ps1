@@ -28,7 +28,7 @@ Describe 'Perfiles de control: arranque y ejecución' {
   It 'los overrides arbitran rulings y merge' {
     $overrides = Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md'
     $overrides | Should -Match 'finishing-a-development-branch'
-    $overrides | Should -Match '(?i)ruling'
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match '(?i)ruling'
   }
 
   It 'la review de spec no se propone por defecto' {

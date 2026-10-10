@@ -27,8 +27,9 @@ Describe 'Frenos de alcance en la ejecución' {
     $cells[3] | Should -Be 'para'
   }
 
-  It 'sdd-start-feature nombra el freno en el paso 6 y en el trabajo descubierto, y enlaza la referencia' {
-    ([regex]::Matches($script:Skill, '(?i)freno de alcance')).Count | Should -BeGreaterOrEqual 2
+  It 'sdd-start-feature nombra el freno en el trabajo descubierto, y enlaza la referencia' {
+    ([regex]::Matches($script:Skill, '(?i)freno de alcance')).Count | Should -BeGreaterOrEqual 1
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match '(?i)scope brakes\*\*[^\n]*control-profiles\.md'
     $script:Skill | Should -Match '(?i)freno de alcance[^
 ]*\(references/control-profiles\.md\)'
   }
@@ -41,7 +42,7 @@ Describe 'Frenos de alcance en la ejecución' {
     Get-KitFile 'skills/sdd-templates/templates/tasks-template.md' | Should -Match '(?m)^## Fixes adicionales.*freno de alcance'
   }
 
-  It 'los overrides arbitran los frenos frente a subagent-driven-development' {
-    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Match 'frenos de alcance'
+  It 'sdd-implement arbitra los frenos frente a las cuatro paradas' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'a \*\*scope brake\*\*'
   }
 }

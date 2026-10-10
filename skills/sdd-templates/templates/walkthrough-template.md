@@ -39,7 +39,7 @@ created: <YYYY-MM-DD>
 
 ### Decisiones tomadas sin el dev-lead
 
-> Los rulings de la ejecución («Rulings I made», del informe final de `subagent-driven-development`): salir
+> Los rulings de la ejecución («Rulings I made», del mensaje final de `sdd-implement`): salir
 > del plan sin cambiar la spec y seguir, sin parar. _Ninguna_ si no hubo.
 
 - <decisión> — <por qué> — <coste si está mal>

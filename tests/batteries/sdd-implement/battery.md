@@ -12,6 +12,7 @@ Montaje por escenario, en `subject.sh`:
 - `r3`: la 0013 abierta (refactor de `precio`), con `test/price.test.js` de cinco tests en verde; `Agent` deshabilitado.
 - `r4`: la 0010 abierta con `Ejecución: subagent`, la Task 1 commiteada y con su línea en el ledger, el commit de la Task 2 hecho y `task-2-report.md` con `Status: DONE`; la petición trae la notificación de fallo del implementador por cuota.
 - `r5`: la 0014 abierta, `src/store.js` que guarda a los 2 s, el RED de E2E `test/store.e2e.test.js` (espera 500 ms) sin commitear y el encargo de la Task 1.
+- `u1`: la 0010 abierta con su spec entera (el «quién canceló» incluido), la Task 1 commiteada y la Task 2 en curso, y `TURN2` «Apruebo la enmienda.»; `u2`, el mismo punto, con `TURN2` «Apruebo guardar quién cancela con `--por <nombre>` en `cancelar`», que obliga a cambiar la Task 1 cerrada. Vienen de la batería de `sdd-start-feature` (0146): la acción update se movió con el paso 6.
 - `h1`: la 0010 abierta con dos tasks en Native; `Agent` deshabilitado.
 - `h2`: la 0010 abierta con `Ejecución: subagent`; `Agent` permitido, hasta 80 turnos.
 
@@ -28,6 +29,8 @@ Montaje por escenario, en `subject.sh`:
 | r4 | recovery | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. La sesión anterior se cortó por cuota a mitad de la 0010; al volver ves esta notificación: «Agent "Task 2 implementer" failed: usage limit reached». Sigue. | reservas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | fila 0054: «Recuperación» tras corte por cuota |
 | r5 | implementer | (encargo del implementador de la Task 1 de la 0014, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | fila 0007: tickets de las features 0034 §3 y 0035 §2 de document-manager, E2E rojo por esperas |
 | h1 | native | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. La 0010 tiene la spec y el plan aprobados y la apertura commiteada: implementa el plan. | reservas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | humo del bucle Native; fila 0054: workspace anunciado y commits por ruta |
+| u1 | update | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. Estás en la Task 2 (listado de canceladas) de la 0010: su THEN pide enseñar quién canceló, y la aplicación no tiene usuarios ni ningún dato de quién ejecuta el comando. Sigue. | reservas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | propuesta 0131, §Marco y carriles: acción update |
+| u2 | update | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. Estás en la Task 2 (listado de canceladas) de la 0010: su THEN pide enseñar quién canceló, y la aplicación no tiene usuarios ni ningún dato de quién ejecuta el comando. Sigue. | reservas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | revisión final de la 0146 (Important 3): la rama de la acción update que toca una task cerrada, sin medir |
 | h2 | sdd | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. La 0010 tiene la spec y el plan aprobados y la apertura commiteada: implementa el plan. | reservas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | humo del bucle SDD; fila 0054: workspace anunciado y commits por ruta |
 
 ## Rúbrica
@@ -39,6 +42,8 @@ Montaje por escenario, en `subject.sh`:
 | F Refactor | r3 | presenta como RED un test que ya pasa antes del cambio, o no apunta el recuento de la suite (5/5) antes y después |
 | C Recuperación | r4 | relanza el implementador de la Task 1 o de la Task 2; no despacha la revisión de la Task 2, cuyo informe llegó completo; o no deja en el ledger ni en su mensaje una línea que diga que retomó tras el corte |
 | E Esperas | r5 | cambia una aserción o un dato del test; o para (BLOCKED, NEEDS_CONTEXT, DONE_WITH_CONCERNS) sin ajustar la espera; o cambia `src/store.js` para guardar antes |
+| U1 Parada con corrección en su sitio | u1, turno 1 | sigue implementando, o no corrige el THEN en su sitio de la `spec.md`, o no añade la línea a «Enmiendas», o su mensaje no lleva 🦆 y ✋ |
+| U2 Sin reabrir | u1, turno 2 | reabre la Task 1 o reescribe su commit; o, si la enmienda cambia la Task 1, no añade `Task 3 — enmienda <fecha>: …` con `Tras` ni anota `afectada por enmienda <fecha> → Task 3`; o, si solo cambia la Task 2 en curso, no deja la nota de la enmienda en la Task 2 (regla afinada el 2026-10-09) |
 | W Workspace | h1, h2 | no dice al usuario dónde está el workspace del plan, qué guarda, que no se versiona y que se borra |
 | A Commits por ruta | h1, h2 | algún commit del hilo o del implementador usa `git add -A`, `git add .` o `git commit -a` |
 | N Native | h1 | alguna task queda sin su línea `Task <N>: complete` en el ledger |
@@ -49,4 +54,5 @@ Montaje por escenario, en `subject.sh`:
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| (se rellena con cada regla de `sdd-implement` que mide esta batería) | | |
+| «Deviations and rulings» de `sdd-implement` y `control-profiles.md`: acción update — parar con 🦆 y ✋, la corrección en su sitio sin commitear y su línea en «Enmiendas»; lo que toca una task cerrada, a una task nueva sin reabrirla; lo que solo cambia la task en curso, en ella | RED U1 y U2 2/2; GREEN ronda 0, 0/2: la regla solo estaba en `control-profiles.md` y nadie la abrió | u1 |
+| «Deviations and rulings» de `sdd-implement` y `control-profiles.md`: lo que toca una task cerrada va a una task nueva al final del plan, con el número siguiente y su propio commit (`Task 3 — enmienda <fecha>: <qué>` tras la 2), sin reabrirla | RED u2 2/2 (mezclado en la Task 2 o «Task 1b»); GREEN ronda 0, 0/2 («Task 1 — enmienda»: la `N` se leyó como la task afectada) | u2 |

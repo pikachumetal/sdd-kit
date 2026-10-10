@@ -16,7 +16,8 @@ BeforeAll {
 Describe 'Cruce de los ficheros de la task con la base antes de cada despacho' {
   BeforeAll {
     $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
-    $script:Skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+    $script:Skill = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $script:CrossingInSkill = 'git diff --name-only $(git merge-base HEAD <integration>) <integration>'
     $script:Brake = Get-MarkdownSection $script:Profiles '### Fichero de la task cambiado en la base' '^##'
     $script:Crossing = 'git diff --name-only $(git merge-base HEAD <integración>) <integración>'
   }
@@ -59,13 +60,13 @@ Describe 'Cruce de los ficheros de la task con la base antes de cada despacho' {
     $cells[3] | Should -Be 'para'
   }
 
-  It 'el paso 6 de sdd-start-feature hace el cruce y lo nombra como freno' {
-    $script:Skill | Should -Match ([regex]::Escape($script:Crossing))
-    $script:Skill | Should -Match '(?i)fichero de la task cambiado en la base'
+  It 'sdd-implement hace el cruce y lo nombra como freno' {
+    $script:Skill | Should -Match ([regex]::Escape($script:CrossingInSkill))
+    $script:Skill | Should -Match '(?i)a task file changed in the base'
   }
 
-  It 'sdd-start-feature lleva la red flag y la racionalización del RED' {
-    $script:Skill | Should -Match '(?i)sin cruzar sus ficheros con la base'
-    $script:Skill | Should -Match ([regex]::Escape('no toca esa fila'))
+  It 'sdd-implement lleva la red flag y la racionalización del RED' {
+    $script:Skill | Should -Match '(?i)without crossing its files with the base'
+    $script:Skill | Should -Match ([regex]::Escape('Another feature can touch your files without touching your row'))
   }
 }

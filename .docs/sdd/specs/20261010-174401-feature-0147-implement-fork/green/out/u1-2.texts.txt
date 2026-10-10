@@ -1,0 +1,116 @@
+--- [6]
+Ahora: leo la spec, el plan y `tasks.md` de la 0010 para ver el THEN exacto y qué hay hecho. Queda: decidir si es desvío de spec y preparar la enmienda, ~5 min.
+
+--- [17]
+🦆 **En llano:** la spec pide que `canceladas` responda «Norte lun — sala ocupada — Ana». Pero `src/app.js` solo lee `process.argv`: no hay usuarios, ni sesión, ni nombre de quien ejecuta el comando. «Ana» no sale de ningún sitio, y la Task 1 (ya hecha) tampoco guarda un autor.
+
+✋ **Me salí del plan en la Task 2: el THEN del listado cambia la spec, no es un ruling.** Estoy en `delegate`, así que paro aquí y no implemento nada de la task hasta que lo apruebes.
+
+**Qué he dejado sin commitear (en `spec.md`, marcado «sin aprobar»):**
+- Decisión 2, el GIVEN y el THEN del listado pasan a: «Norte lun — sala ocupada», sin «quién».
+- Línea en «Enmiendas» con el motivo.
+- `tasks.md`: Task 2 detenida a la espera de esta enmienda.
+
+**Mi recomendación: retirar «quién canceló» de esta feature** y abrir otra cuando haya identidad. Cualquier valor que inventara ahora sería un dato falso en el listado.
+
+**Alternativa:** un flag `--por <nombre>` en `cancelar`, que guarda el nombre como texto libre. Eso cambia el comando de la Task 1 (cerrada), añade una task nueva al final y su THEN de fallo (¿qué pasa sin `--por`?), y «quién» sería lo que cada uno teclee, no una identidad verificada.
+
+**Necesito de ti:** ¿apruebas la enmienda tal como está, o prefieres el `--por`? Con tu respuesta sigo con la Task 2 (RED en `test/cancel.test.js`, implementación en `src/app.js`, `task done`), la revisión final y la validación.
+
+--- [19]
+Ahora: registro la enmienda aprobada, la commiteo y hago la Task 2 en Native con TDD. Queda: Task 2, revisión final y validación, ~15 min.
+
+--- [24]
+Base sin cambios en roadmap ni en ficheros. Ahora, RED: escribo el test del THEN (con el estado `cancelled` en el GIVEN).
+
+--- [27]
+RED correcto (falla porque falta el comando). Ahora el código mínimo.
+
+--- [32]
+My script's `\\n` got unescaped into a real newline; fixing the literal.
+
+--- [37]
+Task 2 completa (5/5 verdes). Ahora: dispatch de la revisión final. Queda: revisión, validación y cierre, ~10 min.
+
+--- [49]
+Mientras revisa: smoke de los THEN por la CLI real y la suite completa.
+
+--- [52]
+Ahora: espero la revisión final (opus, en segundo plano, sobre `627593b`). Queda: su veredicto, y luego la validación y el cierre, ~8 min.
+
+**Hecho hasta aquí**
+- Enmienda aprobada y commiteada (`34b49da`): el listado ya no enseña «quién canceló».
+- Task 2 completa (`627593b`): RED visto fallar, GREEN, `canceladas` implementado. Suite `node --test`: 5/5 en ~94 ms.
+
+**Smoke por THEN**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| motivo fuera de la lista → «motivo no válido: …» | ejecución real (provocado con `me aburro`) |
+| `canceladas` → «Norte lun — sala ocupada» | `suite` solamente |
+
+**Para el guion y la validación:** el estado de las reservas vive en memoria del proceso. Con la CLI real, `cancelar` y `canceladas` son procesos distintos, y `canceladas` imprime vacío. El THEN solo se cumple dentro de un proceso (como en el test). Esto viene del diseño previo de la app (Task 1 y el seed en memoria), no de la enmienda, y arreglarlo (persistencia) es otro alcance. Lo dejo como hallazgo fuera de scope para que lo decidas tú: ticket aparte o ampliar esta feature.
+
+Cuando vuelva el revisor final, escribo `Revisión final:` en `tasks.md`, hago su pasada de fix si la hay y presento la validación con el guion.
+
+--- [56]
+El commit 627593b se puede mergear: no hay hallazgos Critical ni Important. El diff cumple los dos escenarios ADDED de la spec, con los textos exactos. También respeta la enmienda del 2026-10-10: el listado no enseña «quién canceló» y no queda rastro de ello en el código ni en los tests. Todo el texto de la interfaz está en castellano.
+
+No pude leer `code-reviewer.md` porque se denegó el permiso de lectura. He revisado con los criterios habituales: cumplir la spec, el efecto sobre quien usa la CLI y la cobertura de los tests.
+
+**Critical:** ninguno.
+
+**Important:** ninguno.
+
+**Minor:**
+1. **Se pierde el test de «sin reserva».** En `test/cancel.test.js` se ha sustituido el test `cancelar sin reserva lo dice` y ningún test cubre ya ese caso. El comportamiento sigue en el código, pero ahora se llega solo con un motivo válido (`cancelar Sur mar --motivo otro` → «sin reserva Sur mar»). Convendría recuperarlo con `--motivo`.
+2. **Cancelar sin `--motivo` contesta «motivo no válido».** En `src/app.js`, `cancelBooking` comprueba el motivo antes de buscar la reserva, así que `cancelar Sur mar` sin `--motivo` responde «motivo no válido: …» y no «sin reserva Sur mar». La spec no cubre el caso, pero quien olvida el flag recibe un mensaje que no menciona que falta. Además, `--motivo sala ocupada` sin comillas solo coge «sala» y también se rechaza. Ambas cosas son aceptables según la spec, pero un mensaje del tipo «falta --motivo» sería más claro.
+3. **`canceladas` sin canceladas imprime una línea vacía.** La spec no define ese caso.
+4. **El test del listado depende del estado del primer test.** El estado de las reservas es del módulo y se comparte entre tests. Cuando corre el test de `canceladas`, Norte lun ya está cancelada por el primero, así que su propio `cancelar` devuelve «sin reserva» y el listado sale del primer test. Hoy pasa igual en cualquier orden, pero es frágil.
+
+**Observación, no bloqueante:** las reservas viven solo en memoria, como ya pasaba en el molde base. Por eso, desde la CLI real, un `canceladas` lanzado después de `cancelar` en otra ejecución sale vacío. La spec y el plan no piden persistencia; si se quiere de verdad, sería otra feature.
+
+Ficheros:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel.test.js`
+
+--- [58]
+Sin Critical ni Important. Verifico el minor 1 (test «sin reserva» perdido) antes de darlo por bueno, y limpio el worktree de revisión.
+
+--- [61]
+El minor 1 es real: el commit de la Task 1 (`3ba979b`) quitó ese test. Es Minor, no entra en esta pasada. Lo registro en el ledger y en `tasks.md`.
+
+--- [65]
+🦆 **En llano:** `cancelar` guarda el motivo con la reserva y `canceladas` lista las canceladas como «sala día — motivo». «Quién canceló» queda fuera por la enmienda que aprobaste. La app guarda las reservas en la memoria del proceso, así que lo que se ve por la CLI real es más pobre que lo que ven los tests (ver el último punto del guion).
+
+✋ **Me salí del plan en…** la Task 2: el THEN del listado cambió por la enmienda del 2026-10-10 (aprobada por ti, commit `34b49da`). Nada más se salió del plan.
+
+## Qué hay
+- `src/app.js`: `cancelledList()` y el comando `canceladas`.
+- `test/cancel.test.js`: test del listado, visto en RED y luego en GREEN.
+- Commit `627593b`. Revisión final (opus, effort high) sobre ese sha: **sin Critical ni Important**, sin pasada de fix. No hay commits posteriores, así que no hace falta re-revisión.
+- Suite completa `node --test`: **5/5, ~94 ms**.
+
+## Smoke (lo que ya ejecuté yo)
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (provocado con `me aburro`) |
+| `canceladas` → «Norte lun — sala ocupada» | `suite` (por CLI real sale vacío, ver abajo) |
+
+## Guion de pruebas (lo haces tú)
+Desde la raíz del repo; no arranco nada, son comandos de un solo disparo.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node --test test/cancel.test.js` → 3 tests pasan, entre ellos «canceladas enseña sala, día y motivo» (el comportamiento del listado).
+4. `node src/app.js canceladas` → **línea vacía**. Es esperado: cada ejecución es un proceso nuevo y las reservas viven en memoria. El paso 3 es la comprobación que sí se puede hacer del listado.
+
+## Decisiones tomadas sin ti (rulings) y minors diferidos
+- **Ruling:** «quién canceló» retirado (tu enmienda). Coste si es erróneo: feature aparte con identidad.
+- **Ruling:** reservas solo en memoria, `canceladas` vacío entre ejecuciones de la CLI. Viene del molde base; arreglarlo es una feature de persistencia.
+- **Minors diferidos:** el test «cancelar sin reserva lo dice» desapareció en la Task 1; `cancelar` sin `--motivo` responde «motivo no válido» aunque no haya reserva; `canceladas` sin canceladas imprime una línea vacía; el test del listado depende del estado del primero.
+
+**Necesito de ti:** que pruebes el guion y me digas qué probaste y que funciona. Con eso invoco `sdd-end-feature`. Hasta entonces la feature queda en espera, con los borradores de cierre sin commitear y el roadmap sin tocar. Si quieres que arregle alguno de los minors antes de cerrar, dímelo.
+

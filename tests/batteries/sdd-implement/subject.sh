@@ -32,6 +32,7 @@ g checkout -q -b develop
 
 # Sin «quién canceló»: el molde no tiene usuarios, y ese THEN es el desvío que mide la acción update, no estos escenarios.
 approved_0010() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d' -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$FIX/spec-0010.md"; }
+full_0010() { sed -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$FIX/spec-0010.md"; }
 as_subagent() { sed -e 's/^\*\*Ejecución\*\*: native.*/**Ejecución**: subagent, porque se quiere revisión por task./' -e 's/^1\. Dos tasks, Native\./1. Dos tasks, SDD./' -e 's/^- Native: implementa la sesión\./- SDD: un implementador por task y su revisión./' "$1"; }
 open_feature() {
   g checkout -q -b "feature/$1"
@@ -79,6 +80,13 @@ case "$SC" in
     open_feature 0014-saved-reason "$F14" "$FIX/plan-0014.md" < "$FIX/spec-0014.md"
     cp "$FIX/store.e2e.test.js" "$R/test/store.e2e.test.js"
     ASK="$(encargo "$F14" "Guardar el motivo" test/store.e2e.test.js)" ;;
+  u1|u2)
+    full_0010 | open_feature 0010-cancel-reason "$F10" "$FIX/plan-0010.md"
+    task_commit task1 "feat(bookings): cancelar con un motivo de la lista"
+    put "$F10/tasks.md" < "$FIX/tasks-0010-u1.md"
+    TURN2='Apruebo la enmienda.'
+    [ "$SC" = u2 ] && TURN2='Apruebo guardar quién cancela con --por <nombre> en cancelar.'
+    export TURN2 ;;
   h1) approved_0010 | open_feature 0010-cancel-reason "$F10" "$FIX/plan-0010.md" ;;
   h2) as_subagent "$FIX/plan-0010.md" > "$RUN/plan-sdd.md"; approved_0010 | open_feature 0010-cancel-reason "$F10" "$RUN/plan-sdd.md" ;;
   r4)
@@ -104,7 +112,7 @@ esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
 for folder in "$F10" "$F12" "$F13" "$F14" "$F15"; do
-  for kept in plan tasks; do [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"; done
+  for kept in spec plan tasks; do [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"; done
 done
 for test in informe price store.e2e cancel; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done
 [ -f "$R/src/app.js" ] && subject_keep "$R/src/app.js" app.js

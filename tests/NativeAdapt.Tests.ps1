@@ -12,7 +12,7 @@ BeforeAll {
   }
 
   function Get-NativeParagraph {
-    return [regex]::Match((Get-SkillStep 'sdd-start-feature' 6), '(?m)^\s*\*\*En Native\*\*.*$').Value
+    return [regex]::Match((Get-KitFile 'skills/sdd-implement/SKILL.md'), '(?ms)^## Setup.*?(?=^## SDD loop)').Value
   }
 
   $script:Overrides = 'skills/sdd-start-feature/references/overrides-superpowers.md'
@@ -20,8 +20,8 @@ BeforeAll {
 }
 
 Describe 'Task 1 — bucle Native' {
-  It 'el párrafo Native dice que los verbos llevan el ledger de executing-plans' {
-    Get-NativeParagraph | Should -Match 'llevan el ledger del workspace de `executing-plans`'
+  It 'el párrafo Native dice que los verbos llevan el ledger del workspace' {
+    Get-NativeParagraph | Should -Match '`<workspace>/progress.md`'
   }
 
   It 'el paso 6 tiene un párrafo Native con sdd task start y sdd task done' {
@@ -31,17 +31,17 @@ Describe 'Task 1 — bucle Native' {
   }
 
   It 'el párrafo Native comprueba la base antes de cada task' {
-    Get-NativeParagraph | Should -Match 'Cada task, también la segunda y las siguientes, se abre en este orden: `sdd task start`, la comprobación de la base'
+    Get-NativeParagraph | Should -Match 'Every task, the second and later ones too, in both methods'
   }
 
   It 'el párrafo Native aparta y compara los RED' {
     $paragraph = Get-NativeParagraph
-    $paragraph | Should -Match 'guarda una copia fuera del repo'
+    $paragraph | Should -Match 'Keep a copy outside the repo'
     $paragraph | Should -Match '`git diff --no-index`'
   }
 
   It 'el párrafo Native fija el orden del cierre de la task' {
-    Get-NativeParagraph | Should -Match 'comparar los RED, el commit de la task y `sdd task done`'
+    Get-NativeParagraph | Should -Match 'Close, in this order'
   }
 
   It 'los verbos no dejan rutas POSIX que traducir en overrides ni en el encargo' {
@@ -73,8 +73,8 @@ Describe 'Task 2 — historia de commits' {
     Get-SkillStep 'sdd-propose' 5 | Should -Match "Before writing the first task's RED tests, put the opening in a commit"
   }
 
-  It 'el paso 6 pide escribir el mensaje del hito aunque haya un solo commit' {
-    Get-SkillStep 'sdd-start-feature' 6 | Should -Match 'con el mensaje que escribes tú, también si el rango tiene un solo commit'
+  It 'sdd-implement pide escribir el mensaje del hito aunque haya un solo commit' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'with a message you write, even with a single commit'
   }
 }
 
@@ -88,9 +88,9 @@ Describe 'Task 3 — revisión final y cierre' {
     $section | Should -Match '`subagent_type: sdd-kit:effort-high` \+ `model: opus`'
   }
 
-  It 'el paso 6 comprueba el tipo de effort antes del primer despacho' {
-    $step = Get-SkillStep 'sdd-start-feature' 6
-    $step | Should -Match 'Antes del primer despacho de la feature'
+  It 'sdd-implement comprueba el tipo de effort antes del primer despacho' {
+    $step = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $step | Should -Match 'before the first dispatch of the feature'
     $step | Should -Match 'effort: no disponible en este harness, hereda el de la sesión'
   }
 
@@ -100,9 +100,9 @@ Describe 'Task 3 — revisión final y cierre' {
     $step | Should -Not -Match 'solo si la task se ejecutó \*\*en línea\*\*'
   }
 
-  It 'el paso 1 del cierre vuelca los rulings y los minors de executing-plans' {
+  It 'el paso 1 del cierre vuelca los rulings y los minors de sdd-implement' {
     $step = Get-SkillStep 'sdd-end-feature' 1
-    $step | Should -Match '`executing-plans`'
+    $step | Should -Match '`sdd-implement`'
     $step | Should -Match 'Deferred minors'
   }
 }
@@ -110,22 +110,21 @@ Describe 'Task 3 — revisión final y cierre' {
 Describe 'Task 4 — cambio tras compactar' {
   It 'la cabecera Ejecución de la plantilla lleva la frase del cambio de método' {
     $line = (Get-KitFile 'skills/sdd-templates/templates/plan-template.md') -split "`r?`n" | Where-Object { $_.StartsWith('**Ejecución**') }
-    $line | Should -Match ([regex]::Escape('Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con subagent-driven-development sobre el mismo ledger.'))
+    $line | Should -Match ([regex]::Escape('Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con el método SDD de sdd-implement sobre el mismo ledger.'))
   }
 
   It 'el paso 5 dice que tras compactar se relee el plan y no la skill' {
     Get-SkillStep 'sdd-propose' 5 | Should -Match 'after compaction, the session rereads the plan and the ledger'
   }
 
-  It 'la fila de executing-plans en overrides cambia a subagentes tras compactar' {
-    $row = (Get-KitFile $script:Overrides) -split "`r?`n" | Where-Object { $_.StartsWith('| `executing-plans` (Native) |') }
-    $row | Should -Match 'Tras una compactación con dos o más tasks pendientes'
+  It 'sdd-implement cambia a subagentes tras compactar' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'After a compaction in Native with two or more tasks without their `complete` line'
   }
 }
 
 Describe 'Task 5 — REFACTOR del GREEN' {
-  It 'el paso 6 escribe los RED de SDD con la apertura ya juntada' {
-    Get-SkillStep 'sdd-start-feature' 6 | Should -Match 'con la apertura ya juntada en su commit'
+  It 'sdd-implement escribe los RED con la apertura ya juntada' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'with the opening already in its commit'
   }
 }
 
@@ -140,8 +139,8 @@ Describe 'Revisión final — pase de fix' {
     Get-SkillStep 'sdd-propose' 5 | Should -Match 'in Native, before its `sdd task start`'
   }
 
-  It 'el paso 6 apunta la revisión final en tasks.md' {
-    Get-SkillStep 'sdd-start-feature' 6 | Should -Match 'apunta en `tasks.md` la línea `Revisión final:'
+  It 'sdd-implement apunta la revisión final en tasks.md' {
+    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'write in `tasks.md` `Revisión final:'
   }
 
   It 'el paso 9 del cierre busca la revisión final en tasks.md y no en el ledger' {
@@ -162,11 +161,11 @@ Describe 'Decisión del dev-lead — native fijado también cambia tras compacta
 Describe 'Patch 0110 — los verbos de task desde cualquier shell' {
   It 'el párrafo Native lanza los verbos con node, desde cualquier shell' {
     $paragraph = Get-NativeParagraph
-    $paragraph | Should -Match 'desde cualquier shell'
+    $paragraph | Should -Match 'from any shell'
     $paragraph | Should -Not -Match 'Git Bash|cygpath'
   }
 
   It 'el párrafo Native dice que sdd task done registra la task aunque el comando no imprima nada' {
-    Get-NativeParagraph | Should -Match '`sdd task done` registra la task aunque el comando no imprima nada'
+    Get-NativeParagraph | Should -Match 'It records the task even if the command prints nothing'
   }
 }

@@ -38,10 +38,10 @@ Describe 'Vigía de silencio' {
     $script:Section | Should -Not -Match 'betweenStepsMinutes\s*[:=]|longCommandMinutes\s*[:=]'
   }
 
-  It 'el paso 6 de sdd-start-feature lanza el vigía y enlaza la sección' {
-    $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+  It 'sdd-implement lanza el vigía y enlaza la sección' {
+    $skill = Get-KitFile 'skills/sdd-implement/SKILL.md'
     $skill | Should -Match 'sdd.js" watch subagent'
-    $skill | Should -Match '\(references/control-profiles\.md#vigía-de-silencio\)'
+    $skill | Should -Match 'references/control-profiles\.md#vigía-de-silencio\)'
   }
 
   It 'los demás puntos de despacho remiten al vigía' {

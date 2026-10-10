@@ -12,6 +12,7 @@ BeforeAll {
   }
 
   $script:Skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
+  $script:Implement = Get-KitFile 'skills/sdd-implement/SKILL.md'
   $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
 }
 
@@ -28,7 +29,7 @@ Describe 'Re-revisión del tramo' {
   }
 
   It 'la línea de la revisión final guarda el commit revisado' {
-    $script:Skill | Should -Match ([regex]::Escape('Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>'))
+    $script:Implement | Should -Match ([regex]::Escape('Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>'))
   }
 
   It 'el ruling manda el commit posterior a la re-revisión del tramo' {
@@ -43,13 +44,16 @@ Describe 'Revisión en el hilo' {
     }
   }
 
-  It 'el paso 6 nombra el tamaño y enlaza la referencia' {
-    $script:Skill | Should -Match ([regex]::Escape('de menos de 20 líneas, contadas con `git diff --numstat`'))
-    $script:Skill | Should -Match '(?i)revisado en el hilo'
+  It 'sdd-implement nombra el tamaño y enlaza la referencia' {
+    $script:Implement | Should -Match ([regex]::Escape('a commit under 20 lines (`git diff --numstat`)'))
+    $script:Implement | Should -Match '(?i)revisado en el hilo'
   }
 
   It 'la excepción se decide por lo que cambia, no por la ruta' {
-    $texts = $script:Profiles, (Get-SkillStep 'sdd-start-feature' 6), (Get-SkillStep 'sdd-end-feature' 9)
+    foreach ($anchor in '`*.md` of any path', 'comment lines', 'instructions', 'a template') {
+      $script:Implement | Should -Match ([regex]::Escape($anchor))
+    }
+    $texts = $script:Profiles, (Get-SkillStep 'sdd-end-feature' 9)
     foreach ($text in $texts) {
       $text | Should -Not -Match ([regex]::Escape('`*.md` de la raíz'))
       foreach ($anchor in '`*.md` de cualquier ruta', 'líneas de comentario', 'instrucciones', 'plantilla') {
@@ -65,14 +69,14 @@ Describe 'Revisión en el hilo' {
 
 Describe 'Reproducir antes de arreglar' {
   It 'la ronda de fix pide el RED de un hallazgo de ejecución' {
-    $script:Skill | Should -Match '(?i)afirma algo de ejecución'
-    $script:Skill | Should -Match ([regex]::Escape('NEEDS_CONTEXT'))
+    $script:Implement | Should -Match '(?i)claims something about execution'
+    $script:Implement | Should -Match ([regex]::Escape('NEEDS_CONTEXT'))
   }
 }
 
 Describe 'Revisión en el hilo en los pasos' {
   It 'el paso dice cómo se cuenta un merge' {
-    $script:Skill | Should -Match ([regex]::Escape('en un merge, solo lo que resolvió el hilo, con `git show --remerge-diff`'))
+    $script:Implement | Should -Match ([regex]::Escape('in a merge, only what you resolved, with `git show --remerge-diff`'))
   }
 
   It 'el paso 7 no empieza frase en minúscula tras la medida de p2' {
@@ -92,8 +96,8 @@ Describe 'Bordes del cierre' {
     }
   }
 
-  It 'el paso 6 apunta la pasada de fix' {
-    $step = Get-SkillStep 'sdd-start-feature' 6
+  It 'sdd-implement apunta la pasada de fix' {
+    $step = $script:Implement
     $step | Should -Match ([regex]::Escape('Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN'))
   }
 
