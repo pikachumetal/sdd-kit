@@ -39,6 +39,10 @@ case "$SC" in
   a1) echo '{"merge": {"push": true}}' | put .docs/sdd/sdd-kit.local.json ;;
   a2) export TURN2='Sí, como patch.' ;;
   k1|k3|k4) export TURN2='Sí.' ;;
+  k5) export TURN2='Sí.'
+    node -e "const f=process.argv[1],fs=require('fs'),j=JSON.parse(fs.readFileSync(f,'utf8'));j.merge={into:'develop',noFf:true,removeWorktree:false,push:false};fs.writeFileSync(f,JSON.stringify(j,null,2))" "$R/.docs/sdd/sdd-kit.json"
+    commit "chore: política de merge"
+    g checkout -q -b feature/bump-node-22-18 ;;
   s1|c1) g checkout -q -b feature/0010-cancel-reason ;;
   g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
   r1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
@@ -62,4 +66,4 @@ newest=$(ls -d "$R"/.docs/sdd/specs/*/ 2>/dev/null | sort | tail -n 1)
 case "$newest" in *"$F10"*|*"$F11"*|*task-000*|*patch-0007*) newest="" ;; esac
 [ -n "$newest" ] && [ -f "$newest/spec.md" ] && subject_keep "$newest/spec.md" spec-new.md
 [ -n "$newest" ] && [ -f "$newest/patch.md" ] && subject_keep "$newest/patch.md" patch-new.md
-{ echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --all --format='%h %d %s%n%b'; echo "## ficheros"; g ls-files --others --exclude-standard; echo "## package.json"; cat "$R/package.json"; } | subject_save
+{ echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --all --format='%h %d %s%n%b'; echo "## develop"; g log develop --oneline; echo "## ficheros"; g ls-files --others --exclude-standard; echo "## package.json"; cat "$R/package.json"; } | subject_save

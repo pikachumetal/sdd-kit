@@ -90,6 +90,7 @@ Review de spec propuesta: ninguna — señales: contrato público (el nombre de 
 
     10 sujetos de RED y 49 de GREEN: ~32 $ (Sonnet ~0,8 $ por sujeto con conversación o spec, ~0,3 $ en la batería de `using-sdd`) y ~4 h de campaña. Techo: 39 $, con ~20 % de reserva. Si un RED no exhibe el fallo, la regla y su THEN salen y te vuelvo a pedir la aprobación; si la prueba pasa del techo, paro y decides tú.
 20. **Repaso de coherencia**: el tipo de rama de un patch es `feature` (sale de `develop`, como fija `tech-stack.md` §Git), no `patch/`; el título del prompt sin id no lleva «—»; el prompt sin id solo lo da explore, y solo para config; una petición de cambio directa sigue entrando por `sdd-propose` (0160): solo el trabajo que sale de explore pasa por el roadmap; los MODIFIED de `capabilities`, `feature-ids` e `interviewing` solo cambian el nombre de la skill, y sus Pester (`CapabilityRules`, `TaskIds`) entran en el Scope.
+21. **Desvío aprobado en la revisión final** (2026-10-10): un config hecho en una rama `feature/*` (la que abre su prompt de arranque) se fusiona al terminar según `merge.*`. Sin esto, el config se quedaba en una rama sin fusionar. La otra parte del desvío, que el cierre de un patch marque su fila «Patch:», sale por el RED: x1, 2 de 2 la tratan sin regla (uno la marca ✅ y otro la quita de «Próximo»).
 
 ### Decisiones tomadas con el dev-lead
 
@@ -113,6 +114,7 @@ Hoy una conversación de `sdd-consult` que acaba en trabajo lo arranca en la mis
 - Entra: `launch-prompt-template.md` en `sdd-templates`, con su fila en el índice.
 - Entra: en `sdd-roadmap`, la entrada «dame el prompt de la <id>», el patch como fila de «Próximo» y el prompt en el cierre; la frase nueva de su `description`.
 - Entra: `using-sdd` (dos filas), `sdd-propose` (el nombre nuevo), `sdd-grilling`, `sdd-templates`, `overrides-superpowers.md`.
+- Entra (desvío del 2026-10-10): el carril config de `sdd-propose` fusiona una rama `feature/*` al terminar.
 - Entra: `mission.md`, `architecture.md`, README, `plugin.json`, la regla 4 de `CLAUDE.md`.
 - Entra: los Pester que nombran `sdd-consult` y uno nuevo de la plantilla; los topes de `WordBudget.Tests.ps1`.
 - Entra: baterías nuevas de `sdd-explore` y `sdd-roadmap`; escenarios nuevos en `sdd-propose` (a5), `sdd-rubber-duck` (c2) y `using-sdd` (r6); esperados de `using-sdd`, `sdd-grilling` y `sdd-rubber-duck`.
@@ -207,6 +209,13 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 - AND «¿Podemos subir `node` a 22.18? Si se puede, lo quiero.», sin pedir el prompt, es una petición de cambio: entra por `sdd-propose` como config (0160)
 - AND termina con «si prefieres hacerlo en esta sesión, di "arráncalo"», y con «arráncalo» invoca `sdd-propose`
 
+**ADDED — Un config en una rama de feature se fusiona al terminar**
+- GIVEN el molde `reservas` en `delegate`, con `merge.into: develop` y `merge.push: false`, en la rama `feature/bump-node-22-18` que abrió un prompt de arranque
+- WHEN el usuario escribe «Arranca este cambio con sdd-propose, carril config: sube el mínimo de node a 22.18 en los engines de package.json.» y confirma el carril
+- THEN tras el commit con su línea `Gate:`, `sdd-propose` fusiona la rama en `develop` con `sdd merge`, con `--push` si `merge.push` es `true`
+- AND en la rama de integración no fusiona: el commit ya está en ella
+- AND sin bloque `merge` en `sdd-kit.json`, pregunta antes de fusionar
+
 ### Capacidad: `planning`
 
 **ADDED — Un patch pendiente es una fila de «Próximo»**
@@ -271,6 +280,10 @@ Renombrar es editar (Art. I): cada paso, red flag y racionalización de `sdd-con
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
 
 ## Enmiendas
+
+- 2026-10-10 — Del desvío sale la regla del cierre del patch y su ADDED «El cierre de un patch marca su fila de "Próximo"»: x1, 2 de 2 limpios sin regla (Art. I). Queda el merge del config — Task 6 — aprobada: «Arreglarlos en la 0161» (Art. I sobre lo aprobado)
+
+- 2026-10-10 — Desvío: el cierre de un patch marca su fila «Patch:» de «Próximo», y un config en una rama `feature/*` se fusiona al terminar (dos ADDED, decisión 21, Task 6) — hallazgos Important 2 y 3 de la revisión final — aprobada: «Arreglarlos en la 0161»
 
 - 2026-10-10 — El ADDED «Un config que sale de explore da su prompt directo» pasa a la petición vigente de e2 («¿Rompe algo? Si no, dame el prompt…») y dice que «si se puede, lo quiero» entra por `sdd-propose`; el carril va también en la primera línea del prompt, porque quien lo pega en otro worktree pega solo el segundo bloque — hallazgos 4 y 1 de la revisión final — ruling del agente (corrige la spec a lo que el RED ya fijó)
 

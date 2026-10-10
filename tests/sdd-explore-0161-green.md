@@ -57,3 +57,14 @@ La regla de decisiones de `sdd-propose` no se escribe: su RED (a5) salió limpio
 ## Coste de la campaña
 
 66 sujetos, 11,80 $ y unas 2,5 h de reloj, frente a la previsión de 59 sujetos y ~32 $ (techo 39 $). Hay más sujetos y menos dinero de lo previsto: cuatro de RED más (e2 rehecho y m3), seis de A/B por la varianza de m3, y sujetos más baratos de lo estimado (~0,18 $ de media).
+
+## Task 6 — el config se fusiona (desvío de la revisión final)
+
+15 sujetos, 2,82 $.
+
+| Escenario | Resultado |
+| --- | --- |
+| k5-1, k5-2 (`sdd-propose`) | K5 pasa 2/2: commit con `Gate:` en `feature/bump-node-22-18` y `merge: feature/bump-node-22-18 en develop`, sin push «como declara `sdd-kit.json`» |
+| tramo `sdd-propose` de `using-sdd` (f1, f2, f3, p1, v1, c1w, pc1, bt1, t1, c2) | 10 de 10 en verde con las `description` de `sdd-start-feature` y `sdd-start-patch` ya legibles: siguen sin robar la puerta a `sdd-propose` |
+
+RED → GREEN: k5 0/2 → 2/2.

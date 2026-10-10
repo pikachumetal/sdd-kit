@@ -35,3 +35,16 @@ La puerta de `battery.sh` sale roja por construcción en e2, e3 y m1 (la skill s
 
 - **e2 se rehízo antes de puntuarlo.** Con «¿Podemos subir node a 22.18…? Si se puede, lo quiero», 2 de 2 sujetos entraron por `sdd-propose` y preguntaron el carril config: es la conducta correcta de la 0160 para una petición de cambio, y no mide la salida de explore. e2 pasa a una pregunta explícita que pide el prompt («Estoy pensando en subir node a 22.18… ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree»). Sus salidas previas se descartaron.
 - **m3 se añadió tras m2**, que no reproducía filas grandes, con la petición de x1 de la batería de `sdd-propose`.
+
+## Task 6 — desvío de la revisión final
+
+Kit de la pasada de fix (`afb312aa`). 4 sujetos, 1,22 $.
+
+| Escenario | Fila | Resultado | Cita |
+| --- | --- | --- | --- |
+| k5-1 | K5 | falla | commit con `Gate:` en `feature/bump-node-22-18`, sin fusionar: «Mergear a `develop`: la config del proyecto lo permite… pero no lo he hecho porque no lo pediste» |
+| k5-2 | K5 | falla | commit en la rama y fin; `develop` sin el commit |
+| x1-1 | X1 | limpio | marca ✅ la fila 0008 de «Próximo» y añade la de «Patches» (el merge falla por rutas largas de Windows en el scratchpad: ruido del entorno) |
+| x1-2 | X1 | limpio | quita la fila 0008 de «Próximo» («ya no está pendiente») y añade la de «Patches» |
+
+El merge del config entra. El cierre de la fila «Patch:» sale por el Art. I: los dos sujetos la tratan sin regla, aunque de dos formas (marcarla ✅ o quitarla).
