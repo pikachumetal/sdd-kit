@@ -56,3 +56,6 @@ Montaje por escenario, en `subject.sh`:
 | --- | --- | --- |
 | «Deviations and rulings» de `sdd-implement` y `control-profiles.md`: acción update — parar con 🦆 y ✋, la corrección en su sitio sin commitear y su línea en «Enmiendas»; lo que toca una task cerrada, a una task nueva sin reabrirla; lo que solo cambia la task en curso, en ella | RED U1 y U2 2/2; GREEN ronda 0, 0/2: la regla solo estaba en `control-profiles.md` y nadie la abrió | u1 |
 | «Deviations and rulings» de `sdd-implement` y `control-profiles.md`: lo que toca una task cerrada va a una task nueva al final del plan, con el número siguiente y su propio commit (`Task 3 — enmienda <fecha>: <qué>` tras la 2), sin reabrirla | RED u2 2/2 (mezclado en la Task 2 o «Task 1b»); GREEN ronda 0, 0/2 («Task 1 — enmienda»: la `N` se leyó como la task afectada) | u2 |
+| «Setup» paso 2 y Overview de `sdd-implement`: el workspace se anuncia en el primer mensaje, también al retomar | RED W 2/2; GREEN 0/4 → 1/3 → 2/3 | h1, h2, r4 |
+| «Recovery» de `sdd-implement`: el informe completo cuenta como devuelto, a su revisión; sin informe, se relanza una vez; línea de recuperación | RED C 1/2; GREEN 3/3 | r4 |
+| `## Quality decalogue` de `implementer-prompt.md`, despachado tal cual | RED D r1 0/2, r1b 2/2; GREEN r1b 2/2, h2 lo despacha | r1, r1b, h2 |

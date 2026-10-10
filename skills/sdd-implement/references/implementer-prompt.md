@@ -7,6 +7,21 @@ Dispatch it with `description: "Implement Task N: <task name>"`, the `model` and
 
 <copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>
 
+## Quality decalogue
+
+Si una regla de aquí choca con las Restricciones de código, mandan las Restricciones.
+
+1. Names say what a thing is for; one word per concept in the code you touch.
+2. A function does one thing, at one level of abstraction: choosing the data and formatting it are two functions.
+3. Deep modules: a small interface that hides a lot; no wrapper that only passes a call through.
+4. Pull complexity down into the module, and design away the error cases you can instead of handling them in every caller.
+5. DRY is about knowledge, not text: one place decides each rule; prefer duplication over the wrong abstraction.
+6. A change touches one place: no shotgun surgery, no feature envy.
+7. No speculative generality: no option, parameter or hook the task doesn't ask for.
+8. Refactor in small steps with the tests green, inside the TDD loop. New code goes in its own function even when the code around it is one long function: «follow the established patterns» doesn't mean growing it.
+9. Dependencies point toward the domain: a business rule doesn't import infrastructure.
+10. What the task doesn't ask for, note it in your report; don't fix it.
+
 ## Tests RED
 
 Los tests de `<ruta>` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo. Están escritos y sin commitear: commitéalos con tu implementación, con `git add` de sus rutas explícitas, y nunca con `--no-verify`.
@@ -105,6 +120,6 @@ Then report back with ONLY (under 15 lines — the detail lives in the report fi
 If BLOCKED or NEEDS_CONTEXT, put the specifics in the final message itself — the controller acts on it directly. Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness. Never silently produce work you're unsure about.
 ```
 
-The three Spanish sections before the line come from field incidents and the RED of task 0005: without them, 4 of 4 implementers silenced a checker, 3 of 4 used `git stash` and 1 of 2 re-ran someone else's red test and called it «puntual» without a cause (`tests/dispatch-brief-red.md`). «Verificación» replaces superpowers' «run the full suite once before committing»: with the full gate in every task, a backend suite ran ~12 times in a frontend-only task (`tests/task-verification-red.md`). The RED tests are the thread's, written from the spec's THEN before dispatch: the implementer makes them pass, it doesn't write them (`tests/tests-red-hilo-red.md`).
+The decalogue condenses *Clean Code*, *A Philosophy of Software Design*, *The Pragmatic Programmer*, *Refactoring* and *Clean Architecture* (`tests/sdd-implement-red.md`, r1b). The task reviewer doesn't get it: a judgment rule a reviewer reads becomes an Important. The implementer rules come from `tests/dispatch-brief-red.md`; «Verificación» replaces superpowers' «run the full suite once before committing» (`tests/task-verification-red.md`); the RED tests are the thread's (`tests/tests-red-hilo-red.md`).
 
 **Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` prints · `[REPORT_FILE]`, the brief's path with `-report.md` instead of `-brief.md` · `[directory]`, the worktree · `<ruta>`, the task's RED tests · `<comandos>`, the task's «Verificación» · *(if `.docs/sdd/environments.md` exists)* the context line says where the `.sdd-env.json` marker is.

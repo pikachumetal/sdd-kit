@@ -27,7 +27,7 @@ created: <YYYY-MM-DD>
 
 **Spec**: `./spec.md`
 
-**Ejecución**: <native | subagent>, porque <motivo del plan> · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json · con native, añade: Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con el método SDD de sdd-implement sobre el mismo ledger. · con native, añade también: La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.
+**Ejecución**: <native | subagent>, porque <motivo del plan> (el motivo pesa la dependencia entre las interfaces de las tasks, cuántas son, el coste de un error que llegue a la rama y si el plan cabe en un contexto, sin umbral: «native, porque 3 tasks encadenadas por la interfaz de Ledger, un error lo caza el test de su task y el plan cabe en un contexto») · o, con `execution` fijado en `sdd-kit.json`: <valor>, fijado en sdd-kit.json · con native, añade: Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: despacha las que quedan con el método SDD de sdd-implement sobre el mismo ledger. · con native, añade también: La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.
 
 ## Restricciones globales
 
@@ -154,7 +154,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
 - Produce: <lo que las tasks siguientes usan de esta: nombres, firmas y formatos exactos>
 
-> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4»); `Tras` es la única excepción, porque solo nombra la task que la bloquea. Copia aquí las firmas, tablas y textos que necesita.
+> La task viaja sola: `sdd task brief` extrae solo su texto, así que no remite a otras secciones del plan («ver §1.4») ni pide leer otra task o el plan entero: tras una compactación, un implementador con el contexto vacío la hace con su texto, los ficheros que nombra y las Restricciones globales; `Tras` es la única excepción, porque solo nombra la task que la bloquea. Copia aquí las firmas, tablas y textos que necesita.
 
 **Ficheros**: crear/modificar `path/...`
 

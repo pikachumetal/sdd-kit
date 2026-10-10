@@ -187,18 +187,4 @@ For each issue: file:line, what's wrong, why it matters, how to fix
 ```
 
 
-**Placeholders:**
-- `[MODEL]` — REQUIRED: reviewer model per the model policy of `sdd-implement`
-- `[BRIEF_FILE]` — REQUIRED: the task brief file (`sdd task brief <plan> <n>`
-  prints the path; same file the implementer worked from)
-- the «De código» block — the plan's, copied verbatim (in lite mode, the constitution's code-quality article); never the «De proceso» block: a reviewer audits what it reads
-- `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its detailed
-  report to
-- `[BASE_SHA]` — commit before this task
-- `[HEAD_SHA]` — current commit
-- `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`sdd review package <plan> <BASE> HEAD` prints the unique
-  path it wrote; the package never enters the controller's context)
-
-**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
-(Critical/Important/Minor), Task quality verdict
+**Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` printed, the implementer's · `[REPORT_FILE]`, its report · `[BASE_SHA]`, `[HEAD_SHA]` and `[DIFF_FILE]`, the BASE you recorded, the current commit and the path `sdd review package <plan> <BASE> HEAD` printed · the «De código» block, never the «De proceso» one: a reviewer audits what it reads.
