@@ -1,6 +1,6 @@
 # Batería de regresión — `sdd-end-patch`
 
-El cierre de un patch. Nace en la feature 0161 como humo (Art. I: una edición de una skill de la 2.3.x sin batería lleva humo) y mide lo que la 0161 le añade: el cierre marca ✅ la fila «Patch:» de «Próximo» que escribe `sdd-roadmap`.
+El cierre de un patch. Nace en la feature 0161 como control sin regla: el cierre trata la fila «Patch:» de «Próximo» que escribe `sdd-roadmap` (la marca ✅ o la quita), sin que `sdd-end-patch` lo diga. Si un día deja de hacerlo, x1 lo ve.
 
 Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-end-patch`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 40 turnos como máximo. Un molde, `salas-patch`: el de `tests/batteries/using-sdd/mold-salas` con la fila 0008 «Patch:» en «Próximo», la rama `feature/0008-cancel-missing` con el fix commiteado y su `patch.md` (`patch-0008.md`), `validation.mode: field` y `merge` sin push.
 

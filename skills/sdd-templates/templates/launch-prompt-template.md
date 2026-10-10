@@ -38,7 +38,7 @@ Salda <fila de deuda y qué parte> | Nada que saldar.
 Perfil <pair | delegate | unattended>. Al fusionar, <`sdd merge --push` | `sdd merge` | lo decide el dev-lead>.
 ```
 
-> «Perfil»: el que dijo el dev-lead para este cambio o, si no, `control.profile` de `.docs/sdd/sdd-kit.json`. «Al fusionar»: `merge.*` de ese fichero (`push: true` → `` `sdd merge --push` ``); sin `merge`, o con `merge` sin `push`, «lo decide el dev-lead».
+> «Perfil»: el que dijo el dev-lead para este cambio o, si no, `control.profile` de `.docs/sdd/sdd-kit.json`. «Al fusionar»: `merge.*` de ese fichero (`push: true` → `` `sdd merge --push` ``; `push: false` → `` `sdd merge` ``); sin un bloque `merge` completo (`into` y `noFf`), «lo decide el dev-lead».
 
 ## Ejemplo
 

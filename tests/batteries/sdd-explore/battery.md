@@ -4,6 +4,8 @@ Pensar con el contexto del proyecto cargado, sin dejar artefactos propios: enten
 
 Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-explore`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Un molde, `salas` (el de `tests/batteries/using-sdd/mold-salas`), con `control.profile: delegate` y `merge.push: true` en el marcador y `engines` en `package.json`. Si el kit que se prueba no tiene la skill esperada (el RED), la guarda de `subject_init` comprueba `using-sdd`.
 
+**La salida de explore se mide con una pregunta de verdad** (feature 0161): «¿Podemos subir node…? Si se puede, lo quiero» es una petición de cambio y entra, con razón, por `sdd-propose`; e2 pide el prompt de forma explícita.
+
 **Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»; en el RED sale rojo por construcción, porque la skill se llama `sdd-consult`). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
 ## Escenarios

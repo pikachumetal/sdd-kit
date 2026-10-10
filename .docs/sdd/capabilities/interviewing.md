@@ -83,7 +83,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - WHEN el agente termina
 - THEN devuelve a la skill que la invocó dos listas: lo que decidió el usuario y lo que decidió el agente (con su motivo), más lo pendiente
 - AND si la skill que invoca tiene gate (spec, documento de la init, propuesta), la confirmación es ese gate: no pide una confirmación propia antes
-- AND invocada desde `sdd-consult`, que no tiene gate, confirma con una sola pregunta
+- AND invocada desde `sdd-explore`, que no tiene gate, confirma con una sola pregunta
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
 
 ### Busca fuera del repo antes de preguntar lo que depende de un hecho externo

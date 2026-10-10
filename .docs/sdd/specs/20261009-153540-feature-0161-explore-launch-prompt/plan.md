@@ -274,21 +274,21 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Decisión 16 (regla 4 de `CLAUDE.md`) → Task 3. ✓ · decisión 17 (referencias) → Task 2. ✓ · decisión 18 (Pester de forma) → Task 3. ✓
 - Review Focus → Tasks 3, 4 y 5, lectura en la revisión final. ✓
 
-### Task 6 — enmienda 2026-10-10: la fila «Patch:» se cierra y el config se fusiona
+### Task 6 — enmienda 2026-10-10: el config de un worktree se fusiona
 
 **Tras**: Task 5
 **Modelo**: sesión (Native). Sujetos: `MODEL=sonnet`.
 **Tests RED**: `k5` (batería de `sdd-propose`) y `x1` (batería nueva de humo de `sdd-end-patch`), con el kit de la pasada de fix (`afb312aa`).
 **Superficies**: docs (skills), tooling (baterías).
-**Verificación**: `pwsh -NoProfile -Command "Invoke-Pester tests/PatchLane.Tests.ps1,tests/Skills.Tests.ps1,tests/WordBudget.Tests.ps1 -CI"`; GREEN de `k5` y `x1`; tramo `sdd-propose` de `using-sdd` (las `description` de `sdd-start-feature` y `sdd-start-patch` cambiaron en la pasada de fix).
+**Verificación**: `pwsh -NoProfile -Command "Invoke-Pester tests/PatchLane.Tests.ps1,tests/Skills.Tests.ps1,tests/WordBudget.Tests.ps1 -CI"`; GREEN de `k5`; tramo `sdd-propose` de `using-sdd` (las `description` de `sdd-start-feature` y `sdd-start-patch` cambiaron en la pasada de fix).
 
 **Interfaces**:
-- Consume: la fila «Patch:» de la Task 4; el prompt de config de la Task 3.
+- Consume: el prompt de config de la Task 3.
 - Produce: nada que usen otras tasks.
 
-**Ficheros**: modificar `skills/sdd-end-patch/SKILL.md` (paso 4) y `skills/sdd-propose/SKILL.md` («Config lane»); crear `tests/batteries/sdd-end-patch/`; modificar `tests/batteries/sdd-propose/` (k5).
+**Ficheros**: modificar `skills/sdd-propose/SKILL.md` («Config lane», paso 5 nuevo); crear `tests/batteries/sdd-end-patch/`; modificar `tests/batteries/sdd-propose/` (k5).
 
-- [ ] **Step 1: RED.** `k5`: molde `reservas` en la rama `feature/bump-node-22-18` desde `develop`, `merge` sin push, petición «Arranca este cambio con sdd-propose, carril config: sube el mínimo de node a 22.18 en los engines de package.json.», `TURN2` «Sí.». Falla si no fusiona en `develop`. `x1`: molde `salas` con la fila 0008 «Patch:» en «Próximo», la rama `feature/0008-cancel-missing` con el fix y su `patch.md`, `validation.mode: field`, petición «Cierra el patch 0008.». Falla si la fila 0008 no queda ✅.
-- [ ] **Step 2: Reglas.** `sdd-end-patch` paso 4: «si "Próximo" tiene la fila del patch ("Patch:" con su id), márcala ✅, o 🧪 con la validación diferida». «Config lane» paso 4: en una rama que no es la de integración ni la estable, tras el commit, `sdd merge --project-root <worktree>` con `--push` si `merge.push`; sin bloque `merge`, pregunta.
-- [ ] **Step 3: Verificación** y evidencia en `tests/sdd-explore-0161-green.md`.
-- [ ] **Step 4: Commit de la task** — `Task 6 — enmienda 2026-10-10: …`.
+- [x] **Step 1: RED.** `k5`: molde `reservas` en la rama `feature/bump-node-22-18` desde `develop`, `merge` completo sin push, petición «Arranca este cambio con sdd-propose, carril config: sube el mínimo de node a 22.18 en los engines de package.json.», `TURN2` «Sí.». Falla si no fusiona en `develop`. `x1`: molde `salas` con la fila 0008 «Patch:» en «Próximo», la rama `feature/0008-cancel-missing` con el fix y su `patch.md`, `validation.mode: field`, petición «Cierra el patch 0008.». Falla si la fila 0008 sigue ⏳. Resultado: k5 en rojo 2/2; x1 limpio 2/2 (uno la marca ✅, otro la quita), así que `sdd-end-patch` no cambia y x1 queda de control.
+- [x] **Step 2: Regla.** «Config lane» paso 5: en una `feature/*` cuyo único commit sobre `merge.into` es el del config, fusiona como un cierre, por las filas «Merge a develop» y «Push» de la tabla de gates; en cualquier otra rama, no fusiona y lo dice.
+- [x] **Step 3: Verificación** y evidencia en `tests/sdd-explore-0161-green.md`.
+- [x] **Step 4: Commit de la task**.

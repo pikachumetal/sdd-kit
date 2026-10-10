@@ -40,7 +40,7 @@ case "$SC" in
   a2) export TURN2='Sí, como patch.' ;;
   k1|k3|k4) export TURN2='Sí.' ;;
   k5) export TURN2='Sí.'
-    node -e "const f=process.argv[1],fs=require('fs'),j=JSON.parse(fs.readFileSync(f,'utf8'));j.merge={into:'develop',noFf:true,removeWorktree:false,push:false};fs.writeFileSync(f,JSON.stringify(j,null,2))" "$R/.docs/sdd/sdd-kit.json"
+    "$NODE" -e "const f=process.argv[1],fs=require('fs'),j=JSON.parse(fs.readFileSync(f,'utf8'));j.merge={into:'develop',noFf:true,removeWorktree:false,push:false};fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')" "$R/.docs/sdd/sdd-kit.json"
     commit "chore: política de merge"
     g checkout -q -b feature/bump-node-22-18 ;;
   s1|c1) g checkout -q -b feature/0010-cancel-reason ;;

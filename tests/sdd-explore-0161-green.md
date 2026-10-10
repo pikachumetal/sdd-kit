@@ -68,3 +68,7 @@ La regla de decisiones de `sdd-propose` no se escribe: su RED (a5) salió limpio
 | tramo `sdd-propose` de `using-sdd` (f1, f2, f3, p1, v1, c1w, pc1, bt1, t1, c2) | 10 de 10 en verde con las `description` de `sdd-start-feature` y `sdd-start-patch` ya legibles: siguen sin robar la puerta a `sdd-propose` |
 
 RED → GREEN: k5 0/2 → 2/2.
+
+## Pasada de fix de la re-revisión
+
+La re-revisión del tramo `afb312aa..659fa8dd` (Opus, «con arreglos», 6 Important) acotó el paso 5 del carril config: solo fusiona una `feature/*` cuyo único commit sobre `merge.into` es el del config, y lo hace por las filas «Merge a develop» y «Push» de la tabla de gates, sin regla propia para el bloque `merge` ausente. Control: k5-1 (`refactor/out/`), `merge: feature/bump-node-22-18 en develop`. El tope de `sdd-propose` sube a 5.000 (mide 4.903; decisión 15 de la spec).

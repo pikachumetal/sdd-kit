@@ -83,7 +83,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 
 ### En modo gestor el id es el del ticket
 
-- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-feature`, `sdd-start-patch`, `sdd-roadmap`, `sdd-consult`)
+- GIVEN un proyecto en modo `tracker` y una skill que necesita un id (`sdd-start-feature`, `sdd-start-patch`, `sdd-roadmap`, `sdd-explore`)
 - WHEN el trabajo tiene ticket en el gestor
 - THEN el id es el del ticket, y `0000` cuando el trabajo no tiene ticket
 
@@ -92,7 +92,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 - GIVEN un proyecto en modo `sequence` y una skill que necesita un id
 - WHEN el trabajo tiene fila en el roadmap
 - THEN el id es el que reserva esa fila; sin fila, el que reserva `sdd id next --reserve`
-- AND en ningún modo se elige un número a ojo. `sdd-consult` puede proponer el siguiente id con el script sin `--reserve`, pero no lo reserva ni lo escribe en ningún artefacto
+- AND en ningún modo se elige un número a ojo. `sdd-explore` puede proponer el siguiente id con el script sin `--reserve`, pero no lo reserva ni lo escribe en ningún artefacto, y el prompt de un config va sin id
 
 ### Sin reserva, el script solo propone
 
