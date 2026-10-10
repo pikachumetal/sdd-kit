@@ -20,7 +20,7 @@ Describe 'Plantilla del prompt de arranque' {
   }
 
   It 'lleva la rama y el prompt en dos bloques text' {
-    ([regex]::Matches((Get-Content $script:TemplatePath -Raw), '(?m)^```text$')).Count | Should -BeGreaterOrEqual 2
+    ([regex]::Matches((Get-Content $script:TemplatePath -Raw), '(?m)^```text\r?$')).Count | Should -BeGreaterOrEqual 2
   }
 
   It 'tiene su fila en el índice de sdd-templates' {
