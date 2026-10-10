@@ -45,7 +45,7 @@ Every task, the second and later ones too, in both methods:
 
 ## Native loop
 
-1. **Take the task**: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>` prints the brief path and BASE (the commit the task's range is cut from). Read the brief every time, also for tasks you remember: what you remember is a summary. Then the base check and the RED tests of [Before each task](#before-each-task).
+1. **Take the task**: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>` prints the brief path and BASE, the commit the range is cut from. Read the brief every time: what you remember is a summary. Then the base check and the RED tests of [Before each task](#before-each-task).
 2. **Work the steps** in the plan's RED-GREEN order, under TDD. Watching the test fail is a step; a test that passes before the implementation exists is a finding about the test. Every step with a command has an `Expected:`: run it, read the output, compare. Matches → next step. The code is wrong → `superpowers:systematic-debugging`: find the cause, never patch the symptom. The plan is wrong (a step contradicts the spec, an interface doesn't match, a command can't work) → rule the smallest change that satisfies the spec, ledger `Task <N>: Ruling: <finding> — <what you decided and why>`, and go on. Send long test output to a file in the workspace and read its tail; append to the ledger in the same call as the commit.
 3. **Completion contract**, with evidence from this session, not from the diff looking right: every test the brief names exists, ran in this task and you read its output; every `Expected:` was compared with real output; every deviation from the brief has its `Ruling:` line; and the final run is `sdd task done`, below. If one is missing, the task isn't complete.
 4. **Close, in this order**: compare the RED copy with the committed test using `git diff --no-index` — a change that isn't formatting is a ruling in the ledger; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`); then, in its own call, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It records the task even if the command prints nothing, and writes `HEAD` in the ledger line. The command must exit non-zero on failure: with Pester, `-CI`, or `Invoke-Pester` exits 0 with a red test (`tests/task-done-exit-code-red.md`). A failing run records nothing. (`tests/native-adapt-red.md`)
@@ -69,7 +69,7 @@ Every task, the second and later ones too, in both methods:
 
 **Models**: declare model and effort on every dispatch: omitted, both inherit the session's. The effort travels in the agent type (`sdd-kit:effort-low`, `-medium`, `-high`) next to `model`. Mid-tier is the floor for reviewers and for implementers working from prose; the cheapest tier only when the task's text already holds the code to write, or for a single-file mechanical fix: turns cost more than tokens. Design judgment or broad codebase understanding → the most capable model. Fix rounds 4-5 → one tier above the implementer that got stuck. `fable` and `opus xhigh` are forbidden by default, unless the task justifies it in writing.
 
-**Batch small same-shape work**: several tasks that are each the same small edit across files (a one-line fix, a constant) go to ONE implementer with every file and its change, and their diff is reviewed as one unit.
+**Batch small same-shape work**: tasks that are each the same small edit across files go to ONE implementer, reviewed as one unit.
 
 **Hand artifacts over as files**: what you paste into a dispatch stays in your context.
 
@@ -77,8 +77,8 @@ Every task, the second and later ones too, in both methods:
 
 ### 1. Dispatch the implementer
 
-- Record BASE (`git rev-parse HEAD`): the review package and the fix rounds need it.
-- `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task brief <plan> <n>` extracts the task's text to a file and prints its path. The brief is the single source of requirements; never make a subagent read the whole plan.
+- Record BASE (`git rev-parse HEAD`).
+- `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task brief <plan> <n>` extracts the task's text to a file and prints its path. Never make a subagent read the whole plan.
 - The dispatch is [implementer-prompt.md](references/implementer-prompt.md), filled, every section kept: the plan's «De código» block, literal, as first section (in lite mode, the constitution's code-quality article); the `## Quality decalogue`, as is; the RED tests' path as contract; the task's «Verificación» commands, not the full suite; one line on where the task fits; interfaces and decisions from earlier tasks the brief can't know; your resolution of any ambiguity; the report file (the brief's path with `-report.md`). No history of earlier tasks. If an earlier task parked a finding in this area, a pointer to its ledger entry. (`tests/gates-reviews-red.md`, E3) The «De proceso» block (model policy, method) you apply: it doesn't travel.
 - The implementer never dispatches subagents — not helpers, never a reviewer.
 - Record the implementer's agent id: fix rounds 1-3 resume it.
@@ -101,30 +101,29 @@ When it returns, compare the RED copy with the committed test: a change that isn
 
 ### 4. The fix loop
 
-The review reports spec ❌, a Critical or Important finding, or a ⚠️ you confirmed. Two routes leave first: Minor findings go to the ledger (`Task <N>: minor (deferred): <one-liner>`), and the final review gets that list; a plan-mandated finding, or one that conflicts with the plan's text, is yours to rule on with the spec as authority, ledgered before you act. The rest enters the loop. A round is one fix dispatch plus one scoped re-review; five rounds per task at most:
+It opens with spec ❌, a Critical or Important finding, or a ⚠️ you confirmed. Two routes leave first: Minor findings go to the ledger (`Task <N>: minor (deferred): <one-liner>`), and the final review gets that list; a plan-mandated finding, or one that conflicts with the plan's text, is yours to rule on with the spec as authority, ledgered before you act. The rest enters the loop. A round is one fix dispatch plus one scoped re-review; five rounds per task at most:
 
 - **Rounds 1-3**: resume the original implementer with the open findings, verbatim (without a way to message a live subagent, a fresh one with the brief, the report file and the findings).
 - **Rounds 4-5**: a fresh implementer one tier up, with the brief, the report file, the findings and «A prior implementer attempted this task [N] times; you own it now. Read the report file for what was tried.»
 - **Every round**: the implementer fixes, re-runs the covering tests and appends its fix report; check it names the tests, the command and the output, then `sdd review package <plan> <FIX_BASE> HEAD` (FIX_BASE = the head the previous review saw) and dispatch [re-review-prompt.md](references/re-review-prompt.md). New Critical or Important breakage in the fix diff joins the open list; out-of-scope observations go to the ledger as deferred minors. Ledger `Task <N>: fix round <R>/5 (<X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)`.
 - **Reproduce before fixing**: a Critical or Important finding that claims something about execution (an exception, an exit code, a value in a given environment or platform) is fixed by a test that reproduces it in RED first; the fix brief asks for it before the reviewer's proposed fix, and says that if the test isn't RED in one attempt, return `NEEDS_CONTEXT` with the test and its output, unfixed. Not reproducing it doesn't discard the finding: you fix without RED, reject or defer it, ledgered with the attempt's output. A finding you see reading the diff (a name, the structure, a duplication) skips this (`tests/post-final-review-red.md`, f1).
-- **Never fix findings yourself** in this session: your context stays for coordination, and your fixes skip review.
-- **The breaker**: if round 5 leaves findings open, stop dispatching and adjudicate each: the reviewer is wrong or it's contestable → `Task <N>: parked — <finding> — Ruling: <why the code stands>`; real but nothing builds on it → parked the same way, saying it's real and deferred; real and load-bearing → rule the smallest change that unblocks, ledger it and carry it to the next dispatch; stop only if every path forward is a guess. Adjudicate only at the cap: earlier is pre-judging under another name.
+- **Never fix findings yourself**: your fixes skip review.
+- **The breaker**: if round 5 leaves findings open, stop dispatching and adjudicate each: the reviewer is wrong or it's contestable → `Task <N>: parked — <finding> — Ruling: <why the code stands>`; real but nothing builds on it → parked the same way, saying it's real and deferred; real and load-bearing → rule the smallest change that unblocks, ledger it and carry it to the next dispatch; stop only if every path forward is a guess. Adjudicate only at the cap.
 
 ### 5. Complete the task
 
-Clean review, or every open finding parked at the cap: ledger `Task <N>: complete (commits <base7>..<head7>, review clean)` or `…, <K> parked)`. Squash the task's range into one commit with a message you write, even with a single commit, before dispatching the next task, unless a guard trips; its hash goes to `tasks.md` in the next milestone's commit ([commit-milestones.md](../sdd-start-feature/references/commit-milestones.md)). Never move on with an open Critical or Important neither fixed nor parked at the cap.
+Clean review, or all open findings parked at the cap: ledger `Task <N>: complete (commits <base7>..<head7>, review clean)` or `…, <K> parked)`. Squash the task's range into one commit with a message you write, even with a single commit, before dispatching the next task, unless a guard trips; its hash goes to `tasks.md` in the next milestone's commit ([commit-milestones.md](../sdd-start-feature/references/commit-milestones.md)).
 
 | Excuse | Reality |
 | --- | --- |
 | "Close enough on spec compliance" | Spec gaps mean not done. Fix, or reach the cap and adjudicate. |
 | "I'll fix it myself, dispatching is overhead" | Your fixes pollute your context and skip review. Resume the implementer. |
 | "One more round will converge" | Past the cap the failure is structural. Adjudicate. |
-| "The reviewer will just find something new anyway" | Scoped re-reviews verify fixes; new findings on untouched code go to the ledger. |
+| "The reviewer will just find something new anyway" | Scoped re-reviews only verify fixes. |
 | "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a ledger line. |
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. |
-| "Reviews slow the loop down" | Without reviews the loop is unverified churn. |
 | "Ledger bookkeeping is overhead" | The ledger survives compaction; without it, finished tasks get re-dispatched. |
-| "The implementer spawned its own reviewer — extra assurance" | A duplicate seat on the same diff. Flag it as a defect. |
+| "The implementer spawned its own reviewer — extra assurance" | A duplicate seat: flag it as a defect. |
 
 ## After each task
 
@@ -153,7 +152,7 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 **Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or `watch command --path <the command's output>`; the script reads the thresholds. What to do with its warning is in [Vigía de silencio](../sdd-start-feature/references/control-profiles.md#vigía-de-silencio). (`tests/silence-watch-red.md`)
 
-**Without a subagent tool**: perform that review yourself against the package, as a separate pass after the last task's ledger line; ledger `Final review: self-review (no subagent tool)` and say so: a self-review by the author is weaker, and the user decides if it's enough.
+**Without a subagent tool**: perform that review yourself against the package, as a separate pass after the last task's ledger line; ledger `Final review: self-review (no subagent tool)` and say so: the user decides if a self-review is enough.
 
 **Sort the findings before acting.** The severity labels are advice; the gate is yours. Each «Declined to judge» line is a ruling: `Final: Ruling: <behavior set aside> — <what a reasonable person using this gets, and why that stands or is now a finding> — <cost if wrong>`. Re-grade by effect: a finding's grade is what a person gets if it ships, not whether the spec names its input. Then Critical and Important enter the fix pass; Minor goes to the ledger as `Final: minor (deferred): <one-liner>` and never becomes a ruling.
 

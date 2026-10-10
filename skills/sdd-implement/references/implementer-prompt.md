@@ -24,7 +24,7 @@ Si una regla de aquí choca con las Restricciones de código, mandan las Restric
 
 ## Tests RED
 
-Los tests de `<ruta>` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo. Están escritos y sin commitear: commitéalos con tu implementación, con `git add` de sus rutas explícitas, y nunca con `--no-verify`.
+Los tests de `<ruta>` son el contrato; no los modifiques: no cambies una aserción, un nombre de test ni un dato. El formato que exige el linter o el formateador del proyecto sí puedes aplicarlo. Si un test te parece incorrecto, para y explícalo. Están escritos y sin commitear: commitéalos con tu implementación, con `git add` de sus rutas explícitas, y nunca con `--no-verify`. Si uno de E2E o de integración falla por tiempo con tu código ya correcto, ajusta sus esperas, la sincronización o el foco —espera a la señal que da el sistema, no a un tiempo fijo— sin cambiar aserciones ni datos, y lístalo en tu informe bajo `Ajustes de espera`.
 
 ## Verificación
 

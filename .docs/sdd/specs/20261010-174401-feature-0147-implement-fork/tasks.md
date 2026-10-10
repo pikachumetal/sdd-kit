@@ -18,15 +18,15 @@ created: 2026-10-10
 | --- | --- | --- | --- | --- |
 | 1 | Batería de `sdd-implement` y RED de las reglas nuevas | done | 3237410b | r1 limpio → r1b, por decisión del dev-lead |
 | 2 | `sdd-implement` nace con lo movido, sin cambiar reglas | done | 4597d47e | traspaso del paso 6 reforzado tras `u1`/`u2` 0/4 → 4/4 |
-| 3 | Reglas nuevas de implement | done | (en el commit de la Task 4) | anuncio del workspace 3/6: a deuda |
-| 4 | Piezas de la 0007, filas del roadmap y topes finales | pending | — | |
+| 3 | Reglas nuevas de implement | done | 31783aa5 | anuncio del workspace 3/6: a deuda |
+| 4 | Piezas de la 0007, filas del roadmap y topes finales | done | (en el commit de cierre) | r5 2/2; r2, r3 y commits por ruta a deuda |
 
 ## Verificación por task
 
 - [x] Task 1 — `bash -n tests/batteries/sdd-implement/subject.sh` y `battery.mjs field … r1 Petición`
 - [x] Task 2 — Pester `ImplementSkill`, `Skills`, `WordBudget` y GREEN de `u1`, `u2`
 - [x] Task 3 — Pester y GREEN de `r1b`, `r4`, `h1`, `h2`
-- [ ] Task 4 — Pester, `roadmap check` y GREEN de `r5` (la única pieza de la 0007 que falla en RED)
+- [x] Task 4 — Pester, `roadmap check` y GREEN de `r5` (la única pieza de la 0007 que falla en RED)
 
 ## Fixes adicionales
 

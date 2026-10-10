@@ -1,0 +1,205 @@
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Guardar el motivo
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/store.e2e.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/store.e2e.test.js`
+7	**Interfaces**:
+8	- Consume: `persist(bookings)` de `src/store.js`.
+9	- Produce: la reserva cancelada lleva `reason` al llamar a `persist`.
+10	**Ficheros**: `src/app.js`, `test/store.e2e.test.js`
+11	
+12	## 3. Validación final
+13	
+14	- [ ] Gate de cierre: `node --test`
+15	
+
+>>> Read: <run>\repo\test\store.e2e.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { spawn } from 'node:child_process';
+4	import { readFileSync, rmSync } from 'node:fs';
+5	import { setTimeout as sleep } from 'node:timers/promises';
+6	
+7	test('cancelar guarda el motivo en el almacén', async () => {
+8	  rmSync('data', { recursive: true, force: true });
+9	  const child = spawn(process.execPath, ['src/app.js', 'cancelar', 'Norte', 'lun', '--motivo', 'sala ocupada']);
+10	  await sleep(500);
+11	  const saved = JSON.parse(readFileSync('data/bookings.json', 'utf8'));
+12	  child.kill();
+13	  asser
+
+>>> Glob: **/*.{js,json,md}
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\tech-stack.md
+PRODUCT.md
+README.md
+package.json
+test\app.test.js
+.docs\sdd\sdd-kit.json
+src\app.js
+src\store.js
+test\cancel.test.js
+.docs\sdd\specs\20261009-120000-feature-0014-saved-reason\spec.md
+.doc
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	import { persist } from './store.js';
+2	const [command, ...args] = process.argv.slice(2);
+3	const rooms = ['Norte', 'Sur'];
+4	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+5	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+6	
+7	function freeRooms(slot) {
+8	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+9	}
+10	
+11	function findBooking(room, day) {
+12	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13	}
+14	
+15	function reasonOf(
+
+>>> Read: <run>\repo\src\store.js
+<<< 1	import { mkdirSync, writeFileSync } from 'node:fs';
+2	
+3	export function persist(bookings) {
+4	  setTimeout(() => {
+5	    mkdirSync('data', { recursive: true });
+6	    writeFileSync('data/bookings.json', JSON.stringify(bookings, null, 2));
+7	    console.log('guardado');
+8	  }, 2000);
+9	}
+10	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261009-120000-feature-0014-saved-reason\spec.md
+<<< 1	---
+2	id: 20261009-120000-feature-0014-saved-reason
+3	feature: 0014
+4	title: Motivo guardado
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-09
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-09
+14	---
+15	
+16	# Spec — Motivo guardado
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — el motivo de una cancelación se guarda.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. Se guarda con el almacén que ya existe (`src/store.js`), que confirma en unos 2 s e imprime `guardado`.
+25	
+26	##
+
+>>> Bash: cd "<run>/repo" && node --test test/store.e2e.test.js 2>&1 | head -40; cat package.json
+<<< ✖ cancelar guarda el motivo en el almacén (521.4434ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2118.1729
+
+✖ failing tests:
+
+test at test\store.e2e.test.js:7:1
+✖ cancelar guarda el motivo en el almacén (521.4434ms)
+  Error: ENOENT: no such file or directory, open '<run>\repo\data\bookings.json'
+      at readFileSync (node:fs:624:20)
+      at TestContext.<anonymous> (file:///<run>/repo/test/store.e2e.test.js:11:28)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/ha
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && python - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('test/store.e2e.test.js','utf8');
+s=s.replace(\"import { setTimeout as sleep } from 'node:timers/promises';\",\"import { once } from 'node:events';\");
+s=s.replace(\"await once(child.stdout.filter((chunk) => chunk.toString().includes('guardado')), 'data');\",\"await once(child, 'exit');\");
+fs.writeFileSync('test/store.e2e.test.js',s)\"
+E
+cat test/store.e2e.test.js; node --test test/store.e2e.test.js 2>&1 | head -15
+<<< Exit code 2
+/usr/bin/bash: eval: line 1: unexpected EOF while looking for matching `"'
+/usr/bin/bash: line 8: warning: here-document at line 8 delimited by end-of-file (wanted `E')
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && cat test/store.e2e.test.js && node --test test/store.e2e.test.js 2>&1 | head -15; git status --short
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { readFileSync, rmSync } from 'node:fs';
+import { once } from 'node:events';
+
+test('cancelar guarda el motivo en el almacén', async () => {
+  rmSync('data', { recursive: true, force: true });
+  const child = spawn(process.execPath, ['src/app.js', 'cancelar', 'Norte', 'lun', '--motivo', 'sala ocupada']);
+  await once(child, 'exit');
+  const saved = JSON.parse(readFileSync('data/bookings.json', 'utf8'));
+  child.kill();
+  assert.equal(saved.find((b) => b.room === 'Norte' 
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/store.e2e.test.js && git commit -q -m "feat: guardar el motivo de la cancelación en el almacén
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+cat > .superpowers/sdd/plan/task-1-report.md <<'E'
+# Task 1 — Guardar el motivo: informe
+
+## Implementado
+`cancelBooking` en `src/app.js` asigna `booking.reason = reason` antes de `persist(bookings)`.
+
+## TDD
+- RED: `node --test test/store.e2e.test.js` → fallo `ENOENT data/bookings.json`. Esperado: el test lee a los 500 ms y `persist` confirma a los ~2 s (además el motivo aún no se guardaba).
+- GREEN: mismo comando → `✔ cancelar guarda el motivo en el almacén (2057ms)`, 1/1 pass, salida limpia.
+
+## Ajustes de espera
+`test/store.e2e.test.js`: `await sleep(500)` → `await once(child, 'exit')` (el proceso sale justo tras imprimir `guardado`); import `setTimeout as sleep` sustituido por `once` de `node:events`. Sin cambios en aserciones, nombre ni datos.
+
+## Ficheros
+`src/app.js`, `test/store.e2e.test.js`
+
+## Notas
+- `voidBooking` no persiste (fuera de alcance).
+E
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/store.e2e.test.js', LF will be replaced by CRLF the next time Git touches it
+eb804d7 feat: guardar el motivo de la cancelación en el almacén
+
+=== RESULTADO (15 turnos, 0.18878070000000002 $)
+- **Status:** DONE
+- **Commit:** `eb804d7` feat: guardar el motivo de la cancelación en el almacén
+- **Tests:** 1/1 passing with `node --test test/store.e2e.test.js`, output clean.
+- **Change:** `cancelBooking` in `src/app.js` now sets `booking.reason = reason` before `persist`.
+- **Ajustes de espera:** in `test/store.e2e.test.js`, `await sleep(500)` became `await once(child, 'exit')`, because the store only confirms after about 2 s. The exit is the system's own signal, and I changed no assertion, name or data.
+- **Concerns:** none.
+- **Report:** `<run>\repo\.superpowers\sdd\plan\task-1-report.md`

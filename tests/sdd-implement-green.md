@@ -27,3 +27,13 @@ Aprendizaje: **una línea de traspaso a otra skill no basta para que el sujeto l
 | Commits por ruta, bucles Native y SDD (humo) | `h1`, `h2` | limpios: `git add <rutas>`, ledger con `complete` por task, implementador y revisión por task con «Restricciones de código», fix por subagente | limpios | limpios |
 
 El anuncio del workspace queda en **3 de 6** en las rondas reforzadas y no se itera más (coste): fila de deuda «Esperar 2.º ticket», con la salida de sacarlo a la CLI (`sdd workspace` imprime la línea y el hilo la copia), como el anuncio de `sdd-propose` (4/6, 0160).
+
+## Task 4 — piezas de la 0007
+
+| Regla | Escenario | GREEN |
+| --- | --- | --- |
+| E2E rojo por tiempo: ajustar esperas sin tocar aserciones ni datos | `r5` | **2/2**: `r5-1` espera la salida `guardado` del hijo; `r5-2`, `once(child, 'exit')`. Ninguno toca aserciones, datos ni `src/store.js`; los dos lo listan en `Ajustes de espera`. Matiz de `r5-1`: la espera no tiene timeout propio (lo dice en «Concerns») |
+
+`r2` y `r3` salieron limpios en RED y no se escriben: van a deuda con el resto de piezas de la 0007 y la 0054 (`roadmap.md`, «Deuda técnica»).
+
+Coste total de la campaña: ~16,7 $ en 27 sujetos válidos (previsión de la spec: ~34 $), más ~3 $ de sujetos invalidados por el molde.

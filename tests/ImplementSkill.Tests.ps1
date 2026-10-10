@@ -77,3 +77,12 @@ Describe 'Reglas nuevas de implement' {
     Get-KitFile 'skills/sdd-templates/templates/plan-template.md' | Should -Match 'si el plan cabe en un contexto, sin umbral'
   }
 }
+
+Describe 'Piezas de la 0007' {
+  It 'el implementador ajusta las esperas de un E2E rojo por tiempo sin tocar aserciones ni datos' {
+    $prompt = Get-KitFile 'skills/sdd-implement/references/implementer-prompt.md'
+    $prompt | Should -Match 'falla por tiempo con tu código ya correcto'
+    $prompt | Should -Match 'sin cambiar aserciones ni datos'
+    $prompt | Should -Match '`Ajustes de espera`'
+  }
+}

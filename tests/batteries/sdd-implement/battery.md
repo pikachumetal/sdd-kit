@@ -59,3 +59,4 @@ Montaje por escenario, en `subject.sh`:
 | «Setup» paso 2 y Overview de `sdd-implement`: el workspace se anuncia en el primer mensaje, también al retomar | RED W 2/2; GREEN 0/4 → 1/3 → 2/3 | h1, h2, r4 |
 | «Recovery» de `sdd-implement`: el informe completo cuenta como devuelto, a su revisión; sin informe, se relanza una vez; línea de recuperación | RED C 1/2; GREEN 3/3 | r4 |
 | `## Quality decalogue` de `implementer-prompt.md`, despachado tal cual | RED D r1 0/2, r1b 2/2; GREEN r1b 2/2, h2 lo despacha | r1, r1b, h2 |
+| «Tests RED» de `implementer-prompt.md`: un E2E rojo por tiempo se ajusta sin tocar aserciones ni datos, con `Ajustes de espera` | RED E 2/2; GREEN 2/2 | r5 |
