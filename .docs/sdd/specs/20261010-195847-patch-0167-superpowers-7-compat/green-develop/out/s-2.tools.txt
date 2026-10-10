@@ -1,0 +1,82 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -la .docs/sdd .docs/sdd/capabilities 2>&1; for f in constitution mission tech-stack roadmap architecture sdd-kit.json sdd-kit.local.json; do echo "=== $f"; cat .docs/sdd/$f* 2>&1 | head -150; done; node "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-dev/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+total 16
+drwxr-xr-x 1 <user> 197609   0 Oct 10 22:38 ./
+drwxr-xr-x 1 <user> 197609   0 Oct 10 22:38 ../
+-rw-r--r-- 1 <user> 197609 112 Oct 10 22:38 changelog.md
+-rw-r--r-- 1 <user> 197609 868 Oct 10 22:38 constitution.md
+-rw-r--r-- 1 <user> 197609 145 Oct 10 22:38 mission.md
+-rw-r--r-- 1 <user> 197609 487 Oct 10 22:38 roadmap.md
+-rw-r--r-- 1 <user> 197609 143 Oct 10 22:38 sdd-kit.json
+-rw-r--r-- 1 <user> 197609 807 Oct 10 22:38 tech-stack.md
+=== constitution
+# Constitution — reservas
+
+1. Los cambios no triviales
+
+>>> Bash: cat "<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-patch-0167-superpowers-7-compat/aab6c02b-1da9-4941-a74d-d75c4acfbc91/scratchpad/kit-dev/skills/sdd-start-feature/references/modo-lite.md"; cd "<run>/repo" && git ls-files | grep -v node_modules | head -60
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Bash: cd "<run>/repo" && cat frontend/src/app/bookings/booking-list.component.ts frontend/src/app/bookings/booking.ts backend/src/Bookings.Api/BookingsEndpoints.cs docs/api.md; git branch -a; git log --oneline | head
+<<< import { Component, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { Booking } from './booking';
+
+@Component({
+  selector: 'app-booking-list',
+  template: `
+    <ul class="booking-list">
+      @for (booking of bookings.value() ?? []; track booking.id) {
+        <li>{{ booking.room }} · {{ booking.start }}</li>
+      }
+    </ul>
+  `,
+  styleUrl: './booking-list.component.css',
+})
+export class BookingListComponent {
+  readonly bookings = httpResource<Booking[]>(() => '/api/bookings');
+}
+export interface Booking {
+  id: number;
+  roo
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.22808499999999998 $)
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme):** la lista de reservas debe decir cuántas reservas hay. Mi lectura, que es una suposición mía hasta que la confirmes, es el **total de reservas guardadas**, no las de la página que se ve. Hoy el frontend pide `/api/bookings` sin `page` y pinta solo la primera página (20), así que el total no se puede sacar de lo que llega y la API tiene que darlo.
+
+Dos hechos del repo:
+- `GET /bookings` devuelve un array plano, 20 por página, ordenado por inicio (`BookingsEndpoints.cs`, `docs/api.md`).
+- El roadmap marca la 0012 (filtrar por estado) como hecha, pero en esta rama no veo ningún filtro en el código. Si existe en `develop`, el total tendría que respetarlo; por ahora asumo que no hay filtro.
+
+❓ **¿Cómo le damos el total a la lista?**
+Lo que decidas fija el contrato de `GET /bookings`.
+
+1️⃣ **Cabecera `X-Total-Count`** en la misma respuesta. El cuerpo sigue siendo el array y quien ya lo consume no se entera. `httpResource` expone las cabeceras (`headers()`), así que la lista lee el total de la misma petición, y es coherente con la página que pinta: con 57 reservas, `page=1` → 20 filas y «57 reservas».
+2️⃣ **Envoltorio `{ items, total }`**. Es el contrato más explícito y viaja en el cuerpo, pero rompe el formato de array que documenta `docs/api.md`: cambia a la vez backend, frontend y doc, y cualquier otro consumidor.
+3️⃣ **Endpoint aparte `GET /bookings/count`**. No toca el contrato existente, pero son dos peticiones, y el total puede no cuadrar con la página si alguien reserva entre las dos.
+
+➡️ **Recomiendo 1️⃣**, porque conserva el contrato de array y da el total en la misma petición que la página. A cambio, si el frontend se sirviera desde otro origen que la API, habría que exponer la cabecera por CORS; no lo he verificado porque en el repo no veo configuración de proxy ni de CORS.

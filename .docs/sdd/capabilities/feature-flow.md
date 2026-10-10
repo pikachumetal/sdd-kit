@@ -593,6 +593,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN invoca `sdd-start-feature`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
 - AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-start-patch` con la clase del patch y la estimación de la pregunta
 - AND si se invoca `sdd-start-feature` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
+### Saltarse las preguntas de brainstorming no se lleva la spec
+
+- GIVEN una feature en el paso de spec de `sdd-propose`, con `superpowers:brainstorming` 7.0.0, cuyo primer mensaje ofrece saltarse las preguntas
+- WHEN el agente pregunta al usuario
+- THEN no le ofrece saltarse las preguntas
+- AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «Decisiones que he tomado yo», y la spec pasa por su gate
 
 ## Reglas de la capacidad
 

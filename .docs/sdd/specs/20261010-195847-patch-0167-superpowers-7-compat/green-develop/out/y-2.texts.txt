@@ -1,0 +1,58 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitution, mission, tech-stack, roadmap, capacidades). Queda: clasificar, anunciar y arrancar la spec, ~5 min.
+
+--- [14]
+Ahora: abrir la entrevista de la spec. Queda: unas pocas decisiones de diseño, spec, aprobación, plan e implementación, ~15 min hasta la primera parada.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** la fila 0011 del roadmap dice «Avisos por correo antes de la reserva», y quieres hacerla entera, en una sola feature.
+
+**Lo que he encontrado en el código** (`backend/src/Bookings.Api/`):
+- `Data/Booking.cs` tiene `Id`, `Room`, `Start`, `End` y `Owner` (un `string`), y nada más: no hay campo de correo ni de contacto.
+- `BookingsEndpoints.cs` solo expone `GET /bookings` con paginación. No hay endpoint para crear reservas.
+- No existe nada de envío de correo, ni servicio en segundo plano, ni configuración SMTP.
+
+Así que esta feature parte de cero en correo, y de momento ni siquiera sabemos a qué dirección enviar.
+
+❓ **¿Qué quieres que ocurra, en tus palabras?**
+Cuéntame el momento concreto: ¿quién recibe el correo, cuándo, y qué debería poder hacer o saber esa persona al leerlo?
+
+--- [16]
+Ahora: escribir la spec con lo que hay, y los huecos van a «Decisiones que he tomado yo». Queda: spec, repaso de coherencia y tu aprobación, ~5 min.
+
+--- [27]
+Spec escrita en `.docs/sdd/specs/20261010-203931-feature-0011-reminder-emails/spec.md`. Hice el repaso de coherencia: el umbral de 30 minutos, el aviso tardío y el reintento coinciden en decisiones y escenarios, sin contradicciones.
+
+Que me pidieras saltarme las preguntas no aprueba la spec, así que me paro aquí.
+
+## 🦆 Qué cambia
+
+Quien reserva una sala recibe un correo 30 minutos antes de que empiece. Ejemplo: la reserva de «Sala 2» de `ana@empresa.test` empieza a las 10:00, y a las 09:30 le llega «Recordatorio: tu reserva de Sala 2 empieza a las 10:00». Por dentro, una tarea en segundo plano revisa cada minuto las reservas próximas y marca cada una como avisada para no repetir el correo.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+Todo es suposición mía, porque no hubo entrevista:
+
+1. **Destinatario**: campo nuevo `OwnerEmail` (opcional). `Owner` es texto libre y no lo uso como dirección. Sin `OwnerEmail` no hay aviso.
+2. **Antelación**: 30 minutos antes de `Start`, fija.
+3. **Texto**: asunto «Recordatorio: tu reserva de {sala} empieza a las {HH:mm}»; cuerpo «Tu reserva de {sala} es de {HH:mm} a {HH:mm}.»
+4. **Una sola vez**: `ReminderSentAt` en cada reserva evita repetir el aviso.
+5. **No avisar tarde**: si la reserva ya empezó, no se envía. Si faltan menos de 30 minutos pero no ha empezado, se envía en la primera revisión.
+6. **Mecanismo**: servicio en segundo plano que revisa cada 60 s y un `IEmailSender` por SMTP (`Smtp:Host`, `Smtp:Port`, `Smtp:From`). Sin `Smtp:Host` no envía ni marca nada.
+7. **Fallo de envío**: no se marca, se reintenta en la siguiente revisión hasta que empiece, y se registra en el log sin tumbar la API.
+8. **Migración**: dos columnas nuevas, `OwnerEmail` y `ReminderSentAt`, ambas opcionales.
+9. **Sin alta de correo**: no hay endpoint para crear reservas ni para rellenar `OwnerEmail`, y esta feature no lo añade. En la práctica, nadie podrá recibir avisos hasta que exista una vía para rellenarlo.
+10. **Capacidad nueva** `booking-reminders`.
+11. **Hora mostrada**: tal como está guardada, sin conversión de zona horaria.
+
+**Review de spec**: ninguna. Hay 3 señales (capacidad nueva, datos, SMTP), y con 0–3 no se recomienda. Lo que queda sin mirar son las decisiones 5 y 7.
+
+La decisión 9 es la que más puede cambiar el alcance: sin ella la feature solo se puede probar con datos sembrados. Si quieres incluir el alta de `OwnerEmail`, dímelo en los cambios.
+
+**¿Apruebo la spec y escribo el plan, o quieres cambios?** (Con «apruebo» en `delegate` sigo hasta la validación sin más paradas.)
+
