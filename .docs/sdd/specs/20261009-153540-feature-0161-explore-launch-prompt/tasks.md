@@ -39,6 +39,7 @@ Revisión final: sdd-kit:effort-high + opus, con arreglos (0 Critical, 6 Importa
 Pasada de fix: afb312aa, 4 Important arreglados en el hilo (1, 4, 5, 6) y los 12 Minor; 2 Important (2, 3) como desvío aprobado → Task 6
 Re-revisión: afb312aa..659fa8dd, sdd-kit:effort-high + opus, con arreglos (0 Critical, 6 Important)
 Pasada de fix: juntada en el cierre, 6 Important y los Minor; control k5 1/1
+Re-revisión: 3aca3c08..003c2fe1, sdd-kit:effort-high + opus, limpia (regex de `LaunchPrompt.Tests.ps1` tolerante a CRLF, que el pre-commit del merge daba en rojo)
 
 ## Rulings
 
