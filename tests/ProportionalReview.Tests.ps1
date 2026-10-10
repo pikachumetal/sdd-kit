@@ -47,7 +47,9 @@ Describe 'Constitution' {
 Describe 'Paso 4' {
   It 'repasa la coherencia de la spec antes del gate' {
     $skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
-    $skill | Should -Match 'Spec Self-Review'
+    # superpowers 7.0.0 quitó el «Spec Self-Review»: las cuatro comprobaciones viven en el paso (patch 0167).
+    $skill | Should -Not -Match 'Spec Self-Review'
+    $skill | Should -Match 'Repaso de coherencia[^\n]*placeholders[^\n]*contradicciones[^\n]*alcance[^\n]*ambigüedad'
     $skill | Should -Match 'literal[^\n]*más de un sitio'
     $skill | Should -Match 'busca todas sus apariciones'
   }

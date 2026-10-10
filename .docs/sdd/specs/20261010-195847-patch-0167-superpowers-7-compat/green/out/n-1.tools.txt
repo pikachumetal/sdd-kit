@@ -1,0 +1,141 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities .docs/sdd/specs 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; git branch --show-current
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+ls: cannot access '.docs/sdd/specs': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+feature/0011
+<<< 1	# Tech Stack — reservas
+2	
+3	- **Monorepo con moon**: `frontend/` (Angular 20, signals, tema claro y oscuro con variables CSS) y `backend/` (.NET 9, minimal API, EF Core 9 sobre SQL Server).
+4	- **Comandos**:
+5	  - `moon run frontend:test` — Vitest con jsdom, ~40 s.
+6	  - `moon run frontend:check` — lint y `tsc --noEmit`, ~30 s.
+7	  - `moon run frontend:serve` — servidor de desarrollo en `http://localhost:4200`.
+8	  - `moon run backend:test` — xUnit con Testcontainers sobre SQL Server; tarda entre 17 y 21 min.
+9	  - `moon run backend:run` — API en `http://localhost:5080`.
+10	  - `moon run :t
+<<< 1	# Roadmap — reservas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 0011 | Avisos por correo antes de la reserva | ⏳ |
+8	| 0012 | Filtrar la lista de reservas por estado | ✅ |
+9	| 0013 | Que la lista de reservas diga cuántas reservas hay | ⏳ |
+10	
+11	## Backlog
+12	
+13	| # | Ítem | Origen |
+14	| --- | --- | --- |
+15	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+16	
+17	## Releases cerradas
+18	
+19	### v0.4.0 (2026-09-10)
+20	
+21	Lista de reservas con paginación. [changelog](changelog.md)
+22	
+<<< 1	# Misión — reservas
+2	
+3	Aplicación interna para reservar salas de reuniones: una lista de reservas en el navegador y una API que las guarda.
+4	
+<<< 1	# Constitution — reservas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Todo verde al cerrar cada task: `moon run :test` y `moon run frontend:check`.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	5. Calidad de código: sin comentarios que repitan el código; sin comentarios que citen documentos (constitution, spec, task, capacidad); fun
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+=== RESULTADO (10 turnos, 0.2233653 $)
+La fila del roadmap dice solo «Avisos por correo antes de la reserva», y de ahí no salen ni el qué ni el cuándo. Antes de escribir la spec necesito entender qué quieres tú.
+
+Cuéntame la situación real que quieres evitar: ¿qué pasa hoy con una reserva, y en qué momento te gustaría que alguien recibiera un correo?
+
+>>> Bash: cd "<run>/repo" && git ls-files | grep -v -E "node_modules|\.lock|package-lock" | head -80
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+README.md
+backend/src/Bookings.Api/BookingsEndpoints.cs
+backend/src/Bookings.Api/Data/Booking.cs
+backend/src/Bookings.Api/Data/BookingsDb.cs
+backend/tests/Bookings.Tests/BookingsEndpointsTests.cs
+docs/api.md
+frontend/src/app/bookings/booking-list.component.css
+frontend/src/app/bookings/booking-list.component.spec.ts
+frontend/src/app/bookings/booking-list.component.ts
+frontend/src/app/bookings/booking.ts
+moon.yml
+
+>>> Bash: cd "<run>/repo" && cat backend/src/Bookings.Api/Data/Booking.cs backend/src/Bookings.Api/Data/BookingsDb.cs backend/src/Bookings.Api/BookingsEndpoints.cs docs/api.md README.md frontend/src/app/bookings/booking.ts; ls backend backend/src/Bookings.Api
+<<< namespace Bookings.Api.Data;
+
+public class Booking
+{
+    public int Id { get; set; }
+    public string Room { get; set; } = "";
+    public DateTime Start { get; set; }
+    public DateTime End { get; set; }
+    public string Owner { get; set; } = "";
+}
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api.Data;
+
+public class BookingsDb(DbContextOptions<BookingsDb> options) : DbContext(options)
+{
+    public DbSet<Booking> Bookings => Set<Booking>();
+}
+using Bookings.Api.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace Bookings.Api;
+
+public static class Bookings
+
+>>> Bash: cd "<run>/repo" && git branch -a && git log --oneline --all | head; git grep -n -i -E "status|estado|cancel|email|correo" -- backend frontend | head
+<<<   develop
+* feature/0011
+  main
+cbfc27c feat: lista de reservas con paginación
+
+=== RESULTADO (4 turnos, 0.2761692 $)
+He mirado el código y la premisa no encaja con lo que hay:
+
+- **Estado**: una reserva solo tiene sala, inicio, fin y `Owner` (texto libre). No hay «confirmada» ni «cancelada».
+- **Alta y cancelación**: la API solo tiene `GET /bookings`. No hay forma de crear ni cancelar reservas desde este repo.
+- **Correo**: no hay ninguna dirección asociada al cliente, solo el texto `Owner`.
+- **Roadmap**: la fila 0012 («Filtrar por estado») está ✅, pero en esta rama no existe ningún estado. Si vive en otra rama o en otro sistema, necesito saberlo.
+
+Lo que has descrito lo veo así. Una tarea periódica busca reservas confirmadas que empiecen dentro de 24 horas y manda un correo con fecha, hora y sala. Cada reserva se avisa una sola vez, y una cancelada antes no recibe nada. Para que eso exista me faltan tres piezas: el estado, la dirección y quién cancela. El cómo enviarlo lo elijo yo.
+
+Una pregunta antes de seguir: ¿quién crea y cancela hoy las reservas, y de dónde sale la dirección de correo del cliente?

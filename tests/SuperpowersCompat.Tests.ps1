@@ -11,12 +11,33 @@ BeforeAll {
   }
 }
 
-Describe 'Compatibilidad con superpowers 6.4.2' {
-  It 'una fila de overrides integra el Execution Handoff en la tabla de gates' {
+Describe 'Compatibilidad con superpowers 7.0.0' {
+  It 'una fila de overrides integra el Execution Handoff en la tabla de gates, sin la frase de la HARD-GATE que la 7.0.0 quitó' {
     $row = Get-OverrideRow 'Execution Handoff'
     $row | Should -Not -BeNullOrEmpty
     $row | Should -Match 'Native'
-    $row | Should -Match 'HARD-GATE'
+    $row | Should -Not -Match 'reviews the written implementation plan'
+  }
+
+  It 'una fila de overrides deja el tamaño de brainstorming sin gobernar los artefactos y no ofrece saltarse las preguntas' {
+    $row = Get-OverrideRow 'Size the Work'
+    $row | Should -Not -BeNullOrEmpty
+    $row | Should -Match 'toda feature tiene `spec.md` y su gate'
+    $row | Should -Match 'No se ofrece saltarse las preguntas'
+    Get-OverrideRow 'spike / bounded / architectural' | Should -BeNullOrEmpty
+  }
+
+  It 'el paso 4 de sdd-start-feature no ofrece saltarse las preguntas de brainstorming' {
+    $step = ((Get-KitFile 'skills/sdd-start-feature/SKILL.md') -split "`n") | Where-Object { $_ -match '^4\. \*\*Spec\*\*' }
+    $step | Should -Match 'No ofrezcas saltarse las preguntas'
+  }
+
+  It 'una fila de overrides sustituye el builder check por la review de spec del kit' {
+    Get-OverrideRow 'Builder check' | Should -Match 'No se despacha[^|]*review-spec\.md'
+  }
+
+  It 'una fila de overrides mantiene el estilo de preguntas del kit' {
+    Get-OverrideRow 'no list of example answers' | Should -Match 'recomendada primero'
   }
 
   It 'una fila de overrides convierte la ruta de sdd-workspace con cygpath -w' {
@@ -28,12 +49,12 @@ Describe 'Compatibilidad con superpowers 6.4.2' {
     Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' | Should -Match '(?m)^## Rutas del workspace en Windows[\s\S]*cygpath -w'
   }
 
-  It 'el README declara validada la 6.4.2' {
-    Get-KitFile 'README.md' | Should -Match 'Versión validada: 6\.4\.2'
+  It 'el README declara validada la 7.0.0' {
+    Get-KitFile 'README.md' | Should -Match 'Versión validada: 7\.0\.0'
   }
 
-  It 'las referencias de vigilancia declaran validada la 6.4.2 en la caché de superpowers-marketplace' {
-    Get-KitFile '.docs/sdd/tech-stack.md' | Should -Match 'superpowers — .*cache/superpowers-marketplace/superpowers/.*Validado: 6\.4\.2'
+  It 'las referencias de vigilancia declaran validada la 7.0.0 en la caché de superpowers-marketplace' {
+    Get-KitFile '.docs/sdd/tech-stack.md' | Should -Match 'superpowers — .*cache/superpowers-marketplace/superpowers/.*Validado: 7\.0\.0'
   }
 
   It 'el paso de implementación de plan-template sigue «What a Step Contains» de writing-plans 6.4.2' {
