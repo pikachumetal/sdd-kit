@@ -2,6 +2,8 @@
 
 Arranca las sesiones de este repo con `./Start-KitSession.ps1` (acepta argumentos extra, p. ej. `--model sonnet`): carga las skills del working tree y deshabilita el plugin publicado, que el `.claude/settings.json` del repo activa.
 
+Una vez por clon, activa los hooks de git: `git config core.hooksPath .githooks`. Es configuración local y no viaja con el pull; sin ella el pre-commit no corre y un commit creado no prueba nada (ticket del patch 0167 §1). Antes de decir «pre-commit en verde», comprueba que `git config core.hooksPath` devuelve `.githooks`.
+
 Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualquier tarea, lee los documentos de anclaje que apliquen — este fichero solo es el índice.
 
 ## Dónde está cada cosa
