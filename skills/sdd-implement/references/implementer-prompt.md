@@ -106,7 +106,7 @@ If the task review finds issues, you will be resumed with the findings. Fix them
 Write your full report to [REPORT_FILE]:
 - What you implemented (or what you attempted, if blocked)
 - What you tested and test results
-- **TDD Evidence**: RED (step 1 of Your Job) and GREEN (command and passing output after)
+- **TDD Evidence**: RED (command, failing output before implementation, why the failure was expected) and GREEN (command and passing output after)
 - Files changed
 - Self-review findings (if any)
 - Any issues or concerns

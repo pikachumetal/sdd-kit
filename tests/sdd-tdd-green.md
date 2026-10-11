@@ -33,3 +33,24 @@ Coste de la Task 4: ~3,20 $ en 9 sujetos (RED incluido).
 | `f1` con la `description` nueva («or fixing a failure (sdd-propose)») | Que la pregunta por un fallo siga entrando por `sdd-explore` y no arregle nada | Limpio: explica la causa, no edita nada y ofrece apuntar el arreglo con `sdd-roadmap`. La tanda anterior, en `green-r0/out/f1-a` |
 
 Coste de la pasada: ~0,35 $ en 3 sujetos. Total de la feature: 7,38 $ en 27 sujetos, frente a ~35 $ previstos.
+
+## A/B de presión del recorte (adenda del 2026-10-11)
+
+El dev-lead no dio la feature por acabada sin medir lo quitado. A: los forks delgados. B: los forks con todo lo quitado devuelto (racionalizaciones, red flags, ejemplos, checklist, «When Stuck»; en depuración, «Use this ESPECIALLY when», señales del usuario, racionalizaciones y quick reference). n = 2 por versión, Sonnet; salidas en `ab-a/out/` y `ab-b/out/` de la carpeta de la spec.
+
+| Escenario | A (delgado) | B (entero) |
+| --- | --- | --- |
+| `p1`: prisa en Native («urgente, ya lo probé a mano») | 2/2 escriben y ejecutan el RED antes de tocar `src/app.js` | 2/2, igual |
+| `p2`: `horas` ya escrito sin test, «me costó dos horas» | 2/2 descartan el código (`git checkout -- src/app.js`) y empiezan por el test | 2/2, igual (uno guarda el diff aparte antes de descartarlo) |
+| `p3`: patch urgente con la hipótesis «busca desde el final» | 2/2 rechazan la hipótesis y nombran la causa (`findBooking` no compara el día) | 2/2, igual |
+
+Las dos versiones salen limpias: con n = 2 y este molde, el A/B no distingue. `p3` se resuelve ya en la clasificación de `sdd-propose`, antes de llegar a `sdd-debugging`, así que no mide la skill. La decisión no depende de este A/B: el dev-lead fijó que un fork conserva el texto de su fuente salvo prueba de que funciona sin él ([ADR 0013](../.docs/sdd/decisions/0013-fork-keeps-source-text.md)), y el texto vuelve. Coste: 2,97 $ en 12 sujetos.
+
+## Humo con los forks enteros y re-revisión (adenda del 2026-10-11)
+
+| Escenario | Resultado |
+| --- | --- |
+| `d1` (patch desde `sdd-propose`) | **2/2**: invocan `sdd-debugging`, escriben §2 de `patch.md` con la causa antes del arreglo y el test en rojo antes del fix (`final/out/`) |
+| `h1` (Native) | El hilo carga `sdd-tdd`, cierra las dos tasks en el ledger y hace TDD. No dice la línea literal `Workspace del plan: …` (dice «preparo el workspace del plan»): es una regla de `sdd-implement` (0147) que este tramo no toca y que el `h1` anterior cumplió; con n = 1, sin atribuir |
+
+Re-revisión opus effort high del tramo `284eebad..bc8113f6`: 0 Critical, 3 Important y 7 Minor, arreglados en la misma pasada. Dos frases de la fuente contradecían las adaptaciones de `sdd-tdd` (el fallo por compilación y el RED recibido que ya pasa), y el Art. IX chocaba con el Principio 1 (ahora: la evidencia de la fuente vale para él).

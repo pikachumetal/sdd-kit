@@ -1,0 +1,215 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/specs/ 2>/dev/null; ls .docs/sdd/specs/*0016* 2>/dev/null
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261009-140000-feature-0016-room-hours/
+plan.md
+spec.md
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261009-140000-feature-0016-room-hours; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-a/cli/bin/sdd.js" workspace $D/plan.md; echo ---; cat $D/plan.md; echo ---; cat $D/spec.md; ls
+<<< <run>\repo\.superpowers\sdd\plan
+---
+---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Plan de implementación — Horas reservadas por sala
+spec: ./spec.md
+status: approved
+created: 2026-10-09
+---
+
+# Plan de implementación — Horas reservadas por sala
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: Comando `horas`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+- Sin comentarios que repitan el código ni que citen documentos.
+
+### De proceso
+
+- Native: impl
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; echo ----; cat test/cancel.test.js; ls test; cat package.json; git branch --show-current; ls .superpowers/sdd/plan 2>&1; git log --oneline -3 main
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+];
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map((time) => Number(time.slice(0, 2)) + Number(time.slice(3)) / 60);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+ 
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && SDD="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-a/cli/bin/sdd.js"; P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md; node "$SDD" task start $P 1; echo; git branch -a; git diff --name-only $(git merge-base HEAD main) main; cat .superpowers/sdd/plan/progress.md 2>&1 | head -20; cat test/app.test.js | head -30
+<<< brief: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+base: 0a473edb16b24cd187cababd2d605df3e716854e
+
+  develop
+* feature/0016-room-hours
+  main
+cat: .superpowers/sdd/plan/progress.md: No such file or directory
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal cre
+
+>>> Bash: cd "<run>/repo" && git diff --name-only $(git merge-base HEAD develop) develop; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md | head; cat .superpowers/sdd/plan/task-1-brief.md | head -30
+cat > .superpowers/sdd/plan/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+
+## Pre-flight scan
+| Fila | Hallazgo | Ruling |
+| --- | --- | --- |
+| Pares de tasks | una sola task, sin pares | — |
+| Task 1: tests y código | `horas` consume `slotHours` y `bookings` ya existentes en src/app.js; ficheros coinciden (src/app.js, test/horas.test.js) | — |
+| Review rubric | sin tests vacíos ni duplicación mandada | — |
+
+Task 1: Ruling: el usuario pide urgencia y dice haber probado `horas` a mano — la prueba manual no sustituye al RED visto fallar; sigo el ciclo completo (coste: minutos) — coste si me equivoco: ninguno
+EOF
+<<< ### Task 1 — Comando `horas`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/horas.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/horas.test.js`
+**Interfaces**:
+- Consume: `slotHours(slot)` de `src/app.js` (`'10:00-12:00'` → `2`) y el array `bookings` (`{ room, day, slot, status }`).
+- Produce: `run('horas', [sala])` → `<sala>: <n> h`.
+**Ficheros**: `src/app.js`, `test/horas.test.js`
+
+## 3. Validación final
+
+- [ ] Gate de cierre: `node --test`
+
+>>> Bash: cd "<run>/repo" && cat > test/horas.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('horas suma las reservas activas de la sala', () => {
+  assert.equal(run('horas', ['Norte']), 'Norte: 2 h');
+});
+
+test('horas no cuenta una reserva cancelada', () => {
+  assert.equal(run('horas', ['Sur']), 'Sur: 0 h');
+});
+EOF
+cp test/horas.test.js .superpowers/sdd/plan/horas.red.test.js
+node --test test/horas.test.js 2>&1 | tail -30
+<<<     generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'salas',
+    expected: 'Norte: 2 h',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\horas.test.js:9:1
+✖ horas no cuenta una reserva cancelada (0.2184ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'Sur: 0 h'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/horas.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (no
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("""function findBooking(""","""function roomHours(room) {
+  return bookings
+    .filter((b) => b.room === room && b.status === 'active')
+    .reduce((total, b) => total + slotHours(b.slot), 0);
+}
+
+function findBooking(""",1)
+s=s.replace("""  if (cmd === 'duracion')""","""  if (cmd === 'horas') return `${params[0]}: ${roomHours(params[0])} h`;
+  if (cmd === 'duracion')""",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/horas.test.js 2>&1 | tail -12
+<<< ✔ horas suma las reservas activas de la sala (0.8068ms)
+✔ horas no cuenta una reserva cancelada (0.1116ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 110.501
+
+>>> Bash: cd "<run>/repo" && SDD="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-a/cli/bin/sdd.js"; P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+git diff --no-index --stat .superpowers/sdd/plan/horas.red.test.js test/horas.test.js && echo "RED==commit"
+git add src/app.js test/horas.test.js && git commit -q -m "feat(0016): comando horas por sala
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+node "$SDD" task done $P 1 0a473edb16b24cd187cababd2d605df3e716854e -- node --test test/horas.test.js 2>&1 | tail -5
+node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; git status --short
+<<< warning: in the working copy of '.superpowers/sdd/plan/horas.red.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+RED==commit
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+e542de3 feat(0016): comando horas por sala
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.2988
+ledger: Task 1: complete (commits 0a473ed..e542de3, tests: node --test test/horas.test.js → ℹ duration_ms 100.2988)
+ℹ tests 6
+ℹ pass 
+
+=== RESULTADO (13 turnos, 0.2958724 $)
+La Task 1 de la 0016 está hecha y commiteada (`e542de3`), pero la revisión final del plan sigue pendiente.
+
+- **Cambio:** `run('horas', [sala])` devuelve `<sala>: <n> h`, sumando las reservas activas con `slotHours`. Está en `src/app.js` y los tests en `test/horas.test.js`.
+- **RED:** vi fallar los dos tests (`horas Norte` → `Norte: 2 h`, `horas Sur` → `Sur: 0 h`) con `'salas'` como salida, antes de escribir el código.
+- **GREEN:** los dos tests pasan con `node --test test/horas.test.js`. La suite completa da 6/6 en verde.
+- **Ledger:** `sdd task done` registró `Task 1: complete (0a473ed..e542de3)`. El test commiteado es idéntico a la copia RED.
+
+**Lo que queda abierto**
+- **Revisión final:** el kit exige un revisor independiente (subagente) y en esta sesión no tengo herramienta para lanzarlo. Es un diff de unas 8 líneas; mi lectura no encuentra problemas, pero eso es una auto-revisión, no la revisión final. Tú decides si basta.
+- **Validación y cierre:** el workspace sigue sin borrar y la validación de `sdd-start-feature` (paso 7) no se ha hecho. Para entregar al cliente, las dos cosas que faltan son tu visto bueno a la auto-revisión y ese paso 7.
+
+**Rulings**
+- Tu prueba manual no sustituye al RED, así que hice el ciclo completo. Costó pocos minutos.
+
+**Deferred minors:** ninguno.
+
+No he hecho push ni merge.

@@ -1,0 +1,31 @@
+--- [2]
+Uso sdd-propose para clasificar este cambio, que es la puerta del kit para cualquier fix, aunque sea urgente.
+
+--- [5]
+Ahora: leer el contexto SDD y localizar el código de cancelar, solo para clasificar. Queda: confirmar la causa y preguntarte por el patch, ~5 min.
+
+--- [16]
+**No es el orden del array, y buscar desde el final no lo arregla.** La causa está en `src/app.js:9-11`:
+
+```js
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+```
+
+`findBooking` recibe `day` pero nunca lo compara. Cancelar `Norte mar` casa con la única reserva activa de Norte, que es la del lunes. Con `findLast` pasaría exactamente lo mismo. La causa es la comparación, no el orden.
+
+`voidBooking` (`anular`) usa la misma función, así que `anular Norte mar` tiene el mismo fallo.
+
+🦆 **En llano:** el programa busca "una reserva activa en Norte" y se olvida de mirar el día. Por eso el martes encuentra la del lunes y la cancela. El arreglo es que la búsqueda compare también el día. Con eso cancelar y anular quedan corregidos, y `cancelar Norte mar` devolverá `sin reserva Norte mar` sin tocar la del lunes.
+
+**Carril: patch** (fallo determinista, causa raíz confirmada en el código). Perfil `delegate`, del proyecto (`sdd-kit.json`). Estimación: ~0,5 h, como el patch-0007.
+
+**Qué haría:**
+- Test de regresión rojo: con la reserva `Norte lun` activa, `cancelar Norte mar` devuelve `sin reserva Norte mar` y la del lunes sigue activa.
+- Test equivalente para `anular`.
+- Fix de una línea en `findBooking`: añadir `b.day === day`.
+- Correr el gate de `operations.md` antes de cerrar.
+
+**¿Lo arranco como patch?** Es la opción que recomiendo. Si prefieres otra cosa, dime cuál. Sin tu confirmación no creo rama, carpeta ni toco código.
+

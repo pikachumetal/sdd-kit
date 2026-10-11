@@ -1,0 +1,30 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` para clasificar este cambio antes de tocar código.
+
+--- [5]
+Ahora: leer el contexto SDD y reproducir el fallo en el código para clasificarlo. Queda: preguntarte por el carril (patch) antes de tocar nada, ~3 min.
+
+--- [13]
+Ahora: clasificado como **patch**; falta tu confirmación antes de abrir rama o carpeta. No he tocado nada.
+
+**El orden del array no es la causa.** `findBooking` (`src/app.js:9-11`) recibe `day` y no lo usa: devuelve la primera reserva activa de esa sala, sea del día que sea. Buscar desde el final no lo arregla. Con una sola reserva de Norte, la del lunes, seguiría devolviéndola para cualquier día. Solo cambiaría cuál se lleva por delante cuando hay varias.
+
+La misma función la usa `voidBooking` (`anular`), así que **«anular Norte mar» tiene el mismo fallo**; arreglarlo en `findBooking` cubre los dos.
+
+🦆 Cuando cancelas Norte del martes, el programa mira «¿hay alguna reserva activa en Norte?» sin preguntar por el día. Encuentra la del lunes, la cancela y te contesta con el día que tú le escribiste. La corrección es una línea: que además compare `b.day === day`.
+
+**Carril patch.** Es un fallo determinista y la causa fija la solución. Plan:
+
+1. Test en rojo en `test/cancel.test.js`: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes. Otro igual para `anular`.
+2. Añadir `b.day === day` en `findBooking`.
+3. Gate: `node --test && node scripts/lint.mjs`.
+
+Nota: el patch 0007 del roadmap decía haber arreglado «borraba reservas de otro día con la misma hora», pero este código no lo refleja. Lo miro al abrir el patch, por si hubo una regresión o un arreglo que no llegó a `develop`.
+
+**¿Abro el patch con este alcance (cancelar y anular)?**
+- **Sí, abre el patch (recomendada)**
+- **Solo cancelar**
+- **Haz tu propuesta del array**, aunque no resuelve el fallo
+
+Si te vas a ausentar, di «apruebo por delegación» y sigo hasta la validación.
+

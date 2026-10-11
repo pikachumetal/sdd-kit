@@ -7,9 +7,11 @@ description: Use when an sdd-kit skill meets a failure to explain — a bug in a
 
 ## Overview
 
-Find the root cause before you touch the code: a fix of the symptom is a failure. Write everything the user reads in the language of their message. Forked from `systematic-debugging` of superpowers 7.0.0 (MIT, see `NOTICE`).
+Write everything the user reads in the language of their message. Forked from `systematic-debugging` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
-It applies to any technical failure: a bug in a patch, a test that fails, a step of the plan whose `Expected:` doesn't match because the code fails, a build or an integration that breaks. Above all when it looks simple, when there's a hurry or when a fix already failed. **Violating the letter of this process is violating the spirit of debugging.**
+**Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
+
+**Violating the letter of this process is violating the spirit of debugging.**
 
 ## The Iron Law
 
@@ -17,57 +19,269 @@ It applies to any technical failure: a bug in a patch, a test that fails, a step
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
 ```
 
-Until Phase 1 is done, you don't propose a fix. Finish each phase before the next.
+If you haven't completed Phase 1, you cannot propose fixes.
 
-## Phase 1: Root cause
+## When to Use
 
-1. **Read the error completely**: the message, the whole stack trace, line numbers, paths, codes. Warnings too.
-2. **Reproduce it**: the exact steps, every time. If it doesn't reproduce, gather more data; don't guess.
-3. **Check what changed**: `git diff`, recent commits, dependencies, configuration, environment.
-4. **Several components** (CI → build → signing, API → service → database): before proposing anything, instrument each boundary —what enters, what leaves, which configuration arrives— and run once to see **where** it breaks. Then investigate that component.
-5. **Trace the bad value back** to where it's born, and fix it there, not where it shows: [root-cause-tracing.md](references/root-cause-tracing.md).
+Use for ANY technical issue:
+- Test failures
+- Bugs in production
+- Unexpected behavior
+- Performance problems
+- Build failures
+- Integration issues
 
-In a patch, write the result of this phase in §2 of `patch.md` —the why, with its evidence in the code— before Phase 4: a cause written after the fix describes the fix, not what you found.
+**Use this ESPECIALLY when:**
+- Under time pressure (emergencies make guessing tempting)
+- "Just one quick fix" seems obvious
+- You've already tried multiple fixes
+- Previous fix didn't work
+- You don't fully understand the issue
 
-## Phase 2: Pattern
+**Don't skip when:**
+- Issue seems simple (simple bugs have root causes too)
+- You're in a hurry (rushing guarantees rework)
+- Manager wants it fixed NOW (systematic is faster than thrashing)
 
-1. Find similar code in the same codebase that works.
-2. If you're applying a pattern, read its reference implementation completely, every line.
-3. List every difference between what works and what breaks, however small; don't decide in advance that one can't matter.
-4. Name what it depends on: other components, settings, environment, assumptions.
+## The Four Phases
 
-## Phase 3: Hypothesis
+You MUST complete each phase before proceeding to the next.
 
-1. One hypothesis, written down: «I think X is the root cause because Y».
-2. Test it with the smallest change, one variable at a time.
-3. It holds → Phase 4. It doesn't → a new hypothesis, without stacking more fixes on top.
-4. If you don't understand something, say «I don't understand X» and look for it, or ask; don't pretend.
+### Phase 1: Root Cause Investigation
 
-## Phase 4: Fix
+**BEFORE attempting ANY fix:**
 
-In a patch, Phase 4 starts with §2 of `patch.md` already written. If it isn't, stop and write it first.
+1. **Read Error Messages Carefully**
+   - Don't skip past errors or warnings
+   - They often contain the exact solution
+   - Read stack traces completely
+   - Note line numbers, file paths, error codes
 
-1. **A failing test that reproduces it**, before the fix: the simplest reproduction, automated if the project has tests, a one-off script if not. Write it under `sdd-tdd`.
-2. **One fix**, at the root cause. No «while I'm here» changes or bundled refactors.
-3. **Verify**: the test passes, the others still pass, the failure is gone. Run the verification and read its output before saying it's fixed.
-4. **The fix didn't work**: stop and count the fixes you've tried. Fewer than three → back to Phase 1 with what you learned. Three or more → don't try a fourth: each fix showing a new problem somewhere else is a wrong architecture, not a wrong hypothesis. The thread stops as at a deviation from the approved approach ([control-profiles.md](../sdd-start-feature/references/control-profiles.md)); an implementer returns `BLOCKED` with the three attempts and what each one showed.
+2. **Reproduce Consistently**
+   - Can you trigger it reliably?
+   - What are the exact steps?
+   - Does it happen every time?
+   - If not reproducible → gather more data, don't guess
 
-Once the cause is fixed, [defense-in-depth.md](references/defense-in-depth.md) adds validation at each layer the bad value crossed, and [condition-based-waiting.md](references/condition-based-waiting.md) replaces fixed waits with a wait on the condition when the failure was timing.
+3. **Check Recent Changes**
+   - What changed that could cause this?
+   - Git diff, recent commits
+   - New dependencies, config changes
+   - Environmental differences
 
-## No root cause
+4. **Gather Evidence in Multi-Component Systems**
 
-If the investigation shows the failure is really environmental, timing-dependent or external: you finished the process. Write down what you investigated, add the handling it needs (retry, timeout, error message) and the logging that would let the next person see it. Most «no root cause» cases are an incomplete investigation: say what you didn't look at.
+   **WHEN system has multiple components (CI → build → signing, API → service → database):**
 
-## Red flags — STOP and go back to Phase 1
+   **BEFORE proposing fixes, add diagnostic instrumentation:**
+   ```
+   For EACH component boundary:
+     - Log what data enters component
+     - Log what data exits component
+     - Verify environment/config propagation
+     - Check state at each layer
 
-- «Quick fix for now, investigate later».
-- «Let me just try changing X and see».
-- Several changes at once, then running the tests.
-- «Skip the test, I'll check it by hand».
-- «It's probably X, let me fix that».
-- «I don't fully understand it, but this might work».
-- «The pattern says X, but I'll adapt it differently».
-- A list of fixes without an investigation behind it.
-- A solution before tracing the data flow.
-- «One more fix» after two that failed.
-- Each fix shows a new problem in a different place.
+   Run once to gather evidence showing WHERE it breaks
+   THEN analyze evidence to identify failing component
+   THEN investigate that specific component
+   ```
+
+   **Example (multi-layer system):**
+   ```bash
+   # Layer 1: Workflow
+   echo "=== Secrets available in workflow: ==="
+   echo "IDENTITY: $([ -n "${IDENTITY:-}" ] && echo SET || echo UNSET)"
+
+   # Layer 2: Build script
+   echo "=== Env vars in build script: ==="
+   printenv IDENTITY >/dev/null 2>&1 && echo "IDENTITY in environment" || echo "IDENTITY not in environment"
+
+   # Layer 3: Signing script
+   echo "=== Keychain state: ==="
+   security list-keychains
+   security find-identity -v
+
+   # Layer 4: Actual signing
+   codesign --sign "$IDENTITY" --verbose=4 "$APP"
+   ```
+
+   **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)
+
+5. **Trace Data Flow**
+
+   **WHEN error is deep in call stack:**
+
+   See [root-cause-tracing.md](references/root-cause-tracing.md) for the complete backward tracing technique.
+
+   **Quick version:**
+   - Where does bad value originate?
+   - What called this with bad value?
+   - Keep tracing up until you find the source
+   - Fix at source, not at symptom
+
+**In a patch**, write the result of this phase in §2 of `patch.md` —the why, with its evidence in the code— before Phase 4: a cause written after the fix describes the fix, not what you found.
+
+### Phase 2: Pattern Analysis
+
+**Find the pattern before fixing:**
+
+1. **Find Working Examples**
+   - Locate similar working code in same codebase
+   - What works that's similar to what's broken?
+
+2. **Compare Against References**
+   - If implementing pattern, read reference implementation COMPLETELY
+   - Don't skim - read every line
+   - Understand the pattern fully before applying
+
+3. **Identify Differences**
+   - What's different between working and broken?
+   - List every difference, however small
+   - Don't assume "that can't matter"
+
+4. **Understand Dependencies**
+   - What other components does this need?
+   - What settings, config, environment?
+   - What assumptions does it make?
+
+### Phase 3: Hypothesis and Testing
+
+**Scientific method:**
+
+1. **Form Single Hypothesis**
+   - State clearly: "I think X is the root cause because Y"
+   - Write it down
+   - Be specific, not vague
+
+2. **Test Minimally**
+   - Make the SMALLEST possible change to test hypothesis
+   - One variable at a time
+   - Don't fix multiple things at once
+
+3. **Verify Before Continuing**
+   - Did it work? Yes → Phase 4
+   - Didn't work? Form NEW hypothesis
+   - DON'T add more fixes on top
+
+4. **When You Don't Know**
+   - Say "I don't understand X"
+   - Don't pretend to know
+   - Ask for help
+   - Research more
+
+### Phase 4: Implementation
+
+**Fix the root cause, not the symptom.** In a patch, Phase 4 starts with §2 of `patch.md` already written. If it isn't, stop and write it first.
+
+1. **Create Failing Test Case**
+   - Simplest possible reproduction
+   - Automated test if possible
+   - One-off test script if no framework
+   - MUST have before fixing
+   - Use the `sdd-tdd` skill for writing proper failing tests
+
+2. **Implement Single Fix**
+   - Address the root cause identified
+   - ONE change at a time
+   - No "while I'm here" improvements
+   - No bundled refactoring
+
+3. **Verify Fix**
+   - Test passes now?
+   - No other tests broken?
+   - Issue actually resolved?
+   - Run the verification and read its output before claiming success
+
+4. **If Fix Doesn't Work**
+   - STOP
+   - Count: How many fixes have you tried?
+   - If < 3: Return to Phase 1, re-analyze with new information
+   - **If ≥ 3: STOP and question the architecture (step 5 below)**
+   - DON'T attempt Fix #4 without architectural discussion
+
+5. **If 3+ Fixes Failed: Question Architecture**
+
+   **Pattern indicating architectural problem:**
+   - Each fix reveals new shared state/coupling/problem in different place
+   - Fixes require "massive refactoring" to implement
+   - Each fix creates new symptoms elsewhere
+
+   **STOP and question fundamentals:**
+   - Is this pattern fundamentally sound?
+   - Are we "sticking with it through sheer inertia"?
+   - Should we refactor architecture vs. continue fixing symptoms?
+
+   **Discuss with the user before attempting more fixes**: the thread stops as at a deviation from the approved approach ([control-profiles.md](../sdd-start-feature/references/control-profiles.md)); an implementer returns `BLOCKED` with the three attempts and what each one showed
+
+   This is NOT a failed hypothesis - this is a wrong architecture.
+
+## Red Flags - STOP and Follow Process
+
+If you catch yourself thinking:
+- "Quick fix for now, investigate later"
+- "Just try changing X and see if it works"
+- "Add multiple changes, run tests"
+- "Skip the test, I'll manually verify"
+- "It's probably X, let me fix that"
+- "I don't fully understand but this might work"
+- "Pattern says X but I'll adapt it differently"
+- "Here are the main problems: [lists fixes without investigation]"
+- Proposing solutions before tracing data flow
+- **"One more fix attempt" (when already tried 2+)**
+- **Each fix reveals new problem in different place**
+
+**ALL of these mean: STOP. Return to Phase 1.**
+
+**If 3+ fixes failed:** Question the architecture (see Phase 4.5)
+
+## The user's Signals You're Doing It Wrong
+
+**Watch for these redirections:**
+- "Is that not happening?" - You assumed without verifying
+- "Will it show us...?" - You should have added evidence gathering
+- "Stop guessing" - You're proposing fixes without understanding
+- "Ultra-think this" - Question fundamentals, not just symptoms
+- "We're stuck?" (frustrated) - Your approach isn't working
+
+**When you see these:** STOP. Return to Phase 1.
+
+## Common Rationalizations
+
+| Excuse | Reality |
+|--------|---------|
+| "Issue is simple, don't need process" | Simple issues have root causes too. Process is fast for simple bugs. |
+| "Emergency, no time for process" | Systematic debugging is FASTER than guess-and-check thrashing. |
+| "Just try this first, then investigate" | First fix sets the pattern. Do it right from the start. |
+| "I'll write test after confirming fix works" | Untested fixes don't stick. Test first proves it. |
+| "Multiple fixes at once saves time" | Can't isolate what worked. Causes new bugs. |
+| "Reference too long, I'll adapt the pattern" | Partial understanding guarantees bugs. Read it completely. |
+| "I see the problem, let me fix it" | Seeing symptoms ≠ understanding root cause. |
+| "One more fix attempt" (after 2+ failures) | 3+ failures = architectural problem. Question pattern, don't fix again. |
+
+## Quick Reference
+
+| Phase | Key Activities | Success Criteria |
+|-------|---------------|------------------|
+| **1. Root Cause** | Read errors, reproduce, check changes, gather evidence | Understand WHAT and WHY |
+| **2. Pattern** | Find working examples, compare | Identify differences |
+| **3. Hypothesis** | Form theory, test minimally | Confirmed or new hypothesis |
+| **4. Implementation** | Create test, fix, verify | Bug resolved, tests pass |
+
+## When Process Reveals "No Root Cause"
+
+If systematic investigation reveals issue is truly environmental, timing-dependent, or external:
+
+1. You've completed the process
+2. Document what you investigated
+3. Implement appropriate handling (retry, timeout, error message)
+4. Add monitoring/logging for future investigation
+
+**But:** 95% of "no root cause" cases are incomplete investigation.
+
+## Supporting Techniques
+
+These techniques are part of systematic debugging and available in `references/`:
+
+- **[root-cause-tracing.md](references/root-cause-tracing.md)** - Trace bugs backward through call stack to find original trigger
+- **[defense-in-depth.md](references/defense-in-depth.md)** - Add validation at multiple layers after finding root cause
+- **[condition-based-waiting.md](references/condition-based-waiting.md)** - Replace arbitrary timeouts with condition polling
