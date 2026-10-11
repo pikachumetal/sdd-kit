@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-11
 branch: patch/0172-brainstorming-pieces
-commit: <hash>
+commit: 375b4c4a
 ---
 
 # Patch 0172 — tres piezas de `brainstorming` que la 0168 quitó sin motivo
@@ -49,11 +49,13 @@ Lo que da por existente, comprobado en `develop` (`394c5570`): «What the spec c
 | 3 | «Think wide privately» | No se observa desde fuera (es el filtro previo del agente): texto de la fuente recuperado literal, sin escenario (ADR 0013) |
 | 4 | `Skills.Tests.ps1` y `WordBudget.Tests.ps1` | 247/247 en verde |
 
+Validación en campo: 2026-10-11 · humo `fl` 2/2 y `ag` 2/2 con ejecución real por sujetos headless (tras dos rondas de REFACTOR) · pre-commit en verde (Pester 1.079)
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,75 h
 - Inicio: 2026-10-11T19:42Z
-- Real: <Yh>
+- Real: 0,4 h desde que se abrió (más ~25 min de grilling antes, con el dev-lead)
 
 ## 6. Delta de capacidad
 
