@@ -1,0 +1,41 @@
+--- [2]
+Using sdd-propose para arrancar este cambio.
+
+--- [5]
+Ahora: leo el contexto del proyecto en `.docs/sdd/`. Queda: clasificar el cambio y abrir la spec, ~5 min.
+
+--- [27]
+Ahora: escribo la spec en su carpeta (sin más preguntas, como pediste; lo que decido yo va marcado). Queda: presentártela para aprobar, ~3 min.
+
+--- [31]
+Ya está escrita la spec: `.docs/sdd/specs/20261011-132124-feature-0012-reservas-persistentes/spec.md`, en la rama `feature/0012-reservas-persistentes` (id 0012 reservado). No he commiteado nada ni tocado código.
+
+🦆 Hoy, si cancelas Norte el lunes de 10:00 a 12:00 y cierras la terminal, al volver la reserva está otra vez activa: la cancelación se pierde. Con este cambio, `libres 10:00-12:00` responderá `Norte, Sur` también tras cerrar y abrir. Las reservas se guardarán en un fichero propio, que se lee al arrancar cada comando y se escribe cuando un comando las cambia. Esto sustituye una decisión que ya estaba tomada (la 0003, «las reservas viven en memoria»).
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Sustituye la decisión 0003.** Ella misma dejaba abiertas tres preguntas (dónde vive el fichero, dos terminales a la vez, formato) y decía «nadie lo ha pedido». Al cerrar, la ADR 0004 la sustituye, y su comprobación («`src/` no importa `node:fs`») deja de cumplirse a propósito.
+2. **Fichero JSON**, sin base de datos ni dependencias. Descarto SQLite por el «sin dependencias» de `tech-stack.md`.
+3. **Ruta:** `~/.salas/reservas.json`, no el directorio desde el que lanzas. Con una ruta por directorio, las reservas parecerían perdidas al abrir la terminal en otro sitio.
+4. **`SALAS_DATOS`** cambia la ruta. Hace falta para que las pruebas no escriban en tu directorio personal.
+5. **Sin fichero:** arranca con la reserva de ejemplo de hoy (Norte, lun, 10:00-12:00) y no crea el fichero hasta que un comando cambia algo.
+6. **Escriben solo** `cancelar` y `anular`; `libres` solo lee.
+7. **Dos terminales a la vez:** sin cerrojos, gana la última que escribe. La escritura es atómica para no dejar el fichero a medias.
+8. **Fichero roto:** el comando falla con `no se pueden leer las reservas de <ruta>: <motivo>` y no lo sobrescribe.
+9. **Formato:** `{ "version": 1, "reservas": [ {room, day, slot, status} ] }`.
+10. **`reservar` no cambia.** Hoy responde «reserva semanal creada» sin crear nada, y eso queda fuera de esta feature.
+11. **Capacidad nueva `bookings`** (nombre en inglés, como pide el kit); hoy solo lleva este requisito.
+
+**Review de spec:** ninguna. Hay 2 señales de 8 y el umbral es 4. He hecho el pase de coherencia en el hilo.
+
+**Para validar al aprobar**
+- **Pregunta abierta:** ¿apunto en el roadmap «que `reservar` cree reservas de verdad»? Es lo que hace que persistir sirva de algo para reservar, no solo para cancelar y anular.
+- **Aislamiento de pruebas:** las pruebas existentes pasarán a usar un `SALAS_DATOS` temporal; lo he fijado en «Dónde se prueba».
+- **Documentación:** `operations.md` dice «las reservas viven en memoria» y se actualiza en el cierre.
+
+## Para continuar
+
+Estado: spec en `draft`, a la espera de tu aprobación. Con perfil `delegate` el plan no es una parada: tras tu «apruebo» escribo el plan y sigo en la misma pasada, con Native y su gate de cierre `node --test && node scripts/lint.mjs`.
+
+¿Apruebas la spec, o quieres cambios? Si prefieres delegar el resto, «apruebo la spec por delegación, nos vemos en la validación».
+

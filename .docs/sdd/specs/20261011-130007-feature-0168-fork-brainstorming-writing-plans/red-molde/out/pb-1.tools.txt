@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd . && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0168-fork-brainstorming-writing-plans/3c2bca8f-b73d-4f43-a283-4083d3f83a68/scratchpad/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -50; git branch --show-current
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+develop
+
+>>> Bash: cd .docs/sdd && for f in constitution.md mission.md tech-stack.md roadmap.md operations.md sdd-kit.json; do echo "=== $f"; cat $f; done; ls specs; ls -a . | grep local; cd ../..; git ls-files | grep -v '^.docs' | head -50
+<<< === constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo
+
+>>> Bash: wc -l src/app.js; grep -n "command\|case \|process.argv\|cancel\|motivo\|fecha\|sala" src/app.js | head -50; ls .docs/sdd/*.local.json 2>&1; git log --oneline -3; git branch -a
+<<< 35 src/app.js
+1:const [command, ...args] = process.argv.slice(2);
+13:export function cancelBooking(room, day) {
+16:  booking.status = 'cancelled';
+17:  return `cancelada ${room} ${day}`;
+30:  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);
+32:  return 'salas';
+35:if (command) console.log(run(command, args));
+ls: cannot access '.docs/sdd/*.local.json': No such file or directory
+a7e91b7 feat: base del molde
+* develop
+  main
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.2691069 $)
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme):**
+- Un comando nuevo `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, cancelaciones por sala y salas que nadie ha reservado.
+- Las cuatro aceptan `--desde` y `--hasta`, en AAAA-MM-DD. Sin ellas, el último mes.
+- La salida es una tabla de texto.
+
+**Lo que he visto en el código:** cada reserva guarda `day: 'lun'`, solo el día de la semana, y no hay fecha de reserva ni de cancelación (`src/app.js:3`). Las reservas viven en memoria.
+
+❓ **De dónde sale la fecha que filtran `--desde` y `--hasta`**
+Sin una fecha real, un rango AAAA-MM-DD no tiene nada contra lo que comparar.
+1️⃣ **Cada reserva pasa a llevar una fecha real (AAAA-MM-DD), y la cancelación guarda la suya.** El día de la semana se deduce de la fecha. Efecto: `informes ocupacion-sala --desde 2026-09-11 --hasta 2026-10-11` cuenta solo las reservas de ese rango. Coste: cambia la forma de la reserva y hay que decidir qué fecha ponen `reservar` y la reserva de ejemplo.
+2️⃣ **Se queda `day` como está, y el rango se acepta pero no filtra nada.** Efecto: `informes ocupacion-sala --desde 2026-09-11` da lo mismo que sin rango. Coste: pides un filtro que no filtra.
+➡️ **Recomiendo 1️⃣**, porque sin fecha real el último mes por defecto y el rango no significan nada, y la opción 2️⃣ entrega un parámetro engañoso. A cambio, toca el modelo de reserva, que hoy usan `cancelar`, `anular` y `libres`.

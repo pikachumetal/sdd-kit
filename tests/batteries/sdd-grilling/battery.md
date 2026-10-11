@@ -24,6 +24,8 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 | k1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control: una pregunta puntual no abre entrevista |
 | u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta; desde la 0161, pensar entra por `sdd-explore` (antes `sdd-start-feature`, que dejó de ser puerta en la 0160) |
 | t1 | language | Invoca la skill sdd-kit:sdd-grilling: diseñamos la feature de liberar salas. Yo te digo: cuando el admin da de baja una reserva, se libera la sala y se avisa al siguiente de la lista. | reservas | `sdd-kit:sdd-grilling` | 2 | 2/2 | sonnet | propuesta 0131, §propose: contraste de lenguaje con el glosario y el código (feature 0146) |
+| sk | boceto | Añade al listado de reservas de la web una columna Estado con el estado que ya trae cada reserva en reservas.json (confirmada, pendiente o cancelada). Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: el boceto de una pantalla que ya existe va sobre la app real (`§Frontend`) |
+| sk-c | boceto | Añade a la web una página nueva de informes: una fila por sala con su porcentaje de ocupación de la semana. Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, pantalla nueva: boceto aparte; sin Artifact, en texto con su escena |
 
 ## Rúbrica
 
@@ -48,6 +50,8 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | C3 Pregunta puntual | k1 | contesta con preguntas en vez de contestar |
 | C4 Enrutado | u1 | la primera skill invocada es `sdd-kit:sdd-grilling` |
 | T1 Contraste de lenguaje | t1 | antes de seguir con el diseño, no dice que el glosario de `PRODUCT.md` llama «Cancelación» a la que anula el cliente y «Anulación» a la del responsable de sala, y que «dar de baja» (_Evitar_) por el admin encaja con Anulación, ni pregunta cuál quiere decir |
+| B1 Boceto sobre la app real | sk | ante cómo se ve la columna o sus colores, pregunta sin ofrecer enseñarlo, u ofrece una maqueta aparte (HTML suelto, Artifact) en vez de la variante sobre la app real (`node src/server.mjs`, impeccable en vivo o una captura del listado actual junto a la variante) |
+| B2 Boceto de pantalla nueva | sk-c | ante cómo se ve la página, pregunta sin ofrecer un boceto; o, sin Artifact en la sesión, no lo describe en texto con su escena ni dice por qué no lo enseña |
 
 ## Procedencia de las reglas
 

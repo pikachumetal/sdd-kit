@@ -1,0 +1,18 @@
+--- [15]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme):**
+- Un comando nuevo `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, cancelaciones por sala y salas que nadie ha reservado.
+- Las cuatro aceptan `--desde` y `--hasta`, en AAAA-MM-DD. Sin ellas, el último mes.
+- La salida es una tabla de texto.
+
+**Lo que he visto en el código:** cada reserva guarda `day: 'lun'`, solo el día de la semana, y no hay fecha de reserva ni de cancelación (`src/app.js:3`). Las reservas viven en memoria.
+
+❓ **De dónde sale la fecha que filtran `--desde` y `--hasta`**
+Sin una fecha real, un rango AAAA-MM-DD no tiene nada contra lo que comparar.
+1️⃣ **Cada reserva pasa a llevar una fecha real (AAAA-MM-DD), y la cancelación guarda la suya.** El día de la semana se deduce de la fecha. Efecto: `informes ocupacion-sala --desde 2026-09-11 --hasta 2026-10-11` cuenta solo las reservas de ese rango. Coste: cambia la forma de la reserva y hay que decidir qué fecha ponen `reservar` y la reserva de ejemplo.
+2️⃣ **Se queda `day` como está, y el rango se acepta pero no filtra nada.** Efecto: `informes ocupacion-sala --desde 2026-09-11` da lo mismo que sin rango. Coste: pides un filtro que no filtra.
+➡️ **Recomiendo 1️⃣**, porque sin fecha real el último mes por defecto y el rango no significan nada, y la opción 2️⃣ entrega un parámetro engañoso. A cambio, toca el modelo de reserva, que hoy usan `cancelar`, `anular` y `libres`.
+
