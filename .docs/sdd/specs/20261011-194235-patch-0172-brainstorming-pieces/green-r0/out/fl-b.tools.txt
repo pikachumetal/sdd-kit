@@ -1,0 +1,80 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd . && ls -a .docs/sdd .docs/sdd/specs 2>&1; for f in constitution mission tech-stack roadmap architecture operations sdd-kit.json sdd-kit.local.json; do echo "=== $f"; cat .docs/sdd/$f* 2>&1 | head -80; done; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-0172/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40; git branch --show-current; ls
+<<< .docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+./
+../
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotado
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-0172"; cat $K/skills/sdd-propose/references/spec-writing.md; echo =====; head -60 $K/skills/sdd-start-feature/references/control-profiles.md; echo ====; cat src/app.js; ls test; cat package.json
+<<< # Writing the spec
+
+Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The
+
+>>> Bash: cat .docs/sdd/specs/*patch-0007*/patch.md | head -50; cat test/app.test.js; cat .docs/sdd/changelog.md | head -30
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('ca
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.20537490000000003 $)
+❓ **Reabrir una cancelada cuando el hueco ya está ocupado**
+
+Hoy las reservas se identifican por sala, día y franja (patch 0007), y `libres` calcula huecos con eso. Una reserva `cancelada` libera el hueco, así que otra persona puede reservar esa misma sala, día y franja. Si después alguien pide `cancelada → pendiente`:
+
+1️⃣ **Rechazar si el hueco está ocupado.** `reabrir Norte lun 10:00-12:00` → `No se puede reabrir: Norte está ocupada lun 10:00-12:00`. La reserva sigue `cancelada`. Coste: hay que comprobar el hueco en cada reapertura, y quien quiera recuperar su reserva tiene que reservar otro hueco.
+
+2️⃣ **Reabrir siempre.** → `Reserva reabierta (pendiente)`. Coste: pueden quedar dos reservas vivas (`pendiente` o `confirmada`) en la misma sala, día y franja, y `libres` no distingue cuál manda.
+
+3️⃣ **Reabrir y expulsar a la otra.** La reserva que ocupaba el hueco pasa a `cancelada`. Coste: una cancelación que nadie pidió, y en una herramienta de reservas eso suele ser peor que un rechazo.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que mantiene la invariante de «una sola reserva viva por sala, día y franja» que el patch 0007 ya tuvo que arreglar. A cambio, la cancelada deja de ser siempre recuperable.
+
+Con esto el flujo queda bien; los otros dos puntos que te comenté (`libres` ignora las canceladas, y no hay `confirmada → pendiente` ni `cancelada → confirmada`) los apunto como decisiones mías en la spec para que las valides.

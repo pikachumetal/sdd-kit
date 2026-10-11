@@ -1,0 +1,32 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` para clasificar el cambio y arrancar la feature en modo full.
+
+--- [5]
+Ahora: leer el contexto de `.docs/sdd/` para clasificar. Queda: nota de entendimiento y primera pregunta de diseño.
+
+--- [18]
+Estoy abriendo la feature: rama `feature/0008-estados-reserva` creada, id 0008 reservado. Ahora cargo `sdd-grilling` para la primera pregunta de diseño.
+
+--- [21]
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+Rama `feature/0008-estados-reserva` creada desde `develop`, con el id 0008 reservado.
+
+**Lo que he entendido.** Hoy una reserva en `src/app.js` es `{ room, day, slot }` y no tiene estado. `libres` descarta la sala si hay cualquier reserva en esa franja, y `cancelar` solo devuelve un texto. Quieres que la reserva tenga estado y estas transiciones:
+
+| Desde | Puede ir a |
+| --- | --- |
+| pendiente | confirmada, cancelada |
+| confirmada | cancelada |
+| cancelada | pendiente |
+
+**Sobre si el flujo está bien.** El grafo es coherente: no hay estados sin salida ni transiciones que se contradigan. Que `cancelada` no sea final es una decisión tuya, no un fallo. El único punto frágil es `cancelada → pendiente`: si mientras estuvo cancelada otra persona cogió la sala en esa franja, reactivarla choca con ella. Cómo se resuelve eso depende de qué estados bloquean la sala, y es lo primero que hay que fijar.
+
+❓ **¿Qué estados ocupan la sala en `libres`?**
+Hoy el código trata toda reserva como ocupante (`freeRooms` en `src/app.js`), y el patch 0007 apunta a que cancelar debe liberar la franja.
+1️⃣ **Pendiente y confirmada ocupan; cancelada libera.** Con Norte pendiente de 10:00-12:00, `libres 10:00-12:00` → `Sur`. Al cancelarla → `Norte, Sur`. Si reactivas una cancelada y la franja ya está tomada, la reactivación se rechaza.
+2️⃣ **Solo confirmada ocupa.** Con Norte pendiente, `libres 10:00-12:00` → `Norte, Sur`. Puede haber dos pendientes en la misma sala y franja, y el choque aparece al confirmar.
+➡️ **Recomiendo 1️⃣**, porque es lo que el código ya hace y evita dos pendientes disputándose la misma sala. A cambio, una pendiente que nadie confirma retiene la sala indefinidamente: no hay caducidad, y la dejaría fuera de alcance.
+

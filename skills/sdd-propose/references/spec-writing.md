@@ -6,9 +6,12 @@ You build what you believe the user wants, and that belief is usually thinner th
 
 ## What the spec covers
 
+The interview covers goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: never read them out as questions; anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what you guess goes to ✋.
+
+
 Write it so a builder could plan from it without going back to the user:
 
-- **Intent**: what happens today, why it matters, what success looks like.
+- **Intent**: what happens today, why it matters, what success looks like, measurable where it can be (what would make it a failure even if it technically works).
 - **Scope**: «Entra» and «No entra», the goals and the non-goals.
 - **Approach**: the parts of the how the user decided, as they decided them. What's left to the builder belongs to the plan.
 - **✋ Decisiones que he tomado yo**: every value that didn't come from the interview or the roadmap, even if it's also in a THEN. A default the user never heard is one they couldn't reject.

@@ -54,6 +54,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - THEN cada alternativa lleva una escena con datos y lo que se ve en cada paso («pegas `https://…/doc/42` → sale la tarjeta "Informe Q3"»), y la limitación técnica se cuenta por su efecto, no por su causa
 - AND si la decisión es cómo se ve o cómo se siente una pantalla, deja de preguntar y propone enseñar un boceto: un Artifact con las opciones si la pantalla aún no existe; si existe, sobre la app real con lo que declara `§Frontend` (el detector en vivo, o una captura de la pantalla actual junto a la variante), y sin `§Frontend`, un Artifact
 - AND si la app no se puede levantar o no hay acceso, o el harness no tiene Artifact, describe cada opción en texto con su escena y dice por qué no la enseña
+- AND un flujo o una secuencia de pasos, o una estructura que se ve mejor que se lee (un diagrama, una línea de tiempo, un mapa), también se enseña: con una skill de diagramas si la sesión la tiene (`archify`, la preferida), y si no, con un Artifact con el diagrama; sin ninguno de los dos, en texto, diciendo por qué no lo dibuja
 
 ### Rebatir una vez
 

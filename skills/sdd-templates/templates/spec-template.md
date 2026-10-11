@@ -49,7 +49,7 @@ approvers:
 
 ## Intent
 
-> 3-5 líneas: qué pasa hoy, por qué importa, qué se quiere que sea distinto.
+> 3-5 líneas: qué pasa hoy, por qué importa, qué se quiere que sea distinto y qué es el éxito, medible donde se pueda (lo que la haría fracasar aunque funcione técnicamente). Si nadie lo dijo, tu suposición va a ✋.
 
 <texto>
 

@@ -33,7 +33,9 @@ case "$SC" in
   g9) export EXTRA_ALLOWED='WebSearch WebFetch' ;;
 esac
 
+[ "$SC" = ag ] && MAX_TURNS="${MAX_TURNS:-45}"
 MAX_TURNS="${MAX_TURNS:-30}" subject_launch "$ASK"
 [ "$SC" = g7 ] && subject_converse "$HERE/persona-g7.md" 8
 [ "$SC" = g6 ] && subject_resume "no, espera, explícamelo mejor"
+for f in $(cd "$R" && g ls-files --others --exclude-standard -- '.docs/sdd/specs/*/spec.md'); do subject_keep "$R/$f" spec.md; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## ficheros"; g ls-files --others --exclude-standard; } | subject_save

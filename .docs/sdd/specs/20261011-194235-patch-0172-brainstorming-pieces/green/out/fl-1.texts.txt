@@ -1,0 +1,42 @@
+--- [2]
+Es un cambio (una feature), así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto del proyecto en `.docs/sdd/`. Queda: clasificar y arrancar la entrevista de la spec, ~5 min.
+
+--- [17]
+Reservé el id 0008. Ahora creo la rama `feature/0008-estados-reserva` y arranco la entrevista de la spec con `sdd-grilling`.
+
+--- [21]
+Ahora: entender la feature y cerrar el único hueco que veo en el flujo. Queda: 2 o 3 preguntas más, la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He reservado el id 0008 y creado la rama `feature/0008-estados-reserva` desde `develop`.
+
+**Lo que entiendo.** Hoy `src/app.js` no tiene estado: una reserva es `{ room, day, slot }` y `cancelar` solo devuelve un texto. La feature le da a cada reserva un estado, con estas transiciones:
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente
+    pendiente --> confirmada: confirmar
+    pendiente --> cancelada: cancelar
+    confirmada --> cancelada: cancelar
+    cancelada --> pendiente: reactivar
+```
+
+(No hay skill de diagramas en esta sesión, por eso va en texto.)
+
+**¿Está bien el flujo?** Es coherente: ningún estado queda sin salida y no hay transiciones duplicadas. Hay un solo hueco, y es la flecha `cancelada → pendiente`. Cancelar libera la sala en esa franja (`libres` la volvería a ofrecer). Si otra reserva la ocupa mientras tanto, reactivar la vieja dejaría dos reservas en la misma sala y franja.
+
+❓ **¿Qué pasa al reactivar una reserva cancelada cuya franja ya está ocupada?**
+1️⃣ **Reactivar solo si la sala sigue libre en esa franja.** Si no, se rechaza: `reactivar Norte lun 10:00-12:00` → `Norte ocupada en lun 10:00-12:00; no se puede reactivar`. Conserva tu transición y evita el doble reservado. Cuesta una regla y un escenario más.
+2️⃣ **Reactivar siempre, sin comprobar.** `reactivar Norte lun 10:00-12:00` → `reserva pendiente`, aunque Norte ya la tenga otra persona. Es lo más simple, pero permite dos reservas en la misma sala y franja.
+3️⃣ **Quitar la transición: `cancelada` es final.** Para recuperarla se crea una reserva nueva con `reservar`, que ya comprueba disponibilidad. Es el modelo más simple, pero cambia lo que me has pedido.
+
+➡️ **Recomiendo 1️⃣**, porque mantiene exactamente el flujo que describes y cierra el único caso que lo rompe. A cambio, hay que definir el mensaje de rechazo.
+

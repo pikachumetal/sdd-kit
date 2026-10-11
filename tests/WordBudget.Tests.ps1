@@ -16,7 +16,7 @@ BeforeAll {
       'sdd-end-patch'       = @{ SkillMd = 2460; Total = 2460 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
       'sdd-feedback'        = @{ SkillMd = 700; Total = 700 }
-      'sdd-grilling'        = @{ SkillMd = 750; Total = 750 }
+      'sdd-grilling'        = @{ SkillMd = 900; Total = 900 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }

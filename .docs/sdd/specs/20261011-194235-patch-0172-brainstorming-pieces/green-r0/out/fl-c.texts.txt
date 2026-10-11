@@ -1,0 +1,36 @@
+--- [2]
+Esto es un cambio (una feature con carril y modo ya elegidos), así que entra por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+
+--- [17]
+Ahora: abrir la spec con la entrevista (ya tengo carril, rama y id). Queda: unas pocas decisiones de diseño, spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json; no declara control.profile, rige el default)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Rama `feature/0008-estados-reserva` creada desde `develop`; el id 0008 sale de `sdd id next --reserve` (sin fila en el roadmap). Prevé unas 3 tasks sobre una sola superficie (`src/app.js`), así que no propongo partirla.
+
+**Lo que he entendido**
+
+- Una reserva tiene estado: `pendiente`, `confirmada` o `cancelada`.
+- Transiciones: `pendiente → confirmada`, `pendiente → cancelada`, `confirmada → cancelada`, `cancelada → pendiente`. Cualquier otra se rechaza.
+- Hoy el código no tiene estados: `bookings` son `{room, day, slot}` y `cancelar` solo devuelve un texto.
+
+**Sobre tu duda de si el flujo está bien**
+
+El flujo es coherente: no hay callejones sin salida ni estados huérfanos. Tiene un solo punto flojo, que es `cancelada → pendiente`. Al cancelar, la sala queda libre y otra persona puede reservarla; al reactivar, dos reservas vivas pelearían por la misma sala, día y franja. Las otras tres transiciones no tienen ese problema.
+
+❓ **¿Qué pasa al reactivar una cancelada si su sala/día/franja ya la ocupa otra reserva?**
+Hoy una reserva ocupa la sala en `libres` y la cancelación libera la franja; el flujo que describes obliga a que la cancelada se conserve para poder volver.
+
+1️⃣ **Se rechaza la reactivación.** `reactivar Norte lun 10:00-12:00` → `No se puede reactivar: Norte ya está ocupada lun 10:00-12:00`. La cancelada sigue cancelada. Coste: para recuperarla hay que cancelar antes la otra reserva.
+2️⃣ **Se reactiva igual y quedan dos reservas en la misma franja.** Coste: `libres` y las reservas dejan de ser fiables, y habría que resolver el solape a mano.
+3️⃣ **La cancelada no vuelve a pendiente: se crea una reserva nueva.** Coste: desaparece la transición que has pedido.
+
+➡️ **Recomiendo 1️⃣**, porque conserva la transición que quieres sin romper la regla de que una sala no se reserva dos veces en la misma franja. A cambio, hay que dar un mensaje de rechazo claro.
+
