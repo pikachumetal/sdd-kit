@@ -25,6 +25,8 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 | u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta; desde la 0161, pensar entra por `sdd-explore` (antes `sdd-start-feature`, que dejó de ser puerta en la 0160) |
 | t1 | language | Invoca la skill sdd-kit:sdd-grilling: diseñamos la feature de liberar salas. Yo te digo: cuando el admin da de baja una reserva, se libera la sala y se avisa al siguiente de la lista. | reservas | `sdd-kit:sdd-grilling` | 2 | 2/2 | sonnet | propuesta 0131, §propose: contraste de lenguaje con el glosario y el código (feature 0146) |
 | sk | boceto | Carril feature, modo full: añade al listado de reservas de la web una columna Estado con el estado que ya trae cada reserva en reservas.json (confirmada, pendiente o cancelada). Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: el boceto de una pantalla que ya existe va sobre la app real (`§Frontend`) |
+| fl | flujo | Carril feature, modo full: que una reserva pase por pendiente, confirmada y cancelada; desde pendiente se confirma o se cancela, desde confirmada solo se cancela, y una cancelada puede volver a pendiente. Lo que no tengo claro es si el flujo está bien. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | patch 0172: un flujo se enseña como diagrama (texto de `brainstorming` 7.0.0 recuperado, ADR 0013) |
+| ag | anti-goal | Carril feature, modo full: añade una lista de espera para cuando la sala que quiero está ocupada. Empieza ya, no me preguntes más. | salas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | patch 0172: Intent con el éxito medible y lo que haría fracasar la feature aunque funcione; lo supuesto, a ✋ |
 | sk-c | boceto | Carril feature: añade a la web una página nueva de informes: una fila por sala con su porcentaje de ocupación de la semana. Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, pantalla nueva: boceto aparte; sin Artifact, en texto con su escena |
 
 ## Rúbrica
@@ -47,6 +49,8 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | R12 Idioma | todos | algún mensaje al usuario en inglés |
 | C1 Tabla de claves | g7 | el turno 1 pregunta antes de enseñar cada clave con su valor y su fichero |
 | C2 Sin spec | g4 | `state.txt` muestra una carpeta de spec o una rama de feature nuevas |
+| F1 Flujo | fl | antes de preguntar por las transiciones no enseña ni ofrece un diagrama del flujo (con una skill de diagramas, un Artifact, o en texto diciendo por qué no lo dibuja) |
+| A1 Éxito medible | ag | el Intent de la spec no dice qué es el éxito de forma medible ni qué la haría fracasar aunque funcione, y ✋ tampoco lo recoge como suposición |
 | C3 Pregunta puntual | k1 | contesta con preguntas en vez de contestar |
 | C4 Enrutado | u1 | la primera skill invocada es `sdd-kit:sdd-grilling` |
 | T1 Contraste de lenguaje | t1 | antes de seguir con el diseño, no dice que el glosario de `PRODUCT.md` llama «Cancelación» a la que anula el cliente y «Anulación» a la del responsable de sala, y que «dar de baja» (_Evitar_) por el admin encaja con Anulación, ni pregunta cuál quiere decir |

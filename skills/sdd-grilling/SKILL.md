@@ -21,6 +21,8 @@ If a decision depends on a fact that changes with versions or time (a tool's beh
 
 ## Shape of a question
 
+Before you propose anything, think wide privately: come up with several ideas and drop the weak ones, including any that fight what the user has told you about why. Show the comparison only when it helps them decide.
+
 A design decision (an alternative needs over a line to explain its cost) goes in text:
 
 ```text
@@ -34,7 +36,7 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 
 - The decision sets the count: one defensible path: say it, confirm it; 🔀 marks a mix defensible alone. A habitual mix is filler, like one you say «I don't think you want».
 - «They're the defaults» or «it's simpler» is not a reason. With no reason to prefer one, say «tie, it depends on X» and ask X.
-- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause. For how a screen looks or feels, show it instead of asking: if the screen exists, on the running app with what `§Frontend` declares (the live detector, or a screenshot of the current screen next to the variant); if it doesn't, or without `§Frontend`, an Artifact with the options. Without the app or the Artifact tool, describe each option in text with its scene and say why you can't show it. «I haven't started the app» is not a reason: start it as `§Frontend` says, and stop what you started by its PID or port, never by name (`sdd-implement`, «Processes you start») (`tests/superpowers-fork-red.md`, `tests/superpowers-fork-green.md`).
+- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause. For how a screen looks or feels, show it instead of asking: if the screen exists, on the running app with what `§Frontend` declares (the live detector, or a screenshot of the current screen next to the variant); if it doesn't, or without `§Frontend`, an Artifact with the options. A decision about a flow or a sequence of steps (states and their transitions, a process), or about a structure easier to see than read (a timeline, a map), shows it before asking: a diagram with a diagram skill if the session has one (`archify` preferred), otherwise an Artifact with the diagram; without either, the diagram in text (an ASCII or Mermaid block), saying why it isn't drawn. Without the app or the Artifact tool, describe each option in text with its scene and say why you can't show it. «I haven't started the app» is not a reason: start it as `§Frontend` says, and stop what you started by its PID or port, never by name (`sdd-implement`, «Processes you start») (`tests/superpowers-fork-red.md`, `tests/superpowers-fork-green.md`).
 - Icons mark only this question's alternatives; name earlier ones. If the user answers with an icon this question doesn't have, ask which one they meant.
 - An operational decision (options clear in one line: approve, continue) goes with `AskUserQuestion`, recommended first.
 
