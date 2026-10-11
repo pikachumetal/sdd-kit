@@ -49,4 +49,4 @@ En `claude -p` no hay navegador ni Artifact: la rama «sobre la app real» solo 
 
 **Hallazgo**: `sk-4` paró su servidor con `pkill -f "src/server.mjs"` y `taskkill //F //FI "WINDOWTITLE eq *" //IM node.exe`, por nombre, en la máquina que lanzaba la campaña. La regla del boceto lleva a arrancar la app desde la entrevista, y `sdd-grilling` gana la de `sdd-implement`: «stop what you started by its PID or port, never by name». Sin GREEN propio (techo agotado): es la regla medida en `tests/closing-verification-red.md`.
 
-Total del tramo: 1,10 $ (con los invalidados, 1,57 $). Campaña entera: RED 6,52 $ y GREEN 9,61 $, 16,13 $ de 18 $.
+Total del tramo: 0,91 $ (con los invalidados, 1,38 $). Campaña entera: RED 6,53 $ y GREEN 8,42 $, 14,95 $ de 18 $.

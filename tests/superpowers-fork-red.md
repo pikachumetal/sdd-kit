@@ -18,7 +18,7 @@ RED previo a escribir las reglas nuevas de la entrevista (Art. I), con el kit de
 
 ## Invalidados por el molde
 
-Apartados en `red-molde/out/`; su coste cuenta en el techo (1,68 $).
+Apartados en `red-molde/out/`; su coste cuenta en el techo (2,18 $).
 
 | Sujetos | Causa | Corrección |
 | --- | --- | --- |
@@ -39,4 +39,4 @@ Además, `tests/headless/extract.mjs` no pudo parsear una línea larga del strea
 
 La conducta de `adr` sale de leer `.docs/sdd/` en el paso 1: los dos sujetos listan la carpeta y ven `decisions/` con una sola ADR. Era una fuente incidental en un molde pequeño (`tech-stack.md`, «Matices de campaña»), así que se repitió con seis ADR (`adr6`, molde `reservas-adr6`), donde la que aplica solo se reconoce por sus rutas: 2 de 2 la encontraron igual. La regla no se escribe.
 
-Total RED: 9 sujetos válidos, 4,84 $; con los invalidados, 6,52 $.
+Total RED: 9 sujetos válidos, 4,34 $; con los 7 invalidados, 6,53 $.

@@ -61,6 +61,16 @@ Describe 'Compatibilidad con superpowers 7.0.0' {
     $skill | Should -Match 'describe each option in text with its scene'
   }
 
+  It 'las reglas de las referencias forkeadas citan su evidencia sin recuentos' {
+    foreach ($ref in 'spec-writing.md', 'plan-writing.md') {
+      Get-KitFile "skills/sdd-propose/references/$ref" | Should -Not -Match '\d+ of \d+ subjects' -Because "$ref cita un recuento"
+    }
+  }
+
+  It 'sdd-explore sigue prohibiendo brainstorming sin invocarlo' {
+    Get-KitFile 'skills/sdd-explore/SKILL.md' | Should -Match "NEVER superpowers' ``brainstorming``"
+  }
+
   It 'overrides ya no ajusta brainstorming ni writing-plans' {
     foreach ($anchor in 'Size the Work', 'Builder check', 'no list of example answers', 'Execution Handoff', 'Frequent commits') {
       Get-OverrideRow $anchor | Should -BeNullOrEmpty -Because "la fila «$anchor» pasa al fork"

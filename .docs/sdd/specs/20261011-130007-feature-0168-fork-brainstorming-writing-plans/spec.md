@@ -119,8 +119,9 @@ Técnica (Sonnet):
 
 ## Scope
 
+- Entra (enmienda del 2026-10-11): `skills/sdd-explore/SKILL.md`, solo la forma de su prohibición: «NEVER `superpowers:brainstorming`» pasa a «NEVER superpowers' `brainstorming`», que prohíbe lo mismo sin que el README la cuente como skill invocada.
 - Entra: `skills/sdd-propose/references/spec-writing.md` y `plan-writing.md` (nuevos), `skills/sdd-propose/NOTICE` (nuevo), `skills/sdd-propose/SKILL.md` (pasos 4 y 5, red flags y racionalizaciones que nombran las dos skills), `skills/sdd-grilling/SKILL.md` (boceto), `skills/sdd-roadmap/SKILL.md`, `skills/sdd-init-greenfield/SKILL.md`, `skills/sdd-config/SKILL.md` (fila 6), `skills/sdd-start-feature/references/overrides-superpowers.md` y `control-profiles.md`, `skills/using-sdd/SKILL.md` (el resto de la frase de cabecera), `skills/sdd-templates/templates/spec-template.md` y `plan-template.md` (solo los avisos), `.docs/sdd/constitution.md` (Art. IV), `.docs/sdd/architecture.md`, `.docs/sdd/mission.md`, `README.md`, `THIRD_PARTY_NOTICES.md`, los Pester que fijan sus literales, `tests/WordBudget.Tests.ps1` y las baterías de `sdd-propose` y `sdd-grilling`.
-- No entra: forkear `test-driven-development`, `systematic-debugging` (0165), `using-git-worktrees`, `dispatching-parallel-agents` (0166), `requesting-code-review` (0148) ni `finishing-a-development-branch` (0149); quitar superpowers de las dependencias del README; el visual companion; el modelo de plantillas de OpenSpec; la distinción patch / lite; el resto de `sdd-init-greenfield` (0156); `.docs/workflow/`; `sdd-explore`, cuya prohibición de `brainstorming` se queda (✋ 12); `sdd-implement` (✋ 19).
+- No entra: forkear `test-driven-development`, `systematic-debugging` (0165), `using-git-worktrees`, `dispatching-parallel-agents` (0166), `requesting-code-review` (0148) ni `finishing-a-development-branch` (0149); quitar superpowers de las dependencias del README; el visual companion; el modelo de plantillas de OpenSpec; la distinción patch / lite; el resto de `sdd-init-greenfield` (0156); `.docs/workflow/`; `sdd-implement` (✋ 19).
 
 ## Approach
 
@@ -196,6 +197,8 @@ Un fork por referencia, no por skill: `spec-writing.md` reúne lo que de `brains
 - **Dónde viven los datos**: `sdd-grilling` no escribe ficheros del proyecto, y lo que devuelve lo escribe quien la invoca, en sus documentos de siempre; un boceto vive en un Artifact privado del usuario, y una captura de la pantalla actual, fuera de git (el scratchpad de la sesión), como las de la verificación visual.
 
 ## Enmiendas
+
+- 2026-10-11 — `sdd-explore` sale de «No entra» y entra en Scope, solo para cambiar la forma de su prohibición de `brainstorming` — con el literal viejo, la lista del README, que sale de `grep superpowers:` sobre `skills/`, contaría `brainstorming` como invocada; lo señaló la revisión final (Important 2), y un Pester fija la prohibición nueva — aprobada: «Apruebo (Recomendada)» — Task 2
 
 - 2026-10-11 — Sale la regla de las ADR (✋6 y el ADDED «La spec cita las ADR de los ficheros que toca» de `feature-flow`) — su RED salió limpio con una ADR y con seis (`tests/superpowers-fork-red.md`); queda una fila de deuda — aprobada: «Otra tanda con 6 ADR (Recomendada)», con su condición «si sale limpia, la quito y abro fila de deuda» — Task 1
 
