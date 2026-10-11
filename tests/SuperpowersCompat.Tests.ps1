@@ -41,6 +41,19 @@ Describe 'Compatibilidad con superpowers 7.0.0' {
     $ref | Should -Match 'put its gaps in ✋'
   }
 
+  It 'spec-writing presenta el diseño por secciones desde 4 tasks previstas' {
+    $ref = Get-KitFile 'skills/sdd-propose/references/spec-writing.md'
+    $ref | Should -Match '## Design by sections'
+    $ref | Should -Match '4 or more tasks foreseen'
+    $ref | Should -Match '«¿va bien\?»'
+    $ref | Should -Match 'inside the spec''s stop, not a new stop of the profile'
+  }
+
+  It 'el paso 4 de sdd-propose dispara las secciones' {
+    $step = ((Get-KitFile 'skills/sdd-propose/SKILL.md') -split "`n") | Where-Object { $_ -match '^4\. \*\*Spec\*\*' }
+    $step | Should -Match 'With 4 or more tasks foreseen'
+  }
+
   It 'overrides ya no ajusta brainstorming ni writing-plans' {
     foreach ($anchor in 'Size the Work', 'Builder check', 'no list of example answers', 'Execution Handoff', 'Frequent commits') {
       Get-OverrideRow $anchor | Should -BeNullOrEmpty -Because "la fila «$anchor» pasa al fork"

@@ -71,6 +71,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la cubre. Se rellena con el RED y el GREEN (`tests/sdd-propose-0160-red.md`, `-green.md`); la evidencia que la skill ya no cita en su texto vive aquí.
 
+
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
 | Gate 1: sin enunciado, leer el contexto y parar; con rama `feature/<id>` y fila pendiente, la fila es el enunciado | `tests/control-profiles-red.md`, E1: 2 de 2 sujetos pararon con «¿qué tarea arrancamos?» | c1 |
@@ -108,3 +109,6 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 2: una petición con partes de varios carriles va por la más pesada, y dice qué parte va dentro | revisión final de la 0160 (Important 5) | no medido: sin RED; la forma es la de la clasificación, que miden a1-a4 |
 | Paso 4 (sin regla propia): las decisiones que trae un prompt de arranque van a «Decisiones tomadas con el dev-lead» y no se preguntan | `tests/sdd-explore-0161-red.md`, a5: 2 de 2 limpios sin regla; la conducta sale de `spec-template.md` | a5 (control) |
 | «Config lane» paso 5: en una rama `feature/*`, el config se fusiona con `sdd merge` según `merge.*`; sin bloque `merge`, pregunta | `tests/sdd-explore-0161-red.md`, k5: 2 de 2 commitearon sin fusionar; GREEN 2/2 | k5 |
+| Pasos 4 y 5: lo primero, leer `references/spec-writing.md` y `plan-writing.md`; ninguna skill invoca `brainstorming` ni `writing-plans` | feature 0168: RED `h1` 1/1 invoca `brainstorming`; GREEN 2/2 | h1 |
+| Diseño por secciones desde 4 tasks previstas | ticket de la task 0003 («Funcionó, no tocar»); feature 0168: RED `pb` 2/2 sin secciones; GREEN 2/2 | pb, pb-c |
+| La spec cita las ADR (no escrita) | feature 0168: RED limpio 4/4 (`adr`, `adr6`) | adr, adr6 |

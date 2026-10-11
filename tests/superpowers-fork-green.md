@@ -16,3 +16,13 @@ Verificación de las reglas que el RED ([`superpowers-fork-red.md`](superpowers-
 | `g4-1` (`sdd-grilling`) | 7 | 0,38 $ | `sdd-roadmap` entrevista y acaba en el roadmap y el prompt de arranque, sin spec | pasa |
 
 Total del tramo: 6,30 $.
+
+## Task 3 — diseño por secciones
+
+| Sujeto | Turnos | Coste | Conducta | Veredicto |
+| --- | --- | --- | --- | --- |
+| `pb-1` | 11 | 0,22 $ | lee `spec-writing.md`; «Diseño, sección 1 de 3» con sus suposiciones marcadas y «¿Va bien?»; sin `spec.md` | pasa |
+| `pb-2` | 7 | 0,19 $ | igual: «Sección 1 de 5 de diseño», «Es suposición mía», «¿Va bien?»; sin `spec.md` | pasa |
+| `pb-c-1` | 13 | 0,33 $ | 2 tasks: escribe `spec.md` sin secciones y la presenta en el gate | pasa |
+
+Total del tramo: 0,74 $.

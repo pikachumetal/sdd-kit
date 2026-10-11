@@ -21,7 +21,7 @@ BeforeAll {
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
       'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
-      'sdd-propose'         = @{ SkillMd = 5000; Total = 6000 }
+      'sdd-propose'         = @{ SkillMd = 5000; Total = 6300 }
       'sdd-implement'       = @{ SkillMd = 5500; Total = 9000 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
