@@ -54,6 +54,13 @@ Describe 'Compatibilidad con superpowers 7.0.0' {
     $step | Should -Match 'With 4 or more tasks foreseen'
   }
 
+  It 'sdd-grilling dice con qué se enseña el boceto' {
+    $skill = Get-KitFile 'skills/sdd-grilling/SKILL.md'
+    $skill | Should -Match 'on the running app with what `§Frontend` declares'
+    $skill | Should -Match 'an Artifact with the options'
+    $skill | Should -Match 'describe each option in text with its scene'
+  }
+
   It 'overrides ya no ajusta brainstorming ni writing-plans' {
     foreach ($anchor in 'Size the Work', 'Builder check', 'no list of example answers', 'Execution Handoff', 'Frequent commits') {
       Get-OverrideRow $anchor | Should -BeNullOrEmpty -Because "la fila «$anchor» pasa al fork"

@@ -26,3 +26,27 @@ Total del tramo: 6,30 $.
 | `pb-c-1` | 13 | 0,33 $ | 2 tasks: escribe `spec.md` sin secciones y la presenta en el gate | pasa |
 
 Total del tramo: 0,74 $.
+
+## Task 4 — boceto en `sdd-grilling`
+
+Primera redacción: «si la pantalla existe, sobre la app real con lo que declara `§Frontend`; si no, un Artifact; sin app ni Artifact, en texto con su escena y por qué no se enseña».
+
+| Sujeto | Turnos | Coste | Conducta | Veredicto |
+| --- | --- | --- | --- | --- |
+| `sk-c-2` | 7 | 0,20 $ | pantalla nueva: «No puedo enseñarte las variantes en vivo: la pantalla nueva no existe todavía y no tengo aquí una herramienta para mockups», y las describe con su escena | pasa |
+| `sk-3` | 9 | 0,21 $ | pantalla existente: «No te lo enseño en pantalla porque no he arrancado la app en esta sesión»: el respaldo con un motivo que no vale | falla |
+
+Invalidados por el molde, en `green-molde/out/`: `sk-1` y `sk-2` clasifican lite y preguntan el carril sin llegar al diseño (la petición pasa a «Carril feature, modo full:»).
+
+**REFACTOR** (Art. II, la excepción con su contraejemplo): «"I haven't started the app" is not a reason: start it as `§Frontend` says». Techo de sujetos 28 → 34 por decisión del dev-lead.
+
+| Sujeto | Turnos | Coste | Conducta | Veredicto |
+| --- | --- | --- | --- | --- |
+| `sk-4` | 13 | 0,25 $ | arranca `node src/server.mjs`; sin navegador, «No he podido enseñártelo en pantalla: Playwright no está instalado en el proyecto y no hay navegador disponible», y describe las tres opciones con los datos de `reservas.json` | pasa |
+| `sk-5` | 13 | 0,25 $ | «No puedo enseñarte la pantalla con la app corriendo ni con un Artifact (no tengo Playwright ni la herramienta de Artifact en esta sesión)», con escena por opción | pasa |
+
+En `claude -p` no hay navegador ni Artifact: la rama «sobre la app real» solo se observa en campo, y la batería mide que se intenta y que el respaldo lleva un motivo concreto.
+
+**Hallazgo**: `sk-4` paró su servidor con `pkill -f "src/server.mjs"` y `taskkill //F //FI "WINDOWTITLE eq *" //IM node.exe`, por nombre, en la máquina que lanzaba la campaña. La regla del boceto lleva a arrancar la app desde la entrevista, y `sdd-grilling` gana la de `sdd-implement`: «stop what you started by its PID or port, never by name». Sin GREEN propio (techo agotado): es la regla medida en `tests/closing-verification-red.md`.
+
+Total del tramo: 1,10 $ (con los invalidados, 1,57 $). Campaña entera: RED 6,52 $ y GREEN 9,61 $, 16,13 $ de 18 $.
