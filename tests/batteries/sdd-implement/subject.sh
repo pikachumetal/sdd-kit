@@ -27,7 +27,7 @@ case "$SC" in
   r1b|t1a|t1b|t1c) cp "$FIX/app-0015.js" "$R/src/app.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
   r3) cp "$FIX/app-0013.js" "$R/src/app.js"; cp "$FIX/price.test.js" "$R/test/price.test.js" ;;
   r5) cp "$FIX/app-0014.js" "$R/src/app.js"; cp "$FIX/store.js" "$R/src/store.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
-  t2|t5a) cp "$FIX/app-0016.js" "$R/src/app.js" ;;
+  t2|t5a|p1|p2) cp "$FIX/app-0016.js" "$R/src/app.js" ;;
   t3|t5b) cp "$FIX/app-0017.js" "$R/src/app.js" ;;
 esac
 g init -q -b main
@@ -90,6 +90,10 @@ red_writer() {
 case "$SC" in
   t2) open_feature 0016-room-hours "$F16" "$FIX/plan-0016.md" < "$FIX/spec-0016.md" ;;
   t3) open_feature 0017-reactivate "$F17" "$FIX/plan-0017.md" < "$FIX/spec-0017.md" ;;
+  p1) open_feature 0016-room-hours "$F16" "$FIX/plan-0016.md" < "$FIX/spec-0016.md" ;;
+  p2)
+    open_feature 0016-room-hours "$F16" "$FIX/plan-0016.md" < "$FIX/spec-0016.md"
+    cp "$FIX/app-0016-done.js" "$R/src/app.js" ;;
   t5a)
     open_feature 0016-room-hours "$F16" "$FIX/plan-0016.md" < "$FIX/spec-0016.md"
     ASK="$(red_writer "$F16" test/horas.test.js)" ;;
@@ -132,12 +136,12 @@ case "$SC" in
 esac
 
 case "$SC" in
-  r2|r3|h1|t2|t3|t5a|t5b) export EXTRA_DISALLOWED="Agent" ;;
+  r2|r3|h1|t2|t3|t5a|t5b|p1|p2) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   r1|r1b|r5|t1a|t1b|t1c) MAX_TURNS="${MAX_TURNS:-40}" ;;
   r2|r3|r4) MAX_TURNS="${MAX_TURNS:-35}" ;;
-  t2|t3) MAX_TURNS="${MAX_TURNS:-40}" ;;
+  t2|t3|p1|p2) MAX_TURNS="${MAX_TURNS:-40}" ;;
   t5a|t5b) MAX_TURNS="${MAX_TURNS:-20}" ;;
   h2) MAX_TURNS="${MAX_TURNS:-80}" ;;
   *) MAX_TURNS="${MAX_TURNS:-60}" ;;

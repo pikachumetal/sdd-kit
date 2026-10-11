@@ -30,7 +30,7 @@ case "$(cell Molde)" in
   *) die "molde desconocido en battery.md: $SC" ;;
 esac
 # El fallo de a2 y a3: findBooking busca solo por sala, y «cancelar Norte mar» cancela la reserva del lunes.
-case "$SC" in a2|a3|d1) sed -i 's/b.room === room \&\& b.day === day \&\& /b.room === room \&\& /' "$R/src/app.js" ;; esac
+case "$SC" in a2|a3|d1|p3) sed -i 's/b.room === room \&\& b.day === day \&\& /b.room === room \&\& /' "$R/src/app.js" ;; esac
 g init -q -b main
 commit "feat: base del molde"
 [ "$(cell Molde)" = reservas-main ] || g checkout -q -b develop
@@ -55,7 +55,7 @@ esac
 
 case "$SC" in
   g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
-  d1) MAX_TURNS="${MAX_TURNS:-60}" ;;
+  d1|p3) MAX_TURNS="${MAX_TURNS:-60}" ;;
   a1|a3|a4|k2|l1|x1|c1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac

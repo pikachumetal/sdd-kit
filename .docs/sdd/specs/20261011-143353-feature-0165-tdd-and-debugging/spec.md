@@ -210,6 +210,7 @@ Fork por traducción y recorte: se parte del texto de superpowers 7.0.0, se escr
 
 ## Enmiendas
 
+- 2026-10-11 — Decisión 2 (forks delgados) y decisión 11 (topes): `sdd-tdd` y `sdd-debugging` vuelven al texto entero de superpowers 7.0.0, cambiado solo donde el kit trabaja distinto, y `sdd-implement` recupera lo que se le recortó por su tope (una fila de racionalización y la «TDD Evidence» del encargo); los topes pasan a lo que mide el texto (`sdd-tdd` 1.700/3.000, `sdd-debugging` 1.600/3.400, `sdd-implement` 9.100). La regla, en el Art. IX y la [ADR 0013](../../decisions/0013-fork-keeps-source-text.md). El A/B de presión (`p1`-`p3`, versión delgada frente a la entera) salió limpio en las dos versiones: no habría distinguido; la decisión no depende de él — aprobada: «Superpowers funciona… se quita si se ve claramente que funciona bien sin ello, no puede ser que lo quites porque creas que no… No adelgacemos porque sí»
 - 2026-10-11 — Decisión 4: el paso del encargo dice «Before touching code, run `<comando de los RED>`; keep its failing output and why it was expected. If it already passes, stop: report DONE_WITH_CONCERNS with the green output; don't implement», no «Before touching `src/`…; paste…» — `src/` es la ruta del molde y no la de un proyecto .NET o Angular, y la revisión final (Important 1) pidió el caso del RED que ya pasa; el paso 3 carga `sdd-tdd` para un test propio del implementador, como decía la decisión 4 si ganaba A — ruling del hilo y fix de la revisión final, sin cambiar un requisito
 - 2026-10-11 — Decisión 15 y Scope: los escenarios van a las baterías que ya existen (`t1a`-`t5b` en la de `sdd-implement`, `d1` en la de `sdd-propose`, `f1` en la de `sdd-explore`), no a `tests/batteries/sdd-tdd/` y `sdd-debugging/` — las dos skills no son una entrada y su conducta se ve en quien las invoca — ruling del plan (decisión 3)
 
@@ -227,46 +228,48 @@ Fork por traducción y recorte: se parte del texto de superpowers 7.0.0, se escr
 ## Anexo — Regla de la fuente → dónde vive ahora
 
 > El kit deja de invocar dos skills de superpowers 7.0.0 y las sustituye por su fork: una fila por sección, red flag y racionalización de `test-driven-development` (TDD) y `systematic-debugging` (SD), y de las aportaciones de `tdd` de mattpocock/skills 1.2.3 (M). «§» es la sección de la skill del kit. «No-op»: el modelo ya lo hace sin la frase (decisión 2); se recupera si la batería lo ve fallar.
+>
+> Desde la enmienda del 2026-10-11 ([ADR 0013](../../decisions/0013-fork-keeps-source-text.md)), lo que esta tabla quitaba como no-op vuelve literal: solo cambia lo que el kit hace distinto.
 
 | Regla de la fuente | Dónde vive ahora | Por qué se descarta |
 | --- | --- | --- |
 | TDD · Overview y principio («if you didn't watch the test fail…») | `sdd-tdd` § Overview | — |
-| TDD · When to Use | `sdd-tdd` § Overview, en una línea | La lista de casos: no-op |
-| TDD · Excepciones «ask your human partner» | `sdd-tdd` § Exceptions: carril config y tasks de spike; el resto, se pregunta | La lista suelta: la sustituyen los carriles |
+| TDD · When to Use | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| TDD · Excepciones «ask your human partner» | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | TDD · The Iron Law, «delete means delete», Final Rule | `sdd-tdd` § The Iron Law | — |
-| TDD · Red-Green-Refactor (grafo) | `sdd-tdd` § The cycle, en pasos | El grafo: duplica los pasos |
-| TDD · RED con su ejemplo bueno y malo | `sdd-tdd` § RED: quién lo escribe en el kit; los ejemplos, en `writing-good-tests.md` | Los ejemplos de `retryOperation`: no-op |
+| TDD · Red-Green-Refactor (grafo) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| TDD · RED con su ejemplo bueno y malo | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | TDD · Verify RED | `sdd-tdd` § Verify RED, también para el RED recibido | — |
-| TDD · GREEN mínimo, con su ejemplo | `sdd-tdd` § GREEN, una línea | El ejemplo YAGNI: lo cubre el decálogo del encargo (regla 7) |
+| TDD · GREEN mínimo, con su ejemplo | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | TDD · Verify GREEN | `sdd-tdd` § Verify GREEN, con la «Verificación» de la task | «"Other tests" means the project's suite»: la suite es el gate de cierre del hilo |
 | TDD · REFACTOR dentro del bucle | `sdd-tdd` § The cycle | — |
 | M · «Refactoring is not part of the loop» | — | Decisión del dev-lead |
-| TDD · Good Tests (tabla) | — | No-op; el fondo está en `writing-good-tests.md` |
+| TDD · Good Tests (tabla) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | TDD · `writing-good-tests.md` | `sdd-tdd/references/writing-good-tests.md`, entero | — |
 | M · Antipatrón tautológico | `sdd-tdd` § Anti-patterns, si `t2` falla | Si `t2` sale limpio: a deuda; lo cubre «mirror assertion» |
 | M · Antipatrón acoplado a la implementación | `sdd-tdd` § Anti-patterns, si `t3` falla | Si `t3` sale limpio: a deuda; lo cubren las reglas de mocks |
 | M · Horizontal slicing | — | Los RED de una task se escriben antes que su código a propósito: son el contrato de la spec, y las tasks ya son verticales |
 | M · Costuras pactadas con el usuario | `sdd-tdd` § Test seams, si `t3` falla | La pregunta al usuario: la hace el gate de la spec |
 | M · `codebase-design` y `CONTEXT.md` | — | No son del kit; el glosario es `PRODUCT.md` |
-| TDD · Common Rationalizations (11) | — | No-op: ninguna aparece en la evidencia del kit; el 4 de 4 es de forma, no de racionalización (decisión 4) |
-| TDD · Red Flags (13) | `sdd-tdd` § Red flags, 5: código antes del test, test que pasa a la primera, no saber por qué falla, «lo probé a mano», «guardarlo como referencia» | Las otras 8: repiten esas cinco con otras palabras |
-| TDD · Example: Bug Fix | — | Repite el ciclo |
-| TDD · Verification Checklist | — | Lo exige el contrato de cierre de `sdd-implement` |
-| TDD · When Stuck | — | No-op |
+| TDD · Common Rationalizations (11) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| TDD · Red Flags (13) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| TDD · Example: Bug Fix | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| TDD · Verification Checklist | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| TDD · When Stuck | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | TDD · Debugging Integration | `sdd-tdd` § The cycle, puntero a `sdd-debugging` | — |
-| SD · Overview, Iron Law, When to Use | `sdd-debugging` § Overview | La lista «Use this ESPECIALLY when»: no-op |
-| SD · Fase 1 | `sdd-debugging` § Phase 1 | El ejemplo bash de cuatro capas: queda la regla de instrumentar cada frontera |
+| SD · Overview, Iron Law, When to Use | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| SD · Fase 1 | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | SD · Fase 2 | `sdd-debugging` § Phase 2 | — |
 | SD · Fase 3 | `sdd-debugging` § Phase 3 | — |
 | SD · Fase 4.1 (test con `test-driven-development`) | `sdd-debugging` § Phase 4, con `sdd-tdd` | — |
 | SD · Fase 4.2-4.3 (con `verification-before-completion`) | `sdd-debugging` § Phase 4 | La sub-skill: el kit no la invoca desde la 0147 |
 | SD · Fase 4.4-4.5 (tres arreglos fallidos) | `sdd-debugging` § Phase 4: parada de desvío en el hilo, `BLOCKED` en el implementador | — |
 | SD · Red Flags (11) | `sdd-debugging` § Red flags, las 11 | — |
-| SD · Señales del humano | — | No-op: el kit no tiene evidencia de que el agente las ignore |
-| SD · Common Rationalizations (8) | — | No-op mientras `d1` salga limpio; si falla, vuelven |
-| SD · Quick Reference | — | Repite las fases |
+| SD · Señales del humano | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| SD · Common Rationalizations (8) | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
+| SD · Quick Reference | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | SD · «No root cause» | `sdd-debugging` § No root cause | — |
 | SD · Supporting Techniques | `sdd-debugging/references/`, los tres | — |
 | SD · `find-polluter.sh` | Una línea en `references/root-cause-tracing.md` | El script bash: el código del kit es Node (ADR 0011) |
-| SD · `condition-based-waiting-example.ts` | — | Su `.md` ya trae el fragmento |
+| SD · `condition-based-waiting-example.ts` | `sdd-debugging/references/`, literal (enmienda del 2026-10-11, ADR 0013) | — |
 | SD · `CREATION-LOG.md`, `test-academic.md`, `test-pressure-1..3.md` | — | Evidencia de superpowers; el agente no la lee |

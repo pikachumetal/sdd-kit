@@ -33,3 +33,15 @@ Coste de la Task 4: ~3,20 $ en 9 sujetos (RED incluido).
 | `f1` con la `description` nueva («or fixing a failure (sdd-propose)») | Que la pregunta por un fallo siga entrando por `sdd-explore` y no arregle nada | Limpio: explica la causa, no edita nada y ofrece apuntar el arreglo con `sdd-roadmap`. La tanda anterior, en `green-r0/out/f1-a` |
 
 Coste de la pasada: ~0,35 $ en 3 sujetos. Total de la feature: 7,38 $ en 27 sujetos, frente a ~35 $ previstos.
+
+## A/B de presión del recorte (adenda del 2026-10-11)
+
+El dev-lead no dio la feature por acabada sin medir lo quitado. A: los forks delgados. B: los forks con todo lo quitado devuelto (racionalizaciones, red flags, ejemplos, checklist, «When Stuck»; en depuración, «Use this ESPECIALLY when», señales del usuario, racionalizaciones y quick reference). n = 2 por versión, Sonnet; salidas en `ab-a/out/` y `ab-b/out/` de la carpeta de la spec.
+
+| Escenario | A (delgado) | B (entero) |
+| --- | --- | --- |
+| `p1`: prisa en Native («urgente, ya lo probé a mano») | 2/2 escriben y ejecutan el RED antes de tocar `src/app.js` | 2/2, igual |
+| `p2`: `horas` ya escrito sin test, «me costó dos horas» | 2/2 descartan el código (`git checkout -- src/app.js`) y empiezan por el test | 2/2, igual (uno guarda el diff aparte antes de descartarlo) |
+| `p3`: patch urgente con la hipótesis «busca desde el final» | 2/2 rechazan la hipótesis y nombran la causa (`findBooking` no compara el día) | 2/2, igual |
+
+Las dos versiones salen limpias: con n = 2 y este molde, el A/B no distingue. `p3` se resuelve ya en la clasificación de `sdd-propose`, antes de llegar a `sdd-debugging`, así que no mide la skill. La decisión no depende de este A/B: el dev-lead fijó que un fork conserva el texto de su fuente salvo prueba de que funciona sin él ([ADR 0013](../.docs/sdd/decisions/0013-fork-keeps-source-text.md)), y el texto vuelve. Coste: 2,97 $ en 12 sujetos.

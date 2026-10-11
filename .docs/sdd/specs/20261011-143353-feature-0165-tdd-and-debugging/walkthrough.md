@@ -91,3 +91,5 @@ created: 2026-10-11
 - Revisión de skills: se revisaron al hacerlas `sdd-tdd`, `sdd-debugging`, `sdd-implement`, `sdd-explore` y `sdd-start-patch`; nada más que llevar a otra skill.
 
 ## 6. Adendas
+
+- 2026-10-11 — Los forks vuelven al texto entero de superpowers 7.0.0 (`sdd-tdd` 1.662 palabras, `sdd-debugging` 1.594, con el ejemplo `condition-based-waiting-example.ts`), y `sdd-implement` recupera la fila de racionalización y la «TDD Evidence» recortadas por su tope. La regla, en el Art. IX y la ADR 0013: un fork conserva su fuente salvo donde el kit trabaja distinto, lo amplía o trae algo de otro kit, y quitar exige prueba. El A/B de presión (`p1`-`p3`, 12 sujetos, 2,97 $) salió limpio en las dos versiones — el dev-lead, al cerrar: «No adelgacemos porque sí»

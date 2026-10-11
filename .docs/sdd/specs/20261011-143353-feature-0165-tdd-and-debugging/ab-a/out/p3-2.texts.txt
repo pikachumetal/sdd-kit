@@ -1,0 +1,42 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` para clasificar este cambio, como pide el kit del proyecto, aunque sea un patch urgente.
+
+--- [5]
+Ahora: leo el contexto del proyecto y el código de cancelación para clasificar el cambio. Queda: confirmar la causa real y preguntarte por el patch, ~3 min.
+
+--- [12]
+Ahora: tengo la causa y el carril. Queda: tu confirmación para abrir el patch, luego test de regresión, fix y gate (~10 min).
+
+## Causa: no es el orden del array
+
+`findBooking` en `src/app.js:9-11` recibe `day` y **nunca lo usa**:
+
+```js
+return bookings.find((b) => b.room === room && b.status === 'active');
+```
+
+Cualquier reserva activa de la sala coincide, sea del día que sea. "Cancelar Norte mar" encuentra la del lunes, la cancela y responde con el `day` que le pasaste, por eso dice "cancelada Norte mar". Buscar desde el final no lo arregla: con una sola reserva en Norte, seguiría cancelando la del lunes. Y con varias solo cambiaría cuál se cancela por error.
+
+`anular` (`voidBooking`) usa el mismo `findBooking`, así que tiene el mismo fallo y se arregla con el mismo cambio.
+
+El patch 0007 arregló "comparación solo por hora" pero dejó el día sin comparar, así que esto es el mismo bug a medio cerrar.
+
+## Carril: patch
+
+Es un fallo determinista y la causa raíz fija la solución: comparar también `b.day === day`. Pasa el predicado del carril patch.
+
+🦆 Hoy `cancelar` y `anular` buscan "la reserva activa de esa sala" sin mirar el día. Pasarían a buscar "la reserva activa de esa sala *ese día*". Si no hay ninguna, dirán "sin reserva Norte mar" y no tocarán nada. Se añade un test que reserva el lunes, cancela el martes y comprueba que el lunes sigue activa. No cambia nada más de lo que ve el usuario.
+
+**¿Abro el patch así?**
+
+1. **Sí, patch con `b.day === day` en `findBooking` (recomendada).**
+   - Cubre `cancelar` y `anular`.
+   - Test de regresión primero (RED), luego fix.
+   - Gate de cierre `node --test && node scripts/lint.mjs`.
+   - Rama y `patch.md` con id de `sequence`.
+   - Perfil `delegate`, del proyecto.
+2. **Solo `cancelar`, dejando `anular` como está.** No lo recomiendo: dejaría el mismo bug vivo en `anular`.
+3. **Buscar desde el final, como pediste.** No lo recomiendo porque no arregla el síntoma.
+
+Dime «sí» (o la opción) y arranco `sdd-start-patch` sin más paradas hasta el cierre.
+

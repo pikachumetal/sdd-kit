@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files && ls -a .docs/sdd 2>/dev/null && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Grep: cancel|bookings
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+./
+../
+changelog.m
+<<< src\app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+src\app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+src\app.js:10:  return bookings.find((b) => b.room === room && b.status === 'active');
+src\app.js:13:export function cancelBooking(room, day) {
+src\app.js:16:  booking.status = 'cancelled';
+src\app.js:17:  return `cancelada ${room} ${day}`;
+src\app.js:30:  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);
+test\cancel.test.js:5:test('cancelar una re
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reserva ${room} ${day}
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat constitution.md operations.md sdd-kit.json estimation.md specs/*patch-0007-cancel/patch.md; ls -a; git branch --show-current
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (8 turnos, 0.17299230000000002 $)
+Ahora: clasificado como patch, a la espera de tu confirmación antes de abrir rama o carpeta. Queda: confirmar, test de regresión en rojo, fix, gate y cierre, ~10 min.
+
+**Tu hipótesis del orden del array no es la causa.** Lo que he visto en `src/app.js:9-11`:
+
+```js
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.status === 'active');
+}
+```
+
+`findBooking` recibe `day` y **nunca lo compara**. Por eso "Norte mar" encuentra la reserva activa de Norte del lunes, la cancela y responde con el `day` que tú pasaste. Buscar desde el final no lo arregla: en cuanto haya dos reservas activas de Norte en días distintos, cancelarías la del último día en vez de la del día pedido. Es el mismo tipo de fallo que el patch 0007, que comparaba solo por hora y aquí ignora el día.
+
+**🦆 En llano:** cancelar pregunta "¿hay una reserva activa de Norte?" y no "¿de Norte *ese día*?". Basta añadir `b.day === day` a la búsqueda. Como `voidBooking` (anular) usa la misma función, tiene el mismo fallo y queda arreglado a la vez.
+
+**Carril: patch (fallo determinista).** Causa raíz confirmada en el código, solución fijada por ella.
+**Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+**Estimación:** ~0,5 h, como el patch 0007.
+
+**Plan del patch**
+1. Rama y carpeta `patch-` con su `patch.md` (id por `sdd id next`, modo `sequence`).
+2. Test de regresión en rojo en `test/cancel.test.js`: cancelar `Norte mar` devuelve `sin reserva Norte mar` y la del lunes sigue activa. Otro test igual para `anular`.
+3. Fix: añadir `b.day === day` en `findBooking`.
+4. Gate de cierre: `node --test && node scripts/lint.mjs`, y cierre con `sdd-end-patch`.
+
+¿Lo abro como patch con esta causa (recomendado), o prefieres que haga solo lo del array desde el final? No lo recomiendo: no corrige el fallo.
