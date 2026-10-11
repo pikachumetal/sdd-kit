@@ -59,8 +59,8 @@ Describe 'Carril task' {
     Get-SkillStep 'sdd-end-feature' 10 | Should -Match 'junta el cierre en un commit[^\n]*commit-milestones\.md'
   }
 
-  It 'el override cubre los commits frecuentes de superpowers' {
-    Get-KitFile 'skills/sdd-start-feature/references/overrides-superpowers.md' | Should -Match 'Frequent commits[^\n]*commit-milestones\.md'
+  It 'plan-writing junta los commits frecuentes al quedar limpia la revisión' {
+    Get-KitFile 'skills/sdd-propose/references/plan-writing.md' | Should -Match 'Frequent commits[^\n]*commit-milestones\.md'
   }
 
   It 'el encargo del implementador commitea los RED con la implementación' {

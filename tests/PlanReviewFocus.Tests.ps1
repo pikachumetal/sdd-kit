@@ -22,8 +22,8 @@ Describe 'Plantilla del plan' {
     $focusAt | Should -BeLessThan $script:Plan.IndexOf('## Phase -1')
   }
 
-  It 'plan-template help cites writing-plans and names the owning task' {
-    Assert-Literal $script:Focus @('superpowers:writing-plans', 'Task <n>', 'ninguna: comprobado')
+  It 'plan-template help cites plan-writing and names the owning task' {
+    Assert-Literal $script:Focus @('plan-writing.md', 'Task <n>', 'ninguna: comprobado')
   }
 
   It 'plan-template keeps an empty Review Focus instead of deleting it' {

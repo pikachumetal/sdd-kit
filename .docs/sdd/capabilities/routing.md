@@ -11,7 +11,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario pide una feature o un cambio con comportamiento sin nombrar ninguna skill («añade…», «hazme…», «let's build…», «es un cambio pequeño, hazlo rápido»)
 - THEN la primera skill que se invoca es `sdd-kit:sdd-propose`
-- AND `superpowers:brainstorming` se invoca después, desde el paso de la spec de `sdd-propose`, nunca antes
+- AND `superpowers:brainstorming` no se invoca en ningún momento: la entrevista la lleva `sdd-grilling` y la spec, `references/spec-writing.md` de `sdd-propose`
 
 ### Un bug pequeño y determinista entra por el carril patch
 

@@ -1,0 +1,60 @@
+--- [11]
+Estoy leyendo el contexto del proyecto: la reserva en memoria está fijada por el ADR 0003 (aceptado), así que este cambio lo contradice y miro cómo trata el kit ese caso antes de la spec.
+
+--- [26]
+Estoy redactando la spec en `.docs/sdd/specs/` (rama `feature/0012-persistent-bookings` ya creada); primero cargo el formato del párrafo 🦆 que va al principio.
+
+--- [37]
+Ahora: la spec está escrita y pasada la coherencia; se queda en el gate de aprobación. Queda: tu respuesta. Después escribo el plan e implemento sin más paradas hasta la validación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Rama `feature/0012-persistent-bookings`, id 0012 reservado, spec en `.docs/sdd/specs/20261011-132418-feature-0012-persistent-bookings/spec.md`.
+
+## 🦆 La spec en corto
+
+Hoy, si cancelas la reserva de Norte del lunes y cierras la terminal, al volver a abrirla sigue ahí, porque cada arranque de `salas` empieza de cero. Con este cambio las reservas se guardan en un fichero de tu carpeta personal y cada comando las lee de ahí: la cancelación de Norte lun sigue cancelada mañana y `salas libres 10:00-12:00` ofrece `Norte, Sur`. Sin fichero, empieza como hoy; con el fichero estropeado, avisa y no lo toca.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Revierte el ADR 0003** (reservas en memoria, aceptado). Su confirmación exige que `src/` no importe `node:fs`. Se añade un ADR 0004 que lo sustituye y el 0003 pasa a `superseded by 0004`. Es lo que más conviene que mires.
+2. **Soporte:** fichero JSON, no SQLite (sin dependencias, como dice la tech-stack).
+3. **Ruta:** `salas-reservas.json` en la carpeta personal; la variable `SALAS_RESERVAS` fija otra (los tests la usan para no tocar el real).
+4. **Lectura y escritura:** se lee en cada arranque, se escribe solo al cambiar una reserva, y de forma atómica.
+5. **Dos terminales a la vez:** gana la última que escribe, sin bloqueos (lo usa una sola persona).
+6. **Sin fichero:** parte de la reserva inicial (Norte, lun, 10:00-12:00) y no crea fichero hasta el primer cambio.
+7. **Fichero ilegible** (no es JSON o `version` distinta de 1): imprime `reservas ilegibles: <ruta>`, sale con código 1 y no lo sobrescribe.
+8. **Formato:** `{"version": 1, "bookings": [{room, day, slot, status}]}`, con los campos que ya usa el código.
+9. **Capacidad nueva `bookings`** (`capabilities/` aún no existe).
+
+**Review de spec:** ninguna. Solo se cumplen 2 de las 8 señales (capacidad nueva, dato persistente nuevo) y el cambio es de unas 40 líneas.
+
+## ⚠ Algo que no esperabas
+
+`salas reservar … --cada-semana` hoy solo responde `reserva semanal creada`: **no añade ninguna reserva a la lista**. La única reserva real es la inicial. Lo que sobrevive, por tanto, es el estado de las reservas existentes (cancelada, anulada), no las nuevas. Hacer que `reservar` cree reservas de verdad lo he dejado fuera, como otra feature (recomendado), porque pide decidir sala, día y franja sin datos hoy.
+
+## Escenarios clave (con datos)
+
+- `cancelar Norte lun` → `cancelada Norte lun`; en otro arranque, `libres 10:00-12:00` → `Norte, Sur`.
+- `anular Norte lun` → `anulada Norte lun`; en otro arranque, `cancelar Norte lun` → `sin reserva Norte lun`.
+- Sin fichero, `libres 10:00-12:00` → `Sur` y no se crea ningún fichero.
+- Fichero con `{no es json`, `cancelar Norte lun` → `reservas ilegibles: <ruta>`, código 1, fichero intacto.
+- `SALAS_RESERVAS=/tmp/mis-reservas.json` → el cambio queda ahí y no en la carpeta personal.
+
+Se prueba con `run()` y un fichero temporal, y lanzando `node src/app.js` dos veces como procesos distintos para demostrar la supervivencia.
+
+## ✋ Aprobación
+
+No he podido abrir la pregunta como selector en esta sesión, así que va aquí en texto:
+
+- **«Apruebo» (recomendada)**: escribo el plan y, como el perfil es `delegate`, sigo hasta la validación sin más paradas.
+- **«Cambios»**: dime qué ajusto.
+
+Y una pregunta abierta, que no bloquea: ¿quieres que `reservar` cree reservas de verdad dentro de esta feature? Recomiendo que no.
+
+Hasta que respondas, la spec queda en espera y no toco código ni plan.
+

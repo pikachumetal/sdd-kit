@@ -52,7 +52,8 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - GIVEN una decisión sobre lo que ve o hace quien usa el producto (pegar un vínculo cuando el plugin no ve el portapapeles)
 - WHEN el agente la pregunta
 - THEN cada alternativa lleva una escena con datos y lo que se ve en cada paso («pegas `https://…/doc/42` → sale la tarjeta "Informe Q3"»), y la limitación técnica se cuenta por su efecto, no por su causa
-- AND si la decisión es cómo se ve o cómo se siente una pantalla, deja de preguntar y propone enseñar un boceto o un prototipo desechable
+- AND si la decisión es cómo se ve o cómo se siente una pantalla, deja de preguntar y propone enseñar un boceto: un Artifact con las opciones si la pantalla aún no existe; si existe, sobre la app real con lo que declara `§Frontend` (el detector en vivo, o una captura de la pantalla actual junto a la variante), y sin `§Frontend`, un Artifact
+- AND si la app no se puede levantar o no hay acceso, o el harness no tiene Artifact, describe cada opción en texto con su escena y dice por qué no la enseña
 
 ### Rebatir una vez
 
@@ -109,7 +110,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: no aplica; `sdd-grilling` no escribe ficheros, y lo que devuelve lo escribe quien la invoca, en sus documentos de siempre.
+- **Dónde viven los datos**: `sdd-grilling` no escribe ficheros del proyecto, y lo que devuelve lo escribe quien la invoca, en sus documentos de siempre; un boceto vive en un Artifact privado del usuario, y una captura de la pantalla actual, fuera de git (el scratchpad de la sesión), como las de la verificación visual.
 - **Idioma de los nombres**: el texto que ve el usuario (preguntas, listas «decidido por ti», «decidido por mí», «pendiente») va en su idioma; la skill, en inglés.
 - **Límites**: una decisión por turno; sin tope de preguntas por entrevista (para con la frontera vacía); rebatir, una vez por respuesta.
 - **Avisos**: no aplica.

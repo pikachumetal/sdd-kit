@@ -1,0 +1,40 @@
+--- [2]
+Usando sdd-propose para arrancar este cambio.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto (docs, no código). Queda: clasificar, anunciar y abrir la spec, ~3 min.
+
+--- [19]
+Sigo con la spec: reservo el id de la secuencia, creo la rama y escribo `spec.md`.
+
+--- [29]
+La spec está escrita y espera tu aprobación. Está en `.docs/sdd/specs/20261011-134413-feature-0012-persist-bookings/spec.md`, en la rama `feature/0012-persist-bookings`, y no he commiteado nada.
+
+**Carril:** feature, modo full, perfil `delegate` (el del proyecto). No hay `sdd-kit.local.json`, así que no se ignora ninguna clave.
+
+## 🦆 Qué cambia
+Hoy, si cancelas la reserva de Norte el lunes y reabres la terminal, vuelve a estar activa, porque cada arranque empieza de cero. Con este cambio la cancelación se queda guardada: al reabrir, `libres 10:00-12:00` responde «Norte, Sur» y cancelar otra vez dice «sin reserva Norte lun». Las reservas se guardan en un fichero del usuario que se lee al arrancar y se reescribe cuando una cancelación o una anulación las cambia.
+
+## ✋ Decisiones que he tomado yo — valídalas
+
+1. **Sustituye a la decisión 0004**, que dejaba el estado solo en memoria. Su consecuencia («cerrar la terminal pierde las reservas») es justo lo que pides, y su confirmación («`src/` no importa `node:fs`») dejará de cumplirse. Entra una ADR 0007 que la sustituye y marcar 0004 como `superseded by 0007`. Es la que más conviene que valides.
+2. **Lo que sobrevive es poco hoy.** `reservar` no crea reservas reales, solo devuelve «reserva semanal creada». Lo único que existe es la reserva de inicio (Norte, lun, 10:00-12:00) y los cambios de `cancelar` y `anular`. Que `reservar` cree reservas de verdad queda fuera: es otra feature.
+3. **Dónde se guarda:** `reservas.json` en `.salas` del directorio personal, y `SALAS_FICHERO` lo cambia de sitio. Lo puse en el directorio personal para que abrir la terminal en otra carpeta no «pierda» las reservas.
+4. **Qué se guarda:** la lista completa con su estado (activa, cancelada, anulada).
+5. **Primer arranque sin fichero:** parte de la reserva de inicio, y el fichero no se crea hasta que un comando cambia algo.
+6. **Fichero ilegible:** no se pisa ni se arranca de cero. Responde `fichero de reservas dañado: <ruta>` y sale con error.
+7. **Dos terminales a la vez:** sin bloqueo, gana la última escritura.
+8. **Capacidad nueva `bookings`** (nombre en inglés kebab-case por ser nombre de fichero).
+9. **Documentos desactualizados:** se corrige `operations.md` («las reservas viven en memoria»).
+
+**Review de spec:** ninguna. Solo hay 2 de 8 señales (capacidad nueva y dato persistente nuevo) y el cambio es de unas ~40 líneas.
+
+**Escenarios** (con datos concretos): el estado sobrevive tras `cancelar`; una `anular` también sobrevive; el primer arranque sin fichero responde `Sur` y no crea fichero; un fichero con `{no es json` no se pisa.
+
+**Dónde se prueba:** arrancando `node src/app.js` dos veces con `SALAS_FICHERO` en una carpeta temporal. Un test por `run` no sirve, porque no reabre el proceso. Los tests actuales no cambian.
+
+## ⛔ Gate de aprobación
+¿Apruebas la spec? Responde **«Apruebo»** o dime los **cambios**. Mientras no lo digas, no escribo el plan ni toco código.
+
+Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+

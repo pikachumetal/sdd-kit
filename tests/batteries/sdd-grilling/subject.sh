@@ -15,6 +15,9 @@ case "$(cell Molde)" in
   salas) cp -r "$SALAS/." "$R/"; put_kit_marker "$SALAS_MARKER" ;;
   reservas) cp -r "$HERE/../sdd-start-feature/mold-reservas/." "$R/"; put_kit_marker "$SALAS_MARKER" ;;
   salas-sin-docs) cp -r "$SALAS/." "$R/"; rm -r "$R/.docs" ;;
+  salas-web) cp -r "$SALAS/." "$R/"; put_kit_marker "$SALAS_MARKER"
+    cp -r "$HERE/mold-web/public" "$HERE/mold-web/src" "$R/"
+    cat "$HERE/mold-web/tech-stack-frontend.md" >> "$R/.docs/sdd/tech-stack.md" ;;
   vacio) echo '# citas' | put README.md ;;
   *) die "molde desconocido en battery.md: $SC" ;;
 esac

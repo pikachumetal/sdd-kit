@@ -89,8 +89,9 @@ Describe 'sdd-roadmap' {
     $script:Plan | Should -Match 'no lo arranques'
   }
 
-  It 'la entrevista usa brainstorming y acaba en el roadmap, no en una spec' {
-    $script:Plan | Should -Match 'superpowers:brainstorming'
+  It 'la entrevista pregunta con sdd-grilling y acaba en el roadmap, no en una spec' {
+    $script:Plan | Should -Match 'sdd-grilling'
+    $script:Plan | Should -Not -Match 'brainstorming'
     $script:Plan | Should -Match 'nunca acaba en spec'
   }
 
