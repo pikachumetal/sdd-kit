@@ -1,0 +1,65 @@
+--- [2]
+Using sdd-propose to classify this bug and route it.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto y localizo el fallo. Queda: clasificarlo y preguntarte antes de abrir el patch, ~3 min.
+
+--- [14]
+Ahora: confirmo la causa raíz con `sdd-debugging` y reproduzco el fallo antes de abrir nada. Queda: carpeta, test rojo, fix y cierre, ~10 min.
+
+--- [17]
+Fase 1: reproduzco el fallo sobre la base actual.
+
+--- [24]
+Escribo `patch.md` (síntoma, causa raíz con evidencia y estimación) antes de tocar el código.
+
+--- [28]
+Test de regresión en un fichero nuevo: cada fichero corre en su proceso y parte de la reserva de arranque Norte · lun, que `cancel.test.js` ya consume.
+
+--- [33]
+RED confirmado por la causa correcta: cada test falla porque la función toca la reserva del lunes. Aplico el fix mínimo.
+
+--- [37]
+Suite entera y lint en verde. Completo `patch.md` (ficheros, verificación, tiempo) y commiteo todo junto.
+
+--- [39]
+Commit del fix, con código, tests y `patch.md` en uno solo.
+
+--- [41]
+Ahora: cierre del patch con `sdd-end-patch`. Queda: tu validación y el changelog, ~3 min.
+
+--- [45]
+El fix está commiteado y verificado, pero el cierre se detiene en la validación. Tu `sdd-kit.json` no define `validation.mode: field`, así que no fusiono ni cierro `patch.md` sin que lo valides tú.
+
+## Qué se ha hecho
+
+- **Causa**: `findBooking` en `src/app.js:9` no comparaba el día. `cancelar Norte mar` encontraba la reserva del lunes, la cancelaba y respondía con "mar".
+- **Alcance**: `anular` tenía el mismo fallo, porque usa la misma función.
+- **Fix**: una línea, `b.day === day` en `findBooking`.
+- **Test**: `test/cancel-day.test.js`, que fallaba antes del fix por la causa correcta.
+- **Gate de cierre**: `node --test && node scripts/lint.mjs` → 6/6 tests, lint sin hallazgos.
+- **Commit y rama**: `6631803` en la rama `feature/0012-cancelar-dia`, patch `0012`.
+- **Carpeta del patch**: `.docs/sdd/specs/20261011-184306-patch-0012-cancelar-dia/`.
+
+## Guion de validación
+
+Cada comando arranca con la reserva de arranque Norte · lun.
+
+| # | Comando | Esperado |
+| --- | --- | --- |
+| 1 | `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+| 2 | `node src/app.js anular Norte mar` | `sin reserva Norte mar` |
+| 3 | `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+
+Yo ya los he ejecutado y salen así. Como las reservas viven en memoria, los pasos son independientes entre sí. Que el martes no toque el lunes dentro del mismo proceso lo cubre `test/cancel-day.test.js`.
+
+## ¿Qué has probado?
+
+Elige una:
+
+- **Validado: lo he probado y funciona**
+- **Diferir: lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead**
+- **No funciona**
+
+Con tu respuesta termino el cierre: `patch.md` con el hash, changelog en `Fixed`, fila en el roadmap, estimation-log y merge. Tu `sdd-kit.json` no declara el bloque `merge`, así que el merge a `develop` también te lo preguntaré.
+

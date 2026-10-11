@@ -227,49 +227,34 @@ Fork por traducción y recorte: se parte del texto de superpowers 7.0.0, se escr
 
 ## Anexo — Regla de la fuente → dónde vive ahora
 
-> El kit deja de invocar dos skills de superpowers 7.0.0 y las sustituye por su fork: una fila por sección, red flag y racionalización de `test-driven-development` (TDD) y `systematic-debugging` (SD), y de las aportaciones de `tdd` de mattpocock/skills 1.2.3 (M). «§» es la sección de la skill del kit. «No-op»: el modelo ya lo hace sin la frase (decisión 2); se recupera si la batería lo ve fallar.
->
-> Desde la enmienda del 2026-10-11 ([ADR 0013](../../decisions/0013-fork-keeps-source-text.md)), lo que esta tabla quitaba como no-op vuelve literal: solo cambia lo que el kit hace distinto.
+> Desde la enmienda del 2026-10-11 ([ADR 0013](../../decisions/0013-fork-keeps-source-text.md)): una fila por sección de `test-driven-development` (TDD) y `systematic-debugging` (SD) de superpowers 7.0.0, la sección del kit donde vive y si se **conserva** literal o qué motivo la cambia: **kit distinto**, **kit amplía** u **otro kit**. Lo que nunca entró de `tdd` de mattpocock/skills 1.2.3 está en las filas de deuda del roadmap. La versión delgada anterior está en la historia de esta spec (`284eebad`).
 
-| Regla de la fuente | Dónde vive ahora | Por qué se descarta |
+| Sección de la fuente | Dónde vive ahora | Conserva o motivo |
 | --- | --- | --- |
-| TDD · Overview y principio («if you didn't watch the test fail…») | `sdd-tdd` § Overview | — |
-| TDD · When to Use | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Excepciones «ask your human partner» | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · The Iron Law, «delete means delete», Final Rule | `sdd-tdd` § The Iron Law | — |
-| TDD · Red-Green-Refactor (grafo) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · RED con su ejemplo bueno y malo | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Verify RED | `sdd-tdd` § Verify RED, también para el RED recibido | — |
-| TDD · GREEN mínimo, con su ejemplo | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Verify GREEN | `sdd-tdd` § Verify GREEN, con la «Verificación» de la task | «"Other tests" means the project's suite»: la suite es el gate de cierre del hilo |
-| TDD · REFACTOR dentro del bucle | `sdd-tdd` § The cycle | — |
-| M · «Refactoring is not part of the loop» | — | Decisión del dev-lead |
-| TDD · Good Tests (tabla) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · `writing-good-tests.md` | `sdd-tdd/references/writing-good-tests.md`, entero | — |
-| M · Antipatrón tautológico | `sdd-tdd` § Anti-patterns, si `t2` falla | Si `t2` sale limpio: a deuda; lo cubre «mirror assertion» |
-| M · Antipatrón acoplado a la implementación | `sdd-tdd` § Anti-patterns, si `t3` falla | Si `t3` sale limpio: a deuda; lo cubren las reglas de mocks |
-| M · Horizontal slicing | — | Los RED de una task se escriben antes que su código a propósito: son el contrato de la spec, y las tasks ya son verticales |
-| M · Costuras pactadas con el usuario | `sdd-tdd` § Test seams, si `t3` falla | La pregunta al usuario: la hace el gate de la spec |
-| M · `codebase-design` y `CONTEXT.md` | — | No son del kit; el glosario es `PRODUCT.md` |
-| TDD · Common Rationalizations (11) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Red Flags (13) | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Example: Bug Fix | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Verification Checklist | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · When Stuck | `sdd-tdd`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| TDD · Debugging Integration | `sdd-tdd` § The cycle, puntero a `sdd-debugging` | — |
-| SD · Overview, Iron Law, When to Use | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| SD · Fase 1 | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| SD · Fase 2 | `sdd-debugging` § Phase 2 | — |
-| SD · Fase 3 | `sdd-debugging` § Phase 3 | — |
-| SD · Fase 4.1 (test con `test-driven-development`) | `sdd-debugging` § Phase 4, con `sdd-tdd` | — |
-| SD · Fase 4.2-4.3 (con `verification-before-completion`) | `sdd-debugging` § Phase 4 | La sub-skill: el kit no la invoca desde la 0147 |
-| SD · Fase 4.4-4.5 (tres arreglos fallidos) | `sdd-debugging` § Phase 4: parada de desvío en el hilo, `BLOCKED` en el implementador | — |
-| SD · Red Flags (11) | `sdd-debugging` § Red flags, las 11 | — |
-| SD · Señales del humano | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| SD · Common Rationalizations (8) | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| SD · Quick Reference | `sdd-debugging`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| SD · «No root cause» | `sdd-debugging` § No root cause | — |
-| SD · Supporting Techniques | `sdd-debugging/references/`, los tres | — |
-| SD · `find-polluter.sh` | Una línea en `references/root-cause-tracing.md` | El script bash: el código del kit es Node (ADR 0011) |
-| SD · `condition-based-waiting-example.ts` | `sdd-debugging/references/`, literal (enmienda del 2026-10-11, ADR 0013) | — |
-| SD · `CREATION-LOG.md`, `test-academic.md`, `test-pressure-1..3.md` | — | Evidencia de superpowers; el agente no la lee |
+| TDD · frontmatter y título | `sdd-tdd` | kit distinto: nombre y `description` del kit (la invoca otra skill, no es entrada) |
+| TDD · Overview | `sdd-tdd` § Overview | conserva, más idioma del usuario y línea de fork |
+| TDD · When to Use | § When to Use | conserva; las excepciones, kit distinto: carril config y tasks de spike, y el resto se pregunta (el implementador, `NEEDS_CONTEXT`) |
+| TDD · The Iron Law | § The Iron Law | conserva |
+| TDD · Red-Green-Refactor (grafo) | § Red-Green-Refactor | conserva; la etiqueta del verde, kit distinto: «Verificación green» |
+| TDD · RED | § RED | conserva, más kit distinto: quién escribe el RED (el hilo, desde los THEN) y el contrato del RED recibido |
+| TDD · Verify RED | § Verify RED | conserva, más kit distinto: también el RED recibido; si ya pasa, `DONE_WITH_CONCERNS`; el error de compilación del símbolo nuevo cuenta como fallo |
+| TDD · GREEN | § GREEN | conserva |
+| TDD · Verify GREEN | § Verify GREEN | conserva; «"Other tests" means the project's suite», kit distinto: la «Verificación» de la task, y la suite es el gate de cierre del hilo |
+| TDD · REFACTOR y Repeat | § REFACTOR, § Repeat | conserva |
+| TDD · Good Tests | § Good Tests, con `references/writing-good-tests.md` | conserva; `writing-good-tests.md` literal salvo «the kit's skill tests» y «the user» |
+| TDD · Common Rationalizations (11) | § Common Rationalizations | conserva |
+| TDD · Red Flags (13) | § Red Flags | conserva; «Test passes immediately», kit distinto: el RED recibido se reporta |
+| TDD · Example: Bug Fix | § Example: Bug Fix | conserva |
+| TDD · Verification Checklist | § Verification Checklist | conserva; «All tests pass», kit distinto: la «Verificación» de la task |
+| TDD · When Stuck | § When Stuck | conserva; «Ask your human partner», kit distinto: «the user», y el implementador `NEEDS_CONTEXT` |
+| TDD · Debugging Integration | § Debugging Integration | conserva, más kit distinto: la causa con `sdd-debugging` antes del test |
+| TDD · Final Rule | § Final Rule | conserva; el implementador, `NEEDS_CONTEXT` |
+| SD · frontmatter, Overview, Iron Law, When to Use | `sdd-debugging` § Overview… § When to Use | kit distinto: nombre y `description`; el resto conserva, más idioma y línea de fork |
+| SD · Fase 1 | § Phase 1 | conserva; el puntero a `root-cause-tracing.md`, kit distinto: `references/`; kit amplía: en un patch, §2 de `patch.md` antes de la fase 4 |
+| SD · Fases 2 y 3 | § Phase 2, § Phase 3 | conserva |
+| SD · Fase 4 | § Phase 4 | conserva; kit distinto: §2 de `patch.md` escrito al entrar, `sdd-tdd` para el test, la verificación leída en vez de `verification-before-completion`, y los tres arreglos fallidos paran como un desvío (hilo) o devuelven `BLOCKED` (implementador) |
+| SD · Red Flags, señales del usuario, racionalizaciones, Quick Reference, «No root cause» | mismas secciones | conserva; «your human partner» → «the user» |
+| SD · Supporting Techniques y sus tres `.md` | § Supporting Techniques, `references/` | conserva; `defense-in-depth.md` idéntico |
+| SD · `condition-based-waiting-example.ts` | `references/` | conserva, idéntico |
+| SD · `find-polluter.sh` | una línea en `references/root-cause-tracing.md` | kit distinto: el código del kit es Node ([ADR 0011](../../decisions/0011-node-cli.md)); queda la técnica escrita |
+| SD · `CREATION-LOG.md`, `test-academic.md`, `test-pressure-1..3.md` | — | no son texto que lea el agente: la evidencia de superpowers; las pruebas del kit son sus baterías (`tests/batteries/`) |

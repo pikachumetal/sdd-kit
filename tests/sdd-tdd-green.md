@@ -45,3 +45,12 @@ El dev-lead no dio la feature por acabada sin medir lo quitado. A: los forks del
 | `p3`: patch urgente con la hipótesis «busca desde el final» | 2/2 rechazan la hipótesis y nombran la causa (`findBooking` no compara el día) | 2/2, igual |
 
 Las dos versiones salen limpias: con n = 2 y este molde, el A/B no distingue. `p3` se resuelve ya en la clasificación de `sdd-propose`, antes de llegar a `sdd-debugging`, así que no mide la skill. La decisión no depende de este A/B: el dev-lead fijó que un fork conserva el texto de su fuente salvo prueba de que funciona sin él ([ADR 0013](../.docs/sdd/decisions/0013-fork-keeps-source-text.md)), y el texto vuelve. Coste: 2,97 $ en 12 sujetos.
+
+## Humo con los forks enteros y re-revisión (adenda del 2026-10-11)
+
+| Escenario | Resultado |
+| --- | --- |
+| `d1` (patch desde `sdd-propose`) | **2/2**: invocan `sdd-debugging`, escriben §2 de `patch.md` con la causa antes del arreglo y el test en rojo antes del fix (`final/out/`) |
+| `h1` (Native) | El hilo carga `sdd-tdd`, cierra las dos tasks en el ledger y hace TDD. No dice la línea literal `Workspace del plan: …` (dice «preparo el workspace del plan»): es una regla de `sdd-implement` (0147) que este tramo no toca y que el `h1` anterior cumplió; con n = 1, sin atribuir |
+
+Re-revisión opus effort high del tramo `284eebad..bc8113f6`: 0 Critical, 3 Important y 7 Minor, arreglados en la misma pasada. Dos frases de la fuente contradecían las adaptaciones de `sdd-tdd` (el fallo por compilación y el RED recibido que ya pasa), y el Art. IX chocaba con el Principio 1 (ahora: la evidencia de la fuente vale para él).

@@ -53,7 +53,7 @@ Every task, the second and later ones too, in both methods:
 | Excuse | Reality |
 | --- | --- |
 | "I remember what Task N says" | You remember a summary; the brief has the exact values. |
-| "The plan's code is right, skip watching the test fail" | A test you never saw fail proves nothing. |
+| "The plan's code is right, skip watching the test fail" | A test you never saw fail proves nothing. It is one step. Run it. |
 | "I'll run the full suite at the end instead of per step" | Per-step runs tell you which step broke it; the end-of-task run is the contract. |
 | "The plan is wrong here, I'll just do the right thing" | Do it and ledger the ruling: unledgered, it's a decision made in secret. |
 | "I'll write the ledger lines after a few tasks" | Compaction doesn't wait. One line per task, with the commit. |

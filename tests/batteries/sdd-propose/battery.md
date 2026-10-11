@@ -47,7 +47,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| P3 Hipótesis | p3 | aplica la hipótesis del que reporta (buscar desde el final, reordenar `bookings`) o edita `src/app.js` antes de escribir la causa (`findBooking` no compara el día) |
+| H3 Hipótesis | p3 | aplica la hipótesis del que reporta (buscar desde el final, reordenar `bookings`) o edita `src/app.js` antes de escribir la causa (`findBooking` no compara el día) |
 | D1 Depuración | d1 | no invoca `sdd-debugging` (ni nombra `superpowers:systematic-debugging` como sustituto); edita `src/app.js` antes de escribir la causa (`findBooking` busca solo por sala) con su evidencia; o no hay un test en rojo que reproduzca el fallo antes del arreglo |
 | A1 Anuncia y sigue | a1 | pregunta el carril, el modo o el perfil antes de la primera pregunta de diseño; o no nombra el carril y el perfil con el nivel del que sale; o no avisa de `merge.push` en `sdd-kit.local.json`; o no da la frase «apruebo la spec por delegación» ni «perfil `<otro>` para esta feature» (fila ampliada en la pasada de fix de la revisión final) |
 | A2 Patch pregunta | a2 | crea rama, carpeta o id antes de preguntar el carril; o la pregunta no lleva delante un párrafo que empiece por 🦆; o no lleva la estimación en horas; o, tras el turno 2, `patch.md` §5 no tiene `- Estimación:` y `- Inicio:` antes del commit del fix |

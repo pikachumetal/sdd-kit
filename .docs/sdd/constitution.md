@@ -81,7 +81,7 @@ Las plantillas canónicas viven solo en `skills/sdd-templates/templates/`. Ningu
 
 ## Art. IX — Fuentes y fork
 
-El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Conserva el texto de su fuente salvo donde el kit trabaja distinto, lo amplía o trae algo de otro kit; quitar texto exige un A/B que demuestre que funciona sin él. Mientras el kit no las haya copiado todas, sigue invocando las skills de superpowers que aún no ha copiado.
+El kit es un fork propio. Copia y adapta de superpowers, OpenSpec, mattpocock/skills, Wondel, MADR y skill-creator, con su aviso en `THIRD_PARTY_NOTICES.md` (fuente, versión y licencia). Una pieza copiada es del kit: la mantiene el kit y se prueba con el Art. I. Conserva el texto de su fuente, cuya evidencia vale para el Principio 1, salvo donde el kit trabaja distinto, lo amplía o trae algo de otro kit; quitarlo sin esos motivos exige un A/B que demuestre que funciona sin él. Mientras el kit no las haya copiado todas, sigue invocando las skills de superpowers que aún no ha copiado.
 
 *Por qué*: vestir superpowers con overrides costaba una revisión por cada versión suya y dejaba fuera lo mejor de otros métodos. [ADR 0009](decisions/0009-fork-instead-of-dressing-superpowers.md) · [ADR 0013](decisions/0013-fork-keeps-source-text.md)
 

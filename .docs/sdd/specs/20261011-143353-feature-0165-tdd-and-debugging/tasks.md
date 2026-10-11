@@ -24,6 +24,7 @@ created: 2026-10-11
 
 Revisión final: sdd-kit:effort-high + opus, con arreglos (0 Critical, 6 Important, 6 Minor), sobre 37a2704f
 Pasada de fix: juntada en el cierre, 6 hallazgos RED→GREEN (Pester de forma; t1c 2/2 y f1 por conducta)
+Re-revisión: 284eebad..bc8113f6, sdd-kit:effort-high + opus, con arreglos (0 Critical, 3 Important, 7 Minor), arreglados en el commit siguiente
 
 ## Verificación por task
 

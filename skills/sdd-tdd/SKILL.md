@@ -49,7 +49,7 @@ digraph tdd_cycle {
     red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
     verify_red [label="Verify fails\ncorrectly", shape=diamond];
     green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
+    verify_green [label="Verify passes\nVerificación green", shape=diamond];
     refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
     next [label="Next", shape=ellipse];
 
@@ -118,7 +118,7 @@ npm test path/to/test.test.ts
 ```
 
 Confirm:
-- Test fails (not errors)
+- Test fails (not errors; a compile or import error on the symbol the task creates counts as failing)
 - Failure message is expected
 - Fails because feature missing (not typos)
 
@@ -230,7 +230,7 @@ When writing or changing any test, read [writing-good-tests.md](references/writi
 
 - Code before test
 - Test after implementation
-- Test passes immediately
+- Test passes immediately (a RED you received: report it, see Verify RED)
 - Can't explain why test failed
 - Tests added "later"
 - Rationalizing "just this once"
@@ -289,7 +289,7 @@ Before marking work complete:
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
-- [ ] All tests pass
+- [ ] All tests pass (the task's «Verificación»)
 - [ ] Output pristine (no errors, warnings)
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
@@ -300,7 +300,7 @@ Can't check all boxes? You skipped TDD. Start over.
 
 | Problem | Solution |
 |---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. Ask the user. |
+| Don't know how to test | Write wished-for API. Write assertion first. Ask the user (an implementer: `NEEDS_CONTEXT`). |
 | Test too complicated | Design too complicated. Simplify interface. |
 | Must mock everything | Code too coupled. Use dependency injection. |
 | Test setup huge | Extract helpers. Still complex? Simplify design. |
@@ -318,4 +318,4 @@ Production code → test exists and failed first
 Otherwise → not TDD
 ```
 
-No exceptions without the user's permission.
+No exceptions without the user's permission (an implementer: `NEEDS_CONTEXT`).

@@ -19,7 +19,7 @@ El Art. IX dice que el kit copia y adapta de sus fuentes, pero no dice cuánto s
 
 ## Decisión
 
-Un fork conserva el texto de su fuente. Solo lo cambia por tres motivos: lo que el kit hace distinto (documentos, carpetas, pasos), lo que amplía (capacidades, ADR, roadmap) o lo que trae de otro kit. Quitar texto de la fuente exige ver que funciona sin él: un A/B de no-regresión con el escenario donde ese texto actúa (Art. I).
+Un fork conserva el texto de su fuente. Solo lo cambia por tres motivos: lo que el kit hace distinto (documentos, carpetas, pasos), lo que amplía (capacidades, ADR, roadmap) o lo que trae de otro kit. La evidencia de la fuente vale para el Principio 1: su texto no tiene que nombrar un fallo medido en el kit para quedarse. Quitar texto sin sustituirlo por uno de los tres motivos exige ver que funciona sin él: un A/B de no-regresión con el escenario donde ese texto actúa (Art. I).
 
 ### Consecuencias
 
