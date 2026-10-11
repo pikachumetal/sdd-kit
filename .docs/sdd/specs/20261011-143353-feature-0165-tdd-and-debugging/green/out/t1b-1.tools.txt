@@ -1,0 +1,166 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Comando `informe`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/informe.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+9	- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> cancelada
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | head -60; cat src/app.js; cat test/informe.test.js; ls; git log --oneline | head
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.7066ms)
+✖ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (0.4985ms)
+✖ informe sin --por responde con el uso (0.2995ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 303.8471
+
+✖ failing tests:
+
+test at test\informe.test.js:5:1
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.7066ms)
+  AssertionError [ERR_ASSERTION]: Expected valu
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+new='''const cancelledGroupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    keyOf: (b) => b.room,
+    line: (b) => `  ${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    groups: () => reasons,
+    keyOf: (b) => b.reason,
+    line: (b) => `  ${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function cancelledInWeekOrder() {
+  return bookings
+    .filter((b) => b.status === 'cancelled')
+    .sort((a, b) => rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day));
+}
+
+function cancelledReport(grouping) {
+  const cancelled = cancelledInWeekOrder();
+  const lines = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.keyOf(b) === group);
+    if (!members.length) continue;
+    lines.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.line));
+  }
+  lines.push(`Total: ${cancelled.length} canceladas`);
+  return lines.join('\\n');
+}
+
+function informe(params) {
+  const i = params.indexOf('--por');
+  const grouping = i === -1 ? undefined : cancelledGroupings[params[i + 1]];
+  return grouping ? cancelledReport(grouping) : 'uso: informe --por sala|motivo';
+}
+
+export function run('''
+s=s.replace('export function run(',new,1)
+s=s.replace("  if (cmd === 'mias') {","  if (cmd === 'informe') return informe(params);\n  if (cmd === 'mias') {",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/informe.test.js 2>&1 | grep -v oh-my
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+file:///<run>/repo/src/app.js:41
+  return lines.join('
+                    ^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:5
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("lines.join('\n');","lines.join('\\n');",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+sed -n 38,44p src/app.js; node --test test/informe.test.js 2>&1 | grep -v oh-my
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+    lines.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.line));
+  }
+  lines.push(`Total: ${cancelled.length} canceladas`);
+  return lines.join('
+');
+}
+
+file:///<run>/repo/src/app.js:41
+  return lines.join('
+                    ^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modul
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | grep -v oh-my
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✔ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.5372ms)
+✔ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (2.0343ms)
+✔ informe sin --por responde con el uso (0.4074ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 171.791
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de reservas canceladas por sala o motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+cat > .superpowers/sdd/plan/task-1-report.md <<'EOF'
+# Task 1 — Comando informe
+
+## Implementado
+`informe --por sala|motivo` en `src/app.js`: `informe` (parseo de `--por` y uso), `cancelledReport` (formato), `cancelledInWeekOrder` (selección y orden) y la tabla `cancelledGroupings` (grupos, clave y línea por tipo). El `run` solo añade la rama `informe`.
+
+## TDD Evidence
+RED: `node --test test/informe.test.js` → 3 fail. `run('informe', …)` caía en el `return 'salas'` por defecto (actual `'salas'`), es decir, faltaba el comando: fallo esperado.
+GREEN: mismo comando → `tests 3, pass 3, fail 0`, salida limpia.
+
+## Ficheros
+`src/app.js`, `test/informe.test.js` (commiteado sin cambios).
+
+## Autorrevisión
+- Los grupos por sala van en orden alfabético (`[...rooms].sort()`), por motivo en el de `reasons`; los grupos sin canceladas no se muestran.
+- Sin ajustes de espera. No se ejecutó la suite completa (la ejecuta el hilo principal).
+- Fuera de alcance, sin tocar: `run` sigue siendo una función larga con ifs.
+EOF
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+94e0d0f feat: comando informe de reservas canceladas por sala o motivo
+
+=== RESULTADO (10 turnos, 0.18305210000000002 $)
+- **Status:** DONE
+- **Commits:** `94e0d0f` feat: comando informe de reservas canceladas por sala o motivo (incluye `test/informe.test.js` sin cambios)
+- **Tests:** 3/3 passing, output pristine. RED first: 3 failures because `informe` fell through to the default `'salas'`.
+- **Concerns:** none. The implementation is in its own functions (`informe`, `cancelledReport`, `cancelledInWeekOrder`, `cancelledGroupings`) and `run` only gains one branch. Groups with no cancelled bookings are not printed, since the brief doesn't ask for them.
+- **Report:** `<run>\repo\.superpowers\sdd\plan\task-1-report.md`

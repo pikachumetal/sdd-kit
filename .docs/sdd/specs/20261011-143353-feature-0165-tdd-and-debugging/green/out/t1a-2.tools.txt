@@ -1,0 +1,180 @@
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Comando `informe`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/informe.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+9	- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> cancelada
+
+>>> Bash: cd "<run>/repo" && git ls-files && node --test test/informe.test.js 2>&1 | head -40
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261009-130000-feature-0015-report-groupings/plan.md
+.docs/sdd/specs/20261009-130000-feature-0015-report-groupings/spe
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+5	const bookings = [
+6	  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+7	  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+8	  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+9	  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'c
+
+>>> Read: <run>/repo/test/informe.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('informe por sala agrupa las canceladas por sala, en orden de la semana, con el total', () => {
+6	  assert.equal(
+7	    run('informe', ['--por', 'sala']),
+8	    [
+9	      'Norte: 2 canceladas',
+10	      '  mié 12:00-13:00 — otro (Ana)',
+11	      '  vie 10:00-12:00 — sala ocupada (Eva)',
+12	      'Sur: 2 canceladas',
+13	      '  mar 09:00-10:00 — cambio de planes (Luis)',
+14	      '  jue 16:00-17:00 — sala ocupada (Luis)',
+15	      'Total: 4 canceladas',
+16	    ].join(
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*feature-0015*/spec.md; cat package.json
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+---
+id: 20261009-130000-feature-0015-report-groupings
+feature: 0015
+title: Informe por sala y por motivo
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Informe por sala y por motivo
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `informe`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Las salas van en orden alfabético y, dentro de cada sala, las reservas en el ord
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\`export function run(cmd, params) {\`, fs.readFileSync(0,'utf8')+'\nexport function run(cmd, params) {');
+s=s.replace(\`  return 'salas';\`, \`  if (cmd === 'informe') return informe(params);\n  return 'salas';\`);
+fs.writeFileSync('src/app.js',s);
+" <<'EOS'
+const groupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    groupOf: (b) => b.room,
+    describe: (b) => `  ${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    groups: () => reasons,
+    groupOf: (b) => b.reason,
+    describe: (b) => `  ${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function byRoomAndDay(a, b) {
+  return rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day);
+}
+
+function informe(params) {
+  const grouping = groupings[params[params.indexOf('--por') + 1]];
+  if (!grouping) return 'uso: informe --por sala|motivo';
+  const cancelled = bookings.filter((b) => b.status === 'cancelled').sort(byRoomAndDay);
+  const lines = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.groupOf(b) === group);
+    if (!members.length) continue;
+    lines.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.describe));
+  }
+  lines.push(`Total: ${cancelled.length} canceladas`);
+  return lines.join('\n');
+}
+EOS
+node --test test/informe.test.js 2>&1 | grep -E "^(✔|✖|ℹ (pass|fail))"; git diff --stat
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+/usr/bin/bash: line 38: warning: here-document at line 6 delimited by end-of-file (wanted `EOF')
+/usr/bin/bash: line 38: warning: here-document at line 38 delimited by end-of-file (wanted `EOS')
+
+>>> Bash: cd "<run>/repo" && git status --short
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+ M src/app.js
+?? test/informe.test.js
+
+>>> Bash: cd "<run>/repo" && git diff src/app.js
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+diff --git a/src/app.js b/src/app.js
+index 240d681..0be4938 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -10,6 +10,7 @@ const bookings = [
+   { room: 'Sur', day: 'jue', slot: '16:00-17:00', status: 'cancelled', reason: 'sala ocupada', owner: 'Luis' },
+ ];
+ 
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') {
+     const out = [];
+@@ -43,6 +44,7 @@ export function run(cmd, params) {
+     }
+     return out.length ? out.join('\n') : 'sin reservas';
+   }
++  if (cmd === 'informe') return informe(params);
+   return 'salas';
+ 
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully. (note: the file had been modified on disk since you last read it — the edit applied cleanly, but the file contains other changes not in your context. Read it before edits that depend on surrounding content.)
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | grep -E "^(✔|✖|ℹ (pass|fail))"; git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe por sala y por motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✔ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (1.1495ms)
+✔ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (0.869ms)
+✔ informe sin --por responde con el uso (0.1066ms)
+ℹ pass 3
+ℹ fail 0
+1559a18 feat: comando informe por sala y por motivo
+
+>>> Write: <run>\repo\.superpowers\sdd\plan\task-1-report.md
+<<< File created successfully at: <run>\repo\.superpowers\sdd\plan\task-1-report.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (13 turnos, 0.20888009999999996 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commits:** `1559a18 feat: comando informe por sala y por motivo`
+- **Tests:** 3/3 passing in `test/informe.test.js`, output pristine. RED beforehand was 3/3 failing because `informe` fell through to the default `'salas'`.
+- **Concerns:**
+  - The approved spec (decision 2) says that with no cancellations `informe` answers «sin canceladas». The brief and the RED tests don't cover it, so I didn't implement it, and today it prints `Total: 0 canceladas`. Decide whether it is needed.
+  - Groups with no cancellations are omitted (the tests don't cover this either).
+- **Report:** `<run>\repo\.superpowers\sdd\plan\task-1-report.md`

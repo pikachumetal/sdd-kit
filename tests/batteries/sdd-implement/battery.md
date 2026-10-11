@@ -74,4 +74,6 @@ Montaje por escenario, en `subject.sh`:
 | «Setup» paso 2 y Overview de `sdd-implement`: el workspace se anuncia en el primer mensaje, también al retomar | RED W 2/2; GREEN 0/4 → 1/3 → 2/3 | h1, h2, r4 |
 | «Recovery» de `sdd-implement`: el informe completo cuenta como devuelto, a su revisión; sin informe, se relanza una vez; línea de recuperación | RED C 1/2; GREEN 3/3 | r4 |
 | `## Quality decalogue` de `implementer-prompt.md`, despachado tal cual | RED D r1 0/2, r1b 2/2; GREEN r1b 2/2, h2 lo despacha | r1, r1b, h2 |
+| Paso 1 de «Your Job» de `implementer-prompt.md`: ejecutar el RED recibido antes de tocar el código y guardar su salida en rojo | RED 4/4 (`r1`, `r1b` de la 0147); GREEN `t1a` 2/2 (A/B: `t1b`, con la carga de `sdd-tdd`, 2/2; gana A por más barata) | t1a, t1b |
+| Paso 5 de «Setup» de `sdd-implement`: el hilo carga `sdd-tdd` | humo `h1` | h1 |
 | «Tests RED» de `implementer-prompt.md`: un E2E rojo por tiempo se ajusta sin tocar aserciones ni datos, con `Ajustes de espera` | RED E 2/2; GREEN 2/2 | r5 |
