@@ -40,7 +40,7 @@ Frente a `sdd-propose` decide el verbo: hacerlo ya («añade», «hazme», «arr
 
 ### Algo grande
 
-Entrevista con la técnica de `superpowers:brainstorming` —sus preguntas, con la skill `sdd-grilling` (invócala con `Skill`)— con un override: **la entrevista nunca acaba en spec** ni en `writing-plans`; acaba en `proposal.md` y en filas del roadmap.
+Entrevista con la skill `sdd-grilling` (invócala con `Skill`): **la entrevista nunca acaba en spec** ni en plan; acaba en `proposal.md` y en filas del roadmap.
 
 - La propuesta vive en `.docs/sdd/specs/<yyyyMMdd-HHmmss>-proposal-<id>-<slug>/proposal.md`, calcada de `proposal-template.md` del skill `sdd-templates` con `source: interview`.
 - Cada regla de negocio lleva un ejemplo con datos de entrada y de salida.

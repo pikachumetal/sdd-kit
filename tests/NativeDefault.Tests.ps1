@@ -14,9 +14,9 @@ BeforeAll {
 }
 
 Describe 'Task 1 — contrato del método' {
-  It 'el Art. IV deja que el handoff de writing-plans elija el método' {
+  It 'el Art. IV deja que el handoff de plan-writing elija el método' {
     $constitution = Get-KitFile '.docs/sdd/constitution.md'
-    $constitution | Should -Match 'que elige para cada plan el handoff de `writing-plans` con `execution: auto` en `sdd-kit.json`'
+    $constitution | Should -Match 'que elige para cada plan el handoff de `plan-writing.md` de `sdd-propose` con `execution: auto` en `sdd-kit.json`'
     $constitution | Should -Not -Match 'con la ejecución en línea como excepción que el plan declara por task'
   }
 
@@ -59,12 +59,11 @@ Describe 'Task 1 — contrato del método' {
     Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'Use it when a review gate per task is wanted, or when the plan is long enough'
   }
 
-  It 'overrides: el handoff se adopta y solo se sobrescribe dónde se para' {
-    $row = Get-TableRow $script:Overrides 'Execution Handoff'
-    $row | Should -Match 'Se adopta la recomendación'
-    $row | Should -Match 'Ejecución: <native \\\| subagent>, porque <motivo del plan>'
-    $row | Should -Match 'You review the saved plan before anything runs'
-    $row | Should -Not -Match 'No se pregunta el método ni se ofrece'
+  It 'plan-writing: el handoff recomienda y solo pair pregunta' {
+    $ref = Get-KitFile 'skills/sdd-propose/references/plan-writing.md'
+    $ref | Should -Match '`Ejecución` line as `<native \| subagent>, porque <reason from the plan>`'
+    $ref | Should -Match 'only `pair` asks'
+    $ref | Should -Match "don't ask it in any profile"
   }
 
   It 'la plantilla del plan lleva el método en la cabecera y ninguna task lo declara' {
@@ -74,8 +73,8 @@ Describe 'Task 1 — contrato del método' {
     $template | Should -Not -Match 'default del kit'
   }
 
-  It 'el paso 5 nombra el método del handoff y la clave execution' {
-    Get-KitFile 'skills/sdd-propose/SKILL.md' | Should -Match 'The method is recommended by `writing-plans`'' handoff, unless `execution` fixes it in `.docs/sdd/sdd-kit.local.json` or in `sdd-kit.json`'
+  It 'plan-writing nombra el método del handoff y la clave execution' {
+    Get-KitFile 'skills/sdd-propose/references/plan-writing.md' | Should -Match 'If the method is already given —`execution: native` or `subagent` in `.docs/sdd/sdd-kit.local.json` or `sdd-kit.json`'
   }
 
   It 'el paso 6 enruta por la línea Ejecución del plan' {

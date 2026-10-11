@@ -32,6 +32,12 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-propose`); el método, en
 | x1 | control | Quiero usuarios con login, que el responsable de sala tenga su rol, que cada reserva guarde quién la hizo y migrar las reservas de ahora a un usuario genérico. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `tests/control-profiles-red.md` (E11), `tests/split-threshold-red.md`, `tests/fewer-stops-red.md` (s2): partir y aprobar por delegación |
 | c1 | control | /sdd-kit:sdd-propose | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `tests/control-profiles-red.md` (E1): la fila de la rama es el enunciado |
 | a5 | decisions | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Escribe la spec y preséntamela. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0161: un prompt de arranque con decisiones ya tomadas |
+| pb | sections | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: un comando informes con cuatro vistas (ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado) y una opción --sala que filtra las cuatro; la salida es una tabla de texto; sin reservas, cada vista dice «sin reservas»; el plan sale en 5 tasks, una por vista y otra para --sala. Perfil delegate. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: diseño por secciones en una feature de 4 o más tasks (ticket de la task 0003, «Funcionó, no tocar») |
+| pb-c | sections | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: filtrar libres por planta con la opción --planta; sin --planta, lista todas las salas. Perfil delegate. | reservas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, 2 tasks sin secciones |
+| adr | adr | Arranca este cambio con sdd-propose: que las reservas sobrevivan a cerrar y volver a abrir la terminal. Perfil delegate. Escribe la spec y preséntamela. | reservas-adr | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: la spec cita las ADR de lo que toca (propuesta 0131, §Documentos) |
+| adr6 | adr | Arranca este cambio con sdd-propose: que las reservas sobrevivan a cerrar y volver a abrir la terminal. Perfil delegate. Escribe la spec y preséntamela. | reservas-adr6 | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: RED de adr limpio con una sola ADR; repetido con seis, donde la que aplica (0004) solo se reconoce por sus rutas |
+| adr-c | adr | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Escribe la spec y preséntamela. | reservas-adr-docs | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, ninguna ADR casa con el Scope |
+| h1 | fork | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Apruebo la spec por delegación, nos vemos en la validación: escribe la spec y el plan y para antes de implementar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: spec y plan sin superpowers |
 
 ## Rúbrica
 
@@ -52,12 +58,19 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | L1 Lite citado | l1 | no ofrece lite citando sus condiciones una por una |
 | X1 Partir | x1 | no propone partir con la partición y el motivo; o la pregunta no lleva la opción de aprobar la spec por delegación |
 | A5 Decisiones del prompt | a5 | pregunta el nombre de la opción o qué pasa sin ella; o la spec lleva esas decisiones en «✋ Decisiones que he tomado yo» y no en «Decisiones tomadas con el dev-lead» |
+| PB Diseño por secciones | pb | escribe `spec.md` sin haber enseñado antes ninguna sección del diseño con una pregunta de si va bien (el sujeto de un turno acaba en la primera sección, sin `spec-new.md`) |
+| PB-C Sin secciones | pb-c | enseña secciones antes de la spec en una feature de 2 tasks |
+| ADR La spec cita la ADR | adr | `spec-new.md` no nombra la ADR 0003; o la nombra sin decir que persistir va contra ella, sin `sustituye a 0003` entre las ADR candidatas |
+| ADR6 La spec cita la ADR entre seis | adr6 | `spec-new.md` no nombra la ADR 0004; o la nombra sin decir que persistir va contra ella, sin `sustituye a 0004` entre las ADR candidatas |
+| ADR-C Sin ADR | adr-c | la spec cita una ADR que no casa con su Scope |
+| H1 Sin superpowers | h1 | `tools.txt` lleva `>>> Skill` de `superpowers:brainstorming` o `superpowers:writing-plans`; en el GREEN, además, no lleva la lectura de `spec-writing.md` y de `plan-writing.md`, o falta `plan-new.md` |
 | C1 Fila de la rama | c1 | pregunta «¿qué tarea?» en vez de tomar la fila 0010 como enunciado |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
 
 Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la cubre. Se rellena con el RED y el GREEN (`tests/sdd-propose-0160-red.md`, `-green.md`); la evidencia que la skill ya no cita en su texto vive aquí.
+
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
@@ -96,3 +109,6 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 2: una petición con partes de varios carriles va por la más pesada, y dice qué parte va dentro | revisión final de la 0160 (Important 5) | no medido: sin RED; la forma es la de la clasificación, que miden a1-a4 |
 | Paso 4 (sin regla propia): las decisiones que trae un prompt de arranque van a «Decisiones tomadas con el dev-lead» y no se preguntan | `tests/sdd-explore-0161-red.md`, a5: 2 de 2 limpios sin regla; la conducta sale de `spec-template.md` | a5 (control) |
 | «Config lane» paso 5: en una rama `feature/*`, el config se fusiona con `sdd merge` según `merge.*`; sin bloque `merge`, pregunta | `tests/sdd-explore-0161-red.md`, k5: 2 de 2 commitearon sin fusionar; GREEN 2/2 | k5 |
+| Pasos 4 y 5: lo primero, leer `references/spec-writing.md` y `plan-writing.md`; ninguna skill invoca `brainstorming` ni `writing-plans` | feature 0168: RED `h1` 1/1 invoca `brainstorming`; GREEN 2/2 | h1 |
+| Diseño por secciones desde 4 tasks previstas | ticket de la task 0003 («Funcionó, no tocar»); feature 0168: RED `pb` 2/2 sin secciones; GREEN 2/2 | pb, pb-c |
+| La spec cita las ADR (no escrita) | feature 0168: RED limpio 4/4 (`adr`, `adr6`) | adr, adr6 |

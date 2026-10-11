@@ -22,6 +22,9 @@ put_kit_marker "$MARKER"
 case "$(cell Molde)" in
   reservas|reservas-main) ;;
   reservas-sin-ops) rm "$R/.docs/sdd/operations.md" ;;
+  reservas-adr) mkdir -p "$R/.docs/sdd/decisions"; cp "$FIX/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
+  reservas-adr6) cp -r "$FIX/decisions-6" "$R/.docs/sdd/decisions" ;;
+  reservas-adr-docs) mkdir -p "$R/.docs/sdd/decisions"; sed 's#  - src/\*\*#  - docs/**#' "$FIX/adr-0003-bookings-in-memory.md" > "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
   # Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   reservas-rojo) sed -i "s/const rooms = \['Norte', 'Sur'\];/const rooms = ['Norte', 'Sur', 'Este'];/" "$R/src/app.js" ;;
   *) die "molde desconocido en battery.md: $SC" ;;
@@ -51,7 +54,7 @@ esac
 
 case "$SC" in
   g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
-  a1|a3|a4|k2|l1|x1|c1) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  a1|a3|a4|k2|l1|x1|c1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 
@@ -66,4 +69,5 @@ newest=$(ls -d "$R"/.docs/sdd/specs/*/ 2>/dev/null | sort | tail -n 1)
 case "$newest" in *"$F10"*|*"$F11"*|*task-000*|*patch-0007*) newest="" ;; esac
 [ -n "$newest" ] && [ -f "$newest/spec.md" ] && subject_keep "$newest/spec.md" spec-new.md
 [ -n "$newest" ] && [ -f "$newest/patch.md" ] && subject_keep "$newest/patch.md" patch-new.md
+[ -n "$newest" ] && [ -f "$newest/plan.md" ] && subject_keep "$newest/plan.md" plan-new.md
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --all --format='%h %d %s%n%b'; echo "## develop"; g log develop --oneline; echo "## ficheros"; g ls-files --others --exclude-standard; echo "## package.json"; cat "$R/package.json"; } | subject_save

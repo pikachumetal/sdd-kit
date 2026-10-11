@@ -1,0 +1,38 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap). Queda: clasificar con la fila 0011 y abrir la spec con la nota de comprensión, ~3 min.
+
+--- [16]
+Ahora: abro la spec de la 0011 con la nota de comprensión y la primera pregunta de diseño. Queda: entrevista corta, spec, aprobación por delegación, plan e implementación, ~10 min hasta la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Toma la fila 0011 de la rama `feature/0011` como enunciado y tu confirmación de carril, perfil y de no partirla.
+
+**Lo que he entendido, corrígeme:** al acercarse la hora de una reserva, la aplicación manda un correo avisando a quien la hizo. Hoy no hay nada de esto: el backend solo tiene `GET /bookings` paginado, sin envío de correo, sin tareas programadas, y `Booking` no guarda ninguna dirección.
+
+❓ **¿De dónde sale la dirección a la que se avisa?**
+`Booking.Owner` es un `string` libre (`backend/src/Bookings.Api/Data/Booking.cs`), sin garantía de ser un correo, y las reservas existentes ya lo tienen relleno.
+
+1️⃣ **Campo nuevo `OwnerEmail` en `Booking`**, con migración. Las reservas existentes quedan sin correo y no reciben aviso; las nuevas lo llevan. `Owner` sigue siendo el nombre.
+2️⃣ **`Owner` pasa a ser el correo.** Sin campo nuevo, pero hay que migrar los valores actuales (si alguno no es un correo, no hay aviso) y se pierde el nombre.
+3️⃣ **Un destinatario fijo por configuración** (p. ej. un buzón de administración). Sin cambio de datos, pero el aviso no llega a quien reservó.
+
+➡️ **Recomiendo 1️⃣**, porque `Owner` ya contiene datos de personas y 2️⃣ los pisaría. A cambio, las reservas anteriores a esta feature nunca avisarán.
+
+--- [22]
+Entendido, con eso ya tengo el porqué, el plazo (24 h antes), el contenido (fecha, hora y sala) y que una cancelación anula el aviso. El cómo enviarlo lo decido yo y lo dejo en «Decisiones que he tomado yo» de la spec para que lo valides. La dirección del cliente sigue abierta, pero depende de la pregunta de abajo y la retomo después.
+
+Antes tengo que contrastar una cosa con el código, porque cambia el tamaño de la feature:
+
+❓ **¿Dónde viven hoy «reserva confirmada» y «cancelar»?**
+En el repo (`develop` y `main` apuntan al mismo commit que esta rama) no existen: `Booking` solo tiene `Id`, `Room`, `Start`, `End` y `Owner`, sin estado, y `BookingsEndpoints.cs` solo expone `GET /bookings`. No hay forma de crear ni de cancelar una reserva por la API. (De paso: el roadmap marca la 0012, filtrar por estado, como ✅, y tampoco hay rastro de ella en el código.)
+
+1️⃣ **Esta feature añade el estado y la cancelación.** `Booking` gana `Status` (`confirmada` / `cancelada`) y la API un `POST /bookings/{id}/cancel`. El aviso sale solo de reservas `confirmada` y una cancelación a tiempo lo anula. Crece: migración, endpoint, el job y el correo. No incluiría crear reservas: las que haya en la base de datos se consideran confirmadas.
+2️⃣ **Estado y cancelación ya existen en otro sitio** (otra rama, otro servicio o la 0012 sin mergear). Entonces esta feature solo lee ese estado y manda el correo, y necesito que me digas dónde está.
+
+➡️ **Recomiendo 1️⃣**, porque en este repo no hay nada con lo que condicionar el aviso. A cambio, la feature se hace más grande y el estado que defina aquí tendrá que encajar con el de la 0012 cuando se mergee.
+

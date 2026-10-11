@@ -541,10 +541,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El diseño de una feature pregunta con `sdd-grilling`
 
-- GIVEN el paso de spec de `sdd-propose`, con `brainstorming` llevando el diseño de una feature que cambia lo que ve el usuario
-- WHEN `brainstorming` necesita una decisión del usuario
+- GIVEN el paso de spec de `sdd-propose`, con el diseño de una feature que cambia lo que ve el usuario
+- WHEN el agente necesita una decisión del usuario
 - THEN la pregunta sigue `sdd-grilling` ([`interviewing`](interviewing.md)): una por turno, en texto con el formato fijo, con escena concreta si es de producto
-- AND el flujo (enfoques, diseño por secciones, spec) sigue siendo el de `brainstorming`
+- AND la spec se escribe siguiendo `references/spec-writing.md` de `sdd-propose`, y el plan, `references/plan-writing.md`, sin invocar `superpowers:brainstorming` ni `superpowers:writing-plans`
 
 ### Los rulings del ledger se cosechan antes de borrar el workspace
 
@@ -588,13 +588,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN invoca `sdd-start-feature`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
 - AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-start-patch` con la clase del patch y la estimación de la pregunta
 - AND si se invoca `sdd-start-feature` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
-
-### Saltarse las preguntas de brainstorming no se lleva la spec
-
-- GIVEN una feature en el paso de spec de `sdd-propose`, con `superpowers:brainstorming` 7.0.0, cuyo primer mensaje ofrece saltarse las preguntas
-- WHEN el agente pregunta al usuario
-- THEN no le ofrece saltarse las preguntas
-- AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «Decisiones que he tomado yo», y la spec pasa por su gate
 
 ### La implementación la lleva `sdd-implement`
 
@@ -645,10 +638,28 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el implementador lo ve fallar por tiempo
 - THEN cambia la espera por la señal de guardado, sin cambiar aserciones ni datos, y lo lista en su informe bajo `Ajustes de espera`
 
+### Una feature grande devuelve el diseño por secciones antes de la spec
+
+- GIVEN la feature 0012 en `delegate`, con 5 tasks previstas en el recuento del paso 2 y la entrevista cerrada
+- WHEN el agente va a escribir `spec.md`
+- THEN antes presenta el diseño por secciones, una por mensaje, y pregunta «¿va bien?» tras cada una
+- AND lo que el usuario corrige en una sección entra en la spec antes de escribirla
+- AND el recuento es el de la feature que se especifica, hecho al entrar en el paso de spec: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
+- AND con 2 tasks previstas, en lite o en spike (también mientras el spike corra como full), escribe la spec sin secciones y la presenta en el gate
+- AND con la spec aprobada por delegación o en `unattended` no presenta secciones: lo que habría preguntado va a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
+- AND las secciones son turnos de la entrevista dentro de la parada de la spec, no una parada nueva del perfil: valen en `pair` y en `delegate`
+
+### Pedir empezar ya no se lleva la spec
+
+- GIVEN una feature en el paso de spec de `sdd-propose`
+- WHEN el agente pregunta al usuario
+- THEN no le ofrece saltarse las preguntas
+- AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «✋ Decisiones que he tomado yo», y la spec pasa por su gate
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
-- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución.
+- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras.
 - **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
 - **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution.

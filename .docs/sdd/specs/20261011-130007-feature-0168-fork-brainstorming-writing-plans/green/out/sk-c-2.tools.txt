@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd 2>&1 | head -50; git branch --show-current
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+.:
+.
+..
+.docs
+.git
+package.json
+public
+README.md
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+develop
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat $f.md; done; echo ===; cat sdd-kit.json; ls specs; ls -a; cd ../..; git ls-files | head -50
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js src/server.mjs public/index.html public/styles.css public/reservas.json README.md; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; ls .docs/sdd/sdd-kit.local.json 2>&1; cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0168-fork-brainstorming-writing-plans/3c2bca8f-b73d-4f43-a283-4083d3f83a68/scratchpad/kit-green/skills/sdd-propose/references/spec-writing.md"
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0168-fork-brainstorming-writing-plans/3c2bca8f-b73d-4f43-a283-4083d3f83a68/scratchpad/kit-green/skills" && head -80 sdd-start-feature/references/control-profiles.md; echo =====; cat sdd-grilling/SKILL.md
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+# Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre 
+
+=== RESULTADO (7 turnos, 0.19784790000000002 $)
+Ahora: leo el contexto y clasifico tu petición. Queda: una pregunta sobre cómo se ve la página, y después la spec para que la apruebes, ~10 min.
+
+Carril: feature, modo full · Perfil: `delegate`, por defecto (`sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido** (corrígeme si algo no es así): una página nueva en la web de `public/`, junto al listado de reservas, con una fila por sala y el porcentaje de ocupación de la semana. Prevé unas 3 tasks (el cálculo, la página y su enlace desde el listado), así que no propongo partirla.
+
+**Lo que he visto en el código** (`public/reservas.json`, `src/app.js`):
+- El listado muestra sala, día, franja y quién, y cada reserva tiene un `estado`: confirmada, pendiente o cancelada.
+- Hay dos salas, Norte y Sur.
+- Cada reserva es una franja que empieza a una hora (`10:00`); el JSON no guarda su duración.
+- La capacidad de una sala (cuántas franjas tiene por semana) no está escrita en ningún sitio.
+
+Hay una pregunta sobre qué cuenta como «ocupada» que decidiré después. Primero, lo que me has dicho que no tienes claro.
+
+❓ **¿Cómo se ve cada fila?**
+No puedo enseñarte las variantes en vivo: la pantalla nueva no existe todavía y no tengo aquí una herramienta para mockups. Te las describo con datos de hoy, con la tabla del listado actual como estilo:
+
+1️⃣ **Tabla con barra** (recomendada): reutiliza el estilo de `index.html`, con columnas Sala · Ocupación · %.
+   `Norte  ████████░░░░░░░░  35 %`
+   `Sur    ███░░░░░░░░░░░░░  12 %`
+   Se compara de un vistazo y sigue legible en 390 px. Cuesta un poco de CSS, y la barra necesita su texto alternativo para accesibilidad.
+
+2️⃣ **Tabla solo con números**: Sala · Ocupación.
+   `Norte  35 %`
+   `Sur    12 %`
+   Es lo más simple y lo más rápido de hacer. Para comparar salas hay que leer los números, y con muchas salas cuesta.
+
+3️⃣ **Tarjetas por sala**: una caja grande por sala con el porcentaje y las reservas contadas debajo («7 de 20 franjas»).
+   Dice más, pero ocupa más pantalla y rompe con el estilo de tabla del resto de la web.
+
+➡️ **Recomiendo 1️⃣**, porque la pregunta que respondes con esta página es «¿qué sala está más llena?» y la barra la responde sin leer cifras, con el mismo estilo de tabla que ya tienes. A cambio, es algo más de CSS que la opción 2️⃣.

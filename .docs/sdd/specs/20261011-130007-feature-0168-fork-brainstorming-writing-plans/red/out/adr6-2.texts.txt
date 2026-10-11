@@ -1,0 +1,41 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` para arrancar este cambio.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap). Queda: clasificar el cambio y escribir la spec, ~5 min.
+
+--- [28]
+La spec está escrita y queda **en espera de tu aprobación**: no he escrito plan ni código.
+
+Está en `.docs/sdd/specs/20261011-134434-feature-0012-persistir-reservas/spec.md`, rama `feature/0012-persistir-reservas`, sin commitear.
+
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Para ausentarte: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+
+## 🦆 Qué cambia
+
+Hoy, si cancelas `Norte` el lunes y vuelves a ejecutar `salas`, la reserva vuelve a estar activa: cada arranque empieza de cero. Con este cambio, `cancelar Norte lun` deja la cancelación en un fichero y la siguiente ejecución (`libres 10:00-12:00`) responde `Norte, Sur`. El estado se lee al arrancar y se escribe solo cuando una orden lo cambia.
+
+## ✋ Decisiones que he tomado yo
+
+1. **Qué persiste.** `reservar` hoy no guarda nada: la única reserva es una semilla fija. Lo que sobrevive son `cancelar` y `anular`. Crear reservas de verdad **no entra**. ⚠️ Si querías que `reservar` guarde, cambia el alcance: dímelo.
+2. **«Cerrar la terminal».** `salas` no es interactiva: cada orden es un proceso, así que persiste también entre dos órdenes seguidas.
+3. **Dónde.** Un JSON en `~/.salas/reservas.json`, reemplazable con la variable `SALAS_DATOS`. Sin fichero arranca con la semilla de hoy y no lo crea hasta que algo cambie.
+4. **Cuándo escribe.** Solo si `cancelar` o `anular` cambian algo, con escritura atómica (temporal + renombrado).
+5. **Fichero ilegible.** Imprime `reservas ilegibles: <ruta>`, sale con código 1 y no lo sobrescribe.
+6. **Dos terminales a la vez.** Sin bloqueo: gana la última escritura. Es la razón que daba la ADR 0004; lo asumo porque la usas tú solo.
+7. **ADR 0004.** Esto la revierte (decía «cerrar la terminal pierde las reservas» y que `src/` no importa `node:fs`). Propongo la ADR `0007-persist-bookings-in-json-file`, que la sustituye; la escribe el cierre.
+8. **Capacidad nueva `bookings`** (nombre en inglés kebab-case, el proyecto no tenía ninguna; lo apruebas tú).
+9. **Documentos.** El cierre actualiza `operations.md` («las reservas viven en memoria») y `tech-stack.md`.
+
+**Review de la spec:** ninguna (2 señales: dato persistente nuevo y formato de fichero nuevo).
+
+**Dónde se prueba:** lanzando `node src/app.js` dos veces como procesos distintos con `SALAS_DATOS` temporal, porque los tests actuales llaman a `run()` en un mismo proceso y no reproducen «cerrar y abrir».
+
+## ✋ Aprobación
+
+Elige una:
+
+- **Apruebo (Recomendada)** → escribo el plan y sigo con la implementación (Native, fijado en `sdd-kit.json`).
+- **Cambios** → dime qué toco, p. ej. el punto 1 o la ruta del punto 3.
+

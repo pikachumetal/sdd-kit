@@ -24,6 +24,8 @@ Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: f
 | k1 | control | ¿Dónde se cancelan las reservas? | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control: una pregunta puntual no abre entrevista |
 | u1 | control | Pensemos bien cómo debería funcionar la lista de espera. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0128, control de enrutado: `sdd-grilling` no es puerta; desde la 0161, pensar entra por `sdd-explore` (antes `sdd-start-feature`, que dejó de ser puerta en la 0160) |
 | t1 | language | Invoca la skill sdd-kit:sdd-grilling: diseñamos la feature de liberar salas. Yo te digo: cuando el admin da de baja una reserva, se libera la sala y se avisa al siguiente de la lista. | reservas | `sdd-kit:sdd-grilling` | 2 | 2/2 | sonnet | propuesta 0131, §propose: contraste de lenguaje con el glosario y el código (feature 0146) |
+| sk | boceto | Carril feature, modo full: añade al listado de reservas de la web una columna Estado con el estado que ya trae cada reserva en reservas.json (confirmada, pendiente o cancelada). Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: el boceto de una pantalla que ya existe va sobre la app real (`§Frontend`) |
+| sk-c | boceto | Carril feature: añade a la web una página nueva de informes: una fila por sala con su porcentaje de ocupación de la semana. Lo que no tengo claro es cómo se tiene que ver. | salas-web | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, pantalla nueva: boceto aparte; sin Artifact, en texto con su escena |
 
 ## Rúbrica
 
@@ -48,6 +50,8 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 | C3 Pregunta puntual | k1 | contesta con preguntas en vez de contestar |
 | C4 Enrutado | u1 | la primera skill invocada es `sdd-kit:sdd-grilling` |
 | T1 Contraste de lenguaje | t1 | antes de seguir con el diseño, no dice que el glosario de `PRODUCT.md` llama «Cancelación» a la que anula el cliente y «Anulación» a la del responsable de sala, y que «dar de baja» (_Evitar_) por el admin encaja con Anulación, ni pregunta cuál quiere decir |
+| B1 Boceto sobre la app real | sk | ante cómo se ve la columna o sus colores, pregunta sin ofrecer enseñarlo, u ofrece una maqueta aparte (HTML suelto, Artifact) en vez de la variante sobre la app real (`node src/server.mjs`, impeccable en vivo o una captura del listado actual junto a la variante) |
+| B2 Boceto de pantalla nueva | sk-c | ante cómo se ve la página, pregunta sin ofrecer un boceto; o, sin Artifact en la sesión, no lo describe en texto con su escena ni dice por qué no lo enseña |
 
 ## Procedencia de las reglas
 
@@ -69,3 +73,4 @@ Cada regla de `skills/sdd-grilling/SKILL.md`, de dónde viene y qué escenario l
 | Todo en el idioma del usuario, también los anuncios | RED R12 3 de 17 | todos |
 | Interrogar sin descanso hasta que nada quede supuesto en silencio; la dependiente espera; buscar sin bloquear | `grilling` de Matt (recuperado); dev-lead 2026-10-03: «se parecen muy poco» | g1, g7 (control tras la enmienda; g9 no carga la skill) |
 | El número de alternativas lo pone la decisión; «dos más una 🔀» por costumbre es relleno | dev-lead 2026-10-03: «estás cayendo mucho en presentar 2 soluciones y una híbrida» (5 de 7 preguntas del agente en la sesión de la 0128) | g1, g3 (no regresión: la batería no reproduce el fallo) + micro-test m4; «una sola alternativa», sin escenario |
+| Boceto: si la pantalla existe, sobre la app real con `§Frontend`; si no, un Artifact; sin app ni Artifact, en texto con su escena y el motivo; «no he arrancado la app» no es motivo; parar por PID o puerto | feature 0168: RED `sk` 2/2 maqueta aparte; GREEN `sk-3` falla por el motivo, REFACTOR con contraejemplo, `sk-4` y `sk-5` pasan; parada por nombre vista en `sk-4` | sk, sk-c |
