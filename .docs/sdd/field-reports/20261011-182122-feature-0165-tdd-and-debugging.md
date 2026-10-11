@@ -84,3 +84,20 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - La sesión volvió del corte de luz sin `./Start-KitSession.ps1` y cargó las skills desde la caché; leí las de la rama a mano — `CLAUDE.md`, regla 1.
 - La puerta de `battery.sh` da rojo en `t1b` porque su «Esperado» es `ninguna` y el sujeto carga `sdd-tdd` a propósito; la columna no admite «cualquiera» — `tests/headless/battery.mjs`.
 - En el RED de `d1` (kit de `develop`), `sdd-propose` preguntó el carril aunque la petición decía «patch:»; en 7 tandas GREEN no lo hizo — `skills/sdd-propose/SKILL.md` paso 2, «Lane in the request».
+
+## Adenda — 2026-10-11, tras el cierre
+
+### 5. El fork se adelgazó sin prueba, y el kit lo permitía
+
+- **Qué pasó**: `sdd-tdd` y `sdd-debugging` se hicieron «delgados»: fuera las 11 racionalizaciones de TDD y las 8 de depuración, 8 de 13 red flags, ejemplos, checklist y «When Stuck», marcados en el anexo como «No-op». El motivo fue el Principio 1 y la regla de no-ops de `writing-for-agents`, y el RED no los vio fallar. Pero el RED no metía presión, y esas tablas existen para la presión. El dev-lead no dio la feature por acabada: «se quita si se ve claramente que funciona bien sin ello, no puede ser que lo quites porque creas que no… No adelgacemos porque sí». El A/B de presión (`p1`-`p3`, 12 sujetos) salió limpio en las dos versiones: no habría distinguido.
+- **Dónde en el kit**: constitution, Principio 1 y Art. IX; `skills/sdd-propose/SKILL.md` paso 4 (la spec del fork); `.agents/skills/writing-for-agents/` (no-ops).
+- **Por qué el kit no lo evitó**: el Art. I pedía RED para añadir guía, pero no un A/B para quitar texto copiado. El Principio 1 empujaba a quitar todo lo que no nombrara un fallo del kit, y la evidencia de la fuente no contaba.
+- **Coste**: A/B 2,97 $, rehacer las dos skills desde la fuente, re-revisión opus (3 Important), humo final 1,40 $ y ~1,5 h, más la alarma del dev-lead (`walkthrough.md` §6, `spec.md` «Enmiendas»).
+- **Propuesta**: hecha en la misma adenda. Art. IX y [ADR 0013](../decisions/0013-fork-keeps-source-text.md): un fork conserva el texto de su fuente salvo donde el kit trabaja distinto, lo amplía o trae algo de otro kit; la evidencia de la fuente vale para el Principio 1, y quitar sin esos motivos exige un A/B. Queda la idea B18 (adelgazar con A/B) y, en la 0152, revisar la 0168 (tres piezas ya recuperadas en el patch 0172).
+- **Verificada**: sí — re-revisión opus del tramo, con `diff` contra superpowers 7.0.0, y el humo `d1` 2/2.
+- **Criterio de aceptación**: GIVEN la spec de un fork cuyo anexo marca una pieza de la fuente como «No-op» sin motivo ni A/B, WHEN pasa la revisión de la spec o la final, THEN es un hallazgo Important.
+
+### Menores de la adenda
+
+- Un commit WIP intermedio salió con `--no-verify`; se juntó después en uno con el pre-commit en verde — `CLAUDE.md` del dev-lead (nunca saltar hooks), sin regla del kit para el hilo.
+- `sdd roadmap publish` se negó a publicar porque `develop` había cambiado desde la base, y eso evitó pisar el triaje que otra sesión había hecho de este ticket. Funcionó.
