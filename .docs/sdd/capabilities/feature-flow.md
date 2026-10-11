@@ -656,6 +656,22 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN no le ofrece saltarse las preguntas
 - AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «✋ Decisiones que he tomado yo», y la spec pasa por su gate
 
+### Quien implementa ve fallar los RED antes de implementar
+
+- GIVEN un plan con `Ejecución: subagent` y la Task 1 con el RED `test/informe.test.js` escrito por el hilo y sin commitear
+- WHEN el implementador recibe su encargo
+- THEN ejecuta `test/informe.test.js` antes de editar ningún fichero de `src/`
+- AND su informe lleva en «TDD Evidence» el comando, la salida en rojo de antes de implementar y por qué se esperaba ese fallo
+
+### Un fallo se investiga con `sdd-debugging`
+
+- GIVEN un patch de un fallo determinista («`libres 10:00-12:00` devuelve Norte aunque Norte tiene una reserva activa en esa franja»), o un paso del plan cuyo `Expected:` no coincide porque el código falla
+- WHEN el agente lo investiga
+- THEN invoca `sdd-debugging` y escribe la causa raíz con su evidencia en el código antes de proponer el arreglo
+- AND antes del arreglo hay un test en rojo que reproduce el fallo, escrito con `sdd-tdd`
+- AND en un patch, §2 de `patch.md` lleva la causa raíz con su evidencia antes de editar el código: la fase 4 de `sdd-debugging` empieza con ella escrita
+- AND ningún fichero de `skills/` invoca `superpowers:test-driven-development` ni `superpowers:systematic-debugging`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

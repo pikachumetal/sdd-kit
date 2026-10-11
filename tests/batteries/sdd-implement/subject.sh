@@ -24,7 +24,7 @@ cp -r "$HERE/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
 case "$SC" in
   r1|r2) cp "$FIX/app-0012.js" "$R/src/app.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
-  r1b|t1a|t1b) cp "$FIX/app-0015.js" "$R/src/app.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
+  r1b|t1a|t1b|t1c) cp "$FIX/app-0015.js" "$R/src/app.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
   r3) cp "$FIX/app-0013.js" "$R/src/app.js"; cp "$FIX/price.test.js" "$R/test/price.test.js" ;;
   r5) cp "$FIX/app-0014.js" "$R/src/app.js"; cp "$FIX/store.js" "$R/src/store.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
   t2|t5a) cp "$FIX/app-0016.js" "$R/src/app.js" ;;
@@ -100,9 +100,9 @@ case "$SC" in
     open_feature 0012-cancelled-report "$F12" "$FIX/plan-0012.md" < "$FIX/spec-0012.md"
     cp "$FIX/informe.test.js" "$R/test/informe.test.js"
     ASK="$(encargo "$F12" "Comando informe" test/informe.test.js)" ;;
-  r1b|t1a|t1b)
+  r1b|t1a|t1b|t1c)
     open_feature 0015-report-groupings "$F15" "$FIX/plan-0015.md" < "$FIX/spec-0015.md"
-    cp "$FIX/informe-0015.test.js" "$R/test/informe.test.js"
+    if [ "$SC" = t1c ]; then cp "$FIX/cancel-task1.test.js" "$R/test/informe.test.js"; else cp "$FIX/informe-0015.test.js" "$R/test/informe.test.js"; fi
     ASK="$(encargo "$F15" "Comando informe" test/informe.test.js)"
     [ "$SC" = t1b ] && ASK="${ASK/1. Before touching/1. Load \`sdd-tdd\` with \`Skill\`. Then, before touching}" ;;
   r2) open_feature 0012-cancelled-report "$F12" "$FIX/plan-0012.md" < "$FIX/spec-0012.md" ;;
@@ -135,7 +135,7 @@ case "$SC" in
   r2|r3|h1|t2|t3|t5a|t5b) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
-  r1|r1b|r5|t1a|t1b) MAX_TURNS="${MAX_TURNS:-40}" ;;
+  r1|r1b|r5|t1a|t1b|t1c) MAX_TURNS="${MAX_TURNS:-40}" ;;
   r2|r3|r4) MAX_TURNS="${MAX_TURNS:-35}" ;;
   t2|t3) MAX_TURNS="${MAX_TURNS:-40}" ;;
   t5a|t5b) MAX_TURNS="${MAX_TURNS:-20}" ;;

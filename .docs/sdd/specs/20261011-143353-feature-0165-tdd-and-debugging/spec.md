@@ -192,14 +192,26 @@ Fork por traducción y recorte: se parte del texto de superpowers 7.0.0, se escr
 - GIVEN un patch abierto para un ajuste solo de presentación o una retirada
 - WHEN el agente lo recorre con `sdd-start-patch` y lo cierra con `sdd-end-patch`
 - THEN §2 de `patch.md` lleva la intención en una frase, en lugar de la causa raíz, y no se invoca `sdd-debugging`
-- AND (el resto de los AND, sin cambios, salvo el último:) un bug determinista sigue con la causa raíz de `sdd-debugging` y cierra en `Fixed`
+- AND §4 lleva la ruta de una captura en navegador real de cada pantalla tocada antes y después del cambio, guardadas fuera de git, y la salida del detector en los dos viewports con cada hallazgo resuelto o justificado, con los mismos contraejemplos que una task full
+- AND sin detector declarado, el aviso «composición no medida», y con el detector declarado sin ejecutar, «no probado» con el error concreto
+- AND con «sube el badge de estado a 14px», la verificación visual (capturas y detector) dura menos de 5 minutos, sin build dedicado ni suite de specs nueva
+- AND la validación del paso 0 de `sdd-end-patch` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `tech-stack.md` no la tiene
+- AND la entrada del changelog va en `Changed`, no en `Fixed`; en una retirada, en `Removed`
+- AND en una retirada, §4 lleva además la búsqueda de cada símbolo retirado, sin otros usos
+- AND un bug determinista sigue con la causa raíz de `sdd-debugging` y cierra en `Fixed`
 
 **MODIFIED — Un cambio con la solución fijada entra por el carril patch**
-- (GIVEN, WHEN y THEN sin cambios)
+- GIVEN el proyecto `ventas`, con `pages/pedido-detalle.html`, `pages/albaran-detalle.html`, `app.js` e `index.html`
+- WHEN el usuario escribe, por el hook o con `/sdd-propose`, «Ticket VEN-31, cambio pedido por producto: Cancelar tiene que llevar al listado de pedidos. Solución fijada en el ticket: en app.js, un listener de click en [data-accion="cancelar"] que haga location.assign('../index.html'), en las dos fichas.»
+- THEN la skill que abre el trabajo es `sdd-kit:sdd-propose`, que lo clasifica como patch, no como feature
 - AND `patch.md` lleva `solution: ticket` y en §2 la frase del ticket literal, sin causa raíz ni `sdd-debugging`
-- AND (el resto, sin cambios)
+- AND el changelog lleva la entrada en `Changed` o `Added`, nunca en `Fixed`, y el commit no es de tipo `fix`
+- AND si `index.html` no existe, para sin abrir rama, carpeta ni id, y lo dice
 
 ## Enmiendas
+
+- 2026-10-11 — Decisión 4: el paso del encargo dice «Before touching code, run `<comando de los RED>`; keep its failing output and why it was expected. If it already passes, stop: report DONE_WITH_CONCERNS with the green output; don't implement», no «Before touching `src/`…; paste…» — `src/` es la ruta del molde y no la de un proyecto .NET o Angular, y la revisión final (Important 1) pidió el caso del RED que ya pasa; el paso 3 carga `sdd-tdd` para un test propio del implementador, como decía la decisión 4 si ganaba A — ruling del hilo y fix de la revisión final, sin cambiar un requisito
+- 2026-10-11 — Decisión 15 y Scope: los escenarios van a las baterías que ya existen (`t1a`-`t5b` en la de `sdd-implement`, `d1` en la de `sdd-propose`, `f1` en la de `sdd-explore`), no a `tests/batteries/sdd-tdd/` y `sdd-debugging/` — las dos skills no son una entrada y su conducta se ve en quien las invoca — ruling del plan (decisión 3)
 
 - 2026-10-11 — ADDED «Un fallo se investiga con `sdd-debugging`» gana el AND «en un patch, §2 de `patch.md` lleva la causa raíz antes de editar el código», escrito en la fase 1 y a la entrada de la fase 4 de `sdd-debugging` — el humo `d1` falló: causa escrita después del arreglo 0/3 con el fork y 1/2 con superpowers; GREEN 2/2 tras dos rondas de REFACTOR ([evidencia](../../../../tests/sdd-tdd-green.md)). Commiteado en la Task 4 antes de pedir la aprobación — aprobada: «Apruebo (Recomendada)»
 - 2026-10-11 — Scope: entra la regla «Poner al día un fork con su fuente» en `tech-stack.md` (dependencia de superpowers), de la fila de triaje del ticket de la 0168 que llegó a la base; la comparación 7.0.0 contra 7.1.0 que pedía no se hace, porque la 7.1.0 no existe (última versión, v7.0.0), y la fila se corrige — aprobada: «Solo la regla (Recomendada)»

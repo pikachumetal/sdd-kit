@@ -2,24 +2,8 @@
 >>> Skill: sdd-kit:sdd-explore
 <<< Launching skill: sdd-kit:sdd-explore
 
->>> Bash: ls -a; ls .docs/sdd 2>/dev/null; git ls-files | head -80
-<<< <home>/.bashrc: line 1: oh-my-posh: command not found
-.
-..
-.docs
-.git
-package.json
-README.md
-src
-test
-changelog.md
-constitution.md
-mission.md
-roadmap.md
-sdd-kit.json
-specs
-tech-stack.md
-.docs/sdd/changelog.md
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/changelog.md
 .docs/sdd/constitution.md
 .docs/sdd/mission.md
 .docs/sdd/roadmap.md
@@ -29,32 +13,15 @@ tech-stack.md
 .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
 .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
 .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
-.do
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+Sin capacidades
 
->>> Bash: cat src/app.js; cat README.md; cat .docs/sdd/specs/*free/spec.md .docs/sdd/specs/*cancel/patch.md .docs/sdd/specs/*weekly/spec.md
-
->>> Bash: cat test/app.test.js; cat .docs/sdd/roadmap.md
-<<< <home>/.bashrc: line 1: oh-my-posh: command not found
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { run } from '../src/app.js';
-
-test('libres excluye la sala reservada en la franja', () => {
-  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
-});
-
-test('reservar --cada-semana crea la reserva semanal', () => {
-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
-});
-
-test('cancelar respeta el día', () => {
-  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
-});
-# Roadmap — salas
-
-##
-<<< <home>/.bashrc: line 1: oh-my-posh: command not found
-const [command, ...args] = process.argv.slice(2);
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md && cat test/app.test.js | head -80
+<<< const [command, ...args] = process.argv.slice(2);
 const rooms = ['Norte', 'Sur'];
 const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
 
@@ -65,27 +32,22 @@ function freeRooms(slot) {
 export function run(cmd, params) {
   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
-  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
 
-=== RESULTADO (6 turnos, 0.1114087 $)
-Porque `cancelar` no cancela nada: solo devuelve un texto. Es lo que leo en el código; no he ejecutado nada.
+if (command) console.l
 
-## Qué pasa en `src/app.js`
+=== RESULTADO (5 turnos, 0.11287249999999999 $)
+Porque `cancelar` no cancela nada. Solo devuelve un texto, y `libres` no distingue días.
 
-- **`cancelar`** (línea 11): `if (cmd === 'cancelar') return \`cancelada ${params[0]} ${params[1]}\`;`. No toca el array `bookings`, así que la reserva de Norte del lunes 10:00-12:00 sigue ahí.
-- **`libres`** (líneas 4-6): `freeRooms(slot)` filtra `bookings` por sala y franja, y ahí sigue la reserva, así que Norte queda excluida.
-- **Tampoco hay persistencia:** `bookings` es un array en memoria con una reserva fija. Cada ejecución de la CLI arranca de cero, de modo que aunque `cancelar` borrara algo, el siguiente `libres` en otro proceso volvería a ver la reserva.
+Esto es lo que dice el código en `src/app.js`:
 
-## Un segundo problema, aunque cancelaras bien
+- **`cancelar` no toca las reservas.** Devuelve `` `cancelada ${params[0]} ${params[1]}` `` y nada más. El array `bookings` queda intacto, así que Norte `10:00-12:00` sigue reservada.
+- **`libres` solo mira la franja.** `freeRooms(slot)` filtra por `b.room === room && b.slot === slot` y no recibe día. La reserva `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }` bloquea Norte en esa franja para cualquier día.
+- **`cancelar` recibe `(día, hora)` y no `(sala, día, franja)`.** No hay forma de decir qué sala se cancela.
+- **El estado no persiste entre ejecuciones.** `bookings` es un array en memoria con una reserva fija. Cada invocación de la CLI arranca de nuevo con Norte reservada el lunes, aunque `cancelar` sí la borrara.
 
-`libres` solo recibe la franja (`params[0]`) y no el día. Una reserva de Norte el lunes 10:00-12:00 deja Norte ocupada en esa franja cualquier día.
+También hay una discrepancia con la documentación. `patch-0007-cancel/patch.md` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado», pero el código no tiene ningún fix. El test `cancelar respeta el día` solo comprueba que el string de salida contiene `mar 10:00`, así que no habría detectado el problema. La spec `task-0006-free` está vacía salvo `status: done`, por lo que no hay un comportamiento documentado de `libres` con el que contrastar.
 
-## Lo que dicen los docs frente al código
-
-- `specs/…patch-0007-cancel/patch.md` y el roadmap dicen que la cancelación fue arreglada («causa raíz: comparación solo por hora… Verificado»), y el test `cancelar respeta el día` pasa.
-- Ese test solo comprueba que el texto devuelto es `'cancelada mar 10:00'`. No comprueba que la reserva desaparezca, así que el patch 0007 quedó «verificado» sin que exista una cancelación real. Esto es inferencia mía a partir del código y del test.
-- `reservar` tiene el mismo problema: `--cada-semana` devuelve `'reserva semanal creada'` sin crear nada.
-
-## Siguiente paso
-
-Esto es un fallo a corregir, y no lo he tocado. Si quieres arreglarlo, lo apunto en el roadmap como patch: «`cancelar` no elimina la reserva y `libres` ignora el día». ¿Lo apunto?
+No he tocado nada. Si quieres arreglarlo, es un patch o una feature según si queremos añadir el día a `libres`. Dime y lo apunto en el roadmap con `sdd-roadmap`.

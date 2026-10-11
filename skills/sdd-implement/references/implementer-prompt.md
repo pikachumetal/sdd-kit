@@ -56,9 +56,9 @@ If you have questions about the requirements or acceptance criteria, the approac
 ## Your Job
 
 Once you're clear on requirements:
-1. Before touching code, run `<comando de los RED>`; keep its failing output and why that failure was expected
+1. Before touching code, run `<comando de los RED>`; keep its failing output and why it was expected. If it already passes, stop: report DONE_WITH_CONCERNS with the green output; don't implement
 2. Implement exactly what the task specifies
-3. Make the RED tests pass (following TDD for any test you add)
+3. Make the RED tests pass; load `sdd-tdd` before adding your own test
 4. Verify implementation works with the commands under «Verificación»
 5. Commit your work
 6. Self-review (see below)
@@ -121,6 +121,6 @@ Then report back with ONLY (under 15 lines — the detail lives in the report fi
 If BLOCKED or NEEDS_CONTEXT, put the specifics in the final message itself — the controller acts on it directly. Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness. Never silently produce work you're unsure about.
 ```
 
-The decalogue condenses five books (spec 0147; `tests/sdd-implement-red.md`, r1b). The task reviewer doesn't get it: a judgment rule a reviewer reads becomes an Important. The implementer rules come from `tests/dispatch-brief-red.md`; «Verificación» replaces superpowers' «run the full suite once before committing» (`tests/task-verification-red.md`); the RED tests are the thread's (`tests/tests-red-hilo-red.md`).
+The decalogue condenses five books (`tests/sdd-implement-red.md`, r1b). The task reviewer doesn't get it: a judgment rule a reviewer reads becomes an Important. The implementer rules come from `tests/dispatch-brief-red.md`; «Verificación» replaces superpowers' «run the full suite once before committing» (`tests/task-verification-red.md`); the RED tests are the thread's (`tests/tests-red-hilo-red.md`).
 
-**Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` prints · `[REPORT_FILE]`, the brief's path with `-report.md` instead of `-brief.md` · `[directory]`, the worktree · `<ruta>`, the task's RED tests · `<comando de los RED>`, the command that runs them · `<comandos>`, the task's «Verificación» · *(if `.docs/sdd/environments.md` exists)* the context line says where the `.sdd-env.json` marker is.
+**Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` prints · `[REPORT_FILE]`, the brief's path with `-report.md` instead of `-brief.md` · `[directory]`, the worktree · `<ruta>`, the task's RED tests · `<comando de los RED>`, the RED command · `<comandos>`, the task's «Verificación» · *(if `.docs/sdd/environments.md` exists)* the context line says where the `.sdd-env.json` marker is.

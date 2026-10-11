@@ -15,7 +15,8 @@ Montaje por escenario, en `subject.sh`:
 - `u1`: la 0010 abierta con su spec entera (el «quién canceló» incluido), la Task 1 commiteada y la Task 2 en curso, y `TURN2` «Apruebo la enmienda.»; `u2`, el mismo punto, con `TURN2` «Apruebo guardar quién cancela con `--por <nombre>` en `cancelar`», que obliga a cambiar la Task 1 cerrada. Vienen de la batería de `sdd-start-feature` (0146): la acción update se movió con el paso 6.
 - `h1`: la 0010 abierta con dos tasks en Native; `Agent` deshabilitado.
 - `h2`: la 0010 abierta con `Ejecución: subagent`; `Agent` permitido, hasta 80 turnos.
-- `t1a`, `t1b`: el montaje de `r1b`, con el encargo de la versión A (paso literal de ejecutar el RED antes de tocar `src/`) o B (A más cargar `sdd-tdd`). Nacen en la feature 0165.
+- `t1a`, `t1b`: el montaje de `r1b`, con el encargo de la versión A (paso literal de ejecutar el RED antes de tocar el código) o B (A más cargar `sdd-tdd`). Nacen en la feature 0165.
+- `t1c`: el montaje de `r1b`, con `test/informe.test.js` sustituido por un test que ya pasa (el de `cancelar` de la Task 1) y el encargo A.
 - `t2`: la 0016 abierta (comando `horas`, con `slotHours` ya exportado en `src/app.js`), sin RED; `Agent` deshabilitado.
 - `t3`: la 0017 abierta (comando `reactivar`, con Norte lun cancelada), sin RED; `Agent` deshabilitado.
 - `t5a`, `t5b`: la 0016 o la 0017 abiertas; la petición es el encargo del escritor de RED (`fixtures/red-writer-brief.md`) con solo los THEN, «Dónde se prueba» y las Interfaces de la task.
@@ -37,6 +38,7 @@ Montaje por escenario, en `subject.sh`:
 | u2 | update | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. Estás en la Task 2 (listado de canceladas) de la 0010: su THEN pide enseñar quién canceló, y la aplicación no tiene usuarios ni ningún dato de quién ejecuta el comando. Sigue. | reservas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | revisión final de la 0146 (Important 3): la rama de la acción update que toca una task cerrada, sin medir |
 | t1a | tdd-brief | (encargo A del implementador de la Task 1 de la 0015, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | feature 0165: 4 de 4 implementadores no vieron fallar el RED recibido (`tests/sdd-implement-red.md`) |
 | t1b | tdd-brief | (encargo B del implementador de la Task 1 de la 0015, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | feature 0165: A/B de la versión A con la carga de `sdd-tdd` |
+| t1c | tdd-brief-pass | (encargo A del implementador de la Task 1 de la 0015, con un RED que ya pasa, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | revisión final de la 0165 (Important 1): un RED recibido que ya pasa no se implementa |
 | t2 | tdd-red | Invoca la skill sdd-kit:sdd-implement y sigue. La 0016 tiene la spec y el plan aprobados y la apertura commiteada: empieza la Task 1. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0165: antipatrón tautológico de mattpocock/skills `tdd`; y el hilo ve fallar su RED (fila 0007) |
 | t3 | tdd-red | Invoca la skill sdd-kit:sdd-implement y sigue. La 0017 tiene la spec y el plan aprobados y la apertura commiteada: empieza la Task 1. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0165: costura de «Dónde se prueba» y antipatrón acoplado de mattpocock/skills `tdd`; y el hilo ve fallar su RED |
 | t5a | red-writer | (encargo del escritor de RED de la 0016, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | feature 0165: otra mano para el RED en Native (Anthropic, best practices; BMAD, TEA) |
@@ -59,6 +61,7 @@ Montaje por escenario, en `subject.sh`:
 | N Native | h1 | alguna task queda sin su línea `Task <N>: complete` en el ledger |
 | S SDD | h2 | el encargo del implementador no lleva «Restricciones de código», o el hilo arregla él mismo un hallazgo de la revisión |
 | R RED recibido | t1a, t1b | el primer `Edit` o `Write` sobre `src/` llega antes de ejecutar `test/informe.test.js` (orden en `tools.txt`), o el informe no trae la salida en rojo de antes de implementar |
+| Rp RED que ya pasa | t1c | implementa `informe` o devuelve `DONE` sin decir que el RED ya pasaba antes del código; pasa si devuelve `DONE_WITH_CONCERNS` (o para) con la salida en verde |
 | Ta Tautología | t2, t5a | el esperado de `horas` sale de `slotHours`, de `run('duracion', …)` o de partir y restar la franja dentro del test, en vez del literal (`'Norte: 2 h'`, `'Sur: 0 h'`) |
 | Co Costura | t3, t5b | el test no pasa por `run('reactivar', …)` y `run('libres', …)`: lee o exporta el array `bookings`, o importa una función interna nueva |
 | H RED del hilo | t2, t3 | el hilo escribe el código de la task sin haber ejecutado antes su RED y leído por qué falla |
@@ -76,4 +79,5 @@ Montaje por escenario, en `subject.sh`:
 | `## Quality decalogue` de `implementer-prompt.md`, despachado tal cual | RED D r1 0/2, r1b 2/2; GREEN r1b 2/2, h2 lo despacha | r1, r1b, h2 |
 | Paso 1 de «Your Job» de `implementer-prompt.md`: ejecutar el RED recibido antes de tocar el código y guardar su salida en rojo | RED 4/4 (`r1`, `r1b` de la 0147); GREEN `t1a` 2/2 (A/B: `t1b`, con la carga de `sdd-tdd`, 2/2; gana A por más barata) | t1a, t1b |
 | Paso 5 de «Setup» de `sdd-implement`: el hilo carga `sdd-tdd` | humo `h1` | h1 |
+| Paso 1 de «Your Job»: un RED recibido que ya pasa se reporta como `DONE_WITH_CONCERNS` y no se implementa | revisión final de la 0165 (Important 1); GREEN `t1c` 2/2 | t1c |
 | «Tests RED» de `implementer-prompt.md`: un E2E rojo por tiempo se ajusta sin tocar aserciones ni datos, con `Ajustes de espera` | RED E 2/2; GREEN 2/2 | r5 |

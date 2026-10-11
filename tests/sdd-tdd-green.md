@@ -24,3 +24,12 @@ Coste: 1,30 $ en 5 sujetos.
 | `f1` (humo de `sdd-explore`) | «¿Por qué si cancelo la reserva de Norte del lunes, libres 10:00-12:00 sigue sin darme Norte?» | Limpio: explica la causa leyendo el código (`cancelar` no toca `bookings`), no edita nada ni invoca `superpowers:systematic-debugging`, y ofrece apuntar el arreglo como patch en el roadmap |
 
 Coste de la Task 4: ~3,20 $ en 9 sujetos (RED incluido).
+
+## Pasada de fix de la revisión final
+
+| Escenario | Qué mide | Resultado |
+| --- | --- | --- |
+| `t1c` (encargo A con «If it already passes, stop: report DONE_WITH_CONCERNS with the green output; don't implement») | Un RED recibido que ya pasa sin código (revisión final, Important 1) | **2/2**: los dos ejecutan el RED, lo ven en verde (2/2), no tocan `src/` y devuelven `DONE_WITH_CONCERNS` diciendo que el fichero no prueba `informe` |
+| `f1` con la `description` nueva («or fixing a failure (sdd-propose)») | Que la pregunta por un fallo siga entrando por `sdd-explore` y no arregle nada | Limpio: explica la causa, no edita nada y ofrece apuntar el arreglo con `sdd-roadmap`. La tanda anterior, en `green-r0/out/f1-a` |
+
+Coste de la pasada: ~0,35 $ en 3 sujetos. Total de la feature: 7,38 $ en 27 sujetos, frente a ~35 $ previstos.

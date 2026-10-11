@@ -1,23 +1,14 @@
---- [8]
-Porque `cancelar` no cancela nada: solo devuelve un texto. Es lo que leo en el código; no he ejecutado nada.
+--- [7]
+Porque `cancelar` no cancela nada. Solo devuelve un texto, y `libres` no distingue días.
 
-## Qué pasa en `src/app.js`
+Esto es lo que dice el código en `src/app.js`:
 
-- **`cancelar`** (línea 11): `if (cmd === 'cancelar') return \`cancelada ${params[0]} ${params[1]}\`;`. No toca el array `bookings`, así que la reserva de Norte del lunes 10:00-12:00 sigue ahí.
-- **`libres`** (líneas 4-6): `freeRooms(slot)` filtra `bookings` por sala y franja, y ahí sigue la reserva, así que Norte queda excluida.
-- **Tampoco hay persistencia:** `bookings` es un array en memoria con una reserva fija. Cada ejecución de la CLI arranca de cero, de modo que aunque `cancelar` borrara algo, el siguiente `libres` en otro proceso volvería a ver la reserva.
+- **`cancelar` no toca las reservas.** Devuelve `` `cancelada ${params[0]} ${params[1]}` `` y nada más. El array `bookings` queda intacto, así que Norte `10:00-12:00` sigue reservada.
+- **`libres` solo mira la franja.** `freeRooms(slot)` filtra por `b.room === room && b.slot === slot` y no recibe día. La reserva `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }` bloquea Norte en esa franja para cualquier día.
+- **`cancelar` recibe `(día, hora)` y no `(sala, día, franja)`.** No hay forma de decir qué sala se cancela.
+- **El estado no persiste entre ejecuciones.** `bookings` es un array en memoria con una reserva fija. Cada invocación de la CLI arranca de nuevo con Norte reservada el lunes, aunque `cancelar` sí la borrara.
 
-## Un segundo problema, aunque cancelaras bien
+También hay una discrepancia con la documentación. `patch-0007-cancel/patch.md` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado», pero el código no tiene ningún fix. El test `cancelar respeta el día` solo comprueba que el string de salida contiene `mar 10:00`, así que no habría detectado el problema. La spec `task-0006-free` está vacía salvo `status: done`, por lo que no hay un comportamiento documentado de `libres` con el que contrastar.
 
-`libres` solo recibe la franja (`params[0]`) y no el día. Una reserva de Norte el lunes 10:00-12:00 deja Norte ocupada en esa franja cualquier día.
-
-## Lo que dicen los docs frente al código
-
-- `specs/…patch-0007-cancel/patch.md` y el roadmap dicen que la cancelación fue arreglada («causa raíz: comparación solo por hora… Verificado»), y el test `cancelar respeta el día` pasa.
-- Ese test solo comprueba que el texto devuelto es `'cancelada mar 10:00'`. No comprueba que la reserva desaparezca, así que el patch 0007 quedó «verificado» sin que exista una cancelación real. Esto es inferencia mía a partir del código y del test.
-- `reservar` tiene el mismo problema: `--cada-semana` devuelve `'reserva semanal creada'` sin crear nada.
-
-## Siguiente paso
-
-Esto es un fallo a corregir, y no lo he tocado. Si quieres arreglarlo, lo apunto en el roadmap como patch: «`cancelar` no elimina la reserva y `libres` ignora el día». ¿Lo apunto?
+No he tocado nada. Si quieres arreglarlo, es un patch o una feature según si queremos añadir el día a `libres`. Dime y lo apunto en el roadmap con `sdd-roadmap`.
 

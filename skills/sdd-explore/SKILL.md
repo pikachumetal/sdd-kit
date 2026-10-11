@@ -1,6 +1,6 @@
 ---
 name: sdd-explore
-description: Use when the user asks about their project with .docs/sdd/ — how something works, why, whether something can be done, where a change would go, how to approach it («¿cómo funciona…?», «¿se puede…?», «no lo pillo», «¿cómo enfocarías…?», «¿qué hacemos ahora?») — without starting work. Not for a change of any size (sdd-propose), planning without doing (sdd-roadmap) or investigating a failure (sdd-propose).
+description: Use when the user asks about their project with .docs/sdd/ — how something works, why, whether something can be done, where a change would go, how to approach it («¿cómo funciona…?», «¿se puede…?», «no lo pillo», «¿cómo enfocarías…?», «¿qué hacemos ahora?») — without starting work. Not for a change of any size (sdd-propose), planning without doing (sdd-roadmap) or fixing a failure (sdd-propose).
 argument-hint: "<pregunta>"
 ---
 

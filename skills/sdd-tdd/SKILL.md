@@ -34,7 +34,7 @@ In the kit the RED tests encode the spec's THEN and are written **before the tas
 1. **RED** — one minimal test per behavior, with a name that says the behavior, against real code (a mock only where the dependency is slow or external). Before writing or changing any test, read [writing-good-tests.md](references/writing-good-tests.md).
 2. **Verify RED — never skip it, also for a RED you received.** Run it before touching the code it covers, and read why it fails:
    - it fails because the behavior is missing → go on;
-   - it errors (typo, import, syntax) → fix the error and run it again until it fails for the right reason;
+   - it errors (typo, import, syntax) → fix the error and run it again until it fails for the right reason; a compile or import error on the symbol the task creates is the right failure;
    - it passes → it tests behavior that already exists: a finding about the test. Fix the test you wrote; a test you received, report it (`DONE_WITH_CONCERNS` with the green output) and don't write code to «make it pass».
    Keep the command and the failing output: the report's «TDD Evidence» asks for them.
 3. **GREEN** — the simplest code that passes. Nothing the test doesn't ask for.

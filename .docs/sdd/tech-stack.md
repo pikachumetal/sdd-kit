@@ -25,7 +25,6 @@ Solo plugin de Claude Code (ADR 0011):
 
 **Dependencias**: declaradas en el [README](../../README.md#dependencias), que es la fuente única — Node ≥ 22.18.0 y `superpowers` (obligatorias; superpowers se resuelve por `plugin.json` contra el marketplace `superpowers-marketplace` de obra, que hay que añadir antes; `claude-plugins-official` la fija a un commit y llega tarde a las versiones nuevas, patch 0082). Aquí no se repite la lista: dos copias divergen, y de hecho lo hicieron (aprendizaje de la task dependencias-declaradas, 2026-09-02).
 
-
 ## Cómo se testean las skills
 
 Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las skills, **sujetos** (Sonnet) sobre fixtures que se construyen en el scratchpad de sesión, sin framework: la evidencia es narrativa verificada en disco (`tests/*.md`), RED (baseline sin la guidance) → GREEN (con ella), o A/B de no-regresión para los recortes.
@@ -102,6 +101,7 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 - **Un RED limpio con n=2 puede ser suerte** (feature 0146): `l2` salió 2/2 limpio y, repetido con el mismo kit, 0/2 («Dónde mirar» en respuestas en inglés). Antes de sacar una regla por un baseline limpio cuya conducta depende del idioma o del tono de la respuesta, se repite el baseline.
 - **Una regla que solo vive en una referencia no se lee** (feature 0146): en `u1`, 0 de 2 sujetos abrieron `control-profiles.md`, y la acción update no se aplicó; funcionó al subir una frase al paso que la dispara, con el detalle en la referencia.
 - **Un traspaso a otra skill es lo primero del paso** (feature 0147): una línea que la invoca, 0/4; «lo primero de este paso… no implementes nada desde aquí», 4/4. El prompt de un despacho `Agent` no está en `tools.txt`, sino en el `<etiqueta>.jsonl`. Editar un `subject.sh` en marcha da «unexpected EOF».
+- **Un fallo de forma se cura con un paso literal, no cargando una skill** (feature 0165): el implementador que recibía el RED sin ejecutarlo (4/4) lo ejecutó con un primer paso en el encargo (2/2); cargar `sdd-tdd` dio lo mismo con 2.000 palabras más.
 - **En `claude -p` no existe `AskUserQuestion`** (feature 0146): el sujeto la busca con `ToolSearch`, no la encuentra y pregunta en prosa. Un escenario que mide un diálogo de opciones puntúa el intento o las opciones literales, y la rúbrica lo dice antes del RED.
 - **Un emoji en un `grep` de Git Bash puede no casar** (feature 0146): el primer veredicto de `v1b` salió falso. La rúbrica que busca 🦆 o ✋ se puntúa con una lectura UTF-8 (Python con `-X utf8` o Node).
 
