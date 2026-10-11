@@ -36,3 +36,27 @@ Describe 'sdd-tdd' {
     $notice | Should -Match 'MIT License'
   }
 }
+
+Describe 'sdd-debugging' {
+  It 'existe con sus tres referencias y su NOTICE' {
+    foreach ($name in 'SKILL.md', 'NOTICE', 'references/root-cause-tracing.md', 'references/defense-in-depth.md', 'references/condition-based-waiting.md') {
+      Join-Path $script:RepoRoot "skills/sdd-debugging/$name" | Should -Exist
+    }
+  }
+
+  It 'ninguna skill invoca superpowers:systematic-debugging' {
+    Find-InSkills 'superpowers:systematic-debugging' | Should -BeNullOrEmpty
+  }
+
+  It 'sdd-explore deja los fallos a sdd-propose y su arreglo al roadmap' {
+    $explore = Get-KitFile 'skills/sdd-explore/SKILL.md'
+    $explore | Should -Match 'or investigating a failure \(sdd-propose\)\.'
+    $explore | Should -Match 'A failure to fix is a patch: the first bullet\.'
+  }
+
+  It 'NOTICE nombra superpowers 7.0.0 y la licencia MIT' {
+    $notice = Get-KitFile 'skills/sdd-debugging/NOTICE'
+    $notice | Should -Match 'obra/superpowers, version 7\.0\.0'
+    $notice | Should -Match 'MIT License'
+  }
+}

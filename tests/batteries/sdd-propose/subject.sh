@@ -30,7 +30,7 @@ case "$(cell Molde)" in
   *) die "molde desconocido en battery.md: $SC" ;;
 esac
 # El fallo de a2 y a3: findBooking busca solo por sala, y «cancelar Norte mar» cancela la reserva del lunes.
-case "$SC" in a2|a3) sed -i 's/b.room === room \&\& b.day === day \&\& /b.room === room \&\& /' "$R/src/app.js" ;; esac
+case "$SC" in a2|a3|d1) sed -i 's/b.room === room \&\& b.day === day \&\& /b.room === room \&\& /' "$R/src/app.js" ;; esac
 g init -q -b main
 commit "feat: base del molde"
 [ "$(cell Molde)" = reservas-main ] || g checkout -q -b develop
@@ -41,6 +41,7 @@ without_who() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ ca
 case "$SC" in
   a1) echo '{"merge": {"push": true}}' | put .docs/sdd/sdd-kit.local.json ;;
   a2) export TURN2='Sí, como patch.' ;;
+  d1) [ "${PHASE:-red}" = red ] && export TURN2='Sí, como patch.' ;;
   k1|k3|k4) export TURN2='Sí.' ;;
   k5) export TURN2='Sí.'
     "$NODE" -e "const f=process.argv[1],fs=require('fs'),j=JSON.parse(fs.readFileSync(f,'utf8'));j.merge={into:'develop',noFf:true,removeWorktree:false,push:false};fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')" "$R/.docs/sdd/sdd-kit.json"
@@ -54,6 +55,7 @@ esac
 
 case "$SC" in
   g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
+  d1) MAX_TURNS="${MAX_TURNS:-60}" ;;
   a1|a3|a4|k2|l1|x1|c1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac

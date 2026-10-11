@@ -1,6 +1,6 @@
 ---
 name: sdd-explore
-description: Use when the user asks about their project with .docs/sdd/ — how something works, why, whether something can be done, where a change would go, how to approach it («¿cómo funciona…?», «¿se puede…?», «no lo pillo», «¿cómo enfocarías…?», «¿qué hacemos ahora?») — without starting work. Not for a change of any size (sdd-propose), planning without doing (sdd-roadmap) or investigating a failure (superpowers:systematic-debugging).
+description: Use when the user asks about their project with .docs/sdd/ — how something works, why, whether something can be done, where a change would go, how to approach it («¿cómo funciona…?», «¿se puede…?», «no lo pillo», «¿cómo enfocarías…?», «¿qué hacemos ahora?») — without starting work. Not for a change of any size (sdd-propose), planning without doing (sdd-roadmap) or investigating a failure (sdd-propose).
 argument-hint: "<pregunta>"
 ---
 
@@ -24,7 +24,7 @@ Unlike Gate 1 of `sdd-propose`, here **the question IS the statement**: explorin
 5. **When it becomes work, it goes to the roadmap** — once the conversation ends in work («si se puede, lo quiero», «arréglalo», «quiero la tabla de medidas»), say so, name the lane you see and hand it over; the roadmap sizes and splits it:
    - **Feature, patch or spike** → invoke `sdd-roadmap` with `Skill` and hand it what was said: what, why, each decision taken with its literal, and the lane you see. The roadmap writes the row or rows, reserves the id and closes with the launch prompt. You don't write the row, reserve an id or invoke `sdd-propose`: work without a row is work nobody can track (`tests/sdd-explore-0161-red.md`, e3).
    - **Config** (dependencies, CI, settings, a typo outside visible text: no row) → give its launch prompt yourself, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md): no id, branch `feature/<slug>`, `Carril: config`, and end with «si prefieres hacerlo en esta sesión, di "arráncalo"», in the user's language. With «arráncalo», invoke `sdd-propose` (e2).
-   - Planning without doing («apúntalo, no lo hagas») → `sdd-roadmap`; investigating a failure → `superpowers:systematic-debugging`.
+   - Planning without doing («apúntalo, no lo hagas») → `sdd-roadmap`. A failure to fix is a patch: the first bullet.
 
    «Hazlo ya, aquí» doesn't skip the roadmap: the row comes first, and its «arráncalo» starts it in this session.
 

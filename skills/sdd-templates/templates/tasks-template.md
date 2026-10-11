@@ -36,7 +36,7 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 
 > Si durante la ejecución aparece un bug o scope no previsto en la spec: decidir con el
 > usuario (arreglar ahora vs ticket aparte; misma rama vs rama nueva). Antes de proponer el
-> fix: `superpowers:systematic-debugging` (causa raíz). Registrarlo aquí y en el walkthrough.
+> fix: `sdd-debugging` (causa raíz). Registrarlo aquí y en el walkthrough.
 > No inflar el scope original en silencio.
 
 | Descubierto | Causa raíz | Decisión | Commit |

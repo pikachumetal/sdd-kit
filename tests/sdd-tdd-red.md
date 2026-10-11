@@ -15,3 +15,12 @@ Baseline de las piezas condicionadas de la feature 0165, con el kit del commit `
 ## De dónde sale la conducta limpia
 
 Los cuatro hilos cargan `superpowers:test-driven-development` (paso 5 de la preparación de `sdd-implement`), cuyo `writing-good-tests.md` ya pide derivar el esperado sin el código bajo prueba y no afirmar sobre mocks. El fork lo conserva entero en `sdd-tdd/references/writing-good-tests.md`: la fuente de la conducta no es incidental y no se pierde. Lo que no entra es lo que añadía Matt (los nombres y los indicios) y la regla de la costura, que no tienen fallo detrás.
+
+## `d1` — un patch de un fallo determinista (Task 4)
+
+Petición de `a3` de la batería de `sdd-propose` («patch: si cancelo Norte el martes… me quita la del lunes»), seguida hasta el arreglo, con el segundo turno «Sí, como patch.» si pregunta el carril. Kit `6b651ea0` con superpowers 7.0.0. Salidas en `red/out/d1-*` y, la tanda que se paró a preguntar sin segundo turno, en `red-question/out/`.
+
+| Conducta | Resultado |
+| --- | --- |
+| Invoca la skill de depuración | **0/2**: ninguno invoca `superpowers:systematic-debugging`; leen el código, reproducen y arreglan (la fila de deuda del patch 0101: «Un patch reproduce la causa con un test RED sin invocar `systematic-debugging`») |
+| §2 de `patch.md` (la causa) antes del arreglo | **1/2**: `d1-2` edita `src/app.js` y escribe `patch.md` después |
