@@ -1,0 +1,108 @@
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Bash: cd "<run>/repo" && cat package.json && grep -n "export\|bookings" src/app.js | head -30
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+{"type": "module"}
+3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+10:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13:export function cancelBooking(room, day) {
+20:export function voidBooking(room, day) {
+27:export function run(cmd, params) {
+
+>>> Bash: cd "<run>/repo" && sed -n 1,8p src/app.js; sed -n 27,60p src/app.js
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') retu
+
+>>> Bash: cd "<run>/repo" && cat > test/reactivar.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('reactivar devuelve la reserva cancelada', () => {
+  assert.equal(run('reactivar', ['Norte', 'lun']), 'reactivada Norte lun');
+});
+
+test('reactivar saca a la sala de libres en esa franja', () => {
+  run('reactivar', ['Norte', 'lun']);
+  assert.doesNotMatch(run('libres', ['10:00-12:00']), /Norte/);
+});
+
+test('reactivar sin cancelada lo dice', () => {
+  assert.equal(run('reactivar', ['Sur', 'mar']), 'sin cancelada Sur mar');
+});
+EOF
+node --test test/reactivar.test.js 2>&1 | grep -v bashrc
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✖ reactivar devuelve la reserva cancelada (1.3647ms)
+✖ reactivar saca a la sala de libres en esa franja (0.9998ms)
+✖ reactivar sin cancelada lo dice (0.2059ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 225.5327
+
+✖ failing tests:
+
+test at test\reactivar.test.js:5:1
+✖ reactivar devuelve la reserva cancelada (1.3647ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'reactivada Norte lun'
+  
+      at TestContext.<anonymous> (file:///<
+
+=== RESULTADO (5 turnos, 0.16723449999999998 $)
+The three tests are written and all fail for the right reason: `run` doesn't know `reactivar` yet and falls through to `'salas'`. Nothing under `src/` was touched and nothing is committed.
+
+**File:** `test/reactivar.test.js`
+
+**Command:** `node --test test/reactivar.test.js`
+
+**Failing output (abridged):**
+```
+✖ reactivar devuelve la reserva cancelada
+  actual 'salas'  expected 'reactivada Norte lun'
+✖ reactivar saca a la sala de libres en esa franja
+  input 'Norte, Sur' was expected to not match /Norte/
+✖ reactivar sin cancelada lo dice
+  actual 'salas'  expected 'sin cancelada Sur mar'
+ℹ tests 3  ℹ pass 0  ℹ fail 3
+```
+
+**Tests:**
+- `reactivar devuelve la reserva cancelada`: THEN `reactivar Norte lun` responds `reactivada Norte lun`.
+- `reactivar saca a la sala de libres en esa franja`: THEN after reactivating, Norte no longer appears in `run('libres', ['10:00-12:00'])`.
+- `reactivar sin cancelada lo dice`: AND `reactivar Sur mar` with no cancelled booking responds `sin cancelada Sur mar`.
+
+The `libres` test calls `reactivar Norte lun` itself first, so it does not depend on test order, since `bookings` is shared module state. It checks `doesNotMatch /Norte/` rather than an exact string, so it won't break if the room list changes.

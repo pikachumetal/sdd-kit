@@ -28,7 +28,7 @@ Los pasos 1-5 (contexto, enrutado, rama, spec y plan) viven en `sdd-propose`, qu
 
 ## Trabajo descubierto fuera de scope
 
-No lo absorbas en silencio ni lo ignores. Un hallazgo que no cambia la spec es un **ruling** o un freno de alcance ([control-profiles.md](references/control-profiles.md)), como en `sdd-implement`. Si cambia la spec (agranda el Scope, añade un requisito), decide **con el usuario** en `pair` y `delegate` (`AskUserQuestion`: ¿se arregla ahora o se difiere a ticket aparte? ¿misma rama o rama nueva?); en `unattended`, la opción más conservadora, registrada como enmienda sin aprobar ([control-profiles.md](references/control-profiles.md)). Antes de proponer cualquier fix: `superpowers:systematic-debugging` (causa raíz primero).
+No lo absorbas en silencio ni lo ignores. Un hallazgo que no cambia la spec es un **ruling** o un freno de alcance ([control-profiles.md](references/control-profiles.md)), como en `sdd-implement`. Si cambia la spec (agranda el Scope, añade un requisito), decide **con el usuario** en `pair` y `delegate` (`AskUserQuestion`: ¿se arregla ahora o se difiere a ticket aparte? ¿misma rama o rama nueva?); en `unattended`, la opción más conservadora, registrada como enmienda sin aprobar ([control-profiles.md](references/control-profiles.md)). Antes de proponer cualquier fix: `sdd-debugging` (causa raíz primero).
 
 ## Red flags — STOP y vuelve al gate
 

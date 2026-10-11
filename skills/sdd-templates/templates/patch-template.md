@@ -33,7 +33,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ## 2. Causa raíz (o intención, en un ajuste visual; o solución fijada, en una petición cerrada)
 
-> Resultado de `superpowers:systematic-debugging` (Fase 1). El **por qué** con su evidencia
+> Resultado de `sdd-debugging` (Fase 1). El **por qué** con su evidencia
 > en el código, no solo el dónde. La hipótesis de quien reporta no es la causa hasta que la
 > confirma la investigación.
 > En un ajuste solo de presentación no hay causa: la intención en una frase, sacada de la

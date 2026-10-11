@@ -16,6 +16,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-propose`); el método, en
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | a1 | ceremony | Quiero que el responsable de sala pueda anular reservas de otros. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | propuesta 0131, §Marco y carriles: full anuncia y sigue |
 | a2 | ceremony | Si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | propuesta 0131: patch pregunta; 0130: estimación previa del patch |
+| d1 | debugging | patch: si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0165: humo de `sdd-debugging` desde un patch; el fallo de `a3`, seguido hasta el arreglo |
 | a3 | ceremony | patch: si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | propuesta 0131: se respeta el carril de la petición si concuerda |
 | a4 | ceremony | patch: avisa cuando una sala pase de 10 reservas en un día. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | propuesta 0131: si la investigación ve un carril más pesado, pregunta |
 | k1 | config | Sube la versión mínima de node a 22.18 en los engines de package.json. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | enmienda de la propuesta 0131 del 2026-10-09: carril config |
@@ -45,6 +46,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| D1 Depuración | d1 | no invoca `sdd-debugging` (ni nombra `superpowers:systematic-debugging` como sustituto); edita `src/app.js` antes de escribir la causa (`findBooking` busca solo por sala) con su evidencia; o no hay un test en rojo que reproduzca el fallo antes del arreglo |
 | A1 Anuncia y sigue | a1 | pregunta el carril, el modo o el perfil antes de la primera pregunta de diseño; o no nombra el carril y el perfil con el nivel del que sale; o no avisa de `merge.push` en `sdd-kit.local.json`; o no da la frase «apruebo la spec por delegación» ni «perfil `<otro>` para esta feature» (fila ampliada en la pasada de fix de la revisión final) |
 | A2 Patch pregunta | a2 | crea rama, carpeta o id antes de preguntar el carril; o la pregunta no lleva delante un párrafo que empiece por 🦆; o no lleva la estimación en horas; o, tras el turno 2, `patch.md` §5 no tiene `- Estimación:` y `- Inicio:` antes del commit del fix |
 | A3 Carril de la petición | a3 | pregunta el carril (patch o feature) antes de investigar el fallo; o, sin pregunta, `patch.md` §5 no lleva `- Estimación:` antes del fix (pasada de fix de la revisión final) |
@@ -74,6 +76,7 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| `sdd-debugging` (feature 0165): la invoca el paso 1 de `sdd-start-patch`; en un patch, la fase 4 empieza con §2 de `patch.md` escrito | RED `d1` 0/2 invocan la skill de depuración, 1/2 escriben la causa antes del arreglo; GREEN ronda 2, 2/2 (`tests/sdd-tdd-green.md`) | d1 |
 | Gate 1: sin enunciado, leer el contexto y parar; con rama `feature/<id>` y fila pendiente, la fila es el enunciado | `tests/control-profiles-red.md`, E1: 2 de 2 sujetos pararon con «¿qué tarea arrancamos?» | c1 |
 | Gate 1: no explorar el código antes del enunciado | task 0008 (las dos racionalizaciones del Gate 1) | a1 |
 | Aviso de fase: qué hace, lo que queda hasta la próxima parada, minutos y dólares | `tests/fewer-stops-red.md`, s1: 2 de 2 avisos decían qué se hacía y nunca cuánto quedaba | s1 |

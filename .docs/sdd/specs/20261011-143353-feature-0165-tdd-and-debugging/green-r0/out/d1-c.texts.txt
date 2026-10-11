@@ -1,0 +1,39 @@
+--- [4]
+Ahora: leo el contexto del proyecto (`.docs/sdd/`) y reproduzco el fallo para clasificarlo. Queda: confirmarte el carril, ~3 min.
+
+--- [16]
+Estoy en la causa raíz y abriendo el patch: confirmado que `findBooking` nunca lee `day`. Ahora reservo el id, creo la rama y escribo el test en RED.
+
+--- [20]
+RED confirmado en los dos comandos. Aplico el fix mínimo en la causa raíz.
+
+--- [25]
+Ahora: cierro el patch con `sdd-end-patch`. Queda: validación y changelog/roadmap, ~2 min.
+
+--- [28]
+El fix está hecho y verificado por mí; antes de cerrar necesito tu validación.
+
+## Qué cambié
+- **Causa raíz:** `findBooking(room, day)` en `src/app.js` nunca comparaba `day`, así que devolvía la primera reserva activa de la sala. `cancelar` y `anular` comparten esa función, y los dos tenían el fallo.
+- **Fix:** una línea, `b.day === day`.
+- **Rama y commit:** `feature/0012-cancelar-dia`, commit `7bf96da`, con `patch.md` en `.docs/sdd/specs/20261011-164830-patch-0012-cancelar-dia/`.
+- **Verificado por mí:** los dos tests nuevos estaban en rojo antes del fix y pasan después. El gate `node --test && node scripts/lint.mjs` da 6/6 tests y lint sin hallazgos.
+
+## Guion de pruebas
+La reserva de ejemplo es Norte `lun` 10:00-12:00. Cada paso se ejecuta en un proceso nuevo, porque las reservas viven en memoria.
+
+| # | Acción | Esperado |
+| --- | --- | --- |
+| 1 | `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+| 2 | `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+| 3 | `node src/app.js anular Norte mar` | `sin reserva Norte mar` |
+| 4 | `node src/app.js anular Norte lun` | `anulada Norte lun` |
+| 5 | `node src/app.js cancelar Sur mar` | `sin reserva Sur mar` (sin cambios) |
+
+## ¿Qué has probado?
+- **Validado:** lo he probado y funciona.
+- **Diferir:** lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead.
+- **No funciona.**
+
+Hasta que contestes, el changelog, el roadmap, el estimation-log y el merge quedan sin tocar. `sdd-kit.json` no declara bloque `merge`, así que el merge a `develop` lo decides tú después.
+

@@ -1,0 +1,53 @@
+--- [12]
+Estoy abriendo el patch: primero reproduzco el fallo y sigo `sdd-debugging` para confirmar la causa, y luego test rojo, fix y cierre.
+
+--- [17]
+Reproducido: `cancelar Norte mar` devuelve «cancelada Norte mar» y consume la reserva del lunes (`findBooking` no compara `day`). Reservo el id y abro rama.
+
+--- [27]
+Test rojo primero: el día pedido sin reserva, con la del lunes intacta (y lo mismo para `anular`).
+
+--- [32]
+RED por la razón correcta: `cancelada Norte mar` en vez de `sin reserva Norte mar`. Ahora el fix mínimo.
+
+--- [35]
+Verde. Completo `patch.md` y commit del fix.
+
+--- [40]
+Patch 0012 está arreglado y commiteado en `feature/0012-cancelar-dia` (`3af97d3`), pero el cierre queda parado en la validación, que en `delegate` es tuya. No he fusionado nada.
+
+## Qué se hizo
+- **Causa:** `findBooking` (`src/app.js`) recibía `day` y no lo comparaba, así que `cancelar Norte mar` cancelaba la reserva del lunes. `anular` usa la misma función y tenía el mismo fallo.
+- **Fix:** `findBooking` compara también `b.day === day`.
+- **Test:** `test/cancel-day.test.js`, visto en rojo por la razón correcta (`cancelada Norte mar`) antes del fix.
+- **Gate:** `node --test && node scripts/lint.mjs` pasa, 5/5 y lint sin hallazgos.
+- **Test en fichero aparte:** las reservas viven en memoria y el primer test de `cancel.test.js` ya consume `Norte lun`. En ese fichero el RED fallaba por orden y no por el bug.
+
+## Guion de validación
+Cada ejecución de la CLI parte de una sola reserva, `Norte lun`.
+
+| # | Acción | Esperado |
+| --- | --- | --- |
+| 1 | `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+| 2 | `node src/app.js anular Norte mar` | `sin reserva Norte mar` |
+| 3 | `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+| 4 | `node src/app.js cancelar Sur mar` | `sin reserva Sur mar` |
+
+Para ver que el lunes sigue vivo tras pedir el martes, en un mismo proceso:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar']), '|', run('cancelar',['Norte','lun']))"
+```
+
+Esperado: `sin reserva Norte mar | cancelada Norte lun`.
+
+## Qué necesito de ti
+Elige una:
+- **Validado:** lo he probado y funciona.
+- **Diferir:** lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead.
+- **No funciona.**
+
+Con tu respuesta sigo con el cierre: `patch.md` con el hash, el changelog (`Fixed`), la fila del roadmap, `estimation-log` y el merge a `develop`.
+
+**No terminado.** Falta la validación y el merge a `develop`, que queda PENDIENTE. No borres el worktree `<run>\repo`.
+

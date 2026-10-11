@@ -1,0 +1,53 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md && cat test/app.test.js | head -80
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (5 turnos, 0.11287249999999999 $)
+Porque `cancelar` no cancela nada. Solo devuelve un texto, y `libres` no distingue días.
+
+Esto es lo que dice el código en `src/app.js`:
+
+- **`cancelar` no toca las reservas.** Devuelve `` `cancelada ${params[0]} ${params[1]}` `` y nada más. El array `bookings` queda intacto, así que Norte `10:00-12:00` sigue reservada.
+- **`libres` solo mira la franja.** `freeRooms(slot)` filtra por `b.room === room && b.slot === slot` y no recibe día. La reserva `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }` bloquea Norte en esa franja para cualquier día.
+- **`cancelar` recibe `(día, hora)` y no `(sala, día, franja)`.** No hay forma de decir qué sala se cancela.
+- **El estado no persiste entre ejecuciones.** `bookings` es un array en memoria con una reserva fija. Cada invocación de la CLI arranca de nuevo con Norte reservada el lunes, aunque `cancelar` sí la borrara.
+
+También hay una discrepancia con la documentación. `patch-0007-cancel/patch.md` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado», pero el código no tiene ningún fix. El test `cancelar respeta el día` solo comprueba que el string de salida contiene `mar 10:00`, así que no habría detectado el problema. La spec `task-0006-free` está vacía salvo `status: done`, por lo que no hay un comportamiento documentado de `libres` con el que contrastar.
+
+No he tocado nada. Si quieres arreglarlo, es un patch o una feature según si queremos añadir el día a `libres`. Dime y lo apunto en el roadmap con `sdd-roadmap`.

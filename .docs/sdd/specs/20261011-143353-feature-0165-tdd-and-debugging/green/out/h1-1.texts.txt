@@ -1,0 +1,61 @@
+--- [2]
+Paso 6: invoco `sdd-implement` antes de tocar nada de la task.
+
+--- [5]
+Ahora: preparo el workspace de la 0010 y leo spec y plan. Queda: implementar las tasks, la revisión final y la validación, ~20 min.
+
+--- [8]
+Workspace del plan: `.superpowers/sdd/plan` — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia.
+
+--- [16]
+Task 1: escribo los tests RED (un THEN y un AND de la spec) sin tocar `src/app.js`.
+
+--- [18]
+RED por la razón correcta (falta el comportamiento). Ahora el código mínimo.
+
+--- [24]
+Task 2: test RED del listado (base de `develop` sin cambios, ya comprobada).
+
+--- [27]
+My heredoc turned `\n` into a real newline (syntax error). Fixing it.
+
+--- [38]
+Ahora: pasada de fix de la autorevisión final (dos defectos, ambos en RED). Queda: GREEN, suite completa y presentar validación.
+
+--- [43]
+Implementación hecha y commiteada en `feature/0010-cancel-reason`. Quedo a la espera de tu validación; no invoco `sdd-end-feature` hasta entonces.
+
+🦆 **En llano:** `cancelar Norte lun --motivo "sala ocupada"` valida el motivo contra la lista cerrada (cambio de planes, sala ocupada, otro). Si es válido, cancela y guarda el motivo en la reserva. Si no lo es, responde el error y no toca la reserva. `canceladas` recorre las reservas con estado cancelada y escribe una línea `sala día — motivo` por cada una.
+
+✋ **Me salí del plan en…**
+- **`cancelar` sin `--motivo`:** la spec calla. Lo dejé como estaba (`cancelada Norte lun`), porque los tests existentes lo esperan y cambiarlo alteraría la salida observable. «Pide un motivo» no se aplica como obligatorio.
+- **Motivo inválido con reserva inexistente:** se valida el motivo primero.
+- **`canceladas` sin canceladas:** devuelve cadena vacía.
+- **Cancelada sin motivo:** se lista como `Norte lun — sin motivo`. La autorevisión encontró que salía `— undefined`.
+- **`--motivo` sin valor:** se trata como motivo no válido. La autorevisión encontró que cancelaba en silencio.
+
+**Decisión tuya:** ¿`--motivo` debe ser obligatorio? Hoy no lo es. Lo dejé porque la spec no dice qué responder sin él.
+
+**Revisión final:** autorevisión, porque este entorno no tiene herramienta de subagentes; decide tú si basta. Dos hallazgos corregidos con test RED→GREEN en `d3423ab`. Commits: `514d92d` (Task 1), `9385998` (Task 2), `d3423ab` (pasada de fix).
+
+**Smoke por THEN:**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (`node src/app.js …`) y suite |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real y suite |
+| `canceladas` → «Norte lun — sala ocupada» | **suite** (test del mismo proceso); por CLI no probado, ver abajo |
+
+La suite completa (`node --test`) pasa: 9/9, en ~0,3 s.
+
+⚠️ **Limitación que no es de esta feature:** el estado vive en memoria y cada `node src/app.js …` arranca de cero. Por la CLI, `canceladas` siempre responde vacío, y el tercer THEN solo se observa en un proceso (los tests). La persistencia no está en el Scope de la spec.
+
+**Guion de pruebas** (desde la raíz del repo, no hay nada que arrancar):
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun --motivo` → el mismo mensaje de motivo no válido
+4. `node src/app.js cancelar Norte lun` → `cancelada Norte lun` (comportamiento anterior conservado)
+5. `node --test test/cancel.test.js` → 7 tests en verde; el del listado (`canceladas enseña el motivo…`) cubre «Norte lun — sala ocupada»
+
+Dime qué has probado tú y si funciona. Con eso, y con tu respuesta sobre si `--motivo` debe ser obligatorio, cierro con `sdd-end-feature`.
+

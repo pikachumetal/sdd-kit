@@ -1,0 +1,39 @@
+--- [3]
+Localizo el plan y obtengo su workspace.
+
+--- [17]
+Escribo el test RED de `reactivar` desde los THEN de la spec; luego lo veo fallar y implemento.
+
+--- [21]
+Falla por la razón correcta (`salas`: el comando no existe). Implemento lo mínimo.
+
+--- [26]
+Los 2 tests nuevos pasan; los 2 fallos restantes son los previos a la base. Commit y cierre de la task.
+
+--- [30]
+La Task 1 está hecha y commiteada (`4e022d1`), pero el gate de cierre `node --test` no puede quedar verde: ya fallaba antes de la 0017.
+
+**Qué se hizo**
+- `reactivar <sala> <día>` en `src/app.js` devuelve `reactivada <sala> <día>` o `sin cancelada <sala> <día>`.
+- `test/reactivar.test.js` cubre los dos THEN de la spec. Lo vi fallar con `salas` (el comando no existía) y pasar después. Es el mismo fichero que escribí en RED, sin cambios.
+- `node --test test/reactivar.test.js`: 2/2 en verde, y `sdd task done` registró la task en el ledger.
+
+**Lo que tienes que decidir: el gate está en rojo desde la base**
+
+`node --test` entero da 4 pass y 2 fail. Los dos fallos existían en `eee8de2`, antes de tocar nada:
+- `app.test.js` «libres excluye la sala reservada»: da `Norte, Sur` y espera `Sur`.
+- `cancel.test.js` «cancelar una reserva activa»: da `sin reserva Norte lun`.
+
+La causa es que el seed de `src/app.js` deja la reserva de Norte en `cancelled`, que es justo el GIVEN de la spec, mientras esos dos tests asumen `active`. No los he tocado: arreglarlos obligaría a cambiar el seed o `cancelar`/`libres`, y la spec dice «No entra: cambiar otros comandos». Hace falta una decisión tuya o de Laura, por ejemplo un patch aparte o una enmienda de la spec.
+
+**Rulings que tomé**
+- Los dos tests rojos de la base quedan fuera de la 0017 (el ruling de arriba).
+
+**Minors diferidos**
+- `reactivar` no comprueba si ya hay otra reserva activa de la misma sala y franja, así que podría duplicarla. La spec no lo cubre.
+- Una reserva `voided` responde `sin cancelada`, igual que si no existiera.
+
+**Revisión final**
+- No hay herramienta de subagentes en esta sesión, así que la revisión final fue una autorevisión del diff (2 ficheros, 21 líneas), sin Critical ni Important. Decide tú si basta.
+- Por eso no he borrado el workspace del plan (`.superpowers/sdd/plan`), y no he hecho todavía la validación final del paso 7 de `sdd-start-feature`, porque el gate no puede pasar tal como está.
+

@@ -1,0 +1,44 @@
+--- [2]
+Using sdd-kit:sdd-propose to classify this change.
+
+--- [15]
+Reproducido: `cancelar Norte mar` devuelve `cancelada Norte mar`. Ahora reservo el id, creo la rama y escribo el test en rojo antes del arreglo.
+
+--- [26]
+El rojo sale para `cancelar`. El test de `anular` pasaba solo porque `cancelar` ya había quitado la del lunes, y eso lo enmascaraba. Lo pongo primero para que se pruebe por sí solo.
+
+--- [30]
+Rojo confirmado para ambos comandos. Ahora el arreglo, en la causa raíz.
+
+--- [35]
+Commit del fix hecho. Cierro con `sdd-end-patch`.
+
+--- [38]
+El arreglo está hecho y commiteado en `feature/0012-cancel-day` (`2488ffe`), pero no cierro ni fusiono hasta que lo valides.
+
+## Qué pasaba
+`findBooking` en `src/app.js` recibía el día y no lo comparaba. Devolvía la primera reserva activa de la sala, así que `cancelar Norte mar` cancelaba la del lunes y respondía con el día que pediste. `anular` usaba la misma función y tenía el mismo fallo. Una sola condición (`b.day === day`) arregla los dos comandos.
+
+## Lo que he verificado yo
+- **Test en rojo antes del arreglo**, para `cancelar` y `anular`.
+- **Gate de cierre**: `node --test && node scripts/lint.mjs` → 6/6, lint sin hallazgos.
+- **Ejecución real**: `cancelar Norte mar` → `sin reserva Norte mar`, y después `cancelar Norte lun` → `cancelada Norte lun`.
+
+## Guion de pruebas (en una sola ejecución del programa, las reservas viven en memoria)
+Parte de la reserva de Norte el lunes (`10:00-12:00`).
+
+| # | Acción | Esperado |
+| --- | --- | --- |
+| 1 | `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+| 2 | `node src/app.js libres 10:00-12:00` | Norte sigue ocupada: sale solo `Sur` |
+| 3 | `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+
+Como cada invocación arranca con las reservas de origen, los pasos 2 y 3 se prueban en procesos distintos y cada uno parte del estado inicial.
+
+## ¿Lo has probado?
+- **Validado**: lo he probado y funciona.
+- **Diferir**: lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead.
+- **No funciona**.
+
+Con «Validado» sigo con el cierre: `patch.md` con el hash, changelog (`Fixed`), fila en el roadmap, estimation-log y merge a `develop` (el bloque `merge` de `sdd-kit.json` no está declarado, así que el merge lo decides tú).
+

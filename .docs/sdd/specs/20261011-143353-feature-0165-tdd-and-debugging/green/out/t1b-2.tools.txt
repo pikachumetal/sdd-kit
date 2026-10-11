@@ -1,0 +1,154 @@
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Comando `informe`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/informe.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+9	- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> cancelada
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> PowerShell: node --test test/informe.test.js 2>&1 | Select-Object -First 40; Get-Content src/app.js; Get-Content test/informe.test.js
+<<< ✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (2.2371ms)
+✖ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (0.3567ms)
+✖ informe sin --por responde con el uso (0.266ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 206.8698
+
+✖ failing tests:
+
+test at test\informe.test.js:5:1
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (2.2371ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - 
+
+>>> Bash: cd "<run>/repo" && python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+const fn=\`const cancellationReports = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    groupOf: (b) => b.room,
+    detail: (b) => \\\`\\\${b.day} \\\${b.slot} — \\\${b.reason} (\\\${b.owner})\\\`,
+  },
+  motivo: {
+    groups: () => reasons,
+    groupOf: (b) => b.reason,
+    detail: (b) => \\\`\\\${b.room} \\\${b.day} \\\${b.slot} (\\\${b.owner})\\\`,
+  },
+};
+
+function cancellationReport(by) {
+  const report = cancellationReports[by];
+  if (!report) return 'uso: informe --por sala|motivo';
+  const cancelled = bookings
+    .filter((b) => b.status === 'cancelled')
+    .sort((a, b) => rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day));
+  const lines = [];
+  for (const group of report.groups()) {
+    const members = cancelled.filter((b) => report.groupOf(b) === group);
+    if (!members.length) continue;
+    lines.push(\\\`\\\${group}: \\\${members.length} canceladas\\\`);
+    for (const b of members) lines.push(\\\`  \\\${report.detail(b)}\\\`);
+  }
+  lines.push(\\\`Total: \\\${cancelled.length} canceladas\\\`);
+  return lines.join('\\\\n');
+}
+
+\`;
+s=s.replace('export function run(',fn+'export function run(');
+s=s.replace(\"  return 'salas';\n}\",\"  if (cmd === 'informe') return cancellationReport(params[params.indexOf('--por') + 1]);\n  return 'salas';\n}\");
+fs.writeFileSync('src/app.js',s);"
+git diff --stat; node --test test/informe.test.js 2>&1 | head -15
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+/usr/bin/bash: line 37: warning: here-document at line 36 delimited by end-of-file (wanted `EOF')
+/usr/bin/bash: command substitution: line 1: syntax error near unexpected token `('
+/usr/bin/bash: command substitution: line 1: `\${b.day} \${b.slot} — \${b.reason} (\${b.owner})\\'
+/usr/bin/bash: command substitution: line 1: syntax error near unexpected token `('
+/usr/bin/bash: command substitution: line 1: `\${b.room} \${b.day} \${b.slot} (\${b.owner})\\'
+/usr/bin/bash: line 1: ${group}:: command not found
+/usr/bin/bash: command substitutio
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff --stat
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+ M src/app.js
+?? test/informe.test.js
+ src/app.js | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+>>> Bash: cd "<run>/repo" && git diff src/app.js
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+diff --git a/src/app.js b/src/app.js
+index 240d681..e2e4ad9 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -10,6 +10,37 @@ const bookings = [
+   { room: 'Sur', day: 'jue', slot: '16:00-17:00', status: 'cancelled', reason: 'sala ocupada', owner: 'Luis' },
+ ];
+ 
++const cancellationReports = {
++  sala: {
++    groups: () => [...rooms].sort(),
++    groupOf: (b) => b.room,
++    detail: (b) => ,
++  },
++  motivo: {
++    groups: () => reasons,
++    groupOf: (b) => b.reason,
++    detail: (b) => ,
++  },
++};
++
++function cancellationReport(by) {
++  cons
+
+>>> Bash: cd "<run>/repo" && git checkout src/app.js && git status --short
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+Updated 1 path from the index
+?? test/informe.test.js
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | head -14 && git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de canceladas por sala o motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✔ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (0.9843ms)
+✔ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (5.6124ms)
+✔ informe sin --por responde con el uso (0.1788ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 198.855
+47b36be feat: comando informe de canceladas por sala o motivo
+
+>>> Write: <run>\repo\.superpowers\sdd\plan\task-1-report.md
+<<< File created successfully at: <run>\repo\.superpowers\sdd\plan\task-1-report.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (14 turnos, 0.20850099999999996 $)
+- **Status:** DONE
+- **Commits:** `47b36be feat: comando informe de canceladas por sala o motivo`
+- **Tests:** 3/3 passing en `node --test test/informe.test.js`, salida limpia. El RED inicial fallaba porque `informe` devolvía `'salas'` (comando inexistente), como se esperaba.
+- **Concerns:** ninguna. Los grupos sin canceladas no se imprimen; la spec no lo define y lo dejé así. Los tests no se modificaron y no ejecuté la suite completa.
+- **Report:** `<run>\repo\.superpowers\sdd\plan\task-1-report.md`

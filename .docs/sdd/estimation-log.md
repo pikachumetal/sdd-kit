@@ -165,19 +165,20 @@
 | 2026-10-11 | 0147 | infra/tooling | 5 | 2.5 | 0.5 | 142019k | 3112k | 16.7 | 44.34 | 20261010-174401-feature-0147-implement-fork |
 | 2026-10-10 | 0167 | patch | — | 0.3 | — | — | — | — | — | 20261010-195847-patch-0167-superpowers-7-compat |
 | 2026-10-11 | 0168 | docs | 4 | 2.3 | 0.57 | 156046k | 3489k | 14.95 | 45.75 | 20261011-130007-feature-0168-fork-brainstorming-writing-plans |
+| 2026-10-11 | 0165 | docs | 3.5 | 2 | 0.57 | 98869k | 3361k | 7.38 | 31.31 | 20261011-143353-feature-0165-tdd-and-debugging |
 
-**Factor de calibración** (ratio mediano real/estimado, 126 artefactos): **0.6** · media 0.72
+**Factor de calibración** (ratio mediano real/estimado, 127 artefactos): **0.6** · media 0.72
 
 - p25–p75: 0.4–0.93
-- p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 63 % · infraestimadas: 9 %
+- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 28 % · sobreestimadas: 63 % · infraestimadas: 9 %
 - Error absoluto (h): media 1.11 · mediana 0.8
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.43
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.48
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 45 | 36 % |
-| 0.5–0.8 | 37 | 29 % |
+| <0.5 | 45 | 35 % |
+| 0.5–0.8 | 38 | 30 % |
 | 0.8–1.25 | 33 | 26 % |
 | 1.25–2 | 8 | 6 % |
 | ≥2 | 3 | 2 % |
@@ -185,7 +186,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 74 | 0.53 | 0.38–0.75 |
+| docs | 75 | 0.53 | 0.38–0.74 |
 | infra/tooling | 23 | 0.43 | 0.36–0.56 |
 | patch | 28 | 1.2 | 0.8–1.4 |
 
@@ -206,6 +207,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 13 | 30.15 | 0.48 | 126.5 | 311.14 |
+| sin publicar | 14 | 32.15 | 0.5 | 133.88 | 342.45 |
 
 > Ver `estimation.md`.
