@@ -21,9 +21,8 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — quien implementa ve fallar los RED antes de implementar; un fallo se investiga con `sdd-debugging`; y, si su medida lo confirma, el hilo ve fallar su RED, el test no recalcula su esperado, va en la costura de «Dónde se prueba» y, en Native, el RED lo escribe un subagente.
+- Modificadas: `feature-flow` — quien implementa ve fallar los RED antes de implementar; un fallo se investiga con `sdd-debugging`, y en un patch la causa queda escrita antes del arreglo.
 - Modificadas: `routing` — los requisitos que nombran `superpowers:systematic-debugging` pasan a `sdd-debugging`.
-- Modificadas, solo si entra el escritor de RED: `configuration` — la clave `tdd.redWriter`, también local.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -184,41 +183,8 @@ Fork por traducción y recorte: se parte del texto de superpowers 7.0.0, se escr
 - WHEN el agente lo investiga
 - THEN invoca `sdd-debugging` y escribe la causa raíz con su evidencia en el código antes de proponer el arreglo
 - AND antes del arreglo hay un test en rojo que reproduce el fallo, escrito con `sdd-tdd`
+- AND en un patch, §2 de `patch.md` lleva la causa raíz con su evidencia antes de editar el código: la fase 4 de `sdd-debugging` empieza con ella escrita
 - AND ningún fichero de `skills/` invoca `superpowers:test-driven-development` ni `superpowers:systematic-debugging`
-
-**ADDED — El hilo ve fallar su propio RED** *(entra solo si `t4` falla)*
-- GIVEN un plan con `Ejecución: native` y la Task 1 con el THEN «las horas de Norte suman 2 h por la reserva lun 10:00-12:00»
-- WHEN el hilo escribe el RED de la task
-- THEN lo ejecuta antes del código de la task y deja en el ledger su comando y el motivo del fallo, que es por la funcionalidad que falta y no por un error tipográfico o de importación
-- AND si el RED pasa sin código, es un hallazgo sobre el test: lo corrige antes de seguir
-
-**ADDED — Un test no recalcula su valor esperado** *(entra solo si `t2` falla)*
-- GIVEN el THEN «las horas de Norte suman 2 h por la reserva lun 10:00-12:00»
-- WHEN se escribe su RED
-- THEN el esperado es el literal del THEN (`2`) o un dato calculado a mano en el test
-- AND nunca sale de código de `src/` ni repite su regla dentro del test (partir la franja y restar las horas)
-
-**ADDED — Los tests van en la costura de «Dónde se prueba»** *(entra solo si `t3` falla)*
-- GIVEN «Dónde se prueba: cancelar: por `run`, como `test/cancel.test.js`» y el THEN «cancelar la reserva de Norte del lun deja Norte en `libres 10:00-12:00`»
-- WHEN se escribe su RED
-- THEN el test llama a `run('cancelar', …)` y lo comprueba con `run('libres', …)`, sin leer el estado interno de las reservas ni exportar una función interna para el test
-- AND un test en otra costura es un desvío de la spec, con su parada
-
-**ADDED — En Native, el RED lo escribe un subagente** *(entra solo si `t5` le da ventaja sobre el RED del hilo)*
-- GIVEN un plan con `Ejecución: native` y la Task 1 con sus THEN, su «Dónde se prueba» y sus «Interfaces»
-- WHEN el hilo prepara la task
-- AND `tdd.redWriter: subagent` en `sdd-kit.json` o en `sdd-kit.local.json`
-- THEN despacha el escritor de RED (`sdd-kit:effort-medium`, Sonnet) con solo esos tres textos y los ficheros de test que sirven de patrón, sin el código del plan
-- AND el hilo implementa contra esos RED sin cambiar aserciones ni datos; si uno le parece incorrecto, lo trata como un desvío
-- AND sin la clave, o con `thread`, los RED los escribe el hilo, como hoy
-
-### Capacidad: `configuration` *(solo si entra el escritor de RED)*
-
-**ADDED — Quién escribe los RED en Native es una clave de método**
-- GIVEN un proyecto con `"execution": "auto"` en `sdd-kit.json` y sin `tdd`
-- WHEN un dev pone `"tdd": { "redWriter": "subagent" }` en su `sdd-kit.local.json`
-- THEN en sus features en Native los RED los escribe el escritor de RED, y en las del resto del equipo, el hilo
-- AND `sdd-config` enseña la clave con sus valores `thread` (por defecto) y `subagent`, y no avisa de que se ignora en `sdd-kit.local.json`
 
 ### Capacidad: `routing`
 
@@ -234,6 +200,11 @@ Fork por traducción y recorte: se parte del texto de superpowers 7.0.0, se escr
 - AND (el resto, sin cambios)
 
 ## Enmiendas
+
+- 2026-10-11 — ADDED «Un fallo se investiga con `sdd-debugging`» gana el AND «en un patch, §2 de `patch.md` lleva la causa raíz antes de editar el código», escrito en la fase 1 y a la entrada de la fase 4 de `sdd-debugging` — el humo `d1` falló: causa escrita después del arreglo 0/3 con el fork y 1/2 con superpowers; GREEN 2/2 tras dos rondas de REFACTOR ([evidencia](../../../../tests/sdd-tdd-green.md)). Commiteado en la Task 4 antes de pedir la aprobación — aprobada: «Apruebo (Recomendada)»
+- 2026-10-11 — Scope: entra la regla «Poner al día un fork con su fuente» en `tech-stack.md` (dependencia de superpowers), de la fila de triaje del ticket de la 0168 que llegó a la base; la comparación 7.0.0 contra 7.1.0 que pedía no se hace, porque la 7.1.0 no existe (última versión, v7.0.0), y la fila se corrige — aprobada: «Solo la regla (Recomendada)»
+- 2026-10-11 — Salen del delta «El hilo ve fallar su propio RED», «Un test no recalcula su valor esperado», «Los tests van en la costura de "Dónde se prueba"», «En Native, el RED lo escribe un subagente» y la capacidad `configuration` — sus RED salieron limpios (`t2`, `t3` y `t4` 0/4; `t5` no gana, [evidencia](../../../../tests/sdd-tdd-red.md)); van a filas de deuda «Esperar 2.º ticket» — aprobada por la spec: «entra solo si su RED falla»
+- 2026-10-11 — El encargo del implementador no carga `sdd-tdd`: el A/B de `t1` da 2/2 a las dos versiones y gana la más barata, el paso literal (decisión 4) — aprobada por la spec: «Gana la más barata que cumple 2 de 2»
 
 ## Aprobaciones
 

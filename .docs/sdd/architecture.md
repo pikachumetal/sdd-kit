@@ -16,6 +16,7 @@
 │   ├── sdd-propose/SKILL.md
 │   ├── sdd-start-feature/SKILL.md
 │   ├── sdd-implement/SKILL.md
+│   ├── sdd-tdd/, sdd-debugging/
 │   ├── sdd-end-feature/SKILL.md
 │   ├── sdd-start-patch/SKILL.md
 │   ├── sdd-end-patch/SKILL.md
@@ -29,7 +30,7 @@
 │   ├── sdd-rubber-duck/SKILL.md   (+ NOTICE: explicar)
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje)
 ├── cli/                         (la CLI `sdd`, TypeScript sin build: bin/, src/ por dominio, test/ con Vitest y fixtures/)
-├── hooks/                       (hooks.json: SessionStart en forma exec, que ejecuta `sdd hook session-start` e inyecta skills/using-sdd/SKILL.md)
+├── hooks/                       (hooks.json: SessionStart ejecuta `sdd hook session-start`, que inyecta skills/using-sdd/SKILL.md)
 ├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
 ├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
 └── .docs/

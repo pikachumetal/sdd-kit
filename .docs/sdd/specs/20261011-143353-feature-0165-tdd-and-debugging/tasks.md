@@ -19,8 +19,8 @@ created: 2026-10-11
 | 1 | Escenarios y RED: antipatrones, costura, RED del hilo y escritor de RED | done | de333606 | t2, t3, t4 y t5 limpios: no entran los antipatrones, la costura, la regla del hilo ni el escritor; Task 3 se salta |
 | 2 | `sdd-tdd`, el encargo y lo que confirme la Task 1 | done | a37f85e5 | A/B de `t1`: gana A (paso literal), el encargo no carga la skill; fila de racionalización del bucle Native movida a `sdd-tdd` por el tope |
 | 3 | Escritor de RED opcional en Native (solo si `t5` lo gana) | skipped | — | t5 no gana: el RED del hilo sale limpio |
-| 4 | `sdd-debugging` y el recableado | done | — | `d1` en dos rondas de REFACTOR: §2 de `patch.md` antes del arreglo, 2/2; `sdd-start-feature` y la salida de `sdd-explore`, rulings |
-| 5 | Documentos, filas y topes finales | pending | — | |
+| 4 | `sdd-debugging` y el recableado | done | 10476382 | `d1` en dos rondas de REFACTOR: §2 de `patch.md` antes del arreglo, 2/2; `sdd-start-feature` y la salida de `sdd-explore`, rulings |
+| 5 | Documentos, filas y topes finales | done | — | + regla de poner al día un fork (fila de la base, aprobada) |
 
 ## Verificación por task
 
