@@ -1,0 +1,81 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, capabilities). Queda: clasificar, anunciar y arrancar la entrevista de la spec, ~3 min.
+
+--- [15]
+Ahora: abro la feature 0011 con el anuncio y la nota de comprensión, y te hago la primera pregunta de diseño. Queda: entrevista corta, spec en `.docs/sdd/specs/`, tu aprobación de la spec (o tu frase de delegación), plan y arranque de la implementación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», con el modelo más capaz y más de una task)
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hay `sdd-kit.local.json`, así que no hay claves ignoradas. El enunciado sale de la fila 0011 del roadmap (rama `feature/0011`), y el carril y el «entera, sin partir» son lo que me has dicho, así que no los vuelvo a preguntar.
+
+## Lo que he entendido (corrígeme)
+
+- **Qué:** la fila 0011, «Avisos por correo antes de la reserva»: que la aplicación mande un correo a quien tiene una reserva antes de que empiece.
+- **Lo que hay hoy:** el backend solo tiene `GET /bookings` (lista paginada de 20). Una `Booking` tiene `Room`, `Start`, `End` y `Owner`, que es un texto libre.
+- **Lo que no hay:** envío de correo, proceso en segundo plano ni dato de contacto. No hay capabilities documentadas todavía (`Sin capacidades`).
+- **Alcance técnico probable:** backend (.NET 9 + EF Core, migración si hace falta guardar el correo o si se ha avisado), más un sitio donde configurar el envío. El frontend queda fuera salvo que me digas lo contrario.
+
+## ❓ **¿A qué dirección se manda el aviso?**
+
+`Booking.Owner` es hoy un texto sin formato (nada garantiza que sea un correo) y no hay ningún campo de contacto. Sin un destinatario no se puede avisar a nadie.
+
+1️⃣ **Campo nuevo `OwnerEmail` en `Booking`.** Migración con la columna. El aviso va a ese correo. Las reservas que ya existen no lo tienen y no se avisan. Cuesta una migración y decidir cómo se informa el campo (hoy no hay `POST`/`PUT` en la API, así que no hay por dónde ponerlo).
+2️⃣ **`Owner` pasa a ser el correo.** Sin columna nueva. El aviso va a `Owner` solo si tiene formato de correo y se salta el resto. Cuesta ambigüedad: `Owner` ya guarda lo que sea, p. ej. `Ana López`, y esas reservas quedarían sin aviso en silencio.
+3️⃣ **Un único buzón fijo en la configuración** (p. ej. `reservas@empresa.com`). Sin cambios en `Booking`. El aviso va a ese buzón, no a quien reserva. Cuesta que no avisa a la persona, solo a un equipo.
+
+➡️ **Recomiendo 1️⃣**, porque la misión es una app interna donde cada reserva tiene dueño y el aviso solo sirve si llega a esa persona, y 2️⃣ mezcla dos significados en una columna. A cambio, 1️⃣ trae una migración, y como no hay endpoint para crear reservas, el campo solo se rellena hoy desde la base de datos.
+
+¿Cuál eliges?
+
+--- [17]
+Ahora: dejo de preguntar y escribo la spec con lo que hay; los huecos van en «✋ Decisiones que he tomado yo». Queda: leer plantilla y convenciones, crear la carpeta y `spec.md`, pasada de coherencia y presentártela para aprobar (la aprobación sigue siendo tuya), ~6 min.
+
+--- [34]
+Ahora: la spec está escrita y pasó la pasada de coherencia. Te la presento para que la apruebes antes de escribir el plan. Queda: tu aprobación, luego plan y arranque de la Task 1, ~5 min.
+
+`.docs/sdd/specs/20261011-134944-feature-0011-avisos-correo-reserva/spec.md`, estado `draft`, modo full, perfil `delegate` heredado del proyecto.
+
+## 🦆 En corto
+
+Quien tiene una sala reservada recibirá un correo 30 minutos antes de que empiece: si Ana reservó Norte de 10:00 a 11:00, a las 09:30 le llega «Tu reserva de Norte empieza a las 10:00». Cada reserva avisa una sola vez y solo si tiene un correo guardado. Un proceso del servidor lo comprueba cada minuto, y si el envío falla lo reintenta al siguiente.
+
+Falta decidir qué hacemos con el hueco 3, que es el que más cambia el valor de la feature.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**Review de spec: ninguna.** Tres señales (capacidad nueva, datos, dependencia externa), por debajo del umbral. Lo que queda sin mirar es si el reintento puede mandar el correo dos veces cuando el envío tarda más de un minuto.
+
+1. **Destinatario:** columna nueva `OwnerEmail` en la reserva (con migración). Tu respuesta a la pregunta quedó sin contestar al pedir empezar ya, así que tomé la opción 1️⃣ que recomendaba.
+2. **Sin `OwnerEmail` no se avisa**, incluidas todas las reservas que ya existen.
+3. **⚠️ Hueco:** la API solo tiene `GET /bookings`, sin `POST` ni `PUT`. La feature no añade ninguno, así que el correo solo se puede rellenar directamente en la base de datos. El aviso funciona de punta a punta, pero hoy nadie podría poner el correo desde la aplicación.
+4. **30 minutos** de antelación, fijo, no configurable.
+5. **Un solo aviso por reserva**, aunque cambie algo después.
+6. **Se comprueba cada minuto**, así que puede llegar hasta 1 minuto tarde.
+7. **Una reserva que ya empezó no se avisa.** Una creada con menos de 30 min de margen se avisa en la siguiente comprobación.
+8. **Texto** (castellano, por la constitution):
+   - Asunto: `Tu reserva de {Room} empieza a las {HH:mm}`
+   - Cuerpo: `Hola {Owner}: tu reserva de la sala {Room} empieza a las {HH:mm} y termina a las {HH:mm}.`
+9. **Zona horaria:** las horas tal como están guardadas, comparadas con el reloj del servidor. El proyecto no declara zona.
+10. **Fallo de envío:** no se marca como avisada y se reintenta en la siguiente comprobación, sin tope mientras no haya empezado.
+11. **Capacidad nueva `booking-reminders`.**
+12. **Envío por SMTP**, con servidor y remitente en la configuración de la API. El proyecto no usaba correo y nadie dijo proveedor.
+13. **Sin frontend.**
+14. **`GET /bookings` no devuelve `OwnerEmail` ni `ReminderSentAt`.** Hoy serializa la entidad entera, así que la columna saldría sola; lo evito para no publicar correos y no tocar el contrato.
+
+**Con el dev-lead:** empezar sin más preguntas — «Sí, sáltate las preguntas y empieza ya.» Esto no aprueba la spec.
+
+**Dónde se prueba:** el servicio de avisos con reloj fijo y remitente falso, sobre la base de `BookingsEndpointsTests` (SQL Server con Testcontainers; `backend:test` tarda 17–21 min). El SMTP real se comprueba a mano en la validación.
+
+## Aprobación (puerta de la spec)
+
+Pedir empezar ya no aprueba la spec, y sigue en espera hasta que contestes una de estas:
+
+- **Apruebo (Recomendada)**: escribo el plan y sigo a la implementación sin parar en el plan (`delegate`).
+- **Cambios**: dime qué (p. ej. incluir un endpoint para fijar el correo, decisión 3).
+
+Si no vas a estar, puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+

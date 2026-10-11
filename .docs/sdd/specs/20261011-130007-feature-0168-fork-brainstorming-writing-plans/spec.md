@@ -20,7 +20,7 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — la spec y el plan se escriben con las referencias del kit; una feature grande devuelve el diseño por secciones; la spec cita las ADR de lo que toca; pedir empezar ya no se lleva la spec.
+- Modificadas: `feature-flow` — la spec y el plan se escriben con las referencias del kit; una feature grande devuelve el diseño por secciones; pedir empezar ya no se lleva la spec.
 - Modificadas: `routing` — `superpowers:brainstorming` no se invoca en ningún momento.
 - Modificadas: `interviewing` — el boceto dice con qué se hace.
 
@@ -39,7 +39,7 @@ Hecha: dos revisores en paralelo, por decisión del dev-lead sobre la propuesta 
 3. **La tabla de procedencia vive en el anexo de esta spec**, no en las referencias: la lee quien mantiene el fork al revisar una versión nueva (Art. V), no el agente que escribe una spec, y en la referencia gastaría tokens en cada feature. `THIRD_PARTY_NOTICES.md` enlaza el anexo. Para traer mejoras: `diff` de superpowers contra superpowers, y cada pieza cambiada se busca en la tabla.
 4. **El modelo es el de Spec Kit** (decidido contigo): las referencias llevan el proceso; `spec-template.md` y `plan-template.md` conservan la ayuda de sus campos y las reglas medidas allí (transcripción del patch 0082, Review Focus, «Dónde se prueba», 🦆 ✋). Solo cambian sus avisos «Compatible con `superpowers:writing-plans`» y «con `superpowers:writing-plans`», que pasan a nombrar `plan-writing.md`.
 5. **Diseño por secciones** (decidido contigo): en una feature full con **4 o más tasks previstas**, al cerrar la entrevista y antes de escribir `spec.md`, el agente presenta el diseño por secciones, cada una del tamaño que pide (unas frases o hasta ~250 palabras), y pregunta «¿va bien?» tras cada una; lo que el usuario corrige entra antes de escribir. El recuento es el de las tasks previstas de la feature que se especifica, hecho al entrar en el paso 4: así vale también para un patch o un lite que suben a full y, tras partir, cuenta la pieza, no el total. No hay secciones con 3 o menos, en lite, en spike (aunque hoy corra como full: lo decidiste así), con la spec aprobada por delegación ni en `unattended`; en estos dos últimos, lo que habría preguntado va a ✋. Las secciones no sustituyen al gate: la spec se aprueba igual. Son turnos de la entrevista, dentro de la parada de la spec, no una parada nueva: valen en `pair` y `delegate` y `control-profiles` no cambia (decidido contigo tras la review). Si el usuario pide empezar ya, tampoco hay secciones.
-6. **ADR** (decidido contigo): con el Scope decidido, en full y en lite (los dos escriben `spec.md`, y una ADR pisada cuesta igual), `spec-writing.md` manda ejecutar `sdd decision index --path .docs/sdd --files <ficheros>`, con la ruta de cada fichero que el Scope crea o modifica (el índice casa rutas con globs y no exige que el fichero exista; un directorio se pasa por los ficheros suyos que cambian), leer las ADR que salgan y citarlas en «Approach» o en «Términos y ADR». El índice solo devuelve `accepted` y `proposed`: una `proposed` se cita como pendiente. Si el Approach va contra una ADR `accepted` y lo eligió el agente, va a ✋; si lo eligió el dev-lead, a «Decisiones tomadas con el dev-lead», con el aviso; en los dos casos «ADR candidatas» lleva la que la sustituiría (`sustituye a NNNN`). Sin ADR que salgan, nada que escribir. El comando con su ruta (`node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" decision index …`) va en el paso 4 del `SKILL.md`, porque Claude Code solo sustituye la variable en un `SKILL.md` (`tech-stack.md`, «Distribución»); la referencia nombra el verbo.
+6. **ADR — retirada por el RED** (enmienda del 2026-10-11): el agente ya lee las ADR que tocan su Scope sin regla, 4 de 4 sujetos con una ADR y con seis (`tests/superpowers-fork-red.md`); la regla no se escribe y queda una fila de deuda para reabrirla con un caso de campo.
 7. **Boceto** (decidido contigo): la regla de `sdd-grilling` pasa de «offer a sketch instead of asking» a decir con qué: si la pantalla aún no existe, un Artifact con las opciones; si existe, sobre la app real con lo que declara `§Frontend` (el detector en vivo, o una captura de la pantalla actual junto a la variante); sin `§Frontend`, un Artifact. Si la app no se puede levantar o no hay acceso, o el harness no tiene Artifact (`claude -p`), describe cada opción en texto con su escena y dice por qué no la enseña. No se forkea el visual companion ni su servidor.
 8. **Lo que no se adopta de `brainstorming` 7.0.0**: la oferta de saltarse las preguntas, «Size the Work» (lo sustituyen los carriles), el builder check (lo sustituye `review-spec.md`), la primera pregunta abierta sin menú (manda el formato de `sdd-grilling`), «how it gets made» como pieza propia (lo cubren `tech-stack.md`, la pregunta 11 de la init, ✋ y «Decide for me»), anti-goals (sin fallo que lo pida), «think wide privately» (el formato de `sdd-grilling` ya enseña las alternativas), «offer recon» (propose lee sin pedir permiso), la ruta `docs/superpowers/specs/` y el visual companion. Una fila por pieza en el anexo.
 9. **Pedir empezar ya**: la frase del paso 4 «Don't offer to skip the questions, even if its first message asks you to» sale, porque el fork no tiene esa oferta; se queda, en `spec-writing.md`, que si el usuario pide empezar ya («empieza ya», «hazlo sin más preguntas») se escribe la spec con lo que hay, los huecos en ✋, y pasa por su gate; elegir un alcance («solo valida X») no es pedir empezar ni aprueba nada. En `unattended` no se pregunta, así que no aplica.
@@ -159,15 +159,6 @@ Un fork por referencia, no por skill: `spec-writing.md` reúne lo que de `brains
 - AND con la spec aprobada por delegación o en `unattended` no presenta secciones: lo que habría preguntado va a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
 - AND las secciones son turnos de la entrevista dentro de la parada de la spec, no una parada nueva del perfil: valen en `pair` y en `delegate`
 
-**ADDED — La spec cita las ADR de los ficheros que toca**
-
-- GIVEN la ADR `0003-bookings-in-memory.md`, `accepted`, con `rutas: src/**`, que guarda las reservas en memoria y descarta SQLite, y una feature cuyo Scope modifica `src/app.js`
-- WHEN el agente escribe la spec
-- THEN ejecuta `sdd decision index --path .docs/sdd --files src/app.js` y cita la ADR 0003 en «Approach» o en «Términos y ADR»
-- AND si el agente elige pasar las reservas a SQLite, «✋ Decisiones que he tomado yo» dice que va contra la ADR 0003; si lo eligió el dev-lead en la entrevista, lo dice «Decisiones tomadas con el dev-lead»; en los dos casos «ADR candidatas» lleva la que la sustituiría (`sustituye a 0003`)
-- AND una ADR `proposed` que devuelva el índice se cita como pendiente
-- AND en lite hace lo mismo; sin ADR cuyas `rutas` casen con el Scope, la spec no añade nada
-
 **Reglas de la capacidad**
 - **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras.
 
@@ -206,6 +197,8 @@ Un fork por referencia, no por skill: `spec-writing.md` reúne lo que de `brains
 
 ## Enmiendas
 
+- 2026-10-11 — Sale la regla de las ADR (✋6 y el ADDED «La spec cita las ADR de los ficheros que toca» de `feature-flow`) — su RED salió limpio con una ADR y con seis (`tests/superpowers-fork-red.md`); queda una fila de deuda — aprobada: «Otra tanda con 6 ADR (Recomendada)», con su condición «si sale limpia, la quito y abro fila de deuda» — Task 1
+
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |
@@ -231,7 +224,7 @@ Superpowers 7.0.0. Una fila por paso, red flag y racionalización de las dos ski
 | Ground to cover: kind, why now, success | «Intent» de `spec-template.md` |
 | Ground to cover: goals, non-goals | «Scope: Entra / No entra» de `spec-template.md` |
 | Ground to cover: anti-goals | Descartada: sin fallo que la pida |
-| Ground to cover: prior art, current state | `spec-writing.md`: ADR con `sdd decision index --files`; estado actual, `capabilities/` y el código (paso 1) |
+| Ground to cover: prior art, current state | Paso 1 de `sdd-propose`: el agente ya lee `decisions/`, `capabilities/` y el código sin regla (RED de la 0168, 4 de 4) |
 | Questions that work (anclar en lo concreto, una suposición corregible) | `sdd-grilling`, escena concreta y «Look it up before asking» |
 | Offer recon | Descartada: `sdd-propose` lee el código y los documentos sin pedir permiso (pasos 1 y 2) |
 | Think wide privately | Descartada: la forma de `sdd-grilling` enseña las alternativas con su coste |

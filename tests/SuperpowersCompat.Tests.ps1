@@ -12,32 +12,39 @@ BeforeAll {
 }
 
 Describe 'Compatibilidad con superpowers 7.0.0' {
-  It 'una fila de overrides integra el Execution Handoff en la tabla de gates, sin la frase de la HARD-GATE que la 7.0.0 quitó' {
-    $row = Get-OverrideRow 'Execution Handoff'
-    $row | Should -Not -BeNullOrEmpty
-    $row | Should -Match 'Native'
-    $row | Should -Not -Match 'reviews the written implementation plan'
+  It 'ninguna skill invoca brainstorming ni writing-plans de superpowers' {
+    $hits = Get-ChildItem (Join-Path $script:RepoRoot 'skills') -Recurse -Filter '*.md' |
+      Select-String -Pattern 'superpowers:(brainstorming|writing-plans)'
+    $hits | ForEach-Object { "$($_.Path):$($_.LineNumber)" } | Should -BeNullOrEmpty
   }
 
-  It 'una fila de overrides deja el tamaño de brainstorming sin gobernar los artefactos y no ofrece saltarse las preguntas' {
-    $row = Get-OverrideRow 'Size the Work'
-    $row | Should -Not -BeNullOrEmpty
-    $row | Should -Match 'toda feature tiene `spec.md` y su gate'
-    $row | Should -Match 'No se ofrece saltarse las preguntas'
-    Get-OverrideRow 'spike / bounded / architectural' | Should -BeNullOrEmpty
+  It 'cada referencia forkeada abre con su origen' {
+    Get-KitFile 'skills/sdd-propose/references/spec-writing.md' | Should -Match 'Adapted from superpowers 7\.0\.0 `brainstorming` \(MIT, see NOTICE\)'
+    Get-KitFile 'skills/sdd-propose/references/plan-writing.md' | Should -Match 'Adapted from superpowers 7\.0\.0 `writing-plans` \(MIT, see NOTICE\)'
   }
 
-  It 'el paso de la spec de sdd-propose no ofrece saltarse las preguntas de brainstorming' {
-    $step = ((Get-KitFile 'skills/sdd-propose/SKILL.md') -split "`n") | Where-Object { $_ -match '^4\. \*\*Spec\*\*' }
-    $step | Should -Match "Don't offer to skip the questions"
+  It 'sdd-propose lleva el NOTICE de superpowers con su licencia' {
+    $notice = Get-KitFile 'skills/sdd-propose/NOTICE'
+    $notice | Should -Match 'MIT License'
+    $notice | Should -Match 'Jesse Vincent'
   }
 
-  It 'una fila de overrides sustituye el builder check por la review de spec del kit' {
-    Get-OverrideRow 'Builder check' | Should -Match 'No se despacha[^|]*review-spec\.md'
+  It 'los pasos 4 y 5 de sdd-propose empiezan por leer su referencia' {
+    $skill = (Get-KitFile 'skills/sdd-propose/SKILL.md') -split "`n"
+    ($skill | Where-Object { $_ -match '^4\. \*\*Spec\*\*' }) | Should -Match 'First thing in this step: read \[references/spec-writing\.md\]'
+    ($skill | Where-Object { $_ -match '^5\. \*\*Plan\*\*' }) | Should -Match 'First thing in this step: read \[references/plan-writing\.md\]'
   }
 
-  It 'una fila de overrides manda las preguntas a sdd-grilling' {
-    Get-OverrideRow 'no list of example answers' | Should -Match 'sdd-grilling'
+  It 'spec-writing no ofrece saltarse las preguntas y escribe la spec si piden empezar ya' {
+    $ref = Get-KitFile 'skills/sdd-propose/references/spec-writing.md'
+    $ref | Should -Match 'Never offer to skip the questions'
+    $ref | Should -Match 'put its gaps in ✋'
+  }
+
+  It 'overrides ya no ajusta brainstorming ni writing-plans' {
+    foreach ($anchor in 'Size the Work', 'Builder check', 'no list of example answers', 'Execution Handoff', 'Frequent commits') {
+      Get-OverrideRow $anchor | Should -BeNullOrEmpty -Because "la fila «$anchor» pasa al fork"
+    }
   }
 
   It 'el README declara validada la 7.0.0' {

@@ -11,6 +11,8 @@ RED previo a escribir las reglas nuevas de la entrevista (Art. I), con el kit de
 | `pb-6` | 18 | 0,82 $ | igual que `pb-5`; ruido: para a mitad diciendo que «algo distinto de mí está modificando el mismo fichero» y sigue | falla (con ruido) |
 | `adr-1` | 20 | 0,49 $ | lista `.docs/sdd/decisions/`, lee la ADR 0003, la cita en ✋ y en «Términos y ADR», y propone la 0004 que la sustituye (`superseded by 0004`) | limpio |
 | `adr-2` | 22 | 0,57 $ | igual: lee la 0003, «Revierto el ADR 0003», candidata `0004 — … Sustituye al 0003` | limpio |
+| `adr6-1` | 16 | 0,42 $ | seis ADR en `decisions/`; lee la 0004 (la que casa con `src/**`), la cita y propone la 0007 que la sustituye | limpio |
+| `adr6-2` | 16 | 0,41 $ | igual: «ADR nueva que sustituye a la 0004» | limpio |
 | `sk-5` | 12 | 0,25 $ | ante cómo se ve la columna Estado, tres maquetas en texto aparte; ninguna sobre la app real ni con el detector de `§Frontend` | falla |
 | `sk-6` | 11 | 0,23 $ | igual: «Bocetos con tus datos» en texto | falla |
 
@@ -32,9 +34,9 @@ Además, `tests/headless/extract.mjs` no pudo parsear una línea larga del strea
 | --- | --- | --- |
 | Ninguna skill invoca `brainstorming` | falla 1/1 | se escribe (Task 2) |
 | Diseño por secciones en features de 4 o más tasks | falla 2/2 | se escribe (Task 3) |
-| La spec cita las ADR de lo que toca | **limpio 2/2** | decisión 5 del plan: no se escribe sin más; se enseña al dev-lead |
+| La spec cita las ADR de lo que toca | **limpio 4/4** (una ADR y seis) | no se escribe: enmienda de la spec, con la condición que puso el dev-lead; fila de deuda al cerrar |
 | Boceto sobre la app real | falla 2/2 | se escribe (Task 4) |
 
-La conducta de `adr` sale de leer `.docs/sdd/` en el paso 1: los dos sujetos listan la carpeta y ven `decisions/` con una sola ADR. Es una fuente incidental en un molde pequeño (`tech-stack.md`, «Matices de campaña»): con una carpeta de varias ADR, donde la que aplica no se distingue por el nombre, la muestra no dice nada.
+La conducta de `adr` sale de leer `.docs/sdd/` en el paso 1: los dos sujetos listan la carpeta y ven `decisions/` con una sola ADR. Era una fuente incidental en un molde pequeño (`tech-stack.md`, «Matices de campaña»), así que se repitió con seis ADR (`adr6`, molde `reservas-adr6`), donde la que aplica solo se reconoce por sus rutas: 2 de 2 la encontraron igual. La regla no se escribe.
 
-Total RED: 7 sujetos válidos, 4,01 $; con los invalidados, 5,69 $.
+Total RED: 9 sujetos válidos, 4,84 $; con los invalidados, 6,52 $.

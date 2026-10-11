@@ -23,6 +23,7 @@ case "$(cell Molde)" in
   reservas|reservas-main) ;;
   reservas-sin-ops) rm "$R/.docs/sdd/operations.md" ;;
   reservas-adr) mkdir -p "$R/.docs/sdd/decisions"; cp "$FIX/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
+  reservas-adr6) cp -r "$FIX/decisions-6" "$R/.docs/sdd/decisions" ;;
   reservas-adr-docs) mkdir -p "$R/.docs/sdd/decisions"; sed 's#  - src/\*\*#  - docs/**#' "$FIX/adr-0003-bookings-in-memory.md" > "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
   # Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   reservas-rojo) sed -i "s/const rooms = \['Norte', 'Sur'\];/const rooms = ['Norte', 'Sur', 'Este'];/" "$R/src/app.js" ;;

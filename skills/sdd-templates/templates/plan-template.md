@@ -9,7 +9,7 @@ created: <YYYY-MM-DD>
 
 # Plan de implementación — <título>
 
-> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+> Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
 > `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
 > Borra los bloques de ayuda (`>`) al redactar.
 
@@ -51,7 +51,7 @@ created: <YYYY-MM-DD>
 
 ## Review Focus
 
-> La pide `superpowers:writing-plans` en todo plan, y `sdd-implement` se la pasa literal al revisor final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero (el criterio, en `writing-plans`). Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda. Sin ella en la plantilla, 1 de 2 planes en Opus la escribió como «Foco de revisión» entre las decisiones técnicas, donde el revisor final no la recibe (`tests/plan-review-focus-red.md`).
+> La pide `plan-writing.md` de `sdd-propose` en todo plan, y `sdd-implement` se la pasa literal al revisor final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero (el criterio, en `plan-writing.md`). Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda. Sin ella en la plantilla, 1 de 2 planes en Opus la escribió como «Foco de revisión» entre las decisiones técnicas, donde el revisor final no la recibe (`tests/plan-review-focus-red.md`).
 
 - <entrada o condición> → <comportamiento esperado> · Task <n>, `<nombre del test>` — p. ej. `GET /bookings?status=Foo` → 400 con los estados válidos, no la lista entera · Task 1, `Rejects_unknown_status`
 

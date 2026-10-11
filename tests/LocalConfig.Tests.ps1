@@ -72,10 +72,10 @@ Describe 'sdd-propose lee el fichero local' {
     Get-SkillStep 5 | Should -Match 'sdd-kit\.local\.json'
   }
 
-  It 'el paso 5 dice que la cabecera nombra el fichero que fija el método, aunque la plantilla solo nombre sdd-kit.json' {
-    $step = Get-SkillStep 5
-    $step | Should -Match 'fijado en <fichero>'
-    $step | Should -Match 'An `auto` in `sdd-kit\.local\.json`'
+  It 'plan-writing dice que la cabecera nombra el fichero que fija el método, aunque la plantilla solo nombre sdd-kit.json' {
+    $handoff = Get-KitFile 'skills/sdd-propose/references/plan-writing.md'
+    $handoff | Should -Match 'fijado en <fichero>'
+    $handoff | Should -Match 'An `auto` in `sdd-kit\.local\.json`'
   }
 
   It 'los cierres de task y de patch también leen el fichero local' {
