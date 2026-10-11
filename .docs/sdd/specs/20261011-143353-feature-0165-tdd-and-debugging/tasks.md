@@ -16,7 +16,7 @@ created: 2026-10-11
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Escenarios y RED: antipatrones, costura, RED del hilo y escritor de RED | pending | — | |
+| 1 | Escenarios y RED: antipatrones, costura, RED del hilo y escritor de RED | done | — | t2, t3, t4 y t5 limpios: no entran los antipatrones, la costura, la regla del hilo ni el escritor; Task 3 se salta |
 | 2 | `sdd-tdd`, el encargo y lo que confirme la Task 1 | pending | — | |
 | 3 | Escritor de RED opcional en Native (solo si `t5` lo gana) | pending | — | |
 | 4 | `sdd-debugging` y el recableado | pending | — | |

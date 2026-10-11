@@ -189,7 +189,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   - `skills/sdd-tdd/` (la skill se invoca como `sdd-tdd` con `Skill`);
   - el paso del encargo, con el literal de las Restricciones;
   - `sdd-implement` nombrando `sdd-tdd`;
-  - la frase del README con 7 skills de superpowers, sin `test-driven-development`.
+  - la frase del README con 5 skills de superpowers, sin `test-driven-development`.
 
 **Ficheros**: crear `skills/sdd-tdd/*`, `tests/TddSkills.Tests.ps1`, `tests/sdd-tdd-green.md`; modificar `skills/sdd-implement/SKILL.md`, `skills/sdd-implement/references/implementer-prompt.md`, `README.md`, `THIRD_PARTY_NOTICES.md`, `tests/WordBudget.Tests.ps1`.
 
@@ -214,7 +214,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   - `h1` (humo Native: el hilo carga `sdd-tdd`).
   - Gana la versión del encargo más barata con 2 de 2. Si gana B, el paso 3 añade la carga.
 - [ ] **Step 6: Documentos de la task**:
-  - README: la frase de superpowers, de 8 a 7;
+  - README: la frase de superpowers, de 6 a 5 (la 0168 ya quitó `brainstorming` y `writing-plans`);
   - `THIRD_PARTY_NOTICES.md`: la línea de `sdd-tdd`;
   - `WordBudget`: el tope medido de `sdd-tdd`, redondeado a la centena de arriba y bajo su techo.
 - [ ] **Step 7: Evidencia** en `tests/sdd-tdd-green.md` y **commit de la task**.
@@ -257,7 +257,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: `sdd-tdd` (de la Task 2), para la fase 4.
 - Produce:
   - `skills/sdd-debugging/` (se invoca como `sdd-debugging` con `Skill`);
-  - la frase del README con 6 skills de superpowers: `brainstorming`, `writing-plans`, `using-git-worktrees`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`.
+  - la frase del README con 4 skills de superpowers: `using-git-worktrees`, `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`.
 
 **Ficheros**: crear `skills/sdd-debugging/*`; modificar `skills/sdd-implement/SKILL.md`, `skills/sdd-start-patch/SKILL.md`, `skills/sdd-propose/SKILL.md`, `skills/sdd-explore/SKILL.md`, `skills/sdd-templates/templates/{patch-template,tasks-template}.md`, `tests/batteries/sdd-propose/battery.md`, `tests/batteries/sdd-explore/battery.md`, `README.md`, `THIRD_PARTY_NOTICES.md`, `tests/WordBudget.Tests.ps1`.
 
@@ -277,7 +277,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: Humos**:
   - `d1` = `a3` de la batería de `sdd-propose`, con `MAX_TURNS` hasta el fix. Falla si no invoca `sdd-debugging`, si escribe el arreglo antes de la causa con su evidencia en el código, o si no hay un test en rojo antes del arreglo.
   - `e1` en la batería de `sdd-explore`: «¿por qué `libres 10:00-12:00` me da Norte si está reservada?», con el molde de `libres` roto. Falla si investiga o arregla él, o si nombra `superpowers:systematic-debugging` en vez de pasar a `sdd-propose`.
-- [ ] **Step 5: Documentos**: la frase del README, de 7 a 6, más el catálogo; `THIRD_PARTY_NOTICES.md`; el tope de `sdd-debugging`.
+- [ ] **Step 5: Documentos**: la frase del README, de 5 a 4, más el catálogo; `THIRD_PARTY_NOTICES.md`; el tope de `sdd-debugging`.
 - [ ] **Step 6: Evidencia** en `tests/sdd-tdd-green.md` y **commit de la task**.
 
 ### Task 5 — Documentos, filas y topes finales

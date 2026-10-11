@@ -17,6 +17,8 @@ F12=".docs/sdd/specs/20261009-100000-feature-0012-cancelled-report"
 F13=".docs/sdd/specs/20261009-110000-feature-0013-price-module"
 F14=".docs/sdd/specs/20261009-120000-feature-0014-saved-reason"
 F15=".docs/sdd/specs/20261009-130000-feature-0015-report-groupings"
+F16=".docs/sdd/specs/20261009-140000-feature-0016-room-hours"
+F17=".docs/sdd/specs/20261009-150000-feature-0017-reactivate"
 
 cp -r "$HERE/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
@@ -25,6 +27,8 @@ case "$SC" in
   r1b) cp "$FIX/app-0015.js" "$R/src/app.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
   r3) cp "$FIX/app-0013.js" "$R/src/app.js"; cp "$FIX/price.test.js" "$R/test/price.test.js" ;;
   r5) cp "$FIX/app-0014.js" "$R/src/app.js"; cp "$FIX/store.js" "$R/src/store.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
+  t2|t5a) cp "$FIX/app-0016.js" "$R/src/app.js" ;;
+  t3|t5b) cp "$FIX/app-0017.js" "$R/src/app.js" ;;
 esac
 g init -q -b main
 commit "feat: base del molde"
@@ -65,7 +69,33 @@ encargo() {
   "$NODE" "$HERE/compose.mjs" "$KIT" "${SUPERPOWERS_DIR:-}" "$values"
 }
 
+# El encargo del escritor de RED: solo los THEN, «Dónde se prueba» y las Interfaces de la task.
+red_writer() {
+  local folder="$1" test="$2"
+  "$NODE" -e '
+    const fs = require("fs");
+    const [brief, spec, plan, test, dir] = process.argv.slice(1);
+    const specText = fs.readFileSync(spec, "utf8"), planText = fs.readFileSync(plan, "utf8");
+    const between = (text, from, to) => text.split(from)[1].split(to)[0].trim();
+    const scenarios = specText.split("### Capacidad: `bookings`")[1].split("## Aprobaciones")[0].trim();
+    const values = {
+      "<DIRECTORY>": dir, "<THEN>": scenarios, "<DONDE>": between(specText, "## Dónde se prueba", "## Delta"),
+      "<INTERFACES>": between(planText, "**Interfaces**:", "**Ficheros**"), "<TEST>": test, "<PATRON>": "test/cancel.test.js",
+    };
+    let text = fs.readFileSync(brief, "utf8");
+    for (const [key, value] of Object.entries(values)) text = text.split(key).join(value);
+    process.stdout.write(text);' "$FIX/red-writer-brief.md" "$R/$folder/spec.md" "$R/$folder/plan.md" "$test" "$(cygpath -m "$R" 2>/dev/null || echo "$R")"
+}
+
 case "$SC" in
+  t2) open_feature 0016-room-hours "$F16" "$FIX/plan-0016.md" < "$FIX/spec-0016.md" ;;
+  t3) open_feature 0017-reactivate "$F17" "$FIX/plan-0017.md" < "$FIX/spec-0017.md" ;;
+  t5a)
+    open_feature 0016-room-hours "$F16" "$FIX/plan-0016.md" < "$FIX/spec-0016.md"
+    ASK="$(red_writer "$F16" test/horas.test.js)" ;;
+  t5b)
+    open_feature 0017-reactivate "$F17" "$FIX/plan-0017.md" < "$FIX/spec-0017.md"
+    ASK="$(red_writer "$F17" test/reactivar.test.js)" ;;
   r1)
     open_feature 0012-cancelled-report "$F12" "$FIX/plan-0012.md" < "$FIX/spec-0012.md"
     cp "$FIX/informe.test.js" "$R/test/informe.test.js"
@@ -101,20 +131,22 @@ case "$SC" in
 esac
 
 case "$SC" in
-  r2|r3|h1) export EXTRA_DISALLOWED="Agent" ;;
+  r2|r3|h1|t2|t3|t5a|t5b) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   r1|r1b|r5) MAX_TURNS="${MAX_TURNS:-40}" ;;
   r2|r3|r4) MAX_TURNS="${MAX_TURNS:-35}" ;;
+  t2|t3) MAX_TURNS="${MAX_TURNS:-40}" ;;
+  t5a|t5b) MAX_TURNS="${MAX_TURNS:-20}" ;;
   h2) MAX_TURNS="${MAX_TURNS:-80}" ;;
   *) MAX_TURNS="${MAX_TURNS:-60}" ;;
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
-for folder in "$F10" "$F12" "$F13" "$F14" "$F15"; do
+for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17"; do
   for kept in spec plan tasks; do [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"; done
 done
-for test in informe price store.e2e cancel; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done
+for test in informe price store.e2e cancel horas reactivar; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done
 [ -f "$R/src/app.js" ] && subject_keep "$R/src/app.js" app.js
 for ledger in "$R"/.superpowers/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## commits con sus ficheros"; g log --stat --format='--- %h %s' develop..HEAD; } | subject_save
