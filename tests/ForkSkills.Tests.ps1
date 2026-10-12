@@ -41,3 +41,31 @@ Describe 'sdd-worktrees' {
     $notice | Should -Match 'MIT License'
   }
 }
+
+Describe 'sdd-parallel-agents' {
+  It 'existe con su NOTICE' {
+    foreach ($path in 'skills/sdd-parallel-agents/SKILL.md', 'skills/sdd-parallel-agents/NOTICE') {
+      Join-Path $script:RepoRoot $path | Should -Exist
+    }
+  }
+
+  It 'ninguna skill invoca superpowers:dispatching-parallel-agents' {
+    Find-InSkills 'superpowers:dispatching-parallel-agents' | Should -BeNullOrEmpty
+  }
+
+  It 'review-spec.md despacha los dos revisores con sdd-parallel-agents' {
+    Get-KitFile 'skills/sdd-start-feature/references/review-spec.md' | Should -Match 'dos revisores.+`sdd-parallel-agents`'
+  }
+
+  It 'aplica el tope de agentes del proyecto y no reparte tasks del plan' {
+    $skill = Get-KitFile 'skills/sdd-parallel-agents/SKILL.md'
+    $skill | Should -Match 'control\.maxParallelAgents'
+    $skill | Should -Match 'Not for plan tasks'
+  }
+
+  It 'NOTICE nombra superpowers 7.0.0 y la licencia MIT' {
+    $notice = Get-KitFile 'skills/sdd-parallel-agents/NOTICE'
+    $notice | Should -Match 'obra/superpowers, version 7\.0\.0'
+    $notice | Should -Match 'MIT License'
+  }
+}

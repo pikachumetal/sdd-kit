@@ -43,10 +43,14 @@ case "$SC" in
     task_commit done "feat(bookings): listado de canceladas con su motivo"
     put "$F10/tasks.md" < "$FIX/tasks-0010-v1.md"
     commit "docs(sdd): registro de tasks de la 0010" ;;
+  a1)
+    g checkout -q -b feature/0011-void-others
+    put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
 esac
 
 case "$SC" in
   v1b) MAX_TURNS="${MAX_TURNS:-20}" ;;
+  a1) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 
