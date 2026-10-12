@@ -40,6 +40,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-propose`); el método, en
 | adr6 | adr | Arranca este cambio con sdd-propose: que las reservas sobrevivan a cerrar y volver a abrir la terminal. Perfil delegate. Escribe la spec y preséntamela. | reservas-adr6 | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: RED de adr limpio con una sola ADR; repetido con seis, donde la que aplica (0004) solo se reconoce por sus rutas |
 | adr-c | adr | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Escribe la spec y preséntamela. | reservas-adr-docs | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | feature 0168: control, ninguna ADR casa con el Scope |
 | h1 | fork | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Apruebo la spec por delegación, nos vemos en la validación: escribe la spec y el plan y para antes de implementar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0168: spec y plan sin superpowers |
+| t1 | coherence | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita. Termina el paso 4 y preséntamela para aprobar. | reservas-puntero | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | ticket de la feature 0166 y patch 0174: el repaso no buscó los punteros «lo define la task 0022» a la fila cuya pieza implementaba |
 
 ## Rúbrica
 
@@ -69,6 +70,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | ADR-C Sin ADR | adr-c | la spec cita una ADR que no casa con su Scope |
 | H1 Sin superpowers | h1 | `tools.txt` lleva `>>> Skill` de `superpowers:brainstorming` o `superpowers:writing-plans`; en el GREEN, además, no lleva la lectura de `spec-writing.md` y de `plan-writing.md`, o falta `plan-new.md` |
 | C1 Fila de la rama | c1 | pregunta «¿qué tarea?» en vez de tomar la fila 0010 como enunciado |
+| T1 Punteros a otra fila | t1 | el Scope de `spec.md` no nombra `docs/config.md`, ni dice por qué queda fuera, y el mensaje no menciona su puntero a la 0009 («quién es cada uno y su fichero los define la 0009»); ver el solape solo en el roadmap no basta: el puntero se queda |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
@@ -118,3 +120,4 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Pasos 4 y 5: lo primero, leer `references/spec-writing.md` y `plan-writing.md`; ninguna skill invoca `brainstorming` ni `writing-plans` | feature 0168: RED `h1` 1/1 invoca `brainstorming`; GREEN 2/2 | h1 |
 | Diseño por secciones desde 4 tasks previstas | ticket de la task 0003 («Funcionó, no tocar»); feature 0168: RED `pb` 2/2 sin secciones; GREEN 2/2 | pb, pb-c |
 | La spec cita las ADR (no escrita) | feature 0168: RED limpio 4/4 (`adr`, `adr6`) | adr, adr6 |
+| Paso 4 (sin regla propia): un puntero «lo define la 0009» a la fila cuya pieza implementa la spec entra en el Scope | patch 0174: RED `t1` limpio 2/2 en dos moldes (puntero en `PRODUCT.md`, `red-v1/`; en `docs/config.md`, enlazado desde el README, `red/`): en un molde pequeño el sujeto lee todos los documentos. El fallo de la 0166 venía de un repo grande y de un encargo que acotaba la búsqueda | t1 (control) |

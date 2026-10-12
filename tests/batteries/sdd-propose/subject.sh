@@ -21,6 +21,13 @@ cp -r "$HERE/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
 case "$(cell Molde)" in
   reservas|reservas-main) ;;
+  # La 0011 implementa los responsables de sala que una fila pendiente (0009) prometía, y docs/config.md apunta a esa fila.
+  # El puntero va fuera de los documentos que el paso 1 lee: en PRODUCT.md lo vieron 2 de 2 sin buscarlo (red-v1 del patch 0174).
+  reservas-puntero)
+    sed -i 's/^| 0011 |/| 0009 | **Responsables de sala**: quién responde de cada sala y qué puede hacer | ⏳ |\n| 0011 |/' "$R/.docs/sdd/roadmap.md"
+    printf '\nConfiguración: [docs/config.md](docs/config.md).\n' >> "$R/README.md"
+    mkdir -p "$R/docs"
+    printf '%s\n' '# Configuración' '' '- `data/`: ficheros de datos de la herramienta. Hoy no hay ninguno.' '- Responsables de sala: aún no hay; quién es cada uno y su fichero los define la 0009.' > "$R/docs/config.md" ;;
   reservas-sin-ops) rm "$R/.docs/sdd/operations.md" ;;
   reservas-adr) mkdir -p "$R/.docs/sdd/decisions"; cp "$FIX/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
   reservas-adr6) cp -r "$FIX/decisions-6" "$R/.docs/sdd/decisions" ;;
@@ -49,14 +56,14 @@ case "$SC" in
     g checkout -q -b feature/bump-node-22-18 ;;
   s1|c1) g checkout -q -b feature/0010-cancel-reason ;;
   g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
-  r1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
+  r1|t1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
   p1|p2) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | put "$F10/spec.md" ;;
 esac
 
 case "$SC" in
   g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
   d1|p3) MAX_TURNS="${MAX_TURNS:-60}" ;;
-  a1|a3|a4|k2|l1|x1|c1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  a1|a3|a4|k2|l1|x1|c1|t1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 
