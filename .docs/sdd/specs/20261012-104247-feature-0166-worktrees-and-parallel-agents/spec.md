@@ -21,7 +21,7 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `control-profiles` — el desvío nombra sus dos contraejemplos: tocar lo que la spec deja en «No entra» y la guía de una ronda de REFACTOR o de fix que añade o cambia un THEN.
+- Modificadas: `control-profiles` — el desvío nombra su contraejemplo: la guía de una ronda de REFACTOR o de fix que añade o cambia un THEN (el de «No entra» salió del delta: enmienda del 2026-10-12).
 - Modificadas: `feature-flow` — el worktree de la implementación lo prepara `sdd-worktrees`, y dos revisores de spec se despachan con `sdd-parallel-agents`.
 
 ## ✋ Decisiones que he tomado yo — valida estas
@@ -157,7 +157,7 @@ Fork por traducción: los dos `SKILL.md` de superpowers 7.0.0 enteros, con los c
 
 ### Capacidad: `control-profiles`
 
-**MODIFIED — Un cambio a la spec aprobada es un desvío** (añade los dos AND de los contraejemplos)
+**MODIFIED — Un cambio a la spec aprobada es un desvío** (añade el AND del REFACTOR)
 
 - GIVEN la spec aprobada de cancelar reservas, con la Task 1 cerrada y la Task 2 en curso, que descubre que la spec pide guardar el motivo de la cancelación y la tabla de reservas no tiene ese campo
 - WHEN el trabajo exige cambiar un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba»
@@ -168,7 +168,6 @@ Fork por traducción: los dos `SKILL.md` de superpowers 7.0.0 enteros, con los c
 - AND la misma acción se aplica cuando la respuesta a un freno de alcance cambia el texto de la spec; si no lo cambia, la respuesta se apunta en «Enmiendas» sin corregir nada
 - AND en `unattended` elige la opción más conservadora, la aplica igual en su sitio con su línea de «Enmiendas» marcada `sin aprobar` y, si no hay opción que no bloquee, aparca la feature (`⏸️ aparcada: <motivo>`)
 - AND si la enmienda añade ficheros, la entrada nombra, antes de pedir la aprobación, las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno en «Ficheros que toca», o dice «solape no comprobable» si el roadmap no declara ficheros; con la aprobación, la fila de la feature añade esos ficheros
-- AND con la Task 1 de la 0018, cuya solución pide cambiar una frase de `README.md` y la spec deja `README.md` en «No entra», el hilo en Native para con la acción update antes del commit y no escribe un `Ruling:`, aunque el cambio sea de una frase
 - AND con el humo de una skill fallado y una ronda de REFACTOR cuya guía nueva añade un AND a un requisito de la spec, el hilo para con el 🦆 y el ✋ antes de commitear esa guía, y no la commitea en la task en curso para pedir la aprobación en la siguiente
 
 ### Capacidad: `feature-flow`
@@ -193,6 +192,8 @@ Fork por traducción: los dos `SKILL.md` de superpowers 7.0.0 enteros, con los c
 - AND dos tasks independientes del plan no se despachan con `sdd-parallel-agents`: las ejecuta `sdd-implement` una detrás de otra
 
 ## Enmiendas
+
+- 2026-10-12 — Sale del delta de `control-profiles` el AND de «No entra» (el contraejemplo del ruling no se escribe) — su RED salió limpio: con un molde fiel a la 0168, 0/2 sujetos tocaron el README; lo esquivaron con un ruling sobre el plan ([evidencia](../../../../tests/sdd-deviations-red.md)); la fila de deuda pasa a «Esperar 2.º caso» — aprobada por la spec: «Cada texto entra solo si su RED falla» (decisión 6)
 
 ## Aprobaciones
 
