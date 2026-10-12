@@ -1,11 +1,11 @@
 # Entorno por worktree — <proyecto>
 
 > Contrato del entorno que necesita cada worktree más allá de instalar dependencias: base de
-> datos, puertos, servicios, datos de prueba. Crear, instalar y borrar el worktree en sí lo
-> gestiona `superpowers` (`using-git-worktrees`, `finishing-a-development-branch`); este
-> documento cubre solo lo que queda fuera de esas skills. Se calca SOLO si el proyecto trabaja
-> con worktrees Y su entorno necesita algo más que dependencias — si la segunda pregunta es no,
-> superpowers ya cubre el caso y este fichero no existe. Borra los bloques de ayuda (`>`) al
+> datos, puertos, servicios, datos de prueba. Crear el worktree e instalar sus dependencias lo
+> hace `sdd-worktrees`, que ejecuta `env:setup` después; borrarlo, `finishing-a-development-branch`
+> de superpowers. Este documento cubre solo lo que queda fuera de esas skills. Se calca SOLO si el
+> proyecto trabaja con worktrees Y su entorno necesita algo más que dependencias — si la segunda
+> pregunta es no, `sdd-worktrees` ya cubre el caso y este fichero no existe. Borra los bloques de ayuda (`>`) al
 > redactar.
 
 ## 1. El marcador `.sdd-env.json`
@@ -50,7 +50,7 @@ aislada>.
 ## 4. Dónde se engancha en el flujo
 
 - `env:setup` se ejecuta después de que el worktree exista e instale dependencias — ese paso
-  previo es de `superpowers`, no de este documento.
+  previo es de `sdd-worktrees`, no de este documento.
 - `env:clean` se ejecuta **antes** de que se ofrezca borrar el worktree: así el borrado nunca
   deja un contenedor, un puerto o un volumen huérfano.
 

@@ -27,6 +27,7 @@ BeforeAll {
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
+      'sdd-worktrees'       = @{ SkillMd = 1300; Total = 1300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
