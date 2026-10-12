@@ -1,0 +1,228 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Glob: .docs/sdd/specs/*0010*/*
+<<< .docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md
+.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md
+
+>>> Bash: GIT_DIR=$(cd "$(git rev-parse --git-dir)" && pwd -P); GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd -P); echo "GIT_DIR=$GIT_DIR"; echo "GIT_COMMON=$GIT_COMMON"; echo "BRANCH=$(git branch --show-current)"; echo "SUPER=$(git rev-parse --show-superproject-working-tree)"; echo "TOP=$(git rev-parse --show-toplevel)"; ls; ls .docs/sdd; cat package.json 2>/dev/null | head -30
+<<< GIT_DIR=<run>/repo/.git/worktrees/wt
+GIT_COMMON=<run>/repo/.git
+BRANCH=feature/0010-cancel-reason
+SUPER=
+TOP=<run>/wt
+package.json
+PRODUCT.md
+README.md
+scripts
+src
+test
+changelog.md
+constitution.md
+environments.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+{"type": "module", "scripts": {"env:setup": "node scripts/env-setup.mjs", "env:clean": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\"", "env:preflight": "node -e \"require('fs').statSync('data')\""}}
+
+>>> Bash: cat .docs/sdd/environments.md; echo ------; cat .docs/sdd/tech-stack.md; echo ------; cat .docs/sdd/sdd-kit.json; echo; ls scripts test; git status --short
+
+>>> Read: <run>\wt\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Plan de implementación — Motivo al cancelar
+5	spec: ./spec.md
+6	status: approved
+7	created: 2026-10-08
+8	---
+9	
+10	# Plan de implementación — Motivo al cancelar
+11	
+12	## Decisiones que he tomado yo — valida estas
+13	
+14	1. Dos tasks, Native.
+15	
+16	**Goal**: cancelar con motivo y listar las canceladas.
+17	
+18	**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+19	
+20	## Restricciones globales
+21	
+22	### De código
+23	
+24	- Texto de la interfaz en castellano.
+25	
+26	### De proceso
+27	
+28	- Native
+
+>>> Read: <run>\wt\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Motivo al cancelar
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-08
+14	---
+15	
+16	# Spec — Motivo al cancelar
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con 
+<<< # Entorno por worktree — salas
+
+## 1. El marcador `.sdd-env.json`
+
+Vive en la raíz del worktree: `ticket`, `state` (`active` | `cleaned`) y `created`.
+
+## 2. Las tres entradas
+
+| Entrada | Semántica |
+| --- | --- |
+| `env:setup` | crea `data/` con el almacén de reservas de prueba y deja el marcador en `active`; idempotente |
+| `env:clean` | borra `data/` y deja el marcador en `cleaned` |
+| `env:preflight` | comprueba que `data/` existe |
+
+**Runner**: `npm run env:setup`, `npm run env:clean`, `npm run env:preflight`.
+
+## 3. Ciclo de vida
+
+- **efímero**: uno por worktree; nace con `env:setup` y 
+
+>>> Bash: npm run env:setup 2>&1 | tail -5; echo ---; cat .sdd-env.json; echo; echo --- BASELINE; node --test 2>&1 | tail -15; echo ---; node "D:/code/.worktrees/sdd-kit/feature-0166-worktrees-and-parallel-agents/cli/bin/sdd.js" workspace ".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md"; git status --short
+<<< npm notice run env:setup
+npm notice run node scripts/env-setup.mjs
+entorno activo: data/ y .sdd-env.json
+---
+{"ticket":"worktree","state":"active","created":"2026-10-12T12:52:32.643Z"}
+
+--- BASELINE
+✔ libres excluye la sala reservada en la franja (0.9153ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1408ms)
+✔ cancelar una reserva activa (0.9692ms)
+✔ cancelar sin reserva lo dice (0.1574ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 265.8437
+---
+<run>\wt\.superpowers\sdd\plan
+?? .sdd-env.json
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\wt\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\wt\test\cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0166-worktrees-and-parallel-agents/skills/sdd-implement/references/implementer-prompt.md" | sed -n '/Quality decalogue/,/^## [^Q]/p' | head -60; cat .docs/sdd/constitution.md | head -60; git log --oneline -5; ls .superpowers/sdd/plan 2>&1
+<<< ## Quality decalogue
+
+Si una regla de aquí choca con las Restricciones de código, mandan las Restricciones.
+
+1. Names say what a thing is for; one word per concept in the code you touch.
+2. A function does one thing, at one level of abstraction: choosing the data and formatting it are two functions.
+3. Deep modules: a small interface that hides a lot; no wrapper that only passes a call through.
+4. Pull complexity down into the module, and design away the error cases you can instead of handling them in every caller.
+5. DRY is about knowledge, not text: one place decides each rule; prefer duplic
+
+>>> Bash: git branch -a; echo ---; cat .docs/sdd/roadmap.md; echo ---; cat .gitignore 2>/dev/null; git check-ignore -v .superpowers data; cat .superpowers/sdd/plan/plan-path; echo; ls -a .superpowers/sdd/plan
+<<< + develop
+* feature/0010-cancel-reason
+  main
+---
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 0012 | **Informe de canceladas**: `informe` lista las reservas canceladas por sala, con su motivo y el total | ⏳ |
+| 0013 | **Precio en su módulo**: el cálculo del precio sale de `app.js` sin cambiar lo que responde `preci
+
+>>> Write: <run>\wt\.superpowers\sdd\plan\progress.md
+<<< File created successfully at: <run>\wt\.superpowers\sdd\plan\progress.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (20 turnos, 0.38528960000000007 $)
+Ahora: la implementación de la 0010 está preparada y paro antes de la Task 1. Queda: arrancar la Task 1 cuando me lo digas, ~10 min.
+
+**Workspace del plan:** `.superpowers/sdd/plan` (ruta completa: `<run>\wt\.superpowers\sdd\plan`) — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia.
+
+## Estado
+
+- **Aislamiento:** ya estaba en un worktree enlazado, `feature/0010-cancel-reason`. No creé otro.
+- **Entorno:** `npm run env:setup` hecho, `.sdd-env.json` en `active`. No hay dependencias que instalar.
+- **Baseline** con el gate `node --test`: 4/4 en verde.
+- **Método:** Native, perfil `delegate`. `sdd-tdd` cargada. Plan y spec leídos.
+- **Ledger:** creado con el pre-flight scan, 9 filas con su ruling.
+
+## Rulings que he tomado
+
+1. **`--motivo` es opcional.** La spec solo describe cancelar con motivo y el test existente `cancelar una reserva activa` espera `cancelada Norte lun` sin él. Exigirlo cambiaría una salida observable que la spec no toca. Si el dev-lead quería que fuera obligatorio, es una enmienda a la spec, y conviene confirmarlo en la validación.
+2. **Campo `reason` en la reserva** y `cancelBooking(room, day, reason)`. Es el contrato entre la Task 1 y la Task 2, que el plan no fijaba.
+3. **`canceladas` filtra por `status === 'cancelled'`.** No muestra las `voided`, que son de la 0011. Sin canceladas devuelve cadena vacía, porque la spec calla.
+4. **Revisión final como autorrevisión.** No tengo herramienta de subagentes ni agentes `sdd-kit:effort-*` en esta sesión. Quedará anotada como `self-review (no subagent tool)` y decides tú si basta.
+
+## Avisos
+
+- `.sdd-env.json` no está en `.gitignore`. Los commits de task añadirán ficheros por nombre, nunca `git add -A`.
+- Las tasks del plan no traen pasos RED-GREEN con `Expected:`, solo Verificación y Ficheros. Los RED saldrán de los THEN de la spec. `sdd task start` puede quejarse del formato; lo veré al arrancar.
+- Antes de cada task cruzaré los ficheros con `develop`.
+
+Sin commits nuevos en esta preparación; el árbol solo tiene `.sdd-env.json` sin versionar.

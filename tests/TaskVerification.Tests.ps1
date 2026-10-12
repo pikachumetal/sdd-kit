@@ -58,6 +58,6 @@ Describe 'Despacho' {
     $skill = Get-KitFile 'skills/sdd-implement/SKILL.md'
     $skill | Should -Match '«Verificación visual»[^\n]*browser[^\n]*no probado'
     $skill | Should -Match '«Verificación lenta»[^\n]*background'
-    $skill | Should -Match 'closing gate[^\n]*runs once'
+    $skill | Should -Match 'closing gate[^\n]*once in the final validation[^\n]*never inside a task'
   }
 }

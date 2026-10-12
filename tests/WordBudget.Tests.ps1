@@ -17,6 +17,7 @@ BeforeAll {
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
       'sdd-feedback'        = @{ SkillMd = 700; Total = 700 }
       'sdd-grilling'        = @{ SkillMd = 900; Total = 900 }
+      'sdd-parallel-agents' = @{ SkillMd = 1100; Total = 1100 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
@@ -27,6 +28,7 @@ BeforeAll {
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
+      'sdd-worktrees'       = @{ SkillMd = 1300; Total = 1300 }
       'sdd-templates'       = @{ SkillMd = 1500; Total = 11990 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }

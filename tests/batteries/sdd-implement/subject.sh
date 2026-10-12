@@ -19,8 +19,12 @@ F14=".docs/sdd/specs/20261009-120000-feature-0014-saved-reason"
 F15=".docs/sdd/specs/20261009-130000-feature-0015-report-groupings"
 F16=".docs/sdd/specs/20261009-140000-feature-0016-room-hours"
 F17=".docs/sdd/specs/20261009-150000-feature-0017-reactivate"
+F18=".docs/sdd/specs/20261010-100000-feature-0018-help"
+F19=".docs/sdd/specs/20261010-110000-feature-0019-duplicate-note"
 
-cp -r "$HERE/mold-reservas/." "$R/"
+MOLD=mold-reservas
+[ "$SC" = k2 ] && MOLD=mold-kit
+cp -r "$HERE/$MOLD/." "$R/"
 put_kit_marker "$MARKER"
 case "$SC" in
   r1|r2) cp "$FIX/app-0012.js" "$R/src/app.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
@@ -29,6 +33,10 @@ case "$SC" in
   r5) cp "$FIX/app-0014.js" "$R/src/app.js"; cp "$FIX/store.js" "$R/src/store.js"; cp "$FIX/cancel-task1.test.js" "$R/test/cancel.test.js" ;;
   t2|t5a|p1|p2) cp "$FIX/app-0016.js" "$R/src/app.js" ;;
   t3|t5b) cp "$FIX/app-0017.js" "$R/src/app.js" ;;
+  w1)
+    cp "$FIX/package-w1.json" "$R/package.json"; mkdir -p "$R/scripts"; cp "$FIX/env-setup.mjs" "$R/scripts/env-setup.mjs"
+    cp "$FIX/environments-w1.md" "$R/.docs/sdd/environments.md"; cp "$FIX/tech-stack-w1.md" "$R/.docs/sdd/tech-stack.md" ;;
+  k1) cp "$FIX/app-0018.js" "$R/src/app.js"; cp "$FIX/readme-0018.md" "$R/README.md"; cp "$FIX/readme.test.js" "$R/test/readme.test.js" ;;
 esac
 g init -q -b main
 commit "feat: base del molde"
@@ -109,6 +117,11 @@ case "$SC" in
     if [ "$SC" = t1c ]; then cp "$FIX/cancel-task1.test.js" "$R/test/informe.test.js"; else cp "$FIX/informe-0015.test.js" "$R/test/informe.test.js"; fi
     ASK="$(encargo "$F15" "Comando informe" test/informe.test.js)"
     [ "$SC" = t1b ] && ASK="${ASK/1. Before touching/1. Load \`sdd-tdd\` with \`Skill\`. Then, before touching}" ;;
+  k1) open_feature 0018-help "$F18" "$FIX/plan-0018.md" < "$FIX/spec-0018.md" ;;
+  k2)
+    open_feature 0019-duplicate-note "$F19" "$FIX/plan-0019.md" < "$FIX/spec-0019.md"
+    cp "$FIX/guardar-nota-task1.md" "$R/skills/guardar-nota/SKILL.md"
+    put "$F19/green/h1.txt" < "$FIX/h1-0019.txt" ;;
   r2) open_feature 0012-cancelled-report "$F12" "$FIX/plan-0012.md" < "$FIX/spec-0012.md" ;;
   r3) open_feature 0013-price-module "$F13" "$FIX/plan-0013.md" < "$FIX/spec-0013.md" ;;
   r5)
@@ -123,6 +136,11 @@ case "$SC" in
     [ "$SC" = u2 ] && TURN2='Apruebo guardar quién cancela con --por <nombre> en cancelar.'
     export TURN2 ;;
   h1) approved_0010 | open_feature 0010-cancel-reason "$F10" "$FIX/plan-0010.md" ;;
+  w1)
+    approved_0010 | open_feature 0010-cancel-reason "$F10" "$FIX/plan-0010.md"
+    g checkout -q develop
+    g worktree add -q "$RUN/wt" feature/0010-cancel-reason
+    R="$RUN/wt"; MOLD_IS_REPO= ;;
   h2) as_subagent "$FIX/plan-0010.md" > "$RUN/plan-sdd.md"; approved_0010 | open_feature 0010-cancel-reason "$F10" "$RUN/plan-sdd.md" ;;
   r4)
     as_subagent "$FIX/plan-0010.md" > "$RUN/plan-sdd.md"; approved_0010 | open_feature 0010-cancel-reason "$F10" "$RUN/plan-sdd.md"
@@ -136,22 +154,26 @@ case "$SC" in
 esac
 
 case "$SC" in
-  r2|r3|h1|t2|t3|t5a|t5b|p1|p2) export EXTRA_DISALLOWED="Agent" ;;
+  r2|r3|h1|t2|t3|t5a|t5b|p1|p2|k1|k2|w1) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   r1|r1b|r5|t1a|t1b|t1c) MAX_TURNS="${MAX_TURNS:-40}" ;;
   r2|r3|r4) MAX_TURNS="${MAX_TURNS:-35}" ;;
-  t2|t3|p1|p2) MAX_TURNS="${MAX_TURNS:-40}" ;;
+  t2|t3|p1|p2|k1|k2) MAX_TURNS="${MAX_TURNS:-40}" ;;
   t5a|t5b) MAX_TURNS="${MAX_TURNS:-20}" ;;
+  w1) MAX_TURNS="${MAX_TURNS:-30}" ;;
   h2) MAX_TURNS="${MAX_TURNS:-80}" ;;
   *) MAX_TURNS="${MAX_TURNS:-60}" ;;
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
-for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17"; do
+for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17" "$F18" "$F19"; do
   for kept in spec plan tasks; do [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"; done
 done
-for test in informe price store.e2e cancel horas reactivar; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done
+for test in informe price store.e2e cancel horas reactivar ayuda; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done
 [ -f "$R/src/app.js" ] && subject_keep "$R/src/app.js" app.js
+[ -f "$R/.sdd-env.json" ] && subject_keep "$R/.sdd-env.json" sdd-env.json
+[ -f "$R/README.md" ] && subject_keep "$R/README.md" README.md
+[ -f "$R/skills/guardar-nota/SKILL.md" ] && subject_keep "$R/skills/guardar-nota/SKILL.md" guardar-nota.md
 for ledger in "$R"/.superpowers/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## commits con sus ficheros"; g log --stat --format='--- %h %s' develop..HEAD; } | subject_save

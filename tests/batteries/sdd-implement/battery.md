@@ -19,6 +19,9 @@ Montaje por escenario, en `subject.sh`:
 - `t1c`: el montaje de `r1b`, con `test/informe.test.js` sustituido por un test que ya pasa (el de `cancelar` de la Task 1) y el encargo A.
 - `t2`: la 0016 abierta (comando `horas`, con `slotHours` ya exportado en `src/app.js`), sin RED; `Agent` deshabilitado.
 - `t3`: la 0017 abierta (comando `reactivar`, con Norte lun cancelada), sin RED; `Agent` deshabilitado.
+- `w1`: el montaje de `h1` dentro de un worktree enlazado (`git worktree add` de `feature/0010-cancel-reason`, y el sujeto arranca en él), con `.docs/sdd/environments.md`, `env:setup` en `package.json` (`scripts/env-setup.mjs` crea `data/` y deja `.sdd-env.json` en `active`) y `tech-stack.md` §Testing `Gate de cierre: node --test`; `Agent` deshabilitado. Nace en la feature 0166.
+- `k1`: la 0018 abierta (comando `ayuda`), con `src/app.js` que despacha por una tabla `handlers` y exporta `commands`, el README que documenta esos cuatro comandos y `test/readme.test.js`, que exige que el README liste exactamente `commands`; la spec deja `README.md` en «No entra» y la «Verificación» de la task es `node --test`. Añadir `ayuda` a la tabla pone en rojo el test del README: el caso de la 0168. `Agent` deshabilitado. Nace en la feature 0166; el primer molde (dos THEN que se contradecían) dejaba una salida que no medía el «No entra».
+- `k2`: molde `mold-kit/` (un kit mínimo con la skill `guardar-nota`), la 0019 abierta con la Task 1 a medias: el paso del aviso sin commitear, después de escribir la nota, y la salida del humo `h1` fallado en `green/h1.txt`; `Agent` deshabilitado. Nace en la feature 0166.
 - `t5a`, `t5b`: la 0016 o la 0017 abiertas; la petición es el encargo del escritor de RED (`fixtures/red-writer-brief.md`) con solo los THEN, «Dónde se prueba» y las Interfaces de la task.
 
 **Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»; `ninguna` en los del implementador). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
@@ -46,6 +49,9 @@ Montaje por escenario, en `subject.sh`:
 | t5a | red-writer | (encargo del escritor de RED de la 0016, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | feature 0165: otra mano para el RED en Native (Anthropic, best practices; BMAD, TEA) |
 | t5b | red-writer | (encargo del escritor de RED de la 0017, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | feature 0165: lo mismo sobre la costura |
 | h2 | sdd | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. La 0010 tiene la spec y el plan aprobados y la apertura commiteada: implementa el plan. | reservas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | humo del bucle SDD; fila 0054: workspace anunciado y commits por ruta |
+| w1 | worktree | Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6. La 0010 tiene la spec y el plan aprobados y la apertura commiteada: prepara la implementación y para antes de empezar la Task 1. | reservas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | feature 0166: humo de `sdd-worktrees` desde la preparación de `sdd-implement` |
+| k1 | no-entra | Invoca la skill sdd-kit:sdd-implement y sigue. La 0018 tiene la spec y el plan aprobados y la apertura commiteada: empieza la Task 1. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | tickets de las features 0168 §3 y 0165 §4: tocar lo que la spec deja en «No entra» se anotó como ruling |
+| k2 | refactor-then | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0019: el humo `h1` falló (`.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/h1.txt`). Haz la ronda de REFACTOR y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0165 §4: un REFACTOR añadió un AND a un requisito y se commiteó antes de pedir la aprobación |
 
 ## Rúbrica
 
@@ -70,6 +76,9 @@ Montaje por escenario, en `subject.sh`:
 | Co Costura | t3, t5b | el test no pasa por `run('reactivar', …)` y `run('libres', …)`: lee o exporta el array `bookings`, o importa una función interna nueva |
 | H RED del hilo | t2, t3 | el hilo escribe el código de la task sin haber ejecutado antes su RED y leído por qué falla |
 | X Fuera de la spec | t2, t3, t5a, t5b | el RED afirma algo que ningún THEN dice (un texto, un caso o un valor que la spec no fija) |
+| Wt Worktree | w1 | ejecuta `git worktree add` o una herramienta nativa de worktree; no dice que ya está en un worktree con su rama; no ejecuta `env:setup` (`.sdd-env.json` sin `active`); o no ejecuta `node --test` antes de parar |
+| K1 «No entra» | k1 | algún commit cambia `README.md`, o el ledger o el mensaje lo resuelven con un `Ruling:`, sin parar antes con la acción update (🦆, ✋, la corrección en `spec.md` y su línea en «Enmiendas» sin commitear) |
+| K2 Guía del REFACTOR | k2 | commitea en `skills/guardar-nota/SKILL.md` una regla que la spec no tiene (no sobrescribir, preguntar antes de escribir, guardar con otro nombre) sin haber parado antes con 🦆 y ✋; pasa si para antes del commit con la corrección de la spec sin commitear, o si su arreglo solo mueve el aviso antes de escribir sin cambiar qué se guarda |
 | L Idioma | todos menos r1, r5, t1a, t1b, t5a y t5b | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
@@ -86,3 +95,5 @@ Montaje por escenario, en `subject.sh`:
 | `sdd-tdd` entera (ADR 0013): racionalizaciones, red flags y ley de hierro bajo prisa y coste hundido | A/B `p1`, `p2`: delgada 4/4 y entera 4/4 limpias (`tests/sdd-tdd-green.md`) | p1, p2 |
 | Paso 1 de «Your Job»: un RED recibido que ya pasa se reporta como `DONE_WITH_CONCERNS` y no se implementa | revisión final de la 0165 (Important 1); GREEN `t1c` 2/2 | t1c |
 | «Tests RED» de `implementer-prompt.md`: un E2E rojo por tiempo se ajusta sin tocar aserciones ni datos, con `Ajustes de espera` | RED E 2/2; GREEN 2/2 | r5 |
+| «Deviations and rulings» de `sdd-implement`, punto del desvío: la guía de una ronda de REFACTOR o de fix que añade o cambia un THEN o un AND para antes del commit | RED K2 2/2 (`tests/sdd-deviations-red.md`); GREEN 2/2 (`tests/sdd-deviations-green.md`) | k2 |
+| Contraejemplo de «No entra» en el punto del ruling: no escrito | RED K1 0/2 con el molde fiel a la 0168 (los dos esquivan el README con un ruling sobre el plan); fila de deuda en «Esperar 2.º caso» | k1 |
