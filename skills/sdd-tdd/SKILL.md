@@ -181,7 +181,7 @@ Confirm, with the task's «Verificación» commands:
 
 **Other tests fail?** Fix now.
 
-**"Other tests" means the task's «Verificación».** The full suite is the closing gate, and the thread runs it once, in the final validation: a scope statement in your task bounds what you run. Any failure that run shows —including one you didn't cause— goes in your report by name; a red test you watched scroll past and didn't mention is a report falsified by omission.
+**"Other tests" means the task's «Verificación».** The full suite is the closing gate, and the thread runs it at the baseline of `sdd-worktrees` and once in the final validation: a scope statement in your task bounds what you run. Any failure that run shows —including one you didn't cause— goes in your report by name; a red test you watched scroll past and didn't mention is a report falsified by omission.
 
 ### REFACTOR - Clean Up
 

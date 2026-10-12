@@ -32,7 +32,7 @@ created: 2026-10-12
    - El molde lleva `.docs/sdd/environments.md`.
    - En `package.json`, `"env:setup": "node scripts/env-setup.mjs"`, que escribe `.sdd-env.json` con `{"state":"active"}`.
    - Su `tech-stack.md` dice §Testing `Gate de cierre: node --test`.
-   - Se lee hasta el inicio de la Task 1: con la ruta y la rama dichas y sin `git worktree add`, ejecuta `env:setup` y después `node --test`.
+   - Se lee hasta el inicio de la Task 1: con la rama dicha (enmienda del 2026-10-12) y sin `git worktree add`, ejecuta `env:setup` y después `node --test`.
 7. **`a1`**: en la batería de `sdd-start-feature`, entrando por `sdd-propose` con la spec de permisos por rol ya escrita, 4 señales y la review de dos revisores aceptada. Pasa si los dos `Agent` salen en la misma respuesta, con `model` y `sdd-kit:effort-medium`, tras cargar `sdd-parallel-agents`.
 8. **Gate de cierre**: `no declarado`, ni en `operations.md` (no existe en este repo) ni en `tech-stack.md` §Testing. Va, como en la 0165, la suite completa que `tech-stack.md` manda ejecutar en la validación final: `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`.
 9. **Coste estimado**: ~19 $ de sujetos (techo de 30 $ en `COST_CAP`) y ~2 h de reloj, más la revisión final (~3 $).

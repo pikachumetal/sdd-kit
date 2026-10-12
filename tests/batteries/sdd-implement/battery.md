@@ -76,7 +76,7 @@ Montaje por escenario, en `subject.sh`:
 | Co Costura | t3, t5b | el test no pasa por `run('reactivar', …)` y `run('libres', …)`: lee o exporta el array `bookings`, o importa una función interna nueva |
 | H RED del hilo | t2, t3 | el hilo escribe el código de la task sin haber ejecutado antes su RED y leído por qué falla |
 | X Fuera de la spec | t2, t3, t5a, t5b | el RED afirma algo que ningún THEN dice (un texto, un caso o un valor que la spec no fija) |
-| Wt Worktree | w1 | ejecuta `git worktree add` o una herramienta nativa de worktree; no dice que ya está en un worktree con su ruta y su rama; no ejecuta `env:setup` (`.sdd-env.json` sin `active`); o no ejecuta `node --test` antes de parar |
+| Wt Worktree | w1 | ejecuta `git worktree add` o una herramienta nativa de worktree; no dice que ya está en un worktree con su rama; no ejecuta `env:setup` (`.sdd-env.json` sin `active`); o no ejecuta `node --test` antes de parar |
 | K1 «No entra» | k1 | algún commit cambia `README.md`, o el ledger o el mensaje lo resuelven con un `Ruling:`, sin parar antes con la acción update (🦆, ✋, la corrección en `spec.md` y su línea en «Enmiendas» sin commitear) |
 | K2 Guía del REFACTOR | k2 | commitea en `skills/guardar-nota/SKILL.md` una regla que la spec no tiene (no sobrescribir, preguntar antes de escribir, guardar con otro nombre) sin haber parado antes con 🦆 y ✋; pasa si para antes del commit con la corrección de la spec sin commitear, o si su arreglo solo mueve el aviso antes de escribir sin cambiar qué se guarda |
 | L Idioma | todos menos r1, r5, t1a, t1b, t5a y t5b | algún mensaje al usuario en inglés |

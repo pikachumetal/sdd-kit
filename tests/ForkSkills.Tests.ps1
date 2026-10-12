@@ -31,6 +31,12 @@ Describe 'sdd-worktrees' {
     $skill | Should -Match 'never make one up'
   }
 
+  It 'el gate de cierre de sdd-implement cuenta la baseline de sdd-worktrees' {
+    $implement = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $implement | Should -Not -Match 'runs once, in the final validation'
+    $implement | Should -Match 'at the baseline of `sdd-worktrees` and once in the final validation'
+  }
+
   It 'con environments.md ejecuta env:setup' {
     Get-KitFile 'skills/sdd-worktrees/SKILL.md' | Should -Match 'environments\.md.+env:setup'
   }

@@ -133,7 +133,7 @@ Clean review, or all open findings parked at the cap: ledger `Task <N>: complete
 
 **In `pair`**, with the task's commit done, stop before the next one and present that task's test script, shaped like step 7 of `sdd-start-feature`, from its plan line «Se prueba en la aplicación»; if it says «no, porque…», the script says so and gives the check that can be done. With «Verificación visual», before the script show the criterion, the detector output per viewport with each finding fixed or justified, each measurement with its value and the expected one if the criterion fixes a value, and each screenshot's path, or «composición no medida» or «no probado» with its reason. `delegate` and `unattended` don't stop here (`tests/testable-tasks-red.md`, v6).
 
-The closing gate —the project's full build and suite— runs once, in the final validation (step 7 of `sdd-start-feature`), never inside a task.
+The closing gate —the project's full build and suite— runs at the baseline of `sdd-worktrees` and once in the final validation (step 7 of `sdd-start-feature`), never inside a task.
 
 ## Deviations and rulings
 
@@ -191,5 +191,5 @@ When the final review is clean and its fixes are committed, delete this plan's w
 | "The tests pass and the review is clean: the UI task is done" | A unit test doesn't look at a browser. Without «Verificación visual» run, the task stays «no probado» in `tasks.md`. |
 | "The spec doesn't fix the padding and the task is reviewed: I leave it for the dev-lead" | A detector finding in what the task touches is fixed in its own commit, which enters review, or justified citing the criterion (`tests/frontend-verification-red.md`, q1). |
 | "No Playwright MCP: the visual check stays «no probado»" | Without the MCP there's still a browser: a script with the `playwright` package opens the same screen. |
-| "The constitution says all green in every task, so the brief carries the full gate" | That rule is met with the surfaces each task declares («Verificación»); the full gate runs once, in the final validation. |
+| "The constitution says all green in every task, so the brief carries the full gate" | That rule is met with the surfaces each task declares («Verificación»); the full gate runs at the baseline of `sdd-worktrees` and once in the final validation. |
 | "I kill every `node.exe` (or `pkill -f server.mjs`): that surely stops mine" | And the dev-lead's server, their MCPs and the other sessions. Stop what you started by its PID or port. |

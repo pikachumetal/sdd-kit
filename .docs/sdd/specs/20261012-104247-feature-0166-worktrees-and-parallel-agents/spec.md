@@ -176,7 +176,7 @@ Fork por traducción: los dos `SKILL.md` de superpowers 7.0.0 enteros, con los c
 
 - GIVEN la 0010 con la spec y el plan aprobados, abierta en un worktree que creó Orca en la rama `feature/0010-cancel`, y un proyecto con `.docs/sdd/environments.md` y `.docs/sdd/operations.md` §Testing `Gate de cierre: node --test`
 - WHEN `sdd-implement` hace su preparación
-- THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su ruta y su rama, y no crea otro
+- THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
 - AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
 - AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `operations.md`, `tech-stack.md` ni la constitution, lo dice y pregunta qué ejecutar
 - AND si la baseline falla, informa de los fallos y pregunta si sigue o investiga
@@ -193,6 +193,7 @@ Fork por traducción: los dos `SKILL.md` de superpowers 7.0.0 enteros, con los c
 
 ## Enmiendas
 
+- 2026-10-12 — ADDED «El worktree de la implementación lo prepara `sdd-worktrees`»: el THEN dice «lo dice con su rama», no «con su ruta y su rama» — el humo `w1` no escribió la ruta en 3 de 3 sujetos, tras dos rondas de REFACTOR que no movieron la conducta y se retiran (Art. I); el Step 0 vuelve al texto de la fuente, que la pide sin medirse ([evidencia](../../../../tests/sdd-worktrees-green.md)) — pasada de fix de la revisión final, tras la Task 2 — aprobada: «Enmienda: solo la rama (Recomendada)», 2026-10-12
 - 2026-10-12 — Sale del delta de `control-profiles` el AND de «No entra» (el contraejemplo del ruling no se escribe) — su RED salió limpio: con un molde fiel a la 0168, 0/2 sujetos tocaron el README; lo esquivaron con un ruling sobre el plan ([evidencia](../../../../tests/sdd-deviations-red.md)); la fila de deuda pasa a «Esperar 2.º caso» — aprobada por la spec: «Cada texto entra solo si su RED falla» (decisión 6)
 
 ## Aprobaciones
