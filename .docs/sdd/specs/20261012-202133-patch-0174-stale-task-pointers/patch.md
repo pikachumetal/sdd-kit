@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-12
 branch: patch/0174-stale-task-pointers
-commit: <hash>
+commit: e3d01fe
 ---
 
 # Patch 0174 — Punteros desfasados a la task 0022 y un repaso de coherencia que no los busca
@@ -45,13 +45,15 @@ Por qué el repaso de la 0166 no los vio: su encargo pedía listar el grep de lo
 | 1 | `nadie remite ya el tope de agentes a la task 0022` (`ForkSkills.Tests.ps1`) con el kit de `develop` y con la rama | ✅ falla con `develop` (0/1) y pasa con la rama (1/1) |
 | 2 | RED `t1` v1, puntero en `PRODUCT.md` (`red-v1/out/`) | limpio 2/2: los dos citan el puntero y el solape con la 0009 · disparador ausente: el paso 1 lee `PRODUCT.md` · 0,69 $ |
 | 3 | RED `t1` v2, puntero en `docs/config.md` (`red/out/`) | limpio 2/2: los dos abren `docs/config.md` desde el README y lo ponen en el Scope · 0,62 $ |
-| 4 | `rg "0022"` en `skills/` y `.docs/sdd/capabilities/` tras el fix | solo quedan `control-profiles.md:3`, `:156` (reintentos), `feature-flow.md:467` y escenarios con la 0022 como dato |
+| 4 | `grep 0022` en `skills/` y `.docs/sdd/capabilities/` tras el fix | solo quedan `control-profiles.md:3`, `:156` (reintentos), `feature-flow.md:467` y escenarios con la 0022 como dato |
+
+Validación en campo: 2026-10-12 · ForkSkills `0174` 1/1 (0/1 con `develop`) · pre-commit 1.114 Pester y 757 CLI en verde · RED `t1` 4 sujetos con ejecución real, limpio en los dos moldes
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,5 h
 - Inicio: 2026-10-12T20:21Z
-- Real: <Yh>
+- Real: 0,4 h (de la clasificación, ~20:10Z, al cierre, 20:36Z), con los dos RED de ~5 min
 
 ## 6. Delta de capacidad
 
