@@ -153,7 +153,7 @@ Si el usuario, aun así, dice qué ha probado, registras `Validado` con su frase
 - La spec la aprueba el agente, con las decisiones registradas en «Decisiones que he tomado yo».
 - Si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, la feature queda `⏸️ aparcada: <pregunta>` en el roadmap y el agente sigue con la siguiente feature de la release.
 - Al terminar la release, un solo informe: features cerradas, decisiones, enmiendas sin aprobar y features aparcadas.
-- Los reintentos y el tope de agentes en paralelo no son de esta capacidad: los define la task 0022, que lee `control.maxParallelAgents`. El vigía de silencio sí: [Vigía de silencio](#vigía-de-silencio).
+- El tope de agentes en paralelo no es de esta capacidad: lo aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md), que lee `control.maxParallelAgents`. Los reintentos por tipo de fallo, tampoco: los define la task 0022. El vigía de silencio sí: [Vigía de silencio](#vigía-de-silencio).
 
 ## Vigía de silencio
 
@@ -228,7 +228,7 @@ Conjunto cerrado:
 
 `merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
-`control.maxParallelAgents` solo se declara aquí: su conducta la define la task 0022. `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
+`control.maxParallelAgents` solo se declara aquí: su conducta la aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md). `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
 
 El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada: sería concederse a sí mismo el atajo. Cuando el usuario lo pide, la frase y la fecha van en una fila de «Aprobaciones» (o en el commit, si el cambio es en `sdd-kit.json`). En `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`.
 

@@ -69,6 +69,14 @@ Describe 'sdd-parallel-agents' {
     $skill | Should -Match 'Not for plan tasks'
   }
 
+  It 'nadie remite ya el tope de agentes a la task 0022 (patch 0174)' {
+    foreach ($file in 'skills/sdd-config/SKILL.md', 'skills/sdd-start-feature/references/control-profiles.md') {
+      $text = Get-KitFile $file
+      $text | Should -Not -Match 'tope de agentes[^.]*task 0022|maxParallelAgents` solo se declara aquí: su conducta la define la task 0022'
+      $text | Should -Match 'sdd-parallel-agents'
+    }
+  }
+
   It 'NOTICE nombra superpowers 7.0.0 y la licencia MIT' {
     $notice = Get-KitFile 'skills/sdd-parallel-agents/NOTICE'
     $notice | Should -Match 'obra/superpowers, version 7\.0\.0'
