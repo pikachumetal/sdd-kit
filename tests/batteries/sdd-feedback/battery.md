@@ -25,5 +25,5 @@ Cada regla de `skills/sdd-feedback/SKILL.md` que esta batería mide, de dónde v
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Paso 1 y regla de la fuente: una versión, cifra o cita de «Qué pasó» sale de un fichero o un comando nombrado en «Fuente»; lo recordado y sin comprobar se comprueba o se quita | `tests/sdd-feedback-0150-red.md`, fb1: el sujeto copió `superpowers_version: 7.1.0` de las notas sin mirar la instalada (7.0.0) | fb1 |
+| Paso 1 y regla de la fuente: una versión, cifra o cita de «Qué pasó» sale de un fichero o un comando nombrado en «Fuente»; lo recordado y sin comprobar se comprueba o se quita | `tests/sdd-feedback-0150-red.md`, fb1: el sujeto copió `superpowers_version: 7.1.0` de las notas sin mirar la instalada (7.0.0); GREEN fb1 1/1 (`tests/sdd-feedback-0150-green.md`) | fb1 |
 | Las demás reglas (privacidad, criterio de aceptación, verificación, coste respaldado, menores, iniciativa propia, ruta del kit): traducción sin cambio | `tests/kit-feedback-red.md`, `tests/kit-feedback-noise-red.md` y sus GREEN | ninguno: la traducción la vigila `tests/KitFeedback.Tests.ps1` |

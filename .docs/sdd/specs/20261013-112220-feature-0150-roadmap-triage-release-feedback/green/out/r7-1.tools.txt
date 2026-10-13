@@ -1,0 +1,132 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd . && git branch --all && ls && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/steering/debt.md 2>/dev/null; ls .docs/sdd .docs/sdd/steering; cat ROADMAP.md 2>/dev/null
+<<< Exit code 1
+* develop
+  main
+package.json
+README.md
+src/
+test/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls .docs/sdd/specs; cat .docs/sdd/constitution.md | head -60
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: find src test -type f | head -30; cat package.json; grep -rn -i "franja\|slot\|hora" src | head -30
+<<< src/app.js
+test/app.test.js
+{"type": "module"}
+src/app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+src/app.js:5:function freeRooms(slot) {
+src/app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+
+>>> Bash: cat src/app.js; node -e "import('./src/app.js').then(m=>{console.log(Object.keys(m));for(const k of Object.keys(m))console.log(k)})"; git log --oneline | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: node src/app.js libres "banana"; node src/app.js libres ""; node src/app.js libres "25:99-xx"; node src/app.js libres "10:00-12:00"
+<<< Norte, Sur
+Norte, Sur
+Norte, Sur
+Sur
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green2/skills/sdd-templates/templates" && grep -n -B2 -A12 -i "deuda" roadmap-template.md
+<<< 1-# Roadmap — <proyecto>
+2-
+3:> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-end-feature` (marca la fila de la feature), `sdd-end-patch` (tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 🧪 validación 
+
+=== RESULTADO (9 turnos, 0.17476040000000004 $)
+He triado la deuda y te dejo la propuesta sin escribir nada: decides tú.
+
+## Estado
+
+El proyecto está en forma 2.x (`.docs/sdd/roadmap.md`, sin `ROADMAP.md` ni `debt.md`). Solo hay **una** fila en «Deuda técnica». No hay ramas `feature/*` abiertas.
+
+## La fila
+
+**«Sin validación del formato de franja horaria»** (impacto Bajo, plan «Patch cuando moleste»).
+
+Reproducida en `develop`:
+
+```
+$ node src/app.js libres "banana"
+Norte, Sur
+$ node src/app.js libres "25:99-xx"
+Norte, Sur
+$ node src/app.js libres ""
+Norte, Sur
+$ node src/app.js libres "10:00-12:00"   # franja válida, para comparar
+Sur
+```
+
+Una franja que no es `HH:MM-HH:MM` se acepta sin error y se responde que todas las salas están libres. Eso es un resultado falso, no solo una validación ausente.
+
+## Propuesta
+
+| Estado | Destino | Motivo |
+| --- | --- | --- |
+| **Actuar** | Patch nuevo en «Próximo», con id reservado con `sdd id next --reserve` | La reproducción es determinista y la solución está fijada (rechazar con error lo que no encaja en `HH:MM-HH:MM`). Encaja en el carril patch. |
+
+- **Impacto:** lo subiría de «Bajo» a «Medio»: no es un fallo visible sin más, `libres` da una disponibilidad falsa y puede llevar a reservar una sala ocupada. Si prefieres dejarlo en «Bajo», se queda igual.
+- **Destino:** `**Actuar**: patch <id> — rechazar franjas con formato inválido`.
+- **Fila nueva en «Próximo»:** `Patch: validar el formato de franja horaria en libres`, ⏳, detrás de la fila 1 (avisos por correo) salvo que prefieras que vaya antes.
+
+## Aparte
+
+La tabla de deuda y la de Próximo tienen cabeceras que no son las literales de la plantilla (`Deuda | Impacto | Plan` en vez de `Ítem | Impacto | Destino`, y la fila `1` sin id de 4 dígitos). Lo anoto como forma heredada: lo vería `sdd roadmap check` y lo arreglaría la migración, no este triaje. Si quieres, al escribir la fila ajusto la cabecera de «Deuda técnica» a la literal.
+
+¿Doy el visto bueno a la propuesta (Actuar, patch nuevo, impacto Medio, tras la fila 1)? Con tu OK reservo el id, escribo, paso `sdd roadmap check` y publico. También vale un «decide tú».

@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd 2>&1 | head -50; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>/dev/null | head -80; done; echo "=== local"; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; echo "=== index"; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green2/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+
+>>> Grep: cancel|cancelad
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documento
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js .docs/sdd/sdd-kit.json; ls .docs/sdd/specs
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback\300fd786-2a64-487e-8e67-3e9f5f7b2120\scratchpad\kit-green2\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md | head -60
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+
+=== RESULTADO (8 turnos, 0.1834064 $)
+Ahora: clasificar el cambio (ya he leído el contexto y el código). Queda: tu confirmación del carril y, después, la spec, ~5 min.
+
+🦆 **En llano:** `cancelar` no mira las reservas. Devuelve «cancelada <día> <hora>» con cualquier argumento, y no borra nada de `bookings`. El test actual `cancelar respeta el día` da por bueno ese comportamiento: espera «cancelada mar 10:00» aunque no exista ninguna reserva el martes. Arreglarlo exige decidir qué cuenta como «existe» y qué texto ve el usuario cuando no existe.
+
+**Carril: no es patch.** El fallo es determinista, pero la solución no está fijada. Tendría que decidir yo tres cosas que se ven:
+- el texto del mensaje cuando no existe,
+- cómo se compara la hora (`bookings` guarda la franja `10:00-12:00` y el comando recibe `10:00`),
+- si cancelar de verdad elimina la reserva.
+
+Eso, según el kit, es feature aunque sea pequeña.
+
+**Propongo modo lite**, que cumple las condiciones:
+- el flujo existe y se lee (`src/app.js`, rama `cancelar`);
+- no cambia contratos públicos (misma firma `run(cmd, params)`);
+- no cambia el schema de datos (`bookings` en memoria, sin persistencia);
+- cabe en un solo módulo (`src/app.js` y su test);
+- no hay `estimation.md`, así que esa condición no aplica.
+
+Lite significa una spec corta, sin `plan.md`, con el gate de aprobación de la spec igual. Perfil `pair`, del proyecto (`sdd-kit.json`).
+
+**¿Cómo seguimos?**
+1. **Modo lite (recomendada):** abro `feature/<id>` con el id de `sdd id next`, te entrevisto las tres decisiones y escribo la spec corta.
+2. **Modo full:** lo mismo, con spec completa y plan.
+3. **Dejarlo como está:** lo apunto en el roadmap sin hacerlo todavía (`sdd-roadmap`).
+
+Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación» y no paro en el gate de la spec.

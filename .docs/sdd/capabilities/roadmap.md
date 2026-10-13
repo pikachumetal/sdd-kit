@@ -18,10 +18,10 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 
 ### Cada feature de una release declara los ficheros que toca
 
-- GIVEN un `sdd-roadmap` que escribe la sección «Release N» del roadmap
-- WHEN añade la fila de una feature
-- THEN la tabla sigue la cabecera de `roadmap-template.md`, `| id | Feature | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» nombra los ficheros o módulos previstos
-- AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra esa columna
+- GIVEN un `sdd-roadmap` que escribe la fila de una feature en Now o Next de `ROADMAP.md`, o en la sección «Release N» de un roadmap 2.x
+- WHEN añade la fila
+- THEN en `ROADMAP.md` su brief lleva `**Toca:**` con los ficheros o módulos previstos; en el roadmap 2.x la tabla sigue la cabecera de `roadmap-template.md`, `| id | Feature | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» los nombra
+- AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra ese «Toca:» o esa columna
 
 ### Una re-medición que contradice una fila la reescribe
 
@@ -37,7 +37,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: línea <n>: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y la misma línea para la del 2026-09-20, y sale con 1
 - AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
-- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza el artefacto da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo. El enlace cuenta igual si es `specs/<carpeta>/…`, `changes/<carpeta>/…` o, desde `ROADMAP.md`, `.docs/sdd/changes/<carpeta>/…` o `.docs/sdd/specs/<carpeta>/…`
+- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza el artefacto da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo. El enlace cuenta igual si es `specs/<carpeta>/…` o `changes/<carpeta>/…`
 
 ### El título de una release cerrada lleva versión y fecha
 
@@ -54,7 +54,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: línea <n>: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y sale con 1
 - AND la fila del 2026-09-22 no da fallo
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila de «Patches» da fallo
-- AND con el tag `v1.2.0` en git, la fila del 2026-09-20 que enlaza su `patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag: un patch fusionado tras el corte del mismo día da `Roadmap válido`; sin tag o sin enlace, decide la fecha. El enlace cuenta igual con las cuatro formas de «Una fila saldada antes de la última release está de más»
+- AND con el tag `v1.2.0` en git, la fila del 2026-09-20 que enlaza su `patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag: un patch fusionado tras el corte del mismo día da `Roadmap válido`; sin tag o sin enlace, decide la fecha. El enlace cuenta igual con las dos formas de «Una fila saldada antes de la última release está de más»
 
 ### El roadmap solo lleva las secciones de la plantilla
 
@@ -103,27 +103,77 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN tras editar el roadmap y antes del commit de cierre ejecuta `sdd roadmap check`, y un fallo en una línea que escribió el cierre lo corrige
 - AND los fallos de líneas que el cierre no escribió no se tocan ni paran el cierre: el mensaje final dice cuántos son y que los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0
 
-### El roadmap avisa de un destino o un cierre fuera de la plantilla
-
-- GIVEN una fila de «Deuda técnica» con «Destino» `Decidir dev-lead: patch` en la línea 26, y una de «Backlog» que empieza por `**[Feature 0031, 2026-09-25: saldada, salvo el GO — …]**` en la línea 20
-- WHEN se ejecuta `sdd roadmap check`
-- THEN escribe `roadmap.md: aviso: línea 26: «Destino» «Decidir dev-lead: patch» no empieza por Actuar, Esperar 2.º ticket o Descartada` y, para la línea 20, `roadmap.md: aviso: línea 20: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»`
-- AND sin fallos, la última línea es `Roadmap válido` y sale con 0; con fallos, los avisos van tras ellos y sale con 1
-- AND un «Destino» que empieza por `Actuar`, `Esperar 2.º ticket` o `Descartada`, con o sin negrita, no avisa; «Backlog» no tiene «Destino» y solo avisa del prefijo
-- AND el prefijo `saldada — ` que no avisa es el mismo que el corte saca: con fecha no posterior a la última release, falla con «sale en el corte»
-
 ### El roadmap vive en `ROADMAP.md`, en la raíz del proyecto
 
 - GIVEN un proyecto `<x>` con `<x>/ROADMAP.md` y sin `<x>/.docs/sdd/roadmap.md`
 - WHEN se ejecuta `sdd roadmap check --path <x>/.docs/sdd`
-- THEN valida `ROADMAP.md` con las mismas reglas que hoy y cada línea de fallo y de aviso empieza por `ROADMAP.md:`
-- AND con solo `.docs/sdd/roadmap.md` (un proyecto en la 2.x) lo valida como hoy, con `roadmap.md:`
+- THEN valida `ROADMAP.md` con las reglas de `now-next-later-template.md` y cada línea de fallo y de aviso empieza por `ROADMAP.md:`
+- AND con solo `.docs/sdd/roadmap.md` (un proyecto en la 2.x) lo valida con las reglas de `roadmap-template.md`, con `roadmap.md:`
 - AND con los dos, valida `ROADMAP.md`, escribe `ROADMAP.md: aviso: también existe .docs/sdd/roadmap.md, que no se lee` y, sin fallos, termina con `Roadmap válido` y sale con 0
+- AND si existe `<x>/.docs/sdd/steering/debt.md`, lo valida en la misma ejecución, con sus líneas empezando por `debt.md:`; un fallo de `debt.md` también sale con 1
+
+### `ROADMAP.md` tiene Now, Next y Later, solo con tablas
+
+- GIVEN un `ROADMAP.md` en la raíz con `## Now`, el párrafo «Criterio: primero lo que ven los usuarios» en la línea 9, `## Backlog` en la línea 12 y `## Next` en la línea 18, sin `## Later`
+- WHEN se ejecuta `sdd roadmap check --path .docs/sdd`
+- THEN escribe `ROADMAP.md: línea 9: prosa en «Now»; el roadmap solo lleva tablas`, `ROADMAP.md: línea 12: sección «Backlog» fuera de la plantilla` y `ROADMAP.md: falta la sección «Later»`, y sale con 1
+- AND con `## Next` antes que `## Now` escribe `ROADMAP.md: línea <n>: «Now» va antes que «Next»`
+- AND una línea `Perfil de control: delegate` entre `## Now` y su tabla no da fallo; otra línea de texto en ese hueco, o esa misma bajo `## Next`, da el fallo de prosa
+- AND `now-next-later-template.md` calcada sin sus bloques de ayuda escribe `Roadmap válido` y sale con 0, y calcada sin tocar solo falla por la prosa de esos bloques
+
+### El título de Now dice la release en preparación
+
+- GIVEN un `ROADMAP.md` cuya línea 5 es `## Now — 2.4.0`
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `ROADMAP.md: línea 5: «Now — 2.4.0» no es «## Now» ni «## Now — <versión> · en preparación|comprometida»` y sale con 1
+- AND `## Now — 2.4.0 · próxima` y `## Now: 2.4.0` dan el mismo fallo, cada uno con su título
+- AND `## Now`, `## Now — 2.4.0 · en preparación` y `## Now — 2.4.0 · comprometida` no dan fallo
+
+### Las filas de `ROADMAP.md` tienen la cabecera, el estado, la Tarea y el tamaño de la plantilla
+
+- GIVEN un `ROADMAP.md` con, en Now, la fila 0012 con estado `hecho` en la línea 8, la 0013 cuya «Tarea» empieza por `Aviso semanal` en la línea 9, la 0014 sin `<details>` en su «Tarea» en la línea 10 y la 0015 con «Tras» `0099` y tamaño `XL` en la línea 11; en Next, la cabecera `| Id | Tarea | Estado |` en la línea 14; y en Later, la fila `0020` en la línea 22
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `ROADMAP.md: línea 8: estado «hecho» no admitido: ⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …` y sale con 1
+- AND escribe `ROADMAP.md: línea 9: la «Tarea» no empieza por «**<título>**»` y `ROADMAP.md: línea 10: la fila 0014 no lleva brief («<details>»)`
+- AND escribe `ROADMAP.md: línea 11: «Tras» nombra 0099, que no está en el roadmap ni en CHANGELOG.md` y `ROADMAP.md: línea 11: tamaño «XL» no admitido: S, M, L`
+- AND escribe `ROADMAP.md: línea 14: la cabecera de «Next» debe ser «| Id | Externo | Tarea | Estado | Tras | Tamaño |»` y `ROADMAP.md: línea 22: el id «0020» de «Later» no es «B<n>»`
+- AND una fila de Later sin brief y sin tamaño no da fallo; una de Now o Next sin tamaño da `tamaño «» no admitido: S, M, L`
+- AND un id `B3` en Now o Next da `ROADMAP.md: línea <n>: el id «B3» de «Next» es de Later: resérvale uno al subirla`
+- AND una fila de Later con estado `🔄` o `✅` da `ROADMAP.md: línea <n>: estado «🔄» no admitido en «Later»: ⏳, ⏸️ aparcada: …`
+- AND «Tras» vacío no da fallo, ni «Tras» `0011` si el changelog nombra `0011` como palabra entera; con solo `0110` en el changelog, «Tras» `0011` da el fallo
+
+### `debt.md` tiene una sección por estado, y «Lista» exige evidencia
+
+- GIVEN un `.docs/sdd/steering/debt.md` con `## Por triar` en la línea 3 y el párrafo «Revisar cada lunes» en la línea 4; `## Lista` en la línea 9, con la fila «`libres --planta 2` lista salas de la planta 1» y «Evidencia» `—` en la línea 12; `## En espera` en la línea 15; y `## Descartadas`, con una fila cuya «Fecha» es `ayer` en la línea 21
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `debt.md: línea 4: prosa en «Por triar»; debt.md solo lleva tablas`, `debt.md: línea 12: fila de «Lista» sin «Evidencia»`, `debt.md: línea 15: «En espera» va antes que «Lista»` y `debt.md: línea 21: «Fecha» «ayer» no es AAAA-MM-DD`, y sale con 1
+- AND el orden de las secciones es «Por triar», «En espera», «Lista» y «Descartadas»
+- AND una cabecera que no es la de su sección da `debt.md: línea <n>: la cabecera de «<sección>» debe ser «<cabecera>»`, con `| Ítem | Origen | Fecha |` en «Por triar», `| Ítem | Origen | Impacto | Falta | Fecha |` en «En espera», `| Ítem | Origen | Impacto | Evidencia | Destino |` en «Lista» y `| Ítem | Origen | Motivo | Fecha |` en «Descartadas»
+- AND una sección que falta da `debt.md: falta la sección «<sección>»`, y una «Evidencia» vacía da el mismo fallo que `—`
+- AND una fila de «Lista» con «Destino» vacío o `—` da `debt.md: línea <n>: fila de «Lista» sin «Destino»`
+- AND sin `debt.md` no hay ninguna línea `debt.md:`, y `debt-template.md` calcada sin sus bloques de ayuda escribe `Roadmap válido`
+
+### Una fila en espera caduca tras dos releases sin 2.º caso
+
+- GIVEN un `debt.md` con dos filas en «En espera», una con «Fecha» `2026-07-01` en la línea 8 y otra con `2026-08-01` en la línea 9, una fila de «Descartadas» con `2026-07-01` en la línea 20, y un `CHANGELOG.md` con `## [1.4.1] - 2026-10-05`, `## [1.4.0] - 2026-09-01` y `## [1.3.0] - 2026-07-20`
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `debt.md: aviso: línea 8: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca` y `debt.md: aviso: línea 20: descartada el 2026-07-01, dos releases después: sale en el corte`, tras los fallos si los hay, y por los avisos solos sale con 0
+- AND la fila del 2026-08-01 no avisa: después solo hay una release, la 1.4.0, porque la 1.4.1 es un patch y no cuenta
+- AND una release es una versión `X.Y.0`; sin changelog ninguna fila avisa, y `## [Unreleased]` no cuenta
+- AND sin fallos, la última línea es `Roadmap válido`; las líneas salen en este orden: fallos del roadmap, fallos de `debt.md`, avisos del roadmap y avisos de `debt.md`
+
+### El roadmap 2.x avisa de un cierre fuera de la plantilla
+
+- GIVEN un roadmap 2.x con una fila de «Deuda técnica» con «Destino» `Decidir dev-lead: patch` en la línea 26, y una de «Backlog» que empieza por `**[Feature 0031, 2026-09-25: saldada, salvo el GO — …]**` en la línea 20
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `roadmap.md: aviso: línea 20: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»` y ninguna línea de la 26
+- AND sin fallos, la última línea es `Roadmap válido` y sale con 0; con fallos, los avisos van tras ellos y sale con 1
+- AND el prefijo `saldada — ` que no avisa es el mismo que el corte saca: con fecha no posterior a la última release, falla con «sale en el corte»
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: el formato de cierre, en el bloque de ayuda de «Deuda técnica» de `roadmap-template.md` de `sdd-templates`; los cierres lo citan. La cabecera de la tabla de release, en el bloque de ayuda de la sección «Release N» de la misma plantilla. Qué va en cada sección, en los bloques de ayuda de esa plantilla; lo comprueba `sdd roadmap check`.
-- **Idioma de los nombres**: estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
-- **Límites**: el roadmap solo lleva las secciones de la plantilla y, fuera de «Releases cerradas», solo tablas. Una fila saldada y una fila de «Patches» duran hasta el corte de la release siguiente.
-- **Avisos**: una línea por fallo del validador, con la regla incumplida. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.
-- **Regla ante conflicto**: una fila lleva un solo prefijo; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada. Con `ROADMAP.md` y `.docs/sdd/roadmap.md` a la vez, `roadmap check` lee `ROADMAP.md` y avisa del otro; `id next` lee los dos (`feature-ids`).
+- **Dónde viven los datos**: el roadmap 3.0.0, en `ROADMAP.md` de la raíz, con la forma de `now-next-later-template.md`; la deuda, en `.docs/sdd/steering/debt.md`, con la de `debt-template.md`; el roadmap 2.x, en `.docs/sdd/roadmap.md`, con la de `roadmap-template.md`, cuyo bloque de ayuda de «Deuda técnica» guarda el formato de cierre que citan los cierres y el de «Release N», la cabecera de su tabla. Qué va en cada sección, en los bloques de ayuda de cada plantilla; lo comprueba `sdd roadmap check`.
+- **Idioma de los nombres**: las secciones de `ROADMAP.md`, `Now`, `Next` y `Later`, en inglés, como las nombra la propuesta 0131; sus columnas, las secciones de `debt.md`, los estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
+- **Límites**: cada roadmap solo lleva las secciones de su plantilla y solo tablas, salvo «Releases cerradas» en la 2.x; `debt.md`, sus cuatro secciones y solo tablas. Una fila saldada y una fila de «Patches» del roadmap 2.x duran hasta el corte de la release siguiente. Una fila de «En espera» caduca, y una de «Descartadas» sale en el corte, con dos releases (versiones `X.Y.0` del changelog) posteriores a su fecha. Later solo lleva filas `⏳` o `⏸️`. La única línea de texto de `ROADMAP.md` es `Perfil de control: <perfil>`, bajo `## Now`.
+- **Avisos**: una línea por fallo del validador, con la regla incumplida. Son avisos, sin fallo: el prefijo de cierre fuera de forma (2.x), la fila de «En espera» que caduca, la descartada que sale en el corte y el roadmap que no se lee cuando están los dos. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.
+- **Regla ante conflicto**: el fichero decide las reglas: `ROADMAP.md`, las de la 3.0.0; `.docs/sdd/roadmap.md`, las de la 2.x. Con los dos a la vez, `roadmap check` lee `ROADMAP.md` y avisa del otro; `id next` lee los dos (`feature-ids`). Una fila lleva un solo prefijo de cierre; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada.

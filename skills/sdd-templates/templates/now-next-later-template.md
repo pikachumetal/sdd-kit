@@ -4,7 +4,7 @@
 >
 > **La prioridad es el orden de las filas**: la de arriba va antes, en cada tabla y de Now a Later. No hay columna de prioridad.
 >
-> **Forma cerrada.** Tres secciones, `## Now`, `## Next` y `## Later`, en ese orden y solo con tablas; la única línea de texto es `Perfil de control: <perfil>`, entre `## Now` y su tabla. La cabecera de las tres tablas es literal: `| Id | Externo | Tarea | Estado | Tras | Tamaño |`. Una celda vacía se escribe `—` (Externo, Tras y Tamaño; en Later, también el tamaño y el brief).
+> **Forma cerrada.** Tres secciones, `## Now`, `## Next` y `## Later`, en ese orden y solo con tablas; la única línea de texto es `Perfil de control: <perfil>`, entre `## Now` y su tabla. La cabecera de las tres tablas es literal: `| Id | Externo | Tarea | Estado | Tras | Tamaño |`. Una celda vacía se escribe `—` (Externo y Tras; en Later, también Tamaño y el brief). Los ids de «Tras» van separados por comas (`0012, 0013`).
 >
 > **Estado**: `⏳` pendiente · `🔄` en curso · `✅` hecha y validada · `🧪 validación diferida a <disparador>` · `⏸️ aparcada: <motivo>`. Later solo admite `⏳` y `⏸️`.
 >
@@ -22,7 +22,7 @@ Perfil de control: <perfil>
 
 | Id | Externo | Tarea | Estado | Tras | Tamaño |
 | --- | --- | --- | --- | --- | --- |
-| <id> | — | **<título>**<br>*<one-liner>*<details><summary>Brief</summary>**Carril:** <feature\|patch><br>**Requisitos:** <ruta del requisito><br>**Decisiones ya tomadas:** <decisiones><br>**Salda:** <fila de debt.md \| nada><br>**Toca:** <ficheros o módulos></details> | ⏳ | — | M |
+| <id> | — | **<título>**<br>*<one-liner>*<details><summary>Brief</summary>**Carril:** <feature\|patch><br>**Requisitos:** <ruta del requisito><br>**Decisiones ya tomadas:** <decisiones><br>**Salda:** <fila de «Lista» de debt.md \| nada><br>**Toca:** <ficheros o módulos></details> | ⏳ | — | M |
 
 ## Next
 
@@ -30,7 +30,7 @@ Perfil de control: <perfil>
 
 | Id | Externo | Tarea | Estado | Tras | Tamaño |
 | --- | --- | --- | --- | --- | --- |
-| <id> | — | **<título>**<br>*<one-liner>*<details><summary>Brief</summary>**Carril:** <feature\|patch><br>**Requisitos:** <ruta del requisito><br>**Decisiones ya tomadas:** <decisiones><br>**Salda:** <fila de debt.md \| nada><br>**Toca:** <ficheros o módulos></details> | ⏳ | — | M |
+| <id> | — | **<título>**<br>*<one-liner>*<details><summary>Brief</summary>**Carril:** <feature\|patch><br>**Requisitos:** <ruta del requisito><br>**Decisiones ya tomadas:** <decisiones><br>**Salda:** <fila de «Lista» de debt.md \| nada><br>**Toca:** <ficheros o módulos></details> | ⏳ | — | M |
 
 ## Later
 

@@ -1,0 +1,109 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green2/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40; git ls-files | head -60
+
+>>> Grep: cancel|anula
+<<< changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+<<< Found 5 files
+.docs\sdd\changelog.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+src\app.js
+test\app.test.js
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< 25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Grep: cancel|anula
+<<< 14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+20:- Cancelar una reserva propia.
+
+>>> Grep: cancel
+<<< 10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (10 turnos, 0.1303725 $)
+Poco que pillar, porque casi no hay nada montado: la cancelación es un stub.
+
+**Lo que hay en el código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- `cancelar <día> <hora>` solo devuelve el texto `cancelada <día> <hora>`.
+- No toca el array `bookings` (`src/app.js:3`), así que no borra nada.
+- No comprueba que la reserva exista.
+- No comprueba que sea del usuario ni la sala.
+- La única reserva que hay en `bookings` (Norte, lun, 10:00-12:00) tiene la hora como rango (`10:00-12:00`), mientras que `cancelar` recibe una hora suelta (`10:00`).
+
+**Lo que dicen los docs**
+
+- `roadmap.md` y `changelog.md` listan «Cancelar una reserva propia» como funcionalidad.
+- También figura el patch 0007: «La cancelación ya no borra reservas de otro día con la misma hora». Su `patch.md` dice: «Causa raíz: comparación solo por hora. Fix y test de regresión».
+
+**Lo que yo infiero**
+
+- El código actual no coincide con lo que dicen los docs: no hay ninguna comparación por hora ni por día que corregir, porque no hay borrado.
+- El test `cancelar respeta el día` (`test/app.test.js:13`) solo comprueba que el texto de salida repite `mar 10:00`. No demuestra que se respete el día, porque la función ni mira `bookings`.
+- Lo más probable es que la implementación real no se haya llegado a hacer, o que se perdiera en algún merge. Puedo mirar `git log` para confirmarlo si te interesa.
+- Tampoco se aplica lo de «reserva propia»: no hay concepto de usuario en el código.
+
+¿Quieres que mire el historial de git para ver si el fix del 0007 llegó a estar y se perdió? Si lo que quieres es que la cancelación funcione de verdad, eso es trabajo nuevo y pasaría por el roadmap. Dime y lo preparo.

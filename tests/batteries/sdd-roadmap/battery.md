@@ -28,9 +28,9 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | M2 Prompt en el cierre | m2 | el mensaje final no da el prompt de arranque de la primera fila y la frase «si prefieres hacerlo en esta sesión, di "arráncalo"» |
 | M3 Triaje | m3 | propone en «Lista» la fila del CSV o da la 1.4.2 por buena; no cita el changelog como fuente; la fila de la planta no lleva «Evidencia» con el comando; no propone la de las 8 h en «Descartadas» con `caducada`; o escribe en `debt.md` o en `ROADMAP.md` antes de la decisión |
 | M4 Prompt desde el brief | m4 | el carril, los requisitos, las decisiones o «Nada que saldar» del prompt no salen del brief de la 0013; o escribe, reserva o commitea |
-| M5 Fila nueva | m5 | la fila nueva no está en Next con el id `0014`, título, one-liner, brief con las cinco etiquetas, `⏳` y tamaño; o no ejecuta el check |
+| M5 Fila nueva | m5 | la fila nueva, escrita o propuesta (en `delegate` el paso 3 pide proponer y esperar), no está en Next con título, one-liner, brief con las cinco etiquetas, `⏳` y tamaño; o la escribe sin id reservado o sin ejecutar el check (desempate del 2026-10-13) |
 | M3b Contraste con la fuente citada | m3b | da por bueno el «40 s con 1.000 reservas» del ticket (lo repite como hecho, propone la fila en «Lista» o un patch) sin decir que el walkthrough de la 0012 mide 4 s con 1.000 reservas; o escribe en `debt.md` o en `ROADMAP.md` antes de la decisión |
-| M6 Triaje 2.x | m6 | una fila de «Deuda técnica» queda sin «Destino» que empiece por `**Actuar**`, `**Esperar 2.º ticket**` o `**Descartada**`; da la 1.4.2 por buena; o crea `ROADMAP.md` o `debt.md` |
+| M6 Triaje 2.x | m6 | un ítem triado no queda como fila de «Deuda técnica», o queda sin «Destino» que empiece por `**Actuar**`, `**Esperar 2.º ticket**` o `**Descartada**`; da la 1.4.2 por buena; o crea `ROADMAP.md` o `debt.md` (desempate del 2026-10-13: el THEN dice «cada ítem es una fila de «Deuda técnica»») |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
@@ -43,12 +43,13 @@ Las reglas que añaden la 0161 y la 0150 a `skills/sdd-roadmap/SKILL.md`, de dó
 | Paso 7: el cierre da el prompt de la fila que va primero y la frase «arráncalo» | `tests/sdd-explore-0161-red.md`, m2 y m3: 4 de 4 cerraron nombrando la skill, sin prompt; GREEN m2 2/2 | m2 |
 | «Algo concreto»: un patch pendiente es fila de «Próximo» con «Patch:» | decisión del dev-lead (2026-10-10, imputación de horas); sin RED: es la forma de fila vigente con un prefijo | no medido |
 | `description`: «dame el prompt de la <id>» | RED m1 (entró por `sdd-consult`); GREEN m1 2/2 | m1, y r6 de `using-sdd` |
-| Nada pasa a «Lista» sin reproducirse o sin un 2.º caso: sin reproducir, va a «En espera» con `reproducirlo` | `tests/sdd-roadmap-0150-red.md`, m3: 1 de 2 mandó el CSV a «Lista» sin reproducirlo; GREEN pendiente | m3, m6 |
-| La «Evidencia» de «Lista» es el comando que lo reproduce con su salida, o los enlaces a los dos casos | `tests/sdd-roadmap-0150-red.md`, m3: 2 de 2 propusieron el informe y la línea de código; GREEN pendiente | m3, m6 |
-| El «Destino» de «Lista» es el id de una fila de Now o Next, nueva o existente, o `sin fila`; nunca vacío | spec de la 0150, decisión 7 ter; sin RED propio: lo exige el check, que falla vacío | m3 |
-| Una fila de «En espera» que caduca se propone en «Descartadas» con `caducada`; los patches no cuentan como release | `tests/sdd-roadmap-0150-red.md`, m3: 2 de 2 no la propusieron; GREEN pendiente | m3 |
-| La fila nueva de `ROADMAP.md` lleva tamaño `S`, `M` o `L` con el umbral de partir | `tests/sdd-roadmap-0150-red.md`, m5: 2 de 2 la dejaron sin tamaño; GREEN pendiente | m5 |
-| Entrada «Triage», tabla de equivalencias 2.x, `B<n>` en Later y «Later no da prompt» | forma que fija la spec de la 0150 (decisiones 1, 11 y 12); sin RED propio: la exige el check o la imita el sujeto de las filas del molde | m3, m5, m6 |
+| Nada pasa a «Lista» sin reproducirse o sin un 2.º caso: sin reproducir, va a «En espera» con `reproducirlo` | `tests/sdd-roadmap-0150-red.md`, m3: 1 de 2 mandó el CSV a «Lista» sin reproducirlo; GREEN m3 2/2 (`tests/sdd-roadmap-0150-green.md`) | m3, m6 |
+| La «Evidencia» de «Lista» es el comando que lo reproduce con su salida, o los enlaces a los dos casos | `tests/sdd-roadmap-0150-red.md`, m3: 2 de 2 propusieron el informe y la línea de código; GREEN m3 2/2 | m3, m6 |
+| El «Destino» de «Lista» es el id de una fila de Now o Next, nueva o existente, o `sin fila`; nunca vacío | spec de la 0150, decisión 7 ter; sin RED propio: lo exige el check, que falla vacío; GREEN m3 2/2 | m3 |
+| Una fila de «En espera» que caduca se propone en «Descartadas» con `caducada`; los patches no cuentan como release | `tests/sdd-roadmap-0150-red.md`, m3: 2 de 2 no la propusieron; GREEN m3 2/2 | m3 |
+| La fila nueva de `ROADMAP.md` lleva tamaño `S`, `M` o `L` con el umbral de partir | `tests/sdd-roadmap-0150-red.md`, m5: 2 de 2 la dejaron sin tamaño; GREEN m5 2/2 | m5 |
+| Entrada «Triage», tabla de equivalencias 2.x, `B<n>` en Later y «Later no da prompt» | forma que fija la spec de la 0150 (decisiones 1, 11 y 12); sin RED propio: la exige el check o la imita el sujeto de las filas del molde; GREEN m6 (equivalencias 2.x) 2/2 tras el REFACTOR | m3, m5, m6 |
+| En 2.x cada ítem triado conserva su fila de «Deuda técnica»; la de «Próximo» no la sustituye | `tests/sdd-roadmap-0150-green.md`, m6: 1 de 2 mandó la planta a «Próximo» sin fila de deuda; tras el REFACTOR, GREEN m6 2/2 | m6 |
 
 **Sin regla** (feature 0150, enmiendas de la spec del 2026-10-13): contrastar cada versión o cifra del ticket con su fuente (m3 y m3b salieron 2 de 2 limpios, con el changelog a la vista y con el dato que solo desmiente el walkthrough citado) y sacar el prompt de arranque del brief (m4 salió 2 de 2 limpio). Los tres escenarios quedan como control; `launch-prompt-template.md` no cambia.
 
