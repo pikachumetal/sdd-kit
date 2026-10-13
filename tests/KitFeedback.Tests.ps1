@@ -38,6 +38,10 @@ Describe 'Plantilla kit-feedback-template.md' {
     Get-KitFileContent $script:TemplateFile | Should -Match ([regex]::Escape($Section))
   }
 
+  It 'lleva la fuente de cada dato justo bajo «Qué pasó»' {
+    Get-KitFileContent $script:TemplateFile | Should -Match '(?m)^- \*\*Qué pasó\*\*:[^\n]*\r?\n(  [^\n]*\r?\n)*- \*\*Fuente\*\*: '
+  }
+
   It 'ya no lleva la sección de errores del agente' {
     Get-KitFileContent $script:TemplateFile | Should -Not -Match 'Errores míos'
   }
