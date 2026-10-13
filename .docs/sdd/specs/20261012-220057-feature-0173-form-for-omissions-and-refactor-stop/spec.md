@@ -15,7 +15,7 @@ approvers:
 
 # Spec — Art. II: la forma para un elemento omitido y cuándo parar el REFACTOR de una skill
 
-🦆 Cuando un humo de skill falla porque el agente se deja un dato (la ruta del worktree, la ruta de la nota), quien arregla la skill hoy añade una frase recordándolo, y si vuelve a fallar, añade otra. Con esta feature, el Art. II dice que ese fallo se arregla con un hueco en la plantilla de la respuesta («Guardada en `<ruta>`»), no con prosa, y `tech-stack.md` dice que una ronda que da 0/N no se repite igual: la siguiente cambia de forma o para y propone enmendar el THEN. Se prueba con sujetos en un molde de kit, antes y después de escribir cada regla.
+🦆 Cuando un humo de skill falla porque el agente se deja un dato (la ruta del worktree, la ruta de la nota), quien arregla la skill hoy añade una frase recordándolo, y si vuelve a fallar, añade otra. Con esta feature, `tech-stack.md` dice que una ronda que da 0/N no se repite igual: la siguiente cambia de forma o para y propone enmendar el THEN. La fila del Art. II que pedía un hueco en la plantilla no entra: con el Art. II de hoy leído, los sujetos ya escriben la plantilla, y los que fallan son los que no lo leen. Se prueba con sujetos en un molde de kit, antes y después de escribir la regla.
 
 ## Capacidades
 
@@ -26,8 +26,8 @@ approvers:
 Review de spec propuesta: ninguna — señales: ninguna (sin capacidad nueva, contrato, `MODIFIED`, datos, dependencia ni permiso; constitution, `tech-stack.md`, ADR 0003 y el molde `mold-kit` leídos en esta sesión) · tamaño: ~40 líneas en 6 ficheros, más fixtures
 - Mínimo razonable: ninguna — deja sin mirar que el criterio «prosa frente a hueco» de la rúbrica de `o1` y `o2` sea decidible leyendo la salida; lo revisa la revisión final de rama.
 
-1. Fila nueva del Art. II, literal: «- Elemento omitido (cumple, pero falta una pieza de algo que ya produce) → hueco obligatorio en la plantilla que rellena, no un recordatorio en prosa junto a ella.» — es la tercera fila de la tabla «Match the Form to the Failure» de `writing-skills` de superpowers (presente igual de la 6.3.0 a la 7.0.0); el Art. II tiene las otras tres. Art. IX: trae algo de otro kit, con su aviso.
-2. ADR nueva `0014-form-for-omissions-and-refactor-stop.md`, que amplía la 0003 sin sustituirla: la 0003 sigue `accepted`, y el *Por qué* del Art. II enlaza las dos.
+1. **No entra (enmienda 2026-10-13)**. Fila nueva del Art. II, literal: «- Elemento omitido (cumple, pero falta una pieza de algo que ya produce) → hueco obligatorio en la plantilla que rellena, no un recordatorio en prosa junto a ella.» — es la tercera fila de la tabla «Match the Form to the Failure» de `writing-skills` de superpowers (presente igual de la 6.3.0 a la 7.0.0); el Art. II tiene las otras tres. Art. IX: trae algo de otro kit, con su aviso.
+2. ADR nueva `0014-form-for-omissions-and-refactor-stop.md`, solo con la regla de parada si entra (enmienda 2026-10-13), que amplía la 0003 sin sustituirla: la 0003 sigue `accepted`, y el *Por qué* del Art. II enlaza las dos.
 3. Regla de parada en `tech-stack.md`, «Baterías por skill», literal: «**Una ronda de REFACTOR que da 0/N no se repite con la misma forma** (feature 0173): la siguiente cambia de forma por el Art. II —un elemento omitido pide un hueco en la plantilla, no otro recordatorio— o para y propone al dev-lead enmendar el THEN como desvío. En la 0166, dos rondas en prosa sobre `w1` dieron 0/3 y se retiraron (~35 min).» Sin tope numérico de rondas: el tope de coste del Art. I ya para la campaña.
 4. «Misma forma» se juzga con las filas del Art. II: prohibición, receta, predicado, hueco en la plantilla o recordatorio en prosa. Reescribir la frase con otras palabras o con más énfasis («always», «never omit», negrita) es la misma forma.
 5. Una pieza sale: en `tech-stack.md`, la entrada «El techo de coste lo aplica el lanzador» (~110 palabras) se queda en una frase, porque la cabecera de `tests/headless/run.sh` ya documenta `COST_CAP` y `SUBJECT_CAP` (Principio 3). En la constitution no sale nada: sube su tope (decisión del dev-lead, abajo).
@@ -52,8 +52,8 @@ En la 0166, el humo `w1` falló porque `sdd-worktrees` no decía la ruta del wor
 
 ## Scope
 
-- Entra: la fila del Art. II y su ADR 0014; la regla de parada en `tech-stack.md`; el adelgazamiento de la entrada del techo de coste; los escenarios `o1` y `o2` con sus fixtures; el tope de la constitution en `WordBudget.Tests.ps1`.
-- No entra: cambiar `sdd-worktrees` ni el THEN de `w1`; las skills que los proyectos usan para probar sus skills (es la 0151); los micro-tests de redacción.
+- Entra: la regla de parada en `tech-stack.md` y su ADR 0014; el adelgazamiento de la entrada del techo de coste; los escenarios `o1` (control) y `o2` con sus fixtures.
+- No entra: la fila del Art. II y la subida del tope de la constitution (enmienda 2026-10-13); cambiar `sdd-worktrees` ni el THEN de `w1`; las skills que los proyectos usan para probar sus skills (es la 0151); los micro-tests de redacción.
 
 ## Approach
 
@@ -87,6 +87,8 @@ Sin delta: ninguna capacidad describe el método de prueba de las skills del kit
 - AND no escribe otra frase o más énfasis sobre la ruta
 
 ## Enmiendas
+
+- 2026-10-13 — La fila del Art. II no entra, ni la subida del tope de la constitution, ni esa parte de la ADR 0014; `o1` queda como control — RED `o1` en 4 sujetos: los 2 que leyeron el Art. II vigente escribieron una plantilla con hueco («fallo de forma → receta»), los 2 que no lo leyeron escribieron prosa; el fallo es no leer la regla, no que le falte la fila — aprobada: «1» (dev-lead, 2026-10-12: si `o1` sale limpio, la fila no entra) · Task 1
 
 ## Aprobaciones
 
