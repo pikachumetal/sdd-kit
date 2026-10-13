@@ -1,0 +1,4 @@
+# SDD ledger — plan: .docs/sdd/specs/20261013-100000-feature-0020-path-reply/plan.md
+Task 1: complete (commits c9304e0..3bd9532, tests: sh -c 'test "$(grep -c "^- h1-[123]: «Guardado: notas/reunion-martes.md»" .docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/h1-r2.txt)" = 3' → (sin salida))
+Task 1: Ruling: REFACTOR ronda 2 — el fallo es de clase «elemento omitido» (Art. III); la ronda 1 era énfasis sobre prosa (misma forma, 0/3). Paso 3 pasa a plantilla con hueco `<path>` obligatorio, etiqueta en el idioma del usuario — no añade THEN ni AND a la spec — coste si me equivoco: la plantilla fija el formato de la respuesta más que la spec
+Task 1: Ruling: el humo se lanzó con `claude -p` ×3 en directorios fuera del repo; dos sujetos dieron timeout (exit 124, sin respuesta) y se relanzaron, no cuentan como veredicto — coste si me equivoco: ninguno, el resultado final es 3/3 sobre el SKILL.md committeado

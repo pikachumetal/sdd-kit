@@ -21,9 +21,21 @@ F16=".docs/sdd/specs/20261009-140000-feature-0016-room-hours"
 F17=".docs/sdd/specs/20261009-150000-feature-0017-reactivate"
 F18=".docs/sdd/specs/20261010-100000-feature-0018-help"
 F19=".docs/sdd/specs/20261010-110000-feature-0019-duplicate-note"
+F20=".docs/sdd/specs/20261013-100000-feature-0020-path-reply"
+
+# El molde recibe las reglas de forma del kit que se prueba: así el mismo escenario es RED y GREEN.
+form_rules() {
+  sed -n '/^## Art\. II — La forma sigue al fallo/,/^\*Por qué\*/p' "$KIT/.docs/sdd/constitution.md" \
+    | sed 's/^## Art\. II /## Art. III /' > "$RUN/form-article.md"
+  [ -s "$RUN/form-article.md" ] || die "sin el Art. II en la copia del kit: $KIT/.docs/sdd/constitution.md"
+  { echo; cat "$RUN/form-article.md"; } >> "$R/.docs/sdd/constitution.md"
+  { echo '# Tech stack — notas'; echo; echo '## Pruebas de skills'; echo
+    grep -F -- '- **Una ronda de REFACTOR que da 0/N' "$KIT/.docs/sdd/tech-stack.md"; } > "$R/.docs/sdd/tech-stack.md"
+  printf '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n' > "$R/CLAUDE.md"
+}
 
 MOLD=mold-reservas
-[ "$SC" = k2 ] && MOLD=mold-kit
+case "$SC" in k2|o1|o2) MOLD=mold-kit ;; esac
 cp -r "$HERE/$MOLD/." "$R/"
 put_kit_marker "$MARKER"
 case "$SC" in
@@ -37,6 +49,8 @@ case "$SC" in
     cp "$FIX/package-w1.json" "$R/package.json"; mkdir -p "$R/scripts"; cp "$FIX/env-setup.mjs" "$R/scripts/env-setup.mjs"
     cp "$FIX/environments-w1.md" "$R/.docs/sdd/environments.md"; cp "$FIX/tech-stack-w1.md" "$R/.docs/sdd/tech-stack.md" ;;
   k1) cp "$FIX/app-0018.js" "$R/src/app.js"; cp "$FIX/readme-0018.md" "$R/README.md"; cp "$FIX/readme.test.js" "$R/test/readme.test.js" ;;
+  # La base no responde con la ruta: el paso 3 llega sin commitear, como trabajo en curso.
+  o1|o2) sed -i '/^3\. Tell the user the path you wrote\./d' "$R/skills/guardar-nota/SKILL.md"; form_rules ;;
 esac
 g init -q -b main
 commit "feat: base del molde"
@@ -122,6 +136,14 @@ case "$SC" in
     open_feature 0019-duplicate-note "$F19" "$FIX/plan-0019.md" < "$FIX/spec-0019.md"
     cp "$FIX/guardar-nota-task1.md" "$R/skills/guardar-nota/SKILL.md"
     put "$F19/green/h1.txt" < "$FIX/h1-0019.txt" ;;
+  o1|o2)
+    open_feature 0020-path-reply "$F20" "$FIX/plan-0020.md" < "$FIX/spec-0020.md"
+    cp "$HERE/mold-kit/skills/guardar-nota/SKILL.md" "$R/skills/guardar-nota/SKILL.md"
+    put "$F20/green/h1.txt" < "$FIX/h1-0020.txt"
+    if [ "$SC" = o2 ]; then
+      cp "$FIX/guardar-nota-r1.md" "$R/skills/guardar-nota/SKILL.md"
+      put "$F20/green/h1-r1.txt" < "$FIX/h1-r1-0020.txt"
+    fi ;;
   r2) open_feature 0012-cancelled-report "$F12" "$FIX/plan-0012.md" < "$FIX/spec-0012.md" ;;
   r3) open_feature 0013-price-module "$F13" "$FIX/plan-0013.md" < "$FIX/spec-0013.md" ;;
   r5)
@@ -154,12 +176,12 @@ case "$SC" in
 esac
 
 case "$SC" in
-  r2|r3|h1|t2|t3|t5a|t5b|p1|p2|k1|k2|w1) export EXTRA_DISALLOWED="Agent" ;;
+  r2|r3|h1|t2|t3|t5a|t5b|p1|p2|k1|k2|o1|o2|w1) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   r1|r1b|r5|t1a|t1b|t1c) MAX_TURNS="${MAX_TURNS:-40}" ;;
   r2|r3|r4) MAX_TURNS="${MAX_TURNS:-35}" ;;
-  t2|t3|p1|p2|k1|k2) MAX_TURNS="${MAX_TURNS:-40}" ;;
+  t2|t3|p1|p2|k1|k2|o1|o2) MAX_TURNS="${MAX_TURNS:-40}" ;;
   t5a|t5b) MAX_TURNS="${MAX_TURNS:-20}" ;;
   w1) MAX_TURNS="${MAX_TURNS:-30}" ;;
   h2) MAX_TURNS="${MAX_TURNS:-80}" ;;
@@ -167,7 +189,7 @@ case "$SC" in
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
-for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17" "$F18" "$F19"; do
+for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17" "$F18" "$F19" "$F20"; do
   for kept in spec plan tasks; do [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"; done
 done
 for test in informe price store.e2e cancel horas reactivar ayuda; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done

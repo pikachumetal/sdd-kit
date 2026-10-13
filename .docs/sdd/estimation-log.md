@@ -169,19 +169,20 @@
 | 2026-10-11 | 0172 | patch | 0.75 | 0.4 | 0.53 | — | — | — | — | 20261011-194235-patch-0172-brainstorming-pieces |
 | 2026-10-12 | 0166 | docs | 4 | 1.9 | 0.48 | 64561k | 5324k | 5.82 | 30.96 | 20261012-104247-feature-0166-worktrees-and-parallel-agents |
 | 2026-10-12 | 0174 | patch | 1.5 | 0.4 | 0.27 | — | — | — | — | 20261012-202133-patch-0174-stale-task-pointers |
+| 2026-10-13 | 0173 | docs | 2.5 | 1.6 | 0.64 | 48705k | 1372k | 3.52 | 19.7 | 20261012-220057-feature-0173-form-for-omissions-and-refactor-stop |
 
-**Factor de calibración** (ratio mediano real/estimado, 130 artefactos): **0.58** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 131 artefactos): **0.58** · media 0.71
 
 - p25–p75: 0.4–0.91
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 64 % · infraestimadas: 8 %
+- Dentro de ±25 %: 27 % · sobreestimadas: 64 % · infraestimadas: 8 %
 - Error absoluto (h): media 1.11 · mediana 0.8
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.52
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 47 | 36 % |
-| 0.5–0.8 | 39 | 30 % |
+| 0.5–0.8 | 40 | 31 % |
 | 0.8–1.25 | 33 | 25 % |
 | 1.25–2 | 8 | 6 % |
 | ≥2 | 3 | 2 % |
@@ -189,7 +190,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 76 | 0.53 | 0.38–0.74 |
+| docs | 77 | 0.53 | 0.38–0.73 |
 | infra/tooling | 23 | 0.43 | 0.36–0.56 |
 | patch | 30 | 1.2 | 0.8–1.38 |
 
@@ -210,6 +211,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 17 | 34.85 | 0.49 | 139.7 | 373.41 |
+| sin publicar | 18 | 36.45 | 0.5 | 143.22 | 393.11 |
 
 > Ver `estimation.md`.

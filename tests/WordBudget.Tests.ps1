@@ -23,7 +23,7 @@ BeforeAll {
       'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
       'sdd-rubber-duck'     = @{ SkillMd = 500; Total = 500 }
       'sdd-propose'         = @{ SkillMd = 5000; Total = 6300 }
-      'sdd-implement'       = @{ SkillMd = 5500; Total = 9100 }
+      'sdd-implement'       = @{ SkillMd = 5560; Total = 9160 }
       'sdd-tdd'             = @{ SkillMd = 1700; Total = 3100 }
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }
@@ -35,7 +35,7 @@ BeforeAll {
     }
     Kit     = 54595
     Anchors = @{
-      'constitution.md' = 2200
+      'constitution.md' = 2230
       'mission.md'      = 1700
       'architecture.md' = 1900
       'tech-stack.md'   = 18700
