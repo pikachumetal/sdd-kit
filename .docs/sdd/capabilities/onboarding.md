@@ -111,8 +111,8 @@ La inicialización de un proyecto con el kit (`sdd-init-greenfield`, `sdd-init-b
 
 - GIVEN el skill `sdd-templates`
 - WHEN se lista su índice de plantillas de documentos
-- THEN tiene `PRODUCT-template.md` → `PRODUCT.md` en la raíz, `constitution-template.md` → `.docs/sdd/steering/constitution.md`, `operations-template.md` → `.docs/sdd/steering/operations.md`, `architecture-template.md` → `.docs/sdd/steering/architecture.md`, `estimation-template.md` → `.docs/sdd/steering/estimation.md`, `roadmap-template.md` → `ROADMAP.md` en la raíz, `changelog-template.md` → `CHANGELOG.md` en la raíz y `adr-template.md` → `.docs/sdd/decisions/`
-- AND `mission-template.md`, `tech-stack-template.md`, `environments-template.md` y `client-changelog-template.md` siguen, marcadas «2.x» con la feature que las retira (0156; 0150 la de cliente)
+- THEN tiene `PRODUCT-template.md` → `PRODUCT.md` en la raíz, `constitution-template.md` → `.docs/sdd/steering/constitution.md`, `operations-template.md` → `.docs/sdd/steering/operations.md`, `architecture-template.md` → `.docs/sdd/steering/architecture.md`, `estimation-template.md` → `.docs/sdd/steering/estimation.md`, `now-next-later-template.md` → `ROADMAP.md` en la raíz, `debt-template.md` → `.docs/sdd/steering/debt.md`, `changelog-template.md` → `CHANGELOG.md` en la raíz y `adr-template.md` → `.docs/sdd/decisions/`
+- AND `mission-template.md`, `tech-stack-template.md`, `environments-template.md`, `client-changelog-template.md` y `roadmap-template.md` siguen, marcadas «2.x» con la feature que las retira (0156; 0177 la de cliente; 0157 la del roadmap)
 
 ### `PRODUCT.md` comparte la forma de impeccable
 

@@ -1,30 +1,31 @@
 ---
 name: sdd-feedback
-description: Usar al cerrar una feature o un patch — lo ofrecen sdd-end-feature y sdd-end-patch — o cuando el usuario pide el ticket, el informe o el feedback de mejora del kit sobre la sesión.
+description: Use when closing a feature or a patch — sdd-end-feature and sdd-end-patch offer it — or when the user asks for the ticket, the report or the improvement feedback of the kit about the session («el ticket del kit», «el feedback de mejora»).
 ---
 
 # sdd-feedback
 
 ## Overview
 
-El ticket es el conocimiento que esta sesión ha aprendido sobre el kit, escrito para el agente que lo mantendrá. Se pierde al limpiar el contexto, por eso se escribe en la misma sesión.
+The ticket is what this session learned about the kit, written for the agent who will maintain it. It is lost when the context is cleared, so it is written in the same session. **The ticket is written in Spanish**, with the template's section names as they are; what you say to the user, in their language.
 
-## Checklist (crea un todo por paso)
+## Checklist (create a todo per step)
 
-1. **Versiones** — leer `.docs/sdd/sdd-kit.json` (versión del kit y `ids.mode`) y la versión de superpowers instalada.
-2. **Recorrer la sesión** — skills y pasos del kit que se ejecutaron, gates, rodeos, decisiones sin respaldo. No el código del proyecto.
-3. **Plantilla** — calcar `kit-feedback-template.md` del skill `sdd-templates`. Cierre limpio —ningún hallazgo por encima de un menor y el reloj dentro del techo de la estimación, o sin estimación— → el **ticket mínimo** de la plantilla: cabecera y tres líneas, más los menores. Un ruling, un desvío del plan, un paso rodeado o una decisión que ningún paso cubría ya son hallazgo.
-4. **Guardar** — en `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>.md`, timestamp UTC, id y slug como las carpetas de spec. Un ticket por feature o patch: se amplía solo el de esta misma; si la sesión escribió el de otra, nace el suyo y aquel no se toca. Si la carpeta no existe, se crea y se avisa **una vez** de que puede ignorarse en git; **no** se edita `.gitignore`.
-5. **Repaso de privacidad** — antes de guardar, repasar el ticket entero buscando nombres propios y datos del dominio del proyecto.
-6. **Lint** — pasar al ticket el lint de docs del proyecto (el de `tech-stack.md`, su gate de docs o su pre-commit) y arreglarlo hasta que pase, antes de que el cierre lo commitee. Sin lint de docs, dilo en una línea.
+1. **Versions** — read `.docs/sdd/sdd-kit.json` (kit version and `ids.mode`) and the installed superpowers version. A version from the user's notes or from memory doesn't replace that reading.
+2. **Walk the session** — kit skills and steps that ran, gates, detours, decisions nothing backed. Not the project's code.
+3. **Template** — trace `kit-feedback-template.md` from the `sdd-templates` skill. Clean close —no finding above a minor and the clock within the estimate's ceiling, or no estimate— → the template's **minimal ticket**: header and three lines, plus the minors. A ruling, a deviation from the plan, a step worked around or a decision no step covered is already a finding.
+4. **Save** — in `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>.md`, UTC timestamp, id and slug as in the spec folders. One ticket per feature or patch: only this one's own is extended; if the session wrote another's, its own is born and that one is left alone. If the folder doesn't exist, create it and say **once** that it can be git-ignored; do **not** edit `.gitignore`.
+5. **Privacy pass** — before saving, reread the whole ticket looking for proper names and data of the project's domain.
+6. **Lint** — run the project's docs lint on the ticket (the one in `tech-stack.md`, its docs gate or its pre-commit) and fix it until it passes, before the close commits it. With no docs lint, say so in one line.
 
-## Reglas
+## Rules
 
-- **Privacidad**: nunca nombres de cliente, proyecto, producto ni personas, ni código ni reglas de negocio. Si un hallazgo no se entiende sin un dato del dominio, se sustituye por un descriptor genérico («una regla de cálculo de precios», «el interlocutor del cliente»); el hallazgo nunca se omite por privacidad.
-- **Cada hallazgo lleva su criterio de aceptación** — un escenario GIVEN/WHEN/THEN o el RED que hoy falla y pasaría con la propuesta. Sin él no es un hallazgo, es una queja.
-- **Cada propuesta dice si está verificada** (`sí — <cómo>` o `sin verificar`). Un fallo de ejecución citado lleva el comando exacto, el shell y la línea de error.
-- **Una causa de coste se respalda** con la spec, el walkthrough o un commit. Una frase del usuario, aunque sea del dev-lead, no la respalda: cifra y causa «sin respaldo».
-- **Un error tuyo** que una regla, un paso o una plantilla del kit pudo evitar es un hallazgo con esa ruta, también si la regla existía y no la aplicaste: es una regla que no aguantó. Un fallo del shell o del harness que una regla del kit cubre también es hallazgo; solo el que ninguna regla del kit cubriría no va al ticket.
-- **Menores**: menos de ~10 min y una sola vez en la sesión → una línea en «Menores». Si se repitió o costó más, es un hallazgo. Cuenta el coste que viste en la sesión, aunque su causa vaya «sin respaldo».
-- **La iniciativa propia va en su propia sección**, no diluida dentro de otro hallazgo: es candidato a regla nueva del kit.
-- **La ruta del hallazgo es del kit** (`skills/<skill>/SKILL.md` paso N, una plantilla, una referencia), nunca un fichero del proyecto. Si no se localiza, se dice.
+- **Privacy**: never client, project, product or people names, nor code or business rules. If a finding isn't understood without a datum from the domain, replace it with a generic descriptor («una regla de cálculo de precios», «el interlocutor del cliente»); the finding is never omitted for privacy.
+- **Every finding carries its acceptance criterion** — a GIVEN/WHEN/THEN scenario or the RED that fails today and would pass with the proposal. Without it it isn't a finding, it's a complaint.
+- **Every proposal says whether it is verified** (`sí — <cómo>` or `sin verificar`). A cited execution failure carries the exact command, the shell and the error line.
+- **Every version, figure or quote in "Qué pasó" comes from a file or a command named in "Fuente"; one you remember and haven't checked doesn't go in: check it or drop it** (`tests/sdd-feedback-0150-red.md`, fb1). It holds for the header too. "Fuente" names kit metadata or files (`.docs/sdd/sdd-kit.json`, a plugin's version, a skill) or a command; a datum from a project file goes with a generic descriptor, like the rest of the ticket.
+- **A cost cause is backed** with the spec, the walkthrough or a commit. A user's phrase, even the dev-lead's, doesn't back it: figure and cause go «sin respaldo».
+- **A mistake of yours** that a rule, a step or a template of the kit could have avoided is a finding with that path, also if the rule existed and you didn't apply it: it is a rule that didn't hold. A shell or harness failure that a kit rule covers is also a finding; only one that no kit rule would cover doesn't go in the ticket.
+- **Minors**: under ~10 min and once in the session → a line in «Menores». If it repeated or cost more, it's a finding. Count the cost you saw in the session, even if its cause goes «sin respaldo».
+- **Own initiative goes in its own section**, not diluted in another finding: it is a candidate for a new kit rule.
+- **The finding's path is the kit's** (`skills/<skill>/SKILL.md` step N, a template, a reference), never a project file. If it can't be located, say so.

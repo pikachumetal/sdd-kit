@@ -1,0 +1,79 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls -a && cat .docs/sdd/sdd-kit.json && echo ---- && cat ROADMAP.md && echo ---- && cat .docs/sdd/steering/debt.md
+<<< * develop
+  main
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:*
+
+>>> Bash: cd "<run>/repo" && cat docs/qa/2026-10-12-informe.md; echo ----; cat package.json; ls -R src test | head -50; echo ----; cat src/*.js | head -150; echo; head -30 CHANGELOG.md; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+----
+{"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+----
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return
+
+>>> Bash: cd "<run>/repo" && echo '$ node src/app.js libres --planta 2' && node src/app.js libres --planta 2; echo '$ node src/app.js exportar | od' ; node src/app.js exportar | head -1 | od -c | head -3; node src/app.js exportar | head -1
+<<< $ node src/app.js libres --planta 2
+Norte (planta 1)
+$ node src/app.js exportar | od
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n
+0000021
+sala,día,franja
+
+=== RESULTADO (6 turnos, 0.1536393 $)
+He intentado reproducir los dos ítems de «Por triar» y mi propuesta es esta. No he escrito nada todavía: en `delegate` espero tu decisión.
+
+| Ítem | Qué he comprobado | Propuesta |
+| --- | --- | --- |
+| `libres --planta 2` lista salas de la planta 1 | **Reproducido.** `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. La causa es `floors[room] <= floor` en `roomsOnFloor` (`src/app.js`), que filtra por «hasta» esa planta en vez de «igual». | **Lista**, impacto Medio. Evidencia: el comando y su salida. Destino: fila nueva, patch en Now con `**Carril:** patch`, tamaño S. El id se reserva con `sdd id next --reserve` al escribir. |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | **No reproducido.** `node src/app.js exportar` saca `sala,día,franja`, con la tilde en UTF-8 correcto (`d 303 255 a`). Además, el changelog llega a la 1.4.1 y no existe una 1.4.2. | **En espera**, «Falta» `reproducirlo`, fecha 2026-10-13. Faltan versión exacta, SO y consola del QA, porque `?` suele ser un problema de codificación de la terminal o del lector. |
+| Las reservas de más de 8 h no avisan al responsable (ya en «En espera») | `sdd roadmap check` avisa de que caduca: en espera desde 2026-07-01, con dos releases (1.3.0 y 1.4.0) sin 2.º caso. | Pasar a **Descartadas**, con «Motivo» `caducada`. Si llega un 2.º caso, entra en «Por triar» con ambos orígenes. |
+
+Te dejo dos decisiones abiertas:
+
+1. **El patch de las salas.** ¿Lo apunto en Now o prefieres Next? Mi recomendación es Now: es un bug determinista, de tamaño S, y no choca con 0012 ni con 0013.
+2. **El CSV.** Mi recomendación es pedir al QA la versión y el entorno exactos antes de promoverlo. Si preferís darlo por válido sin reproducir, eso va contra la regla de la deuda y no lo haría.
+
+Si me dices «decide tú» o das el visto bueno, escribo `debt.md` y la fila nueva, paso `sdd roadmap check`, publico con `sdd roadmap publish` y te doy el prompt de lanzamiento del patch.

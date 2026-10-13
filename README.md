@@ -115,7 +115,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-rubber-duck` | Cómo te explica el kit las cosas: en palabras del producto y con su glosario, sin rutas ni jerga. En corto, el párrafo 🦆 de una parada; en largo, a petición («explícame cómo viaja un pedido de punta a punta»), por pasos y siguiendo un ejemplo; y si no te ha llegado («no te he entendido»), te lo vuelve a contar con contexto y frases cortas. Adaptada de `teach` y `wait-what` de Matt Pocock (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 25 plantillas canónicas. |
+| `sdd-templates` | Las 27 plantillas canónicas. |
 
 ## Cómo está escrito
 

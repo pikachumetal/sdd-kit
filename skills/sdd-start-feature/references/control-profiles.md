@@ -14,7 +14,7 @@ El arranque (`sdd-propose`) dice el perfil vigente y de qué nivel sale: en feat
 
 1. `profile:` en el frontmatter de `spec.md` — la feature. Omitido, hereda.
 2. `control.profile` en `.docs/sdd/sdd-kit.local.json` — la persona. Fuera de git: ver la sección siguiente.
-3. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap.
+3. `Perfil de control: <perfil>` justo bajo el encabezado de la sección de la release en el roadmap (en `ROADMAP.md`, entre `## Now` y su tabla).
 4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
 
 Manda el primero que exista, de arriba abajo: feature sobre persona, persona sobre release, release sobre proyecto. Al confirmar el perfil vigente, di de qué nivel sale.
@@ -72,7 +72,7 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope, un «No ent
 - `pair` y `delegate`: el agente para con el 🦆 del cambio (de `sdd-rubber-duck` en modo corto) y su ✋ (lo que decidió él), deja escrita sin commitear la corrección **en su sitio** de `spec.md` —el requisito, el THEN o la sección corregidos— más su línea en `## Enmiendas`, y espera la aprobación. No sigue con la enmienda sin aprobar.
 - Con la aprobación: commitea la spec. Si la enmienda obliga a cambiar una task ya cerrada, su trabajo va a una task nueva al final del plan, con el número siguiente y su propio commit —`Task 3 — enmienda <fecha>: <qué>` en un plan de dos tasks, no «Task 1 — enmienda»—, con su `Tras`, y en `tasks.md` cada task cerrada afectada lleva la nota `afectada por enmienda <fecha> → Task N`: no reabre ninguna ni reescribe su commit, la historia sigue con un commit por task, la task nueva pasa por `sdd task start` y `sdd task done` como cualquier otra, y su commit entra en la revisión que toque. Si solo cambia la task en curso, el trabajo sigue en ella, con la nota de la enmienda. Sin esta forma, 1 de 2 sujetos metió en la task en curso el cambio a una task cerrada, y ninguno paró con 🦆 ni ✋ (`tests/sdd-start-feature-0146-red.md`, u1).
 - `unattended`: elige la opción más conservadora, la aplica igual en su sitio con su línea de `## Enmiendas` marcada `sin aprobar`, añade la task y sigue. Si ninguna opción evita bloquear la feature, la aparca (`⏸️ aparcada: <motivo>`).
-- Si la enmienda añade ficheros, antes de pedir la aprobación la entrada nombra las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno de esos ficheros en «Ficheros que toca», o dice «solape no comprobable: el roadmap no declara ficheros» si el roadmap no la declara. Con la aprobación, la fila de la feature añade esos ficheros.
+- Si la enmienda añade ficheros, antes de pedir la aprobación la entrada nombra las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno de esos ficheros en el `**Toca:**` del brief de su fila (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x), o dice «solape no comprobable: el roadmap no declara ficheros» si el roadmap no la declara. Con la aprobación, el `**Toca:**` o la fila de la feature añade esos ficheros.
 
 **Ruling** (no cambia la spec):
 - El agente no para: decide, registra el ruling (qué decidió, por qué, qué cuesta si se equivoca) y sigue. Arbitra así la contradicción entre «decide con el usuario» y las «Rulings, not stalls» de `sdd-implement`: con el usuario ausente, el agente no se queda esperando una pregunta que nadie va a responder.

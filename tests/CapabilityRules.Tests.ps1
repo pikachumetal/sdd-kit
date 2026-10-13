@@ -163,7 +163,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
 Describe 'Las skills eligen capacidades con el índice generado' {
   It '<Skill> ejecuta sdd capability index en su paso de contexto, antes de abrir capacidades' -ForEach @(
     @{ Skill = 'sdd-propose'; Step = 'Context'; Purpose = 'purpose' }
-    @{ Skill = 'sdd-roadmap'; Step = 'Estado real'; Purpose = 'propósito' }
+    @{ Skill = 'sdd-roadmap'; Step = 'Real state'; Purpose = 'purpose' }
     @{ Skill = 'sdd-explore'; Step = 'Context'; Purpose = 'purpose' }
   ) {
     $step = [regex]::Match((Read-SkillFile "$Skill/SKILL.md"), "(?ms)^1\. \*\*$Step.*?(?=^\d+\. |^## |\z)").Value

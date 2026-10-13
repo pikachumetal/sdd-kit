@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { runSdd, sddFolder } from '../capability/helpers.ts';
+import { checkProject, lineOf, validDebt, validRoadmap } from './project.ts';
 
 const proseRule = 'fuera de «Releases cerradas» el roadmap solo lleva tablas';
 const releaseHeader = ['| id | Feature | Origen | Ficheros que toca | Estado |', '| --- | --- | --- | --- | --- |', ''];
@@ -243,15 +244,12 @@ describe('sdd roadmap check: tablas', () => {
   });
 });
 
-describe('sdd roadmap check: avisos de destino y de cierre', () => {
-  it('warns about a debt destination outside the template and stays valid', async () => {
+describe('sdd roadmap check: avisos de cierre', () => {
+  it('no longer warns about Destino', async () => {
     const content = lines();
     content[25] = '| El correo no reintenta | medio | Decidir dev-lead: patch |';
     const result = await check(content);
-    expect(result.lines).toEqual([
-      'roadmap.md: aviso: línea 26: «Destino» «Decidir dev-lead: patch» no empieza por Actuar, Esperar 2.º ticket o Descartada',
-      'Roadmap válido',
-    ]);
+    expect(result.lines).toEqual(['Roadmap válido']);
     expect(result.code).toBe(0);
   });
 
@@ -365,12 +363,51 @@ describe('sdd roadmap check: entradas', () => {
 
   it('--json reports validity, errors and warnings', async () => {
     const content = lines();
-    content[25] = '| El correo no reintenta | medio | Decidir dev-lead: patch |';
+    content[25] = '| **[Feature 0001, 2026-09-26: parcial — [walkthrough](w.md)]** El correo no reintenta | medio | Actuar |';
     const path = sddFolder({ 'roadmap.md': content.join('\n') + '\n' });
     const result = await runSdd(['roadmap', 'check', '--path', path, '--json']);
     const parsed = JSON.parse(result.lines[0]);
     expect(parsed.valid).toBe(true);
     expect(parsed.errors).toEqual([]);
     expect(parsed.warnings).toHaveLength(1);
+  });
+});
+
+describe('sdd roadmap check: debt.md junto al roadmap', () => {
+  const missingEvidence = '| `libres --planta 2` lista salas de la planta 1 | [informe de QA](q.md) | alto | — | 0014 |';
+  const brokenDebt = validDebt.map((text) => (text.startsWith('| `libres') ? missingEvidence : text));
+  const evidenceError = `debt.md: línea ${lineOf(brokenDebt, missingEvidence)}: fila de «Lista» sin «Evidencia»`;
+  const agingRow = '| Las reservas de más de 8 h no avisan al responsable | [ticket](t.md) | medio | 2.º caso | 2026-07-01 |';
+  const agingDebt = brokenDebt.map((text) => (text.startsWith('| El aviso semanal') ? agingRow : text));
+  const releases = ['# Changelog', '', '## [1.4.0] - 2026-09-01', '', '## [1.3.0] - 2026-07-20'];
+
+  it('validates debt.md next to a 2.x roadmap', async () => {
+    const result = await runSdd(['roadmap', 'check', '--path', sddFolder({ 'roadmap.md': lines().join('\n') + '\n', 'steering/debt.md': brokenDebt.join('\n') + '\n' })]);
+    expect(result.lines).toEqual([evidenceError]);
+    expect(result.code).toBe(1);
+  });
+
+  it('validates debt.md without a roadmap', async () => {
+    const result = await runSdd(['roadmap', 'check', '--path', sddFolder({ 'steering/debt.md': brokenDebt.join('\n') + '\n' })]);
+    expect(result.lines).toEqual([evidenceError]);
+    expect(result.code).toBe(1);
+  });
+
+  it('orders errors and warnings by file', async () => {
+    const roadmap = [...validRoadmap];
+    roadmap.splice(5, 0, 'en preparación');
+    const result = await checkProject({ roadmap, debt: agingDebt, changelog: releases, legacy: { 'roadmap.md': lines().join('\n') + '\n' } });
+    expect(result.lines).toEqual([
+      'ROADMAP.md: línea 6: prosa en «Now»; el roadmap solo lleva tablas',
+      evidenceError,
+      'ROADMAP.md: aviso: también existe .docs/sdd/roadmap.md, que no se lee',
+      `debt.md: aviso: línea ${lineOf(agingDebt, agingRow)}: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca`,
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('accepts CRLF in ROADMAP.md and debt.md', async () => {
+    const result = await checkProject({ roadmap: validRoadmap, debt: validDebt, eol: '\r\n' });
+    expect(result.lines).toEqual(['Roadmap válido']);
   });
 });

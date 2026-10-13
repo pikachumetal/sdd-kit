@@ -18,6 +18,12 @@ Describe 'Skill sdd-feedback' {
     Get-KitFileContent $script:SkillFile | Should -Match 'kit-feedback-template\.md'
   }
 
+  It 'pide la fuente de cada dato y quita lo que no se ha comprobado' {
+    $skill = Get-KitFileContent $script:SkillFile
+    $skill | Should -Match '"Fuente"'
+    $skill | Should -Match '(?i)check it or drop it'
+  }
+
   It 'escribe el ticket en la carpeta acordada' {
     Get-KitFileContent $script:SkillFile | Should -Match '\.docs/sdd/kit-feedback/'
   }
@@ -38,6 +44,10 @@ Describe 'Plantilla kit-feedback-template.md' {
     Get-KitFileContent $script:TemplateFile | Should -Match ([regex]::Escape($Section))
   }
 
+  It 'lleva la fuente de cada dato justo bajo «Qué pasó»' {
+    Get-KitFileContent $script:TemplateFile | Should -Match '(?m)^- \*\*Qué pasó\*\*:[^\n]*\r?\n(  [^\n]*\r?\n)*- \*\*Fuente\*\*: '
+  }
+
   It 'ya no lleva la sección de errores del agente' {
     Get-KitFileContent $script:TemplateFile | Should -Not -Match 'Errores míos'
   }
@@ -45,13 +55,13 @@ Describe 'Plantilla kit-feedback-template.md' {
 
 Describe 'Reglas de ruido de la skill' {
   It 'la skill lleva la regla de <Rule>' -ForEach @(
-    @{ Rule = 'ticket mínimo'; Pattern = 'ticket mínimo' }
-    @{ Rule = 'un ticket por feature o patch'; Pattern = 'Un ticket por feature o patch' }
+    @{ Rule = 'ticket mínimo'; Pattern = 'minimal ticket' }
+    @{ Rule = 'un ticket por feature o patch'; Pattern = 'One ticket per feature or patch' }
     @{ Rule = 'propuesta verificada'; Pattern = 'sin verificar' }
     @{ Rule = 'coste respaldado'; Pattern = 'sin respaldo' }
     @{ Rule = 'menores'; Pattern = '«Menores»' }
-    @{ Rule = 'lint de docs'; Pattern = 'lint de docs' }
-    @{ Rule = 'fallo de shell cubierto por el kit'; Pattern = 'que una regla del kit cubre también es hallazgo' }
+    @{ Rule = 'lint de docs'; Pattern = 'docs lint' }
+    @{ Rule = 'fallo de shell cubierto por el kit'; Pattern = 'that a kit rule covers is also a finding' }
   ) {
     Get-KitFileContent $script:SkillFile | Should -Match ([regex]::Escape($Pattern))
   }

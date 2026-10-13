@@ -228,6 +228,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN tras el commit con su línea `Gate:`, `sdd-propose` fusiona la rama en `develop` con `sdd merge`, según las filas «Merge a develop» y «Push» de la tabla de gates (en `delegate`, con `--push` si `merge.push` es `true`)
 - AND en una rama con más commits que el del config (una feature a medias), o en la de integración, no fusiona y lo dice
 
+### Triar la deuda entra por `sdd-roadmap`
+
+- GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
+- WHEN el usuario escribe «Tria lo que hay por triar en la deuda.»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-explore` ni `sdd-kit:sdd-propose`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: no aplica.

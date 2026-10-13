@@ -83,7 +83,7 @@ Describe 'sdd-roadmap no saca el roadmap de la forma' {
   }
 
   It 'no admite una sección que pide el usuario' {
-    $script:Roadmapper | Should -Not -Match 'o donde diga el usuario'
+    $script:Roadmapper | Should -Not -Match '(?i)or wherever the user (says|asks)'
   }
 }
 

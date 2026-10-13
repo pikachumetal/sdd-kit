@@ -156,7 +156,7 @@ Describe 'Tabla de release con Ficheros que toca' {
   }
 
   It 'sdd-roadmap no deja la celda de ficheros por definir' {
-    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'nunca «por definir»'
+    Get-KitFile 'skills/sdd-roadmap/SKILL.md' | Should -Match 'never «por definir»'
   }
 }
 

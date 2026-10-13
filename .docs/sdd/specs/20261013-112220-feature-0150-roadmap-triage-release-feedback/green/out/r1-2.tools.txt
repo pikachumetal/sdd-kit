@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls -a && cat .docs/sdd/sdd-kit.json && echo ---- && cat ROADMAP.md 2>/dev/null; echo ----; cat .docs/sdd/roadmap.md 2>/dev/null; echo ----; cat .docs/sdd/steering/debt.md 2>/dev/null; ls .docs/sdd .docs/sdd/*
+<<< * develop
+  main
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+----
+----
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patc
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md package.json; ls -R src test | head -50; ls .docs/sdd/specs/*; git log --oneline | head; ls ../ 2>/dev/null; ls .docs/sdd/*.local.json 2>/dev/null
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Exit code 2
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la 
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat .docs/sdd/specs/*0005*/spec.md .docs/sdd/specs/*0006*/spec.md | head -80; cat .docs/sdd/changelog.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (8 turnos, 0.17150649999999998 $)
+Estado leído: el proyecto está en forma 2.x (`.docs/sdd/roadmap.md`), sin ramas `feature/*` abiertas, con `ids.mode: sequence`. Es algo grande (tres funcionalidades), así que va con proposal y varias filas. No he escrito nada todavía. Antes de partirlo necesito cerrar una decisión que condiciona las otras dos.
+
+❓ **¿Qué es «ocupación por sala»?**
+Hallazgo: en `src/app.js` una reserva solo tiene `room`, `day` y `slot` (`'10:00-12:00'`). No existe ningún horario de apertura de las salas, así que un porcentaje no se puede calcular sin añadir ese dato. Además, las reservas semanales (`--cada-semana`) se repiten, así que habría que expandirlas.
+
+Escena con los datos actuales (Norte con `lun 10:00-12:00`, Sur sin reservas):
+
+1️⃣ **Horas reservadas por sala en un periodo.** `informe ocupacion --semana` → `Norte 2 h · Sur 0 h`. No necesita datos nuevos y es lo que el Excel y el aviso semanal pueden repetir tal cual.
+2️⃣ **Porcentaje sobre un horario de apertura.** → `Norte 12 % · Sur 0 %` (con apertura 8:00-18:00, lun-vie). Es más legible para los responsables, pero exige definir y mantener ese horario por sala (una funcionalidad más).
+3️⃣ **Número de reservas por sala.** → `Norte 1 · Sur 0`. Es lo más barato, pero no distingue una reserva de 30 min de una de 4 h.
+
+➡️ **Recomiendo 1️⃣**, porque es el único que se calcula con los datos que ya existen y no obliga a inventar un horario de apertura. A cambio, no da un porcentaje; si el cliente lo quiere, 2️⃣ entra después como fila nueva «tras» el informe.
+
+¿Cuál de las tres es la que el cliente espera?

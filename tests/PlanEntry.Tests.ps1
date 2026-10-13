@@ -72,14 +72,14 @@ Describe 'sdd-roadmap' {
   }
 
   It 'la description recoge preparar la release, las reuniones y el roadmap' {
-    $script:Description | Should -Match '^Usar'
+    $script:Description | Should -Match '^Use'
     $script:Description | Should -Match 'prepara la release'
-    $script:Description | Should -Match 'reunión'
+    $script:Description | Should -Match 'meeting'
     $script:Description | Should -Match 'roadmap'
   }
 
   It 'distingue las cinco entradas y el scope de release' {
-    foreach ($entry in 'Algo grande', 'Algo concreto', 'Items del gestor', 'Una reunión', 'Reordenar o cambiar', 'Preparar una release') {
+    foreach ($entry in 'Something big', 'Something concrete', 'Tracker items', 'A meeting', 'Reorder or change', 'Prepare a release', 'Triage') {
       $script:Plan | Should -Match ([regex]::Escape($entry))
     }
   }
@@ -92,7 +92,7 @@ Describe 'sdd-roadmap' {
   It 'la entrevista pregunta con sdd-grilling y acaba en el roadmap, no en una spec' {
     $script:Plan | Should -Match 'sdd-grilling'
     $script:Plan | Should -Not -Match 'brainstorming'
-    $script:Plan | Should -Match 'nunca acaba en spec'
+    $script:Plan | Should -Match 'never ends in a spec'
   }
 
   It 'calca la propuesta de sdd-templates' {
@@ -101,25 +101,25 @@ Describe 'sdd-roadmap' {
   }
 
   It 'no arranca nada' {
-    $script:Plan | Should -Match 'ni rama, ni carpeta de feature, ni spec'
+    $script:Plan | Should -Match 'no branch, no feature folder, no spec'
   }
 
   It 'fija las reglas del roadmap' {
     $script:Plan | Should -Match 'tras NNNN'
     $script:Plan | Should -Match '⏸️ aparcada: descartada por'
     $script:Plan | Should -Match '--reserve --count'
-    $script:Plan | Should -Match 'sin preguntar'
+    $script:Plan | Should -Match 'without asking'
   }
 
   It 'un cambio de definición es una enmienda fechada' {
     $script:Plan | Should -Match 'Enmiendas'
-    $script:Plan | Should -Match 'solo lo pendiente'
+    $script:Plan | Should -Match 'only what is pending'
   }
 
   It 'hereda la preparación de la release' {
     $script:Plan | Should -Match 'release\.hasRecipient'
     $script:Plan | Should -Match 'Ficheros que toca'
-    $script:Plan | Should -Match 'nunca «por definir»'
+    $script:Plan | Should -Match 'never «por definir»'
     $script:Plan | Should -Match 'sequence'
   }
 
@@ -184,20 +184,20 @@ Describe 'Rama sin id' {
 Describe 'Revisión final' {
   BeforeAll {
     $script:Plan = Get-KitFile 'skills/sdd-roadmap/SKILL.md'
-    $script:Checklist = (($script:Plan -split '## Checklist')[1] -split '## Lo que deja')[0]
+    $script:Checklist = (($script:Plan -split '## Checklist')[1] -split '## What each entry leaves')[0]
     $script:Naming = Get-KitFile 'skills/sdd-start-feature/references/nombrado.md'
     $script:PatchStep2 = [regex]::Match((Get-KitFile 'skills/sdd-start-patch/SKILL.md'), '(?ms)^2\. \*\*Carpeta\*\*.*?(?=^3\. )').Value
   }
 
   It 'la regla de la task en marcha vale para toda entrada, en el checklist' {
-    $script:Checklist | Should -Match 'feature en marcha'
+    $script:Checklist | Should -Match 'feature in flight'
     $script:Checklist | Should -Match 'tras'
-    $script:Checklist | Should -Match 'cerrada'
+    $script:Checklist | Should -Match 'closed'
   }
 
   It 'la red flag y la racionalización de la task en marcha vuelven' {
-    $script:Plan | Should -Match 'Vas a editar la fila o la spec de una feature en marcha'
-    $script:Plan | Should -Match 'La nota es del tema de la feature en marcha'
+    $script:Plan | Should -Match 'You''re about to edit the row or the spec of a feature in flight'
+    $script:Plan | Should -Match 'The note is on the topic of the feature in flight'
   }
 
   It 'el renombrado nunca toca la rama de integración ni la estable' {

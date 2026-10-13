@@ -94,7 +94,9 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     @{ Template = 'operations-template.md'; Destination = '`.docs/sdd/steering/operations.md`' }
     @{ Template = 'architecture-template.md'; Destination = '`.docs/sdd/steering/architecture.md`' }
     @{ Template = 'estimation-template.md'; Destination = '`.docs/sdd/steering/estimation.md`' }
-    @{ Template = 'roadmap-template.md'; Destination = '`ROADMAP.md` en la raíz' }
+    @{ Template = 'now-next-later-template.md'; Destination = '`ROADMAP.md` en la raíz' }
+    @{ Template = 'debt-template.md'; Destination = '`.docs/sdd/steering/debt.md`' }
+    @{ Template = 'roadmap-template.md'; Destination = '`.docs/sdd/roadmap.md`' }
     @{ Template = 'changelog-template.md'; Destination = '`CHANGELOG.md` en la raíz' }
     @{ Template = 'adr-template.md'; Destination = '`.docs/sdd/decisions/' }
   ) {
@@ -107,7 +109,8 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     @{ Template = 'mission-template.md'; Feature = '0156' }
     @{ Template = 'tech-stack-template.md'; Feature = '0156' }
     @{ Template = 'environments-template.md'; Feature = '0156' }
-    @{ Template = 'client-changelog-template.md'; Feature = '0150' }
+    @{ Template = 'client-changelog-template.md'; Feature = '0177' }
+    @{ Template = 'roadmap-template.md'; Feature = '0157' }
   ) {
     $row = (Get-KitFileContent 'skills/sdd-templates/SKILL.md') -split "`n" | Where-Object { $_ -match "\[$([regex]::Escape($Template))\]" }
     $row | Should -Match ([regex]::Escape("2.x: la retira la $Feature"))

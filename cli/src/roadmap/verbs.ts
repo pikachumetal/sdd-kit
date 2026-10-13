@@ -7,7 +7,7 @@ import { publish, resolveProjectRoot } from './publish.ts';
 export const roadmapCheckVerb: Verb = {
   noun: 'roadmap',
   verb: 'check',
-  summary: 'Valida que el roadmap tiene la forma de la plantilla',
+  summary: 'Valida que el roadmap y la deuda tienen la forma de su plantilla',
   options: { path: { type: 'string' }, json: { type: 'boolean' } },
   async run(args, io) {
     const { errors, warnings, lines, code } = checkRoadmap(requiredOption(args, 'path'));

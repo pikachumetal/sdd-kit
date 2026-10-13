@@ -15,12 +15,12 @@ BeforeAll {
       'sdd-end-feature'     = @{ SkillMd = 3000; Total = 4500 }
       'sdd-end-patch'       = @{ SkillMd = 2460; Total = 2460 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
-      'sdd-feedback'        = @{ SkillMd = 700; Total = 700 }
+      'sdd-feedback'        = @{ SkillMd = 800; Total = 800 }
       'sdd-grilling'        = @{ SkillMd = 900; Total = 900 }
       'sdd-parallel-agents' = @{ SkillMd = 1100; Total = 1100 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
-      'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
+      'sdd-roadmap'         = @{ SkillMd = 3600; Total = 3600 }
       'sdd-rubber-duck'     = @{ SkillMd = 600; Total = 600 }
       'sdd-propose'         = @{ SkillMd = 5000; Total = 6300 }
       'sdd-implement'       = @{ SkillMd = 10240; Total = 13950 }

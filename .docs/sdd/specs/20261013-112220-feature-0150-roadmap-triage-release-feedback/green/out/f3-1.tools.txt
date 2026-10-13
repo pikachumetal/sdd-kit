@@ -1,0 +1,108 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green2/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && ls test && cat package.json && ls .docs/sdd/specs
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback\300fd786-2a64-487e-8e67-3e9f5f7b2120\scratchpad\kit-green2\skills\sdd-start-feature\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; git branch --show-current
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+develop
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (8 turnos, 0.17505520000000002 $)
+Ahora: he clasificado el cambio y necesito que confirmes el carril. Queda: la spec corta y su aprobación, luego implementar y cerrar, ~10 min.
+
+🦆 **Qué entiendo:** hoy `reservar` solo recibe la sala y `--cada-semana`. Quieres poder añadir un texto libre a una reserva al crearla, algo como `reservar Norte --nota "reunión con cliente"`. Es tocar `src/app.js`, un test nuevo en `test/app.test.js` y nada más.
+
+**Carril: no es patch.** Aunque sea pequeño, la solución no está fijada. Hay que decidir cómo se pasa la nota (nombre del flag), dónde se ve después y si tiene límite de longitud. Eso es diseñar, así que no entra en patch.
+
+**Sí cumple lite**, y lo he comprobado una por una:
+- El flujo ya existe y se lee: `run('reservar', …)` en `src/app.js`.
+- No cambia contratos públicos: es una CLI de un solo usuario, sin otro módulo que la consuma.
+- No cambia el schema: `bookings` en memoria gana un campo opcional, sin migración.
+- Cabe en un solo módulo: `src/app.js`.
+- No hay `estimation.md`, así que esa condición no aplica.
+
+**Lite significa** una spec corta (decisiones, delta, aprobación), sin `plan.md` ni `tasks.md`. El gate de la spec, el test antes que el código y el cierre siguen igual.
+
+**Recomiendo lite.** Perfil actual: el del proyecto (`sdd-kit.json`, sin `control.profile`, así que el por defecto). Dime una de estas:
+
+1. **«Lite»** (recomendada): spec corta y a implementar.
+2. **«Full»**: spec completa con plan, más ceremonia para algo así.
+3. **«Lite, y apruebo la spec por delegación, nos vemos en la validación»**: no paro en el gate de la spec.
+4. **«Perfil `<otro>` para esta feature»**.
+
+Con tu respuesta creo la rama `feature/<id>` desde `develop` y te presento las decisiones de diseño a validar, con mi propuesta primero.

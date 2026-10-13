@@ -1,0 +1,185 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; echo ----; ls -a; cat .docs/sdd/sdd-kit.json; echo ----; cat ROADMAP.md; echo ----; cat .docs/sdd/steering/debt.md; git branch --all
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+----
+./
+../
+.docs/
+.git/
+docs/
+package.json
+README.md
+src/
+test/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": tru
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls -R .docs/sdd | head -40; cat package.json; ls -R src test; cat README.md | head -40
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -60; git log --oneline -5; node --version
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].join('\n');
+}
+
+exp
+
+>>> Bash: node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; node src/app.js exportar > /tmp/o.csv; head -1 /tmp/o.csv; git log --all --oneline | head; grep -n "1.4.2\|version" -r .docs/sdd/changelog.md | head
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+346ce41 feat: base del molde
+3:Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"; cat "$K/skills/sdd-templates/templates/roadmap-template.md"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd; node "$K/cli/bin/sdd.js" id next --project-root .
+<<< # Roadmap — <proyecto>
+
+> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-end-feature` (marca la fila de la feature), `sdd-end-patch` (tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 🧪 validación dife
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"; node "$K/cli/bin/sdd.js" id next --project-root . --reserve --count 1
+<<< 0008
+
+>>> Bash: python3 - <<'EOF' 2>/dev/null || node -e '
+const fs=require("fs");let t=fs.readFileSync(".docs/sdd/roadmap.md","utf8");
+t=t.replace("| 1 | Avisos por correo antes de la reserva | ⏳ |\n","| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: `libres --planta N` solo lista salas de la planta N (hoy `<=` incluye plantas inferiores) | ⏳ |\n");
+t=t.replace("| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n","| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| `libres --planta 2` lista también salas de la planta 1: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)` (QA 2026-10-12, hallazgo 2) | Medio: resultado erróneo | **Actuar**: patch 0008 |\n| La exportación CSV pierde las tildes en la cabecera (`d?a`) (QA 2026-10-12, hallazgo 1); no reproducible: `node src/app.js exportar` emite `sala,día,franja` en UTF-8 correcto, y la versión 1.4.2 que cita no existe (última publicada v0.3.0). Falta: reproducirlo con el entorno y la versión exactos del informe | Bajo | **Esperar 2.º ticket**: reproducirlo (2026-10-13) |\n");
+fs.writeFileSync(".docs/sdd/roadmap.md",t);'
+EOF
+K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"; git diff --stat; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 29: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 17: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: git status --short; grep -n 0008 .docs/sdd/roadmap.md
+<<< (Bash completed with no output)
+
+>>> Edit: <run>\repo\.docs\sdd\roadmap.md
+<<< The file <run>\repo\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\roadmap.md
+<<< The file <run>\repo\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd; node "$K/cli/bin/sdd.js" roadmap publish --project-root . --message "docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decidido sin preguntar (delegate, «decide tú»):
+- Hallazgo 2 (libres --planta 2 lista planta 1): reproducido con el comando; Actuar, patch 0008 en Próximo.
+- Hallazgo 1 (CSV sin tildes): no reproducible (salida UTF-8 correcta; la 1.4.2 citada no existe); Esperar 2.º ticket, falta reproducirlo." .docs/sdd/roadmap.md; git log --oneline -2; git status --short
+<<< roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+346ce41 feat: base del molde
+ M .docs/sdd/roadmap.md
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"; node "$K/cli/bin/sdd.js" roadmap publish --help 2>&1 | head -30; grep -rn "destino con cambios" "$K/cli" | head
+<<< uso: sdd roadmap publish [--message <valor>] [--into <valor>] [--project-root <valor>] [--lock-timeout <valor>] FILES...
+Publica ficheros de .docs/sdd/ y los documentos de la raíz en la rama de integración, bajo el cerrojo de merge
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3/cli/src/roadmap/publish.ts:44:    if (stdout.trim() !== '') throw new DomainError(`destino con cambios: ${file} en ${target}`);
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-rele
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"; sed -n 1,110p "$K/cli/src/roadmap/publish.ts"
+<<< import { copyFileSync, existsSync, mkdirSync, realpathSync, rmSync } from 'node:fs';
+import { dirname, join, relative, resolve, sep } from 'node:path';
+import { DomainError, UsageError } from '../cli/args.ts';
+import type { Io } from '../cli/io.ts';
+import { commonDir, git, gitLines, toplevel, worktrees } from '../git/git.ts';
+import { withLock } from '../git/lock.ts';
+import { withTempWorktree } from '../merge/temp-worktree.ts';
+import { ROOT_DOCUMENTS } from '../cli/layout.ts';
+
+const DOCS_DIR = '.docs/sdd';
+
+export interface PublishOptions {
+  projectRoot: string;
+  files: string[];
+  messa
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-green3"
+T=$(mktemp -d); cp .docs/sdd/roadmap.md $T/roadmap.md; git checkout -- .docs/sdd/roadmap.md
+git worktree add --detach $T/wt develop -q && cp $T/roadmap.md $T/wt/.docs/sdd/roadmap.md
+node "$K/cli/bin/sdd.js" roadmap publish --project-root $T/wt --message "docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decidido sin preguntar (delegate, «decide tú»):
+- Hallazgo 2 (libres --planta 2 lista planta 1): reproducido con el comando; Actuar, patch 0008 en Próximo.
+- Hallazgo 1 (CSV sin tildes): no reproducible (salida UTF-8 correcta; la 1.4.2 citada no existe); Esperar 2.º ticket, falta reproducirlo.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md
+git worktree remove --force $T/wt; git log --oneline -3; git status --short; grep -c 0008 .docs/sdd/roadmap.md
+<<< 9097e61 docs(roadmap): triaje del informe de QA 2026-10-12
+346ce41 feat: base del molde
+2
+
+=== RESULTADO (17 turnos, 0.2843844 $)
+He triado el informe y el resultado está commiteado en `develop` (`9097e61`). Tomé las decisiones yo, como pediste, y quedan en el cuerpo del commit.
+
+| # | Hallazgo | Decisión |
+| --- | --- | --- |
+| 2 | `libres --planta 2` lista también `Norte (planta 1)` | **Lista, Actuar.** Lo reproduje: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. Hay una fila de patch **0008** en «Próximo» y una fila de deuda con la evidencia. |
+| 1 | El CSV pierde las tildes (`d?a`) | **En espera, Esperar 2.º ticket, falta reproducirlo.** No lo reproduzco: `node src/app.js exportar` emite `sala,día,franja` en UTF-8 correcto. La versión 1.4.2 que cita no existe (la última publicada es v0.3.0). Parece un problema de la consola o del entorno de quien probó. |
+
+## Qué queda por hacer
+- **Patch 0008:** no lo he arrancado. El arreglo es probablemente cambiar `<=` por `===` en `roadmapsOnFloor`/`roomsOnFloor` de `src/app.js`.
+- **Hallazgo 1:** pídele a QA la versión exacta y el sistema operativo o consola, y cómo abrieron el CSV. Con un segundo caso o una reproducción, vuelve a triaje.
+
+## Avisos
+- `sdd roadmap check` sigue dando dos fallos de forma heredados que no toqué: la cabecera de «Deuda técnica» (`Deuda | Impacto | Plan` en vez de `Ítem | Impacto | Destino`) y el título de la release `v0.3.0`. Corresponden al paso de migración a la forma de plantilla. Mis filas nuevas siguen la cabecera existente, con el destino en la columna «Plan».
+- `roadmap publish` rechazó publicar desde el propio worktree de `develop` porque el fichero estaba modificado. Lo publiqué desde un worktree temporal desechable, ya borrado.
+
+Si prefieres hacerlo en esta sesión, di «arráncalo».
+
+Prompt de lanzamiento de la 0008:
+
+> Arranca el patch 0008 con sdd-propose: `libres --planta N` debe listar solo las salas de la planta N. Hoy `node src/app.js libres --planta 2` devuelve `Norte (planta 1)` porque el filtro usa `<=`. Origen: QA 2026-10-12, hallazgo 2.
