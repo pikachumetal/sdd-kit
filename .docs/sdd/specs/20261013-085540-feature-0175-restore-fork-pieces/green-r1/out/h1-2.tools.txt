@@ -1,0 +1,402 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/specs/; ls .docs/sdd/specs/*0010*; cat .docs/sdd/sdd-kit.json; ls
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+plan.md
+spec.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0010*/spec.md .docs/sdd/specs/*0010*/plan.md; cat package.json; ls -R src test; git status --short --ignored | head
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js; cat .docs/sdd/specs/*0007*/patch.md | head -40; ls .docs/sdd; node --test 2>&1 | tail -12
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && echo "GD=$(cd $(git rev-parse --git-dir) && pwd -P) GC=$(cd $(git rev-parse --git-common-dir) && pwd -P)"; K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0175-restore-fork-pieces/e5ad8330-7438-4c2f-8261-43eb63dc7be8/scratchpad/kit-c07b2b89"; node "$K/cli/bin/sdd.js" workspace .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; sed -n '/Quality decalogue/,$p' "$K/skills/sdd-implement/references/implementer-prompt.md" | head -40; cat .docs/sdd/constitution.md | head -40
+<<< GD=<run>/repo/.git GC=<run>/repo/.git
+<run>\repo\.superpowers\sdd\plan
+## Quality decalogue
+
+Si una regla de aquí choca con las Restricciones de código, mandan las Restricciones.
+
+1. Names say what a thing is for; one word per concept in the code you touch.
+2. A function does one thing, at one level of abstraction: choosing the data and formatting it are two functions.
+3. Deep modules: a small interface that hides a lot; no wrapper that only passes a call through.
+4. Pull complexity down into the module, and design away the error cases you can instead of handling them in every caller.
+5. DRY i
+
+>>> Bash: cd "<run>/repo" && git check-ignore -v .superpowers/sdd/plan/progress.md; cat .gitignore 2>/dev/null; ls -a .superpowers/sdd/plan 2>/dev/null; git log --oneline | head -3; git show --stat HEAD | head -20
+<<< .gitignore:1:.superpowers/	.superpowers/sdd/plan/progress.md
+.superpowers/
+node_modules/
+data/
+./
+../
+plan-path
+c96129d docs(sdd): abrir la feature 0010 con su spec y su plan
+abe5e8a feat: base del molde
+commit c96129de990691f3c62e0dec3b6284f51c768ca7
+Author: Fixture <fixture@example.com>
+Date:   Tue Oct 13 11:16:44 2026 +0200
+
+    docs(sdd): abrir la feature 0010 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 50 ++++++++++++++++
+ .../spec.md                                        | 68 ++++++++++++++++++++++
+ 2 files changed, 118 ins
+
+>>> Bash: cd "<run>/repo" && cat > .superpowers/sdd/plan/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+
+Setup: en la rama feature/0010-cancel-reason, sin worktree enlazado (trabajo en el sitio); baseline `node --test` 4/4 verde. Método Native. Sin tasks.md en la carpeta: el registro vivo es este ledger.
+
+## Pre-flight scan
+| Par / task | Qué produce vs. qué consume | Hallazgo |
+| --- | --- | --- |
+| T1 ↔ T2 (`src/app.js`) | T1 produce la reserva `cancelled` con el motivo guardado; T2 la lee para listar | coherente: el motivo vive en la reserva (Approach) |
+| T1 ↔ T2 (`test/cancel.test.js`) | ambas añaden tests al mismo fichero | el estado de `app.js` es de módulo y el test existente ya cancela Norte lun: tests nuevos necesitan estado fresco |
+| T1 consigo misma | verificación `node --test test/cancel.test.js` cubre los dos THEN de T1 | coherente; el plan no trae pasos, manda la spec |
+| T2 consigo misma | idem, THEN del listado | coherente |
+
+Task 0: Ruling: sin `--motivo`, `cancelar` sigue respondiendo «cancelada <sala> <día>» (test existente intacto) y `canceladas` lo muestra como «<sala> <día> — sin motivo» — la spec calla y no cambiar la salida existente es lo mínimo — si me equivoco: el dev-lead querrá exigir el motivo y habrá que cambiar un test y un mensaje
+Task 0: Ruling: los tests nuevos importan `app.js` con un query único (módulo fresco) en vez de depender del orden de los tests — el estado de módulo lo consume el test existente — si me equivoco: se cambia el helper por un reset exportado
+Task 0: Ruling: `canceladas` solo lista estado `cancelled`, no `voided` — la spec lo dice (estado cancelada) y las anulaciones no entran (0011) — si me equivoco: se amplía el filtro
+Task 0: Ruling: lista vacía de `canceladas` devuelve cadena vacía, sin inventar texto — la spec no fija la salida — si me equivoco: se añade un mensaje de «sin canceladas»
+EOF
+K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0175-restore-fork-pieces/e5ad8330-7438-4c2f-8261-43eb63dc7be8/scratchpad/kit-c07b2b89"; node "$K/cli/bin/sdd.js" task start .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md 1
+<<< brief: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+base: c96129de990691f3c62e0dec3b6284f51c768ca7
+
+>>> Bash: cd "<run>/repo" && cat .superpowers/sdd/plan/task-1-brief.md; git branch -a; git remote
+<<< ### Task 1 — Cancelar con motivo
+
+**Superficies**: backend
+**Verificación**: `node --test test/cancel.test.js`
+**Ficheros**: `src/app.js`, `test/cancel.test.js`
+
+  develop
+* feature/0010-cancel-reason
+  main
+
+>>> Bash: cd "<run>/repo" && M=$(git merge-base HEAD develop); git diff --name-only $M develop; git diff $M develop -- .docs/sdd/roadmap.md | head; echo base-checked
+cat >> test/cancel.test.js <<'EOF'
+
+let freshImports = 0;
+const freshRun = async () => (await import(`../src/app.js?fresh=${freshImports++}`)).run;
+
+test('cancelar con un motivo de la lista lo incluye en la respuesta', async () => {
+  const run = await freshRun();
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');
+});
+
+test('cancelar con un motivo fuera de la lista lo rechaza', async () => {
+  const run = await freshRun();
+  assert.equal(
+    run('cancelar', ['Norte', 'lun', '--motivo', 'porque sí']),
+    'motivo no válido: cambio de planes, sala ocupada, otro',
+  );
+});
+EOF
+cp test/cancel.test.js "$TMPDIR/cancel.red1.js" 2>/dev/null || cp test/cancel.test.js /tmp/cancel.red1.js; node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖)|expected|actual|pass|fail"
+<<< base-checked
+✔ cancelar una reserva activa (1.5228ms)
+✔ cancelar sin reserva lo dice (1.5001ms)
+✖ cancelar con un motivo de la lista lo incluye en la respuesta (3.5832ms)
+✖ cancelar con un motivo fuera de la lista lo rechaza (9.2166ms)
+ℹ pass 2
+ℹ fail 2
+✖ failing tests:
+✖ cancelar con un motivo de la lista lo incluye en la respuesta (3.5832ms)
+  + actual - expected
+    actual: 'cancelada Norte lun',
+    expected: 'cancelada Norte lun (sala ocupada)',
+✖ cancelar con un motivo fuera de la lista lo rechaza (9.2166ms)
+  + actual - expected
+    actual: 'cancelada Norte lun',
+    expected: 'motivo n
+
+>>> Bash: cd "<run>/repo" && python3 - <<'EOF' 2>/dev/null || echo nopython
+EOF
+node - <<'EOF'
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(`export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return \`sin reserva \${room} \${day}\`;
+  booking.status = 'cancelled';
+  return \`cancelada \${room} \${day}\`;
+}`,`export function cancelBooking(room, day, reason) {
+  if (reason !== undefined && !CANCEL_REASONS.includes(reason)) {
+    return \`motivo no válido: \${CANCEL_REASONS.join(', ')}\`;
+  }
+  const booking = findBooking(room, day);
+  if (!booking) return \`sin reserva \${room} \${day}\`;
+  booking.status = 'cancelled';
+  booking.reason = reason;
+  return reason ? \`cancelada \${room} \${day} (\${reason})\` : \`cancelada \${room} \${day}\`;
+}`);
+s=s.replace(`const bookings =`,`const CANCEL_REASONS = ['cambio de planes', 'sala ocupada', 'otro'];\nconst bookings =`);
+s=s.replace(`function findBooking`,`function optionValue(params, name) {
+  const at = params.indexOf(name);
+  return at === -1 ? undefined : params[at + 1];
+}
+
+function findBooking`);
+s=s.replace(`cancelBooking(params[0], params[1]);`,`cancelBooking(params[0], params[1], optionValue(params, '--motivo'));`);
+fs.writeFileSync('src/app.js',s);
+EOF
+node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖)|pass|fail"; git diff --no-index --stat /tmp/cancel.red1.js test/cancel.test.js; git diff src/app.js | head -50
+<<< ✔ cancelar una reserva activa (0.7841ms)
+✔ cancelar sin reserva lo dice (0.8871ms)
+✖ cancelar con un motivo de la lista lo incluye en la respuesta (2.3421ms)
+✖ cancelar con un motivo fuera de la lista lo rechaza (1.2916ms)
+ℹ pass 2
+ℹ fail 2
+✖ failing tests:
+✖ cancelar con un motivo de la lista lo incluye en la respuesta (2.3421ms)
+✖ cancelar con un motivo fuera de la lista lo rechaza (1.2916ms)
+warning: in the working copy of '<home>/AppData/Local/Temp/cancel.red1.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be rep
+
+>>> Bash: cd "<run>/repo" && file src/app.js test/cancel.test.js; git config core.autocrlf; node -e "const s=require('fs').readFileSync('src/app.js','utf8');console.log(s.includes('\r\n'))"
+<<< src/app.js:          JavaScript source, ASCII text, with CRLF, LF line terminators
+test/cancel.test.js: JavaScript source, Unicode text, UTF-8 text, with CRLF, LF line terminators
+true
+true
+
+>>> Read: <run>\repo\src\app.js
+<<< 16	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+17	}
+18	
+19	export function cancelBooking(room, day) {
+20	  const booking = findBooking(room, day);
+21	  if (!booking) return `sin reserva ${room} ${day}`;
+22	  booking.status = 'cancelled';
+23	  return `cancelada ${room} ${day}`;
+24	}
+25	
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖)|pass|fail"; git diff --no-index --ignore-cr-at-eol --stat /tmp/cancel.red1.js test/cancel.test.js | tail -1
+<<< ✔ cancelar una reserva activa (0.8022ms)
+✔ cancelar sin reserva lo dice (0.8216ms)
+✔ cancelar con un motivo de la lista lo incluye en la respuesta (1.9206ms)
+✔ cancelar con un motivo fuera de la lista lo rechaza (1.5113ms)
+ℹ pass 4
+ℹ fail 0
+warning: in the working copy of '<home>/AppData/Local/Temp/cancel.red1.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/cancel.test.js && git commit -q -m "feat(0010): cancelar con motivo de la lista
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0175-restore-fork-pieces/e5ad8330-7438-4c2f-8261-43eb63dc7be8/scratchpad/kit-c07b2b89"; P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+node "$K/cli/bin/sdd.js" task done $P 1 c96129de990691f3c62e0dec3b6284f51c768ca7 -- node --test test/cancel.test.js | tail -5
+node "$K/cli/bin/sdd.js" task start $P 2
+<<< b8b3b71 feat(0010): cancelar con motivo de la lista
+c96129d docs(sdd): abrir la feature 0010 con su spec y su plan
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 111.1418
+ledger: Task 1: complete (commits c96129d..b8b3b71, tests: node --test test/cancel.test.js → ℹ duration_ms 111.1418)
+brief: <run>\repo\.superpowers\sdd\plan\task-2-brief.md
+base: b8b3b7110b14d6cf55eeca4f814c78154560f129
+
+>>> Bash: cd "<run>/repo" && cat >> test/cancel.test.js <<'EOF'
+
+test('canceladas enseña el motivo de cada reserva cancelada', async () => {
+  const run = await freshRun();
+  run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']);
+  assert.equal(run('canceladas', []), 'Norte lun — sala ocupada');
+});
+EOF
+cp test/cancel.test.js /tmp/cancel.red2.js; node --test test/cancel.test.js 2>&1 | grep -E "^(✖)|actual|expected"
+<<< ✖ canceladas enseña el motivo de cada reserva cancelada (3.5364ms)
+✖ failing tests:
+✖ canceladas enseña el motivo de cada reserva cancelada (3.5364ms)
+  + actual - expected
+    actual: 'salas',
+    expected: 'Norte lun — sala ocupada',
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖)|ℹ (pass|fail)"; git diff --no-index --ignore-cr-at-eol /tmp/cancel.red2.js test/cancel.test.js 2>/dev/null | head -3; echo red-copy-compared
+git add src/app.js test/cancel.test.js && git commit -q -m "feat(0010): comando canceladas con el motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0175-restore-fork-pieces/e5ad8330-7438-4c2f-8261-43eb63dc7be8/scratchpad/kit-c07b2b89"; P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+node "$K/cli/bin/sdd.js" task done $P 2 b8b3b7110b14d6cf55eeca4f814c78154560f129 -- node --test test/cancel.test.js | tail -1
+<<< ✔ cancelar una reserva activa (1.6033ms)
+✔ cancelar sin reserva lo dice (0.1546ms)
+✔ cancelar con un motivo de la lista lo incluye en la respuesta (1.4245ms)
+✔ cancelar con un motivo fuera de la lista lo rechaza (1.0442ms)
+✔ canceladas enseña el motivo de cada reserva cancelada (1.0283ms)
+ℹ pass 5
+ℹ fail 0
+red-copy-compared
+74e8d7b feat(0010): comando canceladas con el motivo
+ledger: Task 2: complete (commits b8b3b71..74e8d7b, tests: node --test test/cancel.test.js → ℹ duration_ms 95.1654)
+
+>>> Bash: cd "<run>/repo" && git diff c96129d HEAD -- src; node --test 2>&1 | grep -E "ℹ (tests|pass|fail)"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo x; node src/app.js cancelar Norte lun --motivo; git status --short
+<<< diff --git a/src/app.js b/src/app.js
+index fd6d964..6030bb3 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,20 +1,37 @@
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
++const CANCEL_REASONS = ['cambio de planes', 'sala ocupada', 'otro'];
+ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+ }
+ 
++function optionValue(params, name) {
++  const at = params.indexOf(name);
+
+>>> Bash: cd "<run>/repo" && cat >> test/cancel.test.js <<'EOF'
+
+test('cancelar con --motivo sin valor lo rechaza y no cancela', async () => {
+  const run = await freshRun();
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+  assert.equal(run('canceladas', []), '');
+});
+EOF
+node --test test/cancel.test.js 2>&1 | grep -E "^✖|actual:|expected:" | head
+<<< ✖ cancelar con --motivo sin valor lo rechaza y no cancela (9.3378ms)
+✖ failing tests:
+✖ cancelar con --motivo sin valor lo rechaza y no cancela (9.3378ms)
+    actual: 'cancelada Norte lun',
+    expected: 'motivo no válido: cambio de planes, sala ocupada, otro',
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "^✖|ℹ (tests|pass|fail)"; git add src/app.js test/cancel.test.js && git commit -q -m "fix(0010): --motivo sin valor se rechaza como motivo no válido
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+cat >> .superpowers/sdd/plan/progress.md <<'EOF'
+Final review: self-review (no subagent tool)
+Final: fixed `--motivo` sin valor cancelaba sin motivo — test «cancelar con --motivo sin valor…» RED→GREEN, suite 7+1/8
+Final: minor (deferred): `canceladas` sin canceladas devuelve cadena vacía (spec calla)
+Final: minor (deferred): el estado vive en memoria del proceso: `cancelar` y `canceladas` en invocaciones CLI separadas no comparten estado (base del molde)
+EOF
+node --test 2>&1 | grep -E "ℹ (tests|pass|duration)"
+<<< ℹ tests 8
+ℹ pass 8
+ℹ fail 0
+d9fc27f fix(0010): --motivo sin valor se rechaza como motivo no válido
+ℹ tests 8
+ℹ pass 8
+ℹ duration_ms 171.637
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0175-restore-fork-pieces/e5ad8330-7438-4c2f-8261-43eb63dc7be8/scratchpad/kit-c07b2b89"; node "$K/cli/bin/sdd.js" ledger rulings .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; rm -rf .superpowers/sdd/plan; git status --short; git log --oneline | head -4
+<<< Task 0: Ruling: sin `--motivo`, `cancelar` sigue respondiendo «cancelada <sala> <día>» (test existente intacto) y `canceladas` lo muestra como «<sala> <día> — sin motivo» — la spec calla y no cambiar la salida existente es lo mínimo — si me equivoco: el dev-lead querrá exigir el motivo y habrá que cambiar un test y un mensaje
+Task 0: Ruling: los tests nuevos importan `app.js` con un query único (módulo fresco) en vez de depender del orden de los tests — el estado de módulo lo consume el test existente — si me equivoco: se cambia el helper por un reset exportado
+Task 0: Ruling: `canceladas` sol
+
+=== RESULTADO (32 turnos, 0.6214856999999999 $)
+La implementación de la 0010 está hecha y commiteada en `feature/0010-cancel-reason`, y la suite completa pasa (8/8, `node --test`). Falta tu validación del trabajo, y la feature no se cierra hasta tenerla.
+
+Cada task tuvo su test en RED antes del código, y los dos THEN de la spec cuentan con test:
+- **Task 1** (`b8b3b71`): `cancelar <sala> <día> --motivo <motivo>` acepta «cambio de planes», «sala ocupada» y «otro». Responde «cancelada Norte lun (sala ocupada)», o «motivo no válido: cambio de planes, sala ocupada, otro» si el motivo no está en la lista.
+- **Task 2** (`74e8d7b`): `canceladas` lista «Norte lun — sala ocupada».
+- **Fix de la revisión final** (`d9fc27f`): `--motivo` sin valor cancelaba la reserva sin motivo; ahora se rechaza como motivo no válido (test RED→GREEN).
+
+**Revisión final:** no hay subagentes en este harness, así que fue una auto-revisión mía y no la de un revisor con contexto fresco. Es más débil; decide si te basta antes del merge. Tampoco he podido hacer la re-revisión del tramo ni la verificación de la validación con un revisor independiente.
+
+## Smoke por THEN
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) y suite |
+| motivo fuera de la lista → «motivo no válido: …» | ejecución real (CLI, con `x`) y suite |
+| `canceladas` → «Norte lun — sala ocupada» | solo suite: `src/app.js` guarda el estado en memoria y cada invocación CLI arranca de cero, así que no se puede encadenar `cancelar` y `canceladas` desde la línea de comandos |
+
+La suite completa tarda ~0,2 s. No arranqué ningún proceso que quede vivo.
+
+## Guion de pruebas
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js cancelar Norte lun --motivo` → el mismo mensaje de motivo no válido, sin cancelar.
+4. `node --test test/cancel.test.js` → 6 tests en verde, entre ellos «canceladas enseña el motivo de cada reserva cancelada» (el único modo de ver el listado, por lo anterior).
+
+## Rulings que tomé (con su coste si me equivoco)
+- **Sin `--motivo`**: `cancelar` responde como antes y `canceladas` lo muestra como «— sin motivo». La spec calla y así no cambia la salida existente. Si el dev-lead quiere exigir el motivo, hay que cambiar un test y un mensaje.
+- **Tests con módulo fresco**: los tests nuevos importan `app.js` con un query único para no depender del orden. Si no gusta, se cambia por un reset exportado.
+- **Solo estado cancelada**: `canceladas` no lista las anuladas, que quedan para la 0011. Si hubiera que incluirlas, se amplía el filtro.
+- **Lista vacía**: `canceladas` sin canceladas devuelve cadena vacía. Si se quiere un texto tipo «sin canceladas», es un mensaje más.
+
+## Minors diferidos
+- `canceladas` vacío no dice nada (la spec no fija la salida).
+- El estado en memoria impide encadenar `cancelar` y `canceladas` entre invocaciones CLI; viene de la base del molde.
+
+Antes de cerrar con `sdd-end-feature` necesito tu validación: dime qué has probado y si funciona. «Cierra» solo no cuenta. Si prefieres diferirla, dime con qué disparador.

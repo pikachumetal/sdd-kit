@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0175-restore-fork-pieces/e5ad8330-7438-4c2f-8261-43eb63dc7be8/scratchpad/kit-00985b0/cli/bin/sdd.js" capability index --path .docs/sdd; ls; git ls-files | head -80
+
+>>> Grep: cancel|cancela|anula
+<<< Sin capacidades
+package.json
+README.md
+src/
+test/
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+<<< Found 5 files
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+src\app.js
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|cancela|anula
+<<< .docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Grep: cancel
+<<< 10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (9 turnos, 0.18473719999999996 $)
+Pues la verdad es que **no hay mucho montado**: lo de cancelar es casi solo una fachada. Te cuento qué dice la documentación y qué hace el código, por separado.
+
+## Lo que dice la documentación
+
+- `changelog.md:20` y `roadmap.md:31` declaran la capacidad: «Cancelar una reserva propia».
+- El **patch 0007** (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`) dice que se corrigió un fallo: la cancelación borraba reservas de otro día con la misma hora. Causa raíz: «comparación solo por hora». Fix + test de regresión, verificado.
+
+## Lo que hace el código
+
+Todo está en `src/app.js:12`:
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+Es decir, `cancelar mar 10:00` (día + franja) devuelve el texto `cancelada mar 10:00` y **nada más**:
+
+- No toca el array `bookings` (línea 3), así que no borra nada.
+- No comprueba que la reserva exista.
+- No comprueba que sea «propia» (no hay ningún concepto de usuario en el código).
+
+El único test (`test/app.test.js:13`, «cancelar respeta el día») solo comprueba que se devuelve esa cadena.
+
+## Lo que yo infiero (no está escrito)
+
+El patch 0007 habla de un fallo de comparación por hora que ya no existe en el código actual: ahí no hay ninguna comparación. Dos lecturas posibles:
+
+1. El molde es un esqueleto simplificado y la lógica real de borrado aún no está (el repo es la «base del molde», según el único commit).
+2. La docs y el código han divergido y el fix descrito no se ve reflejado.
+
+Tampoco hay `architecture` ni `capabilities/` en `.docs/sdd/`, así que no hay documento que describa cómo *debería* funcionar.
+
+¿Quieres que lo mire desde algún ángulo concreto (p. ej. cómo debería borrar de verdad)? Si es para implementarlo, eso ya sería trabajo y pasaría por el roadmap.

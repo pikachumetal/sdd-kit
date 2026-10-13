@@ -93,7 +93,7 @@ Review your work with fresh eyes:
 - **Completeness:** did I implement everything in the brief? Did I miss requirements or edge cases?
 - **Quality:** is this my best work? Do names match what things do, not how they work? Is the code clean and maintainable?
 - **Discipline:** did I avoid overbuilding (YAGNI)? Did I build only what was requested, following existing patterns?
-- **Testing:** do tests verify behavior, not mocks? Is the test output pristine (no stray warnings or noise)?
+- **Testing:** do tests verify behavior, not mocks? Did I follow TDD (`sdd-tdd`)? Are tests comprehensive? Is the test output pristine (no stray warnings or noise)?
 
 If you find issues during self-review, fix them now before reporting.
 
@@ -118,7 +118,7 @@ Then report back with ONLY (under 15 lines — the detail lives in the report fi
 - Your concerns, if any
 - The report file path
 
-If BLOCKED or NEEDS_CONTEXT, put the specifics in the final message itself — the controller acts on it directly. Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness. Never silently produce work you're unsure about.
+If BLOCKED or NEEDS_CONTEXT, put the specifics in the final message itself — the controller acts on it directly. Use DONE_WITH_CONCERNS if you completed the work but have doubts about correctness. Use BLOCKED if you cannot complete the task. Use NEEDS_CONTEXT if you need information that wasn't provided. Never silently produce work you're unsure about.
 ```
 
 The decalogue condenses five books (`tests/sdd-implement-red.md`, r1b). The task reviewer doesn't get it: a judgment rule a reviewer reads becomes an Important. The implementer rules come from `tests/dispatch-brief-red.md`; «Verificación» replaces superpowers' «run the full suite once before committing» (`tests/task-verification-red.md`); the RED tests are the thread's (`tests/tests-red-hilo-red.md`).

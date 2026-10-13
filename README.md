@@ -112,7 +112,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-explore` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
 | `sdd-grilling` | Cómo te pregunta el kit: una decisión por turno, la recomendada con su razón, sin sugerirte lo que solo sabes tú, y buscando antes lo que puede comprobar. La invocan las demás skills; adaptada de `grilling` de Matt Pocock (MIT). |
-| `sdd-rubber-duck` | Cómo te explica el kit las cosas: en palabras del producto y con su glosario, sin rutas ni jerga. En corto, el párrafo 🦆 de una parada; en largo, a petición («explícame cómo viaja un pedido de punta a punta»), por pasos y siguiendo un ejemplo. Adaptada de `teach` y `wait-what` de Matt Pocock (MIT). |
+| `sdd-rubber-duck` | Cómo te explica el kit las cosas: en palabras del producto y con su glosario, sin rutas ni jerga. En corto, el párrafo 🦆 de una parada; en largo, a petición («explícame cómo viaja un pedido de punta a punta»), por pasos y siguiendo un ejemplo; y si no te ha llegado («no te he entendido»), te lo vuelve a contar con contexto y frases cortas. Adaptada de `teach` y `wait-what` de Matt Pocock (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
 | `sdd-templates` | Las 25 plantillas canónicas. |
@@ -178,7 +178,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 3 skills de superpowers: `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 4 skills de superpowers: `writing-skills`, `requesting-code-review`, `verification-before-completion` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 

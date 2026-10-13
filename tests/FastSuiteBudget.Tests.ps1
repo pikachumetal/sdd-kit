@@ -27,6 +27,7 @@ Describe 'Conjunto rápido del pre-commit' -Tag 'Slow' {
     $byFile = ($run.Files | ForEach-Object { "$($_.File) $($_.Seconds) s" }) -join '; '
     $run.Seconds | Should -BeLessThan $script:BudgetSeconds -Because (
       "el pre-commit corre este conjunto en cada commit. Marca con -Tag 'Slow' los bloques de " +
-      "$($slowest.File) ($($slowest.Seconds) s) que crean repos, lanzan procesos o esperan. Por fichero: $byFile")
+      "$($slowest.File) ($($slowest.Seconds) s) que crean repos, lanzan procesos, esperan o leen toda la evidencia del repo; " +
+      "si deben frenar el commit, deja en el conjunto rápido un control de lo que el commit lleva. Por fichero: $byFile")
   }
 }
