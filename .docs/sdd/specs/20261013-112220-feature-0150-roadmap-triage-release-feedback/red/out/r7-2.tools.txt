@@ -1,0 +1,108 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls .docs/sdd && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/roadmap.md && grep -ril "deuda" .docs | head
+<<< * develop
+  main
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md | head -60; grep -rn -i "deuda\|triar\|triage" <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-red/skills/sdd-templates/templates/roadmap-template.md | head -20; ls .docs/sdd/specs; git log --oneline | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+3:> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen 
+
+>>> Bash: cd "<run>/repo" && grep -rn -i "TODO\|FIXME\|HACK\|XXX" --include=* . --exclude-dir=.git | head; ls; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-red/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+package.json
+README.md
+src/
+test/
+roadmap.md: línea 29: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 17: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: sed -n 25,50p "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0150-roadmap-triage-release-feedback/300fd786-2a64-487e-8e67-3e9f5f7b2120/scratchpad/kit-red/skills/sdd-templates/templates/roadmap-template.md"
+<<< > Producto que aún no se ha decidido hacer, y las decisiones pendientes, con la numeración propia del Backlog (`B1`, `B2`…), nunca con un id de la secuencia de features.
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| <id> | <qué> | <quién o qué lo pidió> |
+
+## Deuda técnica
+
+> Solo ingeniería. Las peticiones de producto van al Backlog, nunca aquí. «Destino» dice qué se hará: una feature o un patch (**Actuar**), **Esperar 2.º ticket** o **Descartada**, con su motivo; nunca una versión ya publicada.
+>
+> **Formato de cierre** (esta tabla y el Backlog): cuando una feature o un patch salda una fila, 
+
+>>> Bash: cd "<run>/repo" && ls src test && grep -rn -i "franja\|slot\|hora\|hour" src | head -20
+<<< src:
+app.js
+
+test:
+app.test.js
+src/app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+src/app.js:5:function freeRooms(slot) {
+src/app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+
+=== RESULTADO (8 turnos, 0.16907699999999998 $)
+Estoy triando la deuda del roadmap: ya he leído el estado y solo falta presentarte la propuesta.
+
+## Estado
+
+En `develop` (única rama, sin `feature/*` abiertas) la sección «Deuda técnica» tiene **una sola fila**:
+
+| Ítem | Impacto | Plan (cabecera heredada) |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+Confirmado en el código: `src/app.js` compara `slot` como cadena exacta (`'10:00-12:00'`), sin validar formato. Ni el patch 0007 ni la 0006 lo saldan. No hay TODO/FIXME sueltos ni otra deuda sin apuntar.
+
+## Propuesta (tuya la decisión)
+
+La fila ya tiene impacto, pero su triaje no está en la forma de la plantilla: falta el **Destino**. Mi recomendación:
+
+| Ítem | Impacto | Destino |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria: `freeRooms` compara `slot` como texto exacto, así que `'10-12'` o `'10:00–12:00'` no casan con nada y la sala sale libre (`src/app.js`) | Bajo: nadie lo ha reportado y hoy las franjas salen de una lista cerrada | **Esperar 2.º ticket**: pasa a patch si un usuario real llega a reservar con un formato libre |
+
+Alternativas: **Actuar** (patch ya, con id reservado) si prefieres cerrarlo antes de que `1` (avisos por correo) añada más entradas de franjas; o **Descartada** con motivo.
+
+## Aparte: forma heredada
+
+`sdd roadmap check` falla en dos líneas que no he tocado:
+- cabecera de «Deuda técnica»: es `| Deuda | Impacto | Plan |` y debe ser `| Ítem | Impacto | Destino |`;
+- `### v0.3.0 (2026-09-01)` debe ser `### v0.3.0 — 2026-09-01`.
+
+Ambas son mecánicas y la primera la corregiría al escribir el Destino. La segunda es de «Releases cerradas», fuera del triaje: dime si la arreglo también.
+
+No he escrito nada ni reservado ids. ¿Apruebo **Esperar 2.º ticket** con ese texto, y arreglo la cabecera?

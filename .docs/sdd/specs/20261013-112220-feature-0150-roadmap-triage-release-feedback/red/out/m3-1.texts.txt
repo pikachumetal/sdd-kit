@@ -1,0 +1,44 @@
+--- [2]
+Uso `sdd-kit:sdd-roadmap` para triar la deuda: es planificar sin ejecutar.
+
+--- [5]
+Empiezo por el estado real: roadmap de la rama de integración, ramas `feature/*` y configuración.
+
+--- [7]
+No hay `roadmap.md`. Miro dónde está registrada la deuda.
+
+--- [19]
+Estoy triando las dos filas de «Por triar» en `.docs/sdd/steering/debt.md`. Ya he comprobado las dos contra el código, y ahora te dejo la propuesta sin escribir nada.
+
+## Qué hay por triar
+
+| # | Ítem | Lo que he comprobado |
+| --- | --- | --- |
+| 1 | La exportación a CSV pierde las tildes desde la 1.4.2 | **No se reproduce.** `node src/app.js exportar` emite `d\303\255a` (UTF-8 correcto). |
+| 2 | `salas libres --planta 2` lista también salas de la planta 1 | **Confirmado.** `src/app.js:11` filtra con `floors[room] <= floor` y debería ser `===`. `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. |
+
+## Propuesta (decides tú)
+
+**2 → Actuar, patch.** Es un bug determinista con la solución ya fijada (`<=` por `===`), de impacto **medio**: devuelve salas que no son de la planta pedida. Evidencia: el informe de QA y la línea del código.
+
+**1 → Esperar, con lo que falta.** No lo muevo a «Lista» ni lo descarto, porque el informe lo vio y yo no. Tres cosas que no cuadran:
+- El código actual emite bien las tildes, así que el fallo está en otra capa: la consola o el visor que abrió el CSV (en Windows, con la página de códigos), o la versión que probó QA.
+- El informe habla de la **1.4.2**, pero el `CHANGELOG.md` acaba en la 1.4.1 y no hay tags.
+- La salida es UTF-8 sin BOM. Excel lo abre como ANSI y muestra `d?a` o `dÃ­a`, lo que encaja con lo que describe QA. Si es eso, la solución sería añadir el BOM.
+
+Falta saber con qué versión y con qué programa lo abrió QA. Con eso pasaría a «Lista» (patch del BOM) o a «Descartadas».
+
+## Lo que haría al confirmarlo
+
+- Mover la 2 a «Lista» con impacto, evidencia y destino «Actuar: patch».
+- Mover la 1 a «En espera» con «Falta: versión y programa con que QA abrió el CSV».
+- Reservar un id para el patch con `sdd id next --reserve` (el siguiente sería el 0015, pero no lo reservo hasta que lo confirmes).
+- Añadir la fila al `ROADMAP.md`, ejecutar `sdd roadmap check` y publicar.
+
+## Dos avisos sobre la forma del proyecto
+
+- No existe `.docs/sdd/roadmap.md`. El proyecto usa `ROADMAP.md` en la raíz, con secciones Now/Next/Later, y `steering/debt.md` para la deuda. La plantilla actual del kit pide un único roadmap con «Próximo / Backlog / Deuda técnica / Patches».
+- Por eso `sdd roadmap check` no tiene un roadmap que validar. Esa migración no la hago en este triaje; dime si la quieres como fila aparte.
+
+¿Confirmas la 2 como patch y la 1 en espera? Por el perfil `delegate` no escribo nada hasta tu decisión. Si prefieres «decide tú», lo aplico tal cual está arriba.
+
