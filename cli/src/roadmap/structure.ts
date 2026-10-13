@@ -75,3 +75,48 @@ export function proseProblems(lines: string[], sections: Section[]): string[] {
   }
   return problems;
 }
+
+export interface FormRules {
+  names: string[];
+  kindOf: (section: Section) => string;
+  subject: string;
+  allowedLine?: (text: string, kind: string) => boolean;
+}
+
+function formSectionProblem(section: Section, seen: Set<string>, previous: Section | undefined, rules: FormRules): string | undefined {
+  const kind = rules.kindOf(section);
+  const rank = rules.names.indexOf(kind);
+  if (rank < 0) return `sección «${section.title}» fuera de la plantilla`;
+  if (seen.has(kind)) return `sección «${kind}» repetida`;
+  if (previous && rank < rules.names.indexOf(rules.kindOf(previous))) return `«${kind}» va antes que «${rules.kindOf(previous)}»`;
+  return undefined;
+}
+
+export function formSectionProblems(sections: Section[], rules: FormRules): string[] {
+  const kinds = sections.map(rules.kindOf);
+  const missing = rules.names.filter((name) => !kinds.includes(name)).map((name) => `falta la sección «${name}»`);
+  const found: string[] = [];
+  const seen = new Set<string>();
+  let previous: Section | undefined;
+  for (const section of sections) {
+    const problem = formSectionProblem(section, seen, previous, rules);
+    if (problem) found.push(`línea ${section.line}: ${problem}`);
+    seen.add(rules.kindOf(section));
+    if (rules.names.includes(rules.kindOf(section))) previous = section;
+  }
+  return [...missing, ...found];
+}
+
+export function formProseProblems(lines: string[], sections: Section[], rules: FormRules): string[] {
+  const problems: string[] = [];
+  for (let index = 1; index < lines.length; index++) {
+    const text = lineAt(lines, index);
+    if (/^\s*$|^\||^## /.test(text)) continue;
+    const section = sectionAt(sections, index);
+    const kind = section && rules.kindOf(section);
+    if (kind !== undefined && !rules.names.includes(kind)) continue;
+    if (kind !== undefined && rules.allowedLine?.(text, kind)) continue;
+    problems.push(`línea ${index + 1}: prosa en ${kind === undefined ? 'la cabecera' : `«${kind}»`}; ${rules.subject} solo lleva tablas`);
+  }
+  return problems;
+}

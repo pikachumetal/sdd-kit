@@ -7,7 +7,7 @@ export const CLOSING_PREFIX = String.raw`\*\*\[(?:Feature|Task|Patch) [^\],]+, (
 const SETTLED = new RegExp(String.raw`^\|(?:[^|]*\|)?\s*${CLOSING_PREFIX}saldada — `, 'i');
 const PATCH_ROW = /^\|\s*(\d{4}-\d{2}-\d{2})\s*\|/;
 const MIN_PUBLISHED_ID_LENGTH = 4;
-const ARTIFACT_LINK = /\]\(((?:\.docs\/sdd\/)?(?:specs|changes)\/[^)\s]+)\)/;
+const ARTIFACT_LINK = /\]\(((?:specs|changes)\/[^)\s]+)\)/;
 
 export interface Release {
   version: string;
@@ -89,7 +89,7 @@ export function releasedPatchProblems(lines: string[], sections: Section[], last
     .map(({ index, date }) => `línea ${index + 1}: patch del ${date}, no posterior a la v${last.version} (${last.date}): sale en el corte`);
 }
 
-function escapeRegExp(text: string): string {
+export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }
 

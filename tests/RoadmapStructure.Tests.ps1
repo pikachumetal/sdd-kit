@@ -11,7 +11,7 @@ Describe 'Estructura del roadmap' {
     [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
     try { $output = & node $script:Cli roadmap check --path (Join-Path $script:KitRoot '.docs/sdd') }
     finally { [Console]::OutputEncoding = $previousEncoding }
-    # Los avisos de destino y de cierre no son fallos: normalizar las filas del repo es deuda del lienzo 0131.
+    # Los avisos de cierre no son fallos: normalizar las filas del repo es deuda del lienzo 0131.
     $output | Where-Object { $_ -notmatch '^roadmap\.md: aviso: ' } | Should -Be @('Roadmap válido') -Because 'el roadmap solo lleva las secciones y las tablas de roadmap-template.md'
     $LASTEXITCODE | Should -Be 0
   }

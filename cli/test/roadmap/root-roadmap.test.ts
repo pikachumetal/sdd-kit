@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { runSdd, sddFolder } from '../capability/helpers.ts';
+import { validRoadmap } from './project.ts';
 
 const valid = [
   '# Roadmap — salas',
@@ -43,7 +44,7 @@ describe('sdd roadmap check con ROADMAP.md en la raíz', () => {
 
   it('con los dos roadmaps avisa y termina en Roadmap válido', async () => {
     const sdd = sddFolder({ 'roadmap.md': broken });
-    writeFileSync(join(dirname(dirname(sdd)), 'ROADMAP.md'), valid);
+    writeFileSync(join(dirname(dirname(sdd)), 'ROADMAP.md'), validRoadmap.join('\n') + '\n');
     const result = await runSdd(['roadmap', 'check', '--path', sdd]);
     expect(result.lines).toContain('ROADMAP.md: aviso: también existe .docs/sdd/roadmap.md, que no se lee');
     expect(result.lines.at(-1)).toBe('Roadmap válido');

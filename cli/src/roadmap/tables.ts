@@ -2,8 +2,8 @@ import { cells, indices, lineAt } from './parse.ts';
 import type { Block } from './parse.ts';
 
 const EMPTY_ROW = /^\|[\s|]*$/;
-const STATE_PREFIXES = ['⏳', '🔄', '✅', '🧪 validación diferida a', '⏸️ aparcada:'];
-const STATE_HELP = '⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …';
+export const STATE_PREFIXES = ['⏳', '🔄', '✅', '🧪 validación diferida a', '⏸️ aparcada:'];
+export const STATE_HELP = '⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …';
 const HEADERS = new Map([
   ['Próximo', '| # | Ítem | Estado |'],
   ['Release', '| id | Feature | Origen | Ficheros que toca | Estado |'],
@@ -44,11 +44,19 @@ export function tableBlockProblems(lines: string[], block: Block): string[] {
   return [...problems, ...cellCountProblems(lines, block.header)];
 }
 
+export function headerIs(lines: string[], block: Block, expected: string): boolean {
+  return block.header !== null && lineAt(lines, block.header).trim() === expected;
+}
+
+export function headerProblem(lines: string[], block: Block, name: string, expected: string): string[] {
+  if (block.header === null || headerIs(lines, block, expected)) return [];
+  return [`línea ${block.header + 1}: la cabecera de «${name}» debe ser «${expected}»`];
+}
+
 export function tableHeaderProblems(lines: string[], block: Block): string[] {
-  if (block.header === null || !block.section) return [];
-  const expected = HEADERS.get(block.section.kind);
-  if (!expected || headerMatches(lines, block)) return [];
-  return [`línea ${block.header + 1}: la cabecera de «${block.section.title}» debe ser «${expected}»`];
+  const expected = HEADERS.get(block.section?.kind ?? '');
+  if (!block.section || !expected) return [];
+  return headerProblem(lines, block, block.section.title, expected);
 }
 
 export function rowsOf(lines: string[], block: Block): Row[] {
