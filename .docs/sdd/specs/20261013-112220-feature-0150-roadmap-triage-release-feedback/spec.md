@@ -321,6 +321,22 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 - THEN en `ROADMAP.md` su brief lleva `**Toca:**` con los ficheros o módulos previstos; en el roadmap 2.x la tabla sigue la cabecera de `roadmap-template.md`, `| id | Feature | Origen | Ficheros que toca | Estado |`, y la celda «Ficheros que toca» los nombra
 - AND el freno de alcance de una enmienda (`control-profiles.md`) encuentra ese «Toca:» o esa columna
 
+**MODIFIED — Una fila saldada antes de la última release está de más** (antes: el enlace contaba también «desde `ROADMAP.md`»)
+- GIVEN una fila de «Deuda técnica» que empieza por `**[Patch 0018, 2026-09-10: saldada — …]**`, una de «Backlog» por `**[Task 0012, 2026-09-20: saldada — …]**`, otra de «Deuda técnica» por `**[Feature 0030, 2026-09-25: saldada — …]**`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
+- WHEN se ejecuta `sdd roadmap check --path .docs/sdd`
+- THEN escribe `roadmap.md: línea <n>: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y la misma línea para la del 2026-09-20, y sale con 1
+- AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
+- AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
+- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza el artefacto da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo. El enlace cuenta igual si es `specs/<carpeta>/…` o `changes/<carpeta>/…`
+
+**MODIFIED — Un patch publicado sale de «Patches» en el corte** (antes: «las cuatro formas»)
+- GIVEN una fila de «Patches» con fecha `2026-09-20`, otra con `2026-09-22`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `roadmap.md: línea <n>: patch del 2026-09-20, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y sale con 1
+- AND la fila del 2026-09-22 no da fallo
+- AND sin ninguna subsección en «Releases cerradas», ninguna fila de «Patches» da fallo
+- AND con el tag `v1.2.0` en git, la fila del 2026-09-20 que enlaza su `patch.md` da el fallo solo si el commit que añadió ese fichero es ascendiente del tag: un patch fusionado tras el corte del mismo día da `Roadmap válido`; sin tag o sin enlace, decide la fecha. El enlace cuenta igual con las dos formas de «Una fila saldada antes de la última release está de más»
+
 **REMOVED — El roadmap avisa de un destino o un cierre fuera de la plantilla**
 - motivo: el «Destino» deja de avisarse (dev-lead, «1», 2026-10-13); el aviso del prefijo de cierre sigue en «El roadmap 2.x avisa de un cierre fuera de la plantilla»
 
@@ -473,6 +489,7 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 
 ## Enmiendas
 
+- 2026-10-13 — MODIFIED de «Una fila saldada antes de la última release está de más» y «Un patch publicado sale de «Patches» en el corte»: salen los enlaces «desde `ROADMAP.md`» (`.docs/sdd/changes/…`, `.docs/sdd/specs/…`), porque `ROADMAP.md` ya sigue la forma 3.0.0, sin filas saldadas ni «Releases cerradas», y su corte es de la 0177; sale el test lento que lo probaba (`cut.slow.test.ts`, «una fila saldada que enlaza .docs/sdd/changes/ desde ROADMAP.md…»). La decisión 19 los daba por no contradichos, y no lo estaban (Task 3) — aprobada: «Apruebo (Recomendada)»
 - 2026-10-13 — sale la regla del contraste del triaje (el THEN «dice que la 1.4.2 no existe, con su fuente», el aviso y la regla ante conflicto de `planning` y la viñeta de la decisión 11): m3b salió 2/2 limpio, como m3, y la fila de la 0165 §1 se salda solo en su parte de `sdd-feedback` (Task 1) — aprobada: «Otra tanda con un caso de campo (Recomendada)», que decía «si sale limpio, sale con su THEN»
 - 2026-10-13 — entra el escenario m3b (molde `salas-3-wt`): el ticket da «40 s con 1.000 reservas» citando el walkthrough de la 0012, que mide 4 s; la regla del contraste del triaje se decide por su RED — m3 salió limpio en el contraste porque el `CHANGELOG.md` estaba a la vista, y el fallo de campo fue con un dato que había que buscar en la fuente citada (Task 1) — aprobada: «Otra tanda con un caso de campo (Recomendada)»
 - 2026-10-13 — sale el AND del brief de «Dame el prompt de una fila da su prompt de arranque» (el requisito vuelve a su texto vigente) y el cambio de `launch-prompt-template.md` (decisión 13): m4 salió 2/2 limpio con el kit de antes; m4 queda en la batería como control (Task 1) — aprobada: «Sale (Recomendada)»
