@@ -18,10 +18,12 @@ created: 2026-10-13
 | --- | --- | --- | --- | --- |
 | 1 | `o1` y la fila del Art. II | done | — | la fila no entra: RED `o1` limpio con la regla leída (enmienda 2026-10-13); `o1` queda como control |
 | 2 | `o2` y la regla de parada | done | — | la regla no entra: RED `o2` limpio 2/2 (enmienda 2026-10-13); `o2` queda como control |
+| 3 | Clasificar el fallo antes de la ronda en `sdd-implement` | done | — | enmienda 2026-10-13; GREEN `o1` 2/2 y `o2` 2/2 |
 
 ## Verificación por task
 
 - [ ] Task 1 — `o1` en la batería de `sdd-implement`, `WordBudget.Tests.ps1`, `sdd decision check`
 - [ ] Task 2 — `o2` en la batería de `sdd-implement`, `WordBudget.Tests.ps1`
+- [ ] Task 3 — GREEN `o1` 2/2 y `o2` 2/2 de control, `WordBudget.Tests.ps1`
 
 ## Rulings

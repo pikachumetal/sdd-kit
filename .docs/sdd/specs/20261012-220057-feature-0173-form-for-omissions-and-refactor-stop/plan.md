@@ -140,6 +140,23 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: Verificación** — `Invoke-Pester tests/WordBudget.Tests.ps1 -CI` en verde.
 - [ ] **Step 5: Commit de la task**.
 
+### Task 3 — Clasificar el fallo antes de la ronda (enmienda 2026-10-13)
+
+**Tras**: Task 2
+**Modelo**: la sesión (Native); sujetos `sonnet`.
+**Tests RED**: `o1-2` y `o1-4` del RED de la Task 1 (prosa sin abrir la constitution), sobre el kit de `875e509`.
+**Superficies**: docs (skill) · tooling (batería)
+**Verificación**: `BATTERY=sdd-implement STEPS="form-omission refactor-stop" PHASE=green … bash tests/headless/battery.sh` con las rúbricas `O1` y `O2`; `Invoke-Pester tests/WordBudget.Tests.ps1 -CI`.
+**Interfaces**:
+- Consume: `form_rules`, los fixtures de la 0020 y los escenarios `o1` y `o2`.
+- Produce: la frase del paso 2 del bucle Native de `sdd-implement`.
+
+**Ficheros**: `skills/sdd-implement/SKILL.md`, `tests/WordBudget.Tests.ps1`, `tests/batteries/sdd-implement/battery.md`
+
+- [ ] **Step 1: GREEN** — tras «The code is wrong → `sdd-debugging`: find the cause, never patch the symptom.», literal: «A failing smoke of text an agent follows (a skill, a prompt): if the constitution has a rule on the form of guidance, read it before the round, name the failure's class by it and write the round in that form; rewording or adding emphasis is the same form.» Tope de `sdd-implement` a 5560 (total 9160). `KIT_DIR` con la skill editada. Esperado: `o1` 2/2 y `o2` 2/2.
+- [ ] **Step 2: Procedencia** — la fila de `o1` en «Procedencia de las reglas» pasa a la regla de `sdd-implement`, con el RED y el GREEN.
+- [ ] **Step 3: Commit de la task**.
+
 ---
 
 ## Estimación y esfuerzo
@@ -167,5 +184,6 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Escenario `o1` → Task 1. ✓
 - Regla de parada y adelgazamiento del techo de coste → Task 2. ✓
 - Escenario `o2` → Task 2. ✓
+- Clasificar el fallo antes de la ronda (enmienda) → Task 3. ✓
 - Tope de la constitution → Task 1. ✓
 - Review Focus: la fila cubre `o2` → Task 2, RED de `o2`; ejemplo con ruta concreta → rúbricas `O1` y `O2`. ✓
