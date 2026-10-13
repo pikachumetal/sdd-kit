@@ -2,6 +2,8 @@
 
 Dispatch it with `description: "Review Task N (spec + quality)"` and the reviewer `model` and `subagent_type` of the plan (an omitted model inherits the session's). The reviewer reads the task's diff once and returns two verdicts: spec compliance and code quality. Fill every `<…>` and `[…]`.
 
+**Purpose:** verify one task's implementation matches its requirements (nothing more, nothing less) and is well-built (clean, tested, maintainable).
+
 ```text
 ## Restricciones de código
 
@@ -188,3 +190,5 @@ For each issue: file:line, what's wrong, why it matters, how to fix
 
 
 **Placeholders:** `[BRIEF_FILE]`, the path `sdd task brief` printed, the implementer's · `[REPORT_FILE]`, its report · `[BASE_SHA]`, `[HEAD_SHA]` and `[DIFF_FILE]`, the BASE you recorded, the current commit and the path `sdd review package <plan> <BASE> HEAD` printed · the «De código» block, never the «De proceso» one: a reviewer audits what it reads.
+
+**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues (Critical/Important/Minor), Task quality verdict.

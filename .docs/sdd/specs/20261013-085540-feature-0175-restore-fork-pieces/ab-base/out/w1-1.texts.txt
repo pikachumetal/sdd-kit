@@ -1,0 +1,34 @@
+--- [8]
+Voy por partes, con lo que hay en el código.
+
+## Qué hace hoy el código
+
+En `src/export/ics.js:4`:
+
+```js
+new Date(`${day}T${time}:00${COWORKING_OFFSET}`).toISOString()
+```
+
+1. Toma la reserva `2026-03-02` de `10:00-12:00`.
+2. La interpreta con un desfase fijo de `+02:00` (`COWORKING_OFFSET`).
+3. `toISOString()` siempre devuelve la hora en **UTC**: las 10:00 con `+02:00` pasan a ser las **08:00 UTC**.
+4. El resultado es `DTSTART:20260302T080000`.
+
+## Qué espera el test
+
+El test `exporta en la hora del usuario` (`test/export.test.js:16`) espera `DTSTART:20260302T100000`. Es decir, la hora tal como se reservó (10:00), no convertida a UTC.
+
+## Por qué falla
+
+La reserva es a las 10:00 y el archivo sale con las 08:00. El formateador convierte la hora a UTC, y el test pide la hora local.
+
+## A qué me refería con "pasarle la zona del usuario"
+
+Ahora el desfase está escrito a mano y es el mismo para todos (`+02:00`), y la salida se pasa a UTC. Lo que hace falta es que el formateador sepa en qué zona está la reserva y escriba la hora en esa zona, sin convertirla a UTC. Esa zona vendría como parámetro (por ejemplo `toIcs(bookings, tz)`), en lugar de una constante.
+
+## Un detalle que conviene vigilar (deducido, no lo dice ningún doc)
+
+`+02:00` es el horario de verano. El 2 de marzo, en España, todavía rige `+01:00`. Con un desfase fijo, el fallo reaparecería en cuanto el calendario cruce el cambio de hora, aunque se arreglara el test de hoy. Por eso lo correcto es pasar una zona con nombre (`Europe/Madrid`) y no otro desfase fijo.
+
+No he tocado nada. Si quieres arreglarlo, es un fallo concreto y lo apunto en el roadmap como patch para que arranque por su carril.
+

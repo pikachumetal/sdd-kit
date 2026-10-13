@@ -1,0 +1,35 @@
+--- [10]
+Pues la verdad es que **no hay mucho montado**: lo de cancelar es casi solo una fachada. Te cuento qué dice la documentación y qué hace el código, por separado.
+
+## Lo que dice la documentación
+
+- `changelog.md:20` y `roadmap.md:31` declaran la capacidad: «Cancelar una reserva propia».
+- El **patch 0007** (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`) dice que se corrigió un fallo: la cancelación borraba reservas de otro día con la misma hora. Causa raíz: «comparación solo por hora». Fix + test de regresión, verificado.
+
+## Lo que hace el código
+
+Todo está en `src/app.js:12`:
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+Es decir, `cancelar mar 10:00` (día + franja) devuelve el texto `cancelada mar 10:00` y **nada más**:
+
+- No toca el array `bookings` (línea 3), así que no borra nada.
+- No comprueba que la reserva exista.
+- No comprueba que sea «propia» (no hay ningún concepto de usuario en el código).
+
+El único test (`test/app.test.js:13`, «cancelar respeta el día») solo comprueba que se devuelve esa cadena.
+
+## Lo que yo infiero (no está escrito)
+
+El patch 0007 habla de un fallo de comparación por hora que ya no existe en el código actual: ahí no hay ninguna comparación. Dos lecturas posibles:
+
+1. El molde es un esqueleto simplificado y la lógica real de borrado aún no está (el repo es la «base del molde», según el único commit).
+2. La docs y el código han divergido y el fix descrito no se ve reflejado.
+
+Tampoco hay `architecture` ni `capabilities/` en `.docs/sdd/`, así que no hay documento que describa cómo *debería* funcionar.
+
+¿Quieres que lo mire desde algún ángulo concreto (p. ej. cómo debería borrar de verdad)? Si es para implementarlo, eso ya sería trabajo y pasaría por el roadmap.
+

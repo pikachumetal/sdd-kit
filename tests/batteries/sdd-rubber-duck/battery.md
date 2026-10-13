@@ -16,6 +16,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-rubber-duck`); el método
 | s2 | rubber-duck | La parada la hace sdd-propose con su propia pregunta al dev-lead: tú devuelves el párrafo que le explica por qué no se puede cerrar la feature 0012 (mira los tests). | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | tickets de la feature 6298 y de la 0038 de document-manager: un bloqueo explicado con jerga; rehecho en la 0160 (fila de deuda «El escenario s2 mezcla la parada y el pato»): la parada la hace la skill que invoca y se mide solo el pato |
 | l1 | rubber-duck | Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | propuesta 0131, B13 |
 | l2 | language | Explain to me how an export travels end to end, from when I ask for it until I have the file. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | walkthrough de la feature 0145 §4.3: «Dónde mirar» va literal en castellano (feature 0146) |
+| w1 | re-pitch | Antes me has dicho esto: "El fallo está en el formateador: escribe la hora con `toISOString()`, que serializa en UTC, y el test `exporta en la hora del usuario` espera la local; hay que pasarle la zona del usuario". No te he entendido. | exportes | `sdd-kit:sdd-rubber-duck` | 1 | 1/1 | sonnet | feature 0175: el re-pitch de `wait-what` (ADR 0013); sin el prefijo de s1 y s2, mide también el enrutado |
 | c1 | control | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | batería de `using-sdd`, c1: la puerta de las preguntas conserva sus preguntas (`sdd-explore` desde la 0161) |
 | c2 | control | ¿Cómo funciona la exportación? | exportes | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | fila de deuda de la 0145 («Al conectar el 🦆…»): la `description` se solapa con el «¿cómo funciona…?» de explore; escenario pendiente de la 0146, en la 0161 |
 
@@ -25,14 +26,15 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| R1 Sin jerga | s1, s2, l1 | el texto para el dev-lead contiene una ruta de fichero, un identificador de código (función, variable, comando con opciones) o un término técnico que no está en el glosario ni es de uso cotidiano y no se explica en la misma frase; en l1 se exceptúa una lista final de ubicaciones |
-| R2 Glosario | s1, s2, l1 (en l2, en inglés, no se puntúa: la palabra natural de una reserva en inglés es la de _Evitar_) | usa una palabra de _Evitar_ del `PRODUCT.md` del molde (booking, cita, slot, hueco, room, export, volcado) |
+| R1 Sin jerga | s1, s2, l1, w1 | el texto para el dev-lead contiene una ruta de fichero, un identificador de código (función, variable, comando con opciones) o un término técnico que no está en el glosario ni es de uso cotidiano y no se explica en la misma frase; en l1 se exceptúa una lista final de ubicaciones |
+| R2 Glosario | s1, s2, l1, w1 (en l2, en inglés, no se puntúa: la palabra natural de una reserva en inglés es la de _Evitar_) | usa una palabra de _Evitar_ del `PRODUCT.md` del molde (booking, cita, slot, hueco, room, export, volcado) |
 | R3 Qué y cómo | s1, s2 | no es un solo párrafo de cinco frases como máximo que diga primero qué cambia o qué pasa para quien usa el producto y después cómo |
 | R4 Pasos reales | l1 | no son pasos numerados, son menos de 3 o más de 9, o algún paso no tiene respaldo en el código del molde |
 | R5 Un ejemplo que viaja | l1 | no sigue una exportación concreta con datos (un mes, una sala) a lo largo de los pasos |
 | R6 Invita a preguntar | l1 | no termina ofreciendo resolver dudas |
 | R8 Lista en su idioma | l2 | la lista final de ficheros no se titula en inglés (p. ej. «Dónde mirar» en una respuesta en inglés) |
 | R9 Lo pendiente sin pregunta | s2 | lo que queda por decidir, después del párrafo, va como pregunta, con opciones o con una recomendación |
+| R10 Re-pitch | w1 | no empieza con un poco de contexto (qué estábamos haciendo, dónde estamos), tiene una frase de más de 25 palabras o repite un identificador del mensaje original (`toISOString()`, el nombre del test) |
 | R7 Idioma | todos | algún mensaje al usuario en un idioma distinto del de la petición |
 | C1 Entrada del modo largo | l1 (GREEN) | la primera skill invocada no es `sdd-kit:sdd-rubber-duck` |
 | C2 Explore conserva sus preguntas | c1 | la primera skill invocada no es `sdd-kit:sdd-explore` |
@@ -60,7 +62,10 @@ Cada regla de `skills/sdd-rubber-duck/SKILL.md`, de dónde viene y qué escenari
 | Modo largo: rutas solo en «Dónde mirar», también la del fichero resultante | RED R1 2 de 2 en l1; GREEN l1-2 (`exports/2026-03.ics` en un paso); control l1-3 | l1 |
 | Modo largo: terminar ofreciendo resolver dudas, no más trabajo | RED R6 2 de 2 | l1 |
 
-**Recortadas** en la pasada de fix de la revisión final, por no tener un fallo del RED detrás (Art. I): «frases cortas en voz activa, una idea cada una» (ninguna fila la mide), «ids» en la lista de lo prohibido (el GREEN da por buena «la feature 0012»), «si no cambia nada para quien usa el producto, dilo en una frase» (sin escenario, solo Review Focus) y «de 3 a 9 pasos» (el RED ya numeraba). Si un ticket de campo trae uno de estos fallos, vuelve con su escenario.
+**Recortadas** en la pasada de fix de la revisión final, por no tener un fallo del RED detrás (Art. I): «frases cortas en voz activa, una idea cada una» (ninguna fila la mide; vuelve en la 0175, abajo), «ids» en la lista de lo prohibido (el GREEN da por buena «la feature 0012»), «si no cambia nada para quien usa el producto, dilo en una frase» (sin escenario, solo Review Focus) y «de 3 a 9 pasos» (el RED ya numeraba). Si un ticket de campo trae uno de estos fallos, vuelve con su escenario.
 | Overview: el idioma del mensaje del usuario, no el de los documentos; una pregunta en inglés se contesta en inglés, con el glosario traducido | GREEN de la 0146: l2 ronda 0, 0/2 en castellano; ronda 1, 1/2 | l2 |
 | Modo largo: la lista final titulada en el idioma del usuario | RED de la 0146: l2 2 fallos de 4 («Dónde mirar» en inglés) | l2 |
 | Modo corto: lo pendiente, como afirmación desnuda, con un contraejemplo de otro dominio | RED de la 0146: s2 0/2 (opciones y recomendación tras el párrafo); GREEN 3 de 6 en tres rondas: el escenario mezclaba parada y pato. Rehecho en la 0160 con la parada fuera del sujeto: `tests/sdd-propose-0160-green.md`, Task 3 | s2 |
+| `description`: el último mensaje no llegó («no te he entendido», «wait, what?») | `wait-what` 1.2.3, que en la fuente solo invoca el usuario; en el kit la skill entra sola (feature 0175, ADR 0013) | w1, c1 |
+| Re-pitch: no repetirlo; contexto primero, ASD-STE100 y el lenguaje del proyecto | `wait-what` 1.2.3 entera (feature 0175, ADR 0013: la evidencia de la fuente vale para el Principio 1) | w1 |
+| Palabras: frases cortas en voz activa, una idea cada una (ASD-STE100) | `wait-what` 1.2.3; recortada en la 0145 «por no tener un fallo del RED detrás», vuelve en la 0175 (ADR 0013) | w1 |
