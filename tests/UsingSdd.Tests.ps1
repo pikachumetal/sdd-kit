@@ -65,7 +65,7 @@ Describe 'description de las skills de entrada' {
   }
 
   It 'sdd-roadmap recoge los items del gestor aunque estén asignados para hacerlos' {
-    Get-Description 'sdd-roadmap' | Should -Match 'asignado'
+    Get-Description 'sdd-roadmap' | Should -Match 'assigned'
   }
 }
 

@@ -2,7 +2,7 @@
 
 Cómo entra el trabajo en el roadmap antes de hacerlo. Nace en la feature 0161 como humo (Art. I: una edición de una skill de la 2.3.x sin batería lleva humo) y mide lo que la 0161 le añade: el cierre da el prompt de arranque de la fila que va primero, y «dame el prompt de la <id>» lo da sin escribir nada; la fila de deuda del dimensionado la abre la 0161.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-roadmap`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Seis moldes sobre el de `tests/batteries/using-sdd/mold-salas`, con `control.profile: delegate` y `merge.push: true` en el marcador: `salas`, tal cual, y `salas-0013`, con la fila pendiente 0013 «Aviso semanal a los responsables» (`proposal: 0010`, tras 0012) y la propuesta 0010 (`proposal-0010.md`), cuya enmienda cambia el aviso de las 9:00 a las 8:00. Los de la feature 0150 son capas que `subject.sh` copia encima: `salas-3` (3.0.0: sin `.docs/sdd/roadmap.md`, con `ROADMAP.md`, `debt.md`, `CHANGELOG.md` raíz sin changelog 2.x, el informe de QA `docs/qa/2026-10-12-informe.md` y la propuesta 0010 en `changes/`) `salas-3-plain` (`salas-3` sin el comando `exportar` ni la fila del CSV en `debt.md`, para que m5 apunte la exportación como fila nueva) y `salas-qa` (2.x con el mismo informe y las versiones 1.4.1, 1.4.0 y 1.3.0 en su changelog). En los dos, `node src/app.js libres --planta 2` devuelve `Norte (planta 1)` y la exportación conserva las tildes.
+Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-roadmap`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Seis moldes sobre el de `tests/batteries/using-sdd/mold-salas`, con `control.profile: delegate` y `merge.push: true` en el marcador: `salas`, tal cual, y `salas-0013`, con la fila pendiente 0013 «Aviso semanal a los responsables» (`proposal: 0010`, tras 0012) y la propuesta 0010 (`proposal-0010.md`), cuya enmienda cambia el aviso de las 9:00 a las 8:00. Los de la feature 0150 son capas que `subject.sh` copia encima: `salas-3` (3.0.0: sin `.docs/sdd/roadmap.md`, con `ROADMAP.md`, `debt.md`, `CHANGELOG.md` raíz sin changelog 2.x, el informe de QA `docs/qa/2026-10-12-informe.md` y la propuesta 0010 en `changes/`), `salas-3-plain` (`salas-3` sin el comando `exportar` ni la fila del CSV en `debt.md`, para que m5 apunte la exportación como fila nueva), `salas-3-wt` (`salas-3` con un ticket de soporte que da «40 s con 1.000 reservas» citando el walkthrough de la 0012, que mide 4 s) y `salas-qa` (2.x con el mismo informe y las versiones 1.4.1, 1.4.0 y 1.3.0 en su changelog). En todos, `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`; la exportación conserva las tildes en `salas-3`, `salas-3-wt` y `salas-qa`, y en `salas-3-plain` no existe.
 
 **Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y el `roadmap.md` que deja cada sujeto con la rúbrica de abajo.
 
@@ -12,8 +12,8 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-roadmap`); el método, en
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | m1 | prompt | dame el prompt de la 0013 | salas-0013 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161; enmienda de la propuesta 0131 del 2026-10-08: el prompt de arranque con forma fija |
 | m2 | closing | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161: el cierre da el prompt de la fila que va primero (nació para medir el dimensionado, que salió por el RED) |
-| m3 | triage | Tria lo que hay por triar en la deuda. | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el triaje contrasta los datos del ticket y propone el estado de cada ítem |
-| m4 | brief | dame el prompt de la 0013 | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el prompt sale del brief de la fila |
+| m3 | triage | Tria lo que hay por triar en la deuda. | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el triaje propone el estado de cada ítem; el contraste con la fuente salió limpio y queda de control |
+| m4 | brief | dame el prompt de la 0013 | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: control, sin regla: el prompt sale del brief de la fila (salió limpio) |
 | m5 | write | Apunta en el roadmap: exportar las reservas a CSV. No la arranques. | salas-3-plain | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: la fila nueva entra en Next con su brief |
 | m6 | legacy | Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú. | salas-qa | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: sin `ROADMAP.md`, el triaje escribe la forma 2.x |
 | m3b | cited | Tria lo que hay por triar en la deuda. | salas-3-wt | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el dato del ticket solo lo desmiente el walkthrough que cita (fallo de campo de la «7.1.0», ticket de la feature 0165 §1; decisión del dev-lead del 2026-10-13 tras el m3 limpio) |
@@ -35,7 +35,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 ## Procedencia de las reglas
 
-Las reglas que añade la 0161 a `skills/sdd-roadmap/SKILL.md`, de dónde viene cada una y qué escenario la cubre. Las anteriores tienen su evidencia en `tests/sdd-roadmap-red.md` y `-green.md`.
+Las reglas que añaden la 0161 y la 0150 a `skills/sdd-roadmap/SKILL.md`, de dónde viene cada una y qué escenario la cubre. Las anteriores tienen su evidencia en `tests/sdd-roadmap-red.md` y `-green.md`.
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
@@ -43,5 +43,13 @@ Las reglas que añade la 0161 a `skills/sdd-roadmap/SKILL.md`, de dónde viene c
 | Paso 7: el cierre da el prompt de la fila que va primero y la frase «arráncalo» | `tests/sdd-explore-0161-red.md`, m2 y m3: 4 de 4 cerraron nombrando la skill, sin prompt; GREEN m2 2/2 | m2 |
 | «Algo concreto»: un patch pendiente es fila de «Próximo» con «Patch:» | decisión del dev-lead (2026-10-10, imputación de horas); sin RED: es la forma de fila vigente con un prefijo | no medido |
 | `description`: «dame el prompt de la <id>» | RED m1 (entró por `sdd-consult`); GREEN m1 2/2 | m1, y r6 de `using-sdd` |
+| Nada pasa a «Lista» sin reproducirse o sin un 2.º caso: sin reproducir, va a «En espera» con `reproducirlo` | `tests/sdd-roadmap-0150-red.md`, m3: 1 de 2 mandó el CSV a «Lista» sin reproducirlo; GREEN pendiente | m3, m6 |
+| La «Evidencia» de «Lista» es el comando que lo reproduce con su salida, o los enlaces a los dos casos | `tests/sdd-roadmap-0150-red.md`, m3: 2 de 2 propusieron el informe y la línea de código; GREEN pendiente | m3, m6 |
+| El «Destino» de «Lista» es el id de una fila de Now o Next, nueva o existente, o `sin fila`; nunca vacío | spec de la 0150, decisión 7 ter; sin RED propio: lo exige el check, que falla vacío | m3 |
+| Una fila de «En espera» que caduca se propone en «Descartadas» con `caducada`; los patches no cuentan como release | `tests/sdd-roadmap-0150-red.md`, m3: 2 de 2 no la propusieron; GREEN pendiente | m3 |
+| La fila nueva de `ROADMAP.md` lleva tamaño `S`, `M` o `L` con el umbral de partir | `tests/sdd-roadmap-0150-red.md`, m5: 2 de 2 la dejaron sin tamaño; GREEN pendiente | m5 |
+| Entrada «Triage», tabla de equivalencias 2.x, `B<n>` en Later y «Later no da prompt» | forma que fija la spec de la 0150 (decisiones 1, 11 y 12); sin RED propio: la exige el check o la imita el sujeto de las filas del molde | m3, m5, m6 |
+
+**Sin regla** (feature 0150, enmiendas de la spec del 2026-10-13): contrastar cada versión o cifra del ticket con su fuente (m3 y m3b salieron 2 de 2 limpios, con el changelog a la vista y con el dato que solo desmiente el walkthrough citado) y sacar el prompt de arranque del brief (m4 salió 2 de 2 limpio). Los tres escenarios quedan como control; `launch-prompt-template.md` no cambia.
 
 **Retirado** (feature 0161): su m3 (reparto de usuarios, rol, autoría y migración) medía el dimensionado de cada fila, que salió por el RED (0 de 4 filas grandes). Su enrutado además varía sin cambio del kit: con el kit de la apertura entró 2 de 2 por `sdd-roadmap` en el RED y 2 de 2 por `sdd-propose` al repetirlo (`ab/out/` de la 0161), y las dos puertas son defendibles.

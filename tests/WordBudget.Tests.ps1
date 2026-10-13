@@ -20,7 +20,7 @@ BeforeAll {
       'sdd-parallel-agents' = @{ SkillMd = 1100; Total = 1100 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
-      'sdd-roadmap'         = @{ SkillMd = 2700; Total = 2700 }
+      'sdd-roadmap'         = @{ SkillMd = 3600; Total = 3600 }
       'sdd-rubber-duck'     = @{ SkillMd = 600; Total = 600 }
       'sdd-propose'         = @{ SkillMd = 5000; Total = 6300 }
       'sdd-implement'       = @{ SkillMd = 10240; Total = 13950 }
