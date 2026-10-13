@@ -1,6 +1,8 @@
 # Scoped re-review prompt
 
-Dispatch it after a fix round —of a task, or the fix pass of the final review— with `description: "Re-review Task N fix round R"` and a cheap-to-mid `model` with its `subagent_type`. It verifies each finding was addressed and checks the fix diff for new breakage; it is not a fresh review. Fill every `<…>` and `[…]`.
+Dispatch it after a fix round —of a task, or the fix pass of the final review— with `description: "Re-review Task N fix round R"` and a cheap-to-mid `model` with its `subagent_type`. It verifies each finding was addressed and checks the fix diff for new breakage; it is not a fresh review — the full review already happened. Fill every `<…>` and `[…]`.
+
+**Purpose:** verify each finding from the previous review was addressed, and that the fix itself broke nothing.
 
 ```text
 ## Restricciones de código
@@ -102,3 +104,5 @@ breakage | Findings remain open] — list the open ones.
 
 
 **Placeholders:** `[FINDINGS]`, the Critical and Important findings and spec gaps of the previous review, verbatim, one per bullet · `[FIX_BASE_SHA]`, the head the previous review saw · `[DIFF_FILE]`, the path `sdd review package <plan> <FIX_BASE> HEAD` printed · the rest as in the task review.
+
+**Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED), new breakage in the fix diff, out-of-scope observations, and a round verdict.

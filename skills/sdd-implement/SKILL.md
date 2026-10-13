@@ -7,33 +7,35 @@ description: Use when sdd-start-feature reaches its implementation step with an 
 
 ## Overview
 
-Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message. Forked from `executing-plans` and `subagent-driven-development` of superpowers 7.0.0 (MIT, see `NOTICE`).
+Execute the approved plan, task by task, and leave a record that survives your own forgetting. Write everything the user reads in the language of their message. Forked from `executing-plans` and `subagent-driven-development` of superpowers 7.0.0 (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
-**Core principle:** the plan already did the thinking. Execute it exactly, prove each step with a test you watched fail and then pass, and keep the ledger: it is your memory after compaction.
+**Core principle:** the plan already did the thinking. Execute it exactly, prove each step with a test you watched fail and then pass, and leave a record that survives your own forgetting.
 
 **Your first message after loading this skill**, new run or resumed, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2. Saying «preparo el workspace» or «leo el ledger» isn't it.
 
-**Narration:** between tool calls, at most one short line; the ledger and the tool results carry the record. The phase notice of `sdd-start-feature` still opens each change of step.
+**Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. The phase notice of `sdd-start-feature` still opens each change of step.
 
-**Continuous execution:** don't ask «should I continue?» between tasks. Only these stop you: an irreversible or destructive operation; a security-sensitive action; a side effect outside this worktree that norms say you ask first (a merge, a push to a shared branch, a publish); a plan so broken that every path forward is a guess; and the kit's own stops, which are a fifth class, not an exception to the four: a **deviation** from the approved spec, a **scope brake** and, in `pair`, the stop after each task ([Deviations and rulings](#deviations-and-rulings)).
+**Continuous execution:** do not pause to check in with the user between tasks. Execute all tasks from the plan without stopping: in Native, they chose it to spend less, not to answer «should I continue?» after every task. «Should I continue?» prompts and progress summaries waste their time — they asked you to execute the plan, so execute it. Four things stop you, and only these: an irreversible or destructive operation; a security-sensitive action; a side effect outside this worktree that norms say you ask about first (a merge, a push to a shared branch, a publish); and a plan so broken that every path forward is a guess. For those, stop and ask. The kit's own stops are a fifth class, not an exception to the four: a **deviation** from the approved spec, a **scope brake** and, in `pair`, the stop after each task ([Deviations and rulings](#deviations-and-rulings)).
 
 ## Method
 
-The plan's `Ejecución` line decides, for the whole plan. With `execution: auto` its reason weighs four factors by name, with no numeric threshold: how much the tasks depend on each other's interfaces, how many there are, what an error reaching the branch costs, and whether the plan fits one context. In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`.
+The plan's `Ejecución` line decides, for the whole plan. With `execution: auto` its reason weighs four factors by name, with no numeric threshold: how much the tasks depend on each other's interfaces, how many there are, what an error reaching the branch costs, and whether the plan fits one context. In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`. If your harness has no subagent tool, the plan runs here, in Native: never fabricate a dispatch.
 
-- **Native**: you implement every task in this session, with the ledger; one fresh reviewer at the end. The cheapest: a fully specified plan makes it transcription plus testing, and a mid-tier session (Sonnet, effort medium) runs it well.
-- **SDD** (`Ejecución: subagent`): a fresh implementer subagent per task and a task review after each, then the final review. Costs a fresh context per task and per review. Use it when a review gate per task is wanted, or when the plan is long enough that its later tasks would run on a compacted context.
+- **Native**: you implement every task in this session, with the ledger: no implementer subagent per task, no reviewer per task, and one fresh-context review of the whole branch at the end. SDD pays for a fresh implementer and a fresh reviewer on every task, each re-reading the codebase from zero; Native pays for one context (yours) plus one reviewer at the end. What it gives up is a fresh context per task and a second pair of eyes per task. This skill keeps what those two things bought, by other means: the brief is the spec, the ledger is your memory, TDD is the per-task gate, and the final reviewer is the second pair of eyes. The cheapest: a fully specified plan makes it transcription plus testing, it runs well on a mid-tier session (Sonnet, effort medium), and the one place the most capable model earns its cost is the final review, which this skill dispatches separately.
+- **SDD** (`Ejecución: subagent`): a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end. You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work. Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration.
 
-Both share the workspace, the ledger and its format: a plan can change method mid-flight and the new one resumes from the same ledger. After a compaction in Native with two or more tasks without their `complete` line, the rest goes on with SDD over the same ledger, without stopping in `delegate` or `unattended`; with one task left, Native goes on. Ledger it every time, with either outcome: `Task <N>: Ruling: compactación — sigo con <Native | SDD> — quedan <k> tasks` (with one, `queda 1 task`; the task you were on counts); the walkthrough's `Compactación:` line comes from it. After compaction you reread the plan and the ledger, not this skill.
+**SDD against Native:** a fresh subagent per task (no context pollution) instead of one context doing every task; a review after each task (spec compliance + code quality) instead of only at the end; it costs a fresh context per task and per review, where Native costs one context plus one final reviewer. Use it when a review gate per task is wanted, or when the plan is long enough that its later tasks would run on a compacted context. Native over a long plan still works — the ledger is what makes it recoverable — but the last tasks get the least of you.
+
+Both run in this session, share the workspace, the ledger and its format, and never pause between tasks: a plan can change method mid-flight and the new one resumes from the same ledger. After a compaction in Native with two or more tasks without their `complete` line, the rest goes on with SDD over the same ledger, without stopping in `delegate` or `unattended`; with one task left, Native goes on. Ledger it every time, with either outcome: `Task <N>: Ruling: compactación — sigo con <Native | SDD> — quedan <k> tasks` (with one, `queda 1 task`; the task you were on counts); the walkthrough's `Compactación:` line comes from it. After compaction you reread the plan and the ledger, not this skill.
 
 ## Setup
 
 1. **Worktree**: invoke `sdd-worktrees` with `Skill`; it detects or creates the isolated workspace, runs `env:setup` if `.docs/sdd/environments.md` exists and the baseline with the project's closing gate.
-2. **Workspace**: each plan owns one. Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact of THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours. **Your next message to the user**, right under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
-3. **Ledger**: `<workspace>/progress.md`. If its first line names your plan, tasks with a `Task <N>: complete` line are DONE — don't redo or re-dispatch them; resume at the first task without one. A task whose last line is a fix round is mid-loop: resume at the next round. A ledger naming another plan is someone else's: leave it and start your own, with the identity line `# SDD ledger — plan: <plan path>`. After compaction, trust the ledger and `git log` over your recollection; `git clean -fdx` destroys the workspace, and then you recover from `git log`. `tasks.md` doesn't replace the ledger: after a compaction it's the ledger that says what's done (`tests/native-adapt-red.md`).
-4. **Read** the plan once, its context and Global Constraints, and the spec: the spec is the authority the plan argues from. A plan without a reachable spec gets a ledger note: rulings made without one are provisional. One todo per task. With more than one task, `tasks.md` is the **living record** (status and commit hash per task); the harness todo list is ephemeral.
-5. **TDD**: load `sdd-tdd` with `Skill` before Task 1. It governs every step of every task you implement; a plan whose steps already say «write the failing test first» doesn't exempt you. In Native, read once the `## Quality decalogue` of [implementer-prompt.md](references/implementer-prompt.md): it governs the code you write, under the project's quality article.
-6. **Pre-flight scan**, before Task 1, written to the ledger as a table: one row per pair of tasks sharing a file or an interface (what one produces against what the other consumes, and what you found), one row per task (do its tests and its code agree; do the files it creates match the ones it later touches), and what the plan mandates that the review rubric calls a defect (a test that asserts nothing, verbatim duplication). «The scan is clean» without the rows is not a scan. Rule on each finding, with the spec as the binding authority, and record the ruling beside its row.
+2. **Workspace**: each plan owns one. Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact of THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. **Your next message to the user**, right under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
+3. **Ledger**: conversation memory does not survive compaction. An executor that loses its place re-implements tasks whose commits already exist — the same failure as a controller re-dispatching them, paid for in your own context; in real sessions, controllers that lost their place have re-dispatched entire completed task sequences — the single most expensive failure observed. Track progress in a ledger file, not only in todos: harness todos are a live view; the ledger is the record. It lives at `<workspace>/progress.md`, and it is your recovery map. If its first line names your plan, tasks with a `Task <N>: complete` line are DONE — don't redo or re-dispatch them; resume at the first task without one. Their commits exist in git even when your context no longer remembers making them: after compaction, trust the ledger and `git log` over your own recollection. A task whose last line is a fix round is mid-loop: resume the loop at the next round. A ledger whose first line names another plan is another plan's progress: leave it in place and start your own, fresh, with the identity line `# SDD ledger — plan: <plan path>`. `git clean -fdx` will destroy the workspace (it's git-ignored scratch); if that happens, recover from `git log`. `tasks.md` doesn't replace the ledger: after a compaction it's the ledger that says what's done (`tests/native-adapt-red.md`).
+4. **Read** the plan once, note its context and Global Constraints, and create a todo per task. Read its spec too: the spec is the authority the plan argues from, and conflicts inside the plan resolve against it. A plan with no reachable spec gets a ledger note saying so — rulings made without one are provisional. With more than one task, `tasks.md` is the **living record** (status and commit hash per task); the harness todo list is ephemeral.
+5. **TDD**: load `sdd-tdd` with `Skill` now, before Task 1 — a **REQUIRED SUB-SKILL**. It governs every step of every task you implement; a plan whose steps already say «write the failing test first» does not exempt you from reading it. In Native, read once the `## Quality decalogue` of [implementer-prompt.md](references/implementer-prompt.md): it governs the code you write, under the project's quality article.
+6. **Pre-flight scan**: before Task 1, scan the plan once for conflicts, writing down what you checked as you check it: tasks that contradict each other or the plan's Global Constraints, and anything the plan explicitly mandates that the review rubric treats as a defect (a test that asserts nothing, verbatim duplication of a logic block). The scan's output is a table in the ledger, not a verdict. One row for every pair of tasks that share a file or an interface: the two tasks, what one produces against what the other consumes, and what you found. One row for every task: whether its own text agrees with itself — the tests it specifies against the code it specifies, the files it creates against the files it later touches. «The scan is clean» without those rows is not a scan you ran. Rule on everything you find before execution begins — each finding against the plan text that mandates it, with the spec as the binding authority — and record each ruling beside its row. If the scan is clean, proceed without comment. The task review (in Native, the final review) remains the net for conflicts that only emerge from implementation.
 7. **Effort**: before the first dispatch of the feature —the implementer in SDD, the final reviewer in Native— check that the `sdd-kit:effort-<level>` type is among the session's agents. If not, say so before dispatching, dispatch with the `model` and the phrase «effort: no disponible en este harness, hereda el de la sesión», and record it as a ruling.
 
 ## Before each task
@@ -45,85 +47,240 @@ Every task, the second and later ones too, in both methods:
 
 ## Native loop
 
-1. **Take the task**: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>` prints the brief path and BASE, the commit the range is cut from. Read the brief every time: what you remember is a summary. Then the base check and the RED tests of [Before each task](#before-each-task).
-2. **Work the steps** in the plan's RED-GREEN order, under TDD. Watching the test fail is a step; a test that passes before the implementation exists is a finding about the test. Every step with a command has an `Expected:`: run it, read the output, compare. Matches → next step. The code is wrong → `sdd-debugging`: find the cause, never patch the symptom. A failing smoke of text an agent follows (a skill, a prompt): if the constitution has a rule on the form of guidance, read it before the round, name the failure's class by it and write the round in that form; rewording or adding emphasis is the same form. The plan is wrong (a step contradicts the spec, an interface doesn't match, a command can't work) → rule the smallest change that satisfies the spec, ledger `Task <N>: Ruling: <finding> — <what you decided and why>`, and go on. Send long test output to a file in the workspace and read its tail; append to the ledger in the same call as the commit.
-3. **Completion contract**, with evidence from this session, not from the diff looking right: every test the brief names exists, ran in this task and you read its output; every `Expected:` was compared with real output; every deviation from the brief has its `Ruling:` line; and the final run is `sdd task done`, below. If one is missing, the task isn't complete.
-4. **Close, in this order**: compare the RED copy with the committed test using `git diff --no-index` — a change that isn't formatting is a ruling in the ledger; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`); then, in its own call, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It records the task even if the command prints nothing, and writes `HEAD` in the ledger line. The command must exit non-zero on failure: with Pester, `-CI`, or `Invoke-Pester` exits 0 with a red test (`tests/task-done-exit-code-red.md`). A failing run records nothing. (`tests/native-adapt-red.md`)
+```dot
+digraph native {
+    rankdir=TB;
+
+    subgraph cluster_per_task {
+        label="Per Task";
+        "sdd task start: brief + BASE; read the brief" [shape=box];
+        "Base check; write the RED tests, keep a copy" [shape=box];
+        "Work the steps in order: TDD, run every verification, read every output" [shape=box];
+        "Step output matches plan's Expected?" [shape=diamond];
+        "Plan wrong? Rule and ledger. Code wrong? sdd-debugging" [shape=box];
+        "Completion contract met?" [shape=diamond];
+        "Compare the RED copy; commit the task; check the commit exists" [shape=box];
+        "sdd task done: run the Verificación, ledger the result; mark todo complete" [shape=box];
+    }
+
+    "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan" [shape=box];
+    "More tasks remain?" [shape=diamond];
+    "Final whole-branch review (fresh reviewer, in the background)" [shape=box];
+    "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger" [shape=box];
+    "Final review clean: rulings to tasks.md, delete this plan's workspace" [shape=box];
+    "Step 7 of sdd-start-feature (validation)" [shape=box style=filled fillcolor=lightgreen];
+
+    "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan" -> "sdd task start: brief + BASE; read the brief";
+    "sdd task start: brief + BASE; read the brief" -> "Base check; write the RED tests, keep a copy";
+    "Base check; write the RED tests, keep a copy" -> "Work the steps in order: TDD, run every verification, read every output";
+    "Work the steps in order: TDD, run every verification, read every output" -> "Step output matches plan's Expected?";
+    "Step output matches plan's Expected?" -> "Plan wrong? Rule and ledger. Code wrong? sdd-debugging" [label="no"];
+    "Plan wrong? Rule and ledger. Code wrong? sdd-debugging" -> "Work the steps in order: TDD, run every verification, read every output";
+    "Step output matches plan's Expected?" -> "Completion contract met?" [label="yes, last step"];
+    "Completion contract met?" -> "Work the steps in order: TDD, run every verification, read every output" [label="no - finish the task"];
+    "Completion contract met?" -> "Compare the RED copy; commit the task; check the commit exists" [label="yes"];
+    "Compare the RED copy; commit the task; check the commit exists" -> "sdd task done: run the Verificación, ledger the result; mark todo complete";
+    "sdd task done: run the Verificación, ledger the result; mark todo complete" -> "More tasks remain?";
+    "More tasks remain?" -> "sdd task start: brief + BASE; read the brief" [label="yes"];
+    "More tasks remain?" -> "Final whole-branch review (fresh reviewer, in the background)" [label="no"];
+    "Final whole-branch review (fresh reviewer, in the background)" -> "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger";
+    "Re-grade, then: Critical/Important → ONE fix pass, each fix RED→GREEN + green suite; Minor → ledger" -> "Final review clean: rulings to tasks.md, delete this plan's workspace";
+    "Final review clean: rulings to tasks.md, delete this plan's workspace" -> "Step 7 of sdd-start-feature (validation)";
+}
+```
+
+Everything you print, and every tool result, stays resident in your context for the rest of the session. Redirect long test output to a file in the workspace and read its tail; read a brief, not the whole plan.
+
+1. **Take the task**: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>` prints the brief path and BASE, the commit the task's range is cut from, in one call. Read the brief for every task, including ones you remember from setup: what you remember is a summary, the brief has the exact values, signatures, and test cases. Mark the task's todo in_progress. Then the base check and the RED tests of [Before each task](#before-each-task). Every tool call is a turn that re-reads your whole context: bookkeeping rides along with work — a ledger append in the same call as the commit, never in a call of its own; the completion line is `sdd task done`'s, in its own call after the commit you checked (step 4).
+2. **Work the steps**: the plan's steps are already in RED-GREEN order; follow them in that order under `sdd-tdd`, loaded at setup. A test step's code is written first and run first. Watching it fail is a step, not a formality — a test that passes before the implementation exists is a finding about the test. Every step that runs a command has an `Expected:` line. Run the command, read its output, and compare. Three outcomes:
+   - **Matches.** Next step.
+   - **The code is wrong.** Use `sdd-debugging`. Find the cause; never patch the symptom to make the step's output match. A failing smoke of text an agent follows (a skill, a prompt): if the constitution has a rule on the form of guidance, read it before the round, name the failure's class by it and write the round in that form; rewording or adding emphasis is the same form.
+   - **The plan is wrong** — a step contradicts the spec, an interface from an earlier task doesn't match what this task consumes, a command that cannot work. Rule on the smallest change that satisfies the spec, ledger it as `Task <N>: Ruling: <finding> — <what you decided and why>`, and continue. The ruling is carried, not remembered: later tasks that touch the same interface read it from the ledger.
+3. **Completion contract**: before a task's ledger line, all of the following are true, with evidence in this session — not inferred from the diff looking right:
+   - Every test the brief names exists and ran in this task, and you read the output.
+   - The final test run for the task passed — `sdd task done` is that run, and it writes the command and result into the ledger line.
+   - Every `Expected:` line in the brief was compared against real output.
+   - Every deviation from the brief has a `Ruling:` line in the ledger.
+
+   **REQUIRED SUB-SKILL:** `superpowers:verification-before-completion` governs the claim. If any item is missing, the task is not complete: finish it.
+4. **Close, in this order**: compare the RED copy with the committed test using `git diff --no-index` — a change that isn't formatting is a ruling in the ledger; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`); then, in its own call, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It runs the command, keeps the full output in the workspace, prints the tail and appends `Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)` to the ledger, with `HEAD`; it records the task even if the command prints nothing. The command must exit non-zero on failure: with Pester, `-CI`, or `Invoke-Pester` exits 0 with a red test (`tests/task-done-exit-code-red.md`). A failing run records nothing; the task is not complete. When it records, mark the todo complete and take the next task. (`tests/native-adapt-red.md`)
 
 | Excuse | Reality |
 | --- | --- |
-| "I remember what Task N says" | You remember a summary; the brief has the exact values. |
+| "I remember what Task N says" | You remember a summary. The brief has the exact values. Read it. |
 | "The plan's code is right, skip watching the test fail" | A test you never saw fail proves nothing. It is one step. Run it. |
-| "I'll run the full suite at the end instead of per step" | Per-step runs tell you which step broke it; the end-of-task run is the contract. |
-| "The plan is wrong here, I'll just do the right thing" | Do it and ledger the ruling: unledgered, it's a decision made in secret. |
-| "I'll write the ledger lines after a few tasks" | Compaction doesn't wait. One line per task, with the commit. |
-| "Let me check in before the next task" | Native was chosen to spend less. Only the stops of the Overview stop you. |
-| "I read my own diff carefully; the final reviewer is redundant" | Same author, same blind spots: the reviewer is the only fresh context. |
-| "Tests should pass, the change was trivial" | «Should» is not evidence: the contract asks for the command and its output. |
-| "Subagents are slow and expensive, I'll skip the final review too" | One review of the whole branch is the floor. |
-| "The reviewer said Minor, so it's Minor" | The label graded the spec's silence; grade what the person gets. |
-| "The fix is obvious, no need for a failing test first" | The failing test is the only proof the finding was real and is gone. |
-| "I'll fix the minors too while I'm in there" | Nobody asked for them: ledger them, the user decides. |
+| "I'll run the full suite at the end instead of per step" | Per-step runs are how you learn which step broke it. The end-of-task run is the contract, not a substitute. |
+| "The plan is wrong here, I'll just do the right thing" | Do the right thing and ledger the ruling. Unledgered deviation is a decision made in secret. |
+| "I'll write the ledger lines after a few tasks" | Compaction does not wait for a convenient moment. One line per task: `sdd task done` writes it right after the commit you checked. |
+| "Let me check in before the next task" | Native was chosen to spend less. Progress prompts spend the user's time instead. Only the stops of the Overview stop you. |
+| "I read my own diff carefully; the final reviewer is redundant" | Same author, same blind spots. The reviewer is the only fresh context this run buys. |
+| "Tests should pass, the change was trivial" | «Should» is not evidence. The contract requires the command and its output. |
+| "Subagents are slow and expensive, I'll skip the final review too" | Native already removed the per-task reviewers. One review of the whole branch is the floor, not the ceiling. |
+| "The reviewer said Minor, so it's Minor" | The label graded the spec's silence. Grade what the person gets. Re-grade, then gate. |
+| "The fix is obvious, no need for a failing test first" | The failing test is the only proof the finding was real and is now gone. Without it you have a diff and a hope. |
+| "I'll fix the minors too while I'm in there" | Every minor you fix is a test, a fix, and a suite run the user did not ask for. Ledger them; the user decides. |
 
 ## SDD loop
 
-**Models**: declare model and effort on every dispatch: omitted, both inherit the session's. The effort travels in the agent type (`sdd-kit:effort-low`, `-medium`, `-high`) next to `model`. Mid-tier is the floor for reviewers and for implementers working from prose; the cheapest tier only when the task's text already holds the code to write, or for a single-file mechanical fix: turns cost more than tokens. Design judgment or broad codebase understanding → the most capable model. Fix rounds 4-5 → one tier above the implementer that got stuck. `fable` and `opus xhigh` are forbidden by default, unless the task justifies it in writing.
+```dot
+digraph sdd {
+    rankdir=TB;
 
-**Batch small same-shape work**: tasks that are each the same small edit across files go to ONE implementer, reviewed as one unit.
+    subgraph cluster_per_task {
+        label="Per Task";
+        "Base check; write the RED tests; sdd task brief" [shape=box];
+        "Dispatch implementer subagent (implementer-prompt.md)" [shape=box];
+        "Implementer asks questions?" [shape=diamond];
+        "Answer questions, provide context" [shape=box];
+        "Implementer implements, tests, commits, self-reviews" [shape=box];
+        "sdd review package, dispatch task reviewer (task-reviewer-prompt.md)" [shape=box];
+        "Spec ✅ and quality approved?" [shape=diamond];
+        "Finding conflicts with plan text?" [shape=diamond];
+        "Rule on the conflict, ledger the ruling" [shape=box];
+        "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [shape=box];
+        "Dispatch scoped re-review (re-review-prompt.md)" [shape=box];
+        "All findings addressed?" [shape=diamond];
+        "R = 5?" [shape=diamond];
+        "Adjudicate each open finding" [shape=box];
+        "Any load-bearing finding?" [shape=diamond];
+        "Rule and continue; stop only if every path forward is a guess" [shape=box];
+        "Park findings in ledger with rulings" [shape=box];
+        "Append completion to ledger, squash the task, mark todo complete" [shape=box];
+    }
 
-**Hand artifacts over as files**: what you paste into a dispatch stays in your context.
+    "Setup: worktree, ledger check, read plan + spec, pre-flight review" [shape=box];
+    "More tasks remain?" [shape=diamond];
+    "Dispatch final reviewer (encargo-revision.md + code-reviewer.md)" [shape=box];
+    "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" [shape=box];
+    "Final review clean: rulings to tasks.md, delete this plan's workspace" [shape=box];
+    "Step 7 of sdd-start-feature (validation)" [shape=box style=filled fillcolor=lightgreen];
 
-**Never dispatch two implementers at once.**
+    "Setup: worktree, ledger check, read plan + spec, pre-flight review" -> "Base check; write the RED tests; sdd task brief";
+    "Base check; write the RED tests; sdd task brief" -> "Dispatch implementer subagent (implementer-prompt.md)";
+    "Dispatch implementer subagent (implementer-prompt.md)" -> "Implementer asks questions?";
+    "Implementer asks questions?" -> "Answer questions, provide context" [label="yes"];
+    "Answer questions, provide context" -> "Implementer implements, tests, commits, self-reviews";
+    "Implementer asks questions?" -> "Implementer implements, tests, commits, self-reviews" [label="no"];
+    "Implementer implements, tests, commits, self-reviews" -> "sdd review package, dispatch task reviewer (task-reviewer-prompt.md)";
+    "sdd review package, dispatch task reviewer (task-reviewer-prompt.md)" -> "Spec ✅ and quality approved?";
+    "Spec ✅ and quality approved?" -> "Append completion to ledger, squash the task, mark todo complete" [label="yes"];
+    "Spec ✅ and quality approved?" -> "Finding conflicts with plan text?" [label="no"];
+    "Finding conflicts with plan text?" -> "Rule on the conflict, ledger the ruling" [label="yes"];
+    "Rule on the conflict, ledger the ruling" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model";
+    "Finding conflicts with plan text?" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [label="no"];
+    "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" -> "Dispatch scoped re-review (re-review-prompt.md)";
+    "Dispatch scoped re-review (re-review-prompt.md)" -> "All findings addressed?";
+    "All findings addressed?" -> "Append completion to ledger, squash the task, mark todo complete" [label="yes"];
+    "All findings addressed?" -> "R = 5?" [label="no"];
+    "R = 5?" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [label="no - next round"];
+    "R = 5?" -> "Adjudicate each open finding" [label="yes - breaker trips"];
+    "Adjudicate each open finding" -> "Any load-bearing finding?";
+    "Any load-bearing finding?" -> "Rule and continue; stop only if every path forward is a guess" [label="yes"];
+    "Any load-bearing finding?" -> "Park findings in ledger with rulings" [label="no"];
+    "Park findings in ledger with rulings" -> "Append completion to ledger, squash the task, mark todo complete";
+    "Append completion to ledger, squash the task, mark todo complete" -> "More tasks remain?";
+    "More tasks remain?" -> "Base check; write the RED tests; sdd task brief" [label="yes"];
+    "More tasks remain?" -> "Dispatch final reviewer (encargo-revision.md + code-reviewer.md)" [label="no"];
+    "Dispatch final reviewer (encargo-revision.md + code-reviewer.md)" -> "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals";
+    "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" -> "Final review clean: rulings to tasks.md, delete this plan's workspace";
+    "Final review clean: rulings to tasks.md, delete this plan's workspace" -> "Step 7 of sdd-start-feature (validation)";
+}
+```
+
+**Models**: use the least powerful model that can handle each role, to conserve cost and increase speed. Declare model and effort on every dispatch: an omitted model inherits your session's —often the most capable and most expensive—, which silently defeats this paragraph, and an omitted effort inherits the session's too. The effort travels in the agent type (`sdd-kit:effort-low`, `-medium`, `-high`) next to `model`.
+
+- **Turn count beats token price.** Wall-clock and context cost scale with how many turns a subagent takes, and the cheapest models routinely take 2-3× the turns on multi-step work — costing more overall. Mid-tier is the floor for reviewers and for implementers working from prose descriptions. When the task's text already holds the complete code to write, the implementation is transcription plus testing: the cheapest tier for that implementer. Single-file mechanical fixes also take the cheapest tier.
+- **Task complexity signals:** touches 1-2 files with the complete code in its text → the cheapest tier; touches multiple files with integration concerns → mid-tier; requires design judgment or broad codebase understanding → the most capable model.
+- **Reviewers:** choose the model with the same judgment, scaled to the diff's size, complexity, and risk. A small mechanical diff does not need the most capable model; a subtle concurrency change does. Scoped re-reviews of small fix diffs take a cheap-to-mid tier.
+- **Fix rounds 4-5:** a model at least one tier above the implementer that got stuck.
+- `fable` and `opus xhigh` are forbidden by default, unless the task justifies it in writing.
+
+**Batch small same-shape work.** When the plan lists several tasks that are each a small, independent edit of the same kind — the same one-line fix, constant change, or field addition repeated across files — do not dispatch one subagent per task. Compose ONE dispatch brief listing every file and its change, send the whole batch to a single subagent, and review its diff as one unit. Reserve one-dispatch-per-task for work that needs its own judgment, its own tests, or its own review surface.
+
+**Hand artifacts over as files.** Everything you paste into a dispatch prompt — and everything a subagent prints back — stays resident in your context for the rest of the session and is re-read on every later turn.
+
+**Waiting on dispatched subagents:** never poll a wait interface with short timeouts. While you have local work — ledger updates, packaging the next review, reading reports — keep working; child results arrive on their own. A stuck or lost child is noticed by its silence watch ([Final review](#final-review)).
+
+**Never dispatch multiple implementation subagents in parallel** (conflicts).
 
 ### 1. Dispatch the implementer
 
-- Record BASE (`git rev-parse HEAD`).
-- `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task brief <plan> <n>` extracts the task's text to a file and prints its path. Never make a subagent read the whole plan.
-- The dispatch is [implementer-prompt.md](references/implementer-prompt.md), filled, every section kept: the plan's «De código» block, literal, as first section (in lite mode, the constitution's code-quality article); the `## Quality decalogue`, as is; the RED tests' path as contract; the task's «Verificación» commands, not the full suite; one line on where the task fits; interfaces and decisions from earlier tasks the brief can't know; your resolution of any ambiguity; the report file (the brief's path with `-report.md`). No history of earlier tasks. If an earlier task parked a finding in this area, a pointer to its ledger entry. (`tests/gates-reviews-red.md`, E3) The «De proceso» block (model policy, method) you apply: it doesn't travel.
-- The implementer never dispatches subagents — not helpers, never a reviewer.
-- Record the implementer's agent id: fix rounds 1-3 resume it.
+- Record BASE (`git rev-parse HEAD`) before dispatching — the review package and fix-round diffs need it.
+- `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task brief <plan> <n>` extracts the task's full text to a uniquely named file and prints its path. Compose the dispatch so the brief stays the single source of requirements: its path goes in introduced as «read this first — it is your requirements, with the exact values to use verbatim», and exact values (numbers, magic strings, signatures, test cases) appear only in the brief. Never make a subagent read the whole plan.
+- The dispatch is [implementer-prompt.md](references/implementer-prompt.md), filled, every section kept: the plan's «De código» block, literal, as first section (in lite mode, the constitution's code-quality article); the `## Quality decalogue`, as is; the RED tests' path as contract; the task's «Verificación» commands, not the full suite; one line on where the task fits; interfaces and decisions from earlier tasks the brief can't know; your resolution of any ambiguity you noticed in the brief; the report file (the brief's path with `-report.md`), where the implementer writes the full report, returning only status, commits, a one-line test summary, and concerns. (`tests/gates-reviews-red.md`, E3) The «De proceso» block (model policy, method) you apply: it doesn't travel.
+- A dispatch describes one task, not the session's history. Do not paste accumulated prior-task summaries («state after Tasks 1-3») into later dispatches — a real session's dispatch hit 42k chars of which 99% was pasted history. A fresh subagent needs its task, the interfaces it touches, and the global constraints. Nothing else. If an earlier task parked a finding in the area this task touches, carry a pointer to that ledger entry.
+- The dispatch carries the no-subagents contract (it is in the implementer template): the implementer never dispatches subagents — not helpers, and never a reviewer. Review arrives from you, after the report. In real sessions, every reviewer a worker spawned duplicated the task review the controller dispatched anyway — a full extra review seat per task.
+- Record the implementer's agent identity from the dispatch result — fix rounds 1-3 resume this agent.
 - **Slow verification**: if the task has «Verificación lenta», the implementer doesn't run it: you launch it in the background as soon as it reports, while the task review runs. Dispatch the next task meanwhile only if it shares no files with the running one and its brief forbids the commands that compete for the same binaries; if the slow verification fails, it opens the task's fix round.
 
 ### 2. Handle the report
 
+Implementer subagents report one of four statuses. Handle each appropriately:
+
 - **DONE**: build the review package and dispatch the task reviewer.
-- **DONE_WITH_CONCERNS**: read the concerns first. Correctness or scope → address them before review; observations → note them and go on.
-- **NEEDS_CONTEXT**: provide it and re-dispatch.
-- **BLOCKED**: a context problem → more context, same model; more reasoning needed → a more capable model; too large → split it; the plan is wrong → rule the correction, ledger it and re-dispatch carrying it. Never ignore an escalation or retry the same model unchanged.
+- **DONE_WITH_CONCERNS**: the implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations («this file is getting large»), note them and proceed to review.
+- **NEEDS_CONTEXT**: the implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
+- **BLOCKED**: the implementer cannot complete the task. Assess the blocker: a context problem → more context, re-dispatch with the same model; the task requires more reasoning → re-dispatch with a more capable model; the task is too large → break it into smaller pieces; the plan itself is wrong → rule on the correction, ledger it, and re-dispatch with the ruling carried in the dispatch.
+
+**Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
+
+If the implementer asks questions — before starting or mid-task — answer clearly and completely, provide additional context if needed, and don't rush it into implementation.
 
 When it returns, compare the RED copy with the committed test: a change that isn't formatting goes to the task reviewer.
 
 ### 3. Review the task
 
-- `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" review package <plan> <BASE> HEAD` writes the commit list, stat and full diff to a file and prints its path; the package never enters your context. Never `HEAD~1`: it drops all but the last commit of a multi-commit task. Never dispatch a reviewer without a diff file.
-- Dispatch [task-reviewer-prompt.md](references/task-reviewer-prompt.md), filled with the brief, the report, the package and the plan's «De código» block, literal. Don't ask it to re-run tests the implementer ran, and don't pre-judge: if your prompt says «do not flag», «don't treat X as a defect», «at most Minor» or «the plan chose», stop.
-- Resolve each «⚠️ Cannot verify from diff» yourself; a real gap enters the fix loop.
+Per-task reviews are task-scoped gates. The broad review happens once, at the final whole-branch review. Never skip the task review, and never accept a report missing either verdict — spec compliance AND task quality are both required. Implementer self-review never replaces the task review; both are needed.
+
+- Hand the reviewer its diff as a file: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" review package <plan> <BASE> HEAD` writes the commit list, stat and full diff with context to a file and prints its path. The output never enters your own context, and the reviewer sees all of it in one Read call. Use the BASE you recorded before dispatching the implementer — never `HEAD~1`, which silently drops all but the last commit of a multi-commit task. Never dispatch a task reviewer without a diff file.
+- **Reviewer inputs:** dispatch [task-reviewer-prompt.md](references/task-reviewer-prompt.md), filled with the same brief, the report, the package and the plan's «De código» block, literal. That block is the reviewer's attention lens: what THIS project demands; the reviewer's template already carries the process rules (YAGNI, test hygiene, review method).
+- Do not add open-ended directives like «check all uses» or «run race tests if useful» without a concrete, task-specific reason.
+- Do not ask a reviewer to re-run tests the implementer already ran on the same code — the implementer's report carries the test evidence.
+- Do not pre-judge findings for the reviewer — never instruct a reviewer to ignore or not flag a specific issue. If you believe a finding would be a false positive, let the reviewer raise it and adjudicate it in the review loop. If the prompt you are writing contains «do not flag», «don't treat X as a defect», «at most Minor» or «the plan chose» — stop: you are pre-judging, usually to spare yourself a review loop.
+
+The task reviewer may report «⚠️ Cannot verify from diff» items — requirements that live in unchanged code or span tasks. These do not block the rest of the review, but you must resolve each one yourself before marking the task complete: you hold the plan and cross-task context the reviewer lacks. If you confirm an item is a real gap, treat it as a failed spec review — it enters the fix loop with the other findings.
 
 ### 4. The fix loop
 
-It opens with spec ❌, a Critical or Important finding, or a ⚠️ you confirmed. Two routes leave first: Minor findings go to the ledger (`Task <N>: minor (deferred): <one-liner>`), and the final review gets that list; a plan-mandated finding, or one that conflicts with the plan's text, is yours to rule on with the spec as authority, ledgered before you act. The rest enters the loop. A round is one fix dispatch plus one scoped re-review; five rounds per task at most:
+The loop triggers when the review reports spec ❌, any Critical or Important finding, or a ⚠️ item you confirmed as a real gap. Before the loop starts, two routes leave it immediately:
 
-- **Rounds 1-3**: resume the original implementer with the open findings, verbatim (without a way to message a live subagent, a fresh one with [implementer-prompt.md](references/implementer-prompt.md) filled as in step 1, plus the report file and the findings).
-- **Rounds 4-5**: a fresh implementer one tier up, with [implementer-prompt.md](references/implementer-prompt.md) filled as in step 1, plus the report file, the findings and «A prior implementer attempted this task [N] times; you own it now. Read the report file for what was tried.»
-- **Every round**: the implementer fixes, re-runs the covering tests and appends its fix report; check it names the tests, the command and the output, then `sdd review package <plan> <FIX_BASE> HEAD` (FIX_BASE = the head the previous review saw) and dispatch [re-review-prompt.md](references/re-review-prompt.md). New Critical or Important breakage in the fix diff joins the open list; out-of-scope observations go to the ledger as deferred minors. Ledger `Task <N>: fix round <R>/5 (<X> addressed, <Y> open — <one-liners>; commits <a7>..<b7>)`.
+- Record Minor findings in the ledger as you go (`Task <N>: minor (deferred): <one-liner>`), and point the final whole-branch review at that list so it can triage which must be fixed before merge. A roll-up nobody reads is a silent discard. Minor findings never enter the loop.
+- A finding labeled plan-mandated — or any finding that conflicts with what the plan's text requires — is yours to rule on: weigh the finding against the plan text, decide with the spec as the binding authority, and ledger the ruling before you act on it. Do not dismiss the finding because the plan mandates it, and do not dispatch a fix that contradicts the plan without a recorded ruling.
+
+Everything else enters the loop. A fix round is one fix dispatch plus one scoped re-review. Five rounds maximum per task:
+
+- **Rounds 1-3 — resume the original implementer.** Send it the open findings verbatim. Its context is intact: it knows the task, the code, and its own choices. If your harness cannot send another message to a live subagent, dispatch a fresh implementer with [implementer-prompt.md](references/implementer-prompt.md) filled as in step 1, plus the report file and the findings — the report file is the persistent memory either way.
+- **Rounds 4-5 — dispatch a fresh implementer on a more capable model** (per **Models**), with [implementer-prompt.md](references/implementer-prompt.md) filled as in step 1, plus the report file, the open findings, and this framing: «A prior implementer attempted this task [N] times; you own it now. Read the report file for what was tried.» A loop that survives three resumes usually means the implementer cannot see its own problem — fresh eyes and a capability bump in one move.
+- **Every round, either way:** the implementer fixes, re-runs the tests covering the amended code, appends its fix report to the same report file, and returns the short contract. Before re-dispatching the reviewer, confirm the fix report contains the covering tests, the command run, and the output; dispatch the re-review once all three are present. Name the covering test files in the fix message — a one-line fix does not need the whole suite.
+- **The re-review is scoped.** Run `sdd review package <plan> <FIX_BASE> HEAD`, where FIX_BASE is the head the previous review saw, and dispatch [re-review-prompt.md](references/re-review-prompt.md) with the findings list, the brief, the report file, and the printed diff path. The re-reviewer verdicts each finding ADDRESSED or NOT ADDRESSED and flags new breakage in the fix diff only. New Critical or Important breakage in the fix diff joins the open findings list. Out-of-scope observations go to the ledger as deferred minors — they never extend the loop.
+- **After each round,** append to the ledger: `Task <N>: fix round <R>/5 (<X> addressed, <Y> open — <finding one-liners>; commits <a7>..<b7>)`.
 - **Reproduce before fixing**: a Critical or Important finding that claims something about execution (an exception, an exit code, a value in a given environment or platform) is fixed by a test that reproduces it in RED first; the fix brief asks for it before the reviewer's proposed fix, and says that if the test isn't RED in one attempt, return `NEEDS_CONTEXT` with the test and its output, unfixed. Not reproducing it doesn't discard the finding: you fix without RED, reject or defer it, ledgered with the attempt's output. A finding you see reading the diff (a name, the structure, a duplication) skips this (`tests/post-final-review-red.md`, f1).
-- **Never fix findings yourself**: your fixes skip review.
-- **The breaker**: if round 5 leaves findings open, stop dispatching and adjudicate each: the reviewer is wrong or it's contestable → `Task <N>: parked — <finding> — Ruling: <why the code stands>`; real but nothing builds on it → parked the same way, saying it's real and deferred; real and load-bearing → rule the smallest change that unblocks, ledger it and carry it to the next dispatch; stop only if every path forward is a guess. Adjudicate only at the cap.
+
+Never fix findings yourself in the controller session — your context stays clean for coordination, and controller fixes skip review.
+
+**The breaker.** When round 5's re-review still leaves findings open, stop dispatching. Adjudicate each open finding yourself — you hold the plan and the cross-task context the reviewer lacks:
+
+- **The reviewer is wrong, or the point is contestable:** park it — `Task <N>: parked — <finding> — Ruling: <why the code stands>`. The final review sees both sides.
+- **Real, but nothing downstream builds on it:** park it the same way, with a ruling that says it's real and deferred.
+- **Real and load-bearing** — a later task builds on it, or it reveals a plan defect: rule on the smallest change that unblocks the dependent work, ledger it as `Task <N>: Ruling: <finding> — <what you decided and why>`, and carry it into the next task's dispatch. Parking a structural failure silently lets every dependent task build on it. Stop only when the defect leaves every path forward a guess.
+
+Adjudicate only at the cap. Adjudicating earlier to end a loop is pre-judging with a different name. Every adjudication is a ledger entry — a silent discard is forbidden.
 
 ### 5. Complete the task
 
-Clean review, or all open findings parked at the cap: ledger `Task <N>: complete (commits <base7>..<head7>, review clean)` or `…, <K> parked)`. Squash the task's range into one commit with a message you write, even with a single commit, before dispatching the next task, unless a guard trips; its hash goes to `tasks.md` in the next milestone's commit ([commit-milestones.md](../sdd-start-feature/references/commit-milestones.md)).
+When the review comes back clean — or every open finding is parked with a ruling at the cap — append the completion line to the ledger in the same message as your other bookkeeping: `Task <N>: complete (commits <base7>..<head7>, review clean)`, or `…, <K> parked)` after a tripped breaker. Squash the task's range into one commit with a message you write, even with a single commit, before dispatching the next task, unless a guard trips; its hash goes to `tasks.md` in the next milestone's commit ([commit-milestones.md](../sdd-start-feature/references/commit-milestones.md)). Then mark the todo complete and move on. Never move to the next task while the review has open Critical/Important issues that are neither fixed nor parked-with-ruling at the cap.
 
 | Excuse | Reality |
 | --- | --- |
-| "Close enough on spec compliance" | Spec gaps mean not done. Fix, or reach the cap and adjudicate. |
-| "I'll fix it myself, dispatching is overhead" | Your fixes pollute your context and skip review. Resume the implementer. |
-| "One more round will converge" | Past the cap the failure is structural. Adjudicate. |
-| "The reviewer will just find something new anyway" | Scoped re-reviews only verify fixes. |
-| "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a ledger line. |
-| "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. |
-| "Ledger bookkeeping is overhead" | The ledger survives compaction; without it, finished tasks get re-dispatched. |
-| "The implementer spawned its own reviewer — extra assurance" | A duplicate seat: flag it as a defect. |
+| "Close enough on spec compliance" | Reviewer found spec gaps = not done. Fix or hit the cap and adjudicate — those are the only exits. |
+| "I'll fix it myself, dispatching is overhead" | Controller fixes pollute your context and skip review. Resume the implementer. |
+| "One more round will converge" | Past the cap, rounds don't converge — the failure is structural. Adjudicate and route. |
+| "The reviewer will just find something new anyway" | Scoped re-reviews verify fixes; they cannot wander. New findings on untouched code go to the ledger, not the loop. |
+| "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a ledger entry. Silent discards are forbidden. |
+| "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
+| "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. |
+| "Ledger bookkeeping is overhead" | The ledger is what survives compaction. Controllers without one have re-dispatched entire completed task sequences. |
+| "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |
 
 ## After each task
 
@@ -137,7 +294,7 @@ The closing gate —the project's full build and suite— runs at the baseline o
 
 ## Deviations and rulings
 
-- **Ruling** (rulings, not stalls): leaving the plan without changing the spec (a file under «NO se tocan», another order, a fix of yours) — don't stop: ledger `Ruling: <what you decided> — <why> — <what it costs if wrong>` and go on. The spec is the binding authority, the plan its argument, your judgment settles what neither answers.
+- **Rulings, not stalls.** A running plan does not wait on a human for what a ruling settles. Conflicts, ambiguities, plan defects — decide them; the scope brakes and the deviations below are not rulings, and they stop. The spec is the binding authority, the plan is its argument, and your judgment settles what neither answers. Leaving the plan without changing the spec (a file under «NO se tocan», another order, a fix of yours) doesn't stop you: record every decision in the ledger as `Ruling: <what you decided> — <why> — <what it costs if wrong>`, and keep going. Deviating from the plan without a ledgered ruling is a decision made in secret. A wrong ruling costs rework the user can see and undo; a session parked on a question costs their whole day and buys nothing.
 - **Scope brakes** stop like a deviation even though they don't change the spec's letter: the third discovered fix, a decision that changes the observable output, the feature's row or a task file changed in the base ([control-profiles.md](../sdd-start-feature/references/control-profiles.md)).
 - **Deviation**: a change to the approved spec (a requirement, a THEN, the Scope, a «No entra» or «Dónde se prueba») — the update action. In `pair` and `delegate`, stop with its 🦆 and its ✋, leave uncommitted the correction in its place in `spec.md` and its line in «Enmiendas», and wait for approval; approved, what touches a closed task goes to a new task at the end, with its commit (`Task 3 — enmienda <fecha>: <qué>` after Task 2), without reopening it, and `tasks.md` marks the closed task as `afectada por enmienda <fecha> → Task 3`. In `unattended`, apply it marked `sin aprobar` and go on. A REFACTOR or fix round that writes guidance or behavior the spec doesn't have is a deviation when it adds or changes a THEN or an AND: stop before committing it — also when you didn't write the AND: a smoke that «only says warn» fixed with «don't write until the user confirms» is a new AND, not a ruling (`tests/sdd-deviations-red.md`, k2).
 - **Every commit of yours** —an improvised fix too— enters the review scope of the task in progress; with no task open and the final review not yet out, the final review's; and once it's out, even if not back, the re-review of the range `<last reviewed>..HEAD` of step 7. Never presented or closed unreviewed, except a commit under 20 lines (`git diff --numstat`) that only changes documentation or comments —files under `.docs/`, `*.md` of any path that aren't an agent's instructions or a template, comment lines no tool interprets; in a merge, only what you resolved, with `git show --remerge-diff`—: read it yourself and note `revisado en el hilo`.
@@ -148,25 +305,32 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 ## Final review
 
-**Dispatch it in the background as soon as the last task's commit exists** —in Native, the last task's; in SDD, the squashed one after its clean review—, before starting the app for its «Verificación visual»: while it reviews, you do that check and write the closing drafts of step 7. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`. (`tests/closing-off-critical-path-red.md`, c1) Its brief, model (`sdd-kit:effort-high` + `opus`, also in Native: the kit's ceiling), package recipe —not `sdd review package`— and Review Focus section are the «Revisor final» of [encargo-revision.md](../sdd-start-feature/references/encargo-revision.md), followed by `code-reviewer.md` of `superpowers:requesting-code-review`, with the plan and spec paths and a pointer to the ledger's `Ruling:`, deferred-minor and parked lines.
+**Dispatch it in the background as soon as the last task's commit exists** —in Native, the last task's; in SDD, the squashed one after its clean review—, before starting the app for its «Verificación visual»: while it reviews, you do that check and write the closing drafts of step 7. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`. (`tests/closing-off-critical-path-red.md`, c1)
+
+**With a subagent tool:** dispatch the reviewer on the most capable model — the whole-branch review is a judgment task. Its brief, model (`sdd-kit:effort-high` + `opus`, also in Native: the kit's ceiling), package recipe —not `sdd review package`— and Review Focus section are the «Revisor final» of [encargo-revision.md](../sdd-start-feature/references/encargo-revision.md), followed by `code-reviewer.md` of `superpowers:requesting-code-review`, with the plan and spec paths, the plan's Review Focus section verbatim if it has one (the input classes and failure modes the plan's tests do not exercise — the reviewer checks each deliberately), and a pointer to the ledger's `Ruling:`, deferred-minor and parked lines, so it can weigh the calls you made and triage which must be fixed before merge. Specify the model explicitly; an omitted model inherits the session's, which may not be the most capable. This is the one fresh context the whole run buys. Do not skip it, and do not replace it with your own read of the diff.
 
 **Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or `watch command --path <the command's output>`; the script reads the thresholds. What to do with its warning is in [Vigía de silencio](../sdd-start-feature/references/control-profiles.md#vigía-de-silencio). (`tests/silence-watch-red.md`)
 
-**Without a subagent tool**: perform that review yourself against the package, as a separate pass after the last task's ledger line; ledger `Final review: self-review (no subagent tool)` and say so: the user decides if a self-review is enough.
+**Without a subagent tool:** read `code-reviewer.md` and perform that review yourself against the package, as a separate pass after the last task's ledger line. Write `Final review: self-review (no subagent tool)` to the ledger, and say so in your final message: a self-review by the author is weaker than a fresh reviewer, and the user decides whether that is enough before merge.
 
-**Sort the findings before acting.** The severity labels are advice; the gate is yours. Each «Declined to judge» line is a ruling: `Final: Ruling: <behavior set aside> — <what a reasonable person using this gets, and why that stands or is now a finding> — <cost if wrong>`. Re-grade by effect: a finding's grade is what a person gets if it ships, not whether the spec names its input. Then Critical and Important enter the fix pass; Minor goes to the ledger as `Final: minor (deferred): <one-liner>` and never becomes a ruling.
+**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ships, not whether the spec names the input that triggers it — a reviewer who set a finding at Minor because the spec was silent has graded the spec, not the effect. Then:
 
-- **Native**: fix them yourself in ONE pass. Each fix is a test that reproduces the finding, watched fail, then pass, then the whole suite: `Final: fixed <finding> — <test> RED→GREEN, suite <N>/<N>`. No re-review: the covering tests and the suite answer it. A finding you don't fix is `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>`. No second pass.
-- **SDD**: ONE fix subagent with the whole list —not one per finding—, then exactly one scoped re-review of the fix range, and adjudicate residuals as at the breaker. No second fix wave.
-- In both, the reproduce-before-fixing rule of the fix loop applies.
+- **Critical and Important** enter the fix pass.
+- **Minor** goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors». Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
+
+**Native:** fix the Critical and Important findings yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD, not by a second reviewer: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified; a suite that is not green after the pass means the pass is not over. Do not dispatch a re-review: it would re-read a diff whose covering tests already answer «addressed» and whose suite run already answers «broke nothing». A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
+
+**SDD:** if the final review returns findings, dispatch ONE fix subagent with the complete findings list — not one fixer per finding. Per-finding fixers each rebuild context and re-run suites; a real session's final-review fix wave cost more than all its tasks combined. Then run exactly one scoped re-review of the fix wave (`sdd review package <plan> <FIX_BASE> HEAD` over the fix range, [re-review-prompt.md](references/re-review-prompt.md)). Adjudicate any residual findings as at the breaker: park with rulings, or rule on the load-bearing ones and ledger what you decided. Only the stops of the Overview stop you here. There is no second fix wave — residual load-bearing findings reach the user in the validation's presentation (step 7 of `sdd-start-feature`).
+
+In both, the reproduce-before-fixing rule of the fix loop applies.
 
 When it returns, with either method, write in `tasks.md` `Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>`, with the `HEAD` it reviewed (without `tasks.md`, in the validation's presentation). If it returned Critical or Important, after its fix pass write below `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`: step 7 and the closing count the range from there.
 
 ## Finish
 
-Before deleting anything: run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" ledger rulings <plan>` and paste its lines into `tasks.md` under `## Rulings` (without `tasks.md`, in the validation's presentation). Every `Ruling:` line —pre-flight, parked, breaker, final— and every `minor (deferred)` reach the user in your final message, in order, under «Rulings I made» and «Deferred minors»: they feed «Decisiones tomadas sin el dev-lead» of the walkthrough.
+Before you delete anything, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" ledger rulings <plan>` and paste its lines into `tasks.md` under `## Rulings` (without `tasks.md`, in the validation's presentation). Every ledger line containing `Ruling:` —pre-flight rulings, parked findings, breaker adjudications, final rulings, all of them— reaches the user in your final message under «Rulings I made», in the order you made them, each with what it costs if wrong, and every `minor (deferred)` line under «Deferred minors». Both lists are exhaustive: if the ledger holds a ruling, the list holds it. Your final message is the only place the decisions you took on the user's behalf — and the findings you chose not to act on — reach them: they read it and rework whatever you got wrong. The lists feed «Decisiones tomadas sin el dev-lead» of the walkthrough. A ruling that dies with the workspace was a decision made in secret.
 
-When the final review is clean and its fixes are committed, delete this plan's workspace; sibling directories belong to other plans. Then go on with step 7 of `sdd-start-feature` (validation).
+When the final review is clean and its fixes are committed, delete this plan's workspace — the git history is the record now. Sibling directories belong to other plans; leave them alone. Then go on with step 7 of `sdd-start-feature` (validation).
 
 ## Red flags — STOP
 
@@ -193,3 +357,132 @@ When the final review is clean and its fixes are committed, delete this plan's w
 | "No Playwright MCP: the visual check stays «no probado»" | Without the MCP there's still a browser: a script with the `playwright` package opens the same screen. |
 | "The constitution says all green in every task, so the brief carries the full gate" | That rule is met with the surfaces each task declares («Verificación»); the full gate runs at the baseline of `sdd-worktrees` and once in the final validation. |
 | "I kill every `node.exe` (or `pkill -f server.mjs`): that surely stops mine" | And the dev-lead's server, their MCPs and the other sessions. Stop what you started by its PID or port. |
+
+## Example workflows
+
+**Native:**
+
+```
+[Setup: sdd-worktrees — already in isolated workspace at <path> on branch feature/0012-hook-install; baseline green]
+[sdd workspace .docs/sdd/specs/<folder>/plan.md — no ledger inside, fresh start]
+
+You: Ahora: implemento el plan en Native. Queda: las tasks, la revisión final y la validación, ~40 min.
+Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
+[Read plan once: .docs/sdd/specs/<folder>/plan.md; spec read; sdd-tdd loaded]
+[Pre-flight scan: 2 shared-interface rows, 4 self-consistency rows, clean; written to ledger]
+[Create todos for all tasks]
+
+Task 1: Hook installation script
+
+[sdd task start plan 1 → brief read; BASE a1b2c3d]
+[Base check: row and task files unchanged in develop]
+[RED test written from the THEN; copy kept outside the repo]
+[Step 2: run it — FAIL: install_hook not defined. Matches Expected.]
+[Step 3: implement — written]
+[Step 4: run it — PASS 1/1. Matches Expected.]
+[Contract: tests ran, output read, no deviations]
+[RED copy unchanged; commit d4e5f6a; HEAD moved]
+[sdd task done plan 1 a1b2c3d -- npm test -- hooks → ledger: Task 1: complete (commits a1b2c3d..d4e5f6a, tests: npm test -- hooks → 1/1 pass)]
+
+Task 2: Recovery modes
+
+[sdd task start plan 2 → brief read; BASE d4e5f6a]
+[Base check: row and task files unchanged in develop]
+[RED test written from the THEN; copy kept outside the repo]
+[Step 2: run the failing test — FAIL, but on an import error: Task 1 exported
+ installHook, brief consumes install_hook]
+[Ruling: brief's consumer name is a typo against Task 1's Produces block;
+ use installHook — Ledger: Task 2: Ruling: install_hook → installHook — matches Task 1 Produces — cost if wrong: one rename]
+[Steps 2-5 as planned; RED copy unchanged; commit b7c8d9e; HEAD moved]
+[sdd task done plan 2 d4e5f6a -- npm test -- recovery → ledger: Task 2: complete (commits d4e5f6a..b7c8d9e, tests: npm test -- recovery → 8/8 pass)]
+
+...
+
+[After the last task's commit: final reviewer in the background, sdd-kit:effort-high + opus, «Revisor final» of encargo-revision.md]
+Reviewer: One Important finding — progress reporting interval hardcoded. Two Minor.
+[Re-grade: Important stands; minors → ledger as deferred]
+[Fix pass: test_progress_interval_configurable RED → extract PROGRESS_INTERVAL → GREEN; suite 12/12; commit]
+[Ledger: Final: fixed hardcoded interval — test_progress_interval_configurable RED→GREEN, suite 12/12]
+[tasks.md: Revisión final + Pasada de fix; sdd ledger rulings → ## Rulings]
+
+Rulings I made:
+- Task 2: install_hook → installHook (brief typo; cost if wrong: one rename)
+
+Deferred minors:
+- README lacks a usage example
+- recovery.js could split verify/repair into two files
+
+[Delete this plan's workspace — the record now lives in git]
+
+Step 7 of sdd-start-feature: validation.
+```
+
+**SDD:**
+
+```
+[Setup: sdd-worktrees — already in isolated workspace; baseline green]
+[sdd workspace .docs/sdd/specs/<folder>/plan.md — no ledger inside, fresh start]
+
+You: Ahora: ejecuto el plan con SDD. Queda: las tasks con su revisión, la revisión final y la validación, ~60 min.
+Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
+[Read plan file once: .docs/sdd/specs/<folder>/plan.md]
+[Create todos for all tasks]
+
+Task 1: Hook installation script
+
+[Base check; RED tests written, uncommitted; sdd task brief plan 1; dispatch implementer with brief + report paths + context]
+
+Implementer: "Before I begin - should the hook be installed at user or system level?"
+
+You: "User level (~/.config/hooks/)"
+
+Implementer: [Later]
+  - Implemented install-hook command
+  - RED tests pass, 5/5
+  - Self-review: Found I missed --force flag, added it
+  - Committed
+
+[sdd review package plan BASE HEAD; dispatch task reviewer with the printed path]
+Task reviewer: Spec ✅ - all requirements met, nothing extra.
+  Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
+
+[Ledger: Task 1: complete (commits a1b2c3d..d4e5f6a, review clean); squash]
+
+Task 2: Recovery modes
+
+[Base check; RED tests written; sdd task brief plan 2; dispatch implementer with brief + report paths + context]
+
+Implementer: [No questions]
+  - Added verify/repair modes
+  - 8/8 tests passing
+  - Committed
+
+[sdd review package plan BASE HEAD; dispatch task reviewer with the printed path]
+Task reviewer: Spec ❌:
+  - Missing: Progress reporting (spec says "report every 100 items")
+  Issues (Important): Magic number (100)
+
+[Fix round 1: resume the implementer with both findings]
+Implementer: Added progress reporting, extracted PROGRESS_INTERVAL constant.
+  Re-ran test/recovery.test.js — 10/10 passing. Fix report appended.
+
+[sdd review package plan FIX_BASE HEAD; dispatch scoped re-review]
+Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
+  Magic number — ADDRESSED (src/recovery.js:7). New breakage: none.
+  Verdict: all findings addressed.
+
+[Ledger: Task 2: fix round 1/5 (2 addressed, 0 open; commits d4e5f6a..b7c8d9e)]
+[Ledger: Task 2: complete (commits d4e5f6a..b7c8d9e, review clean); squash]
+
+...
+
+[After all tasks: final reviewer in the background, sdd-kit:effort-high + opus, «Revisor final» of encargo-revision.md]
+Final reviewer: All requirements met. Deferred minors triaged: none block merge.
+
+[tasks.md: Revisión final; sdd ledger rulings → ## Rulings]
+[Delete this plan's workspace — the record now lives in git]
+
+Step 7 of sdd-start-feature: validation.
+```

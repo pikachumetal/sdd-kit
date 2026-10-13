@@ -1,0 +1,89 @@
+--- [2]
+Ahora: invoco `sdd-implement` para ejecutar el plan de la 0010. Queda: implementar las tasks y la revisión final, hasta la validación.
+
+--- [5]
+Ahora: preparo el workspace y leo spec y plan de la 0010. Queda: implementar las tasks, la revisión final y la validación, ~20 min.
+
+--- [13]
+Base verde (4/4). Preparo el workspace y el ledger, y compruebo que el workspace queda ignorado por git.
+
+--- [16]
+Workspace ignorado por git. Cargo `sdd-tdd`, que gobierna cada task.
+
+--- [23]
+Workspace del plan: `.superpowers/sdd/plan` — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
+--- [27]
+Base sin cambios. Escribo los tests RED de la Task 1 (un THEN y un AND de la spec).
+
+--- [30]
+RED por la razón esperada. Implemento lo mínimo.
+
+--- [35]
+Task 1 completa. Task 2: listado de canceladas.
+
+--- [40]
+La suite falla y el commit salió igualmente; miro el error antes de seguir.
+
+--- [43]
+Mi script Python coló un salto de línea literal. Corrijo el `.join` y rehago ese commit local (sin publicar).
+
+--- [47]
+No tengo herramienta de subagentes (el `Workflow` requiere petición explícita del usuario), así que la revisión final es una autorrevisión del paquete completo, y lo dejo dicho.
+
+--- [50]
+Autorrevisión: el único hallazgo que re-gradúo por efecto es `--motivo` sin valor, que cancela sin dejar motivo (el rastro que pide la feature). Lo corrijo con TDD en una pasada.
+
+--- [54]
+El diff de `src/app.js` es enorme (110 líneas): sospecho de los finales de línea tras el `sed`. Lo compruebo.
+
+--- [57]
+El fichero quedó en LF y el commit lo guarda en CRLF, como el original. Lo devuelvo a CRLF para que el diff sea solo la línea cambiada.
+
+--- [62]
+Borro el workspace del plan (el histórico de git es ya el registro) y ejecuto el smoke real, una fila por THEN.
+
+--- [65]
+Ahora: validación del trabajo. Queda: tu prueba del guion y tu «funciona», ~5 min; con eso cierro con `sdd-end-feature`.
+
+## 🦆 Qué hay
+
+`cancelar` acepta `--motivo` con una lista cerrada (cambio de planes, sala ocupada, otro): con un motivo válido lo guarda con la reserva y lo muestra; con uno inválido responde con la lista. Hay un comando nuevo, `canceladas`, que lista las reservas canceladas con su motivo.
+
+Son 3 commits en `feature/0010-cancel-reason`: `6798a8d` (Task 1), `60718d2` (Task 2) y `aeafc6b` (fix de la revisión final). La suite completa pasa 8/8 en ~0,15 s.
+
+## ✋ Me salí del plan en…
+
+- **`--motivo` sin valor**: lo encontró mi autorrevisión. Cancelaba sin dejar motivo, así que lo rechazo igual que un motivo fuera de la lista (test RED→GREEN, `aeafc6b`). No está en la spec; es un fix mío y entra en la revisión.
+- **Revisión final**: no tengo herramienta de subagentes, así que fue una autorrevisión del autor, más débil que un revisor con contexto fresco. Tú decides si basta antes del merge.
+
+## Smoke (una fila por THEN)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) + suite | ✅ |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (CLI) + suite | ✅ |
+| `canceladas` → «Norte lun — sala ocupada» | suite + ejecución real **en el mismo proceso**; **no probado** como dos invocaciones de CLI | ⚠️ |
+
+El ⚠️ es una limitación que ya existía. Las reservas viven en memoria del proceso, así que `node src/app.js cancelar …` seguido de `node src/app.js canceladas` en otro proceso devuelve una línea vacía. La spec no pide persistencia y no la añadí. Si esperabas poder encadenarlos desde la terminal, es una decisión tuya y daría una feature aparte.
+
+## Guion de pruebas (para ti)
+
+No hay nada que arrancar: es una CLI sin servidor.
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun --motivo` → el mismo mensaje de motivo no válido
+4. `node src/app.js cancelar Norte lun` → `cancelada Norte lun` (ruling 1: se conserva)
+5. `node --test` → 8 tests pasan. Los pasos 1 a 4 son procesos separados, así que el listado solo se ve aquí: `canceladas enseña el motivo de cada cancelación`.
+
+## Rulings que tomé
+
+- **Cancelar sin `--motivo`**: conserva `cancelada Norte lun`. La spec solo añade el caso con motivo y cambiarlo habría cambiado una salida existente. Coste si me equivoco: un `if` y un test a invertir. Es la decisión de producto que más te toca revisar: «cancelar pide un motivo» podría significar obligarlo.
+- **`canceladas` sin motivo**: lista `Norte lun` sin guion, y solo estado `cancelled`; las anuladas (0011) quedan fuera. Coste: una línea de formato.
+- **Tests con estado limpio**: usan `import('../src/app.js?<n>')` en vez de añadir un reset a `src/`. Coste: un helper de test.
+
+**Deferred minors**: ninguno abierto. El único que anoté lo corregí en la pasada de fix.
+
+Estado: EN ESPERA de tu validación. Dime qué has probado y que funciona (o difiere la prueba con un disparador). Los borradores de cierre (walkthrough, merge en `capabilities/`, changelog) los escribe `sdd-end-feature` tras tu «validado». No toqué el roadmap.
+

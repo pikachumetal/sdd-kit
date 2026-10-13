@@ -24,7 +24,7 @@ g checkout -q -b develop
 
 case "$SC" in
   s1) g checkout -q -b feature/0013-export-by-room ;;
-  s2) g checkout -q -b feature/0012-ics-export ;;
+  s2|w1) g checkout -q -b feature/0012-ics-export ;;
 esac
 
 # La skill no existe en el kit del RED: la petición de una parada la nombra solo fuera de él.
