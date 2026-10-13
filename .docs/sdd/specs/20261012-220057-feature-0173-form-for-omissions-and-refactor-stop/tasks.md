@@ -17,7 +17,7 @@ created: 2026-10-13
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | `o1` y la fila del Art. II | done | — | la fila no entra: RED `o1` limpio con la regla leída (enmienda 2026-10-13); `o1` queda como control |
-| 2 | `o2` y la regla de parada | pending | — | |
+| 2 | `o2` y la regla de parada | done | — | la regla no entra: RED `o2` limpio 2/2 (enmienda 2026-10-13); `o2` queda como control |
 
 ## Verificación por task
 

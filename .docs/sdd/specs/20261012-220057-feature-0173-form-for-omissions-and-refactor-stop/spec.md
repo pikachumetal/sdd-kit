@@ -15,7 +15,7 @@ approvers:
 
 # Spec — Art. II: la forma para un elemento omitido y cuándo parar el REFACTOR de una skill
 
-🦆 Cuando un humo de skill falla porque el agente se deja un dato (la ruta del worktree, la ruta de la nota), quien arregla la skill hoy añade una frase recordándolo, y si vuelve a fallar, añade otra. Con esta feature, `tech-stack.md` dice que una ronda que da 0/N no se repite igual: la siguiente cambia de forma o para y propone enmendar el THEN. La fila del Art. II que pedía un hueco en la plantilla no entra: con el Art. II de hoy leído, los sujetos ya escriben la plantilla, y los que fallan son los que no lo leen. Se prueba con sujetos en un molde de kit, antes y después de escribir la regla.
+🦆 Cuando un humo de skill falla porque el agente se deja un dato (la ruta del worktree, la ruta de la nota), quien arregla la skill hoy añade una frase recordándolo, y si vuelve a fallar, añade otra. Esta feature midió las dos reglas que lo evitarían (una fila del Art. II para pedir un hueco en la plantilla y una regla de parada tras una ronda 0/N) y no entra ninguna: con el Art. II de hoy leído, los sujetos ya escriben la plantilla, también en la segunda ronda, y los que fallan son los que no lo leen. Quedan dos escenarios de control en la batería de `sdd-implement`.
 
 ## Capacidades
 
@@ -52,8 +52,8 @@ En la 0166, el humo `w1` falló porque `sdd-worktrees` no decía la ruta del wor
 
 ## Scope
 
-- Entra: la regla de parada en `tech-stack.md` y su ADR 0014; el adelgazamiento de la entrada del techo de coste; los escenarios `o1` (control) y `o2` con sus fixtures.
-- No entra: la fila del Art. II y la subida del tope de la constitution (enmienda 2026-10-13); cambiar `sdd-worktrees` ni el THEN de `w1`; las skills que los proyectos usan para probar sus skills (es la 0151); los micro-tests de redacción.
+- Entra: los escenarios `o1` y `o2` con sus fixtures, como control (enmiendas 2026-10-13).
+- No entra: la fila del Art. II, la subida del tope de la constitution, la regla de parada, la ADR 0014 y el recorte del techo de coste (enmiendas 2026-10-13); cambiar `sdd-worktrees` ni el THEN de `w1`; las skills que los proyectos usan para probar sus skills (es la 0151); los micro-tests de redacción.
 
 ## Approach
 
@@ -88,6 +88,7 @@ Sin delta: ninguna capacidad describe el método de prueba de las skills del kit
 
 ## Enmiendas
 
+- 2026-10-13 — La regla de parada no entra, ni la ADR 0014, ni el recorte de la entrada del techo de coste, que solo compensaba sus palabras; `o2` queda como control — RED `o2` 2/2 limpio: los dos leyeron el Art. II vigente, clasificaron el fallo como «de forma» y cambiaron la prosa de la ronda 1 por una plantilla — aprobada: Approach de la spec («cada regla entra solo si su RED falla (Art. I)») · Task 2
 - 2026-10-13 — La fila del Art. II no entra, ni la subida del tope de la constitution, ni esa parte de la ADR 0014; `o1` queda como control — RED `o1` en 4 sujetos: los 2 que leyeron el Art. II vigente escribieron una plantilla con hueco («fallo de forma → receta»), los 2 que no lo leyeron escribieron prosa; el fallo es no leer la regla, no que le falte la fila — aprobada: «1» (dev-lead, 2026-10-12: si `o1` sale limpio, la fila no entra) · Task 1
 
 ## Aprobaciones
