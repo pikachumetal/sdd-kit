@@ -140,13 +140,13 @@ created: 2026-10-13
 - `cli/src/roadmap/warnings.ts`: sin `destinationWarning`; solo el aviso del prefijo de cierre (Task 3).
 - `cli/src/roadmap/verbs.ts`: el `summary` de `roadmap check` (Task 3).
 - `cli/test/roadmap/check.test.ts` y `root-roadmap.test.ts`: los avisos del «Destino» y los fixtures de `ROADMAP.md` en forma 2.x (Task 3).
-- `skills/sdd-templates/templates/kit-feedback-template.md` (hueco «Fuente») y `launch-prompt-template.md` (la línea del carril) (Task 2).
+- `skills/sdd-templates/templates/kit-feedback-template.md` (hueco «Fuente») (Task 2). `launch-prompt-template.md` no cambia: la regla del brief salió por el RED (enmienda del 2026-10-13).
 - `skills/sdd-templates/SKILL.md`: el índice y la fila de `sdd roadmap check` (Task 2).
 - `skills/sdd-roadmap/SKILL.md` (Task 4) y `skills/sdd-feedback/SKILL.md` (Task 5), reescritas.
 - `skills/sdd-start-feature/references/control-profiles.md`, líneas 17 y 75 (Task 4).
 - `skills/using-sdd/SKILL.md`, solo si el RED de r7 no entra por `sdd-roadmap` (Task 4).
 - `tests/batteries/sdd-roadmap/battery.md` y `subject.sh`, y `tests/batteries/using-sdd/battery.md` (Task 1).
-- Los Pester: `AnchorTemplates`, `Skills`, `KitFeedback` y `LaunchPrompt` (Task 2); `RoadmapStructure` (Task 3); `PlanEntry`, `TaskIds`, `MigrationInitParity`, `FeatureRename`, `ReleaseFlow`, `RoadmapClosing`, `SingleEntry` y `WordBudget` (Task 4); `KitFeedback` (Task 5).
+- Los Pester: `AnchorTemplates`, `Skills` y `KitFeedback` (Task 2); `RoadmapStructure` (Task 3); `PlanEntry`, `TaskIds`, `MigrationInitParity`, `FeatureRename`, `ReleaseFlow`, `RoadmapClosing`, `SingleEntry` y `WordBudget` (Task 4); `KitFeedback` (Task 5).
 
 **NO se tocan**:
 
@@ -259,7 +259,6 @@ Cada una sale con 0, y el molde montado de cada escenario tiene lo que su GIVEN 
 **Tests RED**: hilo principal, sin commitear, uno por fichero:
 - `tests/AnchorTemplates.Tests.ps1`: `now-next-later-template.md` → `ROADMAP.md` en la raíz, `debt-template.md` → `.docs/sdd/steering/debt.md`, y `roadmap-template.md` marcada «2.x: la retira la 0157»;
 - `tests/KitFeedback.Tests.ps1`: la plantilla tiene `- **Fuente**:` justo bajo la línea de «Qué pasó»;
-- `tests/LaunchPrompt.Tests.ps1`: la ayuda del carril nombra `**Carril:**` del brief.
 
 **Superficies**: docs (plantillas) y tooling (Pester)
 **Verificación**: `moon run kit:test-fast`
@@ -284,7 +283,6 @@ Cada una sale con 0, y el molde montado de cada escenario tiene lo que su GIVEN 
   - la ayuda da también la cota (caducidad de «En espera» y salida de «Descartadas» tras dos releases `X.Y.0`), las reglas de «Lista» (nada sin «Evidencia» ni «Destino») y la «Fecha» (la entrada en el estado, que se conserva);
   - las cuatro tablas van vacías, con su fila de ejemplo dentro de la ayuda.
 - `kit-feedback-template.md`, bajo «Qué pasó»: `- **Fuente**: <de dónde sale cada versión, cifra o cita de «Qué pasó»: un fichero o metadato del kit con su línea, o un comando con su salida — «`.docs/sdd/sdd-kit.json:3` → `"version": "2.3.3"`», «`claude plugin list` → `superpowers@7.0.0`»; un fichero del proyecto, con un descriptor genérico>`.
-- `launch-prompt-template.md`, la ayuda del carril: «El del brief de la fila (`**Carril:**`), o el de la fila 2.x («Patch:» → patch), o el que pasó `sdd-explore`; sin ninguno, el que ves al leer la fila.», y el resto de la frase igual.
 - `skills/sdd-templates/SKILL.md`:
   - dos filas en el índice;
   - `roadmap-template.md` → `.docs/sdd/roadmap.md`, «**2.x: la retira la 0157.**»;
@@ -416,9 +414,9 @@ Cada una sale con 0, y el molde montado de cada escenario tiene lo que su GIVEN 
   | «Algo concreto»: fila en «Próximo» o «Backlog»; un patch con «Patch:» | 3.0.0: Now, Next o Later, con brief y tamaño; el patch, en Now con «Carril: patch». 2.x: la tabla de equivalencias |
   | «Algo grande» y «Reordenar»: «`proposal: <id>`» y «tras NNNN» en «Ítem» | 3.0.0: el `**Requisitos:**` del brief, la columna «Tras» y el orden; la propuesta, en `changes/`. 2.x: la tabla |
   | «Preparar una release», paso 6: `## Release <N>` con «Ficheros que toca» | 3.0.0: el título de Now, el orden de las filas y el «Toca:» de cada brief. 2.x: la tabla |
-  | «Dar el prompt de una fila» | Además, el brief es la fuente de cada línea; una fila de Later no da prompt |
+  | «Dar el prompt de una fila» | Sin la regla del brief, que salió por el RED (m4 queda de control); una fila de Later no da prompt |
   | Red flag: sección que no está en `roadmap-template.md` | «… que no está en la plantilla de su forma» |
-  | — | Entrada nueva «Triage», con su red flag: «vas a proponer en Lista un ítem sin evidencia, o con un dato que no has contrastado» |
+  | — | Entrada nueva «Triage», con su red flag: «vas a proponer en Lista un ítem sin reproducirlo o sin su evidencia» |
   | `description` | En inglés, con «triage» |
 
   El resto de pasos, entradas, red flags y racionalizaciones se traduce sin cambiar la regla.
@@ -512,7 +510,7 @@ Cada una sale con 0, y el molde montado de cada escenario tiene lo que su GIVEN 
 - `planning` ADDED de la fila nueva → Task 4, m5. ✓
 - `planning` ADDED del triaje → Task 4, m3. ✓
 - `planning` ADDED de la forma 2.x → Task 4, m6. ✓
-- `planning` MODIFIED «Dame el prompt…» → Task 4, m4 (brief) y m1 (2.x). ✓
+- `planning` «Dame el prompt…»: el AND del brief salió por el RED (enmienda del 2026-10-13) → m4 y m1 de control en la Task 4. ✓
 - `planning` MODIFIED «Algo grande», «Una reunión», «Un cambio de definición», «Reordenar», «Preparar una release», «Solo escribe en las secciones…» y «Un patch pendiente» → Task 4, tabla de equivalencias y Pester de forma; sin escenario propio, con su motivo en la decisión 21 de la spec. ✓
 - `kit-feedback` MODIFIED → Tasks 2 y 5, fb1. ✓
 - `control-profiles`, los dos MODIFIED → Task 4 (`control-profiles.md`, líneas 17 y 75) y Task 3 (la línea `Perfil de control:` que admite el check). ✓

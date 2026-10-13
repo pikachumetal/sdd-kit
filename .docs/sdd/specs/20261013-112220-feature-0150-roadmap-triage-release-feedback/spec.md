@@ -21,7 +21,7 @@ approvers:
 ## Capacidades
 
 - Modificadas: `roadmap` — `ROADMAP.md` con Now, Next y Later y sus reglas; `debt.md` con una sección por estado, evidencia en «Lista» y caducidad; el roadmap 2.x deja de avisar del «Destino»; los ficheros que toca una feature van en el «Toca:» de su brief.
-- Modificadas: `planning` — `sdd-roadmap` escribe la forma nueva, o la 2.x con equivalencias; prepara la release en el título de Now; da el prompt desde el brief; tría la deuda contrastando los datos con su fuente.
+- Modificadas: `planning` — `sdd-roadmap` escribe la forma nueva, o la 2.x con equivalencias; prepara la release en el título de Now; tría la deuda: nada pasa a «Lista» sin reproducirse y con su «Evidencia», y lo que caduca se propone en «Descartadas».
 - Modificadas: `kit-feedback` — cada versión, cifra o cita de «Qué pasó» lleva su fuente.
 - Modificadas: `control-profiles` — el freno de alcance lee el «Toca:» del brief, y el perfil de la release va bajo `## Now`.
 - Modificadas: `routing` — triar la deuda entra por `sdd-roadmap`.
@@ -57,13 +57,13 @@ Review de spec propuesta: dos revisores — señales: contrato público (la form
 10. **`debt.md` se valida si existe, en cualquier proyecto**: también junto a un roadmap 2.x. Un fallo de `debt.md` hace salir con 1, como uno del roadmap.
 11. **La entrada «Triar» de `sdd-roadmap`**:
     - La disparan «tria el ticket», «triaje de la deuda» o las filas de «Por triar».
-    - Contrasta cada versión, cifra o cita del ítem con el fichero o el comando que cita (spec, walkthrough, `CHANGELOG.md`, `sdd-kit.json`). Si no cita ninguno, la contrasta con el proyecto.
+    - ~~Contrasta cada versión, cifra o cita del ítem con su fuente~~: sale por el RED (enmienda del 2026-10-13). m3 y m3b salieron 2/2 limpios: con el `CHANGELOG.md` a la vista y con el dato que solo desmiente el walkthrough citado, los sujetos abren la fuente y lo dicen. m3 y m3b quedan como control.
     - Un dato que no casa se dice con su fuente. Ese ítem no se propone en «Lista» con ese dato: se corrige, si la fuente da el valor y el fallo se reproduce, o va a «En espera» con «Falta» `reproducirlo`.
     - Origen y Fecha: el enlace al ticket y el día en que la fila entra en su estado. Una fila que sigue en su estado conserva su «Fecha», para que la caducidad no se reinicie al volver a triarla (review de dominio).
     - El 2.º caso de una fila descartada entra en «Por triar» como fila nueva, con los dos orígenes. `**Salda:**` de un brief solo nombra filas de «Lista». En `unattended`, lo que no puede decidir se queda en «Por triar», y el resto se registra en el commit.
     - Con `ROADMAP.md` y sin `debt.md`, el triaje crea `debt.md` calcando `debt-template.md`.
 12. **En 2.x el triaje no deja nada «por triar»**: cada ítem sale con su «Destino». La 2.x no tiene esa sección, y el check 2.x ya no avisa de un «Destino» vacío.
-13. **Prompt desde el brief**: en `launch-prompt-template.md` cambia una línea: el carril sale del «Carril:» del brief, o de la fila 2.x («Patch:» → patch).
+13. **Prompt desde el brief**: sale por el RED (enmienda del 2026-10-13). m4 salió 2/2 limpio con el kit de antes: el brief está en la fila y el sujeto lo usa. No se escribe guía, `launch-prompt-template.md` no cambia, y m4 queda en la batería como control.
 14. **`using-sdd`**: la fila de planificar gana «triar la deuda o un ticket» solo si el RED del escenario de triaje no entra por `sdd-roadmap` (Art. I: sin fallo no se escribe).
 15. **`sdd-feedback`**:
     - Hueco en `kit-feedback-template.md`, debajo de «Qué pasó»: `- **Fuente**: <fichero:línea o comando de cada versión, cifra o cita de «Qué pasó»: «`.docs/sdd/sdd-kit.json:3` → `"version": "2.3.3"`»>`.
@@ -79,13 +79,14 @@ Review de spec propuesta: dos revisores — señales: contrato público (la form
 19. **No declaro MODIFIED los requisitos que la 3.0.0 no contradice**, como hizo la 0144 (decisión 17): los de `roadmap` con mensajes `roadmap.md:` (forma 2.x), y los de `planning` de los items del gestor y «algo concreto es una fila». Sí declaro los que dicen una sección, una celda o una columna que en `ROADMAP.md` no existe.
 20. **Lo que sale de la deuda**:
     - Se salda la fila del ticket del patch 0164 (los avisos de «Destino»). Su re-destino de las filas «Patch, versión siguiente» no se hace (respuesta «1»): la 0157 las migra a «Por triar».
-    - Se salda la del ticket de la 0165 §1 (la «7.1.0»).
+    - La del ticket de la 0165 §1 (la «7.1.0») se salda en parte: entra la fuente de cada dato del ticket (fb1 falla en el RED); el contraste del triaje queda en «Esperar 2.º ticket», porque m3 y m3b salieron limpios.
 21. **Previsión de coste** (Art. I), sujetos Sonnet headless:
 
     | Paso nuevo o cambiado | Escenario | RED | GREEN |
     | --- | --- | --- | --- |
-    | roadmap: triar contrasta los datos, no propone «Lista» sin evidencia, propone y espera | `m3` (molde `salas-3`, «Tria lo que hay por triar en la deuda.») | 2 | 2 |
-    | roadmap: el prompt sale del brief | `m4` (`salas-3`, «dame el prompt de la 0013») | 2 | 2 |
+    | roadmap: triar no propone «Lista» sin reproducir ni sin «Evidencia», propone lo que caduca en «Descartadas», propone y espera | `m3` (molde `salas-3`, «Tria lo que hay por triar en la deuda.») | 2 | 2 |
+    | roadmap: control del contraste con la fuente citada (la regla salió por el RED) | `m3b` (molde `salas-3-wt`, «Tria lo que hay por triar en la deuda.») | 2 | 2 |
+    | roadmap: control del prompt desde el brief (la regla salió por el RED) | `m4` (`salas-3`, «dame el prompt de la 0013») | 2 | 2 |
     | roadmap: «apunta» escribe la fila en Next con brief y tamaño, y el check en verde | `m5` (`salas-3`, «Apunta en el roadmap: exportar las reservas a CSV. No la arranques.») | 2 | 2 |
     | roadmap: en 2.x, el triaje escribe «Deuda técnica» con su «Destino» | `m6` (`salas`, «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.») | — | 2 |
     | roadmap: control de lo traducido | `m1`, `m2` | — | 4 |
@@ -118,7 +119,6 @@ Review de spec propuesta: dos revisores — señales: contrato público (la form
     - los MODIFIED buscados fuera de la spec están en el Scope:
       - el freno de alcance, en `control-profiles.md`, línea 75;
       - la cabecera de release, en `tables.ts`, y el aviso, en `warnings.ts`;
-      - el carril del prompt, en `launch-prompt-template.md`;
       - el índice, en `sdd-templates/SKILL.md`;
       - los Pester que leen las dos skills;
     - quedan fuera, con dueño:
@@ -196,7 +196,7 @@ La 3.0.0 separa el plan (`ROADMAP.md`: Now, Next y Later, en orden de prioridad,
 
 ## Scope
 
-- Entra: `now-next-later-template.md` y `debt-template.md` (nuevas); `kit-feedback-template.md` (hueco «Fuente»); `launch-prompt-template.md` (línea del carril); el índice de `skills/sdd-templates/SKILL.md`.
+- Entra: `now-next-later-template.md` y `debt-template.md` (nuevas); `kit-feedback-template.md` (hueco «Fuente»); el índice de `skills/sdd-templates/SKILL.md`.
 - Entra: `sdd roadmap check`:
   - reglas 3.0.0 para `ROADMAP.md`;
   - validación de `steering/debt.md` y su caducidad;
@@ -227,7 +227,7 @@ Las dos plantillas nuevas son la única fuente de su forma (Art. VIII). El check
 ## Dónde se prueba
 
 - Reglas de `ROADMAP.md` y `debt.md`, caducidad, y el roadmap 2.x sin aviso de «Destino»: Vitest de `sdd roadmap check` en `cli/test/roadmap/`, como los de hoy, con fixtures en línea y las dos plantillas calcadas.
-- Triaje, fila nueva, prompt desde el brief y forma 2.x: sujetos headless de la batería `sdd-roadmap` (m3 a m6, y m1 y m2 de control), como en la 0161.
+- Triaje, fila nueva y forma 2.x, y el prompt desde el brief como control: sujetos headless de la batería `sdd-roadmap` (m3 a m6, y m1 y m2 de control), como en la 0161.
 - La fuente de los datos del ticket: humo fb1 de `sdd-feedback`, sujeto headless.
 - Enrutado: r7 y la batería entera de `using-sdd`.
 - Plantillas, índice, nombres y la frase del freno de alcance: Pester, como `AnchorTemplates.Tests.ps1`.
@@ -250,9 +250,9 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 | «Algo concreto»: fila en «Próximo» o «Backlog»; un patch con «Patch:» | En 3.0.0, Now, Next o Later con brief y tamaño, y el patch en Now con «Carril: patch»; en 2.x, la tabla de equivalencias | m5, m6 |
 | «Algo grande» y «Reordenar»: «`proposal: <id>`» y «tras NNNN» en la celda «Ítem», sin columna | En 3.0.0, el «Requisitos:» del brief y la columna «Tras», y el orden de las filas es la prioridad; en 2.x, la tabla | Sin escenario: el check exige el brief y que «Tras» exista |
 | «Preparar una release», paso 6: `## Release <N>` con «Ficheros que toca» | En 3.0.0, el título de Now, el orden de las filas y el «Toca:» de cada brief; en 2.x, la tabla | Sin escenario: el título lo valida el check del paso 5 |
-| «Dar el prompt de una fila»: la fila y la propuesta | Además, el brief es la fuente de cada línea | m4 |
+| «Dar el prompt de una fila»: la fila y la propuesta | Sin cambio: sale por el RED la regla del brief (m4, 2/2 limpio) | m4, de control |
 | Red flag: «abrir una sección que no está en `roadmap-template.md`» | «… que no está en la plantilla de su forma» | m6 |
-| — | Entrada nueva «Triar», con su red flag («vas a proponer en Lista un ítem sin evidencia, o con un dato que no has contrastado») | m3, m6 |
+| — | Entrada nueva «Triar», con su red flag («vas a proponer en Lista un ítem sin reproducirlo o sin su evidencia») | m3, m6 |
 | `description` | En inglés, con «triage» | batería `using-sdd`, r7 |
 | `sdd-feedback`: checklist y reglas | Traducidos sin cambio | fb1 |
 | — | `sdd-feedback`: un dato de «Qué pasó» sale de un fichero o un comando citado en «Fuente» | fb1 |
@@ -347,10 +347,10 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 - AND lo que aún no se ha decidido hacer va a Later con su `B<n>`, con el brief opcional
 - AND subir una fila de Later a Next le reserva un id y le escribe el brief y el tamaño; con «dame el prompt de la B3», `sdd-roadmap` no da prompt: dice que la B3 está en Later y que subirla a Next le reserva un id y le escribe su brief
 
-**ADDED — El triaje contrasta los datos del ticket y propone el estado de cada ítem**
+**ADDED — El triaje propone el estado de cada ítem de la deuda**
 - GIVEN el molde `salas-3`, con `ROADMAP.md`; un `CHANGELOG.md` con `## [1.4.1] - 2026-10-05` y `## [1.4.0] - 2026-09-01`; en «Por triar» de `debt.md`, dos filas del informe de QA `docs/qa/2026-10-12-informe.md`: «La exportación a CSV pierde las tildes desde la 1.4.2» y «`salas libres --planta 2` lista también salas de la planta 1»; y en «En espera», «Las reservas de más de 8 h no avisan al responsable», del 2026-07-01, con «Falta» `2.º caso`, con `## [1.3.0] - 2026-07-20` también en el changelog. En el molde, la exportación conserva las tildes y `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`
 - WHEN el usuario pide «Tria lo que hay por triar en la deuda.»
-- THEN `sdd-roadmap` dice que la 1.4.2 no existe, con su fuente («la última versión de `CHANGELOG.md` es la 1.4.1»), y no propone la fila del CSV en «Lista»: como no se reproduce, la propone en «En espera» con «Falta» `reproducirlo`
+- THEN `sdd-roadmap` no propone la fila del CSV en «Lista»: como no se reproduce, la propone en «En espera» con «Falta» `reproducirlo`
 - AND propone la fila de la planta en «Lista», con «Evidencia» `node src/app.js libres --planta 2` → `Norte (planta 1)` y un «Destino» no vacío: el id de una fila de Now o Next, nueva o existente, o `sin fila`
 - AND propone la fila de las 8 h, que `roadmap check` avisa que caduca, en «Descartadas» con el «Motivo» `caducada`; toda fila descartada lleva su motivo
 - AND en `pair` y `delegate` no escribe en `debt.md` ni en `ROADMAP.md` hasta que el usuario decide, como en el resto de entradas; con la decisión, o con «decide tú», mueve cada fila que cambia de estado a la tabla de ese estado, con la «Fecha» del día, y deja lo decidido en el cuerpo del commit; una fila que sigue en su estado conserva su «Fecha»
@@ -359,10 +359,10 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 - AND con `ROADMAP.md` y sin `debt.md`, el triaje crea `debt.md` calcando `debt-template.md`
 
 **ADDED — Sin `ROADMAP.md`, `sdd-roadmap` escribe la forma 2.x**
-- GIVEN el molde `salas`, con `.docs/sdd/roadmap.md` 2.x, sin `ROADMAP.md`, con un changelog cuya última versión es la 1.4.1 y el informe de QA de «El triaje contrasta los datos del ticket…»
+- GIVEN el molde `salas`, con `.docs/sdd/roadmap.md` 2.x, sin `ROADMAP.md`, con un changelog cuya última versión es la 1.4.1 y el informe de QA de «El triaje propone el estado de cada ítem de la deuda»
 - WHEN el usuario pide «Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú.»
 - THEN cada ítem es una fila de «Deuda técnica» cuyo «Destino» empieza por `**Actuar**` (lo que iría a «Lista»), `**Esperar 2.º ticket**` (a «En espera», con lo que falta) o `**Descartada**` (con su motivo), y ninguna queda sin «Destino»
-- AND la fila del CSV dice que la 1.4.2 no existe y va a `**Esperar 2.º ticket**` con «falta reproducirlo»; la de la planta va a `**Actuar**`, con el comando que la reproduce
+- AND la fila del CSV va a `**Esperar 2.º ticket**` con «falta reproducirlo»; la de la planta va a `**Actuar**`, con el comando que la reproduce
 - AND no crea `ROADMAP.md` ni `debt.md`
 
 **MODIFIED — Algo grande acaba en una propuesta y en filas, no en una spec** (antes: «`proposal: 0014`» y «tras NNNN» en todas las formas)
@@ -412,20 +412,10 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 - THEN en un roadmap 2.x es una fila de «Próximo» con su id reservado y «Patch:» al inicio del ítem, no una fila de «Patches», que registra los cerrados
 - AND en `ROADMAP.md` es una fila de Now con su id reservado y `**Carril:** patch` en su brief
 
-**MODIFIED — Dame el prompt de una fila da su prompt de arranque** (antes: sin brief)
-- GIVEN el molde `salas` con la fila pendiente 0013 «Aviso semanal a los responsables», `proposal: 0010`, `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
-- WHEN el usuario escribe «dame el prompt de la 0013»
-- THEN `sdd-roadmap` da el prompt de arranque en la forma de `launch-prompt-template.md`: el título «0013 — Aviso semanal a los responsables»; `Base: develop`; la rama `feature/0013-<slug en inglés>` sola en su bloque; el carril; y el prompt, que arranca la 0013 con `sdd-propose`, con los requisitos en la propuesta 0010 y la fila, las decisiones de la propuesta y sus enmiendas que tocan a la 0013, las filas que salda o «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
-- AND no escribe en el roadmap ni en la propuesta, no reserva id, no publica ni commitea, y no arranca la feature
-- AND si la fila está cerrada (✅, 🧪) o en marcha (🔄 o rama `feature/0013-*` abierta), lo dice en vez de dar el prompt
-- AND en el molde `salas-3`, cuya fila 0013 de `ROADMAP.md` lleva el brief `**Carril:** feature`, `**Requisitos:**` la propuesta 0010 con §Reglas de negocio y §Enmiendas, `**Decisiones ya tomadas:**` «el aviso sale los lunes a las 8:00» y `**Salda:**` nada, el carril, los requisitos, las decisiones y «Nada que saldar» del prompt salen de ese brief
-
 **Reglas de la capacidad**
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
 - **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`).
 - **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» (2.x: `Actuar`) sin reproducirse o sin un 2.º caso.
-- **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve. Un dato de un ticket que no casa con la fuente que cita se dice, con esa fuente, antes de proponer su fila.
-- **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva. Entre un ticket y la fuente que cita, manda la fuente.
 
 ### Capacidad: `kit-feedback`
 
@@ -483,7 +473,10 @@ Traducir es editar (Art. I): lo que se traduce sin cambio lo controlan m1, m2 y 
 
 ## Enmiendas
 
-- 2026-10-13 — el comando del molde en «El triaje contrasta los datos del ticket…» es `node src/app.js`, no `node src/cli.js`: el molde `salas` arranca por `src/app.js` — corrección de un literal del fixture al escribir el plan, sin cambio de conducta — sin aprobar: no se pidió, por ser la ruta del fichero de entrada del molde; se cuenta en el cierre
+- 2026-10-13 — sale la regla del contraste del triaje (el THEN «dice que la 1.4.2 no existe, con su fuente», el aviso y la regla ante conflicto de `planning` y la viñeta de la decisión 11): m3b salió 2/2 limpio, como m3, y la fila de la 0165 §1 se salda solo en su parte de `sdd-feedback` (Task 1) — aprobada: «Otra tanda con un caso de campo (Recomendada)», que decía «si sale limpio, sale con su THEN»
+- 2026-10-13 — entra el escenario m3b (molde `salas-3-wt`): el ticket da «40 s con 1.000 reservas» citando el walkthrough de la 0012, que mide 4 s; la regla del contraste del triaje se decide por su RED — m3 salió limpio en el contraste porque el `CHANGELOG.md` estaba a la vista, y el fallo de campo fue con un dato que había que buscar en la fuente citada (Task 1) — aprobada: «Otra tanda con un caso de campo (Recomendada)»
+- 2026-10-13 — sale el AND del brief de «Dame el prompt de una fila da su prompt de arranque» (el requisito vuelve a su texto vigente) y el cambio de `launch-prompt-template.md` (decisión 13): m4 salió 2/2 limpio con el kit de antes; m4 queda en la batería como control (Task 1) — aprobada: «Sale (Recomendada)»
+- 2026-10-13 — el comando del molde en «El triaje propone el estado de cada ítem de la deuda» es `node src/app.js`, no `node src/cli.js`: el molde `salas` arranca por `src/app.js` — corrección de un literal del fixture al escribir el plan, sin cambio de conducta — sin aprobar: no se pidió, por ser la ruta del fichero de entrada del molde; se cuenta en el cierre
 
 ## Aprobaciones
 
