@@ -25,7 +25,7 @@ With `ROADMAP.md` at the root, the project is on the **3.0.0 form**: Now, Next a
 | The `**Requisitos:**` of the brief (the proposal's path) | «`proposal: <id>`» in the «Ítem» cell |
 | A patch in Now, with `**Carril:** patch` | «Próximo», with «Patch:» at the start of the item |
 | Preparing a release | `## Release <N>` with «Ficheros que toca» |
-| Lista | `**Actuar**` in the «Destino» of «Deuda técnica» |
+| Lista | A «Deuda técnica» row with `**Actuar**: <id of its «Próximo» row>` (or `sin fila`) in «Destino»; the «Próximo» row never replaces the debt row (`tests/sdd-roadmap-0150-green.md`, m6) |
 | En espera | `**Esperar 2.º ticket**`, with what is missing |
 | Descartada | `**Descartada**`, with its reason |
 | Por triar | does not exist: triage decides one of the three |
