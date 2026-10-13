@@ -49,7 +49,7 @@ case "$SC" in
     cp "$FIX/package-w1.json" "$R/package.json"; mkdir -p "$R/scripts"; cp "$FIX/env-setup.mjs" "$R/scripts/env-setup.mjs"
     cp "$FIX/environments-w1.md" "$R/.docs/sdd/environments.md"; cp "$FIX/tech-stack-w1.md" "$R/.docs/sdd/tech-stack.md" ;;
   k1) cp "$FIX/app-0018.js" "$R/src/app.js"; cp "$FIX/readme-0018.md" "$R/README.md"; cp "$FIX/readme.test.js" "$R/test/readme.test.js" ;;
-  # La base no responde con la ruta: el paso 3 es lo que añade la Task 1 de la 0020.
+  # La base no responde con la ruta: el paso 3 llega sin commitear, como trabajo en curso.
   o1|o2) sed -i '/^3\. Tell the user the path you wrote\./d' "$R/skills/guardar-nota/SKILL.md"; form_rules ;;
 esac
 g init -q -b main

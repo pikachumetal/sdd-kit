@@ -1,8 +1,7 @@
 # SDD ledger — plan: .docs/sdd/specs/20261013-100000-feature-0020-path-reply/plan.md
 
-Task 1: started (base 311317b)
-Task 1: smoke h1 FAIL — subject wrote notas/reunion-martes.md and replied «Nota guardada.» without the path (green/h1.txt)
-Task 1: Ruling: REFACTOR round 1 — failure class is form (complies, wrong output shape), Art. III → output contract/recipe, not emphasis or rewording of «tell the user the path» — covers the spec's single THEN, adds no THEN/AND — if wrong, h1 fails again
-Task 1: h1 run after round 1 — reply «Guardada en C:\...\notas\reunion-martes.md» + extra paragraph: absolute path, not the relative one of the THEN; cause: my wording «path you passed to the write» (the write tool takes absolute paths)
-Task 1: Ruling: REFACTOR round 2 — contract names the project-relative path of step 2 and one line only — same form (contract), no new THEN — if wrong, h1 fails again
-Task 1: complete (commits 311317b..227fe60, tests: grep -q 'Veredicto: PASA' .docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/h1.txt → (sin salida))
+Pre-flight: una task, un fichero (`skills/guardar-nota/SKILL.md`); sin pares de tasks, sin hallazgos. Sin RED en fichero: el RED es el humo `h1`.
+Task 1: humo h1 FALLA (green/h1.txt): responde «Nota guardada.» sin ruta; el paso 3 en prosa («Tell the user the path») no bastó.
+Task 1: Ruling: fallo de clase «elemento omitido» (Art. III) — REFACTOR: el paso 3 pasa de recordatorio en prosa a plantilla de respuesta con hueco `<path …>` obligatorio, en inglés y en el idioma del usuario (restricción global) — no añade THEN ni AND a la spec — coste si es erróneo: el humo vuelve a fallar.
+Task 1: humo h1 tras ronda 1 PASA (green/h1-r1.txt).
+Task 1: complete (commits 93f1325..5f2d93b, tests: grep -q PASA .docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/h1-r1.txt → (sin salida))

@@ -35,7 +35,7 @@ BeforeAll {
     }
     Kit     = 54595
     Anchors = @{
-      'constitution.md' = 2200
+      'constitution.md' = 2230
       'mission.md'      = 1700
       'architecture.md' = 1900
       'tech-stack.md'   = 18700

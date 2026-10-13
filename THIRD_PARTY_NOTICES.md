@@ -18,6 +18,6 @@
 
 Solo para editar el kit; no forman parte del plugin. Viven en `.agents/skills/` (enlazadas desde `.claude/skills/`) y las fija `skills-lock.json`.
 
-- `writing-skills` de [obra/superpowers](https://github.com/obra/superpowers) — MIT, Copyright (c) 2025 Jesse Vincent.
+- `writing-skills` de [obra/superpowers](https://github.com/obra/superpowers) — MIT, Copyright (c) 2025 Jesse Vincent. La fila «Elemento omitido» del Art. II de la constitution viene de su tabla «Match the Form to the Failure» (7.0.0; [ADR 0014](.docs/sdd/decisions/0014-form-for-omissions.md)).
 - `writing-for-agents` de [mattpocock/skills](https://github.com/mattpocock/skills) — MIT, Copyright (c) 2026 Matt Pocock.
 - `skill-creator` de [anthropics/skills](https://github.com/anthropics/skills) — Apache 2.0; el texto de la licencia va en [`.agents/skills/skill-creator/LICENSE.txt`](.agents/skills/skill-creator/LICENSE.txt).
