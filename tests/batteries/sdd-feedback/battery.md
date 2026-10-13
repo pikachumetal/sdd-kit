@@ -18,3 +18,12 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-feedback`); el método, e
 | --- | --- | --- |
 | F1 Fuente | fb1 | el ticket (cabecera o «Qué pasó») da una versión de las notas sin contrastarla con `.docs/sdd/sdd-kit.json` o con la instalada, o «Qué pasó» da una versión o una cifra sin su fuente (desempate del 2026-10-13: el THEN de la spec mira el ticket entero) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
+
+## Procedencia de las reglas
+
+Cada regla de `skills/sdd-feedback/SKILL.md` que esta batería mide, de dónde viene y qué escenario la cubre. Se rellena con el RED de la 0150 (`tests/sdd-feedback-0150-red.md`) y su GREEN (`tests/sdd-feedback-0150-green.md`).
+
+| Regla | Origen | Escenarios |
+| --- | --- | --- |
+| Paso 1 y regla de la fuente: una versión, cifra o cita de «Qué pasó» sale de un fichero o un comando nombrado en «Fuente»; lo recordado y sin comprobar se comprueba o se quita | `tests/sdd-feedback-0150-red.md`, fb1: el sujeto copió `superpowers_version: 7.1.0` de las notas sin mirar la instalada (7.0.0) | fb1 |
+| Las demás reglas (privacidad, criterio de aceptación, verificación, coste respaldado, menores, iniciativa propia, ruta del kit): traducción sin cambio | `tests/kit-feedback-red.md`, `tests/kit-feedback-noise-red.md` y sus GREEN | ninguno: la traducción la vigila `tests/KitFeedback.Tests.ps1` |

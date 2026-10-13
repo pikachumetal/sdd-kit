@@ -15,7 +15,7 @@ BeforeAll {
       'sdd-end-feature'     = @{ SkillMd = 3000; Total = 4500 }
       'sdd-end-patch'       = @{ SkillMd = 2460; Total = 2460 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
-      'sdd-feedback'        = @{ SkillMd = 700; Total = 700 }
+      'sdd-feedback'        = @{ SkillMd = 800; Total = 800 }
       'sdd-grilling'        = @{ SkillMd = 900; Total = 900 }
       'sdd-parallel-agents' = @{ SkillMd = 1100; Total = 1100 }
       'sdd-init-brownfield' = @{ SkillMd = 1100; Total = 1700 }
