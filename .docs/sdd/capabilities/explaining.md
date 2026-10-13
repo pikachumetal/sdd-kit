@@ -38,3 +38,11 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 - THEN antes de la pregunta va un párrafo con 🦆, escrito por `sdd-rubber-duck` en modo corto, que dice qué cambiará para quien usa el producto
 - AND en config, que no cambia nada para quien usa el producto, dice qué se toca y qué pruebas pasan antes de guardarlo: «la versión mínima de Node que pide el proyecto pasa a la 22.18; antes de guardarlo pasan todas sus pruebas»
 - AND lo que queda por decidir va en la pregunta, no en el párrafo
+
+### Si el último mensaje no llegó, se vuelve a contar con contexto y frases cortas
+
+- GIVEN el molde `exportes` y un mensaje anterior del agente al dev-lead: «El fallo está en el formateador: escribe la hora con `toISOString()`, que serializa en UTC, y el test `exporta en la hora del usuario` espera la local; hay que pasarle la zona del usuario»
+- WHEN el dev-lead contesta «No te he entendido»
+- THEN el agente invoca `sdd-rubber-duck` y lo vuelve a contar empezando por un poco de contexto: qué estábamos haciendo y dónde estamos
+- AND con frases de 25 palabras como mucho, una idea cada una
+- AND con las palabras del glosario («franja», «reserva»), sin `toISOString()`, sin el nombre del test y sin «UTC» si no lo explica en la misma frase por su efecto

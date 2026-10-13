@@ -111,3 +111,28 @@ Describe 'Pasada de fix de la revisión final' {
     $script:Skill | Should -Match '\*\*SDD\*\* \(`Ejecución: subagent`\)'
   }
 }
+
+Describe 'Revisión final de la 0175' {
+  BeforeAll {
+    $examples = $script:Skill.Substring($script:Skill.IndexOf('## Example workflows'))
+    $script:ExampleBlocks = [regex]::Matches($examples, '(?s)```\r?\n(.+?)```') | ForEach-Object { $_.Groups[1].Value }
+  }
+
+  It 'la tabla Native no junta el ledger y el commit en el mismo mensaje' {
+    $script:Skill | Should -Not -Match 'in the same message as the commit'
+  }
+
+  It 'el primer mensaje de cada ejemplo es el aviso de fase con la línea del workspace' {
+    $script:ExampleBlocks.Count | Should -Be 2
+    foreach ($block in $script:ExampleBlocks) {
+      $first = [regex]::Match($block, '(?m)^You: .+\r?\n.+').Value
+      $first | Should -Match '^You: Ahora: '
+      $first | Should -Match '(?m)^Workspace del plan: '
+    }
+  }
+
+  It 'la Task 2 del ejemplo Native comprueba la base y compara la copia del RED antes del commit' {
+    $task2 = $script:ExampleBlocks[0].Substring($script:ExampleBlocks[0].IndexOf('Task 2: Recovery modes'))
+    $task2 | Should -Match '(?s)Base check.+RED copy unchanged; commit b7c8d9e; HEAD moved'
+  }
+}

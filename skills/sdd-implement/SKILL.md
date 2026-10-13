@@ -91,7 +91,7 @@ digraph native {
 
 Everything you print, and every tool result, stays resident in your context for the rest of the session. Redirect long test output to a file in the workspace and read its tail; read a brief, not the whole plan.
 
-1. **Take the task**: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>` prints the brief path and BASE, the commit the task's range is cut from, in one call. Read the brief for every task, including ones you remember from setup: what you remember is a summary, the brief has the exact values, signatures, and test cases. Mark the task's todo in_progress. Then the base check and the RED tests of [Before each task](#before-each-task). Every tool call is a turn that re-reads your whole context: bookkeeping rides along with work — a ledger append in the same call as the commit, never in a call of its own.
+1. **Take the task**: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task start <plan> <n>` prints the brief path and BASE, the commit the task's range is cut from, in one call. Read the brief for every task, including ones you remember from setup: what you remember is a summary, the brief has the exact values, signatures, and test cases. Mark the task's todo in_progress. Then the base check and the RED tests of [Before each task](#before-each-task). Every tool call is a turn that re-reads your whole context: bookkeeping rides along with work — a ledger append in the same call as the commit, never in a call of its own; the completion line is `sdd task done`'s, in its own call after the commit you checked (step 4).
 2. **Work the steps**: the plan's steps are already in RED-GREEN order; follow them in that order under `sdd-tdd`, loaded at setup. A test step's code is written first and run first. Watching it fail is a step, not a formality — a test that passes before the implementation exists is a finding about the test. Every step that runs a command has an `Expected:` line. Run the command, read its output, and compare. Three outcomes:
    - **Matches.** Next step.
    - **The code is wrong.** Use `sdd-debugging`. Find the cause; never patch the symptom to make the step's output match. A failing smoke of text an agent follows (a skill, a prompt): if the constitution has a rule on the form of guidance, read it before the round, name the failure's class by it and write the round in that form; rewording or adding emphasis is the same form.
@@ -111,7 +111,7 @@ Everything you print, and every tool result, stays resident in your context for 
 | "The plan's code is right, skip watching the test fail" | A test you never saw fail proves nothing. It is one step. Run it. |
 | "I'll run the full suite at the end instead of per step" | Per-step runs are how you learn which step broke it. The end-of-task run is the contract, not a substitute. |
 | "The plan is wrong here, I'll just do the right thing" | Do the right thing and ledger the ruling. Unledgered deviation is a decision made in secret. |
-| "I'll write the ledger lines after a few tasks" | Compaction does not wait for a convenient moment. One line per task, in the same message as the commit. |
+| "I'll write the ledger lines after a few tasks" | Compaction does not wait for a convenient moment. One line per task: `sdd task done` writes it right after the commit you checked. |
 | "Let me check in before the next task" | Native was chosen to spend less. Progress prompts spend the user's time instead. Only the stops of the Overview stop you. |
 | "I read my own diff carefully; the final reviewer is redundant" | Same author, same blind spots. The reviewer is the only fresh context this run buys. |
 | "Tests should pass, the change was trivial" | «Should» is not evidence. The contract requires the command and its output. |
@@ -363,11 +363,12 @@ When the final review is clean and its fixes are committed, delete this plan's w
 **Native:**
 
 ```
-You: I'm using sdd-implement to implement this plan in Native.
-
 [Setup: sdd-worktrees — already in isolated workspace at <path> on branch feature/0012-hook-install; baseline green]
 [sdd workspace .docs/sdd/specs/<folder>/plan.md — no ledger inside, fresh start]
+
+You: Ahora: implemento el plan en Native. Queda: las tasks, la revisión final y la validación, ~40 min.
 Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
 [Read plan once: .docs/sdd/specs/<folder>/plan.md; spec read; sdd-tdd loaded]
 [Pre-flight scan: 2 shared-interface rows, 4 self-consistency rows, clean; written to ledger]
 [Create todos for all tasks]
@@ -387,11 +388,13 @@ Task 1: Hook installation script
 Task 2: Recovery modes
 
 [sdd task start plan 2 → brief read; BASE d4e5f6a]
+[Base check: row and task files unchanged in develop]
+[RED test written from the THEN; copy kept outside the repo]
 [Step 2: run the failing test — FAIL, but on an import error: Task 1 exported
  installHook, brief consumes install_hook]
 [Ruling: brief's consumer name is a typo against Task 1's Produces block;
  use installHook — Ledger: Task 2: Ruling: install_hook → installHook — matches Task 1 Produces — cost if wrong: one rename]
-[Steps 2-5 as planned; commit b7c8d9e]
+[Steps 2-5 as planned; RED copy unchanged; commit b7c8d9e; HEAD moved]
 [sdd task done plan 2 d4e5f6a -- npm test -- recovery → ledger: Task 2: complete (commits d4e5f6a..b7c8d9e, tests: npm test -- recovery → 8/8 pass)]
 
 ...
@@ -418,11 +421,12 @@ Step 7 of sdd-start-feature: validation.
 **SDD:**
 
 ```
-You: I'm using sdd-implement to execute this plan with SDD.
-
 [Setup: sdd-worktrees — already in isolated workspace; baseline green]
 [sdd workspace .docs/sdd/specs/<folder>/plan.md — no ledger inside, fresh start]
+
+You: Ahora: ejecuto el plan con SDD. Queda: las tasks con su revisión, la revisión final y la validación, ~60 min.
 Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
 [Read plan file once: .docs/sdd/specs/<folder>/plan.md]
 [Create todos for all tasks]
 
