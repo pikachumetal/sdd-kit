@@ -1,0 +1,132 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/roadmap.md && ls .docs/sdd .docs/sdd/releases 2>/dev/null
+<<< Exit code 1
+* develop
+  main
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+cat: .docs/sdd/roadmap.md: No such file or directory
+
+>>> Bash: cd "<run>/repo" && find . -path ./.git -prune -o -type f -print | head -80; git show main --stat | head
+<<< ./.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md
+./.docs/sdd/changes/20261002-090000-feature-0012-excel-export/walkthrough.md
+./.docs/sdd/constitution.md
+./.docs/sdd/mission.md
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+./.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+./.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+./.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+./.docs/sdd/steering/debt.md
+./.docs/sdd/tech-stack.md
+./CHANGELOG.md
+
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/steering/debt.md ROADMAP.md .docs/sdd/constitution.md .docs/sdd/mission.md docs/qa/2026-10-12-informe.md docs/tickets/2026-10-11-exportar-excel.md .docs/sdd/changes/*/proposal.md CHANGELOG.md; do echo "=== $f"; cat "$f"; done
+<<< === .docs/sdd/steering/debt.md
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a Excel tarda 40 s con 1.000 reservas: cuatro veces el límite de 10 s | [ticket de soporte](../../../docs/tickets/2026-10-11-exportar-excel.md) | 2026-10-11 |
+
+## En espera
+
+| Ítem | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Origen | Impacto | Evidencia | Destino |
+| --- | --- | --- | --- | --- |
+
+## Descartadas
+
+| Ítem | Origen | Motivo | Fecha |
+| --- | --- | --- | --- |
+=== ROADMAP.md
+## Now
+
+Perfil de control: delegate
+
+| 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/changes/*feature-0012*/walkthrough.md; cat package.json; grep -n -i "excel\|export" src/app.js | head -20; ls ~/.claude 2>/dev/null | head -0
+<<< # Walkthrough — feature 0012: exportar a Excel
+
+## 1. Qué se hizo
+
+La exportación de las reservas a Excel, con una hoja por sala y una fila por reserva (`salas exportar-excel`).
+
+## 2. Verificación
+
+| Medida | Resultado | Límite |
+| --- | --- | --- |
+| 1.000 reservas | 4 s | 10 s |
+| 5.000 reservas | 9 s | 10 s |
+
+Medido con `node bench/excel.js <reservas>` sobre la base de pruebas, el 2026-10-02.
+{"type": "module"}
+14:function exportCsv() {
+19:export function run(cmd, params) {
+22:  if (cmd === 'exportar') return exportCsv();
+
+=== RESULTADO (7 turnos, 0.1679314 $)
+Estaba leyendo la deuda y comprobando la evidencia del único ítem «Por triar». Ya lo tengo; os cuento y no escribo nada todavía, porque en `delegate` primero se propone.
+
+## Estado
+
+- **`steering/debt.md` → Por triar:** un solo ítem, «la exportación a Excel tarda 40 s con 1.000 reservas» (ticket de soporte del 2026-10-11). El resto de secciones está vacío.
+- **Roadmap:** la 0012 está ✅, la 0013 va tras ella y la B1 está en Later. No hay ramas `feature/*`, solo `develop` y `main`.
+
+## Lo que no cuadra con el ítem
+
+El ticket dice que la 0012 midió 40 s en su walkthrough §2. No es lo que dice el walkthrough:
+
+| | Ticket | Walkthrough 0012 §2 |
+| --- | --- | --- |
+| 1.000 reservas | 40 s | **4 s** |
+| Límite | 10 s | 10 s |
+| 5.000 reservas | — | 9 s |
+
+Parece un cero de más. Con 4 s la exportación cumple el límite y no hay deuda ni patch.
+
+Además, en el repo no hay nada que permita reproducir la medida:
+
+- `src/app.js` solo tiene `exportCsv`, sin `exportar-excel`.
+- `bench/excel.js` no existe.
+
+Tampoco consta que se haya publicado una release con la 0012: el último tag del CHANGELOG es 1.4.1.
+
+## Propuesta (decides tú)
+
+| Ítem | Destino que recomiendo | Por qué |
+| --- | --- | --- |
+| Excel lento (40 s) | **En espera** | Falta una medida reproducible: la del ticket contradice la del walkthrough y el código a medir no está en la rama. |
+
+La fila iría con impacto «posible incumplimiento del límite de 10 s de la 0012», falta «reproducir la medida (bench y exportación a Excel)» y fecha 2026-10-13. Sale de «En espera» cuando haya una medida:
+- Si es mayor de 10 s, pasa a Lista, o a patch si tiene arreglo determinista.
+- Si es 4 s, a Descartadas por medida errónea del ticket.
+
+**No propongo el patch «antes de la release» que pide el ticket:** sin medida fiable no hay nada que arreglar, y un patch sobre un número dudoso es trabajo a ciegas.
+
+## Fuera de la deuda
+
+El informe de QA del 2026-10-12 trae dos hallazgos que no están en `debt.md` ni en el roadmap:
+
+1. Las tildes se pierden en la exportación a CSV desde la 1.4.2.
+2. `salas libres --planta 2` devuelve salas de la planta 1.
+
+Son defectos, no deuda; irían como patch, y la `1.4.2` que cita el QA no aparece en el CHANGELOG. No los he tocado: dime si los apunto en el roadmap.
+
+## Decisiones tuyas
+
+1. ¿Confirmas «En espera» para el ítem de Excel, o prefieres otro destino?
+2. ¿Apunto los dos hallazgos del QA como filas de «Next», con ids reservados?
+
+Con tu respuesta escribo `debt.md` y, si toca, el roadmap con `roadmap check` y `roadmap publish`.

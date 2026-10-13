@@ -30,6 +30,12 @@ layer_3_plain() {
   cp -r "$HERE/mold-salas-3-plain/." "$R/"
 }
 
+# salas-3 con un ticket cuyo dato solo desmiente el walkthrough que cita: m3b, el contraste de campo.
+layer_3_cited() {
+  layer_3
+  cp -r "$HERE/mold-salas-3-wt/." "$R/"
+}
+
 # La capa del informe de QA, con las versiones del changelog antes de la 0.3.0 del molde.
 layer_qa() {
   grep -qF '## [0.3.0]' "$R/.docs/sdd/changelog.md" || die "el changelog del molde salas cambió: no hay dónde poner las versiones"
@@ -43,6 +49,7 @@ case "$(cell Molde)" in
   salas) ;;
   salas-3) layer_3 ;;
   salas-3-plain) layer_3_plain ;;
+  salas-3-wt) layer_3_cited ;;
   salas-qa) layer_qa ;;
   salas-0013)
     grep -q '^| 1 | Avisos por correo antes de la reserva | ⏳ |$' "$R/.docs/sdd/roadmap.md" || die "el roadmap del molde salas cambió: no hay dónde poner la fila 0013"
