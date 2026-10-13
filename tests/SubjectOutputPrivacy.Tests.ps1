@@ -6,16 +6,50 @@ BeforeAll {
 
   # En UTF-8: desde el pre-commit, pwsh -NoProfile decodifica la salida de git con IBM437, y un nombre
   # con tilde no casaba con nada: el test pasaba con la fuga dentro (ticket de la feature 0099 §1).
-  function Get-GitUserName {
-    $savedGitEnv = Clear-GitEnv
+  function Invoke-GitUtf8([string[]]$GitArgs) {
     $savedEncoding = [Console]::OutputEncoding
     try {
       [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-      git -C $script:KitRoot config user.name
-    } finally {
-      [Console]::OutputEncoding = $savedEncoding
-      Restore-GitEnv $savedGitEnv
-    }
+      git -C $script:KitRoot @GitArgs
+    } finally { [Console]::OutputEncoding = $savedEncoding }
+  }
+
+  function Get-GitUserName {
+    $savedGitEnv = Clear-GitEnv
+    try { Invoke-GitUtf8 'config', 'user.name' } finally { Restore-GitEnv $savedGitEnv }
+  }
+
+  # Las mismas carpetas que la revisión completa: green1, red2… también son salidas de sujetos.
+  function Select-EvidencePath([string[]]$Paths) {
+    @($Paths) -match '^\.docs/sdd/specs/[^/]+/(red|green|refactor|battery|fix)[^/]*/|^tests/[^/]+-(red|green)\.md$'
+  }
+
+  # Sin limpiar el entorno de git: dentro del hook, GIT_INDEX_FILE dice qué índice se está commiteando.
+  function Get-StagedEvidence {
+    $staged = Invoke-GitUtf8 '-c', 'core.quotePath=false', 'diff', '--cached', '--name-only', '--diff-filter=ACMR'
+    Select-EvidencePath $staged | ForEach-Object { Get-Item -LiteralPath (Join-Path $script:KitRoot $_) }
+  }
+
+  # Leído una vez: con un Select-String por fichero y patrón, el pre-commit pasó de su tope de 30 s.
+  function Read-Evidence([IO.FileInfo[]]$Files) {
+    @(foreach ($file in $Files) {
+        [pscustomobject]@{ Path = [IO.Path]::GetRelativePath($script:KitRoot, $file.FullName); Text = [IO.File]::ReadAllText($file.FullName) }
+      })
+  }
+
+  function Find-Leak([string]$Pattern) {
+    $script:EvidenceText | Where-Object { $_.Text -match $Pattern } | ForEach-Object Path
+  }
+
+  # X:\Users\…, X:\\Users\\… (JSON), X:/Users/…, /x/Users/… y la carpeta de proyecto X--Users-….
+  $script:UserPathPattern = '(?i)(?:\b[a-z]:|(?<![\w.])/[a-z])(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?![\\/<…])|\b[a-z]--Users-(?!<)'
+  # Del home, no de $USERNAME, que en Git Bash vale SYSTEM (ticket 0068 §5).
+  $script:MachineUserPattern = "\b$([regex]::Escape((Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME))))\b"
+
+  function Find-MachineLeak {
+    $gitUser = Get-GitUserName
+    $patterns = @($script:UserPathPattern, $script:MachineUserPattern) + @(if ($gitUser) { [regex]::Escape($gitUser) })
+    $patterns | ForEach-Object { Find-Leak $_ } | Sort-Object -Unique
   }
 
   # Una identidad de git fija: la global en un fichero propio y, si se pide, la del molde por GIT_CONFIG_*.
@@ -31,9 +65,6 @@ BeforeAll {
       & $Script
     } finally { Restore-GitEnv $saved }
   }
-
-  # El ejecutable real: un shim de node (proto) necesita el home verdadero para arrancar.
-  $script:Node = node -e 'console.log(process.execPath)'
 
   function Invoke-Tools([string[]]$ToolArgs, [string]$InputText) {
     $saved = @{ USERPROFILE = $env:USERPROFILE; HOME = $env:HOME }
@@ -60,7 +91,13 @@ BeforeAll {
   ) -join "`n"
 }
 
-Describe 'El lanzador de sujetos oculta el home y el usuario' {
+# Slow porque lanza node: lo cubre en el conjunto rápido la revisión de la evidencia que lleva el commit.
+Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
+  BeforeAll {
+    # El ejecutable real: un shim de node (proto) necesita el home verdadero para arrancar.
+    $script:Node = node -e 'console.log(process.execPath)'
+  }
+
   It 'extract.mjs tools los sustituye en el extracto del stream' {
     $stream = Join-Path $TestDrive 'stream.jsonl'
     $event = @{ message = @{ content = @(@{ type = 'tool_result'; content = $script:Leaky }) } } | ConvertTo-Json -Depth 5 -Compress
@@ -115,7 +152,9 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' {
   }
 }
 
-Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
+# Slow porque lee toda la evidencia del repo, que crece con cada campaña: en el conjunto rápido,
+# la revisión de la evidencia que lleva el commit.
+Describe 'La evidencia de los sujetos no lleva el home de la máquina' -Tag 'Slow' {
   BeforeAll {
     $root = Join-Path $script:KitRoot '.docs/sdd/specs'
     # green1, red2…: las rondas extra de una campaña también son salidas de sujetos (patch 0080).
@@ -123,13 +162,7 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
       ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -match '^(red|green|refactor|battery|fix)' } |
       ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse }) +
       @(Get-ChildItem -Path (Join-Path $script:KitRoot 'tests/*') -File -Include '*-red.md', '*-green.md')
-    # Leído una vez: con un Select-String por fichero y patrón, el pre-commit pasó de su tope de 30 s.
-    $script:EvidenceText = @($script:Evidence | ForEach-Object {
-        [pscustomobject]@{ Path = [IO.Path]::GetRelativePath($script:KitRoot, $_.FullName); Text = [IO.File]::ReadAllText($_.FullName) }
-      })
-    function Find-Leak([string]$Pattern) {
-      $script:EvidenceText | Where-Object { $_.Text -match $Pattern } | ForEach-Object Path
-    }
+    $script:EvidenceText = Read-Evidence $script:Evidence
   }
 
   It 'revisa también las salidas de las baterías y de las pasadas de fix' {
@@ -137,15 +170,12 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
   }
 
   It 'ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario' {
-    # X:\Users\…, X:\\Users\\… (JSON), X:/Users/…, /x/Users/… y la carpeta de proyecto X--Users-….
-    Find-Leak '(?i)(?:\b[a-z]:|(?<![\w.])/[a-z])(?:\\{1,2}|/)Users(?:\\{1,2}|/)(?![\\/<…])|\b[a-z]--Users-(?!<)' |
+    Find-Leak $script:UserPathPattern |
       Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
   }
 
   It 'ni el usuario de esta máquina suelto (ls -l)' {
-    # Del home, no de $USERNAME, que en Git Bash vale SYSTEM (ticket 0068 §5).
-    $user = Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME)
-    Find-Leak "\b$([regex]::Escape($user))\b" |
+    Find-Leak $script:MachineUserPattern |
       Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
   }
 
@@ -162,5 +192,28 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' {
     if (-not $name) { Set-ItResult -Skipped -Because 'esta máquina no tiene user.name en git'; return }
     Find-Leak ([regex]::Escape($name)) |
       Should -BeNullOrEmpty -Because 'el sujeto hereda la identidad de git si subject_launch no la fija: sustitúyelo por <git-user>'
+  }
+
+  It 'el control del commit toma como evidencia todo lo que recorre esta revisión' {
+    $paths = @($script:EvidenceText.Path -replace '\\', '/')
+    @(Select-EvidencePath $paths).Count | Should -Be $paths.Count
+  }
+}
+
+Describe 'La evidencia que lleva el commit no tiene el home de la máquina' {
+  BeforeAll {
+    $script:EvidenceText = Read-Evidence (Get-StagedEvidence)
+  }
+
+  It 'toma como evidencia las salidas de sujetos y los RED y GREEN de tests/, y nada más' {
+    $spec = '.docs/sdd/specs/20260101-000000-feature-0001-x'
+    $evidence = "$spec/red/out/a.txt", "$spec/green2/state.txt", "$spec/battery-s1/out/b.md", 'tests/patch-lane-red.md'
+    $others = "$spec/spec.md", 'tests/SubjectOutputPrivacy.Tests.ps1', 'tests/batteries/x/out-red.md', 'skills/sdd-propose/SKILL.md'
+
+    Select-EvidencePath ($evidence + $others) | Should -Be $evidence
+  }
+
+  It 'ningún fichero de evidencia del commit tiene una ruta de usuario, el usuario ni el user.name de git' {
+    Find-MachineLeak | Should -BeNullOrEmpty -Because 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean'
   }
 }
