@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-13
 branch: patch/0176-fast-suite-budget
-commit: <hash>
+commit: fd3c51e6
 ---
 
 # Patch 0176 — el conjunto rápido del pre-commit vuelve por debajo de 30 s
@@ -63,9 +63,12 @@ El archivo no crea repos. Si solo se marca como `Slow` lo que lanza procesos, qu
 | 3 | RED → GREEN de los tests nuevos | ✅ los 3 fallaban porque `Select-EvidencePath` y `Get-StagedEvidence` no existían; ahora `SubjectOutputPrivacy.Tests.ps1` da 13/13 |
 | 4 | Suite completa con los `Slow` (`Invoke-Pester tests`) | ✅ 1.171 de 1.188, 0 en rojo, 17 omitidos · 3,3 min |
 | 5 | `WordBudget.Tests.ps1` con la regla nueva de `tech-stack.md` | ✅ 68 de 71, 3 omitidos que ya lo estaban |
+| 6 | El pre-commit del commit del fix (`fd3c51e6`), con `cli:typecheck` y `cli:test` en paralelo | ✅ `kit:test-fast` en verde: Pester informa 25,24 s |
+
+Validación en campo: 2026-10-13 · `FastSuiteBudget` en verde (antes 31,6 s en rojo) · `SubjectOutputPrivacy.Tests.ps1` 13/13 · suite completa 1.171/1.188, 0 en rojo · el control del commit para una fuga preparada en el pre-commit real
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1 h
 - Inicio: 2026-10-13T09:24Z
-- Real: pendiente
+- Real: 0,75 h (2026-10-13T09:01Z-09:46Z, con la investigación de antes de abrir la carpeta)
