@@ -1,0 +1,78 @@
+--- [13]
+### Strengths
+
+- `voidBooking` checks for the reason before it looks up the booking (`src/app.js:30`). Running `anular Norte lun` without `--motivo` returns exactly «falta el motivo», whether or not the booking exists. The text matches decision ✋1.
+- `reasonOf` also handles `--motivo` given with no value (`params[index + 1]` is `undefined`, so it falls into «falta el motivo»).
+- The new success text «anulada Norte lun (avería)» matches the THEN, and `test/void.test.js:8-10` fixes it by running the `anular` command, as «Dónde se prueba» asks.
+- The reason is stored on the booking (`booking.reason = reason`), which follows the Approach («El motivo viaja con la reserva anulada»).
+- All new interface text is in Spanish, and the diff adds no comments.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **The cancellation email still goes out.** At `src/app.js:35`, `voidBooking` still calls `notifyByMail(...)`, which pushes to `outbox` (`src/app.js:16-18`, exported at line 6).
+   - **Why it matters:** the spec asks for this behaviour to be gone, and it still runs on every cancellation. That contradicts both the REMOVED requirement and the dev-lead's decision («el correo sobra»).
+   - **Fix:** remove the call, plus `notifyByMail` and `outbox` if nothing else uses them, and add a test that `outbox` stays empty after a cancellation.
+   - Gap: `contradicts`
+   - Source: REMOVED «Las anulaciones se avisan por correo» and the dev-lead decision «El correo de anulación desaparece».
+
+#### Important (Should Fix)
+
+2. **The THEN «falta el motivo» has no test** (`test/void.test.js`).
+   - The Review Focus names the test `pide motivo al anular` in Task 1. It doesn't exist; the file only has `anular con motivo`. The code does produce that text (`src/app.js:30`), but nothing locks it in, so a regression would go unnoticed.
+   - **Fix:** add `test('pide motivo al anular', () => assert.equal(run('anular', ['Norte', 'lun']), 'falta el motivo'))`.
+   - Gap: `missing` (verification)
+   - Source: THEN «AND `anular Norte lun` sin `--motivo` responde «falta el motivo»» and the Review Focus.
+
+3. **Dev-lead decision only half covered: «Anular pide motivo en las dos vías, `anular` y `anular-todas`».**
+   - The rule only covers `anular`. `anular-todas` doesn't read `--motivo`, doesn't require it and doesn't store it (`src/app.js:40-44`, `src/app.js:52`). `anular-todas` with no reason still cancels every booking, which is exactly the case the dev-lead wanted to block («que no se cuele ninguna sin motivo»).
+   - **Fix:** in `voidAll`, require the reason, store it on each booking, and add a test.
+   - Gap: `partial`
+   - Source: dev-lead decision, and the Scope line «Entra: … `anular-todas --motivo <texto>`».
+
+4. **ADR 0003 not met.**
+   - Its Confirmación says «`src/` no importa `node:fs` ni ningún paquete de base de datos». `src/app.js:1` imports `writeFileSync` from `node:fs`, and `saveVoided` (`src/app.js:25-27, 36`) writes `data/anuladas.json`.
+   - It also goes against the Scope: «No entra: guardar las anulaciones (ADR 0003)».
+   - Side effects: the test has to create `data/` (`test/void.test.js:6`), against the ADR consequence «los tests no limpian nada». And from the CLI, if `data/` doesn't exist, `writeFileSync` throws ENOENT after the booking has already been marked `voided`.
+   - **Fix:** remove `saveVoided`, the `node:fs` import and the `mkdirSync` in the test.
+   - Gap: `contradicts`
+   - Source: ADR 0003 «Confirmación», and the Scope.
+
+5. **Unrequested change to `availability`.**
+   - `libres` now returns `"<n> libres: <salas>"` instead of the plain list (`src/app.js:47-50`). The delta has no subsection for `availability`, and the plan says «solo cambia el comando `anular`».
+   - It also breaks an existing test: `test/app.test.js:6` expects `'Sur'` and will get `'1 libres: Sur'`.
+   - **Fix:** revert the `libres` branch to `return freeRooms(params[0]).join(', ');`. If the change is wanted, it needs its own delta.
+   - Gap: `unrequested`
+   - Source: the capability list (`availability`) and the plan.
+
+#### Minor (Nice to Have)
+
+6. **`reasonOf` assumes room and day come first.** `anular --motivo avería Norte lun` reads `--motivo` as the room and answers «sin reserva --motivo avería». The spec only defines the documented order, so this doesn't block anything, but it should be documented in the help or the arguments should be parsed properly.
+   - Gap: `partial` (expectation of a reasonable user)
+   - Source: THEN «anular … --motivo».
+
+There is no ledger, so there are no rulings or deferred minors to weigh.
+
+### Declined to judge
+
+- `cancelar` and `reservar` don't exist in `run` (they fall into `'salas'`), so `test/cancel.test.js` and the second test in `test/app.test.js` fail. That's pre-existing behaviour this diff doesn't touch, so it's outside this spec.
+- Module state (`bookings`) is shared between tests in the same file. That's test quality, which belongs to the other axis.
+- `export function voidBooking` changes its public signature (a third parameter). It's an internal API not covered by the spec, so it's a matter for the Quality axis.
+
+### Not verified
+
+- **Test results:** not verified, because the package doesn't include the Task 1 report (output of `node --test test/void.test.js`), and the brief tells me not to run the suite. The `libres` breakage in `test/app.test.js:6` comes from reading the code, not from running it.
+- **The CLI with no `data/` folder:** not verified (I didn't run it). The ENOENT failure comes from reading `src/app.js:26`.
+
+### Recommendations
+
+- The main thread should run the full suite (`node --test`) after the fixes, to confirm `test/app.test.js` is green again.
+- Add a test that `outbox` is empty after `anular`, and one for `anular-todas` without a reason. That way the REMOVED requirement and the dev-lead's decision each have their own verification.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The cancellation email the spec removes is still sent (Critical). On top of that, `anular-todas` doesn't ask for a reason, the code writes to disk against ADR 0003, `libres` changed without being asked and breaks its test, and the Review Focus test `pide motivo al anular` doesn't exist.
+

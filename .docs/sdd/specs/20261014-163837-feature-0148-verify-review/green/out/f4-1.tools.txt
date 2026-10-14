@@ -1,0 +1,78 @@
+
+>>> Read: <run>/review-final-799fbb3.diff
+<<< 1	# Review package: 489d91d..HEAD
+2	
+3	## Commits
+4	799fbb3 feat(bookings): informe de ocupación
+5	
+6	## Files changed
+7	 src/app.js | 30 +++++++++++++++++++++++++++++-
+8	 1 file changed, 29 insertions(+), 1 deletion(-)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e267053 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+16	   const booking = findBooking(room, day);
+17	   if (!booking) return `sin reserva ${room} ${day}`;
+18	   booking.status = 'voided';
+19	   return `anulada ${room} ${day}`;
+20	 }
+21	 
+22	
+
+>>> Bash: cd <run>/repo && git show 799fbb3:src/app.js | head -30 && git show 799fbb3 | sed -n '/anular/p' | cat -A | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+=== RESULTADO (3 turnos, 0.115888 $)
+### Strengths
+- `occupancyReport` is 26 lines, under the 30-line limit. All user-facing text is in Spanish.
+- The report reads existing state (`rooms`, `bookings`) and does not mutate it.
+- It is wired into `run` as `ocupacion`, following the existing command pattern.
+- The singular/plural label (`reserva`/`reservas`) is handled correctly.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:35`: a comment that repeats the code.** `// incrementa count` sits above `count++`. It adds nothing and is Important by the comment rule. Delete it.
+
+#### Minor (Nice to Have)
+1. **`src/app.js:29,46`: pointless constant `now = 'hoy'`.** The literal "hoy" is not a time value, so it names nothing that varies. It then shows up as `total: N (hoy)`, which adds noise to the output. Remove it, or inline the text if it is really wanted. Possible Clean Code "magic values / intent hidden" smell.
+2. **`src/app.js:31-37`: nested loop with `continue`s.** `bookings.filter((b) => b.room === room && b.status === 'active').length` would do the same in one line, as `freeRooms` and `cancelledList` already do. This would shorten the function and match the surrounding idiom. Possible Fowler "Long Method" and Clean Code "can you understand the function without reading its body".
+3. **`src/app.js:47-49`: redundant `'sin reservas activas'` line.** Every room already printed `0 reservas` and the total is 0, so the message only repeats it. Judge whether the spec asked for it; otherwise remove it.
+4. **`src/app.js:58-59`: diff noise.** The `anular` line is removed and re-added with visually identical content, apparently a whitespace or encoding change. `cat -A` shows no difference in line endings, so the change is unexplained. Revert it so the commit contains only the feature.
+5. **No tests.** The diff touches only `src/app.js`, with no test for `occupancyReport` or the `ocupacion` command. Per Clean Code "a test for every public method" this is a gap. The package lacks the task reports, so it may have been covered elsewhere; confirm.
+
+### Recommendations
+Simplify `occupancyReport` into a `rooms.map` of per-room count lines plus the cancelled/total lines. Add a test covering an empty case and a case with cancelled bookings.
+
+### Declined to judge
+- Whether the report content (the cancelled count, the "total" line, the "hoy" text) matches the feature's spec: that is the Spec axis.
+- Whether `app.js` should keep growing with all commands in one file: that is the Architecture axis.
+- Whether the full suite passes: the main thread runs it, and I did not run it.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The function is correct and within the size limit, but it carries a comment that only repeats the code (Important), a meaningless `now` constant, an unneeded nested loop, and an unrelated re-written line. The comment should go; the rest are cleanups.

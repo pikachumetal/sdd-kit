@@ -15,6 +15,7 @@ SDD_CLI="$KIT/cli/bin/sdd.js"
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"'
 [ "$SC" = f2 ] && MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 2}, "execution": "native"'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
+F21=".docs/sdd/specs/20261012-100000-feature-0021-void-reason"
 
 cp -r "$IMPL/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
@@ -37,6 +38,37 @@ ledger() {
   printf '# SDD ledger — plan: %s\n%s\n' "$F10/plan.md" "$1" > "$ws/progress.md"
 }
 
+# El encargo del eje de f3 o f4, compuesto con el texto del kit que se prueba.
+axis_brief() {
+  local axis=spec values="$RUN/axis-values.json" code focus files adrs caps dir
+  [ "$SC" = f4 ] && axis=code
+  dir="$(cygpath -m "$R" 2>/dev/null || echo "$R")"
+  if [ "$SC" = f3 ]; then
+    code=$'- Texto de la interfaz en castellano.\n- Sin comentarios que repitan el código ni que citen documentos.'
+    focus='- `anular Norte lun` sin `--motivo` → «falta el motivo» · Task 1, `pide motivo al anular`'
+  else
+    code=$'- Texto de la interfaz en castellano.\n- Funciones de 30 líneas como mucho.'
+    focus='ninguna: comprobado'
+  fi
+  files=$(g diff --name-only "$BASE" HEAD -- . ":(exclude,glob).docs/sdd/specs/**")
+  # shellcheck disable=SC2086
+  adrs=$(cd "$R" && "$NODE" "$SDD_CLI" decision index --path .docs/sdd --files $files 2>/dev/null)
+  caps=$(cd "$R" && "$NODE" "$SDD_CLI" capability index --path .docs/sdd 2>/dev/null)
+  "$NODE" -e '
+    const [code, focus, pkg, sha, dir, adrs, caps, spec, plan] = process.argv.slice(1);
+    console.log(JSON.stringify([
+      ["<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>", code],
+      ["<ruta del paquete que imprime la receta>", pkg], ["<sha>", sha], ["<REVIEW_DIR>", dir],
+      ["<copia literal de la sección `## Review Focus` del plan: todas sus líneas, enteras>", focus],
+      ["<ruta de spec.md>", spec], ["<ruta de plan.md>", plan],
+      ["<líneas que imprime sdd decision index --files con los ficheros del diff, o «ninguna»>", adrs || "ninguna"],
+      ["<salida de sdd capability index>", caps], ["<ruta del ledger del plan, o «sin ledger»>", "sin ledger"],
+      ["[DESCRIPTION]", "la feature de la rama"], ["[PLAN_OR_REQUIREMENTS]", spec ? `${spec} y ${plan}` : "Comando ocupacion: cada sala con sus reservas activas, las canceladas si las hay y el total."],
+      ["[BASE_SHA]", sha + "~"], ["[HEAD_SHA]", sha],
+    ]));' -- "$code" "$focus" "$(cygpath -m "$PKG" 2>/dev/null || echo "$PKG")" "$HEADSHA" "$dir" "$adrs" "$caps" \
+      "$([ "$SC" = f3 ] && echo "$F21/spec.md")" "$([ "$SC" = f3 ] && echo "$F21/plan.md")" > "$values"
+  "$NODE" "$HERE/compose-axis.mjs" "$KIT" "${SUPERPOWERS_DIR:-}" "$axis" "$values"
+}
 case "$SC" in
   v1)
     open_0010
@@ -45,7 +77,29 @@ case "$SC" in
     commit "feat(bookings): cancelar con un motivo de la lista"
     ledger "Task 1: complete (commits $BASE1..$(short HEAD), tests: node --test test/cancel.test.js → 2/2 pass)"
     cp "$FIX/app-v1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js" ;;
-  f1|f2)
+  f3|f4)
+    mkdir -p "$R/.docs/sdd/decisions" "$R/.docs/sdd/capabilities"
+    cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
+    cp "$FIX/capabilities/"*.md "$R/.docs/sdd/capabilities/"
+    if [ "$SC" = f3 ]; then cp "$FIX/app-f3-base.js" "$R/src/app.js"; else cp "$IMPL/fixtures/app-done.js" "$R/src/app.js"; fi
+    commit "feat: la app antes del cambio"
+    BASE=$(g rev-parse HEAD)
+    g checkout -q -b feature/review
+    if [ "$SC" = f3 ]; then
+      put "$F21/spec.md" < "$FIX/spec-0021.md"; put "$F21/plan.md" < "$FIX/plan-0021.md"
+      commit "docs(sdd): abrir la feature 0021"
+      cp "$FIX/app-f3.js" "$R/src/app.js"; cp "$FIX/void-f3.test.js" "$R/test/void.test.js"
+      commit "feat(bookings): anular con motivo"
+    else
+      cp "$FIX/app-f4.js" "$R/src/app.js"
+      commit "feat(bookings): informe de ocupación"
+    fi
+    HEADSHA=$(g rev-parse --short HEAD)
+    PKG="$RUN/review-final-$HEADSHA.diff"
+    { echo "# Review package: $(g rev-parse --short "$BASE")..HEAD"; echo; echo "## Commits"; g log --oneline "$BASE..HEAD"; echo
+      echo "## Files changed"; g diff --stat "$BASE" HEAD -- . ":(exclude,glob).docs/sdd/specs/**"; echo
+      echo "## Diff"; g diff -U10 "$BASE" HEAD -- . ":(exclude,glob).docs/sdd/specs/**"; } > "$PKG"
+    ASK="$(axis_brief)" ;;  f1|f2)
     mkdir -p "$R/.docs/sdd/decisions"; cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
     commit "docs(decisions): las reservas viven en memoria"
     open_0010
@@ -61,10 +115,11 @@ Task 2: complete (commits $BASE2..$(short HEAD), tests: node --test test/cancel.
 esac
 
 case "$SC" in
-  v1) export EXTRA_DISALLOWED="Agent" ;;
+  v1|f3|f4) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   f1|f2) MAX_TURNS="${MAX_TURNS:-30}" ;;
+  f3|f4) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 

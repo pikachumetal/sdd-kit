@@ -24,7 +24,7 @@ BeforeAll {
       'sdd-rubber-duck'     = @{ SkillMd = 600; Total = 600 }
       'sdd-propose'         = @{ SkillMd = 5000; Total = 6325 }
       'sdd-implement'       = @{ SkillMd = 10240; Total = 13950 }
-      'sdd-verify'          = @{ SkillMd = 2500; Total = 4800 }
+      'sdd-verify'          = @{ SkillMd = 2500; Total = 8400 }
       'sdd-tdd'             = @{ SkillMd = 1700; Total = 3100 }
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }

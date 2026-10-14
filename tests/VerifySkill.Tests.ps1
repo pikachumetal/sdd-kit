@@ -58,3 +58,15 @@ Describe 'Revisión final por ejes' {
     Get-KitFile 'skills/sdd-templates/templates/plan-template.md' | Should -Match '(?m)^\*\*Eje Arquitectura\*\*: '
   }
 }
+
+Describe 'Encargos de los ejes' -Tag 'Slow' {
+  It 'el Quick Diagnostic de <_> es el de Wondel 1.8.0' -ForEach @('clean-code', 'refactoring-patterns', 'software-design-philosophy', 'pragmatic-programmer', 'clean-architecture') {
+    $clone = if ($env:SDD_UPSTREAM_DIR) { Join-Path $env:SDD_UPSTREAM_DIR 'wondelai-skills' }
+    if (-not $clone -or -not (Test-Path $clone)) { Set-ItResult -Skipped -Because 'sin el clone de wondelai/skills en SDD_UPSTREAM_DIR'; return }
+    $source = (git -C $clone show "v1.8.0:$_/SKILL.md") -join "`n"
+    $table = [regex]::Match($source, '(?ms)^## Quick Diagnostic\s*\n\s*\n(\|.*?)(?=\n\s*\n)').Groups[1].Value
+    $table | Should -Not -BeNullOrEmpty
+    $prompt = if ($_ -eq 'clean-architecture') { 'architecture' } else { 'code' }
+    (Get-KitFile "skills/sdd-verify/references/$prompt-reviewer-prompt.md").Replace("`r`n", "`n") | Should -Match ([regex]::Escape($table))
+  }
+}
