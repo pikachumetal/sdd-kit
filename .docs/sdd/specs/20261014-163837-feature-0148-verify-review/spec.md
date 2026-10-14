@@ -608,6 +608,7 @@ Total: ~39 sujetos, ~3,5 h y ~43 $, con una tanda de REFACTOR. Si la prueba lo s
 
 ## Enmiendas
 
+- 2026-10-14 — Scope: `review-spec.md` ganaba el punto de las decisiones del dev-lead → no se escribe: el revisor de la spec de `develop` ya marca como Crítico la decisión cubierta a medias en `s1` y en `s1b` (RED 2 de 2), y el Art. I prohíbe escribir guía sin un fallo en la línea base; el requisito «El revisor de la spec comprueba que cada decisión del dev-lead tiene una regla que la cubre entera» se cumple y queda medido — Task 5 — sin aprobar: la impone el Art. I; se presenta al dev-lead en el cierre
 - 2026-10-14 — «El cierre no repite la revisión final»: con una línea en el formato 2.x, el tramo de la re-revisión empezaba en `Pasada de fix:`, como en la 2.x → empieza en el `sobre` de `Revisión final:`, con la pasada de fix dentro, como en el cierre único — en `c4`, 2 de 2 sujetos re-revisaron desde el `sobre`: una regla para los dos formatos, y la pasada de fix, que en el cierre nuevo siempre se revisa, se revisa también aquí — Task 4 — aprobada: «Desde su «sobre» (Recomendada)»
 
 ## Aprobaciones

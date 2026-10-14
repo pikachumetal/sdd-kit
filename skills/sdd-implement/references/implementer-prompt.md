@@ -91,7 +91,7 @@ It is always OK to stop and say "this is too hard for me." Bad work is worse tha
 
 Review your work with fresh eyes:
 - **Completeness:** did I implement everything in the brief? Did I miss requirements or edge cases?
-- **Quality:** is this my best work? Do names match what things do, not how they work? Is the code clean and maintainable?
+- **Quality:** is this my best work? Are names clear and accurate (match what things do, not how they work)? Is the code clean and maintainable?
 - **Discipline:** did I avoid overbuilding (YAGNI)? Did I build only what was requested, following existing patterns?
 - **Testing:** do tests verify behavior, not mocks? Did I follow TDD (`sdd-tdd`)? Are tests comprehensive? Is the test output pristine (no stray warnings or noise)?
 

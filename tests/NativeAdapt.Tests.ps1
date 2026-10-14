@@ -79,8 +79,8 @@ Describe 'Task 2 — historia de commits' {
 }
 
 Describe 'Task 3 — revisión final y cierre' {
-  It 'el Art. IV fija el techo del revisor final de Native' {
-    Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'va con Opus y effort high \(`sdd-kit:effort-high`\): es el techo por defecto'
+  It 'el Art. IV fija los modelos de los ejes de la revisión final' {
+    Get-KitFile '.docs/sdd/constitution.md' | Should -Match 'Spec y Arquitectura en Opus, Código en Sonnet, con effort high'
   }
 
   It 'el revisor final se despacha con effort-high y opus' {

@@ -17,6 +17,8 @@ MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipi
 [ "$SC" = f2 ] && MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 2}, "execution": "native"'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
 F21=".docs/sdd/specs/20261012-100000-feature-0021-void-reason"
+F22=".docs/sdd/specs/20261013-100000-feature-0022-cancel-notice"
+F23=".docs/sdd/specs/20261013-110000-feature-0023-cancelled-list"
 
 cp -r "$IMPL/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
@@ -106,6 +108,18 @@ case "$SC" in
     commit "feat(bookings): cancelar con un motivo de la lista"
     ledger "Task 1: complete (commits $BASE1..$(short HEAD), tests: node --test test/cancel.test.js → 2/2 pass)"
     cp "$FIX/app-v1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js" ;;
+  s1)
+    mkdir -p "$R/.docs/sdd/capabilities"; cp "$FIX/capabilities/bookings.md" "$R/.docs/sdd/capabilities/bookings.md"
+    g checkout -q -b feature/0022-cancel-notice
+    put "$F22/spec.md" < "$FIX/spec-s1.md"
+    commit "docs(sdd): spec de la 0022"
+    ASK="$("$NODE" "$HERE/compose-spec-review.mjs" "$KIT" "$F22/spec.md" .docs/sdd/capabilities/bookings.md)" ;;
+  s1b)
+    mkdir -p "$R/.docs/sdd/capabilities"; cp "$FIX/capabilities/reports.md" "$R/.docs/sdd/capabilities/reports.md"
+    g checkout -q -b feature/0023-cancelled-list
+    put "$F23/spec.md" < "$FIX/spec-s1b.md"
+    commit "docs(sdd): spec de la 0023"
+    ASK="$("$NODE" "$HERE/compose-spec-review.mjs" "$KIT" "$F23/spec.md" .docs/sdd/capabilities/reports.md)" ;;
   c1)
     done_0010; tasks_md
     WS=$(ws_dir); cp "$FIX/review-spec-c1.md" "$WS/review-spec.md"; cp "$FIX/review-code-c1.md" "$WS/review-code.md" ;;
@@ -166,11 +180,11 @@ Task 2: complete (commits $BASE2..$(short HEAD), tests: node --test test/cancel.
 esac
 
 case "$SC" in
-  v1|f3|f4) export EXTRA_DISALLOWED="Agent" ;;
+  v1|f3|f4|s1|s1b) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   f1|f2) MAX_TURNS="${MAX_TURNS:-30}" ;;
-  f3|f4) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  f3|f4|s1|s1b) MAX_TURNS="${MAX_TURNS:-25}" ;;
   c1|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
   c2|c3|c4) MAX_TURNS="${MAX_TURNS:-30}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;

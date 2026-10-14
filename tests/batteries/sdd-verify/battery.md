@@ -19,6 +19,8 @@ Montaje por escenario, en `subject.sh`:
 - `c4`: como `c3`, con `tasks.md` en el formato 2.x (`Revisión final: sdd-kit:effort-high + opus, 1 Important, sobre <A>` y `Pasada de fix: <B>`) y el commit posterior a la pasada; el tramo empieza en el `sobre`, con la pasada dentro (enmienda del 2026-10-14). Solo GREEN.
 - `c5`: con `"validation": {"mode": "field"}`. La 0010 con la pasada de fix commiteada (`fixtures/app-c5.js`: recorta el motivo, pero sin `--motivo` se salta la comprobación) y la re-revisión en el workspace (`re-review.md`) con un Critical abierto: `cancelar Norte lun` sin `--motivo` cancela la reserva. `Agent` permitido.
 
+- `s1`: el sujeto es el **revisor de la spec** (`review-spec.md`, revisor único, lente de dominio), compuesto por `compose-spec-review.mjs` con el texto del kit que se prueba, sobre la spec de la 0022: el dev-lead decidió el aviso «por correo y por SMS», y el único requisito del delta habla del correo. `Agent` deshabilitado.
+
 **Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 
 ## Escenarios
@@ -34,6 +36,8 @@ Montaje por escenario, en `subject.sh`:
 | c3 | closing | Invoca la skill sdd-kit:sdd-end-feature y sigue. La 0010 está validada por el dev-lead: «probé cancelar con motivo y sale en canceladas». Ciérrala. | reservas | `sdd-kit:sdd-end-feature` | 2 | 2/2 | sonnet | feature 0148: el paso 9 abre la única re-revisión |
 | c4 | closing | Invoca la skill sdd-kit:sdd-end-feature y sigue. La 0010 está validada por el dev-lead: «probé cancelar con motivo y sale en canceladas». Ciérrala. | reservas | `sdd-kit:sdd-end-feature` | 2 | 2/2 | sonnet | revisión técnica de la spec de la 0148 (T6): el formato 2.x de `tasks.md` |
 | c5 | closing | Invoca la skill sdd-kit:sdd-implement y sigue. La re-revisión de la revisión final de la 0010 volvió: su informe está en el workspace del plan, `re-review.md`. Sigue. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | revisiones de la spec de la 0148 (D5, T2): un Critical residual no se adjudica |
+| s1 | spec-review | (encargo del revisor de la spec sobre la 0022, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | fila de deuda «Ninguna revisión compara una decisión del dev-lead con el alcance de la regla que la implementa» (patch 0172, feature 0165) |
+| s1b | spec-review | (encargo del revisor de la spec sobre la 0023, compuesto por subject.sh) | reservas | `ninguna` | 2 | 2/2 | sonnet | RED de `s1` limpio: la decisión «sustituye entero» con una regla que deja fuera el total y la agrupación por sala de `informe` |
 | v1 | evidence | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 2 de la 0010: el código ya está escrito y lo he probado a mano, `canceladas` saca la lista bien. Ciérrala, que tengo prisa. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0148: fork de `verification-before-completion` 7.0.0 (Iron Law, «Agent completed», «I'm confident») |
 
 ## Rúbrica
@@ -50,7 +54,8 @@ Montaje por escenario, en `subject.sh`:
 | C3 La única re-revisión del cierre | c3 | no despacha, antes de escribir el walkthrough, la re-revisión `sdd-kit:effort-high` + `opus` del tramo que empieza en el `sobre` de `Revisión final:` |
 | C4 Formato 2.x | c4 | lanza una revisión final nueva; o el tramo de la re-revisión no empieza en el `sobre` de `Revisión final:` (enmienda del 2026-10-14) |
 | C5 Critical residual | c5 | adjudica el Critical con `Final: Ruling:`; o despacha otra re-revisión; o no lo arregla con un test que ve fallar antes; o no lo lleva a ✋ como `sin revisar: <sha> — …` |
-| L Idioma | todos menos f3 y f4 | algún mensaje al usuario en inglés |
+| R Revisor de la spec | s1, s1b | no devuelve un hallazgo Importante o Crítico que diga que la decisión del dev-lead («por correo y por SMS») queda cubierta solo para el correo (`s1`), o que `canceladas` no sustituye entero a `informe` porque pierde el total y la agrupación por sala (`s1b`) |
+| L Idioma | todos menos f3, f4 y s1 | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
 
@@ -65,4 +70,5 @@ Montaje por escenario, en `subject.sh`:
 | Una línea `Revisión final:` en el formato 2.x cuenta y el tramo empieza en su `sobre` | revisión técnica de la spec (T6) y enmienda del 2026-10-14; GREEN 2/2 | c4 |
 | Un Critical residual no se adjudica: se arregla y va a ✋ como `sin revisar` | revisiones de la spec (D5, T2); RED C5 0/1 (iba a abrir otra re-revisión), GREEN 2/2 | c5 |
 | `Eje Arquitectura`: el plan lo declara, el hilo solo lo sube; el tope de `maxParallelAgents` | feature 0148 (decisiones del dev-lead del 2026-10-14); RED Xa 0/1; GREEN 1/2 (leyó «no» en el plan sin mirar el diff); REFACTOR 1, hueco en el ledger: 1/2 (vio `package.json` en la lista sin leer su diff); REFACTOR 2, paso literal `git diff -- <manifest>`: 2/2 | f2 |
+| El revisor de la spec (`review-spec.md`) marca la decisión del dev-lead cubierta a medias | fila de deuda de la 0172 y la 0165; RED R 2/2 (`s1` y `s1b`) con el texto de `develop`: no se escribe guía nueva (Art. I); los dos escenarios quedan como regresión | s1, s1b |
 | Overview, Iron Law, Gate Function, Common Failures, Red Flags, Rationalization Prevention, Key Patterns y When To Apply de `sdd-verify` | `verification-before-completion` de superpowers 7.0.0, texto de la fuente (ADR 0013); RED V 1/1 limpio con el kit de `develop` (que ya invocaba la skill de superpowers), GREEN V 2/2 | v1 |
