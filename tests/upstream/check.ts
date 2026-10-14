@@ -1,4 +1,5 @@
 // Uso: node tests/upstream/check.ts [<ruta de THIRD_PARTY_NOTICES.md>], con SDD_UPSTREAM_DIR apuntando a la carpeta de los clones.
+// El package.json de esta carpeta ("type": "module") evita que Node avise por stderr y ensucie la salida.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { git } from '../../cli/src/git/git.ts';

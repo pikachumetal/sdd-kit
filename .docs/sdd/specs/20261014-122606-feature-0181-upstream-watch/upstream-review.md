@@ -57,6 +57,7 @@ De dónde toma texto cada skill y cada plantilla del kit, y qué invoca de fuera
 | Escribir los `spec.md` de las capacidades de uno en uno, y retomar por el primero que falta | — | se mantiene: el kit escribe un `spec.md` con un delta por capacidad (hace distinto) | — |
 | Tasks: cada una dice cómo se verifica; cada grupo trae sus tests y su documentación, sin un grupo final de «tests y docs» | `plan-template.md` («Verificación» y RED por task) y `plan-writing.md` («Fold … documentation into the task whose deliverable needs them») | se mantiene: el kit ya lo dice | — |
 | `explore` registra lo explorado (un cambio, los artefactos que se nombran) si se le pide o si el usuario acepta su oferta, y nunca escribe código | `sdd-explore`, pasos 4 y 5: salida durable con aprobación, y el trabajo va al roadmap | se mantiene: el kit ya lo hace | — |
+| Tasks: sección opcional `## Workflow follow-up` para los pasos que dependen de archivar, fuera del progreso; `- [ x]` cuenta como hecha, y `- [~]`, `- [-]` y `- []`, no | — | sin pieza del kit: el avance va en el ledger (`sdd task done`), no en casillas, y los pasos de cierre viven en `sdd-end-feature` | — |
 | `update` propone ficheros que faltan en un artefacto con varios; contrato JSON, completions de PowerShell, herramientas soportadas y la página de comunidad (que lista MySpec) | — | sin pieza del kit | — |
 
 ## mattpocock/skills `v1.2.3` → `v1.3.1`
@@ -74,15 +75,21 @@ De dónde toma texto cada skill y cada plantilla del kit, y qué invoca de fuera
 
 ## Spec Kit `v0.8.7` → `v1.2.0`
 
-`git -C D:/code/github/upstream/spec-kit diff v0.8.7..v1.2.0 -- CHANGELOG.md spec-driven.md templates/` (90 versiones; de `CHANGELOG.md`, las 50 líneas `feat` sin extensiones, presets ni catálogos). Sin fork: el kit toma conceptos.
+`git -C D:/code/github/upstream/spec-kit diff -w v0.8.7..v1.2.0 -- CHANGELOG.md spec-driven.md templates/`. Son 90 versiones; de `CHANGELOG.md` se leen las 50 líneas `feat` sin extensiones, presets ni catálogos, y de `templates/commands/` los +633/−161 sin espacios. Sin fork: el kit toma conceptos. La primera versión de esta sección dio `templates/` por revisado sin leer `templates/commands/`, y la fila de `/analyze` salía al revés; lo vio la revisión final de rama y se corrigió en su pasada de fix.
 
 | Cambio | Pieza del kit | Decisión | Destino |
 | --- | --- | --- | --- |
 | `/speckit.converge`: compara el código con spec, plan y tasks y añade a `tasks.md` lo que falta, sin reescribir la intención para que encaje con el código | revisión final de rama y smoke con una fila por THEN (`sdd-implement`, paso 7 de `sdd-start-feature`); la acción update pide aprobación para cambiar la spec | se mantiene: el kit ya lo hace | — |
 | Persistencia de la spec tras la entrega: el equipo elige cómo mantener los artefactos; los descubrimientos no cambian la intención sin hacerlo explícito | Art. XI: la spec es un artefacto de evento y `capabilities/` la verdad viva | se mantiene: el kit ya eligió | — |
 | `spec-driven.md`: los artículos IV a VI de la constitution los define cada proyecto | `constitution-template.md`, con las reglas de producto del proyecto | se mantiene | — |
-| `/analyze` en un subagente aparte (Claude) | review de spec con revisores subagentes (`review-spec.md`) | se mantiene | — |
-| `templates/`: espacios al final de línea y la nota del plan | — | sin pieza del kit | — |
+| `/analyze` pasó a un subagente aparte (`98ee02a9`) y se revirtió (`c49966da`): su informe largo volvía a la conversación en cada fork y acababa congelando la sesión; en `v1.2.0` corre en la sesión | los subagentes del kit: el revisor de spec devuelve como mucho diez hallazgos de una línea (`review-spec.md`), y el implementador escribe su informe en un fichero y devuelve solo estado, commits, una línea de tests y dudas (`implementer-prompt.md`); el revisor final devuelve su informe entero, pero una vez por feature | se mantiene: el kit ya acota lo que vuelve en los despachos que se repiten | — |
+| `clarify`: cada pregunta es una frase interrogativa completa que acaba en `?`, nunca una etiqueta ni un id de requisito; detrás, una frase de por qué importa, en lenguaje llano y con la jerga definida en la misma frase | `sdd-grilling`, «Shape of a question»: la decisión de diseño abre con `❓ **<title>**`, que puede quedarse en etiqueta, y no pide el porqué | se asume como candidato: es guía de una skill y pide su RED (Art. I) | fila de deuda nueva de `sdd-grilling` |
+| `clarify`: tras cada aclaración se vuelve a evaluar el checklist de calidad de la spec y se informa de lo que pasa a cumplir y de lo que retrocede | repaso de coherencia del paso 4 de `sdd-propose`: al cambiar un literal se buscan y cambian todas sus apariciones | se mantiene: el kit no tiene checklist de requisitos y su repaso cubre lo mismo | — |
+| `checklist` e `implement`: `[x]` en un checklist significa «criterio revisado», no trabajo hecho, y `implement` lee los checklists sin tocarlos | — | sin pieza del kit: no hay checklist de requisitos, y el avance de las tasks va en el ledger (`sdd task done`), no en casillas | — |
+| `plan`: `quickstart.md`, una guía de validación ejecutable de punta a punta (requisitos, arranque, comandos y resultado esperado) | el guion de pruebas y el smoke con una fila por THEN del paso 7 de `sdd-start-feature`, y «Se prueba en la aplicación» de cada task del plan | se mantiene: el kit ya lo hace | — |
+| `tasks`: cada restricción de campo de `data-model.md` (longitud, nulos, enumerados, validaciones) se cita literal en la descripción de la task | `plan-template.md`: «los valores de la spec que fija» en cada Step 1, y las Restricciones globales copiadas literales | se mantiene: el kit ya lo dice | — |
+| `specify`, `clarify` y `tasks` leen la constitution si existe; `constitution` se limita a la constitution y deja como «Next Actions» lo que no es de gobierno | paso 1 de `sdd-propose` (lee la constitution); la constitution del kit cambia solo por una feature | se mantiene | — |
+| `taskstoissues`, obsoleto y con deduplicación de issues; hooks obligatorios al acabar cada comando; `templates/` de la raíz, solo espacios al final de línea | — | sin pieza del kit | — |
 
 ## impeccable `skill-v4.3.1` → `skill-v4.5.2`
 
