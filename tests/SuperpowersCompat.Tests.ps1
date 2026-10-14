@@ -81,8 +81,9 @@ Describe 'Compatibilidad con superpowers 7.0.0' {
     Get-KitFile 'README.md' | Should -Match 'Versión validada: 7\.0\.0'
   }
 
-  It 'las referencias de vigilancia declaran validada la 7.0.0 en la caché de superpowers-marketplace' {
-    Get-KitFile '.docs/sdd/tech-stack.md' | Should -Match 'superpowers — .*cache/superpowers-marketplace/superpowers/.*Validado: 7\.0\.0'
+  It 'THIRD_PARTY_NOTICES vigila superpowers en la 7.0.0' {
+    $row = (Get-KitFile 'THIRD_PARTY_NOTICES.md') -split "`n" | Where-Object { $_ -match '^\| superpowers \|' }
+    $row | Should -Match '\| \[obra/superpowers\]\(https://github\.com/obra/superpowers\) \| `v7\.0\.0` \|'
   }
 
   It 'el paso de implementación de plan-template sigue «What a Step Contains» de writing-plans 6.4.2' {
