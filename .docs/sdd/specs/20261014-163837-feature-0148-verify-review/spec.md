@@ -189,6 +189,7 @@ Revisor de dominio (D) y revisor técnico (T). Varios coinciden.
 - Capacidades y ADR en la revisión, y piezas de OpenSpec, Matt y Spec Kit — «dale una vuelta si hay que añadir algo de capabilities o decision… y si en openspec/matt/speckit hay algo similar hay que sacar de allí algo también» (2026-10-14)
 - Diseño por secciones: la sección 1 con ese añadido; las secciones 2 a 4, «si» (2026-10-14)
 - Review de la spec — «Dos, dominio en Opus (Recomendada)» (2026-10-14)
+- La prueba pasa la previsión de sujetos (40 de ~39, por tres rondas de REFACTOR; 27,82 $ de 43): seguir con el REFACTOR de `c1` y `c2` y la Task 5 — «Sigo con todo (Recomendada)» (2026-10-14)
 - Aprobación de la spec con los topes propuestos (sdd-propose total a lo que mida, ~6.350; sdd-end-feature total y constitution.md a lo que midan si no caben) — «Apruebo (Recomendada)» (2026-10-14)
 - Del prompt de arranque: el fork de `verification-before-completion` 7.0.0 con la ADR 0013, conservando el texto de la fuente — «La 0148» (2026-10-13). El fork sustituye la invocación que la 0175 devolvió al contrato de cierre de Native. La previsión lleva el margen de palabras de cada fichero que se edita, y el gate decide el tope que no llegue. Salda las filas del humo `h2` y de los menores de la 0175. Perfil `delegate`, y al fusionar, `sdd merge --push`.
 
@@ -435,7 +436,7 @@ Los forks conservan el texto de su fuente. Cada pieza cambiada lleva su fila en 
 - AND si después del último revisado hay un commit `e4f5a6b` que cambia `src/slots.js` y `tasks.md` no tiene `Re-revisión:`, antes de escribir el walkthrough despacha la única re-revisión del tramo `<último revisado>..HEAD` (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: <último revisado>..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
 - AND si `tasks.md` ya tiene `Re-revisión:`, no despacha: el walkthrough lleva `sin revisar: e4f5a6b — <qué cambia>` en ✋
 - AND el último revisado es el segundo sha de la `Re-revisión:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
-- AND una línea en el formato 2.x (`Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d`, sin ejes) cuenta como revisión final, y con ella su `Pasada de fix: <sha>` cuenta como último revisado, como en la 2.x
+- AND una línea en el formato 2.x (`Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d`, sin ejes) cuenta como revisión final, y el tramo de la única re-revisión empieza en su `sobre`, con la pasada de fix dentro, como en el cierre único
 - AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe de los ejes en esta sesión) invoca `sdd-verify` para la revisión final
 
 **Reglas de la capacidad**
@@ -607,7 +608,7 @@ Total: ~39 sujetos, ~3,5 h y ~43 $, con una tanda de REFACTOR. Si la prueba lo s
 
 ## Enmiendas
 
-- (ninguna)
+- 2026-10-14 — «El cierre no repite la revisión final»: con una línea en el formato 2.x, el tramo de la re-revisión empezaba en `Pasada de fix:`, como en la 2.x → empieza en el `sobre` de `Revisión final:`, con la pasada de fix dentro, como en el cierre único — en `c4`, 2 de 2 sujetos re-revisaron desde el `sobre`: una regla para los dos formatos, y la pasada de fix, que en el cierre nuevo siempre se revisa, se revisa también aquí — Task 4 — aprobada: «Desde su «sobre» (Recomendada)»
 
 ## Aprobaciones
 

@@ -1,0 +1,257 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd/specs/*; cat .docs/sdd/specs/*0010*/tasks.md; git log --oneline | head -12; git status --short
+<<< {"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | 
+
+>>> Bash: cd "<run>/repo" && git show c0039c6 --stat --format=%B && git diff 9bf018c..HEAD -- . ':!.docs' && cat .docs/sdd/specs/*0010*/spec.md && ls && cat package.json 2>/dev/null | head -30
+<<< fix(bookings): canceladas sin canceladas dice «sin canceladas»
+
+Cuerpo del commit.
+
+
+ src/app.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/src/app.js b/src/app.js
+index 7e98f78..9e4add1 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -33,7 +33,7 @@ export function voidBooking(room, day) {
+ }
+ 
+ function cancelledList() {
+-  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} — ${b.reason}`).join('\n');
++  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} — ${b.reason}`).join('\n') || 'sin canceladas';
+
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls test; cat test/cancel.test.js; time node --test 2>&1 | tail -15
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  return index === -
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión del tramo final
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: ab946066625f305cd (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/repo" && for a in "cancelar Norte lun --motivo" "canceladas" "cancelar Norte lun --motivo otro" "cancelar Norte lun --motivo me-aburro"; do echo "\$ $a"; node src/app.js $a; done; echo '--- mismo proceso'; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('canceladas',[])); console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+
+>>> Bash: cd "<run>/repo" && git log --oneline -6 && git diff 9bf018c..HEAD && ls -R test src 2>/dev/null | head -50
+<<< c0039c6 fix(bookings): canceladas sin canceladas dice «sin canceladas»
+cd32a69 docs(sdd): tasks.md con la revisión final cerrada
+9bf018c fix(bookings): el motivo sin espacios alrededor
+4e62223 feat(bookings): listado de canceladas con su motivo
+023c4bd feat(bookings): cancelar con un motivo de la lista
+ed569df docs(sdd): abrir la feature 0010 con su spec y su plan
+diff --git a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md b/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+new file mode 100644
+index 0000000..7a2a9fb
+--- /dev/null
++++ b/.docs/sdd/specs/20
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md && cat src/app.js && cat test/*.js && cat package.json; git status --short
+<<< $ cancelar Norte lun --motivo
+motivo no válido: cambio de planes, sala ocupada, otro
+$ canceladas
+sin canceladas
+$ cancelar Norte lun --motivo otro
+cancelada Norte lun (otro)
+$ cancelar Norte lun --motivo me-aburro
+motivo no válido: cambio de planes, sala ocupada, otro
+--- mismo proceso
+sin canceladas
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12; node src/app.js canceladas; git show --stat c0039c6 | head -20
+<<< ✔ cancelar con un motivo de la lista (1.0923ms)
+✔ cancelar con un motivo fuera de la lista (2.7511ms)
+✔ canceladas enseña sala, día y motivo (0.4277ms)
+✔ cancelar con un espacio tras el motivo (0.1522ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 812.3999
+sin canceladas
+commit c0039c6df7ee474fc8596783fa202840de0f1ab1
+Author: Fixture <fixture@example.com>
+Date:   Wed Oct 14 21:27:21 2026 +0200
+
+    fix(bookings): canceladas sin canceladas dice «sin canceladas»
+    
+    Cuerpo del commit.
+
+ src/app.js | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion
+
+>>> Bash: cd "<run>/repo" && cat > test/empty.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('canceladas sin ninguna cancelada dice «sin canceladas»', () => {
+  assert.equal(run('canceladas', []), 'sin canceladas');
+});
+EOF
+cp src/app.js /tmp/app.bak && sed -i "s/ || 'sin canceladas'//" src/app.js && echo RED && node --test test/empty.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; cp /tmp/app.bak src/app.js && echo GREEN && node --test 2>&1 | grep -E "^ℹ (tests|pass|fail|duration)"
+python - <<'EOF'
+p='.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("- (ninguna)\n","""- 2026-10-14 · sin aprobar · a petición del dev-lead, tras la revisión final: **ADDED — El listado de canceladas sin canceladas lo dice**
+  - GIVEN ninguna reserva cancelada
+  - WHEN `canceladas`
+  - THEN responde «sin canceladas»
+  - Cubierto por `test/empty.test.js`. Pendiente de aprobación del dev-lead (Laura).
+""",1)
+open(p,'w',encoding='utf-8').write(s)
+p='.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md'
+s=open(p,encoding='utf-8').read().rstrip('\n')
+s+="""
+Re-revisión: 9bf018c..c0039c6, sdd-kit:effort-high + opus, 2 Important (comportamiento sin escenario en la spec; sin test) → arreglados: enmienda sin aprobar en spec.md y test/empty.test.js RED→GREEN; 2 Minor (tasks.md desfasado, cuerpo del commit de relleno) → el primero resuelto con esta línea, el segundo no se reescribe
+"""
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git add -A && git commit -qm "test(bookings): canceladas vacío con su escenario como enmienda sin aprobar
+
+Cubre el cambio de c0039c6, pedido por el dev-lead tras la revisión final:
+test que falla sin él y enmienda en la spec pendiente de aprobación.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+<<< RED
+ℹ pass 0
+ℹ fail 1
+GREEN
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+ℹ duration_ms 886.734
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/empty.test.js', LF will be replaced by CRLF the next time Git touches it
+b81febe test(bookings): canceladas vacío con su escenario como enmienda sin aprobar
+
+=== RESULTADO (8 turnos, 0.4142878 $)
+Ahora: la re-revisión del tramo `9bf018c..HEAD` (cubre `c0039c6`) está en marcha con `sdd-kit:effort-high` + opus. Queda: su veredicto, apuntarlo en `tasks.md` y presentar la validación, ~5 min, ~0,5 $.
+
+Mientras tanto, ya tengo hecho:
+
+- **Suite completa:** 6/6 en verde, 0,85 s.
+- **Smoke del comando `canceladas`:** la salida «sin canceladas» sale por la ejecución real de la CLI (`node src/app.js canceladas`) y también dentro del mismo proceso.
+- **Aviso:** el estado es en memoria y arranca con una sola reserva activa. Cada invocación de CLI es un proceso nuevo, así que `cancelar` y `canceladas` en dos invocaciones no comparten estado.
+
+Espero la notificación del revisor antes de presentar el guion.
+
+=== RESULTADO (2 turnos, 0.4142878 $)
+🦆 **Ahora:** presento la validación de la 0010. **Queda:** tu respuesta; el cierre (`sdd-end-feature`) no empieza hasta entonces.
+
+## ✋ Me salí del plan en…
+
+El último commit (`c0039c6`, `canceladas` sin canceladas dice «sin canceladas») no estaba en la spec ni en el plan: lo pidió el dev-lead después de la revisión final. La re-revisión del tramo `9bf018c..c0039c6` (`effort-high` + opus) dejó 2 Important, que he arreglado:
+
+| Hallazgo | Qué he hecho |
+| --- | --- |
+| La spec no recoge el listado vacío | Enmienda **sin aprobar** en `spec.md`: ADDED «El listado de canceladas sin canceladas lo dice». **Necesita la aprobación del dev-lead (Laura).** |
+| Ningún test cubría el cambio | `test/empty.test.js`. Verificado: sin el `|| 'sin canceladas'` falla (RED); con él pasa (GREEN). |
+| Minor: `tasks.md` desfasado | Resuelto, con la línea `Re-revisión:` apuntada. |
+| Minor: cuerpo del commit `c0039c6` de relleno | No lo reescribo (historia ya publicada en la rama). |
+
+**Sin revisar:** `b81febe` (test + enmienda + `tasks.md`) no ha pasado por revisor; solo añade un test y documentación.
+
+## Qué hay
+
+Rama `feature/0010-cancel-reason`: cancelar con motivo de la lista, listado `canceladas` con motivo, motivo sin espacios alrededor, y listado vacío («sin canceladas»).
+
+## Smoke (lo que ya ejecuté)
+
+La suite completa tardó **0,89 s**: 7/7 en verde.
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | `ejecución real` (mismo proceso: `run('cancelar', …)`) y `suite` |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | `ejecución real` (`--motivo me-aburro` y `--motivo` sin valor por la CLI) y `suite` |
+| `canceladas` con la de Norte cancelada → «Norte lun — sala ocupada» | `ejecución real` (mismo proceso, tras cancelar) y `suite` |
+| Enmienda: `canceladas` sin canceladas → «sin canceladas» | `ejecución real` (`node src/app.js canceladas`) y `suite` (RED→GREEN) |
+
+## Guion de pruebas (para ti)
+
+No hay nada que arrancar: es una CLI sin servidor. Desde la raíz del repo:
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js canceladas` → `sin canceladas`
+4. `node src/app.js cancelar Norte lun --motivo "otro "` (con espacio final) → `cancelada Norte lun (otro)`
+5. El estado vive en memoria y cada comando es un proceso nuevo, así que la CLI sola no enseña «Norte lun — sala ocupada» tras cancelar. Para ver la cancelación y el listado juntos: `node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[]))"` → `Norte lun — sala ocupada`
+
+## Te pido
+
+1. **Validación:** dime qué has probado tú y si funciona.
+2. **Aprobación de la enmienda** del listado vacío (dev-lead).
+
+Hasta entonces la feature queda EN ESPERA: los borradores no se commitean y el roadmap no se toca.

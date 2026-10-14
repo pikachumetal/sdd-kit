@@ -30,11 +30,11 @@ Describe 'Re-revisión del tramo' {
   }
 
   It 'la línea de la revisión final guarda el commit revisado' {
-    $script:Verify | Should -Match ([regex]::Escape('Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>'))
+    $script:Verify | Should -Match ([regex]::Escape('Revisión final: Spec opus+high, <verdict> · Código sonnet+high, <verdict> · Arquitectura <opus+high, <verdict> | no (plan)>, sobre <sha corto>'))
   }
 
   It 'el ruling manda el commit posterior a la re-revisión del tramo' {
-    $script:Profiles | Should -Match '(?i)si ya salió, aunque no haya vuelto, en la re-revisión del tramo'
+    $script:Profiles | Should -Match '(?i)si ya salió, aunque no haya vuelto, en la única re-revisión del tramo'
   }
 }
 
@@ -92,7 +92,7 @@ Describe 'Bordes del cierre' {
 
   It 'el paso 9 compara HEAD con el último commit revisado y lleva las condiciones del hilo' {
     $step = Get-SkillStep 'sdd-end-feature' 9
-    foreach ($anchor in '`Pasada de fix:`', '`Re-revisión:`', '<último revisado>..HEAD', 'git diff --numstat', 'git show --remerge-diff', 'No lances otra') {
+    foreach ($anchor in '`Re-revisión:`', '<último revisado>..HEAD', 'git diff --numstat', 'git show --remerge-diff', 'No lances otra') {
       $step | Should -Match ([regex]::Escape($anchor))
     }
   }
@@ -102,13 +102,13 @@ Describe 'Bordes del cierre' {
     $step | Should -Match ([regex]::Escape('Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN'))
   }
 
-  It 'el paso 7 no abre re-revisión por la pasada de fix y cuenta desde el último revisado' {
+  It 'el paso 7 cierra con la única re-revisión, que cubre la pasada de fix, y cuenta desde el último revisado' {
     $step = Get-SkillStep 'sdd-start-feature' 7
-    $step | Should -Match ([regex]::Escape('La pasada de fix de la propia revisión final no abre la re-revisión'))
+    $step | Should -Match ([regex]::Escape('que cubre la pasada de fix y tus commits posteriores'))
     $step | Should -Match ([regex]::Escape('<último revisado>..HEAD'))
   }
 
-  It 'el ruling saca la pasada de fix de la re-revisión del tramo' {
-    $script:Profiles | Should -Match ([regex]::Escape('La pasada de fix de la propia revisión final tampoco entra'))
+  It 'el ruling mete la pasada de fix en la única re-revisión' {
+    $script:Profiles | Should -Match ([regex]::Escape('La pasada de fix de la propia revisión final entra en esa re-revisión'))
   }
 }

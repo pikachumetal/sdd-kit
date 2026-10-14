@@ -13,6 +13,7 @@ subject_init "$1" "$2" "$4" "$([ -d "$1/skills/$GUARD" ] && echo "$GUARD" || ech
 ASK="$(cell Petición)"
 SDD_CLI="$KIT/cli/bin/sdd.js"
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"'
+[ "$SC" = c5 ] && MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native", "validation": {"mode": "field"}'
 [ "$SC" = f2 ] && MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 2}, "execution": "native"'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
 F21=".docs/sdd/specs/20261012-100000-feature-0021-void-reason"
@@ -38,6 +39,34 @@ ledger() {
   printf '# SDD ledger — plan: %s\n%s\n' "$F10/plan.md" "$1" > "$ws/progress.md"
 }
 
+# La 0010 implementada en Native, con sus dos tasks en el ledger y en tasks.md; deja A con el sha de la última task.
+done_0010() {
+  local base1 base2
+  open_0010
+  base1=$(short HEAD)
+  cp "$IMPL/fixtures/app-task1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-task1.test.js" "$R/test/cancel.test.js"
+  commit "feat(bookings): cancelar con un motivo de la lista"
+  base2=$(short HEAD)
+  cp "$IMPL/fixtures/app-done.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js"
+  commit "feat(bookings): listado de canceladas con su motivo"
+  A=$(short HEAD)
+  ledger "Task 1: complete (commits $base1..$base2, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits $base2..$A, tests: node --test test/cancel.test.js → 3/3 pass)"
+}
+tasks_md() {
+  printf '%s\n' '---' 'id: 20261008-100000-feature-0010-cancel-reason' 'title: Tasks — Motivo al cancelar' '---' '' '# Tasks — Motivo al cancelar (registro vivo)' '' \
+    '| # | Task | Status | Commit | Notas |' '| --- | --- | --- | --- | --- |' "| 1 | Cancelar con motivo | done | $A | |" "| 2 | Listado de canceladas | done | $A | |" '' "$@" | put "$F10/tasks.md"
+}
+fix_trim() {
+  sed -i 's/return index === -1 ? undefined : params\[index + 1\];/return index === -1 ? undefined : params[index + 1]?.trim();/' "$R/src/app.js"
+  printf '\ntest("cancelar con un espacio tras el motivo", () => {\n  assert.equal(run("cancelar", ["Sur", "mar", "--motivo", "otro "]), "sin reserva Sur mar");\n});\n' >> "$R/test/cancel.test.js"
+  commit "fix(bookings): el motivo sin espacios alrededor"
+}
+empty_list_text() {
+  sed -i "s/\.join('\\\\n');/.join('\\\\n') || 'sin canceladas';/" "$R/src/app.js"
+  commit "fix(bookings): canceladas sin canceladas dice «sin canceladas»"
+}
+ws_dir() { cd "$R" && "$NODE" "$SDD_CLI" workspace "$F10/plan.md" | tail -n 1; }
 # El encargo del eje de f3 o f4, compuesto con el texto del kit que se prueba.
 axis_brief() {
   local axis=spec values="$RUN/axis-values.json" code focus files adrs caps dir
@@ -77,7 +106,29 @@ case "$SC" in
     commit "feat(bookings): cancelar con un motivo de la lista"
     ledger "Task 1: complete (commits $BASE1..$(short HEAD), tests: node --test test/cancel.test.js → 2/2 pass)"
     cp "$FIX/app-v1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js" ;;
-  f3|f4)
+  c1)
+    done_0010; tasks_md
+    WS=$(ws_dir); cp "$FIX/review-spec-c1.md" "$WS/review-spec.md"; cp "$FIX/review-code-c1.md" "$WS/review-code.md" ;;
+  c2)
+    done_0010; fix_trim; B=$(short HEAD)
+    tasks_md "Revisión final: Spec opus+high, 1 Minor · Código sonnet+high, 1 Important · Arquitectura no (plan), sobre $A" "Pasada de fix: $B, 1 hallazgo RED→GREEN" "Re-revisión: $A..$B, sdd-kit:effort-high + opus, limpia"
+    commit "docs(sdd): tasks.md con la revisión final cerrada"; empty_list_text ;;
+  c3)
+    done_0010
+    tasks_md "Revisión final: Spec opus+high, limpia · Código sonnet+high, limpia · Arquitectura no (plan), sobre $A"
+    commit "docs(sdd): tasks.md con la revisión final"; empty_list_text ;;
+  c4)
+    done_0010; fix_trim; B=$(short HEAD)
+    tasks_md "Revisión final: sdd-kit:effort-high + opus, 1 Important, sobre $A" "Pasada de fix: $B, 1 hallazgo RED→GREEN"
+    commit "docs(sdd): tasks.md con la revisión final"; empty_list_text ;;
+  c5)
+    done_0010
+    cp "$FIX/app-c5.js" "$R/src/app.js"
+    printf '\ntest("cancelar con un espacio tras el motivo", () => {\n  assert.equal(run("cancelar", ["Sur", "mar", "--motivo", "otro "]), "sin reserva Sur mar");\n});\n' >> "$R/test/cancel.test.js"
+    commit "fix(bookings): el motivo sin espacios alrededor"; B=$(short HEAD)
+    tasks_md "Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important · Arquitectura no (plan), sobre $A" "Pasada de fix: $B, 1 hallazgo RED→GREEN" "Re-revisión: $A..$B, sdd-kit:effort-high + opus, 1 Critical"
+    commit "docs(sdd): tasks.md con la re-revisión"
+    WS=$(ws_dir); cp "$FIX/re-review-c5.md" "$WS/re-review.md" ;;  f3|f4)
     mkdir -p "$R/.docs/sdd/decisions" "$R/.docs/sdd/capabilities"
     cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
     cp "$FIX/capabilities/"*.md "$R/.docs/sdd/capabilities/"
@@ -120,11 +171,13 @@ esac
 case "$SC" in
   f1|f2) MAX_TURNS="${MAX_TURNS:-30}" ;;
   f3|f4) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  c1|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
+  c2|c3|c4) MAX_TURNS="${MAX_TURNS:-30}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
-for kept in spec plan tasks; do [ -f "$R/$F10/$kept.md" ] && subject_keep "$R/$F10/$kept.md" "$kept.md"; done
+for kept in spec plan tasks walkthrough; do [ -f "$R/$F10/$kept.md" ] && subject_keep "$R/$F10/$kept.md" "$kept.md"; done
 [ -f "$R/test/cancel.test.js" ] && subject_keep "$R/test/cancel.test.js" cancel.test.js
 [ -f "$R/src/app.js" ] && subject_keep "$R/src/app.js" app.js
 for ledger in "$R"/.superpowers/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done

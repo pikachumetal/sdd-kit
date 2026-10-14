@@ -140,7 +140,7 @@ Describe 'Revisión final — pase de fix' {
   }
 
   It 'sdd-implement apunta la revisión final en tasks.md' {
-    Get-KitFile 'skills/sdd-verify/SKILL.md' | Should -Match 'write in `tasks.md` `Revisión final:'
+    Get-KitFile 'skills/sdd-verify/SKILL.md' | Should -Match 'write `Revisión final: Spec opus\+high'
   }
 
   It 'el paso 9 del cierre busca la revisión final en tasks.md y no en el ledger' {

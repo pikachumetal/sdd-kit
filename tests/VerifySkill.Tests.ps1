@@ -70,3 +70,22 @@ Describe 'Encargos de los ejes' -Tag 'Slow' {
     (Get-KitFile "skills/sdd-verify/references/$prompt-reviewer-prompt.md").Replace("`r`n", "`n") | Should -Match ([regex]::Escape($table))
   }
 }
+
+Describe 'Cierre de la revisión' {
+  It 'ningún fichero de skills/ invoca las skills sustituidas' {
+    $hits = Get-ChildItem (Join-Path $script:RepoRoot 'skills') -Recurse -File |
+      Where-Object { $_.FullName -notlike '*sdd-verify*NOTICE' } |
+      Select-String -Pattern 'superpowers:verification-before-completion', 'superpowers:requesting-code-review', 'code-reviewer\.md'
+    $hits | ForEach-Object { "$($_.Path):$($_.LineNumber)" } | Should -BeNullOrEmpty
+  }
+
+  It 'el cierre vive en sdd-verify' {
+    $script:Skill | Should -Match '(?m)^## Closing the review\s*$'
+  }
+
+  It 'un Critical residual no se adjudica y una re-revisión no abre otra' {
+    $script:Skill | Should -Match 'A Critical is never adjudicated'
+    $script:Skill | Should -Match 'A re-review never opens another'
+    $script:Skill | Should -Match ([regex]::Escape('sin revisar: <sha> — <what it changes>'))
+  }
+}
