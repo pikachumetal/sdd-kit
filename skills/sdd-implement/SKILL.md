@@ -102,7 +102,7 @@ Everything you print, and every tool result, stays resident in your context for 
    - Every `Expected:` line in the brief was compared against real output.
    - Every deviation from the brief has a `Ruling:` line in the ledger.
 
-   **REQUIRED SUB-SKILL:** `superpowers:verification-before-completion` governs the claim. If any item is missing, the task is not complete: finish it.
+   **REQUIRED SUB-SKILL:** `sdd-verify` governs the claim. If any item is missing, the task is not complete: finish it.
 4. **Close, in this order**: compare the RED copy with the committed test using `git diff --no-index` — a change that isn't formatting is a ruling in the ledger; commit the task; check the commit exists — if `HEAD` is still at the task's base, the pre-commit rejected it: read its message and fix the cause before committing again, because the task's «Verificación» is narrower than the hook and `sdd task done` would pass anyway (`tests/closing-verification-red.md`); then, in its own call, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It runs the command, keeps the full output in the workspace, prints the tail and appends `Task <N>: complete (commits <base7>..<head7>, tests: <command> → <result>)` to the ledger, with `HEAD`; it records the task even if the command prints nothing. The command must exit non-zero on failure: with Pester, `-CI`, or `Invoke-Pester` exits 0 with a red test (`tests/task-done-exit-code-red.md`). A failing run records nothing; the task is not complete. When it records, mark the todo complete and take the next task. (`tests/native-adapt-red.md`)
 
 | Excuse | Reality |

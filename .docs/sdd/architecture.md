@@ -16,7 +16,7 @@
 │   ├── sdd-propose/SKILL.md
 │   ├── sdd-start-feature/SKILL.md
 │   ├── sdd-implement/SKILL.md
-│   ├── sdd-{tdd,debugging,worktrees,parallel-agents}/
+│   ├── sdd-{tdd,debugging,worktrees,parallel-agents,verify}/
 │   ├── sdd-end-feature/SKILL.md
 │   ├── sdd-start-patch/SKILL.md
 │   ├── sdd-end-patch/SKILL.md

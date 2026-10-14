@@ -101,6 +101,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-propose` | La entrada de un cambio: lee el proyecto, clasifica el carril y escribe lo que va antes de implementar (spec y plan, o la apertura del patch). |
 | `sdd-start-feature` | El carril completo desde la implementación: tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
 | `sdd-implement` | Implementa el plan task a task: en la propia sesión (Native) o con un subagente y una revisión por task (SDD), con los tests de la spec escritos antes, el registro que sobrevive a una compactación y la revisión final de rama. La invoca `sdd-start-feature`. |
+| `sdd-verify` | La evidencia antes de dar algo por hecho y la revisión final de rama: dos o tres revisores a la vez (spec, código con cinco libros de buen diseño y, si el plan cruza fronteras, arquitectura), una sola tanda de arreglos y una sola re-revisión. La invocan `sdd-implement` y `sdd-end-feature`; adaptada de `verification-before-completion` y `requesting-code-review` de superpowers (MIT). |
 | `sdd-tdd` | Primero el test, verlo fallar y luego el código: también con los tests en rojo que llegan ya escritos, que se ejecutan antes de tocar nada. La carga `sdd-implement`; adaptada de `test-driven-development` de superpowers (MIT). |
 | `sdd-debugging` | La causa raíz antes del arreglo: reproducir, comparar con lo que funciona, una hipótesis cada vez y un test en rojo antes del fix. La invocan `sdd-start-patch` y `sdd-implement`; adaptada de `systematic-debugging` de superpowers (MIT). |
 | `sdd-worktrees` | El sitio aislado donde se implementa: detecta el worktree que ya existe o crea uno, levanta el entorno de `environments.md` y pasa el gate del proyecto antes de empezar. La invoca `sdd-implement`; adaptada de `using-git-worktrees` de superpowers (MIT). |
@@ -178,7 +179,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 4 skills de superpowers: `writing-skills`, `requesting-code-review`, `verification-before-completion` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 3 skills de superpowers: `writing-skills`, `requesting-code-review` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 
