@@ -45,7 +45,7 @@ Describe 'Vigía de silencio' {
   }
 
   It 'los demás puntos de despacho remiten al vigía' {
-    foreach ($file in 'skills/sdd-start-feature/references/encargo-revision.md', 'skills/sdd-start-feature/references/review-spec.md',
+    foreach ($file in 'skills/sdd-verify/references/encargo-revision.md', 'skills/sdd-start-feature/references/review-spec.md',
       'skills/sdd-end-feature/SKILL.md') {
       Get-KitFile $file | Should -Match 'vigía de silencio' -Because $file
     }

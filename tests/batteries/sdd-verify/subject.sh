@@ -13,6 +13,7 @@ subject_init "$1" "$2" "$4" "$([ -d "$1/skills/$GUARD" ] && echo "$GUARD" || ech
 ASK="$(cell Petición)"
 SDD_CLI="$KIT/cli/bin/sdd.js"
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"'
+[ "$SC" = f2 ] && MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 2}, "execution": "native"'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
 
 cp -r "$IMPL/mold-reservas/." "$R/"
@@ -23,9 +24,10 @@ g checkout -q -b develop
 
 # Sin «quién canceló»: el molde no tiene usuarios.
 approved_0010() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d' -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$IMPL/fixtures/spec-0010.md"; }
+with_axis() { sed 's/^\*\*Ejecución\*\*: native.*/&\n\n**Eje Arquitectura**: no — solo la app de reservas/' "$IMPL/fixtures/plan-0010.md"; }
 open_0010() {
   g checkout -q -b feature/0010-cancel-reason
-  approved_0010 | put "$F10/spec.md"; put "$F10/plan.md" < "$IMPL/fixtures/plan-0010.md"
+  approved_0010 | put "$F10/spec.md"; with_axis | put "$F10/plan.md"
   commit "docs(sdd): abrir la feature 0010 con su spec y su plan"
 }
 short() { g rev-parse --short=7 "$1"; }
@@ -43,12 +45,28 @@ case "$SC" in
     commit "feat(bookings): cancelar con un motivo de la lista"
     ledger "Task 1: complete (commits $BASE1..$(short HEAD), tests: node --test test/cancel.test.js → 2/2 pass)"
     cp "$FIX/app-v1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js" ;;
+  f1|f2)
+    mkdir -p "$R/.docs/sdd/decisions"; cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
+    commit "docs(decisions): las reservas viven en memoria"
+    open_0010
+    BASE1=$(short HEAD)
+    cp "$IMPL/fixtures/app-task1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-task1.test.js" "$R/test/cancel.test.js"
+    commit "feat(bookings): cancelar con un motivo de la lista"
+    BASE2=$(short HEAD)
+    cp "$IMPL/fixtures/app-done.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js"
+    [ "$SC" = f2 ] && printf '{"type": "module", "dependencies": {"zod": "^3.23.8"}}\n' > "$R/package.json"
+    commit "feat(bookings): listado de canceladas con su motivo"
+    ledger "Task 1: complete (commits $BASE1..$BASE2, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits $BASE2..$(short HEAD), tests: node --test test/cancel.test.js → 3/3 pass)" ;;
 esac
 
 case "$SC" in
   v1) export EXTRA_DISALLOWED="Agent" ;;
 esac
-MAX_TURNS="${MAX_TURNS:-40}"
+case "$SC" in
+  f1|f2) MAX_TURNS="${MAX_TURNS:-30}" ;;
+  *) MAX_TURNS="${MAX_TURNS:-40}" ;;
+esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
 for kept in spec plan tasks; do [ -f "$R/$F10/$kept.md" ] && subject_keep "$R/$F10/$kept.md" "$kept.md"; done

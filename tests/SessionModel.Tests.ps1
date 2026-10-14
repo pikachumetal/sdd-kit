@@ -27,7 +27,7 @@ Describe 'Modelo de la sesión que ejecuta en Native' {
   }
 
   It 'la línea Ejecución del plan registra el modelo recomendado para la sesión' {
-    Get-TemplateLine 'plan-template.md' '**Ejecución**' | Should -Match ([regex]::Escape('La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.'))
+    Get-TemplateLine 'plan-template.md' '**Ejecución**' | Should -Match ([regex]::Escape('La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.'))
   }
 
   It 'la línea Modelo del hilo del walkthrough pide modelo y effort de cada fase' {

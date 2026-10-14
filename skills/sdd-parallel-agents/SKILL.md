@@ -1,6 +1,6 @@
 ---
 name: sdd-parallel-agents
-description: Use when an sdd-kit skill dispatches two or more independent agents at once — the spec reviewers of review-spec.md — to dispatch them in parallel within the project's agent cap. Invoked from there; not the entry of a change (that is sdd-propose), and not for plan tasks (sdd-implement runs them one after another).
+description: Use when an sdd-kit skill dispatches two or more independent agents at once — the spec reviewers of review-spec.md, or the axes of the final review of sdd-verify — to dispatch them in parallel within the project's agent cap. Invoked from there; not the entry of a change (that is sdd-propose), and not for plan tasks (sdd-implement runs them one after another).
 ---
 
 # sdd-parallel-agents
@@ -40,6 +40,7 @@ digraph when_to_use {
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No shared state between investigations
+- In the kit: the two spec reviewers of `review-spec.md`, and the axes of the final review of `sdd-verify`, each reading the same package with its own lens
 
 **Don't use when:**
 - Failures are related (fix one might fix others)

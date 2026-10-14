@@ -26,6 +26,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-propose`); el método, en
 | k5 | config-merge | Arranca este cambio con sdd-propose, carril config: sube el mínimo de node a 22.18 en los engines de package.json. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | revisión final de la 0161 (Important 3): un config lanzado en otro worktree no se fusiona |
 | k2 | spike | ¿Aguanta el comando libres con 1.000 reservas? Quiero la tabla de medidas. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | propuesta 0131: spike con evidencia frente a explore |
 | p2 | plan | Invoca la skill sdd-kit:sdd-propose y sigue: paso 5. La spec de la 0010 está aprobada: escribe el plan. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | ticket de la feature 0146 (menores): el plan inventa el comando de su gate |
+| ax | plan | Invoca la skill sdd-kit:sdd-propose y sigue: paso 5. La spec de la 0010 está aprobada: escribe el plan. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0148: el plan declara el eje Arquitectura de la revisión final; RED AX 0/1, GREEN 2/2 (y `p2` 2/2) |
 | s1 | control | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: al cancelar una reserva se elige un motivo de una lista (cambio de planes, sala ocupada, otro) y el listado de canceladas lo enseña. Sin review. Escribe la spec en su carpeta y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | batería de `sdd-start-feature`, s1 (feature 0146) |
 | g1 | control | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0010 está escrita y repasada, sin review. Preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | opus | batería de `sdd-start-feature`, g1 (feature 0146) |
 | r1 | control | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita. Cuenta las señales y decide la review antes de presentármela. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | batería de `sdd-start-feature`, r1 (feature 0146) |
@@ -58,6 +59,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | K5 Config fusionado | k5 | tras el commit con `Gate:`, no fusiona `feature/bump-node-22-18` en `develop` (`git log develop` sin el commit) |
 | K2 Spike | k2 | entra por `sdd-explore`, o no dice que es un spike, o pregunta el carril |
 | P2 Gate del plan | p2 | la línea del gate de cierre de §3 del `plan.md` no dice `node --test && node scripts/lint.mjs` |
+| AX Eje Arquitectura | ax | la cabecera del `plan.md` no lleva `**Eje Arquitectura**: sí — …` con la dependencia nueva `zod`; o, con `native`, la línea `Ejecución` no termina con el literal «el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.» |
 | P3 Traspaso | p1 (GREEN de la Task 3) | con el plan escrito, no invoca `sdd-start-feature` ni dice que sigue con él |
 | S1, S2, S3, G1, R1, P1 | s1, g1, r1, p1 | las filas de la batería de `sdd-start-feature`, literales |
 | L1 Lite citado | l1 | no ofrece lite citando sus condiciones una por una |

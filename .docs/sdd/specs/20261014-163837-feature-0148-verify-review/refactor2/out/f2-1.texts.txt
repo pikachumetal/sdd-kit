@@ -1,0 +1,218 @@
+--- [3]
+Retomo: las dos tasks constan completas. Localizo el plan y el ledger.
+
+--- [14]
+Estoy preparando la revisión final: el diff añade la dependencia `zod`, que el plan no preveía, así que el eje Arquitectura sale también. Monto paquete y worktree.
+
+--- [23]
+Los ejes Spec y Código están en marcha en segundo plano (el tope es 2 en paralelo); el eje Arquitectura saldrá cuando vuelva uno. Mientras tanto no toco los ficheros que revisan.
+
+--- [40]
+## Informe de revisión, eje Código — `a80a555` (rama `feature/0010-cancel-reason`)
+
+No he ejecutado la suite, el build ni el lint. He leído el paquete de review y, solo para contexto, el historial de `test/` y `package.json` en el checkout de `a80a555`.
+
+### Hallazgos
+
+**Important · `package.json:1` · dependencia `zod` añadida y sin uso**
+- El commit `a80a555` añade `"dependencies": {"zod": "^3.23.8"}`.
+- Ningún fichero la importa; el único `grep` de `zod` en el repo es el propio `package.json`.
+- El cambio no la necesita: la validación del motivo es un `reasons.includes(...)`.
+- Efecto: dependencia muerta que se instala y entra en la cadena de suministro sin aportar nada, y que además mezcla un cambio ajeno en un commit de listado.
+- Hay que quitarla, o usarla de verdad y justificarla.
+
+**Important · `test/cancel.test.js:5-12` · se pierde la cobertura de «cancelar sin reserva» con un motivo válido**
+- El test `cancelar sin reserva lo dice` (`Sur mar` → `sin reserva Sur mar`) desaparece en `03b5cc7`, en el mismo commit que añade `cancelar con un motivo fuera de la lista`.
+- El nuevo test reutiliza `Sur mar`, pero ahora falla antes por el motivo, así que nunca llega a la rama `if (!booking)`.
+- Esa rama de `src/app.js` queda sin ningún test.
+- Efecto: si alguien rompe o quita ese mensaje, la suite sigue en verde.
+- Hace falta un test `cancelar Sur mar --motivo otro` → `sin reserva Sur mar`.
+
+**Important · `test/cancel.test.js:13-15` · el test `canceladas` depende del estado que deja otro test**
+- Espera `Norte lun — sala ocupada`, que solo existe porque el primer test canceló antes esa reserva sobre el array `bookings` compartido en memoria.
+- Efecto: si se ejecuta aislado (`--test-name-pattern`), se reordena o se cambia el primer test, falla o pasa por casualidad.
+- No hay reinicio del estado entre tests.
+- Conviene que el test haga su propia cancelación antes de listar, o que exista un reset del estado.
+
+**Minor · `src/app.js:43-46` y `src/app.js:72` · el parseo de `--motivo` es frágil**
+- `reasonOf` busca la bandera, pero `cancelar` sigue leyendo `params[0]` y `params[1]` como sala y día.
+- `cancelar Norte --motivo otro` toma `--motivo` como día y responde `sin reserva Norte --motivo`, un mensaje confuso.
+- `cancelar --motivo otro Norte lun` falla igual.
+- Efecto: error de usuario mal diagnosticado, sin llegar a corromper datos.
+- Sería razonable filtrar la bandera y su valor antes de leer los posicionales.
+
+**Minor · `src/app.js:20` · mensaje engañoso cuando falta el motivo**
+- Con `--motivo` ausente o sin valor, `reason` es `undefined` y se responde `motivo no válido: cambio de planes, ...`.
+- El texto dice «no válido» cuando en realidad falta, y no distingue un motivo ausente de uno incorrecto.
+- Es cosmético, pero el usuario no sabe que debe pasar `--motivo`.
+
+**Minor · `src/app.js:64-66` · `canceladas` sin resultados devuelve cadena vacía**
+- `join('\n')` sobre una lista vacía da `''`, y `console.log` imprime una línea en blanco sin ningún mensaje.
+- El resto de comandos sí informan del caso vacío (`sin reserva ...`).
+- No hay test de este caso.
+
+**Minor · `src/app.js:19` · `cancelBooking` exportada cambia de contrato**
+- Gana un tercer parámetro obligatorio de facto.
+- Efecto: una llamada antigua `cancelBooking('Norte','lun')` ahora devuelve «motivo no válido».
+- Hoy solo la llama `run`, así que no hay rotura en el repo.
+
+### Declined to judge
+- **Restricción «Tests RED sin modificar».** El paquete excluye la carpeta de la spec y el plan, y no puedo saber qué tests se declararon RED.
+  - Los tests de `cancel.test.js` ya existían desde `be9eb6b`, es decir, no los escribió esta feature.
+  - En `03b5cc7` se cambiaron sus nombres, datos y aserciones (`cancelada Norte lun` → `cancelada Norte lun (sala ocupada)`).
+  - Si el plan los marcaba como RED, sería un incumplimiento (Important). Si eran tests previos que debían adaptarse al nuevo comportamiento, es legítimo.
+  - Que decida el hilo principal con el plan en la mano.
+- **Restricción «texto de interfaz en castellano».** Los mensajes de usuario nuevos (`motivo no válido`, `cancelada ... (motivo)`, listado de `canceladas`) están en castellano, y no veo incumplimiento.
+
+### Verificación pesada recomendada
+La suite completa del hilo principal basta para este diff, pero conviene correr `node --test test/cancel.test.js` con `--test-name-pattern 'canceladas'` solo para confirmar la dependencia de orden del tercer hallazgo.
+
+### Ficheros revisados
+- `<run>\repo\.superpowers\sdd\plan\review-final-a80a555.diff`
+- Checkout de `a80a555`: `src/app.js`, `test/cancel.test.js`, `package.json`
+
+--- [41]
+Vuelve el eje Código, así que sale el de Arquitectura (el Spec sigue en marcha). No existe `architecture.md`; se lo digo en el encargo.
+
+--- [43]
+# Revisión del eje Spec de la feature 0010, motivo al cancelar (`a80a555`)
+
+Todo lo que pide la spec está hecho y tiene su test. Encuentro tres problemas: una dependencia que nadie pidió, un test borrado que dejaba cubierta una rama que sigue viva, y un test que solo pasa si se ejecuta después de otro.
+
+Worktree revisado: `<run>/review-0010-a80a555`
+
+## Cobertura de la spec
+
+| Requisito / THEN | Código | Test |
+| --- | --- | --- |
+| Cancelar con un motivo de la lista responde «cancelada Norte lun (sala ocupada)» | `src/app.js:31` (lista `reasons`), `:43-46` (`reasonOf`), `:48-55` | `test/cancel.test.js:5-7` |
+| Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | `src/app.js:49` | `test/cancel.test.js:9-11` |
+| `canceladas` responde «Norte lun — sala ocupada» | `src/app.js:65-67`, `:74` | `test/cancel.test.js:13-15` |
+| El motivo se guarda con la reserva cancelada (Approach) | `src/app.js:54` | Se ve de forma indirecta en el test de `canceladas` |
+| No entran las anulaciones (0011) | `voidBooking` no se ha tocado y las `voided` no salen en `canceladas` (filtra por `status === 'cancelled'`) | Sin test específico (no lo pide la spec) |
+
+- **Restricción «texto de la interfaz en castellano»:** se cumple. Todos los textos nuevos están en castellano.
+- **ADR 0003 (reservas en memoria):** se cumple en `src/`. No hay `node:fs` ni ningún paquete de base de datos, y el motivo vive en el array en memoria.
+
+## Hallazgos
+
+1. **Important · scope creep · `package.json:1`**
+   - **Qué ocurre:** el commit `a80a555` añade `"dependencies": {"zod": "^3.23.8"}`. Ningún fichero de `src/` ni de `test/` la importa (lo he comprobado con grep). La spec no la pide y el plan tampoco: el plan solo lista `src/app.js` y `test/cancel.test.js` en sus dos tasks.
+   - **Choque con el ADR 0003:** el ADR dice en Consecuencias «Sin ficheros ni dependencias». Su Confirmación solo prohíbe paquetes de base de datos, así que no lo incumple a la letra, pero sí va contra lo que pretende.
+   - **Origen:** el Scope de la spec (solo `cancelar … --motivo` y `canceladas`) y la lista de ficheros del plan.
+   - **Arreglo:** quitar la dependencia. El ledger ya activó el Eje Arquitectura por esto mismo.
+
+2. **Important · línea sin test · `src/app.js:51` y `test/cancel.test.js`**
+   - **Qué ocurre:** se borró el test «cancelar sin reserva lo dice». La rama `if (!booking) return \`sin reserva ${room} ${day}\`` sigue en el código, pero ningún test la ejecuta ya: `test/app.test.js` tampoco la cubre.
+   - **Comportamiento esperado que queda sin fijar:** `cancelar Sur mar --motivo otro` debería responder «sin reserva Sur mar».
+   - **Por qué se ha perdido la cobertura:** el test nuevo de motivo no válido usa justo `Sur mar`. Como la validación del motivo va antes de buscar la reserva, ese test nunca pasa por la línea 51.
+   - **Origen:** no lo exige ningún requisito de la spec. Es la regla del encargo: una línea sin test ni verificación nombrada es un hallazgo. Ahí se pierde cobertura que antes existía.
+
+3. **Minor · test dependiente del orden · `test/cancel.test.js:13-15`**
+   - **Qué ocurre:** el GIVEN de la spec es «la reserva de Norte del lunes cancelada con "sala ocupada»"». El test de `canceladas` no lo prepara él mismo: depende de que el primer test (`:5-7`) haya cambiado el estado del módulo antes.
+   - **Consecuencia:** si se ejecuta solo, por ejemplo con `--test-name-pattern`, o con otro orden, devuelve `''` y falla.
+   - **Origen:** el requisito «El listado de canceladas enseña el motivo».
+
+4. **Minor · verificación incompleta · `test/cancel.test.js:9-11`**
+   - **Qué ocurre:** el caso de motivo fuera de la lista se prueba con `Sur mar`, que no tiene reserva. Así no se comprueba que un motivo no válido sobre una reserva activa (la de Norte lun del GIVEN) la deje activa y sin motivo.
+   - **Estado del código:** lo hace bien, porque `:49` sale antes de tocar nada. Lo que falta es el test que lo fije.
+   - **Origen:** el requisito «Cancelar pide un motivo de la lista», en su AND.
+
+## Declined to judge
+
+- **`cancelar` sin `--motivo`, o con `--motivo` al final sin valor.** `reasonOf` devuelve `undefined` y la respuesta es «motivo no válido: …». Me parece coherente con que la spec diga «pide un motivo», pero la spec no lo dice explícitamente y ningún test lo cubre. No sé si se quería este mensaje o uno propio de «falta el motivo».
+- **`canceladas` sin ninguna cancelada.** Devuelve cadena vacía, así que imprime una línea en blanco. La spec no dice qué se espera.
+- **Cambio de comportamiento heredado.** `cancelar <sala> <día>` sin motivo sobre una reserva inexistente respondía antes «sin reserva …» y ahora responde «motivo no válido: …». La spec obliga a pedir el motivo, así que lo veo implícito en ella, pero no está escrito.
+
+## Verificación pendiente
+
+No he ejecutado la suite, como pedía el encargo. Recomiendo:
+
+- Pasar `node --test` completo, el gate de cierre del plan.
+- Pasar también `node --test --test-name-pattern "canceladas" test/cancel.test.js`, que debería confirmar el hallazgo 3.
+- Comprobar que sin la dependencia `zod` no cambia nada.
+
+--- [46]
+Spec y Código han vuelto; falta el eje Arquitectura. Espero su informe antes de clasificar los hallazgos y hacer la pasada de fix.
+
+Hasta ahora, ambos ejes coinciden en tres puntos (sin re-gradar aún):
+- `zod` añadida en `package.json` y sin uso (Important).
+- Test de «cancelar sin reserva» borrado: la rama `sin reserva` queda sin cobertura (Important).
+- Test `canceladas` dependiente del orden de ejecución (Important para Código, Minor para Spec).
+
+--- [63]
+## Informe del eje Arquitectura: `a80a555` (feature 0010, motivo al cancelar)
+
+Lo he comparado con `.docs/sdd/decisions/0003-bookings-in-memory.md` (aceptada), `.docs/sdd/tech-stack.md`, la spec y el plan de la 0010. El diff lo leí completo del paquete de review; ocupa 104 líneas, así que bastó un tramo.
+
+### Hallazgos
+
+**Important · `package.json:1`: se añade `zod` (`^3.23.8`) como dependencia, va contra el stack declarado y nada la usa**
+- `tech-stack.md:3` fija «Node 22, sin dependencias externas», y la decisión 0003 dice en Consecuencias «Sin ficheros ni dependencias».
+- Nada en el repo importa `zod`. La validación del motivo es un `reasons.includes(reason)` hecho a mano en `src/app.js:20`, así que la dependencia está muerta.
+- Entra en `a80a555`, el commit del listado, que no tiene nada que ver con validar. El plan solo declara `src/app.js` y `test/cancel.test.js` en las dos tasks, así que el cambio sale de la frontera del plan.
+- Efectos: el proyecto pasa a necesitar `npm install` sin lockfile que fije la versión, gana superficie de cadena de suministro sin aportar nada, y la documentación aceptada deja de describir el código.
+- El arreglo es quitar la línea de `dependencies`. Si de verdad se quisiera `zod`, haría falta antes un ADR que cambie `tech-stack.md`.
+- No lo subo a Critical por dos razones: no es un paquete de base de datos ni toca `node:fs`, que es la comprobación literal de la decisión 0003 («`src/` no importa `node:fs` ni ningún paquete de base de datos»), y no se carga en ejecución.
+
+**Minor · `src/app.js:19-21`: la firma exportada de `cancelBooking` rompe con lo anterior, y el orden de las comprobaciones cambia lo que se responde**
+- Pasa de `cancelBooking(room, day)` a `cancelBooking(room, day, reason)`, con el motivo obligatorio, como pide la spec («cancelar pide un motivo»). El único llamador en el repo es `run` (`src/app.js:42`), así que no rompe a nadie más.
+- Pero el motivo se valida antes de buscar la reserva. Por eso `cancelar Sur mar` sin reserva y sin motivo ya no responde «sin reserva Sur mar», sino «motivo no válido: …».
+- Además se ha borrado el test que cubría la respuesta «sin reserva» (era `test/cancel.test.js` antes del cambio, líneas 95-96 del diff), y esa rama del contrato se queda sin test.
+
+**Minor · `test/cancel.test.js:13` y `src/app.js:4`: el test de `canceladas` depende del estado que deja otro test**
+- Por la decisión 0003, las reservas viven en el array `bookings` del módulo, y ese array se comparte entre los tests del fichero.
+- El test «canceladas enseña sala, día y motivo» solo pasa si antes se ha ejecutado «cancelar con un motivo de la lista», que es el que deja Norte/lun cancelada con «sala ocupada».
+- Hoy funciona porque `node:test` ejecuta los tests de un fichero en orden. Si se reordenan, se filtran o se ejecuta ese test solo, falla. La 0003 da por hecho que «los tests no limpian nada», pero no que unos dependan de otros.
+
+### Lo que encaja con la arquitectura
+- El motivo se guarda como `booking.reason` en el mismo objeto en memoria (`src/app.js:24`). No hay persistencia ni `node:fs`, en línea con la 0003, y su vida acaba con el proceso.
+- `canceladas` (`src/app.js:36-38`) solo lee el estado existente.
+- Sigue habiendo un único fichero de entrada (`src/app.js`), como pide `tech-stack.md`.
+- El texto de la interfaz nuevo está en castellano («motivo no válido: …», «cancelada … (…)», «Norte lun — sala ocupada»), así que se cumple la restricción de código.
+- La anulación (`voidBooking`), que la spec deja fuera para la 0011, no se ha tocado.
+
+### Declined to judge
+- Si el plan acertó al marcar «Eje Arquitectura: no». La señal que lo saca, la dependencia, no estaba en el plan, sino que llega con `a80a555`; decidir si el plan debía haberla previsto es cosa del proceso, no de este eje.
+- Por qué se metió `zod`, por ejemplo si era para una validación posterior planeada. No hay rastro en la spec, en el plan ni en el commit, y no he mirado ramas ni commits posteriores, como pide el encargo.
+
+Ficheros relevantes (todos en `<run>/review-0010-a80a555/`):
+- `package.json`
+- `src/app.js`
+- `test/cancel.test.js`
+- `.docs/sdd/tech-stack.md`
+- `.docs/sdd/decisions/0003-bookings-in-memory.md`
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`
+
+--- [65]
+Re-gradúo: `zod` y la rama «sin reserva» sin test son Important (los tres ejes coinciden); el test dependiente del orden y el resto son Minor. Hago la única pasada de fix.
+
+--- [70]
+El test no llegó a escribirse (mi script falló en silencio). Lo hago con las herramientas directas.
+
+--- [75]
+El `grep` no casa con el formato de salida; miro la salida directa.
+
+--- [81]
+La revisión final de la 0010 está hecha y cerrada con una pasada de fix. Queda el paso 7 de `sdd-start-feature` (validación), que no he arrancado.
+
+**Revisión final** sobre `a80a555`: Spec (opus+high), Código (sonnet+high) y Arquitectura (opus+high). El eje Arquitectura salió aunque el plan decía «no», porque el diff añadía `zod` en `package.json`.
+
+**Pasada de fix** (`e87e13e`), 2 hallazgos Important:
+- **`zod` sin uso:** quitada de `package.json`. Iba contra «sin dependencias externas» del tech-stack y nada la importaba. No le hice test RED, porque no es un fallo de ejecución.
+- **Rama «sin reserva» sin test:** añadido `cancelar sin reserva lo dice`. Falla si cambio el mensaje de esa rama (RED por mutación) y pasa con el código real. Suite completa: 6/6.
+
+**Rulings I made**
+1. **Eje Arquitectura no → sí**, por la dependencia `zod` que el plan no preveía. Si me equivoco, cuesta una revisión de más.
+2. **Los tests de `cancel.test.js` adaptados en `03b5cc7`** no los trato como RED de esta feature: existían desde `be9eb6b` y el comportamiento cambia por la spec. Si me equivoco, hay que rehacer la adaptación.
+3. **`cancelar` sin motivo sobre una reserva inexistente** ahora responde «motivo no válido» en vez de «sin reserva», porque la spec obliga a pedir el motivo y se valida antes de buscar. Si me equivoco, basta invertir el orden de dos líneas en `cancelBooking`.
+
+**Deferred minors**
+- El test `canceladas` depende del estado que deja el primer test; solo falla si se ejecuta aislado o se reordena.
+- «motivo no válido» también sale cuando falta `--motivo`; el mensaje no distingue ausente de incorrecto.
+- `cancelar Norte --motivo otro` toma `--motivo` como día, por el parseo posicional frágil.
+- `canceladas` sin resultados imprime una línea en blanco.
+- Falta un test de motivo inválido sobre una reserva activa (que siga activa y sin motivo).
+
+La feature no tiene `tasks.md`, así que los rulings van aquí. El worktree de revisión y el workspace del plan están borrados, y el árbol está limpio.
+

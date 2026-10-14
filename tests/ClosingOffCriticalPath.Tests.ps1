@@ -24,7 +24,7 @@ BeforeAll {
 
 Describe 'Revisor en segundo plano' {
   It 'sdd-implement despacha el revisor final en segundo plano con el commit de la última task' {
-    Assert-Literal $script:ImplementSkill @('Dispatch it in the background as soon as the last task''s commit exists', 'before starting the app for its «Verificación visual»')
+    Assert-Literal (Get-Content (Join-Path $script:RepoRoot 'skills/sdd-verify/SKILL.md') -Raw) @('Dispatch it in the background as soon as the last task''s commit exists', 'before starting the app for its «Verificación visual»')
   }
 
   It 'el paso 7 presenta la validación cuando vuelve el revisor' {
@@ -32,7 +32,7 @@ Describe 'Revisor en segundo plano' {
   }
 
   It 'el encargo del revisor final lo aísla en un worktree desanclado' {
-    Assert-Literal (Get-Reference 'encargo-revision.md') @('git worktree add --detach', 'review-<id>-<sha corto>', 'no mires ramas ni commits posteriores', 'git worktree remove')
+    Assert-Literal (Get-Content (Join-Path $script:RepoRoot 'skills/sdd-verify/references/encargo-revision.md') -Raw) @('git worktree add --detach', 'review-<id>-<sha corto>', 'no mires ramas ni commits posteriores', 'git worktree remove')
   }
 
   It 'la revisión final sale en segundo plano con los dos métodos' {

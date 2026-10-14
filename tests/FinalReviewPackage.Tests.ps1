@@ -5,7 +5,7 @@ BeforeAll {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
   }
 
-  $brief = Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'
+  $brief = Get-KitFile 'skills/sdd-verify/references/encargo-revision.md'
   $script:FinalReviewer = [regex]::Match($brief, '(?ms)^## Revisor final.*?(?=^## Encargo del implementador)').Value
 }
 
@@ -51,14 +51,14 @@ Describe 'Paquete del revisor final' {
   }
 
   It 'sdd-implement dice que la revisión final usa el paquete del kit en los dos métodos' {
-    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'package recipe —not `sdd review package`'
+    Get-KitFile 'skills/sdd-verify/SKILL.md' | Should -Match 'package recipe —not `sdd review package`'
   }
 }
 
 Describe 'Revisor final en el plan' {
   It 'la plantilla lo fija en el techo y no deja quitarlo' {
     $template = Get-KitFile 'skills/sdd-templates/templates/plan-template.md'
-    $template | Should -Match 'revisor final de rama no sigue esta política[^\n]*`sdd-kit:effort-high` \+ `opus`'
+    $template | Should -Match 'revisión final de rama no sigue esta política[^\n]*`sdd-kit:effort-high` \+ `opus`'
     $template | Should -Match 'no hay subagentes que auditar'
   }
 }

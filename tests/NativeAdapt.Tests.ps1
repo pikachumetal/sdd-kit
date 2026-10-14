@@ -16,7 +16,7 @@ BeforeAll {
   }
 
   $script:Overrides = 'skills/sdd-start-feature/references/overrides-superpowers.md'
-  $script:Dispatch = 'skills/sdd-start-feature/references/encargo-revision.md'
+  $script:Dispatch = 'skills/sdd-verify/references/encargo-revision.md'
 }
 
 Describe 'Task 1 — bucle Native' {
@@ -140,7 +140,7 @@ Describe 'Revisión final — pase de fix' {
   }
 
   It 'sdd-implement apunta la revisión final en tasks.md' {
-    Get-KitFile 'skills/sdd-implement/SKILL.md' | Should -Match 'write in `tasks.md` `Revisión final:'
+    Get-KitFile 'skills/sdd-verify/SKILL.md' | Should -Match 'write in `tasks.md` `Revisión final:'
   }
 
   It 'el paso 9 del cierre busca la revisión final en tasks.md y no en el ledger' {

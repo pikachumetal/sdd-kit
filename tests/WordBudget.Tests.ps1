@@ -22,9 +22,9 @@ BeforeAll {
       'sdd-init-greenfield' = @{ SkillMd = 1800; Total = 2100 }
       'sdd-roadmap'         = @{ SkillMd = 3600; Total = 3600 }
       'sdd-rubber-duck'     = @{ SkillMd = 600; Total = 600 }
-      'sdd-propose'         = @{ SkillMd = 5000; Total = 6300 }
+      'sdd-propose'         = @{ SkillMd = 5000; Total = 6325 }
       'sdd-implement'       = @{ SkillMd = 10240; Total = 13950 }
-      'sdd-verify'          = @{ SkillMd = 1100; Total = 1100 }
+      'sdd-verify'          = @{ SkillMd = 2500; Total = 4800 }
       'sdd-tdd'             = @{ SkillMd = 1700; Total = 3100 }
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 13200 }

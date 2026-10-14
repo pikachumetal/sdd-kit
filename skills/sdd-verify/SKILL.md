@@ -145,7 +145,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 ### How to Request
 
-The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package comes from the recipe of [encargo-revision.md](../sdd-start-feature/references/encargo-revision.md), and each axis gets its own brief, model and effort ([Final review](#final-review)).
+The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package comes from the recipe of [encargo-revision.md](references/encargo-revision.md), and each axis gets its own brief, model and effort ([Final review](#final-review)).
 
 ### Act on feedback
 
@@ -173,3 +173,65 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 - Push back with technical reasoning
 - Show code/tests that prove it works
 - Request clarification
+
+## Final review
+
+**Dispatch it in the background as soon as the last task's commit exists** —in Native, the last task's; in SDD, the squashed one after its clean review—, before starting the app for its «Verificación visual»: while it reviews, you do that check and write the closing drafts of step 7. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`. (`tests/closing-off-critical-path-red.md`, c1)
+
+**The axes.** The review goes out in axes, each with its own brief, model and effort, in parallel: load `sdd-parallel-agents` with `Skill` and dispatch them in the same message, never more at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (with 2 and three axes, two go out and the third when one returns). Every brief starts with the header and «Cómo revisar» of [encargo-revision.md](references/encargo-revision.md), its package recipe —not `sdd review package`— and its worktree sentence, followed by the axis brief:
+
+| Axis | Brief | Model | Gets, besides the package |
+| --- | --- | --- | --- |
+| Spec | [spec-reviewer-prompt.md](references/spec-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | the paths of `spec.md` and `plan.md`; the plan's `## Review Focus`, verbatim, if it has one; the `accepted` ADRs that `sdd decision index --files <the diff's files>` lists; the output of `sdd capability index`; and a pointer to the ledger's `Ruling:`, `minor (deferred)` and `parked` lines |
+| Code | [code-reviewer-prompt.md](references/code-reviewer-prompt.md) | `sdd-kit:effort-high` + `sonnet` | nothing else: neither the spec nor the ADRs |
+| Architecture | [architecture-reviewer-prompt.md](references/architecture-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | `architecture.md`; it goes out only with `Eje Arquitectura: sí` |
+
+The models are those of the 0131 proposal: an axis changes model only with data of the constitution's Principle 5. Specify model and effort on every dispatch; an omitted model inherits the session's. These are the fresh contexts the whole run buys. Do not skip them, and do not replace them with your own read of the diff.
+
+**The architecture axis.** The plan's header carries `Eje Arquitectura: sí — <frontier>` or `no — <reason>`. Before dispatching, check the diff against four signals: a new module, a new dependency in a manifest (`package.json`, `*.csproj`, `go.mod`…), a contract between modules, data. A manifest in the file list is not the check: for each one the diff touches, read `git diff "$MERGE_BASE" HEAD -- <manifest>` (the recipe's merge-base); an added line under its dependencies is a new dependency. Write what you found to the ledger first, also when the plan says `sí` and when you find nothing:
+
+```
+Final: Eje Arquitectura: <sí | no> en el plan · señales en el diff: <each signal with its file, or «ninguna»> → <sale | no sale>
+```
+
+If the diff crosses one the plan didn't foresee, the axis goes out and you ledger `Final: Ruling: Eje Arquitectura no → sí — <reason> — <cost if wrong>`; `tasks.md` writes it `Arquitectura opus+high, <verdict> (subido: <reason>)`. Never lower a `sí`. Without the line —lite mode, or a plan written before the kit carried it— decide it at dispatch with the same signals, as a ruling.
+
+**Each axis gets its silence watch** (`sdd-implement`, «Every dispatch»). A hung axis is relaunched alone, once, as [Vigía de silencio](../sdd-start-feature/references/control-profiles.md#vigía-de-silencio) says; the others go on.
+
+**Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](#closing-the-review)).
+
+**Without a subagent tool:** read each axis brief and perform each review yourself against the package, as separate passes after the last task's ledger line. Write `Final review: self-review (no subagent tool)` to the ledger, and say so in your final message: a self-review by the author is weaker than fresh reviewers, and the user decides whether that is enough before merge.
+
+### Example
+
+```
+[Last task committed: a1b2c3d; plan header: Eje Arquitectura: no — solo la app de reservas]
+[Package from the recipe of encargo-revision.md, built in review-0010-a1b2c3d]
+[sdd decision index --files <diff files> → 0003 (accepted); sdd capability index → bookings, invoicing]
+[sdd-parallel-agents: two dispatches in one message, in the background, each with its silence watch]
+  Spec axis (sdd-kit:effort-high + opus): spec and plan paths, Review Focus, ADR 0003, capability index
+  Code axis (sdd-kit:effort-high + sonnet): the package
+[While they review: the visual check and the closing drafts]
+
+## Spec
+Critical · contradicts · src/annul.js:12 · the REMOVED requirement still runs · «Las anulaciones se avisan por correo»
+## Code
+Minor · possible Feature Envy in cancelledList (src/app.js:36)
+
+[Closing the review: re-grade inside each axis, then ONE fix pass]
+```
+
+## Closing the review
+
+**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ships, not whether the spec names the input that triggers it — a reviewer who set a finding at Minor because the spec was silent has graded the spec, not the effect. Then:
+
+- **Critical and Important** enter the fix pass.
+- **Minor** goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors». Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
+
+**Native:** fix the Critical and Important findings yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD, not by a second reviewer: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified; a suite that is not green after the pass means the pass is not over. Do not dispatch a re-review: it would re-read a diff whose covering tests already answer «addressed» and whose suite run already answers «broke nothing». A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
+
+**SDD:** if the final review returns findings, dispatch ONE fix subagent with the complete findings list — not one fixer per finding. Per-finding fixers each rebuild context and re-run suites; a real session's final-review fix wave cost more than all its tasks combined. Then run exactly one scoped re-review of the fix wave (`sdd review package <plan> <FIX_BASE> HEAD` over the fix range, [re-review-prompt.md](../sdd-implement/references/re-review-prompt.md)). Adjudicate any residual findings as at the breaker: park with rulings, or rule on the load-bearing ones and ledger what you decided. Only the stops of the Overview stop you here. There is no second fix wave — residual load-bearing findings reach the user in the validation's presentation (step 7 of `sdd-start-feature`).
+
+In both, the reproduce-before-fixing rule of the fix loop applies.
+
+When it returns, with either method, write in `tasks.md` `Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>`, with the `HEAD` it reviewed (without `tasks.md`, in the validation's presentation). If it returned Critical or Important, after its fix pass write below `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`: step 7 and the closing count the range from there.

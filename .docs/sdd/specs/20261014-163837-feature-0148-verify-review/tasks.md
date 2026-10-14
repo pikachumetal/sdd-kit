@@ -18,16 +18,16 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | `sdd-verify` nace: la evidencia antes de afirmar | pending | — | |
-| 2 | La revisión final sale por ejes, y el plan declara el eje Arquitectura | pending | — | |
+| 1 | `sdd-verify` nace: la evidencia antes de afirmar | done | 02afa007 | |
+| 2 | La revisión final sale por ejes, y el plan declara el eje Arquitectura | done | — | dos rondas de REFACTOR en `f2` |
 | 3 | Los encargos de los tres ejes | pending | — | |
 | 4 | El cierre único de la revisión | pending | — | |
 | 5 | El revisor de la spec, la ADR, la constitution y los humos | pending | — | |
 
 ## Verificación por task
 
-- [ ] Task 1 — Pester (`VerifySkill`, `WordBudget`, `Skills`, `ImplementSkill`) y `v1`
-- [ ] Task 2 — Pester (los que leen `encargo-revision.md`, `SessionModel`, `ImplementSkill`, `WordBudget`, `Skills`), `f1`, `f2` y `p`
+- [x] Task 1 — Pester (`VerifySkill`, `WordBudget`, `Skills`, `ImplementSkill`) y `v1`
+- [x] Task 2 — Pester (los que leen `encargo-revision.md`, `SessionModel`, `ImplementSkill`, `WordBudget`, `Skills`), `f1`, `f2` y `p`
 - [ ] Task 3 — Pester (`VerifySkill`, `WordBudget`, `Skills`), `f3` y `f4`
 - [ ] Task 4 — Pester (`VerifySkill`, `WordBudget`, `Skills`, `ClosingOffCriticalPath`, `SilenceWatch`) y `c1`-`c5`
 - [ ] Task 5 — Pester, `decision check`, `s1`, `h1` y `h2`

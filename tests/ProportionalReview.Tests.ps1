@@ -19,7 +19,7 @@ Describe 'Restricciones globales en dos bloques' {
 }
 
 Describe 'Encargo de revisión' {
-  BeforeAll { $script:Brief = Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md' }
+  BeforeAll { $script:Brief = Get-KitFile 'skills/sdd-verify/references/encargo-revision.md' }
 
   It 'no convierte en Important todo incumplimiento' {
     $script:Brief | Should -Not -Match 'Todo hallazgo que las incumpla es \*\*Important\*\*'

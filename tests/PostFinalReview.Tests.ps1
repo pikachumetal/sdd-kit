@@ -13,6 +13,7 @@ BeforeAll {
 
   $script:Skill = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
   $script:Implement = Get-KitFile 'skills/sdd-implement/SKILL.md'
+  $script:Verify = Get-KitFile 'skills/sdd-verify/SKILL.md'
   $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
 }
 
@@ -29,7 +30,7 @@ Describe 'Re-revisión del tramo' {
   }
 
   It 'la línea de la revisión final guarda el commit revisado' {
-    $script:Implement | Should -Match ([regex]::Escape('Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>'))
+    $script:Verify | Should -Match ([regex]::Escape('Revisión final: <tipo> + <modelo>, <veredicto>, sobre <sha corto>'))
   }
 
   It 'el ruling manda el commit posterior a la re-revisión del tramo' {
@@ -96,8 +97,8 @@ Describe 'Bordes del cierre' {
     }
   }
 
-  It 'sdd-implement apunta la pasada de fix' {
-    $step = $script:Implement
+  It 'sdd-verify apunta la pasada de fix' {
+    $step = $script:Verify
     $step | Should -Match ([regex]::Escape('Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN'))
   }
 

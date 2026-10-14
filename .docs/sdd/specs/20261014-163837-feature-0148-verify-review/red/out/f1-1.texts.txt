@@ -1,0 +1,80 @@
+--- [10]
+Preparé el paquete de revisión final; ahora despacho al revisor final en segundo plano.
+
+--- [12]
+La revisión final está despachada en segundo plano (Opus, effort high) sobre `9dd072e`, en un worktree desanclado. Las dos tasks siguen completas en el ledger, sin rulings ni minors diferidos.
+
+Mientras revisa, no toco el árbol. Cuando llegue el veredicto clasifico los hallazgos, hago el pase de fix si hace falta, vuelco los rulings a `tasks.md` y paso a la validación (paso 7 de `sdd-start-feature`).
+
+--- [24]
+## Revisión final de la feature 0010 (motivo al cancelar), con `9dd072e` como último commit
+
+Trabajé solo en el worktree de revisión y con el paquete `review-final-9dd072e.diff`. Contrasté el diff con la spec y el plan, y leí `src/app.js`, `test/cancel.test.js`, `test/app.test.js` y `PRODUCT.md` tal como están en ese commit. No ejecuté la suite, el build ni el lint.
+
+### Cada THEN/AND de la spec frente al código y los tests
+
+| Escenario de la spec | Código | Test | Estado |
+| --- | --- | --- | --- |
+| THEN «cancelada Norte lun (sala ocupada)» | `src/app.js:24-25` | `test/cancel.test.js:5-7` | Cumple |
+| AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | `src/app.js:3`, `src/app.js:20` (la lista se une con `, ` en el orden de la spec) | `test/cancel.test.js:9-11` | Cumple |
+| THEN `canceladas` responde «Norte lun — sala ocupada» | `src/app.js:36-38`, `src/app.js:43` | `test/cancel.test.js:13-15` | Cumple (el mismo «—» en el código y en el test) |
+| Fuera de alcance: las anulaciones (0011) | `cancelledList` solo filtra `status === 'cancelled'`, así que las `voided` no salen | — | Cumple |
+
+**Texto de la interfaz en castellano:** se cumple. Los mensajes nuevos son «motivo no válido: …», «cancelada … (…)» y «Norte lun — …».
+
+### Critical
+
+Ninguno.
+
+### Important
+
+1. **Se ha borrado un test de un comportamiento que sigue vivo.** Está en `test/cancel.test.js` (en la base, líneas 82-84 del paquete).
+   - La rama elimina `test('cancelar sin reserva lo dice', …)`, que esperaba `'sin reserva Sur mar'`. No lo sustituye ningún otro test.
+   - La rama de código que lo cubría sigue en `src/app.js:21-22`. La spec no retira ese comportamiento.
+   - Además, la rama cambia el orden: ahora el motivo se valida antes de buscar la reserva (`src/app.js:20`). El nuevo test del motivo inválido usa precisamente `Sur mar`. Por eso nada comprueba que `cancelar Sur mar --motivo "otro"` siga respondiendo «sin reserva Sur mar».
+   - Arreglo: volver a añadir el test con un motivo válido, por ejemplo `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+
+### Minor
+
+1. **El test del listado depende del orden de los tests** (`test/cancel.test.js:13-15`). El GIVEN («la reserva de Norte del lunes cancelada con "sala ocupada"») no se prepara dentro del test: sale del estado del módulo que deja el test de las líneas 5-7. Funciona porque `node:test` ejecuta los tests de un fichero en orden. Pero si se ejecuta solo, con `--test-name-pattern`, o si se reordenan los tests, falla. Conviene preparar el GIVEN dentro del propio test.
+2. **No hay test para `cancelar` sin `--motivo`** (`src/app.js:14-17`, `src/app.js:20`). Sin la opción, o con `--motivo` como último argumento, `reasonOf` devuelve `undefined` y la respuesta es «motivo no válido: …». Es coherente con «cancelar pide un motivo», pero ningún test lo fija.
+3. **`canceladas` sin ninguna cancelación devuelve una cadena vacía** (`src/app.js:37`). En la CLI eso imprime una línea en blanco, sin ningún mensaje en castellano. La spec no define este caso, así que no lo considero un incumplimiento. Lo dejo anotado por si se quiere un mensaje del estilo «sin cancelaciones».
+
+### Declined to judge
+
+- **Las reservas no se guardan entre ejecuciones.** `bookings` vive en memoria (`src/app.js:4`) y ya era así en la base (`349ccef`). En la CLI real, `canceladas` en un proceso nuevo nunca verá lo cancelado en otro. Es un problema de diseño previo y queda fuera del alcance de la 0010.
+- **El glosario de `PRODUCT.md` dice evitar «booking» y «room».** Los identificadores `bookings` y `rooms` vienen de la base y la restricción solo afecta al texto de la interfaz, así que no lo juzgo en esta rama.
+
+### Verificación recomendada al hilo principal
+
+- `node --test` completo, el gate de cierre del plan.
+- `node --test --test-name-pattern "canceladas" test/cancel.test.js`, para confirmar que el Minor 1 es real: ese test, ejecutado solo, debería fallar.
+
+### Veredicto
+
+**Needs fixes.** Hay que recuperar el test de «sin reserva» con un motivo válido (Important 1). Los Minor se pueden arreglar a la vez o dejar para más adelante.
+
+Ficheros relevantes:
+- `<run>/review-0010-9dd072e/src/app.js`
+- `<run>/review-0010-9dd072e/test/cancel.test.js`
+- `<run>/review-0010-9dd072e/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+--- [35]
+La implementación de la 0010 está cerrada y lista para la validación (paso 7 de `sdd-start-feature`). Ejecuté el gate de cierre, `node --test`, y pasa 6/6.
+
+## Revisión final
+Revisor Opus (effort high) sobre `9dd072e`, veredicto *Needs fixes*. Cada THEN/AND de la spec está cubierto por código y test.
+
+- **Important (arreglado):** la rama había borrado el test `cancelar sin reserva lo dice` y el comportamiento seguía vivo. Lo recuperé con un motivo válido en `febbdda`. Para verlo fallar cambié temporalmente el mensaje en `src/app.js` y el test salió en rojo; con el código restaurado, la suite pasa 6/6.
+- No hubo re-revisión: en Native la cubre el test y la suite verde.
+- No hay `tasks.md` en esta spec, así que el registro de la revisión va aquí.
+- Borré el workspace del plan, porque la revisión quedó limpia y el arreglo está commiteado.
+
+## Rulings I made
+- **Persistencia en memoria** (previa a la 0010): el revisor la dejó sin juzgar y la dejo fuera de alcance. Si me equivoco, `canceladas` no ve lo cancelado en otro proceso.
+
+## Deferred minors
+- El test de `canceladas` depende del orden de los tests: su GIVEN no se prepara dentro del test.
+- No hay test para `cancelar` sin `--motivo`.
+- `canceladas` sin cancelaciones devuelve una cadena vacía, sin mensaje en castellano.
+
