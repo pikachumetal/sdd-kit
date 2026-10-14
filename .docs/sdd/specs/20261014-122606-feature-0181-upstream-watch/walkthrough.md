@@ -21,7 +21,7 @@ created: 2026-10-14
 
 - Tipo: infra/tooling
 - Estimación de implementación (del plan): 4,5 h
-- Esfuerzo real: 1,15 h — reloj del hilo por las marcas de los commits: apertura a las 14:43 y cierre a las 15:52 (hora local), con la espera de la línea base y del revisor final dentro; la spec y el plan, antes, ~0,5 h
+- Esfuerzo real: 1,15 h — reloj del hilo por las marcas de los commits: apertura a las 14:43 y cierre a las 15:52 (hora local), con la espera de la línea base, la del revisor final y los 34 min de la parada por memoria (14:49–15:23) dentro; la spec y el plan, antes, ~0,5 h
 - Desviación: −3,35 h (−74 %)
 - Causa de la desviación: la estimación contaba la revisión de las fuentes como lectura entera (Spec Kit sin medir) y no aplicó el factor del log (infra/tooling 0,45), aunque el plan lo citaba. La revisión fue por diffs acotados a los ficheros de conceptos y por el barrido mecánico, y el check y su Pester siguieron el patrón de `battery.mjs`. El ratio (0,26) queda por debajo de la banda p25–p75 de infra/tooling (0,37–0,55)
 - Compactación: no
