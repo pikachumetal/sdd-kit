@@ -43,3 +43,53 @@ De dónde toma texto cada skill y cada plantilla del kit, y qué invoca de fuera
 | `cli/src/tasks/` (fuera de `skills/`) | scripts de superpowers portados a Node | 6.4.2 | `THIRD_PARTY_NOTICES.md` | — |
 
 **Dependencias en tiempo de ejecución**: solo superpowers, con las cuatro skills de la columna «Invoca de fuera». Son las que el README lista y `tests/Skills.Tests.ps1` compara. impeccable, Playwright y `archify` son herramientas que el kit propone o usa si están, y no las exige.
+
+## OpenSpec `v1.11.0` → `v1.14.1`
+
+`git -C D:/code/github/upstream/OpenSpec diff v1.11.0..v1.14.1 -- schemas/spec-driven/schema.yaml docs/` (16 ficheros, +188/−40). Sin fork: el kit toma conceptos.
+
+| Cambio | Pieza del kit | Decisión | Destino |
+| --- | --- | --- | --- |
+| La descripción de un requisito, hasta 500 caracteres: `validate` avisa y `--strict` falla; un comportamiento por requisito, los ejemplos y los bordes a escenarios, y bajo `MODIFIED` el bloque existente no se parte ni se recorta para cumplir | `capability-template.md` y `sdd capability check` | se asume: en el ticket de la feature 0150 §2, el AND que no se vio estaba al final de un requisito largo | fila 0129, «Incluye también» |
+| Un `REMOVED` que deja una capacidad sin requisitos borra su `spec.md` solo con `retire_capabilities: true` en el cambio; sin el marcador, el archivado para antes de tocar nada | `sdd capability merge` (`removeRequirement`), que hoy deja el fichero con su propósito y sin requisitos, sin avisar | se asume | fila 0129, «Incluye también» |
+| Una capacidad nueva se nombra por un comportamiento duradero (`user-auth`), no por el trabajo del cambio (`add-login-endpoint`), con una frontera cohesionada y sin cajones de sastre | `spec-template.md`: «Una capacidad es un sustantivo del dominio, nunca un ticket» | se mantiene: el kit ya lo dice; el tamaño de una capacidad es la propuesta «documentos acotados» | — |
+| Antes de declarar capacidades, el inventario (`list --specs`), la vista sin escenarios de las que parecen tocadas y la lectura entera de las relevantes; reusar el nombre exacto | paso 1 de `sdd-propose` (`sdd capability index` y leer solo las que toca) y «con el nombre exacto que da el índice» de `spec-template.md` | se mantiene: el kit ya lo hace | — |
+| Escribir los `spec.md` de las capacidades de uno en uno, y retomar por el primero que falta | — | se mantiene: el kit escribe un `spec.md` con un delta por capacidad (hace distinto) | — |
+| Tasks: cada una dice cómo se verifica; cada grupo trae sus tests y su documentación, sin un grupo final de «tests y docs» | `plan-template.md` («Verificación» y RED por task) y `plan-writing.md` («Fold … documentation into the task whose deliverable needs them») | se mantiene: el kit ya lo dice | — |
+| `explore` registra lo explorado (un cambio, los artefactos que se nombran) si se le pide o si el usuario acepta su oferta, y nunca escribe código | `sdd-explore`, pasos 4 y 5: salida durable con aprobación, y el trabajo va al roadmap | se mantiene: el kit ya lo hace | — |
+| `update` propone ficheros que faltan en un artefacto con varios; contrato JSON, completions de PowerShell, herramientas soportadas y la página de comunidad (que lista MySpec) | — | sin pieza del kit | — |
+
+## mattpocock/skills `v1.2.3` → `v1.3.1`
+
+`git -C D:/code/github/upstream/mattpocock-skills diff v1.2.3..v1.3.1 -- skills/productivity/grilling skills/productivity/teach/SKILL.md skills/productivity/wait-what/SKILL.md skills/engineering/to-spec/SKILL.md`
+
+| Cambio | Pieza del kit | Decisión | Destino |
+| --- | --- | --- | --- |
+| Sin rayas (—) en `grilling`, `teach`, `to-spec` y `wait-what`; solo puntuación | — | sin pieza del kit: el texto del kit en esos sitios es suyo | — |
+| `grilling`: rondas separadas con `---` (`85f83d3`) | `sdd-grilling` | se mantiene: ya estaba en la versión adaptada, y el kit pregunta una decisión por turno, no por rondas (hace distinto) | — |
+| `wait-what`: el lenguaje común sale de `GLOSSARY.md` (y `GLOSSARY-MAP.md`), no de `CONTEXT.md` | `sdd-rubber-duck`, «Re-pitch»: la «Terminology» de `PRODUCT.md` | se mantiene: el kit tiene su documento (hace distinto) | — |
+| `to-spec`: la frase de `setup-matt-pocock-skills` | «Dónde se prueba» de `spec-template.md` toma solo la regla de la costura | sin pieza del kit | — |
+
+`domain-modeling` se tomó en `b0618bc`, posterior a `v1.3.1`: no hay versión nueva que revisar. Fuera de tag, en `main`, `95249b0` (2026-10-07) cambia `grilling` para que un «sí» acepte la recomendación: entra en la revisión del próximo tag.
+
+## Spec Kit `v0.8.7` → `v1.2.0`
+
+`git -C D:/code/github/upstream/spec-kit diff v0.8.7..v1.2.0 -- CHANGELOG.md spec-driven.md templates/` (90 versiones; de `CHANGELOG.md`, las 50 líneas `feat` sin extensiones, presets ni catálogos). Sin fork: el kit toma conceptos.
+
+| Cambio | Pieza del kit | Decisión | Destino |
+| --- | --- | --- | --- |
+| `/speckit.converge`: compara el código con spec, plan y tasks y añade a `tasks.md` lo que falta, sin reescribir la intención para que encaje con el código | revisión final de rama y smoke con una fila por THEN (`sdd-implement`, paso 7 de `sdd-start-feature`); la acción update pide aprobación para cambiar la spec | se mantiene: el kit ya lo hace | — |
+| Persistencia de la spec tras la entrega: el equipo elige cómo mantener los artefactos; los descubrimientos no cambian la intención sin hacerlo explícito | Art. XI: la spec es un artefacto de evento y `capabilities/` la verdad viva | se mantiene: el kit ya eligió | — |
+| `spec-driven.md`: los artículos IV a VI de la constitution los define cada proyecto | `constitution-template.md`, con las reglas de producto del proyecto | se mantiene | — |
+| `/analyze` en un subagente aparte (Claude) | review de spec con revisores subagentes (`review-spec.md`) | se mantiene | — |
+| `templates/`: espacios al final de línea y la nota del plan | — | sin pieza del kit | — |
+
+## impeccable `skill-v4.3.1` → `skill-v4.5.2`
+
+`git -C D:/code/github/upstream/impeccable diff skill-v4.3.1..skill-v4.5.2 -- skill/reference/init.md`
+
+| Cambio | Pieza del kit | Decisión | Destino |
+| --- | --- | --- | --- |
+| La pregunta `buildPath` (comp-first o code-first) dice que cubre landings y superficies de escaparate; las pantallas de aplicación y los documentos van siempre code-first | — | sin pieza del kit: `PRODUCT-template.md` toma solo los encabezados de `PRODUCT.md`, que no cambian | — |
+
+superpowers (`v7.0.0`) y MADR (`4.0.0`) están en su último tag: nada que revisar.
