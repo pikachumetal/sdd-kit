@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-15
 branch: patch/0183-reliable-repo-tests
-commit: <hash>
+commit: bde41cd5
 ---
 
 # Patch 0183 — tests del repo que no esconden un rojo hasta el cierre
@@ -64,8 +64,10 @@ Medido en esta rama, sobre `d95f3de0`:
 | 5 | Nombre de proyecto real en `skills/` | ✅ `NamingConvention.Tests.ps1` 18/18 (RED: 1 fallo, `encargo-revision.md`) |
 | 6 | Gate de cierre declarado, y `tech-stack.md` en su tope | ⚠️ `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`: `cli:typecheck` ✅, `cli:test-slow` 156/156 ✅, `cli:test-min` 1023/1023 ✅; `cli:test` 866/867 y `kit:test` 1257/1258, fuera de este patch: `verify.test.ts` «runs the gate with powershell.exe…» expira (6.952 ms, fila de deuda nueva) y `FastSuiteBudget` midió 31,8 s con `cli:test-slow` y `cli:test-min` en paralelo (solo, en verde). `WordBudget` en verde con el tope en 18.800 |
 
+Validación en campo: 2026-10-15 · RED/GREEN de los seis casos de la tabla · gate de cierre: cli:typecheck, cli:test-slow 156/156 y cli:test-min 1023/1023 en verde, los dos rojos de la fila 6 fuera del patch · pre-commit del fix en verde
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 2,5 h
 - Inicio: 2026-10-15T09:22Z
-- Real: <Yh>
+- Real: 1,2 h
