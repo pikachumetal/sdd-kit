@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, git, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { edit, git, isWindows, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const ORDER = 'fusiona el hotfix del login en main';
+const failsIfExists = (file: string) => (isWindows ? `if (Test-Path ${file}) { exit 1 }` : `if [ -f ${file} ]; then exit 1; fi`);
 const slash = (text: string) => text.replaceAll('\\', '/');
 
 function hotfixFixture(name: string, branch = 'hotfix/0200-fix'): Fixture & { hotfix: string } {
@@ -73,6 +74,26 @@ describe('un hotfix se fusiona en la rama estable, se etiqueta y vuelve a la int
     expect(result.code).toBe(1);
     expect(result.text).toContain('vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano');
     expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+  });
+
+  it('una release que el remoto ya cerró en main no recibe la vuelta', async () => {
+    const fx = hotfixFixture('release-cerrada');
+    openRelease(fx, 'release/3.1.0');
+    git(fx.repo, 'push', '-q', 'origin', 'release/3.1.0');
+    const localMain = sha(fx.repo, 'main');
+    const closer = join(fx.wt, 'cierre-release');
+    git(fx.repo, 'worktree', 'add', '-q', closer, 'main');
+    git(closer, 'merge', '-q', '--no-ff', '-m', 'merge: release/3.1.0 en main', 'release/3.1.0');
+    git(closer, 'push', '-q', 'origin', 'main');
+    git(fx.repo, 'worktree', 'remove', closer);
+    git(fx.repo, 'update-ref', 'refs/heads/main', localMain);
+    const release = sha(fx.repo, 'release/3.1.0');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs());
+
+    expect(result.code, result.text).toBe(0);
+    expect(sha(fx.repo, 'develop^2')).toBe(sha(fx.repo, 'hotfix/0200-fix'));
+    expect(sha(fx.repo, 'release/3.1.0')).toBe(release);
   });
 
   it('una rama release vuelve a develop', async () => {
@@ -148,6 +169,33 @@ describe('un hotfix cuya vuelta falla se deshace entero', () => {
     expect(result.text).toContain("vuelta: conflicto en README.md; se deshacen el merge en 'main' y la etiqueta: porta el arreglo a 'develop' a mano");
     expect(git(fx.repo, 'for-each-ref')).toBe(refs);
     expect(sha(fx.remote, 'main')).toBe(sha(fx.repo, 'main'));
+  });
+
+  it('con la verificación de la vuelta en rojo deshace main y la etiqueta y dice la base', async () => {
+    const fx = hotfixFixture('vuelta-roja');
+    const develop = join(fx.wt, 'develop-sacada');
+    git(fx.repo, 'worktree', 'add', '-q', develop, 'develop');
+    write(develop, 'solo-develop.txt', 'develop\n');
+    saveAll(develop, 'chore: algo solo en develop');
+    const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3.0.1', '--verify', failsIfExists('solo-develop.txt')));
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('verificación: código de salida 1');
+    expect(result.text).toContain('base: en rojo: el mismo comando también falla sin la rama');
+    expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
+  });
+
+  it('una etiqueta que git no puede crear falla y deshace main', async () => {
+    const fx = hotfixFixture('tag-invalida');
+    const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3..0'));
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("--tag: no se pudo crear 'v3..0'");
+    expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
   });
 
   it('si el remoto avanzó, deshace todo y pide relanzar', async () => {

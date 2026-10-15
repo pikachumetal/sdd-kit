@@ -146,7 +146,8 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN la rama destino sacada en un worktree con cambios sin commitear
 - WHEN el cierre va a fusionar
-- THEN no fusiona ahí: dice qué ficheros tienen cambios y para
+- THEN no fusiona ahí y sale con 1 con `destino sacado: el checkout de '<into>' en '<ruta>' tiene cambios sin commitear; el merge se haría encima de ellos, así que no se toca.`, el `git diff --stat HEAD` del checkout, `sin seguimiento: <ficheros>` si los hay, y el bloque `Salidas:` (commit de quien los hizo y relanzar, llevarlos a la feature y dejar el merge para luego)
+- AND la salida «Llevarlos a la rama de la feature: solo tocan registros (roadmap, changelog, estimation-log).» solo aparece si todos los ficheros sucios son `roadmap.md`, `changelog.md` o `estimation-log.md`; con `.gitignore` modificado, las salidas son dos
 - AND no hace `stash`, `reset` ni commit de lo ajeno
 
 ### Un merge que el entorno deniega se informa con su evidencia
@@ -229,6 +230,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND el script sale con error y nombra el paso que falló y el motivo
 - AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de las últimas 20 líneas de la salida del hook, no un conflicto
 - AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
+- AND si `--verify` sale en rojo, el mismo comando corre sobre el commit de antes del merge y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
 
 ### La verificación del merge es el gate de merge, no la suite completa
 
@@ -290,10 +292,57 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND un método que el dev-lead nombra para la feature manda sobre los dos ficheros
 - AND un `execution: auto` en `sdd-kit.local.json` también cuenta: el método lo recomienda el handoff aunque `sdd-kit.json` fije `native` o `subagent`
 
+### La comprobación del destino no toca nada
+
+- GIVEN un worktree de feature y `develop` sacada en el checkout principal con `roadmap.md` modificado
+- WHEN se ejecuta `node sdd.js merge --check --project-root <worktree>`
+- THEN sale con 1 con el mismo mensaje de destino sacado que daría el merge, sin coger el cerrojo, sin fetch y sin cambiar ningún ref, índice ni fichero
+- AND con el checkout limpio sale con 0 y `destino: listo: 'develop' sacado en '<ruta>', sin cambios`; sin `develop` sacada, con `destino: listo: 'develop' irá en el worktree temporal '<ruta>'`
+
+### La suite no se repite si desde el commit verificado solo cambian docs
+
+- GIVEN una feature cuyo gate de cierre pasó en el commit `a1b2c3d` y una rama destino que desde entonces solo avanzó en `.docs/sdd/roadmap.md`
+- WHEN el cierre ejecuta `sdd merge --verify "<gate>" --verified-at a1b2c3d`
+- THEN no ejecuta `<gate>` y escribe `verificación: omitida: desde a1b2c3d solo cambian docs`
+- AND si desde `a1b2c3d` cambió cualquier fichero fuera de `.docs/` que no sea `*.md`, de la rama o de la base, ejecuta `<gate>` como sin la opción
+- AND `--verified-at nada` sale con 2 y `--verified-at: 'nada' no es un commit`, sin coger el cerrojo
+
+### El push del cierre reintenta si la rama destino avanzó
+
+- GIVEN `sdd merge --push` y un remoto en el que otra sesión publica `develop` mientras corre `--verify`
+- WHEN el push se rechaza y, tras un fetch, la `develop` remota ya no es antecesora de la local
+- THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`, integra la `develop` remota como al empezar, repite `--verify` salvo que desde el último commit verificado solo cambien docs, y vuelve a empujar
+- AND tras el tercer push rechazado falla con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato` y la rama destino como estaba
+- AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla como hoy con `push: no se pudo publicar 'develop' en 'origin'.`, sin reintentar
+
+### Un hotfix se fusiona en la rama estable, se etiqueta y vuelve a la integración
+
+- GIVEN `merge.into: develop`, la rama `hotfix/0200-fix-login` salida de `main` y ninguna `release/*` abierta
+- WHEN se ejecuta `sdd merge --branch hotfix/0200-fix-login --into main --tag v3.0.1 --order "fusiona el hotfix del login en main" --push`
+- THEN bajo un solo cerrojo fusiona la rama en `main` con `--no-ff` y el commit `merge: hotfix/0200-fix-login en main` con la línea `Orden del dev-lead: «fusiona el hotfix del login en main»`, crea la etiqueta anotada `v3.0.1` en ese commit, fusiona la misma rama en `develop` con `--no-ff`, y publica `main`, `develop` y `v3.0.1` en un solo push atómico
+- AND escribe `Fusionado hotfix/0200-fix-login en main: <hash>`, `etiqueta v3.0.1 en <hash>`, `Fusionado hotfix/0200-fix-login en develop: <hash>` y `publicado en origin`
+- AND con `release/3.1.0` abierta (no antecesora de `main`), la vuelta va a `release/3.1.0` y no a `develop`; con dos abiertas falla antes de tocar nada con `vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano`
+- AND una rama `release/3.1.0` con `--into main` vuelve a `develop`
+- AND `--into main` sin `--order` sale con 2 con `--into 'main' distinta de merge.into necesita --order "<frase del dev-lead>"`; `--tag` sin ese `--into`, con `--tag solo con --into a la rama estable`; y una etiqueta existente falla con `--tag: ya existe 'v3.0.1'` sin tocar nada
+
+### A la rama estable solo llegan ramas hotfix y release
+
+- GIVEN la rama `patch/0201-typo`
+- WHEN se ejecuta `sdd merge --branch patch/0201-typo --into main --order "llévalo a main"`
+- THEN sale con 1 con `--into: a 'main' solo llegan ramas hotfix/ o release/ (git-flow); 'patch/0201-typo' no lo es`, sin coger el cerrojo ni tocar ningún ref
+
+### Un hotfix cuya vuelta falla se deshace entero
+
+- GIVEN un hotfix que se fusiona en `main` y cuya vuelta a `develop` tiene un conflicto en `skills/x/SKILL.md` en el que los dos lados cambian la misma línea
+- WHEN el script llega a la vuelta
+- THEN deshace la vuelta, el merge en `main` y la etiqueta, no publica nada y falla con `vuelta: conflicto en skills/x/SKILL.md; se deshacen el merge en 'main' y la etiqueta: porta el arreglo a 'develop' a mano`
+- AND con la verificación de la vuelta en rojo, deshace lo mismo y da el error de verificación con su línea `base:`
+- AND si el push atómico se rechaza porque `main` o `develop` avanzaron en el remoto, deshace lo mismo y falla con `push: 'main' o 'develop' avanzó en 'origin'; relanza el hotfix`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap (en `ROADMAP.md`, entre `## Now` y su tabla); los ficheros que prevé tocar una feature abierta, en el «Toca:» de su brief (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x); el método de un plan, en la línea `Ejecución:` de su cabecera.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
-- **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la aplica `sdd-parallel-agents` (requisito «Dos revisores de spec se despachan con `sdd-parallel-agents`» de `feature-flow`). `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después.
+- **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la aplica `sdd-parallel-agents` (requisito «Dos revisores de spec se despachan con `sdd-parallel-agents`» de `feature-flow`). `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después. `sdd merge --push`: 3 intentos de push como máximo cuando la rama destino avanza en el remoto; el push de un hotfix, uno.
 - **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); el bloque de un push fallido (comando literal y error); y el aviso de cada clave de `sdd-kit.local.json` que el agente ignora, en el anuncio o en la pregunta del carril de `sdd-propose`.
 - **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.

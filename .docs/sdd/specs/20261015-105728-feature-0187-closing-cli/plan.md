@@ -3,7 +3,7 @@ id: 20261015-105728-feature-0187-closing-cli
 feature: 0187
 title: Plan de implementación — CLI del cierre
 spec: ./spec.md
-status: draft
+status: done
 created: 2026-10-15
 ---
 

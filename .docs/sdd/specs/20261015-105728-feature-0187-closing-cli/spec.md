@@ -6,7 +6,7 @@ proposal: 0131
 title: CLI del cierre — `sdd merge` para el hotfix, el destino sacado, la base en rojo, la suite una vez y el push que reintenta
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-15
 author: Claude (Opus 5.5)
 approvers:

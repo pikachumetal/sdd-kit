@@ -22,41 +22,53 @@ interface Checkouts {
 const GIT_FLOW = /^(hotfix|release)\//;
 const MERGE_CONFLICT = /^merge: conflicto en (.+)\.$/;
 
-async function openReleases(root: string, into: string, remote: string | null, branch: string): Promise<string[]> {
-  const remotePrefix = `refs/remotes/${remote}/`;
-  const refs = await gitLines(root, ['for-each-ref', '--format=%(refname)', 'refs/heads/release/', ...(remote === null ? [] : [`${remotePrefix}release/`])]);
+async function openReleases(root: string, plan: HotfixPlan, branch: string): Promise<string[]> {
+  const remotePrefix = `refs/remotes/${plan.remote}/`;
+  const refs = await gitLines(root, ['for-each-ref', '--format=%(refname)', 'refs/heads/release/', ...(plan.remote === null ? [] : [`${remotePrefix}release/`])]);
   const open = new Set<string>();
   for (const ref of refs) {
     const name = ref.startsWith('refs/heads/') ? ref.slice('refs/heads/'.length) : ref.slice(remotePrefix.length);
-    if (name !== branch && (await git(root, ['merge-base', '--is-ancestor', ref, into])).code !== 0) open.add(name);
+    if (name !== branch && (await git(root, ['merge-base', '--is-ancestor', ref, `refs/heads/${plan.into}`])).code !== 0) open.add(name);
   }
   return [...open].sort();
 }
 
+async function backTarget(root: string, job: Job, plan: HotfixPlan): Promise<string> {
+  if (!job.branch.startsWith('hotfix/')) return job.policy.into;
+  const releases = await openReleases(root, plan, job.branch);
+  if (releases.length > 1) throw new DomainError(`vuelta: hay varias ramas release/ abiertas (${releases.join(', ')}); fusiona a mano`);
+  return releases[0] ?? job.policy.into;
+}
+
 export async function prepareHotfix(job: Job, into: string, order: string): Promise<HotfixPlan> {
-  const { projectRoot, branch, policy, options } = job;
+  const { projectRoot, branch, options } = job;
   if (!GIT_FLOW.test(branch)) throw new DomainError(`--into: a '${into}' solo llegan ramas hotfix/ o release/ (git-flow); '${branch}' no lo es`);
   const { tag } = options;
   if (tag !== null && (await git(projectRoot, ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`])).code === 0) {
     throw new DomainError(`--tag: ya existe '${tag}'`);
   }
-  const remote = await remoteForBranch(projectRoot, into);
-  const releases = branch.startsWith('hotfix/') ? await openReleases(projectRoot, into, remote, branch) : [];
-  if (releases.length > 1) throw new DomainError(`vuelta: hay varias ramas release/ abiertas (${releases.join(', ')}); fusiona a mano`);
-  return { into, back: releases[0] ?? policy.into, tag, order, remote };
+  const plan = { into, back: '', tag, order, remote: await remoteForBranch(projectRoot, into) };
+  return { ...plan, back: await backTarget(projectRoot, job, plan) };
 }
 
-function destinations(job: Job, plan: HotfixPlan): [DestinationRequest, DestinationRequest] {
+function destination(job: Job, into: string, suffix: string): DestinationRequest {
   const { projectRoot, branch, io } = job;
-  const folder = `merge-${basename(branch)}`;
-  return [
-    { projectRoot, into: plan.into, branch, warn: io.err, folder },
-    { projectRoot, into: plan.back, branch, warn: io.err, folder: `${folder}-${basename(plan.back)}` },
-  ];
+  return { projectRoot, into, branch, warn: io.err, folder: `merge-${basename(branch)}${suffix}` };
 }
+
+const stableDestination = (job: Job, plan: HotfixPlan) => destination(job, plan.into, '');
+const backDestination = (job: Job, plan: HotfixPlan) => destination(job, plan.back, `-${basename(plan.back)}`);
 
 export async function checkHotfix(job: Job, plan: HotfixPlan): Promise<void> {
-  for (const request of destinations(job, plan)) job.io.out(await checkDestination(request));
+  for (const request of [stableDestination(job, plan), backDestination(job, plan)]) job.io.out(await checkDestination(request));
+}
+
+async function mergeStable(path: string, job: Job, plan: HotfixPlan): Promise<boolean> {
+  await mergeFeature(path, job.branch, { into: plan.into, noFf: true }, plan.order);
+  await verifyMerge(path, job.options.verify, job.verifiedAt, job.io);
+  if (plan.tag === null) return false;
+  if ((await git(path, ['tag', '-a', plan.tag, '-m', `${plan.tag} — ${job.branch}`])).code !== 0) throw new DomainError(`--tag: no se pudo crear '${plan.tag}'`);
+  return true;
 }
 
 async function mergeBack(path: string, job: Job, plan: HotfixPlan): Promise<void> {
@@ -68,6 +80,7 @@ async function mergeBack(path: string, job: Job, plan: HotfixPlan): Promise<void
     const undone = plan.tag === null ? `el merge en '${plan.into}'` : `el merge en '${plan.into}' y la etiqueta`;
     throw new DomainError(`vuelta: conflicto en ${files}; se deshacen ${undone}: porta el arreglo a '${plan.back}' a mano`);
   }
+  await verifyMerge(path, job.options.verify, job.verifiedAt, job.io);
 }
 
 async function pushAll(path: string, plan: HotfixPlan, remote: string): Promise<void> {
@@ -81,9 +94,16 @@ async function pushAll(path: string, plan: HotfixPlan, remote: string): Promise<
 
 const shortHead = async (path: string) => (await gitLines(path, ['rev-parse', '--short', 'HEAD']))[0];
 
+async function report(job: Job, plan: HotfixPlan, paths: Checkouts, tagged: boolean): Promise<void> {
+  const { branch, options, io } = job;
+  const stableHash = await shortHead(paths.stable);
+  io.out(`Fusionado ${branch} en ${plan.into}: ${stableHash}`);
+  if (tagged) io.out(`etiqueta ${plan.tag} en ${stableHash}`);
+  io.out(`Fusionado ${branch} en ${plan.back}: ${await shortHead(paths.back)}`);
+  if (options.push) io.out(plan.remote === null ? 'push: no hecho: sin remoto' : `publicado en ${plan.remote}`);
+}
+
 async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<void> {
-  const { branch, options, verifiedAt, io } = job;
-  await syncBaseBranch(paths.stable, plan.into, plan.remote);
   const backPublished = plan.remote !== null && (await git(paths.back, ['ls-remote', '--exit-code', '--heads', plan.remote, plan.back])).code === 0;
   await syncBaseBranch(paths.back, plan.back, backPublished ? plan.remote : null);
   const [stableBefore] = await gitLines(paths.stable, ['rev-parse', 'HEAD']);
@@ -91,29 +111,25 @@ async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Pr
   let failedAt = paths.stable;
   let tagged = false;
   try {
-    await mergeFeature(paths.stable, branch, { into: plan.into, noFf: true }, plan.order);
-    await verifyMerge(paths.stable, options.verify, verifiedAt, io);
-    if (plan.tag !== null) tagged = (await git(paths.stable, ['tag', '-a', plan.tag, '-m', `${plan.tag} — ${branch}`])).code === 0;
+    tagged = await mergeStable(paths.stable, job, plan);
     failedAt = paths.back;
     await mergeBack(paths.back, job, plan);
-    await verifyMerge(paths.back, options.verify, verifiedAt, io);
-    const pushed = options.push && plan.remote !== null;
-    if (pushed) await pushAll(paths.stable, plan, plan.remote as string);
-    const stableHash = await shortHead(paths.stable);
-    io.out(`Fusionado ${branch} en ${plan.into}: ${stableHash}`);
-    if (tagged) io.out(`etiqueta ${plan.tag} en ${stableHash}`);
-    io.out(`Fusionado ${branch} en ${plan.back}: ${await shortHead(paths.back)}`);
-    if (pushed) io.out(`publicado en ${plan.remote}`);
-    else if (options.push) io.out('push: no hecho: sin remoto');
+    if (job.options.push && plan.remote !== null) await pushAll(paths.stable, plan, plan.remote);
+    await report(job, plan, paths, tagged);
   } catch (error) {
     await undoFailedMerge(paths.back, backBefore);
     await undoFailedMerge(paths.stable, stableBefore);
-    if (tagged) await git(paths.stable, ['tag', '-d', plan.tag as string]);
-    throw await explainFailure(error, options.verify, failedAt, io);
+    if (tagged && plan.tag !== null) await git(paths.stable, ['tag', '-d', plan.tag]);
+    throw await explainFailure(error, job.options.verify, failedAt, job.io);
   }
 }
 
-export async function mergeHotfix(job: Job, plan: HotfixPlan): Promise<void> {
-  const [stable, back] = destinations(job, plan);
-  await withDestination(stable, (stablePath) => withDestination(back, (backPath) => integrateHotfix(job, plan, { stable: stablePath, back: backPath })));
+// La vuelta se decide con la rama estable ya integrada y las release/ del remoto al día: una release cerrada fuera no la recibe.
+export async function mergeHotfix(job: Job, prepared: HotfixPlan): Promise<void> {
+  await withDestination(stableDestination(job, prepared), async (stable) => {
+    await syncBaseBranch(stable, prepared.into, prepared.remote);
+    if (prepared.remote !== null) await git(stable, ['fetch', prepared.remote, `+refs/heads/release/*:refs/remotes/${prepared.remote}/release/*`]);
+    const plan = { ...prepared, back: await backTarget(stable, job, prepared) };
+    await withDestination(backDestination(job, plan), (back) => integrateHotfix(job, plan, { stable, back }));
+  });
 }
