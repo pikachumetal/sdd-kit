@@ -11,6 +11,7 @@ export const mergeVerb: Verb = {
     push: { type: 'boolean' },
     check: { type: 'boolean' },
     verify: { type: 'string' },
+    'verified-at': { type: 'string' },
     'lock-timeout': { type: 'string' },
   },
   async run(args, io) {
@@ -22,6 +23,7 @@ export const mergeVerb: Verb = {
       push: args.values.push === true,
       check: args.values.check === true,
       verify: text(args, 'verify'),
+      verifiedAt: text(args, 'verified-at'),
       lockTimeoutMinutes: lockTimeoutOption(args),
     };
     await mergeBranch(options, io);

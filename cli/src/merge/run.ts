@@ -7,7 +7,7 @@ import { withLock } from '../git/lock.ts';
 import { checkDestination, withDestination } from './destination.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
 import { mergeFeature, pushDestination, remoteForBranch, syncBaseBranch, undoFailedMerge } from './steps.ts';
-import { runVerification } from './verify.ts';
+import { onlyDocsSince, resolveCommit, runVerification } from './verify.ts';
 
 export interface MergeOptions {
   projectRoot: string;
@@ -15,6 +15,7 @@ export interface MergeOptions {
   push: boolean;
   check: boolean;
   verify: string | null;
+  verifiedAt: string | null;
   lockTimeoutMinutes: number;
 }
 
@@ -22,7 +23,18 @@ interface Job {
   branch: string;
   policy: MergePolicy;
   options: MergeOptions;
+  verifiedAt: string | null;
   io: Io;
+}
+
+async function verifyMerge(path: string, job: Job): Promise<void> {
+  const { options, verifiedAt, io } = job;
+  if (options.verify === null || options.verify.trim() === '') return;
+  if (verifiedAt !== null && (await onlyDocsSince(path, verifiedAt))) {
+    const [shortHash] = await gitLines(path, ['rev-parse', '--short', verifiedAt]);
+    return io.out(`verificación: omitida: desde ${shortHash} solo cambian docs`);
+  }
+  await runVerification({ worktree: path, command: options.verify, io });
 }
 
 async function integrate(path: string, job: Job): Promise<void> {
@@ -32,7 +44,7 @@ async function integrate(path: string, job: Job): Promise<void> {
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
   try {
     await mergeFeature(path, branch, policy);
-    if (options.verify !== null && options.verify.trim() !== '') await runVerification({ worktree: path, command: options.verify, io });
+    await verifyMerge(path, job);
     const pushed = options.push && remote !== null;
     if (pushed) await pushDestination(path, remote, policy.into);
     const [shortHash] = await gitLines(path, ['rev-parse', '--short', 'HEAD']);
@@ -59,6 +71,7 @@ export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> 
   const lock = { path: resolve(await commonDir(projectRoot), 'sdd-merge.lock'), label: 'merge', io: lockIo, owner: { branch, worktree: projectRoot } };
   const request = { projectRoot, into: policy.into, branch, warn: io.err };
   if (options.check) return io.out(await checkDestination(request));
-  const job: Job = { branch, policy, options, io };
+  const verifiedAt = options.verifiedAt === null ? null : await resolveCommit(projectRoot, options.verifiedAt);
+  const job: Job = { branch, policy, options, verifiedAt, io };
   await withLock(lock, options.lockTimeoutMinutes, () => withDestination(request, (path) => integrate(path, job)));
 }

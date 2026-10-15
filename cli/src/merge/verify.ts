@@ -3,8 +3,9 @@ import { createWriteStream, readFileSync, rmSync, type WriteStream } from 'node:
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { StringDecoder } from 'node:string_decoder';
-import { DomainError } from '../cli/args.ts';
+import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
+import { git, gitLines } from '../git/git.ts';
 
 export interface Verification {
   worktree: string;
@@ -79,6 +80,16 @@ export function findLockedFile(output: string): string | undefined {
   if (file === undefined) return undefined;
   const holder = LOCKING_PROCESS.exec(output)?.groups?.process ?? 'otro proceso';
   return `'${file.file ?? file.busy}' lo tiene abierto ${holder}`;
+}
+
+export async function onlyDocsSince(worktree: string, commit: string): Promise<boolean> {
+  return (await git(worktree, ['diff', '--quiet', commit, 'HEAD', '--', '.', ':!.docs', ':!*.md'])).code === 0;
+}
+
+export async function resolveCommit(root: string, value: string): Promise<string> {
+  const [commit] = await gitLines(root, ['rev-parse', '--verify', '--quiet', `${value}^{commit}`]);
+  if (commit === undefined) throw new UsageError(`--verified-at: '${value}' no es un commit`);
+  return commit;
 }
 
 export async function runVerification(verification: Verification): Promise<void> {
