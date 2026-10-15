@@ -2,6 +2,7 @@ import { caseInsensitiveGet, isRecord } from '../cli/records.ts';
 import { existsSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { parseJsonFile } from '../cli/json-file.ts';
+import { readClock, type Clock } from './clock.ts';
 import { elapsedMinutes, isInProgress, modelTotals, readResponses, type ModelTotals } from './usage.ts';
 
 export interface Dispatch {
@@ -14,6 +15,7 @@ export interface Dispatch {
 export interface Session {
   thread: ModelTotals;
   dispatches: Dispatch[];
+  clock: Clock | null;
 }
 
 function entries(folder: string, kind: 'file' | 'directory'): string[] {
@@ -51,8 +53,9 @@ function readDispatch(file: string, branch: string): Dispatch | null {
 }
 
 export function readSession(folders: string[], branch: string): Session {
-  const thread = folders.flatMap(threadFiles).flatMap((file) => readResponses(file, branch));
-  const files = folders.flatMap(agentFiles).sort((first, second) => first.localeCompare(second));
-  const dispatches = files.map((file) => readDispatch(file, branch)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
-  return { thread: modelTotals(thread), dispatches };
+  const files = folders.flatMap(threadFiles);
+  const thread = files.flatMap((file) => readResponses(file, branch));
+  const agents = folders.flatMap(agentFiles).sort((first, second) => first.localeCompare(second));
+  const dispatches = agents.map((file) => readDispatch(file, branch)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
+  return { thread: modelTotals(thread), dispatches, clock: readClock(files, branch) };
 }
