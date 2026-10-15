@@ -53,7 +53,7 @@ El ciclo es el mismo que en greenfield, guiado por las skills:
 4. **Tareas** en `tasks.md`, solo si el plan tiene varios pasos.
 5. **Implementación** en la propia sesión por defecto, o con subagentes en los planes largos, y en los dos casos con los tests en rojo escritos antes del código de cada tarea: son el contrato de quien implementa.
 6. **Verificación**, que se detalla en el punto 2.2.
-7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#3-qué-te-pregunta-el-agente-y-qué-contestar).
+7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
 8. **Cierre** con `walkthrough.md` y `sdd-end-feature`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
 
 Los artefactos viven en `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/`, como en greenfield.

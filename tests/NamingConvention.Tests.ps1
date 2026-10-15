@@ -11,6 +11,10 @@ BeforeDiscovery {
     '<capacidad>'
   )
 
+  # Proyectos reales donde se usa el kit: skills/ se instala en cada consumidor, y la evidencia de
+  # campo se cita sin nombre propio (patches 0017 y 0183). MDT se llama hoy Quartz.
+  $script:RealProjectNames = @('Alybo', 'SifAcademy', 'SifRest', '\bMDT\b', '\bQuartz\b', 'LegalRep', 'Medysif')
+
   $script:ForbiddenPaths = @(
     '.docs/sdd/funcional'
     'skills/sdd-templates/templates/funcional-template.md'
@@ -68,6 +72,16 @@ Describe 'Convención de nombres' {
   It 'ninguna ruta viva menciona <_>' -ForEach $script:ForbiddenTokens {
     $offenders = Get-Offender $_
     $offenders | Should -BeNullOrEmpty -Because 'los nombres de fichero y carpeta van en inglés kebab-case'
+  }
+
+  It 'ningún fichero de skills/ nombra el proyecto real <_>' -ForEach $script:RealProjectNames {
+    if (-not $script:SkillTexts) {
+      $script:SkillTexts = Get-ChildItem (Join-Path $script:KitRoot 'skills') -Recurse -File |
+        ForEach-Object { @{ Path = $_.FullName.Replace($script:KitRoot, '').TrimStart('\', '/'); Text = Get-Content $_.FullName -Raw } }
+    }
+    $name = $_
+    $offenders = $script:SkillTexts | Where-Object { $_.Text -match $name } | ForEach-Object { $_.Path }
+    $offenders | Should -BeNullOrEmpty -Because 'la evidencia de campo se cita sin el nombre del proyecto'
   }
 
   It 'no existe en disco <_>' -ForEach $script:ForbiddenPaths {
