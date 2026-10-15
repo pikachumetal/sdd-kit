@@ -10,6 +10,7 @@ export interface DestinationRequest {
   into: string;
   branch: string;
   warn: (message: string) => void;
+  folder?: string;
 }
 
 function changedFile(statusLine: string): string {
@@ -35,21 +36,21 @@ async function checkedOut(projectRoot: string, into: string): Promise<Worktree |
   return (await worktrees(projectRoot)).find((entry) => entry.branch === into && existsSync(entry.path));
 }
 
-const tempFolder = (branch: string) => `merge-${basename(branch)}`;
+const tempFolder = ({ branch, folder }: DestinationRequest) => folder ?? `merge-${basename(branch)}`;
 
 export async function withDestination<T>(request: DestinationRequest, body: (path: string) => Promise<T>): Promise<T> {
-  const { projectRoot, into, branch, warn } = request;
+  const { projectRoot, into, warn } = request;
   await git(projectRoot, ['worktree', 'prune']);
   const found = await checkedOut(projectRoot, into);
-  if (found === undefined) return withWorktreeFolder(projectRoot, { branch: into, folder: tempFolder(branch), warn }, body);
+  if (found === undefined) return withWorktreeFolder(projectRoot, { branch: into, folder: tempFolder(request), warn }, body);
   await assertClean(found.path, into);
   return body(found.path);
 }
 
 export async function checkDestination(request: DestinationRequest): Promise<string> {
-  const { projectRoot, into, branch } = request;
+  const { projectRoot, into } = request;
   const found = await checkedOut(projectRoot, into);
-  if (found === undefined) return `destino: listo: '${into}' irá en el worktree temporal '${await freeTempFolder(projectRoot, tempFolder(branch))}'`;
+  if (found === undefined) return `destino: listo: '${into}' irá en el worktree temporal '${await freeTempFolder(projectRoot, tempFolder(request))}'`;
   await assertClean(found.path, into);
   return `destino: listo: '${into}' sacado en '${found.path}', sin cambios`;
 }

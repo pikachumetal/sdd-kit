@@ -129,3 +129,14 @@ export function cleanedUp(fx: Fixture): boolean {
 
 export const isWindows = process.platform === 'win32';
 export const sleepCommand = (seconds: number) => (isWindows ? `Start-Sleep -Seconds ${seconds}` : `sleep ${seconds}`);
+
+export function publishFromSeed(fx: Fixture, file: string, once: boolean): string {
+  const marker = join(fx.root, 'publicado.txt');
+  const seed = fx.seed;
+  if (isWindows) {
+    const publish = `Set-Content -Path '${join(seed, file)}' -Value (Get-Random); git -C '${seed}' add -A; git -C '${seed}' commit -q -m otra-sesion; git -C '${seed}' push -q '${fx.remote}' develop`;
+    return once ? `if (-not (Test-Path '${marker}')) { New-Item '${marker}' | Out-Null; ${publish} }` : publish;
+  }
+  const publish = `od -An -N4 -tu4 /dev/urandom > '${join(seed, file)}'; git -C '${seed}' add -A; git -C '${seed}' commit -q -m otra-sesion; git -C '${seed}' push -q '${fx.remote}' develop`;
+  return once ? `if [ ! -f '${marker}' ]; then touch '${marker}'; ${publish}; fi` : publish;
+}

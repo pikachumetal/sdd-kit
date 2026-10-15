@@ -105,7 +105,22 @@ export async function runVerification(verification: Verification): Promise<void>
   throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${tail.join('\n')}`);
 }
 
-export async function baseVerdict(verification: Verification): Promise<string> {
+export async function verifyMerge(worktree: string, command: string | null, verifiedAt: string | null, io: Io): Promise<void> {
+  if (command === null || command.trim() === '') return;
+  if (verifiedAt !== null && (await onlyDocsSince(worktree, verifiedAt))) {
+    const [shortHash] = await gitLines(worktree, ['rev-parse', '--short', verifiedAt]);
+    return io.out(`verificación: omitida: desde ${shortHash} solo cambian docs`);
+  }
+  await runVerification({ worktree, command, io });
+}
+
+// Tras deshacer el merge, el worktree ya está en la base: el mismo comando dice si el rojo es de la rama.
+export async function explainFailure(error: unknown, command: string | null, worktree: string, io: Io): Promise<unknown> {
+  if (!(error instanceof VerificationFailed) || command === null) return error;
+  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, command, io })}`);
+}
+
+async function baseVerdict(verification: Verification): Promise<string> {
   const log = logPath('verify-base');
   if ((await runTee(verification, log)) === 0) {
     rmSync(log, { force: true });
