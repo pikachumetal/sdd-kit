@@ -7,7 +7,7 @@ import { withLock } from '../git/lock.ts';
 import { checkDestination, withDestination } from './destination.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
 import { mergeFeature, pushDestination, remoteForBranch, syncBaseBranch, undoFailedMerge } from './steps.ts';
-import { onlyDocsSince, resolveCommit, runVerification } from './verify.ts';
+import { baseVerdict, onlyDocsSince, resolveCommit, runVerification, VerificationFailed } from './verify.ts';
 
 export interface MergeOptions {
   projectRoot: string;
@@ -53,7 +53,8 @@ async function integrate(path: string, job: Job): Promise<void> {
     else if (options.push) io.out('push: no hecho: sin remoto');
   } catch (error) {
     await undoFailedMerge(path, before);
-    throw error;
+    if (!(error instanceof VerificationFailed) || options.verify === null) throw error;
+    throw new DomainError(`${error.message}\n${await baseVerdict({ worktree: path, command: options.verify, io })}`);
   }
 }
 

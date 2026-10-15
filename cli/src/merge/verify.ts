@@ -32,9 +32,11 @@ export function shellCommand(command: string, platform = process.platform, probe
   return [program, ['-NoProfile', '-Command', command]];
 }
 
-function logPath(): string {
+export class VerificationFailed extends DomainError {}
+
+function logPath(kind: string): string {
   const stamp = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
-  return join(tmpdir(), `sdd-merge-verify-${stamp}-${process.pid}.log`);
+  return join(tmpdir(), `sdd-merge-${kind}-${stamp}-${process.pid}.log`);
 }
 
 function lineSink(io: Io, file: WriteStream) {
@@ -93,12 +95,21 @@ export async function resolveCommit(root: string, value: string): Promise<string
 }
 
 export async function runVerification(verification: Verification): Promise<void> {
-  const log = logPath();
+  const log = logPath('verify');
   const code = await runTee(verification, log);
   if (code === 0) return void rmSync(log, { force: true });
   const output = readFileSync(log, 'utf8');
   const locked = findLockedFile(output);
   if (locked !== undefined) throw new DomainError(`bloqueado: ${locked}; ciérralo y relanza el merge. Salida completa en ${log}`);
   const tail = output.split(LINE_BREAK).filter((line) => line !== '').slice(-20);
-  throw new DomainError(`verificación: código de salida ${code}; salida completa en ${log}\n${tail.join('\n')}`);
+  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${tail.join('\n')}`);
+}
+
+export async function baseVerdict(verification: Verification): Promise<string> {
+  const log = logPath('verify-base');
+  if ((await runTee(verification, log)) === 0) {
+    rmSync(log, { force: true });
+    return 'base: en verde: el rojo lo trae la rama';
+  }
+  return `base: en rojo: el mismo comando también falla sin la rama (salida en ${log}); mira la deuda del proyecto antes de investigar`;
 }
