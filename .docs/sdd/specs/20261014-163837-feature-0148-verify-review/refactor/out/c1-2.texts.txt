@@ -1,0 +1,82 @@
+--- [3]
+Retomo la 0010 en la revisión final: localizo el plan y su workspace.
+
+--- [12]
+Corrijo el Important con TDD: primero el test en RED.
+
+--- [14]
+RED confirmado. Ahora el fix y la suite completa.
+
+--- [20]
+Ahora la única re-revisión del fix pass. Leo sus plantillas.
+
+--- [28]
+El `sed -i` cambió los finales de línea de todo `src/app.js` (96 líneas de ruido). Lo corrijo antes de la re-revisión.
+
+--- [36]
+Paquete limpio (51 líneas). Despacho la única re-revisión y su vigía.
+
+--- [42]
+La re-revisión de `5faddcf` está en marcha en segundo plano; espero su informe antes de cerrar (tasks.md, rulings y borrado del workspace).
+
+**Estado hasta aquí**
+- Tasks 1 y 2 completas (2/2 y 3/3 tests).
+- Revisión final: Spec sin Critical ni Important; Code con 1 Important.
+- Fix pass en `5faddcf`: `reasonOf` recorta el motivo; el test nuevo `cancelar ignora los espacios alrededor del motivo` pasó de RED a GREEN y la suite da 6/6.
+- Mi primer commit del fix reescribió los finales de línea de `src/app.js` (96 líneas de ruido). Lo enmendé: el commit queda en 1 línea de código más 4 de test.
+- Minor diferido: el test de `canceladas` depende del orden respecto al de `cancelar` (`test/cancel.test.js:13`).
+
+--- [51]
+**Finding Verdicts**
+
+- **Code · Important · `src/app.js:14-17` (antes no se recortaba el motivo): ADDRESSED.** En `src/app.js:16` ahora pone `return index === -1 ? undefined : params[index + 1]?.trim();`. El motivo se recorta antes de compararlo con `reasons` en `cancelBooking` (`src/app.js:20`), y el valor guardado en `booking.reason` (`src/app.js:24`) también sale recortado. He comprobado la CLI en el worktree:
+  - `cancelar Norte lun --motivo "sala ocupada "` responde «cancelada Norte lun (sala ocupada)». Es el caso del hallazgo y ya no da «motivo no válido».
+  - `--motivo "  otro"` responde «cancelada Norte lun (otro)».
+  
+  El test nuevo está en `test/cancel.test.js:17-19`. Con el código anterior el motivo `' sala ocupada '` no supera la validación y la respuesta es «motivo no válido: …», así que el test falla, como dice el hilo. Con el fix pasa la validación y llega a «sin reserva Sur mar». Usa Sur/mar, donde no hay reserva, así que no depende del orden respecto a los tests anteriores.
+
+**New Breakage in the Fix Diff**
+
+None. He revisado estos casos:
+- **`params[index + 1]` ausente** (`--motivo` como último argumento): `?.` devuelve `undefined`, la validación lo rechaza y la respuesta es «motivo no válido: cambio de planes, sala ocupada, otro». Es lo mismo que antes del fix; lo he probado en la CLI. El proyecto corre en Node v26 y admite el encadenamiento opcional sin problema.
+- **Motivo solo con espacios** (`"   "`): queda en `''` y lo rechaza la validación. Es correcto.
+- **Finales de línea:** los blobs de `src/app.js` (48/48 líneas) y de `test/cancel.test.js` (19/19) son CRLF en `5faddcf`, igual que en `0127a2f`. No hay mezcla en lo que está en el commit. `git status` sale limpio.
+- **Texto de la interfaz:** el diff no añade texto nuevo. El nombre del test está en castellano.
+
+Una nota menor sobre el test, que no bloquea: demuestra el recorte por un camino indirecto. Comprueba que la validación se supera porque la respuesta es «sin reserva …», no porque haya una cancelación correcta. Basta para discriminar, porque el test de `test/cancel.test.js:9-11` impide que nadie retire la validación sin que se note. Aun así, no comprueba que se guarde el motivo recortado.
+
+**Out-of-Scope Observations**
+
+- `cancelBooking` está exportada (`src/app.js:19`) y no recorta. Si se la llama directamente con `' sala ocupada '`, sigue rechazando el motivo. El hallazgo pedía el arreglo en la CLI (`reasonOf`), y ahí está hecho. Solo importaría si otro código llama a `cancelBooking` sin pasar por `run`.
+- Los espacios dentro del motivo no se normalizan: `"sala  ocupada"` con dos espacios se sigue rechazando. La spec no dice nada de este caso.
+- El Minor diferido del eje Spec (el test de `canceladas` depende del orden respecto al de `cancelar`) sigue en `test/cancel.test.js:13-15`. Este fix no lo cambia.
+
+**Verdict**
+
+All findings addressed, no new Critical/Important breakage.
+
+--- [54]
+La revisión final de la 0010 está cerrada. La rama queda limpia en `c749d9c`, con el workspace del plan borrado. Sigue el paso 7 de `sdd-start-feature` (validación).
+
+**Resultado**
+- Tasks 1 y 2 completas.
+- Revisión final: eje Spec listo para mergear; eje Código con 1 Important, corregido. El eje Arquitectura no salió: el plan no lo pedía y el diff no tiene señales.
+- Fix pass `5faddcf`: `reasonOf` recorta el motivo, así que `--motivo "sala ocupada "` ya cancela. El test nuevo pasó de RED a GREEN y la suite da 6/6.
+- Re-revisión única (opus + high) sobre `0127a2f..5faddcf`: hallazgo resuelto, sin roturas nuevas.
+- `tasks.md` queda commiteado con las líneas de revisión.
+
+**Rulings I made**
+Ninguno: el ledger no tiene líneas `Ruling:`.
+
+**Deferred minors**
+- El test de `canceladas` depende de que `cancelar` se haya ejecutado antes (`test/cancel.test.js:13`). Si falla en aislado, es por esto.
+- `cancelBooking` está exportada y no recorta el motivo; solo lo hace la CLI (`reasonOf`). Importa únicamente si otro código la llama directamente.
+
+**Incidencia propia**
+Mi primer commit del fix reescribió los finales de línea de `src/app.js` (CRLF a LF, 96 líneas de ruido) por un `sed -i`. Lo detecté al armar el paquete de revisión y enmendé el commit antes de la re-revisión: el commit final es 1 línea de código y 4 de test.
+
+--- [55]
+Es solo el aviso de que el vigía de silencio de la re-revisión terminó, sin incidencias; no hay nada pendiente por esa vía.
+
+La 0010 queda donde la dejé: revisión final cerrada y paso 7 de `sdd-start-feature` (validación) como siguiente.
+

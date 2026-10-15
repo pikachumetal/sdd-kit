@@ -9,7 +9,7 @@ BeforeAll {
 }
 
 Describe 'sdd-implement' {
-  It 'tiene la sección <_>' -ForEach @('## Overview', '## Method', '## Setup', '## Before each task', '## Native loop', '## SDD loop', '## After each task', '## Deviations and rulings', '## Final review', '## Finish', '## Red flags') {
+  It 'tiene la sección <_>' -ForEach @('## Overview', '## Method', '## Setup', '## Before each task', '## Native loop', '## SDD loop', '## After each task', '## Deviations and rulings', '## Finish', '## Red flags') {
     $script:Skill | Should -Match ('(?m)^' + [regex]::Escape($_) + '\b')
   }
 

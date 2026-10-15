@@ -1,0 +1,41 @@
+--- [3]
+Ahora: cierro la revisión final de la 0010 (triaje de los informes, fixes si hacen falta) y paso a validación.
+
+--- [11]
+RED reproducido. Fix:
+
+--- [19]
+Re-revisión del fix lanzada; espero su resultado antes de cerrar el workspace y pasar a validación.
+
+--- [21]
+Verdict: **ADDRESSED**. `reasonOf` now returns `params[index + 1]?.trim()`, so `"sala ocupada "` becomes `"sala ocupada"` and matches the list. The `?.` also keeps a missing value as `undefined`, so `--motivo` with no value still gives «motivo no válido».
+
+New breakage: none in behavior.
+- **Minor:** the whole of `src/app.js` shows as deleted and re-added, which looks like a line-ending change (CRLF/LF). This is noisy and could make history and blame harder to read. The only real change is line 80, so it is worth normalizing.
+- **Minor:** the new test only asserts the result is not «motivo no válido». It does not check the exact output `cancelada Norte lun (sala ocupada)`. It also depends on the earlier test having left Norte/lun cancelled, so after that test the booking is already gone and the result would be «sin reserva». The test therefore passes even without the fix, since «sin reserva» also doesn't match the regex. It is a weak test, though the fix itself is correct.
+
+Ready to merge: **yes**. The fix is correct, and the minors are the test weakness and the line-ending noise.
+
+--- [26]
+My `sed -i` stripped the CRLFs. Restoring them in a follow-up commit so the diff is just the real line.
+
+--- [37]
+La revisión final de la 0010 está cerrada y limpia; sigue el paso 7 de `sdd-start-feature` (validación).
+
+**Qué ha pasado**
+- **Revisión final.** El eje de spec salió sin Critical ni Important. El eje de código encontró un Important: `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Arreglo.** Reproduje el fallo primero con un test en RED y luego recorté el motivo con `trim()`. Suite 4/4 en verde, commit `7df890d`.
+- **Re-revisión.** Un revisor con contexto nuevo dio el fix por ADDRESSED, sin roturas nuevas.
+- **Line endings.** Mi `sed -i` había quitado los CRLF de `src/app.js` y el commit reescribía las 48 líneas. Lo corregí: el diff del fix es ahora de 1 línea y la re-revisión sigue valiendo, porque el cambio de código es el mismo.
+- **Cierre.** Metí la revisión, los rulings y los minors en `tasks.md` (`49b5efa`) y borré el workspace del plan.
+
+**Rulings I made**
+- Ninguno. El ledger no tiene líneas `Ruling:`.
+
+**Deferred minors**
+- El test `canceladas` depende de que `cancelar` haya corrido antes, por el estado compartido del módulo.
+- El test del fix solo comprueba que no responde «motivo no válido», no la salida exacta. Lo afirmó el revisor y es cierto en sentido estricto, aunque sí falla sin el fix, como vi en RED.
+
+**Una cosa que debes saber**
+- Reescribí el commit del fix con `--amend` para corregir los line endings. Ocurrió antes de presentarlo y no hay push, así que no afecta a nadie.
+

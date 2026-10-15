@@ -1,0 +1,81 @@
+
+>>> Read: <run>/review-final-779149c.diff
+<<< 1	# Review package: 28310e9..HEAD
+2	
+3	## Commits
+4	779149c feat(bookings): informe de ocupación
+5	
+6	## Files changed
+7	 src/app.js | 30 +++++++++++++++++++++++++++++-
+8	 1 file changed, 29 insertions(+), 1 deletion(-)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e267053 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+16	   const booking = findBooking(room, day);
+17	   if (!booking) return `sin reserva ${room} ${day}`;
+18	   booking.status = 'voided';
+19	   return `anulada ${room} ${day}`;
+20	 }
+21	 
+22	
+
+>>> Bash: cd "<run>/repo" && git diff 28310e9 779149c | grep -n "anular" | cat -A | head; sed -n 1,28p src/app.js; ls; ls tests test 2>/dev/null
+<<< Exit code 2
+41:-  if (cmd === 'anular') return voidBooking(params[0], params[1]);$
+42:+  if (cmd === 'anular') return voidBooking(params[0], params[1]);$
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b
+
+=== RESULTADO (3 turnos, 0.11779139999999999 $)
+### Strengths
+- `occupancyReport` has 26 lines, inside the 30-line limit.
+- The interface text is in Castellano, with correct singular/plural handling (`reserva`/`reservas`).
+- The new `ocupacion` command is wired into `run` consistently with the existing ones.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:35` — comment that repeats the code.** `// incrementa count` sits above `count++`. It adds nothing and is Important under the comment rule. Delete it.
+2. **No test for the new public function.** The branch changes only `src/app.js`, and `test/` has no case for `occupancyReport` or for the `ocupacion` command. Add tests for these cases:
+   - active bookings are counted per room;
+   - `reserva`/`reservas` pluralisation;
+   - the `canceladas` line appears only when there are cancellations;
+   - the `sin reservas activas` line appears;
+   - the `run('ocupacion')` dispatch.
+
+   Clean Code: possible "a test for every public method".
+3. **`src/app.js:29,46` — `const now = 'hoy'` is a fake value.** It is a hard-coded literal named like a timestamp and printed as `total: N (hoy)`. It carries no information and misleads readers into thinking the report is date-aware. Remove it and print `total: N`. If a date is intended, use a real one.
+
+#### Minor (Nice to Have)
+1. **`src/app.js:30-41` — manual counting loop.** The nested `for` with two `continue` guards is what `bookings.filter((b) => b.room === room && b.status === 'active').length` does in one line. Extracting a small `countByStatus` helper would also remove the duplicated `filter(status === 'cancelled')` that already exists in `cancelledList` (line 23). Refactoring: possible Duplicated Code / Long Method.
+2. **`src/app.js:59` — spurious diff on the `anular` line.** The line is removed and re-added with no visible change, probably whitespace or line endings. It is noise unrelated to the feature. Revert it.
+3. **`src/app.js:47-49` — `sin reservas activas` is emitted after the `total: 0` line.** It reads as an afterthought. Consider whether it should replace the per-room lines or come first.
+
+### Declined to judge
+- The wording and format of the report (e.g. whether `canceladas` should count only cancelled and not `voided`): a product decision not in the package, and the spec folder is excluded.
+- Whether `ocupacion` belongs in `app.js` or a separate module: Architecture axis.
+- Whether the report should be filtered by date or room: Spec axis.
+
+### Recommendations
+Run the project's suite once tests for the new command exist. I did not run it, per the review rules.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the repo limits, but there is a comment that restates the code, a meaningless `now = 'hoy'` constant leaking into the output, and no test coverage for the new function and command.

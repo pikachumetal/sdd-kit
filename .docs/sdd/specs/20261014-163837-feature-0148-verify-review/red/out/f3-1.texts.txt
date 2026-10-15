@@ -1,0 +1,81 @@
+--- [3]
+Now the spec and plan.
+
+--- [10]
+# Review de la feature 0021: anular con motivo y sin correo (`57d14fc`)
+
+Leí el paquete de review entero en una pasada; son 96 líneas. También leí la spec, el plan, el ADR 0003 y los tests que ya había en `test/`. No ejecuté nada.
+
+### Strengths
+
+- **`src/app.js:30`**: la validación del motivo es lo primero que hace `voidBooking`. Si falta el motivo, no se toca ninguna reserva.
+- **`src/app.js:20-23`**: `reasonOf` es pequeña y legible. Si falta la bandera, o si `--motivo` va al final sin texto, devuelve `undefined` y la respuesta es «falta el motivo».
+- **`src/app.js:37`**: la respuesta con motivo coincide exactamente con la spec: «anulada Norte lun (avería)».
+- **`test/void.test.js:8-10`**: el test del caso con motivo comprueba la salida real de `run`, sin mocks.
+- No hay comentarios que repitan el código y el texto de la interfaz está en castellano.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **`src/app.js:1` y `src/app.js:25-27, 36`: la rama guarda las anulaciones en disco, y eso está expresamente fuera del alcance.**
+   - **Qué pasa:** `saveVoided()` escribe `data/anuladas.json` en cada anulación. La spec dice «No entra: guardar las anulaciones (ADR 0003: las reservas viven en memoria)». La confirmación del ADR 0003 dice: «`src/` no importa `node:fs`».
+   - **Fallo concreto:** si se ejecuta `node src/app.js anular Norte lun --motivo avería` desde un directorio sin `data/`, `writeFileSync` lanza `ENOENT`. La reserva ya está marcada `voided` y el correo ya se ha encolado, pero el usuario ve una traza en lugar de «anulada Norte lun (avería)».
+   - **El test lo tapa:** `test/void.test.js:6` crea `data/` con `mkdirSync` y deja un fichero en el disco. El ADR dice «los tests no limpian nada».
+   - **Arreglo:** quitar el import de `node:fs`, `saveVoided` y su llamada, y la línea `mkdirSync` del test. El motivo ya «viaja con la reserva» gracias a `booking.reason = reason`.
+
+2. **`src/app.js:35`: el correo de anulación sigue enviándose.**
+   - **Qué pasa:** la spec tiene un **REMOVED — Las anulaciones se avisan por correo** y el dev-lead decidió que «el correo sobra». Sin embargo, `notifyByMail(...)` se sigue llamando.
+   - **Fallo concreto:** después de `run('anular', ['Norte','lun','--motivo','avería'])`, `outbox` contiene `'anulada Norte lun'`.
+   - **Arreglo:** quitar la llamada. Si `notifyByMail` y `outbox` se quedan sin uso, quitarlos también. Añadir un test que compruebe que `outbox` queda vacío tras anular.
+
+#### Important (Should Fix)
+
+3. **Review Focus: no existe el test `pide motivo al anular`.**
+   - **Qué pide la línea:** entrada `anular Norte lun` sin `--motivo`, respuesta «falta el motivo», fijada por el test `pide motivo al anular` de la Task 1.
+   - **El código sí lo da:** `reasonOf(['Norte','lun'])` devuelve `undefined` y `src/app.js:30` devuelve «falta el motivo».
+   - **Pero no hay test:** `test/void.test.js` solo tiene `anular con motivo`. El comportamiento queda sin fijar, y es justo lo que la spec lista como `AND` del escenario.
+   - **Ojo al orden al añadirlo:** el test debe ir antes que el de «con motivo», o usar otra reserva. Si no, la reserva de Norte del lunes ya estará anulada; el resultado coincidiría igualmente, pero por casualidad.
+
+4. **`src/app.js:52` y `src/app.js:40-44`: `anular-todas` no pide motivo.**
+   - **Qué pide la spec:** el Scope incluye `anular-todas --motivo <texto>`, y la decisión del dev-lead dice «en las dos vías, que no se cuele ninguna sin motivo».
+   - **Fallo concreto:** `run('anular-todas', [])` anula todas las reservas activas sin motivo y responde «anuladas 1». Además, `voidAll` no guarda `reason` en ninguna reserva.
+   - **Plan:** el plan no tiene ninguna task ni ninguna línea de Review Focus para esta vía, así que el hueco empieza en el plan. Hay que decidir si va en la Task 1 o en una Task 2, con su test (por ejemplo, `anular-todas` sin `--motivo` → «falta el motivo»).
+
+5. **`src/app.js:47-50`: cambia la salida de `libres`, que está fuera del alcance y rompe un test existente.**
+   - **Qué pasa:** la spec solo toca el comando `anular`; el plan dice «solo cambia el comando `anular`». Aun así, `libres 10:00-12:00` pasa de responder `Sur` a responder `1 libres: Sur`.
+   - **Fallo concreto:** `test/app.test.js` (`libres excluye la sala reservada en la franja`) espera `'Sur'` y falla con este cambio.
+   - **Gramática:** «1 libres» está mal; sería «1 libre».
+   - **Arreglo:** revertir el cambio de `libres`. Si se quiere de verdad, que vaya en su propia propuesta.
+
+6. **`test/void.test.js:6`: el test escribe en el disco del directorio de trabajo.** Se resuelve con el issue 1; lo anoto aparte porque es el test el que esconde el fallo de producción.
+
+#### Minor (Nice to Have)
+
+7. **`src/app.js:30`: un motivo que solo tiene espacios se acepta.**
+   - **Fallo concreto:** `--motivo " "` responde «anulada Norte lun ( )».
+   - **Arreglo:** `if (!reason?.trim())`.
+
+8. **`src/app.js:22`: el motivo es solo el token siguiente.**
+   - **Fallo concreto:** `--motivo fuga de agua` sin comillas guarda solo «fuga». Si sigue otra bandera, como `--motivo --x`, el motivo pasa a ser `--x`.
+   - **Valoración:** es aceptable con comillas, pero conviene saberlo.
+
+### Recommendations
+
+- **Lo que sobra:** la escritura en disco y el cambio de `libres` no están en la spec ni en el plan. Confirmad con quien implementó si fueron intencionados; tal como están, contradicen el ADR 0003 y el alcance aprobado.
+- **El plan se queda corto:** su Review Focus solo cubre `anular` sin motivo. Le faltan dos líneas: `anular-todas` sin motivo → «falta el motivo» y «anular no manda correo» (`outbox` vacío). Sin ellas, dos decisiones explícitas del dev-lead se quedaron sin task ni test.
+- **La verificación del plan es demasiado estrecha:** `node --test test/void.test.js` no detecta la regresión de `test/app.test.js`. Recomiendo que el hilo principal ejecute la suite completa (`node --test`).
+- **Estado compartido en los tests:** el estado del módulo se comparte entre tests (el array `bookings`). Si se añaden varios casos sobre la reserva de Norte del lunes, el orden importa; conviene dejarlo claro en el test o usar datos distintos.
+
+### Declined to judge
+
+- `test/app.test.js` (`reservar --cada-semana …`) y `test/cancel.test.js` llaman a `reservar` y `cancelar`, que `run` no implementa (devuelve `'salas'`). Es así desde antes de esta rama y esta feature no lo toca, así que queda fuera del plan.
+- Si falta el motivo y además no existe la reserva, la respuesta es «falta el motivo» y no «sin reserva …». Lo dejo fuera porque la spec no fija ese orden y la respuesta es razonable.
+- Los mensajes de error se devuelven como texto con código de salida 0, en vez de como fallo. Es el patrón que ya seguía la app y la spec no lo cambia.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** La feature hace justo lo contrario de dos decisiones aprobadas: sigue mandando el correo y añade persistencia en disco que el ADR 0003 y el alcance excluyen y que falla con `ENOENT` si no existe `data/`. Además, `anular-todas` no pide motivo, el test del Review Focus no existe y el cambio de `libres`, fuera de alcance, rompe un test existente.
+

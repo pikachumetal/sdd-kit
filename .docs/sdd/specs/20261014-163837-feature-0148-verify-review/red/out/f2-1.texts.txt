@@ -1,0 +1,73 @@
+--- [10]
+Preparo el paquete de la revisión final y despacho al revisor en segundo plano.
+
+--- [18]
+El revisor final (opus, effort high) está corriendo en segundo plano sobre `bc52948`, en un worktree desanclado, con su vigía de silencio activo. Cuando vuelva, ordeno los hallazgos, aplico el pase de fix si hay Critical o Important, y paso a la validación.
+
+--- [27]
+La rama cumple la spec, pero no puede mergearse todavía: hay dos hallazgos Important. Hice la revisión solo con el paquete de diff, la spec, el plan, `test/app.test.js` y búsquedas en el worktree; no ejecuté suite, build ni lint.
+
+## Cumplimiento de la spec
+
+| THEN/AND | Implementación | Test |
+| --- | --- | --- |
+| La lista de motivos es cerrada: cambio de planes, sala ocupada, otro | `const reasons = [...]` + `reasons.includes(reason)` | indirecto |
+| «cancelada Norte lun (sala ocupada)» | `cancelBooking` devuelve `` `cancelada ${room} ${day} (${reason})` `` | `cancelar con un motivo de la lista` |
+| «motivo no válido: cambio de planes, sala ocupada, otro» | `reasons.join(', ')` | `cancelar con un motivo fuera de la lista` |
+| `canceladas` → «Norte lun — sala ocupada» | `cancelledList()`, separador ` — ` | `canceladas enseña sala, día y motivo` |
+
+Todos los textos de la interfaz están en castellano. Las anulaciones (`voided`) no salen en `canceladas`, como pide el Scope (la 0011 queda fuera).
+
+## Hallazgos
+
+### Critical
+Ninguno.
+
+### Important
+
+1. **Dependencia `zod` añadida sin uso.** `package.json` pasa a `{"type": "module", "dependencies": {"zod": "^3.23.8"}}`, pero ningún fichero del worktree importa `zod`. La validación se hace a mano con `reasons.includes`. Ni la spec ni el plan hablan de dependencias. Además no hay lockfile, así que la versión instalada no está fijada. **Arreglo:** quitar la dependencia de `package.json`.
+
+2. **Se ha borrado el único test de «sin reserva».** El test `cancelar sin reserva lo dice` (`run('cancelar', ['Sur', 'mar'])` → `'sin reserva Sur mar'`) desaparece. El nuevo test que reutiliza `Sur mar` pasa por la validación del motivo y nunca llega a `findBooking`. Ese comportamiento sigue en el código (`if (!booking) return \`sin reserva ${room} ${day}\``) y ningún test lo cubre, ni en `cancel.test.js` ni en `app.test.js`. La spec no pide quitarlo. **Arreglo:** recuperarlo con motivo válido, p. ej. `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+
+### Minor
+
+3. **El test de `canceladas` depende del orden.** El GIVEN («la reserva de Norte del lunes cancelada con "sala ocupada"») no lo prepara el propio test, sino el primero, que muta el array `bookings` del módulo. Pasa porque `node:test` ejecuta en orden dentro del fichero, pero si se aísla el test con `--test-only` o se reordenan, falla. Mejor que el test prepare su GIVEN, p. ej. cancelando dentro del propio test o con un `before`.
+
+4. **`canceladas` sin canceladas devuelve una cadena vacía.** La CLI imprime solo una línea en blanco. La spec no define este caso; un mensaje en castellano (p. ej. «sin canceladas») sería más claro. Si se añade, debería ir en una enmienda de la spec.
+
+5. **No hay test para cancelar sin motivo.** Cancelar sin `--motivo`, o con `--motivo` como último argumento, deja `reason` en `undefined` y responde «motivo no válido: …». El comportamiento es razonable, pero ningún test lo fija.
+
+## Casos límite revisados (sin hallazgo)
+- **Sala o día inexistente:** con motivo válido responde «sin reserva X Y», que es correcto (solo le falta el test, hallazgo 2). Con motivo inválido gana el error de motivo porque se valida antes de buscar la reserva; la spec no fija el orden y es defendible.
+- **Reserva ya cancelada:** `findBooking` solo busca reservas activas, así que responde «sin reserva Norte lun» y no reescribe el motivo guardado.
+- **Estado entre ficheros de test:** `node --test` ejecuta cada fichero en su propio proceso, así que `app.test.js` (`libres` → `Sur`) no se ve afectado por la cancelación de `cancel.test.js`.
+
+## Declined to judge
+- Que la suite, el lint y el formato pasen: no los ejecuté, por encargo. Recomiendo que el hilo principal lance `node --test`, el gate de cierre del plan.
+- El `## Review Focus` del plan dice «ninguna: comprobado»: no hay foco que evaluar.
+
+## Veredicto
+**Cambios requeridos.** El comportamiento cumple todos los THEN/AND de la spec. Hay que corregir los dos Important antes de mergear: quitar `zod` y recuperar el test de «sin reserva» con motivo válido. Los Minor son opcionales o pueden quedar diferidos en el ledger.
+
+Ficheros relevantes:
+- `<run>/review-0010-bc52948/package.json`
+- `<run>/review-0010-bc52948/src/app.js`
+- `<run>/review-0010-bc52948/test/cancel.test.js`
+
+--- [36]
+La implementación de la 0010 está cerrada: las dos tasks y la revisión final están hechas, y el workspace del plan está borrado. La suite (`node --test`) pasa 6/6 después del pase de fix, en el commit `59ad92a`. Falta el paso 7 de `sdd-start-feature` (validación).
+
+**Revisión final** (opus, effort high, sobre `bc52948`): veredicto «cambios requeridos», con 0 Critical, 2 Important y 3 Minor. Los dos Important entraron en un único pase de fix.
+
+- **`zod` sin uso:** quité la dependencia de `package.json`, que vuelve al estado base. Ningún fichero la importaba. No admite RED porque es una dependencia, no un comportamiento.
+- **Test «sin reserva» borrado:** lo recuperé con `--motivo otro` y espera `sin reserva Sur mar`. Pasa en verde desde la primera ejecución porque cubre código que ya existía, así que no tiene RED.
+
+**Rulings I made:** ninguno. Las tasks no registraron ninguno y el pase final tampoco.
+
+**Deferred minors:**
+- El test de `canceladas` depende del orden del fichero, porque el GIVEN lo prepara el primer test.
+- `canceladas` sin canceladas devuelve una cadena vacía, y la spec no define ese caso.
+- No hay test para cancelar sin `--motivo`.
+
+**Gate de cierre:** falta que la validación final lo lance con `node --test` sobre la rama completa.
+

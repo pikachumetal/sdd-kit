@@ -1,0 +1,57 @@
+--- [4]
+### Strengths
+- The report is wired correctly into `run` (`ocupacion`) and exported like the other commands.
+- UI text is in Spanish, and singular/plural is handled (`reserva`/`reservas`).
+- The change is confined to one file and one commit.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+
+1. **`src/app.js:25-50`: `occupancyReport` is 26 lines.**
+   - This is within the 30-line limit in «Restricciones de código», so it is not a violation of that limit.
+   - It is still long, with a nested loop and several responsibilities: counting per room, formatting, cancelled count and total. Possible Long Method (Clean Code, "functions under 20 lines"; Refactoring, "method under ~10 lines").
+   - Fix: extract `activeCount(room)` and use `bookings.filter(...).length`. This removes the nested loop and the `continue` pair.
+
+2. **`src/app.js:34`: the comment `// incrementa count` repeats what the code says.**
+   - A comment that repeats the code is Important under the review rules.
+   - Fix: delete it.
+
+#### Minor (Nice to Have)
+
+3. **`src/app.js:28` and `:45`: `const now = 'hoy'` is a constant string presented as a time value.**
+   - The report prints `total: N (hoy)`, which adds no information and misleads the name `now`.
+   - Possible Magic value (Clean Code, "magic numbers named constants").
+   - Fix: remove it, or compute a real date.
+
+4. **`src/app.js:46-48`: the `sin reservas activas` line duplicates what `total: 0` already says.**
+   - It is harmless, but it is extra output the report does not need.
+
+5. **`src/app.js:41`: the cancelled count is the same filter as `cancelledList` (line 22).**
+   - It is two occurrences, below the threshold of three. It could share a helper if a third appears.
+
+6. **`src/app.js:57-58`: the `anular` line is rewritten with no visible change.**
+   - The diff shows `-` and `+` lines that look identical, probably whitespace or line endings.
+   - This is noise in the diff. Revert it if it is unintentional.
+
+7. **There are no tests for `occupancyReport` in this package.**
+   - Per Clean Code, "a test for every public method": add one covering 0, 1 and several reservations, and the cancelled line.
+   - I did not see the task reports, so this may be covered elsewhere.
+
+### Declined to judge
+- Whether `ocupacion` matches the spec: that is the Spec axis, and the spec folder is not in the package.
+- Whether the command should live in `app.js` or in a separate module: that is the Architecture axis.
+- The report counts only `active` and `cancelled` bookings and ignores `voided`: this is spec-dependent, so I left it to the Spec axis.
+
+### Recommendations
+- Simplify `occupancyReport` with small helpers, remove the dead `now` and the redundant comment, and add a test.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The behavior looks correct and respects the 30-line limit and the Spanish UI. The redundant comment is Important, and the rest is cleanup (long function, placeholder `now`, whitespace noise, missing tests).
+

@@ -1,0 +1,76 @@
+
+>>> Read: <run>/review-final-ec6a9b1.diff
+<<< 0	# Review package: b70be0d..HEAD
+1	
+2	## Commits
+3	ec6a9b1 feat(bookings): informe de ocupación
+4	
+5	## Files changed
+6	 src/app.js | 30 +++++++++++++++++++++++++++++-
+7	 1 file changed, 29 insertions(+), 1 deletion(-)
+8	
+9	## Diff
+10	diff --git a/src/app.js b/src/app.js
+11	index 10d99e4..e267053 100644
+12	--- a/src/app.js
+13	+++ b/src/app.js
+14	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+15	   const booking = findBooking(room, day);
+16	   if (!booking) return `sin reserva ${room} ${day}`;
+17	   booking.status = 'voided';
+18	   return `anulada ${room} ${day}`;
+19	 }
+20	 
+21	 
+
+>>> Bash: cd <run>/repo && git diff b70be0d ec6a9b1 | cat -A | grep -n "anular"; sed -n 1,28p src/app.js; ls; ls test* 2>/dev/null
+<<< 41:-  if (cmd === 'anular') return voidBooking(params[0], params[1]);^M$
+42:+  if (cmd === 'anular') return voidBooking(params[0], params[1]);$
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === 
+
+=== RESULTADO (3 turnos, 0.11952509999999998 $)
+### Strengths
+- `occupancyReport` is 26 lines, under the 30-line limit.
+- The UI text is in Spanish, with correct singular/plural handling (`reserva`/`reservas`).
+- It reuses the existing `status` model and is wired into `run` as the `ocupacion` command in the same style as the other commands.
+- The diff is small and focused on one file.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:34`**: the comment `// incrementa count` repeats what `count++` already says. The brief classes this as Important. Delete it.
+2. **`src/app.js` (new `occupancyReport` and the `ocupacion` branch in `run`)**: the diff touches only `src/app.js` and adds no test for the new exported function or command. The cases `total === 0`, `cancelled > 0` and singular/plural are all untested, and the repo already has `test/app.test.js` and `test/cancel.test.js`. Possible Clean Code «Is there a test for every public method?». If the executor's task reports show test evidence outside this diff, confirm it.
+
+#### Minor (Nice to Have)
+1. **`src/app.js:28,45`**: `const now = 'hoy'` is a constant that carries no date, and it prints `total: 1 (hoy)` in the interface. The text adds nothing and suggests a date that does not exist. Remove it.
+2. **`src/app.js:30-37`**: the nested loop plus counter can be `bookings.filter((b) => b.room === room && b.status === 'active').length`. That cuts the function to about 15 lines and removes the mutable `count`. It also repeats the `status === 'active'` predicate that `findBooking` and `freeRooms` already use, and the `'cancelled'` filter that `cancelledList` uses. Possible Refactoring «duplicated code blocks» (slight).
+3. **`src/app.js:57-58`**: the `anular` line was only changed from CRLF to LF, which is unrelated noise in the diff. The file now has mixed line endings. Restore the original ending or normalise the whole file in a separate commit.
+
+### Declined to judge
+- Whether the `ocupacion` command and its output format match what the spec asked for. That is the Spec axis.
+- Whether `occupancyReport` should live in `app.js` alongside the CLI rather than in its own module. That is the Architecture axis.
+- Whether README/PRODUCT should document the new command. That is a documentation and spec matter.
+
+### Recommendations
+- Add the tests for `occupancyReport` (empty, with cancelled, singular/plural) before merging.
+- Simplify the counting with `filter().length`.
+- Heavy verification: the full suite must run on the main thread. I did not run it.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the length limit. The redundant comment (Important) and the absence of tests for the new public function and command need fixing, and the `now = 'hoy'` text and the line-ending noise should be cleaned up.

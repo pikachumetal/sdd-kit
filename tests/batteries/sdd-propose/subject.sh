@@ -58,6 +58,8 @@ case "$SC" in
   g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
   r1|t1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
   p1|p2) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | put "$F10/spec.md" ;;
+  # La 0010 con una dependencia nueva: el plan declara el eje Arquitectura de la revisión final.
+  ax) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | sed 's/^El motivo se guarda con la reserva cancelada;/El motivo se valida con la librería `zod`, una dependencia nueva en `dependencies` de `package.json`. &/' | put "$F10/spec.md" ;;
 esac
 
 case "$SC" in

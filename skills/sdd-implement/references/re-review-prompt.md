@@ -1,6 +1,6 @@
 # Scoped re-review prompt
 
-Dispatch it after a fix round —of a task, or the fix pass of the final review— with `description: "Re-review Task N fix round R"` and a cheap-to-mid `model` with its `subagent_type`. It verifies each finding was addressed and checks the fix diff for new breakage; it is not a fresh review — the full review already happened. Fill every `<…>` and `[…]`.
+Dispatch it after a fix round of a task with `description: "Re-review Task N fix round R"` and a cheap-to-mid `model` with its `subagent_type`. After the final review it is the single re-review of `sdd-verify` («Closing the review»): `sdd-kit:effort-high` + `opus`, `[FINDINGS]` carries the open findings of every axis, each with its axis, followed by the «What to Check» of the axes that went out, and `[BRIEF_FILE]` is the paths of `spec.md` and `plan.md`. It verifies each finding was addressed and checks the fix diff for new breakage; it is not a fresh review — the full review already happened. Fill every `<…>` and `[…]`.
 
 **Purpose:** verify each finding from the previous review was addressed, and that the fix itself broke nothing.
 
@@ -15,7 +15,7 @@ Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. E
 
 ---
 
-You are re-reviewing one task's fix round. A previous review produced
+You are re-reviewing one task's fix round, or the fix range of a final review. A previous review produced
 findings; an implementer has attempted to fix them. Your job is to
 verdict each finding and inspect the fix diff — nothing else.
 

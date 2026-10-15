@@ -47,12 +47,12 @@ Describe 'Plantilla del plan' {
 
 Describe 'Encargo del revisor final' {
   It 'final reviewer brief carries the Review Focus verbatim' {
-    $finalReviewer = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'), '(?s)## Revisor final.*?(?=\n## Encargo del implementador)').Value
+    $finalReviewer = [regex]::Match((Get-KitFile 'skills/sdd-verify/references/encargo-revision.md'), '(?s)## Revisor final.*?(?=\n## Encargo del implementador)').Value
     Assert-Literal $finalReviewer @('## Review Focus', 'copia literal de la sección `## Review Focus` del plan', 'no basta con remitir al plan')
   }
 
   It 'final reviewer accepts a named verification instead of a test' {
-    $finalReviewer = [regex]::Match((Get-KitFile 'skills/sdd-start-feature/references/encargo-revision.md'), '(?s)## Revisor final.*?(?=\n## Encargo del implementador)').Value
+    $finalReviewer = [regex]::Match((Get-KitFile 'skills/sdd-verify/references/encargo-revision.md'), '(?s)## Revisor final.*?(?=\n## Encargo del implementador)').Value
     Assert-Literal $finalReviewer @('el test o la verificación que la fija', 'sin test ni verificación nombrada')
   }
 

@@ -1,0 +1,73 @@
+--- [11]
+### Strengths
+
+- `src/app.js:30` cumple el Review Focus: `anular Norte lun` sin `--motivo` cae en `reasonOf` → `undefined` → «falta el motivo». La guarda va antes de buscar la reserva, así que una anulación sin motivo nunca toca el estado. `anular Norte lun --motivo` sin texto también da «falta el motivo».
+- El camino feliz del ADDED (`anular Norte lun --motivo avería` → «anulada Norte lun (avería)») está implementado (`src/app.js:37`) y tiene test (`test/void.test.js:8`).
+- El motivo viaja con la reserva anulada (`booking.reason`, `src/app.js:34`), como pide el Approach.
+- Los textos de la interfaz están en castellano y no hay comentarios en el código.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **El correo de anulación sigue saliendo.** `src/app.js:35` (`notifyByMail(...)`), con `src/app.js:16-18` y `export const outbox` en `src/app.js:6`.
+   - Qué falla: el delta dice **REMOVED — Las anulaciones se avisan por correo**, pero `voidBooking` sigue llamando a `notifyByMail` y cada anulación con motivo mete «anulada Norte lun» en `outbox`.
+   - Por qué importa: es justo el comportamiento que el dev-lead pidió quitar («el correo sobra»).
+   - Cómo arreglarlo: borrar la llamada, `notifyByMail` y `outbox` si nada más los usa. Añadir un test de que `outbox` queda vacío tras anular, o retirar el export.
+   - Gap: `contradicts`. Origen: el REMOVED del delta y la decisión del dev-lead «El correo de anulación desaparece».
+
+2. **El cambio en `libres` rompe un requisito vigente de `availability`.** `src/app.js:47-50`.
+   - Qué falla: `libres 10:00-12:00` ahora responde «1 libres: Sur». El requisito de `.docs/sdd/capabilities/availability.md` y el test `test/app.test.js:6` esperan «Sur».
+   - Por qué importa: la spec no menciona esta capacidad (Capacidades: solo `bookings`), el plan dice «solo cambia el comando `anular`», y deja en rojo un test que ya existía. Además «1 libres» es incorrecto en castellano.
+   - Cómo arreglarlo: revertir el bloque `libres` a `return freeRooms(params[0]).join(', ');`.
+   - Gap: `unrequested`, y además `contradicts` con la capacidad `availability`. Lo pongo en Critical porque rompe un comportamiento aprobado y su test; por sí solo, un cambio no pedido sería Important.
+
+#### Important (Should Fix)
+
+3. **El ADR 0003 no se cumple: `src/` escribe a disco.** `src/app.js:1` (`import { writeFileSync } from 'node:fs'`) y `src/app.js:25-27, 36`.
+   - Qué falla: la Confirmación del ADR 0003 dice «`src/` no importa `node:fs`». La spec también excluye esto de forma explícita: «No entra: guardar las anulaciones (ADR 0003)».
+   - Por qué importa, además del ADR:
+     - `data/` está en `.gitignore`, así que en un checkout limpio `anular Norte lun --motivo x` lanza ENOENT desde `writeFileSync`, y lo hace después de marcar la reserva como `voided`.
+     - El test tiene que crear `data/` (`test/void.test.js:6`) y deja ficheros en disco, en contra de la consecuencia del ADR «los tests no limpian nada».
+   - Cómo arreglarlo: borrar `saveVoided`, su llamada, el import de `node:fs` y el `mkdirSync` del test.
+   - Gap: `contradicts`. Origen: la Confirmación del ADR 0003 y el Scope «No entra».
+
+4. **Falta el test que nombra el Review Focus: `pide motivo al anular`.** `test/void.test.js`.
+   - Qué falla: el fichero solo tiene `anular con motivo`, y en el repo no hay ningún test con ese nombre. El AND «`anular Norte lun` sin `--motivo` responde «falta el motivo»» no tiene verificación, aunque «Dónde se prueba» la pide en `test/void.test.js` («con motivo y sin él»).
+   - Por qué importa: el comportamiento es correcto hoy, pero nada lo fija.
+   - Cómo arreglarlo: añadir `test('pide motivo al anular', () => assert.equal(run('anular', ['Norte', 'lun']), 'falta el motivo'))`. Conviene que vaya antes del test con motivo o con una reserva aún activa, aunque la guarda no depende del estado.
+   - Gap: `missing`. Origen: el THEN/AND del ADDED y la línea del Review Focus.
+
+5. **Decisión del dev-lead cubierta a medias: «Anular pide motivo en las dos vías, `anular` y `anular-todas`».** `src/app.js:40-44, 52`.
+   - Qué falla: `anular-todas` no lee `--motivo`, no lo exige y no lo guarda en las reservas. `anular-todas` sin motivo sigue anulando todas las reservas. La regla solo cubre `anular`.
+   - Cómo arreglarlo: pasar `reasonOf(params)` a `voidAll` y aplicar la misma guarda «falta el motivo». Poner el motivo en cada reserva y añadir un test con motivo y otro sin él.
+   - Gap: `partial`. Origen: la decisión del dev-lead y el Scope «`anular-todas --motivo <texto>`».
+
+#### Minor (Nice to Have)
+
+6. `reasonOf` (`src/app.js:22`) toma como motivo lo que vaya detrás de `--motivo`, aunque sea otro flag, y solo admite una palabra salvo que el texto vaya entre comillas. No hay ningún THEN que fije esto. Mejor documentar el uso con comillas en el README.
+
+**Ledger:** no hay ledger, así que no hay minors diferidos que valorar.
+
+### Declined to judge
+
+- `reservar` y `cancelar` devuelven «salas»: `test/app.test.js:10` y `test/cancel.test.js` esperan otras salidas. Viene de antes del diff (`ec8000b`) y queda fuera de esta feature.
+- `anular --motivo x Norte lun`, con los argumentos en otro orden: el sitio de los posicionales queda fuera de la spec y es un uso poco probable.
+- Que `bookings.md`/`availability.md` en `.docs/` no reflejen todavía el delta: eso se actualiza al cerrar la feature, no forma parte de esta revisión de código.
+
+### Not verified
+
+- Si el test de la Task 1 pasa: no verificado. No hay informe de la task en el paquete y no tengo que ejecutar la suite.
+- Que `test/app.test.js:6` falle con el nuevo `libres`: no verificado ejecutándolo. Es una deducción leyendo el código, aunque el resultado es determinista.
+
+### Recommendations
+
+- Que el hilo principal ejecute la suite completa (`node --test`) para confirmar el fallo de `libres` y ver qué otros tests vienen ya en rojo.
+- Volver a pasar la revisión con `grep` sobre `node:fs` y `outbox` en `src/` para confirmar que han desaparecido.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** El camino feliz de `anular` y la guarda «falta el motivo» están bien, pero la anulación sigue mandando el correo que el delta elimina, `libres` cambia de salida sin que nadie lo pidiera y rompe su test, `src/` escribe a disco en contra del ADR 0003 y del Scope, `anular-todas` no pide motivo, y el test `pide motivo al anular` del Review Focus no existe.
+
