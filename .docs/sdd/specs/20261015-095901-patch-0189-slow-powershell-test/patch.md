@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-15
 branch: patch/0189-slow-powershell-test
-commit: <hash>
+commit: 2e6d0e29
 ---
 
 # Patch 0189 — el test que lanza powershell.exe pasa a la suite lenta
@@ -43,8 +43,10 @@ El test de `cli/test/merge/verify.test.ts:8` ejecuta `runVerification`, que lanz
 | 1 | `cli:test` sin el test lento, en el pre-commit del commit del fix | ✅ el pre-commit deja pasar el commit (`cli:typecheck`, `cli:test`, `kit:test-fast`, `kit:roadmap`) |
 | 2 | `vitest run test/merge/verify --test-timeout 120000` (el tope de `cli:test-slow`) | ✅ 9/9, el de `powershell.exe` incluido |
 
+Validación en campo: 2026-10-15 · pre-commit del fix en verde (`cli:test` 866/866, `kit:test-fast` 1170 pasados y 0 fallidos) · `vitest run test/merge/verify --test-timeout 120000` 9/9
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,3 h
 - Inicio: 2026-10-15T09:59Z
-- Real: <Yh>
+- Real: 0,25 h (2026-10-15T09:55Z-10:10Z, con la investigación de antes de abrir la carpeta)
