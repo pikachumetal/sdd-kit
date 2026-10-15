@@ -178,20 +178,21 @@
 | 2026-10-15 | 0183 | patch | 2.5 | 1.2 | 0.48 | — | — | — | — | 20261015-092206-patch-0183-reliable-repo-tests |
 | 2026-10-15 | 0189 | patch | 0.3 | 0.25 | 0.83 | — | — | — | — | 20261015-095901-patch-0189-slow-powershell-test |
 | 2026-10-15 | 0190 | patch | 0.5 | 1.3 | 2.6 | — | — | — | — | 20261015-103859-patch-0190-gate-mutex |
+| 2026-10-15 | 0188 | infra/tooling | 2.5 | 0.99 | 0.4 | 55850k | 4818k | 2.28 | 23.92 | 20261015-104325-feature-0188-closing-estimation-templates |
 | 2026-10-15 | 0187 | infra/tooling | 4 | 1.5 | 0.38 | 42349k | 3951k | no aplica | 19.89 | 20261015-105728-feature-0187-closing-cli |
 | 2026-10-15 | 0191 | infra/tooling | 1.5 | 0.5 | 0.33 | 13771k | 1942k | no aplica | 7.63 | 20261015-160528-feature-0191-capability-check-artifact |
 
-**Factor de calibración** (ratio mediano real/estimado, 141 artefactos): **0.58** · media 0.71
+**Factor de calibración** (ratio mediano real/estimado, 142 artefactos): **0.58** · media 0.71
 
 - p25–p75: 0.4–0.9
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 64 % · infraestimadas: 9 %
+- Dentro de ±25 %: 27 % · sobreestimadas: 64 % · infraestimadas: 8 %
 - Error absoluto (h): media 1.13 · mediana 0.9
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.51
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 52 | 37 % |
+| <0.5 | 53 | 37 % |
 | 0.5–0.8 | 42 | 30 % |
 | 0.8–1.25 | 35 | 25 % |
 | 1.25–2 | 8 | 6 % |
@@ -201,7 +202,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 79 | 0.53 | 0.38–0.74 |
-| infra/tooling | 27 | 0.4 | 0.35–0.53 |
+| infra/tooling | 28 | 0.4 | 0.35–0.53 |
 | patch | 34 | 1.2 | 0.8–1.38 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -221,6 +222,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 28 | 52.2 | 0.5 | 191.56 | 628.7 |
+| sin publicar | 29 | 53.19 | 0.49 | 193.84 | 652.62 |
 
 > Ver `estimation.md`.

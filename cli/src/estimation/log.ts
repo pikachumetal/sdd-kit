@@ -16,6 +16,8 @@ const HEADER =
 const TABLE_HEADER =
   '| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |';
 
+const POST_HOC_CELL = 'post hoc';
+
 export interface GeneratedLog {
   text: string;
   rowCount: number;
@@ -38,7 +40,8 @@ function textOrMissing(value: string | null): string {
 }
 
 function formatRow(row: Row): string {
-  const hours = [row.estimate, row.real, row.ratio].map(formatNumber).join(' | ');
+  const ratio = row.postHoc ? POST_HOC_CELL : formatNumber(row.ratio);
+  const hours = [formatNumber(row.estimate), formatNumber(row.real), ratio].join(' | ');
   const costs = [row.threadTokens, row.subagentTokens, row.subjectCost, row.sessionCost].map(textOrMissing).join(' | ');
   return `| ${row.date} | ${row.id} | ${row.type} | ${hours} | ${costs} | ${row.folder} |`;
 }

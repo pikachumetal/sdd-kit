@@ -128,16 +128,16 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN un worktree sin carpeta en `<proyectos>/`
 - WHEN se ejecuta el script
-- THEN las tres líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
-- AND con la carpeta pero sin ninguna respuesta de la rama pedida, las tres dicen `no medido (sin respuestas de <rama> en los transcripts)`
+- THEN las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
+- AND con la carpeta pero sin ninguna respuesta de la rama pedida, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
 - AND con respuestas del hilo y ningún subagente, la línea de subagentes dice `no aplica` y la del coste lleva solo el hilo: `Coste de la sesión: 0,95 $ (hilo 0,95 $)`
 
 ### El cierre rellena los tokens y el coste de la sesión
 
-- GIVEN una feature en Claude Code que llega al paso de tiempo real de `sdd-end-feature`, en un proyecto con `.docs/sdd/estimation.md`
-- WHEN se rellena la sección 2 del walkthrough
-- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama de la feature>`, ejecutado desde el kit
-- AND en otro harness, las tres dicen «no medido», con el motivo
+- GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-end-feature` o al paso 1 de `sdd-end-patch`, en un proyecto con `.docs/sdd/estimation.md`
+- WHEN se rellena la sección 2 del walkthrough o la §5 de `patch.md`
+- THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit
+- AND en otro harness, las cuatro dicen «no medido», con el motivo, y el esfuerzo real se aproxima con las marcas de los commits y se dice
 
 ### El log lee las features y las tasks heredadas
 
@@ -157,12 +157,38 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y un patch clasificado por `sdd-propose`
 - WHEN el agente abre el patch
 - THEN si pregunta el carril, la pregunta lleva la estimación en horas
-- AND, pregunte o no, `patch.md` §5 la escribe antes del fix, y la hora de inicio en UTC en la línea siguiente: `- Estimación: 0,5h` y `- Inicio: 2026-10-09T11:20Z`, con `- Real:` debajo
+- AND, pregunte o no, `patch.md` §5 la escribe antes del fix, y la hora de inicio en UTC en la línea siguiente: `- Estimación: 0,5h` y `- Inicio: 2026-10-09T11:20Z`, con `- Esfuerzo real:` debajo al cerrar
 - AND `sdd estimation log` lee `- Estimación: 0,5h` como hoy, y `- Inicio:` no cuenta como estimación ni como real
+- AND un `patch.md` cerrado antes con `- Real:` se sigue leyendo igual
+
+### La sesión mide el esfuerzo real sin las esperas al dev-lead
+
+- GIVEN un worktree con un transcript que empieza a las 12:26 en `develop`, pasa a `feature/0181` a las 12:40 y termina a las 13:35, con dos mensajes del usuario a las 12:58 y a las 13:30 cuya entrada anterior del agente es de las 12:40 y de las 13:28
+- WHEN se ejecuta `sdd session tokens --path <worktree> --branch feature/0181`
+- THEN la cuarta línea es `- Esfuerzo real: 0,82 h — reloj de la sesión 1,15 h desde 2026-10-14T12:26Z, sin 20 min de espera al dev-lead (2 esperas)`
+- AND el hueco entre una llamada a `AskUserQuestion` y su resultado es una espera; cualquier otro resultado de herramienta, una notificación del harness o una entrada `isMeta` no abre ni cierra una espera
+- AND con dos transcripts de la rama, el reloj suma los dos, el inicio es el del más antiguo y la línea dice `reloj de 2 sesiones`
+- AND un transcript sin ninguna respuesta de la rama pedida no cuenta
+- AND `--json` lleva `real: { measured: true, hours: 0.82, clockHours: 1.15, start: "2026-10-14T12:26Z", waitMinutes: 20, waits: 2 }`
+- AND `sdd estimation log` lee esa línea como real 0,82 en un walkthrough y en §5 de un `patch.md`
+
+### Una estimación de patch escrita al cerrar queda `post hoc` y no calibra
+
+- GIVEN un proyecto con `estimation.md` y un `patch.md` cuya estimación llegó en el commit de cierre: `- Estimación: 0,5h (post hoc)`, con la forma de §5 de `patch-template.md`, y un real de 0,75 h
+- WHEN se ejecuta `sdd estimation log`
+- THEN da su fila con estimado 0.5, real 0.75 y `post hoc` en la columna Ratio
+- AND esa fila no entra en el factor global, la dispersión, la tendencia, la tabla por tipo ni la mediana de su release
+- AND sus horas reales sí suman en «Horas reales» de su release
+
+### El patch registra el coste de sus sujetos
+
+- GIVEN un `patch.md` con `- Coste de sujetos: 1,20 $ en 2 sujetos sonnet` en §5
+- WHEN se ejecuta `sdd estimation log`
+- THEN su fila lleva `1.2` en «Sujetos ($)»
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix; el log, generado, en la carpeta de `estimation.md`.
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; el log, generado, en la carpeta de `estimation.md`.
 - **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
 - **Límites**: no aplica.
 - **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas.

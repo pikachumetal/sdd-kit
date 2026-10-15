@@ -68,9 +68,10 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ## 5. Tiempo (ligero) *(si existe `.docs/sdd/estimation.md`)*
 
-- Estimación: <Xh, la de la pregunta del carril de `sdd-propose`, escrita antes del fix>
+- Estimación: <Xh, la de la pregunta del carril de `sdd-propose`, escrita antes del fix; si llega en el commit de cierre, `<Xh> (post hoc)`: no calibra>
 - Inicio: <hora UTC en que se abrió el patch, p. ej. 2026-10-09T11:20Z>
-- Real: <Yh>
+- Esfuerzo real: <la línea de `sdd session tokens --path <worktree> --branch <rama>`, pegada tal cual: cuenta desde el arranque de la sesión que abrió el trabajo, con la investigación previa, y sin las esperas al dev-lead | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`>
+- Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
 
 ## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*
 

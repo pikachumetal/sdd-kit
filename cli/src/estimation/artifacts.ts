@@ -19,6 +19,7 @@ import { MISSING } from './text.ts';
 
 const WALKTHROUGH_HEADING = String.raw`^#+[^\n]*estimado vs real`;
 const PATCH_HEADING = String.raw`^#+\s*(?:\d+\.\s*)?Tiempo(?![\p{L}\p{N}_])`;
+const POST_HOC = /\(post hoc\)/i;
 const TIME_OUTSIDE_BLOCK = /(?<![\p{L}\p{N}_])(?:Real|Estimaci[oó]n|Estimado)\s*:/imu;
 
 export interface Cost {
@@ -32,6 +33,7 @@ interface Artifact {
   content: string;
   type: string;
   estimate: number | null;
+  postHoc: boolean;
   real: number | null;
   cost: Cost;
 }
@@ -41,6 +43,7 @@ export interface Row extends Cost {
   id: string;
   type: string;
   estimate: number | null;
+  postHoc: boolean;
   real: number;
   ratio: number | null;
   folder: string;
@@ -69,10 +72,12 @@ interface Source {
 
 function readTimes(section: string, source: Source, warn: Warn): Artifact {
   const { content, type, path } = source;
+  const estimateText = getFieldText(section, ESTIMATE_LABEL);
   return {
     content,
     type,
-    estimate: toHours(getFieldText(section, ESTIMATE_LABEL), path, warn),
+    estimate: toHours(estimateText, path, warn),
+    postHoc: POST_HOC.test(estimateText ?? ''),
     real: toHours(getFieldText(section, REAL_LABEL), path, warn),
     cost: readCost(section),
   };
@@ -120,14 +125,15 @@ function rowDate(content: string, folder: string): string {
 }
 
 function toRow(folder: string, artifact: Artifact, real: number): Row {
-  const { estimate } = artifact;
+  const { estimate, postHoc } = artifact;
   return {
     date: rowDate(artifact.content, folder),
     id: artifactId(artifact.content, folder),
     type: artifact.type,
     estimate,
+    postHoc,
     real,
-    ratio: estimate !== null && estimate > 0 ? real / estimate : null,
+    ratio: !postHoc && estimate !== null && estimate > 0 ? real / estimate : null,
     ...artifact.cost,
     folder,
   };

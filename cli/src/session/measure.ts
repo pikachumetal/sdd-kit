@@ -2,6 +2,7 @@ import type { Json } from '../cli/records.ts';
 import { resolve } from 'node:path';
 import { readPrices, sessionCost, type SessionCost } from './cost.ts';
 import { notMeasuredLines, reportLines, mainModel } from './format.ts';
+import type { Clock } from './clock.ts';
 import { readSession, type Session } from './session.ts';
 import { defaultProjectsRoots, transcriptFolders } from './transcripts.ts';
 import { mergeTotals, modelsByTokens, tokenSum, totalTokens, type ModelTotals } from './usage.ts';
@@ -53,15 +54,22 @@ function dispatchesJson(session: Session): object {
   return { measured: true, tokens: totalTokens(mergeTotals(session.dispatches.map((item) => item.totals))), dispatches };
 }
 
+function realJson(clock: Clock | null): object {
+  if (clock === null) return { measured: false, reason: 'sin respuestas del hilo en los transcripts' };
+  const { hours, clockHours, start, waitMinutes, waits } = clock;
+  return { measured: true, hours, clockHours, start, waitMinutes, waits };
+}
+
 export function toJson(measurement: Measurement): object {
   if (measurement.kind === 'notMeasured') {
     const unmeasured = { measured: false, reason: measurement.reason };
-    return { thread: unmeasured, subagents: unmeasured, cost: unmeasured };
+    return { thread: unmeasured, subagents: unmeasured, cost: unmeasured, real: unmeasured };
   }
   const { session, cost } = measurement;
   return {
     thread: { measured: true, tokens: totalTokens(session.thread), models: modelsJson(session.thread) },
     subagents: dispatchesJson(session),
     cost: costJson(cost),
+    real: realJson(session.clock),
   };
 }
