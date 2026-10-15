@@ -9,6 +9,7 @@ export const mergeVerb: Verb = {
     'project-root': { type: 'string' },
     branch: { type: 'string' },
     push: { type: 'boolean' },
+    check: { type: 'boolean' },
     verify: { type: 'string' },
     'lock-timeout': { type: 'string' },
   },
@@ -19,6 +20,7 @@ export const mergeVerb: Verb = {
       projectRoot: text(args, 'project-root') ?? '.',
       branch: text(args, 'branch'),
       push: args.values.push === true,
+      check: args.values.check === true,
       verify: text(args, 'verify'),
       lockTimeoutMinutes: lockTimeoutOption(args),
     };

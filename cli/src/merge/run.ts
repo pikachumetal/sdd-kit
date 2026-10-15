@@ -4,7 +4,7 @@ import { DomainError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { commonDir, gitLines } from '../git/git.ts';
 import { withLock } from '../git/lock.ts';
-import { withDestination } from './destination.ts';
+import { checkDestination, withDestination } from './destination.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
 import { mergeFeature, pushDestination, remoteForBranch, syncBaseBranch, undoFailedMerge } from './steps.ts';
 import { runVerification } from './verify.ts';
@@ -13,6 +13,7 @@ export interface MergeOptions {
   projectRoot: string;
   branch: string | null;
   push: boolean;
+  check: boolean;
   verify: string | null;
   lockTimeoutMinutes: number;
 }
@@ -56,6 +57,8 @@ export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> 
   const branch = await currentBranch(projectRoot, options.branch);
   const lockIo = { ...io, err: io.out };
   const lock = { path: resolve(await commonDir(projectRoot), 'sdd-merge.lock'), label: 'merge', io: lockIo, owner: { branch, worktree: projectRoot } };
+  const request = { projectRoot, into: policy.into, branch, warn: io.err };
+  if (options.check) return io.out(await checkDestination(request));
   const job: Job = { branch, policy, options, io };
-  await withLock(lock, options.lockTimeoutMinutes, () => withDestination({ projectRoot, into: policy.into, branch, warn: io.err }, (path) => integrate(path, job)));
+  await withLock(lock, options.lockTimeoutMinutes, () => withDestination(request, (path) => integrate(path, job)));
 }

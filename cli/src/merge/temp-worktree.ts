@@ -50,12 +50,15 @@ async function removeWorktree(repo: string, path: string, warn: (message: string
   if (existsSync(path) || registered) warn(`No se pudo retirar el worktree temporal '${path}'.`);
 }
 
+export async function freeTempFolder(repo: string, folder: string): Promise<string> {
+  const path = join(await worktreesParent(repo), folder);
+  if (existsSync(path) && !(await isEmptyOrphanFolder(repo, path))) throw new DomainError(`destino sacado: ya existe '${path}'.`);
+  return path;
+}
+
 async function addWorktree(repo: string, spec: TempWorktreeSpec): Promise<string> {
-  const path = join(await worktreesParent(repo), spec.folder);
-  if (existsSync(path)) {
-    if (!(await isEmptyOrphanFolder(repo, path))) throw new DomainError(`destino sacado: ya existe '${path}'.`);
-    rmdirSync(path);
-  }
+  const path = await freeTempFolder(repo, spec.folder);
+  if (existsSync(path)) rmdirSync(path);
   if ((await git(repo, ['worktree', 'add', path, spec.branch])).code !== 0) {
     throw new DomainError(`destino sacado: no se pudo crear el worktree de '${spec.branch}' en '${path}'.`);
   }
