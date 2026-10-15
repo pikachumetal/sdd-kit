@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-15
 branch: patch/0190-gate-mutex
-commit: <hash>
+commit: 9ea480ce
 ---
 
 # Patch 0190 — el gate de cierre no corre a la vez las tareas que cargan la máquina
@@ -43,8 +43,10 @@ Dev-lead, 2026-10-15: «mutex de moon». `kit:test`, `cli:test-slow` y `cli:test
 | 2 | Gate con el fix (`moon run --force`, sin caché) → una a una, y `FastSuiteBudget` en verde | ✅ GREEN: `kit:test` solo (3m 55s, 1258/1258, `FastSuiteBudget` 49,79 s las dos pasadas), después `cli:test-min` (1m 46s, 1023/1023) y `cli:test-slow` (1m 39s, 157/157), uno tras otro; `cli:test` 866/866 y `cli:typecheck` en verde. Gate entero: 7m 21s, frente a 6m 26s en paralelo |
 | 3 | Gate con el fix y otras sesiones corriendo suites (CPU al 96 %, dos `Invoke-KitTests.ps1` de otros worktrees) | ❌ `FastSuiteBudget` 39,8 s, y el mutex sí ordenó las tres tareas. Es el primer caso de la fila de deuda, la carga entre sesiones, y un mutex de moon no lo cubre: solo ordena las tareas de un mismo `moon run` |
 
+Validación en campo: 2026-10-15 · RED del paralelismo en el log de moon · GREEN del gate entero con `moon run --force`: 1258/1258, 866/866, 1023/1023 y 157/157, con las tres tareas una a una · pre-commit del fix en verde
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h
 - Inicio: 2026-10-15T10:38Z
-- Real: <Yh>
+- Real: 1,3 h
