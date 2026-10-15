@@ -22,16 +22,23 @@ export async function syncBaseBranch(worktree: string, into: string, remote: str
   await completeMergeAttempt({ worktree, stepName: 'base', output: merged.output }, merged.code);
 }
 
-export async function mergeFeature(worktree: string, branch: string, policy: MergePolicy): Promise<void> {
-  const flags = policy.noFf ? ['--no-ff'] : [];
-  const message = ['-m', `merge: ${branch} en ${policy.into}`, '-m', 'Fusión hecha con sdd merge (sdd-kit).'];
+export async function mergeFeature(worktree: string, branch: string, target: MergePolicy, order: string | null = null): Promise<void> {
+  const flags = target.noFf ? ['--no-ff'] : [];
+  const orderLine = order === null ? [] : ['-m', `Orden del dev-lead: «${order}»`];
+  const message = ['-m', `merge: ${branch} en ${target.into}`, ...orderLine, '-m', 'Fusión hecha con sdd merge (sdd-kit).'];
   const merged = await gitWithOutput(worktree, ['merge', ...flags, ...message, branch]);
   await completeMergeAttempt({ worktree, stepName: 'merge', output: merged.output }, merged.code);
 }
 
-export async function pushDestination(worktree: string, remote: string, into: string): Promise<void> {
-  const pushed = await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`]);
-  if (pushed.code !== 0) throw new DomainError(`push: no se pudo publicar '${into}' en '${remote}'.`);
+export async function remoteMoved(worktree: string, remote: string, branch: string): Promise<boolean> {
+  const fetched = await git(worktree, ['fetch', remote, `+refs/heads/${branch}:refs/remotes/${remote}/${branch}`]);
+  return fetched.code === 0 && (await git(worktree, ['merge-base', '--is-ancestor', `${remote}/${branch}`, `refs/heads/${branch}`])).code !== 0;
+}
+
+export async function pushDestination(worktree: string, remote: string, into: string): Promise<'pushed' | 'moved'> {
+  if ((await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`])).code === 0) return 'pushed';
+  if (await remoteMoved(worktree, remote, into)) return 'moved';
+  throw new DomainError(`push: no se pudo publicar '${into}' en '${remote}'.`);
 }
 
 export async function undoFailedMerge(worktree: string, before: string): Promise<void> {
