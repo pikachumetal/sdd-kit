@@ -428,3 +428,71 @@ describe('sdd capability check follows a pointer', () => {
     expect(result.code).toBe(1);
   });
 });
+
+describe('sdd capability check --artifact separates foreign failures', () => {
+  const artifact = 'specs/t/spec.md';
+  const rooms = '# Capacidad — rooms\n\n## Propósito\n\nSalas y su aforo.\n';
+  const roomsProblem = 'rooms.md: falta la sección «Requisitos»';
+  const header = 'Ajenos al artefacto, no cambian el código de salida: 1';
+  const block = '## Capacidades\n\n- Modificadas: `bookings` — cambia «Reservar una franja»\n';
+  const files = (bookingsContent = bookings, specContent = spec(block, ['bookings'])) => ({
+    'capabilities/bookings.md': bookingsContent,
+    'capabilities/rooms.md': rooms,
+    [artifact]: specContent,
+  });
+
+  it('foreign failures do not change the exit code', async () => {
+    const result = await check(files(), artifact);
+    expect(result.lines).toEqual(['Capacidades válidas: 1', header, `  ${roomsProblem}`]);
+    expect(result.code).toBe(0);
+  });
+
+  it('a failure in a delta capability exits 1 and keeps the foreign block', async () => {
+    const result = await check(files(bookings.replace(thenLine, '')), artifact);
+    expect(result.lines).toEqual([
+      'bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)',
+      header,
+      `  ${roomsProblem}`,
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('an artifact failure exits 1 without a foreign block', async () => {
+    const empty = spec('## Capacidades\n\n- Nuevas: ninguna\n', []);
+    const result = await check({ 'capabilities/bookings.md': bookings, [artifact]: empty }, artifact);
+    expect(result.lines).toEqual([
+      'spec.md: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»',
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('with «Ninguna, porque» every capability failure is foreign', async () => {
+    const none = spec('## Capacidades\n\nNinguna, porque es un refactor.\n', []);
+    const result = await check(files(bookings.replace(thenLine, ''), none), artifact);
+    expect(result.lines).toContain(`  ${roomsProblem}`);
+    expect(result.lines).toContain('  bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)');
+    expect(result.lines[0]).toBe('Capacidades válidas: 0');
+    expect(result.code).toBe(0);
+  });
+
+  it('a delta name in another case still owns the capability', async () => {
+    const upper = spec(block.replace('`bookings`', '`Bookings`'), ['Bookings']);
+    const result = await check(files(bookings.replace(thenLine, ''), upper), artifact);
+    expect(result.lines[0]).toBe('bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)');
+    expect(result.code).toBe(1);
+  });
+
+  it('--artifact --json reports foreign', async () => {
+    const sdd = sddFolder(files());
+    const result = await runSdd(['capability', 'check', '--path', sdd, '--artifact', join(sdd, artifact), '--json']);
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 1, errors: [], foreign: [roomsProblem] });
+    expect(result.code).toBe(0);
+  });
+
+  it('--json without --artifact has no foreign key', async () => {
+    const sdd = sddFolder({ 'capabilities/rooms.md': rooms });
+    const result = await runSdd(['capability', 'check', '--path', sdd, '--json']);
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 0, errors: [roomsProblem] });
+    expect(result.code).toBe(1);
+  });
+});

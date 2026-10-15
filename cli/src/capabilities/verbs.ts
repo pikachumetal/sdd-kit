@@ -35,9 +35,17 @@ export const capabilityCheckVerb: Verb = {
     const path = requiredOption(args, 'path');
     const artifact = typeof args.values.artifact === 'string' ? args.values.artifact : undefined;
     if (artifact !== undefined && !existsSync(artifact)) return reportMissingArtifact(artifact, args.values.json === true, io);
-    const { lines, code, validCount } = validateCapabilities(path, artifact);
-    if (!args.values.json) lines.forEach((line) => io.out(line));
-    else io.json({ validCount, errors: code ? lines : [] });
+    const { lines, code, validCount, foreign } = validateCapabilities(path, artifact);
+    if (args.values.json) {
+      const errors = code ? lines : [];
+      io.json(artifact === undefined ? { validCount, errors } : { validCount, errors, foreign });
+      return code;
+    }
+    lines.forEach((line) => io.out(line));
+    if (foreign.length) {
+      io.out(`Ajenos al artefacto, no cambian el código de salida: ${foreign.length}`);
+      foreign.forEach((line) => io.out(`  ${line}`));
+    }
     return code;
   },
 };

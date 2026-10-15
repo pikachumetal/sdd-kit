@@ -15,7 +15,7 @@ const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
 const POINTER_TITLE = /^# Capacidad — (.+) \(puntero\)\s*$/i;
 const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
 
-export type Validation = { lines: string[]; code: number; validCount: number };
+export type Validation = { lines: string[]; code: number; validCount: number; foreign: string[] };
 
 type Resolved = { name: string; lines: string[]; problems: string[]; skipped: boolean; label?: string };
 
@@ -197,12 +197,16 @@ function deltaAppliedProblems(lines: string[], bySlug: Map<string, Resolved>): s
     });
 }
 
+function deltaCapabilityNames(lines: string[]): string[] {
+  return lines.flatMap((line) => /^### Capacidad: `([^`]+)`/.exec(line)?.[1] ?? []);
+}
+
 function artifactProblems(artifactPath: string, dir: string, bySlug: Map<string, Resolved>): string[] {
   const name = basename(artifactPath);
   const lines = readLines(artifactPath);
   const block = sectionLines(lines, 'Capacidades');
   if (!block) return [`${name}: falta el bloque «## Capacidades»`];
-  const deltaNames = lines.flatMap((line) => /^### Capacidad: `([^`]+)`/.exec(line)?.[1] ?? []);
+  const deltaNames = deltaCapabilityNames(lines);
   const declared = declaredCapabilities(block);
   const patchCreates = isPatch(name, lines) && declared.some((item) => item.kind === 'Nuevas');
   return [
@@ -221,10 +225,13 @@ export function validateCapabilities(sddPath: string, artifactPath?: string): Va
   const files = capabilityFiles(sddPath).map(resolveFile);
   const bySlug = new Map(files.map((file) => [file.name.toLowerCase(), file]));
   const artifact = artifactPath ? artifactProblems(artifactPath, capabilitiesDir(sddPath), bySlug) : [];
-  const problems = [...files.flatMap((file) => file.problems), ...artifact];
+  const touched = artifactPath ? deltaCapabilityNames(readLines(artifactPath)).map((name) => `${name}.md`.toLowerCase()) : null;
+  const isOwn = (file: Resolved) => touched === null || touched.includes(file.name.toLowerCase());
+  const problems = [...files.filter(isOwn).flatMap((file) => file.problems), ...artifact];
+  const foreign = files.filter((file) => !isOwn(file)).flatMap((file) => file.problems);
   const skipped = files.filter((file) => file.skipped).map((file) => file.name);
   const validCount = files.filter((file) => !file.problems.length && !file.skipped).length;
-  if (problems.length) return { lines: problems, code: 1, validCount };
-  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount };
-  return { lines: [summaryLine(files.length - skipped.length, skipped)], code: 0, validCount };
+  if (problems.length) return { lines: problems, code: 1, validCount, foreign };
+  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount, foreign };
+  return { lines: [summaryLine(validCount, skipped)], code: 0, validCount, foreign };
 }
