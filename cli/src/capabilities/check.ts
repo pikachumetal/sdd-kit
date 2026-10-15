@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { readLines } from '../cli/files.ts';
 import { capabilitiesDir, capabilityFiles } from './files.ts';
 import {
@@ -12,8 +12,12 @@ const SCENARIO_KEYWORDS = ['GIVEN', 'WHEN', 'THEN'];
 const PURPOSE_MAX_LENGTH = 300;
 const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
 const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
+const POINTER_TITLE = /^# Capacidad — (.+) \(puntero\)\s*$/i;
+const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
 
 export type Validation = { lines: string[]; code: number; validCount: number };
+
+type Resolved = { name: string; lines: string[]; problems: string[]; skipped: boolean; label?: string };
 
 function titleProblems(slug: string, lines: string[]): string[] {
   const title = lines.find((line) => line.trim());
@@ -118,6 +122,40 @@ function fileProblems(fileName: string, lines: string[]): string[] {
   ];
 }
 
+function isPointer(slug: string, lines: string[]): boolean {
+  const title = POINTER_TITLE.exec(lines.find((line) => line.trim()) ?? '');
+  return title !== null && equalsIgnoringCase(title[1].trim(), slug);
+}
+
+function pointerLink(slug: string, lines: string[]): string | undefined {
+  const suffix = `capabilities/${slug}.md`.toLowerCase();
+  return lines
+    .filter((line) => line.startsWith('>'))
+    .flatMap((line) => [...line.matchAll(MARKDOWN_LINK)].map((match) => match[1]))
+    .find((link) => link.replace(/\\/g, '/').toLowerCase().endsWith(suffix));
+}
+
+function resolvePointer(path: string, name: string, slug: string, lines: string[]): Resolved {
+  const own = (problem: string): Resolved => ({ name, lines, problems: [`${name}: ${problem}`], skipped: false });
+  if (scenarioLines(lines).length) return own('un puntero no lleva escenarios: van en su destino');
+  const link = pointerLink(slug, lines);
+  if (link === undefined) return own(`el puntero no enlaza en una cita a <…>/capabilities/${slug}.md`);
+  const target = resolve(dirname(path), link);
+  if (!existsSync(target)) return own(`el destino del puntero no existe: ${link}`);
+  const targetLines = readLines(target);
+  const problems = fileProblems(name, targetLines).map((problem) => `${name} → ${link}: ${problem}`);
+  return { name, lines: targetLines, problems, skipped: false, label: link };
+}
+
+function resolveFile(path: string): Resolved {
+  const name = basename(path);
+  const slug = name.replace(/\.[^.]*$/, '');
+  const lines = readLines(path);
+  if (isPointer(slug, lines)) return resolvePointer(path, name, slug, lines);
+  const problems = fileProblems(name, lines).map((problem) => `${name}: ${problem}`);
+  return { name, lines, problems, skipped: isNotCapability(lines) };
+}
+
 function noneLineProblems(block: string[], deltaNames: string[]): string[] {
   const none = block.find((line) => NONE_LINE.test(line));
   if (none === undefined) return [];
@@ -145,20 +183,21 @@ function blockAgainstDeltaProblems(declared: Declared[], deltaNames: string[], d
   ];
 }
 
-function deltaAppliedProblems(lines: string[], dir: string): string[] {
+function deltaAppliedProblems(lines: string[], bySlug: Map<string, Resolved>): string[] {
   return deltaEntries(lines)
     .filter((delta) => delta.kind === 'ADDED' || delta.kind === 'MODIFIED')
     .flatMap((delta) => {
-      const file = join(dir, `${delta.capability}.md`);
-      if (!existsSync(file)) return [];
-      const requirement = requirementsOf(readLines(file)).find((item) => equalsIgnoringCase(item.title, delta.title));
-      if (!requirement) return [`«${delta.title}» del delta no está en capabilities/${delta.capability}.md`];
+      const file = bySlug.get(`${delta.capability}.md`.toLowerCase());
+      if (!file) return [];
+      const where = file.label ?? `capabilities/${delta.capability}.md`;
+      const requirement = requirementsOf(file.lines).find((item) => equalsIgnoringCase(item.title, delta.title));
+      if (!requirement) return [`«${delta.title}» del delta no está en ${where}`];
       const same = equalsIgnoringCase(scenarioLines(delta.lines).join('\n'), scenarioLines(requirement.lines).join('\n'));
-      return same ? [] : [`«${delta.title}» del delta no coincide con capabilities/${delta.capability}.md`];
+      return same ? [] : [`«${delta.title}» del delta no coincide con ${where}`];
     });
 }
 
-function artifactProblems(artifactPath: string, dir: string): string[] {
+function artifactProblems(artifactPath: string, dir: string, bySlug: Map<string, Resolved>): string[] {
   const name = basename(artifactPath);
   const lines = readLines(artifactPath);
   const block = sectionLines(lines, 'Capacidades');
@@ -168,7 +207,7 @@ function artifactProblems(artifactPath: string, dir: string): string[] {
   const patchCreates = isPatch(name, lines) && declared.some((item) => item.kind === 'Nuevas');
   return [
     ...emptyBlockProblems(block, declared), ...noneLineProblems(block, deltaNames),
-    ...blockAgainstDeltaProblems(declared, deltaNames, dir), ...deltaAppliedProblems(lines, dir),
+    ...blockAgainstDeltaProblems(declared, deltaNames, dir), ...deltaAppliedProblems(lines, bySlug),
     ...(patchCreates ? ['un patch no crea capacidades: quita «Nuevas»'] : []),
   ].map((problem) => `${name}: ${problem}`);
 }
@@ -179,11 +218,12 @@ function summaryLine(count: number, skipped: string[]): string {
 }
 
 export function validateCapabilities(sddPath: string, artifactPath?: string): Validation {
-  const files = capabilityFiles(sddPath).map((path) => ({ name: basename(path), lines: readLines(path) }));
-  const perFile = files.map((file) => fileProblems(file.name, file.lines).map((problem) => `${file.name}: ${problem}`));
-  const problems = [...perFile.flat(), ...(artifactPath ? artifactProblems(artifactPath, capabilitiesDir(sddPath)) : [])];
-  const skipped = files.filter((file) => isNotCapability(file.lines)).map((file) => file.name);
-  const validCount = files.filter((file, index) => !perFile[index].length && !skipped.includes(file.name)).length;
+  const files = capabilityFiles(sddPath).map(resolveFile);
+  const bySlug = new Map(files.map((file) => [file.name.toLowerCase(), file]));
+  const artifact = artifactPath ? artifactProblems(artifactPath, capabilitiesDir(sddPath), bySlug) : [];
+  const problems = [...files.flatMap((file) => file.problems), ...artifact];
+  const skipped = files.filter((file) => file.skipped).map((file) => file.name);
+  const validCount = files.filter((file) => !file.problems.length && !file.skipped).length;
   if (problems.length) return { lines: problems, code: 1, validCount };
   if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount };
   return { lines: [summaryLine(files.length - skipped.length, skipped)], code: 0, validCount };

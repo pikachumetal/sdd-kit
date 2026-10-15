@@ -376,3 +376,55 @@ describe('sdd capability check with --artifact', () => {
     expect(result.code).toBe(0);
   });
 });
+
+describe('sdd capability check follows a pointer', () => {
+  const link = '../../../app/.docs/sdd/capabilities/bookings.md';
+  const destination = '../../app/.docs/sdd/capabilities/bookings.md';
+  const pointer = (target = link, extra = '') =>
+    `# Capacidad — bookings (puntero)\n\n> **Esta capacidad no vive aquí.** Su verdad está en [app/bookings.md](${target})\n\n## Propósito\n\nReservas de salas.\n${extra}`;
+  const block = '## Capacidades\n\n- Modificadas: `bookings` — añade «Cancelar una reserva»\n';
+  const added = '### Capacidad: `bookings`\n\n**ADDED — Cancelar una reserva**\n- GIVEN a\n- WHEN b\n- THEN c\n';
+
+  it('a pointer to a valid capability passes and counts', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer(), [destination]: bookings });
+    expect(result.lines).toEqual(['Capacidades válidas: 1']);
+    expect(result.code).toBe(0);
+  });
+
+  it('a pointer reports the problems of its destination', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer(), [destination]: bookings.replace(thenLine, '') });
+    expect(result.lines).toEqual([
+      `bookings.md → ${link}: «Consultar salas libres» no tiene escenario completo (falta - THEN)`,
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('a pointer whose destination does not exist fails', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer() });
+    expect(result.lines).toEqual([`bookings.md: el destino del puntero no existe: ${link}`]);
+    expect(result.code).toBe(1);
+  });
+
+  it('a pointer without a link to its capability fails', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer('../../../app/.docs/sdd/capabilities/rooms.md') });
+    expect(result.lines).toEqual(['bookings.md: el puntero no enlaza en una cita a <…>/capabilities/bookings.md']);
+  });
+
+  it('a pointer with scenarios fails', async () => {
+    const extra = '\n## Requisitos\n\n### Algo\n\n- GIVEN a\n- WHEN b\n- THEN c\n';
+    const result = await check({ 'capabilities/bookings.md': pointer(link, extra), [destination]: bookings });
+    expect(result.lines).toEqual(['bookings.md: un puntero no lleva escenarios: van en su destino']);
+  });
+
+  it('a pointer link is resolved from the pointer folder', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer(`./${link}`), [destination]: bookings });
+    expect(result.lines).toEqual(['Capacidades válidas: 1']);
+  });
+
+  it('the delta is checked against the pointer destination', async () => {
+    const files = { 'capabilities/bookings.md': pointer(), [destination]: bookings, 'specs/t/spec.md': spec(block, []) + added };
+    const result = await check(files, 'specs/t/spec.md');
+    expect(result.lines).toEqual([`spec.md: «Cancelar una reserva» del delta no está en ${link}`]);
+    expect(result.code).toBe(1);
+  });
+});
