@@ -29,9 +29,12 @@ export async function mergeFeature(worktree: string, branch: string, policy: Mer
   await completeMergeAttempt({ worktree, stepName: 'merge', output: merged.output }, merged.code);
 }
 
-export async function pushDestination(worktree: string, remote: string, into: string): Promise<void> {
-  const pushed = await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`]);
-  if (pushed.code !== 0) throw new DomainError(`push: no se pudo publicar '${into}' en '${remote}'.`);
+export async function pushDestination(worktree: string, remote: string, into: string): Promise<'pushed' | 'moved'> {
+  if ((await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`])).code === 0) return 'pushed';
+  const fetched = await git(worktree, ['fetch', remote, `+refs/heads/${into}:refs/remotes/${remote}/${into}`]);
+  const moved = fetched.code === 0 && (await git(worktree, ['merge-base', '--is-ancestor', `${remote}/${into}`, 'HEAD'])).code !== 0;
+  if (moved) return 'moved';
+  throw new DomainError(`push: no se pudo publicar '${into}' en '${remote}'.`);
 }
 
 export async function undoFailedMerge(worktree: string, before: string): Promise<void> {

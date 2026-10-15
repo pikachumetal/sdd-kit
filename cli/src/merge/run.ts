@@ -27,14 +27,27 @@ interface Job {
   io: Io;
 }
 
-async function verifyMerge(path: string, job: Job): Promise<void> {
-  const { options, verifiedAt, io } = job;
+const PUSH_ATTEMPTS = 3;
+
+async function verifyMerge(path: string, job: Job, verifiedAt: string | null): Promise<void> {
+  const { options, io } = job;
   if (options.verify === null || options.verify.trim() === '') return;
   if (verifiedAt !== null && (await onlyDocsSince(path, verifiedAt))) {
     const [shortHash] = await gitLines(path, ['rev-parse', '--short', verifiedAt]);
     return io.out(`verificación: omitida: desde ${shortHash} solo cambian docs`);
   }
   await runVerification({ worktree: path, command: options.verify, io });
+}
+
+async function publish(path: string, job: Job, remote: string): Promise<void> {
+  const { policy, io } = job;
+  for (let attempt = 1; (await pushDestination(path, remote, policy.into)) === 'moved'; attempt++) {
+    if (attempt === PUSH_ATTEMPTS) throw new DomainError(`push: '${policy.into}' sigue moviéndose en '${remote}' tras ${PUSH_ATTEMPTS} intentos; relanza el merge en un rato`);
+    io.out(`push: '${policy.into}' avanzó en '${remote}'; integro y reintento (${attempt + 1}/${PUSH_ATTEMPTS})`);
+    const [verified] = await gitLines(path, ['rev-parse', 'HEAD']);
+    await syncBaseBranch(path, policy.into, remote);
+    await verifyMerge(path, job, verified);
+  }
 }
 
 async function integrate(path: string, job: Job): Promise<void> {
@@ -44,9 +57,9 @@ async function integrate(path: string, job: Job): Promise<void> {
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
   try {
     await mergeFeature(path, branch, policy);
-    await verifyMerge(path, job);
+    await verifyMerge(path, job, job.verifiedAt);
     const pushed = options.push && remote !== null;
-    if (pushed) await pushDestination(path, remote, policy.into);
+    if (pushed) await publish(path, job, remote);
     const [shortHash] = await gitLines(path, ['rev-parse', '--short', 'HEAD']);
     io.out(`Fusionado ${branch} en ${policy.into}: ${shortHash}`);
     if (pushed) io.out(`publicado en ${remote}`);
