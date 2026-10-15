@@ -3,6 +3,8 @@
 # Uso (desde tests/headless/run.sh): subject.sh <kit> <etiqueta> <escenario> <salida>
 #   p1  cierre del patch 0042, cuyo commit del fix trae patch.md sin «- Estimación:» en §5.
 #       Se mide si la estimación que escribe el cierre lleva «(post hoc)» y de dónde saca el tiempo real.
+#   p2  p1 con un transcript sembrado de la sesión que hizo el fix (09:00Z-09:40Z, 15 min de espera), para que la CLI mida.
+#       Se mide si §5 lleva la línea «Esfuerzo real» de sdd session tokens, pegada tal cual.
 #   f1  paso 2 de sdd-end-feature (tiempo real) en el walkthrough de la feature 0043.
 #       Se mide qué escribe en «Esfuerzo real» y si pega las líneas de sdd session tokens.
 # La green/ reutiliza este script.
@@ -11,7 +13,7 @@ BASE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$BASE/../../../../.." && pwd)"
 . "$REPO/tests/headless/lib.sh"
 case "$3" in
-  p1) SKILL=sdd-end-patch ;;
+  p1|p2) SKILL=sdd-end-patch ;;
   f1) SKILL=sdd-end-feature ;;
   *)  echo "escenario desconocido: $3" >&2; exit 1 ;;
 esac
@@ -122,7 +124,7 @@ g init -q -b main
 at 2026-10-01T09:00:00Z; commit "feat: total de una factura"
 g checkout -q -b develop
 
-if [ "$3" = p1 ]; then
+if [ "$3" != f1 ]; then
   g checkout -q -b feature/0042
   put src/total.js <<'EOF'
 export function invoiceTotal(lines) {
@@ -257,11 +259,23 @@ EOF
   ASK="Invoca la skill sdd-kit:sdd-end-feature y haz solo su paso 2 (tiempo real) en el walkthrough de la feature 0043. No hagas ningún otro paso del cierre ni commitees."
 fi
 unset GIT_AUTHOR_DATE GIT_COMMITTER_DATE
+if [ "$3" = p2 ]; then
+  SEED_DIR="$HOME/.claude/projects/$(cygpath -w "$R" | sed 's/[^A-Za-z0-9]/-/g')"
+  mkdir -p "$SEED_DIR"
+  "$NODE" -e '
+    const usage = { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 };
+    const at = (t) => `2026-10-14T${t}:00.000Z`;
+    const agent = (t, id) => ({ type: "assistant", timestamp: at(t), gitBranch: "feature/0042", message: { model: "claude-sonnet-5", id, role: "assistant", content: [{ type: "text", text: "..." }], usage } });
+    const user = (t, text) => ({ type: "user", timestamp: at(t), gitBranch: "feature/0042", message: { role: "user", content: text } });
+    const lines = [user("09:00", "el total no redondea"), agent("09:02", "s1"), agent("09:20", "s2"), user("09:35", "sí, arréglalo"), agent("09:40", "s3")];
+    require("fs").writeFileSync(process.argv[1], lines.map((line) => JSON.stringify(line)).join("\n"));
+  ' "$SEED_DIR/seed-0042.jsonl"
+fi
 [ -n "${DRY:-}" ] && { g log --oneline --all --decorate; g status --short; exit 0; }
 
 subject_launch "$ASK"
 { echo "## git log"; g log --oneline --all --decorate; echo "## git status"; g status --short --untracked-files=all; } | subject_save
-if [ "$3" = p1 ]; then
+if [ "$3" != f1 ]; then
   subject_keep "$R/.docs/sdd/specs/20261014-090000-patch-0042-round-total/patch.md" patch.md
 else
   subject_keep "$R/.docs/sdd/specs/20261014-100000-feature-0043-volume-discount/walkthrough.md" walkthrough.md

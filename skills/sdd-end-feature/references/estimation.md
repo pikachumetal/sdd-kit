@@ -2,7 +2,7 @@
 
 ## Paso 2 — Tiempo real
 
-Si la desviación supera el ±30 %, la causa es obligatoria. Sin la línea medida, aproxima y márcalo como aproximado: nunca en blanco.
+Si la desviación supera el ±30 %, la causa es obligatoria. ¿No conoces el tiempo? Pregunta, y si no hay respuesta, aproxima y márcalo como aproximado — nunca en blanco.
 
 ## Paso 3 — estimation-log
 

@@ -18,4 +18,17 @@ Frente al RED: `p1` pasa de 0/2 a 2/2 en ejecutar el script; `f1` pasa de tres l
 
 El trabajo de los dos moldes está en commits, no en una sesión de Claude Code: la única sesión con transcripts es la del sujeto, que solo cierra. Por eso la línea medida da 0,00 h, y los dos `p1` lo explican («`sdd session tokens` mide la sesión de cierre y no la que abrió el patch») y aproximan con los commits, como pide la plantilla fuera de Claude Code. En el flujo del kit la sesión que cierra es la que trabajó, o comparte la carpeta de transcripts del worktree, y la CLI suma todas sus sesiones de la rama (Vitest: «suma dos sesiones de la rama…»).
 
+## p2 — el cierre del patch con un transcript del trabajo (pasada de fix de la revisión final)
+
+El eje Spec de la revisión final marcó que `p1` no comprobaba que la línea se pegara. `p2` es `p1` con un transcript sembrado en la carpeta de transcripts del molde: la sesión que hizo el fix, de 09:00Z a 09:40Z de la rama `feature/0042`, con una espera de 15 min. Sobre el molde, la CLI da `0,42 h — reloj de 2 sesiones 0,67 h desde 2026-10-14T09:00Z, sin 15 min de espera al dev-lead (1 espera)`; el transcript sembrado lo borró el hilo a mano tras cada sujeto (`green/subject.sh` no lo limpia: repetir una etiqueta sumaría el del sujeto anterior).
+
+| Tanda | Kit | Sujeto | Esfuerzo real en §5 |
+| --- | --- | --- | --- |
+| 1 | plantilla nueva, `sdd-end-patch` sin editar | p2-1 | `Real: ~40 min (aproximado)`: no abre la plantilla ni ejecuta el script |
+| 1 | ídem | p2-2 | la línea de la CLI, pegada tal cual |
+| 2 | con la frase del paso 1 de `sdd-end-patch` | p2-3 | la línea de la CLI, pegada tal cual |
+| 2 | ídem | p2-4 | la línea de la CLI, pegada tal cual |
+
+Con la plantilla sola, 1/2: quien no relee la plantilla escribe el tiempo a ojo. Por la enmienda del 2026-10-15 eso abre la edición de `sdd-end-patch`, y con la frase sale 2/2. La tanda 2 la aprobó el dev-lead al pasar de los 6 sujetos previstos («Editar y otra tanda GREEN (Recomendada)»). Coste: 0,38 $ la tanda 1 y 0,39 $ la 2. La campaña entera: 10 sujetos, 2,28 $. El recorte posterior para caber en el tope de palabras deja la frase medida igual.
+
 **Hallazgo**: `f1-1` pegó la línea con `0,00 h` y añadió la aproximación detrás. `sdd estimation log` lee el primer número, así que esa fila daría real 0. Solo pasa cuando los transcripts no cubren el trabajo (otra máquina, otra ruta). No se corrige aquí, porque sería un AND nuevo de la spec: va a la deuda como **Esperar 2.º ticket**.

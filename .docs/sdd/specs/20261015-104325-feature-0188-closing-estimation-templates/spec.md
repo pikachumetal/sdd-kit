@@ -6,7 +6,7 @@ proposal: 0131
 title: Estimación y plantillas del cierre — `post hoc`, el «Real», el coste de sujetos y `## Rulings`
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-15
 author: Claude (Opus 5.5)
 approvers:
@@ -109,7 +109,7 @@ Lo decidido por el dev-lead, tal cual: `post hoc` y su exclusión, y el «Real»
 - AND `sdd estimation log` lee esa línea como real 0,82 en un walkthrough y en §5 de un `patch.md`
 
 **ADDED — Una estimación de patch escrita al cerrar queda `post hoc` y no calibra**
-- GIVEN un proyecto con `estimation.md` y un `patch.md` cuya estimación llegó en el commit de cierre: `- Estimación: 0,5h (post hoc)` y `- Real: 0,75h`, como da la forma §5 de `patch-template.md`
+- GIVEN un proyecto con `estimation.md` y un `patch.md` cuya estimación llegó en el commit de cierre: `- Estimación: 0,5h (post hoc)`, con la forma de §5 de `patch-template.md`, y un real de 0,75 h
 - WHEN se ejecuta `sdd estimation log`
 - THEN da su fila con estimado 0.5, real 0.75 y `post hoc` en la columna Ratio
 - AND esa fila no entra en el factor global, la dispersión, la tendencia, la tabla por tipo ni la mediana de su release
@@ -135,10 +135,21 @@ Lo decidido por el dev-lead, tal cual: `post hoc` y su exclusión, y el «Real»
 - THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit
 - AND en otro harness, las cuatro dicen «no medido», con el motivo, y el esfuerzo real se aproxima con las marcas de los commits y se dice
 
+**MODIFIED — La estimación de un patch se escribe antes del fix** (antes: «con `- Real:` debajo»)
+
+- GIVEN un proyecto con `.docs/sdd/estimation.md` y un patch clasificado por `sdd-propose`
+- WHEN el agente abre el patch
+- THEN si pregunta el carril, la pregunta lleva la estimación en horas
+- AND, pregunte o no, `patch.md` §5 la escribe antes del fix, y la hora de inicio en UTC en la línea siguiente: `- Estimación: 0,5h` y `- Inicio: 2026-10-09T11:20Z`, con `- Esfuerzo real:` debajo al cerrar
+- AND `sdd estimation log` lee `- Estimación: 0,5h` como hoy, y `- Inicio:` no cuenta como estimación ni como real
+- AND un `patch.md` cerrado antes con `- Real:` se sigue leyendo igual
+
 **Reglas de la capacidad**
 - **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; el log, generado, en la carpeta de `estimation.md`.
 
 ## Enmiendas
+
+- 2026-10-15 — `MODIFIED` de «La estimación de un patch se escribe antes del fix»: `- Real:` pasa a `- Esfuerzo real:` y los `patch.md` de antes se siguen leyendo — la decisión 2 (aprobada) cambió la etiqueta en la plantilla y el delta no traía el requisito que la nombraba; hallazgo Important del eje Spec de la revisión final — sin aprobación aparte: aplica la decisión 2 — pasada de fix
 
 - 2026-10-15 — `sdd-end-patch` no gana la regla de `post hoc`: el requisito «Una estimación de patch escrita al cerrar…» parte del `patch.md` marcado, con la forma de la plantilla, y su WHEN es el log; `sdd-end-patch` solo se edita si el GREEN del real falla con la plantilla sola; el último `MODIFIED` dice qué líneas van en cada artefacto (§5 del patch no lleva tokens) — RED de `p1`: 0/2 escribieron una cifra de estimación al cerrar (`tests/closing-estimation-red.md`); Art. I, un baseline limpio no se escribe — aprobada: «Apruebo (Recomendada)» — Task 3
 

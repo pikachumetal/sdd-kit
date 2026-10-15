@@ -29,6 +29,8 @@ const HARNESS_PREFIXES = ['<task-notification>', '<system-reminder>', '<local-co
 const MILLIS_PER_HOUR = 3_600_000;
 
 const roundToHundredths = (value: number): number => Math.round(value * 100) / 100;
+const earlier = (first: number, second: number): number => Math.min(first, second);
+const later = (first: number, second: number): number => Math.max(first, second);
 
 function parseEntry(text: string): Json | null {
   try {
@@ -89,7 +91,7 @@ function timeline(file: string): Timeline | null {
     if (sameText(entry.type, 'assistant')) readAgentEntry(state, entry, times[index]!);
     else readUserEntry(state, entry, times[index]!);
   });
-  return { first: Math.min(...times), last: Math.max(...times), waitMillis: state.waitMillis, waits: state.waits };
+  return { first: times.reduce(earlier), last: times.reduce(later), waitMillis: state.waitMillis, waits: state.waits };
 }
 
 const formatStart = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
@@ -105,7 +107,7 @@ export function readClock(files: string[], branch: string): Clock | null {
   return {
     hours: roundToHundredths((clockMillis - waitMillis) / MILLIS_PER_HOUR),
     clockHours: roundToHundredths(clockMillis / MILLIS_PER_HOUR),
-    start: formatStart(Math.min(...timelines.map((item) => item.first))),
+    start: formatStart(timelines.map((item) => item.first).reduce(earlier)),
     waitMinutes: Math.round(waitMillis / 60_000),
     waits: timelines.reduce((total, item) => total + item.waits, 0),
     sessions: timelines.length,
