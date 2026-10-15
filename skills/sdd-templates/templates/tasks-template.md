@@ -41,3 +41,10 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una ta
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+## Rulings
+
+> Lo pega `sdd-implement` al cerrar, antes de borrar el workspace del plan: la salida de
+> `sdd ledger rulings <plan>`, los rulings y los minor diferidos, tal cual. `_Ninguno_` si no hubo.
+
+_Ninguno_
