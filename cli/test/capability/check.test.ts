@@ -376,3 +376,133 @@ describe('sdd capability check with --artifact', () => {
     expect(result.code).toBe(0);
   });
 });
+
+describe('sdd capability check follows a pointer', () => {
+  const link = '../../../app/.docs/sdd/capabilities/bookings.md';
+  const destination = '../../app/.docs/sdd/capabilities/bookings.md';
+  const pointer = (target = link, extra = '') =>
+    `# Capacidad — bookings (puntero)\n\n> **Esta capacidad no vive aquí.** Su verdad está en [app/bookings.md](${target})\n\n## Propósito\n\nReservas de salas.\n${extra}`;
+  const block = '## Capacidades\n\n- Modificadas: `bookings` — añade «Cancelar una reserva»\n';
+  const added = '### Capacidad: `bookings`\n\n**ADDED — Cancelar una reserva**\n- GIVEN a\n- WHEN b\n- THEN c\n';
+
+  it('a pointer to a valid capability passes and counts', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer(), [destination]: bookings });
+    expect(result.lines).toEqual(['Capacidades válidas: 1']);
+    expect(result.code).toBe(0);
+  });
+
+  it('a pointer reports the problems of its destination', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer(), [destination]: bookings.replace(thenLine, '') });
+    expect(result.lines).toEqual([
+      `bookings.md → ${link}: «Consultar salas libres» no tiene escenario completo (falta - THEN)`,
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('a pointer whose destination does not exist fails', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer() });
+    expect(result.lines).toEqual([`bookings.md: el destino del puntero no existe: ${link}`]);
+    expect(result.code).toBe(1);
+  });
+
+  it('a pointer without a link to its capability fails', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer('../../../app/.docs/sdd/capabilities/rooms.md') });
+    expect(result.lines).toEqual(['bookings.md: el puntero no enlaza en una cita a <…>/capabilities/bookings.md']);
+  });
+
+  it('a pointer with scenarios fails', async () => {
+    const extra = '\n## Requisitos\n\n### Algo\n\n- GIVEN a\n- WHEN b\n- THEN c\n';
+    const result = await check({ 'capabilities/bookings.md': pointer(link, extra), [destination]: bookings });
+    expect(result.lines).toEqual(['bookings.md: un puntero no lleva escenarios: van en su destino']);
+  });
+
+  it('a pointer marked «No es una capacidad.» is skipped, not followed', async () => {
+    const marked = `# Capacidad — bookings (puntero)
+
+> **No es una capacidad.** Su verdad está en [app/bookings.md](${link})
+`;
+    const result = await check({ 'capabilities/bookings.md': marked });
+    expect(result.lines).toEqual(['Capacidades válidas: 0 · omitidas por «No es una capacidad.»: bookings.md']);
+    expect(result.code).toBe(0);
+  });
+
+  it('a pointer link is resolved from the pointer folder', async () => {
+    const result = await check({ 'capabilities/bookings.md': pointer(`./${link}`), [destination]: bookings });
+    expect(result.lines).toEqual(['Capacidades válidas: 1']);
+  });
+
+  it('the delta is checked against the pointer destination', async () => {
+    const files = { 'capabilities/bookings.md': pointer(), [destination]: bookings, 'specs/t/spec.md': spec(block, []) + added };
+    const result = await check(files, 'specs/t/spec.md');
+    expect(result.lines).toEqual([`spec.md: «Cancelar una reserva» del delta no está en ${link}`]);
+    expect(result.code).toBe(1);
+  });
+});
+
+describe('sdd capability check --artifact separates foreign failures', () => {
+  const artifact = 'specs/t/spec.md';
+  const rooms = '# Capacidad — rooms\n\n## Propósito\n\nSalas y su aforo.\n';
+  const roomsProblem = 'rooms.md: falta la sección «Requisitos»';
+  const header = 'Ajenos al artefacto, no cambian el código de salida: 1';
+  const block = '## Capacidades\n\n- Modificadas: `bookings` — cambia «Reservar una franja»\n';
+  const files = (bookingsContent = bookings, specContent = spec(block, ['bookings'])) => ({
+    'capabilities/bookings.md': bookingsContent,
+    'capabilities/rooms.md': rooms,
+    [artifact]: specContent,
+  });
+
+  it('foreign failures do not change the exit code', async () => {
+    const result = await check(files(), artifact);
+    expect(result.lines).toEqual(['Capacidades válidas: 1', header, `  ${roomsProblem}`]);
+    expect(result.code).toBe(0);
+  });
+
+  it('a failure in a delta capability exits 1 and keeps the foreign block', async () => {
+    const result = await check(files(bookings.replace(thenLine, '')), artifact);
+    expect(result.lines).toEqual([
+      'bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)',
+      header,
+      `  ${roomsProblem}`,
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('an artifact failure exits 1 without a foreign block', async () => {
+    const empty = spec('## Capacidades\n\n- Nuevas: ninguna\n', []);
+    const result = await check({ 'capabilities/bookings.md': bookings, [artifact]: empty }, artifact);
+    expect(result.lines).toEqual([
+      'spec.md: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»',
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('with «Ninguna, porque» every capability failure is foreign', async () => {
+    const none = spec('## Capacidades\n\nNinguna, porque es un refactor.\n', []);
+    const result = await check(files(bookings.replace(thenLine, ''), none), artifact);
+    expect(result.lines).toContain(`  ${roomsProblem}`);
+    expect(result.lines).toContain('  bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)');
+    expect(result.lines[0]).toBe('Capacidades válidas: 0');
+    expect(result.code).toBe(0);
+  });
+
+  it('a delta name in another case still owns the capability', async () => {
+    const upper = spec(block.replace('`bookings`', '`Bookings`'), ['Bookings']);
+    const result = await check(files(bookings.replace(thenLine, ''), upper), artifact);
+    expect(result.lines[0]).toBe('bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)');
+    expect(result.code).toBe(1);
+  });
+
+  it('--artifact --json reports foreign', async () => {
+    const sdd = sddFolder(files());
+    const result = await runSdd(['capability', 'check', '--path', sdd, '--artifact', join(sdd, artifact), '--json']);
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 1, errors: [], foreign: [roomsProblem] });
+    expect(result.code).toBe(0);
+  });
+
+  it('--json without --artifact has no foreign key', async () => {
+    const sdd = sddFolder({ 'capabilities/rooms.md': rooms });
+    const result = await runSdd(['capability', 'check', '--path', sdd, '--json']);
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 0, errors: [roomsProblem] });
+    expect(result.code).toBe(1);
+  });
+});
