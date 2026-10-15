@@ -503,7 +503,7 @@ Los forks conservan el texto de su fuente. Cada pieza cambiada lleva su fila en 
 **ADDED — El revisor de la spec comprueba que cada decisión del dev-lead tiene una regla que la cubre entera**
 - GIVEN una spec con «artifacts cubre el visual companion entero» en «Decisiones tomadas con el dev-lead», y un delta cuyo único requisito sobre el companion habla de pantallas
 - WHEN la revisa el revisor de la spec (la lente de dominio, o el revisor único)
-- THEN devuelve «Importante · Delta · la decisión del dev-lead sobre el visual companion queda cubierta solo para pantallas · ampliar el requisito a flujos y diagramas»
+- THEN devuelve, como Importante o Crítico, «Delta · la decisión del dev-lead sobre el visual companion queda cubierta solo para pantallas · ampliar el requisito a flujos y diagramas»
 
 **REMOVED — El revisor final revisa el paquete sin ejecutar la suite**
 - motivo: pasa a `verification`, que lo aplica a cada eje
@@ -595,6 +595,9 @@ Total: ~39 sujetos, ~3,5 h y ~43 $, con una tanda de REFACTOR. Si la prueba lo s
 | `code-reviewer.md` 7.0.0 | What to Check: Plan alignment, Testing, Production readiness | `spec-reviewer-prompt.md` | Kit distinto: repartido por eje |
 | `code-reviewer.md` 7.0.0 | What to Check: Code quality | `code-reviewer-prompt.md` | Kit distinto: repartido por eje, con los «Quick Diagnostic» (otro kit) |
 | `code-reviewer.md` 7.0.0 | What to Check: Architecture | `architecture-reviewer-prompt.md` | Kit distinto: repartido por eje, con el «Quick Diagnostic» de *Clean Architecture* (otro kit) |
+| `code-reviewer.md` 7.0.0 | What to Check, Testing: «All tests passing?» | — | Kit distinto: la suite la corre el hilo (`sdd task done` y el gate de cierre) y el encargo prohíbe ejecutarla: el revisor final que la ejecutaba, 2 de 2 (`tests/proportional-review-red.md`, R2) |
+| `code-reviewer.md` 7.0.0 | «What Was Implemented» (`[DESCRIPTION]`) | `code-reviewer-prompt.md`: «The package above is the work: its commits and its diff.»; — en `spec-reviewer-prompt.md` y `architecture-reviewer-prompt.md` | Kit distinto: el eje Código lee el paquete; el eje Spec, `spec.md` y `plan.md`, y el de Arquitectura, `architecture.md` y la línea del eje (decisión 10) |
+| `code-reviewer.md` 7.0.0 | «Requirements / Plan» (`[PLAN_OR_REQUIREMENTS]`) | — (`code-reviewer-prompt.md`) | Kit distinto: el eje Código no recibe la spec ni el plan (decisión 10) |
 | `code-reviewer.md` 7.0.0 | Example Output | `code-reviewer-prompt.md` | Se conserva |
 | `executing-plans` 7.0.0 | Native: «Do not dispatch a re-review…» | `sdd-verify/SKILL.md` | Kit distinto: la única re-revisión del cierre (decisión del dev-lead, 2026-10-14) |
 | `subagent-driven-development` 7.0.0 | «ONE fix dispatch, one scoped re-review, adjudicate residuals» | `sdd-verify/SKILL.md` | Kit distinto: esa re-revisión acotada es la única del cierre, la adelanta hasta antes de la validación para que cubra también los commits posteriores, y un Critical residual no se adjudica |
@@ -608,7 +611,7 @@ Total: ~39 sujetos, ~3,5 h y ~43 $, con una tanda de REFACTOR. Si la prueba lo s
 
 ## Enmiendas
 
-- 2026-10-14 — Scope: `review-spec.md` ganaba el punto de las decisiones del dev-lead → no se escribe: el revisor de la spec de `develop` ya marca como Crítico la decisión cubierta a medias en `s1` y en `s1b` (RED 2 de 2), y el Art. I prohíbe escribir guía sin un fallo en la línea base; el requisito «El revisor de la spec comprueba que cada decisión del dev-lead tiene una regla que la cubre entera» se cumple y queda medido — Task 5 — sin aprobar: la impone el Art. I; se presenta al dev-lead en el cierre
+- 2026-10-14 — Scope: `review-spec.md` ganaba el punto de las decisiones del dev-lead → no se escribe: el revisor de la spec de `develop` ya marca como Crítico la decisión cubierta a medias en `s1` y en `s1b` (RED 2 de 2), y el Art. I prohíbe escribir guía sin un fallo en la línea base; el requisito «El revisor de la spec comprueba que cada decisión del dev-lead tiene una regla que la cubre entera» se cumple y queda medido — Task 5 — aprobada: «Apruebo la enmienda (Recomendada)» (dev-lead, 2026-10-15); el THEN del ADDED pasa a «Importante o Crítico», lo que dan `s1` y `s1b`
 - 2026-10-14 — «El cierre no repite la revisión final»: con una línea en el formato 2.x, el tramo de la re-revisión empezaba en `Pasada de fix:`, como en la 2.x → empieza en el `sobre` de `Revisión final:`, con la pasada de fix dentro, como en el cierre único — en `c4`, 2 de 2 sujetos re-revisaron desde el `sobre`: una regla para los dos formatos, y la pasada de fix, que en el cierre nuevo siempre se revisa, se revisa también aquí — Task 4 — aprobada: «Desde su «sobre» (Recomendada)»
 
 ## Aprobaciones

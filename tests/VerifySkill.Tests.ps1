@@ -63,7 +63,9 @@ Describe 'Encargos de los ejes' -Tag 'Slow' {
   It 'el Quick Diagnostic de <_> es el de Wondel 1.8.0' -ForEach @('clean-code', 'refactoring-patterns', 'software-design-philosophy', 'pragmatic-programmer', 'clean-architecture') {
     $clone = if ($env:SDD_UPSTREAM_DIR) { Join-Path $env:SDD_UPSTREAM_DIR 'wondelai-skills' }
     if (-not $clone -or -not (Test-Path $clone)) { Set-ItResult -Skipped -Because 'sin el clone de wondelai/skills en SDD_UPSTREAM_DIR'; return }
-    $source = (git -C $clone show "v1.8.0:$_/SKILL.md") -join "`n"
+    $encoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    try { $source = (git -C $clone show "v1.8.0:$_/SKILL.md") -join "`n" } finally { [Console]::OutputEncoding = $encoding }
     $table = [regex]::Match($source, '(?ms)^## Quick Diagnostic\s*\n\s*\n(\|.*?)(?=\n\s*\n)').Groups[1].Value
     $table | Should -Not -BeNullOrEmpty
     $prompt = if ($_ -eq 'clean-architecture') { 'architecture' } else { 'code' }
@@ -87,5 +89,32 @@ Describe 'Cierre de la revisión' {
     $script:Skill | Should -Match 'A Critical is never adjudicated'
     $script:Skill | Should -Match 'A re-review never opens another'
     $script:Skill | Should -Match ([regex]::Escape('sin revisar: <sha> — <what it changes>'))
+  }
+
+  It 'un «no verificado» lo verifica el hilo o lo adjudica antes de la validación' {
+    $script:Skill | Should -Match '«no verificado»[^\n]*yourself[^\n]*`Final: Ruling:'
+  }
+
+  It 'un commit tras la re-revisión se revisa en el hilo con la regla entera de sdd-implement' {
+    $script:Skill | Should -Not -Match 'documentation under 20 lines'
+    $script:Skill | Should -Match 'A commit after it[^\n]*«Every commit of yours»'
+  }
+
+  It 'las órdenes de la CLI llevan su ruta y --path' {
+    $script:Skill | Should -Match ([regex]::Escape('node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js"'))
+    $script:Skill | Should -Match 'decision index --path \.docs/sdd'
+    $script:Skill | Should -Match 'capability index --path \.docs/sdd'
+  }
+
+  It 'el ejemplo de la línea de campo de <_> lleva los ejes' -ForEach @('skills/sdd-start-feature/references/control-profiles.md', 'skills/sdd-end-feature/SKILL.md') {
+    $text = Get-KitFile $_
+    $text | Should -Not -Match 'revisión final opus limpia'
+    $text | Should -Match 'revisión final Spec y Código'
+  }
+
+  It 'la ADR 0015 cubre a <_>' -ForEach @('skills/sdd-start-feature/SKILL.md', 'skills/sdd-start-feature/references/control-profiles.md', 'skills/sdd-start-feature/references/commit-milestones.md', 'skills/sdd-end-feature/SKILL.md', 'skills/sdd-propose/references/plan-writing.md', 'skills/sdd-templates/templates/plan-template.md') {
+    Push-Location $script:RepoRoot
+    try { $index = node cli/bin/sdd.js decision index --path .docs/sdd --files $_ } finally { Pop-Location }
+    ($index -join "`n") | Should -Match '`0015`'
   }
 }

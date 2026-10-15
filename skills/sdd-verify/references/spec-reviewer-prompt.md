@@ -38,7 +38,7 @@ code's quality and its architecture: leave their findings to them.
 
 - Spec: `<ruta de spec.md>` · plan: `<ruta de plan.md>`
 - ADRs that cover the diff: <líneas que imprime sdd decision index --files con los ficheros del diff, o «ninguna»>
-- The project's capabilities: <salida de sdd capability index>
+- The project's capabilities: <salida de sdd capability index --path .docs/sdd>
 - Ledger: <ruta del ledger del plan, o «sin ledger»>. Its `Ruling:`, `minor (deferred)` and `parked` lines are calls the executor made: weigh them, and say which deferred minors must be fixed before merge.
 
 ## The spec is a vision document

@@ -4,6 +4,12 @@ date: 2026-10-14
 rutas:
   - skills/sdd-verify/**
   - skills/sdd-implement/**
+  - skills/sdd-start-feature/SKILL.md
+  - skills/sdd-start-feature/references/control-profiles.md
+  - skills/sdd-start-feature/references/commit-milestones.md
+  - skills/sdd-end-feature/SKILL.md
+  - skills/sdd-propose/references/plan-writing.md
+  - skills/sdd-templates/templates/plan-template.md
 ---
 
 # La revisión final sale en ejes y se cierra una vez

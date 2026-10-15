@@ -61,19 +61,19 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN el plan tiene una sección `## Review Focus` entre «Restricciones globales» y «Phase -1», con una línea por entrada o fallo que ningún test de las tasks ejercita, con su comportamiento esperado y su task (p. ej. «`status=Foo` → 400 con los estados válidos · Task 1, `Rejects_unknown_status`»), o «ninguna: comprobado»
 - AND «Decisiones que he tomado yo» lleva una línea que la resume («Review Focus: 3 entradas que la spec no fija, con su comportamiento esperado; ver la sección»)
 - AND el self-review §4 lleva una fila por línea del Review Focus con su task y su test
-- AND al despachar el revisor final, su encargo lleva la sección `## Review Focus` del plan, copiada literal
+- AND al despachar la revisión final, el encargo del eje Spec lleva la sección `## Review Focus` del plan, copiada literal
 
 ### El artículo de calidad de código viaja a implementadores y revisores
 
 - GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una feature en modo lite, que no tiene plan
-- WHEN se despacha un implementador, un revisor de task, un re-revisor o el revisor final
+- WHEN se despacha un implementador, un revisor de task, un re-revisor o un eje de la revisión final
 - THEN el encargo lleva el bloque «De código» literal como primera sección
 - AND el bloque «De proceso» (política de modelos, modo de ejecución, atribución de commits) no aparece en el encargo de ningún revisor
 - AND en modo lite el bloque es el artículo de calidad de código de la constitution, copiado literal; la política de modelos la aplica quien despacha
 
 ### El trabajo se valida con el usuario antes de cerrar
 
-- GIVEN una feature con la implementación terminada y la revisión final limpia, en un proyecto con `validation.mode` `manual` o sin la clave
+- GIVEN una feature con la implementación terminada y el cierre de la revisión final terminado (sin Critical abiertos ni Important sin adjudicar), en un proyecto con `validation.mode` `manual` o sin la clave
 - WHEN el agente va a cerrar
 - THEN antes de invocar `sdd-end-feature` presenta, empezando por un párrafo con 🦆 sobre lo que cambia para quien usa el producto y siguiendo con «✋ Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
@@ -152,13 +152,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN un implementador que solo añadió en un test RED la línea en blanco que exigía el linter, sin tocar aserciones, nombres ni datos, y lo declara en su informe
 - WHEN el revisor de task revisa el diff
 - THEN no lo reporta como Critical ni como Important
-
-### El revisor final revisa el paquete sin ejecutar la suite
-
-- GIVEN el despacho del revisor final con el paquete de review de la rama
-- WHEN revisa
-- THEN lee el paquete y no ejecuta la suite, el build ni el lint del proyecto
-- AND si cree que hace falta una verificación pesada, la recomienda en su informe
 
 ### La spec se repasa antes del gate
 
@@ -261,28 +254,11 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN escribe los tests de sus THEN antes del código y guarda una copia fuera del repo
 - AND antes del commit de la task compara la copia con el test con `git diff --no-index`, y un cambio que no sea de formato es un ruling del ledger
 
-### El revisor final de Native va con el techo del kit
-
-- GIVEN un plan con `Ejecución: native` con todas sus tasks completas en el ledger
-- WHEN el hilo despacha el revisor final de rama
-- THEN el despacho lleva `subagent_type: sdd-kit:effort-high` y `model: opus`
-- AND el encargo lleva la cabecera de `encargo-revision.md` y su sección «Cómo revisar»
-
 ### Sin el tipo de effort, se dice antes del primer despacho
 
 - GIVEN una sesión cuyos tipos de agente no incluyen el `sdd-kit:effort-<nivel>` que toca
 - WHEN el hilo va a hacer el primer despacho de la feature (implementador en SDD, revisor final en Native)
 - THEN antes de despachar dice que el tipo falta, despacha con el `model` y la frase de respaldo «effort: no disponible en este harness, hereda el de la sesión», y lo registra como ruling
-
-### El cierre no repite la revisión final de Native
-
-- GIVEN una feature cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama `sobre a1b2c3d`, y después de ese commit solo hay commits de los que se revisan en el hilo
-- WHEN se entra en `sdd-end-feature`
-- THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
-- AND si después de `a1b2c3d` hay un commit del hilo `e4f5a6b` que cambia `src/slots.js`, antes de escribir el walkthrough despacha la re-revisión del tramo `a1b2c3d..HEAD` con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
-- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
-- AND la pasada de fix exime solo sus propios commits: si entre el `sobre a1b2c3d` y el primer commit de la pasada hay un commit del hilo `b2c3d4e` que cambia `src/slots.js`, hecho mientras el revisor trabajaba, el último revisado es `a1b2c3d` y la re-revisión cubre `a1b2c3d..HEAD`
-- AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
 
 ### Los minors diferidos llegan al walkthrough
 
@@ -325,7 +301,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN un plan cuyo método es Native
 - WHEN el agente escribe su línea `Ejecución`
-- THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.»
+- THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.»
 
 ### La carpeta de una feature nueva lleva `-feature-`
 
@@ -385,17 +361,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
 - AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
 
-### Un commit del hilo posterior a la revisión final se revisa antes de la validación
-
-- GIVEN `tasks.md` con `Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d` y, después, un commit del hilo `e4f5a6b` que cambia 3 líneas de `hooks/hooks.json`
-- WHEN el hilo va a presentar la validación del paso 7
-- THEN antes despacha un revisor con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) sobre el tramo `a1b2c3d..HEAD`, y no presenta la validación hasta que vuelve sin Critical ni Important abiertos
-- AND apunta en `tasks.md` `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
-- AND si el commit llega con la validación ya presentada (un fix que sale de una pregunta del dev-lead), la re-revisión va antes de invocar `sdd-end-feature`, y el mensaje dice qué cambió y su veredicto
-- AND si el tramo solo tiene commits de solo docs de menos de 20 líneas (`.docs/sdd/roadmap.md`, 2 líneas), no despacha revisor: lo anota como `revisado en el hilo`
-- AND la pasada de fix de la propia revisión final no abre la re-revisión. Ejemplo: la revisión final vuelve con `Needs fixes (0 Critical, 1 Important, 0 Minor)` sobre `a1b2c3d` y la pasada queda en `c7d8e9f`, con su test RED→GREEN. El hilo apunta `Pasada de fix: c7d8e9f, 1 hallazgo RED→GREEN`, no despacha revisor y lo dice al presentar
-- AND un commit del hilo posterior a la pasada, en `src/`, sí abre la re-revisión, sobre el tramo `c7d8e9f..HEAD`
-
 ### Un hallazgo de ejecución se reproduce antes de arreglarse
 
 - GIVEN un revisor que marca como Important «`GetFullPath` lanza con una ruta inválida y el script no sale con 0»: un hallazgo Critical o Important que afirma algo de ejecución (una excepción, un código de salida, un valor en un entorno o una plataforma concretos)
@@ -404,28 +369,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND en Native el hilo hace lo mismo, y si no sale RED en un intento no arregla: decide con esa evidencia
 - AND no reproducirlo no descarta el hallazgo: el hilo decide arreglar sin RED, rechazarlo o diferirlo, y lo registra como ruling con la salida del intento
 - AND un hallazgo que se ve leyendo el diff (un nombre, la estructura, una duplicación) no lleva este paso
-
-### El paquete del revisor final sale del merge-base actual y sin evidencia
-
-- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/specs/<carpeta>/red/out.jsonl` en su rama
-- WHEN el hilo prepara el paquete del revisor final
-- THEN la sección de diff del paquete no contiene `skills/otra/SKILL.md` ni ningún fichero bajo `red/` o `green/`
-- AND la sección de commits lista solo los de la feature y el merge
-- AND el paquete se genera a la primera, con `spec.md` como plan
-
-### El paquete del revisor final deja fuera los borrados y la carpeta de la feature
-
-- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/specs/`
-- WHEN el hilo prepara el paquete del revisor final
-- THEN el paquete no contiene el cuerpo de los ficheros borrados ni ningún fichero de la carpeta de la feature
-- AND lista los borrados por nombre en su sección «Ficheros borrados»
-- AND el revisor lo lee en tramos de 400 líneas con `offset` y `limit`, y ningún `Read` devuelve `exceeds maximum allowed tokens (25000)`
-
-### El plan escribe al revisor final con el techo del kit
-
-- GIVEN una spec aprobada en `delegate` y un plan Native de una sola task pequeña
-- WHEN el agente escribe `plan.md`
-- THEN el revisor final aparece como `sdd-kit:effort-high` + `opus`, o no aparece
 
 ### Todo subagente y toda verificación lenta llevan su vigía de silencio
 
@@ -506,29 +449,11 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND al aprobar la spec, `tech-stack.md` gana esa `§Frontend`, sin parada nueva
 - AND si el dev-lead no quiere detector, queda `Detector: ninguno`, la verificación sigue con capturas y rúbrica y el aviso «composición no medida», y la propuesta no se repite en las features siguientes
 
-### El revisor final sale en segundo plano con el commit de la última task
-
-- GIVEN una feature Native con una task que cambia la UI, cuyo commit `a1b2c3d` acaba de hacerse, y su «Verificación visual» pendiente
-- WHEN el hilo cierra esa task
-- THEN el siguiente despacho es el revisor final en segundo plano sobre `a1b2c3d`, antes de arrancar la aplicación para la verificación visual
-- AND mientras el revisor trabaja, el hilo hace la verificación visual y escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
-- AND la validación se presenta cuando vuelve el revisor sin Critical ni Important abiertos (tras su pasada de fix, si la hay), no antes
-- AND en SDD el disparador es el commit juntado de la última task, tras su revisión limpia
-
-### El revisor final trabaja aislado en el sha que revisa
-
-- GIVEN el revisor final despachado sobre `a1b2c3d` y el hilo que commitea después `e4f5a6b` (un fix de la verificación visual)
-- WHEN el revisor lee el código y el historial
-- THEN trabaja en un worktree desanclado `review-0096-a1b2c3d` creado con `git worktree add --detach` en `a1b2c3d`, con el paquete construido allí, y su encargo le dice que no mire ramas ni commits posteriores
-- AND su informe no cita `e4f5a6b`
-- AND lo mismo vale para la re-revisión de un tramo: su worktree se ancla en el último sha del tramo
-- AND el hilo retira el worktree con `git worktree remove` al volver el revisor
-
 ### Lo cambiado tras la validación se separa de lo validado
 
 - GIVEN una feature validada con «probé borrar un fichero y funciona» y, después, a petición del dev-lead, un commit `c7d8e9f` que cambia el texto del error «No se pudo borrar» por «El fichero ya no existe»
 - WHEN se cierra
-- THEN el commit pasa por la re-revisión del tramo antes del walkthrough
+- THEN si la re-revisión de la revisión final aún no salió, el commit entra en ella antes del walkthrough; si ya salió, no se despacha otra y el walkthrough lleva en ✋ `sin revisar: c7d8e9f — el texto del error de borrar`, como dice «Una re-revisión nunca abre otra» de [`verification`](verification.md)
 - AND la verificación del walkthrough y el mensaje final dicen que el dev-lead probó la versión anterior y qué verificó el agente del cambio (`c7d8e9f`), separado de la línea de validación
 - AND el hilo no para a pedir otra validación
 
@@ -690,6 +615,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND cada despacho lleva `model` y `subagent_type: sdd-kit:effort-medium`, como dice «El revisor de spec se despacha con su effort»
 - AND nunca hay a la vez más agentes que `control.maxParallelAgents` (3 si falta); con más, se despachan por tandas
 - AND dos tasks independientes del plan no se despachan con `sdd-parallel-agents`: las ejecuta `sdd-implement` una detrás de otra
+
+### El revisor de la spec comprueba que cada decisión del dev-lead tiene una regla que la cubre entera
+
+- GIVEN una spec con «artifacts cubre el visual companion entero» en «Decisiones tomadas con el dev-lead», y un delta cuyo único requisito sobre el companion habla de pantallas
+- WHEN la revisa el revisor de la spec (la lente de dominio, o el revisor único)
+- THEN devuelve, como Importante o Crítico, «Delta · la decisión del dev-lead sobre el visual companion queda cubierta solo para pantallas · ampliar el requisito a flujos y diagramas»
 
 ## Reglas de la capacidad
 

@@ -149,10 +149,8 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 
 ### Act on feedback
 
-- Re-grade each finding by its effect before acting on it: the reviewer's label is advice.
-- Critical and Important go to ONE fix pass; Minor goes to the ledger as deferred.
+- Re-grade each finding by its effect, then act as [Closing the review](#closing-the-review) says: ONE fix pass for Critical and Important, Minor to the ledger.
 - Push back if the reviewer is wrong (with reasoning): a finding you don't fix is a `Final: Ruling:` with why the code stands.
-- What the single re-review leaves open follows [Closing the review](#closing-the-review).
 
 ### Common Rationalizations
 
@@ -178,11 +176,11 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 
 **Dispatch it in the background as soon as the last task's commit exists** —in Native, the last task's; in SDD, the squashed one after its clean review—, before starting the app for its «Verificación visual»: while it reviews, you do that check and write the closing drafts of step 7. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`. (`tests/closing-off-critical-path-red.md`, c1)
 
-**The axes.** The review goes out in axes, each with its own brief, model and effort, in parallel: load `sdd-parallel-agents` with `Skill` and dispatch them in the same message, never more at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (with 2 and three axes, two go out and the third when one returns). Each axis brief carries, inside its block, the header, «Cómo revisar» and the worktree sentence of [encargo-revision.md](references/encargo-revision.md): fill every `<…>`, and use its package recipe —not `sdd review package`—. What each axis gets:
+**The axes.** The review goes out in axes, each with its own brief, model and effort, in parallel: load `sdd-parallel-agents` with `Skill` and dispatch them in the same message, never more at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (with 2 and three axes, two go out and the third when one returns). Each axis brief carries, inside its block, the header, «Cómo revisar» and the worktree sentence of [encargo-revision.md](references/encargo-revision.md): fill every `<…>`, and use its package recipe —not `sdd review package`—. Every `sdd <verb>` here and in `references/` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`. What each axis gets:
 
 | Axis | Brief | Model | Gets, besides the package |
 | --- | --- | --- | --- |
-| Spec | [spec-reviewer-prompt.md](references/spec-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | the paths of `spec.md` and `plan.md`; the plan's `## Review Focus`, verbatim, if it has one; the `accepted` ADRs that `sdd decision index --files <the diff's files>` lists; the output of `sdd capability index`; and a pointer to the ledger's `Ruling:`, `minor (deferred)` and `parked` lines |
+| Spec | [spec-reviewer-prompt.md](references/spec-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | the paths of `spec.md` and `plan.md`; the plan's `## Review Focus`, verbatim, if it has one; the `accepted` ADRs that `sdd decision index --path .docs/sdd --files <the diff's files>` lists; the output of `sdd capability index --path .docs/sdd`; and a pointer to the ledger's `Ruling:`, `minor (deferred)` and `parked` lines |
 | Code | [code-reviewer-prompt.md](references/code-reviewer-prompt.md) | `sdd-kit:effort-high` + `sonnet` | nothing else: neither the spec nor the ADRs |
 | Architecture | [architecture-reviewer-prompt.md](references/architecture-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | the path of `architecture.md` and the plan's `Eje Arquitectura` line, or your ruling that raised it; it goes out only with `sí` |
 
@@ -226,6 +224,7 @@ Minor · possible Feature Envy in cancelledList (src/app.js:36)
 **Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ships, not whether the spec names the input that triggers it — a reviewer who set a finding at Minor because the spec was silent has graded the spec, not the effect. Then:
 
 - **Critical and Important** enter the fix pass.
+- A **«no verificado»**: verify it yourself before the validation, or adjudicate it with `Final: Ruling:`.
 - **Minor** goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors». Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
 
 **Native:** fix the Critical and Important findings of every axis yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified; a suite that is not green after the pass means the pass is not over. A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
@@ -241,7 +240,7 @@ In both, the reproduce-before-fixing rule of the fix loop applies.
 - An Important or a Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the validation's presentation and in the walkthrough. No second fix pass, no second re-review.
 - **A Critical is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
 
-**A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread if it is documentation under 20 lines (`revisado en el hilo: <sha> · <files> · <n> líneas`); any other goes to ✋ as `sin revisar: <sha> — <what it changes>`, in any profile and with any `validation.mode`. If no re-review went out yet (a clean review, no fixes), that commit opens it, and it is the only one. While a `sin revisar` or a «no verificado» is unresolved, neither the `Validación en campo:` line nor the walkthrough says the review was clean: they say how many are left («…, 1 sin revisar»).
+**A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread if `sdd-implement`'s «Every commit of yours» allows it (`revisado en el hilo: <sha> · <files> · <n> líneas`); any other goes to ✋ as `sin revisar: <sha> — <what it changes>`, in any profile and with any `validation.mode`. If no re-review went out yet (a clean review, no fixes), that commit opens it, and it is the only one. While a `sin revisar` or a «no verificado» is unresolved, neither the `Validación en campo:` line nor the walkthrough says the review was clean: they say how many are left («…, 1 sin revisar»).
 
 | Excuse | Reality |
 | --- | --- |
