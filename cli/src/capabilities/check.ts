@@ -151,7 +151,7 @@ function resolveFile(path: string): Resolved {
   const name = basename(path);
   const slug = name.replace(/\.[^.]*$/, '');
   const lines = readLines(path);
-  if (isPointer(slug, lines)) return resolvePointer(path, name, slug, lines);
+  if (isPointer(slug, lines) && !isNotCapability(lines)) return resolvePointer(path, name, slug, lines);
   const problems = fileProblems(name, lines).map((problem) => `${name}: ${problem}`);
   return { name, lines, problems, skipped: isNotCapability(lines) };
 }

@@ -416,6 +416,16 @@ describe('sdd capability check follows a pointer', () => {
     expect(result.lines).toEqual(['bookings.md: un puntero no lleva escenarios: van en su destino']);
   });
 
+  it('a pointer marked «No es una capacidad.» is skipped, not followed', async () => {
+    const marked = `# Capacidad — bookings (puntero)
+
+> **No es una capacidad.** Su verdad está en [app/bookings.md](${link})
+`;
+    const result = await check({ 'capabilities/bookings.md': marked });
+    expect(result.lines).toEqual(['Capacidades válidas: 0 · omitidas por «No es una capacidad.»: bookings.md']);
+    expect(result.code).toBe(0);
+  });
+
   it('a pointer link is resolved from the pointer folder', async () => {
     const result = await check({ 'capabilities/bookings.md': pointer(`./${link}`), [destination]: bookings });
     expect(result.lines).toEqual(['Capacidades válidas: 1']);
