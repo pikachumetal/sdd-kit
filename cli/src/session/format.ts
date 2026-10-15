@@ -1,5 +1,6 @@
 import type { Json } from '../cli/records.ts';
 import { costOfModel, type SessionCost } from './cost.ts';
+import type { Clock } from './clock.ts';
 import type { Dispatch, Session } from './session.ts';
 import { CATEGORIES, mergeTotals, modelsByTokens, tokenSum, totalTokens, type ModelTotals } from './usage.ts';
 
@@ -53,6 +54,16 @@ export function costLine(cost: SessionCost): string {
   return `- Coste de la sesión: ${formatMoney(cost.thread + cost.subagents)} $ (${parts})`;
 }
 
+const formatHours = (hours: number): string => hours.toFixed(2).replace('.', ',');
+
+export function realLine(clock: Clock | null): string {
+  if (clock === null) return '- Esfuerzo real: no medido (sin respuestas del hilo en los transcripts)';
+  const scope = clock.sessions === 1 ? 'reloj de la sesión' : `reloj de ${clock.sessions} sesiones`;
+  const noun = clock.waits === 1 ? 'espera' : 'esperas';
+  const waits = `sin ${clock.waitMinutes} min de espera al dev-lead (${clock.waits} ${noun})`;
+  return `- Esfuerzo real: ${formatHours(clock.hours)} h — ${scope} ${formatHours(clock.clockHours)} h desde ${clock.start}, ${waits}`;
+}
+
 export function reportLines(session: Session, prices: Json | null, cost: SessionCost): string[] {
   const subagents = mergeTotals(session.dispatches.map((dispatch) => dispatch.totals));
   return [
@@ -63,9 +74,10 @@ export function reportLines(session: Session, prices: Json | null, cost: Session
     threadLine(session.thread),
     dispatchLine(session.dispatches),
     costLine(cost),
+    realLine(session.clock),
   ];
 }
 
 export function notMeasuredLines(reason: string): string[] {
-  return ['Tokens del hilo', 'Tokens de subagentes', 'Coste de la sesión'].map((label) => `- ${label}: no medido (${reason})`);
+  return ['Tokens del hilo', 'Tokens de subagentes', 'Coste de la sesión', 'Esfuerzo real'].map((label) => `- ${label}: no medido (${reason})`);
 }

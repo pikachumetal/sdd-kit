@@ -18,7 +18,7 @@ Describe 'El cierre mide la sesión' {
 
   It 'la plantilla del walkthrough lleva el coste de la sesión y dice de dónde salen las cifras' {
     $section = [regex]::Match((Get-KitFile 'skills/sdd-templates/templates/walkthrough-template.md'), '(?s)## 2\. .*?(?=\n## 3\. )').Value
-    Assert-Literal $section @('- Coste de la sesión:', 'sdd session tokens', 'sin precio', 'no medido')
+    Assert-Literal $section @('- Coste de la sesión:', 'sdd session tokens', 'sin precio', 'no medido', '- Esfuerzo real:', 'arranque de la sesión', 'espera al dev-lead')
     $section | Should -Not -Match 'no tiene contador expuesto'
   }
 }

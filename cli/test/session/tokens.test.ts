@@ -96,19 +96,25 @@ describe('session tokens sin --projects-root', () => {
 });
 
 describe('session tokens no medido', () => {
-  it('sin carpeta de transcripts las tres líneas dicen no medido y sale con 0', async () => {
+  it('sin carpeta de transcripts las cuatro líneas dicen no medido y sale con 0', async () => {
     const worktree = join(tempDir(), 'sin-transcripts');
     const io = memoryIo();
     const code = await run(['session', 'tokens', '--path', worktree, '--projects-root', join(tempDir(), 'vacio')], io);
     const reason = `no medido (sin transcripts de Claude Code para ${worktree})`;
     expect(code).toBe(0);
-    expect(io.stdout).toEqual([`- Tokens del hilo: ${reason}`, `- Tokens de subagentes: ${reason}`, `- Coste de la sesión: ${reason}`]);
+    expect(io.stdout).toEqual([
+      `- Tokens del hilo: ${reason}`,
+      `- Tokens de subagentes: ${reason}`,
+      `- Coste de la sesión: ${reason}`,
+      `- Esfuerzo real: ${reason}`,
+    ]);
   });
 
   it('con carpeta pero sin respuestas de la rama dice no medido con la rama', async () => {
     const { output } = await measure(newWorktree(['base'], null), ['--branch', 'feature/otra']);
     expect(line(output, 'Tokens del hilo')).toBe('- Tokens del hilo: no medido (sin respuestas de feature/otra en los transcripts)');
     expect(line(output, 'Coste de la sesión')).toBe('- Coste de la sesión: no medido (sin respuestas de feature/otra en los transcripts)');
+    expect(line(output, 'Esfuerzo real')).toBe('- Esfuerzo real: no medido (sin respuestas de feature/otra en los transcripts)');
   });
 });
 
@@ -160,7 +166,7 @@ describe('session tokens entradas que la spec no nombra', () => {
 });
 
 describe('session tokens --json', () => {
-  it('emite un objeto con los campos de las tres líneas', async () => {
+  it('emite un objeto con los campos de las cuatro líneas', async () => {
     const io = memoryIo();
     const worktree = newWorktree(['base'], bothPrices);
     await run(['session', 'tokens', '--path', worktree.path, '--projects-root', worktree.projects, '--json'], io);
@@ -172,6 +178,7 @@ describe('session tokens --json', () => {
         dispatches: [{ description: 'Revisión final de rama', model: 'claude-opus-5-5', tokens: 510010, minutes: 12, inProgress: false }],
       },
       cost: { measured: true, usd: expect.closeTo(1.25, 3), threadUsd: expect.closeTo(0.95, 3), subagentsUsd: expect.closeTo(0.3, 3), missingModels: [] },
+      real: expect.objectContaining({ measured: true }),
     });
   });
 });
