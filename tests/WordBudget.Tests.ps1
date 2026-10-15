@@ -39,7 +39,7 @@ BeforeAll {
       'constitution.md' = 2236
       'mission.md'      = 1700
       'architecture.md' = 1900
-      'tech-stack.md'   = 18700
+      'tech-stack.md'   = 18800
     }
   }
 

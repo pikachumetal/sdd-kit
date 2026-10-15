@@ -25,6 +25,10 @@ Solo plugin de Claude Code (ADR 0011):
 
 **Dependencias**: declaradas en el [README](../../README.md#dependencias), que es la fuente única — Node ≥ 22.18.0 y `superpowers` (obligatorias; superpowers se resuelve por `plugin.json` contra el marketplace `superpowers-marketplace` de obra, que hay que añadir antes; `claude-plugins-official` la fija a un commit y llega tarde a las versiones nuevas, patch 0082). Aquí no se repite la lista: dos copias divergen, y de hecho lo hicieron (aprendizaje de la task dependencias-declaradas, 2026-09-02).
 
+## Testing
+
+- **Gate de cierre**: `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`, una vez y al cerrar (patch 0183).
+
 ## Cómo se testean las skills
 
 Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las skills, **sujetos** (Sonnet) sobre fixtures que se construyen en el scratchpad de sesión, sin framework: la evidencia es narrativa verificada en disco (`tests/*.md`), RED (baseline sin la guidance) → GREEN (con ella), o A/B de no-regresión para los recortes.

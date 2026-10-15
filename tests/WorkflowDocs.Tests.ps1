@@ -24,11 +24,24 @@ BeforeAll {
     return [version]$match.Groups[1].Value -ge $PluginVersion
   }
 
+  # El slug de GitHub: minúsculas, sin puntuación (las letras con tilde se quedan), espacios a guiones.
+  # shortcut: no numera los títulos repetidos (-1, -2) como GitHub; ningún enlace apunta hoy a uno.
+  function Get-HeadingSlug([string]$Path) {
+    $outsideCode = (Get-Content -LiteralPath $Path -Raw) -replace '(?ms)^```.*?^```', ''
+    [regex]::Matches($outsideCode, '(?m)^#{1,6} +(.+?) *$') | ForEach-Object {
+      ($_.Groups[1].Value.ToLowerInvariant() -replace '[^\p{L}\p{N} _-]', '') -replace ' ', '-'
+    }
+  }
+
   function Get-BrokenRelativeLink([string]$Content, [string]$BaseDirectory) {
     $targets = [regex]::Matches($Content, '\]\(([^)\s]+)\)') | ForEach-Object { $_.Groups[1].Value }
-    $relative = $targets | Where-Object { $_ -notmatch ':' -and -not $_.StartsWith('#') }
-    $paths = $relative | ForEach-Object { ($_ -split '#')[0] } | Select-Object -Unique
-    return @($paths | Where-Object { -not (Test-Path -LiteralPath (Join-Path $BaseDirectory $_)) })
+    $relative = $targets | Where-Object { $_ -notmatch ':' -and -not $_.StartsWith('#') } | Select-Object -Unique
+    return @($relative | Where-Object {
+        $path, $anchor = $_ -split '#', 2
+        $full = Join-Path $BaseDirectory $path
+        if (-not (Test-Path -LiteralPath $full)) { return $true }
+        [bool]$anchor -and (Get-HeadingSlug $full) -notcontains $anchor
+      })
   }
 }
 
@@ -69,9 +82,14 @@ Describe 'Marcador de revisión' {
 }
 
 Describe 'Enlaces relativos' {
-  It 'detecta un enlace relativo roto y descarta URLs y anclas' {
-    $content = '[x](brownfeld.md) [y](greenfield.md) [z](https://a.b/c.md) [w](#ancla) [v](brownfield.md#1-fase)'
+  It 'detecta un enlace relativo roto y descarta URLs y anclas del propio documento' {
+    $content = '[x](brownfeld.md) [y](greenfield.md) [z](https://a.b/c.md) [w](#ancla) [v](brownfield.md#1-fase-1-onboarding-del-codebase)'
     Get-BrokenRelativeLink $content $script:WorkflowRoot | Should -Be @('brownfeld.md')
+  }
+
+  It 'detecta un ancla que no es ningún título del fichero destino' {
+    $content = '[v](brownfield.md#1-fase) [u](usage-guide.md#validar-de-verdad)'
+    Get-BrokenRelativeLink $content $script:WorkflowRoot | Should -Be @('brownfield.md#1-fase')
   }
 }
 
