@@ -24,6 +24,11 @@ Describe 'Plantillas del cierre' {
     Assert-Literal $section @('(post hoc)', '- Esfuerzo real:', 'sdd session tokens', '- Coste de sujetos:')
   }
 
+  It 'el cierre de una feature pega las cuatro líneas, el esfuerzo real incluido' {
+    $step = Get-Section (Get-KitFile 'skills/sdd-end-feature/SKILL.md') '(?s)2\. \*\*Tiempo real\*\*.*?(?=\n3\. )'
+    Assert-Literal $step @('cuatro líneas', '`Esfuerzo real`', 'arranque de la sesión', 'closing-estimation-red.md')
+  }
+
   It 'el método dice desde dónde cuenta el real, que las esperas van aparte y qué es post hoc' {
     Assert-Literal (Get-KitFile 'skills/sdd-templates/templates/estimation-template.md') @('arranque de la sesión', 'espera', 'post hoc')
   }

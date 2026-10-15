@@ -34,7 +34,7 @@ Review de spec propuesta: ninguna — señales: contrato público (la salida de 
 4. **Qué sesiones cuentan**: cada transcript del hilo de la carpeta del worktree que tenga al menos una respuesta en la rama (`--branch`), entero, también lo anterior a crear la rama: así entra la investigación previa. El reloj es la suma, por transcript, de su primera a su última entrada; el inicio que se imprime es el más antiguo. Sin `--branch`, todos los transcripts de la carpeta.
 5. **Sin transcripts**, la línea dice `- Esfuerzo real: no medido (<motivo>)`, como las otras tres; la plantilla dice entonces que se aproxime con las marcas de los commits y se diga, como hoy.
 6. **`--json`** gana una clave `real`: `{ measured, hours, clockHours, start, waitMinutes, waits }`, o `{ measured: false, reason }`.
-7. **Cómo se marca el `post hoc`**: `- Estimación: 0,5h (post hoc)`. Lo escribe `sdd-end-patch` en su paso 1 cuando la línea `- Estimación:` no está en el `patch.md` del commit del fix (`git show <fix>:<ruta>`), es decir, cuando llega en el de cierre. Descartado que la CLI lo deduzca del historial de git: una llamada a git por patch en cada regeneración del log, y marcaría de golpe todos los patches anteriores a la 0160.
+7. **Cómo se marca el `post hoc`**: `- Estimación: 0,5h (post hoc)`. La forma la da §5 de `patch-template.md` para quien escribe la estimación en el commit de cierre; `sdd-end-patch` no gana regla: su RED salió limpio, 0/2 escribieron una cifra al cerrar (enmienda del 2026-10-15). Descartado que la CLI lo deduzca del historial de git: una llamada a git por patch en cada regeneración del log, y marcaría de golpe todos los patches anteriores a la 0160.
 8. **En el log**, una fila `post hoc` enseña su estimado y lleva `post hoc` en la columna Ratio: sale del factor, la dispersión, la tendencia, la tabla por tipo y la mediana de la release, pero sus horas reales siguen sumando en «Horas reales» de la release, porque el real sí es bueno.
 9. **`- Coste de sujetos:`** en §5 de `patch-template.md` con la forma del walkthrough (`<X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica`). El log ya lee esa etiqueta en §5; solo faltaba el hueco (Art. II, elemento omitido).
 10. **`## Rulings`** en `tasks-template.md`, tras «Fixes adicionales», con su ayuda: lo pega `sdd-implement` al cerrar con la salida de `sdd ledger rulings <plan>`, y `_Ninguno_` si no hubo.
@@ -42,7 +42,7 @@ Review de spec propuesta: ninguna — señales: contrato público (la salida de 
 12. **La migración de los proyectos** (su `estimation.md`, calcado de la plantilla vieja) no la escribe esta feature: la migración v3.0.0 es de la 0157. Al cerrar, la fila 0157 recibe un «Incluye también» con el cambio del punto 2 y 3 del método.
 13. **`sdd-end-feature`, paso 2**: «pega sus tres líneas» pasa a «sus cuatro líneas»; la frase «lo anterior a crear la rama no cuenta» queda solo para los tokens, y lo dice.
 14. **Previsión de coste de las pruebas (Art. I)**: 6 sujetos Sonnet, ~9 $ y ~40 min de reloj, techo 12 $ con la reserva del 20 %. Pasos que cambian y su escenario:
-    - `sdd-end-patch` paso 1 (`post hoc` y la línea de la CLI): `p1`, cerrar un patch cuyo commit del fix no trae `- Estimación:`; RED n = 2, GREEN n = 2.
+    - `sdd-end-patch` paso 1 (la línea de la CLI): `p1`, cerrar un patch cuyo commit del fix no trae `- Estimación:`; RED n = 2 (`post hoc` limpio 0/2, real inventado 2/2), GREEN n = 2 solo del real, primero con la plantilla sola; la skill se edita solo si ese GREEN falla.
     - `sdd-end-feature` paso 2 (cuatro líneas): `f1`, el paso de tiempo real de un cierre; RED n = 1, GREEN n = 1 (humo: skill de la 2.3.x sin batería de ese paso).
     - `patch-template.md` §5, `walkthrough-template.md` §2 y `estimation-template.md`: las leen los sujetos de `p1` y `f1`; sin escenario propio.
     - `tasks-template.md` `## Rulings`: estructural, sin sujetos. RED leído: `skills/sdd-implement/SKILL.md:314` pide pegar bajo `## Rulings` y la plantilla no la tiene. GREEN: un test de frase.
@@ -67,7 +67,7 @@ El log de estimación es la base para comprometer fechas (p80), y hoy lo contami
   - CLI `estimation`: fila `post hoc` fuera de la calibración (`cli/src/estimation/`).
   - CLI `session`: línea `Esfuerzo real` y clave `real` del JSON (`cli/src/session/`).
   - Plantillas: `patch-template.md` §5, `walkthrough-template.md` §2, `tasks-template.md` (`## Rulings`), `estimation-template.md`.
-  - Skills: `sdd-end-patch` paso 1, `sdd-end-feature` paso 2, con RED/GREEN.
+  - Skills: `sdd-end-feature` paso 2, con RED/GREEN; `sdd-end-patch` paso 1, solo si el GREEN de `p1` con la plantilla sola falla.
   - Tests que fijan hoy las tres líneas: `cli/test/session/tokens.test.ts` (líneas 99 y 163) y `tests/SessionTokensClose.Tests.ps1` (repaso de coherencia: son, con `cli/src/session/format.ts` y `measure.ts`, los sitios que aplican los dos `MODIFIED`).
   - Docs: `.docs/sdd/estimation.md`, `capabilities/estimation.md` (fusión del delta), roadmap (filas de deuda saldadas, 0130, 0188 y el «Incluye también» de la 0157), changelog.
 - No entra:
@@ -85,7 +85,7 @@ Lo decidido por el dev-lead, tal cual: `post hoc` y su exclusión, y el «Real»
 - Fila `post hoc` en el log: Vitest en `cli/test/estimation/`, como `patch-estimate.test.ts`.
 - Coste de sujetos de un patch en el log: Vitest en `cli/test/estimation/`, mismo patrón.
 - Línea `Esfuerzo real` y esperas: Vitest en `cli/test/session/`, con transcripts de fixture como los de `tokens.test.ts`, y una ejecución real de `sdd session tokens` sobre el worktree de esta feature.
-- `post hoc` en el cierre de un patch y la línea pegada: sujetos `p1` (`tests/closing-estimation-red.md` y `-green.md`).
+- La línea pegada en el cierre de un patch: sujetos `p1` (`tests/closing-estimation-red.md` y `-green.md`).
 - Cuatro líneas en el cierre de una feature: sujeto `f1`, en los mismos ficheros.
 - `## Rulings` y frases de plantilla: test Pester de frases, como `tests/SessionTokensClose.Tests.ps1`.
 
@@ -109,10 +109,9 @@ Lo decidido por el dev-lead, tal cual: `post hoc` y su exclusión, y el «Real»
 - AND `sdd estimation log` lee esa línea como real 0,82 en un walkthrough y en §5 de un `patch.md`
 
 **ADDED — Una estimación de patch escrita al cerrar queda `post hoc` y no calibra**
-- GIVEN un proyecto con `estimation.md` y un patch cuyo commit del fix trae un `patch.md` sin `- Estimación:`
-- WHEN `sdd-end-patch` escribe la estimación en el cierre
-- THEN la línea es `- Estimación: 0,5h (post hoc)`
-- AND `sdd estimation log` da su fila con estimado 0.5, real 0.75 y `post hoc` en la columna Ratio
+- GIVEN un proyecto con `estimation.md` y un `patch.md` cuya estimación llegó en el commit de cierre: `- Estimación: 0,5h (post hoc)` y `- Real: 0,75h`, como da la forma §5 de `patch-template.md`
+- WHEN se ejecuta `sdd estimation log`
+- THEN da su fila con estimado 0.5, real 0.75 y `post hoc` en la columna Ratio
 - AND esa fila no entra en el factor global, la dispersión, la tendencia, la tabla por tipo ni la mediana de su release
 - AND sus horas reales sí suman en «Horas reales» de su release
 
@@ -133,13 +132,15 @@ Lo decidido por el dev-lead, tal cual: `post hoc` y su exclusión, y el «Real»
 
 - GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-end-feature` o al paso 1 de `sdd-end-patch`, en un proyecto con `.docs/sdd/estimation.md`
 - WHEN se rellena la sección 2 del walkthrough o la §5 de `patch.md`
-- THEN `Esfuerzo real`, `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit
+- THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit
 - AND en otro harness, las cuatro dicen «no medido», con el motivo, y el esfuerzo real se aproxima con las marcas de los commits y se dice
 
 **Reglas de la capacidad**
 - **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; el log, generado, en la carpeta de `estimation.md`.
 
 ## Enmiendas
+
+- 2026-10-15 — `sdd-end-patch` no gana la regla de `post hoc`: el requisito «Una estimación de patch escrita al cerrar…» parte del `patch.md` marcado, con la forma de la plantilla, y su WHEN es el log; `sdd-end-patch` solo se edita si el GREEN del real falla con la plantilla sola; el último `MODIFIED` dice qué líneas van en cada artefacto (§5 del patch no lleva tokens) — RED de `p1`: 0/2 escribieron una cifra de estimación al cerrar (`tests/closing-estimation-red.md`); Art. I, un baseline limpio no se escribe — aprobada: «Apruebo (Recomendada)» — Task 3
 
 - 2026-10-15 — una respuesta a `AskUserQuestion` también es una espera (decisión 3 y su AND en «La sesión mide el esfuerzo real…») — la respuesta en un gate llega como `tool_result`, no como mensaje: medido en el transcript de esta sesión (aprobación de la spec, 10:58:53) — aprobada: «Sí, contarlas (Recomendada)» — antes de la Task 1
 
