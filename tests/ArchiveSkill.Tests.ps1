@@ -113,3 +113,48 @@ Describe 'sdd-archive: rama de hotfix' {
     $script:Skill | Should -Match 'skills/sdd-init-brownfield/references/migrations/'
   }
 }
+
+Describe 'sdd-archive: receta del merge' {
+  BeforeAll { $script:Recipe = Get-KitFile 'skills/sdd-archive/references/merge-recipe.md' }
+
+  It 'la receta explica la salida <_>' -ForEach @('destino sacado:', 'base: conflicto en', 'merge: conflicto en', 'vuelta: conflicto en', 'base: en rojo', 'base: en verde', 'sigue moviéndose', 'verificación: omitida', 'push: no hecho: sin remoto') {
+    $script:Recipe | Should -Match ([regex]::Escape($_))
+  }
+
+  It 'la receta usa --verified-at' {
+    $script:Recipe | Should -Match '--verified-at <sha'
+  }
+
+  It 'el merge de sincronización va tras el commit de cierre' {
+    $script:Recipe | Should -Match 'After the closing commit, `git fetch`'
+  }
+
+  It 'la suite se repite solo si la base trae algo fuera de docs' {
+    $script:Recipe | Should -Match ([regex]::Escape("git diff --quiet <sha> HEAD -- . ':!.docs' ':!*.md'"))
+  }
+
+  It 'el rojo se contrasta en un worktree desanclado y se busca en la deuda' {
+    $script:Recipe | Should -Match 'git worktree add --detach'
+    $script:Recipe | Should -Match 'search the first error lines'
+  }
+
+  It 'el informe de rojo lleva el destino sin tocar' {
+    $script:Recipe | Should -Match ([regex]::Escape('«`develop` sin tocar en `<hash>`»'))
+  }
+
+  It 'ya no relanza el script tras un conflicto de registros' {
+    $script:Recipe | Should -Not -Match 'Relanza el script'
+  }
+
+  It 'tiene la sección <_>' -ForEach @('## Integrated base', '## A red suite', '## Its outputs', '## Push', '## Hotfix', '## Denied by the environment') {
+    $script:Recipe | Should -Match ('(?m)^' + [regex]::Escape($_) + '\s*$')
+  }
+}
+
+Describe 'sdd-worktrees: línea base en rojo' {
+  It 'contrasta la línea base con la rama de integración y busca en la deuda' {
+    $worktrees = Get-KitFile 'skills/sdd-worktrees/SKILL.md'
+    $worktrees | Should -Match 'detached worktree of the integration branch'
+    $worktrees | Should -Match "project's debt"
+  }
+}

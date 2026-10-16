@@ -20,10 +20,10 @@ MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipi
 short() { g rev-parse --short=7 "$1"; }
 
 # La 0010 implementada en Native y revisada: spec y plan aprobados, dos tasks, tasks.md con la revisión final limpia.
-approved_0010() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d' -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$IMPL/fixtures/spec-0010.md"; }
+approved_0010() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d' -e 's/^- Modificadas: `bookings`/- Nuevas: `bookings`/' -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$IMPL/fixtures/spec-0010.md"; }
 mold_reservas() {
   cp -r "$IMPL/mold-reservas/." "$R/"; put_kit_marker "$MARKER"
-  g init -q -b main; commit "feat: base del molde"; g checkout -q -b develop
+  g init -q -b main; g config core.longpaths true; commit "feat: base del molde"; g checkout -q -b develop
 }
 done_0010() {
   g checkout -q -b feature/0010-cancel-reason
@@ -65,8 +65,32 @@ done_0008() {
   commit "fix: cancelar una reserva que no existe avisa (0008)"
 }
 
+# Un E2E que falla igual con la rama y sin ella, y su fila en la deuda del proyecto.
+e2e_red_base() {
+  printf "import test from 'node:test';\n\ntest('exportar reservas a csv', () => {\n  throw new Error('TimeoutError: export no respondió en 5000 ms');\n});\n" | put test/export.e2e.test.js
+  sed -i 's/^| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |$/&\n| `test\/export.e2e.test.js` falla con «TimeoutError: export no respondió» también en `develop` | Medio | Patch cuando moleste |/' "$R/.docs/sdd/roadmap.md"
+  grep -q 'export.e2e' "$R/.docs/sdd/roadmap.md" || die "no se plantó la fila de deuda del E2E"
+  commit "test: e2e de exportación"
+}
+# develop avanza mientras la 0010 está abierta: código nuevo y una fila de roadmap en el mismo sitio que la que toca el cierre.
+develop_advances() {
+  g checkout -q develop
+  printf "export const rooms = ['Norte', 'Sur'];\n" | put src/rooms.js
+  sed -i 's/^| 0010 | \*\*Motivo al cancelar\*\*.*$/&\n| 0015 | **Salas en su módulo**: la lista de salas sale de `app.js` | ✅ |/' "$R/.docs/sdd/roadmap.md"
+  commit "feat(rooms): las salas en su módulo (0015)"
+  g checkout -q feature/0010-cancel-reason
+}
+# Otra feature abierta en su worktree, junto al del molde.
+other_worktree() { g worktree add -q -b feature/0011-others "$RUN/0011-others" develop; }
+
 case "$(cell Molde)" in
   reservas) mold_reservas; done_0010 ;;
+  reservas-base) mold_reservas; done_0010; develop_advances; other_worktree; printf 'apuntes de la 0010\n' > "$R/notes.md"
+    export TURN2='notes.md era un apunte mío: bórralo y sigue con el cierre.' ;;
+  reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
+  reservas-plan) mold_reservas; e2e_red_base; g checkout -q -b feature/0010-cancel-reason
+    approved_0010 | put "$F10/spec.md"; put "$F10/plan.md" < "$IMPL/fixtures/plan-0010.md"
+    commit "docs(sdd): abrir la feature 0010 con su spec y su plan" ;;
   salas-patch) done_0008 ;;
   salas-hotfix) done_0008 hotfix; export TURN2='Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.' ;;
   *) die "molde desconocido en battery.md: $SC" ;;

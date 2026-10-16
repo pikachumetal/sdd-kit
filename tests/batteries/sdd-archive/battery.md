@@ -9,6 +9,9 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-archive`); el método, en
 Moldes:
 
 - `reservas`: el de `tests/batteries/sdd-implement/mold-reservas` con la 0010 implementada en Native (dos tasks), `tasks.md` con la revisión final limpia y un ruling de workaround en `## Rulings`, `validation.mode: field`, perfil `delegate`, `merge` sin push y sin remoto.
+- `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva justo debajo de la 0010 en «Próximo»), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
+- `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Deuda técnica».
+- `reservas-plan`: `reservas-red` con la rama de la 0010 abierta solo con su spec y su plan.
 - `salas-patch`: el de `tests/batteries/using-sdd/mold-salas` con la fila 0008 «Patch:» en «Próximo», la rama `feature/0008-cancel-missing` con el fix commiteado y su `patch.md` (`patch-0008.md`), `validation.mode: field` y `merge` sin push. «Deuda técnica» lleva la fila «Cancelar una reserva que no existe responde «cancelada» igual» con «Actuar → 0008».
 - `salas-hotfix`: el mismo, con la rama `hotfix/0008-cancel-missing` salida de `main` y una carpeta `skills/sdd-init-brownfield/references/migrations/` con su `README.md`. El segundo turno (`TURN2`) contesta a la pregunta de la migración: «Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.»
 
@@ -21,6 +24,9 @@ Moldes:
 | a1 | trunk | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el tronco y la rama de feature, el workaround con su fila de deuda (ticket de la feature 0010b del template §3) y el 4.1 con su sha |
 | a2 | patch | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el patch 0008. | salas-patch | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | revisión final de la 0161 (Important 2): nadie cierra la fila «Patch:» de «Próximo»; feature 0149: un patch no hereda pasos de feature, y su fila de deuda la cierra el cierre |
 | a4 | hotfix | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el hotfix 0008: fusiona el hotfix 0008 en main, etiquétalo v0.3.1 y publícalo. | salas-hotfix | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el hotfix con `--into`, la frase del dev-lead y la pregunta de la migración (ticket del patch 0057 de un proyecto del equipo §5) |
+| a3 | base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | 0048 y fila de deuda «El kit no tiene modelo para tasks en paralelo» (P2.2, P2.3); ticket de la feature 0093 de document-manager §2 (la suite sobre la base integrada); fila «La suite completa corre tres veces…» |
+| a3r | red | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-red | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | filas de deuda «Un rojo del gate de cierre se contrasta con la base…», «Un rojo ajeno se investiga antes de mirar la deuda…» y «Sin forma de informe cuando la suite falla tras el merge…» |
+| w1 | baseline | Invoca la skill sdd-kit:sdd-worktrees y sigue: prepara el worktree para implementar la 0010, con su spec y su plan aprobados; no implementes nada todavía. | reservas-plan | `sdd-kit:sdd-worktrees` | 2 | 2/2 | sonnet | fila de deuda «Un rojo ajeno se investiga antes de mirar la deuda…» (la línea base de `sdd-worktrees`) |
 | r1 | route | hemos acabado, cierra la tarea | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de una feature entra por `sdd-archive` |
 | r2 | route | cierra el patch | salas-patch | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de un patch entra por `sdd-archive` |
 
@@ -41,6 +47,15 @@ Moldes:
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |
 | H3 Merge a la rama estable | a4 | no ejecuta `sdd merge` con `--into main`, `--tag v0.3.1` y `--order` con la frase literal del dev-lead, o va sin `--push` aunque la frase pide publicar |
 | H4 Resultado | a4 | `main` no tiene el merge del hotfix y la etiqueta `v0.3.1`, o `develop` no recibe la vuelta |
+| B1 Borrador | a3 | escribe o edita un registro antes de preguntar por `notes.md`, o lo borra o lo commitea sin la respuesta |
+| B2 Otra rama | a3 | no nombra `feature/0011-others` con su ruta antes de seguir |
+| B3 Merge de sincronización | a3 | `develop` no queda integrada en la rama después del commit de cierre (el merge de sincronización es el último commit de la rama), o el roadmap de `develop` no tiene las filas 0010 ✅ y 0015 sin duplicar ninguna |
+| B4 Suite sobre la base integrada | a3 | no corre la suite completa después del merge de sincronización, aunque la 0015 cambia `src/` |
+| B5 `--verified-at` | a3 | `sdd merge` va sin `--verified-at`, o con un sha que no es el de la suite sobre el merge de sincronización |
+| C1 Contraste con la base | a3r | no corre el mismo comando sin la rama (worktree desanclado de `develop`, o `develop`) antes de investigar el fallo |
+| C2 Deuda del proyecto | a3r, w1 | no cita la fila de deuda de `export.e2e.test.js`, o abre una fila nueva duplicada, o abre el test para investigarlo antes de buscar en la deuda |
+| C3 Informe y parada | a3r | fusiona sin preguntar, o el informe no lleva el comando, el código de salida, el veredicto de la base y el hash de `develop` sin tocar |
+| W1 Línea base | w1 | da la línea base en rojo sin contrastarla con la rama de integración, o sigue sin preguntar |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -57,4 +72,23 @@ Moldes:
 | Un patch no hereda pasos de feature | propuesta 0131, §archive | a2 (P3) |
 | El hotfix va a la rama estable con `--into`, `--tag` y la frase del dev-lead en `--order`; `--push` solo si la frase lo pide | feature 0187 (CLI) y spec de la 0149, decisión 13 | a4 (H3, H4) |
 | La migración lleva el paso que un hotfix pide al proyecto | ticket del patch 0057 de un proyecto del equipo §5; RED de la 0149, `a4`: no pregunta (0/1); GREEN con la pregunta en el paso del merge, 0/2; como comprobación previa con parada, 2/2 (`refactor/`) | a4 (H1, H2) |
+| La base se integra tras el commit de cierre y la suite se repite solo si trae código | 0048; fila de deuda de tasks en paralelo (P2.2, P2.3); ticket 0093 de document-manager §2; RED de la 0149, `a3`: sin suite tras el merge de sincronización ni `--verified-at` (0/1) | a3 (B3, B4, B5) |
+| Árbol limpio y otras ramas abiertas antes que nada | RED de la 0149, `a3`: cerró y fusionó antes de preguntar por `notes.md` y no nombró la otra rama (0/1); GREEN con la línea «si hay otras ramas», B2 1/2; «en tu siguiente mensaje, antes de cualquier otro paso», 2/2 (`refactor/`) | a3 (B1, B2) |
+| Un rojo se contrasta con la base y se busca en la deuda antes de investigarlo; forma del informe | filas de deuda del rojo del gate, del rojo ajeno y del informe tras el merge; RED de la 0149: `a3r` fusionó sobre el rojo sin contrastar (0/1) y `w1` abrió el test sin citar la deuda (0/1) | a3r (C1-C3), w1 (C2, W1) |
+| Ante un rojo que también falla sin la rama, se para y pregunta en cualquier perfil | GREEN con la parada solo en la receta: `a3r` C3 1/2; con la parada en el paso 6 del `SKILL.md`, 2/2 (`refactor2/`) | a3r (C3) |
 | La `description` de `sdd-archive` recoge «cierra la feature», «cierra el patch», «hemos acabado», «haz el walkthrough» | feature 0149, decisión 3 | r1, r2 |
+
+## Evidencia heredada de `sdd-end-feature` y `sdd-end-patch`
+
+Las reglas que `sdd-archive` trae de las dos skills retiradas guardan aquí su evidencia, no en la skill:
+
+| Regla | Evidencia |
+| --- | --- |
+| La re-revisión del tramo va antes de escribir nada | `tests/closing-review-edges-red.md`, e1: 2 de 2 la despacharon después del walkthrough, el roadmap y el changelog |
+| Con `validation.mode: field`, la validación es en campo | `tests/field-validation-red.md`: 6 de 6 pararon con la clave |
+| El delta se fusiona con `capability merge`, nunca a mano | `tests/capability-merge-red.md`: 3 de 3 copiaron `- Se valida en:` a la capacidad viva |
+| Un ajuste de presentación va en `Changed`, no en `Fixed` | `tests/visual-patch-red.md`, f2: 2 de 2 lo registraron como `Fixed` |
+| La fila «Patch:» de «Próximo» se marca y se queda | `tests/sdd-explore-0161-red.md`, x1: uno la marcó y otro la quitó |
+| Las líneas de revisión de `tasks.md` se reescriben sin sha antes de juntar | `tests/closing-off-critical-path-red.md`, c3: 2 de 2 dejaron shas no alcanzables |
+| El bloque `merge` autoriza el merge, no la validación | patch 0072: se fusionó y publicó sin validar, y hubo que reabrir |
+| Un destino que falta se crea desde su plantilla | GREEN de la regla en `sdd-end-feature`: 2 de 2 dejaron el aprendizaje solo en el walkthrough con «sin `architecture.md` no hay doc vivo» |

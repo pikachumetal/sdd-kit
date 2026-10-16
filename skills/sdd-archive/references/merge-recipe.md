@@ -1,63 +1,84 @@
-# Receta del merge en el cierre
+# Merge recipe
 
-La usa el paso del merge de `sdd-archive` cuando la política de merge ya dijo que se fusiona: la aplica el agente (bloque `merge` completo, perfil `delegate` o `unattended`) o el usuario la pidió. Qué se fusiona y cómo lo fija la política: la rama destino es `merge.into`, y el merge va con `--no-ff` si `merge.noFf` es `true`.
+Used by the integrated-base and merge steps of `sdd-archive`, once the merge policy has said the change merges: the agent applies it (complete `merge` block, profile `delegate` or `unattended`) or the user asked for it. The destination is `merge.into`, with `--no-ff` if `merge.noFf` is `true`; `Hotfix only:` the stable branch, with the dev-lead's words. What the CLI does isn't repeated here: this says what each output means and what you do next.
 
-## El merge es un script
+## Integrated base
 
-El merge lo hace `sdd merge`, siempre, y no se rehace a mano con `git merge`, `git worktree` ni `git push`:
+After the closing commit, `git fetch`. If `<remote>/<merge.into>` is an ancestor of `HEAD`, there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>`.
+
+Otherwise, in the change's worktree: `git merge --no-edit <remote>/<merge.into>`, the sync merge, which stays the branch's last commit. Without a remote, the local `merge.into`.
+
+- **Conflict only in the registers** —every file in the list is `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` or `.docs/sdd/estimation-log.md`—: in `changelog.md` and `roadmap.md` each line keeps the change of the side that touched it. Two new lines both go in; two different rows, even contiguous in one hunk, each keep their change; the two hunks are never pasted whole, that duplicates rows. `estimation-log.md` isn't edited: regenerate it with `sdd estimation log`. `git add` the three and `git commit --no-edit`, through the hook; never `--no-verify`.
+- **Any other conflict**, or both sides touched the same line of a register: `git merge --abort`; quote git's message and the files; the close stays «No terminado» for a person.
+- **The suite again**: only if, since the sha of the validation's suite, something changed outside `.docs/` that isn't `*.md` (`git diff --quiet <sha> HEAD -- . ':!.docs' ':!*.md'` fails), the same predicate as `--verified-at`. Then run the full suite (E2E included if the project declares them) on the sync merge, and the merge carries `--verified-at <sha of the sync merge>`. If only docs changed, don't run it, and pass the validation's sha.
+
+This is the only `git merge` by hand of the close, and it never touches the destination.
+
+## A red suite
+
+A red from the suite you ran is contrasted by hand: the same command in a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`.
+
+- **Passes without the branch**: the red is the branch's. Go back to it, fix with a failing test first, and run the suite again.
+- **Fails without the branch too**: write `base: en rojo: el mismo comando también falla sin la rama`. Before opening the failing test, search the first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap). A row that names it: quote it. None: open one in «Por triar» (in 2.x, in «Deuda técnica») with the evidence. Then stop with the red report and ask whether to merge anyway: that's the dev-lead's call.
+
+A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …` or `base: en verde: el rojo lo trae la rama`), and the same rule follows.
+
+**The red report**, in one block: the command, its exit code, the log's path, its last 20 lines, the base's verdict (the `base:` line) and the destination's state, read with `git rev-parse --short <merge.into>`: «`develop` sin tocar en `<hash>`».
+
+## The merge is a script
 
 ```text
-sdd merge --project-root "<worktree de la feature>" [--push] [--verify "<gate de merge>"]
+sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--verified-at <sha>]
 ```
 
-El script hace, en este orden:
+Under one lock per repo, the script integrates the destination's remote into the local destination (only-add hunks are joined, `estimation-log.md` regenerated), merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others, runs `--verify` on the result and pushes the destination by its name. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
 
-1. Espera su turno. Hay un cerrojo por repo, y si otra sesión lo tiene, el script dice quién es y espera.
-2. Hace `fetch` e integra en la rama destino lo que el remoto tenga de nuevo.
-3. Fusiona. Si la rama destino no está sacada, lo hace en un worktree temporal `merge-<id>` junto a los demás worktrees. Si está sacada en un worktree limpio, lo hace en ese worktree. Un conflicto en `estimation-log.md` lo regenera con `sdd estimation log`.
-4. Ejecuta la verificación.
-5. Empuja la rama destino por su nombre.
-6. Retira el worktree temporal.
+- **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it.
+- **`--verified-at`**: as in «Integrated base». The script writes `verificación: omitida: desde <sha> solo cambian docs` when it skips.
 
-- **`--push`**: según «Push», abajo. Sin él, el script fusiona en local y no publica nada.
-- **`--verify`**: el gate de merge que declara `tech-stack.md` §Testing, y se ejecuta sobre el resultado del merge, antes del push. Con una sola suite, es esa. Si separa un conjunto rápido, el gate es el rápido, y la suite completa se ejecuta antes de llamar al script, en la validación final; el mensaje final da su resultado. Se omite si un hook `pre-merge-commit` del repo ya ejecuta el gate; la suite completa, nunca. Shell: `pwsh` en Windows, o `powershell.exe` si falta; en el resto, `sh -c`.
-- El worktree de la feature sigue en su rama. Lo decide `merge.removeWorktree`, no esta receta.
+## Its outputs
+
+| Output | Means | You do |
+| --- | --- | --- |
+| `destino: listo: …` | `--check` found the destination clean | go on |
+| `destino sacado: …` | the destination's checkout has someone else's uncommitted changes | stop before writing: quote it with its `Salidas:`; no `stash`, `reset` or commit of what isn't yours |
+| `cerrojo: …` | another close holds the lock past `--lock-timeout` | quote it; a person decides |
+| `base: conflicto en <files>.` | integrating the destination's remote conflicts beyond only-add hunks | «No terminado»: a person resolves |
+| `merge: conflicto en <files>.` | the change conflicts with the destination | the same; the sync merge above should have caught it |
+| `verificación: …` + `base: …` | `--verify` red | «A red suite» |
+| `bloqueado: '<file>' lo tiene abierto <process>` | a process holds a file the gate needs | close it and run the script again |
+| `push: '<into>' avanzó en '<remote>'; integro y reintento (n/3)` | another session published meanwhile | nothing: the script retries |
+| `push: '<into>' sigue moviéndose en '<remote>' tras 3 intentos; …` | the remote kept moving | run the script once more in a while |
+| `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | quote it; never `--force`, `pull` or `rebase` |
+| `push: no hecho: sin remoto` | no remote | the final message quotes it |
+
+After any failure the destination is as it was: nothing pushed, the temporary worktree removed, the lock free. The report quotes the message literally, the destination's hash and what's left. Never redo it by hand.
+
+`capability check --artifact` prints the failures of the artifact and of the capabilities its delta touches; those decide the exit code, and you fix them. The others come out apart as someone else's, don't change the exit code and go to the final message as the dev-lead's: don't edit those capabilities.
 
 ## Push
 
-El push lo hace el script con `--push`: publica solo la rama destino, por su nombre, en su remoto, y nunca la rama de la feature ni tags. Se decide en este orden, y manda la primera regla que aplique:
+The script pushes with `--push`: only the destination, by its name, to its remote; never the change's branch. First rule that applies:
 
-1. Perfil `pair`: se presenta junto con el merge y se espera, sea cual sea `merge.push`; `--push` solo si el usuario lo confirma.
-2. Una frase del usuario en esta sesión que confirma el push («súbelo», «publícalo», «push»): `--push`.
-3. `merge.push: true` (perfil `delegate` o `unattended`): `--push`, sin preguntar.
-4. `merge.push` ausente o `false`: sin `--push`, y el mensaje final lo dice («push: no hecho: `merge.push` no lo autoriza»).
+1. Profile `pair`: presented with the merge; `--push` only if the user confirms.
+2. Words of the user in this session confirming the push («súbelo», «publícalo»): `--push`.
+3. `merge.push: true` (profile `delegate` or `unattended`): `--push`, without asking.
+4. `merge.push` missing or `false`: no `--push`, and the final message says «push: no hecho: `merge.push` no lo autoriza».
 
-Si la rama destino no tiene remoto, `--push` se decide igual: el script fusiona en local, no publica y acaba con `push: no hecho: sin remoto`, que el mensaje final cita. Si el push falla, se sigue «Si el script falla»: nunca `--force`, `pull`, `rebase` ni `git push` a mano. El mensaje final cita en un bloque el comando del script, cita su error y da el hash de la rama destino.
+`Hotfix only:` the stable branch and its tag go out only if the dev-lead's words ask to publish; `merge.push` isn't enough.
 
-## Cuándo no se llama
+## Hotfix
 
-Si la rama destino está sacada en un worktree con cambios sin commitear, el script falla con `destino sacado:` y la lista de ficheros. Esos cambios son de otra sesión: el cierre para y dice qué ficheros son, sin `stash`, `reset` ni commit de lo ajeno.
+`Hotfix only:` a `hotfix/*` branch merges into the stable branch only with words of the dev-lead that ask for it (Art. IV), used literally in `--order`:
 
-## Si el script falla
+```text
+git fetch
+sdd merge --check --into <stable> --project-root "<worktree>"
+sdd merge --branch <branch> --into <stable> --tag <version> --order "<their words>" [--push]
+```
 
-Si falla, la rama destino queda como estaba antes de fusionar la feature: no se empuja nada, el worktree temporal se retira y el cerrojo se suelta. El mensaje empieza por el paso que falló (`cerrojo:`, `base:`, `merge:`, `verificación:`, `push:`, `política:`). El informe final cita ese mensaje literal, el hash de la rama destino (`git rev-parse --short <destino>`) y qué queda pendiente. **No se rehace a mano** con `git merge`, `git pull` ni `git push`. Un fallo de `push:` o de `base:` (otra sesión publicó en ese rato) se resuelve ejecutando el script **una vez más**: parte del remoto nuevo. Un conflicto de `merge:`, una `verificación:` en rojo o un `cerrojo:` agotado no se reintentan: los resuelve una persona, salvo el de los registros (siguiente sección).
+The script decides the way back with the local refs: fetch first, or a release already closed on the remote can abort it. Under one lock it merges into the stable branch, tags, merges the same branch into the integration branch (or the open `release/*`) and pushes everything atomically. `vuelta: conflicto en <files>; se deshacen …` means the script undid it all: the close stays «No terminado», and a person ports the fix to the integration branch and runs the hotfix again.
 
-## Conflicto solo en los registros
+## Denied by the environment
 
-1. Se aplica cuando el script falla con `merge: conflicto en` y todos los ficheros de la lista son de estos tres: `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` y `.docs/sdd/estimation-log.md`. Si en la lista hay cualquier otro fichero, sigue «Si el script falla»: es de una persona.
-2. En el worktree de la feature, con el commit de cierre ya hecho: `git merge --no-edit <merge.into>`. La base es la rama local: al fallar en `merge:`, el script ya dejó ahí lo publicado en el remoto.
-3. En `changelog.md` y `roadmap.md`, cada línea se queda con el cambio del lado que la tocó. Dos líneas nuevas entran las dos, y dos filas distintas, aunque sean contiguas y caigan en el mismo trozo, se quedan cada una con su cambio. Los dos trozos no se pegan enteros: eso duplicaría filas.
-4. Si los dos lados tocaron la misma línea, `git merge --abort` y sigue «Si el script falla»: es de una persona.
-5. `estimation-log.md` no se edita: se regenera con `sdd estimation log`.
-6. `git add` de los tres y `git commit --no-edit`, que pasa el hook. Nunca `--no-verify`.
-7. Relanza el script **una vez**. Si vuelve a fallar con `merge:`, es de una persona, aunque sea otra vez solo en los registros.
-8. Es el único `git merge` a mano del cierre, y nunca toca la rama destino.
-
-## Merge denegado por el entorno
-
-La política autoriza el merge y el entorno lo deniega (un clasificador del harness, un hook). No se reintenta con otra herramienta ni con otra forma del comando: lo desbloquea una persona. El informe final dice:
-
-1. El **comando** denegado, literal, en un bloque de código.
-2. El **texto de la denegación**, citado.
-3. El **hash** de la rama destino, que sigue sin tocar (`git rev-parse --short <destino>`). Si al volver a mirarlo ha cambiado, otra sesión fusionó en ese rato: dilo.
-4. Que el resto del cierre está hecho, y qué queda: solo el merge.
+The policy authorizes the merge and the environment denies it (the harness's classifier, a hook). Don't retry with another tool or another form of the command: a person unblocks it. The final report gives the **command**, literal, in a code block; the **denial's text**, quoted; the destination's **hash**, untouched (`git rev-parse --short <destination>`; if it changed when you look again, another session merged meanwhile: say so); and that the rest of the close is done, with only the merge left.

@@ -1,0 +1,42 @@
+--- [2]
+Estoy usando la skill sdd-worktrees para preparar un espacio de trabajo aislado.
+
+Primero, el paso 0: detecto si ya estoy en un worktree.
+
+--- [12]
+La creación falló por una ruta demasiado larga en Windows: el repo ya cuelga de una ruta temporal muy larga y el worktree anida otra encima. Reviso si quedó algo a medias.
+
+--- [15]
+La herramienta dejó una rama huérfana, `worktree-feature-0010-cancel-reason`, que acabo de crear yo y que no tiene worktree. Miro a dónde apunta y la borro.
+
+--- [21]
+El worktree está creado. Paso 2: preparo las dependencias. Paso 3: busco el gate de cierre.
+
+--- [23]
+No hay dependencias que instalar (`package.json` sin `dependencies`) ni `environments.md`. El gate de cierre sale de la constitución: `node --test` entero en verde. Ejecuto la línea base.
+
+--- [26]
+El worktree está creado y la rama es la correcta, pero **la línea base no está limpia**. Antes de implementar necesito que decidas cómo seguir. No he implementado nada.
+
+**Worktree**
+- Ruta: `<run>/wt-0010`
+- Rama: `feature/0010-cancel-reason`, en `6ba586f`, el commit con la spec y el plan. Los dos están en `status: approved` (spec aprobada por Laura el 2026-10-08).
+- Plan: modo full, dos tasks, ejecución Native.
+
+**Qué ha pasado al crearlo**
+- La herramienta nativa (`EnterWorktree`) falló por «Filename too long». La ruta temporal ya es larga y el worktree anidaba otra encima.
+- Borré la rama huérfana `worktree-feature-0010-cancel-reason`, que creó esa llamada fallida.
+- Usé el fallback `git worktree add` en una ruta corta, con `core.longpaths=true`.
+- La rama `feature/0010-cancel-reason` estaba ocupada por el checkout original, así que **dejé ese checkout en `develop`**. Se puede revertir con `git switch feature/0010-cancel-reason` si quitas antes el worktree.
+
+**Preparación**
+- No hay `environments.md`, así que no hay `env:setup`.
+- No hay dependencias que instalar (`package.json` sin `dependencies`).
+
+**Línea base (`node --test`, el gate de cierre de la constitución)**
+- Resultado: 5 tests, 4 pasan y 1 falla.
+- Falla `test/export.e2e.test.js`, «exportar reservas a csv». El test es solo `throw new Error('TimeoutError: export no respondió en 5000 ms')`, sin ninguna comprobación real. Viene del commit `9628720 test: e2e de exportación`, que no tiene que ver con la 0010.
+
+**Decisión**
+¿Sigo con la 0010 con ese test rojo ya conocido, o primero investigamos el e2e de exportación? Si sigo, el gate de cierre `node --test` entero en verde no se cumplirá al cerrar mientras ese test no se arregle. Mi recomendación es arreglar o retirar ese test en un cambio aparte, antes o después de la 0010, para que el cierre de esta feature no dependa de él.
+
