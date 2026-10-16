@@ -10,6 +10,7 @@ BeforeAll {
   $script:Budgets = @{
     Skills  = @{
       'add-to-changelog'    = @{ SkillMd = 500; Total = 500 }
+      'sdd-archive'         = @{ SkillMd = 3600; Total = 6000 }
       'sdd-config'          = @{ SkillMd = 1400; Total = 1400 }
       'sdd-explore'         = @{ SkillMd = 1100; Total = 1100 }
       'sdd-end-feature'     = @{ SkillMd = 3000; Total = 4518 }
