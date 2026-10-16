@@ -24,7 +24,7 @@ Describe 'sdd-archive: anatomía' {
     $script:Skill | Should -Match ([regex]::Escape($_))
   }
 
-  It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'estimation.md', 'aprendizajes-skills.md') {
+  It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'estimation.md', 'aprendizajes-skills.md', 'records.md') {
     $script:Skill | Should -Match ([regex]::Escape("(references/$_"))
     Test-Path (Join-Path $script:RepoRoot "skills/sdd-archive/references/$_") | Should -BeTrue
   }
@@ -71,5 +71,45 @@ Describe 'sdd-archive: rama de feature' {
 
   It 'un destino que falta se crea con su aviso literal' {
     $script:Skill | Should -Match ([regex]::Escape('«`<documento>` no existía: creado desde la plantilla»'))
+  }
+}
+
+Describe 'sdd-archive: rama de patch' {
+  It 'la fila «Patch:» de «Próximo» se marca ✅ y se queda' {
+    $script:Skill | Should -Match '`Patch only:`[^\n]*«Patch:» row[^\n]*`✅`[^\n]*stays'
+  }
+
+  It 'el paso 5 de sdd-start-patch deja la fila de deuda al cierre' {
+    Get-KitFile 'skills/sdd-start-patch/SKILL.md' | Should -Match ([regex]::Escape('La fila de deuda que salda el patch la cierra `sdd-archive`; el commit del fix no la toca.'))
+  }
+
+  It 'el paso 6 de sdd-start-patch cierra con sdd-archive' {
+    Get-KitFile 'skills/sdd-start-patch/SKILL.md' | Should -Match '(?m)^6\. \*\*Cierre\*\* — `sdd-archive`\.'
+  }
+
+  It 'la ayuda de «Capacidades» de patch-template.md usa sdd capability index' {
+    Get-KitFile 'skills/sdd-templates/templates/patch-template.md' | Should -Match ([regex]::Escape('con la salida de `sdd capability index`'))
+  }
+}
+
+Describe 'sdd-archive: rama de hotfix' {
+  It 'pregunta por la migración con su literal' {
+    $script:Skill | Should -Match ([regex]::Escape('«¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?»'))
+  }
+
+  It 'comprueba la rama estable con merge --check --into' {
+    $script:Skill | Should -Match 'merge --check --into <stable>'
+  }
+
+  It 'fusiona con --into, --tag y la frase del dev-lead en --order' {
+    $script:Skill | Should -Match '--into <stable> --tag <version> --order "<their words>"'
+  }
+
+  It '--push solo si la frase pide publicar' {
+    $script:Skill | Should -Match '`--push` only if those words ask to publish'
+  }
+
+  It 'el paso de migración solo con la carpeta del kit' {
+    $script:Skill | Should -Match 'skills/sdd-init-brownfield/references/migrations/'
   }
 }
