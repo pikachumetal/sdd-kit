@@ -72,15 +72,14 @@ Describe 'Reglas de ruido de la skill' {
 }
 
 Describe 'Oferta por feature o patch' {
-  It '<_> ofrece el ticket salvo que ya tenga el suyo' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
-    $content = Get-KitFileContent (Join-Path $script:KitRoot "skills/$_/SKILL.md")
-    $content | Should -Match 'ya tenga el suyo'
-    $content | Should -Not -Match 'esta sesión ya haya generado el suyo'
+  It 'sdd-archive ofrece el ticket salvo que ya tenga el suyo' {
+    $content = Get-KitFileContent (Join-Path $script:KitRoot 'skills/sdd-archive/SKILL.md')
+    $content | Should -Match 'offered unless this change already has its own, even if the session made another''s'
   }
 }
 
 Describe 'Oferta en el cierre de cada carril' {
-  It 'la ofrece <_>' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
-    Get-KitFileContent (Join-Path $script:KitRoot "skills/$_/SKILL.md") | Should -Match 'sdd-feedback'
+  It 'la ofrece sdd-archive' {
+    Get-KitFileContent (Join-Path $script:KitRoot 'skills/sdd-archive/SKILL.md') | Should -Match 'sdd-feedback'
   }
 }

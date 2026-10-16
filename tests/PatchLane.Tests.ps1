@@ -18,7 +18,7 @@ BeforeAll {
   }
 
   $script:StartPatch = Get-KitFile 'skills/sdd-start-patch/SKILL.md'
-  $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
+  $script:EndPatch = Get-KitFile 'skills/sdd-archive/SKILL.md'
   $script:Template = Get-KitFile 'skills/sdd-templates/templates/patch-template.md'
   $script:Door = Get-KitFile 'skills/using-sdd/SKILL.md'
   $script:Propose = Get-KitFile 'skills/sdd-propose/SKILL.md'
@@ -71,19 +71,19 @@ Describe 'criterio: patch.md registra quién decidió' {
     Get-Section $script:StartPatch '3. **`patch.md`**' '4. **Fix mínimo**' | Should -Match 'sin el dev-lead'
   }
 
-  It 'la escalada de sdd-end-patch cuenta decisiones sin el dev-lead, no módulos' {
-    $clause = Get-Section $script:EndPatch '**Cláusula de escalada**' '## Checklist'
+  It 'la escalada del patch cuenta decisiones sin el dev-lead, no módulos' {
+    $clause = Get-Section $script:EndPatch '**Escalation clause**' '## Checklist'
     $clause | Should -Match 'sin el dev-lead'
     $clause | Should -Not -Match 'varios módulos'
   }
 
-  It 'el mensaje final de sdd-end-patch lee la lista Decisiones' {
-    Get-Section $script:EndPatch '8. **Mensaje final**' '## Red flags' | Should -Match 'lista `Decisiones`'
+  It 'el mensaje final del patch lee la lista Decisiones' {
+    Get-Section $script:EndPatch '9. **Final message**' '## Red flags' | Should -Match 'the `Decisiones` list of `patch\.md` §3'
   }
 
   It 'el changelog de una petición cerrada va en Added o Changed' {
-    Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match 'petición cerrada'
-    Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match '`Added`'
+    Get-Section $script:EndPatch '4. **Indexes**' '5. **History**' | Should -Match 'for a closed request'
+    Get-Section $script:EndPatch '4. **Indexes**' '5. **History**' | Should -Match '`Added`'
   }
 }
 
@@ -134,7 +134,7 @@ Describe 'retirada en el patch visual' {
   }
 
   It 'el cierre registra la retirada como Removed' {
-    Get-Section $script:EndPatch '3. **Changelog**' '4. **`roadmap.md`**' | Should -Match '`Removed`'
+    Get-Section $script:EndPatch '4. **Indexes**' '5. **History**' | Should -Match '`Removed` for a removal'
   }
 }
 
@@ -151,8 +151,8 @@ Describe 'lite con migración de datos y deuda parcial' {
     $lite | Should -Match 'la spec la nombra'
   }
 
-  It 'el paso 4 de sdd-end-patch nombra el formato parcial' {
-    $step = Get-Section (Get-KitFile 'skills/sdd-end-patch/SKILL.md') '4. **`roadmap.md`**' '5. **estimation-log**'
+  It 'el roadmap del cierre nombra el formato parcial' {
+    $step = Get-Section (Get-KitFile 'skills/sdd-archive/SKILL.md') '4. **Indexes**' '5. **History**'
     $step | Should -Match 'parcial —'
     $step | Should -Match 'queda:'
   }

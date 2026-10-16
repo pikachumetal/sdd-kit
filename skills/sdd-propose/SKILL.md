@@ -1,6 +1,6 @@
 ---
 name: sdd-propose
-description: Use when the user asks for a change in a project with .docs/sdd/ — a feature, a fix, an adjustment, a removal, a dependency, CI or settings change, a typo or rename, or an investigation that must leave measurements — even a small one («añade…», «hazme…», «arregla…», «sube la versión de…», «let's build…», «es una tontería, hazlo rápido»), or a roadmap row or ticket to start. Not for questions (sdd-explore), planning without doing (sdd-roadmap) or closing work (sdd-end-feature, sdd-end-patch).
+description: Use when the user asks for a change in a project with .docs/sdd/ — a feature, a fix, an adjustment, a removal, a dependency, CI or settings change, a typo or rename, or an investigation that must leave measurements — even a small one («añade…», «hazme…», «arregla…», «sube la versión de…», «let's build…», «es una tontería, hazlo rápido»), or a roadmap row or ticket to start. Not for questions (sdd-explore), planning without doing (sdd-roadmap) or closing work (sdd-archive, sdd-archive).
 argument-hint: "<change, roadmap id or ticket>"
 ---
 

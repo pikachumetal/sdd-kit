@@ -27,8 +27,7 @@ Describe 'Formato de cierre de filas del roadmap' {
   BeforeAll {
     $script:Template = Get-KitFile 'skills/sdd-templates/templates/roadmap-template.md'
     $script:DebtBlock = [regex]::Match($script:Template, '(?ms)^## Deuda técnica\r?\n(.*?)(?=^## )').Groups[1].Value
-    $script:EndTask = Get-KitFile 'skills/sdd-end-feature/SKILL.md'
-    $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
+    $script:Archive = Get-KitFile 'skills/sdd-archive/SKILL.md'
   }
 
   It 'la plantilla fija los dos prefijos y la regex de conteo en el bloque de Deuda técnica' {
@@ -37,23 +36,11 @@ Describe 'Formato de cierre de filas del roadmap' {
     $script:DebtBlock | Should -Match ([regex]::Escape("grep -E '\| \*\*\[(Feature|Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '"))
   }
 
-  It 'el paso 8 de sdd-end-feature cita el formato de la plantilla para Deuda técnica y Backlog' {
-    $line = Get-StepLine $script:EndTask 8
-    $line | Should -Match 'roadmap-template\.md'
-    $line | Should -Match 'Deuda técnica'
-    $line | Should -Match 'Backlog'
-  }
-
-  It 'el paso 4 de sdd-end-patch cita el formato de la plantilla para Deuda técnica y Backlog' {
-    $line = Get-StepLine $script:EndPatch 4
-    $line | Should -Match 'roadmap-template\.md'
-    $line | Should -Match 'Deuda técnica'
-    $line | Should -Match 'Backlog'
-  }
-
-  It 'las skills de cierre no copian el formato: vive solo en la plantilla' {
-    $script:EndTask | Should -Not -Match ([regex]::Escape($script:SaldadaLiteral))
-    $script:EndPatch | Should -Not -Match ([regex]::Escape($script:SaldadaLiteral))
+  It 'sdd-archive cierra una fila de deuda o de backlog con el prefijo literal de la plantilla' {
+    # Feature 0149, a2: remitiendo a la plantilla, 1 de 2 sujetos marcó la fila con «✅»; con el literal en la skill, 2 de 2.
+    $script:Archive | Should -Match ([regex]::Escape('A debt or backlog row the change settles'))
+    $script:Archive | Should -Match ([regex]::Escape('**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))
+    $script:Template | Should -Match ([regex]::Escape('**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))
   }
 }
 
@@ -89,17 +76,14 @@ Describe 'sdd-roadmap no saca el roadmap de la forma' {
 
 Describe 'los cierres avisan del roadmap fuera de forma' {
   BeforeAll {
-    $script:FeatureStep = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?ms)^8\. \*\*`roadmap\.md`\*\*.*?(?=^9\. \*\*)').Value
-    $script:PatchStep = [regex]::Match((Get-KitFile 'skills/sdd-end-patch/SKILL.md'), '(?ms)^4\. \*\*`roadmap\.md`\*\*.*?(?=^5\. \*\*)').Value
+    $script:IndexesStep = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?ms)^4\. \*\*Indexes\*\*.*?(?=^5\. \*\*)').Value
+    $script:Records = Get-KitFile 'skills/sdd-archive/references/records.md'
     $script:TemplatesIndex = (Get-KitFile 'skills/sdd-templates/SKILL.md') -split "`n" | Where-Object { $_ -match '^\| `sdd roadmap check` \|' }
   }
 
-  It 'sdd-end-feature ejecuta el validador en el paso del roadmap' {
-    $script:FeatureStep | Should -Match 'roadmap check'
-  }
-
-  It 'sdd-end-patch ejecuta el validador en el paso del roadmap' {
-    $script:PatchStep | Should -Match 'roadmap check'
+  It 'sdd-archive ejecuta el validador en el paso del roadmap' {
+    $script:IndexesStep | Should -Match 'sdd roadmap check'
+    $script:Records | Should -Match 'roadmap check --path \.docs/sdd'
   }
 
   It 'el índice de sdd-templates nombra quién ejecuta el validador' {

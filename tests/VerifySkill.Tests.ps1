@@ -106,13 +106,13 @@ Describe 'Cierre de la revisión' {
     $script:Skill | Should -Match 'capability index --path \.docs/sdd'
   }
 
-  It 'el ejemplo de la línea de campo de <_> lleva los ejes' -ForEach @('skills/sdd-start-feature/references/control-profiles.md', 'skills/sdd-end-feature/SKILL.md') {
+  It 'el ejemplo de la línea de campo de <_> lleva los ejes' -ForEach @('skills/sdd-start-feature/references/control-profiles.md') {
     $text = Get-KitFile $_
     $text | Should -Not -Match 'revisión final opus limpia'
     $text | Should -Match 'revisión final Spec y Código'
   }
 
-  It 'la ADR 0015 cubre a <_>' -ForEach @('skills/sdd-start-feature/SKILL.md', 'skills/sdd-start-feature/references/control-profiles.md', 'skills/sdd-start-feature/references/commit-milestones.md', 'skills/sdd-end-feature/SKILL.md', 'skills/sdd-propose/references/plan-writing.md', 'skills/sdd-templates/templates/plan-template.md') {
+  It 'la ADR 0015 cubre a <_>' -ForEach @('skills/sdd-start-feature/SKILL.md', 'skills/sdd-start-feature/references/control-profiles.md', 'skills/sdd-start-feature/references/commit-milestones.md', 'skills/sdd-propose/references/plan-writing.md', 'skills/sdd-templates/templates/plan-template.md') {
     Push-Location $script:RepoRoot
     try { $index = node cli/bin/sdd.js decision index --path .docs/sdd --files $_ } finally { Pop-Location }
     ($index -join "`n") | Should -Match '`0015`'

@@ -1,6 +1,6 @@
 # Roadmap — <proyecto>
 
-> Índice vivo del trabajo del proyecto: qué se hace ya, qué viene y qué se guarda para luego. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes) y los cierres (`sdd-end-feature`, `sdd-end-patch`) y el corte de `sdd-end-release` (estado de sus filas, la sección de release); lo leen esas mismas skills y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar.
+> Índice vivo del trabajo del proyecto: qué se hace ya, qué viene y qué se guarda para luego. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes) y los cierres (`sdd-archive`) y el corte de `sdd-end-release` (estado de sus filas, la sección de release); lo leen esas mismas skills y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar.
 >
 > **La prioridad es el orden de las filas**: la de arriba va antes, en cada tabla y de Now a Later. No hay columna de prioridad.
 >

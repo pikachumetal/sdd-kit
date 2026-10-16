@@ -2,7 +2,7 @@
 
 > Contrato del entorno que necesita cada worktree más allá de instalar dependencias: base de
 > datos, puertos, servicios, datos de prueba. Crear el worktree e instalar sus dependencias lo
-> hace `sdd-worktrees`, que ejecuta `env:setup` después; borrarlo, `finishing-a-development-branch`
+> hace `sdd-worktrees`, que ejecuta `env:setup` después; borrarlo, `sdd-archive`
 > de superpowers. Este documento cubre solo lo que queda fuera de esas skills. Se calca SOLO si el
 > proyecto trabaja con worktrees Y su entorno necesita algo más que dependencias — si la segunda
 > pregunta es no, `sdd-worktrees` ya cubre el caso y este fichero no existe. Borra los bloques de ayuda (`>`) al

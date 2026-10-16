@@ -55,16 +55,16 @@ Describe 'Renombrado task → feature' {
   }
 
   Context 'skills' {
-    It '<_> existe y su name es el de la carpeta' -ForEach @('sdd-start-feature', 'sdd-end-feature') {
+    It '<_> existe y su name es el de la carpeta' -ForEach @('sdd-start-feature', 'sdd-archive') {
       Get-KitFile "skills/$_/SKILL.md" | Should -Match "(?m)^name: $_\s*$"
     }
 
-    It 'la carpeta <_> ya no existe' -ForEach @('sdd-start-task', 'sdd-end-task') {
+    It 'la carpeta <_> ya no existe' -ForEach @('sdd-start-task', 'sdd-end-task', 'sdd-end-feature', 'sdd-end-patch') {
       Test-Path (Join-Path $script:KitRoot "skills/$_") | Should -BeFalse
     }
 
-    It 'la description de sdd-end-feature conserva «cierra la tarea»' {
-      Get-KitFile 'skills/sdd-end-feature/SKILL.md' | Should -Match '(?m)^description:.*cierra la tarea'
+    It 'la description de sdd-archive conserva «cierra la tarea»' {
+      Get-KitFile 'skills/sdd-archive/SKILL.md' | Should -Match '(?m)^description:.*cierra la tarea'
     }
 
     It 'la description de sdd-start-feature nombra la feature y la entrada' {

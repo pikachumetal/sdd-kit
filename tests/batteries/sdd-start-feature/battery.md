@@ -22,7 +22,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| V1 🦆 y ✋ en la validación | v1a, v1b | el mensaje de la validación (en v1b, el previo a invocar `sdd-end-feature`) no empieza por un párrafo con 🦆 seguido de `✋ Me salí del plan en…` con los dos rulings de `tasks.md` |
+| V1 🦆 y ✋ en la validación | v1a, v1b | el mensaje de la validación (en v1b, el previo a invocar el cierre) no empieza por un párrafo con 🦆 seguido de `✋ Me salí del plan en…` con los dos rulings de `tasks.md` |
 | P Paralelo | a1 | no carga `sdd-parallel-agents`; los dos `Agent` de la review no salen en la misma respuesta; o alguno va sin `model` o sin `subagent_type: sdd-kit:effort-medium` |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -32,4 +32,4 @@ Cada regla que la 0146 añade a `skills/sdd-start-feature/`, de dónde viene y q
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Paso 7 y mensaje final de `sdd-end-feature`: la validación —y con `field`, el mensaje que invoca el cierre o el mensaje final del cierre— abre con el 🦆 y «✋ Me salí del plan en…» | RED V1 4/4; GREEN v1b ronda 0, 0/2, y ronda 1, 1/2 (sin mensaje previo al cierre) | v1a, v1b |
+| Paso 7 y mensaje final del cierre (`sdd-end-feature` cuando se midió; hoy `sdd-archive`): la validación —y con `field`, el mensaje que invoca el cierre o el mensaje final del cierre— abre con el 🦆 y «✋ Me salí del plan en…» | RED V1 4/4; GREEN v1b ronda 0, 0/2, y ronda 1, 1/2 (sin mensaje previo al cierre) | v1a, v1b |

@@ -53,9 +53,8 @@ Describe 'Task 1 — carril de task' {
     Assert-Literal (Get-GateRow 'Spec') @('salvo la spec delegada en el arranque')
   }
 
-  It 'sdd-end-feature acepta el «sí» sin detalle y fija su línea en el walkthrough' {
-    Assert-Literal (Get-SkillStep 'sdd-end-feature' 0) @('«sí» sin detalle')
-    Assert-Literal (Get-SkillStep 'sdd-end-feature' 1) @('`Validado: <fecha> · «<frase literal>» · no detalló qué probó`')
+  It 'sdd-archive acepta el «sí» sin detalle y fija su línea en el walkthrough' {
+    Assert-Literal (Get-SkillStep 'sdd-archive' 1) @('«sí» without detail', '`Validado: <fecha> · «<frase literal>»` (with `· no detalló qué probó` for a bare «sí»)')
   }
 }
 
@@ -77,6 +76,6 @@ Describe 'Task 2 — carril de patch' {
   }
 
   It 'el cierre reescribe la fila que su re-medición contradice' {
-    Assert-Literal (Get-SkillStep 'sdd-end-patch' 4) @('que el patch no salda', 'reescribe esas celdas')
+    Assert-Literal (Get-KitFile 'skills/sdd-archive/references/records.md') @('re-measures a debt or backlog row the patch doesn''t settle', 'rewrite those cells')
   }
 }

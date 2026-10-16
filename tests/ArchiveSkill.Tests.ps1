@@ -214,3 +214,19 @@ Describe 'sdd-archive: registros, ADR y qué sigue' {
     $milestones | Should -Match '`walkthrough\.md`, `patch\.md`, la deuda o una ADR'
   }
 }
+
+Describe 'sdd-archive: retirada de las skills viejas' {
+  It 'ya no existe la carpeta <_>' -ForEach @('sdd-end-feature', 'sdd-end-patch') {
+    Test-Path (Join-Path $script:RepoRoot "skills/$_") | Should -BeFalse
+  }
+
+  It 'ningún fichero de skills/ nombra <_>, salvo la procedencia de sdd-archive y las migraciones pasadas' -ForEach @('finishing-a-development-branch', 'sdd-end-feature', 'sdd-end-patch') {
+    $name = $_
+    $allowed = 'skills[\\/]sdd-archive[\\/](NOTICE|SKILL\.md)$', 'migrations[\\/]v0\.4\.0\.md$', 'migrations[\\/]v2\.0\.0\.md$'
+    $hits = Get-ChildItem -LiteralPath (Join-Path $script:RepoRoot 'skills') -Recurse -File |
+      Where-Object { $path = $_.FullName; -not ($allowed | Where-Object { $path -match $_ }) } |
+      Where-Object { (Get-Content -Raw -Encoding utf8 $_.FullName) -match [regex]::Escape($name) } |
+      ForEach-Object { $_.FullName.Substring($script:RepoRoot.Path.Length) }
+    $hits | Should -BeNullOrEmpty
+  }
+}

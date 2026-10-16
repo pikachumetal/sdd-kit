@@ -80,8 +80,7 @@ Describe 'sdd-propose lee el fichero local' {
 
   It 'los cierres de task y de patch también leen el fichero local' {
     $section = Get-Section $script:Profiles 'sdd-kit.local.json'
-    $section | Should -Match '`sdd-end-feature`'
-    $section | Should -Match '`sdd-end-patch`'
+    $section | Should -Match '`sdd-archive`'
   }
 
   It 'generacion.md cita el changelog con la numeración nueva de brownfield' {

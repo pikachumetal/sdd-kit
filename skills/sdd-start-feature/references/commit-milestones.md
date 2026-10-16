@@ -8,14 +8,14 @@ La rama de una feature cuenta sus hitos: **apertura**, **un commit por task del 
 | --- | --- | --- | --- |
 | Apertura | spec, hallazgos de la review de spec, `plan.md`, `tasks.md` (lite: solo la spec) | antes de escribir los RED de la primera task (en Native, antes de su `sdd task start`); lite: antes de implementar | `git merge-base HEAD <integración>` |
 | Task N | sus tests RED, su implementación, los arreglos de su revisión, su evidencia | con su revisión (y re-revisión) limpia, antes de despachar la siguiente o la revisión final; en Native, con su contrato de cierre cumplido y antes de `sdd task done` | el `BASE` que apuntaste antes de despacharla (en Native, el que imprime `sdd task start`) |
-| Cierre | documentación de `sdd-end-feature`, arreglos de la revisión final de rama y de la validación, y `tasks.md` con las líneas de revisión del tramo reescritas sin sha | tras la documentación de cierre, antes del merge | el commit de la última task |
+| Cierre | documentación de `sdd-archive`, arreglos de la revisión final de rama y de la validación, y `tasks.md` con las líneas de revisión del tramo reescritas sin sha | tras la documentación de cierre, antes del merge | el commit de la última task |
 | Fix (patch) | código, tests y `patch.md` | con el fix verificado | `git merge-base HEAD <integración>` |
 | Cierre (patch) | `patch.md` con hash y tiempo, changelog, roadmap, estimation-log | antes del merge | el commit del fix |
 | Merge de sincronización | la rama destino integrada en la feature, con los registros resueltos | no se junta | — |
 
 Si el dev-lead fija otra forma de commits («tres commits en orden»), manda la suya sobre «un solo commit» y el hito no se junta. Un test en RED va en el commit de su arreglo o en uno posterior, nunca antes: un `pre-commit` que corre la suite lo rechaza, y sin él la rama llevaría un commit en rojo. El RED queda registrado en `patch.md` §4 (en una feature, en su evidencia). Sin `--no-verify` (ticket del patch 0072 §2).
 
-El merge de sincronización solo lo pide la [receta del merge](../../sdd-end-feature/references/merge-recipe.md#conflicto-solo-en-los-registros); va después del commit de cierre y es el último commit de la rama, así que la historia queda en 2 + N (2 en un patch) más ese merge, y el cierre no se vuelve a juntar.
+El merge de sincronización solo lo pide la [receta del merge](../../sdd-archive/references/merge-recipe.md#integrated-base); va después del commit de cierre y es el último commit de la rama, así que la historia queda en 2 + N (2 en un patch) más ese merge, y el cierre no se vuelve a juntar.
 
 ## Receta
 

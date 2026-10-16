@@ -21,7 +21,7 @@ Manda el primero que exista, de arriba abajo: feature sobre persona, persona sob
 
 ## sdd-kit.local.json
 
-`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee toda skill que resuelve el perfil vigente o `execution` —`sdd-propose` (el arranque y el plan), `sdd-end-feature` y `sdd-end-patch` (el merge y el push dependen del perfil) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
+`.docs/sdd/sdd-kit.local.json` guarda cómo trabaja cada persona, sin cambiar lo que queda en git: está en `.gitignore` y no se commitea. Lo lee toda skill que resuelve el perfil vigente o `execution` —`sdd-propose` (el arranque y el plan), `sdd-archive` (el merge y el push dependen del perfil) y `sdd-config`— aunque no aparezca al listar la carpeta: búscalo siempre junto a `sdd-kit.json`.
 
 Admite solo tres claves:
 
@@ -140,7 +140,7 @@ Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el 
 
 Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Sin la clave, o con `manual`, la validación es la de siempre.
 
-En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature`, paso 0 de `sdd-end-feature` y de `sdd-end-patch`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección (en el RED, 6 de 6 sujetos con la clave pararon a pedir la validación, `tests/field-validation-red.md`). Lo que no cambia es la verificación del agente: revisión final y su cierre (`sdd-verify`), smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. La línea `Validación en campo:` lleva los ejes y no dice «limpia» mientras quede un `sin revisar` o un «no verificado»: dice cuántos quedan. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
+En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature` y la validación de `sdd-archive`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección (en el RED, 6 de 6 sujetos con la clave pararon a pedir la validación, `tests/field-validation-red.md`). Lo que no cambia es la verificación del agente: revisión final y su cierre (`sdd-verify`), smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. La línea `Validación en campo:` lleva los ejes y no dice «limpia» mientras quede un `sin revisar` o un «no verificado»: dice cuántos quedan. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
 
 Forma, y solo esta:
 - Walkthrough (en un patch, `patch.md` §4, debajo de la tabla): `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutaste (p. ej. `Validación en campo: 2026-10-06 · suite 412/412 · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`). Un THEN o una verificación visual `no probado` van tal cual, con su motivo: la línea no los da por verificados.
@@ -226,7 +226,7 @@ Conjunto cerrado:
 
 `execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `plan-writing.md` de `sdd-propose` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro. No tiene nivel de release (precedencia en «sdd-kit.local.json»): el método queda escrito en el plan de cada feature, y un método que el dev-lead nombra para una feature concreta cuenta como dado.
 
-`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
+`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (el merge de `sdd-archive`) pregunta como hoy — una política que nadie declaró entera no se aplica. `merge.push` es opcional y no cuenta para el bloque completo: ausente, el cierre no hace push.
 
 `control.maxParallelAgents` solo se declara aquí: su conducta la aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md). `control.silence.*` los lee el vigía: [Vigía de silencio](#vigía-de-silencio).
 

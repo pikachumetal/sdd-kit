@@ -1,6 +1,6 @@
 ---
 name: add-to-changelog
-description: Usar al cerrar una feature o patch en un proyecto con .docs/sdd/changelog.md, o cuando el usuario pide poner al día el changelog — normalmente invocada desde sdd-end-feature o sdd-end-patch.
+description: Usar al cerrar una feature o patch en un proyecto con .docs/sdd/changelog.md, o cuando el usuario pide poner al día el changelog — normalmente invocada desde sdd-archive.
 ---
 
 # add-to-changelog

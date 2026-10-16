@@ -26,13 +26,13 @@ Planificar. `sdd-roadmap` reconoce qué le traes: algo grande (te entrevista y l
 > añade autenticación con magic link
 ```
 
-Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Cuando termina la última task lanza la revisión final en segundo plano y, mientras tanto, verifica lo que se ve y prepara el cierre. Después te pregunta qué has probado, y `sdd-end-feature` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
+Hacer. Arranca `sdd-start-feature`: una primera pregunta que confirma carril, modo y perfil, y una spec corta que empieza por las decisiones que ha tomado sin ti. Espera tu aprobación antes de tocar código. Con el perfil por defecto, escribe el plan y lo implementa sin pararte, en la propia sesión o, en los planes largos, por subagentes, con los tests escritos antes. Cuando termina la última task lanza la revisión final en segundo plano y, mientras tanto, verifica lo que se ve y prepara el cierre. Después te pregunta qué has probado, y `sdd-archive` escribe el walkthrough, actualiza el changelog, el roadmap y el registro de estimaciones y fusiona en `develop`.
 
 ```
 > el contador de la home muestra un número de más
 ```
 
-Un cambio pequeño con la solución ya fijada no necesita spec: un fallo reproducible, un ajuste o una retirada de presentación, o una petición que dice qué cambia. Va por `sdd-start-patch`: un solo documento y un cierre corto con `sdd-end-patch`. Si la solución la tendría que decidir el agente, es una feature.
+Un cambio pequeño con la solución ya fijada no necesita spec: un fallo reproducible, un ajuste o una retirada de presentación, o una petición que dice qué cambia. Va por `sdd-start-patch`: un solo documento y un cierre corto con `sdd-archive`, la misma skill que cierra una feature. Si la solución la tendría que decidir el agente, es una feature.
 
 ```
 > cierra la release
@@ -101,14 +101,13 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-propose` | La entrada de un cambio: lee el proyecto, clasifica el carril y escribe lo que va antes de implementar (spec y plan, o la apertura del patch). |
 | `sdd-start-feature` | El carril completo desde la implementación: tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
 | `sdd-implement` | Implementa el plan task a task: en la propia sesión (Native) o con un subagente y una revisión por task (SDD), con los tests de la spec escritos antes, el registro que sobrevive a una compactación; la revisión final de rama la lanza con `sdd-verify`. La invoca `sdd-start-feature`. |
-| `sdd-verify` | La evidencia antes de dar algo por hecho y la revisión final de rama: dos o tres revisores a la vez (spec, código con cinco libros de buen diseño y, si el plan cruza fronteras, arquitectura), una sola tanda de arreglos y una sola re-revisión. La invocan `sdd-implement` y `sdd-end-feature`; adaptada de `verification-before-completion` y `requesting-code-review` de superpowers (MIT). |
+| `sdd-verify` | La evidencia antes de dar algo por hecho y la revisión final de rama: dos o tres revisores a la vez (spec, código con cinco libros de buen diseño y, si el plan cruza fronteras, arquitectura), una sola tanda de arreglos y una sola re-revisión. La invocan `sdd-implement` y `sdd-archive`; adaptada de `verification-before-completion` y `requesting-code-review` de superpowers (MIT). |
 | `sdd-tdd` | Primero el test, verlo fallar y luego el código: también con los tests en rojo que llegan ya escritos, que se ejecutan antes de tocar nada. La carga `sdd-implement`; adaptada de `test-driven-development` de superpowers (MIT). |
 | `sdd-debugging` | La causa raíz antes del arreglo: reproducir, comparar con lo que funciona, una hipótesis cada vez y un test en rojo antes del fix. La invocan `sdd-start-patch` y `sdd-implement`; adaptada de `systematic-debugging` de superpowers (MIT). |
 | `sdd-worktrees` | El sitio aislado donde se implementa: detecta el worktree que ya existe o crea uno, levanta el entorno de `environments.md` y pasa el gate del proyecto antes de empezar. La invoca `sdd-implement`; adaptada de `using-git-worktrees` de superpowers (MIT). |
 | `sdd-parallel-agents` | Varios agentes independientes a la vez, con su modelo y sin pasar del tope de agentes del proyecto. La invocan la review de spec con dos revisores y la revisión final de `sdd-verify`; adaptada de `dispatching-parallel-agents` de superpowers (MIT). |
-| `sdd-end-feature` | El cierre: walkthrough, aprendizajes a los documentos vivos, capacidades, estimaciones, changelog, roadmap y merge a `develop` según la política del proyecto. |
+| `sdd-archive` | El cierre de una feature o de un patch: validación, walkthrough o `patch.md`, aprendizajes, capacidades, ADR, changelog, roadmap y deuda, la base integrada con la suite y el merge con `sdd merge`; al final, qué falta si la pieza es parte de algo partido. |
 | `sdd-start-patch` | Carril corto para un cambio con la solución ya fijada: un fallo determinista (causa raíz obligatoria; si no lo reproduce, para sin abrir nada), un ajuste o una retirada de presentación, o una petición cerrada. |
-| `sdd-end-patch` | Cierre del patch: validación, `patch.md`, changelog, roadmap y merge a `develop` según la política del proyecto. |
 | `sdd-end-release` | Corta la release: changelog sellado, notas para quien la va a usar y roadmap colapsado; la retro, si la pides. El merge a `main` y el tag los confirmas tú. |
 | `sdd-explore` | Preguntar, entender o pensar en voz alta con el contexto cargado, sin generar artefactos. |
 | `sdd-config` | La configuración del kit: enseña la que hay y pregunta lo que falta, de una en una. Lo del equipo va a `sdd-kit.json`; tus preferencias, a `sdd-kit.local.json`, que no va a git. |
@@ -179,7 +178,7 @@ Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `devel
 
 Las init y la migración a v2.0.0 ponen `"autoMemoryEnabled": false` en `.claude/settings.json` del proyecto. La memoria automática de Claude Code se queda en una sola máquina, y el kit quiere lo aprendido en los docs, que van en git.
 
-El kit invoca 2 skills de superpowers: `writing-skills` y `finishing-a-development-branch`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
+El kit invoca 1 skill de superpowers: `writing-skills`. La lista sale de `grep -rhoE "superpowers:[a-z-]+" skills/ | sort -u`, y un test la compara con esta frase para que no diverjan. Versión validada: 7.0.0, revisada el 2026-10-10; en cada minor nuevo se vuelve a testar el mapeo antes de cerrar una release del kit.
 
 impeccable y Playwright son las herramientas con las que se probó la verificación de frontend del kit ([`tests/frontend-verification-green.md`](tests/frontend-verification-green.md)): el proyecto las declara en `§Frontend` de `tech-stack.md`, y el kit no las invoca por su nombre.
 

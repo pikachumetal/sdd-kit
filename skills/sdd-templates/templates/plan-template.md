@@ -186,7 +186,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] Gate de cierre, una vez y en el hilo principal: <el «Gate de cierre» de `operations.md` §Testing, literal; sin él, el de `tech-stack.md` §Testing; sin ninguno, el de la constitution; si no hay ninguno, `no declarado`, apuntado en las decisiones del plan. Nunca un comando que no salga de ahí>
 - [ ] Verificación de los criterios de éxito de la spec (§2)
 - [ ] Spec satisfecha: cada requisito tiene su task (ver Self-review)
-- [ ] Cierre de rama según el flujo del proyecto (`sdd-end-feature`)
+- [ ] Cierre de rama según el flujo del proyecto (`sdd-archive`)
 
 ---
 

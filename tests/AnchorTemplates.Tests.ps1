@@ -119,15 +119,15 @@ Describe 'Plantillas de documentos de la 3.0.0' {
 
 Describe 'Consumidores de las plantillas de anclaje' {
   It 'el cierre calca el destino que falta desde su plantilla' {
-    Get-KitFileContent 'skills/sdd-end-feature/references/aprendizajes-skills.md' | Should -Match '(?s)destino no existe.*calcando su plantilla'
+    Get-KitFileContent 'skills/sdd-archive/references/aprendizajes-skills.md' | Should -Match '(?s)destino no existe.*calcando su plantilla'
   }
 
   It 'el cierre dice en el informe que el destino no existía' {
-    Get-KitFileContent 'skills/sdd-end-feature/references/aprendizajes-skills.md' | Should -Match 'informe final del cierre'
+    Get-KitFileContent 'skills/sdd-archive/references/aprendizajes-skills.md' | Should -Match 'informe final del cierre'
   }
 
   It 'la regla del destino que falta está en el checklist, no solo en references' {
-    Get-KitFileContent 'skills/sdd-end-feature/SKILL.md' | Should -Match '(?s)Si el destino no existe.*calcando su plantilla'
+    Get-KitFileContent 'skills/sdd-archive/SKILL.md' | Should -Match 'If the destination doesn''t exist, create it from its template'
   }
 
   It 'nombrado.md dice de dónde sale la forma de architecture.md' {

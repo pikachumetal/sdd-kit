@@ -1,6 +1,6 @@
 # Deuda técnica — <proyecto>
 
-> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-end-feature`, `sdd-end-patch`), que quitan de «Lista» lo que saldan; lo leen `sdd-roadmap`, los cierres y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar. Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.
+> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-archive`), que quitan de «Lista» lo que saldan; lo leen `sdd-roadmap`, los cierres y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar. Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.
 >
 > **Las cuatro secciones y sus cabeceras van literales**, en este orden. Una celda vacía se escribe `—`. Un `|` dentro de una celda se escribe `\|`.
 >

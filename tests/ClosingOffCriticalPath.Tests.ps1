@@ -1,7 +1,7 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:StartSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-start-feature/SKILL.md') -Raw
-  $script:EndSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-end-feature/SKILL.md') -Raw
+  $script:EndSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-archive/SKILL.md') -Raw
   $script:ImplementSkill = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-implement/SKILL.md') -Raw
 
   function Get-Reference([string]$Name) {
@@ -46,7 +46,7 @@ Describe 'Borradores de cierre' {
   }
 
   It 'el cierre parte de los borradores' {
-    Assert-Literal (Get-Step $script:EndSkill 0) @('borradores')
+    Assert-Literal (Get-Step $script:EndSkill 0) @('left drafts uncommitted', 'the close starts from them')
   }
 }
 
@@ -55,16 +55,19 @@ Describe 'Sha alcanzable' {
     Assert-Literal (Get-Reference 'commit-milestones.md') @('juntada en el cierre', 'git merge-base --is-ancestor')
   }
 
-  It 'el paso 10 reescribe antes de juntar' {
-    Assert-Literal (Get-Step $script:EndSkill 10) @('juntada en el cierre')
+  It 'la historia reescribe antes de juntar' {
+    Assert-Literal (Get-Step $script:EndSkill 5) @('juntada en el cierre')
   }
 
   It 'el último revisado cubre la línea juntada en <Where>' -ForEach @(
     @{ Where = 'el paso 7 de sdd-start-feature'; Text = { Get-Step $script:StartSkill 7 } }
-    @{ Where = 'el paso 9 de sdd-end-feature'; Text = { Get-Step $script:EndSkill 9 } }
     @{ Where = 'control-profiles.md'; Text = { Get-Reference 'control-profiles.md' } }
   ) {
     Assert-Literal (& $Text) @('si la línea dice «juntada en el cierre», el commit de cierre')
+  }
+
+  It 'el último revisado cubre la línea juntada en la revisión final de sdd-archive' {
+    Assert-Literal (Get-Step $script:EndSkill 0) @('if the line says «juntada en el cierre», the closing commit')
   }
 }
 

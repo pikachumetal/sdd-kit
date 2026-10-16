@@ -1,6 +1,6 @@
 ---
 name: sdd-feedback
-description: Use when closing a feature or a patch — sdd-end-feature and sdd-end-patch offer it — or when the user asks for the ticket, the report or the improvement feedback of the kit about the session («el ticket del kit», «el feedback de mejora»).
+description: Use when closing a feature or a patch — sdd-archive offers it — or when the user asks for the ticket, the report or the improvement feedback of the kit about the session («el ticket del kit», «el feedback de mejora»).
 ---
 
 # sdd-feedback

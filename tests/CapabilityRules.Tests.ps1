@@ -13,15 +13,14 @@ BeforeAll {
 
 Describe 'Reglas de capacidades en sus puntos de uso' {
   Context 'el cierre de un patch fusiona su delta de capacidad' {
-    It 'sdd-end-patch lo manda en el paso 1, con la salida corta' {
-      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
-      $step | Should -Match '\.docs/sdd/capabilities/'
-      $step | Should -Match 'ya decía, no hay delta'
-      $step | Should -Match 'sdd\.js" capability merge'
+    It 'sdd-archive lo manda en los docs vivos, con la salida corta' {
+      Get-NumberedStep (Read-SkillFile 'sdd-archive/SKILL.md') 3 | Should -Match 'sdd\.js" capability merge'
+      $patch = [regex]::Match((Read-SkillFile 'sdd-archive/references/records.md'), '(?ms)^## Capabilities of a patch.*?(?=^## |\z)').Value
+      $patch | Should -Match "brings it back to what the capability says, there's no delta"
     }
 
-    It 'sdd-end-patch mete la capacidad en el commit de cierre' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 2 | Should -Match 'capacidades'
+    It 'sdd-archive mete la capacidad en el commit de cierre del patch' {
+      Get-NumberedStep (Read-SkillFile 'sdd-archive/SKILL.md') 5 | Should -Match 'merged capabilities'
     }
 
     It 'patch-template lleva la sección opcional de delta' {
@@ -30,7 +29,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
 
     It 'capability-template nombra el cierre de patch en la fusión' {
       $content = Read-SkillFile 'sdd-templates/templates/capability-template.md'
-      ($content -split "`n" | Where-Object { $_ -match '^> 3\. ' }) | Should -Match 'sdd-end-patch'
+      ($content -split "`n" | Where-Object { $_ -match '^> 3\. ' }) | Should -Match 'sdd-archive'
     }
   }
 
@@ -42,12 +41,12 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $content | Should -Match 'no guarda historial'
     }
 
-    It 'sdd-end-patch no pide línea de historial al fusionar' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1 | Should -Not -Match 'historial'
+    It 'sdd-archive no pide línea de historial al fusionar' {
+      Get-NumberedStep (Read-SkillFile 'sdd-archive/SKILL.md') 3 | Should -Not -Match '(?i)histor'
     }
 
-    It 'la regla de fusión de sdd-end-feature dice que la capacidad no guarda historial' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md') 4 | Should -Match 'no guarda historial'
+    It 'la regla de fusión de sdd-archive dice que la capacidad no guarda historial' {
+      Get-NumberedStep (Read-SkillFile 'sdd-archive/references/aprendizajes-skills.md') 4 | Should -Match 'no guarda historial'
     }
   }
 
@@ -79,28 +78,24 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
       $section | Should -Match 'Ninguna, porque'
     }
 
-    It 'sdd-end-feature ejecuta el validador con la spec en el paso 4' {
-      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-feature/SKILL.md') 4
+    It 'sdd-archive ejecuta el validador con el artefacto en los docs vivos' {
+      $step = Get-NumberedStep (Read-SkillFile 'sdd-archive/SKILL.md') 3
       $step | Should -Match 'capability check'
-      $step | Should -Match '--artifact'
+      $step | Should -Match '--artifact <artifact>'
     }
 
-    It 'sdd-end-patch ejecuta el validador con el patch y escribe el bloque en el paso 1' {
-      $step = Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1
-      $step | Should -Match 'capability check'
-      $step | Should -Match '--artifact'
-      $step | Should -Match 'Ninguna, porque el fix devuelve'
+    It 'el bloque del patch lleva la salida corta' {
+      Read-SkillFile 'sdd-archive/references/records.md' | Should -Match 'Ninguna, porque el fix devuelve'
     }
 
-    It 'en los dos cierres, un fallo en una capacidad que el delta no toca se informa y no bloquea' {
-      foreach ($step in @((Get-NumberedStep (Read-SkillFile 'sdd-end-feature/SKILL.md') 4), (Get-NumberedStep (Read-SkillFile 'sdd-end-patch/SKILL.md') 1))) {
-        $step | Should -Match 'que el delta no toca'
-        $step | Should -Match 'no bloquea'
-      }
+    It 'un fallo en una capacidad que el delta no toca se informa y no bloquea' {
+      $recipe = Read-SkillFile 'sdd-archive/references/merge-recipe.md'
+      $recipe | Should -Match "come out apart as someone else's, don't change the exit code"
+      $recipe | Should -Match "don't edit those capabilities"
     }
 
     It 'la regla de fusión nombra el validador' {
-      Get-NumberedStep (Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md') 4 | Should -Match 'capability check'
+      Get-NumberedStep (Read-SkillFile 'sdd-archive/references/aprendizajes-skills.md') 4 | Should -Match 'capability check'
     }
   }
 
@@ -132,11 +127,11 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
 
     It 'el paso de aprendizajes dice que los anclajes enlazan el valor' {
-      Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md' | Should -Match 'enlaza'
+      Read-SkillFile 'sdd-archive/references/aprendizajes-skills.md' | Should -Match 'enlaza'
     }
 
-    It 'sdd-end-feature tiene una red flag sobre valores copiados a tech-stack' {
-      $redFlags = [regex]::Match((Read-SkillFile 'sdd-end-feature/SKILL.md'), '(?s)## Red flags.*?\|').Value
+    It 'sdd-archive tiene una red flag sobre valores copiados a tech-stack' {
+      $redFlags = [regex]::Match((Read-SkillFile 'sdd-archive/SKILL.md'), '(?s)## Red flags.*?\|').Value
       $redFlags | Should -Match 'tech-stack'
     }
   }
@@ -149,7 +144,7 @@ Describe 'Reglas de capacidades en sus puntos de uso' {
     }
 
     It 'la fusión sustituye entero el requisito' {
-      Read-SkillFile 'sdd-end-feature/references/aprendizajes-skills.md' | Should -Match 'MODIFIED sustituye entero'
+      Read-SkillFile 'sdd-archive/references/aprendizajes-skills.md' | Should -Match 'MODIFIED sustituye entero'
     }
 
     It 'capability-template describe la misma fusión en la regla 3' {
