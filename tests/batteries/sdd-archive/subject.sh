@@ -83,8 +83,52 @@ develop_advances() {
 # Otra feature abierta en su worktree, junto al del molde.
 other_worktree() { g worktree add -q -b feature/0011-others "$RUN/0011-others" develop; }
 
+# La 0010 es la pieza de una familia: su madre 0009 y su hermana 0016, tras ella.
+family_0010() {
+  sed -i 's/^feature: 0010$/feature: 0010\nparent: 0009/' "$R/$F10/spec.md"
+  sed -i 's/^| 0010 | \*\*Motivo al cancelar\*\*\(.*\)| ⏳ |$/| 0009 | **Cancelaciones con motivo** — partida en 0010 y 0016 (dev-lead) | ⏳ |\n| 0010 | **Motivo al cancelar**\1— `parent: 0009` | ⏳ |\n| 0016 | **Fotos de las salas**: cada sala enseña su foto en `salas` — `parent: 0009`, tras 0010 | ⏳ |/' "$R/.docs/sdd/roadmap.md"
+  grep -q '^| 0016 |' "$R/.docs/sdd/roadmap.md" || die "no se plantó la familia de la 0010"
+  commit "docs(sdd): la 0010 es pieza de la 0009"
+}
+# Una ADR candidata en la spec, una ADR válida y otra ajena sin «Confirmación» en decisions/.
+adrs_0010() {
+  sed -i 's/^## Enmiendas$/## Términos y ADR\n\n- Términos resueltos: ninguno\n- ADR candidatas: El motivo de una cancelación se guarda en la propia reserva — alternativa descartada: una tabla de motivos aparte\n\n## Enmiendas/' "$R/$F10/spec.md"
+  printf -- '---\nstatus: accepted\ndate: 2026-09-15\nrutas:\n  - src/**\n---\n\n# Las reservas viven en memoria\n\n## Contexto y problema\n\nUna demo sin base de datos.\n\n## Opciones consideradas\n\n- Memoria\n- SQLite\n\n## Decisión\n\nMemoria, por simplicidad.\n\n### Consecuencias\n\n- Se pierden al reiniciar.\n\n### Confirmación\n\nLa revisión.\n' | put .docs/sdd/decisions/0001-bookings-in-memory.md
+  printf -- '---\nstatus: accepted\ndate: 2026-09-20\nrutas:\n  - test/**\n---\n\n# Los tests usan node:test\n\n## Contexto y problema\n\nSin dependencias.\n\n## Opciones consideradas\n\n- node:test\n- vitest\n\n## Decisión\n\nnode:test.\n\n### Consecuencias\n\n- Sin dependencias.\n' | put .docs/sdd/decisions/0002-node-test.md
+  commit "docs(sdd): ADR candidata y decisiones del proyecto"
+}
+# Un capítulo de capacidades donde el literal que cambia el patch se repite fuera de su requisito.
+capability_0008() {
+  printf -- '# Capacidad — bookings\n\n## Propósito\n\nReservar y cancelar salas.\n\n## Requisitos\n\n### Cancelar una reserva\n\n- GIVEN una reserva de Sur el lunes a las 10:00\n- WHEN se ejecuta `cancelar lun 10:00`\n- THEN responde siempre «cancelada lun 10:00»\n\n## Reglas de la capacidad\n\n- **Dónde viven los datos**: en memoria, en `src/app.js`\n- **Idioma de los nombres**: castellano\n- **Límites**: no aplica\n- **Avisos**: «cancelada <día> <franja>», siempre, exista o no la reserva\n- **Regla ante conflicto**: no aplica\n' | put .docs/sdd/capabilities/bookings.md
+}
+patch_delta_0008() {
+  sed -i 's/^Ninguna, porque el proyecto no tiene `capabilities\/`\.$/- Modificadas: `bookings` — cambia «Cancelar una reserva»/' "$R/$P8/patch.md"
+  printf -- '\n## Delta de capacidad\n\n### Capacidad: `bookings`\n\n**MODIFIED — Cancelar una reserva** (antes: «responde siempre «cancelada lun 10:00»»)\n\n- GIVEN una reserva de Sur el lunes a las 10:00\n- WHEN se ejecuta `cancelar lun 10:00`\n- THEN responde «cancelada lun 10:00»\n- AND `cancelar mie 10:00`, sin reserva ese día, responde «no hay reserva mie 10:00»\n' >> "$R/$P8/patch.md"
+  g add -A; g commit -q --amend --no-edit
+}
+# Un walkthrough en borrador que cita el sha de un commit del tramo que el cierre junta.
+cited_sha_0010() {
+  sed -i 's/return index === -1 ? undefined : params\[index + 1\];/return index === -1 ? undefined : params[index + 1]?.trim();/' "$R/src/app.js"
+  commit "fix(bookings): el motivo sin espacios alrededor"
+  local fix; fix=$(short HEAD)
+  printf -- '# Walkthrough — Motivo al cancelar (borrador)\n\n## 1. Qué se hizo\n\n- Las dos tasks del plan.\n- Arreglo de la validación: `%s` quita los espacios del motivo.\n' "$fix" | put "$F10/walkthrough.md"
+  commit "docs(sdd): borrador del walkthrough de la 0010"
+}
+# ROADMAP.md y debt.md de la 3.0.0 en lugar de roadmap.md.
+roadmap_300() {
+  g rm -q .docs/sdd/roadmap.md
+  printf -- '# Roadmap — salas\n\n## Now\n\nPerfil de control: delegate\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n| 0010 | — | **Motivo al cancelar**<br>*Al cancelar se elige un motivo*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** spec de la 0010<br>**Decisiones ya tomadas:** —<br>**Salda:** «El motivo de cancelar no se valida» entera; «Los motivos no se traducen», solo el castellano<br>**Toca:** `src/app.js`</details> | 🔄 | — | M |\n\n## Next\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n\n## Later\n\n| Id | Externo | Tarea | Estado | Tras | Tamaño |\n| --- | --- | --- | --- | --- | --- |\n| B1 | — | **Exportar a calendario**<br>*Las reservas en .ics* | ⏳ | — | — |\n' | put ROADMAP.md
+  printf -- '# Deuda técnica — salas\n\n## Por triar\n\n| Ítem | Origen | Fecha |\n| --- | --- | --- |\n\n## En espera\n\n| Ítem | Origen | Impacto | Falta | Fecha |\n| --- | --- | --- | --- | --- |\n\n## Lista\n\n| Ítem | Origen | Impacto | Evidencia | Destino |\n| --- | --- | --- | --- | --- |\n| El motivo de cancelar no se valida | revisión de la 0007 | medio | `cancelar Sur mar --motivo xyz` | 0010 |\n| Los motivos no se traducen (castellano e inglés) | cliente | bajo | `canceladas` | 0010 |\n\n## Descartadas\n\n| Ítem | Origen | Motivo | Fecha |\n| --- | --- | --- | --- |\n' | put .docs/sdd/steering/debt.md
+  commit "docs(sdd): roadmap y deuda en la forma 3.0.0"
+}
+
 case "$(cell Molde)" in
   reservas) mold_reservas; done_0010 ;;
+  reservas-family) mold_reservas; done_0010; family_0010 ;;
+  reservas-adr) mold_reservas; done_0010; adrs_0010 ;;
+  reservas-sha) mold_reservas; done_0010; cited_sha_0010 ;;
+  reservas-300) mold_reservas; roadmap_300; done_0010 ;;
+  salas-capability) capability_0008; done_0008; patch_delta_0008 ;;
   reservas-base) mold_reservas; done_0010; develop_advances; other_worktree; printf 'apuntes de la 0010\n' > "$R/notes.md"
     export TURN2='notes.md era un apunte mío: bórralo y sigue con el cierre.' ;;
   reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
@@ -106,6 +150,8 @@ for kept in tasks walkthrough patch; do
   for dir in "$F10" "$P8"; do [ -f "$R/$dir/$kept.md" ] && subject_keep "$R/$dir/$kept.md" "$kept.md"; done
 done
 for mig in "$R"/skills/sdd-init-brownfield/references/migrations/v*.md; do [ -f "$mig" ] && subject_keep "$mig" "$(basename "$mig")"; done
+for kept in ROADMAP.md .docs/sdd/steering/debt.md .docs/sdd/capabilities/bookings.md; do [ -f "$R/$kept" ] && subject_keep "$R/$kept" "$(basename "$kept")"; done
+for adr in "$R"/.docs/sdd/decisions/*.md; do [ -f "$adr" ] && subject_keep "$adr" "$(basename "$adr")"; done
 for doc in roadmap tech-stack changelog; do [ -f "$R/.docs/sdd/$doc.md" ] && subject_keep "$R/.docs/sdd/$doc.md" "$doc.md"; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all --graph; echo "## etiquetas"; g tag -n1
   echo "## roadmap en develop"; g show develop:.docs/sdd/roadmap.md 2>/dev/null; echo "## tech-stack en develop"; g show develop:.docs/sdd/tech-stack.md 2>/dev/null | tail -n 20; } | subject_save

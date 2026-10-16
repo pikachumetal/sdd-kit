@@ -12,6 +12,11 @@ Moldes:
 - `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva justo debajo de la 0010 en «Próximo»), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
 - `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Deuda técnica».
 - `reservas-plan`: `reservas-red` con la rama de la 0010 abierta solo con su spec y su plan.
+- `reservas-family`: `reservas` con la 0010 como pieza de la 0009 (`parent: 0009` en su spec y en su fila) y la 0016 «Fotos de las salas», `⏳`, con `parent: 0009`, tras la 0010.
+- `reservas-adr`: `reservas` con una ADR candidata en la spec de la 0010, `decisions/0001-bookings-in-memory.md` válida y `decisions/0002-node-test.md` sin `### Confirmación`.
+- `reservas-sha`: `reservas` con un arreglo tras la última task y un borrador del walkthrough commiteado que cita su sha.
+- `reservas-300`: `reservas` con `ROADMAP.md` (la 0010 en Now, `🔄`, con su brief) y `.docs/sdd/steering/debt.md` (dos filas de «Lista» con «Destino» `0010`: una saldada entera y otra solo en castellano) en lugar de `roadmap.md`.
+- `salas-capability`: `salas-patch` con `capabilities/bookings.md`, cuyo requisito «Cancelar una reserva» dice «responde siempre «cancelada lun 10:00»» y cuyos «Avisos» lo repiten («siempre, exista o no la reserva»), y un `patch.md` con el `MODIFIED` de ese requisito.
 - `salas-patch`: el de `tests/batteries/using-sdd/mold-salas` con la fila 0008 «Patch:» en «Próximo», la rama `feature/0008-cancel-missing` con el fix commiteado y su `patch.md` (`patch-0008.md`), `validation.mode: field` y `merge` sin push. «Deuda técnica» lleva la fila «Cancelar una reserva que no existe responde «cancelada» igual» con «Actuar → 0008».
 - `salas-hotfix`: el mismo, con la rama `hotfix/0008-cancel-missing` salida de `main` y una carpeta `skills/sdd-init-brownfield/references/migrations/` con su `README.md`. El segundo turno (`TURN2`) contesta a la pregunta de la migración: «Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.»
 
@@ -27,6 +32,11 @@ Moldes:
 | a3 | base | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-base | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | 0048 y fila de deuda «El kit no tiene modelo para tasks en paralelo» (P2.2, P2.3); ticket de la feature 0093 de document-manager §2 (la suite sobre la base integrada); fila «La suite completa corre tres veces…» |
 | a3r | red | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-red | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | filas de deuda «Un rojo del gate de cierre se contrasta con la base…», «Un rojo ajeno se investiga antes de mirar la deuda…» y «Sin forma de informe cuando la suite falla tras el merge…» |
 | w1 | baseline | Invoca la skill sdd-kit:sdd-worktrees y sigue: prepara el worktree para implementar la 0010, con su spec y su plan aprobados; no implementes nada todavía. | reservas-plan | `sdd-kit:sdd-worktrees` | 2 | 2/2 | sonnet | fila de deuda «Un rojo ajeno se investiga antes de mirar la deuda…» (la línea base de `sdd-worktrees`) |
+| a5 | family | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-family | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | fila de deuda «Al cerrar una pieza de una feature partida, nada dice qué piezas de su familia quedan abiertas» (dev-lead, 2026-10-16) |
+| a6 | adr | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-adr | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: el cierre escribe las ADR candidatas y ejecuta `sdd decision check` (dev-lead, 2026-10-15) |
+| a7 | literal | Invoca la skill sdd-kit:sdd-archive y sigue. Cierra el patch 0008. | salas-capability | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | ticket del patch 0078 §2: un `MODIFIED` no alcanza el literal repetido en «Reglas de la capacidad» |
+| a8 | sha | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-sha | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | RED de la feature 0096 (`tests/closing-off-critical-path-red.md`, c2) y ticket de la feature 0060 del template §2: juntar hitos borra los shas que cita la evidencia |
+| a9 | v300 | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-300 | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: los cierres escriben en Now y en `debt.md` con las plantillas de la 0150 (dev-lead, 2026-10-15) |
 | r1 | route | hemos acabado, cierra la tarea | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de una feature entra por `sdd-archive` |
 | r2 | route | cierra el patch | salas-patch | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de un patch entra por `sdd-archive` |
 
@@ -56,6 +66,14 @@ Moldes:
 | C2 Deuda del proyecto | a3r, w1 | no cita la fila de deuda de `export.e2e.test.js`, o abre una fila nueva duplicada, o abre el test para investigarlo antes de buscar en la deuda |
 | C3 Informe y parada | a3r | fusiona sin preguntar, o el informe no lleva el comando, el código de salida, el veredicto de la base y el hash de `develop` sin tocar |
 | W1 Línea base | w1 | da la línea base en rojo sin contrastarla con la rama de integración, o sigue sin preguntar |
+| Q1 Qué sigue | a5 | el mensaje final no dice «Para acabar la 0009 falta: 0016 — Fotos de las salas.» con la recomendación, o no da el prompt de arranque de la 0016 con su rama en su bloque, o marca la fila de la 0009 |
+| D1 ADR escrita | a6 | no hay `decisions/0003-*.md` con la forma de la plantilla, o el walkthrough no lleva `ADR: <candidata> → decisions/0003-…` |
+| D2 `decision check` | a6 | no ejecuta `sdd decision check --path .docs/sdd`, o fusiona con el check en rojo por la `0002` sin arreglarla ni preguntar |
+| M1 Literal de la capacidad | a7 | `bookings.md` tras el cierre aún dice «exista o no la reserva» o «responde siempre» |
+| M2 Por el delta | a7 | la corrección de «Avisos» no está en el delta de `patch.md` (se editó `bookings.md` a mano) |
+| S1 Shas alcanzables | a8 | algún sha que cite el `walkthrough.md` o el `tasks.md` de `develop` no es antecesor de `develop` |
+| N1 Now | a9 | la fila 0010 de `ROADMAP.md` no queda `✅` en Now, o sale de Now |
+| N2 `debt.md` | a9 | «El motivo de cancelar no se valida» sigue en «Lista», o «Los motivos no se traducen» sale de «Lista» o queda sin reescribir a lo que falta (el inglés) |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -76,6 +94,11 @@ Moldes:
 | Árbol limpio y otras ramas abiertas antes que nada | RED de la 0149, `a3`: cerró y fusionó antes de preguntar por `notes.md` y no nombró la otra rama (0/1); GREEN con la línea «si hay otras ramas», B2 1/2; «en tu siguiente mensaje, antes de cualquier otro paso», 2/2 (`refactor/`) | a3 (B1, B2) |
 | Un rojo se contrasta con la base y se busca en la deuda antes de investigarlo; forma del informe | filas de deuda del rojo del gate, del rojo ajeno y del informe tras el merge; RED de la 0149: `a3r` fusionó sobre el rojo sin contrastar (0/1) y `w1` abrió el test sin citar la deuda (0/1) | a3r (C1-C3), w1 (C2, W1) |
 | Ante un rojo que también falla sin la rama, se para y pregunta en cualquier perfil | GREEN con la parada solo en la receta: `a3r` C3 1/2; con la parada en el paso 6 del `SKILL.md`, 2/2 (`refactor2/`) | a3r (C3) |
+| «Qué sigue» al cerrar una pieza de una familia | dev-lead, 2026-10-16; sin paso de «qué sigue» en `sdd-end-feature` ni `sdd-end-patch` (contrastado ese día): RED por inspección | a5 (Q1): GREEN 2/2 en contenido (nombra la 0016, la recomienda, da su prompt y no marca la madre), 0/2 con el literal, que parafrasean: minor diferido |
+| Las ADR candidatas se escriben y `decision check` para el cierre, también por una ajena | dev-lead, 2026-10-15 | a6 (D1, D2): GREEN D2 2/2; D1 1/2, `a6-2` nombra la ADR 0003 sin la línea literal: minor diferido; RED: ni la ADR ni el check (0/1) |
+| El literal viejo de un `MODIFIED` se busca en toda la capacidad y se corrige por el delta | ticket del patch 0078 §2 | a7 (M1, M2): RED corrigió «Avisos» a mano (M2 0/1); GREEN 2/2 |
+| Ningún sha citado se pierde al juntar | `tests/closing-off-critical-path-red.md`, c2 (RED de la regla) | a8 (S1): GREEN 2/2 |
+| Con `ROADMAP.md`, lo hecho queda en Now y la deuda saldada sale de «Lista» | dev-lead, 2026-10-15 | a9 (N1, N2): RED dejó la fila parcial sin reescribir (N2 0/1); GREEN 2/2 |
 | La `description` de `sdd-archive` recoge «cierra la feature», «cierra el patch», «hemos acabado», «haz el walkthrough» | feature 0149, decisión 3 | r1, r2 |
 
 ## Evidencia heredada de `sdd-end-feature` y `sdd-end-patch`

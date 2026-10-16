@@ -1,0 +1,87 @@
+--- [3]
+Empiezo por los pre-checks: estado del worktree, `merge --check` y los worktrees abiertos.
+
+--- [5]
+Limpio, sin otras ramas abiertas. Leo spec y tasks.
+
+--- [25]
+Mientras vuelve la re-revisión no escribo ningún registro. Hago solo lecturas y el smoke real.
+
+--- [34]
+La re-revisión está en marcha. No escribo registros hasta que vuelva.
+
+Hasta ahora:
+- **Pre-checks:** el worktree está limpio, `merge --check` da `destino: listo` (`develop`) y no hay otras ramas abiertas.
+- **Smoke:** pasa 4 de 4 THEN y la suite da 5/5. Una cosa no se puede probar de punta a punta: en procesos CLI separados, `canceladas` sale vacío porque el almacén está en memoria (ADR 0001). Lo anotaré como `no probado` y no como verificado.
+
+Cuando vuelva la re-revisión sigo con el walkthrough, las capacidades, el ADR, el changelog y el roadmap.
+
+--- [44]
+### New Breakage in the Fix Diff
+
+1. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. The Task 1 row gives commit `e58f3f0`, but Task 1 («Cancelar con motivo») was actually done in `b1e206a` («feat(bookings): cancelar con un motivo de la lista»). `e58f3f0` is Task 2 («listado de canceladas con su motivo»), and row 11 is correct. The record therefore doesn't match the real `git log` of the range.
+
+2. **Important**: `.docs/sdd/decisions/0002-node-test.md:25`. The ADR is missing the required `### Confirmación` section. The kit's template (`skills/sdd-templates/templates/adr-template.md:30`) requires it, and so does `sdd decision check` (`cli/src/decisions/check.ts:10`, the `SECTIONS` list), so this file fails the check. ADR 0001 does have it.
+
+3. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The Task 2 ruling says the gate was run as `node --test --test-concurrency=1`. That contradicts the plan, whose closing gate is `node --test` (`plan.md`, «3. Validación final»). Nothing else in the repo backs the flag up: `package.json` is only `{"type": "module"}` with no scripts. Two further problems:
+   - **The stated cause doesn't hold up.** `node --test` already runs each file in its own process, so `app.test.js` and `cancel.test.js` don't share the in-memory store. The real coupling is inside `cancel.test.js`: the `canceladas` test depends on the first test having cancelled Norte lun. `--test-concurrency=1` doesn't change that.
+   - **The workaround isn't tracked as debt.** It says so itself («workaround hasta aislar el almacén por test»), but it isn't in the «Deuda técnica» table of `.docs/sdd/roadmap.md`.
+
+   Either the ruling records a gate that didn't happen, or the final review ran a gate different from the plan's. In both cases the record isn't reliable, and it got in through an unreviewed commit.
+
+4. **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md:64`. The candidate ADR («El motivo de una cancelación se guarda en la propia reserva») matches the code: `booking.reason = reason` in `src/app.js`. But it overlaps roadmap item 0014 («Motivo guardado: el motivo de una cancelación se guarda en el almacén de reservas»), which is still ⏳. The candidate should be reconciled with 0014 so the same decision isn't written up twice. Also, with the in-memory store it's doubtful the decision is «difícil de deshacer», which the template requires before offering an ADR.
+
+Everything else in the diff is documentation; none of it touches `src/` or `test/`. ADR 0001 has the correct structure and matches the code (the store is the in-memory `bookings` array). ADR 0002 matches the code apart from the missing section: the tests use `node:test` and there are no dependencies.
+
+### Out-of-Scope Observations
+
+- `spec.md`, «Decisiones que he tomado yo»: the numbering jumps from 1 to 3 (item 2 is missing). Point 3 says «Sin review de spec», yet the final review included a Spec axis. They aren't necessarily incompatible, but it's worth checking. This predates the range.
+- `test/cancel.test.js`: the third test depends on the order and state left by the first, through the shared module-level store. That is the underlying problem the ruling hints at; it was outside this range and had already been reviewed.
+- ADR 0001, «Confirmación: La revisión.»: this is valid per the template but very weak. There is no verifiable check, such as `src/` not importing `node:fs`.
+
+### Verdict
+
+**Fix round:** Findings remain open:
+- `tasks.md:10`, wrong Task 1 commit (should be `b1e206a`) — Important
+- `0002-node-test.md`, missing `### Confirmación` — Important
+- `tasks.md:17`, the ruling contradicts the plan's gate, has a doubtful cause and isn't recorded as debt — Important
+- `spec.md:64`, the candidate ADR overlaps roadmap 0014 — Minor
+
+There were no prior findings to verify.
+
+--- [46]
+La re-revisión devuelve 3 Important y 1 Minor, todos de documentación. Los contrasto antes de tocar nada y retiro el worktree de revisión.
+
+--- [49]
+Confirmado: `decision check` falla por la sección que falta en el ADR 0002. Los otros dos puntos de `tasks.md` también son ciertos. Empiezo por el ADR 0002 y `tasks.md`.
+
+--- [62]
+Estoy cerrando los registros de la 0010. Falta la fila de deuda del roadmap y devolver CRLF a changelog y roadmap, porque `sed` les quitó los finales de línea originales.
+
+--- [65]
+Ahora el walkthrough.
+
+--- [68]
+Historia: junto los dos commits de documentación posteriores a la revisión y el cierre en un solo commit sobre la última task (`e58f3f0`). Esa es la forma que pide el cierre de una feature.
+
+--- [73]
+La 0010 está cerrada y fusionada en `develop` (`0ba2539`). Antes de fusionar, la suite dio 5/5 sobre el commit de cierre `628e230`.
+
+**Decisiones tomadas sin el dev-lead**
+- **Gate con el flag:** la ejecución usó `node --test --test-concurrency=1` en lugar del `node --test` del plan, por una posible carrera entre tests. No pude reproducirla: `node --test` también da 5/5. La re-revisión apunta a otra causa: el test `canceladas` depende del estado que deja el test anterior dentro de `test/cancel.test.js`. Queda como fila de deuda en el roadmap.
+- **ADR 0003:** la escribí yo en el cierre desde la candidata de la spec, con estado `accepted` y la fecha de la spec (2026-10-08). La re-revisión duda de que sea difícil de deshacer, y solapa con la fila 0014 del roadmap, que anoté en la ADR y en la fila.
+- **Correcciones de documentación tras la re-revisión:**
+  - En `tasks.md`, el commit de la Task 1 era `b1e206a`, no `e58f3f0`.
+  - Al ADR 0002 le faltaba `### Confirmación`, que `decision check` exige. La redacté yo.
+
+**Cosas a tener en cuenta**
+- **Re-revisión:** `b19e16b` tocaba 59 líneas de documentación, más del límite de 20, así que lancé la única re-revisión de `e58f3f0..b19e16b`. Devolvió 3 Important y 1 Minor, todos de documentación y ninguno de código. Corregí los tres Important en el cierre y el Minor quedó anotado. El fix del ADR 0002 está sin re-revisar.
+- **Spec modificada tras su aprobación:** se le añadió «Términos y ADR» en `b19e16b`, después de la aprobación del 2026-10-08, y `## Enmiendas` sigue en «(ninguna)». No cambia ningún requisito, pero lo dejé escrito en el walkthrough.
+- **Validación en campo, no humana:** suite 5/5 y smoke con ejecución real de 3 de los 4 THEN. El THEN de `canceladas` no se puede probar de punta a punta por CLI: en procesos separados sale vacío, porque el almacén está en memoria (ADR 0001). Solo lo cubre el test, y está como `no probado` en el walkthrough.
+- **`roadmap check`:** da 2 fallos en líneas que no toqué (la cabecera de «Deuda técnica» y el título de «Releases cerradas»). Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Otros registros:** no existen `estimation.md`, `architecture.md` ni `.claude/skills/`, así que no hay tiempo real ni estimation-log, y ningún aprendizaje les tocaba. El repo no tiene remoto, así que el push no se hizo (`merge.push` es `false`).
+
+¿Quieres que ofrezca el ticket de mejora del kit con `sdd-feedback` sobre esta sesión? No lo he abierto.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`0ba2539`) · push: no hecho: `merge.push` no lo autoriza y no hay remoto.
+

@@ -24,7 +24,7 @@ Describe 'sdd-archive: anatomía' {
     $script:Skill | Should -Match ([regex]::Escape($_))
   }
 
-  It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'estimation.md', 'aprendizajes-skills.md', 'records.md') {
+  It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'aprendizajes-skills.md', 'records.md') {
     $script:Skill | Should -Match ([regex]::Escape("(references/$_"))
     Test-Path (Join-Path $script:RepoRoot "skills/sdd-archive/references/$_") | Should -BeTrue
   }
@@ -156,5 +156,61 @@ Describe 'sdd-worktrees: línea base en rojo' {
     $worktrees = Get-KitFile 'skills/sdd-worktrees/SKILL.md'
     $worktrees | Should -Match 'detached worktree of the integration branch'
     $worktrees | Should -Match "project's debt"
+  }
+}
+
+Describe 'sdd-archive: registros, ADR y qué sigue' {
+  BeforeAll { $script:Records = Get-KitFile 'skills/sdd-archive/references/records.md' }
+
+  It 'escribe cada ADR candidata con su línea en el walkthrough' {
+    $script:Skill | Should -Match ([regex]::Escape('`ADR: <candidata> → decisions/NNNN-<slug>.md`'))
+  }
+
+  It 'ejecuta sdd decision check, también sin candidatas y en un patch' {
+    $script:Skill | Should -Match 'decision check --path \.docs/sdd'
+    $script:Skill | Should -Match 'with or without candidates, in a patch too'
+  }
+
+  It 'una ADR ajena rota también para el cierre' {
+    $script:Skill | Should -Match "an ADR you didn't write stops the close too"
+  }
+
+  It 'busca el literal viejo de un MODIFIED en toda la capacidad y lo corrige por el delta' {
+    $script:Skill | Should -Match 'search the old clause of each `MODIFIED`'
+    $script:Skill | Should -Match 'through the artifact''s delta'
+  }
+
+  It 'con ROADMAP.md la fila queda en Now y la deuda saldada sale de «Lista»' {
+    $script:Skill | Should -Match '`ROADMAP\.md` at the root'
+    $script:Records | Should -Match 'stays in Now'
+    $script:Records | Should -Match '«Lista» of `\.docs/sdd/steering/debt\.md`'
+  }
+
+  It 'qué sigue: <_>' -ForEach @(
+    '«Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas.»',
+    '«Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.»',
+    '«Para acabar la propuesta `<N>` falta: …»',
+    '«La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.»'
+  ) {
+    $script:Records | Should -Match ([regex]::Escape($_))
+  }
+
+  It 'qué sigue lee el parent: de patch.md también' {
+    $script:Records | Should -Match 'frontmatter of the `spec\.md` or `patch\.md`'
+  }
+
+  It 'la madre cerrada no se anuncia' {
+    $script:Records | Should -Match 'A mother already closed: only the open sisters'
+  }
+
+  It 'el mensaje final nombra qué sigue antes de la oferta del ticket' {
+    $msg = $script:Skill.Substring($script:Skill.IndexOf('9. **Final message**'))
+    $msg.IndexOf("What's next") | Should -BeGreaterThan -1
+    $msg.IndexOf("What's next") | Should -BeLessThan $msg.IndexOf('The ticket offer')
+  }
+
+  It 'commit-milestones guarda los shas de cualquier artefacto' {
+    $milestones = Get-KitFile 'skills/sdd-start-feature/references/commit-milestones.md'
+    $milestones | Should -Match '`walkthrough\.md`, `patch\.md`, la deuda o una ADR'
   }
 }
