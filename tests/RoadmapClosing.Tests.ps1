@@ -37,7 +37,6 @@ Describe 'Formato de cierre de filas del roadmap' {
   }
 
   It 'sdd-archive cierra una fila de deuda o de backlog con el prefijo literal de la plantilla' {
-    # Feature 0149, a2: remitiendo a la plantilla, 1 de 2 sujetos marcó la fila con «✅»; con el literal en la skill, 2 de 2.
     $script:Archive | Should -Match ([regex]::Escape('A debt or backlog row the change settles'))
     $script:Archive | Should -Match ([regex]::Escape('**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))
     $script:Template | Should -Match ([regex]::Escape('**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**'))

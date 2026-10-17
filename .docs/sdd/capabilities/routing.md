@@ -75,12 +75,6 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`
 - AND con «prepara la release 1.3», no `sdd-end-release`; con «organízalo para el equipo», no `sdd-propose`
 
-### El cierre de una feature entra por `sdd-end-feature`
-
-- GIVEN un proyecto con `.docs/sdd/`, en la rama `feature/0081-booking-reminders` con su `plan.md` y su `tasks.md` con todas las tasks hechas
-- WHEN el usuario escribe «hemos acabado, cierra la tarea»
-- THEN la primera skill que se invoca es `sdd-kit:sdd-end-feature`
-
 ### Un ajuste solo de presentación entra por el carril patch
 
 - GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo, con las páginas `pedido-detalle.html` y `albaran-detalle.html` y sus estilos
@@ -91,12 +85,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 ### Un patch visual se verifica con una captura y se registra como `Changed`
 
 - GIVEN un patch abierto para un ajuste solo de presentación o una retirada
-- WHEN el agente lo recorre con `sdd-start-patch` y lo cierra con `sdd-end-patch`
+- WHEN el agente lo recorre con `sdd-start-patch` y lo cierra con `sdd-archive`
 - THEN §2 de `patch.md` lleva la intención en una frase, en lugar de la causa raíz, y no se invoca `sdd-debugging`
 - AND §4 lleva la ruta de una captura en navegador real de cada pantalla tocada antes y después del cambio, guardadas fuera de git, y la salida del detector en los dos viewports con cada hallazgo resuelto o justificado, con los mismos contraejemplos que una task full
 - AND sin detector declarado, el aviso «composición no medida», y con el detector declarado sin ejecutar, «no probado» con el error concreto
 - AND con «sube el badge de estado a 14px», la verificación visual (capturas y detector) dura menos de 5 minutos, sin build dedicado ni suite de specs nueva
-- AND la validación del paso 0 de `sdd-end-patch` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `tech-stack.md` no la tiene
+- AND la validación del cierre de `sdd-archive` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `tech-stack.md` no la tiene
 - AND la entrada del changelog va en `Changed`, no en `Fixed`; en una retirada, en `Removed`
 - AND en una retirada, §4 lleva además la búsqueda de cada símbolo retirado, sin otros usos
 - AND un bug determinista sigue con la causa raíz de `sdd-debugging` y cierra en `Fixed`
@@ -125,7 +119,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el agente escribe `patch.md`
 - THEN el frontmatter lleva `solution: ticket | dev-lead | causa raíz`, y §3 una lista `Decisiones` con el autor en cada línea: `ticket`, `dev-lead` o `sin el dev-lead`
 - AND una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` hace que el agente pare el patch y lo suba a feature por el paso de la spec de `sdd-propose`, y se lo diga al usuario
-- AND el mensaje final de `sdd-end-patch` lista las decisiones con autor `sin el dev-lead` leídas de esa lista
+- AND el mensaje final del cierre de `sdd-archive` lista las decisiones con autor `sin el dev-lead` leídas de esa lista
 
 ### Un patch muy grande para y pregunta
 
@@ -233,6 +227,13 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/`, superpowers instalado y el hook de sesión activo
 - WHEN el usuario escribe «Tria lo que hay por triar en la deuda.»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-explore` ni `sdd-kit:sdd-propose`
+
+### El cierre de una feature o de un patch entra por `sdd-archive`
+
+- GIVEN un proyecto con `.docs/sdd/`, en la rama `feature/0081-booking-reminders` con su `plan.md` y su `tasks.md` con todas las tasks hechas
+- WHEN el usuario escribe «hemos acabado, cierra la tarea»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-archive`
+- AND en la rama `patch/0082-slot-overlap` con su `patch.md` y el fix commiteado, «cierra el patch» también invoca primero `sdd-kit:sdd-archive`
 
 ## Reglas de la capacidad
 

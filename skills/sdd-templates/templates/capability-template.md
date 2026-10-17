@@ -3,7 +3,7 @@
 > **Reglas anti-proliferación** (no se rompen sin pasar por esta lista):
 > 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
 > 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
->    la crean `sdd-archive` por su cuenta.
+>    la crea `sdd-archive` por su cuenta.
 > 3. `sdd-archive` fusiona el delta de la spec o el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita. La capacidad no guarda historial: quién cambió
 >    qué lo dicen git y el bloque «Capacidades» de cada spec o `patch.md`.

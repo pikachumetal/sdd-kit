@@ -74,7 +74,7 @@ Describe 'Reglas de ruido de la skill' {
 Describe 'Oferta por feature o patch' {
   It 'sdd-archive ofrece el ticket salvo que ya tenga el suyo' {
     $content = Get-KitFileContent (Join-Path $script:KitRoot 'skills/sdd-archive/SKILL.md')
-    $content | Should -Match 'offered unless this change already has its own, even if the session made another''s'
+    $content | Should -Match 'unless this change already has its own, even if the session made another''s'
   }
 }
 

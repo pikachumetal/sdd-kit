@@ -8,7 +8,7 @@ After the closing commit, `git fetch`. If `<remote>/<merge.into>` is an ancestor
 
 Otherwise, in the change's worktree: `git merge --no-edit <remote>/<merge.into>`, the sync merge, which stays the branch's last commit. Without a remote, the local `merge.into`.
 
-- **Conflict only in the registers** —every file in the list is `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` or `.docs/sdd/estimation-log.md`—: in `changelog.md` and `roadmap.md` each line keeps the change of the side that touched it. Two new lines both go in; two different rows, even contiguous in one hunk, each keep their change; the two hunks are never pasted whole, that duplicates rows. `estimation-log.md` isn't edited: regenerate it with `sdd estimation log`. `git add` the three and `git commit --no-edit`, through the hook; never `--no-verify`.
+- **Conflict only in the registers** —every file in the list is `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` or `.docs/sdd/estimation-log.md` (in 3.0.0, `ROADMAP.md`, `CHANGELOG.md` and `.docs/sdd/steering/debt.md`)—: in `changelog.md` and `roadmap.md` each line keeps the change of the side that touched it. Two new lines both go in; two different rows, even contiguous in one hunk, each keep their change; the two hunks are never pasted whole, that duplicates rows. `estimation-log.md` isn't edited: regenerate it with `sdd estimation log`. `git add` the three and `git commit --no-edit`, through the hook; never `--no-verify`.
 - **Any other conflict**, or both sides touched the same line of a register: `git merge --abort`; quote git's message and the files; the close stays «No terminado» for a person.
 - **The suite again**: only if, since the sha of the validation's suite, something changed outside `.docs/` that isn't `*.md` (`git diff --quiet <sha> HEAD -- . ':!.docs' ':!*.md'` fails), the same predicate as `--verified-at`. Then run the full suite (E2E included if the project declares them) on the sync merge, and the merge carries `--verified-at <sha of the sync merge>`. If only docs changed, don't run it, and pass the validation's sha.
 
@@ -23,7 +23,7 @@ A red from the suite you ran is contrasted by hand: the same command in a detach
 
 A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …` or `base: en verde: el rojo lo trae la rama`), and the same rule follows.
 
-**The red report**, in one block: the command, its exit code, the log's path, its last 20 lines, the base's verdict (the `base:` line) and the destination's state, read with `git rev-parse --short <merge.into>`: «`develop` sin tocar en `<hash>`».
+**The red report**, in one block: the command, its exit code, the log's path, its last 20 lines, the base's verdict (the `base:` line) and the destination's state, read with `git rev-parse --short <merge.into>`: «`<merge.into>` sin tocar en `<hash>`».
 
 ## The merge is a script
 

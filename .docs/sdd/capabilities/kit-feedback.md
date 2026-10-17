@@ -62,7 +62,7 @@ El ticket de mejora del kit: lo que un proyecto consumidor escribe sobre el comp
 
 ### El cierre de una feature y el de un patch ofrecen el ticket en la misma sesión
 
-- GIVEN un cierre por `sdd-end-feature` o `sdd-end-patch` con el resto del checklist terminado
+- GIVEN un cierre por `sdd-archive` con el resto del checklist terminado
 - WHEN el agente da el cierre por cerrado
 - THEN ofrece generar el ticket con `sdd-feedback` en esa misma sesión, diciendo que al limpiar el contexto ese conocimiento se pierde
 - AND la oferta no es un gate: sin respuesta, el cierre termina y no deja nada pendiente ni anotado en ningún artefacto

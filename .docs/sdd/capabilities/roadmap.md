@@ -8,8 +8,8 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 
 ### Cerrar una fila de deuda o de backlog deja un prefijo contable
 
-- GIVEN una fila de «Deuda técnica» o de «Backlog» del roadmap que una feature o un patch salda entera o en parte
-- WHEN se cierra con `sdd-end-feature` o con `sdd-end-patch`
+- GIVEN una fila de «Deuda técnica» o de «Backlog» del roadmap 2.x que una feature o un patch salda entera o en parte
+- WHEN se cierra con `sdd-archive`
 - THEN la celda «Ítem» empieza por `**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**`, o por `**[<Feature|Patch> <id>, <AAAA-MM-DD>: parcial — <enlace>; queda: <lo pendiente>]**` si queda algo, con el enlace al `walkthrough.md` o al `patch.md`
 - AND el texto con que se abrió la fila sigue detrás del prefijo, sin reescribir
 - AND `grep -E '\| \*\*\[(Feature|Task|Patch) [^],]+, [0-9]{4}-[0-9]{2}-[0-9]{2}: saldada — '` sobre el roadmap lista esa fila si está saldada, y no la lista si es `parcial`
@@ -99,7 +99,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 ### Los cierres de feature y de patch avisan del roadmap fuera de forma sin bloquear
 
 - GIVEN un roadmap con la sección heredada `## Versión siguiente`, que `sdd roadmap check` rechaza, y la feature 0030 (o el patch 0031) que se cierra
-- WHEN `sdd-end-feature` marca su fila (o `sdd-end-patch` añade la suya a «Patches»)
+- WHEN `sdd-archive` marca su fila (o añade la del patch a «Patches»)
 - THEN tras editar el roadmap y antes del commit de cierre ejecuta `sdd roadmap check`, y un fallo en una línea que escribió el cierre lo corrige
 - AND los fallos de líneas que el cierre no escribió no se tocan ni paran el cierre: el mensaje final dice cuántos son y que los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0
 
@@ -169,6 +169,21 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: aviso: línea 20: el prefijo de cierre no casa con «**[<Feature|Patch> <id>, <AAAA-MM-DD>: saldada — <enlace>]**» ni con «…: parcial — <enlace>; queda: <lo pendiente>]**»` y ninguna línea de la 26
 - AND sin fallos, la última línea es `Roadmap válido` y sale con 0; con fallos, los avisos van tras ellos y sale con 1
 - AND el prefijo `saldada — ` que no avisa es el mismo que el corte saca: con fecha no posterior a la última release, falla con «sale en el corte»
+
+### Con `ROADMAP.md`, lo hecho queda en Now y la deuda saldada sale de «Lista»
+
+- GIVEN un proyecto con `ROADMAP.md` en la raíz, la fila 0081 en Now con `🔄`, y en «Lista» de `.docs/sdd/steering/debt.md` la fila «El recordatorio sale dos veces» con «Destino» `0081` y la fila «Los recordatorios no respetan la zona horaria» con «Destino» `0081`, que la 0081 salda solo en parte
+- WHEN `sdd-archive` cierra la 0081 validada
+- THEN la fila 0081 se queda en Now con `✅` (o `🧪 validación diferida a <disparador>`) y no se mueve de sección
+- AND «El recordatorio sale dos veces» sale de «Lista»
+- AND «Los recordatorios no respetan la zona horaria» se queda en «Lista» con «Ítem» reescrito a lo que falta
+- AND `sdd roadmap check` pasa tras el cierre
+
+### En el roadmap 2.x, la fila «Patch:» de Próximo se marca y se queda
+
+- GIVEN un roadmap 2.x con la fila `| 0190 | Patch: **El gate de cierre no corre a la vez…** | ⏳ |` en «Próximo»
+- WHEN `sdd-archive` cierra el patch 0190
+- THEN esa fila queda con `✅` en «Próximo», y además el patch tiene su fila en «Patches»
 
 ## Reglas de la capacidad
 

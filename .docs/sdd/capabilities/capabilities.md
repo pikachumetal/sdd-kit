@@ -28,12 +28,12 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND un THEN o un AND no cita las decisiones de la spec por número (`- THEN se rechaza, por la decisión 10`): la capacidad no tiene esas decisiones, y `sdd capability merge` lo rechaza
 - AND un `MODIFIED` copia el bloque entero del requisito con los cambios; `(antes: …)` es opcional y señala la cláusula que cambia
 - AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
-- AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto), cada una con su valor completo: con **Avisos**: A y B vigentes y una feature que añade C, la entrada dice A, B y C, porque `sdd-end-feature` sustituye o añade cada entrada entera por su nombre
+- AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto), cada una con su valor completo: con **Avisos**: A y B vigentes y una feature que añade C, la entrada dice A, B y C, porque el cierre de `sdd-archive` sustituye o añade cada entrada entera por su nombre
 - AND la lente dominio reclama las entradas que falten y marca como Crítico una regla que contradiga la constitution
 
 ### El cierre fusiona el delta en la verdad viva
 
-- GIVEN una feature cerrándose vía `sdd-end-feature` con un delta en su spec
+- GIVEN una feature cerrándose con `sdd-archive` con un delta en su spec
 - WHEN se ejecuta el paso de fusión
 - THEN el agente ejecuta `sdd capability merge --path .docs/sdd --artifact <spec.md>`, que añade cada `ADDED` a `capabilities/<capability>.md`, sustituye entero con cada `MODIFIED` el requisito con ese título, quita cada `REMOVED` y sustituye o añade por su nombre cada entrada de «Reglas de la capacidad»; el walkthrough referencia los escenarios del delta como casos del smoke
 - AND si el script falla, el agente corrige lo que dice su mensaje (el delta de la spec, o la línea «Nuevas» del bloque) y lo vuelve a ejecutar; no fusiona a mano
@@ -41,12 +41,12 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND la capacidad no gana ninguna línea de historial
 - AND tras fusionar y antes del commit de cierre, `sdd capability check --path .docs/sdd --artifact <spec.md>` pasa; si falla en lo fusionado o en el bloque, se corrige eso, no el validador
 - AND un fallo en una capacidad que el delta no toca (`rooms.md` con un requisito sin THEN, mientras la 0020 fusiona en `bookings`) no bloquea el cierre: `rooms.md` no se edita y el informe final lo lista como pendiente del dev-lead
-- AND `sdd-end-feature` no crea ningún fichero de capacidad que la spec no haya declarado
+- AND `sdd-archive` no crea ningún fichero de capacidad que la spec no haya declarado
 
 ### El cierre de un patch fusiona su delta
 
 - GIVEN un proyecto con `.docs/sdd/capabilities/bookings.md`, cuyo requisito «Consultar salas libres» dice que `salas libres 10-12` lista las salas sin reserva en esa franja
-- WHEN se cierra con `sdd-end-patch` el patch 0014, cuyo fix hace que `salas libres 10-12` deje fuera las salas en mantenimiento y las liste aparte con `(en mantenimiento)`
+- WHEN se cierra con `sdd-archive` el patch 0014, cuyo fix hace que `salas libres 10-12` deje fuera las salas en mantenimiento y las liste aparte con `(en mantenimiento)`
 - THEN `patch.md` abre con `## Capacidades` y `- Modificadas: \`bookings\` — cambia «Consultar salas libres»`, y lleva la sección «Delta de capacidad» con `MODIFIED — Consultar salas libres` y el bloque entero del requisito con el cambio
 - AND `sdd capability merge --path .docs/sdd --artifact <patch.md>` sustituye ese requisito en `bookings.md`, sin línea de historial
 - AND `sdd capability check --path .docs/sdd --artifact <patch.md>` pasa antes del commit de cierre, salvo en una capacidad que el delta no toca: esa no se edita y el mensaje final la lista como pendiente del dev-lead
@@ -188,6 +188,13 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND si el destino no existe, escribe `bookings.md: el destino del puntero no existe: ../../../app/.docs/sdd/capabilities/bookings.md`; sin una cita con un enlace que acabe en `capabilities/bookings.md`, `bookings.md: el puntero no enlaza en una cita a <…>/capabilities/bookings.md`; y con una línea `- GIVEN` en el puntero, `bookings.md: un puntero no lleva escenarios: van en su destino`
 - AND con `--artifact` de una spec cuyo delta trae `**ADDED — Cancelar una reserva**` en `bookings`, el requisito se busca en el destino: si no está, `spec.md: «Cancelar una reserva» del delta no está en ../../../app/.docs/sdd/capabilities/bookings.md`
 - AND `sdd capability merge` y `sdd capability index` no siguen el puntero
+
+### El cierre busca el literal viejo de un `MODIFIED` en toda la capacidad
+
+- GIVEN `split.md` con el requisito «El umbral de partir» que dice «más de 6 tasks» y la sección «Límites» de sus «Reglas de la capacidad» que repite «más de 6 tasks», y un patch cuyo `MODIFIED — El umbral de partir` (antes: «más de 6 tasks») pasa a «más de 4 tasks»
+- WHEN `sdd-archive` cierra el patch, antes de `sdd capability merge`
+- THEN busca «más de 6 tasks» en todo `split.md`, y por la aparición de «Límites» añade al delta de `patch.md` la entrada **Límites** de «Reglas de la capacidad» con su valor completo y «más de 4 tasks», sin editar `split.md` a mano
+- AND `sdd capability merge` sustituye esa entrada, `patch.md` nombra la corrección y, tras la fusión, `split.md` no dice «más de 6 tasks» en ningún sitio
 
 ## Reglas de la capacidad
 

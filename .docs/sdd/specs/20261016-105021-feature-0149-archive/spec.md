@@ -5,7 +5,7 @@ proposal: 0131
 title: archive — sdd-archive, cierre único de feature y patch, con su receta de merge, ADR, deuda saldada y suite sobre la base integrada
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-16
 author: Claude (Opus 5.5)
 approvers:
@@ -70,7 +70,7 @@ Review de spec propuesta: dos revisores — señales: capacidad nueva (`archive`
 29. **Requisito de `migration`** «La migración a v2.0.0 cambia los nombres de las skills de feature»: no se toca, porque describe la v2.0.0, en la que la skill se llamaba `sdd-end-feature`.
 30. **Topes de las skills que se editan**: no suben. Si una edición no cabe, se recorta en la misma task. Los dos más justos son `sdd-start-feature` (11.458 de 11.464 en total) y `sdd-verify` (2.885 de 2.900 en `SKILL.md`).
 31. **Lo que se descarta de `finishing-a-development-branch`**: el menú de opciones (lo decide la política `merge` o el dev-lead), «Announce at start» (lo sustituye el aviso de cambio de paso de `control-profiles`), la PR (solo si el dev-lead la pide) y el descarte (solo con la palabra del dev-lead). El detalle, en el anexo.
-32. **El 4.1 del walkthrough gana el sha** sobre el que corrió la suite completa, para que `--verified-at` y el lector citen el mismo commit.
+32. **El 4.1 del walkthrough gana el sha** de la suite de la validación; la repetida sobre la base integrada la da el mensaje final con su sha, porque el merge de sincronización es el último commit (enmienda del 2026-10-16).
 33. **Marcas de carril** en la skill: `Feature only:`, `Patch only:` y `Hotfix only:`.
 34. **Eventos que no se editan**: las campañas `tests/*-red.md`, `*-green.md` y `*-ab.md` (`sdd-end-patch-ab.md`, `sdd-consult-ab.md`). La entrada del changelog del kit (`Changed`: el cierre único; `Removed`: `sdd-end-feature` y `sdd-end-patch`) la escribe el cierre de esta feature.
 
@@ -110,7 +110,10 @@ Técnica (Sonnet):
 - La parte de código de la fila 419 (la etiqueta inválida con código 2 antes de tocar nada, «varias release/» con los refs remotos y los 14 menores de código de la 0187) va a la 0193, y la 0149 solo documenta en la receta el `git fetch` previo al hotfix — «A la 0193 (Recomendada)» (2026-10-16)
 - La 0193, «Merge mejor que el de git por defecto», fila nueva tras la 0149 — «apúntalo, pero con número y que va detrás de la 149, que luego nos olvidamos» (2026-10-16)
 - «Qué sigue» al cerrar una pieza de una familia (`parent:` o `proposal:`) entra en la 0149, con su RED; la entrada «qué sigue» de `sdd-roadmap` va en la 0194 — requisito traído por otra sesión del dev-lead («Cierre en la 0149, roadmap aparte», 2026-10-16), confirmado aquí: «Sí, en la 0149 (Recomendada)» (2026-10-16)
-- Tareas, pruebas y tope de `sdd-archive`: `SkillMd = 3600; Total = 6000` — «Sí, SkillMd 3600 / Total 6000 (Recomendada)» (2026-10-16)
+- Tareas, pruebas y tope de `sdd-archive`: `SkillMd = 3600; Total = 6000` — «Sí, SkillMd 3600 / Total 6000 (Recomendada)» (2026-10-16); en la pasada de fix de la revisión final, `SkillMd = 3850; Total = 6300` — «SkillMd 3.850 / Total 6.300 (Recomendada)» (2026-10-16)
+- La prueba pasa de ~32 a ~45 sujetos — «Sigo hasta ~45 sujetos y 35 $ (Recomendada)»; a 55 — «Subo el techo a 55 sujetos (Recomendada)»; y a 62 en la pasada de fix — «Techo a 62 sujetos (Recomendada)» (2026-10-16)
+- El 4.1 lleva el sha de la validación y el mensaje final el de la base integrada — «4.1 con el sha de la validación; el mensaje final da el de la base integrada (Recomendada)» (2026-10-16)
+- Vuelve el paso de limpieza del worktree con `merge.removeWorktree` — «Recupero el paso de limpieza (Recomendada)» (2026-10-16)
 - Review de la spec — «Dos, dominio en Opus (Recomendada)» (2026-10-16)
 - Aprobación de la spec con sus hallazgos aplicados — «Apruebo (Recomendada)» (2026-10-16)
 
@@ -268,14 +271,14 @@ La receta de merge (`references/merge-recipe.md`) no repite lo que hace la CLI: 
 **ADDED — El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite** (movido de `feature-flow`)
 - GIVEN una feature cerrada con `sdd-archive`
 - WHEN se escribe «4. Verificación» del walkthrough
-- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado, su duración y el sha sobre el que corrió (el de la base integrada si se repitió tras el merge de sincronización)
+- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado, su duración y el sha de la validación; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
 - AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
 - AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
 
 **Reglas de la capacidad**
 - **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)
 - **Idioma de los nombres**: skill y ficheros en inglés kebab-case; marcas de carril de la skill `Feature only:`, `Patch only:`, `Hotfix only:`
-- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.600 y total 6.000 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite de más de 10 minutos va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
+- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.850 y total 6.300 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite de más de 10 minutos va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
 - **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas.» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md`
 - **Regla ante conflicto**: un conflicto al integrar la base o al fusionar que no sea solo de los tres registros lo resuelve una persona; un rojo que también falla sin la rama lo decide el dev-lead tras la búsqueda en la deuda; el merge a la rama estable, el tag y su push solo con la frase del dev-lead; la fila de la madre de una familia la cierra el dev-lead, no el cierre
 
@@ -643,7 +646,7 @@ Una fila por paso, red flag y racionalización de las tres fuentes. «Se conserv
 | `finishing` 7.0.0 | Option 2: Push and Create PR | `references/merge-recipe.md`, «sin bloque `merge`» | Kit distinto: solo si el dev-lead lo pide |
 | `finishing` 7.0.0 | Option 3: Keep As-Is | Tronco, mensaje final («No terminado») | Kit distinto |
 | `finishing` 7.0.0 | Discard on request | Red flags | Se conserva: solo con la palabra del dev-lead |
-| `finishing` 7.0.0 | Step 6: Cleanup Workspace | Tronco, mensaje final (la línea de terminado ofrece borrar el worktree) | Kit distinto: `merge.removeWorktree`; solo el worktree enlazado propio |
+| `finishing` 7.0.0 | Step 6: Cleanup Workspace | Tronco, merge: con `merge.removeWorktree: true`, `git worktree remove` del worktree enlazado y limpio, sin `--force` | Se conserva, con `merge.removeWorktree` en lugar del menú; solo el worktree enlazado propio |
 | `finishing` 7.0.0 | Quick Reference | — | Kit distinto: sin menú |
 | `finishing` 7.0.0 | «Tests passed earlier this session» | Racionalizaciones | Se conserva: la suite corre sobre la base integrada |
 | `finishing` 7.0.0 | «They obviously want it merged» | Racionalizaciones | Kit distinto: lo decide la política `merge` o el dev-lead |
@@ -658,6 +661,10 @@ Una fila por paso, red flag y racionalización de las tres fuentes. «Se conserv
 
 ## Enmiendas
 
+- 2026-10-16 — El THEN del 4.1 («El walkthrough dice de dónde sale cada THEN…») pasa al sha de la validación, y el mensaje final da la suite repetida sobre la base integrada con su sha — la spec se contradecía: el merge de sincronización es el último commit y el walkthrough ya está commiteado (eje Spec, I2) — aprobada: «4.1 con el sha de la validación; el mensaje final da el de la base integrada (Recomendada)» — pasada de fix
+- 2026-10-16 — El paso del merge recupera la limpieza del worktree de `finishing-a-development-branch` (Step 6) con `merge.removeWorktree`; la fila del anexo cambia — la clave se había quedado sin nadie que la leyera (eje Arquitectura, I1) — aprobada: «Recupero el paso de limpieza (Recomendada)» — pasada de fix
+- 2026-10-16 — Tope de `sdd-archive` a 3.850 / 6.300 — para que quepan las racionalizaciones de la fuente, el 🧪 del patch diferido, la fila a mano del log y los literales (ejes Spec y Arquitectura) — aprobada: «SkillMd 3.850 / Total 6.300 (Recomendada)» — pasada de fix
+- 2026-10-16 — `references/estimation.md` se funde en el `SKILL.md` en lugar de moverse (decisión 24), y nace `references/records.md` para el detalle de los registros, del patch y de «qué sigue» — para caber en el tope (Task 4); la fila a mano del log que se perdió vuelve en la pasada de fix (eje Spec, I4) — sin aprobar aparte: ruling de la Task 4
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Estado |

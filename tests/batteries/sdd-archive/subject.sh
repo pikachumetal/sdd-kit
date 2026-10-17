@@ -7,7 +7,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SC="$3"
 IMPL="$HERE/../sdd-implement"
 cell() { "$NODE" "$HEADLESS/battery.mjs" field "$HERE/battery.md" "$SC" "$1" || die "sin el escenario $SC en battery.md"; }
-# En el RED el kit aún no tiene sdd-archive: la guarda mira la skill de cierre de ese kit.
+# Un kit anterior a sdd-archive (el RED, con el kit de develop de entonces) cierra con sdd-end-feature o sdd-end-patch: la guarda y la petición usan la de ese kit.
 GUARD="$(cell Esperado | sed 's/^`*sdd-kit://; s/`*$//')"
 case "$(cell Molde)" in salas-*) OLD=sdd-end-patch ;; *) OLD=sdd-end-feature ;; esac
 subject_init "$1" "$2" "$4" "$([ -d "$1/skills/$GUARD" ] && echo "$GUARD" || echo "$OLD")"
@@ -125,6 +125,10 @@ roadmap_300() {
 case "$(cell Molde)" in
   reservas) mold_reservas; done_0010 ;;
   reservas-family) mold_reservas; done_0010; family_0010 ;;
+  reservas-family-done) mold_reservas; done_0010; family_0010
+    sed -i 's/^| 0009 | \*\*Cancelaciones con motivo\*\*\(.*\)| ⏳ |$/| 0009 | **Cancelaciones con motivo**\1| ✅ |/' "$R/.docs/sdd/roadmap.md"
+    grep -q '^| 0009 .*| ✅ |$' "$R/.docs/sdd/roadmap.md" || die "no se cerró la madre 0009"
+    commit "docs(roadmap): la 0009 cerrada" ;;
   reservas-adr) mold_reservas; done_0010; adrs_0010 ;;
   reservas-sha) mold_reservas; done_0010; cited_sha_0010 ;;
   reservas-300) mold_reservas; roadmap_300; done_0010 ;;
