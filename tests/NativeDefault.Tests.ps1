@@ -109,14 +109,14 @@ Describe 'Task 2 — init y migración' {
   }
 
   It 'la migración a v2.0.0 pregunta execution si falta y la escribe' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
     $migration | Should -Match 'o `execution`'
     $migration | Should -Match '`execution: auto`'
     $migration | Should -Match '"execution"'
   }
 
   It 'la línea Escribe de la migración declara execution' {
-    $line = (Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md') -split "`r?`n" | Where-Object { $_ -match '^\*\*Escribe\*\*:' }
+    $line = (Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md') -split "`r?`n" | Where-Object { $_ -match '^\*\*Escribe\*\*:' }
     $line | Should -Match '`merge\.push`, `execution`'
   }
 }
@@ -156,7 +156,7 @@ Describe 'Revisión final — huecos del método' {
   }
 
   It 'la migración verifica execution como las demás claves' {
-    Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md' | Should -Match '(?m)^.*Verificaci[\s\S]*`execution`'
+    Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md' | Should -Match '(?m)^.*Verificaci[\s\S]*`execution`'
   }
 
   It 'el README describe la ejecución en la sesión o por subagentes' {

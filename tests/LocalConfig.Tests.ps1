@@ -102,7 +102,7 @@ Describe 'El fichero local queda fuera de git' {
   }
 
   It 'la migración v2.0.0 lo declara en su línea Escribe y lo verifica' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
     $write = ($migration -split "`r?`n") | Where-Object { $_ -match '^\*\*Escribe\*\*:' }
     $write | Should -Match ([regex]::Escape("``$script:LocalFile``"))
     $migration | Should -Match ([regex]::Escape("sdd-kit\.local\.json"))

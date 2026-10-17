@@ -13,7 +13,7 @@ Onboarding de un codebase existente al flujo SDD: genera la documentación de an
 
 ## Predicado: ¿onboarding o migración?
 
-Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **migrar** al kit instalado. Sigue [references/migrations/README.md](references/migrations/README.md) — lee `sdd-kit.json`, aplica en orden los `migrations/vX.Y.Z.md` que falten con sus gates, escribe el marcador al final — y **nada más**: ni inventario, ni cosecha, ni reglas de oro, ni reescribir `tech-stack.md`/`architecture.md`, ni tabla de deuda. El flujo de abajo es solo para proyectos sin `.docs/sdd/`; aplicarlo a un proyecto ya inicializado le mete artículos y diagnósticos que nadie pidió.
+Si **ya existe `.docs/sdd/`**, este proyecto no necesita onboarding: necesita **migrar** al kit instalado. Sigue [migrations/README.md](../sdd-init/references/migrations/README.md) — lee `sdd-kit.json`, aplica en orden los `migrations/vX.Y.Z.md` que falten con sus gates, escribe el marcador al final — y **nada más**: ni inventario, ni cosecha, ni reglas de oro, ni reescribir `tech-stack.md`/`architecture.md`, ni tabla de deuda. El flujo de abajo es solo para proyectos sin `.docs/sdd/`; aplicarlo a un proyecto ya inicializado le mete artículos y diagnósticos que nadie pidió.
 
 ## Principios
 

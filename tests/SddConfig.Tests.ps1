@@ -2,7 +2,7 @@ BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
   $script:SkillPath = 'skills/sdd-config/SKILL.md'
   $script:Consumers = 'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-    'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    'skills/sdd-init/references/migrations/v2.0.0.md'
 
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
@@ -56,7 +56,7 @@ Describe 'Anatomía de sdd-config' {
   }
 
   It 'la migración a v2.3.0 guarda la frase de field en el informe y en el commit, también al reanudar' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.3.0.md'
+    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.3.0.md'
     $migration | Should -Match 'van al informe y al cuerpo del commit que lleve la clave, aunque sea el de otra sesión'
     $migration | Should -Match 'el cuerpo del commit que la escribió cita la respuesta del dev-lead y la fecha'
   }
@@ -89,8 +89,8 @@ Describe 'Fuente única de la entrevista de claves' {
 
   It '<_> invoca sdd-config' -ForEach @(
     'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-    'skills/sdd-init-brownfield/references/migrations/v2.0.0.md',
-    'skills/sdd-init-brownfield/references/migrations/v2.3.0.md'
+    'skills/sdd-init/references/migrations/v2.0.0.md',
+    'skills/sdd-init/references/migrations/v2.3.0.md'
   ) {
     Get-KitFile $_ | Should -Match '`sdd-config`'
   }
