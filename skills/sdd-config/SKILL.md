@@ -8,7 +8,7 @@ argument-hint: "<qué quieres configurar>"
 
 ## Overview
 
-La configuración del kit vive en dos ficheros. `.docs/sdd/sdd-kit.json` es del proyecto y está en git. `.docs/sdd/sdd-kit.local.json` es de cada persona y no va a git. Esta skill es la única entrevista de claves del kit: la invoca el usuario, y la invocan `sdd-init-greenfield`, `sdd-init-brownfield` y las migraciones en lugar de llevar sus propias preguntas. Qué admite cada fichero, la precedencia y los avisos están en el contrato: [control-profiles.md](../sdd-start-feature/references/control-profiles.md).
+La configuración del kit vive en dos ficheros. `.docs/sdd/sdd-kit.json` es del proyecto y está en git. `.docs/sdd/sdd-kit.local.json` es de cada persona y no va a git. Esta skill es la única entrevista de claves del kit: la invoca el usuario, y la invocan `sdd-init` y las migraciones en lugar de llevar sus propias preguntas. Qué admite cada fichero, la precedencia y los avisos están en el contrato: [control-profiles.md](../sdd-start-feature/references/control-profiles.md).
 
 ## Pasos
 

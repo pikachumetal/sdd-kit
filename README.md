@@ -62,7 +62,7 @@ El kit necesita [superpowers](https://github.com/obra/superpowers), que se insta
 
 El kit no usa `claude-plugins-official`: ese marketplace fija superpowers a un commit y llega tarde a las versiones nuevas. Si tenías `superpowers@claude-plugins-official`, desinstálalo con `claude plugin uninstall superpowers@claude-plugins-official`; con los dos, las skills de superpowers salen duplicadas.
 
-Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde salen los dos marketplaces (`extraKnownMarketplaces`), qué plugins activar (`enabledPlugins`: el kit y superpowers) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, los plugins aparecen activados pero Claude Code no sabe de dónde sacarlos. Las init y la migración a v2.0.0 escriben `autoMemoryEnabled` y el marketplace de superpowers; el marketplace del kit y `enabledPlugins` los añades tú.
+Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde salen los dos marketplaces (`extraKnownMarketplaces`), qué plugins activar (`enabledPlugins`: el kit y superpowers) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, los plugins aparecen activados pero Claude Code no sabe de dónde sacarlos. `sdd-init` deja escrito este bloque entero, fusionado con lo que ya tenga el fichero.
 
 <!-- sdd-init: settings -->
 ```json
@@ -98,8 +98,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | Skill | Qué hace |
 | --- | --- |
 | `using-sdd` | La puerta de entrada: qué skill toca para lo que acabas de escribir. La inyecta el hook al empezar cada sesión. |
-| `sdd-init-greenfield` | Arranca un proyecto nuevo. Te entrevista y escribe la documentación de anclaje; sin entrevista no escribe nada. |
-| `sdd-init-brownfield` | Onboarding de un codebase que ya existe. Documenta el estado real, no el ideal, y cosecha el `CLAUDE.md` que ya tengas. |
+| `sdd-init` | Prepara un proyecto para trabajar con SDD, nuevo o con código: te entrevista, deduce del código lo que puede y escribe cada documento solo cuando lo apruebas, `CLAUDE.md` incluido. Si la sesión se corta, sigue donde lo dejaste. Un proyecto recién sacado de un template cuenta como nuevo. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
 | `sdd-propose` | La entrada de un cambio: lee el proyecto, clasifica el carril y escribe lo que va antes de implementar (spec y plan, o la apertura del patch). |
 | `sdd-start-feature` | El carril completo desde la implementación: tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
@@ -118,7 +117,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | `sdd-rubber-duck` | Cómo te explica el kit las cosas: en palabras del producto y con su glosario, sin rutas ni jerga. En corto, el párrafo 🦆 de una parada; en largo, a petición («explícame cómo viaja un pedido de punta a punta»), por pasos y siguiendo un ejemplo; y si no te ha llegado («no te he entendido»), te lo vuelve a contar con contexto y frases cortas. Adaptada de `teach` y `wait-what` de Matt Pocock (MIT). |
 | `sdd-feedback` | El ticket de mejora del kit sobre esta sesión: lo ofrecen los cierres, o se pide a mano. |
 | `add-to-changelog` | Entrada de changelog con formato fijo (Keep a Changelog). |
-| `sdd-templates` | Las 27 plantillas canónicas. |
+| `sdd-templates` | Las 24 plantillas canónicas. |
 
 ## Cómo está escrito
 
@@ -142,7 +141,7 @@ Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastan
 
 ## Actualizar un proyecto que ya lo usa
 
-Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init-brownfield`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes. Si el proyecto va por detrás de las migraciones del kit instalado, la sesión te avisa al arrancar con las dos versiones. Cada release del kit trae su migración, aunque no cambie nada del proyecto: entonces solo avanza el marcador.
+Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes. Si el proyecto va por detrás de las migraciones del kit instalado, la sesión te avisa al arrancar con las dos versiones. Cada release del kit trae su migración, aunque no cambie nada del proyecto: entonces solo avanza el marcador.
 
 ## Desarrollo
 

@@ -78,10 +78,8 @@ Describe 'Configuración y log que deja la init' {
     (Get-InitCorpus $_).Contains('autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia') | Should -BeTrue
   }
 
-  It 'la red flag de greenfield habla de filas, no de contenido' {
-    $skill = Get-KitFile 'skills/sdd-init-greenfield/SKILL.md'
-    $skill | Should -Not -Match 'El estimation-log nace con contenido'
-    $skill | Should -Match 'estimation-log nace con filas'
+  It 'la red flag de sdd-init habla de filas, no de contenido' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match 'estimation log is born with rows'
   }
 
   It 'la migración a v2.0.0 ordena ids, control, configuración, memoria, la retirada de sdd-start-release, capacidades, nombres de feature, marketplace y marcador' {
@@ -125,24 +123,15 @@ Describe 'Proyecto de referencia' {
       Should -Match '(?s)## Convenciones.*\*\*Proyecto de referencia\*\*.*## Reglas de producto'
   }
 
-  It 'greenfield lo pregunta como pregunta 20' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 20 \|.*proyecto de referencia'
-  }
-
-  It 'brownfield lo pregunta como pregunta 4' {
-    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 4 \|.*proyecto de referencia'
+  It 'sdd-init lo pregunta y lo lleva a Convenciones' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match "(?m)^\s*\| Does it replicate another project's patterns\?.*«Convenciones» \|\r?$"
   }
 }
 
-Describe 'Entrevista de greenfield: mission completa' {
-  It 'pregunta qué queda fuera de alcance como pregunta 4' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' |
-      Should -Match '(?m)^\s*\| 4 \| ¿Qué queda fuera de alcance\? \| mission, «Qué es y qué no es» \|'
-  }
-
-  It 'pregunta los términos del dominio como pregunta 5' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' |
-      Should -Match '(?m)^\s*\| 5 \| ¿Qué términos del dominio hay que fijar\? \| mission, «Dominio» \|'
+Describe 'Entrevista: PRODUCT.md completo' {
+  It 'pregunta lo que queda fuera de alcance y los términos del dominio, y van a PRODUCT.md' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' |
+      Should -Match '(?m)^\s*\| Problem it solves; users and roles; modules; what is out of scope; domain terms to fix \|.*\| `PRODUCT\.md`'
   }
 }
 

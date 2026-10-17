@@ -83,9 +83,6 @@ Describe 'sdd-propose lee el fichero local' {
     $section | Should -Match '`sdd-archive`'
   }
 
-  It 'generacion.md cita el changelog con la numeración nueva de brownfield' {
-    Get-KitFile 'skills/sdd-init-brownfield/references/generacion.md' | Should -Not -Match 'preguntas 6 y 7'
-  }
 }
 
 Describe 'El fichero local queda fuera de git' {
@@ -94,9 +91,7 @@ Describe 'El fichero local queda fuera de git' {
   }
 
   It '<_> lo añade a .gitignore' -ForEach @(
-    'skills/sdd-init-greenfield/SKILL.md',
-    'skills/sdd-init-greenfield/references/estructura.md',
-    'skills/sdd-init-brownfield/references/generacion.md'
+    'skills/sdd-init/references/structure.md'
   ) {
     Get-KitFile $_ | Should -Match ([regex]::Escape("``$script:LocalFile``"))
   }

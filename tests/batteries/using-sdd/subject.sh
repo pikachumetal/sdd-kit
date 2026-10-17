@@ -11,10 +11,13 @@ ASK="$(cell Petición)"
 SALAS_MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}'
 VENTAS_MARKER="$SALAS_MARKER"', "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"'
 
-# i1 mide la init: el proyecto llega sin .docs/. t1 necesita la errata en el README.
+# i1 mide la init: el proyecto llega sin .docs/; i2, una init en curso, con sdd-kit.json con la clave init. t1 necesita la errata en el README.
 mold_base() {
   cp -r "$HERE/mold-$1/." "$R/"
-  if [ "$SC" = i1 ]; then rm -r "$R/.docs"; else put_kit_marker "$2"; fi
+  if [ "$SC" = i1 ]; then rm -r "$R/.docs"
+  elif [ "$SC" = i2 ]; then rm -r "$R/.docs"; printf '# Salas\n\n## Users\n\n- **Oficina**: reserva salas.\n' | put PRODUCT.md
+    printf '{"init": {"approved": ["PRODUCT.md"]}}\n' | put .docs/sdd/sdd-kit.json
+  else put_kit_marker "$2"; fi
   [ "$SC" = t1 ] && echo 'Consulta las recervas libres con `libres <franja>`.' >> "$R/README.md"
   g init -q -b main
   commit "feat: base del molde $1"

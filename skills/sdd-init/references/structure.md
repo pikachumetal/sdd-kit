@@ -7,7 +7,7 @@
 ├── CHANGELOG.md              (optional, per the interview · traces changelog-template.md)
 ├── CLAUDE.md                 (short: pointers + 3-5 critical rules; through its gate)
 ├── .claude/settings.json     (written by `sdd init --finish`, merged with what it already has)
-├── .gitignore                (+ .playwright-mcp/, .superpowers/, .docs/sdd/sdd-kit.local.json; by `sdd init --finish`)
+├── .gitignore                (+ `.playwright-mcp/`, `.superpowers/`, `.docs/sdd/sdd-kit.local.json`; by `sdd init --finish`)
 └── .docs/
     └── sdd/
         ├── steering/

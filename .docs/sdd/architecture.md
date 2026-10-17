@@ -11,8 +11,7 @@
 │   └── marketplace.json         (marketplace self-hosted, source ".")
 ├── skills/
 │   ├── using-sdd/SKILL.md          (puerta de entrada: la inyecta el hook SessionStart)
-│   ├── sdd-init-greenfield/SKILL.md
-│   ├── sdd-init-brownfield/SKILL.md
+│   ├── sdd-init/SKILL.md          (+ references/migrations/: una por versión del kit)
 │   ├── sdd-propose/SKILL.md
 │   ├── sdd-start-feature/SKILL.md
 │   ├── sdd-implement/SKILL.md

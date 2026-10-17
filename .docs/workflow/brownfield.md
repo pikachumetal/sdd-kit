@@ -8,7 +8,7 @@ El principio transversal es el mismo que en greenfield: el resultado debe depend
 
 ## 1. Fase 1: onboarding del codebase
 
-En un proyecto existente no hay requisitos de cliente que analizar. El primer paso es hacer explícito lo que el código ya dice. La skill `sdd-init-brownfield` del kit automatiza esta fase: explora el repositorio y genera la documentación inicial.
+En un proyecto existente no hay requisitos de cliente que analizar. El primer paso es hacer explícito lo que el código ya dice. La skill `sdd-init` del kit automatiza esta fase: explora el repositorio y genera la documentación inicial.
 
 ### 1.1. Documentar el estado real, no el ideal
 
@@ -36,7 +36,7 @@ Reglas que protegen el sistema en producción y que la constitution del proyecto
 
 ### 1.3. Kit de skills
 
-- **Skills de proceso**: desde el día cero, como en greenfield. `sdd-init-brownfield` es además la vía de actualización: cuando el kit publica una versión nueva, lee la que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json` y aplica en orden las migraciones posteriores, preguntando antes de borrar o renombrar nada. Cada versión del kit trae su migración, aunque no cambie nada del proyecto, y el arranque de la sesión avisa cuando hay alguna pendiente.
+- **Skills de proceso**: desde el día cero, como en greenfield. `sdd-init` es además la vía de actualización: cuando el kit publica una versión nueva, lee la que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json` y aplica en orden las migraciones posteriores, preguntando antes de borrar o renombrar nada. Cada versión del kit trae su migración, aunque no cambie nada del proyecto, y el arranque de la sesión avisa cuando hay alguna pendiente.
 - **Skills técnicas**: en brownfield conviene crearlas pronto, porque capturan el conocimiento tribal del proyecto, como se compila, qué patrón siguen backend y frontend o cómo se hacen las migraciones. Cada skill escrita es conocimiento que deja de depender de la memoria de una persona.
 
 ### 1.4. No hace falta parar el desarrollo

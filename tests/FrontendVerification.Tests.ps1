@@ -18,8 +18,8 @@ BeforeAll {
 }
 
 Describe 'Contrato de §Frontend' {
-  It 'la plantilla de tech-stack lleva §Frontend con sus ocho campos' {
-    $section = Get-Section (Get-KitFile 'skills/sdd-templates/templates/tech-stack-template.md') '## Frontend' "`n## "
+  It 'la plantilla de operations lleva §Frontend con sus ocho campos' {
+    $section = Get-Section (Get-KitFile 'skills/sdd-templates/templates/operations-template.md') '## Frontend' "`n## "
     $section | Should -Not -BeNullOrEmpty
     foreach ($field in $script:FrontendFields) { $section | Should -Match "\*\*$([regex]::Escape($field))\*\*" }
   }
@@ -93,17 +93,8 @@ Describe 'Arranque e init' {
     Get-Section (Get-KitFile 'skills/sdd-propose/SKILL.md') '4. **Spec**' '5. **Plan**' | Should -Match '§Frontend'
   }
 
-  It 'greenfield pregunta la verificación en la fila 21' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '\| 21 \| Solo si el stack de la 11 tiene interfaz'
-  }
-
-  It 'brownfield pregunta la verificación en la fila 5' {
-    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '\| 5 \| Solo si el inventario encontró interfaz web'
-  }
-
-  It 'las filas 20 de greenfield y 4 de brownfield no cambian' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '\| 20 \| ¿Replica los patrones'
-    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '\| 4 \| ¿Replica los patrones'
+  It 'sdd-init pregunta la verificación solo con interfaz y la lleva a operations' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match '\| Only with an interface: what verifies what is seen.*`operations.md`, `## Frontend` \|'
   }
 
   It 'el README recomienda impeccable y Playwright' {

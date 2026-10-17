@@ -14,7 +14,7 @@ BeforeAll {
 }
 
 Describe 'Plantillas de anclaje' {
-  It 'existe <_>-template.md' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation', 'changelog', 'PRODUCT', 'operations', 'adr') {
+  It 'existe <_>-template.md' -ForEach @('constitution', 'architecture', 'roadmap', 'estimation', 'changelog', 'PRODUCT', 'operations', 'adr', 'now-next-later', 'debt') {
     Test-Path (Join-Path $script:TemplatesDir "$_-template.md") | Should -BeTrue
   }
 
@@ -38,7 +38,7 @@ Describe 'Plantillas de anclaje' {
     Get-TemplateContent 'estimation' | Should -Match 'Notas de calibración de este proyecto'
   }
 
-  It '<_>-template.md no nombra proyectos reales' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation', 'changelog', 'PRODUCT', 'operations', 'adr') {
+  It '<_>-template.md no nombra proyectos reales' -ForEach @('constitution', 'architecture', 'roadmap', 'estimation', 'changelog', 'PRODUCT', 'operations', 'adr', 'now-next-later', 'debt') {
     Get-TemplateContent $_ | Should -Not -Match '(?i)alybo|sifacademy|sifrest|\bmdt\b|quartz|legalrep|medysif|statusline|salas'
   }
 }
@@ -82,10 +82,9 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     Get-Section (Get-TemplateContent 'operations') '## Testing' | Should -Match ([regex]::Escape($_))
   }
 
-  It '§Frontend de operations tiene los campos de tech-stack' {
-    $expected = Get-BoldFields (Get-Section (Get-TemplateContent 'tech-stack') '## Frontend')
-    $expected.Count | Should -BeGreaterThan 0
-    Get-BoldFields (Get-Section (Get-TemplateContent 'operations') '## Frontend') | Should -Be $expected
+  It '§Frontend de operations tiene sus ocho campos' {
+    Get-BoldFields (Get-Section (Get-TemplateContent 'operations') '## Frontend') |
+      Should -Be @('URL', 'Detector', 'Viewports', 'Runner E2E', 'Acceso', 'Temas', 'Pantalla de referencia', 'Skills de apoyo')
   }
 
   It 'el índice de sdd-templates da el destino <Destination> a <Template>' -ForEach @(
@@ -105,10 +104,11 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     $row | Should -Match ([regex]::Escape($Destination))
   }
 
+  It 'la plantilla que retira la 0156 ya no existe: <_>' -ForEach @('mission', 'tech-stack', 'environments') {
+    Test-Path (Join-Path $script:TemplatesDir "$_-template.md") | Should -BeFalse
+  }
+
   It 'el índice marca 2.x <Template> con la feature que la retira' -ForEach @(
-    @{ Template = 'mission-template.md'; Feature = '0156' }
-    @{ Template = 'tech-stack-template.md'; Feature = '0156' }
-    @{ Template = 'environments-template.md'; Feature = '0156' }
     @{ Template = 'client-changelog-template.md'; Feature = '0177' }
     @{ Template = 'roadmap-template.md'; Feature = '0157' }
   ) {
@@ -134,11 +134,7 @@ Describe 'Consumidores de las plantillas de anclaje' {
     Get-KitFileContent 'skills/sdd-start-feature/references/nombrado.md' | Should -Match 'architecture-template\.md'
   }
 
-  It 'greenfield calca <_>-template.md' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation', 'changelog') {
-    Get-KitFileContent 'skills/sdd-init-greenfield/references/estructura.md' | Should -Match ([regex]::Escape("$_-template.md"))
-  }
-
-  It 'brownfield calca <_>-template.md' -ForEach @('mission', 'constitution', 'tech-stack', 'architecture', 'roadmap', 'estimation', 'changelog') {
-    Get-KitFileContent 'skills/sdd-init-brownfield/references/generacion.md' | Should -Match ([regex]::Escape("$_-template.md"))
+  It 'sdd-init calca <_>-template.md' -ForEach @('PRODUCT', 'constitution', 'operations', 'architecture', 'now-next-later', 'debt', 'estimation', 'changelog') {
+    Get-KitFileContent 'skills/sdd-init/references/structure.md' | Should -Match ([regex]::Escape("$_-template.md"))
   }
 }

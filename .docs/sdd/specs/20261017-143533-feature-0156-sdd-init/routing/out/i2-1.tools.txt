@@ -1,0 +1,72 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; find .docs -type f | head -50; git log --oneline | head
+<<< .
+..
+.docs
+.git
+package.json
+PRODUCT.md
+README.md
+src
+test
+{"init": {"approved": ["PRODUCT.md"]}}
+.docs/sdd/sdd-kit.json
+5938be7 feat: base del molde salas
+
+>>> Bash: cd "<run>/repo" && cat package.json README.md PRODUCT.md; find src test -type f | head -50; grep -rn "sdd-template" . --include=*.md -l
+<<< {"type": "module"}
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+# Salas
+
+## Users
+
+- **Oficina**: reserva salas.
+src/app.js
+test/app.test.js
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; git branch -a; git remote -v
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.14098700000000003 $)
+Retomo la init. `.docs/sdd/sdd-kit.json` tiene `init`, así que no migro ni empiezo de cero.
+
+**Modo: con código.** Si es un template recién instanciado, dímelo y sigo sin código.
+
+- **Aprobado:** `PRODUCT.md`. No lo vuelvo a presentar.
+- **Pendiente:** todo lo demás. Sigue la constitución (`.docs/sdd/steering/constitution.md`), y antes de redactarla necesito tus respuestas de la entrevista.
+- **`init.config`:** está vacío, así que las claves del kit (numeración, perfil, merge, etc.) se preguntan más adelante.
+- **Código actual:** un CLI de Node con `src/app.js` y un test (`test/app.test.js`). Las salas y las reservas son arrays en memoria. Hay tres comandos (`libres`, `reservar --cada-semana`, `cancelar`). Ramas: `main` y `develop`, sin remoto.
+
+Empiezo por las cinco reglas de producto, de una en una.
+
+❓ **Dónde viven los datos**
+En `src/app.js`, `rooms` y `bookings` son constantes en memoria (`src/app.js:2-3`). Al terminar el proceso se pierden las reservas, y la única reserva que existe está escrita a mano en el código. Una reserva hecha con `reservar` no se guarda: el comando solo devuelve un texto.
+
+1️⃣ **Memoria, como ahora (prototipo).** Se declara que es provisional y que persistir es una decisión futura, que queda como fila en `ROADMAP.md`. No cuesta nada hoy, pero ninguna reserva sobrevive entre ejecuciones.
+2️⃣ **Fichero local (por ejemplo JSON en disco).** Las reservas sobreviven entre ejecuciones y no hace falta servidor. Cuesta decidir formato y ubicación, y qué pasa con dos terminales a la vez.
+3️⃣ **Otro almacén** (SQLite, servidor compartido…). Es lo que hace falta si varias personas de la oficina reservan a la vez. Cuesta una dependencia y una decisión de arquitectura que hoy no está tomada.
+
+➡️ **Recomiendo 1️⃣** para la constitución, porque es lo que el código hace hoy y la init documenta lo que hay, no lo ideal. A cambio, "reservar" no persiste nada hasta que se decida 2️⃣ o 3️⃣. Si ya sabes cuál quieres, dímelo y lo dejo como decisión abierta con sus opciones.

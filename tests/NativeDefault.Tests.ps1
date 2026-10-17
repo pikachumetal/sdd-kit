@@ -83,29 +83,16 @@ Describe 'Task 1 — contrato del método' {
 }
 
 Describe 'Task 2 — init y migración' {
-  It 'greenfield pregunta el método de ejecución a través de sdd-config' {
-    $row = Get-TableRow 'skills/sdd-init-greenfield/SKILL.md' '| 19 |'
-    $row | Should -Match '`sdd-config`.*método de ejecución'
+  It 'sdd-init pregunta el método de ejecución a través de sdd-config' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match '`sdd-config`.*execution method'
   }
 
-  It 'greenfield escribe las claves respondidas en la 19' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'las claves que el usuario respondió en la 19'
+  It 'sdd-init registra solo las claves respondidas' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match ([regex]::Escape("sdd init --config '<json>'``, only what was answered"))
   }
 
-  It 'la estructura de greenfield saca ids.mode de la pregunta 19' {
-    Get-KitFile 'skills/sdd-init-greenfield/references/estructura.md' |
-      Should -Match ([regex]::Escape('con `ids.mode` de la pregunta 19 (`sdd-config`)'))
-  }
-
-  It 'brownfield pregunta el método de ejecución a través de sdd-config' {
-    $row = Get-TableRow 'skills/sdd-init-brownfield/SKILL.md' '| 1 |'
-    $row | Should -Match '`sdd-config`.*método de ejecución'
-  }
-
-  It 'brownfield escribe execution en el marcador solo si se respondió' {
-    $generation = Get-KitFile 'skills/sdd-init-brownfield/references/generacion.md'
-    $generation | Should -Match '"execution"\?'
-    $generation | Should -Match 'con `control`, `merge`, `execution` y `validation.mode` solo con lo respondido'
+  It 'la estructura de sdd-init escribe execution en el marcador solo si se respondió' {
+    Get-KitFile 'skills/sdd-init/references/structure.md' | Should -Match '"execution"\?'
   }
 
   It 'la migración a v2.0.0 pregunta execution si falta y la escribe' {
@@ -135,12 +122,6 @@ Describe 'Revisión final — huecos del método' {
     $row | Should -Match 'a fifth class, not an exception to the four'
     $row | Should -Match 'scope brake'
     $row | Should -Match 'the stop after each task'
-  }
-
-  It 'greenfield escribe execution en el marcador solo si se respondió' {
-    $structure = Get-KitFile 'skills/sdd-init-greenfield/references/estructura.md'
-    $structure | Should -Match '"execution"\?'
-    $structure | Should -Match '`control`, `merge` y `execution`'
   }
 
   It 'el paso 6 dice cómo se ejecuta una task lite' {

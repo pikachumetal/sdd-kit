@@ -10,7 +10,7 @@ Un principio atraviesa todo el flujo: el resultado debe depender del proceso y n
 
 Con la información del cliente (objetivo, funcionalidades, actores, requisitos) y la propuesta de arquitectura del equipo técnico, se construyen los fundamentos del proyecto con **Claude Code**. Si todavía no hay repositorio, Claude Chat sirve para el análisis inicial.
 
-La skill `sdd-init-greenfield` del kit automatiza esta fase: te entrevista sobre el proyecto y genera la documentación y las skills iniciales.
+La skill `sdd-init` del kit automatiza esta fase: te entrevista sobre el proyecto y escribe cada documento cuando lo apruebas. Un proyecto recién sacado de un template también es greenfield.
 
 ### 1.1. Documentación de anclaje
 
@@ -52,12 +52,12 @@ El resultado de esta fase es el plan de implementación, igual que en el flujo o
 
 Instala el kit SDD desde el primer día:
 
-- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init-greenfield` y `sdd-init-brownfield` para arrancar; `sdd-start-feature` y `sdd-archive` para el ciclo completo; `sdd-start-patch` y `sdd-archive` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
+- **Skills de proceso**, agnósticas del stack, organizadas por carriles: `using-sdd`, la puerta de entrada que decide por qué carril entra cada petición; `sdd-init` para arrancar; `sdd-start-feature` y `sdd-archive` para el ciclo completo; `sdd-start-patch` y `sdd-archive` para el carril corto; `sdd-roadmap` para meter trabajo en el roadmap y preparar una release; `sdd-end-release` para cortarla; `sdd-consult` para preguntar sin producir artefactos; `sdd-config` para la configuración del equipo y las preferencias de cada uno; `sdd-feedback` para el ticket de mejora del kit; `add-to-changelog`; y `sdd-templates`, que guarda las plantillas.
 - **Skills técnicas**, según el stack elegido: por ejemplo `sql-migration`, `translation-migration`, `backend-command` y `backend-query` para CQRS, `backend-feature` para casos de uso, o `frontend-feature`.
 
 Las skills encapsulan las convenciones del proyecto, así que nadie tiene que recordarlas ni interpretarlas: basta con seguir el flujo.
 
-Las plantillas viven en el kit y no se copian al proyecto. Cuando el kit se actualiza, `sdd-init-brownfield` aplica las migraciones pendientes leyendo la versión que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json`.
+Las plantillas viven en el kit y no se copian al proyecto. Cuando el kit se actualiza, `sdd-init` aplica las migraciones pendientes leyendo la versión que el proyecto tiene anotada en `.docs/sdd/sdd-kit.json`.
 
 ## 2. Fase 2: implementación, ciclo por tarea
 
