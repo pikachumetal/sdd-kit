@@ -56,7 +56,7 @@ Describe 'Carril task' {
   }
 
   It 'el cierre junta su commit antes del merge' {
-    Get-SkillStep 'sdd-end-feature' 10 | Should -Match 'junta el cierre en un commit[^\n]*commit-milestones\.md'
+    Get-SkillStep 'sdd-archive' 5 | Should -Match 'squash the close into one commit[^\n]*commit-milestones\.md'
   }
 
   It 'plan-writing junta los commits frecuentes al quedar limpia la revisión' {
@@ -84,29 +84,24 @@ Describe 'Carril patch' {
     Get-SkillStep 'sdd-start-patch' 5 | Should -Match 'un solo commit con el código, los tests y `patch\.md`[^\n]*commit-milestones\.md'
   }
 
-  It 'el paso 1 de sdd-end-patch apunta el hash del fix' {
-    Get-SkillStep 'sdd-end-patch' 1 | Should -Match 'el del commit del fix'
+  It 'el registro del patch apunta el hash del fix' {
+    Get-SkillStep 'sdd-archive' 2 | Should -Match '`Patch only:` \*\*`patch\.md` finished\*\*: the real commit hash —the fix''s—'
   }
 
-  It 'el paso 2 de sdd-end-patch es un solo commit de cierre' {
-    $step = Get-SkillStep 'sdd-end-patch' 2
-    $step | Should -Not -Match 'pueden ir en commits separados'
-    $step | Should -Match 'Commit de cierre[^\n]*commit-milestones\.md'
+  It 'el patch queda en dos commits, fix y cierre' {
+    $step = Get-SkillStep 'sdd-archive' 5
+    $step | Should -Match '`Patch only:` the patch stays in two commits'
+    $step | Should -Match 'a fix in several commits is squashed first'
   }
 
-  It 'el paso 2 de sdd-end-patch junta un fix que llega en varios commits' {
-    Get-SkillStep 'sdd-end-patch' 2 | Should -Match 'más de un commit[^\n]*júntalo'
-  }
-
-  It 'el paso 0 de sdd-end-patch para con la validación antes del merge, salvo en unattended (patch 0075)' {
-    $step = Get-SkillStep 'sdd-end-patch' 0
-    $step | Should -Match 'Validación\*\* — [^\n]*antes del merge'
-    $step | Should -Match 'AskUserQuestion`, sola en su turno'
-    $step | Should -Match '«sí» sin detalle'
+  It 'la validación para antes del merge, salvo en unattended (patch 0075)' {
+    $step = Get-SkillStep 'sdd-archive' 1
+    $step | Should -Match 'Validation\*\* — before touching anything, and always before the merge'
+    $step | Should -Match 'alone in its turn'
+    $step | Should -Match '«sí» without detail'
     $step | Should -Match 'Validación diferida: <fecha>'
-    $step | Should -Match '🧪 validación diferida a <disparador> — '
     $step | Should -Match 'No funciona'
-    $step | Should -Match 'En `unattended` no para'
+    $step | Should -Match 'in `unattended` the trigger is always the release smoke'
   }
 
   It 'la tabla de gates aplica la validación también al cierre de patch' {

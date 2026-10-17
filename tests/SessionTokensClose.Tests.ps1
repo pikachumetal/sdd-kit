@@ -11,8 +11,8 @@ BeforeAll {
 }
 
 Describe 'El cierre mide la sesión' {
-  It 'el paso de tiempo real de sdd-end-feature ejecuta el script con la rama de la task' {
-    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?s)2\. \*\*Tiempo real\*\*.*?(?=\n3\. )').Value
+  It 'el tiempo real de sdd-archive ejecuta el script con la rama' {
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?s)\*\*Real time\*\*.*?(?=\n3\. )').Value
     Assert-Literal $step @('sdd.js" session tokens', '--branch', 'no medido')
   }
 

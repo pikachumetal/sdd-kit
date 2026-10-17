@@ -112,7 +112,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### Con `validation.mode: field`, la validación es en campo
 
 - GIVEN un proyecto con `"validation":{"mode":"field"}` en `.docs/sdd/sdd-kit.json` y la feature 0030 con el cierre de su revisión final terminado, su smoke por THEN y la suite en verde, en cualquier perfil
-- WHEN el agente llega a la validación (paso 7 de `sdd-start-feature`, paso 0 de `sdd-end-feature`), o cierra el patch 0031 (paso 0 de `sdd-end-patch`)
+- WHEN el agente llega a la validación (paso 7 de `sdd-start-feature`, o el paso de validación de `sdd-archive`), o cierra el patch 0031 con `sdd-archive`
 - THEN no pregunta qué ha probado el usuario ni ofrece diferir, y sigue con el cierre sin parar
 - AND el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutó (p. ej. `suite 412/412 en 96 s · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`)
 - AND con un `sin revisar` o un «no verificado» sin resolver, esa línea no dice «limpia»: dice cuántos quedan (`…, re-revisión limpia, 1 sin revisar`)
@@ -129,10 +129,10 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### El merge a develop sigue la política declarada
 
 - GIVEN una feature o un patch validados (o diferidos) y un bloque `merge` completo (`into`, `noFf`, `removeWorktree`) en `sdd-kit.json`
-- WHEN el agente llega al paso de rama del cierre (paso 10 de `sdd-end-feature`, paso 6 de `sdd-end-patch`)
+- WHEN el agente llega al paso del merge de `sdd-archive`
 - THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
-- AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta
-- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, el paso 0 de `sdd-end-patch` para con el smoke y la pregunta de validación antes de tocar nada
+- AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta salvo en un hotfix con la frase del dev-lead en `--order`
+- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, la validación de `sdd-archive` para con el smoke y la pregunta de validación antes de tocar nada
 
 ### Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás
 
@@ -179,9 +179,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### El cierre acaba con una línea de terminado
 
-- GIVEN un cierre de feature (`sdd-end-feature`) o de patch (`sdd-end-patch`) que ha recorrido su checklist
+- GIVEN un cierre de feature o de patch con `sdd-archive` que ha recorrido su checklist
 - WHEN el agente escribe su último mensaje
-- THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, y lo pendiente; y ofrece el ticket del kit si toca
+- THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, lo pendiente y lo que falta de su familia; y ofrece el ticket del kit si toca
 - AND su última línea es la de terminado: si la rama está fusionada en `merge.into` y el worktree no tiene cambios sin commitear, dice rama, destino, hash, estado del push (hecho, no hecho y por qué) y que se puede borrar el worktree, con su ruta; si no, dice «No terminado», qué falta y que el worktree no se borra todavía
 - AND con el merge o el push denegados o fallidos, sus bloques de evidencia van antes, y la línea de terminado sigue siendo la última: «No terminado» si falta el merge; con el merge hecho y el push fallido, dice «push no hecho» y el motivo
 - AND solo se ofrece borrar un worktree enlazado: si la rama está en el checkout principal del repo, la línea acaba en el push, sin cláusula de borrado
@@ -205,7 +205,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND si en cada fichero en conflicto cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `sdd estimation log`; con cualquier otro conflicto, falla con la lista de ficheros
+- AND si en cada fichero en conflicto cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `sdd estimation log`; con cualquier otro conflicto, falla con `base: conflicto en` y la lista de ficheros
 
 ### El merge del cierre une los registros que solo añaden líneas
 
@@ -237,21 +237,22 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
 - WHEN el cierre fusiona con `sdd merge`
 - THEN `--verify` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
-- AND la suite completa ya corrió antes del script, en la validación final, y el mensaje final da su resultado
+- AND la suite completa ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
 - AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; la suite completa no se omite nunca
 
 ### Un conflicto solo en los registros se resuelve con un merge de sincronización
 
-- GIVEN un cierre de feature o de patch cuyo `sdd merge` falla con `merge: conflicto en` y una lista formada solo por `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
+- GIVEN un cierre de feature o de patch con su commit de cierre hecho y `origin/develop` por delante, cuyo merge de sincronización (`git merge --no-edit origin/develop` en el worktree de la feature) deja conflicto solo en `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
 - WHEN el agente sigue la receta del merge
-- THEN en el worktree de la feature hace `git merge --no-edit <merge.into>`, en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `sdd estimation log`, commitea el merge y relanza el script una vez, sin parar a preguntar
+- THEN en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `sdd estimation log`, commitea el merge y sigue con `sdd merge`, sin parar a preguntar
 - AND la rama destino acaba con las entradas de las dos features en cada registro y el log regenerado
 
 ### Un conflicto que no se puede conservar entero es de una persona
 
-- GIVEN un cierre cuyo script falla con `merge:` y en la lista hay un fichero que no es uno de los tres registros, o los dos lados tocaron la misma línea de `changelog.md` o `roadmap.md`, o el relanzamiento vuelve a fallar
+- GIVEN un cierre cuyo merge de sincronización o cuyo `sdd merge` deja conflicto (`base: conflicto en` o `merge: conflicto en`) y en la lista hay un fichero que no es uno de los tres registros, o los dos lados tocaron la misma línea de `changelog.md` o `roadmap.md`, o el relanzamiento vuelve a fallar
 - WHEN el agente sigue la receta del merge
-- THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy
+- THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script o de git y los ficheros, y el cierre queda «No terminado», como hoy
+- AND con `vuelta: conflicto en <ficheros>` de un hotfix, el script ya lo ha deshecho todo: una persona porta el arreglo a la rama de integración y relanza el hotfix
 
 ### El método de ejecución lo elige el handoff del plan
 

@@ -39,6 +39,13 @@ la forma de una ADR del proyecto, su plantilla, y cómo la CLI la valida y encue
 - THEN calca `adr-template.md` en `.docs/sdd/decisions/NNNN-<slug-en-inglés>.md`, con el número siguiente al mayor de la carpeta
 - AND la plantilla lleva el frontmatter (`status`, `date`, `rutas`), las cinco secciones de la ADR 0001 y, en la ayuda, cuándo se ofrece una ADR: es difícil de deshacer, sorprende sin contexto y hubo una alternativa real, las tres a la vez
 
+### El cierre ejecuta `sdd decision check`
+
+- GIVEN un proyecto con `.docs/sdd/decisions/` y el cierre de una feature o de un patch
+- WHEN `sdd-archive` llega a los docs vivos, después de escribir las ADR candidatas de la spec
+- THEN ejecuta `sdd decision check --path .docs/sdd` y sigue solo si sale con 0
+- AND un fallo en una ADR que el cierre no escribió también para el cierre: las ADR no separan fallos ajenos
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: una ADR por fichero en `.docs/sdd/decisions/NNNN-<slug>.md`; su estado, fecha y rutas, en el frontmatter; el texto, en sus cinco secciones. La forma la fijan la ADR 0001 y `adr-template.md`.

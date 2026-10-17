@@ -54,7 +54,7 @@ El ciclo es el mismo que en greenfield, guiado por las skills:
 5. **Implementación** en la propia sesión por defecto, o con subagentes en los planes largos, y en los dos casos con los tests en rojo escritos antes del código de cada tarea: son el contrato de quien implementa.
 6. **Verificación**, que se detalla en el punto 2.2.
 7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
-8. **Cierre** con `walkthrough.md` y `sdd-end-feature`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
+8. **Cierre** con `walkthrough.md` y `sdd-archive`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
 
 Los artefactos viven en `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/`, como en greenfield.
 
@@ -98,7 +98,7 @@ Resultados del primer proyecto del equipo con el flujo completo, que era un brow
 
 ## 5. Evolución: los aprendizajes vuelven al proceso
 
-Cada `walkthrough.md` recoge los aprendizajes de la tarea, y el cierre con `sdd-end-feature` obliga a volcarlos a los documentos y a las skills. Un ejemplo real del equipo: un bug de producción causado por un detalle de serialización se convirtió en un artículo de la constitution, y desde entonces ninguna tarea lo repite, la haga quien la haga. En brownfield este bucle es el mecanismo por el que el conocimiento tribal se convierte en activo del proyecto.
+Cada `walkthrough.md` recoge los aprendizajes de la tarea, y el cierre con `sdd-archive` obliga a volcarlos a los documentos y a las skills. Un ejemplo real del equipo: un bug de producción causado por un detalle de serialización se convirtió en un artículo de la constitution, y desde entonces ninguna tarea lo repite, la haga quien la haga. En brownfield este bucle es el mecanismo por el que el conocimiento tribal se convierte en activo del proyecto.
 
 ## 6. Principio general
 

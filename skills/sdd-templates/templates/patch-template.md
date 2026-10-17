@@ -23,7 +23,7 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 
 ## Capacidades
 
-> Se escribe al cerrar, tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `sdd capability check` al cerrar.
+> Se escribe al cerrar, con la salida de `sdd capability index` y el nombre exacto de cada capacidad. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `sdd capability check` al cerrar.
 
 - Modificadas: `<nombre>` — <qué requisito cambia>
 
@@ -56,7 +56,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 ## 4. Verificación
 
 > Distinguir lo verificado por el agente de lo reportado por el usuario. Debajo de la tabla, la
-> validación del paso 0 de `sdd-end-patch`: `Validado: <fecha> · «<frase literal>»`,
+> validación de `sdd-archive`: `Validado: <fecha> · «<frase literal>»`,
 > `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>` o, con `validation.mode: field`,
 > `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>`.
 
@@ -77,7 +77,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 > Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: el bloque
 > «Capacidades» lo dice con «Ninguna, porque el fix devuelve…» y esta sección se borra. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
-> la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-end-patch`.
+> la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-archive`.
 > Quitar un `- AND` o `- THEN` del vivo: `- REMOVED AND <texto literal>`.
 
 ### Capacidad: `<nombre>`

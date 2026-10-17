@@ -80,7 +80,7 @@ Describe 'Puertas de lite y del patch' {
   }
 
   It 'la validación del patch enseña el detector' {
-    Get-Section (Get-KitFile 'skills/sdd-end-patch/SKILL.md') '0. **Validación**' '1. ' | Should -Match 'detector'
+    Get-Section (Get-KitFile 'skills/sdd-archive/SKILL.md') '1. **Validation**' '2. ' | Should -Match 'detector'
   }
 
   It 'la plantilla del patch tiene la fila del detector' {

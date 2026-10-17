@@ -22,9 +22,9 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 ### El script vive en el kit y las skills de cierre lo invocan
 
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y el kit instalado
-- WHEN `sdd-end-feature` o `sdd-end-patch` llegan al paso estimation-log
-- THEN ejecutan `sdd estimation log` desde el kit, sin buscar ni crear copia en el proyecto
-- AND solo si `pwsh` no está disponible añaden la fila a mano
+- WHEN `sdd-archive` llega al paso estimation-log
+- THEN ejecuta `sdd estimation log` desde el kit, sin buscar ni crear copia en el proyecto
+- AND solo si `pwsh` no está disponible añade la fila a mano
 
 ### El parseo tolera el formato real de las plantillas
 
@@ -134,7 +134,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### El cierre rellena los tokens y el coste de la sesión
 
-- GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-end-feature` o al paso 1 de `sdd-end-patch`, en un proyecto con `.docs/sdd/estimation.md`
+- GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-archive`, en un proyecto con `.docs/sdd/estimation.md`
 - WHEN se rellena la sección 2 del walkthrough o la §5 de `patch.md`
 - THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama>`, ejecutado desde el kit
 - AND en otro harness, las cuatro dicen «no medido», con el motivo, y el esfuerzo real se aproxima con las marcas de los commits y se dice

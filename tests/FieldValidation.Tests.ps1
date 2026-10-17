@@ -44,21 +44,24 @@ Describe 'la validación en campo en control-profiles y en el paso 7' {
   }
 }
 
-Describe 'el cierre de feature en campo' {
+Describe 'el cierre en campo' {
   BeforeAll {
-    $script:EndFeature = Get-KitFile 'skills/sdd-end-feature/SKILL.md'
+    $script:Archive = Get-KitFile 'skills/sdd-archive/SKILL.md'
   }
 
-  It 'el paso 0 acepta la validación en campo' {
-    Get-Step $script:EndFeature 0 | Should -Match 'validation\.mode: field'
-  }
-
-  It 'el walkthrough registra la línea de campo' {
-    Get-Step $script:EndFeature 1 | Should -Match 'Validación en campo:'
+  It 'la validación acepta la validación en campo y registra su línea' {
+    $step = Get-Step $script:Archive 1
+    $step | Should -Match 'validation\.mode: field'
+    $step | Should -Match 'Validación en campo: <fecha> · <verificación del agente>'
   }
 
   It 'el roadmap marca ✅ en campo' {
-    Get-Step $script:EndFeature 8 | Should -Match 'validación en campo'
+    Get-Step $script:Archive 4 | Should -Match 'in field, `✅`'
+  }
+
+  It 'la red flag admite la línea de campo' {
+    $redFlag = ($script:Archive -split "`n") | Where-Object { $_ -match '^- You''re about to merge without the' }
+    $redFlag | Should -Match 'Validación en campo:'
   }
 }
 
@@ -66,27 +69,24 @@ Describe 'la validación en campo sin contradicciones ni huecos' {
   BeforeAll {
     $script:Profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
     $script:StartFeature = Get-KitFile 'skills/sdd-start-feature/SKILL.md'
-    $script:EndFeature = Get-KitFile 'skills/sdd-end-feature/SKILL.md'
-    $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
+    $script:Archive = Get-KitFile 'skills/sdd-archive/SKILL.md'
   }
 
   It 'ninguna frase dice que la validación no se quita sin exceptuar el campo' {
-    $absolutes = 'la validación del paso 7 no se quita nunca', 'en `delegate` la validación para siempre', 'Con el usuario ausente, la feature espera', 'con el usuario ausente, la feature espera', 'si no está, espera'
-    foreach ($skill in $script:StartFeature, $script:EndFeature, $script:EndPatch) {
+    $absolutes = 'la validación del paso 7 no se quita nunca', 'en `delegate` la validación para siempre', 'Con el usuario ausente, la feature espera', 'con el usuario ausente, la feature espera', 'si no está, espera', 'the change waits', 'validation stops'
+    foreach ($skill in $script:StartFeature, $script:Archive) {
       $lines = ($skill -split "`n") | Where-Object { $line = $_; $absolutes | Where-Object { $line.Contains($_) } }
-      $lines | Where-Object { $_ -notmatch 'validation\.mode: field' } | Should -BeNullOrEmpty
+      $lines | Where-Object { $_ -notmatch 'validation\.mode: field|Without the key, with `manual`' } | Should -BeNullOrEmpty
     }
   }
 
-  It 'los cierres registran Validado si el usuario dice qué probó, también en campo' {
-    Get-Step $script:EndFeature 1 | Should -Match 'en campo[^.]*dice qué (ha )?probó[^.]*`Validado'
-    Get-Step $script:EndPatch 0 | Should -Match 'en campo[^.]*dice qué (ha )?probó[^.]*`Validado'
+  It 'el cierre registra Validado si el usuario dice qué probó, también en campo' {
+    Get-Step $script:Archive 1 | Should -Match 'If the user does say what they tried, the line is `Validado`'
   }
 
   It 'un valor distinto de manual o field cuenta como manual con aviso literal' {
-    foreach ($step in (Get-Step $script:StartFeature 7), (Get-Step $script:EndFeature 0), (Get-Step $script:EndPatch 0)) {
-      $step | Should -Match 'otro valor'
-    }
+    Get-Step $script:StartFeature 7 | Should -Match 'otro valor'
+    Get-Step $script:Archive 1 | Should -Match 'another value\*\* \(which counts as `manual`; say so\)'
     Get-Section $script:Profiles 'Validación en campo' | Should -Match 'no admitido en `sdd-kit\.json`: rige `manual`'
   }
 
@@ -102,18 +102,7 @@ Describe 'la validación en campo sin contradicciones ni huecos' {
 }
 
 Describe 'el cierre de patch en campo' {
-  BeforeAll {
-    $script:EndPatch = Get-KitFile 'skills/sdd-end-patch/SKILL.md'
-  }
-
-  It 'el paso 0 del patch nombra el modo de campo' {
-    $step = Get-Step $script:EndPatch 0
-    $step | Should -Match 'validation\.mode: field'
-    $step | Should -Match 'Validación en campo:'
-  }
-
-  It 'la red flag admite la línea de campo' {
-    $redFlag = ($script:EndPatch -split "`n") | Where-Object { $_ -match '^- Vas a fusionar sin la línea' }
-    $redFlag | Should -Match 'Validación en campo:'
+  It 'la validación del patch registra la línea de campo bajo la tabla de patch.md §4' {
+    Get-Step (Get-KitFile 'skills/sdd-archive/SKILL.md') 1 | Should -Match '`Patch only:` under the table of `patch\.md` §4'
   }
 }

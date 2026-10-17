@@ -1,0 +1,33 @@
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| **[Patch 0008, 2026-10-16: saldada — [patch](specs/20261010-090000-patch-0008-cancel-missing/patch.md)]** Cancelar una reserva que no existe responde «cancelada» igual | Medio | Actuar → 0008 |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+| 2026-10-16 | 0008 | Cancelar una reserva que no existe avisaba «cancelada» |
+
+## Releases cerradas
+
+### v0.3.0 (2026-09-01)
+
+Cancelar una reserva propia. [changelog](changelog.md)

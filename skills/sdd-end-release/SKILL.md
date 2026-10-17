@@ -1,6 +1,6 @@
 ---
 name: sdd-end-release
-description: Usar cuando hay que cerrar una release/entrega en un proyecto con .docs/sdd/ — el usuario dice "cierra la release", "prepara la entrega", "el cliente espera el email", o el changelog acumula features sin corte de versión. No para cerrar una feature individual (eso es sdd-end-feature).
+description: Usar cuando hay que cerrar una release/entrega en un proyecto con .docs/sdd/ — el usuario dice "cierra la release", "prepara la entrega", "el cliente espera el email", o el changelog acumula features sin corte de versión. No para cerrar una feature individual (eso es sdd-archive).
 ---
 
 # sdd-end-release
@@ -8,7 +8,7 @@ description: Usar cuando hay que cerrar una release/entrega en un proyecto con .
 ## Overview
 
 Cerrar una release es el **corte de publicación** de lo hecho, como la rama de release de git-flow: el
-modo incremental (feature y patch sin abrir release) llega aquí igual. Se ejecuta SOBRE features ya cerradas (vía `sdd-end-feature`) y produce los
+modo incremental (feature y patch sin abrir release) llega aquí igual. Se ejecuta SOBRE features ya cerradas (vía `sdd-archive`) y produce los
 artefactos que convierten trabajo acumulado en una entrega: changelog sellado, release notes de cliente
 (solo con destinatario), roadmap colapsado y tag.
 
@@ -23,7 +23,7 @@ exactamente cuando se salta lo que luego cuesta semanas recuperar.
 
 ## ⛔ Gate de entrada
 
-Toda feature/patch de la release cerrada vía `sdd-end-feature` (walkthrough + changelog al día) y el build/lint
+Toda feature/patch de la release cerrada vía `sdd-archive` (walkthrough + changelog al día) y el build/lint
 del proyecto en verde. Trabajo a medias → se decide CON el usuario si entra o se mueve, nunca en silencio.
 Una feature que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
 mismo tratamiento que el trabajo a medias — decisión del usuario, no "lo anoto y sigo".

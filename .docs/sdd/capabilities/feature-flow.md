@@ -75,7 +75,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una feature con la implementación terminada y el cierre de la revisión final terminado (sin Critical abiertos ni Important sin adjudicar), en un proyecto con `validation.mode` `manual` o sin la clave
 - WHEN el agente va a cerrar
-- THEN antes de invocar `sdd-end-feature` presenta, empezando por un párrafo con 🦆 sobre lo que cambia para quien usa el producto y siguiendo con «✋ Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- THEN antes de invocar `sdd-archive` presenta, empezando por un párrafo con 🦆 sobre lo que cambia para quien usa el producto y siguiendo con «✋ Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
 - AND el smoke da una fila por THEN de la spec con su evidencia, que es uno de tres valores: `suite`, `ejecución real` o `no probado`. Un THEN que se observa en una interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado con `ejecución real`.
 - AND un THEN de fallo (un error, un rechazo, un 400) se provoca de verdad con la entrada que falla: con la feature 0012, `curl -i localhost:<puerto>/api/bookings?status=Lost` → `400` con «Estado no válido: Lost», no «lo cubre el test de la task 3»
@@ -110,14 +110,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN los tests que codifican los escenarios de la task existen antes del primer encargo, escritos por el hilo, uno por THEN y uno por cada línea del Review Focus del plan que nombra esa task, en RED, sin commitear
 - AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica; los commitea con su implementación con `git add` de rutas explícitas y nunca con `--no-verify`
 - AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
-
-### Un aprendizaje sin destino no se redirige en silencio
-
-- GIVEN un cierre de feature cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
-- WHEN `sdd-end-feature` vuelca los aprendizajes a los docs vivos
-- THEN crea `architecture.md` calcando `architecture-template.md` de `sdd-templates`, vuelca ahí el aprendizaje y lo dice en el informe final («`architecture.md` no existía: creado desde la plantilla»)
-- AND no escribe el aprendizaje estructural en `tech-stack.md` ni en otro documento en su lugar
-- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `tech-stack.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la tabla de deuda técnica del roadmap
 
 ### Un documento de anclaje que falta se calca de su plantilla
 
@@ -174,6 +166,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan y se despacha una task de solo frontend
 - THEN el gate completo aparece una sola vez, en la validación final, y lo ejecuta el hilo principal
 - AND no aparece en «De código» ni en la verificación de esa task, y el encargo de su implementador le dice que ejecute su verificación y no la suite completa
+- AND el cierre de `sdd-archive` solo lo repite tras su merge de sincronización, y solo si la base trajo cambios fuera de `.docs/` que no sean `*.md`
 
 ### Una task que cambia la UI se mira en un navegador
 
@@ -310,13 +303,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
 - AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
 
-### Una carpeta `-task-` se cierra como legado
-
-- GIVEN la rama `feature/0064-task-to-feature-rename` con su carpeta `20260925-163055-task-0064-task-to-feature-rename/`, cuyo `spec.md` lleva `task: 0064`
-- WHEN `sdd-end-feature` cierra la feature
-- THEN escribe `walkthrough.md` en esa misma carpeta, sin renombrarla
-- AND el estimation-log regenerado tiene una fila con id `0064` y carpeta `20260925-163055-task-0064-task-to-feature-rename`
-
 ### Las tasks del plan conservan su nombre
 
 - GIVEN una feature en modo full con su plan escrito
@@ -352,14 +338,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente escribe la spec
 - THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
 - AND en el paso 7 prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
-
-### El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite
-
-- GIVEN una feature cerrada con `sdd-end-feature`
-- WHEN se escribe «4. Verificación» del walkthrough
-- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado y su duración
-- AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
-- AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
 
 ### Un hallazgo de ejecución se reproduce antes de arreglarse
 
@@ -604,7 +582,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
 - AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
 - AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `operations.md`, `tech-stack.md` ni la constitution, lo dice y pregunta qué ejecutar
-- AND si la baseline falla, informa de los fallos y pregunta si sigue o investiga
+- AND si la baseline falla, corre el mismo comando en un worktree temporal desanclado de la rama de integración; si también falla allí, busca las primeras líneas de error en la deuda del proyecto y cita la fila o abre una en «Por triar»; después informa de los fallos con ese veredicto y pregunta si sigue o investiga
 - AND ningún fichero de `skills/` invoca `superpowers:using-git-worktrees` ni `superpowers:dispatching-parallel-agents`
 
 ### Dos revisores de spec se despachan con `sdd-parallel-agents`

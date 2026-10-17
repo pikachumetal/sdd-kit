@@ -94,16 +94,16 @@ Describe 'Task 3 — revisión final y cierre' {
     $step | Should -Match 'effort: no disponible en este harness, hereda el de la sesión'
   }
 
-  It 'el paso 9 del cierre no repite la revisión final' {
-    $step = Get-SkillStep 'sdd-end-feature' 9
-    $step | Should -Match 'No lances otra'
-    $step | Should -Not -Match 'solo si la task se ejecutó \*\*en línea\*\*'
+  It 'el cierre no repite la revisión final' {
+    $step = Get-SkillStep 'sdd-archive' 0
+    $step | Should -Match "If it didn't move, don't launch another review"
+    $step | Should -Not -Match '(?i)inline'
   }
 
-  It 'el paso 1 del cierre vuelca los rulings y los minors de sdd-implement' {
-    $step = Get-SkillStep 'sdd-end-feature' 1
-    $step | Should -Match '`sdd-implement`'
-    $step | Should -Match 'Deferred minors'
+  It 'el walkthrough vuelca los rulings de tasks.md y del ledger' {
+    $step = Get-SkillStep 'sdd-archive' 2
+    $step | Should -Match '`## Rulings` of `tasks\.md`'
+    $step | Should -Match 'ledger rulings <plan>'
   }
 }
 
@@ -143,10 +143,10 @@ Describe 'Revisión final — pase de fix' {
     Get-KitFile 'skills/sdd-verify/SKILL.md' | Should -Match 'write `Revisión final: Spec opus\+high'
   }
 
-  It 'el paso 9 del cierre busca la revisión final en tasks.md y no en el ledger' {
-    $step = Get-SkillStep 'sdd-end-feature' 9
-    $step | Should -Match 'la línea `Revisión final:` de `tasks.md`'
-    $step | Should -Not -Match 'queda en el ledger'
+  It 'el cierre busca la revisión final en tasks.md y no en el ledger' {
+    $step = Get-SkillStep 'sdd-archive' 0
+    $step | Should -Match 'the `Revisión final:` line of `tasks\.md`'
+    $step | Should -Not -Match '(?i)in the ledger'
   }
 }
 

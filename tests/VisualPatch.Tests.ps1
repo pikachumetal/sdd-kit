@@ -51,7 +51,7 @@ Describe 'Recorrido y cierre del patch visual' {
   }
 
   It 'el cierre registra el ajuste visual como Changed' {
-    Get-KitFile 'skills/sdd-end-patch/SKILL.md' | Should -Match '`Changed`'
+    Get-KitFile 'skills/sdd-archive/SKILL.md' | Should -Match '`Changed` for a presentation-only adjustment'
   }
 
   It 'la plantilla admite la intención en §2' {

@@ -1,6 +1,6 @@
 ---
 name: sdd-verify
-description: Use when sdd-implement closes a task or finishes its last one, or sdd-end-feature reaches its review step — before claiming work complete, fixed or passing, and to run the final whole-branch review. Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-implement closes a task or finishes its last one, or sdd-archive reaches its final-review check — before claiming work complete, fixed or passing, and to run the final whole-branch review. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 # sdd-verify

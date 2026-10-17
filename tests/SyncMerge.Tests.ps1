@@ -13,21 +13,16 @@ BeforeAll {
   }
 }
 
-Describe 'Merge de sincronización ante un conflicto solo en los registros' {
+Describe 'Merge de sincronización tras el commit de cierre' {
   BeforeAll {
-    $script:Recipe = Get-KitFile 'skills/sdd-end-feature/references/merge-recipe.md'
-    $script:Section = Get-MarkdownSection $script:Recipe '## Conflicto solo en los registros'
-    $script:Anchor = 'merge-recipe.md#conflicto-solo-en-los-registros'
+    $script:Recipe = Get-KitFile 'skills/sdd-archive/references/merge-recipe.md'
+    $script:Section = Get-MarkdownSection $script:Recipe '## Integrated base'
+    $script:Anchor = 'merge-recipe.md#integrated-base'
   }
 
-  It 'la receta tiene la sección, justo después de «Si el script falla»' {
+  It 'la receta tiene la sección y va antes de la del script' {
     $script:Section | Should -Not -BeNullOrEmpty
-    $failIndex = $script:Recipe.IndexOf('## Si el script falla')
-    $syncIndex = $script:Recipe.IndexOf('## Conflicto solo en los registros')
-    $failIndex | Should -BeGreaterThan -1
-    $syncIndex | Should -BeGreaterThan $failIndex
-    $between = $script:Recipe.Substring($failIndex + 2, $syncIndex - $failIndex - 2)
-    $between | Should -Not -Match '(?m)^## '
+    $script:Recipe.IndexOf('## Integrated base') | Should -BeLessThan $script:Recipe.IndexOf('## The merge is a script')
   }
 
   It 'la sección nombra los tres registros' {
@@ -36,10 +31,9 @@ Describe 'Merge de sincronización ante un conflicto solo en los registros' {
     }
   }
 
-  It 'la sección da el merge de sincronización literal, el abort y el relanzamiento único' {
-    $script:Section | Should -Match ([regex]::Escape('git merge --no-edit <merge.into>'))
+  It 'la sección da el merge de sincronización literal y el abort' {
+    $script:Section | Should -Match ([regex]::Escape('git merge --no-edit <remote>/<merge.into>'))
     $script:Section | Should -Match ([regex]::Escape('git merge --abort'))
-    $script:Section | Should -Match '(?i)una vez'
   }
 
   It 'la sección regenera el log con la CLI y no lo edita' {
@@ -50,15 +44,9 @@ Describe 'Merge de sincronización ante un conflicto solo en los registros' {
     $script:Section | Should -Match ([regex]::Escape('--no-verify'))
   }
 
-  It '«Si el script falla» remite a la sección como salvedad' {
-    $failSection = Get-MarkdownSection $script:Recipe '## Si el script falla'
-    $failSection | Should -Match '(?i)salvo[^\r\n]*registros'
-  }
-
-  It 'el paso 10 de sdd-end-feature y el paso 6 de sdd-end-patch enlazan la excepción' {
-    foreach ($skill in 'skills/sdd-end-feature/SKILL.md', 'skills/sdd-end-patch/SKILL.md') {
-      Get-KitFile $skill | Should -Match ([regex]::Escape($script:Anchor))
-    }
+  It 'el paso de la base integrada de sdd-archive remite a la receta para los registros' {
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?ms)^6\. \*\*Integrated base\*\*.*?(?=^7\. )').Value
+    $step | Should -Match 'A conflict only in the three registers you resolve as the recipe says'
   }
 
   It 'commit-milestones añade el merge de sincronización a la tabla de hitos y enlaza la receta' {

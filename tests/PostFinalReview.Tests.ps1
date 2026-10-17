@@ -54,7 +54,8 @@ Describe 'Revisión en el hilo' {
     foreach ($anchor in '`*.md` of any path', 'comment lines', 'instructions', 'a template') {
       $script:Implement | Should -Match ([regex]::Escape($anchor))
     }
-    $texts = $script:Profiles, (Get-SkillStep 'sdd-end-feature' 9)
+    Get-SkillStep 'sdd-archive' 0 | Should -Match '«Every commit of yours» in `sdd-implement`'
+    $texts = , $script:Profiles
     foreach ($text in $texts) {
       $text | Should -Not -Match ([regex]::Escape('`*.md` de la raíz'))
       foreach ($anchor in '`*.md` de cualquier ruta', 'líneas de comentario', 'instrucciones', 'plantilla') {
@@ -86,13 +87,13 @@ Describe 'Revisión en el hilo en los pasos' {
 }
 
 Describe 'Bordes del cierre' {
-  It 'el cierre hace el paso 9 antes de escribir' {
-    Get-SkillStep 'sdd-end-feature' 0 | Should -Match ([regex]::Escape('haz el paso 9'))
+  It 'el cierre comprueba la revisión final antes de escribir' {
+    Get-SkillStep 'sdd-archive' 0 | Should -Match ([regex]::Escape("write nothing until it's back and closed"))
   }
 
-  It 'el paso 9 compara HEAD con el último commit revisado y lleva las condiciones del hilo' {
-    $step = Get-SkillStep 'sdd-end-feature' 9
-    foreach ($anchor in '`Re-revisión:`', '<último revisado>..HEAD', 'git diff --numstat', 'git show --remerge-diff', 'No lances otra') {
+  It 'el cierre compara HEAD con el último commit revisado y lleva las condiciones del hilo' {
+    $step = Get-SkillStep 'sdd-archive' 0
+    foreach ($anchor in '`Re-revisión:`', '<last reviewed>..HEAD', '«Every commit of yours»', "don't launch another review") {
       $step | Should -Match ([regex]::Escape($anchor))
     }
   }

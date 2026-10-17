@@ -49,10 +49,10 @@ Describe 'sdd-start-feature' {
     Assert-Literal (Get-KitFile 'skills/sdd-implement/SKILL.md') @('**In `pair`**, with the task''s commit done', 'present that task''s test script', 'Se prueba en la aplicación', '`delegate` and `unattended` don''t stop here')
   }
 }
-Describe 'sdd-end-feature' {
-  It 'el pre-check presenta el guion de pruebas del paso 7' {
-    $step = [regex]::Match((Get-KitFile 'skills/sdd-end-feature/SKILL.md'), '(?ms)^0\. .*?(?=^\d+\. |^## )').Value
-    Assert-Literal $step @('el **guion de pruebas** del paso 7 de `sdd-start-feature`', 'resultado esperado')
+Describe 'sdd-archive' {
+  It 'la validación presenta el guion de pruebas' {
+    $step = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?ms)^1\. .*?(?=^\d+\. |^## )').Value
+    Assert-Literal $step @('the **test script** (numbered steps, each an action in the app and its expected result)')
     $step.Contains('cómo probarlo') | Should -BeFalse
   }
 }

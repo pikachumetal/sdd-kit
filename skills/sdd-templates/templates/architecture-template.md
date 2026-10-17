@@ -1,6 +1,6 @@
 # Architecture — <proyecto>
 
-> Cómo está construido el proyecto: sus piezas, de qué depende cada una y dónde va lo nuevo. Describe la estructura REAL, no la deseada. Crece con los cierres de feature (`sdd-end-feature`, aprendizajes estructurales). Los valores de comportamiento viven en `capabilities/`: aquí se enlaza la capacidad, no se copia el valor. Una sección sin contenido todavía se deja con `_Pendiente._`, no se borra. Borra los bloques de ayuda (`>`) al redactar.
+> Cómo está construido el proyecto: sus piezas, de qué depende cada una y dónde va lo nuevo. Describe la estructura REAL, no la deseada. Crece con los cierres de feature (`sdd-archive`, aprendizajes estructurales). Los valores de comportamiento viven en `capabilities/`: aquí se enlaza la capacidad, no se copia el valor. Una sección sin contenido todavía se deja con `_Pendiente._`, no se borra. Borra los bloques de ayuda (`>`) al redactar.
 
 ## Estructura
 

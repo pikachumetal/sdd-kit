@@ -126,7 +126,7 @@ if [ -f go.mod ]; then go mod download; fi
 
 Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up.
 
-**If tests fail:** Report failures, ask whether to proceed or investigate.
+**If tests fail:** run the same command in a detached worktree of the integration branch (`git worktree add --detach`, removed when done). If it fails there too, the red isn't this branch's: search its first error lines in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence. Then report the failures with that verdict and ask whether to proceed or investigate.
 
 **If tests pass:** Report ready.
 

@@ -1,0 +1,91 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [5]
+Limpio, destino listo (`develop`), sin otras ramas abiertas. Leo la spec y los artefactos de la 0010.
+
+--- [13]
+Ojo: el entorno me ha movido el directorio al del kit; el trabajo sigue en el worktree de la feature, así que uso rutas absolutas hacia él. Leo las referencias que necesito.
+
+--- [25]
+Mientras vuelve la re-revisión no escribo ningún registro; leo las plantillas.
+
+--- [35]
+La suite completa está verde en el `HEAD` (`node --test`: 5/5, y con `--test-concurrency=1`: 5/5). Espero a que vuelva la re-revisión antes de escribir ningún registro del cierre.
+
+--- [42]
+## Hallazgos del tramo
+
+1. **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El ruling de Task 2 cambia el gate de cierre a `node --test --test-concurrency=1`. Eso contradice la constitución (`.docs/sdd/constitution.md:4`: «Gate de cierre: `node --test` entero en verde») y el plan (`plan.md:50`: `node --test`). No hay enmienda ni ningún cambio en el repositorio que lo recoja: `package.json` no tiene script. Además, el motivo que da no se sostiene:
+   - `node --test` ejecuta cada fichero en su propio proceso, así que no hay un almacén en memoria compartido entre ficheros que pueda tener una carrera.
+   - Dentro de `test/cancel.test.js` los tests ya corren en serie.
+   - Lo que sí existe es otra cosa: el test 3 (`cancel.test.js:13-15`) depende del estado que deja el test 1. Eso es dependencia de orden, y `--test-concurrency=1` no la arregla.
+   - El aplazamiento («hasta aislar el almacén por test») no tiene fila en `roadmap.md`.
+   - La revisión final vio bf8ab9b, cuando este ruling aún no existía, así que el cambio de gate no lo ha revisado nadie.
+
+2. **Important**, `tasks.md:10`. La fila de Task 1 apunta al commit `bf8ab9b`, pero el commit de Task 1 es `d188f20` («feat(bookings): cancelar con un motivo de la lista»). `bf8ab9b` es el de Task 2. El registro no refleja la realidad y `d188f20` no aparece en ninguna parte. El walkthrough y el changelog del cierre se construyen a partir de esta tabla.
+
+3. **Important**, `spec.md:64`. La sección nueva no toca requisitos, THEN, Scope ni «Dónde se prueba», así que no es una enmienda. El problema es la ADR candidata, que no cumple los criterios de la plantilla (`adr-template.md:10` y `spec-template.md:77`: difícil de deshacer, sorprendente y con una alternativa real):
+   - Guardar `reason` como campo de un objeto en memoria (`src/app.js:24`) se deshace trivialmente.
+   - Con la ADR 0001 aceptada (reservas en memoria, sin base de datos), «una tabla de motivos aparte» no es una alternativa real.
+   - Además decide lo que el roadmap tiene pendiente en la fila 0014 («Motivo guardado: el motivo de una cancelación se guarda en el almacén de reservas», ⏳).
+   - Si el cierre la escribe como ADR `accepted`, su Confirmación obligará a 0014 antes de que esa feature tenga spec.
+
+4. **Minor**, `.docs/sdd/decisions/0002-node-test.md:25`. Le falta la sección `### Confirmación` que pide la plantilla (`adr-template.md:30`) y que sí tiene 0001. El revisor de spec aplica la Confirmación de cada ADR `accepted` (`spec-reviewer-prompt.md:87`), y con esta no puede.
+
+Lo demás sí cuadra con el código y el repositorio:
+- La ADR 0001 (reservas en memoria, `src/**`) coincide con `src/app.js:4`.
+- La ADR 0002 (`node:test`, `test/**`) coincide con los tests y con `tech-stack.md`.
+- La línea de la revisión final en `tasks.md:13` coincide con lo que dice el encargo.
+
+## Observaciones fuera de alcance
+
+- El escenario «sin `--motivo`» (`spec.md:54`) no tiene test en `test/cancel.test.js`. El código lo resuelve bien (`reasonOf` devuelve `undefined`, que no está en la lista, y responde el mensaje de motivo no válido), pero no hay prueba.
+- `test/cancel.test.js:13` depende del orden de ejecución y del estado del módulo que deja el test de la línea 5.
+- La fila 0014 del roadmap parece cubierta en buena parte por lo que ya hace `src/app.js:24` (`booking.reason`). Habría que aclarar su alcance.
+- En `spec.md:24-25` la numeración de «Decisiones» salta del 1 al 3. Además, `spec.md:25` dice «Sin review de spec», y la revisión final sí tuvo eje Spec.
+
+## Veredicto
+
+**Hay hallazgos abiertos**: 1 (el ruling cambia el gate en contra de la constitución y del plan, y su motivo no se sostiene), 2 (commit equivocado en Task 1), 3 (ADR candidata que no cumple los criterios y se solapa con 0014), todos Important, y 4 (falta la Confirmación en la ADR 0002), Minor.
+
+--- [44]
+Re-revisión devuelta con 3 Important y 1 Minor. Los adjudico (la regla es una sola pasada, sin segunda re-revisión) y compruebo lo verificable antes de escribir. Primero el smoke real, un THEN por fila, y las comprobaciones de los hallazgos.
+
+--- [50]
+ADR en orden. Ahora la capacidad `bookings` (no existe aún) con el comando del kit.
+
+--- [57]
+`roadmap check` falla en dos líneas que no he tocado (cabecera de «Deuda técnica» y el título de v0.3.0): no las arreglo y lo digo al final. Escribo el walkthrough.
+
+--- [60]
+Squasheo los commits de documentación y el cierre en un solo commit desde el de la última task, y compruebo la base integrada.
+
+--- [63]
+El walkthrough cita `98f6b21`, que ya no existe tras el squash: lo reescribo sin ese sha y enmiendo el commit de cierre (aún sin fusionar).
+
+--- [67]
+La 0010 está cerrada y fusionada en `develop` (`2a0dce2`), pero hay cosas que tienes que decidir, sobre todo la ADR 0003 y la fila 0014.
+
+**Decisiones que tomé sin ti**
+- **Gate de la Task 2:** usó `node --test --test-concurrency=1`, que descarto. La constitución fija `node --test`, y esa suite cerró verde 5/5. El flag no arregla nada, porque lo que falla es una dependencia de orden entre tests (ver «Pendiente»).
+- **ADR 0003:** la escribí como `proposed`, no `accepted`. La sección de ADR entró en la spec después de tu aprobación y nadie la firmó. El revisor además duda de que cumpla los tres criterios de una ADR.
+- **ADR 0002:** le añadí `### Confirmación`, porque `sdd decision check` fallaba y bloqueaba el cierre.
+- **`tasks.md`:** corregí el commit de la Task 1 a `d188f20`; decía `bf8ab9b`.
+
+**Qué pasó en el cierre**
+- **Re-revisión:** lancé una porque el commit de ADRs tenía 59 líneas, por encima del umbral de 20. Devolvió 3 Important y 1 Minor, que adjudiqué en los Rulings de `tasks.md`. No hubo segunda re-revisión.
+- **Validación:** como el modo es `field`, no te pregunté. El smoke dio 4/4 THEN con ejecución real, y la suite 5/5, y quedó registrado en el walkthrough.
+- **Registros:** walkthrough, capacidad `bookings` (creada con `sdd capability merge`), changelog y la fila 0010 del roadmap en ✅. No existe `estimation.md`, así que no hay tiempo real ni log de estimación. `.claude/skills/` tampoco existe, así que la revisión de skills no aplica.
+- **Historial:** squasheé los commits de documentación y el cierre en uno (`b1248a7`).
+
+**Pendiente**
+- **ADR 0003:** acéptala o descártala.
+- **Fila 0014 del roadmap** («Motivo guardado en el almacén»): se solapa con lo que ya hace la 0010. No la toqué.
+- **Dependencia de orden en `test/cancel.test.js`:** el test de `canceladas` falla si se ejecuta solo. Lo dejé como fila en «Deuda técnica».
+- **Minor diferido:** el escenario «sin `--motivo`» no tiene test propio; lo verifiqué por ejecución real.
+- **`sdd roadmap check` falla en 2 líneas que ya estaban:** la cabecera de «Deuda técnica» y el título de v0.3.0. No las toqué.
+- **Ticket de mejora del kit (`sdd-feedback`):** lo puedo preparar si quieres.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`2a0dce2`) · push: no hecho: `merge.push` no lo autoriza · la rama está en el checkout principal, no hay worktree que borrar.
+

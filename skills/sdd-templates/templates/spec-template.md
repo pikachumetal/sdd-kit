@@ -4,7 +4,7 @@ feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la se
 parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
 proposal: <id>        # solo si esta feature sale del reparto de una propuesta (specs/<ts>-proposal-<id>-<slug>/)
 title: <título corto descriptivo>
-mode: full            # full | lite — lo lee sdd-end-feature; sin campo = full
+mode: full            # full | lite — lo lee sdd-archive; sin campo = full
 profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la release o del proyecto
 status: draft
 created: <YYYY-MM-DD>
@@ -81,7 +81,7 @@ approvers:
 
 ## Delta de comportamiento
 
-> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-end-feature`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket. Su slug es un nombre de fichero: va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing`, no `facturacion`), y lo aprueba el dev-lead.
+> Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-archive`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket. Su slug es un nombre de fichero: va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing`, no `facturacion`), y lo aprueba el dev-lead.
 >
 > Un escenario de una regla de negocio lleva datos concretos de entrada y de salida, no una frase abstracta: «GIVEN bolsa FR, IT, PT · WHEN oferta en DE · THEN no cubre», no «una oferta fuera de la bolsa no cubre». La regla mal entendida se ve en la spec, no al validar.
 

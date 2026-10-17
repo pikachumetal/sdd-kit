@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- check"; node "D:/code/.worktrees/sdd-kit/0149-archive/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "--- worktrees"; git worktree list; echo "--- specs"; ls .docs/sdd/specs/ 2>&1 | head -30; cat .docs/sdd/sdd-kit.json 2>&1 | head -40
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- worktrees
+<run>/repo 524b623 [feature/0010-cancel-reason]
+--- specs
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && ls; head -20 spec.md; echo ----; cat tasks.md; cd ../../; echo ----; ls; git -C ../.. log --oneline -8; git -C ../.. diff --stat main...HEAD | tail -15
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+----
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas 
+
+>>> Bash: cat .docs/sdd/specs/*0010*/spec.md | sed -n 20,80p; echo ----; cat package.json; echo ----; cat src/app.js; ls .claude 2>&1; ls .docs/sdd/capabilities 2>&1; cat .docs/sdd/changelog.md | head -30; grep -n "0010\|Patches\|Deuda\|^#" .docs/sdd/roadmap.md | head -40
+<<< - Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MODIFIED, datos).
+
+## Intent
+
+Hoy cancelar no deja rastro: nadie sabe por qué se liberó una sala. Se quiere el motivo de cada cancelación.
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Approach
+
+El motivo se guarda 
+
+>>> Bash: sha=$(git rev-parse --short HEAD); echo sha $sha; node --test --test-concurrency=1 2>&1 | tail -15; echo "--- smoke"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "foo"; node src/app.js cancelar Norte lun; echo "(canceladas en proceso nuevo, almacén en memoria:)"; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; echo; cat .docs/sdd/roadmap.md
+<<< sha 524b623
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 269.216
+
+✖ failing tests:
+
+test at test\export.e2e.test.js:3:1
+✖ exportar reservas a csv (0.6359ms)
+  Error: TimeoutError: export no respondió en 5000 ms
+      at TestContext.<anonymous> (file:///<run>/repo/test/export.e2e.test.js:4:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+--- smoke
+cancelada Norte lun (sala ocupada)
+mot
+
+>>> Bash: git branch -a; T="$TEMP/dev-contrast-0010"; git worktree add --detach "$T" develop 2>&1 | tail -1; (cd "$T" && node --test --test-concurrency=1 2>&1 | grep -E "^ℹ (tests|pass|fail)|✖"); git worktree remove "$T" --force; echo; node --test --test-concurrency=1 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<<   develop
+* feature/0010-cancel-reason
+  main
+HEAD is now at 8a83c75 test: e2e de exportación
+✖ exportar reservas a csv (0.6305ms)
+ℹ tests 5
+ℹ pass 4
+ℹ fail 1
+✖ failing tests:
+✖ exportar reservas a csv (0.6305ms)
+
+ℹ tests 6
+ℹ pass 5
+ℹ fail 1
+
+=== RESULTADO (8 turnos, 0.186948 $)
+**No terminado.** Paro antes de escribir ningún registro o hacer el merge, porque la suite completa está en rojo y hace falta una decisión del dev-lead.
+
+**Informe del rojo**
+- **Suite en la rama** (`524b623`, `node --test --test-concurrency=1`): 6 tests, 5 pasan, 1 falla.
+- **El fallo:** `test/export.e2e.test.js` — «exportar reservas a csv», con `TimeoutError: export no respondió en 5000 ms`.
+- **Contraste sin la rama:** en `develop` (`8a83c75`) falla el mismo test, con 4 de 5 en verde. No es regresión de la 0010.
+- **Deuda:** ya está en el roadmap como «`test/export.e2e.test.js` falla … también en `develop`», impacto Medio.
+
+**Lo que sí está verificado**
+- **Pre-checks:** limpios. No hay cambios sin commitear, `merge --check` dice «destino: listo» (`develop`) y no hay otras ramas abiertas.
+- **Spec y revisión final:** la spec está aprobada (Laura, 2026-10-08, modo `full`). La revisión final fue limpia sobre `9564732`. `HEAD` solo añade `tasks.md` (17 líneas de docs), así que no hace falta re-revisión.
+- **Smoke de los 3 THEN ejecutado por mí:** `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista y la ausencia de `--motivo` responden «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` responde «Norte lun — sala ocupada».
+- **Qué no probé:** el almacén es en memoria, así que `canceladas` en un proceso nuevo queda vacío. Comprobé `cancelar` y `canceladas` en el mismo proceso.
+
+**Lo que decides tú:** fusionar sobre un rojo es decisión del dev-lead, no mía, en cualquier perfil.
+1. **Fusionar igualmente.** Es el rojo preexistente y ya está en la deuda. Cerraría con la validación en campo, el walkthrough, el changelog, la fila 0010 en ✅, el squash y el merge `--no-ff` a `develop`.
+2. **Parar** hasta arreglar `export.e2e` en otro patch.
+
+Al cerrar, además, apuntaré el ruling de `--test-concurrency=1` como fila de deuda. Es un workaround y debe tener la suya.
+
+¿Opción 1 o 2?

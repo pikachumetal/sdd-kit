@@ -1,0 +1,207 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs 2>&1 | head -30
+<<< ?? notes.md
+---
+<run>/repo        277034e [feature/0010-cancel-reason]
+<run>/0011-others 02fbe80 [feature/0011-others]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+
+=== RESULTADO (4 turnos, 0.12171649999999999 $)
+Me paro en el paso 0.1 antes de escribir ningún registro: el worktree tiene cambios sin commitear.
+
+Hay un fichero sin seguimiento: `notes.md`. No sé qué contiene ni si pertenece a la 0010, así que no lo toco hasta que me lo digas.
+
+**Hay cambios sin commitear: `notes.md`. ¿Lo commiteo en la rama, lo descarto o paro?**
+
+Aparte, hay otra rama abierta a la vez: `feature/0011-others`, en `…/a3-2/0011-others`. La que fusione segunda integra la base y repite sus gates.
+
+Cuando me contestes sigo con `sdd merge --check` y el resto del cierre.
+
+>>> Bash: rm notes.md; git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/0149-archive/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "exit $?"; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; ls .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; head -20 .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+exit 0
+---
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+---
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lea
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; cat tasks.md; echo ----; cd ../../../..; git log --oneline -8; git diff --numstat b529e49 HEAD; ls; ls .claude/skills 2>&1 | head; ls .docs/sdd/capabilities 2>&1; cat .docs/sdd/roadmap.md; cat .docs/sdd/changelog.md | head -30
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | b529e49 | |
+| 2 | Listado de canceladas | done | b529e49 | |
+
+Revisión final: Spec opus+high, limpia · Código sonnet+high, limpia · Arquitectura no (plan), sobre b529e49
+
+## Rulings
+
+- Task 2: Ruling: `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria — workaround hasta aislar el alma
+
+>>> Bash: cat package.json; cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; sed -n 20,200p spec.md; echo ----; cat plan.md | head -60; cd ../../../..; ls -R src test; cat .docs/sdd/tech-stack.md
+<<< {"type": "module"}
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MODIFIED, datos).
+
+## Intent
+
+Hoy cancelar no deja rastro: nadie sabe por qué se liberó una sala. Se quiere el motivo de cada cancelación.
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Appro
+
+>>> Bash: cat src/app.js; echo ----; cat test/cancel.test.js; echo ----; S=$(date +%s); node --test --test-concurrency=1 2>&1 | tail -15; echo "dur $(( $(date +%s)-S ))s"; git rev-parse --short HEAD
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "me aburro"; node src/app.js cancelar Norte lun; echo "[canceladas, proceso aparte]"; node src/app.js canceladas; echo "[mismo proceso]"; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; git status --porcelain
+<<< cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+[canceladas, proceso aparte]
+
+[mismo proceso]
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/0149-archive/skills"; ls $K/sdd-templates $K/sdd-templates/references 2>&1 | head -40; cat $K/sdd-templates/references/walkthrough-template.md 2>/dev/null || find $K -name "walkthrough-template*"
+<<< ls: cannot access 'D:/code/.worktrees/sdd-kit/0149-archive/skills/sdd-templates/references': No such file or directory
+D:/code/.worktrees/sdd-kit/0149-archive/skills/sdd-templates:
+SKILL.md
+templates/
+D:/code/.worktrees/sdd-kit/0149-archive/skills/sdd-templates/templates/walkthrough-template.md
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/0149-archive/skills/sdd-archive/references"; cat $K/merge-recipe.md $K/records.md | head -150; cd .docs/sdd/specs/20260918-090000-patch-0007-cancel && ls; cd ..; ls 20260915-090000-task-0005-weekly
+<<< # Merge recipe
+
+Used by the integrated-base and merge steps of `sdd-archive`, once the merge policy has said the change merges: the agent applies it (complete `merge` block, profile `delegate` or `unattended`) or the user asked for it. The destination is `merge.into`, with `--no-ff` if `merge.noFf` is `true`; `Hotfix only:` the stable branch, with the dev-lead's words. What the CLI does isn't repeated here: this says what each output means and what you do next.
+
+## Integrated base
+
+After the closing commit, `git fetch`. If `<remote>/<merge.into>` is an ancestor of `HEAD`, there's nothing to in
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/0149-archive/skills/sdd-templates/templates/walkthrough-template.md"; echo =====; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md; ls .docs/sdd/specs/*/; cat .docs/sdd/constitution.md | head -30; ls .docs/sdd/steering 2>&1
+<<< Exit code 2
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Walkthrough — <título de la spec>
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: <YYYY-MM-DD>
+---
+
+# Walkthrough — <título>
+
+> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), las desviaciones,
+> la verificación con evidencia y los aprendizajes que vuelven a los docs vivos. El cuerpo no se
+> reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra feature) se
+> añade como entrada fechada en `## 6. Adendas`. Borra los bloques de ayu
+
+>>> Bash: S=D:/code/.worktrees/sdd-kit/0149-archive/cli/bin/sdd.js; node $S capability merge --path .docs/sdd --artifact .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; echo "exit $?"; git status --porcelain; ls .docs/sdd
+<<< spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»
+exit 1
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd D:/code/.worktrees/sdd-kit/0149-archive; grep -rn "Nuevas" skills/sdd-templates/templates/*.md skills/sdd-archive/references/*.md | head; ls skills/sdd-templates/templates | head -40
+<<< skills/sdd-templates/templates/patch-template.md:26:> Se escribe al cerrar, con la salida de `sdd capability index` y el nombre exacto de cada capacidad. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `sdd capability check` al cerrar.
+skills/sdd-templates/templates/spec-template.md:33:> Se escribe con la salida de `sdd capability inde
+
+>>> Bash: cd "<run>/repo" && pwd && git branch --show-current && git status --porcelain; cat "D:/code/.worktrees/sdd-kit/0149-archive/skills/sdd-templates/templates/capability-template.md"
+<<< <run>/repo
+feature/0010-cancel-reason
+# Capacidad — <nombre>
+
+> **Reglas anti-proliferación** (no se rompen sin pasar por esta lista):
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+> 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
+>    la crean `sdd-end-feature` ni `sdd-end-patch` por su cuenta.
+> 3. `sdd-end-feature` fusiona el delta de la spec, y `sdd-en
+
+=== RESULTADO (12 turnos, 0.2943544 $)
+Me paro antes de escribir ningún registro: el cierre se atasca en la capacidad `bookings`, y arreglarlo es decisión de Laura, no mía.
+
+**Lo que está hecho y verificado**
+- `notes.md` borrado; el worktree está limpio.
+- `sdd merge --check` da `destino: listo`, con destino `develop`.
+- La spec está `approved`, firmada por Laura el 2026-10-08.
+- La revisión final está limpia sobre `b529e49`. Desde entonces `HEAD` (`277034e`) solo añade 17 líneas a `tasks.md`, así que no hace falta re-revisión.
+- La validación es en campo (`validation.mode: field`). Suite: `node --test --test-concurrency=1` da 5/5 sobre `277034e`.
+- Smoke con ejecución real por CLI: cancelar con motivo válido, con motivo fuera de lista y sin `--motivo` responden lo que dice la spec.
+- Smoke del listado: `canceladas` da «Norte lun — sala ocupada» en el mismo proceso. Por CLI en un proceso aparte sale vacío, porque el almacén es en memoria y no persiste entre invocaciones. Por eso ese THEN lo cubre la suite y la ejecución en el mismo proceso, no el CLI aislado.
+
+**El bloqueo**
+- La spec declara `- Modificadas: bookings`, pero el proyecto no tiene carpeta `capabilities/`. Ninguna feature ni patch anterior la creó.
+- `sdd capability merge` falla con: «`bookings` no tiene fichero en capabilities/ y el bloque no la declara en "Nuevas"».
+- Según la plantilla de capacidades, una capacidad la crea la spec que la declara en «Decisiones que he tomado yo — valida estas», con el slug aprobado por el dev-lead. `sdd-archive` no la crea por su cuenta.
+- Esa sección de la spec no dice que `bookings` sea nueva, y no puedo reescribir una spec aprobada por mi cuenta.
+
+**Opciones**
+1. **Recomendada:** `bookings` pasa a `Nuevas`. Laura aprueba el slug `bookings` y la enmienda se anota en «Enmiendas». La capacidad nace con los dos requisitos de la 0010: cancelar con motivo y listado de canceladas. No recoge el comportamiento anterior de cancelar, `libres` ni la reserva semanal, porque nadie lo documentó.
+2. El delta pasa a `Ninguna, porque …`, y la 0010 se cierra sin capacidad. Pierde el registro de comportamiento observable.
+
+Dime qué opción vale, y si la 1, que el slug `bookings` lo da por bueno el dev-lead. Con eso escribo el walkthrough, `tasks.md`, el changelog, la fila del roadmap y una fila de deuda por el ruling de `--test-concurrency=1`, luego el commit de cierre y el merge a `develop`. No hay `estimation.md` ni `.claude/skills/`, así que esos pasos no aplican.

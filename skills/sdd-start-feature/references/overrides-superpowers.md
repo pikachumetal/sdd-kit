@@ -4,7 +4,6 @@
 | --- | --- |
 | Specs/planes en `docs/superpowers/` | SOLO en `.docs/sdd/specs/` |
 | Formato de spec/plan del skill | Plantillas del skill `sdd-templates` (viven en el kit, no en el proyecto) |
-| `finishing-a-development-branch` | En el cierre de feature y en el de patch, con un bloque `merge` completo en `sdd-kit.json` y perfil `delegate` o `unattended`, se aplica esa política de merge a `develop` sin ofrecer las opciones del Step 4 de la skill. Con el bloque ausente o incompleto, o en `pair`, se ofrecen como hoy. Si la rama destino no está sacada en ningún worktree, la opción 1 (merge local) se sustituye por la [receta del merge](../../sdd-end-feature/references/merge-recipe.md): su `cd` a la raíz del repo principal falla en un repo bare. Push y creación de PR se confirman siempre, en los tres perfiles. |
 
 ## Cuándo NO aplicar SDD
 

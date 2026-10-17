@@ -45,10 +45,10 @@ Describe 'Vigía de silencio' {
   }
 
   It 'los demás puntos de despacho remiten al vigía' {
-    foreach ($file in 'skills/sdd-verify/references/encargo-revision.md', 'skills/sdd-start-feature/references/review-spec.md',
-      'skills/sdd-end-feature/SKILL.md') {
+    foreach ($file in 'skills/sdd-verify/references/encargo-revision.md', 'skills/sdd-start-feature/references/review-spec.md') {
       Get-KitFile $file | Should -Match 'vigía de silencio' -Because $file
     }
+    Get-KitFile 'skills/sdd-archive/SKILL.md' | Should -Match 'with its silence watch'
   }
 
   It 'sdd-config ya no dice que la conducta del vigía la define la task 0022' {

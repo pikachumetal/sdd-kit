@@ -17,7 +17,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 
 - GIVEN los ficheros de `skills/` de la rama
 - WHEN se buscan `superpowers:verification-before-completion`, `superpowers:requesting-code-review` y `code-reviewer.md` de superpowers
-- THEN ninguno aparece: el contrato de cierre de `sdd-implement` y el paso 9 de `sdd-end-feature` invocan `sdd-verify`
+- THEN ninguno aparece: el contrato de cierre de `sdd-implement` y la comprobación de la revisión final de `sdd-archive` invocan `sdd-verify`
 - AND los nombres de las fuentes solo aparecen en el `NOTICE` de `sdd-verify` y en su anexo de procedencia
 
 ### La revisión final sale en ejes, en paralelo
@@ -166,7 +166,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 ### El cierre no repite la revisión final
 
 - GIVEN una feature cuya línea `Revisión final:` de `tasks.md` registra la revisión `sobre a1b2c3d`, y después de ese commit solo hay commits que se revisan en el hilo
-- WHEN se entra en `sdd-end-feature`
+- WHEN se entra en `sdd-archive`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué ejes y modelos
 - AND si después del último revisado hay un commit `e4f5a6b` que cambia `src/slots.js` y `tasks.md` no tiene `Re-revisión:`, antes de escribir el walkthrough despacha la única re-revisión del tramo `<último revisado>..HEAD` (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: <último revisado>..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
 - AND si `tasks.md` ya tiene `Re-revisión:`, no despacha: el walkthrough lleva `sin revisar: e4f5a6b — <qué cambia>` en ✋
