@@ -43,6 +43,12 @@ describe('sdd --help', () => {
     expect(text).toContain('sdd merge');
   });
 
+  it('--help lista init', async () => {
+    const io = memoryIo();
+    expect(await run(['--help'], io)).toBe(0);
+    expect(io.stdout.join('\n')).toMatch(/^sdd init\s/m);
+  });
+
   it('--help lista decision check y decision index', async () => {
     const io = memoryIo();
     expect(await run(['--help'], io)).toBe(0);

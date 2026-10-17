@@ -64,14 +64,17 @@ El kit no usa `claude-plugins-official`: ese marketplace fija superpowers a un c
 
 Para que un compañero que clone tu proyecto tenga el kit sin ir a buscarlo, commitea en el `.claude/settings.json` del proyecto de dónde salen los dos marketplaces (`extraKnownMarketplaces`), qué plugins activar (`enabledPlugins`: el kit y superpowers) y la memoria automática desactivada (`autoMemoryEnabled`). Con solo `enabledPlugins`, los plugins aparecen activados pero Claude Code no sabe de dónde sacarlos. Las init y la migración a v2.0.0 escriben `autoMemoryEnabled` y el marketplace de superpowers; el marketplace del kit y `enabledPlugins` los añades tú.
 
+<!-- sdd-init: settings -->
 ```json
 {
   "extraKnownMarketplaces": {
     "sdd-kit": {
-      "source": { "source": "github", "repo": "pikachumetal/sdd-kit" }
+      "source": { "source": "github", "repo": "pikachumetal/sdd-kit" },
+      "autoUpdate": true
     },
     "superpowers-marketplace": {
-      "source": { "source": "github", "repo": "obra/superpowers-marketplace" }
+      "source": { "source": "github", "repo": "obra/superpowers-marketplace" },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
