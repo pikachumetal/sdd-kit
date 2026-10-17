@@ -56,7 +56,7 @@ gate en solitario.
    fuera de la plantilla, como una «Versión siguiente» con el trabajo de la release—, **no cortes desde
    ella**: di que no es una sección `## Release <N>`, nombra la sección y propón llevar el roadmap a la
    forma con el paso «Roadmap en la forma de la plantilla» de
-   [migrations/v2.3.0.md](../sdd-init-brownfield/references/migrations/v2.3.0.md), con su gate. Sin el visto
+   [migrations/v2.3.0.md](../sdd-init/references/migrations/v2.3.0.md), con su gate. Sin el visto
    del dev-lead a ese gate, el paso 4 queda pendiente y el paso 5 no se ejecuta. En el RED, 2 de 2 sujetos
    cortaron desde «Versión siguiente» sin decirlo y la dejaron en el roadmap (`tests/release-close-roadmap-red.md`, R1).
    ANTES de sustituir nada, rescata los pendientes vivos de la sección de la release. Las diferidas que

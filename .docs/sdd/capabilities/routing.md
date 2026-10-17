@@ -25,7 +25,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN una sesión que arranca con el plugin instalado
 - WHEN el directorio de trabajo no contiene `.docs/sdd/`
 - THEN el hook no inyecta ningún contexto
-- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-explore`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init-greenfield` y `sdd-init-brownfield`
+- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-explore`, `sdd-roadmap`, `sdd-end-release`, `sdd-config` y `sdd-init`
 
 ### Una preferencia de cómo trabajar entra por `sdd-config`
 
@@ -234,6 +234,13 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el usuario escribe «hemos acabado, cierra la tarea»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-archive`
 - AND en la rama `patch/0082-slot-overlap` con su `patch.md` y el fix commiteado, «cierra el patch» también invoca primero `sdd-kit:sdd-archive`
+
+### Una init en curso entra por `sdd-init`
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` = `{"init": {"approved": ["PRODUCT.md"]}}`, con el hook de sesión activo
+- WHEN el usuario escribe «Sigue con la init, se cortó ayer.»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-init`
+- AND en un proyecto sin `.docs/sdd/`, «Quiero empezar a trabajar con SDD en este proyecto.» también invoca primero `sdd-kit:sdd-init`
 
 ## Reglas de la capacidad
 

@@ -278,7 +278,7 @@ Describe 'Marcador del molde con la versión del kit (lib.sh)' -Tag 'Slow' {
     $launch = "put_kit_marker '`"channel`": `"plugin`"'; subject_launch `"x`""
     $script:Marker = New-Campaign (Join-Path $TestDrive 'marker') 'marker.json' -Launch $launch
     $script:Marker.Kit | ForEach-Object {
-      $migrations = Join-Path $_ 'skills/sdd-init-brownfield/references/migrations'
+      $migrations = Join-Path $_ 'skills/sdd-init/references/migrations'
       New-Item -ItemType Directory -Force $migrations, (Join-Path $_ '.claude-plugin') | Out-Null
       Set-Content (Join-Path $migrations 'v2.9.0.md') '# v2.9.0'
       Set-Content (Join-Path $migrations 'v2.10.0.md') '# v2.10.0'

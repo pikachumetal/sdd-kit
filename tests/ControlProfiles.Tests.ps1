@@ -61,7 +61,7 @@ Describe 'Perfiles de control: cierre, release y migración' {
   }
 
   It 'la migración a v2.0.0 pregunta las claves de control' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
     $migration | Should -Match 'control\.profile'
     $migration | Should -Match 'merge'
   }
@@ -70,12 +70,11 @@ Describe 'Perfiles de control: cierre, release y migración' {
     $block = Get-KitFile 'skills/sdd-config/SKILL.md'
     $block | Should -Match '(?m)^## Catálogo'
     ($block | Select-String -Pattern 'Recomendad[ao]' -AllMatches).Matches.Count | Should -BeGreaterOrEqual 3
-    $consumers = 'skills/sdd-init-greenfield/SKILL.md', 'skills/sdd-init-brownfield/SKILL.md',
-      'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $consumers = 'skills/sdd-init/SKILL.md', 'skills/sdd-init/references/migrations/v2.0.0.md'
     foreach ($consumer in $consumers) {
       Get-KitFile $consumer | Should -Match '`sdd-config`'
     }
-    foreach ($init in $consumers[0..1]) { Get-KitFile $init | Should -Not -Match 'maxParallelAgents' }
+    Get-KitFile $consumers[0] | Should -Not -Match 'maxParallelAgents'
   }
 
   It 'el Art. IV ya no reserva todo merge al usuario' {
@@ -216,10 +215,8 @@ Describe 'Push autorizado en el cierre: clave y pregunta' {
     $block | Should -Match 'merge\.push'
   }
 
-  It 'las init piden los frenos a través de sdd-config' {
-    foreach ($init in 'sdd-init-greenfield', 'sdd-init-brownfield') {
-      Get-KitFile "skills/$init/SKILL.md" | Should -Match 'sdd-config`.*frenos'
-    }
+  It 'sdd-init pide los frenos a través de sdd-config' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match 'sdd-config`.*brakes'
   }
 
   It 'la tabla de gates saca el push de la rama de integración de la fila de persona' {

@@ -38,7 +38,7 @@ function versionWarnings(loaded, wanted, latest) {
     warnings.push(`AVISO sdd-kit: esta sesión carga el kit ${loaded} y el proyecto pide el ${wanted} (.docs/sdd/sdd-kit.json), así que las skills pueden ser las de una versión vieja. Actualiza con \`claude plugin update sdd-kit@sdd-kit --scope project\` y reinicia Claude Code: /reload-plugins no aplica una actualización de ámbito proyecto.`);
   }
   if (latest && wanted && isOlder(wanted, latest)) {
-    warnings.push(`AVISO sdd-kit: el proyecto tiene aplicado el kit ${wanted} (.docs/sdd/sdd-kit.json) y el kit cargado trae migraciones hasta la ${latest}. Para aplicarlas, pide «ponme el proyecto al día con sdd-init-brownfield».`);
+    warnings.push(`AVISO sdd-kit: el proyecto tiene aplicado el kit ${wanted} (.docs/sdd/sdd-kit.json) y el kit cargado trae migraciones hasta la ${latest}. Para aplicarlas, pide «ponme el proyecto al día con sdd-init».`);
   }
   return warnings;
 }
@@ -47,7 +47,7 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   if (!existsSync(join(projectDir, '.docs', 'sdd'))) return '';
   const loaded = readJsonVersion(join(pluginRoot, '.claude-plugin', 'plugin.json'));
   const wanted = readJsonVersion(join(projectDir, '.docs', 'sdd', 'sdd-kit.json'));
-  const latest = latestMigration(join(pluginRoot, 'skills', 'sdd-init-brownfield', 'references', 'migrations'));
+  const latest = latestMigration(join(pluginRoot, 'skills', 'sdd-init', 'references', 'migrations'));
   const warnings = versionWarnings(loaded, wanted, latest);
   const nodeProblem = nodeVersionProblem(nodeVersion);
   if (nodeProblem) warnings.push(nodeProblem.replace(/^sdd /, 'sdd-kit '));

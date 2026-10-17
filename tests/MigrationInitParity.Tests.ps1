@@ -1,6 +1,6 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
-  $script:MigrationsDir = Join-Path $script:RepoRoot 'skills/sdd-init-brownfield/references/migrations'
+  $script:MigrationsDir = Join-Path $script:RepoRoot 'skills/sdd-init/references/migrations'
 
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
@@ -18,7 +18,8 @@ BeforeAll {
     $skillDir = Join-Path $script:RepoRoot "skills/$SkillName"
     $own = @(Get-Item (Join-Path $skillDir 'SKILL.md')) +
       @(Get-ChildItem (Join-Path $skillDir 'references') -Filter *.md -File -ErrorAction SilentlyContinue)
-    $files = $own + @($own | ForEach-Object { Get-LinkedMarkdown $_ })
+    $cli = @(Get-ChildItem (Join-Path $script:RepoRoot 'cli/src/init') -Filter *.ts -File -ErrorAction SilentlyContinue)
+    $files = $own + @($own | ForEach-Object { Get-LinkedMarkdown $_ }) + $cli
     $readable = $files | Where-Object { $_.FullName -notmatch 'references[\\/]migrations[\\/]' } | Sort-Object FullName -Unique
     return ($readable | ForEach-Object { Get-Content $_.FullName -Raw }) -join "`n"
   }
@@ -42,7 +43,7 @@ Describe 'Paridad migración–init' {
     Get-DeclaredTokens (Get-Content (Join-Path $script:MigrationsDir $_) -Raw) | Should -Not -BeNullOrEmpty
   }
 
-  It 'cada token declarado por una migración aparece en <_>' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
+  It 'cada token declarado por una migración aparece en <_>' -ForEach @('sdd-init') {
     $corpus = Get-InitCorpus $_
     $missing = foreach ($migration in $script:Migrations) {
       foreach ($token in Get-DeclaredTokens (Get-Content $migration.FullName -Raw)) {
@@ -53,44 +54,42 @@ Describe 'Paridad migración–init' {
   }
 
   It 'el corpus de una init no incluye las migraciones' {
-    (Get-InitCorpus 'sdd-init-brownfield').Contains('**Escribe**:') | Should -BeFalse
+    (Get-InitCorpus 'sdd-init').Contains('**Escribe**:') | Should -BeFalse
   }
 
   It 'una clave inventada no aparece en el corpus' {
-    (Get-InitCorpus 'sdd-init-greenfield').Contains('control.inventedKey') | Should -BeFalse
+    (Get-InitCorpus 'sdd-init').Contains('control.inventedKey') | Should -BeFalse
   }
 
   It 'el README de migraciones fija la regla de la línea **Escribe**' {
-    Get-KitFile 'skills/sdd-init-brownfield/references/migrations/README.md' | Should -Match '\*\*Escribe\*\*'
+    Get-KitFile 'skills/sdd-init/references/migrations/README.md' | Should -Match '\*\*Escribe\*\*'
   }
 }
 
 Describe 'Configuración y log que deja la init' {
-  It '<_> deja autoMemoryEnabled a false, los temporales ignorados y el log del script' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
+  It '<_> deja autoMemoryEnabled a false, los temporales ignorados y el log del script' -ForEach @('sdd-init') {
     $corpus = Get-InitCorpus $_
-    foreach ($literal in '"autoMemoryEnabled": false', '.claude/settings.json', '.playwright-mcp/', '.superpowers/', 'sdd estimation log') {
+    foreach ($literal in 'autoMemoryEnabled: false', '.claude/settings.json', '.playwright-mcp/', '.superpowers/', 'sdd estimation log') {
       $corpus.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }
   }
 
-  It '<_> pregunta antes de cambiar autoMemoryEnabled a true' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
-    (Get-InitCorpus $_).Contains('"autoMemoryEnabled": true') | Should -BeTrue
+  It '<_> pregunta antes de cambiar autoMemoryEnabled a true' -ForEach @('sdd-init') {
+    (Get-InitCorpus $_).Contains('autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia') | Should -BeTrue
   }
 
-  It 'la red flag de greenfield habla de filas, no de contenido' {
-    $skill = Get-KitFile 'skills/sdd-init-greenfield/SKILL.md'
-    $skill | Should -Not -Match 'El estimation-log nace con contenido'
-    $skill | Should -Match 'estimation-log nace con filas'
+  It 'la red flag de sdd-init habla de filas, no de contenido' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match 'estimation log is born with rows'
   }
 
   It 'la migración a v2.0.0 ordena ids, control, configuración, memoria, la retirada de sdd-start-release, capacidades, nombres de feature, marketplace y marcador' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
     $steps = [regex]::Matches($migration, '(?m)^\d+\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
     $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', '`sdd-start-release` retirada', 'Historial de las capacidades', 'Propósito de las capacidades', 'Nombres de las skills de feature', 'Marketplace de superpowers', 'Marcador')
   }
 
   It 'el paso de memoria nombra la carpeta, el índice y el gate de borrado' {
-    $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
     foreach ($literal in '~/.claude/projects/<project>/memory/', 'autoMemoryDirectory', 'MEMORY.md', 'pendiente explícito', 'la tabla va igual en el informe') {
       $migration.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }
@@ -100,7 +99,7 @@ Describe 'Configuración y log que deja la init' {
     Get-KitFile 'README.md' | Should -Match 'autoMemoryEnabled'
   }
 
-  It '<_> declara el marketplace de superpowers en el proyecto y lo añade si falta' -ForEach @('sdd-init-greenfield', 'sdd-init-brownfield') {
+  It '<_> declara el marketplace de superpowers en el proyecto y lo añade si falta' -ForEach @('sdd-init') {
     $corpus = Get-InitCorpus $_
     foreach ($literal in 'extraKnownMarketplaces.superpowers-marketplace', 'claude plugin marketplace add obra/superpowers-marketplace') {
       $corpus.Contains($literal) | Should -BeTrue -Because "falta $literal"
@@ -124,24 +123,15 @@ Describe 'Proyecto de referencia' {
       Should -Match '(?s)## Convenciones.*\*\*Proyecto de referencia\*\*.*## Reglas de producto'
   }
 
-  It 'greenfield lo pregunta como pregunta 20' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match '(?m)^\s*\| 20 \|.*proyecto de referencia'
-  }
-
-  It 'brownfield lo pregunta como pregunta 4' {
-    Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match '(?m)^\s*\| 4 \|.*proyecto de referencia'
+  It 'sdd-init lo pregunta y lo lleva a Convenciones' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match "(?m)^\s*\| Does it replicate another project's patterns\?.*«Convenciones» \|\r?$"
   }
 }
 
-Describe 'Entrevista de greenfield: mission completa' {
-  It 'pregunta qué queda fuera de alcance como pregunta 4' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' |
-      Should -Match '(?m)^\s*\| 4 \| ¿Qué queda fuera de alcance\? \| mission, «Qué es y qué no es» \|'
-  }
-
-  It 'pregunta los términos del dominio como pregunta 5' {
-    Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' |
-      Should -Match '(?m)^\s*\| 5 \| ¿Qué términos del dominio hay que fijar\? \| mission, «Dominio» \|'
+Describe 'Entrevista: PRODUCT.md completo' {
+  It 'pregunta lo que queda fuera de alcance y los términos del dominio, y van a PRODUCT.md' {
+    Get-KitFile 'skills/sdd-init/SKILL.md' |
+      Should -Match '(?m)^\s*\| Problem it solves; users and roles; modules; what is out of scope; domain terms to fix \|.*\| `PRODUCT\.md`'
   }
 }
 
@@ -161,7 +151,7 @@ Describe 'Tabla de release con Ficheros que toca' {
 }
 
 Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
-  BeforeAll { $script:V2 = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md' }
+  BeforeAll { $script:V2 = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md' }
 
   It 'tiene un paso que sustituye los nombres viejos por sdd-start-feature y sdd-end-feature' {
     $script:V2 | Should -Match '(?s)sdd-start-task.{0,200}sdd-start-feature'
@@ -195,7 +185,7 @@ Describe 'Cada versión del kit tiene su migración' {
 }
 
 Describe 'Migración a v2.3.0 — roadmap' {
-  BeforeAll { $script:V23 = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.3.0.md' }
+  BeforeAll { $script:V23 = Get-KitFile 'skills/sdd-init/references/migrations/v2.3.0.md' }
 
   It 'declara roadmap.md en su línea **Escribe**' {
     Get-DeclaredTokens $script:V23 | Should -Contain 'roadmap.md'

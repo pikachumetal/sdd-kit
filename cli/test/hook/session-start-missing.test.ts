@@ -25,7 +25,7 @@ afterEach(() => {
 describe('sdd hook session-start with missing files', () => {
   it('drops only the migration warning without the migrations folder', () => {
     const root = pluginCopy();
-    rmSync(join(root, 'skills', 'sdd-init-brownfield'), { recursive: true });
+    rmSync(join(root, 'skills', 'sdd-init'), { recursive: true });
     const output = sessionStartOutput(project, root, '26.10.0');
     expect(output).not.toContain('trae migraciones');
     expect(output).toContain('# using-sdd');

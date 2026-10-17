@@ -3,6 +3,7 @@ import { capabilityCheckVerb, capabilityIndexVerb, capabilityMergeVerb } from '.
 import { decisionCheckVerb, decisionIndexVerb } from '../decisions/verbs.ts';
 import { idNextVerb } from '../ids/verbs.ts';
 import { estimationLogVerb } from '../estimation/verbs.ts';
+import { initVerb } from '../init/verbs.ts';
 import { roadmapCheckVerb, roadmapPublishVerb } from '../roadmap/verbs.ts';
 import { mergeVerb } from '../merge/verbs.ts';
 import { watchCommandVerb, watchSubagentVerb } from '../watch/verbs.ts';
@@ -22,4 +23,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, estimationLogVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, ledgerRulingsVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, estimationLogVerb, initVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, ledgerRulingsVerb];

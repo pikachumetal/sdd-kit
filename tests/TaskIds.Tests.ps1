@@ -75,16 +75,12 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
   }
 
   Context 'inicialización y migración' {
-    It 'greenfield pregunta cómo se numera el trabajo' {
-      Get-KitFile 'skills/sdd-init-greenfield/SKILL.md' | Should -Match 'numera|secuencia propia'
-    }
-
-    It 'brownfield pregunta cómo se numera el trabajo' {
-      Get-KitFile 'skills/sdd-init-brownfield/SKILL.md' | Should -Match 'numera|secuencia propia'
+    It 'sdd-init pregunta cómo se numera el trabajo' {
+      Get-KitFile 'skills/sdd-init/SKILL.md' | Should -Match 'how work is numbered \(`ids.mode`\)'
     }
 
     It 'la migración v2.0.0 existe con su verificación' {
-      $migration = Get-KitFile 'skills/sdd-init-brownfield/references/migrations/v2.0.0.md'
+      $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
       $migration | Should -Match 'ids'
       $migration | Should -Match '(?m)^##\s+Verificación'
     }
