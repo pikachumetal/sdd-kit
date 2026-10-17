@@ -182,8 +182,9 @@
 | 2026-10-15 | 0187 | infra/tooling | 4 | 1.5 | 0.38 | 42349k | 3951k | no aplica | 19.89 | 20261015-105728-feature-0187-closing-cli |
 | 2026-10-15 | 0191 | infra/tooling | 1.5 | 0.5 | 0.33 | 13771k | 1942k | no aplica | 7.63 | 20261015-160528-feature-0191-capability-check-artifact |
 | 2026-10-17 | 0149 | docs | 6 | 42.42 | 7.07 | 203586k | 26406k | 24.01 | 76.81 | 20261016-105021-feature-0149-archive |
+| 2026-10-17 | 0156 | infra/tooling | 4 | 2.13 | 0.53 | 75697k | 11736k | 2.31 | 32.07 | 20261017-143533-feature-0156-sdd-init |
 
-**Factor de calibración** (ratio mediano real/estimado, 143 artefactos): **0.58** · media 0.75
+**Factor de calibración** (ratio mediano real/estimado, 144 artefactos): **0.58** · media 0.75
 
 - p25–p75: 0.4–0.91
 - p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
@@ -194,7 +195,7 @@
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 53 | 37 % |
-| 0.5–0.8 | 42 | 29 % |
+| 0.5–0.8 | 43 | 30 % |
 | 0.8–1.25 | 35 | 24 % |
 | 1.25–2 | 8 | 6 % |
 | ≥2 | 5 | 3 % |
@@ -203,7 +204,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 80 | 0.53 | 0.38–0.76 |
-| infra/tooling | 28 | 0.4 | 0.35–0.53 |
+| infra/tooling | 29 | 0.4 | 0.36–0.53 |
 | patch | 34 | 1.2 | 0.8–1.38 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -223,6 +224,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 30 | 95.61 | 0.5 | 217.85 | 729.43 |
+| sin publicar | 31 | 97.74 | 0.52 | 220.16 | 761.5 |
 
 > Ver `estimation.md`.

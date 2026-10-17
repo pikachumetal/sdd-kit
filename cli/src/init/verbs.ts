@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { requiredOption, text, UsageError } from '../cli/args.ts';
+import { isRecord } from '../cli/records.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { runInit, validateIgnore, type InitAction } from './run.ts';
 
@@ -17,7 +18,7 @@ function parseConfig(raw: string): Record<string, unknown> {
   } catch {
     throw new UsageError('--config debe ser un objeto JSON');
   }
-  if (typeof config !== 'object' || config === null || Array.isArray(config)) throw new UsageError('--config debe ser un objeto JSON');
+  if (!isRecord(config)) throw new UsageError('--config debe ser un objeto JSON');
   return config as Record<string, unknown>;
 }
 

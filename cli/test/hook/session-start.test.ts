@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sessionStartOutput } from '../../bin/session-start.js';
 
@@ -11,6 +13,19 @@ const expected = (name: string) => readFileSync(`${fixtures}${name}.json`, 'utf8
 describe('sdd hook session-start', () => {
   it.each(['pending-migration', 'outdated-kit', 'up-to-date', 'no-config'])('matches the bash hook output for %s', (name) => {
     expect(sessionStartOutput(project(name), pluginRoot, '26.10.0')).toBe(expected(name));
+  });
+
+  it('does not warn with an init in progress', () => {
+    const root = mkdtempSync(join(tmpdir(), 'hook-init-'));
+    try {
+      mkdirSync(join(root, '.docs', 'sdd'), { recursive: true });
+      writeFileSync(join(root, '.docs', 'sdd', 'sdd-kit.json'), '{"init": {"approved": ["PRODUCT.md"]}}');
+      const output = JSON.parse(sessionStartOutput(root, pluginRoot, '26.10.0'));
+      expect(output.systemMessage).toBeUndefined();
+      expect(output.hookSpecificOutput.additionalContext).toContain('# using-sdd');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('writes nothing without .docs/sdd', () => {

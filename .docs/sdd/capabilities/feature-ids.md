@@ -20,7 +20,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 
 ### La entrevista de init decide el modo de ids
 
-- GIVEN una init greenfield o brownfield en el bloque (d) de proceso
+- GIVEN una init en su entrevista, en el turno de las claves del kit
 - WHEN el agente pregunta por el gestor de tickets
 - THEN pregunta a continuación cómo se numeran las features: ids del gestor (`tracker`) o secuencia propia del proyecto (`sequence`)
 - AND escribe la respuesta en `sdd-kit.json`; «no sé» deja `tracker`

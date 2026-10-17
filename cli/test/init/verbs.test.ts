@@ -67,7 +67,28 @@ describe('sdd init: progress', () => {
   });
 });
 
+describe('sdd init: config before the first approval', () => {
+  it('config without sdd-kit.json records in init.config', async () => {
+    const root = project();
+    await sdd(['init', '--root', root, '--config', '{"ids":{"mode":"sequence"}}']);
+    expect(JSON.parse(read(root, MARKER))).toEqual({ init: { config: { ids: { mode: 'sequence' } } } });
+  });
+
+  it('config on a template marker merges at the root', async () => {
+    const root = project({ [MARKER]: '{"version":"1.1.0"}' });
+    await sdd(['init', '--root', root, '--config', '{"ids":{"mode":"tracker"}}']);
+    expect(JSON.parse(read(root, MARKER))).toEqual({ version: '1.1.0', ids: { mode: 'tracker' } });
+  });
+});
+
 describe('sdd init --finish', () => {
+  it('merges a settings file with a byte order mark', async () => {
+    const root = project({ [SETTINGS]: '﻿{"permissions":{"allow":[]}}' });
+    const { code } = await sdd(['init', '--root', root, '--finish']);
+    expect(code).toBe(0);
+    expect(JSON.parse(read(root, SETTINGS)).permissions).toEqual({ allow: [] });
+  });
+
   it('writes the three files with one line each', async () => {
     const root = project({ '.gitignore': 'node_modules/\r\n.superpowers/\r\n', [MARKER]: '{"init":{"config":{"ids":{"mode":"sequence"},"control":{"profile":"delegate"}}}}' });
     const { lines, code } = await sdd(['init', '--root', root, '--finish', '--ignore', '.auth/']);
@@ -120,6 +141,7 @@ describe('sdd init: nothing is written on a broken file', () => {
     ['broken settings', { [SETTINGS]: '{"autoMemoryEnabled": false,' }, '.claude/settings.json no es JSON válido: no se toca'],
     ['broken marker', { [MARKER]: '{' }, '.docs/sdd/sdd-kit.json no es JSON válido: no se toca'],
     ['a non-object node', { [SETTINGS]: '{"enabledPlugins": []}' }, '.claude/settings.json no se puede fusionar: enabledPlugins no es un objeto'],
+    ['a marker that is not an object', { [MARKER]: '[1]' }, '.docs/sdd/sdd-kit.json no se puede fusionar: la raíz no es un objeto'],
   ];
 
   it.each(cases)('exit 1 and no writes on %s', async (_name, files, message) => {

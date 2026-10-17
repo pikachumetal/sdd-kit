@@ -43,7 +43,7 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 
 ### Un hotfix se cierra en la rama estable solo con la frase del dev-lead
 
-- GIVEN el repo del kit, con `skills/sdd-init-brownfield/references/migrations/`, la rama `hotfix/0200-fix-login` salida de `main`, y el dev-lead que dijo «fusiona el hotfix del login en main, etiquétalo v3.0.1 y publícalo»
+- GIVEN el repo del kit, con `skills/sdd-init/references/migrations/`, la rama `hotfix/0200-fix-login` salida de `main`, y el dev-lead que dijo «fusiona el hotfix del login en main, etiquétalo v3.0.1 y publícalo»
 - WHEN se cierra
 - THEN ejecuta `sdd merge --check --into main` en las comprobaciones previas, y antes de fusionar pregunta «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?»
 - AND con la respuesta «sí, la clave `auth.sameSite`», escribe el paso en `migrations/v3.0.1.md` antes de etiquetar

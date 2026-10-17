@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import { dirname, isAbsolute, join, normalize } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
+import { readText } from '../cli/files.ts';
+import { isRecord } from '../cli/records.ts';
 import type { Io } from '../cli/io.ts';
 import { mergeGitignore } from './gitignore.ts';
 import { finishMarker, mergeConfig, recordApproved } from './marker.ts';
@@ -23,17 +25,20 @@ type Write = { file: string; before: string | null; after: string };
 
 function readOptional(root: string, file: string): string | null {
   const path = join(root, file);
-  return fs.existsSync(path) ? fs.readFileSync(path, 'utf8') : null;
+  return fs.existsSync(path) ? readText(path) : null;
 }
 
 function parseJson(root: string, file: string): Record<string, any> | null {
   const text = readOptional(root, file);
   if (text === null) return null;
+  let parsed: unknown;
   try {
-    return JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch {
     throw new DomainError(`${file} no es JSON válido: no se toca`);
   }
+  if (!isRecord(parsed)) throw new DomainError(`${file} no se puede fusionar: la raíz no es un objeto`);
+  return parsed;
 }
 
 const jsonText = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;

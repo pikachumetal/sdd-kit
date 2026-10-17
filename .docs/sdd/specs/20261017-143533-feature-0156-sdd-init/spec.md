@@ -6,7 +6,7 @@ proposal: 0131
 title: sdd-init — una sola init para proyecto nuevo y con código, con lo determinista en `sdd init`
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-17
 author: Claude (Opus 5.5)
 approvers:
@@ -27,6 +27,7 @@ approvers:
 - Modificadas: `routing` — el hook nombra `sdd-init`; una init en curso entra por `sdd-init`
 - Modificadas: `cli` — verbo nuevo `sdd init`
 - Modificadas: `archive` — el hotfix busca las migraciones en su ruta nueva
+- Modificadas: `feature-ids` — la pregunta del modo de ids nombra una sola init (literal viejo que encontró el cierre)
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -303,6 +304,8 @@ Una skill con un tronco y dos modos marcados (`With code:` / `Without code:`), c
 - AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar; sin `merge` declarado, la de push tampoco se hace
 - AND la pregunta de push recomienda «sí» solo si la convención de ramas es git-flow; con otra convención se hace sin opción recomendada
 - AND la init no pregunta las preferencias personales: el resumen de cierre dice que se fijan con `sdd-config`
+- REMOVED AND escribe en `sdd-kit.json` solo lo que el usuario responde: «no sé» no escribe la clave y rige su default, y un «no» a la política de merge deja `merge` sin declarar
+- REMOVED AND en brownfield sin usuario, las preguntas quedan pendientes explícitas en el resumen de cierre y el proyecto funciona con los defaults
 
 **MODIFIED — La init deja la memoria automática desactivada y los temporales ignorados** (antes: solo `autoMemoryEnabled` y `extraKnownMarketplaces.superpowers-marketplace`, sin el marketplace del kit, `autoUpdate` ni `enabledPlugins`)
 - GIVEN un `sdd-init` sobre un proyecto cuyo `.claude/settings.json` es `{"permissions": {"allow": ["Bash(npm test)"]}}`
@@ -383,7 +386,10 @@ Una skill con un tronco y dos modos marcados (`With code:` / `Without code:`), c
 - THEN no existe `capabilities/`, `changes/` ni `decisions/` al terminar, ni ningún `.gitkeep` en `.docs/sdd/`
 - AND `capabilities/` aparece con la primera feature que declara una capacidad, y `changes/` con la primera feature o patch
 
-**MODIFIED — El volcado inicial solo se hace a petición** (antes: "El volcado inicial es una excepción de greenfield"; "un `sdd-init-greenfield` sobre un proyecto con código")
+**REMOVED — El volcado inicial es una excepción de greenfield**
+- motivo: con una sola init el volcado vale en los dos modos; lo sustituye «El volcado inicial solo se hace a petición»
+
+**ADDED — El volcado inicial solo se hace a petición**
 - GIVEN un `sdd-init` sobre un proyecto con código, en el que el usuario pide generar las capacidades desde el código
 - WHEN el agente atiende la petición
 - THEN antes de escribir ningún fichero propone la partición (slugs en inglés kebab-case, sustantivos del dominio) y espera la aprobación
@@ -504,6 +510,14 @@ Una skill con un tronco y dos modos marcados (`With code:` / `Without code:`), c
 - **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`.
 - **Regla ante conflicto**: en `settings.json`, la hoja que ya existe manda sobre la de la init, salvo `autoMemoryEnabled` con `--memory-off`; en `sdd-kit.json`, `channel` y `updated` los fija la CLI, `version` la fija la CLI salvo que ya exista (la de un template), y en el resto gana el `--config`.
 
+### Capacidad: `feature-ids`
+
+**MODIFIED — La entrevista de init decide el modo de ids** (antes: "una init greenfield o brownfield en el bloque (d) de proceso")
+- GIVEN una init en su entrevista, en el turno de las claves del kit
+- WHEN el agente pregunta por el gestor de tickets
+- THEN pregunta a continuación cómo se numeran las features: ids del gestor (`tracker`) o secuencia propia del proyecto (`sequence`)
+- AND escribe la respuesta en `sdd-kit.json`; «no sé» deja `tracker`
+
 ### Capacidad: `archive`
 
 **MODIFIED — Un hotfix se cierra en la rama estable solo con la frase del dev-lead** (antes: "con `skills/sdd-init-brownfield/references/migrations/`")
@@ -517,6 +531,9 @@ Una skill con un tronco y dos modos marcados (`With code:` / `Without code:`), c
 - AND con `vuelta: conflicto en <ficheros>`, el cierre queda «No terminado»: una persona porta el arreglo a `develop` y relanza el hotfix
 
 ## Enmiendas
+
+- 2026-10-17 — Delta: MODIFIED de `feature-ids` «La entrevista de init decide el modo de ids», cuyo GIVEN nombraba «una init greenfield o brownfield en el bloque (d)» — literal viejo que encontró el cierre, sin cambio de comportamiento — sin parada
+- 2026-10-17 — Delta: el requisito renombrado «El volcado inicial es una excepción de greenfield» pasa a REMOVED + ADDED «El volcado inicial solo se hace a petición», y «La entrevista fija las claves de control» marca con `- REMOVED AND` las dos cláusulas que reescribe — forma que exige `sdd capability merge`, sin cambio de comportamiento — sin parada: no cambia ningún THEN
 
 ## Aprobaciones
 

@@ -59,29 +59,12 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - WHEN se cierra el patch 0013, cuyo fix hace que `salas reservar Norte 10-13` se rechace, como ya decía la capacidad
 - THEN `bookings.md` no cambia, y `patch.md` lleva en su bloque `## Capacidades` la línea `Ninguna, porque el fix devuelve \`reservar\` a lo que ya dice \`bookings\`` y ninguna sección de delta; si la traía vacía de la plantilla, se borra
 
-### Brownfield no vuelca `capabilities/`
-
-- GIVEN un proyecto existente inicializado con `sdd-init-brownfield`, aunque el usuario pida generar las capacidades desde el código
-- WHEN se generan los documentos de anclaje
-- THEN `capabilities/` no se crea ni se rellena: aparece con la primera feature que toque una capacidad
-- AND si el usuario lo pidió, el agente explica que en brownfield las capacidades crecen feature a feature
-
 ### Ninguna init crea `capabilities/` vacía
 
-- GIVEN un `sdd-init-greenfield` o un `sdd-init-brownfield` sin petición de volcado
+- GIVEN un `sdd-init` sin petición de volcado
 - WHEN crea la estructura de `.docs/sdd/`
-- THEN no existe `capabilities/` ni `specs/` al terminar, ni ningún `.gitkeep` en `.docs/sdd/`
-- AND `capabilities/` aparece con la primera feature que declara una capacidad, y `specs/` con la primera feature o patch
-
-### El volcado inicial es una excepción de greenfield
-
-- GIVEN un `sdd-init-greenfield` sobre un proyecto con código, en el que el usuario pide generar las capacidades desde el código
-- WHEN el agente atiende la petición
-- THEN antes de escribir ningún fichero propone la partición (slugs en inglés kebab-case, sustantivos del dominio) y espera la aprobación
-- AND presenta cada capacidad para su aprobación, como los documentos de anclaje
-- AND ninguna capacidad lleva sección de historial
-- AND si no puede leer el código entero en la sesión, lo dice y no vuelca
-- AND el agente no propone el volcado si el usuario no lo pide
+- THEN no existe `capabilities/`, `changes/` ni `decisions/` al terminar, ni ningún `.gitkeep` en `.docs/sdd/`
+- AND `capabilities/` aparece con la primera feature que declara una capacidad, y `changes/` con la primera feature o patch
 
 ### Los documentos de anclaje nombran `capabilities/`
 
@@ -195,6 +178,16 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - WHEN `sdd-archive` cierra el patch, antes de `sdd capability merge`
 - THEN busca «más de 6 tasks» en todo `split.md`, y por la aparición de «Límites» añade al delta de `patch.md` la entrada **Límites** de «Reglas de la capacidad» con su valor completo y «más de 4 tasks», sin editar `split.md` a mano
 - AND `sdd capability merge` sustituye esa entrada, `patch.md` nombra la corrección y, tras la fusión, `split.md` no dice «más de 6 tasks» en ningún sitio
+
+### El volcado inicial solo se hace a petición
+
+- GIVEN un `sdd-init` sobre un proyecto con código, en el que el usuario pide generar las capacidades desde el código
+- WHEN el agente atiende la petición
+- THEN antes de escribir ningún fichero propone la partición (slugs en inglés kebab-case, sustantivos del dominio) y espera la aprobación
+- AND presenta cada capacidad para su aprobación, como los documentos de anclaje
+- AND ninguna capacidad lleva sección de historial
+- AND si no puede leer el código entero en la sesión, lo dice y no vuelca
+- AND el agente no propone el volcado si el usuario no lo pide
 
 ## Reglas de la capacidad
 

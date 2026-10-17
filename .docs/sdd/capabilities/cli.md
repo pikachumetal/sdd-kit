@@ -10,7 +10,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN el plugin instalado y Node 22.18.0 o posterior en el `PATH`, sin pnpm, moon ni proto
 - WHEN se ejecuta `node "<raíz del plugin>/cli/bin/sdd.js" --help`
-- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish`, `id next`, `merge`, `estimation log`, `session tokens`, `watch subagent|command`, `hook session-start`, `task start|done|brief`, `review package`, `workspace`, `ledger rulings`) con una línea de ayuda, y sale con 0
+- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish`, `id next`, `merge`, `estimation log`, `init`, `session tokens`, `watch subagent|command`, `hook session-start`, `task start|done|brief`, `review package`, `workspace`, `ledger rulings`) con una línea de ayuda, y sale con 0
 - AND `cli/package.json` no tiene `dependencies`, y el plugin no necesita `pnpm install` para ejecutar ningún verbo
 
 ### Node demasiado viejo se dice antes de ejecutar nada
@@ -69,3 +69,45 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - GIVEN un plan y `HEAD` en el mismo commit que la `BASE` de la task, por ejemplo porque el pre-commit rechazó su commit
 - WHEN se ejecuta `node sdd.js task done <plan> <n> <base> -- <comando>`
 - THEN escribe en stderr `Task <n> NOT recorded: sin commits en el rango: ¿falló el pre-commit?`, sale con 1, no ejecuta el comando y no escribe en el ledger
+
+### `sdd init` registra el progreso de la init
+
+- GIVEN un proyecto sin `.docs/sdd/sdd-kit.json`
+- WHEN se ejecutan `sdd init --root <raíz> --approved PRODUCT.md`, `sdd init --root <raíz> --config '{"ids":{"mode":"sequence"},"version":"9.9.9"}'` y otra vez `--approved PRODUCT.md`
+- THEN `sdd-kit.json` es `{"init": {"approved": ["PRODUCT.md"], "config": {"ids": {"mode": "sequence"}}}}`, sin `version` ni rutas repetidas
+- AND la segunda llamada dice `version: la fija sdd init, se ignora`
+- AND sin `--approved`, `--config` ni `--finish`, o con dos de ellos, sale con 2 y el uso
+
+### `sdd init --finish` escribe lo determinista de la init
+
+- GIVEN un proyecto sin `.claude/settings.json`, con un `.gitignore` con CRLF que tiene `node_modules/` y `.superpowers/`, y un `sdd-kit.json` en curso con `init.config` = `{"ids":{"mode":"sequence"},"control":{"profile":"delegate"}}`
+- WHEN se ejecuta `sdd init --root <raíz> --finish --ignore .auth/`
+- THEN `.claude/settings.json` tiene el bloque de la init (memoria desactivada, los dos marketplaces con `autoUpdate: true` y los dos plugins activados), igual al bloque marcado con `<!-- sdd-init: settings -->` del README
+- AND `.gitignore` conserva `node_modules/` y `.superpowers/` una vez, gana `.playwright-mcp/`, `.docs/sdd/sdd-kit.local.json` y `.auth/` con CRLF, y termina en salto de línea
+- AND `.docs/sdd/sdd-kit.json` tiene `version` igual a la de `.claude-plugin/plugin.json`, `channel` `plugin`, `updated` del día, `ids.mode` `sequence` y `control.profile` `delegate`, sin `init`, y es el último fichero que se escribe
+- AND la salida tiene una línea por fichero con `creado` o `actualizado`, y sale con 0
+- AND repetir el mismo comando deja los tres ficheros iguales y dice `sin cambios` en los tres
+- AND sin `.gitignore`, lo crea con las líneas de la init
+- AND con un `sdd-kit.json` de template que ya tiene `"version": "1.1.0"`, la conserva
+
+### `sdd init --finish` fusiona `settings.json` por hoja sin pisar
+
+- GIVEN un `.claude/settings.json` con `extraKnownMarketplaces.sdd-kit.source.repo` = `"otro/fork"`, `extraKnownMarketplaces.superpowers-marketplace.autoUpdate` = `false` y `enabledPlugins["sdd-kit@sdd-kit"]` = `false`
+- WHEN se ejecuta `sdd init --root <raíz> --finish`
+- THEN esas tres hojas no cambian, se añaden las que faltan del bloque, y la salida dice `extraKnownMarketplaces.sdd-kit.source.repo: se deja "otro/fork"`, `extraKnownMarketplaces.superpowers-marketplace.autoUpdate: se deja false` y `enabledPlugins.sdd-kit@sdd-kit: se deja false`
+- AND con `"autoMemoryEnabled": true`, dice `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`, y con `--memory-off` la deja en `false`
+
+### `sdd init` no escribe nada si un fichero no se puede fusionar
+
+- GIVEN un proyecto con un `.gitignore` sin `.superpowers/` y, en un caso, un `.claude/settings.json` con `{"autoMemoryEnabled": false,` (JSON roto); en otro, un `sdd-kit.json` roto con un `settings.json` válido; en otro, `{"enabledPlugins": []}`
+- WHEN se ejecuta `sdd init --root <raíz> --finish`
+- THEN en los tres sale con 1, ningún fichero del proyecto cambia (tampoco `.gitignore`), y dice `.claude/settings.json no es JSON válido: no se toca`, `.docs/sdd/sdd-kit.json no es JSON válido: no se toca` o `.claude/settings.json no se puede fusionar: enabledPlugins no es un objeto`
+- AND con `--root` inexistente, `--config '[1]'`, `--config '{'`, `--ignore ''`, `--ignore C:/x` o `--ignore ../x`, sale con 2 sin escribir nada
+
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`.
+- **Idioma de los nombres**: las opciones y las claves en inglés; los mensajes, en castellano.
+- **Límites**: `--ignore` relativo a la raíz, sin vacío, absoluto ni `..`; una acción por llamada.
+- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`.
+- **Regla ante conflicto**: en `settings.json`, la hoja que ya existe manda sobre la de la init, salvo `autoMemoryEnabled` con `--memory-off`; en `sdd-kit.json`, `channel` y `updated` los fija la CLI, `version` la fija la CLI salvo que ya exista (la de un template), y en el resto gana el `--config`.
