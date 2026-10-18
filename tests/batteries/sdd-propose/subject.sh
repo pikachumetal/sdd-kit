@@ -20,7 +20,7 @@ F11=".docs/sdd/specs/20261008-110000-feature-0011-void-others"
 cp -r "$HERE/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
 case "$(cell Molde)" in
-  reservas|reservas-main) ;;
+  reservas|reservas-main|reservas-plan) ;;
   # La 0011 implementa los responsables de sala que una fila pendiente (0009) prometía, y docs/config.md apunta a esa fila.
   # El puntero va fuera de los documentos que el paso 1 lee: en PRODUCT.md lo vieron 2 de 2 sin buscarlo (red-v1 del patch 0174).
   reservas-puntero)
@@ -67,6 +67,8 @@ case "$SC" in
   g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
   r1|t1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
   p1|p2) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | put "$F10/spec.md" ;;
+  # La 0010 con el anexo del Art. I: dos reglas de un comando que se funde en cancelar, cada una con su destino.
+  pl2) g checkout -q -b feature/0010-cancel-reason; { approved_spec | without_who; cat "$FIX/annex-0010.md"; } | put "$F10/spec.md" ;;
   # La 0010 con una dependencia nueva: el plan declara el eje Arquitectura de la revisión final.
   ax) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | sed 's/^El motivo se guarda con la reserva cancelada;/El motivo se valida con la librería `zod`, una dependencia nueva en `dependencies` de `package.json`. &/' | put "$F10/spec.md" ;;
 esac

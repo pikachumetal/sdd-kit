@@ -18,7 +18,7 @@ approvers:
 
 ## Capacidades
 
-- Modificadas: `feature-flow` — el repaso de coherencia busca lo que la spec retira o cambia de forma y los ids de las filas que implementa, y prueba el delta; las secciones del diseño abren en llano; nacen el margen de palabras, la política de modelos de la spec, el self-review por cláusula, la línea de resumen de la «Verificación» y la fila de «Aprobaciones» sin rol
+- Modificadas: `feature-flow` — el repaso de coherencia busca lo que la spec retira o cambia de forma y los ids de las filas que implementa, y prueba el delta; las secciones del diseño abren en llano; nacen el margen de palabras, la política de modelos de la spec, el self-review por cláusula, la línea de resumen que dice la «Verificación» y la fila de «Aprobaciones» sin rol
 - Modificadas: `capabilities` — un `MODIFIED` quita una línea con `- REMOVED <línea>` y un renombrado es REMOVED + ADDED
 - Modificadas: `routing` — un patch es lo que un solo test reproduce
 
@@ -37,7 +37,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (3 requisitos), tres o 
 6. **«Aprobaciones»**: la tabla pasa a `| Nombre | Fecha | Estado |`, y el frontmatter `approvers` pierde `role:`, que tampoco lee nadie. Con una opción elegida, el Estado es `aprobada (opción «Apruebo»)`, la etiqueta sin el sufijo «(Recomendada)». La frase literal va solo cuando el usuario la escribe: `aprobada: «sí, adelante»`. Las fixtures de las baterías no cambian: son artefactos de su fecha, y `subject.sh` las edita con su forma.
 7. **Self-review del plan por cláusula**: §4 de `plan-template.md` cambia `<requisito de la spec> → Task <n>` por una línea por cláusula (`<THEN o AND> → Task <n>, <test o fila de medición que la observa>`). Si nada la observa, la línea dice `sin observar: <motivo>` y el plan lo avisa antes de ejecutar. El punto 1 del self-review de `plan-writing.md` dice lo mismo.
 8. **Regla retirada → tests**: si la spec trae la tabla «regla retirada → dónde vive ahora», §4 lleva una línea por fila con su task y el test que busca la regla en su destino. El hueco va en la plantilla, junto a las líneas del Review Focus.
-9. **«Verificación»** de una task: el placeholder pide un comando cuya última línea es el resumen (con Vitest, `Tests  12 passed (12)`), sin códigos de color (`--reporter=dot`, `-CI`, `NO_COLOR=1`), y que sale con un código distinto de 0 si algo falla.
+9. **«Verificación»** de una task: el placeholder pide un comando que sale con un código distinto de 0 si algo falla, sin códigos de color, y la línea de resumen que imprime, literal (`ℹ fail 0` con `node --test`, `Tests  12 passed (12)` con Vitest); enmienda del 2026-10-18.
 10. **Patch = un test lo reproduce**: en el paso 2 y en «Is it really a patch?» de `sdd-propose`, un patch nombra **el** test que hoy sale en rojo y el arreglo pone en verde; en un ajuste o una retirada de presentación, la captura del estado actual. Si hacen falta dos o más tests de comportamientos nuevos, no es patch: se ofrece lite si cumple su predicado y, si no, feature. La pregunta del carril de un patch lleva el nombre del test. No se quita la clase «petición cerrada» (lo hablamos en la sección 3).
 11. **Secciones en llano**: «Design by sections» de `spec-writing.md` dice que cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos, y que la pregunta es sobre eso; los nombres de código, ficheros y flags internos van detrás, si hacen falta. Es la forma del modo corto de `sdd-rubber-duck`.
 12. **Ejecución prevista**: Native, en 5 tasks (decisiones 1-6 · 5 · 7-9 · 10 · 11). Lo decide el plan.
@@ -155,12 +155,12 @@ El GREEN mide cada hueco con un sujeto que escribe la spec o el plan, y la condu
 - AND una cláusula que nada observa dice `sin observar: <motivo>`, y el plan lo avisa en sus decisiones antes de ejecutar
 - AND si la spec trae la tabla «regla retirada → dónde vive ahora», §4 lleva una línea por fila con su task y el test que busca la regla en su destino
 
-**ADDED — La verificación de una task acaba en una línea de resumen**
+**ADDED — La verificación de una task dice su línea de resumen**
 
-- GIVEN una task con superficie tooling en un proyecto con Vitest
+- GIVEN una task con superficie tooling en un proyecto con `node --test`, cuya salida acaba en `ℹ duration_ms 52.1` y no en el resumen
 - WHEN el agente escribe su «Verificación»
-- THEN es un comando cuya última línea es el resumen (`Tests  12 passed (12)`), sin códigos de color (`NO_COLOR=1`, `--reporter=dot`, `-CI` en Pester), que sale con un código distinto de 0 si algo falla
-
+- THEN es un comando que sale con un código distinto de 0 si algo falla, sin códigos de color, y la línea dice, literal, la línea de resumen que imprime (`ℹ fail 0` con `node --test`, `Tests  12 passed (12)` con Vitest)
+- AND sin tests automáticos, dice el smoke manual con su resultado esperado
 **ADDED — La fila de «Aprobaciones» dice quién y cómo aprobó**
 
 - GIVEN una spec calcada de `spec-template.md` y aprobada por Ana con la opción «Apruebo (Recomendada)» de `AskUserQuestion` el 2026-10-18
@@ -224,6 +224,7 @@ Total: 4 sujetos de RED (1,29 $, hechos) + ~23 de GREEN y control + ~6 de una ta
 
 ## Enmiendas
 
+- 2026-10-18 — «La verificación de una task acaba en una línea de resumen» pasa a «La verificación de una task dice su línea de resumen»: la «Verificación» dice, literal, la línea de resumen que imprime su comando, en vez de exigir que sea la última — `node --test` acaba siempre en `ℹ duration_ms` (reporters `spec` y `tap`) y el THEN no se podía cumplir sin un filtro que pierde el código de salida; GREEN `pl2` 0/2 en esa fila — aprobada (opción «Apruebo la enmienda»)
 - 2026-10-18 — La regla «la política de modelos aprobada es la confirmación de paralelizar» va también en «The axes» de `sdd-verify`, que sale de «No entra»; tope de `sdd-verify` a `SkillMd = 2990; Total = 9020` (hoy 2.885 / 2.900 y 8.799 / 8.800) — GREEN `mp1` 0/2: los dos sujetos deciden parar en «The axes» y no llegan a cargar `sdd-parallel-agents` — aprobada (opción «Apruebo la enmienda»)
 
 ## Aprobaciones

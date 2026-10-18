@@ -275,7 +275,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - «La spec mide el margen de palabras», THEN tabla → Task 1, `sp1`; AND tope + 2 % → Task 1, Pester (ayuda de la plantilla); AND skill que funde otras → Task 1, Pester; AND recorte = edición con RED → Task 1, Pester; AND sin topes no se escribe → Task 1, control `s1`. ✓
 - «La política de modelos… confirmación», THEN despacha sin preguntar → Task 2, `mp1`; AND revisores de spec → Task 2, Pester (la frase nombra los dos despachos); AND lo no nombrado se confirma → Task 2, Pester; AND en `delegate` sin la línea no pasa el repaso → Task 1, `sp1` (SP1, `Política de modelos`). ✓
 - «El self-review del plan asigna cada cláusula», THEN una línea por cláusula → Task 3, `pl2`; AND `sin observar` → Task 3, Pester; AND filas de la regla retirada → Task 3, `pl2`. ✓
-- «La verificación… línea de resumen» → Task 3, `pl2` (PL2) y Pester. ✓
+- «La verificación de una task dice su línea de resumen» (enmienda 2026-10-18), THEN → Task 3, `pl2` (PL2) y Pester; AND smoke manual → Task 3, `ProposeFixes: la verificación admite smoke manual`. ✓
 - «La fila de Aprobaciones», THEN columnas y opción → Task 1, Pester y `sp1`; AND frase literal → Task 1, Pester; AND `approvers` sin `role` → Task 1, Pester. ✓
 - `capabilities` «El delta declara…», AND `- REMOVED <línea>` y renombrado → Task 1, Pester y `sp1` (REMOVED + ADDED). ✓
 - `routing` «Un patch es lo que un solo test reproduce», THEN lite recomendado → Task 4, `pl1`; AND el fallo sigue patch con su test → Task 4, `a3`; AND la captura en presentación → Task 4, Pester. ✓

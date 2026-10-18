@@ -26,3 +26,15 @@ Batería de `sdd-verify`, `mp1`, Opus; la instrucción de campo («antes de para
 | `mp1-5`, `mp1-6` | REFACTOR, molde con la línea dentro de la spec aprobada | 1,46 y — | ✅ 2/2: los dos ejes en la misma respuesta (`msg_011Cg9bNvNQ5FztcNaKa2NaQ` en `mp1-6`) |
 
 Lectura: una regla que quita una parada tiene que estar en el paso donde el agente decide parar; en la skill que se carga después ya no la lee nadie (como la fila de la 0147 sobre los traspasos).
+
+## Task 3 — plantilla de plan: cláusulas, regla retirada y «Verificación»
+
+Molde `reservas-plan`: la 0010 aprobada con su anexo «regla retirada → dónde vive ahora» de dos filas (`fixtures/annex-0010.md`).
+
+| Sujeto | Fase | Veredicto |
+| --- | --- | --- |
+| `pl2-1`, `pl2-2` | GREEN | cláusulas: una línea para el THEN y otra para el AND, y las dos filas del anexo (la segunda `sin observar`, con su motivo: el molde no tiene dueño de reserva) ✅ 2/2; «Verificación»: `node --test test/cancel.test.js` a secas ❌ 0/2 |
+| `p2-1` | control | gate de cierre literal y self-review por cláusula ✅ |
+| `pl2-3`, `pl2-4` | REFACTOR, tras la enmienda del 2026-10-18 | `node --test test/cancel.test.js` → `ℹ fail 0`, cláusulas y anexo ✅ 2/2 |
+
+La enmienda: `node --test` acaba en `ℹ duration_ms` con los reporters `spec` y `tap` (y en un punto con `dot`), medido el 2026-10-18; el THEN «la última línea es el resumen» no se cumplía sin un filtro que pierde el código de salida. La «Verificación» dice ahora su línea de resumen literal.

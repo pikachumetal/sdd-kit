@@ -16,6 +16,37 @@ BeforeAll {
   $script:SpecTemplate = Get-KitFile 'skills/sdd-templates/templates/spec-template.md'
   $script:Propose = Get-KitFile 'skills/sdd-propose/SKILL.md'
   $script:Parallel = Get-KitFile 'skills/sdd-parallel-agents/SKILL.md'
+  $script:PlanTemplate = Get-KitFile 'skills/sdd-templates/templates/plan-template.md'
+  $script:PlanWriting = Get-KitFile 'skills/sdd-propose/references/plan-writing.md'
+}
+
+Describe 'plan-template' {
+  It 'el self-review lleva una línea por cláusula y la salida sin observar' {
+    $selfReview = Get-Section $script:PlanTemplate '## 4. Self-review' '@@none@@'
+    $selfReview | Should -Match '<THEN o AND de la spec> → Task <n>'
+    $selfReview | Should -Match 'sin observar'
+  }
+
+  It 'el self-review lleva las filas de la tabla «regla retirada»' {
+    $selfReview = Get-Section $script:PlanTemplate '## 4. Self-review' '@@none@@'
+    $selfReview | Should -Match 'regla retirada'
+  }
+
+  It 'la Verificación pide la línea de resumen literal, sin color' {
+    $line = ($script:PlanTemplate -split '\r?\n') | Where-Object { $_ -match '^\*\*Verificación\*\*:' }
+    $line | Should -Match 'línea de resumen que imprime, literal'
+    $line | Should -Match 'ℹ fail 0'
+    $line | Should -Match 'NO_COLOR'
+  }
+
+  It 'ProposeFixes: la verificación admite smoke manual' {
+    $line = ($script:PlanTemplate -split '\r?\n') | Where-Object { $_ -match '^\*\*Verificación\*\*:' }
+    $line | Should -Match 'smoke manual'
+  }
+
+  It 'plan-writing cubre cada cláusula en el self-review' {
+    $script:PlanWriting | Should -Match 'each clause'
+  }
 }
 
 Describe 'parallel-agents' {

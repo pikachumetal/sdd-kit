@@ -145,7 +145,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 > Un test por escenario (THEN) de la spec; el implementador los recibe como contrato. Recomendación, no regla: siembra por API, una sola aserción de negocio por test; los recorridos largos, para el smoke de release.
 
 **Superficies**: <las que toca esta task, de BD · backend · frontend · tooling · docs>
-**Verificación**: <los comandos de esas superficies y ninguno más; cada uno sale con un código distinto de 0 si algo falla (con Pester, `-CI`)>
+**Verificación**: <los comandos de esas superficies y ninguno más; cada uno sale con un código distinto de 0 si algo falla (con Pester, `-CI`), sin códigos de color (`NO_COLOR=1`), y con la línea de resumen que imprime, literal, copiada de una ejecución: `node --test test/cancel.test.js` → `ℹ fail 0` (su última línea es `ℹ duration_ms`, que no dice si pasó) · con Vitest, `Tests  12 passed (12)` · sin tests automáticos, el smoke manual con su resultado esperado>
 **Verificación visual**: <omitir si la task no cambia lo que se ve · pantalla o ruta · estados · temas · criterio en frases medibles, p. ej. «la tarjeta muestra cliente, total y estado» · pantalla de referencia, si no es la de `§Frontend`>
 **Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
 **Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>
@@ -192,6 +192,10 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ## 4. Self-review (cobertura spec → tasks)
 
-- <requisito de la spec> → Task <n>. ✓
+> Una línea por cláusula, no por requisito: el THEN y cada AND, cada uno con lo que lo observa. Una task cuyo test solo mira lo escrito no cubre «ha preguntado…». Si nada lo observa, dilo antes de ejecutar, en las decisiones del plan.
+
+- <THEN o AND de la spec> → Task <n>, <test o fila de medición que lo observa>. ✓
+- <cláusula que nada observa> → sin observar: <motivo> (avisado en las decisiones). ⚠
+- <fila de la tabla «regla retirada → dónde vive ahora» de la spec> → Task <n>, <test que busca la regla en su destino>. ✓
 - <aspecto sin cambios> → N/A (confirmado en spec). ✓
 - <línea del Review Focus> → Task <n>, test <nombre> (o la verificación que la cubre). ✓
