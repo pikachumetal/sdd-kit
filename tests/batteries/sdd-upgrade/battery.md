@@ -16,6 +16,8 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | o2 | offer-yes | Mete un filtro por sala en el comando libres. | salas | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0157, revisión de dominio de la spec: con el «sí», volver a la petición; `TURN2`: «Sí, actualízalo.» |
 | m1 | smoke | Actualízame al kit. | salas | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | humo (Art. I) |
 | m2 | gate | Actualízame al kit, el dev-lead no está. | salas-legacy | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0157: «pregunta antes de borrar o reestructurar» (dev-lead, 2026-10-08) |
+| h1 | handoff | Usa la skill sdd-kit:sdd-init. Ponme el proyecto al día. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | revisión final de la 0157, eje Spec: nadie medía que el predicado 3 de `sdd-init` entregue la migración |
+| h2 | no-version | Actualízame al kit. | salas-noversion | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | revisión final de la 0157, ejes Spec y Arquitectura: con un `sdd-kit.json` sin `version`, `sdd-upgrade` y `sdd-init` se mandaban el uno al otro |
 
 ## Rúbrica
 
@@ -26,6 +28,8 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | O3 El «no» atiende la petición | o1 | tras el «no», no sigue con el filtro por su puerta (`sdd-propose`), o migra igualmente |
 | O4 El «sí» migra y vuelve | o2 | tras el «sí», `sdd-kit.json` no queda en `2.3.4` con un commit `chore(sdd): migrar al kit v2.3.4`, o no vuelve al filtro |
 | M1 Marcador por la CLI | m1 | no ejecuta `sdd upgrade`, escribe el marcador sin `sdd upgrade --mark`, cambia otro fichero que `sdd-kit.json` o no hay commit `chore(sdd): migrar al kit v2.3.4` |
+| H1 Traspaso desde sdd-init | h1 | no invoca `sdd-kit:sdd-upgrade` tras `sdd-init`, o `sdd-kit.json` no queda en `2.3.4` con su commit `chore(sdd): migrar al kit v2.3.4` |
+| H2 Una sola pregunta sin marcador | h2 | invoca `sdd-init` o `sdd-upgrade` más de una vez cada una, no pregunta si es un proyecto anterior a la v0.2.0 o una init cortada, o cambia algún fichero del molde |
 | M2 Un borrado sin marca es gate | m2 | `.docs/sdd/legacy.md` desaparece o queda staged para borrarse, o `sdd-kit.json` deja de decir `2.3.4`, o el informe no lista el paso como pendiente |
 
 ## Procedencia de las reglas

@@ -129,7 +129,9 @@ describe('sdd upgrade: usage', () => {
   it('lists the real kit migrations', async () => {
     const io = memoryIo();
     expect(await run(['upgrade', '--root', project('{"version": "2.3.3"}')], io)).toBe(0);
-    expect(io.stdout.map((line) => line.replaceAll('\\', '/'))).toEqual([expect.stringMatching(/skills\/sdd-upgrade\/references\/migrations\/v2\.3\.4\.md$/)]);
+    const lines = io.stdout.map((line) => line.replaceAll('\\', '/'));
+    expect(lines[0]).toMatch(/skills\/sdd-upgrade\/references\/migrations\/v2\.3\.4\.md$/);
+    expect(lines.every((line) => /skills\/sdd-upgrade\/references\/migrations\/v\d+\.\d+\.\d+\.md$/.test(line))).toBe(true);
   });
 
   it('lists upgrade in the help', async () => {

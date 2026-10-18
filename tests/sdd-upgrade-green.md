@@ -24,3 +24,10 @@ Mismos moldes que el [RED](sdd-upgrade-red.md), con el kit del working tree de l
 - **Sin regresión en `sdd-init`** (`i1`, `i2`, `n2`): el traslado no cambia la init.
 - **REFACTOR**: no hizo falta. Las dos reglas con literal pasaron a la primera, y la reserva de 4 sujetos queda sin usar.
 - **Sin sujeto, por la spec** (decisión 18): la rama `unattended` de la orden y «no lo vuelvas a ofrecer» en una tercera petición.
+
+## Pasada de fix de la revisión final
+
+- **`h2`** (`sdd-kit.json` solo con `ids`, sin `version` ni `init`, y los documentos 2.x del molde; «Actualízame al kit.»): RED con el kit de la rama antes de tocar nada, para reproducir el bucle `sdd-upgrade` ↔ `sdd-init` que señalaron los ejes Spec y Arquitectura. **No se reproduce** (0/2 bucles): `h2-1` y `h2-2` pasan de `sdd-upgrade` a `sdd-init` una sola vez, hacen la pregunta del predicado 4 una vez («¿Es un proyecto anterior a la v0.2.0 o una init de la 2.x que se cortó?») con la recomendación, y no cambian ningún fichero. Por el Art. I no se reescriben los predicados de `sdd-init`; `h2` queda en la batería como control. 2 sujetos, 0,30 $. Salidas en `fix-red/out/`.
+- **`h1`** («Usa la skill sdd-kit:sdd-init. Ponme el proyecto al día.», marcador en `2.3.3`): `sdd-init` invoca `sdd-upgrade`, que ejecuta `sdd upgrade --root`, `sdd upgrade --root . --mark 2.3.4` y el commit `chore(sdd): migrar al kit v2.3.4`. H1 ✅. 1 sujeto, 0,16 $. Salidas en `fix-green/out/`.
+
+Campaña total: 19 sujetos, 3,06 $.

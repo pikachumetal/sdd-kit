@@ -24,6 +24,8 @@ kit_with_toy_migration() {
 cp -r "$HERE/../using-sdd/mold-salas/." "$R/"
 case "$(cell Molde)" in
   salas) echo "{\"version\": \"2.3.3\", $MARKER}" | put .docs/sdd/sdd-kit.json ;;
+  # Solo configuración, sin version ni init: el molde trae mission.md y constitution.md de la 2.x.
+  salas-noversion) echo '{"ids": {"mode": "sequence"}}' | put .docs/sdd/sdd-kit.json ;;
   salas-legacy)
     mkdir -p "$RUN/kit"; kit_with_toy_migration
     echo "{\"version\": \"2.3.4\", $MARKER}" | put .docs/sdd/sdd-kit.json

@@ -6,12 +6,19 @@ function numericParts(version) {
   return [0, 1, 2].map((i) => parseInt(version.split('.')[i], 10) || 0);
 }
 
-function isOlder(a, b) {
+export function isOlder(a, b) {
   const [left, right] = [numericParts(a), numericParts(b)];
   for (let i = 0; i < 3; i++) {
     if (left[i] !== right[i]) return left[i] < right[i];
   }
   return false;
+}
+
+export function migrationVersions(directory) {
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory)
+    .flatMap((name) => /^v(\d+\.\d+\.\d+)\.md$/.exec(name)?.[1] ?? [])
+    .sort((a, b) => (isOlder(a, b) ? -1 : isOlder(b, a) ? 1 : 0));
 }
 
 function readJsonVersion(file) {
@@ -21,11 +28,7 @@ function readJsonVersion(file) {
 }
 
 function latestMigration(directory) {
-  if (!existsSync(directory)) return '';
-  return readdirSync(directory)
-    .filter((name) => /^v\d+\.\d+\.\d+\.md$/.test(name))
-    .map((name) => name.slice(1, -3))
-    .reduce((latest, version) => (!latest || isOlder(latest, version) ? version : latest), '');
+  return migrationVersions(directory).at(-1) ?? '';
 }
 
 function escapeForJson(text) {
