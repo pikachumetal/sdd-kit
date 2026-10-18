@@ -38,3 +38,13 @@ Molde `reservas-plan`: la 0010 aprobada con su anexo «regla retirada → dónde
 | `pl2-3`, `pl2-4` | REFACTOR, tras la enmienda del 2026-10-18 | `node --test test/cancel.test.js` → `ℹ fail 0`, cláusulas y anexo ✅ 2/2 |
 
 La enmienda: `node --test` acaba en `ℹ duration_ms` con los reporters `spec` y `tap` (y en un punto con `dot`), medido el 2026-10-18; el THEN «la última línea es el resumen» no se cumplía sin un filtro que pierde el código de salida. La «Verificación» dice ahora su línea de resumen literal.
+
+## Task 4 — un patch es lo que un solo test reproduce
+
+| Sujeto | Fase | $ | Veredicto |
+| --- | --- | --- | --- |
+| `pl1-1`, `pl1-2` | GREEN | 0,16 y 0,17 | ✅ 2/2: «un patch es lo que reproduce un solo test que falla hoy. Aquí hacen falta al menos tres tests de comportamientos nuevos»; lite recomendado, con sus cinco condiciones una por una, sin abrir rama ni `patch.md` |
+| `a2-1` | control | 0,16 | ✅ patch, y el 🦆 nombra el test que hoy falla («`cancelar Norte mar` no debe tocar la del lunes») |
+| `a3-1` | control | 0,42 | ✅ patch sin preguntar; `patch.md` §3 y §4 nombran el test nuevo en rojo sin el fix |
+| `a4-1` | control | 0,16 | ✅ feature recomendada, con lo que tendría que decidir él, y «ningún test actual falla por esto» |
+| `l1-1` | control | 0,16 | ❌ pregunta qué hace `libres` con la planta antes de ofrecer lite; con el kit de la base (`red/out/l1-1`) sale igual: rojo previo, al ticket del cierre |

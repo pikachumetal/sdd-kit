@@ -20,6 +20,25 @@ BeforeAll {
   $script:PlanWriting = Get-KitFile 'skills/sdd-propose/references/plan-writing.md'
 }
 
+Describe 'patch con su test' {
+  It 'ProposeFixes: el patch nombra su test' {
+    $patch = Get-Section $script:Propose '- **patch**' '- **lite**'
+    $patch | Should -Match 'names the test'
+    $patch | Should -Match 'two or more'
+  }
+
+  It 'un ajuste o una retirada nombra la captura del estado actual' {
+    $patch = Get-Section $script:Propose '- **patch**' '- **lite**'
+    $patch | Should -Match 'screenshot of the current state'
+  }
+
+  It 'Fixed solution trae el contraejemplo de tres comportamientos nuevos' {
+    $fixed = Get-Section $script:Propose '**Fixed solution**' '**Presentation-only'
+    $fixed | Should -Match 'reservas <sala>'
+    $fixed | Should -Match 'lite'
+  }
+}
+
 Describe 'plan-template' {
   It 'el self-review lleva una línea por cláusula y la salida sin observar' {
     $selfReview = Get-Section $script:PlanTemplate '## 4. Self-review' '@@none@@'
