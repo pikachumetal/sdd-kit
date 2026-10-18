@@ -52,7 +52,7 @@ done_0008() {
   grep -q 'Actuar → 0008' "$R/.docs/sdd/roadmap.md" || die "no se plantó la fila de deuda de la 0008"
   if [ "${1:-}" = hotfix ]; then
     branch=hotfix/0008-cancel-missing
-    printf '# Migraciones\n\nUna por versión, `vX.Y.Z.md`: los pasos que el proyecto aplica al subir.\n' | put skills/sdd-init/references/migrations/README.md
+    printf '# Migraciones\n\nUna por versión, `vX.Y.Z.md`: los pasos que el proyecto aplica al subir.\n' | put skills/sdd-upgrade/references/migrations/README.md
   fi
   g init -q -b main; commit "feat: base del molde"; g checkout -q -b develop
   [ "${1:-}" = hotfix ] && g checkout -q main
@@ -153,7 +153,7 @@ MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
 for kept in tasks walkthrough patch; do
   for dir in "$F10" "$P8"; do [ -f "$R/$dir/$kept.md" ] && subject_keep "$R/$dir/$kept.md" "$kept.md"; done
 done
-for mig in "$R"/skills/sdd-init/references/migrations/v*.md; do [ -f "$mig" ] && subject_keep "$mig" "$(basename "$mig")"; done
+for mig in "$R"/skills/sdd-upgrade/references/migrations/v*.md; do [ -f "$mig" ] && subject_keep "$mig" "$(basename "$mig")"; done
 for kept in ROADMAP.md .docs/sdd/steering/debt.md .docs/sdd/capabilities/bookings.md; do [ -f "$R/$kept" ] && subject_keep "$R/$kept" "$(basename "$kept")"; done
 for adr in "$R"/.docs/sdd/decisions/*.md; do [ -f "$adr" ] && subject_keep "$adr" "$(basename "$adr")"; done
 for doc in roadmap tech-stack changelog; do [ -f "$R/.docs/sdd/$doc.md" ] && subject_keep "$R/.docs/sdd/$doc.md" "$doc.md"; done

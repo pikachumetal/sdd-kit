@@ -140,7 +140,7 @@ Describe 'Retirada de sdd-start-release' {
   It 'solo la nombra la migración que avisa' {
     $paths = @('skills', 'hooks', 'README.md', '.docs/workflow', '.docs/sdd/architecture.md', '.docs/sdd/mission.md')
     $mentions = @(git -C $script:RepoRoot grep -l 'sdd-start-release' -- @paths)
-    $mentions | Should -Be @('skills/sdd-init/references/migrations/v2.0.0.md')
+    $mentions | Should -Be @('skills/sdd-upgrade/references/migrations/v2.0.0.md')
   }
 
   It 'la consulta pasa la planificación a sdd-roadmap' {
@@ -148,7 +148,7 @@ Describe 'Retirada de sdd-start-release' {
   }
 
   It 'la migración avisa de la retirada' {
-    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-upgrade/references/migrations/v2.0.0.md'
     $migration | Should -Match 'sdd-start-release'
     $migration | Should -Match 'sdd-roadmap'
   }

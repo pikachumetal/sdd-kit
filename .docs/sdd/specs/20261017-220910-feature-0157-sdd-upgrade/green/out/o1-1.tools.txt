@@ -1,0 +1,87 @@
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd
+<<< {"version": "2.3.3", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+=== RESULTADO (2 turnos, 0.0800295 $)
+Antes de empezar con el filtro por sala: el proyecto está en el kit SDD 2.3.3 y el kit cargado trae migraciones hasta la 2.3.4. ¿Quieres que las aplique ahora (sí/no)?
+
+- **Sí:** ejecuto `sdd-upgrade`, te cuento el resultado y sigo con el filtro por sala en `libres`.
+- **No:** voy directo al filtro por sala y no te lo vuelvo a ofrecer en esta sesión.
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md; ls specs; cat sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0157-sdd-upgrade/2370e84b-a541-48ee-a16a-a66c2c3736af/scratchpad/kit-green/cli/bin/sdd.js" capability index --path . 2>&1 | head -20; cd ../..; git ls-files | head -50; grep -rn -i "libres" --include=* -l . 2>/dev/null | grep -v node_modules | grep -v "^./.git/" | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -60; cat .docs/sdd/specs/*free/spec.md; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0157-sdd-upgrade/2370e84b-a541-48ee-a16a-a66c2c3736af/scratchpad/kit-green/skills"; cat sdd-start-feature/references/modo-lite.md; head -60 sdd-start-feature/references/control-profiles.md
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (7 turnos, 0.1944227 $)
+Ahora: te propongo el carril. Queda: tu confirmación, luego el entendimiento y las preguntas de diseño (~5 min).
+
+🦆 **En llano:** hoy `libres <franja>` lista todas las salas libres en esa franja (en `src/app.js`, función `freeRooms`). Quieres poder restringirlo a una sala concreta. No sé aún cómo lo quieres escribir (`libres 10:00-12:00 Norte`, `--sala Norte`…) ni qué debe responder si la sala no existe o está ocupada, así que la solución no está fijada. Por eso no es un patch.
+
+**Carril propuesto: feature en modo lite.** Cumple las condiciones, que he comprobado en el código:
+- El flujo ya existe y se lee: `libres` y `freeRooms` en `src/app.js`.
+- No cambia contratos públicos: solo añade un argumento opcional a la CLI, sin otros módulos que la consuman.
+- No toca ningún schema de datos: las reservas son un array en memoria.
+- Cabe en un solo módulo: `src/app.js` y `test/app.test.js`.
+- No hay `estimation.md`, así que no aplica esa condición.
+
+Lite significa una spec corta, sin `plan.md` ni `tasks.md`. La aprobación de la spec, la validación y el `walkthrough.md` se mantienen igual. Se prevé una sola task, así que no propongo partirla.
+
+**Perfil:** `delegate`, del proyecto (`sdd-kit.json`, por defecto), sin `sdd-kit.local.json`. Con ese perfil paro en la spec y en la validación, y no en el plan.
+
+Opciones:
+1. **Lite (recomendada).**
+2. Full, con spec y plan completos.
+3. Lite, y apruebo la spec por delegación: dime «apruebo la spec por delegación, nos vemos en la validación» si te vas a ausentar.
+
+Dime 1, 2 o 3, o «perfil `pair`/`unattended` para esta feature» si quieres otro perfil. Con tu respuesta creo la rama `feature/<id>` y te hago las preguntas de diseño.

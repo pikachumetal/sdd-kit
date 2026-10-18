@@ -14,6 +14,7 @@ Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del pro
 | Lo que escribe el usuario | Puerta |
 | --- | --- |
 | Sin `.docs/sdd/`, quiere trabajar con SDD (proyecto nuevo, con código o recién sacado de un template), o una init en curso (`.docs/sdd/sdd-kit.json` con la clave `init`): «sigue con la init» | `sdd-kit:sdd-init` |
+| Un proyecto ya inicializado quiere ponerse al día con el kit («actualízame al kit», «ponme el proyecto al día»), o acepta la oferta del aviso de migraciones | `sdd-kit:sdd-upgrade` |
 | Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-explore` |
 | Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-propose` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente; «dame el prompt de la <id>» | `sdd-kit:sdd-roadmap` |
 | Un cambio, aunque sea pequeño o pidan un patch: una funcionalidad («añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido»), un fallo, un ajuste o una retirada de presentación, un cambio de dependencias, CI o configuración, un typo o un renombrado, una investigación que deja medidas | `sdd-kit:sdd-propose`, antes que `brainstorming` |

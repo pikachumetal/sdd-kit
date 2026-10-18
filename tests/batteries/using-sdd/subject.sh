@@ -12,11 +12,13 @@ SALAS_MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"has
 VENTAS_MARKER="$SALAS_MARKER"', "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"'
 
 # i1 mide la init: el proyecto llega sin .docs/; i2, una init en curso, con sdd-kit.json con la clave init. t1 necesita la errata en el README.
+# u1 lleva el marcador en 2.3.3, por debajo de la v2.3.4.md del kit: el hook avisa de migraciones pendientes.
 mold_base() {
   cp -r "$HERE/mold-$1/." "$R/"
   if [ "$SC" = i1 ]; then rm -r "$R/.docs"
   elif [ "$SC" = i2 ]; then rm -r "$R/.docs"; printf '# Salas\n\n## Users\n\n- **Oficina**: reserva salas.\n' | put PRODUCT.md
     printf '{"init": {"approved": ["PRODUCT.md"]}}\n' | put .docs/sdd/sdd-kit.json
+  elif [ "$SC" = u1 ]; then echo "{\"version\": \"2.3.3\", $2}" | put .docs/sdd/sdd-kit.json
   else put_kit_marker "$2"; fi
   [ "$SC" = t1 ] && echo 'Consulta las recervas libres con `libres <franja>`.' >> "$R/README.md"
   g init -q -b main

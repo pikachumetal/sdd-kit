@@ -107,7 +107,7 @@ Describe 'sdd-archive: rama de hotfix' {
   }
 
   It 'el paso de migración solo con la carpeta del kit' {
-    $script:Skill | Should -Match 'skills/sdd-init/references/migrations/'
+    $script:Skill | Should -Match 'skills/sdd-upgrade/references/migrations/'
   }
 }
 

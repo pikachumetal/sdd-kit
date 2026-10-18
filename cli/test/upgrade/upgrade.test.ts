@@ -126,6 +126,12 @@ describe('sdd upgrade: usage', () => {
     expect(await run(['upgrade', '--root', join(tmpdir(), 'sdd-upgrade-missing-root')], io)).toBe(2);
   });
 
+  it('lists the real kit migrations', async () => {
+    const io = memoryIo();
+    expect(await run(['upgrade', '--root', project('{"version": "2.3.3"}')], io)).toBe(0);
+    expect(io.stdout.map((line) => line.replaceAll('\\', '/'))).toEqual([expect.stringMatching(/skills\/sdd-upgrade\/references\/migrations\/v2\.3\.4\.md$/)]);
+  });
+
   it('lists upgrade in the help', async () => {
     const io = memoryIo();
     await run(['--help'], io);

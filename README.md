@@ -99,6 +99,7 @@ La skill `using-sdd` dice por qué skill entra cada petición: una pregunta, alg
 | --- | --- |
 | `using-sdd` | La puerta de entrada: qué skill toca para lo que acabas de escribir. La inyecta el hook al empezar cada sesión. |
 | `sdd-init` | Prepara un proyecto para trabajar con SDD, nuevo o con código: te entrevista, deduce del código lo que puede y escribe cada documento solo cuando lo apruebas, `CLAUDE.md` incluido. Si la sesión se corta, sigue donde lo dejaste. Un proyecto recién sacado de un template cuenta como nuevo. |
+| `sdd-upgrade` | Pone el proyecto al día con el kit instalado: aplica en orden las migraciones pendientes, te pregunta antes de borrar o reestructurar nada y apunta la versión aplicada. El arranque de la sesión te la ofrece cuando hay migraciones pendientes. |
 | `sdd-roadmap` | La puerta de entrada al roadmap: algo grande (con su propuesta), algo concreto, items del gestor, una reunión con el cliente, reordenar o preparar una release. Propone; decides tú. No arranca nada. |
 | `sdd-propose` | La entrada de un cambio: lee el proyecto, clasifica el carril y escribe lo que va antes de implementar (spec y plan, o la apertura del patch). |
 | `sdd-start-feature` | El carril completo desde la implementación: tasks y validación. Dónde te para lo decide el perfil: con `delegate`, el de por defecto, en la spec, en los desvíos y en la validación final. |
@@ -141,7 +142,7 @@ Uso el kit a diario en proyectos propios y del trabajo, así que se mueve bastan
 
 ## Actualizar un proyecto que ya lo usa
 
-Tras actualizar el kit, pide en el proyecto: «Ponme el proyecto al día con `sdd-init`». La skill mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar. Los borrados y renombrados te los pregunta antes. Si el proyecto va por detrás de las migraciones del kit instalado, la sesión te avisa al arrancar con las dos versiones. Cada release del kit trae su migración, aunque no cambie nada del proyecto: entonces solo avanza el marcador.
+Tras actualizar el kit, la sesión te avisa al arrancar si el proyecto va por detrás de las migraciones del kit instalado, y te ofrece aplicarlas; también puedes pedir «actualízame al kit». La skill `sdd-upgrade` mira qué versión tienes aplicada en `.docs/sdd/sdd-kit.json`, ejecuta en orden las migraciones posteriores y escribe el marcador al terminar cada una. Los borrados y renombrados te los pregunta antes. Cada release del kit trae su migración, aunque no cambie nada del proyecto: entonces solo avanza el marcador.
 
 ## Desarrollo
 
