@@ -81,7 +81,7 @@ function apply(root: string, write: Write): string {
 }
 
 export function validateIgnore(path: string): string {
-  if (path.trim() === '' || isAbsolute(path) || /^[a-zA-Z]:/.test(path) || normalize(path).split(/[\\/]/).includes('..')) {
+  if (path.trim() === '' || path !== path.trim() || /[\r\n]/.test(path) || isAbsolute(path) || /^[a-zA-Z]:/.test(path) || normalize(path).split(/[\\/]/).includes('..')) {
     throw new UsageError(`--ignore debe ser una ruta relativa a la raíz, sin «..»: «${path}»`);
   }
   return path;

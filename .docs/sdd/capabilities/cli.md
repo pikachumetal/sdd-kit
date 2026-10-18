@@ -10,7 +10,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN el plugin instalado y Node 22.18.0 o posterior en el `PATH`, sin pnpm, moon ni proto
 - WHEN se ejecuta `node "<raíz del plugin>/cli/bin/sdd.js" --help`
-- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish`, `id next`, `merge`, `estimation log`, `init`, `session tokens`, `watch subagent|command`, `hook session-start`, `task start|done|brief`, `review package`, `workspace`, `ledger rulings`) con una línea de ayuda, y sale con 0
+- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish`, `id next`, `merge`, `estimation log`, `init`, `upgrade`, `session tokens`, `watch subagent|command`, `hook session-start`, `task start|done|brief`, `review package`, `workspace`, `ledger rulings`) con una línea de ayuda, y sale con 0
 - AND `cli/package.json` no tiene `dependencies`, y el plugin no necesita `pnpm install` para ejecutar ningún verbo
 
 ### Node demasiado viejo se dice antes de ejecutar nada
@@ -37,7 +37,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN un proyecto con `.docs/sdd/sdd-kit.json` en `2.2.0` y el kit cargado en `3.0.0`, con migraciones hasta la `2.3.0`
 - WHEN Claude Code arranca la sesión y ejecuta `hooks/hooks.json`
-- THEN escribe el JSON de la fixture `cli/test/fixtures/hook/pending-migration.json`, que es la salida del hook bash con esa entrada: `additionalContext` con `using-sdd` y el `systemMessage` de las migraciones pendientes
+- THEN escribe el JSON de la fixture `cli/test/fixtures/hook/pending-migration.json`: el `systemMessage` de las migraciones pendientes, y `additionalContext` con ese aviso, la orden de ofrecer la migración y `using-sdd`
 - AND en una sesión headless con el plugin por `--plugin-dir`, el `hook_response` del stream trae ese `additionalContext`
 - AND sin `.docs/sdd/` no escribe nada y sale con 0
 - AND con Node 20.11.0 escribe el mismo JSON con `sdd-kit necesita Node 22.18 o posterior; tienes 20.11.0` añadido a `systemMessage`, y sale con 0
@@ -104,10 +104,35 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN en los tres sale con 1, ningún fichero del proyecto cambia (tampoco `.gitignore`), y dice `.claude/settings.json no es JSON válido: no se toca`, `.docs/sdd/sdd-kit.json no es JSON válido: no se toca` o `.claude/settings.json no se puede fusionar: enabledPlugins no es un objeto`
 - AND con `--root` inexistente, `--config '[1]'`, `--config '{'`, `--ignore ''`, `--ignore C:/x` o `--ignore ../x`, sale con 2 sin escribir nada
 
+### `sdd upgrade` lista las migraciones pendientes en orden SemVer
+
+- GIVEN un kit con `v0.9.0.md`, `v0.10.0.md`, `v2.3.1.md` y `v2.3.2.md` en `skills/sdd-upgrade/references/migrations/`, y un proyecto con `"version": "0.9.0"` en `.docs/sdd/sdd-kit.json`
+- WHEN se ejecuta `sdd upgrade --root <raíz>`
+- THEN escribe, una por línea, las rutas absolutas de `v0.10.0.md`, `v2.3.1.md` y `v2.3.2.md`, en ese orden, y sale con 0
+- AND con el marcador en `2.3.2` escribe `el proyecto ya está al día con el kit 2.3.2` y sale con 0
+- AND sin `sdd-kit.json` escribe `sin sdd-kit.json: se aplican todas` y después las rutas de las cuatro, y sale con 0
+- AND con la clave `init` en `sdd-kit.json` escribe `init en curso: sigue con sdd-init` y sale con 1
+
+### `sdd upgrade --mark` escribe el marcador de una versión
+
+- GIVEN el mismo kit y un proyecto con `sdd-kit.json` = `{"version": "2.3.1", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}}`
+- WHEN se ejecuta `sdd upgrade --root <raíz> --mark 2.3.2` el 2026-10-18
+- THEN `sdd-kit.json` queda con `"version": "2.3.2"`, `"channel": "plugin"`, `"updated": "2026-10-18"` e `ids` como estaba, y escribe `.docs/sdd/sdd-kit.json: actualizado`
+- AND con `--mark 2.9.9` escribe `--mark 2.9.9: el kit no trae esa migración`, sale con 2 y no escribe
+- AND con `--mark 2.3.1` escribe `--mark 2.3.1: el proyecto ya está en 2.3.1`, sale con 1 y no escribe
+- AND con la clave `init` en `sdd-kit.json` escribe `init en curso: sigue con sdd-init`, sale con 1 y no escribe
+- AND con `sdd-kit.json` que no es JSON escribe `.docs/sdd/sdd-kit.json no es JSON válido: no se toca`, sale con 1 y no escribe
+
+### `sdd upgrade` rechaza un uso mal formado sin tocar nada
+
+- GIVEN el mismo kit y proyecto
+- WHEN se ejecuta `sdd upgrade --root <raíz> --mark`, `sdd upgrade --root <raíz> --mark 2.x`, `sdd upgrade --root <raíz> --mark ../x`, `sdd upgrade --root <raíz> --foo` o `sdd upgrade --root <no existe>`
+- THEN cada uno escribe en stderr qué no reconoce y el uso (`uso: sdd upgrade …`), sale con 2 y `sdd-kit.json` no cambia
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`.
+- **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe solo `.docs/sdd/sdd-kit.json`.
 - **Idioma de los nombres**: las opciones y las claves en inglés; los mensajes, en castellano.
-- **Límites**: `--ignore` relativo a la raíz, sin vacío, absoluto ni `..`; una acción por llamada.
-- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`.
-- **Regla ante conflicto**: en `settings.json`, la hoja que ya existe manda sobre la de la init, salvo `autoMemoryEnabled` con `--memory-off`; en `sdd-kit.json`, `channel` y `updated` los fija la CLI, `version` la fija la CLI salvo que ya exista (la de un template), y en el resto gana el `--config`.
+- **Límites**: `--ignore` relativo a la raíz, sin vacío, absoluto, `..`, espacios al borde ni saltos de línea; una acción por llamada; `--mark`, solo una versión `X.Y.Z` numérica, con su `vX.Y.Z.md` en el kit y mayor que la del proyecto.
+- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`; `el proyecto ya está al día con el kit <versión>`; `sin sdd-kit.json: se aplican todas`; `init en curso: sigue con sdd-init`; `--mark <versión>: el kit no trae esa migración`; `--mark <versión>: el proyecto ya está en <versión>`.
+- **Regla ante conflicto**: en `settings.json`, la hoja que ya existe manda sobre la de la init, salvo `autoMemoryEnabled` con `--memory-off`; en `sdd-kit.json`, `channel` y `updated` los fija la CLI, `version` la fija la CLI salvo que ya exista (la de un template), y en el resto gana el `--config`; con `sdd upgrade --mark`, `version` es la que se marca y el resto de claves se queda.

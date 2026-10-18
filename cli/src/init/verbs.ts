@@ -1,14 +1,15 @@
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { requiredOption, text, UsageError } from '../cli/args.ts';
+import { localDay } from '../cli/dates.ts';
+import { readText } from '../cli/files.ts';
 import { isRecord } from '../cli/records.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { runInit, validateIgnore, type InitAction } from './run.ts';
 
 const pluginJson = fileURLToPath(new URL('../../../.claude-plugin/plugin.json', import.meta.url));
 
-function kitVersion(): string {
-  return JSON.parse(readFileSync(pluginJson, 'utf8')).version;
+export function kitVersion(file: string = pluginJson): string {
+  return JSON.parse(readText(file)).version;
 }
 
 function parseConfig(raw: string): Record<string, unknown> {
@@ -19,7 +20,7 @@ function parseConfig(raw: string): Record<string, unknown> {
     throw new UsageError('--config debe ser un objeto JSON');
   }
   if (!isRecord(config)) throw new UsageError('--config debe ser un objeto JSON');
-  return config as Record<string, unknown>;
+  return config;
 }
 
 function action(args: VerbArgs): InitAction {
@@ -48,7 +49,7 @@ export const initVerb: Verb = {
   },
   async run(args, io) {
     const root = requiredOption(args, 'root');
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDay(new Date());
     return runInit({ root, action: action(args), kitVersion: kitVersion(), today }, io);
   },
 };

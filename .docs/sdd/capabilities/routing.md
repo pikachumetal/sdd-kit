@@ -25,7 +25,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN una sesión que arranca con el plugin instalado
 - WHEN el directorio de trabajo no contiene `.docs/sdd/`
 - THEN el hook no inyecta ningún contexto
-- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-explore`, `sdd-roadmap`, `sdd-end-release`, `sdd-config` y `sdd-init`
+- AND cuando sí lo contiene, inyecta el texto de la skill `using-sdd`, que es la única fuente de las puertas del kit y nombra `sdd-propose`, `sdd-explore`, `sdd-roadmap`, `sdd-end-release`, `sdd-config`, `sdd-init` y `sdd-upgrade`
 
 ### Una preferencia de cómo trabajar entra por `sdd-config`
 
@@ -241,6 +241,12 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el usuario escribe «Sigue con la init, se cortó ayer.»
 - THEN la primera skill que se invoca es `sdd-kit:sdd-init`
 - AND en un proyecto sin `.docs/sdd/`, «Quiero empezar a trabajar con SDD en este proyecto.» también invoca primero `sdd-kit:sdd-init`
+
+### Ponerse al día con el kit entra por `sdd-upgrade`
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.3.3`, sin la clave `init`, el kit cargado con `v2.3.4.md` y el hook de sesión activo
+- WHEN el usuario escribe «Actualízame al kit.»
+- THEN la primera skill que se invoca es `sdd-kit:sdd-upgrade`
 
 ## Reglas de la capacidad
 

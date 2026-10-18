@@ -1,6 +1,6 @@
 ---
 name: sdd-init
-description: Use when a project wants to start working with SDD, new or with code — "quiero trabajar con SDD", "prepara el proyecto", "inicializa la documentación", "haz el onboarding", "documenta el proyecto para Claude", a project instantiated from a template — or to resume an init that was cut ("sigue con la init"), or when an initialized project asks to update to the kit ("actualízame al kit", "ponme el proyecto al día").
+description: Use when a project wants to start working with SDD, new or with code — "quiero trabajar con SDD", "prepara el proyecto", "inicializa la documentación", "haz el onboarding", "documenta el proyecto para Claude", a project instantiated from a template — or to resume an init that was cut ("sigue con la init"). Not for updating an initialized project to the kit (that is sdd-upgrade).
 argument-hint: "[what the project is, or «sigue con la init»]"
 ---
 
@@ -22,8 +22,8 @@ Invoking this skill starts the interview, not the generation. If the user is not
 
 1. **Template**: a `<!-- sdd-template: pending -->` in `.docs/sdd/` or in `PRODUCT.md`/`ROADMAP.md` → init over a template, **without code** whatever code it brings (a login and little more): complete only what is marked, in the shape its documents come in (2.x: `mission.md`, `tech-stack.md`…; 3.0.0: `PRODUCT.md`, `steering/`). Don't ask what the template already fixes (stack, commands, branches, worktrees) and don't touch its complete documents. The marker's position and count are the template's.
 2. **Init in progress**: `.docs/sdd/sdd-kit.json` has the key `init` → read `init.approved` and `init.config`. Say which documents are approved, don't present them again, don't ask again what `init.config` holds, and go on with the first document missing in the generation order; with all approved, go on with git. Only `init.approved` counts as approved, never what is on disk.
-3. **Initialized**: `.docs/sdd/sdd-kit.json` without `init` → **migrate**, don't re-initialize: follow [references/migrations/README.md](references/migrations/README.md) and nothing else — no inventory, no golden rules, no rewriting documents, no debt table. With `version` equal to the loaded kit's (`.claude-plugin/plugin.json`), say «el proyecto ya está al día con el kit <versión>» and touch nothing.
-4. **2.x documents without marker**: `.docs/sdd/mission.md` or `.docs/sdd/constitution.md` without `sdd-kit.json` → ask, migration recommended: a project older than v0.2.0 (migrate) or a 2.x init that was cut (a new init, with those documents as harvest material).
+3. **Initialized**: `.docs/sdd/sdd-kit.json` without `init` → invoke [`sdd-upgrade`](../sdd-upgrade/SKILL.md) with `Skill`; don't migrate from here, and don't re-initialize.
+4. **2.x documents without marker**: `.docs/sdd/mission.md` or `.docs/sdd/constitution.md` without `sdd-kit.json` → ask, migration recommended: a project older than v0.2.0 (invoke `sdd-upgrade`, which applies them all) or a 2.x init that was cut (a new init, with those documents as harvest material).
 5. **Otherwise** → new init. A previous `PRODUCT.md`, `CLAUDE.md`, `CHANGELOG.md` or `ROADMAP.md` doesn't decide anything: it is harvest material.
 
 ## Mode
@@ -72,7 +72,6 @@ Before the first question, say the mode in one line: «Modo: sin código» or «
 - You're writing `PRODUCT.md` or the constitution and the user hasn't answered the interview.
 - You're about to write a document, `CLAUDE.md` included, without its «sí» in this session or in `init.approved`.
 - You're treating a file on disk as approved because it exists.
-- You're about to migrate a project whose `sdd-kit.json` has `init`.
 - You decided the MVP scope, a role or the stack yourself «as a reasonable proposal».
 - You're copying claims from the old `CLAUDE.md` into the docs without verifying them in the code.
 - Everything is ending up inside `CLAUDE.md` (a monolith) instead of in the documents.

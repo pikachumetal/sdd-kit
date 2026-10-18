@@ -166,7 +166,7 @@ Describe 'Lanzador de baterías (tests/headless/battery.sh)' -Tag 'Slow' {
   It 'la batería de using-sdd monta su molde con el marcador del kit' {
     $root = Join-Path $TestDrive 'using-sdd'
     $kit = Join-Path $root 'kit'
-    $migrations = Join-Path $kit 'skills/sdd-init/references/migrations'
+    $migrations = Join-Path $kit 'skills/sdd-upgrade/references/migrations'
     New-Item -ItemType Directory -Force $migrations, (Join-Path $kit 'skills/using-sdd'), (Join-Path $kit '.claude-plugin'), (Join-Path $root 'spec'), (Join-Path $root 'scratchpad/runs') | Out-Null
     Set-Content (Join-Path $kit 'skills/using-sdd/SKILL.md') '# using-sdd'
     Set-Content (Join-Path $kit '.claude-plugin/plugin.json') '{"name":"sdd-kit","version":"2.2.0"}'

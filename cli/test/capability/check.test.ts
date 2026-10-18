@@ -252,7 +252,7 @@ describe('the repo capabilities', () => {
 });
 
 describe('the 2.0.0 migration', () => {
-  const migration = readRepoFile('skills/sdd-init/references/migrations/v2.0.0.md');
+  const migration = readRepoFile('skills/sdd-upgrade/references/migrations/v2.0.0.md');
   const stepAbout = (text: string) => migration.split('\n').find((line) => line.includes(text)) ?? '';
 
   it('has a step that removes the Historial section with no gate and is skipped without capabilities/', () => {

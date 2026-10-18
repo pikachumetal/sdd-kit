@@ -183,19 +183,20 @@
 | 2026-10-15 | 0191 | infra/tooling | 1.5 | 0.5 | 0.33 | 13771k | 1942k | no aplica | 7.63 | 20261015-160528-feature-0191-capability-check-artifact |
 | 2026-10-17 | 0149 | docs | 6 | 42.42 | 7.07 | 203586k | 26406k | 24.01 | 76.81 | 20261016-105021-feature-0149-archive |
 | 2026-10-17 | 0156 | infra/tooling | 4 | 2.13 | 0.53 | 75697k | 11736k | 2.31 | 32.07 | 20261017-143533-feature-0156-sdd-init |
+| 2026-10-18 | 0157 | infra/tooling | 4 | 2 | 0.5 | 66127k | 8921k | 3.06 | 30.08 | 20261017-220910-feature-0157-sdd-upgrade |
 
-**Factor de calibración** (ratio mediano real/estimado, 144 artefactos): **0.58** · media 0.75
+**Factor de calibración** (ratio mediano real/estimado, 145 artefactos): **0.58** · media 0.75
 
-- p25–p75: 0.4–0.91
-- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p25–p75: 0.4–0.9
+- p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 27 % · sobreestimadas: 64 % · infraestimadas: 9 %
 - Error absoluto (h): media 1.38 · mediana 0.9
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.51
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.52
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 53 | 37 % |
-| 0.5–0.8 | 43 | 30 % |
+| 0.5–0.8 | 44 | 30 % |
 | 0.8–1.25 | 35 | 24 % |
 | 1.25–2 | 8 | 6 % |
 | ≥2 | 5 | 3 % |
@@ -204,7 +205,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 80 | 0.53 | 0.38–0.76 |
-| infra/tooling | 29 | 0.4 | 0.36–0.53 |
+| infra/tooling | 30 | 0.42 | 0.36–0.53 |
 | patch | 34 | 1.2 | 0.8–1.38 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -224,6 +225,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 31 | 97.74 | 0.52 | 220.16 | 761.5 |
+| sin publicar | 32 | 99.74 | 0.5 | 223.22 | 791.58 |
 
 > Ver `estimation.md`.
