@@ -4,7 +4,7 @@ feature: 0185
 title: propose-fixes — margen de palabras, repaso de lo que se retira, delta probado, política de modelos, plan por cláusula y patch con su test
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-18
 author: Claude (Opus 5.5)
 approvers:
@@ -21,6 +21,7 @@ approvers:
 - Modificadas: `feature-flow` — el repaso de coherencia busca lo que la spec retira o cambia de forma y los ids de las filas que implementa, y prueba el delta; las secciones del diseño abren en llano; nacen el margen de palabras, la política de modelos de la spec, el self-review por cláusula, la línea de resumen que dice la «Verificación» y la fila de «Aprobaciones» sin rol
 - Modificadas: `capabilities` — un `MODIFIED` quita una línea con `- REMOVED <línea>` y un renombrado es REMOVED + ADDED
 - Modificadas: `routing` — un patch es lo que un solo test reproduce
+- Modificadas: `verification` — en `delegate`, los ejes salen sin preguntar si la spec aprobada nombra su política de modelos
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -31,7 +32,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (3 requisitos), tres o 
 
 1. **Topes de palabras** (medido el 2026-10-18 con el conteo de `WordBudget.Tests.ps1`): `sdd-propose` sube a `SkillMd = 5200; Total = 6700` (hoy 4.908 / 5.000 y 6.324 / 6.325) y `sdd-parallel-agents` a `SkillMd = 1150; Total = 1150` (hoy 1.083 / 1.100). Cada tope es lo medido más lo previsto (~+180 en `SKILL.md` y ~+75 en referencias de `sdd-propose`; ~+45 en `sdd-parallel-agents`) más un 2 % para la pasada de fix. `sdd-templates` sigue con el tope suspendido. Detalle en «Previsión de la prueba».
 2. **El margen va en la plantilla de la spec, no en la constitution**: un bloque condicional `## Topes de palabras` *(solo si el proyecto pone topes a lo que la spec edita)*, con la tabla «Fichero · medido / tope · margen · tope propuesto». Su ayuda lleva las tres reglas que diste: margen para la pasada de fix (lo previsto + 2 %, mínimo 20 palabras); el tope de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más margen; y lo que se recorte para caber es una edición de skill con su RED. Motivo: Art. II, elemento omitido → hueco en la plantilla que se rellena. En la 0175 no había sitio para lo medido frente a lo previsto.
-3. **Lo que se retira o cambia de forma** va en un hueco obligatorio de la plantilla, `## Lo que se retira o cambia de forma`, tras «Scope». Es una tabla «Qué · dónde aparece (`capabilities/`, `skills/`, docs) · destino (delta, Scope o decisión con motivo)», con una fila «Filas que implementa: <id> → <ficheros que la nombran>», o «nada: comprobado con `<búsqueda>`». La fila se queda aunque se borren los bloques de ayuda. El «Coherence pass» del paso 4 la rellena buscando cada nombre o literal (una etiqueta, un encabezado, una línea fija de plantilla) y cada id de fila en `capabilities/` y `skills/`. Sustituye a la frase «For each `MODIFIED`… search outside the spec…», que pasa a ser un caso de la fila.
+3. **Lo que se retira o cambia de forma** va en un hueco obligatorio de la plantilla, `## Lo que se retira o cambia de forma`, tras «Scope». Es una tabla «Qué · dónde aparece (`capabilities/`, `skills/`, docs) · destino (delta, Scope o decisión con motivo)», con una fila «Filas que implementa: <id> → <ficheros que la nombran>», o «nada: comprobado con» y la búsqueda. La fila se queda aunque se borren los bloques de ayuda. El «Coherence pass» del paso 4 la rellena buscando cada nombre o literal (una etiqueta, un encabezado, una línea fija de plantilla) y cada id de fila en `capabilities/` y `skills/`. Sustituye a la frase «For each `MODIFIED`… search outside the spec…», que pasa a ser un caso de la fila.
 4. **El delta se prueba antes del gate**: el «Coherence pass» copia `.docs/sdd` a una carpeta temporal fuera del repo y ejecuta allí `sdd capability merge --path <copia> --artifact <spec.md>`. Un rechazo se corrige en la spec antes de presentarla, y la línea del resultado (`sdd capability merge sobre una copia → <n> sustituidos, 0 errores`) va en este bloque de decisiones. En esta spec: `sdd capability merge sobre una copia → 3 sustituidos, 6 añadidos, 1 regla, 0 errores` (2026-10-18).
 5. **Política de modelos** (solo en `delegate`): una línea obligatoria en el ✋ de la plantilla, `Política de modelos: revisores de la spec <modelo o ninguno> · ejes de la revisión final <Spec opus+high, Código sonnet+high, Arquitectura según el plan> · en paralelo hasta control.maxParallelAgents`. La regla de que «aprobar la spec cuenta como la confirmación de paralelizar que pidan las instrucciones del usuario» vive en `sdd-parallel-agents`, por donde pasan los dos despachos en paralelo (revisores de spec y ejes). No va en `sdd-verify`, que está en 2.885 de 2.900. La de esta feature: `Política de modelos: revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high, Arquitectura no (solo texto de skills y plantillas) · sujetos de la campaña Sonnet (mp1 en Opus), por tandas de hasta 5 de tests/headless/battery.sh · en paralelo hasta control.maxParallelAgents (3)`. Al aprobar la spec, confirmas esos despachos en paralelo.
 6. **«Aprobaciones»**: la tabla pasa a `| Nombre | Fecha | Estado |`, y el frontmatter `approvers` pierde `role:`, que tampoco lee nadie. Con una opción elegida, el Estado es `aprobada (opción «Apruebo»)`, la etiqueta sin el sufijo «(Recomendada)». La frase literal va solo cuando el usuario la escribe: `aprobada: «sí, adelante»`. Las fixtures de las baterías no cambian: son artefactos de su fecha, y `subject.sh` las edita con su forma.
@@ -112,8 +113,8 @@ El GREEN mide cada hueco con un sujeto que escribe la spec o el plan, y la condu
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
-- AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca su nombre en `capabilities/` y `skills/` y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
-- AND la misma sección lleva cada id de fila que la spec implementa con los ficheros que la nombran («la define la 0009» en `docs/config.md` → Scope), o «nada: comprobado con <búsqueda>», y no se borra con los bloques de ayuda
+- AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca su nombre en `capabilities/`, en los documentos del proyecto y, en un kit de skills, en `skills/`, y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
+- AND la misma sección lleva cada id de fila que la spec implementa con los ficheros que la nombran («la define la 0009» en `docs/config.md` → Scope), o «nada: comprobado con `grep -rn 0009 capabilities/ skills/`», y no se borra con los bloques de ayuda
 - AND antes del gate ejecuta `sdd capability merge --path <copia> --artifact <spec.md>` sobre una copia de `.docs/sdd` fuera del repo, corrige en la spec lo que rechace y escribe la línea del resultado en «Decisiones que he tomado yo»; la `capabilities/` del repo no cambia
 
 **MODIFIED — Una feature grande devuelve el diseño por secciones antes de la spec** (antes: sin la apertura en llano)
@@ -143,7 +144,6 @@ El GREEN mide cada hueco con un sujeto que escribe la spec o el plan, y la condu
 - GIVEN una feature en `delegate`, con la spec aprobada y la línea `Política de modelos: revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high · en paralelo hasta control.maxParallelAgents`, y unas instrucciones del usuario que piden confirmar antes de paralelizar
 - WHEN el hilo va a despachar los ejes de la revisión final con `sdd-parallel-agents`
 - THEN los despacha en la misma respuesta sin preguntar, porque la aprobación de la spec fue esa confirmación
-- AND lo mismo con los dos revisores de una review de spec que la línea nombra
 - AND un modelo o un despacho que la línea no nombra se confirma como piden las instrucciones
 - AND en `delegate` la spec sin esa línea no pasa el repaso de coherencia
 
@@ -197,6 +197,21 @@ El GREEN mide cada hueco con un sujeto que escribe la spec o el plan, y la condu
 - AND con «si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes» sigue siendo patch, y la pregunta del carril nombra el test que hoy sale en rojo (`cancelar Norte mar no toca la reserva de lun`)
 - AND un ajuste o una retirada de presentación nombra la captura del estado actual en lugar del test
 
+### Capacidad: `verification`
+
+**MODIFIED — La revisión final sale en ejes, en paralelo** (antes: sin la política de modelos de la spec)
+
+- GIVEN un plan con `Ejecución: native`, todas sus tasks completas en el ledger, `Eje Arquitectura: no — solo texto de skills` y el commit `a1b2c3d` de su última task
+- WHEN el hilo despacha la revisión final
+- THEN con `sdd-parallel-agents` y en segundo plano salen dos revisores sobre `a1b2c3d`: el eje Spec con `sdd-kit:effort-high` + `opus` y el eje Código con `sdd-kit:effort-high` + `sonnet`, cada uno con su vigía de silencio
+- AND el encargo de cada eje lleva la cabecera de `encargo-revision.md` («Restricciones de código»), su sección «Cómo revisar» y el encargo de su eje de `sdd-verify`
+- AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, solo el paquete; el eje Arquitectura, el paquete y `architecture.md`
+- AND con `Eje Arquitectura: sí — <frontera>` sale además el eje Arquitectura, con `sdd-kit:effort-high` + `opus`
+- AND con `control.maxParallelAgents: 2` y tres ejes, salen dos y el tercero cuando vuelve uno
+- AND los ejes trabajan en el mismo worktree desanclado `review-<id>-a1b2c3d`
+- AND un eje colgado se relanza solo, una vez, como dice «Vigía de silencio», y los demás siguen
+- AND el hilo recibe los informes por eje y no fusiona ni reordena hallazgos de un eje con los de otro
+- AND en `delegate`, si la spec aprobada lleva la línea `Política de modelos:` con esos ejes y las instrucciones del usuario piden confirmar antes de paralelizar, los despacha sin preguntar; un eje que la línea no nombra (el Arquitectura que sube el hilo) se confirma
 ## Previsión de la prueba (Art. I)
 
 Sonnet como sujeto, salvo `mp1` (Opus: el fallo de campo de la 0187 vino de Opus). RED con el kit de `HEAD` antes de la feature, GREEN con la rama.
@@ -224,6 +239,7 @@ Total: 4 sujetos de RED (1,29 $, hechos) + ~23 de GREEN y control + ~6 de una ta
 
 ## Enmiendas
 
+- 2026-10-18 — Tras la revisión final: sale el AND «lo mismo con los dos revisores de una review de spec» (salen antes de la aprobación: contradice `review-spec.md`); el repaso busca también en los documentos del proyecto y solo en un kit de skills en `skills/`; el delta gana el `MODIFIED` de `verification` «La revisión final sale en ejes, en paralelo» — ejes Spec I2, I3 e I4 — aprobada (opción «Apruebo la enmienda»)
 - 2026-10-18 — «La verificación de una task acaba en una línea de resumen» pasa a «La verificación de una task dice su línea de resumen»: la «Verificación» dice, literal, la línea de resumen que imprime su comando, en vez de exigir que sea la última — `node --test` acaba siempre en `ℹ duration_ms` (reporters `spec` y `tap`) y el THEN no se podía cumplir sin un filtro que pierde el código de salida; GREEN `pl2` 0/2 en esa fila — aprobada (opción «Apruebo la enmienda»)
 - 2026-10-18 — La regla «la política de modelos aprobada es la confirmación de paralelizar» va también en «The axes» de `sdd-verify`, que sale de «No entra»; tope de `sdd-verify` a `SkillMd = 2990; Total = 9020` (hoy 2.885 / 2.900 y 8.799 / 8.800) — GREEN `mp1` 0/2: los dos sujetos deciden parar en «The axes» y no llegan a cargar `sdd-parallel-agents` — aprobada (opción «Apruebo la enmienda»)
 

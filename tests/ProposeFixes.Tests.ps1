@@ -47,8 +47,9 @@ Describe 'patch con su test' {
 
   It 'Fixed solution trae el contraejemplo de tres comportamientos nuevos' {
     $fixed = Get-Section $script:Propose '**Fixed solution**' '**Presentation-only'
-    $fixed | Should -Match 'reservas <sala>'
-    $fixed | Should -Match 'lite'
+    $fixed | Should -Not -Match 'reservas <sala>'
+    $fixed | Should -Match 'facturas <cliente>'
+    $fixed | Should -Match 'still a patch'
   }
 }
 
@@ -93,6 +94,7 @@ Describe 'parallel-agents' {
     $axes = Get-Section (Get-KitFile 'skills/sdd-verify/SKILL.md') '**The axes.**' '**Read the reports by axis.**'
     $axes | Should -Match 'Política de modelos'
     $axes | Should -Match 'confirmation'
+    $axes | Should -Match 'Architecture axis you raise'
   }
 
   It 'lo que la línea no nombra se confirma aparte' {
@@ -147,5 +149,6 @@ Describe 'spec-template y repaso' {
     $pass | Should -Match 'capability merge'
     $pass | Should -Match 'copy of `\.docs/sdd`'
     $pass | Should -Match 'Política de modelos'
+    $pass | Should -Match "project's documents"
   }
 }

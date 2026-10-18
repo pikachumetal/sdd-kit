@@ -152,6 +152,9 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
+- AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca su nombre en `capabilities/`, en los documentos del proyecto y, en un kit de skills, en `skills/`, y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
+- AND la misma sección lleva cada id de fila que la spec implementa con los ficheros que la nombran («la define la 0009» en `docs/config.md` → Scope), o «nada: comprobado con `grep -rn 0009 capabilities/ skills/`», y no se borra con los bloques de ayuda
+- AND antes del gate ejecuta `sdd capability merge --path <copia> --artifact <spec.md>` sobre una copia de `.docs/sdd` fuera del repo, corrige en la spec lo que rechace y escribe la línea del resultado en «Decisiones que he tomado yo»; la `capabilities/` del repo no cambia
 
 ### Cada task del plan verifica solo sus superficies
 
@@ -551,6 +554,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND con 2 tasks previstas, en lite o en spike (también mientras el spike corra como full), escribe la spec sin secciones y la presenta en el gate
 - AND con la spec aprobada por delegación o en `unattended` no presenta secciones: lo que habría preguntado va a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
 - AND las secciones son turnos de la entrevista dentro de la parada de la spec, no una parada nueva del perfil: valen en `pair` y en `delegate`
+- AND cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos («`informes --sala Norte` enseña las cuatro vistas solo de Norte»), y la pregunta es sobre eso; un nombre de código (`active`, `rooms`, `src/app.js`) no abre ninguna sección y, si hace falta, va detrás
 
 ### Pedir empezar ya no se lleva la spec
 
@@ -600,10 +604,51 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN la revisa el revisor de la spec (la lente de dominio, o el revisor único)
 - THEN devuelve, como Importante o Crítico, «Delta · la decisión del dev-lead sobre el visual companion queda cubierta solo para pantallas · ampliar el requisito a flujos y diagramas»
 
+### La spec mide el margen de palabras de lo que edita
+
+- GIVEN un proyecto con topes de palabras (`tests/WordBudget.Tests.ps1` con `'sdd-propose' = @{ SkillMd = 5000; Total = 6325 }`) y una spec que edita `sdd-propose`, medido en 4.908 y 6.324
+- WHEN el agente escribe la spec
+- THEN la sección «Topes de palabras» lleva una fila por skill o documento con tope que la spec edita, con lo medido, el tope, el margen y el tope propuesto: `sdd-propose · 4.908 / 5.000 y 6.324 / 6.325 · 92 y 1 · 5.200 / 6.700`
+- AND el tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix, y el gate lo aprueba como decisión del dev-lead
+- AND el de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más margen
+- AND si durante la feature se recorta texto para caber, el recorte es una edición de skill: si quita una instrucción, lleva su RED
+- AND sin topes en el proyecto, la sección no se escribe
+
+### La política de modelos de la spec vale como confirmación de paralelizar
+
+- GIVEN una feature en `delegate`, con la spec aprobada y la línea `Política de modelos: revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high · en paralelo hasta control.maxParallelAgents`, y unas instrucciones del usuario que piden confirmar antes de paralelizar
+- WHEN el hilo va a despachar los ejes de la revisión final con `sdd-parallel-agents`
+- THEN los despacha en la misma respuesta sin preguntar, porque la aprobación de la spec fue esa confirmación
+- AND un modelo o un despacho que la línea no nombra se confirma como piden las instrucciones
+- AND en `delegate` la spec sin esa línea no pasa el repaso de coherencia
+
+### El self-review del plan asigna cada cláusula de un THEN a lo que la observa
+
+- GIVEN una spec con «THEN el agente ha preguntado el umbral · AND la sección lleva la respuesta», y una task cuyo test solo mide lo escrito
+- WHEN el agente escribe §4 del plan
+- THEN §4 lleva una línea por cláusula, cada una con su task y el test o la fila de medición que la observa: `THEN ha preguntado → Task 2, escenario n1 (turno 1)` y `AND la sección lleva la respuesta → Task 2, n1 (spec-new.md)`
+- AND una cláusula que nada observa dice `sin observar: <motivo>`, y el plan lo avisa en sus decisiones antes de ejecutar
+- AND si la spec trae la tabla «regla retirada → dónde vive ahora», §4 lleva una línea por fila con su task y el test que busca la regla en su destino
+
+### La verificación de una task dice su línea de resumen
+
+- GIVEN una task con superficie tooling en un proyecto con `node --test`, cuya salida acaba en `ℹ duration_ms 52.1` y no en el resumen
+- WHEN el agente escribe su «Verificación»
+- THEN es un comando que sale con un código distinto de 0 si algo falla, sin códigos de color, y la línea dice, literal, la línea de resumen que imprime (`ℹ fail 0` con `node --test`, `Tests  12 passed (12)` con Vitest)
+- AND sin tests automáticos, dice el smoke manual con su resultado esperado
+
+### La fila de «Aprobaciones» dice quién y cómo aprobó
+
+- GIVEN una spec calcada de `spec-template.md` y aprobada por Ana con la opción «Apruebo (Recomendada)» de `AskUserQuestion` el 2026-10-18
+- WHEN el agente registra la aprobación
+- THEN la tabla «Aprobaciones» tiene las columnas `Nombre | Fecha | Estado`, sin «Rol», y la fila dice `Ana | 2026-10-18 | aprobada (opción «Apruebo»)`
+- AND si Ana escribe «sí, adelante», el Estado es `aprobada: «sí, adelante»`
+- AND el frontmatter `approvers` lleva `name` y `approved_at`, sin `role`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
-- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras.
+- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras; el tope de palabras propuesto en una spec es lo medido más lo previsto más un 2 %, con un mínimo de 20 palabras.
 - **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
 - **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `operations.md` §Testing; sin él, de `tech-stack.md` §Testing; sin ninguno, de la constitution.

@@ -105,15 +105,14 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 - **El RED se lee por regla del `SKILL.md`, no por fila de la rúbrica** (feature 0145): una fila falla por una parte y deja pasar la regla vecina que se escribe con ella. Cuatro reglas sin fallo detrás llegaron así a la revisión final. La tabla «Procedencia de las reglas» de la batería lista cada regla con su fallo, o la recorta.
 - **Un mutante restaura con ruta absoluta**: `Invoke-Pester` deja el directorio en su módulo, y una restauración con ruta relativa sobrescribió `Pester.ScriptScope.ps1` del dev-lead (feature 0120; repuesto con `Save-Module Pester`).
 - **Un RED limpio con n=2 puede ser suerte** (feature 0146): `l2` salió 2/2 limpio y, repetido con el mismo kit, 0/2 («Dónde mirar» en respuestas en inglés). Antes de sacar una regla por un baseline limpio cuya conducta depende del idioma o del tono de la respuesta, se repite el baseline.
-- **Una regla que solo vive en una referencia no se lee** (feature 0146): en `u1`, 0 de 2 sujetos abrieron `control-profiles.md`, y la acción update no se aplicó; funcionó al subir una frase al paso que la dispara, con el detalle en la referencia.
-- **Un traspaso a otra skill es lo primero del paso** (feature 0147): una línea que la invoca, 0/4; «lo primero de este paso… no implementes nada desde aquí», 4/4. El prompt de un despacho `Agent` no está en `tools.txt`, sino en el `<etiqueta>.jsonl`. Editar un `subject.sh` en marcha da «unexpected EOF».
+- **Una regla que solo vive en una referencia no se lee** (feature 0146): en `u1`, 0 de 2 sujetos abrieron `control-profiles.md`, y la acción update no se aplicó; funcionó al subir una frase al paso que la dispara, con el detalle en la referencia. En la 0185, la que quita una parada: 0/2 en la skill cargada después, 3/3 en el paso que decide.
+- **Un traspaso a otra skill es lo primero del paso** (feature 0147): una línea que la invoca, 0/4; «lo primero de este paso… no implementes nada desde aquí», 4/4. El prompt de un despacho `Agent` no está en `tools.txt`, sino en el `<etiqueta>.jsonl`.
 - **Un fallo de forma se cura con un paso literal, no cargando una skill** (feature 0165): el implementador que recibía el RED sin ejecutarlo (4/4) lo ejecutó con un primer paso en el encargo (2/2); cargar `sdd-tdd` dio lo mismo con 2.000 palabras más.
 - **En `claude -p` no existe `AskUserQuestion`** (feature 0146): el sujeto la busca con `ToolSearch`, no la encuentra y pregunta en prosa. Un escenario que mide un diálogo de opciones puntúa el intento o las opciones literales, y la rúbrica lo dice antes del RED.
 - **Un emoji en un `grep` de Git Bash puede no casar** (feature 0146): el primer veredicto de `v1b` salió falso. La rúbrica que busca 🦆 o ✋ se puntúa con una lectura UTF-8 (Python con `-X utf8` o Node).
 
-- **Una regla de forma que sale en un mensaje que otra skill estructura va dentro de ese mensaje** (feature 0160): el anuncio de feature salió 0 de 6 en su paso y en el aviso de fase, y 4 de 6 en la cabeza de la nota de entendimiento de `brainstorming`.
+- **Una regla de forma que sale en un mensaje que otra skill estructura va dentro de ese mensaje** (feature 0160): el anuncio de feature salió 0 de 6 en su paso y en el aviso de fase, y 4 de 6 en la cabeza de la nota de entendimiento de `brainstorming`. Un hueco omitido igual (0185): frase en el paso 0/2, en la ayuda del hueco 2/2.
 - **«/sdd-kit:<skill>» en `claude -p` carga la skill sin `>>> Skill:`** (feature 0160): la puerta de `battery.sh` sale roja; se puntúa la conducta.
-- **Lo que deja un sujeto se busca por la carpeta que crea, no por fecha** (feature 0160): con `-newer`, el `subject.sh` guardaba ficheros del molde.
 
 ### Entrega de la skill al sujeto
 

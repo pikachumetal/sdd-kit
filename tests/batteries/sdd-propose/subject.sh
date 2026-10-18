@@ -76,7 +76,7 @@ esac
 case "$SC" in
   g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
   d1|p3) MAX_TURNS="${MAX_TURNS:-60}" ;;
-  a1|a3|a4|k2|l1|pl1|x1|c1|t1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  a1|a3|a4|k2|l1|pl1|pt1|x1|c1|t1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 
