@@ -79,6 +79,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | SP1 Huecos de la spec | sp1 | `spec-new.md` no lleva la tabla de topes con `docs/guia.md` (42 / 60); o «Lo que se retira o cambia de forma» no nombra `README.md` y `docs/guia.md` para `anular`, ni la fila 0012 con `docs/guia.md`; o el renombrado no va como `REMOVED` de «Cancelar una reserva propia» más `ADDED` de «Cancelar una reserva»; o `tools.txt` no ejecuta `capability merge` con un `--path` fuera del molde; o el ✋ no lleva `Política de modelos`; o «Aprobaciones» lleva la columna «Rol» |
 | PL2 Plan por cláusula | pl2 | §4 de `plan-new.md` no tiene una línea para el THEN y otra para el AND de «Cancelar pide un motivo de la lista», cada una con su task y su test; o no tiene las dos filas del anexo («sin reserva…» y «la reserva de otra persona no se toca») con su task y el test que las busca en `cancelar`; o una «Verificación» no dice la línea de resumen que imprime su comando (`ℹ fail 0` o la que corresponda), literal |
 | PL1 Patch con su test | pl1 | abre rama, carpeta o `patch.md` de patch; o no ofrece lite citando sus condiciones; y en `a2` y `a3`, la pregunta o el `patch.md` no nombran el test que hoy sale en rojo |
+| PB-L Secciones en llano | pb | la primera sección abre con un nombre de código, un fichero o un campo interno (`active`, `rooms`, `src/app.js`) antes de decir qué ve quien usa `informes`, con un ejemplo con datos |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas

@@ -20,6 +20,19 @@ BeforeAll {
   $script:PlanWriting = Get-KitFile 'skills/sdd-propose/references/plan-writing.md'
 }
 
+Describe 'secciones en llano' {
+  It 'cada sección abre con lo que cambia para quien usa el producto' {
+    $sections = Get-Section (Get-KitFile 'skills/sdd-propose/references/spec-writing.md') '## Design by sections' '## Starting right away'
+    $sections | Should -Match 'for whoever uses the product'
+    $sections | Should -Match 'example with data'
+  }
+
+  It 'trae el contraejemplo con nombres de código' {
+    $sections = Get-Section (Get-KitFile 'skills/sdd-propose/references/spec-writing.md') '## Design by sections' '## Starting right away'
+    $sections | Should -Match 'not «'
+  }
+}
+
 Describe 'patch con su test' {
   It 'ProposeFixes: el patch nombra su test' {
     $patch = Get-Section $script:Propose '- **patch**' '- **lite**'

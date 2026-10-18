@@ -48,3 +48,12 @@ La enmienda: `node --test` acaba en `ℹ duration_ms` con los reporters `spec` y
 | `a3-1` | control | 0,42 | ✅ patch sin preguntar; `patch.md` §3 y §4 nombran el test nuevo en rojo sin el fix |
 | `a4-1` | control | 0,16 | ✅ feature recomendada, con lo que tendría que decidir él, y «ningún test actual falla por esto» |
 | `l1-1` | control | 0,16 | ❌ pregunta qué hace `libres` con la planta antes de ofrecer lite; con el kit de la base (`red/out/l1-1`) sale igual: rojo previo, al ticket del cierre |
+
+## Task 5 — secciones del diseño en llano
+
+| Sujeto | Fase | $ | Veredicto |
+| --- | --- | --- | --- |
+| `pb-1`, `pb-2` | GREEN | 0,21 y 0,20 | ✅ 2/2: la primera sección abre con «Qué ves al ejecutar `informes`» / «qué ve quien lo usa» y la salida de ejemplo con la reserva de Norte del lunes; ningún `active`, `rooms` ni `src/app.js` abre la sección (RED 0/2) |
+| `pb-c-1` | control | 0,20 | ✅ 2 tasks, sin secciones |
+
+El ejemplo de la regla va en otro dominio que el molde (facturas, no reservas: `tech-stack.md`, «El ejemplo de la guidance va en otro dominio que el fixture»).
