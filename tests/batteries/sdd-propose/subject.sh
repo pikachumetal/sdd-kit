@@ -29,6 +29,14 @@ case "$(cell Molde)" in
     mkdir -p "$R/docs"
     printf '%s\n' '# Configuración' '' '- `data/`: ficheros de datos de la herramienta. Hoy no hay ninguno.' '- Responsables de sala: aún no hay; quién es cada uno y su fichero los define la 0009.' > "$R/docs/config.md" ;;
   reservas-sin-ops) rm "$R/.docs/sdd/operations.md" ;;
+  # La 0012 retira anular: la nombran el README, la guía (con tope de palabras) y la capacidad, y la guía apunta a la fila.
+  reservas-topes)
+    mkdir -p "$R/.docs/sdd/capabilities" "$R/docs"
+    cp "$FIX/bookings-capability.md" "$R/.docs/sdd/capabilities/bookings.md"
+    cp "$FIX/guia.md" "$R/docs/guia.md"
+    cp "$FIX/words.test.js" "$R/test/words.test.js"
+    printf '\nComandos: `cancelar` y `anular`; guía en [docs/guia.md](docs/guia.md).\n' >> "$R/README.md"
+    sed -i 's/^| 1 |/| 0012 | **Retirar anular**: el comando anular desaparece | ⏳ |\n| 1 |/' "$R/.docs/sdd/roadmap.md" ;;
   reservas-adr) mkdir -p "$R/.docs/sdd/decisions"; cp "$FIX/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
   reservas-adr6) cp -r "$FIX/decisions-6" "$R/.docs/sdd/decisions" ;;
   reservas-adr-docs) mkdir -p "$R/.docs/sdd/decisions"; sed 's#  - src/\*\*#  - docs/**#' "$FIX/adr-0003-bookings-in-memory.md" > "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
@@ -55,6 +63,7 @@ case "$SC" in
     commit "chore: política de merge"
     g checkout -q -b feature/bump-node-22-18 ;;
   s1|c1) g checkout -q -b feature/0010-cancel-reason ;;
+  sp1) g checkout -q -b feature/0012-retire-void ;;
   g1) g checkout -q -b feature/0010-cancel-reason; put "$F10/spec.md" < "$FIX/spec-0010.md" ;;
   r1|t1) g checkout -q -b feature/0011-void-others; put "$F11/spec.md" < "$FIX/spec-0011.md" ;;
   p1|p2) g checkout -q -b feature/0010-cancel-reason; approved_spec | without_who | put "$F10/spec.md" ;;
