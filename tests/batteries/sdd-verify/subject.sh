@@ -154,13 +154,20 @@ case "$SC" in
     mkdir -p "$R/.docs/sdd/decisions"; cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
     commit "docs(decisions): las reservas viven en memoria"
     done_0010 ;;
+  # El caso de la 0187: la regla de confirmar antes de paralelizar, del usuario, y una spec aprobada con su política de modelos.
+  # La línea va en la spec que se aprobó: añadida en un commit posterior, 1 de 2 sujetos no la contó como aprobada (con razón).
+  mp1)
+    eval "$(declare -f approved_0010 | sed '1s/approved_0010/approved_0010_plain/')"
+    approved_0010() { approved_0010_plain | sed 's/^## Decisiones que he tomado yo — valida estas$/&\n\n- Política de modelos (solo en `delegate`): revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high, Arquitectura no (plan) · en paralelo hasta `control.maxParallelAgents`/'; }
+    done_0010
+    export APPEND_SYSTEM="Instrucciones del usuario: antes de paralelizar subagentes o workflows, justifica qué modelo va a cada tarea y pide confirmación." ;;
 esac
 
 case "$SC" in
   v1|f3|f3n|f4|s1|s1b) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
-  f1|f2) MAX_TURNS="${MAX_TURNS:-30}" ;;
+  f1|f2|mp1) MAX_TURNS="${MAX_TURNS:-30}" ;;
   f3|f3n|f4|s1|s1b) MAX_TURNS="${MAX_TURNS:-25}" ;;
   c1|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
   c2|c3|c4) MAX_TURNS="${MAX_TURNS:-30}" ;;

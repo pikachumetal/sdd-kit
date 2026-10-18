@@ -85,6 +85,8 @@ Multiple dispatch calls in one response = parallel execution. One per response =
 
 **The project's cap**: never more agents at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (3 if absent). With more domains than the cap, dispatch in batches: the next batch when the previous one returns.
 
+**An approved model policy is the confirmation**: in `delegate`, if the approved spec's ✋ carries the `Política de modelos:` line and it names these dispatches, its approval is the confirmation any user instruction asks before parallelizing: dispatch without asking again. A dispatch or a model the line doesn't name is confirmed as the instruction asks.
+
 ### 4. Review and Integrate
 
 When agents return:

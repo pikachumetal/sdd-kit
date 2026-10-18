@@ -171,6 +171,8 @@ build_claude_args() {
   CLAUDE_ARGS+=(--permission-mode acceptEdits --allowedTools "Bash(*)" "PowerShell(*)" "Agent" ${EXTRA_ALLOWED:-})
   # shellcheck disable=SC2206
   CLAUDE_ARGS+=(--disallowedTools "SendMessage" "ListAgents" "AskUserQuestion" ${EXTRA_DISALLOWED:-})
+  # Una instrucción del usuario que el escenario necesita: con --setting-sources "" no llega el CLAUDE.md del molde.
+  [ -n "${APPEND_SYSTEM:-}" ] && CLAUDE_ARGS+=(--append-system-prompt "$APPEND_SYSTEM")
   CLAUDE_ARGS+=(--max-turns "${MAX_TURNS:-60}" --output-format stream-json --verbose)
 }
 

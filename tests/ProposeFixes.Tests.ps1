@@ -15,6 +15,27 @@ BeforeAll {
 
   $script:SpecTemplate = Get-KitFile 'skills/sdd-templates/templates/spec-template.md'
   $script:Propose = Get-KitFile 'skills/sdd-propose/SKILL.md'
+  $script:Parallel = Get-KitFile 'skills/sdd-parallel-agents/SKILL.md'
+}
+
+Describe 'parallel-agents' {
+  It 'la política de modelos aprobada en delegate es la confirmación de paralelizar' {
+    $cap = Get-Section $script:Parallel "**The project's cap**" '### 4.'
+    $cap | Should -Match 'Política de modelos'
+    $cap | Should -Match '`delegate`'
+    $cap | Should -Match 'confirmation'
+  }
+
+  It 'el paso de los ejes de sdd-verify toma la política aprobada como confirmación' {
+    $axes = Get-Section (Get-KitFile 'skills/sdd-verify/SKILL.md') '**The axes.**' '**Read the reports by axis.**'
+    $axes | Should -Match 'Política de modelos'
+    $axes | Should -Match 'confirmation'
+  }
+
+  It 'lo que la línea no nombra se confirma aparte' {
+    $cap = Get-Section $script:Parallel "**The project's cap**" '### 4.'
+    $cap | Should -Match "doesn't name"
+  }
 }
 
 Describe 'spec-template y repaso' {

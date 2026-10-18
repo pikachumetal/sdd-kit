@@ -59,7 +59,7 @@ Siete features pasaron su tope de palabras en el cierre y recortaron texto ajeno
 ## Scope
 
 - Entra: `skills/sdd-templates/templates/spec-template.md` (topes, lo que se retira, política de modelos, ayuda del `MODIFIED`, «Aprobaciones» y frontmatter), `skills/sdd-templates/templates/plan-template.md` (§4 por cláusula y regla retirada, «Verificación»), `skills/sdd-propose/SKILL.md` (paso 2, «Is it really a patch?», «Coherence pass» y prueba del delta en el paso 4), `skills/sdd-propose/references/spec-writing.md` («Design by sections»), `skills/sdd-propose/references/plan-writing.md` (self-review, punto 1), `skills/sdd-parallel-agents/SKILL.md` (la aprobación de la spec como confirmación), `tests/WordBudget.Tests.ps1` (topes de la decisión 1), las baterías de `sdd-propose` (`pl1`, `sp1`, `pl2`) y de `sdd-verify` (`mp1`), y los Pester de frases que fijen lo nuevo.
-- No entra: quitar la clase «petición cerrada» (`routing`, `sdd-start-patch`, `patch-template.md`, `PatchLane.Tests.ps1`), `sdd-verify/SKILL.md` (la regla va en `sdd-parallel-agents`, decisión 5), `review-spec.md` (su regla de un revisor sin preguntar sigue y es compatible), la constitution (decisión 2), y las fixtures de las baterías con «Rol» (decisión 6).
+- No entra: quitar la clase «petición cerrada» (`routing`, `sdd-start-patch`, `patch-template.md`, `PatchLane.Tests.ps1`), `review-spec.md` (su regla de un revisor sin preguntar sigue y es compatible), la constitution (decisión 2), y las fixtures de las baterías con «Rol» (decisión 6).
 
 ## Lo que se retira o cambia de forma
 
@@ -223,6 +223,8 @@ Total: 4 sujetos de RED (1,29 $, hechos) + ~23 de GREEN y control + ~6 de una ta
 | `tech-stack.md` (lo escribe el cierre) | 18.797 / 18.800 | 3 | sin cambio: lo aprendido sustituye o condensa |
 
 ## Enmiendas
+
+- 2026-10-18 — La regla «la política de modelos aprobada es la confirmación de paralelizar» va también en «The axes» de `sdd-verify`, que sale de «No entra»; tope de `sdd-verify` a `SkillMd = 2990; Total = 9020` (hoy 2.885 / 2.900 y 8.799 / 8.800) — GREEN `mp1` 0/2: los dos sujetos deciden parar en «The axes» y no llegan a cargar `sdd-parallel-agents` — aprobada (opción «Apruebo la enmienda»)
 
 ## Aprobaciones
 

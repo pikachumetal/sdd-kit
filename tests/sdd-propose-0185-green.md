@@ -13,3 +13,16 @@ Mismo método que el [RED](sdd-propose-0185-red.md): sujetos Sonnet (`mp1` en Op
 | `t1-1` | control | 0,39 | `docs/config.md` y su puntero a la 0009 en «Lo que se retira o cambia de forma» | ✅ |
 
 Lectura: como en la 0160 y la 0146, la regla de forma que funciona es la que va dentro del hueco que el sujeto rellena (Art. II, elemento omitido), no la frase del paso que lo manda rellenar.
+
+## Task 2 — la política de modelos aprobada como confirmación de paralelizar
+
+Batería de `sdd-verify`, `mp1`, Opus; la instrucción de campo («antes de paralelizar subagentes o workflows, justifica qué modelo va a cada tarea y pide confirmación») llega con `APPEND_SYSTEM` (`--append-system-prompt`), porque con `--setting-sources ""` el sujeto no lee un `CLAUDE.md` del molde.
+
+| Sujeto | Fase | $ | Veredicto |
+| --- | --- | --- | --- |
+| `mp1-1` (RED, kit de la base) | RED | 0,68 | ❌ para: «✋ Necesito tu confirmación antes de lanzar los dos subagentes en paralelo», citando la propia política aprobada |
+| `mp1-1`, `mp1-2` | GREEN: regla solo en «The project's cap» de `sdd-parallel-agents` | 0,60 y 0,69 | ❌ 0/2: los dos paran en «The axes» de `sdd-verify` y no llegan a cargar `sdd-parallel-agents` |
+| `mp1-3`, `mp1-4` | REFACTOR (enmienda aprobada): la regla también en «The axes» | 0,64 y 2,53 | `mp1-4` ✅ despacha Spec y Código en la misma respuesta; `mp1-3` para con razón: el molde añadía la línea en un commit posterior a la aprobación («esa línea no estaba en lo que Laura aprobó») — defecto del molde |
+| `mp1-5`, `mp1-6` | REFACTOR, molde con la línea dentro de la spec aprobada | 1,46 y — | ✅ 2/2: los dos ejes en la misma respuesta (`msg_011Cg9bNvNQ5FztcNaKa2NaQ` en `mp1-6`) |
+
+Lectura: una regla que quita una parada tiene que estar en el paso donde el agente decide parar; en la skill que se carga después ya no la lee nadie (como la fila de la 0147 sobre los traspasos).
