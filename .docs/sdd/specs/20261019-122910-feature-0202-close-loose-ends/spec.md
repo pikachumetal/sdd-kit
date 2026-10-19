@@ -263,6 +263,8 @@ Se mide con `tests/WordBudget.Tests.ps1` en la Task 1. El tope nuevo es lo medid
 
 ## Enmiendas
 
+- 2026-10-19 — Punto 3: la columna de id cuenta solo si es la primera de la tabla (`#`, `id` o `Id`), y un hueco `<…>` de plantilla no es un id. La tabla «Patches» lleva `Id` en segunda posición, y un patch está a la vez en ella y en su fila «Patch:» de «Próximo», que es el flujo previsto; las plantillas repiten `<id>`. Precisa la exclusión que la spec ya hacía de «Patches», sin cambiar ningún THEN — Task 3
+
 - 2026-10-19 — Tope de `tech-stack.md`: medido 18900 tras las dos líneas (antes 18797); tope nuevo 19280 (18900 + 2 %, a la decena) — punto 7, decisión del dev-lead («todo lo que dices que se quedo abierto en 193 y 201 se ha de cerrar») — Task 1
 
 ## Aprobaciones

@@ -9,6 +9,7 @@ import { lineAt, parseSections, tableBlocks } from './parse.ts';
 import { closedReleases, cutCommit, publishedProblem, releasedPatchProblems, settledRowProblems } from './releases.ts';
 import { closedTitleProblems, proseProblems, sectionSetProblems, subsectionProblems } from './structure.ts';
 import { openRows, stateProblem, tableBlockProblems, tableHeaderProblems } from './tables.ts';
+import { duplicateIdWarnings } from './duplicates.ts';
 import { roadmapWarnings } from './warnings.ts';
 
 export interface RoadmapResult {
@@ -57,7 +58,7 @@ function twoPointRoadmapReport(lines: string[], file: string): Report {
   const blocks = tableBlocks(lines, parseSections(lines));
   return {
     errors: prefixed(file, roadmapProblems(lines, dirname(file))),
-    warnings: prefixed(file, roadmapWarnings(lines, blocks).map((warning) => `aviso: ${warning}`)),
+    warnings: prefixed(file, [...roadmapWarnings(lines, blocks).map((warning) => `aviso: ${warning}`), ...duplicateIdWarnings(lines)]),
   };
 }
 
@@ -70,7 +71,7 @@ function roadmapReport(sddPath: string, changelog: string): Report | null {
     const report = twoPointRoadmapReport(lines, file);
     return { errors: report.errors, warnings: [...shadow, ...report.warnings] };
   }
-  return { errors: prefixed(file, nowNextLaterProblems(lines, changelog)), warnings: shadow };
+  return { errors: prefixed(file, nowNextLaterProblems(lines, changelog)), warnings: [...shadow, ...prefixed(file, duplicateIdWarnings(lines))] };
 }
 
 function debtReport(sddPath: string, changelog: string): Report | null {

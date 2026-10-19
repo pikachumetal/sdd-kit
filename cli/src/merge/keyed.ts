@@ -77,20 +77,40 @@ function sides({ ours, base, theirs }: Hunk): Sides | null {
   return sameLines(plainLines(ours), plainLines(theirs)) ? { ours: oursById, base: baseById, theirs: theirsById } : null;
 }
 
-export function dedupeRows(lines: string[]): KeyedMerge {
+const isPlain = (id: string) => id.startsWith('plain\u0000');
+
+export function repeatedIdentities(lines: string[]): Set<string> {
+  const ids = identities(lines).filter((id) => !isPlain(id));
+  return new Set(ids.filter((id, index) => ids.indexOf(id) !== index));
+}
+
+export interface Deduplicated extends KeyedMerge {
+  removed: string[];
+}
+
+export function dedupeNewRows(lines: string[], keep: Set<string>): Deduplicated {
   const seen = new Map<string, Set<string>>();
   const duplicates = new Set<string>();
+  const removed: string[] = [];
   const ids = identities(lines);
   const kept = lines.filter((line, index) => {
-    if (ids[index].startsWith('plain\u0000')) return true;
+    if (isPlain(ids[index]) || keep.has(ids[index])) return true;
     const texts = seen.get(ids[index]) ?? new Set<string>();
     seen.set(ids[index], texts);
-    if (texts.has(line)) return false;
+    if (texts.has(line)) {
+      removed.push(lineKey(line) ?? '');
+      return false;
+    }
     if (texts.size > 0) duplicates.add(lineKey(line) ?? '');
     texts.add(line);
     return true;
   });
-  return { lines: kept, duplicates: [...duplicates] };
+  return { lines: kept, duplicates: [...duplicates], removed };
+}
+
+export function dedupeRows(lines: string[]): KeyedMerge {
+  const { lines: kept, duplicates } = dedupeNewRows(lines, new Set());
+  return { lines: kept, duplicates };
 }
 
 const rowsOf = (id: string, { ours, base, theirs }: Sides) => resolveRow(ours.get(id), base.get(id), theirs.get(id));
