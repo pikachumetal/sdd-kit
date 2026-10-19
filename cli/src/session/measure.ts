@@ -3,36 +3,63 @@ import { resolve } from 'node:path';
 import { readPrices, sessionCost, type SessionCost } from './cost.ts';
 import { notMeasuredLines, reportLines, mainModel } from './format.ts';
 import type { Clock } from './clock.ts';
-import { readSession, type Session } from './session.ts';
+import { isEmpty, readSession, type Session } from './session.ts';
 import { defaultProjectsRoots, transcriptFolders } from './transcripts.ts';
+import { measureWindow, mergedAt, repositoryOf, type Repository } from './window.ts';
 import { mergeTotals, modelsByTokens, tokenSum, totalTokens, type ModelTotals } from './usage.ts';
 
 export interface MeasureOptions {
   path: string;
   branch: string;
   projectsRoots: string[];
+  now?: number;
+}
+
+export interface WindowInfo {
+  folder: string;
+  from: number;
+  to: number;
 }
 
 export type Measurement =
   | { kind: 'notMeasured'; reason: string }
-  | { kind: 'measured'; session: Session; prices: Json | null; cost: SessionCost };
+  | { kind: 'measured'; session: Session; prices: Json | null; cost: SessionCost; window?: WindowInfo };
+
+function measured(worktreePath: string, session: Session, window?: WindowInfo): Measurement {
+  const prices = readPrices(worktreePath);
+  return { kind: 'measured', session, prices, cost: sessionCost(session, prices), window };
+}
+
+function byWindow(repo: Repository, worktreePath: string, options: MeasureOptions): Measurement | null {
+  const result = measureWindow(repo, worktreePath, options.branch, options.now ?? Date.now());
+  if (result.kind === 'noReflog') return { kind: 'notMeasured', reason: `sin reflog de ${options.branch}: no se sabe cuándo se creó` };
+  if (result.kind === 'empty') return null;
+  return measured(worktreePath, result.session, { folder: result.folder, from: result.from, to: result.to });
+}
 
 export function measureSession(options: MeasureOptions): Measurement {
   const worktreePath = resolve(options.path);
   const roots = options.projectsRoots.length > 0 ? options.projectsRoots : defaultProjectsRoots();
   const folders = transcriptFolders(worktreePath, roots);
+  const repo = options.branch === '' ? null : repositoryOf(worktreePath, roots);
+  const own = readSession(folders, { branch: options.branch, until: (repo && mergedAt(repo, options.branch)) ?? undefined });
+  if (!isEmpty(own)) return measured(worktreePath, own);
+  const windowed = repo === null ? null : byWindow(repo, worktreePath, options);
+  if (windowed !== null) return windowed;
   if (folders.length === 0) return { kind: 'notMeasured', reason: `sin transcripts de Claude Code para ${worktreePath}` };
-  const session = readSession(folders, options.branch);
-  if (session.thread.size === 0 && session.dispatches.length === 0) {
-    return { kind: 'notMeasured', reason: `sin respuestas de ${options.branch || 'ninguna rama'} en los transcripts` };
-  }
-  const prices = readPrices(worktreePath);
-  return { kind: 'measured', session, prices, cost: sessionCost(session, prices) };
+  return { kind: 'notMeasured', reason: `sin respuestas de ${options.branch || 'ninguna rama'} en los transcripts` };
+}
+
+const minute = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
+
+function windowLine({ folder, from }: WindowInfo): string {
+  return `- Medición: por ventana — transcripts de ${folder} desde ${minute(from)} (la rama no tiene transcripts propios)`;
 }
 
 export function textLines(measurement: Measurement): string[] {
   if (measurement.kind === 'notMeasured') return notMeasuredLines(measurement.reason);
-  return reportLines(measurement.session, measurement.prices, measurement.cost);
+  const lines = reportLines(measurement.session, measurement.prices, measurement.cost);
+  return measurement.window === undefined ? lines : [...lines, windowLine(measurement.window)];
 }
 
 function costJson(cost: SessionCost): object {
@@ -65,11 +92,12 @@ export function toJson(measurement: Measurement): object {
     const unmeasured = { measured: false, reason: measurement.reason };
     return { thread: unmeasured, subagents: unmeasured, cost: unmeasured, real: unmeasured };
   }
-  const { session, cost } = measurement;
+  const { session, cost, window } = measurement;
   return {
     thread: { measured: true, tokens: totalTokens(session.thread), models: modelsJson(session.thread) },
     subagents: dispatchesJson(session),
     cost: costJson(cost),
     real: realJson(session.clock),
+    ...(window === undefined ? {} : { window: { folder: window.folder, from: minute(window.from), to: minute(window.to) } }),
   };
 }

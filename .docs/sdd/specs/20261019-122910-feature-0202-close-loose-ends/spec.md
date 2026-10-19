@@ -234,8 +234,9 @@ Cinco tasks:
 **MODIFIED — Sin transcripts, «no medido»**
 - GIVEN un worktree sin carpeta en `<proyectos>/`
 - WHEN se ejecuta el script
-- THEN las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
-- AND con la carpeta pero sin ninguna respuesta de la rama pedida, la rama se mide por ventana («Una rama sin transcripts propios se mide por ventana de tiempo»); si la ventana tampoco tiene respuestas, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
+- THEN la rama se mide por ventana («Una rama sin transcripts propios se mide por ventana de tiempo»); si la ventana tampoco tiene respuestas, las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
+- AND con la carpeta pero sin ninguna respuesta de la rama pedida, la rama se mide igual por ventana; si la ventana tampoco tiene respuestas, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
+- REMOVED THEN las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
 - AND con respuestas del hilo y ningún subagente, la línea de subagentes dice `no aplica` y la del coste lleva solo el hilo: `Coste de la sesión: 0,95 $ (hilo 0,95 $)`
 - REMOVED AND con la carpeta pero sin ninguna respuesta de la rama pedida, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
 
@@ -262,6 +263,8 @@ Se mide con `tests/WordBudget.Tests.ps1` en la Task 1. El tope nuevo es lo medid
 | `.docs/sdd/tech-stack.md` | 18797 / 18800 | 3 | medido tras escribir + 2 % (~19 300) |
 
 ## Enmiendas
+
+- 2026-10-19 — «Sin transcripts, "no medido"»: la ventana también se aplica a un worktree sin carpeta de transcripts, que es el caso de la 0201; el `no medido (sin transcripts…)` queda para cuando la ventana tampoco tiene respuestas — sin ese cambio, la spec no arreglaba el caso que la motiva — aprobada: opción «Sí, enmienda» — Task 4
 
 - 2026-10-19 — Punto 3: la columna de id cuenta solo si es la primera de la tabla (`#`, `id` o `Id`), y un hueco `<…>` de plantilla no es un id. La tabla «Patches» lleva `Id` en segunda posición, y un patch está a la vez en ella y en su fila «Patch:» de «Próximo», que es el flujo previsto; las plantillas repiten `<id>`. Precisa la exclusión que la spec ya hacía de «Patches», sin cambiar ningún THEN — Task 3
 

@@ -3,7 +3,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { parseJsonFile } from '../cli/json-file.ts';
 import { readClock, type Clock } from './clock.ts';
-import { elapsedMinutes, isInProgress, modelTotals, readResponses, type ModelTotals } from './usage.ts';
+import { elapsedMinutes, isInProgress, modelTotals, readResponses, type ModelTotals, type Selector } from './usage.ts';
 
 export interface Dispatch {
   description: string;
@@ -46,16 +46,18 @@ function describeDispatch(file: string): string {
   return description ? String(description) : fallback;
 }
 
-function readDispatch(file: string, branch: string): Dispatch | null {
-  const responses = readResponses(file, branch);
+function readDispatch(file: string, selector: Selector): Dispatch | null {
+  const responses = readResponses(file, selector);
   if (responses.length === 0) return null;
   return { description: describeDispatch(file), totals: modelTotals(responses), minutes: elapsedMinutes(responses), inProgress: isInProgress(responses) };
 }
 
-export function readSession(folders: string[], branch: string): Session {
+export function readSession(folders: string[], selector: Selector): Session {
   const files = folders.flatMap(threadFiles);
-  const thread = files.flatMap((file) => readResponses(file, branch));
+  const thread = files.flatMap((file) => readResponses(file, selector));
   const agents = folders.flatMap(agentFiles).sort((first, second) => first.localeCompare(second));
-  const dispatches = agents.map((file) => readDispatch(file, branch)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
-  return { thread: modelTotals(thread), dispatches, clock: readClock(files, branch) };
+  const dispatches = agents.map((file) => readDispatch(file, selector)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
+  return { thread: modelTotals(thread), dispatches, clock: readClock(files, selector) };
 }
+
+export const isEmpty = (session: Session): boolean => session.thread.size === 0 && session.dispatches.length === 0;

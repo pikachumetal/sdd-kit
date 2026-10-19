@@ -1,6 +1,6 @@
 import { isRecord, sameText, type Json } from '../cli/records.ts';
 import { readText } from '../cli/files.ts';
-import { readResponses } from './usage.ts';
+import { inRange, readResponses, type Selector } from './usage.ts';
 
 export interface Clock {
   hours: number;
@@ -82,8 +82,16 @@ function readUserEntry(state: WaitState, entry: Json, time: number): void {
   state.lastAgent = null;
 }
 
-function timeline(file: string): Timeline | null {
-  const entries = readText(file).split(/\r\n|\n|\r/).map(parseEntry).filter((entry): entry is Json => entry !== null);
+interface Range {
+  from?: number;
+  to?: number;
+}
+
+const rangeOf = ({ until, window }: Selector): Range => (window === undefined ? { to: until } : { from: window.from, to: window.to });
+
+function timeline(file: string, range: Range): Timeline | null {
+  const all = readText(file).split(/\r\n|\n|\r/).map(parseEntry).filter((entry): entry is Json => entry !== null);
+  const entries = all.filter((entry) => inRange(Date.parse(String(entry.timestamp)), range.from, range.to));
   if (entries.length === 0) return null;
   const state: WaitState = { lastAgent: null, questions: new Map(), waitMillis: 0, waits: 0 };
   const times = entries.map((entry) => Date.parse(String(entry.timestamp)));
@@ -91,15 +99,15 @@ function timeline(file: string): Timeline | null {
     if (sameText(entry.type, 'assistant')) readAgentEntry(state, entry, times[index]!);
     else readUserEntry(state, entry, times[index]!);
   });
-  return { first: times.reduce(earlier), last: times.reduce(later), waitMillis: state.waitMillis, waits: state.waits };
+  return { first: range.from ?? times.reduce(earlier), last: times.reduce(later), waitMillis: state.waitMillis, waits: state.waits };
 }
 
 const formatStart = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
 
-export function readClock(files: string[], branch: string): Clock | null {
+export function readClock(files: string[], selector: Selector): Clock | null {
   const timelines = files
-    .filter((file) => readResponses(file, branch).length > 0)
-    .map(timeline)
+    .filter((file) => readResponses(file, selector).length > 0)
+    .map((file) => timeline(file, rangeOf(selector)))
     .filter((item): item is Timeline => item !== null);
   if (timelines.length === 0) return null;
   const clockMillis = timelines.reduce((total, item) => total + item.last - item.first, 0);
