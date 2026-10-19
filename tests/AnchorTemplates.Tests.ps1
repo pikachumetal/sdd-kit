@@ -110,10 +110,14 @@ Describe 'Plantillas de documentos de la 3.0.0' {
 
   It 'el índice marca 2.x <Template> con la feature que la retira' -ForEach @(
     @{ Template = 'client-changelog-template.md'; Feature = '0177' }
-    @{ Template = 'roadmap-template.md'; Feature = '0157' }
   ) {
     $row = (Get-KitFileContent 'skills/sdd-templates/SKILL.md') -split "`n" | Where-Object { $_ -match "\[$([regex]::Escape($Template))\]" }
     $row | Should -Match ([regex]::Escape("2.x: la retira la $Feature"))
+  }
+
+  It 'el índice marca roadmap-template.md deprecada, con su salida en la 4.0.0' {
+    $row = (Get-KitFileContent 'skills/sdd-templates/SKILL.md') -split "`n" | Where-Object { $_ -match '\[roadmap-template\.md\]' }
+    $row | Should -Match ([regex]::Escape('2.x, deprecada: la leen `migrations/v2.3.0.md` y los proyectos sin migrar; se borra en la 4.0.0'))
   }
 }
 

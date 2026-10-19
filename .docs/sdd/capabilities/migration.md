@@ -51,7 +51,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN ejecuta `sdd upgrade --root <raíz>`, que lista las migraciones posteriores a la `version` de `sdd-kit.json` hasta la mayor del kit cargado, en orden SemVer
 - AND sin `sdd-kit.json`, la pregunta de si es un proyecto anterior a la v0.2.0, la recomendada, o una init de la 2.x que se cortó la hace el predicado 4 de `sdd-init`: si la sesión aún no la respondió, `sdd-upgrade` invoca `sdd-init`; con «anterior a la v0.2.0», `sdd-upgrade` las aplica todas, y con «init cortada», sigue la init sin migrar
 - AND las aplica en orden, con gate por fichero, y al acabar cada versión ejecuta su «Verificación», escribe el marcador con `sdd upgrade --mark <versión>` y hace su commit
-- AND no regenera los documentos de anclaje ni vuelca `capabilities/`
+- AND no regenera los documentos de anclaje desde cero ni vuelca `capabilities/`: una migración solo los reestructura con una tabla de destinos y su gate
 - AND con la `version` igual a la mayor migración del kit cargado, `sdd upgrade` escribe «el proyecto ya está al día con el kit <versión>» y el agente no toca nada
 - AND un `sdd-kit.json` con la clave `init` no se migra: `sdd upgrade` escribe «init en curso: sigue con sdd-init», y la init sigue por `sdd-init` ([`onboarding`](onboarding.md))
 - AND pedida a `sdd-init`, la migración la hace `sdd-upgrade`: `sdd-init` no aplica ninguna migración
@@ -214,10 +214,52 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND con el dev-lead presente, presenta el borrado y espera su «sí» antes de ejecutarlo
 - AND lo mismo vale para un paso sin marca que borra una sección entera o una clave de un JSON, o cambia la ruta de un fichero; un paso que solo sustituye un nombre, o uno que su migración marca «sin gate», se ejecuta sin preguntar
 
+### La migración a v3.0.0 lleva los documentos de producto y de operaciones a su sitio
+
+- GIVEN un proyecto en 2.3.4 con `.docs/sdd/mission.md` («Por qué existe», «Usuarios y roles», «Qué es y qué no es», «Dominio» con «**Franja**: una hora reservable»), `tech-stack.md` («Tecnologías» con Node 22 y Vitest, que ya fija `package.json`; «Comandos»; «Testing»; «Decisiones abiertas» con «¿avisos por correo?») y `environments.md`, todo commiteado, y el dev-lead presente
+- WHEN pide «actualízame al kit»
+- THEN el agente presenta una tabla con cada sección, su destino y el texto resultante de lo que se reescribe, y no mueve nada antes de su «sí»
+- AND tras el «sí» hay un `PRODUCT.md` en la raíz con `## Users`, `## Product Purpose`, `## Capabilities and Constraints` y `## Terminology` con «**Franja**:», y un `.docs/sdd/steering/operations.md` con `## Comandos`, `## Testing` y `## Entornos`
+- AND «¿avisos por correo?» es una fila de Later en `ROADMAP.md` con el `B<n>` siguiente al mayor del Backlog, «Tecnologías» no está en ningún documento, y no quedan `mission.md`, `tech-stack.md` ni `environments.md` en `.docs/sdd/`
+- AND el informe y el cuerpo del commit dicen `git show <sha>:.docs/sdd/mission.md`, y lo mismo para los otros dos
+
+### La migración a v3.0.0 mueve los documentos de estado a `steering/` y el changelog a la raíz
+
+- GIVEN el mismo proyecto con `.docs/sdd/constitution.md` (que enlaza `decisions/0001-…`), `architecture.md`, `estimation.md`, `estimation-log.md` y `changelog.md`, un `CLAUDE.md` y un `README.md` que enlazan `.docs/sdd/constitution.md`, y una ADR que enlaza `../mission.md`
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
+- THEN los cuatro primeros están en `.docs/sdd/steering/` con su contenido intacto salvo el enlace, que pasa a `../decisions/0001-…`; `estimation-log.md` lo ha regenerado `sdd estimation log`, y `changelog.md` es `CHANGELOG.md` en la raíz
+- AND los enlaces de `CLAUDE.md` y `README.md` apuntan a `.docs/sdd/steering/constitution.md`, la ADR no cambia y el informe la lista con su enlace roto
+- AND `specs/`, `capabilities/`, `decisions/` y `releases/` siguen donde estaban
+
+### La migración a v3.0.0 lleva el roadmap a Now, Next y Later
+
+- GIVEN un `roadmap.md` 2.x sin release en preparación, con la 0021 y la 0022 en «Próximo» (la 0022 con «tras 0021» y «`proposal: 0019`»), B3 en «Backlog», el patch 0023 posterior a la última release cerrada y el 0017 anterior, y la release cerrada con `validaciones pendientes: 0016`
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla, con el Tamaño `M` para la 0021 y la 0022
+- THEN `ROADMAP.md` tiene en Now la 0021 y la 0022 con su brief plegado (la 0022 con «Tras» 0021 y `**Requisitos:**` hacia la propuesta 0019), Tamaño `M`, y el patch 0023 con `✅` y `**Carril:** patch`; en Later, la B3
+- AND no aparecen ni el 0017 ni la 0016, y la tabla y el informe nombran la 0016 como validación pendiente que sigue en su walkthrough
+- AND la tabla deja el Tamaño como «lo decide el dev-lead» antes de su respuesta, sin proponer uno
+- AND `sdd roadmap check --path .docs/sdd` escribe `Roadmap válido`, y no queda `.docs/sdd/roadmap.md`
+
+### La migración a v3.0.0 lleva la deuda a `debt.md` sin inventar celdas
+
+- GIVEN una «Deuda técnica» 2.x con una fila `**Actuar** → 0022` cuyo «Ítem» enlaza su ticket, una `**Actuar** → sin fila` sin evidencia, una `**Esperar 2.º ticket**`, una `**Descartada**: duplica la 0018`, una con destino `versión siguiente` y una saldada posterior a la última release cerrada
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla
+- THEN `.docs/sdd/steering/debt.md` tiene la primera en «Lista» con destino 0022 y el ticket como evidencia, y la saldada en «Lista» con su prefijo `**[… saldada …]**` intacto
+- AND la de `sin fila` y la de `versión siguiente` están en «Por triar», la de `**Esperar**` en «En espera» y la `**Descartada**` en «Descartadas» con «duplica la 0018» como motivo
+- AND cada «Fecha» es la del commit que añadió su fila al roadmap, y la tabla dice de dónde salió
+- AND `sdd roadmap check --path .docs/sdd` escribe `Roadmap válido`
+
+### Sin el dev-lead, la migración a v3.0.0 no mueve nada
+
+- GIVEN el mismo proyecto y la petición «actualízame al kit, el dev-lead no está»
+- WHEN el agente llega a los pasos de la v3.0.0
+- THEN ningún documento cambia de sitio ni de forma, y el informe lista cada tabla de destinos como pendiente, con cómo reanudarla
+- AND no hay commit de la migración ni cambia el marcador
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración.
-- **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case.
+- **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.
+- **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case, salvo los tres documentos de la raíz que fija el Art. IV en mayúsculas: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`.
 - **Límites**: no aplica.
 - **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado (migrar el proyecto); en el segundo caso el agente ofrece migrar antes de atender la primera petición y no migra sin el «sí», salvo con `control.profile: unattended`, que ni ofrece ni migra y lo anota en su mensaje final; un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado; un paso sin marca que borra un fichero, una sección entera o una clave, o que cambia la ruta de un fichero, es un gate.
-- **Regla ante conflicto**: un paso que su migración marca «sin gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca.
+- **Regla ante conflicto**: un paso que su migración marca «sin gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro.
