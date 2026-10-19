@@ -54,7 +54,7 @@ case "$SC" in
 esac
 export TURN2="${TURN2:-}"
 
-[ "$SC" = v1 ] && MAX_TURNS="${MAX_TURNS:-60}"
+[ "$SC" = v1 ] && MAX_TURNS="${MAX_TURNS:-90}"
 MAX_TURNS="${MAX_TURNS:-30}" subject_launch "$ASK"
 [ "$SC" = v1 ] && subject_converse "$HERE/persona-v2x.md" 12
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## sdd-kit.json"; cat "$R/.docs/sdd/sdd-kit.json"
@@ -62,5 +62,5 @@ MAX_TURNS="${MAX_TURNS:-30}" subject_launch "$ASK"
     echo "## ficheros"; (cd "$R" && find . -path ./.git -prune -o -name '*.md' -print | sort)
     echo "## sdd roadmap check"; "$NODE" "$KIT/cli/bin/sdd.js" roadmap check --path "$R/.docs/sdd" 2>&1
     echo "## sdd capability check"; "$NODE" "$KIT/cli/bin/sdd.js" capability check --path "$R/.docs/sdd" 2>&1
-    for f in ROADMAP.md .docs/sdd/steering/debt.md PRODUCT.md .docs/sdd/steering/operations.md CLAUDE.md README.md .docs/sdd/steering/constitution.md; do [ -f "$R/$f" ] && { echo "## $f"; cat "$R/$f"; }; done
+    for f in ROADMAP.md .docs/sdd/steering/debt.md PRODUCT.md .docs/sdd/steering/operations.md CLAUDE.md README.md .docs/sdd/steering/constitution.md .docs/sdd/steering/estimation.md .claude/commands/pregunta.md; do [ -f "$R/$f" ] && { echo "## $f"; cat "$R/$f"; }; done
   fi; } | subject_save
