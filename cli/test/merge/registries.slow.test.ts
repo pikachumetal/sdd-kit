@@ -86,3 +86,23 @@ describe('la unión de trozos en un registro no duplica filas', () => {
     expect(fileAt(fx, 'CHANGELOG.md').match(/Feature 0201/g)).toHaveLength(1);
   });
 });
+
+describe('los avisos solo salen con el merge hecho', () => {
+  it('si otro fichero queda en conflicto, no avisa de filas repetidas', async () => {
+    const fx = mergeFixture('aviso-abortado');
+    const path = '.docs/sdd/steering/debt.md';
+    const debt = (rows: string[]) => ['# Deuda', '', '| Ítem | Origen | Fecha |', '| --- | --- | --- |', '| base | x | 2026-10-01 |', ...rows, '', '## En espera', ''].join('\n');
+    seedBase(fx, path, debt([]));
+    for (const id of ['0001', '0002']) {
+      write(join(fx.wt, id), path, debt([`| Lento | ticket ${id} | 2026-10-19 |`]));
+      write(join(fx.wt, id), 'README.md', `cambio de ${id}\n`);
+      saveAll(join(fx.wt, id), `docs: deuda y readme de ${id}`);
+    }
+
+    const result = await mergeBoth(fx);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('merge: conflicto en');
+    expect(result.text).not.toContain('registros:');
+  });
+});

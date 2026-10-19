@@ -8,7 +8,7 @@ export interface MergirafOptions {
 }
 
 const MERGIRAF = ['mergiraf'];
-const MARKER = /^(<<<<<<<|\|\|\|\|\|\|\||=======|>>>>>>>)/m;
+export const MARKER = /^(<<<<<<<|\|\|\|\|\|\|\||=======|>>>>>>>)/m;
 
 export function mergirafRuns(command = MERGIRAF): boolean {
   const probe = spawnSync(command[0], [...command.slice(1), '--version'], { stdio: 'ignore', windowsHide: true });

@@ -67,6 +67,23 @@ describe.skipIf(!mergirafRuns())('mergiraf resuelve lo que queda', () => {
   });
 });
 
+describe.skipIf(!mergirafRuns())('mergiraf con otro conflicto que queda', () => {
+  it('no dice resuelto si el merge acaba abortado', async () => {
+    const fx = twoMethodsFixture('mergiraf-abortado');
+    for (const id of ['0001', '0002']) {
+      write(join(fx.wt, id), 'README.md', `cambio de ${id}\n`);
+      saveAll(join(fx.wt, id), `docs: readme de ${id}`);
+    }
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+    expect(result.code).toBe(1);
+    expect(result.text).not.toContain('mergiraf: resuelto');
+    expect(result.text).toContain('merge: conflicto en');
+  });
+});
+
 describe('sin mergiraf', () => {
   it('el conflicto falla como hoy y no se nombra mergiraf', async () => {
     const fx = twoMethodsFixture('sin-mergiraf');
