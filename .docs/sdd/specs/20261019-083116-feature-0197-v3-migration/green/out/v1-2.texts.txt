@@ -1,0 +1,82 @@
+--- [5]
+Let me look at what the project has.
+
+--- [10]
+La migración pendiente es la **v3.0.0**, de la 2.3.4 a la 3.0.0. Reestructura documentos, así que necesito tu «sí» a la tabla antes de mover nada. Todavía no he tocado ningún fichero. El árbol está limpio y el sha de partida es `5debfae`.
+
+## Tabla de destinos
+
+**Pasos 1–3: mover y regenerar.**
+| Origen | Destino |
+| --- | --- |
+| `.docs/sdd/changelog.md` | `CHANGELOG.md`, en la raíz, con `git mv`. No hay ninguno en la raíz, así que no hay fusión. |
+| `constitution.md`, `architecture.md`, `estimation.md` y `estimation-log.md` | `.docs/sdd/steering/<mismo nombre>`, con `git mv`. Los enlaces se ajustan a `../decisions/0001-…`. |
+| `steering/estimation-log.md` | Se regenera con `sdd estimation log --root .`. |
+
+**Paso 4: producto y operaciones.**
+| Origen | Destino |
+| --- | --- |
+| `mission.md` → «Por qué existe» | `PRODUCT.md` → `## Product Purpose` |
+| `mission.md` → «Usuarios y roles» | `PRODUCT.md` → `## Users` |
+| `mission.md` → «Qué es y qué no es» | `PRODUCT.md` → `## Capabilities and Constraints` |
+| `mission.md` → «Dominio» | `PRODUCT.md` → `## Terminology`. El texto resultante es `**Franja**: una hora reservable, de en punto a en punto.` No lleva `_Evitar_`, porque el original no nombra sinónimos. |
+| `tech-stack.md` → «Comandos», «Testing» y «Frontend» | `steering/operations.md`, secciones del mismo nombre, tal cual. |
+| `tech-stack.md` → «Tecnologías» (Node 22, Vitest 3) | Sale de `operations.md`. Primero hay que comprobar `package.json`, y si no los declara, van a `steering/architecture.md`. |
+| `tech-stack.md` → «Decisiones abiertas» | Una fila en Later de `ROADMAP.md`: «¿Avisos por correo al reservar?», con id `B4` (el mayor del Backlog es B3). |
+| `environments.md` | `operations.md` → `## Entornos`, condensado al marcador `.sdd-env.json`, las tres entradas (`env:setup`, `env:clean` y `env:status`) y el runner. Si no hay runner, esa parte queda vacía. |
+
+**Paso 5: `roadmap.md` → `ROADMAP.md`.** No hay ninguna release en preparación, así que «Próximo» va a Now.
+| Fila | Destino | Detalles |
+| --- | --- | --- |
+| 0021 Cancelar una reserva propia | Now, `⏳` | Externo: `SAL-41`. Toca: `src/app.js`. Carril: `feature`. Tamaño: **lo decides tú**. |
+| 0022 Avisar de la cancelación a recepción | Now, `⏳` | Tras: `0021`. Requisitos: `0019`. Toca: `src/app.js` y `src/notify.js`. Salda: la fila de deuda `cancel` no comprueba el autor (SAL-45), que apunta con `**Actuar**: 0022`. Tamaño: **lo decides tú**. |
+| 0023 Patch (2026-09-25), posterior a la v1.2.0 | Now, `✅` | Carril: `patch`. Requisitos: su `patch.md`. Tamaño: **lo decides tú**. |
+| B3 Exportar las reservas a CSV | Later, `B3` | Origen: «Recepción, reunión del 2026-09-18». Tamaño y Tras: `—`. |
+| Decisión abierta de `tech-stack` | Later, `B4` | Ver el paso 4. |
+| «Releases cerradas» v1.2.0 | Sale | Vive en `CHANGELOG.md`. Su `validaciones pendientes: 0016` no va a Now. Sigue en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`. |
+
+El tamaño (`S`, `M` o `L`) no lo deduzco, y el gate no se cierra sin él. Dime el de 0021, 0022 y 0023. Después de aplicar, `git rm .docs/sdd/roadmap.md`.
+
+**Paso 6: deuda → `steering/debt.md`.** La fecha de todas las filas sale del único commit que toca el roadmap (`5debfae`, 2026-10-19). No es la fecha real de alta de cada fila, así que dime si prefieres otra.
+| Fila | Sección | Celdas |
+| --- | --- | --- |
+| Dos reservas en la misma franja (patch 0023, saldada, posterior a la última release) | Lista | El «Ítem» va con su prefijo intacto. Origen: SAL-44. |
+| `cancel` no comprueba el autor (SAL-45) | Lista | Destino: `0022`. Evidencia: ticket SAL-45. Origen: SAL-45. Impacto: «Alto — cualquiera cancela cualquier reserva». |
+| Mensajes de error mezclan castellano e inglés | Por triar | Origen: `roadmap 2.x`. Fecha: 2026-10-19. Impacto: «Bajo — confunde». |
+| El test de franjas falla a veces en CI | En espera | Falta: «un segundo fallo con su log». Origen: `roadmap 2.x`. Fecha: 2026-10-19. Impacto: «Medio — rojo intermitente». |
+| Validar el formato de la franja en la API | Descartadas | Motivo: «duplica la 0018». Origen: `roadmap 2.x`. Fecha: 2026-10-19. Impacto: «Bajo». |
+| Pasar `src/app.js` a TypeScript | Por triar | Destino «versión siguiente». Origen: `roadmap 2.x`. Fecha: 2026-10-19. Impacto: «Bajo». |
+
+**Paso 7: enlaces.**
+- `CLAUDE.md` pasa a `steering/constitution.md`, `PRODUCT.md` y `ROADMAP.md`.
+- `README.md` pasa a `.docs/sdd/steering/constitution.md`.
+- `capabilities/bookings.md` se revisa y se corrige si apunta a rutas viejas.
+- El enlace de la constitución a la ADR 0001 pasa a `../decisions/…`.
+- Las ADR no se tocan. El informe listará sus enlaces rotos, si los hay.
+
+Al terminar corro la verificación, marco la versión con `sdd upgrade --mark 3.0.0` y hago el commit `chore(sdd): migrar al kit v3.0.0`.
+
+**¿Apruebas la tabla (sí) y me das los tamaños de 0021, 0022 y 0023?** Si cambias algún destino, aplico el tuyo. Si no contestas, la migración queda pendiente sin tocar nada. Para reanudarla, aprueba la tabla y vuelve a pedir la migración.
+
+--- [19]
+El proyecto está en el kit 3.0.0. La migración quedó en un solo commit (`171d84a`, `chore(sdd): migrar al kit v3.0.0`) y `sdd-kit.json` marca ya la versión 3.0.0.
+
+**Qué cambió**
+- **A la raíz:** `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`.
+- **A `.docs/sdd/steering/`:** `constitution.md`, `architecture.md`, `estimation.md`, `estimation-log.md`, `operations.md` y `debt.md`.
+- **Eliminados:** `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md`.
+- **Roadmap:** 0021, 0022 y 0023 están en Now con tamaño M. B3 y B4 están en Later, y B4 es la decisión abierta de `tech-stack`.
+- **Deuda:** las seis filas están repartidas por sección, con la fecha 2026-10-19 en las que la llevan.
+- **Enlaces:** `CLAUDE.md` y `README.md` apuntan a las rutas nuevas.
+- **`estimation-log.md`:** lo regeneró el comando. Estaba vacío, así que no se perdió nada.
+- **Contenido anterior:** `git show 5debfae:.docs/sdd/<doc>.md` recupera `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md`.
+
+**Verificación**
+- `sdd roadmap check` da «Roadmap válido».
+- `sdd capability check` falla con `bookings.md: falta la sección «Requisitos»`. Ya fallaba antes y la migración no toca las capacidades, así que no lo toqué. Cuando quieras, le añado esa sección.
+- Queda un enlace roto en la ADR 0001, que apunta a `../mission.md`. Las ADR son inmutables y no la toqué. El enlace debería ir a `PRODUCT.md`.
+
+**Para revisar**
+- **`package.json`:** no tiene los scripts `env:setup`, `env:clean` y `env:status`, aunque `environments.md` decía que sí. Los copié tal cual a `operations.md`, con `npm run env:setup` como runner. Corrígelo si no existen.
+- **Tecnologías:** Node 22 y Vitest 3 salen de `operations.md` porque ya están en `package.json`.
+
