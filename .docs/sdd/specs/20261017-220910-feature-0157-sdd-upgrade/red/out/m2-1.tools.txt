@@ -1,0 +1,71 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Read: <run>\kit\skills\sdd-init\references\migrations\README.md
+<<< 1	# Migraciones del kit — procedimiento
+2	
+3	Un proyecto ya inicializado (`.docs/sdd/` existe) no se re-inicializa: se migra. Cada fichero `vX.Y.Z.md` de esta carpeta recoge los cambios estructurales que esa versión del kit pide al proyecto, como pasos-predicado que se pueden verificar.
+4	
+5	1. **Desde dónde**: lee `.docs/sdd/sdd-kit.json`. Si no existe, el proyecto es anterior a v0.2.0: se aplican todas.
+6	2. **Hasta dónde**: la mayor versión que tenga fichero en esta carpeta. **Nunca** `plugin.json`, el changelog ni el marcador del propio kit: el canal `npx skills add` no los instala, y dura
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "2.3.4", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+2	
+
+>>> Glob: v2.3.*.md
+<<< <run>\kit\skills\sdd-init\references\migrations\v2.3.0.md
+<run>\kit\skills\sdd-init\references\migrations\v2.3.1.md
+<run>\kit\skills\sdd-init\references\migrations\v2.3.2.md
+<run>\kit\skills\sdd-init\references\migrations\v2.3.4.md
+<run>\kit\skills\sdd-init\references\migrations\v2.3.3.md
+<run>\kit\skills\sdd-init\references\migrations\v2.3.5.md
+
+>>> Read: <run>\kit\skills\sdd-init\references\migrations\v2.3.5.md
+<<< 1	# Migración a v2.3.5 — el documento heredado sale
+2	
+3	Aplica a cualquier proyecto con `.docs/sdd/legacy.md`. Desde la v2.3.5 su contenido vive en las capacidades y el fichero sobra.
+4	
+5	1. **Documento heredado.** Si existe `.docs/sdd/legacy.md`, bórralo con `git rm .docs/sdd/legacy.md`. Si no existe, el paso se salta y lo dices.
+6	2. **Marcador.** Escribir en `.docs/sdd/sdd-kit.json` `"version": "2.3.5"`, el `channel` y `"updated": "<hoy>"`, fusionando: las demás claves se quedan como están.
+7	
+8	**Escribe**: `sdd-kit.json` → `version`, `channel`, `updated`.
+9	
+10	## Verificación
+11	
+12	- 
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd; git ls-files .docs/sdd/legacy.md; git status --short
+<<< changelog.md
+constitution.md
+legacy.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+.docs/sdd/legacy.md
+
+>>> Bash: cd "<run>/repo" && git rm .docs/sdd/legacy.md && cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "2.3.5", "channel": "plugin", "updated": "2026-10-18", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+EOF
+test ! -e .docs/sdd/legacy.md && echo legacy-gone; cat .docs/sdd/sdd-kit.json
+git add .docs/sdd/sdd-kit.json && git commit -q -m "chore(sdd): migrar al kit v2.3.5
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+<<< rm '.docs/sdd/legacy.md'
+legacy-gone
+{"version": "2.3.5", "channel": "plugin", "updated": "2026-10-18", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+warning: in the working copy of '.docs/sdd/sdd-kit.json', LF will be replaced by CRLF the next time Git touches it
+a8a85c0 chore(sdd): migrar al kit v2.3.5
+
+=== RESULTADO (9 turnos, 0.15427930000000004 $)
+He actualizado el proyecto del kit 2.3.4 al 2.3.5. Era la única migración pendiente y no había pasos con gate.
+
+- **`legacy.md`:** lo he borrado con `git rm .docs/sdd/legacy.md`, como pide la migración. Su contenido ya vive en las capacidades. Sigue en el historial de git por si hace falta.
+- **Marcador:** `.docs/sdd/sdd-kit.json` queda con `version: 2.3.5` y `updated: 2026-10-18`. El resto de claves (`channel`, `ids`, `release`) siguen igual.
+- **Verificación:** comprobé que `legacy.md` ya no existe y que el JSON tiene la versión nueva y conserva las demás claves.
+- **Commit:** `a8a85c0 chore(sdd): migrar al kit v2.3.5` en la rama `develop`. No he hecho push.
+
+No he regenerado documentos de anclaje ni tocado specs.

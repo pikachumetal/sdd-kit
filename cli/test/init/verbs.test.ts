@@ -45,7 +45,7 @@ describe('sdd init: arguments', () => {
     expect((await sdd(['init', '--root', project(), '--config', config])).code).toBe(2);
   });
 
-  it.each(['', 'C:/x', '/x', '../x'])('exit 2 on bad ignore «%s»', async (ignore) => {
+  it.each(['', 'C:/x', '/x', '../x', ' .auth/', '.auth/ ', 'a\nb', 'a\r\nb'])('exit 2 on bad ignore «%s»', async (ignore) => {
     const root = project();
     expect((await sdd(['init', '--root', root, '--finish', '--ignore', ignore])).code).toBe(2);
     expect(fs.existsSync(join(root, '.gitignore'))).toBe(false);
@@ -142,6 +142,7 @@ describe('sdd init: nothing is written on a broken file', () => {
     ['broken marker', { [MARKER]: '{' }, '.docs/sdd/sdd-kit.json no es JSON válido: no se toca'],
     ['a non-object node', { [SETTINGS]: '{"enabledPlugins": []}' }, '.claude/settings.json no se puede fusionar: enabledPlugins no es un objeto'],
     ['a marker that is not an object', { [MARKER]: '[1]' }, '.docs/sdd/sdd-kit.json no se puede fusionar: la raíz no es un objeto'],
+    ['settings that are not an object', { [SETTINGS]: '[]' }, '.claude/settings.json no se puede fusionar: la raíz no es un objeto'],
   ];
 
   it.each(cases)('exit 1 and no writes on %s', async (_name, files, message) => {

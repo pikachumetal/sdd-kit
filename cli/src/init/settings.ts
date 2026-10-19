@@ -20,21 +20,21 @@ function noteFor(path: string, current: unknown): string {
   return `${path}: se deja ${JSON.stringify(current)}`;
 }
 
-function mergeNode(target: Json, wanted: Json, prefix: string, notes: string[]): void {
+function mergeNode(target: Json, wanted: Json, prefix: string): string[] {
+  const notes: string[] = [];
   for (const [key, value] of Object.entries(wanted)) {
     const path = prefix ? `${prefix}.${key}` : key;
     if (!(key in target)) target[key] = structuredClone(value);
     else if (isRecord(value)) {
       if (!isRecord(target[key])) throw new DomainError(`.claude/settings.json no se puede fusionar: ${path} no es un objeto`);
-      mergeNode(target[key], value, path, notes);
+      notes.push(...mergeNode(target[key], value, path));
     } else if (target[key] !== value) notes.push(noteFor(path, target[key]));
   }
+  return notes;
 }
 
-export function mergeSettings(current: unknown, memoryOff: boolean): { merged: Json; notes: string[] } {
+export function mergeSettings(current: Json | null, memoryOff: boolean): { merged: Json; notes: string[] } {
   const merged: Json = structuredClone(current ?? {});
   if (memoryOff) merged[MEMORY_KEY] = false;
-  const notes: string[] = [];
-  mergeNode(merged, INIT_SETTINGS, '', notes);
-  return { merged, notes };
+  return { merged, notes: mergeNode(merged, INIT_SETTINGS, '') };
 }

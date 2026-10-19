@@ -1,6 +1,6 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
-  $script:MigrationsDir = Join-Path $script:RepoRoot 'skills/sdd-init/references/migrations'
+  $script:MigrationsDir = Join-Path $script:RepoRoot 'skills/sdd-upgrade/references/migrations'
 
   function Get-KitFile([string]$RelativePath) {
     return Get-Content (Join-Path $script:RepoRoot $RelativePath) -Raw
@@ -20,7 +20,7 @@ BeforeAll {
       @(Get-ChildItem (Join-Path $skillDir 'references') -Filter *.md -File -ErrorAction SilentlyContinue)
     $cli = @(Get-ChildItem (Join-Path $script:RepoRoot 'cli/src/init') -Filter *.ts -File -ErrorAction SilentlyContinue)
     $files = $own + @($own | ForEach-Object { Get-LinkedMarkdown $_ }) + $cli
-    $readable = $files | Where-Object { $_.FullName -notmatch 'references[\\/]migrations[\\/]' } | Sort-Object FullName -Unique
+    $readable = $files | Where-Object { $_.FullName -notmatch 'references[\\/]migrations[\\/]|skills[\\/]sdd-upgrade[\\/]' } | Sort-Object FullName -Unique
     return ($readable | ForEach-Object { Get-Content $_.FullName -Raw }) -join "`n"
   }
 
@@ -61,8 +61,8 @@ Describe 'Paridad migración–init' {
     (Get-InitCorpus 'sdd-init').Contains('control.inventedKey') | Should -BeFalse
   }
 
-  It 'el README de migraciones fija la regla de la línea **Escribe**' {
-    Get-KitFile 'skills/sdd-init/references/migrations/README.md' | Should -Match '\*\*Escribe\*\*'
+  It 'sdd-upgrade fija la regla de la línea **Escribe**' {
+    Get-KitFile 'skills/sdd-upgrade/SKILL.md' | Should -Match '\*\*Escribe\*\*'
   }
 }
 
@@ -83,13 +83,13 @@ Describe 'Configuración y log que deja la init' {
   }
 
   It 'la migración a v2.0.0 ordena ids, control, configuración, memoria, la retirada de sdd-start-release, capacidades, nombres de feature, marketplace y marcador' {
-    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-upgrade/references/migrations/v2.0.0.md'
     $steps = [regex]::Matches($migration, '(?m)^\d+\. \*\*([^*]+)\*\*') | ForEach-Object { $_.Groups[1].Value.TrimEnd('.') }
     $steps | Should -Be @('Modo de numeración', 'Claves de control', 'Configuración del proyecto', 'Memoria automática', '`sdd-start-release` retirada', 'Historial de las capacidades', 'Propósito de las capacidades', 'Nombres de las skills de feature', 'Marketplace de superpowers', 'Marcador')
   }
 
   It 'el paso de memoria nombra la carpeta, el índice y el gate de borrado' {
-    $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
+    $migration = Get-KitFile 'skills/sdd-upgrade/references/migrations/v2.0.0.md'
     foreach ($literal in '~/.claude/projects/<project>/memory/', 'autoMemoryDirectory', 'MEMORY.md', 'pendiente explícito', 'la tabla va igual en el informe') {
       $migration.Contains($literal) | Should -BeTrue -Because "falta $literal"
     }
@@ -151,7 +151,7 @@ Describe 'Tabla de release con Ficheros que toca' {
 }
 
 Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
-  BeforeAll { $script:V2 = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md' }
+  BeforeAll { $script:V2 = Get-KitFile 'skills/sdd-upgrade/references/migrations/v2.0.0.md' }
 
   It 'tiene un paso que sustituye los nombres viejos por sdd-start-feature y sdd-end-feature' {
     $script:V2 | Should -Match '(?s)sdd-start-task.{0,200}sdd-start-feature'
@@ -185,7 +185,7 @@ Describe 'Cada versión del kit tiene su migración' {
 }
 
 Describe 'Migración a v2.3.0 — roadmap' {
-  BeforeAll { $script:V23 = Get-KitFile 'skills/sdd-init/references/migrations/v2.3.0.md' }
+  BeforeAll { $script:V23 = Get-KitFile 'skills/sdd-upgrade/references/migrations/v2.3.0.md' }
 
   It 'declara roadmap.md en su línea **Escribe**' {
     Get-DeclaredTokens $script:V23 | Should -Contain 'roadmap.md'

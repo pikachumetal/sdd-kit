@@ -80,7 +80,7 @@ Describe 'Contrato del modo de ids en los documentos del kit' {
     }
 
     It 'la migración v2.0.0 existe con su verificación' {
-      $migration = Get-KitFile 'skills/sdd-init/references/migrations/v2.0.0.md'
+      $migration = Get-KitFile 'skills/sdd-upgrade/references/migrations/v2.0.0.md'
       $migration | Should -Match 'ids'
       $migration | Should -Match '(?m)^##\s+Verificación'
     }

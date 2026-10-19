@@ -148,7 +148,7 @@ append_persona_cost() {
 kit_version() {
   local plugin migrations
   plugin=$(grep -o '"version"[^,}]*' "$KIT/.claude-plugin/plugin.json" 2>/dev/null | grep -o '[0-9][0-9.]*')
-  migrations=$(ls "$KIT/skills/sdd-init/references/migrations" "$KIT/skills/sdd-init-brownfield/references/migrations" 2>/dev/null | sed -n 's/^v\([0-9.]*\)\.md$/\1/p')
+  migrations=$(ls "$KIT/skills/sdd-upgrade/references/migrations" "$KIT/skills/sdd-init-brownfield/references/migrations" 2>/dev/null | sed -n 's/^v\([0-9.]*\)\.md$/\1/p')
   printf '%s\n' $plugin $migrations | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1
 }
 
