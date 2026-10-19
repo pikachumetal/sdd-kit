@@ -102,7 +102,13 @@ function timeline(file: string, range: Range): Timeline | null {
   return { first: range.from ?? times.reduce(earlier), last: times.reduce(later), waitMillis: state.waitMillis, waits: state.waits };
 }
 
-const formatStart = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
+export const formatMinute = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
+
+// En la ventana, los transcripts se solapan con su inicio común: el reloj es de pared, no la suma de cada uno.
+function clockMillisOf(timelines: Timeline[], { window }: Selector): number {
+  if (window !== undefined) return Math.max(...timelines.map((item) => item.last)) - window.from;
+  return timelines.reduce((total, item) => total + item.last - item.first, 0);
+}
 
 export function readClock(files: string[], selector: Selector): Clock | null {
   const timelines = files
@@ -110,12 +116,12 @@ export function readClock(files: string[], selector: Selector): Clock | null {
     .map((file) => timeline(file, rangeOf(selector)))
     .filter((item): item is Timeline => item !== null);
   if (timelines.length === 0) return null;
-  const clockMillis = timelines.reduce((total, item) => total + item.last - item.first, 0);
+  const clockMillis = clockMillisOf(timelines, selector);
   const waitMillis = timelines.reduce((total, item) => total + item.waitMillis, 0);
   return {
     hours: roundToHundredths((clockMillis - waitMillis) / MILLIS_PER_HOUR),
     clockHours: roundToHundredths(clockMillis / MILLIS_PER_HOUR),
-    start: formatStart(timelines.map((item) => item.first).reduce(earlier)),
+    start: formatMinute(timelines.map((item) => item.first).reduce(earlier)),
     waitMinutes: Math.round(waitMillis / 60_000),
     waits: timelines.reduce((total, item) => total + item.waits, 0),
     sessions: timelines.length,

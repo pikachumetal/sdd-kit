@@ -4,7 +4,7 @@ import { estimationLogPath } from '../cli/layout.ts';
 import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts';
 import { git } from '../git/git.ts';
 import type { MergeAttempt } from './attempt.ts';
-import { dedupeRows, mergeKeyedHunk, tableHeaders, type KeyedMerge } from './keyed.ts';
+import { dedupeRows, idColumn, mergeKeyedHunk, TABLE_SEPARATOR, tableHeaders, type KeyedMerge } from './keyed.ts';
 import { MARKER, mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
 
 const LOG = /estimation-log\.md$/i;
@@ -44,7 +44,7 @@ function writeMerged(path: string, merged: string): boolean {
 }
 
 // La rama destino va primero: en un merge de sincronización es el lado de fuera.
-const inDestinationOrder = (attempt: MergeAttempt, ours: string, theirs: string) => (attempt.destinationIsTheirs ? [theirs, ours] : [ours, theirs]);
+const inDestinationOrder = (attempt: MergeAttempt, ours: string, theirs: string) => (attempt.mergedDestination !== undefined ? [theirs, ours] : [ours, theirs]);
 
 const reportDuplicates = (attempt: MergeAttempt, file: string, ids: string[]) =>
   ids.forEach((id) => attempt.report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
@@ -65,15 +65,26 @@ async function mergeAddedLines(attempt: MergeAttempt, file: string): Promise<boo
 
 const toLines = (text: string) => (text === '' ? [] : text.replace(/\n$/, '').split('\n'));
 
-function mergeHunkById(attempt: MergeAttempt, [, ours, base, theirs]: RegExpMatchArray, headers: Set<string>): KeyedMerge | null {
+// La columna de id es la de la tabla en la que cae el trozo: se busca su cabecera en las filas de encima.
+function columnBefore(content: string, index: number): number {
+  const above = content.slice(0, index).split(/\r?\n/).slice(0, -1);
+  for (let at = above.length - 1; at >= 0 && above[at].startsWith('|'); at--) {
+    if (TABLE_SEPARATOR.test(above[at + 1] ?? '')) return idColumn(above[at]);
+  }
+  return 0;
+}
+
+function mergeHunkById(attempt: MergeAttempt, hunk: RegExpMatchArray, conflict: Conflict): KeyedMerge | null {
+  const [, ours, base, theirs] = hunk;
   const [first, second] = inDestinationOrder(attempt, ours, theirs);
-  return mergeKeyedHunk({ ours: toLines(first), base: toLines(base), theirs: toLines(second) }, headers);
+  const context = { headers: conflict.headers, column: columnBefore(conflict.content, hunk.index ?? 0) };
+  return mergeKeyedHunk({ ours: toLines(first), base: toLines(base), theirs: toLines(second) }, context);
 }
 
 async function mergeRowsById(attempt: MergeAttempt, file: string): Promise<boolean> {
   const conflict = await readConflict(attempt.worktree, file);
   if (conflict === null) return false;
-  const merges = conflict.hunks.map((hunk) => mergeHunkById(attempt, hunk, conflict.headers));
+  const merges = conflict.hunks.map((hunk) => mergeHunkById(attempt, hunk, conflict));
   const resolved = merges.filter((merge): merge is KeyedMerge => merge !== null);
   if (resolved.length !== merges.length) return false;
   let next = 0;
@@ -107,7 +118,6 @@ async function commitResolution(worktree: string, conflicted: string[]): Promise
   return (await git(worktree, ['commit', '--no-edit'])).code === 0;
 }
 
-// Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
 // Mergiraf solo une código: lo que une lo verifica la suite, y en los documentos nadie lo haría.
 const isCode = (file: string) => !file.startsWith('.docs/') && !file.toLowerCase().endsWith('.md');
 
@@ -119,6 +129,7 @@ async function stillConflicted(buffered: MergeAttempt, conflicted: string[], rep
   return [...left.filter((file) => !isCode(file)), ...unsolved];
 }
 
+// Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
 // Los avisos de lo resuelto solo valen si el merge acaba hecho; lo que no se resuelve se dice siempre.
 export async function resolveConflicts(attempt: MergeAttempt, conflicted: string[]): Promise<string[]> {
   const pending: string[] = [];

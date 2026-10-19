@@ -185,10 +185,18 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - WHEN `sdd-archive` cierra el patch 0190
 - THEN esa fila queda con `✅` en «Próximo», y además el patch tiene su fila en «Patches»
 
+### Un id repetido se avisa sin fallar
+
+- GIVEN un `roadmap.md` con la fila `| 0210 | x | ⏳ |` en la línea 12 y otra fila con el id `0210` en la línea 30, en tablas cuya columna de id se llama `#`, `id` o `Id`
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe, después de los fallos, `roadmap.md: aviso: línea 30: el id «0210» ya está en la línea 12`, y sin otros fallos sale con 0
+- AND las tablas sin esa columna (las de «Patches», que empiezan por la fecha, y la deuda) no se miran
+- AND en `ROADMAP.md` de la 3.0.0, un id repetido entre Now, Next o Later, incluidos los `B<n>` de Later, se avisa igual, con el prefijo `ROADMAP.md: `
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el roadmap 3.0.0, en `ROADMAP.md` de la raíz, con la forma de `now-next-later-template.md`; la deuda, en `.docs/sdd/steering/debt.md`, con la de `debt-template.md`; el roadmap 2.x, en `.docs/sdd/roadmap.md`, con la de `roadmap-template.md`, cuyo bloque de ayuda de «Deuda técnica» guarda el formato de cierre que citan los cierres y el de «Release N», la cabecera de su tabla. Qué va en cada sección, en los bloques de ayuda de cada plantilla; lo comprueba `sdd roadmap check`.
 - **Idioma de los nombres**: las secciones de `ROADMAP.md`, `Now`, `Next` y `Later`, en inglés, como las nombra la propuesta 0131; sus columnas, las secciones de `debt.md`, los estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
 - **Límites**: cada roadmap solo lleva las secciones de su plantilla y solo tablas, salvo «Releases cerradas» en la 2.x; `debt.md`, sus cuatro secciones y solo tablas. Una fila saldada y una fila de «Patches» del roadmap 2.x duran hasta el corte de la release siguiente. Una fila de «En espera» caduca, y una de «Descartadas» sale en el corte, con dos releases (versiones `X.Y.0` del changelog) posteriores a su fecha. Later solo lleva filas `⏳` o `⏸️`. La única línea de texto de `ROADMAP.md` es `Perfil de control: <perfil>`, bajo `## Now`.
-- **Avisos**: una línea por fallo del validador, con la regla incumplida. Son avisos, sin fallo: el prefijo de cierre fuera de forma (2.x), la fila de «En espera» que caduca, la descartada que sale en el corte y el roadmap que no se lee cuando están los dos. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.
+- **Avisos**: una línea por fallo del validador, con la regla incumplida. Son avisos, sin fallo: el prefijo de cierre fuera de forma (2.x), la fila de «En espera» que caduca, la descartada que sale en el corte, el roadmap que no se lee cuando están los dos y el id repetido en la columna de id de dos filas. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.
 - **Regla ante conflicto**: el fichero decide las reglas: `ROADMAP.md`, las de la 3.0.0; `.docs/sdd/roadmap.md`, las de la 2.x. Con los dos a la vez, `roadmap check` lee `ROADMAP.md` y avisa del otro; `id next` lee los dos (`feature-ids`). Una fila lleva un solo prefijo de cierre; un cierre posterior lo sustituye. Una feature que está en una release cerrada no tiene fila en una sección abierta: manda la release cerrada.

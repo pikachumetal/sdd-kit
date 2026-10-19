@@ -2,7 +2,7 @@ import type { Json } from '../cli/records.ts';
 import { resolve } from 'node:path';
 import { readPrices, sessionCost, type SessionCost } from './cost.ts';
 import { notMeasuredLines, reportLines, mainModel } from './format.ts';
-import type { Clock } from './clock.ts';
+import { formatMinute, type Clock } from './clock.ts';
 import { isEmpty, readSession, type Session } from './session.ts';
 import { defaultProjectsRoots, transcriptFolders } from './transcripts.ts';
 import { measureWindow, mergedAt, repositoryOf, type Repository } from './window.ts';
@@ -31,18 +31,20 @@ function measured(worktreePath: string, session: Session, window?: WindowInfo): 
 }
 
 function byWindow(repo: Repository, worktreePath: string, options: MeasureOptions): Measurement | null {
-  const result = measureWindow(repo, worktreePath, options.branch, options.now ?? Date.now());
+  const result = measureWindow(repo, { worktreePath, branch: options.branch, now: options.now ?? Date.now() });
   if (result.kind === 'noReflog') return { kind: 'notMeasured', reason: `sin reflog de ${options.branch}: no se sabe cuándo se creó` };
   if (result.kind === 'empty') return null;
   return measured(worktreePath, result.session, { folder: result.folder, from: result.from, to: result.to });
 }
+
+const untilOf = (repo: Repository | null, branch: string): number | undefined => (repo === null ? undefined : (mergedAt(repo, branch) ?? undefined));
 
 export function measureSession(options: MeasureOptions): Measurement {
   const worktreePath = resolve(options.path);
   const roots = options.projectsRoots.length > 0 ? options.projectsRoots : defaultProjectsRoots();
   const folders = transcriptFolders(worktreePath, roots);
   const repo = options.branch === '' ? null : repositoryOf(worktreePath, roots);
-  const own = readSession(folders, { branch: options.branch, until: (repo && mergedAt(repo, options.branch)) ?? undefined });
+  const own = readSession(folders, { branch: options.branch, until: untilOf(repo, options.branch) });
   if (!isEmpty(own)) return measured(worktreePath, own);
   const windowed = repo === null ? null : byWindow(repo, worktreePath, options);
   if (windowed !== null) return windowed;
@@ -50,10 +52,8 @@ export function measureSession(options: MeasureOptions): Measurement {
   return { kind: 'notMeasured', reason: `sin respuestas de ${options.branch || 'ninguna rama'} en los transcripts` };
 }
 
-const minute = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;
-
 function windowLine({ folder, from }: WindowInfo): string {
-  return `- Medición: por ventana — transcripts de ${folder} desde ${minute(from)} (la rama no tiene transcripts propios)`;
+  return `- Medición: por ventana — transcripts de ${folder} desde ${formatMinute(from)} (la rama no tiene transcripts propios)`;
 }
 
 export function textLines(measurement: Measurement): string[] {
@@ -98,6 +98,6 @@ export function toJson(measurement: Measurement): object {
     subagents: dispatchesJson(session),
     cost: costJson(cost),
     real: realJson(session.clock),
-    ...(window === undefined ? {} : { window: { folder: window.folder, from: minute(window.from), to: minute(window.to) } }),
+    ...(window === undefined ? {} : { window: { folder: window.folder, from: formatMinute(window.from), to: formatMinute(window.to) } }),
   };
 }

@@ -35,6 +35,7 @@ describe('los trozos se calculan con histogram', () => {
     const result = await runMerge(join(fx.wt, '0002'), ['--push']);
 
     expect(result.code, result.text).toBe(0);
+    expect(result.text).not.toContain('mergiraf');
     expect(git(fx.repo, 'show', 'develop:src/f.c')).toBe([fn('a', 1), fn('c', 30), fn('b', 2)].join('\n').trimEnd());
   });
 });

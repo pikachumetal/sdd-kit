@@ -33,7 +33,19 @@ function hasOwnTranscripts(repo: Repository, branch: string): boolean {
   return path !== undefined && !isEmpty(readSession(transcriptFolders(resolve(path), repo.roots), { branch }));
 }
 
-function windowEnd(repo: Repository, branch: string, from: number, now: number): number {
+interface Span {
+  branch: string;
+  from: number;
+  now: number;
+}
+
+export interface WindowRequest {
+  worktreePath: string;
+  branch: string;
+  now: number;
+}
+
+function windowEnd(repo: Repository, { branch, from, now }: Span): number {
   const createdLater = localBranches(repo.root)
     .filter((other) => other !== branch)
     .map((other) => ({ other, start: branchStart(repo.root, other)?.time ?? -Infinity }))
@@ -47,18 +59,23 @@ function countable(repo: Repository): TimeWindow['countable'] {
   const merges = new Map<string, number | null>();
   return (branch, time) => {
     if (!merges.has(branch)) merges.set(branch, mergedAt(repo, branch));
-    const merged = merges.get(branch);
-    return merged !== null && merged !== undefined && merged < time;
+    const merged = merges.get(branch) ?? null;
+    return merged !== null && merged < time;
   };
 }
 
+const escaped = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// shortcut: reconoce la sesión que crea la rama (-b, -B, -c, -C, --branch o git [-C <ruta>] branch); una sesión que
+// sigue tras un /clear sin volver a crearla no cuenta. Si un cierre lo sufre, añadir los transcripts que nombran el worktree de la rama.
+const creationOf = (branch: string) => new RegExp(`(?:-[bBcC]\\s+|--branch[\\s=]+|git(?:\\s+-C\\s+\\S+)?\\s+branch\\s+)${escaped(branch)}(?![\\w./-])`);
+
 export type WindowResult = { kind: 'noReflog' } | { kind: 'empty' } | ({ kind: 'window' } & Windowed);
 
-export function measureWindow(repo: Repository, worktreePath: string, branch: string, now: number): WindowResult {
+export function measureWindow(repo: Repository, { worktreePath, branch, now }: WindowRequest): WindowResult {
   if (gitSync(repo.root, ['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`]) === null) return { kind: 'empty' };
   const start = branchStart(repo.root, branch);
   if (start === null) return { kind: 'noReflog' };
-  const window = { from: start.time, to: windowEnd(repo, branch, start.time, now), countable: countable(repo) };
+  const window = { from: start.time, to: windowEnd(repo, { branch, from: start.time, now }), countable: countable(repo), createdBy: creationOf(branch) };
   const measured = [...repo.worktrees.values()]
     .map((path) => resolve(path))
     .filter((path) => !samePath(path, worktreePath))

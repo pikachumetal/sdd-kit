@@ -4,7 +4,7 @@ feature: 0202
 title: Cierra lo que quedó abierto en la 0193 y la 0201
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-19
 author: Claude (Opus 5.5)
 approvers:
@@ -263,6 +263,10 @@ Se mide con `tests/WordBudget.Tests.ps1` en la Task 1. El tope nuevo es lo medid
 | `.docs/sdd/tech-stack.md` | 18797 / 18800 | 3 | medido tras escribir + 2 % (~19 300) |
 
 ## Enmiendas
+
+- 2026-10-19 — Punto 8, «qué cuenta»: en la ventana solo cuenta la sesión que creó la rama, no cualquier sesión de una rama ya fusionada. Al medir la propia 0202 se coló la sesión del worktree 0157, que trabajaba en la 0197 ya fusionada y solo nombraba la rama en un `git worktree list`. Reconoce `-b`, `-B`, `-c`, `-C`, `--branch` y `git [-C <ruta>] branch`. Límite, anotado en el código: una sesión que sigue tras un /clear sin volver a crear la rama no cuenta. No cambia ningún THEN: el GIVEN ya habla de la sesión desde la que se creó la rama — fix descubierto 2, al cerrar — aprobada: opción «Sí, solo la que la creó»
+
+- 2026-10-19 — Punto 8, aclaración sin cambio de THEN: «una rama ya fusionada antes de esa respuesta» se mide con su último merge en `merge.into`. Con el primero, lo que pasa entre el primer merge y el del ticket contaría para la rama (punto 9) y para la ventana a la vez. Y «Dónde se prueba»: la limpieza tras fusionar se prueba en `cleanup.slow.test.ts`, un fichero por requisito — revisión final, eje Spec, hallazgos 4 y Minor 7
 
 - 2026-10-19 — «Los registros se unen por id», AND de la cabecera: queda una tabla con las dos filas, no dos cabeceras. El test destapó además un fix: una fila nueva de la rama se insertaba tras las líneas en blanco del trozo y partía la tabla (fix descubierto 1) — aprobada: opción «Sí: una tabla con las dos filas» — Task 5
 

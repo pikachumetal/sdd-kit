@@ -101,6 +101,14 @@ describe('la cabecera de una tabla en la unión por id', () => {
     const hunk = { base: [], ours: [header], theirs: ['| Id | Tarea | Estado | Tamaño |'] };
 
     expect(mergeKeyedHunk(hunk)).toEqual({ lines: [header, '| Id | Tarea | Estado | Tamaño |'], duplicates: ['Id'] });
-    expect(mergeKeyedHunk(hunk, new Set([header, '| Id | Tarea | Estado | Tamaño |']))).toBeNull();
+    expect(mergeKeyedHunk(hunk, { headers: new Set([header, '| Id | Tarea | Estado | Tamaño |']), column: 0 })).toBeNull();
+  });
+});
+
+describe('la columna de id de la tabla del trozo', () => {
+  it('en una tabla cuya columna de id es la segunda, dos filas del mismo día no son un id repetido', () => {
+    const merged = mergeKeyedHunk({ base: [], ours: ['| 2026-10-20 | 0205 | a |'], theirs: ['| 2026-10-20 | 0206 | b |'] }, { headers: new Set(), column: 1 });
+
+    expect(merged).toEqual({ lines: ['| 2026-10-20 | 0205 | a |', '| 2026-10-20 | 0206 | b |'], duplicates: [] });
   });
 });

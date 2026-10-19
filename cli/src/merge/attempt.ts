@@ -7,7 +7,8 @@ export interface MergeAttempt {
   stepName: string;
   output: string[];
   report: (line: string) => void;
-  destinationIsTheirs?: boolean;
+  // En un merge de sincronización la rama destino es el lado que entra: su ref.
+  mergedDestination?: string;
 }
 
 export class MergeConflict extends DomainError {

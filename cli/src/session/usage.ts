@@ -9,6 +9,7 @@ export type ModelTotals = Map<string, Usage>;
 export interface TimeWindow {
   from: number;
   to: number;
+  createdBy: RegExp;
   countable: (branch: string, time: number) => boolean;
 }
 
@@ -43,7 +44,7 @@ function isCounted(line: Json, { branch, until, window }: Selector): boolean {
   if (sameText(line.message.model, '<synthetic>')) return false;
   const time = Date.parse(String(line.timestamp));
   if (window !== undefined) return inRange(time, window.from, window.to) && window.countable(String(line.gitBranch ?? ''), time);
-  return (branch === '' || sameText(line.gitBranch, branch)) && inRange(time, -Infinity, until);
+  return (branch === '' || sameText(line.gitBranch, branch)) && (Number.isNaN(time) || inRange(time, -Infinity, until));
 }
 
 function toUsage(raw: Json): Usage {

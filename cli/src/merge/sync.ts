@@ -29,6 +29,6 @@ export async function syncBranch(options: MergeOptions, io: Io): Promise<void> {
   await assertNothingPending(root, branch);
   const base = await fetchBase(root, { into, remote: await remoteForBranch(root, into) });
   if ((await git(root, ['merge-base', '--is-ancestor', base, 'HEAD'])).code === 0) return io.out(`base: al día: '${base}' ya está en '${branch}'`);
-  await mergeAndClean({ worktree: root, stepName: 'base', report: io.out, destinationIsTheirs: true }, ['--no-edit', base]);
+  await mergeAndClean({ worktree: root, stepName: 'base', report: io.out, mergedDestination: base }, ['--no-edit', base]);
   io.out(`base: integrada '${base}' en '${branch}': ${await shortHead(root)}`);
 }

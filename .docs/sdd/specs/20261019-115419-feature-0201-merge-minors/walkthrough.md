@@ -95,3 +95,5 @@ Minors diferidos de la revisión final. No abro fila de deuda: son de forma y la
 - Una sesión que arranca una feature desde el worktree de otra no deja medir el tiempo con `sdd session tokens`, porque los transcripts cuelgan de la ruta de la primera → aproximado aquí. Es candidato al ticket del kit.
 
 ## 6. Adendas
+
+- 2026-10-19 — Medida real con el `sdd session tokens` de la feature 0202, por ventana: esfuerzo real 0,35 h (reloj de la sesión 0,48 h desde 2026-10-19T11:54Z, sin 8 min de espera al dev-lead), coste de la sesión 5,06 $ (hilo 3,79 $ + subagentes 1,27 $). La §2 da ~0,7 h aproximadas, y el estimation-log la sigue leyendo así porque el cuerpo no se reescribe — feature 0202

@@ -39,7 +39,7 @@ export async function mergeAndClean(attempt: Omit<MergeAttempt, 'output'>, args:
   const merged = await gitWithOutput(attempt.worktree, mergeArgs(args));
   await completeMergeAttempt({ ...attempt, output: merged.output }, merged.code);
   try {
-    await cleanRegistries(attempt.worktree, before, attempt.report);
+    await cleanRegistries(attempt.worktree, attempt.mergedDestination ?? before, attempt.report);
   } catch (error) {
     await undoFailedMerge(attempt.worktree, before);
     throw error;

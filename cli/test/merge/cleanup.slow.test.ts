@@ -117,3 +117,102 @@ describe('tras fusionar, las filas repetidas de los registros se limpian', () =>
     expect(sha(fx.repo, 'develop')).toBe(before);
   });
 });
+
+describe('limpieza: casos de la revisión final', () => {
+  it('dos patches del mismo día no son un id repetido', async () => {
+    const fx = mergeFixture('limpieza-patches');
+    const patches = (rows: string[]) => ['# Roadmap', '', '## Próximo', '', '| # | Ítem | Estado |', '| --- | --- | --- |', '| 0100 | base | ✅ |', '', '## Patches', '', '| Fecha | Id | Descripción |', '| --- | --- | --- |', '| 2026-10-01 | 0001 | base |', ...rows, '', '## Deuda', ''].join('\n');
+    seed(fx, ROADMAP, patches([]));
+    onBranch(fx, '0001', ROADMAP, patches(['| 2026-10-20 | 0205 | a |']));
+    onBranch(fx, '0002', ROADMAP, patches(['| 2026-10-20 | 0206 | b |']));
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).not.toContain('registros:');
+    expect(git(fx.repo, 'show', `develop:${ROADMAP}`)).toContain('| 2026-10-20 | 0205 | a |\n| 2026-10-20 | 0206 | b |');
+  });
+
+  it('en --sync, dos filas distintas que develop ya tenía no se vuelven a avisar', async () => {
+    const fx = mergeFixture('limpieza-sync-ya-avisado');
+    seed(fx, ROADMAP, roadmap(BASE_ROWS));
+    write(fx.seed, ROADMAP, roadmap([...BASE_ROWS, '| 0300 | una | ⏳ |', '| 0300 | otra | ⏳ |']));
+    saveAll(fx.seed, 'docs: develop ya tiene la 0300 dos veces');
+    git(fx.seed, 'push', '-q', fx.remote, 'develop');
+    onBranch(fx, '0002', ROADMAP, roadmap(withRow('0100', '| 0220 | y | ⏳ |')));
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--sync']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).not.toContain('registros:');
+  });
+
+  it('un id en dos secciones del roadmap lleva el aviso de roadmap check', async () => {
+    const fx = mergeFixture('limpieza-secciones-roadmap');
+    const doc = (proximo: string[], release: string[]) => ['# Roadmap', '', '## Próximo', '', '| # | Ítem | Estado |', '| --- | --- | --- |', '| 0100 | base | ✅ |', ...proximo, '', '## Release 1.3', '', '| id | Feature | Origen | Ficheros que toca | Estado |', '| --- | --- | --- | --- | --- |', '| 0110 | f | x | y | ⏳ |', ...release, '', '## Deuda', ''].join('\n');
+    seed(fx, ROADMAP, doc([], []));
+    onBranch(fx, '0001', ROADMAP, doc(['| 0210 | x | ⏳ |'], []));
+    onBranch(fx, '0002', ROADMAP, doc([], ['| 0210 | f | x | y | ⏳ |']));
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toMatch(/\.docs\/sdd\/roadmap\.md: aviso: línea \d+: el id «0210» ya está en la línea \d+/);
+  });
+
+  for (const [path, title] of [['ROADMAP.md', '# Roadmap'], ['.docs/sdd/changelog.md', '# Changelog'], ['.docs/sdd/steering/debt.md', '# Deuda']]) {
+    it(`${path}: una fila idéntica en dos sitios queda una`, async () => {
+      const fx = mergeFixture(`limpieza-${path.length}`);
+      const table = (rows: string[]) => [title, '', '## Sección', '', '| Id | Texto | Estado |', '| --- | --- | --- |', ...rows, '', '## Fin', ''].join('\n');
+      seed(fx, path, table(BASE_ROWS));
+      onBranch(fx, '0001', path, table(withRow('0100', '| 0210 | x | ⏳ |')));
+      onBranch(fx, '0002', path, table(withRow('0130', '| 0210 | x | ⏳ |')));
+      expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+      const result = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+      expect(result.code, result.text).toBe(0);
+      expect(count(git(fx.repo, 'show', `develop:${path}`), '0210')).toBe(1);
+    });
+  }
+
+  it('el commit de limpieza solo toca registros, así que --verified-at lo trata como docs', async () => {
+    const fx = sameRowInTwoPlaces('limpieza-verified-at');
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+    expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
+
+    expect(git(fx.repo, 'show', '--name-only', '--format=', 'develop')).toBe(ROADMAP);
+  });
+});
+
+describe('limpieza: lo repetido se compara con la rama destino', () => {
+  it('en el merge del cierre, dos filas distintas que solo traía la feature se avisan', async () => {
+    const fx = mergeFixture('limpieza-solo-feature');
+    seed(fx, ROADMAP, roadmap(BASE_ROWS));
+    onBranch(fx, '0002', ROADMAP, roadmap([...BASE_ROWS, '| 0300 | una | ⏳ |', '| 0300 | otra | ⏳ |']));
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toContain(`registros: dos filas distintas con el id '0300' en ${ROADMAP}; se quedan las dos, revísalas`);
+  });
+});
+
+describe('limpieza en un --sync sin commits propios', () => {
+  it('con fast-forward, lo que develop ya tenía repetido no se toca', async () => {
+    const fx = mergeFixture('limpieza-sync-ff');
+    seed(fx, ROADMAP, roadmap(BASE_ROWS));
+    git(join(fx.wt, '0002'), 'reset', '-q', '--hard', 'origin/develop');
+    write(fx.seed, ROADMAP, roadmap([...BASE_ROWS, '| 0300 | una | ⏳ |', '| 0300 | una | ⏳ |']));
+    saveAll(fx.seed, 'docs: develop con la 0300 dos veces');
+    git(fx.seed, 'push', '-q', fx.remote, 'develop');
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--sync']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(count(git(join(fx.wt, '0002'), 'show', `HEAD:${ROADMAP}`), '0300')).toBe(2);
+  });
+});

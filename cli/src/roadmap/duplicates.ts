@@ -1,18 +1,14 @@
+import { ID_COLUMNS, TABLE_SEPARATOR as SEPARATOR } from '../merge/keyed.ts';
 import { cells } from './parse.ts';
 
-const SEPARATOR = /^\|[\s:|-]+\|?\s*$/;
-const ID_COLUMNS = ['#', 'id'];
-
-function idColumn(header: string): number {
-  return ID_COLUMNS.includes((cells(header)[0] ?? '').trim().toLowerCase()) ? 0 : -1;
-}
+const firstIsId = (header: string): boolean => ID_COLUMNS.includes((cells(header)[0] ?? '').toLowerCase());
 
 function rowIds(lines: string[]): { id: string; line: number }[] {
   const ids: { id: string; line: number }[] = [];
   let column = -1;
   lines.forEach((line, index) => {
     if (!line.startsWith('|')) column = -1;
-    else if (SEPARATOR.test(lines[index + 1] ?? '')) column = idColumn(line);
+    else if (SEPARATOR.test(lines[index + 1] ?? '')) column = firstIsId(line) ? 0 : -1;
     else if (column >= 0 && !SEPARATOR.test(line)) ids.push({ id: (cells(line)[column] ?? '').trim(), line: index + 1 });
   });
   return ids.filter(({ id }) => id !== '' && id !== '—' && !/^<.*>$/.test(id));

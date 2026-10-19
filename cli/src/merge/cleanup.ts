@@ -8,7 +8,13 @@ import { KEYED_REGISTRIES } from './registries.ts';
 
 type Report = (line: string) => void;
 
-const ROADMAPS = ['.docs/sdd/roadmap.md', 'ROADMAP.md'];
+interface Cleaning {
+  worktree: string;
+  destination: string;
+  report: Report;
+}
+
+const ROADMAPS = KEYED_REGISTRIES.filter((file) => /roadmap\.md$/i.test(file));
 const warnedId = (warning: string) => /«(.+?)»/.exec(warning)?.[1] ?? warning;
 
 async function linesAt(worktree: string, revision: string, file: string): Promise<string[]> {
@@ -16,27 +22,29 @@ async function linesAt(worktree: string, revision: string, file: string): Promis
   return shown.code === 0 ? shown.stdout.split(/\r?\n/) : [];
 }
 
-function newRoadmapWarnings(file: string, lines: string[], before: string[], reported: string[]): string[] {
-  const old = new Set([...duplicateIdWarnings(before).map(warnedId), ...reported]);
-  return duplicateIdWarnings(lines).filter((warning) => !old.has(warnedId(warning))).map((warning) => `${file}: ${warning}`);
+function roadmapWarnings(file: string, lines: string[], known: Set<string>): string[] {
+  return duplicateIdWarnings(lines).filter((warning) => !known.has(warnedId(warning))).map((warning) => `${file}: ${warning}`);
 }
 
-async function cleanFile(worktree: string, before: string, file: string, report: Report): Promise<string[]> {
-  const path = join(worktree, file);
+async function cleanFile(cleaning: Cleaning, file: string): Promise<string[]> {
+  const path = join(cleaning.worktree, file);
   if (!existsSync(path)) return [];
   const content = readFileSync(path, 'utf8');
-  const old = await linesAt(worktree, before, file);
-  const { lines, duplicates, removed } = dedupeNewRows(content.split(/\r?\n/), repeatedIdentities(old));
-  duplicates.forEach((id) => report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
-  if (ROADMAPS.includes(file)) newRoadmapWarnings(file, lines, old, duplicates).forEach(report);
+  const old = await linesAt(cleaning.worktree, cleaning.destination, file);
+  const keep = repeatedIdentities(old);
+  const { lines, duplicates, removed } = dedupeNewRows(content.split(/\r?\n/), keep);
+  duplicates.forEach((id) => cleaning.report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
+  const known = new Set([...duplicates, ...duplicateIdWarnings(old).map(warnedId)]);
+  if (ROADMAPS.includes(file)) roadmapWarnings(file, lines, known).forEach(cleaning.report);
   if (removed.length > 0) writeFileSync(path, lines.join(content.includes('\r\n') ? '\r\n' : '\n'), 'utf8');
   return removed;
 }
 
 // La limpieza va en un commit propio: el merge de --sync cae en la rama de la feature, que puede estar publicada.
-export async function cleanRegistries(worktree: string, before: string, report: Report): Promise<void> {
+// destination es la rama destino antes del merge: lo que ya estaba repetido en ella no se toca.
+export async function cleanRegistries(worktree: string, destination: string, report: Report): Promise<void> {
   const removed: string[] = [];
-  for (const file of KEYED_REGISTRIES) removed.push(...(await cleanFile(worktree, before, file, report)));
+  for (const file of KEYED_REGISTRIES) removed.push(...(await cleanFile({ worktree, destination, report }, file)));
   if (removed.length === 0) return;
   await git(worktree, ['add', '--', ...KEYED_REGISTRIES.filter((file) => existsSync(join(worktree, file)))]);
   const body = `Filas: ${[...new Set(removed)].join(', ')}.`;
