@@ -31,7 +31,13 @@ function withoutMergiraf<T>(body: () => Promise<T>): Promise<T> {
   return body().finally(() => { process.env.PATH = original; });
 }
 
-describe.skipIf(!mergirafRuns())('mergiraf resuelve lo que queda', () => {
+describe('mergiraf, herramienta obligatoria del repo', () => {
+  it('mergiraf está en el PATH', () => {
+    expect(mergirafRuns(), 'mergiraf no está en el PATH: instálalo (tech-stack.md, «Herramientas del repo»)').toBe(true);
+  });
+});
+
+describe('mergiraf resuelve lo que queda', () => {
   it('resuelve dos métodos y dos imports en el mismo sitio, lo dice y verifica el resultado', async () => {
     const fx = twoMethodsFixture('mergiraf-ok');
     const first = await runMerge(join(fx.wt, '0001'), ['--push']);
@@ -67,7 +73,7 @@ describe.skipIf(!mergirafRuns())('mergiraf resuelve lo que queda', () => {
   });
 });
 
-describe.skipIf(!mergirafRuns())('mergiraf con otro conflicto que queda', () => {
+describe('mergiraf con otro conflicto que queda', () => {
   it('no dice resuelto si el merge acaba abortado', async () => {
     const fx = twoMethodsFixture('mergiraf-abortado');
     for (const id of ['0001', '0002']) {
