@@ -21,9 +21,12 @@ kit_with_toy_migration() {
   KIT="$(cygpath -m "$RUN/kit" 2>/dev/null || echo "$RUN/kit")"
 }
 
-cp -r "$HERE/../using-sdd/mold-salas/." "$R/"
-case "$(cell Molde)" in
+MOLD="$(cell Molde)"
+if [ "$MOLD" = v2x ]; then cp -r "$HERE/mold-v2x/." "$R/"; else cp -r "$HERE/../using-sdd/mold-salas/." "$R/"; fi
+case "$MOLD" in
   salas) echo "{\"version\": \"2.3.3\", $MARKER}" | put .docs/sdd/sdd-kit.json ;;
+  # Un proyecto 2.x completo, en 2.3.4: lo que mide la migración a la 3.0.0.
+  v2x) ;;
   # Solo configuración, sin version ni init: el molde trae mission.md y constitution.md de la 2.x.
   salas-noversion) echo '{"ids": {"mode": "sequence"}}' | put .docs/sdd/sdd-kit.json ;;
   salas-legacy)
@@ -33,7 +36,16 @@ case "$(cell Molde)" in
   *) die "molde desconocido en battery.md: $SC" ;;
 esac
 g init -q -b main
-commit "feat: base del molde salas"
+if [ "$MOLD" = v2x ]; then
+  # Dos fechas pasadas: la fecha de una fila de deuda tiene que salir de su commit, no del día del sujeto.
+  late='| Pasar `src/app.js` a TypeScript | Bajo | versión siguiente |'
+  grep -vF "$late" "$R/.docs/sdd/roadmap.md" > "$R/roadmap.tmp" && mv "$R/roadmap.tmp" "$R/.docs/sdd/roadmap.md"
+  GIT_AUTHOR_DATE=2026-09-01T10:00:00 GIT_COMMITTER_DATE=2026-09-01T10:00:00 commit "feat: base del molde salas"
+  awk -v row="$late" '{ print } /^\| `cancel` no comprueba/ { print row }' "$R/.docs/sdd/roadmap.md" > "$R/roadmap.tmp" && mv "$R/roadmap.tmp" "$R/.docs/sdd/roadmap.md"
+  GIT_AUTHOR_DATE=2026-09-15T10:00:00 GIT_COMMITTER_DATE=2026-09-15T10:00:00 commit "docs(roadmap): deuda de TypeScript"
+else
+  commit "feat: base del molde salas"
+fi
 g checkout -q -b develop
 
 case "$SC" in
@@ -42,5 +54,13 @@ case "$SC" in
 esac
 export TURN2="${TURN2:-}"
 
+[ "$SC" = v1 ] && MAX_TURNS="${MAX_TURNS:-60}"
 MAX_TURNS="${MAX_TURNS:-30}" subject_launch "$ASK"
-{ echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## sdd-kit.json"; cat "$R/.docs/sdd/sdd-kit.json"; } | subject_save
+[ "$SC" = v1 ] && subject_converse "$HERE/persona-v2x.md" 12
+{ echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## sdd-kit.json"; cat "$R/.docs/sdd/sdd-kit.json"
+  if [ "$MOLD" = v2x ]; then
+    echo "## ficheros"; (cd "$R" && find . -path ./.git -prune -o -name '*.md' -print | sort)
+    echo "## sdd roadmap check"; "$NODE" "$KIT/cli/bin/sdd.js" roadmap check --path "$R/.docs/sdd" 2>&1
+    echo "## sdd capability check"; "$NODE" "$KIT/cli/bin/sdd.js" capability check --path "$R/.docs/sdd" 2>&1
+    for f in ROADMAP.md .docs/sdd/steering/debt.md PRODUCT.md .docs/sdd/steering/operations.md CLAUDE.md README.md .docs/sdd/steering/constitution.md; do [ -f "$R/$f" ] && { echo "## $f"; cat "$R/$f"; }; done
+  fi; } | subject_save
