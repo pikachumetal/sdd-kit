@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { git, mergeFixture, pushRemoteCommit, runMerge, sha } from './helpers.ts';
+import { git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write } from './helpers.ts';
 
 describe('la suite no se repite si desde el commit verificado solo cambian docs', () => {
   it('omite la verificación si desde el sha solo cambian docs', async () => {
@@ -22,6 +22,29 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     pushRemoteCommit(fx, 'src.txt', 'código\n');
 
     const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', verified]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('verificación: código de salida 1');
+    expect(result.text).not.toContain('omitida');
+  });
+
+  it('verifica si desde el sha la rama cambió código', async () => {
+    const fx = mergeFixture('verificado-rama');
+    const verified = sha(fx.repo, 'feature/0001');
+    write(join(fx.wt, '0001'), 'src.txt', 'código de la rama\n');
+    saveAll(join(fx.wt, '0001'), 'feat: más código');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', verified]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('verificación: código de salida 1');
+  });
+
+  it('verifica si el sha es de otra rama', async () => {
+    const fx = mergeFixture('verificado-otra-rama');
+    const other = sha(fx.repo, 'feature/0002');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', other]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('verificación: código de salida 1');

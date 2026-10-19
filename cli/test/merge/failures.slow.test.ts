@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { cleanedUp, git, isWindows, mergeFixture, runMerge, sha, write } from './helpers.ts';
 
@@ -83,6 +83,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
     const before = sha(fx.repo, 'develop');
     const redHooks = join(fx.root, 'red-hooks');
     write(redHooks, 'pre-merge-commit', "#!/bin/sh\necho 'Tests Failed: 3' >&2\nexit 1\n");
+    chmodSync(join(redHooks, 'pre-merge-commit'), 0o755);
     git(fx.repo, 'config', 'core.hooksPath', redHooks);
 
     const result = await runMerge(join(fx.wt, '0001'), ['--push']);
@@ -116,6 +117,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
     const before = sha(fx.repo, 'develop');
     const rejectHooks = join(fx.root, 'reject-hooks');
     write(rejectHooks, 'pre-receive', '#!/bin/sh\nexit 1\n');
+    chmodSync(join(rejectHooks, 'pre-receive'), 0o755);
     git(fx.remote, 'config', 'core.hooksPath', rejectHooks);
 
     const result = await runMerge(join(fx.wt, '0001'), ['--push']);

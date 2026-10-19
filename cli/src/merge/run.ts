@@ -41,8 +41,15 @@ async function publish(path: string, job: Job, remote: string): Promise<void> {
     io.out(`push: '${policy.into}' avanzó en '${remote}'; integro y reintento (${attempt + 1}/${PUSH_ATTEMPTS})`);
     const [verified] = await gitLines(path, ['rev-parse', 'HEAD']);
     await syncBaseBranch(path, { into: policy.into, remote }, io.out);
-    await verifyMerge(path, options.verify, verified, io);
+    await verifyMerge(path, { command: options.verify, verifiedAt: verified }, io);
   }
+}
+
+async function reportMerge(path: string, { branch, policy, options, io }: Job, pushedTo: string | null): Promise<void> {
+  const [shortHash] = await gitLines(path, ['rev-parse', '--short', 'HEAD']);
+  io.out(`Fusionado ${branch} en ${policy.into}: ${shortHash}`);
+  if (pushedTo !== null) io.out(`publicado en ${pushedTo}`);
+  else if (options.push) io.out('push: no hecho: sin remoto');
 }
 
 async function integrate(path: string, job: Job): Promise<void> {
@@ -52,16 +59,13 @@ async function integrate(path: string, job: Job): Promise<void> {
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
   try {
     await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, io.out);
-    await verifyMerge(path, options.verify, job.verifiedAt, io);
-    const pushed = options.push && remote !== null;
-    if (pushed) await publish(path, job, remote);
-    const [shortHash] = await gitLines(path, ['rev-parse', '--short', 'HEAD']);
-    io.out(`Fusionado ${branch} en ${policy.into}: ${shortHash}`);
-    if (pushed) io.out(`publicado en ${remote}`);
-    else if (options.push) io.out('push: no hecho: sin remoto');
+    await verifyMerge(path, { command: options.verify, verifiedAt: job.verifiedAt }, io);
+    const pushedTo = options.push ? remote : null;
+    if (pushedTo !== null) await publish(path, job, pushedTo);
+    await reportMerge(path, job, pushedTo);
   } catch (error) {
     await undoFailedMerge(path, before);
-    throw await explainFailure(error, options.verify, path, io);
+    throw await explainFailure(error, { worktree: path, command: options.verify, io });
   }
 }
 

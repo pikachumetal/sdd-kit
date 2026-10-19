@@ -10,6 +10,15 @@ export interface MergeAttempt {
   destinationIsTheirs?: boolean;
 }
 
+export class MergeConflict extends DomainError {
+  readonly files: string[];
+
+  constructor(stepName: string, files: string[]) {
+    super(`${stepName}: conflicto en ${files.join(', ')}.`);
+    this.files = files;
+  }
+}
+
 export function mergeArgs(args: string[]): string[] {
   return ['-c', 'merge.conflictStyle=zdiff3', 'merge', '-X', 'diff-algorithm=histogram', ...args];
 }
@@ -28,5 +37,5 @@ export async function completeMergeAttempt(attempt: MergeAttempt, mergeCode: num
   if (conflicted.length > 0 && left.length === 0) return;
   await git(worktree, ['merge', '--abort']);
   if (conflicted.length === 0) throw new DomainError(`verificación: el hook rechazó el merge.\n${output.slice(-20).join('\n')}`);
-  throw new DomainError(`${stepName}: conflicto en ${left.join(', ')}.`);
+  throw new MergeConflict(stepName, left);
 }
