@@ -4,15 +4,13 @@ Used by the integrated-base and merge steps of `sdd-archive`, once the merge pol
 
 ## Integrated base
 
-After the closing commit, `git fetch`. If `<remote>/<merge.into>` is an ancestor of `HEAD`, there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>`.
+After the closing commit, in the change's worktree: `sdd merge --sync --project-root "<worktree>"`, the sync merge, which stays the branch's last commit. It fetches `<remote>/<merge.into>` (without a remote, the local `merge.into`) and resolves as the merge does: `estimation-log.md` regenerated with `sdd estimation log`, the registers (`.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md`; in 3.0.0, `ROADMAP.md`, `CHANGELOG.md` and `.docs/sdd/steering/debt.md`) joined by id, hunks where both sides only add joined —two requirements added at the end of a capability too—, and what `mergiraf`, if installed, solves. The commit goes through the hook; never `--no-verify`.
 
-Otherwise, in the change's worktree: `git merge --no-edit <remote>/<merge.into>`, the sync merge, which stays the branch's last commit. Without a remote, the local `merge.into`.
-
-- **Conflict only in the registers** —every file in the list is `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` or `.docs/sdd/estimation-log.md` (in 3.0.0, `ROADMAP.md`, `CHANGELOG.md` and `.docs/sdd/steering/debt.md`)—: in `changelog.md` and `roadmap.md` each line keeps the change of the side that touched it. Two new lines both go in; two different rows, even contiguous in one hunk, each keep their change; the two hunks are never pasted whole, that duplicates rows. `estimation-log.md` isn't edited: regenerate it with `sdd estimation log`. `git add` the three and `git commit --no-edit`, through the hook; never `--no-verify`.
-- **Any other conflict**, or both sides touched the same line of a register: `git merge --abort`; quote git's message and the files; the close stays «No terminado» for a person.
+- `base: al día: …`: there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>`.
+- `base: conflicto en <files>.`: the script ran `git merge --abort`; quote it; the close stays «No terminado» for a person.
 - **The suite again**: only if, since the sha of the validation's suite, something changed outside `.docs/` that isn't `*.md` (`git diff --quiet <sha> HEAD -- . ':!.docs' ':!*.md'` fails), the same predicate as `--verified-at`. Then run the full suite (E2E included if the project declares them) on the sync merge, and the merge carries `--verified-at <sha of the sync merge>`. If only docs changed, don't run it, and pass the validation's sha.
 
-This is the only `git merge` by hand of the close, and it never touches the destination.
+`--sync` never touches the destination.
 
 ## A red suite
 
@@ -31,7 +29,7 @@ A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …
 sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--verified-at <sha>]
 ```
 
-Under one lock per repo, the script integrates the destination's remote into the local destination (only-add hunks are joined, `estimation-log.md` regenerated), merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others, runs `--verify` on the result and pushes the destination by its name. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
+Under one lock per repo, the script integrates the destination's remote into the local destination (resolving as `--sync` does), merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others, runs `--verify` on the result and pushes the destination by its name. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
 
 - **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it.
 - **`--verified-at`**: as in «Integrated base». The script writes `verificación: omitida: desde <sha> solo cambian docs` when it skips.
@@ -43,8 +41,10 @@ Under one lock per repo, the script integrates the destination's remote into the
 | `destino: listo: …` | `--check` found the destination clean | go on |
 | `destino sacado: …` | the destination's checkout has someone else's uncommitted changes | stop before writing: quote it with its `Salidas:`; no `stash`, `reset` or commit of what isn't yours |
 | `cerrojo: …` | another close holds the lock past `--lock-timeout` | quote it; a person decides |
-| `base: conflicto en <files>.` | integrating the destination's remote conflicts beyond only-add hunks | «No terminado»: a person resolves |
+| `base: conflicto en <files>.` | integrating the destination's remote (or, with `--sync`, into the branch) leaves a conflict nothing resolved | «No terminado»: a person resolves |
 | `merge: conflicto en <files>.` | the change conflicts with the destination | the same; the sync merge above should have caught it |
+| `mergiraf: resuelto <file>` | `mergiraf` solved a conflict the kit's rules didn't | nothing: `--verify` runs on the result |
+| `registros: dos filas distintas con el id …` | two different rows with one id, both kept | quote it in the final message for the dev-lead |
 | `verificación: …` + `base: …` | `--verify` red | «A red suite» |
 | `bloqueado: '<file>' lo tiene abierto <process>` | a process holds a file the gate needs | close it and run the script again |
 | `push: '<into>' avanzó en '<remote>'; integro y reintento (n/3)` | another session published meanwhile | nothing: the script retries |
@@ -77,7 +77,7 @@ sdd merge --check --into <stable> --project-root "<worktree>"
 sdd merge --branch <branch> --into <stable> --tag <version> --order "<their words>" [--push]
 ```
 
-The script decides the way back with the local refs: fetch first, or a release already closed on the remote can abort it. Under one lock it merges into the stable branch, tags, merges the same branch into the integration branch (or the open `release/*`) and pushes everything atomically. `vuelta: conflicto en <files>; se deshacen …` means the script undid it all: the close stays «No terminado», and a person ports the fix to the integration branch and runs the hotfix again.
+The script fetches the remote's `release/*` itself and decides the way back with them before touching anything. Under one lock it merges into the stable branch, tags, merges the same branch into the integration branch (or the open `release/*`) and pushes everything atomically. `vuelta: conflicto en <files>; se deshacen …` means the script undid it all: the close stays «No terminado», and a person ports the fix to the integration branch and runs the hotfix again.
 
 ## Denied by the environment
 

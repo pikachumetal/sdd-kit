@@ -14,3 +14,12 @@ describe('sdd merge without arguments', () => {
     expect(mergeBranch).not.toHaveBeenCalled();
   });
 });
+
+describe('sdd merge --sync', () => {
+  it('rechaza las opciones del merge con 2 y sin fusionar', async () => {
+    const io = memoryIo();
+    expect(await run(['merge', '--sync', '--push', '--project-root', '.'], io)).toBe(2);
+    expect(io.stderr.join('\n')).toContain('--sync no admite --push');
+    expect(mergeBranch).not.toHaveBeenCalled();
+  });
+});

@@ -10,6 +10,7 @@ Moldes:
 
 - `reservas`: el de `tests/batteries/sdd-implement/mold-reservas` con la 0010 implementada en Native (dos tasks), `tasks.md` con la revisión final limpia y un ruling de workaround en `## Rulings`, `validation.mode: field`, perfil `delegate`, `merge` sin push y sin remoto.
 - `reservas-base`: `reservas` con `develop` avanzada tras abrir la rama (la 0015: `src/rooms.js` y una fila nueva justo debajo de la 0010 en «Próximo»), otra feature abierta en su worktree (`feature/0011-others`) y un `notes.md` sin seguimiento. El segundo turno contesta: «notes.md era un apunte mío: bórralo y sigue con el cierre.»
+- `reservas-capbase`: `reservas` con `capabilities/bookings.md` en `develop` antes de abrir la 0010 (la spec, «Modificadas: `bookings`») y `develop` avanzada con la 0015, que añade una fila debajo de la 0010 y el requisito «Las salas salen de su módulo» al final de «Requisitos»: el cierre de la 0010 añade los suyos en el mismo sitio.
 - `reservas-red`: `reservas` con `test/export.e2e.test.js`, que falla con «TimeoutError: export no respondió en 5000 ms» en `develop` y en la rama, y su fila en «Deuda técnica».
 - `reservas-plan`: `reservas-red` con la rama de la 0010 abierta solo con su spec y su plan.
 - `reservas-family`: `reservas` con la 0010 como pieza de la 0009 (`parent: 0009` en su spec y en su fila) y la 0016 «Fotos de las salas», `⏳`, con `parent: 0009`, tras la 0010.
@@ -39,6 +40,7 @@ Moldes:
 | a8 | sha | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-sha | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | RED de la feature 0096 (`tests/closing-off-critical-path-red.md`, c2) y ticket de la feature 0060 del template §2: juntar hitos borra los shas que cita la evidencia |
 | a9 | v300 | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-300 | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0149: los cierres escriben en Now y en `debt.md` con las plantillas de la 0150 (dev-lead, 2026-10-15) |
 | a3n | nobase | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | Review Focus del plan de la 0149: sin avance de la base no hay merge de sincronización ni segunda suite |
+| a3c | capbase | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-capbase | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | ticket de la feature 0185 §3: el merge de sincronización paró por dos requisitos añadidos al final de la misma capacidad (feature 0193) |
 | a5m | family-done | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-family-done | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | Review Focus del plan de la 0149: con la madre ya cerrada solo se nombran las hermanas abiertas |
 | r1 | route | hemos acabado, cierra la tarea | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de una feature entra por `sdd-archive` |
 | r2 | route | cierra el patch | salas-patch | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de un patch entra por `sdd-archive` |
@@ -78,6 +80,7 @@ Moldes:
 | N1 Now | a9 | la fila 0010 de `ROADMAP.md` no queda `✅` en Now, o sale de Now |
 | N2 `debt.md` | a9 | «El motivo de cancelar no se valida» sigue en «Lista», o «Los motivos no se traducen» sale de «Lista» o queda sin reescribir a lo que falta (el inglés) |
 | N0 Sin avance de la base | a3n | crea un merge de sincronización, corre la suite completa más de una vez, o `sdd merge` va sin `--verified-at` con el sha de la suite de la validación |
+| S1 Requisitos add/add en la base | a3c | el merge de sincronización para o se aborta por el conflicto en `capabilities/bookings.md`, o `develop` no acaba con «Las salas salen de su módulo» y los dos requisitos de la 0010 en `bookings.md` |
 | Q2 Madre cerrada | a5m | no nombra la 0016 como pieza abierta, o dice «La 0009 ya no tiene piezas abiertas: su fila se puede cerrar.», o toca la fila de la 0009 |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
@@ -96,6 +99,7 @@ Moldes:
 | El hotfix va a la rama estable con `--into`, `--tag` y la frase del dev-lead en `--order`; `--push` solo si la frase lo pide | feature 0187 (CLI) y spec de la 0149, decisión 13 | a4 (H3, H4) |
 | La migración lleva el paso que un hotfix pide al proyecto | ticket del patch 0057 de un proyecto del equipo §5; RED de la 0149, `a4`: no pregunta (0/1); GREEN con la pregunta en el paso del merge, 0/2; como comprobación previa con parada, 2/2 (`refactor/`) | a4 (H1, H2) |
 | La base se integra tras el commit de cierre y la suite se repite solo si trae código | 0048; fila de deuda de tasks en paralelo (P2.2, P2.3); ticket 0093 de document-manager §2; RED de la 0149, `a3`: sin suite tras el merge de sincronización ni `--verified-at` (0/1) | a3 (B3, B4, B5), a3n (N0: 1/1, sin merge de sincronización y una sola suite) |
+| El merge de sincronización lo hace `sdd merge --sync`, que une los registros y los requisitos añadidos al final de una capacidad | ticket de la feature 0185 §3 (feature 0193) | a3c (S1) |
 | Árbol limpio y otras ramas abiertas antes que nada | RED de la 0149, `a3`: cerró y fusionó antes de preguntar por `notes.md` y no nombró la otra rama (0/1); GREEN con la línea «si hay otras ramas», B2 1/2; «en tu siguiente mensaje, antes de cualquier otro paso», 2/2 (`refactor/`) | a3 (B1, B2) |
 | Un rojo se contrasta con la base y se busca en la deuda antes de investigarlo; forma del informe | filas de deuda del rojo del gate, del rojo ajeno y del informe tras el merge; RED de la 0149: `a3r` fusionó sobre el rojo sin contrastar (0/1) y `w1` abrió el test sin citar la deuda (0/1) | a3r (C1-C3), w1 (C2, W1) |
 | Ante un rojo que también falla sin la rama, se para y pregunta en cualquier perfil | GREEN con la parada solo en la receta: `a3r` C3 1/2; con la parada en el paso 6 del `SKILL.md`, 2/2 (`refactor2/`) | a3r (C3) |

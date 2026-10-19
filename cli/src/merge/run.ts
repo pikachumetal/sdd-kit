@@ -79,9 +79,13 @@ function stableTarget({ into, order, tag }: MergeOptions, policy: MergePolicy): 
   return { into, order };
 }
 
+export function resolveProjectRoot(path: string): string {
+  if (!existsSync(path)) throw new DomainError(`No existe la ruta de proyecto '${path}'.`);
+  return realpathSync.native(resolve(path));
+}
+
 export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> {
-  if (!existsSync(options.projectRoot)) throw new DomainError(`No existe la ruta de proyecto '${options.projectRoot}'.`);
-  const projectRoot = realpathSync.native(resolve(options.projectRoot));
+  const projectRoot = resolveProjectRoot(options.projectRoot);
   const policy = resolveMergePolicy(projectRoot);
   const stable = stableTarget(options, policy);
   const branch = await currentBranch(projectRoot, options.branch);

@@ -40,24 +40,32 @@ function writeMerged(path: string, merged: string): boolean {
   return true;
 }
 
-async function mergeAddedLines(worktree: string, file: string): Promise<boolean> {
-  const conflict = await readConflict(worktree, file);
+// La rama destino va primero: en un merge de sincronización es el lado de fuera.
+const inDestinationOrder = (attempt: MergeAttempt, ours: string, theirs: string) => (attempt.destinationIsTheirs ? [theirs, ours] : [ours, theirs]);
+
+async function mergeAddedLines(attempt: MergeAttempt, file: string): Promise<boolean> {
+  const conflict = await readConflict(attempt.worktree, file);
   if (conflict === null || conflict.hunks.some((match) => match[2] !== '')) return false;
-  return writeMerged(conflict.path, conflict.content.replace(HUNK, (_all, ours: string, _base: string, theirs: string) => ours + theirs));
+  return writeMerged(conflict.path, conflict.content.replace(HUNK, (_all, ours: string, _base: string, theirs: string) => inDestinationOrder(attempt, ours, theirs).join('')));
 }
 
 const toLines = (text: string) => (text === '' ? [] : text.replace(/\n$/, '').split('\n'));
 
-async function mergeRowsById({ worktree, report }: MergeAttempt, file: string): Promise<boolean> {
-  const conflict = await readConflict(worktree, file);
+function mergeHunkById(attempt: MergeAttempt, [, ours, base, theirs]: RegExpMatchArray): KeyedMerge | null {
+  const [first, second] = inDestinationOrder(attempt, ours, theirs);
+  return mergeKeyedHunk({ ours: toLines(first), base: toLines(base), theirs: toLines(second) });
+}
+
+async function mergeRowsById(attempt: MergeAttempt, file: string): Promise<boolean> {
+  const conflict = await readConflict(attempt.worktree, file);
   if (conflict === null) return false;
-  const merges = conflict.hunks.map(([, ours, base, theirs]) => mergeKeyedHunk({ ours: toLines(ours), base: toLines(base), theirs: toLines(theirs) }));
+  const merges = conflict.hunks.map((hunk) => mergeHunkById(attempt, hunk));
   const resolved = merges.filter((merge): merge is KeyedMerge => merge !== null);
   if (resolved.length !== merges.length) return false;
   let next = 0;
   const merged = conflict.content.replace(HUNK, () => resolved[next++].lines.map((line) => `${line}\n`).join(''));
   if (!writeMerged(conflict.path, merged)) return false;
-  resolved.flatMap((merge) => merge.duplicates).forEach((id) => report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
+  resolved.flatMap((merge) => merge.duplicates).forEach((id) => attempt.report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
   return true;
 }
 
@@ -68,7 +76,7 @@ function regenerateLog(worktree: string): void {
 
 async function resolvedByKit(attempt: MergeAttempt, file: string): Promise<boolean> {
   if (KEYED_REGISTRIES.includes(file) && (await mergeRowsById(attempt, file))) return true;
-  return mergeAddedLines(attempt.worktree, file);
+  return mergeAddedLines(attempt, file);
 }
 
 async function unresolvedByKit(attempt: MergeAttempt, files: string[]): Promise<string[]> {

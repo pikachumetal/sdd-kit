@@ -25,15 +25,16 @@ Describe 'Merge de sincronización tras el commit de cierre' {
     $script:Recipe.IndexOf('## Integrated base') | Should -BeLessThan $script:Recipe.IndexOf('## The merge is a script')
   }
 
-  It 'la sección nombra los tres registros' {
-    foreach ($register in '.docs/sdd/changelog.md', '.docs/sdd/roadmap.md', '.docs/sdd/estimation-log.md') {
+  It 'la sección nombra los registros de las dos formas' {
+    foreach ($register in '.docs/sdd/changelog.md', '.docs/sdd/roadmap.md', 'ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md') {
       $script:Section | Should -Match ([regex]::Escape($register))
     }
   }
 
-  It 'la sección da el merge de sincronización literal y el abort' {
-    $script:Section | Should -Match ([regex]::Escape('git merge --no-edit <remote>/<merge.into>'))
-    $script:Section | Should -Match ([regex]::Escape('git merge --abort'))
+  It 'la sección da el merge de sincronización con la CLI y su conflicto' {
+    $script:Section | Should -Match ([regex]::Escape('sdd merge --sync --project-root "<worktree>"'))
+    $script:Section | Should -Match ([regex]::Escape('base: conflicto en <files>.'))
+    $script:Section | Should -Not -Match ([regex]::Escape('git merge --no-edit'))
   }
 
   It 'la sección regenera el log con la CLI y no lo edita' {
@@ -44,9 +45,10 @@ Describe 'Merge de sincronización tras el commit de cierre' {
     $script:Section | Should -Match ([regex]::Escape('--no-verify'))
   }
 
-  It 'el paso de la base integrada de sdd-archive remite a la receta para los registros' {
+  It 'el paso de la base integrada de sdd-archive usa sdd merge --sync' {
     $step = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?ms)^6\. \*\*Integrated base\*\*.*?(?=^7\. )').Value
-    $step | Should -Match 'A conflict only in the three registers you resolve as the recipe says'
+    $step | Should -Match ([regex]::Escape('sdd merge --sync --project-root "<worktree>"'))
+    $step | Should -Match ([regex]::Escape('base: conflicto en'))
   }
 
   It 'commit-milestones añade el merge de sincronización a la tabla de hitos y enlaza la receta' {

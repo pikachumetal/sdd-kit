@@ -80,6 +80,20 @@ develop_advances() {
   commit "feat(rooms): las salas en su módulo (0015)"
   g checkout -q feature/0010-cancel-reason
 }
+# bookings.md en develop antes de abrir la 0010, cuyo cierre le añade sus dos requisitos; develop le añade otro al final mientras tanto.
+CAP=.docs/sdd/capabilities/bookings.md
+capability_base() {
+  printf -- '# Capacidad — bookings\n\n## Propósito\n\nReservar y cancelar salas.\n\n## Requisitos\n\n### Reservar una sala\n\n- GIVEN la sala Sur libre el lunes a las 10:00\n- WHEN se ejecuta `reservar Sur lun 10:00`\n- THEN responde «reservada Sur lun 10:00»\n\n## Reglas de la capacidad\n\n- **Dónde viven los datos**: en memoria, en `src/app.js`\n- **Idioma de los nombres**: castellano\n- **Límites**: no aplica\n- **Avisos**: no aplica\n- **Regla ante conflicto**: no aplica\n' | put "$CAP"
+  commit "docs(sdd): capacidad bookings"
+}
+capability_advances() {
+  g checkout -q develop
+  sed -i 's/^## Reglas de la capacidad$/### Las salas salen de su módulo\n\n- GIVEN `src\/rooms.js` con Norte y Sur\n- WHEN se ejecuta `salas`\n- THEN responde «Norte, Sur»\n\n&/' "$R/$CAP"
+  grep -q 'Las salas salen de su módulo' "$R/$CAP" || die "no se plantó el requisito de la 0015"
+  commit "docs(sdd): requisito de salas en bookings (0015)"
+  g checkout -q feature/0010-cancel-reason
+}
+
 # Otra feature abierta en su worktree, junto al del molde.
 other_worktree() { g worktree add -q -b feature/0011-others "$RUN/0011-others" develop; }
 
@@ -135,6 +149,9 @@ case "$(cell Molde)" in
   salas-capability) capability_0008; done_0008; patch_delta_0008 ;;
   reservas-base) mold_reservas; done_0010; develop_advances; other_worktree; printf 'apuntes de la 0010\n' > "$R/notes.md"
     export TURN2='notes.md era un apunte mío: bórralo y sigue con el cierre.' ;;
+  reservas-capbase) mold_reservas; capability_base; done_0010
+    sed -i 's/^- Nuevas: `bookings`/- Modificadas: `bookings`/' "$R/$F10/spec.md"; commit "docs(sdd): bookings ya existe"
+    develop_advances; capability_advances ;;
   reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
   reservas-plan) mold_reservas; e2e_red_base; g checkout -q -b feature/0010-cancel-reason
     approved_0010 | put "$F10/spec.md"; put "$F10/plan.md" < "$IMPL/fixtures/plan-0010.md"
@@ -158,4 +175,4 @@ for kept in ROADMAP.md .docs/sdd/steering/debt.md .docs/sdd/capabilities/booking
 for adr in "$R"/.docs/sdd/decisions/*.md; do [ -f "$adr" ] && subject_keep "$adr" "$(basename "$adr")"; done
 for doc in roadmap tech-stack changelog; do [ -f "$R/.docs/sdd/$doc.md" ] && subject_keep "$R/.docs/sdd/$doc.md" "$doc.md"; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all --graph; echo "## etiquetas"; g tag -n1
-  echo "## roadmap en develop"; g show develop:.docs/sdd/roadmap.md 2>/dev/null; echo "## tech-stack en develop"; g show develop:.docs/sdd/tech-stack.md 2>/dev/null | tail -n 20; } | subject_save
+  echo "## roadmap en develop"; g show develop:.docs/sdd/roadmap.md 2>/dev/null; echo "## bookings en develop"; g show "develop:$CAP" 2>/dev/null; echo "## tech-stack en develop"; g show develop:.docs/sdd/tech-stack.md 2>/dev/null | tail -n 20; } | subject_save

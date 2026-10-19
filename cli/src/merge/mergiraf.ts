@@ -25,7 +25,7 @@ function solvedCleanly(path: string): boolean {
 
 function solve(worktree: string, file: string, command: string[]): Promise<boolean> {
   return new Promise((done) => {
-    const child = spawn(command[0], [...command.slice(1), 'solve', file], { cwd: worktree, stdio: 'ignore', windowsHide: true });
+    const child = spawn(command[0], [...command.slice(1), 'solve', '--keep-backup=false', file], { cwd: worktree, stdio: 'ignore', windowsHide: true });
     child.on('error', () => done(false));
     child.on('close', (code) => done(code === 0 && solvedCleanly(join(worktree, file))));
   });

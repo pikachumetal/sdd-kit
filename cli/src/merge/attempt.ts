@@ -7,6 +7,7 @@ export interface MergeAttempt {
   stepName: string;
   output: string[];
   report: (line: string) => void;
+  destinationIsTheirs?: boolean;
 }
 
 export function mergeArgs(args: string[]): string[] {
