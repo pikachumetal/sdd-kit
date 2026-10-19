@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | 0021 | **Cancelar una reserva propia** — el empleado cancela una franja suya desde la CLI. Ticket SAL-41. Ficheros que toca: `src/app.js` | ⏳ |
 | 0022 | **Avisar de la cancelación a recepción** — `proposal: 0019`, tras 0021. Ficheros que toca: `src/app.js`, `src/notify.js` | ⏳ |
+| 0024 | **Informe de ocupación por sala** — tras 0015. Ficheros que toca: `src/report.js` | ⏳ |
 
 ## Backlog
 

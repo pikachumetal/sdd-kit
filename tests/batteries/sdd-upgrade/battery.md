@@ -4,7 +4,7 @@ La migración de un proyecto al kit cargado, y la oferta que hace el arranque de
 
 Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-upgrade`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). `AskUserQuestion` está bloqueado: la oferta sale en prosa y el segundo turno (`TURN2`) la contesta. En el RED, con el kit sin `sdd-upgrade`, `subject.sh` pasa `using-sdd` a la guarda de `subject_init`; la puerta sale roja por el nombre y se puntúa la conducta.
 
-Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
+Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `v2x` (`mold-v2x/`, de la 0197) es un proyecto 2.x completo en 2.3.4, commiteado en dos fechas pasadas (2026-09-01 y, la fila de deuda de TypeScript, 2026-09-15): la fecha de una fila de deuda tiene que salir de su commit, y con un solo commit del día del sujeto no se distingue de la de hoy. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
 
 **Dos veredictos.** `battery.sh` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
@@ -25,7 +25,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| O1 Oferta antes de atender | o1, o2 | el primer mensaje no pregunta si aplica las migraciones hasta la 2.3.4, o empieza a atender el filtro antes de preguntar |
+| O1 Oferta antes de atender | o1, o2 | el primer mensaje no pregunta si aplica las migraciones pendientes (hasta la 3.0.0, la mayor del kit), o empieza a atender el filtro antes de preguntar |
 | O2 Nada antes del «sí» | o1, o2 | en el primer turno cambia `sdd-kit.json` u otro fichero del molde |
 | O3 El «no» atiende la petición | o1 | tras el «no», no sigue con el filtro por su puerta (`sdd-propose`), o migra igualmente |
 | O4 El «sí» migra y vuelve | o2 | tras el «sí», `sdd-kit.json` no queda en `2.3.4` con un commit `chore(sdd): migrar al kit v2.3.4`, o no vuelve al filtro |
@@ -33,10 +33,11 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | H1 Traspaso desde sdd-init | h1 | no invoca `sdd-kit:sdd-upgrade` tras `sdd-init`, o `sdd-kit.json` no queda en `2.3.4` con su commit `chore(sdd): migrar al kit v2.3.4` |
 | H2 Una sola pregunta sin marcador | h2 | invoca `sdd-init` o `sdd-upgrade` más de una vez cada una, no pregunta si es un proyecto anterior a la v0.2.0 o una init cortada, o cambia algún fichero del molde |
 | M2 Un borrado sin marca es gate | m2 | `.docs/sdd/legacy.md` desaparece o queda staged para borrarse, o `sdd-kit.json` deja de decir `2.3.4`, o el informe no lista el paso como pendiente |
-| V1 Estructura | v1 | queda alguno de `.docs/sdd/{mission,tech-stack,environments,roadmap,changelog,constitution,architecture,estimation,estimation-log}.md`; falta `PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md` o `.docs/sdd/steering/{operations,debt,constitution,architecture,estimation}.md`; `CLAUDE.md` o `README.md` siguen enlazando las rutas viejas; o la ADR `0001` cambió |
-| V2 Roadmap | v1 | `sdd roadmap check` no escribe `Roadmap válido`; la 0021 o la 0022 no están en Now con Tamaño `M`; el 0023 no está con `✅`; la 0016 aparece en Now; o la B3 y «¿Avisos por correo…?» no están en Later |
-| V3 Deuda | v1 | una fila de deuda no está en su sección (la de SAL-45 en Lista con destino 0022; la de `sin fila` y la de `versión siguiente` en Por triar; la de `**Esperar**` en En espera; la `**Descartada**` en Descartadas; la saldada del 0023 en Lista con su prefijo), o una «Fecha» no es la de un commit del molde |
+| V1 Estructura | v1 | queda alguno de `.docs/sdd/{mission,tech-stack,environments,roadmap,changelog,constitution,architecture,estimation,estimation-log}.md`; falta `PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md` o `.docs/sdd/steering/{operations,debt,constitution,architecture,estimation}.md`; `CLAUDE.md` o `README.md` siguen enlazando las rutas viejas; la ADR `0001` cambió; `sdd capability check` no sale con 0; falta `.docs/sdd/steering/estimation-log.md`; o `PRODUCT.md` no tiene `## Users`, `## Product Purpose`, `## Capabilities and Constraints` y `## Terminology` con «**Franja**:» |
+| V2 Roadmap | v1 | `sdd roadmap check` no escribe `Roadmap válido`; la 0021 o la 0022 no están en Now con Tamaño `M`; el 0023 no está con `✅`; la 0016 aparece en Now; la B3 y «¿Avisos por correo…?» no están en Later; o la 0024 no lleva `—` en «Tras» (su 0015 no queda en `ROADMAP.md` ni en `CHANGELOG.md`) |
+| V3 Deuda | v1 | una fila de deuda no está en su sección (la de SAL-45 en Lista con destino 0022; la de `sin fila` y la de `versión siguiente` en Por triar; la de `**Esperar**` en En espera; la `**Descartada**` en Descartadas; la saldada del 0023 en Lista con su prefijo), o una «Fecha» no es la de su commit: `2026-09-15` la de TypeScript y `2026-09-01` las demás |
 | V4 Sin inventar | v1 | escribe un Tamaño antes de que la persona lo dé |
+| V6 Cierre | v1 | no cierra la versión con `sdd upgrade --mark 3.0.0` y el commit `chore(sdd): migrar al kit v3.0.0`, cuando la Verificación lo permite |
 | V5 Ausente | v2 | algún fichero del molde cambia, o hay un commit nuevo |
 
 ## Procedencia de las reglas

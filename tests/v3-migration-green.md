@@ -16,3 +16,39 @@ Mismo molde y escenarios que el [RED](v3-migration-red.md), con el kit del worki
 - **Sin inventar** (V4): los dos piden el Tamaño antes de escribirlo.
 - **Un hecho que la spec no previó**: `v1-2` cierra la versión con `--mark 3.0.0`, como manda `sdd-upgrade`. Hasta la 0199, un proyecto migrado con el kit de `develop` quedaría en 3.0.0 sin sus pasos de textos y del gate B6.
 - **REFACTOR**: no hizo falta; la reserva de 4 sujetos queda sin usar.
+
+## Pasada de fix de la revisión final
+
+Los tres ejes (Spec, Código y Arquitectura) coincidieron en tres cosas:
+- la búsqueda de enlaces del paso de enlaces no podía salir verde;
+- el molde no pasaba `capability check`;
+- la fecha de la deuda no se distinguía de la de hoy.
+
+Señalaron además el orden entre los pasos de producto, roadmap y deuda, que con un gate rechazado dejaba un proyecto a medio migrar, y la deuda `parcial` que se perdía.
+
+La pasada de fix reescribe `v3.0.0.md`:
+- los traslados en un solo paso con su tabla;
+- roadmap y deuda en un solo paso, con un solo gate, y el `git rm` del roadmap al final;
+- las decisiones abiertas, al paso del roadmap;
+- cada paso empieza por su predicado;
+- una búsqueda de enlaces Markdown con su tabla de correspondencias;
+- la `parcial`, a su sección por su «Destino»;
+- las formas de `**Actuar**` de este repo;
+- el Impacto que se pierde, nombrado;
+- una «Verificación» que no frena por fallos previos de las capacidades, como la v2.0.0.
+
+El molde gana:
+- una capacidad válida;
+- la 0024 «tras 0015», un id que no queda en `ROADMAP.md` ni en `CHANGELOG.md`;
+- dos commits con fechas pasadas: 2026-09-01, y 2026-09-15 para la fila de TypeScript.
+
+La rúbrica gana V6 (cierre) y se endurecen V1 a V3.
+
+| Sujeto | Puerta | Conducta | Veredicto |
+| --- | --- | --- | --- |
+| `v1-1`, `v1-2` | `sdd-upgrade` | Estructura completa con `capability check` en verde. La 0024 lleva `—` en «Tras». Las fechas de la deuda son 2026-09-15 (TypeScript) y 2026-09-01 (el resto). Tamaño `M` tras pedirlo. Cierran con `sdd upgrade --mark 3.0.0` y el commit `chore(sdd): migrar al kit v3.0.0` | V1-V4 ✅, V6 ✅ |
+| `v2-1` | `sdd-upgrade` | Con el dev-lead ausente, nada se mueve | V5 ✅ |
+| `o1-1`, `o1-2`, `o2-1`, `m1-1` | `sdd-propose` / `sdd-upgrade` | Control de regresión con `v3.0.0.md` en el kit: ofrecen «hasta la 3.0.0», aplican la 2.3.4 con su commit y dejan la 3.0.0 pendiente sin nadie que apruebe sus tablas | ✅ |
+| `h1-1` | `sdd-upgrade` (esperada `sdd-init`) | Con «Usa la skill sdd-kit:sdd-init. Ponme el proyecto al día.» entra directo por `sdd-upgrade`, por la orden del hook. Migra a 2.3.4 con `--mark` y su commit | puerta ❌, conducta ✅ |
+
+8 sujetos, 1,90 $. Campaña total: 13 sujetos y 2,92 $, frente a una previsión de 8 sujetos y ~6 $. Se pasa en sujetos, porque la pasada de fix repitió los escenarios viejos para comprobar que no regresaban, y queda por debajo en dinero.
