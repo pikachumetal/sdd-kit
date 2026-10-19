@@ -4,7 +4,7 @@ import { estimationLogPath } from '../cli/layout.ts';
 import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts';
 import { git } from '../git/git.ts';
 import type { MergeAttempt } from './attempt.ts';
-import { mergeKeyedHunk, type KeyedMerge } from './keyed.ts';
+import { dedupeRows, mergeKeyedHunk, type KeyedMerge } from './keyed.ts';
 import { mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
 
 const LOG = /estimation-log\.md$/i;
@@ -26,6 +26,7 @@ interface Conflict {
 async function readConflict(worktree: string, file: string): Promise<Conflict | null> {
   // Sin versión en la base (los dos lados crean el fichero) no hay líneas existentes que respetar: decide una persona.
   if ((await git(worktree, ['rev-parse', '--verify', '--quiet', `:1:${file}`])).code !== 0) return null;
+  // diff3 y no zdiff3: zdiff3 saca las líneas comunes del trozo, y unir los dos lados dejaría un bloque sin cerrar; mergiraf tampoco lee zdiff3.
   if ((await git(worktree, ['checkout', '--conflict=diff3', '--', file])).code !== 0) return null;
   const path = join(worktree, file);
   const content = readFileSync(path, 'utf8');
@@ -43,10 +44,21 @@ function writeMerged(path: string, merged: string): boolean {
 // La rama destino va primero: en un merge de sincronización es el lado de fuera.
 const inDestinationOrder = (attempt: MergeAttempt, ours: string, theirs: string) => (attempt.destinationIsTheirs ? [theirs, ours] : [ours, theirs]);
 
+const reportDuplicates = (attempt: MergeAttempt, file: string, ids: string[]) =>
+  ids.forEach((id) => attempt.report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
+
+function joinAdded(attempt: MergeAttempt, file: string, [ours, theirs]: string[]): string {
+  const joined = inDestinationOrder(attempt, ours, theirs).join('');
+  if (!KEYED_REGISTRIES.includes(file)) return joined;
+  const { lines, duplicates } = dedupeRows(toLines(joined));
+  reportDuplicates(attempt, file, duplicates);
+  return lines.map((line) => `${line}\n`).join('');
+}
+
 async function mergeAddedLines(attempt: MergeAttempt, file: string): Promise<boolean> {
   const conflict = await readConflict(attempt.worktree, file);
   if (conflict === null || conflict.hunks.some((match) => match[2] !== '')) return false;
-  return writeMerged(conflict.path, conflict.content.replace(HUNK, (_all, ours: string, _base: string, theirs: string) => inDestinationOrder(attempt, ours, theirs).join('')));
+  return writeMerged(conflict.path, conflict.content.replace(HUNK, (_all, ours: string, _base: string, theirs: string) => joinAdded(attempt, file, [ours, theirs])));
 }
 
 const toLines = (text: string) => (text === '' ? [] : text.replace(/\n$/, '').split('\n'));
@@ -65,7 +77,7 @@ async function mergeRowsById(attempt: MergeAttempt, file: string): Promise<boole
   let next = 0;
   const merged = conflict.content.replace(HUNK, () => resolved[next++].lines.map((line) => `${line}\n`).join(''));
   if (!writeMerged(conflict.path, merged)) return false;
-  resolved.flatMap((merge) => merge.duplicates).forEach((id) => attempt.report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
+  reportDuplicates(attempt, file, resolved.flatMap((merge) => merge.duplicates));
   return true;
 }
 

@@ -7,7 +7,7 @@ import { withLock } from '../git/lock.ts';
 import { checkDestination, withDestination } from './destination.ts';
 import { checkHotfix, mergeHotfix, prepareHotfix } from './hotfix.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
-import { mergeFeature, pushDestination, remoteForBranch, syncBaseBranch, undoFailedMerge } from './steps.ts';
+import { mergeFeature, pushDestination, remoteForBranch, shortHead, syncBaseBranch, undoFailedMerge } from './steps.ts';
 import { explainFailure, resolveCommit, verifyMerge } from './verify.ts';
 
 export interface MergeOptions {
@@ -46,8 +46,7 @@ async function publish(path: string, job: Job, remote: string): Promise<void> {
 }
 
 async function reportMerge(path: string, { branch, policy, options, io }: Job, pushedTo: string | null): Promise<void> {
-  const [shortHash] = await gitLines(path, ['rev-parse', '--short', 'HEAD']);
-  io.out(`Fusionado ${branch} en ${policy.into}: ${shortHash}`);
+  io.out(`Fusionado ${branch} en ${policy.into}: ${await shortHead(path)}`);
   if (pushedTo !== null) io.out(`publicado en ${pushedTo}`);
   else if (options.push) io.out('push: no hecho: sin remoto');
 }

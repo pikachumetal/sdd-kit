@@ -64,10 +64,32 @@ interface Sides {
   theirs: Map<string, string>;
 }
 
+// La unión sigue el orden de la rama destino: si la otra rama reordena filas de la base, decide una persona.
+function keepsBaseOrder(side: Map<string, string>, base: Map<string, string>): boolean {
+  const kept = [...side.keys()].filter((id) => base.has(id));
+  return sameLines(kept, [...base.keys()].filter((id) => side.has(id)));
+}
+
 function sides({ ours, base, theirs }: Hunk): Sides | null {
   const [oursById, baseById, theirsById] = [ours, base, theirs].map(byIdentity);
   if (oursById === null || baseById === null || theirsById === null) return null;
+  if (!keepsBaseOrder(theirsById, baseById)) return null;
   return sameLines(plainLines(ours), plainLines(theirs)) ? { ours: oursById, base: baseById, theirs: theirsById } : null;
+}
+
+export function dedupeRows(lines: string[]): KeyedMerge {
+  const seen = new Map<string, string>();
+  const duplicates: string[] = [];
+  const ids = identities(lines);
+  const kept = lines.filter((line, index) => {
+    const id = ids[index];
+    if (id.startsWith('plain\u0000')) return true;
+    const previous = seen.get(id);
+    if (previous === undefined) return seen.set(id, line) !== undefined;
+    if (previous !== line && !duplicates.includes(lineKey(line) ?? '')) duplicates.push(lineKey(line) ?? '');
+    return previous !== line;
+  });
+  return { lines: kept, duplicates };
 }
 
 const rowsOf = (id: string, { ours, base, theirs }: Sides) => resolveRow(ours.get(id), base.get(id), theirs.get(id));

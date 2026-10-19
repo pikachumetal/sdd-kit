@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { lineKey, mergeKeyedHunk } from '../../src/merge/keyed.ts';
+import { dedupeRows, lineKey, mergeKeyedHunk } from '../../src/merge/keyed.ts';
 
 const row = (id: string, text: string, state = '⏳') => `| ${id} | ${text} | ${state} |`;
 
@@ -59,5 +59,18 @@ describe('mergeKeyedHunk', () => {
 
   it('keyed: líneas sin id distintas en los dos lados dan null', () => {
     expect(mergeKeyedHunk({ base: [], ours: ['texto de la destino'], theirs: ['texto de la rama'] })).toBeNull();
+  });
+});
+
+describe('guardas de la unión por id', () => {
+  it('keyed: si la rama reordena filas de la base es conflicto', () => {
+    expect(mergeKeyedHunk({ base: [row('0190', 'a'), row('0191', 'b')], ours: [row('0190', 'a', '✅'), row('0191', 'b')], theirs: [row('0191', 'b'), row('0190', 'a')] })).toBeNull();
+  });
+
+  it('dedupeRows quita la fila repetida idéntica y avisa de dos distintas con el mismo id', () => {
+    expect(dedupeRows(['### Changed', row('0201', 'x'), row('0201', 'x'), row('0202', 'y'), row('0202', 'z')])).toEqual({
+      lines: ['### Changed', row('0201', 'x'), row('0202', 'y'), row('0202', 'z')],
+      duplicates: ['0202'],
+    });
   });
 });

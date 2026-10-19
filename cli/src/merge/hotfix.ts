@@ -3,7 +3,7 @@ import { DomainError, UsageError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
 import { checkDestination, withDestination, type DestinationRequest } from './destination.ts';
 import type { Job } from './run.ts';
-import { mergeFeature, remoteForBranch, remoteMoved, syncBaseBranch, undoFailedMerge } from './steps.ts';
+import { mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge } from './steps.ts';
 import { MergeConflict } from './attempt.ts';
 import { explainFailure, verifyMerge } from './verify.ts';
 
@@ -116,8 +116,6 @@ async function pushAll(path: string, plan: HotfixPlan, remote: string): Promise<
   if (moved) throw new DomainError(`push: '${plan.into}' o '${plan.back}' avanzó en '${remote}'; relanza el hotfix`);
   throw new DomainError(`push: no se pudo publicar '${plan.into}' y '${plan.back}' en '${remote}'.`);
 }
-
-const shortHead = async (path: string) => (await gitLines(path, ['rev-parse', '--short', 'HEAD']))[0];
 
 async function report(job: Job, plan: HotfixPlan, { tagged, ...paths }: Checkouts & { tagged: boolean }): Promise<void> {
   const { branch, options, io } = job;

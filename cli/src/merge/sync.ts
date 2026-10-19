@@ -4,7 +4,7 @@ import { git, gitLines } from '../git/git.ts';
 import { completeMergeAttempt, gitWithOutput, mergeArgs } from './attempt.ts';
 import { resolveMergePolicy } from './policy.ts';
 import { resolveProjectRoot, type MergeOptions } from './run.ts';
-import { remoteForBranch } from './steps.ts';
+import { fetchBase, remoteForBranch, shortHead } from './steps.ts';
 
 const REFUSED: [keyof MergeOptions, string][] = [
   ['into', '--into'], ['tag', '--tag'], ['order', '--order'], ['push', '--push'], ['verify', '--verify'], ['verifiedAt', '--verified-at'], ['check', '--check'],
@@ -21,24 +21,15 @@ async function assertNothingPending(root: string, branch: string): Promise<void>
   if (changed || merging) throw new DomainError(`base: '${branch}' tiene cambios sin commitear; commitéalos antes de integrar la base`);
 }
 
-async function fetchedBase(root: string, into: string): Promise<string> {
-  const remote = await remoteForBranch(root, into);
-  if (remote === null) return into;
-  const fetched = await git(root, ['fetch', remote, `+refs/heads/${into}:refs/remotes/${remote}/${into}`]);
-  if (fetched.code !== 0) throw new DomainError(`base: no se pudo hacer fetch de '${remote}'.`);
-  return `${remote}/${into}`;
-}
-
 export async function syncBranch(options: MergeOptions, io: Io): Promise<void> {
   refuseMergeOptions(options);
   const root = resolveProjectRoot(options.projectRoot);
   const { into } = resolveMergePolicy(root);
   const [branch] = await gitLines(root, ['branch', '--show-current']);
   await assertNothingPending(root, branch);
-  const base = await fetchedBase(root, into);
+  const base = await fetchBase(root, { into, remote: await remoteForBranch(root, into) });
   if ((await git(root, ['merge-base', '--is-ancestor', base, 'HEAD'])).code === 0) return io.out(`base: al día: '${base}' ya está en '${branch}'`);
   const merged = await gitWithOutput(root, mergeArgs(['--no-edit', base]));
   await completeMergeAttempt({ worktree: root, stepName: 'base', output: merged.output, report: io.out, destinationIsTheirs: true }, merged.code);
-  const [hash] = await gitLines(root, ['rev-parse', '--short', 'HEAD']);
-  io.out(`base: integrada '${base}' en '${branch}': ${hash}`);
+  io.out(`base: integrada '${base}' en '${branch}': ${await shortHead(root)}`);
 }

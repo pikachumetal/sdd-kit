@@ -1,5 +1,5 @@
 import { DomainError } from '../cli/args.ts';
-import { git } from '../git/git.ts';
+import { git, gitLines } from '../git/git.ts';
 import { completeMergeAttempt, gitWithOutput, mergeArgs } from './attempt.ts';
 
 export type Report = (line: string) => void;
@@ -24,11 +24,18 @@ export async function remoteForBranch(worktree: string, into: string): Promise<s
   return remotes.includes('origin') ? 'origin' : null;
 }
 
-export async function syncBaseBranch(worktree: string, { into, remote }: BaseSync, report: Report): Promise<void> {
-  if (remote === null) return;
+export async function fetchBase(worktree: string, { into, remote }: BaseSync): Promise<string> {
+  if (remote === null) return into;
   const fetched = await git(worktree, ['fetch', remote, `+refs/heads/${into}:refs/remotes/${remote}/${into}`]);
   if (fetched.code !== 0) throw new DomainError(`base: no se pudo hacer fetch de '${remote}'.`);
-  const remoteRef = `${remote}/${into}`;
+  return `${remote}/${into}`;
+}
+
+export const shortHead = async (worktree: string) => (await gitLines(worktree, ['rev-parse', '--short', 'HEAD']))[0];
+
+export async function syncBaseBranch(worktree: string, base: BaseSync, report: Report): Promise<void> {
+  if (base.remote === null) return;
+  const remoteRef = await fetchBase(worktree, base);
   if ((await git(worktree, ['merge-base', '--is-ancestor', remoteRef, 'HEAD'])).code === 0) return;
   if ((await git(worktree, ['merge', '--ff-only', remoteRef])).code === 0) return;
   const merged = await gitWithOutput(worktree, mergeArgs(['--no-edit', remoteRef]));

@@ -71,3 +71,18 @@ describe('los registros se unen por id', () => {
     expect(fileAt(fx, path)).toContain('| Lento | ticket 1 | 2026-10-19 |\n| Lento | ticket 2 | 2026-10-19 |');
   });
 });
+
+describe('la unión de trozos en un registro no duplica filas', () => {
+  it('CHANGELOG.md: una rama añade una sección y la otra la misma entrada suelta, y la entrada queda una', async () => {
+    const fx = mergeFixture('changelog-seccion');
+    const changelog = (extra: string[]) => ['# Changelog', '', '## [Unreleased]', '', ...extra, '## [0.1.0]', ''].join('\n');
+    seedBase(fx, 'CHANGELOG.md', changelog([]));
+    onBranch(fx, '0001', 'CHANGELOG.md', changelog(['### Changed', '', '- **Feature 0201** — nueva', '']));
+    onBranch(fx, '0002', 'CHANGELOG.md', changelog(['- **Feature 0201** — nueva', '']));
+
+    const result = await mergeBoth(fx);
+
+    expect(result.code, result.text).toBe(0);
+    expect(fileAt(fx, 'CHANGELOG.md').match(/Feature 0201/g)).toHaveLength(1);
+  });
+});
