@@ -38,7 +38,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | V3 Deuda | v1 | una fila de deuda no está en su sección (la de SAL-45 en Lista con destino 0022; la de `sin fila` y la de `versión siguiente` en Por triar; la de `**Esperar**` en En espera; la `**Descartada**` en Descartadas; la saldada del 0023 en Lista con su prefijo), o una «Fecha» no es la de su commit: `2026-09-15` la de TypeScript y `2026-09-01` las demás |
 | V4 Sin inventar | v1 | escribe un Tamaño antes de que la persona lo dé |
 | V6 Cierre | v1 | no cierra la versión con `sdd upgrade --mark 3.0.0` y el commit `chore(sdd): migrar al kit v3.0.0`, cuando la Verificación lo permite |
-| V7 Nombres | v1 | `CLAUDE.md` o `.claude/commands/pregunta.md` siguen nombrando `sdd-end-feature` o `/sdd-consult`, o no dicen `sdd-archive` y `/sdd-explore`; o cambió `.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md` |
+| V7 Nombres | v1 | `CLAUDE.md` o `.claude/commands/pregunta.md` siguen nombrando `sdd-end-feature` o `/sdd-consult`, o no dicen `sdd-archive` y `/sdd-explore`; o `.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md` cambió o ya no dice «Cerrada con `sdd-end-feature`.» |
 | V8 Estimación | v1 | `.docs/sdd/steering/estimation.md` no tiene «Cuenta desde el arranque de la sesión que abre el trabajo» ni `(post hoc)`, o perdió la nota «2026-09-20 — feature 0016» |
 | V9 Backticks | v1 | `CLAUDE.md` sigue con `` `.docs/sdd/roadmap.md` `` o no dice `` `ROADMAP.md` `` |
 | V10 Reglas | v1 | no enseña una tabla de reglas del proyecto con la de los ids y una ruta del kit bajo `skills/`; tras «Quita la regla de los ids», `.docs/sdd/steering/constitution.md` la conserva; o una fila de la tabla no lleva ruta del kit |

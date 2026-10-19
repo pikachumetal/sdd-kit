@@ -173,8 +173,30 @@ Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
   }
 
   It 'la verificación lleva el git grep con AGENTS.md y el histórico excluido' {
-    $script:V2 | Should -Match ([regex]::Escape("git grep -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'"))
+    $script:V2 | Should -Match ([regex]::Escape("git grep --untracked -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'"))
     $script:V2 | Should -Not -Match 'Select-String -Path CLAUDE\.md, AGENTS\.md'
+  }
+}
+
+Describe 'Migración a v3.0.0 — textos, reglas y marcador' {
+  BeforeAll {
+    $script:V3 = Get-KitFile 'skills/sdd-upgrade/references/migrations/v3.0.0.md'
+    $script:Upgrade = Get-KitFile 'skills/sdd-upgrade/SKILL.md'
+  }
+
+  It 'cada git grep de la migración lleva --untracked' {
+    [regex]::Matches($script:V3, '(?m)git grep [^`\n]*') | ForEach-Object { $_.Value } | Should -Not -BeNullOrEmpty
+    [regex]::Matches($script:V3, '(?m)git grep (?!--untracked)[^\n]*') | ForEach-Object { $_.Value } | Should -BeNullOrEmpty
+  }
+
+  It 'el paso de nombres deja fuera la historia que queda en .docs/sdd/: <_>' -ForEach @('changelog.md', 'client-changelog.md', 'roadmap.md') {
+    $grep = [regex]::Match($script:V3, "git grep --untracked -nE 'sdd-\(end-feature[^\n]*").Value
+    $grep | Should -Match ([regex]::Escape("':!.docs/sdd/$_'"))
+  }
+
+  It 'la revisión de reglas pendiente se reanuda con una petición que sdd-upgrade atiende' {
+    $script:V3 | Should -Match ([regex]::Escape('para reanudar: pide «revisa las reglas del proyecto contra el kit»'))
+    $script:Upgrade | Should -Match 'review the project''s rules against the kit'
   }
 }
 

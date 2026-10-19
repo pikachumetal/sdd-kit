@@ -1,6 +1,6 @@
 ---
 name: sdd-upgrade
-description: Use when a project with .docs/sdd/sdd-kit.json asks to update to the loaded kit («actualízame al kit», «ponme el proyecto al día»), or accepts the offer of the pending-migrations notice at session start. Not for a new project or an init in progress (that is sdd-init).
+description: Use when a project with .docs/sdd/sdd-kit.json asks to update to the loaded kit («actualízame al kit», «ponme el proyecto al día»), or accepts the offer of the pending-migrations notice at session start, or asks to review the project's rules against the kit. Not for a new project or an init in progress (that is sdd-init).
 ---
 
 # sdd-upgrade
@@ -11,7 +11,7 @@ Bring an initialized project up to the loaded kit by applying, in order, the mig
 
 ## Steps
 
-1. **What is pending**: run `sdd upgrade --root "<root>"`. It prints the pending migrations' paths in SemVer order, or `el proyecto ya está al día con el kit <versión>` (say it and touch nothing), or `init en curso: sigue con sdd-init` (invoke `sdd-init` with `Skill`: an init in progress isn't migrated). With `sin sdd-kit.json: se aplican todas`, the question «a project older than v0.2.0, or a 2.x init that was cut?» belongs to `sdd-init` (its predicate 4): if this session hasn't answered it, invoke `sdd-init`; with «older», apply them all; with «cut init», the init goes on and you don't migrate.
+1. **What is pending**: run `sdd upgrade --root "<root>"`. It prints the pending migrations' paths in SemVer order, or `el proyecto ya está al día con el kit <versión>` (say it and touch nothing; asked to review the project's rules against the kit, run the last step of that version's migration), or `init en curso: sigue con sdd-init` (invoke `sdd-init` with `Skill`: an init in progress isn't migrated). With `sin sdd-kit.json: se aplican todas`, the question «a project older than v0.2.0, or a 2.x init that was cut?» belongs to `sdd-init` (its predicate 4): if this session hasn't answered it, invoke `sdd-init`; with «older», apply them all; with «cut init», the init goes on and you don't migrate.
 2. **Apply each file in order, step by step.** Each step starts with a predicate: if it doesn't hold, skip it and say so. Steps without a **gate** mark (a text substitution, renaming a table) run without asking: they're reversible and the user reviews them in the diff. A step marked **gate** is presented to the user before it runs (a mass rename, a deletion, an `estimation-log.md` diff).
 3. **A step without a mark that deletes or restructures is a gate too**: if it deletes a file, a whole section or a JSON key, or changes a file's path (moving, splitting or merging included), present it and wait for the «sí», even if the migration doesn't mark it. Rewriting without deleting (substituting a name, adding a section) isn't. A step its migration marks «sin gate» runs without asking: the mark wins over this rule.
 4. **A gate nobody answers stays pending**: with the user away, don't run it on your own — not executed, not staged «for review». Pending means untouched, with the exact command listed in the report.
