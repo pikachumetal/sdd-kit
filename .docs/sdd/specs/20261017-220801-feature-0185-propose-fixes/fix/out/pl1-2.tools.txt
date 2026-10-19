@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md 2>/dev/null | head -150; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0185-propose-fixes\ebac9378-b677-45da-9748-3efb054b5cba\scratchpad\kit-green\skills\sdd-start-feature\references\modo-lite.md
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+# Constitution — s
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat .docs/sdd/estimation.md | head -30; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (7 turnos, 0.17143190000000003 $)
+Ahora: clasifico el cambio. Queda: que elijas el carril, después la spec, ~10 min.
+
+**No lo abro como patch**, aunque lo pidas así. Es una solución cerrada, pero lleva tres comportamientos nuevos y haría falta más de un test para reproducirlo:
+
+1. `reservas <sala>` lista las reservas activas, una por línea, con el formato `lun 10:00-12:00`.
+2. `reservas <sala>` sin reservas responde `sin reservas <sala>`.
+3. `libres` sin franja responde `indica una franja`.
+
+Un patch es lo que reproduce un solo test que falla hoy. Un comando nuevo no entra ahí, y no bajo de carril por mi cuenta.
+
+🦆 En `src/app.js` añadiría un comando nuevo a `run`. Haría que `libres` compruebe si falta la franja antes de calcular nada. No cambia datos ni nada de lo que ya funciona.
+
+**Recomiendo modo lite.** Cumple las condiciones que he comprobado:
+- El flujo ya existe y se lee: `run` y `libres` en `src/app.js`.
+- No cambia contratos públicos: solo añade un comando y un mensaje.
+- No cambia el esquema de datos: lee `bookings` tal como está.
+- Cabe en un solo módulo: `src/app.js` más su test.
+- La estimación entra en media jornada: son tres tests y unas pocas líneas. `estimation.md` no da cifras, así que es mi cálculo.
+
+El lite lleva una `spec.md` corta, sin `plan.md`. La spec se aprueba antes de tocar código y hay validación y walkthrough al cerrar. Si al implementar cae alguna condición, subo a full.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`). Tareas previstas: 3, así que no propongo partirlo.
+
+¿Cómo seguimos?
+- **A (recomendada):** modo lite.
+- **B:** modo full, con spec y plan.
+- **C:** lite, y si te ausentas, «apruebo la spec por delegación, nos vemos en la validación».
+
+No he creado rama, carpeta ni id. Espero tu respuesta.

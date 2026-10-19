@@ -21,7 +21,7 @@ created: 2026-10-19
   
   Nada se inventa: el Tamaño lo da el dev-lead; la fecha de una deuda sale del commit que la añadió, y si no, la pide; la evidencia, del «Ítem», y sin ella la fila va a «Por triar».
 - **Batería** (Task 1 y pasada de fix): molde `mold-v2x`, un proyecto 2.x completo en dos commits con fechas pasadas; persona `persona-v2x.md`; escenarios `v1` y `v2`; rúbrica V1 a V6.
-- **Plantilla y topes** (Task 3): `roadmap-template.md` queda deprecada y se borra en la 4.0.0 (decisión del dev-lead; `AnchorTemplates` lo fija y el Backlog gana la B20). Los topes de `sdd-templates` (1.700 y 14.600) y del kit (86.300) vuelven, re-medidos.
+- **Plantilla y topes** (Task 3): `roadmap-template.md` queda deprecada y se borra en la 4.0.0 (decisión del dev-lead; `AnchorTemplates` lo fija y el Backlog gana la B20). Los topes de `sdd-templates` (1.700 y 15.300) y del kit (87.500) vuelven, re-medidos sobre la base integrada con la 0185.
 - **Cierre**: delta fusionado en `migration`; changelog; roadmap (0197 ✅, la deuda l.415 saldada, notas en las filas 0177 y 0199); estimation-log.
 
 ## 2. Tiempo y coste: estimado vs real

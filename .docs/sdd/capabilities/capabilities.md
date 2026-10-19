@@ -27,6 +27,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND un escenario de una regla de negocio lleva datos concretos de entrada y de salida («bolsa FR, IT, PT; oferta en DE → no cubre»), no una frase abstracta («una oferta fuera de la bolsa no cubre»)
 - AND un THEN o un AND no cita las decisiones de la spec por número (`- THEN se rechaza, por la decisión 10`): la capacidad no tiene esas decisiones, y `sdd capability merge` lo rechaza
 - AND un `MODIFIED` copia el bloque entero del requisito con los cambios; `(antes: …)` es opcional y señala la cláusula que cambia
+- AND una línea del vivo que el `MODIFIED` quita va en el bloque como `- REMOVED <línea>` (`- REMOVED AND el aviso sale por correo`), y un requisito renombrado es un `REMOVED` del título viejo más un `ADDED` del nuevo, porque el título es la clave de fusión
 - AND si la capacidad no existe en `capabilities/`, su creación aparece en "Decisiones a validar"
 - AND si un requisito introduce datos, nombres, topes, avisos o una condición de conflicto nuevos, la capacidad lleva su subsección «Reglas de la capacidad» con solo las entradas que cambian (dónde viven los datos · idioma de los nombres · límites · avisos · regla ante conflicto), cada una con su valor completo: con **Avisos**: A y B vigentes y una feature que añade C, la entrada dice A, B y C, porque el cierre de `sdd-archive` sustituye o añade cada entrada entera por su nombre
 - AND la lente dominio reclama las entradas que falten y marca como Crítico una regla que contradiga la constitution
