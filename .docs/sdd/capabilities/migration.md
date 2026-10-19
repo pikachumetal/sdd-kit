@@ -141,7 +141,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN `CLAUDE.md` dice «arranca el trabajo con `sdd-start-feature`» y `constitution.md` cita `sdd-end-feature`, sin gate
 - AND `specs/20260910-080000-task-0012-login/spec.md` sigue citando `sdd-end-task`, y la carpeta no se renombra
 - AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
-- AND la verificación de la migración, con `Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task' -ErrorAction SilentlyContinue` (sin `AGENTS.md`, esa ruta no cuenta), no devuelve nada
+- AND la verificación de la migración, con `git grep --untracked -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'`, no devuelve nada, también en un proyecto sin `AGENTS.md`
 
 ### La migración a v2.0.0 declara el marketplace de superpowers
 
@@ -255,6 +255,49 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN el agente llega a los pasos de la v3.0.0
 - THEN ningún documento cambia de sitio ni de forma, y el informe lista cada tabla de destinos como pendiente, con cómo reanudarla
 - AND no hay commit de la migración ni cambia el marcador
+
+### La migración a v3.0.0 cambia los nombres de las skills retiradas
+
+- GIVEN un proyecto en 2.3.4 cuyo `CLAUDE.md` dice «Cierra cada feature con `sdd-end-feature`.», con `.claude/commands/pregunta.md` que dice «Usa `/sdd-consult` para responder.» y con una carpeta de `specs/` cuyo `walkthrough.md` cita `sdd-end-feature`
+- WHEN se aplica la v3.0.0
+- THEN `CLAUDE.md` dice «Cierra cada feature con `sdd-archive`.» y `pregunta.md` dice «Usa `/sdd-explore` para responder.», sin gate
+- AND `sdd-end-patch` pasa a `sdd-archive`, y `sdd-init-greenfield` y `sdd-init-brownfield` a `sdd-init`, en `CLAUDE.md`, `AGENTS.md`, `.docs/sdd/*.md`, `.docs/sdd/steering/*.md`, `.docs/sdd/capabilities/*.md`, `.claude/skills/` y `.claude/commands/`
+- AND el `walkthrough.md` de `specs/` sigue citando `sdd-end-feature`, y tampoco cambian `CHANGELOG.md`, `decisions/`, `releases/` ni `kit-feedback/`
+- AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
+- AND la «Verificación», con `git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)'` sobre esas rutas (las carpetas con `:(glob)`, y sin `changelog.md`, `client-changelog.md` ni `roadmap.md` de `.docs/sdd/`), no devuelve nada, también sin `AGENTS.md` ni `.claude/`
+
+### La migración a v3.0.0 lleva el método nuevo al `estimation.md` del proyecto
+
+- GIVEN un proyecto cuyo `steering/estimation.md` tiene las líneas de la plantilla 2.x «El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, …» y «Los patches registran solo el tiempo real.»
+- WHEN se aplica la v3.0.0
+- THEN la primera gana, tras «registra el tiempo real.», «Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración.», y la segunda pasa a ser la línea de patches de `estimation-template.md` con `(post hoc)`, sin gate
+- AND las «Notas de calibración» del proyecto no cambian
+- AND con un método que no tiene esos literales («Método: horas por task.»), el agente presenta el texto del proyecto y las dos líneas nuevas, y no cambia el fichero sin el «sí»
+- AND sin `estimation.md`, el paso se salta y lo dice
+
+### La migración a v3.0.0 corrige las rutas viejas escritas entre backticks
+
+- GIVEN un proyecto cuyo `CLAUDE.md` dice «El roadmap vive en `.docs/sdd/roadmap.md`.» y cuyo `README.md` cita `` `.docs/sdd/constitution.md` ``
+- WHEN se aplica la v3.0.0 y el dev-lead aprueba las tablas de los pasos 1 y 3
+- THEN `CLAUDE.md` dice «El roadmap vive en `ROADMAP.md`.» y `README.md` cita `` `.docs/sdd/steering/constitution.md` ``
+- AND solo cambian las rutas entre backticks de `CLAUDE.md`, `AGENTS.md` y `README.md` cuyo documento se movió en un paso aprobado
+
+### La migración a v3.0.0 cierra con el marcador y después revisa las reglas del proyecto
+
+- GIVEN un proyecto que migra a v3.0.0 con el dev-lead presente, cuya `steering/constitution.md` dice «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap.»
+- WHEN se aplican y aprueban los pasos de la v3.0.0
+- THEN `sdd-kit.json` queda con `version` `3.0.0`, escrito con `sdd upgrade --mark 3.0.0`, y hay un commit `chore(sdd): migrar al kit v3.0.0`
+- AND después el agente presenta una tabla con cada regla de `CLAUDE.md`, `AGENTS.md`, `PRODUCT.md` y `steering/` que repite o contradice el kit instalado, con su fichero y línea, la ruta del kit que la cubre y su propuesta; la regla de los ids sale con la ruta de `skills/sdd-start-feature/references/nombrado.md`
+- AND solo cambia lo que el dev-lead aprueba, en un commit `chore(sdd): reglas del proyecto que ya cubre el kit`
+- AND una regla sin una ruta del kit que la cubra no sale en la tabla; sin ninguna, el paso se salta y lo dice
+- AND sin el dev-lead, la tabla va al informe como pendiente, con cómo reanudarla, y ni la constitution ni el marcador dependen de ella
+
+### La migración a v3.0.0 enseña lo que un gate deja pendiente o regenera
+
+- GIVEN un proyecto cuyo `tech-stack.md` tiene en «Decisiones abiertas» «¿avisos por correo?», con el paso 2 aprobado y el paso 3 rechazado
+- WHEN acaba la migración
+- THEN el informe nombra «¿avisos por correo?» junto al paso 3 pendiente, con `git show <sha>:.docs/sdd/tech-stack.md`
+- AND la `estimation-log.md` regenerada se enseña antes del gate del paso 1, generada en una carpeta temporal con `sdd estimation log --out`, y la del proyecto solo se regenera tras el «sí»
 
 ## Reglas de la capacidad
 

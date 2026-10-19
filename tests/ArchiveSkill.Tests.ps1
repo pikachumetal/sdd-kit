@@ -219,7 +219,7 @@ Describe 'sdd-archive: retirada de las skills viejas' {
 
   It 'ningún fichero de skills/ nombra <_>, salvo la procedencia de sdd-archive y las migraciones pasadas' -ForEach @('finishing-a-development-branch', 'sdd-end-feature', 'sdd-end-patch') {
     $name = $_
-    $allowed = @('skills[\\/]sdd-archive[\\/]NOTICE$', 'migrations[\\/]v0\.4\.0\.md$', 'migrations[\\/]v2\.0\.0\.md$')
+    $allowed = @('skills[\\/]sdd-archive[\\/]NOTICE$', 'migrations[\\/]v0\.4\.0\.md$', 'migrations[\\/]v2\.0\.0\.md$', 'migrations[\\/]v3\.0\.0\.md$')
     if ($name -eq 'finishing-a-development-branch') { $allowed += 'skills[\\/]sdd-archive[\\/]SKILL\.md$' }
     $hits = Get-ChildItem -LiteralPath (Join-Path $script:RepoRoot 'skills') -Recurse -File |
       Where-Object { $path = $_.FullName; -not ($allowed | Where-Object { $path -match $_ }) } |
