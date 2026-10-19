@@ -105,12 +105,16 @@ async function commitResolution(worktree: string, conflicted: string[]): Promise
 }
 
 // Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
+// Mergiraf solo une código: lo que une lo verifica la suite, y en los documentos nadie lo haría.
+const isCode = (file: string) => !file.startsWith('.docs/') && !file.toLowerCase().endsWith('.md');
+
 // Los avisos de lo resuelto solo valen si el merge acaba hecho; lo que no se resuelve se dice siempre.
 export async function resolveConflicts(attempt: MergeAttempt, conflicted: string[]): Promise<string[]> {
   const lines: string[] = [];
   const buffered = { ...attempt, report: (line: string) => void lines.push(line) };
   let left = await unresolvedByKit(buffered, conflicted.filter((name) => !LOG.test(name)));
-  if (left.length > 0 && mergirafRuns()) left = await solveWithMergiraf(attempt.worktree, left, { report: buffered.report });
+  const forMergiraf = left.filter(isCode);
+  if (forMergiraf.length > 0 && mergirafRuns()) left = [...left.filter((file) => !isCode(file)), ...(await solveWithMergiraf(attempt.worktree, forMergiraf, { report: buffered.report }))];
   const resolved = left.length === 0 && (await commitResolution(attempt.worktree, conflicted));
   lines.filter((line) => resolved || line.startsWith('mergiraf: no resuelve')).forEach((line) => attempt.report(line));
   if (resolved) return [];

@@ -129,7 +129,7 @@ async function report(job: Job, plan: HotfixPlan, { tagged, ...paths }: Checkout
   if (options.push) io.out(plan.remote === null ? 'push: no hecho: sin remoto' : `publicado en ${plan.remote}`);
 }
 
-async function publishedBack(path: string, { back, remote }: HotfixPlan): Promise<boolean> {
+export async function publishedBack(path: string, { back, remote }: HotfixPlan): Promise<boolean> {
   if (remote === null) return false;
   const { code } = await git(path, ['ls-remote', '--exit-code', '--heads', remote, back]);
   if (code !== 0 && code !== 2) throw new DomainError(`vuelta: no se pudo consultar '${back}' en '${remote}'`);
