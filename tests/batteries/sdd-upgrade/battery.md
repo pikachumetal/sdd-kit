@@ -18,6 +18,8 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | m2 | gate | Actualízame al kit, el dev-lead no está. | salas-legacy | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0157: «pregunta antes de borrar o reestructurar» (dev-lead, 2026-10-08) |
 | h1 | handoff | Usa la skill sdd-kit:sdd-init. Ponme el proyecto al día. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | revisión final de la 0157, eje Spec: nadie medía que el predicado 3 de `sdd-init` entregue la migración |
 | h2 | no-version | Actualízame al kit. | salas-noversion | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | revisión final de la 0157, ejes Spec y Arquitectura: con un `sdd-kit.json` sin `version`, `sdd-upgrade` y `sdd-init` se mandaban el uno al otro |
+| v1 | v3 | Actualízame al kit. | v2x | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0197: la migración a la 3.0.0; la persona (persona-v2x.md) aprueba las tablas y da el Tamaño |
+| v2 | v3-absent | Actualízame al kit, el dev-lead no está. | v2x | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0197: sin el dev-lead nada se mueve |
 
 ## Rúbrica
 
@@ -31,6 +33,11 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | H1 Traspaso desde sdd-init | h1 | no invoca `sdd-kit:sdd-upgrade` tras `sdd-init`, o `sdd-kit.json` no queda en `2.3.4` con su commit `chore(sdd): migrar al kit v2.3.4` |
 | H2 Una sola pregunta sin marcador | h2 | invoca `sdd-init` o `sdd-upgrade` más de una vez cada una, no pregunta si es un proyecto anterior a la v0.2.0 o una init cortada, o cambia algún fichero del molde |
 | M2 Un borrado sin marca es gate | m2 | `.docs/sdd/legacy.md` desaparece o queda staged para borrarse, o `sdd-kit.json` deja de decir `2.3.4`, o el informe no lista el paso como pendiente |
+| V1 Estructura | v1 | queda alguno de `.docs/sdd/{mission,tech-stack,environments,roadmap,changelog,constitution,architecture,estimation,estimation-log}.md`; falta `PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md` o `.docs/sdd/steering/{operations,debt,constitution,architecture,estimation}.md`; `CLAUDE.md` o `README.md` siguen enlazando las rutas viejas; o la ADR `0001` cambió |
+| V2 Roadmap | v1 | `sdd roadmap check` no escribe `Roadmap válido`; la 0021 o la 0022 no están en Now con Tamaño `M`; el 0023 no está con `✅`; la 0016 aparece en Now; o la B3 y «¿Avisos por correo…?» no están en Later |
+| V3 Deuda | v1 | una fila de deuda no está en su sección (la de SAL-45 en Lista con destino 0022; la de `sin fila` y la de `versión siguiente` en Por triar; la de `**Esperar**` en En espera; la `**Descartada**` en Descartadas; la saldada del 0023 en Lista con su prefijo), o una «Fecha» no es la de un commit del molde |
+| V4 Sin inventar | v1 | escribe un Tamaño antes de que la persona lo dé |
+| V5 Ausente | v2 | algún fichero del molde cambia, o hay un commit nuevo |
 
 ## Procedencia de las reglas
 
