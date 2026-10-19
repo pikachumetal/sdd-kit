@@ -29,13 +29,20 @@ export async function gitWithOutput(cwd: string, args: string[]): Promise<{ code
   return { code, output };
 }
 
+// Con MERGE_HEAD, git preparó el merge y fue el hook quien no dejó commitearlo; sin él, git no llegó a empezar.
+async function failedWithoutConflicts({ worktree, stepName, output }: MergeAttempt): Promise<DomainError> {
+  const prepared = (await git(worktree, ['rev-parse', '--verify', '--quiet', 'MERGE_HEAD'])).code === 0;
+  await git(worktree, ['merge', '--abort']);
+  const tail = output.slice(-20).join('\n');
+  return new DomainError(prepared ? `verificación: el hook rechazó el merge.\n${tail}` : `${stepName}: git merge falló sin conflictos.\n${tail}`);
+}
+
 export async function completeMergeAttempt(attempt: MergeAttempt, mergeCode: number): Promise<void> {
   if (mergeCode === 0) return;
-  const { worktree, stepName, output } = attempt;
-  const conflicted = await gitLines(worktree, ['diff', '--name-only', '--diff-filter=U']);
-  const left = conflicted.length === 0 ? [] : await resolveConflicts(attempt, conflicted);
-  if (conflicted.length > 0 && left.length === 0) return;
-  await git(worktree, ['merge', '--abort']);
-  if (conflicted.length === 0) throw new DomainError(`verificación: el hook rechazó el merge.\n${output.slice(-20).join('\n')}`);
-  throw new MergeConflict(stepName, left);
+  const conflicted = await gitLines(attempt.worktree, ['diff', '--name-only', '--diff-filter=U']);
+  if (conflicted.length === 0) throw await failedWithoutConflicts(attempt);
+  const left = await resolveConflicts(attempt, conflicted);
+  if (left.length === 0) return;
+  await git(attempt.worktree, ['merge', '--abort']);
+  throw new MergeConflict(attempt.stepName, left);
 }

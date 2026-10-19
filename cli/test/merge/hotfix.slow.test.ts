@@ -290,3 +290,58 @@ describe('la comprobación del destino de un hotfix', () => {
     expect(git(fx.repo, 'for-each-ref')).toBe(refs);
   });
 });
+
+describe('casos de borde del hotfix', () => {
+  it('si no se pueden consultar las etiquetas del remoto falla sin tocar nada, también con --check', async () => {
+    const fx = hotfixFixture('tag-sin-remoto');
+    git(fx.repo, 'remote', 'set-url', 'origin', join(fx.root, 'no-existe.git'));
+    const refs = git(fx.repo, 'for-each-ref');
+
+    for (const extra of [[], ['--check']]) {
+      const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3.0.1', ...extra));
+
+      expect(result.code).toBe(1);
+      expect(result.text).toContain("--tag: no se pudo consultar las etiquetas de 'origin'");
+    }
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+  });
+
+  it('una vuelta sin remoto se nombra como sin remoto', async () => {
+    const fx = hotfixFixture('vuelta-sin-remoto');
+    git(fx.repo, 'remote', 'rename', 'origin', 'upstream');
+    git(fx.repo, 'config', 'branch.main.remote', 'upstream');
+    const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs());
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("push: 'main' y 'develop' tienen remotos distintos ('upstream', sin remoto); fusiona a mano");
+    expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
+  });
+
+  it('una release borrada en el remoto no cuenta aunque quede su ref de seguimiento', async () => {
+    const fx = hotfixFixture('release-borrada');
+    openRelease(fx, 'release/3.1.0');
+    git(fx.seed, 'push', '-q', fx.remote, '--delete', 'release/3.1.0');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs());
+
+    expect(result.code, result.text).toBe(0);
+    expect(sha(fx.repo, 'develop^2')).toBe(sha(fx.repo, 'hotfix/0200-fix'));
+  });
+
+  it('--check no trae del remoto las releases que no conoce', async () => {
+    const fx = hotfixFixture('check-sin-fetch');
+    git(fx.seed, 'checkout', '-q', '-b', 'release/3.1.0', 'develop');
+    write(fx.seed, 'release.txt', 'release\n');
+    saveAll(fx.seed, 'chore: release');
+    git(fx.seed, 'push', '-q', fx.remote, 'release/3.1.0');
+    git(fx.seed, 'checkout', '-q', 'develop');
+    const tracking = git(fx.repo, 'for-each-ref', 'refs/remotes');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--check'));
+
+    expect(result.code, result.text).toBe(0);
+    expect(git(fx.repo, 'for-each-ref', 'refs/remotes')).toBe(tracking);
+  });
+});

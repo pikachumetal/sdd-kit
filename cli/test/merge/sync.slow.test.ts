@@ -100,4 +100,49 @@ describe('sdd merge --sync', () => {
     expect(result.code).toBe(1);
     expect(result.text).toContain("base: 'feature/0001' tiene cambios sin commitear");
   });
+
+  it('con un merge a medias sin cambios no toca nada', async () => {
+    const fx = mergeFixture('sync-merge-head');
+    const feature = join(fx.wt, '0001');
+    git(feature, 'branch', 'vacia');
+    git(feature, 'checkout', '-q', 'vacia');
+    git(feature, 'commit', '-q', '--allow-empty', '-m', 'vacía');
+    git(feature, 'checkout', '-q', 'feature/0001');
+    git(feature, 'merge', '-q', '--no-commit', '--no-ff', 'vacia');
+    const head = sha(feature, 'HEAD');
+    const mergeHead = sha(feature, 'MERGE_HEAD');
+
+    const result = await sync(fx);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("base: 'feature/0001' tiene cambios sin commitear");
+    expect(sha(feature, 'HEAD')).toBe(head);
+    expect(sha(feature, 'MERGE_HEAD')).toBe(mergeHead);
+  });
+
+  it('en un HEAD desacoplado no toca nada', async () => {
+    const fx = mergeFixture('sync-desacoplado');
+    git(join(fx.wt, '0001'), 'checkout', '-q', '--detach');
+
+    const result = await sync(fx);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('base: HEAD desacoplado; --sync integra la base en una rama');
+  });
+
+  it('un git merge que falla sin conflictos no se atribuye a un hook', async () => {
+    const fx = mergeFixture('sync-sin-seguimiento');
+    write(join(fx.wt, '0002'), 'nuevo.txt', 'de la 0002\n');
+    saveAll(join(fx.wt, '0002'), 'feat: nuevo');
+    expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
+    write(join(fx.wt, '0001'), 'nuevo.txt', 'sin seguimiento\n');
+    const before = sha(join(fx.wt, '0001'), 'HEAD');
+
+    const result = await sync(fx);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('base: git merge falló sin conflictos.');
+    expect(result.text).not.toContain('el hook rechazó');
+    expect(sha(join(fx.wt, '0001'), 'HEAD')).toBe(before);
+  });
 });

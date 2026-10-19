@@ -28,9 +28,9 @@ export function lineKey(line: string): string | null {
 function identities(lines: string[]): string[] {
   let heading = '';
   let plain = 0;
-  return lines.map((line) => {
+  return lines.map((line, index) => {
     if (HEADING.test(line)) heading = line.trim();
-    const key = lineKey(line);
+    const key = SEPARATOR.test(lines[index + 1] ?? '') ? null : lineKey(line);
     return key === null ? `plain\u0000${plain++}\u0000${line}` : `row\u0000${heading}\u0000${key}`;
   });
 }
@@ -78,23 +78,24 @@ function sides({ ours, base, theirs }: Hunk): Sides | null {
 }
 
 export function dedupeRows(lines: string[]): KeyedMerge {
-  const seen = new Map<string, string>();
-  const duplicates: string[] = [];
+  const seen = new Map<string, Set<string>>();
+  const duplicates = new Set<string>();
   const ids = identities(lines);
   const kept = lines.filter((line, index) => {
-    const id = ids[index];
-    if (id.startsWith('plain\u0000')) return true;
-    const previous = seen.get(id);
-    if (previous === undefined) return seen.set(id, line) !== undefined;
-    if (previous !== line && !duplicates.includes(lineKey(line) ?? '')) duplicates.push(lineKey(line) ?? '');
-    return previous !== line;
+    if (ids[index].startsWith('plain\u0000')) return true;
+    const texts = seen.get(ids[index]) ?? new Set<string>();
+    seen.set(ids[index], texts);
+    if (texts.has(line)) return false;
+    if (texts.size > 0) duplicates.add(lineKey(line) ?? '');
+    texts.add(line);
+    return true;
   });
-  return { lines: kept, duplicates };
+  return { lines: kept, duplicates: [...duplicates] };
 }
 
 const rowsOf = (id: string, { ours, base, theirs }: Sides) => resolveRow(ours.get(id), base.get(id), theirs.get(id));
 
-function placeOurs(byId: Sides, merged: KeyedMerge & { entries: Entry[] }): boolean {
+function placeOurs(byId: Sides, merged: { entries: Entry[]; duplicates: string[] }): boolean {
   for (const id of byId.ours.keys()) {
     const rows = rowsOf(id, byId);
     if (rows === null) return false;
@@ -121,7 +122,7 @@ function placeTheirs(byId: Sides, entries: Entry[]): boolean {
 export function mergeKeyedHunk(hunk: Hunk): KeyedMerge | null {
   const byId = sides(hunk);
   if (byId === null) return null;
-  const merged = { entries: [] as Entry[], lines: [] as string[], duplicates: [] as string[] };
+  const merged = { entries: [] as Entry[], duplicates: [] as string[] };
   if (!placeOurs(byId, merged) || !placeTheirs(byId, merged.entries)) return null;
   return { lines: merged.entries.map((entry) => entry.line), duplicates: merged.duplicates };
 }

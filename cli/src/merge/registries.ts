@@ -5,11 +5,10 @@ import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts'
 import { git } from '../git/git.ts';
 import type { MergeAttempt } from './attempt.ts';
 import { dedupeRows, mergeKeyedHunk, type KeyedMerge } from './keyed.ts';
-import { mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
+import { MARKER, mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
 
 const LOG = /estimation-log\.md$/i;
 const HUNK = /^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|(?![\s\S]))/gms;
-const MARKER = /^(<<<<<<<|\|\|\|\|\|\|\||=======|>>>>>>>)/m;
 
 const KEYED_REGISTRIES = ['.docs/sdd/roadmap.md', '.docs/sdd/changelog.md', 'ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md'];
 
@@ -106,10 +105,14 @@ async function commitResolution(worktree: string, conflicted: string[]): Promise
 }
 
 // Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
+// Los avisos de lo resuelto solo valen si el merge acaba hecho; lo que no se resuelve se dice siempre.
 export async function resolveConflicts(attempt: MergeAttempt, conflicted: string[]): Promise<string[]> {
-  const { worktree, report } = attempt;
-  let left = await unresolvedByKit(attempt, conflicted.filter((name) => !LOG.test(name)));
-  if (left.length > 0 && mergirafRuns()) left = await solveWithMergiraf(worktree, left, { report });
-  if (left.length > 0) return left;
-  return (await commitResolution(worktree, conflicted)) ? [] : conflicted;
+  const lines: string[] = [];
+  const buffered = { ...attempt, report: (line: string) => void lines.push(line) };
+  let left = await unresolvedByKit(buffered, conflicted.filter((name) => !LOG.test(name)));
+  if (left.length > 0 && mergirafRuns()) left = await solveWithMergiraf(attempt.worktree, left, { report: buffered.report });
+  const resolved = left.length === 0 && (await commitResolution(attempt.worktree, conflicted));
+  lines.filter((line) => resolved || line.startsWith('mergiraf: no resuelve')).forEach((line) => attempt.report(line));
+  if (resolved) return [];
+  return left.length > 0 ? left : conflicted;
 }
