@@ -23,7 +23,7 @@ describe('con la rama destino sacada y con cambios sin commitear, el cierre no f
     expect(result.code).toBe(1);
     expect(slash(result.text)).toContain(`destino sacado: el checkout de 'develop' en '${slash(dev)}' tiene cambios sin commitear; el merge se haría encima de ellos, así que no se toca.`);
     expect(result.text).toMatch(/\.docs\/sdd\/roadmap\.md \| +2 \+-/);
-    expect(result.text).toContain('2. Llevarlos a la rama de la feature: solo tocan registros (roadmap, changelog, estimation-log).');
+    expect(result.text).toContain('2. Llevarlos a la rama de la feature: solo tocan registros (roadmap, changelog, deuda, estimation-log).');
     expect(result.text).toContain('3. Dejar el merge para luego.');
     expect(sha(fx.repo, 'develop')).toBe(before);
   });

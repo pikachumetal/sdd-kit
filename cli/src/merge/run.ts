@@ -7,7 +7,7 @@ import { withLock } from '../git/lock.ts';
 import { checkDestination, withDestination } from './destination.ts';
 import { checkHotfix, mergeHotfix, prepareHotfix } from './hotfix.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
-import { mergeFeature, pushDestination, remoteForBranch, syncBaseBranch, undoFailedMerge } from './steps.ts';
+import { mergeFeature, pushDestination, remoteForBranch, shortHead, syncBaseBranch, undoFailedMerge } from './steps.ts';
 import { explainFailure, resolveCommit, verifyMerge } from './verify.ts';
 
 export interface MergeOptions {
@@ -40,28 +40,31 @@ async function publish(path: string, job: Job, remote: string): Promise<void> {
     if (attempt === PUSH_ATTEMPTS) throw new DomainError(`push: '${policy.into}' sigue moviéndose en '${remote}' tras ${PUSH_ATTEMPTS} intentos; relanza el merge en un rato`);
     io.out(`push: '${policy.into}' avanzó en '${remote}'; integro y reintento (${attempt + 1}/${PUSH_ATTEMPTS})`);
     const [verified] = await gitLines(path, ['rev-parse', 'HEAD']);
-    await syncBaseBranch(path, policy.into, remote);
-    await verifyMerge(path, options.verify, verified, io);
+    await syncBaseBranch(path, { into: policy.into, remote }, io.out);
+    await verifyMerge(path, { command: options.verify, verifiedAt: verified }, io);
   }
+}
+
+async function reportMerge(path: string, { branch, policy, options, io }: Job, pushedTo: string | null): Promise<void> {
+  io.out(`Fusionado ${branch} en ${policy.into}: ${await shortHead(path)}`);
+  if (pushedTo !== null) io.out(`publicado en ${pushedTo}`);
+  else if (options.push) io.out('push: no hecho: sin remoto');
 }
 
 async function integrate(path: string, job: Job): Promise<void> {
   const { branch, policy, options, io } = job;
   const remote = await remoteForBranch(path, policy.into);
-  await syncBaseBranch(path, policy.into, remote);
+  await syncBaseBranch(path, { into: policy.into, remote }, io.out);
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
   try {
-    await mergeFeature(path, branch, policy, options.order);
-    await verifyMerge(path, options.verify, job.verifiedAt, io);
-    const pushed = options.push && remote !== null;
-    if (pushed) await publish(path, job, remote);
-    const [shortHash] = await gitLines(path, ['rev-parse', '--short', 'HEAD']);
-    io.out(`Fusionado ${branch} en ${policy.into}: ${shortHash}`);
-    if (pushed) io.out(`publicado en ${remote}`);
-    else if (options.push) io.out('push: no hecho: sin remoto');
+    await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, io.out);
+    await verifyMerge(path, { command: options.verify, verifiedAt: job.verifiedAt }, io);
+    const pushedTo = options.push ? remote : null;
+    if (pushedTo !== null) await publish(path, job, pushedTo);
+    await reportMerge(path, job, pushedTo);
   } catch (error) {
     await undoFailedMerge(path, before);
-    throw await explainFailure(error, options.verify, path, io);
+    throw await explainFailure(error, { worktree: path, command: options.verify, io });
   }
 }
 
@@ -79,9 +82,13 @@ function stableTarget({ into, order, tag }: MergeOptions, policy: MergePolicy): 
   return { into, order };
 }
 
+export function resolveProjectRoot(path: string): string {
+  if (!existsSync(path)) throw new DomainError(`No existe la ruta de proyecto '${path}'.`);
+  return realpathSync.native(resolve(path));
+}
+
 export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> {
-  if (!existsSync(options.projectRoot)) throw new DomainError(`No existe la ruta de proyecto '${options.projectRoot}'.`);
-  const projectRoot = realpathSync.native(resolve(options.projectRoot));
+  const projectRoot = resolveProjectRoot(options.projectRoot);
   const policy = resolveMergePolicy(projectRoot);
   const stable = stableTarget(options, policy);
   const branch = await currentBranch(projectRoot, options.branch);

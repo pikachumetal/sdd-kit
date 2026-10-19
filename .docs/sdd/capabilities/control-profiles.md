@@ -147,7 +147,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN la rama destino sacada en un worktree con cambios sin commitear
 - WHEN el cierre va a fusionar
 - THEN no fusiona ahí y sale con 1 con `destino sacado: el checkout de '<into>' en '<ruta>' tiene cambios sin commitear; el merge se haría encima de ellos, así que no se toca.`, el `git diff --stat HEAD` del checkout, `sin seguimiento: <ficheros>` si los hay, y el bloque `Salidas:` (commit de quien los hizo y relanzar, llevarlos a la feature y dejar el merge para luego)
-- AND la salida «Llevarlos a la rama de la feature: solo tocan registros (roadmap, changelog, estimation-log).» solo aparece si todos los ficheros sucios son `roadmap.md`, `changelog.md` o `estimation-log.md`; con `.gitignore` modificado, las salidas son dos
+- AND la salida «Llevarlos a la rama de la feature: solo tocan registros (roadmap, changelog, deuda, estimation-log).» solo aparece si todos los ficheros sucios son `.docs/sdd/roadmap.md`, `.docs/sdd/changelog.md`, `ROADMAP.md`, `CHANGELOG.md`, `.docs/sdd/steering/debt.md` o `estimation-log.md`; con `.gitignore` o un `docs/roadmap.md` modificados, las salidas son dos
 - AND no hace `stash`, `reset` ni commit de lo ajeno
 
 ### Un merge que el entorno deniega se informa con su evidencia
@@ -205,14 +205,14 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND si en cada fichero en conflicto cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `sdd estimation log`; con cualquier otro conflicto, falla con `base: conflicto en` y la lista de ficheros
+- AND resuelve sus conflictos como el merge de la feature: regenera `estimation-log.md` con `sdd estimation log`, une los registros por id, une los trozos que solo añaden líneas por los dos lados (primero la rama destino) y prueba Mergiraf si está instalado; con cualquier otro conflicto, falla con `base: conflicto en` y la lista de ficheros
 
 ### El merge del cierre une los registros que solo añaden líneas
 
 - GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md`, una línea a `changelog.md`, una sección al final de otro documento o una palabra a `.cspell/custom-words.txt` en el mismo sitio, y la primera ya se ha fusionado
 - WHEN el cierre de la segunda ejecuta `sdd merge`
 - THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
-- AND si en algún trozo los dos lados cambian una línea que ya existía, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
+- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
 
 ### El push del cierre publica la rama destino
 
@@ -242,16 +242,16 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### Un conflicto solo en los registros se resuelve con un merge de sincronización
 
-- GIVEN un cierre de feature o de patch con su commit de cierre hecho y `origin/develop` por delante, cuyo merge de sincronización (`git merge --no-edit origin/develop` en el worktree de la feature) deja conflicto solo en `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
+- GIVEN un cierre de feature o de patch con su commit de cierre hecho y `origin/develop` por delante
 - WHEN el agente sigue la receta del merge
-- THEN en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `sdd estimation log`, commitea el merge y sigue con `sdd merge`, sin parar a preguntar
+- THEN ejecuta `sdd merge --sync --project-root <worktree>`, que integra `origin/develop` en la rama y resuelve los registros, los trozos que solo añaden y, si está instalado, lo que Mergiraf resuelva; con `base: integrada`, sigue con `sdd merge`, sin parar a preguntar
 - AND la rama destino acaba con las entradas de las dos features en cada registro y el log regenerado
 
 ### Un conflicto que no se puede conservar entero es de una persona
 
-- GIVEN un cierre cuyo merge de sincronización o cuyo `sdd merge` deja conflicto (`base: conflicto en` o `merge: conflicto en`) y en la lista hay un fichero que no es uno de los tres registros, o los dos lados tocaron la misma línea de `changelog.md` o `roadmap.md`, o el relanzamiento vuelve a fallar
+- GIVEN un cierre cuyo `sdd merge --sync` o cuyo `sdd merge` deja conflicto (`base: conflicto en` o `merge: conflicto en`), o el relanzamiento vuelve a fallar
 - WHEN el agente sigue la receta del merge
-- THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script o de git y los ficheros, y el cierre queda «No terminado», como hoy
+- THEN no resuelve: cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy; el script ya ha abortado el merge
 - AND con `vuelta: conflicto en <ficheros>` de un hotfix, el script ya lo ha deshecho todo: una persona porta el arreglo a la rama de integración y relanza el hotfix
 
 ### El método de ejecución lo elige el handoff del plan
@@ -322,9 +322,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - WHEN se ejecuta `sdd merge --branch hotfix/0200-fix-login --into main --tag v3.0.1 --order "fusiona el hotfix del login en main" --push`
 - THEN bajo un solo cerrojo fusiona la rama en `main` con `--no-ff` y el commit `merge: hotfix/0200-fix-login en main` con la línea `Orden del dev-lead: «fusiona el hotfix del login en main»`, crea la etiqueta anotada `v3.0.1` en ese commit, fusiona la misma rama en `develop` con `--no-ff`, y publica `main`, `develop` y `v3.0.1` en un solo push atómico
 - AND escribe `Fusionado hotfix/0200-fix-login en main: <hash>`, `etiqueta v3.0.1 en <hash>`, `Fusionado hotfix/0200-fix-login en develop: <hash>` y `publicado en origin`
-- AND con `release/3.1.0` abierta (no antecesora de `main`), la vuelta va a `release/3.1.0` y no a `develop`; con dos abiertas falla antes de tocar nada con `vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano`
+- AND con `release/3.1.0` abierta en `origin` (no antecesora de `main`), la vuelta va a `release/3.1.0` y no a `develop`; con dos abiertas en `origin` tras el fetch de `release/*` que hace el script, falla antes de sincronizar ni fusionar nada con `vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano`; una `release/` solo local no cuenta si hay remoto
 - AND una rama `release/3.1.0` con `--into main` vuelve a `develop`
-- AND `--into main` sin `--order` sale con 2 con `--into 'main' distinta de merge.into necesita --order "<frase del dev-lead>"`; `--tag` sin ese `--into`, con `--tag solo con --into a la rama estable`; y una etiqueta existente falla con `--tag: ya existe 'v3.0.1'` sin tocar nada
+- AND `--into main` sin `--order` sale con 2 con `--into 'main' distinta de merge.into necesita --order "<frase del dev-lead>"`; `--tag` sin ese `--into`, con `--tag solo con --into a la rama estable`; `--tag 'v3.0.1 beta'`, con `--tag: 'v3.0.1 beta' no es un nombre de etiqueta válido`, antes del cerrojo; y una etiqueta que ya existe falla sin tocar nada con `--tag: ya existe 'v3.0.1'`, o con `--tag: ya existe 'v3.0.1' en 'origin'` si solo existe en el remoto
 
 ### A la rama estable solo llegan ramas hotfix y release
 
@@ -339,6 +339,43 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN deshace la vuelta, el merge en `main` y la etiqueta, no publica nada y falla con `vuelta: conflicto en skills/x/SKILL.md; se deshacen el merge en 'main' y la etiqueta: porta el arreglo a 'develop' a mano`
 - AND con la verificación de la vuelta en rojo, deshace lo mismo y da el error de verificación con su línea `base:`
 - AND si el push atómico se rechaza porque `main` o `develop` avanzaron en el remoto, deshace lo mismo y falla con `push: 'main' o 'develop' avanzó en 'origin'; relanza el hotfix`
+- AND si `main` y la rama de vuelta tienen remotos distintos, falla antes de tocar nada con `push: 'main' y 'develop' tienen remotos distintos ('origin', 'upstream'); fusiona a mano`; y si no se puede consultar la vuelta en el remoto, con `vuelta: no se pudo consultar 'develop' en 'origin'`
+
+### Los trozos del merge se calculan con histogram y se escriben con zdiff3
+
+- GIVEN cualquier merge que hace `sdd merge`: la base, la rama, la vuelta de un hotfix o `--sync`
+- WHEN el script ejecuta `git merge`
+- THEN lo ejecuta con `-c merge.conflictStyle=zdiff3` y `-X diff-algorithm=histogram`
+- AND un conflicto que llega a una persona lleva las marcas de `zdiff3`, con la base entre `|||||||` y `=======`
+
+### Los registros se unen por id
+
+- GIVEN `develop` y la rama que se fusiona, que en el mismo trozo de `.docs/sdd/roadmap.md` (o de `ROADMAP.md`, `CHANGELOG.md`, `.docs/sdd/changelog.md` o `.docs/sdd/steering/debt.md`) marcan una la fila `0190` como `✅` y añaden la otra la fila `0201` debajo
+- WHEN el cierre ejecuta `sdd merge`
+- THEN el trozo queda con la `0190` en `✅` y la `0201`, sin conflicto
+- AND si las dos ramas añaden la misma fila `0201` con el mismo texto, queda una sola
+- AND si añaden dos filas `0201` con texto distinto, se quedan las dos, la de la rama destino primero, y la salida dice `registros: dos filas distintas con el id '0201' en .docs/sdd/roadmap.md; se quedan las dos, revísalas`
+- AND una entrada `- **Feature 0185** — …` en `### Added` y otra en `### Changed` son ids distintos
+- AND si las dos ramas cambian de forma distinta la misma fila que ya estaba en la base, es conflicto y lo resuelve una persona
+
+### Mergiraf resuelve lo que queda si está instalado
+
+- GIVEN dos ramas que añaden cada una un método distinto en el mismo sitio de `src/rooms.ts` y `mergiraf` en el `PATH`
+- WHEN el merge deja ese fichero en conflicto tras unir los registros y los trozos que solo añaden
+- THEN el script ejecuta `mergiraf solve src/rooms.ts`, escribe `mergiraf: resuelto src/rooms.ts`, commitea el merge y corre `--verify` sobre el resultado
+- AND si `mergiraf solve` sale con otro código, escribe `mergiraf: no resuelve src/rooms.ts`, aborta el merge y falla como hoy con el fichero en la lista de `conflicto en`
+- AND sin `mergiraf` en el `PATH` no escribe nada de Mergiraf y falla como hoy
+- AND el script no escribe `git config` ni `.gitattributes`
+
+### El merge de sincronización lo hace `sdd merge --sync`
+
+- GIVEN la rama `feature/0186-x` con su commit de cierre, y `origin/develop` con la 0185 fusionada, que, como la rama, añade un requisito al final de `.docs/sdd/capabilities/routing.md` y una fila al roadmap
+- WHEN se ejecuta `sdd merge --sync --project-root <worktree de la 0186>`
+- THEN integra `origin/develop` en `feature/0186-x` con la misma resolución que el merge del cierre, sin coger el cerrojo, sin `--verify` y sin push; la capacidad queda con los dos requisitos (primero el de `develop`) y el roadmap con las dos filas, y escribe `base: integrada 'origin/develop' en 'feature/0186-x': <hash>`
+- AND si `origin/develop` ya es antecesora de la rama, no hace nada y escribe `base: al día: 'origin/develop' ya está en 'feature/0186-x'`
+- AND con un conflicto que no resuelve, aborta el merge, deja la rama como estaba y sale con 1 con `base: conflicto en <ficheros>.`
+- AND con cambios sin commitear sale con 1 sin tocar nada: `base: 'feature/0186-x' tiene cambios sin commitear; commitéalos antes de integrar la base`
+- AND con `--into`, `--tag`, `--order`, `--push`, `--verify`, `--verified-at` o `--check` sale con 2: `--sync no admite <opción>`
 
 ## Reglas de la capacidad
 
@@ -346,4 +383,4 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
 - **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la aplica `sdd-parallel-agents` (requisito «Dos revisores de spec se despachan con `sdd-parallel-agents`» de `feature-flow`). `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después. `sdd merge --push`: 3 intentos de push como máximo cuando la rama destino avanza en el remoto; el push de un hotfix, uno.
 - **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); el bloque de un push fallido (comando literal y error); y el aviso de cada clave de `sdd-kit.local.json` que el agente ignora, en el anuncio o en la pregunta del carril de `sdd-propose`.
-- **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
+- **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona. Un conflicto de merge en el que los dos lados cambian lo mismo lo resuelve una persona: `sdd merge` solo resuelve, en este orden, el `estimation-log.md` (regenerado), los registros por id, los trozos que solo añaden y lo que Mergiraf resuelva con código 0.

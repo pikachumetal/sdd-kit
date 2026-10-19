@@ -105,7 +105,12 @@ export async function runVerification(verification: Verification): Promise<void>
   throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${tail.join('\n')}`);
 }
 
-export async function verifyMerge(worktree: string, command: string | null, verifiedAt: string | null, io: Io): Promise<void> {
+export interface VerifyRequest {
+  command: string | null;
+  verifiedAt: string | null;
+}
+
+export async function verifyMerge(worktree: string, { command, verifiedAt }: VerifyRequest, io: Io): Promise<void> {
   if (command === null || command.trim() === '') return;
   if (verifiedAt !== null && (await onlyDocsSince(worktree, verifiedAt))) {
     const [shortHash] = await gitLines(worktree, ['rev-parse', '--short', verifiedAt]);
@@ -115,7 +120,7 @@ export async function verifyMerge(worktree: string, command: string | null, veri
 }
 
 // Tras deshacer el merge, el worktree ya está en la base: el mismo comando dice si el rojo es de la rama.
-export async function explainFailure(error: unknown, command: string | null, worktree: string, io: Io): Promise<unknown> {
+export async function explainFailure(error: unknown, { worktree, command, io }: Omit<Verification, 'command'> & { command: string | null }): Promise<unknown> {
   if (!(error instanceof VerificationFailed) || command === null) return error;
   return new DomainError(`${error.message}\n${await baseVerdict({ worktree, command, io })}`);
 }

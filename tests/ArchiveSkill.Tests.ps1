@@ -123,7 +123,7 @@ Describe 'sdd-archive: receta del merge' {
   }
 
   It 'el merge de sincronización va tras el commit de cierre' {
-    $script:Recipe | Should -Match 'After the closing commit, `git fetch`'
+    $script:Recipe | Should -Match 'After the closing commit, in the change''s worktree: `sdd merge --sync'
   }
 
   It 'la suite se repite solo si la base trae algo fuera de docs' {
@@ -271,8 +271,8 @@ Describe 'sdd-archive: pasada de fix de la revisión final' {
     $script:Recipe | Should -Match "there's nothing to integrate: no sync merge, no second suite"
   }
 
-  It 'un conflicto fuera de los registros aborta el merge de sincronización' {
-    $script:Recipe | Should -Match 'Any other conflict\*\*[^\n]*`git merge --abort`'
+  It 'un conflicto que la CLI no resuelve aborta el merge de sincronización' {
+    $script:Recipe | Should -Match '`base: conflicto en <files>\.`: the script ran `git merge --abort`'
   }
 
   It 'la receta reconoce los registros de la 3.0.0' {

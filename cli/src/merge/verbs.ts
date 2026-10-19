@@ -1,6 +1,7 @@
 import { UsageError, lockTimeoutOption, text } from '../cli/args.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { mergeBranch } from './run.ts';
+import { syncBranch } from './sync.ts';
 
 export const mergeVerb: Verb = {
   noun: 'merge',
@@ -10,6 +11,7 @@ export const mergeVerb: Verb = {
     branch: { type: 'string' },
     push: { type: 'boolean' },
     check: { type: 'boolean' },
+    sync: { type: 'boolean' },
     verify: { type: 'string' },
     'verified-at': { type: 'string' },
     into: { type: 'string' },
@@ -32,7 +34,7 @@ export const mergeVerb: Verb = {
       tag: text(args, 'tag'),
       lockTimeoutMinutes: lockTimeoutOption(args),
     };
-    await mergeBranch(options, io);
+    await (args.values.sync === true ? syncBranch(options, io) : mergeBranch(options, io));
     return 0;
   },
 };
