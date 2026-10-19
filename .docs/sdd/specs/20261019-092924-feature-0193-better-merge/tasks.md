@@ -19,7 +19,7 @@ created: 2026-10-19
 | 1 | Opciones de git y Mergiraf en la cadena de resolución | done | — | reescritura de marcas en diff3 (ruling) |
 | 2 | Registros por id | done | — | |
 | 3 | `sdd merge --sync` y el merge de sincronización de `sdd-archive` | done | — | RED a3c rojo; GREEN a3 2/2, a3n 1/1, a3c 1/1 (1,98 $) |
-| 4 | Hotfix: etiqueta y vuelta antes de tocar nada | pending | — | |
+| 4 | Hotfix: etiqueta y vuelta antes de tocar nada | done | — | |
 | 5 | Menores de código de la 0187 | pending | — | |
 
 ## Verificación por task

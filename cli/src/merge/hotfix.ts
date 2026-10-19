@@ -1,17 +1,20 @@
 import { basename } from 'node:path';
-import { DomainError } from '../cli/args.ts';
+import { DomainError, UsageError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
 import { checkDestination, withDestination, type DestinationRequest } from './destination.ts';
 import type { Job } from './run.ts';
 import { mergeFeature, remoteForBranch, remoteMoved, syncBaseBranch, undoFailedMerge } from './steps.ts';
 import { explainFailure, verifyMerge } from './verify.ts';
 
-export interface HotfixPlan {
+export interface HotfixTarget {
   into: string;
-  back: string;
   tag: string | null;
   order: string;
   remote: string | null;
+}
+
+export interface HotfixPlan extends HotfixTarget {
+  back: string;
 }
 
 interface Checkouts {
@@ -22,33 +25,55 @@ interface Checkouts {
 const GIT_FLOW = /^(hotfix|release)\//;
 const MERGE_CONFLICT = /^merge: conflicto en (.+)\.$/;
 
-async function openReleases(root: string, plan: HotfixPlan, branch: string): Promise<string[]> {
-  const remotePrefix = `refs/remotes/${plan.remote}/`;
-  const refs = await gitLines(root, ['for-each-ref', '--format=%(refname)', 'refs/heads/release/', ...(plan.remote === null ? [] : [`${remotePrefix}release/`])]);
-  const open = new Set<string>();
-  for (const ref of refs) {
-    const name = ref.startsWith('refs/heads/') ? ref.slice('refs/heads/'.length) : ref.slice(remotePrefix.length);
-    if (name !== branch && (await git(root, ['merge-base', '--is-ancestor', ref, `refs/heads/${plan.into}`])).code !== 0) open.add(name);
-  }
-  return [...open].sort();
+async function stableRef(root: string, { into, remote }: HotfixTarget): Promise<string> {
+  const tracking = `refs/remotes/${remote}/${into}`;
+  if (remote !== null && (await git(root, ['rev-parse', '--verify', '--quiet', tracking])).code === 0) return tracking;
+  return `refs/heads/${into}`;
 }
 
-async function backTarget(root: string, job: Job, plan: HotfixPlan): Promise<string> {
+async function openReleases(root: string, target: HotfixTarget, branch: string): Promise<string[]> {
+  const prefix = target.remote === null ? 'refs/heads/' : `refs/remotes/${target.remote}/`;
+  const stable = await stableRef(root, target);
+  const open: string[] = [];
+  for (const ref of await gitLines(root, ['for-each-ref', '--format=%(refname)', `${prefix}release/`])) {
+    const name = ref.slice(prefix.length);
+    if (name !== branch && (await git(root, ['merge-base', '--is-ancestor', ref, stable])).code !== 0) open.push(name);
+  }
+  return open.sort();
+}
+
+async function backTarget(root: string, job: Job, target: HotfixTarget): Promise<string> {
   if (!job.branch.startsWith('hotfix/')) return job.policy.into;
-  const releases = await openReleases(root, plan, job.branch);
+  const releases = await openReleases(root, target, job.branch);
   if (releases.length > 1) throw new DomainError(`vuelta: hay varias ramas release/ abiertas (${releases.join(', ')}); fusiona a mano`);
   return releases[0] ?? job.policy.into;
 }
 
-export async function prepareHotfix(job: Job, into: string, order: string): Promise<HotfixPlan> {
-  const { projectRoot, branch, options } = job;
-  if (!GIT_FLOW.test(branch)) throw new DomainError(`--into: a '${into}' solo llegan ramas hotfix/ o release/ (git-flow); '${branch}' no lo es`);
-  const { tag } = options;
-  if (tag !== null && (await git(projectRoot, ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`])).code === 0) {
-    throw new DomainError(`--tag: ya existe '${tag}'`);
+async function decideBack(root: string, job: Job, target: HotfixTarget): Promise<HotfixPlan> {
+  const back = await backTarget(root, job, target);
+  const backRemote = await remoteForBranch(root, back);
+  if (backRemote !== target.remote) {
+    throw new DomainError(`push: '${target.into}' y '${back}' tienen remotos distintos ('${target.remote}', '${backRemote}'); fusiona a mano`);
   }
-  const plan = { into, back: '', tag, order, remote: await remoteForBranch(projectRoot, into) };
-  return { ...plan, back: await backTarget(projectRoot, job, plan) };
+  return { ...target, back };
+}
+
+async function assertTagFree(root: string, { tag, remote }: HotfixTarget): Promise<void> {
+  if (tag === null) return;
+  if ((await git(root, ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`])).code === 0) throw new DomainError(`--tag: ya existe '${tag}'`);
+  if (remote === null) return;
+  const listed = await git(root, ['ls-remote', '--tags', remote, `refs/tags/${tag}`]);
+  if (listed.stdout.trim() !== '') throw new DomainError(`--tag: ya existe '${tag}' en '${remote}'`);
+}
+
+export async function prepareHotfix(job: Job, into: string, order: string): Promise<HotfixTarget> {
+  const { projectRoot, branch, options } = job;
+  const { tag } = options;
+  if (tag !== null && (await git(projectRoot, ['check-ref-format', `refs/tags/${tag}`])).code !== 0) throw new UsageError(`--tag: '${tag}' no es un nombre de etiqueta válido`);
+  if (!GIT_FLOW.test(branch)) throw new DomainError(`--into: a '${into}' solo llegan ramas hotfix/ o release/ (git-flow); '${branch}' no lo es`);
+  const target = { into, tag, order, remote: await remoteForBranch(projectRoot, into) };
+  await assertTagFree(projectRoot, target);
+  return target;
 }
 
 function destination(job: Job, into: string, suffix: string): DestinationRequest {
@@ -59,7 +84,8 @@ function destination(job: Job, into: string, suffix: string): DestinationRequest
 const stableDestination = (job: Job, plan: HotfixPlan) => destination(job, plan.into, '');
 const backDestination = (job: Job, plan: HotfixPlan) => destination(job, plan.back, `-${basename(plan.back)}`);
 
-export async function checkHotfix(job: Job, plan: HotfixPlan): Promise<void> {
+export async function checkHotfix(job: Job, target: HotfixTarget): Promise<void> {
+  const plan = await decideBack(job.projectRoot, job, target);
   for (const request of [stableDestination(job, plan), backDestination(job, plan)]) job.io.out(await checkDestination(request));
 }
 
@@ -103,9 +129,16 @@ async function report(job: Job, plan: HotfixPlan, paths: Checkouts, tagged: bool
   if (options.push) io.out(plan.remote === null ? 'push: no hecho: sin remoto' : `publicado en ${plan.remote}`);
 }
 
+async function publishedBack(path: string, { back, remote }: HotfixPlan): Promise<boolean> {
+  if (remote === null) return false;
+  const { code } = await git(path, ['ls-remote', '--exit-code', '--heads', remote, back]);
+  if (code !== 0 && code !== 2) throw new DomainError(`vuelta: no se pudo consultar '${back}' en '${remote}'`);
+  return code === 0;
+}
+
 async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<void> {
-  const backPublished = plan.remote !== null && (await git(paths.back, ['ls-remote', '--exit-code', '--heads', plan.remote, plan.back])).code === 0;
-  await syncBaseBranch(paths.back, { into: plan.back, remote: backPublished ? plan.remote : null }, job.io.out);
+  const published = await publishedBack(paths.back, plan);
+  await syncBaseBranch(paths.back, { into: plan.back, remote: published ? plan.remote : null }, job.io.out);
   const [stableBefore] = await gitLines(paths.stable, ['rev-parse', 'HEAD']);
   const [backBefore] = await gitLines(paths.back, ['rev-parse', 'HEAD']);
   let failedAt = paths.stable;
@@ -124,12 +157,18 @@ async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Pr
   }
 }
 
-// La vuelta se decide con la rama estable ya integrada y las release/ del remoto al día: una release cerrada fuera no la recibe.
-export async function mergeHotfix(job: Job, prepared: HotfixPlan): Promise<void> {
-  await withDestination(stableDestination(job, prepared), async (stable) => {
-    await syncBaseBranch(stable, { into: prepared.into, remote: prepared.remote }, job.io.out);
-    if (prepared.remote !== null) await git(stable, ['fetch', prepared.remote, `+refs/heads/release/*:refs/remotes/${prepared.remote}/release/*`]);
-    const plan = { ...prepared, back: await backTarget(stable, job, prepared) };
+async function fetchStableAndReleases(root: string, { into, remote }: HotfixTarget): Promise<void> {
+  if (remote === null) return;
+  const refspecs = [`+refs/heads/${into}:refs/remotes/${remote}/${into}`, `+refs/heads/release/*:refs/remotes/${remote}/release/*`];
+  if ((await git(root, ['fetch', remote, ...refspecs])).code !== 0) throw new DomainError(`vuelta: no se pudo hacer fetch de las release/ de '${remote}'`);
+}
+
+// La vuelta se decide antes de tocar nada, con la rama estable y las release/ recién traídas del remoto: una release cerrada fuera no la recibe.
+export async function mergeHotfix(job: Job, target: HotfixTarget): Promise<void> {
+  await fetchStableAndReleases(job.projectRoot, target);
+  const plan = await decideBack(job.projectRoot, job, target);
+  await withDestination(stableDestination(job, plan), async (stable) => {
+    await syncBaseBranch(stable, { into: plan.into, remote: plan.remote }, job.io.out);
     await withDestination(backDestination(job, plan), (back) => integrateHotfix(job, plan, { stable, back }));
   });
 }

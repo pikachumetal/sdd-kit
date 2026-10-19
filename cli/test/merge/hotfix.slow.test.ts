@@ -18,11 +18,21 @@ function hotfixFixture(name: string, branch = 'hotfix/0200-fix'): Fixture & { ho
   return { ...fx, hotfix };
 }
 
-function openRelease(fx: Fixture, name: string): void {
+function openRelease(fx: Fixture, name: string, published = true): void {
   const path = join(fx.wt, name.replace('/', '-'));
   git(fx.repo, 'worktree', 'add', '-q', '-b', name, path, 'develop');
   write(path, `${name.replace('/', '-')}.txt`, 'release\n');
   saveAll(path, `chore: ${name}`);
+  if (published) git(fx.repo, 'push', '-q', 'origin', name);
+}
+
+function advanceRemoteMain(fx: Fixture): void {
+  git(fx.seed, 'fetch', '-q', fx.remote, 'main:main');
+  git(fx.seed, 'checkout', '-q', 'main');
+  write(fx.seed, 'main.txt', 'avanza\n');
+  saveAll(fx.seed, 'chore: main avanza');
+  git(fx.seed, 'push', '-q', fx.remote, 'main');
+  git(fx.seed, 'checkout', '-q', 'develop');
 }
 
 const hotfixArgs = (...extra: string[]) => ['--into', 'main', '--order', ORDER, ...extra];
@@ -63,17 +73,48 @@ describe('un hotfix se fusiona en la rama estable, se etiqueta y vuelve a la int
     expect(sha(fx.repo, 'develop')).toBe(develop);
   });
 
-  it('con dos releases abiertas falla sin tocar nada', async () => {
+  it('con dos releases abiertas en el remoto falla antes de sincronizar la rama estable', async () => {
     const fx = hotfixFixture('hotfix-dos-releases');
-    openRelease(fx, 'release/3.1.0');
-    openRelease(fx, 'release/3.2.0');
-    const refs = git(fx.repo, 'for-each-ref');
+    for (const name of ['release/3.1.0', 'release/3.2.0']) {
+      git(fx.seed, 'checkout', '-q', '-b', name, 'develop');
+      write(fx.seed, `${name.replace('/', '-')}.txt`, 'release\n');
+      saveAll(fx.seed, `chore: ${name}`);
+      git(fx.seed, 'push', '-q', fx.remote, name);
+      git(fx.seed, 'checkout', '-q', 'develop');
+    }
+    advanceRemoteMain(fx);
+    const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
 
     const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3.0.1'));
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano');
-    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+    expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
+  });
+
+  it('una release solo local no cuenta si hay remoto', async () => {
+    const fx = hotfixFixture('release-local');
+    openRelease(fx, 'release/3.1.0', false);
+    const release = sha(fx.repo, 'release/3.1.0');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs());
+
+    expect(result.code, result.text).toBe(0);
+    expect(sha(fx.repo, 'develop^2')).toBe(sha(fx.repo, 'hotfix/0200-fix'));
+    expect(sha(fx.repo, 'release/3.1.0')).toBe(release);
+  });
+
+  it('con la vuelta en otro remoto falla sin tocar nada', async () => {
+    const fx = hotfixFixture('remotos-distintos');
+    git(fx.repo, 'remote', 'add', 'upstream', fx.remote);
+    git(fx.repo, 'config', 'branch.develop.remote', 'upstream');
+    const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--push'));
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("push: 'main' y 'develop' tienen remotos distintos ('origin', 'upstream'); fusiona a mano");
+    expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
   });
 
   it('una release que el remoto ya cerró en main no recibe la vuelta', async () => {
@@ -123,6 +164,29 @@ describe('un hotfix se fusiona en la rama estable, se etiqueta y vuelve a la int
 
     expect(result.code).toBe(2);
     expect(result.text).toContain('--tag solo con --into a la rama estable');
+  });
+
+  it('una etiqueta inválida sale con 2 antes de tocar nada', async () => {
+    const fx = hotfixFixture('tag-invalida');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3.0.1 beta'));
+
+    expect(result.code).toBe(2);
+    expect(result.text).toContain("--tag: 'v3.0.1 beta' no es un nombre de etiqueta válido");
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+  });
+
+  it('una etiqueta que solo existe en el remoto falla sin tocar nada', async () => {
+    const fx = hotfixFixture('tag-remota');
+    git(fx.remote, 'tag', 'v3.0.1', 'main');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3.0.1'));
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("--tag: ya existe 'v3.0.1' en 'origin'");
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
   });
 
   it('una etiqueta que ya existe falla sin tocar nada', async () => {
@@ -187,17 +251,6 @@ describe('un hotfix cuya vuelta falla se deshace entero', () => {
     expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
   });
 
-  it('una etiqueta que git no puede crear falla y deshace main', async () => {
-    const fx = hotfixFixture('tag-invalida');
-    const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
-
-    const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3..0'));
-
-    expect(result.code).toBe(1);
-    expect(result.text).toContain("--tag: no se pudo crear 'v3..0'");
-    expect(git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags')).toBe(refs);
-  });
-
   it('si el remoto avanzó, deshace todo y pide relanzar', async () => {
     const fx = hotfixFixture('hotfix-movido');
     const refs = git(fx.repo, 'for-each-ref', 'refs/heads', 'refs/tags');
@@ -222,5 +275,18 @@ describe('la comprobación del destino de un hotfix', () => {
     expect(slash(result.text)).toContain(`destino: listo: 'develop' irá en el worktree temporal '${slash(join(fx.wt, 'merge-0200-fix-develop'))}'`);
     expect(git(fx.repo, 'for-each-ref')).toBe(refs);
     expect(existsSync(fx.lock)).toBe(false);
+  });
+
+  it('--check dice las varias releases abiertas sin hacer fetch', async () => {
+    const fx = hotfixFixture('check-dos-releases');
+    openRelease(fx, 'release/3.1.0');
+    openRelease(fx, 'release/3.2.0');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--check'));
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano');
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
   });
 });
