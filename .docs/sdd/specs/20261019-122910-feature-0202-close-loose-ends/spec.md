@@ -205,7 +205,7 @@ Cinco tasks:
 - AND una entrada `- **Feature 0185** — …` en `### Added` y otra en `### Changed` son ids distintos
 - AND si las dos ramas cambian de forma distinta la misma fila que ya estaba en la base, es conflicto y lo resuelve una persona
 - AND si el merge se aborta después por otro fichero en conflicto, la salida no dice `registros: …`
-- AND la cabecera de una tabla no es una fila con id, aunque el trozo la separe de su separador: si las dos ramas añaden una tabla con la cabecera `| Id | Tarea | Estado |`, se quedan las dos cabeceras sin aviso
+- AND la cabecera de una tabla no es una fila con id, aunque el trozo la separe de su separador: si las dos ramas añaden la misma tabla (`| Id | Tarea | Estado |`) con filas distintas, queda una tabla con la cabecera una vez y las dos filas seguidas, sin aviso
 
 **Reglas de la capacidad**
 - **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona. Un conflicto de merge en el que los dos lados cambian lo mismo lo resuelve una persona: `sdd merge` solo resuelve, en este orden, el `estimation-log.md` (regenerado), los registros por id, los trozos que solo añaden y lo que Mergiraf resuelva con código 0. La excepción es Mergiraf, solo fuera de `.docs/` y de `*.md`: une cambios compatibles de los dos lados en la misma construcción (`{ a, b }` + `{ a, c }` → `{ a, b, c }`), y la verificación que corre sobre el resultado decide (dev-lead, 2026-10-19).
@@ -263,6 +263,8 @@ Se mide con `tests/WordBudget.Tests.ps1` en la Task 1. El tope nuevo es lo medid
 | `.docs/sdd/tech-stack.md` | 18797 / 18800 | 3 | medido tras escribir + 2 % (~19 300) |
 
 ## Enmiendas
+
+- 2026-10-19 — «Los registros se unen por id», AND de la cabecera: queda una tabla con las dos filas, no dos cabeceras. El test destapó además un fix: una fila nueva de la rama se insertaba tras las líneas en blanco del trozo y partía la tabla (fix descubierto 1) — aprobada: opción «Sí: una tabla con las dos filas» — Task 5
 
 - 2026-10-19 — «Sin transcripts, "no medido"»: la ventana también se aplica a un worktree sin carpeta de transcripts, que es el caso de la 0201; el `no medido (sin transcripts…)` queda para cuando la ventana tampoco tiene respuestas — sin ese cambio, la spec no arreglaba el caso que la motiva — aprobada: opción «Sí, enmienda» — Task 4
 

@@ -123,11 +123,13 @@ describe('sdd merge --sync', () => {
   it('en un HEAD desacoplado no toca nada', async () => {
     const fx = mergeFixture('sync-desacoplado');
     git(join(fx.wt, '0001'), 'checkout', '-q', '--detach');
+    const before = sha(join(fx.wt, '0001'), 'HEAD');
 
     const result = await sync(fx);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('base: HEAD desacoplado; --sync integra la base en una rama');
+    expect(sha(join(fx.wt, '0001'), 'HEAD')).toBe(before);
   });
 
   it('un git merge que falla sin conflictos no se atribuye a un hook', async () => {
@@ -144,5 +146,22 @@ describe('sdd merge --sync', () => {
     expect(result.text).toContain('base: git merge falló sin conflictos.');
     expect(result.text).not.toContain('el hook rechazó');
     expect(sha(join(fx.wt, '0001'), 'HEAD')).toBe(before);
+  });
+});
+
+describe('el error de git sin conflictos solo llega en --sync', () => {
+  it('en el merge del cierre, un fichero sin seguimiento del destino para antes como destino sacado', async () => {
+    const fx = mergeFixture('cierre-sin-seguimiento');
+    write(join(fx.wt, '0001'), 'nuevo.txt', 'de la 0001\n');
+    saveAll(join(fx.wt, '0001'), 'feat: nuevo');
+    const develop = join(fx.wt, 'develop');
+    git(fx.repo, 'worktree', 'add', '-q', develop, 'develop');
+    write(develop, 'nuevo.txt', 'sin seguimiento\n');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--push']);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('destino sacado:');
+    expect(result.text).not.toContain('git merge falló sin conflictos');
   });
 });

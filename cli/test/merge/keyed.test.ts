@@ -85,3 +85,22 @@ describe('dedupeRows con más de dos filas del mismo id', () => {
     expect(dedupeRows([...header, ...header])).toEqual({ lines: [...header, ...header], duplicates: [] });
   });
 });
+
+describe('la cabecera de una tabla en la unión por id', () => {
+  const header = '| Id | Tarea | Estado |';
+  const separator = '| --- | --- | --- |';
+
+  it('la misma tabla nueva en los dos lados queda una con las dos filas', () => {
+    expect(mergeKeyedHunk({ base: [], ours: [header, separator, row('0210', 'x')], theirs: [header, separator, row('0211', 'y')] })).toEqual({
+      lines: [header, separator, row('0210', 'x'), row('0211', 'y')],
+      duplicates: [],
+    });
+  });
+
+  it('una cabecera de la base que el trozo separa de su separador no cuenta como fila con id', () => {
+    const hunk = { base: [], ours: [header], theirs: ['| Id | Tarea | Estado | Tamaño |'] };
+
+    expect(mergeKeyedHunk(hunk)).toEqual({ lines: [header, '| Id | Tarea | Estado | Tamaño |'], duplicates: ['Id'] });
+    expect(mergeKeyedHunk(hunk, new Set([header, '| Id | Tarea | Estado | Tamaño |']))).toBeNull();
+  });
+});

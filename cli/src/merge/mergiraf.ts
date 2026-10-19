@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface MergirafOptions {
-  report: (line: string) => void;
+  onSolved: (line: string) => void;
+  onUnsolved: (line: string) => void;
   command?: string[];
 }
 
@@ -31,12 +32,15 @@ function solve(worktree: string, file: string, command: string[]): Promise<boole
   });
 }
 
-export async function solveWithMergiraf(worktree: string, files: string[], { report, command = MERGIRAF }: MergirafOptions): Promise<string[]> {
+export async function solveWithMergiraf(worktree: string, files: string[], { onSolved, onUnsolved, command = MERGIRAF }: MergirafOptions): Promise<string[]> {
   const left: string[] = [];
   for (const file of files) {
-    const solved = await solve(worktree, file, command);
-    report(`mergiraf: ${solved ? 'resuelto' : 'no resuelve'} ${file}`);
-    if (!solved) left.push(file);
+    if (await solve(worktree, file, command)) {
+      onSolved(`mergiraf: resuelto ${file}`);
+      continue;
+    }
+    onUnsolved(`mergiraf: no resuelve ${file}`);
+    left.push(file);
   }
   return left;
 }

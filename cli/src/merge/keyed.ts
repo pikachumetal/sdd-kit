@@ -25,18 +25,22 @@ export function lineKey(line: string): string | null {
 }
 
 // Una fila se identifica por su id dentro de su sección; una línea sin id, por su orden entre las demás sin id.
-function identities(lines: string[]): string[] {
+export function tableHeaders(lines: string[]): Set<string> {
+  return new Set(lines.filter((line, index) => line.startsWith('|') && SEPARATOR.test(lines[index + 1] ?? '')));
+}
+
+function identities(lines: string[], headers: Set<string> = new Set()): string[] {
   let heading = '';
   let plain = 0;
   return lines.map((line, index) => {
     if (HEADING.test(line)) heading = line.trim();
-    const key = SEPARATOR.test(lines[index + 1] ?? '') ? null : lineKey(line);
+    const key = SEPARATOR.test(lines[index + 1] ?? '') || headers.has(line) ? null : lineKey(line);
     return key === null ? `plain\u0000${plain++}\u0000${line}` : `row\u0000${heading}\u0000${key}`;
   });
 }
 
-function byIdentity(lines: string[]): Map<string, string> | null {
-  const ids = identities(lines);
+function byIdentity(lines: string[], headers: Set<string>): Map<string, string> | null {
+  const ids = identities(lines, headers);
   const map = new Map(ids.map((id, index) => [id, lines[index]]));
   return map.size === ids.length ? map : null;
 }
@@ -55,7 +59,10 @@ function insertAfterAnchor(result: Entry[], entry: Entry, anchor: string | undef
   result.splice(position, 0, entry);
 }
 
-const plainLines = (lines: string[]) => lines.filter((line) => lineKey(line) === null);
+function plainLines(lines: string[], headers: Set<string>): string[] {
+  const ids = identities(lines, headers);
+  return lines.filter((_line, index) => isPlain(ids[index]));
+}
 const sameLines = (a: string[], b: string[]) => a.length === b.length && a.every((line, index) => line === b[index]);
 
 interface Sides {
@@ -70,11 +77,11 @@ function keepsBaseOrder(side: Map<string, string>, base: Map<string, string>): b
   return sameLines(kept, [...base.keys()].filter((id) => side.has(id)));
 }
 
-function sides({ ours, base, theirs }: Hunk): Sides | null {
-  const [oursById, baseById, theirsById] = [ours, base, theirs].map(byIdentity);
+function sides({ ours, base, theirs }: Hunk, headers: Set<string>): Sides | null {
+  const [oursById, baseById, theirsById] = [ours, base, theirs].map((lines) => byIdentity(lines, headers));
   if (oursById === null || baseById === null || theirsById === null) return null;
   if (!keepsBaseOrder(theirsById, baseById)) return null;
-  return sameLines(plainLines(ours), plainLines(theirs)) ? { ours: oursById, base: baseById, theirs: theirsById } : null;
+  return sameLines(plainLines(ours, headers), plainLines(theirs, headers)) ? { ours: oursById, base: baseById, theirs: theirsById } : null;
 }
 
 const isPlain = (id: string) => id.startsWith('plain\u0000');
@@ -119,7 +126,7 @@ function placeOurs(byId: Sides, merged: { entries: Entry[]; duplicates: string[]
   for (const id of byId.ours.keys()) {
     const rows = rowsOf(id, byId);
     if (rows === null) return false;
-    const isNew = !byId.base.has(id);
+    const isNew = !isPlain(id) && !byId.base.has(id);
     if (rows[0] !== undefined) merged.entries.push({ line: rows[0], id, isNew });
     if (rows[1] === undefined) continue;
     merged.duplicates.push(lineKey(rows[1]) ?? '');
@@ -134,13 +141,14 @@ function placeTheirs(byId: Sides, entries: Entry[]): boolean {
     if (byId.ours.has(id)) continue;
     const rows = rowsOf(id, byId);
     if (rows === null) return false;
-    rows.forEach((line) => insertAfterAnchor(entries, { line, id, isNew: !byId.base.has(id) }, theirsIds[index - 1]));
+    rows.forEach((line) => insertAfterAnchor(entries, { line, id, isNew: !isPlain(id) && !byId.base.has(id) }, theirsIds[index - 1]));
   }
   return true;
 }
 
-export function mergeKeyedHunk(hunk: Hunk): KeyedMerge | null {
-  const byId = sides(hunk);
+// La cabecera de una tabla no es una fila: headers trae las de la versión base, por si el trozo la separa de su separador.
+export function mergeKeyedHunk(hunk: Hunk, headers: Set<string> = new Set()): KeyedMerge | null {
+  const byId = sides(hunk, headers);
   if (byId === null) return null;
   const merged = { entries: [] as Entry[], duplicates: [] as string[] };
   if (!placeOurs(byId, merged) || !placeTheirs(byId, merged.entries)) return null;
