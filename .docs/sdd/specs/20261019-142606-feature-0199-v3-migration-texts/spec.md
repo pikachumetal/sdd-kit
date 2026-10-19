@@ -46,7 +46,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (un requisito de `migra
 7. **Dónde vive la revisión de reglas**: es el último paso de `v3.0.0.md`, y «Writing a new migration» de `sdd-upgrade` exige ese paso a toda migración nueva. No va como paso del procedimiento de `SKILL.md`: así se lee en la migración que se aplica, como los demás.
 8. **«Writing a new migration» gana tres reglas**: el paso final de reglas; el paso que actualiza la copia del proyecto cuando la release cambia una regla que una plantilla copió (salda la fila l.174 en su parte de migración); y ninguna ruta opcional a `Select-String` (salda la fila l.308).
 9. **La parte de `sdd-propose` de la fila l.174 no entra**: «el paso del plan mete en el Scope la plantilla que copia la regla» no lo pide el prompt. La fila pasa a `parcial` con eso como lo que queda.
-10. **`v2.0.0.md`**: su línea de «Verificación» de los nombres pasa de `Select-String … -ErrorAction SilentlyContinue` a `git grep -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md '.docs/sdd/*.md' '.docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'`. Es la que daba falso verde sin `AGENTS.md`.
+10. **`v2.0.0.md`**: su línea de «Verificación» de los nombres pasa de `Select-String … -ErrorAction SilentlyContinue` a `git grep -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'`. Es la que daba falso verde sin `AGENTS.md`.
 11. **Los seis menores de la re-revisión de la 0197**, en `v3.0.0.md`:
     1. El predicado del paso 4 incluye el paso 3.
     2. Si el paso 3 queda pendiente tras aplicar el 2, el informe nombra las «Decisiones abiertas» con `git show <sha>:.docs/sdd/tech-stack.md`.
@@ -141,7 +141,7 @@ Cuatro pasos nuevos en `v3.0.0.md`, tras los cuatro de la 0197 y en este orden: 
 - AND `sdd-end-patch` pasa a `sdd-archive`, y `sdd-init-greenfield` y `sdd-init-brownfield` a `sdd-init`, en `CLAUDE.md`, `AGENTS.md`, `.docs/sdd/*.md`, `.docs/sdd/steering/*.md`, `.docs/sdd/capabilities/*.md`, `.claude/skills/` y `.claude/commands/`
 - AND el `walkthrough.md` de `specs/` sigue citando `sdd-end-feature`, y tampoco cambian `CHANGELOG.md`, `decisions/`, `releases/` ni `kit-feedback/`
 - AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
-- AND la «Verificación», con `git grep -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)' --untracked` sobre esas rutas, no devuelve nada, también sin `AGENTS.md` ni `.claude/`
+- AND la «Verificación», con `git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)'` sobre esas rutas (las carpetas con `:(glob)`), no devuelve nada, también sin `AGENTS.md` ni `.claude/`
 
 **ADDED — La migración a v3.0.0 lleva el método nuevo al `estimation.md` del proyecto**
 - GIVEN un proyecto cuyo `steering/estimation.md` tiene las líneas de la plantilla 2.x «El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, …» y «Los patches registran solo el tiempo real.»
@@ -179,7 +179,7 @@ Cuatro pasos nuevos en `v3.0.0.md`, tras los cuatro de la 0197 y en este orden: 
 - AND `specs/20260910-080000-task-0012-login/spec.md` sigue citando `sdd-end-task`, y la carpeta no se renombra
 - AND el informe lista los ficheros cambiados; sin ninguna mención, el paso se salta y lo dice
 - REMOVED AND la verificación de la migración, con `Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task' -ErrorAction SilentlyContinue` (sin `AGENTS.md`, esa ruta no cuenta), no devuelve nada
-- AND la verificación de la migración, con `git grep -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md '.docs/sdd/*.md' '.docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'`, no devuelve nada, también en un proyecto sin `AGENTS.md`
+- AND la verificación de la migración, con `git grep -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'`, no devuelve nada, también en un proyecto sin `AGENTS.md`
 
 ## Topes de palabras
 
@@ -189,6 +189,8 @@ Cuatro pasos nuevos en `v3.0.0.md`, tras los cuatro de la 0197 y en este orden: 
 | Kit entero | 87391 / 87500 | 109 | 87600 (87391 + ~110 previstas + ~100 para la pasada de fix) |
 
 ## Enmiendas
+
+- 2026-10-19 — el `git grep` de la decisión 10, del MODIFIED de la v2.0.0 y de la «Verificación» de nombres lleva `:(glob)` en las carpetas y `--untracked` antes del patrón — sin `:(glob)`, el `*` de git entra en `specs/` y la historia da un falso rojo; con `--untracked` tras el patrón, git sale con 128 (Task 2, comprobado en una carpeta temporal) — sin aprobar: corrige el literal sin cambiar la conducta que el THEN pide
 
 ## Aprobaciones
 

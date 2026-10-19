@@ -172,8 +172,9 @@ Describe 'Migración a v2.0.0 — nombres de las skills de feature' {
     }
   }
 
-  It 'la verificación lleva el Select-String con AGENTS.md y el histórico excluido' {
-    $script:V2 | Should -Match ([regex]::Escape("Select-String -Path CLAUDE.md, AGENTS.md, .docs/sdd/*.md, .docs/sdd/capabilities/*.md -Exclude changelog.md, client-changelog.md, roadmap.md -Pattern 'sdd-(start|end)-task'"))
+  It 'la verificación lleva el git grep con AGENTS.md y el histórico excluido' {
+    $script:V2 | Should -Match ([regex]::Escape("git grep -nE 'sdd-(start|end)-task' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/capabilities/*.md' ':!.docs/sdd/changelog.md' ':!.docs/sdd/client-changelog.md' ':!.docs/sdd/roadmap.md'"))
+    $script:V2 | Should -Not -Match 'Select-String -Path CLAUDE\.md, AGENTS\.md'
   }
 }
 
