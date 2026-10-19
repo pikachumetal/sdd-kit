@@ -229,6 +229,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
 - AND el script sale con error y nombra el paso que falló y el motivo
 - AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de las últimas 20 líneas de la salida del hook, no un conflicto
+- AND si `git merge` falla sin conflictos y sin llegar a preparar el merge (un fichero sin seguimiento que sobrescribiría, una opción que su versión no admite), el motivo es `<paso>: git merge falló sin conflictos.` seguido de las últimas 20 líneas de su salida, no un rechazo del hook
 - AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
 - AND si `--verify` sale en rojo, el mismo comando corre sobre el commit de antes del merge y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
 
@@ -323,8 +324,11 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN bajo un solo cerrojo fusiona la rama en `main` con `--no-ff` y el commit `merge: hotfix/0200-fix-login en main` con la línea `Orden del dev-lead: «fusiona el hotfix del login en main»`, crea la etiqueta anotada `v3.0.1` en ese commit, fusiona la misma rama en `develop` con `--no-ff`, y publica `main`, `develop` y `v3.0.1` en un solo push atómico
 - AND escribe `Fusionado hotfix/0200-fix-login en main: <hash>`, `etiqueta v3.0.1 en <hash>`, `Fusionado hotfix/0200-fix-login en develop: <hash>` y `publicado en origin`
 - AND con `release/3.1.0` abierta en `origin` (no antecesora de `main`), la vuelta va a `release/3.1.0` y no a `develop`; con dos abiertas en `origin` tras el fetch de `release/*` que hace el script, falla antes de sincronizar ni fusionar nada con `vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano`; una `release/` solo local no cuenta si hay remoto
+- AND una `release/3.2.0` que se borró en `origin` no cuenta como abierta aunque su ref de seguimiento siguiera en local antes del fetch
+- AND `--check` decide la vuelta con los refs de seguimiento que ya hay, sin fetch: no crea ni mueve ninguno
 - AND una rama `release/3.1.0` con `--into main` vuelve a `develop`
 - AND `--into main` sin `--order` sale con 2 con `--into 'main' distinta de merge.into necesita --order "<frase del dev-lead>"`; `--tag` sin ese `--into`, con `--tag solo con --into a la rama estable`; `--tag 'v3.0.1 beta'`, con `--tag: 'v3.0.1 beta' no es un nombre de etiqueta válido`, antes del cerrojo; y una etiqueta que ya existe falla sin tocar nada con `--tag: ya existe 'v3.0.1'`, o con `--tag: ya existe 'v3.0.1' en 'origin'` si solo existe en el remoto
+- AND si no se pueden consultar las etiquetas del remoto, falla sin tocar nada, también con `--check`, con `--tag: no se pudo consultar las etiquetas de 'origin'`
 
 ### A la rama estable solo llegan ramas hotfix y release
 
@@ -340,6 +344,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND con la verificación de la vuelta en rojo, deshace lo mismo y da el error de verificación con su línea `base:`
 - AND si el push atómico se rechaza porque `main` o `develop` avanzaron en el remoto, deshace lo mismo y falla con `push: 'main' o 'develop' avanzó en 'origin'; relanza el hotfix`
 - AND si `main` y la rama de vuelta tienen remotos distintos, falla antes de tocar nada con `push: 'main' y 'develop' tienen remotos distintos ('origin', 'upstream'); fusiona a mano`; y si no se puede consultar la vuelta en el remoto, con `vuelta: no se pudo consultar 'develop' en 'origin'`
+- AND si una de las dos no tiene remoto, el mensaje dice `sin remoto` en su lugar: `push: 'main' y 'develop' tienen remotos distintos ('origin', sin remoto); fusiona a mano`
 
 ### Los trozos del merge se calculan con histogram y se escriben con zdiff3
 
@@ -357,6 +362,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND si añaden dos filas `0201` con texto distinto, se quedan las dos, la de la rama destino primero, y la salida dice `registros: dos filas distintas con el id '0201' en .docs/sdd/roadmap.md; se quedan las dos, revísalas`
 - AND una entrada `- **Feature 0185** — …` en `### Added` y otra en `### Changed` son ids distintos
 - AND si las dos ramas cambian de forma distinta la misma fila que ya estaba en la base, es conflicto y lo resuelve una persona
+- AND si el merge se aborta después por otro fichero en conflicto, la salida no dice `registros: …`
 
 ### Mergiraf resuelve lo que queda si está instalado
 
@@ -366,6 +372,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND si `mergiraf solve` sale con otro código, escribe `mergiraf: no resuelve src/rooms.ts`, aborta el merge y falla como hoy con el fichero en la lista de `conflicto en`
 - AND sin `mergiraf` en el `PATH` no escribe nada de Mergiraf y falla como hoy
 - AND el script no escribe `git config` ni `.gitattributes`
+- AND si resuelve `src/rooms.ts` pero otro fichero queda en conflicto, aborta y no escribe `mergiraf: resuelto src/rooms.ts`
 
 ### El merge de sincronización lo hace `sdd merge --sync`
 
@@ -374,8 +381,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN integra `origin/develop` en `feature/0186-x` con la misma resolución que el merge del cierre, sin coger el cerrojo, sin `--verify` y sin push; la capacidad queda con los dos requisitos (primero el de `develop`) y el roadmap con las dos filas, y escribe `base: integrada 'origin/develop' en 'feature/0186-x': <hash>`
 - AND si `origin/develop` ya es antecesora de la rama, no hace nada y escribe `base: al día: 'origin/develop' ya está en 'feature/0186-x'`
 - AND con un conflicto que no resuelve, aborta el merge, deja la rama como estaba y sale con 1 con `base: conflicto en <ficheros>.`
-- AND con cambios sin commitear sale con 1 sin tocar nada: `base: 'feature/0186-x' tiene cambios sin commitear; commitéalos antes de integrar la base`
-- AND con `--into`, `--tag`, `--order`, `--push`, `--verify`, `--verified-at` o `--check` sale con 2: `--sync no admite <opción>`
+- AND con cambios sin commitear, o con otro merge a medias, sale con 1 sin tocar nada: `base: 'feature/0186-x' tiene cambios sin commitear; commitéalos antes de integrar la base`
+- AND en un HEAD desacoplado sale con 1 sin tocar nada: `base: HEAD desacoplado; --sync integra la base en una rama`
+- AND con `--into`, `--tag`, `--order`, `--push`, `--verify`, `--verified-at`, `--check` o `--branch` sale con 2: `--sync no admite <opción>`
 
 ## Reglas de la capacidad
 
