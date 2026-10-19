@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { estimationLogPath } from '../cli/layout.ts';
 import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts';
 import { git } from '../git/git.ts';
+import type { MergeAttempt } from './attempt.ts';
+import { mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
 
 const LOG = /estimation-log\.md$/i;
 const HUNK = /^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|(?![\s\S]))/gms;
@@ -28,12 +30,24 @@ function regenerateLog(worktree: string): void {
   writeEstimationLog(text, estimationLogPath(docsPath), () => undefined);
 }
 
-// Cualquier fichero en el que los dos lados solo añaden se une; estimation-log.md se regenera.
-export async function resolveAddOnlyConflicts(worktree: string, conflicted: string[]): Promise<boolean> {
-  for (const file of conflicted.filter((name) => !LOG.test(name))) {
-    if (!(await mergeAddedLines(worktree, file))) return false;
+async function unresolvedByKit(worktree: string, files: string[]): Promise<string[]> {
+  const left: string[] = [];
+  for (const file of files) {
+    if (!(await mergeAddedLines(worktree, file))) left.push(file);
   }
+  return left;
+}
+
+async function commitResolution(worktree: string, conflicted: string[]): Promise<boolean> {
   if (conflicted.some((file) => LOG.test(file))) regenerateLog(worktree);
   await git(worktree, ['add', '--', ...conflicted]);
   return (await git(worktree, ['commit', '--no-edit'])).code === 0;
+}
+
+// Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
+export async function resolveConflicts({ worktree, report }: MergeAttempt, conflicted: string[]): Promise<string[]> {
+  let left = await unresolvedByKit(worktree, conflicted.filter((name) => !LOG.test(name)));
+  if (left.length > 0 && mergirafRuns()) left = await solveWithMergiraf(worktree, left, { report });
+  if (left.length > 0) return left;
+  return (await commitResolution(worktree, conflicted)) ? [] : conflicted;
 }

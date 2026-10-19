@@ -16,7 +16,7 @@ created: 2026-10-19
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Opciones de git y Mergiraf en la cadena de resolución | pending | — | |
+| 1 | Opciones de git y Mergiraf en la cadena de resolución | done | — | reescritura de marcas en diff3 (ruling) |
 | 2 | Registros por id | pending | — | |
 | 3 | `sdd merge --sync` y el merge de sincronización de `sdd-archive` | pending | — | |
 | 4 | Hotfix: etiqueta y vuelta antes de tocar nada | pending | — | |

@@ -40,7 +40,7 @@ async function publish(path: string, job: Job, remote: string): Promise<void> {
     if (attempt === PUSH_ATTEMPTS) throw new DomainError(`push: '${policy.into}' sigue moviéndose en '${remote}' tras ${PUSH_ATTEMPTS} intentos; relanza el merge en un rato`);
     io.out(`push: '${policy.into}' avanzó en '${remote}'; integro y reintento (${attempt + 1}/${PUSH_ATTEMPTS})`);
     const [verified] = await gitLines(path, ['rev-parse', 'HEAD']);
-    await syncBaseBranch(path, policy.into, remote);
+    await syncBaseBranch(path, { into: policy.into, remote }, io.out);
     await verifyMerge(path, options.verify, verified, io);
   }
 }
@@ -48,10 +48,10 @@ async function publish(path: string, job: Job, remote: string): Promise<void> {
 async function integrate(path: string, job: Job): Promise<void> {
   const { branch, policy, options, io } = job;
   const remote = await remoteForBranch(path, policy.into);
-  await syncBaseBranch(path, policy.into, remote);
+  await syncBaseBranch(path, { into: policy.into, remote }, io.out);
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
   try {
-    await mergeFeature(path, branch, policy, options.order);
+    await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, io.out);
     await verifyMerge(path, options.verify, job.verifiedAt, io);
     const pushed = options.push && remote !== null;
     if (pushed) await publish(path, job, remote);
