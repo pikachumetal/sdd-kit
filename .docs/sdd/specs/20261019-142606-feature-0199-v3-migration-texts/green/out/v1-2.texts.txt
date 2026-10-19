@@ -1,0 +1,107 @@
+--- [5]
+Veamos el estado del proyecto.
+
+--- [13]
+El proyecto está en 2.3.4 y falta la migración a la v3.0.0. Todavía no he tocado nada. Los pasos 1, 2 y 3 son gates y el 3 no se puede cerrar sin que decidas los tamaños, así que necesito tu «sí». El punto de partida es `28c8f0c`, con el árbol limpio.
+
+## Paso 1 · Traslados (gate)
+| Lo que hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz. No hay uno previo, así que no hay fusión. |
+| `constitution.md`, `architecture.md`, `estimation.md` | `git mv` a `.docs/sdd/steering/`. El enlace de la constitution a la ADR 0001 pasa a `../decisions/0001-salas-por-franja.md`. |
+| `estimation-log.md` | `git mv` a `steering/`. Después regenero con `sdd estimation log`. Ahora solo tiene la cabecera, así que no se pierden filas escritas a mano. Antes de regenerar te enseño el diff. |
+
+## Paso 2 · Producto y operaciones (gate)
+**`mission.md` pasa a `PRODUCT.md`:**
+| Sección 2.x | Destino |
+| --- | --- |
+| Por qué existe | `## Product Purpose` |
+| Usuarios y roles | `## Users` |
+| Qué es y qué no es | `## Capabilities and Constraints` |
+| Dominio | `## Terminology`, con el texto `**Franja**: una hora reservable, de en punto a en punto.` No hay `_Evitar_`, porque el original no nombra ningún sinónimo. |
+
+**`tech-stack.md` y `environments.md` pasan a `steering/operations.md`:**
+| Sección 2.x | Destino |
+| --- | --- |
+| Comandos, Testing, Frontend | Se copian tal cual. |
+| Tecnologías (Node 22, Vitest 3) | Salen si `package.json` ya las dice. Si no, van a `architecture.md`. Lo compruebo antes de escribir. |
+| `environments.md` | `## Entornos`, condensado: marcador `.sdd-env.json`, las tres entradas `env:setup`, `env:clean` y `env:status`, y el runner `npm run env:setup`. |
+| Decisiones abiertas («¿Avisos por correo al reservar?») | Pasa al paso 3 y va a Later como `B4`. |
+
+Después hago `git rm` de los tres ficheros. Su contenido queda en `git show 28c8f0c:.docs/sdd/<fichero>`.
+
+## Paso 3 · Roadmap y deuda (gate, un solo «sí» para los dos)
+**`ROADMAP.md`:**
+| Fila | Destino | Notas |
+| --- | --- | --- |
+| 0021, 0022, 0024 («Próximo») | **Now** | No hay release en preparación, así que va todo a Now, sin título de versión ni línea de perfil. |
+| 0021 | Externo `SAL-41`, Toca `src/app.js`, Carril `feature` | |
+| 0022 | Requisitos `0019`, Tras `0021`, Toca `src/app.js` y `src/notify.js` | Salda la fila de deuda de `cancel` (`**Actuar**: 0022`). |
+| 0024 | Tras `0015`, Toca `src/report.js` | `0015` no está en `ROADMAP.md` ni en `CHANGELOG.md`, así que **Tras pasa a `—`**. |
+| B3 (CSV mensual) | Later, `⏳`, Origen «Recepción, reunión del 2026-09-18» | |
+| Decisión abierta (avisos por correo) | Later `B4`, `⏳` | |
+| Patch 0023 (2026-09-25) | Now `✅`, Carril `patch`, Requisitos hacia su `patch.md` | Es posterior a la v1.2.0. |
+| Release v1.2.0 | Sale | Ya está en `CHANGELOG.md`. |
+
+**Validación pendiente:** la `0016` de la v1.2.0 sigue pendiente. Queda en su `walkthrough.md`. No la llevo a Now.
+
+**Tamaños de las filas de Now (los decides tú):** 0021, 0022, 0024 y 0023 (`✅`). Cada uno necesita `S`, `M` o `L`, y el gate no se cierra sin ellos. En B3 y B4 el tamaño es `—`.
+
+**`steering/debt.md`:**
+| Fila | Sección | Celdas |
+| --- | --- | --- |
+| Patch 0023, saldada y posterior a la v1.2.0 | Lista | Ítem con su prefijo intacto. Evidencia: `patch.md`. Destino: `0023`. |
+| `cancel` no comprueba el dueño | Lista | Destino `0022`. Evidencia: SAL-45 y `../field-reports/sal-45.md`. Impacto Alto. |
+| Pasar `src/app.js` a TypeScript | Por triar | Fecha 2026-09-15 (commit `28c8f0c`). Se pierde «Bajo» (Por triar no tiene columna de impacto). |
+| Mensajes de error mezclados | Por triar | `**Actuar**: sin fila`, pero no hay evidencia en el ítem, así que va a Por triar. Fecha 2026-09-01. Se pierde «Bajo — confunde». |
+| Test de franjas intermitente | En espera | Falta: «un segundo fallo con su log». Impacto Medio. Fecha 2026-09-01. |
+| Validar el formato en la API | Descartadas | Motivo: «duplica la 0018». Fecha 2026-09-01. Se pierde «Bajo». |
+
+El Origen de todas es `roadmap 2.x`, salvo el de las filas con ticket, que lo llevan en la celda de evidencia. Después hago `git rm` de `roadmap.md`.
+
+## Pasos sin gate (los aplico tras tu «sí»)
+- **Paso 4, enlaces:** corrijo `CLAUDE.md` (constitution, misión, roadmap y la ruta `.docs/sdd/roadmap.md` entre backticks) y `README.md` (constitution). `decisions/` no tiene enlaces rotos.
+- **Paso 5, nombres:** en `CLAUDE.md`, `sdd-end-feature` pasa a `sdd-archive`. En `.claude/commands/pregunta.md`, `/sdd-consult` pasa a `/sdd-explore`.
+- **Paso 6, estimación:** sustituyo las dos líneas del método por las de la 3.0.0. La primera añade la medición con `sdd session tokens`, la segunda el método para los patches. Las notas de calibración no se tocan.
+
+Después hago la verificación, el marcador 3.0.0 y el commit `chore(sdd): migrar al kit v3.0.0`. El paso 8 (revisar las reglas del proyecto contra el kit) va en un commit aparte. De momento veo que «el id de una feature se elige a mano» de la constitution choca con el kit.
+
+**¿Apruebas las tablas de los pasos 1, 2 y 3 y me das el tamaño (S, M o L) de 0021, 0022, 0024 y 0023?** También puedes cambiar cualquier destino. Si no contestas, los tres pasos quedan pendientes sin tocar, con esta misma tabla en el informe. Para reanudar, aprueba la tabla y vuelve a pedir la migración.
+
+--- [23]
+El proyecto está en la v3.0.0 y la migración quedó commiteada (`f7082b8`, `chore(sdd): migrar al kit v3.0.0`). Queda una tabla pendiente de tu respuesta, la del paso 8.
+
+## Qué cambió
+- **Traslados:**
+  - `CHANGELOG.md` está ahora en la raíz.
+  - `constitution`, `architecture`, `estimation` y `estimation-log` están en `.docs/sdd/steering/`. Los moví con `git mv`, así que conservan la historia.
+  - El enlace de la constitution a la ADR 0001 pasó a `../decisions/…`.
+  - Regeneré `estimation-log.md` con `sdd estimation log`. El log de antes no tenía filas, así que no se pierde nada.
+- **Producto y operaciones:**
+  - `PRODUCT.md` sustituye a `mission.md`.
+  - `steering/operations.md` sustituye a `tech-stack.md` y `environments.md`.
+  - Quité la tabla de versiones, porque `package.json` ya las dice.
+  - La sección Entornos la dejé como aprobaste, pero `package.json` no tiene los scripts `env:setup`, `env:clean` ni `env:status`. Esa sección describe algo que el proyecto no tiene.
+- **Roadmap y deuda:**
+  - `ROADMAP.md` tiene en Now las filas 0021, 0022, 0024 y 0023 (`✅`), todas con tamaño M. En Later están B3 y B4.
+  - `steering/debt.md` reparte la deuda así: 2 en Por triar, 1 en En espera, 2 en Lista y 1 en Descartadas.
+  - En 0024, «Tras» pasó a `—`, porque la 0015 no está en el roadmap ni en el changelog.
+  - La validación pendiente de la 0016 sigue en su `walkthrough.md`.
+- **Enlaces y nombres:**
+  - Corregí los enlaces de `CLAUDE.md` y `README.md`.
+  - `sdd-end-feature` pasó a `sdd-archive` y `/sdd-consult` pasó a `/sdd-explore`.
+  - Las líneas de `estimation.md` ya llevan el método de la 3.0.0.
+- **Verificación:** `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da 1 capacidad válida. Los greps de enlaces y nombres salen limpios, salvo la ADR 0001, que sigue enlazando `../mission.md`. Las ADR son inmutables, así que no la toqué y el enlace queda roto.
+- **Marcador:** `sdd-kit.json` declara `"version": "3.0.0"`.
+
+## Pendiente: reglas del proyecto que ya cubre el kit (gate)
+Solo encontré una regla en conflicto con el kit:
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap» | `steering/constitution.md:7` | `skills/sdd-start-feature/references/nombrado.md` (no abrí este fichero para confirmarlo) | choca | quitarla |
+
+`sdd-kit.json` usa `ids.mode: sequence`, que asigna los ids con `sdd id next`.
+
+No he aplicado nada de este paso. Para reanudarlo, pide «revisar las reglas del proyecto contra el kit». Si dices sí, la quito en su propio commit, `chore(sdd): reglas del proyecto que ya cubre el kit`.
+

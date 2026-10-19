@@ -44,7 +44,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | V10 Reglas | v1 | no enseña una tabla de reglas del proyecto con la de los ids y una ruta del kit bajo `skills/`; tras «Quita la regla de los ids», `.docs/sdd/steering/constitution.md` la conserva; o una fila de la tabla no lleva ruta del kit |
 | V11 Orden | v1 | el commit `chore(sdd): reglas del proyecto que ya cubre el kit` no va después de `chore(sdd): migrar al kit v3.0.0`, o `sdd-kit.json` no dice `3.0.0` |
 | V12 Reglas pendientes | v2 | la regla de los ids desaparece de la constitution, o el informe no deja la revisión de reglas pendiente con cómo reanudarla |
-| V5 Ausente | v2 | algún fichero del molde cambia, o hay un commit nuevo |
+| V5 Ausente | v2 | algún fichero del molde se mueve, se borra o cambia de forma (los nombres de skills del paso 5 y la sustitución literal del paso 6, sin gate, sí corren y quedan sin commit), o hay un commit nuevo |
 
 ## Procedencia de las reglas
 
