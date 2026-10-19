@@ -10,8 +10,7 @@ status: draft
 created: <YYYY-MM-DD>
 author: <autor>
 approvers:
-  - role: dev-lead
-    name: TBD
+  - name: TBD
     approved_at: null
 ---
 
@@ -40,6 +39,7 @@ approvers:
 > Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». Si esta spec crea una capacidad nueva en `capabilities/`, se declara aquí. El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modo full; forma exacta en `sdd-start-feature/references/review-spec.md`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
+- Política de modelos (solo en `delegate`): <revisores de la spec con modelo, o ninguno> · <ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan> · <otros despachos en paralelo: sujetos, por tandas> · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar que pidan las instrucciones del usuario; lo que no nombra se confirma aparte
 
 ### Decisiones tomadas con el dev-lead
 
@@ -59,6 +59,16 @@ approvers:
 
 - Entra: <…>
 - No entra: <…>
+
+## Lo que se retira o cambia de forma
+
+> Obligatoria: no se borra con los bloques de ayuda. Lo rellena el repaso de coherencia de `sdd-propose`. Una fila por cosa que la spec retira o cuya forma o sitio cambia —un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija—, con cada sitio de `capabilities/` y `skills/` (y de los documentos) que la nombra, y su destino: el delta (`MODIFIED` o `REMOVED`), el Scope o una decisión con su motivo. P. ej. «etiqueta `- Real:` → `- Esfuerzo real:` · `patch-template.md` y dos requisitos de `estimation` · delta, `MODIFIED`».
+
+| Qué | Dónde aparece | Destino |
+| --- | --- | --- |
+| <qué se retira o cambia de forma> | <fichero:línea, por sitio> | <delta · Scope · decisión N, con su motivo> |
+
+- Filas que implementa: <id de cada fila que la spec salda o implementa> → <ficheros que la nombran («la define la 0009» en `docs/config.md`) y su destino> | nada: comprobado con `<búsqueda>`
 
 ## Approach
 
@@ -96,7 +106,7 @@ approvers:
 
 **MODIFIED — <título estable>** (antes: "<la cláusula que cambia>" — opcional)
 
-> Copia el bloque entero del requisito vigente con los cambios: al fusionar sustituye al anterior, y lo que no esté aquí desaparece.
+> Copia el bloque entero del requisito vigente con los cambios: al fusionar lo sustituye, y `sdd capability merge` rechaza perder una línea del vivo que no esté aquí. Una línea que quitas va como `- REMOVED <línea>` (`- REMOVED AND el aviso sale por correo`). El título es la clave de fusión: un renombrado es `REMOVED` del título viejo + `ADDED` del nuevo.
 
 - GIVEN <contexto>
 - WHEN <acción>
@@ -118,6 +128,14 @@ approvers:
 - Base de la estimación: <complejidad, incertidumbres, referencia del estimation-log>
 - Confianza: alta / media / baja
 
+## Topes de palabras *(solo si el proyecto pone topes a lo que la spec edita: un test limita en palabras un fichero que edita, como `tests/WordBudget.Tests.ps1`)*
+
+> Si se cumple, es obligatoria y no se borra con los bloques de ayuda: una fila por fichero con tope que la spec edita, también si la edición lo acorta; un margen dicho en una decisión o en «Dónde se prueba» no es la tabla. Si ningún test limita lo que edita, borra la sección. Mide cada uno antes de presentarla, con el conteo del test que lo fija. El tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix de la revisión final, y lo aprueba el dev-lead en el gate. El de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más ese margen. Lo que se recorte para caber es una edición de skill: si quita una instrucción, lleva su RED.
+
+| Fichero | Medido / tope | Margen | Tope propuesto |
+| --- | --- | --- | --- |
+| <skill o documento> | <palabras / tope> | <tope − medido> | <medido + previsto + 2 % · sin cambio> |
+
 ## Enmiendas
 
 > Un cambio a la spec aprobada durante la ejecución: un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba». Se corrige en su sitio del cuerpo (acción update) y aquí queda su línea, con la task que lo implementa. Una entrada por cambio, más reciente arriba.
@@ -126,8 +144,8 @@ approvers:
 
 ## Aprobaciones
 
-> Fila normal: aprobación de la spec o del plan. Fila de cambio de perfil a media feature: Estado `perfil → <perfil>: «<frase literal>»`, con la fecha en que el dev-lead lo dijo.
+> Fila normal: aprobación de la spec o del plan, con el nombre de quien aprueba (`git config user.name`). Con una opción de la pregunta del gate, Estado `aprobada (opción «<etiqueta sin el sufijo «(Recomendada)»>»)`; si el usuario escribe su respuesta, `aprobada: «<su frase literal>»`. Fila de cambio de perfil a media feature: Estado `perfil → <perfil>: «<frase literal>»`, con la fecha en que el dev-lead lo dijo.
 
-| Rol | Nombre | Fecha | Estado |
-| --- | --- | --- | --- |
-| dev-lead | | | pendiente |
+| Nombre | Fecha | Estado |
+| --- | --- | --- |
+| | | pendiente |

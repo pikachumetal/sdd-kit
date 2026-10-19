@@ -20,7 +20,7 @@ Each step is one action with a checkable result: write the failing test; run it 
 
 With the plan written, look at the spec with fresh eyes, yourself, not with a subagent:
 
-1. **Spec coverage**: each requirement and THEN of the spec points to a task (§4 of the template). A requirement without a task gets one.
+1. **Spec coverage**: each clause of each THEN —the THEN and every AND— points to the task and the test or measurement row that observes it (§4 of the template), and so does each row of the spec's «regla retirada → dónde vive ahora» table. A task whose test only reads what was written doesn't cover «has asked…». A clause without a task gets one; one nothing can observe says so in the plan's decisions, before execution.
 2. **Step scan**: no gap, no transcript (above).
 3. **Type consistency**: the names, signatures and types a later task uses are the ones an earlier task produced: `clearLayers()` in Task 3 and `clearFullLayers()` in Task 7 is a bug.
 4. **Review Focus**: for each input or failure the spec implies, a task's tests exercise it; the most likely to bite a person, untested, go to the Review Focus with the test that pins them in the owning task. «ninguna: comprobado» means you checked.

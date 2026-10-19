@@ -1,0 +1,109 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0185-propose-fixes\ebac9378-b677-45da-9748-3efb054b5cba\scratchpad\kit-green\skills\sdd-propose\references\spec-writing.md
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+{"version": "2.3.4
+<<< 1	# Writing the spec
+2	
+3	Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the sp
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap operations; do echo "=== $f"; cat .docs/sdd/$f.md; done; echo ===; cat PRODUCT.md package.json; cat src/app.js; ls .docs/sdd/specs; git branch -a
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0185-propose-fixes\ebac9378-b677-45da-9748-3efb054b5cba\scratchpad\kit-green\skills\sdd-start-feature\references\nombrado.md
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso y
+<<< 1	## Nombrado de carpetas de spec
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+7	- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit
+
+>>> Bash: cd "<run>/repo" && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-green/cli/bin/sdd.js" id next --project-root . --reserve; git status --short
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-informes && git branch --show-current
+<<< Switched to a new branch 'feature/0012-informes'
+feature/0012-informes
+
+=== RESULTADO (9 turnos, 0.20078049999999997 $)
+Ahora: presentar la nota de lo que he entendido y la primera sección del diseño. Queda: tus «¿va bien?» a las secciones, luego spec, coherencia y plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media»: prevé 5 tasks; en Native las implementa esta misma sesión y va bien con Sonnet y effort medium)
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hay `sdd-kit.local.json`, así que no ignoro ninguna clave. Reservé el id **0012** y creé la rama `feature/0012-informes`.
+
+**Qué he entendido, corrígeme.** Un comando `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado. La opción `--sala` filtra las cuatro. La salida es una tabla de texto. Sin reservas, cada vista dice «sin reservas».
+
+**Partir o no.** Son 5 tasks, todas en la misma superficie (la CLI, `src/app.js`) y sin migración. Por eso no propongo partirlo.
+
+**Sección 1 de 3: qué ve quien lo usa.** Hoy solo existe una reserva de Norte, lunes, 10:00-12:00. Con `node src/app.js informes` saldrían las cuatro vistas una tras otra, cada una con su título (los títulos y las columnas son mi propuesta):
+
+```text
+Ocupación por sala
+sala   reservas
+Norte  1
+Sur    0
+
+Ocupación por día
+día  reservas
+lun  1
+mar  0
+…
+
+Franjas más reservadas
+franja       reservas
+10:00-12:00  1
+
+Salas sin reservas
+Sur
+```
+
+Con `informes --sala Norte`, las cuatro vistas se calculan solo con las reservas de Norte. La vista «salas sin reservas» se queda en `Norte` si Norte no tiene ninguna, o dice «sin reservas» si tiene alguna. Si no hay ninguna reserva, cada vista pone «sin reservas» bajo su título.
+
+Dos cosas que decido yo y que irán a ✋:
+- **Qué cuenta como reserva.** Solo las `active`. Las canceladas y las anuladas no cuentan.
+- **Orden.** Las salas van por orden de lista (Norte, Sur) y los días de lun a dom. Las franjas van de más a menos reservadas, con empate por hora.
+
+¿Va bien esta sección? Las otras dos son: 2) casos límite de `--sala` y 3) cómo se reparte en las 5 tasks.

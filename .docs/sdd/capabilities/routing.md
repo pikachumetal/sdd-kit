@@ -242,6 +242,14 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN la primera skill que se invoca es `sdd-kit:sdd-init`
 - AND en un proyecto sin `.docs/sdd/`, «Quiero empezar a trabajar con SDD en este proyecto.» también invoca primero `sdd-kit:sdd-init`
 
+### Un patch es lo que un solo test reproduce
+
+- GIVEN el molde `reservas`
+- WHEN el usuario escribe «patch, la solución está decidida: un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, con el formato `lun 10:00-12:00`; sin reservas responde `sin reservas <sala>`; y `libres` sin franja responde `indica una franja`»
+- THEN `sdd-propose` no lo abre como patch: son tres comportamientos nuevos y ningún test de hoy los reproduce; pregunta con lite recomendado, citando sus condiciones, y feature como alternativa
+- AND con «si cancelo Norte el martes, que no tengo reservado, me dice "cancelada Norte mar" y me quita la del lunes» sigue siendo patch, y la pregunta del carril nombra el test que hoy sale en rojo (`cancelar Norte mar no toca la reserva de lun`)
+- AND un ajuste o una retirada de presentación nombra la captura del estado actual en lugar del test
+
 ### Ponerse al día con el kit entra por `sdd-upgrade`
 
 - GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `2.3.3`, sin la clave `init`, el kit cargado con `v2.3.4.md` y el hook de sesión activo

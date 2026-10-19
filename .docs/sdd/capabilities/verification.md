@@ -32,6 +32,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND los ejes trabajan en el mismo worktree desanclado `review-<id>-a1b2c3d`
 - AND un eje colgado se relanza solo, una vez, como dice «Vigía de silencio», y los demás siguen
 - AND el hilo recibe los informes por eje y no fusiona ni reordena hallazgos de un eje con los de otro
+- AND en `delegate`, si la spec aprobada lleva la línea `Política de modelos:` con esos ejes y las instrucciones del usuario piden confirmar antes de paralelizar, los despacha sin preguntar; un eje que la línea no nombra (el Arquitectura que sube el hilo) se confirma
 
 ### El eje Arquitectura lo declara el plan y el hilo solo lo sube
 
