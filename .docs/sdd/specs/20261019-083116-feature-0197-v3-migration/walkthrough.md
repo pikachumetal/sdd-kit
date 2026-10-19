@@ -71,6 +71,7 @@ created: 2026-10-19
 
 - Pre-commit de cada commit (`kit:test-fast` + `cli:test`): verde en los cinco.
 - Suite completa: `moon run kit:test cli:typecheck cli:test --force`, `moon run cli:test-slow --force` y `moon run cli:test-min --force`, por separado, sobre `5c12563` → `kit:test` 1304/1304, typecheck verde, `cli:test` 1029/1029, `cli:test-slow` 188/188 y `cli:test-min` 1217/1217, en 8 min. La pasada de fix solo cambió Markdown, la batería y el molde; su pre-commit dio `kit:test-fast` 1224 y `cli:test` 1029.
+- Sobre la base integrada con develop (con la 0185), por partes y con --force: kit:test 1324/1324, typecheck verde, cli:test 1032/1032, cli:test-slow 188/188 y cli:test-min 1220/1220, en 10 min.
 
 ### 4.2 Smoke / tests
 
