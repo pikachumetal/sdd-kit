@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { destinationExits, isRegistry } from '../../src/merge/exits.ts';
+import { destinationExits } from '../../src/merge/exits.ts';
+import { isRegistry } from '../../src/merge/registries.ts';
 
 describe('salidas del destino sacado', () => {
   it('ofrece llevarlo a la feature si solo hay registros', () => {

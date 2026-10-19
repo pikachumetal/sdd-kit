@@ -49,11 +49,13 @@ async function backTarget(root: string, job: Job, target: HotfixTarget): Promise
   return releases[0] ?? job.policy.into;
 }
 
+const remoteName = (remote: string | null) => (remote === null ? 'sin remoto' : `'${remote}'`);
+
 async function decideBack(root: string, job: Job, target: HotfixTarget): Promise<HotfixPlan> {
   const back = await backTarget(root, job, target);
   const backRemote = await remoteForBranch(root, back);
   if (backRemote !== target.remote) {
-    throw new DomainError(`push: '${target.into}' y '${back}' tienen remotos distintos ('${target.remote}', '${backRemote}'); fusiona a mano`);
+    throw new DomainError(`push: '${target.into}' y '${back}' tienen remotos distintos (${remoteName(target.remote)}, ${remoteName(backRemote)}); fusiona a mano`);
   }
   return { ...target, back };
 }
@@ -63,6 +65,7 @@ async function assertTagFree(root: string, { tag, remote }: HotfixTarget): Promi
   if ((await git(root, ['rev-parse', '--verify', '--quiet', `refs/tags/${tag}`])).code === 0) throw new DomainError(`--tag: ya existe '${tag}'`);
   if (remote === null) return;
   const listed = await git(root, ['ls-remote', '--tags', remote, `refs/tags/${tag}`]);
+  if (listed.code !== 0) throw new DomainError(`--tag: no se pudo consultar las etiquetas de '${remote}'`);
   if (listed.stdout.trim() !== '') throw new DomainError(`--tag: ya existe '${tag}' en '${remote}'`);
 }
 
@@ -157,7 +160,7 @@ async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Pr
 async function fetchStableAndReleases(root: string, { into, remote }: HotfixTarget): Promise<void> {
   if (remote === null) return;
   const refspecs = [`+refs/heads/${into}:refs/remotes/${remote}/${into}`, `+refs/heads/release/*:refs/remotes/${remote}/release/*`];
-  if ((await git(root, ['fetch', remote, ...refspecs])).code !== 0) throw new DomainError(`vuelta: no se pudo hacer fetch de las release/ de '${remote}'`);
+  if ((await git(root, ['fetch', '--prune', remote, ...refspecs])).code !== 0) throw new DomainError(`vuelta: no se pudo hacer fetch de las release/ de '${remote}'`);
 }
 
 // La vuelta se decide antes de tocar nada, con la rama estable y las release/ recién traídas del remoto: una release cerrada fuera no la recibe.

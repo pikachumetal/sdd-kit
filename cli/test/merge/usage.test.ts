@@ -23,3 +23,11 @@ describe('sdd merge --sync', () => {
     expect(mergeBranch).not.toHaveBeenCalled();
   });
 });
+
+describe('sdd merge --sync y --branch', () => {
+  it('rechaza --branch con 2', async () => {
+    const io = memoryIo();
+    expect(await run(['merge', '--sync', '--branch', 'feature/x', '--project-root', '.'], io)).toBe(2);
+    expect(io.stderr.join('\n')).toContain('--sync no admite --branch');
+  });
+});

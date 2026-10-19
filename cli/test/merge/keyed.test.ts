@@ -74,3 +74,14 @@ describe('guardas de la unión por id', () => {
     });
   });
 });
+
+describe('dedupeRows con más de dos filas del mismo id', () => {
+  it('con a, b, b deja a y b y avisa una vez', () => {
+    expect(dedupeRows([row('0202', 'a'), row('0202', 'b'), row('0202', 'b')])).toEqual({ lines: [row('0202', 'a'), row('0202', 'b')], duplicates: ['0202'] });
+  });
+
+  it('la cabecera de una tabla no lleva id', () => {
+    const header = ['| Id | Tarea |', '| --- | --- |'];
+    expect(dedupeRows([...header, ...header])).toEqual({ lines: [...header, ...header], duplicates: [] });
+  });
+});
