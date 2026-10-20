@@ -48,8 +48,8 @@ Describe 'Task 1 — contrato del método' {
 
   It 'la pregunta 6 de sdd-config pregunta el método con auto recomendado' {
     $row = Get-TableRow 'skills/sdd-config/SKILL.md' '| 6 |'
-    $row | Should -Match '¿Cómo se ejecutan los planes'
-    $row | Should -Match 'Recomendado `auto`'
+    $row | Should -Match 'How are plans executed'
+    $row | Should -Match 'Recommended `auto`'
     $row | Should -Match '`execution`'
   }
 

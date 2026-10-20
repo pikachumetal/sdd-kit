@@ -153,8 +153,8 @@ Describe 'Revisión final — pase de fix' {
 Describe 'Decisión del dev-lead — native fijado también cambia tras compactar' {
   It 'la pregunta 6 de sdd-config describe native con la excepción de la compactación' {
     $row = (Get-KitFile 'skills/sdd-config/SKILL.md') -split "`r?`n" | Where-Object { $_.StartsWith('| 6 |') }
-    $row | Should -Not -Match 'siempre en la sesión'
-    $row | Should -Match '`native` \(en la sesión; tras una compactación con dos o más tasks pendientes, lo que queda va con subagentes\)'
+    $row | Should -Not -Match 'always in the session'
+    $row | Should -Match '`native` \(in the session; after a compaction with two or more pending tasks, the rest goes with subagents\)'
   }
 }
 
