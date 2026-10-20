@@ -61,15 +61,29 @@ export async function mergeFeature(worktree: string, { branch, into, noFf, order
   await mergeAndClean({ worktree, stepName: 'merge', report }, [...flags, ...message, branch]);
 }
 
+export async function unpublishedCommits(worktree: string, remote: string | null, into: string): Promise<string[]> {
+  if (remote === null) return [];
+  return gitLines(worktree, ['log', '--format=%h %s', `refs/remotes/${remote}/${into}..HEAD`]);
+}
+
+export function unpublishedLines(into: string, branch: string, commits: string[]): string[] {
+  if (commits.length === 0) return [];
+  const header = commits.length === 1 ? `1 commit de '${into}' que no es de ${branch}:` : `${commits.length} commits de '${into}' que no son de ${branch}:`;
+  return [`push: también publica ${header}`, ...commits.map((commit) => `- ${commit}`)];
+}
+
 export async function remoteMoved(worktree: string, remote: string, branch: string): Promise<boolean> {
   const fetched = await git(worktree, ['fetch', remote, `+refs/heads/${branch}:refs/remotes/${remote}/${branch}`]);
   return fetched.code === 0 && (await git(worktree, ['merge-base', '--is-ancestor', `${remote}/${branch}`, `refs/heads/${branch}`])).code !== 0;
 }
 
+export const appendGitError = (message: string, stderr: string) => (stderr.trim() === '' ? message : `${message}\n${stderr.trim()}`);
+
 export async function pushDestination(worktree: string, remote: string, into: string): Promise<'pushed' | 'moved'> {
-  if ((await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`])).code === 0) return 'pushed';
+  const pushed = await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`]);
+  if (pushed.code === 0) return 'pushed';
   if (await remoteMoved(worktree, remote, into)) return 'moved';
-  throw new DomainError(`push: no se pudo publicar '${into}' en '${remote}'.`);
+  throw new DomainError(appendGitError(`push: no se pudo publicar '${into}' en '${remote}'.`, pushed.stderr));
 }
 
 export async function undoFailedMerge(worktree: string, before: string): Promise<void> {

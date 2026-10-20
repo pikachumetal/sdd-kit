@@ -3,7 +3,7 @@ import { DomainError, UsageError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
 import { checkDestination, withDestination, type DestinationRequest } from './destination.ts';
 import type { Job } from './run.ts';
-import { mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge } from './steps.ts';
+import { appendGitError, mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge, unpublishedCommits, unpublishedLines } from './steps.ts';
 import { MergeConflict } from './attempt.ts';
 import { explainFailure, verifyMerge } from './verify.ts';
 
@@ -113,20 +113,34 @@ async function mergeBack(path: string, job: Job, plan: HotfixPlan): Promise<void
 
 async function pushAll(path: string, plan: HotfixPlan, remote: string): Promise<void> {
   const refs = [`refs/heads/${plan.into}`, `refs/heads/${plan.back}`, ...(plan.tag === null ? [] : [`refs/tags/${plan.tag}`])];
-  if ((await git(path, ['push', '--atomic', remote, ...refs.map((ref) => `${ref}:${ref}`)])).code === 0) return;
+  const pushed = await git(path, ['push', '--atomic', remote, ...refs.map((ref) => `${ref}:${ref}`)]);
+  if (pushed.code === 0) return;
   const moved = (await remoteMoved(path, remote, plan.into)) || (await remoteMoved(path, remote, plan.back));
   // ponytail: sin bucle de reintentos, al contrario que el merge normal; añadirlo si un hotfix lo sufre en campo.
   if (moved) throw new DomainError(`push: '${plan.into}' o '${plan.back}' avanzó en '${remote}'; relanza el hotfix`);
-  throw new DomainError(`push: no se pudo publicar '${plan.into}' y '${plan.back}' en '${remote}'.`);
+  throw new DomainError(appendGitError(`push: no se pudo publicar '${plan.into}' y '${plan.back}' en '${remote}'.`, pushed.stderr));
 }
 
-async function report(job: Job, plan: HotfixPlan, { tagged, ...paths }: Checkouts & { tagged: boolean }): Promise<void> {
-  const { branch, options, io } = job;
-  const stableHash = await shortHead(paths.stable);
+interface Unpublished {
+  stable: string[];
+  back: string[];
+}
+
+function reportPush(job: Job, plan: HotfixPlan, unpublished: Unpublished): void {
+  if (!job.options.push) return;
+  if (plan.remote === null) return job.io.out('push: no hecho: sin remoto');
+  const lines = [...unpublishedLines(plan.into, job.branch, unpublished.stable), ...unpublishedLines(plan.back, job.branch, unpublished.back)];
+  lines.forEach((line) => job.io.out(line));
+  job.io.out(`publicado en ${plan.remote}`);
+}
+
+async function report(job: Job, plan: HotfixPlan, outcome: Checkouts & { tagged: boolean; unpublished: Unpublished }): Promise<void> {
+  const { branch, io } = job;
+  const stableHash = await shortHead(outcome.stable);
   io.out(`Fusionado ${branch} en ${plan.into}: ${stableHash}`);
-  if (tagged) io.out(`etiqueta ${plan.tag} en ${stableHash}`);
-  io.out(`Fusionado ${branch} en ${plan.back}: ${await shortHead(paths.back)}`);
-  if (options.push) io.out(plan.remote === null ? 'push: no hecho: sin remoto' : `publicado en ${plan.remote}`);
+  if (outcome.tagged) io.out(`etiqueta ${plan.tag} en ${stableHash}`);
+  io.out(`Fusionado ${branch} en ${plan.back}: ${await shortHead(outcome.back)}`);
+  reportPush(job, plan, outcome.unpublished);
 }
 
 export async function publishedBack(path: string, { back, remote }: HotfixPlan): Promise<boolean> {
@@ -136,9 +150,18 @@ export async function publishedBack(path: string, { back, remote }: HotfixPlan):
   return code === 0;
 }
 
-async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<void> {
+async function syncBack(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<Unpublished> {
   const published = await publishedBack(paths.back, plan);
   await syncBaseBranch(paths.back, { into: plan.back, remote: published ? plan.remote : null }, job.io.out);
+  if (!job.options.push) return { stable: [], back: [] };
+  return {
+    stable: await unpublishedCommits(paths.stable, plan.remote, plan.into),
+    back: published ? await unpublishedCommits(paths.back, plan.remote, plan.back) : [],
+  };
+}
+
+async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<void> {
+  const unpublished = await syncBack(job, plan, paths);
   const [stableBefore] = await gitLines(paths.stable, ['rev-parse', 'HEAD']);
   const [backBefore] = await gitLines(paths.back, ['rev-parse', 'HEAD']);
   let failedAt = paths.stable;
@@ -148,7 +171,7 @@ async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Pr
     failedAt = paths.back;
     await mergeBack(paths.back, job, plan);
     if (job.options.push && plan.remote !== null) await pushAll(paths.stable, plan, plan.remote);
-    await report(job, plan, { ...paths, tagged });
+    await report(job, plan, { ...paths, tagged, unpublished });
   } catch (error) {
     await undoFailedMerge(paths.back, backBefore);
     await undoFailedMerge(paths.stable, stableBefore);

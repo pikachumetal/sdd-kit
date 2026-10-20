@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'node:fs';
+import { chmodSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, git, isWindows, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { edit, git, isWindows, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const ORDER = 'fusiona el hotfix del login en main';
 const failsIfExists = (file: string) => (isWindows ? `if (Test-Path ${file}) { exit 1 }` : `if [ -f ${file} ]; then exit 1; fi`);
@@ -343,5 +343,47 @@ describe('casos de borde del hotfix', () => {
 
     expect(result.code, result.text).toBe(0);
     expect(git(fx.repo, 'for-each-ref', 'refs/remotes')).toBe(tracking);
+  });
+});
+
+describe('el push de un hotfix nombra los commits que no son del cambio', () => {
+  it('un commit local en develop sale en la línea de develop', async () => {
+    const fx = hotfixFixture('hotfix-ajeno');
+    const triage = localCommit(fx, 'develop', 'docs(roadmap): triaje');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--push'));
+
+    expect(result.code, result.text).toBe(0);
+    const header = result.text.indexOf("push: también publica 1 commit de 'develop' que no es de hotfix/0200-fix:");
+    expect(header).toBeGreaterThan(-1);
+    expect(result.text.indexOf(`- ${triage} docs(roadmap): triaje`)).toBeGreaterThan(header);
+    expect(result.text.indexOf('publicado en origin')).toBeGreaterThan(header);
+    expect(result.text).not.toContain("de 'main' que no");
+  });
+
+  it('un commit local en main sale en la línea de main', async () => {
+    const fx = hotfixFixture('hotfix-ajeno-main');
+    const release = localCommit(fx, 'main', 'chore: preparar main');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--push'));
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toContain("push: también publica 1 commit de 'main' que no es de hotfix/0200-fix:");
+    expect(result.text).toContain(`- ${release} chore: preparar main`);
+    expect(result.text).not.toContain("de 'develop' que no");
+  });
+
+  it('un push atómico rechazado dice lo que contestó git', async () => {
+    const fx = hotfixFixture('hotfix-rechazo');
+    const rejectHooks = join(fx.root, 'reject-hooks');
+    write(rejectHooks, 'pre-receive', '#!/bin/sh\necho rama protegida >&2\nexit 1\n');
+    chmodSync(join(rejectHooks, 'pre-receive'), 0o755);
+    git(fx.remote, 'config', 'core.hooksPath', rejectHooks);
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--push'));
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("push: no se pudo publicar 'main' y 'develop' en 'origin'.");
+    expect(result.text).toContain('remote: rama protegida');
   });
 });

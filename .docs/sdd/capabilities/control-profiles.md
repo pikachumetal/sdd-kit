@@ -315,7 +315,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - WHEN el push se rechaza y, tras un fetch, la `develop` remota ya no es antecesora de la local
 - THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`, integra la `develop` remota como al empezar, repite `--verify` salvo que desde el último commit verificado solo cambien docs, y vuelve a empujar
 - AND tras el tercer push rechazado falla con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato` y la rama destino como estaba
-- AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla como hoy con `push: no se pudo publicar 'develop' en 'origin'.`, sin reintentar
+- AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla con `push: no se pudo publicar 'develop' en 'origin'.` y, en las líneas siguientes, lo que escribió `git push` (`remote: rama protegida`), sin reintentar; el push atómico de un hotfix, igual
 
 ### Un hotfix se fusiona en la rama estable, se etiqueta y vuelve a la integración
 
@@ -398,6 +398,16 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND vale igual en `ROADMAP.md`, `CHANGELOG.md`, `.docs/sdd/changelog.md` y `.docs/sdd/steering/debt.md`, dentro de cada sección: `**Feature 0210**` en `### Added` y en `### Changed` no se toca
 - AND un id que ya estaba repetido en la rama destino antes del merge no se toca ni se avisa
 - AND si el commit de limpieza falla, el merge se deshace, la rama destino queda como estaba y el script sale con 1 con `registros: no se pudo commitear la limpieza de filas repetidas`
+
+### El push nombra los commits de la rama destino que no son del cambio
+
+- GIVEN una `develop` local con `f5b76897 docs(roadmap): triaje` sin publicar en `origin`, y la rama `feature/0150-x` lista para fusionar
+- WHEN el cierre ejecuta `sdd merge --push`
+- THEN publica `develop` con ese commit y con el merge, y escribe `push: también publica 1 commit de 'develop' que no es de feature/0150-x:` y `- f5b76897 docs(roadmap): triaje`, antes de `publicado en origin`
+- AND con dos commits así, `push: también publica 2 commits de 'develop' que no son de feature/0150-x:` y una línea `- <hash> <asunto>` por cada uno
+- AND sin commits locales sin publicar, sin `--push` o sin remoto, la línea no sale
+- AND los commits que trae de la remota un reintento del push no cuentan
+- AND en un hotfix, cada rama publicada (la estable y la de vuelta) que tenga commits así da su línea, con su nombre
 
 ## Reglas de la capacidad
 
