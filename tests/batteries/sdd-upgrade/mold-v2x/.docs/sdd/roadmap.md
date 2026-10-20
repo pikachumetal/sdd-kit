@@ -19,7 +19,7 @@
 | Ítem | Impacto | Destino |
 | --- | --- | --- |
 | **[Patch 0023, 2026-09-25: saldada — [patch](specs/20260925-100000-patch-0023-double-booking/patch.md)]** Dos reservas en la misma franja se aceptan ([ticket SAL-44](https://tracker.example.com/SAL-44)) | Alto — la sala queda doble | **Actuar**: 0023 |
-| `cancel` no comprueba que la reserva sea del que cancela ([ticket SAL-45](https://tracker.example.com/SAL-45)) | Alto — cualquiera cancela cualquier reserva | **Actuar**: 0022 |
+| `cancel` no comprueba que la reserva sea del que cancela ([ticket SAL-45](https://tracker.example.com/SAL-45), [análisis](field-reports/sal-45.md)) | Alto — cualquiera cancela cualquier reserva | **Actuar**: 0022 |
 | Los mensajes de error mezclan castellano e inglés | Bajo — confunde | **Actuar**: sin fila |
 | El test de franjas falla a veces en CI | Medio — rojo intermitente | **Esperar 2.º ticket**: falta un segundo fallo con su log |
 | Validar el formato de la franja en la API | Bajo | **Descartada**: duplica la 0018 |
