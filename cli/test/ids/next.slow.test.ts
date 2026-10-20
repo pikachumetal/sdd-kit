@@ -36,6 +36,12 @@ describe('id next in a sequence project', () => {
     expect(result.code).toBe(1);
   });
 
+  it('counts sdd-id tags', async () => {
+    const repo = copyFixtureToRepo('sequence-project');
+    git(repo, ['tag', 'sdd-id/0090']);
+    expect(await nextId(repo)).toBe('0091');
+  });
+
   it('returns 0001 when all history is 0000', async () => {
     expect(await nextId(fixturePath('only-zeros'))).toBe('0001');
   });
