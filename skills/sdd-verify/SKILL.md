@@ -225,7 +225,7 @@ Minor · possible Feature Envy in cancelledList (src/app.js:36)
 
 - **Critical and Important** enter the fix pass.
 - A **«no verificado»**: verify it yourself before the validation, or adjudicate it with `Final: Ruling:`.
-- **Minor** goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors». Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
+- **Minor**, with `"review": {"minors": "fix"}` in `sdd-kit.json`, enters the fix pass with them, without asking; in Native its ledger line is `Final: fixed <finding> — <test> RED→GREEN, suite <N>/<N>`, or `Final: fixed <finding> — suite <N>/<N>` when no test can reproduce it (a name, a wording). Without the key, or with `defer`, it goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors»: deferred Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
 
 **Native:** fix the Critical and Important findings of every axis yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified; a suite that is not green after the pass means the pass is not over. A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
 
