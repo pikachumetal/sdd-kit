@@ -12,7 +12,7 @@
 >
 > **Tarea**: `**<título>**<br>*<one-liner>*<details><summary>Brief</summary>…</details>`. El brief es obligatorio en Now y Next y lleva cinco etiquetas, en este orden: `**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**` y `**Toca:**`. Un `|` dentro de una celda se escribe `\|`.
 >
-> **Id**: el de la feature o del patch (`<id>`), también en Later, de la misma reserva; en `tracker`, el del ticket o `0000`. Subir de Later a Next conserva el id.
+> **Id**: el de la feature o del patch (`<id>`), también en Later; en `tracker`, el del ticket o `0000`.
 
 ## Now
 

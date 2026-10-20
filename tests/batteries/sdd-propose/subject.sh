@@ -20,7 +20,7 @@ F11=".docs/sdd/specs/20261008-110000-feature-0011-void-others"
 cp -r "$HERE/mold-reservas/." "$R/"
 put_kit_marker "$MARKER"
 case "$(cell Molde)" in
-  reservas|reservas-main|reservas-plan) ;;
+  reservas|reservas-main|reservas-plan|reservas-remoto) ;;
   # La 0011 implementa los responsables de sala que una fila pendiente (0009) prometía, y docs/config.md apunta a esa fila.
   # El puntero va fuera de los documentos que el paso 1 lee: en PRODUCT.md lo vieron 2 de 2 sin buscarlo (red-v1 del patch 0174).
   reservas-puntero)
@@ -49,6 +49,28 @@ case "$SC" in a2|a3|d1|p3) sed -i 's/b.room === room \&\& b.day === day \&\& /b.
 g init -q -b main
 commit "feat: base del molde"
 [ "$(cell Molde)" = reservas-main ] || g checkout -q -b develop
+
+# reservas-remoto: un remoto bare con develop publicado; otro clon publica su 0012 y aquí queda una 0012 sin publicar.
+ROW_AFTER_0011='^| 0011 |.*$'
+add_row() { sed -i "s/$ROW_AFTER_0011/&\n$2/" "$1/.docs/sdd/roadmap.md"; }
+remote_mold() {
+  local origin="$RUN/origin.git" other="$RUN/other"
+  git init -q --bare -b develop "$origin"
+  g remote add origin "$origin"
+  g push -q -u origin develop
+  git clone -q -b develop "$origin" "$other"
+  [ -z "${1:-}" ] && return 0
+  add_row "$other" '| 0012 | **Informe de ocupación**: horas reservadas por sala y semana | ⏳ |'
+  git -C "$other" -c user.email=otro@example.com -c user.name=Otro commit -qam 'docs(roadmap): reserva 0012'
+  git -C "$other" push -q origin develop
+  add_row "$R" "$1"
+  commit 'docs(roadmap): reserva 0012'
+}
+case "$SC" in
+  id1) remote_mold '| 0012 | **Exportar las reservas a CSV**: un fichero con una fila por reserva | ⏳ |'; g checkout -q -b feature/0012-export-csv ;;
+  id4) remote_mold '| 0012 | Patch: **Franja no válida en libres**: `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» | ⏳ |'; g checkout -q -b feature/0012-slot-format ;;
+  id2) remote_mold; g checkout -q -b feature/0016-slot-format ;;
+esac
 
 approved_spec() { sed -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$FIX/spec-0010.md"; }
 without_who() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d'; }

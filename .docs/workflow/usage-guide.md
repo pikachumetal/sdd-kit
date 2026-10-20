@@ -198,7 +198,7 @@ El feedback de una demo o una reunión no se procesa en el corte: eso es planifi
 
 **Un worktree por feature o por patch.** Cada tarea en su carpeta y su rama, `feature/<id>-<nombre>`, sacada de `develop`. Así dos sesiones no se pisan los ficheros.
 
-**Los ids se reservan, no se calculan a ojo.** En un proyecto con secuencia propia, el id sale de la fila del roadmap o, si no tiene fila, de `sdd id next --reserve`. Lo hace el agente. Sin `--reserve` el verbo solo propone un número, y otro worktree que calcule a la vez se llevaría el mismo.
+**Los ids se reservan, no se calculan a ojo.** En un proyecto con secuencia propia, el id sale de la fila del roadmap o, si no tiene fila, de `sdd id next --reserve`. Lo hace el agente. Sin `--reserve` el verbo solo propone un número, y otro worktree que calcule a la vez se llevaría el mismo. El id es provisional hasta que la tarea arranca: al arrancar, `sdd id claim` lo publica en `develop` del remoto, y si otra persona ya publicó ese número, tu tarea pasa al siguiente libre y el agente te lo dice («la 0174 pasa a 0203»).
 
 **La rama tiene que llevar su id.** Si abres el worktree con una rama sin id (`feature/filtro-pedidos`) y sin commits, el agente la renombra a `feature/<id>-filtro-pedidos` antes del primer commit y te lo dice. Si la rama trae un número que no es el suyo, díselo antes de empezar.
 
