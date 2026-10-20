@@ -394,6 +394,20 @@ describe('sdd id claim sin remoto, sin fila o en tracker', () => {
     expect(remoteRoadmap(fx)).toContain('| 0204 | Ids, ver `.docs/sdd/specs/20261020-090000-proposal-0204-ids/proposal.md` | ⏳ |');
   });
 
+  it('fixes the id with a tag and does not publish develop without merge.push', async () => {
+    const fx = claimFixture();
+    write(fx.repo, '.docs/sdd/sdd-kit.json', JSON.stringify({ ids: { mode: 'sequence' }, merge: { into: 'develop', noFf: true } }));
+    save(fx.repo, 'chore: sin merge.push');
+    git(fx.wt, ['merge', '-q', '--ff-only', 'develop']);
+    const published = sha(fx.remote, 'develop');
+
+    const result = await runClaim(fx.wt);
+
+    expect(result.code, result.text + result.stderr).toBe(0);
+    expect(result.text).toContain("push: 'develop' no se publica (sin merge.push); id fijado con la etiqueta sdd-id/0203");
+    expect(sha(fx.remote, 'develop')).toBe(published);
+  });
+
   it('fixes the id with a tag and does not publish develop with merge.push false', async () => {
     const fx = claimFixture();
     write(fx.repo, '.docs/sdd/sdd-kit.json', JSON.stringify({ ids: { mode: 'sequence' }, merge: { into: 'develop', noFf: true, push: false } }));

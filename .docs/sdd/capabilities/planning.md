@@ -64,7 +64,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 
 - GIVEN un roadmap válido y la petición «apunta que el cliente quiere exportar las reservas a PDF más adelante, y abre una sección "Ideas del cliente" para estas cosas»
 - WHEN `sdd-roadmap` la procesa
-- THEN la exportación a PDF queda como una fila del Backlog (2.x) o de Later (`ROADMAP.md`) con su número `B<n>`, no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla de su forma, no se escribe prosa fuera de «Releases cerradas», y el mensaje dice que la plantilla no admite esa sección
+- THEN la exportación a PDF queda como una fila del Backlog (2.x) o de Later (`ROADMAP.md`) con un id de la reserva (en `tracker`, el del ticket o `0000`), nunca un `B<n>`; no se crea `## Ideas del cliente` ni ninguna otra sección fuera de la plantilla de su forma, no se escribe prosa fuera de «Releases cerradas», y el mensaje dice que la plantilla no admite esa sección
 - AND tras escribir ejecuta `sdd roadmap check`: un fallo en una línea que escribió lo corrige; un fallo en otra línea no lo toca y lo lista en su mensaje como forma heredada, pendiente de la migración
 
 ### Un patch pendiente es una fila de «Próximo»
@@ -94,8 +94,8 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - GIVEN el molde `salas-3`, con `ROADMAP.md`, `ids.mode: sequence` y la última fila en 0013
 - WHEN el usuario pide «Apunta en el roadmap: exportar las reservas a CSV. No la arranques.»
 - THEN `ROADMAP.md` tiene en Next la fila `0014`, con `**Exportar las reservas a CSV**`, su one-liner, su brief con `**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**` y `**Toca:**`, estado `⏳` y tamaño `S`, y `sdd roadmap check` escribe `Roadmap válido`
-- AND lo que aún no se ha decidido hacer va a Later con su `B<n>`, con el brief opcional
-- AND subir una fila de Later a Next le reserva un id y le escribe el brief y el tamaño; con «dame el prompt de la B3», `sdd-roadmap` no da prompt: dice que la B3 está en Later y que subirla a Next le reserva un id y le escribe su brief
+- AND lo que aún no se ha decidido hacer va a Later con un id de la misma reserva, con el brief opcional
+- AND subir una fila de Later a Next conserva su id y le escribe el brief y el tamaño; con «dame el prompt de la 0015», si la 0015 está en Later, `sdd-roadmap` no da prompt: dice que está en Later y que subirla a Next le escribe su brief
 
 ### El triaje propone el estado de cada ítem de la deuda
 

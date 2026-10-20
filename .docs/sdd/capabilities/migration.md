@@ -220,7 +220,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN pide «actualízame al kit»
 - THEN el agente presenta una tabla con cada sección, su destino y el texto resultante de lo que se reescribe, y no mueve nada antes de su «sí»
 - AND tras el «sí» hay un `PRODUCT.md` en la raíz con `## Users`, `## Product Purpose`, `## Capabilities and Constraints` y `## Terminology` con «**Franja**:», y un `.docs/sdd/steering/operations.md` con `## Comandos`, `## Testing` y `## Entornos`
-- AND «¿avisos por correo?» es una fila de Later en `ROADMAP.md` con el `B<n>` siguiente al mayor del Backlog, «Tecnologías» no está en ningún documento, y no quedan `mission.md`, `tech-stack.md` ni `environments.md` en `.docs/sdd/`
+- AND «¿avisos por correo?» es una fila de Later en `ROADMAP.md` con un id de la reserva `sdd id next --reserve --count N` de la migración (en `tracker`, `0000`), «Tecnologías» no está en ningún documento, y no quedan `mission.md`, `tech-stack.md` ni `environments.md` en `.docs/sdd/`
 - AND el informe y el cuerpo del commit dicen `git show <sha>:.docs/sdd/mission.md`, y lo mismo para los otros dos
 
 ### La migración a v3.0.0 mueve los documentos de estado a `steering/` y el changelog a la raíz
@@ -233,9 +233,9 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 
 ### La migración a v3.0.0 lleva el roadmap a Now, Next y Later
 
-- GIVEN un `roadmap.md` 2.x sin release en preparación, con la 0021 y la 0022 en «Próximo» (la 0022 con «tras 0021» y «`proposal: 0019`»), B3 en «Backlog», el patch 0023 posterior a la última release cerrada y el 0017 anterior, y la release cerrada con `validaciones pendientes: 0016`
+- GIVEN un `roadmap.md` 2.x sin release en preparación, con la 0021 y la 0022 en «Próximo» (la 0022 con «tras 0021» y «`proposal: 0019`»), B3 en «Backlog», el patch 0023 posterior a la última release cerrada y el 0017 anterior, y la release cerrada con `validaciones pendientes: 0016`, en un proyecto en modo `sequence`
 - WHEN se aplica la v3.0.0 y el dev-lead aprueba la tabla, con el Tamaño `M` para la 0021 y la 0022
-- THEN `ROADMAP.md` tiene en Now la 0021 y la 0022 con su brief plegado (la 0022 con «Tras» 0021 y `**Requisitos:**` hacia la propuesta 0019), Tamaño `M`, y el patch 0023 con `✅` y `**Carril:** patch`; en Later, la B3
+- THEN `ROADMAP.md` tiene en Now la 0021 y la 0022 con su brief plegado (la 0022 con «Tras» 0021 y `**Requisitos:**` hacia la propuesta 0019), Tamaño `M`, y el patch 0023 con `✅` y `**Carril:** patch`; en Later, el ítem de la B3 con el id `0024`, de la reserva de la migración, y ningún `B<n>`
 - AND no aparecen ni el 0017 ni la 0016, y la tabla y el informe nombran la 0016 como validación pendiente que sigue en su walkthrough
 - AND la tabla deja el Tamaño como «lo decide el dev-lead» antes de su respuesta, sin proponer uno
 - AND `sdd roadmap check --path .docs/sdd` escribe `Roadmap válido`, y no queda `.docs/sdd/roadmap.md`

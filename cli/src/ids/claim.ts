@@ -24,7 +24,7 @@ interface Claim {
   id: string;
   into: string;
   remote: string;
-  publish: boolean;
+  push: boolean | null;
   lockTimeoutMinutes: number;
   io: Io;
 }
@@ -109,7 +109,7 @@ async function tagStep(target: string, claim: Claim, id: string): Promise<'mine'
 }
 
 function fixedLine(claim: Claim, id: string): string {
-  const reason = claim.publish ? 'no admite push directo' : 'no se publica (merge.push: false)';
+  const reason = claim.push === true ? 'no admite push directo' : `no se publica (${claim.push === false ? 'merge.push: false' : 'sin merge.push'})`;
   return `push: '${claim.into}' ${reason}; id fijado con la etiqueta ${ID_TAG_PREFIX}${id}`;
 }
 
@@ -147,7 +147,7 @@ async function publishRow(target: string, claim: Claim, reservations: Reservatio
   const id = changes.find((change) => change.from === claim.id)?.to ?? claim.id;
   await syncBaseBranch(target, { into: claim.into, remote: claim.remote }, claim.io.out);
   const report = changes.map((change) => takenLine(claim, change));
-  const pushed = claim.publish ? await pushInto(target, claim) : 'protected';
+  const pushed = claim.push === true ? await pushInto(target, claim) : 'protected';
   if (pushed === 'moved') return 'moved';
   if (pushed === 'protected') return claimWithTag(target, claim, { id, report });
   return { id, report: [...report, ...unpublishedLines(claim.into, `la ${claim.id}`, others), `id: ${id} es tuya; publicada en ${remoteName(claim)}`] };
@@ -258,7 +258,7 @@ export async function claimIds(options: ClaimOptions, io: Io): Promise<string> {
     io.out(`${found.reason} la ${id} vale (contador local)`);
     return id;
   }
-  const claim: Claim = { root, id, into, remote: found.remote, publish: configuredMergePush(root) !== false, lockTimeoutMinutes: options.lockTimeoutMinutes, io };
+  const claim: Claim = { root, id, into, remote: found.remote, push: configuredMergePush(root), lockTimeoutMinutes: options.lockTimeoutMinutes, io };
   const outcome = await withMergeLock(root, { branch, io, minutes: claim.lockTimeoutMinutes }, () => withIntegrationTarget(root, into, (target) => claimIn(target, claim)));
   [...outcome.report, ...(await settleBranch(claim, branch, outcome.id))].forEach((line) => io.out(line));
   return outcome.id;

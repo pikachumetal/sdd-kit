@@ -89,7 +89,7 @@ export function claimFixture(options: { rows?: string[]; branch?: string } = {})
   git(root, ['init', '-q', '--bare', '-b', 'develop', remote]);
   git(root, ['init', '-q', '-b', 'develop', repo]);
   identity(repo);
-  write(repo, '.docs/sdd/sdd-kit.json', JSON.stringify({ ids: { mode: 'sequence' }, merge: { into: 'develop', noFf: true } }));
+  write(repo, '.docs/sdd/sdd-kit.json', JSON.stringify({ ids: { mode: 'sequence' }, merge: { into: 'develop', noFf: true, push: true } }));
   write(repo, ROADMAP, BASE_ROADMAP.join('\n'));
   save(repo, 'feat: base');
   git(repo, ['remote', 'add', 'origin', remote]);
