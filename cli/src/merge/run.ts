@@ -7,7 +7,7 @@ import { withLock } from '../git/lock.ts';
 import { checkDestination, withDestination } from './destination.ts';
 import { checkHotfix, mergeHotfix, prepareHotfix } from './hotfix.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
-import { mergeFeature, pushDestination, remoteForBranch, shortHead, syncBaseBranch, undoFailedMerge } from './steps.ts';
+import { mergeFeature, pushDestination, remoteForBranch, shortHead, syncBaseBranch, undoFailedMerge, unpublishedCommits, unpublishedLines } from './steps.ts';
 import { explainFailure, resolveCommit, verifyMerge } from './verify.ts';
 
 export interface MergeOptions {
@@ -45,10 +45,12 @@ async function publish(path: string, job: Job, remote: string): Promise<void> {
   }
 }
 
-async function reportMerge(path: string, { branch, policy, options, io }: Job, pushedTo: string | null): Promise<void> {
+async function reportMerge(path: string, { branch, policy, options, io }: Job, pushed: { to: string | null; unpublished: string[] }): Promise<void> {
   io.out(`Fusionado ${branch} en ${policy.into}: ${await shortHead(path)}`);
-  if (pushedTo !== null) io.out(`publicado en ${pushedTo}`);
-  else if (options.push) io.out('push: no hecho: sin remoto');
+  if (pushed.to !== null) {
+    unpublishedLines(policy.into, branch, pushed.unpublished).forEach((line) => io.out(line));
+    io.out(`publicado en ${pushed.to}`);
+  } else if (options.push) io.out('push: no hecho: sin remoto');
 }
 
 async function integrate(path: string, job: Job): Promise<void> {
@@ -56,12 +58,13 @@ async function integrate(path: string, job: Job): Promise<void> {
   const remote = await remoteForBranch(path, policy.into);
   await syncBaseBranch(path, { into: policy.into, remote }, io.out);
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
+  const unpublished = await unpublishedCommits(path, remote, policy.into);
   try {
     await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, io.out);
     await verifyMerge(path, { command: options.verify, verifiedAt: job.verifiedAt }, io);
     const pushedTo = options.push ? remote : null;
     if (pushedTo !== null) await publish(path, job, pushedTo);
-    await reportMerge(path, job, pushedTo);
+    await reportMerge(path, job, { to: pushedTo, unpublished });
   } catch (error) {
     await undoFailedMerge(path, before);
     throw await explainFailure(error, { worktree: path, command: options.verify, io });

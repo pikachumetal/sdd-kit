@@ -107,6 +107,15 @@ export function pushRemoteCommit(fx: Fixture, relative: string, content: string)
   return sha(fx.seed, 'HEAD');
 }
 
+export function localCommit(fx: Fixture, branch: string, message: string): string {
+  const path = join(fx.root, `local-${message.length}`);
+  git(fx.repo, 'worktree', 'add', '-q', path, branch);
+  write(path, `${message.length}.txt`, `${message}\n`);
+  saveAll(path, message);
+  git(fx.repo, 'worktree', 'remove', path);
+  return git(fx.repo, 'rev-parse', '--short', branch);
+}
+
 export async function runMerge(worktree: string, extra: string[] = []): Promise<{ code: number; text: string }> {
   const io = memoryIo();
   const code = await run(['merge', '--project-root', worktree, ...extra], io);

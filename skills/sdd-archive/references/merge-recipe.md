@@ -47,6 +47,7 @@ Under one lock per repo, the script integrates the destination's remote into the
 | `registros: dos filas distintas con el id …` | two different rows with one id, both kept | quote it in the final message for the dev-lead |
 | `verificación: …` + `base: …` | `--verify` red | «A red suite» |
 | `bloqueado: '<file>' lo tiene abierto <process>` | a process holds a file the gate needs | close it and run the script again |
+| `push: también publica <n> commit(s) de '<into>' que no son de <branch>:` + `- <hash> <subject>` lines | the destination had local commits not yet published, and they went out with the change | quote them in the final message: the dev-lead sees what went out besides the change |
 | `push: '<into>' avanzó en '<remote>'; integro y reintento (n/3)` | another session published meanwhile | nothing: the script retries |
 | `push: '<into>' sigue moviéndose en '<remote>' tras 3 intentos; …` | the remote kept moving | run the script once more in a while |
 | `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | quote it; never `--force`, `pull` or `rebase` |
