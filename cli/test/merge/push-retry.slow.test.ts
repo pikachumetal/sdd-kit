@@ -31,7 +31,7 @@ describe('el push del cierre reintenta si la rama destino avanzó', () => {
   it('un rechazo sin que la rama destino avance falla sin reintentar', async () => {
     const fx = mergeFixture('rechazo-sin-avance');
     const rejectHooks = join(fx.root, 'reject-hooks');
-    write(rejectHooks, 'pre-receive', '#!/bin/sh\nexit 1\n');
+    write(rejectHooks, 'pre-receive', '#!/bin/sh\necho rama protegida >&2\nexit 1\n');
     chmodSync(join(rejectHooks, 'pre-receive'), 0o755);
     git(fx.remote, 'config', 'core.hooksPath', rejectHooks);
 
@@ -39,6 +39,7 @@ describe('el push del cierre reintenta si la rama destino avanzó', () => {
 
     expect(result.code).toBe(1);
     expect(result.text).toContain("push: no se pudo publicar 'develop' en 'origin'.");
+    expect(result.text).toContain('remote: rama protegida');
     expect(result.text).not.toContain('reintento');
   });
 

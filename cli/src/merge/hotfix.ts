@@ -3,7 +3,7 @@ import { DomainError, UsageError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
 import { checkDestination, withDestination, type DestinationRequest } from './destination.ts';
 import type { Job } from './run.ts';
-import { mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge } from './steps.ts';
+import { mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge, withGitOutput } from './steps.ts';
 import { MergeConflict } from './attempt.ts';
 import { explainFailure, verifyMerge } from './verify.ts';
 
@@ -113,11 +113,12 @@ async function mergeBack(path: string, job: Job, plan: HotfixPlan): Promise<void
 
 async function pushAll(path: string, plan: HotfixPlan, remote: string): Promise<void> {
   const refs = [`refs/heads/${plan.into}`, `refs/heads/${plan.back}`, ...(plan.tag === null ? [] : [`refs/tags/${plan.tag}`])];
-  if ((await git(path, ['push', '--atomic', remote, ...refs.map((ref) => `${ref}:${ref}`)])).code === 0) return;
+  const pushed = await git(path, ['push', '--atomic', remote, ...refs.map((ref) => `${ref}:${ref}`)]);
+  if (pushed.code === 0) return;
   const moved = (await remoteMoved(path, remote, plan.into)) || (await remoteMoved(path, remote, plan.back));
   // ponytail: sin bucle de reintentos, al contrario que el merge normal; añadirlo si un hotfix lo sufre en campo.
   if (moved) throw new DomainError(`push: '${plan.into}' o '${plan.back}' avanzó en '${remote}'; relanza el hotfix`);
-  throw new DomainError(`push: no se pudo publicar '${plan.into}' y '${plan.back}' en '${remote}'.`);
+  throw new DomainError(withGitOutput(`push: no se pudo publicar '${plan.into}' y '${plan.back}' en '${remote}'.`, pushed.stderr));
 }
 
 async function report(job: Job, plan: HotfixPlan, { tagged, ...paths }: Checkouts & { tagged: boolean }): Promise<void> {
