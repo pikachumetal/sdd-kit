@@ -1,0 +1,69 @@
+--- [3]
+Retomo en el cierre de la revisión final.
+
+--- [11]
+Hay un hallazgo Important (trim del motivo). El Minor del orden de los tests va al ledger como diferido, porque `sdd-kit.json` no tiene `review.minors`. Primero el test en RED.
+
+--- [18]
+Los ficheros eran CRLF y mis ediciones los pasaron a LF. Restauro CRLF para que el diff sea mínimo.
+
+--- [29]
+La re-revisión única está en marcha (opus + effort high). Mientras tanto, dejo escrito `tasks.md`.
+
+--- [36]
+La re-revisión sigue en marcha. Espero su notificación antes de cerrar.
+
+--- [39]
+Esa notificación es solo la del vigía de silencio, que corté yo con `timeout 5`. No es el informe de la re-revisión, que sigue en marcha. Espero su notificación.
+
+--- [41]
+**Finding Verdicts**
+
+- [Eje Código · Important] `reasonOf` conserva los espacios alrededor del motivo: **ADDRESSED**, en `src/app.js:16`.
+  - `reasonOf` ahora devuelve `params[index + 1]?.trim()`, así que el motivo se recorta antes de que `cancelBooking` lo compare con la lista en `src/app.js:20`. Como también se guarda ya recortado en `booking.reason` (`src/app.js:24`), `canceladas` lo enseña sin espacios.
+  - El test nuevo (`test/cancel.test.js:17-19`) reproduce el fallo. Pasa `' sala ocupada '` para `Sur mar` y espera `sin reserva Sur mar`. Sin el fix la respuesta sería «motivo no válido: …», porque se valida antes de buscar la reserva. Con el fix el motivo pasa la validación y no hay reserva que cancelar. La aserción distingue bien los dos casos.
+  - El test no depende del orden. Nunca hay una reserva activa de `Sur mar` en los datos, y el test no cambia el estado: no toca la reserva `Norte lun` de la que dependen los tests 1 y 3.
+  - `cancelar` sin `--motivo` sigue igual. Si `index === -1`, `reasonOf` devuelve `undefined` sin pasar por el `trim`, y `reasons.includes(undefined)` es falso, así que responde «motivo no válido». Si `--motivo` va al final sin valor, `params[index + 1]` es `undefined` y `?.` evita el TypeError, con el mismo resultado. Un motivo que solo tiene espacios queda en `''` y también se rechaza.
+  - Spec: el diff no toca la spec ni cambia ningún THEN. Los tres THEN de «Cancelar pide un motivo de la lista» y el de «El listado de canceladas enseña el motivo» siguen cubiertos por los tests 1 a 3, que no cambian.
+
+**New Breakage in the Fix Diff**
+
+None. No hay texto nuevo en la interfaz, y el nombre del test nuevo está en castellano.
+
+**Out-of-Scope Observations**
+
+None.
+
+**Verdict**
+
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+Archivos revisados:
+- `<run>\review-0010-7b9d9bf\src\app.js`
+- `<run>\review-0010-7b9d9bf\test\cancel.test.js`
+
+--- [42]
+Re-revisión limpia. Cierro: retiro el worktree, anoto la línea en `tasks.md`, vuelco los rulings, borro el workspace y paso la suite de cierre.
+
+--- [46]
+La revisión final de la 0010 está cerrada y limpia. Queda pendiente el paso 7 de `sdd-start-feature` (la validación).
+
+- **Ejes de la revisión final (sobre `c2d2979`):**
+  - **Spec:** lista para fusionar, con 1 Minor.
+  - **Código:** 1 Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+  - **Arquitectura:** no sale. El diff no trae módulo nuevo, dependencia, contrato entre módulos ni datos.
+- **Arreglo:** el test `cancelar ignora los espacios alrededor del motivo` falló antes de tocar el código. Después recorté el motivo con `trim()` en `src/app.js:16` (commit `7b9d9bf`).
+- **Re-revisión única** (`c2d2979..7b9d9bf`, opus con effort high): hallazgo resuelto, sin roturas nuevas.
+- **Suite:** `node --test` da 6 pass, 0 fail. Es el comando del gate de cierre del plan.
+
+**Rulings I made:** ninguno.
+
+**Deferred minors:**
+- `test/cancel.test.js:13`: el test de `canceladas` depende de que antes corra el de `cancelar`. No lo arreglé porque `sdd-kit.json` no tiene `review.minors: fix`.
+
+Dos cosas más:
+- **`tasks.md` sin commitear:** sigue sin commitear. Ahí quedaron las líneas `Revisión final`, `Pasada de fix`, `Re-revisión`, `## Rulings` y los minors diferidos.
+- **Workspace:** borrado, junto con el worktree de revisión.
+
+El hook de sesión avisaba de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizarlo: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+

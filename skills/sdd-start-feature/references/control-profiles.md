@@ -223,6 +223,8 @@ Conjunto cerrado:
 | `execution` | `auto` \| `native` \| `subagent` | `"auto"` |
 | `validation.startEnvironment` | booleano (solo en `sdd-kit.local.json`) | `false` |
 | `validation.mode` | `manual` \| `field` (solo en `sdd-kit.json`) | `"manual"` |
+| `review.minors` | `fix` \| `defer` (solo en `sdd-kit.json`) | `"defer"` |
+| `pricing` | objeto: `source`, `updated`, `usdPerMillionTokens` (solo en `sdd-kit.json`) | — (sin ella, el cierre da «sin precio») |
 
 `execution` elige el método de ejecución de los planes. Con `auto`, el handoff de `plan-writing.md` de `sdd-propose` recomienda uno por plan y el agente lo escribe en la cabecera como `Ejecución: <native | subagent>, porque <motivo del plan>`; con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil: la cabecera dice `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` o `sdd-kit.local.json`, el que lo fija—, aunque el handoff recomiende el otro. No tiene nivel de release (precedencia en «sdd-kit.local.json»): el método queda escrito en el plan de cada feature, y un método que el dev-lead nombra para una feature concreta cuenta como dado.
 
@@ -234,4 +236,4 @@ El agente nunca escribe, sin la frase literal del usuario, un `profile`, un `con
 
 ## Preguntas de las claves
 
-Las preguntas que fijan estas claves, con su recomendación y el fichero donde va cada respuesta, viven solo en `sdd-config` ([catálogo](../../sdd-config/SKILL.md#catálogo)). Las init y las migraciones la invocan en lugar de llevar su lista.
+Las preguntas que fijan estas claves, con su recomendación y el fichero donde va cada respuesta, viven solo en `sdd-config` ([catálogo](../../sdd-config/SKILL.md#catalog)). Las init y las migraciones la invocan en lugar de llevar su lista.

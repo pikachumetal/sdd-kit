@@ -118,7 +118,7 @@ Everything you print, and every tool result, stays resident in your context for 
 | "Subagents are slow and expensive, I'll skip the final review too" | Native already removed the per-task reviewers. One review of the whole branch is the floor, not the ceiling. |
 | "The reviewer said Minor, so it's Minor" | The label graded the spec's silence. Grade what the person gets. Re-grade, then gate. |
 | "The fix is obvious, no need for a failing test first" | The failing test is the only proof the finding was real and is now gone. Without it you have a diff and a hope. |
-| "I'll fix the minors too while I'm in there" | Every minor you fix is a test, a fix, and a suite run the user did not ask for. Ledger them; the user decides. |
+| "I'll fix the minors too while I'm in there" | Minor fixes cost a test, fix and suite run: only the final review's `review.minors: fix` asks them; else ledger them. |
 
 ## SDD loop
 
@@ -384,7 +384,7 @@ Task 2: Recovery modes
 
 [After the last task's commit: sdd-verify — Spec axis (sdd-kit:effort-high + opus) and Code axis (sdd-kit:effort-high + sonnet) in the background, «Revisor final» of encargo-revision.md]
 Code axis: One Important finding — progress reporting interval hardcoded. Spec axis: two Minor.
-[Re-grade: Important stands; minors → ledger as deferred]
+[Re-grade: Important stands; sdd-kit.json has no review.minors: minors → ledger as deferred]
 [Fix pass: test_progress_interval_configurable RED → extract PROGRESS_INTERVAL → GREEN; suite 12/12; commit]
 [Ledger: Final: fixed hardcoded interval — test_progress_interval_configurable RED→GREEN, suite 12/12]
 [tasks.md: Revisión final + Pasada de fix; sdd ledger rulings → ## Rulings]

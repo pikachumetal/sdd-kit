@@ -68,8 +68,8 @@ Describe 'Perfiles de control: cierre, release y migración' {
 
   It 'las init y la migración invocan sdd-config sin copiar sus preguntas' {
     $block = Get-KitFile 'skills/sdd-config/SKILL.md'
-    $block | Should -Match '(?m)^## Catálogo'
-    ($block | Select-String -Pattern 'Recomendad[ao]' -AllMatches).Matches.Count | Should -BeGreaterOrEqual 3
+    $block | Should -Match '(?m)^## Catalog'
+    ($block | Select-String -Pattern 'Recommended' -AllMatches).Matches.Count | Should -BeGreaterOrEqual 3
     $consumers = 'skills/sdd-init/SKILL.md', 'skills/sdd-upgrade/references/migrations/v2.0.0.md'
     foreach ($consumer in $consumers) {
       Get-KitFile $consumer | Should -Match '`sdd-config`'
@@ -210,7 +210,7 @@ Describe 'Merge en el cierre' {
 Describe 'Push autorizado en el cierre: clave y pregunta' {
   It 'el catálogo de sdd-config tiene la pregunta del push' {
     $block = [regex]::Match((Get-KitFile 'skills/sdd-config/SKILL.md'),
-      '(?ms)^## Catálogo\r?$.*').Value
+      '(?ms)^## Catalog\r?$.*').Value
     $block | Should -Match '(?m)^\| 4 \|'
     $block | Should -Match 'merge\.push'
   }

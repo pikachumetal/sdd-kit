@@ -363,7 +363,7 @@ Medidos con `wc -w` el 2026-10-20 (el test parte por espacios en blanco igual); 
 | `skills/sdd-start-patch` | 1843 / 2300 | 457 | sin cambio |
 | `skills/sdd-start-feature` total | 11346 / 11464 | 118 | sin cambio (~+50 en `nombrado.md`) |
 | `skills/sdd-templates` total | 15251 / 15300 | 49 | sin cambio (~+30: fila de `id claim` y notas de las plantillas) |
-| Kit entero | 87532 / 87600 | 68 | 87900 (87532 + ~250 previstas + ~100 para la pasada de fix) |
+| Kit entero | 87532 / 87600 | 68 | 87900 (87532 + ~250 previstas + ~100 para la pasada de fix); al integrar `develop` con la 0178 (87 800), 88 100 |
 
 ## Enmiendas
 
@@ -375,6 +375,7 @@ Medidos con `wc -w` el 2026-10-20 (el test parte por espacios en blanco igual); 
   — Hallazgos Important del eje Spec (1) y del eje Arquitectura (2, 3 y 6) — aprobada: «Quitarla, con enmienda (Recomendada)», «Renombrarla también (Recomendada)», «Es tuya y lo dice (Recomendada)», «Solo con la etiqueta (Recomendada)»
 
 - 2026-10-20 — Sin la clave `merge.push`, el claim tampoco publica `develop` y fija el id con la etiqueta, como el cierre (decisiones 10 y 11 y el escenario de la integración protegida) — hallazgo Important de la re-revisión — aprobada: «Ausente = no publica (Recomendada)»
+- 2026-10-20 — Tope del kit en `tests/WordBudget.Tests.ps1` a 88 100: con la 0178 integrada desde `develop` el kit mide ~88 000, más que su tope (87 800) y que el de esta spec (87 900) — conflicto del merge de sincronización — aprobada: «88 100 (Recomendada)»
 
 ## Aprobaciones
 

@@ -33,7 +33,7 @@ BeforeAll {
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 87800
+    Kit     = 88100
     Anchors = @{
       'constitution.md' = 2236
       'mission.md'      = 1700

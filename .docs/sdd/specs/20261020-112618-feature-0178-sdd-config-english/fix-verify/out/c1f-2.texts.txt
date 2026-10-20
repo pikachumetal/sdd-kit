@@ -1,0 +1,60 @@
+--- [3]
+Retomo la 0010 tras las dos tasks; el plan está en el spec folder.
+
+--- [10]
+El Important se mantiene (el usuario recibe un rechazo por un espacio), y `review.minors: fix` pide arreglar también el Minor. Primero el test en RED.
+
+--- [13]
+RED por la razón correcta. Arreglo en `reasonOf`.
+
+--- [16]
+El fix toca código, así que entra en la re-revisión única del cierre. Cargo `sdd-verify` para seguir su cierre.
+
+--- [36]
+La revisión final de la 0010 está cerrada y borré el workspace. Cargo `sdd-start-feature` para pasar a la validación (paso 7).
+
+--- [39]
+Ahora: preparo la validación (smoke por THEN con ejecución real) y te la presento; después esperas tú a validar. Queda: tu prueba, ~5 min.
+
+--- [44]
+🦆 La 0010 está implementada y revisada. Falta tu validación antes del cierre.
+
+**✋ Me salí del plan en…**
+- **Pasada de fix `6d86e99`.** El eje de código encontró un Important: `reasonOf` no recortaba espacios, así que `--motivo "sala ocupada "` se rechazaba. Lo arreglé con un test que falló primero y pasó después. Con `review.minors: fix` arreglé también el Minor del eje de spec: el test de `canceladas` ya no depende del orden de los demás.
+- **Commit de `tasks.md`.** En ese commit entró el `tasks.md` de la 0010, que estaba sin versionar. Corregí en él el hash de la Task 1 (`3a06a5a`). Luego añadí las líneas de la revisión final y los rulings (`f417ae6`).
+- **Re-revisión.** La re-revisión (opus + effort high, `6a433ca..6d86e99`) dio todo atendido, sin Critical ni Important nuevos.
+- **Observaciones sin arreglar.** No hay segunda pasada de fix, así que quedan como rulings en `tasks.md`:
+  - El fix pasó `app.js` y `cancel.test.js` de CRLF a LF.
+  - El AND «sin `--motivo`» no tiene test.
+  - El test de recorte es indirecto.
+- **Lo que la spec no cubre.** El estado vive en memoria, así que desde el shell `canceladas` sale vacío, porque cada comando es un proceso nuevo. Solo se ve el listado dentro de una misma sesión. Es coherente con la spec, pero tú decides si merece un ticket aparte.
+
+**Smoke, una fila por THEN:**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (sesión única) y suite |
+| Motivo fuera de la lista («me aburro») → «motivo no válido: …» | ejecución real |
+| Sin `--motivo` → «motivo no válido: …» | ejecución real (no tiene test) |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real (sesión única) y suite |
+| Motivo con espacio final → «cancelada Norte lun (sala ocupada)» | ejecución real y suite (el fix) |
+
+La suite completa da 6/6 y tarda 0,4 s.
+
+**Guion de pruebas** (no hay nada que arrancar, es una CLI):
+1. Ejecuta `node src/app.js cancelar Norte lun --motivo "otro"`. Debe responder «cancelada Norte lun (otro)».
+2. Ejecuta `node src/app.js cancelar Norte lun --motivo "me aburro"`. Debe responder «motivo no válido: cambio de planes, sala ocupada, otro».
+3. Ejecuta `node src/app.js cancelar Norte lun`. Debe dar el mismo rechazo.
+4. Ejecuta `node src/app.js cancelar Norte lun --motivo "sala ocupada "`, con el espacio final. Debe responder «cancelada Norte lun (sala ocupada)».
+5. Para el listado, ejecuta `node -e "import('./src/app.js').then(({run})=>{run('cancelar',['Norte','lun','--motivo','sala ocupada']);console.log(run('canceladas',[]))})"`. Debe imprimir «Norte lun — sala ocupada». Desde el shell, `node src/app.js canceladas` sale vacío por lo que dije arriba.
+
+Dime qué has probado y si funciona. Con eso invoco `sdd-archive`. Los borradores de cierre (walkthrough, changelog, delta de capacidades) los escribe el cierre; el roadmap sigue sin tocar.
+
+**Rulings I made**, con su coste si me equivoco:
+- Commit del fix en LF en vez de CRLF: un diff ruidoso en el blame.
+- Hash de la Task 1 corregido en `tasks.md`: ninguno.
+- El AND «sin `--motivo`» queda sin test: una regresión sin red.
+- Test de recorte indirecto: no vigila que el motivo se guarde ya recortado.
+
+**Deferred minors:** ninguno, porque `review.minors: fix` los arregló.
+

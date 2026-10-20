@@ -49,10 +49,29 @@ La configuración del kit en un proyecto: qué va en `sdd-kit.json` (del equipo,
 
 - GIVEN una respuesta del usuario a una pregunta de `sdd-config`
 - WHEN la escribe
-- THEN una clave de política (`ids`, `merge`, frenos de `control`, `validation.mode`) va a `sdd-kit.json`; `validation.startEnvironment` va a `sdd-kit.local.json`; `control.profile` y `execution` van donde el usuario diga (invocada por una init o por la migración, siempre a `sdd-kit.json`)
+- THEN una clave de política (`ids`, `merge`, frenos de `control`, `validation.mode`, `review.minors`, `pricing`) va a `sdd-kit.json`; `validation.startEnvironment` va a `sdd-kit.local.json`; `control.profile` y `execution` van donde el usuario diga (invocada por una init o por la migración, siempre a `sdd-kit.json`)
 - AND «no sé» no escribe la clave y rige su default; lo que no se preguntó no se escribe
 - AND invocada por una init o por una migración no escribe: devuelve las respuestas y quien la invocó las escribe en `sdd-kit.json`, en su paso de estructura o de marcador (enmienda del 2026-09-25)
 - AND sin usuario no escribe nada: las preguntas quedan como pendientes explícitas en el informe de quien la invocó
+
+### `sdd-config` propone la tabla de precios con su fuente y su fecha
+
+- GIVEN el proyecto `salas` con un `sdd-kit.json` sin la clave `pricing`
+- WHEN el usuario pide «revisa la configuración del kit y ponla al día», o una init llega a las claves del kit
+- THEN la tabla de `sdd-config` enseña `pricing` como «falta» y que el cierre da «sin precio»
+- AND su pregunta va sola en su turno, con «sí» recomendada y la tabla propuesta en la pregunta: una fila por modelo vigente de Opus, Sonnet y Haiku de `https://platform.claude.com/docs/en/about-claude/pricing`, con su id de API y `input`, `cacheWrite5m`, `cacheWrite1h`, `cacheRead` y `output` en dólares por millón (`claude-sonnet-5-5`: 2 / 2,5 / 4 / 0,2 / 10)
+- AND con «sí» escribe en `sdd-kit.json` `pricing.usdPerMillionTokens`, `pricing.source` con esa página y `pricing.updated` con la fecha en que la leyó
+- AND si el agente no puede leer la página en la sesión, no inventa precios ni recomienda: lo dice y la clave queda sin escribir
+- AND con «no» o «no sé» no escribe nada, y el cierre sigue con «sin precio»
+- AND con `pricing` ya escrita, la tabla enseña su `updated` y sus modelos, y no la vuelve a preguntar salvo que el usuario lo pida; entonces relee la fuente, actualiza y añade filas, y conserva las de modelos que la página ya no lista
+
+### `sdd-config` pregunta qué se hace con los Minor de la revisión final
+
+- GIVEN el proyecto `salas` con un `sdd-kit.json` sin la clave `review.minors`
+- WHEN el usuario pide «revisa la configuración del kit y ponla al día», o una init llega a las claves del kit
+- THEN la tabla de `sdd-config` enseña `review.minors` como «falta» y que rige `defer`
+- AND su pregunta va sola en su turno, con `defer` recomendada primero y su motivo: un Minor no cambia lo que recibe quien usa el producto, y cada arreglo alarga la pasada de fix
+- AND con «`fix`» o «`defer`» escribe `review.minors` en `sdd-kit.json`; con «no sé» no escribe nada y rige `defer`
 
 ## Reglas de la capacidad
 

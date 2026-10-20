@@ -16,6 +16,7 @@ CONTROL='"profile": "delegate"'
 [ "$SC" = f2 ] && CONTROL='"profile": "delegate", "maxParallelAgents": 2'
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {'"$CONTROL"'}, "execution": "native"'
 [ "$SC" = c5 ] && MARKER="$MARKER"', "validation": {"mode": "field"}'
+[ "$SC" = c1f ] && MARKER="$MARKER"', "review": {"minors": "fix"}'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
 F21=".docs/sdd/specs/20261012-100000-feature-0021-void-reason"
 F22=".docs/sdd/specs/20261013-100000-feature-0022-cancel-notice"
@@ -103,7 +104,7 @@ case "$SC" in
     put "$F23/spec.md" < "$FIX/spec-s1b.md"
     commit "docs(sdd): spec de la 0023"
     ASK="$("$NODE" "$HERE/compose-spec-review.mjs" "$KIT" "$F23/spec.md" .docs/sdd/capabilities/reports.md)" ;;
-  c1)
+  c1|c1f)
     done_0010; tasks_md
     WS=$(ws_dir); cp "$FIX/review-spec-c1.md" "$WS/review-spec.md"; cp "$FIX/review-code-c1.md" "$WS/review-code.md" ;;
   c2)
@@ -169,7 +170,7 @@ esac
 case "$SC" in
   f1|f2|mp1) MAX_TURNS="${MAX_TURNS:-30}" ;;
   f3|f3n|f4|s1|s1b) MAX_TURNS="${MAX_TURNS:-25}" ;;
-  c1|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
+  c1|c1f|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
   c2|c3|c4) MAX_TURNS="${MAX_TURNS:-30}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
