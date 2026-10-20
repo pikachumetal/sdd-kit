@@ -7,7 +7,7 @@ export interface MergePolicy {
   noFf: boolean;
 }
 
-function parseConfig(configPath: string): { merge?: { into?: unknown; noFf?: unknown } } | null {
+function parseConfig(configPath: string): { merge?: { into?: unknown; noFf?: unknown; push?: unknown } } | null {
   try {
     return JSON.parse(readText(configPath));
   } catch {
@@ -20,6 +20,13 @@ export function configuredMergeInto(projectRoot: string): string | null {
   if (!existsSync(configPath)) return null;
   const into = parseConfig(configPath)?.merge?.into;
   return typeof into === 'string' && into.trim() !== '' ? into : null;
+}
+
+export function configuredMergePush(projectRoot: string): boolean | null {
+  const configPath = kitConfigPath(projectRoot);
+  if (!existsSync(configPath)) return null;
+  const push = parseConfig(configPath)?.merge?.push;
+  return typeof push === 'boolean' ? push : null;
 }
 
 export function resolveMergePolicy(projectRoot: string): MergePolicy {

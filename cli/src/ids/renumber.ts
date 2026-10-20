@@ -10,6 +10,7 @@ function inlinePatterns(from: string): RegExp[] {
     new RegExp(`(\\btras )${from}(?!\\d)`, 'g'),
     new RegExp(`(\\bparent: )${from}(?!\\d)`, 'g'),
     new RegExp(`(\\bActuar(?:\\*\\*)?\\s*(?:→|:)\\s*)${from}(?!\\d)`, 'g'),
+    new RegExp(`(-(?:feature|task|patch|proposal)-)${from}(?=-)`, 'g'),
   ];
 }
 

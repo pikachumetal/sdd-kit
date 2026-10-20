@@ -52,7 +52,7 @@ export const idClaimVerb: Verb = {
       projectRoot: optionalText(args, 'project-root') ?? '.',
       id: optionalText(args, 'id'),
       into: optionalText(args, 'into'),
-      lockTimeoutMinutes: lockTimeoutOption(args, ID_LOCK_TIMEOUT_MINUTES),
+      lockTimeoutMinutes: lockTimeoutOption(args),
     };
     await claimIds(options, io);
     return 0;

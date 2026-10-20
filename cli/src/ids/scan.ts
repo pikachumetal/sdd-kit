@@ -130,9 +130,21 @@ async function branchIds(root: string, current: string): Promise<string[]> {
   return ids;
 }
 
+export async function idsOutsideTask(root: string): Promise<string[]> {
+  const [current = ''] = await gitLines(root, ['branch', '--show-current']);
+  const ids: string[] = [];
+  for (const branch of await gitLines(root, ['branch', '--all', '--format=%(refname:short)'])) {
+    if (isCurrentBranch(branch, current)) continue;
+    ids.push(...(BRANCH_ID.exec(branch)?.slice(1, 2) ?? []), ...(await branchContentIds(root, branch)));
+  }
+  const others = (await worktrees(root)).filter(({ path }) => !samePath(path, root));
+  ids.push(...others.flatMap(({ path }) => [...roadmapIds(path), ...specArtifacts(path).map((artifact) => artifact.id)]));
+  return [...ids, ...(await tagIds(root))];
+}
+
 export async function tagIds(root: string): Promise<string[]> {
   const tags = await gitLines(root, ['tag', '--list', `${ID_TAG_PREFIX}*`]);
-  return tags.flatMap((tag) => /^sdd-id\/([0-9]{4})$/.exec(tag)?.[1] ?? []);
+  return tags.flatMap((tag) => (tag.startsWith(ID_TAG_PREFIX) && /^[0-9]{4}$/.test(tag.slice(ID_TAG_PREFIX.length)) ? [tag.slice(ID_TAG_PREFIX.length)] : []));
 }
 
 async function gitIds({ root, io }: Ctx): Promise<GitIds> {

@@ -321,7 +321,7 @@ describe('sdd id claim sin remoto, sin fila o en tracker', () => {
   it('renumbers a taken branch id without a row', async () => {
     const fx = claimFixture({ rows: [], branch: 'patch/0176-fast-suite-budget' });
     write(fx.repo, '.git/sdd-ids', '0179\n');
-    publishFromOther(fx, '| 0176 | La 0176 del otro | ⏳ |');
+    git(fx.repo, ['branch', 'feature/0176-otra', 'develop']);
     const before = sha(fx.repo, 'develop');
 
     const result = await runClaim(fx.wt);
@@ -330,6 +330,82 @@ describe('sdd id claim sin remoto, sin fila o en tracker', () => {
     expect(result.text).toContain('id: la 0176 ya la tiene otro en origin/develop; la 0176 pasa a 0203');
     expect(git(fx.wt, ['branch', '--show-current'])).toBe('patch/0203-fast-suite-budget');
     expect(sha(fx.repo, 'develop')).toBe(before);
+  });
+
+  it('takes a published row that the local develop lacks as yours', async () => {
+    const fx = claimFixture({ rows: [], branch: 'patch/0176-fast-suite-budget' });
+    publishFromOther(fx, '| 0176 | Validar la franja horaria | ⏳ |');
+
+    const result = await runClaim(fx.wt);
+
+    expect(result.code, result.text + result.stderr).toBe(0);
+    expect(result.text).toContain('id: 0176 ya estaba en origin/develop («Validar la franja horaria»); nada que publicar');
+    expect(git(fx.wt, ['branch', '--show-current'])).toBe('patch/0176-fast-suite-budget');
+  });
+
+  it('is idempotent without a row once the folder exists', async () => {
+    const fx = claimFixture({ rows: [], branch: 'patch/0176-fast-suite-budget' });
+    await runClaim(fx.wt);
+    write(fx.wt, '.docs/sdd/specs/20261020-100000-patch-0176-fast-suite-budget/patch.md', '# Patch\n');
+
+    const result = await runClaim(fx.wt);
+
+    expect(result.code, result.text + result.stderr).toBe(0);
+    expect(result.text).toContain('id: 0176 libre en origin/develop');
+    expect(git(fx.wt, ['branch', '--show-current'])).toBe('patch/0176-fast-suite-budget');
+  });
+
+  it('rejects an --id that is not four digits', async () => {
+    const fx = claimFixture();
+
+    const result = await runClaim(fx.wt, ['--id', '12']);
+
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain("--id debe ser un id de cuatro cifras: '12'");
+  });
+
+  it('keeps the local counter when the remote lacks the integration branch', async () => {
+    const fx = claimFixture();
+    git(fx.repo, ['push', '-q', 'origin', 'develop:main']);
+    git(fx.remote, ['symbolic-ref', 'HEAD', 'refs/heads/main']);
+    git(fx.repo, ['push', '-q', 'origin', '--delete', 'develop']);
+    expect(git(fx.repo, ['ls-remote', '--heads', 'origin', 'develop'])).toBe('');
+
+    const result = await runClaim(fx.wt);
+
+    expect(result.code, result.text + result.stderr).toBe(0);
+    expect(result.text).toContain('sin remoto: la 0203 vale (contador local)');
+  });
+
+  it('renames a reserved folder with the id', async () => {
+    const fx = claimFixture({ rows: [] });
+    const folder = '.docs/sdd/specs/20261020-090000-proposal-0203-ids';
+    write(fx.repo, `${folder}/proposal.md`, '# Propuesta\n');
+    addRoadmapRow(fx.repo, `| 0203 | Ids, ver \`${folder}/proposal.md\` | ⏳ |`, 'docs(roadmap): reserva 0203 con propuesta');
+    git(fx.wt, ['merge', '-q', '--ff-only', 'develop']);
+    publishFromOther(fx, OTHER_ROW);
+
+    const result = await runClaim(fx.wt);
+
+    expect(result.code, result.text + result.stderr).toBe(0);
+    const tree = git(fx.repo, ['ls-tree', '-r', '--name-only', 'origin/develop', '.docs/sdd/specs']);
+    expect(tree).toContain('.docs/sdd/specs/20261020-090000-proposal-0204-ids/proposal.md');
+    expect(tree).not.toContain('proposal-0203-ids');
+    expect(remoteRoadmap(fx)).toContain('| 0204 | Ids, ver `.docs/sdd/specs/20261020-090000-proposal-0204-ids/proposal.md` | ⏳ |');
+  });
+
+  it('fixes the id with a tag and does not publish develop with merge.push false', async () => {
+    const fx = claimFixture();
+    write(fx.repo, '.docs/sdd/sdd-kit.json', JSON.stringify({ ids: { mode: 'sequence' }, merge: { into: 'develop', noFf: true, push: false } }));
+    save(fx.repo, 'chore: merge.push false');
+    git(fx.wt, ['merge', '-q', '--ff-only', 'develop']);
+    const published = sha(fx.remote, 'develop');
+
+    const result = await runClaim(fx.wt);
+
+    expect(result.code, result.text + result.stderr).toBe(0);
+    expect(result.text).toContain("push: 'develop' no se publica (merge.push: false); id fijado con la etiqueta sdd-id/0203");
+    expect(sha(fx.remote, 'develop')).toBe(published);
   });
 
   it('rejects tracker', async () => {

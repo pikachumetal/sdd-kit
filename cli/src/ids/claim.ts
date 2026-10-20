@@ -1,16 +1,15 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { commonDir, git, gitLines, samePath, toplevel, worktrees } from '../git/git.ts';
-import { withLock } from '../git/lock.ts';
-import { configuredMergeInto } from '../merge/policy.ts';
+import { git, gitLines, samePath, toplevel } from '../git/git.ts';
+import { runGit, withIntegrationTarget, withMergeLock } from '../merge/integration.ts';
+import { configuredMergeInto, configuredMergePush } from '../merge/policy.ts';
 import { fetchBase, remoteForBranch, remoteMoved, syncBaseBranch, unpublishedLines } from '../merge/steps.ts';
-import { withTempWorktree } from '../merge/temp-worktree.ts';
 import { resolveProjectRoot } from '../roadmap/publish.ts';
 import { raiseCounter, reserveIds } from './next.ts';
 import { renumberLines, type IdChange } from './renumber.ts';
-import { BRANCH_ID, ID_TAG_PREFIX, assertSequenceMode, idScan } from './scan.ts';
+import { BRANCH_CHANGE_FOLDERS, BRANCH_ID, BRANCH_ROADMAPS, ID_TAG_PREFIX, assertSequenceMode, idsOutsideTask, rowIds } from './scan.ts';
 import { refIds, unpublishedReservations, type Reservation } from './unpublished.ts';
 
 export interface ClaimOptions {
@@ -25,6 +24,7 @@ interface Claim {
   id: string;
   into: string;
   remote: string;
+  publish: boolean;
   lockTimeoutMinutes: number;
   io: Io;
 }
@@ -36,17 +36,13 @@ interface Outcome {
 
 const ATTEMPTS = 3;
 const TAG_ATTEMPTS = 3;
-const RENUMBERED_FILES = ['ROADMAP.md', '.docs/sdd/roadmap.md', '.docs/sdd/steering/debt.md'];
+const RENUMBERED_FILES = [...BRANCH_ROADMAPS, '.docs/sdd/steering/debt.md'];
+const TASK_ID = /^[0-9]{4}$/;
 
 const remoteName = (claim: Claim) => `${claim.remote}/${claim.into}`;
 const remoteRef = (claim: Claim) => `refs/remotes/${claim.remote}/${claim.into}`;
 const takenLine = (claim: Claim, { from, to }: IdChange) => `id: la ${from} ya la tiene otro en ${remoteName(claim)}; la ${from} pasa a ${to}`;
-
-async function runGit(cwd: string, args: string[]): Promise<string> {
-  const { code, stdout, stderr } = await git(cwd, args);
-  if (code !== 0) throw new DomainError(`git ${args[0]} falló en '${cwd}': ${(stderr || stdout).trim()}`);
-  return stdout.trim();
-}
+const artifactPattern = (id: string) => new RegExp(`(-(?:feature|task|patch|proposal)-)${id}(?=-)`);
 
 function rewriteFile(path: string, changes: IdChange[], remoteLines: Set<string>): void {
   const text = readFileSync(path, 'utf8');
@@ -55,24 +51,37 @@ function rewriteFile(path: string, changes: IdChange[], remoteLines: Set<string>
   writeFileSync(path, lines.join(eol));
 }
 
-async function remoteLinesOf(target: string, claim: Claim, file: string): Promise<Set<string>> {
-  return new Set(await gitLines(target, ['show', `${remoteRef(claim)}:${file}`]));
+async function remoteLinesOf(target: string, claim: Claim, file: string): Promise<string[]> {
+  return gitLines(target, ['show', `${remoteRef(claim)}:${file}`]);
 }
 
-async function nextFreeId(claim: Claim): Promise<string> {
-  const [id] = await reserveIds({ root: claim.root, io: claim.io }, 1, claim.lockTimeoutMinutes);
-  return id!;
+async function moveOwnFolders(target: string, claim: Claim, { from, to }: IdChange): Promise<void> {
+  for (const folder of BRANCH_CHANGE_FOLDERS.filter((relative) => existsSync(join(target, relative)))) {
+    const published = new Set(await gitLines(target, ['ls-tree', '-d', '--name-only', `${remoteRef(claim)}:${folder}`]));
+    const own = readdirSync(join(target, folder)).filter((name) => artifactPattern(from).test(name) && !published.has(name));
+    for (const name of own) await runGit(target, ['mv', `${folder}/${name}`, `${folder}/${name.replace(artifactPattern(from), `$1${to}`)}`]);
+  }
+}
+
+async function nextFreeIds(claim: Claim, count: number): Promise<string[]> {
+  return count === 0 ? [] : reserveIds({ root: claim.root, io: claim.io }, count, claim.lockTimeoutMinutes);
+}
+
+async function commitRenumbering(target: string, changes: IdChange[], files: string[]): Promise<void> {
+  await runGit(target, ['add', '--', ...files]);
+  if ((await git(target, ['diff', '--cached', '--quiet'])).code === 0) return;
+  const subject = changes.map(({ from, to }) => `la ${from} pasa a ${to}`).join(', ');
+  await runGit(target, ['commit', '-q', '-m', `chore(roadmap): ${subject}`]);
 }
 
 async function renumber(target: string, claim: Claim, taken: string[]): Promise<IdChange[]> {
-  const changes: IdChange[] = [];
-  for (const from of taken) changes.push({ from, to: await nextFreeId(claim) });
+  const fresh = await nextFreeIds(claim, taken.length);
+  const changes = taken.map((from, index) => ({ from, to: fresh[index]! }));
   if (changes.length === 0) return changes;
   const files = RENUMBERED_FILES.filter((file) => existsSync(join(target, file)));
-  for (const file of files) rewriteFile(join(target, file), changes, await remoteLinesOf(target, claim, file));
-  const subject = changes.map(({ from, to }) => `la ${from} pasa a ${to}`).join(', ');
-  await runGit(target, ['add', '--', ...files]);
-  await runGit(target, ['commit', '-q', '-m', `chore(roadmap): ${subject}`, '--', ...files]);
+  for (const file of files) rewriteFile(join(target, file), changes, new Set(await remoteLinesOf(target, claim, file)));
+  for (const change of changes) await moveOwnFolders(target, claim, change);
+  await commitRenumbering(target, changes, files);
   return changes;
 }
 
@@ -99,13 +108,18 @@ async function tagStep(target: string, claim: Claim, id: string): Promise<'mine'
   return (await git(target, ['push', claim.remote, `refs/tags/${tag}`])).code === 0 ? 'fixed' : 'retry';
 }
 
+function fixedLine(claim: Claim, id: string): string {
+  const reason = claim.publish ? 'no admite push directo' : 'no se publica (merge.push: false)';
+  return `push: '${claim.into}' ${reason}; id fijado con la etiqueta ${ID_TAG_PREFIX}${id}`;
+}
+
 async function claimWithTag(target: string, claim: Claim, outcome: Outcome): Promise<Outcome> {
   let { id } = outcome;
   const report = [...outcome.report];
   for (let attempt = 1; attempt <= TAG_ATTEMPTS; attempt++) {
     const step = await tagStep(target, claim, id);
     if (step === 'mine') return { id, report: [...report, `id: ${id} ya fijada con la etiqueta ${ID_TAG_PREFIX}${id}`] };
-    if (step === 'fixed') return { id, report: [...report, `push: '${claim.into}' no admite push directo; id fijado con la etiqueta ${ID_TAG_PREFIX}${id}`] };
+    if (step === 'fixed') return { id, report: [...report, fixedLine(claim, id)] };
     if (step === 'taken') {
       const [change] = await renumber(target, claim, [id]);
       report.push(takenLine(claim, change!));
@@ -116,14 +130,13 @@ async function claimWithTag(target: string, claim: Claim, outcome: Outcome): Pro
 }
 
 async function claimWithoutRow(target: string, claim: Claim): Promise<Outcome> {
-  const scan = await idScan({ root: claim.root, io: claim.io });
-  const taken = scan.usedIds.includes(Number(claim.id)) || (await refIds(target, remoteRef(claim))).has(claim.id);
+  const taken = (await idsOutsideTask(claim.root)).includes(claim.id) || (await refIds(target, remoteRef(claim))).has(claim.id);
   if (!taken) {
     await raiseCounter({ root: claim.root, io: claim.io }, claim.id, claim.lockTimeoutMinutes);
     return { id: claim.id, report: [`id: ${claim.id} libre en ${remoteName(claim)}`] };
   }
-  const change = { from: claim.id, to: await nextFreeId(claim) };
-  return { id: change.to, report: [takenLine(claim, change)] };
+  const [to] = await nextFreeIds(claim, 1);
+  return { id: to!, report: [takenLine(claim, { from: claim.id, to: to! })] };
 }
 
 async function publishRow(target: string, claim: Claim, reservations: Reservation[]): Promise<Outcome | 'moved'> {
@@ -134,20 +147,37 @@ async function publishRow(target: string, claim: Claim, reservations: Reservatio
   const id = changes.find((change) => change.from === claim.id)?.to ?? claim.id;
   await syncBaseBranch(target, { into: claim.into, remote: claim.remote }, claim.io.out);
   const report = changes.map((change) => takenLine(claim, change));
-  const pushed = await pushInto(target, claim);
+  const pushed = claim.publish ? await pushInto(target, claim) : 'protected';
   if (pushed === 'moved') return 'moved';
   if (pushed === 'protected') return claimWithTag(target, claim, { id, report });
   return { id, report: [...report, ...unpublishedLines(claim.into, `la ${claim.id}`, others), `id: ${id} es tuya; publicada en ${remoteName(claim)}`] };
+}
+
+function rowTitle(line: string): string {
+  return /\*\*(.+?)\*\*/.exec(line)?.[1] ?? (line.split('|')[2] ?? '').trim();
+}
+
+async function publishedRowTitle(target: string, claim: Claim): Promise<string | null> {
+  for (const file of BRANCH_ROADMAPS) {
+    const row = (await remoteLinesOf(target, claim, file)).find((line) => rowIds([line])[0] === claim.id);
+    if (row !== undefined) return rowTitle(row);
+  }
+  return null;
+}
+
+async function alreadyPublished(target: string, claim: Claim): Promise<Outcome | null> {
+  const nothing = `id: ${claim.id} ya estaba en ${remoteName(claim)}`;
+  if ((await refIds(target, claim.into)).has(claim.id)) return { id: claim.id, report: [`${nothing}; nada que publicar`] };
+  const title = await publishedRowTitle(target, claim);
+  return title === null ? null : { id: claim.id, report: [`${nothing} («${title}»); nada que publicar`] };
 }
 
 async function attemptClaim(target: string, claim: Claim): Promise<Outcome | 'moved'> {
   await fetchBase(target, claim);
   await runGit(target, ['fetch', claim.remote, `+refs/tags/${ID_TAG_PREFIX}*:refs/tags/${ID_TAG_PREFIX}*`]);
   const reservations = await unpublishedReservations(target, remoteRef(claim), claim.into);
-  const own = reservations.some((reservation) => reservation.ids.includes(claim.id));
-  if (own) return publishRow(target, claim, reservations);
-  if (!(await refIds(target, claim.into)).has(claim.id)) return claimWithoutRow(target, claim);
-  return { id: claim.id, report: [`id: ${claim.id} ya estaba en ${remoteName(claim)}; nada que publicar`] };
+  if (reservations.some((reservation) => reservation.ids.includes(claim.id))) return publishRow(target, claim, reservations);
+  return (await alreadyPublished(target, claim)) ?? claimWithoutRow(target, claim);
 }
 
 async function assertClean(target: string): Promise<void> {
@@ -171,18 +201,6 @@ async function claimIn(target: string, claim: Claim): Promise<Outcome> {
     await git(target, ['reset', '-q', '--hard', before]);
     throw error;
   }
-}
-
-async function withIntegration<T>(claim: Claim, body: (target: string) => Promise<T>): Promise<T> {
-  await git(claim.root, ['worktree', 'prune']);
-  const found = (await worktrees(claim.root)).find((entry) => entry.branch === claim.into);
-  return found === undefined ? withTempWorktree(claim.root, claim.into, body) : body(found.path);
-}
-
-async function lockedClaim(claim: Claim, branch: string): Promise<Outcome> {
-  const lockPath = resolve(await commonDir(claim.root), 'sdd-merge.lock');
-  const lock = { path: lockPath, label: 'merge', io: { ...claim.io, err: claim.io.out }, owner: { branch, worktree: claim.root } };
-  return withLock(lock, claim.lockTimeoutMinutes, () => withIntegration(claim, (target) => claimIn(target, claim)));
 }
 
 async function hasOwnCommits(root: string, into: string): Promise<boolean> {
@@ -214,15 +232,18 @@ async function settleBranch(claim: Claim, branch: string, id: string): Promise<s
   return [...lines, ...(await fastForward(claim))];
 }
 
-async function localOnlyReason(root: string, into: string): Promise<string | null> {
+async function claimRemote(root: string, into: string): Promise<{ remote: string } | { reason: string }> {
   const top = await toplevel(root);
-  if (top !== null && !samePath(top, root)) return 'sin comprobar en el remoto: la raíz del proyecto no es la del repositorio;';
-  return top === null || (await remoteForBranch(root, into)) === null ? 'sin remoto:' : null;
+  if (top !== null && !samePath(top, root)) return { reason: 'sin comprobar en el remoto: la raíz del proyecto no es la del repositorio;' };
+  const remote = top === null ? null : await remoteForBranch(root, into);
+  if (remote === null || (await runGit(root, ['ls-remote', '--heads', remote, into])) === '') return { reason: 'sin remoto:' };
+  return { remote };
 }
 
 function taskId(options: ClaimOptions, branch: string): string {
   const id = options.id ?? BRANCH_ID.exec(branch)?.[1];
   if (id === undefined) throw new UsageError(`--id: la rama '${branch}' no lleva id; pásalo con --id`);
+  if (!TASK_ID.test(id)) throw new UsageError(`--id debe ser un id de cuatro cifras: '${id}'`);
   return id;
 }
 
@@ -232,13 +253,13 @@ export async function claimIds(options: ClaimOptions, io: Io): Promise<string> {
   const [branch = ''] = await gitLines(root, ['branch', '--show-current']);
   const id = taskId(options, branch);
   const into = options.into ?? configuredMergeInto(root) ?? 'develop';
-  const reason = await localOnlyReason(root, into);
-  if (reason !== null) {
-    io.out(`${reason} la ${id} vale (contador local)`);
+  const found = await claimRemote(root, into);
+  if ('reason' in found) {
+    io.out(`${found.reason} la ${id} vale (contador local)`);
     return id;
   }
-  const claim: Claim = { root, id, into, remote: (await remoteForBranch(root, into))!, lockTimeoutMinutes: options.lockTimeoutMinutes, io };
-  const outcome = await lockedClaim(claim, branch);
+  const claim: Claim = { root, id, into, remote: found.remote, publish: configuredMergePush(root) !== false, lockTimeoutMinutes: options.lockTimeoutMinutes, io };
+  const outcome = await withMergeLock(root, { branch, io, minutes: claim.lockTimeoutMinutes }, () => withIntegrationTarget(root, into, (target) => claimIn(target, claim)));
   [...outcome.report, ...(await settleBranch(claim, branch, outcome.id))].forEach((line) => io.out(line));
   return outcome.id;
 }

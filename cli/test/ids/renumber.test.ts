@@ -33,6 +33,11 @@ describe('renumberLines', () => {
     expect(renumberLines([prose, remote], change, new Set([remote]))).toEqual([prose, remote]);
   });
 
+  it('rewrites artifact paths', () => {
+    const line = '| 0203 | **Ids** — `proposal: 0203`, ver `specs/20261020-090000-proposal-0203-ids/proposal.md` | ⏳ |';
+    expect(renumberLines([line], change, none)).toEqual(['| 0205 | **Ids** — `proposal: 0203`, ver `specs/20261020-090000-proposal-0205-ids/proposal.md` | ⏳ |']);
+  });
+
   it('does not touch a longer number', () => {
     expect(renumberLines(['| 02030 | x |', 'tras 20203'], change, none)).toEqual(['| 02030 | x |', 'tras 20203']);
   });
