@@ -149,7 +149,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 
 ### Act on feedback
 
-- Re-grade each finding by its effect, then act as [Closing the review](#closing-the-review) says: ONE fix pass for Critical and Important, Minor to the ledger.
+- Re-grade each finding by its effect, then act as [Closing the review](#closing-the-review) says: ONE fix pass for Critical and Important —and Minor with `review.minors: fix`—, other Minors to the ledger.
 - Push back if the reviewer is wrong (with reasoning): a finding you don't fix is a `Final: Ruling:` with why the code stands.
 
 ### Common Rationalizations
@@ -225,9 +225,9 @@ Minor · possible Feature Envy in cancelledList (src/app.js:36)
 
 - **Critical and Important** enter the fix pass.
 - A **«no verificado»**: verify it yourself before the validation, or adjudicate it with `Final: Ruling:`.
-- **Minor**, with `"review": {"minors": "fix"}` in `sdd-kit.json`, enters the fix pass with them, without asking; in Native its ledger line is `Final: fixed <finding> — <test> RED→GREEN, suite <N>/<N>`, or `Final: fixed <finding> — suite <N>/<N>` when no test can reproduce it (a name, a wording). Without the key, or with `defer`, it goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors»: deferred Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
+- **Minor**, with `"review": {"minors": "fix"}` in `sdd-kit.json`, enters the fix pass with them, without asking; in Native its ledger line is `Final: fixed <finding> — <test> RED→GREEN, suite <N>/<N>`, or `Final: fixed <finding> — suite <N>/<N>` when no test can reproduce it (a name, a wording). Any other value, or no key, it goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors»: deferred Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
 
-**Native:** fix the Critical and Important findings of every axis yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified; a suite that is not green after the pass means the pass is not over. A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
+**Native:** fix the Critical and Important findings of every axis, and the Minor ones with `review.minors: fix`, yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD: write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite. Record each in the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>`. A fix without a test that failed first is not verified, except a Minor no test reproduces; a suite that is not green after the pass means the pass is not over. A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
 
 **SDD:** if the final review returns findings, dispatch ONE fix subagent with the complete findings list of every axis — not one fixer per finding. Per-finding fixers each rebuild context and re-run suites; a real session's final-review fix wave cost more than all its tasks combined. Its scoped re-review is the single re-review below: don't dispatch another for the fix wave. There is no second fix wave.
 

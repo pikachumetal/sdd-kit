@@ -11,7 +11,7 @@ Rúbrica, fila `C1f Minor a la pasada`: falla si el Minor del eje Spec no entra 
 | REFACTOR 1 | + la fila de `sdd-implement`: «…unless `review.minors: fix` asks. Otherwise ledger them.» | **1/2**: `c1f-2` sigue sin leer `sdd-kit.json` y copia el ejemplo de `sdd-implement` «minors → ledger as deferred» | — |
 | REFACTOR 2 | + el ejemplo: «sdd-kit.json has no review.minors: minors → ledger as deferred» | **2/2**: los dos leen el marcador, meten el Minor en la única pasada («+1 minor sin RED: test desacoplado del orden»), sin preguntar, y despachan la re-revisión `sdd-kit:effort-high` + `opus` | ver abajo |
 
-**Gastado en la Task 2**: 9 sujetos de `sdd-verify` y 6,00 $ (RED 2, GREEN 4, REFACTOR 4, más el control de abajo).
+**Gastado en la Task 2**: 11 sujetos de `sdd-verify` y 6,68 $ (RED 2, GREEN 4, REFACTOR 4 y el control de abajo); con el control tras la pasada de fix, 15 sujetos y 9,58 $.
 
 ## Lectura
 
@@ -22,3 +22,7 @@ Rúbrica, fila `C1f Minor a la pasada`: falla si el Minor del eje Spec no entra 
 ## Control tras el REFACTOR
 
 `c1-3`, con el kit final (las dos ediciones de `sdd-implement`): **1/1**. Difiere el Minor del eje Spec, despacha la única re-revisión `sdd-kit:effort-high` + `opus` y lleva lo abierto a «Minors diferidos». El cambio de `sdd-implement` no altera la conducta sin la clave.
+
+## Control tras la pasada de fix de la revisión final
+
+La pasada de fix condicionó también «Act on feedback» y el párrafo Native de `sdd-verify`, y limitó la fila de `sdd-implement` a la revisión final. Con el kit resultante, salidas en `fix-verify/`: `c1f` **2/2** (el Minor del eje Spec entra en la pasada con `Final: fixed … (Minor, review.minors: fix)` y la re-revisión sale) y `c1` **2/2** (el Minor se difiere y la re-revisión sale). Campaña entera de la feature: 55 sujetos y 16,22 $.

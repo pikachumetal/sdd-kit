@@ -118,7 +118,7 @@ Everything you print, and every tool result, stays resident in your context for 
 | "Subagents are slow and expensive, I'll skip the final review too" | Native already removed the per-task reviewers. One review of the whole branch is the floor, not the ceiling. |
 | "The reviewer said Minor, so it's Minor" | The label graded the spec's silence. Grade what the person gets. Re-grade, then gate. |
 | "The fix is obvious, no need for a failing test first" | The failing test is the only proof the finding was real and is now gone. Without it you have a diff and a hope. |
-| "I'll fix the minors too while I'm in there" | A minor fix is a test, fix and suite run nobody asked for, unless `review.minors: fix` asks. Otherwise ledger them. |
+| "I'll fix the minors too while I'm in there" | Minor fixes cost a test, fix and suite run: only the final review's `review.minors: fix` asks them; else ledger them. |
 
 ## SDD loop
 

@@ -56,7 +56,7 @@ Montaje por escenario, en `subject.sh`:
 | Sn Sin ADR | f3n | cuenta la falta de una ADR que cubra el diff como «no verificado» o como hallazgo |
 | Q Eje Código | f4 | no marca Important el comentario `// incrementa count`; o marca como hallazgo la función de 26 líneas, que el bloque «De código» permite; o escribe un olor como infracción y no como juicio («posible…») |
 | C1 Cierre único | c1 | hace más de una pasada de fix; o no despacha, antes de presentar la validación, una re-revisión `sdd-kit:effort-high` + `opus` con el hallazgo del eje Código; o el Minor no va al ledger como `Final: minor (deferred)`; o algo que quede abierto no llega a ✋ |
-| C1f Minor a la pasada | c1f | el Minor del eje Spec no entra en la única pasada de fix; o queda como `minor (deferred)` en el ledger o en «Deferred minors»; o pregunta al dev-lead si lo arregla. Un Minor que abre la re-revisión no cuenta: es «What it leaves open» |
+| C1f Minor a la pasada | c1f | el Minor del eje Spec no entra en la única pasada de fix; o queda como `minor (deferred)` en el ledger o en «Deferred minors»; o pregunta al dev-lead si lo arregla; o el ledger o `tasks.md` no tienen una línea `Final: fixed` de ese Minor. Un Minor que abre la re-revisión no cuenta: es «What it leaves open» |
 | C2 Una re-revisión no abre otra | c2 | despacha otro revisor; o la presentación no lleva en ✋ `sin revisar: <sha del último commit> — …` |
 | C3 La única re-revisión del cierre | c3 | no despacha, antes de escribir el walkthrough, la re-revisión `sdd-kit:effort-high` + `opus` del tramo que empieza en el `sobre` de `Revisión final:` |
 | C4 Formato 2.x | c4 | lanza una revisión final nueva; o el tramo de la re-revisión no empieza en el `sobre` de `Revisión final:` (enmienda del 2026-10-14) |

@@ -50,7 +50,7 @@ created: 2026-10-20
 ## Review Focus
 
 - `sdd-config` invocada en un proyecto con `pricing` escrita y un modelo que `sdd session` dio como «sin precio» → la tabla enseña `updated` y los modelos; no se pregunta salvo que el usuario lo pida · Task 1, rúbrica de `cf2` (tabla con `pricing` y su fecha, sin pregunta de la 10)
-- Revisión final con `review.minors: fix` y un Minor de redacción que ningún test reproduce → `Final: fixed <hallazgo> — suite <N>/<N>`, sin `minor (deferred)` · Task 2, `c1f` (su Minor es de nombre de variable)
+- Revisión final con `review.minors: fix` y un Minor de redacción que ningún test reproduce → `Final: fixed <hallazgo> — suite <N>/<N>`, sin `minor (deferred)` · Task 2, `c1f` (su Minor es una dependencia de orden entre tests, que el sujeto puede reproducir o no; la rúbrica pide una línea `Final: fixed` del Minor)
 
 ---
 

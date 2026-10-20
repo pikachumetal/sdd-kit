@@ -77,8 +77,8 @@ Describe 'Anatomía de sdd-config' {
     $migration | Should -Match 'el cuerpo del commit que la escribió cita la respuesta del dev-lead y la fecha'
   }
 
-  It 'una init o una migración hacen de la 1 a la 7, la 9 y la 10' {
-    Get-KitFile $script:SkillPath | Should -Match 'do 1 to 7, 9 and 10'
+  It 'una init hace de la 1 a la 7, la 9 y la 10' {
+    Get-KitFile $script:SkillPath | Should -Match 'init does 1 to 7, 9 and 10'
   }
 
   It 'enseña cada clave con su valor, su fichero o el default antes de preguntar' {
@@ -119,5 +119,35 @@ Describe 'Fuente única de la entrevista de claves' {
 
   It 'el README cataloga sdd-config' {
     Get-KitFile 'README.md' | Should -Match '\| `sdd-config` \|'
+  }
+}
+
+Describe 'Feature 0178 — review.minors y pricing fuera de sdd-config' {
+  It 'el contrato de claves declara review.minors con defer por defecto y pricing sin default' {
+    $profiles = Get-KitFile 'skills/sdd-start-feature/references/control-profiles.md'
+    $profiles | Should -Match '(?m)^\| `review\.minors` \| `fix` \\\| `defer` \(solo en `sdd-kit\.json`\) \| `"defer"` \|'
+    $profiles | Should -Match '(?m)^\| `pricing` \| .*\(solo en `sdd-kit\.json`\) \| — \(sin ella, el cierre da «sin precio»\) \|'
+  }
+
+  It 'sdd-verify manda los Minor a la pasada de fix con review.minors: fix, también en «Act on feedback» y en Native' {
+    $verify = Get-KitFile 'skills/sdd-verify/SKILL.md'
+    $verify | Should -Match '\*\*Minor\*\*, with `"review": \{"minors": "fix"\}` in `sdd-kit\.json`, enters the fix pass'
+    $verify | Should -Not -Match 'ONE fix pass for Critical and Important, Minor to the ledger\.'
+    $verify | Should -Match 'and the Minor ones with `review\.minors: fix`'
+    $verify | Should -Match 'Any other value, or no key'
+  }
+
+  It 'sdd-implement limita review.minors: fix a la revisión final, en su fila de excusas y en su ejemplo' {
+    $implement = Get-KitFile 'skills/sdd-implement/SKILL.md'
+    $implement | Should -Match 'only the final review''s `review\.minors: fix` asks them'
+    $implement | Should -Match 'sdd-kit\.json has no review\.minors: minors → ledger as deferred'
+  }
+
+  It 'sin poder leer la página de precios, la clave queda sin escribir' {
+    (Get-CatalogRows)[9] | Should -Match 'never made-up prices, and the key stays unwritten'
+  }
+
+  It 'una migración no hace la 9 ni la 10' {
+    Get-KitFile $script:SkillPath | Should -Match 'An init does 1 to 7, 9 and 10, and a migration 1 to 7'
   }
 }

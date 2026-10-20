@@ -22,6 +22,7 @@ approvers:
 
 - Modificadas: `configuration` — `sdd-config` cataloga y propone `pricing` y `review.minors`, y las escribe en `sdd-kit.json`
 - Modificadas: `verification` — con `review.minors: fix`, los Minor de la revisión final entran en la pasada de fix
+- Modificadas: `onboarding` — la entrevista de la init pregunta también `review.minors` y la tabla `pricing` (enmienda del 2026-10-20)
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -172,6 +173,18 @@ Fracasaría si el agente inventara precios sin leer la fuente, o si un proyecto 
 - AND invocada por una init o por una migración no escribe: devuelve las respuestas y quien la invocó las escribe en `sdd-kit.json`, en su paso de estructura o de marcador (enmienda del 2026-09-25)
 - AND sin usuario no escribe nada: las preguntas quedan como pendientes explícitas en el informe de quien la invocó
 
+### Capacidad: `onboarding`
+
+**MODIFIED — La entrevista fija las claves de control** (antes: "método de ejecución (`auto`) y quién valida (`manual`; …)")
+- GIVEN una init con el usuario presente
+- WHEN la entrevista llega a las claves del kit
+- REMOVED THEN el agente invoca `sdd-config`, que hace en turnos distintos las preguntas de su catálogo, cada una con su opción recomendada y su motivo: modo de ids, perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona), push de la rama de integración tras el merge («sí» con git-flow), frenos (3 agentes; 8 y 20 minutos), método de ejecución (`auto`) y quién valida (`manual`; `field` solo sin pantalla ni uso que el dev-lead pueda probar al cerrar)
+- THEN el agente invoca `sdd-config`, que hace en turnos distintos las preguntas de su catálogo, cada una con su opción recomendada y su motivo: modo de ids, perfil (`delegate`), política de merge (rama de integración, `--no-ff`, el worktree lo borra una persona), push de la rama de integración tras el merge («sí» con git-flow), frenos (3 agentes; 8 y 20 minutos), método de ejecución (`auto`), quién valida (`manual`; `field` solo sin pantalla ni uso que el dev-lead pueda probar al cerrar), qué se hace con los Minor de la revisión final (`defer`) y la tabla de precios («sí», con la tabla leída de la página oficial de precios de Anthropic)
+- AND `sdd init --config` guarda solo lo que el usuario responde y `--finish` lo sube a `sdd-kit.json`: «no sé» no escribe la clave y rige su default, y un «no» a la política de merge deja `merge` sin declarar
+- AND si la rama de integración es la estable, la pregunta de merge no se hace y `merge` queda sin declarar; sin `merge` declarado, la de push tampoco se hace
+- AND la pregunta de push recomienda «sí» solo si la convención de ramas es git-flow; con otra convención se hace sin opción recomendada
+- AND la init no pregunta las preferencias personales: el resumen de cierre dice que se fijan con `sdd-config`
+
 ### Capacidad: `verification`
 
 **MODIFIED — La revisión se cierra una vez** (antes: "y el Minor va al ledger como `Final: minor (deferred): <una línea>`")
@@ -198,6 +211,8 @@ Fracasaría si el agente inventara precios sin leer la fuente, o si un proyecto 
 Medido con `wc -w`; el test parte por espacios igual.
 
 ## Enmiendas
+
+- 2026-10-20 — delta `MODIFIED` de `onboarding` («La entrevista fija las claves de control»): la init pregunta también `review.minors` y `pricing`, como ya decía la decisión 2, y el requisito vivo enumeraba sus preguntas sin ellas — revisión final, eje Spec (Important, `unrequested`) — aprobada: «Apruebo (Recomendada)»
 
 - 2026-10-20 — techo de la previsión de coste de 50 a 55 sujetos (decisión 14): el RED de `c1f` necesitó n = 2 y dos tandas de REFACTOR, y la batería entera de `using-sdd` son 34 sujetos, uno por encima del techo; en dólares sigue por debajo de 40 $ — Task 3 — aprobada: «Sube el techo a 55 (Recomendada)»
 

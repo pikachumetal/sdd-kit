@@ -1,0 +1,63 @@
+--- [3]
+Ahora: retomo tras las dos tasks, con los informes de la revisión final por leer.
+
+--- [12]
+Con `review.minors: fix`, el Important y el Minor entran en la pasada de fix. Primero los tests en RED.
+
+--- [17]
+El test del espacio final está en RED. Aplico el fix.
+
+--- [28]
+Voy a despachar la re-revisión única del fix (Opus, effort high) sobre el rango `6a433ca..de2ce05`.
+
+--- [30]
+Mientras revisa, dejo preparadas las líneas de `tasks.md`.
+
+--- [37]
+La re-revisión sigue en marcha. Espero su notificación antes de cerrar.
+
+--- [41]
+### Finding Verdicts
+
+- **[Código · Important] `src/app.js:14-17`, el motivo conserva los espacios: ADDRESSED.** `src/app.js:16` ahora recorta el motivo con `params[index + 1]?.trim()` antes de que `cancelBooking` lo compare con la lista en `src/app.js:20`. El comportamiento cambia solo donde debía:
+  - Sin `--motivo`, `index === -1` sigue devolviendo `undefined` y la respuesta sigue siendo «motivo no válido: …».
+  - Con `--motivo` pero sin valor, `?.` da `undefined`, como antes, en lugar de lanzar un error.
+  - Un motivo hecho solo de espacios queda en `''` y se sigue rechazando.
+  
+  El caso nuevo está cubierto en `test/cancel.test.js:21-24` (`'sala ocupada '` da «cancelada Norte lun (sala ocupada)»).
+- **[Spec · Minor] `test/cancel.test.js:13`, el test de canceladas depende del orden: ADDRESSED.** En `test/cancel.test.js:4-5`, `freshApp()` carga el módulo con `import('../src/app.js?instance=N')`. Como cada URL es distinta, cada test recibe un módulo nuevo con su propio array `bookings`. Todo el estado mutable está dentro de `app.js` y el módulo no importa nada más, así que no hay estado compartido entre tests.
+  - El test de canceladas (`test/cancel.test.js:26-30`) ahora prepara su propio GIVEN: cancela Norte lun con «sala ocupada» y después lista.
+  - La aserción y el nombre del test no cambian; solo se añade la preparación, así que el test no queda más débil.
+  - Lo comprobé con un test enfocado, `node --test test/cancel.test.js`: pasan los 4. El test de espacios vuelve a cancelar Norte lun después del primer test, y si compartieran instancia fallaría con «sin reserva». Eso confirma que están aislados.
+
+### New Breakage in the Fix Diff
+
+None. El commit no toca los nombres ni las aserciones de los tests que ya existían, y los textos de la interfaz siguen en castellano.
+
+### Out-of-Scope Observations
+
+- [Spec · Minor, anterior al fix] El AND de la spec «sin `--motivo` responde lo mismo: «motivo no válido: …»» (`spec.md:54`) no tiene test ni en `test/cancel.test.js` ni en `test/app.test.js`. El código lo cumple (`src/app.js:16,20`), pero la falta de test viene de `3a06a5a`, no de este fix.
+
+### Verdict
+
+All findings addressed, no new Critical/Important breakage.
+
+--- [46]
+La revisión final de la 0010 está cerrada. Los dos hallazgos se arreglaron en un commit (`de2ce05`) y la re-revisión los dio por resueltos. La suite completa pasa: 6/6.
+
+- **Spec:** un Minor. El test de `canceladas` solo pasaba si antes había corrido el de `cancelar`. Como el proyecto tiene `review.minors: fix`, entró en la pasada de fix.
+- **Código:** un Important. `reasonOf` conservaba los espacios alrededor del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Fix del Important:** `src/app.js:16` ahora recorta el motivo. Escribí antes el test del espacio final y lo vi fallar.
+- **Fix del Minor:** cada test carga su propia copia del módulo, así que ya no dependen del orden. El test de `canceladas` pasa también solo.
+- **Re-revisión:** Opus con effort high dio los dos hallazgos por resueltos, sin roturas nuevas en el diff del fix.
+- **Cierre:** `tasks.md` tiene las líneas de `Revisión final`, `Pasada de fix` y `Re-revisión`, más la sección `## Rulings`. `tasks.md` sigue sin versionar, como al empezar. Borré el workspace del plan y el worktree de revisión.
+
+**Rulings I made:** ninguno. El ledger no tenía ninguna línea `Ruling:`.
+
+**Deferred minors:**
+- El AND de la spec «sin `--motivo` responde "motivo no válido: …"» (`spec.md:54`) no tiene test. El código lo cumple. Lo señaló la re-revisión, que no abre una segunda pasada, así que queda diferido.
+
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que estas skills pueden ser de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+Sigue el paso 7 de `sdd-start-feature`, la validación. No lo he arrancado.
+
