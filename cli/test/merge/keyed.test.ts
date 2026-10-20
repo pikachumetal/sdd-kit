@@ -85,3 +85,30 @@ describe('dedupeRows con más de dos filas del mismo id', () => {
     expect(dedupeRows([...header, ...header])).toEqual({ lines: [...header, ...header], duplicates: [] });
   });
 });
+
+describe('la cabecera de una tabla en la unión por id', () => {
+  const header = '| Id | Tarea | Estado |';
+  const separator = '| --- | --- | --- |';
+
+  it('la misma tabla nueva en los dos lados queda una con las dos filas', () => {
+    expect(mergeKeyedHunk({ base: [], ours: [header, separator, row('0210', 'x')], theirs: [header, separator, row('0211', 'y')] })).toEqual({
+      lines: [header, separator, row('0210', 'x'), row('0211', 'y')],
+      duplicates: [],
+    });
+  });
+
+  it('una cabecera de la base que el trozo separa de su separador no cuenta como fila con id', () => {
+    const hunk = { base: [], ours: [header], theirs: ['| Id | Tarea | Estado | Tamaño |'] };
+
+    expect(mergeKeyedHunk(hunk)).toEqual({ lines: [header, '| Id | Tarea | Estado | Tamaño |'], duplicates: ['Id'] });
+    expect(mergeKeyedHunk(hunk, { headers: new Set([header, '| Id | Tarea | Estado | Tamaño |']), column: 0 })).toBeNull();
+  });
+});
+
+describe('la columna de id de la tabla del trozo', () => {
+  it('en una tabla cuya columna de id es la segunda, dos filas del mismo día no son un id repetido', () => {
+    const merged = mergeKeyedHunk({ base: [], ours: ['| 2026-10-20 | 0205 | a |'], theirs: ['| 2026-10-20 | 0206 | b |'] }, { headers: new Set(), column: 1 });
+
+    expect(merged).toEqual({ lines: ['| 2026-10-20 | 0205 | a |', '| 2026-10-20 | 0206 | b |'], duplicates: [] });
+  });
+});

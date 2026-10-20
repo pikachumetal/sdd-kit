@@ -1,10 +1,9 @@
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git, gitLines } from '../git/git.ts';
-import { completeMergeAttempt, gitWithOutput, mergeArgs } from './attempt.ts';
 import { resolveMergePolicy } from './policy.ts';
 import { resolveProjectRoot, type MergeOptions } from './run.ts';
-import { fetchBase, remoteForBranch, shortHead } from './steps.ts';
+import { fetchBase, mergeAndClean, remoteForBranch, shortHead } from './steps.ts';
 
 const REFUSED: [keyof MergeOptions, string][] = [
   ['into', '--into'], ['tag', '--tag'], ['order', '--order'], ['push', '--push'], ['verify', '--verify'], ['verifiedAt', '--verified-at'], ['check', '--check'], ['branch', '--branch'],
@@ -30,7 +29,6 @@ export async function syncBranch(options: MergeOptions, io: Io): Promise<void> {
   await assertNothingPending(root, branch);
   const base = await fetchBase(root, { into, remote: await remoteForBranch(root, into) });
   if ((await git(root, ['merge-base', '--is-ancestor', base, 'HEAD'])).code === 0) return io.out(`base: al día: '${base}' ya está en '${branch}'`);
-  const merged = await gitWithOutput(root, mergeArgs(['--no-edit', base]));
-  await completeMergeAttempt({ worktree: root, stepName: 'base', output: merged.output, report: io.out, destinationIsTheirs: true }, merged.code);
+  await mergeAndClean({ worktree: root, stepName: 'base', report: io.out, mergedDestination: base }, ['--no-edit', base]);
   io.out(`base: integrada '${base}' en '${branch}': ${await shortHead(root)}`);
 }

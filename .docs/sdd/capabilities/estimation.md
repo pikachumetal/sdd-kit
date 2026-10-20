@@ -116,6 +116,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - WHEN se ejecuta el script con `--branch feature/0068`
 - THEN el hilo suma 2.605.005 tokens: `msg_C` queda fuera
 - AND sin `--branch`, el hilo suma 3.505.005
+- AND con `feature/0068` fusionada en `merge.into` (su último commit de merge, a las 10:00Z), las respuestas de la rama posteriores a las 10:00Z no cuentan, en ninguna de las cuatro líneas
 
 ### Sin `--projects-root`, junta todas las configuraciones de Claude Code
 
@@ -128,8 +129,8 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN un worktree sin carpeta en `<proyectos>/`
 - WHEN se ejecuta el script
-- THEN las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
-- AND con la carpeta pero sin ninguna respuesta de la rama pedida, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
+- THEN la rama se mide por ventana («Una rama sin transcripts propios se mide por ventana de tiempo»); si la ventana tampoco tiene respuestas, las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
+- AND con la carpeta pero sin ninguna respuesta de la rama pedida, la rama se mide igual por ventana; si la ventana tampoco tiene respuestas, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
 - AND con respuestas del hilo y ningún subagente, la línea de subagentes dice `no aplica` y la del coste lleva solo el hilo: `Coste de la sesión: 0,95 $ (hilo 0,95 $)`
 
 ### El cierre rellena los tokens y el coste de la sesión
@@ -186,10 +187,20 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - WHEN se ejecuta `sdd estimation log`
 - THEN su fila lleva `1.2` en «Sujetos ($)»
 
+### Una rama sin transcripts propios se mide por ventana de tiempo
+
+- GIVEN la rama `feature/0211-y`, sin respuestas suyas en los transcripts de su worktree, creada (reflog) a las 10:05Z desde una sesión abierta en el worktree de `feature/0210-x`, que se fusionó en `develop` a las 10:00Z y sigue respondiendo con `gitBranch` `feature/0210-x` hasta las 10:40Z
+- WHEN se ejecuta `sdd session tokens --path <worktree de la 0211> --branch feature/0211-y` con «ahora» a las 10:45Z
+- THEN cuenta las respuestas de esa sesión entre las 10:05Z y las 10:45Z, con sus subagentes y sus esperas, y el reloj empieza a las 10:05Z
+- AND imprime las cuatro líneas de siempre y una quinta: `- Medición: por ventana — transcripts de <ruta del worktree de la 0210> desde 2026-10-19T10:05Z (la rama no tiene transcripts propios)`; `--json` lleva `window: { folder, from, to }`
+- AND con otro worktree en `feature/0212-z`, sin fusionar, que responde en la misma ventana, sus respuestas no cuentan
+- AND si otra rama local sin transcripts propios se creó a las 10:30Z, la ventana de la 0211 acaba a las 10:30Z
+- AND sin reflog de la rama, las cuatro dicen `no medido (sin reflog de feature/0211-y: no se sabe cuándo se creó)`
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; el log, generado, en la carpeta de `estimation.md`.
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`.
 - **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
-- **Límites**: no aplica.
-- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas.
+- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes.
+- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas. La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
 - **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.

@@ -4,13 +4,13 @@ import { estimationLogPath } from '../cli/layout.ts';
 import { generateEstimationLog, writeEstimationLog } from '../estimation/log.ts';
 import { git } from '../git/git.ts';
 import type { MergeAttempt } from './attempt.ts';
-import { dedupeRows, mergeKeyedHunk, type KeyedMerge } from './keyed.ts';
+import { dedupeRows, idColumn, mergeKeyedHunk, TABLE_SEPARATOR, tableHeaders, type KeyedMerge } from './keyed.ts';
 import { MARKER, mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
 
 const LOG = /estimation-log\.md$/i;
 const HUNK = /^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|(?![\s\S]))/gms;
 
-const KEYED_REGISTRIES = ['.docs/sdd/roadmap.md', '.docs/sdd/changelog.md', 'ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md'];
+export const KEYED_REGISTRIES = ['.docs/sdd/roadmap.md', '.docs/sdd/changelog.md', 'ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md'];
 
 export function isRegistry(file: string): boolean {
   return KEYED_REGISTRIES.includes(file) || basename(file).toLowerCase() === 'estimation-log.md';
@@ -20,6 +20,7 @@ interface Conflict {
   path: string;
   content: string;
   hunks: RegExpMatchArray[];
+  headers: Set<string>;
 }
 
 async function readConflict(worktree: string, file: string): Promise<Conflict | null> {
@@ -31,7 +32,9 @@ async function readConflict(worktree: string, file: string): Promise<Conflict | 
   const content = readFileSync(path, 'utf8');
   const hunks = [...content.matchAll(HUNK)];
   // Un binario no lleva marcas: no hay nada que unir.
-  return hunks.length === 0 ? null : { path, content, hunks };
+  if (hunks.length === 0) return null;
+  const base = await git(worktree, ['show', `:1:${file}`]);
+  return { path, content, hunks, headers: tableHeaders(base.stdout.split(/\r?\n/)) };
 }
 
 function writeMerged(path: string, merged: string): boolean {
@@ -41,7 +44,7 @@ function writeMerged(path: string, merged: string): boolean {
 }
 
 // La rama destino va primero: en un merge de sincronización es el lado de fuera.
-const inDestinationOrder = (attempt: MergeAttempt, ours: string, theirs: string) => (attempt.destinationIsTheirs ? [theirs, ours] : [ours, theirs]);
+const inDestinationOrder = (attempt: MergeAttempt, ours: string, theirs: string) => (attempt.mergedDestination !== undefined ? [theirs, ours] : [ours, theirs]);
 
 const reportDuplicates = (attempt: MergeAttempt, file: string, ids: string[]) =>
   ids.forEach((id) => attempt.report(`registros: dos filas distintas con el id '${id}' en ${file}; se quedan las dos, revísalas`));
@@ -62,15 +65,26 @@ async function mergeAddedLines(attempt: MergeAttempt, file: string): Promise<boo
 
 const toLines = (text: string) => (text === '' ? [] : text.replace(/\n$/, '').split('\n'));
 
-function mergeHunkById(attempt: MergeAttempt, [, ours, base, theirs]: RegExpMatchArray): KeyedMerge | null {
+// La columna de id es la de la tabla en la que cae el trozo: se busca su cabecera en las filas de encima.
+function columnBefore(content: string, index: number): number {
+  const above = content.slice(0, index).split(/\r?\n/).slice(0, -1);
+  for (let at = above.length - 1; at >= 0 && above[at].startsWith('|'); at--) {
+    if (TABLE_SEPARATOR.test(above[at + 1] ?? '')) return idColumn(above[at]);
+  }
+  return 0;
+}
+
+function mergeHunkById(attempt: MergeAttempt, hunk: RegExpMatchArray, conflict: Conflict): KeyedMerge | null {
+  const [, ours, base, theirs] = hunk;
   const [first, second] = inDestinationOrder(attempt, ours, theirs);
-  return mergeKeyedHunk({ ours: toLines(first), base: toLines(base), theirs: toLines(second) });
+  const context = { headers: conflict.headers, column: columnBefore(conflict.content, hunk.index ?? 0) };
+  return mergeKeyedHunk({ ours: toLines(first), base: toLines(base), theirs: toLines(second) }, context);
 }
 
 async function mergeRowsById(attempt: MergeAttempt, file: string): Promise<boolean> {
   const conflict = await readConflict(attempt.worktree, file);
   if (conflict === null) return false;
-  const merges = conflict.hunks.map((hunk) => mergeHunkById(attempt, hunk));
+  const merges = conflict.hunks.map((hunk) => mergeHunkById(attempt, hunk, conflict));
   const resolved = merges.filter((merge): merge is KeyedMerge => merge !== null);
   if (resolved.length !== merges.length) return false;
   let next = 0;
@@ -104,15 +118,25 @@ async function commitResolution(worktree: string, conflicted: string[]): Promise
   return (await git(worktree, ['commit', '--no-edit'])).code === 0;
 }
 
+// Mergiraf solo une código: lo que une lo verifica la suite, y en los documentos nadie lo haría.
+const isCode = (file: string) => !file.startsWith('.docs/') && !file.toLowerCase().endsWith('.md');
+
+async function stillConflicted(buffered: MergeAttempt, conflicted: string[], reportNow: (line: string) => void): Promise<string[]> {
+  const left = await unresolvedByKit(buffered, conflicted.filter((name) => !LOG.test(name)));
+  const code = left.filter(isCode);
+  if (code.length === 0 || !mergirafRuns()) return left;
+  const unsolved = await solveWithMergiraf(buffered.worktree, code, { onSolved: buffered.report, onUnsolved: reportNow });
+  return [...left.filter((file) => !isCode(file)), ...unsolved];
+}
+
 // Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
 // Los avisos de lo resuelto solo valen si el merge acaba hecho; lo que no se resuelve se dice siempre.
 export async function resolveConflicts(attempt: MergeAttempt, conflicted: string[]): Promise<string[]> {
-  const lines: string[] = [];
-  const buffered = { ...attempt, report: (line: string) => void lines.push(line) };
-  let left = await unresolvedByKit(buffered, conflicted.filter((name) => !LOG.test(name)));
-  if (left.length > 0 && mergirafRuns()) left = await solveWithMergiraf(attempt.worktree, left, { report: buffered.report });
-  const resolved = left.length === 0 && (await commitResolution(attempt.worktree, conflicted));
-  lines.filter((line) => resolved || line.startsWith('mergiraf: no resuelve')).forEach((line) => attempt.report(line));
-  if (resolved) return [];
-  return left.length > 0 ? left : conflicted;
+  const pending: string[] = [];
+  const buffered = { ...attempt, report: (line: string) => { pending.push(line); } };
+  const left = await stillConflicted(buffered, conflicted, attempt.report);
+  if (left.length > 0) return left;
+  if (!(await commitResolution(attempt.worktree, conflicted))) return conflicted;
+  pending.forEach((line) => attempt.report(line));
+  return [];
 }

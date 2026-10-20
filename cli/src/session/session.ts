@@ -1,9 +1,10 @@
 import { caseInsensitiveGet, isRecord } from '../cli/records.ts';
 import { existsSync, readdirSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { readText } from '../cli/files.ts';
 import { parseJsonFile } from '../cli/json-file.ts';
 import { readClock, type Clock } from './clock.ts';
-import { elapsedMinutes, isInProgress, modelTotals, readResponses, type ModelTotals } from './usage.ts';
+import { elapsedMinutes, isInProgress, modelTotals, readResponses, type ModelTotals, type Selector } from './usage.ts';
 
 export interface Dispatch {
   description: string;
@@ -46,16 +47,28 @@ function describeDispatch(file: string): string {
   return description ? String(description) : fallback;
 }
 
-function readDispatch(file: string, branch: string): Dispatch | null {
-  const responses = readResponses(file, branch);
+function readDispatch(file: string, selector: Selector): Dispatch | null {
+  const responses = readResponses(file, selector);
   if (responses.length === 0) return null;
   return { description: describeDispatch(file), totals: modelTotals(responses), minutes: elapsedMinutes(responses), inProgress: isInProgress(responses) };
 }
 
-export function readSession(folders: string[], branch: string): Session {
-  const files = folders.flatMap(threadFiles);
-  const thread = files.flatMap((file) => readResponses(file, branch));
+// En la ventana solo cuenta la sesión que creó la rama: otra que solo la nombra (un git worktree list) no trabajó en ella.
+function sessionFiles(folders: string[], selector: Selector): { files: string[]; agents: string[] } {
+  const all = folders.flatMap(threadFiles);
   const agents = folders.flatMap(agentFiles).sort((first, second) => first.localeCompare(second));
-  const dispatches = agents.map((file) => readDispatch(file, branch)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
-  return { thread: modelTotals(thread), dispatches, clock: readClock(files, branch) };
+  const createdBy = selector.window?.createdBy;
+  if (createdBy === undefined) return { files: all, agents };
+  const files = all.filter((file) => createdBy.test(readText(file)));
+  const sessions = new Set(files.map((file) => basename(file, '.jsonl')));
+  return { files, agents: agents.filter((agent) => sessions.has(basename(dirname(dirname(agent))))) };
 }
+
+export function readSession(folders: string[], selector: Selector): Session {
+  const { files, agents } = sessionFiles(folders, selector);
+  const thread = files.flatMap((file) => readResponses(file, selector));
+  const dispatches = agents.map((file) => readDispatch(file, selector)).filter((dispatch): dispatch is Dispatch => dispatch !== null);
+  return { thread: modelTotals(thread), dispatches, clock: readClock(files, selector) };
+}
+
+export const isEmpty = (session: Session): boolean => session.thread.size === 0 && session.dispatches.length === 0;

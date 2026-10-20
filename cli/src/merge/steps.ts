@@ -1,6 +1,7 @@
 import { DomainError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
-import { completeMergeAttempt, gitWithOutput, mergeArgs } from './attempt.ts';
+import { completeMergeAttempt, gitWithOutput, mergeArgs, type MergeAttempt } from './attempt.ts';
+import { cleanRegistries } from './cleanup.ts';
 
 export type Report = (line: string) => void;
 
@@ -33,21 +34,31 @@ export async function fetchBase(worktree: string, { into, remote }: BaseSync): P
 
 export const shortHead = async (worktree: string) => (await gitLines(worktree, ['rev-parse', '--short', 'HEAD']))[0];
 
+export async function mergeAndClean(attempt: Omit<MergeAttempt, 'output'>, args: string[]): Promise<void> {
+  const [before] = await gitLines(attempt.worktree, ['rev-parse', 'HEAD']);
+  const merged = await gitWithOutput(attempt.worktree, mergeArgs(args));
+  await completeMergeAttempt({ ...attempt, output: merged.output }, merged.code);
+  try {
+    await cleanRegistries(attempt.worktree, attempt.mergedDestination ?? before, attempt.report);
+  } catch (error) {
+    await undoFailedMerge(attempt.worktree, before);
+    throw error;
+  }
+}
+
 export async function syncBaseBranch(worktree: string, base: BaseSync, report: Report): Promise<void> {
   if (base.remote === null) return;
   const remoteRef = await fetchBase(worktree, base);
   if ((await git(worktree, ['merge-base', '--is-ancestor', remoteRef, 'HEAD'])).code === 0) return;
   if ((await git(worktree, ['merge', '--ff-only', remoteRef])).code === 0) return;
-  const merged = await gitWithOutput(worktree, mergeArgs(['--no-edit', remoteRef]));
-  await completeMergeAttempt({ worktree, stepName: 'base', output: merged.output, report }, merged.code);
+  await mergeAndClean({ worktree, stepName: 'base', report }, ['--no-edit', remoteRef]);
 }
 
 export async function mergeFeature(worktree: string, { branch, into, noFf, order }: FeatureMerge, report: Report): Promise<void> {
   const flags = noFf ? ['--no-ff'] : [];
   const orderLine = order === null ? [] : ['-m', `Orden del dev-lead: «${order}»`];
   const message = ['-m', `merge: ${branch} en ${into}`, ...orderLine, '-m', 'Fusión hecha con sdd merge (sdd-kit).'];
-  const merged = await gitWithOutput(worktree, mergeArgs([...flags, ...message, branch]));
-  await completeMergeAttempt({ worktree, stepName: 'merge', output: merged.output, report }, merged.code);
+  await mergeAndClean({ worktree, stepName: 'merge', report }, [...flags, ...message, branch]);
 }
 
 export async function remoteMoved(worktree: string, remote: string, branch: string): Promise<boolean> {

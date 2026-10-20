@@ -106,3 +106,21 @@ describe('los avisos solo salen con el merge hecho', () => {
     expect(result.text).not.toContain('registros:');
   });
 });
+
+describe('la cabecera de una tabla no es una fila con id', () => {
+  it('dos ramas que añaden la misma tabla nueva con filas distintas', async () => {
+    const fx = mergeFixture('cabecera-tabla');
+    const doc = (rows: string[]) => ['# Roadmap', '', '## Now', '', '| Id | Tarea | Estado |', '| --- | --- | --- |', '| 0100 | base | ✅ |', '', ...rows, '## Later', ''].join('\n');
+    const table = (row: string) => ['## Next', '', '| Id | Tarea | Estado |', '| --- | --- | --- |', row, ''];
+    seedBase(fx, 'ROADMAP.md', doc([]));
+    onBranch(fx, '0001', 'ROADMAP.md', doc(table('| 0210 | x | ⏳ |')));
+    onBranch(fx, '0002', 'ROADMAP.md', doc(table('| 0211 | y | ⏳ |')));
+
+    const result = await mergeBoth(fx);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).not.toContain('registros:');
+    expect(fileAt(fx, 'ROADMAP.md')).toContain(['## Next', '', '| Id | Tarea | Estado |', '| --- | --- | --- |', '| 0210 | x | ⏳ |', '| 0211 | y | ⏳ |', '', '## Later'].join('\n'));
+    expect(fileAt(fx, 'ROADMAP.md').match(/## Next/g)).toHaveLength(1);
+  });
+});

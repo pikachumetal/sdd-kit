@@ -31,7 +31,13 @@ function withoutMergiraf<T>(body: () => Promise<T>): Promise<T> {
   return body().finally(() => { process.env.PATH = original; });
 }
 
-describe.skipIf(!mergirafRuns())('mergiraf resuelve lo que queda', () => {
+describe('mergiraf, herramienta obligatoria del repo', () => {
+  it('mergiraf está en el PATH', () => {
+    expect(mergirafRuns(), 'mergiraf no está en el PATH: instálalo (tech-stack.md, «Herramientas del repo»)').toBe(true);
+  });
+});
+
+describe('mergiraf resuelve lo que queda', () => {
   it('resuelve dos métodos y dos imports en el mismo sitio, lo dice y verifica el resultado', async () => {
     const fx = twoMethodsFixture('mergiraf-ok');
     const first = await runMerge(join(fx.wt, '0001'), ['--push']);
@@ -67,7 +73,7 @@ describe.skipIf(!mergirafRuns())('mergiraf resuelve lo que queda', () => {
   });
 });
 
-describe.skipIf(!mergirafRuns())('mergiraf con otro conflicto que queda', () => {
+describe('mergiraf con otro conflicto que queda', () => {
   it('no dice resuelto si el merge acaba abortado', async () => {
     const fx = twoMethodsFixture('mergiraf-abortado');
     for (const id of ['0001', '0002']) {
@@ -96,5 +102,55 @@ describe('sin mergiraf', () => {
     expect(result.text).toContain('merge: conflicto en src/rooms.ts.');
     expect(result.text).not.toContain('mergiraf');
     expect(sha(fx.repo, 'develop')).toBe(before);
+  });
+});
+
+describe('mergiraf solo sobre código', () => {
+  it('no se lanza sobre un .md', async () => {
+    const fx = mergeFixture('mergiraf-md');
+    for (const id of ['0001', '0002']) {
+      write(join(fx.wt, id), 'README.md', `cambio de ${id}\n`);
+      saveAll(join(fx.wt, id), `docs: readme de ${id}`);
+    }
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push']);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('merge: conflicto en README.md.');
+    expect(result.text).not.toContain('mergiraf');
+  });
+
+  it('une dos imports cambiados en los dos lados y la verificación decide', async () => {
+    const fx = mergeFixture('mergiraf-imports');
+    write(fx.seed, 'src/use.ts', 'import { a } from "./a";\n\nexport const used = a;\n');
+    saveAll(fx.seed, 'feat: use');
+    git(fx.seed, 'push', '-q', fx.remote, 'develop');
+    for (const [id, name] of [['0001', 'b'], ['0002', 'c']]) {
+      const feature = join(fx.wt, id);
+      git(feature, 'fetch', '-q', 'origin');
+      git(feature, 'merge', '-q', 'origin/develop');
+      write(feature, 'src/use.ts', `import { a, ${name} } from "./a";\n\nexport const used = a;\n`);
+      saveAll(feature, `feat: import ${name}`);
+    }
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push', '--verify', 'git --version']);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toContain('mergiraf: resuelto src/use.ts');
+    expect(git(fx.repo, 'show', 'develop:src/use.ts')).toContain('import { a, b, c } from "./a";');
+  });
+
+  it('con un fichero resuelto por mergiraf, --verified-at no omite --verify', async () => {
+    const fx = twoMethodsFixture('mergiraf-verified-at');
+    expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
+    const verified = sha(fx.repo, 'feature/0002');
+
+    const result = await runMerge(join(fx.wt, '0002'), ['--push', '--verify', 'exit 1', '--verified-at', verified]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('verificación: código de salida 1');
+    expect(result.text).not.toContain('omitida');
   });
 });

@@ -6,6 +6,19 @@ export type Category = (typeof CATEGORIES)[number];
 export type Usage = Record<Category, number>;
 export type ModelTotals = Map<string, Usage>;
 
+export interface TimeWindow {
+  from: number;
+  to: number;
+  createdBy: RegExp;
+  countable: (branch: string, time: number) => boolean;
+}
+
+export interface Selector {
+  branch: string;
+  until?: number;
+  window?: TimeWindow;
+}
+
 export interface Response {
   model: string;
   usage: Usage;
@@ -24,10 +37,14 @@ function parseLine(text: string): Json | null {
   }
 }
 
-function isCounted(line: Json, branch: string): boolean {
+export const inRange = (time: number, from = -Infinity, to = Infinity): boolean => time >= from && time < to;
+
+function isCounted(line: Json, { branch, until, window }: Selector): boolean {
   if (!sameText(line.type, 'assistant') || line.message?.usage == null) return false;
   if (sameText(line.message.model, '<synthetic>')) return false;
-  return branch === '' || sameText(line.gitBranch, branch);
+  const time = Date.parse(String(line.timestamp));
+  if (window !== undefined) return inRange(time, window.from, window.to) && window.countable(String(line.gitBranch ?? ''), time);
+  return (branch === '' || sameText(line.gitBranch, branch)) && (Number.isNaN(time) || inRange(time, -Infinity, until));
 }
 
 function toUsage(raw: Json): Usage {
@@ -65,11 +82,11 @@ function mergeResponse(responses: Map<string, Response>, line: Json): void {
   existing.lastBlock = lastBlockOf(line.message);
 }
 
-export function readResponses(file: string, branch: string): Response[] {
+export function readResponses(file: string, selector: Selector): Response[] {
   const responses = new Map<string, Response>();
   for (const text of readText(file).split(/\r\n|\n|\r/)) {
     const line = parseLine(text);
-    if (line !== null && isCounted(line, branch)) mergeResponse(responses, line);
+    if (line !== null && isCounted(line, selector)) mergeResponse(responses, line);
   }
   return [...responses.values()];
 }

@@ -16,7 +16,7 @@ describe('mergiraf', () => {
     writeFileSync(join(dir, 'a.ts'), conflicted);
     const lines: string[] = [];
     try {
-      const left = await solveWithMergiraf(dir, ['a.ts'], { report: (line) => lines.push(line), command: [process.execPath, '-e', ''] });
+      const left = await solveWithMergiraf(dir, ['a.ts'], { onSolved: (line) => lines.push(line), onUnsolved: (line) => lines.push(line), command: [process.execPath, '-e', ''] });
       expect(left).toEqual(['a.ts']);
       expect(lines).toEqual(['mergiraf: no resuelve a.ts']);
     } finally {
