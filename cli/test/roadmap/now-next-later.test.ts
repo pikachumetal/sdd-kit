@@ -79,9 +79,9 @@ describe('sdd roadmap check: las filas de ROADMAP.md', () => {
       row({ id: '0014', task: '**Exportar a CSV**<br>*Las reservas del mes.*' }),
       row({ id: '0015', after: '0099', size: 'XL' }),
       '', '## Next', '| Id | Tarea | Estado |', '| --- | --- | --- |', '| 0016 | **Informe** | ⏳ |', '',
-      '## Later', '', header, separator, '| 0020 | — | **Reservar con un código QR**<br>*Desde el móvil.* | ⏳ |  |  |',
+      '## Later', '', header, separator, '| B3 | — | **Reservar con un código QR**<br>*Desde el móvil.* | ⏳ |  |  |',
     ];
-    const result = await checkProject({ roadmap });
+    const result = await checkProject({ roadmap, mode: 'sequence' });
     expect(result.lines).toEqual(
       expect.arrayContaining([
         `ROADMAP.md: línea 8: estado «hecho» no admitido: ${stateHelp}`,
@@ -90,7 +90,7 @@ describe('sdd roadmap check: las filas de ROADMAP.md', () => {
         'ROADMAP.md: línea 11: «Tras» nombra 0099, que no está en el roadmap ni en CHANGELOG.md',
         'ROADMAP.md: línea 11: tamaño «XL» no admitido: S, M, L',
         `ROADMAP.md: línea 14: la cabecera de «Next» debe ser «${header}»`,
-        'ROADMAP.md: línea 22: el id «0020» de «Later» no es «B<n>»',
+        'ROADMAP.md: línea 22: el id «B3» no es de la secuencia: resérvale uno con sdd id next --reserve',
       ]),
     );
     expect(result.code).toBe(1);
@@ -102,10 +102,34 @@ describe('sdd roadmap check: las filas de ROADMAP.md', () => {
     expect((await checkProject({ roadmap })).lines).toContain('ROADMAP.md: línea 16: tamaño «» no admitido: S, M, L');
   });
 
-  it('rejects a B id in Now or Next', async () => {
+  it('rejects a B id in Now or Next in sequence', async () => {
     const roadmap = lines();
     roadmap[15] = row({ id: 'B3', size: 'S' });
-    expect((await checkProject({ roadmap })).lines).toContain('ROADMAP.md: línea 16: el id «B3» de «Next» es de Later: resérvale uno al subirla');
+    expect((await checkProject({ roadmap, mode: 'sequence' })).lines).toContain('ROADMAP.md: línea 16: el id «B3» no es de la secuencia: resérvale uno con sdd id next --reserve');
+  });
+
+  it('accepts a sequence id in Later in sequence', async () => {
+    expect((await checkProject({ roadmap: lines(), mode: 'sequence' })).lines).toEqual(['Roadmap válido']);
+  });
+
+  it('rejects — and 0000 in sequence', async () => {
+    const roadmap = lines();
+    roadmap[21] = laterRow.replace('| 0020 |', '| — |');
+    roadmap[15] = row({ id: '0000', after: '0012, 0013', size: 'S' });
+    const result = (await checkProject({ roadmap, mode: 'sequence' })).lines;
+    expect(result).toContain('ROADMAP.md: línea 22: el id «—» no es de la secuencia: resérvale uno con sdd id next --reserve');
+    expect(result).toContain('ROADMAP.md: línea 16: el id «0000» no es de la secuencia: resérvale uno con sdd id next --reserve');
+  });
+
+  it('rejects a B id in tracker', async () => {
+    const roadmap = lines();
+    roadmap[21] = laterRow.replace('| 0020 |', '| B3 |');
+    expect((await checkProject({ roadmap })).lines).toContain('ROADMAP.md: línea 22: el id «B3» ya no se usa: usa el del ticket o 0000');
+  });
+
+  it('accepts 0000 in Later in tracker', async () => {
+    const roadmap = [...lines(), laterRow.replace('| 0020 |', '| 0000 |'), laterRow.replace('| 0020 |', '| 0000 |')];
+    expect((await checkProject({ roadmap, mode: 'tracker' })).lines).toEqual(['Roadmap válido']);
   });
 
   it('rejects an active state in Later', async () => {

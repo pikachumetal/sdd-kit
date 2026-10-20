@@ -23,7 +23,7 @@
 
 ## Backlog
 
-> Producto que aún no se ha decidido hacer, y las decisiones pendientes, con la numeración propia del Backlog (`B1`, `B2`…), nunca con un id de la secuencia de features.
+> Producto que aún no se ha decidido hacer, y las decisiones pendientes, con un id de la reserva, como el resto del roadmap (en `tracker`, el del ticket o `0000`); los `B<n>` anteriores se quedan hasta la migración v3.0.0.
 
 | # | Ítem | Origen |
 | --- | --- | --- |

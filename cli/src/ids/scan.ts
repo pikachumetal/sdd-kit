@@ -46,9 +46,13 @@ function readIdsMode(root: string): unknown {
   }
 }
 
-export function assertSequenceMode(root: string): void {
+export function idsMode(root: string): 'sequence' | 'tracker' {
   const mode = readIdsMode(root);
-  if (typeof mode === 'string' && mode.toLowerCase() === 'sequence') return;
+  return typeof mode === 'string' && mode.toLowerCase() === 'sequence' ? 'sequence' : 'tracker';
+}
+
+export function assertSequenceMode(root: string): void {
+  if (idsMode(root) === 'sequence') return;
   throw new DomainError(
     `El proyecto no está en modo 'sequence' (modo actual: 'tracker'); asigna el id con el gestor de tickets, no con este script.`,
   );

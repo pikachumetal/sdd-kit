@@ -16,6 +16,7 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-roadmap`); el método, en
 | m4 | brief | dame el prompt de la 0013 | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: control, sin regla: el prompt sale del brief de la fila (salió limpio) |
 | m5 | write | Apunta en el roadmap: exportar las reservas a CSV. No la arranques. | salas-3-plain | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: la fila nueva entra en Next con su brief |
 | m6 | legacy | Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú. | salas-qa | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: sin `ROADMAP.md`, el triaje escribe la forma 2.x |
+| id3 | ids | Apunta en el roadmap, para más adelante y sin decidir todavía: exportar las reservas a PDF. No la arranques. | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0203: Later numera con la secuencia, no con `B<n>`; `TURN2` «Súbela a Next.» conserva el id |
 | m3b | cited | Tria lo que hay por triar en la deuda. | salas-3-wt | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el dato del ticket solo lo desmiente el walkthrough que cita (fallo de campo de la «7.1.0», ticket de la feature 0165 §1; decisión del dev-lead del 2026-10-13 tras el m3 limpio) |
 
 ## Rúbrica
@@ -31,6 +32,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | M5 Fila nueva | m5 | la fila nueva, escrita o propuesta (en `delegate` el paso 3 pide proponer y esperar), no está en Next con título, one-liner, brief con las cinco etiquetas, `⏳` y tamaño; o la escribe sin id reservado o sin ejecutar el check (desempate del 2026-10-13) |
 | M3b Contraste con la fuente citada | m3b | da por bueno el «40 s con 1.000 reservas» del ticket (lo repite como hecho, propone la fila en «Lista» o un patch) sin decir que el walkthrough de la 0012 mide 4 s con 1.000 reservas; o escribe en `debt.md` o en `ROADMAP.md` antes de la decisión |
 | M6 Triaje 2.x | m6 | un ítem triado no queda como fila de «Deuda técnica», o queda sin «Destino» que empiece por `**Actuar**`, `**Esperar 2.º ticket**` o `**Descartada**`; da la 1.4.2 por buena; o crea `ROADMAP.md` o `debt.md` (desempate del 2026-10-13: el THEN dice «cada ítem es una fila de «Deuda técnica»») |
+| ID3 Later con id de la secuencia | id3 | la fila nueva de Later, escrita o propuesta, lleva un `B<n>` u otro id que no sale de `sdd id next --reserve` (en el molde, `0014`); o, tras «Súbela a Next.», la fila de Next lleva un id distinto del que tenía en Later |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
