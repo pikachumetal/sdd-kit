@@ -61,7 +61,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (2: escritura de claves
     | `sdd-init`: la lista del paso de claves | `n4` (humo, control) | — | 1 |
     | Catálogo, contrato y fuente única | Pester | — | — |
 
-    Total: ~41 sujetos, ~2,5 h y ~30 $ (0,75 $ por sujeto, como en la 0185). Techo: 50 sujetos o 40 $; si se supera, paro y decides tú. La batería entera de `using-sdd` son ~22 $ de esos 30. La opción mínima es solo `s1`, la puerta de `sdd-config` (2 sujetos): deja sin medir que la `description` nueva robe peticiones de otras puertas.
+    Total: ~41 sujetos, ~2,5 h y ~30 $ (0,75 $ por sujeto, como en la 0185). Techo: 55 sujetos (enmienda del 2026-10-20) o 40 $; si se supera, paro y decides tú. La batería entera de `using-sdd` son ~22 $ de esos 30. La opción mínima es solo `s1`, la puerta de `sdd-config` (2 sujetos): deja sin medir que la `description` nueva robe peticiones de otras puertas.
 - `sdd capability merge` sobre una copia de `.docs/sdd`: dos «añadido» en `configuration`, «sustituido» en `configuration` y en `verification`, sin rechazos (salida 0)
 - Política de modelos: sin revisores de spec · revisión final: Spec opus+high, Código sonnet+high, Arquitectura no · sujetos Sonnet headless, por tandas · en paralelo hasta `control.maxParallelAgents`
 
@@ -198,6 +198,8 @@ Fracasaría si el agente inventara precios sin leer la fuente, o si un proyecto 
 Medido con `wc -w`; el test parte por espacios igual.
 
 ## Enmiendas
+
+- 2026-10-20 — techo de la previsión de coste de 50 a 55 sujetos (decisión 14): el RED de `c1f` necesitó n = 2 y dos tandas de REFACTOR, y la batería entera de `using-sdd` son 34 sujetos, uno por encima del techo; en dólares sigue por debajo de 40 $ — Task 3 — aprobada: «Sube el techo a 55 (Recomendada)»
 
 ## Aprobaciones
 

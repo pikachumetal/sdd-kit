@@ -1,0 +1,74 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json 2>&1; find .docs -type f 2>/dev/null; grep -rl "sdd-template: pending" . --exclude-dir=.git 2>/dev/null
+<<< .
+..
+.docs
+.git
+package.json
+PRODUCT.md
+README.md
+src
+test
+{"init": {"approved": ["PRODUCT.md"]}}
+.docs/sdd/sdd-kit.json
+
+>>> Bash: cd "<run>/repo" && cat package.json PRODUCT.md README.md; find src test -type f | head -50; git branch -a; ls .github 2>&1 | head
+<<< {"type": "module"}
+# Salas
+
+## Users
+
+- **Oficina**: reserva salas.
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+src/app.js
+test/app.test.js
+* develop
+  main
+ls: cannot access '.github': No such file or directory
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.1303658 $)
+Retomo la init de Salas. Se cortó con solo `PRODUCT.md` aprobado (lo dice `init.approved`), así que no lo vuelvo a presentar.
+
+**Modo: con código.** Si es un template recién instanciado, dímelo y sigo sin código.
+
+**Inventario**
+- **Stack:** Node con ESM (`"type": "module"`). No hay dependencias ni scripts en `package.json`, ni CI, ni remoto.
+- **Código:** un solo módulo, `src/app.js`. Es una CLI de salas (`libres`, `reservar --cada-semana`, `cancelar`).
+- **Datos:** salas y reservas están en memoria, escritas a mano en el código. No hay persistencia.
+- **Tests:** `test/app.test.js`, con `node:test`. No hay script `test`, así que se corre con `node --test`.
+- **Ramas:** `main` y `develop`, con `develop` activa. Eso encaja con git-flow.
+- **Debt:**
+  - `reservar` no guarda nada: devuelve siempre el texto fijo «reserva semanal creada», y sin `--cada-semana` cae en «salas».
+  - `cancelar` solo repite sus argumentos y no cancela nada.
+  - `libres` compara solo la franja, sin mirar el día, aunque la reserva tiene día.
+
+Siguiente documento: la constitución (`.docs/sdd/steering/constitution.md`). Antes necesito las reglas de producto, que no se pueden deducir del todo del código. Te propongo un borrador de lo que sí se ve y te pregunto lo demás, de uno en uno.
+
+**Pregunta 1/5, dónde viven los datos.**
+Ahora mismo viven en memoria: las salas y las reservas son constantes en `src/app.js`, y se pierden al terminar el proceso. Recomiendo un fichero JSON local, porque es una CLI de terminal sin servidor, y no se puede reservar de verdad sin persistir. ¿Dónde deben vivir los datos?
+1. Fichero JSON local (mi recomendación).
+2. Solo memoria, como ahora (es un prototipo).
+3. Otra cosa, por ejemplo SQLite.
