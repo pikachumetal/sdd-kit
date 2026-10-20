@@ -34,13 +34,23 @@ async function consumeIds(ctx: Ctx, path: string, count: number): Promise<string
   return Array.from({ length: count }, (_, index) => formatId(base + 1 + index));
 }
 
-async function reserveIds(ctx: Ctx, count: number, lockTimeoutMinutes: number): Promise<string[]> {
+async function withCounter<T>(ctx: Ctx, lockTimeoutMinutes: number, body: (path: string) => Promise<T>): Promise<T> {
   assertSequenceMode(ctx.root);
   const path = await counterPath(ctx.root);
   if (path === null) throw new DomainError('El proyecto no está en un repositorio git: no hay dónde reservar el id.');
   const [branch = ''] = await gitLines(ctx.root, ['branch', '--show-current']);
   const lock = { path: join(dirname(path), 'sdd-ids.lock'), label: 'ids', io: ctx.io, owner: { branch, worktree: ctx.root } };
-  return withLock(lock, lockTimeoutMinutes, () => consumeIds(ctx, path, count));
+  return withLock(lock, lockTimeoutMinutes, () => body(path));
+}
+
+export function reserveIds(ctx: Ctx, count: number, lockTimeoutMinutes: number): Promise<string[]> {
+  return withCounter(ctx, lockTimeoutMinutes, (path) => consumeIds(ctx, path, count));
+}
+
+export function raiseCounter(ctx: Ctx, id: string, lockTimeoutMinutes: number): Promise<void> {
+  return withCounter(ctx, lockTimeoutMinutes, async (path) => {
+    if (readCounter(path, ctx.io) < Number(id)) writeCounter(path, Number(id));
+  });
 }
 
 export async function nextIds(options: NextOptions, io: Io): Promise<string[]> {

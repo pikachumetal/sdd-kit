@@ -1,0 +1,278 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd && ls -a && cat sdd-kit.json; cat sdd-kit.local.json 2>/dev/null; cat roadmap.md; cat constitution.md mission.md tech-stack.md | head -150; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0203-single-id-sequence/fbb1fd8b-d2ef-464d-9d61-c3a4acbeb2f4/scratchpad/kit-green2/cli/bin/sdd.js" capability index --path .
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳
+
+>>> Bash: cat .docs/sdd/estimation.md .docs/sdd/operations.md; ls -R src test* 2>/dev/null | head -30; cat src/app.js; git branch -a
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo real.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Feat
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: node src/app.js libres 25:00-26:00; cat test/cancel.test.js | head -20; ls scripts; git status --short; S=<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0203-single-id-sequence/fbb1fd8b-d2ef-464d-9d61-c3a4acbeb2f4/scratchpad/kit-green2; node "$S/cli/bin/sdd.js" id claim --project-root "$PWD"; git branch --show-current; ls $S/skills/sdd-templates; date -u +%Y%m%d-%H%M%S
+<<< Norte, Sur
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+lint.mjs
+id: la 0012 ya la tiene otro en origin/develop; la 0012 pasa a 0013
+id: 0013 es tuya; publicada en origin/develop
+rama: feature/0012-slot-format → feature/0013-slot-format
+worktree: la carpeta sigue en <run>\repo
+
+>>> Bash: S=<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0203-single-id-sequence/fbb1fd8b-d2ef-464d-9d61-c3a4acbeb2f4/scratchpad/kit-green2; cat $S/skills/sdd-templates/templates/patch-template.md; git status --short; git diff HEAD --stat; grep -n "0012\|0013" .docs/sdd/roadmap.md; ls .docs/sdd/specs
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash d
+
+>>> Bash: D=.docs/sdd/specs/20261020-135444-patch-0013-slot-format; mkdir -p $D; cat > $D/patch.md <<'EOF'
+---
+id: 20261020-135444-patch-0013-slot-format
+task: 0013
+title: Patch — Franja no válida en libres
+type: patch
+solution: dev-lead
+status: done
+created: 2026-10-20
+branch: feature/0013-slot-format
+commit: pendiente
+---
+
+# Patch 0013 — Franja no válida en libres
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe `libres` (el proyecto no tiene `capabilities/`).
+
+## 1. Síntoma
+
+`node src/app.js libres 25:00-26:00` responde `Norte, Sur`: lista todas las salas como libres para una franja que no existe.
+
+## 2. Solución fijada (petición cerrada)
+
+Fila 0013 del roadmap (dev-lead): «`libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM»». Lo que da por existente, comprobado: el comando `libres` y su rama en `run` (`src/app.js`) existen y hoy no validan la franja (`freeRooms` solo compara cadenas). La deuda «Sin validación del formato de franja horaria» del roadmap es este mismo hueco.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/app.js`, `test/slot.test.js`
+- **Cambio**: `libres` con una franja que no es `HH:MM-HH:MM` (horas 00-23, minutos 00-59) responde `franja no válida: usa HH:MM-HH:MM`, en vez de listar salas.
+- **Decisiones**:
+  - Franja válida = forma `HH:MM-HH:MM` con horas 00-23 y minutos 00-59, que es lo que dice el propio mensaje y lo que hace inválida `25:00-26:00` — dev-lead (mensaje de la fila)
+  - `libres` sin franja y franjas con fin anterior al inicio no cambian: la fila no los pide — dev-lead (alcance de la fila)
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | test RED antes del fix, `libres 25:00-26:00` → mensaje | pendiente |
+
+## 5. Tiempo (ligero)
+
+- Estimación: 0,5 h (antes del fix)
+- Inicio: 2026-10-20T13:54Z
+- Esfuerzo real: pendiente
+- Coste de sujetos: no aplica
+EOF
+cat > test/slot.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres con una franja inexistente la rechaza', () => {
+  assert.equal(run('libres', ['25:00-26:00']), 'franja no válida: usa HH:MM-HH:MM');
+});
+
+test('libres con una franja sin el formato HH:MM-HH:MM la rechaza', () => {
+  assert.equal(run('libres', ['mañana']), 'franja no válida: usa HH:MM-HH:MM');
+});
+
+test('libres con una franja válida lista las salas', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+EOF
+node --test test/slot.test.js 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< (Bash completed with no output)
+
+>>> Bash: node --test test/slot.test.js 2>&1 | tail -30
+<<<     generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Norte, Sur',
+    expected: 'franja no válida: usa HH:MM-HH:MM',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\slot.test.js:9:1
+✖ libres con una franja sin el formato HH:MM-HH:MM la rechaza (1.4712ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte, Sur'
+  - 'franja no válida: usa HH:MM-HH:MM'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/slot.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (no
+
+>>> Bash: python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"function findBooking\",\"const SLOT = /^([01]\\\\d|2[0-3]):[0-5]\\\\d-([01]\\\\d|2[0-3]):[0-5]\\\\d\$/;\n\nfunction findBooking\");
+s=s.replace(\"if (cmd === 'libres') return freeRooms(params[0]).join(', ');\",\"if (cmd === 'libres') {\n    if (!SLOT.test(params[0])) return 'franja no válida: usa HH:MM-HH:MM';\n    return freeRooms(params[0]).join(', ');\n  }\");
+fs.writeFileSync('src/app.js',s)"
+EOF
+git diff src; node --test 2>&1 | grep -E "^# (pass|fail)"; node scripts/lint.mjs; echo lint=$?
+<<< lint: sin hallazgos
+lint=0
+
+>>> Bash: git status --short; node --test 2>&1 | grep -E "^. (pass|fail)"
+<<< ?? .docs/sdd/specs/20261020-135444-patch-0013-slot-format/
+?? test/slot.test.js
+ℹ pass 5
+ℹ fail 2
+✖ failing tests:
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: node --test 2>&1 | grep -E "^. (pass|fail)"; node scripts/lint.mjs; node src/app.js libres 25:00-26:00; node src/app.js libres 10:00-12:00; node src/app.js libres
+<<< ℹ pass 7
+ℹ fail 0
+lint: sin hallazgos
+franja no válida: usa HH:MM-HH:MM
+Sur
+franja no válida: usa HH:MM-HH:MM
+
+>>> Bash: sed -i "s/if (!SLOT.test(params\[0\]))/if (params[0] !== undefined \&\& !SLOT.test(params[0]))/" src/app.js
+cat >> test/slot.test.js <<'EOF'
+
+test('libres sin franja se comporta como antes', () => {
+  assert.equal(run('libres', []), 'Norte, Sur');
+});
+EOF
+node --test 2>&1 | grep -E "^. (pass|fail)"; node scripts/lint.mjs; node src/app.js libres 25:00-26:00; git diff src
+<<< ℹ pass 8
+ℹ fail 0
+lint: sin hallazgos
+franja no válida: usa HH:MM-HH:MM
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index fd6d964..6ce3455 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,35 +1,40 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+-
+-function freeRooms(slot) {
+-  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.st
+
+>>> Bash: sed -i 's/$/\r/' src/app.js; file src/app.js; git diff --stat src; git diff src | cat -A | grep -c '\^M\$' ; node --test 2>&1 | grep -E "^. (pass|fail)"
+<<< src/app.js: JavaScript source, Unicode text, UTF-8 text, with CRLF line terminators
+ src/app.js | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+19
+ℹ pass 8
+ℹ fail 0
+
+>>> Bash: D=.docs/sdd/specs/20261020-135444-patch-0013-slot-format
+sed -i 's/| 1 | test RED antes del fix, `libres 25:00-26:00` → mensaje | pendiente |/| 1 | RED: `libres 25:00-26:00` respondía `Norte, Sur` (2 tests en rojo) → tras el fix, `franja no válida: usa HH:MM-HH:MM` | ✅ |\n| 2 | `libres 10:00-12:00` → `Sur`; `libres` sin franja → `Norte, Sur` (sin cambio) | ✅ |\n| 3 | `node --test` 8\/8 · `node scripts\/lint.mjs` sin hallazgos | ✅ |/' $D/patch.md
+git add -A && git commit -q -m "fix(libres): rechaza una franja que no es HH:MM-HH:MM
+
+Patch 0013: libres 25:00-26:00 responde «franja no válida: usa HH:MM-HH:MM».
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+
+>>> Skill: sdd-kit:sdd-archive
+<<< warning: in the working copy of '.docs/sdd/specs/20261020-135444-patch-0013-slot-format/patch.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/slot.test.js', LF will be replaced by CRLF the next time Git touches it
+ced89f3 fix(libres): rechaza una franja que no es HH:MM-HH:MM
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: S=<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0203-single-id-sequence/fbb1fd8b-d2ef-464d-9d61-c3a4acbeb2f4/scratchpad/kit-green2; git status --porcelain; node "$S/cli/bin/sdd.js" merge --check --project-root "$PWD"; git worktree list
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo ced89f3 [feature/0013-slot-format]
+
+=== RESULTADO (22 turnos, 0.4127104 $)
+Dejo el cierre del patch 0013 parado antes de escribir ningún registro: falta tu validación y la política de merge está incompleta.
+
+## Estado
+
+- **Commit del fix:** `ced89f3`. `libres 25:00-26:00` responde ahora `franja no válida: usa HH:MM-HH:MM`.
+- **Id:** la 0012 ya la tenía otro en `origin/develop`, así que `sdd id claim` la pasó a **0013**. La rama es `feature/0013-slot-format` y la carpeta es `20261020-135444-patch-0013-slot-format`. En el roadmap, la 0013 es esta fila.
+- **Pruebas:** `node --test` pasa 8 de 8 y `scripts/lint.mjs` no da hallazgos.
+- **Árbol de trabajo:** limpio. No hay otras ramas abiertas.
+
+## Cómo está resuelto
+
+- Una franja es válida si tiene la forma `HH:MM-HH:MM`, con horas 00-23 y minutos 00-59.
+- `libres` sin franja se comporta como antes: lista `Norte, Sur`.
+- No comprobé el orden: una franja con el fin antes del inicio, como `12:00-10:00`, se acepta. La fila no lo pide.
+
+## Lo que necesito de ti
+
+**1. Validación.** Esta es mi prueba (`node src/app.js …`):
+
+| # | Acción | Esperado |
+| --- | --- | --- |
+| 1 | `libres 25:00-26:00` | `franja no válida: usa HH:MM-HH:MM` |
+| 2 | `libres mañana` | `franja no válida: usa HH:MM-HH:MM` |
+| 3 | `libres 10:00-12:00` | `Sur` |
+| 4 | `libres` | `Norte, Sur` |
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+**2. Política de merge.** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Con el bloque incompleto no fusiono sin preguntarte. Dime el destino (lo normal sería `develop`) y si va con `--no-ff`. Con tu respuesta fusiono con `sdd merge --push`, como pediste.
+
+Con las dos respuestas termino el cierre: `patch.md` con el hash y el tiempo real, el changelog, la fila de «Patches» y el estado de la fila 0013 en el roadmap, y el log de estimación.

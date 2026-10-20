@@ -61,6 +61,7 @@ g init -q -b main
 commit "feat: base del molde"
 g checkout -q -b develop
 
+[ "$SC" = id3 ] && export TURN2='Súbela a Next.'
 MAX_TURNS="${MAX_TURNS:-30}" subject_launch "$ASK"
 keep_if_present() { [ -f "$1" ] && subject_keep "$1" "$2"; }
 keep_if_present "$R/.docs/sdd/roadmap.md" roadmap.md

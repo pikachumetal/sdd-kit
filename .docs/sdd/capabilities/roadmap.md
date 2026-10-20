@@ -131,14 +131,15 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 
 ### Las filas de `ROADMAP.md` tienen la cabecera, el estado, la Tarea y el tamaño de la plantilla
 
-- GIVEN un `ROADMAP.md` con, en Now, la fila 0012 con estado `hecho` en la línea 8, la 0013 cuya «Tarea» empieza por `Aviso semanal` en la línea 9, la 0014 sin `<details>` en su «Tarea» en la línea 10 y la 0015 con «Tras» `0099` y tamaño `XL` en la línea 11; en Next, la cabecera `| Id | Tarea | Estado |` en la línea 14; y en Later, la fila `0020` en la línea 22
+- GIVEN un `ROADMAP.md` con, en Now, la fila 0012 con estado `hecho` en la línea 8, la 0013 cuya «Tarea» empieza por `Aviso semanal` en la línea 9, la 0014 sin `<details>` en su «Tarea» en la línea 10 y la 0015 con «Tras» `0099` y tamaño `XL` en la línea 11; en Next, la cabecera `| Id | Tarea | Estado |` en la línea 14; y en Later, la fila `B3` en la línea 22, en un proyecto con `ids.mode: sequence`
 - WHEN se ejecuta `sdd roadmap check`
 - THEN escribe `ROADMAP.md: línea 8: estado «hecho» no admitido: ⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …` y sale con 1
 - AND escribe `ROADMAP.md: línea 9: la «Tarea» no empieza por «**<título>**»` y `ROADMAP.md: línea 10: la fila 0014 no lleva brief («<details>»)`
 - AND escribe `ROADMAP.md: línea 11: «Tras» nombra 0099, que no está en el roadmap ni en CHANGELOG.md` y `ROADMAP.md: línea 11: tamaño «XL» no admitido: S, M, L`
-- AND escribe `ROADMAP.md: línea 14: la cabecera de «Next» debe ser «| Id | Externo | Tarea | Estado | Tras | Tamaño |»` y `ROADMAP.md: línea 22: el id «0020» de «Later» no es «B<n>»`
+- AND escribe `ROADMAP.md: línea 14: la cabecera de «Next» debe ser «| Id | Externo | Tarea | Estado | Tras | Tamaño |»` y `ROADMAP.md: línea 22: el id «B3» no es de la secuencia: resérvale uno con sdd id next --reserve`
 - AND una fila de Later sin brief y sin tamaño no da fallo; una de Now o Next sin tamaño da `tamaño «» no admitido: S, M, L`
-- AND un id `B3` en Now o Next da `ROADMAP.md: línea <n>: el id «B3» de «Next» es de Later: resérvale uno al subirla`
+- AND en `sequence`, un id `B3`, `—` o `0000` en Now, Next o Later da ese mismo fallo, y una fila de Later con el id `0020` no da fallo
+- AND en `tracker` (declarado o por ausencia de `ids`), un id `B3` da `ROADMAP.md: línea <n>: el id «B3» ya no se usa: usa el del ticket o 0000`, y una fila de Later con `0000` no da fallo
 - AND una fila de Later con estado `🔄` o `✅` da `ROADMAP.md: línea <n>: estado «🔄» no admitido en «Later»: ⏳, ⏸️ aparcada: …`
 - AND «Tras» vacío no da fallo, ni «Tras» `0011` si el changelog nombra `0011` como palabra entera; con solo `0110` en el changelog, «Tras» `0011` da el fallo
 
@@ -191,7 +192,8 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - WHEN se ejecuta `sdd roadmap check`
 - THEN escribe, después de los fallos, `roadmap.md: aviso: línea 30: el id «0210» ya está en la línea 12`, y sin otros fallos sale con 0
 - AND las tablas sin esa columna (las de «Patches», que empiezan por la fecha, y la deuda) no se miran
-- AND en `ROADMAP.md` de la 3.0.0, un id repetido entre Now, Next o Later, incluidos los `B<n>` de Later, se avisa igual, con el prefijo `ROADMAP.md: `
+- AND en `ROADMAP.md` de la 3.0.0, un id repetido entre Now, Next o Later se avisa igual, con el prefijo `ROADMAP.md: `
+- AND `0000` repetido no se avisa: es el comodín de «sin ticket»
 
 ## Reglas de la capacidad
 

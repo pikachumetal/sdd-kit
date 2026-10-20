@@ -49,6 +49,14 @@ describe('sdd --help', () => {
     expect(io.stdout.join('\n')).toMatch(/^sdd init\s/m);
   });
 
+  it('--help lista id next e id claim', async () => {
+    const io = memoryIo();
+    expect(await run(['--help'], io)).toBe(0);
+    const text = io.stdout.join('\n');
+    expect(text).toContain('sdd id next');
+    expect(text).toContain('sdd id claim');
+  });
+
   it('--help lista decision check y decision index', async () => {
     const io = memoryIo();
     expect(await run(['--help'], io)).toBe(0);

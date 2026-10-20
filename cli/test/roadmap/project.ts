@@ -7,7 +7,7 @@ export const header = '| Id | Externo | Tarea | Estado | Tras | Tamaño |';
 export const separator = '| --- | --- | --- | --- | --- | --- |';
 export const brief =
   '<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** `.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md`, §Reglas de negocio<br>**Decisiones ya tomadas:** el aviso sale los lunes a las 8:00<br>**Salda:** nada<br>**Toca:** `src/avisos.js`</details>';
-export const laterRow = '| B1 | — | **Reservar con un código QR**<br>*Desde el móvil, sin pasar por la web.* | ⏳ |  |  |';
+export const laterRow = '| 0020 | — | **Reservar con un código QR**<br>*Desde el móvil, sin pasar por la web.* | ⏳ |  |  |';
 
 export interface RowSpec {
   id: string;
@@ -83,6 +83,7 @@ export interface Project {
   changelog?: string[];
   legacy?: Record<string, string>;
   eol?: string;
+  mode?: 'sequence' | 'tracker';
 }
 
 function write(path: string, content: string[] | undefined, eol: string): void {
@@ -91,8 +92,9 @@ function write(path: string, content: string[] | undefined, eol: string): void {
   writeFileSync(path, content.join(eol) + eol);
 }
 
-export async function checkProject({ roadmap, debt, changelog, legacy = {}, eol = '\n' }: Project) {
-  const sdd = sddFolder(legacy);
+export async function checkProject({ roadmap, debt, changelog, legacy = {}, eol = '\n', mode }: Project) {
+  const config: Record<string, string> = mode === undefined ? {} : { 'sdd-kit.json': JSON.stringify({ ids: { mode } }) };
+  const sdd = sddFolder({ ...config, ...legacy });
   const root = dirname(dirname(sdd));
   write(join(root, 'ROADMAP.md'), roadmap, eol);
   write(join(root, 'CHANGELOG.md'), changelog, '\n');

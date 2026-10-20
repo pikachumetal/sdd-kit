@@ -2,9 +2,8 @@ import { copyFileSync, existsSync, mkdirSync, realpathSync, rmSync } from 'node:
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { commonDir, git, gitLines, toplevel, worktrees } from '../git/git.ts';
-import { withLock } from '../git/lock.ts';
-import { withTempWorktree } from '../merge/temp-worktree.ts';
+import { git, gitLines, toplevel } from '../git/git.ts';
+import { runGit, withIntegrationTarget, withMergeLock } from '../merge/integration.ts';
 import { ROOT_DOCUMENTS } from '../cli/layout.ts';
 
 const DOCS_DIR = '.docs/sdd';
@@ -83,18 +82,6 @@ async function commitFiles(target: string, options: PublishOptions): Promise<voi
   }
 }
 
-async function runGit(cwd: string, args: string[]): Promise<void> {
-  const { code, stderr, stdout } = await git(cwd, args);
-  if (code !== 0) throw new DomainError(`git ${args[0]} falló en '${cwd}': ${(stderr || stdout).trim()}`);
-}
-
-async function withTarget<T>(options: PublishOptions, body: (target: string) => Promise<T>): Promise<T> {
-  const { projectRoot, into } = options;
-  await git(projectRoot, ['worktree', 'prune']);
-  const found = (await worktrees(projectRoot)).find((entry) => entry.branch === into);
-  return found === undefined ? withTempWorktree(projectRoot, into, body) : body(found.path);
-}
-
 export function resolveProjectRoot(path: string): string {
   if (!existsSync(path)) throw new DomainError(`No existe la ruta de proyecto '${path}'.`);
   return realpathSync.native(resolve(path));
@@ -107,10 +94,8 @@ export async function publish(options: PublishOptions, io: Io): Promise<void> {
   if (missing !== undefined) throw new DomainError(`No existe '${missing}' en '${projectRoot}'.`);
   const job = { ...options, files };
   const [branch = ''] = await gitLines(projectRoot, ['branch', '--show-current']);
-  const lockPath = resolve(await commonDir(projectRoot), 'sdd-merge.lock');
-  const lock = { path: lockPath, label: 'merge', io: { ...io, err: io.out }, owner: { branch, worktree: projectRoot } };
-  await withLock(lock, options.lockTimeoutMinutes, async () => {
+  await withMergeLock(projectRoot, { branch, io, minutes: options.lockTimeoutMinutes }, async () => {
     await assertBaseIntegrated(job);
-    await withTarget(job, (target) => commitFiles(target, job));
+    await withIntegrationTarget(projectRoot, options.into, (target) => commitFiles(target, job));
   });
 }

@@ -11,7 +11,7 @@ function rowIds(lines: string[]): { id: string; line: number }[] {
     else if (SEPARATOR.test(lines[index + 1] ?? '')) column = firstIsId(line) ? 0 : -1;
     else if (column >= 0 && !SEPARATOR.test(line)) ids.push({ id: (cells(line)[column] ?? '').trim(), line: index + 1 });
   });
-  return ids.filter(({ id }) => id !== '' && id !== '—' && !/^<.*>$/.test(id));
+  return ids.filter(({ id }) => id !== '' && id !== '—' && id !== '0000' && !/^<.*>$/.test(id));
 }
 
 export function duplicateIdWarnings(lines: string[]): string[] {

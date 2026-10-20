@@ -10,6 +10,7 @@ import { closedReleases, cutCommit, publishedProblem, releasedPatchProblems, set
 import { closedTitleProblems, proseProblems, sectionSetProblems, subsectionProblems } from './structure.ts';
 import { openRows, stateProblem, tableBlockProblems, tableHeaderProblems } from './tables.ts';
 import { duplicateIdWarnings } from './duplicates.ts';
+import { idsMode } from '../ids/scan.ts';
 import { roadmapWarnings } from './warnings.ts';
 
 export interface RoadmapResult {
@@ -71,7 +72,8 @@ function roadmapReport(sddPath: string, changelog: string): Report | null {
     const report = twoPointRoadmapReport(lines, file);
     return { errors: report.errors, warnings: [...shadow, ...report.warnings] };
   }
-  return { errors: prefixed(file, nowNextLaterProblems(lines, changelog)), warnings: [...shadow, ...prefixed(file, duplicateIdWarnings(lines))] };
+  const mode = idsMode(resolve(sddPath, '..', '..'));
+  return { errors: prefixed(file, nowNextLaterProblems(lines, changelog, mode)), warnings: [...shadow, ...prefixed(file, duplicateIdWarnings(lines))] };
 }
 
 function debtReport(sddPath: string, changelog: string): Report | null {

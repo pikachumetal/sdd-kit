@@ -41,6 +41,8 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 
 **Dentro de un hook de git, `git -C` no basta**: git exporta `GIT_DIR`, `GIT_WORK_TREE`, `GIT_INDEX_FILE` y `GIT_COMMON_DIR` a sus hooks, y esas variables ganan a `-C`. Un código o un test que llame a git desde un hook —por ejemplo desde el pre-commit que corre la suite— opera sobre el repositorio del hook, no sobre el que se le pasa: en la task 0001 eso desvió el cálculo de ids y reinicializó el repo de trabajo. Todo código del kit que llame a git limpia esas cuatro y `GIT_OBJECT_DIRECTORY` en el entorno del hijo (`cli/src/git/git.ts`); en los tests Pester, `tests/Clear-GitEnv.ps1`.
 
+**Un hook `pre-receive` de un remoto *bare* de test no puede mover refs** (feature 0203): git lo ejecuta en cuarentena y `git update-ref` falla sin que el test lo vea, así que «el remoto avanzó entre el fetch y el push» salía como «integración protegida». El hook hace `unset GIT_QUARANTINE_PATH` antes del `update-ref`, y solo apunta a commits que el remoto ya tiene (empujados antes a otra rama, `refs/heads/queue`). Ejemplo: `cli/test/ids/claim.slow.test.ts`.
+
 **Reforzar una regla de superpowers desde el kit pide un contraejemplo, no la regla parafraseada** (patch 0082, 2026-09-27): para alinear `plan-template.md` con `writing-plans` 6.4.2, la ronda 1 del GREEN copió la regla de superpowers en el Step 1 y no cambió nada (1/2 y 1/2); la ronda 2, con un contraejemplo medido en el propio molde y «asserts como código», dio 4/4 con Sonnet y con Opus ([tests/superpowers-642-green.md](../../tests/superpowers-642-green.md)). Cuando una skill de superpowers se sigue a medias, el GREEN parte del caso que falló en el RED.
 
 ### Fixtures y baselines

@@ -1,6 +1,7 @@
 import { UsageError, lockTimeoutOption } from '../cli/args.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { nextIds } from './next.ts';
+import { claimIds } from './claim.ts';
 
 const ID_LOCK_TIMEOUT_MINUTES = 2;
 
@@ -30,6 +31,30 @@ export const idNextVerb: Verb = {
     const ids = await nextIds(options, io);
     if (args.values.json) io.json({ ids, reserved: reserve });
     else ids.forEach((id) => io.out(id));
+    return 0;
+  },
+};
+
+const optionalText = (args: VerbArgs, name: string): string | null => (typeof args.values[name] === 'string' ? (args.values[name] as string) : null);
+
+export const idClaimVerb: Verb = {
+  noun: 'id',
+  verb: 'claim',
+  summary: 'Reclama el id de la tarea contra la integración del remoto (ids.mode=sequence)',
+  options: {
+    'project-root': { type: 'string' },
+    id: { type: 'string' },
+    into: { type: 'string' },
+    'lock-timeout': { type: 'string' },
+  },
+  async run(args, io) {
+    const options = {
+      projectRoot: optionalText(args, 'project-root') ?? '.',
+      id: optionalText(args, 'id'),
+      into: optionalText(args, 'into'),
+      lockTimeoutMinutes: lockTimeoutOption(args),
+    };
+    await claimIds(options, io);
     return 0;
   },
 };
