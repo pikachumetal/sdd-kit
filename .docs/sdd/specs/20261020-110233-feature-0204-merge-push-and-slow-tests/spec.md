@@ -92,6 +92,7 @@ Fracasaría si la suite lenta tardara bastante más sin carga, o si la línea nu
 - Los commits ajenos en el merge normal: `push-retry.slow.test.ts`, con un commit local en `develop` antes del merge, como los tests de push que ya hay. Sin commits ajenos, la línea no sale.
 - Los commits ajenos en el hotfix: `hotfix.slow.test.ts`, como «fusiona en main, etiqueta y vuelve…».
 - El stderr en el error: el test «un rechazo sin que la rama destino avance…», con un `pre-receive` que escribe un motivo.
+- La fila de la receta (citar los commits ajenos en el mensaje final): un humo n=1 con Sonnet, RED con la receta de `develop` y GREEN con la de la rama, sobre la misma salida de `sdd merge`; evidencia en `smoke.md` de esta carpeta.
 - Los workers: la tabla de medidas de la decisión 1, repetida en la verificación con `cli:test-slow` y `cli:test-min` de la rama.
 
 ## Términos y ADR
@@ -127,6 +128,9 @@ Fracasaría si la suite lenta tardara bastante más sin carga, o si la línea nu
 | `.docs/sdd/tech-stack.md` | 18900 / 19280 | 380 | sin cambio (la línea nueva son ~80 palabras) |
 
 ## Enmiendas
+
+- 2026-10-20 — «Dónde se prueba» gana el humo de la fila de `merge-recipe.md` — la revisión final (eje Spec, Important) pidió su prueba por la ADR 0002 y el Art. I — aprobada: «Humo n=1 con Sonnet (Recomendada)» · pasada de fix
+- 2026-10-20 — los Minor de la revisión final entran en la pasada de fix — aprobada: «Sí, todos (Recomendada)»
 
 ## Aprobaciones
 

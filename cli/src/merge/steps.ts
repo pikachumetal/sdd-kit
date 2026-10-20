@@ -77,14 +77,14 @@ export async function remoteMoved(worktree: string, remote: string, branch: stri
   return fetched.code === 0 && (await git(worktree, ['merge-base', '--is-ancestor', `${remote}/${branch}`, `refs/heads/${branch}`])).code !== 0;
 }
 
+export const appendGitError = (message: string, stderr: string) => (stderr.trim() === '' ? message : `${message}\n${stderr.trim()}`);
+
 export async function pushDestination(worktree: string, remote: string, into: string): Promise<'pushed' | 'moved'> {
   const pushed = await git(worktree, ['push', remote, `refs/heads/${into}:refs/heads/${into}`]);
   if (pushed.code === 0) return 'pushed';
   if (await remoteMoved(worktree, remote, into)) return 'moved';
-  throw new DomainError(withGitOutput(`push: no se pudo publicar '${into}' en '${remote}'.`, pushed.stderr));
+  throw new DomainError(appendGitError(`push: no se pudo publicar '${into}' en '${remote}'.`, pushed.stderr));
 }
-
-export const withGitOutput = (message: string, stderr: string) => (stderr.trim() === '' ? message : `${message}\n${stderr.trim()}`);
 
 export async function undoFailedMerge(worktree: string, before: string): Promise<void> {
   await git(worktree, ['merge', '--abort']);

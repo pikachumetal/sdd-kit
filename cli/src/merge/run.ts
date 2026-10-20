@@ -58,7 +58,7 @@ async function integrate(path: string, job: Job): Promise<void> {
   const remote = await remoteForBranch(path, policy.into);
   await syncBaseBranch(path, { into: policy.into, remote }, io.out);
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
-  const unpublished = await unpublishedCommits(path, remote, policy.into);
+  const unpublished = options.push ? await unpublishedCommits(path, remote, policy.into) : [];
   try {
     await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, io.out);
     await verifyMerge(path, { command: options.verify, verifiedAt: job.verifiedAt }, io);

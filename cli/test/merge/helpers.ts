@@ -107,10 +107,13 @@ export function pushRemoteCommit(fx: Fixture, relative: string, content: string)
   return sha(fx.seed, 'HEAD');
 }
 
+let localCommits = 0;
+
 export function localCommit(fx: Fixture, branch: string, message: string): string {
-  const path = join(fx.root, `local-${message.length}`);
+  const id = ++localCommits;
+  const path = join(fx.root, `local-${id}`);
   git(fx.repo, 'worktree', 'add', '-q', path, branch);
-  write(path, `${message.length}.txt`, `${message}\n`);
+  write(path, `local-${id}.txt`, `${message}\n`);
   saveAll(path, message);
   git(fx.repo, 'worktree', 'remove', path);
   return git(fx.repo, 'rev-parse', '--short', branch);

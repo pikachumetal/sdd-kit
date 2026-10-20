@@ -105,4 +105,16 @@ describe('el push nombra los commits de la rama destino que no son del cambio', 
     expect(result.text).toContain('push: no hecho: sin remoto');
     expect(result.text).not.toContain('también publica');
   });
+
+  it('con un commit local y un reintento solo nombra el local', async () => {
+    const fx = mergeFixture('ajeno-reintento');
+    const triage = localCommit(fx, 'develop', 'docs(roadmap): triaje');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', publishFromSeed(fx, 'otra-sesion.txt', true)]);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toContain("push: 'develop' avanzó en 'origin'; integro y reintento (2/3)");
+    expect(result.text).toContain("push: también publica 1 commit de 'develop' que no es de feature/0001:");
+    expect(result.text).toContain(`- ${triage} docs(roadmap): triaje`);
+  });
 });
