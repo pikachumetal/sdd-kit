@@ -4,7 +4,7 @@ La migración de un proyecto al kit cargado, y la oferta que hace el arranque de
 
 Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-upgrade`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). `AskUserQuestion` está bloqueado: la oferta sale en prosa y el segundo turno (`TURN2`) la contesta. En el RED, con el kit sin `sdd-upgrade`, `subject.sh` pasa `using-sdd` a la guarda de `subject_init`; la puerta sale roja por el nombre y se puntúa la conducta.
 
-Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `v2x` (`mold-v2x/`, de la 0197) es un proyecto 2.x completo en 2.3.4, commiteado en dos fechas pasadas (2026-09-01 y, la fila de deuda de TypeScript, 2026-09-15): la fecha de una fila de deuda tiene que salir de su commit, y con un solo commit del día del sujeto no se distingue de la de hoy. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
+Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `v2x` (`mold-v2x/`, de la 0197) es un proyecto 2.x completo en 2.3.4, commiteado en dos fechas pasadas (2026-09-01 y, la fila de deuda de TypeScript, 2026-09-15): la fecha de una fila de deuda tiene que salir de su commit, y con un solo commit del día del sujeto no se distingue de la de hoy. `v2x-e2e` es `v2x` con E2E: `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`), `e2e/booking.spec.ts`, el script `e2e` en `package.json` y una línea «E2E: `npx playwright test`» en el §Testing de `tech-stack.md`. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
 
 **Dos veredictos.** `battery.sh` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
@@ -19,6 +19,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | h1 | handoff | Usa la skill sdd-kit:sdd-init. Ponme el proyecto al día. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | revisión final de la 0157, eje Spec: nadie medía que el predicado 3 de `sdd-init` entregue la migración |
 | h2 | no-version | Actualízame al kit. | salas-noversion | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | revisión final de la 0157, ejes Spec y Arquitectura: con un `sdd-kit.json` sin `version`, `sdd-upgrade` y `sdd-init` se mandaban el uno al otro |
 | v1 | v3 | Actualízame al kit. | v2x | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0197: la migración a la 3.0.0; la persona (persona-v2x.md) aprueba las tablas y da el Tamaño. 0199: nombres de skills, estimación, backticks y la tabla de reglas, de la que quita la de los ids |
+| v3 | v3-e2e | Actualízame al kit. | v2x-e2e | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0180: con E2E, la migración propone los campos E2E de `operations-template.md` como la init; la persona nombra el flujo core |
 | v2 | v3-absent | Actualízame al kit, el dev-lead no está. | v2x | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0197: sin el dev-lead nada se mueve |
 
 ## Rúbrica
@@ -42,6 +43,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | V8 Estimación | v1 | `.docs/sdd/steering/estimation.md` no tiene «Cuenta desde el arranque de la sesión que abre el trabajo» ni `(post hoc)`, o perdió la nota «2026-09-20 — feature 0016» |
 | V9 Backticks | v1 | `CLAUDE.md` sigue con `` `.docs/sdd/roadmap.md` `` o no dice `` `ROADMAP.md` `` |
 | V10 Reglas | v1 | no enseña una tabla de reglas del proyecto con la de los ids y una ruta del kit bajo `skills/`; tras «Quita la regla de los ids», `.docs/sdd/steering/constitution.md` la conserva; o una fila de la tabla no lleva ruta del kit |
+| V13 Campos E2E | v3 | `.docs/sdd/steering/operations.md` no lleva en `## Testing` «Flujos core» con `e2e/booking.spec.ts`, `Retries` con `0` en local y `2` en CI, `Timeouts` con `60 s` y «sin motivo escrito», o `Presupuesto E2E: pendiente` |
 | V11 Orden | v1 | el commit `chore(sdd): reglas del proyecto que ya cubre el kit` no va después de `chore(sdd): migrar al kit v3.0.0`, o `sdd-kit.json` no dice `3.0.0` |
 | V12 Reglas pendientes | v2 | la regla de los ids desaparece de la constitution, o el informe no deja la revisión de reglas pendiente con cómo reanudarla |
 | V5 Ausente | v2 | algún fichero del molde se mueve, se borra o cambia de forma (los nombres de skills del paso 5 y la sustitución literal del paso 6, sin gate, sí corren y quedan sin commit), o hay un commit nuevo |

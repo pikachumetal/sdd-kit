@@ -82,6 +82,15 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     Get-Section (Get-TemplateContent 'operations') '## Testing' | Should -Match ([regex]::Escape($_))
   }
 
+  It '§Testing de operations tiene sus doce campos, seis de ellos de E2E' {
+    Get-BoldFields (Get-Section (Get-TemplateContent 'operations') '## Testing') |
+      Should -Be @('Suites', 'Lo afectado', 'Gate de cierre', 'Gate de merge', 'Acceso a la aplicación', 'Motor de producción', 'Flujos core', 'Presupuesto E2E', 'Retries', 'Timeouts', 'Entorno de la suite', 'Datos')
+  }
+
+  It '«Entorno de la suite» admite no aplica' {
+    Get-Section (Get-TemplateContent 'operations') '## Testing' | Should -Match '\*\*Entorno de la suite\*\*:[^\n]*`no aplica`'
+  }
+
   It '§Frontend de operations tiene sus ocho campos' {
     Get-BoldFields (Get-Section (Get-TemplateContent 'operations') '## Frontend') |
       Should -Be @('URL', 'Detector', 'Viewports', 'Runner E2E', 'Acceso', 'Temas', 'Pantalla de referencia', 'Skills de apoyo')

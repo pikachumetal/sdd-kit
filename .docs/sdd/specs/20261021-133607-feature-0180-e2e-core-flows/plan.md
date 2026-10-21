@@ -22,7 +22,7 @@ created: 2026-10-21
 
 **Goal**: el proyecto declara en `operations.md` sus flujos core y la política de su suite E2E, y quien escribe un E2E con el kit espera solo a lo que el usuario ve.
 
-**Architecture**: tres piezas de texto. Campos nuevos en la plantilla de `operations.md`, que la init y la migración rellenan desde una sola lista; una referencia de `sdd-tdd` para escribir y arreglar E2E; y una regla en «Visual check» de `sdd-implement` sobre dónde vive el script de verificación. Cada una con su campaña de sujetos.
+**Architecture**: tres piezas de texto. Campos nuevos en la plantilla de `operations.md`, que la init y la migración rellenan desde una sola lista; una referencia de `sdd-tdd` para escribir y arreglar E2E. La regla de los scripts de verificación desechables (Task 3) se recortó por su RED limpio (enmienda de la spec). Cada pieza, con su campaña de sujetos.
 
 **Tech Stack**: skills en Markdown; Pester para `tests/*.Tests.ps1`; sujetos headless con `tests/headless/run.sh`.
 
@@ -39,7 +39,7 @@ created: 2026-10-21
 - Art. X: sin comentarios que repitan el código ni que citen documentos (constitution, spec, task, capacidad); nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin alias de PowerShell; texto humano en castellano con tildes.
 - Las skills se escriben en inglés (Art. III); las plantillas de `sdd-templates` siguen en castellano hasta la 0206.
 - Ningún ejemplo nombra un proyecto real: los de campo van como «la 0223» o «el patch 0158», sin el nombre del proyecto.
-- Topes de palabras, los de la tabla de la spec: `sdd-tdd` 1750 y 4000; `sdd-implement` 9600 y 13370; `sdd-templates` 15560; `sdd-init` 2460 y 3060; kit 89500.
+- Topes de palabras, los de la tabla de la spec: `sdd-tdd` 1750 y 4000; `sdd-implement` sin cambio (Task 3 recortada); `sdd-templates` 15560; `sdd-init` 2460 y 3060; kit 89500.
 
 ### De proceso
 
@@ -50,8 +50,8 @@ created: 2026-10-21
 ## Review Focus
 
 - Un proyecto con E2E pero sin servidores que levantar (una CLI con Playwright contra un HTML estático) → «Entorno de la suite» admite `no aplica`, no un comando inventado · Task 1, la ayuda del campo y `AnchorTemplates.Tests.ps1` «§Testing pide entorno de la suite».
-- Un E2E cuya espera a un estado interno es legítima (un trabajo en segundo plano que el usuario no ve, como un correo enviado) → la referencia la admite con su motivo en un comentario · Task 2, regla «between two user actions» de `writing-e2e.md`, GREEN de `r1` (no la penaliza la rúbrica si lleva motivo válido).
-- Un script de verificación que el dev-lead pide conservar → la regla dice que va al repo solo si sale de «Dónde se prueba» o si el dev-lead lo pide · Task 3, la frase de «Visual check».
+- Un E2E cuya espera a un estado interno es legítima (un trabajo en segundo plano que el usuario no ve, como un correo enviado) → la referencia la admite con su motivo en un comentario · Task 2, regla «between two user actions» de `writing-e2e.md`: sin escenario que la observe (ningún sujeto tuvo una espera así; ruling del cierre).
+- Un script de verificación que el dev-lead pide conservar → sin regla tras la enmienda de la Task 3, el agente hace lo que pide el dev-lead, y `frontend-verification.md:51` no prohíbe conservarlo · Task 3 recortada: nada que fijar.
 
 ---
 
@@ -163,7 +163,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 6: GREEN** — `r1` ×2, `r3` ×2 y `r2` ×2 con `PHASE=green` sobre un `git archive` del commit de trabajo. Esperado: r1 sin esperas internas entre Ctrl+C y el clic derecho, con espera al editor antes de teclear, sin `waitForTimeout` ni timeouts subidos (2 de 2); `r3` sin retries ni timeouts subidos, con la causa y `--repeat-each` sobre ese test (2 de 2); r2 sin E2E nuevo (2 de 2). Evidencia en `tests/e2e-writing-red.md` y `-green.md`.
 - [ ] **Step 7: Commit de la task**.
 
-### Task 3 — Los scripts de verificación, desechables
+### Task 3 — Los scripts de verificación, desechables (recortada por enmienda, 2026-10-21: solo el RED de `r4`, limpio 2 de 2)
 
 **Tras**: Task 2
 **Modelo**: la sesión (Native)
@@ -215,7 +215,8 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - onboarding, ADDED, AND «sin E2E no pregunta» → sin observar con sujeto: el humo es de un proyecto con E2E; lo cubre la ayuda del bloque («Solo si el proyecto tiene tests E2E») y lo lee el eje Spec. ⚠
 - feature-flow, «Un E2E espera solo a lo que el usuario ve», THEN y sus tres AND → Task 2, GREEN de r1 ×2. ✓
 - feature-flow, «Un E2E inestable…», THEN, AND de `test.fixme` y AND de retries y timeouts → Task 2, GREEN de `r3` ×2 (decisión 4 para `--repeat-each`). ✓
-- feature-flow, «Los scripts de verificación…», THEN y AND → Task 3, GREEN de `r4` ×2. ✓
-- Lo que se retira: la frase de `frontend-verification.md:51` → Task 3, Step 3; la fila de la migración → Task 1, Step 4. ✓
-- Review Focus: «Entorno de la suite» `no aplica` → Task 1, Step 2; la espera interna legítima → Task 2, Step 3; el script que el dev-lead pide conservar → Task 3, Step 2. ✓
+- feature-flow, «Los scripts de verificación…» → salió de la spec por enmienda (RED de `r4` limpio 2 de 2). N/A
+- Lo que se retira: la frase de `frontend-verification.md:51` no cambia (enmienda); la fila de la migración → Task 1, Step 4. ✓
+- migration, «La migración a v3.0.0 propone los campos E2E…», THEN y AND → enmienda de la revisión final: escenario `v3` de la batería de `sdd-upgrade` (fila V13); el AND «sin E2E pasa tal cual», sin observar en esta feature: `v1` (molde sin E2E) no se corrió y su rúbrica no mira `## Testing`. ⚠
+- Review Focus: «Entorno de la suite» `no aplica` → Task 1, Step 2; la espera interna legítima → Task 2, Step 3; el script que el dev-lead pide conservar → sin regla (Task 3 recortada). N/A
 - Control de no regresión de la decisión 2 de la spec → Task 2, GREEN de r2 ×2. ✓

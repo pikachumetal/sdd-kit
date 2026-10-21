@@ -1,6 +1,6 @@
 # Writing E2E Tests
 
-**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts come from its docs (`docs/src`, branch `main`, 1.65, read 2026-10-21).
+**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts: its 1.65 docs.
 
 ## Overview
 
@@ -19,7 +19,7 @@ In the field, a menu offered the *previous* copy for ~3 s after copying; every E
 
 ## Rule 2: Test What the User Sees
 
-Locate by role, label or text (`getByRole('button', { name: 'Reservar' })`), not by CSS or XPath. Assert with web-first assertions, which retry until their timeout (`await expect(row).toHaveText('Norte · 10:00')`); a manual check (`expect(await row.textContent())…`) reads once and races. Stub what you don't control (a payment provider) at the network.
+Locate by role, label or text (`getByRole('button', { name: 'Reservar' })`), not by CSS or XPath; a test id only where neither exists. Assert with web-first assertions, which retry until their timeout (`await expect(row).toHaveText('Norte · 10:00')`); a manual check (`expect(await row.textContent())…`) reads once and races. Stub what you don't control (a payment provider) at the network.
 
 ## Rule 3: Between Two User Actions, Wait Only for What the User Sees
 
@@ -61,7 +61,7 @@ await page.getByTestId(`cell-${cell}`).click();
 await page.keyboard.press('Enter');
 const editor = page.getByRole('textbox', { name: 'Concepto' });
 await expect(editor).toBeFocused();
-await editor.fill(text);
+await editor.pressSequentially(text);
 ```
 </Good>
 
@@ -80,7 +80,7 @@ Playwright's defaults: 30 s per test, 5 s per assertion, no retries. Retries are
 1. **Repeat only that test**: `npx playwright test <file> -g "<title>" --repeat-each=10`, not the suite.
 2. **Classify the cause** from the failing run's output: a **race in the test** (rules 2-4: fix the test); a **race in the app**, which the user hits too (a bug: `sdd-debugging`); the **environment** (a server down, a port taken: check it before the code); **shared data** (rule 5: isolate it).
 3. **Fix the cause** and repeat that test again.
-4. **Can't fix it now**: `test.fixme()` with the link to its issue. Playwright doesn't run it, and the suite stops lying.
+4. **Can't fix it now**: declare it `test.fixme('<title>', { annotation: { type: 'issue', description: '<url>' } }, …)`. Playwright doesn't run it, and the suite stops lying.
 
 ## Common Rationalizations
 

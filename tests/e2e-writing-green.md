@@ -40,4 +40,18 @@ Init de `hojas` sin `.docs/`, con `playwright.config.ts` (`retries: process.env.
 
 **Pasa 2 de 2**: la referencia no empuja a escribir un E2E donde no toca.
 
-Coste del GREEN de la Task 2: 2,26 $ (8 sujetos).
+Coste del GREEN de la Task 2: 1,91 $ (8 sujetos).
+
+## Baterías de `sdd-init` y `sdd-upgrade` (enmienda de la revisión final)
+
+El eje Spec pidió el tramo de batería de las ediciones de la init y de la migración (ADR 0002). Escenarios nuevos: `n6` en la de `sdd-init` (molde `code-e2e-progress`, filas E1-E3) y `v3` en la de `sdd-upgrade` (molde `v2x-e2e`, fila V13); `n3` como control. Salidas en [`battery/`](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/battery/out/) y [`battery2/`](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/battery2/out/).
+
+| Pasada | Escenario | Resultado |
+| --- | --- | --- |
+| 1 | `n6` ×2 | **pasa**: propone `booking.spec.ts` y `cancel.spec.ts` como candidatos y pregunta cuáles son core (E1); `0` en local y `2` en CI, `60 s por test, sin motivo escrito` (E2); nadie inventa el presupuesto (E3) |
+| 1 | `n3` ×2 | **falla 1 de 2** (T1): `n3-2`, con el script `e2e` sin tests, deja fuera la suite entera; en la 0156, 2 de 2 la declaraban. La condición nueva «with E2E» de la fila de la init la empujaba |
+| 1 | `v3` ×1 | **falla** (V13, leída literal): el flujo core, los retries y el presupuesto bien, pero el timeout sale como «el motivo no está escrito»: la fila de la migración remitía a la init sin el literal |
+| 2 | `n3` ×2 | **pasa 2 de 2**, con «An `e2e` script without tests is still a suite, without the E2E fields» en la fila de la init |
+| 2 | `v3` ×1 | **pasa**, con los literales en la fila de la migración: `Timeouts: 60 s por test, sin motivo escrito` |
+
+La espera interna legítima (Review Focus 2 del plan) no tiene escenario: ningún sujeto tuvo una espera así, y queda como ruling del cierre. Coste de las baterías: 1,99 $ (8 sujetos).

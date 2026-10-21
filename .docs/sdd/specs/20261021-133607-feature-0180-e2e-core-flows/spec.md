@@ -20,6 +20,7 @@ approvers:
 
 - Modificadas: `onboarding` — `operations.md` §Testing gana los campos de los E2E, y la init los propone desde el código
 - Modificadas: `feature-flow` — un E2E se escribe con la referencia de E2E; un test inestable no se tapa con retries ni timeouts
+- Modificadas: `migration` — la migración a v3.0.0 propone los campos E2E en un proyecto con E2E
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -53,7 +54,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (`operations.md` dice c
 8. **Los datos de Playwright (30 s y 5 s por defecto, `test.fixme`, `--repeat-each`) los compruebo en la fuente de Playwright en la Task 2**, no en un resumen: Context7 solo devolvió la config de ejemplo del sitio, con `timeout: 30 * 1000` y `expect: { timeout: 5000 }`.
 9. **Scripts de verificación desechables** (pieza (c)): **recortada por enmienda** (2026-10-21). Su RED salió limpio 2 de 2 (`r4`): ningún sujeto dejó el script en `e2e/` ni lo commiteó. `sdd-implement` y `frontend-verification.md` no cambian.
 10. **El RED de los dos frentes que no medí antes, va en su task**: el triaje del test inestable (Task 2) y el script de verificación que acaba en `e2e/` (Task 3), 2 sujetos cada uno. Si sale limpio, se recorta con una enmienda, como en la decisión 2.
-11. **Previsión de coste de la campaña** (Art. I), las tres fases: **22 sujetos y 20 $** de techo, con un 20 % de reserva para lo que destape la revisión final. Van gastados 4 sujetos y 1,17 $. Quedan: Task 1, un humo de la init (1 sujeto); Task 2, RED del triaje (2) y GREEN de r1, del triaje y el control de r2 (6); Task 3, RED y GREEN del script (4). Cada paso nuevo o cambiado y su escenario:
+11. **Previsión de coste de la campaña** (Art. I), las tres fases: **28 sujetos y 20 $** de techo (22 al aprobar; 25 por la enmienda de las baterías; 28 para volver a medir `n3` y `v3` tras sus arreglos, «Sí, techo 28 (Recomendada)»), con un 20 % de reserva para lo que destape la revisión final. Al aprobar iban gastados 4 sujetos y 1,17 $, y quedaban: Task 1, un humo de la init (1 sujeto); Task 2, RED del triaje (2) y GREEN de r1, del triaje y el control de r2 (6); Task 3, RED y GREEN del script (4). Cada paso nuevo o cambiado y su escenario:
 
     | Paso | Escenario |
     | --- | --- |
@@ -122,6 +123,7 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
 ## Dónde se prueba
 
 - Los campos de §Testing: `AnchorTemplates.Tests.ps1`, como «§Testing pide <_>».
+- La init y la migración que los proponen, en sus baterías: `n6` de `sdd-init` (molde `code-e2e-progress`, ×2) con el tramo `n3` ×2 como control, y `v3` de `sdd-upgrade` (molde `v2x-e2e`, ×1), cada uno con sus filas de rúbrica.
 - La init que los propone: humo `i1` con Sonnet sobre el molde `hojas` con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`), como los humos de `sdd-init`.
 - La referencia y su puntero: r1 ×2 y `r3` ×2 (un E2E que falla 1 de cada 5 pasadas: se le pide dejar la suite en verde), RED y GREEN; r2 ×2 como control, en el GREEN.
 - El script desechable: `r4` ×2, solo RED (limpio 2 de 2; la regla se recortó).
@@ -167,6 +169,14 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
 - AND si no la arregla, lo marca con `test.fixme()` y el enlace a su issue
 - AND no sube `retries` ni ningún timeout, ni en el test ni en `playwright.config.ts`
 
+### Capacidad: `migration`
+
+**ADDED — La migración a v3.0.0 propone los campos E2E en un proyecto con E2E**
+- GIVEN un proyecto 2.x en 2.3.4 con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`) y `e2e/booking.spec.ts`
+- WHEN el dev-lead pide «Actualízame al kit» y aprueba la tabla de operaciones
+- THEN `.docs/sdd/steering/operations.md` lleva en `## Testing` los campos E2E de `operations-template.md`, con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
+- AND los flujos core son los que el dev-lead nombra entre los candidatos de `e2e/`, y en un proyecto sin E2E la sección `## Testing` pasa tal cual
+
 ## Topes de palabras
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
@@ -182,6 +192,8 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
 | Kit entero | 88024 / 88100 | 76 | 89500 |
 
 ## Enmiendas
+
+- 2026-10-21 — Entra la capacidad `migration` con «La migración a v3.0.0 propone los campos E2E en un proyecto con E2E», y «Dónde se prueba» gana los escenarios `n6` (y el tramo `n3`) de la batería de `sdd-init` y `v3` de la de `sdd-upgrade`; el techo de sujetos pasa de 22 a 25 — la revisión final (eje Spec, dos Important): la migración cambiaba de comportamiento sin requisito, y la ADR 0002 pide el tramo de batería de cada edición — aprobada: «Enmienda y baterías (Recomendada)»; el techo sube después a 28 para volver a medir `n3` y `v3` tras sus arreglos — aprobada: «Sí, techo 28 (Recomendada)»
 
 - 2026-10-21 — Sale el requisito «Los scripts de verificación no entran en el repo» y la decisión 9 (pieza (c)): ni `sdd-implement` ni `frontend-verification.md` cambian, y no se lanza el GREEN de `r4` — RED limpio 2 de 2: los dos sujetos de `r4` escribieron su script fuera del repo (`%TEMP%`) y no lo commitearon (Task 3) — aprobada: «Recorta (Recomendada)»
 
