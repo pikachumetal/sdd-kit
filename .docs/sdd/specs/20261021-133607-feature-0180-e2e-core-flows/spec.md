@@ -14,12 +14,12 @@ approvers:
 
 # Spec — E2E: flujos core, presupuesto y cómo se escribe un E2E
 
-🦆 Hoy, cuando un agente escribe un E2E con el kit, copia lo que ve en el proyecto: espera a que el API tenga la copia antes de abrir el menú de «Pegar», teclea nada más pulsar Enter y sube el timeout hasta que el test pasa. Un usuario no espera al API, y por eso un fallo de ~3 s tras copiar vivió tres releases sin que ningún test lo viera. Con este cambio, el proyecto declara en `operations.md` sus flujos core, cada uno con su test, junto con el presupuesto de la suite, los retries y timeouts, cómo se levanta el entorno y cómo crea y borra cada test sus datos. Quien escribe un E2E sigue una referencia nueva: entre dos acciones del usuario solo espera a lo que el usuario ve, por ejemplo al editor de la celda con el foco antes de teclear «4321». Y los scripts con los que el agente mira una pantalla se quedan en el workspace de la task y no entran en el repo.
+🦆 Hoy, cuando un agente escribe un E2E con el kit, copia lo que ve en el proyecto: espera a que el API tenga la copia antes de abrir el menú de «Pegar», teclea nada más pulsar Enter y sube el timeout hasta que el test pasa. Un usuario no espera al API, y por eso un fallo de ~3 s tras copiar vivió tres releases sin que ningún test lo viera. Con este cambio, el proyecto declara en `operations.md` sus flujos core, cada uno con su test, junto con el presupuesto de la suite, los retries y timeouts, cómo se levanta el entorno y cómo crea y borra cada test sus datos. Quien escribe un E2E sigue una referencia nueva: entre dos acciones del usuario solo espera a lo que el usuario ve, por ejemplo al editor de la celda con el foco antes de teclear «4321».
 
 ## Capacidades
 
 - Modificadas: `onboarding` — `operations.md` §Testing gana los campos de los E2E, y la init los propone desde el código
-- Modificadas: `feature-flow` — un E2E se escribe con la referencia de E2E; un test inestable no se tapa con retries ni timeouts; los scripts de verificación son desechables
+- Modificadas: `feature-flow` — un E2E se escribe con la referencia de E2E; un test inestable no se tapa con retries ni timeouts
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -51,7 +51,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (`operations.md` dice c
    - el triaje de un test inestable: repetir solo ese test (`--repeat-each`), clasificar la causa (carrera del test, carrera de la app, entorno, datos compartidos) y arreglarla; si no se puede ahora, `test.fixme()` con el enlace a su issue; nunca subir retries ni timeouts;
    - una tabla de racionalizaciones con las frases de r1.
 8. **Los datos de Playwright (30 s y 5 s por defecto, `test.fixme`, `--repeat-each`) los compruebo en la fuente de Playwright en la Task 2**, no en un resumen: Context7 solo devolvió la config de ejemplo del sitio, con `timeout: 30 * 1000` y `expect: { timeout: 5000 }`.
-9. **Scripts de verificación desechables** (pieza (c)): en `sdd-implement`, «Visual check», el script con el paquete `playwright` vive en el workspace de la task (la carpeta que imprime `sdd task start`), no en la carpeta de E2E del proyecto, y no se commitea; un test nuevo para la suite solo sale de «Dónde se prueba». La frase de `frontend-verification.md` («Para verificar no escribes una suite de specs E2E nueva: basta un script de capturas o el MCP») pasa a apuntar a esa regla.
+9. **Scripts de verificación desechables** (pieza (c)): **recortada por enmienda** (2026-10-21). Su RED salió limpio 2 de 2 (`r4`): ningún sujeto dejó el script en `e2e/` ni lo commiteó. `sdd-implement` y `frontend-verification.md` no cambian.
 10. **El RED de los dos frentes que no medí antes, va en su task**: el triaje del test inestable (Task 2) y el script de verificación que acaba en `e2e/` (Task 3), 2 sujetos cada uno. Si sale limpio, se recorta con una enmienda, como en la decisión 2.
 11. **Previsión de coste de la campaña** (Art. I), las tres fases: **22 sujetos y 20 $** de techo, con un 20 % de reserva para lo que destape la revisión final. Van gastados 4 sujetos y 1,17 $. Quedan: Task 1, un humo de la init (1 sujeto); Task 2, RED del triaje (2) y GREEN de r1, del triaje y el control de r2 (6); Task 3, RED y GREEN del script (4). Cada paso nuevo o cambiado y su escenario:
 
@@ -62,11 +62,11 @@ Review de spec propuesta: ninguna — señales: MODIFIED (`operations.md` dice c
     | `migrations/v3.0.0.md`, fila «Testing» | no se mide: repite la lista de la plantilla y la fila de la init; la batería de `sdd-upgrade` corre antes de la release (0152) |
     | `sdd-tdd`, puntero a `writing-e2e.md` | r1, GREEN |
     | `writing-e2e.md` | r1 (esperas y tecleo) y `r3` (triaje), GREEN; r2 como control |
-    | `sdd-implement`, «Visual check» | `r4`: verificación visual de una task con pantalla |
-    | `frontend-verification.md`, la frase del script | `r4` |
+    | `sdd-implement`, «Visual check» | `r4`, solo RED: limpio, la regla se recortó (enmienda) |
+    | `frontend-verification.md`, la frase del script | no cambia (enmienda) |
 
-12. **Una pieza entra, otra sale**: sale la frase de `frontend-verification.md` sobre la suite, que pasa a la regla de `sdd-implement`, y no entra el hueco de «Dónde se prueba» (decisión 2). Lo demás es un elemento omitido (Art. II): campos que faltaban en la plantilla y una referencia que el implementador no tenía.
-- `sdd capability merge` sobre una copia de `.docs/sdd`: «sustituido «`operations.md` dice cómo se ejecuta y se verifica el proyecto»» y cuatro «añadido», sin rechazos; `sdd capability check`: «Capacidades válidas: 20»
+12. **Una pieza entra, otra sale**: no entran el hueco de «Dónde se prueba» (decisión 2) ni la regla de los scripts (decisión 9). No sale nada, porque lo que entra es un elemento omitido (Art. II): campos que faltaban en la plantilla y una referencia que el implementador no tenía.
+- `sdd capability merge` sobre una copia de `.docs/sdd`: «sustituido «`operations.md` dice cómo se ejecuta y se verifica el proyecto»» y tres «añadido», sin rechazos (tras la enmienda de la pieza (c)); `sdd capability check`: «Capacidades válidas: 20»
 - Política de modelos: sin revisores de spec · revisión final: Spec opus+high, Código sonnet+high, Arquitectura no · sujetos Sonnet, de 2 en 2 · en paralelo hasta `control.maxParallelAgents`
 
 ### Decisiones tomadas con el dev-lead
@@ -93,7 +93,7 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
   - `skills/sdd-init/SKILL.md`, fila «How it is tested», y `skills/sdd-init/references/generation.md` si su línea de `operations.md` necesita nombrarlos (decisión 5).
   - `skills/sdd-upgrade/references/migrations/v3.0.0.md`, fila «Testing» (decisión 6).
   - `skills/sdd-tdd/references/writing-e2e.md`, nueva, y su puntero en `skills/sdd-tdd/SKILL.md` (decisión 7).
-  - `skills/sdd-implement/SKILL.md`, «Visual check», y `skills/sdd-start-feature/references/frontend-verification.md`, la frase del script (decisión 9).
+  - Nada en `skills/sdd-implement/` ni en `frontend-verification.md` (decisión 9, recortada).
   - `tests/AnchorTemplates.Tests.ps1`: los campos nuevos de §Testing.
   - `tests/WordBudget.Tests.ps1`: los topes de la tabla de abajo.
   - Las campañas en `red/` y `green/` de esta carpeta, y su evidencia en `tests/e2e-writing-red.md` y `tests/e2e-writing-green.md`.
@@ -108,7 +108,7 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
 
 | Qué | Dónde aparece | Destino |
 | --- | --- | --- |
-| «Para verificar no escribes una suite de specs E2E nueva: basta un script de capturas o el MCP» | `skills/sdd-start-feature/references/frontend-verification.md:51` | decisión 9: apunta a la regla de `sdd-implement`; ningún requisito de `capabilities/` la cita (buscado «suite de specs E2E») |
+| «Para verificar no escribes una suite de specs E2E nueva: basta un script de capturas o el MCP» | `skills/sdd-start-feature/references/frontend-verification.md:51` | no cambia: la decisión 9 se recortó por enmienda |
 | «Testing: tal cual» en la tabla de la migración | `skills/sdd-upgrade/references/migrations/v3.0.0.md:41` | decisión 6; `capabilities/migration.md` no la cita (buscado «tal cual») |
 | `## Testing` de `operations-template.md` gana campos | `operations-template.md:10-19`; `capabilities/onboarding.md`, «`operations.md` dice cómo se ejecuta y se verifica el proyecto»; `tests/AnchorTemplates.Tests.ps1:81` | delta `MODIFIED`; el test, en el Scope |
 
@@ -124,7 +124,7 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
 - Los campos de §Testing: `AnchorTemplates.Tests.ps1`, como «§Testing pide <_>».
 - La init que los propone: humo `i1` con Sonnet sobre el molde `hojas` con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`), como los humos de `sdd-init`.
 - La referencia y su puntero: r1 ×2 y `r3` ×2 (un E2E que falla 1 de cada 5 pasadas: se le pide dejar la suite en verde), RED y GREEN; r2 ×2 como control, en el GREEN.
-- El script desechable: `r4` ×2, RED y GREEN, la verificación visual de una task con pantalla sobre `hojas`.
+- El script desechable: `r4` ×2, solo RED (limpio 2 de 2; la regla se recortó).
 
 ## Términos y ADR
 
@@ -167,27 +167,23 @@ El éxito: un proyecto declara sus flujos core y la política de su suite en `op
 - AND si no la arregla, lo marca con `test.fixme()` y el enlace a su issue
 - AND no sube `retries` ni ningún timeout, ni en el test ni en `playwright.config.ts`
 
-**ADDED — Los scripts de verificación no entran en el repo**
-- GIVEN una task con «Verificación visual» de la pantalla `/facturas`, sin el MCP de Playwright en la sesión
-- WHEN el agente la verifica con un script del paquete `playwright`
-- THEN el script está en el workspace de la task que imprimió `sdd task start`
-- AND no hay ningún fichero nuevo en `e2e/` y el script no está en ningún commit
-
 ## Topes de palabras
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
 | `sdd-tdd`, `SKILL.md` | 1700 / 1700 | 0 | 1750 (puntero de ~25 palabras) |
 | `sdd-tdd`, total | 3011 / 3100 | 89 | 4000 (`writing-e2e.md`, ~900 palabras) |
-| `sdd-implement`, `SKILL.md` | 9483 / 9483 | 0 | 9600 (~90 palabras en «Visual check») |
-| `sdd-implement`, total | 13249 / 13249 | 0 | 13370 |
+| `sdd-implement`, `SKILL.md` | 9483 / 9483 | 0 | sin cambio (decisión 9, recortada) |
+| `sdd-implement`, total | 13249 / 13249 | 0 | sin cambio |
 | `sdd-templates`, total | 15300 / 15300 | 0 | 15560 (~220 palabras en `operations-template.md`) |
 | `sdd-init`, `SKILL.md` | 2365 / 2400 | 35 | 2460 (~80 palabras en la fila) |
 | `sdd-init`, total | 2961 / 3000 | 39 | 3060 |
-| `sdd-start-feature`, total | 11436 / 11464 | 28 | sin cambio (la frase se acorta) |
+| `sdd-start-feature`, total | 11436 / 11464 | 28 | sin cambio |
 | Kit entero | 88024 / 88100 | 76 | 89500 |
 
 ## Enmiendas
+
+- 2026-10-21 — Sale el requisito «Los scripts de verificación no entran en el repo» y la decisión 9 (pieza (c)): ni `sdd-implement` ni `frontend-verification.md` cambian, y no se lanza el GREEN de `r4` — RED limpio 2 de 2: los dos sujetos de `r4` escribieron su script fuera del repo (`%TEMP%`) y no lo commitearon (Task 3) — aprobada: «Recorta (Recomendada)»
 
 ## Aprobaciones
 

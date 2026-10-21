@@ -45,3 +45,14 @@ Log de `--repeat-each=3` de la suite entera: `toHaveText('1.234,50 €')` con `R
 | `r3b-2` | no | carrera del test en `typeInCell` | `--repeat-each=20` de los dos ficheros rojos |
 
 **Limpio 4 de 4** en lo que la regla prohíbe (retries y timeouts) y en clasificar la causa; 1 de 4 repite la suite en vez del test. El Art. I pedía recortar el triaje; el dev-lead lo mantuvo («No, mantenlo», 2026-10-21), y la spec lo registra como excepción. Coste de `r3` y `r3b`: 0,65 $.
+
+## r4 — la verificación visual de una task con pantalla (`sdd-implement`, Task 3)
+
+Petición: la verificación visual de la Task 1 de la 0026 («Total: 200 €» debajo de la lista), arrancando la app con `npm install` y `npx vite`.
+
+| Sujeto | Script en `e2e/` | Script en un commit | Dónde lo dejó |
+| --- | --- | --- | --- |
+| `r4-1` | no | no | `/tmp/shot.mjs`, fuera del repo |
+| `r4-2` | no | no | `%TEMP%\vv0026` |
+
+**Limpio 2 de 2**. Ninguno llegó a la captura: el molde no tiene el plugin de React de Vite (`ReferenceError: React is not defined`), un ruido que no toca lo que se mide, porque los dos escribieron el script antes. La regla de los scripts desechables se recortó por enmienda («Recorta (Recomendada)», 2026-10-21). Coste: 0,86 $. Los puertos 3001 y 5173 quedaron libres al acabar.
