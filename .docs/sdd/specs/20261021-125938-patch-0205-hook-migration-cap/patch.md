@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-21
 branch: patch/0205-hook-migration-cap
-commit: <hash>
+commit: 33f2f688
 ---
 
 # Patch 0205 — el hook de arranque no ofrece migraciones más nuevas que el kit cargado
@@ -48,12 +48,14 @@ Reproducido sobre `47a6838f` con `sessionStartOutput('.', '.', process.versions.
 | 3 | Kit 2.0.0 por detrás del proyecto 2.1.0, con `v2.2.0.md` → solo el aviso de versión | ✅ `gives only the version warning with the loaded kit behind the project` |
 | 4 | Este repo: `sessionStartOutput('.', '.')` tras el fix | ✅ sin `systemMessage` |
 
-Validación en campo: 2026-10-21 · <gate>
+Validación en campo: 2026-10-21 · casos 1-4 · gate de cierre `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` en verde: kit:test 1339/1339 (12 omitidos), cli:test 1120/1120, cli:test-min 1415/1415, cli:test-slow y cli:typecheck en verde. La primera pasada dio 1 fallo de 1415 en `cli:test-min` con la máquina cargada; repetido solo, 1415/1415 (salida recortada, sin el nombre del test) · no probado: una sesión real arrancada con el plugin publicado
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h
 - Inicio: 2026-10-21T12:59Z
+- Esfuerzo real: 0,38 h — reloj de la sesión 0,38 h desde 2026-10-21T12:58Z, sin 0 min de espera al dev-lead (0 esperas)
+- Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
 
