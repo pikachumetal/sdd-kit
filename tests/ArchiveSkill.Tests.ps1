@@ -24,7 +24,7 @@ Describe 'sdd-archive: anatomía' {
     $script:Skill | Should -Match ([regex]::Escape($_))
   }
 
-  It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'aprendizajes-skills.md', 'records.md') {
+  It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'aprendizajes-skills.md', 'records.md', 'e2e-suite.md') {
     $script:Skill | Should -Match ([regex]::Escape("(references/$_"))
     Test-Path (Join-Path $script:RepoRoot "skills/sdd-archive/references/$_") | Should -BeTrue
   }

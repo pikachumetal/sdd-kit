@@ -117,6 +117,7 @@ Moldes:
 | Ningún sha citado se pierde al juntar | `tests/closing-off-critical-path-red.md`, c2 (RED de la regla) | a8 (S1): GREEN 2/2 |
 | Con `ROADMAP.md`, lo hecho queda en Now y la deuda saldada sale de «Lista» | dev-lead, 2026-10-15 | a9 (N1, N2): RED dejó la fila parcial sin reescribir (N2 0/1); GREEN 2/2 |
 | La `description` de `sdd-archive` recoge «cierra la feature», «cierra el patch», «hemos acabado», «haz el walkthrough» | feature 0149, decisión 3 | r1, r2 |
+| `references/e2e-suite.md`: el entorno lo levanta la sesión, el gate tal cual, el presupuesto con su deuda y la tanda acotada contra `merge.into` | feature 0207: RED E1 1/2, E2 0/2, E3 0/2, E4 0/2; GREEN E1-E3 2/2; E4, alcance 2/2 y línea `Tanda:` en el 4.1 2/2 tras dos REFACTOR, el anuncio antes de lanzar 0/2 (deuda) ([evidencia](../../e2e-closing-green.md)) | e1, e2 |
 
 ## Evidencia heredada de `sdd-end-feature` y `sdd-end-patch`
 

@@ -207,6 +207,7 @@ Fracasaría si:
 - WHEN el dev-lead pide «pasa tres veces las specs E2E que toca la rama»
 - THEN antes de lanzarla da la estimación y el alcance: los tres tests nuevos ×3 y los dos que no cambian ×1, 11 ejecuciones, con su duración
 - AND no repite `free.e2e.mjs`
+- AND el 4.1 del walkthrough repite la línea `Tanda:` con esa estimación
 - AND con la tanda en marcha no edita `src/` ni `e2e/`
 
 **MODIFIED — El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite** (antes: «si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración»)
@@ -244,6 +245,8 @@ Fracasaría si:
 | Kit entero | 89298 / 89500 | 202 | 90300 |
 
 ## Enmiendas
+
+- 2026-10-21 — «Una tanda E2E se estima y se acota antes de lanzarla» gana el AND del 4.1 (la línea `Tanda:` en un hueco de `walkthrough-template.md`), y el techo de la campaña pasa de 20 a 22 sujetos — REFACTOR de `e2`: el alcance salió 2 de 2 con la línea fija en la referencia, pero la estimación antes de lanzar, 0 de 2 — aprobada: «Sube a 22, una vuelta más (Recomendada)»
 
 ## Aprobaciones
 
