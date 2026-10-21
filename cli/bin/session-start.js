@@ -27,8 +27,9 @@ function readJsonVersion(file) {
   return match ? match[1] : '';
 }
 
-function latestMigration(directory) {
-  return migrationVersions(directory).at(-1) ?? '';
+// una migración más nueva que el kit cargado aún no se publica: no se ofrece
+function latestMigration(directory, loaded) {
+  return migrationVersions(directory).filter((version) => !loaded || !isOlder(loaded, version)).at(-1) ?? '';
 }
 
 function escapeForJson(text) {
@@ -51,7 +52,7 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   if (!existsSync(join(projectDir, '.docs', 'sdd'))) return '';
   const loaded = readJsonVersion(join(pluginRoot, '.claude-plugin', 'plugin.json'));
   const wanted = readJsonVersion(join(projectDir, '.docs', 'sdd', 'sdd-kit.json'));
-  const latest = latestMigration(join(pluginRoot, 'skills', 'sdd-upgrade', 'references', 'migrations'));
+  const latest = latestMigration(join(pluginRoot, 'skills', 'sdd-upgrade', 'references', 'migrations'), loaded);
   const migration = migrationWarning(wanted, latest);
   const warnings = [...versionWarning(loaded, wanted), ...migration];
   const nodeProblem = nodeVersionProblem(nodeVersion);

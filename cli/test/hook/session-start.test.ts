@@ -78,12 +78,24 @@ describe('sdd hook session-start', () => {
     expect(sessionStartOutput(projectAt('0.9.0'), plugin, '26.10.0')).not.toContain('trae migraciones');
   });
 
-  it('shows both warnings, the version one first', () => {
+  it('ignores migrations newer than the loaded kit', () => {
+    const plugin = pluginWith('2.3.4', ['v2.3.4.md', 'v3.0.0.md']);
+    const output = JSON.parse(sessionStartOutput(projectAt('2.3.4'), plugin, '26.10.0'));
+    expect(output.systemMessage).toBeUndefined();
+    expect(output.hookSpecificOutput.additionalContext).not.toContain('Antes de atender la primera petición');
+  });
+
+  it('warns up to the loaded kit version', () => {
+    const plugin = pluginWith('2.3.4', ['v2.3.3.md', 'v2.3.4.md', 'v3.0.0.md']);
+    const output = JSON.parse(sessionStartOutput(projectAt('2.3.3'), plugin, '26.10.0'));
+    expect(output.systemMessage).toContain('trae migraciones hasta la 2.3.4');
+  });
+
+  it('gives only the version warning with the loaded kit behind the project', () => {
     const plugin = pluginWith('2.0.0', ['v2.2.0.md']);
     const output = JSON.parse(sessionStartOutput(projectAt('2.1.0'), plugin, '26.10.0'));
-    const [version, migrations] = output.systemMessage.split('\n\n');
-    expect(version).toContain('esta sesión carga el kit 2.0.0 y el proyecto pide el 2.1.0');
-    expect(migrations).toContain('trae migraciones hasta la 2.2.0');
+    expect(output.systemMessage).toContain('esta sesión carga el kit 2.0.0 y el proyecto pide el 2.1.0');
+    expect(output.systemMessage).not.toContain('trae migraciones');
   });
 
   it('gives the offer order only to the agent', () => {
