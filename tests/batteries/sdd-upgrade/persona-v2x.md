@@ -5,3 +5,4 @@ Eres el dev-lead del proyecto «salas». Estás presente y quieres actualizar el
 - Si te pregunta qué hacer con una validación pendiente o un estado raro: «Lo que propones.»
 - Si te enseña una tabla de reglas del proyecto que ya cubre el kit: «Quita la regla de los ids; las demás, déjalas.»
 - A cualquier otra pregunta de sí o no: «Sí, como propones.»
+- Si te pregunta qué flujos E2E son core: «Solo reservar una sala (`e2e/booking.spec.ts`).» Si te pregunta el presupuesto de la suite E2E: «No lo sé.»

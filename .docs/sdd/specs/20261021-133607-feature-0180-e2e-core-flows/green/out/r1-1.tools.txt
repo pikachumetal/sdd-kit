@@ -1,0 +1,187 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0180-e2e-core-flows\4e6b3416-44e5-41b5-8c65-85439c8b6f13\scratchpad\kit2\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts come from its docs (`docs/src`, branch `main`, 1.65, read 2026-10-21).
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
+8	
+9	```
+10	1. An E2E names a core flow
+11	2. Between
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261020-090000-feature-0025-paste-menu\plan.md
+<<< 1	# Plan — Pegar desde el menú contextual
+2	
+3	**Ejecución**: Native.
+4	
+5	## Task 1: menú contextual con «Pegar» — hecha
+6	
+7	## Task 2: E2E del flujo
+8	
+9	- **Fichero**: `e2e/0025-paste-menu.spec.ts`
+10	- **Flujo**: el usuario escribe 4321 en A1, lo copia con Ctrl+C, hace clic derecho en B1, elige «Pegar» y B1 muestra 4321.
+11	
+
+>>> Glob: **/*
+<<< src\sheet\clipboard.ts
+src\sheet\CellEditor.tsx
+src\sheet\ContextMenu.tsx
+src\sheet\Grid.tsx
+src\invoices\InvoiceList.tsx
+src\invoices\InvoiceList.test.tsx
+
+>>> Read: <run>\repo\src\sheet\Grid.tsx
+<<< 1	import { lazy, Suspense, useState } from 'react';
+2	import { copyRange, lastCopied } from './clipboard';
+3	import { ContextMenu } from './ContextMenu';
+4	
+5	const CellEditor = lazy(() => import('./CellEditor'));
+6	
+7	const COLUMNS = ['A', 'B', 'C', 'D'];
+8	const ROWS = [1, 2, 3, 4, 5];
+9	
+10	export function Grid({ sheet }: { sheet: string }) {
+11	  const [values, setValues] = useState<Record<string, string>>({});
+12	  const [selected, setSelected] = useState('A1');
+13	  const [editing, setEditing] = useState<string | null>(null);
+14	  const [menu, setMenu] = useState<{ cell: string; x: numbe
+
+>>> Read: <run>\repo\src\sheet\ContextMenu.tsx
+<<< 1	export function ContextMenu({ x, y, onPaste, onClose }: { x: number; y: number; onPaste: () => void; onClose: () => void }) {
+2	  return (
+3	    <div role="menu" aria-label="Menú de celda" style={{ position: 'fixed', left: x, top: y }} onMouseLeave={onClose}>
+4	      <button role="menuitem" onClick={onPaste}>Pegar</button>
+5	    </div>
+6	  );
+7	}
+8	
+
+>>> Read: <run>\repo\src\sheet\CellEditor.tsx
+<<< 1	import { useState } from 'react';
+2	
+3	export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+4	  const [value, setValue] = useState(initial);
+5	  return (
+6	    <input
+7	      aria-label="Editor de celda"
+8	      autoFocus
+9	      value={value}
+10	      onChange={(e) => setValue(e.target.value)}
+11	      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+12	    />
+13	  );
+14	}
+15	
+
+>>> Grep: Flujos core|Datos|Acceso a la aplicación|baseURL|retries
+<<< playwright.config.ts-2-
+playwright.config.ts-3-export default defineConfig({
+playwright.config.ts-4-  testDir: './e2e',
+playwright.config.ts-5-  workers: 3,
+playwright.config.ts:6:  use: { baseURL: 'http://localhost:5173' },
+playwright.config.ts-7-});
+--
+.docs\sdd\operations.md-10-- **Suites**: `componentes` · `npm test` · ~20 s; `e2e` · `npm run e2e` · ~14 min
+.docs\sdd\operations.md-11-- **Lo afectado**: `npx vitest run <fichero>`; `npx playwright test <fichero>`
+.docs\sdd\operations.md-12-- **Gate de cierre**: `npm test && npm run e2e`
+.docs\sdd\operations.md-13-- **Gate de merge**: `npm te
+
+>>> Read: <run>\repo\.docs\sdd\operations.md
+<<< 1	# Operations — hojas
+2	
+3	## Comandos
+4	
+5	- **Build**: `npx vite build`
+6	- **Arrancar**: `npm run api` y `npm run dev`
+7	
+8	## Testing
+9	
+10	- **Suites**: `componentes` · `npm test` · ~20 s; `e2e` · `npm run e2e` · ~14 min
+11	- **Lo afectado**: `npx vitest run <fichero>`; `npx playwright test <fichero>`
+12	- **Gate de cierre**: `npm test && npm run e2e`
+13	- **Gate de merge**: `npm test && npm run e2e`
+14	- **Acceso a la aplicación**: usuario de pruebas `admin@hojas.test`, contraseña en `.env.test`
+15	- **Motor de producción**: SQLite en los dos; el API arranca con una base vacía si `DB=me
+
+>>> Glob: e2e/**/*
+<<< e2e\0018-invoice-status.spec.ts
+e2e\0021-cell-format.spec.ts
+e2e\helpers.ts
+e2e\0012-sum-row.spec.ts
+e2e\0015-export-pdf.spec.ts
+
+>>> Read: <run>\repo\e2e\helpers.ts
+<<< 1	import { APIRequestContext, Page } from '@playwright/test';
+2	
+3	export async function login(page: Page, path: string) {
+4	  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+5	}
+6	
+7	export async function typeInCell(page: Page, cell: string, text: string) {
+8	  await page.getByTestId(`cell-${cell}`).click();
+9	  await page.keyboard.press('Enter');
+10	  await page.keyboard.type(text);
+11	  await page.keyboard.press('Enter');
+12	}
+13	
+14	export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+15	  const res = await request.get(`http://localho
+
+>>> Read: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('formatea una celda como moneda', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'B2', '1234.5');
+7	  await expect.poll(() => cellValue(request, 'demo', 'B2')).toBe('1234.5');
+8	  await page.getByTestId('cell-B2').click({ button: 'right' });
+9	  await page.getByRole('menuitem', { name: 'Formato moneda' }).click();
+10	  await expect(page.getByTestId('cell-B2')).toHaveText('1.234,50 €');
+11	});
+12	
+
+>>> Bash: cd "<run>/repo" && cat src/sheet/clipboard.ts; ls .docs/sdd/specs/*0025*; grep -n -i "core\|flujo" .docs/sdd/specs/*0025*/spec.md | head -20
+<<< export type Copied = { sheet: string; range: string; values: string[][] };
+
+// Se guarda en el servidor: tarda entre 1 y 3 s con la base cargada.
+export async function copyRange(copied: Copied): Promise<void> {
+  await fetch('/api/clipboard', { method: 'POST', body: JSON.stringify(copied) });
+}
+
+export async function lastCopied(): Promise<Copied | null> {
+  const res = await fetch('/api/clipboard');
+  return res.json();
+}
+plan.md
+spec.md
+
+>>> Write: <run>\repo\e2e\0025-paste-menu.spec.ts
+<<< File created successfully at: <run>\repo\e2e\0025-paste-menu.spec.ts (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add e2e/0025-paste-menu.spec.ts && git commit -q -m "test(e2e): flujo de Pegar desde el menú contextual (0025)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of 'e2e/0025-paste-menu.spec.ts', LF will be replaced by CRLF the next time Git touches it
+bb40850 test(e2e): flujo de Pegar desde el menú contextual (0025)
+
+=== RESULTADO (17 turnos, 0.20187799999999997 $)
+He escrito el E2E en `e2e/0025-paste-menu.spec.ts` y lo he commiteado (`bb40850`). No lo he ejecutado, como pediste, así que no he visto el RED/GREEN que exige `sdd-tdd`. Ese paso falta y toca hacerlo donde haya navegadores: `npx playwright test e2e/0025-paste-menu.spec.ts`.
+
+**Lo que hace el test**
+- Escribe 4321 en A1 y espera a que el editor esté visible y con foco antes de teclear.
+- Copia con Ctrl+C, hace clic derecho en B1, elige «Pegar» y comprueba que B1 muestra 4321.
+
+**Decisiones**
+- **Espera tras Ctrl+C:** no espero a que el servidor guarde la copia. `src/sheet/clipboard.ts` avisa de que tarda de 1 a 3 s, y el usuario puede abrir el menú antes. Si «Pegar» pega algo viejo o nada en ese margen, el test falla, que es lo que debe detectar.
+- **Helpers:** no reutilicé `typeInCell` de `e2e/helpers.ts`, porque teclea sin esperar al editor y puede perder teclas. Tampoco copié el `expect.poll` de `0021-cell-format.spec.ts` entre acciones. Solo importo `login`.
+- **Datos:** el test usa una hoja con nombre único (`e2e-0025-<timestamp>`). No la borra al terminar, porque no vi ningún endpoint de borrado.
+- **Flujo core:** `operations.md` no tiene sección «Flujos core», así que el `describe` nombra la feature (0025) pero no puede apuntar a un flujo core registrado. Si este flujo debe serlo, hay que añadirlo ahí.
+
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las reglas aplicadas pueden ser las de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.

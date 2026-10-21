@@ -11,6 +11,7 @@ Moldes:
 - `blank`: un repo con solo `README.md` («# Reservas de salas»).
 - `code`: un repo con `package.json` (`dev`: `vite`, `test`: `vitest run`, `e2e`: `playwright test`), `src/app.ts`, `.github/workflows/ci.yml` que ejecuta `npm test`, y un `CLAUDE.md` previo con «Usa `npm run dev` en el puerto 3000» y «Las fechas van en UTC».
 - `code-progress`: `code` con una init en curso. Con `sdd-init`: `PRODUCT.md` y `.docs/sdd/steering/constitution.md` escritos y `.docs/sdd/sdd-kit.json` = `{"init": {"approved": ["PRODUCT.md", ".docs/sdd/steering/constitution.md"], "config": {"ids": {"mode": "sequence"}}}}`. En el RED: `.docs/sdd/mission.md` y `.docs/sdd/constitution.md` escritos y aprobados en sesión anterior, sin `sdd-kit.json`.
+- `code-e2e-progress`: `code-progress` con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`) y `e2e/` con `booking.spec.ts` y `cancel.spec.ts`.
 - `code-claude`: `code` con todos los documentos aprobados salvo `CLAUDE.md`. Con `sdd-init`, en `init.approved`; en el RED, los documentos 2.x en `.docs/sdd/`.
 - `template`: un proyecto instanciado de un template 2.x: `package.json`, `src/login.ts`, `.docs/sdd/tech-stack.md`, `architecture.md` y `environments.md` completos, `mission.md`, `roadmap.md` y una sección de `constitution.md` con `<!-- sdd-template: pending -->`, y `sdd-kit.json` con `"version": "1.1.0"`.
 
@@ -24,6 +25,7 @@ Moldes:
 | n2 | resume | Usa la skill sdd-kit:sdd-init. Sigue con la init, se cortó ayer. | code-progress | `sdd-kit:sdd-init` | 2 | 2/2 | sonnet | 0034, B6: una init cortada se reconstruyó del historial |
 | n3 | testing | Usa la skill sdd-kit:sdd-init. Sigue con la init, se cortó ayer. | code-progress | `sdd-kit:sdd-init` | 2 | 2/2 | sonnet | 0097 (cuatro reportes de gate de merge sin declarar, document-manager) |
 | n4 | smoke | Usa la skill sdd-kit:sdd-init. Quiero trabajar con SDD en este proyecto. | blank | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | humo (Art. I) |
+| n6 | e2e | Usa la skill sdd-kit:sdd-init. Sigue con la init, se cortó ayer. | code-e2e-progress | `sdd-kit:sdd-init` | 2 | 2/2 | sonnet | 0180: los campos E2E de `operations.md` (flujos core, retries, timeouts y presupuesto), propuestos desde el código |
 | n5 | template | Usa la skill sdd-kit:sdd-init. Inicializa el proyecto desde el template. | template | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | dev-lead, 2026-10-17: un template recién instanciado es greenfield aunque traiga código |
 
 ## Rúbrica
@@ -38,6 +40,9 @@ Moldes:
 | R4 Sin repreguntar | n2 | pregunta el modo de ids |
 | T1 Suites y gates | n3 | el `## Testing` (o §Testing) que propone no lleva `npm test` y `npm run e2e` (o `vitest run`/`playwright test`) con gate de cierre y gate de merge |
 | T2 Duración | n3 | inventa una duración para una suite que nadie midió, en vez de `pendiente` |
+| E1 Flujos core | n6 | no propone `booking.spec.ts` y `cancel.spec.ts` como candidatos a flujo core, o da alguno por core sin preguntar cuáles lo son |
+| E2 Retries y timeouts reales | n6 | los retries no son `0` en local y `2` en CI, o el timeout no es `60 s` con «sin motivo escrito» |
+| E3 Presupuesto sin inventar | n6 | el presupuesto E2E no es `pendiente` |
 | S1 Modo | n4 | no dice «sin código» en una línea antes de la primera pregunta |
 | S2 Una pregunta, nada escrito | n4 | termina con más de una pregunta, o escribe algún documento |
 | P1 Template sin código | n5 | presenta como estado del proyecto lo que deduce del código del template (el login), o pregunta stack, ramas o worktrees |

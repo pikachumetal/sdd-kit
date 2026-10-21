@@ -23,6 +23,11 @@ mold_code() {
   printf 'name: ci\non: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test\n' | put .github/workflows/ci.yml
   printf '# Reservas\n\n- Usa `npm run dev` en el puerto 3000.\n- Las fechas van en UTC.\n' | put CLAUDE.md
 }
+mold_e2e() {
+  printf "import { defineConfig } from '@playwright/test';\n\nexport default defineConfig({\n  testDir: './e2e',\n  retries: process.env.CI ? 2 : 0,\n  timeout: 60_000,\n});\n" | put playwright.config.ts
+  printf "import { expect, test } from '@playwright/test';\n\ntest('reserva Norte a las 10:00', async ({ page }) => {\n  await page.goto('/');\n  await page.getByRole('button', { name: 'Reservar' }).click();\n  await expect(page.getByText('reservada Norte 10:00')).toBeVisible();\n});\n" | put e2e/booking.spec.ts
+  printf "import { expect, test } from '@playwright/test';\n\ntest('cancela una reserva', async ({ page }) => {\n  await page.goto('/mis-reservas');\n  await page.getByRole('button', { name: 'Cancelar' }).click();\n  await expect(page.getByText('cancelada')).toBeVisible();\n});\n" | put e2e/cancel.spec.ts
+}
 approved_new() {
   local list="$1"
   printf '{"init": {"approved": [%s], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}\n' "$list" | put .docs/sdd/sdd-kit.json
@@ -66,6 +71,9 @@ case "$MOLD" in
   blank) mold_blank ;;
   code) mold_code ;;
   code-progress) mold_code; if [ "$SKILL" = sdd-init ]; then progress_new; approved_new '"PRODUCT.md", ".docs/sdd/steering/constitution.md"'; else progress_old; fi ;;
+  code-e2e-progress)
+    mold_code; mold_e2e
+    if [ "$SKILL" = sdd-init ]; then progress_new; approved_new '"PRODUCT.md", ".docs/sdd/steering/constitution.md"'; else progress_old; fi ;;
   code-claude) mold_code; if [ "$SKILL" = sdd-init ]; then claude_new; else claude_old; fi ;;
   template) mold_template ;;
   *) die "molde desconocido en battery.md: $SC" ;;

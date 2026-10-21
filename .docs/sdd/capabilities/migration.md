@@ -300,6 +300,13 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN el informe nombra «¿avisos por correo?» junto al paso 3 pendiente, con `git show <sha>:.docs/sdd/tech-stack.md`
 - AND la `estimation-log.md` regenerada se enseña antes del gate del paso 1, generada en una carpeta temporal con `sdd estimation log --out`, y la del proyecto solo se regenera tras el «sí»
 
+### La migración a v3.0.0 propone los campos E2E en un proyecto con E2E
+
+- GIVEN un proyecto 2.x en 2.3.4 con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`) y `e2e/booking.spec.ts`
+- WHEN el dev-lead pide «Actualízame al kit» y aprueba la tabla de operaciones
+- THEN `.docs/sdd/steering/operations.md` lleva en `## Testing` los campos E2E de `operations-template.md`, con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
+- AND los flujos core son los que el dev-lead nombra entre los candidatos de `e2e/`, y en un proyecto sin E2E la sección `## Testing` pasa tal cual
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.

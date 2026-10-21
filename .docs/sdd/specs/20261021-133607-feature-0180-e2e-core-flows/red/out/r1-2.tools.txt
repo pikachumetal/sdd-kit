@@ -1,0 +1,202 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261020-090000-feature-0025-paste-menu\plan.md
+<<< 1	# Plan — Pegar desde el menú contextual
+2	
+3	**Ejecución**: Native.
+4	
+5	## Task 1: menú contextual con «Pegar» — hecha
+6	
+7	## Task 2: E2E del flujo
+8	
+9	- **Fichero**: `e2e/0025-paste-menu.spec.ts`
+10	- **Flujo**: el usuario escribe 4321 en A1, lo copia con Ctrl+C, hace clic derecho en B1, elige «Pegar» y B1 muestra 4321.
+11	
+
+>>> Glob: **/*
+<<< src\sheet\clipboard.ts
+src\sheet\CellEditor.tsx
+src\sheet\ContextMenu.tsx
+src\sheet\Grid.tsx
+src\invoices\InvoiceList.tsx
+src\invoices\InvoiceList.test.tsx
+
+>>> Read: <run>\repo\src\sheet\Grid.tsx
+<<< 1	import { lazy, Suspense, useState } from 'react';
+2	import { copyRange, lastCopied } from './clipboard';
+3	import { ContextMenu } from './ContextMenu';
+4	
+5	const CellEditor = lazy(() => import('./CellEditor'));
+6	
+7	const COLUMNS = ['A', 'B', 'C', 'D'];
+8	const ROWS = [1, 2, 3, 4, 5];
+9	
+10	export function Grid({ sheet }: { sheet: string }) {
+11	  const [values, setValues] = useState<Record<string, string>>({});
+12	  const [selected, setSelected] = useState('A1');
+13	  const [editing, setEditing] = useState<string | null>(null);
+14	  const [menu, setMenu] = useState<{ cell: string; x: numbe
+
+>>> Read: <run>\repo\src\sheet\ContextMenu.tsx
+<<< 1	export function ContextMenu({ x, y, onPaste, onClose }: { x: number; y: number; onPaste: () => void; onClose: () => void }) {
+2	  return (
+3	    <div role="menu" aria-label="Menú de celda" style={{ position: 'fixed', left: x, top: y }} onMouseLeave={onClose}>
+4	      <button role="menuitem" onClick={onPaste}>Pegar</button>
+5	    </div>
+6	  );
+7	}
+8	
+
+>>> Read: <run>\repo\src\sheet\CellEditor.tsx
+<<< 1	import { useState } from 'react';
+2	
+3	export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+4	  const [value, setValue] = useState(initial);
+5	  return (
+6	    <input
+7	      aria-label="Editor de celda"
+8	      autoFocus
+9	      value={value}
+10	      onChange={(e) => setValue(e.target.value)}
+11	      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+12	    />
+13	  );
+14	}
+15	
+
+>>> Bash: cd "<run>/repo" && ls -a && ls e2e 2>&1; cat playwright.config.* package.json 2>&1 | head -60
+<<< .
+..
+.docs
+.git
+e2e
+package.json
+playwright.config.ts
+PRODUCT.md
+README.md
+server
+src
+0012-sum-row.spec.ts
+0015-export-pdf.spec.ts
+0018-invoice-status.spec.ts
+0021-cell-format.spec.ts
+helpers.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  workers: 3,
+  use: { baseURL: 'http://localhost:5173' },
+});
+{
+  "name": "hojas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "api": "node server/api.js",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.48.2"
+
+>>> Read: <run>\repo\e2e\helpers.ts
+<<< 1	import { APIRequestContext, Page } from '@playwright/test';
+2	
+3	export async function login(page: Page, path: string) {
+4	  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+5	}
+6	
+7	export async function typeInCell(page: Page, cell: string, text: string) {
+8	  await page.getByTestId(`cell-${cell}`).click();
+9	  await page.keyboard.press('Enter');
+10	  await page.keyboard.type(text);
+11	  await page.keyboard.press('Enter');
+12	}
+13	
+14	export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+15	  const res = await request.get(`http://localho
+
+>>> Read: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('formatea una celda como moneda', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'B2', '1234.5');
+7	  await expect.poll(() => cellValue(request, 'demo', 'B2')).toBe('1234.5');
+8	  await page.getByTestId('cell-B2').click({ button: 'right' });
+9	  await page.getByRole('menuitem', { name: 'Formato moneda' }).click();
+10	  await expect(page.getByTestId('cell-B2')).toHaveText('1.234,50 €');
+11	});
+12	
+
+>>> Read: <run>\repo\src\sheet\clipboard.ts
+<<< 1	export type Copied = { sheet: string; range: string; values: string[][] };
+2	
+3	// Se guarda en el servidor: tarda entre 1 y 3 s con la base cargada.
+4	export async function copyRange(copied: Copied): Promise<void> {
+5	  await fetch('/api/clipboard', { method: 'POST', body: JSON.stringify(copied) });
+6	}
+7	
+8	export async function lastCopied(): Promise<Copied | null> {
+9	  const res = await fetch('/api/clipboard');
+10	  return res.json();
+11	}
+12	
+
+>>> Bash: cd "<run>/repo" && grep -n "clipboard\|copiedRange\|hojas/\|A1\|B1\|serial\|mode" e2e/*.spec.ts; ls server; grep -n "clipboard\|dev/login" -r server | head -20
+<<< e2e/0012-sum-row.spec.ts:5:  await login(page, '/hojas/demo');
+e2e/0012-sum-row.spec.ts:6:  await typeInCell(page, 'A1', '100');
+e2e/0012-sum-row.spec.ts:7:  await expect.poll(() => cellValue(request, 'demo', 'A1')).toBe('100');
+e2e/0012-sum-row.spec.ts:10:  await typeInCell(page, 'A3', '=SUMA(A1:A2)');
+e2e/0015-export-pdf.spec.ts:5:  await login(page, '/hojas/demo');
+e2e/0021-cell-format.spec.ts:5:  await login(page, '/hojas/demo');
+api.js
+server/api.js:4:const clipboard = new Map();
+server/api.js:12:  if (req.url === '/api/clipboard' && req.method === 'POST') { clipboard.set(user, await read
+
+>>> Bash: cd "<run>/repo" && cat server/api.js; grep -rn "hojas/" src README.md | head
+<<< import http from 'node:http';
+
+// El portapapeles de la hoja vive en el servidor: se comparte entre pestañas del mismo usuario.
+const clipboard = new Map();
+const cells = new Map();
+
+const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
+const read = (req) => new Promise((resolve) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => resolve(b ? JSON.parse(b) : {})); });
+
+http.createServer(async (req, res) => {
+  const user = req.headers['x-user'] ?? 'anon';
+  if (req.url === '/api/clipboard' && req
+
+>>> Write: <run>\repo\e2e\0025-paste-menu.spec.ts
+<<< File created successfully at: <run>\repo\e2e\0025-paste-menu.spec.ts (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add e2e/0025-paste-menu.spec.ts && git commit -q -m "test(e2e): flujo copiar y pegar desde el menú contextual (0025 Task 2)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of 'e2e/0025-paste-menu.spec.ts', LF will be replaced by CRLF the next time Git touches it
+0763f08 test(e2e): flujo copiar y pegar desde el menú contextual (0025 Task 2)
+
+=== RESULTADO (16 turnos, 0.18808119999999998 $)
+Escribí el E2E en `e2e/0025-paste-menu.spec.ts` y lo dejé en el commit `0763f08`. No lo he ejecutado, como pediste, así que no he visto el RED ni el GREEN de esta spec.
+
+El test sigue el flujo del plan:
+1. Escribe 4321 en A1.
+2. Copia A1 con Ctrl+C.
+3. Hace clic derecho en B1 y elige «Pegar».
+4. Comprueba que B1 muestra 4321 y que el servidor también lo tiene guardado.
+
+Dos decisiones que conviene que revises:
+- **Hoja propia (`pastemenu`):** las demás specs usan `demo`, y 0012 escribe en A1. Con `workers: 3` podrían pisarse al correr en paralelo.
+- **Espera al copiado:** el portapapeles vive en el servidor y `clipboard.ts` avisa de que guardar tarda de 1 a 3 s. Por eso, antes de hacer clic derecho, el test espera a que el servidor devuelva 4321 como contenido copiado (hasta 10 s). Sin esa espera, «Pegar» podría no tener nada que pegar.
+
+Además, el portapapeles es por usuario y ninguna otra spec lo toca ahora. Si otra spec empieza a usarlo con el mismo usuario, habrá que serializarlas.
+
+Cuando haya navegadores y red, lanza `npx playwright test e2e/0025-paste-menu.spec.ts`.
+
+El aviso del arranque dice que esta sesión carga el kit 2.3.4 y que el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.

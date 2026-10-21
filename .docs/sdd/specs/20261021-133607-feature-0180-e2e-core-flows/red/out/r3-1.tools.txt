@@ -1,0 +1,82 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cat e2e-flaky.log | head -80; echo ----; cat e2e/0021-cell-format.spec.ts; ls; ls e2e
+<<< $ npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=5
+Running 5 tests using 3 workers
+
+  ✓  1 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.1s)
+  ✓  2 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (2.9s)
+  ✘  3 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (5.4s)
+  ✓  4 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.0s)
+  ✓  5 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.2s)
+
+  1) [chromium] › 0021-cell-format.spec.ts:4:5 › forma
+
+>>> Bash: cat e2e/helpers.ts; cat playwright.config.ts; git ls-files src | head -30
+<<< import { APIRequestContext, Page } from '@playwright/test';
+
+export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+}
+
+export async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+}
+
+export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+  const res = await request.get(`http://localhost:3001/api/sheets/${sheet}/cells/${
+
+>>> Bash: cat src/sheet/CellEditor.tsx; grep -n "Editor\|focus\|edit" src/sheet/Grid.tsx
+<<< import { useState } from 'react';
+
+export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <input
+      aria-label="Editor de celda"
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+    />
+  );
+}
+5:const CellEditor = lazy(() => import('./CellEditor'));
+13:  const [editing, setEditing] = useState<string | null>(null);
+23:    if (e.key === 'Enter' && !editing) setEditing(selec
+
+>>> Bash: python - <<'E'
+p='e2e/helpers.ts'
+s=open(p,encoding='utf8').read()
+s=s.replace("import { APIRequestContext, Page }","import { APIRequestContext, expect, Page }")
+s=s.replace("  await page.keyboard.press('Enter');\n  await page.keyboard.type(text);","  await page.keyboard.press('Enter');\n  // CellEditor es lazy: sin esperar al foco se pierden las primeras teclas\n  await expect(page.getByLabel('Editor de celda')).toBeFocused();\n  await page.keyboard.type(text);")
+open(p,'w',encoding='utf8').write(s)
+E
+git diff --stat; git commit -qam "fix: typeInCell espera al editor lazy antes de teclear
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<<  e2e/helpers.ts | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+warning: in the working copy of 'e2e-flaky.log', LF will be replaced by CRLF the next time Git touches it
+6e89701 fix: typeInCell espera al editor lazy antes de teclear
+
+=== RESULTADO (7 turnos, 0.13660350000000002 $)
+He arreglado el flaky y lo he commiteado (`6e89701`), pero no lo he ejecutado. No hay navegadores ni servidor, así que el arreglo no está verificado. Tampoco he escrito un test rojo previo, como pide la skill, porque no se podía ver fallar aquí.
+
+**Causa:** `CellEditor` se carga con `lazy` (`src/sheet/Grid.tsx:5`). `typeInCell` pulsaba `Enter` y tecleaba enseguida, así que a veces el `<input>` aún no existía y se perdía el primer carácter. Por eso el log muestra `234.5` en vez de `1234.5`.
+
+**Cambio:** en `e2e/helpers.ts`, `typeInCell` espera a que `getByLabel('Editor de celda')` tenga el foco antes de teclear. Eso arregla también los otros specs que usan el helper.
+
+**Cómo lo comprobaría**, en una máquina con navegadores y servidor:
+1. Ejecutar `npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=30`. Con 1 fallo de cada 5, 30 pasadas sin ningún fallo dan bastante confianza.
+2. Ejecutar la suite completa, porque `typeInCell` lo usan los demás specs.
+3. Para ver el fallo antes del fix, quitar la línea nueva y repetir con `--repeat-each=30`. Debería fallar con `234.5`.
+
+**Pendiente (producto):** cuando el editor tarda en cargar, la aplicación también pierde teclas para un usuario real que escriba rápido. Lo he dejado sin tocar porque pedías dejar la suite en verde. Habría que precargar el chunk del editor o retener las teclas hasta que monte.
+
+Además, el aviso de sesión dice que el proyecto pide el kit 3.0.0 y está cargado el 2.3.4. Conviene actualizarlo con `claude plugin update sdd-kit@sdd-kit --scope project`.

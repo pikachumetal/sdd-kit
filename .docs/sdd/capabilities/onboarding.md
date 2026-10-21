@@ -131,6 +131,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - THEN tiene `## Comandos`, `## Testing`, `## Frontend` y `## Entornos`, y no tiene tabla de versiones ni «Decisiones abiertas»
 - AND `## Testing` pide cada suite con su comando y su duración, el comando de lo afectado, el gate de cierre y el de merge, cómo entra el agente en la aplicación y si los tests usan el motor de producción
 - AND `## Frontend` tiene los campos URL, Detector, Viewports, Runner E2E, Acceso, Temas, Pantalla de referencia y Skills de apoyo
+- AND `## Testing`, solo si el proyecto tiene E2E, pide los flujos core con su test, el presupuesto de la suite E2E, los retries, los timeouts, el entorno de la suite y cómo crea y borra cada test sus datos; y cómo entra el agente nombra el usuario del agente, distinto del de la persona que valida
 
 ### Una sola init para proyecto nuevo y con código
 
@@ -189,6 +190,14 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - WHEN arranca `sdd-init`
 - THEN la línea del modo dice «con código» y añade «si es un template recién instanciado, dímelo y sigo sin código»
 - AND con «es un template», sigue en modo sin código: pregunta lo de una init sin código y no inventaría el código
+
+### La init propone los campos E2E desde el código
+
+- GIVEN una init con código de un repo con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`) y `e2e/` con `0012-sum-row.spec.ts`, `0015-export-pdf.spec.ts` y `0018-invoice-status.spec.ts`
+- WHEN la entrevista llega a cómo se prueba
+- THEN propone como candidatos a flujo core los de esos tres ficheros, y pregunta cuáles lo son
+- AND `operations.md` sale con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
+- AND en un proyecto sin E2E no pregunta nada de esto y §Testing no lleva esos campos
 
 ## Reglas de la capacidad
 

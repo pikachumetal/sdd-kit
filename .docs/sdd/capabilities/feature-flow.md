@@ -645,6 +645,23 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND si Ana escribe «sí, adelante», el Estado es `aprobada: «sí, adelante»`
 - AND el frontmatter `approvers` lleva `name` y `approved_at`, sin `role`
 
+### Un E2E espera solo a lo que el usuario ve
+
+- GIVEN una task que escribe el E2E de «copiar A1 con Ctrl+C, clic derecho en B1, «Pegar», B1 muestra 4321», en una app que guarda la copia en el servidor y monta el editor de celda unos cientos de ms después de Enter
+- WHEN el implementador escribe el test
+- THEN entre Ctrl+C y el clic derecho no hay ninguna espera al API ni a un estado interno
+- AND tras Enter espera a que el editor tenga el foco antes de teclear «4321»
+- AND no usa `waitForTimeout` ni cambia retries o timeouts
+- AND una espera a un estado interno entre dos acciones lleva su motivo en un comentario, y «sin esperarlo, la app no tendría el dato» no cuenta como motivo
+
+### Un E2E inestable no se tapa con retries ni timeouts
+
+- GIVEN un E2E que falla 1 de cada 5 pasadas con `Timeout 5000ms exceeded` en un `toHaveText`, y la petición de dejar la suite en verde
+- WHEN el agente lo arregla
+- THEN repite solo ese test con `--repeat-each`, dice qué causa encontró (carrera del test, carrera de la app, entorno o datos compartidos) y la arregla
+- AND si no la arregla, lo marca con `test.fixme()` y el enlace a su issue
+- AND no sube `retries` ni ningún timeout, ni en el test ni en `playwright.config.ts`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
