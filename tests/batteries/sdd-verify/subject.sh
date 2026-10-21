@@ -22,11 +22,14 @@ F21=".docs/sdd/specs/20261012-100000-feature-0021-void-reason"
 F22=".docs/sdd/specs/20261013-100000-feature-0022-cancel-notice"
 F23=".docs/sdd/specs/20261013-110000-feature-0023-cancelled-list"
 
-cp -r "$IMPL/mold-reservas/." "$R/"
-put_kit_marker "$MARKER"
-g init -q -b main
-commit "feat: base del molde"
-g checkout -q -b develop
+# f5 monta su propio molde, hojas.
+if [ "$SC" != f5 ]; then
+  cp -r "$IMPL/mold-reservas/." "$R/"
+  put_kit_marker "$MARKER"
+  g init -q -b main
+  commit "feat: base del molde"
+  g checkout -q -b develop
+fi
 
 # Sin «quién canceló»: el molde no tiene usuarios.
 approved_0010() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d' -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$IMPL/fixtures/spec-0010.md"; }
@@ -80,13 +83,26 @@ ws_dir() { cd "$R" && "$NODE" "$SDD_CLI" workspace "$F10/plan.md" | tail -n 1; }
 # El encargo del eje de f3, f3n o f4, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
 axis_brief() {
   local axis=spec files
-  [ "$SC" = f4 ] && axis=code
+  case "$SC" in f4|f5) axis=code ;; esac
   files=$(g diff --name-only "$BASE" HEAD -- . ":(exclude,glob).docs/sdd/specs/**")
   # shellcheck disable=SC2086
   "$NODE" "$HERE/compose-axis.mjs" --kit="$KIT" --superpowers="${SUPERPOWERS_DIR:-}" --axis="$axis" --scenario="${SC%n}" \
     --package="$(cygpath -m "$PKG" 2>/dev/null || echo "$PKG")" --sha="$HEADSHA" --dir="$(cygpath -m "$R" 2>/dev/null || echo "$R")" \
     --adrs="$(cd "$R" && "$NODE" "$SDD_CLI" decision index --path .docs/sdd --files $files 2>/dev/null)" \
     --caps="$(cd "$R" && "$NODE" "$SDD_CLI" capability index --path .docs/sdd 2>/dev/null)"
+}
+# La 0024 de hojas: recordar el filtro de estado, con su E2E y los timeouts subidos.
+hojas_0024() {
+  local fix="$FIX/hojas-0024"
+  cp -r "$HERE/mold-hojas/." "$R/"; put_kit_marker "$MARKER"
+  g init -q -b main; commit "feat: base del molde hojas"; g checkout -q -b develop
+  BASE=$(g rev-parse HEAD)
+  g checkout -q -b feature/0024-remember-status-filter
+  cp "$fix/InvoiceList.tsx" "$R/src/invoices/InvoiceList.tsx"; cp "$fix/api.js" "$R/server/api.js"
+  commit "feat(invoices): la lista recuerda el último estado elegido"
+  cp "$fix/remember-filter.spec.ts" "$R/e2e/0024-remember-filter.spec.ts"; cat "$fix/helpers-tail.ts" >> "$R/e2e/helpers.ts"
+  cp "$fix/playwright.config.ts" "$R/playwright.config.ts"
+  commit "test(invoices): e2e de recordar el filtro"
 }
 case "$SC" in
   v1)
@@ -151,6 +167,14 @@ case "$SC" in
       echo "## Files changed"; g diff --stat "$BASE" HEAD -- . ":(exclude,glob).docs/sdd/specs/**"; echo
       echo "## Diff"; g diff -U10 "$BASE" HEAD -- . ":(exclude,glob).docs/sdd/specs/**"; } > "$PKG"
     ASK="$(axis_brief)" ;;
+  f5)
+    hojas_0024
+    HEADSHA=$(g rev-parse --short HEAD)
+    PKG="$RUN/review-final-$HEADSHA.diff"
+    { echo "# Review package: $(g rev-parse --short "$BASE")..HEAD"; echo; echo "## Commits"; g log --oneline "$BASE..HEAD"; echo
+      echo "## Files changed"; g diff --stat "$BASE" HEAD; echo
+      echo "## Diff"; g diff -U10 "$BASE" HEAD; } > "$PKG"
+    ASK="$(axis_brief)" ;;
   f1|f2)
     mkdir -p "$R/.docs/sdd/decisions"; cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
     commit "docs(decisions): las reservas viven en memoria"
@@ -165,11 +189,11 @@ case "$SC" in
 esac
 
 case "$SC" in
-  v1|f3|f3n|f4|s1|s1b) export EXTRA_DISALLOWED="Agent" ;;
+  v1|f3|f3n|f4|f5|s1|s1b) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   f1|f2|mp1) MAX_TURNS="${MAX_TURNS:-30}" ;;
-  f3|f3n|f4|s1|s1b) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  f3|f3n|f4|f5|s1|s1b) MAX_TURNS="${MAX_TURNS:-25}" ;;
   c1|c1f|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
   c2|c3|c4) MAX_TURNS="${MAX_TURNS:-30}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
@@ -179,5 +203,6 @@ MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
 for kept in spec plan tasks walkthrough; do [ -f "$R/$F10/$kept.md" ] && subject_keep "$R/$F10/$kept.md" "$kept.md"; done
 [ -f "$R/test/cancel.test.js" ] && subject_keep "$R/test/cancel.test.js" cancel.test.js
 [ -f "$R/src/app.js" ] && subject_keep "$R/src/app.js" app.js
+[ "$SC" = f5 ] && subject_keep "$R/e2e/0024-remember-filter.spec.ts" 0024-remember-filter.spec.ts
 for ledger in "$R"/.superpowers/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## commits con sus ficheros"; g log --stat --format='--- %h %s' develop..HEAD; } | subject_save
