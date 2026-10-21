@@ -4,7 +4,7 @@ Used by the validation and integrated-base steps of `sdd-archive` when `operatio
 
 ## 1. The environment, raised by this session
 
-Before each pass, run the command of «Entorno de la suite» yourself, in this session, and its check, and see it green. A server that was already listening doesn't count, even if it answers: it may serve another worktree's code or the data of another pass. With `no aplica`, there's nothing to raise. Stop what you raised afterwards, by its PID or its port (`sdd-implement`, «Processes you start»).
+Before each pass, run the command of «Entorno de la suite» yourself, in this session, and its check, and see it green. A server that was already listening doesn't count, even if it answers: it may serve another worktree's code or the data of another pass. With `no aplica`, there's nothing to raise, and the 4.1 says so. If the suite's port is held by a process you didn't start and the command doesn't free it, stop and ask: its port is the project's, and another one would check the wrong server. Stop what you raised afterwards, by its PID or its port (`sdd-implement`, «Processes you start»).
 
 ## 2. The gate as declared
 
@@ -16,7 +16,7 @@ Run the closing gate of `operations.md` literally: no environment variable, opti
 
 ## 4. The budget
 
-Compare the E2E suite's duration with «Presupuesto E2E» and write both in the 4.1: `E2E: <duración> de <Presupuesto E2E>`. Over the budget, open a debt row with the duration and the budget, also when it was already over without the branch: nobody else measures it. With `pendiente`, write the measured duration and open nothing.
+Compare the E2E suite's duration with «Presupuesto E2E» and write both in the 4.1: `E2E: <duración> de <Presupuesto E2E>`. Over the budget, open a debt row with the duration and the budget, also when it was already over without the branch: nobody else measures it. With `pendiente`, write the measured duration; the template's 10-minute threshold still applies.
 
 ## 5. A repeated batch
 

@@ -50,10 +50,10 @@ created: <YYYY-MM-DD>
 ### 4.1 Builds
 
 - Comandos ejecutados y resultado real (no "debería funcionar").
-- Suite completa: `<comando>` → <resultado> · <duración> · configuración: <la del gate | lo que se añadió> *(sin «Presupuesto E2E», si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración)*
-- Entorno de la suite: `<comando>` · <comprobación> → <resultado>, levantado en esta sesión *(solo con E2E)*
+- Suite completa: `<comando>` → <resultado> · <duración> · configuración: <la del gate | lo que se añadió> *(sin «Presupuesto E2E» o con `pendiente`, si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración)*
+- Entorno de la suite: `<comando>` · <comprobación> → <resultado>, levantado en esta sesión · o `no aplica` *(solo con E2E)*
 - E2E: <duración> de <Presupuesto E2E> *(solo con E2E; si lo pasa, apúntalo en 4.3 como deuda del proyecto)*
-- Tanda: <nuevos o cambiados> ×<N> + <los demás> ×1 = <ejecuciones> ejecuciones · ~<minutos> estimados, <minutos> reales *(si hubo tanda)*
+- Tanda: <la línea `Tanda:` que diste antes de lanzarla>, <minutos> reales *(si hubo tanda)*
 
 ### 4.2 Smoke / tests
 

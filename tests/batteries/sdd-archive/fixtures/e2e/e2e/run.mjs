@@ -33,6 +33,7 @@ for (const file of specs) {
     if (t.name.includes(grep)) for (let i = 0; i < repeatEach; i += 1) tests.push({ file, ...t });
   }
 }
+if (tests.length === 0) { console.log('Error: No tests found'); process.exit(1); }
 console.log(`Running ${tests.length} tests using 1 worker (trace: ${trace}, retries: ${config.retries}, timeout: ${config.timeout} ms)\n`);
 const started = Date.now();
 let failed = 0;

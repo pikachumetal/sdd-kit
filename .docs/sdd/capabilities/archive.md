@@ -101,14 +101,41 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 
 - GIVEN una feature cerrada con `sdd-archive`
 - WHEN se escribe «4. Verificación» del walkthrough
-- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado, su duración y el sha de la validación; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
+- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado, su duración, su configuración (la del gate, o lo que se añadió) y el sha de la validación; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
+- AND con E2E, «4.1 Builds» lleva el comando de «Entorno de la suite» con su comprobación, levantado en esa sesión, y la duración de la suite E2E frente a «Presupuesto E2E»
 - AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
-- AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
+- AND si la suite E2E pasó de su presupuesto, o, sin presupuesto, la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
+
+### La suite E2E del cierre corre sobre un entorno que levanta la sesión
+
+- GIVEN un proyecto cuyo `operations.md` declara `Entorno de la suite: node scripts/env-up.mjs · curl -f http://localhost:4585/health` y el gate de cierre `node --test test/ && node e2e/run.mjs`
+- AND en el puerto 4585 ya escucha un servidor que arrancó otra pasada con el código de `develop`
+- WHEN el cierre pasa la suite
+- THEN antes de la primera pasada ejecuta `node scripts/env-up.mjs` y comprueba `/health`
+- AND la pasa con `node --test test/ && node e2e/run.mjs` literal, sin `E2E_TRACE` ni otra variable que el gate no declare
+- AND ante un `ERR_CONNECTION_REFUSED` vuelve a levantar el entorno, lo comprueba y repite la pasada antes de abrir el código o contrastar con la base
+
+### La suite E2E del cierre se mide contra su presupuesto
+
+- GIVEN `Presupuesto E2E: 0,5 min` en `operations.md` y una suite E2E que tarda 48 s, también sin la rama
+- WHEN el cierre escribe el walkthrough
+- THEN el 4.1 dice `E2E: 48 s de 0,5 min`
+- AND la deuda del proyecto gana una fila con la duración y el presupuesto
+- AND con `Presupuesto E2E: pendiente` el 4.1 da la duración medida y solo abre deuda si la suite pasa de 10 minutos
+
+### Una tanda E2E se estima y se acota antes de lanzarla
+
+- GIVEN una rama que reescribe `e2e/cancel.e2e.mjs` con tres tests nuevos y dos que no cambian, deja `e2e/free.e2e.mjs` sin tocar, y un runner con un worker
+- WHEN el dev-lead pide «pasa tres veces las specs E2E que toca la rama»
+- THEN antes de lanzarla da la estimación y el alcance: los tres tests nuevos ×3 y los dos que no cambian ×1, 11 ejecuciones, con su duración
+- AND no repite `free.e2e.mjs`
+- AND el 4.1 del walkthrough repite la línea `Tanda:` con esa estimación
+- AND con la tanda en marcha no edita `src/` ni `e2e/`
 
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)
 - **Idioma de los nombres**: skill y ficheros en inglés kebab-case; marcas de carril de la skill `Feature only:`, `Patch only:`, `Hotfix only:`
-- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.850 y total 6.300 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite de más de 10 minutos va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
+- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.900 y total 6.900 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
 - **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas.» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md`
 - **Regla ante conflicto**: un conflicto al integrar la base o al fusionar que `sdd merge` no resuelve lo resuelve una persona; un rojo que también falla sin la rama lo decide el dev-lead tras la búsqueda en la deuda; el merge a la rama estable, el tag y su push solo con la frase del dev-lead; la fila de la madre de una familia la cierra el dev-lead, no el cierre

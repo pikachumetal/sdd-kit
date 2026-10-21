@@ -305,6 +305,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - GIVEN un proyecto 2.x en 2.3.4 con `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`) y `e2e/booking.spec.ts`
 - WHEN el dev-lead pide «Actualízame al kit» y aprueba la tabla de operaciones
 - THEN `.docs/sdd/steering/operations.md` lleva en `## Testing` los campos E2E de `operations-template.md`, con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
+- AND lleva también «Entorno de la suite» y «Datos», con su valor o `pendiente`
 - AND los flujos core son los que el dev-lead nombra entre los candidatos de `e2e/`, y en un proyecto sin E2E la sección `## Testing` pasa tal cual
 
 ## Reglas de la capacidad

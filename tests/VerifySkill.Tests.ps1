@@ -49,6 +49,7 @@ Describe 'Revisión final por ejes' {
     $brief = Get-KitFile 'skills/sdd-verify/references/code-reviewer-prompt.md'
     $brief | Should -Match '(?s)```text.+## E2E del proyecto\s+<«Flujos core», «Retries» y «Timeouts» de operations\.md §Testing, literales, o «sin E2E declarados»>'
     $brief | Should -Match '(?s)\*\*E2E tests\.\*\*.+sin E2E declarados'
+    $brief | Should -Match '«Flujos core» empty or `pendiente`'
   }
 
   It 'la tabla de ejes da al eje Código los campos E2E' {

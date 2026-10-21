@@ -200,7 +200,8 @@ Fracasaría si:
 - WHEN el cierre escribe el walkthrough
 - THEN el 4.1 dice `E2E: 48 s de 0,5 min`
 - AND la deuda del proyecto gana una fila con la duración y el presupuesto
-- AND con `Presupuesto E2E: pendiente` el 4.1 da la duración medida y no abre deuda
+- AND con `Presupuesto E2E: pendiente` el 4.1 da la duración medida y solo abre deuda si la suite pasa de 10 minutos
+- REMOVED AND con `Presupuesto E2E: pendiente` el 4.1 da la duración medida y no abre deuda
 
 **ADDED — Una tanda E2E se estima y se acota antes de lanzarla**
 - GIVEN una rama que reescribe `e2e/cancel.e2e.mjs` con tres tests nuevos y dos que no cambian, deja `e2e/free.e2e.mjs` sin tocar, y un runner con un worker
@@ -246,6 +247,8 @@ Fracasaría si:
 
 ## Enmiendas
 
+- 2026-10-21 — Dos frases de la pasada de fix entran sin medir: «si el puerto de la suite lo ocupa un proceso que no arrancó la sesión y el comando no lo libera, para y pregunta» (`e2e-suite.md`, hallazgo I5 del eje Spec) y «con «Flujos core» vacío o `pendiente`, la primera regla no aplica» (`code-reviewer-prompt.md`, hallazgo m5 del eje Código); van a la fila de deuda de las excepciones sin escenario, y la batería de release (0152) las mide. Con `Presupuesto E2E: pendiente`, la suite usa el umbral de 10 minutos — re-revisión (Important nuevo, Art. I, y Minor de la spec) — aprobada: «Mantener con enmienda (Recomendada)»
+- 2026-10-21 — El THEN «antes de lanzarla da la estimación y el alcance» de «Una tanda E2E se estima y se acota antes de lanzarla» se cierra en parte: el alcance y la línea `Tanda:` del 4.1 salen 2 de 2, y el anuncio antes de lanzar, 0 de 2 tras la segunda vuelta; queda como fila de deuda — revisión final, eje Spec (Important 1) — aprobada al elegir «Sube a 22, una vuelta más (Recomendada)», cuya opción decía «Si vuelve a fallar, cierro con lo medido y fila de deuda»
 - 2026-10-21 — «Una tanda E2E se estima y se acota antes de lanzarla» gana el AND del 4.1 (la línea `Tanda:` en un hueco de `walkthrough-template.md`), y el techo de la campaña pasa de 20 a 22 sujetos — REFACTOR de `e2`: el alcance salió 2 de 2 con la línea fija en la referencia, pero la estimación antes de lanzar, 0 de 2 — aprobada: «Sube a 22, una vuelta más (Recomendada)»
 
 ## Aprobaciones

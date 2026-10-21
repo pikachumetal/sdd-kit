@@ -24,6 +24,17 @@ Describe 'sdd-archive: anatomía' {
     $script:Skill | Should -Match ([regex]::Escape($_))
   }
 
+  It 'el 4.1 del walkthrough lleva la configuración de la suite, con E2E o sin ellos' {
+    $script:Skill | Should -Match ([regex]::Escape("«4.1 Builds» gives the full suite's command, result, duration, configuration"))
+  }
+
+  It 'e2e-suite.md fija las líneas del 4.1, el puerto ajeno y el presupuesto pendiente' {
+    $suite = Get-KitFile 'skills/sdd-archive/references/e2e-suite.md'
+    foreach ($literal in @('Tanda: <tests nuevos o cambiados> ×<N>', 'E2E: <duración> de <Presupuesto E2E>', 'stop and ask', 'With `pendiente`, write the measured duration; the template''s 10-minute threshold still applies')) {
+      $suite | Should -Match ([regex]::Escape($literal))
+    }
+  }
+
   It 'enlaza la referencia <_>, que existe' -ForEach @('merge-recipe.md', 'aprendizajes-skills.md', 'records.md', 'e2e-suite.md') {
     $script:Skill | Should -Match ([regex]::Escape("(references/$_"))
     Test-Path (Join-Path $script:RepoRoot "skills/sdd-archive/references/$_") | Should -BeTrue
@@ -244,7 +255,7 @@ Describe 'sdd-archive: pasada de fix de la revisión final' {
   }
 
   It 'el 4.1 da el sha de la validación y el mensaje final el de la base integrada' {
-    $script:Skill | Should -Match '«4\.1 Builds» gives the full suite''s command, result, duration and the sha of the validation'
+    $script:Skill | Should -Match '«4\.1 Builds» gives the full suite''s command, result, duration, configuration \(the gate''s, or what you added\) and the sha of the validation'
     $script:Skill | Should -Match 'the full suite again on the integrated base, with its result and its sha'
   }
 

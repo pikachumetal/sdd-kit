@@ -78,7 +78,7 @@ pass, review it in passes yourself and say so in your report.
 
 **Comments:** a comment that repeats what the code says is Important, also when «Restricciones de código» doesn't mention comments.
 
-**E2E tests.** With the fields of «E2E del proyecto» above, each of these is Important; with `sin E2E declarados`, none applies:
+**E2E tests.** With the fields of «E2E del proyecto» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
 - a new E2E test that names none of the core flows: what no core flow covers is tested one layer down;
 - a retry or a timeout raised above the declared value, in a test or in the runner's config, without its reason written in `operations.md`;
 - a wait on internal state (an API poll, a store, an attribute the user doesn't see) between two user actions, without a reason in a comment. «Without waiting, the app wouldn't have the data yet» is not a reason: it is the failure the test exists to catch. A wait the test needs is not a strength.
