@@ -15,8 +15,17 @@
 - **Lo afectado**: <comando que corre solo los tests de lo que toca un cambio, p. ej. `moon run :test --affected`; lo usan la pasada de fix y el gate de merge>
 - **Gate de cierre**: <comando de la suite completa que corre una vez, al cerrar>
 - **Gate de merge**: <comando que corre sobre la base integrada antes de fusionar>
-- **Acceso a la aplicación**: <cómo entra el agente en la aplicación para probarla: usuario de pruebas, página de desarrollo, `sin login`>
+- **Acceso a la aplicación**: <cómo entra el agente en la aplicación para probarla: usuario de pruebas, página de desarrollo, `sin login`; con E2E, el usuario del agente, distinto del de la persona que valida, para que sus pruebas no le cambien los datos>
 - **Motor de producción**: <si los tests usan el motor de base de datos de producción o uno en memoria, y qué no se puede expresar con el segundo>
+
+> Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos. Los lee la referencia de E2E de `sdd-tdd`, y el cierre compara la suite con su presupuesto.
+
+- **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` › emite y descarga el PDF». Un E2E nuevo nombra uno de estos flujos; lo demás se prueba en una capa más baja>
+- **Presupuesto E2E**: <minutos que puede tardar la suite E2E del gate de cierre, p. ej. `10 min` · `pendiente`>
+- **Retries**: <`0` en local; en CI, `0`, `1` o `2`. Recomendado: `0` en local y `2` en CI>
+- **Timeouts**: <`por defecto` (los del runner: en Playwright, 30 s por test y 5 s por `expect`) · o el valor subido con su motivo escrito>
+- **Entorno de la suite**: <el comando que levanta todo lo que la suite necesita (contenedores, API, web) y cómo se comprueba que responde, p. ej. `moon run env:up` · `curl -f http://localhost:5000/health` · o `no aplica`, si la suite no necesita servidores>
+- **Datos**: <cómo crea y borra cada test sus datos, p. ej. «la fixture `invoice` la crea y la borra al acabar». Un test que solo pasa con el entorno recién vaciado depende de otro>
 
 ## Frontend
 

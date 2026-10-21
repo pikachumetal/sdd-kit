@@ -78,7 +78,7 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     $content | Should -Not -Match 'Decisiones abiertas'
   }
 
-  It '§Testing pide <_>' -ForEach @('comando', 'duración', 'lo afectado', 'gate de cierre', 'gate de merge', 'cómo entra el agente', 'motor de producción') {
+  It '§Testing pide <_>' -ForEach @('comando', 'duración', 'lo afectado', 'gate de cierre', 'gate de merge', 'cómo entra el agente', 'motor de producción', 'flujos core', 'presupuesto e2e', 'retries', 'timeouts', 'entorno de la suite', 'crea y borra', 'usuario del agente') {
     Get-Section (Get-TemplateContent 'operations') '## Testing' | Should -Match ([regex]::Escape($_))
   }
 
