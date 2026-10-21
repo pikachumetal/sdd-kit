@@ -1,0 +1,52 @@
+--- [4]
+### Strengths
+- The change is small and self-contained. It adds an exported `occupancyReport()` and one `ocupacion` branch in `run`, and touches nothing else.
+- The UI text is in Spanish, as required.
+- `occupancyReport` runs from line 25 to 50 of the diff (26 lines), under the 30-line limit.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:34`: the comment `// incrementa count` repeats the code.**
+   - The next line is `count++`, so the comment adds nothing.
+   - Delete it.
+
+2. **No test covers the new command.**
+   - `occupancyReport` and `ocupacion` are public, but the diff touches only `src/app.js`.
+   - `test/app.test.js` and `test/cancel.test.js` already exist, so the pattern is there.
+   - Add tests for these cases:
+     - Pluralisation: 1 reservation gives "reserva", and 0 or 2 give "reservas".
+     - The `canceladas:` line appears only when there are cancelled bookings.
+     - The empty case prints `sin reservas activas`.
+   - Treat it as a possible Clean Code gap: "a test for every public method".
+
+#### Minor (Nice to Have)
+1. **`src/app.js:28`: `const now = 'hoy'` is a constant used only at line 45.**
+   - The name `now` suggests a date but holds a literal string.
+   - Inline the literal or drop it. If the report is meant to show the date, say so.
+   - Possible Clean Code issue: the name does not reveal intent.
+
+2. **`src/app.js:30-36`: the inner loop counts with two `continue` guards.**
+   - The same function already counts cancelled bookings with `bookings.filter(...).length` (line 41), so the style is inconsistent.
+   - A helper such as `countByStatus(room, status)` would shorten the function and remove the manual counter. Possible Refactoring smell: Long Method.
+   - The function stays within the limit, so this is a readability suggestion only.
+
+3. **`src/app.js:38`: the pluralisation is inline.**
+   - It is only used here, so it is fine for now.
+
+### Recommendations
+- Run `node --test` once the tests are added. I did not run the suite, as instructed.
+
+### Declined to judge
+- Whether `ocupacion` should appear in the README or the `reports` capability doc (`.docs/sdd/capabilities/reports.md`). That belongs to the Spec axis.
+- Whether the report should include `voided` bookings. The spec decides the scope, and the code ignores them silently.
+- E2E checks: the project declares no E2E tests, so none apply.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the length limit. The redundant comment and the missing tests should be fixed first. The `now` constant and the inner loop are optional polish.
+

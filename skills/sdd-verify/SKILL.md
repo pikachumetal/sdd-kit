@@ -181,7 +181,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 | Axis | Brief | Model | Gets, besides the package |
 | --- | --- | --- | --- |
 | Spec | [spec-reviewer-prompt.md](references/spec-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | the paths of `spec.md` and `plan.md`; the plan's `## Review Focus`, verbatim, if it has one; the `accepted` ADRs that `sdd decision index --path .docs/sdd --files <the diff's files>` lists; the output of `sdd capability index --path .docs/sdd`; and a pointer to the ledger's `Ruling:`, `minor (deferred)` and `parked` lines |
-| Code | [code-reviewer-prompt.md](references/code-reviewer-prompt.md) | `sdd-kit:effort-high` + `sonnet` | nothing else: neither the spec nor the ADRs |
+| Code | [code-reviewer-prompt.md](references/code-reviewer-prompt.md) | `sdd-kit:effort-high` + `sonnet` | «Flujos core», «Retries», «Timeouts» of `operations.md` §Testing, literal, or `sin E2E declarados`; neither the spec nor the ADRs |
 | Architecture | [architecture-reviewer-prompt.md](references/architecture-reviewer-prompt.md) | `sdd-kit:effort-high` + `opus` | the path of `architecture.md` and the plan's `Eje Arquitectura` line, or your ruling that raised it; it goes out only with `sí` |
 
 The models are those of the 0131 proposal: an axis changes model only with data of the constitution's Principle 5. Specify model and effort on every dispatch; an omitted model inherits the session's. These are the fresh contexts the whole run buys. Do not skip them, and do not replace them with your own read of the diff.

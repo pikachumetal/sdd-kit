@@ -45,6 +45,16 @@ Describe 'Revisión final por ejes' {
     Get-KitFile "skills/sdd-verify/references/$_" | Should -Match '(?s)```text\s+## Restricciones de código'
   }
 
+  It 'el encargo del eje Código lleva los campos E2E del proyecto dentro del bloque' {
+    $brief = Get-KitFile 'skills/sdd-verify/references/code-reviewer-prompt.md'
+    $brief | Should -Match '(?s)```text.+## E2E del proyecto\s+<«Flujos core», «Retries» y «Timeouts» de operations\.md §Testing, literales, o «sin E2E declarados»>'
+    $brief | Should -Match '(?s)\*\*E2E tests\.\*\*.+sin E2E declarados'
+  }
+
+  It 'la tabla de ejes da al eje Código los campos E2E' {
+    $script:Skill | Should -Match '(?m)^\| Code \|.+«Flujos core», «Retries», «Timeouts».+`sin E2E declarados`'
+  }
+
   It 'encargo-revision.md vive en sdd-verify' {
     Test-Path (Join-Path $script:RepoRoot 'skills/sdd-verify/references/encargo-revision.md') | Should -BeTrue
     Test-Path (Join-Path $script:RepoRoot 'skills/sdd-start-feature/references/encargo-revision.md') | Should -BeFalse
