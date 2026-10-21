@@ -1,0 +1,21 @@
+--- [16]
+Está arreglado y commiteado (`1d831e5`), pero no lo he ejecutado: aquí no hay navegadores ni servidor.
+
+**Causa:** el log del fallo da `Received: "234.5"`, así que se perdía la primera tecla. En `typeInCell` (`e2e/helpers.ts`), el test pulsaba Enter y escribía con `keyboard.type` antes de que el editor de celda tuviera el foco. Es una carrera en el test (regla 4 de `writing-e2e.md`). Falla 1 de cada 5 pasadas porque depende del momento en que aparece el editor.
+
+**Cambios:**
+- **`typeInCell`:** ahora espera a que el textbox «Editor de celda» tenga el foco (`toBeFocused`) y escribe con `fill`. Al ser un helper compartido, esto también protege a `0012-sum-row.spec.ts`, que lo usa.
+- **`0021-cell-format.spec.ts`:** quité el `expect.poll` a la API entre la escritura y el clic derecho. Esperar al servidor entre dos acciones del usuario esconde carreras de la app (regla 3). La comprobación del valor en el servidor pasa al final, después de la última acción.
+
+No he tocado timeouts ni reintentos.
+
+**Cómo lo comprobaría**, en una máquina con Playwright y el servidor:
+1. `npx playwright test e2e/0021-cell-format.spec.ts -g "formatea una celda como moneda" --repeat-each=20`. Tiene que dar 20 de 20; con 1 de 5 de fallo antes, 20 pasadas casi seguro habrían sacado algún rojo.
+2. `npx playwright test e2e/0012-sum-row.spec.ts --repeat-each=10`, porque comparte el helper.
+3. La suite completa una vez, como puerta de cierre.
+
+**Limitaciones:**
+- No pude ver el RED, porque la carrera no se puede reproducir sin ejecutar. El log es la única evidencia del fallo.
+- No he comprobado que el textbox «Editor de celda» sea el que recibe el foco tras Enter. Lo deduje de `CellEditor.tsx`, que tiene `aria-label="Editor de celda"` en un `<input>`.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las reglas que apliqué pueden ser de una versión vieja.
+

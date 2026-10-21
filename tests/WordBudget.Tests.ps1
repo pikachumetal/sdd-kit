@@ -23,7 +23,7 @@ BeforeAll {
       'sdd-propose'         = @{ SkillMd = 5250; Total = 6800 }
       'sdd-implement'       = @{ SkillMd = 9483; Total = 13249 }
       'sdd-verify'          = @{ SkillMd = 3060; Total = 9020 }
-      'sdd-tdd'             = @{ SkillMd = 1700; Total = 3100 }
+      'sdd-tdd'             = @{ SkillMd = 1750; Total = 4000 }
       'sdd-upgrade'         = @{ SkillMd = 980; Total = 980 }
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 11464 }

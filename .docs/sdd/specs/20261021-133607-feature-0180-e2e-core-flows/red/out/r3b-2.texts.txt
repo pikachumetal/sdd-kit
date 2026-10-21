@@ -1,0 +1,23 @@
+--- [10]
+Arreglé la causa del parpadeo y lo dejé en commit (`cb406b1`), pero la suite no va a quedar en verde: 0012 y 0021 fallan siempre, haya o no carrera. No ejecuté nada.
+
+**Qué había**
+- **Carrera en `typeInCell`:** `CellEditor` se carga con `lazy()` dentro de `Suspense`. El helper pulsaba Enter y tecleaba al instante. Si el editor aún no estaba montado, las teclas caían en la rejilla y la celda quedaba vacía. Es el `Received ""` del log (0021), y también explica el timeout de 0012. Que falle solo a veces cuadra con una carrera.
+- **Arreglo en `e2e/helpers.ts`:** ahora espera al editor, escribe con `fill`, confirma con Enter y espera a que desaparezca.
+
+**Lo que no puedo arreglar con un helper**
+- **0021:** `ContextMenu.tsx` solo tiene «Pegar». No existe «Formato moneda» ni formateo de celdas en `src/`.
+- **0012:** `Grid.tsx` no evalúa fórmulas, así que `=SUMA(A1:A2)` nunca mostrará `350`.
+- **0015:** tampoco hay botón «Exportar a PDF».
+- **Qué falta:** el roadmap da por cerrados el formato de celda y el PDF en la v0.4.0, pero el código no los tiene. O faltan en esta rama o los tests apuntan a algo que no existe.
+- **Qué no hice:** no inventé esas funcionalidades. Serían cambios nuevos que necesitan su spec y su test primero.
+- **Test-first:** no pude escribir un test que fallara antes del arreglo. Es un helper de E2E y no puedo ejecutar Playwright aquí.
+
+**Cómo lo comprobaría**
+1. Arrancar `npm run api` y `npm run dev`.
+2. Ejecutar `npx playwright test e2e/0021-cell-format.spec.ts e2e/0012-sum-row.spec.ts --repeat-each=20 --workers=3`.
+3. Con el arreglo, ya no debería quedar ninguna celda vacía. Si siguen fallando, el error pasará a ser el de «Formato moneda» o `SUMA`, que es el problema real.
+4. Después, `npm run e2e` completo, que es el gate de cierre.
+
+Antes de cerrar la release, decidid si esas funcionalidades están en otra rama (¿`feature/0027-currency-fix`?) o hay que implementarlas. Con la versión 2.3.4 del kit cargada frente a la 3.0.0 que pide el proyecto, las skills pueden ser de una versión vieja.
+

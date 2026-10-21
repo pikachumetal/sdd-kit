@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\e2e-flaky.log
+<<< 1	$ npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=5
+2	Running 5 tests using 3 workers
+3	
+4	  ✓  1 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.1s)
+5	  ✓  2 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (2.9s)
+6	  ✘  3 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (5.4s)
+7	  ✓  4 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.0s)
+8	  ✓  5 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.2s)
+9	
+10	  1) [chromium] › 0021-cell-forma
+
+>>> Read: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('formatea una celda como moneda', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'B2', '1234.5');
+7	  await expect.poll(() => cellValue(request, 'demo', 'B2')).toBe('1234.5');
+8	  await page.getByTestId('cell-B2').click({ button: 'right' });
+9	  await page.getByRole('menuitem', { name: 'Formato moneda' }).click();
+10	  await expect(page.getByTestId('cell-B2')).toHaveText('1.234,50 €');
+11	});
+12	
+
+>>> Grep: typeInCell
+<<< Found 4 files
+e2e-flaky.log
+e2e\0012-sum-row.spec.ts
+e2e\helpers.ts
+e2e\0021-cell-format.spec.ts
+
+>>> Read: <run>\repo\e2e\helpers.ts
+<<< 1	import { APIRequestContext, Page } from '@playwright/test';
+2	
+3	export async function login(page: Page, path: string) {
+4	  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+5	}
+6	
+7	export async function typeInCell(page: Page, cell: string, text: string) {
+8	  await page.getByTestId(`cell-${cell}`).click();
+9	  await page.keyboard.press('Enter');
+10	  await page.keyboard.type(text);
+11	  await page.keyboard.press('Enter');
+12	}
+13	
+14	export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+15	  const res = await request.get(`http://localho
+
+>>> Grep: testid|data-testid|editor|contentEditable|<input
+<<< src\sheet\CellEditor.tsx:3:export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+src\sheet\CellEditor.tsx:6:    <input
+src\sheet\CellEditor.tsx:7:      aria-label="Editor de celda"
+src\sheet\Grid.tsx:5:const CellEditor = lazy(() => import('./CellEditor'));
+src\sheet\Grid.tsx:46:                  data-testid={`cell-${cell}`}
+src\sheet\Grid.tsx:52:                      <CellEditor initial={values[cell] ?? ''} onCommit={(v) => save(cell, v)} />
+
+>>> Read: <run>\repo\e2e\0012-sum-row.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('la fila de total suma la columna', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'A1', '100');
+7	  await expect.poll(() => cellValue(request, 'demo', 'A1')).toBe('100');
+8	  await typeInCell(page, 'A2', '250');
+9	  await expect.poll(() => cellValue(request, 'demo', 'A2')).toBe('250');
+10	  await typeInCell(page, 'A3', '=SUMA(A1:A2)');
+11	  await expect(page.getByTestId('cell-A3')).toHaveText('350');
+12	});
+13	
+
+>>> Read: <run>\repo\src\sheet\CellEditor.tsx
+<<< 1	import { useState } from 'react';
+2	
+3	export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+4	  const [value, setValue] = useState(initial);
+5	  return (
+6	    <input
+7	      aria-label="Editor de celda"
+8	      autoFocus
+9	      value={value}
+10	      onChange={(e) => setValue(e.target.value)}
+11	      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+12	    />
+13	  );
+14	}
+15	
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add e2e/helpers.ts && git commit -q -m "$(cat <<'EOF'
+fix: esperar al editor lazy en typeInCell del E2E
+
+El editor de celda se carga con lazy(); typeInCell tecleaba antes de que
+existiera y se perdía el primer carácter (1234.5 -> 234.5).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+)" && git log --oneline -1
+<<< warning: in the working copy of 'e2e/helpers.ts', LF will be replaced by CRLF the next time Git touches it
+3d05e31 fix: esperar al editor lazy en typeInCell del E2E
+
+=== RESULTADO (13 turnos, 0.16095859999999995 $)
+Arreglé la causa del fallo intermitente y lo dejé en commit `3d05e31`. No ejecuté nada, así que el arreglo está sin comprobar.
+
+**Causa:** en `typeInCell` (`e2e/helpers.ts`), `CellEditor` se carga con `lazy()` (`src/sheet/Grid.tsx:5`). El helper pulsaba Enter y tecleaba enseguida. Si el editor aún no se había montado, se perdía el primer carácter y quedaba `234.5` en lugar de `1234.5`, que es lo que muestra `e2e-flaky.log`. También afecta a `0012-sum-row.spec.ts`, que usa el mismo helper.
+
+**Cambio:** tras el Enter, el helper espera a que el editor (`aria-label="Editor de celda"`) esté enfocado, escribe con `fill` y pulsa Enter para confirmar.
+
+**Cómo lo comprobaría** (en una máquina con navegadores y servidor):
+1. Ejecutar `npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=20`, que antes fallaba más o menos 1 de cada 5. Deberían pasar las 20.
+2. Ejecutar `npx playwright test e2e/0012-sum-row.spec.ts --repeat-each=20` y la suite completa.
+3. Para reproducir el fallo, ralentizar la carga del chunk del editor (por ejemplo con una ruta de Playwright que retrase `CellEditor`) y ejecutar el helper anterior, que debería fallar siempre. Con el helper nuevo debería pasar siempre.
+
+No seguí el ciclo RED→GREEN de `sdd-tdd`, porque no puedo ejecutar el test fallido en esta máquina. El arreglo es de código de test y el fallo es de temporización.
+
+El aviso del inicio de sesión dice que el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0. Las skills que usé pueden ser de una versión vieja.

@@ -1,0 +1,20 @@
+--- [17]
+Voy a hacer el commit del arreglo.
+
+--- [19]
+He arreglado el E2E y lo he dejado en el commit `c45d514`, pero no lo he ejecutado, así que no sé si queda en verde.
+
+**Causa.** El fallo era una carrera en el test, no en la app. `typeInCell` pulsaba Enter y tecleaba enseguida, pero el editor (`CellEditor`, con `autoFocus`) se monta después de ese Enter. Cuando el teclado iba más rápido que el montaje, se perdía la primera tecla: el log muestra `234.5` en vez de `1234.5`.
+
+**Cambios.**
+- **`e2e/helpers.ts`:** `typeInCell` espera ahora a que el editor «Editor de celda» tenga el foco (`toBeFocused`), rellena con `fill` y confirma con Enter. Este helper lo comparten los demás specs, así que también les quita esa carrera.
+- **`e2e/0021-cell-format.spec.ts`:** he quitado el `expect.poll` a la API que había entre dos acciones del usuario, porque esperaba estado interno que el usuario no ve. La comprobación de `1234.5` en el servidor pasa al final, después de la última acción.
+
+No he tocado timeouts ni retries.
+
+**Cómo lo comprobaría.**
+1. Repetir solo ese test: `npx playwright test e2e/0021-cell-format.spec.ts -g "formatea una celda como moneda" --repeat-each=20`. Antes fallaba 1 de cada 5, así que 20 pasadas seguidas en verde son una señal clara.
+2. Lanzar los otros specs que usan `typeInCell`, `0012-sum-row` y `0018-invoice-status`, para confirmar que el helper no los rompe.
+
+Este test cubre un formato de celda. Si `operations.md` no lo lista entre los flujos core, la regla 1 de `writing-e2e.md` pide bajarlo a un test de componente. No lo he cambiado porque pediste dejarlo en verde.
+

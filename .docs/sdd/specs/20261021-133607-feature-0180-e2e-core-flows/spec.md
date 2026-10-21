@@ -78,6 +78,7 @@ Review de spec propuesta: ninguna — señales: MODIFIED (`operations.md` dice c
 - `operations.md` declara cómo se levanta todo, y cada test crea y borra sus propios datos — prompt de arranque
 - La referencia incluye no teclear tras un cambio de foco o de celda sin esperar a un estado visible, y que `waitForTimeout` no es una espera, con el ejemplo de `typeInCell` de la 0223 — prompt de arranque
 - RED previo a la spec, 4 sujetos Sonnet con un techo de 12 $ — «Sí, 4 sujetos, techo 12 $ (Recomendada)»
+- El triaje de un test inestable se escribe aunque su RED salió limpio 4 de 4 (`r3` ×2, `r3b` ×2): excepción al Art. I por decisión del dev-lead, con la propuesta de recorte rechazada el 2026-10-21 — «No, mantenlo»
 
 ## Intent
 
