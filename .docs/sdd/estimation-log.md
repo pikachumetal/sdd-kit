@@ -195,19 +195,20 @@
 | 2026-10-20 | 0203 | infra/tooling | 6 | 2.2 | 0.37 | 109448k | 10103k | 4.97 | 40.05 | 20261020-115102-feature-0203-single-id-sequence |
 | 2026-10-21 | 0205 | patch | 0.5 | 0.38 | 0.76 | — | — | no aplica | — | 20261021-125938-patch-0205-hook-migration-cap |
 | 2026-10-21 | 0180 | docs | 4 | 2.8 | 0.7 | 80309k | 6597k | 7.73 | 28.11 | 20261021-133607-feature-0180-e2e-core-flows |
+| 2026-10-21 | 0207 | docs | 3 | 1.58 | 0.53 | 64997k | 6359k | 8.29 | 23.92 | 20261021-174559-feature-0207-e2e-review-and-closing |
 
-**Factor de calibración** (ratio mediano real/estimado, 156 artefactos): **0.58** · media 0.76
+**Factor de calibración** (ratio mediano real/estimado, 157 artefactos): **0.58** · media 0.76
 
 - p25–p75: 0.4–0.9
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 27 % · sobreestimadas: 64 % · infraestimadas: 9 %
 - Error absoluto (h): media 1.45 · mediana 1
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.58
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.56
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 56 | 36 % |
-| 0.5–0.8 | 50 | 32 % |
+| 0.5–0.8 | 51 | 32 % |
 | 0.8–1.25 | 36 | 23 % |
 | 1.25–2 | 8 | 5 % |
 | ≥2 | 6 | 4 % |
@@ -215,7 +216,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 85 | 0.56 | 0.39–0.77 |
+| docs | 86 | 0.56 | 0.39–0.76 |
 | infra/tooling | 35 | 0.4 | 0.35–0.53 |
 | patch | 35 | 1.2 | 0.8–1.37 |
 
@@ -236,6 +237,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 43 | 131.02 | 0.53 | 284.45 | 1045.8 |
+| sin publicar | 44 | 132.6 | 0.53 | 292.74 | 1069.72 |
 
 > Ver `estimation.md`.

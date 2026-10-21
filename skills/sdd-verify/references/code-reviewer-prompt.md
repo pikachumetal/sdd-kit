@@ -13,6 +13,10 @@ Incumplir una de estas restricciones es **Important**, aunque el resto de este e
 
 Tests RED: modificarlos es cambiar una aserción, un nombre de test o un dato. El formato que exige el linter o el formateador del proyecto (una línea en blanco, la sangría) no es una modificación.
 
+## E2E del proyecto
+
+<«Flujos core», «Retries» y «Timeouts» de operations.md §Testing, literales, o «sin E2E declarados»>
+
 ---
 
 ## Cómo revisar
@@ -73,6 +77,11 @@ pass, review it in passes yourself and say so in your report.
 - Edge cases handled?
 
 **Comments:** a comment that repeats what the code says is Important, also when «Restricciones de código» doesn't mention comments.
+
+**E2E tests.** With the fields of «E2E del proyecto» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
+- a new E2E test that names none of the core flows: what no core flow covers is tested one layer down;
+- a retry or a timeout raised above the declared value, in a test or in the runner's config, without its reason written in `operations.md`;
+- a wait on internal state (an API poll, a store, an attribute the user doesn't see) between two user actions, without a reason in a comment. «Without waiting, the app wouldn't have the data yet» is not a reason: it is the failure the test exists to catch. A wait the test needs is not a strength.
 
 **The five books.** The tables below come from five books of good design. Two rules bind them:
 

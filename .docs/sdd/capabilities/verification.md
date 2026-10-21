@@ -26,7 +26,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - WHEN el hilo despacha la revisión final
 - THEN con `sdd-parallel-agents` y en segundo plano salen dos revisores sobre `a1b2c3d`: el eje Spec con `sdd-kit:effort-high` + `opus` y el eje Código con `sdd-kit:effort-high` + `sonnet`, cada uno con su vigía de silencio
 - AND el encargo de cada eje lleva la cabecera de `encargo-revision.md` («Restricciones de código»), su sección «Cómo revisar» y el encargo de su eje de `sdd-verify`
-- AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, solo el paquete; el eje Arquitectura, el paquete y `architecture.md`
+- AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, el paquete y «Flujos core», «Retries» y «Timeouts» de `operations.md` §Testing, literales, o `sin E2E declarados`; el eje Arquitectura, el paquete y `architecture.md`
 - AND con `Eje Arquitectura: sí — <frontera>` sale además el eje Arquitectura, con `sdd-kit:effort-high` + `opus`
 - AND con `control.maxParallelAgents: 2` y tres ejes, salen dos y el tercero cuando vuelve uno
 - AND los ejes trabajan en el mismo worktree desanclado `review-<id>-a1b2c3d`
@@ -175,6 +175,16 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND el último revisado es el segundo sha de la `Re-revisión:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
 - AND una línea en el formato 2.x (`Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d`, sin ejes) cuenta como revisión final, y el tramo de la única re-revisión empieza en su `sobre`, con la pasada de fix dentro, como en el cierre único
 - AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe de los ejes en esta sesión) invoca `sdd-verify` para la revisión final
+
+### El eje Código marca los E2E que no siguen la política del proyecto
+
+- GIVEN `operations.md` §Testing con tres flujos core (`0012-sum-row`, `0015-export-pdf` y `0018-invoice-status`), `Timeouts: por defecto` y `Retries: 0` en local
+- AND un diff que añade `e2e/0024-remember-filter.spec.ts`, con un test que elige «cobrada» en «Estado», espera con `expect.poll(() => savedStatus(request))` y después sale de la pantalla, y otro que cuenta las cuatro opciones del desplegable, y sube `playwright.config.ts` a `timeout: 90_000` y `expect: { timeout: 20_000 }` sin motivo
+- WHEN revisa el eje Código
+- THEN marca Important que los dos tests no nombran ninguno de los flujos core
+- AND marca Important los dos timeouts subidos sin motivo escrito en `operations.md`
+- AND marca Important la espera a `savedStatus` entre elegir el estado y salir de la pantalla, sin motivo en un comentario
+- AND con `sin E2E declarados` en el encargo no marca ninguno de los tres
 
 ## Reglas de la capacidad
 

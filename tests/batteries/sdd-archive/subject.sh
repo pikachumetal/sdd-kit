@@ -32,6 +32,7 @@ done_0010() {
   cp "$IMPL/fixtures/app-task1.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-task1.test.js" "$R/test/cancel.test.js"
   commit "feat(bookings): cancelar con un motivo de la lista"
   cp "$IMPL/fixtures/app-done.js" "$R/src/app.js"; cp "$IMPL/fixtures/cancel-done.test.js" "$R/test/cancel.test.js"
+  [ -f "$R/e2e/run.mjs" ] && cp "$E2E/e2e/cancel-0010.e2e.mjs" "$R/e2e/cancel.e2e.mjs"
   commit "feat(bookings): listado de canceladas con su motivo"
   A=$(short HEAD)
   printf '%s\n' '---' 'id: 20261008-100000-feature-0010-cancel-reason' 'title: Tasks — Motivo al cancelar' '---' '' '# Tasks — Motivo al cancelar (registro vivo)' '' \
@@ -41,6 +42,29 @@ done_0010() {
     | put "$F10/tasks.md"
   commit "docs(sdd): tasks.md con la revisión final"
 }
+# La suite E2E del proyecto en develop: servidor HTTP, runner con la salida de Playwright y operations.md con sus campos E2E.
+E2E="$HERE/fixtures/e2e"
+# Un puerto por sujeto: dos sujetos a la vez no comparten servidor.
+E2E_PORT=$((4300 + RANDOM % 600))
+e2e_suite() {
+  mkdir -p "$R/e2e" "$R/scripts" "$R/.docs/sdd/steering"
+  cp "$E2E/server.mjs" "$R/"; cp "$E2E/e2e/run.mjs" "$E2E/e2e/free.e2e.mjs" "$R/e2e/"; cp "$E2E/e2e/cancel-base.e2e.mjs" "$R/e2e/cancel.e2e.mjs"
+  cp "$E2E/scripts/"*.mjs "$R/scripts/"
+  printf '{"port": %s, "timeout": 30000, "expectTimeout": 5000, "retries": 0}
+' "$E2E_PORT" > "$R/e2e/config.json"
+  printf '{"type": "module", "scripts": {"test": "node --test test/", "test:e2e": "node e2e/run.mjs", "env:up": "node scripts/env-up.mjs", "env:down": "node scripts/env-down.mjs"}}
+' > "$R/package.json"
+  sed "s/PORT/$E2E_PORT/" "$E2E/operations.md" > "$R/.docs/sdd/steering/operations.md"
+  cat "$E2E/README-tail.md" >> "$R/README.md"
+  commit "test: suite e2e"
+}
+# Un servidor que arrancó otra pasada, desde el código de develop, escucha ya en el puerto de la suite.
+stale_server() {
+  local stale="$RUN/stale-env"
+  mkdir -p "$stale"; g archive develop | tar -x -C "$stale"
+  "$NODE" "$stale/scripts/env-up.mjs" >/dev/null || die "no arrancó el servidor ajeno"
+}
+
 # El patch 0008 con su fix commiteado, sobre el molde de salas de using-sdd; con «hotfix», la rama sale de main.
 done_0008() {
   local row='| 0008 | Patch: si cancelo una reserva que no existe me dice «cancelada» igual | ⏳ |' branch=feature/0008-cancel-missing
@@ -153,6 +177,8 @@ case "$(cell Molde)" in
     sed -i 's/^- Nuevas: `bookings`/- Modificadas: `bookings`/' "$R/$F10/spec.md"; commit "docs(sdd): bookings ya existe"
     develop_advances; capability_advances ;;
   reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
+  reservas-e2e) mold_reservas; e2e_suite; done_0010 ;;
+  reservas-e2e-stale) mold_reservas; e2e_suite; done_0010; stale_server ;;
   reservas-plan) mold_reservas; e2e_red_base; g checkout -q -b feature/0010-cancel-reason
     approved_0010 | put "$F10/spec.md"; put "$F10/plan.md" < "$IMPL/fixtures/plan-0010.md"
     commit "docs(sdd): abrir la feature 0010 con su spec y su plan" ;;
@@ -167,12 +193,15 @@ case "$SC" in
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
+# Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
+[ -f "$R/scripts/env-down.mjs" ] && "$NODE" "$R/scripts/env-down.mjs" >/dev/null 2>&1
 for kept in tasks walkthrough patch; do
   for dir in "$F10" "$P8"; do [ -f "$R/$dir/$kept.md" ] && subject_keep "$R/$dir/$kept.md" "$kept.md"; done
 done
 for mig in "$R"/skills/sdd-upgrade/references/migrations/v*.md; do [ -f "$mig" ] && subject_keep "$mig" "$(basename "$mig")"; done
 for kept in ROADMAP.md .docs/sdd/steering/debt.md .docs/sdd/capabilities/bookings.md; do [ -f "$R/$kept" ] && subject_keep "$R/$kept" "$(basename "$kept")"; done
 for adr in "$R"/.docs/sdd/decisions/*.md; do [ -f "$adr" ] && subject_keep "$adr" "$(basename "$adr")"; done
+[ -f "$R/.docs/sdd/steering/operations.md" ] && subject_keep "$R/.docs/sdd/steering/operations.md" operations.md
 for doc in roadmap tech-stack changelog; do [ -f "$R/.docs/sdd/$doc.md" ] && subject_keep "$R/.docs/sdd/$doc.md" "$doc.md"; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all --graph; echo "## etiquetas"; g tag -n1
   echo "## roadmap en develop"; g show develop:.docs/sdd/roadmap.md 2>/dev/null; echo "## bookings en develop"; g show "develop:$CAP" 2>/dev/null; echo "## tech-stack en develop"; g show develop:.docs/sdd/tech-stack.md 2>/dev/null | tail -n 20; } | subject_save

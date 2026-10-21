@@ -89,5 +89,5 @@ Playwright's defaults: 30 s per test, 5 s per assertion, no retries. Retries are
 | "Without waiting for the server, the next action would have nothing" | That's what the user gets. The test must fail there, not wait it out. |
 | "The helper already types in cells; I reuse it" | A shared helper that types before the editor is ready loses keys in every test. Wait for the visible state, in the helper. |
 | "I raise this one timeout to 10 s: the server is slow" | A raised timeout hides the race on a fast machine and loses it on a slow one. Keep the default or write the reason in `operations.md`. |
-| "Retries: 2 makes the suite green" | It makes the failure invisible. Triage it, or `test.fixme()` with its issue. |
+| "Retries: 2 makes the suite green" | It makes the failure invisible. Triage it, or declare it `test.fixme('<title>', { annotation: { type: 'issue', description: '<url>' } }, …)`. |
 | "The behavior is new, so it gets its own E2E file" | New isn't core. Name the core flow, or go one layer down. |
