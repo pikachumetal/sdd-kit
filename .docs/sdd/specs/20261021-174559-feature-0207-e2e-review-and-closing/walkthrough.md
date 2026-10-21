@@ -87,11 +87,12 @@ created: 2026-10-21
 
 - Baseline al arrancar (`moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`, con sujetos y commits a la vez): kit 1351/1351, cli 1122/1122, `cli:test-min` 3/1419 en rojo («fatal: failed to write commit object»).
 - Suite completa: `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` → kit 1354/1354, cli 1124/1124, `cli:test-min` 9 en rojo de 1419 (siete ficheros de `test/merge/*.slow`: «unknown error occurred while reading the configuration files», «cannot use .git/info/exclude», «'origin' does not appear to be a git repository» en `Z:\TEMP\sdd-merge-*`), `cli:test-slow` saltada por moon tras el rojo · 17 min 16 s · configuración: la del gate · sobre la pasada de fix (juntada en el cierre). La rama no toca `cli/`.
+- **Suite del cierre, en verde**: `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` → kit 1354/1354, cli 1124/1124, slow 295/295, min 1419/1419 · 14 min 38 s · configuración: la del gate, con `%TEMP%` de vuelta en el NVMe `C:` (el dev-lead lo había movido ese día a `Z:`, un disco mecánico WD Green, por los temporales de Claude) · sobre `582da606`. Los rojos de las pasadas anteriores eran de ese disco.
 - `base: en rojo: el mismo comando también falla sin la rama` — `moon run cli:test-min` en un worktree desanclado de `origin/develop` (`a7f9afb6`): 2 en rojo de 1417 (`lock-and-base`, `hotfix`), 13 min 27 s. Fila de deuda «Dos tests lentos ajenos fallan con la suite entera y pasan solos» (parcial desde la 0204: «los fallos sueltos de git con la máquina cargada»).
 
 ### 4.2 Smoke / tests
 
-- Validación en campo: 2026-10-21 · revisión final Spec y Código sobre `6fa6d47a`, pasada de fix y re-revisión (juntadas en el cierre; la re-revisión, 1 Important nuevo resuelto por enmienda y 3 Minor adjudicados) · 21 sujetos (RED, GREEN y dos REFACTOR) · gate de cierre con `cli:test-min` en rojo también sin la rama (4.1).
+- Validación en campo: 2026-10-21 · revisión final Spec y Código sobre `6fa6d47a`, pasada de fix y re-revisión (juntadas en el cierre; la re-revisión, 1 Important nuevo resuelto por enmienda y 3 Minor adjudicados) · 21 sujetos (RED, GREEN y dos REFACTOR) · gate de cierre en verde sobre `582da606` tras volver `%TEMP%` al NVMe (4.1).
 
 | THEN | Evidencia | Resultado |
 | --- | --- | --- |
