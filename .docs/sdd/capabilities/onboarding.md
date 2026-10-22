@@ -67,7 +67,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - GIVEN un `sdd-init` sobre un proyecto cuyo `.claude/settings.json` es `{"permissions": {"allow": ["Bash(npm test)"]}}`
 - WHEN ejecuta `sdd init --root <raíz> --finish`
 - THEN `.claude/settings.json` conserva `permissions` y gana `"autoMemoryEnabled": false`, `extraKnownMarketplaces.sdd-kit` con la fuente `github` `pikachumetal/sdd-kit` y `extraKnownMarketplaces.superpowers-marketplace` con la fuente `github` `obra/superpowers-marketplace`, los dos con `"autoUpdate": true`, y `enabledPlugins` con `"sdd-kit@sdd-kit": true` y `"superpowers@superpowers-marketplace": true`
-- AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json` una sola vez cada una, y cada ruta de `--ignore`
+- AND `.gitignore` contiene las líneas `.playwright-mcp/`, `.superpowers/`, `.docs/sdd/sdd-kit.local.json` y `.temp/` una sola vez cada una, y cada ruta de `--ignore`
 - AND con `"autoMemoryEnabled": true` previo, la salida dice `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia` y el agente pregunta; con su «sí», repite `--finish` con `--memory-off` y la clave queda en `false`; con su «no», se queda en `true` y el resumen de cierre lo anota
 - AND si `claude plugin marketplace list` no muestra `superpowers-marketplace`, el agente ejecuta `claude plugin marketplace add obra/superpowers-marketplace`
 
@@ -129,7 +129,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - GIVEN `operations-template.md`
 - WHEN se lee
 - THEN tiene `## Comandos`, `## Testing`, `## Frontend` y `## Entornos`, y no tiene tabla de versiones ni «Decisiones abiertas»
-- AND `## Testing` pide cada suite con su comando y su duración, el comando de lo afectado, el gate de cierre y el de merge, cómo entra el agente en la aplicación y si los tests usan el motor de producción
+- AND `## Testing` pide cada suite con su comando y su duración, el comando de lo afectado, el gate de cierre y el de merge, cómo entra el agente en la aplicación, si los tests usan el motor de producción y dónde deja cada suite sus temporales
 - AND `## Frontend` tiene los campos URL, Detector, Viewports, Runner E2E, Acceso, Temas, Pantalla de referencia y Skills de apoyo
 - AND `## Testing`, solo si el proyecto tiene E2E, pide los flujos core con su test, el presupuesto de la suite E2E, los retries, los timeouts, el entorno de la suite y cómo crea y borra cada test sus datos; y cómo entra el agente nombra el usuario del agente, distinto del de la persona que valida
 
@@ -175,6 +175,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - GIVEN una init con código cuyo `package.json` tiene los scripts `test` (`vitest run`) y `e2e` (`playwright test`), y un CI que ejecuta `npm test`
 - WHEN genera `operations.md`
 - THEN `## Testing` propone las suites `unit` · `npm test` y `e2e` · `npm run e2e`, el gate de cierre y el de merge con esos comandos, y cada duración como `pendiente`
+- AND con un `playwright.config.ts` sin `outputDir`, «Temporales» propone `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`, sin editar la config ni añadir filas al roadmap; una suite cuyo sitio no fijan ni su config ni el valor por defecto de su runner sale como `no declarado`, sin propuesta
 - AND sin código, pregunta «¿Cómo se prueba?» con la recomendación que sale del stack; con «no sé», cada campo sin respuesta queda `no declarado`
 
 ### El marcador sale del kit y se escribe al final
@@ -201,7 +202,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar. El progreso de una init en curso, en la clave `init` de `.docs/sdd/sdd-kit.json` (`approved` y `config`), que `sdd init --finish` quita. El bloque de `.claude/settings.json` que escribe la init, en una constante de `cli/src/init/`, que el README reproduce.
+- **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar. El progreso de una init en curso, en la clave `init` de `.docs/sdd/sdd-kit.json` (`approved` y `config`), que `sdd init --finish` quita. El bloque de `.claude/settings.json` que escribe la init, en una constante de `cli/src/init/`, que el README reproduce. Los temporales del proyecto, en `.temp/` de la raíz, que la init ignora en `.gitignore`.
 - **Idioma de los nombres**: no aplica.
 - **Límites**: un repo es «con código» si su raíz tiene `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json` o `Gemfile`, o, fuera de `node_modules/`, `.git/` y `.docs/`, un fichero `.ts`, `.js`, `.cs`, `.java`, `.py`, `.go`, `.rs`, `.php`, `.rb`, `.kt` o `.swift`; si no, «sin código».
 - **Avisos**: la init dice su modo en una línea antes de la primera pregunta, y con «con código» ofrece corregirlo si es un template; con `autoMemoryEnabled: true` pregunta antes de cambiarlo, y un «no» lo anota el resumen de cierre; tras un template 2.x, el resumen de cierre dice que el proyecto se pone al día con la migración.

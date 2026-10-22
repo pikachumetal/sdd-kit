@@ -208,7 +208,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
     # En secuencia basta: con la ruta sin fase, la segunda borraba el molde de la primera (rm -rf en subject_init).
     foreach ($phase in 'red', 'green') {
-      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; PHASE = $phase; SUBJECT_SH = Join-Path $campaign.Spec "$phase/subject.sh" }
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; PHASE = $phase; SUBJECT_SH = Join-Path $campaign.Spec "$phase/subject.sh"; KEEP_MOLD = '1' }
       $run.ExitCode | Should -Be 0 -Because $run.Output
     }
 
@@ -228,16 +228,80 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     (Get-Subjects $campaign).Count | Should -Be 0
   }
 
-  It 'aborta con RUNS_DIR fuera del scratchpad' {
+  It 'aborta con RUNS_DIR fuera del scratchpad y de .temp/' {
     $campaign = New-Campaign (Join-Path $TestDrive 'outside')
-    $outside = Join-Path $TestDrive 'runs'
-    New-Item -ItemType Directory -Force $outside | Out-Null
+    # El TestDrive puede colgar de .temp/ del repo: la ruta de fuera no se crea, la guarda aborta antes.
+    $outside = Join-Path ([IO.Path]::GetPathRoot($TestDrive)) "sdd-fuera-$([guid]::NewGuid().ToString('N'))/runs"
 
     $run = Invoke-Campaign $campaign @{ RUNS_DIR = $outside }
 
     $run.ExitCode | Should -Not -Be 0
-    $run.Output | Should -Match 'fuera del scratchpad'
+    $run.Output | Should -Match 'fuera del scratchpad o de \.temp/'
     (Get-Subjects $campaign).Count | Should -Be 0
+    Split-Path $outside | Should -Not -Exist
+  }
+
+  It 'acepta RUNS_DIR bajo .temp/ del repo' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'repo-temp')
+    $runs = Join-Path (Split-Path $PSScriptRoot) ".temp/launcher-$([guid]::NewGuid().ToString('N'))"
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; RUNS_DIR = $runs }
+
+      $run.ExitCode | Should -Be 0 -Because $run.Output
+      (Get-Subjects $campaign).Count | Should -Be 1
+    }
+    finally { Remove-Item -LiteralPath $runs -Recurse -Force -ErrorAction SilentlyContinue }
+  }
+
+  It 'borra el molde del sujeto y conserva su stream y sus argumentos' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'cleanup')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Join-Path $campaign.Runs 'red/a-1' | Should -Not -Exist
+    Join-Path $campaign.Runs 'red/a-1.jsonl' | Should -Exist
+    Join-Path $campaign.Runs 'red/a-1.args' | Should -Exist
+    Join-Path $campaign.Out 'a-1/readme.md' | Should -Exist
+  }
+
+  It 'con KEEP_MOLD=1 conserva el molde' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'keep')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; KEEP_MOLD = '1' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Join-Path $campaign.Runs 'red/a-1/repo/README.md' | Should -Exist
+  }
+
+  It 'borra la carpeta de Claude Code del sujeto y no la de otros' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'claude-tmp')
+    $base = Join-Path $TestDrive 'cc-tmp'
+    $mold = [IO.Path]::GetFullPath((Join-Path $campaign.Runs 'red/a-1/repo'))
+    $own = Join-Path $base "claude/$($mold -replace '[^A-Za-z0-9]', '-')"
+    $other = Join-Path $base 'claude/D--code-otro-proyecto'
+    New-Item -ItemType Directory -Force (Join-Path $own 'tasks'), $other | Out-Null
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; CLAUDE_CODE_TMPDIR = $base }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $own | Should -Not -Exist
+    $other | Should -Exist
+  }
+
+  It 'subject_cleanup no borra con la etiqueta vacía ni fuera de RUNS_DIR' {
+    $root = (Join-Path $TestDrive 'guard') -replace '\\', '/'
+    New-Item -ItemType Directory -Force "$root/runs/red/x", "$root/elsewhere" | Out-Null
+    $lib = (Join-Path $script:Headless 'lib.sh') -replace '\\', '/'
+    $script = ". '$lib'; RUNS='$root/runs/red'; " +
+      "LABEL=''; RUN='$root/runs/red/x'; R=`"`$RUN/repo`"; subject_cleanup; " +
+      "LABEL=x; RUN='$root/elsewhere'; R=`"`$RUN/repo`"; subject_cleanup"
+
+    $output = (& $script:Bash -c $script 2>&1) -join "`n"
+
+    "$root/runs/red/x" | Should -Exist
+    "$root/elsewhere" | Should -Exist
+    ([regex]::Matches($output, 'no se borra')).Count | Should -Be 2 -Because $output
   }
 
   It 'aborta antes de escribir si el molde no es su propio repo git (ticket 0086 §1)' {

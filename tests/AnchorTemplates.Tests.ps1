@@ -82,9 +82,9 @@ Describe 'Plantillas de documentos de la 3.0.0' {
     Get-Section (Get-TemplateContent 'operations') '## Testing' | Should -Match ([regex]::Escape($_))
   }
 
-  It '§Testing de operations tiene sus doce campos, seis de ellos de E2E' {
+  It '§Testing de operations tiene sus trece campos, seis de ellos de E2E' {
     Get-BoldFields (Get-Section (Get-TemplateContent 'operations') '## Testing') |
-      Should -Be @('Suites', 'Lo afectado', 'Gate de cierre', 'Gate de merge', 'Acceso a la aplicación', 'Motor de producción', 'Flujos core', 'Presupuesto E2E', 'Retries', 'Timeouts', 'Entorno de la suite', 'Datos')
+      Should -Be @('Suites', 'Lo afectado', 'Gate de cierre', 'Gate de merge', 'Acceso a la aplicación', 'Motor de producción', 'Temporales', 'Flujos core', 'Presupuesto E2E', 'Retries', 'Timeouts', 'Entorno de la suite', 'Datos')
   }
 
   It '«Entorno de la suite» admite no aplica' {

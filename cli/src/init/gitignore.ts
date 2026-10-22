@@ -1,4 +1,4 @@
-export const INIT_IGNORES = ['.playwright-mcp/', '.superpowers/', '.docs/sdd/sdd-kit.local.json'];
+export const INIT_IGNORES = ['.playwright-mcp/', '.superpowers/', '.docs/sdd/sdd-kit.local.json', '.temp/'];
 
 export function mergeGitignore(current: string | null, extra: string[]): string {
   const text = current ?? '';
