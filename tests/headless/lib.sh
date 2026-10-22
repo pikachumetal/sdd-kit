@@ -9,7 +9,7 @@
 #   put_kit_marker '"ids": {"mode": "sequence"}'           # sdd-kit.json del molde con la versión del kit (kit_version)
 #   subject_resume "<mensaje>"                            # segundo turno sobre la misma sesión
 #   subject_converse <hoja de la persona> <turnos máximos> # la persona (haiku) contesta hasta que el sujeto deja de preguntar
-# Variables: RUNS_DIR (obligatoria, en el scratchpad; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
+# Variables: RUNS_DIR (obligatoria, en el scratchpad o en .temp/ del repo; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
 # que se suman a --allowedTools, como un servidor MCP),
@@ -17,7 +17,8 @@
 # SUBJECT_TIMEOUT (segundos de reloj por sujeto; 0, el valor por omisión, sin tope),
 # TURN2 (mensaje del segundo turno: subject_launch reanuda la sesión con subject_resume),
 # DRY_RESULT (texto del result en seco; con «?», subject_converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
-# DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5).
+# DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
+# KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre).
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
 NODE="${NODE:-node}"
@@ -30,7 +31,7 @@ subject_init() {
   # --plugin-dir en ruta Windows: con la de Git Bash, 4 de 10 sujetos recibieron «Unknown skill» (task 0009).
   KIT="$(cygpath -m "$1" 2>/dev/null || echo "$1")"; LABEL="$2"; OUT="$3"
   RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
-  case "$RUNS" in *scratchpad*) ;; *) die "RUNS_DIR fuera del scratchpad: $RUNS" ;; esac
+  case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" ;; esac
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
   # Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency» (ticket de la feature 0095 §2).
   if [ -z "${SUPERPOWERS_DIR:-}" ] && grep -q '"dependencies"' "$KIT/.claude-plugin/plugin.json" 2>/dev/null; then
@@ -43,6 +44,7 @@ subject_init() {
   OUT="$(cd "$OUT" && pwd)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
   rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=
+  trap subject_cleanup EXIT
   JSONL="$RUNS/$LABEL.jsonl"
 }
 
@@ -58,6 +60,21 @@ mold_is_repo() {
     || die "el molde $R no es su propio repo git: falta g init en el subject.sh antes del primer g"
   MOLD_IS_REPO=1
 }
+# El molde y la carpeta que Claude Code crea para su cwd pesan; el stream y las salidas ya están guardados.
+subject_cleanup() {
+  [ -n "${LABEL:-}" ] && [ "${RUN#"$RUNS"/}" != "$RUN" ] || { echo "[${LABEL:-sujeto}] no se borra $RUN: fuera de $RUNS o sin etiqueta" >&2; return 0; }
+  remove_claude_folder
+  [ "${KEEP_MOLD:-}" = 1 ] || rm -rf "$RUN"
+}
+
+# Claude Code nombra la carpeta con la ruta Windows del cwd y cada carácter no alfanumérico como «-».
+remove_claude_folder() {
+  local base slug
+  base=$(cygpath -u "${CLAUDE_CODE_TMPDIR:-${TEMP:-/tmp}}" 2>/dev/null || echo "${CLAUDE_CODE_TMPDIR:-${TEMP:-/tmp}}")
+  slug=$( (cygpath -w "$R" 2>/dev/null || echo "$R") | sed 's/[^A-Za-z0-9]/-/g')
+  [ -n "$slug" ] && rm -rf "${base:?}/claude/$slug"
+}
+
 put() { mkdir -p "$(dirname "$R/$1")"; cat > "$R/$1"; }
 commit() { g add -A; g commit -q -m "$1" -m "${2:-Cuerpo del commit.}"; }
 

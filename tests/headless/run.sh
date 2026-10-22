@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lanzador de referencia de una campaña de sujetos headless (patch 0076): las campañas lo usan, no lo copian.
 # Uso: SPEC_DIR=<carpeta de la spec> PHASE=<red|green|refactor|ab> SUBJECT_SH=<subject.sh de la campaña> \
-#      KIT_DIR=<copia limpia del kit> RUNS_DIR=<carpeta en el scratchpad> SCENARIOS="p1 p2" SUBJECT=<n> \
+#      KIT_DIR=<copia limpia del kit> RUNS_DIR=<carpeta en el scratchpad o en .temp/ del repo> SCENARIOS="p1 p2" SUBJECT=<n> \
 #      SUBJECT_CAP=<sujetos> COST_CAP=<$> bash tests/headless/run.sh
 # SUBJECT_CAP y COST_CAP son los de la previsión de la spec y cuentan todas las fases de SPEC_DIR.
 # No lanza el siguiente sujeto si existe RUNS_DIR/stop («parada a petición»), si se llega a SUBJECT_CAP
@@ -11,7 +11,8 @@ set -u
 : "${SPEC_DIR:?define SPEC_DIR}" "${SUBJECT_SH:?define SUBJECT_SH}" "${KIT_DIR:?define KIT_DIR}" "${SCENARIOS:?define SCENARIOS}"
 : "${SUBJECT_CAP:?define SUBJECT_CAP (previsión de la spec)}" "${COST_CAP:?define COST_CAP (previsión de la spec)}"
 RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
-case "$RUNS" in *scratchpad*) ;; *) echo "RUNS_DIR fuera del scratchpad: $RUNS" >&2; exit 1 ;; esac
+REPO_ROOT="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) echo "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" >&2; exit 1 ;; esac
 OUT="$SPEC_DIR/${PHASE:-red}/out"
 
 subjects() { ls "$SPEC_DIR"/*/out/*.tools.txt 2>/dev/null | wc -l; }
