@@ -33,7 +33,7 @@ Review de spec: dos revisores (dominio Opus, técnica Sonnet), pedidos por el de
 5. **La guarda de `RUNS_DIR`** acepta una ruta que contenga `scratchpad` (como hoy) o que cuelgue de `<REPO_ROOT>/.temp/`, con `REPO_ROOT` el que ya calcula `lib.sh` desde su propia ruta; fuera de las dos aborta con `RUNS_DIR fuera del scratchpad o de .temp/: <ruta>`.
 6. **Sonda de los sujetos dentro del worktree**: con el scratchpad en `<worktree>/.temp/`, el `cwd` de un sujeto cuelga del repo del kit. Antes de cambiar `Start-KitSession.ps1`, un sujeto Haiku (~0,03 $) lanzado con `lib.sh` desde `.temp/`, con `CLAUDE_CODE_TMPDIR` apuntando ahí, dice qué ve. **Es un desvío y paro** si ve el `CLAUDE.md` del kit, si en el stream sale el hook `SessionStart` o la memoria del repo, o si lista skills distintas de las de la copia del kit y superpowers. La misma sonda mide el nombre de la carpeta de la decisión 4.
 7. **`Start-KitSession.ps1`** fija `CLAUDE_CODE_TMPDIR=<raíz del worktree>\.temp` mientras dura la sesión y lo restaura al salir, como ya hace con `SDD_KIT_SESSION_ROOT`; Claude Code crea `claude\` dentro.
-8. **El campo «Temporales»** de `## Testing` en `operations-template.md`, fuera del bloque E2E: «dónde deja hoy cada suite sus temporales y, si no es `.temp/`, la propuesta para llevarlos ahí», con el ejemplo `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`. La init y la migración leen el sitio de la config de la suite; si no lo pueden leer, el campo dice `no declarado` para esa suite y no proponen nada. No editan la config de las suites ni añaden filas al roadmap: lo apuntado en `operations.md` es la propuesta, y moverlo es trabajo del proyecto.
+8. **El campo «Temporales»** de `## Testing` en `operations-template.md`, fuera del bloque E2E: «dónde deja hoy cada suite sus temporales y, si no es `.temp/`, la propuesta para llevarlos ahí», con el ejemplo `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`. La init y la migración leen el sitio de la config de la suite o, si no lo fija, del valor por defecto de su runner (Playwright: `test-results/`); si ninguno lo dice, el campo dice `no declarado` para esa suite y no proponen nada; con el «no» del usuario, apunta solo el sitio. No editan la config de las suites ni añaden filas al roadmap: lo apuntado en `operations.md` es la propuesta, y moverlo es trabajo del proyecto.
 9. **La migración v3.0.0** (sin publicar: `plugin.json` dice 2.3.4) gana un paso: `.temp/` en `.gitignore` si falta, sin duplicar la línea exacta, y crea el fichero si no existe; y la misma pregunta de «Temporales» que la init, desde la misma fila de `sdd-init` (Art. V). Sin el dev-lead, los dos quedan pendientes en el informe, como el resto de la v3.0.0.
 10. **`structure.md` de `sdd-init`** lista `.temp/` entre las líneas de `.gitignore`.
 11. **Prueba de las skills (Art. I)**: el tramo de la batería de `sdd-init` (`n3` y `n6`, con una fila de rúbrica nueva, T3 «Temporales») y de `sdd-upgrade` (el escenario de v3.0.0 con Playwright, y uno sin E2E). Previsión: RED 4 sujetos, GREEN 8, una vuelta de REFACTOR de 4; techo `SUBJECT_CAP=16`, `COST_CAP=10` $, ~75 min, Sonnet. Pasos nuevos o cambiados de lo que sigue el agente: fila «How it is tested» de `sdd-init/SKILL.md` → `n3`, `n6`; paso de `.gitignore` de `v3.0.0.md` → los dos escenarios de `sdd-upgrade`; pregunta de «Temporales» de `v3.0.0.md` → los mismos; `structure.md` → sin escenario (lista de ficheros que ya lee `n6`).
@@ -151,7 +151,7 @@ Una `.temp/` por worktree, ignorada, como único sitio de temporales del repo, y
 - GIVEN una init con código cuyo `package.json` tiene los scripts `test` (`vitest run`) y `e2e` (`playwright test`), y un CI que ejecuta `npm test`
 - WHEN genera `operations.md`
 - THEN `## Testing` propone las suites `unit` · `npm test` y `e2e` · `npm run e2e`, el gate de cierre y el de merge con esos comandos, y cada duración como `pendiente`
-- AND con un `playwright.config.ts` sin `outputDir`, «Temporales» propone `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`, sin editar la config ni añadir filas al roadmap; una suite cuyo sitio de temporales no se lee de su config sale como `no declarado`, sin propuesta
+- AND con un `playwright.config.ts` sin `outputDir`, «Temporales» propone `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`, sin editar la config ni añadir filas al roadmap; una suite cuyo sitio no fijan ni su config ni el valor por defecto de su runner sale como `no declarado`, sin propuesta
 - AND sin código, pregunta «¿Cómo se prueba?» con la recomendación que sale del stack; con «no sé», cada campo sin respuesta queda `no declarado`
 
 **Reglas de la capacidad**
@@ -182,13 +182,15 @@ Una `.temp/` por worktree, ignorada, como único sitio de temporales del repo, y
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| `sdd-init`, `SKILL.md` | 2438 / 2460 | 22 | 2490 (~30 palabras en la fila «How it is tested») |
-| `sdd-init`, total | 3034 / 3060 | 26 | 3090 (lo anterior y `.temp/` en `structure.md`) |
-| `sdd-templates`, total | 15620 / 15620 | 0 | 15680 (~40 palabras del campo «Temporales») |
-| kit entero | 90248 / 90300 | 52 | 90380 (~75 palabras entre las tres) |
+| `sdd-init`, `SKILL.md` | 2438 / 2460 | 22 | 2490 (~30 palabras en la fila «How it is tested»); 2500 por la enmienda |
+| `sdd-init`, total | 3034 / 3060 | 26 | 3090 (lo anterior y `.temp/` en `structure.md`); 3100 por la enmienda |
+| `sdd-templates`, total | 15620 / 15620 | 0 | 15680 (~40 palabras del campo «Temporales»); 15690 por la enmienda |
+| kit entero | 90248 / 90300 | 52 | 90380 (~75 palabras entre las tres); 90400 por la enmienda |
 | `tech-stack.md` | 19266 / 19280 | 14 | sin cambio: las decisiones 4 y 5 sustituyen frases (decisión 12) |
 
 ## Enmiendas
+
+- 2026-10-22 — «Temporales» sale de la config de la suite o, si no lo fija, del valor por defecto de su runner; `no declarado` solo si ninguno lo dice; las frases del «no» y de las filas del roadmap van al texto, con los topes `sdd-init` 2500/3100, `sdd-templates` 15690 y kit 90400 — la regla decía «no se lee de su config → `no declarado`» y contradecía el THEN de `playwright.config.ts` sin `outputDir`; la revisión final (eje Spec) lo vio — aprobada: «Apruebo la enmienda (Recomendada)»
 
 ## Aprobaciones
 

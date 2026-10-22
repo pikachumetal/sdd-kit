@@ -43,8 +43,7 @@ subject_init() {
   # subject_launch hace cd al molde: un OUT relativo perdía las salidas (tickets 0077 §2 y 0064 §1).
   OUT="$(cd "$OUT" && pwd)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
-  rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=
-  trap subject_cleanup EXIT
+  rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=; trap subject_cleanup EXIT
   JSONL="$RUNS/$LABEL.jsonl"
 }
 
@@ -151,7 +150,7 @@ persona_reply() {
   local prompt="Eres el usuario de esta hoja: $(cat "$1"). Contesta en castellano solo lo que el agente pregunta, en una o dos frases; lo que la hoja no dice, «no sé». El agente dice: $2"
   if [ "${DRY_RUN:-}" = 1 ]; then echo "${DRY_PERSONA_COST:-0}" > "$3"; echo "Respuesta de la persona."; return; fi
   local reply
-  reply=$(timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" -p --model haiku --output-format json --max-turns 1 "$prompt" < /dev/null 2>> "$RUNS/$LABEL.err") || return $?
+  reply=$(timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" -p --model haiku --setting-sources "" --output-format json --max-turns 1 "$prompt" < /dev/null 2>> "$RUNS/$LABEL.err") || return $?
   echo "$reply" | "$NODE" -e 'const r = JSON.parse(require("fs").readFileSync(0, "utf8")); require("fs").writeFileSync(process.argv[1], String(r.total_cost_usd ?? 0)); process.stdout.write(r.result ?? "")' "$3"
 }
 

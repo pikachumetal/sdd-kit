@@ -9,7 +9,8 @@ const tempRoot = resolve(import.meta.dirname, '..', '..', '.temp');
 export function sweepRunFolders(root: string, now: number): void {
   for (const name of readdirSync(root)) {
     const path = join(root, name);
-    if (name.startsWith(RUN_PREFIX) && statSync(path).mtimeMs < now - STALE_AFTER_MS) removeQuietly(path);
+    const stats = name.startsWith(RUN_PREFIX) ? statSync(path, { throwIfNoEntry: false }) : undefined;
+    if (stats !== undefined && stats.mtimeMs < now - STALE_AFTER_MS) removeQuietly(path);
   }
 }
 

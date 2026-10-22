@@ -306,7 +306,18 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN el dev-lead pide «Actualízame al kit» y aprueba la tabla de operaciones
 - THEN `.docs/sdd/steering/operations.md` lleva en `## Testing` los campos E2E de `operations-template.md`, con `Retries: 0 en local; 2 en CI`, `Timeouts: 60 s por test, sin motivo escrito` y `Presupuesto E2E: pendiente`
 - AND lleva también «Entorno de la suite» y «Datos», con su valor o `pendiente`
-- AND los flujos core son los que el dev-lead nombra entre los candidatos de `e2e/`, y en un proyecto sin E2E la sección `## Testing` pasa tal cual
+- AND los flujos core son los que el dev-lead nombra entre los candidatos de `e2e/`, y en un proyecto sin E2E la sección `## Testing` pasa tal cual salvo «Temporales»
+
+### La migración a v3.0.0 ignora `.temp/` y propone los temporales de las suites
+
+- GIVEN un proyecto 2.x en 2.3.4 cuyo `.gitignore` no tiene `.temp/`, con `playwright.config.ts` sin `outputDir`
+- WHEN el dev-lead pide «Actualízame al kit» y aprueba la tabla de operaciones
+- THEN `.gitignore` gana la línea `.temp/` una sola vez, sin tocar las demás
+- AND `## Testing` de `.docs/sdd/steering/operations.md` lleva «Temporales» con `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`, sin editar la config de la suite
+- AND en un proyecto sin E2E cuyo `package.json` tiene `test` (`vitest run`) sin carpeta de salida en su config, «Temporales» dice `unit` · `no declarado`, sin propuesta
+- AND con `.temp/` ya en `.gitignore`, el paso lo dice y no duplica la línea
+- AND con el «no» del dev-lead a la propuesta, «Temporales» apunta solo el sitio actual de cada suite
+- AND sin el dev-lead, ni `.gitignore` ni «Temporales» cambian, y el informe los deja como pendientes con cómo reanudarlos
 
 ## Reglas de la capacidad
 

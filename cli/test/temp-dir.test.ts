@@ -7,10 +7,11 @@ import { sweepRunFolders } from './temp-setup.ts';
 
 const HOUR_MS = 60 * 60 * 1000;
 const slashed = (path: string): string => resolve(path).replaceAll('\\', '/');
+const repoTemp = slashed(resolve(import.meta.dirname, '..', '..', '.temp'));
 
 describe('run folder under .temp', () => {
   it('tmpdir lives in the run folder under .temp', () => {
-    expect(slashed(tmpdir())).toMatch(/\/\.temp\/vitest-[^/]+$/);
+    expect(slashed(tmpdir())).toMatch(new RegExp(`^${repoTemp.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/vitest-[^/]+$`, 'i'));
   });
 
   it('git does not climb into .temp', () => {
