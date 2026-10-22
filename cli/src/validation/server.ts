@@ -54,7 +54,7 @@ function page(steps: Step[]): string {
   const mount = `sddValidationPanel.mount('serve', ${JSON.stringify(steps).replace(/</g, '\\u003c')});`;
   const onChange = "window.sddValidationPanelOnChange = (marks) => marks.forEach(({ id, status, comment }) =>"
     + " fetch('/mark', { method: 'POST', body: JSON.stringify({ id, status, comment }) }));";
-  return `<!doctype html><meta charset="utf-8"><title>Validación</title><ol>${items}</ol>`
+  return `<!doctype html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Validación</title><ol>${items}</ol>`
     + `<script src="/panel.js"></script><script>${onChange} ${mount}</script>`;
 }
 
