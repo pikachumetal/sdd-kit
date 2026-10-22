@@ -1,0 +1,146 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- check"; node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-red/cli/bin/sdd.js" merge --check --project-root "<run>/repo"; echo "exit $?"; echo "--- worktrees"; git worktree list; echo "--- specs"; ls .docs/sdd/specs/ 2>&1; cat .docs/sdd/sdd-kit.json
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+exit 0
+--- worktrees
+<run>/repo 3eb3c45 [feature/0010-cancel-reason]
+--- specs
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manua
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && ls; head -30 spec.md; echo ----; cat tasks.md; cd ../..; ls; git log --oneline -8
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review
+
+>>> Bash: cd <run>/repo && git ls-files | grep -v '^.docs' ; sed -n 30,200p .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; cat package.json
+<<< .gitignore
+PRODUCT.md
+README.md
+e2e/cancel.e2e.mjs
+e2e/config.json
+e2e/free.e2e.mjs
+e2e/run.mjs
+package.json
+scripts/env-down.mjs
+scripts/env-up.mjs
+server.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Approach
+
+El motivo se guarda con la reserva cancelada; `canceladas` lista las reservas con estado cancelada.
+
+## Dónde se prueba
+
+- Motivo: por el comando `cancelar`, como `test/cancel.test.js`.
+- Listado: por la salida del comando `canceladas`, 
+
+>>> Bash: npm test 2>&1 | tail -15; cat README.md | head -30; cat src/app.js | head -60
+<<< npm notice run test
+npm notice run node --test test/
+✔ libres excluye la sala reservada en la franja (0.7537ms)
+✔ reservar --cada-semana crea la reserva semanal (0.2082ms)
+✔ cancelar con un motivo de la lista (0.871ms)
+✔ cancelar con un motivo fuera de la lista (0.1342ms)
+✔ canceladas enseña sala, día y motivo (14.4751ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.3574
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+
+## Trucos de la máquina de Laura
+
+- La suite E2E va el doble de rápida con `E2E_TRACE=light node e2e/run.mjs` (tr
+
+>>> Bash: cat server.mjs | head -30; for a in 'cancelar Norte lun --motivo "sala ocupada"' 'cancelar Norte lun --motivo vacaciones' 'cancelar Norte lun' 'canceladas'; do echo "\$ $a"; eval node src/app.js $a; done
+<<< import http from 'node:http';
+import { readFileSync } from 'node:fs';
+
+const { port } = JSON.parse(readFileSync(new URL('./e2e/config.json', import.meta.url)));
+const appUrl = new URL('./src/app.js', import.meta.url).href;
+// Cada sesión de test tiene su propio estado de la app: sus datos nacen y mueren con ella.
+const sessions = new Map();
+const appFor = (session) => {
+  if (!sessions.has(session)) sessions.set(session, import(`${appUrl}?session=${session}`));
+  return sessions.get(session);
+};
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url,
+
+=== RESULTADO (8 turnos, 0.1805282 $)
+Cierro la 0010 a medias: me paro en el paso 1 (validación), antes de escribir ningún registro. No hay `validation.mode: field`, así que sin tu validación no sigo.
+
+**Pre-checks**
+- El árbol está limpio.
+- `sdd merge --check` da `destino: listo` (`develop`, con worktree temporal).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, con la firma de Laura (modo `full`).
+- La revisión final consta en `tasks.md`: Spec opus+high limpia y Código sonnet+high limpia. Arquitectura quedó en «no (plan)».
+- `HEAD` (`3eb3c45`) solo añade `tasks.md` sobre lo revisado (`a60ccb5`). Es documentación y no lanzo otra revisión.
+- El hook de sesión avisa de que está cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Se arregla con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+**Mi smoke** (verificado por mí en este árbol):
+- `npm test` da 5/5 en verde.
+- `node src/app.js cancelar Norte lun --motivo "sala ocupada"` responde `cancelada Norte lun (sala ocupada)`.
+- Con `--motivo vacaciones` responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+- Sin `--motivo` responde lo mismo.
+- No he podido ver el listado `canceladas` por CLI. El estado vive en memoria de cada proceso, así que una invocación suelta sale vacía. Ese THEN solo lo cubre `test/cancel.test.js`.
+
+**Guion de prueba para ti:**
+1. En un solo proceso (por ejemplo `node -e "import('./src/app.js')..."`, o el servidor E2E con `npm run env:up`), ejecuta `cancelar Norte lun --motivo "sala ocupada"`. Esperado: `cancelada Norte lun (sala ocupada)`.
+2. Ejecuta `canceladas` en ese mismo proceso. Esperado: `Norte lun — sala ocupada`.
+3. Con una reserva activa, ejecuta `cancelar Norte lun --motivo vacaciones`. Esperado: `motivo no válido: cambio de planes, sala ocupada, otro`.
+4. Con una reserva activa, ejecuta `cancelar Norte lun` sin motivo. Esperado: el mismo mensaje de motivo no válido.
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`

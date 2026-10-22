@@ -1,0 +1,108 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain && echo "--- check" && node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-red/cli/bin/sdd.js" merge --check --project-root "$PWD"; echo "--- worktrees" && git worktree list && echo "--- cfg" && cat .docs/sdd/sdd-kit.json && ls .docs/sdd .docs/sdd/specs/* && git diff --stat main...HEAD
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- worktrees
+<run>/repo 32de7e8 [feature/0010-cancel-reason]
+--- cfg
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manual"}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs/20260915-090000-task-0005-
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && head -30 $D/spec.md && echo ---- && cat $D/tasks.md && echo ---- && cat .docs/sdd/steering/operations.md && echo ---- && cat e2e/run.mjs e2e/config.json package.json && cat "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-red/skills/sdd-archive/references/e2e-suite.md"
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MO
+
+>>> Bash: cd "<run>/repo" && git branch -a && git diff --stat develop...HEAD -- e2e && git diff develop...HEAD -- e2e/cancel.e2e.mjs e2e/free.e2e.mjs && cat e2e/cancel.e2e.mjs e2e/free.e2e.mjs && cat scripts/env-up.mjs; netstat -ano | grep 4550
+<<<   develop
+* feature/0010-cancel-reason
+  main
+ e2e/cancel.e2e.mjs | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+diff --git a/e2e/cancel.e2e.mjs b/e2e/cancel.e2e.mjs
+index c3a3f02..a2a6b56 100644
+--- a/e2e/cancel.e2e.mjs
++++ b/e2e/cancel.e2e.mjs
+@@ -1,5 +1,7 @@
+ export default [
+-  { name: 'cancela una reserva', steps: [['cancelar', ['Norte', 'lun'], 'cancelada Norte lun']] },
++  { name: 'cancela una reserva con su motivo', steps: [['cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada'], 'cancelada Norte lun (sala ocupada)']] },
++  { name: 'rechaza un motivo fuera de la lista', 
+
+>>> Bash: cd "<run>/repo" && node scripts/env-up.mjs && curl -sf http://localhost:4550/health && echo && echo "=== A: cambiados x3" && node e2e/run.mjs e2e/cancel.e2e.mjs --grep=motivo --repeat-each=3; echo "exit A=$?"; node scripts/env-up.mjs && curl -sf http://localhost:4550/health && echo && echo "=== B: resto x1" && node e2e/run.mjs e2e/cancel.e2e.mjs --grep=anula; echo "exit B=$?"; node scripts/env-down.mjs; git status --porcelain
+<<< entorno arriba: http://localhost:4550 (pid 72360)
+ok
+=== A: cambiados x3
+Running 9 tests using 1 worker (trace: on, retries: 0, timeout: 30000 ms)
+
+  ✓  1 e2e/cancel.e2e.mjs › cancela una reserva con su motivo (6.1s)
+  ✓  2 e2e/cancel.e2e.mjs › cancela una reserva con su motivo (6.0s)
+  ✓  3 e2e/cancel.e2e.mjs › cancela una reserva con su motivo (6.0s)
+  ✓  4 e2e/cancel.e2e.mjs › rechaza un motivo fuera de la lista (6.0s)
+  ✓  5 e2e/cancel.e2e.mjs › rechaza un motivo fuera de la lista (6.0s)
+  ✓  6 e2e/cancel.e2e.mjs › rechaza un motivo fuera de la lista (6.0s)
+  ✓  7 e2e/cancel.e2e.mjs › la c
+
+=== RESULTADO (7 turnos, 0.20960819999999997 $)
+La 0010 aún no está cerrada: me paro en la validación, antes de escribir ningún registro.
+
+**Tanda E2E** (11 ejecuciones en 2 pasadas, sin `E2E_TRACE` ni otro interruptor, entorno levantado y parado por mí): las 11 pasan.
+- Los 3 tests cambiados ×3: 9 de 9 verdes, 72,2 s.
+- Los otros 2 de `cancel.e2e.mjs` ×1: 2 de 2 verdes, 12,1 s.
+- Duración total: unos 84 s, frente a los ~78 s estimados.
+
+No hay indicio de inestabilidad. La tanda cubre solo `cancel.e2e.mjs`. `free.e2e.mjs` no lo toca la rama contra `develop`, así que no lo repetí.
+
+**Mi smoke** (verificado por mí, vía E2E):
+- `cancelar Norte lun --motivo "sala ocupada"` responde `cancelada Norte lun (sala ocupada)`.
+- Un motivo fuera de la lista (`me aburro`) responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+- Tras cancelar con `otro`, `canceladas` enseña `Norte lun — otro`.
+- `anular` sigue funcionando, con y sin reserva.
+
+**Guion de prueba** para ti (sesión propia, distinta de las de los tests):
+1. Arranca con `node scripts/env-up.mjs`. Debería decir `entorno arriba` y `/health` debería responder `ok`.
+2. Cancela `Norte lun` con motivo `cambio de planes`. Debería responder `cancelada Norte lun (cambio de planes)`.
+3. Cancela con un motivo inventado. Debería rechazarlo y listar los tres motivos válidos.
+4. Lista las canceladas. Debería salir `Norte lun — <motivo>`.
+5. Anula una reserva que existe y otra que no. Debería salir `anulada …` en la primera y `sin reserva …` en la segunda.
+
+¿Qué has probado?
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
