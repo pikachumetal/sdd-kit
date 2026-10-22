@@ -1,6 +1,6 @@
 # The dev's validation
 
-Used when the person validates the work: `validation.mode` `manual`, or the key missing; step 1 of `sdd-archive` and step 7 of `sdd-start-feature` follow it, in a feature and in a patch. With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`, step 7 of `sdd-start-feature`). With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
 
 ## 1. The script
 
@@ -13,13 +13,23 @@ Each step is an action in the app with the scenarios' data and its expected resu
 
 ## 2. The environment
 
-The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd/sdd-kit.local.json` it must be up: if nothing you started answers (a closing gate that doesn't raise it), raise it with `env:setup` of `## Entornos` in `operations.md` if the section exists, otherwise «Arrancar»; check it answers, and open with its URL or port and the command that stops it. Without the key, or `false`, stop what you started (`sdd-implement`, «Processes you start») and open with how to start it. With no command declared, say so.
+The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd/sdd-kit.local.json` it must be up: if nothing you started answers (a closing gate that doesn't raise it), raise it with `env:setup` of `## Entornos` in `operations.md` if the section exists, otherwise «Arrancar»; check it answers, and open with its URL or port and the command that stops it. Without the key, or `false`, stop what you started (`sdd-implement`, «Processes you start») and open with how to start it. With no command declared, say so. An app you also run from the CLI still has one if «Arrancar» declares it.
 
 ## 3. Hands off
 
 From the message that presents the script until the person answers, launch nothing against the environment and leave nothing running against it: no batch, suite, `env-up`, `env-down`, probe or data write. A batch asked for «while I test» runs **before** you present —wait for its result— or **after** the answer; say which and why. Still fine, because they don't touch the app: the environment raised and checked before presenting, the server of `sdd validation serve`, and re-injecting or reading the panel.
 
-## 4. The panel in Chrome
+## 4. The panel line
+
+The validation message always carries this line, before the script:
+
+```text
+Panel: Chrome sobre <url de la app> | plan B en http://127.0.0.1:<port>/ | sin panel: <motivo>
+```
+
+Without the Chrome tools —the usual case in a terminal— it's plan B (§6), CLI apps included: nobody pastes results.
+
+## 5. The panel in Chrome
 
 With the `claude-in-chrome` tools and a browser from `list_connected_browsers`, the person marks the steps on [validation-panel.js](validation-panel.js), over their app:
 
@@ -35,11 +45,11 @@ Open the app, inject the file with `javascript_tool` and mount the steps, each `
 
 If injecting fails (a CSP blocking `eval`, another origin after an SSO), go to plan B and say why. The script also goes in text.
 
-## 5. Plan B
+## 6. Plan B
 
 No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" validation serve --steps <steps.json> --out .temp/validation/<id>.json` in the background, `steps.json` being the script's `[{id, title}]`. Give the person the URL it prints (`panel: http://127.0.0.1:<port>/`). First check `.temp/` is in the project's `.gitignore`; if not, say so and propose adding it. Say what this page loses: it doesn't see the app, so no console, network or screenshot of a KO; the person tells the error in the comment. On «listo», read the `--out` file and stop the server by its PID.
 
-## 6. The record
+## 7. The record
 
 - All `ok` and «listo»: `Validado: <fecha> · panel: <n>/<n> OK · «listo»`, then `clear()`.
 - A `ko`: «No funciona», with its comment and, in Chrome, the console and network read and a screenshot.
@@ -51,7 +61,7 @@ No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLU
 | Excuse | Reality |
 | --- | --- |
 | "They're in a rush: the batch runs in the background while they test" | It restarts the server or writes their data: «La tanda usa el servidor del puerto 4650 y lo para al acabar», a RED subject. Before presenting, or after the answer. |
-| "I won't touch `src/` while it runs" | The person tests the environment, not your code. Nothing against it until they answer. |
-| "My E2E covered it; the script can ask the same by hand" | Run the exact steps the person will type. |
+| "My E2E covered it" | Run the exact steps the person will type. |
 | "The key is set, but I didn't start anything" | That's its case: start it, check it, give the port and how to stop it. |
-| "No Chrome, so they paste the results" | Offer `sdd validation serve`: no copy and paste. |
+| "No Chrome, or it's a CLI app: they paste the results" | Plan B: `sdd validation serve`, and the `Panel:` line says so. |
+| "It runs from the CLI: no environment to start" | «Arrancar» declares one: start it, check it, give its port. |
