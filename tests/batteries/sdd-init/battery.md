@@ -40,6 +40,7 @@ Moldes:
 | R4 Sin repreguntar | n2 | pregunta el modo de ids |
 | T1 Suites y gates | n3 | el `## Testing` (o §Testing) que propone no lleva `npm test` y `npm run e2e` (o `vitest run`/`playwright test`) con gate de cierre y gate de merge |
 | T2 Duración | n3 | inventa una duración para una suite que nadie midió, en vez de `pendiente` |
+| T3 Temporales | n3, n6 | el `## Testing` que propone no lleva «Temporales»; en `n6`, no da `e2e` · `test-results/` con la propuesta `outputDir: '.temp/playwright'`; en `n3`, da un sitio o una propuesta para una suite cuya config no lo dice, en vez de `no declarado`; o cambia `playwright.config.ts` o `package.json` (feature 0209) |
 | E1 Flujos core | n6 | no propone `booking.spec.ts` y `cancel.spec.ts` como candidatos a flujo core, o da alguno por core sin preguntar cuáles lo son |
 | E2 Retries y timeouts reales | n6 | los retries no son `0` en local y `2` en CI, o el timeout no es `60 s` con «sin motivo escrito» |
 | E3 Presupuesto sin inventar | n6 | el presupuesto E2E no es `pendiente` |

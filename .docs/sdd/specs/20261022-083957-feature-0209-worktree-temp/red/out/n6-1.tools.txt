@@ -1,0 +1,170 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls -a . .docs/sdd .docs/sdd/steering 2>&1 | head -50
+<<< {"init": {"approved": ["PRODUCT.md", ".docs/sdd/steering/constitution.md"], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}
+.:
+./
+../
+.docs/
+.git/
+.github/
+CLAUDE.md
+e2e/
+package.json
+playwright.config.ts
+PRODUCT.md
+README.md
+src/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+steering/
+
+.docs/sdd/steering:
+./
+../
+constitution.md
+
+>>> Bash: cat package.json playwright.config.ts; ls .github/* e2e src; cat .github/workflows/* 2>/dev/null | head -60; cat CLAUDE.md; cat .docs/sdd/steering/constitution.md
+
+>>> Bash: git branch -a; git remote -v; cat PRODUCT.md | head -40
+<<< * main
+# Product — Reservas
+
+## Users
+
+El equipo de oficina reserva salas.
+
+## Product Purpose
+
+Reservar salas por franja.
+<<< {
+  "name": "reservas",
+  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test" },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0" }
+}
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  retries: process.env.CI ? 2 : 0,
+  timeout: 60_000,
+});
+.github/workflows:
+ci.yml
+
+e2e:
+booking.spec.ts
+cancel.spec.ts
+
+src:
+app.ts
+name: ci
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm test
+# Reservas
+
+- Usa `
+
+>>> Bash: cat e2e/*.ts; cat src/app.ts | head -40; cat "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-red/skills/sdd-init/references/generation.md" | head -80; ls "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-red/skills/sdd-templates"
+<<< import { expect, test } from '@playwright/test';
+
+test('reserva Norte a las 10:00', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Reservar' }).click();
+  await expect(page.getByText('reservada Norte 10:00')).toBeVisible();
+});
+import { expect, test } from '@playwright/test';
+
+test('cancela una reserva', async ({ page }) => {
+  await page.goto('/mis-reservas');
+  await page.getByRole('button', { name: 'Cancelar' }).click();
+  await expect(page.getByText('cancelada')).toBeVisible();
+});
+export function reserve(room: string, slot: string): string {
+  retu
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-red/skills/sdd-templates/templates"; ls; cat operations*
+<<< adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+client-changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+feedback-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+patch-template.md
+plan-template.md
+PRODUCT-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+walkthrough-template.md
+# Operations — <proyecto>
+
+> Cómo se ejecuta y se verifica el proyecto.
+
+=== RESULTADO (8 turnos, 0.21949770000000002 $)
+Retomo la init donde se cortó. Los documentos aprobados son `PRODUCT.md` y `constitution.md`. Las claves del kit (`ids`, `control`, `execution`, `validation`) ya están guardadas, así que no las vuelvo a preguntar. Modo: con código. El siguiente documento es `operations.md`.
+
+Esto he sacado del código. Lo que no se puede verificar queda como `pendiente` o `no declarado`:
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: no declarado (no hay script `build` en `package.json`)
+- **Arrancar**: `npm run dev` (Vite)
+
+## Testing
+
+- **Suites**:
+  - `unitarias` · `npm test` (vitest) · duración pendiente
+  - `e2e` · `npm run e2e` (Playwright, `e2e/`) · duración pendiente
+- **Lo afectado**: `npx vitest related <ficheros>` (unitarias); no declarado para E2E
+- **Gate de cierre**: `npm test && npm run e2e`
+- **Gate de merge**: pendiente. CI (`.github/workflows/ci.yml`) solo corre `npm test`, no corre E2E
+- **Acceso a la aplicación**: sin login
+- **Motor de producción**: no aplica (los datos viven en memoria)
+- **Flujos core** (candidatos, dime cuáles lo son):
+  - reservar una sala · `e2e/booking.spec.ts` › reserva Norte a las 10:00
+  - cancelar una reserva · `e2e/cancel.spec.ts` › cancela una reserva
+- **Presupuesto E2E**: pendiente
+- **Retries**: `0` en local, `2` en CI (`playwright.config.ts`)
+- **Timeouts**: 60 s por test, sin motivo escrito
+- **Entorno de la suite**: pendiente. El config no tiene `webServer` ni `baseURL`, así que `page.goto('/')` no funciona sin levantar la app a mano
+- **Datos**: no declarado. Los tests no crean ni borran datos; la app guarda todo en memoria
+```
+
+Hay dos discrepancias que no he metido en el documento:
+1. `CLAUDE.md` dice «puerto 3000», pero Vite usa 5173 por defecto y no hay configuración de puerto. Lo trato como no verificado.
+2. `src/app.ts` solo tiene la función `reserve`, sin interfaz visible. Los E2E asumen una UI (botones «Reservar» y «Cancelar», la ruta `/mis-reservas`) que no encuentro en el código.
+
+Por eso propongo omitir la sección `## Frontend` por ahora, ya que no hay interfaz verificable.
+
+Necesito tres cosas:
+1. ¿Son core los dos flujos?
+2. ¿Sabes las duraciones de las suites y el presupuesto E2E? Si no, quedan `pendiente`.
+3. ¿Apruebas el documento («sí») o quieres cambios?
+
+No he escrito nada todavía.

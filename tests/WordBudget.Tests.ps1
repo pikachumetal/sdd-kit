@@ -17,7 +17,7 @@ BeforeAll {
       'sdd-feedback'        = @{ SkillMd = 800; Total = 800 }
       'sdd-grilling'        = @{ SkillMd = 900; Total = 900 }
       'sdd-parallel-agents' = @{ SkillMd = 1150; Total = 1150 }
-      'sdd-init'            = @{ SkillMd = 2460; Total = 3060 }
+      'sdd-init'            = @{ SkillMd = 2490; Total = 3090 }
       'sdd-roadmap'         = @{ SkillMd = 3600; Total = 3600 }
       'sdd-rubber-duck'     = @{ SkillMd = 600; Total = 600 }
       'sdd-propose'         = @{ SkillMd = 5250; Total = 6800 }
@@ -29,11 +29,11 @@ BeforeAll {
       'sdd-start-feature'   = @{ SkillMd = 2100; Total = 11464 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-worktrees'       = @{ SkillMd = 1300; Total = 1300 }
-      'sdd-templates'       = @{ SkillMd = 1700; Total = 15620 }
+      'sdd-templates'       = @{ SkillMd = 1700; Total = 15680 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 90300
+    Kit     = 90380
     Anchors = @{
       'constitution.md' = 2236
       'mission.md'      = 1700

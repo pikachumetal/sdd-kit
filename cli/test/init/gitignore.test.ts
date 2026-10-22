@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { mergeGitignore } from '../../src/init/gitignore.ts';
 
-const INIT_LINES = '.playwright-mcp/\n.superpowers/\n.docs/sdd/sdd-kit.local.json\n';
+const INIT_LINES = '.playwright-mcp/\n.superpowers/\n.docs/sdd/sdd-kit.local.json\n.temp/\n';
 
 describe('mergeGitignore', () => {
   it('creates the file when missing', () => {
@@ -10,13 +10,13 @@ describe('mergeGitignore', () => {
 
   it('does not duplicate trimmed lines', () => {
     expect(mergeGitignore('node_modules/\n  .superpowers/  \n', ['.auth/'])).toBe(
-      'node_modules/\n  .superpowers/  \n.playwright-mcp/\n.docs/sdd/sdd-kit.local.json\n.auth/\n',
+      'node_modules/\n  .superpowers/  \n.playwright-mcp/\n.docs/sdd/sdd-kit.local.json\n.temp/\n.auth/\n',
     );
   });
 
   it('keeps CRLF', () => {
     expect(mergeGitignore('node_modules/\r\n.superpowers/\r\n', [])).toBe(
-      'node_modules/\r\n.superpowers/\r\n.playwright-mcp/\r\n.docs/sdd/sdd-kit.local.json\r\n',
+      'node_modules/\r\n.superpowers/\r\n.playwright-mcp/\r\n.docs/sdd/sdd-kit.local.json\r\n.temp/\r\n',
     );
   });
 

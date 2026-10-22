@@ -94,7 +94,7 @@ describe('sdd init --finish', () => {
     const { lines, code } = await sdd(['init', '--root', root, '--finish', '--ignore', '.auth/']);
     expect(code).toBe(0);
     expect(lines).toEqual([`${SETTINGS}: creado`, '.gitignore: actualizado', `${MARKER}: actualizado`]);
-    expect(read(root, '.gitignore')).toBe('node_modules/\r\n.superpowers/\r\n.playwright-mcp/\r\n.docs/sdd/sdd-kit.local.json\r\n.auth/\r\n');
+    expect(read(root, '.gitignore')).toBe('node_modules/\r\n.superpowers/\r\n.playwright-mcp/\r\n.docs/sdd/sdd-kit.local.json\r\n.temp/\r\n.auth/\r\n');
     const marker = JSON.parse(read(root, MARKER));
     expect(marker).toMatchObject({ channel: 'plugin', ids: { mode: 'sequence' }, control: { profile: 'delegate' } });
     expect(marker.init).toBeUndefined();

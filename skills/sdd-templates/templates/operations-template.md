@@ -17,6 +17,7 @@
 - **Gate de merge**: <comando que corre sobre la base integrada antes de fusionar>
 - **Acceso a la aplicación**: <cómo entra el agente en la aplicación para probarla: usuario de pruebas, página de desarrollo, `sin login`; con E2E, el usuario del agente, distinto del de la persona que valida, para que sus pruebas no le cambien los datos>
 - **Motor de producción**: <si los tests usan el motor de base de datos de producción o uno en memoria, y qué no se puede expresar con el segundo>
+- **Temporales**: <dónde deja hoy cada suite sus temporales, según su config o, si no lo fija, el valor por defecto del runner (Playwright sin `outputDir`: `test-results/`), y si no es `.temp/`, la propuesta para llevarlos ahí, p. ej. `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`; si ninguno lo dice, `<suite>` · `no declarado`, sin propuesta>
 
 > Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos. Los lee la referencia de E2E de `sdd-tdd`, y el cierre compara la suite con su presupuesto.
 
