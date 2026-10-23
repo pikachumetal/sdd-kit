@@ -1,0 +1,54 @@
+--- [11]
+Solo `e2e/cancel.e2e.mjs` cambia respecto a `develop` (la base del merge), así que repito solo esa. Compruebo el entorno antes de lanzar nada.
+
+--- [17]
+11 de 11 en verde (85 s). Ahora la suite completa del gate, que es mi smoke, y leo los escenarios de la spec para componer el guion.
+
+--- [21]
+La 0010 todavía no está cerrada: `validation.mode` es `manual` y el cierre se para hasta que valides tú. Todo lo anterior a esa puerta está hecho, y no he escrito ningún registro.
+
+## Pre-checks
+- El worktree está limpio y `sdd merge --check` da `destino: listo` (`develop`, con `noFf`).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, firmada por Laura el 2026-10-08, en modo `full`.
+- La revisión final consta en `tasks.md` (Spec opus+high, limpia · Código sonnet+high, limpia · sobre `4ecbfbe`). `HEAD` es `34b0440`, que solo añade `tasks.md`, es decir, documentación, así que no hace falta re-revisión.
+
+## Estabilidad de las specs E2E
+Contra `develop`, la rama solo toca `e2e/cancel.e2e.mjs`; `free.e2e.mjs` no cambia. Levanté el entorno yo, en esta sesión, y su `/health` respondió ok. Luego repetí los tests cambiados ×3 y los otros dos del fichero ×1, sin opciones fuera del runner (traza por defecto, `retries: 0`).
+
+| Tanda | Resultado |
+| --- | --- |
+| `cancela una reserva con su motivo` ×3 | 3/3 OK |
+| `la cancelada sale en canceladas con su motivo` ×3 | 3/3 OK |
+| `rechaza un motivo fuera de la lista` ×3 | 3/3 OK |
+| `anula una reserva` ×1 | OK |
+| `anular sin reserva avisa` ×1 | OK |
+
+- **Tanda real:** 11 ejecuciones en 85 s, contra una estimación de ~1,5 min. No hay inestabilidad.
+- **Los hice antes de darte el guion**, no mientras pruebas. Una tanda a la vez que tú contra el mismo servidor del puerto 4354 reinicia el servidor o escribe tus datos.
+- **Gate:** `node --test test/` dio 5/5. La suite E2E completa dio 7/7 en 48,2 s sobre `34b0440`, dentro del presupuesto de 0,5 min según `operations.md`.
+
+Paré el entorno al terminar. Ahora no hay nada corriendo.
+
+## Guion de validación
+Lo ensayé yo con otra sesión (`x-session`), no la tuya. El estado vive en memoria y por sesión, así que no queda nada mío en tu entorno.
+
+**Arranque:** `node scripts/env-up.mjs` levanta el servidor en `http://localhost:4354`. Para pararlo: `node scripts/env-down.mjs`. Usa tu propia cabecera `x-session`, o la pestaña del navegador, para partir de la reserva de Norte del lunes.
+
+| # | Acción (`/run?cmd=…&args=…`) | Debe salir |
+| --- | --- | --- |
+| 1 | `cancelar ["Norte","lun","--motivo","sala ocupada"]` | `cancelada Norte lun (sala ocupada)` |
+| 2 | `canceladas []` | `Norte lun — sala ocupada` |
+| 3 | `cancelar ["Norte","lun","--motivo","me aburro"]` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 4 | `cancelar ["Norte","lun"]` (sin `--motivo`) | `motivo no válido: cambio de planes, sala ocupada, otro` |
+
+Los cuatro pasos salieron así en mi ensayo. En los pasos 3 y 4, la reserva de Norte del lunes sigue activa, porque la rechazada no la cancela.
+
+## Qué necesito de ti
+Dime cuál de estas tres opciones es:
+- `Validado: lo he probado y funciona`, con lo que probaste.
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`.
+- `No funciona`.
+
+Con tu respuesta sigo con walkthrough, living docs, changelog, roadmap, el squash de cierre, la integración con `develop` y el merge. No haré nada contra el entorno hasta entonces.
+

@@ -1,0 +1,48 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [15]
+Paro antes de escribir ningún registro: falta tu validación (el paso 1 del cierre). Los pre-checks del paso 0 están bien:
+
+- El árbol está limpio.
+- `sdd merge --check` dice que el destino `develop` va en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- La revisión final fue sobre `7713085`. `HEAD` solo añadió `tasks.md`, que es documentación, así que no hace falta otra revisión.
+
+**Mi smoke, aparte de tu prueba**
+
+- `node --test --test-concurrency=1 test/` da 5/5 en verde, sobre `d1bd66c`.
+- Ensayé yo mismo cada paso del script de abajo, con una sesión propia (`ensayo-agente`). Las salidas coinciden con lo que te indico.
+- No he corrido la suite e2e. El gate de cierre del proyecto es solo `node --test test/`.
+
+**Entorno arriba** (`validation.startEnvironment`)
+
+- URL: `http://localhost:4689`.
+- Para pararlo: `node scripts/env-down.mjs`.
+- No toco nada contra él hasta que contestes.
+- Tú usa tu propia sesión, `x-session: persona`. Así arrancas con el estado limpio: la reserva de Norte del lunes, activa.
+
+**Script de prueba** (desde la raíz del repo, en bash; cada paso conserva el estado de la sesión `persona`):
+
+```
+Q() { curl -s -G -H "x-session: persona" http://localhost:4689/run --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }
+```
+
+| # | Acción | Debe salir |
+| --- | --- | --- |
+| 1 | `Q cancelar '["Norte","lun","--motivo","me aburro"]'` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 2 | `Q cancelar '["Norte","lun"]'` (sin `--motivo`) | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 3 | `Q canceladas '[]'` (aún no se ha cancelado nada) | línea vacía |
+| 4 | `Q cancelar '["Norte","lun","--motivo","sala ocupada"]'` | `cancelada Norte lun (sala ocupada)` |
+| 5 | `Q canceladas '[]'` | `Norte lun — sala ocupada` |
+| 6 | `Q cancelar '["Norte","lun","--motivo","sala ocupada"]'` (otra vez) | `sin reserva Norte lun` |
+
+El paso 6 no está en los THEN de la spec; lo añadí para ver que una reserva ya cancelada no se vuelve a cancelar.
+
+¿Qué has probado? Estas son las tres opciones:
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+

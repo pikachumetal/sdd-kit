@@ -302,6 +302,8 @@ Fracasaría si con `validation.mode: field` el cierre empezara a dar guion, a ab
 
 ## Enmiendas
 
+- 2026-10-23 — El techo de la campaña pasa de 22 a 26 sujetos, para una vuelta más de G6 (ofrecer el plan B sin Chrome: 1 de 12 en GREEN y REFACTOR) con la línea `Panel:` sin la salida «sin panel»; si vuelve a fallar, se cierra con lo medido y una fila de deuda — Task 2, REFACTOR — aprobada: «Una vuelta más (Recomendada)»
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |

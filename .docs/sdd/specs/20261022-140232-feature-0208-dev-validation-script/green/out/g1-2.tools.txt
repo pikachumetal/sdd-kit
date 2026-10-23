@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "<run>/repo"; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs 2>&1; cat .docs/sdd/sdd-kit.json; ls .docs/sdd/specs/*0008* 2>&1
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0008-cancel-missing'
+---
+<run>/repo e7f759b [feature/0008-cancel-missing]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261010-090000-patch-0008-cancel-missing/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "remove
+
+>>> Bash: cd .docs/sdd; cat specs/20261010-090000-patch-0008-cancel-missing/patch.md; echo ----; cat roadmap.md changelog.md | head -80; ls ..; git log --stat -3 | head -30
+<<< ---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+Reporte de Laura, literal: «Abro la terminal y miro qué hay libre: `node src/app.js libres 10:00-12:00` me da «Sur». Como el miércoles no tengo nada reservado, pruebo `node src/app.js cancelar mie 10:00` y me dice «cancelada mie 1
+
+>>> Read: D:\code\.worktrees\sdd-kit\0208-dev-validation-script\.temp\kit-green\skills\sdd-archive\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	Used when the person validates the work: `validation.mode` `manual`, or the key missing; step 1 of `sdd-archive` and step 7 of `sdd-start-feature` follow it, in a feature and in a patch. With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps 
+
+>>> Bash: cd ..\.. 2>/dev/null; cd "<run>/repo"; cat src/app.js; node --test 2>&1 | tail -12
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0
+
+>>> Bash: node src/app.js libres 10:00-12:00; node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00; git status --porcelain
+<<< Sur
+no hay reserva mie 10:00
+cancelada lun 10:00
+
+=== RESULTADO (8 turnos, 0.1702406 $)
+Los pre-checks del cierre del patch 0008 han pasado, pero el cierre está parado en la validación: nadie ha dicho todavía qué probó. No he tocado ningún registro.
+
+**Pre-checks**
+- El árbol está limpio.
+- `sdd merge --check` da `destino: listo`: `develop` irá en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- `patch.md` está completo (§2–§4). Falta el hash del fix (`commit: <hash>`), que lo pongo en el cierre.
+
+**Mi smoke** (lo he ejecutado yo)
+- `node --test`: 4 pasados, 0 fallos, incluido «cancelar sin reserva avisa».
+- Los tres comandos de abajo dan la salida esperada.
+
+**Guion de prueba**, con los pasos del reporte de Laura primero. La app no guarda estado entre procesos, así que no hay datos que restaurar. Se arranca con `node src/app.js …` desde la raíz del repo, sin servidor.
+
+1. `node src/app.js libres 10:00-12:00` → `Sur`
+2. `node src/app.js cancelar mie 10:00` → `no hay reserva mie 10:00` (antes decía «cancelada mie 10:00»)
+3. `node src/app.js cancelar lun 10:00` → `cancelada lun 10:00` (el caso con reserva sigue igual)
+
+Hasta que respondas no lanzo nada más contra la app. ¿Qué has probado? Elige una opción:
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`

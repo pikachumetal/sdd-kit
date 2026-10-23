@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain && echo "--- check" && node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "--- worktrees"; git worktree list; echo "--- cfg"; cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs/*0010* 2>/dev/null
+
+>>> Read: D:\code\.worktrees\sdd-kit\0208-dev-validation-script\.temp\kit-green\skills\sdd-archive\references\dev-validation.md
+
+>>> Read: D:\code\.worktrees\sdd-kit\0208-dev-validation-script\.temp\kit-green\skills\sdd-archive\references\e2e-suite.md
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- worktrees
+<run>/repo 5316b64 [feature/0010-cancel-reason]
+--- cfg
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manual"}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-00
+<<< 1	# The dev's validation
+2	
+3	Used when the person validates the work: `validation.mode` `manual`, or the key missing; step 1 of `sdd-archive` and step 7 of `sdd-start-feature` follow it, in a feature and in a patch. With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps 
+<<< 1	# The E2E suite of the close
+2	
+3	Used by the validation and integrated-base steps of `sdd-archive` when `operations.md` §Testing declares the E2E fields («Flujos core», «Presupuesto E2E», «Entorno de la suite»…). Every pass that counts for the close follows these steps in order; a pass that skipped one doesn't count. The walkthrough's 4.1 records what each step gave.
+4	
+5	## 1. The environment, raised by this session
+6	
+7	Before each pass, run the command of «Entorno de la suite» yourself, in this session, and its check, and see it green. A server that was already listening doesn't count, e
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50; cat package.json; echo ---; cat .docs/sdd/specs/*0010*/tasks.md; echo ---; cat .docs/sdd/specs/*0010*/spec.md; echo; git diff --stat develop...HEAD 2>&1 | tail -20
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-rea
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/operations.md; echo ---; cat src/app.js; echo ---; cat server.mjs | head -40; cat e2e/run.mjs e2e/config.json scripts/env-up.mjs; git diff develop...HEAD -- e2e/cancel.e2e.mjs; cat .gitignore
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/ && node e2e/run.mjs`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la person
+
+>>> Bash: cd "<run>/repo" && curl -s -m 2 http://localhost:4530/health; echo "[previo: $?]"; node scripts/env-up.mjs && S=ensayo-agente; run(){ curl -s -G http://localhost:4530/run -H "x-session: $S" --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }
+run cancelar '["Norte","lun","--motivo","me aburro"]'
+run cancelar '["Norte","lun"]'
+run cancelar '["Norte","lun","--motivo","sala ocupada"]'
+run canceladas '[]'
+node scripts/env-down.mjs; sleep 1; curl -s -m 2 http://localhost:4530/health || echo "parado"
+<<< [previo: 28]
+entorno arriba: http://localhost:4530 (pid 57384)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+entorno parado
+parado
+
+=== RESULTADO (9 turnos, 0.2283659 $)
+Todavía no he tocado nada del cierre. El paso 1 pide tu validación antes de escribir ningún registro, y el entorno de pruebas está parado.
+
+**Cómo arrancarlo:** `node scripts/env-up.mjs`. Levanta el servidor en http://localhost:4530. Para pararlo: `node scripts/env-down.mjs`.
+Usa tu propia sesión con la cabecera `x-session: yo`, distinta de las de los tests. Estado de partida: la reserva de Norte del lunes, 10:00-12:00, activa. Ejecuta los pasos en este orden, porque el estado vive en memoria dentro de cada sesión.
+
+**Guion.** Lo he ensayado entero con mi propia sesión y las respuestas coinciden. Cada paso es `curl -G http://localhost:4530/run -H "x-session: yo" --data-urlencode "cmd=<cmd>" --data-urlencode 'args=<args>'`.
+
+| # | `cmd` | `args` | Debe responder |
+| --- | --- | --- | --- |
+| 1 | `cancelar` | `["Norte","lun","--motivo","me aburro"]` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 2 | `cancelar` | `["Norte","lun"]` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 3 | `cancelar` | `["Norte","lun","--motivo","sala ocupada"]` | `cancelada Norte lun (sala ocupada)` |
+| 4 | `canceladas` | `[]` | `Norte lun — sala ocupada` |
+
+Mi humo, aparte de tu guion, es lo que ya dio la revisión final y los tests. Todavía no he corrido el gate de cierre completo; lo hago después de tu respuesta.
+
+**Sobre la tanda en segundo plano: no la lanzo mientras pruebas.** La suite E2E arranca con `env-up`. Ese comando manda `/shutdown` al servidor del puerto 4530 y lo reinicia, así que te tumbaría el entorno a mitad de una prueba. El kit prohíbe tocar el entorno desde que se presenta el guion hasta tu respuesta. La tanda es esta:
+
+`Tanda: 3 tests cambiados/nuevos de e2e/cancel.e2e.mjs ×3 + 2 tests de anular de ese fichero ×1 = 11 ejecuciones · ~1,5 min (≈8 s de media × 11 ÷ 1 worker)`
+
+`free.e2e.mjs` no entra, porque la rama no lo toca. La lanzo en cuanto me contestes, o antes de que pruebes si prefieres esperar esa minuta y minuto y medio.
+
+¿Qué has probado? Elige una:
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`

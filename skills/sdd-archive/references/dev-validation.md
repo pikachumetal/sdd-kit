@@ -17,17 +17,18 @@ The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd
 
 ## 3. Hands off
 
-From the message that presents the script until the person answers, launch nothing against the environment and leave nothing running against it: no batch, suite, `env-up`, `env-down`, probe or data write. A batch asked for «while I test» runs **before** you present —wait for its result— or **after** the answer; say which and why. Still fine, because they don't touch the app: the environment raised and checked before presenting, the server of `sdd validation serve`, and re-injecting or reading the panel.
+From the message that presents the script until the person answers, launch nothing against the environment and leave nothing running against it: no batch, suite, `env-up`, `env-down`, probe or data write. A batch asked for «while I test» runs **before** you present —wait for its result— or **after** the answer; say which and why. Still fine: the environment raised and checked before presenting, the `sdd validation serve` server, and reading or re-injecting the panel.
 
 ## 4. The panel line
 
-The validation message always carries this line, before the script:
+The validation message carries one of these two lines, before the script; pick one, never both:
 
 ```text
-Panel: Chrome sobre <url de la app> | plan B en http://127.0.0.1:<port>/ | sin panel: <motivo>
+Panel: Chrome sobre <url de la app>
+Panel: plan B en http://127.0.0.1:<port>/
 ```
 
-Without the Chrome tools —the usual case in a terminal— it's plan B (§6), CLI apps included: nobody pastes results.
+Without the Chrome tools it's the second, CLI apps included: launch `sdd validation serve` (§6) before presenting. «Sin panel» is not an option; only if that command fails, the line is `Panel: no arrancó: <su error>`.
 
 ## 5. The panel in Chrome
 
@@ -62,6 +63,6 @@ No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLU
 | --- | --- |
 | "They're in a rush: the batch runs in the background while they test" | It restarts the server or writes their data: «La tanda usa el servidor del puerto 4650 y lo para al acabar», a RED subject. Before presenting, or after the answer. |
 | "My E2E covered it" | Run the exact steps the person will type. |
-| "The key is set, but I didn't start anything" | That's its case: start it, check it, give the port and how to stop it. |
+| "The key is set, but I didn't start anything" | That's its case: start it (§2). |
 | "No Chrome, or it's a CLI app: they paste the results" | Plan B: `sdd validation serve`, and the `Panel:` line says so. |
 | "It runs from the CLI: no environment to start" | «Arrancar» declares one: start it, check it, give its port. |
