@@ -1,18 +1,22 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { request } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { runInNewContext } from 'node:vm';
 import { UsageError } from '../../src/cli/args.ts';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
 import { parseSteps, startValidationServer } from '../../src/validation/server.ts';
+import { panelPath } from '../../src/validation/verbs.ts';
 
 const STEPS = [
   { id: '1', title: 'libres 10:00-12:00 → «Sur»' },
   { id: '2', title: 'cancelar mie 10:00 → «no hay reserva mie 10:00»' },
 ];
 const BAD_STEPS = 'pasos.json: no es una lista de pasos {id, title}';
+const USAGE = 'uso: sdd validation serve --steps <fichero> --out <fichero>';
+const PENDING = STEPS.map((step) => ({ ...step, status: 'pending', comment: '', markedAt: null }));
 
 const dirs: string[] = [];
 const servers: { close(): Promise<void> }[] = [];
@@ -69,9 +73,8 @@ describe('sdd validation serve', () => {
 
   it('writes all steps pending at start', async () => {
     const { url, out } = await serve();
-    const pending = STEPS.map((step) => ({ ...step, status: 'pending', comment: '', markedAt: null }));
-    expect(saved(out)).toEqual(pending);
-    expect(JSON.parse((await send(`${url}results`)).body)).toEqual(pending);
+    expect(saved(out)).toEqual(PENDING);
+    expect(JSON.parse((await send(`${url}results`)).body)).toEqual(PENDING);
   });
 
   it('stores a mark and returns it in results', async () => {
@@ -89,6 +92,43 @@ describe('sdd validation serve', () => {
     await mark(url, { id: '1', status: 'ok' });
     await mark(url, { id: '1', status: 'ko', comment: 'sale cancelada' });
     expect(saved(out)[0]).toMatchObject({ status: 'ko', comment: 'sale cancelada' });
+  });
+
+  it('a new mark renews markedAt even with the same status', async () => {
+    const { url, out } = await serve();
+    await mark(url, { id: '1', status: 'ok' });
+    const first = saved(out)[0].markedAt;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await mark(url, { id: '1', status: 'ok' });
+    expect(saved(out)[0].markedAt).not.toBe(first);
+  });
+
+  it('a comment alone keeps the status and its markedAt', async () => {
+    const { url, out } = await serve();
+    await mark(url, { id: '1', status: 'ko' });
+    const before = saved(out)[0];
+    expect((await mark(url, { id: '1', comment: 'sale cancelada' })).status).toBe(200);
+    expect(saved(out)[0]).toEqual({ ...before, comment: 'sale cancelada' });
+  });
+
+  it('rejects a body that is not a mark with 400', async () => {
+    const { url } = await serve();
+    expect((await send(`${url}mark`, { method: 'POST', body: 'no json' })).status).toBe(400);
+    expect((await mark(url, { id: '1', comment: 3 })).status).toBe(400);
+  });
+
+  it('answers 500 and keeps listening when the marks cannot be saved', async () => {
+    const { url, out } = await serve();
+    rmSync(out);
+    mkdirSync(out);
+    expect((await mark(url, { id: '1', status: 'ok' })).status).toBe(500);
+    expect((await send(`${url}results`)).status).toBe(200);
+  });
+
+  it('the page starts from the marks of this server, not from the browser', async () => {
+    const { url } = await serve();
+    const seed = `localStorage.setItem('sdd-validation-serve', ${JSON.stringify(JSON.stringify(PENDING))});`;
+    expect((await send(url)).body).toContain(seed);
   });
 
   it('rejects a foreign origin with 403', async () => {
@@ -135,7 +175,37 @@ describe('validation serve usage', () => {
     const io = memoryIo();
     expect(await run(['validation', 'serve', '--out', 'x.json'], io)).toBe(2);
     expect(io.stderr.join('\n')).toContain('falta la opción --steps');
-    expect(io.stderr.join('\n')).toContain('uso: sdd validation serve');
+    expect(io.stderr).toContain(USAGE);
+  });
+
+  it('serve without --out exits 2 with usage', async () => {
+    const io = memoryIo();
+    expect(await run(['validation', 'serve', '--steps', 'pasos.json'], io)).toBe(2);
+    expect(io.stderr).toContain(USAGE);
+  });
+
+  it('serve --help shows the usage without listening', async () => {
+    const io = memoryIo();
+    expect(await run(['validation', 'serve', '--help'], io)).toBe(0);
+    expect(io.stdout[0]).toBe(USAGE);
+  });
+
+  it('serve with a missing steps file exits 2 with the steps message', async () => {
+    const io = memoryIo();
+    const steps = join(tempDir(), 'pasos.json');
+    expect(await run(['validation', 'serve', '--steps', steps, '--out', join(tempDir(), 'out.json')], io)).toBe(2);
+    expect(io.stderr).toContain(`${steps}: no es una lista de pasos {id, title}`);
+  });
+
+  it('serve exits 1 with the system message when --out cannot be written', async () => {
+    const steps = join(tempDir(), 'pasos.json');
+    writeFileSync(steps, JSON.stringify(STEPS));
+    const blocker = join(tempDir(), 'blocker');
+    writeFileSync(blocker, 'not a folder');
+    const io = memoryIo();
+    expect(await run(['validation', 'serve', '--steps', steps, '--out', join(blocker, '0008.json')], io)).toBe(1);
+    expect(io.stderr.join('\n')).toMatch(/EEXIST|ENOTDIR|EPERM/);
+    expect(io.stdout.join('\n')).not.toContain('panel:');
   });
 
   it('serve with a bad steps file exits 2 without listening', async () => {
@@ -151,5 +221,39 @@ describe('validation serve usage', () => {
     const io = memoryIo();
     expect(await run(['--help'], io)).toBe(0);
     expect(io.stdout.join('\n')).toContain('sdd validation serve');
+  });
+});
+
+describe('plan B page script', () => {
+  async function pageScript() {
+    const { url } = await serve();
+    const html = (await send(url)).body;
+    const posts: unknown[] = [];
+    const window: Record<string, (marks: unknown[]) => void> = {};
+    const context = { window, localStorage: { setItem: () => {} }, sddValidationPanel: { mount: () => {} },
+      fetch: async (_path: string, init: { body: string }) => posts.push(JSON.parse(init.body)) };
+    runInNewContext(html.split('<script>')[1].split('</script>')[0], context);
+    const change = async (marks: unknown[]) => {
+      window.sddValidationPanelOnChange(marks);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    };
+    return { change, posts };
+  }
+
+  it('posts only the step that changed, without its status when only the comment changed', async () => {
+    const { change, posts } = await pageScript();
+    await change([{ ...PENDING[0], status: 'ok' }, PENDING[1]]);
+    expect(posts).toEqual([{ id: '1', status: 'ok', comment: '' }]);
+    await change([{ ...PENDING[0], status: 'ok', comment: 'x' }, PENDING[1]]);
+    expect(posts.at(-1)).toEqual({ id: '1', comment: 'x' });
+  });
+});
+
+describe('validation panel contract', () => {
+  it('the panel file the verb serves exposes the API the page calls', () => {
+    expect(existsSync(panelPath)).toBe(true);
+    const source = readFileSync(panelPath, 'utf8');
+    expect(source).toContain('window.sddValidationPanel = { mount, read: loadMarks, clear }');
+    expect(source).toContain('window.sddValidationPanelOnChange?.(marks)');
   });
 });

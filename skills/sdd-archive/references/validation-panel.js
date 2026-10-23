@@ -26,6 +26,7 @@
     const element = document.createElement('button');
     element.textContent = label;
     element.style.cssText = `margin-right:4px;padding:2px 8px;font-weight:${active ? 700 : 400};`;
+    element.setAttribute('aria-pressed', String(active));
     element.onclick = onClick;
     return element;
   };
@@ -38,6 +39,7 @@
     row.append(button('KO', () => markStep(mark.id, 'ko'), mark.status === 'ko'));
     const comment = document.createElement('input');
     comment.placeholder = 'Comentario';
+    comment.setAttribute('aria-label', `Comentario: ${mark.title}`);
     comment.value = mark.comment;
     comment.style.cssText = 'width:100%;margin-top:4px;';
     comment.oninput = () => saveChanges(mark.id, { comment: comment.value });

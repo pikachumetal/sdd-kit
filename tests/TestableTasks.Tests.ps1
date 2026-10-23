@@ -54,7 +54,7 @@ Describe 'sdd-archive' {
   It 'la validación presenta el guion de pruebas' {
     $step = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?ms)^1\. .*?(?=^\d+\. |^## )').Value
     Assert-Literal $step @('the **test script**, composed, rehearsed and offered as [dev-validation.md](references/dev-validation.md) says')
-    Assert-Literal (Get-KitFile 'skills/sdd-archive/references/dev-validation.md') @('Each step is an action in the app with the scenarios'' data and its expected result with the literal that comes out')
+    Assert-Literal (Get-KitFile 'skills/sdd-archive/references/dev-validation.md') @('Each step is a numbered action in the app with the scenarios'' data and its expected result with the literal that comes out')
     $step.Contains('cómo probarlo') | Should -BeFalse
   }
 }

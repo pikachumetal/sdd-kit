@@ -4,7 +4,7 @@ For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `s
 
 ## 1. The script
 
-Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+Each step is a numbered action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
 
 1. **The report's steps first**, literal and in their order: the symptom of `patch.md` or the ticket. «I check `libres 10:00-12:00`, it says «Sur»; then `cancelar mie 10:00` says «cancelada mie 10:00»» opens the script with `node src/app.js libres 10:00-12:00` → «Sur» and `node src/app.js cancelar mie 10:00` → «no hay reserva mie 10:00».
 2. Then one step per line «Se prueba en la aplicación» of the tasks; without it, one per THEN of the spec.
@@ -37,7 +37,7 @@ With the `claude-in-chrome` tools and a browser from `list_connected_browsers`, 
 - `sddValidationPanel.mount(<id>, [{id, title}])` mounts validation `<id>` (the feature's or patch's id), keeping that `<id>`'s saved marks; another `<id>` starts from zero; `mount(<id>)` restores them.
 - `read()` returns `[{id, title, status, comment, markedAt}]`, `status` `pending | ok | ko`; `clear()` removes its `localStorage` keys, all prefixed `sdd-validation-`.
 
-Open the app, inject the file with `javascript_tool` and mount the steps, each `title` «action → expected result». Then the four rules measured in feature 0162:
+Open the app, inject the file with `javascript_tool` and mount the steps, each `title` «action → expected result». Then the four rules of feature 0162:
 
 1. `read_network_requests` right after injecting: the network log starts at the first call.
 2. `read_console_messages` with `clear: true` when injecting, so old errors aren't attached to a KO.
@@ -48,12 +48,12 @@ If injecting fails (a CSP blocking `eval`, another origin after an SSO), go to p
 
 ## 6. Plan B
 
-No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" validation serve --steps <steps.json> --out .temp/validation/<id>.json` in the background, `steps.json` being the script's `[{id, title}]`. Give the person the URL it prints (`panel: http://127.0.0.1:<port>/`). First check `.temp/` is in the project's `.gitignore`; if not, say so and propose adding it. Say what this page loses: it doesn't see the app, so no console, network or screenshot of a KO; the person tells the error in the comment. On «listo», read the `--out` file and stop the server by its PID.
+No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" validation serve --steps <steps.json> --out .temp/validation/<id>.json` in the background, `steps.json` being the script's `[{id, title}]`. Before launching it, if `.temp/` isn't in the project's `.gitignore`, say so and propose adding it. Give the URL it prints (`panel: http://127.0.0.1:<port>/`). Say what this page loses: it doesn't see the app, so no console, network or screenshot of a KO; the person tells the error in the comment. On «listo», read the `--out` file and stop the server by its PID.
 
 ## 7. The record
 
 - All `ok` and «listo»: `Validado: <fecha> · panel: <n>/<n> OK · «listo»`, then `clear()`.
-- A `ko`: «No funciona», with its comment and, in Chrome, the console and network read and a screenshot.
+- A `ko`: «No funciona», with its comment and, in Chrome, the console and network read and a screenshot; then `clear()`: the retest starts clean.
 - A `pending` step isn't OK: ask. If the person won't test it now, deferred validation ([control-profiles.md](../../sdd-start-feature/references/control-profiles.md)) applies to those steps.
 - What the person says in the chat wins over a mark: record their phrase.
 

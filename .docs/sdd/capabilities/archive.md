@@ -132,10 +132,51 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - AND el 4.1 del walkthrough repite la línea `Tanda:` con esa estimación
 - AND con la tanda en marcha no edita `src/` ni `e2e/`
 
+### El guion de la validación empieza por el reporte y lo ha corrido el agente
+
+- GIVEN el patch 0008 listo para validar en `validation.mode` `manual` o sin la clave, con el reporte de su §1: «miro qué hay libre: `node src/app.js libres 10:00-12:00` me da «Sur»; como el miércoles no tengo nada, pruebo `node src/app.js cancelar mie 10:00` y me dice «cancelada mie 10:00»», y una app que no guarda reservas entre procesos
+- WHEN el agente compone el guion de pruebas
+- THEN sus dos primeros pasos son los del reporte, literales y en su orden: «1. `node src/app.js libres 10:00-12:00` → «Sur» · 2. `node src/app.js cancelar mie 10:00` → «no hay reserva mie 10:00»»
+- AND cada resultado esperado da el literal que sale, no «funciona» ni «se cancela con normalidad»
+- AND antes de presentarlo, el agente corre cada paso del guion tal como lo hará la persona, con el usuario del agente de «Acceso a la aplicación» si `operations.md` lo declara, y deja los datos como estaban tras un paso que escribe o dice de qué estado parte la persona
+- AND un paso que añadió y no funciona al correrlo («reserva el miércoles y cancélalo», que la app no guarda) no entra en el guion
+- AND un THEN que no puede observar (una pantalla sin detector declarado) va en el guion con `no ensayado: <motivo>` y la comprobación que sí hizo
+- AND en una feature sin reporte, los pasos salen de la línea «Se prueba en la aplicación» de cada task, y sin ella, de los THEN de la spec
+
+### Mientras la persona prueba, el agente no lanza nada contra el entorno
+
+- GIVEN la 0010 lista para validar en `validation.mode` `manual` o sin la clave, con una suite E2E de ~50 s cuyo `env-up` reinicia el servidor
+- WHEN el dev-lead pide «dame ya el guion y, mientras lo pruebo, pasa en segundo plano tres veces las specs E2E que toca la rama»
+- THEN desde el mensaje que presenta el guion hasta la respuesta de la persona, no deja en marcha ni lanza ninguna tanda, suite, `env-up`, `env-down`, sonda ni escritura en datos
+- AND la tanda corre antes de presentar el guion, esperando su resultado, o queda para después de la validación, y el mensaje dice cuál y por qué
+- AND siguen en marcha el entorno que levantó antes de presentar, comprobado antes, y el servidor de `sdd validation serve`; reinyectar o leer el panel de validación no cuenta como lanzar algo contra el entorno
+
+### La persona valida con un panel en su navegador
+
+- GIVEN la 0010 lista para validar en `validation.mode` `manual` o sin la clave, una sesión con Claude in Chrome y un navegador conectado, y un guion de 3 pasos
+- WHEN el agente presenta la validación
+- THEN abre la app, inyecta `validation-panel.js` y monta la validación `0010` con los 3 pasos (cada uno «acción → resultado esperado»), llama a `read_network_requests` y a `read_console_messages` con `clear: true`, y dice que la captura será la del momento de leer y que la red no trae hora
+- AND al recibir «listo», o el aviso de que el panel ha desaparecido, lo reinyecta desde `localStorage` y monta `0010` otra vez, con las marcas que tenía, antes de leerlo
+- AND con 3 de 3 en OK y «listo», el walkthrough registra `Validado: <fecha> · panel: 3/3 OK · «listo»` y el agente borra las claves `sdd-validation-` del panel
+- AND con el paso 2 en KO y el comentario «sale cancelada», sigue por «No funciona» con ese comentario, la consola y la red leídas y una captura, y borra las claves `sdd-validation-` del panel, para que la vuelta tras el arreglo empiece de cero
+- AND con el paso 3 sin marcar, pregunta por él; si la persona dice que lo probará más tarde, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md) a ese paso
+- AND una validación posterior en el mismo origen con otro id (`0011`) empieza sin las marcas de la `0010`
+- AND si la inyección falla (una CSP que bloquea `eval`), pasa a «Sin Claude in Chrome, el panel lo sirve la CLI» y dice por qué
+- AND con `validation.mode: field` no abre el navegador, no lanza `sdd validation serve` ni arranca el entorno para validar
+
+### Sin Claude in Chrome, el panel lo sirve la CLI
+
+- GIVEN la 0010 lista para validar en `validation.mode` `manual` o sin la clave, y una sesión sin las herramientas de Claude in Chrome, o sin navegador conectado
+- WHEN el agente presenta la validación
+- THEN ofrece `sdd validation serve --steps <pasos> --out .temp/validation/0010.json`, da su URL `http://127.0.0.1:<puerto>/` y dice que esa página no ve la app: sin consola, red ni captura del KO, que la persona cuenta en el comentario
+- AND si `.temp/` no está en el `.gitignore` del proyecto, lo dice y propone añadirlo antes de lanzarlo
+- AND el mensaje de la validación lleva, antes del guion, una sola línea `Panel:`: `Panel: Chrome sobre <url de la app>` o `Panel: plan B en http://127.0.0.1:<puerto>/`; «sin panel» no es una opción, y solo si `sdd validation serve` falla la línea es `Panel: no arrancó: <su error>`
+- AND al recibir «listo» lee las marcas de `.temp/validation/0010.json`, para el servidor por su PID y aplica las mismas reglas de `Validado`, KO y paso sin marcar que con el panel en Chrome
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)
-- **Idioma de los nombres**: skill y ficheros en inglés kebab-case; marcas de carril de la skill `Feature only:`, `Patch only:`, `Hotfix only:`
-- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.900 y total 6.900 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
-- **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas.» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md`
-- **Regla ante conflicto**: un conflicto al integrar la base o al fusionar que `sdd merge` no resuelve lo resuelve una persona; un rojo que también falla sin la rama lo decide el dev-lead tras la búsqueda en la deuda; el merge a la rama estable, el tag y su push solo con la frase del dev-lead; la fila de la madre de una familia la cierra el dev-lead, no el cierre
+- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)
+- **Idioma de los nombres**: skill y ficheros en inglés kebab-case; marcas de carril de la skill `Feature only:`, `Patch only:`, `Hotfix only:`; el panel, `sddValidationPanel`, con los estados `pending`, `ok` y `ko`; las líneas de registro, en castellano (`Validado:`, `no ensayado:`)
+- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.920 y total 8.000 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
+- **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas.» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md` · `Validado: <fecha> · panel: <n>/<n> OK · «listo»` · `no ensayado: <motivo>` · que la captura es la del momento de leer y la red no trae hora (panel en Chrome) · que la página del plan B no ve la app: sin consola, red ni captura del KO · `Panel: Chrome sobre <url de la app>` · `Panel: plan B en http://127.0.0.1:<puerto>/` · `Panel: no arrancó: <su error>`
+- **Regla ante conflicto**: un conflicto al integrar la base o al fusionar que `sdd merge` no resuelve lo resuelve una persona; un rojo que también falla sin la rama lo decide el dev-lead tras la búsqueda en la deuda; el merge a la rama estable, el tag y su push solo con la frase del dev-lead; la fila de la madre de una familia la cierra el dev-lead, no el cierre; el panel en Chrome va antes que el plan B, que solo sale sin Claude in Chrome, sin navegador conectado o con la inyección fallida; si lo que la persona dice en el chat contradice una marca del panel, manda lo que dice, y el agente lo registra con su frase

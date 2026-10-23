@@ -4,7 +4,7 @@ import { readText } from '../cli/files.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { parseSteps, startValidationServer } from './server.ts';
 
-const panelPath = fileURLToPath(new URL('../../../skills/sdd-archive/references/validation-panel.js', import.meta.url));
+export const panelPath = fileURLToPath(new URL('../../../skills/sdd-archive/references/validation-panel.js', import.meta.url));
 
 function untilStopped(): Promise<void> {
   return new Promise((resolve) => {
@@ -25,6 +25,7 @@ export const validationServeVerb: Verb = {
   noun: 'validation',
   verb: 'serve',
   summary: 'Sirve el panel de validación y guarda las marcas',
+  usage: 'uso: sdd validation serve --steps <fichero> --out <fichero>',
   options: { steps: { type: 'string' }, out: { type: 'string' } },
   async run(args, io) {
     const stepsPath = requiredOption(args, 'steps');

@@ -18,6 +18,7 @@ function resolveVerb(argv: string[], verbs: Verb[]): Resolved {
 }
 
 function verbUsage(verb: Verb): string {
+  if (verb.usage) return verb.usage;
   const options = Object.entries(verb.options).map(([name, option]) => (option.type === 'boolean' ? `[--${name}]` : `[--${name} <valor>]`));
   return ['uso: sdd', verb.noun, verb.verb, ...options, ...(verb.positionals ?? [])].filter(Boolean).join(' ');
 }
@@ -27,6 +28,7 @@ function usageLine(noun: string | undefined, verbs: Verb[]): string {
   if (ofNoun.length === 0) return `uso: sdd ${[...new Set(verbs.map((verb) => verb.noun))].join('|')}`;
   const bare = ofNoun.find((verb) => verb.verb === undefined);
   if (bare) return verbUsage(bare);
+  if (ofNoun.length === 1 && ofNoun[0].usage) return ofNoun[0].usage;
   return `uso: sdd ${noun} ${ofNoun.flatMap((verb) => verb.verb ?? []).join('|')}`;
 }
 

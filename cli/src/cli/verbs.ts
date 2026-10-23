@@ -20,6 +20,7 @@ export interface Verb {
   noun: string;
   verb?: string;
   summary: string;
+  usage?: string;
   options: ParseArgsOptionsConfig;
   positionals?: string[];
   run(args: VerbArgs, io: Io): Promise<number>;
