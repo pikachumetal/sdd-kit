@@ -41,7 +41,8 @@ Describe 'sdd-start-feature' {
   }
 
   It 'la validación trae un guion de pruebas en pasos numerados' {
-    Assert-Literal (Get-SkillStep 7) @('**guion de pruebas**', 'pasos numerados', 'resultado esperado', 'separado del smoke')
+    Assert-Literal (Get-SkillStep 7) @('**guion de pruebas**', 'El guion, el entorno y el panel siguen [dev-validation.md]')
+    Assert-Literal (Get-KitFile 'skills/sdd-archive/references/dev-validation.md') @('**The report''s steps first**', 'expected result', 'The script goes apart from your smoke')
     (Get-SkillStep 7).Contains('cómo probarlo') | Should -BeFalse
   }
 
@@ -52,7 +53,8 @@ Describe 'sdd-start-feature' {
 Describe 'sdd-archive' {
   It 'la validación presenta el guion de pruebas' {
     $step = [regex]::Match((Get-KitFile 'skills/sdd-archive/SKILL.md'), '(?ms)^1\. .*?(?=^\d+\. |^## )').Value
-    Assert-Literal $step @('the **test script** (numbered steps, each an action in the app and its expected result)')
+    Assert-Literal $step @('the **test script**, composed, rehearsed and offered as [dev-validation.md](references/dev-validation.md) says')
+    Assert-Literal (Get-KitFile 'skills/sdd-archive/references/dev-validation.md') @('Each step is a numbered action in the app with the scenarios'' data and its expected result with the literal that comes out')
     $step.Contains('cómo probarlo') | Should -BeFalse
   }
 }

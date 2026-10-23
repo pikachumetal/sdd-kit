@@ -19,7 +19,9 @@ Describe 'Parar lo arrancado' {
   }
 
   It 'el paso 7 para antes del guion salvo validation.startEnvironment' {
-    Assert-Literal (Get-Step 7) @('Antes de presentar el guion, para lo que arrancaste, con la regla de `sdd-implement`', '`validation.startEnvironment: true`', 'en qué puerto está y cómo pararla')
+    Assert-Literal (Get-Step 7) @('El guion, el entorno y el panel siguen [dev-validation.md](../sdd-archive/references/dev-validation.md)')
+    $reference = Get-Content (Join-Path $script:RepoRoot 'skills/sdd-archive/references/dev-validation.md') -Raw
+    Assert-Literal $reference @('`validation.startEnvironment: true`', 'stop what you started (`sdd-implement`, «Processes you start»)', 'its URL or port and the command that stops it')
   }
 
   It 'la tabla de racionalizaciones responde a matar todos los procesos del ejecutable' {

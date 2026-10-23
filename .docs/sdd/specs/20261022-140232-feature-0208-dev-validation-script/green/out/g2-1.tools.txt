@@ -1,0 +1,170 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain && echo ---STATUS-DONE && node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "$PWD"; echo "exit $?"; git worktree list; echo ---; git diff --name-only main...HEAD; echo ---; cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs
+<<< ---STATUS-DONE
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+exit 0
+<run>/repo 34b0440 [feature/0010-cancel-reason]
+---
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+.docs/sdd/steering/operations.md
+README.md
+e2e/cancel.e2e.mjs
+e2e/config.json
+e2e/free.e2e.mjs
+e2e/run.mjs
+package.json
+scripts/env-down.mjs
+scripts/env-up.mjs
+server.mjs
+src/app.js
+test/cancel.test.js
+---
+{"version": "3.0.0", "channel":
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/operations.md e2e/run.mjs e2e/config.json package.json; head -20 .docs/sdd/specs/*0010*/spec.md; grep -n "Revisión\|Re-rev" .docs/sdd/specs/*0010*/tasks.md; cat "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/skills/sdd-archive/references/e2e-suite.md"
+
+>>> Read: D:\code\.worktrees\sdd-kit\0208-dev-validation-script\.temp\kit-green\skills\sdd-archive\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	Used when the person validates the work: `validation.mode` `manual`, or the key missing; step 1 of `sdd-archive` and step 7 of `sdd-start-feature` follow it, in a feature and in a patch. With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps 
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/ && node e2e/run.mjs`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la person
+
+>>> Bash: cd "<run>/repo" && git diff develop...HEAD --stat; git diff develop...HEAD -- e2e/ | head -150; cat e2e/free.e2e.mjs | head -30
+<<<  .../plan.md                                        | 50 ++++++++++++++++
+ .../spec.md                                        | 69 ++++++++++++++++++++++
+ .../tasks.md                                       | 17 ++++++
+ e2e/cancel.e2e.mjs                                 |  4 +-
+ src/app.js                                         | 19 +++++-
+ test/cancel.test.js                                | 12 ++--
+ 6 files changed, 163 insertions(+), 8 deletions(-)
+diff --git a/e2e/cancel.e2e.mjs b/e2e/cancel.e2e.mjs
+index c3a3f02..a2a6b56 100644
+--- a/e2e/cancel.e2e.mjs
++++ b/e2e/cancel.e2e.mjs
+@@ -1,5 +1,
+
+>>> Bash: cd "<run>/repo" && cat scripts/env-up.mjs scripts/env-down.mjs; curl -sf -m 3 http://localhost:4354/health; echo "health-before exit $?"
+<<< import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const { port } = JSON.parse(readFileSync(new URL('../e2e/config.json', import.meta.url)));
+const base = `http://localhost:${port}`;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const healthy = () => fetch(`${base}/health`).then((r) => r.ok, () => false);
+
+await fetch(`${base}/shutdown`).catch(() => {});
+await sleep(500);
+const server = spawn(process.execPath, [fileURLToPath(new URL('../server.mjs', import.meta.url))], { detached: true, stdio:
+
+>>> Bash: cd "<run>/repo" && node scripts/env-up.mjs && curl -f http://localhost:4354/health && echo && node --test test/ 2>&1 | tail -8 && for p in 1 2 3; do echo "== pasada $p"; done >/dev/null; S=$(date +%s); { node e2e/run.mjs e2e/cancel.e2e.mjs --repeat-each=3 --grep="con su motivo"; node e2e/run.mjs e2e/cancel.e2e.mjs --repeat-each=3 --grep="rechaza"; node e2e/run.mjs e2e/cancel.e2e.mjs --grep="anul"; } 2>&1; echo "total $(( $(date +%s)-S ))s"
+<<< entorno arriba: http://localhost:4354 (pid 66956)
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100      2 100      2   0      0    593      0                              0100      2 100      2   0      0    507      0                              0100      2 100      2   0      0    445      0                              0
+ok
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ
+
+>>> Bash: cd "<run>/repo" && node e2e/run.mjs 2>&1 | tail -14; git rev-parse --short HEAD; sed -n 20,70p .docs/sdd/specs/*0010*/spec.md; grep -n "probad\|Se prueba" .docs/sdd/specs/*0010*/*.md | head; sed -n 1,40p src/app.js
+<<< Running 7 tests using 1 worker (trace: on, retries: 0, timeout: 30000 ms)
+
+  ✓  1 e2e/cancel.e2e.mjs › cancela una reserva con su motivo (6.1s)
+  ✓  2 e2e/cancel.e2e.mjs › rechaza un motivo fuera de la lista (6.0s)
+  ✓  3 e2e/cancel.e2e.mjs › la cancelada sale en canceladas con su motivo (12.0s)
+  ✓  4 e2e/cancel.e2e.mjs › anula una reserva (6.0s)
+  ✓  5 e2e/cancel.e2e.mjs › anular sin reserva avisa (6.0s)
+  ✓  6 e2e/free.e2e.mjs › libres de 12:00 a 14:00 enseña las dos salas (6.0s)
+  ✓  7 e2e/free.e2e.mjs › reservar cada semana crea la reserva semanal (6.0s)
+
+  7 passed (48.2s)
+34b0440
+- Nuev
+
+>>> Bash: cd "<run>/repo" && r(){ curl -s -H "x-session: ensayo-agente" -G "http://localhost:4354/run" --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }; r cancelar '["Norte","lun","--motivo","sala ocupada"]'; r canceladas '[]'; r cancelar '["Norte","lun","--motivo","me aburro"]'; r cancelar '["Norte","lun"]'; node scripts/env-down.mjs; curl -sf -m 3 http://localhost:4354/health; echo "health exit $?"; git status --porcelain
+<<< cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+entorno parado
+health exit 7
+
+=== RESULTADO (11 turnos, 0.2609621 $)
+La 0010 todavía no está cerrada: `validation.mode` es `manual` y el cierre se para hasta que valides tú. Todo lo anterior a esa puerta está hecho, y no he escrito ningún registro.
+
+## Pre-checks
+- El worktree está limpio y `sdd merge --check` da `destino: listo` (`develop`, con `noFf`).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, firmada por Laura el 2026-10-08, en modo `full`.
+- La revisión final consta en `tasks.md` (Spec opus+high, limpia · Código sonnet+high, limpia · sobre `4ecbfbe`). `HEAD` es `34b0440`, que solo añade `tasks.md`, es decir, documentación, así que no hace falta re-revisión.
+
+## Estabilidad de las specs E2E
+Contra `develop`, la rama solo toca `e2e/cancel.e2e.mjs`; `free.e2e.mjs` no cambia. Levanté el entorno yo, en esta sesión, y su `/health` respondió ok. Luego repetí los tests cambiados ×3 y los otros dos del fichero ×1, sin opciones fuera del runner (traza por defecto, `retries: 0`).
+
+| Tanda | Resultado |
+| --- | --- |
+| `cancela una reserva con su motivo` ×3 | 3/3 OK |
+| `la cancelada sale en canceladas con su motivo` ×3 | 3/3 OK |
+| `rechaza un motivo fuera de la lista` ×3 | 3/3 OK |
+| `anula una reserva` ×1 | OK |
+| `anular sin reserva avisa` ×1 | OK |
+
+- **Tanda real:** 11 ejecuciones en 85 s, contra una estimación de ~1,5 min. No hay inestabilidad.
+- **Los hice antes de darte el guion**, no mientras pruebas. Una tanda a la vez que tú contra el mismo servidor del puerto 4354 reinicia el servidor o escribe tus datos.
+- **Gate:** `node --test test/` dio 5/5. La suite E2E completa dio 7/7 en 48,2 s sobre `34b0440`, dentro del presupuesto de 0,5 min según `operations.md`.
+
+Paré el entorno al terminar. Ahora no hay nada corriendo.
+
+## Guion de validación
+Lo ensayé yo con otra sesión (`x-session`), no la tuya. El estado vive en memoria y por sesión, así que no queda nada mío en tu entorno.
+
+**Arranque:** `node scripts/env-up.mjs` levanta el servidor en `http://localhost:4354`. Para pararlo: `node scripts/env-down.mjs`. Usa tu propia cabecera `x-session`, o la pestaña del navegador, para partir de la reserva de Norte del lunes.
+
+| # | Acción (`/run?cmd=…&args=…`) | Debe salir |
+| --- | --- | --- |
+| 1 | `cancelar ["Norte","lun","--motivo","sala ocupada"]` | `cancelada Norte lun (sala ocupada)` |
+| 2 | `canceladas []` | `Norte lun — sala ocupada` |
+| 3 | `cancelar ["Norte","lun","--motivo","me aburro"]` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 4 | `cancelar ["Norte","lun"]` (sin `--motivo`) | `motivo no válido: cambio de planes, sala ocupada, otro` |
+
+Los cuatro pasos salieron así en mi ensayo. En los pasos 3 y 4, la reserva de Norte del lunes sigue activa, porque la rechazada no la cancela.
+
+## Qué necesito de ti
+Dime cuál de estas tres opciones es:
+- `Validado: lo he probado y funciona`, con lo que probaste.
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`.
+- `No funciona`.
+
+Con tu respuesta sigo con walkthrough, living docs, changelog, roadmap, el squash de cierre, la integración con `develop` y el merge. No haré nada contra el entorno hasta entonces.

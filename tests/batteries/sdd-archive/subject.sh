@@ -18,6 +18,8 @@ P8=".docs/sdd/specs/20261010-090000-patch-0008-cancel-missing"
 MERGE='"merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}'
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, '"$MERGE"', "execution": "native", "validation": {"mode": "field"}'
 short() { g rev-parse --short=7 "$1"; }
+# La validación la hace la persona: el cierre para con el guion.
+manual_validation() { MARKER="${MARKER/\"mode\": \"field\"/\"mode\": \"manual\"}"; }
 
 # La 0010 implementada en Native y revisada: spec y plan aprobados, dos tasks, tasks.md con la revisión final limpia.
 approved_0010() { sed -e 's/ y quién canceló//' -e 's/ cancelada por Ana con/ cancelada con/' -e 's/ — sala ocupada — Ana»/ — sala ocupada»/' -e '/^2\. El listado de canceladas enseña sala/d' -e 's/^- Modificadas: `bookings`/- Nuevas: `bookings`/' -e 's/^status: draft/status: approved/' -e 's/approved_at: null/approved_at: 2026-10-08/' -e 's/| dev-lead | Laura | | pendiente |/| dev-lead | Laura | 2026-10-08 | aprobada |/' "$IMPL/fixtures/spec-0010.md"; }
@@ -87,6 +89,19 @@ done_0008() {
   printf "\ntest('cancelar sin reserva avisa', () => {\n  assert.equal(run('cancelar', ['mie', '10:00']), 'no hay reserva mie 10:00');\n});\n" >> "$R/test/app.test.js"
   put "$P8/patch.md" < "$HERE/patch-0008.md"
   commit "fix: cancelar una reserva que no existe avisa (0008)"
+}
+
+# El síntoma del patch 0008 con el reporte literal de quien lo encontró: sus pasos empiezan antes del comando que falla.
+report_0008() {
+  sed -i 's/^`cancelar mie 10:00`, sin reserva ese día, responde «cancelada mie 10:00»\.$/Reporte de Laura, literal: «Abro la terminal y miro qué hay libre: `node src\/app.js libres 10:00-12:00` me da «Sur». Como el miércoles no tengo nada reservado, pruebo `node src\/app.js cancelar mie 10:00` y me dice «cancelada mie 10:00». Debería decirme que no hay reserva.»/' "$R/$P8/patch.md"
+  grep -q 'Reporte de Laura' "$R/$P8/patch.md" || die "no se plantó el reporte en patch.md"
+  g add -A; g commit -q --amend --no-edit
+}
+# La persona quiere el entorno arrancado al validar, y el gate de cierre no lo levanta.
+start_environment() {
+  sed -i 's/^- \*\*Gate de cierre\*\*: .*$/- **Gate de cierre**: `node --test test\/`/' "$R/.docs/sdd/steering/operations.md"
+  printf '.docs/sdd/sdd-kit.local.json\n' >> "$R/.gitignore"
+  commit "chore: gate de cierre sin e2e y config local ignorada"
 }
 
 # Un E2E que falla igual con la rama y sin ella, y su fila en la deuda del proyecto.
@@ -183,6 +198,10 @@ case "$(cell Molde)" in
     approved_0010 | put "$F10/spec.md"; put "$F10/plan.md" < "$IMPL/fixtures/plan-0010.md"
     commit "docs(sdd): abrir la feature 0010 con su spec y su plan" ;;
   salas-patch) done_0008 ;;
+  salas-report) manual_validation; done_0008; report_0008 ;;
+  reservas-e2e-manual) manual_validation; mold_reservas; e2e_suite; done_0010 ;;
+  reservas-start) manual_validation; mold_reservas; e2e_suite; start_environment; done_0010
+    printf '{"validation": {"startEnvironment": true}}\n' > "$R/.docs/sdd/sdd-kit.local.json" ;;
   salas-hotfix) done_0008 hotfix; export TURN2='Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.' ;;
   *) die "molde desconocido en battery.md: $SC" ;;
 esac
@@ -193,6 +212,8 @@ case "$SC" in
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
+ENV_AT_END=abajo
+[ -f "$R/e2e/config.json" ] && curl -sf "http://localhost:$E2E_PORT/health" >/dev/null 2>&1 && ENV_AT_END="arriba en el puerto $E2E_PORT"
 # Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
 [ -f "$R/scripts/env-down.mjs" ] && "$NODE" "$R/scripts/env-down.mjs" >/dev/null 2>&1
 for kept in tasks walkthrough patch; do
@@ -203,5 +224,5 @@ for kept in ROADMAP.md .docs/sdd/steering/debt.md .docs/sdd/capabilities/booking
 for adr in "$R"/.docs/sdd/decisions/*.md; do [ -f "$adr" ] && subject_keep "$adr" "$(basename "$adr")"; done
 [ -f "$R/.docs/sdd/steering/operations.md" ] && subject_keep "$R/.docs/sdd/steering/operations.md" operations.md
 for doc in roadmap tech-stack changelog; do [ -f "$R/.docs/sdd/$doc.md" ] && subject_keep "$R/.docs/sdd/$doc.md" "$doc.md"; done
-{ echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all --graph; echo "## etiquetas"; g tag -n1
+{ echo "## petición"; echo "$ASK"; echo "## entorno al acabar el sujeto"; echo "$ENV_AT_END"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all --graph; echo "## etiquetas"; g tag -n1
   echo "## roadmap en develop"; g show develop:.docs/sdd/roadmap.md 2>/dev/null; echo "## bookings en develop"; g show "develop:$CAP" 2>/dev/null; echo "## tech-stack en develop"; g show develop:.docs/sdd/tech-stack.md 2>/dev/null | tail -n 20; } | subject_save

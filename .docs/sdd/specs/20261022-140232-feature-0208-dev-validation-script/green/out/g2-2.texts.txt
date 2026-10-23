@@ -1,0 +1,65 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [20]
+La ejecución anterior terminó sin dejar salida. El servidor ya está arriba, así que la relanzo escribiendo a un fichero.
+
+--- [23]
+Las E2E salen estables. Ahora toca la validación: el proyecto tiene `validation.mode: manual`, así que tengo que parar antes de escribir ningún registro. Leo cómo componer el guion.
+
+--- [31]
+Las tres pasadas de `e2e/cancel.e2e.mjs` salieron bien, pero el cierre está parado en la validación y no he escrito ningún registro. El proyecto usa `validation.mode: manual`, y «la implementación está lista y la revisión limpia» es la orden de cerrar, no una validación.
+
+## Pre-comprobaciones
+
+- **Árbol de trabajo:** limpio, sin cambios sin commitear.
+- **`sdd merge --check`:** `develop` irá en un worktree temporal, así que puede fusionar.
+- **Otras ramas abiertas:** no hay ninguna `feature/*` ni `patch/*` más.
+- **Spec:** está `approved` y firmada por Laura el 2026-10-08.
+- **Revisión final:** consta en `tasks.md` (spec, código y arquitectura) sobre `482cf90`. `HEAD` es `5491708`, un commit solo de documentación, así que no relanzo la revisión.
+
+## E2E de la rama
+
+- **Qué se pasó:** la rama solo toca `e2e/cancel.e2e.mjs`. Lo pasé con `--repeat-each=3`: 5 tests × 3 = 15.
+- **Resultado:** 15 de 15 pasan, en 108,4 s, con `retries: 0` y traza completa. No hay inestabilidad.
+- **Cuándo:** lo corrí antes de presentarte el guion. Las reglas del kit prohíben tocar el entorno mientras pruebas.
+
+## Guion de validación
+
+Ensayé cada paso tal como lo teclearás. El entorno lo paré: no hay nada corriendo, y el árbol sigue limpio.
+
+Cada proceso de `node src/app.js` pierde las reservas al terminar, así que el paso 4 no se puede probar en CLI suelto. Los pasos 1 a 3 sirven en CLI; para el paso 4 hay que usar el servidor.
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. Con el entorno en marcha (`npm run env:up`, puerto 4881, y para pararlo `npm run env:down`), usa la misma sesión en las dos peticiones:
+   - `curl -G -H "x-session: dev" --data-urlencode 'cmd=cancelar' --data-urlencode 'args=["Norte","lun","--motivo","otro"]' localhost:4881/run` → `cancelada Norte lun (otro)`
+   - `curl -G -H "x-session: dev" --data-urlencode 'cmd=canceladas' --data-urlencode 'args=[]' localhost:4881/run` → `Norte lun — otro`
+
+Mi propia prueba, aparte de tu guion, son esos mismos pasos más la suite E2E de arriba. Los 15 tests E2E son el único resultado automático que se ha repetido; no he vuelto a pasar `npm test`.
+
+## Tu respuesta
+
+¿Qué has probado? Elige una:
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Con tu respuesta sigo con el cierre: walkthrough, `tasks.md`, capacidad `bookings`, changelog, roadmap, historia, base integrada y fusión en `develop`.
+
+--- [35]
+Tengo que corregirte lo del mensaje anterior: las E2E no están descartadas como inestables. Acaba de terminar la primera ejecución en segundo plano, la de `npm run env:up` seguido de `test:e2e`, y salió **15 de 15 fallados**, todos con `net::ERR_CONNECTION_REFUSED` en `http://localhost:4881/`. No lo había visto porque su salida estaba vacía cuando la consulté.
+
+- **Primera ejecución:** 0 pasadas, 90,2 s.
+- **Segunda ejecución:** la lancé yo a mano contra el servidor ya levantado y pasó 15 de 15, en 108,4 s.
+- **Qué sé:** las dos son el mismo comando y el mismo código, y el servidor respondía a `/health` mientras la primera aún corría. Los fallos son de conexión, no de aserción: el runner nunca llegó a comparar un resultado.
+- **Qué no sé:** por qué la primera no conectó. Puede ser un problema de arranque del servidor desde `env:up` lanzado en segundo plano, o algo intermitente de la propia suite. Con lo que tengo no puedo distinguirlo.
+
+Así que «tres pasadas» está sin cumplir: hay una limpia (con tres repeticiones de cada test) y una fallida por conexión. No la voy a contar como estable.
+
+No relanzo nada mientras pruebas el guion, porque cualquier batch contra el entorno puede pisar tus datos. Ahora mismo no hay nada corriendo y el entorno está parado. En cuanto me respondas, repito las tres pasadas arrancando el entorno con `env:up` y esperando a que responda antes de lanzar la suite. Si vuelve a fallar por conexión, lo investigo antes de seguir con el cierre.
+
+Este aviso automático no es tu respuesta, así que el cierre sigue parado en la validación. Necesito que elijas: `Validado: lo he probado y funciona`, `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>` o `No funciona`.
+

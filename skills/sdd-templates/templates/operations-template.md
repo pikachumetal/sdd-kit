@@ -49,3 +49,4 @@
 - **Entradas**: `env:setup` levanta el entorno y deja el marcador en `active` (idempotente); `env:clean` baja los recursos antes de borrar el worktree; `env:preflight` comprueba que el entorno sigue disponible antes de arrancar servicios y, si falla, no arranca nada ni limpia el entorno de otro worktree.
 - **Runner**: <comando real, p. ej. `pnpm env:setup`, `moon run env:setup`>
 - **Tipos**: <default (persistente, puertos fijos) y efímero (uno por worktree), con sus puertos, almacenamiento y servicios>
+- **Puertos en Windows**: un puerto de desarrollo puede caer en un rango reservado del sistema, y el arranque falla con `EACCES` sin decir por qué; `netsh int ipv4 show excludedportrange protocol=tcp` lista los rangos.

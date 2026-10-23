@@ -10,7 +10,7 @@ BeforeAll {
   $script:Budgets = @{
     Skills  = @{
       'add-to-changelog'    = @{ SkillMd = 500; Total = 500 }
-      'sdd-archive'         = @{ SkillMd = 3900; Total = 6900 }
+      'sdd-archive'         = @{ SkillMd = 3920; Total = 8000 }
       'sdd-config'          = @{ SkillMd = 1450; Total = 1450 }
       'sdd-explore'         = @{ SkillMd = 1100; Total = 1100 }
       'sdd-end-release'     = @{ SkillMd = 1900; Total = 2500 }
@@ -26,14 +26,14 @@ BeforeAll {
       'sdd-tdd'             = @{ SkillMd = 1750; Total = 4020 }
       'sdd-upgrade'         = @{ SkillMd = 980; Total = 980 }
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
-      'sdd-start-feature'   = @{ SkillMd = 2100; Total = 11464 }
+      'sdd-start-feature'   = @{ SkillMd = 1916; Total = 11322 }
       'sdd-start-patch'     = @{ SkillMd = 2300; Total = 2300 }
       'sdd-worktrees'       = @{ SkillMd = 1300; Total = 1300 }
-      'sdd-templates'       = @{ SkillMd = 1700; Total = 15690 }
+      'sdd-templates'       = @{ SkillMd = 1700; Total = 15720 }
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 90400
+    Kit     = 91300
     Anchors = @{
       'constitution.md' = 2236
       'mission.md'      = 1700
