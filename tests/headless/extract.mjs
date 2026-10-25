@@ -6,9 +6,19 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
+// Una línea que no parsea no tumba el extractor: en la 0168 dejó texts.txt a medias (feature 0168).
+const readStream = (path) =>
+  readFileSync(path, 'utf8').split(/\r?\n/).map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => line.trim()).map(({ line, n }) => {
+    try {
+      return { n, event: JSON.parse(line) };
+    } catch (error) {
+      return { n, length: line.length, error: error.message };
+    }
+  });
+
 const [mode, ...rest] = process.argv.slice(2);
 if (mode === 'last') {
-  const results = readFileSync(rest[0], 'utf8').split('\n').filter((line) => line.trim()).map((line) => JSON.parse(line)).filter((event) => event.type === 'result');
+  const results = readStream(rest[0]).filter(({ error }) => !error).map(({ event }) => event).filter((event) => event?.type === 'result');
   process.stdout.write(results.at(-1)?.result ?? '');
   process.exit(0);
 }
@@ -35,22 +45,36 @@ const escaped = user.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 // Home en sus formas Windows (\, \\ de JSON, /) y Git Bash (/c/…); luego el usuario suelto (ls -l, C--Users-<user>).
 const homePattern = new RegExp(`(?:[A-Za-z]:|/[A-Za-z])(?:\\\\{1,2}|/)Users(?:\\\\{1,2}|/)${escaped}\\b`, 'gi');
 const userPattern = new RegExp(`\\b${escaped}\\b`, 'g');
-// El user.name de git de la máquina: el sujeto lo copia del contexto de la sesión (ticket de la feature 0099 §1).
-// Sin los GIT_CONFIG_* que exporta subject_launch, que lo tapan con Fixture.
+// El nombre y el email de git de la máquina: el sujeto los copia del contexto de la sesión (tickets de las features 0099 §1 y 0160).
+// Sin los GIT_CONFIG_* que exporta subject_launch, que los tapan con Fixture.
 const machineEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^GIT_CONFIG_(COUNT|KEY_\d+|VALUE_\d+)$/.test(key)));
-let gitUser = '';
-try {
-  gitUser = execFileSync('git', ['config', 'user.name'], { cwd: import.meta.dirname, env: machineEnv, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-} catch {} // sin user.name, git sale con 1: no hay nada que limpiar
+const gitConfig = (key) => {
+  try {
+    return execFileSync('git', ['config', key], { cwd: import.meta.dirname, env: machineEnv, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  } catch {
+    return ''; // sin la clave, git sale con 1
+  }
+};
+// Como palabra entera: un nombre corto («Ana») no casa dentro de otra palabra («Analizar»).
+const identity = [gitConfig('user.name'), gitConfig('user.email')]
+  .filter(Boolean)
+  .map((value) => new RegExp(`(?<![\\p{L}\\p{N}])${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'u'));
+// Sustituirla escondía que el sujeto había visto la identidad de la máquina: la salida no se guarda.
+const write = (text) => {
+  if (identity.some((pattern) => pattern.test(text))) {
+    console.error('la salida lleva el nombre o el email de git de la máquina: no se guarda');
+    process.exit(3);
+  }
+  process.stdout.write(text);
+};
 const clean = (text) => {
   let out = String(text);
-  if (gitUser) out = out.replaceAll(gitUser, '<git-user>');
   for (const variant of runVariants) out = out.replaceAll(variant, '<run>');
   return user ? out.replace(homePattern, '<home>').replace(userPattern, '<user>') : out;
 };
 
 if (mode === 'clean') {
-  process.stdout.write(clean(readFileSync(0, 'utf8')));
+  write(clean(readFileSync(0, 'utf8')));
   process.exit(0);
 }
 
@@ -65,22 +89,27 @@ const describe = (block) => {
 };
 const resultText = (block) => (Array.isArray(block.content) ? block.content.map((c) => c.text ?? '').join('') : String(block.content ?? ''));
 
+const lines = [];
 let turn = 0;
-for (const line of readFileSync(streamPath, 'utf8').split('\n')) {
-  if (!line.trim()) continue;
-  const event = JSON.parse(line);
+for (const { n, event, length, error } of readStream(streamPath)) {
+  if (error) {
+    lines.push(`!!! línea ${n} del stream sin parsear (${length} caracteres): ${clean(error)}`);
+    continue;
+  }
+  if (typeof event !== 'object' || event === null) continue;
   if (mode === 'texts') {
     if (event.type !== 'assistant') continue;
     turn += 1;
     for (const block of event.message?.content ?? []) {
-      if (block.type === 'text' && block.text.trim()) console.log(`--- [${turn}]\n${clean(block.text.trim())}\n`);
+      if (block.type === 'text' && block.text.trim()) lines.push(`--- [${turn}]\n${clean(block.text.trim())}\n`);
     }
     continue;
   }
   for (const block of event.message?.content ?? []) {
-    if (block.type === 'tool_use') console.log(`\n>>> ${block.name}: ${clean(describe(block))}`);
-    if (block.type === 'tool_result') console.log(`<<< ${clean(resultText(block)).slice(0, 600)}`);
+    if (block.type === 'tool_use') lines.push(`\n>>> ${block.name}: ${clean(describe(block))}`);
+    if (block.type === 'tool_result') lines.push(`<<< ${clean(resultText(block)).slice(0, 600)}`);
   }
   // Un stream puede traer más de un result: run.sh suma solo el último de cada sujeto (task 0055).
-  if (event.type === 'result') console.log(`\n=== RESULTADO (${event.num_turns} turnos, ${event.total_cost_usd} $)\n${clean(event.result ?? '')}`);
+  if (event.type === 'result') lines.push(`\n=== RESULTADO (${event.num_turns} turnos, ${event.total_cost_usd} $)\n${clean(event.result ?? '')}`);
 }
+write(lines.map((line) => `${line}\n`).join(''));

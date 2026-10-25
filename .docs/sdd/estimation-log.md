@@ -203,20 +203,21 @@
 | 2026-10-25 | 0210 | infra/tooling | 2.5 | 2.37 | 0.95 | 36306k | 2301k | 0.03 | 14.83 | 20261025-144428-feature-0210-session-end-temp-cleanup |
 | 2026-10-25 | 0213 | infra/tooling | 2.5 | 2.57 | 1.03 | 64973k | 3253k | 0.01 | 26.55 | 20261025-152402-feature-0213-campaign-control |
 | 2026-10-25 | 0217 | patch | 0.5 | 0.75 | 1.5 | — | — | no aplica | — | 20261025-160210-patch-0217-pester-git-env-anatomy |
+| 2026-10-25 | 0214 | infra/tooling | 3 | 2.72 | 0.91 | 72074k | 8273k | no aplica | 26.57 | 20261025-181756-feature-0214-mold-and-launcher-safety |
 
-**Factor de calibración** (ratio mediano real/estimado, 164 artefactos): **0.59** · media 0.76
+**Factor de calibración** (ratio mediano real/estimado, 165 artefactos): **0.6** · media 0.76
 
 - p25–p75: 0.4–0.92
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 63 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.41 · mediana 0.98
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.8
+- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 9 %
+- Error absoluto (h): media 1.4 · mediana 0.95
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.87
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 57 | 35 % |
 | 0.5–0.8 | 52 | 32 % |
-| 0.8–1.25 | 40 | 24 % |
+| 0.8–1.25 | 41 | 25 % |
 | 1.25–2 | 9 | 5 % |
 | ≥2 | 6 | 4 % |
 
@@ -224,7 +225,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
-| infra/tooling | 39 | 0.46 | 0.36–0.59 |
+| infra/tooling | 40 | 0.47 | 0.37–0.63 |
 | patch | 38 | 1.18 | 0.8–1.38 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -244,6 +245,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 51 | 146.6 | 0.55 | 303.95 | 1174.82 |
+| sin publicar | 52 | 149.32 | 0.57 | 303.95 | 1201.39 |
 
 > Ver `estimation.md`.

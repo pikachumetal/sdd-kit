@@ -252,6 +252,187 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     (Get-Subjects $campaign).Count | Should -Be 0
   }
 
+  It 'el SETTINGS por defecto carga deny-kill.mjs (walkthrough de la feature 0168 §5)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'deny-default')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.args') | Should -Match 'tests/headless/deny-kill\.mjs'
+  }
+
+  It 'aborta si SETTINGS no carga deny-kill.mjs' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'deny-missing')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SETTINGS = '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' }
+
+    $run.Output | Should -Match 'SETTINGS sin el hook deny-kill\.mjs: añade \$DENY_KILL_HOOK a sus PreToolUse'
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'acepta un SETTINGS propio que lleva el hook' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'deny-own')
+    $hook = (Join-Path $script:Headless 'deny-kill.mjs') -replace '\\', '/'
+    $settings = '{"enabledPlugins":{"sdd-kit@sdd-kit":false},"hooks":{"PreToolUse":[{"matcher":"Edit","hooks":[{"type":"command","command":"node other.mjs"}]},{"matcher":"Bash|PowerShell","hooks":[{"type":"command","command":"node \"' + $hook + '\""}]}]}}'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SETTINGS = $settings }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    (Get-Subjects $campaign).Count | Should -Be 1
+  }
+
+  It 'para al acabar lo que escucha en los puertos del sujeto (ticket de la feature 0036 §3)' {
+    $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
+    $script = Join-Path $TestDrive 'server.mjs'
+    Set-Content -LiteralPath $script -Value "import { createServer } from 'node:http'; createServer().listen(Number(process.argv[2]));"
+    $server = "PORT=$port; `"`$NODE`" '$($script -replace '\\', '/')' `"`$PORT`" > /dev/null 2>&1 & for i in `$(seq 50); do (: < /dev/tcp/127.0.0.1/`$PORT) 2>/dev/null && break; sleep 0.1; done; "
+    $campaign = New-Campaign (Join-Path $TestDrive 'ports') -Launch ($server + 'subject_launch "x"')
+
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+      $run.ExitCode | Should -Be 0 -Because $run.Output
+      Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+      Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') | Should -Match "puertos del sujeto: $port · escuchando al acabar: $port" -Because $run.Output
+    } finally {
+      Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+    }
+  }
+
+  It 'no para lo que ya escuchaba en un puerto del stream antes del sujeto (revisión final de la feature 0214)' {
+    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $listener.Start()
+    $port = $listener.LocalEndpoint.Port
+    $campaign = New-Campaign (Join-Path $TestDrive 'foreign-port') -Launch "PORT=$port; subject_launch `"x`""
+
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+      $run.ExitCode | Should -Be 0 -Because $run.Output
+      Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+      Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') | Should -Match "puertos del sujeto: $port · escuchando al acabar: ninguno" -Because $run.Output
+    } finally { $listener.Stop() }
+  }
+
+  It 'subject_save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)' {
+    $config = Join-Path $TestDrive 'machine.gitconfig'
+    Set-Content -LiteralPath $config -Value "[user]`n`tname = Alice Liddell" -Encoding utf8NoBOM
+    $campaign = New-Campaign (Join-Path $TestDrive 'identity-leak') -Launch 'subject_launch "x"; echo "aprobada por Alice Liddell" | subject_save; exit 0'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; GIT_CONFIG_GLOBAL = $config }
+
+    $run.Output | Should -Match 'el stream sigue en'
+    $run.Output | Should -Not -Match 'Alice Liddell'
+    Join-Path $campaign.Out 'a-1.state.txt' | Should -Not -Exist
+    Join-Path $campaign.Out 'a-1.tools.txt' | Should -Exist -Because 'sin tools.txt, run.sh no cuenta el coste del sujeto'
+    Get-ChildItem -LiteralPath $campaign.Out -Filter '*.tmp' -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+  }
+
+  It 'un sujeto con la identidad de git de la máquina en su salida sale con error' {
+    $config = Join-Path $TestDrive 'exit.gitconfig'
+    Set-Content -LiteralPath $config -Value "[user]`n`tname = Alice Liddell" -Encoding utf8NoBOM
+    $campaign = New-Campaign (Join-Path $TestDrive 'identity-exit') -Launch 'subject_launch "x"; echo "aprobada por Alice Liddell" | subject_save; exit 0'
+    $subject = Join-Path $campaign.Spec 'red/subject.sh'
+    $wrapper = Join-Path $campaign.Spec 'red/wrapper.sh'
+    Set-Content -LiteralPath $wrapper -Value "bash '$($subject -replace '\\', '/')' `"`$@`"; echo `"salida del sujeto: `$?`" >&2" -NoNewline
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; GIT_CONFIG_GLOBAL = $config; SUBJECT_SH = $wrapper }
+
+    $run.Output | Should -Match 'salida del sujeto: 1'
+  }
+
+  It 'aborta si la copia del kit lleva <Folder>/ (walkthrough de la feature 0150 §4.3)' -ForEach @(@{ Folder = '.docs' }, @{ Folder = 'tests' }) {
+    $campaign = New-Campaign (Join-Path $TestDrive "kit-$Folder")
+    New-Item -ItemType Directory -Force (Join-Path $campaign.Kit $Folder) | Out-Null
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'la copia del kit lleva \.docs/ o tests/: sácala con git archive <commit> skills \.claude-plugin'
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'subject_show vuelca un fichero de otra rama (ticket del patch 0075 §3)' {
+    $launch = 'g checkout -q -b feature/0013; put .docs/sdd/roadmap.md <<< "fila 0013"; commit "docs: fila"; g checkout -q main; subject_launch "x"; subject_show feature/0013:.docs/sdd/roadmap.md roadmap.md'
+    $campaign = New-Campaign (Join-Path $TestDrive 'show') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Out 'a-1/roadmap.md') -ErrorAction SilentlyContinue | Should -Match 'fila 0013' -Because $run.Output
+  }
+
+  It 'seed_transcript siembra en la carpeta del molde y la borra al acabar (ticket de la feature 0188 §2)' {
+    $config = Join-Path $TestDrive 'seed-config'
+    $launch = 'seed_transcript feature/0042 < <(printf "%s\n" "2026-10-14T09:00:00Z user el total no redondea" "2026-10-14T09:02:00Z assistant mirando"); cp "$SEED_DIR"/seed-1.jsonl "$OUT/seed.jsonl"; subject_launch "x"'
+    $campaign = New-Campaign (Join-Path $TestDrive 'seed') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; CLAUDE_CONFIG_DIR = $config; KEEP_MOLD = '1' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $seed = @(Get-Content (Join-Path $campaign.Out 'seed.jsonl') -ErrorAction SilentlyContinue | ForEach-Object { $_ | ConvertFrom-Json })
+    $seed | Should -HaveCount 2 -Because $run.Output
+    $seed[0].gitBranch | Should -Be 'feature/0042'
+    $seed[0].message.content | Should -Be 'el total no redondea'
+    $seed[1].message.model | Should -Be 'claude-sonnet-5'
+    $seed[1].message.usage.output_tokens | Should -Be 1
+    @(Get-ChildItem -LiteralPath (Join-Path $config 'projects') -Directory -ErrorAction SilentlyContinue) | Should -HaveCount 0
+  }
+
+  It 'seed_transcript en una tubería también borra la carpeta al acabar' {
+    $config = Join-Path $TestDrive 'seed-pipe-config'
+    $launch = 'printf "%s\n" "2026-10-14T09:00:00Z user hola" | seed_transcript feature/0042; subject_launch "x"'
+    $campaign = New-Campaign (Join-Path $TestDrive 'seed-pipe') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; CLAUDE_CONFIG_DIR = $config }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Join-Path $config 'projects' | Should -Exist -Because 'seed_transcript la crea'
+    @(Get-ChildItem -LiteralPath (Join-Path $config 'projects') -Directory) | Should -HaveCount 0
+  }
+
+  It 'seed_transcript sin molde muere sin tocar los transcripts' {
+    $config = Join-Path $TestDrive 'seed-nomold'
+    New-Item -ItemType Directory -Force (Join-Path $config 'projects/otra-sesion') | Out-Null
+    $lib = (Join-Path $script:Headless 'lib.sh') -replace '\\', '/'
+    $saved = $env:CLAUDE_CONFIG_DIR
+    try {
+      $env:CLAUDE_CONFIG_DIR = $config
+      $out = (& $script:Bash -c ". '$lib'; seed_transcript feature/0042 <<< '2026-10-14T09:00:00Z user hola'; subject_cleanup" 2>&1) -join "`n"
+    } finally { $env:CLAUDE_CONFIG_DIR = $saved }
+
+    $out | Should -Match 'seed_transcript antes de subject_init'
+    Join-Path $config 'projects/otra-sesion' | Should -Exist
+  }
+
+  It 'subject_show con una copia con carpetas da el aviso de copia plana' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'show-flat') -Launch 'subject_launch "x"; subject_show main:README.md docs/readme.md'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'docs/readme\.md: solo copia plana'
+  }
+
+  It 'g pasa core.longpaths (ticket de la feature 0089 §2)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'longpaths') -Launch 'subject_launch "x"; g config --get core.longpaths > "$OUT/longpaths.txt"'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content (Join-Path $campaign.Out 'longpaths.txt') -ErrorAction SilentlyContinue | Should -Be 'true'
+  }
+
+  It 'subject_ports junta PORT y los puertos del stream' {
+    $stream = Join-Path $TestDrive 'ports.jsonl'
+    Set-Content -LiteralPath $stream -Value '{"text":"abre http://localhost:4567 y PORT=5173 npm start; otra vez localhost:4567"}'
+    $lib = (Join-Path $script:Headless 'lib.sh') -replace '\\', '/'
+    $jsonl = $stream -replace '\\', '/'
+
+    $ports = & $script:Bash -c ". '$lib'; JSONL='$jsonl'; PORT=4300; subject_ports"
+
+    $ports | Should -Be '4300,4567,5173'
+  }
+
   It 'no pasa de SUBJECT_CAP sujetos' {
     $campaign = New-Campaign (Join-Path $TestDrive 'cap')
 

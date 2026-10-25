@@ -11,7 +11,7 @@ Verificado por el agente (smoke, 2026-09-21):
 | `node src/app.js reservar Norte 9:00-11:00` | mensaje de error ✔ |
 | `node src/app.js libres 10:00-12:00` | `Sur` ✔ |
 
-Validación diferida: 2026-09-23 · «se prueba en uso» · disparador: próximo uso real de `libres`/`reservar` en producción, dueño: dev-lead (Àngel Delgado).
+Validación diferida: 2026-09-23 · «se prueba en uso» · disparador: próximo uso real de `libres`/`reservar` en producción, dueño: dev-lead (<git-user>).
 
 ## Desviaciones
 
