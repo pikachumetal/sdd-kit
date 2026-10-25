@@ -56,7 +56,11 @@ if (mode === 'clean') {
 
 const describe = (block) => {
   const input = block.input ?? {};
-  if (block.name === 'Agent') return `subagent_type=${input.subagent_type ?? '(sin tipo)'} model=${input.model ?? '(sin modelo)'} · ${input.description ?? ''}`;
+  // Las cabeceras ## del prompt: sin ellas, un despacho se leyó mal y se escribió un REFACTOR de más (ticket de la feature 0147 §3).
+  if (block.name === 'Agent') {
+    const headings = String(input.prompt ?? '').split(/\r?\n/).filter((line) => line.startsWith('## ')).map((line) => `\n    ${line}`);
+    return `subagent_type=${input.subagent_type ?? '(sin tipo)'} model=${input.model ?? '(sin modelo)'} · ${input.description ?? ''}${headings.join('')}`;
+  }
   return input.command ?? input.skill ?? input.file_path ?? input.pattern ?? input.description ?? JSON.stringify(input);
 };
 const resultText = (block) => (Array.isArray(block.content) ? block.content.map((c) => c.text ?? '').join('') : String(block.content ?? ''));
