@@ -1,8 +1,13 @@
 BeforeAll {
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  # Dentro del pre-commit, GIT_DIR apunta al repo del kit: sin esto, git init lo reinicializa como bare.
+  $script:SavedGitEnv = Clear-GitEnv
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
   $script:HookScript = Join-Path $script:KitRoot '.claude/hooks/Test-KitSessionSource.ps1'
   $script:ProjectDir = Join-Path ([IO.Path]::GetTempPath()) ('kit-session-' + [guid]::NewGuid().ToString('N'))
   New-Item -ItemType Directory -Path $script:ProjectDir -Force | Out-Null
+  git init --quiet $script:ProjectDir
+  git -C $script:ProjectDir config core.hooksPath .githooks
 
   function Invoke-KitSessionHook([AllowNull()][string]$SessionRoot, [string]$ProjectDir) {
     $previous = @{ Root = $env:SDD_KIT_SESSION_ROOT; Project = $env:CLAUDE_PROJECT_DIR }
@@ -20,6 +25,7 @@ BeforeAll {
 
 AfterAll {
   Remove-Item -LiteralPath $script:ProjectDir -Recurse -Force -ErrorAction SilentlyContinue
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'Hook SessionStart del repo' {
@@ -67,6 +73,19 @@ Describe 'Hook SessionStart del repo' {
     It 'additionalContext nombra los agentes sdd-kit:*' {
       $script:Json.hookSpecificOutput.additionalContext | Should -Match ([regex]::Escape('Las skills y los agentes sdd-kit:*'))
     }
+
+    It 'additionalContext manda leer de la rama una skill que no resuelve' {
+      $script:Json.hookSpecificOutput.additionalContext | Should -Match 'no resuelve'
+    }
+
+    It 'systemMessage dice cómo reanudar con el script' {
+      $script:Json.systemMessage | Should -Match '--resume'
+      $script:Json.systemMessage | Should -Match '--continue'
+    }
+
+    It 'no avisa de los hooks de git si core.hooksPath es .githooks' {
+      $script:Json.systemMessage | Should -Not -Match 'core\.hooksPath'
+    }
   }
 
   Context 'con SDD_KIT_SESSION_ROOT de otro worktree' {
@@ -96,6 +115,36 @@ Describe 'Hook SessionStart del repo' {
   }
 }
 
+Describe 'Hook SessionStart: hooks de git' {
+  BeforeAll {
+    $script:BareProject = Join-Path ([IO.Path]::GetTempPath()) ('kit-session-' + [guid]::NewGuid().ToString('N'))
+    git init --quiet $script:BareProject
+    $script:Result = Invoke-KitSessionHook $script:BareProject $script:BareProject
+    $script:Json = $script:Result.Output | ConvertFrom-Json
+  }
+
+  AfterAll {
+    Remove-Item -LiteralPath $script:BareProject -Recurse -Force -ErrorAction SilentlyContinue
+  }
+
+  It 'sin core.hooksPath avisa aunque la sesión salga del script, y sale con 0' {
+    $script:Result.ExitCode | Should -Be 0
+    $script:Json.systemMessage | Should -Match 'hooks de git'
+  }
+
+  It 'systemMessage da el comando para activarlos' {
+    $script:Json.systemMessage | Should -Match ([regex]::Escape('git config core.hooksPath .githooks'))
+  }
+
+  It 'additionalContext avisa al agente de que el pre-commit no corre' {
+    $script:Json.hookSpecificOutput.additionalContext | Should -Match 'pre-commit'
+  }
+
+  It 'no da el aviso de la caché si la sesión salió del script' {
+    $script:Json.systemMessage | Should -Not -Match 'caché'
+  }
+}
+
 Describe 'Start-KitSession.ps1' {
   BeforeAll {
     $script:Launcher = @(Get-Content (Join-Path $script:KitRoot 'Start-KitSession.ps1'))
@@ -106,6 +155,11 @@ Describe 'Start-KitSession.ps1' {
   It 'exporta SDD_KIT_SESSION_ROOT con su carpeta antes de invocar claude' {
     $script:ExportLine | Should -BeGreaterOrEqual 0
     $script:ClaudeLine | Should -BeGreaterThan $script:ExportLine
+  }
+
+  It 'documenta cómo reanudar una sesión' {
+    ($script:Launcher -join "`n") | Should -Match '--resume'
+    ($script:Launcher -join "`n") | Should -Match '--continue'
   }
 
   It 'restaura la variable al salir claude' {
