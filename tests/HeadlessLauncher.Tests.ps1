@@ -27,10 +27,31 @@ $Launch
 subject_keep "`$R/README.md" $KeepName
 "@
     Set-Content -LiteralPath (Join-Path $spec 'red/subject.sh') -Value $subject -NoNewline
-    return [pscustomobject]@{ Spec = $spec; Runs = $runs; Kit = $kit; Out = Join-Path $spec 'red/out' }
+    return [pscustomobject]@{ Spec = $spec; Runs = $runs; Kit = $kit; Out = Join-Path $runs 'dry/red/out'; Dry = Join-Path $runs 'dry' }
   }
 
-  function Invoke-Campaign($Campaign, [hashtable]$Env) {
+  # Un claude falso que no gasta: imprime el result mínimo de un stream, tras ejecutar $Before.
+  function New-FakeClaude([string]$Name, [string]$Before = '') {
+    $bin = Join-Path $TestDrive "bin-$Name"
+    New-Item -ItemType Directory -Force $bin | Out-Null
+    $stream = "echo '{`"type`":`"result`",`"num_turns`":1,`"total_cost_usd`":0.5,`"result`":`"hecho`"}'"
+    Set-Content -LiteralPath (Join-Path $bin 'claude') -Value "#!/usr/bin/env bash`n$Before`n$stream" -NoNewline
+    return $bin
+  }
+
+  # Cada sujeto apunta cuántos hay a la vez en conc.log, junto a RUNS_DIR, y dura 4 s.
+  $script:Concurrent = 'C="$RUNS_DIR/../conc"; mkdir -p "$C"; touch "$C/$2"; ls "$C" | wc -l >> "$C.log"; ls "$RUNS_DIR/dry/live" >> "$C.live"; sleep 4; rm "$C/$2"; subject_launch "x"'
+
+  function Get-MaxConcurrent($Campaign) {
+    (Get-Content (Join-Path $Campaign.Runs '../conc.log') | ForEach-Object { [int]$_.Trim() } | Measure-Object -Maximum).Maximum
+  }
+
+  function Set-Tools([string]$Dir, [string]$Label, [string]$Text) {
+    New-Item -ItemType Directory -Force $Dir | Out-Null
+    Set-Content -LiteralPath (Join-Path $Dir "$Label.tools.txt") -Value $Text
+  }
+
+  function Invoke-Campaign($Campaign, [hashtable]$Env, [string]$Command) {
     $vars = @{
       USERPROFILE = 'C:\Users\alice'; HOME = '/c/Users/alice'; NODE = $script:Node; DRY_RUN = '1'
       SPEC_DIR = $Campaign.Spec; RUNS_DIR = $Campaign.Runs; KIT_DIR = $Campaign.Kit
@@ -43,7 +64,7 @@ subject_keep "`$R/README.md" $KeepName
     [Console]::OutputEncoding = [Text.Encoding]::UTF8
     foreach ($key in $vars.Keys) { $saved[$key] = [Environment]::GetEnvironmentVariable($key); [Environment]::SetEnvironmentVariable($key, $vars[$key]) }
     try {
-      $output = (& $script:Bash (Join-Path $script:Headless 'run.sh') 2>&1) -join "`n"
+      $output = if ($Command) { (& $script:Bash -c $Command 2>&1) -join "`n" } else { (& $script:Bash (Join-Path $script:Headless 'run.sh') 2>&1) -join "`n" }
       return [pscustomobject]@{ Output = $output; ExitCode = $LASTEXITCODE }
     } finally {
       [Console]::OutputEncoding = $encoding
@@ -51,7 +72,9 @@ subject_keep "`$R/README.md" $KeepName
     }
   }
 
-  function Get-Subjects($Campaign) { @(Get-ChildItem -Path (Join-Path $Campaign.Spec '*/out/*.tools.txt') -ErrorAction SilentlyContinue) }
+  function Get-Subjects($Campaign) {
+    @(Get-ChildItem -Path (Join-Path $Campaign.Spec '*/out/*.tools.txt'), (Join-Path $Campaign.Dry '*/out/*.tools.txt') -ErrorAction SilentlyContinue)
+  }
 }
 
 AfterAll {
@@ -80,13 +103,48 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
   It 'con SPEC_DIR relativo guarda las salidas y las cuenta (tickets 0077 §2 y 0064 §1)' {
     $root = Join-Path $TestDrive 'relative'
     $campaign = New-Campaign $root
+    $bin = New-FakeClaude 'relative'
 
     Push-Location $root
-    try { $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SPEC_DIR = 'spec' } } finally { Pop-Location }
+    try { $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SPEC_DIR = 'spec'; DRY_RUN = $null; PATH = "$bin;$env:PATH" } } finally { Pop-Location }
 
     $run.ExitCode | Should -Be 0 -Because $run.Output
-    Join-Path $campaign.Out 'a-1.tools.txt' | Should -Exist
+    Join-Path $campaign.Spec 'red/out/a-1.tools.txt' | Should -Exist
     $run.Output | Should -Match 'sujetos de la campaña: 1 '
+  }
+
+  It 'en seco deja las salidas en RUNS_DIR/dry y nada en SPEC_DIR (ticket de la feature 0115 §9)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dry-out')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $run.Output | Should -Not -Match 'No such file or directory'
+    Join-Path $campaign.Spec 'red/out' | Should -Not -Exist
+    Join-Path $campaign.Runs 'dry/red/out/a-1.tools.txt' | Should -Exist
+    $run.Output | Should -Match 'en seco: salidas en .*dry/red/out'
+  }
+
+  It 'en seco no cuenta las salidas de SPEC_DIR' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dry-count')
+    Set-Tools (Join-Path $campaign.Spec 'green/out') 'x-1' '=== RESULTADO (1 turnos, 9 $)'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; COST_CAP = '4' }
+
+    $run.Output | Should -Match 'coste acumulado: 0\.50 \$'
+  }
+
+  It 'al acabar da el coste por carpeta de salida (ticket de la feature 0168 §4)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'folders')
+    Set-Tools (Join-Path $campaign.Dry 'green-premature/out') 'x-1' '=== RESULTADO (2 turnos, 0.9 $)'
+    Set-Tools (Join-Path $campaign.Dry 'green/out') 'y-1' '>>> Bash: ls'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'red: 1 sujetos · 0\.50 \$' -Because $run.Output
+    $run.Output | Should -Match 'green-premature: 1 sujetos · 0\.90 \$'
+    $run.Output | Should -Match 'green: 1 sujetos · 0\.00 \$ · 1 sin RESULTADO'
+    $run.Output | Should -Match 'coste acumulado: 1\.40 \$'
   }
 
   It 'el sujeto ve la identidad fixture en git config, no la de la máquina (ticket del patch 0080 §2)' {
@@ -172,6 +230,19 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     (Get-Subjects $campaign).Count | Should -Be 2
   }
 
+  It 'el sujeto no puede lanzar su propio claude: su coste no lo vería run.sh (walkthrough de la feature 0173)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'nested-claude')
+    $log = Join-Path $TestDrive 'nested.log'
+    # La guarda evita que, sin el bloqueo, el claude falso se llame a sí mismo sin fin.
+    $nested = '[ -n "${FAKE_NESTED:-}" ] && { echo "claude sin bloquear"; exit 0; }; export FAKE_NESTED=1; claude --version > "$NESTED_LOG" 2>&1; echo "rc=$?" >> "$NESTED_LOG"'
+    $bin = New-FakeClaude 'nested' $nested
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; DRY_RUN = $null; PATH = "$bin;$env:PATH"; NESTED_LOG = $log }
+
+    Get-Content -Raw $log | Should -Match 'claude anidado bloqueado en un sujeto: run\.sh no ve su coste' -Because $run.Output
+    Get-Content -Raw $log | Should -Match 'rc=1'
+  }
+
   It 'aborta si SETTINGS no deshabilita el kit instalado' {
     $campaign = New-Campaign (Join-Path $TestDrive 'settings')
 
@@ -192,14 +263,129 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
   It 'no lanza si el coste de la campaña, sumando todas las fases, llega a COST_CAP' {
     $campaign = New-Campaign (Join-Path $TestDrive 'cost')
-    New-Item -ItemType Directory -Force (Join-Path $campaign.Spec 'green/out') | Out-Null
     # Dos eventos result: cuenta solo el último (task 0055).
-    Set-Content -LiteralPath (Join-Path $campaign.Spec 'green/out/x-1.tools.txt') -Value "=== RESULTADO (3 turnos, 9 $)`n=== RESULTADO (4 turnos, 4.5 $)"
+    Set-Tools (Join-Path $campaign.Dry 'green/out') 'x-1' "=== RESULTADO (3 turnos, 9 $)`n=== RESULTADO (4 turnos, 4.5 $)"
 
     $run = Invoke-Campaign $campaign @{ COST_CAP = '4' }
 
-    $run.Output | Should -Match 'techo de 4 \$ alcanzado \(4\.50 \$\)'
+    $run.Output | Should -Match 'techo de 4 \$ alcanzado \(4\.50 \$ gastados, 0 en curso a 0\.4 \$\)'
     (Get-Subjects $campaign).Count | Should -Be 1
+  }
+
+  It 'no relanza una etiqueta que ya tiene tools.txt en su fase (ticket de la feature 0032 §2)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'existing')
+    Set-Tools $campaign.Out 'a-1' 'marca'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b' }
+
+    $run.Output | Should -Match 'ya existe a-1: sube SUBJECT'
+    Get-Content -Raw (Join-Path $campaign.Out 'a-1.tools.txt') | Should -Match '^marca'
+    Join-Path $campaign.Out 'b-1.tools.txt' | Should -Exist
+  }
+
+  It 'no lanza si lo gastado más lo lanzado a SUBJECT_COST pasa de COST_CAP (ticket de la feature 0086 §3)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'launched') -Launch 'sleep 3; subject_launch "x"'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b c'; COST_CAP = '1'; SUBJECT_COST = '0.4' }
+
+    $run.Output | Should -Match 'techo de 1 \$ alcanzado \(0\.00 \$ gastados, 2 en curso a 0\.4 \$\)'
+    (Get-Subjects $campaign).Count | Should -Be 2
+  }
+
+  It 'cuenta un sujeto cortado como sujeto y como SUBJECT_COST (ticket del patch 0094 §3)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'cut')
+    New-Item -ItemType Directory -Force (Join-Path $campaign.Runs 'dry/live') | Out-Null
+    Set-Content -LiteralPath (Join-Path $campaign.Runs 'dry/live/red.z-1') -Value '999999'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b'; SUBJECT_CAP = '2' }
+
+    $run.Output | Should -Match 'techo de 2 sujetos'
+    (Get-Subjects $campaign).Count | Should -Be 1
+    $run.Output | Should -Match 'cortados sin salida: 1 \(contados a 5 \$ cada uno\)'
+  }
+
+  It 'un sujeto cortado de una tanda real no cuenta en un ensayo en seco' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'cut-real')
+    New-Item -ItemType Directory -Force (Join-Path $campaign.Runs 'live') | Out-Null
+    Set-Content -LiteralPath (Join-Path $campaign.Runs 'live/red.z-1') -Value '999999'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b'; SUBJECT_CAP = '2' }
+
+    (Get-Subjects $campaign).Count | Should -Be 2 -Because $run.Output
+    $run.Output | Should -Not -Match 'cortados sin salida'
+  }
+
+  It 'no relanza una etiqueta que está en curso' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'running-label') -Launch 'sleep 4; subject_launch "x"'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a a' }
+
+    $run.Output | Should -Match 'ya existe a-1: sube SUBJECT'
+    ([regex]::Matches($run.Output, '\[a-1\] listo')).Count | Should -Be 1
+  }
+
+  It 'lanza si lo gastado más lo lanzado iguala COST_CAP: el techo es estrictamente mayor' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'cost-edge') -Launch 'sleep 3; subject_launch "x"'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b'; COST_CAP = '1'; SUBJECT_COST = '0.5' }
+
+    (Get-Subjects $campaign).Count | Should -Be 2 -Because $run.Output
+    $run.Output | Should -Not -Match 'techo de'
+  }
+
+  It 'rompe un cerrojo sin dueño escrito y lanza' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'orphan-lock')
+    New-Item -ItemType Directory -Force (Join-Path $campaign.Runs 'live/.lock') | Out-Null
+    $runSh = (Join-Path $script:Headless 'run.sh') -replace '\\', '/'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' } -Command "timeout 60 bash '$runSh'"
+
+    (Get-Subjects $campaign).Count | Should -Be 1 -Because $run.Output
+  }
+
+  It 'aborta con MAX_PARALLEL o SUBJECT_CAP que no son enteros positivos' -ForEach @(
+    @{ Name = 'MAX_PARALLEL'; Value = '0' }, @{ Name = 'SUBJECT_CAP'; Value = '0' }
+  ) {
+    $campaign = New-Campaign (Join-Path $TestDrive "invalid-$Name")
+    $runSh = (Join-Path $script:Headless 'run.sh') -replace '\\', '/'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; $Name = $Value } -Command "timeout 30 bash '$runSh'"
+
+    $run.ExitCode | Should -Not -Be 0
+    $run.Output | Should -Match "$Name tiene que ser un entero positivo: 0"
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'MAX_PARALLEL limita los sujetos a la vez (ticket de la feature 0091 §1)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'parallel') -Launch $script:Concurrent
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a b c d'; MAX_PARALLEL = '1' }
+
+    Get-MaxConcurrent $campaign | Should -Be 1 -Because $run.Output
+    (Get-Subjects $campaign).Count | Should -Be 4
+    $run.Output | Should -Match 'esperando hueco: 1 sujetos en curso \(MAX_PARALLEL=1\)'
+  }
+
+  It 'MAX_PARALLEL cuenta los sujetos de otro run.sh sobre el mismo RUNS_DIR' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'two-launchers') -Launch $script:Concurrent
+    Copy-Item -Recurse (Join-Path $campaign.Spec 'red') (Join-Path $campaign.Spec 'green')
+    $runSh = (Join-Path $script:Headless 'run.sh') -replace '\\', '/'
+    $green = (Join-Path $campaign.Spec 'green/subject.sh') -replace '\\', '/'
+    $command = "SCENARIOS='a b' bash '$runSh' & PHASE=green SUBJECT_SH='$green' SCENARIOS='c d' bash '$runSh'; wait"
+
+    $run = Invoke-Campaign $campaign @{ MAX_PARALLEL = '1' } -Command $command
+
+    Get-MaxConcurrent $campaign | Should -Be 1 -Because $run.Output
+    (Get-Subjects $campaign).Count | Should -Be 4
+  }
+
+  It 'marca al sujeto en RUNS_DIR/dry/live mientras corre en seco y borra la marca al acabar' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'marker-live') -Launch $script:Concurrent
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    Get-Content (Join-Path $campaign.Runs '../conc.live') | Should -Contain 'red.a-1' -Because $run.Output
+    @(Get-ChildItem (Join-Path $campaign.Runs 'dry/live') -ErrorAction SilentlyContinue).Count | Should -Be 0
   }
 
   It 'dos fases con el mismo RUNS_DIR no comparten molde ni stream (ticket del patch 0082 §1)' {
@@ -248,9 +434,33 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
       $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; RUNS_DIR = $runs }
 
       $run.ExitCode | Should -Be 0 -Because $run.Output
-      (Get-Subjects $campaign).Count | Should -Be 1
+      Join-Path $runs 'dry/red/out/a-1.tools.txt' | Should -Exist
     }
     finally { Remove-Item -LiteralPath $runs -Recurse -Force -ErrorAction SilentlyContinue }
+  }
+
+  It 'en seco no corta por la ruta del scratchpad, aunque cuelgue del repo con un nombre largo' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dry-long-runs')
+    $runs = Join-Path (Split-Path $PSScriptRoot) ".temp/launcher-$('x' * 100)-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; RUNS_DIR = $runs }
+
+      Join-Path $runs 'dry/red/out/a-1.tools.txt' | Should -Exist -Because $run.Output
+    }
+    finally { Remove-Item -LiteralPath $runs -Recurse -Force -ErrorAction SilentlyContinue }
+  }
+
+  It 'en seco corta la ruta que tendría la salida en SPEC_DIR' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dry-long-spec')
+    $spec = Join-Path (Split-Path $PSScriptRoot) ".temp/launcher-$('x' * 100)-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+    New-Item -ItemType Directory -Force $spec | Out-Null
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SPEC_DIR = $spec }
+
+      $run.Output | Should -Match 'ruta de \d+ caracteres'
+      Join-Path $campaign.Out 'a-1.tools.txt' | Should -Not -Exist
+    }
+    finally { Remove-Item -LiteralPath $spec -Recurse -Force -ErrorAction SilentlyContinue }
   }
 
   It 'borra el molde del sujeto y conserva su stream y sus argumentos' {
