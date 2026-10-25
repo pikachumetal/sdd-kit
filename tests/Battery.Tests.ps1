@@ -172,6 +172,18 @@ Describe 'Lanzador de baterías (tests/headless/battery.sh)' -Tag 'Slow' {
     $r2 = @(Get-Content (Join-Path $toy.Runs 'battery/r2-1.args'))
     $r2[[array]::IndexOf($r2, '--model') + 1] | Should -Be 'opus'
     $run.Output | Should -Match 'r1 · 0/2 · umbral 2/2 · rojo'
+    $run.Output | Should -Not -Match 'faltan'
+  }
+
+  It 'battery.sh no relanza una batería cuyas etiquetas ya tienen salida en su fase' {
+    $toy = New-Battery (Join-Path $TestDrive 'existing')
+    Set-FinishedTools (New-Item -ItemType Directory -Force (Join-Path $toy.Runs 'dry/battery/out') | Join-Path -ChildPath 'r1-1.tools.txt') 'marca'
+
+    $run = Invoke-Battery $toy @{ STEPS = 'roadmap' }
+
+    $run.ExitCode | Should -Not -Be 0
+    $run.Output | Should -Match 'ya existe r1-1 en .*: borra esa carpeta o cambia PHASE'
+    Get-ArgsFiles $toy | Should -BeNullOrEmpty
   }
 
   It 'battery.sh rechaza un paso desconocido' {

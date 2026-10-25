@@ -34,11 +34,20 @@ MAX_PATH=140
 
 die() { echo "[${LABEL:-sujeto}] $*" >&2; exit 1; }
 
+# Con TEMP en .temp/ del repo, Git Bash monta ahí /tmp y la forma /d/… de esas rutas sale /tmp/…: se compara en forma Windows.
+win_path() { cygpath -m "$1" 2>/dev/null || echo "$1"; }
+runs_dir_allowed() { case "$(win_path "$1")/" in *scratchpad*|"$(win_path "$REPO_ROOT")"/.temp/*) ;; *) return 1 ;; esac; }
+
+# Un ensayo en seco no escribe en la carpeta de la spec ni cuenta para sus techos.
+campaign_root() {
+  if [ "${DRY_RUN:-}" = 1 ]; then echo "${RUNS_DIR:?define RUNS_DIR (scratchpad)}/dry"; else echo "${SPEC_DIR:?define SPEC_DIR}"; fi
+}
+
 subject_init() {
   # --plugin-dir en ruta Windows: con la de Git Bash, 4 de 10 sujetos recibieron «Unknown skill» (task 0009).
   KIT="$(cygpath -m "$1" 2>/dev/null || echo "$1")"; LABEL="$2"; OUT="$3"
   RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
-  case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" ;; esac
+  runs_dir_allowed "$RUNS" || die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS"
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
   # Con .docs/, el sujeto leyó la spec de lo que se medía (feature 0150).
   { [ -e "$KIT/.docs" ] || [ -e "$KIT/tests" ]; } && die "la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin"
@@ -50,7 +59,7 @@ subject_init() {
   # Una carpeta por fase: dos fases a la vez con el mismo RUNS_DIR se borraban el molde (ticket del patch 0082 §1).
   RUNS="$(cd "$RUNS" && pwd)/${PHASE:-red}"
   # subject_launch hace cd al molde: un OUT relativo perdía las salidas (tickets 0077 §2 y 0064 §1).
-  OUT="$(cd "$OUT" && pwd)"
+  OUT="$(cd "$OUT" && pwd)"; VERSIONED_OUT="$(versioned_out)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
   rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=; trap subject_cleanup EXIT
   JSONL="$RUNS/$LABEL.jsonl"; LEAK="$RUNS/$LABEL.leak"; rm -f "$LEAK"
@@ -187,8 +196,11 @@ subject_launch() {
 
 # Sin < /dev/null, un aviso de stdin precede al JSON.
 # timeout no ejecuta builtins: con `timeout 720 command claude` no arranca ningún sujeto.
+# El sujeto ve primero no-claude/: un claude que lance él no gasta fuera de lo que cuenta run.sh.
 run_claude() {
-  timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" "${CLAUDE_ARGS[@]}" "$@" < /dev/null 2>> "$RUNS/$LABEL.err"
+  local claude
+  claude="$(type -P claude)"
+  PATH="$HEADLESS/no-claude:$PATH" timeout "${SUBJECT_TIMEOUT:-0}" "$claude" "${CLAUDE_ARGS[@]}" "$@" < /dev/null 2>> "$RUNS/$LABEL.err"
   local rc=$?
   [ $rc -eq 124 ] && echo "[$LABEL] tope de $SUBJECT_TIMEOUT s: sujeto cortado" >&2
   return $rc
@@ -273,10 +285,17 @@ build_claude_args() {
   CLAUDE_ARGS+=(--max-turns "${MAX_TURNS:-60}" --output-format stream-json --verbose)
 }
 
+# En seco la salida va al scratchpad, que puede colgar del repo con una ruta larga: se mide la que tendría en SPEC_DIR.
+versioned_out() {
+  if [ "${DRY_RUN:-}" = 1 ] && [ -d "${SPEC_DIR:-}" ]; then echo "$(cd "$SPEC_DIR" && pwd)/${PHASE:-red}/out"; else echo "$OUT"; fi
+}
+
 # Ruta de salida comprobada: dentro del repo, relativa y por debajo de MAX_PATH.
 out_path() {
-  local rel="${1#"$REPO_ROOT"/}"
-  [ "$rel" != "$1" ] && [ ${#rel} -ge $MAX_PATH ] && die "ruta de ${#rel} caracteres (máximo $((MAX_PATH - 1))): $rel"
+  local versioned rel
+  versioned="$(win_path "${VERSIONED_OUT:-$OUT}/${1#"$OUT"/}")"
+  rel="${versioned#"$(win_path "$REPO_ROOT")"/}"
+  [ "$rel" != "$versioned" ] && [ ${#rel} -ge $MAX_PATH ] && die "ruta de ${#rel} caracteres (máximo $((MAX_PATH - 1))): $rel"
   echo "$1"
 }
 
