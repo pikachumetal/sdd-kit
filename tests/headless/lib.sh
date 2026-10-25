@@ -226,10 +226,16 @@ clean() { "$NODE" "$HEADLESS/extract.mjs" clean "$RUN"; }
 subject_save() {
   local state tools texts
   state=$(out_path "$OUT/$LABEL.state.txt") && tools=$(out_path "$OUT/$LABEL.tools.txt") && texts=$(out_path "$OUT/$LABEL.texts.txt") || exit 1
-  clean > "$state"
-  "$NODE" "$HEADLESS/extract.mjs" tools "$JSONL" "$RUN" > "$tools"
-  "$NODE" "$HEADLESS/extract.mjs" texts "$JSONL" "$RUN" > "$texts"
+  save_extract "$state" clean
+  save_extract "$tools" "$NODE" "$HEADLESS/extract.mjs" tools "$JSONL" "$RUN"
+  save_extract "$texts" "$NODE" "$HEADLESS/extract.mjs" texts "$JSONL" "$RUN"
   echo "[$LABEL] listo"
+}
+
+# A un temporal que se renombra solo si extract.mjs sale bien: con la identidad de git de la máquina sale con 3 (ticket de la feature 0160).
+save_extract() {
+  local dest="$1"; shift
+  if "$@" > "$dest.tmp"; then mv "$dest.tmp" "$dest"; else rm -f "$dest.tmp"; die "no se guarda $(basename "$dest"): el stream sigue en $JSONL"; fi
 }
 
 # Un fichero del molde, plano: la ruta completa de .docs/ pasó de 140 caracteres (tasks 0062 y 0063).
@@ -239,5 +245,5 @@ subject_keep() {
   local dest
   dest=$(out_path "$OUT/$LABEL/$2") || return 1
   mkdir -p "$OUT/$LABEL"
-  clean < "$1" > "$dest"
+  save_extract "$dest" clean < "$1"
 }

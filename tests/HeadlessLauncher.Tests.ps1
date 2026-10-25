@@ -229,6 +229,19 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     }
   }
 
+  It 'subject_save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)' {
+    $config = Join-Path $TestDrive 'machine.gitconfig'
+    Set-Content -LiteralPath $config -Value "[user]`n`tname = Alice Liddell" -Encoding utf8NoBOM
+    $campaign = New-Campaign (Join-Path $TestDrive 'identity-leak') -Launch 'subject_launch "x"; echo "aprobada por Alice Liddell" | subject_save; exit 0'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; GIT_CONFIG_GLOBAL = $config }
+
+    $run.Output | Should -Match 'el stream sigue en'
+    $run.Output | Should -Not -Match 'Alice Liddell'
+    Join-Path $campaign.Out 'a-1.state.txt' | Should -Not -Exist
+    Get-ChildItem -LiteralPath $campaign.Out -Filter '*.tmp' -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+  }
+
   It 'subject_ports junta PORT y los puertos del stream' {
     $stream = Join-Path $TestDrive 'ports.jsonl'
     Set-Content -LiteralPath $stream -Value '{"text":"abre http://localhost:4567 y PORT=5173 npm start; otra vez localhost:4567"}'

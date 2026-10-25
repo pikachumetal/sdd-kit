@@ -37,7 +37,7 @@ created: 2026-09-23
 
 ### 4.2 Smoke / tests
 
-- Validación diferida: 2026-09-23 · «se prueba en uso» · disparador: la primera vez que se use `libres`/`reservar` en el día a día, a cargo de Àngel Delgado (dev-lead). *(Disparador concretado por el agente: la frase original no nombraba uno — corrígelo si no es el que querías.)*
+- Validación diferida: 2026-09-23 · «se prueba en uso» · disparador: la primera vez que se use `libres`/`reservar` en el día a día, a cargo de <git-user> (dev-lead). *(Disparador concretado por el agente: la frase original no nombraba uno — corrígelo si no es el que querías.)*
 
 | # | Caso | Resultado |
 | --- | --- | --- |

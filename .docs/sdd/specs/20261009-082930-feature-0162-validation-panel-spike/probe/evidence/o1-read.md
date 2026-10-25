@@ -14,7 +14,7 @@ App desechable Vite 8.3.4 + React en el scratchpad de la sesión (fuera del repo
 ## O1 — inyectar y leer sin copiar (simulado por Claude, 2026-10-09 ~10:48)
 
 - Inyección: una llamada a `javascript_tool` con el contenido de `panel.js` y `mount` de 3 pruebas. `read()` devuelve las 3 en `pending`.
-- El panel se ve abajo a la derecha, encima de la app (tema oscuro) y legible: el `all:initial` y el `z-index` máximo aíslan el CSS de la app. Captura: `C:\Users\pikac\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791535638376-0.jpg`.
+- El panel se ve abajo a la derecha, encima de la app (tema oscuro) y legible: el `all:initial` y el `z-index` máximo aíslan el CSS de la app. Captura: `<home>\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791535638376-0.jpg`.
 - Clics reales de ratón (`computer left_click`) en OK de la 1 y la 2, y en KO de la 3, con el comentario escrito con el teclado. `read()` devuelve:
 
 ```json
@@ -36,7 +36,7 @@ App desechable Vite 8.3.4 + React en el scratchpad de la sesión (fuera del repo
  {"id":"h3","status":"ko","comment":"","markedAt":"2026-10-09T09:37:24.322Z"}]
 ```
 
-- Junto al KO: `GET /api/missing · 500` (red armada antes de la prueba) y la captura `C:\Users\pikac\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791538672171-2.jpg`. La consola devolvió también el error de las 10:48, de la medida anterior: hay que leerla con `clear: true` al armarla, o filtrar por hora.
+- Junto al KO: `GET /api/missing · 500` (red armada antes de la prueba) y la captura `<home>\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791538672171-2.jpg`. La consola devolvió también el error de las 10:48, de la medida anterior: hay que leerla con `clear: true` al armarla, o filtrar por hora.
 - Durante la prueba, el panel desapareció **dos veces** y el dev-lead tuvo que avisar: «el 2 perdona pero le di actualizar :D y se perdio» y «al hacer cerrar sesion y cvolver a entrar se pierde la ventanita». Las dos veces, la reinyección de una línea lo recuperó con las marcas intactas.
 - **Resultado: cumple, salvo el comentario a mano**: cero copia y pega de resultados, pero el KO del dev-lead llegó sin comentario, así que el guardado del comentario en `input` (versión actual de `panel.js`) no está medido. Además, el dev tiene que avisar cada vez que una recarga se lleva el panel.
 

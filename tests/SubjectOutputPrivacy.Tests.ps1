@@ -19,9 +19,14 @@ BeforeAll {
     try { Invoke-GitUtf8 'config', 'user.name' } finally { Restore-GitEnv $savedGitEnv }
   }
 
-  # Las mismas carpetas que la revisión completa: green1, red2… también son salidas de sujetos.
+  function Get-GitUserEmail {
+    $savedGitEnv = Clear-GitEnv
+    try { Invoke-GitUtf8 'config', 'user.email' } finally { Restore-GitEnv $savedGitEnv }
+  }
+
+  # Toda subcarpeta de una tarea: campaign/, ab/, micro/… también son salidas de sujetos (feature 0214).
   function Select-EvidencePath([string[]]$Paths) {
-    @($Paths) -match '^\.docs/sdd/specs/[^/]+/(red|green|refactor|battery|fix)[^/]*/|^tests/[^/]+-(red|green)\.md$'
+    @($Paths) -match '^\.docs/sdd/specs/[^/]+/[^/]+/|^tests/[^/]+-(red|green)\.md$'
   }
 
   # Sin limpiar el entorno de git: dentro del hook, GIT_INDEX_FILE dice qué índice se está commiteando.
@@ -47,19 +52,20 @@ BeforeAll {
   $script:MachineUserPattern = "\b$([regex]::Escape((Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME))))\b"
 
   function Find-MachineLeak {
-    $gitUser = Get-GitUserName
-    $patterns = @($script:UserPathPattern, $script:MachineUserPattern) + @(if ($gitUser) { [regex]::Escape($gitUser) })
+    $identity = @(Get-GitUserName; Get-GitUserEmail) | Where-Object { $_ } | ForEach-Object { [regex]::Escape($_) }
+    $patterns = @($script:UserPathPattern, $script:MachineUserPattern) + $identity
     $patterns | ForEach-Object { Find-Leak $_ } | Sort-Object -Unique
   }
 
   # Una identidad de git fija: la global en un fichero propio y, si se pide, la del molde por GIT_CONFIG_*.
-  function Invoke-WithGitUser([string]$GlobalName, [scriptblock]$Script, [string]$MoldName) {
+  function Invoke-WithGitUser([string]$GlobalName, [scriptblock]$Script, [string]$MoldName, [string]$GlobalEmail) {
     $names = 'GIT_CONFIG_GLOBAL', 'GIT_CONFIG_COUNT', 'GIT_CONFIG_KEY_0', 'GIT_CONFIG_VALUE_0'
     $saved = @{}
     foreach ($name in $names) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
     try {
       $config = Join-Path $TestDrive 'gitconfig'
-      Set-Content -LiteralPath $config -Value "[user]`n`tname = $GlobalName" -Encoding utf8NoBOM
+      $email = if ($GlobalEmail) { "`n`temail = $GlobalEmail" } else { '' }
+      Set-Content -LiteralPath $config -Value "[user]`n`tname = $GlobalName$email" -Encoding utf8NoBOM
       $env:GIT_CONFIG_GLOBAL = $config
       if ($MoldName) { $env:GIT_CONFIG_COUNT = '1'; $env:GIT_CONFIG_KEY_0 = 'user.name'; $env:GIT_CONFIG_VALUE_0 = $MoldName }
       & $Script
@@ -77,6 +83,16 @@ BeforeAll {
       $env:USERPROFILE = $saved.USERPROFILE
       $env:HOME = $saved.HOME
     }
+  }
+
+  # Con el código de salida y el stderr: una salida con la identidad de la máquina no se guarda.
+  function Invoke-ToolsExit([string[]]$ToolArgs, [string]$InputText) {
+    $encoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+    try {
+      $output = ($InputText | & $script:Node $script:Tools @ToolArgs 2>&1) -join "`n"
+      [pscustomobject]@{ Output = $output; ExitCode = $LASTEXITCODE }
+    } finally { [Console]::OutputEncoding = $encoding }
   }
 
   # Las formas en que el home y el usuario salían en las salidas (ticket del patch 0069 §2).
@@ -142,13 +158,29 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
     $out | Should -Match '<home>/\.claude/plugins'
   }
 
-  It 'extract.mjs clean sustituye el user.name de git de la máquina, no el del molde (ticket de la feature 0099 §1)' {
+  It 'extract.mjs clean falla con el user.name de git de la máquina, no con el del molde (ticket de la feature 0099 §1)' {
     # El sujeto lo copia del contexto de la sesión aunque subject_launch fije Fixture con GIT_CONFIG_*.
-    $out = Invoke-WithGitUser 'Alice Liddell' -MoldName 'Fixture' {
-      Invoke-Tools @('clean', '/c/runs/x') 'spec aprobada por Alice Liddell; commits de Fixture'
-    }
+    $leak = Invoke-WithGitUser 'Alice Liddell' -MoldName 'Fixture' { Invoke-ToolsExit @('clean', '/c/runs/x') 'spec aprobada por Alice Liddell' }
+    $clean = Invoke-WithGitUser 'Alice Liddell' -MoldName 'Fixture' { Invoke-ToolsExit @('clean', '/c/runs/x') 'commits de Fixture' }
 
-    $out | Should -Be 'spec aprobada por <git-user>; commits de Fixture'
+    $leak.ExitCode | Should -Be 3
+    $leak.Output | Should -Match 'la salida lleva el nombre o el email de git de la máquina: no se guarda'
+    $leak.Output | Should -Not -Match 'Alice Liddell'
+    $clean.ExitCode | Should -Be 0
+    $clean.Output | Should -Be 'commits de Fixture'
+  }
+
+  It 'extract.mjs falla con el user.email de git de la máquina' {
+    $leak = Invoke-WithGitUser 'Alice Liddell' -GlobalEmail 'alice@example.org' { Invoke-ToolsExit @('clean', '/c/runs/x') 'Author: Fixture <alice@example.org>' }
+
+    $leak.ExitCode | Should -Be 3
+    $leak.Output | Should -Not -Match 'alice@example\.org'
+  }
+
+  It 'extract.mjs falla con el user.name de la máquina aunque lleve tilde' {
+    $leak = Invoke-WithGitUser 'Àlice Liddell' { Invoke-ToolsExit @('clean', '/c/runs/x') 'aprobada por Àlice Liddell' }
+
+    $leak.ExitCode | Should -Be 3
   }
 
   It 'extract.mjs tools escribe bajo >>> Agent las cabeceras ## del prompt (ticket de la feature 0147 §3)' {
@@ -169,16 +201,17 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
 Describe 'La evidencia de los sujetos no lleva el home de la máquina' -Tag 'Slow' {
   BeforeAll {
     $root = Join-Path $script:KitRoot '.docs/sdd/specs'
-    # green1, red2…: las rondas extra de una campaña también son salidas de sujetos (patch 0080).
+    # Toda subcarpeta de la tarea: las fugas que se escaparon estaban en campaign/ (feature 0214).
     $script:Evidence = @(Get-ChildItem -LiteralPath $root -Directory |
-      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory | Where-Object Name -match '^(red|green|refactor|battery|fix)' } |
+      ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory } |
       ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -File -Recurse }) +
       @(Get-ChildItem -Path (Join-Path $script:KitRoot 'tests/*') -File -Include '*-red.md', '*-green.md')
     $script:EvidenceText = Read-Evidence $script:Evidence
   }
 
-  It 'revisa también las salidas de las baterías y de las pasadas de fix' {
+  It 'revisa también las salidas de las baterías, de las pasadas de fix y de las campañas' {
     $script:Evidence | Where-Object FullName -match '[\\/](battery|fix)[^\\/]*[\\/]out[\\/]' | Should -Not -BeNullOrEmpty
+    $script:Evidence | Where-Object FullName -match '[\\/]campaign[\\/]out[\\/]' | Should -Not -BeNullOrEmpty
   }
 
   It 'ningún fichero de specs/*/red|green|refactor/ tiene una ruta de usuario' {
@@ -203,7 +236,14 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' -Tag 'Slo
     $name = Get-GitUserName
     if (-not $name) { Set-ItResult -Skipped -Because 'esta máquina no tiene user.name en git'; return }
     Find-Leak ([regex]::Escape($name)) |
-      Should -BeNullOrEmpty -Because 'el sujeto hereda la identidad de git si subject_launch no la fija: sustitúyelo por <git-user>'
+      Should -BeNullOrEmpty -Because 'el repo es público: no se guarda una salida con la identidad de la máquina'
+  }
+
+  It 'ni el user.email de git de esta máquina' {
+    $email = Get-GitUserEmail
+    if (-not $email) { Set-ItResult -Skipped -Because 'esta máquina no tiene user.email en git'; return }
+    Find-Leak ([regex]::Escape($email)) |
+      Should -BeNullOrEmpty -Because 'el repo es público: no se guarda una salida con la identidad de la máquina'
   }
 
   It 'el control del commit toma como evidencia todo lo que recorre esta revisión' {
@@ -219,7 +259,7 @@ Describe 'La evidencia que lleva el commit no tiene el home de la máquina' {
 
   It 'toma como evidencia las salidas de sujetos y los RED y GREEN de tests/, y nada más' {
     $spec = '.docs/sdd/specs/20260101-000000-feature-0001-x'
-    $evidence = "$spec/red/out/a.txt", "$spec/green2/state.txt", "$spec/battery-s1/out/b.md", 'tests/patch-lane-red.md'
+    $evidence = "$spec/red/out/a.txt", "$spec/green2/state.txt", "$spec/battery-s1/out/b.md", "$spec/campaign/out/x.md", 'tests/patch-lane-red.md'
     $others = "$spec/spec.md", 'tests/SubjectOutputPrivacy.Tests.ps1', 'tests/batteries/x/out-red.md', 'skills/sdd-propose/SKILL.md'
 
     Select-EvidencePath ($evidence + $others) | Should -Be $evidence
