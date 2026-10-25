@@ -39,6 +39,7 @@ Revisión final: Spec opus+high, con arreglos (1 Critical, 3 Important, 6 Minor)
 Pasada de fix: juntada en el cierre, 6 hallazgos RED→GREEN
 Re-revisión: 2bdb2f87..pasada de fix (juntada en el cierre), sdd-kit:effort-high + opus, quedan 1 Important y 4 Minor, adjudicados
 sin revisar: arreglo del orden de redirecciones de `read` en `run.sh` (juntado en el cierre) — quita el «No such file or directory» que salía en stderr
+sin revisar: comparación de rutas en forma Windows en `lib.sh` y `run.sh` (tras la base integrada) — con `TEMP` en `.temp/`, `/tmp` de Git Bash apunta ahí y la guarda de `RUNS_DIR` y `out_path` no casaban con `REPO_ROOT`
 
 ## Rulings
 

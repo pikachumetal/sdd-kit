@@ -69,11 +69,12 @@ Las «esperas» incluyen dos caídas del PC durante la verificación de la Task 
 
 - Suite completa: `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` → verde · 10 min · configuración: la del gate · sobre la pasada de fix (juntada en el cierre): `kit:test` 1389 pasados, 0 fallos, 13 omitidos; `cli:test` 1164/1164; `cli:test-min` 1459/1459; `cli:typecheck` y `cli:test-slow` en caché (la CLI no cambia).
 - Tras el arreglo del ruido de `read`: `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1, tests/Battery.Tests.ps1 -CI` → 58/58, con «en seco deja las salidas en RUNS_DIR/dry…» fijando que no sale «No such file or directory» (RED→GREEN).
+- Base integrada (`sdd merge --sync`, `origin/develop` con la 0210 y el 0217): el gate dio 3 rojos de `HeadlessLauncher.Tests.ps1` con rutas bajo `.temp/`, porque esta sesión tiene `TEMP` en `.temp/` y Git Bash monta ahí `/tmp`; arreglado comparando en forma Windows (ver 4.2 y la entrada «sin revisar»). Gate repetido con el arreglo: verde · 8 min · `kit:test` 1394 pasados, 0 fallos, 13 omitidos; `cli:test` 1182/1182; `cli:test-min` 1459/1459; `cli:typecheck` y `cli:test-slow` en caché de la ejecución anterior sobre la misma CLI.
 - Línea base: dos rojos ajenos, también en `develop`: «acepta RUNS_DIR bajo .temp/ del repo» (arreglado en la Task 1) y `FastSuiteBudget` 31,6 s con la máquina cargada (fila del patch 0190, parcial).
 
 ### 4.2 Smoke / tests
 
-- Validación en campo: 2026-10-25 · gate de cierre verde sobre la pasada de fix (juntada en el cierre) · Pester de `tests/headless/` verde tras el último arreglo · smoke en seco real desde el scratchpad de la sesión · sujeto real haiku para el `claude` anidado · revisión final Spec y Código sobre `2bdb2f87`, re-revisión de `2bdb2f87` a la pasada de fix con 1 Important y 4 Minor adjudicados · 1 sin revisar (el arreglo del ruido de `read`)
+- Validación en campo: 2026-10-25 · gate de cierre verde sobre la pasada de fix (juntada en el cierre) · Pester de `tests/headless/` verde tras el último arreglo · smoke en seco real desde el scratchpad de la sesión · sujeto real haiku para el `claude` anidado · revisión final Spec y Código sobre `2bdb2f87`, re-revisión de `2bdb2f87` a la pasada de fix con 1 Important y 4 Minor adjudicados · 2 sin revisar (el ruido de `read` y la comparación de rutas en forma Windows)
 
 | THEN (decisión de la spec) | Evidencia | Resultado |
 | --- | --- | --- |
@@ -97,6 +98,7 @@ Las «esperas» incluyen dos caídas del PC durante la verificación de la Task 
 - En Git Bash bajo carga, cada proceso cuenta: un bucle de lanzamiento con subshells tardaba ~16 s por escenario y anulaba el paralelismo → comentario en `run.sh` (`count_finished`).
 - `cmd < fichero 2>/dev/null` imprime el error del `<`: bash procesa las redirecciones de izquierda a derecha → arreglado en `run.sh`; regla general de bash, sin documento de anclaje.
 - Con el scratchpad dentro del repo (`Start-KitSession.ps1`), toda ruta que se mida contra `REPO_ROOT` pasa de 140 caracteres → `out_path` mide en seco la ruta versionada; `tech-stack.md` («`DRY_RUN=1` … con las salidas en `RUNS_DIR/dry`»).
+- Con `TEMP` en `.temp/` del repo, Git Bash monta ahí `/tmp` y la forma `/d/…` de esas rutas sale `/tmp/…` → `tech-stack.md` («Sujetos headless») y `win_path` de `lib.sh`.
 - Revisión de skills: no aplica, porque la feature no toca `skills/` ni `.claude/skills/` (comprobado con `git diff --name-only 37deadd4..HEAD`).
 
 ## 6. Adendas

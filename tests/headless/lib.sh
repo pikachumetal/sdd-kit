@@ -27,6 +27,10 @@ MAX_PATH=140
 
 die() { echo "[${LABEL:-sujeto}] $*" >&2; exit 1; }
 
+# Con TEMP en .temp/ del repo, Git Bash monta ahí /tmp y la forma /d/… de esas rutas sale /tmp/…: se compara en forma Windows.
+win_path() { cygpath -m "$1" 2>/dev/null || echo "$1"; }
+runs_dir_allowed() { case "$(win_path "$1")/" in *scratchpad*|"$(win_path "$REPO_ROOT")"/.temp/*) ;; *) return 1 ;; esac; }
+
 # Un ensayo en seco no escribe en la carpeta de la spec ni cuenta para sus techos.
 campaign_root() {
   if [ "${DRY_RUN:-}" = 1 ]; then echo "${RUNS_DIR:?define RUNS_DIR (scratchpad)}/dry"; else echo "${SPEC_DIR:?define SPEC_DIR}"; fi
@@ -36,7 +40,7 @@ subject_init() {
   # --plugin-dir en ruta Windows: con la de Git Bash, 4 de 10 sujetos recibieron «Unknown skill» (task 0009).
   KIT="$(cygpath -m "$1" 2>/dev/null || echo "$1")"; LABEL="$2"; OUT="$3"
   RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
-  case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" ;; esac
+  runs_dir_allowed "$RUNS" || die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS"
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
   # Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency» (ticket de la feature 0095 §2).
   if [ -z "${SUPERPOWERS_DIR:-}" ] && grep -q '"dependencies"' "$KIT/.claude-plugin/plugin.json" 2>/dev/null; then
@@ -207,8 +211,9 @@ versioned_out() {
 
 # Ruta de salida comprobada: dentro del repo, relativa y por debajo de MAX_PATH.
 out_path() {
-  local versioned="${VERSIONED_OUT:-$OUT}/${1#"$OUT"/}" rel
-  rel="${versioned#"$REPO_ROOT"/}"
+  local versioned rel
+  versioned="$(win_path "${VERSIONED_OUT:-$OUT}/${1#"$OUT"/}")"
+  rel="${versioned#"$(win_path "$REPO_ROOT")"/}"
   [ "$rel" != "$versioned" ] && [ ${#rel} -ge $MAX_PATH ] && die "ruta de ${#rel} caracteres (máximo $((MAX_PATH - 1))): $rel"
   echo "$1"
 }

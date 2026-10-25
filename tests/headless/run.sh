@@ -22,7 +22,7 @@ set -u
 RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
 # dirname no parte una ruta Windows con «\»: con la de Pester daba «.» y la raíz salía del cwd.
 . "$(cd "$(dirname "${BASH_SOURCE[0]//\\//}")" && pwd)/lib.sh"
-case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) echo "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" >&2; exit 1 ;; esac
+runs_dir_allowed "$RUNS" || { echo "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" >&2; exit 1; }
 ROOT="$(campaign_root)"
 OUT="$ROOT/${PHASE:-red}/out"
 positive_int() { case "$2" in ''|*[!0-9]*|0) echo "$1 tiene que ser un entero positivo: $2" >&2; exit 1 ;; esac; }
