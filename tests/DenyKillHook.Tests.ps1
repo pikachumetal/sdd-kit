@@ -1,5 +1,5 @@
 BeforeAll {
-  $script:Hook = Join-Path $PSScriptRoot '../.docs/sdd/specs/20260925-180248-feature-0036-closing-verification/green/deny-kill.mjs'
+  $script:Hook = Join-Path $PSScriptRoot 'headless/deny-kill.mjs'
 
   function Test-Denied([string]$Command) {
     $payload = @{ tool_input = @{ command = $Command } } | ConvertTo-Json -Compress

@@ -7,7 +7,7 @@
 | Estado del KO | `javascript_tool` → `read()` | `t3 · ko · «Guardar no guarda, sale error»` | `markedAt 2026-10-09T08:48:14.671Z` |
 | Consola | `read_console_messages` (`onlyErrors`) | `[ERROR] probe-app: fallo provocado al guardar` | `10:48:14 AM` (hora local) |
 | Red | `read_network_requests` (`urlPattern: /api/`) | `GET /api/missing · 500` | **sin hora**: la herramienta no la da |
-| Captura | `computer screenshot` con `save_to_disk` | `C:\Users\pikac\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791535695460-1.jpg` | la del momento de la lectura |
+| Captura | `computer screenshot` con `save_to_disk` | `<home>\AppData\Local\Temp\claude-chrome-screenshots-VC6joD\screenshot-1791535695460-1.jpg` | la del momento de la lectura |
 
 ## Hallazgos
 

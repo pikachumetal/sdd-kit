@@ -32,6 +32,7 @@ function selectSteps(rows, steps) {
 
 // using-sdd es el enrutador que inyecta el hook: invocarlo no elige ninguna puerta.
 const ROUTER = 'sdd-kit:using-sdd';
+const ANY = 'cualquiera';
 
 function firstSkill(toolsPath) {
   const skills = [...readFileSync(toolsPath, 'utf8').matchAll(/^>>> Skill: (\S+)/gm)].map((match) => match[1]);
@@ -45,7 +46,8 @@ function judge(row, outDir) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
   const runs = Array.from({ length: n }, (_, i) => join(outDir, `${row.Id}-${i + 1}.tools.txt`)).filter(finished);
-  const passed = runs.filter((path) => firstSkill(path) === row.Esperado).length;
+  // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito (ticket de la feature 0165).
+  const passed = runs.filter((path) => row.Esperado === ANY || firstSkill(path) === row.Esperado).length;
   const missing = n - runs.length;
   const green = missing === 0 && passed >= needed;
   return `${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${green ? 'verde' : 'rojo'}${missing ? ` · faltan ${missing}` : ''}`;
