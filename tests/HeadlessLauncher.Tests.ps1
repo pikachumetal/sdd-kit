@@ -242,6 +242,52 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     Get-ChildItem -LiteralPath $campaign.Out -Filter '*.tmp' -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
   }
 
+  It 'aborta si la copia del kit lleva <Folder>/ (walkthrough de la feature 0150 §4.3)' -ForEach @(@{ Folder = '.docs' }, @{ Folder = 'tests' }) {
+    $campaign = New-Campaign (Join-Path $TestDrive "kit-$Folder")
+    New-Item -ItemType Directory -Force (Join-Path $campaign.Kit $Folder) | Out-Null
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'la copia del kit lleva \.docs/ o tests/: sácala con git archive <commit> skills \.claude-plugin'
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'subject_show vuelca un fichero de otra rama (ticket del patch 0075 §3)' {
+    $launch = 'g checkout -q -b feature/0013; put .docs/sdd/roadmap.md <<< "fila 0013"; commit "docs: fila"; g checkout -q main; subject_launch "x"; subject_show feature/0013:.docs/sdd/roadmap.md roadmap.md'
+    $campaign = New-Campaign (Join-Path $TestDrive 'show') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Out 'a-1/roadmap.md') -ErrorAction SilentlyContinue | Should -Match 'fila 0013' -Because $run.Output
+  }
+
+  It 'seed_transcript siembra en la carpeta del molde y la borra al acabar (ticket de la feature 0188 §2)' {
+    $config = Join-Path $TestDrive 'seed-config'
+    $launch = 'seed_transcript feature/0042 < <(printf "%s\n" "2026-10-14T09:00:00Z user el total no redondea" "2026-10-14T09:02:00Z assistant mirando"); cp "$SEED_DIR"/seed-1.jsonl "$OUT/seed.jsonl"; subject_launch "x"'
+    $campaign = New-Campaign (Join-Path $TestDrive 'seed') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; CLAUDE_CONFIG_DIR = $config; KEEP_MOLD = '1' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $seed = @(Get-Content (Join-Path $campaign.Out 'seed.jsonl') -ErrorAction SilentlyContinue | ForEach-Object { $_ | ConvertFrom-Json })
+    $seed | Should -HaveCount 2 -Because $run.Output
+    $seed[0].gitBranch | Should -Be 'feature/0042'
+    $seed[0].message.content | Should -Be 'el total no redondea'
+    $seed[1].message.model | Should -Be 'claude-sonnet-5'
+    $seed[1].message.usage.output_tokens | Should -Be 1
+    @(Get-ChildItem -LiteralPath (Join-Path $config 'projects') -Directory -ErrorAction SilentlyContinue) | Should -HaveCount 0
+  }
+
+  It 'g pasa core.longpaths (ticket de la feature 0089 §2)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'longpaths') -Launch 'subject_launch "x"; g config --get core.longpaths > "$OUT/longpaths.txt"'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content (Join-Path $campaign.Out 'longpaths.txt') -ErrorAction SilentlyContinue | Should -Be 'true'
+  }
+
   It 'subject_ports junta PORT y los puertos del stream' {
     $stream = Join-Path $TestDrive 'ports.jsonl'
     Set-Content -LiteralPath $stream -Value '{"text":"abre http://localhost:4567 y PORT=5173 npm start; otra vez localhost:4567"}'

@@ -9,10 +9,15 @@
 #   put_kit_marker '"ids": {"mode": "sequence"}'           # sdd-kit.json del molde con la versión del kit (kit_version)
 #   subject_resume "<mensaje>"                            # segundo turno sobre la misma sesión
 #   subject_converse <hoja de la persona> <turnos máximos> # la persona (haiku) contesta hasta que el sujeto deja de preguntar
+#   subject_show feature/0013:.docs/sdd/roadmap.md roadmap.md # un fichero de otra rama, con las reglas de subject_keep
+#   seed_transcript feature/0042 <<'EOF' ... EOF          # transcripts del trabajo, «<fecha ISO> <user|assistant> <texto>» por línea;
+#                                                         # con heredoc, no con tubería: la carpeta se borra al acabar
+#   subject_ports                                         # puertos del sujeto (PORT y los del stream); subject_cleanup los para por PID
 # Variables: RUNS_DIR (obligatoria, en el scratchpad o en .temp/ del repo; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
-# SETTINGS (el JSON de --settings: sin él, solo deshabilita el kit instalado), EXTRA_ALLOWED (herramientas
-# que se suman a --allowedTools, como un servidor MCP),
+# SETTINGS (el JSON de --settings: sin él, deshabilita el kit instalado y carga el hook deny-kill.mjs; uno propio lo lleva,
+# con la ruta de DENY_KILL_HOOK), EXTRA_ALLOWED (herramientas que se suman a --allowedTools, como un servidor MCP),
+# PORT (puerto del molde, si arranca un servidor), CLAUDE_CONFIG_DIR (raíz de los transcripts de seed_transcript; sin ella, ~/.claude),
 # SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
 # SUBJECT_TIMEOUT (segundos de reloj por sujeto; 0, el valor por omisión, sin tope),
 # TURN2 (mensaje del segundo turno: subject_launch reanuda la sesión con subject_resume),
@@ -35,6 +40,8 @@ subject_init() {
   RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
   case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" ;; esac
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
+  # Con .docs/, el sujeto leyó la spec de lo que se medía (walkthrough de la feature 0150 §4.3).
+  { [ -e "$KIT/.docs" ] || [ -e "$KIT/tests" ]; } && die "la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin"
   # Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency» (ticket de la feature 0095 §2).
   if [ -z "${SUPERPOWERS_DIR:-}" ] && grep -q '"dependencies"' "$KIT/.claude-plugin/plugin.json" 2>/dev/null; then
     die "el kit declara dependencies: define SUPERPOWERS_DIR (ruta de superpowers)"
@@ -51,7 +58,8 @@ subject_init() {
 
 g() {
   [ "$1" = init ] || [ -n "${MOLD_IS_REPO:-}" ] || mold_is_repo
-  git -C "$R" -c user.email=fixture@example.com -c user.name=Fixture -c core.autocrlf=false "$@"
+  # core.longpaths: un molde calcado de sdd-project-template falló en git add con «unable to index file» (feature 0089).
+  git -C "$R" -c user.email=fixture@example.com -c user.name=Fixture -c core.autocrlf=false -c core.longpaths=true "$@"
 }
 # Sin g init, git sube hasta el repo que contiene el molde: un %TEMP% dentro de un repo perdió su HEAD (ticket 0086 §1).
 # --show-cdup vacío es --show-toplevel igual a $R, sin comparar C:/… con /c/… ni nombres cortos de Windows.
@@ -65,6 +73,7 @@ mold_is_repo() {
 subject_cleanup() {
   [ -n "${LABEL:-}" ] && [ "${RUN#"$RUNS"/}" != "$RUN" ] || { echo "[${LABEL:-sujeto}] no se borra $RUN: fuera de $RUNS o sin etiqueta" >&2; return 0; }
   stop_subject_ports
+  [ -n "${SEED_DIR:-}" ] && rm -rf "${SEED_DIR:?}"
   remove_claude_folder
   [ "${KEEP_MOLD:-}" = 1 ] || rm -rf "$RUN"
 }
@@ -84,11 +93,35 @@ stop_subject_ports() {
 }
 
 # Claude Code nombra la carpeta con la ruta Windows del cwd y cada carácter no alfanumérico como «-».
+mold_slug() { (cygpath -w "$R" 2>/dev/null || echo "$R") | sed 's/[^A-Za-z0-9]/-/g'; }
+
 remove_claude_folder() {
   local base slug
   base=$(cygpath -u "${CLAUDE_CODE_TMPDIR:-${TEMP:-/tmp}}" 2>/dev/null || echo "${CLAUDE_CODE_TMPDIR:-${TEMP:-/tmp}}")
-  slug=$( (cygpath -w "$R" 2>/dev/null || echo "$R") | sed 's/[^A-Za-z0-9]/-/g')
+  slug=$(mold_slug)
   [ -n "$slug" ] && rm -rf "${base:?}/claude/$slug"
+}
+
+# Transcripts del trabajo para un THEN que lee sdd session tokens: sin ellos da 0,00 h (feature 0188).
+# Una línea por entrada: <fecha ISO> <user|assistant> <texto>. subject_cleanup borra la carpeta.
+seed_transcript() {
+  SEED_DIR="$(cygpath -u "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" 2>/dev/null || echo "${CLAUDE_CONFIG_DIR:-$HOME/.claude}")/projects/$(mold_slug)"
+  mkdir -p "$SEED_DIR"
+  local n=1
+  while [ -e "$SEED_DIR/seed-$n.jsonl" ]; do n=$((n + 1)); done
+  "$NODE" -e '
+    const [branch, out] = process.argv.slice(1);
+    const usage = { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 };
+    const entries = require("fs").readFileSync(0, "utf8").split("\n").filter((line) => line.trim()).map((line, i) => {
+      const [timestamp, type, ...words] = line.split(" ");
+      const text = words.join(" ");
+      const message = type === "assistant"
+        ? { model: "claude-sonnet-5", id: `seed-${i + 1}`, role: "assistant", content: [{ type: "text", text }], usage }
+        : { role: "user", content: text };
+      return JSON.stringify({ type, timestamp, gitBranch: branch, message });
+    });
+    require("fs").writeFileSync(out, entries.join("\n") + "\n");
+  ' "$1" "$(cygpath -m "$SEED_DIR/seed-$n.jsonl" 2>/dev/null || echo "$SEED_DIR/seed-$n.jsonl")"
 }
 
 put() { mkdir -p "$(dirname "$R/$1")"; cat > "$R/$1"; }
@@ -246,4 +279,14 @@ subject_keep() {
   dest=$(out_path "$OUT/$LABEL/$2") || return 1
   mkdir -p "$OUT/$LABEL"
   save_extract "$dest" clean < "$1"
+}
+
+# Un fichero de otra rama, con las reglas de subject_keep: <rev>:<ruta> <copia plana>.
+# Sin MSYS2_ARG_CONV_EXCL, Git Bash convierte rama:ruta en «rama\ruta;…» y el volcado sale vacío (ticket del patch 0075 §3);
+# con él, -C necesita la ruta Windows del molde.
+subject_show() {
+  local dump="$RUN/$2.show"
+  MSYS2_ARG_CONV_EXCL='*' git -C "$(cygpath -m "$R" 2>/dev/null || echo "$R")" show "$1" > "$dump" \
+    || { echo "[$LABEL] sin $1" >&2; return 1; }
+  subject_keep "$dump" "$2"
 }
