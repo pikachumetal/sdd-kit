@@ -29,7 +29,7 @@ Lite: sin review de spec; la pasada de coherencia la he hecho yo (literales del 
 3. **Plazo interno de 1 s**: tras 1 s desde que arranca, el verbo no empieza a borrar ninguna sesión más; las que quedan caen en el siguiente cierre. Si Claude Code lo mata a media sesión, queda el borrado parcial, que es lo tolerado.
 4. **La base es una sola**: `CLAUDE_CODE_TMPDIR` si viene con valor, y si no `os.tmpdir()` (`%TEMP%` en Windows). Una sesión de `Start-KitSession.ps1` limpia `.temp/claude/`, no lo que dejaran en `%TEMP%` sesiones anteriores sin script. `Clear-ClaudeTemp.ps1` recorre las dos; el enunciado dice «o».
 5. **La carpeta del proyecto sale de `CLAUDE_PROJECT_DIR`** y, sin ella, del `cwd` del JSON de stdin: es la raíz del proyecto, no el directorio al que se haya movido la sesión.
-6. **Rutas largas** *(enmienda 2026-10-25)*: medido con un sujeto headless Haiku en una ruta de 231 caracteres con `CLAUDE_CODE_TMPDIR` en el scratchpad: un nombre de más de 200 caracteres se recorta a 200 y gana `-` y el hash djb2 de la ruta original (`h = (h << 5) - h + código`, entero de 32 bits, valor absoluto en base 36); la ruta medida da `…-scratchpad-probe-aaa-bjejxf`, igual en `<base>/claude/` y en `~/.claude/projects`, y el cálculo en Node da `bjejxf`. El verbo calcula el nombre exacto, sin buscar por prefijo. Windows no deja lanzar un proceso con un `cwd` de más de 259 caracteres (`The directory name is invalid`, medido con 261), así que el recorte solo se da entre 201 y 259.
+6. **Rutas largas** *(enmienda 2026-10-25)*: medido con un sujeto headless Haiku en una ruta de 231 caracteres con `CLAUDE_CODE_TMPDIR` en el scratchpad: un nombre de más de 200 caracteres se recorta a 200 y gana `-` y un hash de 32 bits de la ruta original, de multiplicador 31 como `String.hashCode` de Java (`h = (h << 5) - h + unidad UTF-16`, valor absoluto en base 36); la ruta medida da `…-scratchpad-probe-aaa-bjejxf`, igual en `<base>/claude/` y en `~/.claude/projects`, y el cálculo en Node da `bjejxf`. El verbo calcula el nombre exacto, sin buscar por prefijo. Windows no deja lanzar un proceso con un `cwd` de más de 259 caracteres (`The directory name is invalid`, medido con 261), así que el recorte solo se da entre 201 y 259.
 7. **Guardas** (si falla una, no borra nada y escribe en stderr `sdd-kit: no borro los temporales de Claude Code: <motivo>`, sale con 0):
    - `session_id` ausente, vacío o con algo que no sea letra, cifra o `-` → `sin session_id válido en la entrada del hook`; un stdin que no es JSON cae aquí.
    - La base no es absoluta → `<base> no es una ruta absoluta`.
@@ -108,7 +108,7 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - AND no escribe nada en stdout ni en stderr y sale con 0
 - AND sin `CLAUDE_CODE_TMPDIR` la base es la carpeta temporal del sistema (`%TEMP%` en Windows); sin `CLAUDE_PROJECT_DIR`, la ruta es el `cwd` del stdin
 - AND `D:\code\_worktrees\sdd-kit-0180` da la carpeta `D--code--worktrees-sdd-kit-0180`: cada carácter que no es letra ASCII ni cifra, guion bajo incluido, pasa a `-`
-- AND un nombre de más de 200 caracteres se recorta a 200 y gana `-` y el hash djb2 de la ruta en base 36: la ruta de 231 caracteres de la sonda (`…\scratchpad\probe-` + 30 `a` + `_x.y`) da `…-scratchpad-probe-aaa-bjejxf`
+- AND un nombre de más de 200 caracteres se recorta a 200 y gana `-` y el hash de 32 bits de la ruta (multiplicador 31, por unidades UTF-16) en base 36: la ruta de 231 caracteres de la sonda (`…\scratchpad\probe-` + 30 `a` + `_x.y`) da `…-scratchpad-probe-aaa-bjejxf`
 - AND si una sesión no se puede borrar entera (un fichero en uso, una carpeta que otro proceso ya borró), deja lo que no pudo, sigue con las demás y sale con 0
 - AND un enlace simbólico o un junction dentro de la carpeta del proyecto no se borra ni se sigue
 
@@ -136,6 +136,8 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - Confianza: media
 
 ## Enmiendas
+
+- 2026-10-25 — el hash del recorte se llama «de 32 bits, multiplicador 31» en vez de «djb2», y recorre unidades UTF-16 — la revisión final vio que la fórmula medida es la de `String.hashCode`, no djb2 (33, semilla 5381); el valor medido no cambia — corrección de nombre, sin cambio de comportamiento: ruling, no desvío
 
 - 2026-10-25 — decisión 6, un AND nuevo en «El hook de cierre borra las sesiones viejas del proyecto» y fuera la guarda y el aviso de «<n> carpetas de proyecto posibles» — la sonda midió que el hash del recorte es djb2 en base 36 y se reproduce desde Node: el nombre se calcula exacto, sin buscar por prefijo — aprobada (opción «Apruebo»)
 

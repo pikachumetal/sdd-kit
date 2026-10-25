@@ -28,8 +28,7 @@ function age(path: string, hoursAgo: number): void {
   utimesSync(path, time, time);
 }
 
-// el árbol del escenario de la spec: cuatro sesiones del proyecto, un fichero suelto y otro proyecto
-function tree(): string {
+function projectWithFourSessions(): string {
   const base = mkdtempSync(join(tmpdir(), 'hook-end-'));
   roots.push(base);
   const project = join(base, 'claude', 'D--code-facturas');
@@ -46,49 +45,61 @@ function tree(): string {
 
 describe('sdd hook session-end', () => {
   it('borra solo las sesiones del proyecto sin escrituras en 24 h, salvo la actual', () => {
-    const base = tree();
+    const base = projectWithFourSessions();
     const project = join(base, 'claude', 'D--code-facturas');
-    expect(cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, NOW)).toBe('');
+    expect(cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW })).toBe('');
     expect(existsSync(join(project, 'vieja'))).toBe(false);
     for (const kept of ['actual', 'reciente', 'tarea', 'leeme.txt']) expect(existsSync(join(project, kept))).toBe(true);
     expect(existsSync(join(base, 'claude', 'D--code-otro', 'vieja'))).toBe(true);
   });
 
   it('sin CLAUDE_PROJECT_DIR usa el cwd del stdin', () => {
-    const base = tree();
-    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base }, NOW);
+    const base = projectWithFourSessions();
+    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base }, { now: NOW });
     expect(existsSync(join(base, 'claude', 'D--code-facturas', 'vieja'))).toBe(false);
   });
 
   it('sin CLAUDE_CODE_TMPDIR usa la carpeta temporal del sistema', () => {
-    const base = tree();
+    const base = projectWithFourSessions();
     vi.stubEnv('TEMP', base);
     vi.stubEnv('TMP', base);
     vi.stubEnv('TMPDIR', base);
-    cleanSessionTemp(STDIN, { CLAUDE_PROJECT_DIR: PROJECT }, NOW);
+    cleanSessionTemp(STDIN, { CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW });
     expect(existsSync(join(base, 'claude', 'D--code-facturas', 'vieja'))).toBe(false);
   });
 
   it('no sigue ni borra un junction o enlace de la carpeta del proyecto', () => {
-    const base = tree();
+    const base = projectWithFourSessions();
     const target = join(base, 'fuera');
     write(join(target, 'a.txt'), 30);
     const link = join(base, 'claude', 'D--code-facturas', 'enlace');
     symlinkSync(target, link, 'junction');
-    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, NOW);
+    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW });
     expect(existsSync(link)).toBe(true);
     expect(readFileSync(join(target, 'a.txt'), 'utf8')).toBe('x');
   });
 
   it('pasado el plazo no empieza a borrar ninguna sesión', () => {
-    const base = tree();
-    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, NOW, 0);
+    const base = projectWithFourSessions();
+    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW, deadline: 0 });
     expect(existsSync(join(base, 'claude', 'D--code-facturas', 'vieja'))).toBe(true);
   });
 
+  it('una sesión sin ficheros se mide por la fecha de su carpeta', () => {
+    const base = projectWithFourSessions();
+    const project = join(base, 'claude', 'D--code-facturas');
+    mkdirSync(join(project, 'vacia-vieja'));
+    age(join(project, 'vacia-vieja'), 30);
+    mkdirSync(join(project, 'vacia-reciente'));
+    age(join(project, 'vacia-reciente'), 2);
+    cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW });
+    expect(existsSync(join(project, 'vacia-vieja'))).toBe(false);
+    expect(existsSync(join(project, 'vacia-reciente'))).toBe(true);
+  });
+
   it('sin carpeta del proyecto no avisa', () => {
-    const base = tree();
-    expect(cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: 'D:\\code\\nuevo' }, NOW)).toBe('');
+    const base = projectWithFourSessions();
+    expect(cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: 'D:\\code\\nuevo' }, { now: NOW })).toBe('');
   });
 });
 
@@ -100,15 +111,25 @@ describe('sdd hook session-end, guardas', () => {
     ['un texto que no es JSON', 'no es json'],
     ['un session_id con barras', JSON.stringify({ session_id: '../vieja', cwd: PROJECT })],
   ])('%s: no borra y avisa', (_, stdin) => {
-    const base = tree();
-    expect(cleanSessionTemp(stdin, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, NOW)).toBe(
+    const base = projectWithFourSessions();
+    expect(cleanSessionTemp(stdin, { CLAUDE_CODE_TMPDIR: base, CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW })).toBe(
       `${reason}sin session_id válido en la entrada del hook`,
     );
     expect(existsSync(join(base, 'claude', 'D--code-facturas', 'vieja'))).toBe(true);
   });
 
+  it.each([
+    ['sin cwd', JSON.stringify({ session_id: 'actual' })],
+    ['con un cwd que no es texto', JSON.stringify({ session_id: 'actual', cwd: 5 })],
+  ])('sin CLAUDE_PROJECT_DIR y %s: no borra y avisa', (_, stdin) => {
+    const base = projectWithFourSessions();
+    expect(cleanSessionTemp(stdin, { CLAUDE_CODE_TMPDIR: base }, { now: NOW })).toBe(
+      `${reason}no sale el nombre de la carpeta del proyecto de `,
+    );
+  });
+
   it('con una base relativa no borra y avisa', () => {
-    expect(cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: 'temporales', CLAUDE_PROJECT_DIR: PROJECT }, NOW)).toBe(
+    expect(cleanSessionTemp(STDIN, { CLAUDE_CODE_TMPDIR: 'temporales', CLAUDE_PROJECT_DIR: PROJECT }, { now: NOW })).toBe(
       `${reason}temporales no es una ruta absoluta`,
     );
   });
@@ -119,7 +140,15 @@ describe('nombre de la carpeta del proyecto', () => {
     expect(projectFolderName('D:\\code\\_worktrees\\sdd-kit-0180')).toBe('D--code--worktrees-sdd-kit-0180');
   });
 
-  it('recorta a 200 y añade el hash djb2 de la ruta, como midió la sonda', () => {
+  it('el hash recorre unidades UTF-16, no puntos de código', () => {
+    const emoji = projectFolderName('D:\\' + 'a'.repeat(200) + '\u{1F600}');
+    const surrogates = projectFolderName('D:\\' + 'a'.repeat(200) + '\uD83D\uDE00');
+    const firstHalf = projectFolderName('D:\\' + 'a'.repeat(200) + '\uD83D');
+    expect(emoji).toBe(surrogates);
+    expect(emoji).not.toBe(firstHalf);
+  });
+
+  it('recorta a 200 y añade el hash de 32 bits de la ruta, como midió la sonda', () => {
     const probe =
       'D:\\code\\.worktrees\\sdd-kit\\feature-0210-session-end-temp-cleanup\\.temp\\claude\\D--code--worktrees-sdd-kit-feature-0210-session-end-temp-cleanup\\a75e9b1e-3ea6-4d60-a315-74ee288d015f\\scratchpad\\probe-' +
       'a'.repeat(30) + '_x.y';
