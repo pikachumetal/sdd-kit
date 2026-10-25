@@ -4,7 +4,7 @@ feature: 0210
 title: El plugin borra los temporales de Claude Code del proyecto al cerrar la sesión
 mode: lite
 profile: delegate
-status: approved
+status: done
 created: 2026-10-25
 author: Àngel Delgado
 approvers:
