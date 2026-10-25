@@ -6,9 +6,7 @@
 # Cada escenario se lanza n veces con su modelo; las tandas van de 5 como máximo: con más, Git Bash agota los procesos.
 # Sale con el código del veredicto: 0 si todos los escenarios pasan su umbral.
 set -u
-HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
-NODE="${NODE:-node}"
+. "$(cd "$(dirname "${BASH_SOURCE[0]//\\//}")" && pwd)/lib.sh"
 DIR="${BATTERY_DIR:-$REPO_ROOT/tests/batteries/${BATTERY:?define BATTERY (nombre de la skill)}}"
 TABLE="$DIR/battery.md"
 CHUNK=5
@@ -39,4 +37,4 @@ max_n=$(echo "$PLAN" | awk '$3 > m { m = $3 } END { print m + 0 }')
 for index in $(seq 1 "$max_n"); do launch_index; done
 
 # shellcheck disable=SC2086
-"$NODE" "$HEADLESS/battery.mjs" verdict "$TABLE" "$SPEC_DIR/${PHASE:-red}/out" ${STEPS:-}
+"$NODE" "$HEADLESS/battery.mjs" verdict "$TABLE" "$(campaign_root)/${PHASE:-red}/out" ${STEPS:-}

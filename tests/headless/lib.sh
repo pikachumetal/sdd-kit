@@ -27,6 +27,11 @@ MAX_PATH=140
 
 die() { echo "[${LABEL:-sujeto}] $*" >&2; exit 1; }
 
+# Un ensayo en seco no escribe en la carpeta de la spec ni cuenta para sus techos.
+campaign_root() {
+  if [ "${DRY_RUN:-}" = 1 ]; then echo "${RUNS_DIR:?define RUNS_DIR (scratchpad)}/dry"; else echo "${SPEC_DIR:?define SPEC_DIR}"; fi
+}
+
 subject_init() {
   # --plugin-dir en ruta Windows: con la de Git Bash, 4 de 10 sujetos recibieron «Unknown skill» (task 0009).
   KIT="$(cygpath -m "$1" 2>/dev/null || echo "$1")"; LABEL="$2"; OUT="$3"

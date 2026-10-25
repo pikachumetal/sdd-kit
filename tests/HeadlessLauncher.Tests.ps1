@@ -27,7 +27,21 @@ $Launch
 subject_keep "`$R/README.md" $KeepName
 "@
     Set-Content -LiteralPath (Join-Path $spec 'red/subject.sh') -Value $subject -NoNewline
-    return [pscustomobject]@{ Spec = $spec; Runs = $runs; Kit = $kit; Out = Join-Path $spec 'red/out' }
+    return [pscustomobject]@{ Spec = $spec; Runs = $runs; Kit = $kit; Out = Join-Path $runs 'dry/red/out'; Dry = Join-Path $runs 'dry' }
+  }
+
+  # Un claude falso que no gasta: imprime el result mínimo de un stream, tras ejecutar $Before.
+  function New-FakeClaude([string]$Name, [string]$Before = '') {
+    $bin = Join-Path $TestDrive "bin-$Name"
+    New-Item -ItemType Directory -Force $bin | Out-Null
+    $stream = "echo '{`"type`":`"result`",`"num_turns`":1,`"total_cost_usd`":0.5,`"result`":`"hecho`"}'"
+    Set-Content -LiteralPath (Join-Path $bin 'claude') -Value "#!/usr/bin/env bash`n$Before`n$stream" -NoNewline
+    return $bin
+  }
+
+  function Set-Tools([string]$Dir, [string]$Label, [string]$Text) {
+    New-Item -ItemType Directory -Force $Dir | Out-Null
+    Set-Content -LiteralPath (Join-Path $Dir "$Label.tools.txt") -Value $Text
   }
 
   function Invoke-Campaign($Campaign, [hashtable]$Env) {
@@ -51,7 +65,9 @@ subject_keep "`$R/README.md" $KeepName
     }
   }
 
-  function Get-Subjects($Campaign) { @(Get-ChildItem -Path (Join-Path $Campaign.Spec '*/out/*.tools.txt') -ErrorAction SilentlyContinue) }
+  function Get-Subjects($Campaign) {
+    @(Get-ChildItem -Path (Join-Path $Campaign.Spec '*/out/*.tools.txt'), (Join-Path $Campaign.Dry '*/out/*.tools.txt') -ErrorAction SilentlyContinue)
+  }
 }
 
 AfterAll {
@@ -80,13 +96,47 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
   It 'con SPEC_DIR relativo guarda las salidas y las cuenta (tickets 0077 §2 y 0064 §1)' {
     $root = Join-Path $TestDrive 'relative'
     $campaign = New-Campaign $root
+    $bin = New-FakeClaude 'relative'
 
     Push-Location $root
-    try { $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SPEC_DIR = 'spec' } } finally { Pop-Location }
+    try { $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SPEC_DIR = 'spec'; DRY_RUN = $null; PATH = "$bin;$env:PATH" } } finally { Pop-Location }
 
     $run.ExitCode | Should -Be 0 -Because $run.Output
-    Join-Path $campaign.Out 'a-1.tools.txt' | Should -Exist
+    Join-Path $campaign.Spec 'red/out/a-1.tools.txt' | Should -Exist
     $run.Output | Should -Match 'sujetos de la campaña: 1 '
+  }
+
+  It 'en seco deja las salidas en RUNS_DIR/dry y nada en SPEC_DIR (ticket de la feature 0115 §9)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dry-out')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Join-Path $campaign.Spec 'red/out' | Should -Not -Exist
+    Join-Path $campaign.Runs 'dry/red/out/a-1.tools.txt' | Should -Exist
+    $run.Output | Should -Match 'en seco: salidas en .*dry/red/out'
+  }
+
+  It 'en seco no cuenta las salidas de SPEC_DIR' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'dry-count')
+    Set-Tools (Join-Path $campaign.Spec 'green/out') 'x-1' '=== RESULTADO (1 turnos, 9 $)'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; COST_CAP = '4' }
+
+    $run.Output | Should -Match 'coste acumulado: 0\.50 \$'
+  }
+
+  It 'al acabar da el coste por carpeta de salida (ticket de la feature 0168 §4)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'folders')
+    Set-Tools (Join-Path $campaign.Dry 'green-premature/out') 'x-1' '=== RESULTADO (2 turnos, 0.9 $)'
+    Set-Tools (Join-Path $campaign.Dry 'green/out') 'y-1' '>>> Bash: ls'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'red: 1 sujetos · 0\.50 \$' -Because $run.Output
+    $run.Output | Should -Match 'green-premature: 1 sujetos · 0\.90 \$'
+    $run.Output | Should -Match 'green: 1 sujetos · 0\.00 \$ · 1 sin RESULTADO'
+    $run.Output | Should -Match 'coste acumulado: 1\.40 \$'
   }
 
   It 'el sujeto ve la identidad fixture en git config, no la de la máquina (ticket del patch 0080 §2)' {
@@ -192,9 +242,8 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
   It 'no lanza si el coste de la campaña, sumando todas las fases, llega a COST_CAP' {
     $campaign = New-Campaign (Join-Path $TestDrive 'cost')
-    New-Item -ItemType Directory -Force (Join-Path $campaign.Spec 'green/out') | Out-Null
     # Dos eventos result: cuenta solo el último (task 0055).
-    Set-Content -LiteralPath (Join-Path $campaign.Spec 'green/out/x-1.tools.txt') -Value "=== RESULTADO (3 turnos, 9 $)`n=== RESULTADO (4 turnos, 4.5 $)"
+    Set-Tools (Join-Path $campaign.Dry 'green/out') 'x-1' "=== RESULTADO (3 turnos, 9 $)`n=== RESULTADO (4 turnos, 4.5 $)"
 
     $run = Invoke-Campaign $campaign @{ COST_CAP = '4' }
 
@@ -248,7 +297,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
       $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; RUNS_DIR = $runs }
 
       $run.ExitCode | Should -Be 0 -Because $run.Output
-      (Get-Subjects $campaign).Count | Should -Be 1
+      Join-Path $runs 'dry/red/out/a-1.tools.txt' | Should -Exist
     }
     finally { Remove-Item -LiteralPath $runs -Recurse -Force -ErrorAction SilentlyContinue }
   }
