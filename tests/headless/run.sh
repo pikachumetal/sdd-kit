@@ -6,6 +6,8 @@
 # SUBJECT_CAP y COST_CAP son los de la previsión de la spec y cuentan todas las fases de SPEC_DIR.
 # No lanza el siguiente sujeto si existe RUNS_DIR/stop («parada a petición»), si se llega a SUBJECT_CAP
 # o si el coste de los sujetos terminados llega a COST_CAP. Cada sujeto: bash SUBJECT_SH <kit> <escenario>-<n> <escenario> <salida>.
+# El RED de un patch se lanza con SPEC_DIR en el scratchpad hasta que reproduce: solo entonces se reserva el id
+# y se copia red/ a la carpeta del patch (tickets de los patches 0111, 0114 y 0125).
 # No se edita mientras corre: bash lee el script a trozos (task 0005).
 set -u
 : "${SPEC_DIR:?define SPEC_DIR}" "${SUBJECT_SH:?define SUBJECT_SH}" "${KIT_DIR:?define KIT_DIR}" "${SCENARIOS:?define SCENARIOS}"
