@@ -6,7 +6,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-// Una línea que no parsea no tumba el extractor: en la 0168 dejó texts.txt a medias (walkthrough de la feature 0168 §5).
+// Una línea que no parsea no tumba el extractor: en la 0168 dejó texts.txt a medias (feature 0168).
 const readStream = (path) =>
   readFileSync(path, 'utf8').split(/\r?\n/).map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => line.trim()).map(({ line, n }) => {
     try {
@@ -18,7 +18,7 @@ const readStream = (path) =>
 
 const [mode, ...rest] = process.argv.slice(2);
 if (mode === 'last') {
-  const results = readStream(rest[0]).map(({ event }) => event).filter((event) => event?.type === 'result');
+  const results = readStream(rest[0]).filter(({ error }) => !error).map(({ event }) => event).filter((event) => event?.type === 'result');
   process.stdout.write(results.at(-1)?.result ?? '');
   process.exit(0);
 }
@@ -55,10 +55,13 @@ const gitConfig = (key) => {
     return ''; // sin la clave, git sale con 1
   }
 };
-const identity = [gitConfig('user.name'), gitConfig('user.email')].filter(Boolean);
+// Como palabra entera: un nombre corto («Ana») no casa dentro de otra palabra («Analizar»).
+const identity = [gitConfig('user.name'), gitConfig('user.email')]
+  .filter(Boolean)
+  .map((value) => new RegExp(`(?<![\\p{L}\\p{N}])${value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}])`, 'u'));
 // Sustituirla escondía que el sujeto había visto la identidad de la máquina: la salida no se guarda.
 const write = (text) => {
-  if (identity.some((value) => text.includes(value))) {
+  if (identity.some((pattern) => pattern.test(text))) {
     console.error('la salida lleva el nombre o el email de git de la máquina: no se guarda');
     process.exit(3);
   }
@@ -89,10 +92,11 @@ const resultText = (block) => (Array.isArray(block.content) ? block.content.map(
 const lines = [];
 let turn = 0;
 for (const { n, event, length, error } of readStream(streamPath)) {
-  if (!event) {
+  if (error) {
     lines.push(`!!! línea ${n} del stream sin parsear (${length} caracteres): ${clean(error)}`);
     continue;
   }
+  if (typeof event !== 'object' || event === null) continue;
   if (mode === 'texts') {
     if (event.type !== 'assistant') continue;
     turn += 1;

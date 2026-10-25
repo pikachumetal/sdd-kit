@@ -103,6 +103,8 @@ Todo se añade a `tests/headless/` (`lib.sh`, `extract.mjs`, `battery.mjs`, `den
 
 ## Enmiendas
 
+- 2026-10-25 — decisión 3: la parada por puerto solo para lo que escucha en los puertos del sujeto **y arrancó después de `subject_init`**; el `.err` cuenta en «escuchando al acabar» solo esos, y «no comprobado» si `pwsh` no responde — la revisión final (Spec y Código) vio que el stream nombra puertos que el sujeto solo lee (`localhost:4200` de una plantilla) y que la regla vigente de `tech-stack.md` (feature 0180) ya pedía parar solo lo de la campaña; con la parada anterior, el test que abre el puerto desde Pester mató al propio Pester — aprobada (opción «Apruebo»)
+- 2026-10-25 — decisión 5: `save_extract` ya no corta con `die`; guarda lo que puede (`tools.txt` sigue contando el coste), deja la marca `<etiqueta>.leak` y `subject_cleanup` sale con 1, también cuando `subject_save` corre en una tubería — la revisión final (Spec) vio que en `{ …; } | subject_save` el sujeto salía con 0 — aprobada (opción «Apruebo»)
 - 2026-10-25 — se añade «Topes de palabras» (`tech-stack.md`, tope sin cambio) — el repaso de coherencia no vio el tope de `tests/WordBudget.Tests.ps1` y el pre-commit de la Task 1 lo paró; no cambia requisitos, Scope ni «Dónde se prueba» — sin aprobar: ruling de la Task 1, se cuenta en el cierre
 
 ## Aprobaciones

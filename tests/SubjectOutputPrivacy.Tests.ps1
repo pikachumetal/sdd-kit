@@ -14,15 +14,11 @@ BeforeAll {
     } finally { [Console]::OutputEncoding = $savedEncoding }
   }
 
-  function Get-GitUserName {
+  function Get-GitUserConfig([string]$Key) {
     $savedGitEnv = Clear-GitEnv
-    try { Invoke-GitUtf8 'config', 'user.name' } finally { Restore-GitEnv $savedGitEnv }
+    try { Invoke-GitUtf8 'config', $Key } finally { Restore-GitEnv $savedGitEnv }
   }
 
-  function Get-GitUserEmail {
-    $savedGitEnv = Clear-GitEnv
-    try { Invoke-GitUtf8 'config', 'user.email' } finally { Restore-GitEnv $savedGitEnv }
-  }
 
   # Toda subcarpeta de una tarea: campaign/, ab/, micro/… también son salidas de sujetos (feature 0214).
   function Select-EvidencePath([string[]]$Paths) {
@@ -52,7 +48,7 @@ BeforeAll {
   $script:MachineUserPattern = "\b$([regex]::Escape((Split-Path -Leaf ($env:USERPROFILE ?? $env:HOME))))\b"
 
   function Find-MachineLeak {
-    $identity = @(Get-GitUserName; Get-GitUserEmail) | Where-Object { $_ } | ForEach-Object { [regex]::Escape($_) }
+    $identity = @(Get-GitUserConfig user.name; Get-GitUserConfig user.email) | Where-Object { $_ } | ForEach-Object { [regex]::Escape($_) }
     $patterns = @($script:UserPathPattern, $script:MachineUserPattern) + $identity
     $patterns | ForEach-Object { Find-Leak $_ } | Sort-Object -Unique
   }
@@ -177,12 +173,13 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
     $leak.Output | Should -Not -Match 'alice@example\.org'
   }
 
-  It 'extract.mjs <Mode> salta una línea sin parsear y sigue (walkthrough de la feature 0168 §5)' -ForEach @(@{ Mode = 'tools'; Kept = '>>> Bash: ls' }, @{ Mode = 'texts'; Kept = '--- \[1\]' }) {
+  It 'extract.mjs <Mode> salta una línea sin parsear y sigue (feature 0168)' -ForEach @(@{ Mode = 'tools'; Kept = '>>> Bash: ls'; After = '=== RESULTADO' }, @{ Mode = 'texts'; Kept = '--- \[1\]'; After = 'luego' }) {
     $stream = Join-Path $TestDrive "broken-$Mode.jsonl"
     $broken = '{"type":"assistant","message":{"content":[{"type":"text","text":"a"'
     $valid = @(
       '{"type":"assistant","message":{"content":[{"type":"text","text":"antes"},{"type":"tool_use","name":"Bash","input":{"command":"ls"}}]}}'
       $broken
+      '{"type":"assistant","message":{"content":[{"type":"text","text":"luego"}]}}'
       '{"type":"result","num_turns":2,"total_cost_usd":0.3,"result":"después"}'
     )
     Set-Content -LiteralPath $stream -Value $valid -Encoding utf8NoBOM
@@ -192,6 +189,7 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
     $run.ExitCode | Should -Be 0 -Because $run.Output
     $run.Output | Should -Match "!!! línea 2 del stream sin parsear \($($broken.Length) caracteres\): "
     $run.Output | Should -Match $Kept
+    $run.Output | Should -Match $After
   }
 
   It 'extract.mjs last salta una línea sin parsear' {
@@ -204,10 +202,33 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
     $run.Output | Should -Be '¿seguimos?'
   }
 
-  It 'extract.mjs falla con el user.name de la máquina aunque lleve tilde' {
-    $leak = Invoke-WithGitUser 'Àlice Liddell' { Invoke-ToolsExit @('clean', '/c/runs/x') 'aprobada por Àlice Liddell' }
+  It 'extract.mjs falla con el user.name de la máquina aunque lleve tilde y la consola no sea UTF-8' {
+    $saved = [Console]::OutputEncoding
+    try {
+      [Console]::OutputEncoding = [Text.Encoding]::GetEncoding(437)
+      $exitCode = Invoke-WithGitUser 'Àlice Liddell' { 'aprobada por Àlice Liddell' | & $script:Node $script:Tools clean '/c/runs/x' 2>$null | Out-Null; $LASTEXITCODE }
+    } finally { [Console]::OutputEncoding = $saved }
 
+    $exitCode | Should -Be 3
+  }
+
+  It 'extract.mjs no confunde un nombre corto con parte de otra palabra (revisión final de la feature 0214)' {
+    $clean = Invoke-WithGitUser 'Ana' { Invoke-ToolsExit @('clean', '/c/runs/x') 'Analizar la Anamnesis' }
+    $leak = Invoke-WithGitUser 'Ana' { Invoke-ToolsExit @('clean', '/c/runs/x') 'aprobada por Ana.' }
+
+    $clean.ExitCode | Should -Be 0 -Because $clean.Output
     $leak.ExitCode | Should -Be 3
+  }
+
+  It 'extract.mjs tools salta una línea que no es un evento' {
+    $stream = Join-Path $TestDrive 'null.jsonl'
+    Set-Content -LiteralPath $stream -Encoding utf8NoBOM -Value @('null', '{"type":"result","num_turns":1,"total_cost_usd":0.1,"result":"hecho"}')
+
+    $run = Invoke-ToolsExit @('tools', $stream, '/c/runs/x')
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $run.Output | Should -Not -Match 'undefined'
+    $run.Output | Should -Match '=== RESULTADO'
   }
 
   It 'extract.mjs tools escribe bajo >>> Agent las cabeceras ## del prompt (ticket de la feature 0147 §3)' {
@@ -255,19 +276,19 @@ Describe 'La evidencia de los sujetos no lleva el home de la máquina' -Tag 'Slo
     $saved = [Console]::OutputEncoding
     try {
       [Console]::OutputEncoding = [Text.Encoding]::GetEncoding(437)
-      Invoke-WithGitUser 'Àlice Liddell' { Get-GitUserName } | Should -Be 'Àlice Liddell'
+      Invoke-WithGitUser 'Àlice Liddell' { Get-GitUserConfig user.name } | Should -Be 'Àlice Liddell'
     } finally { [Console]::OutputEncoding = $saved }
   }
 
   It 'ni el user.name de git de esta máquina (ticket del patch 0080 §2)' {
-    $name = Get-GitUserName
+    $name = Get-GitUserConfig user.name
     if (-not $name) { Set-ItResult -Skipped -Because 'esta máquina no tiene user.name en git'; return }
     Find-Leak ([regex]::Escape($name)) |
       Should -BeNullOrEmpty -Because 'el repo es público: no se guarda una salida con la identidad de la máquina'
   }
 
   It 'ni el user.email de git de esta máquina' {
-    $email = Get-GitUserEmail
+    $email = Get-GitUserConfig user.email
     if (-not $email) { Set-ItResult -Skipped -Because 'esta máquina no tiene user.email en git'; return }
     Find-Leak ([regex]::Escape($email)) |
       Should -BeNullOrEmpty -Because 'el repo es público: no se guarda una salida con la identidad de la máquina'

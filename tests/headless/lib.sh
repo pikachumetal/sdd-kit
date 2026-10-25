@@ -11,8 +11,8 @@
 #   subject_converse <hoja de la persona> <turnos máximos> # la persona (haiku) contesta hasta que el sujeto deja de preguntar
 #   subject_show feature/0013:.docs/sdd/roadmap.md roadmap.md # un fichero de otra rama, con las reglas de subject_keep
 #   seed_transcript feature/0042 <<'EOF' ... EOF          # transcripts del trabajo, «<fecha ISO> <user|assistant> <texto>» por línea;
-#                                                         # con heredoc, no con tubería: la carpeta se borra al acabar
-#   subject_ports                                         # puertos del sujeto (PORT y los del stream); subject_cleanup los para por PID
+#                                                         # la carpeta del molde se borra al acabar
+#   subject_ports                                         # puertos del sujeto (PORT y los del stream); subject_cleanup para lo que arrancó con el sujeto
 # Variables: RUNS_DIR (obligatoria, en el scratchpad o en .temp/ del repo; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 # EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees, task 0040), NODE (node),
 # SETTINGS (el JSON de --settings: sin él, deshabilita el kit instalado y carga el hook deny-kill.mjs; uno propio lo lleva,
@@ -40,7 +40,7 @@ subject_init() {
   RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
   case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" ;; esac
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
-  # Con .docs/, el sujeto leyó la spec de lo que se medía (walkthrough de la feature 0150 §4.3).
+  # Con .docs/, el sujeto leyó la spec de lo que se medía (feature 0150).
   { [ -e "$KIT/.docs" ] || [ -e "$KIT/tests" ]; } && die "la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin"
   # Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency» (ticket de la feature 0095 §2).
   if [ -z "${SUPERPOWERS_DIR:-}" ] && grep -q '"dependencies"' "$KIT/.claude-plugin/plugin.json" 2>/dev/null; then
@@ -53,7 +53,9 @@ subject_init() {
   OUT="$(cd "$OUT" && pwd)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
   rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=; trap subject_cleanup EXIT
-  JSONL="$RUNS/$LABEL.jsonl"
+  JSONL="$RUNS/$LABEL.jsonl"; LEAK="$RUNS/$LABEL.leak"; rm -f "$LEAK"
+  # La parada por puerto solo alcanza a lo que arrancó después: no a los servidores ni a los MCP que ya escuchaban.
+  SUBJECT_STARTED=$(date +%s)
 }
 
 g() {
@@ -73,22 +75,39 @@ mold_is_repo() {
 subject_cleanup() {
   [ -n "${LABEL:-}" ] && [ "${RUN#"$RUNS"/}" != "$RUN" ] || { echo "[${LABEL:-sujeto}] no se borra $RUN: fuera de $RUNS o sin etiqueta" >&2; return 0; }
   stop_subject_ports
-  [ -n "${SEED_DIR:-}" ] && rm -rf "${SEED_DIR:?}"
+  local seed
+  seed=$(seed_dir) && compgen -G "$seed/seed-*.jsonl" > /dev/null && rm -rf "${seed:?}"
   remove_claude_folder
   [ "${KEEP_MOLD:-}" = 1 ] || rm -rf "$RUN"
+  # Una salida con la identidad de la máquina no se guardó: el sujeto sale con error aunque save_extract corriera en una tubería.
+  [ ! -f "$LEAK" ] || exit 1
 }
 
 # Un sujeto web arranca en el puerto que elige, no en el del molde: 5 de 6 en la 0036 (ticket de la feature 0036 §3).
 subject_ports() {
-  { [ -n "${PORT:-}" ] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | sort -un | paste -sd, -
+  { [[ "${PORT:-}" =~ ^[0-9]+$ ]] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | sort -un | paste -sd, -
 }
 
-# Por el PID que escucha en el puerto, nunca por nombre: en la máquina corren los servidores y los MCP de otras sesiones.
+# Por el PID que escucha en el puerto y arrancó con el sujeto, nunca por nombre: en la máquina corren los servidores
+# y los MCP de otras sesiones, y el stream nombra puertos que el sujeto solo leyó (revisión final de la feature 0214).
 stop_subject_ports() {
-  local ports listening
+  local ports script result listening
   ports=$(subject_ports)
-  [ -n "$ports" ] || return 0
-  listening=$(pwsh -NoProfile -Command "\$c = @(Get-NetTCPConnection -LocalPort $ports -State Listen -ErrorAction SilentlyContinue); \$c | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }; (\$c.LocalPort | Sort-Object -Unique) -join ','" 2>/dev/null | tr -d '\r')
+  [ -n "$ports" ] && [ -n "${SUBJECT_STARTED:-}" ] || return 0
+  # Como argumento: con -Command - y el script por la entrada estándar, pwsh no ejecuta las líneas partidas.
+  script=$(cat <<EOF
+\$since = [DateTimeOffset]::FromUnixTimeSeconds($SUBJECT_STARTED).LocalDateTime
+\$mine = @(Get-NetTCPConnection -LocalPort $ports -State Listen -ErrorAction SilentlyContinue |
+  Where-Object { (Get-Process -Id \$_.OwningProcess -ErrorAction SilentlyContinue).StartTime -ge \$since })
+\$mine | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }
+'comprobado:' + ((\$mine.LocalPort | Sort-Object -Unique) -join ',')
+EOF
+)
+  result=$(pwsh -NoProfile -Command "$script" 2>/dev/null | tr -d '\r')
+  case "$result" in
+    *comprobado:*) listening="${result##*comprobado:}" ;;
+    *) listening="no comprobado (pwsh no respondió)" ;;
+  esac
   echo "puertos del sujeto: $ports · escuchando al acabar: ${listening:-ninguno}" >> "$RUNS/$LABEL.err"
 }
 
@@ -102,10 +121,18 @@ remove_claude_folder() {
   [ -n "$slug" ] && rm -rf "${base:?}/claude/$slug"
 }
 
+# La carpeta de transcripts del molde; sin molde no hay ninguna: con el slug vacío sería projects/ entero.
+seed_dir() {
+  local slug
+  slug=$(mold_slug)
+  [ -n "${R:-}" ] && [ -n "$slug" ] || return 1
+  echo "$(cygpath -u "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" 2>/dev/null || echo "${CLAUDE_CONFIG_DIR:-$HOME/.claude}")/projects/$slug"
+}
+
 # Transcripts del trabajo para un THEN que lee sdd session tokens: sin ellos da 0,00 h (feature 0188).
 # Una línea por entrada: <fecha ISO> <user|assistant> <texto>. subject_cleanup borra la carpeta.
 seed_transcript() {
-  SEED_DIR="$(cygpath -u "${CLAUDE_CONFIG_DIR:-$HOME/.claude}" 2>/dev/null || echo "${CLAUDE_CONFIG_DIR:-$HOME/.claude}")/projects/$(mold_slug)"
+  SEED_DIR=$(seed_dir) || die "seed_transcript antes de subject_init: sin molde no hay carpeta de transcripts"
   mkdir -p "$SEED_DIR"
   local n=1
   while [ -e "$SEED_DIR/seed-$n.jsonl" ]; do n=$((n + 1)); done
@@ -141,7 +168,7 @@ subject_launch() {
   local settings="${SETTINGS:-$default}"
   # Sin esa clave, el sujeto carga también el kit instalado, y mide la caché en vez de la copia.
   case "$settings" in *'"sdd-kit@sdd-kit":false'*) ;; *) die "SETTINGS sin deshabilitar el kit instalado: $settings" ;; esac
-  # Un sujeto que para node.exe por nombre tumba los MCP de las sesiones de la máquina (walkthrough de la feature 0168 §5).
+  # Un sujeto que para node.exe por nombre tumba los MCP de las sesiones de la máquina (feature 0168).
   case "$settings" in *deny-kill.mjs*) ;; *) die "SETTINGS sin el hook deny-kill.mjs: añade \$DENY_KILL_HOOK a sus PreToolUse" ;; esac
   build_claude_args "$settings"
   printf '%s\n' "${CLAUDE_ARGS[@]}" "$1" > "$RUNS/$LABEL.args"
@@ -259,21 +286,31 @@ clean() { "$NODE" "$HEADLESS/extract.mjs" clean "$RUN"; }
 subject_save() {
   local state tools texts
   state=$(out_path "$OUT/$LABEL.state.txt") && tools=$(out_path "$OUT/$LABEL.tools.txt") && texts=$(out_path "$OUT/$LABEL.texts.txt") || exit 1
-  save_extract "$state" clean
-  save_extract "$tools" "$NODE" "$HEADLESS/extract.mjs" tools "$JSONL" "$RUN"
-  save_extract "$texts" "$NODE" "$HEADLESS/extract.mjs" texts "$JSONL" "$RUN"
-  echo "[$LABEL] listo"
+  # Los tres aunque falle uno: sin tools.txt, run.sh no cuenta el coste del sujeto.
+  local saved=0
+  save_extract "$state" clean || saved=1
+  save_extract "$tools" "$NODE" "$HEADLESS/extract.mjs" tools "$JSONL" "$RUN" || saved=1
+  save_extract "$texts" "$NODE" "$HEADLESS/extract.mjs" texts "$JSONL" "$RUN" || saved=1
+  [ "$saved" = 1 ] || echo "[$LABEL] listo"
 }
 
 # A un temporal que se renombra solo si extract.mjs sale bien: con la identidad de git de la máquina sale con 3 (ticket de la feature 0160).
+# La marca LEAK hace salir al sujeto con error en subject_cleanup, también si esto corre en una tubería.
 save_extract() {
   local dest="$1"; shift
-  if "$@" > "$dest.tmp"; then mv "$dest.tmp" "$dest"; else rm -f "$dest.tmp"; die "no se guarda $(basename "$dest"): el stream sigue en $JSONL"; fi
+  if "$@" > "$dest.tmp"; then mv "$dest.tmp" "$dest"; return 0; fi
+  rm -f "$dest.tmp"; : > "$LEAK"
+  echo "[$LABEL] no se guarda $(basename "$dest"): el stream sigue en $JSONL" >&2
+  return 1
+}
+
+flat_copy() {
+  case "$1" in */*) echo "[$LABEL] $1: solo copia plana, sin carpetas (<etiqueta>/walkthrough-task-<id>.md)" >&2; return 1 ;; esac
 }
 
 # Un fichero del molde, plano: la ruta completa de .docs/ pasó de 140 caracteres (tasks 0062 y 0063).
 subject_keep() {
-  case "$2" in */*) echo "[$LABEL] $2: solo copia plana, sin carpetas (<etiqueta>/walkthrough-task-<id>.md)" >&2; return 1 ;; esac
+  flat_copy "$2" || return 1
   [ -f "$1" ] || { echo "[$LABEL] sin $1" >&2; return 1; }
   local dest
   dest=$(out_path "$OUT/$LABEL/$2") || return 1
@@ -285,6 +322,7 @@ subject_keep() {
 # Sin MSYS2_ARG_CONV_EXCL, Git Bash convierte rama:ruta en «rama\ruta;…» y el volcado sale vacío (ticket del patch 0075 §3);
 # con él, -C necesita la ruta Windows del molde.
 subject_show() {
+  flat_copy "$2" || return 1
   local dump="$RUN/$2.show"
   MSYS2_ARG_CONV_EXCL='*' git -C "$(cygpath -m "$R" 2>/dev/null || echo "$R")" show "$1" > "$dump" \
     || { echo "[$LABEL] sin $1" >&2; return 1; }

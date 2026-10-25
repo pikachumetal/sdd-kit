@@ -215,7 +215,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
     $script = Join-Path $TestDrive 'server.mjs'
     Set-Content -LiteralPath $script -Value "import { createServer } from 'node:http'; createServer().listen(Number(process.argv[2]));"
-    $server = "PORT=$port; `"`$NODE`" '$($script -replace '\\', '/')' `"`$PORT`" & sleep 2; "
+    $server = "PORT=$port; `"`$NODE`" '$($script -replace '\\', '/')' `"`$PORT`" > /dev/null 2>&1 & for i in `$(seq 50); do (: < /dev/tcp/127.0.0.1/`$PORT) 2>/dev/null && break; sleep 0.1; done; "
     $campaign = New-Campaign (Join-Path $TestDrive 'ports') -Launch ($server + 'subject_launch "x"')
 
     try {
@@ -229,6 +229,21 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     }
   }
 
+  It 'no para lo que ya escuchaba en un puerto del stream antes del sujeto (revisión final de la feature 0214)' {
+    $listener = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $listener.Start()
+    $port = $listener.LocalEndpoint.Port
+    $campaign = New-Campaign (Join-Path $TestDrive 'foreign-port') -Launch "PORT=$port; subject_launch `"x`""
+
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+      $run.ExitCode | Should -Be 0 -Because $run.Output
+      Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+      Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') | Should -Match "puertos del sujeto: $port · escuchando al acabar: ninguno" -Because $run.Output
+    } finally { $listener.Stop() }
+  }
+
   It 'subject_save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)' {
     $config = Join-Path $TestDrive 'machine.gitconfig'
     Set-Content -LiteralPath $config -Value "[user]`n`tname = Alice Liddell" -Encoding utf8NoBOM
@@ -239,7 +254,21 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $run.Output | Should -Match 'el stream sigue en'
     $run.Output | Should -Not -Match 'Alice Liddell'
     Join-Path $campaign.Out 'a-1.state.txt' | Should -Not -Exist
+    Join-Path $campaign.Out 'a-1.tools.txt' | Should -Exist -Because 'sin tools.txt, run.sh no cuenta el coste del sujeto'
     Get-ChildItem -LiteralPath $campaign.Out -Filter '*.tmp' -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+  }
+
+  It 'un sujeto con la identidad de git de la máquina en su salida sale con error' {
+    $config = Join-Path $TestDrive 'exit.gitconfig'
+    Set-Content -LiteralPath $config -Value "[user]`n`tname = Alice Liddell" -Encoding utf8NoBOM
+    $campaign = New-Campaign (Join-Path $TestDrive 'identity-exit') -Launch 'subject_launch "x"; echo "aprobada por Alice Liddell" | subject_save; exit 0'
+    $subject = Join-Path $campaign.Spec 'red/subject.sh'
+    $wrapper = Join-Path $campaign.Spec 'red/wrapper.sh'
+    Set-Content -LiteralPath $wrapper -Value "bash '$($subject -replace '\\', '/')' `"`$@`"; echo `"salida del sujeto: `$?`" >&2" -NoNewline
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; GIT_CONFIG_GLOBAL = $config; SUBJECT_SH = $wrapper }
+
+    $run.Output | Should -Match 'salida del sujeto: 1'
   }
 
   It 'aborta si la copia del kit lleva <Folder>/ (walkthrough de la feature 0150 §4.3)' -ForEach @(@{ Folder = '.docs' }, @{ Folder = 'tests' }) {
@@ -277,6 +306,40 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $seed[1].message.model | Should -Be 'claude-sonnet-5'
     $seed[1].message.usage.output_tokens | Should -Be 1
     @(Get-ChildItem -LiteralPath (Join-Path $config 'projects') -Directory -ErrorAction SilentlyContinue) | Should -HaveCount 0
+  }
+
+  It 'seed_transcript en una tubería también borra la carpeta al acabar' {
+    $config = Join-Path $TestDrive 'seed-pipe-config'
+    $launch = 'printf "%s\n" "2026-10-14T09:00:00Z user hola" | seed_transcript feature/0042; subject_launch "x"'
+    $campaign = New-Campaign (Join-Path $TestDrive 'seed-pipe') -Launch $launch
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; CLAUDE_CONFIG_DIR = $config }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Join-Path $config 'projects' | Should -Exist -Because 'seed_transcript la crea'
+    @(Get-ChildItem -LiteralPath (Join-Path $config 'projects') -Directory) | Should -HaveCount 0
+  }
+
+  It 'seed_transcript sin molde muere sin tocar los transcripts' {
+    $config = Join-Path $TestDrive 'seed-nomold'
+    New-Item -ItemType Directory -Force (Join-Path $config 'projects/otra-sesion') | Out-Null
+    $lib = (Join-Path $script:Headless 'lib.sh') -replace '\\', '/'
+    $saved = $env:CLAUDE_CONFIG_DIR
+    try {
+      $env:CLAUDE_CONFIG_DIR = $config
+      $out = (& $script:Bash -c ". '$lib'; seed_transcript feature/0042 <<< '2026-10-14T09:00:00Z user hola'; subject_cleanup" 2>&1) -join "`n"
+    } finally { $env:CLAUDE_CONFIG_DIR = $saved }
+
+    $out | Should -Match 'seed_transcript antes de subject_init'
+    Join-Path $config 'projects/otra-sesion' | Should -Exist
+  }
+
+  It 'subject_show con una copia con carpetas da el aviso de copia plana' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'show-flat') -Launch 'subject_launch "x"; subject_show main:README.md docs/readme.md'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.Output | Should -Match 'docs/readme\.md: solo copia plana'
   }
 
   It 'g pasa core.longpaths (ticket de la feature 0089 §2)' {
