@@ -150,6 +150,18 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
 
     $out | Should -Be 'spec aprobada por <git-user>; commits de Fixture'
   }
+
+  It 'extract.mjs tools escribe bajo >>> Agent las cabeceras ## del prompt (ticket de la feature 0147 §3)' {
+    $stream = Join-Path $TestDrive 'agent.jsonl'
+    $prompt = "Contexto sin cabecera`n## Tarea`ntexto`n### Detalle`n## Entrega`nmás texto"
+    $event = @{ message = @{ content = @(@{ type = 'tool_use'; name = 'Agent'; input = @{ subagent_type = 'general-purpose'; model = 'sonnet'; description = 'implementa'; prompt = $prompt } }) } } | ConvertTo-Json -Depth 6 -Compress
+    Set-Content -LiteralPath $stream -Value $event -Encoding utf8NoBOM
+
+    $out = Invoke-Tools @('tools', $stream, '/c/runs/x')
+
+    $out | Should -Match '>>> Agent: subagent_type=general-purpose model=sonnet · implementa\n    ## Tarea\n    ## Entrega'
+    $out | Should -Not -Match '### Detalle|más texto'
+  }
 }
 
 # Slow porque lee toda la evidencia del repo, que crece con cada campaña: en el conjunto rápido,

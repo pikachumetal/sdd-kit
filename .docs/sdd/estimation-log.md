@@ -198,8 +198,9 @@
 | 2026-10-21 | 0207 | docs | 3 | 1.58 | 0.53 | 64997k | 6359k | 8.29 | 23.92 | 20261021-174559-feature-0207-e2e-review-and-closing |
 | 2026-10-22 | 0209 | infra/tooling | 4 | 2.9 | 0.73 | 76517k | 5068k | 5.03 | 28.16 | 20261022-083957-feature-0209-worktree-temp |
 | 2026-10-23 | 0208 | infra/tooling | 5 | 4.7 | 0.94 | 70181k | 4995k | 6.14 | 35.56 | 20261022-140232-feature-0208-dev-validation-script |
+| 2026-10-25 | 0170 | patch | 1.5 | 0.29 | 0.19 | — | — | no aplica | — | 20261025-134440-patch-0170-battery-tools |
 
-**Factor de calibración** (ratio mediano real/estimado, 159 artefactos): **0.58** · media 0.76
+**Factor de calibración** (ratio mediano real/estimado, 160 artefactos): **0.58** · media 0.76
 
 - p25–p75: 0.4–0.9
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
@@ -209,7 +210,7 @@
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 56 | 35 % |
+| <0.5 | 57 | 36 % |
 | 0.5–0.8 | 52 | 33 % |
 | 0.8–1.25 | 37 | 23 % |
 | 1.25–2 | 8 | 5 % |
@@ -220,7 +221,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
 | infra/tooling | 37 | 0.43 | 0.36–0.53 |
-| patch | 35 | 1.2 | 0.8–1.37 |
+| patch | 36 | 1.18 | 0.79–1.35 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
 | --- | --- | --- | --- | --- | --- |
@@ -239,6 +240,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 46 | 140.2 | 0.53 | 303.91 | 1133.44 |
+| sin publicar | 47 | 140.49 | 0.53 | 303.91 | 1133.44 |
 
 > Ver `estimation.md`.
