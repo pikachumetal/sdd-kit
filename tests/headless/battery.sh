@@ -3,33 +3,23 @@
 # Uso: BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
 #      [SUPERPOWERS_DIR=…] bash tests/headless/battery.sh
 # La batería vive en tests/batteries/<skill>/ (battery.md y subject.sh); BATTERY_DIR la sustituye.
-# Cada escenario se lanza n veces con su modelo; las tandas van de 5 como máximo: con más, Git Bash agota los procesos.
+# Cada escenario se lanza n veces con su modelo; run.sh limita cuántos corren a la vez (MAX_PARALLEL).
 # Sale con el código del veredicto: 0 si todos los escenarios pasan su umbral.
 set -u
 . "$(cd "$(dirname "${BASH_SOURCE[0]//\\//}")" && pwd)/lib.sh"
 DIR="${BATTERY_DIR:-$REPO_ROOT/tests/batteries/${BATTERY:?define BATTERY (nombre de la skill)}}"
 TABLE="$DIR/battery.md"
-CHUNK=5
 [ -f "$TABLE" ] || { echo "sin batería: $TABLE" >&2; exit 1; }
 
 # shellcheck disable=SC2086
 PLAN=$("$NODE" "$HEADLESS/battery.mjs" plan "$TABLE" ${STEPS:-}) || exit $?
 
-launch_chunk() {
-  [ $# -gt 0 ] || return 0
-  MODEL="$model" SUBJECT="$index" SCENARIOS="$*" SUBJECT_SH="$DIR/subject.sh" bash "$HEADLESS/run.sh"
-}
-
 launch_index() {
   local model ids
   for model in $(echo "$PLAN" | awk '{ print $2 }' | sort -u); do
     ids=$(echo "$PLAN" | awk -v m="$model" -v i="$index" '$2 == m && $3 >= i { print $1 }')
-    # shellcheck disable=SC2086
-    set -- $ids
-    while [ $# -gt 0 ]; do
-      launch_chunk "${@:1:$CHUNK}"
-      shift $(( $# < CHUNK ? $# : CHUNK ))
-    done
+    [ -n "$ids" ] || continue
+    MODEL="$model" SUBJECT="$index" SCENARIOS="$ids" SUBJECT_SH="$DIR/subject.sh" bash "$HEADLESS/run.sh"
   done
 }
 

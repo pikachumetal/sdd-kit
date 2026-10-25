@@ -17,14 +17,14 @@ created: 2026-10-25
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | Ensayo en seco fuera de la spec y coste por carpeta | done | — | `run.sh` y `battery.sh` cargan `lib.sh` (`campaign_root`, `REPO_ROOT` con la ruta Windows arreglada) |
-| 2 | Recuento de sujetos: etiqueta existente, techo con lo lanzado, cortados y MAX_PARALLEL | pending | — | |
+| 2 | Recuento de sujetos: etiqueta existente, techo con lo lanzado, cortados y MAX_PARALLEL | done | — | recuento con builtins; cerrojo `RUNS_DIR/live/.lock` entre lanzadores; `battery.sh` sin `CHUNK` |
 | 3 | `claude` anidado bloqueado en el sujeto | pending | — | |
 | 4 | Tabla de coste por tipo de sujeto y `tech-stack.md` al día | pending | — | |
 
 ## Verificación por task
 
 - [x] Task 1 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1, tests/Battery.Tests.ps1 -CI`
-- [ ] Task 2 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1, tests/Battery.Tests.ps1 -CI`
+- [x] Task 2 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1, tests/Battery.Tests.ps1 -CI`
 - [ ] Task 3 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1 -CI` y el sujeto real
 - [ ] Task 4 — `Invoke-Pester -Path tests/WordBudget.Tests.ps1 -CI`
 
