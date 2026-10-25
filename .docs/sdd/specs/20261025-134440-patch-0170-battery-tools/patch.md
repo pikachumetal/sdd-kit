@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-25
 branch: feature/0170-battery-tools
-commit: <hash>
+commit: 2a7558e5
 ---
 
 # Patch 0170 — Herramientas de las baterías: comprobación en seco del molde, prompt del Agent en tools.txt y Node del gate
@@ -49,10 +49,14 @@ Lo que da por existente, comprobado: «Comprobación previa de cada escenario» 
 | # | Caso | Resultado |
 | --- | --- | --- |
 | 1 | `extract.mjs tools` con un despacho `Agent` cuyo prompt lleva cabeceras `##` | RED: el `It` nuevo falla («did not match», solo la línea `>>> Agent`); GREEN tras el fix: `SubjectOutputPrivacy.Tests.ps1` 14/14 |
+| 2 | `tech-stack.md` cabe en su tope de palabras tras las cuatro líneas nuevas | ✅ `WordBudget.Tests.ps1` 71/71, tras compactar cuatro reglas que el código ya cumple (`g init`, `touch stop`, la campaña cortada y el segundo turno) |
+| 3 | (a), (c), (d) y la línea del RED en el scratchpad: texto de `tech-stack.md` y `run.sh`, sin conducta que probar | releídas en el diff; no probado con un sujeto |
+
+Validación en campo: 2026-10-25 · gate de cierre `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` sobre 2a7558e5: `cli:test` 1164/1164, `kit:test` 1362/0/13 saltados al relanzarlo (en la primera pasada falló una vez «acepta RUNS_DIR bajo .temp/ del repo», que pasa en aislado y en el relanzamiento: intermitente con carga), `cli:typecheck`, `cli:test-slow` y `cli:test-min` en verde
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,5 h
 - Inicio: 2026-10-25T13:44Z
-- Esfuerzo real: <al cerrar>
+- Esfuerzo real: 0,29 h — reloj de la sesión 0,30 h desde 2026-10-25T13:40Z, sin 0 min de espera al dev-lead (1 espera). Desvío de −80 %: tres de las cuatro piezas eran una línea de `tech-stack.md` y la cuarta, cinco líneas con su test; la estimación contaba con más trabajo por pieza del que hubo
 - Coste de sujetos: no aplica
