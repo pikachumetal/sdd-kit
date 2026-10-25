@@ -12,6 +12,7 @@ import { sessionTokensVerb } from '../session/verbs.ts';
 import { hookSessionEndVerb, hookSessionStartVerb } from '../hook/verbs.ts';
 import { ledgerRulingsVerb, reviewPackageVerb, taskBriefVerb, taskDoneVerb, taskStartVerb, workspaceVerb } from '../tasks/verbs.ts';
 import { validationServeVerb } from '../validation/verbs.ts';
+import { lockRunVerb } from '../lock/verbs.ts';
 import type { Io } from './io.ts';
 
 export type VerbArgs = { values: Record<string, unknown>; positionals: string[]; hasSeparator?: boolean };
@@ -26,4 +27,4 @@ export interface Verb {
   run(args: VerbArgs, io: Io): Promise<number>;
 }
 
-export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, idClaimVerb, estimationLogVerb, initVerb, upgradeVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, hookSessionEndVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, ledgerRulingsVerb, validationServeVerb];
+export const VERBS: Verb[] = [capabilityIndexVerb, capabilityCheckVerb, capabilityMergeVerb, decisionCheckVerb, decisionIndexVerb, roadmapCheckVerb, roadmapPublishVerb, idNextVerb, idClaimVerb, estimationLogVerb, initVerb, upgradeVerb, mergeVerb, sessionTokensVerb, watchSubagentVerb, watchCommandVerb, hookSessionStartVerb, hookSessionEndVerb, workspaceVerb, taskStartVerb, taskDoneVerb, taskBriefVerb, reviewPackageVerb, ledgerRulingsVerb, validationServeVerb, lockRunVerb];

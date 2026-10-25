@@ -44,6 +44,17 @@ function launchSpec(path: string, args: string[]): { file: string; args: string[
   return isScript ? windowsScriptCall(path, args) : { file: path, args };
 }
 
+export function runInherited(command: string[], cwd: string): Promise<number> {
+  const resolved = resolveCommand(command[0]);
+  if (resolved === null) return Promise.resolve(COMMAND_NOT_FOUND);
+  const { file, args } = launchSpec(resolved, command.slice(1));
+  return new Promise<number>((done) => {
+    const child = spawn(file, args, { cwd, stdio: 'inherit', windowsHide: true, windowsVerbatimArguments: file !== resolved });
+    child.on('error', () => done(COMMAND_NOT_FOUND));
+    child.on('close', (code) => done(code ?? 1));
+  });
+}
+
 export async function runToLog(command: string[], log: string): Promise<number> {
   writeFileSync(log, '');
   const resolved = resolveCommand(command[0]);
