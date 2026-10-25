@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-25
 branch: feature/0217-pester-git-env-anatomy
-commit: <hash>
+commit: 9ef30369
 ---
 
 # Patch 0217 — los tests Pester que llaman a git limpian las variables de git, y un test de anatomía lo comprueba
@@ -50,11 +50,22 @@ Contraste de las dos lecturas:
 | 1 | RED: el test de anatomía sobre el árbol actual | 9/1: señala `TempDir.Tests.ps1` y `VerifySkill.Tests.ps1`; los casos de fixture (`git init` y `git -C` sin `Clear-GitEnv` fallan, con `Clear-GitEnv` en el `BeforeAll` pasa, lectura de la raíz y texto no cuentan) en verde |
 | 2 | GREEN: `Invoke-Pester tests/Clear-GitEnv.Tests.ps1, tests/VerifySkill.Tests.ps1` | 10/0 · 41/0 |
 | 3 | `pwsh -File tests/Invoke-KitTests.ps1` con `GIT_DIR` y `GIT_INDEX_FILE` en un repo señuelo del scratchpad; `git config core.bare` del kit después | 1ª pasada 1373/2: `Hook.Tests.ps1` «es ejecutable en git» leía el señuelo con `git -C $script:KitRoot` (ver abajo) y `FastSuiteBudget`. Tras limpiar en `Hook.Tests.ps1`: 1374/1, solo `FastSuiteBudget` (48,4 s frente a 30 s, CPU al 79 % con otras sesiones: fila de deuda «`FastSuiteBudget` falla con la máquina cargada»; el test nuevo suma 1,2 s). `core.bare` del kit y del señuelo: `false` |
-| 4 | Commit del fix con el pre-commit activo (`git config core.hooksPath` → `.githooks`) | |
+| 4 | Commit del fix con el pre-commit activo (`git config core.hooksPath` → `.githooks`) | `kit:test-fast` 1289/0 · `core.bare` del kit después: `false` |
 
 La excepción de la raíz del kit supone que el `GIT_DIR` heredado es el del propio kit, como en su pre-commit. El señuelo lo desmiente: `Hook.Tests.ps1:33-34` leyó el repo señuelo y falló. Por eso `Hook.Tests.ps1` también limpia las variables en su `BeforeAll`. La excepción se queda para las lecturas de la raíz que no comprueban nada del repo, como `SubjectOutputPrivacy.Tests.ps1`, que pasó con el señuelo.
+
+Gate de cierre (`moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`), tres pasadas sobre `bd2f78e2`; el PC se colgó durante dos de ellas, con la CPU al 70-80 % por otras sesiones:
+
+- 1ª: `cli:test` 1164/1164; `kit:test` en rojo en `FastSuiteBudget`. El cuelgue cortó la salida.
+- 2ª: `kit:test` 1373/2, con `FastSuiteBudget` (55,6 s) y el `SUBJECT_TIMEOUT` de `HeadlessLauncher` (41,5 s frente a un tope de 40 s). Sin la rama, en `74607f4d`: `FastSuiteBudget` falla también (38,3 s), y `SUBJECT_TIMEOUT` pasa con 24,9 s. Ninguno de los dos ficheros cambia en la rama.
+- 3ª, tras el segundo cuelgue y con la orden del dev-lead de repetir el gate: `cli:test` 1164/1164; `kit:test` 1374/1. Los dos rojos de tiempo pasan, y sale «acepta RUNS_DIR bajo .temp/ del repo», determinista y ajeno a la rama: Git Bash montó `/tmp` sobre `.temp/` de este worktree. Va a una fila de deuda nueva, «`lib.sh` rechaza un `RUNS_DIR` bajo `.temp/`…».
+
+Validación en campo: 2026-10-25 · RED 9/1 → GREEN 10/0 en `tests/Clear-GitEnv.Tests.ps1` · suite con `GIT_DIR` señuelo 1374/1 (`FastSuiteBudget` por carga, deuda conocida) y `core.bare` en `false` · pre-commit 1289/0 · no probado: un `tests/*.Tests.ps1` nuevo con `git init` sin `Clear-GitEnv` commiteado de verdad (lo cubre la fixture)
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h
 - Inicio: 2026-10-25T16:02Z
+- Esfuerzo real: 0,75 h — reloj de la sesión 0,75 h desde 2026-10-25T16:00Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: +50 %, por dos pasadas de la suite completa con el repo señuelo (~10 min cada una, con la máquina cargada por otras sesiones); la segunda la pidió el rojo de `Hook.Tests.ps1`
+- Coste de sujetos: no aplica
