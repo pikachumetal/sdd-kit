@@ -6,9 +6,19 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
+// Una línea que no parsea no tumba el extractor: en la 0168 dejó texts.txt a medias (walkthrough de la feature 0168 §5).
+const readStream = (path) =>
+  readFileSync(path, 'utf8').split(/\r?\n/).map((line, i) => ({ line, n: i + 1 })).filter(({ line }) => line.trim()).map(({ line, n }) => {
+    try {
+      return { n, event: JSON.parse(line) };
+    } catch (error) {
+      return { n, length: line.length, error: error.message };
+    }
+  });
+
 const [mode, ...rest] = process.argv.slice(2);
 if (mode === 'last') {
-  const results = readFileSync(rest[0], 'utf8').split('\n').filter((line) => line.trim()).map((line) => JSON.parse(line)).filter((event) => event.type === 'result');
+  const results = readStream(rest[0]).map(({ event }) => event).filter((event) => event?.type === 'result');
   process.stdout.write(results.at(-1)?.result ?? '');
   process.exit(0);
 }
@@ -78,9 +88,11 @@ const resultText = (block) => (Array.isArray(block.content) ? block.content.map(
 
 const lines = [];
 let turn = 0;
-for (const line of readFileSync(streamPath, 'utf8').split('\n')) {
-  if (!line.trim()) continue;
-  const event = JSON.parse(line);
+for (const { n, event, length, error } of readStream(streamPath)) {
+  if (!event) {
+    lines.push(`!!! línea ${n} del stream sin parsear (${length} caracteres): ${clean(error)}`);
+    continue;
+  }
   if (mode === 'texts') {
     if (event.type !== 'assistant') continue;
     turn += 1;

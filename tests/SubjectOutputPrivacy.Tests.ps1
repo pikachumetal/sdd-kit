@@ -177,6 +177,33 @@ Describe 'El lanzador de sujetos oculta el home y el usuario' -Tag 'Slow' {
     $leak.Output | Should -Not -Match 'alice@example\.org'
   }
 
+  It 'extract.mjs <Mode> salta una línea sin parsear y sigue (walkthrough de la feature 0168 §5)' -ForEach @(@{ Mode = 'tools'; Kept = '>>> Bash: ls' }, @{ Mode = 'texts'; Kept = '--- \[1\]' }) {
+    $stream = Join-Path $TestDrive "broken-$Mode.jsonl"
+    $broken = '{"type":"assistant","message":{"content":[{"type":"text","text":"a"'
+    $valid = @(
+      '{"type":"assistant","message":{"content":[{"type":"text","text":"antes"},{"type":"tool_use","name":"Bash","input":{"command":"ls"}}]}}'
+      $broken
+      '{"type":"result","num_turns":2,"total_cost_usd":0.3,"result":"después"}'
+    )
+    Set-Content -LiteralPath $stream -Value $valid -Encoding utf8NoBOM
+
+    $run = Invoke-ToolsExit @($Mode, $stream, '/c/runs/x')
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $run.Output | Should -Match "!!! línea 2 del stream sin parsear \($($broken.Length) caracteres\): "
+    $run.Output | Should -Match $Kept
+  }
+
+  It 'extract.mjs last salta una línea sin parsear' {
+    $stream = Join-Path $TestDrive 'broken-last.jsonl'
+    Set-Content -LiteralPath $stream -Encoding utf8NoBOM -Value @('{"type":"result","result":"¿seguimos?"}', '{"type":"assistant","message":')
+
+    $run = Invoke-ToolsExit @('last', $stream)
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    $run.Output | Should -Be '¿seguimos?'
+  }
+
   It 'extract.mjs falla con el user.name de la máquina aunque lleve tilde' {
     $leak = Invoke-WithGitUser 'Àlice Liddell' { Invoke-ToolsExit @('clean', '/c/runs/x') 'aprobada por Àlice Liddell' }
 

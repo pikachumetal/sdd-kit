@@ -125,6 +125,27 @@ Describe 'Veredicto de una batería (tests/headless/battery.mjs)' -Tag 'Slow' {
     $run.Output | Should -Match 'd1 · 1/2 · umbral 1/2 · rojo · faltan 1'
   }
 
+  It 'verdict da por buena cualquier skill con «cualquiera», pero no un sujeto sin terminar (ticket de la feature 0165)' {
+    $table = Join-Path $TestDrive 'any.md'
+    Set-Content -LiteralPath $table -Encoding utf8 -Value @'
+| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| a1 | brief | Implementa la Task 1. | reservas | `cualquiera` | 2 | 2/2 | sonnet | toy |
+| a2 | brief | Implementa la Task 1. | reservas | `cualquiera` | 2 | 2/2 | sonnet | toy |
+'@
+    $out = Join-Path $TestDrive 'any-out'
+    New-Item -ItemType Directory -Force $out | Out-Null
+    Set-FinishedTools (Join-Path $out 'a1-1.tools.txt') ">>> Skill: sdd-kit:sdd-tdd"
+    Set-FinishedTools (Join-Path $out 'a1-2.tools.txt') ">>> Edit: src/informe.js"
+    Set-FinishedTools (Join-Path $out 'a2-1.tools.txt') ">>> Skill: sdd-kit:sdd-tdd"
+    Set-Content (Join-Path $out 'a2-2.tools.txt') '>>> Read: README.md'
+
+    $run = Invoke-Verdict $table $out
+
+    $run.Output | Should -Match 'a1 · 2/2 · umbral 2/2 · verde'
+    $run.Output | Should -Match 'a2 · 1/2 · umbral 2/2 · rojo · faltan 1'
+  }
+
   It 'verdict cuenta como faltan los sujetos que no terminaron, sin RESULTADO' {
     $out = Join-Path $TestDrive 'cut-out'
     New-Item -ItemType Directory -Force $out | Out-Null
