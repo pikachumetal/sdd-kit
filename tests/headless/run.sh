@@ -5,9 +5,9 @@
 #      SUBJECT_CAP=<sujetos> COST_CAP=<$> [SUBJECT_COST=<$>] [MAX_PARALLEL=<n>] bash tests/headless/run.sh
 # SUBJECT_CAP y COST_CAP son los de la previsión de la spec y cuentan todas las fases de SPEC_DIR.
 # Con DRY_RUN=1 las salidas van a RUNS_DIR/dry/<fase>/out y los techos cuentan solo las de RUNS_DIR/dry.
-# Cada sujeto lanzado deja su PID en RUNS_DIR/live/<fase>.<etiqueta> mientras corre: con el proceso vivo está en curso,
+# Cada sujeto lanzado deja su PID en RUNS_DIR/live/<fase>.<etiqueta> (en seco, RUNS_DIR/dry/live/) mientras corre: con el proceso vivo está en curso,
 # y si muere sin dejar <etiqueta>.tools.txt queda cortado y cuenta como sujeto y como SUBJECT_COST.
-# Por escenario: no lanza una etiqueta que ya tiene tools.txt en su fase («ya existe <etiqueta>: sube SUBJECT»);
+# Por escenario: no lanza una etiqueta que ya tiene tools.txt en su fase o está en curso («ya existe <etiqueta>: sube SUBJECT»);
 # espera mientras haya MAX_PARALLEL (5) sujetos en curso bajo RUNS_DIR, de esta fase o de otra; y no lanza más
 # si existe RUNS_DIR/stop («parada a petición»), si se llega a SUBJECT_CAP o si lo gastado más
 # (en curso + 1) × SUBJECT_COST (COST_CAP / SUBJECT_CAP) pasa de COST_CAP.
@@ -25,25 +25,34 @@ RUNS="${RUNS_DIR:?define RUNS_DIR (scratchpad)}"
 case "$(cygpath -u "$RUNS" 2>/dev/null || echo "$RUNS")" in *scratchpad*|"$REPO_ROOT"/.temp/*) ;; *) echo "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS" >&2; exit 1 ;; esac
 ROOT="$(campaign_root)"
 OUT="$ROOT/${PHASE:-red}/out"
-LIVE="$RUNS/live"
-SUBJECT_COST="${SUBJECT_COST:-$(awk -v c="$COST_CAP" -v n="$SUBJECT_CAP" 'BEGIN { print c / n }')}"
+positive_int() { case "$2" in ''|*[!0-9]*|0) echo "$1 tiene que ser un entero positivo: $2" >&2; exit 1 ;; esac; }
 MAX_PARALLEL="${MAX_PARALLEL:-5}"
-mkdir -p "$LIVE"
+positive_int MAX_PARALLEL "$MAX_PARALLEL"; positive_int SUBJECT_CAP "$SUBJECT_CAP"
+SUBJECT_COST="${SUBJECT_COST:-$(awk -v c="$COST_CAP" -v n="$SUBJECT_CAP" 'BEGIN { print c / n }')}"
+# Las marcas del seco van con sus salidas: un sujeto real cortado no cuenta en un ensayo en seco, ni al revés.
+LIVE="$RUNS/live"; OTHER_LIVE="$RUNS/dry/live"; LOCK="$RUNS/live/.lock"
+[ "${DRY_RUN:-}" = 1 ] && { LIVE="$RUNS/dry/live"; OTHER_LIVE="$RUNS/live"; }
+mkdir -p "$LIVE" "$OTHER_LIVE"
 
 # En Git Bash cada proceso tarda: con la máquina cargada, un bucle de subshells tardaba más en lanzar que un sujeto en correr.
 # Por eso el recuento usa builtins y deja el resultado en variables.
 count_finished() { local files=("$ROOT"/*/out/*.tools.txt); FINISHED=0; [ -f "${files[0]}" ] && FINISHED=${#files[@]}; }
 
-# Se mira tools.txt antes que el PID: un sujeto que acaba de guardar y aún no borró su marca está terminado.
-count_live() {
+subject_saved() { [ -f "$ROOT/${1%%.*}/out/${1#*.}.tools.txt" ]; }
+
+count_live() { RUNNING=0; CUT=0; count_marks "$LIVE" own; count_marks "$OTHER_LIVE" other; }
+
+# En curso cuenta las marcas de los dos modos; cortadas, solo las del propio. Un PID vacío es una marca a medio
+# escribir: en curso. tools.txt se mira antes y después del PID: un sujeto que acaba de guardar no es un cortado.
+count_marks() {
   local mark name pid
-  RUNNING=0; CUT=0
-  for mark in "$LIVE"/*; do
+  for mark in "$1"/*.*; do
+    name="${mark##*/}"; pid=
+    [ "$2" = own ] && subject_saved "$name" && continue
+    read -r pid 2>/dev/null < "$mark"
     [ -f "$mark" ] || continue
-    name="${mark##*/}"
-    [ -f "$ROOT/${name%%.*}/out/${name#*.}.tools.txt" ] && continue
-    read -r pid < "$mark"
-    if kill -0 "$pid" 2>/dev/null; then RUNNING=$((RUNNING + 1)); else CUT=$((CUT + 1)); fi
+    if [ -z "$pid" ] || kill -0 "$pid" 2>/dev/null; then RUNNING=$((RUNNING + 1))
+    elif [ "$2" = own ] && ! subject_saved "$name"; then CUT=$((CUT + 1)); fi
   done
 }
 
@@ -71,16 +80,20 @@ folder_report() {
 stop_requested() { [ -f "$RUNS/stop" ] && echo "parada a petición"; }
 
 # Dos run.sh que miraban a la vez los sujetos en curso lanzaban los dos: mkdir es atómico y guarda el cupo
-# hasta que la marca existe. Un cerrojo cuyo dueño ya no vive se rompe.
+# hasta que la marca existe. Un cerrojo abandonado se rompe con mv, que solo gana uno de los que esperan.
 take_launch_lock() {
-  local holder
-  until mkdir "$LIVE/.lock" 2>/dev/null; do
-    read -r holder < "$LIVE/.lock/pid" 2>/dev/null && ! kill -0 "$holder" 2>/dev/null && rm -rf "$LIVE/.lock"
+  local holder tries=0
+  until mkdir "$LOCK" 2>/dev/null; do
+    holder=; read -r holder 2>/dev/null < "$LOCK/pid"
+    tries=$((tries + 1))
+    lock_abandoned "$holder" "$tries" && { mv "$LOCK" "$LOCK-$$" 2>/dev/null && rm -rf "$LOCK-$$"; tries=0; }
     sleep 1
   done
-  echo $$ > "$LIVE/.lock/pid"
+  echo $$ > "$LOCK/pid"
 }
-release_launch_lock() { rm -rf "$LIVE/.lock"; }
+# Sin PID tras 10 intentos, su dueño murió entre el mkdir y escribirlo.
+lock_abandoned() { if [ -n "$1" ]; then ! kill -0 "$1" 2>/dev/null; else [ "$2" -ge 10 ]; fi; }
+release_launch_lock() { rm -rf "$LOCK"; }
 
 wait_for_slot() {
   local announced=
@@ -111,14 +124,20 @@ launch_subject() {
   pids+=($!)
 }
 
+label_taken() {
+  local pid=
+  [ -f "$OUT/$1.tools.txt" ] && return 0
+  read -r pid 2>/dev/null < "$LIVE/${PHASE:-red}.$1" && kill -0 "$pid" 2>/dev/null
+}
+
 pids=()
 for sc in $SCENARIOS; do
   stop_requested && break
   label="$sc-${SUBJECT:-1}"
-  [ -f "$OUT/$label.tools.txt" ] && { echo "ya existe $label: sube SUBJECT"; continue; }
+  if label_taken "$label"; then echo "ya existe $label: sube SUBJECT"; continue; fi
   take_launch_lock
   wait_for_slot
-  stop_requested || subject_cap_reached || cost_cap_reached && { release_launch_lock; break; }
+  if stop_requested || subject_cap_reached || cost_cap_reached; then release_launch_lock; break; fi
   launch_subject "$sc" "$label"
   release_launch_lock
 done

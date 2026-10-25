@@ -13,6 +13,17 @@ TABLE="$DIR/battery.md"
 
 # shellcheck disable=SC2086
 PLAN=$("$NODE" "$HEADLESS/battery.mjs" plan "$TABLE" ${STEPS:-}) || exit $?
+OUT="$(campaign_root)/${PHASE:-red}/out"
+
+# battery.sh numera SUBJECT por su cuenta: con una etiqueta ya guardada, run.sh la saltaría y el veredicto sería el viejo.
+saved_label() {
+  local id n i
+  while read -r id _ n; do
+    for i in $(seq 1 "$n"); do [ -f "$OUT/$id-$i.tools.txt" ] && { echo "$id-$i"; return 0; }; done
+  done <<< "$PLAN"
+  return 1
+}
+if label=$(saved_label); then echo "ya existe $label en $OUT: borra esa carpeta o cambia PHASE" >&2; exit 1; fi
 
 launch_index() {
   local model ids
@@ -27,4 +38,4 @@ max_n=$(echo "$PLAN" | awk '$3 > m { m = $3 } END { print m + 0 }')
 for index in $(seq 1 "$max_n"); do launch_index; done
 
 # shellcheck disable=SC2086
-"$NODE" "$HEADLESS/battery.mjs" verdict "$TABLE" "$(campaign_root)/${PHASE:-red}/out" ${STEPS:-}
+"$NODE" "$HEADLESS/battery.mjs" verdict "$TABLE" "$OUT" ${STEPS:-}

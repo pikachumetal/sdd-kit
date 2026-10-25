@@ -19,7 +19,6 @@
 # DRY_RESULT (texto del result en seco; con «?», subject_converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
 # KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre).
-# El sujeto no puede lanzar su propio claude: su PATH empieza por no-claude/, que lo rechaza.
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
 NODE="${NODE:-node}"
@@ -47,7 +46,7 @@ subject_init() {
   # Una carpeta por fase: dos fases a la vez con el mismo RUNS_DIR se borraban el molde (ticket del patch 0082 §1).
   RUNS="$(cd "$RUNS" && pwd)/${PHASE:-red}"
   # subject_launch hace cd al molde: un OUT relativo perdía las salidas (tickets 0077 §2 y 0064 §1).
-  OUT="$(cd "$OUT" && pwd)"
+  OUT="$(cd "$OUT" && pwd)"; VERSIONED_OUT="$(versioned_out)"
   RUN="$RUNS/$LABEL"; R="$RUN/${MOLD_NAME:-repo}"
   rm -rf "$RUN"; mkdir -p "$R"; MOLD_IS_REPO=; trap subject_cleanup EXIT
   JSONL="$RUNS/$LABEL.jsonl"
@@ -201,10 +200,16 @@ build_claude_args() {
   CLAUDE_ARGS+=(--max-turns "${MAX_TURNS:-60}" --output-format stream-json --verbose)
 }
 
+# En seco la salida va al scratchpad, que puede colgar del repo con una ruta larga: se mide la que tendría en SPEC_DIR.
+versioned_out() {
+  if [ "${DRY_RUN:-}" = 1 ] && [ -d "${SPEC_DIR:-}" ]; then echo "$(cd "$SPEC_DIR" && pwd)/${PHASE:-red}/out"; else echo "$OUT"; fi
+}
+
 # Ruta de salida comprobada: dentro del repo, relativa y por debajo de MAX_PATH.
 out_path() {
-  local rel="${1#"$REPO_ROOT"/}"
-  [ "$rel" != "$1" ] && [ ${#rel} -ge $MAX_PATH ] && die "ruta de ${#rel} caracteres (máximo $((MAX_PATH - 1))): $rel"
+  local versioned="${VERSIONED_OUT:-$OUT}/${1#"$OUT"/}" rel
+  rel="${versioned#"$REPO_ROOT"/}"
+  [ "$rel" != "$versioned" ] && [ ${#rel} -ge $MAX_PATH ] && die "ruta de ${#rel} caracteres (máximo $((MAX_PATH - 1))): $rel"
   echo "$1"
 }
 
