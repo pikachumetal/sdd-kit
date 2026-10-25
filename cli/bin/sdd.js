@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { fileURLToPath } from 'node:url';
 import { runSessionStart } from './session-start.js';
+import { runSessionEnd } from './session-end.js';
 import { nodeVersionProblem } from './node-version.js';
 
 const args = process.argv.slice(2);
@@ -8,6 +9,8 @@ const problem = nodeVersionProblem(process.versions.node);
 
 if (args[0] === 'hook' && args[1] === 'session-start') {
   process.exitCode = runSessionStart(fileURLToPath(new URL('../..', import.meta.url)));
+} else if (args[0] === 'hook' && args[1] === 'session-end') {
+  process.exitCode = runSessionEnd();
 } else if (problem) {
   process.stderr.write(`${problem}\n`);
   process.exitCode = 2;

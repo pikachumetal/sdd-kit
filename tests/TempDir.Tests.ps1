@@ -1,6 +1,11 @@
 BeforeAll {
   . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
   $script:TempRoot = Join-Path (Split-Path $PSScriptRoot) '.temp'
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'La carpeta temporal de los Pester del kit' {
@@ -9,12 +14,8 @@ Describe 'La carpeta temporal de los Pester del kit' {
   }
 
   It 'git no sube del TestDrive al repo del kit' {
-    $saved = Clear-GitEnv
-    try {
-      git -C $TestDrive rev-parse --show-toplevel 2>$null
-      $LASTEXITCODE | Should -Not -Be 0
-    }
-    finally { Restore-GitEnv $saved }
+    git -C $TestDrive rev-parse --show-toplevel 2>$null
+    $LASTEXITCODE | Should -Not -Be 0
   }
 }
 
