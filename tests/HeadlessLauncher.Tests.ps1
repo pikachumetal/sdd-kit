@@ -229,6 +229,19 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     (Get-Subjects $campaign).Count | Should -Be 2
   }
 
+  It 'el sujeto no puede lanzar su propio claude: su coste no lo vería run.sh (walkthrough de la feature 0173)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'nested-claude')
+    $log = Join-Path $TestDrive 'nested.log'
+    # La guarda evita que, sin el bloqueo, el claude falso se llame a sí mismo sin fin.
+    $nested = '[ -n "${FAKE_NESTED:-}" ] && { echo "claude sin bloquear"; exit 0; }; export FAKE_NESTED=1; claude --version > "$NESTED_LOG" 2>&1; echo "rc=$?" >> "$NESTED_LOG"'
+    $bin = New-FakeClaude 'nested' $nested
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; DRY_RUN = $null; PATH = "$bin;$env:PATH"; NESTED_LOG = $log }
+
+    Get-Content -Raw $log | Should -Match 'claude anidado bloqueado en un sujeto: run\.sh no ve su coste' -Because $run.Output
+    Get-Content -Raw $log | Should -Match 'rc=1'
+  }
+
   It 'aborta si SETTINGS no deshabilita el kit instalado' {
     $campaign = New-Campaign (Join-Path $TestDrive 'settings')
 

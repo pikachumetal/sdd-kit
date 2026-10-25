@@ -19,6 +19,7 @@
 # DRY_RESULT (texto del result en seco; con «?», subject_converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
 # DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
 # KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre).
+# El sujeto no puede lanzar su propio claude: su PATH empieza por no-claude/, que lo rechaza.
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
 NODE="${NODE:-node}"
@@ -111,8 +112,11 @@ subject_launch() {
 
 # Sin < /dev/null, un aviso de stdin precede al JSON.
 # timeout no ejecuta builtins: con `timeout 720 command claude` no arranca ningún sujeto.
+# El sujeto ve primero no-claude/: un claude que lance él no gasta fuera de lo que cuenta run.sh.
 run_claude() {
-  timeout "${SUBJECT_TIMEOUT:-0}" "$(type -P claude)" "${CLAUDE_ARGS[@]}" "$@" < /dev/null 2>> "$RUNS/$LABEL.err"
+  local claude
+  claude="$(type -P claude)"
+  PATH="$HEADLESS/no-claude:$PATH" timeout "${SUBJECT_TIMEOUT:-0}" "$claude" "${CLAUDE_ARGS[@]}" "$@" < /dev/null 2>> "$RUNS/$LABEL.err"
   local rc=$?
   [ $rc -eq 124 ] && echo "[$LABEL] tope de $SUBJECT_TIMEOUT s: sujeto cortado" >&2
   return $rc
