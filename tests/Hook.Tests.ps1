@@ -1,6 +1,13 @@
 BeforeAll {
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
   $script:HooksDir = Join-Path $script:KitRoot 'hooks'
+  # Con un GIT_DIR heredado que no es el del kit, git -C $script:KitRoot leería ese otro repo.
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'hooks/hooks.json' {
