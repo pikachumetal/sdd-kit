@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-25
 branch: feature/0218-cross-worktree-test-lock
-commit: <hash>
+commit: 52aded80
 ---
 
 # Patch 0218 — las suites lentas de varios worktrees del clon no corren a la vez
@@ -54,7 +54,8 @@ Validación en campo: 2026-10-25 · RED/GREEN de `run.slow.test.ts` 2/2 · gate 
 
 - Estimación: 1,5 h
 - Inicio: 2026-10-25T20:35Z
-- Esfuerzo real: <pendiente>
+- Esfuerzo real: 0,45 h — reloj de la sesión 0,45 h desde 2026-10-25T20:33Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: −70 %. La estimación contaba con un gate de cierre de ~25 min y dos pasadas; corrió una sola en 17 min, y el fix fueron 40 líneas que reutilizan `withLock` y el lanzador de `sdd task done`
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
@@ -62,7 +63,7 @@ Validación en campo: 2026-10-25 · RED/GREEN de `run.slow.test.ts` 2/2 · gate 
 ### Capacidad: `cli`
 
 **ADDED — `sdd lock run` corre un comando con el cerrojo de las suites del clon**
-- GIVEN un worktree del clon con `sdd lock run -- <comando>` en marcha
-- WHEN otro worktree del mismo clon lanza `sdd lock run -- <comando>`
-- THEN el segundo escribe «Esperando el cerrojo de suites: lo tiene <rama> (<worktree>, PID <n>) desde <fecha>.» y no arranca su comando hasta que acaba el primero
+- GIVEN el worktree de `feature/0210` con `sdd lock run -- pnpm exec vitest run slow.test` en marcha desde las 19:30:00 del 2026-10-25
+- WHEN otro worktree del mismo clon lanza `sdd lock run -- pwsh -NoProfile -File tests/Invoke-KitTests.ps1`
+- THEN el segundo escribe «Esperando el cerrojo de suites: lo tiene feature/0210 (D:\code\sdd-kit-0210, PID 4120) desde 2026-10-25 19:30:00.» y no arranca su comando hasta que acaba el primero
 - AND `sdd lock run` sale con el código del comando
