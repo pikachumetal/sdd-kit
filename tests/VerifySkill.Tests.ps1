@@ -1,5 +1,8 @@
 BeforeAll {
   $script:RepoRoot = if ($env:SDD_KIT_ROOT) { Resolve-Path $env:SDD_KIT_ROOT } else { Resolve-Path (Join-Path $PSScriptRoot '..') }
+  # Desde un hook, GIT_DIR gana a git -C: la lectura del clon de wondelai leería el repo del kit.
+  . (Join-Path $PSScriptRoot 'Clear-GitEnv.ps1')
+  $script:SavedGitEnv = Clear-GitEnv
 
   function Get-KitFile([string]$RelativePath) {
     $path = Join-Path $script:RepoRoot $RelativePath
@@ -8,6 +11,10 @@ BeforeAll {
   }
 
   $script:Skill = Get-KitFile 'skills/sdd-verify/SKILL.md'
+}
+
+AfterAll {
+  Restore-GitEnv $script:SavedGitEnv
 }
 
 Describe 'sdd-verify' {
