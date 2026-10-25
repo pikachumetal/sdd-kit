@@ -181,6 +181,65 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     (Get-Subjects $campaign).Count | Should -Be 0
   }
 
+  It 'el SETTINGS por defecto carga deny-kill.mjs (walkthrough de la feature 0168 §5)' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'deny-default')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.args') | Should -Match 'tests/headless/deny-kill\.mjs'
+  }
+
+  It 'aborta si SETTINGS no carga deny-kill.mjs' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'deny-missing')
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SETTINGS = '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' }
+
+    $run.Output | Should -Match 'SETTINGS sin el hook deny-kill\.mjs: añade \$DENY_KILL_HOOK a sus PreToolUse'
+    (Get-Subjects $campaign).Count | Should -Be 0
+  }
+
+  It 'acepta un SETTINGS propio que lleva el hook' {
+    $campaign = New-Campaign (Join-Path $TestDrive 'deny-own')
+    $hook = (Join-Path $script:Headless 'deny-kill.mjs') -replace '\\', '/'
+    $settings = '{"enabledPlugins":{"sdd-kit@sdd-kit":false},"hooks":{"PreToolUse":[{"matcher":"Edit","hooks":[{"type":"command","command":"node other.mjs"}]},{"matcher":"Bash|PowerShell","hooks":[{"type":"command","command":"node \"' + $hook + '\""}]}]}}'
+
+    $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a'; SETTINGS = $settings }
+
+    $run.ExitCode | Should -Be 0 -Because $run.Output
+    (Get-Subjects $campaign).Count | Should -Be 1
+  }
+
+  It 'para al acabar lo que escucha en los puertos del sujeto (ticket de la feature 0036 §3)' {
+    $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+    $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
+    $script = Join-Path $TestDrive 'server.mjs'
+    Set-Content -LiteralPath $script -Value "import { createServer } from 'node:http'; createServer().listen(Number(process.argv[2]));"
+    $server = "PORT=$port; `"`$NODE`" '$($script -replace '\\', '/')' `"`$PORT`" & sleep 2; "
+    $campaign = New-Campaign (Join-Path $TestDrive 'ports') -Launch ($server + 'subject_launch "x"')
+
+    try {
+      $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+      $run.ExitCode | Should -Be 0 -Because $run.Output
+      Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+      Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') | Should -Match "puertos del sujeto: $port · escuchando al acabar: $port" -Because $run.Output
+    } finally {
+      Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
+    }
+  }
+
+  It 'subject_ports junta PORT y los puertos del stream' {
+    $stream = Join-Path $TestDrive 'ports.jsonl'
+    Set-Content -LiteralPath $stream -Value '{"text":"abre http://localhost:4567 y PORT=5173 npm start; otra vez localhost:4567"}'
+    $lib = (Join-Path $script:Headless 'lib.sh') -replace '\\', '/'
+    $jsonl = $stream -replace '\\', '/'
+
+    $ports = & $script:Bash -c ". '$lib'; JSONL='$jsonl'; PORT=4300; subject_ports"
+
+    $ports | Should -Be '4300,4567,5173'
+  }
+
   It 'no pasa de SUBJECT_CAP sujetos' {
     $campaign = New-Campaign (Join-Path $TestDrive 'cap')
 

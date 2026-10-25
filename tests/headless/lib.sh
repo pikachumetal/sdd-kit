@@ -22,6 +22,8 @@
 HEADLESS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
 NODE="${NODE:-node}"
+# Ruta Windows: node la recibe del hook de Claude Code, no de Git Bash.
+DENY_KILL_HOOK="$(cygpath -m "$HEADLESS/deny-kill.mjs" 2>/dev/null || echo "$HEADLESS/deny-kill.mjs")"
 # La salida versionada de una campaña no pasa de 140 caracteres de ruta relativa (PathLength.Tests.ps1).
 MAX_PATH=140
 
@@ -62,8 +64,23 @@ mold_is_repo() {
 # El molde y la carpeta que Claude Code crea para su cwd pesan; el stream y las salidas ya están guardados.
 subject_cleanup() {
   [ -n "${LABEL:-}" ] && [ "${RUN#"$RUNS"/}" != "$RUN" ] || { echo "[${LABEL:-sujeto}] no se borra $RUN: fuera de $RUNS o sin etiqueta" >&2; return 0; }
+  stop_subject_ports
   remove_claude_folder
   [ "${KEEP_MOLD:-}" = 1 ] || rm -rf "$RUN"
+}
+
+# Un sujeto web arranca en el puerto que elige, no en el del molde: 5 de 6 en la 0036 (ticket de la feature 0036 §3).
+subject_ports() {
+  { [ -n "${PORT:-}" ] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | sort -un | paste -sd, -
+}
+
+# Por el PID que escucha en el puerto, nunca por nombre: en la máquina corren los servidores y los MCP de otras sesiones.
+stop_subject_ports() {
+  local ports listening
+  ports=$(subject_ports)
+  [ -n "$ports" ] || return 0
+  listening=$(pwsh -NoProfile -Command "\$c = @(Get-NetTCPConnection -LocalPort $ports -State Listen -ErrorAction SilentlyContinue); \$c | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }; (\$c.LocalPort | Sort-Object -Unique) -join ','" 2>/dev/null | tr -d '\r')
+  echo "puertos del sujeto: $ports · escuchando al acabar: ${listening:-ninguno}" >> "$RUNS/$LABEL.err"
 }
 
 # Claude Code nombra la carpeta con la ruta Windows del cwd y cada carácter no alfanumérico como «-».
@@ -86,9 +103,13 @@ subject_launch() {
   # Una petición ejecutada fuera del molde corrió una vez sobre el worktree del kit (2026-09-23).
   case "$(pwd)/" in "$RUNS"/*) ;; *) die "cwd fuera del scratchpad: $(pwd)" ;; esac
   BEFORE=$(g rev-parse --short HEAD 2>/dev/null)
-  local settings="${SETTINGS:-"{\"enabledPlugins\":{\"sdd-kit@sdd-kit\":false}}"}"
+  # Entre comillas simples: dentro de ${SETTINGS:-…}, bash expande las llaves con comas y parte el JSON.
+  local default='{"enabledPlugins":{"sdd-kit@sdd-kit":false},"hooks":{"PreToolUse":[{"matcher":"Bash|PowerShell","hooks":[{"type":"command","command":"node \"'"$DENY_KILL_HOOK"'\""}]}]}}'
+  local settings="${SETTINGS:-$default}"
   # Sin esa clave, el sujeto carga también el kit instalado, y mide la caché en vez de la copia.
   case "$settings" in *'"sdd-kit@sdd-kit":false'*) ;; *) die "SETTINGS sin deshabilitar el kit instalado: $settings" ;; esac
+  # Un sujeto que para node.exe por nombre tumba los MCP de las sesiones de la máquina (walkthrough de la feature 0168 §5).
+  case "$settings" in *deny-kill.mjs*) ;; *) die "SETTINGS sin el hook deny-kill.mjs: añade \$DENY_KILL_HOOK a sus PreToolUse" ;; esac
   build_claude_args "$settings"
   printf '%s\n' "${CLAUDE_ARGS[@]}" "$1" > "$RUNS/$LABEL.args"
   if [ "${DRY_RUN:-}" = 1 ]; then

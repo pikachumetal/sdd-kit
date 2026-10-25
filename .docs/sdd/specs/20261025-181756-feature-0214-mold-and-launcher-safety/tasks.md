@@ -18,14 +18,14 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Hook por defecto y parada por puerto | pending | — | |
+| 1 | Hook por defecto y parada por puerto | done | — | |
 | 2 | Nombre y email reales: fallo, evidencia ampliada y barrido | pending | — | |
 | 3 | Volcado, siembra, copia del kit y rutas largas | pending | — | |
 | 4 | Líneas sin parsear y «cualquiera» | pending | — | |
 
 ## Verificación por task
 
-- [ ] Task 1 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1,tests/DenyKillHook.Tests.ps1 -CI`
+- [x] Task 1 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1,tests/DenyKillHook.Tests.ps1 -CI`
 - [ ] Task 2 — `Invoke-Pester -Path tests/SubjectOutputPrivacy.Tests.ps1,tests/HeadlessLauncher.Tests.ps1 -CI`
 - [ ] Task 3 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1 -CI`
 - [ ] Task 4 — `Invoke-Pester -Path tests/SubjectOutputPrivacy.Tests.ps1,tests/Battery.Tests.ps1 -CI`

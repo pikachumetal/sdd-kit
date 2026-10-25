@@ -95,6 +95,16 @@ Todo se añade a `tests/headless/` (`lib.sh`, `extract.mjs`, `battery.mjs`, `den
 - Términos resueltos: ninguno
 - ADR candidatas: ninguna
 
+## Topes de palabras
+
+| Fichero | Medido / tope | Margen | Tope propuesto |
+| --- | --- | --- | --- |
+| `.docs/sdd/tech-stack.md` | 19277 / 19280 | 3 | sin cambio: las líneas que la feature reescribe se aprietan para que el total no pase de 19280 |
+
+## Enmiendas
+
+- 2026-10-25 — se añade «Topes de palabras» (`tech-stack.md`, tope sin cambio) — el repaso de coherencia no vio el tope de `tests/WordBudget.Tests.ps1` y el pre-commit de la Task 1 lo paró; no cambia requisitos, Scope ni «Dónde se prueba» — sin aprobar: ruling de la Task 1, se cuenta en el cierre
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |
