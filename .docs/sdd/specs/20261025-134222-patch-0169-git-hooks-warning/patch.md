@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-25
 branch: feature/0169-git-hooks-warning
-commit:
+commit: f5bc0055
 ---
 
 # Patch 0169 — el arranque de sesión del repo avisa si los hooks de git no están activos
@@ -47,10 +47,16 @@ Lo que da por existente, comprobado: el hook, registrado en `.claude/settings.js
 | 2 | GREEN: `Invoke-Pester tests/KitSessionSource.Tests.ps1` | 24/0 |
 | 3 | Smoke con la invocación del settings (`pwsh -NoProfile -File`): sesión del script en este worktree, con `core.hooksPath` = `.githooks` | sin salida, exit 0 |
 | 4 | Smoke en un repo recién creado, sin `core.hooksPath` y fuera del script | los dos avisos en un `systemMessage`, con `git config core.hooksPath .githooks`; exit 0 |
+| 5 | Commit del fix con el pre-commit activo (`git config core.hooksPath` → `.githooks`, comprobado) | `kit:test-fast` 1284/0 |
+| 6 | Gate de cierre `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` | kit:test 1370/0/12 · cli:test 1164/1164 · cli:test-slow 295/295 · cli:test-min 1459/1459 |
+
+Incidente durante el fix: la primera versión de los tests hacía `git init` sin limpiar las variables de git, y el pre-commit exporta `GIT_DIR`. Dentro del hook ese `git init` reinicializó el repo compartido del kit y dejó `core.bare = true` en su `config`, y el checkout principal dejó de funcionar (`fatal: this operation must be run in a work tree`). Se restauró a `false` en cuanto se vio. El test carga ahora `tests/Clear-GitEnv.ps1` en todo el fichero, y se comprobó con `GIT_DIR` apuntando a un repo señuelo, que siguió sin `bare`.
+
+Validación en campo: 2026-10-25 · RED 18/6 → GREEN 24/0 en `tests/KitSessionSource.Tests.ps1` · smoke del hook 2/2 casos con la invocación de `.claude/settings.json` · gate de cierre en verde · no probado: una sesión interactiva de Claude Code real arrancada en un clon sin `core.hooksPath`
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h
 - Inicio: 2026-10-25T13:42Z
-- Esfuerzo real:
+- Esfuerzo real: 0,42 h — reloj de la sesión 0,42 h desde 2026-10-25T13:41Z, sin 0 min de espera al dev-lead (0 esperas)
 - Coste de sujetos: no aplica
