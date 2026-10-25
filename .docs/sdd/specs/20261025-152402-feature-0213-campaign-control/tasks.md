@@ -19,14 +19,14 @@ created: 2026-10-25
 | 1 | Ensayo en seco fuera de la spec y coste por carpeta | done | — | `run.sh` y `battery.sh` cargan `lib.sh` (`campaign_root`, `REPO_ROOT` con la ruta Windows arreglada) |
 | 2 | Recuento de sujetos: etiqueta existente, techo con lo lanzado, cortados y MAX_PARALLEL | done | — | recuento con builtins; cerrojo `RUNS_DIR/live/.lock` entre lanzadores; `battery.sh` sin `CHUNK` |
 | 3 | `claude` anidado bloqueado en el sujeto | done | — | sujeto real (haiku, 0,0096 $): Bash y PowerShell bloqueados |
-| 4 | Tabla de coste por tipo de sujeto y `tech-stack.md` al día | pending | — | |
+| 4 | Tabla de coste por tipo de sujeto y `tech-stack.md` al día | done | — | 1328 sujetos; `tech-stack.md` 19367 palabras, tope 19663 |
 
 ## Verificación por task
 
 - [x] Task 1 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1, tests/Battery.Tests.ps1 -CI`
 - [x] Task 2 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1, tests/Battery.Tests.ps1 -CI`
 - [x] Task 3 — `Invoke-Pester -Path tests/HeadlessLauncher.Tests.ps1 -CI` y el sujeto real
-- [ ] Task 4 — `Invoke-Pester -Path tests/WordBudget.Tests.ps1 -CI`
+- [x] Task 4 — `Invoke-Pester -Path tests/WordBudget.Tests.ps1 -CI`
 
 ## Fixes adicionales
 
