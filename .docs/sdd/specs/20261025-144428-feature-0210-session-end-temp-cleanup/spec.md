@@ -29,12 +29,11 @@ Lite: sin review de spec; la pasada de coherencia la he hecho yo (literales del 
 3. **Plazo interno de 1 s**: tras 1 s desde que arranca, el verbo no empieza a borrar ninguna sesión más; las que quedan caen en el siguiente cierre. Si Claude Code lo mata a media sesión, queda el borrado parcial, que es lo tolerado.
 4. **La base es una sola**: `CLAUDE_CODE_TMPDIR` si viene con valor, y si no `os.tmpdir()` (`%TEMP%` en Windows). Una sesión de `Start-KitSession.ps1` limpia `.temp/claude/`, no lo que dejaran en `%TEMP%` sesiones anteriores sin script. `Clear-ClaudeTemp.ps1` recorre las dos; el enunciado dice «o».
 5. **La carpeta del proyecto sale de `CLAUDE_PROJECT_DIR`** y, sin ella, del `cwd` del JSON de stdin: es la raíz del proyecto, no el directorio al que se haya movido la sesión.
-6. **Rutas largas**: la regla de `~/.claude/projects` recorta los nombres de más de 200 caracteres y les añade un hash que no se puede reproducir desde Node. Lo mido con un sujeto headless Haiku (~0,03 $) lanzado en una ruta de más de 200 caracteres con `CLAUDE_CODE_TMPDIR` en el scratchpad. Si recorta así, el verbo busca en `<base>/claude/` las carpetas que empiezan por los 200 primeros caracteres seguidos de `-`: con una sola, esa es; con dos o más, guarda que falla. Si la medida da otra regla, es un desvío y paro.
+6. **Rutas largas** *(enmienda 2026-10-25)*: medido con un sujeto headless Haiku en una ruta de 231 caracteres con `CLAUDE_CODE_TMPDIR` en el scratchpad: un nombre de más de 200 caracteres se recorta a 200 y gana `-` y el hash djb2 de la ruta original (`h = (h << 5) - h + código`, entero de 32 bits, valor absoluto en base 36); la ruta medida da `…-scratchpad-probe-aaa-bjejxf`, igual en `<base>/claude/` y en `~/.claude/projects`, y el cálculo en Node da `bjejxf`. El verbo calcula el nombre exacto, sin buscar por prefijo. Windows no deja lanzar un proceso con un `cwd` de más de 259 caracteres (`The directory name is invalid`, medido con 261), así que el recorte solo se da entre 201 y 259.
 7. **Guardas** (si falla una, no borra nada y escribe en stderr `sdd-kit: no borro los temporales de Claude Code: <motivo>`, sale con 0):
    - `session_id` ausente, vacío o con algo que no sea letra, cifra o `-` → `sin session_id válido en la entrada del hook`; un stdin que no es JSON cae aquí.
    - La base no es absoluta → `<base> no es una ruta absoluta`.
    - El nombre de la carpeta del proyecto sale vacío → `no sale el nombre de la carpeta del proyecto de <ruta>`.
-   - Ruta larga con dos o más candidatas → `<n> carpetas de proyecto posibles en <base>/claude para <ruta>`.
    - Que la carpeta del proyecto no exista no es una guarda: no hay nada que borrar, sale en silencio.
 8. **Qué es una sesión borrable**: cada subcarpeta directa de la del proyecto que no sea un enlace simbólico ni un junction, con nombre distinto del `session_id`, cuya escritura más reciente (el `mtime` mayor de sus ficheros, recursivo, sin seguir enlaces; sin ficheros, el de la propia carpeta, como `Clear-ClaudeTemp.ps1`) tiene más de 24 h. Los ficheros sueltos de la carpeta del proyecto no se tocan.
 9. **La carpeta del proyecto no se borra aunque quede vacía**: queda fuera de «solo dentro de», y otra sesión puede estar creando la suya en ese momento. `Clear-ClaudeTemp.ps1` sí la borra.
@@ -82,7 +81,7 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - Borrado por antigüedad, sesión en curso, tarea en segundo plano reciente, otro proyecto, enlaces y ficheros sueltos: `cli/test/hook/session-end.test.ts`, con un árbol de fixture y `utimesSync`, como los tests de `session-start`.
 - Guardas y salida 0: el mismo test, llamando a la función con stdin inválido, sin `session_id`, base relativa y dos candidatas de ruta larga.
 - `hooks/hooks.json`: el mismo test lee el `SessionEnd` y su `args`.
-- Nombre con rutas largas: la sonda de la decisión 6; su resultado, en el walkthrough.
+- Nombre con rutas largas: la sonda de la decisión 6 (hecha) y, en el mismo test, la ruta de la sonda con su nombre medido.
 - Funcionamiento real: en campo, al cerrar sesiones del kit (`validation.mode: field`).
 
 ## Términos y ADR
@@ -109,6 +108,7 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - AND no escribe nada en stdout ni en stderr y sale con 0
 - AND sin `CLAUDE_CODE_TMPDIR` la base es la carpeta temporal del sistema (`%TEMP%` en Windows); sin `CLAUDE_PROJECT_DIR`, la ruta es el `cwd` del stdin
 - AND `D:\code\_worktrees\sdd-kit-0180` da la carpeta `D--code--worktrees-sdd-kit-0180`: cada carácter que no es letra ASCII ni cifra, guion bajo incluido, pasa a `-`
+- AND un nombre de más de 200 caracteres se recorta a 200 y gana `-` y el hash djb2 de la ruta en base 36: la ruta de 231 caracteres de la sonda (`…\scratchpad\probe-` + 30 `a` + `_x.y`) da `…-scratchpad-probe-aaa-bjejxf`
 - AND si una sesión no se puede borrar entera (un fichero en uso, una carpeta que otro proceso ya borró), deja lo que no pudo, sigue con las demás y sale con 0
 - AND un enlace simbólico o un junction dentro de la carpeta del proyecto no se borra ni se sigue
 
@@ -118,7 +118,6 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - WHEN `sdd hook session-end` recibe por stdin `{"cwd":"D:\\code\\facturas"}`, sin `session_id`, o un texto que no es JSON
 - THEN no borra nada, escribe en stderr `sdd-kit: no borro los temporales de Claude Code: sin session_id válido en la entrada del hook` y sale con 0
 - AND con `CLAUDE_CODE_TMPDIR=temporales`, relativa, escribe `sdd-kit: no borro los temporales de Claude Code: temporales no es una ruta absoluta`, no borra nada y sale con 0
-- AND con una ruta de proyecto cuyo nombre pasa de 200 caracteres y dos carpetas en `<t>/claude/` que empiezan por sus 200 primeros caracteres y `-`, escribe `sdd-kit: no borro los temporales de Claude Code: 2 carpetas de proyecto posibles en <t>/claude para <ruta>`, no borra nada y sale con 0
 - AND si `<t>/claude/<carpeta del proyecto>/` no existe, no escribe nada y sale con 0
 
 **Reglas de la capacidad**
@@ -126,7 +125,7 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe solo `.docs/sdd/sdd-kit.json`. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.
 - **Idioma de los nombres**: las opciones y las claves en inglés; los mensajes, en castellano.
 - **Límites**: `--ignore` relativo a la raíz, sin vacío, absoluto, `..`, espacios al borde ni saltos de línea; una acción por llamada; `--mark`, solo una versión `X.Y.Z` numérica, con su `vX.Y.Z.md` en el kit y mayor que la del proyecto; `sdd validation serve` escucha solo en `127.0.0.1` y en un puerto que elige el sistema, acepta solo peticiones con `Host` y `Origin` de `127.0.0.1:<puerto>`, y `--steps` es una lista JSON de al menos un `{id, title}` con ids únicos y `title` de texto; `--out` es relativo al directorio de trabajo, su carpeta se crea si falta, y el fichero se escribe de nuevo al arrancar; `sdd hook session-end` borra solo las sesiones sin escrituras en las últimas 24 h, nunca la del `session_id`, y tras 1 s desde que arranca no empieza a borrar ninguna más.
-- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`; `el proyecto ya está al día con el kit <versión>`; `sin sdd-kit.json: se aplican todas`; `init en curso: sigue con sdd-init`; `--mark <versión>: el kit no trae esa migración`; `--mark <versión>: el proyecto ya está en <versión>`; `panel: http://127.0.0.1:<puerto>/`; `<ruta>: no es una lista de pasos {id, title}`; `sdd-kit: no borro los temporales de Claude Code: sin session_id válido en la entrada del hook`; `sdd-kit: no borro los temporales de Claude Code: <base> no es una ruta absoluta`; `sdd-kit: no borro los temporales de Claude Code: no sale el nombre de la carpeta del proyecto de <ruta>`; `sdd-kit: no borro los temporales de Claude Code: <n> carpetas de proyecto posibles en <base>/claude para <ruta>`.
+- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`; `el proyecto ya está al día con el kit <versión>`; `sin sdd-kit.json: se aplican todas`; `init en curso: sigue con sdd-init`; `--mark <versión>: el kit no trae esa migración`; `--mark <versión>: el proyecto ya está en <versión>`; `panel: http://127.0.0.1:<puerto>/`; `<ruta>: no es una lista de pasos {id, title}`; `sdd-kit: no borro los temporales de Claude Code: sin session_id válido en la entrada del hook`; `sdd-kit: no borro los temporales de Claude Code: <base> no es una ruta absoluta`; `sdd-kit: no borro los temporales de Claude Code: no sale el nombre de la carpeta del proyecto de <ruta>`.
 
 ### Estimación y esfuerzo
 
@@ -137,6 +136,8 @@ Un verbo de la CLI en JavaScript sin tipos, como el de arranque, que lee el JSON
 - Confianza: media
 
 ## Enmiendas
+
+- 2026-10-25 — decisión 6, un AND nuevo en «El hook de cierre borra las sesiones viejas del proyecto» y fuera la guarda y el aviso de «<n> carpetas de proyecto posibles» — la sonda midió que el hash del recorte es djb2 en base 36 y se reproduce desde Node: el nombre se calcula exacto, sin buscar por prefijo — aprobada (opción «Apruebo»)
 
 ## Aprobaciones
 
