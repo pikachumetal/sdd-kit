@@ -9,9 +9,26 @@ tasks:
     # El cerrojo del clon hace esperar a la suite de otro worktree (patch 0218).
     command: node
     args: [cli/bin/sdd.js, lock, run, --, pwsh, -NoProfile, -File, tests/Invoke-KitTests.ps1]
+    # El proyecto raíz no tiene inputs por defecto (solo .moon/*): sin ellos, --affected la salta siempre (0223).
+    inputs: ['**/*']
     options:
       cache: false
       # Una a una con cli:test-slow y cli:test-min: con la máquina cargada, FastSuiteBudget pasa de 30 s (patch 0190).
+      mutex: heavy-tests
+  # El gate la corre con --affected: solo cuando cambia el lanzador de sujetos o sus tests (0223).
+  test-headless:
+    command: node
+    args: [cli/bin/sdd.js, lock, run, --, pwsh, -NoProfile, -File, tests/Invoke-KitTests.ps1, -Headless]
+    inputs:
+      - '/tests/headless/**'
+      - '/tests/HeadlessLauncher.Tests.ps1'
+      - '/tests/Battery.Tests.ps1'
+      - '/tests/batteries/**'
+      - '/tests/Resolve-Bash.ps1'
+      - '/tests/Clear-GitEnv.ps1'
+      - '/tests/Invoke-KitTests.ps1'
+    options:
+      cache: false
       mutex: heavy-tests
   roadmap:
     command: node
