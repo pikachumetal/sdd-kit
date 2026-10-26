@@ -9,11 +9,16 @@ export interface BriefRequest {
   out?: string;
 }
 
+function splitLines(text: string): string[] {
+  const lines = text.split('\n');
+  if (lines.at(-1) === '') lines.pop();
+  return lines;
+}
+
 export function extractTask(planText: string, task: string): string[] {
   const heading = new RegExp(`^#+[ \t]+Task[ \t]+${task}([^0-9]|$)`);
   const anyTask = /^#+[ \t]+Task[ \t]+[0-9]+/;
-  const lines = planText.split('\n');
-  if (lines[lines.length - 1] === '') lines.pop();
+  const lines = splitLines(planText);
   const picked: string[] = [];
   let inFence = false;
   let inTask = false;
@@ -34,18 +39,15 @@ function readPlan(plan: string): string {
 }
 
 const FRONTMATTER = /^---\n([\s\S]*?)\n---(?:\n|$)/;
-const LITE_MODE = /^mode:[ \t]*lite\b/m;
+const LITE_MODE = /^mode:[ \t]*lite[ \t]*(?:#|$)/m;
 
 export function isLiteSpec(text: string): boolean {
-  const frontmatter = FRONTMATTER.exec(text.replace(/\r\n/g, '\n'))?.[1];
+  const frontmatter = FRONTMATTER.exec(text)?.[1];
   return frontmatter !== undefined && LITE_MODE.test(frontmatter);
 }
 
 function briefLines(text: string, task: string): string[] {
-  if (!isLiteSpec(text)) return extractTask(text, task);
-  const lines = text.split('\n');
-  if (lines.at(-1) === '') lines.pop();
-  return lines;
+  return isLiteSpec(text) ? splitLines(text) : extractTask(text, task);
 }
 
 export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number }> {

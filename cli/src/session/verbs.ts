@@ -16,7 +16,7 @@ export const sessionTokensVerb: Verb = {
   async run(args, io) {
     const roots = args.values['projects-root'];
     const measurement = measureSession({
-      path: rootOption(args, 'path', (root) => root) ?? '.',
+      path: rootOption(args, 'path') ?? '.',
       branch: text(args, 'branch') ?? '',
       projectsRoots: Array.isArray(roots) ? roots.map(String) : [],
     });

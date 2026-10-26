@@ -28,16 +28,16 @@ const WITHOUT_LINKS = /\[[^\]]*\]\([^)]*\)/g;
 
 interface Pointer {
   item: number;
-  target: number;
+  pointerColumn: number;
   pattern: RegExp;
 }
 
-const ABSORBED_ROW: Pointer = { item: 1, target: 1, pattern: ABSORBED };
-const DEBT_ROW: Pointer = { item: 0, target: 2, pattern: ACTING };
+const ABSORBED_ROW: Pointer = { item: 1, pointerColumn: 1, pattern: ABSORBED };
+const DEBT_ROW: Pointer = { item: 0, pointerColumn: 2, pattern: ACTING };
 
-function pointedIds(row: Row, { item, target, pattern }: Pointer): string[] {
+function pointedIds(row: Row, { item, pointerColumn, pattern }: Pointer): string[] {
   if (row.cells[item]?.startsWith('**[')) return [];
-  const text = pattern.exec(row.cells[target] ?? '')?.[1].replace(WITHOUT_LINKS, '') ?? '';
+  const text = pattern.exec(row.cells[pointerColumn] ?? '')?.[1].replace(WITHOUT_LINKS, '') ?? '';
   const arrow = text.indexOf('→');
   return (arrow === -1 ? text : text.slice(arrow)).match(TASK_ID) ?? [];
 }

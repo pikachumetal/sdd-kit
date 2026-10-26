@@ -1,4 +1,5 @@
-import { UsageError, docsFolder, lockTimeoutOption, requiredOption, requiredRootOption, text } from '../cli/args.ts';
+import { UsageError, lockTimeoutOption, requiredOption, requiredRootOption, text } from '../cli/args.ts';
+import { docsFolder } from '../cli/layout.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { configuredMergeInto } from '../merge/policy.ts';
 import { checkRoadmap } from './check.ts';

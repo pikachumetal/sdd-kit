@@ -10,7 +10,7 @@ export const estimationLogVerb: Verb = {
   summary: 'Regenera estimation-log.md a partir de los bloques de tiempo de los artefactos',
   options: { root: { type: 'string' }, 'project-root': { type: 'string' }, out: { type: 'string' } },
   async run(args, io) {
-    const root = rootOption(args, 'root', (root) => root) ?? '.';
+    const root = rootOption(args, 'root') ?? '.';
     const { text, rowCount, docsPath } = generateEstimationLog(root, io.err);
     const requested = args.values.out;
     const named = typeof requested === 'string' && requested.trim() !== '';

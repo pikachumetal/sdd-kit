@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { bookingsFixture, sddFolder } from './capability/helpers.ts';
 import { run } from '../src/main.ts';
@@ -129,7 +129,7 @@ async function runReal(argv: string[]) {
 
 describe('--project-root', () => {
   const project = () => {
-    const sdd = sddFolder({ 'roadmap.md': '# Notas\n', 'capabilities/bookings.md': bookingsFixture, 'specs/.gitkeep': '' });
+    const sdd = sddFolder({ 'roadmap.md': '# Notas\n', 'capabilities/bookings.md': bookingsFixture, 'decisions/0001-sin-forma.md': 'sin forma de ADR\n', 'specs/.gitkeep': '' });
     return { sdd, root: dirname(dirname(sdd)) };
   };
 
@@ -137,11 +137,16 @@ describe('--project-root', () => {
     const { sdd, root } = project();
     const byRoot = await runReal([noun, verb, '--project-root', root]);
     expect(byRoot).toEqual(await runReal([noun, verb, '--path', sdd]));
+    expect(byRoot).not.toEqual(await runReal([noun, verb, '--path', join(root, 'otra')]));
   });
 
   it('project-root without .docs/sdd has no roadmap to check', async () => {
     const root = dirname(dirname(sddFolder({})));
-    expect((await runReal(['roadmap', 'check', '--project-root', join(root, 'otra')])).stdout).toEqual(['Sin roadmap que validar']);
+    const bare = join(root, 'otra');
+    mkdirSync(bare);
+    const byRoot = await runReal(['roadmap', 'check', '--project-root', bare]);
+    expect(byRoot).toEqual({ code: 0, stdout: ['Sin roadmap que validar'], stderr: '' });
+    expect(byRoot).toEqual(await runReal(['roadmap', 'check', '--path', join(bare, '.docs', 'sdd')]));
   });
 
   it('project-root is an alias of --root in estimation log', async () => {

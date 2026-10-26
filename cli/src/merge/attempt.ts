@@ -1,7 +1,7 @@
 import { DomainError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
 import { resolveConflicts } from './registries.ts';
-import { failureReport } from './verify.ts';
+import { SHOWN_LINES, failureReport } from './verify.ts';
 
 export interface MergeAttempt {
   worktree: string;
@@ -36,7 +36,7 @@ async function abortedMergeError({ worktree, stepName, output }: MergeAttempt): 
   const prepared = (await git(worktree, ['rev-parse', '--verify', '--quiet', 'MERGE_HEAD'])).code === 0;
   await git(worktree, ['merge', '--abort']);
   if (prepared) return new DomainError(`verificación: el hook rechazó el merge.\n${failureReport(output)}`);
-  const tail = output.slice(-20).join('\n');
+  const tail = output.slice(-SHOWN_LINES).join('\n');
   return new DomainError(`${stepName}: git merge falló sin conflictos.\n${tail}`);
 }
 

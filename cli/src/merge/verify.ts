@@ -85,7 +85,7 @@ export function findLockedFile(output: string): string | undefined {
 }
 
 const FAILED_TEST = /(?:^|[\s|])(?:\[-\]|×|FAIL)\s/;
-const SHOWN_LINES = 20;
+export const SHOWN_LINES = 20;
 
 export function failedTestLines(lines: string[]): string[] {
   return lines.filter((line) => FAILED_TEST.test(line)).slice(0, SHOWN_LINES);

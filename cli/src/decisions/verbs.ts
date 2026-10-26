@@ -1,4 +1,5 @@
-import { docsFolder, requiredRootOption } from '../cli/args.ts';
+import { requiredRootOption } from '../cli/args.ts';
+import { docsFolder } from '../cli/layout.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { checkDecisions } from './check.ts';
 import { decisionIndex } from './index.ts';

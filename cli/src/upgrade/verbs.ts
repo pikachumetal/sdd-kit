@@ -22,7 +22,7 @@ export const upgradeVerb: Verb = {
     mark: { type: 'string' },
   },
   async run(args, io) {
-    const root = requiredRootOption(args, 'root', (root) => root);
+    const root = requiredRootOption(args, 'root');
     if (!fs.existsSync(root)) throw new UsageError(`no existe la raíz: «${root}»`);
     const mark = markOption(text(args, 'mark'));
     return runUpgrade({ root, migrationsDir, today: localDay(new Date()), mark }, io);

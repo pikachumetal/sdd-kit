@@ -49,7 +49,7 @@ export const initVerb: Verb = {
     'memory-off': { type: 'boolean' },
   },
   async run(args, io) {
-    const root = requiredRootOption(args, 'root', (root) => root);
+    const root = requiredRootOption(args, 'root');
     const today = localDay(new Date());
     return runInit({ root, action: action(args), kitVersion: kitVersion(), today }, io);
   },

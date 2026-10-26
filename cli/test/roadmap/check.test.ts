@@ -318,6 +318,12 @@ describe('sdd roadmap check: avisos de cierre', () => {
     expect(result.code).toBe(0);
   });
 
+  it('warns of a row absorbed without an arrow', async () => {
+    const content = pointingRoadmap('✅');
+    content[6] = '| 0047 | **Absorbida por la 0149** (dev-lead, 2026-10-07) | ⏳ |';
+    expect((await check(content)).lines).toContain('roadmap.md: aviso: línea 7: apunta a 0149, ya ✅: sáldala');
+  });
+
   it('does not warn of a settled or deferred pointer', async () => {
     expect((await check(pointingRoadmap('🧪 validación diferida al primer correo'))).lines).toEqual(['Roadmap válido']);
     const content = pointingRoadmap('✅');

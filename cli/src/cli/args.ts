@@ -1,4 +1,3 @@
-import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { Verb, VerbArgs } from './verbs.ts';
 
@@ -41,20 +40,20 @@ export function parseVerbArgs(verb: Verb, argv: string[]): VerbArgs {
   }
 }
 
-export function rootOption(args: VerbArgs, legacy: 'path' | 'root', fromRoot: (root: string) => string): string | null {
+const asGiven = (root: string): string => root;
+
+export function rootOption(args: VerbArgs, legacy: 'path' | 'root', fromRoot = asGiven): string | null {
   const own = text(args, legacy);
   const root = text(args, PROJECT_ROOT);
   if (own !== null && root !== null) throw new UsageError(`--${legacy} y --${PROJECT_ROOT} no van juntas`);
   return root === null ? own : fromRoot(root);
 }
 
-export function requiredRootOption(args: VerbArgs, legacy: 'path' | 'root', fromRoot: (root: string) => string): string {
+export function requiredRootOption(args: VerbArgs, legacy: 'path' | 'root', fromRoot = asGiven): string {
   const value = rootOption(args, legacy, fromRoot);
   if (value === null) throw new UsageError(`falta la opción --${legacy}`);
   return value;
 }
-
-export const docsFolder = (root: string): string => join(root, '.docs', 'sdd');
 
 export function requiredOption(args: VerbArgs, name: string): string {
   const value = args.values[name];

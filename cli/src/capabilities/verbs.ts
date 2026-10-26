@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
-import { docsFolder, requiredOption, requiredRootOption } from '../cli/args.ts';
+import { requiredOption, requiredRootOption } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
+import { docsFolder } from '../cli/layout.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { validateCapabilities } from './check.ts';
 import { capabilityIndex, indexLines } from './index.ts';
