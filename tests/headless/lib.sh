@@ -94,30 +94,65 @@ subject_cleanup() {
 
 # Un sujeto web arranca en el puerto que elige, no en el del molde: 5 de 6 en la 0036 (ticket de la feature 0036 §3).
 subject_ports() {
-  { [[ "${PORT:-}" =~ ^[0-9]+$ ]] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | sort -un | paste -sd, -
+  { [[ "${PORT:-}" =~ ^[0-9]+$ ]] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | awk '$1 >= 1 && $1 <= 65535' | sort -un | paste -sd, -
+}
+
+# RUNS es <RUNS_DIR>/<fase>: las marcas de live/ y los streams de los demás sujetos cuelgan de su padre (feature 0215).
+other_subject_ports() {
+  local root="${RUNS%/*}" mark name pid
+  for mark in "$root"/live/*.* "$root"/dry/live/*.*; do
+    [ -f "$mark" ] || continue
+    name="${mark##*/}"; [ "$name" = "${PHASE:-red}.$LABEL" ] && continue
+    pid=; read -r pid < "$mark"
+    # Un PID vacío es una marca a medio escribir: en curso, como en count_marks de run.sh.
+    [ -z "$pid" ] || kill -0 "$pid" 2>/dev/null || continue
+    JSONL="$root/${name%%.*}/${name#*.}.jsonl" PORT= subject_ports | tr , '\n'
+  done | sort -un | paste -sd, -
 }
 
 # Por el PID que escucha en el puerto y arrancó con el sujeto, nunca por nombre: en la máquina corren los servidores
 # y los MCP de otras sesiones, y el stream nombra puertos que el sujeto solo leyó (revisión final de la feature 0214).
 stop_subject_ports() {
-  local ports script result listening
-  ports=$(subject_ports)
-  [ -n "$ports" ] && [ -n "${SUBJECT_STARTED:-}" ] || return 0
+  local own others p since first ports= pairs= shared= script result listening
+  local handoff="${RUNS%/*}/ports"
+  own=$(subject_ports)
+  [ -n "$own" ] && [ -n "${SUBJECT_STARTED:-}" ] || return 0
+  # Un puerto que nombra otro sujeto en curso lo para el último en acabar, desde el arranque del primero que lo saltó en ports/:
+  # el primero paraba el servidor del otro, y el último no veía uno arrancado antes que él (feature 0215).
+  # shortcut: dos sujetos que acaban a la vez se ven en curso y ninguno para el puerto; un lock por puerto si pasa.
+  others=",$(other_subject_ports),"
+  for p in ${own//,/ }; do
+    since=$SUBJECT_STARTED; first=
+    [ -f "$handoff/$p" ] && read -r first < "$handoff/$p"
+    [[ "$first" =~ ^[0-9]+$ ]] && [ "$first" -lt "$since" ] && since=$first
+    if [[ "$others" == *",$p,"* ]]; then
+      shared+="${shared:+,}$p"; mkdir -p "$handoff"; echo "$since" > "$handoff/$p"
+    else
+      ports+="${ports:+,}$p"; pairs+="${pairs:+,}'$p:$since'"; rm -f "$handoff/$p"
+    fi
+  done
   # Como argumento: con -Command - y el script por la entrada estándar, pwsh no ejecuta las líneas partidas.
   script=$(cat <<EOF
-\$since = [DateTimeOffset]::FromUnixTimeSeconds($SUBJECT_STARTED).LocalDateTime
-\$mine = @(Get-NetTCPConnection -LocalPort $ports -State Listen -ErrorAction SilentlyContinue |
-  Where-Object { (Get-Process -Id \$_.OwningProcess -ErrorAction SilentlyContinue).StartTime -ge \$since })
+\$mine = @(foreach (\$pair in @($pairs)) {
+  \$port, \$since = \$pair -split ':'
+  \$since = [DateTimeOffset]::FromUnixTimeSeconds([long]\$since).LocalDateTime
+  Get-NetTCPConnection -LocalPort ([int]\$port) -State Listen -ErrorAction SilentlyContinue |
+    Where-Object { (Get-Process -Id \$_.OwningProcess -ErrorAction SilentlyContinue).StartTime -ge \$since }
+})
 \$mine | ForEach-Object { Stop-Process -Id \$_.OwningProcess -Force -ErrorAction SilentlyContinue }
 'comprobado:' + ((\$mine.LocalPort | Sort-Object -Unique) -join ',')
 EOF
 )
-  result=$(pwsh -NoProfile -Command "$script" 2>/dev/null | tr -d '\r')
-  case "$result" in
-    *comprobado:*) listening="${result##*comprobado:}" ;;
-    *) listening="no comprobado (pwsh no respondió)" ;;
-  esac
-  echo "puertos del sujeto: $ports · escuchando al acabar: ${listening:-ninguno}" >> "$RUNS/$LABEL.err"
+  if [ -z "$ports" ]; then
+    listening="sin consultar"
+  else
+    result=$(pwsh -NoProfile -Command "$script" 2>/dev/null | tr -d '\r')
+    case "$result" in
+      *comprobado:*) listening="${result##*comprobado:}" ;;
+      *) listening="no comprobado (pwsh no respondió)" ;;
+    esac
+  fi
+  echo "puertos del sujeto: $own · escuchando al acabar: ${listening:-ninguno}${shared:+ · compartidos con otro sujeto en curso, sin parar: $shared}" >> "$RUNS/$LABEL.err"
 }
 
 # Claude Code nombra la carpeta con la ruta Windows del cwd y cada carácter no alfanumérico como «-».
