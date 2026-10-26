@@ -9,11 +9,16 @@ export interface BriefRequest {
   out?: string;
 }
 
+function splitLines(text: string): string[] {
+  const lines = text.split('\n');
+  if (lines.at(-1) === '') lines.pop();
+  return lines;
+}
+
 export function extractTask(planText: string, task: string): string[] {
   const heading = new RegExp(`^#+[ \t]+Task[ \t]+${task}([^0-9]|$)`);
   const anyTask = /^#+[ \t]+Task[ \t]+[0-9]+/;
-  const lines = planText.split('\n');
-  if (lines[lines.length - 1] === '') lines.pop();
+  const lines = splitLines(planText);
   const picked: string[] = [];
   let inFence = false;
   let inTask = false;
@@ -33,10 +38,22 @@ function readPlan(plan: string): string {
   }
 }
 
+const FRONTMATTER = /^---\n([\s\S]*?)\n---(?:\n|$)/;
+const LITE_MODE = /^mode:[ \t]*lite[ \t]*(?:#|$)/m;
+
+export function isLiteSpec(text: string): boolean {
+  const frontmatter = FRONTMATTER.exec(text)?.[1];
+  return frontmatter !== undefined && LITE_MODE.test(frontmatter);
+}
+
+function briefLines(text: string, task: string): string[] {
+  return isLiteSpec(text) ? splitLines(text) : extractTask(text, task);
+}
+
 export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number }> {
   const { plan, task } = request;
   const path = request.out ?? join(await workspaceFor(plan), `task-${task}-brief.md`);
-  const picked = extractTask(readPlan(plan), task);
+  const picked = briefLines(readPlan(plan), task);
   if (picked.length === 0) throw new DomainError(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
   writeFileSync(path, `${picked.join('\n')}\n`);
   return { path, lines: picked.length };

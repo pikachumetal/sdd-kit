@@ -32,8 +32,9 @@ export const toolUses = (events: Json[]): ToolUse[] =>
   events.flatMap((event, index) => contentBlocks(event, 'tool_use').map((call) => ({ call, index, timestamp: event.timestamp })));
 
 export function isFinished(events: Json[]): boolean {
-  const lastAnswer = events.filter((event) => sameText(event.type, 'assistant')).at(-1);
-  return lastAnswer !== undefined && sameText(lastAnswer.message?.stop_reason, 'end_turn');
+  const lastAnswer = events.findLastIndex((event) => sameText(event.type, 'assistant'));
+  if (lastAnswer === -1 || !sameText(events[lastAnswer].message?.stop_reason, 'end_turn')) return false;
+  return !events.slice(lastAnswer + 1).some((event) => sameText(event.type, 'user'));
 }
 
 export function isPending(events: Json[], toolUse: ToolUse): boolean {

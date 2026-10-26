@@ -10,6 +10,8 @@ export interface ResolvedDocument {
 
 export const ROOT_DOCUMENTS = ['PRODUCT.md', 'ROADMAP.md', 'CHANGELOG.md'];
 
+export const docsFolder = (root: string): string => join(root, '.docs', 'sdd');
+
 export function projectRoot(docsPath: string): string {
   return dirname(dirname(resolve(docsPath)));
 }

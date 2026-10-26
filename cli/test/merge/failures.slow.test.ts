@@ -97,6 +97,32 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
     expect(cleanedUp(fx)).toBe(true);
   });
 
+  it('con el hook en rojo nombra los tests fallidos antes de la cola', async () => {
+    const fx = mergeFixture('hook-tests');
+    const redHooks = join(fx.root, 'red-hooks');
+    write(redHooks, 'pre-merge-commit', "#!/bin/sh\necho '[-] se llama sdd-archive 12ms'\necho 'Tests Failed: 1' >&2\nexit 1\n");
+    chmodSync(join(redHooks, 'pre-merge-commit'), 0o755);
+    git(fx.repo, 'config', 'core.hooksPath', redHooks);
+
+    const result = await runMerge(join(fx.wt, '0001'), []);
+
+    expect(result.code).not.toBe(0);
+    expect(result.text).toContain('el hook rechazó el merge.\ntests fallidos:\n[-] se llama sdd-archive 12ms');
+    expect(cleanedUp(fx)).toBe(true);
+  });
+
+  it('con --verify en rojo nombra los tests fallidos antes de la cola', async () => {
+    const fx = mergeFixture('verificacion-tests');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', "echo '[-] se llama sdd-archive 12ms'; exit 1"]);
+
+    expect(result.code).not.toBe(0);
+    expect(result.text).toMatch(/salida completa en [^\n]*\ntests fallidos:\n\[-\] se llama sdd-archive 12ms/);
+    const log = /\S+sdd-merge-verify-\S+\.log/.exec(result.text)?.[0] ?? '';
+    if (log !== '') rmSync(log);
+    expect(cleanedUp(fx)).toBe(true);
+  });
+
   it('con --push y sin remoto fusiona en local y avisa de que no hay push', async () => {
     const fx = mergeFixture('sin-remoto');
     git(fx.repo, 'remote', 'remove', 'origin');

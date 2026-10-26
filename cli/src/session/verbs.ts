@@ -1,4 +1,4 @@
-import { text } from '../cli/args.ts';
+import { rootOption, text } from '../cli/args.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { measureSession, textLines, toJson } from './measure.ts';
 
@@ -8,6 +8,7 @@ export const sessionTokensVerb: Verb = {
   summary: 'Mide los tokens y el coste de las sesiones de Claude Code de un worktree',
   options: {
     path: { type: 'string' },
+    'project-root': { type: 'string' },
     branch: { type: 'string' },
     'projects-root': { type: 'string', multiple: true },
     json: { type: 'boolean' },
@@ -15,7 +16,7 @@ export const sessionTokensVerb: Verb = {
   async run(args, io) {
     const roots = args.values['projects-root'];
     const measurement = measureSession({
-      path: text(args, 'path') ?? '.',
+      path: rootOption(args, 'path') ?? '.',
       branch: text(args, 'branch') ?? '',
       projectsRoots: Array.isArray(roots) ? roots.map(String) : [],
     });
