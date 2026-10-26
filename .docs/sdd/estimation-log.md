@@ -205,30 +205,33 @@
 | 2026-10-25 | 0217 | patch | 0.5 | 0.75 | 1.5 | — | — | no aplica | — | 20261025-160210-patch-0217-pester-git-env-anatomy |
 | 2026-10-25 | 0214 | infra/tooling | 3 | 2.72 | 0.91 | 72074k | 8273k | no aplica | 26.57 | 20261025-181756-feature-0214-mold-and-launcher-safety |
 | 2026-10-25 | 0218 | patch | 1.5 | 0.45 | 0.3 | — | — | no aplica | — | 20261025-203518-patch-0218-cross-worktree-test-lock |
+| 2026-10-26 | 0212 | patch | 0.5 | 1.2 | 2.4 | — | — | no aplica | — | 20261026-111623-patch-0212-plan-workspace-temp |
 | 2026-10-26 | 0219 | patch | 1.5 | 1.71 | post hoc | — | — | 2.22 | — | 20261026-114041-patch-0219-e2e-smoke-stress-out-of-suite |
+| 2026-10-26 | 0215 | infra/tooling | 2.5 | 3.5 | 1.4 | 28415k | 2759k | 0.41 | 14.43 | 20261026-120112-feature-0215-real-subject-measurements |
+| 2026-10-26 | 0211 | infra/tooling | 1.5 | 2.39 | 1.59 | 31658k | 3646k | no aplica | 12.49 | 20261026-122254-feature-0211-session-clock-gaps |
 
-**Factor de calibración** (ratio mediano real/estimado, 166 artefactos): **0.59** · media 0.76
+**Factor de calibración** (ratio mediano real/estimado, 169 artefactos): **0.6** · media 0.78
 
-- p25–p75: 0.4–0.92
-- p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 63 % · infraestimadas: 9 %
-- Error absoluto (h): media 1.4 · mediana 0.98
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.87
+- p25–p75: 0.4–0.94
+- p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 11 %
+- Error absoluto (h): media 1.39 · mediana 0.95
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.99
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 58 | 35 % |
+| <0.5 | 58 | 34 % |
 | 0.5–0.8 | 52 | 31 % |
-| 0.8–1.25 | 41 | 25 % |
-| 1.25–2 | 9 | 5 % |
-| ≥2 | 6 | 4 % |
+| 0.8–1.25 | 41 | 24 % |
+| 1.25–2 | 11 | 7 % |
+| ≥2 | 7 | 4 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
-| infra/tooling | 40 | 0.47 | 0.37–0.63 |
-| patch | 39 | 1.17 | 0.78–1.37 |
+| infra/tooling | 42 | 0.48 | 0.37–0.72 |
+| patch | 40 | 1.18 | 0.79–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
 | --- | --- | --- | --- | --- | --- |
@@ -247,6 +250,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 54 | 151.48 | 0.55 | 306.17 | 1201.39 |
+| sin publicar | 57 | 158.57 | 0.57 | 306.58 | 1228.31 |
 
 > Ver `estimation.md`.

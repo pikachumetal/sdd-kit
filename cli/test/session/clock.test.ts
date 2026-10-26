@@ -26,11 +26,19 @@ const askUser = (time: string, id: string): Entry =>
 
 const toolResult = (time: string, id: string): Entry => user(time, [{ type: 'tool_result', tool_use_id: id, content: 'ok' }]);
 
+const toolUse = (time: string, id: string, name = 'Bash'): Entry => agent(time, `use-${id}`, branch, [{ type: 'tool_use', id, name, input: {} }]);
+
+const closing = (entry: Entry, reason = 'end_turn'): Entry => ({ ...entry, message: { ...(entry.message as Entry), stop_reason: reason } });
+
+const onDay = (entry: Entry, day: string): Entry => ({ ...entry, timestamp: String(entry.timestamp).replace('2026-10-14', day) });
+
+const notification = (time: string): Entry => user(time, '<task-notification>tarea terminada</task-notification>');
+
 const firstSession: Entry[] = [
   user('12:26', 'arranca la 0181', { gitBranch: 'develop' }),
   user('12:26', '<system-reminder>contexto</system-reminder>', { isMeta: true, gitBranch: 'develop' }),
   agent('12:27', 'c1', 'develop'),
-  agent('12:40', 'c2'),
+  closing(agent('12:40', 'c2')),
   user('12:58', 'sí'),
   agent('13:05', 'c3', branch, [{ type: 'tool_use', id: 't1', name: 'Bash', input: {} }]),
   toolResult('13:06', 't1'),
@@ -104,6 +112,120 @@ describe('session tokens mide el esfuerzo real', () => {
       start: '2026-10-14T12:26Z',
       waitMinutes: 20,
       waits: 2,
+      idleMinutes: 0,
+      idleGaps: 0,
     });
+  });
+
+  it('un mensaje tecleado con el turno abierto no es espera', async () => {
+    const midTurn = [toolUse('10:00', 't2'), user('10:05', 'nos vemos en la validación'), toolResult('10:06', 't2'), closing(agent('10:20', 'g1'))];
+    expect(await realLine(worktreeWith({ s10: midTurn }))).toBe(
+      '- Esfuerzo real: 0,33 h — reloj de la sesión 0,33 h desde 2026-10-14T10:00Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
+  });
+
+  it('un hueco dentro de una espera cuenta solo como espera', async () => {
+    const longWait = [closing(agent('10:00', 'h1')), user('11:30', 'sigue'), closing(agent('11:40', 'h2'))];
+    expect(await realLine(worktreeWith({ s11: longWait }))).toBe(
+      '- Esfuerzo real: 0,17 h — reloj de la sesión 1,67 h desde 2026-10-14T10:00Z, sin 90 min de espera al dev-lead (1 espera)',
+    );
+  });
+});
+
+describe('session tokens: la espera a una tarea en segundo plano es trabajo', () => {
+  it('el hueco que acaba en una notificación de tarea no es espera', async () => {
+    const background = [user('09:50', 'arranca'), closing(agent('10:00', 'i1')), notification('10:18'), user('10:19', 'ok'), closing(agent('10:30', 'i2'))];
+    expect(await realLine(worktreeWith({ s12: background }))).toBe(
+      '- Esfuerzo real: 0,67 h — reloj de la sesión 0,67 h desde 2026-10-14T09:50Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
+  });
+
+  it('una notificación 133 min después del cierre también es trabajo', async () => {
+    const longTask = [closing(agent('10:00', 'j1')), notification('12:13'), closing(agent('12:20', 'j2'))];
+    expect(await realLine(worktreeWith({ s13: longTask }))).toBe(
+      '- Esfuerzo real: 2,33 h — reloj de la sesión 2,33 h desde 2026-10-14T10:00Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
+  });
+});
+
+describe('session tokens: la compactación no cierra la espera de un turno', () => {
+  it('el resumen de la compactación no es un mensaje tecleado', async () => {
+    const compacted = [
+      closing(agent('07:33', 'k1')),
+      user('08:28', 'This session is being continued from a previous conversation', { isCompactSummary: true }),
+      notification('09:46'),
+      closing(agent('10:00', 'k2')),
+    ];
+    expect(await realLine(worktreeWith({ s14: compacted }))).toBe(
+      '- Esfuerzo real: 2,45 h — reloj de la sesión 2,45 h desde 2026-10-14T07:33Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
+  });
+});
+
+describe('session tokens descuenta los huecos sin actividad', () => {
+  const night = [
+    onDay(toolUse('21:00', 't3'), '2026-10-21'),
+    onDay(toolResult('21:01', 't3'), '2026-10-21'),
+    onDay(agent('21:02', 'l1'), '2026-10-21'),
+    onDay(user('21:03', [{ type: 'text', text: '[Request interrupted by user]' }]), '2026-10-21'),
+    onDay(closing(agent('06:48', 'l2', branch, [{ type: 'text', text: 'No response requested.' }]), 'stop_sequence'), '2026-10-22'),
+    onDay(user('06:50', 'sigue'), '2026-10-22'),
+    onDay(closing(agent('07:00', 'l3')), '2026-10-22'),
+  ];
+
+  it('la noche tras una interrupción no cuenta, y la línea lo dice', async () => {
+    expect(await realLine(worktreeWith({ s15: night }))).toBe(
+      '- Esfuerzo real: 0,22 h — reloj de la sesión 10,00 h desde 2026-10-21T21:00Z, sin 2 min de espera al dev-lead (1 espera), sin 9,75 h sin actividad (1 hueco)',
+    );
+  });
+
+  it('da los huecos en --json', async () => {
+    const worktree = worktreeWith({ s15: night });
+    const io = memoryIo();
+    await run(['session', 'tokens', '--path', worktree.path, '--projects-root', worktree.projects, '--branch', branch, '--json'], io);
+    expect(JSON.parse(io.stdout[0]!).real).toMatchObject({ idleMinutes: 585, idleGaps: 1 });
+  });
+
+  it('el hueco que acaba en una notificación de tarea es trabajo también con el turno abierto', async () => {
+    const interrupted = [agent('10:00', 'n1'), user('10:01', [{ type: 'text', text: '[Request interrupted by user]' }]), notification('11:30'), closing(agent('11:35', 'n2'))];
+    expect(await realLine(worktreeWith({ s17: interrupted }))).toBe(
+      '- Esfuerzo real: 1,58 h — reloj de la sesión 1,58 h desde 2026-10-14T10:00Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
+  });
+
+  it('una llamada sin resultado en el transcript no está en curso', async () => {
+    const cut = [toolUse('21:00', 't5'), user('23:00', 'sigue'), closing(agent('23:05', 'o1'))];
+    expect(await realLine(worktreeWith({ s18: cut }))).toBe(
+      '- Esfuerzo real: 0,08 h — reloj de la sesión 2,08 h desde 2026-10-14T21:00Z, sin 0 min de espera al dev-lead (0 esperas), sin 2,00 h sin actividad (1 hueco)',
+    );
+  });
+
+  it('un hueco de 60 min justos no es hueco sin actividad', async () => {
+    const edge = [agent('10:00', 'r1'), agent('11:00', 'r2'), closing(agent('11:05', 'r3'))];
+    expect(await realLine(worktreeWith({ s20: edge }))).toBe(
+      '- Esfuerzo real: 1,08 h — reloj de la sesión 1,08 h desde 2026-10-14T10:00Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
+  });
+
+  it('suma los huecos de dos sesiones', async () => {
+    const morning = [agent('08:00', 's1'), closing(agent('09:30', 's2'))];
+    const afternoon = [agent('15:00', 's3'), closing(agent('17:00', 's4'))];
+    expect(await realLine(worktreeWith({ s21: morning, s22: afternoon }))).toBe(
+      '- Esfuerzo real: 0,00 h — reloj de 2 sesiones 3,50 h desde 2026-10-14T08:00Z, sin 0 min de espera al dev-lead (0 esperas), sin 3,50 h sin actividad (2 huecos)',
+    );
+  });
+
+  it('una pregunta pendiente de 90 min cuenta solo como espera', async () => {
+    const asked = [askUser('10:00', 'q2'), toolResult('11:30', 'q2'), closing(agent('11:35', 'p1'))];
+    expect(await realLine(worktreeWith({ s19: asked }))).toBe(
+      '- Esfuerzo real: 0,08 h — reloj de la sesión 1,58 h desde 2026-10-14T10:00Z, sin 90 min de espera al dev-lead (1 espera)',
+    );
+  });
+
+  it('un subagente de 90 min es una herramienta en curso: su hueco es trabajo', async () => {
+    const subagent = [toolUse('10:00', 't4', 'Task'), toolResult('11:30', 't4'), closing(agent('11:31', 'm1'))];
+    expect(await realLine(worktreeWith({ s16: subagent }))).toBe(
+      '- Esfuerzo real: 1,52 h — reloj de la sesión 1,52 h desde 2026-10-14T10:00Z, sin 0 min de espera al dev-lead (0 esperas)',
+    );
   });
 });

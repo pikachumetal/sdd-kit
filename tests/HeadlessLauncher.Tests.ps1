@@ -315,6 +315,90 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     } finally { $listener.Stop() }
   }
 
+  Context 'un puerto que nombra otro sujeto (feature 0215)' {
+    BeforeAll {
+      function Stop-Port($Port) {
+        if ($Port) { Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }
+      }
+
+      function Invoke-SharedPort([string]$Name, [string]$OtherPid) {
+        $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+        $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
+        $script = Join-Path $TestDrive "$Name.mjs"
+        Set-Content -LiteralPath $script -Value "import { createServer } from 'node:http'; createServer().listen(Number(process.argv[2]));"
+        $server = "PORT=$port; `"`$NODE`" '$($script -replace '\\', '/')' `"`$PORT`" > /dev/null 2>&1 & for i in `$(seq 50); do (: < /dev/tcp/127.0.0.1/`$PORT) 2>/dev/null && break; sleep 0.1; done; "
+        $other = "$OtherPid echo `"`$other`" > `"`$RUNS_DIR/live/red.b-1`"; echo 'localhost:$port' > `"`$RUNS_DIR/red/b-1.jsonl`"; "
+        $campaign = New-Campaign (Join-Path $TestDrive $Name) -Launch ($server + $other + 'subject_launch "x"')
+        $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+        return [pscustomobject]@{ Run = $run; Port = $port; Runs = $campaign.Runs; Err = Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') }
+      }
+    }
+
+    It 'deja su arranque al último en acabar cuando salta un puerto compartido' {
+      try {
+        $shared = Invoke-SharedPort 'handoff' 'other=$$;'
+
+        $handoff = Join-Path $shared.Runs "ports/$($shared.Port)"
+        Get-Content $handoff -ErrorAction SilentlyContinue | Should -Match '^\d+$' -Because $shared.Run.Output
+        $shared.Err | Should -Match "escuchando al acabar: sin consultar · compartidos" -Because $shared.Run.Output
+      } finally { Stop-Port $shared.Port }
+    }
+
+    It 'el último en acabar para el servidor compartido que arrancó antes que él' {
+      $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+      $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
+      $script = Join-Path $TestDrive 'earlier.mjs'
+      Set-Content -LiteralPath $script -Value "import { createServer } from 'node:http'; createServer().listen(Number(process.argv[2]));"
+      $campaign = New-Campaign (Join-Path $TestDrive 'earlier') -Launch "PORT=$port; subject_launch `"x`""
+      New-Item -ItemType Directory -Force (Join-Path $campaign.Runs 'ports') | Out-Null
+      Set-Content -LiteralPath (Join-Path $campaign.Runs "ports/$port") -Value ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 60) -NoNewline
+
+      try {
+        Start-Process -FilePath $script:Node -ArgumentList $script, $port -WindowStyle Hidden
+        foreach ($i in 1..50) { if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) { break }; Start-Sleep -Milliseconds 100 }
+        # SUBJECT_STARTED va en segundos: sin la espera, el servidor podía caer en el mismo segundo y contar como del sujeto.
+        Start-Sleep -Seconds 2
+        $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+        $run.ExitCode | Should -Be 0 -Because $run.Output
+        $err = Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err')
+        Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Should -BeNullOrEmpty -Because $err
+        $err | Should -Match "escuchando al acabar: $port" -Because $run.Output
+        Join-Path $campaign.Runs "ports/$port" | Should -Not -Exist
+      } finally { Stop-Port $port }
+    }
+
+    It 'trata como en curso la marca a medio escribir de otro sujeto' {
+      try {
+        $shared = Invoke-SharedPort 'half-written' 'other=;'
+
+        $shared.Err | Should -Match "compartidos con otro sujeto en curso, sin parar: $($shared.Port)" -Because $shared.Run.Output
+      } finally { Stop-Port $shared.Port }
+    }
+
+    It 'no para un puerto que nombra otro sujeto en curso' {
+      try {
+        # El propio bash del sujeto: sigue vivo mientras su limpieza mira los puertos.
+        $shared = Invoke-SharedPort 'shared-live' 'other=$$;'
+
+        $shared.Run.ExitCode | Should -Be 0 -Because $shared.Run.Output
+        Get-NetTCPConnection -LocalPort $shared.Port -State Listen -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+        $shared.Err | Should -Match "compartidos con otro sujeto en curso, sin parar: $($shared.Port)" -Because $shared.Run.Output
+      } finally { Stop-Port $shared.Port }
+    }
+
+    It 'para un puerto de otro sujeto que ya no corre' {
+      try {
+        $shared = Invoke-SharedPort 'shared-dead' '( : ) & other=$!; wait $other;'
+
+        $shared.Run.ExitCode | Should -Be 0 -Because $shared.Run.Output
+        Get-NetTCPConnection -LocalPort $shared.Port -State Listen -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
+        $shared.Err | Should -Match "escuchando al acabar: $($shared.Port)" -Because $shared.Run.Output
+        $shared.Err | Should -Not -Match 'compartidos'
+      } finally { Stop-Port $shared.Port }
+    }
+  }
+
   It 'subject_save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)' {
     $config = Join-Path $TestDrive 'machine.gitconfig'
     Set-Content -LiteralPath $config -Value "[user]`n`tname = Alice Liddell" -Encoding utf8NoBOM
@@ -431,6 +515,17 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
     $ports = & $script:Bash -c ". '$lib'; JSONL='$jsonl'; PORT=4300; subject_ports"
 
     $ports | Should -Be '4300,4567,5173'
+  }
+
+  It 'subject_ports descarta puertos fuera de rango (feature 0215)' {
+    $stream = Join-Path $TestDrive 'ports-range.jsonl'
+    Set-Content -LiteralPath $stream -Value '{"text":"abre http://localhost:70000 y http://localhost:4567"}'
+    $lib = (Join-Path $script:Headless 'lib.sh') -replace '\\', '/'
+    $jsonl = $stream -replace '\\', '/'
+
+    $ports = & $script:Bash -c ". '$lib'; JSONL='$jsonl'; PORT=99999; subject_ports"
+
+    $ports | Should -Be '4567'
   }
 
   It 'no pasa de SUBJECT_CAP sujetos' {

@@ -521,9 +521,9 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El workspace del plan se anuncia
 
-- GIVEN un plan sin workspace en `.superpowers/sdd/`
+- GIVEN un plan sin workspace en `.temp/sdd/`
 - WHEN `sdd-implement` lo crea
-- THEN dice al dev-lead `Workspace del plan: .superpowers/sdd/plan/ — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
+- THEN dice al dev-lead `Workspace del plan: .temp/sdd/plan/ — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
 - AND con un ledger del mismo plan con `Task 1: complete …`, la línea acaba en `· retomo en la Task 2`
 
 ### Tras una caída o un corte por cuota, la ejecución sigue desde el ledger
