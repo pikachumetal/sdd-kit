@@ -94,15 +94,32 @@ subject_cleanup() {
 
 # Un sujeto web arranca en el puerto que elige, no en el del molde: 5 de 6 en la 0036 (ticket de la feature 0036 §3).
 subject_ports() {
-  { [[ "${PORT:-}" =~ ^[0-9]+$ ]] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | sort -un | paste -sd, -
+  { [[ "${PORT:-}" =~ ^[0-9]+$ ]] && echo "$PORT"; [ -f "${JSONL:-}" ] && grep -oE '(PORT=|localhost:)[0-9]{4,5}' "$JSONL" | grep -oE '[0-9]+$'; } | awk '$1 >= 1 && $1 <= 65535' | sort -un | paste -sd, -
+}
+
+# Los puertos de los streams de los otros sujetos en curso del mismo RUNS_DIR: su marca de live/ (o dry/live/) con el PID vivo.
+other_subject_ports() {
+  local root="${RUNS%/*}" mark name pid
+  for mark in "$root"/live/*.* "$root"/dry/live/*.*; do
+    [ -f "$mark" ] || continue
+    name="${mark##*/}"; [ "$name" = "${PHASE:-red}.$LABEL" ] && continue
+    pid=; read -r pid < "$mark"
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null || continue
+    JSONL="$root/${name%%.*}/${name#*.}.jsonl" PORT= subject_ports | tr , '\n'
+  done | sort -un | paste -sd, -
 }
 
 # Por el PID que escucha en el puerto y arrancó con el sujeto, nunca por nombre: en la máquina corren los servidores
 # y los MCP de otras sesiones, y el stream nombra puertos que el sujeto solo leyó (revisión final de la feature 0214).
 stop_subject_ports() {
-  local ports script result listening
-  ports=$(subject_ports)
-  [ -n "$ports" ] && [ -n "${SUBJECT_STARTED:-}" ] || return 0
+  local own others p ports= shared= script result=comprobado: listening
+  own=$(subject_ports)
+  [ -n "$own" ] && [ -n "${SUBJECT_STARTED:-}" ] || return 0
+  # Un puerto que nombra otro sujeto en curso lo para el último en acabar: el primero paraba el servidor del otro (feature 0215).
+  others=",$(other_subject_ports),"
+  for p in ${own//,/ }; do
+    if [[ "$others" == *",$p,"* ]]; then shared+="${shared:+,}$p"; else ports+="${ports:+,}$p"; fi
+  done
   # Como argumento: con -Command - y el script por la entrada estándar, pwsh no ejecuta las líneas partidas.
   script=$(cat <<EOF
 \$since = [DateTimeOffset]::FromUnixTimeSeconds($SUBJECT_STARTED).LocalDateTime
@@ -112,12 +129,12 @@ stop_subject_ports() {
 'comprobado:' + ((\$mine.LocalPort | Sort-Object -Unique) -join ',')
 EOF
 )
-  result=$(pwsh -NoProfile -Command "$script" 2>/dev/null | tr -d '\r')
+  [ -z "$ports" ] || result=$(pwsh -NoProfile -Command "$script" 2>/dev/null | tr -d '\r')
   case "$result" in
     *comprobado:*) listening="${result##*comprobado:}" ;;
     *) listening="no comprobado (pwsh no respondió)" ;;
   esac
-  echo "puertos del sujeto: $ports · escuchando al acabar: ${listening:-ninguno}" >> "$RUNS/$LABEL.err"
+  echo "puertos del sujeto: $own · escuchando al acabar: ${listening:-ninguno}${shared:+ · compartidos con otro sujeto en curso, sin parar: $shared}" >> "$RUNS/$LABEL.err"
 }
 
 # Claude Code nombra la carpeta con la ruta Windows del cwd y cada carácter no alfanumérico como «-».
