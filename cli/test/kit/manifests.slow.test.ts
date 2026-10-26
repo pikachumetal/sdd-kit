@@ -3,11 +3,19 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { repoRoot } from './kit-files.ts';
 
-const hasClaude = !spawnSync('claude', ['--version'], { windowsHide: true }).error;
+const claude = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['claude'], { encoding: 'utf8', windowsHide: true })
+  .stdout?.split(/\r?\n/)
+  .find(Boolean);
+
+// Instalado con npm en Windows, claude es un .cmd, que solo arranca a través del shell.
+function runClaude(args: string[]): string {
+  const viaShell = /\.(cmd|bat)$/i.test(claude ?? '');
+  const quoted = viaShell ? args.map((arg) => `"${arg}"`) : args;
+  return spawnSync(viaShell ? `"${claude}"` : (claude ?? 'claude'), quoted, { encoding: 'utf8', windowsHide: true, shell: viaShell }).stdout;
+}
 
 function validate(target: string, strict: boolean): { success: boolean } {
-  const args = ['plugin', 'validate', join(repoRoot, target), '--json', ...(strict ? ['--strict'] : [])];
-  const { stdout } = spawnSync('claude', args, { encoding: 'utf8', windowsHide: true });
+  const stdout = runClaude(['plugin', 'validate', join(repoRoot, target), '--json', ...(strict ? ['--strict'] : [])]);
   try {
     return JSON.parse(stdout);
   } catch {
@@ -15,7 +23,7 @@ function validate(target: string, strict: boolean): { success: boolean } {
   }
 }
 
-describe.skipIf(!hasClaude)('claude plugin validate', () => {
+describe.skipIf(!claude)('claude plugin validate', () => {
   it('acepta la carpeta skills/ en modo strict', () => {
     expect(validate('skills', true).success).toBe(true);
   });

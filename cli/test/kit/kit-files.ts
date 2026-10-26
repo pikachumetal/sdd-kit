@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const repoRoot = fileURLToPath(new URL('../../../', import.meta.url));
@@ -14,6 +14,12 @@ export function filesUnder(dir: string, keep: (path: string) => boolean): string
     if (statSync(path).isDirectory()) return filesUnder(path, keep);
     return keep(path) ? [path] : [];
   });
+}
+
+const migrationsPart = `${sep}references${sep}migrations${sep}`;
+
+export function isMigration(path: string): boolean {
+  return path.includes(migrationsPart);
 }
 
 export function markdownFiles(dir: string): string[] {

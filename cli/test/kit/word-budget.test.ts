@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { join, sep } from 'node:path';
-import { markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
+import { join } from 'node:path';
+import { isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
 
 interface Budget {
   skillMd: number;
   total: number;
 }
 
-// Margen del 25 % sobre cada tope hasta la v3 y su limpieza (dev-lead, patch 0220, 2026-10-26).
+// Margen del 25 % sobre cada tope hasta la limpieza de la v3, que lo quita.
 const slack = 1.25;
 
 const skillBudgets: Record<string, Budget> = {
@@ -63,9 +63,8 @@ function words(text: string): number {
 }
 
 function skillWords(skill: string): number {
-  const migrations = `${sep}references${sep}migrations${sep}`;
   return markdownFiles(join(repoRoot, 'skills', skill))
-    .filter((path) => !path.includes(migrations))
+    .filter((path) => !isMigration(path))
     .reduce((sum, path) => sum + words(readFileSync(path, 'utf8')), 0);
 }
 
@@ -78,6 +77,7 @@ function expectWithin(measured: number, budget: number): void {
 }
 
 const skills = skillNames();
+const wordsBySkill = new Map(skills.map((skill) => [skill, skillWords(skill)]));
 
 describe('topes de palabras', () => {
   it.each(skills)('toda skill tiene tope: %s', (skill) => {
@@ -89,11 +89,11 @@ describe('topes de palabras', () => {
   });
 
   it.each(skills)('%s: la skill completa cabe en su tope', (skill) => {
-    expectWithin(skillWords(skill), skillBudgets[skill].total);
+    expectWithin(wordsBySkill.get(skill) ?? 0, skillBudgets[skill].total);
   });
 
   it('el kit entero cabe en su presupuesto', () => {
-    expectWithin(skills.reduce((sum, skill) => sum + skillWords(skill), 0), kitBudget);
+    expectWithin([...wordsBySkill.values()].reduce((sum, count) => sum + count, 0), kitBudget);
   });
 
   it.each(Object.keys(anchorBudgets))('%s cabe en su tope', (anchor) => {

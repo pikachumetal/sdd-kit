@@ -7,7 +7,7 @@ import { repoRoot } from './kit-files.ts';
 // clonado largos llegan a ~120: 140 relativos es lo que deja margen para esas bases.
 const MAX_RELATIVE_LENGTH = 140;
 
-// También los ficheros sin versionar no ignorados: antes de `git add` el test pasaba en falso (ticket 0063 §3).
+// También los ficheros sin versionar no ignorados: sin ellos, el test pasa en falso antes de `git add`.
 const paths = gitSync(repoRoot, ['ls-files', '--cached', '--others', '--exclude-standard']) ?? [];
 
 describe('longitud de las rutas versionadas y por versionar', () => {

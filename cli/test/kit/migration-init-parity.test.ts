@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
-import { repoRoot } from './kit-files.ts';
+import { isMigration, repoRoot } from './kit-files.ts';
 
 const migrationsDir = join(repoRoot, 'skills/sdd-upgrade/references/migrations');
 
@@ -25,13 +25,12 @@ function markdownIn(dir: string): string[] {
   return existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith('.md')).map((name) => join(dir, name)) : [];
 }
 
-// Lo que la init lee o escribe: su skill, sus referencias, lo que enlazan y el verbo `sdd init`.
 function initCorpus(): string {
   const skillDir = join(repoRoot, 'skills/sdd-init');
   const own = [join(skillDir, 'SKILL.md'), ...markdownIn(join(skillDir, 'references'))];
   const cli = readdirSync(join(repoRoot, 'cli/src/init')).filter((name) => name.endsWith('.ts')).map((name) => join(repoRoot, 'cli/src/init', name));
-  const excluded = [`${sep}references${sep}migrations${sep}`, `${sep}skills${sep}sdd-upgrade${sep}`];
-  const files = [...new Set([...own, ...own.flatMap(linkedMarkdown), ...cli])].filter((path) => !excluded.some((part) => path.includes(part)));
+  const upgradeSkill = `${sep}skills${sep}sdd-upgrade${sep}`;
+  const files = [...new Set([...own, ...own.flatMap(linkedMarkdown), ...cli])].filter((path) => !isMigration(path) && !path.includes(upgradeSkill));
   return files.map((path) => readFileSync(path, 'utf8')).join('\n');
 }
 

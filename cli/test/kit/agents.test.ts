@@ -3,12 +3,12 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { frontmatter, readText, repoRoot } from './kit-files.ts';
 
-const levels = ['high', 'low', 'medium'];
+const levels = ['low', 'medium', 'high'];
 
 describe('tipos de agente por effort', () => {
   it('el plugin entrega exactamente effort-low, effort-medium y effort-high', () => {
     const names = readdirSync(join(repoRoot, 'agents')).filter((name) => name.endsWith('.md')).map((name) => name.replace(/\.md$/, '')).sort();
-    expect(names).toEqual(levels.map((level) => `effort-${level}`));
+    expect(names).toEqual(levels.map((level) => `effort-${level}`).sort());
   });
 
   it.each(levels)('effort-%s hereda el modelo, fija su effort y no recorta herramientas', (level) => {

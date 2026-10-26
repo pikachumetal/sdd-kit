@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
-import { filesUnder, frontmatter, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
+import { join, relative } from 'node:path';
+import { filesUnder, frontmatter, isMigration, markdownFiles, readText, repoRoot, skillNames } from './kit-files.ts';
 
 const skillsRoot = join(repoRoot, 'skills');
 const skills = skillNames();
 
 // Proyectos reales donde se usa el kit: skills/ se instala en cada consumidor, y la evidencia de
-// campo se cita sin nombre propio (patches 0017 y 0183). MDT se llama hoy Quartz.
+// campo se cita sin nombre propio. MDT se llama hoy Quartz.
 const realProjectNames = ['Alybo', 'SifAcademy', 'SifRest', '\\bMDT\\b', '\\bQuartz\\b', 'LegalRep', 'Medysif'];
 
 function relativeLinks(text: string): string[] {
@@ -15,8 +15,7 @@ function relativeLinks(text: string): string[] {
 }
 
 function skillMarkdown(): string[] {
-  const migrations = `${sep}references${sep}migrations${sep}`;
-  return markdownFiles(skillsRoot).filter((path) => !path.includes(migrations));
+  return markdownFiles(skillsRoot).filter((path) => !isMigration(path));
 }
 
 function sortedUnique(values: string[]): string[] {
@@ -65,7 +64,7 @@ describe('skills de superpowers citadas', () => {
   // El recuento y la lista son el contrato; el énfasis y la frase de cierre son redacción.
   const sentence = /invoca \*{0,2}(\d+) skills? de superpowers\*{0,2}: (.*?)\./.exec(readText('README.md'));
   const declared = sortedUnique([...(sentence?.[2] ?? '').matchAll(/`([a-z-]+)`/g)].map((match) => match[1]));
-  const cited = sortedUnique(skillMarkdown().flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
+  const cited = sortedUnique(markdownFiles(skillsRoot).flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
 
   it('el README declara la misma lista que citan las skills', () => {
     expect(cited.length).toBeGreaterThan(0);
@@ -97,7 +96,7 @@ describe('manifests del plugin', () => {
 
   it('marketplace.json publica el plugin desde la raíz del repo, con description', () => {
     const entry = marketplace.plugins.find((candidate: { name: string }) => candidate.name === plugin.name);
-    expect(entry.source).toBe('.');
+    expect(entry?.source).toBe('.');
     expect(marketplace.description).toBeTruthy();
   });
 });
@@ -132,7 +131,7 @@ describe('privacidad', () => {
   const texts = filesUnder(skillsRoot, () => true).map((path) => ({ path: relative(repoRoot, path), text: readFileSync(path, 'utf8') }));
 
   it.each(realProjectNames)('ningún fichero de skills/ nombra el proyecto real %s', (name) => {
-    const pattern = new RegExp(name);
+    const pattern = new RegExp(name, 'i');
     expect(texts.filter(({ text }) => pattern.test(text)).map(({ path }) => path), 'la evidencia de campo se cita sin el nombre del proyecto').toEqual([]);
   });
 });
