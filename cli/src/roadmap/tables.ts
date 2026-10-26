@@ -27,11 +27,14 @@ export function headerMatches(lines: string[], block: Block): boolean {
   return lineAt(lines, block.header).trim() === HEADERS.get(block.section.kind);
 }
 
-function cellCountProblems(lines: string[], header: number): string[] {
+function cellCountProblems(lines: string[], block: Block, header: number): string[] {
   const headerCells = cells(lineAt(lines, header)).length;
   const separatorCells = cells(lineAt(lines, header + 1)).length;
-  if (headerCells === separatorCells) return [];
-  return [`línea ${header + 1}: la cabecera tiene ${headerCells} celdas y el separador ${separatorCells}`];
+  const separator = headerCells === separatorCells ? [] : [`línea ${header + 1}: la cabecera tiene ${headerCells} celdas y el separador ${separatorCells}`];
+  const rows = rowsOf(lines, block)
+    .filter((row) => row.cells.length !== headerCells)
+    .map((row) => `línea ${row.index + 1}: la fila tiene ${row.cells.length} celdas y la cabecera ${headerCells}`);
+  return [...separator, ...rows];
 }
 
 export function tableBlockProblems(lines: string[], block: Block): string[] {
@@ -41,7 +44,7 @@ export function tableBlockProblems(lines: string[], block: Block): string[] {
     return isEmptyRow(lineAt(lines, index)) ? [`línea ${index + 1}: fila vacía`] : [];
   });
   if (block.header === null) return problems;
-  return [...problems, ...cellCountProblems(lines, block.header)];
+  return [...problems, ...cellCountProblems(lines, block, block.header)];
 }
 
 export function headerIs(lines: string[], block: Block, expected: string): boolean {
