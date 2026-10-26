@@ -317,7 +317,10 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
 
   Context 'un puerto que nombra otro sujeto (feature 0215)' {
     BeforeAll {
-      # Un servidor en el puerto del sujeto y otro sujeto, b-1, con su marca y un stream que nombra el mismo puerto.
+      function Stop-Port($Port) {
+        if ($Port) { Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue } }
+      }
+
       function Invoke-SharedPort([string]$Name, [string]$OtherPid) {
         $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
         $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
@@ -327,8 +330,50 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
         $other = "$OtherPid echo `"`$other`" > `"`$RUNS_DIR/live/red.b-1`"; echo 'localhost:$port' > `"`$RUNS_DIR/red/b-1.jsonl`"; "
         $campaign = New-Campaign (Join-Path $TestDrive $Name) -Launch ($server + $other + 'subject_launch "x"')
         $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
-        return [pscustomobject]@{ Run = $run; Port = $port; Err = Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') }
+        return [pscustomobject]@{ Run = $run; Port = $port; Runs = $campaign.Runs; Err = Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err') }
       }
+    }
+
+    It 'deja su arranque al último en acabar cuando salta un puerto compartido' {
+      try {
+        $shared = Invoke-SharedPort 'handoff' 'other=$$;'
+
+        $handoff = Join-Path $shared.Runs "ports/$($shared.Port)"
+        Get-Content $handoff -ErrorAction SilentlyContinue | Should -Match '^\d+$' -Because $shared.Run.Output
+        $shared.Err | Should -Match "escuchando al acabar: sin consultar · compartidos" -Because $shared.Run.Output
+      } finally { Stop-Port $shared.Port }
+    }
+
+    It 'el último en acabar para el servidor compartido que arrancó antes que él' {
+      $probe = [Net.Sockets.TcpListener]::new([Net.IPAddress]::Loopback, 0)
+      $probe.Start(); $port = $probe.LocalEndpoint.Port; $probe.Stop()
+      $script = Join-Path $TestDrive 'earlier.mjs'
+      Set-Content -LiteralPath $script -Value "import { createServer } from 'node:http'; createServer().listen(Number(process.argv[2]));"
+      $campaign = New-Campaign (Join-Path $TestDrive 'earlier') -Launch "PORT=$port; subject_launch `"x`""
+      New-Item -ItemType Directory -Force (Join-Path $campaign.Runs 'ports') | Out-Null
+      Set-Content -LiteralPath (Join-Path $campaign.Runs "ports/$port") -Value ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() - 60) -NoNewline
+
+      try {
+        Start-Process -FilePath $script:Node -ArgumentList $script, $port -WindowStyle Hidden
+        foreach ($i in 1..50) { if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) { break }; Start-Sleep -Milliseconds 100 }
+        # SUBJECT_STARTED va en segundos: sin la espera, el servidor podía caer en el mismo segundo y contar como del sujeto.
+        Start-Sleep -Seconds 2
+        $run = Invoke-Campaign $campaign @{ SCENARIOS = 'a' }
+
+        $run.ExitCode | Should -Be 0 -Because $run.Output
+        $err = Get-Content -Raw (Join-Path $campaign.Runs 'red/a-1.err')
+        Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Should -BeNullOrEmpty -Because $err
+        $err | Should -Match "escuchando al acabar: $port" -Because $run.Output
+        Join-Path $campaign.Runs "ports/$port" | Should -Not -Exist
+      } finally { Stop-Port $port }
+    }
+
+    It 'trata como en curso la marca a medio escribir de otro sujeto' {
+      try {
+        $shared = Invoke-SharedPort 'half-written' 'other=;'
+
+        $shared.Err | Should -Match "compartidos con otro sujeto en curso, sin parar: $($shared.Port)" -Because $shared.Run.Output
+      } finally { Stop-Port $shared.Port }
     }
 
     It 'no para un puerto que nombra otro sujeto en curso' {
@@ -339,9 +384,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
         $shared.Run.ExitCode | Should -Be 0 -Because $shared.Run.Output
         Get-NetTCPConnection -LocalPort $shared.Port -State Listen -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
         $shared.Err | Should -Match "compartidos con otro sujeto en curso, sin parar: $($shared.Port)" -Because $shared.Run.Output
-      } finally {
-        Get-NetTCPConnection -LocalPort $shared.Port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
-      }
+      } finally { Stop-Port $shared.Port }
     }
 
     It 'para un puerto de otro sujeto que ya no corre' {
@@ -352,9 +395,7 @@ Describe 'Lanzador de referencia de sujetos headless (tests/headless/run.sh)' -T
         Get-NetTCPConnection -LocalPort $shared.Port -State Listen -ErrorAction SilentlyContinue | Should -BeNullOrEmpty
         $shared.Err | Should -Match "escuchando al acabar: $($shared.Port)" -Because $shared.Run.Output
         $shared.Err | Should -Not -Match 'compartidos'
-      } finally {
-        Get-NetTCPConnection -LocalPort $shared.Port -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
-      }
+      } finally { Stop-Port $shared.Port }
     }
   }
 
