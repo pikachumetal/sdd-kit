@@ -49,7 +49,7 @@ Describe 'Evidencia por THEN' {
   }
 
   It 'el walkthrough lleva la suite con su duración, su configuración y el umbral de 10 minutos' {
-    Assert-Literal $script:Walkthrough @('Suite completa: `<comando>` → <resultado> · <duración> · configuración: <la del gate | lo que se añadió>', 'sin «Presupuesto E2E» o con `pendiente`, si pasa de 10 min')
+    Assert-Literal $script:Walkthrough @('Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué de la herramienta>) · <duración> · configuración: <la del gate | lo que se añadió>', 'sin «Presupuesto E2E» o con `pendiente`, si pasa de 10 min')
   }
 
   It 'el walkthrough lleva, con E2E, el entorno de la suite y su duración frente al presupuesto' {
