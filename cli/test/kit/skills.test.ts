@@ -64,7 +64,7 @@ describe('skills de superpowers citadas', () => {
   // El recuento y la lista son el contrato; el énfasis y la frase de cierre son redacción.
   const sentence = /invoca \*{0,2}(\d+) skills? de superpowers\*{0,2}: (.*?)\./.exec(readText('README.md'));
   const declared = sortedUnique([...(sentence?.[2] ?? '').matchAll(/`([a-z-]+)`/g)].map((match) => match[1]));
-  const cited = sortedUnique(markdownFiles(skillsRoot).flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
+  const cited = sortedUnique(skillMarkdown().flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/superpowers:([a-z-]+)/g)].map((match) => match[1])));
 
   it('el README declara la misma lista que citan las skills', () => {
     expect(cited.length).toBeGreaterThan(0);

@@ -210,19 +210,20 @@
 | 2026-10-26 | 0215 | infra/tooling | 2.5 | 3.5 | 1.4 | 28415k | 2759k | 0.41 | 14.43 | 20261026-120112-feature-0215-real-subject-measurements |
 | 2026-10-26 | 0211 | infra/tooling | 1.5 | 2.39 | 1.59 | 31658k | 3646k | no aplica | 12.49 | 20261026-122254-feature-0211-session-clock-gaps |
 | 2026-10-26 | 0220 | patch | 3 | 1.08 | 0.36 | — | — | 3.87 | — | 20261026-141903-patch-0220-flaky-red-and-gate-estimate |
+| 2026-10-26 | 0226 | infra/tooling | 2 | 1.47 | 0.74 | 46677k | 9598k | no aplica | 20.49 | 20261026-162553-feature-0226-drop-phrase-tests |
 
-**Factor de calibración** (ratio mediano real/estimado, 170 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 171 artefactos): **0.6** · media 0.78
 
 - p25–p75: 0.4–0.94
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 11 %
-- Error absoluto (h): media 1.39 · mediana 0.98
+- Dentro de ±25 %: 27 % · sobreestimadas: 62 % · infraestimadas: 11 %
+- Error absoluto (h): media 1.39 · mediana 0.95
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.99
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 59 | 35 % |
-| 0.5–0.8 | 52 | 31 % |
+| 0.5–0.8 | 53 | 31 % |
 | 0.8–1.25 | 41 | 24 % |
 | 1.25–2 | 11 | 6 % |
 | ≥2 | 7 | 4 % |
@@ -231,7 +232,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
-| infra/tooling | 42 | 0.48 | 0.37–0.72 |
+| infra/tooling | 43 | 0.49 | 0.37–0.73 |
 | patch | 41 | 1.17 | 0.76–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -251,6 +252,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 58 | 159.65 | 0.57 | 310.45 | 1228.31 |
+| sin publicar | 59 | 161.12 | 0.57 | 310.45 | 1248.8 |
 
 > Ver `estimation.md`.

@@ -608,7 +608,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### La spec mide el margen de palabras de lo que edita
 
-- GIVEN un proyecto con topes de palabras (`tests/WordBudget.Tests.ps1` con `'sdd-propose' = @{ SkillMd = 5000; Total = 6325 }`) y una spec que edita `sdd-propose`, medido en 4.908 y 6.324
+- GIVEN un proyecto con topes de palabras (`cli/test/kit/word-budget.test.ts` con `'sdd-propose': { skillMd: 5000, total: 6325 }`) y una spec que edita `sdd-propose`, medido en 4.908 y 6.324
 - WHEN el agente escribe la spec
 - THEN la sección «Topes de palabras» lleva una fila por skill o documento con tope que la spec edita, con lo medido, el tope, el margen y el tope propuesto: `sdd-propose · 4.908 / 5.000 y 6.324 / 6.325 · 92 y 1 · 5.200 / 6.700`
 - AND el tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix, y el gate lo aprueba como decisión del dev-lead

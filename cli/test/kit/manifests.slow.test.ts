@@ -3,16 +3,29 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { repoRoot } from './kit-files.ts';
 
-const claude = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['claude'], { encoding: 'utf8', windowsHide: true })
-  .stdout?.split(/\r?\n/)
-  .find(Boolean);
+// En Windows, `where` lista antes el shim sin extensión que deja npm, que no arranca fuera de bash.
+function pickExecutable(lines: string[], platform: string): string | undefined {
+  return lines.find((line) => line !== '' && (platform !== 'win32' || /\.(exe|cmd|bat)$/i.test(line)));
+}
+
+const claude = pickExecutable(
+  spawnSync(process.platform === 'win32' ? 'where' : 'which', ['claude'], { encoding: 'utf8', windowsHide: true }).stdout?.split(/\r?\n/) ?? [],
+  process.platform,
+);
 
 // Instalado con npm en Windows, claude es un .cmd, que solo arranca a través del shell.
 function runClaude(args: string[]): string {
-  const viaShell = /\.(cmd|bat)$/i.test(claude ?? '');
-  const quoted = viaShell ? args.map((arg) => `"${arg}"`) : args;
-  return spawnSync(viaShell ? `"${claude}"` : (claude ?? 'claude'), quoted, { encoding: 'utf8', windowsHide: true, shell: viaShell }).stdout;
+  if (!/\.(cmd|bat)$/i.test(claude ?? '')) return spawnSync(claude ?? 'claude', args, { encoding: 'utf8', windowsHide: true }).stdout;
+  const command = [claude, ...args].map((part) => `"${part}"`).join(' ');
+  return spawnSync(command, { encoding: 'utf8', windowsHide: true, shell: true }).stdout;
 }
+
+describe('ejecutable de claude', () => {
+  it('en Windows salta el shim sin extensión y elige el .cmd', () => {
+    expect(pickExecutable(['C:\\npm\\claude', 'C:\\npm\\claude.cmd', ''], 'win32')).toBe('C:\\npm\\claude.cmd');
+    expect(pickExecutable(['/usr/local/bin/claude', ''], 'linux')).toBe('/usr/local/bin/claude');
+  });
+});
 
 function validate(target: string, strict: boolean): { success: boolean } {
   const stdout = runClaude(['plugin', 'validate', join(repoRoot, target), '--json', ...(strict ? ['--strict'] : [])]);
