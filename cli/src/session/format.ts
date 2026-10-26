@@ -56,12 +56,17 @@ export function costLine(cost: SessionCost): string {
 
 const formatHours = (hours: number): string => hours.toFixed(2).replace('.', ',');
 
+function idleTail({ idleMinutes, idleGaps }: Clock): string {
+  if (idleGaps === 0) return '';
+  return `, sin ${formatHours(idleMinutes / 60)} h sin actividad (${idleGaps} ${idleGaps === 1 ? 'hueco' : 'huecos'})`;
+}
+
 export function realLine(clock: Clock | null): string {
   if (clock === null) return '- Esfuerzo real: no medido (sin respuestas del hilo en los transcripts)';
   const scope = clock.sessions === 1 ? 'reloj de la sesión' : `reloj de ${clock.sessions} sesiones`;
   const noun = clock.waits === 1 ? 'espera' : 'esperas';
   const waits = `sin ${clock.waitMinutes} min de espera al dev-lead (${clock.waits} ${noun})`;
-  return `- Esfuerzo real: ${formatHours(clock.hours)} h — ${scope} ${formatHours(clock.clockHours)} h desde ${clock.start}, ${waits}`;
+  return `- Esfuerzo real: ${formatHours(clock.hours)} h — ${scope} ${formatHours(clock.clockHours)} h desde ${clock.start}, ${waits}${idleTail(clock)}`;
 }
 
 export function reportLines(session: Session, prices: Json | null, cost: SessionCost): string[] {
