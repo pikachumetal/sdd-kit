@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-26
 branch: patch/0222-fix-round-recorded-decision
-commit: <hash>
+commit: b66381e7
 ---
 
 # Patch 0222 — una pasada de fix que aplica una decisión registrada sigue con la enmienda marcada
@@ -45,14 +45,16 @@ Lo que da por existente, comprobado: `skills/sdd-implement/SKILL.md:299` (punto 
 | 2 | RED `c6` ×2 | ✅ 2/2 limpio: paran con 🦆 y la enmienda sin commitear → no se escribe guía en `sdd-verify` |
 | 3 | GREEN `k3` ×2 (texto de la rama) | ✅ 2/2: commit con el AND, «Enmiendas» `sin aprobar` y ✋ (`green/out/`) |
 | 4 | Control `k2` ×2 (sin decisión registrada) | ✅ 2/2: no commitean la regla que la spec no tiene |
-| 5 | Gate de cierre | <pendiente> |
+| 5 | Gate de cierre `moon run kit:test kit:test-headless cli:typecheck cli:test-min --affected --base develop` sobre `b66381e7` más el cierre sin commitear, salida entera en el scratchpad | ✅ en la 2.ª pasada (la 1.ª la cortó un cuelgue de la máquina en `kit:test-headless`), 70 min 32 s: `kit:test` 1345/0 (12 omitidos), `kit:test-headless` 81/0, `cli:test-min` 1497/1497; `cli:typecheck` lo salta `--affected` (sin cambios en `cli/`) |
+
+Validación en campo: 2026-10-26 · RED `k3` 0/2 → GREEN 2/2 + control `k2` 2/2; RED `c6` 2/2 limpio (parte recortada) · gate de cierre en verde · no probado: la regla en `pair`, y una ronda de fix (no de REFACTOR) de una feature con código: los dos escenarios son de la ronda de REFACTOR de una skill
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,5 h + 0,48 h del gate de cierre (29 min, patch 0220)
 - Inicio: 2026-10-26T17:22Z
-- Esfuerzo real:
-- Coste de sujetos:
+- Esfuerzo real: 2,16 h — reloj de 2 sesiones 3,03 h desde 2026-10-26T17:20Z, sin 52 min de espera al dev-lead (1 espera). +9 % sobre la estimación (1,98 h); el gate tardó 70 min, no los 29 previstos
+- Coste de sujetos: 2,57 $ en 12 sujetos Sonnet — RED descartado (`KIT_DIR` relativo) 0,45 $; RED `k3` 0,55 $ y `c6` 0,43 $; GREEN `k3` y control `k2` 1,14 $
 
 ## 6. Delta de capacidad
 
