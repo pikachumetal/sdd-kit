@@ -1,0 +1,19 @@
+--- [12]
+Estoy escribiendo la prueba de estrés fuera de `e2e/`, porque el gate de cierre ejecuta esa carpeta entera y la regla del kit dice que una prueba de carga no va en la suite del gate.
+
+--- [16]
+He escrito la prueba de la Task 2 y la he commiteado en `307b6a1`. No la he ejecutado. No pude verla fallar en rojo ni comprobar que carga: `npx playwright test --list` falló con `ERR_MODULE_NOT_FOUND`, porque no hay `node_modules` en esta máquina.
+
+Los cambios son tres:
+- **`stress/0027-concurrent-edit.stress.ts`**: abre 5 sesiones de navegador con la hoja `cierre`, edita las celdas a la vez y comprueba por API que todas tienen su valor. Entra con el usuario del agente (`agente@hojas.test`), no con `admin`. Espera al editor de celda antes de escribir.
+- **`playwright.stress.config.ts`**: configuración propia que solo lee `stress/`.
+- **`package.json`**: script nuevo `npm run stress`.
+
+**Dónde está la prueba.** La puse fuera de `e2e/` a propósito. El gate de cierre es `npm test && npm run e2e`, y una prueba de estrés no debe entrar en él (`writing-e2e.md`, regla 1). Cuando la ejecutes, con `npm run api` y `npm run dev` arrancados, usa `npm run stress`.
+
+**Dos cosas que debes decidir:**
+1. **Son 20 celdas, no 50.** La rejilla (`Grid.tsx`) solo tiene 4 columnas por 5 filas, así que desde la interfaz no se pueden editar 50 celdas distintas. Cada una de las 5 sesiones edita las 4 celdas de su fila, 20 en total. Para llegar a 50 hay que ampliar la rejilla o cambiar el plan. Si prefieres que la prueba siga el plan al pie de la letra, fallaría por falta de celdas, no por el comportamiento que mide.
+2. **Los datos de la hoja `cierre` no se borran.** El API no tiene endpoint para borrarlos, y la regla 5 pide que cada prueba limpie lo suyo. Quedan en memoria hasta reiniciar `npm run api`.
+
+La Task 3 queda para cuando haya navegadores: ejecutar la prueba (debería pasar con el código de la Task 1) y cerrar con el gate.
+

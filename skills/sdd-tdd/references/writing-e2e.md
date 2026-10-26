@@ -15,7 +15,7 @@ In the field, a menu offered the *previous* copy for ~3 s after copying; every E
 
 ## Rule 1: Name the Core Flow
 
-`operations.md` §Testing lists the project's **Flujos core**, each with its test. A new E2E extends one of them; say which in its `describe`. A behavior of no core flow (a remembered filter, a format, a label) is tested one layer down: a component or endpoint test. A change you think creates a core flow is a proposal for the spec's ✋, not a file you add.
+`operations.md` §Testing lists the project's **Flujos core**, each with its test. A new E2E extends one of them; say which in its `describe`. A behavior of no core flow (a remembered filter, a format, a label) is tested one layer down: a component or endpoint test. A change you think creates a core flow is a proposal for the spec's ✋, not a file you add. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
 
 ## Rule 2: Test What the User Sees
 
