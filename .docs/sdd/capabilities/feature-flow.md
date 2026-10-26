@@ -664,6 +664,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND si no la arregla, lo marca con `test.fixme()` y el enlace a su issue
 - AND no sube `retries` ni ningún timeout, ni en el test ni en `playwright.config.ts`
 
+### Una prueba de estrés no entra en la suite E2E del gate
+
+- GIVEN un proyecto con «Flujos core» en `operations.md` §Testing, entre ellos «editar celdas de una hoja y que se guarden», y un gate de cierre que corre `playwright test` sobre `e2e/`
+- WHEN una task pide una prueba de estrés de cinco sesiones editando la misma hoja a la vez
+- THEN la prueba no queda en `e2e/` ni en ninguna suite que corra el gate de cierre, aunque ejerza un flujo core
+- AND vive en una suite aparte con su propio comando, o se ejecuta como medida del smoke con su resultado en el walkthrough
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

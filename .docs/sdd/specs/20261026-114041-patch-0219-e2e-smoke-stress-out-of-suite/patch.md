@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-26
 branch: patch/0219-e2e-smoke-stress-out-of-suite
-commit: <hash>
+commit: b9c623d4
 ---
 
 # Patch 0219 — una prueba de estrés no entra en la suite E2E del gate
@@ -50,12 +50,16 @@ Lo que da por existente, comprobado: la regla 1 de `writing-e2e.md` («Name the 
 | 2 | RED `s1`: el smoke del paso 7 con `validation.mode: field` | ✅ limpio 0/2: los scripts quedan en `/tmp`; línea no escrita |
 | 3 | GREEN `s2` con la frase nueva, una vez por redacción | ✅ 2/2: `stress/` con `playwright.stress.config.ts` y `npm run stress`; `playwright.config.ts` sigue con `testDir: './e2e'` |
 | 4 | `tests/WordBudget.Tests.ps1` con los topes nuevos | ✅ 71/71 |
+| 5 | Gate de cierre `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`, cuatro pasadas sobre `b9c623d4` | ⚠️ ninguna pasada entera en verde. 1.ª (1111 s): `kit:test` 1417/1 en `Battery.Tests.ps1` (`pwd: write error: Bad file descriptor`); `cli:test-min` y `cli:test-slow`, sin correr. 2.ª (1171 s, `--cache off`): `kit:test` 1418/0, `cli:typecheck` en verde, `cli:test` 1182/1182, `cli:test-min` 1480/1 en `claim.slow.test.ts` › «takes the moved path when protected and moved». 3.ª (`cli:test-min` y `cli:test-slow`, 966 s): `cli:test-min` 1481/1481, `cli:test-slow` 298/1 en `lock-and-base.slow.test.ts` › «une lo que dos ramas añaden al final de cualquier fichero, sin tocar sus líneas» (`push: no se pudo publicar 'develop' en 'origin'.`). 4.ª (`cli:test-slow`, 407 s): 298/1 en `claim.slow.test.ts` › «refuses a dirty develop worktree» (`TypeError: Cannot read properties of undefined (reading 'trim')`). Cada test rojo, repetido solo en la rama: 3/3 (el de `Battery`, 1/1). No se contrastó en un worktree de la base: la rama no toca `cli/` ni `tests/headless/`. Merge sobre el rojo por decisión del dev-lead: «fusiona y apunta la fila» (2026-10-26). Los intermitentes, en la deuda con **Actuar → 0223** |
+
+Validación en campo: 2026-10-26 · RED 1/1 (estrés) y 0/2 (smoke) · GREEN 2/2 · `WordBudget.Tests.ps1` 71/71 · gate de cierre sin pasada entera en verde: cuatro rojos intermitentes distintos, cada uno 3/3 al repetirlo solo, y merge por decisión del dev-lead
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,5 h (post hoc): no calibra
 - Inicio: 2026-10-26T11:08Z
-- Esfuerzo real: <se escribe al cerrar>
+- Esfuerzo real: 1,71 h — reloj de la sesión 4,17 h desde 2026-10-26T11:08Z, sin 147 min de espera al dev-lead (7 esperas)
+- Desvío: +14 %. El gate de cierre se corrió cuatro veces (~60 min de reloj) por los rojos intermitentes
 - Coste de sujetos: 2,22 $ en 5 sujetos Sonnet — RED 1,71 $ (3); GREEN 0,51 $ (2)
 
 ## 6. Delta de capacidad

@@ -205,6 +205,7 @@
 | 2026-10-25 | 0217 | patch | 0.5 | 0.75 | 1.5 | — | — | no aplica | — | 20261025-160210-patch-0217-pester-git-env-anatomy |
 | 2026-10-25 | 0214 | infra/tooling | 3 | 2.72 | 0.91 | 72074k | 8273k | no aplica | 26.57 | 20261025-181756-feature-0214-mold-and-launcher-safety |
 | 2026-10-25 | 0218 | patch | 1.5 | 0.45 | 0.3 | — | — | no aplica | — | 20261025-203518-patch-0218-cross-worktree-test-lock |
+| 2026-10-26 | 0219 | patch | 1.5 | 1.71 | post hoc | — | — | 2.22 | — | 20261026-114041-patch-0219-e2e-smoke-stress-out-of-suite |
 
 **Factor de calibración** (ratio mediano real/estimado, 166 artefactos): **0.59** · media 0.76
 
@@ -246,6 +247,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 53 | 149.77 | 0.55 | 303.95 | 1201.39 |
+| sin publicar | 54 | 151.48 | 0.55 | 306.17 | 1201.39 |
 
 > Ver `estimation.md`.
