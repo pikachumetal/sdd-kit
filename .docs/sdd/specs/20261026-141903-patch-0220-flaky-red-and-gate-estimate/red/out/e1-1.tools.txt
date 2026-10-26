@@ -1,0 +1,226 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd; ls .docs/sdd/estimation.md
+
+>>> Grep: cancelada
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+.docs/sdd/estimation.md
+<<< test\cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+src\app.js:17:  return `cancelada ${room} ${day}`;
+.docs\sdd\roadmap.md:7:| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md operations.md estimation.md roadmap.md; ls specs; cat ../../src/app.js
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd ../.. && git branch --show-current && cat test/cancel.test.js && ls .docs/sdd/specs/*patch-0007* && cat .docs/sdd/specs/*patch-0007*/patch.md && ls scripts; SDD="D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/cli/bin/sdd.js"; node "$SDD" id next
+<<< develop
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+patch.md
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión.
+
+## Verificación
+
+- Gate de cierre `node --test && node scripts/lint.mjs` sobre el fix: verde, 38 min (el lint recorre el histórico d
+
+>>> Bash: cat scripts/lint.mjs; git status --short
+<<< import { readFileSync } from 'node:fs';
+
+const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const tabs = source.split('\n').filter((line) => line.includes('\t')).length;
+if (tabs > 0) {
+  console.error(`lint: ${tabs} líneas con tabuladores en src/app.js`);
+  process.exit(1);
+}
+console.log('lint: sin hallazgos');
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/cli/bin/sdd.js"; node "$SDD" id next --reserve && git checkout -b feature/0012-mensaje-cancelar && node "$SDD" id claim --project-root "$PWD"; git branch --show-current; date -u +%Y%m%d-%H%M%S; date -u +%H:%M
+<<< 0012
+Switched to a new branch 'feature/0012-mensaje-cancelar'
+sin remoto: la 0012 vale (contador local)
+feature/0012-mensaje-cancelar
+20261026-142346
+14:23
+
+>>> Bash: sed -i "s/'cancelada Norte lun'/'reserva cancelada: Norte lun'/" test/cancel.test.js && node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|expected|actual" 
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0220-flaky-red-and-gate-estimate\.temp\p0220\kit-red\skills\sdd-templates\patch-template.md
+<<<   + actual - expected
+    actual: 'cancelada Norte lun',
+    expected: 'reserva cancelada: Norte lun',
+<<< File does not exist. Note: your current working directory is <run>\repo.
+
+>>> Bash: find "D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/skills/sdd-templates" -name "patch-template*" | xargs cat
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash d
+
+>>> Bash: sed -i 's/`cancelada \${room} \${day}`/`reserva cancelada: ${room} ${day}`/' src/app.js && git diff --stat && s=$(date +%s) && node --test && node scripts/lint.mjs; echo "gate exit=$? secs=$(( $(date +%s)-s ))"
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+ src/app.js          | 70 ++++++++++++++++++++++++++---------------------------
+ test/cancel.test.js | 22 ++++++++---------
+ 2 files changed, 46 insertions(+), 46 deletions(-)
+✔ libres excluye la sala reservada en la franja (1.0279ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1854ms)
+✔ cancelar una reserva activa (0.9404ms)
+✔ cancelar sin reserva lo dice (0.1246ms)
+ℹ tests
+
+>>> Bash: git show HEAD:src/app.js | file - ; file src/app.js test/cancel.test.js; git config core.autocrlf; git diff --stat --ignore-space-at-eol
+<<< /dev/stdin: JavaScript source, ASCII text, with CRLF line terminators
+src/app.js:          JavaScript source, ASCII text
+test/cancel.test.js: JavaScript source, ASCII text
+true
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+ src/app.js          | 2 +-
+ test/cancel.test.js | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+>>> Bash: sed -i 's/$/\r/' src/app.js test/cancel.test.js && file src/app.js test/cancel.test.js && git diff --stat && node --test 2>&1 | grep -E "^ℹ (pass|fail)" && node scripts/lint.mjs
+<<< src/app.js:          JavaScript source, ASCII text, with CRLF line terminators
+test/cancel.test.js: JavaScript source, ASCII text, with CRLF line terminators
+ src/app.js          | 2 +-
+ test/cancel.test.js | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+ℹ pass 4
+ℹ fail 0
+lint: sin hallazgos
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/cli/bin/sdd.js"; node "$SDD" session tokens --path "$PWD" --branch feature/0012-mensaje-cancelar 2>&1 | head -5; node "$SDD" capability index --path .docs/sdd
+<<< | Ámbito | Modelo | Entrada | Escritura 5m | Escritura 1h | Lectura | Salida | Total | Coste ($) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Hilo | claude-sonnet-5-5 | 12 | 0 | 4.785 | 332.376 | 1.225 | 338.398 | sin precio |
+
+- Tokens del hilo: 338.398 — claude-sonnet-5-5 338.398
+Sin capacidades
+
+>>> Bash: d=.docs/sdd/specs/20261026-142346-patch-0012-mensaje-cancelar; mkdir -p $d; cat > $d/patch.md <<'EOF'
+---
+id: 20261026-142346-patch-0012-mensaje-cancelar
+task: 0012
+title: Patch — mensaje de cancelar
+type: patch
+solution: dev-lead
+status: done
+created: 2026-10-26
+branch: feature/0012-mensaje-cancelar
+commit: pendiente
+---
+
+# Patch 0012 — mensaje de cancelar
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe `cancelar` (`sdd capability index`: «Sin capacidades»).
+
+## 1. Síntoma
+
+Petición: «cambia el mensaje de cancelar: en vez de «cancelada Norte lun» que diga «reserva cancelada: Norte lun»».
+
+## 2. Solución fijada
+
+Frase literal del dev-lead (autor: dev-lead): «reserva cancelada: Norte lun». Comprobado que existe lo que da por existente: `cancelBooking` en `src/app.js:17` devuelve `cancelada ${room} ${day}` y `test/cancel.test.js:6` lo comprueba. El otro mensaje de `cancelar` (`sin reserva …`) no cambia.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/app.js`, `test/cancel.test.js`
+- **Cambio**: el mensaje pasa a `reserva cancelada: ${room} ${day}`; el test se actualiza antes (RED) con el nuevo texto.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | RED: `node --test test/cancel.test.js` con el texto nuevo falla (actual `cancelada Norte lun`) | ✅ |
+| 2 | Gate de cierre `node --test && node scripts/lint.mjs`: 4/4 y lint sin hallazgos (~1 s) | ✅ |
+
+## 5. Tiempo (ligero)
+
+- Estimación: 0,25 h
+- Inicio: 2026-10-26T14:23Z
+- Esfuerzo real: pendiente de cierre
+EOF
+git add -A && git commit -q -m "feat(cancelar): el mensaje dice «reserva cancelada: <sala> <día>» (0012)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< warning: in the working copy of '.docs/sdd/specs/20261026-142346-patch-0012-mensaje-cancelar/patch.md', LF will be replaced by CRLF the next time Git touches it
+05bc5dd feat(cancelar): el mensaje dice «reserva cancelada: <sala> <día>» (0012)
+448d9d2 feat: base del molde
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/cli/bin/sdd.js"; git status --porcelain; node "$SDD" merge --check --project-root "$PWD"; git worktree list
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo 05bc5dd [feature/0012-mensaje-cancelar]
+
+=== RESULTADO (22 turnos, 0.3530584000000001 $)
+Ahora: el cierre se para en la validación. Queda: que me digas qué has probado. Después van `patch.md` con el hash, changelog, roadmap, estimation-log y el merge, ~5 min.
+
+Comprobaciones previas hechas:
+- No hay cambios sin commitear.
+- Solo existe esta rama, así que no hay otras abiertas a la vez.
+- `sdd merge --check` avisa de que `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Por eso el merge te lo presentaré y esperaré tu respuesta, aunque el perfil sea `delegate`.
+
+**Lo que he verificado yo** (commit `05bc5dd`):
+- **RED:** con el texto nuevo en el test, `cancelar Norte lun` devolvía `cancelada Norte lun` y el test fallaba.
+- **Gate de cierre:** `node --test && node scripts/lint.mjs` da 4/4 en verde y lint sin hallazgos, en ~1 s.
+- **Diff:** 2 líneas en 2 ficheros. Los finales de línea CRLF originales se mantienen.
+
+**Guion para que lo pruebes tú:**
+1. `node src/app.js cancelar Norte lun` debe imprimir `reserva cancelada: Norte lun`.
+2. `node src/app.js cancelar Sur mar` debe imprimir `sin reserva Sur mar`, sin cambios.
+
+Cada invocación de `node src/app.js` arranca con las reservas en memoria, así que la reserva inicial `Norte lun` existe siempre.
+
+¿Qué has probado? Elige una:
+- **`Validado: lo he probado y funciona`**
+- **`Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`**
+- **`No funciona`**
+
+Hasta que respondas, el cierre queda en espera. No hay `validation.mode: field`, y con perfil `delegate` y sin tu respuesta no cierro ni fusiono.

@@ -7,6 +7,8 @@ BeforeDiscovery {
 BeforeAll {
   $script:KitRoot = if ($env:SDD_KIT_ROOT) { $env:SDD_KIT_ROOT } else { (Resolve-Path (Join-Path $PSScriptRoot '..')).Path }
 
+  # Margen del 25 % sobre cada tope hasta la v3 y su limpieza (dev-lead, patch 0220, 2026-10-26).
+  $script:Slack = 1.25
   $script:Budgets = @{
     Skills  = @{
       'add-to-changelog'    = @{ SkillMd = 500; Total = 500 }
@@ -65,25 +67,26 @@ Describe 'Topes de palabras' {
 
   It '<_>: SKILL.md cabe en su tope' -ForEach $script:SkillNames {
     $measured = Measure-Words (Join-Path $script:KitRoot "skills/$_/SKILL.md")
-    $budget = [int]$script:Budgets.Skills[$_].SkillMd
+    $budget = [int]($script:Budgets.Skills[$_].SkillMd * $script:Slack)
     $measured | Should -BeLessOrEqual $budget -Because (Get-BudgetReason $measured $budget)
   }
 
   It '<_>: la skill completa cabe en su tope' -ForEach $script:SkillNames {
     $measured = Measure-SkillWords $_
-    $budget = [int]$script:Budgets.Skills[$_].Total
+    $budget = [int]($script:Budgets.Skills[$_].Total * $script:Slack)
     $measured | Should -BeLessOrEqual $budget -Because (Get-BudgetReason $measured $budget)
   }
 
   It 'el kit entero cabe en su presupuesto' {
     $measured = (Get-ChildItem -LiteralPath (Join-Path $script:KitRoot 'skills') -Directory |
       ForEach-Object { Measure-SkillWords $_.Name } | Measure-Object -Sum).Sum
-    $measured | Should -BeLessOrEqual $script:Budgets.Kit -Because (Get-BudgetReason $measured $script:Budgets.Kit)
+    $budget = [int]($script:Budgets.Kit * $script:Slack)
+    $measured | Should -BeLessOrEqual $budget -Because (Get-BudgetReason $measured $budget)
   }
 
   It '<_> cabe en su tope' -ForEach $script:AnchorNames {
     $measured = Measure-Words (Join-Path $script:KitRoot ".docs/sdd/$_")
-    $budget = [int]$script:Budgets.Anchors[$_]
+    $budget = [int]($script:Budgets.Anchors[$_] * $script:Slack)
     $measured | Should -BeLessOrEqual $budget -Because (Get-BudgetReason $measured $budget)
   }
 }

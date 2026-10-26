@@ -35,10 +35,12 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 
 - GIVEN el cierre de la 0081 cuya suite falla sobre la rama con la base integrada con `TimeoutError: tests/e2e/export.spec.ts:12`
 - WHEN el cierre recibe ese rojo
-- THEN corre el mismo comando en un worktree temporal desanclado de `origin/develop`, y lo retira al acabar
+- THEN la salida de cada pasada de la suite ya está entera en un fichero del scratchpad de la sesión, guardada antes de filtrarla
+- AND corre el mismo comando en un worktree temporal desanclado de `origin/develop`, y lo retira al acabar; no fusiona hasta que acaba ese contraste
 - AND si también falla, escribe `base: en rojo: el mismo comando también falla sin la rama` y busca `export.spec.ts` y `TimeoutError` en la deuda del proyecto antes de abrir el test; si una fila lo nombra, la cita en el informe; si no, abre una fila en «Por triar» de `debt.md` (o en «Deuda técnica» del roadmap 2.x) con la evidencia
 - AND para con un bloque que lleva el comando, el código de salida, la ruta del log, las últimas 20 líneas, la línea `base:` y «`develop` sin tocar en `<hash>`», con el hash de `git rev-parse develop`, y pregunta si fusiona igual
-- AND si sin la rama pasa, el rojo es de la rama: vuelve a ella, arregla y repite la suite
+- AND si sin la rama pasa, lo repite en la rama: si vuelve a fallar, el rojo es de la rama: vuelve a ella, arregla y repite la suite
+- AND si en la rama también pasa, «No se repite»: abre una fila de intermitentes en la deuda, donde abriría la del rojo que también falla sin la rama, con el test, su línea de error copiada entera de la salida guardada, sin «…», y las dos pasadas en verde, y sigue con el cierre en cualquier perfil
 - AND con el rojo del `--verify` de `sdd merge`, la línea `base:` es la que da el script, y el cierre sigue igual
 
 ### Un hotfix se cierra en la rama estable solo con la frase del dev-lead

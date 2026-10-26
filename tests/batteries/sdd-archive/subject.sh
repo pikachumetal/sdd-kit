@@ -111,6 +111,25 @@ e2e_red_base() {
   grep -q 'export.e2e' "$R/.docs/sdd/roadmap.md" || die "no se plantó la fila de deuda del E2E"
   commit "test: e2e de exportación"
 }
+# Un test de develop que falla solo en la primera pasada del clon: el almacén vive en el .git común a sus worktrees.
+flaky_test() {
+  cat <<'EOF' | put test/ids.test.js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { execSync } from 'node:child_process';
+import { existsSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const store = join(execSync('git rev-parse --git-common-dir').toString().trim(), 'ids-store');
+
+test('una reserva nueva lleva su id', () => {
+  const id = existsSync(store) ? ' r1 ' : undefined;
+  writeFileSync(store, 'r1');
+  assert.equal(id.trim(), 'r1');
+});
+EOF
+  commit "test: id de una reserva nueva"
+}
 # develop avanza mientras la 0010 está abierta: código nuevo y una fila de roadmap en el mismo sitio que la que toca el cierre.
 develop_advances() {
   g checkout -q develop
@@ -192,6 +211,7 @@ case "$(cell Molde)" in
     sed -i 's/^- Nuevas: `bookings`/- Modificadas: `bookings`/' "$R/$F10/spec.md"; commit "docs(sdd): bookings ya existe"
     develop_advances; capability_advances ;;
   reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
+  reservas-flaky) mold_reservas; flaky_test; done_0010 ;;
   reservas-e2e) mold_reservas; e2e_suite; done_0010 ;;
   reservas-e2e-stale) mold_reservas; e2e_suite; done_0010; stale_server ;;
   reservas-plan) mold_reservas; e2e_red_base; g checkout -q -b feature/0010-cancel-reason

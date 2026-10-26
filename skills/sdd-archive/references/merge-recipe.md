@@ -14,9 +14,10 @@ After the closing commit, in the change's worktree: `sdd merge --sync --project-
 
 ## A red suite
 
-A red from the suite you ran is contrasted by hand: the same command in a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`.
+Save every pass of the suite whole to a file in the session's scratchpad before filtering it: a filter on the pipe loses the failing test's name. A red is contrasted by hand: the same command, as is, without cleaning state or caches first, in a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`. Nothing merges before the contrast ends.
 
-- **Passes without the branch**: the red is the branch's. Go back to it, fix with a failing test first, and run the suite again.
+- **Passes without the branch**: run it again on the branch. Red again: it's the branch's; fix it with a failing test first and run the suite again.
+- **No se repite**: green on the branch too. Open a debt row of flaky tests, placed as below, with the test, its error line copied whole from the saved log, without «…», and both green passes; go on, in any profile.
 - **Fails without the branch too**: write `base: en rojo: el mismo comando también falla sin la rama`. Before opening the failing test, search the first error lines (the test file, the error's name) in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap). A row that names it: quote it. None: open one in «Por triar» (in 2.x, in «Deuda técnica») with the evidence. Then stop with the red report and ask whether to merge anyway: that's the dev-lead's call.
 
 A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …` or `base: en verde: el rojo lo trae la rama`), and the same rule follows.
