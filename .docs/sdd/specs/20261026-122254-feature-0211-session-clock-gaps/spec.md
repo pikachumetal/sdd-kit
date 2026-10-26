@@ -4,7 +4,7 @@ feature: 0211
 title: El reloj de la sesión descuenta los huecos sin actividad y no toma por espera lo que no lo es
 mode: lite
 profile: delegate
-status: approved
+status: done
 created: 2026-10-26
 author: Àngel Delgado
 approvers:
@@ -61,6 +61,7 @@ approvers:
 | Línea de ejemplo `- Esfuerzo real: … (<n> esperas)` | `skills/sdd-templates/templates/walkthrough-template.md:26` | Scope: gana la cola opcional `[, sin <h> h sin actividad (<n> huecos)]` |
 | Línea pegada «tal cual» | `skills/sdd-templates/templates/patch-template.md:73`, `skills/sdd-archive/SKILL.md:34` | sin cambio: no fijan la forma de la línea |
 | **Límites** de la capacidad | `capabilities/estimation.md` §Reglas | delta: gana el umbral de 60 min |
+| Nota de la línea «Esfuerzo real» (`se pega tal cual …, y deja fuera las esperas`) | `skills/sdd-templates/templates/walkthrough-template.md:26` | recortada sin quitar instrucción para que la cola quepa en el tope del kit (91300 palabras, sin margen): ruling del ledger |
 
 - Filas que implementa: 0211 → `roadmap.md:24`, la fila se cierra en el archive · deuda «cuenta como esfuerzo una noche sin actividad» (0185/0149, `roadmap.md:121`), «cuenta como trabajo una noche de interrupción» (0209, `:160`), «descuenta como espera el trabajo que sigue a un mensaje … que no pide respuesta» (0208, `:486`), «cuenta como espera al dev-lead la espera a una tarea en segundo plano» (0210, `:494`) → saldadas en el archive · parciales: «El esfuerzo real medido se queda corto…» (`:478`, queda: la sesión de otra máquina) y «Menores diferidos de la feature 0188» (`:480`, el de `isCompactSummary`) → marca parcial en el archive. Comprobado con `grep -n "session tokens\|isCompactSummary\|0211" .docs/sdd/roadmap.md`.
 
@@ -69,7 +70,7 @@ approvers:
 El reloj recorre las entradas del transcript en orden, con dos estados:
 
 - **Turno cerrado**: lo abre una respuesta del agente con `end_turn` o `stop_sequence`. Un mensaje tecleado lo cierra como espera, del cierre al mensaje. Una notificación de tarea lo cierra como trabajo. Lo demás (compactación, `isMeta`, otras etiquetas del harness) no lo cierra.
-- **Turno abierto**: un mensaje tecleado no abre ni cierra nada. Cada hueco entre dos entradas seguidas de más de 60 min, sin herramienta en curso, se descuenta como hueco sin actividad.
+- **Turno abierto**: un mensaje tecleado no abre ni cierra nada. Cada hueco entre dos entradas seguidas de más de 60 min, sin herramienta en curso y que no acaba en una notificación de tarea, se descuenta como hueco sin actividad.
 
 Las preguntas con `AskUserQuestion` siguen como hoy: espera de la llamada a su resultado. `Esfuerzo real` = reloj − esperas − huecos. Las fixtures de transcript van en línea en `clock.test.ts`, como las de hoy.
 
@@ -118,6 +119,7 @@ Las preguntas con `AskUserQuestion` siguen como hoy: espera de la llamada a su r
 - AND `--json` lleva `idleMinutes: 585, idleGaps: 1`
 - AND un hueco cuenta como sin actividad si pasa de 60 min entre dos entradas seguidas, con el turno del agente abierto y sin herramienta en curso: una llamada cuyo resultado llega después en el transcript
 - AND un subagente en primer plano que tarda 90 min es una herramienta en curso: su hueco es trabajo
+- AND un hueco que acaba en una notificación de tarea es trabajo también con el turno abierto: GIVEN el usuario interrumpe al agente a las 10:01 y la notificación llega a las 11:30, THEN no hay hueco sin actividad
 - AND un hueco dentro de una espera cuenta solo como espera
 - AND sin huecos, la línea acaba en `(<n> esperas)`, como hoy
 
@@ -133,6 +135,8 @@ Las preguntas con `AskUserQuestion` siguen como hoy: espera de la llamada a su r
 - Confianza: media — la forma real del transcript en otros casos (subagentes, sesiones viejas sin `stop_reason`) puede pedir un ajuste
 
 ## Enmiendas
+
+- 2026-10-26 — AND nuevo en «La sesión descuenta los huecos sin actividad» y el Approach: el hueco que acaba en una notificación de tarea es trabajo también con el turno abierto — la revisión final (eje Spec) vio que la regla cubría a medias la decisión del dev-lead «el hueco que acaba en una `task-notification` cuenta como trabajo», que no se condiciona al turno cerrado; hay 5 huecos así en los transcripts reales — sin aprobar: aplica una decisión del dev-lead ya registrada, se le enseña en el cierre
 
 ## Aprobaciones
 
