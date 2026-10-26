@@ -29,7 +29,7 @@ Solo plugin de Claude Code (ADR 0011):
 
 ## Testing
 
-- **Gate de cierre**: `moon run kit:test kit:test-headless cli:typecheck cli:test-min --affected --base develop`, una vez y al cerrar (patch 0183; 0223). `--affected` salta la tarea cuyos `inputs` no cambian frente a `develop`: `kit:test-headless` (~700 s) solo corre si cambia `tests/headless/` o sus tests, y la CLI, si cambian `cli/`, `skills/`, `.docs/`, `tests/`, `agents/`, `.claude-plugin/` o `README.md` (`testInputs`). `cli:test-min` corre la CLI entera con Node 22.18.0: `cli:test` y `cli:test-slow` quedan para el bucle de desarrollo (dev-lead, 2026-10-26: «con cli:test-min nos sobra y basta»).
+- **Gate de cierre**: `moon run kit:test kit:test-headless cli:typecheck cli:test-min --affected --base develop`, una vez y al cerrar (patch 0183; 0223). `--affected` salta la tarea cuyos `inputs` no cambian frente a `develop`: `kit:test-headless` (~700 s) solo corre si cambia `tests/headless/` o sus tests, y la CLI, con cualquier cambio (`testInputs`: `/**/*`, porque `path-length.test.ts` mira todas las rutas). `cli:test-min` corre la CLI entera con Node 22.18.0: `cli:test` y `cli:test-slow` quedan para el bucle de desarrollo (dev-lead, 2026-10-26: «con cli:test-min nos sobra y basta»).
 
 ## Cómo se testean las skills
 

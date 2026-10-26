@@ -28,7 +28,7 @@ La última. Pasa a `cli/test/kit/`, en Vitest, lo que rompe algo de verdad: que 
 - Sustituye la consecuencia de la [ADR 0011](0011-node-cli.md) «los Pester que quedan (frases y anatomía de skills) siguen hasta la 0152». La 0011 sigue vigente en lo demás y no se edita. Los Pester que quedan son de conducta, hasta la 0227.
 - La «Confirmación» de varias ADR cita Pester borrados. Las que citan `WordBudget` (0001, 0002 y 0014) y `MigrationInitParity` (0007) se confirman ahora con `cli/test/kit/word-budget.test.ts` y `cli/test/kit/migration-init-parity.test.ts`. Lo que 0005 y 0006 citan de `NamingConvention` y `AgentDefinitions` vive en `cli/test/kit/skills.test.ts` y `cli/test/kit/agents.test.ts`. El resto (0005, 0006, 0008, 0010, 0012, 0015 y 0016) eran Pester de frase: su prueba es la batería RED/GREEN de la skill que aplica la regla.
 - Editar una frase de una skill no toca ningún test. Cambiar la forma de una plantilla tampoco.
-- `cli/moon.yml` lee como inputs de los tests de la CLI `.docs/`, `tests/`, `agents/`, `.claude-plugin/` y `README.md`: el gate corre la CLI también en un cambio que solo toca documentos.
+- `cli/moon.yml` toma el repo entero como input de los tests de la CLI, porque `path-length` mira todas las rutas: el gate corre la CLI con cualquier cambio.
 
 ### Confirmación
 
