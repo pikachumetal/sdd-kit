@@ -211,18 +211,19 @@
 | 2026-10-26 | 0211 | infra/tooling | 1.5 | 2.39 | 1.59 | 31658k | 3646k | no aplica | 12.49 | 20261026-122254-feature-0211-session-clock-gaps |
 | 2026-10-26 | 0220 | patch | 3 | 1.08 | 0.36 | — | — | 3.87 | — | 20261026-141903-patch-0220-flaky-red-and-gate-estimate |
 | 2026-10-26 | 0222 | patch | 1.5 | 2.16 | 1.44 | — | — | 2.57 | — | 20261026-172255-patch-0222-fix-round-recorded-decision |
+| 2026-10-26 | 0184 | infra/tooling | 3 | 1.37 | 0.46 | 34783k | 4322k | no aplica | 14.96 | 20261026-173032-feature-0184-cli-roadmap-task-watch-root |
 
-**Factor de calibración** (ratio mediano real/estimado, 171 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 172 artefactos): **0.6** · media 0.78
 
 - p25–p75: 0.4–0.94
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 27 % · sobreestimadas: 61 % · infraestimadas: 11 %
-- Error absoluto (h): media 1.39 · mediana 0.95
+- Dentro de ±25 %: 27 % · sobreestimadas: 62 % · infraestimadas: 11 %
+- Error absoluto (h): media 1.39 · mediana 0.98
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 1.21
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 59 | 35 % |
+| <0.5 | 60 | 35 % |
 | 0.5–0.8 | 52 | 30 % |
 | 0.8–1.25 | 41 | 24 % |
 | 1.25–2 | 12 | 7 % |
@@ -232,7 +233,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
-| infra/tooling | 42 | 0.48 | 0.37–0.72 |
+| infra/tooling | 43 | 0.48 | 0.37–0.71 |
 | patch | 42 | 1.18 | 0.77–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -252,6 +253,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 59 | 161.81 | 0.57 | 313.02 | 1228.31 |
+| sin publicar | 60 | 163.18 | 0.57 | 313.02 | 1243.27 |
 
 > Ver `estimation.md`.
