@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-26
 branch: patch/0220-flaky-red-and-gate-estimate
-commit: <hash>
+commit: 39c8c32e
 ---
 
 # Patch 0220 — cierre de un patch: el rojo que no se repite y el gate en la estimación
@@ -54,11 +54,19 @@ Lo que da por existente, comprobado: `merge-recipe.md:15-22` («A red suite») s
 | 3 | GREEN 1 (texto solo en `merge-recipe.md` y «from its last measure»), descartado: `a3f-1` no abrió la receta, borró `ids-store` antes del contraste y paró; `e1-1` midió su propio gate (1,3 s) | `a3f` 0/1, `e1` 1/2; la regla pasa al `SKILL.md` de `sdd-archive` (pasos 1 y 6, «sin limpiar estado») y `sdd-propose` dice dónde buscar la medida. Un segundo sujeto de `a3f` se cortó al parar la tanda, que corría con la receta truncada por un error mío al reescribirla |
 | 4 | GREEN 2: `green2/out/` | `a3f` 2/2 en F1, F2 y F4, F3 1/2 (`a3f-1` cita el error como «`TypeError … reading 'trim'`»); `e1` 2/2: «0,25 h + 0,63 h del gate de cierre (38 min, patch 0007)» |
 | 5 | Control de `a3f` tras pedir la línea de error entera, sin «…» (`green3/out/`) | 1/1 en F1-F4: salida en un fichero, contraste en un worktree desanclado de `develop`, fila con `TypeError [Error]: Cannot read properties of undefined (reading 'trim')` y las dos pasadas, merge después |
+| 6 | Commit del fix con el pre-commit activo (`git config core.hooksPath` → `.githooks`) | `kit:test-fast` 1289/0 (12 omitidos) |
+| 7 | `sdd capability merge` del delta en una copia de `.docs/sdd` y, al cerrar, en el repo; `capability check --artifact`, `decision check`, `roadmap check` | `archive.md` y `estimation.md`: sustituidos; «Capacidades válidas: 20», «Decisiones válidas», «Roadmap válido» |
+| 8 | Gate de cierre `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` sobre `39c8c32e`, salida entera en el scratchpad | verde en la 1ª pasada, 28 min 46 s: `kit:test` 1424/0 (14 omitidos), `cli:test` 1198/1198, `cli:test-slow` 299/299, `cli:test-min` 1497/1497 |
+
+Validación en campo: 2026-10-26 · `a3f` RED 0/2 → GREEN 2/2 (F3 1/2) + control 1/1; `e1` RED 0/2 → GREEN 2/2 · gate de cierre en verde a la primera (28 min 46 s) · no probado: un rojo de verdad intermitente en un cierre real (el molde lo simula con una marca en el `.git` común), y la conducta con la regla en un perfil `pair`; la salida del GREEN 1, descartada, queda fuera de git
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 3 h — 1,5 h de texto y escenarios, 0,75 h de la campaña RED/GREEN y 0,6 h del gate de cierre (`moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min`, 33 min en la última medida, patch 0212 §5)
 - Inicio: 2026-10-26T14:19Z
+- Esfuerzo real: 1,08 h — reloj de la sesión 1,23 h desde 2026-10-26T14:16Z, sin 9 min de espera al dev-lead (1 espera)
+- Desvío: −64 %: la campaña de sujetos costó menos de lo previsto (cada sujeto de 3 a 8 min, en paralelo) y el gate tardó 29 min; la estimación contaba 0,75 h de campaña y 1,5 h de texto
+- Coste de sujetos: 3,87 $ en 10 sujetos sonnet — RED 1,09 $; GREEN 1 (descartado), GREEN 2 y control, el resto, con un sujeto cortado contado a 0,83 $ por el lanzador
 
 ## 6. Delta de capacidad
 

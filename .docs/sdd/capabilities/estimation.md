@@ -157,7 +157,8 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y un patch clasificado por `sdd-propose`
 - WHEN el agente abre el patch
-- THEN si pregunta el carril, la pregunta lleva la estimación en horas
+- THEN la estimación en horas suma la duración del gate de cierre, de su última medida en el proyecto o de su «Gate de cierre», y la nombra: «0,5 h + 0,55 h del gate de cierre (33 min, patch 0212)»
+- AND si pregunta el carril, la pregunta lleva la estimación
 - AND, pregunte o no, `patch.md` §5 la escribe antes del fix, y la hora de inicio en UTC en la línea siguiente: `- Estimación: 0,5h` y `- Inicio: 2026-10-09T11:20Z`, con `- Esfuerzo real:` debajo al cerrar
 - AND `sdd estimation log` lee `- Estimación: 0,5h` como hoy, y `- Inicio:` no cuenta como estimación ni como real
 - AND un `patch.md` cerrado antes con `- Real:` se sigue leyendo igual
