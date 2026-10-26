@@ -83,8 +83,8 @@ function dispatchesJson(session: Session): object {
 
 function realJson(clock: Clock | null): object {
   if (clock === null) return { measured: false, reason: 'sin respuestas del hilo en los transcripts' };
-  const { hours, clockHours, start, waitMinutes, waits } = clock;
-  return { measured: true, hours, clockHours, start, waitMinutes, waits };
+  const { hours, clockHours, start, waitMinutes, waits, idleMinutes, idleGaps } = clock;
+  return { measured: true, hours, clockHours, start, waitMinutes, waits, idleMinutes, idleGaps };
 }
 
 export function toJson(measurement: Measurement): object {

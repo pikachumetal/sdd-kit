@@ -207,28 +207,29 @@
 | 2026-10-25 | 0218 | patch | 1.5 | 0.45 | 0.3 | — | — | no aplica | — | 20261025-203518-patch-0218-cross-worktree-test-lock |
 | 2026-10-26 | 0212 | patch | 0.5 | 1.2 | 2.4 | — | — | no aplica | — | 20261026-111623-patch-0212-plan-workspace-temp |
 | 2026-10-26 | 0215 | infra/tooling | 2.5 | 3.5 | 1.4 | 28415k | 2759k | 0.41 | 14.43 | 20261026-120112-feature-0215-real-subject-measurements |
+| 2026-10-26 | 0211 | infra/tooling | 1.5 | 2.39 | 1.59 | 31658k | 3646k | no aplica | 12.49 | 20261026-122254-feature-0211-session-clock-gaps |
 
-**Factor de calibración** (ratio mediano real/estimado, 168 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 169 artefactos): **0.6** · media 0.78
 
 - p25–p75: 0.4–0.94
-- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 10 %
-- Error absoluto (h): media 1.39 · mediana 0.98
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.94
+- p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 11 %
+- Error absoluto (h): media 1.39 · mediana 0.95
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.99
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 58 | 35 % |
+| <0.5 | 58 | 34 % |
 | 0.5–0.8 | 52 | 31 % |
 | 0.8–1.25 | 41 | 24 % |
-| 1.25–2 | 10 | 6 % |
+| 1.25–2 | 11 | 7 % |
 | ≥2 | 7 | 4 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
-| infra/tooling | 41 | 0.48 | 0.37–0.7 |
+| infra/tooling | 42 | 0.48 | 0.37–0.72 |
 | patch | 40 | 1.18 | 0.79–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -248,6 +249,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 55 | 154.47 | 0.57 | 304.36 | 1215.82 |
+| sin publicar | 56 | 156.86 | 0.57 | 304.36 | 1228.31 |
 
 > Ver `estimation.md`.

@@ -164,13 +164,14 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### La sesión mide el esfuerzo real sin las esperas al dev-lead
 
-- GIVEN un worktree con un transcript que empieza a las 12:26 en `develop`, pasa a `feature/0181` a las 12:40 y termina a las 13:35, con dos mensajes del usuario a las 12:58 y a las 13:30 cuya entrada anterior del agente es de las 12:40 y de las 13:28
+- GIVEN un worktree con un transcript que empieza a las 12:26 en `develop`, pasa a `feature/0181` a las 12:40 y termina a las 13:35, con un turno del agente que se cierra a las 12:40 y el usuario contesta a las 12:58, y una pregunta del agente a las 13:28 que el usuario contesta a las 13:30
 - WHEN se ejecuta `sdd session tokens --path <worktree> --branch feature/0181`
 - THEN la cuarta línea es `- Esfuerzo real: 0,82 h — reloj de la sesión 1,15 h desde 2026-10-14T12:26Z, sin 20 min de espera al dev-lead (2 esperas)`
-- AND el hueco entre una llamada a `AskUserQuestion` y su resultado es una espera; cualquier otro resultado de herramienta, una notificación del harness o una entrada `isMeta` no abre ni cierra una espera
+- AND una espera va del cierre de turno del agente (una respuesta con `stop_reason` `end_turn` o `stop_sequence`) al siguiente mensaje tecleado, o de una llamada a `AskUserQuestion` a su resultado; un mensaje tecleado con el turno abierto no abre ni cierra una espera
+- AND el resumen de una compactación (`isCompactSummary`), una entrada `isMeta` o una etiqueta del harness no es un mensaje tecleado: no abre ni cierra una espera
 - AND con dos transcripts de la rama, el reloj suma los dos, el inicio es el del más antiguo y la línea dice `reloj de 2 sesiones`
 - AND un transcript sin ninguna respuesta de la rama pedida no cuenta
-- AND `--json` lleva `real: { measured: true, hours: 0.82, clockHours: 1.15, start: "2026-10-14T12:26Z", waitMinutes: 20, waits: 2 }`
+- AND `--json` lleva `real: { measured: true, hours: 0.82, clockHours: 1.15, start: "2026-10-14T12:26Z", waitMinutes: 20, waits: 2, idleMinutes: 0, idleGaps: 0 }`
 - AND `sdd estimation log` lee esa línea como real 0,82 en un walkthrough y en §5 de un `patch.md`
 
 ### Una estimación de patch escrita al cerrar queda `post hoc` y no calibra
@@ -197,10 +198,35 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - AND si otra rama local sin transcripts propios se creó a las 10:30Z, la ventana de la 0211 acaba a las 10:30Z
 - AND sin reflog de la rama, las cuatro dicen `no medido (sin reflog de feature/0211-y: no se sabe cuándo se creó)`
 
+### La espera a una tarea en segundo plano es trabajo
+
+- GIVEN un transcript de la rama donde el agente cierra el turno a las 10:00, la siguiente entrada es una notificación de tarea (`<task-notification>`) a las 10:18, el usuario escribe a las 10:19 y el agente trabaja hasta cerrar a las 10:30
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN la línea dice `sin 0 min de espera al dev-lead (0 esperas)` y el esfuerzo real es el reloj entero
+- AND si la notificación llega 133 min después del cierre del turno, el hueco también es trabajo
+
+### La compactación no cierra la espera de un turno
+
+- GIVEN un transcript de la rama donde el agente cierra el turno a las 07:33 esperando una tarea en segundo plano, Claude Code compacta la conversación a las 08:28 (una entrada `isCompactSummary`), la notificación de la tarea llega a las 09:46 y el agente trabaja hasta cerrar a las 10:00
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN la línea dice `sin 0 min de espera al dev-lead (0 esperas)` y `reloj de la sesión 2,45 h`, con esfuerzo real 2,45 h
+
+### La sesión descuenta los huecos sin actividad
+
+- GIVEN un transcript de la rama donde el agente trabaja de las 21:00 a las 21:03 del 2026-10-21, el usuario lo interrumpe a las 21:03 (`[Request interrupted by user]`), la siguiente entrada es el «No response requested.» del agente a las 06:48 del 2026-10-22 con `stop_reason` `stop_sequence`, el usuario escribe «sigue» a las 06:50 y el agente trabaja hasta cerrar a las 07:00
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN la cuarta línea es `- Esfuerzo real: 0,22 h — reloj de la sesión 10,00 h desde 2026-10-21T21:00Z, sin 2 min de espera al dev-lead (1 espera), sin 9,75 h sin actividad (1 hueco)`
+- AND `--json` lleva `idleMinutes: 585, idleGaps: 1`
+- AND un hueco cuenta como sin actividad si pasa de 60 min entre dos entradas seguidas, con el turno del agente abierto y sin herramienta en curso: una llamada cuyo resultado llega después en el transcript
+- AND un subagente en primer plano que tarda 90 min es una herramienta en curso: su hueco es trabajo
+- AND un hueco que acaba en una notificación de tarea es trabajo también con el turno abierto: GIVEN el usuario interrumpe al agente a las 10:01 y la notificación llega a las 11:30, THEN no hay hueco sin actividad
+- AND un hueco dentro de una espera cuenta solo como espera
+- AND sin huecos, la línea acaba en `(<n> esperas)`, como hoy
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`.
 - **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee.
-- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes.
+- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min.
 - **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe y un documento presente en sus dos rutas. La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
 - **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.
