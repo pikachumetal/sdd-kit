@@ -33,10 +33,25 @@ function readPlan(plan: string): string {
   }
 }
 
+const FRONTMATTER = /^---\n([\s\S]*?)\n---(?:\n|$)/;
+const LITE_MODE = /^mode:[ \t]*lite\b/m;
+
+export function isLiteSpec(text: string): boolean {
+  const frontmatter = FRONTMATTER.exec(text.replace(/\r\n/g, '\n'))?.[1];
+  return frontmatter !== undefined && LITE_MODE.test(frontmatter);
+}
+
+function briefLines(text: string, task: string): string[] {
+  if (!isLiteSpec(text)) return extractTask(text, task);
+  const lines = text.split('\n');
+  if (lines.at(-1) === '') lines.pop();
+  return lines;
+}
+
 export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number }> {
   const { plan, task } = request;
   const path = request.out ?? join(await workspaceFor(plan), `task-${task}-brief.md`);
-  const picked = extractTask(readPlan(plan), task);
+  const picked = briefLines(readPlan(plan), task);
   if (picked.length === 0) throw new DomainError(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
   writeFileSync(path, `${picked.join('\n')}\n`);
   return { path, lines: picked.length };
