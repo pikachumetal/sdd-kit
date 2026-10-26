@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-26
 branch: patch/0212-plan-workspace-temp
-commit: <hash>
+commit: b4db4f3a
 ---
 
 # Patch 0212 — el workspace del plan pasa de `.superpowers/sdd/` a `.temp/sdd/`
@@ -45,11 +45,19 @@ Lo que da por existente, comprobado: la carpeta la crea la CLI del kit, no super
 | 1 | RED: tests de `cli/test/tasks/` con `.temp/sdd` esperado, código sin tocar | 18/46 fallan (`workspace.slow`, `executing.slow`) |
 | 2 | GREEN: `vitest run test/tasks/ test/watch/` | 78/78 |
 | 3 | `bash -n` de los dos `subject.sh` | sin errores |
+| 4 | Commit del fix con el pre-commit activo (`git config core.hooksPath` → `.githooks`) | `kit:test-fast` en verde |
+| 5 | `sdd capability merge` del delta en una copia de `.docs/sdd` y, al cerrar, en el repo | `feature-flow.md: sustituido «El workspace del plan se anuncia»`; el literal `.superpowers/sdd` no queda en `feature-flow.md` |
+| 6 | Gate de cierre `moon run kit:test cli:typecheck cli:test cli:test-slow cli:test-min` sobre `b4db4f3a` | 1ª pasada: `cli:test` 1182/1182, `kit:test` 1418/0 (14 omitidos), `cli:test-min` 1480/1: `test/ids/claim.slow.test.ts`, `TypeError: Cannot read properties of undefined (reading 'trim')`, fichero ajeno a la rama. Ese fichero solo con node 22.18.0: 29/29 (385 s). 2ª pasada de `cli:typecheck cli:test-slow cli:test-min`: `cli:test-slow` 299/299, `cli:test-min` 1481/1481. El intermitente va a una fila de deuda |
+
+Validación en campo: 2026-10-26 · RED 18/46 → GREEN 78/78 en `cli/test/tasks/` y `cli/test/watch/` · gate de cierre en verde en la 2ª pasada (`cli:test-min` intermitente en `claim.slow.test.ts`, ajeno, a la deuda) · no probado: una batería de `sdd-implement` o `sdd-verify` con sujetos que escriba su ledger en `.temp/sdd/` (sin texto de skill, no se lanzan sujetos)
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h
 - Inicio: 2026-10-26T11:16Z
+- Esfuerzo real: 1,20 h — reloj de la sesión 1,20 h desde 2026-10-26T11:15Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: +140 %, por el gate de cierre: 33 min la 1ª pasada, 6 min el contraste del rojo de `claim.slow.test.ts` y 25 min la 2ª pasada
+- Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
 
