@@ -7,7 +7,7 @@ import { memoryIo } from '../../src/cli/io.ts';
 import { generateEstimationLog, writeEstimationLog } from '../../src/estimation/log.ts';
 import { run } from '../../src/main.ts';
 
-const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
+export const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
 const roots: string[] = [];
 
 vi.setConfig({ testTimeout: 120_000 });
