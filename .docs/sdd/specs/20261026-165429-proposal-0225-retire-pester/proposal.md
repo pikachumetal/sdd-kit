@@ -39,3 +39,5 @@ El repo prueba el kit con dos pilas: Vitest para la CLI y 67 ficheros Pester (96
 No aplica: entrevista.
 
 ## Enmiendas
+
+- 2026-10-26 — Orden: la 0226 y la 0227 iban tras la 0223 → arrancan ya, en paralelo con la 0223, porque la 0223 toca `moon.yml`, `tests/Invoke-KitTests.ps1` y `tech-stack.md`, y ellas solo comparten `tech-stack.md`; la que cierre después integra la base — pedido por el dev-lead («me gustaría poder quitarme el pester cuanto antes»; «Sí, ya en paralelo») — re-parte: la columna «Tras» de 0226 y 0227 pasa de 0223 a —, sin tocar la regla de orden de arriba
