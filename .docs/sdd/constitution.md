@@ -20,7 +20,7 @@ Ninguna skill nueva ni edición de una existente —recortes, traducciones y ren
 - **La previsión de coste** (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite. Lista cada paso nuevo o cambiado de lo que el agente sigue (`SKILL.md`, `references/`, `migrations/`) con su escenario o el motivo de no medirlo, y la lente técnica de la review de spec lo comprueba. Si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead: seguir, cerrar con lo medido y dejar lo pendiente como deuda, o recortar el alcance.
 - **Renombrar, retirar o fusionar una skill es editarla**: se vuelve a medir su entrada, y la spec lleva una tabla «regla de la skill retirada → dónde vive ahora | por qué se descarta», con una fila por paso, red flag y racionalización.
 
-**Una pieza entra, otra sale**: la spec de toda feature o patch del kit dice qué retira o adelgaza; «nada» se justifica y se aprueba en el gate. Los topes de palabras viven en `tests/WordBudget.Tests.ps1` y solo suben por decisión del dev-lead escrita en la spec.
+**Una pieza entra, otra sale**: la spec de toda feature o patch del kit dice qué retira o adelgaza; «nada» se justifica y se aprueba en el gate. Los topes de palabras viven en `cli/test/kit/word-budget.test.ts` y solo suben por decisión del dev-lead escrita en la spec.
 
 El método (baterías, sujetos, matices de campaña) vive en `tech-stack.md`.
 

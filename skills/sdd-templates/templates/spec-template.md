@@ -128,7 +128,7 @@ approvers:
 - Base de la estimación: <complejidad, incertidumbres, referencia del estimation-log>
 - Confianza: alta / media / baja
 
-## Topes de palabras *(solo si el proyecto pone topes a lo que la spec edita: un test limita en palabras un fichero que edita, como `tests/WordBudget.Tests.ps1`)*
+## Topes de palabras *(solo si el proyecto pone topes a lo que la spec edita: un test limita en palabras un fichero que edita, como `cli/test/kit/word-budget.test.ts`)*
 
 > Si se cumple, es obligatoria y no se borra con los bloques de ayuda: una fila por fichero con tope que la spec edita, también si la edición lo acorta; un margen dicho en una decisión o en «Dónde se prueba» no es la tabla. Si ningún test limita lo que edita, borra la sección. Mide cada uno antes de presentarla, con el conteo del test que lo fija. El tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix de la revisión final, y lo aprueba el dev-lead en el gate. El de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más ese margen. Lo que se recorte para caber es una edición de skill: si quita una instrucción, lleva su RED.
 
