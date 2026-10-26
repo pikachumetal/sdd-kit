@@ -155,6 +155,34 @@ capability_advances() {
 # Otra feature abierta en su worktree, junto al del molde.
 other_worktree() { g worktree add -q -b feature/0011-others "$RUN/0011-others" develop; }
 
+# Un gate de cierre filtrado, con los flags de moon: bookings:test lee app.js y sus tests; rooms:test, rooms.js y el suyo.
+FILTERED_GATE='node scripts/gate.mjs run bookings:test rooms:test --affected --base develop'
+affected_gate() {
+  mkdir -p "$R/scripts"; cp "$HERE/fixtures/gate/gate.mjs" "$R/scripts/gate.mjs"
+  printf '%s\n' '{"tasks": {' \
+    '  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},' \
+    '  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}' '}}' | put gate.json
+  printf "export const rooms = ['Norte', 'Sur'];\n" | put src/rooms.js
+  printf "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { rooms } from '../src/rooms.js';\n\ntest('hay dos salas', () => {\n  assert.equal(rooms.length, 2);\n});\n" | put test/rooms.test.js
+  sed -i "s#Gate de cierre: \`node --test\` entero en verde.#Gate de cierre: \`$FILTERED_GATE\` en verde.#" "$R/.docs/sdd/constitution.md"
+  grep -q 'scripts/gate.mjs' "$R/.docs/sdd/constitution.md" || die "no se plantó el gate filtrado"
+  commit "chore: gate de cierre filtrado por tareas"
+}
+# La validación en campo de la 0010 ya se hizo sobre el último commit: el borrador del walkthrough, sin commitear.
+validated_0010() {
+  printf '%s\n' '# Walkthrough — Motivo al cancelar' '' '## 4. Verificación' '' '### 4.1 Builds' '' \
+    "- Suite completa: \`$FILTERED_GATE\` → verde, 1 s, sobre $(short HEAD)" '' \
+    "Validación en campo: 2026-10-26 · smoke por THEN (\`node src/app.js cancelar Norte lun --motivo sala-ocupada\`) y suite en verde sobre $(short HEAD)" \
+    | put "$F10/walkthrough.md"
+}
+# Tras la validación, develop gana la 0015, que solo cambia el test de las salas.
+develop_rooms_test() {
+  g checkout -q develop
+  printf "\ntest('las salas no se repiten', () => {\n  assert.equal(new Set(rooms).size, rooms.length);\n});\n" >> "$R/test/rooms.test.js"
+  commit "test(rooms): las salas no se repiten (0015)"
+  g checkout -q feature/0010-cancel-reason
+}
+
 # La 0010 es la pieza de una familia: su madre 0009 y su hermana 0016, tras ella.
 family_0010() {
   sed -i 's/^feature: 0010$/feature: 0010\nparent: 0009/' "$R/$F10/spec.md"
@@ -210,6 +238,12 @@ case "$(cell Molde)" in
   reservas-capbase) mold_reservas; capability_base; done_0010
     sed -i 's/^- Nuevas: `bookings`/- Modificadas: `bookings`/' "$R/$F10/spec.md"; commit "docs(sdd): bookings ya existe"
     develop_advances; capability_advances ;;
+  reservas-gate-base) mold_reservas; affected_gate; done_0010; develop_rooms_test; validated_0010
+    export TURN2='El walkthrough sin commitear es el borrador del paso 7: sigue con el cierre.' ;;
+  reservas-gate-open) mold_reservas; affected_gate; done_0010; develop_rooms_test; other_worktree ;;
+  reservas-gate-plan) mold_reservas; affected_gate; g checkout -q -b feature/0010-cancel-reason
+    approved_0010 | put "$F10/spec.md"; put "$F10/plan.md" < "$IMPL/fixtures/plan-0010.md"
+    commit "docs(sdd): abrir la feature 0010 con su spec y su plan" ;;
   reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
   reservas-flaky) mold_reservas; flaky_test; done_0010 ;;
   reservas-e2e) mold_reservas; e2e_suite; done_0010 ;;
