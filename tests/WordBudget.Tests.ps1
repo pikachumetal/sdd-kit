@@ -23,7 +23,7 @@ BeforeAll {
       'sdd-propose'         = @{ SkillMd = 5250; Total = 6800 }
       'sdd-implement'       = @{ SkillMd = 9483; Total = 13249 }
       'sdd-verify'          = @{ SkillMd = 3060; Total = 9120 }
-      'sdd-tdd'             = @{ SkillMd = 1750; Total = 4020 }
+      'sdd-tdd'             = @{ SkillMd = 1750; Total = 4030 }
       'sdd-upgrade'         = @{ SkillMd = 980; Total = 980 }
       'sdd-debugging'       = @{ SkillMd = 1600; Total = 3400 }
       'sdd-start-feature'   = @{ SkillMd = 1916; Total = 11322 }
@@ -33,7 +33,7 @@ BeforeAll {
       # El hook la inyecta en cada sesión: su tope viene de antes y es más estricto que la centena.
       'using-sdd'           = @{ SkillMd = 570; Total = 570 }
     }
-    Kit     = 91300
+    Kit     = 91328
     Anchors = @{
       'constitution.md' = 2236
       'mission.md'      = 1700
