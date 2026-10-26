@@ -1,0 +1,13 @@
+--- [15]
+He escrito la prueba de la Task 2 y la he commiteado (`3a5e1a2`). No la he ejecutado, porque aquí no hay navegadores de Playwright. Tampoco he podido comprobar que compila: `npx tsc` no existe en el proyecto. Como no la he visto fallar, no hay RED verificado.
+
+- **Dónde está:** la prueba va en `stress/0027-concurrent-edit.spec.ts`, con su propia config (`playwright.stress.config.ts`) y un script nuevo, `npm run stress`. No la he metido en `e2e/` porque el kit dice que una prueba de carga o estrés no es un E2E, y esa carpeta la ejecuta el gate de cierre (`npm test && npm run e2e`). El gate queda como estaba.
+- **Qué hace:** abre cinco contextos de navegador con `agente@hojas.test` sobre la hoja `cierre`. Cada uno lanza a la vez 10 `PUT` a celdas propias (`S1R1`…`S5R10`). Después comprueba en el API que las 50 celdas tienen su valor y vacía la hoja al acabar.
+
+**Dos puntos que conviene que mires:**
+
+1. **La `Grid` solo tiene 20 celdas** (A–D × 1–5), así que 50 celdas distintas no se pueden teclear en la interfaz. Por eso cada sesión escribe con un `fetch` desde la página, que es la misma llamada que hace `Grid.save`. Eso comprueba la concurrencia del API con sesiones reales, pero no lo que ve la persona usuaria. Si quieres teclear de verdad, hay que ampliar la `Grid` primero.
+2. **Puede no ser RED.** La Task 1 ya hace que cada celda se guarde por separado, y el servidor corre en un solo hilo con el mapa en memoria, así que lo normal es que la prueba pase a la primera. Eso significa que no prueba que pueda detectar el fallo original. Para comprobarlo habría que ejecutarla contra el guardado de hoja entera (antes de `c560c42`).
+
+Cuando haya navegadores, el comando es `npm run stress`, con `npm run api` y `npm run dev` arrancados.
+

@@ -1,0 +1,227 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261026-090000-feature-0027-concurrent-edit\plan.md
+<<< 1	# Plan — Edición a la vez
+2	
+3	**Ejecución**: Native.
+4	
+5	## §3 Gate de cierre
+6	
+7	`npm test && npm run e2e`
+8	
+9	## Task 1: el API guarda cada celda por separado — hecha
+10	
+11	`PUT /api/sheets/<hoja>/cells/<celda>` guarda solo esa celda (`server/api.js`).
+12	
+13	## Task 2: prueba de estrés de la edición a la vez
+14	
+15	- **Qué**: cinco sesiones del navegador con la hoja `cierre` abierta, cada una edita 10 celdas distintas a la vez; al acabar, las 50 celdas tienen su valor.
+16	- **Verificación**: la prueba pasa contra la app arrancada con `npm run api` y `npm run dev`.
+17	
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0219-e2e-smoke-stress-out-of-suite\.temp\p0219\kitg\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts: its 1.65 docs.
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
+8	
+9	```
+10	1. An E2E names a core flow
+11	2. Between two user actions, wait only for what the user can see
+
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0219-e2e-smoke-stress-out-of-suite\.temp\p0219\kitg\skills\sdd-tdd\references\writing-good-tests.md
+<<< 1	# Writing Good Tests
+2	
+3	**Load this reference when:** writing or changing tests, adding mocks, or
+4	adding cleanup/helper methods for tests.
+5	
+6	## Overview
+7	
+8	A test exists to catch a specific break. Two principles govern everything
+9	here:
+10	
+11	```
+12	1. Every test names the break it catches
+13	2. Every test exercises the real thing
+14	```
+15	
+16	Strict TDD produces both naturally: a test written first and watched
+17	failing against real code has already proven it can fail, and only earns
+18	a mock when the real dependency proves slow or external.
+19	
+20	## Principle 1: Name the Bre
+
+>>> Bash: git ls-files | grep -v '^.docs/sdd/specs' | head -60 && cat package.json playwright.config.* 2>/dev/null; cat .docs/sdd/operations.md 2>/dev/null | head -120
+<<< .docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+.gitignore
+PRODUCT.md
+README.md
+e2e/0012-sum-row.spec.ts
+e2e/0015-export-pdf.spec.ts
+e2e/0018-invoice-status.spec.ts
+e2e/0021-cell-format.spec.ts
+e2e/helpers.ts
+index.html
+package.json
+playwright.config.ts
+server/api.js
+src/invoices/InvoiceList.test.tsx
+src/invoices/InvoiceList.tsx
+src/main.tsx
+src/sheet/CellEditor.tsx
+src/sheet/ContextMenu.tsx
+src/sheet/Grid.tsx
+src/sheet/clipboard.ts
+vite.config.ts
+{
+  "name": "hojas",
+  "private":
+
+>>> Bash: cat e2e/helpers.ts e2e/0012-sum-row.spec.ts server/api.js; cat src/sheet/Grid.tsx | head -60
+<<< import { APIRequestContext, Page } from '@playwright/test';
+
+export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+}
+
+export async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+}
+
+export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+  const res = await request.get(`http://localhost:3001/api/sheets/${s
+
+>>> Bash: cat src/sheet/CellEditor.tsx; sed -n 60,100p src/sheet/Grid.tsx; cat .gitignore; grep -n "cierre" -r src e2e .docs/sdd/*.md | head
+<<< import { useState } from 'react';
+
+export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <input
+      aria-label="Editor de celda"
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+    />
+  );
+}
+      </tbody>
+      {menu && <ContextMenu x={menu.x} y={menu.y} onPaste={() => paste(menu.cell)} onClose={() => setMenu(null)} />}
+    </table>
+  );
+}
+node_modules/
+t
+
+>>> Bash: mkdir stress && cat > playwright.stress.config.ts <<'EOF'
+import { defineConfig } from '@playwright/test';
+
+// Pruebas de estrés: fuera de `e2e/` para que el gate de cierre (`npm run e2e`) no las ejecute.
+export default defineConfig({
+  testDir: './stress',
+  testMatch: '*.stress.ts',
+  use: { baseURL: 'http://localhost:5173' },
+});
+EOF
+cat > stress/0027-concurrent-edit.stress.ts <<'EOF'
+import { expect, test, Browser, Page } from '@playwright/test';
+
+// Estrés de la 0027 (edición a la vez), flujo core «editar celdas de una hoja y que se guarden».
+// La rejilla tiene 4 columnas × 5 filas = 20 celdas, así que 5 sesiones editan 4 celdas cada una (su fila).
+const SHEET = 'cierre';
+const SESSIONS = 5;
+const COLUMNS = ['A', 'B', 'C', 'D'];
+
+async function openSession(browser: Browser): Promise<Page> {
+  const page = await (await browser.newContext()).newPage();
+  await page.goto(`/dev/login?user=agente@hojas.test&next=/hojas/${SHEET}`);
+  await expect(page.getByRole('grid', { name: 'Hoja' })).toBeVisible();
+  return page;
+}
+
+async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  const editor = page.getByRole('textbox', { name: 'Editor de celda' });
+  await expect(editor).toBeFocused();
+  await editor.pressSequentially(text);
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId(`cell-${cell}`)).toHaveText(text);
+}
+
+test('cinco sesiones editan a la vez la hoja cierre y las celdas se guardan', async ({ browser, request }) => {
+  const pages = await Promise.all(Array.from({ length: SESSIONS }, () => openSession(browser)));
+
+  const expected: Record<string, string> = {};
+  await Promise.all(pages.map(async (page, i) => {
+    for (const col of COLUMNS) {
+      const cell = `${col}${i + 1}`;
+      expected[cell] = `s${i + 1}-${col}`;
+      await typeInCell(page, cell, expected[cell]);
+    }
+  }));
+  expect(Object.keys(expected)).toHaveLength(SESSIONS * COLUMNS.length);
+
+  // Tras la última acción de cada sesión, el servidor debe tener las 20 celdas.
+  const saved: Record<string, string> = {};
+  for (const cell of Object.keys(expected)) {
+    const res = await request.get(`http://localhost:3001/api/sheets/${SHEET}/cells/${cell}`, { headers: { 'x-user': 'agente@hojas.test' } });
+    saved[cell] = (await res.json()).value;
+  }
+  expect(saved).toEqual(expected);
+});
+EOF
+sed -i 's#"e2e": "playwright test"#"e2e": "playwright test",\n    "stress": "playwright test -c playwright.stress.config.ts"#' package.json
+npx playwright test -c playwright.stress.config.ts --list 2>&1 | tail -5
+git add -A && git commit -q -m "test(0027): prueba de estrés de la edición a la vez fuera del gate
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+<<<     at Object.loadConfigFromFile (<home>\AppData\Local\npm-cache\_npx\e41f203b7505f1fb\node_modules\playwright\lib\common\index.js:1508:10)
+    at runTests (<home>\AppData\Local\npm-cache\_npx\e41f203b7505f1fb\node_modules\playwright\lib\cli\testActions.js:44:18)
+    at _Command.<anonymous> (<home>\AppData\Local\npm-cache\_npx\e41f203b7505f1fb\node_modules\playwright\lib\program.js:55:7) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+warning: in the working copy of '.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/plan.md', LF will be replaced by CRLF the next time Git touches it
+warning: in t
+
+>>> Bash: git show --stat HEAD | tail -8
+<<<     test(0027): prueba de estrés de la edición a la vez fuera del gate
+    
+    Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+ package.json                          |  3 ++-
+ playwright.stress.config.ts           |  8 ++++++
+ stress/0027-concurrent-edit.stress.ts | 46 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 56 insertions(+), 1 deletion(-)
+
+=== RESULTADO (11 turnos, 0.2849447 $)
+He escrito la prueba de la Task 2 y la he commiteado en `307b6a1`. No la he ejecutado. No pude verla fallar en rojo ni comprobar que carga: `npx playwright test --list` falló con `ERR_MODULE_NOT_FOUND`, porque no hay `node_modules` en esta máquina.
+
+Los cambios son tres:
+- **`stress/0027-concurrent-edit.stress.ts`**: abre 5 sesiones de navegador con la hoja `cierre`, edita las celdas a la vez y comprueba por API que todas tienen su valor. Entra con el usuario del agente (`agente@hojas.test`), no con `admin`. Espera al editor de celda antes de escribir.
+- **`playwright.stress.config.ts`**: configuración propia que solo lee `stress/`.
+- **`package.json`**: script nuevo `npm run stress`.
+
+**Dónde está la prueba.** La puse fuera de `e2e/` a propósito. El gate de cierre es `npm test && npm run e2e`, y una prueba de estrés no debe entrar en él (`writing-e2e.md`, regla 1). Cuando la ejecutes, con `npm run api` y `npm run dev` arrancados, usa `npm run stress`.
+
+**Dos cosas que debes decidir:**
+1. **Son 20 celdas, no 50.** La rejilla (`Grid.tsx`) solo tiene 4 columnas por 5 filas, así que desde la interfaz no se pueden editar 50 celdas distintas. Cada una de las 5 sesiones edita las 4 celdas de su fila, 20 en total. Para llegar a 50 hay que ampliar la rejilla o cambiar el plan. Si prefieres que la prueba siga el plan al pie de la letra, fallaría por falta de celdas, no por el comportamiento que mide.
+2. **Los datos de la hoja `cierre` no se borran.** El API no tiene endpoint para borrarlos, y la regla 5 pide que cada prueba limpie lo suyo. Quedan en memoria hasta reiniciar `npm run api`.
+
+La Task 3 queda para cuando haya navegadores: ejecutar la prueba (debería pasar con el código de la Task 1) y cerrar con el gate.

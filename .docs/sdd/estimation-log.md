@@ -206,6 +206,7 @@
 | 2026-10-25 | 0214 | infra/tooling | 3 | 2.72 | 0.91 | 72074k | 8273k | no aplica | 26.57 | 20261025-181756-feature-0214-mold-and-launcher-safety |
 | 2026-10-25 | 0218 | patch | 1.5 | 0.45 | 0.3 | — | — | no aplica | — | 20261025-203518-patch-0218-cross-worktree-test-lock |
 | 2026-10-26 | 0212 | patch | 0.5 | 1.2 | 2.4 | — | — | no aplica | — | 20261026-111623-patch-0212-plan-workspace-temp |
+| 2026-10-26 | 0219 | patch | 1.5 | 1.71 | post hoc | — | — | 2.22 | — | 20261026-114041-patch-0219-e2e-smoke-stress-out-of-suite |
 | 2026-10-26 | 0215 | infra/tooling | 2.5 | 3.5 | 1.4 | 28415k | 2759k | 0.41 | 14.43 | 20261026-120112-feature-0215-real-subject-measurements |
 | 2026-10-26 | 0211 | infra/tooling | 1.5 | 2.39 | 1.59 | 31658k | 3646k | no aplica | 12.49 | 20261026-122254-feature-0211-session-clock-gaps |
 | 2026-10-26 | 0220 | patch | 3 | 1.08 | 0.36 | — | — | 3.87 | — | 20261026-141903-patch-0220-flaky-red-and-gate-estimate |
@@ -250,6 +251,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 57 | 157.94 | 0.57 | 308.23 | 1228.31 |
+| sin publicar | 58 | 159.65 | 0.57 | 310.45 | 1228.31 |
 
 > Ver `estimation.md`.
