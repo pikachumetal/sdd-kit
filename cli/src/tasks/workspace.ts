@@ -67,7 +67,7 @@ async function planContext(plan: string): Promise<{ base: string; slug: string; 
   planFile(plan);
   const root = await toplevel(process.cwd());
   if (root === null) throw new UsageError('fatal: not a git repository');
-  return { base: join(root, '.superpowers', 'sdd'), slug: slugOf(plan), claim: planIdentity(plan, root) };
+  return { base: join(root, '.temp', 'sdd'), slug: slugOf(plan), claim: planIdentity(plan, root) };
 }
 
 export async function workspaceFor(plan: string): Promise<string> {

@@ -73,7 +73,7 @@ export const hook = (hookEvent: string, toolUseID: string): Event => ({
 });
 
 export const readCall = (): Event =>
-  toolUse('Read', { file_path: 'C:\\repo\\.superpowers\\sdd\\plan\\review-final-0f264440.diff', offset: 500, limit: 420 });
+  toolUse('Read', { file_path: 'C:\\repo\\.temp\\sdd\\plan\\review-final-0f264440.diff', offset: 500, limit: 420 });
 
 export const pesterCall = (): Event => toolUse('PowerShell', { command: 'Invoke-Pester tests/' });
 

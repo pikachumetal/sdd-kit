@@ -197,5 +197,5 @@ for test in informe price store.e2e cancel horas reactivar ayuda; do [ -f "$R/te
 [ -f "$R/.sdd-env.json" ] && subject_keep "$R/.sdd-env.json" sdd-env.json
 [ -f "$R/README.md" ] && subject_keep "$R/README.md" README.md
 [ -f "$R/skills/guardar-nota/SKILL.md" ] && subject_keep "$R/skills/guardar-nota/SKILL.md" guardar-nota.md
-for ledger in "$R"/.superpowers/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
+for ledger in "$R"/.temp/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## commits con sus ficheros"; g log --stat --format='--- %h %s' develop..HEAD; } | subject_save

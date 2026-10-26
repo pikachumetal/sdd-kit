@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { commitAll, emptyRepo, git, planText, scratchDir, sdd, write } from './harness.ts';
 
-const workspaceRoot = (repo: string) => join(repo, '.superpowers', 'sdd');
+const workspaceRoot = (repo: string) => join(repo, '.temp', 'sdd');
 const marker = (dir: string) => readFileSync(join(dir, 'plan-path'), 'utf8').trim();
 
 function repoWithPlans(): string {
@@ -22,7 +22,7 @@ describe('sdd workspace (test-sdd-workspace.sh)', () => {
     expect(sdd(repoWithPlans(), 'workspace', 'no-such-plan.md').code).toBe(2);
   });
 
-  it('prints <repo-root>/.superpowers/sdd/<plan-basename> and two plans get distinct directories', () => {
+  it('prints <repo-root>/.temp/sdd/<plan-basename> and two plans get distinct directories', () => {
     const repo = repoWithPlans();
     const dirA = sdd(repo, 'workspace', 'plan-a.md').out.trim();
     const dirB = sdd(repo, 'workspace', 'plan-b.md').out.trim();
@@ -36,9 +36,9 @@ describe('sdd workspace (test-sdd-workspace.sh)', () => {
     const dir = sdd(repo, 'workspace', 'plan-a.md').out.trim();
     write(join(dir, 'artifact.md'), 'x\n');
     expect(readFileSync(join(workspaceRoot(repo), '.gitignore'), 'utf8').trim()).toBe('*');
-    expect(git(repo, 'status', '--porcelain')).not.toContain('.superpowers');
+    expect(git(repo, 'status', '--porcelain')).not.toContain('.temp');
     git(repo, 'add', '-A');
-    expect(git(repo, 'diff', '--cached', '--name-only')).not.toContain('.superpowers');
+    expect(git(repo, 'diff', '--cached', '--name-only')).not.toContain('.temp');
   });
 
   it('task brief writes its brief under the plan workspace', () => {
@@ -55,10 +55,10 @@ describe('sdd workspace (test-sdd-workspace.sh)', () => {
     git(repo, 'worktree', 'add', '-q', worktree, '-b', 'wt-feature');
     const own = sdd(worktree, 'workspace', 'plan-a.md').out.trim();
     const top = git(worktree, 'rev-parse', '--show-toplevel').split('/').join(sep);
-    expect(own).toBe(join(top, '.superpowers', 'sdd', 'plan-a'));
+    expect(own).toBe(join(top, '.temp', 'sdd', 'plan-a'));
     expect(own).not.toBe(join(workspaceRoot(repo), 'plan-a'));
     write(join(own, 'artifact.md'), 'y\n');
-    expect(git(worktree, 'status', '--porcelain')).not.toContain('.superpowers');
+    expect(git(worktree, 'status', '--porcelain')).not.toContain('.temp');
   });
 
   it('same-basename plans resolve to distinct workspaces and keep both briefs intact', () => {
