@@ -204,5 +204,5 @@ for kept in spec plan tasks walkthrough; do [ -f "$R/$F10/$kept.md" ] && subject
 [ -f "$R/test/cancel.test.js" ] && subject_keep "$R/test/cancel.test.js" cancel.test.js
 [ -f "$R/src/app.js" ] && subject_keep "$R/src/app.js" app.js
 [ "$SC" = f5 ] && subject_keep "$R/e2e/0024-remember-filter.spec.ts" 0024-remember-filter.spec.ts
-for ledger in "$R"/.superpowers/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
+for ledger in "$R"/.temp/sdd/*/progress.md; do [ -f "$ledger" ] && subject_keep "$ledger" progress.md; done
 { echo "## petición"; echo "$ASK"; echo "## git status"; g status --short; echo "## git log"; g log --oneline --all; echo "## commits con sus ficheros"; g log --stat --format='--- %h %s' develop..HEAD; } | subject_save

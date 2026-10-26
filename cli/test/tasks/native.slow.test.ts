@@ -112,7 +112,7 @@ describe('sdd task start / task done', () => {
   it('rulings does not create the workspace', () => {
     const repo = newRepo();
     sdd(repo, 'ledger', 'rulings', plan);
-    expect(existsSync(join(repo, '.superpowers'))).toBe(false);
+    expect(existsSync(join(repo, '.temp', 'sdd'))).toBe(false);
   });
 
   it('rulings reads the ledger of an existing workspace', () => {
