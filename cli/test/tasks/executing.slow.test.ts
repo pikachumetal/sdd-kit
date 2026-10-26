@@ -12,7 +12,7 @@ function repoWithPlan(): { repo: string; base: string; ledger: string } {
   const base = commitAll(repo, 'fixture');
   write(join(repo, 'task.txt'), 'x\n');
   commitAll(repo, 'task');
-  return { repo, base, ledger: join(repo, '.superpowers', 'sdd', 'plan', 'progress.md') };
+  return { repo, base, ledger: join(repo, '.temp', 'sdd', 'plan', 'progress.md') };
 }
 
 describe('sdd task start / done (test-executing-plans-scripts.sh)', () => {
@@ -24,7 +24,7 @@ describe('sdd task start / done (test-executing-plans-scripts.sh)', () => {
     const { repo } = repoWithPlan();
     const head = git(repo, 'rev-parse', 'HEAD');
     const result = sdd(repo, 'task', 'start', plan, '1');
-    const briefPath = join(repo, '.superpowers', 'sdd', 'plan', 'task-1-brief.md');
+    const briefPath = join(repo, '.temp', 'sdd', 'plan', 'task-1-brief.md');
     expect(result.out).toContain(`brief: ${briefPath}`);
     expect(result.out).toContain(`base: ${head}`);
     expect(readFileSync(briefPath, 'utf8')).toContain('Do the first thing.');
@@ -40,7 +40,7 @@ describe('sdd task start / done (test-executing-plans-scripts.sh)', () => {
     expect(result.out).toContain('OK');
     const line = `Task 1: complete (commits ${base.slice(0, 7)}..${head.slice(0, 7)}, tests: ${process.execPath} -e '${script}' → OK)`;
     expect(readFileSync(ledger, 'utf8')).toContain(line);
-    expect(readFileSync(join(repo, '.superpowers', 'sdd', 'plan', 'task-1-tests.log'), 'utf8').length).toBeGreaterThan(0);
+    expect(readFileSync(join(repo, '.temp', 'sdd', 'plan', 'task-1-tests.log'), 'utf8').length).toBeGreaterThan(0);
   });
 
   it('task done refuses to record a failing task and shows the failing output', () => {
@@ -75,7 +75,7 @@ describe('sdd task brief', () => {
   it('extracts only the requested task', () => {
     const { repo } = repoWithPlan();
     sdd(repo, 'task', 'brief', plan, '2');
-    const brief = readFileSync(join(repo, '.superpowers', 'sdd', 'plan', 'task-2-brief.md'), 'utf8');
+    const brief = readFileSync(join(repo, '.temp', 'sdd', 'plan', 'task-2-brief.md'), 'utf8');
     expect(brief).toBe('## Task 2: Second thing\n\nDo the second thing.\n');
   });
 
@@ -83,7 +83,7 @@ describe('sdd task brief', () => {
     const repo = emptyRepo();
     write(join(repo, plan), '## Task 1: A\n\n```\n## Task 2: fake\n```\n\nstill task 1\n\n## Task 2: B\n\nreal\n');
     sdd(repo, 'task', 'brief', plan, '1');
-    const brief = readFileSync(join(repo, '.superpowers', 'sdd', 'plan', 'task-1-brief.md'), 'utf8');
+    const brief = readFileSync(join(repo, '.temp', 'sdd', 'plan', 'task-1-brief.md'), 'utf8');
     expect(brief).toContain('## Task 2: fake');
     expect(brief).toContain('still task 1');
     expect(brief).not.toContain('real');
@@ -93,7 +93,7 @@ describe('sdd task brief', () => {
     const repo = emptyRepo();
     write(join(repo, plan), '## Task 10: Tenth\n\nten\n\n## Task 1: First\n\none\n');
     sdd(repo, 'task', 'brief', plan, '1');
-    expect(readFileSync(join(repo, '.superpowers', 'sdd', 'plan', 'task-1-brief.md'), 'utf8')).toBe('## Task 1: First\n\none\n');
+    expect(readFileSync(join(repo, '.temp', 'sdd', 'plan', 'task-1-brief.md'), 'utf8')).toBe('## Task 1: First\n\none\n');
   });
 
   it('fails with the not-found message when the task is missing', () => {
@@ -129,7 +129,7 @@ describe('sdd review package', () => {
     const repo = repoWithTwoCommits();
     const result = sdd(repo, 'review', 'package', plan, 'HEAD~1', 'HEAD');
     expect(result.code).toBe(0);
-    expect(result.out).toMatch(/^wrote .*[\\/]\.superpowers[\\/]sdd[\\/]plan[\\/]review-[0-9a-f]+\.\.[0-9a-f]+\.diff: 1 commit\(s\), \d+ bytes$/m);
+    expect(result.out).toMatch(/^wrote .*[\\/]\.temp[\\/]sdd[\\/]plan[\\/]review-[0-9a-f]+\.\.[0-9a-f]+\.diff: 1 commit\(s\), \d+ bytes$/m);
   });
 
   it('fails without a plan with exit 2', () => {
