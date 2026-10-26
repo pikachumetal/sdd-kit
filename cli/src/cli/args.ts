@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { Verb, VerbArgs } from './verbs.ts';
 
@@ -11,10 +12,18 @@ const PARSE_ERRORS: Record<string, string> = {
   ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL: 'argumento inesperado',
 };
 
-function toUsageError(error: unknown): UsageError {
+const PROJECT_ROOT = 'project-root';
+const ROOT_ALIASES = ['--path', '--root'];
+
+function rootHint(verb: Verb, code: string, token: string): string {
+  const misplaced = code === 'ERR_PARSE_ARGS_UNKNOWN_OPTION' && ROOT_ALIASES.includes(token) && PROJECT_ROOT in verb.options;
+  return misplaced ? `; la raíz del proyecto va en --${PROJECT_ROOT}` : '';
+}
+
+function toUsageError(error: unknown, verb: Verb): UsageError {
   const { code = '', message = String(error) } = error as { code?: string; message?: string };
   const token = /'([^' ]+)/.exec(message)?.[1] ?? '';
-  return new UsageError(`${PARSE_ERRORS[code] ?? message}: «${token}»`);
+  return new UsageError(`${PARSE_ERRORS[code] ?? message}: «${token}»${rootHint(verb, code, token)}`);
 }
 
 export function parseVerbArgs(verb: Verb, argv: string[]): VerbArgs {
@@ -28,9 +37,24 @@ export function parseVerbArgs(verb: Verb, argv: string[]): VerbArgs {
     });
     return { values, positionals, hasSeparator: tokens.some((token) => token.kind === 'option-terminator') };
   } catch (error) {
-    throw toUsageError(error);
+    throw toUsageError(error, verb);
   }
 }
+
+export function rootOption(args: VerbArgs, legacy: 'path' | 'root', fromRoot: (root: string) => string): string | null {
+  const own = text(args, legacy);
+  const root = text(args, PROJECT_ROOT);
+  if (own !== null && root !== null) throw new UsageError(`--${legacy} y --${PROJECT_ROOT} no van juntas`);
+  return root === null ? own : fromRoot(root);
+}
+
+export function requiredRootOption(args: VerbArgs, legacy: 'path' | 'root', fromRoot: (root: string) => string): string {
+  const value = rootOption(args, legacy, fromRoot);
+  if (value === null) throw new UsageError(`falta la opción --${legacy}`);
+  return value;
+}
+
+export const docsFolder = (root: string): string => join(root, '.docs', 'sdd');
 
 export function requiredOption(args: VerbArgs, name: string): string {
   const value = args.values[name];

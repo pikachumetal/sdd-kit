@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { requiredOption } from '../cli/args.ts';
+import { docsFolder, requiredOption, requiredRootOption } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { validateCapabilities } from './check.ts';
@@ -17,9 +17,9 @@ export const capabilityIndexVerb: Verb = {
   noun: 'capability',
   verb: 'index',
   summary: 'Lista las capacidades con su propósito',
-  options: { path: { type: 'string' }, json: { type: 'boolean' } },
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, json: { type: 'boolean' } },
   async run(args, io) {
-    const entries = capabilityIndex(requiredOption(args, 'path'));
+    const entries = capabilityIndex(requiredRootOption(args, 'path', docsFolder));
     if (args.values.json) io.json(entries);
     else indexLines(entries).forEach((line) => io.out(line));
     return 0;
@@ -30,9 +30,9 @@ export const capabilityCheckVerb: Verb = {
   noun: 'capability',
   verb: 'check',
   summary: 'Valida las capacidades y, con --artifact, el bloque «Capacidades» de una spec o un patch',
-  options: { path: { type: 'string' }, artifact: { type: 'string' }, json: { type: 'boolean' } },
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, artifact: { type: 'string' }, json: { type: 'boolean' } },
   async run(args, io) {
-    const path = requiredOption(args, 'path');
+    const path = requiredRootOption(args, 'path', docsFolder);
     const artifact = typeof args.values.artifact === 'string' ? args.values.artifact : undefined;
     if (artifact !== undefined && !existsSync(artifact)) return reportMissingArtifact(artifact, args.values.json === true, io);
     const { lines, code, validCount, foreign } = validateCapabilities(path, artifact);
@@ -54,9 +54,9 @@ export const capabilityMergeVerb: Verb = {
   noun: 'capability',
   verb: 'merge',
   summary: 'Fusiona el delta de una spec o un patch en capabilities/',
-  options: { path: { type: 'string' }, artifact: { type: 'string' } },
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, artifact: { type: 'string' } },
   async run(args, io) {
-    const path = requiredOption(args, 'path');
+    const path = requiredRootOption(args, 'path', docsFolder);
     const artifact = requiredOption(args, 'artifact');
     if (!existsSync(artifact)) {
       io.err(`no existe el artefacto: ${artifact}`);

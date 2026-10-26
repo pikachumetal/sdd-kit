@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { requiredOption, text, UsageError } from '../cli/args.ts';
+import { requiredRootOption, text, UsageError } from '../cli/args.ts';
 import { localDay } from '../cli/dates.ts';
 import { readText } from '../cli/files.ts';
 import { isRecord } from '../cli/records.ts';
@@ -41,6 +41,7 @@ export const initVerb: Verb = {
   summary: 'Registra el progreso de la init (--approved, --config) y escribe settings, .gitignore y sdd-kit.json (--finish)',
   options: {
     root: { type: 'string' },
+    'project-root': { type: 'string' },
     approved: { type: 'string' },
     config: { type: 'string' },
     finish: { type: 'boolean' },
@@ -48,7 +49,7 @@ export const initVerb: Verb = {
     'memory-off': { type: 'boolean' },
   },
   async run(args, io) {
-    const root = requiredOption(args, 'root');
+    const root = requiredRootOption(args, 'root', (root) => root);
     const today = localDay(new Date());
     return runInit({ root, action: action(args), kitVersion: kitVersion(), today }, io);
   },

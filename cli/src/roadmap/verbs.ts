@@ -1,4 +1,4 @@
-import { UsageError, lockTimeoutOption, requiredOption, text } from '../cli/args.ts';
+import { UsageError, docsFolder, lockTimeoutOption, requiredOption, requiredRootOption, text } from '../cli/args.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { configuredMergeInto } from '../merge/policy.ts';
 import { checkRoadmap } from './check.ts';
@@ -8,9 +8,9 @@ export const roadmapCheckVerb: Verb = {
   noun: 'roadmap',
   verb: 'check',
   summary: 'Valida que el roadmap y la deuda tienen la forma de su plantilla',
-  options: { path: { type: 'string' }, json: { type: 'boolean' } },
+  options: { path: { type: 'string' }, 'project-root': { type: 'string' }, json: { type: 'boolean' } },
   async run(args, io) {
-    const { errors, warnings, lines, code } = checkRoadmap(requiredOption(args, 'path'));
+    const { errors, warnings, lines, code } = checkRoadmap(requiredRootOption(args, 'path', docsFolder));
     if (args.values.json) io.json({ valid: errors.length === 0, errors, warnings });
     else lines.forEach((line) => io.out(line));
     return code;
