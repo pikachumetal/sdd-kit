@@ -29,6 +29,12 @@ case "$(cell Molde)" in
     mkdir -p "$R/docs"
     printf '%s\n' '# Configuración' '' '- `data/`: ficheros de datos de la herramienta. Hoy no hay ninguno.' '- Responsables de sala: aún no hay; quién es cada uno y su fichero los define la 0009.' > "$R/docs/config.md" ;;
   reservas-sin-ops) rm "$R/.docs/sdd/operations.md" ;;
+  # El último patch midió su gate de cierre: 38 min de un cierre de 0,9 h.
+  reservas-gate)
+    printf '%s\n' '# Patch — cancel' '' 'Causa raíz: comparación solo por hora. Fix y test de regresión.' '' '## Verificación' '' \
+      '- Gate de cierre `node --test && node scripts/lint.mjs` sobre el fix: verde, 38 min (el lint recorre el histórico de reservas)' '' \
+      '## Tiempo' '' '- Estimación: 0,25 h' '- Esfuerzo real: 0,9 h' '- Desvío: +260 %, por el gate de cierre (38 min)' \
+      > "$R/.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md" ;;
   # La 0012 retira anular: la nombran el README, la guía (con tope de palabras) y la capacidad, y la guía apunta a la fila.
   reservas-topes)
     mkdir -p "$R/.docs/sdd/capabilities" "$R/docs"
@@ -98,7 +104,7 @@ esac
 case "$SC" in
   g1|r1) MAX_TURNS="${MAX_TURNS:-15}" ;;
   d1|p3) MAX_TURNS="${MAX_TURNS:-60}" ;;
-  a1|a3|a4|k2|l1|pl1|pt1|x1|c1|t1|pb|pb-c|adr|adr-c) MAX_TURNS="${MAX_TURNS:-25}" ;;
+  a1|a3|a4|k2|l1|pl1|pt1|x1|c1|t1|pb|pb-c|adr|adr-c|e1) MAX_TURNS="${MAX_TURNS:-25}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
 

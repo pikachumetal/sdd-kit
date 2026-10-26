@@ -1,0 +1,25 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Pre-checks 1–3 limpios: sin cambios, destino `develop` listo, y no hay otras ramas abiertas. Ahora el paso 4 y 6 (spec, revisión final).
+
+--- [21]
+Paro antes de escribir ningún registro. Hay una suite roja que no es de la 0010 y el kit me obliga a que lo decida el dev-lead, aunque estemos en `delegate`.
+
+**Qué pasa**
+- `node --test` en este árbol (`a39b78e`): 6/6 en verde, unos 0,3 s. Con `--test-concurrency=1`, también 6/6.
+- `test/ids.test.js` ("una reserva nueva lleva su id") falla en la primera ejecución de cualquier clon limpio. El error es `TypeError: Cannot read properties of undefined (reading 'trim')`. Pasa a partir de la segunda.
+- La causa es que el test lee y escribe un fichero `ids-store` dentro de `.git`. Si todavía no existe, `id` queda `undefined`.
+- **Sin la rama también falla.** En un clon limpio de `develop` falla igual en la primera ejecución (4 pasan, 1 falla) y pasa en la segunda. `develop` ya contiene el mismo `test/ids.test.js`, sin diferencias con la rama.
+- Esta rama y la comprobación de fusión comparten `.git` con el worktree, así que ahí ya existe `ids-store` y la verán en verde.
+- No hay ninguna fila en la deuda de `roadmap.md` para esto.
+
+**Otra cosa a decidir.** El ruling de la Task 2 dice que se usa `--test-concurrency=1` en el gate para esquivar una carrera sobre el almacén en memoria. No creo que eso sea cierto. Cada fichero de test corre en su propio proceso, así que no comparten ese almacén. El flag no arregla el fallo real, que es lo de `ids-store`. Además el flag no está en ningún sitio del repo: el gate sigue siendo `node --test`. Lo dejaré en el walkthrough como decisión tomada sin el dev-lead, con esta corrección.
+
+**Lo que necesito de ti:** ¿fusiono `feature/0010-cancel-reason` en `develop` aun con ese rojo previo?
+- **Sí, fusiona:** sigo con el cierre completo. Eso incluye walkthrough, `bookings` con `capability merge`, changelog, roadmap y una fila nueva en la deuda con lo de `ids.test.js` y el ruling dudoso.
+- **No:** me paro aquí sin tocar nada.
+
+Lo que ya he comprobado: no hay cambios sin commitear, el destino `develop` está listo y no hay otras ramas abiertas. La spec está aprobada por Laura y la revisión final (Spec, Código y Arquitectura) quedó limpia sobre `21580bb`. El único commit posterior es `a39b78e`, que solo toca `tasks.md`, así que no hace falta otra revisión. La validación va en campo (`validation.mode: field`): la hice yo con la suite, no con tu prueba manual, y así quedará registrada.
+
