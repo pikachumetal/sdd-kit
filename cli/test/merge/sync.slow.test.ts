@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
-import { edit, git, mergeFixture, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { cleanEnv, edit, git, mergeFixture, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const CAPABILITY = '.docs/sdd/capabilities/routing.md';
 const RULES = ['Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto'].map((rule) => `- **${rule}**: no aplica\n`).join('');
@@ -93,7 +93,7 @@ describe('sdd merge --sync', () => {
     git(feature, 'checkout', '-q', 'feature/0001');
     edit(feature, 'README.md', 'base\n', 'la 0001\n');
     saveAll(feature, 'docs: la 0001');
-    spawnSync('git', ['merge', 'otra'], { cwd: feature });
+    spawnSync('git', ['merge', 'otra'], { cwd: feature, env: cleanEnv });
 
     const result = await sync(fx);
 

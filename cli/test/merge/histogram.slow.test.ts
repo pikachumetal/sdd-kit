@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
-import { git, mergeFixture, runMerge, saveAll, write, type Fixture } from './helpers.ts';
+import { cleanEnv, git, mergeFixture, runMerge, saveAll, write, type Fixture } from './helpers.ts';
 
 const fn = (name: string, value: number) => `int ${name}(void)\n{\n    return ${value};\n}\n`;
 const BASE = [fn('a', 1), fn('b', 2), fn('c', 3)].join('\n');
@@ -27,8 +27,8 @@ describe('los trozos se calculan con histogram', () => {
   it('mover c y cambiar c: con myers es conflicto, sdd merge lo fusiona', async () => {
     const fx = movedAndEdited('histogram');
     const probe = join(fx.wt, '0002');
-    const myers = spawnSync('git', ['merge', '--no-commit', '-X', 'diff-algorithm=myers', 'feature/0001'], { cwd: probe });
-    spawnSync('git', ['merge', '--abort'], { cwd: probe });
+    const myers = spawnSync('git', ['merge', '--no-commit', '-X', 'diff-algorithm=myers', 'feature/0001'], { cwd: probe, env: cleanEnv });
+    spawnSync('git', ['merge', '--abort'], { cwd: probe, env: cleanEnv });
     expect(myers.status).not.toBe(0);
     expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
 
