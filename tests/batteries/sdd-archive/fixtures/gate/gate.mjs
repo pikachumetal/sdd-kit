@@ -33,7 +33,7 @@ function runTask(name) {
   return failed === 0;
 }
 
-function unknownTask(names) {
+function exitOnUnknownTask(names) {
   const unknown = names.find((name) => !tasks[name]);
   if (unknown) {
     console.error(`tarea desconocida: ${unknown}`);
@@ -43,8 +43,9 @@ function unknownTask(names) {
 
 function run(args) {
   const names = args.filter((arg, i) => !arg.startsWith('--') && args[i - 1] !== '--base');
-  unknownTask(names);
-  const base = args.includes('--affected') ? args[args.indexOf('--base') + 1] ?? 'HEAD' : null;
+  exitOnUnknownTask(names);
+  const baseAt = args.indexOf('--base');
+  const base = args.includes('--affected') ? (baseAt === -1 ? 'HEAD' : args[baseAt + 1]) : null;
   const files = base ? changedFiles(base) : null;
   const selected = names.filter((name) => !files || isAffected(name, files));
   if (selected.length === 0) {
@@ -57,14 +58,14 @@ function run(args) {
   return passed ? 0 : 1;
 }
 
-function describe([name]) {
-  unknownTask([name]);
+function describeTask([name]) {
+  exitOnUnknownTask([name]);
   console.log(['Task: ' + name, 'Inputs:', ...tasks[name].inputs.map((input) => `  - ${input}`)].join('\n'));
   return 0;
 }
 
 const [verb, ...rest] = process.argv.slice(2);
-const verbs = { run, task: describe };
+const verbs = { run, task: describeTask };
 if (!verbs[verb]) {
   console.error('uso: node scripts/gate.mjs run <tareas…> [--affected --base <ref>] | task <tarea>');
   process.exit(2);

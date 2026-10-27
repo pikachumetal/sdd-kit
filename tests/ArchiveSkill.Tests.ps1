@@ -25,7 +25,7 @@ Describe 'sdd-archive: anatomía' {
   }
 
   It 'el 4.1 del walkthrough lleva la configuración de la suite, con E2E o sin ellos' {
-    $script:Skill | Should -Match ([regex]::Escape("«4.1 Builds» gives the full suite's command, result, duration, configuration"))
+    $script:Skill | Should -Match ([regex]::Escape("«4.1 Builds» gives the ``Gate:`` line of the validation's run, its duration, configuration"))
   }
 
   It 'e2e-suite.md fija las líneas del 4.1, el puerto ajeno y el presupuesto pendiente' {
@@ -255,8 +255,8 @@ Describe 'sdd-archive: pasada de fix de la revisión final' {
   }
 
   It 'el 4.1 da el sha de la validación y el mensaje final el de la base integrada' {
-    $script:Skill | Should -Match '«4\.1 Builds» gives the full suite''s command, result, duration, configuration \(the gate''s, or what you added\) and the sha of the validation'
-    $script:Skill | Should -Match 'the full suite again on the integrated base, with its result and its sha'
+    $script:Skill | Should -Match '«4\.1 Builds» gives the `Gate:` line of the validation''s run, its duration, configuration \(the gate''s, or what you added\) and sha'
+    $script:Skill | Should -Match 'if step 6 ran the gate, its `Gate:` line and its sha'
   }
 
   It 'un patch diferido lleva el prefijo 🧪 en su fila de «Patches»' {

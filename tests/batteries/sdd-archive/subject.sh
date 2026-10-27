@@ -158,12 +158,9 @@ other_worktree() { g worktree add -q -b feature/0011-others "$RUN/0011-others" d
 # Un gate de cierre filtrado, con los flags de moon: bookings:test lee app.js y sus tests; rooms:test, rooms.js y el suyo.
 FILTERED_GATE='node scripts/gate.mjs run bookings:test rooms:test --affected --base develop'
 affected_gate() {
-  mkdir -p "$R/scripts"; cp "$HERE/fixtures/gate/gate.mjs" "$R/scripts/gate.mjs"
-  printf '%s\n' '{"tasks": {' \
-    '  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},' \
-    '  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}' '}}' | put gate.json
-  printf "export const rooms = ['Norte', 'Sur'];\n" | put src/rooms.js
-  printf "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { rooms } from '../src/rooms.js';\n\ntest('hay dos salas', () => {\n  assert.equal(rooms.length, 2);\n});\n" | put test/rooms.test.js
+  local gate="$HERE/fixtures/gate"
+  mkdir -p "$R/scripts"; cp "$gate/gate.mjs" "$R/scripts/gate.mjs"; cp "$gate/gate.json" "$R/gate.json"
+  cp "$gate/rooms.js" "$R/src/rooms.js"; cp "$gate/rooms.test.js" "$R/test/rooms.test.js"
   sed -i "s#Gate de cierre: \`node --test\` entero en verde.#Gate de cierre: \`$FILTERED_GATE\` en verde.#" "$R/.docs/sdd/constitution.md"
   grep -q 'scripts/gate.mjs' "$R/.docs/sdd/constitution.md" || die "no se plantó el gate filtrado"
   commit "chore: gate de cierre filtrado por tareas"

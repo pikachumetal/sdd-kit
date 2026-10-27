@@ -101,7 +101,7 @@ Una regla y tres sitios. La regla, en `sdd-verify`: la línea `Gate:` nombra cad
 - GIVEN la 0081 con la suite en verde en `a1b2c3d`, en la validación, un gate de cierre `moon run app:test api:test --affected --base develop`, y `origin/develop` que avanzó con el merge de la 0080, que solo cambia `src/api/rooms.js` (input de `api:test`, no de `app:test`)
 - WHEN el cierre ha hecho su commit de cierre
 - THEN hace `git fetch` y `sdd merge --sync --project-root <worktree>`, que integra `origin/develop` en la rama como último commit, y corre `moon run app:test api:test --affected --base a1b2c3d` sobre el resultado: corre `api:test` y no `app:test`
-- AND el 4.1 del walkthrough lleva `` Gate: `moon run app:test api:test --affected --base a1b2c3d` → api:test: corrió 212/212 · app:test: saltada (la base no toca sus inputs: `moon task app:test`) ``
+- AND el mensaje final lleva `` Gate: `moon run app:test api:test --affected --base a1b2c3d` → api:test: corrió 212/212 · app:test: saltada (la base no toca sus inputs: `moon task app:test`) ``, y el 4.1 del walkthrough, la línea `Gate:` de la validación
 - AND el merge final lleva `--verified-at <sha del merge de sincronización>`
 - AND si la 0080 solo hubiera cambiado `.docs/sdd/roadmap.md`, no corre nada y el merge lleva `--verified-at a1b2c3d`
 - AND con un gate sin filtro de base (`node --test`), corre el gate entero (E2E incluidos si el proyecto los declara) si la base trae cambios fuera de `.docs/` que no sean `*.md`
@@ -135,7 +135,7 @@ Una regla y tres sitios. La regla, en `sdd-verify`: la línea `Gate:` nombra cad
 - THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
 - AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
 - AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `operations.md`, `tech-stack.md` ni la constitution, lo dice y pregunta qué ejecutar
-- AND con un gate filtrado (`moon run app:test api:test --affected --base develop`), la baseline corre sin el filtro solo las tareas cuyos inputs incluyen ficheros del Scope de la spec (`moon run api:test` si el Scope solo toca `src/api/`), y su informe es la línea `Gate:` con `app:test: saltada (fuera del Scope de la spec)`; nunca da la baseline por buena con un gate que no corrió ninguna tarea
+- AND con un gate filtrado (`moon run app:test api:test --affected --base develop`), la baseline corre sin el filtro solo las tareas cuyos inputs incluyen ficheros del Scope de la spec (`moon run api:test` si el Scope solo toca `src/api/`), y su informe es la línea `Gate:` con `app:test: saltada (fuera del Scope de la spec)`; nunca da la baseline por buena con un filtro que no corrió ninguna tarea; si ninguna tarea lee ficheros del Scope (un cambio solo en `.docs/`), las nombra todas saltadas fuera del Scope, lo dice y da la baseline por lista
 - AND si la baseline falla, corre el mismo comando en un worktree temporal desanclado de la rama de integración; si también falla allí, busca las primeras líneas de error en la deuda del proyecto y cita la fila o abre una en «Por triar»; después informa de los fallos con ese veredicto y pregunta si sigue o investiga
 - AND ningún fichero de `skills/` invoca `superpowers:using-git-worktrees` ni `superpowers:dispatching-parallel-agents`
 
@@ -164,6 +164,8 @@ Una regla y tres sitios. La regla, en `sdd-verify`: la línea `Gate:` nombra cad
 
 ## Enmiendas
 
+- 2026-10-27 — La baseline con un Scope que ninguna tarea lee: todas saltadas fuera del Scope y lista; lo que no vale es un filtro que no corrió nada — el AND «nunca… con un gate que no corrió ninguna tarea» chocaba con el Review Focus 3 del plan (eje Spec, Important 3) — Task 4 — aprobada (opción «Apruebo»)
+- 2026-10-27 — La línea `Gate:` del gate repetido tras el sync va en el mensaje final, no en el 4.1, que lleva la de la validación — el walkthrough entra en el commit de cierre, antes del sync (eje Spec, Important 2; misma causa que la enmienda de `Validación en campo:`) — Task 3 — aprobada (opción «Apruebo»)
 - 2026-10-26 — `Validación en campo:` ya no cita el sha del merge de sincronización: dice que la suite corrió sobre él, y el sha va en `--verified-at` y en el mensaje final — el walkthrough entra en el commit de cierre, antes del sync, y no puede llevar un sha posterior (GREEN `g6`, 0/2 en ese punto) — Task 3 — aprobada (opción «Apruebo»)
 
 ## Aprobaciones

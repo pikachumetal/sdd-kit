@@ -22,15 +22,6 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - AND ejecuta `sdd merge --check`; con `destino sacado:`, para con su salida antes de escribir
 - AND avisa en una línea, sin parar: «Abiertas a la vez: `feature/0083-room-photos` (`../0083-room-photos`). La que fusione segunda integra la base y repite sus gates.»
 
-### El cierre integra la base tras su commit y repite la suite solo si la base trae código
-
-- GIVEN la 0081 con la suite completa en verde en `a1b2c3d`, en la validación, y `origin/develop` que avanzó desde que se abrió la rama con el merge de la 0080, que cambia `src/rooms.js`
-- WHEN el cierre ha hecho su commit de cierre
-- THEN hace `git fetch` y `sdd merge --sync --project-root <worktree>`, que integra `origin/develop` en la rama como último commit, y corre la suite completa (E2E incluidos si el proyecto los declara) sobre el resultado, porque la 0080 cambia `src/`
-- AND el merge final lleva `--verified-at <sha del merge de sincronización>`
-- AND si la 0080 solo hubiera cambiado `.docs/sdd/roadmap.md`, no corre la suite y el merge lleva `--verified-at a1b2c3d`
-- AND con conflicto en `roadmap.md`, `changelog.md` o un add/add de dos requisitos al final de una capacidad, `--sync` lo resuelve y el cierre sigue; con `base: conflicto en src/slots.js`, el cierre queda «No terminado» para una persona
-
 ### Un rojo ajeno se busca en la deuda antes de investigarlo
 
 - GIVEN el cierre de la 0081 cuya suite falla sobre la rama con la base integrada con `TimeoutError: tests/e2e/export.spec.ts:12`
@@ -175,10 +166,31 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - AND el mensaje de la validación lleva, antes del guion, una sola línea `Panel:`: `Panel: Chrome sobre <url de la app>` o `Panel: plan B en http://127.0.0.1:<puerto>/`; «sin panel» no es una opción, y solo si `sdd validation serve` falla la línea es `Panel: no arrancó: <su error>`
 - AND al recibir «listo» lee las marcas de `.temp/validation/0010.json`, para el servidor por su PID y aplica las mismas reglas de `Validado`, KO y paso sin marcar que con el panel en Chrome
 
+### El cierre integra la base tras su commit y repite solo lo que afecta lo que trae la base
+
+- GIVEN la 0081 con la suite en verde en `a1b2c3d`, en la validación, un gate de cierre `moon run app:test api:test --affected --base develop`, y `origin/develop` que avanzó con el merge de la 0080, que solo cambia `src/api/rooms.js` (input de `api:test`, no de `app:test`)
+- WHEN el cierre ha hecho su commit de cierre
+- THEN hace `git fetch` y `sdd merge --sync --project-root <worktree>`, que integra `origin/develop` en la rama como último commit, y corre `moon run app:test api:test --affected --base a1b2c3d` sobre el resultado: corre `api:test` y no `app:test`
+- AND el mensaje final lleva `` Gate: `moon run app:test api:test --affected --base a1b2c3d` → api:test: corrió 212/212 · app:test: saltada (la base no toca sus inputs: `moon task app:test`) ``, y el 4.1 del walkthrough, la línea `Gate:` de la validación
+- AND el merge final lleva `--verified-at <sha del merge de sincronización>`
+- AND si la 0080 solo hubiera cambiado `.docs/sdd/roadmap.md`, no corre nada y el merge lleva `--verified-at a1b2c3d`
+- AND con un gate sin filtro de base (`node --test`), corre el gate entero (E2E incluidos si el proyecto los declara) si la base trae cambios fuera de `.docs/` que no sean `*.md`
+- AND con conflicto en `roadmap.md`, `changelog.md` o un add/add de dos requisitos al final de una capacidad, `--sync` lo resuelve y el cierre sigue; con `base: conflicto en src/slots.js`, el cierre queda «No terminado» para una persona
+
+### Con otra rama abierta o la base por delante, la suite corre una sola vez, tras el merge de sincronización
+
+- GIVEN `validation.mode: field`, la 0081 implementada, `git worktree list` que muestra `feature/0083-room-photos`, y `git rev-list --count HEAD..origin/develop` que da 2 tras `git fetch`
+- WHEN la validación y el cierre de la 0081
+- THEN el smoke por THEN corre y la suite no corre antes del commit de cierre
+- AND tras el commit de cierre y `sdd merge --sync`, el gate de cierre corre una sola vez, tal como lo declara el proyecto, sobre el merge de sincronización
+- AND `Validación en campo:` dice que la suite corrió sobre el merge de sincronización, y el merge final lleva `--verified-at` con su sha, que da también el mensaje final
+- AND sin otra rama abierta y con la base al día (`git rev-list --count` da 0), la suite corre en la validación como hasta ahora
+- AND con `validation.mode: manual`, el guion se presenta igual, y la suite corre tras el merge de sincronización, antes del merge
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)
 - **Idioma de los nombres**: skill y ficheros en inglés kebab-case; marcas de carril de la skill `Feature only:`, `Patch only:`, `Hotfix only:`; el panel, `sddValidationPanel`, con los estados `pending`, `ok` y `ko`; las líneas de registro, en castellano (`Validado:`, `no ensayado:`)
-- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.920 y total 8.000 (`tests/WordBudget.Tests.ps1`); la suite completa una vez por árbol (en la validación, y otra tras el merge de sincronización solo si la base trae cambios fuera de `.docs/` que no sean `*.md`); el informe de rojo lleva las últimas 20 líneas; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
+- **Límites**: tope de palabras de `sdd-archive`, `SKILL.md` 3.920 y total 8.000 (`tests/WordBudget.Tests.ps1`); el gate de cierre corre una vez por árbol: en la validación o, con otra rama abierta o la base por delante, solo sobre el merge de sincronización; tras el merge de sincronización se repite solo lo que afecta lo que trae la base: con un gate filtrado, el gate con su base en el sha de la última suite en verde; sin filtro, el gate entero si la base trae cambios fuera de `.docs/` que no sean `*.md`; el informe de rojo lleva las últimas 20 líneas; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` dentro del `NOTICE` y el anexo de procedencia de `sdd-archive` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0)
 - **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas.» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md` · `Validado: <fecha> · panel: <n>/<n> OK · «listo»` · `no ensayado: <motivo>` · que la captura es la del momento de leer y la red no trae hora (panel en Chrome) · que la página del plan B no ve la app: sin consola, red ni captura del KO · `Panel: Chrome sobre <url de la app>` · `Panel: plan B en http://127.0.0.1:<puerto>/` · `Panel: no arrancó: <su error>`
 - **Regla ante conflicto**: un conflicto al integrar la base o al fusionar que `sdd merge` no resuelve lo resuelve una persona; un rojo que también falla sin la rama lo decide el dev-lead tras la búsqueda en la deuda; el merge a la rama estable, el tag y su push solo con la frase del dev-lead; la fila de la madre de una familia la cierra el dev-lead, no el cierre; el panel en Chrome va antes que el plan B, que solo sale sin Claude in Chrome, sin navegador conectado o con la inyección fallida; si lo que la persona dice en el chat contradice una marca del panel, manda lo que dice, y el agente lo registra con su frase

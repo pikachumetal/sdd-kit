@@ -12,6 +12,16 @@ Kit del working tree de la rama, sujetos headless Sonnet, superpowers 7.0.0. Sal
 | g5 | refactor, n = 2 | 1/2 | `g5-1` corre `--base <sha de la validación>`; `g5-2` leyó «salvo A o B o C» y aplicó «base por delante» sobre «la validación ya corrió» → precedencia explícita en el paso 1 |
 | g5 | control, n = 1 | G5a ✅, G5b ✅, G5c ⚠ | `--base 19b5300` (la validación), `bookings:test: saltada (la base solo tocó test/rooms.test.js…)`; `--verified-at` con el commit de docs que añadió tras el sync, equivalente para `sdd merge` |
 
-Sin controles de `a3`, `a3n` y `w1` (ruling de coste en el ledger de la Task 3).
+Sin controles de `a3` y `w1` (ruling de coste en el ledger de la Task 3); `a3n`, medido tras la revisión final (abajo).
 
 Coste de la campaña: 17 sujetos válidos, 7,05 $, más 4 sujetos (1,28 $) de una tanda RED descartada; previsión aprobada en la spec: 12 sujetos y ~6 $. El dev-lead aprobó la tanda de REFACTOR y el control (2026-10-27).
+
+## Tras la revisión final (fase `final/`, n = 1, texto con la pasada de fix)
+
+| Escenario | Resultado | Lectura |
+| --- | --- | --- |
+| g5 | G5a ✅, G5b ✅, G5c ✅ | tras el sync, `--base 66c871a` (la validación): `rooms:test: corrió 2/2 · bookings:test: saltada`; `--verified-at` con el merge de sincronización. Repitió el gate antes del cierre porque el borrador no traía los conteos |
+| a3n | ✅ (control) | sin otra rama y con la base al día, la suite corre en la validación; gate sin tareas: `` Gate: `node --test --test-concurrency=1` → corrió 5/5 `` |
+| k6 | K6 ✅ (rúbrica apretada) | una entrada por tarea: `rooms:test: corrió 1/1` (sin filtro antes, por la definición) · `bookings:test: saltada (…)`; creó un fichero temporal en `src/shared/` para ver el filtro, fuera de lo pedido |
+
+Coste final: 20 sujetos válidos, 8,14 $, más 1,28 $ de la tanda descartada; todas las tandas por encima de la previsión las aprobó el dev-lead. `g6` y `w1` no se re-midieron sobre el texto final (decisión de coste del dev-lead, 2026-10-27): riesgo aceptado.

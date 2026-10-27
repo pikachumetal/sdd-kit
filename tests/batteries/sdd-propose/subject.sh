@@ -48,12 +48,9 @@ case "$(cell Molde)" in
   reservas-adr-docs) mkdir -p "$R/.docs/sdd/decisions"; sed 's#  - src/\*\*#  - docs/**#' "$FIX/adr-0003-bookings-in-memory.md" > "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
   # Un gate de cierre filtrado, con los flags de moon (el de la batería de sdd-archive): un cambio en gate.json no casa con ningún input.
   reservas-filtro)
-    mkdir -p "$R/scripts"; cp "$HERE/../sdd-archive/fixtures/gate/gate.mjs" "$R/scripts/gate.mjs"
-    printf '%s\n' '{"tasks": {' \
-      '  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},' \
-      '  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}' '}}' > "$R/gate.json"
-    printf "export const rooms = ['Norte', 'Sur'];\n" > "$R/src/rooms.js"
-    printf "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { rooms } from '../src/rooms.js';\n\ntest('hay dos salas', () => {\n  assert.equal(rooms.length, 2);\n});\n" > "$R/test/rooms.test.js"
+    GATE="$HERE/../sdd-archive/fixtures/gate"
+    mkdir -p "$R/scripts"; cp "$GATE/gate.mjs" "$R/scripts/gate.mjs"; cp "$GATE/gate.json" "$R/gate.json"
+    cp "$GATE/rooms.js" "$R/src/rooms.js"; cp "$GATE/rooms.test.js" "$R/test/rooms.test.js"
     sed -i 's#^- \*\*Gate de cierre\*\*: .*$#- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`#' "$R/.docs/sdd/operations.md"
     grep -q 'scripts/gate.mjs' "$R/.docs/sdd/operations.md" || die "no se plantó el gate filtrado" ;;
   # Una sala más rompe el test de libres: el gate de cierre sale en rojo.
