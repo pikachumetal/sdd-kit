@@ -16,6 +16,15 @@ describe('sdd roadmap check: secciones de ROADMAP.md', () => {
     expect(result.code).toBe(0);
   });
 
+  it('flags a ROADMAP.md row with a different cell count', async () => {
+    const roadmap = lines();
+    const index = roadmap.indexOf(laterRow);
+    roadmap[index] = laterRow.replace('|  |  |', '|  ||  |');
+    const result = await checkProject({ roadmap });
+    expect(result.lines).toContain(`ROADMAP.md: línea ${index + 1}: la fila tiene 7 celdas y la cabecera 6`);
+    expect(result.code).toBe(1);
+  });
+
   it('requires Now, Next and Later in order, only tables', async () => {
     const roadmap = [
       '# Roadmap — salas', '', '## Now', '', header, separator, row({ id: '0012' }), '',

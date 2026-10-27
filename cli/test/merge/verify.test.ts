@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findLockedFile, shellCommand } from '../../src/merge/verify.ts';
+import { failedTestLines, failureReport, findLockedFile, shellCommand } from '../../src/merge/verify.ts';
 
 describe('merge --verify shell', () => {
   it('prefers pwsh on Windows', () => {
@@ -17,6 +17,35 @@ describe('merge --verify shell', () => {
 
   it('uses sh outside Windows without probing', () => {
     expect(shellCommand('echo x', 'linux', () => false)).toEqual(['sh', ['-c', 'echo x']]);
+  });
+});
+
+describe('merge en rojo: tests fallidos', () => {
+  const filler = (count: number) => Array.from({ length: count }, (_, index) => `línea ${index + 1}`);
+
+  it('picks the Pester failed line', () => {
+    const output = ['[+] se llama sdd-propose 10ms', '[-] se llama sdd-archive 12ms', '[+] se llama sdd-verify 9ms', 'Tests Passed: 1246, Failed: 1'];
+    expect(failedTestLines(output)).toEqual(['[-] se llama sdd-archive 12ms']);
+  });
+
+  it('picks Vitest failures behind a moon prefix', () => {
+    const output = ['cli:test |  ✓ test/b.test.ts (3 tests)', 'cli:test |  FAIL  test/a.test.ts > grupo > nombre', 'cli:test |    × nombre 3ms', 'cli:test |       Tests  1 failed | 2 passed (3)'];
+    expect(failedTestLines(output)).toEqual(['cli:test |  FAIL  test/a.test.ts > grupo > nombre', 'cli:test |    × nombre 3ms']);
+  });
+
+  it('caps the failed test lines at 20', () => {
+    const output = Array.from({ length: 25 }, (_, index) => `[-] test ${index + 1}`);
+    const report = failureReport(output).split('\n');
+    expect(report.slice(0, 21)).toEqual(['tests fallidos:', ...output.slice(0, 20)]);
+  });
+
+  it('puts the failed tests before the tail', () => {
+    const output = ['[-] se llama sdd-archive 12ms', ...filler(30)];
+    expect(failureReport(output)).toBe(['tests fallidos:', '[-] se llama sdd-archive 12ms', ...filler(30).slice(-20)].join('\n'));
+  });
+
+  it('keeps the plain tail without failed tests', () => {
+    expect(failureReport(filler(30))).toBe(filler(30).slice(-20).join('\n'));
   });
 });
 

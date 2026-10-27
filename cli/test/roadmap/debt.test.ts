@@ -29,6 +29,15 @@ describe('sdd roadmap check: forma de debt.md', () => {
     expect(result.code).toBe(0);
   });
 
+  it('flags a debt.md row with a different cell count', async () => {
+    const content = debt();
+    const index = content.indexOf('| El tema oscuro | [reunión](r.md) | fuera del producto | 2026-09-20 |');
+    content[index] = '| El tema oscuro | [reunión](r.md) | fuera del producto. || 2026-09-20 |';
+    const result = await check(content);
+    expect(result.lines).toContain(`debt.md: línea ${index + 1}: la fila tiene 5 celdas y la cabecera 4`);
+    expect(result.code).toBe(1);
+  });
+
   it('requires the four sections in order, only tables', async () => {
     const content = [
       '# Deuda técnica — salas', '', '## Por triar', 'Revisar cada lunes', '', ...debtHeaders['Por triar'], '',
