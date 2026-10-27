@@ -168,10 +168,32 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN el segundo escribe «Esperando el cerrojo de suites: lo tiene feature/0210 (D:\code\sdd-kit-0210, PID 4120) desde 2026-10-25 19:30:00.» y no arranca su comando hasta que acaba el primero
 - AND `sdd lock run` sale con el código del comando
 
+### `sdd task start` abre una spec lite como brief
+
+- GIVEN una `spec.md` con `mode: lite` en el frontmatter y sin ningún encabezado `Task <n>`
+- WHEN se ejecuta `node sdd.js task start <spec.md> 1`
+- THEN escribe la spec entera en `task-1-brief.md` del workspace, imprime `brief: <ruta>` y `base: <sha de HEAD>`, y sale con 0
+- AND con un plan sin `mode: lite` y sin `Task 1`, sale con 1 y `task 1 not found in <plan> (no heading matching 'Task 1')`, como hoy
+
+### El vigía no da por terminado un subagente reanudado
+
+- GIVEN el transcript de un subagente cuya última respuesta acaba en `end_turn` y, después, un mensaje `user` de una reanudación con `SendMessage`
+- WHEN se ejecuta `sdd watch subagent` sobre él
+- THEN no escribe `TERMINADO:`: el veredicto es `EN MARCHA:` o `SILENCIO:` según los minutos sin escribir, como un subagente que trabaja
+- AND sin mensaje `user` tras el `end_turn`, escribe `TERMINADO: <etiqueta> devolvió su resultado`, como hoy
+
+### `--project-root` vale en todo verbo que sitúa el proyecto
+
+- GIVEN un proyecto en `D:\code\reservas` con `.docs/sdd/`
+- WHEN se ejecuta `node sdd.js roadmap check --project-root D:\code\reservas`, `capability index --project-root …`, `decision check --project-root …`, `estimation log --project-root …`, `upgrade --project-root …` o `session tokens --project-root …`
+- THEN cada uno hace lo mismo que con `--path D:\code\reservas\.docs\sdd` (en `roadmap`, `capability` y `decision`), con `--root D:\code\reservas` (en `estimation`, `init` y `upgrade`) o con `--path D:\code\reservas` (en `session tokens`)
+- AND con `--project-root` y el nombre de hoy a la vez, escribe `--path y --project-root no van juntas` (o `--root y --project-root no van juntas`) y el uso, y sale con 2
+- AND `node sdd.js merge --path .` escribe `opción desconocida: «--path»; la raíz del proyecto va en --project-root` y el uso, y sale con 2; lo mismo con `--root` en `merge`, `id next`, `id claim` y `roadmap publish`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe solo `.docs/sdd/sdd-kit.json`. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.
 - **Idioma de los nombres**: las opciones y las claves en inglés; los mensajes, en castellano.
 - **Límites**: `--ignore` relativo a la raíz, sin vacío, absoluto, `..`, espacios al borde ni saltos de línea; una acción por llamada; `--mark`, solo una versión `X.Y.Z` numérica, con su `vX.Y.Z.md` en el kit y mayor que la del proyecto; `sdd validation serve` escucha solo en `127.0.0.1` y en un puerto que elige el sistema, acepta solo peticiones con `Host` y `Origin` de `127.0.0.1:<puerto>`, y `--steps` es una lista JSON de al menos un `{id, title}` con ids únicos y `title` de texto; `--out` es relativo al directorio de trabajo, su carpeta se crea si falta, y el fichero se escribe de nuevo al arrancar; `sdd hook session-end` borra solo las sesiones sin escrituras en las últimas 24 h, nunca la del `session_id`, y tras 1 s desde que arranca no empieza a borrar ninguna más.
-- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`; `el proyecto ya está al día con el kit <versión>`; `sin sdd-kit.json: se aplican todas`; `init en curso: sigue con sdd-init`; `--mark <versión>: el kit no trae esa migración`; `--mark <versión>: el proyecto ya está en <versión>`; `panel: http://127.0.0.1:<puerto>/`; `<ruta>: no es una lista de pasos {id, title}`; `sdd-kit: no borro los temporales de Claude Code: sin session_id válido en la entrada del hook`; `sdd-kit: no borro los temporales de Claude Code: <base> no es una ruta absoluta`; `sdd-kit: no borro los temporales de Claude Code: no sale el nombre de la carpeta del proyecto de <ruta>`.
+- **Avisos**: `<clave>: la fija sdd init, se ignora`; `<ruta con puntos>: se deja <valor JSON>`; `autoMemoryEnabled: se deja true; pregunta al usuario si lo cambia`; `<ruta> no es JSON válido: no se toca`; `<ruta> no se puede fusionar: <ruta con puntos> no es un objeto`; `el proyecto ya está al día con el kit <versión>`; `sin sdd-kit.json: se aplican todas`; `init en curso: sigue con sdd-init`; `--mark <versión>: el kit no trae esa migración`; `--mark <versión>: el proyecto ya está en <versión>`; `panel: http://127.0.0.1:<puerto>/`; `<ruta>: no es una lista de pasos {id, title}`; `sdd-kit: no borro los temporales de Claude Code: sin session_id válido en la entrada del hook`; `sdd-kit: no borro los temporales de Claude Code: <base> no es una ruta absoluta`; `sdd-kit: no borro los temporales de Claude Code: no sale el nombre de la carpeta del proyecto de <ruta>`; `--<opción> y --project-root no van juntas`; `opción desconocida: «--<opción>»; la raíz del proyecto va en --project-root`.
 - **Regla ante conflicto**: en `settings.json`, la hoja que ya existe manda sobre la de la init, salvo `autoMemoryEnabled` con `--memory-off`; en `sdd-kit.json`, `channel` y `updated` los fija la CLI, `version` la fija la CLI salvo que ya exista (la de un template), y en el resto gana el `--config`; con `sdd upgrade --mark`, `version` es la que se marca y el resto de claves se queda; con `sdd validation serve`, un `--out` que ya existe se escribe de nuevo con los pasos de `--steps` en `pending`: cada validación empieza de cero.

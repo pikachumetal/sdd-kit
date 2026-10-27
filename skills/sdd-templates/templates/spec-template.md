@@ -140,7 +140,7 @@ approvers:
 
 > Un cambio a la spec aprobada durante la ejecución: un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba». Se corrige en su sitio del cuerpo (acción update) y aquí queda su línea, con la task que lo implementa. Una entrada por cambio, más reciente arriba.
 
-- <fecha> — <qué cambia> — <por qué> — aprobada: «<frase>» | sin aprobar (unattended)
+- <fecha> — <qué cambia> — <por qué> — aprobada: «<frase>» | sin aprobar (unattended, o aplica literal una decisión tomada con el dev-lead)
 
 ## Aprobaciones
 

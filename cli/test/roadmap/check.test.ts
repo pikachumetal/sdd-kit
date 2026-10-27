@@ -198,6 +198,8 @@ describe('sdd roadmap check: tablas', () => {
     content[11] = '| --- | --- | --- | --- |';
     const result = await check(content);
     expect(result.lines).toEqual([
+      'roadmap.md: línea 13: la fila tiene 5 celdas y la cabecera 4',
+      'roadmap.md: línea 14: la fila tiene 5 celdas y la cabecera 4',
       'roadmap.md: línea 11: la cabecera de «Release 1.3» debe ser «| id | Feature | Origen | Ficheros que toca | Estado |»',
     ]);
     expect(result.code).toBe(1);
@@ -225,6 +227,28 @@ describe('sdd roadmap check: tablas', () => {
     content[6] = '| 3 | Piloto en la oficina de Lugo | pendiente \\| ⏳ |';
     const result = await check(content);
     expect(result.lines).toEqual([`roadmap.md: línea 7: estado «pendiente \\| ⏳» no admitido: ${stateHelp}`]);
+  });
+
+  it('flags a row with an extra empty cell', async () => {
+    const content = lines();
+    content[6] = '| 3 | Piloto en la oficina de Lugo. || ✅ |';
+    const result = await check(content);
+    expect(result.lines).toContain('roadmap.md: línea 7: la fila tiene 4 celdas y la cabecera 3');
+    expect(result.code).toBe(1);
+  });
+
+  it('flags an unescaped pipe inside code in a debt row', async () => {
+    const content = lines();
+    content[26] = '| Los tests dependen de la fecha | medio | Actuar: `rg a | wc -l` |';
+    const result = await check(content);
+    expect(result.lines).toEqual(['roadmap.md: línea 27: la fila tiene 4 celdas y la cabecera 3']);
+    expect(result.code).toBe(1);
+  });
+
+  it('does not count an escaped pipe inside code', async () => {
+    const content = lines();
+    content[26] = '| Los tests dependen de la fecha | medio | Actuar: `rg a \\| wc -l` |';
+    expect((await check(content)).lines).toEqual(['Roadmap válido']);
   });
 
   it('keeps the structure messages', async () => {
@@ -273,6 +297,39 @@ describe('sdd roadmap check: avisos de cierre', () => {
       'Roadmap válido',
     ]);
     expect(result.code).toBe(0);
+  });
+
+  function pointingRoadmap(target: string): string[] {
+    const content = lines();
+    content[6] = '| 0047 | **Absorbida por la propuesta 0131 → 0149** (dev-lead, 2026-10-07) | ⏳ |';
+    content[12] = `| 0149 | **Cierre** | dev-lead | \`src/a.js\` | ${target} |`;
+    content[13] = '| 0150 | **Otra** | dev-lead | `src/b.js` | ⏳ |';
+    content[26] = '| Los tests dependen de la fecha del sistema | medio | **Actuar → 0149**, patch de la CLI |';
+    return insert(content, 7, '| 0048 | **Absorbida por la propuesta 0131 → 0149 y 0150** | ⏳ |');
+  }
+
+  it('warns of a row absorbed by a closed task', async () => {
+    const result = await check(pointingRoadmap('✅'));
+    expect(result.lines).toEqual([
+      'roadmap.md: aviso: línea 7: apunta a 0149, ya ✅: sáldala',
+      'roadmap.md: aviso: línea 28: apunta a 0149, ya ✅: sáldala',
+      'Roadmap válido',
+    ]);
+    expect(result.code).toBe(0);
+  });
+
+  it('warns of a row absorbed without an arrow', async () => {
+    const content = pointingRoadmap('✅');
+    content[6] = '| 0047 | **Absorbida por la 0149** (dev-lead, 2026-10-07) | ⏳ |';
+    expect((await check(content)).lines).toContain('roadmap.md: aviso: línea 7: apunta a 0149, ya ✅: sáldala');
+  });
+
+  it('does not warn of a settled or deferred pointer', async () => {
+    expect((await check(pointingRoadmap('🧪 validación diferida al primer correo'))).lines).toEqual(['Roadmap válido']);
+    const content = pointingRoadmap('✅');
+    content[6] = '| 0047 | **[Feature 0149, 2026-10-26: saldada — [walkthrough](w.md)]** **Absorbida por la propuesta 0131 → 0149** | ⏳ |';
+    content[27] = '| **[Feature 0149, 2026-10-26: saldada — [walkthrough](w.md)]** Los tests dependen | medio | **Actuar → 0149** |';
+    expect((await check(content)).lines).toEqual(['Roadmap válido']);
   });
 
   it('the prefix the warning accepts is the one the cut removes, and the other warns', async () => {

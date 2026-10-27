@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { bookingsFixture, sddFolder } from './capability/helpers.ts';
 import { run } from '../src/main.ts';
 import { memoryIo } from '../src/cli/io.ts';
 import { VERBS, type Verb } from '../src/cli/verbs.ts';
@@ -116,6 +118,70 @@ describe('usage errors', () => {
     const code = await run(['capability', 'index', '--path', '.docs/sdd'], io, testVerbs);
     expect(code).toBe(0);
     expect(io.stdout).toEqual(['ok']);
+  });
+});
+
+async function runReal(argv: string[]) {
+  const io = memoryIo();
+  const code = await run(argv, io);
+  return { code, stdout: io.stdout, stderr: io.stderr.join('\n') };
+}
+
+describe('--project-root', () => {
+  const project = () => {
+    const sdd = sddFolder({ 'roadmap.md': '# Notas\n', 'capabilities/bookings.md': bookingsFixture, 'decisions/0001-sin-forma.md': 'sin forma de ADR\n', 'specs/.gitkeep': '' });
+    return { sdd, root: dirname(dirname(sdd)) };
+  };
+
+  it.each([['roadmap', 'check'], ['capability', 'index'], ['decision', 'check']])('project-root resolves the docs folder in %s %s', async (noun, verb) => {
+    const { sdd, root } = project();
+    const byRoot = await runReal([noun, verb, '--project-root', root]);
+    expect(byRoot).toEqual(await runReal([noun, verb, '--path', sdd]));
+    expect(byRoot).not.toEqual(await runReal([noun, verb, '--path', join(root, 'otra')]));
+  });
+
+  it('project-root without .docs/sdd has no roadmap to check', async () => {
+    const root = dirname(dirname(sddFolder({})));
+    const bare = join(root, 'otra');
+    mkdirSync(bare);
+    const byRoot = await runReal(['roadmap', 'check', '--project-root', bare]);
+    expect(byRoot).toEqual({ code: 0, stdout: ['Sin roadmap que validar'], stderr: '' });
+    expect(byRoot).toEqual(await runReal(['roadmap', 'check', '--path', join(bare, '.docs', 'sdd')]));
+  });
+
+  it('project-root is an alias of --root in estimation log', async () => {
+    const { root } = project();
+    const out = join(root, 'log.md');
+    const byRoot = await runReal(['estimation', 'log', '--project-root', root, '--out', out]);
+    expect(byRoot).toEqual(await runReal(['estimation', 'log', '--root', root, '--out', out]));
+    expect(byRoot.code).toBe(0);
+  });
+
+  it('project-root is an alias of --path in session tokens', async () => {
+    const { root } = project();
+    const empty = join(root, 'sin-sesiones');
+    const byRoot = await runReal(['session', 'tokens', '--project-root', root, '--projects-root', empty, '--json']);
+    expect(byRoot).toEqual(await runReal(['session', 'tokens', '--path', root, '--projects-root', empty, '--json']));
+  });
+
+  it('rejects path with project-root', async () => {
+    const { sdd, root } = project();
+    const result = await runReal(['roadmap', 'check', '--path', sdd, '--project-root', root]);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('--path y --project-root no van juntas');
+  });
+
+  it('rejects root with project-root', async () => {
+    const { root } = project();
+    const result = await runReal(['upgrade', '--root', root, '--project-root', root]);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('--root y --project-root no van juntas');
+  });
+
+  it.each([['merge', '--path'], ['id next', '--root']])('hints project-root on %s %s', async (command, option) => {
+    const result = await runReal([...command.split(' '), option, '.']);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain(`opción desconocida: «${option}»; la raíz del proyecto va en --project-root`);
   });
 });
 
