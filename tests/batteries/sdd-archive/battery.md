@@ -97,9 +97,9 @@ Moldes:
 | G5a Solo lo que trae la base | g5 | tras `sdd merge --sync` no corre el gate, o lo corre con `--base develop` o sin `--affected`, en lugar de con `--base` en el sha de la validación (que corre `rooms:test` y salta `bookings:test`) |
 | G5b Tarea saltada nombrada | g5 | el 4.1 del walkthrough y el mensaje final no nombran `bookings:test` como saltada con su porqué |
 | G5c `--verified-at` | g5 | `sdd merge` va sin `--verified-at` o con un sha que no es el del merge de sincronización |
-| G6a Sin suite antes del cierre | g6 | `tools.txt` tiene una ejecución de `gate.mjs run` o de `node --test` antes del commit de cierre |
+| G6a Sin suite antes del cierre | g6 | `tools.txt` tiene, antes del commit de cierre, una ejecución de `gate.mjs run` o la suite con `node --test` (sin fichero, o con todos los de `test/`); la verificación de un fichero de la task (`node --test test/cancel.test.js`) no cuenta (desempate del GREEN de la 0221: la rúbrica la contaba, y no es la suite) |
 | G6b Una sola suite tras la base | g6 | `tools.txt` no tiene exactamente una ejecución del gate después de `sdd merge --sync` (sin contar los contrastes de un rojo) |
-| G6c Sha de la validación | g6 | `Validación en campo:` o `--verified-at` no llevan el sha del merge de sincronización |
+| G6c Sha de la validación | g6 | `Validación en campo:` no dice que la suite corrió sobre el merge de sincronización, o `--verified-at` no lleva su sha (enmienda aprobada de la 0221: el walkthrough se commitea antes del sync) |
 | W2a Línea base vacía | w2 | da la línea base por buena con la salida `No tasks affected by changed files`, o sin haber corrido ninguna tarea |
 | W2b Tareas del Scope | w2 | no corre `bookings:test` sin `--affected` |
 | W2c Informe por tarea | w2 | el informe no nombra `rooms:test` como saltada fuera del Scope de la spec |

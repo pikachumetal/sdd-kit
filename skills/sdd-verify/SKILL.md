@@ -50,7 +50,7 @@ Skip any step = lying, not verifying
 | Requirements met | Line-by-line checklist | Tests passing |
 | Filtered gate passes | Each task of the gate: ran N/M, or skipped with the tool's reason | Exit 0, «Tasks: n completed» |
 
-**The `Gate:` line.** A gate that filters (`--affected --base <ref>`, a cache) exits 0 even when it skips tasks, so wherever you record a gate —a config commit, the walkthrough's 4.1, `patch.md` §4, the baseline report— the line names every task: `` Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué>) ``. The reason for a skip comes from the tool (`moon task <t>`: its inputs against the changed files), not from your reading. A task whose definition the change edits (its `moon.yml`, its script, the gate line of §Testing) runs without the filter before you claim the gate: `<tarea>: corrió <N>/<M> (sin filtro: cambia su definición)`. Never `→ verde`, nor the exit code alone (`tests/affected-gate-red.md`, k6).
+**The `Gate:` line.** A gate that filters (`--affected --base <ref>`, a cache) exits 0 even when it skips tasks, so wherever you record a gate —a config commit, the walkthrough's 4.1, `patch.md` §4, the baseline report— the line names every task: `` Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué>) ``, with `<N>/<M>` its tests in green over its total. The reason for a skip comes from the tool (`moon task <t>`: its inputs against the changed files), not from your reading. A task whose definition the change edits (its `moon.yml`, its script, the gate line of §Testing) runs without the filter before you claim the gate: `<tarea>: corrió <N>/<M> (sin filtro: cambia su definición)`. Never `→ verde`, nor the exit code alone (`tests/affected-gate-red.md`, k6).
 
 ## Red Flags - STOP
 

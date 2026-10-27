@@ -112,7 +112,7 @@ Una regla y tres sitios. La regla, en `sdd-verify`: la línea `Gate:` nombra cad
 - WHEN la validación y el cierre de la 0081
 - THEN el smoke por THEN corre y la suite no corre antes del commit de cierre
 - AND tras el commit de cierre y `sdd merge --sync`, el gate de cierre corre una sola vez, tal como lo declara el proyecto, sobre el merge de sincronización
-- AND `Validación en campo:` cita el sha del merge de sincronización, y el merge final lleva `--verified-at` con ese sha
+- AND `Validación en campo:` dice que la suite corrió sobre el merge de sincronización, y el merge final lleva `--verified-at` con su sha, que da también el mensaje final
 - AND sin otra rama abierta y con la base al día (`git rev-list --count` da 0), la suite corre en la validación como hasta ahora
 - AND con `validation.mode: manual`, el guion se presenta igual, y la suite corre tras el merge de sincronización, antes del merge
 
@@ -163,6 +163,8 @@ Una regla y tres sitios. La regla, en `sdd-verify`: la línea `Gate:` nombra cad
 | Kit | 98.533 / 91.328 (×1,25 = 114.160) | 15.627 | sin cambio |
 
 ## Enmiendas
+
+- 2026-10-26 — `Validación en campo:` ya no cita el sha del merge de sincronización: dice que la suite corrió sobre él, y el sha va en `--verified-at` y en el mensaje final — el walkthrough entra en el commit de cierre, antes del sync, y no puede llevar un sha posterior (GREEN `g6`, 0/2 en ese punto) — Task 3 — aprobada (opción «Apruebo»)
 
 ## Aprobaciones
 
