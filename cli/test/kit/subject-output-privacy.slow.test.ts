@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  escapeRegExp,
   findLeak,
   gitUserConfig,
   machineUserPattern,
@@ -214,13 +215,13 @@ describe('La evidencia de los sujetos no lleva el home de la máquina', () => {
   it('ni el user.name de git de esta máquina (ticket del patch 0080 §2)', (context) => {
     const name = gitUserConfig('user.name');
     if (name === '') context.skip('esta máquina no tiene user.name en git');
-    expect(findLeak(evidence, new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')), 'el repo es público: no se guarda una salida con la identidad de la máquina').toEqual([]);
+    expect(findLeak(evidence, new RegExp(escapeRegExp(name), 'i')), 'el repo es público: no se guarda una salida con la identidad de la máquina').toEqual([]);
   });
 
   it('ni el user.email de git de esta máquina', (context) => {
     const email = gitUserConfig('user.email');
     if (email === '') context.skip('esta máquina no tiene user.email en git');
-    expect(findLeak(evidence, new RegExp(email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')), 'el repo es público: no se guarda una salida con la identidad de la máquina').toEqual([]);
+    expect(findLeak(evidence, new RegExp(escapeRegExp(email), 'i')), 'el repo es público: no se guarda una salida con la identidad de la máquina').toEqual([]);
   });
 
   it('el control del commit toma como evidencia todo lo que recorre esta revisión', () => {

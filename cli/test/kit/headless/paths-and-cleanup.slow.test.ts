@@ -6,13 +6,14 @@ import { kitRoot, run } from '../process.ts';
 import { newCampaign, runCampaign, runLib, slashed, subjects, testRoot } from './campaign.ts';
 
 const repoTemp = (name: string): string => join(kitRoot, '.temp', name);
-const shortId = (): string => randomUUID().replaceAll('-', '').slice(0, 8);
+const uuid = (): string => randomUUID().replaceAll('-', '');
+const shortId = (): string => uuid().slice(0, 8);
 
 describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
   it('aborta con RUNS_DIR fuera del scratchpad y de .temp/', () => {
     const campaign = newCampaign(testRoot('outside'));
     // La carpeta temporal cuelga de .temp/ del repo: la ruta de fuera no se crea, la guarda aborta antes.
-    const outside = join(parse(kitRoot).root, `sdd-fuera-${randomUUID().replaceAll('-', '')}`, 'runs');
+    const outside = join(parse(kitRoot).root, `sdd-fuera-${uuid()}`, 'runs');
 
     const result = runCampaign(campaign, { RUNS_DIR: outside });
 
@@ -24,7 +25,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', (
 
   it('acepta RUNS_DIR bajo .temp/ del repo', () => {
     const campaign = newCampaign(testRoot('repo-temp'));
-    const runs = repoTemp(`launcher-${randomUUID().replaceAll('-', '')}`);
+    const runs = repoTemp(`launcher-${uuid()}`);
     try {
       const result = runCampaign(campaign, { SCENARIOS: 'a', RUNS_DIR: runs });
 

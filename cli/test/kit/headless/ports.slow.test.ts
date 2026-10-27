@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { RunResult } from '../process.ts';
 import {
+  type Campaign,
   freePort,
   isListening,
   newCampaign,
@@ -38,6 +39,18 @@ async function invokeSharedPort(name: string, otherPid: string): Promise<SharedP
   const campaign = newCampaign(root, { launch: `${serverLaunch(serverScript(root, name), port)}${other}subject_launch "x"` });
   const run = runCampaign(campaign, { SCENARIOS: 'a' });
   return { run, port, runs: campaign.runs, err: errOf(campaign.runs) };
+}
+
+// Un servidor que otro sujeto arrancó hace 60 s en un puerto que este sujeto nombra, ya escuchando.
+async function earlierSharedServer(root: string): Promise<{ campaign: Campaign; port: number }> {
+  const port = await freePort();
+  const campaign = newCampaign(root, { launch: `PORT=${port}; subject_launch "x"` });
+  write(join(campaign.runs, `ports/${port}`), String(Math.floor(Date.now() / 1000) - 60));
+  startServer(serverScript(root, 'earlier'), port);
+  await waitListening(port);
+  // SUBJECT_STARTED va en segundos: sin la espera, el servidor podía caer en el mismo segundo y contar como del sujeto.
+  await sleep(2000);
+  return { campaign, port };
 }
 
 describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
@@ -86,17 +99,9 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', (
     });
 
     it('el último en acabar para el servidor compartido que arrancó antes que él', async () => {
-      const root = testRoot('earlier');
-      const port = await freePort();
-      const script = serverScript(root, 'earlier');
-      const campaign = newCampaign(root, { launch: `PORT=${port}; subject_launch "x"` });
-      write(join(campaign.runs, `ports/${port}`), String(Math.floor(Date.now() / 1000) - 60));
+      const { campaign, port } = await earlierSharedServer(testRoot('earlier'));
 
       try {
-        startServer(script, port);
-        await waitListening(port);
-        // SUBJECT_STARTED va en segundos: sin la espera, el servidor podía caer en el mismo segundo y contar como del sujeto.
-        await sleep(2000);
         const result = runCampaign(campaign, { SCENARIOS: 'a' });
 
         expect(result.code, result.output).toBe(0);

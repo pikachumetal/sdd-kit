@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findMachineLeak, readEvidence, selectEvidencePath, stagedEvidence } from './privacy.ts';
+import { findMachineLeak, machineUserPattern, readEvidence, selectEvidencePath, stagedEvidence } from './privacy.ts';
 
 describe('La evidencia que lleva el commit no tiene el home de la máquina', () => {
   it('toma como evidencia las salidas de sujetos y los RED y GREEN de tests/, y nada más', () => {
@@ -12,5 +12,9 @@ describe('La evidencia que lleva el commit no tiene el home de la máquina', () 
 
   it('ningún fichero de evidencia del commit tiene una ruta de usuario, el usuario ni el user.name de git', () => {
     expect(findMachineLeak(readEvidence(stagedEvidence())), 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean').toEqual([]);
+  });
+
+  it('sin home no da por fuga cualquier fichero', () => {
+    expect(machineUserPattern({}).test('cualquier texto')).toBe(false);
   });
 });

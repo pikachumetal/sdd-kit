@@ -10,12 +10,12 @@ export interface EvidenceFile {
 // X:\Users\…, X:\\Users\\… (JSON), X:/Users/…, /x/Users/… y la carpeta de proyecto X--Users-….
 export const USER_PATH_PATTERN = /(?:\b[a-z]:|(?<![\w.])\/[a-z])(?:\\{1,2}|\/)Users(?:\\{1,2}|\/)(?![\\/<…])|\b[a-z]--Users-(?!<)/i;
 
-const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-// Del home, no de USERNAME, que en Git Bash vale SYSTEM.
-export function machineUserPattern(): RegExp {
-  const leaf = (process.env.USERPROFILE ?? process.env.HOME ?? '').split(/[\\/]/).pop() ?? '';
-  return new RegExp(`\\b${escapeRegExp(leaf)}\\b`, 'i');
+// Del home, no de USERNAME, que en Git Bash vale SYSTEM. Sin home, un patrón que no casa: \b\b casaría con todo.
+export function machineUserPattern(env: NodeJS.ProcessEnv = process.env): RegExp {
+  const leaf = (env.USERPROFILE ?? env.HOME ?? '').split(/[\\/]/).pop() ?? '';
+  return leaf === '' ? /(?!)/ : new RegExp(`\\b${escapeRegExp(leaf)}\\b`, 'i');
 }
 
 // Toda subcarpeta de una tarea: campaign/, ab/, micro/… también son salidas de sujetos.

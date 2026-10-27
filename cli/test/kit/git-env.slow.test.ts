@@ -6,7 +6,8 @@ import { git, gitSync } from '../../src/git/git.ts';
 import { kitRoot, run } from './process.ts';
 
 const GIT_ENV_NAMES = ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE', 'GIT_COMMON_DIR', 'GIT_OBJECT_DIRECTORY'];
-const GIT_CALL = /\b(?:spawnSync|spawn|execFileSync|execFile)\(\s*'git'/g;
+const GIT_CALL = /\b(spawnSync|spawn|execFileSync|execFile)\(\s*(['"`])git\2/g;
+const MARKED_CALL = /\b(?:spawnSync|spawn|execFileSync|execFile)\(GIT_CALL/g;
 
 function newRepo(prefix: string): string {
   const dir = mkdtempSync(join(tmpdir(), prefix));
@@ -16,7 +17,7 @@ function newRepo(prefix: string): string {
 
 // Los textos y los comentarios no son llamadas: se vacían conservando las posiciones.
 function maskTextAndComments(source: string): string {
-  return source.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g, (match) => match.replace(/[^\n]/g, ' '));
+  return source.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\/|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g, (match) => match.replace(/[^\n]/g, ' '));
 }
 
 function callText(masked: string, start: number): string {
@@ -28,9 +29,10 @@ function callText(masked: string, start: number): string {
   return masked.slice(start);
 }
 
+// La llamada se marca antes de vaciar los textos: su 'git' es un texto, y una llamada escrita dentro de otro texto queda vacía.
 function findGitCallsWithoutEnv(source: string): number[] {
-  const masked = maskTextAndComments(source);
-  return [...masked.matchAll(GIT_CALL)]
+  const masked = maskTextAndComments(source.replace(GIT_CALL, '$1(GIT_CALL'));
+  return [...masked.matchAll(MARKED_CALL)]
     .filter((match) => !/\benv\b\s*[:,}]/.test(callText(masked, match.index)))
     .map((match) => masked.slice(0, match.index).split('\n').length);
 }
@@ -41,7 +43,7 @@ function testFiles(dir: string): string[] {
     .map((name) => join(dir, name));
 }
 
-describe('Clear-GitEnv.ps1', () => {
+describe('git() de cli/src/git', () => {
   const saved = Object.fromEntries(GIT_ENV_NAMES.map((name) => [name, process.env[name]]));
 
   afterEach(() => {
@@ -60,6 +62,14 @@ describe('Clear-GitEnv.ps1', () => {
     expect(gitSync(mine, ['rev-parse', '--show-toplevel'])).toEqual([mine]);
     expect((await git(mine, ['rev-parse', '--show-toplevel'])).stdout.trim()).toBe(mine);
   });
+
+  it("run() sin env no hereda las variables de git: run('git', …) cumple la regla por su default", () => {
+    const other = newRepo('git-env-run-other-');
+    const mine = newRepo('git-env-run-mine-');
+    process.env.GIT_DIR = join(other, '.git');
+
+    expect(run('git', ['-C', mine, 'rev-parse', '--show-toplevel']).output).toBe(mine);
+  });
 });
 
 describe('Los tests que llaman a git limpian las variables de git', () => {
@@ -73,6 +83,10 @@ describe('Los tests que llaman a git limpian las variables de git', () => {
   it('acepta el mismo test con env', () => {
     expect(findGitCallsWithoutEnv("spawnSync('git', ['init', dir], { cwd, env: cleanGitEnv });")).toEqual([]);
     expect(findGitCallsWithoutEnv("spawnSync('git', ['init', dir], { cwd, env });")).toEqual([]);
+  });
+
+  it('señala la llamada con comillas dobles', () => {
+    expect(findGitCallsWithoutEnv('spawnSync("git", ["init", dir], { cwd });')).toEqual([1]);
   });
 
   it('no señala una llamada dentro de un texto ni de un comentario', () => {

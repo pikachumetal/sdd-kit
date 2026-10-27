@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -177,7 +177,6 @@ describe('Start-KitSession.ps1 y los temporales de Claude Code', () => {
   it('lanza claude con CLAUDE_CODE_TMPDIR en .temp/ y restaura el valor anterior', () => {
     const bin = mkdtempSync(join(tmpdir(), 'fake-claude-'));
     const seen = join(bin, 'seen.txt');
-    mkdirSync(bin, { recursive: true });
     writeFileSync(join(bin, 'claude.ps1'), `Set-Content -LiteralPath '${seen}' -Value $env:CLAUDE_CODE_TMPDIR -NoNewline\n`);
     const command = `$env:CLAUDE_CODE_TMPDIR = 'antes'; & '${launcherPath}'; $env:CLAUDE_CODE_TMPDIR`;
     const env = { ...cleanGitEnv, PATH: `${bin}${delimiter}${process.env.PATH}` };

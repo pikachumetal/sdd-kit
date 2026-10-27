@@ -40,15 +40,9 @@ export function write(path: string, content: string): string {
   return path;
 }
 
-// Una campaña mínima: un subject.sh que usa lib.sh y un molde de un commit, en seco (DRY_RUN=1).
-export function newCampaign(root: string, options: CampaignOptions = {}): Campaign {
+function subjectScript(options: CampaignOptions): string {
   const { keepName = 'readme.md', init = 'g init -q -b main; ', launch = 'subject_launch "Invoca la skill sdd-kit:sdd-plan."' } = options;
-  const spec = join(root, 'spec');
-  const runs = join(root, 'scratchpad', 'runs');
-  const kit = join(root, 'kit');
-  mkdirSync(runs, { recursive: true });
-  write(join(kit, 'skills', 'sdd-plan', 'SKILL.md'), '# sdd-plan\n');
-  const subject = [
+  return [
     '#!/usr/bin/env bash',
     'set -u',
     `. "${libSh}"`,
@@ -59,11 +53,18 @@ export function newCampaign(root: string, options: CampaignOptions = {}): Campai
     '{ echo "## home: $HOME/.claude"; echo "-rw-r--r-- 1 alice 197609 12 f"; } | subject_save',
     `subject_keep "$R/README.md" ${keepName}`,
   ].join('\n');
-  write(join(spec, 'red', 'subject.sh'), subject);
+}
+
+export function newCampaign(root: string, options: CampaignOptions = {}): Campaign {
+  const spec = join(root, 'spec');
+  const runs = join(root, 'scratchpad', 'runs');
+  const kit = join(root, 'kit');
+  mkdirSync(runs, { recursive: true });
+  write(join(kit, 'skills', 'sdd-plan', 'SKILL.md'), '# sdd-plan\n');
+  write(join(spec, 'red', 'subject.sh'), subjectScript(options));
   return { spec, runs, kit, out: join(runs, 'dry', 'red', 'out'), dry: join(runs, 'dry') };
 }
 
-// Un claude falso que no gasta: imprime el result mínimo de un stream, tras ejecutar `before`.
 export function fakeClaude(root: string, name: string, before = ''): string {
   const bin = join(root, `bin-${name}`);
   const stream = `echo '{"type":"result","num_turns":1,"total_cost_usd":0.5,"result":"hecho"}'`;
@@ -75,14 +76,12 @@ export const withPath = (bin: string): string => `${bin}${delimiter}${process.en
 
 export type CampaignEnv = Record<string, string | null>;
 
+const ALICE_DRY_RUN: NodeJS.ProcessEnv = { ...cleanGitEnv, USERPROFILE: 'C:\\Users\\alice', HOME: '/c/Users/alice', NODE: process.execPath, DRY_RUN: '1' };
+
 // Un valor null quita la variable del entorno del hijo.
 export function campaignEnv(campaign: Campaign, overrides: CampaignEnv): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = {
-    ...cleanGitEnv,
-    USERPROFILE: 'C:\\Users\\alice',
-    HOME: '/c/Users/alice',
-    NODE: process.execPath,
-    DRY_RUN: '1',
+    ...ALICE_DRY_RUN,
     SPEC_DIR: campaign.spec,
     RUNS_DIR: campaign.runs,
     KIT_DIR: campaign.kit,

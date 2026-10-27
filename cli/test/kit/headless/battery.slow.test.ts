@@ -62,7 +62,18 @@ function runBattery(battery: Battery, overrides: Record<string, string>): RunRes
   return runBash([join(headless, 'battery.sh')], env);
 }
 
-const verdict = (table: string, out: string): RunResult => run(process.execPath, [batteryJs, 'verdict', table, out]);
+// La batería real de using-sdd sobre un kit de juguete en 2.2.0 con la migración v2.3.0.
+function usingSddBattery(root: string): Battery {
+  const kit = join(root, 'kit');
+  write(join(kit, 'skills/using-sdd/SKILL.md'), '# using-sdd\n');
+  write(join(kit, '.claude-plugin/plugin.json'), '{"name":"sdd-kit","version":"2.2.0"}\n');
+  write(join(kit, 'skills/sdd-upgrade/references/migrations/v2.3.0.md'), '# v2.3.0\n');
+  mkdirSync(join(root, 'spec'), { recursive: true });
+  mkdirSync(join(root, 'scratchpad/runs'), { recursive: true });
+  return { battery: join(kitRoot, 'tests/batteries/using-sdd'), kit, spec: join(root, 'spec'), runs: join(root, 'scratchpad/runs') };
+}
+
+const verdict =(table: string, out: string): RunResult => run(process.execPath, [batteryJs, 'verdict', table, out]);
 
 const setFinishedTools = (path: string, text: string): string => write(path, `${text}\n=== RESULTADO (1 turnos, 0.1 $)\n`);
 
@@ -185,14 +196,7 @@ describe('Lanzador de baterías (tests/headless/battery.sh)', () => {
   });
 
   it('la batería de using-sdd monta su molde con el marcador del kit', () => {
-    const root = testRoot('using-sdd');
-    const kit = join(root, 'kit');
-    write(join(kit, 'skills/using-sdd/SKILL.md'), '# using-sdd\n');
-    write(join(kit, '.claude-plugin/plugin.json'), '{"name":"sdd-kit","version":"2.2.0"}\n');
-    write(join(kit, 'skills/sdd-upgrade/references/migrations/v2.3.0.md'), '# v2.3.0\n');
-    mkdirSync(join(root, 'spec'), { recursive: true });
-    mkdirSync(join(root, 'scratchpad/runs'), { recursive: true });
-    const real: Battery = { battery: join(kitRoot, 'tests/batteries/using-sdd'), kit, spec: join(root, 'spec'), runs: join(root, 'scratchpad/runs') };
+    const real = usingSddBattery(testRoot('using-sdd'));
 
     const result = runBattery(real, { STEPS: 'sdd-config sdd-propose', KEEP_MOLD: '1' });
 

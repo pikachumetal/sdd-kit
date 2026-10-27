@@ -105,6 +105,9 @@ Medido con el conteo de `tests/WordBudget.Tests.ps1` (`-split '\s+'`), 2026-10-2
 
 ## Enmiendas
 
+- 2026-10-26 — Decisión 16: `tech-stack.md:8` conserva «o con `-Tag 'Slow'` (Pester)», porque los Pester de la 0226 aún lo usan; solo sale la frase de `FastSuiteBudget`. Además, la línea «Gate de cierre» se pone al día con los `testInputs` nuevos, la medida de `kit:test-headless` y sus `inputs` de la CLI (`temp-setup.ts`, `vitest.config.ts`, `package.json`) — revisión final, eje Spec, Minor 1-3 — Task 5 y pasada de fix — sin cambio de comportamiento: ruling, no desvío
+- 2026-10-26 — Decisión 13: `testInputs` gana `/.docs/**` en lugar de `/.docs/sdd/capabilities/**`; con solo una salida de sujeto staged, `cli:test` salía de la caché y la fuga entraba (RED de la Task 3) — Task 3 — ruling: el Intent ya pedía que el control siguiera parando el commit
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |
