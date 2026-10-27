@@ -121,7 +121,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - WHEN se migra al kit v2.0.0
 - THEN `bookings.md` pierde la sección `## Historial` entera, con su ayuda y sus líneas, y nada más, sin gate
 - AND la verificación de la migración ejecuta `sdd capability check --path .docs/sdd`; si falla por otra cosa que el historial (un bloque de reglas del delta pegado, un requisito sin escenario), el informe lo lista como pendiente del dev-lead, sin tocarlo
-- AND `tests/MigrationInitParity.Tests.ps1` sigue en verde con `v2.0.0.md` en la carpeta
+- AND `cli/test/kit/migration-init-parity.test.ts` sigue en verde con `v2.0.0.md` en la carpeta
 - AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
 ### La migración a v2.0.0 añade el propósito a las capacidades
@@ -132,7 +132,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND si la capacidad no tiene párrafo bajo el título, el propósito sale de los títulos de sus requisitos
 - AND va sin gate, y el informe lista las capacidades a las que se ha escrito el propósito, para que el dev-lead lo revise en el diff
 - AND la verificación de la migración ejecuta `sdd capability check --path .docs/sdd`, y no queda ningún fallo del propósito
-- AND la línea `**Escribe**:` de `v2.0.0.md` no gana tokens: el paso va en su frase «Además…», como el del historial, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
+- AND la línea `**Escribe**:` de `v2.0.0.md` no gana tokens: el paso va en su frase «Además…», como el del historial, y `cli/test/kit/migration-init-parity.test.ts` sigue en verde
 - AND sin carpeta `capabilities/`, el paso se salta y lo dice
 
 ### La migración a v2.0.0 cambia los nombres de las skills de feature
@@ -161,7 +161,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND el informe y el cuerpo del commit de la migración llevan `git show 284d195:.docs/sdd/roadmap.md` como la forma de ver el roadmap anterior
 - AND si el dev-lead cambia un destino de la tabla, se aplica el suyo; si la rechaza, `roadmap.md` queda sin tocar y el paso, pendiente
 - AND con `roadmap.md` sin commitear, el paso para antes de la tabla y lo dice
-- AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md`, `validation.mode` y el marcador, y `tests/MigrationInitParity.Tests.ps1` sigue en verde
+- AND `v2.3.0.md` declara en su línea `**Escribe**:` `roadmap.md`, `validation.mode` y el marcador, y `cli/test/kit/migration-init-parity.test.ts` sigue en verde
 
 ### La migración a v2.3.0 pregunta quién valida
 

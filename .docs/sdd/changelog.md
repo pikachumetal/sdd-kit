@@ -79,6 +79,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](specs/20261003-113240-patch-0132-grilling-template-count/)
 
 ### Removed
+- **Feature 0226** — Salen los 57 `tests/*.Tests.ps1` que no son de conducta: las frases de las skills dejan de probarse, y lo que rompe algo (carga de skills y agentes, enlaces, skills invocadas, `NOTICE`, proyectos reales, rutas de 140, contrato del roadmap, manifests) y los topes de palabras pasan a Vitest en `cli/test/kit/`, con `testInputs` de `cli/moon.yml` a `/**/*` y la ADR 0019. → [ref](specs/20261026-162553-feature-0226-drop-phrase-tests/)
 
 - **Feature 0156** — `sdd-init-greenfield`, `sdd-init-brownfield` y las plantillas `mission-template.md`, `tech-stack-template.md` y `environments-template.md`; la pregunta del changelog de cliente en la init. → [ref](specs/20261017-143533-feature-0156-sdd-init/)
 - **Feature 0149** — `sdd-end-feature` y `sdd-end-patch`: los sustituye `sdd-archive`. → [ref](specs/20261016-105021-feature-0149-archive/)

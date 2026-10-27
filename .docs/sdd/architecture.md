@@ -71,9 +71,9 @@ Cada documento es de estado, un artefacto de evento o una ADR (constitution, Art
 | --- | --- | --- | --- | --- |
 | `roadmap.md` | estado | `sdd-roadmap` y los cierres de feature, patch y release | los arranques, `sdd-roadmap` y los cierres | `sdd roadmap check`: solo las secciones de la plantilla, solo tablas, y las filas saldadas salen en el corte |
 | `capabilities/<capability>.md` | estado | los cierres, al fusionar el delta de una spec | los arranques y `sdd-explore`, por el índice | la forma, con `sdd capability check`; **sin cota** de tamaño (`feature-flow`, 7.927 palabras y 71 requisitos): propuesta «documentos acotados» |
-| `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
-| `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`) |
-| `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | tope de palabras (`WordBudget.Tests.ps1`; no cabe en una lectura): un aprendizaje nuevo sustituye o condensa otro |
+| `constitution.md` | estado | el dev-lead, por una feature | toda sesión que arranca una feature | tope de palabras (`word-budget.test.ts`) |
+| `mission.md`, `architecture.md`, `estimation.md` | estado | el dev-lead y los cierres | toda sesión que arranca una feature | tope de palabras (`word-budget.test.ts`) |
+| `tech-stack.md` | estado, hoy usado como diario | los cierres, con lo aprendido | toda sesión que arranca una feature | tope de palabras (`word-budget.test.ts`; no cabe en una lectura): un aprendizaje nuevo sustituye o condensa otro |
 | `changelog.md` | diario por release | `add-to-changelog` y `sdd-end-release` | `sdd-end-release`, y las personas | solo se lee `[Unreleased]` y la última versión; se parte por versión mayor si pesa |
 | `estimation-log.md` | generado | `sdd estimation log` | `plan-writing.md`, para estimar | una fila por cierre; nadie lo edita |
 | `sdd-kit.json` | estado | `sdd-config`, las init y las migraciones | todas las skills | sus claves son las del catálogo de `sdd-config` |
