@@ -15,7 +15,7 @@ SDD_CLI="$KIT/cli/bin/sdd.js"
 CONTROL='"profile": "delegate"'
 [ "$SC" = f2 ] && CONTROL='"profile": "delegate", "maxParallelAgents": 2'
 MARKER='"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {'"$CONTROL"'}, "execution": "native"'
-[ "$SC" = c5 ] && MARKER="$MARKER"', "validation": {"mode": "field"}'
+case "$SC" in c5|c6) MARKER="$MARKER"', "validation": {"mode": "field"}' ;; esac
 [ "$SC" = c1f ] && MARKER="$MARKER"', "review": {"minors": "fix"}'
 F10=".docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"
 F21=".docs/sdd/specs/20261012-100000-feature-0021-void-reason"
@@ -142,6 +142,14 @@ case "$SC" in
     tasks_md "Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important · Arquitectura no (plan), sobre $A" "Pasada de fix: $B, 1 hallazgo RED→GREEN" "Re-revisión: $A..$B, sdd-kit:effort-high + opus, 1 Critical"
     commit "docs(sdd): tasks.md con la re-revisión"
     WS=$(ws_dir); cp "$FIX/re-review-c5.md" "$WS/re-review.md" ;;
+  # El caso de la 0213: el arreglo de la pasada cambia un literal que fija la spec, y deshacerlo devuelve el hallazgo.
+  c6)
+    done_0010
+    cp "$FIX/app-c6.js" "$R/src/app.js"; cp "$FIX/cancel-c6.test.js" "$R/test/cancel.test.js"
+    commit "fix(bookings): canceladas enseña la franja de cada reserva"; B=$(short HEAD)
+    tasks_md "Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important · Arquitectura no (plan), sobre $A" "Pasada de fix: $B, 1 hallazgo RED→GREEN" "Re-revisión: $A..$B, sdd-kit:effort-high + opus, 1 Important"
+    commit "docs(sdd): tasks.md con la re-revisión"
+    WS=$(ws_dir); cp "$FIX/re-review-c6.md" "$WS/re-review.md" ;;
   f3|f3n|f4)
     mkdir -p "$R/.docs/sdd/decisions" "$R/.docs/sdd/capabilities"
     cp "$HERE/../sdd-propose/fixtures/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md"
@@ -194,7 +202,7 @@ esac
 case "$SC" in
   f1|f2|mp1) MAX_TURNS="${MAX_TURNS:-30}" ;;
   f3|f3n|f4|f5|s1|s1b) MAX_TURNS="${MAX_TURNS:-25}" ;;
-  c1|c1f|c5) MAX_TURNS="${MAX_TURNS:-50}" ;;
+  c1|c1f|c5|c6) MAX_TURNS="${MAX_TURNS:-50}" ;;
   c2|c3|c4) MAX_TURNS="${MAX_TURNS:-30}" ;;
   *) MAX_TURNS="${MAX_TURNS:-40}" ;;
 esac
