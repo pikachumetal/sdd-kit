@@ -1,6 +1,6 @@
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { cleanGitEnv, kitRoot, run, type RunResult } from './process.ts';
 
@@ -200,20 +200,23 @@ describe('start-kit-session.mjs', () => {
   it('exits with the code of claude', () => {
     expect(launchWithFakeClaude(undefined, []).result.code).toBe(7);
   });
+
+  it('says so when claude is not on the PATH', () => {
+    const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: dirname(process.execPath) };
+    expect(run(process.execPath, [launcherPath], { env })).toEqual({ output: 'start-kit-session: no encuentro claude en el PATH.', code: 127 });
+  });
 });
 
 describe('.claude/settings.json', () => {
-  const settings = JSON.parse(readFileSync(join(kitRoot, '.claude', 'settings.json'), 'utf8'));
-  const commands: string[] = Object.values(settings.hooks as Record<string, { hooks: { command: string }[] }[]>)
-    .flat()
-    .flatMap((entry) => entry.hooks.map((hook) => hook.command));
+  type HookEntry = { hooks: { command: string }[] };
+  const hooks: Record<string, HookEntry[]> = JSON.parse(readFileSync(join(kitRoot, '.claude', 'settings.json'), 'utf8')).hooks;
+  const commandsOf = (entries: HookEntry[]): string[] => entries.flatMap((entry) => entry.hooks.map((hook) => hook.command));
 
   it('registra un hook SessionStart que ejecuta kit-session-source.mjs con node', () => {
-    const sessionStart: string[] = settings.hooks.SessionStart.flatMap((entry: { hooks: { command: string }[] }) => entry.hooks.map((hook) => hook.command));
-    expect(sessionStart.some((command) => /^node\s/.test(command) && /kit-session-source\.mjs/.test(command))).toBe(true);
+    expect(commandsOf(hooks.SessionStart).some((command) => /^node\s/.test(command) && /kit-session-source\.mjs/.test(command))).toBe(true);
   });
 
   it('ningún hook llama a pwsh', () => {
-    expect(commands.filter((command) => /\bpwsh\b/.test(command))).toEqual([]);
+    expect(commandsOf(Object.values(hooks).flat()).filter((command) => /\bpwsh\b/.test(command))).toEqual([]);
   });
 });

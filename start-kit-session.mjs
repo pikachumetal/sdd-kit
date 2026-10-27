@@ -6,7 +6,7 @@
 // Las variables van solo al proceso de claude: la terminal que lo lanza no se queda con ellas.
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runInherited } from './cli/src/tasks/command.ts';
+import { COMMAND_NOT_FOUND, runInherited } from './cli/src/tasks/command.ts';
 
 const root = dirname(fileURLToPath(import.meta.url));
 // SDD_KIT_SESSION_ROOT le dice al hook SessionStart del repo que la sesión salió de aquí.
@@ -19,3 +19,4 @@ process.on('SIGINT', () => {});
 
 const settings = '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}';
 process.exitCode = await runInherited(['claude', '--settings', settings, '--plugin-dir', root, ...process.argv.slice(2)], process.cwd());
+if (process.exitCode === COMMAND_NOT_FOUND) console.error('start-kit-session: no encuentro claude en el PATH.');

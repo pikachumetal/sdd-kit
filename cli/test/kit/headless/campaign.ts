@@ -161,7 +161,7 @@ export function isListening(port: number): Promise<boolean> {
 }
 
 // La remota de un socket que escucha es 0.0.0.0:0 o [::]:0; el nombre del estado se traduce con el idioma de Windows.
-function listeningPids(netstat: string, port: number): number[] {
+export function listeningPids(netstat: string, port: number): number[] {
   return netstat
     .split(/\r?\n/)
     .map((line) => line.trim().split(/\s+/))
