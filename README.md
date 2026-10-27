@@ -148,21 +148,21 @@ Tras actualizar el kit, la sesión te avisa al arrancar si el proyecto va por de
 
 Para probar el kit desde tu clon, arranca Claude Code con el plugin del working tree y el instalado deshabilitado:
 
-```powershell
-./Start-KitSession.ps1
+```text
+node start-kit-session.mjs
 ```
 
 El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir <raíz del clon>` y pasa detrás los argumentos que le des (por ejemplo, `--model sonnet`).
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI y los de las skills (topes, enlaces, manifests) son Vitest; los Pester que quedan, de conducta, piden Pester 5 o superior con `pwsh` 7+.
+Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI y los de las skills (topes, enlaces, manifests) son Vitest, y ninguno pide PowerShell.
 
-```powershell
-moon run cli:typecheck cli:test kit:test
+```text
+moon run cli:typecheck cli:test kit:roadmap
 ```
 
-El hook de pre-commit ejecuta el conjunto rápido (`cli:typecheck cli:test kit:test-fast kit:roadmap`) y bloquea el commit si falla. `cli:test-slow` y `kit:test` añaden los lentos. Se activa una vez por clon:
+El hook de pre-commit ejecuta ese conjunto rápido y bloquea el commit si falla. `cli:test-slow` y `kit:test-headless` añaden los lentos. Se activa una vez por clon:
 
 ```bash
 git config core.hooksPath .githooks

@@ -30,8 +30,8 @@
 │   └── sdd-templates/           (SKILL.md índice + templates/*.md — fuente única, artefactos y documentos de anclaje)
 ├── cli/                         (la CLI `sdd`, TypeScript sin build: bin/, src/ por dominio, test/ con Vitest y fixtures/)
 ├── hooks/                       (hooks.json: `sdd hook session-start` inyecta skills/using-sdd/SKILL.md; `session-end` borra temporales)
-├── .claude/                     (settings.json del repo y hooks/Test-KitSessionSource.ps1: aviso de skills cargadas fuera de la rama)
-├── tests/                       (evidencia RED/GREEN por skill + *.Tests.ps1, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
+├── .claude/                     (settings.json del repo y hooks/kit-session-source.mjs: aviso de skills cargadas fuera de la rama)
+├── tests/                       (evidencia RED/GREEN por skill, fixtures/, headless/ (lanzador de sujetos) y batteries/ (baterías por skill))
 └── .docs/
     ├── workflow/                (documentación temprana del flujo: greenfield, brownfield, anexo de evidencia)
     └── sdd/                     (artefactos SDD del propio kit — dogfooding)
