@@ -1,0 +1,29 @@
+--- [2]
+Esto es un cambio de configuración en un proyecto con `.docs/sdd/`, así que lo llevo por `sdd-propose`.
+
+--- [7]
+Lo clasifico como **config**: `gate.json` es configuración del gate y no cambia lo que ve o puede hacer quien usa el producto. En esta lane tengo que preguntar antes de tocar nada.
+
+🦆 `gate.json` le dice al gate de cierre qué ficheros mira para decidir si `rooms:test` está afectada. Hoy esos inputs son `src/rooms.js` y `test/rooms.test.js`. Al añadir `src/shared/**`, un cambio en `src/shared/` volverá a lanzar esa tarea con `--affected`, en vez de saltarla. Antes de guardar, correría el gate de cierre de `operations.md`:
+
+`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+
+Si sale verde, haría un solo commit en `develop` con la línea `Gate:`. Como `gate.json` es una definición de tarea que edito, `rooms:test` correrá primero sin el filtro `--affected`. No habría spec, plan, id ni entrada en el roadmap.
+
+Una cosa antes de seguir: `src/shared/` no existe hoy en el repo. El glob no casaría con ningún fichero hasta que alguien cree esa carpeta, y el cambio sería inocuo mientras tanto.
+
+¿Sigo con la lane config, es decir, edito `gate.json`, corro el gate y hago el commit? Recomiendo que sí. Si prefieres otra lane o no quieres el commit, dímelo.
+
+--- [10]
+Primero corro `rooms:test` sin el filtro, porque edité su definición. Después corro el gate de cierre.
+
+--- [14]
+Hecho. `src/shared/**` ya está en los inputs de `rooms:test` en `gate.json`, y el cambio está en el commit `08abe07` sobre `develop`.
+
+- **`rooms:test` sin filtro:** corrió porque edité su definición. Pasó 1 y falló 0.
+- **Gate de cierre con `--affected`:** salió con código 0, pero saltó `bookings:test` y `rooms:test`. Ningún fichero cambiado casa con sus inputs, porque `gate.json` no es input de ninguna de las dos. Es decir, el gate afectado no ejecutó nada en este cambio.
+- **Línea `Gate:` del commit:** recoge las dos cosas, la ejecución sin filtro y los saltos.
+- **Merge:** `develop` no es una rama `feature/*`, así que no hice merge. El commit se queda donde está.
+- **Git:** avisó de que `gate.json` pasará de LF a CRLF la próxima vez que lo toque.
+- **`src/shared/`:** sigue sin existir. El glob no casará con nada hasta que alguien cree esa carpeta.
+

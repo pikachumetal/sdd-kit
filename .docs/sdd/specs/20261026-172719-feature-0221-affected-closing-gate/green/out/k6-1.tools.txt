@@ -1,0 +1,89 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: git ls-files | grep -v node_modules | head -50; cat gate.json; ls -a .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/operations.md
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+gate.json
+package.json
+scripts/gate.mjs
+scripts/lint.mjs
+src/app.js
+src/rooms.js
+test/app.test.j
+
+=== RESULTADO (4 turnos, 0.1405274 $)
+Lo clasifico como **config**: `gate.json` es configuración del gate y no cambia lo que ve o puede hacer quien usa el producto. En esta lane tengo que preguntar antes de tocar nada.
+
+🦆 `gate.json` le dice al gate de cierre qué ficheros mira para decidir si `rooms:test` está afectada. Hoy esos inputs son `src/rooms.js` y `test/rooms.test.js`. Al añadir `src/shared/**`, un cambio en `src/shared/` volverá a lanzar esa tarea con `--affected`, en vez de saltarla. Antes de guardar, correría el gate de cierre de `operations.md`:
+
+`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+
+Si sale verde, haría un solo commit en `develop` con la línea `Gate:`. Como `gate.json` es una definición de tarea que edito, `rooms:test` correrá primero sin el filtro `--affected`. No habría spec, plan, id ni entrada en el roadmap.
+
+Una cosa antes de seguir: `src/shared/` no existe hoy en el repo. El glob no casaría con ningún fichero hasta que alguien cree esa carpeta, y el cambio sería inocuo mientras tanto.
+
+¿Sigo con la lane config, es decir, edito `gate.json`, corro el gate y hago el commit? Recomiendo que sí. Si prefieres otra lane o no quieres el commit, dímelo.
+
+>>> Edit: <run>\repo\gate.json
+
+>>> Bash: cat scripts/gate.mjs | head -60; git branch --show-current
+<<< The file <run>\repo\gate.json has been updated successfully.
+<<< #!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).split('\n').filter(Boolean);
+}
+
+function changedFiles(base) {
+  const committed = git(['diff', '--name-only', `${base}...HEAD`]);
+  const local = git(['status', '--porcelain']).map((line) => line.slice(3));
+  ret
+
+>>> Bash: node scripts/gate.mjs run rooms:test; echo "exit $?"; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop; echo "exit $?"
+<<< ▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit 0
+No tasks affected by changed files. Unable to execute action pipeline.
+exit 0
+
+>>> Bash: git add gate.json && git commit -q -F - <<'EOF'
+chore(gate): añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: saltada (ningún fichero cambiado casa con sus inputs) · rooms:test: saltada (ningún fichero cambiado casa con sus inputs); rooms:test sin filtro (definición editada): corrió 1/1
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< warning: in the working copy of 'gate.json', LF will be replaced by CRLF the next time Git touches it
+08abe07 chore(gate): añade src/shared/** a los inputs de rooms:test
+3b06e79 feat: base del molde
+
+=== RESULTADO (5 turnos, 0.1824313 $)
+Hecho. `src/shared/**` ya está en los inputs de `rooms:test` en `gate.json`, y el cambio está en el commit `08abe07` sobre `develop`.
+
+- **`rooms:test` sin filtro:** corrió porque edité su definición. Pasó 1 y falló 0.
+- **Gate de cierre con `--affected`:** salió con código 0, pero saltó `bookings:test` y `rooms:test`. Ningún fichero cambiado casa con sus inputs, porque `gate.json` no es input de ninguna de las dos. Es decir, el gate afectado no ejecutó nada en este cambio.
+- **Línea `Gate:` del commit:** recoge las dos cosas, la ejecución sin filtro y los saltos.
+- **Merge:** `develop` no es una rama `feature/*`, así que no hice merge. El commit se queda donde está.
+- **Git:** avisó de que `gate.json` pasará de LF a CRLF la próxima vez que lo toque.
+- **`src/shared/`:** sigue sin existir. El glob no casará con nada hasta que alguien cree esa carpeta.

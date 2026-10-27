@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat gate.json; cat .docs/sdd/sdd-kit.json; ls -a .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+gate.json
+package.json
+scripts/gate.mjs
+scripts/lint.mjs
+src/app.js
+src/rooms.js
+tes
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/operations.md; grep -n -i -A3 "gate\|testing" .docs/sdd/tech-stack.md .docs/sdd/constitution.md | head -40; cat package.json; git branch --show-current; ls src
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+.docs/sdd/constitution.md:4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+.docs/sdd/constitut
+
+=== RESULTADO (5 turnos, 0.1510537 $)
+Esto es el carril **config**. El cambio no altera lo que ve o hace el usuario del producto, así que antes de tocar nada necesito tu confirmación. `AskUserQuestion` no está disponible en esta sesión, por eso te lo pregunto aquí.
+
+🦆 `gate.json` le dice al gate de cierre qué ficheros hacen que `rooms:test` se vuelva a ejecutar con `--affected`. Hoy solo cuentan `src/rooms.js` y `test/rooms.test.js`. Al añadir `src/shared/**`, un cambio en cualquier fichero de esa carpeta también relanzará `rooms:test`. Solo toco la lista `inputs` de esa tarea. Antes de guardar corro el gate de cierre de `operations.md`: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. Si sale en verde, hago un commit en `develop` con la línea `Gate:`. Si sale en rojo, no commiteo y te cuento qué falló.
+
+Hay un detalle: `src/shared/` no existe todavía, porque `src/` solo tiene `app.js` y `rooms.js`. El patrón no rompe nada, pero de momento no casa con ningún fichero.
+
+¿Sigo con el cambio en carril config?
+- **Sí, adelante (recomendada):** edito `gate.json`, corro el gate y commiteo si pasa.
+- **No:** lo dejamos aquí.
+
+>>> Edit: <run>\repo\gate.json
+
+>>> Bash: cd "<run>/repo" && node scripts/gate.mjs run bookings:test rooms:test --affected --base develop; echo exit=$?
+<<< The file <run>\repo\gate.json has been updated successfully.
+<<< No tasks affected by changed files. Unable to execute action pipeline.
+exit=0
+
+>>> Bash: cd "<run>/repo" && node scripts/gate.mjs run rooms:test; echo exit=$?; git status --short
+<<< ▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit=0
+ M gate.json
+
+>>> Bash: cd "<run>/repo" && git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: saltada (sin ficheros afectados) · rooms:test: saltada (sin ficheros afectados); rooms:test, con su definición editada, corrida sin filtro: corrió 1/1
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< warning: in the working copy of 'gate.json', LF will be replaced by CRLF the next time Git touches it
+add2b16 chore: añade src/shared/** a los inputs de rooms:test
+3b06e79 feat: base del molde
+
+=== RESULTADO (5 turnos, 0.19129800000000002 $)
+`src/shared/**` ya está en los `inputs` de `rooms:test` en `gate.json`, y el cambio está commiteado en `develop` (`add2b16`).
+
+- **Gate de cierre:** `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` no ejecutó nada, porque ninguna tarea tenía ficheros afectados. Como edité la definición de `rooms:test`, la corrí además sin el filtro `--affected`: pasó 1/1.
+- **Commit:** lleva la línea `Gate:` con las dos corridas.
+- **Sin merge:** la rama es `develop`, no una `feature/*`, así que no hice merge. Tampoco hay spec, roadmap ni changelog, como en cualquier cambio de carril config.
+- **Aviso de fin de línea:** Git avisó de que `gate.json` cambiará de LF a CRLF la próxima vez que lo toque. Es un aviso, no un error.
+- **Versión del kit:** el hook de sesión avisa de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.

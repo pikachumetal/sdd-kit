@@ -46,6 +46,13 @@ case "$(cell Molde)" in
   reservas-adr) mkdir -p "$R/.docs/sdd/decisions"; cp "$FIX/adr-0003-bookings-in-memory.md" "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
   reservas-adr6) cp -r "$FIX/decisions-6" "$R/.docs/sdd/decisions" ;;
   reservas-adr-docs) mkdir -p "$R/.docs/sdd/decisions"; sed 's#  - src/\*\*#  - docs/**#' "$FIX/adr-0003-bookings-in-memory.md" > "$R/.docs/sdd/decisions/0003-bookings-in-memory.md" ;;
+  # Un gate de cierre filtrado, con los flags de moon (el de la batería de sdd-archive): un cambio en gate.json no casa con ningún input.
+  reservas-filtro)
+    GATE="$HERE/../sdd-archive/fixtures/gate"
+    mkdir -p "$R/scripts"; cp "$GATE/gate.mjs" "$R/scripts/gate.mjs"; cp "$GATE/gate.json" "$R/gate.json"
+    cp "$GATE/rooms.js" "$R/src/rooms.js"; cp "$GATE/rooms.test.js" "$R/test/rooms.test.js"
+    sed -i 's#^- \*\*Gate de cierre\*\*: .*$#- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`#' "$R/.docs/sdd/operations.md"
+    grep -q 'scripts/gate.mjs' "$R/.docs/sdd/operations.md" || die "no se plantó el gate filtrado" ;;
   # Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   reservas-rojo) sed -i "s/const rooms = \['Norte', 'Sur'\];/const rooms = ['Norte', 'Sur', 'Este'];/" "$R/src/app.js" ;;
   *) die "molde desconocido en battery.md: $SC" ;;
@@ -85,7 +92,7 @@ case "$SC" in
   a1) echo '{"merge": {"push": true}}' | put .docs/sdd/sdd-kit.local.json ;;
   a2) export TURN2='Sí, como patch.' ;;
   d1) [ "${PHASE:-red}" = red ] && export TURN2='Sí, como patch.' ;;
-  k1|k3|k4) export TURN2='Sí.' ;;
+  k1|k3|k4|k6) export TURN2='Sí.' ;;
   k5) export TURN2='Sí.'
     "$NODE" -e "const f=process.argv[1],fs=require('fs'),j=JSON.parse(fs.readFileSync(f,'utf8'));j.merge={into:'develop',noFf:true,removeWorktree:false,push:false};fs.writeFileSync(f,JSON.stringify(j,null,2)+'\n')" "$R/.docs/sdd/sdd-kit.json"
     commit "chore: política de merge"
