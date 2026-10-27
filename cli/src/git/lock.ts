@@ -1,5 +1,6 @@
-import { closeSync, openSync, unlinkSync, writeSync } from 'node:fs';
+import { closeSync, mkdirSync, openSync, readdirSync, unlinkSync, writeFileSync, writeSync } from 'node:fs';
 import { hostname } from 'node:os';
+import { join } from 'node:path';
 import { DomainError } from '../cli/args.ts';
 import { readText } from '../cli/files.ts';
 import type { Io } from '../cli/io.ts';
@@ -21,6 +22,8 @@ export interface Lock {
   label: string;
   io: Io;
   owner: { branch: string; worktree: string };
+  // Carpeta de la cola: con ella, las esperas entran por orden de llegada.
+  queue?: string;
 }
 
 interface Waiting {
@@ -65,6 +68,10 @@ function readOwner(path: string): LockOwner | null {
   }
 }
 
+export function lockHolderPid(path: string): number | null {
+  return readOwner(path)?.pid ?? null;
+}
+
 function isAlive(pid: number): boolean {
   try {
     process.kill(pid, 0);
@@ -86,8 +93,22 @@ function formatSince(since: string): string {
   return `${day} ${two(date.getHours())}:${two(date.getMinutes())}:${two(date.getSeconds())}`;
 }
 
+function formatWaiter(owner: LockOwner): string {
+  return `${owner.branch ?? ''} (${owner.worktree}, PID ${owner.pid})`;
+}
+
+function formatHolder(owner: LockOwner): string {
+  return `${formatWaiter(owner)} desde ${formatSince(owner.since)}`;
+}
+
 function formatOwner(owner: LockOwner): string {
-  return `${owner.branch ?? ''} (${owner.worktree}, PID ${owner.pid}) desde ${formatSince(owner.since)}.`;
+  return `${formatHolder(owner)}.`;
+}
+
+function waitMessage(lock: Lock, owner: LockOwner, ahead: LockOwner[] | null): string {
+  if (ahead === null) return `Esperando el cerrojo de ${lock.label}: lo tiene ${formatOwner(owner)}`;
+  const before = ahead.length === 0 ? '' : `; delante de ti, ${ahead.map(formatWaiter).join(', ')}`;
+  return `Esperando el cerrojo de ${lock.label}: vas ${ahead.length + 1}.º en la cola; lo tiene ${formatHolder(owner)}${before}.`;
 }
 
 function removeQuietly(path: string): void {
@@ -98,14 +119,14 @@ function removeQuietly(path: string): void {
   }
 }
 
-function announceOnce(lock: Lock, owner: LockOwner, waiting: Waiting): void {
-  const key = `${owner.branch}|${owner.pid}|${owner.since}`;
+function announceOnce(lock: Lock, owner: LockOwner, waiting: Waiting, ahead: LockOwner[] | null): void {
+  const key = [owner, ...(ahead ?? [])].map((entry) => `${entry.branch}|${entry.pid}|${entry.since}`).join(',');
   if (key === waiting.announcedKey) return;
-  lock.io.err(`Esperando el cerrojo de ${lock.label}: lo tiene ${formatOwner(owner)}`);
+  lock.io.err(waitMessage(lock, owner, ahead));
   waiting.announcedKey = key;
 }
 
-async function handleHeld(lock: Lock, waiting: Waiting): Promise<void> {
+async function handleHeld(lock: Lock, waiting: Waiting, ahead: LockOwner[] | null): Promise<void> {
   const owner = readOwner(lock.path);
   if (owner === null) {
     if (Date.now() > waiting.deadline) throw new DomainError('cerrojo: no se libera; no se puede leer quién lo tiene.');
@@ -116,23 +137,64 @@ async function handleHeld(lock: Lock, waiting: Waiting): Promise<void> {
     lock.io.err(`Cerrojo huérfano: lo tenía ${formatOwner(owner)}`);
     return;
   }
-  announceOnce(lock, owner, waiting);
+  announceOnce(lock, owner, waiting, ahead);
   if (Date.now() > waiting.deadline) throw new DomainError(`cerrojo: no se libera; lo tiene ${formatOwner(owner)}`);
   return sleep(POLL_MILLISECONDS);
 }
 
+function newWaiting(timeoutMinutes: number): Waiting {
+  return { deadline: Date.now() + timeoutMinutes * 60_000, announcedKey: '' };
+}
+
 async function acquire(lock: Lock, timeoutMinutes: number): Promise<number> {
   const self = selfOwner(lock);
-  const waiting: Waiting = { deadline: Date.now() + timeoutMinutes * 60_000, announcedKey: '' };
+  const waiting = newWaiting(timeoutMinutes);
   for (;;) {
     const descriptor = tryCreate(lock.path, self);
     if (descriptor !== null) return descriptor;
-    await handleHeld(lock, waiting);
+    await handleHeld(lock, waiting, null);
+  }
+}
+
+function enqueue(queue: string, self: LockOwner): string {
+  mkdirSync(queue, { recursive: true });
+  const entry = join(queue, `${String(Date.now()).padStart(13, '0')}-${String(self.pid).padStart(10, '0')}.json`);
+  writeFileSync(entry, JSON.stringify(self));
+  return entry;
+}
+
+// Las entradas de la cola se ordenan por su nombre, que empieza por la hora de llegada.
+function waitersAhead(queue: string, entry: string): LockOwner[] {
+  const own = entry.slice(queue.length + 1);
+  const ahead: LockOwner[] = [];
+  for (const name of readdirSync(queue).sort()) {
+    if (name >= own) break;
+    const owner = readOwner(join(queue, name));
+    if (owner === null) continue;
+    if (isOrphan(owner)) removeQuietly(join(queue, name));
+    else ahead.push(owner);
+  }
+  return ahead;
+}
+
+async function acquireInTurn(lock: Lock, queue: string, timeoutMinutes: number): Promise<number> {
+  const self = selfOwner(lock);
+  const waiting = newWaiting(timeoutMinutes);
+  const entry = enqueue(queue, self);
+  try {
+    for (;;) {
+      const ahead = waitersAhead(queue, entry);
+      const descriptor = ahead.length === 0 ? tryCreate(lock.path, self) : null;
+      if (descriptor !== null) return descriptor;
+      await handleHeld(lock, waiting, ahead);
+    }
+  } finally {
+    removeQuietly(entry);
   }
 }
 
 export async function withLock<T>(lock: Lock, timeoutMinutes: number, body: () => Promise<T>): Promise<T> {
-  const descriptor = await acquire(lock, timeoutMinutes);
+  const descriptor = lock.queue === undefined ? await acquire(lock, timeoutMinutes) : await acquireInTurn(lock, lock.queue, timeoutMinutes);
   try {
     return await body();
   } finally {
