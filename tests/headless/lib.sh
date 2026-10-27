@@ -29,7 +29,7 @@ REPO_ROOT="$(dirname "$(dirname "$HEADLESS")")"
 NODE="${NODE:-node}"
 # Ruta Windows: node la recibe del hook de Claude Code, no de Git Bash.
 DENY_KILL_HOOK="$(cygpath -m "$HEADLESS/deny-kill.mjs" 2>/dev/null || echo "$HEADLESS/deny-kill.mjs")"
-# La salida versionada de una campaña no pasa de 140 caracteres de ruta relativa (PathLength.Tests.ps1).
+# La salida versionada de una campaña no pasa de 140 caracteres de ruta relativa (cli/test/kit/path-length.test.ts).
 MAX_PATH=140
 
 die() { echo "[${LABEL:-sujeto}] $*" >&2; exit 1; }

@@ -156,7 +156,7 @@ El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI son Vitest; los de anatomía de las skills y los manifests, Pester 5 o superior con `pwsh` 7+.
+Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI y los de las skills (topes, enlaces, manifests) son Vitest; los Pester que quedan, de conducta, piden Pester 5 o superior con `pwsh` 7+.
 
 ```powershell
 moon run cli:typecheck cli:test kit:test
