@@ -39,6 +39,7 @@ created: 2026-10-27
 - El RED se lanzó con `run.sh` (n = 1) en lugar de `battery.sh` (n = 2).
 - Una tanda RED (4 sujetos, 1,28 $) se descartó: la copia del kit no llevaba `cli/`.
 - `g5` y `g6` necesitaron una tanda de REFACTOR y `g5` un sujeto de control, aprobados por el dev-lead por encima del coste previsto.
+- Enmienda en el cierre, aprobada por el dev-lead: tras el sync se repiten solo las tareas que tocan la rama y la base a la vez; invierte la decisión 1. Sin sujeto que la mida: la aplicó el propio cierre de la 0221 (sin `kit:test-headless`, que solo tocó la base: 5 min 47 s frente a 25 min).
 - Enmienda de la spec, aprobada: `Validación en campo:` no lleva el sha del merge de sincronización (el walkthrough se commitea antes del sync).
 
 ### Decisiones tomadas sin el dev-lead
@@ -88,6 +89,7 @@ created: 2026-10-27
 
 ### 4.3 Residuales / deuda generada
 
+- Fila de intermitentes de `kit:test-headless` (dos tests del lanzador portados por la 0227, rojos con la suite entera y verdes solos, con la rama y sin ella).
 - Fila de intermitentes: `afterAll` de `test/merge/hotfix.slow.test.ts` que agota los 10 s con la máquina cargada (abierta en el roadmap).
 - g6 y w1 sin re-medir sobre el texto final, y los «no probado» de 4.2: riesgo aceptado por el dev-lead (2026-10-27).
 
