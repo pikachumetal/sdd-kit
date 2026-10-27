@@ -84,6 +84,19 @@ export function findLockedFile(output: string): string | undefined {
   return `'${file.file ?? file.busy}' lo tiene abierto ${holder}`;
 }
 
+const FAILED_TEST = /(?:^|[\s|])(?:\[-\]|×|FAIL)\s/;
+export const SHOWN_LINES = 20;
+
+export function failedTestLines(lines: string[]): string[] {
+  return lines.filter((line) => FAILED_TEST.test(line)).slice(0, SHOWN_LINES);
+}
+
+export function failureReport(lines: string[]): string {
+  const failed = failedTestLines(lines);
+  const header = failed.length === 0 ? [] : ['tests fallidos:', ...failed];
+  return [...header, ...lines.slice(-SHOWN_LINES)].join('\n');
+}
+
 export async function onlyDocsSince(worktree: string, commit: string): Promise<boolean> {
   return (await git(worktree, ['diff', '--quiet', commit, 'HEAD', '--', '.', ':!.docs', ':!*.md'])).code === 0;
 }
@@ -101,8 +114,8 @@ export async function runVerification(verification: Verification): Promise<void>
   const output = readFileSync(log, 'utf8');
   const locked = findLockedFile(output);
   if (locked !== undefined) throw new DomainError(`bloqueado: ${locked}; ciérralo y relanza el merge. Salida completa en ${log}`);
-  const tail = output.split(LINE_BREAK).filter((line) => line !== '').slice(-20);
-  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${tail.join('\n')}`);
+  const report = failureReport(output.split(LINE_BREAK).filter((line) => line !== ''));
+  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${report}`);
 }
 
 export interface VerifyRequest {

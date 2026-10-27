@@ -83,6 +83,18 @@ describe('watch subagent --once', () => {
     expect(await watchOnce(setup)).toEqual([`TERMINADO: ${description} devolvió su resultado`]);
   });
 
+  it('no da por terminado un subagente reanudado tras el end_turn', async () => {
+    const setup = newWorktree(defaultConfig);
+    const final = {
+      type: 'assistant',
+      timestamp: '2026-09-28T13:30:00.000Z',
+      message: { id: 'msg_end', stop_reason: 'end_turn', usage: { output_tokens: 300 }, content: [{ type: 'text', text: 'listo' }] },
+    };
+    const resumed = { type: 'user', timestamp: '2026-09-28T13:40:00.000Z', message: { content: 'arregla los dos hallazgos' } };
+    newTranscript(setup, [readCall(), toolResult('toolu_last'), final, hook('SubagentStop', ''), resumed], 1);
+    expect((await watchOnce(setup))[0]).toMatch(/^EN MARCHA:/);
+  });
+
   it('con --once toma el despacho más reciente de los que repiten description', async () => {
     const setup = newWorktree(defaultConfig);
     newTranscript(setup, [readCall()], 30);

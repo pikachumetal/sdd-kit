@@ -80,6 +80,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - WHEN se ejecuta `sdd roadmap check`
 - THEN escribe `roadmap.md: línea <n>: la cabecera de «Release 1.3» debe ser «| id | Feature | Origen | Ficheros que toca | Estado |»`, y para cada una de las dos filas `roadmap.md: línea <n>: estado «<texto>» no admitido: ⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …`, y sale con 1
 - AND una fila suelta, una fila vacía o una cabecera descuadrada con su separador dan su mensaje con el prefijo `roadmap.md: `, fijado en los tests de `cli/test/roadmap/`
+- AND una fila de «Próximo» que acaba en `. || ✅ |` da `roadmap.md: línea <n>: la fila tiene 4 celdas y la cabecera 3`, y una de «Deuda técnica» con un `|` sin escapar dentro de un código da `roadmap.md: línea <n>: la fila tiene 4 celdas y la cabecera 3`; un `\|` escapado no cuenta; lo mismo en las tablas de `ROADMAP.md` y de `debt.md`
 - AND los tests fijan el número de línea exacto de cada fixture
 
 ### Una feature publicada no sigue como fila de una sección abierta
@@ -194,6 +195,14 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - AND las tablas sin esa columna (las de «Patches», que empiezan por la fecha, y la deuda) no se miran
 - AND en `ROADMAP.md` de la 3.0.0, un id repetido entre Now, Next o Later se avisa igual, con el prefijo `ROADMAP.md: `
 - AND `0000` repetido no se avisa: es el comodín de «sin ticket»
+
+### El roadmap 2.x avisa de una fila que apunta a una tarea ya cerrada
+
+- GIVEN un roadmap 2.x con la fila `0149` ✅ en «Próximo», la fila `0047` ⏳ en la línea 12 con «**Absorbida por la propuesta 0131 → 0149**», la fila `0048` ⏳ con «**Absorbida por la propuesta 0131 → 0149 y 0150**» y la `0150` ⏳, y en «Deuda técnica» una fila de la línea 30 con «Destino» `**Actuar → 0149**, patch de la CLI` sin prefijo de cierre en su «Ítem»
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `roadmap.md: aviso: línea 12: apunta a 0149, ya ✅: sáldala` y `roadmap.md: aviso: línea 30: apunta a 0149, ya ✅: sáldala`, y ningún aviso de la fila `0048`, porque la `0150` no está ✅
+- AND una fila «Absorbida» o de deuda cuya «Ítem» ya empieza por `**[Feature <id>, <fecha>: saldada — …]**` no avisa, ni una cuyo destino está 🧪
+- AND sin fallos, la última línea es `Roadmap válido` y sale con 0
 
 ## Reglas de la capacidad
 
