@@ -126,6 +126,8 @@ if [ -f go.mod ]; then go mod download; fi
 
 Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up.
 
+**A gate that filters by a base** (`--affected --base <ref>`) runs nothing on a fresh branch and exits 0. Run, without the filter, only its tasks whose inputs —per the tool, `moon task <t>`— include files the spec's Scope or the plan names; the rest go in the report as `<tarea>: saltada (fuera del Scope de la spec)`. Never report ready from a gate that ran no task (`tests/affected-gate-red.md`, w2).
+
 **If tests fail:** run the same command in a detached worktree of the integration branch (`git worktree add --detach`, removed when done). If it fails there too, the red isn't this branch's: search its first error lines in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence. Then report the failures with that verdict and ask whether to proceed or investigate.
 
 **If tests pass:** Report ready.
@@ -134,7 +136,7 @@ Run tests to ensure workspace starts clean, with the project's closing gate: `Ga
 
 ```
 Worktree ready at <full-path>
-Tests passing (<N> tests, 0 failures)
+Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué>)
 Ready to implement <feature-name>
 ```
 
@@ -154,6 +156,7 @@ Ready to implement <feature-name>
 | Permission error on create | Sandbox fallback, work in place |
 | `.docs/sdd/environments.md` exists | `env:setup` after dependencies (Step 2) |
 | Baseline command | The project's closing gate; none declared → ask (Step 3) |
+| Gate filters by a base | The Scope's tasks, without the filter (Step 3) |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
