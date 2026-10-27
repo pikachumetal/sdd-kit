@@ -40,4 +40,5 @@ No aplica: entrevista.
 
 ## Enmiendas
 
+- 2026-10-27 — Arranque de sesión: `start-kit-session.mjs` lanzaba `claude --dangerously-skip-permissions …` → lo lanza sin ese flag, `node start-kit-session.mjs --model sonnet` → `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir <repo> --model sonnet`; el dev-lead lo quitó de `Start-KitSession.ps1` (`cdd7842f`) y el yolo lo pone su `Select-Claude` desde `.claude/.profile.json` — pedido por el dev-lead — re-parte: 0228
 - 2026-10-26 — Orden: la 0226 y la 0227 iban tras la 0223 → arrancan ya, en paralelo con la 0223, porque la 0223 toca `moon.yml`, `tests/Invoke-KitTests.ps1` y `tech-stack.md`, y ellas solo comparten `tech-stack.md`; la que cierre después integra la base — pedido por el dev-lead («me gustaría poder quitarme el pester cuanto antes»; «Sí, ya en paralelo») — re-parte: la columna «Tras» de 0226 y 0227 pasa de 0223 a —, sin tocar la regla de orden de arriba
