@@ -16,7 +16,7 @@ created: 2026-10-26
 - **Hook de sesión del repo** (Task 2): `KitSessionSource` y el caso de `Start-KitSession.ps1` de `TempDir` pasan a `kit-session-source.slow.test.ts`. Siguen lanzando `pwsh` hasta la 0228. `TempDir` (sus dos casos del TEMP de Pester) y `FastSuiteBudget` se retiran sin portar.
 - **Privacidad** (Task 3): el control del commit sigue en el conjunto rápido (`subject-output-privacy.test.ts`) y el resto va en el lento. El control falla si `git diff --cached` falla, y `cli/moon.yml` gana `/.docs/**` y `/tests/**` en `testInputs`.
 - **Lanzador y baterías** (Task 4): `HeadlessLauncher` (69 casos) se parte en siete ficheros por tema en `cli/test/kit/headless/`, y `Battery` va al suyo. `kit:test-headless` corre `vitest` sobre esa carpeta. `cli:test-slow` y `cli:test-min` la excluyen, y `tests/Invoke-KitTests.ps1` pierde `-Headless`.
-- **Documentos** (Task 5 y pasada de fix): `tech-stack.md` (estado y gate), la fila 0228 (borrar los dos helpers `.ps1` si siguen, y pasar a Node los tests que aún lanzan `pwsh`) y el changelog.
+- **Documentos** (Task 5 y pasada de fix): `tech-stack.md` (estado y gate), la fila 0228 (pasar a Node los tests que aún lanzan `pwsh`) y el changelog.
 - **Pasada de fix**: `resolveBash(env)`, la regla de git con comillas dobles, el patrón del usuario sin home y los refactors de la revisión. Commits: apertura `3259987`; tasks `c12fa5e`, `b7813d1`, `7c911cf` + `3bc53a2`, `c4659b1` y `021c800`; pasada de fix, juntada en el cierre.
 
 ## 2. Tiempo y coste: estimado vs real
@@ -39,7 +39,7 @@ created: 2026-10-26
 - La salida de bash en los tests del lanzador va a un fichero, no a una tubería (el plan no lo preveía): con tubería se perdían a ratos las últimas líneas de `run.sh`.
 - `testInputs` gana `/.docs/**` en lugar de `/.docs/sdd/capabilities/**` (spec, enmienda de la decisión 13).
 - `tech-stack.md:8` conserva el `-Tag 'Slow'` de Pester (spec, enmienda de la decisión 16).
-- Los helpers `.ps1` se quedan: los usan cinco Pester de la 0226, que aún no ha cerrado (decisión 15). Los borra la 0228.
+- Los helpers `tests/Clear-GitEnv.ps1` y `tests/Resolve-Bash.ps1` se borran en el merge con `develop`, porque la 0226 cerró antes y ya no queda ningún Pester que los use (decisión 15).
 
 ### Decisiones tomadas sin el dev-lead
 
@@ -86,7 +86,7 @@ created: 2026-10-26
 ### 4.3 Residuales / deuda generada
 
 - `stopPort` (`headless/campaign.ts`) y `kit-session-source.slow.test.ts` lanzan `pwsh`: van en la fila 0228.
-- `tests/Clear-GitEnv.ps1` y `tests/Resolve-Bash.ps1` siguen en el repo mientras los usen los Pester de la 0226: van en la fila 0228.
+- Sin ningún Pester en `tests/` tras la 0226 y esta, `kit:test` y `kit:test-fast` llaman a `Invoke-Pester` sin ficheros: salen con 0, pero imprimen «No test files were found…». Lo retira la 0228 con `tests/Invoke-KitTests.ps1`.
 - Dos filas de deuda «Por triar» de tests que fallan con la máquina cargada: tres del lanzador en Vitest (tope de 120 s y umbral de 40 s) y dos de `merge/cleanup.slow.test.ts`, de antes de la rama.
 - Tres Minor de la re-revisión adjudicados (rulings): `=(` sin espacio en `battery.slow.test.ts:76`, el comentario de `usingSddBattery` y el salto de línea que come el marcado de `GIT_CALL`.
 

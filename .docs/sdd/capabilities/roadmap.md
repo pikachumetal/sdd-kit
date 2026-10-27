@@ -79,7 +79,7 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - GIVEN una sección de release cuya tabla empieza por `| id | Task | Tamaño | Estado |`, una fila de «Próximo» con el estado `pendiente` y otra con `❌ descartado`
 - WHEN se ejecuta `sdd roadmap check`
 - THEN escribe `roadmap.md: línea <n>: la cabecera de «Release 1.3» debe ser «| id | Feature | Origen | Ficheros que toca | Estado |»`, y para cada una de las dos filas `roadmap.md: línea <n>: estado «<texto>» no admitido: ⏳, 🔄, ✅, 🧪 validación diferida a…, ⏸️ aparcada: …`, y sale con 1
-- AND una fila suelta, una fila vacía o una cabecera descuadrada con su separador dan los mensajes que hoy da `tests/RoadmapStructure.Tests.ps1`, con el prefijo `roadmap.md: `
+- AND una fila suelta, una fila vacía o una cabecera descuadrada con su separador dan su mensaje con el prefijo `roadmap.md: `, fijado en los tests de `cli/test/roadmap/`
 - AND una fila de «Próximo» que acaba en `. || ✅ |` da `roadmap.md: línea <n>: la fila tiene 4 celdas y la cabecera 3`, y una de «Deuda técnica» con un `|` sin escapar dentro de un código da `roadmap.md: línea <n>: la fila tiene 4 celdas y la cabecera 3`; un `\|` escapado no cuenta; lo mismo en las tablas de `ROADMAP.md` y de `debt.md`
 - AND los tests fijan el número de línea exacto de cada fixture
 

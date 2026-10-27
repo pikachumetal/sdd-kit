@@ -21,7 +21,7 @@ Bring an initialized project up to the loaded kit by applying, in order, the mig
 
 ## Writing a new migration
 
-Declare, in a `**Escribe**:` line right before «Verificación», each file and each key it writes in the project, in backticks. Everything it declares is also asked or written by `sdd-init` (its text or `sdd init`), from a single source: a new project is born in the current version and never goes through this migration. `tests/MigrationInitParity.Tests.ps1` checks it.
+Declare, in a `**Escribe**:` line right before «Verificación», each file and each key it writes in the project, in backticks. Everything it declares is also asked or written by `sdd-init` (its text or `sdd init`), from a single source: a new project is born in the current version and never goes through this migration. `cli/test/kit/migration-init-parity.test.ts` checks it.
 
 Every migration ends with the review of the project's rules against the installed kit, after its marker and without blocking it (step 8 of [v3.0.0.md](references/migrations/v3.0.0.md)). If the release changes a rule a template copied into the projects (the method in `estimation.md`), the migration carries the step that updates the project's copy. No step or «Verificación» passes `Select-String` a path that may not exist (`AGENTS.md`, `.claude/`): it cuts the whole search and the step reads as clean. Use `git grep --untracked`, with `:(glob)` for a folder's own files.
 

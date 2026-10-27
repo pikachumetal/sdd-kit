@@ -20,7 +20,7 @@ created: 2026-10-26
 | 2 | Hook de sesión del repo y Start-KitSession | done | b7813d1 | |
 | 3 | Privacidad de las salidas de sujetos | done | 7c911cf, 3bc53a2 | el segundo, `/.docs/**` en `testInputs` |
 | 4 | Lanzador de sujetos y baterías | done | c4659b1 | `kit:test-headless`: 81/81 en 262,6 s (Pester: 81 en 920 s) |
-| 5 | Documentos y helpers | done | 021c800 | helpers `.ps1` se quedan: los usan Pester de la 0226 |
+| 5 | Documentos y helpers | done | 021c800 | helpers `.ps1` borrados en el merge con `develop`: la 0226 ya cerró |
 
 ## Verificación por task
 

@@ -22,6 +22,7 @@ F17=".docs/sdd/specs/20261009-150000-feature-0017-reactivate"
 F18=".docs/sdd/specs/20261010-100000-feature-0018-help"
 F19=".docs/sdd/specs/20261010-110000-feature-0019-duplicate-note"
 F20=".docs/sdd/specs/20261013-100000-feature-0020-path-reply"
+F21=".docs/sdd/specs/20261012-100000-feature-0021-keep-note"
 
 # El molde recibe las reglas de forma del kit que se prueba: así el mismo escenario es RED y GREEN.
 form_rules() {
@@ -35,7 +36,7 @@ form_rules() {
 }
 
 MOLD=mold-reservas
-case "$SC" in k2|o1|o2) MOLD=mold-kit ;; esac
+case "$SC" in k2|k3|o1|o2) MOLD=mold-kit ;; esac
 cp -r "$HERE/$MOLD/." "$R/"
 put_kit_marker "$MARKER"
 case "$SC" in
@@ -136,6 +137,11 @@ case "$SC" in
     open_feature 0019-duplicate-note "$F19" "$FIX/plan-0019.md" < "$FIX/spec-0019.md"
     cp "$FIX/guardar-nota-task1.md" "$R/skills/guardar-nota/SKILL.md"
     put "$F19/green/h1.txt" < "$FIX/h1-0019.txt" ;;
+  # La 0021: el arreglo del humo aplica literal una decisión registrada del dev-lead.
+  k3)
+    open_feature 0021-keep-note "$F21" "$FIX/plan-0021.md" < "$FIX/spec-0021.md"
+    cp "$FIX/guardar-nota-task1.md" "$R/skills/guardar-nota/SKILL.md"
+    put "$F21/green/h1.txt" < "$FIX/h1-0021.txt" ;;
   o1|o2)
     open_feature 0020-path-reply "$F20" "$FIX/plan-0020.md" < "$FIX/spec-0020.md"
     cp "$HERE/mold-kit/skills/guardar-nota/SKILL.md" "$R/skills/guardar-nota/SKILL.md"
@@ -176,12 +182,12 @@ case "$SC" in
 esac
 
 case "$SC" in
-  r2|r3|h1|t2|t3|t5a|t5b|p1|p2|k1|k2|o1|o2|w1) export EXTRA_DISALLOWED="Agent" ;;
+  r2|r3|h1|t2|t3|t5a|t5b|p1|p2|k1|k2|k3|o1|o2|w1) export EXTRA_DISALLOWED="Agent" ;;
 esac
 case "$SC" in
   r1|r1b|r5|t1a|t1b|t1c) MAX_TURNS="${MAX_TURNS:-40}" ;;
   r2|r3|r4) MAX_TURNS="${MAX_TURNS:-35}" ;;
-  t2|t3|p1|p2|k1|k2|o1|o2) MAX_TURNS="${MAX_TURNS:-40}" ;;
+  t2|t3|p1|p2|k1|k2|k3|o1|o2) MAX_TURNS="${MAX_TURNS:-40}" ;;
   t5a|t5b) MAX_TURNS="${MAX_TURNS:-20}" ;;
   w1) MAX_TURNS="${MAX_TURNS:-30}" ;;
   h2) MAX_TURNS="${MAX_TURNS:-80}" ;;
@@ -189,7 +195,7 @@ case "$SC" in
 esac
 
 MAX_TURNS="$MAX_TURNS" subject_launch "$ASK"
-for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17" "$F18" "$F19" "$F20"; do
+for folder in "$F10" "$F12" "$F13" "$F14" "$F15" "$F16" "$F17" "$F18" "$F19" "$F20" "$F21"; do
   for kept in spec plan tasks; do [ -f "$R/$folder/$kept.md" ] && subject_keep "$R/$folder/$kept.md" "$kept.md"; done
 done
 for test in informe price store.e2e cancel horas reactivar ayuda; do [ -f "$R/test/$test.test.js" ] && subject_keep "$R/test/$test.test.js" "$test.test.js"; done
