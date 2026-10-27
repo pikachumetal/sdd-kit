@@ -17,7 +17,7 @@ $env:SDD_KIT_SESSION_ROOT = $PSScriptRoot
 # Claude Code no lo borra nunca y en los settings del proyecto se ignora.
 $env:CLAUDE_CODE_TMPDIR = Join-Path $PSScriptRoot '.temp'
 try {
-  claude --dangerously-skip-permissions --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir $PSScriptRoot @args
+  claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}' --plugin-dir $PSScriptRoot @args
 }
 finally {
   Restore-EnvVar 'SDD_KIT_SESSION_ROOT' $previousSessionRoot
