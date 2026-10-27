@@ -160,9 +160,24 @@ export function isListening(port: number): Promise<boolean> {
   });
 }
 
+// La remota de un socket que escucha es 0.0.0.0:0 o [::]:0; el nombre del estado se traduce con el idioma de Windows.
+function listeningPids(netstat: string, port: number): number[] {
+  return netstat
+    .split(/\r?\n/)
+    .map((line) => line.trim().split(/\s+/))
+    .filter((columns) => columns.length === 5 && columns[1].endsWith(`:${port}`) && /^(0\.0\.0\.0|\[::\]):0$/.test(columns[2]))
+    .map((columns) => Number(columns[4]));
+}
+
 // Por el puerto, nunca por nombre: en la máquina corren otros node.
 export function stopPort(port: number): void {
-  run('pwsh', ['-NoProfile', '-Command', `Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }`]);
+  for (const pid of listeningPids(run('netstat', ['-ano']).output, port)) {
+    try {
+      process.kill(pid);
+    } catch {
+      // Ya había salido.
+    }
+  }
 }
 
 export const serverScript = (root: string, name: string): string =>
