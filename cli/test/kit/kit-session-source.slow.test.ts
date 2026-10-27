@@ -4,12 +4,19 @@ import { delimiter, join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { cleanGitEnv, kitRoot, run, type RunResult } from './process.ts';
 
-const hookScript = join(kitRoot, '.claude', 'hooks', 'Test-KitSessionSource.ps1');
-const launcherPath = join(kitRoot, 'Start-KitSession.ps1');
+const hookScript = join(kitRoot, '.claude', 'hooks', 'kit-session-source.mjs');
+const launcherPath = join(kitRoot, 'start-kit-session.mjs');
+const root = kitRoot.replace(/[\\/]$/, '');
 
 interface HookOutput {
   systemMessage: string;
   hookSpecificOutput: { hookEventName: string; additionalContext: string };
+}
+
+interface ClaudeCall {
+  tmp: string | null;
+  root: string | null;
+  args: string[];
 }
 
 function newProject(hooksPath?: string): string {
@@ -23,10 +30,26 @@ function invokeKitSessionHook(sessionRoot: string | null, projectDir: string): R
   const env: NodeJS.ProcessEnv = { ...cleanGitEnv, CLAUDE_PROJECT_DIR: projectDir };
   delete env.SDD_KIT_SESSION_ROOT;
   if (sessionRoot !== null) env.SDD_KIT_SESSION_ROOT = sessionRoot;
-  return run('pwsh', ['-NoProfile', '-File', hookScript], { env });
+  return run(process.execPath, [hookScript], { env });
 }
 
 const parse = (result: RunResult): HookOutput => JSON.parse(result.output);
+
+// Un `claude` falso al principio del PATH apunta lo que recibe y sale con 7.
+function launchWithFakeClaude(tmpDir: string | undefined, args: string[]): { call: ClaudeCall; result: RunResult } {
+  const bin = mkdtempSync(join(tmpdir(), 'fake-claude-'));
+  const seen = join(bin, 'seen.json');
+  const fake = join(bin, 'fake.mjs');
+  writeFileSync(fake, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(seen)}, JSON.stringify({ tmp: process.env.CLAUDE_CODE_TMPDIR ?? null, root: process.env.SDD_KIT_SESSION_ROOT ?? null, args: process.argv.slice(2) }));\nprocess.exit(7);\n`);
+  writeFileSync(join(bin, 'claude.cmd'), `@"${process.execPath}" "${fake}" %*\r\n`);
+  writeFileSync(join(bin, 'claude'), `#!/bin/sh\nexec "${process.execPath}" "${fake}" "$@"\n`, { mode: 0o755 });
+  const env: NodeJS.ProcessEnv = { ...cleanGitEnv, PATH: `${bin}${delimiter}${process.env.PATH}` };
+  delete env.CLAUDE_CODE_TMPDIR;
+  delete env.SDD_KIT_SESSION_ROOT;
+  if (tmpDir !== undefined) env.CLAUDE_CODE_TMPDIR = tmpDir;
+  const result = run(process.execPath, [launcherPath, ...args], { env });
+  return { call: JSON.parse(readFileSync(seen, 'utf8')), result };
+}
 
 describe('Hook SessionStart del repo', () => {
   let projectDir: string;
@@ -57,8 +80,8 @@ describe('Hook SessionStart del repo', () => {
       expect(result.code).toBe(0);
     });
 
-    it('systemMessage nombra Start-KitSession.ps1', () => {
-      expect(json.systemMessage).toMatch(/Start-KitSession\.ps1/);
+    it('systemMessage nombra start-kit-session.mjs', () => {
+      expect(json.systemMessage).toMatch(/node start-kit-session\.mjs/);
     });
 
     it('hookSpecificOutput es de SessionStart', () => {
@@ -112,6 +135,10 @@ describe('Hook SessionStart del repo', () => {
       expect(json.systemMessage).toContain(projectDir);
     });
 
+    it('nombra start-kit-session.mjs', () => {
+      expect(json.systemMessage).toContain('start-kit-session.mjs');
+    });
+
     it('da al agente la misma instrucción', () => {
       expect(json.hookSpecificOutput.additionalContext).toContain('skills/<nombre>/SKILL.md');
     });
@@ -152,46 +179,41 @@ describe('Hook SessionStart: hooks de git', () => {
   });
 });
 
-describe('Start-KitSession.ps1', () => {
-  const launcher = readFileSync(launcherPath, 'utf8');
-  const lines = launcher.split(/\r?\n/);
-
-  it('exporta SDD_KIT_SESSION_ROOT con su carpeta antes de invocar claude', () => {
-    const exportLine = lines.findIndex((line) => /^\s*\$env:SDD_KIT_SESSION_ROOT\s*=\s*\$PSScriptRoot\s*$/.test(line));
-    const claudeLine = lines.findIndex((line) => /^\s*claude\s/.test(line));
-    expect(exportLine).toBeGreaterThanOrEqual(0);
-    expect(claudeLine).toBeGreaterThan(exportLine);
+describe('start-kit-session.mjs', () => {
+  it('passes the variables and the arguments to claude', () => {
+    const { call } = launchWithFakeClaude(undefined, ['--model', 'sonnet']);
+    expect(call).toEqual({
+      tmp: join(root, '.temp'),
+      root,
+      args: ['--settings', '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}', '--plugin-dir', root, '--model', 'sonnet'],
+    });
   });
 
-  it('documenta cómo reanudar una sesión', () => {
-    expect(launcher).toMatch(/--resume/);
-    expect(launcher).toMatch(/--continue/);
+  it('keeps CLAUDE_CODE_TMPDIR when it is already set', () => {
+    expect(launchWithFakeClaude('D:/otra/.temp', []).call.tmp).toBe('D:/otra/.temp');
   });
 
-  it('restaura la variable al salir claude', () => {
-    expect(launcher).toMatch(/finally\s*\{[^}]*SDD_KIT_SESSION_ROOT/);
+  it('sets CLAUDE_CODE_TMPDIR when it is empty', () => {
+    expect(launchWithFakeClaude('', []).call.tmp).toBe(join(root, '.temp'));
   });
-});
 
-describe('Start-KitSession.ps1 y los temporales de Claude Code', () => {
-  it('lanza claude con CLAUDE_CODE_TMPDIR en .temp/ y restaura el valor anterior', () => {
-    const bin = mkdtempSync(join(tmpdir(), 'fake-claude-'));
-    const seen = join(bin, 'seen.txt');
-    writeFileSync(join(bin, 'claude.ps1'), `Set-Content -LiteralPath '${seen}' -Value $env:CLAUDE_CODE_TMPDIR -NoNewline\n`);
-    const command = `$env:CLAUDE_CODE_TMPDIR = 'antes'; & '${launcherPath}'; $env:CLAUDE_CODE_TMPDIR`;
-    const env = { ...cleanGitEnv, PATH: `${bin}${delimiter}${process.env.PATH}` };
-
-    const result = run('pwsh', ['-NoProfile', '-Command', command], { env });
-
-    expect(readFileSync(seen, 'utf8')).toBe(join(kitRoot, '.temp'));
-    expect(result.output.split(/\r?\n/).at(-1)).toBe('antes');
+  it('exits with the code of claude', () => {
+    expect(launchWithFakeClaude(undefined, []).result.code).toBe(7);
   });
 });
 
 describe('.claude/settings.json', () => {
-  it('registra un hook SessionStart que ejecuta Test-KitSessionSource.ps1 con pwsh', () => {
-    const settings = JSON.parse(readFileSync(join(kitRoot, '.claude', 'settings.json'), 'utf8'));
-    const commands: string[] = settings.hooks.SessionStart.flatMap((entry: { hooks: { command: string }[] }) => entry.hooks.map((hook) => hook.command));
-    expect(commands.some((command) => /\bpwsh\b/.test(command) && /Test-KitSessionSource\.ps1/.test(command))).toBe(true);
+  const settings = JSON.parse(readFileSync(join(kitRoot, '.claude', 'settings.json'), 'utf8'));
+  const commands: string[] = Object.values(settings.hooks as Record<string, { hooks: { command: string }[] }[]>)
+    .flat()
+    .flatMap((entry) => entry.hooks.map((hook) => hook.command));
+
+  it('registra un hook SessionStart que ejecuta kit-session-source.mjs con node', () => {
+    const sessionStart: string[] = settings.hooks.SessionStart.flatMap((entry: { hooks: { command: string }[] }) => entry.hooks.map((hook) => hook.command));
+    expect(sessionStart.some((command) => /^node\s/.test(command) && /kit-session-source\.mjs/.test(command))).toBe(true);
+  });
+
+  it('ningún hook llama a pwsh', () => {
+    expect(commands.filter((command) => /\bpwsh\b/.test(command))).toEqual([]);
   });
 });
