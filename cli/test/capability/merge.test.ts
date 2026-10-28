@@ -319,7 +319,7 @@ describe('sdd capability merge', () => {
   it('the spec-template half filled fails with the gap', async () => {
     const template = readRepoFile('skills/sdd-templates/templates/spec-template.md')
       .replace(/`<nombre>`/g, '`bookings`')
-      .replace(/\*\*ADDED — <título estable>\*\*/g, '**ADDED — Cancelar una reserva**');
+      .replace(/#### ADDED — <título estable>/g, '#### ADDED — Cancelar una reserva');
     const sdd = sddFolder({ 'capabilities/bookings.md': bookings, 'specs/x/spec.md': template });
     const result = await merge(sdd);
     expect(result.lines.join('\n')).toMatch(/es un hueco de la plantilla/);
@@ -397,6 +397,48 @@ describe('heading marks', () => {
     expect(boldResult.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «#### ADDED — <título>», con raya');
     expect(boldResult.code).toBe(1);
     expect(readCapability(bold)).toBe(bookings);
+  });
+});
+
+describe('the delta of the templates', () => {
+  const templates = ['spec-template.md', 'patch-template.md'];
+
+  function deltaSection(name: string): string[] {
+    const lines = readRepoFile(`skills/sdd-templates/templates/${name}`).split(/\r?\n/);
+    const start = lines.findIndex((line) => line.startsWith('### Capacidad:'));
+    const end = lines.findIndex((line, index) => index > start && /^#{2,3} /.test(line) && !line.startsWith('### Capacidad:'));
+    return lines.slice(start, end < 0 ? undefined : end);
+  }
+
+  function filledDelta(name: string): string {
+    return deltaSection(name)
+      .filter((line) => !line.startsWith('>'))
+      .join('\n')
+      .replace('#### ADDED — <título estable>', '#### ADDED — Cancelar una reserva')
+      .replace(/#### MODIFIED — <título estable>[^\n]*/, '#### MODIFIED — Reservar una franja')
+      .replace('#### REMOVED — <título estable>', '#### REMOVED — Consultar salas libres')
+      .replace(/^- \*\*Dónde viven los datos\*\* \/.*$/m, '- **Avisos**: aviso si la reserva pisa un festivo o dura más de 4 h')
+      .replace(/<[^<>\n]+>/g, 'valor');
+  }
+
+  it('template deltas use heading marks', () => {
+    for (const name of templates) {
+      const lines = deltaSection(name);
+      expect(lines.filter((line) => /^\*\*(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)/.test(line)), name).toEqual([]);
+      const headings = lines.map((line, index) => [line, lines[index + 1]]).filter(([line]) => line.startsWith('#### '));
+      expect(headings.length, name).toBeGreaterThan(0);
+      headings.forEach(([line, next]) => expect(next, `${name}: tras «${line}» va una línea en blanco`).toBe(''));
+    }
+  });
+
+  it('a delta traced from each template merges', async () => {
+    for (const name of templates) {
+      const delta = filledDelta(name).replace('### Capacidad: `valor`', '### Capacidad: `bookings`');
+      const sdd = sddFolder({ 'capabilities/bookings.md': bookings, 'specs/x/spec.md': spec('- Modificadas: `bookings` — cambia', [delta]) });
+      const result = await merge(sdd);
+      expect(result.lines, name).toContain('bookings.md: sustituido «Reservar una franja»');
+      expect(result.code, name).toBe(0);
+    }
   });
 });
 
