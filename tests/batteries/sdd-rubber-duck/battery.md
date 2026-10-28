@@ -2,11 +2,11 @@
 
 Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y la explicación por pasos que pide el dev-lead (modo largo). Cada escenario pone al sujeto ante algo que tiene que explicar a un dev-lead que conoce el producto y no el código, y mide la forma de la explicación. El **paso** es el modo: `rubber-duck` para los escenarios de la skill y `control` para los de enrutado, que solo van en el GREEN.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-rubber-duck`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Dos moldes: `exportes` (`mold-exportes/`: reservas con una exportación al calendario repartida en cinco ficheros, un `PRODUCT.md` con glosario cuyo _Evitar_ son los nombres del código, el test `exporta en la hora del usuario` en rojo y la spec de la feature 0013 en borrador) y `salas` (el de `tests/batteries/using-sdd/mold-salas`).
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-rubber-duck`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Dos moldes: `exportes` (`mold-exportes/`: reservas con una exportación al calendario repartida en cinco ficheros, un `PRODUCT.md` con glosario cuyo _Evitar_ son los nombres del código, el test `exporta en la hora del usuario` en rojo y la spec de la feature 0013 en borrador) y `salas` (el de `tests/batteries/using-sdd/mold-salas`).
 
 **Petición por fase.** En s1 y s2, fuera del RED, `subject.sh` antepone «Invoca la skill sdd-kit:sdd-rubber-duck en modo corto y », que es como la invocará una parada; en el RED la skill no existe y la petición va sin ese prefijo. En l1 la petición es igual en las dos fases, porque mide también el enrutado. En el RED el veredicto de puerta de s1, s2 y l1 sale rojo por construcción.
 
-**Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo.
 
 ## Escenarios
 

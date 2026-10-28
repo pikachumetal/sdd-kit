@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sujeto de la batería de sdd-implement: un paso de la implementación, con los artefactos de ese punto ya escritos,
-# o el encargo de un implementador como petición. Lo lanza tests/headless/battery.sh, con SUPERPOWERS_DIR.
+# o el encargo de un implementador como petición. Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR.
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../../headless/lib.sh"

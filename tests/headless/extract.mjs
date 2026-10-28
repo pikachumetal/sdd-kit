@@ -109,7 +109,7 @@ for (const { n, event, length, error } of readStream(streamPath)) {
     if (block.type === 'tool_use') lines.push(`\n>>> ${block.name}: ${clean(describe(block))}`);
     if (block.type === 'tool_result') lines.push(`<<< ${clean(resultText(block)).slice(0, 600)}`);
   }
-  // Un stream puede traer más de un result: run.sh suma solo el último de cada sujeto (task 0055).
+  // Un stream puede traer más de un result: run.mjs suma solo el último de cada sujeto (task 0055).
   if (event.type === 'result') lines.push(`\n=== RESULTADO (${event.num_turns} turnos, ${event.total_cost_usd} $)\n${clean(event.result ?? '')}`);
 }
 write(lines.map((line) => `${line}\n`).join(''));

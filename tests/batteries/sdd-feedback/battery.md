@@ -2,9 +2,9 @@
 
 Cómo se escribe el ticket de mejora del kit. Nace en la feature 0150 y mide lo que añade: la línea «Fuente» de «Qué pasó», y que un dato que el agente recuerda y no ha comprobado no pasa al ticket.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-feedback`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Un molde sobre el de `tests/batteries/using-sdd/mold-salas`: `sesion`, con `notas-sesion.md`, que cita «kit 2.4.0» mientras `.docs/sdd/sdd-kit.json` lleva la versión real del kit que se prueba, y un coste de «unos 40 min» sin respaldo en ninguna spec ni walkthrough.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-feedback`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Un molde sobre el de `tests/batteries/using-sdd/mold-salas`: `sesion`, con `notas-sesion.md`, que cita «kit 2.4.0» mientras `.docs/sdd/sdd-kit.json` lleva la versión real del kit que se prueba, y un coste de «unos 40 min» sin respaldo en ninguna spec ni walkthrough.
 
-**Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y el ticket que deja cada sujeto con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y el ticket que deja cada sujeto con la rúbrica de abajo.
 
 ## Escenarios
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sujeto de la batería de sdd-propose: una petición de cambio, o un paso del flujo con sus artefactos ya escritos.
-# Lo lanza tests/headless/battery.sh, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+# Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../../headless/lib.sh"
