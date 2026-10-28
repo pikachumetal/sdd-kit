@@ -134,6 +134,18 @@ describe('sdd capability check on capabilities/', () => {
     expect(result.lines.filter((line) => line.includes('bookings.md: resto de delta «**MODIFIED —» en la línea 14'))).not.toEqual([]);
   });
 
+  it('rejects heading marks in a capability', async () => {
+    for (const mark of ['ADDED', 'MODIFIED', 'REMOVED']) {
+      const result = await checkBookings(bookings.replace('### Consultar salas libres', `#### ${mark} — Consultar salas libres`));
+      expect(result.lines).toContain(`bookings.md: resto de delta «#### ${mark} —» en la línea 14`);
+      expect(result.code).toBe(1);
+    }
+    const rules = await checkBookings(bookings.replace('### Consultar salas libres', '#### Reglas de la capacidad — bookings'));
+    expect(rules.lines).toContain(
+      'bookings.md: resto de delta «#### Reglas de la capacidad» en la línea 14: sus entradas van en «## Reglas de la capacidad»',
+    );
+  });
+
   it('the bold rules block of the delta fails even with a section', async () => {
     const content = bookings.replace(/^- AND sin salas libres/m, '\n**Reglas de la capacidad**\n- **Avisos**: ninguno\n- AND sin salas libres');
     const result = await checkBookings(content);
@@ -365,6 +377,19 @@ describe('sdd capability check with --artifact', () => {
     const result = await check({ ...capabilities, [artifact]: spec(block, []) + delta }, artifact);
     expect(result.lines).toContain('spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md');
     expect(result.lines).toContain('spec.md: «Anular todas las reservas de una sala» del delta no está en capabilities/bookings.md');
+    expect(result.code).toBe(1);
+  });
+
+  it('reads a heading delta with --artifact', async () => {
+    const block = '## Capacidades\n\n- Modificadas: `bookings` — añade «Cancelar una reserva» y cambia «Reservar una franja»\n';
+    const delta = [
+      '### Capacidad: `bookings`', '', '#### ADDED — Cancelar una reserva', '', '- GIVEN a', '- WHEN b', '- THEN c', '',
+      '#### MODIFIED — Reservar una franja', '', '- GIVEN la sala Norte libre de 10 a 12', '- WHEN `salas reservar Norte 10-12`',
+      '- THEN el CLI pide confirmación', '',
+    ].join('\n');
+    const result = await check({ ...capabilities, [artifact]: spec(block, []) + delta }, artifact);
+    expect(result.lines).toContain('spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md');
+    expect(result.lines).toContain('spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md');
     expect(result.code).toBe(1);
   });
 

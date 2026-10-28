@@ -12,7 +12,7 @@ vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 export const bash = resolveBash();
 export const headless = join(kitRoot, 'tests', 'headless');
 export const slashed = (path: string): string => path.replaceAll('\\', '/');
-export const runSh = slashed(join(headless, 'run.sh'));
+export const runMjs = join(headless, 'run.mjs');
 export const libSh = slashed(join(headless, 'lib.sh'));
 
 export interface Campaign {
@@ -28,9 +28,6 @@ export interface CampaignOptions {
   init?: string;
   launch?: string;
 }
-
-// Cada sujeto apunta cuántos hay a la vez en conc.log, junto a RUNS_DIR, y dura 4 s.
-export const CONCURRENT = 'C="$RUNS_DIR/../conc"; mkdir -p "$C"; touch "$C/$2"; ls "$C" | wc -l >> "$C.log"; ls "$RUNS_DIR/dry/live" >> "$C.live"; sleep 4; rm "$C/$2"; subject_launch "x"';
 
 export const testRoot = (name: string): string => mkdtempSync(join(tmpdir(), `${name}-`));
 
@@ -61,6 +58,7 @@ export function newCampaign(root: string, options: CampaignOptions = {}): Campai
   const kit = join(root, 'kit');
   mkdirSync(runs, { recursive: true });
   write(join(kit, 'skills', 'sdd-plan', 'SKILL.md'), '# sdd-plan\n');
+  write(join(kit, 'cli', 'bin', 'sdd.js'), '');
   write(join(spec, 'red', 'subject.sh'), subjectScript(options));
   return { spec, runs, kit, out: join(runs, 'dry', 'red', 'out'), dry: join(runs, 'dry') };
 }
@@ -97,23 +95,21 @@ export function campaignEnv(campaign: Campaign, overrides: CampaignEnv): NodeJS.
   return env;
 }
 
-// A un fichero, no a una tubería: con los sujetos en segundo plano, Git Bash perdía a ratos líneas de la
+// A un fichero, no a una tubería: con los sujetos en Git Bash, se perdían a ratos líneas de la
 // salida («write error: Bad file descriptor»), y así stdout y stderr quedan en su orden.
-export function runBash(args: string[], env: NodeJS.ProcessEnv, cwd?: string): RunResult {
-  const log = join(mkdtempSync(join(tmpdir(), 'bash-log-')), 'output.txt');
+function runToFile(command: string, args: string[], env: NodeJS.ProcessEnv, cwd?: string): RunResult {
+  const log = join(mkdtempSync(join(tmpdir(), 'run-log-')), 'output.txt');
   const fd = openSync(log, 'w');
   try {
-    const result = spawnSync(bash, args, { env, cwd, stdio: ['ignore', fd, fd], windowsHide: true });
+    const result = spawnSync(command, args, { env, cwd, stdio: ['ignore', fd, fd], windowsHide: true });
     return { output: readFileSync(log, 'utf8').trimEnd(), code: result.status ?? 1 };
   } finally {
     closeSync(fd);
   }
 }
 
-export function runCampaign(campaign: Campaign, overrides: CampaignEnv = {}, options: { command?: string; cwd?: string } = {}): RunResult {
-  const args = options.command === undefined ? [runSh] : ['-c', options.command];
-  return runBash(args, campaignEnv(campaign, overrides), options.cwd);
-}
+export const runCampaign = (campaign: Campaign, overrides: CampaignEnv = {}): RunResult =>
+  runToFile(process.execPath, [runMjs], campaignEnv(campaign, overrides));
 
 export function runLib(script: string, env: NodeJS.ProcessEnv = cleanGitEnv): RunResult {
   return run(bash, ['-c', `. '${libSh}'; ${script}`], { env });
@@ -128,11 +124,6 @@ function toolsFiles(dir: string): string[] {
 }
 
 export const subjects = (campaign: Campaign): string[] => [...toolsFiles(campaign.spec), ...toolsFiles(campaign.dry)];
-
-export function maxConcurrent(campaign: Campaign): number {
-  const counts = readFileSync(join(campaign.runs, '..', 'conc.log'), 'utf8').split(/\r?\n/).filter((line) => line.trim() !== '');
-  return Math.max(...counts.map((line) => Number(line.trim())));
-}
 
 export const setTools = (dir: string, label: string, text: string): string => write(join(dir, `${label}.tools.txt`), `${text}\n`);
 
@@ -160,9 +151,24 @@ export function isListening(port: number): Promise<boolean> {
   });
 }
 
+// La remota de un socket que escucha es 0.0.0.0:0 o [::]:0; el nombre del estado se traduce con el idioma de Windows.
+export function listeningPids(netstat: string, port: number): number[] {
+  return netstat
+    .split(/\r?\n/)
+    .map((line) => line.trim().split(/\s+/))
+    .filter((columns) => columns.length === 5 && columns[1].endsWith(`:${port}`) && /^(0\.0\.0\.0|\[::\]):0$/.test(columns[2]))
+    .map((columns) => Number(columns[4]));
+}
+
 // Por el puerto, nunca por nombre: en la máquina corren otros node.
 export function stopPort(port: number): void {
-  run('pwsh', ['-NoProfile', '-Command', `Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }`]);
+  for (const pid of listeningPids(run('netstat', ['-ano']).output, port)) {
+    try {
+      process.kill(pid);
+    } catch {
+      // Ya había salido.
+    }
+  }
 }
 
 export const serverScript = (root: string, name: string): string =>

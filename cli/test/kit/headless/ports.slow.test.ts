@@ -31,7 +31,18 @@ interface SharedPort {
 
 const errOf = (runs: string): string => readText(join(runs, 'red/a-1.err'));
 
-// Otro sujeto, b-1, nombra el mismo puerto en su stream y deja su marca en live/ con `other` como PID.
+describe('stopPort', () => {
+  it('para lo que escucha en el puerto', async () => {
+    const port = await freePort();
+    startServer(serverScript(testRoot('stop-port'), 'stop-port'), port);
+    await waitListening(port);
+    stopPort(port);
+    await sleep(500);
+    expect(await isListening(port)).toBe(false);
+  });
+});
+
+// Otro sujeto, b-1, nombra el mismo puerto en su stream y deja su marca en live/ con `other` como PID de Windows.
 async function invokeSharedPort(name: string, otherPid: string): Promise<SharedPort> {
   const root = testRoot(name);
   const port = await freePort();
@@ -53,7 +64,7 @@ async function earlierSharedServer(root: string): Promise<{ campaign: Campaign; 
   return { campaign, port };
 }
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('para al acabar lo que escucha en los puertos del sujeto (ticket de la feature 0036 §3)', async () => {
     const root = testRoot('ports');
     const port = await freePort();
@@ -89,7 +100,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', (
 
   describe('un puerto que nombra otro sujeto (feature 0215)', () => {
     it('deja su arranque al último en acabar cuando salta un puerto compartido', async () => {
-      const shared = await invokeSharedPort('handoff', 'other=$$;');
+      const shared = await invokeSharedPort('handoff', 'other=$(cat /proc/$$/winpid);');
       try {
         expect(readText(join(shared.runs, `ports/${shared.port}`)), shared.run.output).toMatch(/^\d+\s*$/);
         expect(shared.err, shared.run.output).toMatch(/escuchando al acabar: sin consultar · compartidos/i);
@@ -125,7 +136,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', (
 
     it('no para un puerto que nombra otro sujeto en curso', async () => {
       // El propio bash del sujeto: sigue vivo mientras su limpieza mira los puertos.
-      const shared = await invokeSharedPort('shared-live', 'other=$$;');
+      const shared = await invokeSharedPort('shared-live', 'other=$(cat /proc/$$/winpid);');
       try {
         expect(shared.run.code, shared.run.output).toBe(0);
         expect(await isListening(shared.port)).toBe(true);

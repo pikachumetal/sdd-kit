@@ -215,7 +215,7 @@ describe('sdd capability merge', () => {
   it('a header without a readable title fails without writing', async () => {
     const sdd = bookingsFolder([added.replace('ADDED — ', 'ADDED - ')]);
     const result = await merge(sdd);
-    expect(result.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «**ADDED — <título>**», con raya');
+    expect(result.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «#### ADDED — <título>», con raya');
     expect(result.code).toBe(1);
     expect(readCapability(sdd)).toBe(bookings);
   });
@@ -319,7 +319,7 @@ describe('sdd capability merge', () => {
   it('the spec-template half filled fails with the gap', async () => {
     const template = readRepoFile('skills/sdd-templates/templates/spec-template.md')
       .replace(/`<nombre>`/g, '`bookings`')
-      .replace(/\*\*ADDED — <título estable>\*\*/g, '**ADDED — Cancelar una reserva**');
+      .replace(/#### ADDED — <título estable>/g, '#### ADDED — Cancelar una reserva');
     const sdd = sddFolder({ 'capabilities/bookings.md': bookings, 'specs/x/spec.md': template });
     const result = await merge(sdd);
     expect(result.lines.join('\n')).toMatch(/es un hueco de la plantilla/);
@@ -330,6 +330,164 @@ describe('sdd capability merge', () => {
   it('exits 2 without --artifact', async () => {
     const result = await runSdd(['capability', 'merge', '--path', sddFolder({})]);
     expect(result.code).toBe(2);
+  });
+});
+
+describe('heading marks', () => {
+  const scenario = [
+    '- GIVEN la sala Norte libre de 10 a 12',
+    '- WHEN `salas reservar Norte 10-12`',
+    '- THEN la reserva queda guardada a nombre del usuario y el CLI responde `Reservada Norte 10-12`',
+  ].join('\n');
+  const addedHeading = (header: string, gap = '\n') =>
+    `${header}\n${gap}- GIVEN la reserva Norte 10-12\n- WHEN \`salas cancelar Norte 10-12\`\n- THEN la franja queda libre`;
+
+  it('merges heading marks like bold marks', async () => {
+    const heading = bookingsFolder([`#### MODIFIED — Reservar una franja (antes: «la reserva queda guardada»)\n\n${scenario}`]);
+    const bold = bookingsFolder([`**MODIFIED — Reservar una franja**\n${scenario}`]);
+    for (const sdd of [heading, bold]) {
+      const result = await merge(sdd);
+      expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+      expect(result.code).toBe(0);
+    }
+    expect(readCapability(heading)).toBe(readCapability(bold));
+  });
+
+  it('merges heading ADDED, REMOVED and rules', async () => {
+    const entries = [
+      addedHeading('#### ADDED — Cancelar una reserva'),
+      '#### REMOVED — Consultar salas libres\n\n- motivo: lo cubre `salas agenda`',
+      '#### Reglas de la capacidad — bookings\n\n- **Avisos**: aviso si la reserva pisa un festivo o dura más de 4 h',
+    ];
+    const result = await merge(bookingsFolder(entries));
+    expect(result.lines).toEqual([
+      'bookings.md: añadido «Cancelar una reserva»',
+      'bookings.md: quitado «Consultar salas libres»',
+      'bookings.md: regla «Avisos» sustituida',
+    ]);
+    expect(result.code).toBe(0);
+  });
+
+  it('reads a heading without a blank line, a closed heading and a split before clause', async () => {
+    const glued = await merge(bookingsFolder([addedHeading('#### ADDED — Cancelar una reserva', '')]));
+    expect(glued.lines).toEqual(['bookings.md: añadido «Cancelar una reserva»']);
+
+    const closed = await merge(bookingsFolder([addedHeading('#### ADDED — Cancelar una reserva ##')]));
+    expect(closed.lines).toEqual(['bookings.md: añadido «Cancelar una reserva»']);
+
+    const split = bookingsFolder([`#### MODIFIED — Reservar una franja (antes: «la reserva queda\nguardada»)\n\n${scenario}`]);
+    expect((await merge(split)).lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+    expect(readCapability(split)).not.toMatch(/guardada»\)/);
+  });
+
+  it('reads a closed heading with its before clause', async () => {
+    const result = await merge(bookingsFolder([`#### MODIFIED — Reservar una franja (antes: «a») ##\n\n${scenario}`]));
+    expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+  });
+
+  it('keeps a hash that ends the title', async () => {
+    const live = bookings.replace('### Reservar una franja', '### Exportar a F#');
+    const result = await merge(bookingsFolder([`#### MODIFIED — Exportar a F#\n\n${scenario}`], live));
+    expect(result.lines).toEqual(['bookings.md: sustituido «Exportar a F#»']);
+  });
+
+  it('rejects an unreadable title in both forms', async () => {
+    const heading = bookingsFolder([addedHeading('#### ADDED - Cancelar una reserva')]);
+    const headingResult = await merge(heading);
+    expect(headingResult.lines).toContain('spec.md: no leo el título de «#### ADDED - Cancelar una reserva»: escríbelo como «#### ADDED — <título>», con raya');
+    expect(headingResult.code).toBe(1);
+    expect(readCapability(heading)).toBe(bookings);
+
+    const bold = bookingsFolder([addedHeading('**ADDED - Cancelar una reserva**', '')]);
+    const boldResult = await merge(bold);
+    expect(boldResult.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «#### ADDED — <título>», con raya');
+    expect(boldResult.code).toBe(1);
+    expect(readCapability(bold)).toBe(bookings);
+  });
+});
+
+describe('the delta of the templates', () => {
+  const templates = ['spec-template.md', 'patch-template.md'];
+
+  function deltaSection(name: string): string[] {
+    const lines = readRepoFile(`skills/sdd-templates/templates/${name}`).split(/\r?\n/);
+    const start = lines.findIndex((line) => line.startsWith('### Capacidad:'));
+    const end = lines.findIndex((line, index) => index > start && /^#{2,3} /.test(line) && !line.startsWith('### Capacidad:'));
+    return lines.slice(start, end < 0 ? undefined : end);
+  }
+
+  function filledDelta(name: string): string {
+    return deltaSection(name)
+      .filter((line) => !line.startsWith('>'))
+      .join('\n')
+      .replace('#### ADDED — <título estable>', '#### ADDED — Cancelar una reserva')
+      .replace(/#### MODIFIED — <título estable>[^\n]*/, '#### MODIFIED — Reservar una franja')
+      .replace('#### REMOVED — <título estable>', '#### REMOVED — Consultar salas libres')
+      .replace(/^- \*\*Dónde viven los datos\*\* \/.*$/m, '- **Avisos**: aviso si la reserva pisa un festivo o dura más de 4 h')
+      .replace(/<[^<>\n]+>/g, 'valor');
+  }
+
+  it('template deltas use heading marks', () => {
+    for (const name of templates) {
+      const lines = deltaSection(name);
+      expect(lines.filter((line) => /^\*\*(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)/.test(line)), name).toEqual([]);
+      const headings = lines.map((line, index) => [line, lines[index + 1]]).filter(([line]) => line.startsWith('#### '));
+      expect(headings.length, name).toBeGreaterThan(0);
+      headings.forEach(([line, next]) => expect(next, `${name}: tras «${line}» va una línea en blanco`).toBe(''));
+    }
+  });
+
+  it('a delta traced from each template merges', async () => {
+    for (const name of templates) {
+      const delta = filledDelta(name).replace('### Capacidad: `valor`', '### Capacidad: `bookings`');
+      const sdd = sddFolder({ 'capabilities/bookings.md': bookings, 'specs/x/spec.md': spec('- Modificadas: `bookings` — cambia', [delta]) });
+      const result = await merge(sdd);
+      expect(result.lines, name).toContain('bookings.md: sustituido «Reservar una franja»');
+      expect(result.code, name).toBe(0);
+    }
+  });
+});
+
+describe('tables in a merged capability', () => {
+  const table = ['  | Sala | Tarifa |', '  | --- | --- |', '  | Norte | 20 € |'];
+  const rates = (gap: string[]) =>
+    [
+      '#### ADDED — Consultar las tarifas', '', '- GIVEN las salas Norte y Sur', '- WHEN `salas tarifas`', '- THEN responde:',
+      ...gap, ...table, ...gap, '- AND sin sala responde las de todas',
+    ].join('\n');
+
+  function expectBlankLinesAround(content: string) {
+    const lines = content.split('\n');
+    const first = lines.indexOf(table[0]);
+    const last = lines.indexOf(table[2]);
+    expect(lines[first - 1]).toBe('');
+    expect(lines.slice(first, last + 1)).toEqual(table);
+    expect(lines[last + 1]).toBe('');
+    expect(content).not.toMatch(/\n\n\n/);
+  }
+
+  it('adds blank lines around a glued table', async () => {
+    const sdd = bookingsFolder([rates([])]);
+    expect((await merge(sdd)).code).toBe(0);
+    expectBlankLinesAround(readCapability(sdd));
+    const validation = await validate(sdd);
+    expect(validation.lines).toEqual(['Capacidades válidas: 1']);
+    expect(validation.code).toBe(0);
+  });
+
+  it('keeps a table already surrounded by blank lines', async () => {
+    const glued = bookingsFolder([rates([])]);
+    const spaced = bookingsFolder([rates([''])]);
+    expect((await merge(glued)).code).toBe(0);
+    expect((await merge(spaced)).code).toBe(0);
+    expect(readCapability(spaced)).toBe(readCapability(glued));
+  });
+
+  it('adds blank lines around a table already in the capability', async () => {
+    const live = bookings.replace(/^(- THEN la reserva queda guardada.*)$/m, `$1\n${table.join('\n')}\n- AND la sala aparece ocupada`);
+    const sdd = bookingsFolder([added], live);
+    expect((await merge(sdd)).code).toBe(0);
+    expectBlankLinesAround(readCapability(sdd));
   });
 });
 

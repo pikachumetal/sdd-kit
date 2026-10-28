@@ -2,11 +2,11 @@
 
 La migración de un proyecto al kit cargado, y la oferta que hace el arranque de la sesión cuando hay migraciones pendientes. Nace en la feature 0157, que saca la migración de `sdd-init`.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-upgrade`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). `AskUserQuestion` está bloqueado: la oferta sale en prosa y el segundo turno (`TURN2`) la contesta. En el RED, con el kit sin `sdd-upgrade`, `subject.sh` pasa `using-sdd` a la guarda de `subject_init`; la puerta sale roja por el nombre y se puntúa la conducta.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-upgrade`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). `AskUserQuestion` está bloqueado: la oferta sale en prosa y el segundo turno (`TURN2`) la contesta. En el RED, con el kit sin `sdd-upgrade`, `subject.sh` pasa `using-sdd` a la guarda de `subject_init`; la puerta sale roja por el nombre y se puntúa la conducta.
 
 Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `v2x` (`mold-v2x/`, de la 0197) es un proyecto 2.x completo en 2.3.4, commiteado en dos fechas pasadas (2026-09-01 y, la fila de deuda de TypeScript, 2026-09-15): la fecha de una fila de deuda tiene que salir de su commit, y con un solo commit del día del sujeto no se distingue de la de hoy. `v2x-e2e` es `v2x` con E2E: `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`), `e2e/booking.spec.ts`, el script `e2e` en `package.json` y una línea «E2E: `npx playwright test`» en el §Testing de `tech-stack.md`. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
 
-**Dos veredictos.** `battery.sh` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
 ## Escenarios
 

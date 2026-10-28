@@ -13,7 +13,7 @@ function projectFolders(config: string): string[] {
   return existsSync(projects) ? readdirSync(projects, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name) : [];
 }
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('subject_save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)', () => {
     const root = testRoot('identity-leak');
     const campaign = newCampaign(root, { launch: LEAK_LAUNCH });
@@ -23,7 +23,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', (
     expect(result.output).toMatch(/el stream sigue en/i);
     expect(result.output).not.toMatch(/Alice Liddell/i);
     expect(existsSync(join(campaign.out, 'a-1.state.txt'))).toBe(false);
-    expect(existsSync(join(campaign.out, 'a-1.tools.txt')), 'sin tools.txt, run.sh no cuenta el coste del sujeto').toBe(true);
+    expect(existsSync(join(campaign.out, 'a-1.tools.txt')), 'sin tools.txt, run.mjs no cuenta el coste del sujeto').toBe(true);
     expect(readdirSync(campaign.out).filter((name) => name.endsWith('.tmp'))).toEqual([]);
   });
 

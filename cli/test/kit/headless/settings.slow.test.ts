@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fakeClaude, headless, newCampaign, readLines, runCampaign, slashed, subjects, testRoot, withPath, write } from './campaign.ts';
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('con SUPERPOWERS_DIR aísla al sujeto de la configuración del usuario y carga superpowers desde esa ruta (feature 0074)', () => {
     const campaign = newCampaign(testRoot('isolated'));
 
@@ -67,7 +67,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', (
     expect(subjects(campaign)).toHaveLength(2);
   });
 
-  it('el sujeto no puede lanzar su propio claude: su coste no lo vería run.sh (walkthrough de la feature 0173)', () => {
+  it('el sujeto no puede lanzar su propio claude: su coste no lo vería run.mjs (walkthrough de la feature 0173)', () => {
     const root = testRoot('nested-claude');
     const campaign = newCampaign(root);
     const log = join(root, 'nested.log');

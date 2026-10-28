@@ -97,14 +97,15 @@ approvers:
 
 ### Capacidad: `<nombre>`
 
-**ADDED — <título estable>**
+#### ADDED — <título estable>
+
 - GIVEN <precondición>
 - WHEN <acción>
 - THEN <resultado observable>
 - AND <opcional>
 - Se valida en: <omite la línea si se ve desde la rama · `worktree con la base al día` · `validación post-merge con fecha`> *(solo si el THEN depende de la rama de integración, del historial de git, del remoto o de un entorno que la rama no reproduce: desde la rama de la feature no se puede observar, y el dev-lead no puede validarlo ahí)*
 
-**MODIFIED — <título estable>** (antes: "<la cláusula que cambia>" — opcional)
+#### MODIFIED — <título estable> (antes: "<la cláusula que cambia>" — opcional)
 
 > Copia el bloque entero del requisito vigente con los cambios: al fusionar lo sustituye, y `sdd capability merge` rechaza perder una línea del vivo que no esté aquí. Una línea que quitas va como `- REMOVED <línea>` (`- REMOVED AND el aviso sale por correo`). El título es la clave de fusión: un renombrado es `REMOVED` del título viejo + `ADDED` del nuevo.
 
@@ -112,10 +113,12 @@ approvers:
 - WHEN <acción>
 - THEN <resultado actualizado>
 
-**REMOVED — <título estable>**
+#### REMOVED — <título estable>
+
 - motivo: <por qué deja de aplicar>
 
-**Reglas de la capacidad** *(solo si este delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos; solo las entradas que cambian, cada una con su valor completo —el vigente más el cambio—: al fusionar sustituye entera a la vigente, y lo que no esté en la entrada desaparece (con **Avisos**: A y B vigentes y una feature que añade C, se escribe A, B y C, no «además de los vigentes, C»); el nombre es la clave de fusión; el valor sale de las «Reglas de producto» de la constitution o de la capacidad, no se inventa)*
+#### Reglas de la capacidad — <nombre> *(solo si este delta introduce datos, nombres, topes, avisos o una condición de conflicto nuevos; solo las entradas que cambian, cada una con su valor completo —el vigente más el cambio—: al fusionar sustituye entera a la vigente, y lo que no esté en la entrada desaparece (con **Avisos**: A y B vigentes y una feature que añade C, se escribe A, B y C, no «además de los vigentes, C»); el nombre es la clave de fusión; el valor sale de las «Reglas de producto» de la constitution o de la capacidad, no se inventa)*
+
 - **Dónde viven los datos** / **Idioma de los nombres** / **Límites** / **Avisos** / **Regla ante conflicto**: <valor | no aplica>
 
 ### Estimación y esfuerzo *(solo modo lite — OBLIGATORIO si existe `.docs/sdd/estimation.md`)*

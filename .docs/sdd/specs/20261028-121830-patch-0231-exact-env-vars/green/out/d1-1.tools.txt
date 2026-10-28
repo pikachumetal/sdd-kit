@@ -1,0 +1,80 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: ls -la .githooks; git config core.hooksPath; echo ---; cat .githooks/pre-commit; echo ---; git status --short
+<<< total 5
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:31 ./
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:31 ../
+-rwxr-xr-x 1 <user> 197609 394 Oct 28 13:31 pre-commit*
+.githooks
+---
+#!/bin/sh
+# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+tmp="$(git rev-parse --git-dir)/hook-check"
+rm -rf "$tmp"
+git worktree add -q --detach "$tmp" HEAD || exit 1
+if ! (cd "$tmp" && git status --porcelain >/dev/null); then
+  echo "pre-commit: el worktree temporal no responde" >&2
+  git worktree remove --force "$tmp"
+  exit 1
+fi
+git worktree remove --force "$tmp"
+---
+A  notas.txt
+
+>>> Bash: sh .githooks/pre-commit; echo "exit=$?"; git worktree list
+<<< exit=0
+<run>/repo 4567fbd [develop]
+
+>>> Bash: idx="$(git rev-parse --absolute-git-dir)/index"; GIT_INDEX_FILE="$idx" sh .githooks/pre-commit; echo "exit=$?"; GIT_INDEX_FILE=".git/index" sh .githooks/pre-commit; echo "exit(relative)=$?"; git worktree list | wc -l
+<<< exit=0
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit(relative)=1
+1
+
+>>> Bash: d="$(mktemp -d)"; printf '#!/bin/sh\necho "GIT_INDEX_FILE=$GIT_INDEX_FILE"\nexit 1\n' > "$d/pre-commit"; chmod +x "$d/pre-commit"; git -c core.hooksPath="$d" commit -m probe 2>&1 | head -5; rm -rf "$d"; git log --oneline | head -3; git status --short
+<<< GIT_INDEX_FILE=.git/index
+4567fbd feat: base del molde
+ M .docs/sdd/sdd-kit.json
+ M .githooks/pre-commit
+?? notas.txt
+
+>>> Bash: git diff --stat; echo ---; git diff --ignore-cr-at-eol --stat 2>/dev/null | tail -3; echo ---; ls -la notas.txt; git ls-files --stage | head
+<<< warning: in the working copy of '.docs/sdd/sdd-kit.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.githooks/pre-commit', LF will be replaced by CRLF the next time Git touches it
+---
+---
+-rw-r--r-- 1 <user> 197609 31 Oct 28 13:31 notas.txt
+100644 442b9ba33ac858795075cf0f4b1e017446d266b0 0	.docs/sdd/changelog.md
+100644 036c70004c9a3d41412de417b6baee57856b6eca 0	.docs/sdd/constitution.md
+100644 7bdb047084f3ef8440f5ea8314da2678c46dde2d 0	.docs/sdd/mission.md
+100644 f90deb44c3492ef5d792eeb25eefc51004a2330e 0	.docs/sdd/roadmap.md
+100644 c39ab52e2cfb7
+
+>>> Bash: git add notas.txt && git status --short
+<<< warning: in the working copy of 'notas.txt', LF will be replaced by CRLF the next time Git touches it
+ M .docs/sdd/sdd-kit.json
+ M .githooks/pre-commit
+A  notas.txt
+
+=== RESULTADO (9 turnos, 0.1629793 $)
+## Causa raíz
+
+Al hacer `git commit`, Git exporta `GIT_INDEX_FILE=.git/index` a los hooks, y esa ruta es relativa. Lo confirmé con un hook de prueba que imprimió solo esa variable.
+
+El `pre-commit` hereda ese valor y lo propaga a todo lo que lanza:
+
+1. `git worktree add ... "$tmp" HEAD` no ignora `GIT_INDEX_FILE`. Escribe el índice del checkout en `.git/index` relativo al directorio donde se ejecuta, no en el índice del worktree nuevo.
+2. Después, `cd "$tmp" && git status` resuelve `.git/index` como `$tmp/.git/index`. Ahí `.git` es un archivo, no un directorio, así que falla con `Unable to create '.../hook-check/.git/index.lock': No such file or directory`.
+3. El hook muestra «el worktree temporal no responde» y sale con 1, y el commit se aborta.
+
+Ejecutado a mano, el hook pasa porque `GIT_INDEX_FILE` no está definida. Con una ruta absoluta también pasa, porque apunta a un fichero que sí existe. Por eso el fallo solo aparece durante el commit.
+
+## Mi error durante la investigación
+
+Mi reproducción con `GIT_INDEX_FILE=.git/index` dejó sin staging a `notas.txt`, porque el hook escribió el índice de `HEAD` sobre el real. Ya lo restauré con `git add notas.txt`. El estado ha vuelto al de antes, y el contenido del archivo no se tocó. Los dos `M` (`sdd-kit.json` y `pre-commit`) son solo un aviso de CRLF: `git diff` no muestra diferencias de contenido. No existía antes de mi prueba, así que lo más probable es que el cambio de stat venga de la reescritura del índice.
+
+Esto no es un arreglo, solo el diagnóstico. Dime si quieres que lo arregle.
+
+El aviso de arranque indica que esta sesión carga sdd-kit 2.3.4 y el proyecto pide la 3.0.0, así que la skill que usé puede ser de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
