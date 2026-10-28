@@ -26,6 +26,13 @@ export function readDocument(file: string): Document {
   return newDocument(file, raw.split(/\r?\n/), raw.includes('\r\n') ? '\r\n' : '\n');
 }
 
+const isHeading = (text: string) => /^#{1,3} /.test(text);
+const isTableRow = (text: string) => text.trimStart().startsWith('|');
+
+function needsBlankBetween(previous: string, line: string): boolean {
+  return isHeading(line) || isHeading(previous) || isTableRow(line) !== isTableRow(previous);
+}
+
 function withBlankLines(lines: string[]): string[] {
   const result: string[] = [];
   for (const line of lines) {
@@ -34,8 +41,7 @@ function withBlankLines(lines: string[]): string[] {
       if (previous) result.push('');
       continue;
     }
-    const isHeading = (text: string) => /^#{1,3} /.test(text);
-    if (previous && (isHeading(line) || isHeading(previous))) result.push('');
+    if (previous && needsBlankBetween(previous, line)) result.push('');
     result.push(line);
   }
   while (result.at(-1) === '') result.pop();

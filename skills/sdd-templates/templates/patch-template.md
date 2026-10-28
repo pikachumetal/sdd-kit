@@ -83,7 +83,8 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ### Capacidad: `<nombre>`
 
-**MODIFIED — <título estable>**
+#### MODIFIED — <título estable>
+
 - GIVEN <contexto>
 - WHEN <acción>
 - THEN <resultado actualizado>
