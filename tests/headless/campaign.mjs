@@ -16,7 +16,7 @@ const REQUIRED = [
 ];
 const KIT_WITHOUT_CLI = 'la copia del kit no lleva cli/: sácala con git archive <commit> skills .claude-plugin agents cli hooks';
 const LAUNCH_POLL_MS = 1000;
-const MAX_RUNS_DIR = 80;
+const MAX_RUNS_DIR = 100;
 
 const comparable = (path) => path.replaceAll('\\', '/').toLowerCase();
 const formatCost = (value) => value.toFixed(2);

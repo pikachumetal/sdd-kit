@@ -126,15 +126,15 @@ describe('readConfig', () => {
     expect(() => readConfig(baseEnv({ RUNS_DIR: outside }), CWD, kitFs())).toThrow(`RUNS_DIR fuera del scratchpad o de .temp/: ${outside}`);
   });
 
-  it('aborta con un RUNS_DIR de más de 80 caracteres, que los sujetos no pueden clonar (ticket de la feature 0230 §3)', () => {
+  it('aborta con un RUNS_DIR de más de 100 caracteres, que los sujetos no pueden clonar (ticket de la feature 0230 §3)', () => {
     const base = join(CWD, 'scratchpad');
-    const longRuns = join(base, 'r'.repeat(79 - base.length));
+    const longRuns = join(base, 'r'.repeat(99 - base.length));
     const tooLong = `${longRuns}x`;
 
-    expect(longRuns).toHaveLength(80);
+    expect(longRuns).toHaveLength(100);
     expect(() => readConfig(baseEnv({ RUNS_DIR: longRuns }), CWD, kitFs())).not.toThrow();
     expect(() => readConfig(baseEnv({ RUNS_DIR: tooLong }), CWD, kitFs())).toThrow(
-      new CampaignError(`RUNS_DIR de 81 caracteres (máximo 80): ${tooLong}; usa .temp/<corto> del worktree`),
+      new CampaignError(`RUNS_DIR de 101 caracteres (máximo 100): ${tooLong}; usa .temp/<corto> del worktree`),
     );
   });
 
