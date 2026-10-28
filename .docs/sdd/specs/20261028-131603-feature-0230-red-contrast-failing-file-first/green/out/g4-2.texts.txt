@@ -1,0 +1,70 @@
+--- [13]
+Estoy ensayando el guion de validación contra el servidor, con mi propia sesión, antes de dártelo. Después lo paro y dejo listo el panel.
+
+--- [16]
+Las respuestas salieron vacías: `curl` interpreta los `[]` como un glob. Repito con `-g`.
+
+--- [21]
+Está todo listo para que lo pruebes. Lo de las tres pasadas en segundo plano no lo lanzo todavía, y abajo explico por qué.
+
+Antes del guion:
+- **Sin commitear:** nada. `sdd merge --check` da destino listo: `develop`, en un worktree temporal.
+- **Otras ramas abiertas:** ninguna.
+- **Spec:** está `approved`, firmada por Laura.
+- **Revisión final:** limpia sobre `648cb3f`. `HEAD` solo añade `tasks.md`, que es documentación, así que no repito la revisión.
+- **Modo de validación:** no hay `validation.mode`, así que cuenta como `manual`.
+
+Panel: plan B en http://127.0.0.1:12504/ (no está Chrome conectado, así que es una página aparte que no ve la app; si algo falla, cuéntalo en el comentario).
+
+## Guion
+Ensayé cada paso con mi sesión (`agente-ensayo`) y las salidas coinciden. Después paré el servidor.
+
+**Arrancar:** `node scripts/env-up.mjs` (puerto 4816). **Parar:** `node scripts/env-down.mjs`.
+
+El estado vive en memoria y por sesión, así que `cancelar` y `canceladas` tienen que compartir cabecera `x-session`. Por eso uso el servidor y no `node src/app.js`: en la CLI, cada proceso empieza vacío. Usa una sesión nueva, por ejemplo `mia`:
+
+```sh
+r(){ curl -sg -H "x-session: mia" "http://localhost:4816/run?cmd=$1&args=$2"; echo; }
+```
+
+1. `r cancelar '["Norte","lun","--motivo","sala%20ocupada"]'` → `cancelada Norte lun (sala ocupada)`
+2. `r canceladas '[]'` → `Norte lun — sala ocupada`
+3. `r cancelar '["Norte","lun","--motivo","me%20aburro"]'` → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. `r cancelar '["Norte","lun"]'` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+Los pasos 3 y 4 no cambian nada. Si los pruebas con la sesión que ya canceló, la respuesta sigue siendo la misma.
+
+Cuando acabes, dime una de estas:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+## La tanda E2E: la lanzo después de tu respuesta
+La regla de `dev-validation.md` §3 no permite lanzar nada contra el entorno mientras pruebas. La suite usa el servidor del puerto 4816 (`env-up` lo reinicia y `env-down` lo para), así que te cortaría la prueba o te mezclaría datos. Prefiero lanzarla justo después de tu respuesta y no antes, porque así no te hago esperar más de lo que tardas en probar.
+
+Esta es la línea que irá antes de lanzarla, calculada contra `develop...HEAD`. Solo se toca `e2e/cancel.e2e.mjs`; `free.e2e.mjs` no se toca.
+
+```text
+Tanda: 3 tests nuevos o cambiados de e2e/cancel.e2e.mjs ×3 + 2 de ese fichero ×1 = 11 ejecuciones · ~1,4 min (~7,6 s × 11 ÷ 1 worker)
+```
+
+Esa estimación es provisional: sale de 14 pasos de 6 s cada uno, sin contar `env-up` ni los arranques, y todavía no tengo tiempos medidos de una pasada real.
+
+## Cosas a tener en cuenta
+- **Falta `walkthrough.md`.** Lo escribo en el cierre.
+- **Ruling del gate:** el `Ruling` de la tarea 2 usa `--test-concurrency=1` «en el gate», pero el gate declarado en `operations.md` no lo lleva. Voy a correr el gate tal como está declarado. Es un workaround y le toca una fila de deuda.
+- **Presupuesto E2E:** `operations.md` declara 0,5 min y la suite dura unos 50 s, así que probablemente lo supera. Abriré la fila de deuda con la duración medida.
+
+--- [23]
+El panel de validación se paró al llegar al límite de tiempo del proceso en segundo plano, así que la URL anterior ya no responde. Lo relanzo con el límite máximo. Sigo sin tu respuesta de validación.
+
+--- [26]
+El panel anterior se paró por el límite de tiempo del proceso en segundo plano. Lo he relanzado, y **la URL nueva es http://127.0.0.1:13471/**. Esa es la que debes usar; la de antes ya no responde. El guion no cambia.
+
+Sigo esperando tu respuesta de validación. La notificación de fondo no era tuya y no la cuento como tal. Hasta que contestes con una de estas, la 0010 no se cierra y la tanda E2E no se lanza:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Cuando respondas con `Validado` o `Diferir`, escribo la línea `Tanda:` ya calculada y lanzo las tres pasadas en segundo plano. Las lanzo después de tu respuesta porque la suite usa el servidor del puerto 4816, el mismo que usa tu prueba.
+

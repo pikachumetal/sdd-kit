@@ -135,6 +135,8 @@ Medido con el conteo de `cli/test/kit/word-budget.test.ts` (palabras separadas p
 
 ## Enmiendas
 
+- 2026-10-28 — Previsión de coste y «Dónde se prueba»: el GREEN baja a 9 sujetos (`a3a`, `a8` y `g4` ×2; `a3r`, `g5` y `g3d` ×1) y el techo sube a 13 sujetos y 9 $ — el RED costó 0,70 $ por sujeto (2,80 $ los 4), no los 0,30 $ previstos, y el GREEN completo dejaba la campaña en ~11 $ — aprobada (opción «Recortar a 9 sujetos»)
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |

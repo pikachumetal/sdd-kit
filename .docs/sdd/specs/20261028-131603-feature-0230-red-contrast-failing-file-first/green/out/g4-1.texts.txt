@@ -1,0 +1,34 @@
+--- [3]
+Empiezo por las comprobaciones previas del cierre.
+
+--- [17]
+Pre-checks hechos: el worktree está limpio, `merge --check` da `listo` (se fusiona en `develop`), no hay otras ramas abiertas y la spec está aprobada y firmada. Hay un solo commit nuevo desde la revisión final (`ca457ba`): solo `tasks.md`, 17 líneas, así que no hace falta re-revisar.
+
+**No lanzo la tanda mientras pruebas.** `env-up` reinicia el servidor del puerto 4730 y `env-down` lo para al acabar, y ese es el servidor contra el que pruebas. Te cortaría la sesión a mitad. La lanzo en segundo plano en cuanto contestes, así que no esperas por ella. El resto del cierre (walkthrough, changelog, roadmap, capability) también espera a tu respuesta.
+
+Panel: plan B en http://127.0.0.1:7815/ (no tengo Chrome conectado, así que ahí marcas cada paso; este panel no ve la app, cuéntame los errores en el comentario).
+
+**Guion.** El entorno está levantado en `http://localhost:4730` (lo paras con `node scripts/env-down.mjs`). Todos los pasos usan tu propia sesión `validar`, distinta de la mía. Los ensayé yo antes, con otra sesión, y salió lo esperado.
+
+Atajo para los comandos: `run(){ curl -s -H "x-session: validar" -G http://localhost:4730/run --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }`
+
+1. `run cancelar '["Norte","lun","--motivo","me aburro"]'` → `motivo no válido: cambio de planes, sala ocupada, otro`
+2. `run cancelar '["Norte","lun"]'` (sin motivo) → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `run canceladas '[]'` (todavía no has cancelado nada) → línea vacía
+4. `run cancelar '["Norte","lun","--motivo","sala ocupada"]'` → `cancelada Norte lun (sala ocupada)`
+5. `run canceladas '[]'` → `Norte lun — sala ocupada`
+
+Si repites, usa otra sesión: la `validar` ya tiene Norte lun cancelada.
+
+**Tanda**, que lanzo tras tu respuesta (solo `e2e/cancel.e2e.mjs`, el único spec que toca la rama):
+
+`Tanda: 3 tests nuevos o cambiados ×3 + 2 los demás de ese fichero ×1 = 11 ejecuciones · ~1,5 min (7,6 s × 11 ÷ 1)`
+
+Son dos pasadas: `--grep=motivo --repeat-each=3` y `--grep=anul`. La pasada de cierre completa (unit y E2E entero, según `operations.md`) va después. El E2E entero ya supera el presupuesto de 0,5 min que declara `operations.md` (~50 s), así que abriré una fila de deuda.
+
+¿Qué has probado?
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
