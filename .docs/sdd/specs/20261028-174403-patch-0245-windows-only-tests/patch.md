@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-28
 branch: patch/0245-windows-only-tests
-commit: <hash>
+commit: f5c927c6
 ---
 
 # Patch 0245 — dos tests que solo pasan en Windows dejan la CI de develop en rojo
@@ -45,7 +45,13 @@ Con la CI de la base en `ubuntu-latest`, medido en un contenedor `ubuntu:24.04` 
 | 2 | RED → GREEN en `ubuntu:24.04` (`ci-linux.sh`, los pasos de `ci.yml` con mergiraf e identidad de git) | ✅ RED sobre `develop` `a23efeee`: `cli:test-min` 6 rojos, los dos `publish-failures` y «ni el usuario de esta máquina suelto» entre ellos. GREEN con el patch: 1855 verdes, 25 skipped (el de privacidad salta: el usuario es `root`), 1 rojo, `histogram`, que no es de este patch (depende de la versión de git del runner, se mira en el run real); los `hookTimeout` de `reserve`/`hotfix` no salen esta vez |
 | 3 | GREEN en Windows de los tres ficheros tocados y `tsc --noEmit` | ✅ 30/30 · `tsc` 0 |
 
+Gate: `node cli/bin/sdd.js lock run -- moon run kit:test-headless cli:typecheck cli:test-min --affected --base develop` → cli:test-min: corrió 1869/1881 (12 skipped) · cli:typecheck: corrió · kit:test-headless: saltada (--affected: el cambio no toca sus inputs) · 11 min, sobre el árbol de `f5c927c6`
+
+Validación en campo: 2026-10-28 · RED unitario en Windows y RED de los tres en `ubuntu:24.04` → GREEN en los dos sistemas · gate de cierre en verde · no probado: el runner real de GitHub, que se ve en el primer run tras la 0238
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,75 h + 0,2 h del gate de cierre (12 min, config de la CI de hoy)
 - Inicio: 2026-10-28T17:40Z
+- Esfuerzo real: 2,20 h — reloj de la sesión 2,87 h desde 2026-10-28T15:09Z, sin 40 min de espera al dev-lead (5 esperas). +132 % sobre la estimación (0,95 h): la medida cuenta desde el arranque de la sesión, que abrió la CI de la base y su config antes de este patch; el patch solo, de 17:40Z al commit del fix, fue ~0,6 h, con el gate.
+- Coste de sujetos: no aplica

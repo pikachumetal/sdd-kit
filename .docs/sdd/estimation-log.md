@@ -221,12 +221,13 @@
 | 2026-10-28 | 0231 | patch | 1.5 | 1.34 | 0.89 | — | — | 0.68 | — | 20261028-121830-patch-0231-exact-env-vars |
 | 2026-10-28 | 0216 | tooling | 4 | 2.39 | 0.6 | 50578k | 7547k | 0 | 24.02 | 20261028-124244-feature-0216-node-subject-launcher |
 | 2026-10-28 | 0230 | docs | 1.5 | 1.58 | 1.05 | 32823k | 4618k | 8.24 | 13.75 | 20261028-131603-feature-0230-red-contrast-failing-file-first |
+| 2026-10-28 | 0245 | patch | 0.75 | 2.2 | 2.93 | — | — | no aplica | — | 20261028-174403-patch-0245-windows-only-tests |
 
-**Factor de calibración** (ratio mediano real/estimado, 181 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 182 artefactos): **0.6** · media 0.79
 
 - p25–p75: 0.4–0.95
-- p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 29 % · sobreestimadas: 61 % · infraestimadas: 10 %
+- p80: 1.06 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 29 % · sobreestimadas: 60 % · infraestimadas: 11 %
 - Error absoluto (h): media 1.35 · mediana 0.9
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.85
 
@@ -236,14 +237,14 @@
 | 0.5–0.8 | 56 | 31 % |
 | 0.8–1.25 | 45 | 25 % |
 | 1.25–2 | 12 | 7 % |
-| ≥2 | 7 | 4 % |
+| ≥2 | 8 | 4 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 88 | 0.56 | 0.4–0.77 |
 | infra/tooling | 47 | 0.5 | 0.37–0.85 |
-| patch | 44 | 1.08 | 0.76–1.4 |
+| patch | 45 | 1.17 | 0.76–1.4 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -263,6 +264,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 69 | 182.62 | 0.58 | 331.36 | 1415.13 |
+| sin publicar | 70 | 184.82 | 0.59 | 331.36 | 1415.13 |
 
 > Ver `estimation.md`.
