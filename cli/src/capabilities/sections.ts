@@ -3,8 +3,9 @@ import { basename, extname } from 'node:path';
 
 export const RULE_NAMES = ['Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto'];
 
-const DELTA_HEADER = /^\*\*(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b/i;
-const DELTA_TITLE = /^\*\*[\p{L}\p{N}_]+ —\s*([^*]+?)\s*\*\*/u;
+const DELTA_HEADER = /^(?:\*\*|####\s+)(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b/i;
+const BOLD_TITLE = /^\*\*[\p{L}\p{N}_]+ —\s*([^*]+?)\s*\*\*/u;
+const HEADING_TITLE = /^####\s+[\p{L}\p{N}_]+ —\s*(.+?)(?:\s+\(antes:.*)?(?:\s+#+)?\s*$/u;
 
 export type Requirement = { title: string; lines: string[] };
 export type Declared = { kind: 'Nuevas' | 'Modificadas'; name: string; summary: string };
@@ -75,8 +76,12 @@ export function declaredCapabilities(block: string[]): Declared[] {
   });
 }
 
+function isHeadingMark(header: string): boolean {
+  return header.startsWith('####');
+}
+
 function isHeaderClosed(header: string): boolean {
-  if (!/^\*\*[^*]+\*\*/.test(header)) return false;
+  if (!isHeadingMark(header) && !/^\*\*[^*]+\*\*/.test(header)) return false;
   return (header.match(/\(/g) ?? []).length <= (header.match(/\)/g) ?? []).length;
 }
 
@@ -99,7 +104,8 @@ function newDelta(capability: string, header: string): Delta {
   const kindWritten = DELTA_HEADER.exec(header)![1];
   const kindText = kindWritten.toUpperCase();
   const kind = (kindText === 'REGLAS DE LA CAPACIDAD' ? 'RULES' : kindText) as DeltaKind;
-  const title = (DELTA_TITLE.exec(header)?.[1] ?? '').replace(/\s+/g, ' ');
+  const titlePattern = isHeadingMark(header) ? HEADING_TITLE : BOLD_TITLE;
+  const title = (titlePattern.exec(header)?.[1] ?? '').replace(/\s+/g, ' ');
   return { capability, kind, writtenKind: kindWritten, title, header, lines: [] };
 }
 
