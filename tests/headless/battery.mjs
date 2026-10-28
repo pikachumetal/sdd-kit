@@ -144,6 +144,12 @@ export function scenarioCell(here, id, column, env = process.env) {
   return findScenario(join(env.BATTERY_DIR || here, 'battery.md'), id)?.[column];
 }
 
+// La celda del escenario del sujeto, que muere sin él.
+export const subjectCell = (here, s) => (column) => scenarioCell(here, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+
+// El molde de la columna Molde, de los que sabe montar el sujeto.
+export const moldFrom = (cell, s, molds) => molds[cell('Molde')] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+
 async function main([command, batteryPath, ...rest]) {
   if (command === 'plan') {
     for (const row of selectSteps(readScenarios(batteryPath, fileFs), rest)) console.log(`${row.Id} ${row.Modelo} ${row.n}`);

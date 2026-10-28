@@ -46,7 +46,7 @@ const escaped = user.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const homePattern = new RegExp(`(?:[A-Za-z]:|/[A-Za-z])(?:\\\\{1,2}|/)Users(?:\\\\{1,2}|/)${escaped}\\b`, 'gi');
 const userPattern = new RegExp(`\\b${escaped}\\b`, 'g');
 // El nombre y el email de git de la máquina: el sujeto los copia del contexto de la sesión (tickets de las features 0099 §1 y 0160).
-// Sin los GIT_CONFIG_* que exporta subject_launch, que los tapan con Fixture.
+// Sin los GIT_CONFIG_* que pasa launch de lib.mjs a claude, que los tapan con Fixture.
 const machineEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^GIT_CONFIG_(COUNT|KEY_\d+|VALUE_\d+)$/.test(key)));
 const gitConfig = (key) => {
   try {

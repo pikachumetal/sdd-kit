@@ -3,13 +3,13 @@
 import { appendFileSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
+import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
 import { initSubject } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SC = process.argv[4];
 const s = initSubject(process.argv.slice(2), (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, ''));
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 const ASK = cell('Petición');
 const SALAS = join(HERE, '..', 'using-sdd', 'mold-salas');
 const SALAS_MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}';
@@ -36,11 +36,9 @@ const molds = {
   },
   vacio: () => s.put('README.md', '# citas\n'),
 };
-const mold = molds[cell('Molde')] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const mold = moldFrom(cell, s, molds);
 mold();
-s.git('init', '-q', '-b', 'main');
-s.commit('feat: base del molde');
-s.git('checkout', '-q', '-b', 'develop');
+s.initRepo();
 
 const turn2 = { g3: 'sí, adelante: feature full con delegate', g4: 'mantengo lo que dije', g5: 'decide tú lo que puedas', g6: 'sí, adelante: feature full con delegate' };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];

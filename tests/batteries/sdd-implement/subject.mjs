@@ -4,15 +4,15 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { scenarioCell, subjectCell } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIX = join(HERE, 'fixtures');
 const [kit, , SC] = process.argv.slice(2);
 const guard = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
 const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', guard)) ? guard : 'using-sdd');
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 let ASK = cell('Petición');
 const SDD_CLI = join(s.KIT, 'cli', 'bin', 'sdd.js');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
@@ -27,11 +27,9 @@ const F18 = '.docs/sdd/specs/20261010-100000-feature-0018-help';
 const F19 = '.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note';
 const F20 = '.docs/sdd/specs/20261013-100000-feature-0020-path-reply';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-keep-note';
-// Como el sed de Git Bash, que dejaba las líneas en LF.
-const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 const fixture = (name) => readFileSync(join(FIX, name), 'utf8');
 const at = (path) => join(s.R, path);
-// En los encargos, la carpeta con barras, como la daba cygpath -m.
+// En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
 const forward = (path) => path.replaceAll('\\', '/');
 const cp = (name, path) => copyFileSync(join(FIX, name), at(path));
 const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '';
@@ -82,9 +80,7 @@ for (const id of ['t5a', 'p1', 'p2']) molds[id] = molds.t2;
 molds.t5b = molds.t3;
 molds.o2 = molds.o1;
 molds[s.SC]?.();
-s.git('init', '-q', '-b', 'main');
-s.commit('feat: base del molde');
-s.git('checkout', '-q', '-b', 'develop');
+s.initRepo();
 
 const approvalOf = (text) => text
   .replace(/^status: draft/m, 'status: approved')
@@ -101,13 +97,13 @@ const asSubagent = (path) => readLf(path)
   .replace(/^\*\*Ejecución\*\*: native.*$/m, '**Ejecución**: subagent, porque se quiere revisión por task.')
   .replace(/^1\. Dos tasks, Native\./m, '1. Dos tasks, SDD.')
   .replace(/^- Native: implementa la sesión\./m, '- SDD: un implementador por task y su revisión.');
-function openFeature(name, folder, spec, plan) {
+function openFeature(name, { folder, spec, plan }) {
   s.git('checkout', '-q', '-b', `feature/${name}`);
   s.put(`${folder}/spec.md`, spec);
   s.put(`${folder}/plan.md`, plan);
   s.commit(`docs(sdd): abrir la feature ${name.split('-')[0]} con su spec y su plan`);
 }
-const openFixture = (name, folder, id) => openFeature(name, folder, fixture(`spec-${id}.md`), fixture(`plan-${id}.md`));
+const openFixture = (name, folder, id) => openFeature(name, { folder, spec: fixture(`spec-${id}.md`), plan: fixture(`plan-${id}.md`) });
 function taskCommit(name, title) {
   cp(`app-${name}.js`, 'src/app.js');
   cp(`cancel-${name}.test.js`, 'test/cancel.test.js');
@@ -116,7 +112,7 @@ function taskCommit(name, title) {
 const short = (rev) => s.git('rev-parse', '--short=7', rev).trim();
 
 // El encargo del implementador, compuesto con el texto del kit que se prueba; el brief, con su CLI.
-function encargo(folder, task, test) {
+function implementerBrief(folder, task, test) {
   const brief = sddCli('task', 'brief', `${folder}/plan.md`, '1').trim().split('\n').at(-1).replace(/^wrote /, '').replace(/: \d+ lines$/, '');
   const values = [
     ['<copia literal del bloque «De código» de las Restricciones globales de plan.md, artículo de calidad de código incluido; en modo lite, sin plan: el artículo de calidad de código de la constitution, literal>',
@@ -152,7 +148,7 @@ function redWriter(folder, test) {
 
 function reviewedTwoTasks() {
   writeFileSync(join(s.RUN, 'plan-sdd.md'), asSubagent(join(FIX, 'plan-0010.md')));
-  openFeature('0010-cancel-reason', F10, approved0010(), readFileSync(join(s.RUN, 'plan-sdd.md'), 'utf8'));
+  openFeature('0010-cancel-reason', { folder: F10, spec: approved0010(), plan: readFileSync(join(s.RUN, 'plan-sdd.md'), 'utf8') });
   const base1 = short('HEAD');
   taskCommit('task1', 'feat(bookings): cancelar con un motivo de la lista');
   const base2 = short('HEAD');
@@ -183,12 +179,12 @@ const steps = {
   r1: () => {
     openFixture('0012-cancelled-report', F12, '0012');
     cp('informe.test.js', 'test/informe.test.js');
-    ASK = encargo(F12, 'Comando informe', 'test/informe.test.js');
+    ASK = implementerBrief(F12, 'Comando informe', 'test/informe.test.js');
   },
   r1b: () => {
     openFixture('0015-report-groupings', F15, '0015');
     cp(s.SC === 't1c' ? 'cancel-task1.test.js' : 'informe-0015.test.js', 'test/informe.test.js');
-    ASK = encargo(F15, 'Comando informe', 'test/informe.test.js');
+    ASK = implementerBrief(F15, 'Comando informe', 'test/informe.test.js');
     if (s.SC === 't1b') ASK = ASK.replace('1. Before touching', '1. Load `sdd-tdd` with `Skill`. Then, before touching');
   },
   k1: () => openFixture('0018-help', F18, '0018'),
@@ -216,24 +212,24 @@ const steps = {
   r5: () => {
     openFixture('0014-saved-reason', F14, '0014');
     cp('store.e2e.test.js', 'test/store.e2e.test.js');
-    ASK = encargo(F14, 'Guardar el motivo', 'test/store.e2e.test.js');
+    ASK = implementerBrief(F14, 'Guardar el motivo', 'test/store.e2e.test.js');
   },
   u1: () => {
-    openFeature('0010-cancel-reason', F10, full0010(), fixture('plan-0010.md'));
+    openFeature('0010-cancel-reason', { folder: F10, spec: full0010(), plan: fixture('plan-0010.md') });
     taskCommit('task1', 'feat(bookings): cancelar con un motivo de la lista');
     s.put(`${F10}/tasks.md`, fixture('tasks-0010-u1.md'));
     s.env.TURN2 = s.SC === 'u2' ? 'Apruebo guardar quién cancela con --por <nombre> en cancelar.' : 'Apruebo la enmienda.';
   },
-  h1: () => openFeature('0010-cancel-reason', F10, approved0010(), fixture('plan-0010.md')),
+  h1: () => openFeature('0010-cancel-reason', { folder: F10, spec: approved0010(), plan: fixture('plan-0010.md') }),
   w1: () => {
-    openFeature('0010-cancel-reason', F10, approved0010(), fixture('plan-0010.md'));
+    openFeature('0010-cancel-reason', { folder: F10, spec: approved0010(), plan: fixture('plan-0010.md') });
     s.git('checkout', '-q', 'develop');
     s.git('worktree', 'add', '-q', join(s.RUN, 'wt'), 'feature/0010-cancel-reason');
     s.R = join(s.RUN, 'wt');
   },
   h2: () => {
     writeFileSync(join(s.RUN, 'plan-sdd.md'), asSubagent(join(FIX, 'plan-0010.md')));
-    openFeature('0010-cancel-reason', F10, approved0010(), readFileSync(join(s.RUN, 'plan-sdd.md'), 'utf8'));
+    openFeature('0010-cancel-reason', { folder: F10, spec: approved0010(), plan: readFileSync(join(s.RUN, 'plan-sdd.md'), 'utf8') });
   },
   r4: reviewedTwoTasks,
 };

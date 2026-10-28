@@ -4,8 +4,8 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIX = join(HERE, 'fixtures');
@@ -14,14 +14,12 @@ const [kit, , SC] = process.argv.slice(2);
 // y los pasos de spec y plan se piden a sdd-start-feature, donde vivían.
 const guard = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
 const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', guard)) ? guard : 'using-sdd');
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 let ASK = cell('Petición');
 if (!existsSync(join(kit, 'skills', 'sdd-propose'))) ASK = ASK.replaceAll('sdd-propose', 'sdd-start-feature');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
-// Como el sed de Git Bash, que dejaba las líneas en LF.
-const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -34,7 +32,7 @@ const molds = {
   'reservas-plan'() {},
   'reservas-remoto'() {},
   // La 0011 implementa los responsables de sala que una fila pendiente (0009) prometía, y docs/config.md apunta a esa fila.
-  // El puntero va fuera de los documentos que el paso 1 lee: en PRODUCT.md lo vieron 2 de 2 sin buscarlo (red-v1 del patch 0174).
+  // El puntero va fuera de los documentos que el paso 1 lee: en PRODUCT.md lo vieron 2 de 2 sin buscarlo.
   'reservas-puntero'() {
     edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 0011 \|/gm, '| 0009 | **Responsables de sala**: quién responde de cada sala y qué puede hacer | ⏳ |\n| 0011 |'));
     appendFileSync(at('README.md'), '\nConfiguración: [docs/config.md](docs/config.md).\n');
@@ -87,7 +85,7 @@ const molds = {
     edit('src/app.js', (text) => text.replaceAll("const rooms = ['Norte', 'Sur'];", "const rooms = ['Norte', 'Sur', 'Este'];"));
   },
 };
-const mold = molds[MOLD] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const mold = moldFrom(() => MOLD, s, molds);
 mold();
 // El fallo de a2 y a3: findBooking busca solo por sala, y «cancelar Norte mar» cancela la reserva del lunes.
 if (['a2', 'a3', 'd1', 'p3'].includes(s.SC)) edit('src/app.js', (text) => text.replaceAll('b.room === room && b.day === day && ', 'b.room === room && '));
@@ -163,7 +161,7 @@ const steps = {
     branch('feature/0010-cancel-reason');
     s.put(`${F10}/spec.md`, withoutWho(approvedSpec()));
   },
-  // La 0010 con el anexo del Art. I: dos reglas de un comando que se funde en cancelar, cada una con su destino.
+  // La 0010 con su anexo: dos reglas de un comando que se funde en cancelar, cada una con su destino.
   pl2: () => {
     branch('feature/0010-cancel-reason');
     s.put(`${F10}/spec.md`, withoutWho(approvedSpec()) + readFileSync(join(FIX, 'annex-0010.md'), 'utf8'));

@@ -2,9 +2,9 @@
 
 Cómo depura el kit un fallo antes de proponer el arreglo. Nace en el patch 0231 y mide lo que añade: para ver el entorno, se imprimen las variables que se nombran, nunca un prefijo ni el entorno entero.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-debugging`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Un molde sobre el de `tests/batteries/using-sdd/mold-salas`: `hook`, con `core.hooksPath` en `.githooks/` y un `pre-commit` que abre un worktree temporal y falla por el `GIT_INDEX_FILE` relativo que hereda del commit; `notas.txt` queda en el índice. `subject.mjs` quita del entorno heredado las variables con pinta de secreto y pone un `GITHUB_PERSONAL_ACCESS_TOKEN` falso, y `state.txt` cuenta cuántas líneas del transcript lo llevan.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-debugging`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Un molde sobre el de `tests/batteries/using-sdd/mold-salas`: `hook`, con `core.hooksPath` en `.githooks/` y un `pre-commit` que abre un worktree temporal y falla por el `GIT_INDEX_FILE` relativo que hereda del commit; `notas.txt` queda en el índice. `subject.mjs` quita del entorno heredado las variables con pinta de secreto y pone un `GITHUB_PERSONAL_ACCESS_TOKEN` falso, y `state.txt` cuenta cuántas líneas del transcript lo llevan.
 
-**Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `tools.txt`, `state.txt` y el `<etiqueta>.jsonl` de cada sujeto con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `tools.txt`, `state.txt` y el `<etiqueta>.jsonl` de cada sujeto con la rúbrica de abajo.
 
 ## Escenarios
 

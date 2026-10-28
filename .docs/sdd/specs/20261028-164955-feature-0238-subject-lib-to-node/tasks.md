@@ -19,4 +19,6 @@ created: 2026-10-28
 | 3 | `using-sdd` en Node, el e2e y fuera los tests lentos | done | 1c018d5 | |
 | 4 | Los otros 13 moldes en Node y el test de moldes en seco | done | f561e64 | |
 | 5 | El repo sin bash y los documentos | done | 4464d27 | |
-| 6 | Enmienda 2026-10-28: la suite en el CI de Linux, los rápidos en `cli:test`, el tope por omisión y la longitud de `RUNS_DIR` | done | | |
+| 6 | Enmienda 2026-10-28: la suite en el CI de Linux, los rápidos en `cli:test`, el tope por omisión y la longitud de `RUNS_DIR` | done | 3990b93 | |
+
+Revisión final: Spec opus+high, With fixes (4 Important, 8 Minor) · Código sonnet+high, With fixes (4 Important, 10 Minor) · Arquitectura no (plan), sobre 3990b93

@@ -1,32 +1,12 @@
 // Las dependencias reales de campaign.mjs, que comparten run.mjs y battery.mjs run.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { withLock } from '../../cli/src/git/lock.ts';
 import { stopCampaign } from './campaign.mjs';
+import { isAlive, killProcess, MAX_BUFFER, nodeFs } from './lib.mjs';
 
 const LOCK_TIMEOUT_MINUTES = 120;
-
-export const nodeFs = {
-  exists: existsSync,
-  read: (path) => readFileSync(path, 'utf8'),
-  write: (path, text) => {
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, text);
-  },
-  remove: (path) => rmSync(path, { recursive: true, force: true }),
-  list: (dir) => (existsSync(dir) ? readdirSync(dir).sort() : []),
-  mkdir: (dir) => mkdirSync(dir, { recursive: true }),
-};
-
-function isAlive(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    return error.code === 'EPERM';
-  }
-}
 
 const running = new Set();
 
@@ -59,26 +39,13 @@ function linuxProcesses() {
 
 async function processes() {
   if (!windows) return linuxProcesses();
-  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: MAX_BUFFER });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`pwsh salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
   return result.stdout.split(/\r?\n/).filter(Boolean).map((line) => {
     const tab = line.indexOf('\t');
     return { pid: Number(line.slice(0, tab)), commandLine: line.slice(tab + 1) };
   });
-}
-
-// taskkill /T se lleva el árbol; un proceso que ya no existe no es un error. Fuera de Windows, solo ese PID.
-function kill(pid, tree) {
-  if (!windows) {
-    try {
-      process.kill(pid, 'SIGKILL');
-    } catch {
-      // Ya había salido.
-    }
-    return;
-  }
-  spawnSync('taskkill', [...(tree ? ['/T'] : []), '/F', '/PID', String(pid)], { stdio: 'ignore', windowsHide: true });
 }
 
 export function realDeps() {
@@ -92,7 +59,7 @@ export function realDeps() {
     lock: (path, body) => withLock({ path, label: 'lanzamiento de sujetos', io, owner: { ...owner, worktree: dirname(path) } }, LOCK_TIMEOUT_MINUTES, body),
     launch,
     processes,
-    kill,
+    kill: killProcess,
   };
 }
 

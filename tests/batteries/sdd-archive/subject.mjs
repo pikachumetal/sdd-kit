@@ -4,8 +4,8 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const IMPL = join(HERE, '..', 'sdd-implement');
@@ -15,7 +15,7 @@ const GUARD = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, ''
 const OLD = (scenarioCell(HERE, SC, 'Molde') ?? '').startsWith('salas-') ? 'sdd-end-patch' : 'sdd-end-feature';
 const current = existsSync(join(kit, 'skills', GUARD));
 const s = initSubject(process.argv.slice(2), current ? GUARD : OLD);
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 let ASK = cell('Petición');
 if (!current) ASK = ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
@@ -23,8 +23,6 @@ const P8 = '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing';
 const CAP = '.docs/sdd/capabilities/bookings.md';
 const MERGE = '"merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}';
 let MARKER = `"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, ${MERGE}, "execution": "native", "validation": {"mode": "field"}`;
-// Como el sed de Git Bash, que dejaba las líneas en LF; como sed, cada sustitución, la primera de cada línea.
-const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 const perLine = (text, ...pairs) => text.split('\n').map((line) => pairs.reduce((out, [from, to]) => out.replace(from, to), line)).join('\n');
 const at = (path) => join(s.R, path);
 const edit = (path, ...pairs) => writeFileSync(at(path), perLine(readLf(at(path)), ...pairs));
@@ -96,7 +94,7 @@ function e2eSuite() {
   s.commit('test: suite e2e');
 }
 // Un servidor que arrancó otra pasada, desde el código de develop, escucha ya en el puerto de la suite.
-// El tar se lee con una ruta relativa: el de Git Bash toma «D:» como un host.
+// El tar se lee con una ruta relativa: el tar del PATH puede tomar «D:» como un host.
 function staleServer() {
   const stale = join(s.RUN, 'stale-env');
   mkdirSync(stale, { recursive: true });
@@ -106,29 +104,34 @@ function staleServer() {
 }
 
 // El patch 0008 con su fix commiteado, sobre el molde de salas de using-sdd; con «hotfix», la rama sale de main.
-function done0008(hotfix) {
+// Las filas de la 0008 en el roadmap del molde salas: la del patch y la de su deuda.
+function rows0008() {
+  const roadmap = '.docs/sdd/roadmap.md';
+  const avisos = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
+  const franja = '| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |';
   const row = '| 0008 | Patch: si cancelo una reserva que no existe me dice «cancelada» igual | ⏳ |';
   const debt = '| Cancelar una reserva que no existe responde «cancelada» igual | Medio | Actuar → 0008 |';
-  const roadmap = '.docs/sdd/roadmap.md';
-  s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
-  s.putKitMarker(MARKER.replace(', "execution": "native"', ''));
-  const avisos = '| 1 | Avisos por correo antes de la reserva | ⏳ |';
   if (!has(roadmap, /^\| 1 \| Avisos por correo antes de la reserva \| ⏳ \|$/)) s.die('el roadmap del molde salas cambió: no hay dónde poner la fila 0008');
-  const franja = '| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |';
   writeFileSync(at(roadmap), readLf(at(roadmap)).split('\n').flatMap((line) => (line === avisos ? [line, row] : line === franja ? [line, debt] : [line])).join('\n'));
   if (!has(roadmap, 'Actuar → 0008')) s.die('no se plantó la fila de deuda de la 0008');
-  if (hotfix) s.put('skills/sdd-upgrade/references/migrations/README.md', '# Migraciones\n\nUna por versión, `vX.Y.Z.md`: los pasos que el proyecto aplica al subir.\n');
-  s.git('init', '-q', '-b', 'main');
-  s.commit('feat: base del molde');
-  branch('develop');
-  if (hotfix) s.git('checkout', '-q', 'main');
-  branch(hotfix ? 'hotfix/0008-cancel-missing' : 'feature/0008-cancel-missing');
+}
+function fix0008() {
   edit('src/app.js', ["  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;", "  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0]} ${params[1]}` : `no hay reserva ${params[0]} ${params[1]}`;"]);
   if (!has('src/app.js', 'no hay reserva')) s.die('no se plantó el fix en src/app.js');
   edit('test/app.test.js', ["run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00'", "run('cancelar', ['lun', '10:00']), 'cancelada lun 10:00'"]);
   appendFileSync(at('test/app.test.js'), "\ntest('cancelar sin reserva avisa', () => {\n  assert.equal(run('cancelar', ['mie', '10:00']), 'no hay reserva mie 10:00');\n});\n");
   s.put(`${P8}/patch.md`, readFileSync(join(HERE, 'patch-0008.md'), 'utf8'));
   s.commit('fix: cancelar una reserva que no existe avisa (0008)');
+}
+function done0008(hotfix) {
+  s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
+  s.putKitMarker(MARKER.replace(', "execution": "native"', ''));
+  rows0008();
+  if (hotfix) s.put('skills/sdd-upgrade/references/migrations/README.md', '# Migraciones\n\nUna por versión, `vX.Y.Z.md`: los pasos que el proyecto aplica al subir.\n');
+  s.initRepo();
+  if (hotfix) s.git('checkout', '-q', 'main');
+  branch(hotfix ? 'hotfix/0008-cancel-missing' : 'feature/0008-cancel-missing');
+  fix0008();
 }
 const amend = () => {
   s.git('add', '-A');
@@ -345,7 +348,7 @@ const molds = {
     s.env.TURN2 = 'Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.';
   },
 };
-const mold = molds[cell('Molde')] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const mold = moldFrom(cell, s, molds);
 mold();
 
 s.env.MAX_TURNS ||= s.SC === 'r1' || s.SC === 'r2' ? '4' : '60';

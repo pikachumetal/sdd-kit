@@ -4,8 +4,8 @@ import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { scenarioCell, subjectCell } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIX = join(HERE, 'fixtures');
@@ -13,7 +13,7 @@ const IMPL = join(HERE, '..', 'sdd-implement');
 const [kit, , SC] = process.argv.slice(2);
 const guard = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
 const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', guard)) ? guard : 'using-sdd');
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 let ASK = cell('Petición');
 const SDD_CLI = join(s.KIT, 'cli', 'bin', 'sdd.js');
 const CONTROL = s.SC === 'f2' ? '"profile": "delegate", "maxParallelAgents": 2' : '"profile": "delegate"';
@@ -24,8 +24,6 @@ const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-void-reason';
 const F22 = '.docs/sdd/specs/20261013-100000-feature-0022-cancel-notice';
 const F23 = '.docs/sdd/specs/20261013-110000-feature-0023-cancelled-list';
-// Como el sed de Git Bash, que dejaba las líneas en LF.
-const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 const at = (path) => join(s.R, path);
 const forward = (path) => path.replaceAll('\\', '/');
 const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '';
@@ -35,9 +33,7 @@ const edit = (path, change) => writeFileSync(at(path), change(readLf(at(path))))
 if (s.SC !== 'f5') {
   s.copy(join(IMPL, 'mold-reservas'));
   s.putKitMarker(MARKER);
-  s.git('init', '-q', '-b', 'main');
-  s.commit('feat: base del molde');
-  s.git('checkout', '-q', '-b', 'develop');
+  s.initRepo();
 }
 
 // Sin «quién canceló»: el molde no tiene usuarios.
@@ -106,7 +102,7 @@ function emptyListText() {
 function axisBrief(base, headSha, pkg) {
   const axis = s.SC === 'f4' || s.SC === 'f5' ? 'code' : 'spec';
   const files = s.git('diff', '--name-only', base, 'HEAD', '--', '.', ':(exclude,glob).docs/sdd/specs/**').split('\n').filter(Boolean);
-  const adrs = spawnSync(s.NODE, [SDD_CLI, 'decision', 'index', '--path', '.docs/sdd', '--files', ...files], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '';
+  const adrs = sddCli('decision', 'index', '--path', '.docs/sdd', '--files', ...files);
   const caps = sddCli('capability', 'index', '--path', '.docs/sdd');
   const args = [`--kit=${s.KIT}`, `--superpowers=${s.env.SUPERPOWERS_DIR ?? ''}`, `--axis=${axis}`, `--scenario=${s.SC.replace(/n$/, '')}`,
     `--package=${forward(pkg)}`, `--sha=${headSha}`, `--dir=${forward(s.R)}`, `--adrs=${adrs.replace(/\n+$/, '')}`, `--caps=${caps.replace(/\n+$/, '')}`];
@@ -128,9 +124,7 @@ function hojas0024() {
   const fix = join(FIX, 'hojas-0024');
   s.copy(join(HERE, 'mold-hojas'));
   s.putKitMarker(MARKER);
-  s.git('init', '-q', '-b', 'main');
-  s.commit('feat: base del molde hojas');
-  s.git('checkout', '-q', '-b', 'develop');
+  s.initRepo('feat: base del molde hojas');
   const base = s.git('rev-parse', 'HEAD').trim();
   s.git('checkout', '-q', '-b', 'feature/0024-remember-status-filter');
   cp(join(fix, 'InvoiceList.tsx'), 'src/invoices/InvoiceList.tsx');
@@ -142,16 +136,20 @@ function hojas0024() {
   s.commit('test(invoices): e2e de recordar el filtro');
   return base;
 }
-const specReview = (folder, capability, fixture, title) => {
+// La spec de la feature en su rama, con su capacidad, y el encargo del revisor de la spec que compone el kit.
+function specReview(folder, { capability, fixture }) {
   mkdirSync(at('.docs/sdd/capabilities'), { recursive: true });
   cp(join(FIX, 'capabilities', capability), `.docs/sdd/capabilities/${capability}`);
-  s.git('checkout', '-q', '-b', `feature/${folder.split('-feature-')[1]}`);
+  const id = folder.split('-feature-')[1];
+  s.git('checkout', '-q', '-b', `feature/${id}`);
   s.put(`${folder}/spec.md`, readFileSync(join(FIX, fixture), 'utf8'));
-  s.commit(title);
-  return (spawnSync(s.NODE, [join(HERE, 'compose-spec-review.mjs'), s.KIT, `${folder}/spec.md`, `.docs/sdd/capabilities/${capability}`], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '').replace(/\n+$/, '');
-};
+  s.commit(`docs(sdd): spec de la ${id.split('-')[0]}`);
+  const composed = spawnSync(s.NODE, [join(HERE, 'compose-spec-review.mjs'), s.KIT, `${folder}/spec.md`, `.docs/sdd/capabilities/${capability}`], { cwd: s.R, env: s.env, encoding: 'utf8' });
+  return (composed.stdout ?? '').replace(/\n+$/, '');
+}
 const reReview = (fixture) => copyFileSync(join(FIX, fixture), join(workspace(), 're-review.md'));
-function reviewedFix(app, test, title, verdict, fixture) {
+// La 0010 hecha, con una pasada de fix y su re-revisión con el veredicto que mide el escenario.
+function reviewedFix({ app, test, title, verdict, fixture }) {
   done0010();
   cp(join(FIX, app), 'src/app.js');
   if (test) cp(join(FIX, test), 'test/cancel.test.js');
@@ -162,27 +160,34 @@ function reviewedFix(app, test, title, verdict, fixture) {
   s.commit('docs(sdd): tasks.md con la re-revisión');
   reReview(fixture);
 }
-function reviewF3() {
+// La app antes del cambio, con la ADR de las reservas en memoria y las capacidades; en f3n ninguna ADR cubre el diff.
+function reviewBase() {
   mkdirSync(at('.docs/sdd/decisions'), { recursive: true });
   mkdirSync(at('.docs/sdd/capabilities'), { recursive: true });
-  const adr = readLf(join(HERE, '..', 'sdd-propose', 'fixtures', 'adr-0003-bookings-in-memory.md'));
-  // En f3n ninguna ADR cubre el diff.
-  writeFileSync(at('.docs/sdd/decisions/0003-bookings-in-memory.md'), s.SC === 'f3n' ? adr.replace(/^ {2}- src\/\*\*$/m, '  - docs/**') : readFileSync(join(HERE, '..', 'sdd-propose', 'fixtures', 'adr-0003-bookings-in-memory.md')));
+  const adr = join(HERE, '..', 'sdd-propose', 'fixtures', 'adr-0003-bookings-in-memory.md');
+  const text = s.SC === 'f3n' ? readLf(adr).replace(/^ {2}- src\/\*\*$/m, '  - docs/**') : readFileSync(adr);
+  writeFileSync(at('.docs/sdd/decisions/0003-bookings-in-memory.md'), text);
   for (const name of readdirSync(join(FIX, 'capabilities')).filter((file) => file.endsWith('.md'))) cp(join(FIX, 'capabilities', name), `.docs/sdd/capabilities/${name}`);
   cp(s.SC === 'f4' ? join(IMPL, 'fixtures', 'app-done.js') : join(FIX, 'app-f3-base.js'), 'src/app.js');
   s.commit('feat: la app antes del cambio');
-  const base = s.git('rev-parse', 'HEAD').trim();
+  return s.git('rev-parse', 'HEAD').trim();
+}
+function voidWithReason() {
+  s.put(`${F21}/spec.md`, readFileSync(join(FIX, 'spec-0021.md'), 'utf8'));
+  s.put(`${F21}/plan.md`, readFileSync(join(FIX, 'plan-0021.md'), 'utf8'));
+  s.commit('docs(sdd): abrir la feature 0021');
+  cp(join(FIX, 'app-f3.js'), 'src/app.js');
+  cp(join(FIX, 'void-f3.test.js'), 'test/void.test.js');
+  s.commit('feat(bookings): anular con motivo');
+}
+function reviewF3() {
+  const base = reviewBase();
   s.git('checkout', '-q', '-b', 'feature/review');
   if (s.SC === 'f4') {
     cp(join(FIX, 'app-f4.js'), 'src/app.js');
     s.commit('feat(bookings): informe de ocupación');
   } else {
-    s.put(`${F21}/spec.md`, readFileSync(join(FIX, 'spec-0021.md'), 'utf8'));
-    s.put(`${F21}/plan.md`, readFileSync(join(FIX, 'plan-0021.md'), 'utf8'));
-    s.commit('docs(sdd): abrir la feature 0021');
-    cp(join(FIX, 'app-f3.js'), 'src/app.js');
-    cp(join(FIX, 'void-f3.test.js'), 'test/void.test.js');
-    s.commit('feat(bookings): anular con motivo');
+    voidWithReason();
   }
   ASK = reviewPackage(base, true);
 }
@@ -194,8 +199,8 @@ const steps = {
     cp(join(FIX, 'app-v1.js'), 'src/app.js');
     cp(join(IMPL, 'fixtures', 'cancel-done.test.js'), 'test/cancel.test.js');
   },
-  s1: () => (ASK = specReview(F22, 'bookings.md', 'spec-s1.md', 'docs(sdd): spec de la 0022')),
-  s1b: () => (ASK = specReview(F23, 'reports.md', 'spec-s1b.md', 'docs(sdd): spec de la 0023')),
+  s1: () => (ASK = specReview(F22, { capability: 'bookings.md', fixture: 'spec-s1.md' })),
+  s1b: () => (ASK = specReview(F23, { capability: 'reports.md', fixture: 'spec-s1b.md' })),
   c1: () => {
     done0010();
     tasksMd();
@@ -224,9 +229,9 @@ const steps = {
     s.commit('docs(sdd): tasks.md con la revisión final');
     emptyListText();
   },
-  c5: () => reviewedFix('app-c5.js', undefined, 'fix(bookings): el motivo sin espacios alrededor', '1 Critical', 're-review-c5.md'),
-  // El caso de la 0213: el arreglo de la pasada cambia un literal que fija la spec, y deshacerlo devuelve el hallazgo.
-  c6: () => reviewedFix('app-c6.js', 'cancel-c6.test.js', 'fix(bookings): canceladas enseña la franja de cada reserva', '1 Important', 're-review-c6.md'),
+  c5: () => reviewedFix({ app: 'app-c5.js', title: 'fix(bookings): el motivo sin espacios alrededor', verdict: '1 Critical', fixture: 're-review-c5.md' }),
+  // El arreglo de la pasada cambia un literal que fija la spec, y deshacerlo devuelve el hallazgo.
+  c6: () => reviewedFix({ app: 'app-c6.js', test: 'cancel-c6.test.js', title: 'fix(bookings): canceladas enseña la franja de cada reserva', verdict: '1 Important', fixture: 're-review-c6.md' }),
   f5: () => {
     const base = hojas0024();
     ASK = reviewPackage(base, false);
@@ -237,7 +242,7 @@ const steps = {
     s.commit('docs(decisions): las reservas viven en memoria');
     done0010();
   },
-  // El caso de la 0187: la regla de confirmar antes de paralelizar, del usuario, y una spec aprobada con su política de modelos.
+  // La regla de confirmar antes de paralelizar, del usuario, y una spec aprobada con su política de modelos.
   // La línea va en la spec que se aprobó: añadida en un commit posterior, 1 de 2 sujetos no la contó como aprobada (con razón).
   mp1: () => {
     const plain = approved0010;

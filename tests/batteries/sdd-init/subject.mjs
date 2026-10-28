@@ -3,7 +3,7 @@
 import { existsSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
+import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
 import { initSubject } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -12,7 +12,7 @@ const MOLD = scenarioCell(HERE, SC, 'Molde') ?? '';
 // Un kit sin sdd-init (el RED) usa la init vieja que toca y el molde en la forma 2.x que esa lee.
 const SKILL = existsSync(join(kit, 'skills', 'sdd-init')) ? 'sdd-init' : ['blank', 'template'].includes(MOLD) ? 'sdd-init-greenfield' : 'sdd-init-brownfield';
 const s = initSubject(process.argv.slice(2), SKILL);
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 const ASK = cell('Petición').replaceAll('sdd-kit:sdd-init', `sdd-kit:${SKILL}`);
 const fresh = SKILL === 'sdd-init';
 
@@ -90,7 +90,7 @@ const molds = {
   },
   template: moldTemplate,
 };
-const mold = molds[MOLD] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const mold = moldFrom(() => MOLD, s, molds);
 mold();
 s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');

@@ -3,14 +3,14 @@
 import { copyFileSync, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { moldFrom, scenarioCell, subjectCell } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIX = join(HERE, 'fixtures');
 const SC = process.argv[4];
 const s = initSubject(process.argv.slice(2), (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, ''));
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 const ASK = cell('Petición');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
@@ -18,14 +18,11 @@ const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
 
 s.copy(join(HERE, 'mold-reservas'));
 const markers = { reservas: MARKER, 'reservas-campo': `${MARKER}, "validation": {"mode": "field"}` };
-const marker = markers[cell('Molde')] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const marker = moldFrom(cell, s, markers);
 s.putKitMarker(marker);
-s.git('init', '-q', '-b', 'main');
-s.commit('feat: base del molde');
-s.git('checkout', '-q', '-b', 'develop');
+s.initRepo();
 
-// Como el sed de Git Bash, que dejaba las líneas en LF.
-const approvedSpec = () => readFileSync(join(FIX, 'spec-0010.md'), 'utf8').replaceAll('\r\n', '\n')
+const approvedSpec = () => readLf(join(FIX, 'spec-0010.md'))
   .replace(/^status: draft/m, 'status: approved')
   .replaceAll('approved_at: null', 'approved_at: 2026-10-08')
   .replaceAll('| dev-lead | Laura | | pendiente |', '| dev-lead | Laura | 2026-10-08 | aprobada |');

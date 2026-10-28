@@ -47,6 +47,7 @@ interface FakeOptions {
   claude?: (call: ClaudeCall) => { stream?: string; code?: number; hang?: boolean };
   netstat?: () => string;
   alive?: number[];
+  which?: () => string | undefined;
 }
 
 const STREAM = '{"type":"system","subtype":"init","session_id":"s-1"}\n{"type":"result","num_turns":1,"total_cost_usd":0.5,"result":"hecho"}\n';
@@ -107,8 +108,7 @@ function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
       hanging(1);
     },
     isAlive: (pid: number) => (options.alive ?? []).includes(pid),
-    whichClaude: () => 'C:\\bin\\claude.exe',
-    now: () => 1_000_000,
+    whichClaude: options.which ?? (() => 'C:\\bin\\claude.exe'),
     onExit: (fn: () => number) => exits.push(fn),
     exit: (code: number) => {
       throw new Exited(code);
@@ -250,7 +250,7 @@ describe('Molde y guardado (lib.mjs)', () => {
     const { subject, errs, calls } = start({}, kitFs(), { run: ({ args }) => (args.includes('--show-cdup') ? { stdout: '../\n' } : undefined) });
 
     expect(dies(() => subject.commit('feat: base'))).toBe('exit 1');
-    expect(errs).toEqual([`[a-1] el molde ${subject.R} no es su propio repo git: falta g init en el subject.mjs antes del primer git`]);
+    expect(errs).toEqual([`[a-1] el molde ${subject.R} no es su propio repo git: falta git init en el subject.mjs antes del primer git`]);
     expect(calls.some(({ args }) => args.includes('add'))).toBe(false);
   });
 
@@ -790,5 +790,94 @@ describe('Puertos del sujeto (lib.mjs)', () => {
       expect(killed).toEqual([{ pid: 77, tree: false }]);
       expect(fs.exists(join(RUNS, 'ports', '4300'))).toBe(false);
     });
+  });
+});
+
+describe('Pasada de fix de la revisión final (lib.mjs)', () => {
+  it('la limpieza borra el molde aunque un paso anterior lance', () => {
+    const fs = kitFs();
+    const remove = fs.remove;
+    fs.remove = (path: string) => {
+      if (path.includes('cc-tmp')) throw new Error('EBUSY: carpeta en uso');
+      remove(path);
+    };
+    const { subject, errs, cleanup } = start({ CLAUDE_CODE_TMPDIR: join(CWD, 'cc-tmp') }, fs);
+
+    cleanup();
+
+    expect(fs.exists(subject.RUN)).toBe(false);
+    expect(errs).toEqual(['[a-1] EBUSY: carpeta en uso']);
+  });
+
+  it('al vencer el tope el sujeto sale con 124', async () => {
+    const { subject, timers, cleanup } = start({ SUBJECT_TIMEOUT: '5' }, kitFs(), { claude: () => ({ hang: true }) });
+    const launched = subject.launch('x');
+    timers[0].fire();
+    await launched;
+
+    expect(cleanup()).toEqual([124]);
+  });
+
+  it('aborta con un SUBJECT_TIMEOUT que no es un número de segundos', async () => {
+    const { subject, errs } = start({ SUBJECT_TIMEOUT: 'media hora' });
+
+    await expect(subject.launch('x')).rejects.toThrow('exit 1');
+    expect(errs).toEqual(['[a-1] SUBJECT_TIMEOUT tiene que ser un número de segundos: media hora']);
+  });
+
+  it('aborta sin claude en el PATH', async () => {
+    const { subject, errs } = start({}, kitFs(), { which: () => undefined });
+
+    await expect(subject.launch('x')).rejects.toThrow('exit 1');
+    expect(errs).toEqual(['[a-1] no encuentro claude en el PATH']);
+  });
+
+  it('putKitMarker aborta si la copia del kit no da ninguna versión', () => {
+    const fs = kitFs();
+    fs.write(join(KIT, '.claude-plugin', 'plugin.json'), '{"name":"sdd-kit"}\n');
+    const { subject, errs } = start({}, fs);
+
+    expect(dies(() => subject.putKitMarker('"channel": "plugin"'))).toBe('exit 1');
+    expect(errs).toEqual([`[a-1] sin versión en la copia del kit ${KIT}: ni plugin.json ni migraciones`]);
+  });
+
+  it('converse para y devuelve 1 si la persona falla', async () => {
+    const question = '{"type":"system","session_id":"s-1"}\n{"type":"result","total_cost_usd":0.5,"result":"¿Seguimos?"}\n';
+    const { subject, fs, claudeCalls } = start({}, kitFs(), { claude: ({ args }) => (args.includes('haiku') ? { code: 1, stream: '' } : { stream: question }) });
+    fs.write(join(RUNS, 'hoja.md'), 'Contesta sí.');
+    await subject.launch('x');
+
+    expect(await subject.converse(join(RUNS, 'hoja.md'), 3)).toBe(1);
+    expect(claudeCalls).toHaveLength(2);
+  });
+
+  it('sin foto del arranque no deja relevo de un puerto compartido', () => {
+    let call = 0;
+    const netstat = () => {
+      if (call++ === 0) throw new Error('netstat no está');
+      return listen(4300, 77);
+    };
+    const fs = kitFs();
+    fs.write(join(RUNS, 'live', 'red.b-1'), '900\n');
+    fs.write(join(RUNS, 'red', 'b-1.jsonl'), '{"text":"localhost:4300"}\n');
+    const { subject, killed, cleanup } = start({ PORT: '4300' }, fs, { netstat, alive: [900] });
+    fs.write(subject.JSONL, '');
+
+    cleanup();
+
+    expect(killed).toEqual([]);
+    expect(fs.exists(join(RUNS, 'ports', '4300'))).toBe(false);
+  });
+
+  it('un relevo ilegible vale lo que la foto propia', () => {
+    const fs = kitFs();
+    fs.write(join(RUNS, 'ports', '4300'), '[77, 8');
+    const { subject, killed, cleanup } = start({ PORT: '4300' }, fs, { netstat: netstatSequence(listen(4300, 50), listen(4300, 50)) });
+    fs.write(subject.JSONL, '');
+
+    cleanup();
+
+    expect(killed).toEqual([]);
+    expect(errLine(fs)).toBe('puertos del sujeto: 4300 · escuchando al acabar: ninguno');
   });
 });

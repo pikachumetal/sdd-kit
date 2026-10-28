@@ -1,11 +1,10 @@
 // Lógica de una campaña de sujetos headless: la cablean run.mjs y battery.mjs run con las dependencias reales,
 // y los tests con las suyas. Uso, variables y reglas: cabecera de run.mjs.
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { runsDirAllowed } from './lib.mjs';
 
 export class CampaignError extends Error {}
 
-const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const REQUIRED = [
   ['SPEC_DIR', 'define SPEC_DIR'],
   ['SUBJECT_SH', 'define SUBJECT_SH'],
@@ -21,18 +20,13 @@ const MAX_RUNS_DIR = 80;
 
 const comparable = (path) => path.replaceAll('\\', '/').toLowerCase();
 const formatCost = (value) => value.toFixed(2);
-// awk imprime con %.6g: el SUBJECT_COST por omisión sale igual que en el lanzador de bash.
+// awk imprime con %.6g: el SUBJECT_COST por omisión sale igual que con el lanzador anterior.
 const formatAwk = (value) => String(Number(value.toPrecision(6)));
 
 function positiveInt(env, name, fallback) {
   const value = env[name] ?? fallback;
   if (!/^[0-9]+$/.test(value) || Number(value) === 0) throw new CampaignError(`${name} tiene que ser un entero positivo: ${value}`);
   return Number(value);
-}
-
-function runsDirAllowed(runsDir) {
-  const path = `${comparable(runsDir)}/`;
-  return path.includes('scratchpad') || path.startsWith(`${comparable(join(REPO_ROOT, '.temp'))}/`);
 }
 
 function checkCostCap(env) {
@@ -174,7 +168,7 @@ function labelTaken(config, deps, label) {
 // La carpeta que lib.mjs da al sujeto: RUNS_DIR/<fase>/<etiqueta>, también en seco.
 const subjectFolder = (config, label) => join(config.runsDir, config.phase, label);
 
-// claude -p recibe la carpeta del sujeto en --add-dir con la forma de cygpath -m (D:/…): se compara sin barras ni
+// La línea de órdenes puede traer la carpeta del sujeto con / o \ y otras mayúsculas: se compara sin barras ni
 // mayúsculas, y la carpeta tiene que acabar ahí para que a-1 no alcance a a-10.
 export function subjectProcesses(processes, folder) {
   const target = comparable(folder);

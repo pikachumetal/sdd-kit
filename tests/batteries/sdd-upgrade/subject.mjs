@@ -4,18 +4,16 @@ import { spawnSync } from 'node:child_process';
 import { copyFileSync, cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { subjectCell, moldFrom } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const kit = process.argv[2];
 // En el RED el kit aún no trae sdd-upgrade: la guarda de initSubject mira using-sdd.
 const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', 'sdd-upgrade', 'SKILL.md')) ? 'sdd-upgrade' : 'using-sdd');
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 const ASK = cell('Petición');
 const MARKER = '"channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}';
-// Como el sed y el awk de Git Bash, que dejaban las líneas en LF.
-const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 
 // El kit propio de m2: la migración de juguete no puede llegar a los sujetos de los demás escenarios, que comparten KIT_DIR.
@@ -50,7 +48,7 @@ const molds = {
     s.put('.docs/sdd/legacy.md', '# Funcional heredado\n\nLas reservas son por franja de una hora.\n');
   },
 };
-const mold = molds[MOLD] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const mold = moldFrom(() => MOLD, s, molds);
 mold();
 s.git('init', '-q', '-b', 'main');
 

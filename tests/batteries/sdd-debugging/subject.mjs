@@ -3,12 +3,12 @@
 import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
+import { subjectCell } from '../../headless/battery.mjs';
 import { initSubject } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const s = initSubject(process.argv.slice(2), 'sdd-debugging');
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 const ASK = cell('Petición');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}';
 const FAKE_SECRET = 'ghp_FAKE0231notarealtoken0000000000000';
@@ -18,9 +18,7 @@ s.putKitMarker(MARKER);
 if (cell('Molde') !== 'hook') s.die(`molde desconocido en battery.md: ${s.SC}`);
 s.copy(join(HERE, 'mold-hook'));
 chmodSync(join(s.R, '.githooks', 'pre-commit'), 0o755);
-s.git('init', '-q', '-b', 'main');
-s.commit('feat: base del molde');
-s.git('checkout', '-q', '-b', 'develop');
+s.initRepo();
 s.git('config', 'core.hooksPath', '.githooks');
 writeFileSync(join(s.R, 'notas.txt'), 'Revisar el aforo de la sala 3.\n');
 s.git('add', 'notas.txt');

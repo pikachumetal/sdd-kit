@@ -3,20 +3,18 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scenarioCell } from '../../headless/battery.mjs';
-import { initSubject } from '../../headless/lib.mjs';
+import { subjectCell, moldFrom } from '../../headless/battery.mjs';
+import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const s = initSubject(process.argv.slice(2), 'sdd-roadmap');
-const cell = (column) => scenarioCell(HERE, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+const cell = subjectCell(HERE, s);
 const ASK = cell('Petición');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}';
 const P10 = '.docs/sdd/specs/20261001-090000-proposal-0010-reports';
 const P10_3 = '.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md';
 const ROADMAP = join(s.R, '.docs', 'sdd', 'roadmap.md');
 const CHANGELOG = join(s.R, '.docs', 'sdd', 'changelog.md');
-// Como el sed y el awk de Git Bash, que dejaban las líneas en LF.
-const readLf = (path) => readFileSync(path, 'utf8').replaceAll('\r\n', '\n');
 
 s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
 s.putKitMarker(MARKER);
@@ -64,11 +62,9 @@ const molds = {
   'salas-qa': layerQa,
   'salas-0013': salas0013,
 };
-const mold = molds[cell('Molde')] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+const mold = moldFrom(cell, s, molds);
 mold();
-s.git('init', '-q', '-b', 'main');
-s.commit('feat: base del molde');
-s.git('checkout', '-q', '-b', 'develop');
+s.initRepo();
 
 if (s.SC === 'id3') s.env.TURN2 = 'Súbela a Next.';
 s.env.MAX_TURNS ||= '30';

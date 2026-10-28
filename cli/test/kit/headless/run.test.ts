@@ -6,9 +6,9 @@ import { realDeps } from '../../../../tests/headless/real-deps.mjs';
 import { cleanGitEnv, kitRoot } from '../process.ts';
 
 const runMjs = join(kitRoot, 'tests', 'headless', 'run.mjs');
-// Corto y bajo .temp/ del repo: run.mjs rechaza un RUNS_DIR de más de 80 caracteres.
+// RUNS_DIR va en .temp/ del repo y corto: run.mjs rechaza uno largo, y aquí cuelga del nombre del worktree.
 mkdirSync(join(kitRoot, '.temp'), { recursive: true });
-const root = mkdtempSync(join(kitRoot, '.temp', 'r-'));
+const root = mkdtempSync(join(kitRoot, '.temp', 'r'));
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 // El sujeto falso deja su tools.txt con un RESULTADO, como lo haría lib.mjs al guardar.
@@ -37,7 +37,7 @@ function campaignEnv(subject: string): NodeJS.ProcessEnv {
   return {
     ...cleanGitEnv,
     SPEC_DIR: join(root, 'spec'),
-    RUNS_DIR: join(root, 'runs'),
+    RUNS_DIR: root,
     KIT_DIR: kit,
     SUBJECT_SH: writeFile(join(root, 'subject.mjs'), subject),
     SCENARIOS: 'a b',
