@@ -1,0 +1,155 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain && echo "--- merge check" && node "D:/code/.worktrees/sdd-kit/patch-0230-red-contrast-failing-file-first/.temp/k30/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "--- worktrees"; git worktree list; echo "--- sdd"; ls .docs/sdd .docs/sdd/specs 2>/dev/null; cat .docs/sdd/sdd-kit.json
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0230-red-contrast-failing-file-first\.temp\k30\skills\sdd-archive\references\dev-validation.md
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0230-red-contrast-failing-file-first\.temp\k30\skills\sdd-archive\references\e2e-suite.md
+<<< --- merge check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- worktrees
+<run>/repo 10e98d7 [feature/0010-cancel-reason]
+--- sdd
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+steering
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+20261008-100000-feature-0010-cancel-reason
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "de
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`, step 7 of `sdd-start-feature`). With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is a numbered action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in their order: the symptom of `p
+<<< 1	# The E2E suite of the close
+2	
+3	Used by the validation and integrated-base steps of `sdd-archive` when `operations.md` §Testing declares the E2E fields («Flujos core», «Presupuesto E2E», «Entorno de la suite»…). Every pass that counts for the close follows these steps in order; a pass that skipped one doesn't count. The walkthrough's 4.1 records what each step gave.
+4	
+5	## 1. The environment, raised by this session
+6	
+7	Before each pass, run the command of «Entorno de la suite» yourself, in this session, and its check, and see it green. A server that was already listening doesn't count, e
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80; echo ---; cat package.json; echo ---; git diff --stat develop...HEAD 2>&1 | tail -30; ls .docs/sdd/steering .docs/sdd/specs/*feature-0010*; grep -rn -i "e2e\|puerto\|port\|Arrancar\|Entorno" .docs/sdd/steering .docs/sdd/tech-stack.md | head -30
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-rea
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/operations.md; echo ----; cat e2e/config.json e2e/run.mjs scripts/env-up.mjs scripts/env-down.mjs; echo ----; cat .docs/sdd/specs/*feature-0010*/spec.md .docs/sdd/specs/*feature-0010*/tasks.md; git diff develop...HEAD -- src e2e
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/ && node e2e/run.mjs`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la person
+
+>>> Bash: cd "<run>/repo" && cat server.mjs .gitignore; echo ---; git diff ca457ba..HEAD --stat; git fetch 2>&1 | head -3; git remote -v; git rev-list --count HEAD..develop 2>&1; echo ---; curl -s -m 2 http://localhost:4730/health || echo "nada en 4730"; echo; node "D:/code/.worktrees/sdd-kit/patch-0230-red-contrast-failing-file-first/.temp/k30/cli/bin/sdd.js" validation serve --help 2>&1 | head -20
+<<< import http from 'node:http';
+import { readFileSync } from 'node:fs';
+
+const { port } = JSON.parse(readFileSync(new URL('./e2e/config.json', import.meta.url)));
+const appUrl = new URL('./src/app.js', import.meta.url).href;
+// Cada sesión de test tiene su propio estado de la app: sus datos nacen y mueren con ella.
+const sessions = new Map();
+const appFor = (session) => {
+  if (!sessions.has(session)) sessions.set(session, import(`${appUrl}?session=${session}`));
+  return sessions.get(session);
+};
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url,
+
+>>> Bash: cd "<run>/repo" && node scripts/env-up.mjs && curl -sf http://localhost:4730/health && echo && S=ensayo-agente; run(){ curl -s -H "x-session: $S" -G http://localhost:4730/run --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }
+run cancelar '["Norte","lun","--motivo","me aburro"]'
+run cancelar '["Norte","lun"]'
+run canceladas '[]'
+run cancelar '["Norte","lun","--motivo","sala ocupada"]'
+run canceladas '[]'
+run cancelar '["Norte","lun","--motivo","sala ocupada"]'
+<<< entorno arriba: http://localhost:4730 (pid 64004)
+ok
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+sin reserva Norte lun
+
+>>> Bash: cd "<run>/repo" && mkdir -p .temp/validation && cat > .temp/validation/steps-0010.json <<'EOF'
+[
+{"id":"1","title":"cancelar Norte lun --motivo \"me aburro\" → «motivo no válido: cambio de planes, sala ocupada, otro»"},
+{"id":"2","title":"cancelar Norte lun (sin --motivo) → «motivo no válido: cambio de planes, sala ocupada, otro»"},
+{"id":"3","title":"canceladas (aún sin cancelar nada) → vacío"},
+{"id":"4","title":"cancelar Norte lun --motivo \"sala ocupada\" → «cancelada Norte lun (sala ocupada)»"},
+{"id":"5","title":"canceladas → «Norte lun — sala ocupada»"}
+]
+EOF
+node "D:/code/.worktrees/sdd-kit/patch-0230-red-contrast-failing-file-first/.temp/k30/cli/bin/sdd.js" validation serve --steps .temp/validation/steps-0010.json --out .temp/validation/0010.json > .temp/validation/serve.log 2>&1 &
+sleep 2; cat .temp/validation/serve.log
+<<< panel: http://127.0.0.1:7815/
+
+=== RESULTADO (11 turnos, 0.3169775 $)
+Pre-checks hechos: el worktree está limpio, `merge --check` da `listo` (se fusiona en `develop`), no hay otras ramas abiertas y la spec está aprobada y firmada. Hay un solo commit nuevo desde la revisión final (`ca457ba`): solo `tasks.md`, 17 líneas, así que no hace falta re-revisar.
+
+**No lanzo la tanda mientras pruebas.** `env-up` reinicia el servidor del puerto 4730 y `env-down` lo para al acabar, y ese es el servidor contra el que pruebas. Te cortaría la sesión a mitad. La lanzo en segundo plano en cuanto contestes, así que no esperas por ella. El resto del cierre (walkthrough, changelog, roadmap, capability) también espera a tu respuesta.
+
+Panel: plan B en http://127.0.0.1:7815/ (no tengo Chrome conectado, así que ahí marcas cada paso; este panel no ve la app, cuéntame los errores en el comentario).
+
+**Guion.** El entorno está levantado en `http://localhost:4730` (lo paras con `node scripts/env-down.mjs`). Todos los pasos usan tu propia sesión `validar`, distinta de la mía. Los ensayé yo antes, con otra sesión, y salió lo esperado.
+
+Atajo para los comandos: `run(){ curl -s -H "x-session: validar" -G http://localhost:4730/run --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }`
+
+1. `run cancelar '["Norte","lun","--motivo","me aburro"]'` → `motivo no válido: cambio de planes, sala ocupada, otro`
+2. `run cancelar '["Norte","lun"]'` (sin motivo) → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `run canceladas '[]'` (todavía no has cancelado nada) → línea vacía
+4. `run cancelar '["Norte","lun","--motivo","sala ocupada"]'` → `cancelada Norte lun (sala ocupada)`
+5. `run canceladas '[]'` → `Norte lun — sala ocupada`
+
+Si repites, usa otra sesión: la `validar` ya tiene Norte lun cancelada.
+
+**Tanda**, que lanzo tras tu respuesta (solo `e2e/cancel.e2e.mjs`, el único spec que toca la rama):
+
+`Tanda: 3 tests nuevos o cambiados ×3 + 2 los demás de ese fichero ×1 = 11 ejecuciones · ~1,5 min (7,6 s × 11 ÷ 1)`
+
+Son dos pasadas: `--grep=motivo --repeat-each=3` y `--grep=anul`. La pasada de cierre completa (unit y E2E entero, según `operations.md`) va después. El E2E entero ya supera el presupuesto de 0,5 min que declara `operations.md` (~50 s), así que abriré una fila de deuda.
+
+¿Qué has probado?
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
