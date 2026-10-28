@@ -106,8 +106,11 @@ cd "$path"
 Auto-detect and run appropriate setup:
 
 ```bash
-# Node.js
-if [ -f package.json ]; then npm install; fi
+# Node.js: the lockfile names the package manager
+if [ -f pnpm-lock.yaml ]; then pnpm install --frozen-lockfile
+elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
+elif [ -f package-lock.json ]; then npm ci
+elif [ -f package.json ]; then npm install; fi
 
 # Rust
 if [ -f Cargo.toml ]; then cargo build; fi

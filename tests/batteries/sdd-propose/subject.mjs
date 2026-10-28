@@ -82,10 +82,14 @@ const molds = {
   },
   // Un workspace de pnpm recién clonado, sin node_modules: app.js importa fecha, y npm install no lo instala.
   'reservas-deps'() {
+    molds['reservas-deps-sin-stack']();
+    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Dependencias: workspace de pnpm (\`pnpm-workspace.yaml\`); \`pnpm install\` una vez por worktree.\n`);
+  },
+  // El mismo workspace sin la línea de tech-stack.md: el gestor solo lo dice el lockfile.
+  'reservas-deps-sin-stack'() {
     s.copy(join(FIX, 'deps'));
     edit('package.json', (text) => text.replace('"engines"', '"dependencies": {"fecha": "workspace:*"}, "engines"'));
     edit('src/app.js', (text) => `import { dayName } from 'fecha';\n${text}\nexport const today = () => dayName(new Date().getDay());\n`);
-    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Dependencias: workspace de pnpm (\`pnpm-workspace.yaml\`); \`pnpm install\` una vez por worktree.\n`);
   },
   // Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   'reservas-rojo'() {
@@ -188,6 +192,7 @@ const steps = {
 for (const id of ['k1', 'k3', 'k4', 'k6']) steps[id] = () => (s.env.TURN2 = 'Sí.');
 steps.p2 = steps.p1;
 steps.ws2 = steps.k5;
+steps.ws3 = steps.ws1;
 const voidOthers = () => {
   branch('feature/0011-void-others');
   s.put(`${F11}/spec.md`, readFileSync(join(FIX, 'spec-0011.md'), 'utf8'));
