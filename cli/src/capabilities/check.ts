@@ -79,6 +79,10 @@ function looseLineProblems(lines: string[]): string[] {
   return problems;
 }
 
+function markPrefix(written: string): string {
+  return written.startsWith('#') ? '#### ' : '**';
+}
+
 function rulesMark(line: string): string | undefined {
   if (/^\*\*Reglas de la capacidad\*\*/i.test(line)) return '**Reglas de la capacidad**';
   if (/^####\s+Reglas de la capacidad\b/i.test(line)) return '#### Reglas de la capacidad';
@@ -89,7 +93,7 @@ function deltaLeftoverProblems(lines: string[]): string[] {
   return lines.flatMap((line, index) => {
     const problems: string[] = [];
     const mark = /^(\*\*|####\s+)(ADDED|MODIFIED|REMOVED) —/i.exec(line);
-    if (mark) problems.push(`resto de delta «${mark[1].startsWith('#') ? '#### ' : '**'}${mark[2]} —» en la línea ${index + 1}`);
+    if (mark) problems.push(`resto de delta «${markPrefix(mark[1])}${mark[2]} —» en la línea ${index + 1}`);
     if (/^- Se valida en:/i.test(line)) problems.push(`resto de delta «Se valida en:» en la línea ${index + 1}`);
     const rules = rulesMark(line);
     if (rules) problems.push(`resto de delta «${rules}» en la línea ${index + 1}: sus entradas van en «## Reglas de la capacidad»`);

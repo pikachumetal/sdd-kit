@@ -385,6 +385,12 @@ describe('heading marks', () => {
     expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
   });
 
+  it('keeps a hash that ends the title', async () => {
+    const live = bookings.replace('### Reservar una franja', '### Exportar a F#');
+    const result = await merge(bookingsFolder([`#### MODIFIED — Exportar a F#\n\n${scenario}`], live));
+    expect(result.lines).toEqual(['bookings.md: sustituido «Exportar a F#»']);
+  });
+
   it('rejects an unreadable title in both forms', async () => {
     const heading = bookingsFolder([addedHeading('#### ADDED - Cancelar una reserva')]);
     const headingResult = await merge(heading);
@@ -464,7 +470,9 @@ describe('tables in a merged capability', () => {
     const sdd = bookingsFolder([rates([])]);
     expect((await merge(sdd)).code).toBe(0);
     expectBlankLinesAround(readCapability(sdd));
-    expect((await validate(sdd)).lines).toEqual(['Capacidades válidas: 1']);
+    const validation = await validate(sdd);
+    expect(validation.lines).toEqual(['Capacidades válidas: 1']);
+    expect(validation.code).toBe(0);
   });
 
   it('keeps a table already surrounded by blank lines', async () => {

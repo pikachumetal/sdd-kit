@@ -24,6 +24,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - GIVEN una spec que cambia comportamiento observable
 - WHEN se escribe su sección de delta
 - THEN cada requisito va bajo una capacidad nombrada, marcado `ADDED`, `MODIFIED` o `REMOVED (motivo)`, con al menos un escenario `GIVEN / WHEN / THEN`
+- AND cada marca es un encabezado bajo la subsección `### Capacidad:` de su capacidad, `#### ADDED — <título>`, `#### MODIFIED — <título>` o `#### REMOVED — <título>`, con una línea en blanco antes de su primer escenario, y las reglas van bajo `#### Reglas de la capacidad — <nombre de la capacidad>`, para que markdownlint no dé MD036, MD022, MD032 ni MD024; la forma en negrita de las specs anteriores (`**ADDED — <título>**`) se sigue leyendo
 - AND un escenario de una regla de negocio lleva datos concretos de entrada y de salida («bolsa FR, IT, PT; oferta en DE → no cubre»), no una frase abstracta («una oferta fuera de la bolsa no cubre»)
 - AND un THEN o un AND no cita las decisiones de la spec por número (`- THEN se rechaza, por la decisión 10`): la capacidad no tiene esas decisiones, y `sdd capability merge` lo rechaza
 - AND un `MODIFIED` copia el bloque entero del requisito con los cambios; `(antes: …)` es opcional y señala la cláusula que cambia
@@ -95,13 +96,15 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - GIVEN `.docs/sdd/capabilities/bookings.md` cuyo requisito `### Consultar salas libres` tiene GIVEN y WHEN pero no `- THEN`
 - WHEN se ejecuta `sdd capability check --path .docs/sdd`
 - THEN sale con código 1 y escribe `bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)`
-- AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Propósito`, `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) en la capacidad; un bloque `**Reglas de la capacidad**` en negrita, que es la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
+- AND también falla, nombrando fichero y, si aplica, requisito, ante: un título que no es `# Capacidad — <nombre del fichero sin .md>`; una sección `##` distinta de `## Propósito`, `## Requisitos` y `## Reglas de la capacidad` (una `## Historial` incluida); una marca de delta en la capacidad, en negrita (`**ADDED —`, `**MODIFIED —`, `**REMOVED —`) o en encabezado (`#### ADDED —`, `#### MODIFIED —`, `#### REMOVED —`); un bloque `**Reglas de la capacidad**` en negrita o `#### Reglas de la capacidad`, que son la forma del delta; una sección de reglas a la que falte alguna de sus cinco entradas por nombre
+- AND ante `#### MODIFIED — Consultar salas libres` en la línea 14 de la capacidad escribe `bookings.md: resto de delta «#### MODIFIED —» en la línea 14`, igual con `#### ADDED —` y `#### REMOVED —`, y ante `#### Reglas de la capacidad — bookings`, `bookings.md: resto de delta «#### Reglas de la capacidad» en la línea 14: sus entradas van en «## Reglas de la capacidad»`
 - AND ante una línea suelta bajo un requisito —ni `- …`, ni `>`, ni sangrada, ni en blanco—, como la segunda línea de un «(antes: …)» partido, escribe `bookings.md: línea suelta en «Reservar una franja» (línea 14): «guardada»)»`
 - AND ante una línea `- Se valida en:` en la capacidad escribe `bookings.md: resto de delta «Se valida en:» en la línea 15`
 - AND ante `## Historial` el mensaje es `bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0`
 - AND sin `## Propósito` escribe `bookings.md: falta la sección «Propósito»`; con la sección vacía, o solo con la ayuda `>` y el hueco `<…>` de la plantilla, `bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad`; con un propósito de 412 caracteres, medidos sobre el propósito en una sola línea como lo escribe el índice, `bookings.md: «Propósito» tiene 412 caracteres; el máximo es 300 (una o dos frases)`; y con `## Propósito` detrás de otra sección, `bookings.md: «Propósito» debe ser la primera sección`
 - AND con `--artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
-- AND con `--artifact`, un `**ADDED — Cancelar una reserva**` del delta de `bookings` sin fusionar falla con `spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md`, y un `**MODIFIED — Reservar una franja**` cuyas líneas `- GIVEN`, `- WHEN`, `- THEN` y `- AND` no son, en orden, las de ese requisito en la capacidad, con `spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md`; el título cuenta entero aunque el encabezado, con su `(antes: «…»)`, ocupe varias líneas
+- AND con `--artifact`, un `**ADDED — Cancelar una reserva**` del delta de `bookings` sin fusionar falla con `spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md`, y un `**MODIFIED — Reservar una franja**` cuyas líneas `- GIVEN`, `- WHEN`, `- THEN` y `- AND` no son, en orden, las de ese requisito en la capacidad, con `spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md`; el título cuenta entero aunque el encabezado en negrita, con su `(antes: «…»)`, ocupe varias líneas
+- AND con `--artifact`, `#### ADDED — Cancelar una reserva` sin fusionar y `#### MODIFIED — Reservar una franja` con otras líneas de escenario fallan con los mismos dos mensajes
 - AND con `--artifact` de una spec cuyo delta solo toca `bookings`, ya fusionado, y `rooms.md` sin `## Requisitos`, escribe `Capacidades válidas: 1`, después `Ajenos al artefacto, no cambian el código de salida: 1` y `  rooms.md: falta la sección «Requisitos»`, y sale con 0
 - AND con `--artifact` y un fallo en `bookings.md` o en el propio artefacto, escribe sus líneas, después el bloque de ajenos, y sale con 1; un artefacto con «Ninguna, porque…» no toca ninguna capacidad, y todos los fallos de `capabilities/` salen como ajenos
 - AND con `--artifact --json` escribe `{ "validCount": <n>, "errors": [<fallos propios>], "foreign": [<ajenos>] }`; sin `--artifact`, el JSON no lleva `foreign` y todos los fallos cuentan
@@ -189,6 +192,24 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND ninguna capacidad lleva sección de historial
 - AND si no puede leer el código entero en la sesión, lo dice y no vuelca
 - AND el agente no propone el volcado si el usuario no lo pide
+
+### La fusión lee las dos formas de marca del delta
+
+- GIVEN `capabilities/bookings.md` con el requisito «Reservar una franja», y dos specs con el mismo bloque de escenario: una con `#### MODIFIED — Reservar una franja (antes: «la reserva queda guardada»)` y otra con `**MODIFIED — Reservar una franja**`
+- WHEN se ejecuta `sdd capability merge --path .docs/sdd --artifact <spec.md>` con cada una, sobre dos copias de `.docs/sdd`
+- THEN las dos escriben `bookings.md: sustituido «Reservar una franja»`, salen con 0 y dejan `bookings.md` con el mismo contenido
+- AND con `#### ADDED — Cancelar una reserva` y `#### REMOVED — Consultar salas libres` escribe `bookings.md: añadido «Cancelar una reserva»` y `bookings.md: quitado «Consultar salas libres»`, y con `#### Reglas de la capacidad — bookings` seguido de `- **Avisos**: aviso si la reserva pisa un festivo o dura más de 4 h`, `bookings.md: regla «Avisos» sustituida`
+- AND un `#### ADDED — Cancelar una reserva` seguido directamente de `- GIVEN`, sin línea en blanco, se fusiona igual; un `#### ADDED — Cancelar una reserva ##` cerrado añade «Cancelar una reserva»; y un `#### MODIFIED — Reservar una franja (antes: «la reserva queda` con `guardada»)` en la línea siguiente sustituye «Reservar una franja» sin que ninguna línea del «(antes: …)» llegue a la capacidad
+- AND un delta calcado de `spec-template.md` o de `patch-template.md`, con los huecos rellenos, no tiene ninguna línea que empiece por `**ADDED`, `**MODIFIED`, `**REMOVED` ni `**Reglas de la capacidad`, cada `#### …` va seguido de una línea en blanco, y se fusiona con código 0
+- AND un `#### ADDED - Cancelar una reserva`, con guion en vez de raya, falla con `spec.md: no leo el título de «#### ADDED - Cancelar una reserva»: escríbelo como «#### ADDED — <título>», con raya`, y un `**ADDED - Cancelar una reserva**` con `spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «#### ADDED — <título>», con raya`; los dos salen con 1 y no escriben
+
+### La fusión deja una línea en blanco alrededor de cada tabla
+
+- GIVEN `capabilities/bookings.md` y una spec con `#### ADDED — Consultar las tarifas` cuyo escenario dice `- THEN responde:`, la tabla `| Sala | Tarifa |`, `| --- | --- |`, `| Norte | 20 € |`, sangrada con dos espacios y pegada a esa línea, sin línea en blanco, y justo debajo `- AND sin sala responde las de todas`
+- WHEN se ejecuta `sdd capability merge --path .docs/sdd --artifact <spec.md>`
+- THEN en `bookings.md` hay una línea en blanco justo antes de la fila `| Sala | Tarifa |` y otra justo después de `| Norte | 20 € |`, ninguna dentro de la tabla y ninguna doble
+- AND con el mismo escenario y la tabla ya rodeada de líneas en blanco en el delta, `bookings.md` queda igual
+- AND `sdd capability check --path .docs/sdd --artifact <spec.md>` escribe `Capacidades válidas: 1` y sale con 0
 
 ## Reglas de la capacidad
 
