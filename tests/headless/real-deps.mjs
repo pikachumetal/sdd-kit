@@ -1,9 +1,9 @@
 // Las dependencias reales de campaign.mjs, que comparten run.mjs y battery.mjs run.
 import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname } from 'node:path';
 import { withLock } from '../../cli/src/git/lock.ts';
-import { CampaignError, stopCampaign } from './campaign.mjs';
+import { stopCampaign } from './campaign.mjs';
 
 const LOCK_TIMEOUT_MINUTES = 120;
 
@@ -28,26 +28,10 @@ function isAlive(pid) {
   }
 }
 
-// En Windows, el bash del PATH suele ser el lanzador de WSL, que no ejecuta scripts sin distro: se prefiere Git Bash.
-// ponytail: los subject.sh siguen en bash; esta búsqueda se va cuando pasen a Node.
-function findGitBash() {
-  const installed = [process.env.ProgramFiles, process.env['ProgramFiles(x86)']]
-    .filter(Boolean)
-    .map((root) => join(root, 'Git', 'bin', 'bash.exe'))
-    .find((path) => existsSync(path));
-  if (installed) return installed;
-  const where = spawnSync('where', ['bash'], { encoding: 'utf8', windowsHide: true }).stdout ?? '';
-  const found = where.split(/\r?\n/).find((path) => path !== '' && !/System32/i.test(path));
-  if (!found) throw new CampaignError('no encuentro Git Bash para lanzar el subject.sh');
-  return found;
-}
-
-let gitBash;
 const running = new Set();
 
 function launch({ subjectSh, args, env }) {
-  const command = subjectSh.endsWith('.mjs') ? process.execPath : (gitBash ??= findGitBash());
-  const child = spawn(command, [subjectSh, ...args], { env, stdio: 'inherit', windowsHide: true });
+  const child = spawn(process.execPath, [subjectSh, ...args], { env, stdio: 'inherit', windowsHide: true });
   running.add(child.pid);
   const exited = new Promise((resolve) => {
     child.on('exit', (code) => resolve(code ?? 1));

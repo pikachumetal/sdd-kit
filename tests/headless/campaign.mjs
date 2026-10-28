@@ -47,6 +47,7 @@ function absolutePaths(env, cwd) {
 
 export function readConfig(env, cwd, fs) {
   for (const [name, message] of REQUIRED) if (!env[name]) throw new CampaignError(message);
+  if (!env.SUBJECT_SH.endsWith('.mjs')) throw new CampaignError('SUBJECT_SH tiene que ser un .mjs: los subject.sh se fueron con la 0238');
   const subjectEnv = absolutePaths(env, cwd);
   if (!runsDirAllowed(subjectEnv.RUNS_DIR)) throw new CampaignError(`RUNS_DIR fuera del scratchpad o de .temp/: ${env.RUNS_DIR}`);
   const maxParallel = positiveInt(env, 'MAX_PARALLEL', '5');

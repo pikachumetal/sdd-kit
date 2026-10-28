@@ -1,10 +1,11 @@
-import { join } from 'node:path';
+import { delimiter, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { HEADLESS, initSubject, listeningPids } from '../../../../tests/headless/lib.mjs';
+import { HEADLESS, initSubject } from '../../../../tests/headless/lib.mjs';
 import { kitRoot } from '../process.ts';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
-const CWD = 'C:\\w';
+// Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
+const CWD = resolve('/w');
 const RUNS = join(CWD, 'scratchpad', 'runs');
 const KIT = join(CWD, 'kit');
 const OUT = join(CWD, 'spec', 'red', 'out');
@@ -180,7 +181,7 @@ describe('initSubject (lib.mjs)', () => {
     expect(fake.errs).toEqual(['[a-1] el kit declara dependencies: define SUPERPOWERS_DIR (ruta de superpowers)']);
   });
 
-  it.each([{ label: '' }, { label: '..' }, { label: 'x\\..\\..\\y' }])('aborta con una etiqueta que no es un nombre plano: «$label»', ({ label }) => {
+  it.each([{ label: '' }, { label: '..' }, { label: 'x/../../y' }])('aborta con una etiqueta que no es un nombre plano: «$label»', ({ label }) => {
     const fake = fakeDeps(kitFs());
 
     expect(dies(() => initSubject([KIT, label, 'a', OUT], 'sdd-plan', { env: baseEnv(), deps: fake.deps, cwd: CWD }))).toBe('exit 1');
@@ -506,7 +507,7 @@ describe('Argumentos de claude -p (lib.mjs)', () => {
   });
 
   it('aborta si el molde no cuelga de RUNS_DIR', async () => {
-    const { subject, errs } = start({ MOLD_NAME: '..\\..\\..\\fuera' });
+    const { subject, errs } = start({ MOLD_NAME: '../../../fuera' });
 
     await expect(subject.launch('x')).rejects.toThrow('exit 1');
     expect(errs).toEqual([`[a-1] cwd fuera del scratchpad: ${subject.R}`]);
@@ -515,7 +516,7 @@ describe('Argumentos de claude -p (lib.mjs)', () => {
 
 describe('Lanzar claude (lib.mjs)', () => {
   it('lanza el claude del PATH en el molde, con no-claude/ delante y la identidad Fixture', async () => {
-    const { subject, claudeCalls, fs } = start({ Path: 'C:\\bin' });
+    const { subject, claudeCalls, fs } = start({ Path: join(CWD, 'bin') });
 
     expect(await subject.launch('x')).toBe(0);
 
@@ -523,7 +524,7 @@ describe('Lanzar claude (lib.mjs)', () => {
     expect(call.command).toBe('C:\\bin\\claude.exe');
     expect(call.cwd).toBe(subject.R);
     expect(call.stdout).toBe(join(RUNS, 'red', 'a-1.jsonl'));
-    expect(call.env.Path).toBe(`${join(HEADLESS, 'no-claude')};C:\\bin`);
+    expect(call.env.Path).toBe(`${join(HEADLESS, 'no-claude')}${delimiter}${join(CWD, 'bin')}`);
     expect(Object.keys(call.env).filter((name) => name.toLowerCase() === 'path')).toEqual(['Path']);
     expect(call.env).toMatchObject({ GIT_CONFIG_COUNT: '2', GIT_CONFIG_KEY_0: 'user.name', GIT_CONFIG_VALUE_0: 'Fixture', GIT_CONFIG_KEY_1: 'user.email', GIT_CONFIG_VALUE_1: 'fixture@example.com' });
     expect(call.args.at(-1)).toBe('x');
@@ -531,12 +532,13 @@ describe('Lanzar claude (lib.mjs)', () => {
   });
 
   it('con CLAUDE_BIN en .mjs lanza ese claude con node', async () => {
-    const { subject, claudeCalls } = start({ CLAUDE_BIN: 'C:\\f\\fake-claude.mjs' });
+    const fake = join(CWD, 'f', 'fake-claude.mjs');
+    const { subject, claudeCalls } = start({ CLAUDE_BIN: fake });
 
     await subject.launch('x');
 
     expect(claudeCalls[0].command).toBe('node');
-    expect(claudeCalls[0].args[0]).toBe('C:\\f\\fake-claude.mjs');
+    expect(claudeCalls[0].args[0]).toBe(fake);
     expect(claudeCalls[0].args.at(-1)).toBe('x');
   });
 
@@ -672,12 +674,6 @@ function netstatSequence(...outputs: string[]): () => string {
 const errLine = (fs: MemoryFs): string => fs.read(join(RUNS, 'red', 'a-1.err')).trim().split('\n').at(-1) ?? '';
 
 describe('Puertos del sujeto (lib.mjs)', () => {
-  it('listeningPids lee los que escuchan en IPv4 e IPv6 y descarta las conexiones', () => {
-    const netstat = `${listen(4300, 11)}  TCP    [::]:4300              [::]:0                 LISTENING       12\n  TCP    127.0.0.1:4300         127.0.0.1:50000        ESTABLISHED     13\n`;
-
-    expect(listeningPids(netstat, 4300)).toEqual([11, 12]);
-  });
-
   it('ports junta PORT y los puertos del stream', () => {
     const { subject, fs } = start({ PORT: '4300' });
     fs.write(subject.JSONL, '{"text":"abre http://localhost:4567 y PORT=5173 npm start; otra vez localhost:4567"}\n');

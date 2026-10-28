@@ -21,7 +21,7 @@ function baseEnv(overrides: Env = {}): Env {
     SPEC_DIR: SPEC,
     RUNS_DIR: RUNS,
     KIT_DIR: KIT,
-    SUBJECT_SH: join(SPEC, 'red', 'subject.sh'),
+    SUBJECT_SH: join(SPEC, 'red', 'subject.mjs'),
     SCENARIOS: 'a',
     SUBJECT_CAP: '10',
     COST_CAP: '10',
@@ -110,6 +110,12 @@ describe('readConfig', () => {
     expect(() => readConfig(baseEnv({ SPEC_DIR: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SPEC_DIR'));
   });
 
+  it('rechaza un SUBJECT_SH que no es .mjs', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_SH: join(SPEC, 'red', 'subject.sh') }), CWD, kitFs())).toThrow(
+      new CampaignError('SUBJECT_SH tiene que ser un .mjs: los subject.sh se fueron con la 0238'),
+    );
+  });
+
   it('exige que MAX_PARALLEL sea un entero positivo', () => {
     expect(() => readConfig(baseEnv({ MAX_PARALLEL: '0' }), CWD, kitFs())).toThrow('MAX_PARALLEL tiene que ser un entero positivo: 0');
   });
@@ -131,6 +137,11 @@ describe('readConfig', () => {
   it('pasa al sujeto RUNS_DIR, SPEC_DIR y KIT_DIR en ruta absoluta', () => {
     const { env } = readConfig(baseEnv({ RUNS_DIR: 'scratchpad\\runs', SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
     expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
+  });
+
+  it('exige SUBJECT_CAP y COST_CAP, que salen de la previsión de la spec', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
+    expect(() => readConfig(baseEnv({ COST_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define COST_CAP (previsión de la spec)'));
   });
 
   it('exige que COST_CAP sea un número', () => {
@@ -264,7 +275,7 @@ describe('runCampaign', () => {
     const fake = fakeDeps(fs);
     await runCampaign(readConfig(baseEnv({ SUBJECT: '2', PHASE: 'green' }), CWD, fs), fake.deps);
     expect(fake.launched[0].args).toEqual([KIT, 'a-2', 'a', join(SPEC, 'green', 'out')]);
-    expect(fake.launched[0].subjectSh).toBe(join(SPEC, 'red', 'subject.sh'));
+    expect(fake.launched[0].subjectSh).toBe(join(SPEC, 'red', 'subject.mjs'));
   });
 
   it('informa del coste por carpeta de salida, los cortados y el total', async () => {
