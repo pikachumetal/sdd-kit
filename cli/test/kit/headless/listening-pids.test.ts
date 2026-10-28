@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listeningPids } from './campaign.ts';
+import { listeningPids } from '../../../../tests/headless/lib.mjs';
 
 const netstat = [
   '  Proto  Dirección local          Dirección remota        Estado           PID',

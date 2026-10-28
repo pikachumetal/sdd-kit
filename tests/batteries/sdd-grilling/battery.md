@@ -6,7 +6,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-grilling`); el 
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo: un juez automático sería otro modelo, con su propio ruido.
 
-Turnos extra por escenario, en `subject.sh`: g3 lleva `TURN2` «sí, adelante: feature full con delegate», para llegar a la primera decisión de diseño; g4 lleva `TURN2` «mantengo lo que dije»; g5, «decide tú lo que puedas»; g6, «sí, adelante: feature full con delegate» y un tercer turno «no, espera, explícamelo mejor», para rechazar la primera decisión de diseño y no la de carril. g7 conversa con la persona de `persona-g7.md` (Haiku, hasta 8 respuestas). g9 lleva `WebSearch` y `WebFetch` permitidos. Los escenarios del paso `control` solo van en el GREEN.
+Turnos extra por escenario, en `subject.mjs`: g3 lleva `TURN2` «sí, adelante: feature full con delegate», para llegar a la primera decisión de diseño; g4 lleva `TURN2` «mantengo lo que dije»; g5, «decide tú lo que puedas»; g6, «sí, adelante: feature full con delegate» y un tercer turno «no, espera, explícamelo mejor», para rechazar la primera decisión de diseño y no la de carril. g7 conversa con la persona de `persona-g7.md` (Haiku, hasta 8 respuestas). g9 lleva `WebSearch` y `WebFetch` permitidos. Los escenarios del paso `control` solo van en el GREEN.
 
 ## Escenarios
 

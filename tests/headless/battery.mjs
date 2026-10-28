@@ -4,7 +4,7 @@
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo
 //      BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
 //      [SUPERPOWERS_DIR=…] node battery.mjs run                  lanza la batería, entera o por tramos, y da el veredicto
-// La batería vive en tests/batteries/<skill>/ (battery.md y subject.sh); BATTERY_DIR la sustituye.
+// La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral.
 import { existsSync, readFileSync } from 'node:fs';
@@ -117,7 +117,7 @@ export function batteryPlan(env, cwd, fs) {
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
   const steps = (env.STEPS ?? '').split(/\s+/).filter(Boolean);
   const rows = selectSteps(readScenarios(table, fs), steps);
-  const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.sh') };
+  const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, steps, rows, launchEnv, config };
 }
@@ -135,12 +135,27 @@ export async function runBattery(env, cwd, deps) {
 
 const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync };
 
+export const scenarios = (batteryPath) => readScenarios(batteryPath, fileFs);
+const findScenario = (batteryPath, id) => scenarios(batteryPath).find((candidate) => candidate.Id === id);
+
+// La celda de un escenario para el subject.mjs de una batería: la tabla de su carpeta, o la de BATTERY_DIR.
+// Sin el escenario, undefined: el sujeto muere con su mensaje.
+export function scenarioCell(here, id, column, env = process.env) {
+  return findScenario(join(env.BATTERY_DIR || here, 'battery.md'), id)?.[column];
+}
+
+// La celda del escenario del sujeto, que muere sin él.
+export const subjectCell = (here, s) => (column) => scenarioCell(here, s.SC, column) ?? s.die(`sin el escenario ${s.SC} en battery.md`);
+
+// El molde de la columna Molde, de los que sabe montar el sujeto.
+export const moldFrom = (cell, s, molds) => molds[cell('Molde')] ?? s.die(`molde desconocido en battery.md: ${s.SC}`);
+
 async function main([command, batteryPath, ...rest]) {
   if (command === 'plan') {
     for (const row of selectSteps(readScenarios(batteryPath, fileFs), rest)) console.log(`${row.Id} ${row.Modelo} ${row.n}`);
   } else if (command === 'field') {
     const [id, column] = rest;
-    const row = readScenarios(batteryPath, fileFs).find((candidate) => candidate.Id === id);
+    const row = findScenario(batteryPath, id);
     if (!row) throw new BatteryError(`escenario desconocido: ${id}`);
     console.log(row[column]);
   } else if (command === 'verdict') {

@@ -2,7 +2,7 @@
 
 La inicialización de un proyecto con el kit. Nace en la feature 0156, que funde `sdd-init-greenfield` y `sdd-init-brownfield`.
 
-Los escenarios de conducta piden la skill por su nombre: mientras las dos viejas siguen en el kit, el router las elegiría (ticket de la feature 0149 §4); el enrutado lo mide el tramo `sdd-init` de la batería de `using-sdd`. En el RED, con el kit sin `sdd-init`, `subject.sh` pide la vieja que toca (`sdd-init-brownfield` con código o con documentos, `sdd-init-greenfield` sin código o con template) y monta el molde en la forma que esa skill lee; la puerta sale roja por el nombre y se puntúa la conducta.
+Los escenarios de conducta piden la skill por su nombre: mientras las dos viejas siguen en el kit, el router las elegiría (ticket de la feature 0149 §4); el enrutado lo mide el tramo `sdd-init` de la batería de `using-sdd`. En el RED, con el kit sin `sdd-init`, `subject.mjs` pide la vieja que toca (`sdd-init-brownfield` con código o con documentos, `sdd-init-greenfield` sin código o con template) y monta el molde en la forma que esa skill lee; la puerta sale roja por el nombre y se puntúa la conducta.
 
 Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-init`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y en un solo turno: `AskUserQuestion` está bloqueado, así que una pregunta acaba el turno.
 

@@ -4,7 +4,7 @@ Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y l
 
 Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-rubber-duck`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Dos moldes: `exportes` (`mold-exportes/`: reservas con una exportación al calendario repartida en cinco ficheros, un `PRODUCT.md` con glosario cuyo _Evitar_ son los nombres del código, el test `exporta en la hora del usuario` en rojo y la spec de la feature 0013 en borrador) y `salas` (el de `tests/batteries/using-sdd/mold-salas`).
 
-**Petición por fase.** En s1 y s2, fuera del RED, `subject.sh` antepone «Invoca la skill sdd-kit:sdd-rubber-duck en modo corto y », que es como la invocará una parada; en el RED la skill no existe y la petición va sin ese prefijo. En l1 la petición es igual en las dos fases, porque mide también el enrutado. En el RED el veredicto de puerta de s1, s2 y l1 sale rojo por construcción.
+**Petición por fase.** En s1 y s2, fuera del RED, `subject.mjs` antepone «Invoca la skill sdd-kit:sdd-rubber-duck en modo corto y », que es como la invocará una parada; en el RED la skill no existe y la petición va sin ese prefijo. En l1 la petición es igual en las dos fases, porque mide también el enrutado. En el RED el veredicto de puerta de s1, s2 y l1 sale rojo por construcción.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo cada `texts.txt` con la rúbrica de abajo.
 
