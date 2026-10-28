@@ -1,0 +1,11 @@
+#!/bin/sh
+# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+tmp="$(git rev-parse --git-dir)/hook-check"
+rm -rf "$tmp"
+git worktree add -q --detach "$tmp" HEAD || exit 1
+if ! (cd "$tmp" && git status --porcelain >/dev/null); then
+  echo "pre-commit: el worktree temporal no responde" >&2
+  git worktree remove --force "$tmp"
+  exit 1
+fi
+git worktree remove --force "$tmp"
