@@ -10,7 +10,7 @@ import { run } from '../../src/main.ts';
 export const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
 const roots: string[] = [];
 
-vi.setConfig({ testTimeout: 120_000 });
+vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 
 afterAll(() => {
   roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true }));
