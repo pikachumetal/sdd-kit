@@ -442,6 +442,47 @@ describe('the delta of the templates', () => {
   });
 });
 
+describe('tables in a merged capability', () => {
+  const table = ['  | Sala | Tarifa |', '  | --- | --- |', '  | Norte | 20 € |'];
+  const rates = (gap: string[]) =>
+    [
+      '#### ADDED — Consultar las tarifas', '', '- GIVEN las salas Norte y Sur', '- WHEN `salas tarifas`', '- THEN responde:',
+      ...gap, ...table, ...gap, '- AND sin sala responde las de todas',
+    ].join('\n');
+
+  function expectBlankLinesAround(content: string) {
+    const lines = content.split('\n');
+    const first = lines.indexOf(table[0]);
+    const last = lines.indexOf(table[2]);
+    expect(lines[first - 1]).toBe('');
+    expect(lines.slice(first, last + 1)).toEqual(table);
+    expect(lines[last + 1]).toBe('');
+    expect(content).not.toMatch(/\n\n\n/);
+  }
+
+  it('adds blank lines around a glued table', async () => {
+    const sdd = bookingsFolder([rates([])]);
+    expect((await merge(sdd)).code).toBe(0);
+    expectBlankLinesAround(readCapability(sdd));
+    expect((await validate(sdd)).lines).toEqual(['Capacidades válidas: 1']);
+  });
+
+  it('keeps a table already surrounded by blank lines', async () => {
+    const glued = bookingsFolder([rates([])]);
+    const spaced = bookingsFolder([rates([''])]);
+    expect((await merge(glued)).code).toBe(0);
+    expect((await merge(spaced)).code).toBe(0);
+    expect(readCapability(spaced)).toBe(readCapability(glued));
+  });
+
+  it('adds blank lines around a table already in the capability', async () => {
+    const live = bookings.replace(/^(- THEN la reserva queda guardada.*)$/m, `$1\n${table.join('\n')}\n- AND la sala aparece ocupada`);
+    const sdd = bookingsFolder([added], live);
+    expect((await merge(sdd)).code).toBe(0);
+    expectBlankLinesAround(readCapability(sdd));
+  });
+});
+
 describe('a MODIFIED that copies fewer AND and THEN than the live requirement', () => {
   const fourAnds = bookings.replace(
     /^(- THEN la reserva queda guardada.*)$/m,
