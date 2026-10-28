@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-28
 branch: patch/0248-lanes-env-setup
-commit: <hash>
+commit: a8cfc6df
 ---
 
 # Patch 0248 — los carriles patch y config preparan el entorno antes del primer test
@@ -50,12 +50,16 @@ Medido al abrir: el paso 2 dice `npm install` si hay `package.json`. En una copi
 | --- | --- | --- |
 | 1 | RED `ws1` y `ws2` (`sdd-propose`, molde `reservas-deps`, kit de `a431655e`, sonnet ×2 cada uno): `red/out/` | 0/4 en WS: los cuatro ejecutan `src/app.js` o `node --test` antes de instalar y leen `Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'fecha' imported from <run>\repo\src\app.js`; los dos `ws1` instalan con `pnpm install` tras el fallo y siguen; los dos `ws2` paran a preguntar con el gate en rojo («¿Corro `pnpm install` y repito el gate?») y no commitean. Puerta 4/4 |
 | 2 | GREEN con el texto del working tree: `green/out/` | 4/4 en WS: los cuatro corren `pnpm install` antes del primer `node --test` o del gate, sin `ERR_MODULE_NOT_FOUND`; `ws1-1` invoca `sdd-worktrees`, `ws1-2` y `ws2-1` leen su Step 2; los dos `ws2` commitean con la línea `Gate:`. Ninguno usa `npm install`: los cuatro eligen pnpm por la línea de `tech-stack.md` del molde. `ws1-2` ejecuta una vez `node src/app.js libres 25:00-26:00` en la clasificación de `sdd-propose`, antes de `sdd-start-patch` y de instalar (sale con 1); su primer test, ya instalado |
-| 3 | `vitest` de `word-budget.test.ts` y, con `SDD_KIT_HEADLESS=1`, `molds.test.ts` (construye `reservas-deps` en seco) | 72/72 · 96/96 |
+| 3 | Commit del fix con el pre-commit activo (`git config core.hooksPath` → `.githooks`) | verde |
+| 4 | `vitest` de `word-budget.test.ts` y, con `SDD_KIT_HEADLESS=1`, `molds.test.ts` (construye `reservas-deps` en seco) | 72/72 · 96/96 |
+
+Validación en campo: 2026-10-28 · `ws1` y `ws2` RED 0/4 → GREEN 4/4 · pre-commit del fix en verde · gate de cierre sobre el merge de sincronización (paso 6 de `sdd-archive`) · no probado: un proyecto con workspace de pnpm cuyo `tech-stack.md` no lo diga, donde el Step 2 literal (`npm install`) no instala nada (medido en una copia de la raíz de este repo); y la reproducción de la clasificación de `sdd-propose`, que corre antes de `sdd-start-patch` (`ws1-2` ejecutó la app una vez sin dependencias)
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1,25 h + 0,01 h del gate de cierre (31 s, patch 0241) — 0,5 h de texto y escenarios, 0,75 h de la campaña RED/GREEN
 - Inicio: 2026-10-28T21:18Z
+- Esfuerzo real: 0,39 h — reloj de la sesión 0,39 h desde 2026-10-28T21:13Z, sin 0 min de espera al dev-lead (0 esperas). −69 % sobre la estimación (1,26 h): la campaña, que la estimación contaba en 0,75 h, corrió cada fase de 4 sujetos en paralelo, y el RED salió limpio a la primera, sin REFACTOR
 - Coste de sujetos: 2,66 $ en 8 sujetos sonnet — RED 1,28 $; GREEN 1,38 $
 
 ## 6. Delta de capacidad
