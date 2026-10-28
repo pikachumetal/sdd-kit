@@ -73,6 +73,9 @@ function subjectSaved(config, fs, markName) {
   return fs.exists(join(config.root, markName.slice(0, dot), 'out', `${markName.slice(dot + 1)}.tools.txt`));
 }
 
+// <fase>.<etiqueta>; el cerrojo (.lock) no es una marca.
+const markNames = (fs, dir) => fs.list(dir).filter((entry) => entry.includes('.') && !entry.startsWith('.'));
+
 function readPid(fs, path) {
   try {
     return fs.read(path).trim();
@@ -85,7 +88,7 @@ function readPid(fs, path) {
 // escribir: en curso. tools.txt se mira antes y después del PID: un sujeto que acaba de guardar no es un cortado.
 function countMarks(config, deps, dir, own) {
   const counts = { running: 0, cut: 0 };
-  for (const name of deps.fs.list(dir).filter((entry) => entry.includes('.') && !entry.startsWith('.'))) {
+  for (const name of markNames(deps.fs, dir)) {
     if (own && subjectSaved(config, deps.fs, name)) continue;
     const pid = readPid(deps.fs, join(dir, name));
     if (pid === null) continue;
@@ -147,6 +150,40 @@ function labelTaken(config, deps, label) {
   return pid !== null && (pid === '' || deps.isAlive(Number(pid)));
 }
 
+// La carpeta que lib.sh da al sujeto: RUNS_DIR/<fase>/<etiqueta>, también en seco.
+const subjectFolder = (config, label) => join(config.runsDir, config.phase, label);
+
+// claude -p recibe la carpeta del sujeto en --add-dir con la forma de cygpath -m (D:/…): se compara sin barras ni
+// mayúsculas, y la carpeta tiene que acabar ahí para que a-1 no alcance a a-10.
+export function subjectProcesses(processes, folder) {
+  const target = comparable(folder);
+  const endsFolder = (line, at) => /^($|["' /])/.test(line.slice(at + target.length));
+  return processes
+    .filter(({ commandLine }) => {
+      const line = comparable(commandLine ?? '');
+      for (let at = line.indexOf(target); at >= 0; at = line.indexOf(target, at + 1)) if (endsFolder(line, at)) return true;
+      return false;
+    })
+    .map(({ pid }) => pid);
+}
+
+// ponytail: un proceso con nohup cuya línea de órdenes no nombra la carpeta del sujeto no se para; amplíalo si vuelve a quedar uno vivo.
+export async function stopSubjectProcesses(label, folder, deps) {
+  const pids = subjectProcesses(await deps.processes(), folder);
+  for (const pid of pids) deps.kill(pid, true);
+  if (pids.length > 0) deps.log(`[${label}] paro ${pids.length} procesos de ${folder}`);
+}
+
+// TaskStop puede matar el lanzador sin que corra ningún manejador: lo que dejaron sus sujetos se para al volver a lanzar.
+export async function sweepCut(config, deps) {
+  for (const name of markNames(deps.fs, config.live)) {
+    const pid = readPid(deps.fs, join(config.live, name));
+    if (!pid || deps.isAlive(Number(pid)) || subjectSaved(config, deps.fs, name)) continue;
+    const label = name.slice(name.indexOf('.') + 1);
+    await stopSubjectProcesses(label, join(config.runsDir, name.slice(0, name.indexOf('.')), label), deps);
+  }
+}
+
 // La marca se escribe dentro del cerrojo: el siguiente lanzador ya la cuenta al mirar los sujetos en curso.
 function launchSubject(config, deps, scenario, label) {
   const markPath = join(config.live, `${config.phase}.${label}`);
@@ -155,7 +192,7 @@ function launchSubject(config, deps, scenario, label) {
   // Envuelta: una promesa devuelta tal cual dentro del cerrojo lo sostendría hasta que el sujeto acabe.
   const done = exited.then(async () => {
     deps.fs.remove(markPath);
-    await deps.cleanup(label, join(config.runsDir, config.phase, label));
+    await stopSubjectProcesses(label, subjectFolder(config, label), deps);
   });
   return { done };
 }
@@ -194,6 +231,7 @@ function finalReport(config, deps) {
 export async function runCampaign(config, deps) {
   deps.fs.mkdir(config.live);
   deps.fs.mkdir(config.otherLive);
+  await sweepCut(config, deps);
   const running = [];
   for (const scenario of config.scenarios) {
     if (stopRequested(config, deps)) break;

@@ -15,12 +15,26 @@
 // Al acabar imprime el coste por carpeta de salida (red, green, green-premature…) y los cortados.
 // El RED de un patch se lanza con SPEC_DIR en .temp/<id>/ del repo hasta que reproduce: el scratchpad pasa del tope
 // de ruta de las salidas. Solo entonces se reserva el id y se copia red/ a la carpeta del patch.
-import { CampaignError, readConfig, runCampaign } from './campaign.mjs';
-import { realDeps } from './real-deps.mjs';
+// Al acabar cada sujeto se paran los procesos cuya línea de órdenes nombra su carpeta; con Ctrl-C o una señal de
+// parada, también el árbol de cada sujeto en curso.
+import { CampaignError, readConfig, runCampaign, sweepCut } from './campaign.mjs';
+import { realDeps, runningSubjects } from './real-deps.mjs';
 
 const deps = realDeps();
+
+function stopOnSignal(config) {
+  const stop = async () => {
+    for (const pid of runningSubjects()) deps.kill(pid, true);
+    await sweepCut(config, deps);
+    process.exit(130);
+  };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGBREAK']) process.once(signal, stop);
+}
+
 try {
-  process.exitCode = await runCampaign(readConfig(process.env, process.cwd(), deps.fs), deps);
+  const config = readConfig(process.env, process.cwd(), deps.fs);
+  stopOnSignal(config);
+  process.exitCode = await runCampaign(config, deps);
 } catch (error) {
   if (!(error instanceof CampaignError)) throw error;
   console.error(error.message);

@@ -23,26 +23,53 @@ function writeFile(path: string, content: string): string {
   return path;
 }
 
-// Lanza procesos de node de verdad: con la máquina cargada pasa de los 5 s por omisión.
-it('lanza, cuenta e informa con un sujeto en node', { timeout: 30_000 }, () => {
-  const runs = join(root, 'scratchpad', 'runs');
+// Un proceso suelto que nombra la carpeta del sujeto, como el que deja un nohup, y sigue vivo cuando el sujeto acaba.
+const LEAKY_SUBJECT = `import { spawn } from 'node:child_process';
+const folder = join(process.env.RUNS_DIR, process.env.PHASE || 'red', process.argv[3]);
+spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)', folder], { detached: true, stdio: 'ignore' }).unref();
+${FAKE_SUBJECT}`;
+
+function campaignEnv(subject: string): NodeJS.ProcessEnv {
   const kit = join(root, 'kit');
   writeFile(join(kit, 'cli', 'bin', 'sdd.js'), '');
-  const env = {
+  return {
     ...cleanGitEnv,
     SPEC_DIR: join(root, 'spec'),
-    RUNS_DIR: runs,
+    RUNS_DIR: join(root, 'scratchpad', 'runs'),
     KIT_DIR: kit,
-    SUBJECT_SH: writeFile(join(root, 'subject.mjs'), FAKE_SUBJECT),
+    SUBJECT_SH: writeFile(join(root, 'subject.mjs'), subject),
     SCENARIOS: 'a b',
     SUBJECT_CAP: '4',
     COST_CAP: '4',
     MAX_PARALLEL: '1',
     DRY_RUN: '1',
   };
-  const result = spawnSync(process.execPath, [runMjs], { env, encoding: 'utf8', windowsHide: true });
+}
+
+const runCampaign = (env: NodeJS.ProcessEnv) => spawnSync(process.execPath, [runMjs], { env, encoding: 'utf8', windowsHide: true });
+
+function processesNaming(folder: string): number[] {
+  const query = `Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*${folder}*' } | ForEach-Object { $_.ProcessId }`;
+  const result = spawnSync('pwsh', ['-NoProfile', '-Command', query], { encoding: 'utf8', windowsHide: true });
+  return result.stdout.split(/\r?\n/).filter(Boolean).map(Number);
+}
+
+// Lanzan procesos de node de verdad: con la máquina cargada pasan de los 5 s por omisión.
+it('lanza, cuenta e informa con un sujeto en node', { timeout: 30_000 }, () => {
+  const env = campaignEnv(FAKE_SUBJECT);
+  const result = runCampaign(env);
   expect(result.status, result.stderr).toBe(0);
   expect(result.stdout).toContain('sujetos de la campaña: 2 · coste acumulado: 1.00 $');
-  const live = join(runs, 'dry', 'live');
+  const live = join(env.RUNS_DIR as string, 'dry', 'live');
   expect(existsSync(live) ? readdirSync(live).filter((name) => !name.startsWith('.')) : []).toEqual([]);
+});
+
+it('no deja vivo ningún proceso del sujeto', { timeout: 60_000 }, () => {
+  const env = campaignEnv(LEAKY_SUBJECT);
+  const folder = join(env.RUNS_DIR as string, 'red', 'a-1');
+  const result = runCampaign({ ...env, SCENARIOS: 'a' });
+  const left = processesNaming(folder);
+  for (const pid of left) process.kill(pid);
+  expect(result.stdout).toContain(`[a-1] paro 1 procesos de ${folder}`);
+  expect(left).toEqual([]);
 });

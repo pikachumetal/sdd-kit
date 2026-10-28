@@ -39,15 +39,37 @@ function gitBash() {
   return where.split(/\r?\n/).find((path) => path !== '' && !/System32/i.test(path)) ?? 'bash';
 }
 
+const running = new Set();
+
 function launch({ subjectSh, args, env }) {
   const command = subjectSh.endsWith('.mjs') ? process.execPath : gitBash();
   const child = spawn(command, [subjectSh, ...args], { env, stdio: 'inherit', windowsHide: true });
+  running.add(child.pid);
   const exited = new Promise((resolve) => {
     child.on('exit', (code) => resolve(code ?? 1));
     child.on('error', () => resolve(1));
-  });
+  }).finally(() => running.delete(child.pid));
   return { pid: child.pid, exited };
 }
+
+// Una línea por proceso, «<pid>\t<línea de órdenes>»: ConvertTo-Json deja sin escapar algún carácter de control
+// de las líneas de órdenes de otros programas, y el JSON no se puede leer.
+const PROCESS_QUERY = "Get-CimInstance Win32_Process | ForEach-Object { \"$($_.ProcessId)`t$($_.CommandLine -replace '[\\x00-\\x1f]', ' ')\" }";
+
+async function processes() {
+  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+  return (result.stdout ?? '').split(/\r?\n/).filter(Boolean).map((line) => {
+    const tab = line.indexOf('\t');
+    return { pid: Number(line.slice(0, tab)), commandLine: line.slice(tab + 1) };
+  });
+}
+
+// taskkill /T se lleva el árbol; un proceso que ya no existe no es un error.
+function kill(pid, tree) {
+  spawnSync('taskkill', [...(tree ? ['/T'] : []), '/F', '/PID', String(pid)], { stdio: 'ignore', windowsHide: true });
+}
+
+export const runningSubjects = () => [...running];
 
 export function realDeps() {
   const io = { out: (line) => console.log(line), err: (line) => console.error(line), json: (value) => console.log(JSON.stringify(value)) };
@@ -58,6 +80,7 @@ export function realDeps() {
     isAlive,
     lock: (path, body) => withLock({ path, label: 'lanzamiento de sujetos', io, owner: { branch: '', worktree: dirname(path) } }, LOCK_TIMEOUT_MINUTES, body),
     launch,
-    cleanup: async () => undefined,
+    processes,
+    kill,
   };
 }

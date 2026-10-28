@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CampaignError, readConfig, runCampaign } from '../../../../tests/headless/campaign.mjs';
+import { CampaignError, readConfig, runCampaign, stopSubjectProcesses, subjectProcesses } from '../../../../tests/headless/campaign.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
 const CWD = 'C:\\w';
@@ -38,8 +38,14 @@ function kitFs(): MemoryFs {
 const tools = (cost: number) => `>>> Bash: ls\n=== RESULTADO (1 turnos, ${cost.toFixed(2)} $)\nhecho\n`;
 
 // Un sujeto que acaba al instante deja su tools.txt; con manual, el test decide cuándo acaba.
-function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWait?: () => void } = {}) {
+interface ProcessInfo {
+  pid: number;
+  commandLine: string;
+}
+
+function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWait?: () => void; processes?: ProcessInfo[] } = {}) {
   const log: string[] = [];
+  const killed: { pid: number; tree: boolean }[] = [];
   const launched: LaunchRequest[] = [];
   const alive = new Set<number>();
   const finishers = new Map<string, () => void>();
@@ -75,9 +81,10 @@ function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWa
       else queueMicrotask(finish);
       return { pid, exited };
     },
-    cleanup: async () => undefined,
+    processes: async () => options.processes ?? [],
+    kill: (pid: number, tree: boolean) => killed.push({ pid, tree }),
   };
-  return { deps, log, launched, alive, finishers, waits: () => waits };
+  return { deps, log, launched, alive, finishers, killed, waits: () => waits };
 }
 
 function mark(fs: MemoryFs, dir: string, name: string, pid: number | '') {
@@ -251,5 +258,54 @@ describe('runCampaign', () => {
     const out = join(RUNS, 'dry', 'red', 'out');
     expect(fs.exists(join(out, 'a-1.tools.txt'))).toBe(true);
     expect(fake.log).toContain(`en seco: salidas en ${out}`);
+  });
+});
+
+describe('procesos del sujeto', () => {
+  const folder = join(RUNS, 'red', 'a-1');
+
+  it('reconoce la carpeta del sujeto con cualquier barra y capitalización', () => {
+    const processes = [
+      { pid: 1, commandLine: `claude.exe -p --add-dir ${folder.replaceAll('\\', '/').toLowerCase()} --verbose` },
+      { pid: 2, commandLine: `claude.exe -p --add-dir "${folder}"` },
+      { pid: 3, commandLine: `claude.exe -p --add-dir ${folder}0` },
+      { pid: 4, commandLine: 'node.exe other.js' },
+    ];
+    expect(subjectProcesses(processes, folder)).toEqual([1, 2]);
+  });
+
+  it('para los procesos del sujeto al acabar y dice cuántos', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { processes: [{ pid: 51, commandLine: `timeout.exe 0 claude --add-dir ${folder}` }, { pid: 52, commandLine: `node serve ${folder}` }] });
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.killed).toEqual([{ pid: 51, tree: true }, { pid: 52, tree: true }]);
+    expect(fake.log).toContain(`[a-1] paro 2 procesos de ${folder}`);
+  });
+
+  it('no avisa si el sujeto no deja procesos', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    await stopSubjectProcesses('a-1', folder, fake.deps);
+    expect(fake.log).toEqual([]);
+  });
+
+  it('al arrancar para los procesos de los cortados de una tanda anterior', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const cutFolder = join(RUNS, 'red', 'z-1');
+    const fake = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${cutFolder}` }] });
+    fs.write(join(RUNS, 'stop'), '');
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.killed).toEqual([{ pid: 61, tree: true }]);
+  });
+
+  it('al arrancar no toca las marcas cuyo PID sigue vivo', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'z-1')}` }] });
+    fake.alive.add(77);
+    fs.write(join(RUNS, 'stop'), '');
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.killed).toEqual([]);
   });
 });
