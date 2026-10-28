@@ -48,7 +48,7 @@ function claimsIn(path: string): Claim[] {
   const claims: Claim[] = [];
   readFileSync(path, 'utf8').split(/\r?\n/).forEach((line, index) => {
     for (const match of line.matchAll(/\bsdd(?:\.js"?)?\s+([^`\n]+)/g)) {
-      const tokens = match[1].trim().split(/\s+/).map((token) => token.replace(/[:;,."]+$/, ''));
+      const tokens = match[1].replace(/(^|\s)"[^"]*"(?=\s|$)/g, '$1valor').trim().split(/\s+/).map((token) => token.replace(/[:;,."]+$/, ''));
       if (!/^[a-z][a-z-]*$/.test(tokens[0])) continue;
       claims.push({ where: `${relative(repoRoot, path)}:${index + 1}`, tokens });
     }

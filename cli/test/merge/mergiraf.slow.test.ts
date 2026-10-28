@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { mergirafRuns } from '../../src/merge/mergiraf.ts';
-import { git, mergeFixture, runMerge, saveAll, sha, write } from './helpers.ts';
+import { failGate, git, mergeFixture, runMerge, saveAll, sha, write } from './helpers.ts';
 
 const base = 'import { a } from "./a";\n\nexport class Rooms {\n  list(): string[] {\n    return [];\n  }\n}\n';
 const variant = (name: string, method: string) =>
@@ -147,7 +147,7 @@ describe('mergiraf solo sobre código', () => {
     expect((await runMerge(join(fx.wt, '0001'), ['--push'])).code).toBe(0);
     const verified = sha(fx.repo, 'feature/0002');
 
-    const result = await runMerge(join(fx.wt, '0002'), ['--push', '--verify', 'exit 1', '--verified-at', verified]);
+    const result = await runMerge(join(fx.wt, '0002'), ['--push', '--verify', failGate, '--verified-at', verified]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('verificación: código de salida 1');

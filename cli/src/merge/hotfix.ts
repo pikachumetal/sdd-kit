@@ -3,7 +3,7 @@ import { DomainError, UsageError } from '../cli/args.ts';
 import { git, gitLines } from '../git/git.ts';
 import { checkDestination, withDestination, type DestinationRequest } from './destination.ts';
 import type { Job } from './run.ts';
-import { appendGitError, mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge, unpublishedCommits, unpublishedLines } from './steps.ts';
+import { appendGitError, branchMergeBase, mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge, unpublishedCommits, unpublishedLines } from './steps.ts';
 import { MergeConflict } from './attempt.ts';
 import { explainFailure, verifyMerge } from './verify.ts';
 
@@ -93,14 +93,16 @@ export async function checkHotfix(job: Job, target: HotfixTarget): Promise<void>
 }
 
 async function mergeStable(path: string, job: Job, plan: HotfixPlan): Promise<boolean> {
+  const mergeBase = await branchMergeBase(path, job.branch);
   await mergeFeature(path, { branch: job.branch, into: plan.into, noFf: true, order: plan.order }, job.io.out);
-  await verifyMerge(path, { command: job.options.verify, verifiedAt: job.verifiedAt }, job.io);
+  await verifyMerge(path, { command: job.options.verify, verifiedAt: job.verifiedAt, branch: job.branch, mergeBase }, job.io);
   if (plan.tag === null) return false;
   if ((await git(path, ['tag', '-a', plan.tag, '-m', `${plan.tag} — ${job.branch}`])).code !== 0) throw new DomainError(`--tag: no se pudo crear '${plan.tag}'`);
   return true;
 }
 
 async function mergeBack(path: string, job: Job, plan: HotfixPlan): Promise<void> {
+  const mergeBase = await branchMergeBase(path, job.branch);
   try {
     await mergeFeature(path, { branch: job.branch, into: plan.back, noFf: true, order: plan.order }, job.io.out);
   } catch (error) {
@@ -108,7 +110,7 @@ async function mergeBack(path: string, job: Job, plan: HotfixPlan): Promise<void
     const undone = plan.tag === null ? `el merge en '${plan.into}'` : `el merge en '${plan.into}' y la etiqueta`;
     throw new DomainError(`vuelta: conflicto en ${error.files.join(', ')}; se deshacen ${undone}: porta el arreglo a '${plan.back}' a mano`);
   }
-  await verifyMerge(path, { command: job.options.verify, verifiedAt: job.verifiedAt }, job.io);
+  await verifyMerge(path, { command: job.options.verify, verifiedAt: job.verifiedAt, branch: job.branch, mergeBase }, job.io);
 }
 
 async function pushAll(path: string, plan: HotfixPlan, remote: string): Promise<void> {
@@ -176,7 +178,7 @@ async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Pr
     await undoFailedMerge(paths.back, backBefore);
     await undoFailedMerge(paths.stable, stableBefore);
     if (tagged && plan.tag !== null) await git(paths.stable, ['tag', '-d', plan.tag]);
-    throw await explainFailure(error, { worktree: failedAt, command: job.options.verify, io: job.io });
+    throw await explainFailure(error, { worktree: failedAt, io: job.io });
   }
 }
 

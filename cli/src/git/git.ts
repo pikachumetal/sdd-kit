@@ -16,7 +16,7 @@ export interface Worktree {
   branch: string | null;
 }
 
-function isolatedEnv(): NodeJS.ProcessEnv {
+export function isolatedEnv(): NodeJS.ProcessEnv {
   const kept = Object.entries(process.env).filter(([name]) => !GIT_ENV_VARS.includes(name.toUpperCase()));
   return Object.fromEntries(kept);
 }

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { spawn } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { cleanedUp, git, isWindows, mergeFixture, runMerge, sha, write } from './helpers.ts';
+import { cleanedUp, failGate, git, isWindows, mergeFixture, nodeGate, runMerge, sha, write } from './helpers.ts';
 
 describe('el push del cierre publica la rama destino', () => {
   it('con --push fusiona --no-ff con el título acordado y deja local y remoto iguales', async () => {
@@ -35,7 +35,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
     const fx = mergeFixture('verificacion');
     const before = sha(fx.repo, 'develop');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', 'exit 1']);
+    const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', failGate]);
 
     expect(result.code).not.toBe(0);
     expect(result.text).toMatch(/verificaci/);
@@ -47,7 +47,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
   it('con la verificación en rojo el mensaje cita la ruta del log y la cola de la salida del gate', async () => {
     const fx = mergeFixture('verificacion-log');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', "echo 'Tests Failed: 3'; exit 1"]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', nodeGate(fx.root, "console.log('Tests Failed: 3');\nprocess.exit(1);\n")]);
 
     expect(result.code).not.toBe(0);
     expect(result.text).toMatch(/verificación: código de salida 1; salida completa en [\s\S]*Tests Failed: 3/);
@@ -66,7 +66,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
     const holder = spawn('pwsh', ['-NoProfile', '-Command', `$s = [IO.File]::Open('${locked}', 'Create', 'ReadWrite', 'None'); 'abierto'; Start-Sleep 120`]);
     await new Promise((done) => holder.stdout.once('data', done));
     try {
-      const result = await runMerge(join(fx.wt, '0001'), ['--verify', `[IO.File]::WriteAllText('${locked}', 'x')`]);
+      const result = await runMerge(join(fx.wt, '0001'), ['--verify', nodeGate(fx.root, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(locked)}, 'x');\n`)]);
 
       expect(result.code).not.toBe(0);
       expect(result.text).toMatch(/bloqueado: .*App\.dll/);
@@ -114,7 +114,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
   it('con --verify en rojo nombra los tests fallidos antes de la cola', async () => {
     const fx = mergeFixture('verificacion-tests');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', "echo '[-] se llama sdd-archive 12ms'; exit 1"]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', nodeGate(fx.root, "console.log('[-] se llama sdd-archive 12ms');\nprocess.exit(1);\n")]);
 
     expect(result.code).not.toBe(0);
     expect(result.text).toMatch(/salida completa en [^\n]*\ntests fallidos:\n\[-\] se llama sdd-archive 12ms/);
@@ -158,7 +158,7 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
   it('el worktree temporal va junto a los demás worktrees y se retira', async () => {
     const fx = mergeFixture('ruta');
     const marker = join(fx.root, 'cwd.txt');
-    const command = isWindows ? `(Get-Location).Path | Set-Content -LiteralPath '${marker}'` : `pwd > '${marker}'`;
+    const command = nodeGate(fx.root, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, process.cwd());\n`);
 
     const result = await runMerge(join(fx.wt, '0001'), ['--verify', command]);
 

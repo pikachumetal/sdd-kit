@@ -1,22 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import { failedTestLines, failureReport, findLockedFile, shellCommand } from '../../src/merge/verify.ts';
+import { UsageError } from '../../src/cli/args.ts';
+import { failedTestLines, failureReport, findLockedFile, parseGate } from '../../src/merge/verify.ts';
 
-describe('merge --verify shell', () => {
-  it('prefers pwsh on Windows', () => {
-    expect(shellCommand('echo x', 'win32', () => true)).toEqual(['pwsh', ['-NoProfile', '-Command', 'echo x']]);
+describe('merge --verify gate', () => {
+  const chained = (op: string) => `--verify: el gate encadena comandos con '${op}'; hazlo una tarea de moon o un script de package.json`;
+
+  it('splits on spaces and groups quotes', () => {
+    expect(parseGate('node -e "process.exit(1)"')).toEqual(['node', '-e', 'process.exit(1)']);
+    expect(parseGate("moon run 'a b'")).toEqual(['moon', 'run', 'a b']);
   });
 
-  it('falls back to powershell.exe on Windows', () => {
-    const [program] = shellCommand('echo x', 'win32', (candidate) => candidate === 'powershell.exe');
-    expect(program).toBe('powershell.exe');
+  it('rejects operators outside quotes only', () => {
+    const cases: [string, string][] = [['a && b', '&&'], ['a || b', '||'], ['a; b', ';'], ['a | b', '|'], ['a > f', '>'], ['a < f', '<'], ['test&&lint', '&&']];
+    for (const [gate, op] of cases) {
+      expect(() => parseGate(gate)).toThrow(UsageError);
+      expect(() => parseGate(gate)).toThrow(chained(op));
+    }
+    expect(parseGate('node -e "a && b"')).toEqual(['node', '-e', 'a && b']);
   });
 
-  it('names the shells it tried when none runs', () => {
-    expect(() => shellCommand('echo x', 'win32', () => false)).toThrow(/pwsh.*powershell\.exe/);
+  it('keeps an unclosed quote to the end', () => {
+    expect(parseGate('node -e "a; b')).toEqual(['node', '-e', 'a; b']);
   });
 
-  it('uses sh outside Windows without probing', () => {
-    expect(shellCommand('echo x', 'linux', () => false)).toEqual(['sh', ['-c', 'echo x']]);
+  it('keeps variables literal', () => {
+    expect(parseGate('echo $HOME %PATH% ~')).toEqual(['echo', '$HOME', '%PATH%', '~']);
   });
 });
 

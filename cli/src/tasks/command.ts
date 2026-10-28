@@ -39,17 +39,23 @@ function windowsScriptCall(path: string, args: string[]): { file: string; args: 
   return { file: process.env.ComSpec ?? 'cmd.exe', args: ['/d', '/s', '/c', `"${quoted}"`] };
 }
 
-function launchSpec(path: string, args: string[]): { file: string; args: string[] } {
+export interface LaunchSpec {
+  file: string;
+  args: string[];
+  windowsVerbatimArguments: boolean;
+}
+
+export function launchSpec(path: string, args: string[]): LaunchSpec {
   const isScript = process.platform === 'win32' && ['.cmd', '.bat'].includes(extname(path).toLowerCase());
-  return isScript ? windowsScriptCall(path, args) : { file: path, args };
+  return isScript ? { ...windowsScriptCall(path, args), windowsVerbatimArguments: true } : { file: path, args, windowsVerbatimArguments: false };
 }
 
 export function runInherited(command: string[], cwd: string): Promise<number> {
   const resolved = resolveCommand(command[0]);
   if (resolved === null) return Promise.resolve(COMMAND_NOT_FOUND);
-  const { file, args } = launchSpec(resolved, command.slice(1));
+  const { file, args, windowsVerbatimArguments } = launchSpec(resolved, command.slice(1));
   return new Promise<number>((done) => {
-    const child = spawn(file, args, { cwd, stdio: 'inherit', windowsHide: true, windowsVerbatimArguments: file !== resolved });
+    const child = spawn(file, args, { cwd, stdio: 'inherit', windowsHide: true, windowsVerbatimArguments });
     child.on('error', () => done(COMMAND_NOT_FOUND));
     child.on('close', (code) => done(code ?? 1));
   });
@@ -60,10 +66,10 @@ export async function runToLog(command: string[], log: string): Promise<number> 
   const resolved = resolveCommand(command[0]);
   if (resolved === null) return COMMAND_NOT_FOUND;
   const fd = openSync(log, 'w');
-  const { file, args } = launchSpec(resolved, command.slice(1));
+  const { file, args, windowsVerbatimArguments } = launchSpec(resolved, command.slice(1));
   try {
     return await new Promise<number>((done) => {
-      const child = spawn(file, args, { stdio: ['ignore', fd, fd], windowsHide: true, windowsVerbatimArguments: file !== resolved });
+      const child = spawn(file, args, { stdio: ['ignore', fd, fd], windowsHide: true, windowsVerbatimArguments });
       child.on('error', () => done(COMMAND_NOT_FOUND));
       child.on('close', (code) => done(code ?? 1));
     });

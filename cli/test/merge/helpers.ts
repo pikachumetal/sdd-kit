@@ -10,7 +10,7 @@ import { run } from '../../src/main.ts';
 export const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('GIT_')));
 const roots: string[] = [];
 
-vi.setConfig({ testTimeout: 120_000 });
+vi.setConfig({ testTimeout: 120_000, hookTimeout: 120_000 });
 
 afterAll(() => {
   roots.splice(0).forEach((root) => rmSync(root, { recursive: true, force: true }));
@@ -140,15 +140,32 @@ export function cleanedUp(fx: Fixture): boolean {
 }
 
 export const isWindows = process.platform === 'win32';
-export const sleepCommand = (seconds: number) => (isWindows ? `Start-Sleep -Seconds ${seconds}` : `sleep ${seconds}`);
+export const failGate = 'node -e "process.exit(1)"';
+export const sleepCommand = (seconds: number) => `node -e "setTimeout(() => {}, ${seconds * 1000})"`;
+export const failsIfExists = (file: string) => `node -e "process.exit(require('fs').existsSync('${file}') ? 1 : 0)"`;
+
+let gates = 0;
+
+export function nodeGate(dir: string, script: string): string {
+  const path = join(dir, `gate-${++gates}.mjs`);
+  writeFileSync(path, script);
+  return `node "${path}"`;
+}
 
 export function publishFromSeed(fx: Fixture, file: string, once: boolean): string {
-  const marker = join(fx.root, 'publicado.txt');
-  const seed = fx.seed;
-  if (isWindows) {
-    const publish = `Set-Content -Path '${join(seed, file)}' -Value (Get-Random); git -C '${seed}' add -A; git -C '${seed}' commit -q -m otra-sesion; git -C '${seed}' push -q '${fx.remote}' develop`;
-    return once ? `if (-not (Test-Path '${marker}')) { New-Item '${marker}' | Out-Null; ${publish} }` : publish;
-  }
-  const publish = `od -An -N4 -tu4 /dev/urandom > '${join(seed, file)}'; git -C '${seed}' add -A; git -C '${seed}' commit -q -m otra-sesion; git -C '${seed}' push -q '${fx.remote}' develop`;
-  return once ? `if [ ! -f '${marker}' ]; then touch '${marker}'; ${publish}; fi` : publish;
+  return nodeGate(fx.root, publishScript(fx, file, once));
+}
+
+export function publishScript(fx: Fixture, file: string, once: boolean): string {
+  const [marker, target] = [join(fx.root, 'publicado.txt'), join(fx.seed, file)].map((path) => JSON.stringify(path));
+  return `import { execFileSync } from 'node:child_process';
+import { existsSync, writeFileSync } from 'node:fs';
+if (${once} && existsSync(${marker})) process.exit(0);
+if (${once}) writeFileSync(${marker}, '');
+writeFileSync(${target}, String(Math.random()));
+const git = (...args) => execFileSync('git', ['-C', ${JSON.stringify(fx.seed)}, ...args], { stdio: 'ignore' });
+git('add', '-A');
+git('commit', '-q', '-m', 'otra-sesion');
+git('push', '-q', ${JSON.stringify(fx.remote)}, 'develop');
+`;
 }

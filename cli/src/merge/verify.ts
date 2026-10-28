@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createWriteStream, readFileSync, rmSync, type WriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -6,33 +6,44 @@ import { StringDecoder } from 'node:string_decoder';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git, gitLines } from '../git/git.ts';
+import { launchSpec, resolveCommand } from '../tasks/command.ts';
+import { branchOnly, noCross, planGate, queryTasks, readMoonGate, type Plan } from './affected.ts';
 
 export interface Verification {
   worktree: string;
-  command: string;
+  argv: string[];
   io: Io;
 }
 
 const LINE_BREAK = /\r?\n/;
 
-const WINDOWS_SHELLS = ['pwsh', 'powershell.exe'];
+const OPERATORS = ['&&', '||', ';', '|', '>', '<'];
 
-type ShellProbe = (program: string) => boolean;
-
-function runs(program: string): boolean {
-  return spawnSync(program, ['-NoProfile', '-Command', 'exit 0'], { stdio: 'ignore', windowsHide: true }).error === undefined;
+function chained(operator: string): UsageError {
+  return new UsageError(`--verify: el gate encadena comandos con '${operator}'; hazlo una tarea de moon o un script de package.json`);
 }
 
-export function shellCommand(command: string, platform = process.platform, probe: ShellProbe = runs): [string, string[]] {
-  if (platform !== 'win32') return ['sh', ['-c', command]];
-  const program = WINDOWS_SHELLS.find(probe);
-  if (program === undefined) {
-    throw new DomainError(`verificación: no hay shell para ejecutar el gate; se probó ${WINDOWS_SHELLS.join(' y ')}`);
+// Una comilla sin cerrar llega hasta el final, como hacía un shell al leer el resto.
+const WORD = /(?:"[^"]*(?:"|$)|'[^']*(?:'|$)|[^\s"'])+/g;
+const QUOTED = /"[^"]*(?:"|$)|'[^']*(?:'|$)/g;
+const unquote = (quoted: string) => quoted.slice(1, quoted.length > 1 && quoted.endsWith(quoted[0]) ? -1 : undefined);
+
+export function parseGate(text: string): string[] {
+  return (text.match(WORD) ?? []).map((word) => {
+    const operator = OPERATORS.find((candidate) => word.replace(QUOTED, '').includes(candidate));
+    if (operator !== undefined) throw chained(operator);
+    return word.replace(QUOTED, unquote);
+  });
+}
+
+export class VerificationFailed extends DomainError {
+  readonly contrast: string[] | null;
+
+  constructor(message: string, contrast: string[] | null) {
+    super(message);
+    this.contrast = contrast;
   }
-  return [program, ['-NoProfile', '-Command', command]];
 }
-
-export class VerificationFailed extends DomainError {}
 
 function logPath(kind: string): string {
   const stamp = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
@@ -56,11 +67,13 @@ function lineSink(io: Io, file: WriteStream) {
   };
 }
 
-function runTee({ worktree, command, io }: Verification, log: string): Promise<number> {
-  const [program, args] = shellCommand(command);
+function runTee({ worktree, argv, io }: Verification, log: string): Promise<number> {
+  const resolved = resolveCommand(argv[0]);
+  if (resolved === null) throw new DomainError(`verificación: no se encuentra '${argv[0]}' en el PATH`);
+  const { file: program, args, windowsVerbatimArguments } = launchSpec(resolved, argv.slice(1));
   const file = createWriteStream(log);
   const sink = lineSink(io, file);
-  const child = spawn(program, args, { cwd: worktree, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(program, args, { cwd: worktree, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments });
   child.stdout.on('data', sink.push);
   child.stderr.on('data', sink.push);
   const finish = (code: number, done: (code: number) => void) => {
@@ -107,7 +120,7 @@ export async function resolveCommit(root: string, value: string): Promise<string
   return commit;
 }
 
-export async function runVerification(verification: Verification): Promise<void> {
+export async function runVerification(verification: Verification, contrast: string[] | null = verification.argv): Promise<void> {
   const log = logPath('verify');
   const code = await runTee(verification, log);
   if (code === 0) return void rmSync(log, { force: true });
@@ -115,27 +128,52 @@ export async function runVerification(verification: Verification): Promise<void>
   const locked = findLockedFile(output);
   if (locked !== undefined) throw new DomainError(`bloqueado: ${locked}; ciérralo y relanza el merge. Salida completa en ${log}`);
   const report = failureReport(output.split(LINE_BREAK).filter((line) => line !== ''));
-  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${report}`);
+  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${report}`, contrast);
 }
 
 export interface VerifyRequest {
   command: string | null;
   verifiedAt: string | null;
+  branch: string;
+  mergeBase: string;
 }
 
-export async function verifyMerge(worktree: string, { command, verifiedAt }: VerifyRequest, io: Io): Promise<void> {
+async function planVerification(worktree: string, { command, verifiedAt, branch, mergeBase }: VerifyRequest & { command: string }, io: Io): Promise<Omit<Plan, 'lines'>> {
+  const argv = parseGate(command);
+  const gate = readMoonGate(argv);
+  if (gate === null || !gate.affected) return { run: argv, contrast: argv };
+  const fallback = (reason: string) => {
+    io.out(noCross(reason));
+    return branchOnly(gate, mergeBase);
+  };
+  if (gate.blocker !== null) return fallback(`'${gate.blocker}' no admitido`);
+  try {
+    const moon = gate.before[gate.before.length - 2];
+    const branchTasks = await queryTasks(worktree, { base: mergeBase, head: branch, relations: gate.relations }, moon);
+    const baseTasks = verifiedAt === null ? null : await queryTasks(worktree, { base: verifiedAt, head: 'HEAD', relations: gate.relations }, moon);
+    const plan = planGate(gate, { branch: branchTasks, base: baseTasks }, { mergeBase, verifiedAt });
+    plan.lines.forEach((line) => io.out(line));
+    return plan;
+  } catch (error) {
+    return fallback(`moon query falló (${(error as Error).message})`);
+  }
+}
+
+export async function verifyMerge(worktree: string, request: VerifyRequest, io: Io): Promise<void> {
+  const { command, verifiedAt } = request;
   if (command === null || command.trim() === '') return;
   if (verifiedAt !== null && (await onlyDocsSince(worktree, verifiedAt))) {
     const [shortHash] = await gitLines(worktree, ['rev-parse', '--short', verifiedAt]);
     return io.out(`verificación: omitida: desde ${shortHash} solo cambian docs`);
   }
-  await runVerification({ worktree, command, io });
+  const { run, contrast } = await planVerification(worktree, { ...request, command }, io);
+  if (run !== null) await runVerification({ worktree, argv: run, io }, contrast);
 }
 
-// Tras deshacer el merge, el worktree ya está en la base: el mismo comando dice si el rojo es de la rama.
-export async function explainFailure(error: unknown, { worktree, command, io }: Omit<Verification, 'command'> & { command: string | null }): Promise<unknown> {
-  if (!(error instanceof VerificationFailed) || command === null) return error;
-  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, command, io })}`);
+// Tras deshacer el merge, el worktree ya está en la base: lo mismo que corrió dice si el rojo es de la rama.
+export async function explainFailure(error: unknown, { worktree, io }: Omit<Verification, 'argv'>): Promise<unknown> {
+  if (!(error instanceof VerificationFailed) || error.contrast === null) return error;
+  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, argv: error.contrast, io })}`);
 }
 
 async function baseVerdict(verification: Verification): Promise<string> {
