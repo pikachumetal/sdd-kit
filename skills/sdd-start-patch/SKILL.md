@@ -18,7 +18,9 @@ La clasificación —el árbol, la solución fijada y el predicado del ajuste so
 
 ## Flujo (crea un todo por paso)
 
-1. **Causa raíz OBLIGATORIA en un fallo** (la intención, en un ajuste visual; la solución fijada, en una petición cerrada) — `sdd-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o que el arreglo deja algo que el usuario ve sin fijar → STOP: era una feature, sube a feature por el paso 4 de `sdd-propose`, salvo que se resuelva eligiendo entre opciones ya escritas (paso 3).
+1. **Antes de ejecutar el código o un test, prepara el entorno** con el Step 2 de `sdd-worktrees` («Project Setup»): el worktree que abre un prompt de lanzamiento no trae las dependencias, y sin ellas el primer RED es un `Cannot find module`, no el fallo (patches 0212 y 0241).
+
+   **Causa raíz OBLIGATORIA en un fallo** (la intención, en un ajuste visual; la solución fijada, en una petición cerrada) — `sdd-debugging` ANTES de proponer el fix. Nada de parchear el síntoma, y nada de implementar la hipótesis del reporte sin confirmarla con evidencia en el código. Si la investigación revela que la causa exige interpretar requisitos, o que el arreglo deja algo que el usuario ve sin fijar → STOP: era una feature, sube a feature por el paso 4 de `sdd-propose`, salvo que se resuelva eligiendo entre opciones ya escritas (paso 3).
 
    Si la investigación **no reproduce el fallo** sobre la base actual → STOP también, sin abrir el patch: ni rama, ni carpeta, ni `patch.md`, ni fix, ni id reservado. Si la petición viene de una fila del roadmap, déjala re-medida: las celdas que el resultado contradice se reescriben con la fecha y la evidencia nuevas, porque añadir la medición y dejar el texto viejo no basta. Díselo al usuario. Si reproduce un fallo **distinto** del que predice el ticket o la fila, no es este caso: el patch sigue con el fallo medido.
 
