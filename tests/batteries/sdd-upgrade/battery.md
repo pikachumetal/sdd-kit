@@ -4,7 +4,7 @@ La migración de un proyecto al kit cargado, y la oferta que hace el arranque de
 
 Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-upgrade`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). `AskUserQuestion` está bloqueado: la oferta sale en prosa y el segundo turno (`TURN2`) la contesta. En el RED, con el kit sin `sdd-upgrade`, `subject.mjs` pasa `using-sdd` a la guarda de `initSubject`; la puerta sale roja por el nombre y se puntúa la conducta.
 
-Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `v2x` (`mold-v2x/`, de la 0197) es un proyecto 2.x completo en 2.3.4, commiteado en dos fechas pasadas (2026-09-01 y, la fila de deuda de TypeScript, 2026-09-15): la fecha de una fila de deuda tiene que salir de su commit, y con un solo commit del día del sujeto no se distingue de la de hoy. `v2x-e2e` es `v2x` con E2E: `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`), `e2e/booking.spec.ts`, el script `e2e` en `package.json` y una línea «E2E: `npx playwright test`» en el §Testing de `tech-stack.md`. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
+Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-salas/`), con `sdd-kit.json` en `2.3.3` y el kit con `v2.3.4.md` como mayor migración. `v2x` (`mold-v2x/`, de la 0197) es un proyecto 2.x completo en 2.3.4, commiteado en dos fechas pasadas (2026-09-01 y, la fila de deuda de TypeScript, 2026-09-15): la fecha de una fila de deuda tiene que salir de su commit, y con un solo commit del día del sujeto no se distingue de la de hoy. `v2x-e2e` es `v2x` con E2E: `playwright.config.ts` (`retries: process.env.CI ? 2 : 0`, `timeout: 60_000`), `e2e/booking.spec.ts`, el script `e2e` en `package.json` y una línea «E2E: `npx playwright test`» en el §Testing de `tech-stack.md`. `v2x-gate` es `v2x` con «- Gate de merge: `pnpm lint && pnpm test`.» bajo el gate de cierre del §Testing de `tech-stack.md`. `m2` va con su propia copia del kit, que gana `v2.3.5.md` (la de esta carpeta: su paso 1, sin marca de gate, borra `.docs/sdd/legacy.md`), y el molde en `2.3.4` con `legacy.md`.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
@@ -20,6 +20,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | h2 | no-version | Actualízame al kit. | salas-noversion | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | revisión final de la 0157, ejes Spec y Arquitectura: con un `sdd-kit.json` sin `version`, `sdd-upgrade` y `sdd-init` se mandaban el uno al otro |
 | v1 | v3 | Actualízame al kit. | v2x | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0197: la migración a la 3.0.0; la persona (persona-v2x.md) aprueba las tablas y da el Tamaño. 0199: nombres de skills, estimación, backticks y la tabla de reglas, de la que quita la de los ids |
 | v3 | v3-e2e | Actualízame al kit. | v2x-e2e | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0180: con E2E, la migración propone los campos E2E de `operations-template.md` como la init; la persona nombra el flujo core |
+| g1 | v3-gate | Actualízame al kit. | v2x-gate | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0235: `sdd merge --verify` lanza el gate sin shell; la migración avisa de un «Gate de merge» que encadena con `&&` y no lo reescribe; la persona (persona-v2x.md) aprueba las tablas |
 | v2 | v3-absent | Actualízame al kit, el dev-lead no está. | v2x | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0197: sin el dev-lead nada se mueve |
 
 ## Rúbrica
@@ -47,6 +48,7 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | V14 Temporales | v1, v3 | tras el marcador, `.gitignore` no tiene `.temp/` una sola vez; en `v3`, «Temporales» no propone `outputDir: '.temp/playwright'` para `e2e`; en `v1` (sin E2E), «Temporales» no dice `no declarado` para la suite de `vitest run` o le inventa una propuesta; o cambia `playwright.config.ts` o `package.json` (feature 0209) |
 | V11 Orden | v1 | el commit `chore(sdd): reglas del proyecto que ya cubre el kit` no va después de `chore(sdd): migrar al kit v3.0.0`, o `sdd-kit.json` no dice `3.0.0` |
 | V12 Reglas pendientes | v2 | la regla de los ids desaparece de la constitution, o el informe no deja la revisión de reglas pendiente con cómo reanudarla |
+| G1 Gate encadenado | g1 | el informe final no dice `Gate que encadena comandos: «pnpm lint && pnpm test»` con «hazlo una tarea de moon o un script de package.json», o `.docs/sdd/steering/operations.md` no conserva la línea del gate tal cual |
 | V5 Ausente | v2 | algún fichero del molde se mueve, se borra o cambia de forma (los nombres de skills del paso 5 y la sustitución literal del paso 6, sin gate, sí corren y quedan sin commit), o hay un commit nuevo |
 
 ## Procedencia de las reglas
@@ -60,4 +62,5 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | Nombres de skills, estimación, backticks, marcador y revisión de reglas de la v3.0.0 | fila 0199 (B6, 0149, 0188, re-revisión de la 0197); filas de deuda de .claude/commands y de Select-String | v1, v2 |
 | Lista y marcador con `sdd upgrade` | 0157: lo determinista a la CLI; el orden por nombre de fichero se rompía con la 0.10.0 | m1 |
 | Un paso sin marca que borra o reestructura es gate | dev-lead, 2026-10-08 | m2 |
+| Aviso de un gate que `sdd merge --verify` no admite (operadores que encadenan o redirigen, variables) | feature 0235 | g1 |
 | El procedimiento heredado de `migrations/README.md` (predicados, gates pendientes sin tocar, qué no es migrar, commit por versión) | `tests/migracion-red.md` y `tests/migracion-green.md` | m1, m2 |

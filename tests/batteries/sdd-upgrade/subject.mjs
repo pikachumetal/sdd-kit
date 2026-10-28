@@ -40,6 +40,8 @@ const molds = {
     edit('package.json', (text) => text.replace('"test": "vitest run"', '"test": "vitest run", "e2e": "playwright test"'));
     edit('.docs/sdd/tech-stack.md', (text) => text.replace(/^- Gate de cierre: `npm test`\./m, '- Gate de cierre: `npm test`.\n- E2E: `npx playwright test`.'));
   },
+  // v2x con un gate de merge encadenado: lo que mide el aviso del paso 9 de la migración a la 3.0.0.
+  'v2x-gate': () => edit('.docs/sdd/tech-stack.md', (text) => text.replace(/^- Gate de cierre: `npm test`\./m, '- Gate de cierre: `npm test`.\n- Gate de merge: `pnpm lint && pnpm test`.')),
   // Solo configuración, sin version ni init: el molde trae mission.md y constitution.md de la 2.x.
   'salas-noversion': () => s.put('.docs/sdd/sdd-kit.json', '{"ids": {"mode": "sequence"}}\n'),
   'salas-legacy': () => {
@@ -75,7 +77,7 @@ s.git('checkout', '-q', '-b', 'develop');
 const turn2 = { o1: 'No, ahora no. Sigue con lo del filtro.', o2: 'Sí, actualízalo.' };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
 
-const long = s.SC === 'v1' || s.SC === 'v3';
+const long = ['v1', 'v3', 'g1'].includes(s.SC);
 if (long) s.env.MAX_TURNS ||= '90';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);

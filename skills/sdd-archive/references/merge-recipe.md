@@ -39,7 +39,7 @@ sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--veri
 
 Under one lock per repo, the script integrates the destination's remote into the local destination (resolving as `--sync` does), merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others, runs `--verify` on the result and pushes the destination by its name. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
 
-- **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it.
+- **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it. The script launches it as arguments, without a shell: a gate that chains commands (`&&`, `;`, a pipe) exits 2, and becomes a moon task or a `package.json` script. With a `moon run … --affected` gate it runs only what crosses, the tasks the branch touches whose inputs the base also touched, and its `verificación: corre …` and `verificación: <tarea>: saltada (…)` lines go in the `Gate:` line.
 - **`--verified-at`**: as in «Integrated base». The script writes `verificación: omitida: desde <sha> solo cambian docs` when it skips.
 
 ## Its outputs
