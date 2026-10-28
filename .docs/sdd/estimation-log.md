@@ -227,18 +227,19 @@
 | 2026-10-28 | 0239 | patch | 0.5 | 0.09 | 0.18 | — | — | no aplica | — | 20261028-211332-patch-0239-watch-ignores-moon-heartbeat |
 | 2026-10-28 | 0248 | patch | 1.25 | 0.39 | 0.31 | — | — | 2.66 | — | 20261028-211807-patch-0248-lanes-env-setup |
 | 2026-10-28 | 0253 | patch | 0.75 | 0.43 | 0.57 | — | — | 2.33 | — | 20261028-215919-patch-0253-setup-by-lockfile |
+| 2026-10-28 | 0254 | patch | 0.5 | 0.1 | 0.2 | 4428k | no aplica | no aplica | 2.6 | 20261028-220038-patch-0254-campaign-cleanup-kit-copy |
 
-**Factor de calibración** (ratio mediano real/estimado, 187 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 188 artefactos): **0.6** · media 0.78
 
 - p25–p75: 0.4–0.94
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 61 % · infraestimadas: 11 %
+- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 11 %
 - Error absoluto (h): media 1.34 · mediana 0.9
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.54
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 64 | 34 % |
+| <0.5 | 65 | 35 % |
 | 0.5–0.8 | 58 | 31 % |
 | 0.8–1.25 | 45 | 24 % |
 | 1.25–2 | 12 | 6 % |
@@ -249,7 +250,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 88 | 0.56 | 0.4–0.77 |
 | infra/tooling | 48 | 0.5 | 0.37–0.83 |
-| patch | 49 | 0.89 | 0.6–1.4 |
+| patch | 50 | 0.87 | 0.6–1.38 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -269,6 +270,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 75 | 188.92 | 0.57 | 336.35 | 1477.02 |
+| sin publicar | 76 | 189.02 | 0.57 | 336.35 | 1479.62 |
 
 > Ver `estimation.md`.
