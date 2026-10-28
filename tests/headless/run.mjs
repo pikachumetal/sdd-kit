@@ -15,8 +15,9 @@
 // Al acabar imprime el coste por carpeta de salida (red, green, green-premature…) y los cortados.
 // El RED de un patch se lanza con SPEC_DIR en .temp/<id>/ del repo hasta que reproduce: el scratchpad pasa del tope
 // de ruta de las salidas. Solo entonces se reserva el id y se copia red/ a la carpeta del patch.
-// Al acabar cada sujeto se paran los procesos cuya línea de órdenes nombra su carpeta; con Ctrl-C o una señal de
-// parada, también el árbol de cada sujeto en curso.
+// Al acabar cada sujeto se paran los procesos cuya línea de órdenes nombra su carpeta; sin ninguno en curso, también
+// los que nombran la CLI de la copia del kit, y se borran las carpetas que quedaron (salvo KEEP_MOLD=1). Con Ctrl-C o
+// una señal de parada, también el árbol de cada sujeto en curso.
 import { CampaignError, readConfig, runCampaign } from './campaign.mjs';
 import { realDeps, stopOnSignal } from './real-deps.mjs';
 
