@@ -39,7 +39,7 @@ function windowsScriptCall(path: string, args: string[]): { file: string; args: 
   return { file: process.env.ComSpec ?? 'cmd.exe', args: ['/d', '/s', '/c', `"${quoted}"`] };
 }
 
-function launchSpec(path: string, args: string[]): { file: string; args: string[] } {
+export function launchSpec(path: string, args: string[]): { file: string; args: string[] } {
   const isScript = process.platform === 'win32' && ['.cmd', '.bat'].includes(extname(path).toLowerCase());
   return isScript ? windowsScriptCall(path, args) : { file: path, args };
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write } from './helpers.ts';
+import { failGate, git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write } from './helpers.ts';
 
 describe('la suite no se repite si desde el commit verificado solo cambian docs', () => {
   it('omite la verificación si desde el sha solo cambian docs', async () => {
@@ -9,7 +9,7 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     const verified = sha(fx.repo, 'feature/0001');
     pushRemoteCommit(fx, '.docs/sdd/notas.md', 'solo docs\n');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', verified]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', failGate, '--verified-at', verified]);
 
     expect(result.code, result.text).toBe(0);
     expect(result.text).toContain(`verificación: omitida: desde ${git(fx.repo, 'rev-parse', '--short', verified)} solo cambian docs`);
@@ -21,7 +21,7 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     const verified = sha(fx.repo, 'feature/0001');
     pushRemoteCommit(fx, 'src.txt', 'código\n');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', verified]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', failGate, '--verified-at', verified]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('verificación: código de salida 1');
@@ -34,7 +34,7 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     write(join(fx.wt, '0001'), 'src.txt', 'código de la rama\n');
     saveAll(join(fx.wt, '0001'), 'feat: más código');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', verified]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', failGate, '--verified-at', verified]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('verificación: código de salida 1');
@@ -44,7 +44,7 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     const fx = mergeFixture('verificado-otra-rama');
     const other = sha(fx.repo, 'feature/0002');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 1', '--verified-at', other]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', failGate, '--verified-at', other]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('verificación: código de salida 1');
@@ -55,7 +55,7 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     const fx = mergeFixture('verificado-nada');
     const before = sha(fx.repo, 'develop');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'exit 0', '--verified-at', 'nada']);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', 'node -e 0', '--verified-at', 'nada']);
 
     expect(result.code).toBe(2);
     expect(result.text).toContain("--verified-at: 'nada' no es un commit");

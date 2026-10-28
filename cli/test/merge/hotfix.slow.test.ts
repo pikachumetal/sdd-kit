@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { chmodSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, git, isWindows, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { edit, failsIfExists, git, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const ORDER = 'fusiona el hotfix del login en main';
-const failsIfExists = (file: string) => (isWindows ? `if (Test-Path ${file}) { exit 1 }` : `if [ -f ${file} ]; then exit 1; fi`);
 const slash = (text: string) => text.replaceAll('\\', '/');
 
 function hotfixFixture(name: string, branch = 'hotfix/0200-fix'): Fixture & { hotfix: string } {

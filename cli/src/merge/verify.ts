@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createWriteStream, readFileSync, rmSync, type WriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -6,30 +6,45 @@ import { StringDecoder } from 'node:string_decoder';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git, gitLines } from '../git/git.ts';
+import { launchSpec, resolveCommand } from '../tasks/command.ts';
 
 export interface Verification {
   worktree: string;
-  command: string;
+  argv: string[];
   io: Io;
 }
 
 const LINE_BREAK = /\r?\n/;
 
-const WINDOWS_SHELLS = ['pwsh', 'powershell.exe'];
+const OPERATORS = ['&&', '||', ';', '|', '>', '<'];
 
-type ShellProbe = (program: string) => boolean;
-
-function runs(program: string): boolean {
-  return spawnSync(program, ['-NoProfile', '-Command', 'exit 0'], { stdio: 'ignore', windowsHide: true }).error === undefined;
+function chained(operator: string): UsageError {
+  return new UsageError(`--verify: el gate encadena comandos con '${operator}'; hazlo una tarea de moon o un script de package.json`);
 }
 
-export function shellCommand(command: string, platform = process.platform, probe: ShellProbe = runs): [string, string[]] {
-  if (platform !== 'win32') return ['sh', ['-c', command]];
-  const program = WINDOWS_SHELLS.find(probe);
-  if (program === undefined) {
-    throw new DomainError(`verificación: no hay shell para ejecutar el gate; se probó ${WINDOWS_SHELLS.join(' y ')}`);
+export function parseGate(text: string): string[] {
+  const words: string[] = [];
+  let word: string | null = null;
+  let quote: string | null = null;
+  for (let index = 0; index < text.length; index++) {
+    const char = text[index];
+    if (quote !== null) {
+      if (char === quote) quote = null;
+      else word += char;
+      continue;
+    }
+    const operator = OPERATORS.find((candidate) => text.startsWith(candidate, index));
+    if (operator !== undefined) throw chained(operator);
+    if (char === '"' || char === "'") {
+      quote = char;
+      word ??= '';
+    } else if (/\s/.test(char)) {
+      if (word !== null) words.push(word);
+      word = null;
+    } else word = (word ?? '') + char;
   }
-  return [program, ['-NoProfile', '-Command', command]];
+  if (word !== null) words.push(word);
+  return words;
 }
 
 export class VerificationFailed extends DomainError {}
@@ -56,11 +71,13 @@ function lineSink(io: Io, file: WriteStream) {
   };
 }
 
-function runTee({ worktree, command, io }: Verification, log: string): Promise<number> {
-  const [program, args] = shellCommand(command);
+function runTee({ worktree, argv, io }: Verification, log: string): Promise<number> {
+  const resolved = resolveCommand(argv[0]);
+  if (resolved === null) throw new DomainError(`verificación: no se encuentra '${argv[0]}' en el PATH`);
+  const { file: program, args } = launchSpec(resolved, argv.slice(1));
   const file = createWriteStream(log);
   const sink = lineSink(io, file);
-  const child = spawn(program, args, { cwd: worktree, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(program, args, { cwd: worktree, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments: program !== resolved });
   child.stdout.on('data', sink.push);
   child.stderr.on('data', sink.push);
   const finish = (code: number, done: (code: number) => void) => {
@@ -129,13 +146,13 @@ export async function verifyMerge(worktree: string, { command, verifiedAt }: Ver
     const [shortHash] = await gitLines(worktree, ['rev-parse', '--short', verifiedAt]);
     return io.out(`verificación: omitida: desde ${shortHash} solo cambian docs`);
   }
-  await runVerification({ worktree, command, io });
+  await runVerification({ worktree, argv: parseGate(command), io });
 }
 
 // Tras deshacer el merge, el worktree ya está en la base: el mismo comando dice si el rojo es de la rama.
-export async function explainFailure(error: unknown, { worktree, command, io }: Omit<Verification, 'command'> & { command: string | null }): Promise<unknown> {
+export async function explainFailure(error: unknown, { worktree, command, io }: Omit<Verification, 'argv'> & { command: string | null }): Promise<unknown> {
   if (!(error instanceof VerificationFailed) || command === null) return error;
-  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, command, io })}`);
+  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, argv: parseGate(command), io })}`);
 }
 
 async function baseVerdict(verification: Verification): Promise<string> {

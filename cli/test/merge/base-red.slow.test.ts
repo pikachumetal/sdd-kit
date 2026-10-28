@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { cleanedUp, isWindows, mergeFixture, runMerge, sha } from './helpers.ts';
+import { cleanedUp, failsIfExists, mergeFixture, nodeGate, runMerge, sha } from './helpers.ts';
 
-const failsIfExists = (file: string) => (isWindows ? `if (Test-Path ${file}) { exit 1 }` : `if [ -f ${file} ]; then exit 1; fi`);
 
 describe('un merge del cierre que falla en la verificación dice si la base también falla', () => {
   it('con la base también en rojo lo dice', async () => {
@@ -34,7 +33,7 @@ describe('un merge del cierre que falla en la verificación dice si la base tamb
   it('tras un bloqueado no repite la suite en la base', async () => {
     const fx = mergeFixture('base-bloqueado');
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', "echo \"Error: EBUSY: resource busy or locked, unlink 'dist/app.js'\"; exit 1"]);
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', nodeGate(fx.root, "console.log(\"Error: EBUSY: resource busy or locked, unlink 'dist/app.js'\");\nprocess.exit(1);\n")]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain("bloqueado: 'dist/app.js' lo tiene abierto otro proceso");

@@ -8,7 +8,7 @@ import { checkDestination, withDestination } from './destination.ts';
 import { checkHotfix, mergeHotfix, prepareHotfix } from './hotfix.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
 import { mergeFeature, pushDestination, remoteForBranch, shortHead, syncBaseBranch, undoFailedMerge, unpublishedCommits, unpublishedLines } from './steps.ts';
-import { explainFailure, resolveCommit, verifyMerge } from './verify.ts';
+import { explainFailure, parseGate, resolveCommit, verifyMerge } from './verify.ts';
 
 export interface MergeOptions {
   projectRoot: string;
@@ -91,6 +91,7 @@ export function resolveProjectRoot(path: string): string {
 }
 
 export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> {
+  if (options.verify !== null && options.verify.trim() !== '') parseGate(options.verify);
   const projectRoot = resolveProjectRoot(options.projectRoot);
   const policy = resolveMergePolicy(projectRoot);
   const stable = stableTarget(options, policy);
