@@ -97,7 +97,7 @@ export function campaignEnv(campaign: Campaign, overrides: CampaignEnv): NodeJS.
 
 // A un fichero, no a una tubería: con los sujetos en Git Bash, se perdían a ratos líneas de la
 // salida («write error: Bad file descriptor»), y así stdout y stderr quedan en su orden.
-function runToFile(command: string, args: string[], env: NodeJS.ProcessEnv, cwd?: string): RunResult {
+export function runToFile(command: string, args: string[], env: NodeJS.ProcessEnv, cwd?: string): RunResult {
   const log = join(mkdtempSync(join(tmpdir(), 'run-log-')), 'output.txt');
   const fd = openSync(log, 'w');
   try {

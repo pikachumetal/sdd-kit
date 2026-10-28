@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { fakeClaude, headless, newCampaign, readLines, runCampaign, slashed, subjects, testRoot, withPath, write } from './campaign.ts';
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('con SUPERPOWERS_DIR aísla al sujeto de la configuración del usuario y carga superpowers desde esa ruta (feature 0074)', () => {
     const campaign = newCampaign(testRoot('isolated'));
 

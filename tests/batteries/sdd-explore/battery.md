@@ -2,11 +2,11 @@
 
 Pensar con el contexto del proyecto cargado, sin dejar artefactos propios: entender, sondear con una prueba desechable o estructurar con `sdd-grilling`. Nace en la feature 0161 como humo (Art. I: renombrar `sdd-consult` es editarla y se vuelve a medir su entrada), y mide además la salida cuando la conversación acaba en trabajo: una feature o un patch pasan por `sdd-roadmap`, y un config da su prompt de arranque directo. Los controles de pensar viven en la batería de `sdd-grilling` (g1, g9, k1).
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-explore`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Un molde, `salas` (el de `tests/batteries/using-sdd/mold-salas`), con `control.profile: delegate` y `merge.push: true` en el marcador y `engines` en `package.json`. Si el kit que se prueba no tiene la skill esperada (el RED), la guarda de `subject_init` comprueba `using-sdd`.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-explore`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 30 turnos como máximo. Un molde, `salas` (el de `tests/batteries/using-sdd/mold-salas`), con `control.profile: delegate` y `merge.push: true` en el marcador y `engines` en `package.json`. Si el kit que se prueba no tiene la skill esperada (el RED), la guarda de `subject_init` comprueba `using-sdd`.
 
 **La salida de explore se mide con una pregunta de verdad** (feature 0161): «¿Podemos subir node…? Si se puede, lo quiero» es una petición de cambio y entra, con razón, por `sdd-propose`; e2 pide el prompt de forma explícita.
 
-**Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»; en el RED sale rojo por construcción, porque la skill se llama `sdd-consult`). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»; en el RED sale rojo por construcción, porque la skill se llama `sdd-consult`). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y `state.txt` con la rúbrica de abajo.
 
 ## Escenarios
 

@@ -53,7 +53,7 @@ async function earlierSharedServer(root: string): Promise<{ campaign: Campaign; 
   return { campaign, port };
 }
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('para al acabar lo que escucha en los puertos del sujeto (ticket de la feature 0036 §3)', async () => {
     const root = testRoot('ports');
     const port = await freePort();

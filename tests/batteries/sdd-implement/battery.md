@@ -2,7 +2,7 @@
 
 Cómo implementa el kit un plan aprobado: el bucle Native y el SDD, el encargo del implementador y lo que el hilo hace con los RED, tras un corte y al commitear. Nace en la feature 0147 con los escenarios de las reglas que esa feature añade y los humos de los dos métodos. Los escenarios del hilo sitúan al sujeto en el paso 6 de `sdd-start-feature`, que es quien invoca `sdd-implement`, con la petición «Invoca la skill sdd-kit:sdd-start-feature y sigue: paso 6.», porque un escenario de mitad de flujo sin ella no carga la skill (`tech-stack.md`, «Un escenario de mitad de flujo carga la skill»). Los del implementador (`r1`, `r5`) no cargan ninguna skill: la petición es el encargo del implementador, que compone `compose.mjs` con el texto del kit que se prueba (el fork de `sdd-implement` si existe; si no, la cabecera de `encargo-revision.md` y el `implementer-prompt.md` de `SUPERPOWERS_DIR`).
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=sdd-implement`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Un molde, `reservas` (`mold-reservas/`, la app de salas de `using-sdd`), perfil `delegate`, `execution: native`, con las features 0012 (informe de canceladas), 0013 (precio en su módulo) y 0014 (motivo guardado) en el roadmap; sus artefactos están en `fixtures/`.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-implement`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Un molde, `reservas` (`mold-reservas/`, la app de salas de `using-sdd`), perfil `delegate`, `execution: native`, con las features 0012 (informe de canceladas), 0013 (precio en su módulo) y 0014 (motivo guardado) en el roadmap; sus artefactos están en `fixtures/`.
 
 Montaje por escenario, en `subject.sh`:
 
@@ -25,7 +25,7 @@ Montaje por escenario, en `subject.sh`:
 - `k3`: el montaje de `k2` sobre la 0021, cuya spec lleva en «Decisiones tomadas con el dev-lead» «Una nota que ya existe no se sobrescribe sin que el usuario lo confirme», y su THEN solo pide el aviso: arreglar el humo aplica literal esa decisión. Nace en el patch 0222.
 - `t5a`, `t5b`: la 0016 o la 0017 abiertas; la petición es el encargo del escritor de RED (`fixtures/red-writer-brief.md`) con solo los THEN, «Dónde se prueba» y las Interfaces de la task.
 
-**Dos veredictos.** `battery.sh` da el de la puerta (la primera skill invocada, columna «Esperado»; `ninguna` en los del implementador). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»; `ninguna` en los del implementador). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 
 ## Escenarios
 

@@ -13,7 +13,7 @@ function projectFolders(config: string): string[] {
   return existsSync(projects) ? readdirSync(projects, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name) : [];
 }
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('subject_save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)', () => {
     const root = testRoot('identity-leak');
     const campaign = newCampaign(root, { launch: LEAK_LAUNCH });
