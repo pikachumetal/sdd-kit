@@ -1,9 +1,10 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BatteryError, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
-const CWD = 'C:\\w';
+// Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
+const CWD = resolve('/w');
 const DIR = join(CWD, 'battery');
 const TABLE = join(DIR, 'battery.md');
 const SPEC = join(CWD, 'spec');

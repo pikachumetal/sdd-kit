@@ -71,6 +71,7 @@ function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
   const exits: (() => number)[] = [];
   const killed: { pid: number; tree: boolean }[] = [];
   const timers: { ms: number; fire: () => void }[] = [];
+  const armed: number[] = [];
   // Un claude encallado acaba cuando lo matan.
   let hanging = (_code: number) => {};
   const defaultReply = (args: string[], input?: string): RunReply => {
@@ -98,6 +99,7 @@ function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
     startTimer: (ms: number, fire: () => void) => {
       const timer = { ms, fire };
       timers.push(timer);
+      armed.push(ms);
       return () => timers.splice(timers.indexOf(timer), 1);
     },
     kill: (pid: number, tree: boolean) => {
@@ -116,7 +118,7 @@ function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
     netstat: options.netstat ?? (() => ''),
   };
   const cleanup = () => exits.map((fn) => fn());
-  return { deps, calls, claudeCalls, errs, outs, killed, timers, cleanup };
+  return { deps, calls, claudeCalls, errs, outs, killed, timers, armed, cleanup };
 }
 
 function baseEnv(overrides: Env = {}): Env {
@@ -567,12 +569,20 @@ describe('Lanzar claude (lib.mjs)', () => {
     expect(errs).toEqual(['[a-1] tope de 5 s: sujeto cortado']);
   });
 
-  it('sin SUBJECT_TIMEOUT no pone tope', async () => {
-    const { subject, timers } = start();
+  it('sin SUBJECT_TIMEOUT pone un tope de 30 min: sin él, un sujeto colgado paró la tanda una hora (ticket de la feature 0230 §1)', async () => {
+    const { subject, armed } = start();
 
     await subject.launch('x');
 
-    expect(timers).toEqual([]);
+    expect(armed).toEqual([1_800_000]);
+  });
+
+  it('con SUBJECT_TIMEOUT=0 no pone tope', async () => {
+    const { subject, armed } = start({ SUBJECT_TIMEOUT: '0' });
+
+    await subject.launch('x');
+
+    expect(armed).toEqual([]);
   });
 });
 

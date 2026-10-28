@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { cleanGitEnv, kitRoot } from '../process.ts';
@@ -24,13 +23,15 @@ function write(path: string, content: string): string {
   return path;
 }
 
-// RUNS_DIR tiene que estar en el scratchpad o en .temp/ del repo: el nombre de la carpeta temporal lo lleva.
-const root = mkdtempSync(join(tmpdir(), 'scratchpad-subject-'));
+// RUNS_DIR va en .temp/ del repo y corto: run.mjs rechaza uno de más de 80 caracteres.
+mkdirSync(join(kitRoot, '.temp'), { recursive: true });
+const root = mkdtempSync(join(kitRoot, '.temp', 's-'));
 const runs = join(root, 'runs');
 const log = join(root, 'fake-claude.json');
 let output = '';
 let code = 1;
 
+// Lanza run.mjs, el sujeto y git de verdad: con molds.test.ts a la vez pasa de los 10 s por omisión.
 beforeAll(() => {
   const kit = join(root, 'kit');
   write(join(kit, 'skills', 'using-sdd', 'SKILL.md'), '# using-sdd\n');
@@ -55,7 +56,7 @@ beforeAll(() => {
   const result = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'run.mjs')], { env, encoding: 'utf8', windowsHide: true });
   output = `${result.stdout}${result.stderr}`;
   code = result.status ?? 1;
-});
+}, 120_000);
 
 afterAll(() => rmSync(root, { recursive: true, force: true }));
 

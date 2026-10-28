@@ -1,9 +1,10 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CampaignError, readConfig, runCampaign, stopCampaign, stopSubjectProcesses, subjectProcesses, sweepCut } from '../../../../tests/headless/campaign.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
-const CWD = 'C:\\w';
+// Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
+const CWD = resolve('/w');
 const SPEC = join(CWD, 'spec');
 const RUNS = join(CWD, 'scratchpad', 'runs');
 const KIT = join(CWD, 'kit');
@@ -121,7 +122,20 @@ describe('readConfig', () => {
   });
 
   it('rechaza un RUNS_DIR fuera del scratchpad y de .temp/', () => {
-    expect(() => readConfig(baseEnv({ RUNS_DIR: 'C:\\otro\\runs' }), CWD, kitFs())).toThrow('RUNS_DIR fuera del scratchpad o de .temp/: C:\\otro\\runs');
+    const outside = join(resolve('/otro'), 'runs');
+    expect(() => readConfig(baseEnv({ RUNS_DIR: outside }), CWD, kitFs())).toThrow(`RUNS_DIR fuera del scratchpad o de .temp/: ${outside}`);
+  });
+
+  it('aborta con un RUNS_DIR de más de 80 caracteres, que los sujetos no pueden clonar (ticket de la feature 0230 §3)', () => {
+    const base = join(CWD, 'scratchpad');
+    const longRuns = join(base, 'r'.repeat(79 - base.length));
+    const tooLong = `${longRuns}x`;
+
+    expect(longRuns).toHaveLength(80);
+    expect(() => readConfig(baseEnv({ RUNS_DIR: longRuns }), CWD, kitFs())).not.toThrow();
+    expect(() => readConfig(baseEnv({ RUNS_DIR: tooLong }), CWD, kitFs())).toThrow(
+      new CampaignError(`RUNS_DIR de 81 caracteres (máximo 80): ${tooLong}; usa .temp/<corto> del worktree`),
+    );
   });
 
   it('aborta si la copia del kit no lleva cli/bin/sdd.js', () => {

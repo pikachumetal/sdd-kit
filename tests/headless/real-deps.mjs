@@ -44,18 +44,32 @@ function launch({ subjectSh, args, env }) {
 // de las líneas de órdenes de otros programas, y el JSON no se puede leer.
 const PROCESS_QUERY = "Get-CimInstance Win32_Process | ForEach-Object { \"$($_.ProcessId)`t$($_.CommandLine -replace '[\\x00-\\x1f]', ' ')\" }";
 
+// Fuera de Windows (el CI corre esta suite en Linux), ps da lo mismo: «<pid> <línea de órdenes>».
+const windows = process.platform === 'win32';
+const [PROCESS_COMMAND, PROCESS_ARGS, SEPARATOR] = windows
+  ? ['pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], '\t']
+  : ['ps', ['-eo', 'pid=,args='], ' '];
+
 async function processes() {
-  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+  const result = spawnSync(PROCESS_COMMAND, PROCESS_ARGS, { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
   if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`pwsh salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
-  return result.stdout.split(/\r?\n/).filter(Boolean).map((line) => {
-    const tab = line.indexOf('\t');
-    return { pid: Number(line.slice(0, tab)), commandLine: line.slice(tab + 1) };
+  if (result.status !== 0) throw new Error(`${PROCESS_COMMAND} salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
+  return result.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
+    const at = line.indexOf(SEPARATOR);
+    return { pid: Number(line.slice(0, at)), commandLine: line.slice(at + 1) };
   });
 }
 
-// taskkill /T se lleva el árbol; un proceso que ya no existe no es un error.
+// taskkill /T se lleva el árbol; un proceso que ya no existe no es un error. Fuera de Windows, solo ese PID.
 function kill(pid, tree) {
+  if (!windows) {
+    try {
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // Ya había salido.
+    }
+    return;
+  }
   spawnSync('taskkill', [...(tree ? ['/T'] : []), '/F', '/PID', String(pid)], { stdio: 'ignore', windowsHide: true });
 }
 

@@ -17,6 +17,7 @@ const REQUIRED = [
 ];
 const KIT_WITHOUT_CLI = 'la copia del kit no lleva cli/: sácala con git archive <commit> skills .claude-plugin agents cli hooks';
 const LAUNCH_POLL_MS = 1000;
+const MAX_RUNS_DIR = 80;
 
 const comparable = (path) => path.replaceAll('\\', '/').toLowerCase();
 const formatCost = (value) => value.toFixed(2);
@@ -50,6 +51,9 @@ export function readConfig(env, cwd, fs) {
   if (!env.SUBJECT_SH.endsWith('.mjs')) throw new CampaignError('SUBJECT_SH tiene que ser un .mjs: los subject.sh se fueron con la 0238');
   const subjectEnv = absolutePaths(env, cwd);
   if (!runsDirAllowed(subjectEnv.RUNS_DIR)) throw new CampaignError(`RUNS_DIR fuera del scratchpad o de .temp/: ${env.RUNS_DIR}`);
+  // Con uno de ~190 caracteres, git clone y git worktree add de los sujetos dieron «Filename too long».
+  const runsLength = subjectEnv.RUNS_DIR.length;
+  if (runsLength > MAX_RUNS_DIR) throw new CampaignError(`RUNS_DIR de ${runsLength} caracteres (máximo ${MAX_RUNS_DIR}): ${subjectEnv.RUNS_DIR}; usa .temp/<corto> del worktree`);
   const maxParallel = positiveInt(env, 'MAX_PARALLEL', '5');
   const subjectCap = positiveInt(env, 'SUBJECT_CAP');
   checkCostCap(env);

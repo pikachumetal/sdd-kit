@@ -18,7 +18,7 @@
 // EXTRA_ALLOWED (herramientas que se suman a --allowedTools, como un servidor MCP), APPEND_SYSTEM (--append-system-prompt),
 // PORT (puerto del molde, si arranca un servidor), CLAUDE_CONFIG_DIR (raíz de los transcripts de seedTranscript; sin ella, ~/.claude),
 // SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
-// SUBJECT_TIMEOUT (segundos de reloj por sujeto; 0, el valor por omisión, sin tope), CLAUDE_BIN (otro claude; un .mjs se lanza con node),
+// SUBJECT_TIMEOUT (segundos de reloj por sujeto: 1800 por omisión; 0, sin tope), CLAUDE_BIN (otro claude; un .mjs se lanza con node),
 // TURN2 (mensaje del segundo turno: launch reanuda la sesión con resume),
 // DRY_RESULT (texto del result en seco; con «?», converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
 // DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
@@ -36,6 +36,8 @@ const EXTRACT = join(HEADLESS, 'extract.mjs');
 const DENY_KILL_HOOK = join(HEADLESS, 'deny-kill.mjs').replaceAll('\\', '/');
 // La salida versionada de una campaña no pasa de 140 caracteres de ruta relativa (cli/test/kit/path-length.test.ts).
 const MAX_PATH = 140;
+// Sin tope, un sujeto colgado paró la tanda una hora.
+const DEFAULT_TIMEOUT_SECONDS = 1800;
 
 const forward = (path) => path.replaceAll('\\', '/');
 const comparable = (path) => forward(resolve(path)).toLowerCase();
@@ -399,7 +401,7 @@ function addLaunch(s, deps) {
     if (!bin) s.die('no encuentro claude en el PATH');
     const [command, finalArgs] = bin.endsWith('.mjs') ? [s.NODE, [bin, ...args]] : [bin, args];
     const child = deps.spawnClaude(command, finalArgs, { cwd: s.R, env: claudeEnv(s.env), stdout, stderr: errFile, append });
-    const seconds = Number(s.env.SUBJECT_TIMEOUT || 0);
+    const seconds = Number(s.env.SUBJECT_TIMEOUT || DEFAULT_TIMEOUT_SECONDS);
     let timedOut = false;
     const cancel = seconds > 0
       ? deps.startTimer(seconds * 1000, () => {
