@@ -156,7 +156,7 @@ El script lanza `claude --settings '{"enabledPlugins":{"sdd-kit@sdd-kit":false}}
 
 No cambies la fuente del marketplace a tu clon: al volver a GitHub chocarías con el error de arriba.
 
-Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI y los de las skills (topes, enlaces, manifests) son Vitest. El pre-commit y `moon` corren sin PowerShell; solo lo usan dos piezas que lo necesitan en Windows: `cli/test/merge/failures.slow.test.ts`, para abrir un fichero en exclusiva, y `tests/headless/lib.sh`, al cerrar una campaña real de sujetos.
+Las herramientas del repo las fija `.prototools` (Node 26, pnpm y moon): `proto install` una vez, y `pnpm install` en cada worktree. La CLI `sdd` está en `cli/`, en TypeScript que Node ejecuta sin compilar. Los tests de la CLI y los de las skills (topes, enlaces, manifests) son Vitest. El pre-commit y `moon` corren sin PowerShell; solo lo usan dos piezas que lo necesitan en Windows: `cli/test/merge/failures.slow.test.ts`, para abrir un fichero en exclusiva, y `tests/headless/real-deps.mjs`, que lista los procesos de cada sujeto de una campaña real para pararlos al acabar.
 
 ```text
 moon run cli:typecheck cli:test kit:roadmap

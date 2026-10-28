@@ -9,7 +9,7 @@ const runMjs = join(kitRoot, 'tests', 'headless', 'run.mjs');
 const root = mkdtempSync(join(tmpdir(), 'run-mjs-'));
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-// El sujeto falso deja su tools.txt con un RESULTADO, como lo haría lib.sh al guardar.
+// El sujeto falso deja su tools.txt con un RESULTADO, como lo haría lib.mjs al guardar.
 const FAKE_SUBJECT = `import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 const [, label, , out] = process.argv.slice(2);

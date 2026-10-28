@@ -39,7 +39,7 @@ function checkCostCap(env) {
 }
 
 // El sujeto arranca en su carpeta de run: con rutas relativas, --plugin-dir no resolvía y el kit no cargaba,
-// y lib.sh rechazaba el RUNS_DIR.
+// y lib.mjs rechazaba el RUNS_DIR.
 function absolutePaths(env, cwd) {
   const absolute = (path) => (isAbsolute(path) ? path : resolve(cwd, path));
   return { ...env, RUNS_DIR: absolute(env.RUNS_DIR), SPEC_DIR: absolute(env.SPEC_DIR), KIT_DIR: absolute(env.KIT_DIR) };
@@ -167,7 +167,7 @@ function labelTaken(config, deps, label) {
   return pid !== null && (pid === '' || deps.isAlive(Number(pid)));
 }
 
-// La carpeta que lib.sh da al sujeto: RUNS_DIR/<fase>/<etiqueta>, también en seco.
+// La carpeta que lib.mjs da al sujeto: RUNS_DIR/<fase>/<etiqueta>, también en seco.
 const subjectFolder = (config, label) => join(config.runsDir, config.phase, label);
 
 // claude -p recibe la carpeta del sujeto en --add-dir con la forma de cygpath -m (D:/…): se compara sin barras ni

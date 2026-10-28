@@ -4,7 +4,7 @@ El cierre de una feature o de un patch. Nace en la feature 0149, que funde `sdd-
 
 Los escenarios de conducta piden `sdd-archive` por su nombre, como `c3` de `sdd-verify`: con las dos skills viejas en el kit, el router las elegía; el enrutado lo miden `r1` y `r2`. El RED de `a1` (kit de `develop`) usó la petición sin el nombre.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-archive`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). En el RED, con el kit de `develop`, la guarda de `subject.sh` mira `sdd-end-feature` o `sdd-end-patch`, porque `sdd-archive` aún no existe; la puerta de esos escenarios sale roja por eso y se puntúa la conducta.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-archive`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). En el RED, con el kit de `develop`, la guarda de `subject.mjs` mira `sdd-end-feature` o `sdd-end-patch`, porque `sdd-archive` aún no existe; la puerta de esos escenarios sale roja por eso y se puntúa la conducta.
 
 Moldes:
 
