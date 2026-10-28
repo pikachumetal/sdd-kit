@@ -1,0 +1,30 @@
+--- [2]
+Empiezo por la Fase 1: ver el hook y reproducir el fallo.
+
+--- [6]
+Reproducido. El fallo sale de `git worktree add` (no del mensaje propio del hook). Compruebo qué variables de git hereda el hook, citándolas una a una.
+
+--- [12]
+Estado restaurado (`f9a6d3b`, `notas.txt` en el índice). Ahora pruebo la hipótesis cambiando una sola variable: ejecutar el hook a mano con y sin `GIT_INDEX_FILE=.git/index`.
+
+--- [14]
+**Causa raíz:** el hook hereda `GIT_INDEX_FILE` y eso rompe el `git worktree add` que hace por dentro. El problema no está en `notas.txt`.
+
+**Cómo ocurre**
+1. Cuando `git commit` lanza un hook, le pasa `GIT_INDEX_FILE=.git/index`. Es una ruta **relativa**, y la comprobé con una sonda.
+2. `.githooks/pre-commit` ejecuta `git worktree add -q --detach "$tmp" HEAD`, con `tmp=.git/hook-check`. Ese comando hereda la variable.
+3. Git resuelve `.git/index` respecto al worktree nuevo. Termina buscando `.git/hook-check/.git/index.lock`, y esa carpeta no existe todavía.
+4. Falla con `fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory` y el hook sale con `exit 1` (por el `|| exit 1`).
+
+**Evidencia**
+- Con el commit real, el mensaje es el de arriba.
+- Ejecutando el hook a mano, sin la variable, sale con `exit=0`.
+- Ejecutándolo a mano con `GIT_INDEX_FILE=.git/index`, falla igual que en el commit. Esa es la única diferencia entre los dos casos.
+
+**Aviso sobre mi sonda:** con un hook de prueba que no hacía nada, el commit sí se completó y creé un commit `probe`. Lo deshice con `git reset --soft HEAD~1`. Ahora HEAD está en `f9a6d3b` y `notas.txt` sigue en el índice (`A`). El resto del repo está igual que al empezar.
+
+**Otras notas**
+- Como pediste, no he tocado el hook.
+- La sesión carga sdd-kit 2.3.4 y el proyecto pide la 3.0.0. La skill de debugging que seguí puede ser la de una versión antigua.
+- Cuando quieras que lo arregle, dímelo.
+
