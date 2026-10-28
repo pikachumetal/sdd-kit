@@ -793,7 +793,7 @@ describe('Puertos del sujeto (lib.mjs)', () => {
   });
 });
 
-describe('Pasada de fix de la revisión final (lib.mjs)', () => {
+describe('Fallos de la limpieza, el tope, los puertos y la copia del kit (lib.mjs)', () => {
   it('la limpieza borra el molde aunque un paso anterior lance', () => {
     const fs = kitFs();
     const remove = fs.remove;

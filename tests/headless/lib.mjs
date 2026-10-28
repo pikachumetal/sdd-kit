@@ -229,12 +229,7 @@ function bindMoldTools(s, deps) {
       s.git('add', '-A');
       s.git('commit', '-q', '-m', title, '-m', body);
     },
-    // El molde como repo en main, con su commit base y develop sacada de él.
-    initRepo: (title = 'feat: base del molde') => {
-      s.git('init', '-q', '-b', 'main');
-      s.commit(title);
-      s.git('checkout', '-q', '-b', 'develop');
-    },
+    initRepo: (title = 'feat: base del molde') => initRepo(s, title),
     put: (path, text) => deps.fs.write(join(s.R, path), text),
     copy: (source, dest = '.') => cpSync(source, join(s.R, dest), { recursive: true }),
     kitVersion: () => kitVersion(s.KIT, deps.fs),
@@ -254,6 +249,13 @@ function bindRunTools(s, deps) {
     converse: (sheet, max) => converse(s, deps, { sheet, max }),
     ports: () => streamPorts(readOr(deps.fs, s.JSONL), s.env.PORT).join(','),
   });
+}
+
+// El molde como repo en main, con su commit base y develop sacada de él.
+function initRepo(s, title) {
+  s.git('init', '-q', '-b', 'main');
+  s.commit(title);
+  s.git('checkout', '-q', '-b', 'develop');
 }
 
 const GIT_CONFIG = ['-c', 'user.email=fixture@example.com', '-c', 'user.name=Fixture', '-c', 'core.autocrlf=false', '-c', 'core.longpaths=true'];

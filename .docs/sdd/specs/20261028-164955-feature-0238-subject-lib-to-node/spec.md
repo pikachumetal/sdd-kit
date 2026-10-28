@@ -101,13 +101,15 @@ Sin delta: no toca comportamiento de ninguna capacidad.
 
 ## Enmiendas
 
+- 2026-10-28 — El texto `falta g init en el subject.sh antes del primer g` pasa a `falta git init en el subject.mjs antes del primer git`: nombraba el fichero y la función que se van. Lo señaló la re-revisión final. — sin aprobar
+
 - 2026-10-28 — Dos ajustes de la enmienda anterior, que salen de la revisión final:
   1. El tope de `RUNS_DIR` pasa de 80 a 100 caracteres: `RUNS_DIR de <n> caracteres (máximo 100): <ruta>; usa .temp/<corto> del worktree`. El GREEN de la 0230 funcionó con `.temp/r30` en su worktree, unos 83 caracteres, y con 80 el lanzador lo rechazaría; el que falló medía unos 190.
-  2. Tres textos nuevos que la spec no listaba: `etiqueta no válida: «<etiqueta>»` (sustituye a `no se borra <run>: fuera de <runs> o sin etiqueta`, que llegaba tarde), `no encuentro claude en el PATH` y `SUBJECT_TIMEOUT tiene que ser un número de segundos: <valor>`; y `sin versión en la copia del kit <kit>: ni plugin.json ni migraciones`.
+  2. Cuatro textos nuevos que la spec no listaba: `etiqueta no válida: «<etiqueta>»` (sustituye a `no se borra <run>: fuera de <runs> o sin etiqueta`, que llegaba tarde), `no encuentro claude en el PATH` y `SUBJECT_TIMEOUT tiene que ser un número de segundos: <valor>`; y `sin versión en la copia del kit <kit>: ni plugin.json ni migraciones`.
   — aprobada: «apruebo» (dev-lead, 2026-10-28)
 
 - 2026-10-28 — Ampliación con cuatro puntos, que pidió la sesión `develop` de parte del dev-lead; se implementan en la Task 6 (nueva, tras la 5):
-  1. La suite de `test/kit/headless/` en verde en el CI de `develop` (`ubuntu-latest`, run 40725241939). Los tests de la 0216 (`battery.test.ts`, `campaign.test.ts`) usan rutas neutras construidas con `path`, como `lib.test.ts`. En Linux, `real-deps.mjs` lista procesos con `ps -eo pid=,args=` y para por PID con `process.kill`, porque `pwsh` y `taskkill` son de Windows.
+  1. La suite de `test/kit/headless/` en verde en el CI de `develop` (`ubuntu-latest`, run 40725241939). Los tests de la 0216 (`battery.test.ts`, `campaign.test.ts`) usan rutas neutras construidas con `path`, como `lib.test.ts`. En Linux, `real-deps.mjs` lee los procesos de `/proc` (el contenedor `ubuntu:24.04` no trae `ps`) y para por PID con `process.kill`, porque `pwsh` y `taskkill` son de Windows.
   2. `cli/vitest.config.ts` (0233) solo deja fuera de `cli:test` los tests que lanzan procesos (`run.test.ts`, `subject.test.ts`, `molds.test.ts`); los rápidos vuelven al pre-commit.
   3. Del ticket de la 0230: `SUBJECT_TIMEOUT` vale 1800 s por omisión (la propuesta del ticket, 30 min); `0` sigue quitando el tope. `run.mjs` y `battery.mjs run` abortan antes del primer sujeto con un `RUNS_DIR` de más de 100 caracteres (80 hasta el ajuste de abajo): `RUNS_DIR de <n> caracteres (máximo 100): <ruta>; usa .temp/<corto> del worktree`. La parte de `settings.slow.test.ts` ya no aplica: la Task 3 lo borró.
   4. El repo sin `.sh` fuera de `.githooks/` y `.docs/sdd/specs/`: ya estaba en la Task 5.
