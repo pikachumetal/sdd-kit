@@ -31,6 +31,17 @@ interface SharedPort {
 
 const errOf = (runs: string): string => readText(join(runs, 'red/a-1.err'));
 
+describe('stopPort', () => {
+  it('para lo que escucha en el puerto', async () => {
+    const port = await freePort();
+    startServer(serverScript(testRoot('stop-port'), 'stop-port'), port);
+    await waitListening(port);
+    stopPort(port);
+    await sleep(500);
+    expect(await isListening(port)).toBe(false);
+  });
+});
+
 // Otro sujeto, b-1, nombra el mismo puerto en su stream y deja su marca en live/ con `other` como PID.
 async function invokeSharedPort(name: string, otherPid: string): Promise<SharedPort> {
   const root = testRoot(name);
