@@ -46,6 +46,7 @@ export async function completeMergeAttempt(attempt: MergeAttempt, mergeCode: num
   if (conflicted.length === 0) throw await abortedMergeError(attempt);
   const left = await resolveConflicts(attempt, conflicted);
   if (left.length === 0) return;
-  await git(attempt.worktree, ['merge', '--abort']);
+  // En un merge de sincronización no se aborta: lo ya unido se queda y una persona resuelve el resto.
+  if (attempt.mergedDestination === undefined) await git(attempt.worktree, ['merge', '--abort']);
   throw new MergeConflict(attempt.stepName, left);
 }

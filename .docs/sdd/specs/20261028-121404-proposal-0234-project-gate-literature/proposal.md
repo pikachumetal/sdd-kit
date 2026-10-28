@@ -45,3 +45,5 @@ No aplica: entrevista.
 
 ## Enmiendas
 
+- 2026-10-28 — CI de la base: la propuesta no decía cómo se sabe que la CI falló → con «CI de la base» declarada, el cierre lee su último resultado en la rama de integración antes del merge y no fusiona sobre un rojo; las personas se enteran por la notificación de la CI. `develop` con la última ejecución `failed` en `3c4d5e6` → el cierre dice «CI de develop en rojo en `3c4d5e6`» y para; lo que arregla `develop` es un patch. Si el comando de la CI no responde (sin herramienta o sin sesión), avisa y sigue. `operations.md` declara, junto al pipeline, el comando que lee su último resultado — pedido por el dev-lead («¿cómo sabemos que el CI falló?»; «avisa a OdySIF de esto») — re-parte: 0236
+

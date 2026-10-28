@@ -254,7 +254,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN un cierre cuyo `sdd merge --sync` o cuyo `sdd merge` deja conflicto (`base: conflicto en` o `merge: conflicto en`), o el relanzamiento vuelve a fallar
 - WHEN el agente sigue la receta del merge
-- THEN no resuelve: cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy; el script ya ha abortado el merge
+- THEN no resuelve: cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy; `sdd merge` ya ha abortado el merge, y `--sync` lo deja a medias en el worktree, con los registros ya unidos, para que una persona resuelva los ficheros que lista y lo commitee
 - AND con `vuelta: conflicto en <ficheros>` de un hotfix, el script ya lo ha deshecho todo: una persona porta el arreglo a la rama de integración y relanza el hotfix
 
 ### El método de ejecución lo elige el handoff del plan
@@ -386,7 +386,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - WHEN se ejecuta `sdd merge --sync --project-root <worktree de la 0186>`
 - THEN integra `origin/develop` en `feature/0186-x` con la misma resolución que el merge del cierre, sin coger el cerrojo, sin `--verify` y sin push; la capacidad queda con los dos requisitos (primero el de `develop`) y el roadmap con las dos filas, y escribe `base: integrada 'origin/develop' en 'feature/0186-x': <hash>`
 - AND si `origin/develop` ya es antecesora de la rama, no hace nada y escribe `base: al día: 'origin/develop' ya está en 'feature/0186-x'`
-- AND con un conflicto que no resuelve, aborta el merge, deja la rama como estaba y sale con 1 con `base: conflicto en <ficheros>.`
+- AND con un conflicto que no resuelve, no aborta: deja el merge a medias, con lo que sí resuelve —los registros unidos por id— ya en el índice, y sale con 1 con `base: conflicto en <ficheros>.`, que lista solo lo que queda; con filas contiguas del roadmap y la misma línea de `tech-stack.md` editadas en los dos lados, el roadmap queda unido y solo `tech-stack.md` en conflicto
 - AND con cambios sin commitear, o con otro merge a medias, sale con 1 sin tocar nada: `base: 'feature/0186-x' tiene cambios sin commitear; commitéalos antes de integrar la base`
 - AND en un HEAD desacoplado sale con 1 sin tocar nada: `base: HEAD desacoplado; --sync integra la base en una rama`
 - AND con `--into`, `--tag`, `--order`, `--push`, `--verify`, `--verified-at`, `--check` o `--branch` sale con 2: `--sync no admite <opción>`
