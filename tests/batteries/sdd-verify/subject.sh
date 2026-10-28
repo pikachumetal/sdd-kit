@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Sujeto de la batería de sdd-verify: un punto de la implementación o del cierre de la 0010, con sus artefactos ya escritos.
-# Lo lanza tests/headless/battery.sh, con SUPERPOWERS_DIR.
+# Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR.
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../../headless/lib.sh"

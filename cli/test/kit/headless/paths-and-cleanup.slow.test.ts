@@ -9,7 +9,7 @@ const repoTemp = (name: string): string => join(kitRoot, '.temp', name);
 const uuid = (): string => randomUUID().replaceAll('-', '');
 const shortId = (): string => uuid().slice(0, 8);
 
-describe('Lanzador de referencia de sujetos headless (tests/headless/run.sh)', () => {
+describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', () => {
   it('aborta con RUNS_DIR fuera del scratchpad y de .temp/', () => {
     const campaign = newCampaign(testRoot('outside'));
     // La carpeta temporal cuelga de .temp/ del repo: la ruta de fuera no se crea, la guarda aborta antes.

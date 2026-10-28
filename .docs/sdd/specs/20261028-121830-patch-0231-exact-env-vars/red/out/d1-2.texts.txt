@@ -1,0 +1,36 @@
+--- [2]
+Empiezo por la Fase 1: reproducir el fallo y leer el error.
+
+--- [6]
+Reproducido: el commit falla con `index.lock: No such file or directory`. Compruebo qué entorno le pasa git al hook y qué pasa dentro del worktree temporal.
+
+--- [9]
+Manualmente, sin el entorno del hook, funciona. Falta confirmar que la variable `GIT_INDEX_FILE` relativa es lo que lo rompe.
+
+--- [12]
+Algo no cuadra: HEAD pasó de `7657040` a `a7671e2` y `notas.txt` ya no aparece como staged. Lo compruebo.
+
+--- [15]
+Mi sonda creó por accidente un commit `probe`, porque ese hook de prueba no llegó a bloquear. Lo deshago con un reset suave, que deja `notas.txt` staged como estaba.
+
+--- [17]
+**Causa raíz:** el hook `.githooks/pre-commit` hereda `GIT_INDEX_FILE=.git/index` del entorno que git le pasa al ejecutarlo. Esa ruta es relativa, y el hook no la limpia antes de llamar a `git worktree add`.
+
+**Cómo ocurre:**
+1. Durante un `git commit`, git exporta `GIT_INDEX_FILE=.git/index` a los hooks.
+2. El hook crea un worktree temporal en `.git/hook-check` con `git worktree add --detach`.
+3. El checkout de ese worktree corre con el directorio de trabajo dentro de `hook-check`. Ahí `.git/index` se resuelve como `hook-check/.git/index`, y `hook-check/.git` es un fichero de enlace, no un directorio.
+4. Git no puede crear `hook-check/.git/index.lock` y aborta con `fatal: Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory`.
+5. El hook termina con `exit 1` por el `|| exit 1` de esa línea, y el commit se cancela.
+
+**Evidencia:**
+- Con `GIT_INDEX_FILE=.git/index git worktree add …` falla con exactamente ese error.
+- Con `env -u GIT_INDEX_FILE git worktree add …` funciona.
+- Lanzado a mano, sin el entorno del hook, también funciona.
+
+Por eso no depende de `notas.txt`: cualquier commit con este hook fallaría.
+
+**Incidencia mía:** mi hook de sondeo no bloqueó el commit y se creó un commit `probe`. Lo deshice con `git reset --soft HEAD~1`. Ahora HEAD vuelve a ser `7657040`, `notas.txt` sigue staged y `.githooks/pre-commit` está intacto. No he arreglado nada, como pediste.
+
+Además, la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres, el siguiente paso es el arreglo, pero esa decisión es tuya.
+
