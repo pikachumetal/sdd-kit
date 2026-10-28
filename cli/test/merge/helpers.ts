@@ -153,10 +153,12 @@ export function nodeGate(dir: string, script: string): string {
 }
 
 export function publishFromSeed(fx: Fixture, file: string, once: boolean): string {
+  return nodeGate(fx.root, publishScript(fx, file, once));
+}
+
+export function publishScript(fx: Fixture, file: string, once: boolean): string {
   const [marker, target] = [join(fx.root, 'publicado.txt'), join(fx.seed, file)].map((path) => JSON.stringify(path));
-  return nodeGate(
-    fx.root,
-    `import { execFileSync } from 'node:child_process';
+  return `import { execFileSync } from 'node:child_process';
 import { existsSync, writeFileSync } from 'node:fs';
 if (${once} && existsSync(${marker})) process.exit(0);
 if (${once}) writeFileSync(${marker}, '');
@@ -165,6 +167,5 @@ const git = (...args) => execFileSync('git', ['-C', ${JSON.stringify(fx.seed)}, 
 git('add', '-A');
 git('commit', '-q', '-m', 'otra-sesion');
 git('push', '-q', ${JSON.stringify(fx.remote)}, 'develop');
-`,
-  );
+`;
 }

@@ -233,7 +233,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND con el hook o `--verify` en rojo, si la salida tiene líneas de un test fallido —`[-] se llama sdd-archive` de Pester, ` FAIL  test/a.test.ts > grupo > nombre` o `× nombre` de Vitest, también tras un prefijo de moon como `cli:test | `—, antes de la cola va `tests fallidos:` y esas líneas, en orden y hasta 20; sin ninguna, el mensaje no cambia
 - AND si `git merge` falla sin conflictos y sin llegar a preparar el merge (un fichero sin seguimiento que sobrescribiría, una opción que su versión no admite), el motivo es `<paso>: git merge falló sin conflictos.` seguido de las últimas 20 líneas de su salida, no un rechazo del hook
 - AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
-- AND si `--verify` sale en rojo, el mismo comando corre sobre el commit de antes del merge y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
+- AND si `--verify` sale en rojo, corre otra vez sobre el commit de antes del merge: con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
 
 ### La verificación del merge es el gate de merge, no la suite completa
 
@@ -308,7 +308,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una feature cuyo gate de cierre pasó en el commit `a1b2c3d` y una rama destino que desde entonces solo avanzó en `.docs/sdd/roadmap.md`
 - WHEN el cierre ejecuta `sdd merge --verify "<gate>" --verified-at a1b2c3d`
 - THEN no ejecuta `<gate>` y escribe `verificación: omitida: desde a1b2c3d solo cambian docs`
-- AND si desde `a1b2c3d` cambió cualquier fichero fuera de `.docs/` que no sea `*.md`, de la rama o de la base, ejecuta `<gate>` como sin la opción
+- AND si desde `a1b2c3d` cambió cualquier fichero fuera de `.docs/` que no sea `*.md`, de la rama o de la base, ejecuta `<gate>`, y con un gate `moon run … --affected`, solo lo que se cruza; también si Mergiraf resolvió algún fichero, que tocaron los dos lados
 - AND `--verified-at nada` sale con 2 y `--verified-at: 'nada' no es un commit`, sin coger el cerrojo
 
 ### El push del cierre reintenta si la rama destino avanzó
@@ -316,6 +316,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN `sdd merge --push` y un remoto en el que otra sesión publica `develop` mientras corre `--verify`
 - WHEN el push se rechaza y, tras un fetch, la `develop` remota ya no es antecesora de la local
 - THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`, integra la `develop` remota como al empezar, repite `--verify` salvo que desde el último commit verificado solo cambien docs, y vuelve a empujar
+- AND en el reintento, con un gate `moon run … --affected`, corre solo lo que toca la rama y también tocó lo que llegó desde el último commit verificado; sin `--verified-at`, el último commit verificado es el resultado del merge que pasó la primera pasada
 - AND tras el tercer push rechazado falla con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato` y la rama destino como estaba
 - AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla con `push: no se pudo publicar 'develop' en 'origin'.` y, en las líneas siguientes, lo que escribió `git push` (`remote: rama protegida`), sin reintentar; el push atómico de un hotfix, igual
 
@@ -410,6 +411,33 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND sin commits locales sin publicar, sin `--push` o sin remoto, la línea no sale
 - AND los commits que trae de la remota un reintento del push no cuentan
 - AND en un hotfix, cada rama publicada (la estable y la de vuelta) que tenga commits así da su línea, con su nombre
+
+### La verificación del merge corre solo lo que se cruza
+
+- GIVEN una rama que solo toca `apps/frontend/`, verificada en `a1b2c3d`, y una base que desde entonces trajo un cambio en `apps/backend/`
+- WHEN el cierre ejecuta `sdd merge --verify "moon run :test --affected --base develop" --verified-at a1b2c3d`
+- THEN no corre ninguna tarea, escribe `verificación: frontend:test: saltada (la base no toca sus inputs)` y `verificación: backend:test: saltada (solo la toca la base)`, y fusiona
+- AND si la base también tocó `apps/frontend/`, escribe `verificación: corre frontend:test (las tocan la rama y la base)` y corre `moon run frontend:test --affected --base a1b2c3d`
+- AND si la rama tiene un commit en `apps/frontend/` posterior a `a1b2c3d` y la base no tocó `apps/frontend/`, también corre `frontend:test`: lo que tocó la base se mide desde el commit verificado hasta el resultado del merge, que incluye esos commits de la rama
+- AND lo que toca la rama se mide desde `git merge-base <destino antes del merge> <rama>` hasta la punta de la rama; el `--base` declarado en el gate no cuenta
+- AND sin `--verified-at`, corre las tareas que toca la rama, con `--base <merge-base>`
+- AND con `-g` o `--include-relations` en el gate, una tarea cuya dependencia cambió cuenta como tocada en los dos lados
+- AND una tarea que no tocan ni la rama ni la base no sale en la salida
+- AND un gate sin `--affected`, o que no es `moon run`, corre como está declarado
+- AND con `--stdin`, `--status`, `--force` o un target que no es `proyecto:tarea` ni `:tarea`, escribe `verificación: sin cruce: '<opción o target>' no admitido; corre lo que toca la rama` y corre el gate con `--base <merge-base>`
+- AND si `moon query` falla, escribe `verificación: sin cruce: moon query falló (<primera línea del error>); corre lo que toca la rama` y corre el gate con `--base <merge-base>`
+- AND en un hotfix vale igual en la ida a la rama estable y en la vuelta a la de integración, con el merge-base de cada destino antes del merge
+
+### La verificación del merge lanza el gate sin shell
+
+- GIVEN una máquina Windows sin `pwsh` ni `powershell.exe` en el `PATH`
+- WHEN el cierre ejecuta `sdd merge --verify "moon run app:test"`
+- THEN el gate corre como `moon` con los argumentos `run app:test`, sin ningún intérprete de comandos
+- AND las comillas dobles o simples agrupan un argumento: `node -e "process.exit(1)"` son dos argumentos tras `node`
+- AND un `.cmd` o un `.bat` de Windows se lanza con el `cmd.exe` de `ComSpec`
+- AND `--verify "pnpm lint && pnpm test"` sale con 2, sin coger el cerrojo, con `--verify: el gate encadena comandos con '&&'; hazlo una tarea de moon o un script de package.json`; igual con `||`, `;`, `|`, `>` y `<` fuera de comillas
+- AND `$VAR`, `%VAR%` y `~` llegan literales al programa
+- AND un programa que no está en el `PATH` falla con `verificación: no se encuentra '<programa>' en el PATH`
 
 ## Reglas de la capacidad
 

@@ -319,6 +319,15 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND con el «no» del dev-lead a la propuesta, «Temporales» apunta solo el sitio actual de cada suite
 - AND sin el dev-lead, ni `.gitignore` ni «Temporales» cambian, y el informe los deja como pendientes con cómo reanudarlos
 
+### La migración a v3.0.0 avisa de un gate que encadena comandos
+
+- GIVEN un proyecto 2.x cuyo §Testing declara `- **Gate de merge**: pnpm lint && pnpm test`
+- WHEN acaba la migración a v3.0.0
+- THEN el informe dice `Gate que encadena comandos: «pnpm lint && pnpm test» — sdd merge --verify ya no lo admite; hazlo una tarea de moon o un script de package.json`
+- AND la línea del gate no cambia, el paso no tiene gate y no frena el marcador
+- AND con `||`, `;`, `|`, `>` o `<` fuera de comillas, igual; con `$`, `%…%` o `~`, el informe dice `Gate con variables: «<línea>» — sdd merge --verify no las expande; ponlas en la tarea de moon o en el script`
+- AND sin «Gate de merge» se lee «Gate de cierre»; «Lo afectado» no se lee; sin ningún gate que avisar, el paso se salta y lo dice
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.

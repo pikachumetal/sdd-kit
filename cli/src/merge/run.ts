@@ -34,7 +34,7 @@ export interface Job {
 
 const PUSH_ATTEMPTS = 3;
 
-async function publish(path: string, job: Job, remote: string, mergeBase: string): Promise<void> {
+async function publish(path: string, job: Job, { remote, mergeBase }: { remote: string; mergeBase: string }): Promise<void> {
   const { branch, policy, options, io } = job;
   for (let attempt = 1; (await pushDestination(path, remote, policy.into)) === 'moved'; attempt++) {
     if (attempt === PUSH_ATTEMPTS) throw new DomainError(`push: '${policy.into}' sigue moviéndose en '${remote}' tras ${PUSH_ATTEMPTS} intentos; relanza el merge en un rato`);
@@ -64,7 +64,7 @@ async function integrate(path: string, job: Job): Promise<void> {
     await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, io.out);
     await verifyMerge(path, { command: options.verify, verifiedAt: job.verifiedAt, branch, mergeBase }, io);
     const pushedTo = options.push ? remote : null;
-    if (pushedTo !== null) await publish(path, job, pushedTo, mergeBase);
+    if (pushedTo !== null) await publish(path, job, { remote: pushedTo, mergeBase });
     await reportMerge(path, job, { to: pushedTo, unpublished });
   } catch (error) {
     await undoFailedMerge(path, before);

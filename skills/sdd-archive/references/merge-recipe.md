@@ -53,6 +53,10 @@ Under one lock per repo, the script integrates the destination's remote into the
 | `merge: conflicto en <files>.` | the change conflicts with the destination | the same; the sync merge above should have caught it |
 | `mergiraf: resuelto <file>` | `mergiraf` solved a conflict the kit's rules didn't | nothing: `--verify` runs on the result |
 | `registros: dos filas distintas con el id …` | two different rows with one id, both kept | quote it in the final message for the dev-lead |
+| `--verify: el gate encadena comandos con …` (exit 2) | the gate chains or redirects commands; nothing was locked | make it a moon task or a `package.json` script, and run the script again |
+| `verificación: corre …` · `verificación: <tarea>: saltada (…)` | the crossing of a `moon run … --affected` gate | copy them into the `Gate:` line |
+| `verificación: sin cruce: …` | the gate can't be crossed (a target or option the script doesn't cross, or `moon query` failed): it runs what the branch touches | quote it in the `Gate:` line |
+| `verificación: no se encuentra '<program>' en el PATH` | the gate's program isn't on the `PATH` | fix the gate or the machine, and run the script again |
 | `verificación: …` + `base: …` | `--verify` red | «A red suite» |
 | `bloqueado: '<file>' lo tiene abierto <process>` | a process holds a file the gate needs | close it and run the script again |
 | `push: también publica <n> commit(s) de '<into>' que no son de <branch>:` + `- <hash> <subject>` lines | the destination had local commits not yet published, and they went out with the change | quote them in the final message: the dev-lead sees what went out besides the change |

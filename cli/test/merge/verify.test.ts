@@ -19,6 +19,10 @@ describe('merge --verify gate', () => {
     expect(parseGate('node -e "a && b"')).toEqual(['node', '-e', 'a && b']);
   });
 
+  it('keeps an unclosed quote to the end', () => {
+    expect(parseGate('node -e "a; b')).toEqual(['node', '-e', 'a; b']);
+  });
+
   it('keeps variables literal', () => {
     expect(parseGate('echo $HOME %PATH% ~')).toEqual(['echo', '$HOME', '%PATH%', '~']);
   });

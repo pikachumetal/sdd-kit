@@ -1,13 +1,14 @@
 import { execFile } from 'node:child_process';
 import { basename } from 'node:path';
+import { isolatedEnv } from '../git/git.ts';
 import { launchSpec, resolveCommand } from '../tasks/command.ts';
 
 export interface MoonGate {
   before: string[];
   targets: string[];
   options: string[];
+  passthrough: string[];
   affected: boolean;
-  base: string | null;
   relations: boolean;
   blocker: string | null;
 }
@@ -28,45 +29,61 @@ export interface Bases {
   verifiedAt: string | null;
 }
 
+export interface Range {
+  base: string;
+  head: string;
+  relations: boolean;
+}
+
 const MOON = ['moon', 'moon.exe'];
-const CROSSABLE_TARGET = /^[^:#~^]+:[^:]+$|^:[^:]+$/;
+const CROSSABLE_TARGET = /^[^:#~^-]+:[^:]+$|^:[^:]+$/;
 const BLOCKING_OPTIONS = ['--stdin', '--status', '--force'];
+const DROPPED_OPTIONS = ['--base', '--head'];
+const QUERY_TIMEOUT_MS = 5 * 60 * 1000;
 
 const optionName = (token: string) => token.split('=')[0];
+const firstLine = (text: string) => text.trim().split(/\r?\n/)[0] ?? '';
+
+export const noCross = (reason: string) => `verificación: sin cruce: ${reason}; corre lo que toca la rama`;
 
 function moonRunIndex(argv: string[]): number {
   return argv.findIndex((token, index) => MOON.includes(basename(token).toLowerCase()) && argv[index + 1] === 'run');
 }
 
-function splitOptions(tokens: string[]): { options: string[]; base: string | null } {
+const looksLikeTarget = (token: string) => !token.startsWith('-') && token.includes(':');
+
+// Un target tras las opciones vuelve con los demás; el resto (opciones y sus valores) se queda en su orden.
+function splitOptions(tokens: string[]): { options: string[]; lateTargets: string[] } {
   const options: string[] = [];
-  let base: string | null = null;
+  const lateTargets: string[] = [];
   for (let index = 0; index < tokens.length; index++) {
-    const [name, value] = [optionName(tokens[index]), tokens[index].split('=')[1]];
-    if (name !== '--base' && name !== '--head') options.push(tokens[index]);
-    else if (value === undefined) index++;
-    if (name === '--base') base = value ?? tokens[index] ?? null;
+    const token = tokens[index];
+    const dropped = DROPPED_OPTIONS.includes(optionName(token));
+    if (dropped && !token.includes('=')) index++;
+    else if (!dropped) (looksLikeTarget(token) ? lateTargets : options).push(token);
   }
-  return { options, base };
+  return { options, lateTargets };
 }
 
 export function readMoonGate(argv: string[]): MoonGate | null {
   const at = moonRunIndex(argv);
   if (at === -1) return null;
   const rest = argv.slice(at + 2);
-  const firstOption = rest.findIndex((token) => token.startsWith('-'));
-  const targets = firstOption === -1 ? rest : rest.slice(0, firstOption);
-  const { options, base } = splitOptions(firstOption === -1 ? [] : rest.slice(firstOption));
+  const separator = rest.indexOf('--');
+  const own = separator === -1 ? rest : rest.slice(0, separator);
+  const firstOption = own.findIndex((token) => token.startsWith('-'));
+  const { options, lateTargets } = splitOptions(firstOption === -1 ? [] : own.slice(firstOption));
+  const targets = [...(firstOption === -1 ? own : own.slice(0, firstOption)), ...lateTargets];
   const names = options.map(optionName);
-  const blocker = options.find((token) => BLOCKING_OPTIONS.includes(optionName(token))) ?? targets.find((target) => !CROSSABLE_TARGET.test(target)) ?? null;
+  const blockingOption = options.find((token) => BLOCKING_OPTIONS.includes(optionName(token)));
   return {
     before: argv.slice(0, at + 2),
     targets,
     options,
+    passthrough: separator === -1 ? [] : rest.slice(separator),
     affected: names.includes('--affected'),
-    base,
     relations: names.includes('-g') || names.includes('--include-relations'),
-    blocker,
+    blocker: blockingOption ?? targets.find((target) => !CROSSABLE_TARGET.test(target)) ?? null,
   };
 }
 
@@ -79,36 +96,51 @@ export function parseTaskTargets(json: string): string[] {
   return Object.values(tasks).flatMap((project) => Object.values(project).map((task) => task.target));
 }
 
-export function queryTasks(worktree: string, base: string, head: string, relations: boolean): Promise<string[]> {
-  const resolved = resolveCommand('moon');
-  if (resolved === null) return Promise.reject(new Error("no se encuentra 'moon' en el PATH"));
-  const { file, args } = launchSpec(resolved, ['query', 'tasks', '--affected']);
-  const env = { ...process.env, MOON_BASE: base, MOON_HEAD: head, ...(relations ? { MOON_INCLUDE_RELATIONS: 'true' } : {}) };
+// El stdin se cierra al lanzar: con él abierto, moon query espera la lista de ficheros y no acaba.
+export function queryTasks(worktree: string, { base, head, relations }: Range, moon = 'moon'): Promise<string[]> {
+  const resolved = resolveCommand(moon);
+  if (resolved === null) return Promise.reject(new Error(`no se encuentra '${moon}' en el PATH`));
+  const { file, args, windowsVerbatimArguments } = launchSpec(resolved, ['query', 'tasks', '--affected']);
+  const env = { ...isolatedEnv(), MOON_BASE: base, MOON_HEAD: head, ...(relations ? { MOON_INCLUDE_RELATIONS: 'true' } : {}) };
+  const options = { cwd: worktree, env, windowsHide: true, windowsVerbatimArguments, timeout: QUERY_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 };
   return new Promise((done, fail) => {
-    const child = execFile(file, args, { cwd: worktree, env, windowsHide: true, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {
-      if (error !== null) return fail(new Error(stderr.trim().split(/\r?\n/)[0] || error.message));
+    const child = execFile(file, args, options, (error, stdout, stderr) => {
+      if (error !== null) return fail(new Error(firstLine(stderr) || firstLine(stdout) || firstLine(error.message)));
       try {
         done(parseTaskTargets(stdout));
       } catch {
-        fail(new Error(`la salida no es JSON: ${stdout.trim().split(/\r?\n/)[0] ?? ''}`));
+        fail(new Error(`la salida no es JSON: ${firstLine(stdout)}`));
       }
     });
     child.stdin?.end();
   });
 }
 
-const withoutAffected = (options: string[]) => options.filter((token) => optionName(token) !== '--affected');
+// Sin --affected (y su valor, si lo lleva aparte), el contraste corre los targets enteros sobre la base.
+function withoutAffected(options: string[]): string[] {
+  const at = options.findIndex((token) => optionName(token) === '--affected');
+  if (at === -1) return options;
+  const valued = !options[at].includes('=') && options[at + 1] !== undefined && !options[at + 1].startsWith('-');
+  return [...options.slice(0, at), ...options.slice(at + (valued ? 2 : 1))];
+}
 const named = (gate: MoonGate, tasks: string[]) => tasks.filter((task) => gate.targets.some((target) => matches(target, task)));
 
+function planFor(gate: MoonGate, targets: string[], base: string): Omit<Plan, 'lines'> {
+  return {
+    run: [...gate.before, ...targets, ...gate.options, '--base', base, ...gate.passthrough],
+    contrast: [...gate.before, ...targets, ...withoutAffected(gate.options), ...gate.passthrough],
+  };
+}
+
 export function branchOnly(gate: MoonGate, mergeBase: string): Omit<Plan, 'lines'> {
-  return { run: [...gate.before, ...gate.targets, ...gate.options, '--base', mergeBase], contrast: [...gate.before, ...gate.targets, ...withoutAffected(gate.options)] };
+  return planFor(gate, gate.targets, mergeBase);
 }
 
 export function planGate(gate: MoonGate, sides: Sides, bases: Bases): Plan {
   const branch = named(gate, sides.branch);
   if (sides.base === null || bases.verifiedAt === null) {
     if (branch.length === 0) return { run: null, contrast: null, lines: [] };
-    return { run: [...gate.before, ...branch, ...gate.options, '--base', bases.mergeBase], contrast: [...gate.before, ...branch, ...withoutAffected(gate.options)], lines: [] };
+    return { ...planFor(gate, branch, bases.mergeBase), lines: [] };
   }
   const base = named(gate, sides.base);
   const crossed = branch.filter((task) => base.includes(task));
@@ -117,9 +149,5 @@ export function planGate(gate: MoonGate, sides: Sides, bases: Bases): Plan {
     ...base.filter((task) => !crossed.includes(task)).map((task) => `verificación: ${task}: saltada (solo la toca la base)`),
   ];
   if (crossed.length === 0) return { run: null, contrast: null, lines: skipped };
-  return {
-    run: [...gate.before, ...crossed, ...gate.options, '--base', bases.verifiedAt],
-    contrast: [...gate.before, ...crossed, ...withoutAffected(gate.options)],
-    lines: [`verificación: corre ${crossed.join(' ')} (las tocan la rama y la base)`, ...skipped],
-  };
+  return { ...planFor(gate, crossed, bases.verifiedAt), lines: [`verificación: corre ${crossed.join(' ')} (las tocan la rama y la base)`, ...skipped] };
 }

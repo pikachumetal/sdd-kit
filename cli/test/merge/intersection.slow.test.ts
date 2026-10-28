@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync, renameSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, join } from 'node:path';
 import { resolveCommand } from '../../src/tasks/command.ts';
-import { git, mergeFixture, publishFromSeed, pushRemoteCommit, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { git, mergeFixture, publishScript, pushRemoteCommit, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 // Sin MSYSTEM, como fuera de Git Bash: con él, el git.exe de Git\cmd no añade mingw64 al PATH de sus hijos.
 function withPath<T>(dirs: string[], body: () => Promise<T>): Promise<T> {
@@ -160,8 +160,7 @@ describe('merge --verify cruza con la base', () => {
     const fx = moonFixture('cruce-reintento');
     const verified = tip(fx);
     pushRemoteCommit(fx, 'apps/frontend/b.txt', 'remoto\n');
-    const publish = publishFromSeed(fx, 'apps/backend/c.txt', false);
-    renameSync(publish.slice('node "'.length, -1), join(fx.root, 'publish-once.mjs'));
+    writeFileSync(join(fx.root, 'publish-once.mjs'), publishScript(fx, 'apps/backend/c.txt', false));
 
     const result = await runMerge(fx.branch, ['--push', '--verify', GATE, '--verified-at', verified]);
 
