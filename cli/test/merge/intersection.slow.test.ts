@@ -4,11 +4,14 @@ import { delimiter, dirname, join } from 'node:path';
 import { resolveCommand } from '../../src/tasks/command.ts';
 import { git, mergeFixture, publishFromSeed, pushRemoteCommit, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
+// Sin MSYSTEM, como fuera de Git Bash: con él, el git.exe de Git\cmd no añade mingw64 al PATH de sus hijos.
 function withPath<T>(dirs: string[], body: () => Promise<T>): Promise<T> {
-  const saved = process.env.PATH;
+  const { PATH: saved, MSYSTEM: msystem } = process.env;
   process.env.PATH = dirs.join(delimiter);
+  delete process.env.MSYSTEM;
   return body().finally(() => {
     process.env.PATH = saved;
+    if (msystem !== undefined) process.env.MSYSTEM = msystem;
   });
 }
 
