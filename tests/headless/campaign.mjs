@@ -71,6 +71,8 @@ function campaignConfig(env, maxParallel, subjectCap) {
     subjectCost: env.SUBJECT_COST || formatAwk(Number(env.COST_CAP) / subjectCap),
     out: join(root, phase, 'out'),
     lockPath: join(runsDir, 'live', '.lock'),
+    // Las carpetas de los sujetos acabados: el propio sujeto no puede borrar la suya si un proceso que dejó la bloquea.
+    finished: [],
   };
 }
 
@@ -198,9 +200,27 @@ function stopIn(label, folder, processes, deps) {
   if (pids.length > 0) deps.log(`[${label}] paro ${pids.length} procesos de ${folder}`);
 }
 
-// ponytail: un proceso con nohup cuya línea de órdenes no nombra la carpeta del sujeto no se para; amplíalo si vuelve a quedar uno vivo.
-export async function stopSubjectProcesses(label, folder, deps) {
-  stopIn(label, folder, await listProcesses(label, deps), deps);
+function removeFinished(config, deps) {
+  const folders = config.finished.splice(0);
+  if (config.env.KEEP_MOLD === '1') return;
+  for (const folder of folders) {
+    try {
+      deps.fs.remove(folder);
+    } catch (error) {
+      deps.log(`no pude borrar ${folder}: ${error.message}`);
+    }
+  }
+}
+
+// El servidor del panel nombra la CLI de la copia del kit, no la carpeta del sujeto, y su cwd la bloquea. Su línea
+// de órdenes no dice de qué sujeto es: se para solo sin sujetos en curso, y el último en acabar limpia lo de todos.
+// ponytail: otra campaña con el mismo KIT_DIR y otro RUNS_DIR no cuenta como en curso; separa las copias del kit si pasa.
+async function stopLeftovers(config, label, deps) {
+  const processes = await listProcesses(label, deps);
+  stopIn(label, subjectFolder(config, label), processes, deps);
+  if (countLive(config, deps).running > 0) return;
+  stopIn(label, join(config.kitDir, 'cli', 'bin', 'sdd.js'), processes, deps);
+  removeFinished(config, deps);
 }
 
 function cutSubjects(config, deps) {
@@ -235,7 +255,8 @@ function launchSubject(config, deps, { scenario, label }) {
   // Envuelta: una promesa devuelta tal cual dentro del cerrojo lo sostendría hasta que el sujeto acabe.
   const done = exited.then(async () => {
     deps.fs.remove(markPath);
-    await stopSubjectProcesses(label, subjectFolder(config, label), deps);
+    config.finished.push(subjectFolder(config, label));
+    await stopLeftovers(config, label, deps);
   });
   return { done };
 }
