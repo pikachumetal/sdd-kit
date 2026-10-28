@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-28
 branch: patch/0241-git-bash-tmp-repair
-commit: <hash>
+commit: f90307c9
 ---
 
 # Patch 0241 — el hook de arranque del plugin repara el /tmp de Git Bash cuando apunta a una carpeta borrada
@@ -54,11 +54,15 @@ Nada del kit lo repara hoy: el hook `SessionStart` del plugin (`hooks/hooks.json
 | 4 | Lo mismo con `CLAUDE_PROJECT_DIR` en la raíz del worktree (con `.docs/sdd/`) | ✅ sale con 0; `systemMessage` con la línea de la reparación y `additionalContext` con `using-sdd`; `bash` da `0` después |
 | 5 | Coste del arranque: `cygpath.exe -w /tmp` medido tres veces | 365, 190 y 749 ms |
 
+Gate: `node cli/bin/sdd.js lock run -- moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → cli:test: corrió 1592/1604 (12 skipped) · cli:typecheck: corrió (de caché de moon, mismas entradas que el pre-commit de `f90307c9`) · kit:test-headless: saltada (--affected: el cambio no toca sus inputs) · 31 s, sobre el árbol de `f90307c9` con el cierre sin commitear (solo `.md`)
+
+Validación en campo: 2026-10-28 · RED → GREEN 9/9 de `git-bash-tmp.test.ts` · de punta a punta en Windows con la carpeta de `/tmp` apartada, con y sin `.docs/sdd/`: el hook la crea, lo dice y `bash -c 'test -d /tmp'` pasa de `1` con aviso a `0` · gate de cierre en verde · no probado: una máquina con Git instalado fuera de `C:\Program Files\Git` o sin `git.exe` en el `PATH`, y Linux o macOS de verdad (cubiertos solo por el test con la plataforma inyectada)
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,18 h del gate de cierre (11 min, patch 0245)
 - Inicio: 2026-10-28T19:53Z
-- Esfuerzo real: 
+- Esfuerzo real: 0,17 h — reloj de la sesión 0,17 h desde 2026-10-28T19:51Z, sin 0 min de espera al dev-lead (0 esperas). −75 % sobre la estimación (0,68 h con el gate): la causa raíz ya venía medida en la fila y en el walkthrough de la 0216, y el gate corrió en 31 s porque `--affected` saltó `kit:test-headless` y `cli:typecheck` salió de caché
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
