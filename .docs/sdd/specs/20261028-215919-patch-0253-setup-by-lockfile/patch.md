@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-28
 branch: patch/0253-setup-by-lockfile
-commit: <hash>
+commit: 9a566af5
 ---
 
 # Patch 0253 — el «Project Setup» de sdd-worktrees elige el gestor de paquetes por el lockfile
@@ -47,8 +47,11 @@ Lo que da por existente, comprobado: `skills/sdd-worktrees/SKILL.md:108` (`if [ 
 | 4 | GREEN determinista con el fix | 4/4 · `skills.test` y `word-budget.test` en verde (190 passed, 12 skipped) |
 | 5 | GREEN de control `ws3` con el fix (kit de `def09ce9` más el `SKILL.md` del fix): `green/out/` | sin regresión, ninguno corre `npm install`: `ws3-1` corre `node --test` en la clasificación de `sdd-propose`, antes de instalar (`ERR_MODULE_NOT_FOUND`), y después invoca `sdd-worktrees` y corre `pnpm install --frozen-lockfile`; `ws3-2` para a preguntar el alcance. El test antes de instalar en la clasificación es el hueco que la 0248 dejó «no probado», fuera de este patch. Coste: 0,78 $ |
 
+Validación en campo: 2026-10-28 · `worktrees-setup.slow.test` RED 3/4 en rojo → GREEN 4/4 (uno por lockfile y el caso sin lockfile) · `ws3` de control sin regresión (0 de 2 sujetos con `npm install`) · pre-commit del fix en verde · gate de cierre sobre el merge de sincronización (paso 6 de `sdd-archive`) · no probado: `yarn` y `npm ci` reales (el test los sustituye por funciones que imprimen su llamada), y un sujeto que siga el Step 2 sin deducir el gestor por su cuenta: los 6 lo dedujeron del lockfile
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,75 h + 0,01 h del gate de cierre (31 s, patch 0241) — 0,25 h de texto y escenario, 0,5 h de la campaña RED/GREEN
 - Inicio: 2026-10-28T21:59Z
+- Esfuerzo real: 0,43 h — reloj de la sesión 0,43 h desde 2026-10-28T21:57Z, sin 0 min de espera al dev-lead (1 espera). −43 % sobre la estimación (0,76 h con el gate): las dos tandas del RED y el GREEN corrieron cada una sus 2 sujetos en paralelo, y el RED determinista que sustituyó al de sujetos costó un test de 30 líneas
 - Coste de sujetos: 2,33 $ en 6 sujetos sonnet — RED 0,63 $; RED (segunda tanda) 0,92 $; GREEN 0,78 $
