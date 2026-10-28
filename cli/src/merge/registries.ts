@@ -112,9 +112,14 @@ async function unresolvedByKit(attempt: MergeAttempt, files: string[]): Promise<
   return left;
 }
 
+async function stageResolution(worktree: string, files: string[]): Promise<void> {
+  if (files.length === 0) return;
+  if (files.some((file) => LOG.test(file))) regenerateLog(worktree);
+  await git(worktree, ['add', '--', ...files]);
+}
+
 async function commitResolution(worktree: string, conflicted: string[]): Promise<boolean> {
-  if (conflicted.some((file) => LOG.test(file))) regenerateLog(worktree);
-  await git(worktree, ['add', '--', ...conflicted]);
+  await stageResolution(worktree, conflicted);
   return (await git(worktree, ['commit', '--no-edit'])).code === 0;
 }
 
@@ -130,13 +135,15 @@ async function stillConflicted(buffered: MergeAttempt, conflicted: string[], rep
 }
 
 // Devuelve los ficheros que siguen en conflicto; sin ninguno, el merge queda commiteado.
-// Los avisos de lo resuelto solo valen si el merge acaba hecho; lo que no se resuelve se dice siempre.
+// En un merge de sincronización lo resuelto se queda en el índice aunque quede algo: el merge sigue a medias para una persona.
+// Los avisos de lo resuelto solo valen si lo resuelto se queda; lo que no se resuelve se dice siempre.
 export async function resolveConflicts(attempt: MergeAttempt, conflicted: string[]): Promise<string[]> {
   const pending: string[] = [];
   const buffered = { ...attempt, report: (line: string) => { pending.push(line); } };
   const left = await stillConflicted(buffered, conflicted, attempt.report);
-  if (left.length > 0) return left;
-  if (!(await commitResolution(attempt.worktree, conflicted))) return conflicted;
+  if (left.length > 0 && attempt.mergedDestination === undefined) return left;
+  if (left.length > 0) await stageResolution(attempt.worktree, conflicted.filter((file) => !left.includes(file)));
+  else if (!(await commitResolution(attempt.worktree, conflicted))) return conflicted;
   pending.forEach((line) => attempt.report(line));
-  return [];
+  return left;
 }

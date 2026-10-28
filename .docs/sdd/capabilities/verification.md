@@ -186,6 +186,15 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND marca Important la espera a `savedStatus` entre elegir el estado y salir de la pantalla, sin motivo en un comentario
 - AND con `sin E2E declarados` en el encargo no marca ninguno de los tres
 
+### La línea `Gate:` nombra cada tarea, corrida o saltada
+
+- GIVEN un cambio en carril config que edita la definición de `app:test` en `moon.yml`, con el gate `moon run app:test api:test --affected --base develop`, que sale con 0 y `Tasks: 0 completed, 2 skipped`
+- WHEN el agente va a declarar el gate y commitear
+- THEN corre `moon run app:test` sin `--affected`, porque cambia su definición, antes de commitear
+- AND la línea del commit es `` Gate: `moon run app:test api:test --affected --base develop` → app:test: corrió 98/98 (sin filtro: cambia su definición) · api:test: saltada (ningún fichero cambiado casa con sus inputs: `moon task api:test`) ``
+- AND nunca escribe `→ verde` ni da el gate por bueno solo por su código de salida
+- AND la misma forma, una entrada por tarea del gate, vale en el 4.1 del walkthrough, en el §4 de `patch.md` y en el informe de la baseline de `sdd-worktrees`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:` en `tasks.md` (sin él, en la presentación de la validación); los hallazgos, rulings y minors en el ledger del workspace del plan (en lite, el de `spec.md`), hasta que «Finish» los cosecha.

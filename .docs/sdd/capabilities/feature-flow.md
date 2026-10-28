@@ -169,7 +169,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan y se despacha una task de solo frontend
 - THEN el gate completo aparece una sola vez, en la validación final, y lo ejecuta el hilo principal
 - AND no aparece en «De código» ni en la verificación de esa task, y el encargo de su implementador le dice que ejecute su verificación y no la suite completa
-- AND el cierre de `sdd-archive` solo lo repite tras su merge de sincronización, y solo si la base trajo cambios fuera de `.docs/` que no sean `*.md`
+- AND tras su merge de sincronización, el cierre de `sdd-archive` repite solo lo que afecta lo que trajo la base, y con otra rama abierta o la base por delante la validación no lo corre: lo corre el cierre una sola vez sobre el merge de sincronización
 
 ### Una task que cambia la UI se mira en un navegador
 
@@ -588,6 +588,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
 - AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
 - AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `operations.md`, `tech-stack.md` ni la constitution, lo dice y pregunta qué ejecutar
+- AND con un gate filtrado (`moon run app:test api:test --affected --base develop`), la baseline corre sin el filtro solo las tareas cuyos inputs incluyen ficheros del Scope de la spec (`moon run api:test` si el Scope solo toca `src/api/`), y su informe es la línea `Gate:` con `app:test: saltada (fuera del Scope de la spec)`; nunca da la baseline por buena con un filtro que no corrió ninguna tarea; si ninguna tarea lee ficheros del Scope (un cambio solo en `.docs/`), las nombra todas saltadas fuera del Scope, lo dice y da la baseline por lista
 - AND si la baseline falla, corre el mismo comando en un worktree temporal desanclado de la rama de integración; si también falla allí, busca las primeras líneas de error en la deuda del proyecto y cita la fila o abre una en «Por triar»; después informa de los fallos con ese veredicto y pregunta si sigue o investiga
 - AND ningún fichero de `skills/` invoca `superpowers:using-git-worktrees` ni `superpowers:dispatching-parallel-agents`
 
