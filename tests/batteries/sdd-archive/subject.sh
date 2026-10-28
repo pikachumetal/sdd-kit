@@ -103,7 +103,6 @@ start_environment() {
   printf '.docs/sdd/sdd-kit.local.json\n' >> "$R/.gitignore"
   commit "chore: gate de cierre sin e2e y config local ignorada"
 }
-# «Arrancar» falla: el entorno no se levanta y la persona valida sin la aplicación arriba.
 broken_environment() {
   printf "console.error('Error: no arranca: falta data/seed.json');\nprocess.exit(1);\n" | put scripts/env-up.mjs
   commit "chore: env-up sin la semilla de datos"
@@ -137,30 +136,11 @@ EOF
 }
 # Un test de bookings:test, en develop, que falla con EBUSY la primera vez que corre en el clon e importa una dependencia local: un worktree sin `npm install` no la tiene.
 store_red_test() {
-  mkdir -p "$R/vendor/slot-format"
-  printf '{"name": "slot-format", "version": "1.0.0", "type": "module", "main": "index.js"}\n' > "$R/vendor/slot-format/package.json"
-  printf "export const formatSlot = (day, hour) => \`\${day} \${hour}\`;\n" > "$R/vendor/slot-format/index.js"
+  local gate="$HERE/fixtures/gate"
+  mkdir -p "$R/vendor"; cp -r "$gate/slot-format" "$R/vendor/slot-format"; cp "$gate/store.test.js" "$R/test/store.test.js"
   printf '{"type": "module", "dependencies": {"slot-format": "file:vendor/slot-format"}}\n' > "$R/package.json"
-  cat <<'EOF' | put test/store.test.js
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import { execSync } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { formatSlot } from 'slot-format';
-
-const lock = join(execSync('git rev-parse --git-common-dir').toString().trim(), 'store-lock');
-
-test('el almacén guarda una reserva', () => {
-  const busy = !existsSync(lock);
-  writeFileSync(lock, '1');
-  if (busy) throw new Error("EBUSY: resource busy or locked, open 'data/bookings.json'");
-  assert.equal(formatSlot('lun', '10:00'), 'lun 10:00');
-});
-EOF
-  printf '%s\n' '{"tasks": {' \
-    '  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js test/store.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js", "test/store.test.js"]},' \
-    '  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}' '}}' > "$R/gate.json"
+  sed -i 's#test/cancel.test.js"#test/cancel.test.js test/store.test.js"#; s#"test/cancel.test.js"\]#"test/cancel.test.js", "test/store.test.js"]#' "$R/gate.json"
+  grep -q 'store.test.js"\]' "$R/gate.json" || die "bookings:test sin test/store.test.js"
   (cd "$R" && npm install --no-audit --no-fund --silent >/dev/null 2>&1) || die "npm install no instaló slot-format"
   [ -e "$R/node_modules/slot-format" ] || die "sin node_modules/slot-format"
   commit "test(bookings): el almacén guarda una reserva, con slot-format"

@@ -50,7 +50,7 @@ created: <YYYY-MM-DD>
 ### 4.1 Builds
 
 - Comandos ejecutados y resultado real (no "debería funcionar").
-- Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué de la herramienta>) · <duración> · configuración: <la del gate | lo que se añadió> · sobre <sha> *(sin «Presupuesto E2E» o con `pendiente`, si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración)*
+- Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué de la herramienta>) · <duración> · configuración: <la del gate | lo que se añadió> · sobre <sha | el commit de cierre, si el cierre junta ese sha> *(sin «Presupuesto E2E» o con `pendiente`, si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración)*
 - Entorno de la suite: `<comando>` · <comprobación> → <resultado>, levantado en esta sesión · o `no aplica` *(solo con E2E)*
 - E2E: <duración> de <Presupuesto E2E> *(solo con E2E; si lo pasa, apúntalo en 4.3 como deuda del proyecto)*
 - Tanda: <la línea `Tanda:` que diste antes de lanzarla>, <minutos> reales *(si hubo tanda)*

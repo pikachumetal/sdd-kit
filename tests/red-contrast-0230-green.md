@@ -15,10 +15,22 @@ Misma batería que el [RED](red-contrast-0230-red.md), con el kit de la rama cop
 
 Lectura por regla:
 
-- **Fichero primero**: la regla está escrita y el RED la midió en 0/2; el GREEN no la puede medir hasta volver a correr `a3a` con el molde arreglado. Va a la deuda.
+- **Fichero primero**: RED 0/2; GREEN2 (abajo) 2/2 en el fichero solo antes que la tarea, 1/2 en las dos pasadas en el mismo turno.
 - **Entorno de la base**: 2/2.
-- **Sha del commit de cierre**: 1/1.
+- **Sha del commit de cierre**: S2 1/1 (umbral 2/2); G5c cae con G5a y N0 no se corrió.
 - **Intersección rama ∩ base** (`g5`, regla del paso 6 desde `0622a9ac`): falla 0/1. El escenario ya existe y la (b) queda hecha, pero la regla no se cumple. Va a la deuda con esta evidencia; no se reescribe en esta feature (techo de sujetos).
-- **Plan B con el entorno caído**: 2/2 entre `g3d` y `g4`. El §4 de `dev-validation.md` no cambia.
+- **Plan B con el entorno caído**: `g3d` 1/1 y `g4` 1/1, cada uno por debajo de su umbral de 2/2 por el recorte. El §4 de `dev-validation.md` no cambia.
 
-Coste: 9 sujetos, 4,17 $; campaña, 13 sujetos y 6,97 $, dentro del techo de 9 $ de la enmienda.
+Coste: 9 sujetos, 4,17 $.
+
+## GREEN2 — `a3a` ×2 con el molde arreglado
+
+El `gate.mjs` del molde vuelca la salida de la tarea roja, y `store_red_test` sale de fixtures. Decidido por el dev-lead («Repetir a3a ×2»). Salidas en `green2/out/`.
+
+| Fila | Resultado | Evidencia |
+| --- | --- | --- |
+| C4 Fichero primero | 2/2 en el fichero solo; 1/2 a la vez | `a3a-2.tools.txt:157-160`: `npm install` en el worktree de la base y `node --test test/store.test.js` en la rama y en la base, en la misma llamada, antes de la segunda pasada del gate (`:184`); `a3a-1.tools.txt:114` (rama) y `:152` (base), en dos turnos |
+| C5 Entorno de la base | ✅ 2/2 | `npm install` en el worktree de la base antes de la pasada (`a3a-1:152`, `a3a-2:158`) |
+| C6 Veredicto | ✅ 2/2 | los dos abren la fila de intermitentes con `EBUSY: resource busy or locked, open 'data/bookings.json'` entera y fusionan la 0010 |
+
+Coste: 2 sujetos, 1,27 $. Campaña: 15 sujetos y 8,24 $, dentro del techo de 9 $.
