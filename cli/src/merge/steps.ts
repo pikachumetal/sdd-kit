@@ -54,6 +54,12 @@ export async function syncBaseBranch(worktree: string, base: BaseSync, report: R
   await mergeAndClean({ worktree, stepName: 'base', report }, ['--no-edit', remoteRef]);
 }
 
+export async function branchMergeBase(worktree: string, branch: string): Promise<string> {
+  const [base] = await gitLines(worktree, ['merge-base', 'HEAD', branch]);
+  if (base === undefined) throw new DomainError(`merge: '${branch}' no tiene historia común con el destino`);
+  return base;
+}
+
 export async function mergeFeature(worktree: string, { branch, into, noFf, order }: FeatureMerge, report: Report): Promise<void> {
   const flags = noFf ? ['--no-ff'] : [];
   const orderLine = order === null ? [] : ['-m', `Orden del dev-lead: «${order}»`];

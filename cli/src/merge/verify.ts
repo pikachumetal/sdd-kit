@@ -7,6 +7,7 @@ import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git, gitLines } from '../git/git.ts';
 import { launchSpec, resolveCommand } from '../tasks/command.ts';
+import { branchOnly, planGate, queryTasks, readMoonGate, type Plan } from './affected.ts';
 
 export interface Verification {
   worktree: string;
@@ -47,7 +48,14 @@ export function parseGate(text: string): string[] {
   return words;
 }
 
-export class VerificationFailed extends DomainError {}
+export class VerificationFailed extends DomainError {
+  readonly contrast: string[] | null;
+
+  constructor(message: string, contrast: string[] | null) {
+    super(message);
+    this.contrast = contrast;
+  }
+}
 
 function logPath(kind: string): string {
   const stamp = new Date().toISOString().replace(/\D/g, '').slice(0, 14);
@@ -124,7 +132,7 @@ export async function resolveCommit(root: string, value: string): Promise<string
   return commit;
 }
 
-export async function runVerification(verification: Verification): Promise<void> {
+export async function runVerification(verification: Verification, contrast: string[] | null = verification.argv): Promise<void> {
   const log = logPath('verify');
   const code = await runTee(verification, log);
   if (code === 0) return void rmSync(log, { force: true });
@@ -132,27 +140,52 @@ export async function runVerification(verification: Verification): Promise<void>
   const locked = findLockedFile(output);
   if (locked !== undefined) throw new DomainError(`bloqueado: ${locked}; ciérralo y relanza el merge. Salida completa en ${log}`);
   const report = failureReport(output.split(LINE_BREAK).filter((line) => line !== ''));
-  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}\n${report}`);
+  throw new VerificationFailed(`verificación: código de salida ${code}; salida completa en ${log}
+${report}`, contrast);
 }
 
 export interface VerifyRequest {
   command: string | null;
   verifiedAt: string | null;
+  branch: string;
+  mergeBase: string;
 }
 
-export async function verifyMerge(worktree: string, { command, verifiedAt }: VerifyRequest, io: Io): Promise<void> {
+async function planVerification(worktree: string, argv: string[], { verifiedAt, branch, mergeBase }: VerifyRequest, io: Io): Promise<Omit<Plan, 'lines'>> {
+  const gate = readMoonGate(argv);
+  if (gate === null || !gate.affected) return { run: argv, contrast: argv };
+  const fallback = (reason: string) => {
+    io.out(`verificación: sin cruce: ${reason}; corre lo que toca la rama`);
+    return branchOnly(gate, mergeBase);
+  };
+  if (gate.blocker !== null) return fallback(`'${gate.blocker}' no admitido`);
+  try {
+    const branchTasks = await queryTasks(worktree, mergeBase, branch, gate.relations);
+    const baseTasks = verifiedAt === null ? null : await queryTasks(worktree, verifiedAt, 'HEAD', gate.relations);
+    const plan = planGate(gate, { branch: branchTasks, base: baseTasks }, { mergeBase, verifiedAt });
+    plan.lines.forEach((line) => io.out(line));
+    return plan;
+  } catch (error) {
+    return fallback(`moon query falló (${(error as Error).message})`);
+  }
+}
+
+export async function verifyMerge(worktree: string, request: VerifyRequest, io: Io): Promise<void> {
+  const { command, verifiedAt } = request;
   if (command === null || command.trim() === '') return;
   if (verifiedAt !== null && (await onlyDocsSince(worktree, verifiedAt))) {
     const [shortHash] = await gitLines(worktree, ['rev-parse', '--short', verifiedAt]);
     return io.out(`verificación: omitida: desde ${shortHash} solo cambian docs`);
   }
-  await runVerification({ worktree, argv: parseGate(command), io });
+  const { run, contrast } = await planVerification(worktree, parseGate(command), request, io);
+  if (run !== null) await runVerification({ worktree, argv: run, io }, contrast);
 }
 
-// Tras deshacer el merge, el worktree ya está en la base: el mismo comando dice si el rojo es de la rama.
-export async function explainFailure(error: unknown, { worktree, command, io }: Omit<Verification, 'argv'> & { command: string | null }): Promise<unknown> {
-  if (!(error instanceof VerificationFailed) || command === null) return error;
-  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, argv: parseGate(command), io })}`);
+// Tras deshacer el merge, el worktree ya está en la base: lo mismo que corrió dice si el rojo es de la rama.
+export async function explainFailure(error: unknown, { worktree, io }: Omit<Verification, 'argv'>): Promise<unknown> {
+  if (!(error instanceof VerificationFailed) || error.contrast === null) return error;
+  return new DomainError(`${error.message}
+${await baseVerdict({ worktree, argv: error.contrast, io })}`);
 }
 
 async function baseVerdict(verification: Verification): Promise<string> {
