@@ -1,9 +1,10 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CampaignError, readConfig, runCampaign, stopCampaign, stopSubjectProcesses, subjectProcesses, sweepCut } from '../../../../tests/headless/campaign.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
-const CWD = 'C:\\w';
+// Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
+const CWD = resolve('/w');
 const SPEC = join(CWD, 'spec');
 const RUNS = join(CWD, 'scratchpad', 'runs');
 const KIT = join(CWD, 'kit');
@@ -21,7 +22,7 @@ function baseEnv(overrides: Env = {}): Env {
     SPEC_DIR: SPEC,
     RUNS_DIR: RUNS,
     KIT_DIR: KIT,
-    SUBJECT_SH: join(SPEC, 'red', 'subject.sh'),
+    SUBJECT_SH: join(SPEC, 'red', 'subject.mjs'),
     SCENARIOS: 'a',
     SUBJECT_CAP: '10',
     COST_CAP: '10',
@@ -110,12 +111,31 @@ describe('readConfig', () => {
     expect(() => readConfig(baseEnv({ SPEC_DIR: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SPEC_DIR'));
   });
 
+  it('rechaza un SUBJECT_SH que no es .mjs', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_SH: join(SPEC, 'red', 'subject.sh') }), CWD, kitFs())).toThrow(
+      new CampaignError('SUBJECT_SH tiene que ser un .mjs: los subject.sh se fueron con la 0238'),
+    );
+  });
+
   it('exige que MAX_PARALLEL sea un entero positivo', () => {
     expect(() => readConfig(baseEnv({ MAX_PARALLEL: '0' }), CWD, kitFs())).toThrow('MAX_PARALLEL tiene que ser un entero positivo: 0');
   });
 
   it('rechaza un RUNS_DIR fuera del scratchpad y de .temp/', () => {
-    expect(() => readConfig(baseEnv({ RUNS_DIR: 'C:\\otro\\runs' }), CWD, kitFs())).toThrow('RUNS_DIR fuera del scratchpad o de .temp/: C:\\otro\\runs');
+    const outside = join(resolve('/otro'), 'runs');
+    expect(() => readConfig(baseEnv({ RUNS_DIR: outside }), CWD, kitFs())).toThrow(`RUNS_DIR fuera del scratchpad o de .temp/: ${outside}`);
+  });
+
+  it('aborta con un RUNS_DIR de más de 100 caracteres, que los sujetos no pueden clonar (ticket de la feature 0230 §3)', () => {
+    const base = join(CWD, 'scratchpad');
+    const longRuns = join(base, 'r'.repeat(99 - base.length));
+    const tooLong = `${longRuns}x`;
+
+    expect(longRuns).toHaveLength(100);
+    expect(() => readConfig(baseEnv({ RUNS_DIR: longRuns }), CWD, kitFs())).not.toThrow();
+    expect(() => readConfig(baseEnv({ RUNS_DIR: tooLong }), CWD, kitFs())).toThrow(
+      new CampaignError(`RUNS_DIR de 101 caracteres (máximo 100): ${tooLong}; usa .temp/<corto> del worktree`),
+    );
   });
 
   it('aborta si la copia del kit no lleva cli/bin/sdd.js', () => {
@@ -129,8 +149,13 @@ describe('readConfig', () => {
   });
 
   it('pasa al sujeto RUNS_DIR, SPEC_DIR y KIT_DIR en ruta absoluta', () => {
-    const { env } = readConfig(baseEnv({ RUNS_DIR: 'scratchpad\\runs', SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
+    const { env } = readConfig(baseEnv({ RUNS_DIR: join('scratchpad', 'runs'), SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
     expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
+  });
+
+  it('exige SUBJECT_CAP y COST_CAP, que salen de la previsión de la spec', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
+    expect(() => readConfig(baseEnv({ COST_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define COST_CAP (previsión de la spec)'));
   });
 
   it('exige que COST_CAP sea un número', () => {
@@ -264,7 +289,7 @@ describe('runCampaign', () => {
     const fake = fakeDeps(fs);
     await runCampaign(readConfig(baseEnv({ SUBJECT: '2', PHASE: 'green' }), CWD, fs), fake.deps);
     expect(fake.launched[0].args).toEqual([KIT, 'a-2', 'a', join(SPEC, 'green', 'out')]);
-    expect(fake.launched[0].subjectSh).toBe(join(SPEC, 'red', 'subject.sh'));
+    expect(fake.launched[0].subjectSh).toBe(join(SPEC, 'red', 'subject.mjs'));
   });
 
   it('informa del coste por carpeta de salida, los cortados y el total', async () => {

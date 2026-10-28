@@ -1,15 +1,17 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, expect, it } from 'vitest';
+import { realDeps } from '../../../../tests/headless/real-deps.mjs';
 import { cleanGitEnv, kitRoot } from '../process.ts';
 
 const runMjs = join(kitRoot, 'tests', 'headless', 'run.mjs');
-const root = mkdtempSync(join(tmpdir(), 'run-mjs-'));
+// RUNS_DIR va en .temp/ del repo y corto: run.mjs rechaza uno largo, y aquí cuelga del nombre del worktree.
+mkdirSync(join(kitRoot, '.temp'), { recursive: true });
+const root = mkdtempSync(join(kitRoot, '.temp', 'r'));
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-// El sujeto falso deja su tools.txt con un RESULTADO, como lo haría lib.sh al guardar.
+// El sujeto falso deja su tools.txt con un RESULTADO, como lo haría lib.mjs al guardar.
 const FAKE_SUBJECT = `import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 const [, label, , out] = process.argv.slice(2);
@@ -35,7 +37,7 @@ function campaignEnv(subject: string): NodeJS.ProcessEnv {
   return {
     ...cleanGitEnv,
     SPEC_DIR: join(root, 'spec'),
-    RUNS_DIR: join(root, 'scratchpad', 'runs'),
+    RUNS_DIR: root,
     KIT_DIR: kit,
     SUBJECT_SH: writeFile(join(root, 'subject.mjs'), subject),
     SCENARIOS: 'a b',
@@ -48,10 +50,10 @@ function campaignEnv(subject: string): NodeJS.ProcessEnv {
 
 const runCampaign = (env: NodeJS.ProcessEnv) => spawnSync(process.execPath, [runMjs], { env, encoding: 'utf8', windowsHide: true });
 
-function processesNaming(folder: string): number[] {
-  const query = `Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -like '*${folder}*' } | ForEach-Object { $_.ProcessId }`;
-  const result = spawnSync('pwsh', ['-NoProfile', '-Command', query], { encoding: 'utf8', windowsHide: true });
-  return result.stdout.split(/\r?\n/).filter(Boolean).map(Number);
+// La consulta del lanzador: pwsh en Windows, ps en el CI de Linux.
+async function processesNaming(folder: string): Promise<number[]> {
+  const all: { pid: number; commandLine: string }[] = await realDeps().processes();
+  return all.filter(({ pid, commandLine }) => pid !== process.pid && commandLine.includes(folder)).map(({ pid }) => pid);
 }
 
 // Lanzan procesos de node de verdad: con la máquina cargada pasan de los 5 s por omisión.
@@ -64,11 +66,11 @@ it('lanza, cuenta e informa con un sujeto en node', { timeout: 30_000 }, () => {
   expect(existsSync(live) ? readdirSync(live).filter((name) => !name.startsWith('.')) : []).toEqual([]);
 });
 
-it('no deja vivo ningún proceso del sujeto', { timeout: 60_000 }, () => {
+it('no deja vivo ningún proceso del sujeto', { timeout: 60_000 }, async () => {
   const env = campaignEnv(LEAKY_SUBJECT);
   const folder = join(env.RUNS_DIR as string, 'red', 'a-1');
   const result = runCampaign({ ...env, SCENARIOS: 'a' });
-  const left = processesNaming(folder);
+  const left = await processesNaming(folder);
   for (const pid of left) process.kill(pid);
   expect(result.stdout).toContain(`[a-1] paro 1 procesos de ${folder}`);
   expect(left).toEqual([]);

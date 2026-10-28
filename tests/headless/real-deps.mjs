@@ -1,53 +1,17 @@
 // Las dependencias reales de campaign.mjs, que comparten run.mjs y battery.mjs run.
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { readdirSync, readFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { withLock } from '../../cli/src/git/lock.ts';
-import { CampaignError, stopCampaign } from './campaign.mjs';
+import { stopCampaign } from './campaign.mjs';
+import { isAlive, killProcess, MAX_BUFFER, nodeFs } from './lib.mjs';
 
 const LOCK_TIMEOUT_MINUTES = 120;
 
-export const nodeFs = {
-  exists: existsSync,
-  read: (path) => readFileSync(path, 'utf8'),
-  write: (path, text) => {
-    mkdirSync(dirname(path), { recursive: true });
-    writeFileSync(path, text);
-  },
-  remove: (path) => rmSync(path, { recursive: true, force: true }),
-  list: (dir) => (existsSync(dir) ? readdirSync(dir).sort() : []),
-  mkdir: (dir) => mkdirSync(dir, { recursive: true }),
-};
-
-function isAlive(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    return error.code === 'EPERM';
-  }
-}
-
-// En Windows, el bash del PATH suele ser el lanzador de WSL, que no ejecuta scripts sin distro: se prefiere Git Bash.
-// ponytail: los subject.sh siguen en bash; esta búsqueda se va cuando pasen a Node.
-function findGitBash() {
-  const installed = [process.env.ProgramFiles, process.env['ProgramFiles(x86)']]
-    .filter(Boolean)
-    .map((root) => join(root, 'Git', 'bin', 'bash.exe'))
-    .find((path) => existsSync(path));
-  if (installed) return installed;
-  const where = spawnSync('where', ['bash'], { encoding: 'utf8', windowsHide: true }).stdout ?? '';
-  const found = where.split(/\r?\n/).find((path) => path !== '' && !/System32/i.test(path));
-  if (!found) throw new CampaignError('no encuentro Git Bash para lanzar el subject.sh');
-  return found;
-}
-
-let gitBash;
 const running = new Set();
 
 function launch({ subjectSh, args, env }) {
-  const command = subjectSh.endsWith('.mjs') ? process.execPath : (gitBash ??= findGitBash());
-  const child = spawn(command, [subjectSh, ...args], { env, stdio: 'inherit', windowsHide: true });
+  const child = spawn(process.execPath, [subjectSh, ...args], { env, stdio: 'inherit', windowsHide: true });
   running.add(child.pid);
   const exited = new Promise((resolve) => {
     child.on('exit', (code) => resolve(code ?? 1));
@@ -60,19 +24,28 @@ function launch({ subjectSh, args, env }) {
 // de las líneas de órdenes de otros programas, y el JSON no se puede leer.
 const PROCESS_QUERY = "Get-CimInstance Win32_Process | ForEach-Object { \"$($_.ProcessId)`t$($_.CommandLine -replace '[\\x00-\\x1f]', ' ')\" }";
 
+const windows = process.platform === 'win32';
+
+// Fuera de Windows (el CI corre esta suite en Linux), la línea de órdenes sale de /proc, sin depender de ps.
+function linuxProcesses() {
+  return readdirSync('/proc').filter((name) => /^\d+$/.test(name)).flatMap((pid) => {
+    try {
+      return [{ pid: Number(pid), commandLine: readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ').trim() }];
+    } catch {
+      return [];
+    }
+  });
+}
+
 async function processes() {
-  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+  if (!windows) return linuxProcesses();
+  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: MAX_BUFFER });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`pwsh salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
   return result.stdout.split(/\r?\n/).filter(Boolean).map((line) => {
     const tab = line.indexOf('\t');
     return { pid: Number(line.slice(0, tab)), commandLine: line.slice(tab + 1) };
   });
-}
-
-// taskkill /T se lleva el árbol; un proceso que ya no existe no es un error.
-function kill(pid, tree) {
-  spawnSync('taskkill', [...(tree ? ['/T'] : []), '/F', '/PID', String(pid)], { stdio: 'ignore', windowsHide: true });
 }
 
 export function realDeps() {
@@ -86,7 +59,7 @@ export function realDeps() {
     lock: (path, body) => withLock({ path, label: 'lanzamiento de sujetos', io, owner: { ...owner, worktree: dirname(path) } }, LOCK_TIMEOUT_MINUTES, body),
     launch,
     processes,
-    kill,
+    kill: killProcess,
   };
 }
 
