@@ -7,9 +7,9 @@
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.sh); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { CampaignError, readConfig, runCampaign } from './campaign.mjs';
 
 export class BatteryError extends Error {
@@ -79,7 +79,8 @@ function judge(row, outDir, fs) {
   const passed = runs.filter(({ label, text }) => !unloaded.includes(label) && (row.Esperado === ANY || firstSkill(text) === row.Esperado)).length;
   const missing = n - runs.length;
   const green = missing === 0 && unloaded.length === 0 && passed >= needed;
-  return `${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${green ? 'verde' : 'rojo'}${missing ? ` · faltan ${missing}` : ''}${unloaded.length ? ` · el kit no cargó en ${unloaded.join(', ')}` : ''}`;
+  const notes = [missing ? `faltan ${missing}` : '', unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : ''].filter(Boolean);
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${green ? 'verde' : 'rojo'}`, ...notes].join(' · ');
 }
 
 export function verdict(batteryPath, outDir, steps, fs) {
@@ -102,31 +103,37 @@ function refuseSavedLabels(rows, out, fs) {
   }
 }
 
-async function launchIndex(rows, index, launchEnv, launch) {
+async function launchIndex(rows, index, launch) {
   for (const model of [...new Set(rows.map((row) => row.Modelo))].sort()) {
     const ids = rows.filter((row) => row.Modelo === model && Number(row.n) >= index).map((row) => row.Id);
-    if (ids.length > 0) await launch({ ...launchEnv, MODEL: model, SUBJECT: String(index), SCENARIOS: ids.join(' ') });
+    if (ids.length > 0) await launch({ MODEL: model, SUBJECT: String(index), SCENARIOS: ids.join(' ') });
   }
 }
 
-export async function runBattery(env, cwd, deps) {
+// La configuración de la batería entera: la que comprueba las etiquetas guardadas y la que barre al parar.
+export function batteryPlan(env, cwd, fs) {
   const dir = batteryDir(env);
   const table = join(dir, 'battery.md');
-  if (!deps.fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
+  if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
   const steps = (env.STEPS ?? '').split(/\s+/).filter(Boolean);
-  const rows = selectSteps(readScenarios(table, deps.fs), steps);
+  const rows = selectSteps(readScenarios(table, fs), steps);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.sh') };
-  const { out } = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, deps.fs);
-  refuseSavedLabels(rows, out, deps.fs);
-  const launch = (campaignEnv) => runCampaign(readConfig(campaignEnv, cwd, deps.fs), deps);
+  const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
+  return { table, steps, rows, launchEnv, config };
+}
+
+export async function runBattery(env, cwd, deps) {
+  const { table, steps, rows, launchEnv, config } = batteryPlan(env, cwd, deps.fs);
+  refuseSavedLabels(rows, config.out, deps.fs);
+  const launch = (overrides) => runCampaign(readConfig({ ...launchEnv, ...overrides }, cwd, deps.fs), deps);
   const maxN = Math.max(0, ...rows.map((row) => Number(row.n)));
-  for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launchEnv, launch);
-  const result = verdict(table, out, steps, deps.fs);
+  for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch);
+  const result = verdict(table, config.out, steps, deps.fs);
   for (const line of result.lines) deps.log(line);
   return result.red ? 1 : 0;
 }
 
-const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: (path) => { try { readFileSync(path); return true; } catch { return false; } } };
+const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync };
 
 async function main([command, batteryPath, ...rest]) {
   if (command === 'plan') {
@@ -142,14 +149,16 @@ async function main([command, batteryPath, ...rest]) {
     console.log(lines.join('\n'));
     if (red) process.exitCode = 1;
   } else if (command === 'run') {
-    const { realDeps } = await import('./real-deps.mjs');
-    process.exitCode = await runBattery(process.env, process.cwd(), realDeps());
+    const { realDeps, stopOnSignal } = await import('./real-deps.mjs');
+    const deps = realDeps();
+    stopOnSignal(batteryPlan(process.env, process.cwd(), deps.fs).config, deps);
+    process.exitCode = await runBattery(process.env, process.cwd(), deps);
   } else {
     throw new BatteryError('uso: node battery.mjs plan|field|verdict|run …');
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (import.meta.main) {
   try {
     await main(process.argv.slice(2));
   } catch (error) {

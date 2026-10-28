@@ -67,7 +67,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', 
     expect(subjects(campaign)).toHaveLength(2);
   });
 
-  it('el sujeto no puede lanzar su propio claude: su coste no lo vería run.sh (walkthrough de la feature 0173)', () => {
+  it('el sujeto no puede lanzar su propio claude: su coste no lo vería run.mjs (walkthrough de la feature 0173)', () => {
     const root = testRoot('nested-claude');
     const campaign = newCampaign(root);
     const log = join(root, 'nested.log');

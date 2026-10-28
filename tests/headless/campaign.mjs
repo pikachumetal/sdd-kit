@@ -34,27 +34,37 @@ function runsDirAllowed(runsDir) {
   return path.includes('scratchpad') || path.startsWith(`${comparable(join(REPO_ROOT, '.temp'))}/`);
 }
 
+function checkCostCap(env) {
+  if (!Number.isFinite(Number(env.COST_CAP))) throw new CampaignError(`COST_CAP tiene que ser un número: ${env.COST_CAP}`);
+}
+
+// El sujeto arranca en su carpeta de run: con rutas relativas, --plugin-dir no resolvía y el kit no cargaba,
+// y lib.sh rechazaba el RUNS_DIR.
+function absolutePaths(env, cwd) {
+  const absolute = (path) => (isAbsolute(path) ? path : resolve(cwd, path));
+  return { ...env, RUNS_DIR: absolute(env.RUNS_DIR), SPEC_DIR: absolute(env.SPEC_DIR), KIT_DIR: absolute(env.KIT_DIR) };
+}
+
 export function readConfig(env, cwd, fs) {
   for (const [name, message] of REQUIRED) if (!env[name]) throw new CampaignError(message);
-  const runsDir = resolve(cwd, env.RUNS_DIR);
-  if (!runsDirAllowed(runsDir)) throw new CampaignError(`RUNS_DIR fuera del scratchpad o de .temp/: ${env.RUNS_DIR}`);
+  const subjectEnv = absolutePaths(env, cwd);
+  if (!runsDirAllowed(subjectEnv.RUNS_DIR)) throw new CampaignError(`RUNS_DIR fuera del scratchpad o de .temp/: ${env.RUNS_DIR}`);
   const maxParallel = positiveInt(env, 'MAX_PARALLEL', '5');
   const subjectCap = positiveInt(env, 'SUBJECT_CAP');
-  // El sujeto arranca en su carpeta de run: con una ruta relativa, --plugin-dir no resolvía y el kit no cargaba.
-  const kitDir = isAbsolute(env.KIT_DIR) ? env.KIT_DIR : resolve(cwd, env.KIT_DIR);
-  if (!fs.exists(join(kitDir, 'cli', 'bin', 'sdd.js'))) throw new CampaignError(KIT_WITHOUT_CLI);
-  return paths({ env, runsDir, kitDir, maxParallel, subjectCap });
+  checkCostCap(env);
+  if (!fs.exists(join(subjectEnv.KIT_DIR, 'cli', 'bin', 'sdd.js'))) throw new CampaignError(KIT_WITHOUT_CLI);
+  return campaignConfig(subjectEnv, maxParallel, subjectCap);
 }
 
 // Un ensayo en seco no escribe en la carpeta de la spec ni cuenta para sus techos, y sus marcas van con sus salidas.
-function paths({ env, runsDir, kitDir, maxParallel, subjectCap }) {
+function campaignConfig(env, maxParallel, subjectCap) {
+  const { RUNS_DIR: runsDir, KIT_DIR: kitDir } = env;
   const dryRun = env.DRY_RUN === '1';
   const phase = env.PHASE || 'red';
-  const root = dryRun ? join(runsDir, 'dry') : resolve(env.SPEC_DIR);
+  const root = dryRun ? join(runsDir, 'dry') : env.SPEC_DIR;
   const [live, otherLive] = dryRun ? [join(runsDir, 'dry', 'live'), join(runsDir, 'live')] : [join(runsDir, 'live'), join(runsDir, 'dry', 'live')];
   return {
     env, runsDir, kitDir, maxParallel, subjectCap, dryRun, phase, root, live, otherLive,
-    specDir: env.SPEC_DIR,
     subjectSh: env.SUBJECT_SH,
     scenarios: env.SCENARIOS.split(/\s+/).filter(Boolean),
     subject: env.SUBJECT || '1',
@@ -68,9 +78,14 @@ function paths({ env, runsDir, kitDir, maxParallel, subjectCap }) {
 const outDirs = (config, fs) => fs.list(config.root).map((phase) => join(config.root, phase, 'out')).filter((dir) => fs.exists(dir));
 const toolsFiles = (dir, fs) => fs.list(dir).filter((name) => name.endsWith('.tools.txt'));
 
-function subjectSaved(config, fs, markName) {
+function markParts(markName) {
   const dot = markName.indexOf('.');
-  return fs.exists(join(config.root, markName.slice(0, dot), 'out', `${markName.slice(dot + 1)}.tools.txt`));
+  return { phase: markName.slice(0, dot), label: markName.slice(dot + 1) };
+}
+
+function subjectSaved(config, fs, markName) {
+  const { phase, label } = markParts(markName);
+  return fs.exists(join(config.root, phase, 'out', `${label}.tools.txt`));
 }
 
 // <fase>.<etiqueta>; el cerrojo (.lock) no es una marca.
@@ -86,7 +101,8 @@ function readPid(fs, path) {
 
 // En curso cuentan las marcas de los dos modos; cortadas, solo las propias. Un PID vacío es una marca a medio
 // escribir: en curso. tools.txt se mira antes y después del PID: un sujeto que acaba de guardar no es un cortado.
-function countMarks(config, deps, dir, own) {
+function countMarks(config, deps, own) {
+  const dir = own ? config.live : config.otherLive;
   const counts = { running: 0, cut: 0 };
   for (const name of markNames(deps.fs, dir)) {
     if (own && subjectSaved(config, deps.fs, name)) continue;
@@ -99,8 +115,8 @@ function countMarks(config, deps, dir, own) {
 }
 
 function countLive(config, deps) {
-  const own = countMarks(config, deps, config.live, true);
-  const other = countMarks(config, deps, config.otherLive, false);
+  const own = countMarks(config, deps, true);
+  const other = countMarks(config, deps, false);
   return { running: own.running + other.running, cut: own.cut };
 }
 
@@ -167,25 +183,53 @@ export function subjectProcesses(processes, folder) {
     .map(({ pid }) => pid);
 }
 
-// ponytail: un proceso con nohup cuya línea de órdenes no nombra la carpeta del sujeto no se para; amplíalo si vuelve a quedar uno vivo.
-export async function stopSubjectProcesses(label, folder, deps) {
-  const pids = subjectProcesses(await deps.processes(), folder);
+// Sin la lista no se para nada: se avisa para que nadie dé la limpieza por hecha, y la campaña sigue.
+async function listProcesses(label, deps) {
+  try {
+    return await deps.processes();
+  } catch (error) {
+    deps.log(`[${label}] no pude listar los procesos: ${error.message}`);
+    return [];
+  }
+}
+
+function stopIn(label, folder, processes, deps) {
+  const pids = subjectProcesses(processes, folder);
   for (const pid of pids) deps.kill(pid, true);
   if (pids.length > 0) deps.log(`[${label}] paro ${pids.length} procesos de ${folder}`);
 }
 
+// ponytail: un proceso con nohup cuya línea de órdenes no nombra la carpeta del sujeto no se para; amplíalo si vuelve a quedar uno vivo.
+export async function stopSubjectProcesses(label, folder, deps) {
+  stopIn(label, folder, await listProcesses(label, deps), deps);
+}
+
+function cutSubjects(config, deps) {
+  return markNames(deps.fs, config.live)
+    .filter((name) => {
+      const pid = readPid(deps.fs, join(config.live, name));
+      return pid && !deps.isAlive(Number(pid)) && !subjectSaved(config, deps.fs, name);
+    })
+    .map(markParts)
+    .map(({ phase, label }) => ({ label, folder: join(config.runsDir, phase, label) }));
+}
+
 // TaskStop puede matar el lanzador sin que corra ningún manejador: lo que dejaron sus sujetos se para al volver a lanzar.
 export async function sweepCut(config, deps) {
-  for (const name of markNames(deps.fs, config.live)) {
-    const pid = readPid(deps.fs, join(config.live, name));
-    if (!pid || deps.isAlive(Number(pid)) || subjectSaved(config, deps.fs, name)) continue;
-    const label = name.slice(name.indexOf('.') + 1);
-    await stopSubjectProcesses(label, join(config.runsDir, name.slice(0, name.indexOf('.')), label), deps);
-  }
+  const cut = cutSubjects(config, deps);
+  if (cut.length === 0) return;
+  const processes = await listProcesses('barrido', deps);
+  for (const { label, folder } of cut) stopIn(label, folder, processes, deps);
+}
+
+// Con Ctrl-C o una señal de parada: el árbol de cada sujeto en curso, y después lo que dejaron.
+export async function stopCampaign(config, deps, pids) {
+  for (const pid of pids) deps.kill(pid, true);
+  await sweepCut(config, deps);
 }
 
 // La marca se escribe dentro del cerrojo: el siguiente lanzador ya la cuenta al mirar los sujetos en curso.
-function launchSubject(config, deps, scenario, label) {
+function launchSubject(config, deps, { scenario, label }) {
   const markPath = join(config.live, `${config.phase}.${label}`);
   const { pid, exited } = deps.launch({ subjectSh: config.subjectSh, args: [config.kitDir, label, scenario, config.out], env: config.env });
   deps.fs.write(markPath, `${pid}\n`);
@@ -197,18 +241,22 @@ function launchSubject(config, deps, scenario, label) {
   return { done };
 }
 
-// Dos lanzadores que miraban a la vez los sujetos en curso lanzaban los dos: el cerrojo guarda el cupo
-// hasta que la marca existe, y la etiqueta se mira después de esperar hueco.
-async function launchUnderLock(config, deps, scenario, label) {
-  const live = await waitForSlot(config, deps);
-  if (stopRequested(config, deps) || capReached(config, deps, live)) return 'stop';
-  if (labelTaken(config, deps, label)) {
-    deps.log(`ya existe ${label}: sube SUBJECT`);
-    return 'taken';
-  }
-  return launchSubject(config, deps, scenario, label);
+function refuseTaken(config, deps, label) {
+  if (!labelTaken(config, deps, label)) return false;
+  deps.log(`ya existe ${label}: sube SUBJECT`);
+  return true;
 }
 
+// Dos lanzadores que miraban a la vez los sujetos en curso lanzaban los dos: el cerrojo guarda el cupo
+// hasta que la marca existe, y la etiqueta se vuelve a mirar después de esperar hueco.
+async function launchUnderLock(config, deps, subject) {
+  const live = await waitForSlot(config, deps);
+  if (stopRequested(config, deps) || capReached(config, deps, live)) return 'stop';
+  if (refuseTaken(config, deps, subject.label)) return 'taken';
+  return launchSubject(config, deps, subject);
+}
+
+// Lo que separa los sujetos válidos de los invalidados es la carpeta (green frente a green-premature): coste por carpeta.
 function folderReport(config, deps) {
   for (const dir of outDirs(config, deps.fs)) {
     const costs = costsIn(dir, deps.fs);
@@ -235,7 +283,9 @@ export async function runCampaign(config, deps) {
   const running = [];
   for (const scenario of config.scenarios) {
     if (stopRequested(config, deps)) break;
-    const outcome = await deps.lock(config.lockPath, () => launchUnderLock(config, deps, scenario, `${scenario}-${config.subject}`));
+    const subject = { scenario, label: `${scenario}-${config.subject}` };
+    if (refuseTaken(config, deps, subject.label)) continue;
+    const outcome = await deps.lock(config.lockPath, () => launchUnderLock(config, deps, subject));
     if (outcome === 'stop') break;
     if (outcome !== 'taken') running.push(outcome.done);
   }

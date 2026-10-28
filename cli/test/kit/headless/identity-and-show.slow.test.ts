@@ -23,7 +23,7 @@ describe('Lanzador de referencia de sujetos headless (tests/headless/run.mjs)', 
     expect(result.output).toMatch(/el stream sigue en/i);
     expect(result.output).not.toMatch(/Alice Liddell/i);
     expect(existsSync(join(campaign.out, 'a-1.state.txt'))).toBe(false);
-    expect(existsSync(join(campaign.out, 'a-1.tools.txt')), 'sin tools.txt, run.sh no cuenta el coste del sujeto').toBe(true);
+    expect(existsSync(join(campaign.out, 'a-1.tools.txt')), 'sin tools.txt, run.mjs no cuenta el coste del sujeto').toBe(true);
     expect(readdirSync(campaign.out).filter((name) => name.endsWith('.tmp'))).toEqual([]);
   });
 

@@ -17,23 +17,14 @@
 // de ruta de las salidas. Solo entonces se reserva el id y se copia red/ a la carpeta del patch.
 // Al acabar cada sujeto se paran los procesos cuya línea de órdenes nombra su carpeta; con Ctrl-C o una señal de
 // parada, también el árbol de cada sujeto en curso.
-import { CampaignError, readConfig, runCampaign, sweepCut } from './campaign.mjs';
-import { realDeps, runningSubjects } from './real-deps.mjs';
+import { CampaignError, readConfig, runCampaign } from './campaign.mjs';
+import { realDeps, stopOnSignal } from './real-deps.mjs';
 
 const deps = realDeps();
 
-function stopOnSignal(config) {
-  const stop = async () => {
-    for (const pid of runningSubjects()) deps.kill(pid, true);
-    await sweepCut(config, deps);
-    process.exit(130);
-  };
-  for (const signal of ['SIGINT', 'SIGTERM', 'SIGBREAK']) process.once(signal, stop);
-}
-
 try {
   const config = readConfig(process.env, process.cwd(), deps.fs);
-  stopOnSignal(config);
+  stopOnSignal(config, deps);
   process.exitCode = await runCampaign(config, deps);
 } catch (error) {
   if (!(error instanceof CampaignError)) throw error;

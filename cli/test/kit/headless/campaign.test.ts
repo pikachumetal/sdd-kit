@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { CampaignError, readConfig, runCampaign, stopSubjectProcesses, subjectProcesses } from '../../../../tests/headless/campaign.mjs';
+import { CampaignError, readConfig, runCampaign, stopCampaign, stopSubjectProcesses, subjectProcesses, sweepCut } from '../../../../tests/headless/campaign.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
 const CWD = 'C:\\w';
@@ -37,13 +37,22 @@ function kitFs(): MemoryFs {
 
 const tools = (cost: number) => `>>> Bash: ls\n=== RESULTADO (1 turnos, ${cost.toFixed(2)} $)\nhecho\n`;
 
-// Un sujeto que acaba al instante deja su tools.txt; con manual, el test decide cuándo acaba.
 interface ProcessInfo {
   pid: number;
   commandLine: string;
 }
 
-function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWait?: () => void; processes?: ProcessInfo[] } = {}) {
+interface FakeOptions {
+  cost?: number;
+  manual?: boolean;
+  unsaved?: boolean;
+  onWait?: () => void;
+  processes?: ProcessInfo[];
+  processesFail?: boolean;
+}
+
+// Un sujeto que acaba al instante deja su tools.txt (sin él, con unsaved); con manual, el test decide cuándo acaba.
+function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
   const log: string[] = [];
   const killed: { pid: number; tree: boolean }[] = [];
   const launched: LaunchRequest[] = [];
@@ -51,6 +60,7 @@ function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWa
   const finishers = new Map<string, () => void>();
   let nextPid = 1000;
   let waits = 0;
+  let queries = 0;
   let chain: Promise<unknown> = Promise.resolve();
   const deps = {
     fs,
@@ -73,7 +83,7 @@ function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWa
       let done!: (code: number) => void;
       const exited = new Promise<number>((resolve) => (done = resolve));
       const finish = () => {
-        fs.write(join(out, `${label}.tools.txt`), tools(options.cost ?? 0.5));
+        if (!options.unsaved) fs.write(join(out, `${label}.tools.txt`), tools(options.cost ?? 0.5));
         alive.delete(pid);
         done(0);
       };
@@ -81,10 +91,14 @@ function fakeDeps(fs: MemoryFs, options: { cost?: number; manual?: boolean; onWa
       else queueMicrotask(finish);
       return { pid, exited };
     },
-    processes: async () => options.processes ?? [],
+    processes: async () => {
+      queries++;
+      if (options.processesFail) throw new Error('pwsh no arrancó');
+      return options.processes ?? [];
+    },
     kill: (pid: number, tree: boolean) => killed.push({ pid, tree }),
   };
-  return { deps, log, launched, alive, finishers, killed, waits: () => waits };
+  return { deps, log, launched, alive, finishers, killed, waits: () => waits, queries: () => queries };
 }
 
 function mark(fs: MemoryFs, dir: string, name: string, pid: number | '') {
@@ -112,6 +126,15 @@ describe('readConfig', () => {
 
   it('resuelve un KIT_DIR relativo contra el cwd de quien lanza', () => {
     expect(readConfig(baseEnv({ KIT_DIR: 'kit' }), CWD, kitFs()).kitDir).toBe(KIT);
+  });
+
+  it('pasa al sujeto RUNS_DIR, SPEC_DIR y KIT_DIR en ruta absoluta', () => {
+    const { env } = readConfig(baseEnv({ RUNS_DIR: 'scratchpad\\runs', SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
+    expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
+  });
+
+  it('exige que COST_CAP sea un número', () => {
+    expect(() => readConfig(baseEnv({ COST_CAP: 'abc' }), CWD, kitFs())).toThrow('COST_CAP tiene que ser un número: abc');
   });
 
   it('reparte COST_CAP entre SUBJECT_CAP si no hay SUBJECT_COST', () => {
@@ -150,8 +173,7 @@ describe('runCampaign', () => {
     const live = join(RUNS, 'live');
     mark(fs, live, 'red.x-1', 1);
     mark(fs, live, 'red.y-1', 2);
-    let fake: ReturnType<typeof fakeDeps>;
-    fake = fakeDeps(fs, { onWait: () => fake.alive.delete(1) });
+    const fake: ReturnType<typeof fakeDeps> = fakeDeps(fs, { onWait: () => fake.alive.delete(1) });
     fake.alive.add(1);
     fake.alive.add(2);
     await runCampaign(readConfig(baseEnv({ MAX_PARALLEL: '2' }), CWD, fs), fake.deps);
@@ -171,6 +193,17 @@ describe('runCampaign', () => {
     await Promise.all([first, second]);
     expect(fake.launched).toHaveLength(1);
     expect(fake.log).toContain('ya existe a-1: sube SUBJECT');
+  });
+
+  it('una etiqueta ya guardada no espera hueco', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'red', 'out', 'a-1.tools.txt'), tools(0.5));
+    mark(fs, join(RUNS, 'live'), 'red.x-1', 1);
+    const fake: ReturnType<typeof fakeDeps> = fakeDeps(fs, { onWait: () => fake.alive.delete(1) });
+    fake.alive.add(1);
+    await runCampaign(readConfig(baseEnv({ MAX_PARALLEL: '1' }), CWD, fs), fake.deps);
+    expect(fake.log).toContain('ya existe a-1: sube SUBJECT');
+    expect(fake.waits()).toBe(0);
   });
 
   it('no relanza una etiqueta que ya tiene tools.txt en su fase', async () => {
@@ -307,5 +340,48 @@ describe('procesos del sujeto', () => {
     fs.write(join(RUNS, 'stop'), '');
     await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
     expect(fake.killed).toEqual([]);
+  });
+
+  it('un sujeto que acaba sin tools.txt borra su marca y no queda como cortado de otra tanda', async () => {
+    const fs = kitFs();
+    const config = readConfig(baseEnv(), CWD, fs);
+    const first = fakeDeps(fs, { unsaved: true });
+    await runCampaign(config, first.deps);
+    expect(fs.exists(join(RUNS, 'live', 'red.a-1'))).toBe(false);
+    expect(first.log.some((line) => line.startsWith('cortados sin salida'))).toBe(false);
+    const next = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${folder}` }] });
+    await sweepCut(config, next.deps);
+    expect(next.killed).toEqual([]);
+  });
+
+  it('al arrancar lista los procesos una sola vez para todos los cortados', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.y-1', 76);
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs, {
+      processes: [
+        { pid: 61, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'y-1')}` },
+        { pid: 62, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'z-1')}` },
+      ],
+    });
+    await sweepCut(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.queries()).toBe(1);
+    expect(fake.killed).toEqual([{ pid: 61, tree: true }, { pid: 62, tree: true }]);
+  });
+
+  it('avisa si no puede listar los procesos y sigue', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { processesFail: true });
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.log).toContain('[a-1] no pude listar los procesos: pwsh no arrancó');
+    expect(fake.log.at(-1)).toBe('sujetos de la campaña: 1 · coste acumulado: 0.50 $');
+  });
+
+  it('al parar, mata el árbol de cada sujeto en curso y barre sus procesos', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'z-1')}` }] });
+    await stopCampaign(readConfig(baseEnv(), CWD, fs), fake.deps, [77]);
+    expect(fake.killed).toEqual([{ pid: 77, tree: true }, { pid: 61, tree: true }]);
   });
 });

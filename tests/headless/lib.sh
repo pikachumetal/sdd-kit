@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Funciones de referencia para el subject.sh de una campaña de sujetos headless (patch 0076). Se cargan, no se copian:
 #   . "<repo>/tests/headless/lib.sh"
-#   subject_init "$1" "$2" "$4" <skill medida>     # kit, etiqueta, salida (argumentos de run.sh)
+#   subject_init "$1" "$2" "$4" <skill medida>     # kit, etiqueta, salida (argumentos de run.mjs)
 #   ...molde en $R con g, put y commit; ASK="<petición>"...
 #   subject_launch "$ASK"
 #   { echo "## git log"; g log --oneline --all; } | subject_save
@@ -104,7 +104,7 @@ other_subject_ports() {
     [ -f "$mark" ] || continue
     name="${mark##*/}"; [ "$name" = "${PHASE:-red}.$LABEL" ] && continue
     pid=; read -r pid < "$mark"
-    # Un PID vacío es una marca a medio escribir: en curso, como en count_marks de run.sh.
+    # Un PID vacío es una marca a medio escribir: en curso, como en countMarks de campaign.mjs.
     # El PID de la marca es de Windows (lo escribe run.mjs): el kill de Git Bash no lo ve.
     [ -z "$pid" ] || "$NODE" -e 'process.kill(Number(process.argv[1]), 0)' "$pid" 2>/dev/null || continue
     JSONL="$root/${name%%.*}/${name#*.}.jsonl" PORT= subject_ports | tr , '\n'
@@ -232,7 +232,7 @@ subject_launch() {
 
 # Sin < /dev/null, un aviso de stdin precede al JSON.
 # timeout no ejecuta builtins: con `timeout 720 command claude` no arranca ningún sujeto.
-# El sujeto ve primero no-claude/: un claude que lance él no gasta fuera de lo que cuenta run.sh.
+# El sujeto ve primero no-claude/: un claude que lance él no gasta fuera de lo que cuenta run.mjs.
 run_claude() {
   local claude
   claude="$(type -P claude)"
@@ -243,7 +243,7 @@ run_claude() {
 }
 
 # Segundo turno sobre la sesión real del primero: su molde es lo que el primero dejó, no el relato de un ticket.
-# --resume da un total_cost_usd acumulado; run.sh ya cuenta solo el último RESULTADO.
+# --resume da un total_cost_usd acumulado; run.mjs ya cuenta solo el último RESULTADO.
 subject_resume() {
   local session
   session=$(grep -o '"session_id":"[^"]*"' "$JSONL" | head -n 1 | cut -d'"' -f4)
@@ -259,7 +259,7 @@ subject_resume() {
 }
 
 # Conversación con una persona: un modelo barato contesta con su hoja hasta que el sujeto deja de preguntar o llega al tope.
-# Su coste va al último RESULTADO, que es el único que cuenta run.sh.
+# Su coste va al último RESULTADO, que es el único que cuenta run.mjs.
 subject_converse() {
   local sheet="$1" max="$2" turn=0 asked answer persona_cost=0
   while [ "$turn" -lt "$max" ]; do
@@ -341,7 +341,7 @@ clean() { "$NODE" "$HEADLESS/extract.mjs" clean "$RUN"; }
 subject_save() {
   local state tools texts
   state=$(out_path "$OUT/$LABEL.state.txt") && tools=$(out_path "$OUT/$LABEL.tools.txt") && texts=$(out_path "$OUT/$LABEL.texts.txt") || exit 1
-  # Los tres aunque falle uno: sin tools.txt, run.sh no cuenta el coste del sujeto.
+  # Los tres aunque falle uno: sin tools.txt, run.mjs no cuenta el coste del sujeto.
   local saved=0
   save_extract "$state" clean || saved=1
   save_extract "$tools" "$NODE" "$HEADLESS/extract.mjs" tools "$JSONL" "$RUN" || saved=1
