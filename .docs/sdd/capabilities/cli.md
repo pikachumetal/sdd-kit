@@ -39,7 +39,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - WHEN Claude Code arranca la sesión y ejecuta `hooks/hooks.json`
 - THEN escribe el JSON de la fixture `cli/test/fixtures/hook/pending-migration.json`: el `systemMessage` de las migraciones pendientes, y `additionalContext` con ese aviso, la orden de ofrecer la migración y `using-sdd`
 - AND en una sesión headless con el plugin por `--plugin-dir`, el `hook_response` del stream trae ese `additionalContext`
-- AND sin `.docs/sdd/` no escribe nada y sale con 0
+- AND sin `.docs/sdd/` ni `/tmp` de Git Bash que reparar no escribe nada y sale con 0
 - AND con Node 20.11.0 escribe el mismo JSON con `sdd-kit necesita Node 22.18 o posterior; tienes 20.11.0` añadido a `systemMessage`, y sale con 0
 
 ### Las skills solo nombran verbos que existen
@@ -204,6 +204,15 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN escribe «Esperando el cerrojo de suites: vas 2.º en la cola; lo tiene feature/0210 (D:\code\sdd-kit-0210, PID 4120) desde 2026-10-27 17:05:12; delante de ti, feature/0211 (D:\code\sdd-kit-0211, PID 5332).»
 - AND al soltarlo la 0210 a las 17:31:40, lo coge la 0211 aunque la 0212 sondee antes, y la 0212 escribe «Esperando el cerrojo de suites: vas 1.º en la cola; lo tiene feature/0211 (D:\code\sdd-kit-0211, PID 5332) desde 2026-10-27 17:31:40.»
 - AND una espera cuyo proceso muere sale de la cola, y quien iba detrás sube de puesto
+
+### El hook de sesión repara el `/tmp` de Git Bash
+
+- GIVEN Windows con Git en el `PATH` y el `/tmp` de Git Bash montado sobre una carpeta que no existe
+- WHEN corre `sdd hook session-start`, con `.docs/sdd/` o sin él
+- THEN crea esa carpeta vacía, pone delante del `systemMessage` `sdd-kit: Git Bash tenía /tmp montado sobre una carpeta borrada; la he creado vacía: <ruta>` y sale con 0
+- AND un `bash -c 'test -d /tmp'` de Git Bash sale con 0 sin aviso
+- AND pregunta el montaje a un binario de Git con `execFile`, nunca con un `bash -c`
+- AND en otro sistema, o sin Git en el `PATH`, no ejecuta nada
 
 ## Reglas de la capacidad
 
