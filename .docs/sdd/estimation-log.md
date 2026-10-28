@@ -214,20 +214,21 @@
 | 2026-10-26 | 0227 | infra/tooling | 4.5 | 4.66 | 1.04 | 97206k | 9669k | no aplica | 42.2 | 20261026-170842-feature-0227-behavior-tests-to-vitest |
 | 2026-10-26 | 0222 | patch | 1.5 | 2.16 | 1.44 | — | — | 2.57 | — | 20261026-172255-patch-0222-fix-round-recorded-decision |
 | 2026-10-26 | 0184 | infra/tooling | 3 | 1.37 | 0.46 | 34783k | 4322k | no aplica | 14.96 | 20261026-173032-feature-0184-cli-roadmap-task-watch-root |
+| 2026-10-27 | 0228 | infra/tooling | 4 | 4.07 | 1.02 | 84725k | 4988k | no aplica | 29.43 | 20261027-164105-feature-0228-no-powershell |
 
-**Factor de calibración** (ratio mediano real/estimado, 174 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 175 artefactos): **0.6** · media 0.78
 
 - p25–p75: 0.4–0.95
 - p80: 1.07 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 28 % · sobreestimadas: 61 % · infraestimadas: 11 %
-- Error absoluto (h): media 1.38 · mediana 0.93
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.97
+- Error absoluto (h): media 1.37 · mediana 0.9
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 1.03
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 60 | 34 % |
 | 0.5–0.8 | 53 | 30 % |
-| 0.8–1.25 | 42 | 24 % |
+| 0.8–1.25 | 43 | 25 % |
 | 1.25–2 | 12 | 7 % |
 | ≥2 | 7 | 4 % |
 
@@ -235,7 +236,7 @@
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 86 | 0.56 | 0.39–0.76 |
-| infra/tooling | 45 | 0.49 | 0.37–0.74 |
+| infra/tooling | 46 | 0.49 | 0.37–0.86 |
 | patch | 42 | 1.18 | 0.77–1.4 |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -255,6 +256,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 62 | 169.31 | 0.57 | 313.02 | 1305.96 |
+| sin publicar | 63 | 173.38 | 0.57 | 313.02 | 1335.39 |
 
 > Ver `estimation.md`.
