@@ -1,0 +1,23 @@
+# CI de la base (tech-stack.md §Testing): la suite completa en cada push a develop, sin --affected.
+name: ci
+on:
+  push:
+    branches: [develop]
+# Un job a la vez por rama, sin cancelar: los pushes seguidos esperan y se juntan.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+      # cli:test-min corre con el mínimo del README.
+      - run: proto install node 22.18.0
+      - run: pnpm install --frozen-lockfile
+      - run: node cli/bin/sdd.js lock run -- moon run kit:test-headless cli:typecheck cli:test-min

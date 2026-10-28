@@ -30,6 +30,7 @@ Solo plugin de Claude Code (ADR 0011):
 ## Testing
 
 - **Gate de cierre**: `node cli/bin/sdd.js lock run -- moon run kit:test-headless cli:typecheck cli:test-min --affected --base develop`, una vez y al cerrar (patch 0183; 0223; 0228: el `sdd lock run` de fuera hace del gate un solo turno del cerrojo). `--affected` salta la tarea cuyos `inputs` no cambian frente a `develop`: `kit:test-headless` (~260 s) solo corre si cambia `tests/headless/` o sus tests, y la CLI, con cualquier cambio (`testInputs`: `/**/*`, porque `path-length.test.ts` mira todas las rutas). `cli:test-min` corre la CLI entera con Node 22.18.0: `cli:test` y `cli:test-slow` quedan para el bucle de desarrollo (dev-lead, 2026-10-26: «con cli:test-min nos sobra y basta»). En una rama recién abierta el filtro no corre ninguna tarea y sale con 0 (moon 2.6.0, feature 0221): la línea base corre sin `--affected` las tareas del Scope.
+- **CI de la base**: GitHub Actions, `.github/workflows/ci.yml`. Corre las tareas del gate de cierre sin `--affected` en cada push a `develop`, un job a la vez por rama (propuesta 0234, §Enmiendas). Último resultado: `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`. El aviso de un rojo lo manda GitHub por correo a quien hizo el push.
 
 ## Cómo se testean las skills
 
