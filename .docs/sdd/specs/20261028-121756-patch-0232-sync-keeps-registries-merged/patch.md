@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-28
 branch: patch/0232-sync-keeps-registries-merged
-commit: <hash>
+commit: 39dba261
 ---
 
 # Patch 0232 — `sdd merge --sync` deja unidos los registros cuando choca otro fichero
@@ -43,10 +43,15 @@ Lo que da por existente, comprobado: `completeMergeAttempt` (`cli/src/merge/atte
 | 1 | RED: test nuevo de `sync.slow.test.ts` sin el arreglo | ❌ como se esperaba: `git rev-parse MERGE_HEAD … fatal: ambiguous argument 'MERGE_HEAD'` (el merge se abortó) |
 | 2 | GREEN: `vitest run test/merge` con el arreglo | ✅ 20 ficheros, 157/157; `tsc --noEmit` en verde |
 
+Validación en campo: 2026-10-28 · RED 0/1 (`MERGE_HEAD` no existe: el merge se abortó) → GREEN 1/1 · `cli/test/merge/` 157/157 (el merge del cierre y la vuelta de un hotfix siguen abortando) · el gate de cierre corre en el paso 6, sobre el merge de sincronización, porque hay otras cuatro ramas abiertas · no probado: un sync a medias con un fichero de código que resuelve Mergiraf y otro que no, ni la regeneración del `estimation-log.md` con el merge a medias
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 1 h + 1,17 h del gate de cierre (70 min, patch 0222)
 - Inicio: 2026-10-28T12:17Z
+- Esfuerzo real: 0,28 h — reloj de la sesión 0,28 h desde 2026-10-28T12:15Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: −87 % sobre la estimación (2,17 h): el gate de cierre (1,17 h de la estimación) corre después del commit de cierre, en el paso 6, y el reloj no lo cuenta; el fix se quedó en 15 líneas de dos funciones
+- Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
 
