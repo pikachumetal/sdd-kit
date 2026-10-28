@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-28
 branch: patch/0239-watch-ignores-moon-heartbeat
-commit: <hash>
+commit: 837676ef
 ---
 
 # Patch 0239 — sdd watch command no cuenta el latido de moon como actividad
@@ -40,9 +40,11 @@ Ticket de la feature 0228 §1 (fila 0239 del roadmap): moon escribe `▮▮▮�
 | 2 | una línea que no es latido sí cuenta como actividad: 15 min de latidos, una línea de test y otros 15 min de latidos no avisan | ✅ |
 | 3 | `cli/test/watch/` entera | ✅ 33/33 |
 
+Validación en campo: 2026-10-28 · RED → GREEN del test del latido con el reloj inyectado · `cli/test/watch/` 33/33 · typecheck limpio · pre-commit en verde · no probado: un gate de moon colgado de verdad, y la forma del latido pasados los 120 s (solo medidos 30-120 s; el patrón acepta cualquier duración entre paréntesis)
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,18 h del gate de cierre (11 min, patch 0245)
 - Inicio: 2026-10-28T21:13Z
-- Esfuerzo real:
+- Esfuerzo real: 0,09 h — reloj de la sesión 0,09 h desde 2026-10-28T21:12Z, sin 0 min de espera al dev-lead (0 esperas). −87 % sobre la estimación (0,68 h con el gate): la fila traía la causa y el formato del latido, y el fix cabe en una función del vigía; el gate de cierre aún no ha corrido (corre en la integración con la base, con otras dos ramas abiertas)
 - Coste de sujetos: no aplica
