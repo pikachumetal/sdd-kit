@@ -4,10 +4,10 @@ task: 0254
 title: Patch — la limpieza de una campaña de sujetos para también los procesos lanzados desde su copia del kit
 type: patch
 solution: causa raíz
-status: in-progress
+status: done
 created: 2026-10-28
 branch: patch/0254-campaign-cleanup-kit-copy
-commit:
+commit: 78e6e476
 ---
 
 # Patch 0254 — la limpieza de una campaña de sujetos para también los procesos lanzados desde su copia del kit
@@ -45,8 +45,13 @@ Fila 0254 del roadmap, con dos casos de un `sdd validation serve` que un sujeto 
 | 4 | `cli/test/kit/headless/campaign.test.ts` entera y `cli:typecheck` | ✅ 37/37 · typecheck limpio |
 | 5 | smoke con la lista de procesos real de Windows (`realDeps().processes`): un `node <kit>/cli/bin/sdd.js validation serve` con barras `/` lo encuentra `subjectProcesses` y `killProcess` lo para | ✅ `encontrados [ 77664 ]` · `vivo tras parar: false` |
 
+Validación en campo: 2026-10-28 · RED → GREEN de los tres casos de `campaign.test.ts` con la lista de procesos inyectada · mutante de la guarda «sin sujetos en curso» en rojo · `campaign.test.ts` 37/37 · typecheck limpio · smoke con la lista de procesos real de Windows · pre-commit en verde · no probado: una campaña real con un sujeto que deja el panel vivo (el borrado de la carpeta con el servidor recién parado, sin reintentos de `rmSync`, se ve en la próxima tanda), y otra campaña con el mismo `KIT_DIR` y otro `RUNS_DIR`, cuyos sujetos no cuentan como en curso
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,01 h del gate de cierre (31 s, patch 0241)
 - Inicio: 2026-10-28T22:00Z
+- Tokens del hilo: 4.427.961 — claude-opus-5-5 4.427.961
+- Tokens de subagentes: no aplica
+- Coste de la sesión: 2,60 $ (hilo 2,60 $)
+- Esfuerzo real: 0,10 h — reloj de la sesión 0,10 h desde 2026-10-28T21:58Z, sin 0 min de espera al dev-lead (0 esperas). −80 % sobre la estimación (0,51 h con el gate): la fila traía los dos casos y el test, la causa salió de leer `dev-validation.md` y `campaign.mjs`, y el fix cabe en el manejador de fin de sujeto; el gate de cierre aún no ha corrido (corre en la integración con la base)
 - Coste de sujetos: no aplica
