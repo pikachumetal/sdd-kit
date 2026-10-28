@@ -23,15 +23,17 @@
 // DRY_RESULT (texto del result en seco; con «?», converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
 // DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
 // KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre).
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { basename, delimiter, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const HEADLESS = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HEADLESS, '..', '..');
 const EXTRACT = join(HEADLESS, 'extract.mjs');
+// Con barras: va dentro del JSON de --settings, que el hook de Claude Code pasa a node.
+const DENY_KILL_HOOK = join(HEADLESS, 'deny-kill.mjs').replaceAll('\\', '/');
 // La salida versionada de una campaña no pasa de 140 caracteres de ruta relativa (cli/test/kit/path-length.test.ts).
 const MAX_PATH = 140;
 
@@ -71,10 +73,58 @@ function runSync(command, args, { cwd, env, input } = {}) {
   return { code: result.status ?? 1, stdout: result.stdout ?? '', stderr: result.stderr ?? result.error?.message ?? '' };
 }
 
+// Sin shell y con la entrada cerrada: con ella abierta, un aviso de stdin precedía al JSON.
+function spawnClaude(command, args, { cwd, env, stdout, stderr, append }) {
+  const out = openSync(stdout, append ? 'a' : 'w');
+  const err = openSync(stderr, 'a');
+  try {
+    const child = spawn(command, args, { cwd, env, stdio: ['ignore', out, err], windowsHide: true });
+    const exited = new Promise((done) => {
+      child.on('exit', (code) => done(code ?? 1));
+      child.on('error', () => done(1));
+    });
+    return { pid: child.pid, exited };
+  } finally {
+    closeSync(out);
+    closeSync(err);
+  }
+}
+
+// El claude.exe de la instalación nativa: spawn sin shell no lanza un .cmd.
+function whichClaude() {
+  const found = runSync('where', ['claude']).stdout.split(/\r?\n/).filter(Boolean);
+  return found.find((path) => /\.exe$/i.test(path)) ?? found[0];
+}
+
+function netstat() {
+  const result = runSync('netstat', ['-ano']);
+  if (result.code !== 0) throw new Error(result.stderr);
+  return result.stdout;
+}
+
+function isAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error.code === 'EPERM';
+  }
+}
+
 export function realSubjectDeps() {
   return {
     fs: nodeFs,
     run: runSync,
+    spawnClaude,
+    whichClaude,
+    netstat,
+    isAlive,
+    // taskkill /T se lleva el árbol; un proceso que ya no existe no es un error.
+    kill: (pid, tree) => spawnSync('taskkill', [...(tree ? ['/T'] : []), '/F', '/PID', String(pid)], { stdio: 'ignore', windowsHide: true }),
+    startTimer: (ms, fire) => {
+      const timer = setTimeout(fire, ms);
+      return () => clearTimeout(timer);
+    },
     now: Date.now,
     // La limpieza es síncrona, como el trap EXIT de bash: corre también al salir con process.exit.
     onExit: (fn) => process.on('exit', () => {
@@ -108,6 +158,8 @@ export function initSubject(argv, skill, { env = process.env, deps = realSubject
   prepareRun(s, { out, fs, cwd });
   addMoldTools(s, deps);
   addSaving(s, deps);
+  addLaunch(s, deps);
+  addPorts(s, deps);
   addCleanup(s, deps);
   return s;
 }
@@ -281,7 +333,7 @@ function addCleanup(s, deps) {
   s.cleanup = () => {
     if (done) return 0;
     done = true;
-    s.stopPorts?.();
+    s.stopPorts();
     const seed = s.seedDir();
     if (fs.list(seed).some((name) => /^seed-\d+\.jsonl$/.test(name))) fs.remove(seed);
     const base = s.env.CLAUDE_CODE_TMPDIR || s.env.TEMP || tmpdir();
@@ -293,3 +345,227 @@ function addCleanup(s, deps) {
   deps.onExit(s.cleanup);
 }
 
+
+const lines = (values) => `${values.join('\n')}\n`;
+const words = (value) => (value ? value.split(/\s+/).filter(Boolean) : []);
+
+function defaultSettings() {
+  const hook = { type: 'command', command: `node "${DENY_KILL_HOOK}"` };
+  return JSON.stringify({ enabledPlugins: { 'sdd-kit@sdd-kit': false }, hooks: { PreToolUse: [{ matcher: 'Bash|PowerShell', hooks: [hook] }] } });
+}
+
+// Los argumentos de claude -p; launch los deja en <etiqueta>.args para poder comprobarlos.
+function claudeArgs(s, settings) {
+  const { env } = s;
+  // La carpeta de ejecución, junto al molde: sin ella, los sujetos no abrían sus capturas.
+  const args = ['-p', '--model', env.MODEL || 'sonnet', '--settings', settings, '--plugin-dir', s.KIT, '--add-dir', s.KIT, '--add-dir', s.RUN];
+  // El CLAUDE.md del dev-lead ya enruta al kit: medir con él da por buena una puerta que un dev sin él no tiene.
+  if (env.SUPERPOWERS_DIR) args.push('--setting-sources', '', '--plugin-dir', env.SUPERPOWERS_DIR);
+  args.push('--permission-mode', 'acceptEdits', '--allowedTools', 'Bash(*)', 'PowerShell(*)', 'Agent', ...words(env.EXTRA_ALLOWED));
+  // La mensajería entre sesiones va bloqueada.
+  args.push('--disallowedTools', 'SendMessage', 'ListAgents', 'AskUserQuestion', ...words(env.EXTRA_DISALLOWED));
+  // Una instrucción del usuario que el escenario necesita: con --setting-sources "" no llega el CLAUDE.md del molde.
+  if (env.APPEND_SYSTEM) args.push('--append-system-prompt', env.APPEND_SYSTEM);
+  args.push('--max-turns', env.MAX_TURNS || '60', '--output-format', 'stream-json', '--verbose');
+  return args;
+}
+
+// La identidad por entorno gana a la global también en `git config user.name`: sin ella, los sujetos ponían el
+// nombre del dev-lead en las salidas. El sujeto ve primero no-claude/: un claude que lance él no gasta fuera de la cuenta.
+const GIT_IDENTITY = { GIT_CONFIG_COUNT: '2', GIT_CONFIG_KEY_0: 'user.name', GIT_CONFIG_VALUE_0: 'Fixture', GIT_CONFIG_KEY_1: 'user.email', GIT_CONFIG_VALUE_1: 'fixture@example.com' };
+function claudeEnv(env) {
+  const pathKey = Object.keys(env).find((name) => name.toLowerCase() === 'path') ?? 'PATH';
+  return { ...env, [pathKey]: [join(HEADLESS, 'no-claude'), env[pathKey]].filter(Boolean).join(delimiter), ...GIT_IDENTITY };
+}
+
+function dryStream(s) {
+  const text = `En seco desde ${s.env.HOME ?? ''} · permitidas extra: ${s.env.EXTRA_ALLOWED ?? ''} · git: Fixture <fixture@example.com>`;
+  return lines([
+    JSON.stringify({ type: 'system', subtype: 'init', session_id: `dry-${s.LABEL}` }),
+    JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text }, { type: 'tool_use', name: 'Bash', input: { command: `ls ${s.R}` } }] } }),
+    JSON.stringify({ type: 'result', num_turns: 1, total_cost_usd: Number(s.env.DRY_COST ?? 0.5), result: s.env.DRY_RESULT || 'hecho' }),
+  ]);
+}
+
+function addLaunch(s, deps) {
+  const { fs } = deps;
+  const errFile = join(s.RUNS, `${s.LABEL}.err`);
+  const dry = () => s.env.DRY_RUN === '1';
+  // El tope mata el árbol de claude: con el tope solo al proceso, sus hijos seguían vivos.
+  const runClaude = async (args, { stdout = s.JSONL, append = false } = {}) => {
+    const bin = s.env.CLAUDE_BIN || deps.whichClaude();
+    if (!bin) s.die('no encuentro claude en el PATH');
+    const [command, finalArgs] = bin.endsWith('.mjs') ? [s.NODE, [bin, ...args]] : [bin, args];
+    const child = deps.spawnClaude(command, finalArgs, { cwd: s.R, env: claudeEnv(s.env), stdout, stderr: errFile, append });
+    const seconds = Number(s.env.SUBJECT_TIMEOUT || 0);
+    let timedOut = false;
+    const cancel = seconds > 0
+      ? deps.startTimer(seconds * 1000, () => {
+        timedOut = true;
+        deps.kill(child.pid, true);
+      })
+      : () => {};
+    const code = await child.exited;
+    cancel();
+    if (!timedOut) return code;
+    deps.err(`[${s.LABEL}] tope de ${seconds} s: sujeto cortado`);
+    return 124;
+  };
+  s.launch = async (ask) => {
+    // Una petición ejecutada fuera del molde corrió una vez sobre el worktree del kit.
+    if (!isInside(s.R, s.RUNS)) s.die(`cwd fuera del scratchpad: ${s.R}`);
+    const settings = s.env.SETTINGS || defaultSettings();
+    // Sin esa clave, el sujeto carga también el kit instalado, y mide la caché en vez de la copia.
+    if (!settings.includes('"sdd-kit@sdd-kit":false')) s.die(`SETTINGS sin deshabilitar el kit instalado: ${settings}`);
+    // Un sujeto que para node.exe por nombre tumba los MCP de las sesiones de la máquina.
+    if (!settings.includes('deny-kill.mjs')) s.die('SETTINGS sin el hook deny-kill.mjs: añade $DENY_KILL_HOOK a sus PreToolUse');
+    s.claudeArgs = claudeArgs(s, settings);
+    fs.write(join(s.RUNS, `${s.LABEL}.args`), lines([...s.claudeArgs, ask]));
+    if (dry()) {
+      fs.write(s.JSONL, dryStream(s));
+    } else {
+      fs.write(errFile, '');
+      const code = await runClaude([...s.claudeArgs, ask]);
+      if (code !== 0) return code;
+    }
+    if (s.env.TURN2) await s.resume(s.env.TURN2);
+    return 0;
+  };
+  // Segundo turno sobre la sesión real del primero: su molde es lo que el primero dejó, no el relato de un ticket.
+  // --resume da un total_cost_usd acumulado; run.mjs ya cuenta solo el último RESULTADO.
+  s.resume = async (message) => {
+    const session = /"session_id":"([^"]*)"/.exec(fs.exists(s.JSONL) ? fs.read(s.JSONL) : '')?.[1];
+    if (!session) s.die('sin session_id: no se puede reanudar');
+    const args = [...s.claudeArgs, '--resume', session, message];
+    fs.write(join(s.RUNS, `${s.LABEL}.resume.args`), lines(args));
+    if (!dry()) return runClaude(args, { append: true });
+    const result = { type: 'result', num_turns: 2, total_cost_usd: Number(s.env.DRY_COST ?? 0.5) * 2, result: s.env.DRY_RESULT || 'hecho' };
+    fs.write(s.JSONL, fs.read(s.JSONL) + lines([JSON.stringify(result)]));
+    return 0;
+  };
+  // Devuelve la respuesta y deja el coste de la llamada en costFile.
+  const personaReply = async (sheet, asked, costFile) => {
+    if (dry()) {
+      fs.write(costFile, s.env.DRY_PERSONA_COST || '0');
+      return 'Respuesta de la persona.';
+    }
+    const prompt = `Eres el usuario de esta hoja: ${fs.read(sheet).trimEnd()}. Contesta en castellano solo lo que el agente pregunta, en una o dos frases; lo que la hoja no dice, «no sé». El agente dice: ${asked}`;
+    const replyFile = costFile.replace(/\.txt$/, '.json');
+    const code = await runClaude(['-p', '--model', 'haiku', '--setting-sources', '', '--output-format', 'json', '--max-turns', '1', prompt], { stdout: replyFile });
+    if (code !== 0) return undefined;
+    const reply = JSON.parse(fs.read(replyFile));
+    fs.write(costFile, String(reply.total_cost_usd ?? 0));
+    return reply.result ?? '';
+  };
+  // Conversación con una persona: un modelo barato contesta con su hoja hasta que el sujeto deja de preguntar o llega al tope.
+  // Su coste va al último RESULTADO, que es el único que cuenta run.mjs.
+  s.converse = async (sheet, max) => {
+    let turn = 0;
+    let personaCost = 0;
+    while (turn < max) {
+      const asked = deps.run(s.NODE, [EXTRACT, 'last', s.JSONL], { env: s.env }).stdout;
+      if (!asked.includes('?')) break;
+      turn++;
+      const costFile = join(s.RUNS, `${s.LABEL}.persona-${turn}.txt`);
+      const answer = await personaReply(sheet, asked, costFile);
+      if (answer === undefined) return 1;
+      personaCost += Number(fs.read(costFile));
+      await s.resume(answer);
+    }
+    if (turn > 0) appendPersonaCost(s, fs, personaCost, turn);
+    return 0;
+  };
+}
+
+function appendPersonaCost(s, fs, personaCost, turns) {
+  const stream = fs.read(s.JSONL);
+  const subjectCost = Number([...stream.matchAll(/"total_cost_usd":([0-9.]+)/g)].at(-1)?.[1] ?? 0);
+  const result = { type: 'result', num_turns: turns, total_cost_usd: subjectCost + personaCost, result: `conversación con persona: ${turns} respuestas` };
+  fs.write(s.JSONL, stream + lines([JSON.stringify(result)]));
+}
+
+// netstat -ano: la remota de un socket que escucha es 0.0.0.0:0 o [::]:0; el nombre del estado se traduce con el idioma de Windows.
+export function listeningPids(netstatText, port) {
+  return netstatText
+    .split(/\r?\n/)
+    .map((line) => line.trim().split(/\s+/))
+    .filter((columns) => columns.length === 5 && columns[1].endsWith(`:${port}`) && /^(0\.0\.0\.0|\[::\]):0$/.test(columns[2]))
+    .map((columns) => Number(columns[4]));
+}
+
+// Un sujeto web arranca en el puerto que elige, no en el del molde: se miden todos los que nombra el stream.
+function streamPorts(stream, port) {
+  const found = /^\d+$/.test(port ?? '') ? [Number(port)] : [];
+  for (const match of stream.matchAll(/(?:PORT=|localhost:)(\d{4,5})/g)) found.push(Number(match[1]));
+  return [...new Set(found.filter((value) => value >= 1 && value <= 65535))].sort((a, b) => a - b);
+}
+
+// Por el PID que escucha en el puerto y no estaba en la foto del arranque, nunca por nombre: en la máquina corren
+// los servidores y los MCP de otras sesiones, y el stream nombra puertos que el sujeto solo leyó.
+function addPorts(s, deps) {
+  const { fs } = deps;
+  const readOr = (path) => (fs.exists(path) ? fs.read(path) : '');
+  const tryNetstat = () => {
+    try {
+      return deps.netstat();
+    } catch {
+      return undefined;
+    }
+  };
+  s.snapshot = tryNetstat();
+  s.ports = () => streamPorts(readOr(s.JSONL), s.env.PORT).join(',');
+  // RUNS es <RUNS_DIR>/<fase>: las marcas de live/ y los streams de los demás sujetos cuelgan de su padre.
+  const otherSubjectPorts = () => {
+    const root = dirname(s.RUNS);
+    const ports = new Set();
+    for (const live of [join(root, 'live'), join(root, 'dry', 'live')]) {
+      for (const name of fs.list(live).filter((mark) => !mark.startsWith('.') && mark.includes('.'))) {
+        if (name === `${s.env.PHASE || 'red'}.${s.LABEL}`) continue;
+        // Un PID vacío es una marca a medio escribir: en curso, como en countMarks de campaign.mjs.
+        const pid = readOr(join(live, name)).split(/\r?\n/)[0].trim();
+        if (pid && !deps.isAlive(Number(pid))) continue;
+        const dot = name.indexOf('.');
+        streamPorts(readOr(join(root, name.slice(0, dot), `${name.slice(dot + 1)}.jsonl`))).forEach((port) => ports.add(port));
+      }
+    }
+    return ports;
+  };
+  const stopNew = (ports, before) => {
+    const now = s.snapshot === undefined ? undefined : tryNetstat();
+    if (now === undefined) return 'no comprobado (netstat no respondió)';
+    const stopped = ports.filter((port) => {
+      const mine = listeningPids(now, port).filter((pid) => !before.get(port).includes(pid));
+      mine.forEach((pid) => deps.kill(pid, false));
+      return mine.length > 0;
+    });
+    return stopped.join(',') || 'ninguno';
+  };
+  // Un puerto que nombra otro sujeto en curso lo para el último en acabar, con la foto del primero que lo saltó en ports/:
+  // el primero paraba el servidor del otro, y el último no veía uno arrancado antes que él.
+  // shortcut: dos sujetos que acaban a la vez se ven en curso y ninguno para el puerto; un lock por puerto si pasa.
+  s.stopPorts = () => {
+    const own = streamPorts(readOr(s.JSONL), s.env.PORT);
+    if (own.length === 0) return;
+    const others = otherSubjectPorts();
+    const handoffDir = join(dirname(s.RUNS), 'ports');
+    const toStop = [];
+    const shared = [];
+    const before = new Map();
+    for (const port of own) {
+      const handoff = join(handoffDir, String(port));
+      const pids = fs.exists(handoff) ? JSON.parse(fs.read(handoff)) : listeningPids(s.snapshot ?? '', port);
+      if (others.has(port)) {
+        shared.push(port);
+        fs.write(handoff, JSON.stringify(pids));
+      } else {
+        toStop.push(port);
+        before.set(port, pids);
+        fs.remove(handoff);
+      }
+    }
+    const listening = toStop.length === 0 ? 'sin consultar' : stopNew(toStop, before);
+    const sharedNote = shared.length ? ` · compartidos con otro sujeto en curso, sin parar: ${shared.join(',')}` : '';
+    const errFile = join(s.RUNS, `${s.LABEL}.err`);
+    fs.write(errFile, readOr(errFile) + lines([`puertos del sujeto: ${own.join(',')} · escuchando al acabar: ${listening}${sharedNote}`]));
+  };
+}
