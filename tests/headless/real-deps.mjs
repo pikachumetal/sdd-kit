@@ -44,19 +44,27 @@ function launch({ subjectSh, args, env }) {
 // de las líneas de órdenes de otros programas, y el JSON no se puede leer.
 const PROCESS_QUERY = "Get-CimInstance Win32_Process | ForEach-Object { \"$($_.ProcessId)`t$($_.CommandLine -replace '[\\x00-\\x1f]', ' ')\" }";
 
-// Fuera de Windows (el CI corre esta suite en Linux), ps da lo mismo: «<pid> <línea de órdenes>».
 const windows = process.platform === 'win32';
-const [PROCESS_COMMAND, PROCESS_ARGS, SEPARATOR] = windows
-  ? ['pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], '\t']
-  : ['ps', ['-eo', 'pid=,args='], ' '];
+
+// Fuera de Windows (el CI corre esta suite en Linux), la línea de órdenes sale de /proc, sin depender de ps.
+function linuxProcesses() {
+  return readdirSync('/proc').filter((name) => /^\d+$/.test(name)).flatMap((pid) => {
+    try {
+      return [{ pid: Number(pid), commandLine: readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ').trim() }];
+    } catch {
+      return [];
+    }
+  });
+}
 
 async function processes() {
-  const result = spawnSync(PROCESS_COMMAND, PROCESS_ARGS, { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
+  if (!windows) return linuxProcesses();
+  const result = spawnSync('pwsh', ['-NoProfile', '-Command', PROCESS_QUERY], { encoding: 'utf8', windowsHide: true, maxBuffer: 64 * 1024 * 1024 });
   if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`${PROCESS_COMMAND} salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
-  return result.stdout.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
-    const at = line.indexOf(SEPARATOR);
-    return { pid: Number(line.slice(0, at)), commandLine: line.slice(at + 1) };
+  if (result.status !== 0) throw new Error(`pwsh salió con ${result.status}: ${(result.stderr ?? '').trim()}`);
+  return result.stdout.split(/\r?\n/).filter(Boolean).map((line) => {
+    const tab = line.indexOf('\t');
+    return { pid: Number(line.slice(0, tab)), commandLine: line.slice(tab + 1) };
   });
 }
 

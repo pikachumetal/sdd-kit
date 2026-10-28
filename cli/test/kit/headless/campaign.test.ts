@@ -149,7 +149,7 @@ describe('readConfig', () => {
   });
 
   it('pasa al sujeto RUNS_DIR, SPEC_DIR y KIT_DIR en ruta absoluta', () => {
-    const { env } = readConfig(baseEnv({ RUNS_DIR: 'scratchpad\\runs', SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
+    const { env } = readConfig(baseEnv({ RUNS_DIR: join('scratchpad', 'runs'), SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
     expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
   });
 
