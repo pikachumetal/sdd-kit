@@ -62,7 +62,7 @@ function lostLines(existingBody: string[], entryLines: string[]): string[] {
 
 function entryProblem(entry: Delta, artifactName: string): string | undefined {
   if (entry.kind !== 'RULES' && !entry.title) {
-    return `${artifactName}: no leo el título de «${entry.header}»: escríbelo como «**${entry.writtenKind} — <título>**», con raya`;
+    return `${artifactName}: no leo el título de «${entry.header}»: escríbelo como «#### ${entry.writtenKind} — <título>», con raya`;
   }
   const body = mergeableLines(entry.lines);
   const gap = [entry.capability, entry.title, ...body]

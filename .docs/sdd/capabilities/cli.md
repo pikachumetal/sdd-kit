@@ -164,8 +164,8 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 ### `sdd lock run` corre un comando con el cerrojo de las suites del clon
 
 - GIVEN el worktree de `feature/0210` con `sdd lock run -- pnpm exec vitest run slow.test` en marcha desde las 19:30:00 del 2026-10-25
-- WHEN otro worktree del mismo clon lanza `sdd lock run -- pwsh -NoProfile -File tests/Invoke-KitTests.ps1`
-- THEN el segundo escribe «Esperando el cerrojo de suites: lo tiene feature/0210 (D:\code\sdd-kit-0210, PID 4120) desde 2026-10-25 19:30:00.» y no arranca su comando hasta que acaba el primero
+- WHEN otro worktree del mismo clon lanza `sdd lock run -- pnpm exec vitest run test/kit/headless`
+- THEN el segundo escribe «Esperando el cerrojo de suites: vas 1.º en la cola; lo tiene feature/0210 (D:\code\sdd-kit-0210, PID 4120) desde 2026-10-25 19:30:00.» y no arranca su comando hasta que acaba el primero
 - AND `sdd lock run` sale con el código del comando
 
 ### `sdd task start` abre una spec lite como brief
@@ -189,6 +189,21 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - THEN cada uno hace lo mismo que con `--path D:\code\reservas\.docs\sdd` (en `roadmap`, `capability` y `decision`), con `--root D:\code\reservas` (en `estimation`, `init` y `upgrade`) o con `--path D:\code\reservas` (en `session tokens`)
 - AND con `--project-root` y el nombre de hoy a la vez, escribe `--path y --project-root no van juntas` (o `--root y --project-root no van juntas`) y el uso, y sale con 2
 - AND `node sdd.js merge --path .` escribe `opción desconocida: «--path»; la raíz del proyecto va en --project-root` y el uso, y sale con 2; lo mismo con `--root` en `merge`, `id next`, `id claim` y `roadmap publish`
+
+### Un `sdd lock run` dentro de otro no vuelve a pedir el cerrojo
+
+- GIVEN `sdd lock run -- moon run kit:test-headless cli:test-min` en marcha en `feature/0228`, con el cerrojo de suites cogido por su PID 7100
+- WHEN `kit:test-headless`, hijo de ese proceso, lanza `sdd lock run -- pnpm --dir cli exec vitest run test/kit/headless`
+- THEN el comando arranca sin esperar ni escribir «Esperando el cerrojo», y el cerrojo sigue siendo del PID 7100 hasta que acaba el `moon run` entero
+- AND un `sdd lock run` con `SDD_SUITE_LOCK_OWNER=7100` heredado cuando el cerrojo lo tiene otro PID, o cuando no lo tiene nadie, lo pide como cualquier otro
+
+### La espera del cerrojo de suites va por orden de llegada y dice el puesto
+
+- GIVEN `feature/0210` con el cerrojo de suites desde las 17:05:12 del 2026-10-27, y `feature/0211` esperándolo desde las 17:06:00
+- WHEN `feature/0212` lanza `sdd lock run` a las 17:07:00
+- THEN escribe «Esperando el cerrojo de suites: vas 2.º en la cola; lo tiene feature/0210 (D:\code\sdd-kit-0210, PID 4120) desde 2026-10-27 17:05:12; delante de ti, feature/0211 (D:\code\sdd-kit-0211, PID 5332).»
+- AND al soltarlo la 0210 a las 17:31:40, lo coge la 0211 aunque la 0212 sondee antes, y la 0212 escribe «Esperando el cerrojo de suites: vas 1.º en la cola; lo tiene feature/0211 (D:\code\sdd-kit-0211, PID 5332) desde 2026-10-27 17:31:40.»
+- AND una espera cuyo proceso muere sale de la cola, y quien iba detrás sube de puesto
 
 ## Reglas de la capacidad
 
