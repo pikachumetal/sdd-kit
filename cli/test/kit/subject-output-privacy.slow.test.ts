@@ -6,6 +6,8 @@ import {
   escapeRegExp,
   findLeak,
   gitUserConfig,
+  isCommonUser,
+  machineUser,
   machineUserPattern,
   readEvidence,
   selectEvidencePath,
@@ -204,7 +206,9 @@ describe('La evidencia de los sujetos no lleva el home de la máquina', () => {
     expect(findLeak(evidence, USER_PATH_PATTERN), because).toEqual([]);
   });
 
-  it('ni el usuario de esta máquina suelto (ls -l)', () => {
+  it('ni el usuario de esta máquina suelto (ls -l)', (context) => {
+    const user = machineUser();
+    if (isCommonUser(user)) context.skip(`el usuario de esta máquina, ${user}, es una palabra corriente: casaría con cualquier salida`);
     expect(findLeak(evidence, machineUserPattern()), because).toEqual([]);
   });
 
