@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { gitBashTmpPath, repairGitBashTmp, withSystemMessage } from './git-bash-tmp.js';
 import { nodeVersionProblem } from './node-version.js';
 
 function numericParts(version) {
@@ -65,10 +66,20 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   return `{\n${systemMessage}  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "${escapeForJson(context)}"\n  }\n}\n`;
 }
 
+function gitBashTmpNotice() {
+  try {
+    return repairGitBashTmp(gitBashTmpPath());
+  } catch {
+    return '';
+  }
+}
+
 export function runSessionStart(pluginRoot) {
+  const notice = gitBashTmpNotice();
   try {
     const projectDir = resolve(process.env.CLAUDE_PROJECT_DIR || process.cwd());
-    process.stdout.write(Buffer.from(sessionStartOutput(projectDir, pluginRoot, process.versions.node), 'utf8'));
+    const output = withSystemMessage(sessionStartOutput(projectDir, pluginRoot, process.versions.node), notice);
+    process.stdout.write(Buffer.from(output, 'utf8'));
   } catch {
     // el hook nunca debe romper el arranque de la sesión
   }

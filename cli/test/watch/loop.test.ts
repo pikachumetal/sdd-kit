@@ -3,6 +3,7 @@ import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
 import { defaultConfig, description, newTranscript, newWorktree, readCall, touch } from './helpers.ts';
 import { join } from 'node:path';
+import { appendFileSync, writeFileSync } from 'node:fs';
 
 function startWatching(setup: ReturnType<typeof newWorktree>, name = description) {
   const io = memoryIo();
@@ -67,5 +68,48 @@ describe('watch subagent sin --once', () => {
     await vi.advanceTimersByTimeAsync(150_000);
     await finished;
     expect(io.stdout[0]).toMatch(/^SIN TRANSCRIPT:/);
+  });
+});
+
+describe('watch command sin --once', () => {
+  beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'Date'] }));
+  afterEach(() => vi.useRealTimers());
+
+  async function writeEvery30s(log: string, minutes: number, line: (second: number) => string): Promise<void> {
+    for (let second = 30; second <= minutes * 60; second += 30) {
+      await vi.advanceTimersByTimeAsync(29_000);
+      appendFileSync(log, line(second));
+      touch(log, 0);
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+  }
+
+  const heartbeat = (second: number): string => `▮▮▮▮ kit:test-headless (running for ${second}s)\n`;
+
+  function startCommand(setup: ReturnType<typeof newWorktree>, log: string) {
+    const io = memoryIo();
+    const finished = run(['watch', 'command', '--path', log, '--worktree', setup.repo], io);
+    return { io, finished };
+  }
+
+  it('no cuenta el latido de moon como actividad y avisa al pasar longCommandMinutes', async () => {
+    const setup = newWorktree(defaultConfig);
+    const log = join(setup.repo, 'gate.log');
+    writeFileSync(log, 'kit:test-headless | RUN tests\n');
+    const { io, finished } = startCommand(setup, log);
+    await writeEvery30s(log, 20.5, heartbeat);
+    expect(io.stdout[0]).toBe('SILENCIO: gate.log lleva 20 min sin escribir (umbral 20 min, longCommandMinutes)');
+    expect(await finished).toBe(0);
+  });
+
+  it('una línea que no es latido sí cuenta como actividad', async () => {
+    const setup = newWorktree(defaultConfig);
+    const log = join(setup.repo, 'gate.log');
+    writeFileSync(log, 'kit:test-headless | RUN tests\n');
+    const { io } = startCommand(setup, log);
+    await writeEvery30s(log, 15, heartbeat);
+    await writeEvery30s(log, 0.5, () => 'kit:test-headless | ✓ test/x.test.ts\n');
+    await writeEvery30s(log, 15, heartbeat);
+    expect(io.stdout).toEqual([]);
   });
 });

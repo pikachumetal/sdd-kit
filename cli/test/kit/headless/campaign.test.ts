@@ -1,6 +1,6 @@
 import { join, resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { CampaignError, readConfig, runCampaign, stopCampaign, stopSubjectProcesses, subjectProcesses, sweepCut } from '../../../../tests/headless/campaign.mjs';
+import { describe, expect, it, vi } from 'vitest';
+import { CampaignError, readConfig, runCampaign, stopCampaign, subjectProcesses, sweepCut } from '../../../../tests/headless/campaign.mjs';
 import { memoryFs, type MemoryFs } from './memory-fs.ts';
 
 // Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
@@ -343,8 +343,8 @@ describe('procesos del sujeto', () => {
   it('no avisa si el sujeto no deja procesos', async () => {
     const fs = kitFs();
     const fake = fakeDeps(fs);
-    await stopSubjectProcesses('a-1', folder, fake.deps);
-    expect(fake.log).toEqual([]);
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.log.filter((line) => line.includes('paro'))).toEqual([]);
   });
 
   it('al arrancar para los procesos de los cortados de una tanda anterior', async () => {
@@ -400,6 +400,56 @@ describe('procesos del sujeto', () => {
     await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
     expect(fake.log).toContain('[a-1] no pude listar los procesos: pwsh no arrancó');
     expect(fake.log.at(-1)).toBe('sujetos de la campaña: 1 · coste acumulado: 0.50 $');
+  });
+
+  describe('procesos lanzados desde la copia del kit', () => {
+    const kitCli = join(KIT, 'cli', 'bin', 'sdd.js');
+    const serve = { pid: 71, commandLine: `node ${kitCli} validation serve --steps steps.json --out .temp/validation/0001.json` };
+    const pluginDir = { pid: 72, commandLine: `claude.exe -p --plugin-dir ${KIT}` };
+
+    // Como en Windows: la carpeta no se borra mientras viva el servidor que tiene su cwd dentro.
+    function lockedBy(fs: MemoryFs, fake: ReturnType<typeof fakeDeps>, pid: number) {
+      const remove = fs.remove;
+      fs.remove = (path) => {
+        if (path.startsWith(join(RUNS, 'red')) && !fake.killed.some((kill) => kill.pid === pid)) throw new Error(`EPERM: ${path}`);
+        remove(path);
+      };
+    }
+
+    it('para el servidor del panel que deja un sujeto y borra su carpeta sin EPERM', async () => {
+      const fs = kitFs();
+      fs.write(join(folder, 'repo', 'a.txt'), '');
+      const fake = fakeDeps(fs, { processes: [serve, pluginDir] });
+      lockedBy(fs, fake, serve.pid);
+      await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+      expect(fake.killed).toEqual([{ pid: 71, tree: true }]);
+      expect(fs.exists(folder)).toBe(false);
+    });
+
+    it('con otro sujeto en curso no para nada de la copia del kit: lo para el último en acabar', async () => {
+      const fs = kitFs();
+      fs.write(join(folder, 'repo', 'a.txt'), '');
+      const fake = fakeDeps(fs, { manual: true, processes: [serve] });
+      lockedBy(fs, fake, serve.pid);
+      const campaign = runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps);
+      await vi.waitFor(() => expect(fake.finishers.size).toBe(2));
+      fake.finishers.get('a-1')!();
+      await vi.waitFor(() => expect(fs.exists(join(RUNS, 'live', 'red.a-1'))).toBe(false));
+      expect(fake.killed).toEqual([]);
+      fake.finishers.get('b-1')!();
+      await campaign;
+      expect(fake.killed).toEqual([{ pid: 71, tree: true }]);
+      expect(fs.exists(folder)).toBe(false);
+    });
+
+    it('con KEEP_MOLD=1 para el servidor y deja la carpeta', async () => {
+      const fs = kitFs();
+      fs.write(join(folder, 'repo', 'a.txt'), '');
+      const fake = fakeDeps(fs, { processes: [serve] });
+      await runCampaign(readConfig(baseEnv({ KEEP_MOLD: '1' }), CWD, fs), fake.deps);
+      expect(fake.killed).toEqual([{ pid: 71, tree: true }]);
+      expect(fs.exists(folder)).toBe(true);
+    });
   });
 
   it('al parar, mata el árbol de cada sujeto en curso y barre sus procesos', async () => {

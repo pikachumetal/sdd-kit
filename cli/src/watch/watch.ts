@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { caseInsensitiveGet, isRecord } from '../cli/records.ts';
 import { readText } from '../cli/files.ts';
@@ -23,6 +23,7 @@ interface Context {
   roots: string[];
   thresholds: Thresholds;
   startedAt: number;
+  activity?: { size: number; at: number };
 }
 
 const POLL_MILLIS = 30_000;
@@ -59,6 +60,19 @@ function findTranscript(description: string, context: Context): string | null {
   return existsSync(transcript) ? transcript : null;
 }
 
+const MOON_HEARTBEAT = /^▮+ \S+ \(running for [^)]+\)$/;
+
+// moon escribe su latido cada 30 s aunque la tarea esté colgada: lo añadido que solo son latidos no cuenta como actividad.
+function commandActivity(context: Context, file: string): number {
+  const { size, mtimeMs } = statSync(file);
+  const previous = context.activity;
+  const onlyHeartbeats = (from: number): boolean =>
+    readFileSync(file).subarray(from).toString('utf8').split(/\r?\n/).filter((line) => line !== '').every((line) => MOON_HEARTBEAT.test(line));
+  const quiet = previous !== undefined && (size === previous.size || (size > previous.size && onlyHeartbeats(previous.size)));
+  context.activity = { size, at: quiet ? previous.at : mtimeMs };
+  return context.activity.at;
+}
+
 function verdictFor(context: Context, graceOver: boolean): Verdict {
   const { target } = context.options;
   const label = target.kind === 'command' ? basename(target.path) : target.description;
@@ -67,7 +81,7 @@ function verdictFor(context: Context, graceOver: boolean): Verdict {
     if (!graceOver) return { status: 'BUSCANDO', lines: [] };
     return { status: 'SIN TRANSCRIPT', lines: [`SIN TRANSCRIPT: ${label}; el vigía de silencio no funciona en esta sesión`] };
   }
-  if (target.kind === 'command') return headVerdict({ file, label }, 'longCommandMinutes', context.thresholds);
+  if (target.kind === 'command') return headVerdict({ file, label, activeAt: commandActivity(context, file) }, 'longCommandMinutes', context.thresholds);
   return subagentVerdict({ file, label }, context.thresholds);
 }
 

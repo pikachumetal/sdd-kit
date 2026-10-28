@@ -80,6 +80,17 @@ const molds = {
     edit('.docs/sdd/operations.md', (text) => text.replace(/^- \*\*Gate de cierre\*\*: .*$/gm, '- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`'));
     if (!readFileSync(at('.docs/sdd/operations.md'), 'utf8').includes('scripts/gate.mjs')) s.die('no se plantó el gate filtrado');
   },
+  // Un workspace de pnpm recién clonado, sin node_modules: app.js importa fecha, y npm install no lo instala.
+  'reservas-deps'() {
+    molds['reservas-deps-sin-stack']();
+    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Dependencias: workspace de pnpm (\`pnpm-workspace.yaml\`); \`pnpm install\` una vez por worktree.\n`);
+  },
+  // El mismo workspace sin la línea de tech-stack.md: el gestor solo lo dice el lockfile.
+  'reservas-deps-sin-stack'() {
+    s.copy(join(FIX, 'deps'));
+    edit('package.json', (text) => text.replace('"engines"', '"dependencies": {"fecha": "workspace:*"}, "engines"'));
+    edit('src/app.js', (text) => `import { dayName } from 'fecha';\n${text}\nexport const today = () => dayName(new Date().getDay());\n`);
+  },
   // Una sala más rompe el test de libres: el gate de cierre sale en rojo.
   'reservas-rojo'() {
     edit('src/app.js', (text) => text.replaceAll("const rooms = ['Norte', 'Sur'];", "const rooms = ['Norte', 'Sur', 'Este'];"));
@@ -150,6 +161,11 @@ const steps = {
     s.commit('chore: política de merge');
     branch('feature/bump-node-22-18');
   },
+  ws1: () => {
+    addRow(s.R, '| 0012 | Patch: **Franja no válida en libres**: `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» | ⏳ |');
+    s.commit('docs(roadmap): reserva 0012');
+    branch('feature/0012-slot-format');
+  },
   s1: () => branch('feature/0010-cancel-reason'),
   c1: () => branch('feature/0010-cancel-reason'),
   sp1: () => branch('feature/0012-retire-void'),
@@ -175,6 +191,8 @@ const steps = {
 };
 for (const id of ['k1', 'k3', 'k4', 'k6']) steps[id] = () => (s.env.TURN2 = 'Sí.');
 steps.p2 = steps.p1;
+steps.ws2 = steps.k5;
+steps.ws3 = steps.ws1;
 const voidOthers = () => {
   branch('feature/0011-void-others');
   s.put(`${F11}/spec.md`, readFileSync(join(FIX, 'spec-0011.md'), 'utf8'));

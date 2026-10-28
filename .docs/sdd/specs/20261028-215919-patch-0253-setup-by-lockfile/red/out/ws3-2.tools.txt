@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/roadmap.md; node "D:/code/.worktrees/sdd-kit/patch-0253-setup-by-lockfile/.temp/k253/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md | head -150; ls .docs/sdd/specs 2>/dev/null; git ls-files | head -50
+<<< .
+..
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`)
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat .docs/sdd/operations.md .docs/sdd/estimation.md; cat .docs/sdd/specs/*0007*/patch.md; grep -n "libres" test/*.js | head
+<<< import { dayName } from 'fecha';
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva 
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (7 turnos, 0.1727825 $)
+**Carril:** patch, de una petición cerrada. La rama es `feature/0012-slot-format` y la fila 0012 está pendiente, así que esa fila es el enunciado. No hago más preguntas de diseño, pero necesito tu confirmación antes de abrir nada.
+
+🦆 **Qué tocaría:** ahora `libres` compara el texto de la franja tal cual, sin mirar si es una franja. `libres 25:00-26:00` no encuentra reservas y devuelve todas las salas libres. El cambio hace que `libres` compruebe que la franja tiene la forma `HH:MM-HH:MM` con horas 00–23 y minutos 00–59. Si no la tiene, responde `franja no válida: usa HH:MM-HH:MM`. Una franja válida se comporta como hasta ahora. Es un único test que hoy falla, en `src/app.js` y `test/app.test.js`. Esto cierra la deuda «Sin validación del formato de franja horaria» del roadmap.
+
+**Por qué es patch:** la fila fija el texto exacto y el comportamiento, y es un solo test. No hay nada visible que yo tenga que decidir.
+
+**Dos puntos que asumo y que puedes corregir:**
+- `libres` sin franja, o con basura como `abc`, también responde `franja no válida: usa HH:MM-HH:MM`.
+- Una franja con el fin antes del inicio, como `12:00-10:00`, no la rechazo: la fila habla solo de formato.
+
+**Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+**Estimación:** no hay estimación en horas, porque `estimation.md` dice que los patches registran solo el tiempo real. El gate de cierre (`node --test && node scripts/lint.mjs`) no tiene duración medida en el patch 0007.
+
+**¿Abro el patch 0012 con este alcance?**
+1. **Sí, patch (recomendada).**
+2. **Sí, pero rechazando también el fin antes del inicio.** Esto añade una regla que la fila no pide, así que lo trataría como feature.
+3. **No.**
+
+Mientras no contestes no creo carpeta ni `patch.md`.

@@ -15,12 +15,13 @@ export interface Verdict {
 export interface Watched {
   file: string;
   label: string;
+  activeAt?: number;
 }
 
-const silenceMinutes = (file: string): number => (Date.now() - statSync(file).mtimeMs) / 60000;
+const silenceMinutes = (watched: Watched): number => (Date.now() - (watched.activeAt ?? statSync(watched.file).mtimeMs)) / 60000;
 
 export function headVerdict(watched: Watched, key: keyof Thresholds, thresholds: Thresholds): Verdict {
-  const minutes = silenceMinutes(watched.file);
+  const minutes = silenceMinutes(watched);
   const shown = Math.floor(minutes);
   const limit = `(umbral ${thresholds[key]} min, ${key})`;
   if (minutes > thresholds[key]) return { status: 'SILENCIO', lines: [`SILENCIO: ${watched.label} lleva ${shown} min sin escribir ${limit}`] };
