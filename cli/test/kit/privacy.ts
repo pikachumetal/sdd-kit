@@ -12,10 +12,21 @@ export const USER_PATH_PATTERN = /(?:\b[a-z]:|(?<![\w.])\/[a-z])(?:\\{1,2}|\/)Us
 
 export const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-// Del home, no de USERNAME, que en Git Bash vale SYSTEM. Sin home, un patrón que no casa: \b\b casaría con todo.
+// Usuarios por defecto de GitHub Actions, de un contenedor y de las imágenes de nube: como palabra, casan con texto
+// corriente de cualquier salida («el test runner nativo»), sin que sea una fuga (patch 0245).
+export const COMMON_USERS = ['runner', 'root', 'user', 'admin', 'ubuntu'];
+
+// Del home, no de USERNAME, que en Git Bash vale SYSTEM.
+export function machineUser(env: NodeJS.ProcessEnv = process.env): string {
+  return (env.USERPROFILE ?? env.HOME ?? '').split(/[\\/]/).pop() ?? '';
+}
+
+export const isCommonUser = (user: string): boolean => COMMON_USERS.includes(user.toLowerCase());
+
+// Sin home o con un usuario corriente, un patrón que no casa: \b\b casaría con todo.
 export function machineUserPattern(env: NodeJS.ProcessEnv = process.env): RegExp {
-  const leaf = (env.USERPROFILE ?? env.HOME ?? '').split(/[\\/]/).pop() ?? '';
-  return leaf === '' ? /(?!)/ : new RegExp(`\\b${escapeRegExp(leaf)}\\b`, 'i');
+  const leaf = machineUser(env);
+  return leaf === '' || isCommonUser(leaf) ? /(?!)/ : new RegExp(`\\b${escapeRegExp(leaf)}\\b`, 'i');
 }
 
 // Toda subcarpeta de una tarea: campaign/, ab/, micro/… también son salidas de sujetos.

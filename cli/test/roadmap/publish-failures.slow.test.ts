@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { run } from '../../src/main.ts';
@@ -20,6 +20,12 @@ function git(cwd: string, ...args: string[]): string {
 function write(root: string, path: string, content: string): void {
   mkdirSync(dirname(join(root, path)), { recursive: true });
   writeFileSync(join(root, path), content);
+}
+
+// En Linux git ignora un hook sin bit de ejecución, y el commit no fallaría (patch 0245).
+function failingPreCommit(root: string): void {
+  write(root, '.git/hooks/pre-commit', '#!/bin/sh\nexit 1\n');
+  chmodSync(join(root, '.git/hooks/pre-commit'), 0o755);
 }
 
 function newRepo() {
@@ -50,7 +56,7 @@ async function publish(cwd: string, ...extra: string[]) {
 describe('sdd roadmap publish failures', () => {
   it('rolls back the target when the commit fails', async () => {
     const repo = newRepo();
-    write(repo.main, '.git/hooks/pre-commit', '#!/bin/sh\nexit 1\n');
+    failingPreCommit(repo.main);
     const result = await publish(repo.session, roadmap);
     expect(result.code).toBe(1);
     expect(git(repo.main, 'status', '--porcelain')).toBe('');
@@ -62,7 +68,7 @@ describe('sdd roadmap publish failures', () => {
     const repo = newRepo();
     const added = '.docs/sdd/nuevo.md';
     write(repo.session, added, 'nuevo\n');
-    write(repo.main, '.git/hooks/pre-commit', '#!/bin/sh\nexit 1\n');
+    failingPreCommit(repo.main);
     const result = await publish(repo.session, roadmap, added);
     expect(result.code).toBe(1);
     expect(git(repo.main, 'status', '--porcelain')).toBe('');

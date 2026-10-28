@@ -17,4 +17,9 @@ describe('La evidencia que lleva el commit no tiene el home de la máquina', () 
   it('sin home no da por fuga cualquier fichero', () => {
     expect(machineUserPattern({}).test('cualquier texto')).toBe(false);
   });
+
+  it('un usuario que es palabra corriente, como runner en GitHub Actions, no da por fuga el texto normal (patch 0245)', () => {
+    expect(machineUserPattern({ HOME: '/home/runner' }).test('TDD con el test runner nativo')).toBe(false);
+    expect(machineUserPattern({ HOME: '/home/alice' }).test('drwxr-xr-x alice')).toBe(true);
+  });
 });
