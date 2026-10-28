@@ -135,7 +135,8 @@ export async function runBattery(env, cwd, deps) {
 
 const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync };
 
-const findScenario = (batteryPath, id) => readScenarios(batteryPath, fileFs).find((candidate) => candidate.Id === id);
+export const scenarios = (batteryPath) => readScenarios(batteryPath, fileFs);
+const findScenario = (batteryPath, id) => scenarios(batteryPath).find((candidate) => candidate.Id === id);
 
 // La celda de un escenario para el subject.mjs de una batería: la tabla de su carpeta, o la de BATTERY_DIR.
 // Sin el escenario, undefined: el sujeto muere con su mensaje.

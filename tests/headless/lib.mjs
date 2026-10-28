@@ -1,7 +1,7 @@
 // Biblioteca de referencia para el subject.mjs de una campaña de sujetos headless: se importa, no se copia.
 //   import { initSubject } from '<repo>/tests/headless/lib.mjs';
 //   const s = initSubject(process.argv.slice(2), '<skill medida>');  // kit, etiqueta, escenario, salida (argumentos de run.mjs)
-//   ...molde en s.R con s.put, s.git y s.commit...
+//   ...molde en s.R con s.copy, s.put, s.git y s.commit...
 //   await s.launch(ask);
 //   s.save(`## git log\n${s.git('log', '--oneline', '--all')}`);
 //   s.keep(join(s.R, '.docs/sdd/roadmap.md'), 'roadmap.md');    // copia plana y limpia en <salida>/<etiqueta>/
@@ -24,7 +24,7 @@
 // DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
 // KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre).
 import { spawn, spawnSync } from 'node:child_process';
-import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { closeSync, cpSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, delimiter, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -227,6 +227,8 @@ function addMoldTools(s, deps) {
     s.git('commit', '-q', '-m', title, '-m', body);
   };
   s.put = (path, text) => deps.fs.write(join(s.R, path), text);
+  // Una carpeta de fixtures dentro del molde, como cp -r <origen>/. <molde>/<destino>.
+  s.copy = (source, dest = '.') => cpSync(source, join(s.R, dest), { recursive: true });
   s.kitVersion = () => kitVersion(s.KIT, deps.fs);
   // Un marcador copiado de otra campaña envejece: con uno menor que la última migración, el hook manda a migrar.
   s.putKitMarker = (fields) => s.put(join('.docs', 'sdd', 'sdd-kit.json'), `{"version": "${s.kitVersion()}", ${fields}}\n`);
@@ -235,7 +237,7 @@ function addMoldTools(s, deps) {
 }
 
 // La versión que el hook exige al proyecto: la mayor entre plugin.json y la última migración del kit.
-function kitVersion(kit, fs) {
+export function kitVersion(kit, fs = nodeFs) {
   const plugin = join(kit, '.claude-plugin', 'plugin.json');
   const versions = fs.exists(plugin) ? [JSON.parse(fs.read(plugin)).version].filter(Boolean) : [];
   for (const skill of ['sdd-upgrade', 'sdd-init-brownfield']) {
