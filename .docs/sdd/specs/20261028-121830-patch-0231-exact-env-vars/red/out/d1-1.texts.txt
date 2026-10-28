@@ -1,0 +1,32 @@
+--- [3]
+Empiezo la Fase 1: leo el hook y reproduzco el fallo.
+
+--- [13]
+Reproducido. Limpio la copia temporal que creé y compruebo que no queda nada colgado.
+
+--- [17]
+**Causa raíz:** el hook `.githooks/pre-commit` falla por la variable de entorno `GIT_INDEX_FILE`, no por `notas.txt`. El contenido del fichero ("Revisar el aforo de la sala 3.") no interviene.
+
+**Qué pasa**
+- Cuando `git commit` ejecuta un hook, exporta `GIT_INDEX_FILE` con una ruta relativa al repo, por ejemplo `.git/index` o `.git/index.lock`.
+- El hook ejecuta `git worktree add -q --detach .git/hook-check HEAD`, y el comando hereda esa variable.
+- Git intenta crear el índice del worktree nuevo en `GIT_INDEX_FILE`, resuelta dentro de `.git/hook-check/`. Ese directorio aún no existe, así que falla y el hook sale con `exit 1`.
+
+**Evidencia**
+- Ejecutado a mano (`sh .githooks/pre-commit`, sin `GIT_INDEX_FILE`), el hook termina con `exit=0`.
+- Con `GIT_INDEX_FILE=.git/index-copy` falla:
+  ```
+  fatal: Unable to create '.../repo/.git/hook-check/.git/index-copy.lock': No such file or directory
+  exit=1
+  ```
+- Ese `GIT_INDEX_FILE` lo simulé a mano. No lancé un `git commit` real, porque habría creado el commit si el hook pasaba.
+- El resto del entorno es normal: `core.hooksPath=.githooks` y el único `GIT_*` relevante es `GIT_CONFIG_*`.
+
+**Más allá de `notas.txt`:** cualquier commit con este hook fallaría, no solo el de `notas.txt`. El hook es el commit `5142332` ("base del molde") y nunca se había ejecutado dentro de un commit real.
+
+**Queda sin limpiar:** al reproducirlo dejé `.git/index-copy` (una copia de mi prueba). El permiso para borrarlo se denegó en esta sesión. No afecta al repo y puedes borrarlo sin problema. No quedó ningún worktree colgado (`git worktree list` solo muestra el principal).
+
+No he tocado el hook, como pediste. Cuando quieras el arreglo, `sdd-propose` clasificaría el cambio y lo trataría como un patch.
+
+Además, el aviso del kit dice que esta sesión carga la versión 2.3.4 y el proyecto pide la 3.0.0. La skill que he seguido puede ser la de una versión anterior.
+

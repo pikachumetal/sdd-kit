@@ -78,7 +78,10 @@ You MUST complete each phase before proceeding to the next.
    For EACH component boundary:
      - Log what data enters component
      - Log what data exits component
-     - Verify environment/config propagation
+     - Verify environment/config propagation: print each variable
+       you name (GIT_DIR, GIT_INDEX_FILE…), never a prefix
+       (env | grep GIT) or the whole environment: they copy
+       secrets (GITHUB_PERSONAL_ACCESS_TOKEN) into the transcript
      - Check state at each layer
 
    Run once to gather evidence showing WHERE it breaks
