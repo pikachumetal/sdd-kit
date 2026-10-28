@@ -30,6 +30,8 @@ function runTask(name) {
   const count = (label) => Number((result.stdout.match(new RegExp(`ℹ ${label} (\\d+)`)) ?? [0, 0])[1]);
   const failed = result.status === 0 ? count('fail') : Math.max(count('fail'), 1);
   console.log(`▪ ${name} (${count('pass')} passed, ${failed} failed)`);
+  // Como moon, una tarea en rojo vuelca su salida: sin ella no se sabe qué fichero falló.
+  if (failed > 0) console.log(result.stdout + result.stderr);
   return failed === 0;
 }
 

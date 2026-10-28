@@ -103,6 +103,10 @@ start_environment() {
   printf '.docs/sdd/sdd-kit.local.json\n' >> "$R/.gitignore"
   commit "chore: gate de cierre sin e2e y config local ignorada"
 }
+broken_environment() {
+  printf "console.error('Error: no arranca: falta data/seed.json');\nprocess.exit(1);\n" | put scripts/env-up.mjs
+  commit "chore: env-up sin la semilla de datos"
+}
 
 # Un E2E que falla igual con la rama y sin ella, y su fila en la deuda del proyecto.
 e2e_red_base() {
@@ -129,6 +133,17 @@ test('una reserva nueva lleva su id', () => {
 });
 EOF
   commit "test: id de una reserva nueva"
+}
+# Un test de bookings:test, en develop, que falla con EBUSY la primera vez que corre en el clon e importa una dependencia local: un worktree sin `npm install` no la tiene.
+store_red_test() {
+  local gate="$HERE/fixtures/gate"
+  mkdir -p "$R/vendor"; cp -r "$gate/slot-format" "$R/vendor/slot-format"; cp "$gate/store.test.js" "$R/test/store.test.js"
+  printf '{"type": "module", "dependencies": {"slot-format": "file:vendor/slot-format"}}\n' > "$R/package.json"
+  sed -i 's#test/cancel.test.js"#test/cancel.test.js test/store.test.js"#; s#"test/cancel.test.js"\]#"test/cancel.test.js", "test/store.test.js"]#' "$R/gate.json"
+  grep -q 'store.test.js"\]' "$R/gate.json" || die "bookings:test sin test/store.test.js"
+  (cd "$R" && npm install --no-audit --no-fund --silent >/dev/null 2>&1) || die "npm install no instaló slot-format"
+  [ -e "$R/node_modules/slot-format" ] || die "sin node_modules/slot-format"
+  commit "test(bookings): el almacén guarda una reserva, con slot-format"
 }
 # develop avanza mientras la 0010 está abierta: código nuevo y una fila de roadmap en el mismo sitio que la que toca el cierre.
 develop_advances() {
@@ -243,6 +258,7 @@ case "$(cell Molde)" in
     commit "docs(sdd): abrir la feature 0010 con su spec y su plan" ;;
   reservas-red) mold_reservas; e2e_red_base; done_0010 ;;
   reservas-flaky) mold_reservas; flaky_test; done_0010 ;;
+  reservas-gate-red) mold_reservas; affected_gate; store_red_test; done_0010 ;;
   reservas-e2e) mold_reservas; e2e_suite; done_0010 ;;
   reservas-e2e-stale) mold_reservas; e2e_suite; done_0010; stale_server ;;
   reservas-plan) mold_reservas; e2e_red_base; g checkout -q -b feature/0010-cancel-reason
@@ -252,6 +268,8 @@ case "$(cell Molde)" in
   salas-report) manual_validation; done_0008; report_0008 ;;
   reservas-e2e-manual) manual_validation; mold_reservas; e2e_suite; done_0010 ;;
   reservas-start) manual_validation; mold_reservas; e2e_suite; start_environment; done_0010
+    printf '{"validation": {"startEnvironment": true}}\n' > "$R/.docs/sdd/sdd-kit.local.json" ;;
+  reservas-start-down) manual_validation; mold_reservas; e2e_suite; start_environment; broken_environment; done_0010
     printf '{"validation": {"startEnvironment": true}}\n' > "$R/.docs/sdd/sdd-kit.local.json" ;;
   salas-hotfix) done_0008 hotfix; export TURN2='Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.' ;;
   *) die "molde desconocido en battery.md: $SC" ;;

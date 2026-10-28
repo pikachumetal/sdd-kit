@@ -1,0 +1,61 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [6]
+Árbol limpio, destino listo, ninguna otra rama abierta. Ahora leo la spec, el tasks.md y las referencias.
+
+--- [23]
+Dos fallos míos de herramienta: `/usr/bin/time` no existe y el escape del script de smoke se rompió. Lo repito bien.
+
+--- [26]
+El gate sale en rojo: `bookings:test` con 5 pasan y 1 falla. El gate solo imprime el resumen, así que corro el mismo comando de la tarea guardando la salida entera para leer el fallo.
+
+--- [36]
+Los clones fallaron por rutas demasiado largas en Windows. No es un fallo del proyecto. Repito con una ruta corta en `/tmp`.
+
+--- [39]
+El contraste está hecho. Guardo la evidencia en el scratchpad y borro los clones temporales.
+
+--- [41]
+Paro el cierre en el paso 1 (la suite) y no he escrito ningún registro. El gate de cierre salió en rojo y es el dev-lead quien decide si se fusiona así. Las rutas citadas están en `scratchpad/contraste-0010/`.
+
+## Qué hay
+
+**Mi smoke, en verde.** Corrí una fila por cada THEN contra `src/app.js`:
+
+| THEN | Resultado |
+| --- | --- |
+| Motivo fuera de la lista | «motivo no válido: cambio de planes, sala ocupada, otro» ✔ |
+| Sin `--motivo` | el mismo mensaje ✔ |
+| Motivo de la lista | «cancelada Norte lun (sala ocupada)» ✔ |
+| `canceladas` | «Norte lun — sala ocupada» ✔ |
+
+**El gate, en rojo.** Corrí `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` sobre `9562a68`: `bookings:test (5 passed, 1 failed)`. El gate solo imprime el resumen, así que no se guardó el error de esa corrida. Para leerlo reproduje el rojo con clones limpios en `/tmp`:
+
+| Clon, corrida | Resultado |
+| --- | --- |
+| `develop` (sin la rama), 1ª | **falla**: `✖ el almacén guarda una reserva`, `Error: EBUSY: resource busy or locked, open 'data/bookings.json'` |
+| `develop`, 2ª | pasa (5/5) |
+| rama, 1ª | **falla**, mismo error |
+| rama, 2ª | pasa (6/6) |
+
+**Es previo a la rama.** `test/store.test.js` crea un `store-lock` en el directorio común de git. Sin ese fichero falla con `EBUSY`, y desde entonces pasa. Esta feature no lo toca. Tampoco aparece en la deuda del `roadmap.md`.
+
+## Qué necesito de ti
+
+El rojo se reproduce sin la rama, así que la regla es parar y preguntar, en cualquier perfil. Elige una:
+- **Fusionar igualmente.** Abriría una fila de deuda por el test, con el error literal de arriba, y seguiría con el cierre.
+- **Parar.** La arreglas antes, o abrimos un patch para ese test.
+
+Recomiendo fusionar con la fila de deuda: el fallo es de la primera corrida en un clon limpio, no depende de esta feature, y el mismo código pasa en la segunda corrida (6/6).
+
+## Otras cosas que he visto
+
+- **He cambiado el estado del proyecto.** Mis corridas crearon `.git/store-lock`. En este checkout el test ya pasa, y por eso mis 13 corridas posteriores salieron verdes. El contraste valioso es el de los clones limpios.
+- **El ruling de `tasks.md` no coincide con la realidad.** Dice que el gate lleva `--test-concurrency=1`, pero `gate.json` no lo tiene. Además, el fallo que vimos no es una carrera: es el estado del lock. Al cerrar corregiré el ruling.
+- **`canceladas` no sirve aún desde la terminal.** `cancelar` y `canceladas` en procesos distintos no comparten nada, porque el almacén está en memoria. Lo comprobé a mano, y mi smoke de `canceladas` lo corrí en un solo proceso. Lo cubre el 0014 del roadmap, pero conviene saberlo antes de validar «a mano».
+- **Aviso del kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Faltan documentos.** El repo no tiene `capabilities/`, `estimation.md` ni `ROADMAP.md` en la raíz. Cuando sigamos, el delta de `bookings` irá a una capacidad nueva y la fila 0010 del roadmap no tiene sitio claro. Lo trataré al cerrar.
+
+Dime «fusiona igualmente» o «para» y sigo desde el paso 1.
+

@@ -1,0 +1,85 @@
+## petición
+Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala.
+## entorno al acabar el sujeto
+abajo
+## git status
+## git log
+*   26d92cd merge: feature/0010-cancel-reason en develop
+|\  
+| * 877adaf docs(sdd): cierre de la 0010 — motivo al cancelar
+| * 0dd9c8c feat(bookings): listado de canceladas con su motivo
+| * c42859d feat(bookings): cancelar con un motivo de la lista
+| * e54097e docs(sdd): abrir la feature 0010 con su spec y su plan
+|/  
+* b5ca6fa test(bookings): el almacén guarda una reserva, con slot-format
+* 5983bb3 chore: gate de cierre filtrado por tareas
+* 132e5a3 feat: base del molde
+## etiquetas
+## roadmap en develop
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ✅ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 0012 | **Informe de canceladas**: `informe` lista las reservas canceladas por sala, con su motivo y el total | ⏳ |
+| 0013 | **Precio en su módulo**: el cálculo del precio sale de `app.js` sin cambiar lo que responde `precio` | ⏳ |
+| 0014 | **Motivo guardado**: el motivo de una cancelación se guarda en el almacén de reservas | ⏳ |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| Tests inestables: `bookings:test` salió en rojo una vez (`5 passed, 1 failed`) al cerrar la 0010 y no se repite (0 fallos en 46 ejecuciones y 3 pasadas del gate; base en verde). No se capturó el test ni su línea de error | Bajo | Si vuelve, guardar la salida del test y abrir patch. Origen: Feature 0010, 2026-10-28, [walkthrough](specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md) |
+| Workaround `node --test --test-concurrency=1` declarado como ruling de la Task 2 de la 0010 y no aplicado en `gate.json`; la carrera sobre el almacén en memoria no consta | Bajo | Aislar el almacén por test, o quitar el ruling si no hay carrera. Origen: [tasks.md](specs/20261008-100000-feature-0010-cancel-reason/tasks.md) |
+| `scripts/gate.mjs` imprime solo recuentos: un rojo pierde el test que falló y su error | Medio | Que el gate vuelque la salida de la tarea a un fichero o la imprima si falla. Origen: Feature 0010, 2026-10-28 |
+| `canceladas` solo se prueba encadenado tras `cancelar` en `test/cancel.test.js`, y «sin `--motivo`» no tiene test propio | Bajo | Test independiente por THEN. Origen: Feature 0010, 2026-10-28 |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-09-01)
+
+Cancelar una reserva propia. [changelog](changelog.md)
+## bookings en develop
+# Capacidad — bookings
+
+## Propósito
+
+cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Requisitos
+
+### Cancelar pide un motivo de la lista
+
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro»
+- AND sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»
+
+### El listado de canceladas enseña el motivo
+
+- GIVEN la reserva de Norte del lunes cancelada con «sala ocupada»
+- WHEN `canceladas`
+- THEN responde «Norte lun — sala ocupada»
+## tech-stack en develop
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
