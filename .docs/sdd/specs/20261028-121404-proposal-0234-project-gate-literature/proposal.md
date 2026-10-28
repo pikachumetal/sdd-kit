@@ -1,0 +1,47 @@
+---
+id: 20261028-121404-proposal-0234-project-gate-literature
+proposal: 0234
+title: El gate de los proyectos sigue la literatura
+source: interview
+created: 2026-10-28
+---
+
+# Propuesta — El gate de los proyectos sigue la literatura
+
+## Por qué
+
+En los proyectos, el cierre corre la suite completa hasta cinco veces: en la validación, tras el merge de sincronización, en `sdd merge --verify`, en cada reintento de push y en el contraste de un rojo. Un error de lint o de formato de un `.md` pone en rojo todo el gate y obliga a repetirlo entero. En OdySIF (kit 2.3.4), la feature 6465 cerró con dos commits solo de `.md` (`b04e532`, `909a8b1`) tras el merge de sincronización `f0d073e`, y `lint:md` da 167 fallos MD036 que salen de las marcas de delta en negrita de las plantillas del kit. En este repo, de 32 walkthroughs y patches con un rojo en el gate, 3 eran fallos reales de la rama, y los tres estaban en lo que tocaba la rama; los demás eran de carga, de tiempo o de entorno. La literatura (análisis de impacto de tests, Martin Fowler; la «Not Rocket Science Rule» de bors; superpowers en `subagent-driven-development`: «a one-line fix does not need the whole suite») corre lo afectado en cada cambio y la suite completa en otro sitio. El dev-lead, 2026-10-28: «entiendo que tenemos que seguir la literatura»; «entiendo que el riesgo lo podríamos tener solucionado con un CI que nos avise».
+
+## Reglas de negocio
+
+- El lint y el formato no están en el gate: corren al editar y en el pre-commit, solo sobre los ficheros tocados. Un `.md` con una tabla sin línea en blanco → el hook de edición o el pre-commit lo arregla o lo rechaza; el gate de cierre no corre markdownlint y nunca se repite por un error de lint.
+- El pre-commit no corre la suite: lint, formato y comprobaciones de estructura (`sdd roadmap check`). Un commit que solo toca `roadmap.md` → el pre-commit tarda segundos y no lanza tests.
+- El gate de cierre corre lo afectado por la rama frente a la rama de integración. Una rama que toca `apps/frontend/src/people/` → corren las tareas cuyos `inputs` incluyen ese fichero (`--affected --base develop`), no `backend:test`.
+- Salvaguarda: si la rama toca la definición del build, la configuración o las dependencias, el gate corre completo. Una rama que cambia `package.json`, el lockfile, `moon.yml`, `tsconfig*.json`, `*.csproj` o `.prototools` → la suite entera, sin filtro, y el `Gate:` lo dice: `<tarea>: corrió <N>/<M> (sin filtro: cambia el build)`.
+- Tras un rojo, se repiten el test que falló y lo afectado por el arreglo, no todo. Pasada roja en `a1b2c3d` con `PeopleTests.Zero_is_saved` en rojo; el arreglo toca `apps/backend/api/People/Save.cs` → corren `PeopleTests.Zero_is_saved` y `--affected --base a1b2c3d`. Si el arreglo solo toca `.md` o `.docs/` → no se vuelve a correr ningún test. La pasada roja tiene que haber corrido entera: lo que no llegó a correr (una tarea que moon saltó por depender de la roja) entra en la pasada siguiente.
+- Al integrar la base solo corre lo que se cruza: las tareas que toca la rama y cuyos `inputs` también tocó la base. Vale para el paso de la base integrada de `sdd-archive` (lo hace ya la 0221), para `sdd merge --verify`, para cada reintento de push y para el contraste de un rojo. La base trae un cambio en `apps/backend/` y la rama solo toca `apps/frontend/` → `--verify` no corre nada y el `Gate:` lo apunta como `saltada (la base no toca sus inputs)`. Si solo cambia documentación (`.docs/`, `*.md`), nada, como ya hace `onlyDocsSince`.
+- La suite completa corre fuera del ciclo de cada cierre. `operations.md` §Testing declara «CI de la base»: el pipeline que corre la suite completa en cada push a la rama de integración, o `ninguna`. Con CI declarada, un rojo de la CI en `develop` se arregla con un patch y una fila de deuda; sin CI, la suite completa la corre `sdd-end-release`.
+- `sdd-end-release` no corta la release sin la suite completa en verde sobre el sha que corta. Con CI declarada, basta con que el último verde de la CI sea de ese sha. Release 3.1.0 sobre `9f8e7d6`: la CI dio verde en `9f8e7d6` → se corta sin correr nada; el último verde es de `1a2b3c4` → corre la suite completa antes de cortar.
+- Las plantillas del kit generan markdown que pasa markdownlint con sus reglas por defecto. Las marcas de delta pasan de `**ADDED — <título>**` a `#### ADDED — <título>`, debajo de `### Capacidad: <nombre>`. El parser de capabilities acepta las dos formas, para que las specs ya cerradas no se migren: `**MODIFIED — Cancelar una reserva**` y `#### MODIFIED — Cancelar una reserva` se fusionan igual.
+- La fusión de un delta en una capability conserva las líneas en blanco alrededor de las tablas. En la 6465 de OdySIF, la fusión dejó las tablas de `people.md` y `authorization.md` pegadas al párrafo anterior (MD058): se reproduce primero con un test en rojo en `cli/test/capabilities/`, y si no se reproduce en la 3.0.0, la fila lo dice y no cambia el código.
+- Orden: primero en este repo. La 0233 saca `cli:test-min` del gate de cierre a la release, y su medida (cuántos rojos encuentra la suite completa al cortar que lo afectado no vio) se apunta en el walkthrough de la release. Con un rojo así, esa release abre una fila que revisa la regla de lo afectado antes de la siguiente.
+- La CI de este repo es un workflow de GitHub Actions en `.github/workflows/`, que corre la suite completa en cada push a `develop` en un runner de Linux. Es del carril config, sin fila.
+
+## Capacidades que toca
+
+- Ninguna de `capabilities/` del kit: este repo no las tiene. Cambian las skills `sdd-archive` (con su receta del merge), `sdd-verify` (la línea `Gate:` sin filtro por el build), `sdd-end-release`, `sdd-start-feature` y `sdd-start-patch` (los gates de la validación), `sdd-upgrade` (la migración que añade «Lint» y «CI de la base» a `operations.md`), las plantillas `operations-template.md`, `spec-template.md` y `patch-template.md`, y la CLI `cli/src/merge/` y `cli/src/capabilities/`.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0235 | CLI: `sdd merge --verify`, los reintentos de push y el contraste de un rojo corren solo lo que se cruza | 0233 |
+| 2 | 0236 | Skills y plantillas: «Lint» y «CI de la base» en `operations.md`, la regla tras un rojo, la salvaguarda del build, `sdd-end-release` con la suite completa o la CI, y la migración | 0235 |
+| 3 | 0237 | Markdown del kit que pasa el lint: marcas de delta como encabezados y la fusión que conserva las líneas en blanco | — |
+
+## Acta
+
+No aplica: entrevista.
+
+## Enmiendas
+
