@@ -231,6 +231,19 @@ En orden, sin paralelo.
 - [ ] **Step 3: Verificación**.
 - [ ] **Step 4: Commit** — `chore(headless): el repo sin bash fuera de .githooks`.
 
+### Task 6 — enmienda 2026-10-28: la suite en el CI de Linux, los rápidos en `cli:test`, el tope por omisión y la longitud de `RUNS_DIR`
+
+**Tras**: Task 5
+**Modelo**: la sesión (Native)
+**Tests RED**: hilo principal · `campaign.test.ts`, `battery.test.ts`, `lib.test.ts`
+**Superficies**: tooling
+**Verificación**: `pnpm --dir cli exec vitest run test/kit/headless` → `passed`; `pnpm --dir cli exec vitest run` sin `SDD_KIT_HEADLESS` corre `lib.test.ts`, `campaign.test.ts`, `battery.test.ts` y `listening-pids.test.ts`; la suite de `test/kit/headless` en Linux (contenedor o CI) → `passed`.
+
+- [ ] **Step 1: Tests RED**: `readConfig` con un `RUNS_DIR` de 81 caracteres → `RUNS_DIR de 81 caracteres (máximo 80): <ruta>; usa .temp/<corto> del worktree`, y con 80 pasa; `lib.mjs` sin `SUBJECT_TIMEOUT` pone un tope de 1 800 000 ms y con `SUBJECT_TIMEOUT=0` no pone ninguno. Antes, `CWD` y las rutas de `campaign.test.ts` y `battery.test.ts` pasan a `resolve('/w')` y `join`.
+- [ ] **Step 2: Implementación**: la guarda de longitud en `readConfig`; el tope por omisión en `runClaude`; en `real-deps.mjs`, `processes` y `kill` con `ps` y `process.kill` fuera de Windows; `cli/vitest.config.ts` excluye fuera de `kit:test-headless` solo `run.test.ts`, `subject.test.ts` y `molds.test.ts`.
+- [ ] **Step 3: Verificación**, en Windows y en Linux.
+- [ ] **Step 4: Commit** — `fix(headless): la suite del lanzador en Linux, los rápidos en cli:test y los topes de la 0230`.
+
 ---
 
 ## Estimación y esfuerzo

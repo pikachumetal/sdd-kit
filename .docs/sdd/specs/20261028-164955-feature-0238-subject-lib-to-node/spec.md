@@ -60,8 +60,8 @@ Hoy los moldes y su biblioteca son bash: `kit:test-headless` tarda ~740 s con ca
 
 ## Scope
 
-- Entra: `lib.mjs` y sus tests en proceso; los 14 `subject.mjs`; el e2e con `claude` falso; el test de moldes en seco con el de cierre vivo; la carrera (c); el tope de tiempo que mata el árbol; la parada por puertos con `netstat`; `SUBJECT_SH` solo `.mjs`; borrar lo de la decisión 13; documentos (decisión 15).
-- No entra: la consulta de procesos por línea de órdenes (se queda en `pwsh`); `no-claude/claude`; el hook de `.claude/settings.json`; reescribir la evidencia cerrada de `.docs/sdd/specs/` y `tests/*.md`; Linux y macOS; cambiar texto de ninguna skill.
+- Entra: `lib.mjs` y sus tests en proceso; los 14 `subject.mjs`; el e2e con `claude` falso; el test de moldes en seco con el de cierre vivo; la carrera (c); el tope de tiempo que mata el árbol; la parada por puertos con `netstat`; `SUBJECT_SH` solo `.mjs`; borrar lo de la decisión 13; documentos (decisión 15). Por la enmienda del 2026-10-28: la suite del lanzador en verde también en el CI de Linux, los tests rápidos del lanzador de vuelta en `cli:test`, un tope por sujeto por omisión y el tope de longitud de `RUNS_DIR`.
+- No entra: la consulta de procesos por línea de órdenes en Windows (se queda en `pwsh`); `no-claude/claude`; el hook de `.claude/settings.json`; reescribir la evidencia cerrada de `.docs/sdd/specs/` y `tests/*.md`; lanzar campañas reales en Linux o macOS (solo su suite corre en el CI de Linux); cambiar texto de ninguna skill.
 
 ## Lo que se retira o cambia de forma
 
@@ -100,6 +100,13 @@ La lógica de `lib.sh` pasa a un módulo de Node con sus dependencias inyectadas
 Sin delta: no toca comportamiento de ninguna capacidad.
 
 ## Enmiendas
+
+- 2026-10-28 — Ampliación con cuatro puntos, que pidió la sesión `develop` de parte del dev-lead; se implementan en la Task 6 (nueva, tras la 5):
+  1. La suite de `test/kit/headless/` en verde en el CI de `develop` (`ubuntu-latest`, run 40725241939). Los tests de la 0216 (`battery.test.ts`, `campaign.test.ts`) usan rutas neutras construidas con `path`, como `lib.test.ts`. En Linux, `real-deps.mjs` lista procesos con `ps -eo pid=,args=` y para por PID con `process.kill`, porque `pwsh` y `taskkill` son de Windows.
+  2. `cli/vitest.config.ts` (0233) solo deja fuera de `cli:test` los tests que lanzan procesos (`run.test.ts`, `subject.test.ts`, `molds.test.ts`); los rápidos vuelven al pre-commit.
+  3. Del ticket de la 0230: `SUBJECT_TIMEOUT` vale 1800 s por omisión (la propuesta del ticket, 30 min); `0` sigue quitando el tope. `run.mjs` y `battery.mjs run` abortan antes del primer sujeto con un `RUNS_DIR` de más de 80 caracteres: `RUNS_DIR de <n> caracteres (máximo 80): <ruta>; usa .temp/<corto> del worktree`. La parte de `settings.slow.test.ts` ya no aplica: la Task 3 lo borró.
+  4. El repo sin `.sh` fuera de `.githooks/` y `.docs/sdd/specs/`: ya estaba en la Task 5.
+  — aprobada: «sí, manda lo que sea necesario» (dev-lead, 2026-10-28, transmitida por la sesión `develop`)
 
 ## Aprobaciones
 
