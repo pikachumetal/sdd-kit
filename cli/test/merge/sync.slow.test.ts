@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
@@ -10,14 +11,20 @@ const RULES = ['Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'A
 const requirement = (title: string) => `### ${title}\n\n- GIVEN una petición\n- WHEN entra\n- THEN va a ${title}\n\n`;
 const capability = (extra: string) => `# Capacidad — routing\n\n## Propósito\n\nEnruta las peticiones.\n\n## Requisitos\n\n${requirement('Requisito base')}${extra}## Reglas de la capacidad\n\n${RULES}`;
 
-function seedCapability(fx: Fixture): void {
-  write(fx.seed, CAPABILITY, capability(''));
-  saveAll(fx.seed, 'docs: routing');
+const TECH_STACK = '.docs/sdd/tech-stack.md';
+
+function pushSeed(fx: Fixture): void {
   git(fx.seed, 'push', '-q', fx.remote, 'develop');
   for (const id of ['0001', '0002']) {
     git(join(fx.wt, id), 'fetch', '-q', 'origin');
     git(join(fx.wt, id), 'merge', '-q', 'origin/develop');
   }
+}
+
+function seedCapability(fx: Fixture): void {
+  write(fx.seed, CAPABILITY, capability(''));
+  saveAll(fx.seed, 'docs: routing');
+  pushSeed(fx);
 }
 
 const sync = (fx: Fixture, extra: string[] = []) => runMerge(join(fx.wt, '0001'), ['--sync', ...extra]);
@@ -57,21 +64,31 @@ describe('sdd merge --sync', () => {
     expect(await run(['capability', 'check', '--path', join(fx.wt, '0001', '.docs/sdd')], io), [...io.stdout, ...io.stderr].join('\n')).toBe(0);
   });
 
-  it('un conflicto real aborta y deja la rama como estaba', async () => {
+  it('un conflicto fuera de los registros deja el merge a medias con el roadmap ya unido', async () => {
     const fx = mergeFixture('sync-conflicto');
-    for (const id of ['0002', '0001']) {
-      edit(join(fx.wt, id), 'README.md', 'base\n', `cambio de ${id}\n`);
-      saveAll(join(fx.wt, id), `docs: readme de ${id}`);
+    edit(fx.seed, '.docs/sdd/roadmap.md', '| 0100 | base |\n', '| 0100 | base |\n| 0101 | otra |\n');
+    write(fx.seed, TECH_STACK, '# Tech stack\n\n- Runtime: base\n');
+    saveAll(fx.seed, 'docs: base del conflicto');
+    pushSeed(fx);
+    for (const [id, row] of [['0002', '| 0100 | base |'], ['0001', '| 0101 | otra |']]) {
+      const feature = join(fx.wt, id);
+      edit(feature, '.docs/sdd/roadmap.md', `${row}\n`, `${row.replace(/ \|$/, ` de ${id} |`)}\n`);
+      edit(feature, TECH_STACK, 'Runtime: base', `Runtime: de ${id}`);
+      saveAll(feature, `docs: cambios de ${id}`);
     }
     expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
-    const before = sha(join(fx.wt, '0001'), 'HEAD');
+    const feature = join(fx.wt, '0001');
+    const before = sha(feature, 'HEAD');
 
     const result = await sync(fx);
 
     expect(result.code).toBe(1);
-    expect(result.text).toContain('base: conflicto en README.md.');
-    expect(sha(join(fx.wt, '0001'), 'HEAD')).toBe(before);
-    expect(git(join(fx.wt, '0001'), 'status', '--porcelain')).toBe('');
+    expect(result.text).toContain(`base: conflicto en ${TECH_STACK}.`);
+    expect(result.text).not.toContain('roadmap.md');
+    expect(sha(feature, 'HEAD')).toBe(before);
+    expect(sha(feature, 'MERGE_HEAD')).toBe(sha(feature, 'origin/develop'));
+    expect(git(feature, 'diff', '--name-only', '--diff-filter=U')).toBe(TECH_STACK);
+    expect(readFileSync(join(feature, '.docs/sdd/roadmap.md'), 'utf8')).toContain('| 0100 | base de 0002 |\n| 0101 | otra de 0001 |\n');
   });
 
   it('con cambios sin commitear no toca nada', async () => {
