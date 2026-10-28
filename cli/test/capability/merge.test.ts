@@ -215,7 +215,7 @@ describe('sdd capability merge', () => {
   it('a header without a readable title fails without writing', async () => {
     const sdd = bookingsFolder([added.replace('ADDED — ', 'ADDED - ')]);
     const result = await merge(sdd);
-    expect(result.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «**ADDED — <título>**», con raya');
+    expect(result.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «#### ADDED — <título>», con raya');
     expect(result.code).toBe(1);
     expect(readCapability(sdd)).toBe(bookings);
   });
@@ -330,6 +330,73 @@ describe('sdd capability merge', () => {
   it('exits 2 without --artifact', async () => {
     const result = await runSdd(['capability', 'merge', '--path', sddFolder({})]);
     expect(result.code).toBe(2);
+  });
+});
+
+describe('heading marks', () => {
+  const scenario = [
+    '- GIVEN la sala Norte libre de 10 a 12',
+    '- WHEN `salas reservar Norte 10-12`',
+    '- THEN la reserva queda guardada a nombre del usuario y el CLI responde `Reservada Norte 10-12`',
+  ].join('\n');
+  const addedHeading = (header: string, gap = '\n') =>
+    `${header}\n${gap}- GIVEN la reserva Norte 10-12\n- WHEN \`salas cancelar Norte 10-12\`\n- THEN la franja queda libre`;
+
+  it('merges heading marks like bold marks', async () => {
+    const heading = bookingsFolder([`#### MODIFIED — Reservar una franja (antes: «la reserva queda guardada»)\n\n${scenario}`]);
+    const bold = bookingsFolder([`**MODIFIED — Reservar una franja**\n${scenario}`]);
+    for (const sdd of [heading, bold]) {
+      const result = await merge(sdd);
+      expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+      expect(result.code).toBe(0);
+    }
+    expect(readCapability(heading)).toBe(readCapability(bold));
+  });
+
+  it('merges heading ADDED, REMOVED and rules', async () => {
+    const entries = [
+      addedHeading('#### ADDED — Cancelar una reserva'),
+      '#### REMOVED — Consultar salas libres\n\n- motivo: lo cubre `salas agenda`',
+      '#### Reglas de la capacidad — bookings\n\n- **Avisos**: aviso si la reserva pisa un festivo o dura más de 4 h',
+    ];
+    const result = await merge(bookingsFolder(entries));
+    expect(result.lines).toEqual([
+      'bookings.md: añadido «Cancelar una reserva»',
+      'bookings.md: quitado «Consultar salas libres»',
+      'bookings.md: regla «Avisos» sustituida',
+    ]);
+    expect(result.code).toBe(0);
+  });
+
+  it('reads a heading without a blank line, a closed heading and a split before clause', async () => {
+    const glued = await merge(bookingsFolder([addedHeading('#### ADDED — Cancelar una reserva', '')]));
+    expect(glued.lines).toEqual(['bookings.md: añadido «Cancelar una reserva»']);
+
+    const closed = await merge(bookingsFolder([addedHeading('#### ADDED — Cancelar una reserva ##')]));
+    expect(closed.lines).toEqual(['bookings.md: añadido «Cancelar una reserva»']);
+
+    const split = bookingsFolder([`#### MODIFIED — Reservar una franja (antes: «la reserva queda\nguardada»)\n\n${scenario}`]);
+    expect((await merge(split)).lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+    expect(readCapability(split)).not.toMatch(/guardada»\)/);
+  });
+
+  it('reads a closed heading with its before clause', async () => {
+    const result = await merge(bookingsFolder([`#### MODIFIED — Reservar una franja (antes: «a») ##\n\n${scenario}`]));
+    expect(result.lines).toEqual(['bookings.md: sustituido «Reservar una franja»']);
+  });
+
+  it('rejects an unreadable title in both forms', async () => {
+    const heading = bookingsFolder([addedHeading('#### ADDED - Cancelar una reserva')]);
+    const headingResult = await merge(heading);
+    expect(headingResult.lines).toContain('spec.md: no leo el título de «#### ADDED - Cancelar una reserva»: escríbelo como «#### ADDED — <título>», con raya');
+    expect(headingResult.code).toBe(1);
+    expect(readCapability(heading)).toBe(bookings);
+
+    const bold = bookingsFolder([addedHeading('**ADDED - Cancelar una reserva**', '')]);
+    const boldResult = await merge(bold);
+    expect(boldResult.lines).toContain('spec.md: no leo el título de «**ADDED - Cancelar una reserva**»: escríbelo como «#### ADDED — <título>», con raya');
+    expect(boldResult.code).toBe(1);
+    expect(readCapability(bold)).toBe(bookings);
   });
 });
 
