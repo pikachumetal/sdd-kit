@@ -30,7 +30,7 @@ launch_index() {
   for model in $(echo "$PLAN" | awk '{ print $2 }' | sort -u); do
     ids=$(echo "$PLAN" | awk -v m="$model" -v i="$index" '$2 == m && $3 >= i { print $1 }')
     [ -n "$ids" ] || continue
-    MODEL="$model" SUBJECT="$index" SCENARIOS="$ids" SUBJECT_SH="$DIR/subject.sh" bash "$HEADLESS/run.sh"
+    MODEL="$model" SUBJECT="$index" SCENARIOS="$ids" SUBJECT_SH="$DIR/subject.sh" "$NODE" "$HEADLESS/run.mjs"
   done
 }
 

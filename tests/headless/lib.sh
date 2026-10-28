@@ -50,7 +50,7 @@ subject_init() {
   runs_dir_allowed "$RUNS" || die "RUNS_DIR fuera del scratchpad o de .temp/: $RUNS"
   [ -f "$KIT/skills/$4/SKILL.md" ] || die "sin la skill $4 en la copia del kit $KIT (task 0040)"
   # Con .docs/, el sujeto leyó la spec de lo que se medía (feature 0150).
-  { [ -e "$KIT/.docs" ] || [ -e "$KIT/tests" ]; } && die "la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin"
+  { [ -e "$KIT/.docs" ] || [ -e "$KIT/tests" ]; } && die "la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin agents cli hooks"
   # Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency» (ticket de la feature 0095 §2).
   if [ -z "${SUPERPOWERS_DIR:-}" ] && grep -q '"dependencies"' "$KIT/.claude-plugin/plugin.json" 2>/dev/null; then
     die "el kit declara dependencies: define SUPERPOWERS_DIR (ruta de superpowers)"
@@ -105,7 +105,8 @@ other_subject_ports() {
     name="${mark##*/}"; [ "$name" = "${PHASE:-red}.$LABEL" ] && continue
     pid=; read -r pid < "$mark"
     # Un PID vacío es una marca a medio escribir: en curso, como en count_marks de run.sh.
-    [ -z "$pid" ] || kill -0 "$pid" 2>/dev/null || continue
+    # El PID de la marca es de Windows (lo escribe run.mjs): el kill de Git Bash no lo ve.
+    [ -z "$pid" ] || "$NODE" -e 'process.kill(Number(process.argv[1]), 0)' "$pid" 2>/dev/null || continue
     JSONL="$root/${name%%.*}/${name#*.}.jsonl" PORT= subject_ports | tr , '\n'
   done | sort -un | paste -sd, -
 }

@@ -30,6 +30,7 @@ function newBattery(root: string): Battery {
   mkdirSync(join(root, 'spec'), { recursive: true });
   mkdirSync(join(root, 'scratchpad/runs'), { recursive: true });
   write(join(kit, 'skills/using-sdd/SKILL.md'), '# using-sdd\n');
+  write(join(kit, 'cli/bin/sdd.js'), '');
   write(join(battery, 'battery.md'), TABLE);
   const subject = [
     '#!/usr/bin/env bash',
@@ -66,6 +67,7 @@ function runBattery(battery: Battery, overrides: Record<string, string>): RunRes
 function usingSddBattery(root: string): Battery {
   const kit = join(root, 'kit');
   write(join(kit, 'skills/using-sdd/SKILL.md'), '# using-sdd\n');
+  write(join(kit, 'cli/bin/sdd.js'), '');
   write(join(kit, '.claude-plugin/plugin.json'), '{"name":"sdd-kit","version":"2.2.0"}\n');
   write(join(kit, 'skills/sdd-upgrade/references/migrations/v2.3.0.md'), '# v2.3.0\n');
   mkdirSync(join(root, 'spec'), { recursive: true });
