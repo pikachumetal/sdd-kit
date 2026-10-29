@@ -124,3 +124,54 @@ describe('la cabecera de una tabla no es una fila con id', () => {
     expect(fileAt(fx, 'ROADMAP.md').match(/## Next/g)).toHaveLength(1);
   });
 });
+
+async function syncAfterOther(fx: Fixture, relative: string, [other, mine]: [string, string]): Promise<{ code: number; text: string }> {
+  onBranch(fx, '0002', relative, other);
+  expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
+  onBranch(fx, '0001', relative, mine);
+  return runMerge(join(fx.wt, '0001'), ['--sync']);
+}
+
+const branchFile = (fx: Fixture, path: string) => git(join(fx.wt, '0001'), 'show', `HEAD:${path}`);
+
+describe('sdd merge --sync une lo que cada lado cambia sin tocar lo del otro', () => {
+  it('roadmap.md: la rama salda una fila de deuda y develop le cambia el Destino, y queda una fila', async () => {
+    const fx = mergeFixture('sync-deuda-saldada');
+    const path = '.docs/sdd/roadmap.md';
+    const debt = (item: string, destination: string) => ['# Roadmap', '', '## Deuda técnica', '', '| Ítem | Impacto | Destino |', '| --- | --- | --- |', '| **Base** — x | Bajo | Esperar |', `| ${item} | Medio | ${destination} |`, '| **Otra** — y | Bajo | Esperar |', ''].join('\n');
+    const closed = '**[Feature 0001, 2026-10-29: saldada — [walkthrough](specs/x/walkthrough.md)]** ';
+    seedBase(fx, path, debt('**Lento** — z', 'Actuar → 0001'));
+
+    const result = await syncAfterOther(fx, path, [debt('**Lento** — z', 'Actuar → 0001 (segundo caso)'), debt(`${closed}**Lento** — z`, 'Actuar → 0001')]);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).not.toContain('registros:');
+    const merged = branchFile(fx, path);
+    expect(merged).toContain(`| ${closed}**Lento** — z | Medio | Actuar → 0001 (segundo caso) |`);
+    expect(merged.match(/\*\*Lento\*\*/g)).toHaveLength(1);
+  });
+
+  it('capabilities: develop cambia el THEN de un requisito y la rama sus AND, y quedan los dos', async () => {
+    const fx = mergeFixture('sync-then-and');
+    const path = '.docs/sdd/capabilities/routing.md';
+    const capability = (lines: string[]) => ['# Capacidad — routing', '', '## Requisitos', '', '### Enruta', '', '- GIVEN una petición', '- WHEN entra', ...lines, '', '### Otro', '', '- GIVEN algo', ''].join('\n');
+    seedBase(fx, path, capability(['- THEN va a routing', '- AND avisa', '- AND guarda']));
+
+    const result = await syncAfterOther(fx, path, [capability(['- THEN va a planning', '- AND avisa', '- AND guarda']), capability(['- THEN va a routing', '- AND avisa dos veces', '- AND guarda todo'])]);
+
+    expect(result.code, result.text).toBe(0);
+    expect(branchFile(fx, path)).toContain('- WHEN entra\n- THEN va a planning\n- AND avisa dos veces\n- AND guarda todo\n');
+  });
+
+  it('fuera de capabilities, el mismo cambio de THEN y AND sigue siendo conflicto', async () => {
+    const fx = mergeFixture('sync-then-and-fuera');
+    const path = 'docs/routing.md';
+    const doc = (lines: string[]) => ['# Routing', '', '- WHEN entra', ...lines, ''].join('\n');
+    seedBase(fx, path, doc(['- THEN va a routing', '- AND avisa']));
+
+    const result = await syncAfterOther(fx, path, [doc(['- THEN va a planning', '- AND avisa']), doc(['- THEN va a routing', '- AND avisa dos veces'])]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('base: conflicto en docs/routing.md.');
+  });
+});

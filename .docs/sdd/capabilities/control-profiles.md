@@ -206,14 +206,14 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND resuelve sus conflictos como el merge de la feature: regenera `estimation-log.md` con `sdd estimation log`, une los registros por id, une los trozos que solo añaden líneas por los dos lados (primero la rama destino) y prueba Mergiraf si está instalado; con cualquier otro conflicto, falla con `base: conflicto en` y la lista de ficheros
+- AND resuelve sus conflictos como el merge de la feature: regenera `estimation-log.md` con `sdd estimation log`, une los registros por id, une los trozos que solo añaden líneas por los dos lados (primero la rama destino), une los `THEN` y `AND` de un requisito de una capacidad y prueba Mergiraf si está instalado; con cualquier otro conflicto, falla con `base: conflicto en` y la lista de ficheros
 
 ### El merge del cierre une los registros que solo añaden líneas
 
 - GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md`, una línea a `changelog.md`, una sección al final de otro documento o una palabra a `.cspell/custom-words.txt` en el mismo sitio, y la primera ya se ha fusionado
 - WHEN el cierre de la segunda ejecuta `sdd merge`
 - THEN el script resuelve el conflicto en su worktree —con `--verify`, al integrar la base en la rama del cambio, fuera del cerrojo; sin él, dentro del cerrojo—: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
-- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino; si el conflicto sale al integrar la base en la rama, falla con `base: conflicto en` y la rama del cambio vuelve a su commit, sin `MERGE_HEAD`
+- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros, ni la de los `THEN` y `AND` de un requisito de una capacidad, ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino; si el conflicto sale al integrar la base en la rama, falla con `base: conflicto en` y la rama del cambio vuelve a su commit, sin `MERGE_HEAD`
 
 ### El push del cierre publica la rama destino
 
@@ -367,7 +367,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND si las dos ramas añaden la misma fila `0201` con el mismo texto, queda una sola
 - AND si añaden dos filas `0201` con texto distinto, se quedan las dos, la de la rama destino primero, y la salida dice `registros: dos filas distintas con el id '0201' en .docs/sdd/roadmap.md; se quedan las dos, revísalas`
 - AND una entrada `- **Feature 0185** — …` en `### Added` y otra en `### Changed` son ids distintos
-- AND si las dos ramas cambian de forma distinta la misma fila que ya estaba en la base, es conflicto y lo resuelve una persona
+- AND si las dos ramas cambian celdas distintas de la misma fila que ya estaba en la base, la fila queda con los cambios de las dos: la `0248` con el `✅` de la rama y el caso que `develop` añadió a la descripción; si cambian la misma celda de forma distinta, o la fila no tiene las mismas celdas en los dos lados, es conflicto y lo resuelve una persona
+- AND la clave de una fila de deuda no cuenta los prefijos de cierre del principio de su primera celda (`**[Feature 0216, 2026-10-28: saldada — …]**`, o con `Patch` y `parcial`): si la rama salda la fila «Tres tests del lanzador en Vitest…» y `develop` le cambia la celda «Destino», queda una sola fila, con el prefijo de la rama y el «Destino» de `develop`, sin conflicto y sin aviso de `registros:`
+- AND si los dos lados añaden prefijos de cierre distintos a la misma fila, es conflicto
 - AND si el merge se aborta después por otro fichero en conflicto, la salida no dice `registros: …`
 - AND la cabecera de una tabla no es una fila con id, aunque el trozo la separe de su separador: si las dos ramas añaden la misma tabla (`| Id | Tarea | Estado |`) con filas distintas, queda una tabla con la cabecera una vez y las dos filas seguidas, sin aviso
 
@@ -466,6 +468,17 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - THEN `feature/0252-y` coge el cerrojo de merge, fusiona y publica sin esperar a que acabe la verificación de `feature/0251-x`
 - AND `feature/0251-x`, al acabar su verificación en verde, coge el cerrojo, ve `develop` cambiada, lo suelta e integra `origin/develop`, verifica solo lo que se cruza con lo que trajo `feature/0252-y`, y fusiona
 - AND en ningún momento una de las dos espera un cerrojo mientras tiene el otro cogido
+
+### Dentro de un requisito de una capacidad se unen los THEN y AND que cambia cada lado
+
+- GIVEN un requisito de `.docs/sdd/capabilities/control-profiles.md` cuyo `- THEN` cambia `develop` y cuyos `- AND` cambia la rama, en líneas seguidas que git deja en el mismo trozo en conflicto
+- WHEN se ejecuta `sdd merge --sync` (o el cierre ejecuta `sdd merge`)
+- THEN el requisito queda con el `THEN` de `develop` y los `AND` de la rama, sin conflicto, y la integración sigue como con cualquier conflicto resuelto
+- AND vale igual si un lado añade o quita un `- AND` y el otro cambia otra línea del trozo; las líneas añadidas quedan en el sitio donde las puso su lado
+- AND si los dos lados cambian la misma línea de forma distinta, o añaden líneas en el mismo hueco de un trozo que conserva líneas de la base, sigue siendo conflicto: `base: conflicto en .docs/sdd/capabilities/control-profiles.md.`
+- AND un trozo en el que los dos lados solo añaden líneas, sin ninguna de la base, se une como en «El merge del cierre une los registros que solo añaden líneas»: primero las de la rama destino
+- AND si alguna línea del trozo, en cualquiera de los tres lados, no empieza por `- THEN ` ni por `- AND ` (un `- GIVEN`, un `- WHEN`, un título `###`, prosa o una línea en blanco), sigue siendo conflicto
+- AND fuera de `.docs/sdd/capabilities/` esta unión no se aplica
 
 ## Reglas de la capacidad
 
