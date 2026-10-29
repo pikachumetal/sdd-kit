@@ -176,6 +176,15 @@ El carril release del kit: cuándo es opcional, cómo se cierra una publicación
 - AND solo se escribe si el usuario la pide, en `.docs/sdd/releases/vX.Y.Z/retro.md`, y no retiene los demás pasos: si el roadmap ya está colapsado, se añade su enlace a la entrada de la release
 - AND sin `estimation-log.md` no se ofrece
 
+### El corte exige la suite completa en verde sobre su sha, o el último verde de la CI en ese sha
+
+- GIVEN la release 3.1.0 que se corta sobre `9f8e7d6`, el `HEAD` de `develop` al arrancar el corte, y la CI de la base con su último verde en `1a2b3c4`
+- WHEN `sdd-end-release` pasa su gate de entrada
+- THEN corre todas las suites de §Testing, sin `--affected`, antes de sellar el changelog
+- AND si la CI dio `success` en `9f8e7d6`, no corre nada
+- AND si la CI dio `failure` en `9f8e7d6`, o la suite completa sale en rojo, no corta: lo arregla un patch, y el corte vuelve a empezar
+- AND sin «CI de la base», o con `ninguna`, corre siempre la suite completa
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: si la release tiene destinatario vive en `.docs/sdd/sdd-kit.json` (`release.hasRecipient`, booleano), junto a `version` e `ids`. El nombre del destinatario no se guarda en la configuración.
