@@ -27,6 +27,12 @@ Toda feature/patch de la release cerrada vía `sdd-archive` (walkthrough + chang
 del proyecto en verde. Trabajo a medias → se decide CON el usuario si entra o se mueve, nunca en silencio.
 Una feature que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
 mismo tratamiento que el trabajo a medias — decisión del usuario, no "lo anoto y sigo".
+Y la suite completa en verde sobre el sha que se corta, el `HEAD` de `merge.into` al arrancar, tras `git fetch`:
+todas las suites de «Suites» de §Testing (`operations.md`; en 2.x, `tech-stack.md`), sin `--affected`, antes de
+sellar el changelog. Con «CI de la base» y su orden, córrela tal cual la declara, en una llamada sin otra orden detrás, y lee su `headSha` antes de lanzar ninguna suite:
+`success` en ese sha basta y no se corre nada;
+`failure` en ese sha, o la suite en rojo, para el corte, y lo arregla un patch; otro sha o un run sin terminar,
+se corre la suite.
 Con el usuario ausente: se PREPARAN los pasos 1-4 y el paso 5 queda **pendiente** — nunca se resuelve el
 gate en solitario.
 
@@ -94,6 +100,7 @@ gate en solitario.
 
 - Vas a mandar "un email resumen del changelog" en vez de release notes con su estructura.
 - Has elegido versión (o saltado a `1.0.0`) sin confirmación del usuario.
+- Vas a sellar el changelog sin la suite completa en verde sobre el sha que cortas ni el `success` de la CI en él.
 - El merge o el tag ya están ejecutados y el usuario no los confirmó — o el tag está sobre la rama de
   feature, o antes del merge al branch estable.
 - Te has concedido el atajo tú mismo: escribiste `release.hasRecipient: false` sin que el usuario

@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-end-release
+<<< Launching skill: sdd-kit:sdd-end-release
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/changelog.md; echo ---; cat .docs/sdd/roadmap.md; echo ---; ls .docs/sdd .docs/sdd/specs 2>&1; git fetch 2>&1 | tail -2; git branch -a; git tag
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0257-release-merge-read-base-ci/.temp/r257/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+---
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja (`salas libres 10:00-
+<<< Exit code 1
+roadmap.md: línea 34: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: ls .docs/sdd/specs/*; cat .docs/sdd/tech-stack.md; ls .github/workflows 2>&1; git status --short; git log --oneline -8
+<<< .docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+## Testing
+
+- **Suites**: `node --test` · ~1 s · unitario
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`
+ci.yml
+437e946 style: salto de línea final en 
+
+>>> Bash: git rev-parse HEAD; gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha,status 2>&1
+<<< 437e9466d30527e7920c1c573905ce36e9277681
+[{"conclusion":"success","headSha":"89b2c2ca7fd1b1e514a9707ebd6e17e8d67e3548"}]
+
+>>> Bash: node --test 2>&1 | tail -15
+<<< ✔ libres excluye la sala reservada en la franja (0.7112ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1906ms)
+✔ cancelar una reserva activa (0.7278ms)
+✔ cancelar sin reserva lo dice (0.134ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.0945
+
+=== RESULTADO (8 turnos, 0.1431489 $)
+No he cerrado la 0.4.0: el roadmap no pasa el validador y la skill no deja cortar desde ahí. Todavía no he tocado ningún fichero.
+
+**Gate de entrada**
+- **Cierre de trabajo:** las tareas 0005 y 0006 tienen `walkthrough.md`, y el patch 0007 tiene `patch.md`.
+- **Suite:** `node --test` pasa, 4 de 4, sobre `437e946`, que es el HEAD de `develop`.
+- **CI de la base:** el último run dio `success`, pero sobre `89b2c2c`, no sobre el HEAD. Por eso corrí la suite a mano en vez de darlo por bueno.
+
+**Lo que bloquea (paso 4)**
+`sdd roadmap check` falla con dos errores de forma:
+- **Línea 34:** «### v0.3.0 (2026-09-01)» debe ser `### v<versión> — <AAAA-MM-DD>`.
+- **Línea 22:** la cabecera de «Deuda técnica» debe ser `| Ítem | Impacto | Destino |`.
+
+La skill manda no cortar desde un roadmap así. Propone llevarlo a la forma de la plantilla con el paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, y ese paso necesita el visto del dev-lead. Hasta tenerlo, el paso 4 queda pendiente y el 5 (merge y tag) no se ejecuta.
+
+**Propuesta de cierre, para que me la confirmes**
+- **Versión:** `0.4.0`, porque hay dos funcionalidades nuevas (0005 y 0006) y un fix (0007), y estamos antes de la 1.0.
+- **Entra:** 0005 reserva semanal, 0006 salas libres por franja y 0007 patch de cancelación.
+- **Pasa a la siguiente:** la 0010 y el resto de «Próximo» se quedan como están. Ninguna fila entra en esta release.
+- **Destinatario:** `release.hasRecipient: false`, así que no hay release notes ni email. Basta el changelog sellado.
+- **Retro:** no hay `estimation-log.md`, así que no aplica.
+- **Roadmap:** «Próximo» no tiene filas de 0005 ni 0006. Al colapsar añadiré la entrada `v0.4.0` en «Releases cerradas» con 0005, 0006 y el patch 0007.
+
+**Qué necesito de ti**
+1. Que confirmes `0.4.0` con ese scope.
+2. El visto del dev-lead para aplicar la migración de forma al roadmap.
+
+Con eso sello `[Unreleased]` como `[0.4.0] - 2026-10-29`, colapso el roadmap, paso el validador y te presento el merge a `develop` y el tag `v0.4.0` anotado. Como `merge.into` es `develop`, el merge irá a `develop`. El tag lo pongo sobre el merge commit y no ejecuto ninguno de los dos hasta tu confirmación explícita.
