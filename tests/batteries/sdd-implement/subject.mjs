@@ -27,7 +27,13 @@ const F18 = '.docs/sdd/specs/20261010-100000-feature-0018-help';
 const F19 = '.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note';
 const F20 = '.docs/sdd/specs/20261013-100000-feature-0020-path-reply';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-keep-note';
+const F22 = '.docs/sdd/specs/20261014-100000-feature-0022-scripts-to-node';
 const fixture = (name) => readFileSync(join(FIX, name), 'utf8');
+const HALF_RED = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
+  + "test('cancelar con motivo lo guarda', () => {\n  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');\n});\n\n"
+  + "test('cancelar sin motivo lo pide', () => {\n  assert.equal(run('cancelar', ['Norte', 'lun']),\n";
+const BROKEN_ON_BRANCH = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
+  + "test('salas en orden', () => {\n  assert.equal(run('salas', []), 'Norte, Sur');\n});\n";
 const at = (path) => join(s.R, path);
 // En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
 const forward = (path) => path.replaceAll('\\', '/');
@@ -67,6 +73,12 @@ const molds = {
     cp('tech-stack-w1.md', '.docs/sdd/tech-stack.md');
   },
   k1: () => (cp('app-0018.js', 'src/app.js'), cp('readme-0018.md', 'README.md'), cp('readme.test.js', 'test/readme.test.js')),
+  // Se escriben aquí y no en fixtures/: el repo del kit no admite scripts de bash. El hook va sin extensión, para que solo lo delate su `#!`.
+  t6: () => {
+    mkdirSync(at('scripts/hooks'), { recursive: true });
+    writeFileSync(at('scripts/deploy.sh'), '#!/usr/bin/env bash\nset -euo pipefail\necho "desplegado"\n');
+    writeFileSync(at('scripts/hooks/pre-push'), '#!/usr/bin/env bash\nset -euo pipefail\nnode --test\n');
+  },
   // La base no responde con la ruta: el paso 3 llega sin commitear, como trabajo en curso.
   o1: () => {
     const skill = at('skills/guardar-nota/SKILL.md');
@@ -79,6 +91,8 @@ for (const id of ['t1a', 't1b', 't1c']) molds[id] = molds.r1b;
 for (const id of ['t5a', 'p1', 'p2']) molds[id] = molds.t2;
 molds.t5b = molds.t3;
 molds.o2 = molds.o1;
+molds.w2 = molds.w1;
+molds.w3 = molds.w1;
 molds[s.SC]?.();
 s.initRepo();
 
@@ -164,6 +178,7 @@ const greenNote = (folder, name, txt) => s.put(`${folder}/green/${name}`, fixtur
 const steps = {
   t2: () => openFixture('0016-room-hours', F16, '0016'),
   t3: () => openFixture('0017-reactivate', F17, '0017'),
+  t6: () => openFixture('0022-scripts-to-node', F22, '0022'),
   p2: () => {
     openFixture('0016-room-hours', F16, '0016');
     cp('app-0016-done.js', 'src/app.js');
@@ -223,9 +238,15 @@ const steps = {
   h1: () => openFeature('0010-cancel-reason', { folder: F10, spec: approved0010(), plan: fixture('plan-0010.md') }),
   w1: () => {
     openFeature('0010-cancel-reason', { folder: F10, spec: approved0010(), plan: fixture('plan-0010.md') });
+    if (s.SC === 'w3') {
+      s.put('test/rooms.test.js', BROKEN_ON_BRANCH);
+      s.commit('test(rooms): las salas, en orden');
+    }
     s.git('checkout', '-q', 'develop');
     s.git('worktree', 'add', '-q', join(s.RUN, 'wt'), 'feature/0010-cancel-reason');
     s.R = join(s.RUN, 'wt');
+    // El RED de la Task 1 a medio escribir, sin commitear; se escribe aquí para que ningún glob de tests del kit lo recoja.
+    if (s.SC === 'w2') writeFileSync(at('test/rooms-half.test.js'), HALF_RED);
   },
   h2: () => {
     writeFileSync(join(s.RUN, 'plan-sdd.md'), asSubagent(join(FIX, 'plan-0010.md')));
@@ -234,26 +255,28 @@ const steps = {
   r4: reviewedTwoTasks,
 };
 steps.p1 = steps.t2;
+steps.w2 = steps.w1;
+steps.w3 = steps.w1;
 for (const id of ['t1a', 't1b', 't1c']) steps[id] = steps.r1b;
 steps.o2 = steps.o1;
 steps.u2 = steps.u1;
 steps[s.SC]?.();
 
-if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
-const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', h2: '80' };
-for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2']) turns[id] = '40';
+if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', h2: '80' };
+for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2']) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21]) {
+for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22]) {
   for (const kept of ['spec', 'plan', 'tasks']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
-for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
 keepIf('src/app.js', 'app.js');
 keepIf('.sdd-env.json', 'sdd-env.json');
 keepIf('README.md', 'README.md');
 keepIf('skills/guardar-nota/SKILL.md', 'guardar-nota.md');
 const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
-s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}`);
+s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);

@@ -89,7 +89,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND con `"review": {"minors": "fix"}` en `sdd-kit.json`, el Minor entra en esa misma pasada sin preguntar, y el ledger lo apunta como `Final: fixed <hallazgo> — <test> RED→GREEN, suite <N>/<N>` (si ningún test lo reproduce, `Final: fixed <hallazgo> — suite <N>/<N>`), nunca como `minor (deferred)`
 - AND justo antes de presentar la validación (con `validation.mode: field`, antes de pasar al cierre), despacha una sola re-revisión con `sdd-kit:effort-high` + `opus`, con la cabecera de `encargo-revision.md` y `re-review-prompt.md`, los hallazgos abiertos de todos los ejes y el «What to Check» de los ejes que salieron, sobre el paquete `sdd review package <plan> a1b2c3d HEAD`; apunta `Re-revisión: a1b2c3d..<head>, sdd-kit:effort-high + opus, <veredicto>`
 - AND en SDD la fix wave no lleva otra re-revisión: es esta
-- AND un Important que la re-revisión deja abierto, el hilo lo adjudica con `Final: Ruling:` y llega a ✋ en la presentación y en el walkthrough, sin otra pasada de fix ni otra re-revisión
+- AND un Important que la re-revisión deja abierto en código que ya vio la revisión final, el hilo lo adjudica con `Final: Ruling:` y llega a ✋ en la presentación y en el walkthrough, sin otra pasada de fix ni otra re-revisión; uno que mete la propia pasada de fix no se adjudica («Un Important que mete la pasada de fix no se adjudica»)
 - AND si desde `a1b2c3d` solo hay commits que se revisan en el hilo, no despacha re-revisión
 
 ### Un Critical que deja la re-revisión no se adjudica
@@ -196,6 +196,14 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND la misma forma, una entrada por tarea del gate, vale en el 4.1 del walkthrough, en el §4 de `patch.md` y en el informe de la baseline de `sdd-worktrees`
 - AND las órdenes que corrieron (las suites unitarias y el gate) van antes de la flecha, cada una entre backticks y separadas por ` · `
 - AND una tarea que corre sin filtro porque la rama o la base tocan un fichero de «Sin filtro» de `operations.md` lleva `(sin filtro: cambia el build)`; una que no corrió en la pasada roja, `(no corrió en la pasada roja)`; tras una pasada roja, la línea empieza por `tras el rojo en <sha>, arreglo <sha>:`, y con un arreglo solo de docs, por `tras el rojo en <sha>, arreglo <sha> solo de docs:`
+
+### Un Important que mete la pasada de fix no se adjudica
+
+- GIVEN la pasada de fix `b2c3d4e` sobre la revisión final de `a1b2c3d`, y una re-revisión que vuelve con 1 Important en líneas que cambió `b2c3d4e`: «`canceladas` enseña la franja de la reserva equivocada»
+- WHEN el hilo cierra la revisión
+- THEN no lo adjudica con un ruling: escribe el test que lo reproduce, lo ve fallar, lo arregla, corre la suite y lleva a ✋ `sin revisar: <sha> — arregla el Important «canceladas enseña la franja de la reserva equivocada»`
+- AND no despacha otra re-revisión
+- AND un Important que la re-revisión achaca a la pasada sin que caiga en sus líneas, porque lo dice su informe, sigue el mismo camino
 
 ## Reglas de la capacidad
 

@@ -1,0 +1,462 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/ && node "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js" workspace .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< plan.md
+spec.md
+tasks.md
+<run>\repo\.temp\sdd\plan
+
+>>> Bash: cd "<run>/repo/.temp/sdd/plan" && ls && cat progress.md && echo ---SPEC && cat review-spec.md && echo ---CODE && cat review-code.md
+
+>>> Skill: sdd-kit:sdd-verify
+<<< plan-path
+progress.md
+review-code.md
+review-spec.md
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 36bba52..def8e64, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits def8e64..dc74321, tests: node --test test/cancel.test.js → 3/3 pass)
+---SPEC
+## Spec
+
+### Strengths
+- Both THEN of the 0010 have their test in `test/cancel.test.js`.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+#### Minor (Nice to Have)
+1. Minor · partial · `test/cancel.test.js:13` · the `
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; cat src/app.js; cat test/cancel.test.js; git status --short; cat package.json
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const days = ['lun', 'mar', 'mié', 'jue', 'vie'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+fun
+
+>>> Bash: cd "<run>/repo" && cat >> test/cancel.test.js <<'EOF'
+
+test('canceladas --desde sin día pide un día y no lista nada', () => {
+  assert.equal(run('canceladas', ['--desde']), 'indica un día: lun, mar, mié, jue, vie');
+});
+EOF
+node --test test/cancel.test.js 2>&1 | tail -25
+<<< ✖ failing tests:
+
+test at test\cancel.test.js:17:1
+✖ canceladas --desde sin día pide un día y no lista nada (0.9195ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte lun — sala ocupada'
+  - 'indica un día: lun, mar, mié, jue, vie'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:18:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:inter
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"return { since: index === -1 ? undefined : params[index + 1], missing: false };\",\"const since = index === -1 ? undefined : params[index + 1];\n  return { since, missing: index !== -1 && since === undefined };\");
+s=s.replace(\"if (cmd === 'canceladas') return cancelledList(parseSince(params).since);\",\"if (cmd === 'canceladas') {\n    const { since, missing } = parseSince(params);\n    return missing ? \`indica un día: \${days.join(', ')}\` : cancelledList(since);\n  }\");
+fs.writeFileSync('src/app.js',s);"
+EOF
+git diff src/app.js; node --test test/cancel.test.js 2>&1 | grep -E "^# (tests|pass|fail)"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo" && git status --short; git diff src/app.js | head -30
+<<<  M test/cancel.test.js
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "^# (tests|pass|fail)"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | tail -12
+<<< ✔ cancelar con un motivo de la lista (0.8988ms)
+✔ cancelar con un motivo fuera de la lista (0.1366ms)
+✔ canceladas enseña sala, día y motivo (0.2449ms)
+✔ canceladas --desde sin día pide un día y no lista nada (0.1377ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.0058
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/cancel.test.js && git commit -q -m "fix(bookings): canceladas --desde sin día pide un día
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+4fb67d7 fix(bookings): canceladas --desde sin día pide un día
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | dc74321 | |
+| 2 | Listado de canceladas | done | dc74321 | |
+
+>>> Bash: cd "<run>/repo" && cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna → no sale
+Final: fixed src/app.js:20-23 parseSince nunca marcaba missing — 'canceladas --desde sin día pide un día y no lista nada' RED→GREEN, suite 4/4 (commit 4fb67d7)
+Final: minor (deferred): test/cancel.test.js:13 el test de canceladas depende del orden del de cancelar
+EOF
+node "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js" ledger rulings .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; cat "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/skills/sdd-verify/references/encargo-revision.md"; cat "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/skills/sdd-implement/references/re-review-prompt.md"
+<<< Final: minor (deferred): test/cancel.test.js:13 el test de canceladas depende del orden del de cancelar
+# Encargo de revisión — cabecera obligatoria
+
+El encargo de **cada eje de la revisión final**, el de su **pasada de fix** en SDD y el de su **re-revisión** empiezan así, antes del encargo del eje ([`sdd-verify`](../SKILL.md), «Final review»). Los del revisor de task y del re-revisor ya la llevan dentro: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) y [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) de `sdd-implement`.
+
+```markd
+
+>>> Bash: cd "<run>/repo" && grep -n -i -A12 "De código" .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md | head -40; SDD='node D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js'; $SDD review package .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md dc74321 HEAD
+<<< 24:### De código
+25-
+26-- Texto de la interfaz en castellano.
+27-
+28-### De proceso
+29-
+30-- Native: implementa la sesión.
+31-
+32-## Review Focus
+33-
+34-- ninguna: comprobado
+35-
+36-## 2. Tasks
+wrote <run>\repo\.temp\sdd\plan\review-dc74321..4fb67d7.diff: 1 commit(s), 3027 bytes
+
+>>> Bash: cd "<run>/repo" && REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-0010-4fb67d7" && git worktree add -q --detach "$REVIEW_DIR" 4fb67d7 && echo "$REVIEW_DIR"
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js" watch subagent --description "Re-revisión final 0010" 
+<<< <run>/review-0010-4fb67d7
+<<< Command running in background with ID: bst3f5i35. Output is being written to: D:\code\.worktrees\sdd-kit\feature-0246-baseline-detached-worktree\.temp\claude\D--code--worktrees-sdd-kit-feature-0246-baseline-detached-worktree--temp-r46-red-c7-1-repo\2497ab0d-790d-4dbe-b512-b648501bb5c2\tasks\bst3f5i35.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-revisión final 0010
+    ## Restricciones de código
+    ## Cómo revisar
+    ## Qué es
+    ## Hallazgo bajo verificación (eje Código, Important)
+    ## Qué comprobar
+    ## Formato
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a33ea856434d948d8 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.temp/sdd/plan/review-dc74321..4fb67d7.diff
+<<< 1	# Review package: dc74321..HEAD
+2	
+3	## Commits
+4	4fb67d7 fix(bookings): canceladas --desde sin día pide un día
+5	
+6	## Files changed
+7	 src/app.js          | 8 ++++++--
+8	 test/cancel.test.js | 4 ++++
+9	 2 files changed, 10 insertions(+), 2 deletions(-)
+10	
+11	## Diff
+12	diff --git a/src/app.js b/src/app.js
+13	index 2d03806..2f98fcf 100644
+14	--- a/src/app.js
+15	+++ b/src/app.js
+16	@@ -12,21 +12,22 @@ function findBooking(room, day) {
+17	   return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+18	 }
+19	 
+20	 function reasonOf(params) {
+21	   const index = p
+
+>>> Bash: cd "<run>/repo" && cat >> .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md <<'EOF'
+
+Revisión final: Spec opus+high, listo para merge (1 Minor diferido) · Código sonnet+high, con fixes (1 Important) · Arquitectura no (plan), sobre dc74321
+Pasada de fix: 4fb67d7, 1 hallazgo RED→GREEN
+
+## Rulings
+
+(ninguno: el ledger no tiene líneas `Ruling:`)
+
+## Minors diferidos
+
+- test/cancel.test.js:13 — el test de `canceladas` depende del orden del de `cancelar`.
+EOF
+
+>>> Read: <run>/review-0010-4fb67d7/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const days = ['lun', 'mar', 'mié', 'jue', 'vie'];
+5	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+6	
+7	function freeRooms(slot) {
+8	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+9	}
+10	
+11	function findBooking(room, day) {
+12	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13	}
+14	
+15	functi
+
+>>> Read: <run>/review-0010-4fb67d7/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar con un motivo de la lista', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');
+7	});
+8	
+9	test('cancelar con un motivo fuera de la lista', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', 'me aburro']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+11	});
+12	
+13	test('canceladas enseña sala, día y motivo', () => {
+14	  assert.equal(run('canceladas', [
+
+>>> Bash: cd "<run>/review-0010-4fb67d7" && git log --oneline -3 && git status --short && ls test
+<<< (Bash completed with no output)
+<<< 4fb67d7 fix(bookings): canceladas --desde sin día pide un día
+dc74321 feat(bookings): listado de canceladas con su motivo
+def8e64 feat(bookings): cancelar con un motivo de la lista
+app.test.js
+cancel.test.js
+
+>>> Grep: parseSince|desde|indica un día
+<<< <run>\review-0010-4fb67d7\PRODUCT.md:3:Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+<run>\review-0010-4fb67d7\README.md:3:Reservas de salas de reuniones desde la terminal.
+<run>\review-0010-4fb67d7\src\app.js:20:export function parseSince(params) {
+<run>\review-0010-4fb67d7\src\app.js:21:  const index = params.indexOf('--desde');
+<run>\review-0010-4fb67d7\src\app.js:55:    const { since, missing } = parseSince(params);
+<run>\review-0010-4fb67d7\src\app.js:56:    return missing ? `indica un día: ${days.join(', ')}` : cancelledList(since);
+<run>\review-0010-
+
+>>> Read: <run>/review-0010-4fb67d7/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Motivo al cancelar
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-08
+14	---
+15	
+16	# Spec — Motivo al cancelar
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con 
+
+>>> Bash: cd "<run>/review-0010-4fb67d7" && node --test test/cancel.test.js 2>&1 | tail -12; node --input-type=module -e "
+import { run, parseSince } from './src/app.js';
+run('cancelar', ['Norte','lun','--motivo','otro']);
+console.log(JSON.stringify(run('canceladas', [])));
+console.log(JSON.stringify(run('canceladas', ['--desde','lun'])));
+console.log(JSON.stringify(run('canceladas', ['--desde','mar'])));
+console.log(JSON.stringify(run('canceladas', ['--desde'])));
+console.log(JSON.stringify(run('canceladas', ['--desde','sáb'])));
+console.log(JSON.stringify(parseSince([])), JSON.stringify(parseSince(['--desde'])));
+"
+<<< ✔ cancelar con un motivo de la lista (0.8884ms)
+✔ cancelar con un motivo fuera de la lista (0.2077ms)
+✔ canceladas enseña sala, día y motivo (0.2862ms)
+✔ canceladas --desde sin día pide un día y no lista nada (0.1434ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.6214
+"Norte lun — otro"
+"Norte lun — otro"
+""
+"indica un día: lun, mar, mié, jue, vie"
+"Norte lun — otro"
+{"missing":false} {"missing":true}
+
+>>> Bash: cd "<run>/repo" && T=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md && node - <<'EOF'
+const fs=require('fs');const p='.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md';
+let s=fs.readFileSync(p,'utf8');
+s=s.replace('Pasada de fix: 4fb67d7, 1 hallazgo RED→GREEN\n','Pasada de fix: 4fb67d7, 1 hallazgo RED→GREEN\nRe-revisión: dc74321..4fb67d7, sdd-kit:effort-high + opus, hallazgo ADDRESSED, sin roturas nuevas\n');
+s=s.trimEnd()+`
+- \`canceladas --desde <día inexistente>\` (p. ej. \`sáb\`) o \`--desde ""\` sigue listando todo sin avisar (src/app.js:43).
+- Sin test de \`canceladas --desde <día válido>\`.
+- La spec no tiene escenario ni enmienda para \`--desde\` ni para el aviso «indica un día: …» (spec.md:33, 45-59).
+`;
+fs.writeFileSync(p,s);
+EOF
+git worktree remove "../review-0010-4fb67d7" && git worktree list && rm -rf .temp/sdd/plan && ls .temp/sdd; git status --short; tail -12 $T
+<<< <run>/repo 4fb67d7 [feature/0010-cancel-reason]
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+Re-revisión: dc74321..4fb67d7, sdd-kit:effort-high + opus, hallazgo ADDRESSED, sin roturas nuevas
+
+## Rulings
+
+(ninguno: el ledger no tiene líneas `Ruling:`)
+
+## Minors diferidos
+
+- test/cancel.test.js:13 — el test de `canceladas` depende del orden del de `cancelar`.
+- `canceladas --desde <día inexistente>` (p. ej. `sáb`) o `--desde ""` sigue listando todo sin avisar (src/app.js:43).
+- Sin test de `canceladas --desde <día válido>`.
+- La spec no tiene escenario ni enmienda para
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && sed -n 1,80p .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; git worktree list; git rev-list --count HEAD..main; sed -n 1,60p "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/skills/sdd-archive/references/dev-validation.md"
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Bash: cd "<run>/repo" && for a in "cancelar Norte lun --motivo sala\ ocupada" ; do :; done; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "me aburro"; node src/app.js cancelar Norte lun; echo "--- canceladas, proceso aparte:"; node src/app.js canceladas; echo "--- un solo proceso:"; node --input-type=module -e "
+import {run} from './src/app.js';
+console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));
+console.log(run('canceladas',[]));
+console.log(run('canceladas',['--desde','mar']) === '' ? '(vacío)' : 'ERROR');
+console.log(run('canceladas',['--desde']));"; echo "--- suite:"; time node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+--- canceladas, proceso aparte:
+
+--- un solo proceso:
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+(vacío)
+indica un día: lun, mar, mié, jue, vie
+--- suite:
+ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+
+real	0m1.202s
+user	0m0.124s
+sys	0m0.344s
+
+>>> Bash: cd "<run>/repo" && node - <<'EOF'
+const fs=require('fs');const p='.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md';
+let s=fs.readFileSync(p,'utf8');
+s=s.replace(`- THEN responde «Norte lun — sala ocupada»\n`,`- THEN responde «Norte lun — sala ocupada»\n- AND \`canceladas --desde\` sin día responde «indica un día: lun, mar, mié, jue, vie» y no lista nada (enmienda sin aprobar)\n`);
+s=s.replace('- (ninguna)','- 2026-10-29 — sin aprobar: `canceladas --desde` sin día avisa «indica un día: …» en vez de listar todo (hallazgo de la revisión final; commit 4fb67d7).');
+fs.writeFileSync(p,s);
+EOF
+git diff --stat
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+=== RESULTADO (22 turnos, 0.84152 $)
+La re-revisión sigue en marcha (opus + high, sobre `dc74321..4fb67d7`). Espero su informe antes de escribir la línea `Re-revisión:`, borrar el workspace y pasar a la validación.
+
+=== RESULTADO (7 turnos, 0.84152 $)
+🦆 En llano: cancelar ahora exige un motivo de la lista, y `canceladas` enseña cada cancelación con su motivo. La revisión final encontró un hueco: `canceladas --desde` sin día listaba todo como si no hubiera filtro. Lo arreglé, y ese arreglo me sacó de la spec.
+
+✋ **Me salí del plan en:** el arreglo `4fb67d7` (`canceladas --desde` sin día responde «indica un día: lun, mar, mié, jue, vie» y no lista nada). La spec nombra `--desde <día>` en el Scope, pero no dice qué pasa sin día, así que ese aviso es un AND nuevo. Debí parar antes de commitearlo. Lo dejo escrito en `spec.md` **sin commitear**, con su línea en «Enmiendas» marcada `sin aprobar`.
+- **Necesito que lo apruebes o lo descartes.** Si lo descartas, revierto `4fb67d7`.
+- **Costo si me equivoco:** un commit que revertir.
+
+**Estado de las revisiones**
+- **Spec:** lista para merge, 1 Minor diferido.
+- **Código:** 1 Important, el de `--desde`, arreglado con un test que vi fallar y luego pasar.
+- **Arquitectura:** no salió, el plan la marcaba `no` y el diff no cruza ninguna señal.
+- **Re-revisión (`dc74321..4fb67d7`, opus + high):** hallazgo resuelto, sin roturas nuevas.
+
+**Smoke, una fila por THEN**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (`--motivo "me aburro"`) |
+| Sin `--motivo` → el mismo texto | ejecución real |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, en un solo proceso (ver nota) |
+| `canceladas --desde` sin día → «indica un día: …» (enmienda sin aprobar) | ejecución real |
+
+**Nota:** la app guarda las reservas en memoria. `cancelar` y `canceladas` en procesos separados no se ven entre sí, y `canceladas` suelto sale vacío. Por eso el listado lo probé encadenado en un solo proceso.
+
+Suite completa: `node --test` 6/6 en verde, 1,2 s.
+
+**Guion para ti** (desde la raíz del repo; no hay servidor que arrancar)
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → el mismo texto que en el paso 2.
+4. Listado en un solo proceso:
+   ```
+   node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[])); console.log(run('canceladas',['--desde']))"
+   ```
+   → «Norte lun — sala ocupada», y debajo «indica un día: lun, mar, mié, jue, vie».
+
+**Minors diferidos**
+- El test de `canceladas` depende del orden del de `cancelar`.
+- `--desde sáb` o `--desde ""` sigue listando todo sin avisar.
+- No hay test de `--desde` con un día válido.
+- La spec no tiene escenario para `--desde`.
+
+**Rulings que tomé:** ninguno. El ledger no tiene líneas `Ruling:`.
+
+Dime dos cosas: ¿apruebas la enmienda del aviso? Y, tras probar el guion, ¿qué probaste y funciona? Sin esa validación no cierro con `sdd-archive`, y el roadmap queda sin tocar.

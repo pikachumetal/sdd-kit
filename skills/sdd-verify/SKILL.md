@@ -250,8 +250,8 @@ In both, the reproduce-before-fixing rule of the fix loop applies.
 
 **What it leaves open:**
 
-- An Important or a Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the validation's presentation and in the walkthrough. No second fix pass, no second re-review.
-- **A Critical is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
+- **A Critical, or an Important the fix pass brought in (its lines, or the re-review says so), is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
+- Any other Important or Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the presentation and walkthrough.
 
 **A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread if `sdd-implement`'s «Every commit of yours» allows it (`revisado en el hilo: <sha> · <files> · <n> líneas`); any other goes to ✋ as `sin revisar: <sha> — <what it changes>`, in any profile and with any `validation.mode`. If no re-review went out yet (a clean review, no fixes), that commit opens it, and it is the only one. While a `sin revisar` or a «no verificado» is unresolved, neither the `Validación en campo:` line nor the walkthrough says the review was clean: they say how many are left («…, 1 sin revisar»).
 
@@ -260,6 +260,6 @@ In both, the reproduce-before-fixing rule of the fix loop applies.
 | "The commit after the re-review isn't covered: it needs its own re-review" | That is how a feature chained three re-reviews. It goes to ✋ as `sin revisar`; a re-review never opens another. |
 | "This re-review is small: a cheap model is enough" | The single re-review is the closing's only fresh eyes on the fix pass: `sdd-kit:effort-high` + `opus`. |
 
-**The last reviewed sha** is the second sha of the `Re-revisión:` line; without one, the `sobre` of `Revisión final:`; and if the line says «juntada en el cierre», the closing commit. A `Revisión final:` line in the 2.x format (`Revisión final: sdd-kit:effort-high + opus, <verdict>, sobre <sha>`, without axes) counts as the final review, and the range starts at its `sobre`, with the fix pass inside, as in the single closing.
+**The last reviewed sha** is the second sha of the `Re-revisión:` line; without one, the `sobre` of `Revisión final:`; and if the line says «juntada en el cierre», the closing commit. A `Revisión final:` line in the 2.x format (`Revisión final: sdd-kit:effort-high + opus, <verdict>, sobre <sha>`, without axes) counts as the final review, and the range starts at its `sobre`, with the fix pass inside.
 
 **`tasks.md`.** When the axes return, write `Revisión final: Spec opus+high, <verdict> · Código sonnet+high, <verdict> · Arquitectura <opus+high, <verdict> | no (plan)>, sobre <sha corto>`, with the `HEAD` they reviewed (without `tasks.md`, in the validation's presentation). A raised axis reads `Arquitectura opus+high, <verdict> (subido: <reason>)`, and a check an axis couldn't make adds `, <n> sin verificar` to its verdict. After the fix pass, `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`. At most one `Re-revisión:` line.

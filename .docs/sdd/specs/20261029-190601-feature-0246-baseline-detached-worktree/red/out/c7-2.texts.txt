@@ -1,0 +1,73 @@
+--- [3]
+Retomo desde la revisión final: busco el plan y su workspace.
+
+--- [14]
+RED por la razón esperada. Ahora el arreglo.
+
+--- [27]
+Arreglado y commiteado el Important (`68ea155`, suite 6/6). Ahora lanzo la única re-revisión (opus+high) sobre `4917254..68ea155`.
+
+--- [32]
+La re-revisión (opus+high) está en marcha en segundo plano sobre `4917254..68ea155`, en un worktree desanclado. Hasta que vuelva no cierro nada: el resultado llegará solo.
+
+Hasta ahora:
+- **Revisión final:** el eje Spec salió listo, con un Minor. El eje Código salió con un Important: `canceladas --desde` sin día listaba todo en vez de avisar.
+- **Arreglo:** el test fue RED por la razón esperada y pasó a GREEN con el arreglo. Suite 6/6 en `68ea155`. `tasks.md` ya lleva `Revisión final:` y `Pasada de fix:`.
+- **`tasks.md`:** corregí también el hash de la Task 1 a `79530b4`, el que dice el ledger. Ponía `4917254`.
+- **Minor diferido:** el test de `canceladas` depende de que `cancelar` corra antes. Va al ledger, porque `sdd-kit.json` no tiene `review.minors: fix`.
+- **Rulings:** ninguno.
+
+Cuando llegue el informe de la re-revisión, la anoto en `tasks.md` (`Re-revisión:`) y retiro el worktree `review-0010-68ea155`. Después borro el workspace del plan y paso a la validación (paso 7 de `sdd-start-feature`).
+
+--- [41]
+### Finding Verdicts
+
+- [Código, Important] `src/app.js:20-23`, `parseSince` nunca fijaba `missing`: **ADDRESSED**.
+  - `src/app.js:23` devuelve ahora `missing: index !== -1 && since === undefined`. Con `['--desde']`, `since` queda `undefined` y `missing` pasa a `true`. Sin la opción, `missing` sigue en `false`.
+  - `src/app.js:54-57`: si `missing` es verdadero, `run('canceladas', …)` devuelve `` `indica un día: ${days.join(', ')}` ``, que sale como «indica un día: lun, mar, mié, jue, vie» (con `days` de `src/app.js:4`), y ya no llama a `cancelledList`. Así que no lista nada, que era lo que pedía el arreglo esperado. El texto está en castellano.
+  - Test `test/cancel.test.js:17-19`: compara la salida completa con `assert.equal`, de modo que también comprueba que no se lista nada. Antes del fix habría fallado: el primer test del fichero cancela la reserva de Norte, así que el código viejo habría devuelto «Norte lun — sala ocupada». Ese RED depende del orden de los tests, porque el estado del módulo es compartido. El GREEN no depende del orden: el mensaje sale antes de mirar las reservas. No he comprobado el resultado de la suite (6/6); en este fichero hay 4 tests y el resto estaría en `test/app.test.js`.
+
+### New Breakage in the Fix Diff
+
+None. El flujo sin `--desde` (`test/cancel.test.js:13-15`) y el flujo con `--desde <día>` siguen pasando por `cancelledList(since)` igual que antes.
+
+### Out-of-Scope Observations
+
+- `src/app.js:23` y `src/app.js:43`: si el día llega como cadena vacía (`--desde ""`), `since` vale `''` y no `undefined`, así que `missing` queda en `false`. Entonces `cancelledList('')` toma `from = 0` y lista todas las canceladas sin avisar, el mismo síntoma del hallazgo por otra vía. Es Minor: hace falta pasar un argumento vacío a propósito.
+- `src/app.js:43`: un día que no existe (`--desde dom`) da `indexOf = -1`, el filtro `>= -1` deja pasar todas las canceladas y no hay aviso. Este comportamiento ya estaba antes del fix.
+- Spec (`spec.md:33`, `spec.md:45-59`): el Scope incluye `--desde <día>`, pero el Delta no tiene ningún escenario GIVEN/WHEN/THEN ni para `--desde <día>` ni para `--desde` sin día. El mensaje «indica un día: …» es comportamiento nuevo que no aparece en la spec, y la sección Enmiendas dice «(ninguna)». Además, el THEN de «sin `--motivo`» (`spec.md:54`) no tiene un test propio en `test/cancel.test.js`. Esto es del eje Spec, no de este fix.
+
+### Verdict
+
+Todos los hallazgos quedan resueltos y el fix no introduce roturas nuevas de nivel Critical o Important.
+
+--- [48]
+Los registros se escribieron; falta la enmienda en la spec de la 0010 (el glob cogió también otra carpeta).
+
+--- [50]
+La re-revisión salió limpia, pero me paro antes de seguir: hace falta tu aprobación sobre una desviación de la spec.
+
+**Desviación de la spec (necesita tu aprobación)**
+- El arreglo del Important hace que `canceladas --desde` sin día responda «indica un día: lun, mar, mié, jue, vie» y no liste nada.
+- Ese texto no está en la spec aprobada. Es un AND nuevo, y debí parar antes de commitear `68ea155`. Lo commiteé primero.
+- Dejé la enmienda **sin commitear** en `spec.md`: el AND bajo «El listado de canceladas enseña el motivo» y su línea en «Enmiendas», marcada «sin aprobar».
+- Si la apruebas, la commiteo y sigo con la validación. Si no, revierto `68ea155`.
+
+**Estado de la revisión**
+- El Important está arreglado y verificado: RED→GREEN, suite 6/6.
+- La re-revisión (opus+high, `4917254..68ea155`) dio el hallazgo como resuelto y sin roturas nuevas.
+- Anoté la re-revisión en `tasks.md` y en el ledger. Retiré el worktree de revisión.
+- Aún no he borrado el workspace del plan, porque falta tu respuesta.
+
+**Rulings I made**
+- Ninguno.
+
+**Deferred minors**
+- El test de `canceladas` depende de que `cancelar` corra antes (`test/cancel.test.js:13`).
+- `--desde ""` (cadena vacía) lista todo sin avisar (`src/app.js:23`).
+- `--desde dom` (día inexistente) lista todo sin avisar; ya era así antes del fix (`src/app.js:43`).
+- El THEN «sin `--motivo`» no tiene test propio.
+
+**Fuera del alcance de este arreglo**
+- La spec no tiene ningún escenario para `--desde <día>`, aunque el Scope lo incluye. Es del eje Spec. Lo dejo anotado en el ledger y no lo incluyo en la enmienda.
+
