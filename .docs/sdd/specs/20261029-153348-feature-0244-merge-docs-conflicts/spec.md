@@ -27,7 +27,7 @@ approvers:
 3. **La primera celda de una fila de deuda se une en dos partes**: los prefijos de cierre y el texto que sigue, cada parte por su lado. Así «la fila que lo lleva gana a la que no»: si la rama añade el prefijo y `develop` no lo toca, queda el prefijo de la rama; si los dos añaden prefijos distintos, conflicto. El texto del ítem es la clave: si un lado lo cambia, ya es otra fila, como hoy.
 4. **Qué es un prefijo de cierre**: al principio de la primera celda, uno o más `**[<Feature|Patch> NNNN, AAAA-MM-DD: <saldada|parcial> — …]**` seguidos de un espacio. Medido en el roadmap: 184 filas empiezan por `**[`, y las 184 tienen esta forma (120 Feature saldada, 20 Feature parcial, 35 Patch saldada, 9 Patch parcial).
 5. **El aviso de dos filas distintas con el mismo id** ya no sale por una fila que solo difiere en el prefijo, porque ahora son la misma fila; el texto del aviso no cambia.
-6. **Cuándo se unen las líneas de un requisito**: en un fichero de `.docs/sdd/capabilities/`, un trozo en conflicto se une si cada lado cambia, añade o quita líneas distintas de la base y todas las líneas del trozo, en los tres lados, empiezan por `- THEN ` o `- AND `. Un trozo con un `- GIVEN`, un `- WHEN`, un título `###` o prosa sigue siendo conflicto; y también si los dos lados cambian la misma línea de la base o añaden líneas en el mismo hueco. Las líneas añadidas por un lado van en el hueco de la base donde las puso ese lado.
+6. **Cuándo se unen las líneas de un requisito**: en un fichero de `.docs/sdd/capabilities/`, un trozo en conflicto se une si cada lado cambia, añade o quita líneas distintas de la base y todas las líneas del trozo, en los tres lados, empiezan por `- THEN ` o `- AND `. Un trozo con un `- GIVEN`, un `- WHEN`, un título `###` o prosa sigue siendo conflicto; y también si los dos lados cambian la misma línea de la base o añaden líneas en el mismo hueco de un trozo que conserva líneas de la base (un trozo que solo añade se une como hasta ahora, enmienda del 2026-10-29). Las líneas añadidas por un lado van en el hueco de la base donde las puso ese lado.
 7. **Pruebas**: una prueba de la función pura por cada regla en `cli/test/merge/keyed.test.ts` (rápida) y en un fichero nuevo `cli/test/merge/requirement-lines.test.ts` (rápida); y dos de punta a punta con `sdd merge --sync` en `cli/test/merge/registries.slow.test.ts`, una por cada GIVEN de la fila (prefijo + «Destino» y THEN + AND).
 - Delta probado con `sdd capability merge` sobre una copia de `.docs/sdd` (2026-10-29): sustituidos «Los registros se unen por id», «El merge del cierre une los registros que solo añaden líneas» y «El merge del cierre parte de la rama destino publicada»; añadido «Dentro de un requisito de una capacidad se unen los THEN y AND que cambia cada lado».
 - Política de modelos: sin revisores de la spec (modo lite) · ejes de la revisión final: Spec opus+high, Código sonnet+high · sin otros despachos en paralelo · en paralelo hasta `control.maxParallelAgents`.
@@ -100,7 +100,8 @@ La clave de una fila descarta sus prefijos de cierre; dos versiones con la misma
 - WHEN se ejecuta `sdd merge --sync` (o el cierre ejecuta `sdd merge`)
 - THEN el requisito queda con el `THEN` de `develop` y los `AND` de la rama, sin conflicto, y la integración sigue como con cualquier conflicto resuelto
 - AND vale igual si un lado añade o quita un `- AND` y el otro cambia otra línea del trozo; las líneas añadidas quedan en el sitio donde las puso su lado
-- AND si los dos lados cambian la misma línea de forma distinta, o añaden líneas en el mismo hueco, sigue siendo conflicto: `base: conflicto en .docs/sdd/capabilities/control-profiles.md.`
+- AND si los dos lados cambian la misma línea de forma distinta, o añaden líneas en el mismo hueco de un trozo que conserva líneas de la base, sigue siendo conflicto: `base: conflicto en .docs/sdd/capabilities/control-profiles.md.`
+- AND un trozo en el que los dos lados solo añaden líneas, sin ninguna de la base, se une como en «El merge del cierre une los registros que solo añaden líneas»: primero las de la rama destino
 - AND si alguna línea del trozo, en cualquiera de los tres lados, no empieza por `- THEN ` ni por `- AND ` (un `- GIVEN`, un `- WHEN`, un título `###`, prosa o una línea en blanco), sigue siendo conflicto
 - AND fuera de `.docs/sdd/capabilities/` esta unión no se aplica
 
@@ -129,6 +130,8 @@ La clave de una fila descarta sus prefijos de cierre; dos versiones con la misma
 - Confianza: media
 
 ## Enmiendas
+
+- 2026-10-29 — el AND «añaden líneas en el mismo hueco → conflicto» del ADDED se limita a los trozos que conservan líneas de la base, y un AND nuevo dice que un trozo en el que los dos solo añaden se une como hasta ahora — la revisión final (eje Spec) lo probó con git real: dos `- AND` añadidos tras la misma línea dan un trozo con la base vacía, que ya unía `mergeAddedLines` antes de esta rama y que regula el requisito «El merge del cierre une los registros que solo añaden líneas»; el AND tal cual contradecía ese requisito — aprobada (opción «Corregir el AND»)
 
 - 2026-10-29 — la decisión 3 deja de decir que un cambio del texto del ítem en `develop` queda detrás del prefijo — ese texto es la clave de la fila, así que un cambio suyo ya es otra fila, como hoy; ningún THEN ni AND cambia — sin aprobar (corrige una decisión mía, no un escenario)
 

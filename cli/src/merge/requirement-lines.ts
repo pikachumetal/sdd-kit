@@ -8,8 +8,8 @@ interface Edit {
 
 const CONSEQUENCE = /^- (?:THEN|AND) /;
 
-// Los tramos de la base que un lado cambia, por la subsecuencia común más larga: los trozos de un conflicto son cortos.
-function editsAgainst(base: string[], side: string[]): Edit[] {
+// Longitud de la subsecuencia común más larga desde cada par de posiciones: los trozos de un conflicto son cortos.
+function commonSuffixes(base: string[], side: string[]): (i: number, j: number) => number {
   const common = base.map(() => side.map(() => 0));
   const length = (i: number, j: number) => (i < base.length && j < side.length ? common[i][j] : 0);
   for (let i = base.length - 1; i >= 0; i--) {
@@ -17,6 +17,11 @@ function editsAgainst(base: string[], side: string[]): Edit[] {
       common[i][j] = base[i] === side[j] ? length(i + 1, j + 1) + 1 : Math.max(length(i + 1, j), length(i, j + 1));
     }
   }
+  return length;
+}
+
+function editsAgainst(base: string[], side: string[]): Edit[] {
+  const length = commonSuffixes(base, side);
   const edits: Edit[] = [];
   let [i, j, start, from] = [0, 0, 0, 0];
   const close = () => {
@@ -35,7 +40,10 @@ function editsAgainst(base: string[], side: string[]): Edit[] {
 }
 
 const sameEdit = (a: Edit, b: Edit) => a.start === b.start && a.end === b.end && a.lines.join('\n') === b.lines.join('\n');
-const clash = (a: Edit, b: Edit) => a.start === b.start || (a.start < b.end && b.start < a.end);
+const grows = (edit: Edit) => edit.lines.length > edit.end - edit.start;
+// Una inserción justo detrás de un tramo que el otro lado alarga cae en el mismo hueco: no hay orden que elegir.
+const addsToSameGap = (insertion: Edit, other: Edit) => insertion.start === insertion.end && other.end === insertion.start && grows(other);
+const clash = (a: Edit, b: Edit) => a.start === b.start || (a.start < b.end && b.start < a.end) || addsToSameGap(a, b) || addsToSameGap(b, a);
 
 // Une un trozo en conflicto de un requisito si cada lado cambia líneas THEN o AND distintas de la base; si no, null.
 export function mergeRequirementLines({ ours, base, theirs }: Hunk): string[] | null {

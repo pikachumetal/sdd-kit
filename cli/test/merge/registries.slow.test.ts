@@ -125,7 +125,7 @@ describe('la cabecera de una tabla no es una fila con id', () => {
   });
 });
 
-async function syncAfterOther(fx: Fixture, relative: string, [other, mine]: string[]): Promise<{ code: number; text: string }> {
+async function syncAfterOther(fx: Fixture, relative: string, [other, mine]: [string, string]): Promise<{ code: number; text: string }> {
   onBranch(fx, '0002', relative, other);
   expect((await runMerge(join(fx.wt, '0002'), ['--push'])).code).toBe(0);
   onBranch(fx, '0001', relative, mine);
@@ -161,5 +161,17 @@ describe('sdd merge --sync une lo que cada lado cambia sin tocar lo del otro', (
 
     expect(result.code, result.text).toBe(0);
     expect(branchFile(fx, path)).toContain('- WHEN entra\n- THEN va a planning\n- AND avisa dos veces\n- AND guarda todo\n');
+  });
+
+  it('fuera de capabilities, el mismo cambio de THEN y AND sigue siendo conflicto', async () => {
+    const fx = mergeFixture('sync-then-and-fuera');
+    const path = 'docs/routing.md';
+    const doc = (lines: string[]) => ['# Routing', '', '- WHEN entra', ...lines, ''].join('\n');
+    seedBase(fx, path, doc(['- THEN va a routing', '- AND avisa']));
+
+    const result = await syncAfterOther(fx, path, [doc(['- THEN va a planning', '- AND avisa']), doc(['- THEN va a routing', '- AND avisa dos veces'])]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('base: conflicto en docs/routing.md.');
   });
 });

@@ -155,3 +155,12 @@ describe('la clave de una fila de deuda no cuenta el prefijo de cierre', () => {
     })).toBeNull();
   });
 });
+
+describe('el prefijo de cierre tiene la forma que lee el roadmap', () => {
+  it('keyed: un prefijo de Task o con un id que no es de cuatro dígitos tampoco cuenta en la clave', () => {
+    for (const prefix of ['**[Task 0061, 2026-09-25: saldada — [w](a.md)]** ', '**[Feature 12, 2026-09-25: parcial — [w](a.md); queda: x]** ']) {
+      const merged = mergeKeyedHunk({ base: ['| **Lento** — z | Bajo | Esperar |'], ours: ['| **Lento** — z | Bajo | Actuar |'], theirs: [`| ${prefix}**Lento** — z | Bajo | Esperar |`] });
+      expect(merged).toEqual({ lines: [`| ${prefix}**Lento** — z | Bajo | Actuar |`], duplicates: [] });
+    }
+  });
+});

@@ -1,4 +1,5 @@
 import { cells } from '../roadmap/parse.ts';
+import { CLOSING_PREFIX } from '../roadmap/releases.ts';
 
 export interface Hunk {
   ours: string[];
@@ -34,11 +35,16 @@ export function idColumn(header: string): number {
   return Math.max(0, cells(header).findIndex((cell) => ID_COLUMNS.includes(cell.toLowerCase())));
 }
 
-// El cierre antepone a una fila de deuda «**[Feature NNNN, fecha: saldada — …]** » (o Patch, o parcial): no es parte de su clave.
-const CLOSING_PREFIXES = /^(\s*(?:\*\*\[(?:Feature|Patch) \d{4}, \d{4}-\d{2}-\d{2}: (?:saldada|parcial) — .*?\]\*\* )*)(.*)$/s;
+// El cierre antepone a una fila de deuda «**[Feature NNNN, fecha: saldada — …]** » (o parcial): no es parte de su clave.
+const CLOSING_PREFIXES = new RegExp(String.raw`^(?<prefixes>\s*(?:${CLOSING_PREFIX}(?:saldada|parcial) — .*?\]\*\* )*)(?<text>.*)$`, 'is');
 const CELL_DIVIDER = /(?<!\\)\|/;
 
-const withoutPrefixes = (cell: string) => CLOSING_PREFIXES.exec(cell)?.[2] ?? cell;
+function splitPrefixes(cell: string): [string, string] {
+  const groups = CLOSING_PREFIXES.exec(cell)?.groups;
+  return groups === undefined ? ['', cell] : [groups.prefixes, groups.text];
+}
+
+const withoutPrefixes = (cell: string) => splitPrefixes(cell)[1];
 
 function rowKey(line: string, column: number): string | null {
   if (line.startsWith('|') && !TABLE_SEPARATOR.test(line)) return withoutPrefixes(cells(line)[column] ?? '');
@@ -76,9 +82,7 @@ function pick<T>(ours: T, base: T, theirs: T): T | null {
   return ours === base ? theirs : null;
 }
 
-const splitPrefixes = (cell: string) => CLOSING_PREFIXES.exec(cell)?.slice(1, 3) ?? ['', cell];
-
-// Una fila que cambian los dos lados se une celda a celda, y en cada celda los prefijos de cierre aparte del texto.
+// Cada celda se une con sus prefijos de cierre aparte del texto: así gana el lado que salda la fila.
 function mergeCells(ours: string, base: string, theirs: string): string | null {
   if (!ours.startsWith('|')) return null;
   const [mine, original, other] = [ours, base, theirs].map((line) => line.split(CELL_DIVIDER).map(splitPrefixes));

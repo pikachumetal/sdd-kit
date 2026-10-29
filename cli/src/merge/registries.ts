@@ -55,7 +55,7 @@ function joinAdded(attempt: MergeAttempt, file: string, [ours, theirs]: string[]
   if (!KEYED_REGISTRIES.includes(file)) return joined;
   const { lines, duplicates } = dedupeRows(toLines(joined));
   reportDuplicates(attempt, file, duplicates);
-  return lines.map((line) => `${line}\n`).join('');
+  return linesToText(lines);
 }
 
 async function mergeAddedLines(attempt: MergeAttempt, file: string): Promise<boolean> {
@@ -65,6 +65,7 @@ async function mergeAddedLines(attempt: MergeAttempt, file: string): Promise<boo
 }
 
 const toLines = (text: string) => (text === '' ? [] : text.replace(/\n$/, '').split('\n'));
+const linesToText = (lines: string[]) => lines.map((line) => `${line}\n`).join('');
 
 // La columna de id es la de la tabla en la que cae el trozo: se busca su cabecera en las filas de encima.
 function columnBefore(content: string, index: number): number {
@@ -89,7 +90,7 @@ async function mergeRowsById(attempt: MergeAttempt, file: string): Promise<boole
   const resolved = merges.filter((merge): merge is KeyedMerge => merge !== null);
   if (resolved.length !== merges.length) return false;
   let next = 0;
-  const merged = conflict.content.replace(HUNK, () => resolved[next++].lines.map((line) => `${line}\n`).join(''));
+  const merged = conflict.content.replace(HUNK, () => linesToText(resolved[next++].lines));
   if (!writeMerged(conflict.path, merged)) return false;
   reportDuplicates(attempt, file, resolved.flatMap((merge) => merge.duplicates));
   return true;
@@ -102,20 +103,20 @@ function regenerateLog(worktree: string): void {
 
 const isCapability = (file: string) => file.startsWith('.docs/sdd/capabilities/');
 
-// En una capacidad, además de lo que solo añade, se unen los THEN y AND de un requisito que cambia cada lado.
 function mergeRequirementHunk(attempt: MergeAttempt, file: string, [, ours, base, theirs]: RegExpMatchArray): string | null {
   if (base === '') return joinAdded(attempt, file, [ours, theirs]);
   const lines = mergeRequirementLines({ ours: toLines(ours), base: toLines(base), theirs: toLines(theirs) });
-  return lines === null ? null : lines.map((line) => `${line}\n`).join('');
+  return lines === null ? null : linesToText(lines);
 }
 
 async function mergeRequirements(attempt: MergeAttempt, file: string): Promise<boolean> {
   const conflict = await readConflict(attempt.worktree, file);
   if (conflict === null) return false;
   const merges = conflict.hunks.map((hunk) => mergeRequirementHunk(attempt, file, hunk));
-  if (merges.some((merge) => merge === null)) return false;
+  const resolved = merges.filter((merge): merge is string => merge !== null);
+  if (resolved.length !== merges.length) return false;
   let next = 0;
-  return writeMerged(conflict.path, conflict.content.replace(HUNK, () => merges[next++] ?? ''));
+  return writeMerged(conflict.path, conflict.content.replace(HUNK, () => resolved[next++]));
 }
 
 async function resolvedByKit(attempt: MergeAttempt, file: string): Promise<boolean> {

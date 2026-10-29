@@ -102,6 +102,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Fixed
 
+- **Feature 0244** — `sdd merge` y `--sync` unen celda a celda una fila de los registros que cambian los dos lados, con la clave sin los prefijos de cierre (saldada o parcial), y en `.docs/sdd/capabilities/` los `- THEN` y `- AND` de un requisito que cambia cada lado; la misma celda o la misma línea sigue siendo conflicto. → [ref](specs/20261029-153348-feature-0244-merge-docs-conflicts/)
 - **Patch 0247** — `sdd ledger rulings` ya no devuelve las filas de tabla del ledger (la del pre-flight que nombra un ruling), y `sdd task done` anota la línea `Tests …` de vitest en lugar de la última, `Duration …`; sin línea `Tests`, la última no vacía como antes. → [ref](specs/20261029-121440-patch-0247-ledger-rulings-and-done-count/)
 - **Patch 0258** — `sdd merge --verify` lanzado dentro de una tarea de moon ya no hereda su `MOON_WORKSPACE_ROOT` ni el resto de su contexto: el `moon query` del cruce y el gate usan el workspace del worktree que fusiona, y la CI de `develop` vuelve a verde en `intersection.slow.test.ts`. → [ref](specs/20261029-103752-patch-0258-ci-fixture-moon-workspace/)
 - **Patch 0254** — Al acabar un sujeto sin otros en curso, la campaña de `tests/headless/` para también los procesos que nombran la CLI de su copia del kit, como el `sdd validation serve` que deja un sujeto con el cwd en su carpeta, y borra las carpetas de los sujetos acabados que quedaron (salvo `KEEP_MOLD=1`). → [ref](specs/20261028-220038-patch-0254-campaign-cleanup-kit-copy/)

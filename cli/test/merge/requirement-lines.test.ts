@@ -32,3 +32,16 @@ describe('mergeRequirementLines', () => {
     expect(mergeRequirementLines({ base: [...base, ''], ours: ['- THEN va a planning', '- AND avisa', '- AND guarda', ''], theirs: ['- THEN va a routing', '- AND avisa dos veces', '- AND guarda', ''] })).toBeNull();
   });
 });
+
+describe('mergeRequirementLines con los trozos que da git', () => {
+  it('un lado cambia un AND y añade otro detrás, y el otro añade uno en ese mismo hueco: conflicto', () => {
+    const merged = mergeRequirementLines({ base: ['- AND b'], ours: ['- AND b cambiado', '- AND x'], theirs: ['- AND b', '- AND y'] });
+    expect(merged).toBeNull();
+  });
+
+  it('un título o una línea de prosa en el trozo es conflicto', () => {
+    for (const line of ['### Otro requisito', 'Una frase suelta.']) {
+      expect(mergeRequirementLines({ base: [line, ...base], ours: [line, '- THEN va a planning', '- AND avisa', '- AND guarda'], theirs: [line, '- THEN va a routing', '- AND avisa dos veces', '- AND guarda'] })).toBeNull();
+    }
+  });
+});
