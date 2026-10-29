@@ -37,7 +37,7 @@ A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …
 sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--verified-at <sha>]
 ```
 
-Under one lock per repo, the script integrates the destination's remote into the local destination (resolving as `--sync` does), merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others, runs `--verify` on the result and pushes the destination by its name. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
+With `--verify`, the script integrates the destination (remote and local) into the change's branch in its worktree, resolving as `--sync` does, and runs `--verify` there, without the lock. Then, under one lock per repo, it integrates the destination's remote into the local destination, merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others and pushes the destination by its name. If the destination changed meanwhile outside docs, it integrates and verifies what crosses again, up to 3 times. Without `--verify`, everything happens under the lock. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
 
 - **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it. The script launches it as arguments, without a shell: a gate that chains commands (`&&`, `;`, a pipe) exits 2, and becomes a moon task or a `package.json` script. With a `moon run … --affected` gate it runs only what crosses, the tasks the branch touches whose inputs the base also touched, and its `verificación: corre …` and `verificación: <tarea>: saltada (…)` lines go in the `Gate:` line.
 - **`--verified-at`**: as in «Integrated base». The script writes `verificación: omitida: desde <sha> solo cambian docs` when it skips.
@@ -53,6 +53,9 @@ Under one lock per repo, the script integrates the destination's remote into the
 | `merge: conflicto en <files>.` | the change conflicts with the destination | the same; the sync merge above should have caught it |
 | `mergiraf: resuelto <file>` | `mergiraf` solved a conflict the kit's rules didn't | nothing: `--verify` runs on the result |
 | `registros: dos filas distintas con el id …` | two different rows with one id, both kept | quote it in the final message for the dev-lead |
+| `base: integrada '<ref>' en '<branch>': <hash>` | with `--verify`, the destination (remote or local) came into the change's branch before verifying | nothing: the commit stays on the branch |
+| `base: '<branch>' tiene cambios sin commitear; …` | with `--verify`, the change's worktree has uncommitted changes; nothing was locked | commit them and run the script again |
+| `--verify corre en el worktree de la rama; …` (exit 2) | `--branch` names a branch that isn't checked out in `--project-root`; nothing was locked | run it from the branch's worktree |
 | `--verify: el gate encadena comandos con …` (exit 2) | the gate chains or redirects commands; nothing was locked | make it a moon task or a `package.json` script, and run the script again |
 | `verificación: corre …` · `verificación: <tarea>: saltada (…)` | the crossing of a `moon run … --affected` gate | copy them into the `Gate:` line |
 | `verificación: sin cruce: …` | the gate can't be crossed (a target or option the script doesn't cross, or `moon query` failed): it runs what the branch touches | quote it in the `Gate:` line |
@@ -60,12 +63,14 @@ Under one lock per repo, the script integrates the destination's remote into the
 | `verificación: …` + `base: …` | `--verify` red | «A red suite» |
 | `bloqueado: '<file>' lo tiene abierto <process>` | a process holds a file the gate needs | close it and run the script again |
 | `push: también publica <n> commit(s) de '<into>' que no son de <branch>:` + `- <hash> <subject>` lines | the destination had local commits not yet published, and they went out with the change | quote them in the final message: the dev-lead sees what went out besides the change |
+| `merge: '<into>' cambió durante la verificación; integro y verifico lo que se cruza (n/3)` | another session merged while `--verify` ran | nothing: the script retries |
+| `merge: '<into>' sigue cambiando tras 3 intentos; …` | the destination kept changing | run the script once more in a while |
 | `push: '<into>' avanzó en '<remote>'; integro y reintento (n/3)` | another session published meanwhile | nothing: the script retries |
 | `push: '<into>' sigue moviéndose en '<remote>' tras 3 intentos; …` | the remote kept moving | run the script once more in a while |
 | `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | quote it; never `--force`, `pull` or `rebase` |
 | `push: no hecho: sin remoto` | no remote | the final message quotes it |
 
-After any failure the destination is as it was: nothing pushed, the temporary worktree removed, the lock free. The report quotes the message literally, the destination's hash and what's left. Never redo it by hand.
+After any failure the destination is as it was: nothing pushed, the temporary worktree removed, the lock free; with `--verify`, the change's branch is back at its commit too. The report quotes the message literally, the destination's hash and what's left. Never redo it by hand.
 
 `capability check --artifact` prints the failures of the artifact and of the capabilities its delta touches; those decide the exit code, and you fix them. The others come out apart as someone else's, don't change the exit code and go to the final message as the dev-lead's: don't edit those capabilities.
 

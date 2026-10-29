@@ -1,8 +1,30 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
-import { mergirafRuns } from '../../src/merge/mergiraf.ts';
+import { mergirafRuns, solveWithMergiraf } from '../../src/merge/mergiraf.ts';
 import { failGate, git, mergeFixture, runMerge, saveAll, sha, write } from './helpers.ts';
+
+const conflicted = '<<<<<<< ours\na\n||||||| base\n=======\nb\n>>>>>>> theirs\n';
+
+describe('mergiraf sin el programa', () => {
+  it('un programa que no arranca no cuenta como mergiraf', () => {
+    expect(mergirafRuns(['sdd-no-existe-mergiraf'])).toBe(false);
+  });
+
+  it('una salida con marcas no cuenta como resuelta aunque mergiraf salga con 0', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sdd-mergiraf-'));
+    writeFileSync(join(dir, 'a.ts'), conflicted);
+    const lines: string[] = [];
+    try {
+      const left = await solveWithMergiraf(dir, ['a.ts'], { onSolved: (line) => lines.push(line), onUnsolved: (line) => lines.push(line), command: [process.execPath, '-e', ''] });
+      expect(left).toEqual(['a.ts']);
+      expect(lines).toEqual(['mergiraf: no resuelve a.ts']);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
 
 const base = 'import { a } from "./a";\n\nexport class Rooms {\n  list(): string[] {\n    return [];\n  }\n}\n';
 const variant = (name: string, method: string) =>
@@ -48,7 +70,7 @@ describe('mergiraf resuelve lo que queda', () => {
     expect(result.text).toContain('mergiraf: resuelto src/rooms.ts');
     expect(result.text).toMatch(/git version/);
     const merged = git(fx.repo, 'show', 'develop:src/rooms.ts');
-    expect(merged).toContain('import { a, b, c } from "./a";');
+    expect(merged).toMatch(/import \{ a, (b, c|c, b) \} from "\.\/a";/);
     expect(merged).toContain('count(): number');
     expect(merged).toContain('free(): boolean');
     expect(git(fx.repo, 'config', '--local', '--list')).not.toMatch(/^(merge|mergiraf)\./m);
@@ -139,7 +161,7 @@ describe('mergiraf solo sobre código', () => {
 
     expect(result.code, result.text).toBe(0);
     expect(result.text).toContain('mergiraf: resuelto src/use.ts');
-    expect(git(fx.repo, 'show', 'develop:src/use.ts')).toContain('import { a, b, c } from "./a";');
+    expect(git(fx.repo, 'show', 'develop:src/use.ts')).toMatch(/import \{ a, (b, c|c, b) \} from "\.\/a";/);
   });
 
   it('con un fichero resuelto por mergiraf, --verified-at no omite --verify', async () => {
