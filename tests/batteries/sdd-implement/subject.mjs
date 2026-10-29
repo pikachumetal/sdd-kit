@@ -27,6 +27,7 @@ const F18 = '.docs/sdd/specs/20261010-100000-feature-0018-help';
 const F19 = '.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note';
 const F20 = '.docs/sdd/specs/20261013-100000-feature-0020-path-reply';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-keep-note';
+const F22 = '.docs/sdd/specs/20261014-100000-feature-0022-scripts-to-node';
 const fixture = (name) => readFileSync(join(FIX, name), 'utf8');
 const at = (path) => join(s.R, path);
 // En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
@@ -67,6 +68,12 @@ const molds = {
     cp('tech-stack-w1.md', '.docs/sdd/tech-stack.md');
   },
   k1: () => (cp('app-0018.js', 'src/app.js'), cp('readme-0018.md', 'README.md'), cp('readme.test.js', 'test/readme.test.js')),
+  // Se escriben aquí y no en fixtures/: el repo del kit no admite scripts de bash. El hook no lleva extensión, el caso de la 0238.
+  t6: () => {
+    mkdirSync(at('scripts/hooks'), { recursive: true });
+    writeFileSync(at('scripts/deploy.sh'), '#!/usr/bin/env bash\nset -euo pipefail\necho "desplegado"\n');
+    writeFileSync(at('scripts/hooks/pre-push'), '#!/usr/bin/env bash\nset -euo pipefail\nnode --test\n');
+  },
   // La base no responde con la ruta: el paso 3 llega sin commitear, como trabajo en curso.
   o1: () => {
     const skill = at('skills/guardar-nota/SKILL.md');
@@ -165,6 +172,7 @@ const greenNote = (folder, name, txt) => s.put(`${folder}/green/${name}`, fixtur
 const steps = {
   t2: () => openFixture('0016-room-hours', F16, '0016'),
   t3: () => openFixture('0017-reactivate', F17, '0017'),
+  t6: () => openFixture('0022-scripts-to-node', F22, '0022'),
   p2: () => {
     openFixture('0016-room-hours', F16, '0016');
     cp('app-0016-done.js', 'src/app.js');
@@ -243,17 +251,17 @@ steps.o2 = steps.o1;
 steps.u2 = steps.u1;
 steps[s.SC]?.();
 
-if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 't6'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', h2: '80' };
-for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2']) turns[id] = '40';
+for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2']) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21]) {
+for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22]) {
   for (const kept of ['spec', 'plan', 'tasks']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
-for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'no-bash']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
 keepIf('src/app.js', 'app.js');
 keepIf('.sdd-env.json', 'sdd-env.json');
 keepIf('README.md', 'README.md');

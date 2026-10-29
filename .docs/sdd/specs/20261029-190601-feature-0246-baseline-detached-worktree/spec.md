@@ -14,12 +14,12 @@ approvers:
 
 # Spec — La línea base corre en un worktree desanclado, y la pasada de fix prueba el efecto y no adjudica lo que mete
 
-🦆 Hoy la línea base de `sdd-worktrees` corre en el árbol de la rama: en la 0238 encontró a medias los RED de la Task 2 y salió roja sin que la rama tuviera nada roto. Con el cambio corre en `git worktree add --detach <tmp> HEAD`, el commit de apertura, y el worktree se quita al acabar: su resultado es el de ese commit aunque la sesión escriba tests a la vez. Además, tres reglas de la pasada de fix: el test que escribe afirma el efecto que se pide (lo que se ejecuta, la salida, el fichero que deja) y no una bandera interna ni el nombre de un fichero; un valor que elige el arreglo (un sha, un literal, un umbral) sale de las decisiones de la spec; y un Important que la re-revisión achaca a la propia pasada de fix se arregla en el hilo y va a ✋ como `sin revisar`, sin ruling que lo deje en pie. Ninguna skill crece: cada fichero editado queda con las mismas palabras o menos.
+🦆 Hoy la línea base de `sdd-worktrees` corre en el árbol de la rama: en la 0238 encontró a medias los RED de la Task 2 y salió roja sin que la rama tuviera nada roto. Con el cambio corre en `git worktree add --detach <tmp> HEAD`, el commit de apertura, y el worktree se quita al acabar: su resultado es el de ese commit aunque la sesión escriba tests a la vez. Además, una regla de la pasada de fix: un Important que la re-revisión achaca a la propia pasada de fix se arregla en el hilo y va a ✋ como `sin revisar`, sin ruling que lo deje en pie. Ninguna skill crece: cada fichero editado queda con las mismas palabras o menos.
 
 ## Capacidades
 
 - Modificadas: `feature-flow` — la línea base corre en un worktree desanclado en el commit de apertura
-- Modificadas: `verification` — el test de la pasada de fix afirma el efecto; el valor que elige sale de la spec; un Important que mete la propia pasada no se adjudica
+- Modificadas: `verification` — un Important que mete la propia pasada no se adjudica
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -32,8 +32,8 @@ Review de spec propuesta: ninguna — señales: MODIFIED (un requisito de `verif
 2. **El commit de apertura es el `HEAD` del momento**: el paso 5 de `sdd-propose` ya lo commitea antes de los RED de la Task 1, y `sdd-implement` invoca `sdd-worktrees` en su Setup, después. Sin commit de apertura (una feature retomada a mitad), `HEAD` es el último commit: la regla es «el `HEAD` cuando arranca la línea base», no un sha guardado.
 3. **Si la línea base sale roja**, se queda el paso de hoy: el mismo comando en un worktree desanclado de la rama de integración, y la deuda. Solo cambia dónde corre la primera pasada.
 4. **«Achacado a la pasada de fix»**: el Important cae en líneas que cambió la pasada (`git diff <último revisado>..<sha de la pasada>`) o la re-revisión lo dice. Se arregla como hoy un Critical: test que lo reproduce y falla, arreglo, suite, y ✋ `sin revisar: <sha> — <qué arregla>`. Un Important en código que ya vio la revisión final se sigue adjudicando con `Final: Ruling:`. Por economía de palabras, la viñeta del Critical de «What it leaves open» y la nueva van juntas.
-5. **El valor que elige un arreglo** se busca en las decisiones y los THEN de la spec antes de escribirlo; vale para la pasada de Native y para el encargo del subagente de fix en SDD (va en la frase que ya comparten, «In both…»).
-6. **La regla del efecto** vive en `sdd-tdd`, «Verify RED», en la viñeta «Fails because feature missing»: el test afirma el efecto que nombra el requisito o el hallazgo (lo que se ejecuta, la salida, el fichero que deja), no una variable intermedia ni el nombre de un fichero. `sdd-verify` la nombra en la pasada de Native («Closing the review») y `plan-writing.md` en su punto 1 («Spec coverage»), que ya dice «A task whose test only reads what was written doesn't cover…»: esa frase pasa a nombrar la regla. `plan-writing.md` no tiene sección «Verificación»; la tiene `plan-template.md`, que no se toca: la regla llega al test por `sdd-tdd`, y al plan por el punto 1.
+5. *(Recortada en la enmienda del 2026-10-29: RED limpio.)* **El valor que elige un arreglo** se busca en las decisiones y los THEN de la spec antes de escribirlo; vale para la pasada de Native y para el encargo del subagente de fix en SDD (va en la frase que ya comparten, «In both…»).
+6. *(Recortada en la enmienda del 2026-10-29: RED limpio dos veces.)* **La regla del efecto** vive en `sdd-tdd`, «Verify RED», en la viñeta «Fails because feature missing»: el test afirma el efecto que nombra el requisito o el hallazgo (lo que se ejecuta, la salida, el fichero que deja), no una variable intermedia ni el nombre de un fichero. `sdd-verify` la nombra en la pasada de Native («Closing the review») y `plan-writing.md` en su punto 1 («Spec coverage»), que ya dice «A task whose test only reads what was written doesn't cover…»: esa frase pasa a nombrar la regla. `plan-writing.md` no tiene sección «Verificación»; la tiene `plan-template.md`, que no se toca: la regla llega al test por `sdd-tdd`, y al plan por el punto 1.
 7. **Saldo de palabras por fichero** (regla 6 de `CLAUDE.md`): cada fichero editado de `skills/` acaba con igual o menos palabras que hoy, contadas como `words()` de `word-budget.test.ts` (tabla de abajo). Lo que sale, por fichero: en `sdd-worktrees`, la frase del fallo de la línea base se acorta y salen las filas de «Quick Reference» que repiten el paso 3 (texto del kit, no de superpowers: Art. IX); en `sdd-verify`, las viñetas del Critical y del Important nuevo se funden; en `sdd-tdd`, `sdd-implement` y `plan-writing.md`, la frase nueva sustituye a la que toca. El plan fija cada recorte con su recuento.
 8. **El RED antes de la spec** (`tech-stack.md`, «Un baseline limpio no reproduce los fallos de sesiones largas»): los frentes estructurales están leídos con fichero y línea — `sdd-worktrees/SKILL.md:130` corre la línea base en el árbol, `sdd-verify/SKILL.md:253` manda adjudicar todo Important abierto, `sdd-verify/SKILL.md:243-247` no pide mirar la spec al elegir un valor —. El del efecto es de conducta y no lo he medido con sujetos antes de la spec: tiene dos casos de campo (0238 §3, verificado; 0235 §1) y su RED, n = 2, abre la Task 2; si sale limpio, la regla se recorta y vuelvo a pedir la aprobación (`tech-stack.md`, «Un baseline que no falla…»). Lo mismo con el del valor de la spec (tres casos de campo, 0257 §2 el último).
 9. **Prueba (Art. I)**: `sdd-verify` es skill de verify, así que va su tramo `closing` de la batería como control, más escenarios nuevos en esa batería; `sdd-worktrees`, `sdd-tdd` y `sdd-implement`, humo.
@@ -64,7 +64,7 @@ Hoy la línea base corre en el árbol donde la sesión ya escribe los RED, y una
 
 ## Scope
 
-- Entra: `skills/sdd-worktrees/SKILL.md` (paso 3 y «Quick Reference»), `skills/sdd-implement/SKILL.md` (Setup, paso 1), `skills/sdd-tdd/SKILL.md` («Verify RED»), `skills/sdd-verify/SKILL.md` («Closing the review»), `skills/sdd-propose/references/plan-writing.md` (punto 1), los escenarios nuevos de `tests/batteries/sdd-verify/` y la evidencia `tests/baseline-detached-*.md`, `tests/fix-pass-effect-*.md`.
+- Entra: `skills/sdd-worktrees/SKILL.md` (paso 3 y «Quick Reference»), `skills/sdd-implement/SKILL.md` (Setup, paso 1), `skills/sdd-verify/SKILL.md` («Closing the review»), los escenarios nuevos de `tests/batteries/sdd-verify/` y `tests/batteries/sdd-implement/` y la evidencia `tests/baseline-detached-*.md`, `tests/fix-pass-effect-*.md`.
 - No entra: la parte de carga de «El baseline del gate de cierre sale rojo si el hilo corre tests a la vez» (un `vitest` a mano a la vez), que sigue abierta; `plan-template.md`; la revisión final (ya corre desanclada); la CLI.
 
 ## Lo que se retira o cambia de forma
@@ -75,19 +75,19 @@ Hoy la línea base corre en el árbol donde la sesión ya escribe los RED, y una
 | «If tests fail: run the same command in a detached worktree of the integration branch (`git worktree add --detach`, removed when done)» | `skills/sdd-worktrees/SKILL.md:134` | se acorta: el mecanismo ya lo dice la frase de arriba |
 | Filas «Baseline command», «Gate filters by a base» y «Tests fail during baseline» de «Quick Reference» | `skills/sdd-worktrees/SKILL.md:161-163` | salen o se funden en una (decisión 7) |
 | «An Important or a Minor: adjudicate it…» | `skills/sdd-verify/SKILL.md:253`; `capabilities/verification.md:92` | se queda para lo que ya revisó la revisión final; el Important de la pasada se funde con la viñeta del Critical (decisión 4); delta `MODIFIED` «La revisión se cierra una vez» |
-| «Fails because feature missing (not typos)» | `skills/sdd-tdd/SKILL.md:123` | gana el efecto (decisión 6) |
-| «A task whose test only reads what was written doesn't cover «has asked…»» | `skills/sdd-propose/references/plan-writing.md:23` | pasa a nombrar la regla de `sdd-tdd` |
+| «Fails because feature missing (not typos)» | `skills/sdd-tdd/SKILL.md:123` | no cambia: la regla del efecto salió en la enmienda del 2026-10-29 |
+| «A task whose test only reads what was written doesn't cover «has asked…»» | `skills/sdd-propose/references/plan-writing.md:23` | no cambia (enmienda del 2026-10-29) |
 
-- Filas que implementa: 0246 → `roadmap.md:33` (a ✅ al cerrar); 0256 → `roadmap.md:43` (aparcada, absorbida: sale con la 0246); deuda que salda: «La pasada de fix mete un Important y la regla solo deja adjudicarlo» (`roadmap.md:629`, entera) y «Una verificación de ausencia mira el nombre de los ficheros y no la propiedad» (`roadmap.md:603`, la regla); en parte, «El baseline del gate de cierre sale rojo si el hilo corre tests a la vez» (`roadmap.md:564`, la del árbol; queda la de carga). Buscado `0246` y `0256` en `skills/`, `capabilities/`, `.docs/sdd/*.md`, `CLAUDE.md`, `tests/batteries/` y `cli/`: solo el roadmap y los tickets.
+- Filas que implementa: 0246 → `roadmap.md:33` (a ✅ al cerrar); 0256 → `roadmap.md:43` (aparcada, absorbida: sale con la 0246); deuda que salda: «La pasada de fix mete un Important y la regla solo deja adjudicarlo» (`roadmap.md:629`, entera); «Una verificación de ausencia mira el nombre de los ficheros y no la propiedad» (`roadmap.md:603`) no se salda: su RED salió limpio (enmienda del 2026-10-29) y la fila lleva esa evidencia; en parte, «El baseline del gate de cierre sale rojo si el hilo corre tests a la vez» (`roadmap.md:564`, la del árbol; queda la de carga). Buscado `0246` y `0256` en `skills/`, `capabilities/`, `.docs/sdd/*.md`, `CLAUDE.md`, `tests/batteries/` y `cli/`: solo el roadmap y los tickets.
 
 ## Approach
 
-Task 1, la línea base: el paso 3 de `sdd-worktrees` abre con el worktree desanclado en `HEAD` y la preparación del paso 2 dentro (decisiones 1-3); `sdd-implement` Setup paso 1 lo dice en su frase. Task 2, el efecto: la viñeta de `sdd-tdd` y las dos menciones (decisión 6). Task 3, la pasada de fix: el valor de la spec en la frase «In both…» y la viñeta fundida de «What it leaves open» (decisiones 4 y 5). Cada task mide su saldo de palabras.
+Task 1, la línea base: el paso 3 de `sdd-worktrees` abre con el worktree desanclado en `HEAD` y la preparación del paso 2 dentro (decisiones 1-3); `sdd-implement` Setup paso 1 lo dice en su frase. Task 2, el efecto: sin cambio de skill tras su RED limpio (enmienda del 2026-10-29). Task 3, la pasada de fix: la viñeta fundida de «What it leaves open» (decisión 4). Cada task mide su saldo de palabras.
 
 ## Dónde se prueba
 
-- La línea base: `w1`, sujetos de `sdd-implement` en su Setup sobre un molde con commit de apertura y un RED a medio escribir.
-- El efecto, el valor de la spec y el Important de la pasada: `e1`, `s1` y `f1` en la batería de `sdd-verify`, sobre el molde `reservas`, como `c5` y `c6`; `t1`, humo de `sdd-tdd`.
+- La línea base: `w2` (y `w1` de control), sujetos de `sdd-implement` en su Setup sobre un molde con commit de apertura y un RED a medio escribir.
+- El Important de la pasada: `c8` en la batería de `sdd-verify`, sobre el molde `reservas`, como `c5` y `c6`. El efecto y el valor de la spec, recortados por su RED: `c7`, `c9` y `t6` quedan en las baterías como controles.
 - El saldo: un recuento por fichero antes y después en el walkthrough, y `cli/test/kit/word-budget.test.ts`.
 
 ## Términos y ADR
@@ -128,31 +128,19 @@ Task 1, la línea base: el paso 3 de `sdd-worktrees` abre con el worktree desanc
 - AND no despacha otra re-revisión
 - AND un Important que la re-revisión achaca a la pasada sin que caiga en sus líneas, porque lo dice su informe, sigue el mismo camino
 
-#### ADDED — El test de la pasada de fix afirma el efecto del hallazgo
-
-- GIVEN una revisión final Native con un Important «`canceladas --desde` sin fecha no filtra nada y no avisa»
-- WHEN el hilo escribe el test de la pasada de fix
-- THEN el test afirma lo que se ve al ejecutar `canceladas --desde` sin fecha: el aviso impreso y lo que lista
-- AND un test que solo afirma una variable intermedia (una bandera, un `blocker`) o el nombre de un fichero no cuenta como la reproducción del hallazgo
-- AND la misma regla vale para el test de una task: «sin scripts de bash» se prueba por la primera línea `#!` de cada fichero, no por la extensión `.sh`
-
-#### ADDED — Un valor que elige la pasada de fix sale de la spec
-
-- GIVEN `"review": {"minors": "fix"}` y un Minor del eje Código: «no dice si el `HEAD` del corte es el local o el remoto», en una feature cuya spec fija, entre sus decisiones, «el `HEAD` de `merge.into` cuando arranca el corte, tras `git fetch`»
-- WHEN la pasada de fix lo arregla, en Native o con el subagente de fix de SDD
-- THEN busca el valor en las decisiones y los THEN de la spec antes de escribirlo, y el texto dice el `HEAD` local
-
 ## Topes de palabras
 
 | Fichero | Hoy (palabras) | Después |
 | --- | --- | --- |
 | `skills/sdd-worktrees/SKILL.md` | 1435 | ≤ 1435 |
 | `skills/sdd-implement/SKILL.md` | 9583 | ≤ 9583 |
-| `skills/sdd-tdd/SKILL.md` | 1716 | ≤ 1716 |
 | `skills/sdd-verify/SKILL.md` | 3567 | ≤ 3567 |
-| `skills/sdd-propose/references/plan-writing.md` | 896 | ≤ 896 |
 
 ## Enmiendas
+
+- 2026-10-29 — Sale el requisito «Un valor que elige la pasada de fix sale de la spec» y la decisión 5 queda sin regla: su RED (c9, n = 2) salió limpio, los dos sujetos usaron el 20 de la spec y no el 10 del revisor (	ests/fix-pass-effect-red.md); Art. I. La regla del efecto sigue, con su RED repetido sobre un molde más duro: el primero salió limpio en los 2 sujetos válidos con un molde que lo ponía fácil — aprobada: opciones «Recortarla (Recomendada)» y «Endurecer y medir (Recomendada)» (dev-lead, 2026-10-29)
+
+- 2026-10-29 — Sale el requisito «El test de la pasada de fix afirma el efecto del hallazgo» y la decisión 6 queda sin regla: el RED repetido sobre el molde endurecido (`--desde` en la spec, el hallazgo que nombra la bandera `missing`) salió limpio 2/2, como el primero y `t6` (`tests/fix-pass-effect-red.md`); no se tocan `sdd-tdd` ni `plan-writing.md` — aplica la opción «Endurecer y medir (Recomendada)»: «si sigue limpio, recorto la regla» (dev-lead, 2026-10-29)
 
 ## Aprobaciones
 

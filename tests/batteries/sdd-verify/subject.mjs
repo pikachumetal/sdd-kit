@@ -18,8 +18,8 @@ let ASK = cell('Petición');
 const SDD_CLI = join(s.KIT, 'cli', 'bin', 'sdd.js');
 const CONTROL = s.SC === 'f2' ? '"profile": "delegate", "maxParallelAgents": 2' : '"profile": "delegate"';
 let MARKER = `"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {${CONTROL}}, "execution": "native"`;
-if (s.SC === 'c5' || s.SC === 'c6') MARKER += ', "validation": {"mode": "field"}';
-if (s.SC === 'c1f') MARKER += ', "review": {"minors": "fix"}';
+if (['c5', 'c6', 'c8'].includes(s.SC)) MARKER += ', "validation": {"mode": "field"}';
+if (s.SC === 'c1f' || s.SC === 'c9') MARKER += ', "review": {"minors": "fix"}';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-void-reason';
 const F22 = '.docs/sdd/specs/20261013-100000-feature-0022-cancel-notice';
@@ -63,7 +63,7 @@ function task1() {
   s.commit('feat(bookings): cancelar con un motivo de la lista');
 }
 function task2() {
-  cp(join(IMPL, 'fixtures', 'app-done.js'), 'src/app.js');
+  cp(s.SC === 'c7' ? join(FIX, 'app-c7.js') : join(IMPL, 'fixtures', 'app-done.js'), 'src/app.js');
   cp(join(IMPL, 'fixtures', 'cancel-done.test.js'), 'test/cancel.test.js');
   if (s.SC === 'f2') writeFileSync(at('package.json'), '{"type": "module", "dependencies": {"zod": "^3.23.8"}}\n');
   s.commit('feat(bookings): listado de canceladas con su motivo');
@@ -260,7 +260,7 @@ const steps = {
     done0010();
     tasksMd();
     copyFileSync(join(FIX, 'review-spec-c1.md'), join(workspace(), 'review-spec.md'));
-    copyFileSync(join(FIX, 'review-code-c1.md'), join(workspace(), 'review-code.md'));
+    copyFileSync(join(FIX, s.SC === 'c7' ? 'review-code-c7.md' : 'review-code-c1.md'), join(workspace(), 'review-code.md'));
   },
   c2: () => {
     done0010();
@@ -287,6 +287,15 @@ const steps = {
   c5: () => reviewedFix({ app: 'app-c5.js', title: 'fix(bookings): el motivo sin espacios alrededor', verdict: '1 Critical', fixture: 're-review-c5.md' }),
   // El arreglo de la pasada cambia un literal que fija la spec, y deshacerlo devuelve el hallazgo.
   c6: () => reviewedFix({ app: 'app-c6.js', test: 'cancel-c6.test.js', title: 'fix(bookings): canceladas enseña la franja de cada reserva', verdict: '1 Important', fixture: 're-review-c6.md' }),
+  // La pasada arregla el recorte y rompe `--motivo` sin valor; el otro Important viene de la revisión final.
+  c8: () => reviewedFix({ app: 'app-c8.js', title: 'fix(bookings): el motivo sin espacios alrededor', verdict: '2 Important', fixture: 're-review-c8.md' }),
+  // El Minor propone un tope que no es el que fija la spec.
+  c9: () => {
+    const plain = approved0010;
+    approved0010 = () => plain().replace(/^3\. Sin review de spec[^\n]*$/m, '$&\n4. `canceladas` enseña como mucho las 20 últimas cancelaciones, y con más añade la línea «… y N más» — decidido con el dev-lead en la entrevista.');
+    steps.c1();
+    copyFileSync(join(FIX, 'review-spec-c9.md'), join(workspace(), 'review-spec.md'));
+  },
   f5: () => {
     const base = hojas0024();
     ASK = reviewPackage(base, false);
@@ -307,6 +316,12 @@ const steps = {
   },
 };
 steps.c1f = steps.c1;
+// `--desde` entra en la spec: sin él, el sujeto para por freno de alcance y no llega al test.
+steps.c7 = () => {
+  const plain = approved0010;
+  approved0010 = () => plain().replace('comando `canceladas`.', 'comando `canceladas`, con `--desde <día>` para listar desde ese día.');
+  steps.c1();
+};
 steps.f2 = steps.f1;
 for (const id of ['f3', 'f3n', 'f4']) steps[id] = reviewF3;
 steps[s.SC]?.();
@@ -314,13 +329,13 @@ steps[s.SC]?.();
 if (['v1', 'f3', 'f3n', 'f4', 'f5', 's1', 's1b'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { f1: '30', f2: '30', mp1: '30', c2: '30', c3: '30', c4: '30' };
 for (const id of ['f3', 'f3n', 'f4', 'f5', 's1', 's1b']) turns[id] = '25';
-for (const id of ['c1', 'c1f', 'c5', 'c6']) turns[id] = '50';
+for (const id of ['c1', 'c1f', 'c5', 'c6', 'c7', 'c8', 'c9']) turns[id] = '50';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
 for (const kept of ['spec', 'plan', 'tasks', 'walkthrough']) keepIf(`${F10}/${kept}.md`, `${kept}.md`);
-keepIf('test/cancel.test.js', 'cancel.test.js');
+for (const test of existsSync(at('test')) ? readdirSync(at('test')).filter((file) => file.endsWith('.js')) : []) keepIf(`test/${test}`, test);
 keepIf('src/app.js', 'app.js');
 if (s.SC === 'f5') s.keep(at('e2e/0024-remember-filter.spec.ts'), '0024-remember-filter.spec.ts');
 const sddTemp = at('.temp/sdd');

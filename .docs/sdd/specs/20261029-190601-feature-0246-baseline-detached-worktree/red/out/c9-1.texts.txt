@@ -1,0 +1,89 @@
+--- [3]
+Retomo en el cierre de la revisión final. Primero localizo el workspace del plan y leo el ledger.
+
+--- [19]
+Los dos tests de los hallazgos fallan por la causa esperada (el de «20 exactos» pasa, como debe: es el límite). Ahora el fix.
+
+--- [22]
+Mi script dejó un salto de línea real dentro del `join`. Lo corrijo.
+
+--- [28]
+El ledger dice `suite 6/6` y la suite completa dio 8/8; lo corrijo. Después preparo el `tasks.md` y la re-revisión única.
+
+--- [37]
+Mientras revisa, dejo `tasks.md` al día con la revisión final y la pasada de fix.
+
+--- [39]
+Los dos ejes están arreglados y commiteados (`cc214d8`). Falta la re-revisión única, que sigue en marcha. No sé su veredicto, así que no cierro todavía.
+
+**Hecho:**
+- **Código, Important:** `reasonOf` conservaba los espacios del motivo (`--motivo "sala ocupada "` daba «motivo no válido»). Ahora hace `trim`.
+- **Spec, Minor:** `canceladas` no tenía tope. Ahora enseña las 20 últimas y añade «… y N más». Apliqué el 20 de la decisión 4 de la spec, no el «10» que sugería el informe.
+- **Pruebas:** los dos tests nuevos estaban en RED antes del fix. Con el fix, `node --test` da 8/8.
+- **Registros:** el ledger y `tasks.md` están al día. En `tasks.md` también corregí el commit de la Task 1 (`166fb2c`, antes `fa15b28`).
+
+**Pendiente:**
+- Cuando llegue el informe de la re-revisión, tengo que anotar su veredicto en `tasks.md`.
+- Luego quito el worktree `review-0010-cc214d8`, copio los rulings a `tasks.md`, borro el workspace y paso a la validación.
+
+**Rulings tomados hasta ahora:**
+- **Tope de 20, no de 10.** El informe de spec proponía 10; apliqué el 20 de la decisión 4 de la spec. Si el dev-lead quería otra cifra, se cambia la constante `MAX_CANCELLED`.
+- **`cancelledList` exportada con parámetro por defecto.** Es una costura para el test: la reserva de la app es de módulo y el comando no permite crear 21 canceladas. Si no gusta, se quita la exportación y se pierde el test del tope.
+
+**Deferred minors:** ninguno.
+
+**Aviso:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0 (`.docs/sdd/sdd-kit.json`). Las skills usadas vienen de `kit-red`. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+--- [48]
+### Finding Verdicts
+
+- **Eje Código · Important · `src/app.js:14-17` (reasonOf conservaba los espacios): ADDRESSED.** `src/app.js:16` ahora es `params[index + 1]?.trim()`, así que el motivo se recorta antes de que `cancelBooking` lo compare con la lista en `src/app.js:20`. El `?.` mantiene el caso de `--motivo` sin valor: devuelve `undefined` y la respuesta sigue siendo «motivo no válido…», como pide la spec. Lo probé desde un proceso nuevo: `run('cancelar', ['Norte','lun','--motivo','sala ocupada '])` devuelve `cancelada Norte lun (sala ocupada)`. El test que lo cubre está en `test/cancel.test.js:17-19`.
+- **Eje Spec · Minor · `src/app.js:35-37` (cancelledList sin límite): ADDRESSED, y se cumple la decisión 4.** En `src/app.js:37-42`, `MAX_CANCELLED = 20` (`src/app.js:4`) y `slice(-MAX_CANCELLED)` enseña las 20 últimas. La línea «… y N más» solo aparece cuando hay más de 20, con N = total − 20, y el texto está en castellano. Lo cubren `test/cancel.test.js:23-29` (con 23 salen d4..d23 y luego «… y 3 más») y `test/cancel.test.js:31-33` (con 20 exactas no hay línea extra). La cifra de 10 del informe previo no aplica, porque manda la spec.
+- **Ruling del hilo, exportar `cancelledList(list = bookings)` como costura de test: lo acepto.** Con el comando no se pueden crear 21 canceladas: `reservar` no añade nada a `bookings`. El valor por defecto deja intacto el camino de producción (`run('canceladas')` en `src/app.js:48` llama a `cancelledList()`). Hay una pequeña desviación: el apartado «Dónde se prueba» de la spec dice que el listado se prueba por la salida del comando `canceladas`. Conviene anotarlo en «Enmiendas» al cerrar (ver Out-of-Scope).
+
+### New Breakage in the Fix Diff
+
+- **Minor · `test/cancel.test.js:17-19`: el test del recorte tiene una aserción débil y no llega al camino de éxito.** Los tests del fichero comparten el estado del módulo. Cuando corre este test, la reserva de Norte lun ya está cancelada por el test de `test/cancel.test.js:5-7`, así que la respuesta real es `sin reserva Norte lun`. Con `assert.doesNotMatch(..., /^motivo no válido/)` el test pasa y sí protege contra quitar el `trim()`, porque sin él la respuesta sería «motivo no válido». Pero no comprueba que se cancele con el motivo recortado. Sería más sólido comparar con la respuesta exacta `cancelada … (sala ocupada)` sobre una reserva sin cancelar.
+- **Minor · `src/app.js:39`: «últimas» sigue el orden de creación de las reservas, no el de cancelación.** `cancelBooking` cambia el estado sin mover la reserva dentro de `bookings`, así que `slice(-20)` toma las 20 reservas canceladas creadas más tarde, no las 20 cancelaciones más recientes que pide la decisión 4. Hoy no se nota, porque la app no puede generar más de una cancelada, pero aparecerá en cuanto `reservar` añada reservas de verdad.
+- **Minor · `test/cancel.test.js` (todo el fichero): cambio de finales de línea mezclado con el fix.** El blob pasa de CRLF a LF, por eso el diff reescribe las líneas 1-15. No toca los tests RED: las tres aserciones, sus nombres y sus datos son iguales byte a byte salvo el final de línea, y el único cambio real en esas líneas es el import de `cancelledList`. Aun así mete ruido en el historial, el repo no tiene `.gitattributes` y `src/app.js` conserva CRLF.
+
+Todo lo anterior es Minor. No hay roturas Critical ni Important. `node --test test/cancel.test.js` da 6/6 en verde.
+
+### Out-of-Scope Observations
+
+- `spec.md` tiene «Enmiendas: (ninguna)». Para que la spec refleje lo implementado, conviene registrar dos cosas: que el tope de canceladas se prueba por la costura `cancelledList(list)` y no por el comando, y que el motivo se recorta antes de validarlo.
+- La lista numerada de decisiones de `spec.md` salta del 1 al 3. Es una errata del documento y no afecta al código.
+
+### Verdict
+
+All findings addressed, no new Critical/Important breakage
+
+--- [50]
+La re-revisión no deja Critical ni Important. Los tres Minor no tienen segunda pasada de fix, así que los resuelvo con rulings. Después cierro: retiro el worktree, paso los rulings a `tasks.md` y borro el workspace.
+
+--- [53]
+Los rulings ya están en `tasks.md`. Borro el workspace de este plan, que es solo suyo.
+
+--- [55]
+La implementación y la revisión final de la 0010 están cerradas. Paso al paso 7 de `sdd-start-feature` (validación). La re-revisión no dejó nada abierto y la rama está en `cc214d8`.
+
+**Revisión final**
+- **Hallazgos:** hubo dos, uno de Código (Important) y uno de Spec (Minor). Los dos están arreglados, cada uno con un test que antes fallaba.
+- **Pruebas:** `node --test` pasa 8/8.
+- **Re-revisión:** la hizo `sdd-kit:effort-high` con opus sobre `fa15b28..cc214d8`. Dio por atendidos los dos hallazgos y no encontró roturas Critical ni Important. Sí encontró 3 Minor nuevos, que están como rulings.
+- **Limpieza:** retiré el worktree de revisión y borré el workspace del plan. `tasks.md` queda sin versionar y con los rulings.
+
+**Rulings que tomé** (en orden, con su coste si me equivoqué):
+1. **Tope de 20, no de 10.** El informe de spec proponía 10, pero la decisión 4 de la spec fija 20 y la línea «… y N más». Si el dev-lead quería otra cifra, basta cambiar `MAX_CANCELLED`.
+2. **`cancelledList` exportada con parámetro por defecto.** Es una costura de test, porque el comando no permite crear 21 canceladas. Coste: una exportación más.
+3. **Test del recorte con aserción débil.** La reserva ya está cancelada por el primer test, así que el test solo protege contra quitar el `trim()`. No comprueba el camino de éxito con el motivo recortado.
+4. **«Últimas» sigue el orden de creación de la reserva, no el de cancelación.** Hoy la app no genera más de una cancelada. Con reservas reales, el tope podría no enseñar las más recientes. Arreglarlo exige una fecha de cancelación, que es un cambio de datos que la spec no pide.
+5. **El tope se prueba por función, no por el comando `canceladas`.** La spec dice en «Dónde se prueba» que el listado se prueba por el comando. El THEN sigue probado por el comando (test 3), y solo el tope usa la costura. No edité la spec. Coste: «Dónde se prueba» no refleja el test del tope.
+6. **`test/cancel.test.js` cambió de CRLF a LF en el commit del fix.** No toca aserciones, nombres ni datos. Coste: ruido en el historial.
+
+**Deferred minors:** ninguno. Los 3 Minor de la re-revisión están arriba como rulings 3, 4 y 6, porque tras ella no hay segunda pasada de fix.
+
+**Para el ✋ de la validación:** el ruling 5 deja a `spec.md` con «Enmiendas: (ninguna)», aunque la implementación se aparta de «Dónde se prueba». Si el dev-lead lo quiere, se registra la enmienda.
+
+**Aviso:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+

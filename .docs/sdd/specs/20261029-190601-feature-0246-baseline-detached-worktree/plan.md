@@ -137,6 +137,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ### Task 2 — El test afirma el efecto
 
+**Estado**: recortada por su RED (enmienda del 2026-10-29 de la spec): `c7` limpio dos veces y `t6` limpio; sin cambio de skill. `c7` y `t6` quedan en las baterías como controles, y la task se cierra con su evidencia.
 **Tras**: —
 **Modelo**: Native, la sesión
 **Tests RED**: hilo principal · `c7` en `tests/batteries/sdd-verify/` y `t6` en `tests/batteries/sdd-implement/`, lanzados con el texto sin tocar
@@ -157,6 +158,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ### Task 3 — La pasada de fix toma los valores de la spec y no adjudica lo que mete
 
+**Estado**: la regla del valor de la spec salió por su RED (`c9` limpio, enmienda del 2026-10-29): queda solo la viñeta fundida de «What it leaves open»; `c9` queda como control.
 **Tras**: Task 2
 **Modelo**: Native, la sesión
 **Tests RED**: hilo principal · `c8` y `c9` en `tests/batteries/sdd-verify/`, lanzados con el texto de la Task 2 (sin la regla de esta)

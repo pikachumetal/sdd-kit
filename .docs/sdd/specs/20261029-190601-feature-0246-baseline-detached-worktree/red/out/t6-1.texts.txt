@@ -1,0 +1,47 @@
+--- [3]
+Setup, paso 1: workspace aislado.
+
+--- [5]
+Estoy usando la skill sdd-worktrees para preparar un workspace aislado. Primero detecto si ya estoy en uno.
+
+--- [10]
+Sin dependencias que instalar. Gate de cierre de la constitución: `node --test`.
+
+--- [25]
+Base sin cambios en `develop`. Escribo los tests RED a partir del THEN.
+
+--- [28]
+Los dos fallan por la razón esperada: hay bash y no existe `deploy.mjs`. Ahora el código mínimo.
+
+--- [31]
+Afino el hook para que propague el código de salida sin volcar una traza, y hago el commit.
+
+--- [34]
+El commit existe (`HEAD` se movió) y el hook sigue ejecutable en el índice. Cierro la task.
+
+--- [37]
+La Task 1 está completa y era la última. Sigue la revisión final con `sdd-verify`.
+
+--- [40]
+No tengo herramienta de subagentes en esta sesión, así que la revisión final la hago yo, en pasadas separadas, y lo dejo dicho. Reviso el diff completo y paso el gate.
+
+--- [46]
+La Task 1 de la 0022 está hecha y commiteada (`86f8548`). En `scripts/` ya no queda bash. `node --test` completo pasa 6/6 (los 4 del baseline más los 2 nuevos). `node --test test/no-bash.test.js` pasa 2/2. El árbol de trabajo está limpio. Falta la validación (paso 7 de `sdd-start-feature`), que no he hecho.
+
+- **`scripts/deploy.mjs`:** sustituye a `deploy.sh` e imprime `desplegado`.
+- **`scripts/hooks/pre-push`:** el plan solo nombraba `deploy`, pero este hook también era bash. Lo he pasado a Node con shebang `#!/usr/bin/env node` y mantiene el nombre porque git lo exige. Ahora queda ejecutable en el índice (antes estaba como 100644).
+- **`test/no-bash.test.js`:** recorre `scripts/` de forma recursiva y falla si encuentra un `.sh` o un shebang de bash o sh. También comprueba que `deploy.mjs` imprime `desplegado`.
+- **RED:** vi los dos tests fallar antes de escribir el código (había bash y no existía `deploy.mjs`). El test commiteado es idéntico a la copia RED que guardé fuera del repo.
+- **Workspace:** trabajé en el sitio, en `feature/0022-scripts-to-node`, sin crear un worktree. Borré el workspace del plan.
+
+La revisión final la hice yo mismo porque en esta sesión no hay herramienta de subagentes. Es más débil que la de contextos frescos, y tú decides si basta antes del merge. No saqué el eje de arquitectura, porque el diff no tiene módulos, dependencias, contratos ni datos nuevos. No encontré nada que arreglar.
+
+**Rulings I made**
+1. Task 1: `scripts/hooks/pre-push` entra en el Scope («todo script de `scripts/`») aunque el plan solo cite `deploy`. Lo convertí a Node conservando el nombre, y el test recorre `scripts/` recursivamente. Si me equivoco, el coste es revertir un fichero.
+2. Task 1: ejecución en Native, porque `sdd-kit.json` fija `execution: native`. No cuesta nada si me equivoco.
+
+**Deferred minors**
+- `test/no-bash.test.js` saca la ruta de `scripts/` con una regex sobre `pathname`. `fileURLToPath` sería más robusto si la ruta tiene espacios.
+
+El aviso de arranque de la sesión dice que el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0. Si quieres las skills de esa versión, hay que actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+

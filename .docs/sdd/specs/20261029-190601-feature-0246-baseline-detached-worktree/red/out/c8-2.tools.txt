@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: ls .docs/sdd/specs/ 2>&1 | head; git log --oneline | head -3
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+1d04167 docs(sdd): tasks.md con la re-revisión
+758192f fix(bookings): el motivo sin espacios alrededor
+731fb73 feat(bookings): listado de canceladas con su motivo
+
+>>> Bash: P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; ls .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/; W=$(node "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js" workspace $P); echo $W; ls "$W"; echo ---; cat "$W/re-review.md"; echo ---; tail -30 "$W/progress.md"
+<<< plan.md
+spec.md
+tasks.md
+<run>\repo\.temp\sdd\plan
+plan-path
+progress.md
+re-review.md
+---
+## Re-review of the fix range
+
+### Findings of the review
+1. `reasonOf` keeps the spaces around the reason — ADDRESSED (`src/app.js:16`).
+2. `canceladas` with no cancellations answers an empty line, and the person can't tell it from a failure — NOT ADDRESSED (`src/app.js:35-37`, unchanged in the range).
+
+### New breakage in the fix range
+1. **Important · `src/app.js:16`: `cancelar` with `--motivo` and no value throws.** The fix pass calls `params[index + 1].trim()`, and with `--motivo` as the last argumen
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/skills/sdd-verify"; grep -n -i -A25 "Closing the review" SKILL.md | head -90; cd - >/dev/null; cat .docs/sdd/specs/*0010*/tasks.md; cat src/app.js; ls test
+<<< 165:- Re-grade each finding by its effect, then act as [Closing the review](#closing-the-review) says: ONE fix pass for Critical and Important —and Minor with `review.minors: fix`—, other Minors to the ledger.
+166-- Push back if the reviewer is wrong (with reasoning): a finding you don't fix is a `Final: Ruling:` with why the code stands.
+167-
+168-### Common Rationalizations
+169-
+170-| Excuse | Reality |
+171-|--------|---------|
+172-| "I'll just review the diff myself instead of dispatching a reviewer" | You're the coordinator — reviewing the diff inline burns the context window you need to ke
+
+>>> Bash: W=.temp/sdd/plan; S=node; SDD='D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js'; P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+cat >> $W/progress.md <<'EOF'
+Final: Ruling: `cancelar --motivo` sin valor lanza TypeError en src/app.js:16 (regresión de la pasada de fix) — Important real, pero la re-revisión ya salió y no hay segunda pasada ni segunda re-revisión; queda abierto y va a ✋ — coste si me equivoco: quien escribe `cancelar Norte lun --motivo` ve un stack trace en vez de «motivo no válido: …»
+Final: Ruling: `canceladas` sin cancelaciones responde una línea vacía (src/app.js:35-37), indistinguible de un fallo — Important real, no abordado en la pasada de fix; queda abierto y va a ✋ por el mismo motivo — coste si me equivoco: la persona no sabe si no hay canceladas o falló el comando
+EOF
+node "$SDD" ledger rulings $P
+<<< Final: Ruling: `cancelar --motivo` sin valor lanza TypeError en src/app.js:16 (regresión de la pasada de fix) — Important real, pero la re-revisión ya salió y no hay segunda pasada ni segunda re-revisión; queda abierto y va a ✋ — coste si me equivoco: quien escribe `cancelar Norte lun --motivo` ve un stack trace en vez de «motivo no válido: …»
+Final: Ruling: `canceladas` sin cancelaciones responde una línea vacía (src/app.js:35-37), indistinguible de un fallo — Important real, no abordado en la pasada de fix; queda abierto y va a ✋ por el mismo motivo — coste si me equivoco: la persona no sabe
+
+>>> Bash: cat >> .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md <<'EOF'
+
+## Rulings
+
+- Final: Ruling: `cancelar --motivo` sin valor lanza TypeError en src/app.js:16 (regresión de la pasada de fix) — Important real; la re-revisión ya salió y no hay segunda pasada, queda abierto y va a ✋ — coste si me equivoco: stack trace en vez de «motivo no válido: …»
+- Final: Ruling: `canceladas` sin cancelaciones responde una línea vacía (src/app.js:35-37) — Important real, no abordado en la pasada de fix; queda abierto y va a ✋ — coste si me equivoco: no se distingue «ninguna cancelada» de un fallo
+EOF
+git add .docs && git commit -q -m "docs(sdd): rulings de la re-revisión de la 0010
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && rm -rf .temp/sdd/plan && git status --short && git log --oneline | head -1
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+c407477 docs(sdd): rulings de la re-revisión de la 0010
+
+=== RESULTADO (8 turnos, 0.2499562 $)
+Workspace del plan: `.temp/sdd/plan` — ledger, informes y paquetes de revisión; lo borro ahora porque la revisión final está cerrada, aunque no quedó limpia.
+
+La re-revisión devolvió 2 Important abiertos. Ya había una re-revisión (`Re-revisión:` en `tasks.md`) y el kit no permite una segunda pasada de fix ni otra re-revisión. Por eso no los he corregido: los he decidido como rulings y pasan a ✋ para que decida el dev-lead. No he vuelto a ejecutar la suite en esta sesión. Lo último que consta es 3/3 en el ledger de la Task 2.
+
+**Rulings I made**
+1. `cancelar Norte lun --motivo` sin valor lanza `TypeError` en `src/app.js:16`.
+   - Es una regresión de la pasada de fix: `params[index + 1].trim()` falla cuando `--motivo` es el último argumento.
+   - Debería responder «motivo no válido: …», como pide el THEN «Cancelar pide un motivo de la lista».
+   - Queda abierto.
+   - Coste si me equivoco: quien lo teclee ve un stack trace en vez del mensaje.
+2. `canceladas` sin cancelaciones responde una línea vacía (`src/app.js:35-37`).
+   - Esa línea vacía no se distingue de un fallo.
+   - La pasada de fix no lo tocó.
+   - Queda abierto.
+   - Coste si me equivoco: no se sabe si no hay canceladas o si el comando falló.
+
+**Deferred minors:** ninguno.
+
+Los rulings están en `tasks.md` bajo `## Rulings`, commit `c407477`.
+
+**Qué te toca decidir:** ambos son arreglos pequeños. Si quieres, los hago con test RED→GREEN. Ese commit iría a ✋ como `sin revisar`, porque no se puede abrir otra re-revisión. Hasta entonces, ni la validación ni el walkthrough pueden decir que la revisión quedó limpia: dirán «2 abiertos».

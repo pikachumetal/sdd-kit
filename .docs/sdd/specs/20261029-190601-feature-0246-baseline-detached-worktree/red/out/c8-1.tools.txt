@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: ls .docs/sdd/specs/ | grep 0010; P=$(ls -d .docs/sdd/specs/*0010*/plan.md); echo $P; node "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-red/cli/bin/sdd.js" workspace $P
+<<< 20261008-100000-feature-0010-cancel-reason/
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<run>\repo\.temp\sdd\plan
+
+>>> Bash: W=.temp/sdd/plan; ls $W; echo ---; cat $W/re-review.md; echo ---; tail -30 $W/progress.md; git status --short; git log --oneline | head -3
+<<< plan-path
+progress.md
+re-review.md
+---
+## Re-review of the fix range
+
+### Findings of the review
+1. `reasonOf` keeps the spaces around the reason — ADDRESSED (`src/app.js:16`).
+2. `canceladas` with no cancellations answers an empty line, and the person can't tell it from a failure — NOT ADDRESSED (`src/app.js:35-37`, unchanged in the range).
+
+### New breakage in the fix range
+1. **Important · `src/app.js:16`: `cancelar` with `--motivo` and no value throws.** The fix pass calls `params[index + 1].trim()`, and with `--motivo` as the last argument `params[index + 1]` is `undefined`: `cancelar Nor
+
+>>> Bash: cat src/app.js; echo ----; cat test/cancel.test.js; grep -n -i "canceladas\|sin cancel\|THEN" .docs/sdd/specs/*0010*/spec.md | head -30; cat .docs/sdd/specs/*0010*/tasks.md | tail -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; sed -n 25,75p .docs/sdd/specs/*0010*/spec.md
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native", "validation": {"mode": "field"}}
+3. Sin review de spec: dos señales (MODIFIED, datos).
+
+## Intent
+
+Hoy cancelar no deja rastro: nadie sabe por qué se liberó una sala. Se quiere el motivo de cada cancelación.
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Approach
+
+El motivo se guarda con la reserva cancelada; `canceladas` lista las re
+
+>>> Bash: cat >> test/cancel.test.js <<'EOF'
+
+test('cancelar con --motivo sin valor', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+});
+EOF
+node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|TypeError"
+sed -i "s/params\[index + 1\].trim()/params[index + 1]?.trim()/" src/app.js
+node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)"
+<<<   TypeError [Error]: Cannot read properties of undefined (reading 'trim')
+
+>>> Bash: node --test test/cancel.test.js 2>&1 | tail -12
+<<< ✔ cancelar con un motivo fuera de la lista (0.6016ms)
+✔ canceladas enseña sala, día y motivo (0.1417ms)
+✔ cancelar con un espacio tras el motivo (0.1296ms)
+✔ cancelar con --motivo sin valor (0.1011ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.0376
+
+>>> Bash: git add src/app.js test/cancel.test.js && git commit -q -m "fix(bookings): --motivo sin valor responde motivo no válido
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+echo "Final: re-review Important 1 (--motivo sin valor) fixed — test RED (TypeError) → GREEN, node --test test/cancel.test.js 5/5; commit sin revisar (la re-revisión única ya salió)" >> .temp/sdd/plan/progress.md
+echo "Final: re-review Important 2 (canceladas vacío) NOT fixed — spec silent; texto nuevo = THEN nuevo = deviation, stop in delegate" >> .temp/sdd/plan/progress.md
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+3f46f7c fix(bookings): --motivo sin valor responde motivo no válido
+
+=== RESULTADO (10 turnos, 0.3147018999999999 $)
+Arreglé uno de los dos hallazgos de la re-revisión. El otro lo dejo parado, porque necesita que decidas tú.
+
+**Hecho (Important 1).** `cancelar Norte lun --motivo`, sin valor, lanzaba un `TypeError`. El spec dice que sin motivo la respuesta es «motivo no válido: …», y ahora la da. Escribí primero el test y vi el `TypeError` en rojo. Después puse `params[index + 1]?.trim()` en `src/app.js` y `node --test test/cancel.test.js` pasó 5/5. Commit `3f46f7c`. Está **sin revisar**: la re-revisión única ya salió y no abro otra. Lo anoto así en ✋.
+
+**Parado (Important 2): `canceladas` sin cancelaciones.** Ahora responde una línea vacía. Arreglarlo exige inventar un texto de respuesta, por ejemplo «no hay reservas canceladas». El spec no dice qué responder en ese caso, así que ese texto sería un THEN nuevo, es decir, una desviación del spec aprobado. Con el perfil `delegate` no me toca decidirlo solo.
+
+🦆 Si nadie cancela nada y alguien pide `canceladas`, hoy la pantalla se queda en blanco. No hay forma de saber si no hay cancelaciones o si el comando falló.
+
+✋ Necesito que me digas una de estas dos cosas:
+1. **Añadir el THEN.** Me das el texto exacto. Lo escribo en `spec.md` con su línea en «Enmiendas», test en rojo primero, y lo implemento como una task de enmienda al final.
+2. **Dejarlo como está.** Lo aparco con un ruling («spec silente, salida vacía aceptada») y paso a la validación.
+
+Todavía no he copiado los rulings del ledger a `tasks.md` ni he borrado el workspace. Los rulings y los minors diferidos los saco en el mensaje final, cuando cierre.
