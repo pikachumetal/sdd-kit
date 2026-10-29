@@ -34,8 +34,14 @@ export function idColumn(header: string): number {
   return Math.max(0, cells(header).findIndex((cell) => ID_COLUMNS.includes(cell.toLowerCase())));
 }
 
+// El cierre antepone a una fila de deuda «**[Feature NNNN, fecha: saldada — …]** » (o Patch, o parcial): no es parte de su clave.
+const CLOSING_PREFIXES = /^(\s*(?:\*\*\[(?:Feature|Patch) \d{4}, \d{4}-\d{2}-\d{2}: (?:saldada|parcial) — .*?\]\*\* )*)(.*)$/s;
+const CELL_DIVIDER = /(?<!\\)\|/;
+
+const withoutPrefixes = (cell: string) => CLOSING_PREFIXES.exec(cell)?.[2] ?? cell;
+
 function rowKey(line: string, column: number): string | null {
-  if (line.startsWith('|') && !TABLE_SEPARATOR.test(line)) return cells(line)[column] ?? '';
+  if (line.startsWith('|') && !TABLE_SEPARATOR.test(line)) return withoutPrefixes(cells(line)[column] ?? '');
   return ENTRY.exec(line)?.[1] ?? null;
 }
 
@@ -65,12 +71,35 @@ function byIdentity(lines: string[], context: KeyContext): Map<string, string> |
   return map.size === ids.length ? map : null;
 }
 
+function pick<T>(ours: T, base: T, theirs: T): T | null {
+  if (ours === theirs || theirs === base) return ours;
+  return ours === base ? theirs : null;
+}
+
+const splitPrefixes = (cell: string) => CLOSING_PREFIXES.exec(cell)?.slice(1, 3) ?? ['', cell];
+
+// Una fila que cambian los dos lados se une celda a celda, y en cada celda los prefijos de cierre aparte del texto.
+function mergeCells(ours: string, base: string, theirs: string): string | null {
+  if (!ours.startsWith('|')) return null;
+  const [mine, original, other] = [ours, base, theirs].map((line) => line.split(CELL_DIVIDER).map(splitPrefixes));
+  if (mine.length !== original.length || other.length !== original.length) return null;
+  const merged: string[] = [];
+  for (const [index, [prefixes, text]] of mine.entries()) {
+    const parts = [pick(prefixes, original[index][0], other[index][0]), pick(text, original[index][1], other[index][1])];
+    if (parts[0] === null || parts[1] === null) return null;
+    merged.push(parts.join(''));
+  }
+  return merged.join('|');
+}
+
 function resolveRow(ours: string | undefined, base: string | undefined, theirs: string | undefined): string[] | null {
   if (ours === theirs) return ours === undefined ? [] : [ours];
   if (ours === base) return theirs === undefined ? [] : [theirs];
   if (theirs === base) return ours === undefined ? [] : [ours];
   if (base === undefined && ours !== undefined && theirs !== undefined) return [ours, theirs];
-  return null;
+  if (ours === undefined || base === undefined || theirs === undefined) return null;
+  const merged = mergeCells(ours, base, theirs);
+  return merged === null ? null : [merged];
 }
 
 function insertAfterAnchor(result: Entry[], entry: Entry, anchor: string | undefined): void {

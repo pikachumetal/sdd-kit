@@ -24,7 +24,7 @@ approvers:
 
 1. **El conflicto de la 0248 se arregla aquí, no se queda en el ticket.** Reproducido el 2026-10-29 (worktree en `d797f13d`, `git merge a7c10780^2`): su causa no es la clave. La fila `0248` la cambian los dos lados en celdas distintas —la rama, el estado `⏳` → `✅`; `develop`, la descripción, con «Cuarto caso, el patch 0239…» y «tres» → «cuatro»— y la unión trata la fila entera como una pieza. El otro trozo (filas de la 0239 en «Patches») ya lo resuelve la unión de líneas añadidas. Tu decisión decía que, con otra causa, la fila lo dice y se queda en el ticket; pero el THEN de la fila 0244 («una sola fila, con el prefijo y el cambio de la base») solo se cumple uniendo la fila por celdas, que es justo lo que arregla la 0248: dejarlo fuera costaría código para impedirlo. Si prefieres que la unión por celdas valga solo para el prefijo, dilo en «Cambios».
 2. **Unión por celdas**: dos versiones de una fila con la misma clave se unen celda a celda, como hoy se unen filas enteras (gana el lado que cambia; si los dos cambian la misma celda de forma distinta, conflicto). Si las tres versiones no tienen el mismo número de celdas, conflicto.
-3. **La primera celda de una fila de deuda se une en dos partes**: los prefijos de cierre y el texto que sigue, cada parte por su lado. Así «la fila que lo lleva gana a la que no»: si la rama añade el prefijo y `develop` no lo toca, queda el prefijo de la rama; si `develop` cambia el texto del ítem, queda ese texto detrás del prefijo; si los dos añaden prefijos distintos, conflicto.
+3. **La primera celda de una fila de deuda se une en dos partes**: los prefijos de cierre y el texto que sigue, cada parte por su lado. Así «la fila que lo lleva gana a la que no»: si la rama añade el prefijo y `develop` no lo toca, queda el prefijo de la rama; si los dos añaden prefijos distintos, conflicto. El texto del ítem es la clave: si un lado lo cambia, ya es otra fila, como hoy.
 4. **Qué es un prefijo de cierre**: al principio de la primera celda, uno o más `**[<Feature|Patch> NNNN, AAAA-MM-DD: <saldada|parcial> — …]**` seguidos de un espacio. Medido en el roadmap: 184 filas empiezan por `**[`, y las 184 tienen esta forma (120 Feature saldada, 20 Feature parcial, 35 Patch saldada, 9 Patch parcial).
 5. **El aviso de dos filas distintas con el mismo id** ya no sale por una fila que solo difiere en el prefijo, porque ahora son la misma fila; el texto del aviso no cambia.
 6. **Cuándo se unen las líneas de un requisito**: en un fichero de `.docs/sdd/capabilities/`, un trozo en conflicto se une si cada lado cambia, añade o quita líneas distintas de la base y todas las líneas del trozo, en los tres lados, empiezan por `- THEN ` o `- AND `. Un trozo con un `- GIVEN`, un `- WHEN`, un título `###` o prosa sigue siendo conflicto; y también si los dos lados cambian la misma línea de la base o añaden líneas en el mismo hueco. Las líneas añadidas por un lado van en el hueco de la base donde las puso ese lado.
@@ -129,6 +129,8 @@ La clave de una fila descarta sus prefijos de cierre; dos versiones con la misma
 - Confianza: media
 
 ## Enmiendas
+
+- 2026-10-29 — la decisión 3 deja de decir que un cambio del texto del ítem en `develop` queda detrás del prefijo — ese texto es la clave de la fila, así que un cambio suyo ya es otra fila, como hoy; ningún THEN ni AND cambia — sin aprobar (corrige una decisión mía, no un escenario)
 
 ## Aprobaciones
 

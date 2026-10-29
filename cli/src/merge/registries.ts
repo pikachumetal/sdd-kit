@@ -6,6 +6,7 @@ import { git } from '../git/git.ts';
 import type { MergeAttempt } from './attempt.ts';
 import { dedupeRows, idColumn, mergeKeyedHunk, TABLE_SEPARATOR, tableHeaders, type KeyedMerge } from './keyed.ts';
 import { MARKER, mergirafRuns, solveWithMergiraf } from './mergiraf.ts';
+import { mergeRequirementLines } from './requirement-lines.ts';
 
 const LOG = /estimation-log\.md$/i;
 const HUNK = /^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\r?\n(.*?)^>>>>>>> [^\n]*(?:\n|(?![\s\S]))/gms;
@@ -99,8 +100,27 @@ function regenerateLog(worktree: string): void {
   writeEstimationLog(text, estimationLogPath(docsPath), () => undefined);
 }
 
+const isCapability = (file: string) => file.startsWith('.docs/sdd/capabilities/');
+
+// En una capacidad, además de lo que solo añade, se unen los THEN y AND de un requisito que cambia cada lado.
+function mergeRequirementHunk(attempt: MergeAttempt, file: string, [, ours, base, theirs]: RegExpMatchArray): string | null {
+  if (base === '') return joinAdded(attempt, file, [ours, theirs]);
+  const lines = mergeRequirementLines({ ours: toLines(ours), base: toLines(base), theirs: toLines(theirs) });
+  return lines === null ? null : lines.map((line) => `${line}\n`).join('');
+}
+
+async function mergeRequirements(attempt: MergeAttempt, file: string): Promise<boolean> {
+  const conflict = await readConflict(attempt.worktree, file);
+  if (conflict === null) return false;
+  const merges = conflict.hunks.map((hunk) => mergeRequirementHunk(attempt, file, hunk));
+  if (merges.some((merge) => merge === null)) return false;
+  let next = 0;
+  return writeMerged(conflict.path, conflict.content.replace(HUNK, () => merges[next++] ?? ''));
+}
+
 async function resolvedByKit(attempt: MergeAttempt, file: string): Promise<boolean> {
   if (KEYED_REGISTRIES.includes(file) && (await mergeRowsById(attempt, file))) return true;
+  if (isCapability(file)) return mergeRequirements(attempt, file);
   return mergeAddedLines(attempt, file);
 }
 
