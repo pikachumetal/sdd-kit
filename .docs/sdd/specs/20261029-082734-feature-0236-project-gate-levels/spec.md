@@ -317,6 +317,7 @@ Medido con el conteo de `cli/test/kit/word-budget.test.ts` (tope × 1,25), 2026-
 
 ## Enmiendas
 
+- 2026-10-29 — Tope de coste de la prueba: de 22 $ a 25 $ — los moldes de `m1` y `m2` no medían (el sujeto corregía el texto de su rama, que nombraba lo que el proyecto no tiene) y `g8` salió a medias — aprobada: opción «Arreglar y repetir (~24 $)»
 - 2026-10-29 — Previsión de coste de la decisión 21: de ~11 $ con tope 15 $ a ~17 $ con tope 22 $ — el plan contó ~0,70 $ por sujeto de `sdd-archive`, no 0,31 $ — aprobada: opción «~17 $, tope 22 $»
 
 ## Aprobaciones

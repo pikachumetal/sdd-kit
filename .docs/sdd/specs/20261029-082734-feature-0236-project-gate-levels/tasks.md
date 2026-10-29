@@ -16,9 +16,9 @@ created: 2026-10-29
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | `operations.md` con nivel, «Sin filtro», «Lint» y «CI de la base», y quien los propone | done | (este commit) | `pl3` limpio en el RED: sin regla en plan-template |
-| 2 | Correr un gate: unitarios enteros, salvaguarda, tras un rojo y lint | pending | — | |
-| 3 | Lo que trae la base y el conflicto solo de docs | pending | — | |
+| 1 | `operations.md` con nivel, «Sin filtro», «Lint» y «CI de la base», y quien los propone | done | 621bee5 | `pl3` limpio en el RED: sin regla en plan-template |
+| 2 | Correr un gate: unitarios enteros, salvaguarda, tras un rojo y lint | done | (este commit) | un solo commit con la Task 3: comparten el paso 1, el paso 6 y la batería de sdd-archive |
+| 3 | Lo que trae la base y el conflicto solo de docs | done | (este commit) | con la Task 2; G7b, G8b y M1c sin medir tras su afinado (dev-lead: «Cerrar con lo medido») |
 
 ## Verificación por task
 

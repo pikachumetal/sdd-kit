@@ -224,6 +224,16 @@ function affectedGate() {
   if (!has('.docs/sdd/constitution.md', 'scripts/gate.mjs')) s.die('no se plantó el gate filtrado');
   s.commit('chore: gate de cierre filtrado por tareas');
 }
+// Una suite unitaria y las tareas del gate como integración, en el tech-stack del molde; sin «Sin filtro»: rige la lista del kit.
+function levelsStack() {
+  appendFileSync(at('.docs/sdd/tech-stack.md'), '\n## Testing\n\n- **Suites**: `unit` · `node --test test/app.test.js` · ~1 s · unitario\n- `bookings:test` y `rooms:test` · las tareas del gate de cierre · ~1 s · integración\n');
+  s.commit('docs(sdd): suites con su nivel');
+}
+// La 0010 añade un script a package.json además de su código.
+function buildChange0010() {
+  writeFileSync(at('package.json'), '{"type": "module", "scripts": {"cancelar": "node src/app.js cancelar"}}\n');
+  s.commit('chore: script cancelar en package.json');
+}
 // La validación en campo de la 0010 ya se hizo sobre el último commit: el borrador del walkthrough, sin commitear.
 function validated0010() {
   const head = short('HEAD');
@@ -239,6 +249,32 @@ function developRoomsTest() {
   s.git('checkout', '-q', 'feature/0010-cancel-reason');
 }
 
+// Tras la validación, develop gana la 0015, que trae también el lockfile: un fichero de la lista «Sin filtro» del kit.
+function developLockfile() {
+  developRoomsTest();
+  s.git('checkout', '-q', 'develop');
+  s.put('package-lock.json', '{\n  "name": "salas",\n  "lockfileVersion": 3,\n  "packages": {}\n}\n');
+  s.commit('chore: package-lock.json (0015)');
+  s.git('checkout', '-q', 'feature/0010-cancel-reason');
+}
+// La rama y develop cambian la misma línea de tech-stack.md: «join» suma sin contradecirse; «clash» pone dos valores distintos.
+const STACK_LINE = '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.';
+const STACK_CHANGES = {
+  join: { branch: '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`, que también valida el motivo al cancelar.', base: `${STACK_LINE} Los tests corren con \`node --test\`.` },
+  clash: { branch: '- Node 20, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.', base: '- Node 24, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.' },
+};
+function stackConflict(kind) {
+  const { branch: ours, base } = STACK_CHANGES[kind];
+  edit('.docs/sdd/tech-stack.md', [STACK_LINE, ours]);
+  s.commit('docs(sdd): tech-stack de la 0010');
+  s.git('checkout', '-q', 'develop');
+  edit('.docs/sdd/tech-stack.md', [STACK_LINE, base]);
+  if (!has('.docs/sdd/tech-stack.md', base)) s.die('no se plantó la línea de develop');
+  s.commit('docs(sdd): tech-stack de la 0016');
+  s.git('checkout', '-q', 'feature/0010-cancel-reason');
+  const probe = spawnSync('git', ['-C', s.R, 'merge-tree', '--write-tree', '--name-only', 'HEAD', 'develop'], { env: s.env, encoding: 'utf8' });
+  if (probe.status !== 1 || !probe.stdout.includes('.docs/sdd/tech-stack.md')) s.die('la base y la rama no chocan en tech-stack.md');
+}
 // La 0010 es la pieza de una familia: su madre 0009 y su hermana 0016, tras ella.
 function family0010() {
   edit(`${F10}/spec.md`, [/^feature: 0010$/, 'feature: 0010\nparent: 0009']);
@@ -330,8 +366,19 @@ const molds = {
     validated0010();
     s.env.TURN2 = 'El walkthrough sin commitear es el borrador del paso 7: sigue con el cierre.';
   },
+  'reservas-gate-lock': () => {
+    moldReservas();
+    affectedGate();
+    done0010();
+    developLockfile();
+    validated0010();
+    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del paso 7: sigue con el cierre.';
+  },
+  'reservas-docs-join': () => (moldReservas(), done0010(), stackConflict('join')),
+  'reservas-docs-clash': () => (moldReservas(), done0010(), stackConflict('clash')),
   'reservas-gate-open': () => (moldReservas(), affectedGate(), done0010(), developRoomsTest(), otherWorktree()),
   'reservas-gate-plan': openPlan0010,
+  'reservas-gate-build': () => (moldReservas(), affectedGate(), levelsStack(), done0010(), buildChange0010()),
   'reservas-red': () => (moldReservas(), e2eRedBase(), done0010()),
   'reservas-flaky': () => (moldReservas(), flakyTest(), done0010()),
   'reservas-gate-red': () => (moldReservas(), affectedGate(), storeRedTest(), done0010()),

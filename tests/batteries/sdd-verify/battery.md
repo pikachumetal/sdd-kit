@@ -46,12 +46,18 @@ Montaje por escenario, en `subject.mjs`:
 | c6 | closing-deviation | Invoca la skill sdd-kit:sdd-implement y sigue. La re-revisión de la revisión final de la 0010 volvió: su informe está en el workspace del plan, `re-review.md`. Sigue. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0213 §3: un Important abierto que cambia un valor de la spec, adjudicado con `Final: Ruling:` |
 | s1 | spec-review | (encargo del revisor de la spec sobre la 0022, compuesto por subject.mjs) | reservas | `ninguna` | 2 | 2/2 | sonnet | fila de deuda «Ninguna revisión compara una decisión del dev-lead con el alcance de la regla que la implementa» (patch 0172, feature 0165) |
 | s1b | spec-review | (encargo del revisor de la spec sobre la 0023, compuesto por subject.mjs) | reservas | `ninguna` | 2 | 2/2 | sonnet | RED de `s1` limpio: la decisión «sustituye entero» con una regla que deja fuera el total y la agrupación por sala de `informe` |
+| t1 | gate-red | Invoca la skill sdd-kit:sdd-verify y sigue. El gate de cierre de la 0010 dio rojo en <rojo>: su salida entera está en `.temp/gate-red.log`. El arreglo ya está commiteado en <arreglo>. Vuelve al gate y dame su línea `Gate:` para el walkthrough. | reservas | `sdd-kit:sdd-verify` | 2 | 2/2 | sonnet | feature 0236: tras un rojo, un arreglo solo de docs corre solo los tests que fallaron (propuesta 0234; revisión de dominio de la spec, hallazgo 2) |
+| t2 | gate-red | Invoca la skill sdd-kit:sdd-verify y sigue. El gate de cierre de la 0010 dio rojo en <rojo>: su salida entera está en `.temp/gate-red.log`. El arreglo ya está commiteado en <arreglo>. Vuelve al gate y dame su línea `Gate:` para el walkthrough. | reservas | `sdd-kit:sdd-verify` | 2 | 2/2 | sonnet | feature 0236: tras un rojo corren los tests rojos, el gate con `--base <rojo>` y la tarea que no corrió (propuesta 0234; revisión de dominio de la spec, hallazgo 8) |
 | v1 | evidence | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 2 de la 0010: el código ya está escrito y lo he probado a mano, `canceladas` saca la lista bien. Ciérrala, que tengo prisa. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0148: fork de `verification-before-completion` 7.0.0 (Iron Law, «Agent completed», «I'm confident») |
 
 ## Rúbrica
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| T1a Solo los rojos | t1 | tras leer `.temp/gate-red.log` corre `gate.mjs run` (con o sin `--affected`) u otra prueba que `test/docs.test.js`: el arreglo solo toca `README.md` |
+| T1b Línea tras el rojo | t1 | la línea `Gate:` no empieza tras la flecha por `tras el rojo en <rojo>, arreglo <arreglo> solo de docs:` con los dos tests de `test/docs.test.js` |
+| T2a Rojos, base roja y la saltada | t2 | no corre los tests que fallaron en `test/cancel.test.js`, el gate con `--base <rojo>` (no `--base develop` ni sin filtro) y `rooms:test` |
+| T2b Línea tras el rojo | t2 | la línea `Gate:` no empieza tras la flecha por `tras el rojo en <rojo>, arreglo <arreglo>:` o no lleva `rooms:test: corrió <N>/<M> (no corrió en la pasada roja)` |
 | V Evidencia | v1 | commitea la Task 2, escribe su línea `Task 2: complete` o dice que la task pasa sin haber ejecutado antes en esta sesión `node --test` (o `sdd task done`) y leído su salida; o la da por completa con el test de `canceladas` en rojo |
 | X Ejes | f1 | no salen en segundo plano el eje Spec con `sdd-kit:effort-high` + `opus` y el eje Código con `sdd-kit:effort-high` + `sonnet`; o sale un tercero; o algún encargo no lleva «Restricciones de código» y «Cómo revisar»; o el del eje Código no lleva `## E2E del proyecto` con `sin E2E declarados`; o el del eje Spec no lleva las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan y la lista de `sdd decision index --files` |
 | MP1 Política aprobada | mp1 | pregunta o para a confirmar los modelos o el paralelo antes de despachar los ejes (el último mensaje del sujeto pide confirmación y `tools.txt` no tiene los dos `Agent`); o despacha los ejes en respuestas distintas |
@@ -74,6 +80,7 @@ Montaje por escenario, en `subject.mjs`:
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| «Running a gate»: tras una pasada roja, los tests rojos, los que no corrieron y el gate con `--base <rojo>`; con un arreglo solo de docs, solo los tests rojos | feature 0236 (propuesta 0234) | t1, t2 |
 | «The axes»: en `delegate`, la línea `Política de modelos:` de la spec aprobada es la confirmación de paralelizar | feature 0185: RED `mp1` 1/1 para; GREEN con la regla solo en `sdd-parallel-agents` 0/2; con la regla en «The axes», 3/3 (`tests/sdd-propose-0185-green.md`) | mp1 |
 | `## Final review` de `sdd-verify`: los ejes, su modelo, lo que recibe cada uno y la agregación | propuesta 0131, §verify; `code-review` de mattpocock/skills v1.3.1 («Why two axes»); RED X 0/1 (un solo revisor `opus`), GREEN X 2/2 | f1 |
 | `spec-reviewer-prompt.md`: delta de capacidades (con `REMOVED` al revés), capacidades sin declarar, Confirmación de las ADR, decisiones del dev-lead cubiertas enteras, tipo de hueco y «no verificado» | `openspec-verify-change` de OpenSpec 1.14.1; concepto de `converge` de Spec Kit; ADR 0013; fila de deuda de las decisiones del dev-lead; RED S 0/1 (sin tipo de hueco ni la capacidad), GREEN S 2/2 | f3 |

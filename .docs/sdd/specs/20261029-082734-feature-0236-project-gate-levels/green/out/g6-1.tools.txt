@@ -1,0 +1,145 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; ls .docs/sdd/specs/*0010*; cat .docs/sdd/specs/*0010*/tasks.md; git worktree list; git status -sb
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | 668126d | |
+| 2 | Listado de canceladas | done | 6
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0010*/spec.md; git diff --stat 668126d..HEAD; git log --oneline -3 --format='%h %s' 668126d..HEAD; ls; cat package.json; git fetch -q 2>&1 | head -2; git rev-list --count HEAD..origin/develop 2>&1 | head -1
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MO
+
+>>> Bash: cd "<run>/repo" && cat gate.json; ls src test scripts; cat README.md | head -30; git branch -a; git remote -v
+<<< {"tasks": {
+  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+}}
+scripts:
+gate.mjs
+
+src:
+app.js
+rooms.js
+
+test:
+app.test.js
+cancel.test.js
+rooms.test.js
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+  develop
+* feature/0010-cancel-reason
++ feature/0011-others
+  main
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/cancel.test.js | head -40
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: cd "<run>/repo" && echo "--1 ok"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; echo "--2 motivo fuera"; node src/app.js cancelar Norte lun --motivo "me aburro"; echo "--3 sin motivo"; node src/app.js cancelar Norte lun; echo "--4 canceladas (CLI, proceso nuevo)"; node src/app.js canceladas | cat -A | head; echo "--5 misma sesión"; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; echo "--suite"; time node --test --test-concurrency=1 2>&1 | tail -12
+<<< --1 ok
+cancelada Norte lun (sala ocupada)
+--2 motivo fuera
+motivo no válido: cambio de planes, sala ocupada, otro
+--3 sin motivo
+motivo no válido: cambio de planes, sala ocupada, otro
+--4 canceladas (CLI, proceso nuevo)
+$
+--5 misma sesión
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+--suite
+✔ cancelar con un motivo de la lista (0.8281ms)
+✔ cancelar con un motivo fuera de la lista (0.1429ms)
+✔ canceladas enseña sala, día y motivo (16.9899ms)
+✔ hay dos salas (0.7843ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 347.3648
+
+real	0m0.584s
+u
+
+=== RESULTADO (8 turnos, 0.16308740000000002 $)
+Ahora: parada antes de cerrar. Queda: tu decisión sobre una cosa que he visto en el smoke; después, la re-revisión del tramo y `sdd-archive`, ~5 min.
+
+**No cierro la 0010 todavía.** Al ejecutar de verdad el segundo THEN, el listado de canceladas no se puede observar desde la CLI.
+
+**Smoke por THEN** (`node src/app.js …`):
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | ✅ |
+| Motivo fuera de la lista responde «motivo no válido: …» | ejecución real, con `--motivo "me aburro"` | ✅ |
+| Sin `--motivo` responde lo mismo | ejecución real | ✅ |
+| `canceladas` responde «Norte lun — sala ocupada» | suite, y ejecución real solo dentro de un mismo proceso | ❌ desde la CLI |
+
+**Qué falla en la CLI:** las reservas viven en memoria (`src/app.js`, array `bookings`). Cada `node src/app.js` empieza de cero, así que `cancelar` y después `canceladas` en otro comando no devuelve nada. Solo funciona importando `run` y llamándolo dos veces en el mismo proceso, que es lo que hace la suite. El intent de la spec es «cancelar deja rastro», y desde la terminal no lo deja.
+
+**Suite:** la corrí aunque habría tocado dejarla al paso 6 de `sdd-archive` (hay otra rama abierta, `feature/0011-others`). Con `node --test --test-concurrency=1`: 6 de 6 pasan, 0,6 s. No sustituye la corrida del cierre.
+
+**Tramo posterior a la revisión final:** `668126d..4b6dccd` solo toca `tasks.md`. No hay código que re-revisar.
+
+**Decisión tuya:** ¿cómo tratamos que `canceladas` no funcione entre comandos?
+
+1. **Recomendado: aceptarlo y apuntar la persistencia como feature aparte.** El almacén en memoria ya existía antes de la 0010 y el Scope no promete persistencia. Cierro con el hallazgo anotado en el walkthrough y una fila en el roadmap.
+2. **Ampliar la 0010 para persistir las reservas.** Cambia el Scope y la spec, y vuelve a pasar por revisión.
+
+Respóndeme con 1 o 2 y sigo con el cierre.

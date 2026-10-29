@@ -1,0 +1,21 @@
+--- [7]
+El gate sigue en rojo, así que todavía no tengo una línea `Gate:` verde que darte. Si la escribiera como verde sería falsa.
+
+Volví a correr el gate completo, sin cache: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. Salió con exit 1.
+
+- **`bookings:test`:** el arreglo de c9e7e6b funcionó. Antes tenía 4 en verde y 1 en rojo (`canceladas enseña sala, día y motivo`), y ahora tiene 5 en verde de 5.
+- **`rooms:test`:** falla, y en el log original no se veía. Allí figuraba como `skipped (depends on bookings:test, which failed)`, y la tabla del log no refleja esa cadena de dependencias. Esta vez corrió y falló `hay dos salas` con `3 !== 2`.
+
+La causa está en dc3c280, el commit del refactor "cancelar y salas". Ese commit añadió `'Este'` en `src/rooms.js` (`['Norte','Sur']` pasó a `['Norte','Sur','Este']`). `test/rooms.test.js` sigue esperando 2 salas.
+
+Esto es lo que habría que escribir hoy en el walkthrough. Es el estado real, no el de cierre:
+
+``Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: corrió 5/5 · rooms:test: corrió 0/1 (falla: hay dos salas, 3 !== 2)``
+
+Antes de cerrar hay que decidir una de dos cosas:
+
+1. **La tercera sala es intencionada.** Entonces se actualiza el test a 3 y se comprueba contra la spec.
+2. **Fue un añadido accidental del refactor.** Entonces se revierte `src/rooms.js`.
+
+Para decidirlo no he leído la spec ni el plan. Por el nombre del commit ("refactor") me inclino por el accidente, pero no lo he comprobado. No he tocado nada. Dime cuál de las dos es y lo arreglo con su prueba. Después vuelvo a correr el gate y te doy la línea final.
+

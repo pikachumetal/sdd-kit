@@ -59,7 +59,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 > validación de `sdd-archive`: `Validado: <fecha> · «<frase literal>»`,
 > `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>` o, con `validation.mode: field`,
 > `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>`.
-> Encima, la línea del gate de cierre: `` Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué de la herramienta>) `` (sin tareas, `→ <N>/<M>`).
+> Encima, la línea del gate de cierre: `` Gate: `<suite unitaria, si «Suites» la declara>` · `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>) `` (sin tareas, `→ <N>/<M>`).
 
 | # | Caso | Resultado |
 | --- | --- | --- |
