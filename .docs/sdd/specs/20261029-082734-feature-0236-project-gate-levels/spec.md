@@ -151,7 +151,8 @@ Las reglas de correr un gate (unitarios enteros, salvaguarda, tras un rojo, lint
 - THEN corre `npm run test:unit` entera y después el gate sin `--affected`
 - AND la línea es `` Gate: `npm run test:unit` · `moon run :integration --affected --base develop --include-relations` → unit: corrió 510/510 · api:integration: corrió 61/61 (sin filtro: cambia el build) · app:integration: corrió 12/12 (sin filtro: cambia el build) ``
 - AND si la rama solo toca `apps/app/src/people/list.ts`, corre `npm run test:unit` entera y el gate con `--affected`, y `api:integration` sale como `saltada`; si solo toca `README.md` y `.docs/sdd/roadmap.md`, no corre ninguna orden
-- AND una suite con nivel `pendiente` corre entera, como una unitaria
+- AND una suite con nivel `pendiente`, o sin nivel, corre entera, como una unitaria
+- AND con «Suites» `` `unit` · `npm test` · pendiente `` y «Gate de cierre» `npm test`, `npm test` corre una sola vez: una suite cuya orden es la del gate, o que el gate ya corre sin filtro, no corre aparte
 - AND sin «Sin filtro» en `operations.md`, cuentan como build, a cualquier profundidad, `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json`, `Gemfile`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `packages.lock.json`, `poetry.lock`, `uv.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, `.moon/**`, `tsconfig*.json`, `Directory.Build.*`, `Directory.Packages.props`, `global.json`, `.prototools`, `vitest.config.*`, `jest.config.*` y `playwright.config.*`, y `Api.csproj` también hace correr todo
 - AND editar el `moon.yml` de `apps/app` no es «cambia el build»: corre sin filtro solo las tareas que define, con `(sin filtro: cambia su definición)`
 
@@ -317,6 +318,7 @@ Medido con el conteo de `cli/test/kit/word-budget.test.ts` (tope × 1,25), 2026-
 
 ## Enmiendas
 
+- 2026-10-29 — Una suite cuya orden es la del gate, o que el gate ya corre sin filtro, no corre aparte; una suite sin nivel cuenta como `pendiente` (delta de `archive`, «El gate corre entero…») — revisión final, eje Spec, I3: con un gate que no filtra, el cierre corría la misma suite dos veces — aprobada: opción «Arreglarlo ahora (Recomendada)»
 - 2026-10-29 — Tope de coste de la prueba: de 22 $ a 25 $ — los moldes de `m1` y `m2` no medían (el sujeto corregía el texto de su rama, que nombraba lo que el proyecto no tiene) y `g8` salió a medias — aprobada: opción «Arreglar y repetir (~24 $)»
 - 2026-10-29 — Previsión de coste de la decisión 21: de ~11 $ con tope 15 $ a ~17 $ con tope 22 $ — el plan contó ~0,70 $ por sujeto de `sdd-archive`, no 0,31 $ — aprobada: opción «~17 $, tope 22 $»
 

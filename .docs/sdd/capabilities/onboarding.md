@@ -129,7 +129,7 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - GIVEN `operations-template.md`
 - WHEN se lee
 - THEN tiene `## Comandos`, `## Testing`, `## Frontend` y `## Entornos`, y no tiene tabla de versiones ni «Decisiones abiertas»
-- AND `## Testing` pide cada suite con su comando y su duración, el comando de lo afectado, el gate de cierre y el de merge, cómo entra el agente en la aplicación, si los tests usan el motor de producción y dónde deja cada suite sus temporales
+- AND `## Testing` pide cada suite con su comando, su duración y su nivel (`unitario`, `integración`, `E2E` o `pendiente`), el comando de lo afectado, el gate de cierre —una orden, la integración y los E2E por lo afectado, con `--include-relations` en moon, o la suite entera si el proyecto no filtra— y el de merge, «Sin filtro» (los globs del build, la configuración, las dependencias y los helpers comunes de los tests), «Lint» (formato y estilo, al editar y en el pre-commit, nunca en el gate), «CI de la base» (el pipeline y la orden que lee su último resultado, `sin orden de lectura` o `ninguna`), cómo entra el agente en la aplicación, si los tests usan el motor de producción y dónde deja cada suite sus temporales
 - AND `## Frontend` tiene los campos URL, Detector, Viewports, Runner E2E, Acceso, Temas, Pantalla de referencia y Skills de apoyo
 - AND `## Testing`, solo si el proyecto tiene E2E, pide los flujos core con su test, el presupuesto de la suite E2E, los retries, los timeouts, el entorno de la suite y cómo crea y borra cada test sus datos; y cómo entra el agente nombra el usuario del agente, distinto del de la persona que valida
 
@@ -174,7 +174,9 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 
 - GIVEN una init con código cuyo `package.json` tiene los scripts `test` (`vitest run`) y `e2e` (`playwright test`), y un CI que ejecuta `npm test`
 - WHEN genera `operations.md`
-- THEN `## Testing` propone las suites `unit` · `npm test` y `e2e` · `npm run e2e`, el gate de cierre y el de merge con esos comandos, y cada duración como `pendiente`
+- THEN `## Testing` propone las suites `` `unit` · `npm test` · pendiente · pendiente `` y `` `e2e` · `npm run e2e` · pendiente · E2E ``, el gate de cierre y el de merge con esos comandos, y cada duración como `pendiente`
+- AND el nivel de `unit` queda `pendiente` porque ni su config ni su código dicen qué arranca, y el dev-lead lo dice; `e2e` es E2E porque corre con Playwright
+- AND propone «Sin filtro» con los manifiestos, lockfiles y configs que existen (`package.json`, `package-lock.json`, `vitest.config.ts`, `playwright.config.ts`) y las carpetas de helpers comunes de los tests que encuentre; «Lint» con el lint o el formato del pre-commit o de los scripts (`npm run lint`), o `ninguno`; y «CI de la base» con el pipeline encontrado (`.github/workflows/ci.yml`) y `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`, o `ninguna`
 - AND con un `playwright.config.ts` sin `outputDir`, «Temporales» propone `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`, sin editar la config ni añadir filas al roadmap; una suite cuyo sitio no fijan ni su config ni el valor por defecto de su runner sale como `no declarado`, sin propuesta
 - AND sin código, pregunta «¿Cómo se prueba?» con la recomendación que sale del stack; con «no sé», cada campo sin respuesta queda `no declarado`
 

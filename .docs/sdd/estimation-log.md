@@ -229,18 +229,19 @@
 | 2026-10-28 | 0248 | patch | 1.25 | 0.39 | 0.31 | — | — | 2.66 | — | 20261028-211807-patch-0248-lanes-env-setup |
 | 2026-10-28 | 0253 | patch | 0.75 | 0.43 | 0.57 | — | — | 2.33 | — | 20261028-215919-patch-0253-setup-by-lockfile |
 | 2026-10-28 | 0254 | patch | 0.5 | 0.1 | 0.2 | 4428k | no aplica | no aplica | 2.6 | 20261028-220038-patch-0254-campaign-cleanup-kit-copy |
+| 2026-10-29 | 0236 | docs | 5 | 1.75 | 0.35 | 123720k | 9159k | 23.78 | 41.41 | 20261029-082734-feature-0236-project-gate-levels |
 
-**Factor de calibración** (ratio mediano real/estimado, 189 artefactos): **0.6** · media 0.78
+**Factor de calibración** (ratio mediano real/estimado, 190 artefactos): **0.59** · media 0.77
 
 - p25–p75: 0.4–0.94
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 28 % · sobreestimadas: 62 % · infraestimadas: 11 %
-- Error absoluto (h): media 1.34 · mediana 0.9
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.49
+- Dentro de ±25 %: 27 % · sobreestimadas: 62 % · infraestimadas: 11 %
+- Error absoluto (h): media 1.35 · mediana 0.9
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.41
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 66 | 35 % |
+| <0.5 | 67 | 35 % |
 | 0.5–0.8 | 58 | 31 % |
 | 0.8–1.25 | 45 | 24 % |
 | 1.25–2 | 12 | 6 % |
@@ -249,7 +250,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 88 | 0.56 | 0.4–0.77 |
+| docs | 89 | 0.56 | 0.39–0.77 |
 | infra/tooling | 49 | 0.5 | 0.38–0.8 |
 | patch | 50 | 0.87 | 0.6–1.38 |
 | tooling | 1 | 0.6 | — |
@@ -271,6 +272,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 77 | 191.38 | 0.57 | 337.66 | 1511.7 |
+| sin publicar | 78 | 193.13 | 0.57 | 361.44 | 1553.11 |
 
 > Ver `estimation.md`.

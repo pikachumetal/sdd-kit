@@ -240,8 +240,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
 - WHEN el cierre fusiona con `sdd merge`
 - THEN `--verify` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
-- AND la suite completa ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
-- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; la suite completa no se omite nunca
+- AND el gate de cierre ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
+- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; el gate de cierre no se omite nunca
+- AND `--verify` no lleva las suites unitarias ni lee «Sin filtro»: los aplicó el gate de cierre sobre el merge de sincronización
 
 ### Un conflicto solo en los registros se resuelve con un merge de sincronización
 

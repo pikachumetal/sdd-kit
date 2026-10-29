@@ -162,6 +162,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan
 - THEN cada task declara sus superficies (BD · backend · frontend · tooling · docs) y una verificación con los comandos de esas superficies y ninguno más
 - AND la suite de BD solo aparece en las tasks cuyas superficies incluyen BD (migraciones, persistencia o dialecto)
+- AND con «Suites» `unit` · `dotnet test Api.UnitTests` · ~20 s · unitario y `api` · `dotnet test Api.IntegrationTests` · ~1 min · integración, una task que cambia `Domain/Pricing.cs` sin escribir tests de integración verifica con `unit`, y `api` lo corre el gate de cierre si `--affected` lo marca; una task que escribe `Api.IntegrationTests/PeopleTests.cs` corre también ese fichero
 
 ### El gate de cierre se ejecuta una vez
 

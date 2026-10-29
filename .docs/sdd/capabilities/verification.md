@@ -194,6 +194,8 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND la línea del commit es `` Gate: `moon run app:test api:test --affected --base develop` → app:test: corrió 98/98 (sin filtro: cambia su definición) · api:test: saltada (ningún fichero cambiado casa con sus inputs: `moon task api:test`) ``
 - AND nunca escribe `→ verde` ni da el gate por bueno solo por su código de salida
 - AND la misma forma, una entrada por tarea del gate, vale en el 4.1 del walkthrough, en el §4 de `patch.md` y en el informe de la baseline de `sdd-worktrees`
+- AND las órdenes que corrieron (las suites unitarias y el gate) van antes de la flecha, cada una entre backticks y separadas por ` · `
+- AND una tarea que corre sin filtro porque la rama o la base tocan un fichero de «Sin filtro» de `operations.md` lleva `(sin filtro: cambia el build)`; una que no corrió en la pasada roja, `(no corrió en la pasada roja)`; tras una pasada roja, la línea empieza por `tras el rojo en <sha>, arreglo <sha>:`, y con un arreglo solo de docs, por `tras el rojo en <sha>, arreglo <sha> solo de docs:`
 
 ## Reglas de la capacidad
 

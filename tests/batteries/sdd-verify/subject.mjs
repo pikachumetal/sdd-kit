@@ -212,7 +212,7 @@ function filteredGate(bookingsTests, bookingsInputs) {
 // La pasada roja del gate en HEAD, guardada entera donde la guarda el cierre; devuelve su sha.
 function redPass(rewrite = (text) => text) {
   const red = short('HEAD');
-  const result = spawnSync(s.NODE, ['scripts/gate.mjs', 'run', 'bookings:test', 'rooms:test', '--affected', '--base', 'develop'], { cwd: s.R, env: s.env, encoding: 'utf8' });
+  const result = spawnSync(s.NODE, GATE.split(' ').slice(1), { cwd: s.R, env: s.env, encoding: 'utf8' });
   if (result.status === 0) s.die('la pasada del gate no salió roja');
   mkdirSync(at('.temp'), { recursive: true });
   writeFileSync(at('.temp/gate-red.log'), rewrite(`$ ${GATE}\n${result.stdout}${result.stderr}`));
@@ -236,7 +236,10 @@ function redCode() {
   cp(join(IMPL, 'fixtures', 'app-task1.js'), 'src/app.js');
   writeFileSync(at('src/rooms.js'), "export const rooms = ['Norte', 'Sur'].sort();\n");
   s.commit('refactor(bookings): cancelar y salas');
-  const red = redPass((text) => `${text.replace(/^▪ rooms:test.*$/m, '').trimEnd()}\n▪ rooms:test skipped (depends on bookings:test, which failed)\n`);
+  const red = redPass((text) => {
+    if (!/^▪ rooms:test.*$/m.test(text)) s.die('la pasada roja no nombra rooms:test');
+    return `${text.replace(/^▪ rooms:test.*$/m, '').trimEnd()}\n▪ rooms:test skipped (depends on bookings:test, which failed)\n`;
+  });
   cp(join(IMPL, 'fixtures', 'app-done.js'), 'src/app.js');
   s.commit('fix(bookings): canceladas vuelve a enseñar el motivo');
   askWith(red, short('HEAD'));
