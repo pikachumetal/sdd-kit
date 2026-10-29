@@ -360,7 +360,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el hilo despacha el revisor final de rama
 - THEN en el mismo turno lanza en segundo plano `sdd watch subagent` sobre el transcript de ese revisor, y la orden no lleva ni 8 ni 20: los umbrales los lee el script
 - AND lo mismo al despachar un implementador, un revisor de task, un fix wave o una re-revisión en SDD, un revisor de spec o la re-revisión del cierre
-- AND al lanzar la verificación lenta `Invoke-Pester tests/` en segundo plano, lanza el vigía sobre el fichero de salida de ese comando
+- AND la verificación lenta `Invoke-Pester tests/` la lanza en segundo plano el propio vigía, `sdd watch command -- Invoke-Pester tests/`, que guarda su salida y termina con `TERMINADO: Invoke-Pester tests/ salió con <rc>` en cuanto el comando sale, o con `SILENCIO:` si deja de escribir; `sdd watch command --path <fichero>` queda para un comando que ya corre
 
 ### El umbral del silencio depende de la herramienta que espera
 
@@ -674,6 +674,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN una task pide una prueba de estrés de cinco sesiones editando la misma hoja a la vez
 - THEN la prueba no queda en `e2e/` ni en ninguna suite que corra el gate de cierre, aunque ejerza un flujo core
 - AND vive en una suite aparte con su propio comando, o se ejecuta como medida del smoke con su resultado en el walkthrough
+
+### El vigía de una verificación lenta termina con su comando
+
+- GIVEN `longCommandMinutes: 20`
+- WHEN se ejecuta `sdd watch command -- node -e "setTimeout(()=>{},100)"` y el comando sale con 0
+- THEN el vigía termina con `TERMINADO: node -e setTimeout(()=>{},100) salió con 0` y `salida: <ruta del log>`, y no escribe `SILENCIO:`
+- AND con un comando que no escribe nada en 20 min 30 s, el vigía termina con `SILENCIO:` y el comando ya no corre
 
 ## Reglas de la capacidad
 

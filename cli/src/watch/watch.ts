@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { startToLog, type Started } from '../tasks/command.ts';
 import { caseInsensitiveGet, isRecord } from '../cli/records.ts';
 import { readText } from '../cli/files.ts';
 import { defaultProjectsRoots, transcriptFolders } from '../session/transcripts.ts';
@@ -8,7 +9,14 @@ import { sameText } from '../cli/records.ts';
 import { readThresholds } from './thresholds.ts';
 import { headVerdict, subagentVerdict, type Thresholds, type Verdict } from './verdict.ts';
 
-export type WatchTarget = { kind: 'subagent'; description: string } | { kind: 'command'; path: string };
+export type WatchTarget = { kind: 'subagent'; description: string } | { kind: 'command'; path: string } | { kind: 'run'; command: string[] };
+
+interface Run {
+  label: string;
+  log: string;
+  started: Started;
+  code?: number;
+}
 
 export interface WatchOptions {
   target: WatchTarget;
@@ -24,6 +32,7 @@ interface Context {
   thresholds: Thresholds;
   startedAt: number;
   activity?: { size: number; at: number };
+  run?: Run;
 }
 
 const POLL_MILLIS = 30_000;
@@ -73,8 +82,17 @@ function commandActivity(context: Context, file: string): number {
   return context.activity.at;
 }
 
+function runVerdict(context: Context, run: Run): Verdict {
+  const output = `salida: ${run.log}`;
+  if (run.code !== undefined) return { status: 'TERMINADO', lines: [`TERMINADO: ${run.label} salió con ${run.code}`, output] };
+  const verdict = headVerdict({ file: run.log, label: run.label, activeAt: commandActivity(context, run.log) }, 'longCommandMinutes', context.thresholds);
+  verdict.lines.push(output);
+  return verdict;
+}
+
 function verdictFor(context: Context, graceOver: boolean): Verdict {
   const { target } = context.options;
+  if (target.kind === 'run') return runVerdict(context, context.run!);
   const label = target.kind === 'command' ? basename(target.path) : target.description;
   const file = target.kind === 'command' ? (existsSync(target.path) ? target.path : null) : findTranscript(target.description, context);
   if (file === null) {
@@ -85,16 +103,39 @@ function verdictFor(context: Context, graceOver: boolean): Verdict {
   return subagentVerdict({ file, label }, context.thresholds);
 }
 
-const pause = (millis: number): Promise<void> => new Promise((done) => setTimeout(done, millis));
+// Corta la espera si el comando sale antes: el vigía termina con él, no en el siguiente sondeo.
+function pause(millis: number, until?: Promise<unknown>): Promise<void> {
+  return new Promise((done) => {
+    const timer = setTimeout(done, millis);
+    void until?.then(() => {
+      clearTimeout(timer);
+      done();
+    });
+  });
+}
+
+function startRun(command: string[], worktree: string): Run {
+  const folder = join(worktree, '.temp', 'sdd', 'watch');
+  mkdirSync(folder, { recursive: true });
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+  const log = join(folder, `${stamp}-${process.pid}.log`);
+  const run: Run = { label: command.join(' '), log, started: startToLog(command, log) };
+  void run.started.exit.then((code) => (run.code = code));
+  return run;
+}
 
 export async function watch(options: WatchOptions): Promise<string[]> {
   const startedAt = Date.now();
   const worktree = options.worktree ?? (await toplevel(process.cwd())) ?? process.cwd();
   const context: Context = { options, worktree, roots: options.projectsRoots.length > 0 ? options.projectsRoots : defaultProjectsRoots(), thresholds: readThresholds(worktree), startedAt };
+  if (options.target.kind === 'run') context.run = startRun(options.target.command, worktree);
   for (;;) {
     const graceOver = options.once || Date.now() - startedAt >= TRANSCRIPT_GRACE_MILLIS;
     const verdict = verdictFor(context, graceOver);
-    if (options.once || (verdict.status !== 'EN MARCHA' && verdict.status !== 'BUSCANDO')) return verdict.lines;
-    await pause(POLL_MILLIS);
+    if (options.once || (verdict.status !== 'EN MARCHA' && verdict.status !== 'BUSCANDO')) {
+      if (verdict.status === 'SILENCIO') context.run?.started.stop();
+      return verdict.lines;
+    }
+    await pause(POLL_MILLIS, context.run?.started.exit);
   }
 }

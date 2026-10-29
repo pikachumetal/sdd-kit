@@ -1,19 +1,23 @@
-import { requiredOption, text } from '../cli/args.ts';
+import { UsageError, requiredOption, text } from '../cli/args.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
 import { watch, type WatchTarget } from './watch.ts';
 
 interface WatchVerbSpec {
   verb: string;
   summary: string;
+  usage?: string;
   options: Verb['options'];
+  positionals?: string[];
   target: (args: VerbArgs) => WatchTarget;
 }
 
-function watchVerb({ verb, summary, options, target }: WatchVerbSpec): Verb {
+function watchVerb({ verb, summary, usage, options, positionals, target }: WatchVerbSpec): Verb {
   return {
     noun: 'watch',
     verb,
     summary,
+    usage,
+    positionals,
     options: { ...options, worktree: { type: 'string' }, once: { type: 'boolean' } },
     async run(args, io) {
       const roots = args.values['projects-root'];
@@ -36,9 +40,19 @@ export const watchSubagentVerb = watchVerb({
   target: (args) => ({ kind: 'subagent', description: requiredOption(args, 'description') }),
 });
 
+function commandTarget(args: VerbArgs): WatchTarget {
+  if (!args.hasSeparator && args.positionals.length > 0) throw new UsageError(`argumento inesperado: «${args.positionals[0]}»`);
+  if (!args.hasSeparator) return { kind: 'command', path: requiredOption(args, 'path') };
+  if (args.positionals.length === 0) throw new UsageError('falta el comando tras --');
+  if (args.values.path !== undefined || args.values.once === true) throw new UsageError('-- no va con --path ni con --once');
+  return { kind: 'run', command: args.positionals };
+}
+
 export const watchCommandVerb = watchVerb({
   verb: 'command',
-  summary: 'Vigila la salida de un comando en segundo plano y termina cuando se queda en silencio',
+  summary: 'Lanza un comando (o vigila la salida de uno que ya corre, con --path) y termina cuando acaba o se queda en silencio',
+  usage: 'uso: sdd watch command [--worktree <ruta>] -- COMMAND [ARGS...] | sdd watch command --path <fichero> [--once]',
   options: { path: { type: 'string' } },
-  target: (args) => ({ kind: 'command', path: requiredOption(args, 'path') }),
+  positionals: ['--', 'COMMAND', '[ARGS...]'],
+  target: commandTarget,
 });

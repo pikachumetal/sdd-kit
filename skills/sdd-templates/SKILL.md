@@ -56,7 +56,7 @@ El código ejecutable del kit es una CLI en Node, `cli/bin/sdd.js`, que viaja co
 | `sdd roadmap publish` | Commitea en la rama de integración los ficheros de `.docs/sdd/` que se le pasan, con el cerrojo de `sdd merge`: `roadmap publish --project-root "<raíz>" --message "<mensaje>" [--into <rama>] <ficheros>`. Lo usa `sdd-roadmap`. |
 | `sdd session tokens` | Mide los tokens y el coste de las sesiones de Claude Code de un worktree: `session tokens --path <worktree> --branch <rama>`. Lo usa `sdd-archive`. |
 | `sdd watch subagent` | Vigila el transcript de un subagente y termina cuando se cuelga o acaba: `watch subagent --description "<description del despacho>"`. |
-| `sdd watch command` | Vigila la salida de un comando en segundo plano y termina si se queda en silencio: `watch command --path <fichero de salida>`. |
+| `sdd watch command` | Lanza un comando en segundo plano, guarda su salida y termina con él (`TERMINADO: <comando> salió con <rc>`) o si se queda en silencio: `watch command -- <comando…>`. Para un comando que ya corre, `watch command --path <fichero de salida>`. |
 | `sdd workspace` | Resuelve y crea el workspace de SDD de un plan: `workspace <plan>`. |
 | `sdd task start` | Abre una task Native y registra el commit base: `task start <plan> <n>`. |
 | `sdd task done` | Ejecuta la «Verificación» de una task y, si pasa, la anota en el ledger: `task done <plan> <n> <base> -- <comando…>`. |
