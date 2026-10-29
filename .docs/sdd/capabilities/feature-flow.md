@@ -461,6 +461,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el cierre ejecuta `node sdd.js ledger rulings <plan.md>`
 - THEN escribe esas tres líneas en el orden del ledger y sale con 0
 - AND sin ledger escribe `Sin rulings` y sale con 0
+- AND una fila de tabla del ledger (la del pre-flight) que contiene `Ruling:` no sale: solo cuentan las líneas que no empiezan por `|`
 
 ### Las tasks Native se abren y cierran desde cualquier shell
 
@@ -469,6 +470,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN `sdd task start` imprime la ruta del workspace en forma Windows (`D:\…`), y la línea `Task <N>: complete (…, tests: <comando> → (sin salida))` queda en el ledger a la primera
 - AND si `sdd task start` falla o no imprime ruta, sale con un código distinto de 0 y el hilo no escribe en el ledger
 - AND con un test en rojo, `sdd task done` no escribe `Task <N>: complete` y sale con el código del comando; con un comando que no existe, sale con 127 y tampoco lo escribe
+- AND con una salida de vitest, que acaba en `Duration …`, la línea del ledger lleva la de `Tests N passed`; sin línea `Tests …`, la última línea no vacía de la salida
 
 ### La spec dice dónde se prueba cada comportamiento
 

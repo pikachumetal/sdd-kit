@@ -30,6 +30,15 @@ describe('sdd ledger rulings', () => {
     ]);
   });
 
+  it('rulings skips table rows of the pre-flight scan', () => {
+    const text = [
+      '| Task 1 · Task 2 | `parse()` | Ruling: se usa la firma de la Task 1 |',
+      'Task 2: Ruling: el umbral queda en 30 s — el plan decía 20 y el test tarda 24',
+      '',
+    ].join('\n');
+    expect(listRulings(workspaceWithLedger(text))).toEqual(['Task 2: Ruling: el umbral queda en 30 s — el plan decía 20 y el test tarda 24']);
+  });
+
   it('rulings without ledger', () => {
     expect(listRulings(workspaceWithLedger(null))).toEqual([]);
   });

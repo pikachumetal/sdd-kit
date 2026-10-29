@@ -7,5 +7,6 @@ export function listRulings(workspace: string): string[] {
   const ledger = join(workspace, 'progress.md');
   if (!existsSync(ledger)) return [];
   const lines = readFileSync(ledger, 'utf8').split(/\r?\n/);
-  return lines.filter((line) => MARKERS.some((marker) => line.includes(marker)));
+  // Una fila de la tabla del pre-flight puede nombrar un ruling sin serlo.
+  return lines.filter((line) => !line.trimStart().startsWith('|') && MARKERS.some((marker) => line.includes(marker)));
 }
