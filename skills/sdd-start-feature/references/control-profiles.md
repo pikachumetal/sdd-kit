@@ -165,17 +165,17 @@ Un subagente en segundo plano puede colgarse sin error: la herramienta de subage
 sdd watch subagent --description "<la description del despacho, literal>"
 ```
 
-Y al lanzar una verificación lenta en segundo plano, otro, `sdd watch command --path <fichero de salida de ese comando>`. Cada despacho lleva una `description` distinta: el vigía encuentra el transcript por ella.
+Una verificación lenta la lanza en segundo plano su propio vigía, `sdd watch command -- <comando…>`: guarda la salida en el fichero que nombra su línea `salida:` y termina con el comando. `sdd watch command --path <fichero de salida>` queda para un comando que ya corre. Cada despacho lleva una `description` distinta: el vigía encuentra el transcript por ella.
 
 **Qué hacer con lo que devuelve.** El vigía termina con una sola notificación; su primera línea dice cuál:
 
 | Primera línea | Qué haces |
 | --- | --- |
-| `TERMINADO:` | Nada: el resultado del subagente llega por su lado. |
+| `TERMINADO:` | Nada: el resultado del subagente llega por su lado; el de un comando, en el fichero de su línea `salida:`. |
 | `SIN TRANSCRIPT:` | Dile al usuario, en tu siguiente mensaje, que en esta sesión el vigía de silencio no funciona. No lo sustituyas por otra cosa. |
 | `SILENCIO:` | Es un cuelgue. Sigue abajo. |
 
-Al recibir el resultado de un subagente, o el aviso de que terminó el comando de una verificación lenta, para su vigía si sigue corriendo: el de una verificación lenta no sabe cuándo acaba su comando, y daría `SILENCIO:` sobre uno ya terminado.
+Al recibir el resultado de un subagente, o el aviso de que terminó un comando vigilado con `--path`, para su vigía si sigue corriendo: ese vigía no sabe cuándo acaba su comando, y daría `SILENCIO:` sobre uno ya terminado.
 
 **Ante un `SILENCIO:`**, en este orden, sin esperar a que el usuario pregunte:
 
@@ -186,7 +186,7 @@ Al recibir el resultado de un subagente, o el aviso de que terminó el comando d
 5. En tu siguiente mensaje, dile al usuario qué se colgó, con las líneas del aviso, y qué has hecho.
 6. Registra el ruling en `tasks.md` (en Native, también en el ledger): `Cuelgue: <tipo de subagente o comando>, <herramienta> sin respuesta, <minutos> min, <relanzado | no relanzado: permiso | parado: segundo cuelgue>`.
 
-Una verificación lenta colgada sigue los mismos pasos, con su proceso en vez del subagente.
+Una verificación lenta colgada sigue los mismos pasos, con su proceso en vez del subagente: la que lanzó su vigía con `--` ya está parada.
 
 | Racionalización | Realidad |
 | --- | --- |

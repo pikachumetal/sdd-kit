@@ -307,7 +307,7 @@ After a machine crash or a quota cut, before anything else, reread the ledger, `
 
 **REQUIRED SUB-SKILL:** `sdd-verify` runs the final whole-branch review and its single closing, with either method: its axes go out in the background as soon as the last task's commit exists —in Native, the last task's; in SDD, the squashed one after its clean review—, and you come back here, to [Finish](#finish), when its closing is done.
 
-**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or `watch command --path <the command's output>`; the script reads the thresholds. What to do with its warning is in [Vigía de silencio](../sdd-start-feature/references/control-profiles.md#vigía-de-silencio). (`tests/silence-watch-red.md`)
+**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, launch the command through its watch: `watch command -- <the command…>`, which saves its output and ends with the command (`watch command --path <its output>` only for a command already running); the script reads the thresholds. What to do with its warning is in [Vigía de silencio](../sdd-start-feature/references/control-profiles.md#vigía-de-silencio). (`tests/silence-watch-red.md`)
 
 ## Finish
 
