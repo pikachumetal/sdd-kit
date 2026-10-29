@@ -3,7 +3,7 @@ import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
 import { defaultConfig, description, newTranscript, newWorktree, readCall, touch } from './helpers.ts';
 import { join } from 'node:path';
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 
 function startWatching(setup: ReturnType<typeof newWorktree>, name = description) {
   const io = memoryIo();
@@ -72,7 +72,7 @@ describe('watch subagent sin --once', () => {
 });
 
 describe('watch command sin --once', () => {
-  beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'Date'] }));
+  beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] }));
   afterEach(() => vi.useRealTimers());
 
   async function writeEvery30s(log: string, minutes: number, line: (second: number) => string): Promise<void> {
@@ -100,6 +100,32 @@ describe('watch command sin --once', () => {
     await writeEvery30s(log, 20.5, heartbeat);
     expect(io.stdout[0]).toBe('SILENCIO: gate.log lleva 20 min sin escribir (umbral 20 min, longCommandMinutes)');
     expect(await finished).toBe(0);
+  });
+
+  it('con -- lanza el comando y termina con él, sin SILENCIO', async () => {
+    const setup = newWorktree(defaultConfig);
+    const io = memoryIo();
+    const code = await run(['watch', 'command', '--worktree', setup.repo, '--', 'node', '-e', 'setTimeout(()=>{},100)'], io);
+    expect(code).toBe(0);
+    expect(io.stdout[0]).toBe('TERMINADO: node -e setTimeout(()=>{},100) salió con 0');
+    expect(io.stdout[1]).toMatch(/^salida: .*[\\/]\.temp[\\/]sdd[\\/]watch[\\/]\d{8}-\d{6}-\d+\.log$/);
+    expect(io.stdout.join('\n')).not.toMatch(/SILENCIO:/);
+  });
+
+  it('con -- da SILENCIO al pasar longCommandMinutes y para el comando', async () => {
+    const setup = newWorktree(defaultConfig);
+    const marker = join(setup.repo, 'alive');
+    const script = `setInterval(()=>require('fs').writeFileSync(${JSON.stringify(marker)},''),50)`;
+    const io = memoryIo();
+    const finished = run(['watch', 'command', '--worktree', setup.repo, '--', 'node', '-e', script], io);
+    await vi.advanceTimersByTimeAsync(20.5 * 60_000);
+    expect(await finished).toBe(0);
+    expect(io.stdout[0]).toMatch(/^SILENCIO: node -e .* lleva 20 min sin escribir \(umbral 20 min, longCommandMinutes\)$/);
+    vi.useRealTimers();
+    await new Promise((done) => setTimeout(done, 500));
+    rmSync(marker, { force: true });
+    await new Promise((done) => setTimeout(done, 300));
+    expect(existsSync(marker)).toBe(false);
   });
 
   it('una línea que no es latido sí cuenta como actividad', async () => {
