@@ -41,7 +41,14 @@ const BLOCKING_OPTIONS = ['--stdin', '--status', '--force'];
 const DROPPED_OPTIONS = ['--base', '--head'];
 const QUERY_TIMEOUT_MS = 5 * 60 * 1000;
 
-const optionName = (token: string) => token.split('=')[0];
+// Lo que moon exporta a sus tareas: heredado, el moon del worktree usaría el workspace de fuera (patch 0258).
+const MOON_TASK_CONTEXT = /^MOON_(WORKSPACE_ROOT|WORKING_DIR|CACHE_DIR|PROJECT_\w+|TARGET|TASK_\w+)$/i;
+
+export function withoutMoonTask(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return Object.fromEntries(Object.entries(env).filter(([name]) => !MOON_TASK_CONTEXT.test(name)));
+}
+
+const optionName =(token: string) => token.split('=')[0];
 const firstLine = (text: string) => text.trim().split(/\r?\n/)[0] ?? '';
 
 export const noCross = (reason: string) => `verificación: sin cruce: ${reason}; corre lo que toca la rama`;
@@ -101,7 +108,7 @@ export function queryTasks(worktree: string, { base, head, relations }: Range, m
   const resolved = resolveCommand(moon);
   if (resolved === null) return Promise.reject(new Error(`no se encuentra '${moon}' en el PATH`));
   const { file, args, windowsVerbatimArguments } = launchSpec(resolved, ['query', 'tasks', '--affected']);
-  const env = { ...isolatedEnv(), MOON_BASE: base, MOON_HEAD: head, ...(relations ? { MOON_INCLUDE_RELATIONS: 'true' } : {}) };
+  const env = { ...withoutMoonTask(isolatedEnv()), MOON_BASE: base, MOON_HEAD: head, ...(relations ? { MOON_INCLUDE_RELATIONS: 'true' } : {}) };
   const options = { cwd: worktree, env, windowsHide: true, windowsVerbatimArguments, timeout: QUERY_TIMEOUT_MS, maxBuffer: 64 * 1024 * 1024 };
   return new Promise((done, fail) => {
     const child = execFile(file, args, options, (error, stdout, stderr) => {
