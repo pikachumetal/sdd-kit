@@ -1,0 +1,26 @@
+--- [3]
+Primero leo el log del rojo y la sección Testing del proyecto.
+
+--- [12]
+El test que falló en rojo sigue fallando suelto, aunque `bookings:test` da 5/5. Lo miro antes de dar la línea.
+
+--- [16]
+El gate está en verde, pero con una salvedad sobre el test que falló.
+
+```
+Gate: `node --test test/cancel.test.js` · `node scripts/gate.mjs run bookings:test rooms:test --affected --base a4e9f72` · `node scripts/gate.mjs run rooms:test` → tras el rojo en a4e9f72, arreglo 5a36e75: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja; el filtro la saltaba, así que la lancé sin filtro)
+```
+
+**Cómo salió cada paso**
+- **`bookings:test`:** pasa 5/5 con `--base a4e9f72`, y `test/cancel.test.js` entero pasa 3/3. El fix de 5a36e75 solo toca `src/app.js`, que es un input de esta tarea.
+- **`rooms:test`:** el filtro la saltaba porque su input `src/rooms.js` no cambió desde a4e9f72. Pero en el rojo no corrió, porque dependía de `bookings:test`. Por eso la ejecuté aparte, sin filtro, y pasa 1/1.
+- **Sin sección Testing:** `tech-stack.md` no tiene sección Testing, así que no hay «Suites» ni «Sin filtro». Tampoco hay suites unitarias que correr enteras, y el fix no toca ningún fichero de build.
+
+**Salvedad: el test depende del orden.**
+- **Qué pasa:** `canceladas enseña sala, día y motivo` falla si se ejecuta suelto (`--test-name-pattern`). Devuelve `''`, porque solo ve la cancelación que crea el test anterior de `cancel.test.js`. En el fichero entero y en el gate pasa.
+- **Qué no he hecho:** no lo he arreglado, porque eso es otro cambio.
+- **Qué puedes escribir:** para el walkthrough, el verde se sostiene con el fichero entero, no con el test aislado.
+- **Qué te propongo:** anotarlo como deuda, o hacer que el test cree su propia cancelación.
+
+También hay un aviso de arranque: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Esta skill puede ser la de una versión vieja.
+

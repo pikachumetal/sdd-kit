@@ -327,6 +327,14 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND la línea del gate no cambia, el paso no tiene gate y no frena el marcador
 - AND con `||`, `;`, `|`, `>` o `<` fuera de comillas, igual; con `$`, `%…%` o `~`, el informe dice `Gate con variables: «<línea>» — sdd merge --verify no las expande; ponlas en la tarea de moon o en el script`
 - AND sin «Gate de merge» se lee «Gate de cierre»; «Lo afectado» no se lee; sin ningún gate que avisar, el paso se salta y lo dice
+- AND con un «Gate de cierre» `moon run :test :lint`, el informe dice también `Gate con lint: «moon run :test :lint» — el lint va en «Lint», al editar y en el pre-commit; sácalo del gate`, sin tocar la línea; una tarea de typecheck o de build no avisa
+
+### La migración a v3.0.0 propone el nivel de cada suite, «Sin filtro», «Lint» y «CI de la base»
+
+- GIVEN un proyecto en 2.3.4 cuyo `tech-stack.md` §Testing declara las suites `backend` · `dotnet test` · ~13 min y `e2e` · `npx playwright test` · ~3 min, un `.husky/pre-commit` que corre `lint-staged`, un `azure-pipelines.yml`, y el dev-lead presente
+- WHEN la migración llega a su paso 2
+- THEN la tabla propone `## Testing` con cada suite y su nivel (`backend` · `dotnet test` · ~13 min · `pendiente`, porque no se ve si arranca el host; `e2e` · `npx playwright test` · ~3 min · E2E), «Sin filtro» con los `*.csproj`, `Directory.Build.props`, `package.json` y lockfiles que existan, «Lint» `lint-staged`, al editar y en el pre-commit, y «CI de la base» `azure-pipelines.yml` · `sin orden de lectura`
+- AND no escribe nada antes del «sí»
 
 ## Reglas de la capacidad
 

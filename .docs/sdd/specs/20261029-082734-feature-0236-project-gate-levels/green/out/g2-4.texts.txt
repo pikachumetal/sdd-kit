@@ -1,0 +1,172 @@
+--- [11]
+El proyecto está en la 2.3.4 y hay una migración pendiente, la v3.0.0. Todavía no he movido nada: el paso 1 tiene un gate y necesito tu «sí» antes de tocar ficheros. El árbol está limpio y el sha de partida es `507c905`.
+
+## Paso 1: traslados (gate)
+
+| Lo que hay | Destino |
+| --- | --- |
+| `.docs/sdd/changelog.md` | `git mv` a `CHANGELOG.md` en la raíz. No hay un `CHANGELOG.md` previo, así que no hay fusión. |
+| `.docs/sdd/constitution.md` | `git mv` a `.docs/sdd/steering/constitution.md`. Un enlace cambia: `decisions/0001-salas-por-franja.md` pasa a `../decisions/0001-salas-por-franja.md`. |
+| `.docs/sdd/architecture.md` | `git mv` a `steering/architecture.md`. No tiene enlaces. |
+| `.docs/sdd/estimation.md` | `git mv` a `steering/estimation.md`. No tiene enlaces. |
+| `.docs/sdd/estimation-log.md` | `git mv` a `steering/`, y después `sdd estimation log` lo regenera en su sitio. |
+
+El log actual no tiene filas escritas a mano, solo la cabecera. Regenerarlo no pierde datos: cambia a 11 columnas (Tipo, Est, Real, Ratio, tokens, $, Carpeta) y añade el aviso de «auto-generado». Con 0 filas, quedan solo la cabecera y el aviso.
+
+## Qué viene después
+
+Estos pasos también tienen gate, y te presentaré una tabla para cada uno:
+
+- **Paso 2 (producto y operaciones):** `mission.md` pasa a `PRODUCT.md`, y `tech-stack.md` con `environments.md` pasan a `steering/operations.md`.
+  - «Decisiones abiertas» («¿Avisos por correo al reservar?») va a Later.
+  - Hay que decidir los campos nuevos de `## Testing`: nivel de la suite, «Sin filtro», «Lint» y «CI de la base».
+- **Paso 3 (roadmap y deuda):** `roadmap.md` se divide en `ROADMAP.md` y `steering/debt.md`.
+  - Necesito que decidas el tamaño `S`, `M` o `L` de cada fila de Now y Next (0021, 0022, 0024 y el patch 0023). No lo deduzco.
+  - Necesito que decidas el id que reservamos para Later (B3 y la decisión abierta).
+  - La validación pendiente de la 0016 sigue en su walkthrough.
+- **Paso 9:** el «Gate de cierre» actual (`moon run :typecheck :test :lint`) llevará el aviso de lint.
+
+¿Apruebo la tabla del paso 1 y sigo con las tablas de los pasos 2 y 3? Si prefieres cambiar algún destino, dímelo. Mientras no respondas, todo queda sin tocar y sin marcador. Para reanudar, aprueba la tabla y vuelve a pedir la migración.
+
+--- [17]
+Aplicado el paso 1 con tu «sí». Los ficheros se movieron con `git mv`, y el único enlace relativo que se rompía (la ADR 0001) ya está corregido. `sdd estimation log` avisó de que sobrescribía un log sin cabecera automática, pero ese log solo tenía la cabecera, sin filas. Aún no hay commit: va uno solo al cerrar la versión.
+
+Aquí van las tablas de los pasos 2 y 3. Siguen sin escribirse.
+
+## Paso 2: producto y operaciones (gate)
+
+**`mission.md` → `PRODUCT.md`** (raíz)
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Por qué existe» | `## Product Purpose`, texto igual |
+| «Usuarios y roles» | `## Users`, texto igual |
+| «Qué es y qué no es» | `## Capabilities and Constraints`, texto igual |
+| «Dominio» | `## Terminology`, con `**Franja**: una hora reservable, de en punto a en punto.` No lleva `_Evitar_`, porque el original no nombra ningún sinónimo. |
+
+**`tech-stack.md` y `environments.md` → `steering/operations.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Comandos» | `## Comandos`, tal cual (`npm test`) |
+| «Testing» | `## Testing`. La línea «Gate de cierre: `moon run :typecheck :test :lint`» queda tal cual. Se añaden los campos nuevos de abajo. |
+| «Frontend» | `## Frontend`: «No aplica: es una CLI.» |
+| `environments.md` | `## Entornos`, condensado: marcador `.sdd-env.json` (lo deja `npm run env:setup`), entradas `env:setup`, `env:clean` y `env:status`, y runner `pendiente`. El documento no nombra ningún runner. |
+| «Tecnologías» | Sale. Node 22 y Vitest 3 ya están en `package.json`, y no hay nada fuera de los manifests. |
+| «Decisiones abiertas» | Pasan al paso 3, a Later. |
+
+Campos nuevos de `## Testing`, propuestos como en la init:
+
+| Campo | Valor propuesto | Origen |
+| --- | --- | --- |
+| Nivel de la suite | `pendiente` | Hay `vitest run`, pero ninguna config ni código dice qué arranca. |
+| Sin filtro | `package.json` | No hay lockfile, ni config de build o runner, ni helpers de test. |
+| Lint | `ninguno` | No hay script `lint` o `format`, ni pre-commit. |
+| CI de la base | `ninguna` | No hay pipeline. |
+| Temporales | `pendiente` | Lo decide el dev-lead. |
+| Campos E2E | No se añaden | No hay config de Playwright ni carpeta `e2e/`. |
+
+Dos cosas por si quieres cambiar algo:
+- `package.json` no tiene scripts `env:*` ni `moon`, aunque los documentos 2.x los mencionan. Los copio tal cual, pero no existen.
+- El «Gate de cierre» lleva `:lint`, y en el paso 9 saldrá el aviso de lint.
+
+Tras tu «sí», `git rm` de `mission.md`, `tech-stack.md` y `environments.md`. Su texto sigue en `git show 507c905:.docs/sdd/<fichero>`.
+
+## Paso 3: `ROADMAP.md` y `steering/debt.md` (un solo gate)
+
+**`ROADMAP.md`**
+
+No hay una release en preparación. Por eso «Próximo» va entero a Now, sin título de versión y sin línea de perfil.
+
+| Fila | Destino | Tarea (brief plegado) | Externo | Tras | Estado | Tamaño |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0021 Cancelar una reserva propia | Now | Carril: feature. Toca: `src/app.js`. | SAL-41 | — | ⏳ | **lo decides tú** |
+| 0022 Avisar de la cancelación a recepción | Now | Carril: feature. Requisitos: 0019. Toca: `src/app.js`, `src/notify.js`. Salda: la deuda de `cancel`. | — | 0021 | ⏳ | **lo decides tú** |
+| 0024 Informe de ocupación por sala | Now | Carril: feature. Toca: `src/report.js`. | — | — (la 0015 no está en `ROADMAP.md` ni en `CHANGELOG.md`; se avisa) | ⏳ | **lo decides tú** |
+| Patch 0023 «Rechazar dos reservas en la misma franja» | Now ✅ | Carril: patch. Requisitos: su `patch.md`. Salda: la deuda de doble reserva. Fecha 2026-09-25 en el one-liner. | — | — | ✅ | **lo decides tú** |
+| B3 Exportar las reservas del mes a CSV | Later, id `0025` | Origen: «Recepción, reunión del 2026-09-18» | — | — | ⏳ | — |
+| «¿Avisos por correo al reservar?» | Later, id `0026` | Viene de «Decisiones abiertas» | — | — | ⏳ | — |
+
+- **Ids de Later:** los ids `0025` y `0026` los reservo con `sdd id next --reserve --count 2`, solo tras tu «sí».
+- **Sale, porque ya está en `CHANGELOG.md` y en `releases/`:** la «Releases cerradas» v1.2.0.
+- **Pendiente de validación:** la 0016 sigue pendiente en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`.
+
+**`steering/debt.md`**
+
+| Fila 2.x | Sección | Celdas |
+| --- | --- | --- |
+| Patch 0023 saldada (2026-09-25, posterior a la v1.2.0) | Lista | Ítem con el prefijo intacto. Evidencia: `../specs/20260925-100000-patch-0023-double-booking/patch.md`. Destino: 0023. Impacto: «Alto — la sala queda doble». Origen: SAL-44. |
+| `cancel` no comprueba el autor | Lista | Evidencia: SAL-45 y `../field-reports/sal-45.md`. Destino: 0022. Impacto: «Alto — cualquiera cancela cualquier reserva». Origen: SAL-45. |
+| Pasar `src/app.js` a TypeScript | Por triar | Fecha 2026-09-15. Origen: `roadmap 2.x`. Se pierde Impacto «Bajo». |
+| Mensajes de error mezclados | Por triar | Fecha 2026-09-01. Origen: `roadmap 2.x`. Se pierde Impacto «Bajo — confunde». |
+| Test de franjas intermitente | En espera | Falta: «un segundo fallo con su log». Impacto: «Medio — rojo intermitente». Fecha 2026-09-01. |
+| Validar el formato de la franja | Descartadas | Motivo: «duplica la 0018». Fecha 2026-09-01. Se pierde Impacto «Bajo». |
+
+Las fechas salen de `git log -S<ítem> --format=%as --reverse -- .docs/sdd/roadmap.md`, la primera línea. Los impactos que se pierden son los de Por triar y Descartadas, porque esas secciones no tienen columna. Dime si alguno debe ir dentro del «Ítem».
+
+Tras tu «sí», escribo los ficheros y hago `git rm .docs/sdd/roadmap.md`. Su texto sigue en `git show 507c905:.docs/sdd/roadmap.md`.
+
+## Qué necesito de ti
+
+1. ¿Apruebo las tablas de los pasos 2 y 3, con los destinos y valores propuestos?
+2. El tamaño, `S`, `M` o `L`, de la 0021, la 0022, la 0024 y el patch 0023. No lo deduzco, y sin él el gate del paso 3 no se cierra.
+3. Si quieres cambiar algún valor propuesto (por ejemplo `Temporales`, el nivel de la suite o el runner de entornos), dímelo ahora.
+
+Tras tu respuesta sigo con los pasos 4 a 9.
+
+--- [29]
+Sigo con la migración. Los pasos 1 a 6 están aplicados. Ahora cierro la versión: marcador y commit.
+
+--- [33]
+La migración a la 3.0.0 está aplicada y commiteada (`cf6d40f`). El proyecto ya consta al día con el kit 3.0.0. Me quedan dos cosas: tu respuesta al paso 8 y los avisos que ya te dejo abajo.
+
+**Qué hizo la migración**
+- **Paso 1:** `changelog.md` pasó a `CHANGELOG.md`, y `constitution`, `architecture`, `estimation` y `estimation-log` pasaron a `steering/`. El enlace de la constitution a la ADR 0001 ya está corregido.
+- **Paso 2:** `PRODUCT.md` y `steering/operations.md` sustituyen a `mission`, `tech-stack` y `environments`.
+  - Los valores de Testing son los propuestos: nivel de la suite `pendiente`, Sin filtro `package.json`, Lint `ninguno`, CI de la base `ninguna` y Temporales `pendiente`.
+  - El runner de Entornos queda `pendiente`.
+- **Paso 3:** `ROADMAP.md` y `steering/debt.md` sustituyen a `roadmap.md`.
+  - Las cuatro filas de Now llevan tamaño M.
+  - Later tiene B3 con id `0025` y la decisión de los avisos por correo con id `0026` (reservados con `sdd id next --reserve`).
+  - La 0024 perdió su «tras 0015», porque esa fila no existe en el roadmap ni en el changelog.
+- **Paso 4:** corregí los enlaces vivos de `CLAUDE.md` y `README.md`.
+- **Paso 5:** sustituí `sdd-end-feature` por `sdd-archive` en `CLAUDE.md`, y `/sdd-consult` por `/sdd-explore` en `.claude/commands/pregunta.md`.
+- **Paso 6:** las dos líneas de método de `steering/estimation.md` están al día.
+- **Paso 7:** añadí `.temp/` a `.gitignore`, que no existía.
+- **Comprobaciones:** `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da «Capacidades válidas: 1».
+
+**Pendiente tuyo**
+- **ADR 0001:** la línea 10 enlaza a `../mission.md`, que ya no existe. Las ADR son inmutables, así que no la toqué. Dime si quieres corregirla a mano.
+- **Validación de la feature 0016:** sigue pendiente en su walkthrough.
+- **Entornos:** `package.json` no tiene scripts `env:*`, aunque `steering/operations.md` los menciona. Los copié tal cual del documento 2.x.
+- **Impactos perdidos:** no pasaron al «Ítem» los de «Pasar `src/app.js` a TypeScript», «Los mensajes de error mezclan castellano e inglés» y «Validar el formato de la franja». Las secciones de destino no tienen columna de Impacto.
+
+## Paso 8: reglas del proyecto que ya cubre el kit (gate)
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «Ids: el id de una feature se elige a mano, el siguiente libre del roadmap» | `.docs/sdd/steering/constitution.md:6` | `skills/sdd-start-feature/references/nombrado.md` | Choca. Con `ids.mode: sequence`, el id lo reserva `sdd id next --reserve`, y elegirlo a mano provoca ids repetidos entre worktrees. | Quitarla |
+| «Cierra cada feature con `sdd-archive`» | `CLAUDE.md:7` | `skills/sdd-archive` | Repite: es la skill de cierre del kit. | Quitarla |
+
+**¿Aplico estas propuestas?** Si dices que sí, las aplico en un commit aparte, `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no respondes, quedan pendientes. Para reanudar: pide «revisa las reglas del proyecto contra el kit».
+
+## Paso 9: gates que `sdd merge --verify` no admite
+
+- La línea «Gate de merge» no existe, así que no hay aviso de encadenado ni de variables.
+- Aviso de lint, tal cual:
+
+```text
+Gate con lint: «moon run :typecheck :test :lint» — el lint va en «Lint», al editar y en el pre-commit; sácalo del gate
+```
+
+No toqué la línea: elegir la tarea del gate es del proyecto.
+
+--- [35]
+Quité la regla de los ids de `.docs/sdd/steering/constitution.md`. El commit es `5cc0d63`, `chore(sdd): reglas del proyecto que ya cubre el kit`. Dejé la de `CLAUDE.md` («Cierra cada feature con `sdd-archive`») como pediste, y el árbol está limpio.
+
+La migración a la 3.0.0 queda completa: el marcador está escrito y los gates están resueltos. Lo que sigue pendiente es tuyo:
+- **ADR 0001:** el enlace a `../mission.md` sigue roto, porque las ADR no se tocan.
+- **Validación de la 0016:** sigue pendiente en su walkthrough.
+- **Scripts `env:*`:** `package.json` no los tiene, aunque `steering/operations.md` los menciona.
+- **Gate de cierre:** lleva `:lint`, con el aviso del paso 9.
+

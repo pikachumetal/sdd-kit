@@ -1,0 +1,18 @@
+--- [3]
+Primero leo el log rojo y la sección Testing del proyecto.
+
+--- [13]
+La prueba que falló sigue en rojo cuando la ejecuto sola, aunque `bookings:test` entero pasa. Eso no cuadra, así que lo investigo.
+
+--- [16]
+El gate pasa tras el arreglo: `bookings:test` da 5/5 y `rooms:test` 1/1. La línea para el walkthrough es esta:
+
+```
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base 2635197` · `node scripts/gate.mjs run rooms:test` → tras el rojo en 2635197, arreglo 6d57efe: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja)
+```
+
+- **`rooms:test`:** en la pasada roja se saltó porque dependía de `bookings:test`. Con `--base 2635197` el filtro lo vuelve a saltar, porque el arreglo solo toca `src/app.js`. Por eso lo ejecuto aparte, sin filtro, y la línea lo marca como «no corrió en la pasada roja».
+- **El test que falló, en solitario:** `canceladas enseña sala, día y motivo` falla si lo ejecuto solo con `--test-name-pattern`. Espera `Norte lun — sala ocupada`, que solo existe si el test anterior (`cancelar con un motivo de la lista`) ya canceló esa reserva en el estado compartido del módulo. Pasa en `test/cancel.test.js` entero (3/3) y en la tarea (5/5), que es lo que ejecuta el gate. No es un fallo del arreglo, pero las pruebas dependen del orden. Lo anoto como Minor para el ledger. No lo he tocado.
+- **Suites unitarias:** el proyecto no tiene `operations.md` y `tech-stack.md` no tiene sección Testing, así que no hay «Suites» ni «Sin filtro» declarados. El arreglo toca solo `src/app.js`, que no está en la lista por defecto de «Sin filtro», así que no hace falta pasar el gate sin filtro. La línea `Gate de cierre: node --test` del plan no coincide con el gate real (`scripts/gate.mjs`). No he ejecutado `node --test` a pelo.
+- **Todavía no lo he ejecutado:** la revisión final por ejes (Spec y Código) de esta skill no se ha lanzado. Sin ella no puedo decir que la feature esté lista para cerrar.
+

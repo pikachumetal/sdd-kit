@@ -192,7 +192,62 @@ function reviewF3() {
   ASK = reviewPackage(base, true);
 }
 
+// El gate filtrado de la batería de sdd-archive, en develop, con lo que lee cada tarea.
+const GATE = 'node scripts/gate.mjs run bookings:test rooms:test --affected --base develop';
+function filteredGate(bookingsTests, bookingsInputs) {
+  const gate = join(HERE, '..', 'sdd-archive', 'fixtures', 'gate');
+  mkdirSync(at('scripts'), { recursive: true });
+  cp(join(gate, 'gate.mjs'), 'scripts/gate.mjs');
+  cp(join(gate, 'rooms.js'), 'src/rooms.js');
+  cp(join(gate, 'rooms.test.js'), 'test/rooms.test.js');
+  const tasks = {
+    'bookings:test': { command: `node --test ${bookingsTests.join(' ')}`, inputs: ['src/app.js', ...bookingsTests, ...bookingsInputs] },
+    'rooms:test': { command: 'node --test test/rooms.test.js', inputs: ['src/rooms.js', 'test/rooms.test.js'] },
+  };
+  writeFileSync(at('gate.json'), `${JSON.stringify({ tasks })}\n`);
+  edit('.docs/sdd/constitution.md', (text) => text.replace('Gate de cierre: `node --test` entero en verde.', `Gate de cierre: \`${GATE}\` en verde.`));
+  appendFileSync(at('.git/info/exclude'), '.temp/\n');
+  s.commit('chore: gate de cierre filtrado por tareas');
+}
+// La pasada roja del gate en HEAD, guardada entera donde la guarda el cierre; devuelve su sha.
+function redPass(rewrite = (text) => text) {
+  const red = short('HEAD');
+  const result = spawnSync(s.NODE, GATE.split(' ').slice(1), { cwd: s.R, env: s.env, encoding: 'utf8' });
+  if (result.status === 0) s.die('la pasada del gate no salió roja');
+  mkdirSync(at('.temp'), { recursive: true });
+  writeFileSync(at('.temp/gate-red.log'), rewrite(`$ ${GATE}\n${result.stdout}${result.stderr}`));
+  return red;
+}
+const askWith = (red, fix) => (ASK = ASK.replaceAll('<rojo>', red).replaceAll('<arreglo>', fix));
+// t1: dos tests leen el README, que no nombra los comandos; el arreglo solo toca el README.
+function redDocs() {
+  s.put('test/docs.test.js', "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync } from 'node:fs';\n\nconst readme = readFileSync('README.md', 'utf8');\n\ntest('el README nombra cancelar con motivo', () => assert.match(readme, /cancelar <sala> <día> --motivo/));\ntest('el README nombra canceladas', () => assert.match(readme, /canceladas/));\n");
+  filteredGate(['test/app.test.js', 'test/cancel.test.js', 'test/docs.test.js'], ['README.md']);
+  done0010();
+  const red = redPass();
+  appendFileSync(at('README.md'), '\n- `cancelar <sala> <día> --motivo <motivo>`\n- `canceladas`\n');
+  s.commit('docs: el README nombra cancelar con motivo y canceladas');
+  askWith(red, short('HEAD'));
+}
+// t2: la rama rompe cancelar y toca rooms.js; moon saltó rooms:test por depender de la tarea roja.
+function redCode() {
+  filteredGate(['test/app.test.js', 'test/cancel.test.js'], []);
+  done0010();
+  cp(join(IMPL, 'fixtures', 'app-task1.js'), 'src/app.js');
+  writeFileSync(at('src/rooms.js'), "export const rooms = ['Norte', 'Sur'].sort();\n");
+  s.commit('refactor(bookings): cancelar y salas');
+  const red = redPass((text) => {
+    if (!/^▪ rooms:test.*$/m.test(text)) s.die('la pasada roja no nombra rooms:test');
+    return `${text.replace(/^▪ rooms:test.*$/m, '').trimEnd()}\n▪ rooms:test skipped (depends on bookings:test, which failed)\n`;
+  });
+  cp(join(IMPL, 'fixtures', 'app-done.js'), 'src/app.js');
+  s.commit('fix(bookings): canceladas vuelve a enseñar el motivo');
+  askWith(red, short('HEAD'));
+}
+
 const steps = {
+  t1: redDocs,
+  t2: redCode,
   v1: () => {
     openTask1();
     ledger(taskLine(1, `${shas.T0}..${shas.T1}`, '2/2'));

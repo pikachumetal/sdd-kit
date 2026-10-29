@@ -1,0 +1,69 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [21]
+Estoy cerrando la 0010. Los pre-checks pasaron: árbol limpio, `merge --check` listo hacia `develop` y no hay otras ramas abiertas.
+
+La revisión final cubrió hasta `755ceca`. Después hay dos commits: `tasks.md` y un cambio en `package.json` (el script `cancelar`). Ese segundo no es solo documentación, así que el kit exige una re-revisión de ese tramo. Está en marcha con `opus`, en segundo plano. Fue como `general-purpose`, porque `sdd-kit:effort-high` no existe en esta sesión. No escribo ningún registro del cierre hasta que vuelva.
+
+Aviso aparte: el hook de arranque dijo que se cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills de esta sesión podrían ser de una versión vieja.
+
+Cuando llegue el veredicto sigo con la validación en campo (`validation.mode: field`), el walkthrough, el merge de la capability `bookings` y el changelog, y después el merge a `develop`.
+
+--- [28]
+**Finding Verdicts**
+
+There were no findings to verify. The final review on 755ceca came back clean.
+
+**New Breakage in the Fix Diff**
+
+None.
+
+- **`package.json:1`:** the file is still valid JSON. `"type": "module"` is unchanged, and the only addition is `"scripts": {"cancelar": "node src/app.js cancelar"}`.
+- **The script matches what `src/app.js` does:** the file reads `process.argv.slice(2)` at the top. Its last line, `if (command) console.log(run(command, args));`, makes it a working entry point. `run` has an explicit branch: `if (cmd === 'cancelar') return cancelBooking(params[0], params[1], reasonOf(params));`. Arguments that npm passes after the script name reach `args`, so `npm run cancelar -- Norte lun --motivo "sala ocupada"` ends up in `cancelBooking`, as the feature intends.
+- **Nothing depends on `package.json` or its scripts:** `gate.json` calls `node --test …` directly, `scripts/gate.mjs` does not run npm, and no test reads `package.json`. The diff adds no interface text, so the Spanish-UI restriction is not affected.
+
+**Out-of-Scope Observations**
+
+- Arguments must go after `--`. If you write `npm run cancelar Norte lun --motivo "sala ocupada"` without it, npm takes `--motivo` as its own option. The reason never reaches the app, and you get `motivo no válido: …`. That is how npm behaves, not a fault in the diff, but if the README documents the script it should show the `--` form.
+- The docs commit 6b36a61 (tasks.md) was not reviewed. It is out of scope.
+
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [40]
+Re-revisión limpia. Ahora ejecuto mi smoke (una fila por THEN) para la validación en campo, y después escribo los registros.
+
+--- [53]
+Sigo con el cierre: re-revisión limpia, suite y smoke en verde. Ahora escribo los registros (tasks.md, walkthrough, capability, changelog y roadmap).
+
+--- [66]
+Registros commiteados en un solo commit de cierre (`8599a4b`) y la base `develop` ya está integrada. Ahora hago el merge siguiendo la receta del kit.
+
+--- [71]
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`54b29e2`) · push: no hecho: `merge.push` es `false`.
+
+**Validación**
+- Es validación en campo, así que no te pregunté. Nadie ha dicho qué probó, y el walkthrough lo dice.
+- La suite unitaria pasó 2/2 y el gate 6/6, sin filtro porque la rama toca `package.json`. Los cuatro THEN del smoke corrieron de verdad.
+- `npm run cancelar` no lo ejecuté. Solo comprobé que `src/app.js` tiene la entrada `cancelar`. Con npm los argumentos van tras `--` (`npm run cancelar -- Norte lun --motivo "sala ocupada"`).
+
+**Re-revisión**
+- La revisión final cubría hasta `755ceca`, y `package.json` cambió después. Hice una re-revisión de ese tramo con `opus` y salió limpia.
+- Tuve que lanzarla como `general-purpose`, porque el tipo `sdd-kit:effort-high` no existe en esta sesión. Queda anotado en `tasks.md` y en el walkthrough.
+
+**Decisiones tomadas sin el dev-lead**
+- Task 2: `--test-concurrency=1` en el gate, como workaround de la carrera de los tests sobre el almacén en memoria. Ese flag no está en `gate.json` ni lo usó mi suite. Lo anoté y abrí una fila de deuda técnica.
+- La re-revisión con `general-purpose` + `opus` en lugar del tipo del kit.
+
+**Registros**
+- Cierre en un solo commit (`8599a4b`) sobre la última task: walkthrough, capacidad `bookings` (nueva, creada con `capability merge`), changelog, roadmap (0010 en ✅) y la fila de deuda.
+- El tramo `6b36a61`..`87ba57c` quedó juntado en ese commit.
+- No hay `estimation.md` ni `.claude/skills/`, así que no escribí sección de tiempo y la revisión de skills quedó en «no aplica».
+
+**Pendiente**
+- `sdd roadmap check` da 2 fallos que ya estaban y que no toqué: la cabecera de «Deuda técnica» (línea 22) y el formato de «v0.3.0» (línea 35). Los arregla el paso del roadmap de la migración 2.3.0.
+- El hook de arranque avisó de que la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+- La 0010 no tiene `parent:` ni `proposal:`, así que no hay piezas de familia que listar.
+
+¿Quieres el ticket de mejora del kit con `sdd-feedback`? Es opcional. Lo que daría es el tipo `sdd-kit:effort-high` ausente y que la regla de la re-revisión no distingue un cambio de `package.json` de uno de código.
+

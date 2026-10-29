@@ -127,7 +127,7 @@ if [ -f go.mod ]; then go mod download; fi
 
 ## Step 3: Verify Clean Baseline
 
-Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up.
+Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up. It runs as «Running a gate» of `sdd-verify` says.
 
 **A gate that filters by a base** (`--affected --base <ref>`) runs nothing on a fresh branch and exits 0. Run, without the filter, only its tasks whose inputs —per the tool, `moon task <t>`— include files the spec's Scope or the plan names; the rest go in the report, the `Gate:` line of `sdd-verify`, as `<tarea>: saltada (fuera del Scope de la spec)`. Never report ready from a filter that ran no task; if no task reads the Scope's files (a change only to `.docs/`), name them all skipped, say so, and report ready (`tests/affected-gate-red.md`, w2).
 

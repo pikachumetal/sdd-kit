@@ -122,6 +122,8 @@ Para el código ejecutable, Vitest con fixtures versionadas (arriba). Para las s
 
 - **Una regla de forma que sale en un mensaje que otra skill estructura va dentro de ese mensaje** (feature 0160): el anuncio de feature salió 0 de 6 en su paso y en el aviso de fase, y 4 de 6 en la cabeza de la nota de entendimiento de `brainstorming`. Un hueco omitido igual (0185): frase en el paso 0/2, en la ayuda del hueco 2/2.
 - **Una fila de rúbrica cubre el THEN entero** (feature 0180): V13 miraba 4 de los 6 campos E2E que pedía el THEN, y la pasada que perdía dos salió verde; lo vio la re-revisión.
+- **El texto que planta un molde tiene que ser cierto en el molde** (feature 0236): en `m1` y `m2`, la rama nombraba en `tech-stack.md` un `src/rooms.js` y una dependencia que el molde no tiene; el sujeto lo corrigió al cerrar y el conflicto que se medía desapareció (4 sujetos, 2,8 $ perdidos).
+- **Un hueco de plantilla gana a la receta del paso** (feature 0236): con la línea `Gate:` literal en el paso 1 de `sdd-archive`, 0 de 3 sujetos pusieron la suite unitaria antes de la flecha, porque calcaban el hueco de una sola orden de `walkthrough-template.md`; se arregla el hueco (Art. II, elemento omitido).
 - **«/sdd-kit:<skill>» en `claude -p` carga la skill sin `>>> Skill:`** (feature 0160): la puerta de `battery.mjs run` sale roja; se puntúa la conducta.
 
 ### Entrega de la skill al sujeto

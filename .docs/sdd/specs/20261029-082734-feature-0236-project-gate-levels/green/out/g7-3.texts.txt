@@ -1,0 +1,107 @@
+--- [3]
+Empiezo por las comprobaciones previas (paso 0).
+
+--- [7]
+Árbol limpio, destino listo (`develop`), sin otras ramas abiertas. Ahora el estado de la spec y de la revisión final.
+
+--- [10]
+La revisión final es sobre `4483ab6`, pero `HEAD` es `bd1a438`. Miro qué entró después.
+
+--- [26]
+Preparo el worktree desanclado en `HEAD` y despacho la re-revisión (Opus + effort-high, en segundo plano).
+
+--- [30]
+El tipo `sdd-kit:effort-high` no existe en esta sesión (carga el kit 2.3.4, no el 3.0.0). Lo despacho con `general-purpose` + `opus` y lo anoto.
+
+--- [33]
+Re-revisión despachada. Hasta que vuelva y la cierre no escribo ningún registro, como pide el paso 0.6, así que paro aquí.
+
+**Dónde está el cierre:**
+- **Pre-checks:** el árbol está limpio, `merge --check` autoriza fusionar en `develop` y no hay otras ramas `feature/*` ni `patch/*` abiertas. La spec está `approved` con la firma de Laura.
+- **Revisión final:** `tasks.md` la registra limpia, pero sobre `4483ab6`, y `HEAD` es `bd1a438`. El commit `bd1a438` añade el script `cancelar` a `package.json`. Eso es configuración, no documentación ni comentarios, así que queda fuera de la excepción de los commits sin revisar. Por eso lanzo la re-revisión única de `4483ab6..bd1a438`.
+- **Tipo de agente:** `sdd-kit:effort-high` no existe en esta sesión, porque carga el kit 2.3.4 y el proyecto pide el 3.0.0. Despaché con `general-purpose` + `opus`. Lo anotaré en la línea `Re-revisión:`. Para tenerlo en regla, actualiza el kit con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+Cuando vuelva el informe, sigo con la validación en campo (`validation.mode: field`, la hago yo con mi smoke), el walkthrough, el changelog, el roadmap y el merge a `develop`.
+
+--- [41]
+### Finding Verdicts
+Nothing was open. The final review on `4483ab6` came back clean.
+
+### New Breakage in the Fix Diff
+- **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:9`. The Task 1 row gives commit `4483ab6`, but Task 1 ("feat(bookings): cancelar con un motivo de la lista") went in at `6ccd262`. `4483ab6` is the Task 2 commit (listado de canceladas). The table loses traceability for Task 1. Fix: `| 1 | Cancelar con motivo | done | 6ccd262 | |`.
+- **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The Task 2 ruling puts `node --test --test-concurrency=1` in the gate. The plan does not agree: section 3 of `plan.md` (line 50) still says `Gate de cierre: \`node --test\``, and neither the plan nor `package.json` was amended. The tasks record and the plan now give different gates. The reason given in the ruling also looks shaky. `node --test` runs each test file in its own process, so the in-memory store is not shared between files, and tests inside one file already run in order. Serialising files would not prevent the race it describes. Either amend the plan's gate, or rewrite or drop the ruling.
+- `package.json:1`: no problems. The `cancelar` script (`node src/app.js cancelar`) matches the CLI entry in `src/app.js`. That file reads `process.argv.slice(2)` (line 1), handles `cancelar` in `run` (line 42) with `<sala> <día> --motivo <motivo>`, and prints the result when there is a command (line 48). It is used as `npm run cancelar -- Norte lun --motivo "sala ocupada"`. With no arguments it answers «motivo no válido: …», which is what the spec asks for. It keeps `"type": "module"` (the file already uses ESM `export`), and there were no earlier scripts for it to replace.
+- The `Revisión final:` line matches the context: Spec and Código clean, Arquitectura not run per the plan, on `4483ab6`, which is the last code commit.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js:13-15`: the `canceladas` test relies on state left by the first test, which cancels Norte lun. It only passes because tests in a file run in order. The ruling's "almacén compartido" points at this coupling, and `--test-concurrency=1` does not touch it.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. The two new Minors in `tasks.md` (wrong commit on the Task 1 row, and a gate ruling that contradicts the plan) are worth fixing before the archive.
+
+--- [43]
+La re-revisión no deja Critical ni Important. Quito su worktree y miro el resto de lo que necesito para el cierre.
+
+--- [48]
+La rama toca `package.json` («Sin filtro»), así que el gate va entero, sin `--affected`. Primero la suite unitaria y el gate, con la salida guardada en fichero.
+
+--- [52]
+Verde. Ahora mi smoke de campo, una fila por THEN, ejecutando el comando real.
+
+--- [55]
+Las filas 1–3 cumplen. El almacén es en memoria (el guardado es la 0014), así que `canceladas` hay que probarlo en el mismo proceso.
+
+--- [58]
+Suite y gate verdes. Paso a los registros: leo la plantilla del walkthrough y las referencias que piden los pasos 3–5.
+
+--- [65]
+Hago primero la fusión de la capacidad con el CLI y los chequeos de ADR.
+
+--- [69]
+Capacidad fusionada y validada, sin ADRs. Ahora los registros: `tasks.md` (la fila de la Task 1 apunta a un commit equivocado, `6ccd262` es el correcto, y falta la línea `Re-revisión:`).
+
+--- [72]
+Ahora el walkthrough.
+
+--- [80]
+`bd1a438` cae en el tramo que se junta, así que el walkthrough no puede citarlo. Lo reescribo sin ese sha y compruebo el roadmap.
+
+--- [85]
+Los dos errores parecen del formato 2.x previo al kit 3.0.0. Lo compruebo contra el roadmap de `HEAD` para no atribuirme nada que no sea mío.
+
+--- [90]
+Sin merges y sin publicar: se puede juntar. `reset --soft` conserva todo el árbol, y el commit pasa por el hook.
+
+--- [92]
+Cierre commiteado (`fa6f324`). Ahora la base integrada (paso 6) y los chequeos finales.
+
+--- [99]
+La 0010 está cerrada y fusionada en `develop`, pero en un punto la revisión no se hizo con lo que pide el kit.
+
+**Pendiente y avisos:**
+- **Revisión.** El kit 3.0.0 pide revisar con `sdd-kit:effort-high` + `opus`, y ese tipo de agente no existe en esta sesión (carga el kit 2.3.4). Hice la re-revisión con `general-purpose` + `opus`, y quedó anotado en `tasks.md` y en el walkthrough. Para el próximo cierre, actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Push no hecho.** `merge.push` no lo autoriza, y el repo no tiene remoto.
+- **Roadmap.** `sdd roadmap check` da dos errores (el formato de «Releases cerradas» y la cabecera de «Deuda técnica»). Salen igual en `HEAD` sin mis cambios, porque el roadmap está en formato 2.x. No los toqué.
+
+**Decisiones tomadas sin el dev-lead:**
+- **Ruling de la Task 2.** Está en `tasks.md` y el walkthrough lo recoge: `node --test --test-concurrency=1` en el gate, como workaround, con la suite al doble de tiempo si el ruling es erróneo. Ese flag no está en `gate.json` ni en el plan. El gate que corrí es el declarado y pasó. La re-revisión duda también de la causa que da el ruling. Lo dejé en la deuda técnica del roadmap, y tú decides si el flag entra en el gate o se retira el ruling.
+- **Re-revisión con otro agente.** Lo del punto anterior, pero el coste está en que no tuvo el effort alto que pide el kit.
+
+**Validación en campo:** no ha probado nada a mano nadie, solo yo, y el walkthrough lo dice.
+- La suite unitaria pasó 2/2 y el gate 6/6, sin filtro porque la rama toca `package.json`.
+- Los 4 THEN de la spec los ejecuté con el comando real.
+- `canceladas` solo muestra el motivo en el mismo proceso que `cancelar`, porque el almacén es en memoria. Guardarlo es la 0014.
+
+**Minors de la re-revisión:**
+- Corregido: la fila de la Task 1 de `tasks.md` citaba `4483ab6` y el commit correcto es `6ccd262`.
+- Diferido, ya en la deuda: los tests de `cancel.test.js` dependen del orden y del almacén compartido (`cancel.test.js:13-15`).
+
+**Qué cambió en la rama:**
+- Juntados los dos commits posteriores a la Task 2 y el cierre en `fa6f324`. Incluye el walkthrough, `tasks.md`, la capacidad nueva `bookings`, el changelog y el roadmap con la 0010 en ✅.
+- No había `estimation.md` ni ADRs candidatas, y el proyecto no tiene `.claude/skills/`.
+- La base ya estaba al día, así que no hubo merge de sincronización.
+
+¿Quieres que genere el ticket de mejora del kit (`sdd-feedback`) para esta sesión? Habría que incluir lo del agente que no existía.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`16cb874`) · push: no hecho: `merge.push` no lo autoriza y no hay remoto.
+

@@ -1,0 +1,41 @@
+--- [4]
+Empiezo por las comprobaciones previas del paso 0.
+
+--- [25]
+**Veredicto: limpia.** El tramo 9bc6ecb no tiene hallazgos Critical, Important ni Minor.
+
+**Lo que revisé**
+- **El cambio:** `package.json` pasa de `{"type": "module"}` a `{"type": "module", "scripts": {"cancelar": "node src/app.js cancelar"}}`. Se mantiene `"type": "module"`, así que los `export` de `src/app.js` siguen funcionando.
+- **Frente a `src/app.js`:** el programa lee `const [command, ...args] = process.argv.slice(2)`. El script fija `command = 'cancelar'` y npm añade detrás los argumentos que le pasa el usuario. Así `params[0]` es la sala, `params[1]` el día, y `reasonOf` encuentra `--motivo <motivo>` en `args`. Por ejemplo, `npm run cancelar -- Norte lun --motivo "sala ocupada"` produce `node src/app.js cancelar Norte lun --motivo "sala ocupada"`, que es justo la entrada de la spec (líneas 33 y 51).
+- **Frente a la spec:** la spec no dice nada de scripts npm. El script es solo un atajo para lanzar el comando y no cambia cómo se comporta. Los comandos `canceladas`, `anular`, `libres` y `reservar` siguen como estaban.
+- **Restricción de texto en castellano:** el nombre del script, `cancelar`, está en castellano y no añade texto nuevo a la interfaz.
+
+**Una nota de uso, que no es un defecto:** si se escribe `npm run cancelar Norte lun --motivo x` sin el separador `--`, npm se queda `--motivo` como opción suya y no lo pasa al programa. El comando acaba respondiendo «motivo no válido: …», que es la respuesta que la spec prevé cuando falta el motivo. Es como funciona npm, no un error del script. Si se documenta el atajo, conviene que el ejemplo lleve `--`.
+
+No he editado nada, ni ejecutado la suite, el build o el lint.
+
+--- [27]
+La re-revisión salió limpia. Retiro su worktree y leo las plantillas y referencias del cierre.
+
+--- [37]
+Ahora escribo los registros: walkthrough, `tasks.md`, changelog y roadmap.
+
+--- [53]
+La 0010 está cerrada y fusionada en `develop` (`85fcb35`). No he hecho push. Nadie ha probado la feature a mano.
+
+- **Validación:** el proyecto tiene `validation.mode: field`, así que no pregunté. Está registrada como `Validación en campo`, con la parte manual como `no probado`. La suite pasó 6/6 con `--test-concurrency=1`. Probé los cuatro THEN de la spec con ejecución real:
+  - cancelar con motivo de la lista;
+  - motivo fuera de la lista;
+  - cancelar sin `--motivo`;
+  - `canceladas`, que probé en un solo proceso porque el almacén vive en memoria.
+- **Re-revisión:** `HEAD` estaba dos commits por delante de lo revisado (`eb6a0bb`) y uno tocaba `package.json`, que no es solo documentación. Despaché una re-revisión del tramo y salió limpia. No existe el tipo `sdd-kit:effort-high` en esta sesión, así que la hizo un agente `general-purpose` con opus. Está anotado en `tasks.md` y en el walkthrough.
+- **Decisión tomada sin el dev-lead:** en la Task 2 se corre el gate con `--test-concurrency=1` porque los tests comparten el almacén en memoria y se pisan. Es un apaño y la suite tarda el doble. Lo dejé en la deuda del roadmap, con enlace al walkthrough. `gate.json` no lleva ese flag, y quedó anotado en la fila de deuda.
+- **Registros:** walkthrough, `capabilities/bookings.md` (creada con `sdd capability merge`, y `capability check` pasa), changelog y roadmap con la 0010 en ✅. No hay ADR. No hay `estimation.md` ni `.claude/skills/`, así que esos pasos no aplican. Squashé el cierre en un commit (`4c051d2`) sobre `eb6a0bb`. En `tasks.md` corregí el commit de la Task 1 a `c3f83f0`.
+- **Pendiente que no es de esta feature:**
+  - `sdd roadmap check` da 2 fallos en líneas que no toqué: la cabecera de «Deuda técnica» y el formato de `v0.3.0`. Los arregla el paso del roadmap de la migración v2.3.0.
+  - El aviso de arranque dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+- **Siguiente:** la 0010 no tiene `parent:` ni `proposal:`, así que no hay hermanas que recomendar. La 0014 («Motivo guardado») cubre que el almacén sea de memoria.
+- **Ticket del kit:** puedo preparar el ticket de mejora con `sdd-feedback` en esta misma sesión. Dime si lo quieres.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`85fcb35`) · push: no hecho: `merge.push` no lo autoriza.
+

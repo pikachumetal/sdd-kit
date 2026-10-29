@@ -1,0 +1,68 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+Estoy esperando la re-revisión del cierre de la 0010. Según el skill, la revisión final solo cubre hasta 7df530a. Después hubo un commit que toca `package.json`, y eso no es solo documentación, así que hace falta una re-revisión. Hasta que vuelva no escribo ningún registro.
+
+--- [25]
+### Finding Verdicts — «ninguno abierto»
+
+La revisión final sobre 7df530a no dejó ningún hallazgo abierto, así que no hay nada que verificar.
+
+### New Breakage in the Fix Diff
+
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:9`: Task 1 aparece con el commit `7df530a`, pero se implementó en `e532009` («feat(bookings): cancelar con un motivo de la lista»). El commit `7df530a` corresponde solo a la Task 2 (listado de canceladas). Hay que corregir la columna Commit de la fila 1.
+- **Minor**, `tasks.md:17` (Ruling de la Task 2): la regla `node --test --test-concurrency=1` cambia el gate de cierre del plan (`plan.md:50`, que dice `node --test`), pero en `## Enmiendas` de la spec no hay ninguna enmienda y el plan sigue igual. Además, la justificación técnica es dudosa. `node --test` ejecuta cada fichero de test (`app.test.js`, `cancel.test.js`, `rooms.test.js`) en su propio proceso hijo. El array `bookings` de `src/app.js:4` vive en memoria del módulo, así que no se comparte entre ficheros. Con eso, `--test-concurrency=1` no debería quitar una carrera entre ellos. Si la inestabilidad existe, lo más probable es que esté dentro de un mismo fichero, y entonces este workaround no la arregla. No rompe nada en este rango, pero conviene confirmar la causa o anotar el aislamiento del almacén como deuda técnica.
+
+`package.json:1` es coherente. `cancelar` existe como subcomando en `src/app.js:42` (`run` → `cancelBooking(params[0], params[1], reasonOf(params))`), y `npm run cancelar -- Norte lun --motivo "sala ocupada"` le pasa los argumentos tal como espera. Si se lanza sin argumentos, responde «motivo no válido: …», igual que pide la spec. No contradice la spec, y el texto de la interfaz sigue en castellano.
+
+### Out-of-Scope Observations
+
+None
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [37]
+Validé con mi propio smoke (el proyecto está en modo `field`) y la suite está verde. Ahora escribo los registros del cierre: walkthrough, `tasks.md`, capacidad, changelog y roadmap.
+
+--- [47]
+Ahora el walkthrough, el changelog y el roadmap.
+
+--- [51]
+Hay una línea en blanco de más en el changelog; la quito. Después compruebo el roadmap y hago el commit de cierre.
+
+--- [62]
+La feature 0010 queda cerrada y fusionada en `develop`. Hice una comprobación más que el «revisión limpia» que me diste: la revisión final solo cubría hasta `7df530a`, y después hubo un commit que toca `package.json`, así que lanzé la re-revisión única (opus).
+
+**Re-revisión.** No salió ningún Critical ni Important. Salieron dos Minor:
+- La fila de la Task 1 de `tasks.md` citaba un commit equivocado. Ya está corregida a `e532009`.
+- La causa del workaround `--test-concurrency=1` es dudosa. Cada fichero de test corre en su propio proceso, así que ese flag no debería quitar ninguna carrera entre ficheros. Lo dejé como ruling y como fila en la deuda técnica del roadmap.
+
+El tipo de agente `sdd-kit:effort-high` no estaba disponible en esta sesión. Despaché la re-revisión con `general-purpose` y `model: opus`.
+
+**Validación en campo.** El proyecto está en `validation.mode: field`, así que no te pregunté y la validé yo:
+- Los tests unitarios (2/2) y las dos tareas del gate, `bookings:test` (5/5) y `rooms:test` (1/1), pasan. Corrí el gate sin filtro porque la rama toca `package.json`.
+- Probé de verdad las cuatro condiciones de la spec, por código y por la CLI.
+- **No probado:** `canceladas` por la CLI entre procesos. El almacén es en memoria y cada proceso arranca solo con la reserva de Norte del lunes.
+
+**Registros.**
+- Escribí el walkthrough y actualicé `tasks.md`.
+- Creé la capacidad `bookings`.
+- Añadí la entrada al changelog.
+- Marqué la 0010 como ✅ en el roadmap.
+- No hay `estimation.md`, así que no hay tiempo real que registrar.
+- No existe `.claude/skills/`, así que la revisión de skills no aplica.
+- Junté el cierre en un commit (`af92c07`) y `develop` está en `fb32c81`.
+
+**Decisión tomada sin el dev-lead.** Usé `--test-concurrency=1` como workaround de una carrera en los tests, con coste si es erróneo de que la suite tarde el doble. El gate real (`gate.json`) no lo usa.
+
+**Pendiente.**
+- `sdd roadmap check` da 2 fallos en líneas que no toqué: el encabezado «v0.3.0» y la cabecera de «Deuda técnica». Son del formato antiguo del roadmap y los arreglaría la migración del kit.
+- El kit cargado es el 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+¿Quieres que prepare el ticket de mejora del kit con `sdd-feedback`? No bloquea nada.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`fb32c81`) · push: no hecho: `merge.push` es `false` y no hay remoto.
+

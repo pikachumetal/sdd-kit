@@ -30,6 +30,14 @@ function moldE2e() {
   s.put('e2e/booking.spec.ts', "import { expect, test } from '@playwright/test';\n\ntest('reserva Norte a las 10:00', async ({ page }) => {\n  await page.goto('/');\n  await page.getByRole('button', { name: 'Reservar' }).click();\n  await expect(page.getByText('reservada Norte 10:00')).toBeVisible();\n});\n");
   s.put('e2e/cancel.spec.ts', "import { expect, test } from '@playwright/test';\n\ntest('cancela una reserva', async ({ page }) => {\n  await page.goto('/mis-reservas');\n  await page.getByRole('button', { name: 'Cancelar' }).click();\n  await expect(page.getByText('cancelada')).toBeVisible();\n});\n");
 }
+function moldGate() {
+  s.put('package.json', '{\n  "name": "reservas",\n  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test", "lint": "eslint ." },\n  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0", "eslint": "^9.0.0" }\n}\n');
+  s.put('package-lock.json', '{\n  "name": "reservas",\n  "lockfileVersion": 3,\n  "packages": {}\n}\n');
+  s.put('vitest.config.ts', "import { defineConfig } from 'vitest/config';\n\nexport default defineConfig({ test: { include: ['src/**/*.test.ts'] } });\n");
+  s.put('playwright.config.ts', "import { defineConfig } from '@playwright/test';\n\nexport default defineConfig({ testDir: './e2e' });\n");
+  s.put('tests/helpers/rooms.ts', "export const rooms = ['Norte', 'Sur'];\n");
+  s.put('src/app.test.ts', "import { expect, test } from 'vitest';\nimport { reserve } from './app';\nimport { rooms } from '../tests/helpers/rooms';\n\ntest('reserva', () => expect(reserve(rooms[0], '10:00')).toBe('reservada Norte 10:00'));\n");
+}
 const approvedNew = (list) => s.put('.docs/sdd/sdd-kit.json', `{"init": {"approved": [${list}], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}\n`);
 function progressNew() {
   doc('Product', '## Users\n\nEl equipo de oficina reserva salas.\n\n## Product Purpose\n\nReservar salas por franja.', 'PRODUCT.md');
@@ -83,6 +91,11 @@ const molds = {
     moldE2e();
     progress();
   },
+  'code-gate-progress': () => {
+    moldCode();
+    moldGate();
+    progress();
+  },
   'code-claude': () => {
     moldCode();
     if (fresh) claudeNew();
@@ -95,6 +108,8 @@ mold();
 s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
 
+// Una pregunta por turno: si n7 para en una, el segundo turno la contesta para que llegue a proponer ## Testing entero.
+if (s.SC === 'n7') s.env.TURN2 = 'La que recomiendas. Sigue con el resto de operations.md.';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
 for (const kept of ['CLAUDE.md', 'PRODUCT.md', '.docs/sdd/sdd-kit.json', '.docs/sdd/steering/operations.md', '.docs/sdd/tech-stack.md', '.docs/sdd/mission.md']) {
