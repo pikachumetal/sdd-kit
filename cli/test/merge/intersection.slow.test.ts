@@ -173,7 +173,7 @@ describe('merge --verify cruza con la base', () => {
     expect([ran(fx, 'frontend'), ran(fx, 'backend')]).toEqual([1, 0]);
   });
 
-  it('crosses again on a push retry', async () => {
+  it('crosses again on a merge retry', async () => {
     const fx = moonFixture('cruce-reintento');
     const verified = tip(fx);
     pushRemoteCommit(fx, 'apps/frontend/b.txt', 'remoto\n');
@@ -182,7 +182,7 @@ describe('merge --verify cruza con la base', () => {
     const result = await runMerge(fx.branch, ['--push', '--verify', GATE, '--verified-at', verified]);
 
     expect(result.code, result.text).toBe(0);
-    expect(result.text).toContain("push: 'develop' avanzó en 'origin'; integro y reintento (2/3)");
+    expect(result.text).toContain("merge: 'develop' cambió durante la verificación; integro y verifico lo que se cruza (2/3)");
     expect(result.text).toContain('verificación: frontend:test: saltada (la base no toca sus inputs)');
     expect(ran(fx, 'frontend')).toBe(1);
   });

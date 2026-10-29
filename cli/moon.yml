@@ -10,16 +10,17 @@ tasks:
   typecheck:
     command: pnpm
     args: [exec, tsc, --noEmit]
+  # La mitad de los núcleos: con todos, dos gates a la vez daban tests en el tope de 5 s.
   test:
     command: pnpm
-    args: [exec, vitest, run, --exclude, '**/*.slow.test.ts']
+    args: [exec, vitest, run, --exclude, '**/*.slow.test.ts', --maxWorkers, '50%']
     inputs: ['@group(testInputs)']
   # 8 workers: con los 32 por defecto, los ficheros lentos arrancan a la vez y con carga el test más lento pasa de 58 s.
-  # Las dos con el cerrojo del clon: la suite de otro worktree espera a la que está en marcha (patch 0218).
+  # test-min con el cerrojo del clon: la suite de otro worktree espera a la que está en marcha (patch 0218).
   # Las dos fuera del gate de cierre, que no cabrían en su tope de 5 min: corren al cortar una release (0233).
   test-slow:
-    command: node
-    args: [bin/sdd.js, lock, run, --, pnpm, exec, vitest, run, slow.test, --test-timeout, '120000', --maxWorkers, '8']
+    command: pnpm
+    args: [exec, vitest, run, slow.test, --test-timeout, '120000', --maxWorkers, '8']
     inputs: ['@group(testInputs)']
     options:
       mutex: heavy-tests

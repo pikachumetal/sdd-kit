@@ -170,10 +170,31 @@ export async function verifyMerge(worktree: string, request: VerifyRequest, io: 
   if (run !== null) await runVerification({ worktree, argv: run, io }, contrast);
 }
 
-// Tras deshacer el merge, el worktree ya está en la base: lo mismo que corrió dice si el rojo es de la rama.
-export async function explainFailure(error: unknown, { worktree, io }: Omit<Verification, 'argv'>): Promise<unknown> {
+export interface Contrast extends Omit<Verification, 'argv'> {
+  base?: string;
+}
+
+// Sin base, el worktree ya está en ella tras deshacer el merge; con base, se saca desacoplada y se vuelve a la rama.
+export async function explainFailure(error: unknown, { worktree, io, base }: Contrast): Promise<unknown> {
   if (!(error instanceof VerificationFailed) || error.contrast === null) return error;
-  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, argv: error.contrast, io })}`);
+  const verification = { worktree, argv: error.contrast, io };
+  const verdict = base === undefined ? await baseVerdict(verification) : await verdictOnBase(verification, base);
+  return verdict === null ? error : new DomainError(`${error.message}\n${verdict}`);
+}
+
+// Un fichero sin seguimiento que la base trae impide sacarla: sin contraste no hay veredicto de base.
+async function verdictOnBase(verification: Verification, base: string): Promise<string | null> {
+  const { worktree } = verification;
+  const [branch] = await gitLines(worktree, ['branch', '--show-current']);
+  if ((await git(worktree, ['checkout', '-q', '--detach', base])).code !== 0) return null;
+  let verdict: string;
+  let back: number;
+  try {
+    verdict = await baseVerdict(verification);
+  } finally {
+    back = (await git(worktree, ['checkout', '-q', branch])).code;
+  }
+  return back === 0 ? verdict : `${verdict}\nbase: no se pudo volver a '${branch}' en '${worktree}'; sácala con git checkout ${branch}`;
 }
 
 async function baseVerdict(verification: Verification): Promise<string> {
