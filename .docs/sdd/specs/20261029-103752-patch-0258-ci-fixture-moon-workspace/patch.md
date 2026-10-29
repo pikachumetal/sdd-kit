@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-29
 branch: patch/0258-ci-fixture-moon-workspace
-commit: <hash>
+commit: 81d9b54e
 ---
 
 # Patch 0258 — moon dentro de una tarea de moon resuelve el workspace de fuera
@@ -52,9 +52,13 @@ Lo sufre un proyecto real, no solo el test: cualquier `sdd merge --verify` lanza
 | 1 | Test nuevo «ignores the moon workspace it inherits from a task» (fija `MOON_WORKSPACE_ROOT` a otro workspace) | ✅ RED antes del fix: `fatal: bad object 02c40743…`, el síntoma de la CI → GREEN |
 | 2 | `intersection.slow.test.ts` entero, limpio y con `MOON_WORKSPACE_ROOT` = raíz del kit | ✅ antes del fix: 11/11 limpio, 7 rojos heredado → después: 12/12 en los dos |
 | 3 | `tsc --noEmit` | ✅ |
-| 4 | run de `ci.yml` sobre el merge en `develop` (Linux) | pendiente: tras el merge |
+| 4 | pre-commit del fix (`cli:typecheck cli:test kit:roadmap`) | ✅ 1625 passed · 12 skipped |
+
+Validación en campo: 2026-10-29 · test nuevo RED (`fatal: bad object`) → GREEN · `intersection.slow.test.ts` 12/12 limpio y con `MOON_WORKSPACE_ROOT` heredado (antes, 7 rojos heredado) · `tsc --noEmit` limpio · pre-commit en verde · gate de cierre sobre el merge de sincronización (paso 6 de `sdd-archive`) · no probado: Linux de verdad (lo da el run de `ci.yml` sobre el merge en `develop`), y un moon distinto de 2.6.0 que lea otras variables de contexto
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,2 h del gate de cierre (12 min, patch 0245)
 - Inicio: 2026-10-29T10:31Z
+- Esfuerzo real: 0,25 h — reloj de la sesión 0,25 h desde 2026-10-29T10:30Z, sin 0 min de espera al dev-lead (0 esperas). −64 % sobre la estimación (0,7 h con el gate): el log de la CI ya enseñaba el `cli:test` del kit dentro del fixture, y una tarea de moon que lista sus variables confirmó la causa en un paso; el gate de cierre aún no ha corrido (corre en la integración con la base)
+- Coste de sujetos: no aplica
