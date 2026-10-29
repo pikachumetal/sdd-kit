@@ -7,7 +7,7 @@ solution: ticket
 status: done
 created: 2026-10-29
 branch: patch/0252-watch-command-runs-command
-commit: <hash>
+commit: 92f3eab5
 ---
 
 # Patch 0252 — `sdd watch command` lanza el comando y termina con él
@@ -47,13 +47,13 @@ Fila 0252 del roadmap (triaje del ticket del patch 0239, 2026-10-28): «`sdd wat
 | 3 | CLI real en Windows: `node cli/bin/sdd.js watch command -- node -e "setTimeout(()=>console.log('hola'),100)"` | ✅ termina en 0,5 s con `TERMINADO:` y el log contiene `hola`; `--path x -- node -v` → `-- no va con --path ni con --once`, rc 2 |
 | 4 | `cli/test/watch/` entera y `tsc --noEmit` | ✅ 35/35 · tsc limpio |
 
-No probado: el paro del árbol en POSIX (`process.kill(-pid)` con `detached`); lo cubre el test 2 en la CI de Linux.
+Validación en campo: 2026-10-29 · `loop.test.ts` RED 2/2 en rojo (sale con 2) → GREEN 9/9 · `cli/test/watch/` 35/35 · `tsc --noEmit` limpio · CLI real en Windows: `TERMINADO:` en 0,5 s y el log con la salida · pre-commit del fix en verde (`cli:test` 1636 pasados) · gate de cierre sobre el merge de sincronización (paso 6 de `sdd-archive`) · no probado: el paro del árbol en POSIX (`process.kill(-pid)` con `detached`), que cubre el test 2 en el run de `ci.yml` sobre el merge en `develop`, y una verificación lenta real (moon) lanzada por el vigía
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 1 h + 0,2 h del gate de cierre (12 min, patch 0245)
 - Inicio: 2026-10-29T12:14Z
-- Esfuerzo real:
+- Esfuerzo real: 0,15 h — reloj de la sesión 0,15 h desde 2026-10-29T12:13Z, sin 0 min de espera al dev-lead (0 esperas). −87 % sobre la estimación (1,2 h con el gate): la fila fijaba la forma y el escenario, y el lanzador de `sdd lock run` y el bucle de `--path` ya existían: el fix solo los junta; el gate de cierre aún no ha corrido (corre en la integración con la base)
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
