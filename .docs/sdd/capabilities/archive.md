@@ -226,6 +226,16 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - AND lo mismo con una frase que la base añade al final de una línea de `.docs/sdd/tech-stack.md` que la rama reescribe, si no dice lo contrario que la línea de la rama: queda la línea de la rama más la frase de la base
 - AND si en un trozo la rama y la base ponen dos «Destino» distintos (`**Actuar → 0240**` y `**Descartada**`), si la frase de la base dice lo contrario que la línea de la rama, o si el conflicto incluye un fichero de `.docs/sdd/capabilities/` o que no es un `.md` de `.docs/` ni `ROADMAP.md` o `CHANGELOG.md` (`src/slots.js`), no resuelve nada: el cierre queda «No terminado» para una persona
 
+### Antes del merge, el cierre lee la CI de la base y no fusiona sobre un rojo
+
+- GIVEN un proyecto cuyo §Testing declara «CI de la base» con la orden que lee su último resultado, y esa orden da `conclusion` `failure` y `headSha` `3c4d5e6` en `develop`
+- WHEN el cierre de una feature o de un patch llega al merge
+- THEN no ejecuta `sdd merge`, dice `CI de develop en rojo en 3c4d5e6`, busca el rojo en la deuda y, sin fila que lo nombre, abre una con ese sha; el cierre queda «No terminado»
+- AND si la orden da `success`, una `conclusion` vacía (run en curso) o `cancelled`, fusiona como siempre
+- AND si la orden no responde (sin `gh`, sin sesión, error de red), dice `CI de develop sin respuesta: <primera línea del error>; sigo sin leerla` y fusiona
+- AND con «CI de la base» `ninguna` o `sin orden de lectura`, no lee nada ni avisa
+- AND un hotfix no la lee
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)

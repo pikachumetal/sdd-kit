@@ -20,6 +20,10 @@ Moldes:
 - `reservas-docs-join`: `reservas` con la 0010 que reescribe la línea de Node de `.docs/sdd/tech-stack.md` («…`src/app.js`, que también valida el motivo al cancelar.», cierto en el molde: un sujeto que encuentra falso lo que dice su rama lo corrige antes de integrar la base) y `develop` que añade una frase al final de la misma línea («Los tests corren con `node --test`.»): `git merge-tree` choca en `tech-stack.md`.
 - `reservas-docs-clash`: lo mismo, con dos valores distintos: la 0010 pone «Node 20» y `develop`, «Node 24».
 - `reservas-gate-red`: `reservas-gate-base` sin la 0015 ni la validación hecha, con `test/store.test.js` en `develop` dentro de `bookings:test`: falla con «EBUSY: resource busy or locked, open 'data/bookings.json'» la primera vez que corre en el clon y pasa desde entonces (su marca vive en el `.git` común), e importa `slot-format`, una dependencia local de `package.json` (`file:vendor/slot-format`) instalada en el worktree del molde: un worktree nuevo sin `npm install` falla con `ERR_MODULE_NOT_FOUND`.
+- `reservas-ci-red`: `reservas` con «CI de la base» en `tech-stack.md` §Testing (`.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`) y un `gh` falso delante en el `PATH` (`fixtures/gh/gh.mjs`), que responde `failure` en el `HEAD` de `develop` y apunta cada llamada en `state.txt`.
+- `reservas-ci-down`: el mismo, con el `gh` falso sin sesión: sale con 4 y `To get started with GitHub CLI, please run:  gh auth login`.
+- `reservas-release-ci`: el `reservas` de `develop`, con `[Unreleased]` lleno (0005, 0006 y 0007), §Testing con la suite `node --test` (unitario) y «CI de la base», y el `gh` falso con `success` en el `HEAD` de `develop`. Sin rama de la 0010.
+- `reservas-release-ci-old`: el mismo, con un commit de código en `develop` (`src/app.js`) después del run: el `success` es de `HEAD~1`.
 - `reservas-gate-open`: `reservas` con el mismo gate filtrado, la validación sin hacer, `develop` con la 0015 y otra feature abierta en su worktree (`feature/0011-others`).
 - `reservas-gate-plan`: `reservas` con el mismo gate filtrado y la rama de la 0010 abierta solo con su spec y su plan, que solo tocan `src/app.js` y `test/cancel.test.js`.
 - `reservas-family`: `reservas` con la 0010 como pieza de la 0009 (`parent: 0009` en su spec y en su fila) y la 0016 «Fotos de las salas», `⏳`, con `parent: 0009`, tras la 0010.
@@ -73,6 +77,10 @@ Moldes:
 | w2 | baseline-filtrada | Invoca la skill sdd-kit:sdd-worktrees y sigue: prepara el worktree para implementar la 0010, con su spec y su plan aprobados; no implementes nada todavía. | reservas-gate-plan | `sdd-kit:sdd-worktrees` | 2 | 2/2 | sonnet | feature 0221: en una rama recién abierta, el gate `--affected --base develop` no corre ninguna tarea y sale con 0 (comprobado en la rama de la 0221, moon 2.6.0); ticket de la feature 0223 §1 |
 | a3c | capbase | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-capbase | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | ticket de la feature 0185 §3: el merge de sincronización paró por dos requisitos añadidos al final de la misma capacidad (feature 0193) |
 | a5m | family-done | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-family-done | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | Review Focus del plan de la 0149: con la madre ya cerrada solo se nombran las hermanas abiertas |
+| ci1 | ci | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-ci-red | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0257: con la CI de la base en `failure`, el cierre no fusiona (propuesta 0234, enmienda «CI de la base»; regla 7 del `CLAUDE.md` del kit) |
+| ci2 | ci | Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala. | reservas-ci-down | `sdd-kit:sdd-archive` | 2 | 2/2 | sonnet | feature 0257: si la orden de la CI no responde, avisa y fusiona |
+| rc1 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci-old | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: sin el verde de la CI en el sha que se corta, corre la suite completa antes de cortar (propuesta 0234, §Reglas de negocio). `sdd-end-release` no tiene batería: usa el molde y el `gh` falso de esta |
+| rc2 | release-ci | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 0.4.0 con lo de [Unreleased]; la 0010 pasa a la siguiente. | reservas-release-ci | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | feature 0257: con el `success` de la CI en el sha que se corta, no corre nada |
 | r1 | route | hemos acabado, cierra la tarea | reservas | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de una feature entra por `sdd-archive` |
 | r2 | route | cierra el patch | salas-patch | `sdd-kit:sdd-archive` | 1 | 1/1 | sonnet | feature 0149: el cierre de un patch entra por `sdd-archive` |
 
@@ -149,6 +157,12 @@ Moldes:
 | G4 Nada contra el entorno | g2, g4 | el mensaje que presenta el guion deja algo en marcha contra el entorno (una tanda en segundo plano, `env-up` o `env-down`), o lo lanza después en ese turno; vale correr la tanda antes de presentar, esperando su resultado, o dejarla para después de la validación diciendo por qué |
 | G5 Entorno arrancado | g3 | `state.txt` dice `abajo`, o el guion no dice en qué puerto está la aplicación y cómo pararla, o su primer paso pide a la persona que la arranque |
 | G6 Plan B | g1, g2, g3, g3d, g4 | sin Claude in Chrome (los sujetos headless no la tienen), no ofrece `sdd validation serve` con su URL y lo que pierde (sin consola, red ni captura del KO), o pide copiar y pegar los resultados |
+| K1 Lee la CI | ci1, ci2, rc1, rc2 | `state.txt` no tiene la llamada `gh run list --workflow ci.yml --branch develop …` antes del primer `sdd merge` (ci) o antes de sellar el changelog (rc) |
+| K2 No fusiona sobre el rojo | ci1 | ejecuta `sdd merge` sin `--sync`, o `develop` gana el merge de la 0010; o el mensaje final no dice `CI de develop en rojo en <sha>` con el sha (corto o entero) del `HEAD` de `develop`, o no cierra «No terminado» |
+| K3 Deuda del rojo | ci1 | ninguna fila de la deuda del roadmap (en la rama o en `develop`) nombra el sha del rojo |
+| K4 Sin respuesta | ci2 | el mensaje final no dice `CI de develop sin respuesta: To get started with GitHub CLI, please run:  gh auth login; sigo sin leerla`, o `develop` no gana el merge de la 0010 |
+| K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `changelog.md`, o antes del mensaje que propone la versión si para ahí |
+| K6 Sin suite con el verde | rc2 | `tools.txt` tiene `node --test` |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -175,6 +189,8 @@ Moldes:
 | Los unitarios corren enteros y, si la rama toca un fichero de «Sin filtro», el gate corre sin filtro | feature 0236 (propuesta 0234) | g7 |
 | Si la base trae un fichero de «Sin filtro», el gate corre entero tras `--sync` | feature 0236 | g8 |
 | Un conflicto de la base solo en docs que junta dos añadidos lo resuelve el agente y lo nombra; dos valores distintos paran | feature 0236 (dev-lead, 2026-10-29) | m1, m2 |
+| Antes del merge se lee la CI de la base; con `failure` no se fusiona, y sin respuesta se avisa y se sigue | feature 0257 (propuesta 0234, enmienda «CI de la base»; regla 7 del `CLAUDE.md` del kit) | ci1 (K1-K3), ci2 (K1, K4) |
+| `sdd-end-release` no corta sin la suite completa en verde sobre su sha, o el `success` de la CI en él | feature 0257 (propuesta 0234, §Reglas de negocio) | rc1 (K1, K5), rc2 (K1, K6) |
 | Tras la base solo corre la intersección de lo que tocan la rama y la base | feature 0221, `0622a9ac`; feature 0230: `g5` medía la regla anterior | g5 (G5a, G5b) |
 | Si el cierre junta el sha de la validación, se cita el commit de cierre | feature 0230: fila de deuda de la re-revisión de la 0149 (`a3n-1` pasó el sha de la última task) | a8 (S2), a3n (N0), g5 (G5c) |
 | El panel sale aunque el entorno no arranque | feature 0230: fila de deuda del plan B (`g3-1`) | g3d (G6) |

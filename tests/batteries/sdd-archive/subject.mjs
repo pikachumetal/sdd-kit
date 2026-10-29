@@ -2,7 +2,7 @@
 // Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
 import { initSubject, readLf } from '../../headless/lib.mjs';
@@ -275,6 +275,31 @@ function stackConflict(kind) {
   const probe = spawnSync('git', ['-C', s.R, 'merge-tree', '--write-tree', '--name-only', 'HEAD', 'develop'], { env: s.env, encoding: 'utf8' });
   if (probe.status !== 1 || !probe.stdout.includes('.docs/sdd/tech-stack.md')) s.die('la base y la rama no chocan en tech-stack.md');
 }
+// La CI de la base declarada en el tech-stack del molde; con suites, también la suite unitaria.
+const CI_LINE = '- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`';
+function baseCi(suites) {
+  s.put('.github/workflows/ci.yml', 'name: ci\non:\n  push:\n    branches: [develop]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: node --test\n');
+  appendFileSync(at('.docs/sdd/tech-stack.md'), `\n## Testing\n\n${suites ? '- **Suites**: `node --test` · ~1 s · unitario\n' : ''}${CI_LINE}\n`);
+  s.commit('ci: CI de la base en develop');
+}
+// Fuera del repo del sujeto, para que no lo vea ni lo commitee.
+const GH_BIN = join(s.RUN, 'bin');
+function ghFake(reply) {
+  mkdirSync(GH_BIN, { recursive: true });
+  copyFileSync(join(HERE, 'fixtures', 'gh', 'gh.mjs'), join(GH_BIN, 'gh.mjs'));
+  writeFileSync(join(GH_BIN, 'gh'), `#!/bin/sh\nexec "${s.NODE.replaceAll('\\', '/')}" "$(dirname "$0")/gh.mjs" "$@"\n`, { mode: 0o755 });
+  writeFileSync(join(GH_BIN, 'gh.cmd'), `@"${s.NODE}" "%~dp0gh.mjs" %*\r\n`);
+  writeFileSync(join(GH_BIN, 'gh.json'), JSON.stringify(reply));
+  const key = Object.keys(s.env).find((name) => name.toUpperCase() === 'PATH') ?? 'PATH';
+  s.env[key] = `${GH_BIN}${delimiter}${s.env[key] ?? ''}`;
+}
+const ghRun = (conclusion, rev) => ({ stdout: `${JSON.stringify([{ conclusion, headSha: s.git('rev-parse', rev).trim() }])}\n` });
+const GH_LOGGED_OUT = { stderr: 'To get started with GitHub CLI, please run:  gh auth login\nAlternatively, populate the GH_TOKEN environment variable with a GitHub API authentication token.\n', code: 4 };
+// Tras la CI, develop gana un cambio de código: el último verde de la CI ya no es del HEAD.
+function developAfterCi() {
+  appendFileSync(at('src/app.js'), '\n');
+  s.commit('style: salto de línea final en app.js');
+}
 // La 0010 es la pieza de una familia: su madre 0009 y su hermana 0016, tras ella.
 function family0010() {
   edit(`${F10}/spec.md`, [/^feature: 0010$/, 'feature: 0010\nparent: 0009']);
@@ -376,6 +401,16 @@ const molds = {
   },
   'reservas-docs-join': () => (moldReservas(), done0010(), stackConflict('join')),
   'reservas-docs-clash': () => (moldReservas(), done0010(), stackConflict('clash')),
+  'reservas-ci-red': () => (moldReservas(), baseCi(false), ghFake(ghRun('failure', 'develop')), done0010()),
+  'reservas-ci-down': () => (moldReservas(), baseCi(false), ghFake(GH_LOGGED_OUT), done0010()),
+  'reservas-release-ci': () => (moldReservas(), baseCi(true), ghFake(ghRun('success', 'develop'))),
+  'reservas-release-ci-old': () => {
+    moldReservas();
+    baseCi(true);
+    const run = ghRun('success', 'develop');
+    developAfterCi();
+    ghFake(run);
+  },
   'reservas-gate-open': () => (moldReservas(), affectedGate(), done0010(), developRoomsTest(), otherWorktree()),
   'reservas-gate-plan': openPlan0010,
   'reservas-gate-build': () => (moldReservas(), affectedGate(), levelsStack(), done0010(), buildChange0010()),
@@ -419,6 +454,7 @@ const techStack = gitQuiet('show', 'develop:.docs/sdd/tech-stack.md');
 const tail = techStack ? `${techStack.replace(/\n$/, '').split('\n').slice(-20).join('\n')}\n` : '';
 s.save([
   `## petición\n${ASK}\n## entorno al acabar el sujeto\n${envAtEnd}\n`,
+  existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,
   `## roadmap en develop\n${gitQuiet('show', 'develop:.docs/sdd/roadmap.md')}## bookings en develop\n${gitQuiet('show', `develop:${CAP}`)}## tech-stack en develop\n${tail}`,
 ].join(''));
