@@ -11,10 +11,13 @@
 
 > Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
 
-- **Suites**: <una por línea, cada una con su comando y su duración, p. ej. `backend` · `dotnet test` · ~2 min>
+- **Suites**: <una por línea, cada una con su comando, su duración y su nivel —`unitario` (sin host, base de datos, red ni procesos), `integración` (arranca el host, un motor de base de datos, contenedores o el sistema de ficheros), `E2E` (la aplicación entera desde fuera) o `pendiente` si no se sabe qué arranca—, p. ej. `unit` · `dotnet test Api.UnitTests` · ~20 s · unitario>
 - **Lo afectado**: <comando que corre solo los tests de lo que toca un cambio, p. ej. `moon run :test --affected`; lo usan la pasada de fix y el gate de merge>
-- **Gate de cierre**: <comando de la suite completa que corre una vez, al cerrar>
-- **Gate de merge**: <comando que corre sobre la base integrada antes de fusionar>
+- **Gate de cierre**: <una orden, la integración y los E2E por lo afectado, p. ej. `moon run :integration :e2e --affected --base develop --include-relations`, con los `inputs` de cada tarea declarados; sin forma de filtrar, la suite entera. Las suites `unitario` y `pendiente` no van aquí: el cierre las corre enteras con su orden>
+- **Gate de merge**: <la orden que `sdd merge --verify` corre sobre la base integrada antes de fusionar, sin encadenar comandos>
+- **Sin filtro**: <globs, a cualquier profundidad, del build, la configuración, las dependencias y los helpers comunes de los tests, p. ej. `package.json`, `pnpm-lock.yaml`, `*.csproj`, `.moon/**`, `vitest.config.*`, `tests/helpers/**`: si la rama o la base tocan uno, el gate corre sin filtro>
+- **Lint**: <formato y estilo, al editar y en el pre-commit, solo sobre los ficheros tocados, p. ej. `lint-staged`; nunca en el gate, y typecheck y build siguen en el gate · o `ninguno`>
+- **CI de la base**: <el pipeline que corre todas las suites en cada push a la rama de integración, un job a la vez, y la orden que lee su último resultado, p. ej. `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`; con un pipeline sin esa orden, `sin orden de lectura`; sin pipeline, `ninguna`>
 - **Acceso a la aplicación**: <cómo entra el agente en la aplicación para probarla: usuario de pruebas, página de desarrollo, `sin login`; con E2E, el usuario del agente, distinto del de la persona que valida, para que sus pruebas no le cambien los datos>
 - **Motor de producción**: <si los tests usan el motor de base de datos de producción o uno en memoria, y qué no se puede expresar con el segundo>
 - **Temporales**: <dónde deja hoy cada suite sus temporales, según su config o, si no lo fija, el valor por defecto del runner (Playwright sin `outputDir`: `test-results/`), y si no es `.temp/`, la propuesta para llevarlos ahí, p. ej. `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`; si ninguno lo dice, `<suite>` · `no declarado`, sin propuesta; con un «no», solo el sitio>

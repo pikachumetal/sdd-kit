@@ -16,7 +16,7 @@ created: 2026-10-29
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | `operations.md` con nivel, «Sin filtro», «Lint» y «CI de la base», y quien los propone | pending | — | |
+| 1 | `operations.md` con nivel, «Sin filtro», «Lint» y «CI de la base», y quien los propone | done | (este commit) | `pl3` limpio en el RED: sin regla en plan-template |
 | 2 | Correr un gate: unitarios enteros, salvaguarda, tras un rojo y lint | pending | — | |
 | 3 | Lo que trae la base y el conflicto solo de docs | pending | — | |
 

@@ -38,6 +38,11 @@ const molds = {
     appendFileSync(at('README.md'), '\nConfiguración: [docs/config.md](docs/config.md).\n');
     s.put('docs/config.md', '# Configuración\n\n- `data/`: ficheros de datos de la herramienta. Hoy no hay ninguno.\n- Responsables de sala: aún no hay; quién es cada uno y su fichero los define la 0009.\n');
   },
+  // Dos suites con nivel: la unitaria y la de integración, que escribe ficheros.
+  'reservas-levels'() {
+    edit('.docs/sdd/operations.md', (text) => text.replace('- **Suites**: `unit` · `node --test` · ~1 s', '- **Suites**: `unit` · `node --test test/app.test.js test/cancel.test.js` · ~1 s · unitario\n- `store` · `node --test test/store.test.js` · ~40 s · integración'));
+    copyFileSync(join(FIX, 'store.test.js'), at('test/store.test.js'));
+  },
   'reservas-sin-ops'() {
     rmSync(at('.docs/sdd/operations.md'));
   },
@@ -181,6 +186,10 @@ const steps = {
   pl2: () => {
     branch('feature/0010-cancel-reason');
     s.put(`${F10}/spec.md`, withoutWho(approvedSpec()) + readFileSync(join(FIX, 'annex-0010.md'), 'utf8'));
+  },
+  pl3: () => {
+    branch('feature/0010-cancel-reason');
+    s.put(`${F10}/spec.md`, withoutWho(approvedSpec()));
   },
   // La 0010 con una dependencia nueva: el plan declara el eje Arquitectura de la revisión final.
   ax: () => {

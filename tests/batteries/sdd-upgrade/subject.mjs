@@ -42,6 +42,15 @@ const molds = {
   },
   // v2x con un gate de merge encadenado: lo que mide el aviso del paso 9 de la migración a la 3.0.0.
   'v2x-gate': () => edit('.docs/sdd/tech-stack.md', (text) => text.replace(/^- Gate de cierre: `npm test`\./m, '- Gate de cierre: `npm test`.\n- Gate de merge: `pnpm lint && pnpm test`.')),
+  // v2x con E2E, lint en el pre-commit y un pipeline sin orden de lectura: lo que mide que el paso 2 proponga nivel, «Sin filtro», «Lint» y «CI de la base».
+  'v2x-levels': () => {
+    molds['v2x-e2e']();
+    s.put('package-lock.json', '{\n  "name": "salas",\n  "lockfileVersion": 3,\n  "packages": {}\n}\n');
+    s.put('.husky/pre-commit', 'npx lint-staged\n');
+    s.put('azure-pipelines.yml', 'trigger:\n  - develop\npool:\n  vmImage: ubuntu-latest\nsteps:\n  - script: npm ci && npm test\n');
+  },
+  // v2x con lint en el gate de cierre: lo que mide el aviso «Gate con lint» del paso 9.
+  'v2x-lint': () => edit('.docs/sdd/tech-stack.md', (text) => text.replace(/^- Gate de cierre: `npm test`\./m, '- Gate de cierre: `moon run :typecheck :test :lint`.')),
   // Solo configuración, sin version ni init: el molde trae mission.md y constitution.md de la 2.x.
   'salas-noversion': () => s.put('.docs/sdd/sdd-kit.json', '{"ids": {"mode": "sequence"}}\n'),
   'salas-legacy': () => {
@@ -77,7 +86,7 @@ s.git('checkout', '-q', '-b', 'develop');
 const turn2 = { o1: 'No, ahora no. Sigue con lo del filtro.', o2: 'Sí, actualízalo.' };
 if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
 
-const long = ['v1', 'v3', 'g1'].includes(s.SC);
+const long = ['v1', 'v3', 'g1', 'v4', 'g2'].includes(s.SC);
 if (long) s.env.MAX_TURNS ||= '90';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
