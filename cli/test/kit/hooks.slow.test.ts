@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { kitRoot, run } from './process.ts';
@@ -14,6 +15,30 @@ describe('hooks/hooks.json', () => {
 
   it('no declara shell', () => {
     expect(Object.keys(hook)).not.toContain('shell');
+  });
+});
+
+describe('hooks de git en Node', () => {
+  const hooks = ['.githooks/pre-commit', '.githooks/pre-merge-commit', 'tests/batteries/sdd-debugging/mold-hook/.githooks/pre-commit'];
+
+  it.each(hooks)('%s empieza por #!/usr/bin/env node', (hook) => {
+    expect(readFileSync(join(kitRoot, hook), 'utf8').split('\n', 1)[0]).toBe('#!/usr/bin/env node');
+  });
+
+  // Git for Windows lanza el hook con su sh, que resuelve la primera línea: si no supiera, el commit pasaría sin el hook.
+  it('git lanza un hook cuya primera línea es #!/usr/bin/env node', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'node-hook-'));
+    try {
+      run('git', ['init', '-q', repo]);
+      mkdirSync(join(repo, '.githooks'));
+      writeFileSync(join(repo, '.githooks', 'pre-commit'), "#!/usr/bin/env node\nconsole.error('hook de node'); process.exit(1);\n", { mode: 0o755 });
+      run('git', ['-C', repo, 'config', 'core.hooksPath', '.githooks']);
+      const commit = run('git', ['-C', repo, '-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '--allow-empty', '-m', 'x']);
+      expect(commit.output).toContain('hook de node');
+      expect(commit.code).not.toBe(0);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
   });
 });
 
