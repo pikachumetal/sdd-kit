@@ -8,7 +8,7 @@ Kit de la rama, sonnet, 2026-10-29. Escenarios y rúbrica en [la batería de `sd
 | REFACTOR, n = 2 | «write this line, literal, in the final message»; «córrela sola» | 2/2 | K4 1/2: `ci2-2` recorta el error en «please run:» | K5 2/2; K1 con `gh run list --limit 3` en 2/2, que con un `gh` real no da `headSha` | K6 2/2; K1 con otra orden en 1/2 |
 | REFACTOR 2, n = 2 | «tal cual la declara» | — | — | 2/2 | K1 2/2; K6 1/2: `rc2-2` vuelve a juntar `gh` y `node --test` |
 | REFACTOR 3, n = 2 | «en una llamada sin otra orden detrás» | — | — | 2/2 | K6 1/2: `rc2-2` corre `node --test` «igualmente» con el `success` en el `HEAD` (lo cazó el eje Spec de la revisión final; la primera lectura dio 2/2) |
-| Pasada de fix, n = 2 | «tampoco "por si acaso"» y su racionalización; «first line of the error, whole»; «go on with the merge policy» | 2/2 | marco literal 2/2; error entero 1/2: `ci2-1` vuelve a cortar en «please run:» | 2/2 (`rc1-1` junta `gh` y la suite en una llamada; con el verde en otro sha, la suite corre igual) | 2/2 |
+| Pasada de fix, n = 2 | «tampoco "por si acaso"» y su racionalización; «first line of the error, whole»; «go on with the merge policy» | 2/2 | marco literal 2/2; error entero 1/2: `ci2-1` vuelve a cortar en «please run:» | 2/2 (`rc1-1` junta `gh` y la suite en una llamada; con el verde en otro sha, la suite corre igual) | 2/2 (`rc2-1` encadena `git rev-parse HEAD` tras `gh`: inocuo, ninguna fila lo mide) |
 
 `ci1` y `ci2` no se repitieron tras REFACTOR 2 y 3: esas rondas solo tocan `sdd-end-release`.
 

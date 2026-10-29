@@ -27,7 +27,7 @@ Toda feature/patch de la release cerrada vía `sdd-archive` (walkthrough + chang
 del proyecto en verde. Trabajo a medias → se decide CON el usuario si entra o se mueve, nunca en silencio.
 Una feature que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
 mismo tratamiento que el trabajo a medias — decisión del usuario, no "lo anoto y sigo".
-Y la suite completa en verde sobre el sha que se corta, el de `<remoto>/<merge.into>` al arrancar, tras `git fetch`:
+Y la suite completa en verde sobre el sha que se corta, el `HEAD` local de `merge.into` al arrancar, tras `git fetch`:
 todas las suites de «Suites» de §Testing (`operations.md`; en 2.x, `tech-stack.md`), sin `--affected`, antes de
 sellar el changelog. Con «CI de la base» y su orden, córrela tal cual la declara, en una llamada sin otra orden detrás, y lee su `headSha` antes de lanzar ninguna suite:
 `success` en ese sha basta y no se corre nada, tampoco «por si acaso»;
