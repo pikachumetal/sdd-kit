@@ -212,8 +212,8 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md`, una línea a `changelog.md`, una sección al final de otro documento o una palabra a `.cspell/custom-words.txt` en el mismo sitio, y la primera ya se ha fusionado
 - WHEN el cierre de la segunda ejecuta `sdd merge`
-- THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
-- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
+- THEN el script resuelve el conflicto en su worktree —con `--verify`, al integrar la base en la rama del cambio, fuera del cerrojo; sin él, dentro del cerrojo—: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
+- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino; si el conflicto sale al integrar la base en la rama, falla con `base: conflicto en` y la rama del cambio vuelve a su commit, sin `MERGE_HEAD`
 
 ### El push del cierre publica la rama destino
 
@@ -228,18 +228,19 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN un merge del cierre que falla: conflicto que no es el del log, verificación en rojo, push rechazado o error de git
 - WHEN el script termina
 - THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
+- AND la rama del cambio vuelve al commit que tenía antes de la integración que hizo el script, y su worktree queda en ella
 - AND el script sale con error y nombra el paso que falló y el motivo
 - AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de los tests fallidos y de las últimas 20 líneas de la salida del hook, no un conflicto
 - AND con el hook o `--verify` en rojo, si la salida tiene líneas de un test fallido —`[-] se llama sdd-archive` de Pester, ` FAIL  test/a.test.ts > grupo > nombre` o `× nombre` de Vitest, también tras un prefijo de moon como `cli:test | `—, antes de la cola va `tests fallidos:` y esas líneas, en orden y hasta 20; sin ninguna, el mensaje no cambia
 - AND si `git merge` falla sin conflictos y sin llegar a preparar el merge (un fichero sin seguimiento que sobrescribiría, una opción que su versión no admite), el motivo es `<paso>: git merge falló sin conflictos.` seguido de las últimas 20 líneas de su salida, no un rechazo del hook
 - AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
-- AND si `--verify` sale en rojo, corre otra vez sobre el commit de antes del merge: con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
+- AND si `--verify` sale en rojo, corre otra vez, sin el cerrojo de merge, sobre la base integrada (`<remoto>/<destino>`), en el worktree del cambio desacoplado en ella, que vuelve después a su rama (en un hotfix, dentro del cerrojo y sobre el commit de antes del merge): con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
 
 ### La verificación del merge es el gate de merge, no la suite completa
 
 - GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
 - WHEN el cierre fusiona con `sdd merge`
-- THEN `--verify` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
+- THEN `--verify` es el conjunto rápido, que corre sobre la rama del cambio integrada con la base, antes del merge y del push; con una sola suite, es esa
 - AND la suite completa ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
 - AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; la suite completa no se omite nunca
 
@@ -313,10 +314,11 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### El push del cierre reintenta si la rama destino avanzó
 
-- GIVEN `sdd merge --push` y un remoto en el que otra sesión publica `develop` mientras corre `--verify`
+- GIVEN `sdd merge --push` y un remoto en el que otra sesión publica `develop` entre el merge y el push
 - WHEN el push se rechaza y, tras un fetch, la `develop` remota ya no es antecesora de la local
-- THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`, integra la `develop` remota como al empezar, repite `--verify` salvo que desde el último commit verificado solo cambien docs, y vuelve a empujar
-- AND en el reintento, con un gate `moon run … --affected`, corre solo lo que toca la rama y también tocó lo que llegó desde el último commit verificado; sin `--verified-at`, el último commit verificado es el resultado del merge que pasó la primera pasada
+- THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`; sin `--verify`, integra la `develop` remota en la local y vuelve a empujar; con `--verify`, deshace el merge, suelta el cerrojo y repite fuera de él la integración en la rama y la verificación, como en «La verificación del merge corre fuera del cerrojo de merge»
+- AND en el reintento con `--verify` y un gate `moon run … --affected`, corre solo lo que toca la rama y también tocó lo que llegó desde el último commit verificado, que es la punta de la rama integrada que pasó la pasada anterior
+- AND si otra sesión publica `develop` mientras corre `--verify`, el reintento lo da el merge, con `merge: 'develop' cambió durante la verificación; …`, no el push
 - AND tras el tercer push rechazado falla con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato` y la rama destino como estaba
 - AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla con `push: no se pudo publicar 'develop' en 'origin'.` y, en las líneas siguientes, lo que escribió `git push` (`remote: rama protegida`), sin reintentar; el push atómico de un hotfix, igual
 
@@ -377,7 +379,7 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND sin `mergiraf` en el `PATH` no escribe nada de Mergiraf y falla como hoy
 - AND el script no escribe `git config` ni `.gitattributes`
 - AND si resuelve `src/rooms.ts` pero otro fichero queda en conflicto, aborta y no escribe `mergiraf: resuelto src/rooms.ts`
-- AND si las dos ramas cambian el mismo import de forma compatible (`import { a, b }` y `import { a, c }`), Mergiraf los une en `import { a, b, c }` y `--verify` decide: en rojo, el merge se deshace como cualquier verificación en rojo
+- AND si las dos ramas cambian el mismo import de forma compatible (`import { a, b }` y `import { a, c }`), Mergiraf los une en un solo import con `b` y `c`, en el orden que da Mergiraf según qué lado entra, y `--verify` decide: en rojo, el merge se deshace como cualquier verificación en rojo
 - AND no se lanza sobre ficheros de `.docs/` ni sobre `*.md`: un conflicto ahí que las reglas del kit no resuelven sale en `conflicto en` sin línea de Mergiraf
 - AND si resolvió algún fichero, `--verified-at` no omite `--verify`
 
@@ -439,10 +441,35 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND `$VAR`, `%VAR%` y `~` llegan literales al programa
 - AND un programa que no está en el `PATH` falla con `verificación: no se encuentra '<programa>' en el PATH`
 
+### La verificación del merge corre fuera del cerrojo de merge
+
+- GIVEN `feature/0251-x`, sacada en `D:\code\kit-0251` y verificada en `c3d4e5f`, y `origin/develop`, que avanzó a `d4e5f6a` con un cambio en `cli/src/`
+- WHEN el cierre ejecuta `sdd merge --push --verify "moon run cli:test --affected --base develop" --verified-at c3d4e5f`
+- THEN sin coger el cerrojo de merge, integra `origin/develop` en `feature/0251-x` en `D:\code\kit-0251`, con la resolución de `--sync`, y escribe `base: integrada 'origin/develop' en 'feature/0251-x': <hash>`
+- AND si la `develop` local tiene commits sin publicar que la rama no lleva, los integra también, y escribe `base: integrada 'develop' en 'feature/0251-x': <hash>`
+- AND corre la verificación en `D:\code\kit-0251`, todavía sin el cerrojo, con el cruce desde `c3d4e5f`
+- AND solo con la verificación en verde coge el cerrojo de merge, fusiona `feature/0251-x` en `develop` y la publica, sin correr otra verificación dentro del cerrojo
+- AND si al fusionar, dentro del cerrojo, el resultado difiere del commit verificado fuera de `.docs/` y de `*.md`, deshace el merge de `develop`, suelta el cerrojo, escribe `merge: 'develop' cambió durante la verificación; integro y verifico lo que se cruza (2/3)` y vuelve a integrar y a verificar lo que se cruza desde el commit verificado; si solo difieren docs, publica
+- AND si el push encuentra `origin/develop` movido, deshace el merge, suelta el cerrojo, escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)` y repite igual, fuera del cerrojo
+- AND los dos casos comparten el tope de 3 intentos; al agotarlo por el merge, sale con 1 con `merge: 'develop' sigue cambiando tras 3 intentos; relanza el merge en un rato`, y por el push, con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato`, sin publicar
+- AND con `origin/develop` ya en la rama, no hay commit de integración, y con `--verified-at` en el `HEAD` de la rama la verificación se omite con `verificación: omitida: desde <sha> solo cambian docs`
+- AND sin `--verify`, coge el cerrojo y fusiona como antes, sin integrar en la rama del cambio
+- AND con cambios sin commitear en ficheros con seguimiento de `feature/0251-x`, o un merge a medias, sale con 1 con `base: 'feature/0251-x' tiene cambios sin commitear; commitéalos antes de integrar la base`, sin coger el cerrojo ni tocar nada
+- AND `--verify` con `--branch feature/0252-y`, que no es la sacada en `--project-root`, sale con 2 con `--verify corre en el worktree de la rama; 'feature/0252-y' no está sacada en 'D:\code\kit-0251'`, sin coger el cerrojo
+- AND en un hotfix (`--into` a la rama estable) la verificación sigue dentro del cerrojo
+
+### Dos cierres a la vez no se esperan con un cerrojo cogido
+
+- GIVEN `feature/0251-x` en `sdd merge --verify`, con su verificación en marcha, y `feature/0252-y`, que acaba su gate y ejecuta `sdd merge --push` mientras tanto
+- WHEN las dos quieren fusionar en `develop`
+- THEN `feature/0252-y` coge el cerrojo de merge, fusiona y publica sin esperar a que acabe la verificación de `feature/0251-x`
+- AND `feature/0251-x`, al acabar su verificación en verde, coge el cerrojo, ve `develop` cambiada, lo suelta e integra `origin/develop`, verifica solo lo que se cruza con lo que trajo `feature/0252-y`, y fusiona
+- AND en ningún momento una de las dos espera un cerrojo mientras tiene el otro cogido
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap (en `ROADMAP.md`, entre `## Now` y su tabla); los ficheros que prevé tocar una feature abierta, en el «Toca:» de su brief (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x); el método de un plan, en la línea `Ejecución:` de su cabecera.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
-- **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la aplica `sdd-parallel-agents` (requisito «Dos revisores de spec se despachan con `sdd-parallel-agents`» de `feature-flow`). `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después. `sdd merge --push`: 3 intentos de push como máximo cuando la rama destino avanza en el remoto; el push de un hotfix, uno.
+- **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la aplica `sdd-parallel-agents` (requisito «Dos revisores de spec se despachan con `sdd-parallel-agents`» de `feature-flow`). `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después. `sdd merge`: 3 intentos como máximo entre la verificación y la publicación cuando la rama destino cambia, al fusionar o al empujar; el push de un hotfix, uno.
 - **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); el bloque de un push fallido (comando literal y error); y el aviso de cada clave de `sdd-kit.local.json` que el agente ignora, en el anuncio o en la pregunta del carril de `sdd-propose`.
 - **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona. Un conflicto de merge en el que los dos lados cambian lo mismo lo resuelve una persona: `sdd merge` solo resuelve, en este orden, el `estimation-log.md` (regenerado), los registros por id, los trozos que solo añaden y lo que Mergiraf resuelva con código 0. La excepción es Mergiraf, solo fuera de `.docs/` y de `*.md`: une cambios compatibles de los dos lados en la misma construcción (`{ a, b }` + `{ a, c }` → `{ a, b, c }`), y la verificación que corre sobre el resultado decide (dev-lead, 2026-10-19).

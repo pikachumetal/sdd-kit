@@ -48,8 +48,11 @@ interface Route {
   lock: Lock;
   destination: DestinationRequest;
   remote: string | null;
-  // Los del primer intento, antes de integrar el remoto: lo que trae un reintento no es del destino local.
-  unpublished?: string[];
+}
+
+interface Where {
+  into: string;
+  remote: string | null;
 }
 
 type Outcome = 'published' | 'changed' | 'moved';
@@ -58,8 +61,8 @@ const ATTEMPTS = 3;
 
 async function publish(path: string, { policy, io }: Job, remote: string): Promise<void> {
   for (let attempt = 1; (await pushDestination(path, remote, policy.into)) === 'moved'; attempt++) {
-    if (attempt === ATTEMPTS) throw new DomainError(exhausted('moved', policy.into, remote));
-    io.out(retrying('moved', policy.into, remote, attempt + 1));
+    if (attempt === ATTEMPTS) throw new DomainError(exhausted('moved', { into: policy.into, remote }));
+    io.out(retrying('moved', { into: policy.into, remote }, attempt + 1));
     await syncBaseBranch(path, { into: policy.into, remote }, io.out);
   }
 }
@@ -89,12 +92,12 @@ async function integrate(path: string, job: Job): Promise<void> {
   }
 }
 
-function retrying(outcome: Exclude<Outcome, 'published'>, into: string, remote: string | null, attempt: number): string {
+function retrying(outcome: Exclude<Outcome, 'published'>, { into, remote }: Where, attempt: number): string {
   if (outcome === 'moved') return `push: '${into}' avanzó en '${remote}'; integro y reintento (${attempt}/${ATTEMPTS})`;
   return `merge: '${into}' cambió durante la verificación; integro y verifico lo que se cruza (${attempt}/${ATTEMPTS})`;
 }
 
-function exhausted(outcome: Exclude<Outcome, 'published'>, into: string, remote: string | null): string {
+function exhausted(outcome: Exclude<Outcome, 'published'>, { into, remote }: Where): string {
   if (outcome === 'moved') return `push: '${into}' sigue moviéndose en '${remote}' tras ${ATTEMPTS} intentos; relanza el merge en un rato`;
   return `merge: '${into}' sigue cambiando tras ${ATTEMPTS} intentos; relanza el merge en un rato`;
 }
@@ -114,9 +117,11 @@ async function integrateAndVerify(job: Job, remote: string | null, verifiedAt: s
 interface Target {
   route: Route;
   verified: string;
+  // Los de antes del primer intento: lo que trae un reintento del remoto no es del destino local.
+  unpublished: string[];
 }
 
-async function mergeOrUndo(path: string, job: Job, { route: { remote }, verified }: Target): Promise<Outcome> {
+async function mergeAndPush(path: string, job: Job, { route: { remote }, verified }: Target): Promise<Outcome> {
   const { branch, policy, options } = job;
   await mergeFeature(path, { branch, into: policy.into, noFf: policy.noFf, order: options.order }, job.io.out);
   if (!(await onlyDocsSince(path, verified))) return 'changed';
@@ -126,14 +131,13 @@ async function mergeOrUndo(path: string, job: Job, { route: { remote }, verified
 
 async function publishVerified(path: string, job: Job, target: Target): Promise<Outcome> {
   const { policy, options, io } = job;
-  const { route } = target;
-  route.unpublished ??= options.push ? await unpublishedCommits(path, route.remote, policy.into) : [];
+  const { route, unpublished } = target;
   await syncBaseBranch(path, { into: policy.into, remote: route.remote }, io.out);
   const [before] = await gitLines(path, ['rev-parse', 'HEAD']);
   try {
-    const outcome = await mergeOrUndo(path, job, target);
+    const outcome = await mergeAndPush(path, job, target);
     if (outcome !== 'published') await undoFailedMerge(path, before);
-    else await reportMerge(path, job, { to: options.push ? route.remote : null, unpublished: route.unpublished });
+    else await reportMerge(path, job, { to: options.push ? route.remote : null, unpublished });
     return outcome;
   } catch (error) {
     await undoFailedMerge(path, before);
@@ -143,14 +147,16 @@ async function publishVerified(path: string, job: Job, target: Target): Promise<
 
 async function verifyUntilPublished(job: Job, route: Route): Promise<void> {
   const { policy, options, io } = job;
+  const where = { into: policy.into, remote: route.remote };
+  const unpublished = options.push ? await destinationUnpublished(job, where) : [];
   let verifiedAt = job.verifiedAt;
   for (let attempt = 1; ; attempt++) {
     const verified = await integrateAndVerify(job, route.remote, verifiedAt);
-    const target = { route, verified };
+    const target = { route, verified, unpublished };
     const outcome = await withLock(route.lock, options.lockTimeoutMinutes, () => withDestination(route.destination, (path) => publishVerified(path, job, target)));
     if (outcome === 'published') return;
-    if (attempt === ATTEMPTS) throw new DomainError(exhausted(outcome, policy.into, route.remote));
-    io.out(retrying(outcome, policy.into, route.remote, attempt + 1));
+    if (attempt === ATTEMPTS) throw new DomainError(exhausted(outcome, where));
+    io.out(retrying(outcome, where, attempt + 1));
     verifiedAt = verified;
   }
 }
@@ -167,6 +173,21 @@ async function mergeVerified(job: Job, route: Route): Promise<void> {
     const base = route.remote === null ? policy.into : `${route.remote}/${policy.into}`;
     throw await explainFailure(error, { worktree: root, io, base });
   }
+}
+
+async function destinationUnpublished(job: Job, where: Where): Promise<string[]> {
+  if (where.remote === null) return [];
+  await fetchBase(job.projectRoot, where);
+  return unpublishedCommits(job.projectRoot, where.remote, where.into);
+}
+
+async function mergeIntoIntegration(job: Job, lock: Lock): Promise<void> {
+  const { projectRoot, branch, policy, options, io } = job;
+  const destination = { projectRoot, into: policy.into, branch, warn: io.err };
+  if (options.check) return io.out(await checkDestination(destination));
+  if (!hasGate(options.verify)) return withLock(lock, options.lockTimeoutMinutes, () => withDestination(destination, (path) => integrate(path, job)));
+  await assertBranchCheckedOut(projectRoot, branch);
+  await mergeVerified(job, { lock, destination, remote: await remoteForBranch(projectRoot, policy.into) });
 }
 
 async function currentBranch(root: string, requested: string | null): Promise<string> {
@@ -193,10 +214,10 @@ export function resolveProjectRoot(path: string): string {
   return realpathSync.native(resolve(path));
 }
 
-const hasGate = (verify: string | null) => verify !== null && verify.trim() !== '';
+const hasGate = (verify: string | null): verify is string => verify !== null && verify.trim() !== '';
 
 export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> {
-  if (hasGate(options.verify)) parseGate(options.verify ?? '');
+  if (hasGate(options.verify)) parseGate(options.verify);
   const projectRoot = resolveProjectRoot(options.projectRoot);
   const policy = resolveMergePolicy(projectRoot);
   const stable = stableTarget(options, policy);
@@ -210,9 +231,5 @@ export async function mergeBranch(options: MergeOptions, io: Io): Promise<void> 
     if (options.check) return checkHotfix(job, plan);
     return withLock(lock, options.lockTimeoutMinutes, () => mergeHotfix(job, plan));
   }
-  const destination = { projectRoot, into: policy.into, branch, warn: io.err };
-  if (options.check) return io.out(await checkDestination(destination));
-  if (!hasGate(options.verify)) return withLock(lock, options.lockTimeoutMinutes, () => withDestination(destination, (path) => integrate(path, job)));
-  await assertBranchCheckedOut(projectRoot, branch);
-  await mergeVerified(job, { lock, destination, remote: await remoteForBranch(projectRoot, policy.into) });
+  await mergeIntoIntegration(job, lock);
 }

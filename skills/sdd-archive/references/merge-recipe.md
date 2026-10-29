@@ -53,6 +53,9 @@ With `--verify`, the script integrates the destination (remote and local) into t
 | `merge: conflicto en <files>.` | the change conflicts with the destination | the same; the sync merge above should have caught it |
 | `mergiraf: resuelto <file>` | `mergiraf` solved a conflict the kit's rules didn't | nothing: `--verify` runs on the result |
 | `registros: dos filas distintas con el id …` | two different rows with one id, both kept | quote it in the final message for the dev-lead |
+| `base: integrada '<ref>' en '<branch>': <hash>` | with `--verify`, the destination (remote or local) came into the change's branch before verifying | nothing: the commit stays on the branch |
+| `base: '<branch>' tiene cambios sin commitear; …` | with `--verify`, the change's worktree has uncommitted changes; nothing was locked | commit them and run the script again |
+| `--verify corre en el worktree de la rama; …` (exit 2) | `--branch` names a branch that isn't checked out in `--project-root`; nothing was locked | run it from the branch's worktree |
 | `--verify: el gate encadena comandos con …` (exit 2) | the gate chains or redirects commands; nothing was locked | make it a moon task or a `package.json` script, and run the script again |
 | `verificación: corre …` · `verificación: <tarea>: saltada (…)` | the crossing of a `moon run … --affected` gate | copy them into the `Gate:` line |
 | `verificación: sin cruce: …` | the gate can't be crossed (a target or option the script doesn't cross, or `moon query` failed): it runs what the branch touches | quote it in the `Gate:` line |
@@ -67,7 +70,7 @@ With `--verify`, the script integrates the destination (remote and local) into t
 | `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | quote it; never `--force`, `pull` or `rebase` |
 | `push: no hecho: sin remoto` | no remote | the final message quotes it |
 
-After any failure the destination is as it was: nothing pushed, the temporary worktree removed, the lock free. The report quotes the message literally, the destination's hash and what's left. Never redo it by hand.
+After any failure the destination is as it was: nothing pushed, the temporary worktree removed, the lock free; with `--verify`, the change's branch is back at its commit too. The report quotes the message literally, the destination's hash and what's left. Never redo it by hand.
 
 `capability check --artifact` prints the failures of the artifact and of the capabilities its delta touches; those decide the exit code, and you fix them. The others come out apart as someone else's, don't change the exit code and go to the final message as the dev-lead's: don't edit those capabilities.
 

@@ -41,6 +41,33 @@ function writePublisher(fx: Fixture, file: string, once: boolean): string {
 
 const real = (path: string) => realpathSync.native(path);
 
+// El remoto rechaza los `moves` primeros push y, en cada uno, mueve develop a un commit nuevo de otra sesión.
+function movingRemote(fx: Fixture, moves: number): string[] {
+  git(fx.seed, 'checkout', '-q', '-b', 'queue', 'develop');
+  const commits = Array.from({ length: moves }, (_, index) => {
+    write(fx.seed, `src/q${index}.ts`, 'cola\n');
+    saveAll(fx.seed, `chore: otra sesión ${index}`);
+    return sha(fx.seed, 'queue');
+  });
+  git(fx.seed, 'push', '-q', fx.remote, 'queue');
+  git(fx.seed, 'checkout', '-q', 'develop');
+  const counter = join(fx.root, 'push-count').replaceAll('\\', '/');
+  const cases = commits.map((commit, index) => `${index + 1}) s=${commit};;`).join(' ');
+  const hook = `#!/bin/sh\nn=$(cat "${counter}" 2>/dev/null || echo 0)\nn=$((n+1))\necho $n > "${counter}"\ncase $n in ${cases} *) exit 0;; esac\nunset GIT_QUARANTINE_PATH\ngit update-ref refs/heads/develop $s\nexit 1\n`;
+  const hooks = join(fx.root, 'move-hooks');
+  write(hooks, 'pre-receive', hook);
+  chmodSync(join(hooks, 'pre-receive'), 0o755);
+  git(fx.remote, 'config', 'core.hooksPath', hooks);
+  return commits;
+}
+
+const waitUntil = async (done: () => boolean, label: string) => {
+  for (let tries = 0; !done(); tries++) {
+    if (tries === 600) throw new Error(`no llegó: ${label}`);
+    await new Promise((resolveWait) => setTimeout(resolveWait, 100));
+  }
+};
+
 describe('la verificación del merge corre fuera del cerrojo de merge', () => {
   it('verifica en el worktree de la rama sin el cerrojo de merge', async () => {
     const fx = mergeFixture('fuera-cerrojo');
@@ -100,18 +127,7 @@ describe('la verificación del merge corre fuera del cerrojo de merge', () => {
 
   it('el push que encuentra el remoto movido repite fuera del cerrojo', async () => {
     const fx = mergeFixture('push-movido');
-    git(fx.seed, 'checkout', '-q', '-b', 'queue', 'develop');
-    write(fx.seed, 'src/q.ts', 'cola\n');
-    saveAll(fx.seed, 'chore: otra sesión');
-    git(fx.seed, 'push', '-q', fx.remote, 'queue');
-    const queue = sha(fx.seed, 'queue');
-    git(fx.seed, 'checkout', '-q', 'develop');
-    const hooks = join(fx.root, 'move-hooks');
-    const marker = join(fx.root, 'movido').replaceAll('\\', '/');
-    const hook = `#!/bin/sh\n[ -f "${marker}" ] && exit 0\ntouch "${marker}"\nunset GIT_QUARANTINE_PATH\ngit update-ref refs/heads/develop ${queue}\nexit 1\n`;
-    write(hooks, 'pre-receive', hook);
-    chmodSync(join(hooks, 'pre-receive'), 0o755);
-    git(fx.remote, 'config', 'core.hooksPath', hooks);
+    const [queue] = movingRemote(fx, 1);
 
     const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', recordingGate(fx)]);
 
@@ -185,19 +201,87 @@ describe('la verificación del merge corre fuera del cerrojo de merge', () => {
     expect(result.code).toBe(1);
     expect(result.text).toContain('verificación: el hook rechazó el merge.');
     expect(sha(fx.repo, 'feature/0001')).toBe(branch);
-    expect(existsSync(fx.lock)).toBe(false);
+    expect(passes(fx)).toEqual([]);
+  });
+
+  it('un conflicto al integrar la base en la rama deja la rama como estaba, sin MERGE_HEAD', async () => {
+    const fx = mergeFixture('conflicto-rama');
+    const branch = sha(fx.repo, 'feature/0001');
+    pushRemoteCommit(fx, 'feature-0001.txt', 'otro contenido\n');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', recordingGate(fx)]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('base: conflicto en feature-0001.txt');
+    expect(sha(fx.repo, 'feature/0001')).toBe(branch);
+    expect(existsSync(join(fx.repo, 'worktrees', '0001', 'MERGE_HEAD'))).toBe(false);
+    expect(git(join(fx.wt, '0001'), 'status', '--porcelain')).toBe('');
+    expect(passes(fx)).toEqual([]);
+  });
+
+  it('con la base ya en la rama no hay commit de integración', async () => {
+    const fx = mergeFixture('al-dia');
+    const branch = sha(fx.repo, 'feature/0001');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', recordingGate(fx)]);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).not.toContain('base: integrada');
+    expect(sha(fx.repo, 'feature/0001')).toBe(branch);
+  });
+
+  it('tras tres push con el remoto movido falla con el literal del push y sin publicar', async () => {
+    const fx = mergeFixture('push-siempre');
+    const branch = sha(fx.repo, 'feature/0001');
+    movingRemote(fx, 3);
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', recordingGate(fx)]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato");
+    expect(git(fx.remote, 'branch', '--contains', branch)).not.toContain('develop');
+    expect(sha(fx.repo, 'feature/0001')).toBe(branch);
+  });
+
+  it('sin --verify, tras tres push con el remoto movido falla con el literal del push', async () => {
+    const fx = mergeFixture('push-siempre-sin-verify');
+    const branch = sha(fx.repo, 'feature/0001');
+    movingRemote(fx, 3);
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--push']);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain("push: 'develop' avanzó en 'origin'; integro y reintento (3/3)");
+    expect(result.text).toContain("push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato");
+    expect(git(fx.remote, 'branch', '--contains', branch)).not.toContain('develop');
+  });
+
+  it('si la base no se puede sacar para el contraste, no da veredicto de base y la rama sigue sacada', async () => {
+    const fx = mergeFixture('contraste-imposible');
+    const wt = join(fx.wt, '0001');
+    git(wt, 'rm', '-q', 'README.md');
+    saveAll(wt, 'chore: quita README');
+    const readme = JSON.stringify(join(wt, 'README.md'));
+
+    const result = await runMerge(wt, ['--verify', recordingGate(fx, { exitCode: 1, extra: `(await import('node:fs')).writeFileSync(${readme}, 'local');` })]);
+
+    expect(result.code).toBe(1);
+    expect(result.text).toContain('verificación: código de salida 1');
+    expect(result.text).not.toContain('base: en');
+    expect(passes(fx)).toHaveLength(1);
+    expect(git(wt, 'branch', '--show-current')).toBe('feature/0001');
   });
 });
 
 describe('dos cierres a la vez no se esperan con un cerrojo cogido', () => {
-  it('dos cierres a la vez no se esperan con un cerrojo cogido', async () => {
+  it('el segundo fusiona mientras el primero verifica, y el primero verifica de nuevo lo que se cruza', async () => {
     const fx = mergeFixture('a-la-vez');
     const go = join(fx.root, 'adelante').replaceAll('\\', '/');
     const waiting = `while (!existsSync(${JSON.stringify(go)})) await new Promise((done) => setTimeout(done, 100));`;
     let firstDone = false;
 
     const first = runMerge(join(fx.wt, '0001'), ['--push', '--verify', recordingGate(fx, { extra: waiting })]).finally(() => (firstDone = true));
-    while (passes(fx).length === 0) await new Promise((done) => setTimeout(done, 100));
+    await waitUntil(() => passes(fx).length > 0, 'la primera verificación');
     const second = await runMerge(join(fx.wt, '0002'), ['--push']);
     const secondFinishedFirst = !firstDone;
     writeFileSync(go, '');

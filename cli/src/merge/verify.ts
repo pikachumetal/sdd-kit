@@ -177,19 +177,24 @@ export interface Contrast extends Omit<Verification, 'argv'> {
 // Sin base, el worktree ya está en ella tras deshacer el merge; con base, se saca desacoplada y se vuelve a la rama.
 export async function explainFailure(error: unknown, { worktree, io, base }: Contrast): Promise<unknown> {
   if (!(error instanceof VerificationFailed) || error.contrast === null) return error;
-  const verdict = () => baseVerdict({ worktree, argv: error.contrast ?? [], io });
-  return new DomainError(`${error.message}\n${base === undefined ? await verdict() : await onBase(worktree, base, verdict)}`);
+  const verification = { worktree, argv: error.contrast, io };
+  const verdict = base === undefined ? await baseVerdict(verification) : await verdictOnBase(verification, base);
+  return verdict === null ? error : new DomainError(`${error.message}\n${verdict}`);
 }
 
-// shortcut: si el checkout desacoplado falla (un fichero sin seguimiento que la base trae), el contraste corre en la rama; avisar si llega a pasar.
-async function onBase<T>(worktree: string, base: string, body: () => Promise<T>): Promise<T> {
+// Un fichero sin seguimiento que la base trae impide sacarla: sin contraste no hay veredicto de base.
+async function verdictOnBase(verification: Verification, base: string): Promise<string | null> {
+  const { worktree } = verification;
   const [branch] = await gitLines(worktree, ['branch', '--show-current']);
-  await git(worktree, ['checkout', '-q', '--detach', base]);
+  if ((await git(worktree, ['checkout', '-q', '--detach', base])).code !== 0) return null;
+  let verdict: string;
+  let back: number;
   try {
-    return await body();
+    verdict = await baseVerdict(verification);
   } finally {
-    await git(worktree, ['checkout', '-q', branch]);
+    back = (await git(worktree, ['checkout', '-q', branch])).code;
   }
+  return back === 0 ? verdict : `${verdict}\nbase: no se pudo volver a '${branch}' en '${worktree}'; sácala con git checkout ${branch}`;
 }
 
 async function baseVerdict(verification: Verification): Promise<string> {

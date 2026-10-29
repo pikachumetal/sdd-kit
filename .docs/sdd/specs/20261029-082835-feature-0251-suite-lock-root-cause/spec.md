@@ -139,7 +139,50 @@ Tres tasks, en orden: (a) el merge, (b) los workers y el test a lento, (c) la me
 - AND si `git merge` falla sin conflictos y sin llegar a preparar el merge (un fichero sin seguimiento que sobrescribiría, una opción que su versión no admite), el motivo es `<paso>: git merge falló sin conflictos.` seguido de las últimas 20 líneas de su salida, no un rechazo del hook
 - AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
 - REMOVED AND si `--verify` sale en rojo, corre otra vez sobre el commit de antes del merge: con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
-- AND si `--verify` sale en rojo, corre otra vez, sin el cerrojo de merge, sobre la base integrada (`<remoto>/<destino>`), en el worktree del cambio desacoplado en ella, que vuelve después a su rama: con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
+- AND si `--verify` sale en rojo, corre otra vez, sin el cerrojo de merge, sobre la base integrada (`<remoto>/<destino>`), en el worktree del cambio desacoplado en ella, que vuelve después a su rama (en un hotfix, dentro del cerrojo y sobre el commit de antes del merge): con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
+
+#### MODIFIED — El push del cierre reintenta si la rama destino avanzó
+
+- GIVEN `sdd merge --push` y un remoto en el que otra sesión publica `develop` entre el merge y el push
+- WHEN el push se rechaza y, tras un fetch, la `develop` remota ya no es antecesora de la local
+- REMOVED THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`, integra la `develop` remota como al empezar, repite `--verify` salvo que desde el último commit verificado solo cambien docs, y vuelve a empujar
+- REMOVED AND en el reintento, con un gate `moon run … --affected`, corre solo lo que toca la rama y también tocó lo que llegó desde el último commit verificado; sin `--verified-at`, el último commit verificado es el resultado del merge que pasó la primera pasada
+- THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`; sin `--verify`, integra la `develop` remota en la local y vuelve a empujar; con `--verify`, deshace el merge, suelta el cerrojo y repite fuera de él la integración en la rama y la verificación, como en «La verificación del merge corre fuera del cerrojo de merge»
+- AND en el reintento con `--verify` y un gate `moon run … --affected`, corre solo lo que toca la rama y también tocó lo que llegó desde el último commit verificado, que es la punta de la rama integrada que pasó la pasada anterior
+- AND si otra sesión publica `develop` mientras corre `--verify`, el reintento lo da el merge, con `merge: 'develop' cambió durante la verificación; …`, no el push
+- AND tras el tercer push rechazado falla con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato` y la rama destino como estaba
+- AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla con `push: no se pudo publicar 'develop' en 'origin'.` y, en las líneas siguientes, lo que escribió `git push` (`remote: rama protegida`), sin reintentar; el push atómico de un hotfix, igual
+
+#### MODIFIED — El merge del cierre une los registros que solo añaden líneas
+
+- GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md`, una línea a `changelog.md`, una sección al final de otro documento o una palabra a `.cspell/custom-words.txt` en el mismo sitio, y la primera ya se ha fusionado
+- WHEN el cierre de la segunda ejecuta `sdd merge`
+- REMOVED THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
+- THEN el script resuelve el conflicto en su worktree —con `--verify`, al integrar la base en la rama del cambio, fuera del cerrojo; sin él, dentro del cerrojo—: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
+- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino; si el conflicto sale al integrar la base en la rama, falla con `base: conflicto en` y la rama del cambio vuelve a su commit, sin `MERGE_HEAD`
+
+#### MODIFIED — La verificación del merge es el gate de merge, no la suite completa
+
+- GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
+- WHEN el cierre fusiona con `sdd merge`
+- REMOVED THEN `--verify` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
+- THEN `--verify` es el conjunto rápido, que corre sobre la rama del cambio integrada con la base, antes del merge y del push; con una sola suite, es esa
+- AND la suite completa ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
+- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; la suite completa no se omite nunca
+
+#### MODIFIED — Mergiraf resuelve lo que queda si está instalado
+
+- GIVEN dos ramas que añaden cada una un método distinto en el mismo sitio de `src/rooms.ts` y `mergiraf` en el `PATH`
+- WHEN el merge deja ese fichero en conflicto tras unir los registros y los trozos que solo añaden
+- THEN el script ejecuta `mergiraf solve src/rooms.ts`, escribe `mergiraf: resuelto src/rooms.ts`, commitea el merge y corre `--verify` sobre el resultado
+- AND si `mergiraf solve` sale con otro código, escribe `mergiraf: no resuelve src/rooms.ts`, aborta el merge y falla como hoy con el fichero en la lista de `conflicto en`
+- AND sin `mergiraf` en el `PATH` no escribe nada de Mergiraf y falla como hoy
+- AND el script no escribe `git config` ni `.gitattributes`
+- AND si resuelve `src/rooms.ts` pero otro fichero queda en conflicto, aborta y no escribe `mergiraf: resuelto src/rooms.ts`
+- REMOVED AND si las dos ramas cambian el mismo import de forma compatible (`import { a, b }` y `import { a, c }`), Mergiraf los une en `import { a, b, c }` y `--verify` decide: en rojo, el merge se deshace como cualquier verificación en rojo
+- AND si las dos ramas cambian el mismo import de forma compatible (`import { a, b }` y `import { a, c }`), Mergiraf los une en un solo import con `b` y `c`, en el orden que da Mergiraf según qué lado entra, y `--verify` decide: en rojo, el merge se deshace como cualquier verificación en rojo
+- AND no se lanza sobre ficheros de `.docs/` ni sobre `*.md`: un conflicto ahí que las reglas del kit no resuelven sale en `conflicto en` sin línea de Mergiraf
+- AND si resolvió algún fichero, `--verified-at` no omite `--verify`
 
 #### Reglas de la capacidad — control-profiles
 
@@ -154,6 +197,7 @@ Tres tasks, en orden: (a) el merge, (b) los workers y el test a lento, (c) la me
 
 ## Enmiendas
 
+- 2026-10-29 — Delta: `MODIFIED` de «El push del cierre reintenta…», «El merge del cierre une los registros…», «La verificación del merge es el gate de merge…» y «Mergiraf resuelve lo que queda…», y «en un hotfix, dentro del cerrojo…» en el contraste de «Un merge del cierre que falla…» — la revisión final (eje Spec) encontró en la capacidad textos que el comportamiento aprobado (decisiones 1, 2, 3 y 6) ya contradice; no cambian el comportamiento, lo describen — pasada de fix de la revisión final — sin aprobar
 - 2026-10-29 — Decisión 9 y un AND de «La verificación del merge corre fuera del cerrojo de merge»: la rama integra también la `develop` local si tiene commits sin publicar — sin ello, `develop` con un commit local de código no converge y rompe «con un commit local y un reintento solo nombra el local» de `push-retry.slow.test.ts` — Task 1 — aprobada (opción «Integrar también develop local»)
 
 ## Aprobaciones

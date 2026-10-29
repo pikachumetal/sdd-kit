@@ -83,7 +83,7 @@ export async function mergeFeature(worktree: string, { branch, into, noFf, order
 
 export async function unpublishedCommits(worktree: string, remote: string | null, into: string): Promise<string[]> {
   if (remote === null) return [];
-  return gitLines(worktree, ['log', '--format=%h %s', `refs/remotes/${remote}/${into}..HEAD`]);
+  return gitLines(worktree, ['log', '--format=%h %s', `refs/remotes/${remote}/${into}..refs/heads/${into}`]);
 }
 
 export function unpublishedLines(into: string, branch: string, commits: string[]): string[] {
