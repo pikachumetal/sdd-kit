@@ -1,10 +1,15 @@
-#!/bin/sh
-# Activar una vez por clon: git config core.hooksPath .githooks
-if ! command -v moon >/dev/null 2>&1; then
-  echo "Commit bloqueado: falta moon; instálalo con «proto install» en la raíz del repo"
-  exit 1
-fi
-if ! moon run cli:typecheck cli:test kit:roadmap; then
-  echo "Commit bloqueado: fallan las comprobaciones del kit. Ejecuta: moon run cli:typecheck cli:test kit:roadmap"
-  exit 1
-fi
+#!/usr/bin/env node
+// Activar una vez por clon: git config core.hooksPath .githooks
+// CommonJS: sin extensión y sin "type" en package.json, Node lo carga así sin re-parsear.
+const { spawnSync } = require('node:child_process');
+
+const checks = ['run', 'cli:typecheck', 'cli:test', 'kit:roadmap'];
+const result = spawnSync('moon', checks, { stdio: 'inherit' });
+if (result.error?.code === 'ENOENT') {
+  console.log('Commit bloqueado: falta moon; instálalo con «proto install» en la raíz del repo');
+  process.exit(1);
+}
+if (result.status !== 0) {
+  console.log(`Commit bloqueado: fallan las comprobaciones del kit. Ejecuta: moon ${checks.join(' ')}`);
+  process.exit(1);
+}

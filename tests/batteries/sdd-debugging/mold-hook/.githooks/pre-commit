@@ -1,11 +1,16 @@
-#!/bin/sh
-# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
-tmp="$(git rev-parse --git-dir)/hook-check"
-rm -rf "$tmp"
-git worktree add -q --detach "$tmp" HEAD || exit 1
-if ! (cd "$tmp" && git status --porcelain >/dev/null); then
-  echo "pre-commit: el worktree temporal no responde" >&2
-  git worktree remove --force "$tmp"
-  exit 1
-fi
-git worktree remove --force "$tmp"
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+const { spawnSync } = require('node:child_process');
+const { rmSync } = require('node:fs');
+const { join } = require('node:path');
+
+const git = (args, options = {}) => spawnSync('git', args, { stdio: 'inherit', ...options }).status === 0;
+const tmp = join(spawnSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).stdout.trim(), 'hook-check');
+rmSync(tmp, { recursive: true, force: true });
+if (!git(['worktree', 'add', '-q', '--detach', tmp, 'HEAD'])) process.exit(1);
+if (!git(['status', '--porcelain'], { cwd: tmp, stdio: ['inherit', 'ignore', 'inherit'] })) {
+  console.error('pre-commit: el worktree temporal no responde');
+  git(['worktree', 'remove', '--force', tmp]);
+  process.exit(1);
+}
+git(['worktree', 'remove', '--force', tmp]);
