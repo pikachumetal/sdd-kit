@@ -250,8 +250,8 @@ In both, the reproduce-before-fixing rule of the fix loop applies.
 
 **What it leaves open:**
 
-- **A Critical, or an Important in the lines the fix pass changed, is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
-- Any other Important, or a Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the presentation and the walkthrough.
+- **A Critical, or an Important the fix pass brought in (its lines, or the re-review says so), is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
+- Any other Important or Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the presentation and walkthrough.
 
 **A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread if `sdd-implement`'s «Every commit of yours» allows it (`revisado en el hilo: <sha> · <files> · <n> líneas`); any other goes to ✋ as `sin revisar: <sha> — <what it changes>`, in any profile and with any `validation.mode`. If no re-review went out yet (a clean review, no fixes), that commit opens it, and it is the only one. While a `sin revisar` or a «no verificado» is unresolved, neither the `Validación en campo:` line nor the walkthrough says the review was clean: they say how many are left («…, 1 sin revisar»).
 

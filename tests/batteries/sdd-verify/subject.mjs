@@ -45,6 +45,11 @@ let approved0010 = () => readLf(join(IMPL, 'fixtures', 'spec-0010.md'))
   .replace(/^status: draft/m, 'status: approved')
   .replaceAll('approved_at: null', 'approved_at: 2026-10-08')
   .replaceAll('| dev-lead | Laura | | pendiente |', '| dev-lead | Laura | 2026-10-08 | aprobada |');
+// La spec aprobada de la 0010 con un cambio del escenario, antes de abrir la feature.
+const amendSpec = (change) => {
+  const plain = approved0010;
+  approved0010 = () => change(plain());
+};
 const withAxis = () => readLf(join(IMPL, 'fixtures', 'plan-0010.md')).replace(/^\*\*Ejecución\*\*: native.*$/m, '$&\n\n**Eje Arquitectura**: no — solo la app de reservas');
 function open0010() {
   s.git('checkout', '-q', '-b', 'feature/0010-cancel-reason');
@@ -291,8 +296,7 @@ const steps = {
   c8: () => reviewedFix({ app: 'app-c8.js', title: 'fix(bookings): el motivo sin espacios alrededor', verdict: '2 Important', fixture: 're-review-c8.md' }),
   // El Minor propone un tope que no es el que fija la spec.
   c9: () => {
-    const plain = approved0010;
-    approved0010 = () => plain().replace(/^3\. Sin review de spec[^\n]*$/m, '$&\n4. `canceladas` enseña como mucho las 20 últimas cancelaciones, y con más añade la línea «… y N más» — decidido con el dev-lead en la entrevista.');
+    amendSpec((text) => text.replace(/^3\. Sin review de spec[^\n]*$/m, '$&\n4. `canceladas` enseña como mucho las 20 últimas cancelaciones, y con más añade la línea «… y N más» — decidido con el dev-lead en la entrevista.'));
     steps.c1();
     copyFileSync(join(FIX, 'review-spec-c9.md'), join(workspace(), 'review-spec.md'));
   },
@@ -309,8 +313,7 @@ const steps = {
   // La regla de confirmar antes de paralelizar, del usuario, y una spec aprobada con su política de modelos.
   // La línea va en la spec que se aprobó: añadida en un commit posterior, 1 de 2 sujetos no la contó como aprobada (con razón).
   mp1: () => {
-    const plain = approved0010;
-    approved0010 = () => plain().replace(/^## Decisiones que he tomado yo — valida estas$/m, '$&\n\n- Política de modelos (solo en `delegate`): revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high, Arquitectura no (plan) · en paralelo hasta `control.maxParallelAgents`');
+    amendSpec((text) => text.replace(/^## Decisiones que he tomado yo — valida estas$/m, '$&\n\n- Política de modelos (solo en `delegate`): revisores de la spec ninguno · ejes de la revisión final Spec opus+high, Código sonnet+high, Arquitectura no (plan) · en paralelo hasta `control.maxParallelAgents`'));
     done0010();
     s.env.APPEND_SYSTEM = 'Instrucciones del usuario: antes de paralelizar subagentes o workflows, justifica qué modelo va a cada tarea y pide confirmación.';
   },
@@ -318,8 +321,7 @@ const steps = {
 steps.c1f = steps.c1;
 // `--desde` entra en la spec: sin él, el sujeto para por freno de alcance y no llega al test.
 steps.c7 = () => {
-  const plain = approved0010;
-  approved0010 = () => plain().replace('comando `canceladas`.', 'comando `canceladas`, con `--desde <día>` para listar desde ese día.');
+  amendSpec((text) => text.replace('comando `canceladas`.', 'comando `canceladas`, con `--desde <día>` para listar desde ese día.'));
   steps.c1();
 };
 steps.f2 = steps.f1;

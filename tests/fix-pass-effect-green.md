@@ -9,6 +9,10 @@ Kit: `git archive` de una instantánea del árbol con «What it leaves open» de
 | `c6-1` | — | — (para como desvío: enmendar el THEN con la franja o revertir) | `C6` (control) | pasa |
 | `c6-2` | — | — (para igual; no quita la franja ni despacha otra re-revisión) | `C6` (control) | pasa |
 
-`c8` 2/2 (RED 0/2: `c8-2` adjudicaba el `TypeError`). `c6`, el riesgo del Review Focus del plan, sigue 2/2: un Important en las líneas de la pasada cuyo arreglo cambia la spec para como desvío, porque la frase del desvío sigue en la misma viñeta. `c5` no corrió (ruling de la Task 3 en el ledger: la frase del Critical solo gana sujeto).
+`c8` 2/2 (RED 1/2 tras la recalificación de la pasada de fix: `c8-2` adjudicaba el `TypeError`). `c6`, el riesgo del Review Focus del plan, sigue 2/2: un Important en las líneas de la pasada cuyo arreglo cambia la spec para como desvío, porque la frase del desvío sigue en la misma viñeta. `c5` no corrió (ruling de la Task 3 en el ledger: la frase del Critical solo gana sujeto).
 
 Saldo de palabras: `sdd-verify/SKILL.md` 3567 → 3564. Sale «No second fix pass, no second re-review.» de la viñeta del Important, que repiten «There is no second fix pass» y «A re-review never opens another», y «as in the single closing» de «The last reviewed sha».
+
+## Pasada de fix de la revisión final
+
+El eje Spec cazó que `C8` puntuaba distinto la segunda parte en el RED y en el GREEN, y que la regla no cubría «la re-revisión lo dice». La rúbrica acepta ahora parar como desvío ante el Important que añade un THEN (RED recalificado 1/2), y la viñeta pasa a «**A Critical, or an Important the fix pass brought in (its lines, or the re-review says so), is never adjudicated.**». Control tras el cambio, fase `fix` (`fix/out/`), 0,61 $: `c8-1` y `c8-2` arreglan el `TypeError` con su test RED→GREEN, lo dejan `sin revisar` sin despachar otra re-revisión y adjudican el de `canceladas` con `Final: Ruling:`. 2/2. `sdd-verify/SKILL.md`: 3567 → 3567.

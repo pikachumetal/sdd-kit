@@ -236,19 +236,20 @@
 | 2026-10-29 | 0247 | patch | 0.5 | 0.06 | 0.12 | — | — | no aplica | — | 20261029-121440-patch-0247-ledger-rulings-and-done-count |
 | 2026-10-29 | 0244 | infra/tooling | 2.5 | 0.54 | 0.22 | 23612k | 3160k | — | 11.35 | 20261029-153348-feature-0244-merge-docs-conflicts |
 | 2026-10-29 | 0257 | docs | 2.5 | 0.84 | 0.34 | 28745k | 4675k | 8.56 | 13.11 | 20261029-171538-feature-0257-release-merge-read-base-ci |
+| 2026-10-29 | 0246 | docs | 3 | 1.86 | 0.62 | 91266k | 5442k | 8.3 | 30.14 | 20261029-190601-feature-0246-baseline-detached-worktree |
 
-**Factor de calibración** (ratio mediano real/estimado, 196 artefactos): **0.58** · media 0.76
+**Factor de calibración** (ratio mediano real/estimado, 197 artefactos): **0.58** · media 0.76
 
 - p25–p75: 0.38–0.92
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 27 % · sobreestimadas: 63 % · infraestimadas: 10 %
+- Dentro de ±25 %: 26 % · sobreestimadas: 63 % · infraestimadas: 10 %
 - Error absoluto (h): media 1.35 · mediana 0.9
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.32
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.34
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 72 | 37 % |
-| 0.5–0.8 | 59 | 30 % |
+| 0.5–0.8 | 60 | 30 % |
 | 0.8–1.25 | 45 | 23 % |
 | 1.25–2 | 12 | 6 % |
 | ≥2 | 8 | 4 % |
@@ -256,7 +257,7 @@
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 90 | 0.55 | 0.38–0.76 |
+| docs | 91 | 0.56 | 0.38–0.76 |
 | infra/tooling | 51 | 0.49 | 0.37–0.77 |
 | patch | 53 | 0.83 | 0.53–1.33 |
 | tooling | 1 | 0.6 | — |
@@ -278,6 +279,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 84 | 196.48 | 0.53 | 370 | 1598.53 |
+| sin publicar | 85 | 198.34 | 0.53 | 378.3 | 1628.67 |
 
 > Ver `estimation.md`.

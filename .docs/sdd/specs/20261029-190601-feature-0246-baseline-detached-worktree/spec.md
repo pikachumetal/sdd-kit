@@ -1,7 +1,7 @@
 ---
 id: 20261029-190601-feature-0246-baseline-detached-worktree
 feature: 0246
-title: La línea base corre en un worktree desanclado, y la pasada de fix prueba el efecto y no adjudica lo que mete
+title: La línea base corre en un worktree desanclado, y la pasada de fix no adjudica lo que mete
 mode: full
 profile: delegate
 status: approved
@@ -12,7 +12,7 @@ approvers:
     approved_at: 2026-10-29
 ---
 
-# Spec — La línea base corre en un worktree desanclado, y la pasada de fix prueba el efecto y no adjudica lo que mete
+# Spec — La línea base corre en un worktree desanclado, y la pasada de fix no adjudica lo que mete
 
 🦆 Hoy la línea base de `sdd-worktrees` corre en el árbol de la rama: en la 0238 encontró a medias los RED de la Task 2 y salió roja sin que la rama tuviera nada roto. Con el cambio corre en `git worktree add --detach <tmp> HEAD`, el commit de apertura, y el worktree se quita al acabar: su resultado es el de ese commit aunque la sesión escriba tests a la vez. Además, una regla de la pasada de fix: un Important que la re-revisión achaca a la propia pasada de fix se arregla en el hilo y va a ✋ como `sin revisar`, sin ruling que lo deje en pie. Ninguna skill crece: cada fichero editado queda con las mismas palabras o menos.
 
@@ -47,15 +47,15 @@ Review de spec propuesta: ninguna — señales: MODIFIED (un requisito de `verif
 11. **Una pieza entra, otra sale**: entran la regla del worktree de la línea base, la del efecto, la del valor de la spec y la del Important de la pasada; salen las palabras de la decisión 7, hasta dejar cada fichero igual o por debajo. Ningún tope de `word-budget.test.ts` cambia.
 
 - Repaso de coherencia: el THEN de «Un valor que elige la pasada de fix sale de la spec» citaba «la decisión 5» de otra spec y `sdd capability merge` lo rechazó; ahora lleva el literal. La regla de adjudicar solo vive en `sdd-verify/SKILL.md:253` para la revisión final: los «Adjudicate» de `sdd-implement` son del bucle por task, fuera del alcance.
-- Delta probado con `sdd capability merge` sobre una copia de `.docs/sdd` (2026-10-29): añadido «La línea base corre en un worktree desanclado en el commit de apertura» en `feature-flow`; sustituido «La revisión se cierra una vez» y añadidos «Un Important que mete la pasada de fix no se adjudica», «El test de la pasada de fix afirma el efecto del hallazgo» y «Un valor que elige la pasada de fix sale de la spec» en `verification`; `sdd capability check` sobre la copia: `Capacidades válidas: 20`.
+- Delta probado con `sdd capability merge` sobre una copia de `.docs/sdd` (2026-10-29, antes de las enmiendas, que quitan dos de los cuatro requisitos añadidos; tras ellas lo fusionó el cierre): añadido «La línea base corre en un worktree desanclado en el commit de apertura» en `feature-flow`; sustituido «La revisión se cierra una vez» y añadidos «Un Important que mete la pasada de fix no se adjudica», «El test de la pasada de fix afirma el efecto del hallazgo» y «Un valor que elige la pasada de fix sale de la spec» en `verification`; `sdd capability check` sobre la copia: `Capacidades válidas: 20`.
 - Política de modelos: sin revisores de la spec · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura no (solo texto de skills y baterías) · sujetos de la campaña RED/GREEN en Sonnet, por tandas · en paralelo hasta `control.maxParallelAgents` (3) — al aprobar la spec, esta línea es la confirmación de paralelizar que pide tu `CLAUDE.md`.
 
 ### Decisiones tomadas con el dev-lead
 
 - Carril feature, perfil `delegate`, al fusionar `sdd merge --push` — «Arranca la 0246 con sdd-propose, carril feature … Perfil delegate. Al fusionar, `sdd merge --push`.»
 - La línea base corre en `git worktree add --detach <tmp> HEAD`, como la revisión final, y el worktree se quita al acabar; la sesión sigue en el suyo — literal del prompt de arranque
-- La 0256 entra entera: la regla del efecto va en `sdd-tdd`, nombrada desde `sdd-verify` y `plan-writing.md` — «Sí, los 5 grupos» (2026-10-29)
-- Pasada de fix: antes de escribir un valor (un sha, un literal, un umbral), lo busca en las decisiones de la spec — literal del prompt de arranque (3.er caso, ticket de la feature 0257 §2)
+- La 0256 entra entera: la regla del efecto va en `sdd-tdd`, nombrada desde `sdd-verify` y `plan-writing.md` — «Sí, los 5 grupos» (2026-10-29); su regla del efecto la sustituye la enmienda del 2026-10-29 (RED limpio)
+- Pasada de fix: antes de escribir un valor (un sha, un literal, un umbral), lo busca en las decisiones de la spec — literal del prompt de arranque (3.er caso, ticket de la feature 0257 §2); la sustituye la enmienda del 2026-10-29 (RED limpio)
 - Ningún arreglo alarga una skill: el saldo de palabras de cada skill editada queda igual o baja — literal del prompt de arranque (regla 6 de `CLAUDE.md`)
 
 ## Intent
@@ -138,7 +138,7 @@ Task 1, la línea base: el paso 3 de `sdd-worktrees` abre con el worktree desanc
 
 ## Enmiendas
 
-- 2026-10-29 — Sale el requisito «Un valor que elige la pasada de fix sale de la spec» y la decisión 5 queda sin regla: su RED (c9, n = 2) salió limpio, los dos sujetos usaron el 20 de la spec y no el 10 del revisor (	ests/fix-pass-effect-red.md); Art. I. La regla del efecto sigue, con su RED repetido sobre un molde más duro: el primero salió limpio en los 2 sujetos válidos con un molde que lo ponía fácil — aprobada: opciones «Recortarla (Recomendada)» y «Endurecer y medir (Recomendada)» (dev-lead, 2026-10-29)
+- 2026-10-29 — Sale el requisito «Un valor que elige la pasada de fix sale de la spec» y la decisión 5 queda sin regla: su RED (`c9`, n = 2) salió limpio, los dos sujetos usaron el 20 de la spec y no el 10 del revisor (`tests/fix-pass-effect-red.md`); Art. I. La regla del efecto sigue, con su RED repetido sobre un molde más duro: el primero salió limpio en los 2 sujetos válidos con un molde que lo ponía fácil — aprobada: opciones «Recortarla (Recomendada)» y «Endurecer y medir (Recomendada)» (dev-lead, 2026-10-29)
 
 - 2026-10-29 — Sale el requisito «El test de la pasada de fix afirma el efecto del hallazgo» y la decisión 6 queda sin regla: el RED repetido sobre el molde endurecido (`--desde` en la spec, el hallazgo que nombra la bandera `missing`) salió limpio 2/2, como el primero y `t6` (`tests/fix-pass-effect-red.md`); no se tocan `sdd-tdd` ni `plan-writing.md` — aplica la opción «Endurecer y medir (Recomendada)»: «si sigue limpio, recorto la regla» (dev-lead, 2026-10-29)
 

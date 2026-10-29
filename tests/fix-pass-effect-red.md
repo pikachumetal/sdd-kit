@@ -6,10 +6,10 @@ Kit: `git archive` del commit de apertura `40c72058`, sin las reglas nuevas. Son
 
 | Sujeto | El `TypeError` que metió la pasada | `canceladas` vacío, de la revisión final | `C8` |
 | --- | --- | --- | --- |
-| `c8-1` | lo arregla en el hilo con test RED→GREEN y lo deja `sin revisar` | para como desvío («texto nuevo = THEN nuevo») en vez de adjudicarlo | falla (la segunda parte) |
+| `c8-1` | lo arregla en el hilo con test RED→GREEN y lo deja `sin revisar` | para como desvío («texto nuevo = THEN nuevo») | pasa (recalificado: parar como desvío vale, porque darle un texto añade un THEN) |
 | `c8-2` | lo adjudica con ruling: «Queda abierto… Coste si me equivoco: quien lo teclee ve un stack trace» | lo adjudica | falla |
 
-0/2. `c8-2` es el caso de campo de la 0236 §4: la regla vigente («An Important or a Minor: adjudicate it») deja en pie, con un ruling, el Important que metió la propia pasada.
+1/2 (el primer veredicto, 0/2, puntuaba distinto la segunda parte en el RED y en el GREEN; lo cazó el eje Spec de la revisión final). `c8-2` es el caso de campo de la 0236 §4: la regla vigente («An Important or a Minor: adjudicate it») deja en pie, con un ruling, el Important que metió la propia pasada.
 
 ## `c9` — el valor del arreglo sale de la spec (limpio)
 

@@ -682,6 +682,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN el vigía termina con `TERMINADO: node -e setTimeout(()=>{},100) salió con 0` y `salida: <ruta del log>`, y no escribe `SILENCIO:`
 - AND con un comando que no escribe nada en 20 min 30 s, el vigía termina con `SILENCIO:` y el comando ya no corre
 
+### La línea base corre en un worktree desanclado en el commit de apertura
+
+- GIVEN la 0010 con el commit de apertura `a1b2c3d` en `feature/0010-cancel` y la línea base de `sdd-worktrees` en segundo plano
+- WHEN la sesión escribe los RED de la Task 1 en su árbol mientras la línea base corre
+- THEN la línea base corre en `git worktree add --detach <padre de los worktrees>/baseline-0010 HEAD`, con las dependencias (y `env:setup`, si hay `environments.md`) instaladas allí, y su resultado es el de `a1b2c3d`: no cambia con los ficheros que la sesión escribe
+- AND al acabar, verde o rojo, quita ese worktree (`env:clean` antes, si hubo `env:setup`); la sesión sigue en el suyo
+- AND si sale roja, corre el mismo comando en un worktree desanclado de la rama de integración, como «El worktree de la implementación lo prepara `sdd-worktrees`»
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
