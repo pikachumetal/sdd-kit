@@ -80,7 +80,8 @@ interface MoonFixture extends Fixture {
 
 function seedMoon(fx: Fixture): void {
   const root = fx.root.replaceAll('\\', '/');
-  write(fx.seed, '.moon/workspace.yml', "projects:\n  frontend: 'apps/frontend'\n  backend: 'apps/backend'\n");
+  // Con CI=true, moon run sin --base diffea contra vcs.defaultBranch, que por defecto es master (patch 0258).
+  write(fx.seed, '.moon/workspace.yml', "projects:\n  frontend: 'apps/frontend'\n  backend: 'apps/backend'\nvcs:\n  defaultBranch: develop\n");
   write(fx.seed, '.gitignore', '.moon/cache/\n');
   for (const project of ['frontend', 'backend']) {
     write(fx.seed, `apps/${project}/moon.yml`, moonYml);
