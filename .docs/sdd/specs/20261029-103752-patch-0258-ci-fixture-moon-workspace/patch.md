@@ -56,6 +56,15 @@ Lo sufre un proyecto real, no solo el test: cualquier `sdd merge --verify` lanza
 
 Validación en campo: 2026-10-29 · test nuevo RED (`fatal: bad object`) → GREEN · `intersection.slow.test.ts` 12/12 limpio y con `MOON_WORKSPACE_ROOT` heredado (antes, 7 rojos heredado) · `tsc --noEmit` limpio · pre-commit en verde · gate de cierre sobre el merge de sincronización (paso 6 de `sdd-archive`) · no probado: Linux de verdad (lo da el run de `ci.yml` sobre el merge en `develop`), y un moon distinto de 2.6.0 que lea otras variables de contexto
 
+### Tras el merge (2026-10-29): segunda causa, del fixture
+
+El run 40860384675 de `ci.yml` sobre el merge (`5ef709e8`) pasó 6 de los 7 y dejó en rojo «contrasts the crossed targets on the base», con otro error: `fatal: ambiguous argument 'master': unknown revision`, tras `moon_vcs::git::git_client … base="master" head="HEAD"`. Lo tapaba la primera causa.
+
+- **Causa**: con `CI=true` (el runner de GitHub lo fija), `moon run` sin `--base` calcula los ficheros tocados contra `vcs.defaultBranch`, que por defecto es `master`; el contraste corre los targets cruzados sobre la base sin `--affected` ni `--base`, y el `workspace.yml` del fixture no declaraba la rama, cuyo tronco es `develop`. Reproducido en Windows con `CI=true`: el mismo rojo. Solo es del fixture: un proyecto real declara su `defaultBranch`.
+- **Fix**: `seedMoon` de `cli/test/merge/intersection.slow.test.ts` declara `vcs.defaultBranch: develop`.
+- **Verificación**: `intersection.slow.test.ts` 12/12 con `CI=true` y `MOON_WORKSPACE_ROOT` heredado a la vez, y 12/12 limpio. Lo que no se ve aquí, el runner Linux, lo da el run de `ci.yml` sobre el segundo merge.
+- **Hallazgo para el ticket**: el «después comprueba que el run de `ci.yml` sale en verde» del dev-lead fue lo que lo encontró; ninguna verificación local reproducía `CI=true`.
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,2 h del gate de cierre (12 min, patch 0245)
