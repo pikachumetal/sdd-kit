@@ -30,8 +30,14 @@ async function shortSha(rev: string): Promise<string> {
   return (await git(process.cwd(), ['rev-parse', '--short=7', rev])).stdout.trim();
 }
 
+// vitest cierra con `Duration`; el recuento es la línea `Tests`.
+export function resultLine(lines: string[]): string {
+  const filled = lines.filter((line) => line.trim() !== '');
+  return filled.findLast((line) => line.trimStart().startsWith('Tests ')) ?? filled.at(-1) ?? '(sin salida)';
+}
+
 async function completionLine(request: DoneRequest, lines: string[]): Promise<string> {
-  const last = lines.filter((line) => line.trim() !== '').at(-1) ?? '(sin salida)';
+  const last = resultLine(lines);
   const range = `${await shortSha(request.base)}..${await shortSha('HEAD')}`;
   return `Task ${request.task}: complete (commits ${range}, tests: ${renderCommand(request.command)} → ${last})`;
 }
