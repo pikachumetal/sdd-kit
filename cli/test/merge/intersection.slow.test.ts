@@ -133,6 +133,22 @@ describe('merge --verify cruza con la base', () => {
     expect([ran(fx, 'frontend'), ran(fx, 'backend')]).toEqual([1, 0]);
   });
 
+  // Como bajo `moon run`, que exporta su raíz a la tarea: el merge tiene que cruzar con el workspace del worktree.
+  it('ignores the moon workspace it inherits from a task', async () => {
+    const fx = moonFixture('cruce-heredado');
+    const outer = moonFixture('cruce-de-fuera');
+    const verified = tip(fx);
+    pushRemoteCommit(fx, 'apps/backend/a.txt', 'remoto\n');
+    pushRemoteCommit(fx, 'apps/frontend/b.txt', 'remoto\n');
+    process.env.MOON_WORKSPACE_ROOT = outer.seed;
+
+    const result = await runMerge(fx.branch, ['--verify', GATE, '--verified-at', verified]).finally(() => delete process.env.MOON_WORKSPACE_ROOT);
+
+    expect(result.code, result.text).toBe(0);
+    expect(result.text).toContain('verificación: corre frontend:test (las tocan la rama y la base)');
+    expect([ran(fx, 'frontend'), ran(fx, 'backend'), ran(outer, 'frontend'), ran(outer, 'backend')]).toEqual([1, 0, 0, 0]);
+  });
+
   it('runs a branch commit after verified-at', async () => {
     const fx = moonFixture('cruce-posterior');
     const verified = tip(fx);
