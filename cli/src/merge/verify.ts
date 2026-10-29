@@ -7,7 +7,7 @@ import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { git, gitLines } from '../git/git.ts';
 import { launchSpec, resolveCommand } from '../tasks/command.ts';
-import { branchOnly, noCross, planGate, queryTasks, readMoonGate, type Plan } from './affected.ts';
+import { branchOnly, noCross, planGate, queryTasks, readMoonGate, withoutMoonTask, type Plan } from './affected.ts';
 
 export interface Verification {
   worktree: string;
@@ -73,7 +73,7 @@ function runTee({ worktree, argv, io }: Verification, log: string): Promise<numb
   const { file: program, args, windowsVerbatimArguments } = launchSpec(resolved, argv.slice(1));
   const file = createWriteStream(log);
   const sink = lineSink(io, file);
-  const child = spawn(program, args, { cwd: worktree, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments });
+  const child = spawn(program, args, { cwd: worktree, env: withoutMoonTask(process.env), windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], windowsVerbatimArguments });
   child.stdout.on('data', sink.push);
   child.stderr.on('data', sink.push);
   const finish = (code: number, done: (code: number) => void) => {

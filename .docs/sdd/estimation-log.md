@@ -230,19 +230,20 @@
 | 2026-10-28 | 0253 | patch | 0.75 | 0.43 | 0.57 | — | — | 2.33 | — | 20261028-215919-patch-0253-setup-by-lockfile |
 | 2026-10-28 | 0254 | patch | 0.5 | 0.1 | 0.2 | 4428k | no aplica | no aplica | 2.6 | 20261028-220038-patch-0254-campaign-cleanup-kit-copy |
 | 2026-10-29 | 0251 | infra/tooling | 4.5 | 1.51 | 0.34 | 46335k | 7564k | no aplica | 20.96 | 20261029-082835-feature-0251-suite-lock-root-cause |
+| 2026-10-29 | 0258 | patch | 0.5 | 0.25 | 0.5 | — | — | no aplica | — | 20261029-103752-patch-0258-ci-fixture-moon-workspace |
 
-**Factor de calibración** (ratio mediano real/estimado, 190 artefactos): **0.59** · media 0.77
+**Factor de calibración** (ratio mediano real/estimado, 191 artefactos): **0.58** · media 0.77
 
 - p25–p75: 0.4–0.94
 - p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 27 % · sobreestimadas: 62 % · infraestimadas: 11 %
+- Dentro de ±25 %: 27 % · sobreestimadas: 62 % · infraestimadas: 10 %
 - Error absoluto (h): media 1.35 · mediana 0.9
 - Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.41
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 67 | 35 % |
-| 0.5–0.8 | 58 | 31 % |
+| 0.5–0.8 | 59 | 31 % |
 | 0.8–1.25 | 45 | 24 % |
 | 1.25–2 | 12 | 6 % |
 | ≥2 | 8 | 4 % |
@@ -252,7 +253,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 88 | 0.56 | 0.4–0.77 |
 | infra/tooling | 50 | 0.49 | 0.37–0.78 |
-| patch | 50 | 0.87 | 0.6–1.38 |
+| patch | 51 | 0.84 | 0.59–1.37 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -272,6 +273,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 78 | 192.89 | 0.57 | 337.66 | 1532.66 |
+| sin publicar | 79 | 193.14 | 0.57 | 337.66 | 1532.66 |
 
 > Ver `estimation.md`.
