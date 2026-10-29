@@ -79,6 +79,7 @@ for (const id of ['t1a', 't1b', 't1c']) molds[id] = molds.r1b;
 for (const id of ['t5a', 'p1', 'p2']) molds[id] = molds.t2;
 molds.t5b = molds.t3;
 molds.o2 = molds.o1;
+molds.w2 = molds.w1;
 molds[s.SC]?.();
 s.initRepo();
 
@@ -226,6 +227,8 @@ const steps = {
     s.git('checkout', '-q', 'develop');
     s.git('worktree', 'add', '-q', join(s.RUN, 'wt'), 'feature/0010-cancel-reason');
     s.R = join(s.RUN, 'wt');
+    // El RED de la Task 1 a medio escribir en el árbol de la rama, sin commitear: el caso de la 0238.
+    if (s.SC === 'w2') cp('rooms-half.test.js', 'test/rooms-half.test.js');
   },
   h2: () => {
     writeFileSync(join(s.RUN, 'plan-sdd.md'), asSubagent(join(FIX, 'plan-0010.md')));
@@ -234,13 +237,14 @@ const steps = {
   r4: reviewedTwoTasks,
 };
 steps.p1 = steps.t2;
+steps.w2 = steps.w1;
 for (const id of ['t1a', 't1b', 't1c']) steps[id] = steps.r1b;
 steps.o2 = steps.o1;
 steps.u2 = steps.u1;
 steps[s.SC]?.();
 
-if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
-const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', h2: '80' };
+if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2']) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
@@ -249,11 +253,11 @@ const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
 for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21]) {
   for (const kept of ['spec', 'plan', 'tasks']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
-for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
 keepIf('src/app.js', 'app.js');
 keepIf('.sdd-env.json', 'sdd-env.json');
 keepIf('README.md', 'README.md');
 keepIf('skills/guardar-nota/SKILL.md', 'guardar-nota.md');
 const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
-s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}`);
+s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}## worktrees\n${s.git('worktree', 'list')}`);

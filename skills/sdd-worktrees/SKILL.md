@@ -127,11 +127,11 @@ if [ -f go.mod ]; then go mod download; fi
 
 ## Step 3: Verify Clean Baseline
 
-Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up. It runs as «Running a gate» of `sdd-verify` says.
+Run tests to ensure workspace starts clean, with the project's closing gate: `Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's. With none declared, say so and ask which command to run: never make one up. It runs as «Running a gate» of `sdd-verify` says, in `git worktree add --detach <worktrees parent>/baseline-<id> HEAD`, never in your tree, where your RED tests land: Step 2 there, removed when done (`env:clean` first if `env:setup` ran).
 
 **A gate that filters by a base** (`--affected --base <ref>`) runs nothing on a fresh branch and exits 0. Run, without the filter, only its tasks whose inputs —per the tool, `moon task <t>`— include files the spec's Scope or the plan names; the rest go in the report, the `Gate:` line of `sdd-verify`, as `<tarea>: saltada (fuera del Scope de la spec)`. Never report ready from a filter that ran no task; if no task reads the Scope's files (a change only to `.docs/`), name them all skipped, say so, and report ready (`tests/affected-gate-red.md`, w2).
 
-**If tests fail:** run the same command in a detached worktree of the integration branch (`git worktree add --detach`, removed when done). If it fails there too, the red isn't this branch's: search its first error lines in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence. Then report the failures with that verdict and ask whether to proceed or investigate.
+**If tests fail:** run it again in one detached at the integration branch. If it fails there too, the red isn't this branch's: search its first error lines in the project's debt (`.docs/sdd/steering/debt.md`, or «Deuda técnica» of the 2.x roadmap) and quote the row, or open one in «Por triar» (in 2.x, «Deuda técnica») with the evidence. Then report the failures with that verdict and ask whether to proceed or investigate.
 
 **If tests pass:** Report ready.
 
@@ -158,8 +158,7 @@ Ready to implement <feature-name>
 | Directory not ignored | Add to .gitignore + commit |
 | Permission error on create | Sandbox fallback, work in place |
 | `.docs/sdd/environments.md` exists | `env:setup` after dependencies (Step 2) |
-| Baseline command | The project's closing gate; none declared → ask (Step 3) |
-| Gate filters by a base | The Scope's tasks, without the filter (Step 3) |
+| Baseline | Closing gate, detached worktree at `HEAD` (Step 3) |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
