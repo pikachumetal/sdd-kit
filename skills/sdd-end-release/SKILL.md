@@ -27,12 +27,12 @@ Toda feature/patch de la release cerrada vía `sdd-archive` (walkthrough + chang
 del proyecto en verde. Trabajo a medias → se decide CON el usuario si entra o se mueve, nunca en silencio.
 Una feature que figura cerrada en roadmap/changelog pero **sin walkthrough/patch.md es evidencia faltante**:
 mismo tratamiento que el trabajo a medias — decisión del usuario, no "lo anoto y sigo".
-Y la suite completa en verde sobre el sha que se corta, el `HEAD` de `merge.into` al arrancar, tras `git fetch`:
+Y la suite completa en verde sobre el sha que se corta, el de `<remoto>/<merge.into>` al arrancar, tras `git fetch`:
 todas las suites de «Suites» de §Testing (`operations.md`; en 2.x, `tech-stack.md`), sin `--affected`, antes de
 sellar el changelog. Con «CI de la base» y su orden, córrela tal cual la declara, en una llamada sin otra orden detrás, y lee su `headSha` antes de lanzar ninguna suite:
-`success` en ese sha basta y no se corre nada;
-`failure` en ese sha, o la suite en rojo, para el corte, y lo arregla un patch; otro sha o un run sin terminar,
-se corre la suite.
+`success` en ese sha basta y no se corre nada, tampoco «por si acaso»;
+`failure` en ese sha, o la suite en rojo, para el corte: lo arregla un patch, y el corte vuelve a empezar; cualquier
+otro resultado, o la orden sin respuesta, se corre la suite.
 Con el usuario ausente: se PREPARAN los pasos 1-4 y el paso 5 queda **pendiente** — nunca se resuelve el
 gate en solitario.
 
@@ -127,5 +127,6 @@ gate en solitario.
 | "Escribo yo `hasRecipient: false`: el proyecto es claramente de una persona" | El campo solo lo escribe el usuario, por respuesta o petición explícita suya. Sin eso, ninguna condición es válida y el gate sigue completo. |
 | "«Versión siguiente» hace de sección de la release: colapso desde ahí" | Es la forma que dejó los cortes de la 2.1.0 y la 2.2.0 del kit con las filas publicadas dentro. Un fallo de forma del validador se dice y se lleva a la migración, con su gate. |
 | "La 0022 no se validó: la dejo con 🧪 en «Próximo» para que no se pierda" | No se pierde: su id queda en `validaciones pendientes:` y el disparador en su walkthrough. Como fila, el validador la da por publicada y en una sección abierta (R3, 4/4). |
+| "La CI dio `success` en el sha, pero corro la suite igualmente" | La CI ya la corrió entera sobre ese sha: repetirla es el coste que la regla quita. 1 de 2 sujetos la corrió «igualmente» (`tests/base-ci-green.md`, `rc2`). |
 | "El roadmap se ve bien, no hace falta pasar el validador" | 4 de 4 sujetos lo dieron por bueno con la deuda saldada y el patch publicado aún en sus tablas. `Roadmap válido` es la prueba, no la lectura. |
 | "El trabajo está entregado y demostrado; el walkthrough que falta no bloquea" | Evidencia faltante = gate de entrada fallido. Se regulariza o lo decide el usuario; documentarlo y seguir es la racionalización, no el remedio. |

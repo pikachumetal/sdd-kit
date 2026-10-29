@@ -166,7 +166,7 @@ Ninguna.
 ## 4. Self-review (cobertura spec → tasks)
 
 - archive THEN (no fusiona, literal, deuda, «No terminado») → Task 1, `ci1` (a)-(d). ✓
-- archive AND `success`/vacía/`cancelled` fusiona → Task 1, texto; `success` lo cubre `ci2` por el camino de seguir; el resto, Review Focus. ⚠ sin escenario propio
+- archive AND `success`/vacía/`cancelled` fusiona → Task 1, texto; sin escenario: `ci2` es el camino sin respuesta, no el de `success`. ⚠
 - archive AND sin respuesta → Task 1, `ci2`. ✓
 - archive AND `ninguna`/`sin orden de lectura` → Task 1, texto: todos los moldes sin la línea (`a1` y el resto de la batería) son su control. ✓
 - archive AND hotfix no la lee → Task 1, texto; sin escenario (el hotfix `a4` no lleva la línea). ⚠

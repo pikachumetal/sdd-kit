@@ -282,7 +282,7 @@ function baseCi(suites) {
   appendFileSync(at('.docs/sdd/tech-stack.md'), `\n## Testing\n\n${suites ? '- **Suites**: `node --test` · ~1 s · unitario\n' : ''}${CI_LINE}\n`);
   s.commit('ci: CI de la base en develop');
 }
-// Un gh falso delante en el PATH del sujeto, fuera de su repo: responde lo que diga reply y apunta cada llamada en gh.log.
+// Fuera del repo del sujeto, para que no lo vea ni lo commitee.
 const GH_BIN = join(s.RUN, 'bin');
 function ghFake(reply) {
   mkdirSync(GH_BIN, { recursive: true });

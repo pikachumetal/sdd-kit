@@ -36,8 +36,8 @@ A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …
 Before `sdd merge` (not before `--sync`), if «CI de la base» of `tech-stack.md` §Testing (`operations.md` in 3.0.0) declares a pipeline with the command that reads its last result, run it and read `conclusion` and `headSha`:
 
 - `failure`: don't run `sdd merge`. Write this line, literal, in the final message: `CI de <merge.into> en rojo en <headSha>`; search the `headSha` and the workflow's name in the project's debt as «Fails without the branch» says, and with no row that names them open one with the `headSha`. The close stays «No terminado», with the red in what's pending: what fixes `<merge.into>` is a patch.
-- Any other result (`success`, `cancelled`, the empty `conclusion` of a run in progress, no runs): merge.
-- The command fails (no `gh`, no session, no network): write this line, literal, in the final message: `CI de <merge.into> sin respuesta: <first line of the error>; sigo sin leerla`, and merge.
+- Any other result (`success`, `cancelled`, the empty `conclusion` of a run in progress, no runs): go on with the merge policy.
+- The command fails (no `gh`, no session, no network): write this line, literal, in the final message: `CI de <merge.into> sin respuesta: <first line of the error, whole>; sigo sin leerla`, and go on with the merge policy.
 
 With `ninguna` or `sin orden de lectura`, nothing is read or said. A hotfix doesn't read it: the CI is the integration branch's.
 
