@@ -10,7 +10,7 @@ describe('el push del cierre reintenta si la rama destino avanzó', () => {
     const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', publishFromSeed(fx, 'otra-sesion.txt', true)]);
 
     expect(result.code, result.text).toBe(0);
-    expect(result.text).toContain("push: 'develop' avanzó en 'origin'; integro y reintento (2/3)");
+    expect(result.text).toContain("merge: 'develop' cambió durante la verificación; integro y verifico lo que se cruza (2/3)");
     expect(sha(fx.remote, 'develop')).toBe(sha(fx.repo, 'develop'));
     git(fx.repo, 'merge-base', '--is-ancestor', sha(fx.seed, 'develop'), 'develop');
     git(fx.repo, 'merge-base', '--is-ancestor', 'feature/0001', 'develop');
@@ -19,14 +19,14 @@ describe('el push del cierre reintenta si la rama destino avanzó', () => {
 
   it('tras tres intentos con la rama moviéndose falla y deja el destino como estaba', async () => {
     const fx = mergeFixture('sin-parar');
-    const before = sha(fx.repo, 'develop');
+    const branch = sha(fx.repo, 'feature/0001');
 
     const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', publishFromSeed(fx, 'otra-sesion.txt', false)]);
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('(3/3)');
-    expect(result.text).toContain("push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato");
-    expect(sha(fx.repo, 'develop')).toBe(before);
+    expect(result.text).toContain("merge: 'develop' sigue cambiando tras 3 intentos; relanza el merge en un rato");
+    expect(git(fx.repo, 'branch', '--contains', branch)).not.toContain('develop');
   });
 
   it('un rechazo sin que la rama destino avance falla sin reintentar', async () => {
@@ -46,13 +46,15 @@ describe('el push del cierre reintenta si la rama destino avanzó', () => {
 
   it('un conflicto al reintegrar deja la rama destino como estaba', async () => {
     const fx = mergeFixture('reintento-conflicto');
-    const before = sha(fx.repo, 'develop');
+    const branch = sha(fx.repo, 'feature/0001');
 
     const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', publishFromSeed(fx, 'feature-0001.txt', true)]);
 
     expect(result.code).toBe(1);
-    expect(result.text).toContain('base: conflicto en feature-0001.txt');
-    expect(sha(fx.repo, 'develop')).toBe(before);
+    expect(result.text).toContain('merge: conflicto en feature-0001.txt');
+    expect(git(fx.repo, 'branch', '--contains', branch)).not.toContain('develop');
+    expect(sha(fx.repo, 'feature/0001')).toBe(branch);
+    expect(git(join(fx.wt, '0001'), 'status', '--porcelain')).toBe('');
   });
 });
 
@@ -113,7 +115,7 @@ describe('el push nombra los commits de la rama destino que no son del cambio', 
     const result = await runMerge(join(fx.wt, '0001'), ['--push', '--verify', publishFromSeed(fx, 'otra-sesion.txt', true)]);
 
     expect(result.code, result.text).toBe(0);
-    expect(result.text).toContain("push: 'develop' avanzó en 'origin'; integro y reintento (2/3)");
+    expect(result.text).toContain("merge: 'develop' cambió durante la verificación; integro y verifico lo que se cruza (2/3)");
     expect(result.text).toContain("push: también publica 1 commit de 'develop' que no es de feature/0001:");
     expect(result.text).toContain(`- ${triage} docs(roadmap): triaje`);
   });

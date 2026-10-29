@@ -46,6 +46,20 @@ export async function mergeAndClean(attempt: Omit<MergeAttempt, 'output'>, args:
   }
 }
 
+export async function assertNothingPending(root: string, branch: string): Promise<void> {
+  const changed = (await gitLines(root, ['status', '--porcelain', '--untracked-files=no'])).length > 0;
+  const merging = (await git(root, ['rev-parse', '--verify', '--quiet', 'MERGE_HEAD'])).code === 0;
+  if (changed || merging) throw new DomainError(`base: '${branch}' tiene cambios sin commitear; commitéalos antes de integrar la base`);
+}
+
+export async function integrateRef(root: string, ref: string, report: Report): Promise<boolean> {
+  if ((await git(root, ['merge-base', '--is-ancestor', ref, 'HEAD'])).code === 0) return false;
+  await mergeAndClean({ worktree: root, stepName: 'base', report, mergedDestination: ref }, ['--no-edit', ref]);
+  const [branch] = await gitLines(root, ['branch', '--show-current']);
+  report(`base: integrada '${ref}' en '${branch}': ${await shortHead(root)}`);
+  return true;
+}
+
 export async function syncBaseBranch(worktree: string, base: BaseSync, report: Report): Promise<void> {
   if (base.remote === null) return;
   const remoteRef = await fetchBase(worktree, base);

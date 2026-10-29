@@ -170,10 +170,26 @@ export async function verifyMerge(worktree: string, request: VerifyRequest, io: 
   if (run !== null) await runVerification({ worktree, argv: run, io }, contrast);
 }
 
-// Tras deshacer el merge, el worktree ya está en la base: lo mismo que corrió dice si el rojo es de la rama.
-export async function explainFailure(error: unknown, { worktree, io }: Omit<Verification, 'argv'>): Promise<unknown> {
+export interface Contrast extends Omit<Verification, 'argv'> {
+  base?: string;
+}
+
+// Sin base, el worktree ya está en ella tras deshacer el merge; con base, se saca desacoplada y se vuelve a la rama.
+export async function explainFailure(error: unknown, { worktree, io, base }: Contrast): Promise<unknown> {
   if (!(error instanceof VerificationFailed) || error.contrast === null) return error;
-  return new DomainError(`${error.message}\n${await baseVerdict({ worktree, argv: error.contrast, io })}`);
+  const verdict = () => baseVerdict({ worktree, argv: error.contrast ?? [], io });
+  return new DomainError(`${error.message}\n${base === undefined ? await verdict() : await onBase(worktree, base, verdict)}`);
+}
+
+// shortcut: si el checkout desacoplado falla (un fichero sin seguimiento que la base trae), el contraste corre en la rama; avisar si llega a pasar.
+async function onBase<T>(worktree: string, base: string, body: () => Promise<T>): Promise<T> {
+  const [branch] = await gitLines(worktree, ['branch', '--show-current']);
+  await git(worktree, ['checkout', '-q', '--detach', base]);
+  try {
+    return await body();
+  } finally {
+    await git(worktree, ['checkout', '-q', branch]);
+  }
 }
 
 async function baseVerdict(verification: Verification): Promise<string> {

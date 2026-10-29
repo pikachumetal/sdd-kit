@@ -158,9 +158,12 @@ describe('un merge del cierre que falla deja la rama destino como estaba', () =>
   it('el worktree temporal va junto a los demás worktrees y se retira', async () => {
     const fx = mergeFixture('ruta');
     const marker = join(fx.root, 'cwd.txt');
-    const command = nodeGate(fx.root, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, process.cwd());\n`);
+    const hooks = join(fx.root, 'cwd-hooks');
+    write(hooks, 'pre-merge-commit', `#!/bin/sh\nnode -e "require('fs').writeFileSync(process.argv[1], process.cwd())" "${marker.replaceAll('\\', '/')}"\n`);
+    chmodSync(join(hooks, 'pre-merge-commit'), 0o755);
+    git(fx.repo, 'config', 'core.hooksPath', hooks);
 
-    const result = await runMerge(join(fx.wt, '0001'), ['--verify', command]);
+    const result = await runMerge(join(fx.wt, '0001'));
 
     expect(result.code, result.text).toBe(0);
     expect(resolve(readFileSync(marker, 'utf8').trim()).toLowerCase()).toBe(resolve(join(fx.wt, 'merge-0001')).toLowerCase());

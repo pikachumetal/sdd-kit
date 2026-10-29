@@ -37,7 +37,7 @@ A red from `sdd merge --verify` brings its own `base:` line (`base: en rojo: …
 sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--verified-at <sha>]
 ```
 
-Under one lock per repo, the script integrates the destination's remote into the local destination (resolving as `--sync` does), merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others, runs `--verify` on the result and pushes the destination by its name. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
+With `--verify`, the script integrates the destination (remote and local) into the change's branch in its worktree, resolving as `--sync` does, and runs `--verify` there, without the lock. Then, under one lock per repo, it integrates the destination's remote into the local destination, merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others and pushes the destination by its name. If the destination changed meanwhile outside docs, it integrates and verifies what crosses again, up to 3 times. Without `--verify`, everything happens under the lock. The change's worktree stays on its branch; `merge.removeWorktree` decides it.
 
 - **`--verify`**: the merge gate of `tech-stack.md` §Testing (`operations.md` in 3.0.0); with a fast set, the fast one; with one suite, that one. Skipped if a `pre-merge-commit` hook already runs it. The script launches it as arguments, without a shell: a gate that chains commands (`&&`, `;`, a pipe) exits 2, and becomes a moon task or a `package.json` script. With a `moon run … --affected` gate it runs only what crosses, the tasks the branch touches whose inputs the base also touched, and its `verificación: corre …` and `verificación: <tarea>: saltada (…)` lines go in the `Gate:` line.
 - **`--verified-at`**: as in «Integrated base». The script writes `verificación: omitida: desde <sha> solo cambian docs` when it skips.
@@ -60,6 +60,8 @@ Under one lock per repo, the script integrates the destination's remote into the
 | `verificación: …` + `base: …` | `--verify` red | «A red suite» |
 | `bloqueado: '<file>' lo tiene abierto <process>` | a process holds a file the gate needs | close it and run the script again |
 | `push: también publica <n> commit(s) de '<into>' que no son de <branch>:` + `- <hash> <subject>` lines | the destination had local commits not yet published, and they went out with the change | quote them in the final message: the dev-lead sees what went out besides the change |
+| `merge: '<into>' cambió durante la verificación; integro y verifico lo que se cruza (n/3)` | another session merged while `--verify` ran | nothing: the script retries |
+| `merge: '<into>' sigue cambiando tras 3 intentos; …` | the destination kept changing | run the script once more in a while |
 | `push: '<into>' avanzó en '<remote>'; integro y reintento (n/3)` | another session published meanwhile | nothing: the script retries |
 | `push: '<into>' sigue moviéndose en '<remote>' tras 3 intentos; …` | the remote kept moving | run the script once more in a while |
 | `push: no se pudo publicar …` | rejected for another reason (credentials, server hook) | quote it; never `--force`, `pull` or `rebase` |

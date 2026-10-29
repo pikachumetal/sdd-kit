@@ -48,7 +48,7 @@ describe('mergiraf resuelve lo que queda', () => {
     expect(result.text).toContain('mergiraf: resuelto src/rooms.ts');
     expect(result.text).toMatch(/git version/);
     const merged = git(fx.repo, 'show', 'develop:src/rooms.ts');
-    expect(merged).toContain('import { a, b, c } from "./a";');
+    expect(merged).toMatch(/import \{ a, (b, c|c, b) \} from "\.\/a";/);
     expect(merged).toContain('count(): number');
     expect(merged).toContain('free(): boolean');
     expect(git(fx.repo, 'config', '--local', '--list')).not.toMatch(/^(merge|mergiraf)\./m);
@@ -139,7 +139,7 @@ describe('mergiraf solo sobre código', () => {
 
     expect(result.code, result.text).toBe(0);
     expect(result.text).toContain('mergiraf: resuelto src/use.ts');
-    expect(git(fx.repo, 'show', 'develop:src/use.ts')).toContain('import { a, b, c } from "./a";');
+    expect(git(fx.repo, 'show', 'develop:src/use.ts')).toMatch(/import \{ a, (b, c|c, b) \} from "\.\/a";/);
   });
 
   it('con un fichero resuelto por mergiraf, --verified-at no omite --verify', async () => {

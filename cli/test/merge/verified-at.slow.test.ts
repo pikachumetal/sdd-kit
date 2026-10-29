@@ -13,7 +13,7 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
 
     expect(result.code, result.text).toBe(0);
     expect(result.text).toContain(`verificación: omitida: desde ${git(fx.repo, 'rev-parse', '--short', verified)} solo cambian docs`);
-    expect(sha(fx.repo, 'develop^2')).toBe(verified);
+    expect(sha(fx.repo, 'develop^2^1')).toBe(verified);
   });
 
   it('verifica si desde el sha cambió código de la base', async () => {
