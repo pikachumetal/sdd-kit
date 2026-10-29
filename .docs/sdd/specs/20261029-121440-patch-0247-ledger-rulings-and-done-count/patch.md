@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-29
 branch: patch/0247-ledger-rulings-and-done-count
-commit: <hash>
+commit: e95390b8
 ---
 
 # Patch 0247 — los rulings del ledger sin filas de tabla y el recuento de tests en `sdd task done`
@@ -45,10 +45,16 @@ Fila 0247 del roadmap, con dos menores:
 | 1 | RED: `vitest run test/tasks/rulings.test.ts test/tasks/done.test.ts` antes del fix | 3 rojos: la fila de tabla sale en `listRulings` (`expected [ …(2) ] to deeply equal [ Array(1) ]`) y `resultLine is not a function` en los dos de `done.test.ts` |
 | 2 | GREEN: `vitest run test/tasks` con el fix | 6 ficheros, 54/54 · `tsc --noEmit` limpio |
 
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → cli:typecheck: corrió 1/1 (caché) · cli:test: corrió 1634/1648, 2 rojos por `Error: Test timed out in 5000ms.` que no se repiten (los dos ficheros, 57/57 en la rama y en la base `cfc2a741`; fila de intermitentes en la deuda), 12 saltados · kit:test-headless: cortado por moon al fallar `cli:test`, repetido solo: corrió 239/239 (66 s) — sobre el commit de cierre, 109 s
+
+Validación en campo: 2026-10-29 · `rulings.test.ts` y `done.test.ts` RED 3 rojos → GREEN · `test/tasks` 54/54 · `tsc --noEmit` limpio · pre-commit del fix en verde · gate de cierre sobre el merge de sincronización (paso 6 de `sdd-archive`) · no probado: un ledger real de una feature con su tabla de pre-flight, y la salida de vitest con colores (`FORCE_COLOR`): con códigos ANSI delante de `Tests`, la línea vuelve a ser la última no vacía, como antes
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,2 h del gate de cierre (12 min, patch 0245)
 - Inicio: 2026-10-29T12:13Z
+- Esfuerzo real: 0,06 h — reloj de la sesión 0,06 h desde 2026-10-29T12:13Z, sin 0 min de espera al dev-lead (0 esperas). −91 % sobre la estimación (0,7 h con el gate): la fila traía las dos causas con su fichero y línea, y cada fix cabe en una línea; el gate de cierre (109 s + 66 s de `kit:test-headless` repetido, más el contraste de dos rojos que no se repiten) no entra en el reloj de la línea
+- Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
 
