@@ -45,7 +45,7 @@ created: 2026-10-30
 
 ## Review Focus
 
-- Una fila de un solo test → sigue siendo «Patch:», como dice «Un patch pendiente es una fila de «Próximo»» · Task 1, control `m5`, y lectura del texto: la regla cuenta dos o más.
+- Una fila de un solo test → sigue siendo «Patch:», como dice «Un patch pendiente es una fila de «Próximo»» · Task 1, control `rf1` (RF1 exige `**Carril:** patch`); el «Patch:» de 2.x con un test no se mide.
 - Un patch ya cerrado cuyo artefacto recibe las cifras → adenda fechada al final, sin reescribir el cuerpo · Task 1, `re1`, comparando `patch-0007.md` con el del molde.
 
 ---
@@ -66,7 +66,7 @@ created: 2026-10-30
 **Modificar**:
 
 - `skills/sdd-roadmap/SKILL.md` — las dos frases y las cuatro líneas que salen.
-- `tests/batteries/sdd-roadmap/battery.md` — `rl1` y `re1` con n = 2, y procedencia de las dos reglas y de lo retirado.
+- `tests/batteries/sdd-roadmap/battery.md` — `rl1` y `re1` con n = 2, y procedencia de las dos reglas y de lo retirado (línea «Retirado»).
 - `tests/batteries/sdd-roadmap/subject.mjs` — `TURN2` de `rl1`.
 - `.docs/sdd/roadmap.md` — al cerrar.
 

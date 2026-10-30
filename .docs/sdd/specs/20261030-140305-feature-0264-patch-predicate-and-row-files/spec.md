@@ -5,7 +5,7 @@ parent: 0224
 title: El predicado de patch en el roadmap y la evidencia de una fila nacida de otro cambio
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-30
 author: agente con el dev-lead
 approvers:

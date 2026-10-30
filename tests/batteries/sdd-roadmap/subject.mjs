@@ -71,7 +71,7 @@ const molds = {
     if (!code.includes("if (cmd === 'libres')")) s.die('el molde salas-3-plain cambió: no hay dónde poner avisar');
     writeFileSync(app, `import { notify } from './avisos.js';\n${code.replace("  if (cmd === 'libres')", "  if (cmd === 'avisar') return notify(params[0]);\n  if (cmd === 'libres')")}`);
   },
-  // Las medidas de un gate solo en un log sin versionar, como las del patch 0219.
+  // Las medidas de un gate solo en un log sin versionar.
   'salas-gate': () => {
     s.put('.gitignore', '.temp/\n');
     s.put('.temp/gate-times.log', 'test/app.test.js 1,2 s\ntest/store.test.js 31 min 40 s\ntest/report.test.js 8 min 12 s\ntotal 40 min\n');
