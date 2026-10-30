@@ -133,7 +133,7 @@ approvers:
 
 ## Previsión de coste *(solo si la spec edita una skill que se prueba con sujetos)*
 
-> Obligatoria si se cumple: no se borra con los bloques de ayuda. Cada cifra cita su batería y el precio por sujeto de `tech-stack.md`, o lo medido; el total es la suma de las filas.
+> Obligatoria: no se borra con los bloques de ayuda. Cada cifra cita su batería y el precio por sujeto de `tech-stack.md`, o lo medido; una fila a cero, su porqué; el total es la suma de las filas.
 
 | Tanda | Sujetos (batería) | $ |
 | --- | --- | --- |

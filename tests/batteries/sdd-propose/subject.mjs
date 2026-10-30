@@ -71,7 +71,7 @@ const molds = {
     copyFileSync(join(FIX, 'bookings-long-capability.md'), at('.docs/sdd/capabilities/bookings.md'));
     edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0013 | **Cancelar varios días de una vez** | ⏳ |\n| 1 |'));
   },
-  // El tope limita la carpeta entera, no el fichero que edita la spec: como el de una skill en word-budget.test.ts.
+  // El tope limita la carpeta entera, no el fichero que edita la spec.
   'reservas-tope-carpeta'() {
     s.put('docs/plantillas/aviso.md', 'Aviso de sala: {sala} el {dia}.\n');
     s.put('docs/plantillas/recibo.md', `${'palabra '.repeat(46)}\n`);

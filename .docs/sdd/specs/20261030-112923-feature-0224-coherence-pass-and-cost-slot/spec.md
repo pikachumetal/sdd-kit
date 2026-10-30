@@ -4,7 +4,7 @@ feature: 0224
 title: La regla del entorno en la clasificación y el hueco «Previsión de coste» de la spec
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-30
 author: agente con el dev-lead
 approvers:
@@ -38,8 +38,9 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` (1) · tamaño: ~25 l
 7. **Id de la segunda parte: 0264**, reservado con `sdd id next --reserve`. Lleva (a), lo que queda de (c) y la 0250, sin la línea `Evidencia:`, con `parent: 0224`. Tamaño S. Aún no tiene `Patch:`: son varios tests de comportamiento nuevo.
 8. **Filas de deuda con «Actuar → 0224» que la fila no nombraba** pasan también a la 0264: «En lite, la apertura llega después de la primera edición», la parcial de la 0199, «El paso 6 de `sdd-roadmap` commitea…» y «Al partir una fila…». Si no, apuntarían a una fila cerrada sin arreglarse.
 9. **Predicado del hueco**: `*(solo si la spec edita una skill que se prueba con sujetos)*`, como «Topes de palabras». Los proyectos consumidores sin sujetos lo borran.
-10. **Lo que paga el hueco en `sdd-templates`** (Principio «una pieza entra, otra sale»): salen de `spec-template.md` las ayudas «**Siguiente paso**» y «**Modo lite**», que ya dicen `sdd-propose` y `sdd-templates/SKILL.md:73`, y la frase del porqué de «Estimación y esfuerzo». Son pasos de contexto, no instrucciones que se midan aparte; `co4` y `s1` hacen de control.
+10. **Lo que paga el hueco en `sdd-templates`** (Principio «una pieza entra, otra sale»): salen de `spec-template.md` las ayudas «**Siguiente paso**» y «**Modo lite**», que ya dicen `sdd-propose` y `sdd-templates/SKILL.md:73`, la ayuda de «Estimación y esfuerzo», las de «Scope» y «Approach» y «Si ningún test limita lo que edita, borra la sección». Son pasos de contexto, no instrucciones que se midan aparte; `co4` y `s1` hacen de control.
 11. **Tamaño de la fila 0224**: de M a S.
+- Prueba del delta en una copia de `.docs/sdd`: `capability merge` → routing.md: sustituido «Los carriles patch y config preparan el entorno antes del primer test» · feature-flow.md: añadido «La spec que edita una skill con sujetos prevé su coste».
 - Política de modelos: revisores de la spec, ninguno · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura no aplica · sujetos sonnet, en una tanda por escenario · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar
 
 ### Decisiones tomadas con el dev-lead
@@ -66,6 +67,8 @@ La regla del entorno vive en dos pasos que corren después del primer punto que 
 | «Prepare the environment with Step 2 of `sdd-worktrees`» | `skills/sdd-propose/SKILL.md:72` | Scope: pasa al paso 2 |
 | AND «`sdd-start-patch` y el carril config de `sdd-propose` nombran ese paso» | `capabilities/routing.md:264` | delta, `MODIFIED` |
 | Ayudas «**Siguiente paso**» y «**Modo lite**» de la spec | `spec-template.md:24-25` | decisión 10; el lite sigue en `sdd-templates/SKILL.md:73` |
+| Ayudas de «Scope», «Approach» y «Estimación y esfuerzo» y «borra la sección» de «Topes» | `spec-template.md` | decisión 10; los cubren `spec-writing.md:15-16` y sus encabezados; `co2` y `co3` omiten bien las secciones condicionales |
+| «—the branch a launch prompt opened—» y la cita de `k5` | `skills/sdd-propose/SKILL.md`, «Config lane» paso 5 | Scope: pagan el saldo; la cita sigue en la batería |
 
 - Filas que implementa: 0224, 0255 → `.docs/sdd/roadmap.md` (fila 0224, reducida; fila 0255, cerrada) y las filas de deuda que apuntan a ellas; nada más: comprobado con `grep -rln 0224 skills .docs/sdd/capabilities .docs/sdd/*.md tests/batteries` → solo `roadmap.md`.
 
@@ -133,7 +136,7 @@ Medido con el conteo de `cli/test/kit/word-budget.test.ts`. Sin cambio en ningú
 
 ## Enmiendas
 
-- (ninguna)
+- 2026-10-30 — la decisión 10 y «Lo que se retira» nombran todos los recortes hechos para no subir el saldo, sin requisito ni THEN nuevos — lo pidieron los ejes Spec y Código — sin aprobar
 
 ## Aprobaciones
 

@@ -690,6 +690,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND al acabar, verde o rojo, quita ese worktree (`env:clean` antes, si hubo `env:setup`); la sesión sigue en el suyo
 - AND si sale roja, corre el mismo comando en un worktree desanclado de la rama de integración, como «El worktree de la implementación lo prepara `sdd-worktrees`»
 
+### La spec que edita una skill con sujetos prevé su coste
+
+- GIVEN un repo con `tests/batteries/aviso-cierre/` y `tech-stack.md` con «un sujeto de `aviso-cierre` cuesta ~0,70 $», y una spec que edita `skills/aviso-cierre/SKILL.md`
+- WHEN el agente escribe la spec
+- THEN «Previsión de coste» lleva las filas RED, GREEN, una tanda de REFACTOR, controles y medición tras la revisión final, cada una con sus sujetos y sus dólares
+- AND cada cifra cita su batería y el precio de `tech-stack.md`, y el total es la suma de las filas
+- AND una spec que no edita una skill probada con sujetos no lleva la sección
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.

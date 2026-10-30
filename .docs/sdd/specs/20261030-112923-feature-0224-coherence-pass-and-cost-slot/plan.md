@@ -13,7 +13,7 @@ created: 2026-10-30
 
 1. Modelo y effort: las tres tasks las hace la sesión (Native), en el modelo de la sesión; los sujetos, Sonnet — lo fija la batería.
 2. Ejecución: Native — tres tasks de texto, independientes y cortas, y la revisión final ve la rama entera.
-3. Frase nueva del paso 2 de `sdd-propose`, con no más palabras que la que sustituye en «Config lane»: «Before running the code, a test or a gate, here or in any later step, prepare the environment with Step 2 of `sdd-worktrees` («Project Setup»): a worktree a launch prompt opens has no dependencies.»
+3. Frase nueva del paso 2 de `sdd-propose`, con no más palabras que la que sustituye en «Config lane» (sustituida en el GREEN, ver Rulings): «check first, in a command of its own, whether dependencies are installed (`node_modules`, `.venv`…); if not, Step 2 of `sdd-worktrees` («Project Setup») goes before any command that runs the project's code, tests or gate, in this step or a later one.»
 4. Riesgo alto: quitar la frase de `sdd-start-patch` deja sin regla un patch retomado en un worktree nuevo, que no pasa por `sdd-propose`. Se acepta: un retomado ya tuvo su entorno, y si no, el `Cannot find module` lo dice.
 5. Coste: 0,5 h y ~6,6 $ de sujetos, con el techo de la previsión de la spec. Revisión final aparte.
 6. Review Focus: 1 entrada; ver la sección.
@@ -110,7 +110,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 **Ficheros**: modificar `skills/sdd-propose/SKILL.md`, `skills/sdd-start-patch/SKILL.md`, `tests/batteries/sdd-propose/battery.md`
 
-- [ ] **Step 1: Implementación** — añadir al final del primer párrafo del paso 2 la frase: «Before running the code, a test or a gate, here or in any later step, prepare the environment with Step 2 of `sdd-worktrees` («Project Setup»): a worktree a launch prompt opens has no dependencies.»; quitar de «Config lane» paso 2 la frase «Prepare the environment… (patch 0245).»; quitar de `sdd-start-patch` el paso 1, frase «Antes de ejecutar el código o un test…(patches 0212 y 0241).»; fila de procedencia en la batería.
+- [ ] **Step 1: Implementación** — añadir al final del primer párrafo del paso 2 la frase: «check first, in a command of its own, whether dependencies are installed (`node_modules`, `.venv`…); if not, Step 2 of `sdd-worktrees` («Project Setup») goes before any command that runs the project's code, tests or gate, in this step or a later one.»; quitar de «Config lane» paso 2 la frase «Prepare the environment… (patch 0245).»; quitar de `sdd-start-patch` el paso 1, frase «Antes de ejecutar el código o un test…(patches 0212 y 0241).»; fila de procedencia en la batería.
 - [ ] **Step 2: Build** — no aplica.
 - [ ] **Step 3: Verificación** — la de arriba, con `wc -w` antes y después.
 - [ ] **Step 4: Commit de la task**.
