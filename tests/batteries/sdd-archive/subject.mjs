@@ -2,6 +2,7 @@
 // Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:net';
 import { delimiter, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
@@ -79,7 +80,12 @@ function done0010() {
 // La suite E2E del proyecto en develop: servidor HTTP, runner con la salida de Playwright y operations.md con sus campos E2E.
 const E2E = join(HERE, 'fixtures', 'e2e');
 // Un puerto por sujeto: dos sujetos a la vez no comparten servidor.
-const E2E_PORT = 4300 + Math.floor(Math.random() * 600);
+const E2E_PORT = await new Promise((resolve, reject) => {
+  const probe = createServer().once('error', reject).listen(0, () => {
+    const { port } = probe.address();
+    probe.close(() => resolve(port));
+  });
+});
 function e2eSuite() {
   for (const dir of ['e2e', 'scripts', '.docs/sdd/steering']) mkdirSync(at(dir), { recursive: true });
   cp(join(E2E, 'server.mjs'), 'server.mjs');
@@ -100,7 +106,8 @@ function staleServer() {
   mkdirSync(stale, { recursive: true });
   s.git('archive', '-o', join(s.RUN, 'stale-env.tar'), 'develop');
   spawnSync('tar', ['-xf', '../stale-env.tar'], { cwd: stale, stdio: 'ignore' });
-  if (spawnSync(s.NODE, [join(stale, 'scripts', 'env-up.mjs')], { stdio: 'ignore' }).status !== 0) s.die('no arrancó el servidor ajeno');
+  const up = spawnSync(s.NODE, [join(stale, 'scripts', 'env-up.mjs')], { encoding: 'utf8' });
+  if (up.status !== 0) s.die(`no arrancó el servidor ajeno: ${up.stdout}${up.stderr}`);
 }
 
 // El patch 0008 con su fix commiteado, sobre el molde de salas de using-sdd; con «hotfix», la rama sale de main.
