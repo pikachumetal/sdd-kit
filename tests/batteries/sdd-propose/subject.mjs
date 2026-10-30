@@ -20,6 +20,7 @@ if (!existsSync(join(kit, 'skills', 'sdd-propose'))) ASK = ASK.replaceAll('sdd-p
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
+const F13 = '.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days';
 const edit = (path, change) => writeFileSync(join(s.R, path), change(readLf(join(s.R, path))));
 const at = (path) => join(s.R, path);
 
@@ -63,6 +64,45 @@ const molds = {
     copyFileSync(join(FIX, 'words.test.js'), at('test/words.test.js'));
     appendFileSync(at('README.md'), '\nComandos: `cancelar` y `anular`; guía en [docs/guia.md](docs/guia.md).\n');
     edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0012 | **Retirar anular**: el comando anular desaparece | ⏳ |\n| 1 |'));
+  },
+  // La 0013 añade un requisito que contradice otro vivo de la capacidad, con otro título.
+  'reservas-contradice'() {
+    mkdirSync(at('.docs/sdd/capabilities'), { recursive: true });
+    copyFileSync(join(FIX, 'bookings-long-capability.md'), at('.docs/sdd/capabilities/bookings.md'));
+    edit('.docs/sdd/roadmap.md', (text) => text.replace(/^\| 1 \|/gm, '| 0013 | **Cancelar varios días de una vez** | ⏳ |\n| 1 |'));
+  },
+  // El tope limita la carpeta entera, no el fichero que edita la spec: como el de una skill en word-budget.test.ts.
+  'reservas-tope-carpeta'() {
+    s.put('docs/plantillas/aviso.md', 'Aviso de sala: {sala} el {dia}.\n');
+    s.put('docs/plantillas/recibo.md', `${'palabra '.repeat(46)}\n`);
+    s.put('test/words.test.js', [
+      "import { test } from 'node:test';", "import assert from 'node:assert';", "import { readdirSync, readFileSync } from 'node:fs';", '',
+      "test('docs/plantillas cabe en su tope de 60 palabras', () => {",
+      "  const words = readdirSync('docs/plantillas').flatMap((name) => readFileSync(`docs/plantillas/${name}`, 'utf8').split(/\\s+/).filter(Boolean));",
+      '  assert.ok(words.length <= 60);', '});', '',
+    ].join('\n'));
+  },
+  // Dos tareas con caché por inputs: la fast no ve el repo entero que recorre test/paths.test.js.
+  'reservas-tareas'() {
+    s.put('gate.json', `${JSON.stringify({ tasks: {
+      fast: { command: 'node --test test/app.test.js', inputs: ['src/**', 'test/app.test.js'] },
+      slow: { command: 'node --test test/paths.test.js', inputs: ['**/*'] },
+    } }, null, 2)}\n`);
+    s.put('test/paths.test.js', [
+      "import { test } from 'node:test';", "import assert from 'node:assert';", "import { execFileSync } from 'node:child_process';", '',
+      "test('ninguna ruta del repo pasa de 140 caracteres', () => {",
+      "  const paths = execFileSync('git', ['ls-files'], { encoding: 'utf8' }).split('\\n');",
+      '  assert.ok(paths.every((path) => path.length <= 140));', '});', '',
+    ].join('\n'));
+    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Tareas: \`gate.json\`, con caché: una tarea se salta si no cambia ninguno de sus \`inputs\`. El pre-commit corre \`fast\`.\n`);
+  },
+  // Un repo de skills con su batería, la regla de la previsión y dos precios por sujeto: el vigente y uno viejo.
+  'reservas-skills'() {
+    s.put('skills/aviso-cierre/SKILL.md', '---\nname: aviso-cierre\ndescription: Usar al cerrar una feature.\n---\n\n# aviso-cierre\n\n1. Di qué se cierra.\n2. Corre el gate.\n');
+    s.put('tests/batteries/aviso-cierre/battery.md', '# Batería — aviso-cierre\n\n| Id | Paso | n | Modelo |\n| --- | --- | --- | --- |\n| c1 | cierre | 2 | sonnet |\n| c2 | cierre | 2 | sonnet |\n');
+    edit('.docs/sdd/constitution.md', (text) => `${text}5. Ninguna edición de una skill sin su prueba con sujetos (RED → GREEN). La previsión de coste (sujetos, minutos y dólares) se declara antes del primer sujeto y la spec la repite; si la prueba la supera, una tanda más de REFACTOR incluida, se para y decide el dev-lead.\n`);
+    edit('.docs/sdd/tech-stack.md', (text) => `${text}\n- Sujetos: Sonnet. Un sujeto de \`aviso-cierre\` cuesta ~0,70 $, porque cierra una feature entera.\n`);
+    s.put('.docs/sdd/specs/20260915-090000-patch-0006-aviso/patch.md', '# Patch — aviso\n\nRED y GREEN de `aviso-cierre`, 4 sujetos, ~1,24 $ (~0,31 $ por sujeto).\n');
   },
   'reservas-adr'() {
     mkdirSync(at('.docs/sdd/decisions'), { recursive: true });
@@ -208,6 +248,13 @@ const voidOthers = () => {
 };
 steps.r1 = voidOthers;
 steps.t1 = voidOthers;
+steps.co1 = () => {
+  branch('feature/0013-cancel-many-days');
+  s.put(`${F13}/spec.md`, readFileSync(join(FIX, 'spec-0013.md'), 'utf8'));
+};
+steps.co2 = () => branch('feature/0014-notice-room');
+steps.co3 = () => branch('feature/0015-paths-in-fast');
+steps.co4 = () => branch('feature/0016-close-notice');
 steps[s.SC]?.();
 
 const turns = { g1: '15', r1: '15', d1: '60', p3: '60' };
@@ -216,12 +263,12 @@ s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
 await s.launch(ASK);
 for (const kept of ['spec', 'plan', 'tasks']) {
-  for (const folder of [F10, F11]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
+  for (const folder of [F10, F11, F13]) if (existsSync(at(`${folder}/${kept}.md`))) s.keep(at(`${folder}/${kept}.md`), `${kept}.md`);
 }
 // Las carpetas del molde y de los fixtures son de 2026-10-08 o antes: la que crea el sujeto es la de fecha mayor.
 const specs = at('.docs/sdd/specs');
 const newest = existsSync(specs) ? readdirSync(specs).sort().at(-1) : undefined;
-const ours = [F10, F11].map((folder) => folder.split('/').at(-1));
+const ours = [F10, F11, F13].map((folder) => folder.split('/').at(-1));
 if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
   for (const [file, name] of [['spec.md', 'spec-new.md'], ['patch.md', 'patch-new.md'], ['plan.md', 'plan-new.md']]) {
     if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);
