@@ -1,0 +1,87 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro), y `canceladas` lista cada cancelación con su motivo. Por ejemplo, si cancelas la reserva de Norte del lunes con «sala ocupada», sale `Norte lun — sala ocupada`.
+
+No he cerrado nada y no he escrito ningún registro. En `manual` con perfil `delegate`, el cierre se para hasta que valides tú o difieras la validación.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1`. Es un workaround para la carrera de los tests sobre el almacén en memoria compartido, hasta que se aísle por test. Si es erróneo, la suite tarda el doble. Irá a una fila de deuda al cerrar.
+
+**Smoke que he corrido** (mismos comandos que el guion)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | el mismo mensaje |
+| Listado de canceladas | ejecución real, en un solo proceso | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test --test-concurrency=1 test/`: 5/5 sobre a76ff8b. Salida completa guardada en el scratchpad.
+- No hay E2E declarado (no existe `operations.md`), así que no he corrido `test:e2e`.
+
+**Sin probar**
+
+- Nada de la spec. El estado de la app vive en memoria por proceso, así que `cancelar` seguido de `canceladas` en dos comandos separados no muestra la cancelación. Por eso el paso 4 del guion va en un solo proceso.
+
+**Pre-checks**
+
+- El árbol está limpio y `sdd merge --check` dice que `develop` está listo. No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está aprobada por Laura.
+- La revisión final fue sobre 34ca93e. `HEAD` solo añade el `tasks.md` de documentación, así que no hace falta re-revisión.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (aviso del hook). Las skills que estoy siguiendo vienen del checkout del kit 3.x que usa el CLI. Si prefieres actualizar el plugin y reiniciar antes de cerrar, dímelo.
+
+Panel: plan B en http://127.0.0.1:10799/
+
+Ese panel no ve la app, así que si algo falla cuéntamelo en el comentario. Si `.temp/` no está en el `.gitignore` del proyecto, puedo añadirlo. He dejado la salida del panel fuera del repo.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay entorno que arrancar. Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Cancelar con un motivo fuera de la lista:
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3. Cancelar sin motivo:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Cancelar y listar en el mismo proceso:
+
+```
+node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"
+```
+
+→ dos líneas: `cancelada Norte lun (sala ocupada)` y `Norte lun — sala ocupada`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

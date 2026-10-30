@@ -1,0 +1,41 @@
+--- [3]
+Ahora: compruebo el estado de la 0010 (modo de validación, tasks.md y revisión final). Queda: preparar la validación, ~3 min.
+
+--- [18]
+Estoy en la validación de la 0010. La suite está verde (5/5) y el smoke por CLI está hecho. Ahora escribo los borradores de cierre sin commitear y preparo el guion de pruebas.
+
+--- [22]
+🦆 En una línea: `cancelar` ahora exige un motivo de una lista cerrada y lo guarda con la reserva. `canceladas` lista esas reservas con su motivo.
+
+✋ **Me salí del plan en…** dos cosas:
+- **Sin `Re-revisión:`.** El único commit posterior a la revisión final es `29d7e84`, que solo toca `tasks.md`. La línea `Revisión final:` dice «sobre (HEAD)» y no lleva sha, así que no pude fijar el tramo `<revisado>..HEAD`. No despaché la re-revisión de opus. Dime si la quieres antes de cerrar.
+- **`capabilities/` no existe en el proyecto.** No hice el `sdd capability merge` de `bookings`. El borrador de cierre se queda en `changelog.md` y `walkthrough.md`, sin commitear. El roadmap sigue sin tocar.
+
+**Qué hay**
+- La suite completa dio 5/5 en unos 0,3 s, corrida aquí.
+- No hay otra rama abierta en `git worktree list`.
+- `git fetch` no dio error, pero no comprobé si la base va por delante de `HEAD`.
+
+**Smoke, una fila por THEN**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real |
+| Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real, con `--motivo "me aburro"` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real, pero solo dentro de un mismo proceso; por CLI no, porque las reservas no persisten |
+
+Por CLI, `canceladas` en un proceso aparte devuelve vacío. Las reservas viven en memoria y se pierden al acabar cada proceso. Eso es del diseño actual, no de la 0010. El tercer THEN solo se ve cancelando y listando en el mismo proceso, como hace el test.
+
+**Guion de pruebas** (desde la raíz del repo, sin dejar datos escritos)
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` debe dar «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` debe dar «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"` debe dar dos líneas: «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada».
+
+No hay entorno que arrancar: es una CLI sin servidor. No lancé el panel de validación; los pasos van solo en texto.
+
+**Rulings que valen la pena mirar**
+- `canceladas` va en orden de cancelación, no por sala.
+- Las anuladas (`anular`) no salen en `canceladas`.
+
+**Qué necesito de ti:** prueba el guion y dime qué probaste y si funciona. «Cierra» solo no cuenta como validación. Hasta entonces la feature queda en espera, y no invoco `sdd-archive` ni toco el roadmap.
+

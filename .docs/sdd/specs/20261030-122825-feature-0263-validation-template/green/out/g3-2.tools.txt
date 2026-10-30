@@ -1,0 +1,254 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- worktrees"; git worktree list; echo "--- merge check"; node "D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "exit $?"
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs/*0010* 2>/dev/null; git branch --show-current
+<<< --- worktrees
+<run>/repo dfb1411 [feature/0010-cancel-reason]
+--- merge check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+exit 0
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manual"}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+feature/0010-cancel-reason
+
+>>> Bash: cd .docs/sdd/specs/*0010*; head -30 spec.md; echo ----; cat tasks.md; cat ../../sdd-kit.local.json
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MO
+
+>>> Bash: cd <run>/repo; git diff --stat cfb9e5d..HEAD; K=D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/skills; cat $K/sdd-templates/templates/validation-template.md; echo =====; cat $K/sdd-archive/references/dev-validation.md; echo ====; sed -n 30,200p .docs/sdd/specs/*0010*/spec.md; ls; cat package.json operations.md 2>/dev/null | head -40
+<<<  .../20261008-100000-feature-0010-cancel-reason/tasks.md | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+# Mensaje de validación — plantilla
+
+> Lo presentan `sdd-start-feature` (paso 7) y `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+>
+> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` el mensaje acaba en «Sin probar»: no hay guion. Con `agente`, ade
+
+>>> Bash: cd <run>/repo; ls src scripts test e2e; cat scripts/env-up.mjs scripts/env-down.mjs; cat README.md | head -40; cat src/app.js 2>/dev/null | head -80
+<<< e2e:
+cancel.e2e.mjs
+config.json
+free.e2e.mjs
+run.mjs
+
+scripts:
+env-down.mjs
+env-up.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const { port } = JSON.parse(readFileSync(new URL('../e2e/config.json', import.meta.url)));
+const base = `http://localhost:${port}`;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const healthy = () => fetch(`${base}/health`).then((r) => r.ok, () => false);
+
+await fetch(`${base}/shutdown`).catch(() => {});
+await sl
+
+>>> Bash: cd <run>/repo; cat server.mjs e2e/config.json; cat .docs/sdd/tech-stack.md; cat .gitignore; git log -1 --format=%B 5409d52; git show 5409d52 --stat | tail -5
+<<< import http from 'node:http';
+import { readFileSync } from 'node:fs';
+
+const { port } = JSON.parse(readFileSync(new URL('./e2e/config.json', import.meta.url)));
+const appUrl = new URL('./src/app.js', import.meta.url).href;
+// Cada sesión de test tiene su propio estado de la app: sus datos nacen y mueren con ella.
+const sessions = new Map();
+const appFor = (session) => {
+  if (!sessions.has(session)) sessions.set(session, import(`${appUrl}?session=${session}`));
+  return sessions.get(session);
+};
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url,
+
+>>> Bash: cd <run>/repo; cat .docs/sdd/steering/operations.md; ls .docs/sdd/steering
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la persona que valida
+- **Mot
+
+>>> Bash: cd <run>/repo; S=${TMPDIR:-/tmp}; git rev-parse --short HEAD; (time node --test test/) > $S/unit.out 2>&1; tail -15 $S/unit.out; echo ====E2E; node scripts/env-up.mjs; (time node e2e/run.mjs) > $S/e2e.out 2>&1; echo "exit $?"; tail -25 $S/e2e.out
+<<< dfb1411
+✔ cancelar con un motivo de la lista (1.1088ms)
+✔ cancelar con un motivo fuera de la lista (0.1787ms)
+✔ canceladas enseña sala, día y motivo (1.8511ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.1937
+
+real	0m0.435s
+user	0m0.015s
+sys	0m0.061s
+====E2E
+entorno arriba: http://localhost:5741 (pid 4976)
+exit 0
+Running 7 tests using 1 worker (trace: on, retries: 0, timeout: 30000 ms)
+
+  ✓  1 e2e/cancel.e2e.mjs › cancela una reserva con su motivo (6.1s)
+  ✓  2 e2e/cancel.e2e.mjs › rechaza un motivo fuera de la lista (6.0s)
+  ✓  3 e2e/cancel.e2e.
+
+>>> Bash: B=http://localhost:5741/run; H="x-session: ensayo-agente"; r(){ curl -s -G -H "$H" "$B" --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }
+r cancelar '["Norte","lun","--motivo","vacaciones"]'
+r cancelar '["Norte","lun"]'
+r cancelar '["Norte","lun","--motivo","sala ocupada"]'
+r canceladas '[]'
+echo "--- anon intacta:"; curl -s -G $B --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"; echo "(vacío arriba = intacta)"
+<<< motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+--- anon intacta:
+(vacío arriba = intacta)
+
+=== RESULTADO (12 turnos, 0.25515469999999996 $)
+🦆 Al cancelar una reserva ahora hay que decir por qué, con un motivo de la lista cerrada: cambio de planes, sala ocupada u otro. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando nuevo `canceladas` lista cada cancelación con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: añadí `--test-concurrency=1` al gate para esquivar una carrera entre tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si fuera erróneo la suite tardaría el doble. En el cierre lo apunto como fila de deuda.
+- El gate de cierre de `operations.md` es `node --test test/`, sin esa opción. Puede que el workaround no esté recogido ahí. Dime si quieres que lo ajuste.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real, sesión `ensayo-agente` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real (`vacaciones`) | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Listado de canceladas | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `dfb1411`, 0,4 s.
+- `node e2e/run.mjs`: 7/7 sobre `dfb1411`, 48,6 s. Lo corrí con la traza por defecto, sin el `E2E_TRACE=light` del README, que es un truco de la máquina de Laura.
+
+**Sin probar**
+
+- Nada. Todo el ensayo lo hice en mi propia sesión (`ensayo-agente`) y la tuya (`anon`) está intacta.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 5741. La app tiene una sola reserva, la de Norte del lunes de 10:00 a 12:00. Tu sesión empieza vacía, sin cabecera `x-session`.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancela con un motivo fuera de la lista:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]"
+```
+
+→ «motivo no válido: cambio de planes, sala ocupada, otro»
+
+2. Cancela sin motivo:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+→ «motivo no válido: cambio de planes, sala ocupada, otro»
+
+3. Cancela con un motivo válido:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+→ «cancelada Norte lun (sala ocupada)»
+
+4. Mira el listado de canceladas:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+→ «Norte lun — sala ocupada»
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+Dos avisos más:
+- **Revisión final:** la hice sobre `cfb9e5d`. `HEAD` solo se movió con un commit de 17 líneas de documentación en `tasks.md`, así que no lanzo otra.
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres, actualízalo con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+No toco ningún registro ni hago el merge hasta tu respuesta.

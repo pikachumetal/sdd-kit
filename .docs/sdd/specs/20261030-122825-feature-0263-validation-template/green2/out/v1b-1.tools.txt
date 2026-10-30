@@ -1,0 +1,126 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd/specs/*0010*; git worktree list; git log --oneline -8
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native", "validation": {"mode": "field"}}
+plan.md
+spec.md
+tasks.md
+<run>/repo a3880a4 [feature/0010-cancel-reason]
+a3880a4 docs(sdd): registro de tasks de la 0010
+86e4485 feat(bookings): listado de canceladas con su motivo
+507c1e3 feat(bookings): cancelar con un motivo de la lista
+e6fadee docs(sdd): abrir la feature 0010 con su spec y su plan
+c5c10b4 feat: base del molde
+
+>>> Bash: cd .docs/sdd/specs/*0010*; cat spec.md tasks.md; ls ../; git remote -v; cat ../../../../.docs/sdd/specs/*0010*/../../sdd-kit.local.json 2>/dev/null
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0263-validation-template\.temp\k263\skills\sdd-templates\templates\validation-template.md
+<<< Exit code 1
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec
+<<< 1	# Mensaje de validación — plantilla
+2	
+3	> Lo presentan `sdd-start-feature` (paso 7) y `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+4	>
+5	> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` el mensaje acaba en «Sin probar»: no hay guion. Con `agente`, además, no esperas respuesta y registras `Validación por el agente: <fecha> · <evidencia>`.
+6	>
+7	> **El guion 
+
+>>> Bash: git remote -v; git fetch 2>&1 | tail -2; git ls-files | grep -v '^.docs' ; cat package.json; git show --stat HEAD | tail -5; cat .docs/sdd/specs/*0010*/plan.md | head -40
+<<< PRODUCT.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+test/cancel.test.js
+{"type": "module"}
+    
+    Cuerpo del commit.
+
+ .../tasks.md                                        | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Plan de implementación — Motivo al cancelar
+spec: ./spec.md
+status: approved
+created: 2026-10-08
+---
+
+# Plan de implementación — Motivo al cancelar
+
+## Decisiones que he tomado yo — valida estas
+
+1. Dos tasks, Native.
+
+**Goal**: cancelar con motivo y listar las cancel
+
+>>> Bash: cat src/app.js; cat README.md | head -30; node --test 2>&1 | tail -15; git rev-parse --short HEAD; git status --short
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "porque sí"; echo "[canceladas CLI:]"; node src/app.js canceladas; echo "[misma proceso:]"; node --input-type=module -e 'import {run} from "./src/app.js"; console.log(run("cancelar",["Norte","lun","--motivo","sala ocupada"])); console.log(run("canceladas",[]))'; git diff 507c1e3^ HEAD --stat -- src test
+<<< cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+[canceladas CLI:]
+
+[misma proceso:]
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+ src/app.js          | 19 ++++++++++++++++---
+ test/cancel.test.js | 12 ++++++++----
+ 2 files changed, 24 insertions(+), 7 deletions(-)
+
+=== RESULTADO (9 turnos, 0.1657017 $)
+Ahora: tengo el smoke y la suite (5/5 sobre `a3880a4`), pero al ejecutarlo de verdad encontré una decisión tuya antes de presentar la validación. Queda: tu respuesta y después la validación, ~5 min.
+
+**Decisión: `canceladas` no ve nada entre dos ejecuciones del CLI.**
+
+- **Qué pasa:** el molde guarda las reservas solo en memoria (`bookings` en `src/app.js`), sin ficheros ni base de datos. Cada `node src/app.js …` arranca de cero.
+- **Prueba real:** `cancelar Norte lun --motivo "sala ocupada"` responde bien, pero un `canceladas` lanzado después, en otro proceso, sale **vacío**. Dentro de un mismo proceso sí responde «Norte lun — sala ocupada».
+- **Por qué importa:** el THEN del listado se cumple en la suite y en un mismo proceso, pero un usuario que lo pruebe a mano desde la terminal no lo verá.
+- **No es una regresión de la 0010:** `reservar` y `anular` ya se comportaban así. La spec dice «el motivo se guarda con la reserva» y no habla de persistencia.
+
+**Mi recomendación:** cerrar la 0010 tal cual y apuntar la persistencia como feature aparte en el roadmap. Meter ficheros aquí agranda el Scope y toca todos los comandos, no solo el motivo. El smoke registraría ese THEN como `ejecución real` en proceso único, con esta limitación anotada en «Sin probar».
+
+¿Cierro así, o prefieres añadir persistencia dentro de la 0010 (enmienda de la spec)?

@@ -1,0 +1,94 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [17]
+El gate unitario pasa (5/5). El e2e falló con `ERR_CONNECTION_REFUSED`: el entorno no estaba levantado. Leo cómo manda el kit correr el e2e antes de repetirlo.
+
+--- [19]
+Es el entorno, no el código. Lo levanto yo, compruebo `/health` y repito el gate tal como lo declara el proyecto, sin variables añadidas.
+
+--- [25]
+Los cinco pasos dan el literal esperado. La línea `Panel:` es obligatoria y no tengo herramientas de Chrome, así que levanto el panel plan B.
+
+--- [30]
+Ambos servidores responden. El cierre se detiene aquí: falta tu validación, y no escribo nada hasta tenerla.
+
+🦆 Al cancelar una reserva ahora hay que decir por qué, con un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). El comando `canceladas` lista cada cancelación con su motivo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y después `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: usé `node --test --test-concurrency=1` en el gate para esquivar la carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si es erróneo la suite tarda el doble. Al cerrar abriré su fila de deuda.
+
+**Smoke que he corrido**
+
+Los he ejecutado de verdad contra el servidor, con mi propia sesión.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| El listado enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `0f32e00`, menos de 1 s.
+- `node e2e/run.mjs`: 7/7 sobre `0f32e00`, 48,1 s, con el entorno levantado por mí y comprobado en `/health`. Supera el «Presupuesto E2E» de 0,5 min. Abriré una fila de deuda con la duración y el presupuesto.
+- La primera pasada del e2e falló con `ERR_CONNECTION_REFUSED` porque el entorno no estaba levantado. Lo levanté y repetí, y pasó.
+
+**Sin probar**
+
+- Nada. La revisión final (`sobre 5db881b`) está limpia, y desde entonces solo se han commiteado cambios de documentación.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Panel: plan B en http://127.0.0.1:1813/ (esta página no ve la app, así que no recoge consola, red ni capturas. Si algo falla, cuéntame el error en el comentario).
+
+El entorno ya está arrancado en el puerto 5047 (`http://localhost:5047`). Lo he levantado yo con `node scripts/env-up.mjs`.
+
+Usa una sesión nueva, por ejemplo `persona1`. La mía es otra, y cada sesión tiene su propia reserva de Norte del lunes.
+
+1. Cancela con un motivo de la lista:
+
+```
+curl -G "http://localhost:5047/run" -H "x-session: persona1" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Mira el listado:
+
+```
+curl -G "http://localhost:5047/run" -H "x-session: persona1" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+→ `Norte lun — sala ocupada`
+
+3. Prueba un motivo fuera de la lista:
+
+```
+curl -G "http://localhost:5047/run" -H "x-session: persona1" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"porque sí\"]"
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Prueba sin `--motivo`:
+
+```
+curl -G "http://localhost:5047/run" -H "x-session: persona1" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+Para parar el entorno cuando acabes:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -77,14 +77,14 @@ function done0010() {
   ].join('\n'));
   s.commit('docs(sdd): tasks.md con la revisión final');
 }
-// La 0012 solo fija la versión de Node: nada que una persona vea, implementada y revisada; `line` es la línea `Validación:` de su spec.
+// La 0020 solo fija la versión de Node: nada que una persona vea, implementada y revisada; `line` es la línea `Validación:` de su spec.
 function doneConfig0012(line = '') {
-  const folder = '.docs/sdd/specs/20261012-100000-feature-0012-node-engine';
-  branch('feature/0012-node-engine');
-  s.put(`${folder}/spec.md`, ['---', 'id: 20261012-100000-feature-0012-node-engine', 'feature: 0012', 'title: Fijar la versión de Node', 'mode: full', 'status: approved', 'created: 2026-10-12', 'author: Laura', 'approvers:', '  - name: Laura', '    approved_at: 2026-10-12', '---', '', '# Spec — Fijar la versión de Node', '',
+  const folder = '.docs/sdd/specs/20261012-100000-feature-0020-node-engine';
+  branch('feature/0020-node-engine');
+  s.put(`${folder}/spec.md`, ['---', 'id: 20261012-100000-feature-0020-node-engine', 'feature: 0020', 'title: Fijar la versión de Node', 'mode: full', 'status: approved', 'created: 2026-10-12', 'author: Laura', 'approvers:', '  - name: Laura', '    approved_at: 2026-10-12', '---', '', '# Spec — Fijar la versión de Node', '',
     ...(line ? [line, ''] : []), '## Capacidades', '', 'Ninguna, porque herramientas.', '', '## Intent', '', 'Que todos usen Node 22: `engines` en `package.json` y `.nvmrc`.', '', '## Scope', '', '- Entra: `package.json`, `.nvmrc`', '- No entra: el código de la app', '', '## Delta de comportamiento', '', 'THEN `package.json` declara `engines.node` `>=22` y `.nvmrc` contiene `22`.', '', '## Aprobaciones', '', '| Nombre | Fecha | Estado |', '| --- | --- | --- |', '| Laura | 2026-10-12 | aprobada |', ''].join('\n'));
   s.put(`${folder}/plan.md`, '# Plan — Fijar la versión de Node\n\nEjecución: native, porque son dos ficheros\n\n## Task 1: engines\n\n`package.json`\n\n## Task 2: nvmrc\n\n`.nvmrc`\n');
-  s.commit('docs(sdd): abrir la feature 0012 con su spec y su plan');
+  s.commit('docs(sdd): abrir la feature 0020 con su spec y su plan');
   writeFileSync(at('package.json'), '{"type": "module", "engines": {"node": ">=22"}}\n');
   s.put('.nvmrc', '22\n');
   s.commit('chore: fijar Node 22');
@@ -445,6 +445,14 @@ const molds = {
   'salas-patch': () => done0008(),
   'salas-report': () => (manualValidation(), done0008(), report0008()),
   'reservas-e2e-manual': () => (manualValidation(), moldReservas(), e2eSuite(), done0010()),
+  'reservas-ui': () => {
+    manualValidation();
+    moldReservas();
+    e2eSuite();
+    done0010();
+    appendFileSync(at(`${F10}/plan.md`), '\n**Se prueba en la aplicación**: la persona arranca el servidor y cancela y lista por `GET /run` con la misma sesión (`x-session`), porque el servidor es la aplicación que usa.\n');
+    s.commit('docs(sdd): cómo se prueba la 0010 en la aplicación');
+  },
   'reservas-config-manual': () => (manualValidation(), moldReservas(), doneConfig0012()),
   'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0012('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),
   'reservas-start': () => startEnv(false),
@@ -467,7 +475,7 @@ if (existsSync(at('e2e/config.json'))) {
 // Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
 if (existsSync(at('scripts/env-down.mjs'))) spawnSync(s.NODE, [at('scripts/env-down.mjs')], { cwd: s.R, stdio: 'ignore' });
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const kept of ['tasks', 'walkthrough', 'patch']) for (const dir of [F10, P8]) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
+for (const kept of ['tasks', 'walkthrough', 'patch']) for (const dir of [F10, P8, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
 const files = (dir, pattern) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => pattern.test(name)).sort() : []);
 for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\.md$/)) keepIf(`skills/sdd-upgrade/references/migrations/${migration}`, migration);
 for (const kept of ['ROADMAP.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));
