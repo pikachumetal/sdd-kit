@@ -21,8 +21,6 @@ approvers:
 > El párrafo 🦆 lo escribe `sdd-rubber-duck` en modo corto al presentar la spec: cinco frases como mucho, sin rutas ni jerga.
 
 > **Estado**: draft / in-review / approved / implementing / done / superseded / cancelled.
-> **Siguiente paso**: modo full → `plan.md`, siguiendo `plan-writing.md` de `sdd-propose`; modo lite → implementación directa.
-> **Modo lite** = rellenar el bloque «Estimación y esfuerzo» de esta misma plantilla; no existe ni se crea un `spec-lite-template.md` (Art. VIII).
 > **Regla de contenido**: si la implementación puede cambiar sin cambiar el comportamiento observable, no va en la spec — va en `plan.md` (datos, UX, riesgos, rollout, restricciones).
 > **Regla de reparto**: el comportamiento observable (tiempos, límites, cuotas, avisos, respuestas, estados) vive solo en `capabilities/`. `tech-stack.md`, `architecture.md` y `environments.md` dicen dónde está la pieza técnica y enlazan la capacidad; no copian el valor.
 > Borra los bloques de ayuda (`>`) al redactar.
@@ -55,8 +53,6 @@ approvers:
 
 ## Scope
 
-> Entra / No entra — listas cortas, no prosa.
-
 - Entra: <…>
 - No entra: <…>
 
@@ -71,8 +67,6 @@ approvers:
 - Filas que implementa: <id de cada fila que la spec salda o implementa> → <ficheros que la nombran («la define la 0009» en `docs/config.md`) y su destino> | nada: comprobado con `<búsqueda>`
 
 ## Approach
-
-> Qué enfoque se toma, no cómo se implementa — el cómo es contenido de `plan.md`.
 
 <texto>
 
@@ -123,8 +117,6 @@ approvers:
 
 ### Estimación y esfuerzo *(solo modo lite — OBLIGATORIO si existe `.docs/sdd/estimation.md`)*
 
-> En modo full este bloque vive en `plan.md`. En lite no hay plan, así que vive aquí: sin él, el `estimation-log` pierde justo las tareas pequeñas, que son las que mejor lo calibran.
-
 - Tipo: <frontend | backend | fullstack | migration | docs | infra/tooling | chore>
 - Esfuerzo spec: <Xh>
 - Estimación de implementación: <Yh>
@@ -133,11 +125,24 @@ approvers:
 
 ## Topes de palabras *(solo si el proyecto pone topes a lo que la spec edita: un test limita en palabras un fichero que edita, como `cli/test/kit/word-budget.test.ts`)*
 
-> Si se cumple, es obligatoria y no se borra con los bloques de ayuda: una fila por fichero con tope que la spec edita, también si la edición lo acorta; un margen dicho en una decisión o en «Dónde se prueba» no es la tabla. Si ningún test limita lo que edita, borra la sección. Mide cada uno antes de presentarla, con el conteo del test que lo fija. El tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix de la revisión final, y lo aprueba el dev-lead en el gate. El de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más ese margen. Lo que se recorte para caber es una edición de skill: si quita una instrucción, lleva su RED.
+> Si se cumple, es obligatoria y no se borra con los bloques de ayuda: una fila por fichero con tope que la spec edita, también si la edición lo acorta; un margen dicho en una decisión o en «Dónde se prueba» no es la tabla. Mide cada uno antes de presentarla, con el conteo del test que lo fija. El tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix de la revisión final, y lo aprueba el dev-lead en el gate. El de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más ese margen. Lo que se recorte para caber es una edición de skill: si quita una instrucción, lleva su RED.
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
 | <skill o documento> | <palabras / tope> | <tope − medido> | <medido + previsto + 2 % · sin cambio> |
+
+## Previsión de coste *(solo si la spec edita una skill que se prueba con sujetos)*
+
+> Obligatoria si se cumple: no se borra con los bloques de ayuda. Cada cifra cita su batería y el precio por sujeto de `tech-stack.md`, o lo medido; el total es la suma de las filas.
+
+| Tanda | Sujetos (batería) | $ |
+| --- | --- | --- |
+| RED | | |
+| GREEN | | |
+| Una tanda de REFACTOR | | |
+| Controles | | |
+| Medición tras la revisión final | | |
+| Suma | | |
 
 ## Enmiendas
 
