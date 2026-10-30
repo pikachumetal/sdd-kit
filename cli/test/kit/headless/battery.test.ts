@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { BatteryError, runBattery, verdict } from '../../../../tests/headless/battery.mjs';
@@ -78,6 +79,77 @@ describe('verdict', () => {
 
   it('rechaza un paso desconocido', () => {
     expect(() => verdict(TABLE, OUT, ['nope'], toyFs())).toThrow(new BatteryError('paso desconocido: nope', 2));
+  });
+});
+
+describe('verdict con las filas de la rúbrica que se comprueban', () => {
+  const SCENARIOS = `| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| k1 | rc | Corta la release. | salas | \`cualquiera\` | 2 | 2/2 | sonnet | toy |
+| k2 | rc | Corta la release. | salas | \`cualquiera\` | 2 | 1/2 | sonnet | toy |
+`;
+  const withRubric = (...rows: string[]) => {
+    const fs = memoryFs();
+    fs.write(TABLE, `${SCENARIOS}\n## Rúbrica\n\n| Fila | Escenarios | Falla si… |\n| --- | --- | --- |\n${rows.join('\n')}\n`);
+    return fs;
+  };
+  const CHAINED = '>>> Bash: gh run list --workflow ci.yml; node --test 2>&1 | tail -8\n<<< ok';
+  const CLEAN = '>>> Bash: gh run list --workflow ci.yml\n<<< ok';
+
+  it('una fila «presente» tumba al sujeto que encadena el comando en la misma llamada', () => {
+    const fs = withRubric('| K6 Sin suite | k1 | `tools: /node --test/` presente |');
+    tools(fs, 'k1-1', finished(CLEAN));
+    tools(fs, 'k1-2', finished(CHAINED));
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 1/2 · umbral 2/2 · rojo · K6 falla en k1-2');
+  });
+
+  it('no cuenta lo que sale en un resultado o en el mensaje final: el sujeto no lo corrió', () => {
+    const fs = withRubric('| K6 Sin suite | k1 | `tools: /node --test/` presente |');
+    tools(fs, 'k1-1', finished(`>>> Read: operations.md\n<<< - **Suites**: \`node --test\`\n\n${CLEAN}`));
+    tools(fs, 'k1-2', `${CLEAN}\n\n=== RESULTADO (1 turnos, 0.1 $)\nno he corrido node --test\n`);
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it('una llamada de varias líneas se mira entera', () => {
+    const fs = withRubric('| K6 Sin suite | k1 | `tools: /node --test/` presente |');
+    tools(fs, 'k1-1', finished('>>> Bash: gh run list\nnode --test\n<<< ok'));
+    tools(fs, 'k1-2', finished(CLEAN));
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 1/2 · umbral 2/2 · rojo · K6 falla en k1-1');
+  });
+
+  it('una fila «ausente» tumba al sujeto sin esa llamada, y una regex admite la alternativa escapada', () => {
+    const fs = withRubric('| K1 Lee la CI | k1, k2 | `tools: /gh run\\|gh pr/` ausente |');
+    tools(fs, 'k1-1', finished(CLEAN));
+    tools(fs, 'k1-2', finished('>>> Read: README.md\n<<< gh run'));
+    tools(fs, 'k2-1', finished('>>> Read: README.md\n<<< ok'));
+    tools(fs, 'k2-2', finished(CLEAN));
+    expect(verdict(TABLE, OUT, [], fs).lines).toEqual(['k1 · 1/2 · umbral 2/2 · rojo · K1 falla en k1-2', 'k2 · 1/2 · umbral 1/2 · verde · K1 falla en k2-1']);
+  });
+
+  it('deja a mano las filas de juicio', () => {
+    const fs = withRubric('| J1 Juicio | k1 | `tools.txt` tiene `node --test` |');
+    tools(fs, 'k1-1', finished(CHAINED));
+    tools(fs, 'k1-2', finished(CHAINED));
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
+  });
+
+  it.each([
+    ['sin presente ni ausente', '| K6 Mal | k1 | `tools: /x/` |', 'K6: comprobación mal escrita'],
+    ['con una regex que no compila', '| K6 Mal | k1 | `tools: /(/` presente |', 'K6: comprobación mal escrita'],
+    ['con un escenario que no existe', '| K6 Mal | k9 | `tools: /x/` presente |', 'K6: escenario desconocido: k9'],
+  ])('rechaza una comprobación %s: callada, no correría', (_name, row, message) => {
+    expect(() => verdict(TABLE, OUT, [], withRubric(row))).toThrow(new BatteryError(message));
+  });
+});
+
+describe('la batería de sdd-archive', () => {
+  it('declara K6 como comprobación, con lo que da el rc2 de la 0257: 1/2', () => {
+    const fs = memoryFs();
+    const real = resolve(import.meta.dirname, '../../../../tests/batteries/sdd-archive/battery.md');
+    fs.write(TABLE, readFileSync(real, 'utf8'));
+    tools(fs, 'rc2-1', finished('>>> Bash: gh run list --workflow ci.yml --branch develop -L 1\n<<< ok\n\n=== RESULTADO\nno he corrido `node --test`'));
+    tools(fs, 'rc2-2', finished('>>> Bash: gh run list --workflow ci.yml --branch develop -L 1 2>&1; node --test 2>&1 | tail -8\n<<< ok'));
+    expect(lineOf(verdict(TABLE, OUT, [], fs).lines, 'rc2')).toContain('K6 falla en rc2-2');
   });
 });
 

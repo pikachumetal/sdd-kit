@@ -1,7 +1,7 @@
 // Lee la tabla de escenarios de una batería (tests/batteries/<skill>/battery.md), la lanza y da su veredicto.
 // Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
-//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo
+//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo: la puerta y las filas `tools: /<regex>/`
 //      BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
 //      [SUPERPOWERS_DIR=…] node battery.mjs run                  lanza la batería, entera o por tramos, y da el veredicto
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
@@ -22,20 +22,57 @@ export class BatteryError extends Error {
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const HEADER = ['Id', 'Paso', 'Petición', 'Molde', 'Esperado', 'n', 'Umbral', 'Modelo', 'Procedencia'];
 
-const cells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+const RUBRIC_HEADER = ['Fila', 'Escenarios', 'Falla si…'];
+
+const cells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map((cell) => cell.trim());
 const unquote = (cell) => cell.replace(/^`(.*)`$/, '$1');
 
-function readScenarios(batteryPath, fs) {
+// Las filas de la tabla con esa cabecera; sin la tabla, null.
+function readTable(batteryPath, header, fs) {
   const lines = fs.read(batteryPath).split(/\r?\n/);
-  const start = lines.findIndex((line) => line.startsWith('|') && cells(line).join('|') === HEADER.join('|'));
-  if (start < 0) throw new BatteryError(`sin la tabla de escenarios (| ${HEADER.join(' | ')} |) en ${batteryPath}`);
+  const start = lines.findIndex((line) => line.startsWith('|') && cells(line).join('|') === header.join('|'));
+  if (start < 0) return null;
   const rows = [];
   for (const line of lines.slice(start + 2)) {
     if (!line.startsWith('|')) break;
-    rows.push(Object.fromEntries(cells(line).map((cell, i) => [HEADER[i], unquote(cell)])));
+    rows.push(Object.fromEntries(cells(line).map((cell, i) => [header[i], cell])));
   }
   return rows;
 }
+
+function readScenarios(batteryPath, fs) {
+  const rows = readTable(batteryPath, HEADER, fs);
+  if (!rows) throw new BatteryError(`sin la tabla de escenarios (| ${HEADER.join(' | ')} |) en ${batteryPath}`);
+  return rows.map((row) => Object.fromEntries(Object.entries(row).map(([column, cell]) => [column, unquote(cell)])));
+}
+
+function parseCheck(row, known) {
+  const id = row.Fila.split(' ')[0];
+  const match = row['Falla si…'].match(/^`tools: \/(.+)\/` (presente|ausente)$/);
+  if (!match) throw new BatteryError(`${id}: comprobación mal escrita`);
+  let pattern;
+  try {
+    pattern = new RegExp(match[1].replaceAll('\\|', '|'));
+  } catch {
+    throw new BatteryError(`${id}: comprobación mal escrita`);
+  }
+  const scenarioIds = row.Escenarios.split(/,\s*/);
+  const unknown = scenarioIds.find((scenario) => !known.has(scenario));
+  if (unknown) throw new BatteryError(`${id}: escenario desconocido: ${unknown}`);
+  return { id, scenarioIds, pattern, failsWhenFound: match[2] === 'presente' };
+}
+
+// Una fila cuya celda «Falla si…» empieza por `tools: es una comprobación; mal escrita es un error, porque callada no correría.
+function readChecks(batteryPath, rows, fs) {
+  const known = new Set(rows.map((row) => row.Id));
+  const rubric = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
+  return rubric.filter((row) => row['Falla si…'].startsWith('`tools:')).map((row) => parseCheck(row, known));
+}
+
+// Solo las llamadas, enteras: en la 0257, rc2-1 nombra `node --test` en un resultado y en su mensaje final sin haberlo corrido.
+const toolCalls = (text) => [...text.matchAll(/^>>> [\s\S]*?(?=^(?:<<< |>>> |=== RESULTADO)|(?![\s\S]))/gm)].map((match) => match[0]);
+
+const failsCheck = (check, text) => toolCalls(text).some((call) => check.pattern.test(call)) === check.failsWhenFound;
 
 function selectSteps(rows, steps) {
   if (steps.length === 0) return rows;
@@ -70,21 +107,34 @@ function finishedRuns(row, outDir, fs) {
     .filter(({ text }) => text.includes('=== RESULTADO'));
 }
 
-function judge(row, outDir, fs) {
+function judge(row, outDir, checks, fs) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
   const runs = finishedRuns(row, outDir, fs);
   const unloaded = runs.filter(({ text }) => kitMissing(text)).map(({ label }) => label);
+  const failedChecks = checks
+    .filter((check) => check.scenarioIds.includes(row.Id))
+    .map((check) => ({ id: check.id, labels: runs.filter(({ text }) => failsCheck(check, text)).map(({ label }) => label) }))
+    .filter(({ labels }) => labels.length > 0);
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
-  const passed = runs.filter(({ label, text }) => !unloaded.includes(label) && (row.Esperado === ANY || firstSkill(text) === row.Esperado)).length;
+  const passed = runs.filter(
+    ({ label, text }) =>
+      !unloaded.includes(label) && !failedChecks.some(({ labels }) => labels.includes(label)) && (row.Esperado === ANY || firstSkill(text) === row.Esperado),
+  ).length;
   const missing = n - runs.length;
   const green = missing === 0 && unloaded.length === 0 && passed >= needed;
-  const notes = [missing ? `faltan ${missing}` : '', unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : ''].filter(Boolean);
+  const notes = [
+    missing ? `faltan ${missing}` : '',
+    unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
+    ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
+  ].filter(Boolean);
   return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${green ? 'verde' : 'rojo'}`, ...notes].join(' · ');
 }
 
 export function verdict(batteryPath, outDir, steps, fs) {
-  const lines = selectSteps(readScenarios(batteryPath, fs), steps).map((row) => judge(row, outDir, fs));
+  const rows = readScenarios(batteryPath, fs);
+  const checks = readChecks(batteryPath, rows, fs);
+  const lines = selectSteps(rows, steps).map((row) => judge(row, outDir, checks, fs));
   return { lines, red: lines.some((line) => line.includes('· rojo')) };
 }
 
