@@ -15,6 +15,7 @@ const P10 = '.docs/sdd/specs/20261001-090000-proposal-0010-reports';
 const P10_3 = '.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md';
 const ROADMAP = join(s.R, '.docs', 'sdd', 'roadmap.md');
 const CHANGELOG = join(s.R, '.docs', 'sdd', 'changelog.md');
+const PATCH_0007 = '.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md';
 
 s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
 s.putKitMarker(MARKER);
@@ -59,6 +60,22 @@ const molds = {
     layer3();
     s.copy(join(HERE, 'mold-salas-3-wt'));
   },
+  // salas-3-plain con un fichero que solo reexporta: el arreglo vive en src/lib/notify.js.
+  'salas-3-reexport': () => {
+    layer3();
+    s.copy(join(HERE, 'mold-salas-3-plain'));
+    s.put('src/avisos.js', "export { notify } from './lib/notify.js';\n");
+    s.put('src/lib/notify.js', 'export const notify = (room) => `aviso: ${room.toLowerCase()}`;\n');
+    const app = join(s.R, 'src', 'app.js');
+    const code = readLf(app);
+    if (!code.includes("if (cmd === 'libres')")) s.die('el molde salas-3-plain cambió: no hay dónde poner avisar');
+    writeFileSync(app, `import { notify } from './avisos.js';\n${code.replace("  if (cmd === 'libres')", "  if (cmd === 'avisar') return notify(params[0]);\n  if (cmd === 'libres')")}`);
+  },
+  // Las medidas de un gate solo en un log sin versionar, como las del patch 0219.
+  'salas-gate': () => {
+    s.put('.gitignore', '.temp/\n');
+    s.put('.temp/gate-times.log', 'test/app.test.js 1,2 s\ntest/store.test.js 31 min 40 s\ntest/report.test.js 8 min 12 s\ntotal 40 min\n');
+  },
   'salas-qa': layerQa,
   'salas-0013': salas0013,
 };
@@ -67,10 +84,12 @@ mold();
 s.initRepo();
 
 if (s.SC === 'id3') s.env.TURN2 = 'Súbela a Next.';
+if (s.SC === 'rl1') s.env.TURN2 = 'Dame el prompt de esa fila.';
 s.env.MAX_TURNS ||= '30';
 await s.launch(ASK);
 const keepIfPresent = (path, name) => existsSync(path) && s.keep(path, name);
 keepIfPresent(ROADMAP, 'roadmap.md');
+keepIfPresent(join(s.R, PATCH_0007), 'patch-0007.md');
 keepIfPresent(join(s.R, 'ROADMAP.md'), 'roadmap-3.md');
 keepIfPresent(join(s.R, '.docs', 'sdd', 'steering', 'debt.md'), 'debt.md');
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## ficheros\n${s.git('ls-files', '--others', '--exclude-standard')}`);

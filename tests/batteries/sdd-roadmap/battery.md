@@ -1,4 +1,4 @@
-# Batería de regresión — `sdd-roadmap`
+ 2 | 2/2 | 2 | 2/2 |# Batería de regresión — `sdd-roadmap`
 
 Cómo entra el trabajo en el roadmap antes de hacerlo. Nace en la feature 0161 como humo (Art. I: una edición de una skill de la 2.3.x sin batería lleva humo) y mide lo que la 0161 le añade: el cierre da el prompt de arranque de la fila que va primero, y «dame el prompt de la <id>» lo da sin escribir nada; la fila de deuda del dimensionado la abre la 0161.
 
@@ -18,6 +18,9 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-roadmap`); el m
 | m6 | legacy | Tria el informe de QA de docs/qa/2026-10-12-informe.md. Decide tú. | salas-qa | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: sin `ROADMAP.md`, el triaje escribe la forma 2.x |
 | id3 | ids | Apunta en el roadmap, para más adelante y sin decidir todavía: exportar las reservas a PDF. No la arranques. | salas-3 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0203: Later numera con la secuencia, no con `B<n>`; `TURN2` «Súbela a Next.» conserva el id |
 | m3b | cited | Tria lo que hay por triar en la deuda. | salas-3-wt | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: el dato del ticket solo lo desmiente el walkthrough que cita (fallo de campo de la «7.1.0», ticket de la feature 0165 §1; decisión del dev-lead del 2026-10-13 tras el m3 limpio) |
+| rl1 | row-lane | Apunta en el roadmap, en una sola fila, estos tres arreglos de `salas`, ya reproducidos y con la solución clara: `libres 25:00-26:00` lista las salas y debe responder «franja no válida: usa HH:MM-HH:MM»; `cancelar Norte` responde «cancelada Norte undefined» y debe responder «indica un día»; `reservar` sin más responde «salas» y debe responder «indica una sala». Decide tú. No los arranques. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0264: tickets de la feature 0211 §3 y del patch 0220 (menores) |
+| re1 | row-evidence | Acabo de cerrar el patch 0007: el gate tardó 40 min y las medidas por fichero están en .temp/gate-times.log. Apunta la fila para bajar el gate. Decide tú. No la arranques. | salas-gate | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0264: ticket del patch 0219 §1 |
+| rf1 | row-files | Apunta en el roadmap: el aviso de una reserva sale con la sala en minúsculas (`avisar Norte` da «aviso: norte») y debe respetar el nombre. Creo que el arreglo va en src/avisos.js. Decide tú. No la arranques. | salas-3-reexport | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | feature 0264: tickets de los patches 0212 y 0241 (menores) |
 
 ## Rúbrica
 
@@ -32,6 +35,9 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | M5 Fila nueva | m5 | la fila nueva, escrita o propuesta (en `delegate` el paso 3 pide proponer y esperar), no está en Next con título, one-liner, brief con las cinco etiquetas, `⏳` y tamaño; o la escribe sin id reservado o sin ejecutar el check (desempate del 2026-10-13) |
 | M3b Contraste con la fuente citada | m3b | da por bueno el «40 s con 1.000 reservas» del ticket (lo repite como hecho, propone la fila en «Lista» o un patch) sin decir que el walkthrough de la 0012 mide 4 s con 1.000 reservas; o escribe en `debt.md` o en `ROADMAP.md` antes de la decisión |
 | M6 Triaje 2.x | m6 | un ítem triado no queda como fila de «Deuda técnica», o queda sin «Destino» que empiece por `**Actuar**`, `**Esperar 2.º ticket**` o `**Descartada**`; da la 1.4.2 por buena; o crea `ROADMAP.md` o `debt.md` (desempate del 2026-10-13: el THEN dice «cada ítem es una fila de «Deuda técnica»») |
+| RL1 Carril de la fila | rl1 | la fila empieza por «Patch:», o el prompt lleva `Carril` patch u otro título con 🩹; salidas correctas: lite o feature, con `feature/<id>-<slug>` |
+| RE1 Evidencia de la fila | re1 | la fila no enlaza el `patch.md` de la 0007 con la sección de las medidas, o las cifras por fichero siguen solo en `.temp/gate-times.log` |
+| RF1 Ficheros leídos del código | rf1 | el `**Toca:**` nombra `src/avisos.js` y no `src/lib/notify.js`, que tiene el código |
 | ID3 Later con id de la secuencia | id3 | la fila nueva de Later, escrita o propuesta, lleva un `B<n>` u otro id que no sale de `sdd id next --reserve` (en el molde, `0014`); o, tras «Súbela a Next.», la fila de Next lleva un id distinto del que tenía en Later |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
@@ -52,6 +58,10 @@ Las reglas que añaden la 0161 y la 0150 a `skills/sdd-roadmap/SKILL.md`, de dó
 | La fila nueva de `ROADMAP.md` lleva tamaño `S`, `M` o `L` con el umbral de partir | `tests/sdd-roadmap-0150-red.md`, m5: 2 de 2 la dejaron sin tamaño; GREEN m5 2/2 | m5 |
 | Entrada «Triage», tabla de equivalencias 2.x, `B<n>` en Later y «Later no da prompt» | forma que fija la spec de la 0150 (decisiones 1, 11 y 12); sin RED propio: la exige el check o la imita el sujeto de las filas del molde; GREEN m6 (equivalencias 2.x) 2/2 tras el REFACTOR | m3, m5, m6 |
 | En 2.x cada ítem triado conserva su fila de «Deuda técnica»; la de «Próximo» no la sustituye | `tests/sdd-roadmap-0150-green.md`, m6: 1 de 2 mandó la planta a «Próximo» sin fila de deuda; tras el REFACTOR, GREEN m6 2/2 | m6 |
+| «Something concrete»: antes de «Patch:» o `**Carril:** patch`, cuenta los tests de comportamiento nuevo; con dos o más, lite o feature | tickets de la feature 0211 §3 y del patch 0220 (menores); RED de la 0264, `rl1` 0/1 | rl1 |
+| «Something concrete»: una fila nacida de otro cambio enlaza su artefacto, con las cifras añadidas antes en él | ticket del patch 0219 §1; RED de la 0264, `re1` 0/1 (copió las cifras a la celda, sin enlace) | re1 |
+
+**Sin regla** (feature 0264): `rf1` (ficheros leídos del código) salió limpio con un sujeto y queda de control; posible falso negativo, porque el molde es pequeño.
 
 **Sin regla** (feature 0150, enmiendas de la spec del 2026-10-13): contrastar cada versión o cifra del ticket con su fuente (m3 y m3b salieron 2 de 2 limpios, con el changelog a la vista y con el dato que solo desmiente el walkthrough citado) y sacar el prompt de arranque del brief (m4 salió 2 de 2 limpio). Los tres escenarios quedan como control; `launch-prompt-template.md` no cambia.
 
