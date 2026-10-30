@@ -210,10 +210,10 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN el molde `salas`, con `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
 - WHEN el usuario escribe «Estoy pensando en subir `node` a 22.18 en los `engines` de `package.json`. ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree.»
-- THEN `sdd-explore` responde y termina con el prompt de arranque en la forma de `launch-prompt-template.md`: el título «Subir el mínimo de Node a 22.18», sin id; `Base: develop`; la rama `feature/<slug>` sola en su bloque; `Carril: config`; y en otro bloque el prompt, que arranca con `sdd-propose` y su carril, con «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
+- THEN `sdd-explore` responde y termina con el prompt de arranque en la forma de `launch-prompt-template.md`: el título en `###` y cursiva con ⚙️, «Subir el mínimo de Node a 22.18», sin id; `***Nombre:***` con `feature/<slug>`, `***Base:***` con `develop` y `***Carril:***` con `config`, en líneas seguidas y con el valor en código en línea; `***Prompt***`; y un bloque de código sin lenguaje, que arranca con `sdd-propose` y su carril, con alcance, fuera de alcance, criterio de hecho, «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
 - AND no escribe fila en el roadmap ni reserva id
 - AND «¿Podemos subir `node` a 22.18? Si se puede, lo quiero.», sin pedir el prompt, es una petición de cambio: entra por `sdd-propose` como config (0160)
-- AND termina con «si prefieres hacerlo en esta sesión, di "arráncalo"», y con «arráncalo» invoca `sdd-propose`
+- AND termina con *si prefieres hacerlo en esta sesión, di "arráncalo"*, en cursiva, y con «arráncalo» invoca `sdd-propose`
 
 ### Un config en una rama de feature se fusiona al terminar
 
