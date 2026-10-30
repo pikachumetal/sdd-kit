@@ -65,7 +65,8 @@ created: <YYYY-MM-DD>
 - Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
   disparador: <feature, release o uso con dueño> **o**, con `validation.mode: field` en `sdd-kit.json`,
   Validación en campo: <fecha> · <verificación del agente, p. ej. «suite 412/412 · smoke 5/5 THEN con
-  ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia»> *(obligatorio: sin una de las tres no hay
+  ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia»> **o**, con `Validación: agente` en la spec,
+  Validación por el agente: <fecha> · <evidencia> *(obligatorio: sin una de las cuatro no hay
   cierre; si validó sobre lo reportado por el agente, dilo)*
   *(la frase del dev-lead no se corrige, erratas incluidas; si el proyecto pasa un corrector sobre los `.md`,
   excluye en este fichero, al escribirlo y no después del lint, todas las palabras de la frase, no solo las que

@@ -137,11 +137,13 @@ Mientras espera a un subagente o a un comando largo, el agente vigila que no se 
 
 ### Validar de verdad
 
-El agente lanza la revisión final en segundo plano en cuanto commitea la última task, sobre ese commit, y mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, empezando por «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
+El agente lanza la revisión final en segundo plano en cuanto commitea la última task, sobre ese commit, y mientras tanto hace la verificación visual y escribe los borradores del cierre. La validación te llega cuando la revisión vuelve. Si deja una decisión que es tuya (de producto o de alcance), te la pregunta antes, sola, en su propio turno. Después para lo que haya arrancado y te presenta el trabajo, siempre con la misma forma: qué hay y «Me salí del plan en…», con las decisiones que tomó durante la ejecución. Luego vienen:
 
-- Qué hay.
-- El guion de pruebas, que es lo que harás tú: pasos numerados, cada uno con una acción y lo que debería pasar, empezando por cómo arrancar la aplicación. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Si alguna task cambió lo que se ve, antes del guion van las capturas y, si el proyecto declara un detector en `tech-stack.md` §Frontend, su salida en escritorio y en móvil; sin detector, el agente te avisa de que la composición no está medida.
 - El smoke, que es lo que ya hizo él: una fila por escenario de la spec, con su evidencia: `suite` (lo cubre un test), `ejecución real` (lo probó en la aplicación) o `no probado`. Lo que se ve en una pantalla, una respuesta o un fichero solo cuenta como verificado con `ejecución real`.
+- Las suites, con su recuento, y lo que no pudo probar. Si alguna task cambió lo que se ve, van también las capturas y, si el proyecto declara un detector en `tech-stack.md` §Frontend, su salida en escritorio y en móvil; sin detector, el agente te avisa de que la composición no está medida.
+- El guion de pruebas, el último, que es lo que harás tú: la rama, el worktree y cómo arrancar la aplicación, con un bloque por terminal, y pasos numerados, cada uno con una acción y lo que debería pasar. Si prefieres encontrarla ya levantada, pídeselo a `sdd-config` (`validation.startEnvironment`). Acaba en «dime "validado" o qué paso falla».
+
+Si la spec dice `Validación: agente`, porque no verías nada que él no haya medido ya, no hay guion: te deja la línea con su evidencia.
 
 **Validar es decir qué has probado y que funciona**: «he filtrado por Pendiente y Enviado, y el listado cambia bien». Un «sí» a secas también vale, y queda escrito tal cual, con la nota de que no detallaste.
 
@@ -172,7 +174,7 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-archive` de un tirón:
 - fusiona en `develop` con `sdd merge`, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
-El patch cierra con la misma skill, sin walkthrough: primero te pide la validación con tres opciones (validado, diferir o no funciona) y después fusiona. Si la pieza es parte de algo partido, el mensaje final te dice qué falta y te da el prompt de la siguiente. Ningún cierre fusiona a `main` ni pone tags sin una frase tuya que lo pida: eso es entregar (sección 6).
+El patch cierra con la misma skill, sin walkthrough: primero te pide la validación (validado, diferir o qué paso falla) y después fusiona. Si la pieza es parte de algo partido, el mensaje final te dice qué falta y te da el prompt de la siguiente. Ningún cierre fusiona a `main` ni pone tags sin una frase tuya que lo pida: eso es entregar (sección 6).
 
 ### El ticket para el kit
 

@@ -481,6 +481,17 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND si alguna línea del trozo, en cualquiera de los tres lados, no empieza por `- THEN ` ni por `- AND ` (un `- GIVEN`, un `- WHEN`, un título `###`, prosa o una línea en blanco), sigue siendo conflicto
 - AND fuera de `.docs/sdd/capabilities/` esta unión no se aplica
 
+### La spec dice quién valida
+
+- GIVEN una spec o un `patch.md` con la línea `Validación: agente — solo fija Node 22 en package.json y .nvmrc` y un proyecto con `validation.mode` `manual`
+- WHEN el agente cierra
+- THEN no presenta guion ni espera validación, y el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación por el agente: <fecha> · <evidencia>`, con el smoke y la suite que ejecutó
+- AND la fila del roadmap queda ✅
+- AND sin la línea, o con `Validación: dev-lead`, valida el dev-lead
+- AND con la spec aprobada por delegación o en `unattended`, `agente` solo vale si la frase del dev-lead lo nombra; en un patch, solo con su frase literal en la petición o en la pregunta del carril
+- AND si al implementar aparece algo visible para el usuario, la línea vuelve a `dev-lead` como desvío
+- AND con `validation.mode: field`, el registro es `Validación en campo:`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap (en `ROADMAP.md`, entre `## Now` y su tabla); los ficheros que prevé tocar una feature abierta, en el «Toca:» de su brief (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x); el método de un plan, en la línea `Ejecución:` de su cabecera.

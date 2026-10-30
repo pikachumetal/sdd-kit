@@ -21,6 +21,10 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
 > Borra los bloques de ayuda (`>`) al redactar.
 
+Validación: <dev-lead | agente, «<frase literal del dev-lead>»> — <porqué>
+
+> `agente` solo si un humano no observaría nada que el agente no haya medido ya, y con la frase literal del dev-lead en la petición o en la pregunta del carril; sin ella, o en duda, `dev-lead`.
+
 ## Capacidades
 
 > Se escribe al cerrar, con la salida de `sdd capability index` y el nombre exacto de cada capacidad. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `sdd capability check` al cerrar.
@@ -58,7 +62,8 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 > Distinguir lo verificado por el agente de lo reportado por el usuario. Debajo de la tabla, la
 > validación de `sdd-archive`: `Validado: <fecha> · «<frase literal>»`,
 > `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>` o, con `validation.mode: field`,
-> `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>`.
+> `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>` o,
+> con `Validación: agente`, `Validación por el agente: <fecha> · <evidencia>`.
 > Encima, la línea del gate de cierre: `` Gate: `<suite unitaria, si «Suites» la declara>` · `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>) `` (sin tareas, `→ <N>/<M>`).
 
 | # | Caso | Resultado |
