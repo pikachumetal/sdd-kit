@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: node|"engines"|nvmrc|node-version|FROM node|@types/node
+<<< package.json:1:{"type": "module", "engines": {"node": ">=22"}}
+.docs\sdd\constitution.md:4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+.docs\sdd\tech-stack.md:3:- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+.docs\sdd\tech-stack.md:4:- Tests: `node --test` (carpeta `test/`).
+
+>>> Glob: *
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\tech-stack.md
+README.md
+src\app.js
+test\app.test.js
+.docs\sdd\sdd-kit.json
+package.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor-watchman.sampl
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0262-launch-prompt-format\.temp\claude\D--code--worktrees-sdd-kit-patch-0262-launch-prompt-format\8d45f5ea-5b90-4975-be95-7d07148c6b98\scratchpad\kit-green\skills\sdd-templates\templates\launch-prompt-template.md
+<<< 1	# Prompt de arranque — plantilla
+2	
+3	> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+4	>
+5	> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+6	>
+7	> - Cuenta lo que no encuentra mirando: cada decisión con su literal y su porqué. La constitution, el stack y el código los lee solo.
+8	> - En positivo: lo que tiene que hacer.
+9	> - Le
+
+>>> Bash: node --version
+<<< v26.10.0
+
+>>> Read: <run>\repo\.docs\sdd\sdd-kit.json
+<<< 1	{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+2	
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12; ls .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 2
+✔ libres excluye la sala reservada en la franja (0.6895ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1039ms)
+✔ cancelar respeta el día (9.5558ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.7466
+ls: cannot access '.docs/sdd/sdd-kit.local.json': No such file or directory
+
+=== RESULTADO (10 turnos, 0.1428752 $)
+No, no rompe nada.
+
+- **`package.json`:** `engines` es `{"node": ">=22"}`. Pasar a `>=22.18` solo estrecha el mínimo. Cualquier Node 22.18 o posterior sigue cumpliéndolo.
+- **Dependencias:** no hay ninguna, así que ninguna puede declarar un `engines` incompatible.
+- **Código:** `src/app.js` solo usa `process.argv` y `console.log`, sin APIs sensibles a la versión.
+- **Tests:** `node --test` pasa 3/3 en este entorno, que tiene Node v26.10.0. Eso no prueba 22.18 en concreto, pero el código no depende de nada que cambie entre 22.x.
+- **CI, Dockerfile, `.nvmrc`:** no existen en el repo, así que no hay nada que alinear.
+- **Documentación:** `.docs/sdd/tech-stack.md:3` dice "Node 22". Sigue siendo cierto, pero tendrías que ponerlo como "Node ≥ 22.18" para que no contradiga el `engines`. Eso es un cambio de documentación que haría falta aprobar, y lo he metido en el prompt.
+
+Es un cambio de configuración (sin fila de roadmap ni id), así que va como carril `config`:
+
+### *⚙️ Subir Node a 22.18 en engines*
+***Nombre:*** `feature/node-22-18-engines`  
+***Base:*** `develop`  
+***Carril:*** `config`
+
+***Prompt***
+
+```
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node de >=22 a >=22.18 en los engines de package.json.
+
+Alcance:
+- package.json: engines.node pasa de ">=22" a ">=22.18"
+- .docs/sdd/tech-stack.md, línea 3: "Node 22" pasa a "Node >=22.18", para que coincida con el engines
+
+Fuera de alcance:
+- Añadir CI, Dockerfile o .nvmrc: no existen en el repo y no se piden
+
+Decisiones ya tomadas:
+- El valor es literalmente ">=22.18", porque se quiere subir el mínimo sin fijar una major nueva
+
+Antes de diseñar, lee:
+- Sin lecturas: los requisitos son los de este prompt.
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa en verde, `package.json` contiene `"node": ">=22.18"` y tech-stack.md menciona el mismo mínimo.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+*si prefieres hacerlo en esta sesión, di "arráncalo"*
+
+Un aviso aparte: el hook de inicio indica que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres evitar skills desactualizadas, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

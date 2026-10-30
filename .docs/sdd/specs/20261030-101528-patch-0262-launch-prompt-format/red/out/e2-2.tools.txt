@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cat package.json; ls -a; node -v; ls .docs/sdd 2>/dev/null; grep -rniE "node(-version|js)?[\"' :=@-]*[0-9]{2}|FROM node|engines" --include=*.yml --include=*.yaml --include=Dockerfile* --include=.nvmrc --include=.node-version --include=*.md --include=.tool-versions --exclude-dir=node_modules --exclude-dir=.git . 2>/dev/null | head -40
+<<< {"type": "module", "engines": {"node": ">=22"}}
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+v26.10.0
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+./.docs/sdd/tech-stack.md:3:- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+
+>>> Bash: cat .docs/sdd/tech-stack.md; echo ---; cat README.md; echo ---; ls -R src test; echo ---; grep -rnE "process\.version|node:|--experimental|require\(" src test | head -20; echo ---; cat .docs/sdd/constitution.md | head -30; echo ---; cat .docs/sdd/roadmap.md | head -30; ls .docs/sdd/specs
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+---
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+---
+src:
+app.js
+
+test:
+app.test.js
+---
+test/app.test.js:1:import { test } from 'node:test';
+test/app.test.js:2:import assert from 'node:assert/strict';
+---
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril pa
+
+>>> Bash: node --test 2>&1 | tail -8; git ls-files | head -20
+<<< ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88.5958
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0262-launch-prompt-format\.temp\claude\D--code--worktrees-sdd-kit-patch-0262-launch-prompt-format\8d45f5ea-5b90-4975-be95-7d07148c6b98\scratchpad\kit-red\skills\sdd-templates\templates\launch-prompt-template.md
+<<< 1	# Prompt de arranque — plantilla
+2	
+3	> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, que no lleva fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca el cambio sin repetir la entrevista. Tras el prompt, termina con: «si prefieres hacerlo en esta sesión, di "arráncalo"».
+4	>
+5	> **Cómo se redacta** (lo lee un agente, no una persona):
+6	>
+7	> - En imperativo y en positivo: lo que tiene que hacer, no lo que debe evitar.
+8	> - Cada decisión ya tomada, con su 
+
+>>> Bash: cat .docs/sdd/sdd-kit.json
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+
+=== RESULTADO (8 turnos, 0.141772 $)
+No rompe nada de lo que hay en el repo. No he podido probarlo con Node 22.18: aquí corre Node 26.10 y `node --test` pasa (3 de 3).
+
+- **Código y tests:** solo usan `node:test`, `node:assert/strict` y ESM. No hay `process.version`, flags experimentales ni dependencias.
+- **Dónde aparece Node:** en `package.json` (`"engines": {"node": ">=22"}`) y en `.docs/sdd/tech-stack.md` (`Node 22`). No hay `.nvmrc`, `Dockerfile`, CI ni `.tool-versions`.
+- **Qué cambia:** `>=22.18` solo excluye 22.0 a 22.17, un rango que el repo no pide en ningún sitio. La línea de `tech-stack.md` convendría ajustarla a `Node 22.18+`.
+
+Es un cambio de configuración, sin fila en el roadmap, así que el prompt va sin id. Pégalo en el otro worktree; el segundo bloque es el que arranca el cambio:
+
+**Subir el mínimo de Node a 22.18**
+
+Base: `develop`
+
+```text
+feature/bump-node-engines
+```
+
+Carril: config
+
+```text
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node a 22.18 en los engines de package.json y reflejarlo en el tech-stack.
+Requisitos: los de este prompt (un config sin fila ni propuesta).
+Decisiones ya tomadas:
+- En package.json, `engines.node` pasa de `">=22"` a `">=22.18"`.
+- En .docs/sdd/tech-stack.md, la línea `Node 22` pasa a `Node 22.18+`.
+- No se toca nada más: no hay .nvmrc, CI ni Dockerfile que actualizar.
+Nada que saldar.
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+
+Al arrancar esta sesión, el kit avisó de que carga la 2.3.4 y el proyecto pide la 3.0.0. Si lanzas el cambio en otro worktree, actualiza antes con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. Si no, las skills pueden ser las de una versión vieja.

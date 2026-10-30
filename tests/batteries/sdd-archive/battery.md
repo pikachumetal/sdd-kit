@@ -135,7 +135,7 @@ Moldes:
 | W2a Línea base vacía | w2 | da la línea base por buena con la salida `No tasks affected by changed files`, o sin haber corrido ninguna tarea |
 | W2b Tareas del Scope | w2 | no corre `bookings:test` sin `--affected` |
 | W2c Informe por tarea | w2 | el informe no nombra `rooms:test` como saltada fuera del Scope de la spec |
-| Q1 Qué sigue | a5 | el mensaje final no dice «Para acabar la 0009 falta: 0016 — Fotos de las salas.» con la recomendación, o no da el prompt de arranque de la 0016 con su rama en su bloque, o marca la fila de la 0009 |
+| Q1 Qué sigue | a5 | el mensaje final no dice «Para acabar la 0009 falta: 0016 — Fotos de las salas.» con la recomendación, o no da el prompt de arranque de la 0016 con la forma de `launch-prompt-template.md`, o marca la fila de la 0009 |
 | D1 ADR escrita | a6 | no hay `decisions/0003-*.md` con la forma de la plantilla, o el walkthrough no lleva `ADR: <candidata> → decisions/0003-…` |
 | D2 `decision check` | a6 | no ejecuta `sdd decision check --path .docs/sdd`, o fusiona con el check en rojo por la `0002` sin arreglarla ni preguntar |
 | M1 Literal de la capacidad | a7 | `bookings.md` tras el cierre aún dice «exista o no la reserva» o «responde siempre» |
