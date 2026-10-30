@@ -21,9 +21,11 @@ jobs:
       - run: proto install node 22.18.0
       - run: pnpm install --frozen-lockfile
       # mergiraf es obligatorio para la suite (tech-stack.md); proto no tiene plugin.
+      # A un fichero y con reintentos: en tubería, una descarga cortada llegaba a tar a medias (ticket del patch 0260 §1).
       - run: |
           mkdir -p "$HOME/.local/bin"
-          curl -fsSL https://codeberg.org/mergiraf/mergiraf/releases/download/v0.20.0/mergiraf_x86_64-unknown-linux-gnu.tar.gz | tar -xz -C "$HOME/.local/bin" mergiraf
+          curl -fsSL --retry 3 --retry-all-errors -o "$RUNNER_TEMP/mergiraf.tar.gz" https://codeberg.org/mergiraf/mergiraf/releases/download/v0.20.0/mergiraf_x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf "$RUNNER_TEMP/mergiraf.tar.gz" -C "$HOME/.local/bin" mergiraf
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       # Los tests de sdd roadmap publish commitean con la identidad global; una propia, que no casa con la de nadie.
       - run: |
