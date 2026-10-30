@@ -39,7 +39,7 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` (1 requisito de `feat
 9. **`field` manda**: con `validation.mode: field` la línea se escribe igual, pero el registro es `Validación en campo:`, sin `Validación por el agente:`. Por eso esta feature cierra en campo.
 10. **El guion de una task en `pair`** (`feature-flow`, «En `pair`, cada task cerrada para con su guion de pruebas») no entra: es otra parada, y el reporte habla de la validación final.
 11. **Saldo de palabras**: lo mido con `wc -w`. Hoy: `sdd-start-feature/SKILL.md` 1977, `control-profiles.md` 4805, `sdd-archive/SKILL.md` 4616, `dev-validation.md` 1029, `sdd-templates/SKILL.md` 1663; cada uno queda igual o baja, y la cifra final va en el ✋ del cierre. **Te rebato un punto**: en `sdd-templates` el total de la skill sube, porque es el destino de la plantilla y de los huecos; solo se puede cumplir en su `SKILL.md`. El saldo que importa es que el texto salga de los pasos que el agente lee en cada cierre.
-12. **Previsión de pruebas** (Art. I): RED hecho, 2 sujetos Sonnet, 0,41 $. GREEN: `t1` y `t3` con n=2, y de control `v1a`, `v1b`, `g1` y `g3` con n=1: 8 sujetos, ~2 $ por tanda; con una tanda de REFACTOR, ~4 $. Tope 8 $. Pasos cambiados: paso 7 de `sdd-start-feature` (`t1`, `v1a`, `v1b`), paso 1 de `sdd-archive` (`t1`, `t3`, `g1`), `dev-validation.md` (`g1`, `g3`), la regla de quién valida de `control-profiles.md` (`t3`); los huecos de spec y patch, leyendo el sujeto `t3`, que parte de la línea escrita; la línea en una spec nueva no la mide ningún sujeto, la comprueba un test de `sdd-templates`.
+12. **Previsión de pruebas** (Art. I): RED hecho, 2 sujetos Sonnet, 0,41 $. GREEN: `t1` y `t3` con n=2, y de control `v1a`, `v1b`, `g1` y `g3` con n=1: 8 sujetos, ~2 $ por tanda; con una tanda de REFACTOR, ~4 $. Tope 8 $. Pasos cambiados: paso 7 de `sdd-start-feature` (`t1`, `v1a`, `v1b`), paso 1 de `sdd-archive` (`t1`, `t3`, `g1`), `dev-validation.md` (`g1`, `g3`), la regla de quién valida de `control-profiles.md` (`t3`); los huecos de spec y patch, leyendo el sujeto `t3`, que parte de la línea escrita; la línea en una spec nueva no la mide ningún sujeto: se lee, por la ADR 0019.
 13. **Repaso de coherencia**: `capability merge` sobre una copia, verde: sustituido «El trabajo se valida con el usuario antes de cerrar», añadidos «El guion arranca por el entorno y acaba en texto» y «La spec dice quién valida». La línea `Validación:` no la pregunta `sdd-propose`: la pide el hueco de la plantilla (Art. II, elemento omitido).
 - Política de modelos: sin revisores de spec · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura no · sujetos Sonnet, por tandas · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar que pidan las instrucciones del usuario; lo que no nombra se confirma aparte
 
@@ -78,7 +78,7 @@ La plantilla, de chat como `launch-prompt-template.md`, fija forma y orden: 🦆
 
 ## Dónde se prueba
 
-- La forma de la presentación: batería de `sdd-archive`, `t1`, sobre `reservas-e2e-manual`.
+- La forma de la presentación: batería de `sdd-archive`, `t1`, sobre `reservas-ui`.
 - `Validación: agente` sin guion: batería de `sdd-archive`, `t3` (nuevo), sobre `reservas-config-agent`.
 - Sin la línea se sigue pidiendo validar: `t2`, control.
 - Field y los pasos del reporte no regresan: `v1b`, `g1`, `g3`.
@@ -102,7 +102,7 @@ La plantilla, de chat como `launch-prompt-template.md`, fija forma y orden: 🦆
 - AND el smoke da una fila por THEN de la spec con su evidencia, que es uno de tres valores: `suite`, `ejecución real` o `no probado`. Un THEN que se observa en una interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado con `ejecución real`.
 - AND un THEN de fallo (un error, un rechazo, un 400) se provoca de verdad con la entrada que falla: con la feature 0012, `curl -i localhost:<puerto>/api/bookings?status=Lost` → `400` con «Estado no válido: Lost», no «lo cubre el test de la task 3»
 - AND el smoke dice cuánto tardó la suite completa
-- AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
+- AND «validado» o un «sí» sin detalle a la pregunta de validación es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
 - AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, el mensaje con el que pasa al cierre empieza por el 🦆 y el ✋ de los rulings, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
@@ -141,6 +141,10 @@ La plantilla, de chat como `launch-prompt-template.md`, fija forma y orden: 🦆
 | `sdd-templates` completa | 16064 / 19650 | 3586 | sin cambio |
 
 ## Enmiendas
+
+- 2026-10-30 — `t1` pasa a `reservas-ui` — el molde anterior no se usaba por servidor — sin aprobar (aplica «lo que usa una persona» y el criterio de hecho del dev-lead)
+- 2026-10-30 — «validado» a secas cuenta como validación — es la respuesta que pide la frase final fijada por el dev-lead — sin aprobar (aplica literal esa decisión)
+- 2026-10-30 — Sale el test de la decisión 12 — la ADR 0019 prohíbe probar una skill o una plantilla por sus frases; se cubre leyendo — sin aprobar
 
 ## Aprobaciones
 

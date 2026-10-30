@@ -174,7 +174,7 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-archive` de un tirón:
 - fusiona en `develop` con `sdd merge`, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
-El patch cierra con la misma skill, sin walkthrough: primero te pide la validación con tres opciones (validado, diferir o no funciona) y después fusiona. Si la pieza es parte de algo partido, el mensaje final te dice qué falta y te da el prompt de la siguiente. Ningún cierre fusiona a `main` ni pone tags sin una frase tuya que lo pida: eso es entregar (sección 6).
+El patch cierra con la misma skill, sin walkthrough: primero te pide la validación (validado, diferir o qué paso falla) y después fusiona. Si la pieza es parte de algo partido, el mensaje final te dice qué falta y te da el prompt de la siguiente. Ningún cierre fusiona a `main` ni pone tags sin una frase tuya que lo pida: eso es entregar (sección 6).
 
 ### El ticket para el kit
 

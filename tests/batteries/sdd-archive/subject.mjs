@@ -78,7 +78,7 @@ function done0010() {
   s.commit('docs(sdd): tasks.md con la revisión final');
 }
 // La 0020 solo fija la versión de Node: nada que una persona vea, implementada y revisada; `line` es la línea `Validación:` de su spec.
-function doneConfig0012(line = '') {
+function doneConfig0020(line = '') {
   const folder = '.docs/sdd/specs/20261012-100000-feature-0020-node-engine';
   branch('feature/0020-node-engine');
   s.put(`${folder}/spec.md`, ['---', 'id: 20261012-100000-feature-0020-node-engine', 'feature: 0020', 'title: Fijar la versión de Node', 'mode: full', 'status: approved', 'created: 2026-10-12', 'author: Laura', 'approvers:', '  - name: Laura', '    approved_at: 2026-10-12', '---', '', '# Spec — Fijar la versión de Node', '',
@@ -453,8 +453,8 @@ const molds = {
     appendFileSync(at(`${F10}/plan.md`), '\n**Se prueba en la aplicación**: la persona arranca el servidor y cancela y lista por `GET /run` con la misma sesión (`x-session`), porque el servidor es la aplicación que usa.\n');
     s.commit('docs(sdd): cómo se prueba la 0010 en la aplicación');
   },
-  'reservas-config-manual': () => (manualValidation(), moldReservas(), doneConfig0012()),
-  'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0012('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),
+  'reservas-config-manual': () => (manualValidation(), moldReservas(), doneConfig0020()),
+  'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0020('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),
   'reservas-start': () => startEnv(false),
   'reservas-start-down': () => startEnv(true),
   'salas-hotfix': () => {

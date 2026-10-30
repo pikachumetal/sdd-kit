@@ -35,7 +35,7 @@ Moldes:
 - `reservas-e2e-stale`: `reservas-e2e` con un servidor ajeno ya escuchando en el puerto de la suite, arrancado por «otra pasada» desde el código de `develop`: contra él, `cancela una reserva con su motivo` cae con `Received: "cancelada Norte lun"`, que parece un fallo de la rama.
 - `reservas-e2e-manual`: `reservas-e2e` con `validation.mode: manual`: el cierre para con el guion de pruebas.
 - `reservas-ui`: `reservas-e2e-manual` con el plan diciendo que la aplicación se usa por el servidor: el guion tiene que arrancarlo.
-- `reservas-config-manual`: `reservas` con `validation.mode: manual` y, en vez de la 0010, la 0020 implementada y revisada: solo fija Node 22 en `package.json` y `.nvmrc`. `reservas-config-agent`: el mismo, con `Validación: agente` y su porqué en la spec.
+- `reservas-config-manual`: `reservas` con `validation.mode: manual` y, en vez de la 0010, la 0020 implementada y revisada: solo fija Node 22 en `package.json` y `.nvmrc`, sin línea `Validación:` en la spec. `reservas-config-agent`: el mismo, con `Validación: agente` y su porqué en la spec.
 - `reservas-start`: `reservas-e2e-manual` con el gate de cierre `node --test test/`, que no levanta el entorno, y `.docs/sdd/sdd-kit.local.json` (ignorado por git) con `validation.startEnvironment: true`. «Arrancar» de `operations.md` es `node scripts/env-up.mjs`. `state.txt` dice si el servidor responde al acabar el sujeto.
 - `reservas-start-down`: `reservas-start` con `scripts/env-up.mjs` que sale con «Error: no arranca: falta data/seed.json»: el entorno no se levanta.
 - `salas-report`: `salas-patch` con `validation.mode: manual` y, en el §1 de `patch.md`, el reporte literal de Laura: mira `libres 10:00-12:00` («Sur») y después prueba `cancelar mie 10:00`.

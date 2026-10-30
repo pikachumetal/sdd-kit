@@ -53,7 +53,7 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
 | Freno de alcance (3.er fix, salida observable, fila de la feature o fichero de la task cambiados en la base) | para | para | opción conservadora, enmienda sin aprobar |
 | Salida del plan | ruling + «✋ Me salí del plan en…» | ruling + «✋ Me salí del plan en…» | ruling + informe |
-| Validación (cierre de feature y de patch) | para | para | diferida al smoke de la release (🧪) · con `validation.mode: field` en `sdd-kit.json`, en los tres: no para, [validación en campo](#validación-en-campo) |
+| Validación (cierre de feature y de patch) | para | para | diferida al smoke de la release (🧪) · con `validation.mode: field` o [`Validación: agente`](#quién-valida), en los tres: no para |
 | Merge a develop (cierre de feature y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
 | Push de la rama de integración tras el merge del cierre | presenta el push con el merge y espera | con `merge.push: true`, lo hace; sin él, no | igual que `delegate` |
 | Merge a main, tag, cualquier otro push, PR, publicar | persona | persona | persona |
@@ -116,7 +116,7 @@ Disparador: antes de despachar cada task del plan, junto a la comprobación de l
 
 ## Quién valida
 
-La línea `Validación: dev-lead | agente` de la spec o de `patch.md`; sin ella, `dev-lead`. Con `agente`, sin guion ni espera: `Validación por el agente: <fecha> · <evidencia>` y ✅. Con `field`, manda `Validación en campo:`. Si al implementar aparece algo visible para el usuario, vuelve a `dev-lead` como desvío.
+La línea `Validación: dev-lead | agente` de la spec o de `patch.md`; sin ella, `dev-lead`. Con `agente`, sin guion ni espera: `Validación por el agente: <fecha> · <evidencia>` y ✅. Con `field`, manda `Validación en campo:`. `agente` no vale si solo lo aprobó el agente (spec delegada sin frase que lo nombre, `unattended`, patch sin la frase del dev-lead). Si al implementar aparece algo visible para el usuario, vuelve a `dev-lead` como desvío.
 
 ## Validación diferida
 
@@ -142,9 +142,9 @@ Cuando el usuario valida lo diferido, el agente añade una adenda fechada en el 
 
 ## Validación en campo
 
-Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Sin la clave, o con `manual`, la validación es la de siempre.
+Con `"validation": {"mode": "field"}` en `.docs/sdd/sdd-kit.json`, la validación humana del proyecto es el uso real: los fallos llegan como tickets de `sdd-feedback` y abren fila nueva. Es una decisión del equipo, escrita en el fichero del proyecto; en `sdd-kit.local.json` se ignora con aviso, y un valor distinto de `manual` o `field` cuenta como `manual`, también con aviso: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Sin la clave, o con `manual`, la de siempre.
 
-En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature` y la validación de `sdd-archive`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección (en el RED, 6 de 6 sujetos con la clave pararon a pedir la validación, `tests/field-validation-red.md`). Lo que no cambia es la verificación del agente: revisión final y su cierre (`sdd-verify`), smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. La línea `Validación en campo:` lleva los ejes y no dice «limpia» mientras quede un `sin revisar` o un «no verificado»: dice cuántos quedan. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
+En campo, en los tres perfiles, la validación del cierre (paso 7 de `sdd-start-feature` y la validación de `sdd-archive`) no para: no preguntas qué ha probado el usuario, no ofreces diferir, no escribes guion de pruebas y sigues con el cierre. «El kit no define ese valor, no voy a suponer qué significa» no vale: lo define esta sección. Lo que no cambia es la verificación del agente: revisión final y su cierre (`sdd-verify`), smoke con una fila por THEN, verificación visual y suite, igual que en `manual`. La línea `Validación en campo:` lleva los ejes y no dice «limpia» mientras quede un `sin revisar` o un «no verificado»: dice cuántos quedan. Una decisión que la revisión final deja al usuario se sigue preguntando sola, en su turno.
 
 Forma, y solo esta:
 - Walkthrough (en un patch, `patch.md` §4, debajo de la tabla): `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutaste (p. ej. `Validación en campo: 2026-10-06 · suite 412/412 · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`). Un THEN o una verificación visual `no probado` van tal cual, con su motivo: la línea no los da por verificados.

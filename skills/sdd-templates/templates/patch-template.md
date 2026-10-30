@@ -21,9 +21,9 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
 > Borra los bloques de ayuda (`>`) al redactar.
 
-Validación: <dev-lead | agente> — <porqué>
+Validación: <dev-lead | agente, «<frase literal del dev-lead>»> — <porqué>
 
-> `agente` solo si un humano no observaría nada que el agente no haya medido ya, y con la frase literal del dev-lead en la petición o en la pregunta del carril; sin ella, `dev-lead`.
+> `agente` solo si un humano no observaría nada que el agente no haya medido ya, y con la frase literal del dev-lead en la petición o en la pregunta del carril; sin ella, o en duda, `dev-lead`.
 
 ## Capacidades
 

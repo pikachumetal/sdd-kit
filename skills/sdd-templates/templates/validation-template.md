@@ -2,7 +2,7 @@
 
 > Lo presentan `sdd-start-feature` (paso 7) y `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
 >
-> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` el mensaje acaba en «Sin probar»: no hay guion. En los dos no paras: lo de «Sin probar» se informa, no se pregunta, y sigues con el cierre. Con `agente` registras `Validación por el agente: <fecha> · <evidencia>`.
+> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` no hay guion. En los dos no paras: lo de «Sin probar» se informa, no se pregunta, y sigues con el cierre. Con `agente`, sin `field`, registras `Validación por el agente: <fecha> · <evidencia>`.
 >
 > **El guion va el último** porque es lo que queda a la vista en el terminal: pre-checks y avisos van antes de «Guion», y tras «Dime "validado"…» no escribes nada. **La validación se pide en texto, nunca con `AskUserQuestion`**, aunque la norma sea preguntar con esa herramienta: tapa el guion, y la persona lo necesita delante para probar. «Es la herramienta de las preguntas» no vale aquí.
 >

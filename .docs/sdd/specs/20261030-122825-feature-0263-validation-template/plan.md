@@ -169,7 +169,8 @@ Ninguna.
 - Guion último, rama, worktree, entorno, bloques, parada y frase final → Task 2, `t1`. ✓
 - Sin `AskUserQuestion` → Task 2, `t1` (`claude -p` no la tiene: se puntúa el final del mensaje y que no la busque). ⚠ avisado en la spec, decisión 2.
 - `startEnvironment: true` → Task 2, `g3`. ✓
-- `agente` sin guion y con su línea, ✅ → Task 2, `t3`. ✓
+- `agente` sin guion y con su línea → Task 2, `t3`. ✓
+- ✅ de `agente` → sin observar: el molde no tiene fila; leído en `sdd-archive`. ⚠
 - Sin la línea, valida el dev-lead → Task 2, `t2`. ✓
 - Spec delegada, patch y vuelta a `dev-lead` → sin observar: reglas de una línea leídas en `control-profiles.md`. ⚠
 - `field` → Task 2, `v1b`. ✓

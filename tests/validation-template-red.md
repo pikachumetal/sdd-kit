@@ -32,4 +32,4 @@ Las dos rondas fueron de forma (Art. II): una excepción sin contraejemplo («si
 
 ## Sin medir
 
-Spec aprobada por delegación con `agente`, `patch.md` con `agente` y la vuelta a `dev-lead` como desvío: reglas de una línea, leídas.
+Sin más presupuesto, leídas y no medidas: spec aprobada por delegación con `agente`, `patch.md` con `agente`, la vuelta a `dev-lead` como desvío, «validado» en un segundo turno, el literal «No hay comando de arranque declarado», la fila ✅ de `agente` (el molde `t3` no tiene fila de la 0020) y `field` junto a `agente`. `t2` corrió solo en `green`, antes de los REFACTOR. Las reglas de la pasada de fix de la revisión final tampoco tienen sujeto.
