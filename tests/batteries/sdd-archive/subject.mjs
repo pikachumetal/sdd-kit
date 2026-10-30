@@ -77,6 +77,21 @@ function done0010() {
   ].join('\n'));
   s.commit('docs(sdd): tasks.md con la revisión final');
 }
+// La 0012 solo fija la versión de Node: nada que una persona vea, implementada y revisada; `line` es la línea `Validación:` de su spec.
+function doneConfig0012(line = '') {
+  const folder = '.docs/sdd/specs/20261012-100000-feature-0012-node-engine';
+  branch('feature/0012-node-engine');
+  s.put(`${folder}/spec.md`, ['---', 'id: 20261012-100000-feature-0012-node-engine', 'feature: 0012', 'title: Fijar la versión de Node', 'mode: full', 'status: approved', 'created: 2026-10-12', 'author: Laura', 'approvers:', '  - name: Laura', '    approved_at: 2026-10-12', '---', '', '# Spec — Fijar la versión de Node', '',
+    ...(line ? [line, ''] : []), '## Capacidades', '', 'Ninguna, porque herramientas.', '', '## Intent', '', 'Que todos usen Node 22: `engines` en `package.json` y `.nvmrc`.', '', '## Scope', '', '- Entra: `package.json`, `.nvmrc`', '- No entra: el código de la app', '', '## Delta de comportamiento', '', 'THEN `package.json` declara `engines.node` `>=22` y `.nvmrc` contiene `22`.', '', '## Aprobaciones', '', '| Nombre | Fecha | Estado |', '| --- | --- | --- |', '| Laura | 2026-10-12 | aprobada |', ''].join('\n'));
+  s.put(`${folder}/plan.md`, '# Plan — Fijar la versión de Node\n\nEjecución: native, porque son dos ficheros\n\n## Task 1: engines\n\n`package.json`\n\n## Task 2: nvmrc\n\n`.nvmrc`\n');
+  s.commit('docs(sdd): abrir la feature 0012 con su spec y su plan');
+  writeFileSync(at('package.json'), '{"type": "module", "engines": {"node": ">=22"}}\n');
+  s.put('.nvmrc', '22\n');
+  s.commit('chore: fijar Node 22');
+  const A = short('HEAD');
+  s.put(`${folder}/tasks.md`, ['# Tasks — Fijar la versión de Node (registro vivo)', '', '| # | Task | Status | Commit | Notas |', '| --- | --- | --- | --- | --- |', `| 1 | engines | done | ${A} | |`, `| 2 | nvmrc | done | ${A} | |`, '', `Revisión final: Spec opus+high, limpia · Código sonnet+high, limpia · Arquitectura no (plan), sobre ${A}`, ''].join('\n'));
+  s.commit('docs(sdd): tasks.md con la revisión final');
+}
 // La suite E2E del proyecto en develop: servidor HTTP, runner con la salida de Playwright y operations.md con sus campos E2E.
 const E2E = join(HERE, 'fixtures', 'e2e');
 // Un puerto por sujeto: dos sujetos a la vez no comparten servidor.
@@ -430,6 +445,8 @@ const molds = {
   'salas-patch': () => done0008(),
   'salas-report': () => (manualValidation(), done0008(), report0008()),
   'reservas-e2e-manual': () => (manualValidation(), moldReservas(), e2eSuite(), done0010()),
+  'reservas-config-manual': () => (manualValidation(), moldReservas(), doneConfig0012()),
+  'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0012('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),
   'reservas-start': () => startEnv(false),
   'reservas-start-down': () => startEnv(true),
   'salas-hotfix': () => {
