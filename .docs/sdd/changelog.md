@@ -53,6 +53,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Patch 0262** — El prompt de arranque se distingue del resto del chat y va bien explicado: título en `###` y cursiva con el emoji del carril, `***Nombre:***`, `***Base:***` y `***Carril:***` seguidos, y el texto en un bloque sin lenguaje, con alcance, fuera de alcance, lecturas, deuda y criterio de hecho. → [ref](specs/20261030-101528-patch-0262-launch-prompt-format/)
 - **Patch 0260** — Una fila de la rúbrica de una batería puede declarar en «Falla si…» `` `tools: /<regex>/` presente `` o `ausente`, y `battery.mjs verdict` la aplica a cada llamada entera de cada sujeto (`K6` de `sdd-archive` ya la lleva); `tech-stack.md` pide nombrar antes del RED todas las salidas correctas de una fila. → [ref](specs/20261030-095328-patch-0260-battery-verdict-rubric-checks/)
 
 - **Patch 0253** — El Step 2 de `sdd-worktrees` («Project Setup») elige el gestor de Node por el lockfile: `pnpm-lock.yaml` → `pnpm install --frozen-lockfile`, `yarn.lock` → `yarn install --frozen-lockfile`, `package-lock.json` → `npm ci`, y sin ninguno el `npm install` de superpowers 7.0.0; lo comprueba `cli/test/kit/worktrees-setup.slow.test.ts`. → [ref](specs/20261028-215919-patch-0253-setup-by-lockfile/)

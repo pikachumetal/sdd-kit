@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-30
 branch: patch/0262-launch-prompt-format
-commit: pendiente
+commit: 0fb90494
 ---
 
 # Patch 0262 — El prompt de arranque se ve distinto del resto del chat y va bien explicado
@@ -45,13 +45,16 @@ Lo que da por existente, comprobado: `launch-prompt-template.md`, `tests/batteri
 | 4 | Bloque sin lenguaje en azul en el terminal del dev-lead | ✅ visto en captura de Orca, en otra sesión con un bloque sin lenguaje |
 | 5 | Dos espacios: las tres etiquetas en líneas seguidas en el terminal | no probado: la captura enseña otra sesión y no cambié la vista del dev-lead; `orca terminal read` no llega a la muestra de esta sesión |
 
-GATE_PLACEHOLDER
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 256/256 · cli:test: corrió 1672/1684 · cli:typecheck: saltada (`--affected`: sus `inputs` no cambian), sobre 0fb90494
+
+Validación en campo: 2026-10-30 · m1 y e2: RED 4/4 con la forma vieja, GREEN 4/4 con la nueva · azul del bloque sin lenguaje visto en captura de otra sesión · no probado: los saltos de línea de las tres etiquetas en el terminal del dev-lead
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,75 h + 0,2 h del gate de cierre (12 min, patch 0245)
 - Inicio: 2026-10-30T10:15Z
-- Coste de sujetos: previsión 3 $ en 8 sujetos Sonnet — RED y GREEN de m1 y e2
+- Esfuerzo real: 0,14 h — reloj de la sesión 0,14 h desde 2026-10-30T10:14Z, sin 0 min de espera al dev-lead (0 esperas). Por debajo de lo estimado porque la forma llegó literal en la fila
+- Coste de sujetos: 1,21 $ en 8 sujetos Sonnet — RED 0,63 $; GREEN 0,58 $
 
 ## 6. Delta de capacidad
 

@@ -85,7 +85,7 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 
 - GIVEN el molde `salas` con la fila pendiente 0013 «Aviso semanal a los responsables», `proposal: 0010`, `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
 - WHEN el usuario escribe «dame el prompt de la 0013»
-- THEN `sdd-roadmap` da el prompt de arranque en la forma de `launch-prompt-template.md`: el título «0013 — Aviso semanal a los responsables»; `Base: develop`; la rama `feature/0013-<slug en inglés>` sola en su bloque; el carril; y el prompt, que arranca la 0013 con `sdd-propose`, con los requisitos en la propuesta 0010 y la fila, las decisiones de la propuesta y sus enmiendas que tocan a la 0013, las filas que salda o «Nada que saldar», `Perfil delegate` y «Al fusionar, `sdd merge --push`»
+- THEN `sdd-roadmap` da el prompt de arranque en la forma de `launch-prompt-template.md`: el título en `###` y cursiva con el emoji del carril, «0013 — Aviso semanal a los responsables»; `***Nombre:***` con `feature/0013-<slug en inglés>`, `***Base:***` con `develop` y `***Carril:***`, en líneas seguidas y con el valor en código en línea; `***Prompt***`; y un bloque de código sin lenguaje, que arranca la 0013 con `sdd-propose`, con alcance, fuera de alcance, las lecturas con la propuesta 0010 y la fila, las decisiones de la propuesta y sus enmiendas que tocan a la 0013, las filas que salda o «Nada que saldar», el criterio de hecho, `Perfil delegate` y «Al fusionar, `sdd merge --push`»
 - AND no escribe en el roadmap ni en la propuesta, no reserva id, no publica ni commitea, y no arranca la feature
 - AND si la fila está cerrada (✅, 🧪) o en marcha (🔄 o rama `feature/0013-*` abierta), lo dice en vez de dar el prompt
 
