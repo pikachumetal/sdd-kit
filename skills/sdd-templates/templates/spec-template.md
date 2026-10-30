@@ -20,6 +20,10 @@ approvers:
 
 > El párrafo 🦆 lo escribe `sdd-rubber-duck` en modo corto al presentar la spec: cinco frases como mucho, sin rutas ni jerga.
 
+Validación: <dev-lead | agente> — <porqué>
+
+> Obligatoria, se aprueba con la spec. `agente` solo si un humano no observaría nada que el agente no haya medido ya (configuración, tests, documentos, estrés, un entorno muy complicado); lo que usa una persona, y en duda, `dev-lead`. Con la spec aprobada por delegación o en `unattended`, `agente` solo si la frase del dev-lead lo nombra: el agente no se concede el atajo.
+
 > **Estado**: draft / in-review / approved / implementing / done / superseded / cancelled.
 > **Siguiente paso**: modo full → `plan.md`, siguiendo `plan-writing.md` de `sdd-propose`; modo lite → implementación directa.
 > **Modo lite** = rellenar el bloque «Estimación y esfuerzo» de esta misma plantilla; no existe ni se crea un `spec-lite-template.md` (Art. VIII).
