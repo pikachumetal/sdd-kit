@@ -242,27 +242,28 @@
 | 2026-10-30 | 0261 | patch | 0.5 | 0.08 | 0.16 | — | — | — | — | 20261030-111117-patch-0261-stale-mold-system-port |
 | 2026-10-30 | 0224 | docs | 0.8 | 0.79 | 0.99 | 15840k | 3208k | 7.21 | 10.65 | 20261030-112923-feature-0224-coherence-pass-and-cost-slot |
 | 2026-10-30 | 0263 | docs | 1 | 1.07 | 1.07 | 15738k | 2484k | 7.74 | 11.08 | 20261030-122825-feature-0263-validation-template |
+| 2026-10-30 | 0264 | docs | 0.5 | 0.44 | 0.88 | 9955k | 949k | 2.59 | 7.08 | 20261030-140305-feature-0264-patch-predicate-and-row-files |
 
-**Factor de calibración** (ratio mediano real/estimado, 202 artefactos): **0.58** · media 0.75
+**Factor de calibración** (ratio mediano real/estimado, 203 artefactos): **0.58** · media 0.75
 
 - p25–p75: 0.38–0.93
-- p80: 1.05 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- p80: 1.04 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 27 % · sobreestimadas: 63 % · infraestimadas: 10 %
-- Error absoluto (h): media 1.33 · mediana 0.88
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.2
+- Error absoluto (h): media 1.32 · mediana 0.86
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.28
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 75 | 37 % |
 | 0.5–0.8 | 60 | 30 % |
-| 0.8–1.25 | 47 | 23 % |
+| 0.8–1.25 | 48 | 24 % |
 | 1.25–2 | 12 | 6 % |
 | ≥2 | 8 | 4 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 93 | 0.56 | 0.39–0.8 |
+| docs | 94 | 0.57 | 0.39–0.8 |
 | infra/tooling | 51 | 0.49 | 0.37–0.77 |
 | patch | 56 | 0.82 | 0.45–1.23 |
 | tooling | 1 | 0.6 | — |
@@ -284,6 +285,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 90 | 200.51 | 0.53 | 394.46 | 1650.4 |
+| sin publicar | 91 | 200.95 | 0.53 | 397.05 | 1657.48 |
 
 > Ver `estimation.md`.

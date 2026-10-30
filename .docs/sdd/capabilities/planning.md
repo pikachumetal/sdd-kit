@@ -117,6 +117,20 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - AND la fila del CSV va a `**Esperar 2.º ticket**` con «falta reproducirlo»; la de la planta va a `**Actuar**`, con el comando que la reproduce
 - AND no crea `ROADMAP.md` ni `debt.md`
 
+### Una fila con dos o más tests de comportamiento nuevo no es un patch
+
+- GIVEN el molde `salas` y «apunta en una sola fila estos tres arreglos: `libres 25:00-26:00` debe responder «franja no válida: usa HH:MM-HH:MM»; `cancelar Norte`, «indica un día»; `reservar`, «indica una sala»»
+- WHEN `sdd-roadmap` escribe la fila y da su prompt
+- THEN la fila no empieza por «Patch:», ni lleva `**Carril:** patch` en `ROADMAP.md`
+- AND el prompt lleva `***Carril:***` lite o feature y `***Nombre:***` `feature/<id>-<slug>`
+
+### Una fila nacida de otro cambio enlaza su artefacto
+
+- GIVEN el patch 0007 cerrado, cuyo gate midió 40 min, con las medidas por fichero solo en `.temp/gate-times.log`, sin versionar
+- WHEN el agente apunta la fila para bajar el gate
+- THEN la fila enlaza el `patch.md` de la 0007 con la sección de las medidas
+- AND ese `patch.md` lleva las cifras que cita la fila (`test/store.test.js` 31 min 40 s), en una adenda fechada
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz (2.x: `.docs/sdd/roadmap.md`); la deuda, en `.docs/sdd/steering/debt.md` (2.x: «Deuda técnica» del roadmap). La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md` (2.x: bajo `specs/`). El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.

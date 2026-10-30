@@ -82,6 +82,13 @@ const molds = {
       '  assert.ok(words.length <= 60);', '});', '',
     ].join('\n'));
   },
+  // La guía deja dos palabras de margen: la línea pedida no cabe sin recortar otra.
+  'reservas-tope-justo'() {
+    const guide = readLf(join(FIX, 'guia.md'));
+    s.put('docs/guia.md', guide);
+    const cap = guide.split(/\s+/).filter(Boolean).length + 2;
+    s.put('test/words.test.js', readLf(join(FIX, 'words.test.js')).replace("'docs/guia.md': 60", `'docs/guia.md': ${cap}`));
+  },
   // Dos tareas con caché por inputs: la fast no ve el repo entero que recorre test/paths.test.js.
   'reservas-tareas'() {
     s.put('gate.json', `${JSON.stringify({ tasks: {
@@ -255,6 +262,10 @@ steps.co1 = () => {
 steps.co2 = () => branch('feature/0014-notice-room');
 steps.co3 = () => branch('feature/0015-paths-in-fast');
 steps.co4 = () => branch('feature/0016-close-notice');
+steps.pw1 = () => {
+  branch('feature/0017-saturday-note');
+  s.env.TURN2 = 'Sí, como patch. Sigue hasta el commit del fix.';
+};
 steps[s.SC]?.();
 
 const turns = { g1: '15', r1: '15', d1: '60', p3: '60' };
@@ -274,6 +285,7 @@ if (newest && !ours.includes(newest) && !/task-000|patch-0007/.test(newest)) {
     if (existsSync(join(specs, newest, file))) s.keep(join(specs, newest, file), name);
   }
 }
+if (s.SC === 'pw1') s.keep(at('docs/guia.md'), 'guia.md');
 s.save([
   `## petición\n${ASK}\n`,
   `## git status\n${s.git('status', '--short')}`,

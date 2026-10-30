@@ -68,7 +68,7 @@ Interview with the `sdd-grilling` skill (invoke it with `Skill`): **the intervie
 
 ### Something concrete
 
-One row, without a proposal. In 3.0.0 it is a row of Now or Next if it will be done, with its id, title, one-liner, brief and size; or of Later, with its id, if it is not decided, or in the template section the user names. Raising a Later row to Next keeps its id and writes its brief and size. A pending patch is a row of Now with `**Carril:** patch` in its brief. In 2.x it is a row of «Próximo» with its id, or of «Backlog» if not, or in the template section the user names, and a pending patch has «Patch:» at the start of the item; the «Patches» section is the register of the closed ones. A single-feature epic is a feature.
+One row, without a proposal. In 3.0.0 it is a row of Now or Next if it will be done, with its id, title, one-liner, brief and size; or of Later, with its id, if it is not decided, or in the template section the user names. Raising a Later row to Next keeps its id and writes its brief and size. A pending patch is a row of Now with `**Carril:** patch` in its brief. In 2.x it is a row of «Próximo» with its id, or of «Backlog» if not, or in the template section the user names, and a pending patch has «Patch:» at the start of the item; the «Patches» section is the register of the closed ones. Before writing «Patch:» or `**Carril:** patch`, count the tests of new behavior the row asks for: with two or more it is not a patch but lite or feature, and its prompt opens `feature/<id>-<slug>`. A row born from the measures or conclusions of another change links that artifact (`patch.md` §N, `walkthrough.md`), with the figures it cites added there first, as a dated addendum if it is closed: a scratchpad is deleted. A single-feature epic is a feature.
 
 A new row in 3.0.0 gets a size, with the splitting threshold of `sdd-propose`: `S` — a patch, a lite or 3 tasks or fewer; `M` — 4 or 5 tasks; `L` — more than 5: new work that big is «Something big» and is split now, so `L` only appears on an existing row (from a manager, or after re-estimating), which is split when it starts, with `sdd-propose`. It is required in Now and Next; in Later it may be `—` (`tests/sdd-roadmap-0150-red.md`, m5).
 
@@ -130,10 +130,7 @@ The rules:
 - You're about to delete a row, replace it with a tracker item or merge two without the user saying so.
 - You're about to leave the business rules of something big in a block of the roadmap.
 - You're about to note a big tracker item with «trocear al arrancarlo» instead of proposing the split now.
-- You're about to take in a meeting without keeping its literal notes.
-- You're about to rewrite a rule of a proposal instead of adding a dated amendment.
 - You're about to reopen a closed or in-flight feature because the definition changed.
-- You're about to edit the row or the spec of a feature in flight to put new work in it.
 - You're about to write in the roadmap an id that doesn't come from the tracker or from `sdd id next --reserve`.
 - You're about to mark a release «comprometida» without the user saying so, or with external blocks open.
 - You're planning with the roadmap of your worktree without having read the integration branch's and the `feature/*` branches'.
@@ -152,7 +149,6 @@ The rules:
 | «The minutes' triage already decided it; I mark the release comprometida» | The triage decided the destination of each request; committing the milestone, its order and its state is another decision of the user. |
 | «The client said everything is important» | Verbal emphasis is not prioritization. It is registered and decided with product criteria. |
 | «I carry all the technical debt, so it gets paid off» | Debt enters by prerequisite or by explicit decision, not by inertia: it inflates the scope. |
-| «I freeze the scope in a separate document» | The versioned roadmap is already auditable. The proposal is the definition of the big thing, not a copy of the scope. |
 | «The note is on the topic of the feature in flight; I group it in its row» | Its branch is editing that row and that spec. Grouping it there causes the conflict on closing and changes an approved scope: it goes to a new row «tras» it. |
 | «The roadmap of my worktree is the real state» | It is your base's. Another branch may have closed, split or reserved; without reading it, you repeat ids or extend closed features. |
 | «I put the next free number to get ahead» | A made-up id is confused with a reserved one forever. The id comes from the tracker or from `sdd id next --reserve`. |
