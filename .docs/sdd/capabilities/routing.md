@@ -261,7 +261,8 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un worktree recién creado por un prompt de lanzamiento, sin `node_modules`, en un proyecto cuyas dependencias se instalan con `pnpm install`
 - WHEN el carril patch va a correr su primer test, o el carril config su gate
 - THEN antes corre el paso 2 de `sdd-worktrees` («Project Setup»), con el gestor de paquetes del proyecto, y el test no falla por un módulo que falta
-- AND `sdd-start-patch` y el carril config de `sdd-propose` nombran ese paso; no copian sus órdenes
+- AND la clasificación de `sdd-propose` también: al reproducir un fallo, ningún `node --test` ni `node src/…` va antes de `pnpm install`
+- AND el paso 2 de `sdd-propose` nombra ese paso, sin copiar sus órdenes, y `sdd-start-patch` y el carril config no lo repiten
 
 ## Reglas de la capacidad
 

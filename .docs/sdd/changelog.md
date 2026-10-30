@@ -53,6 +53,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Changed
 
+- **Feature 0224** — `sdd-propose` comprueba las dependencias en su paso 2, antes de cualquier comando que ejecute código, y la spec que edita una skill con sujetos gana la sección «Previsión de coste». → [ref](specs/20261030-112923-feature-0224-coherence-pass-and-cost-slot/)
 - **Patch 0262** — El prompt de arranque se distingue del resto del chat y va bien explicado: título en `###` y cursiva con el emoji del carril, `***Nombre:***`, `***Base:***` y `***Carril:***` seguidos, y el texto en un bloque sin lenguaje, con alcance, fuera de alcance, lecturas, deuda y criterio de hecho. → [ref](specs/20261030-101528-patch-0262-launch-prompt-format/)
 - **Patch 0260** — Una fila de la rúbrica de una batería puede declarar en «Falla si…» `` `tools: /<regex>/` presente `` o `ausente`, y `battery.mjs verdict` la aplica a cada llamada entera de cada sujeto (`K6` de `sdd-archive` ya la lleva); `tech-stack.md` pide nombrar antes del RED todas las salidas correctas de una fila. → [ref](specs/20261030-095328-patch-0260-battery-verdict-rubric-checks/)
 

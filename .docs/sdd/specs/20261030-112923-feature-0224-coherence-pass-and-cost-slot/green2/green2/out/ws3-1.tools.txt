@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd && ls -a . capabilities 2>/dev/null; cat sdd-kit.json; cat sdd-kit.local.json 2>/dev/null; grep -n "0012" roadmap.md; node "D:/code/.worktrees/sdd-kit/feature-0224-patch-predicate-word-budgets/.temp/c224/green2/cli/bin/sdd.js" capability index --path .
+
+>>> Bash: cd .docs/sdd && head -c 2500 constitution.md; echo ----; head -c 1500 mission.md; echo ----; cat tech-stack.md | head -60; ls operations.md estimation.md 2>&1
+<<< .:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+9:| 0012 | Patch: **Franja no válida en libres**: `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» | ⏳ |
+Sin capacidades
+<<< /usr/bin/bash: line 1: cd: .docs/sdd: No such file or directory
+----
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+----
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+estimation.md
+operations.md
+
+>>> Bash: cat constitution.md | head -40; echo ----; cat operations.md; echo ----; cat estimation.md; echo ---; sed -n 1,20p roadmap.md; ls specs; cd ../..; ls; wc -l src/app.js; ls test* 2>/dev/null
+
+>>> Bash: cd ../..; cat src/app.js; cat package.json
+<<< import { dayName } from 'fecha';
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva 
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+----
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` ·
+
+>>> Bash: grep -rniE "gate|min" specs/*patch*/ 2>/dev/null | head -20; ls specs/*; cat test/app.test.js | head -30
+<<< ls: cannot access 'specs/*': No such file or directory
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+>>> Bash: cd .docs/sdd/specs; ls -R . | head -30; grep -rniE "gate|min" . | head -20
+<<< .:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+./20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+./20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+./20260918-090000-patch-0007-cancel:
+patch.md
+
+=== RESULTADO (9 turnos, 0.18181430000000004 $)
+Ahora: clasificado como patch y a la espera de tu confirmación. Queda: abrir `sdd-start-patch` (test rojo, arreglo, gate), ~15 min.
+
+🦆 Hoy `libres 25:00-26:00` no valida nada: `freeRooms` compara la franja como texto con las reservas y, como no coincide con ninguna, devuelve todas las salas (`src/app.js:6`). El arreglo es comprobar el formato antes de buscar y, si no vale, responder «franja no válida: usa HH:MM-HH:MM». Se toca solo `src/app.js` y se añade un test en `test/app.test.js`. No cambia nada más de lo que ve la persona usuaria.
+
+**Carril propuesto: patch** (perfil `delegate`, del proyecto).
+- La fila 0012 fija la entrada, el texto de la respuesta y el comando, así que es una petición cerrada con un único test que falla hoy.
+- No hay capacidades en `capabilities/` que actualizar.
+- **Estimación:** 0,5 h, más el gate de cierre (`node --test && node scripts/lint.mjs`). El proyecto no tiene ningún gate medido, y la suite declara ~1 s.
+
+**Qué cuenta como franja no válida** (lo único que la fila no fija del todo):
+1. **Recomendada:** vale `HH:MM-HH:MM` con horas 00–23 y minutos 00–59, y todo lo demás da el error. Eso cubre `25:00-26:00`, `abc` y `9:00-10:00`.
+2. Igual que la 1, pero además se rechaza el fin anterior o igual al inicio.
+
+No he tocado nada: ni rama, ni carpeta, ni código.
+
+¿Abro el patch con la opción 1 (di «patch, opción 2» si prefieres la 2), o prefieres otro carril?

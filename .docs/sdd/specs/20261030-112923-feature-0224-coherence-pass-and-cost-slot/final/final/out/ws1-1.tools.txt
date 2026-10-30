@@ -1,0 +1,118 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd && ls -a . specs capabilities 2>/dev/null; cat sdd-kit.json; cat sdd-kit.local.json 2>/dev/null; cat roadmap.md; cat constitution.md mission.md tech-stack.md | head -150; node "D:/code/.worktrees/sdd-kit/feature-0224-patch-predicate-word-budgets/.temp/c224/final/cli/bin/sdd.js" capability index --path .
+<<< .:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+specs:
+./
+../
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo en
+
+>>> Bash: cd ../.. && ls -a; ls node_modules 2>&1 | head -3; cat package.json pnpm-workspace.yaml 2>&1; ls src test tests 2>&1; cat src/app.js; cat .docs/sdd/estimation.md .docs/sdd/operations.md; ls .docs/sdd/specs/*
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+lib/
+package.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+ls: cannot access 'node_modules': No such file or directory
+{"type": "module", "dependencies": {"fecha": "workspace:*"}, "engines": {"node": ">=20"}}
+packages:
+  - lib/fecha
+ls: cannot access 'tests': No such file or directory
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+import { dayName } from 'fecha';
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' 
+
+>>> Bash: cat .docs/sdd/specs/*patch-0007*/patch.md; cat .docs/sdd/specs/*0006*/walkthrough.md | grep -i -n "gate\|min" ; pnpm install 2>&1 | tail -5; cat test/app.test.js | head -30
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+
+dependencies:
++ fecha <- lib/fecha
+
+Done in 84ms using pnpm v12.9.1
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+}
+
+>>> Bash: node src/app.js libres 25:00-26:00
+<<< Norte, Sur
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (8 turnos, 0.18809479999999998 $)
+Ahora: clasificado y a la espera de tu confirmación. Queda: abrir el patch (`sdd-start-patch`), test rojo, fix y cierre, ~30 min.
+
+🦆 **Qué pasa hoy:** `libres` no mira lo que le pasas como franja, solo lo compara con las reservas. Con `25:00-26:00` ninguna reserva coincide y lista las dos salas (`Norte, Sur`), como si estuvieran libres a una hora que no existe. Lo he reproducido. Tras el fix, una franja que no sea una hora válida responderá `franja no válida: usa HH:MM-HH:MM` y no listará nada.
+
+**Carril propuesto: patch, petición cerrada.**
+- La fila 0012 fija el texto y el comando. Un solo test lo reproduce y hoy falla.
+- No hay nada de presentación que verificar con captura.
+- Perfil `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+- Es la deuda «Sin validación del formato de franja horaria».
+
+**Estimación:** 0,5 h, como el patch 0007, más el gate de cierre. Ese gate no está medido en ningún `patch.md` ni walkthrough. `operations.md` da ~1 s para `node --test`, y el gate de cierre añade `scripts/lint.mjs`.
+
+**Una decisión que quedaría dentro del patch:** el roadmap solo da el ejemplo `25:00-26:00`. Propongo validar `HH:MM-HH:MM` con horas 00–23 y minutos 00–59, lo que también rechaza `abc` o `9:00-10:00`. No comprobaría que el fin sea posterior al inicio. Si prefieres otra regla, es una decisión de diseño y el cambio pasaría a feature.
+
+No tengo `AskUserQuestion` en esta sesión, así que te pregunto en texto. No he creado rama, carpeta ni id. La rama `feature/0012-slot-format` ya existía por la reserva. Solo he ejecutado `pnpm install`, que hacía falta para correr el código.
+
+**¿Abro el patch con esa regla (recomendado)?**
+1. **Sí, patch con esa regla (Recomendada).**
+2. Patch, pero la regla de validez la fijas tú.
+3. Mejor como feature.
+
+Si te vas a ausentar, di «apruebo por delegación, nos vemos en la validación».
