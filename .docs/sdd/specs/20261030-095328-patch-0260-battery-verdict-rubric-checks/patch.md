@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-30
 branch: patch/0260-battery-verdict-rubric-checks
-commit: <hash>
+commit: 9c8ceb10
 ---
 
 # Patch 0260 — `battery.mjs verdict` aplica las filas de la rúbrica que se comprueban con una máquina
@@ -44,8 +44,13 @@ Lo que da por existente, comprobado: la tabla `| Fila | Escenarios | Falla si…
 | 3 | Criterio del ticket de la 0246: la fila nombra las dos salidas y falla el arreglo silencioso | ✅ por lectura: `C8` de `sdd-verify` ya lo hace desde la 0246, y la regla queda en `tech-stack.md`; no se lanzan sujetos, porque ninguna skill cambia |
 | 4 | `battery.mjs plan` de las 13 baterías con el nuevo corte de celdas por `\|` | ✅ sin errores |
 
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 256/256 · cli:typecheck: corrió 1/1 (caché) · cli:test: corrió 1673/1685 (48 s, sobre 9c8ceb10)
+
+Validación en campo: 2026-10-30 · `battery.test.ts` 19/19 · `verdict` sobre las salidas reales de la 0257: `rc2` 1/2 en `refactor3`, 2/2 en `fix` · no probado: una campaña nueva con sujetos
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,2 h del gate de cierre (12 min, patch 0245)
 - Inicio: 2026-10-30T09:53Z
+- Esfuerzo real: 0,09 h — reloj de la sesión 0,09 h desde 2026-10-30T09:51Z, sin 0 min de espera al dev-lead (0 esperas). Por debajo de lo estimado porque la solución llegó fijada y el RED se midió con las salidas de la 0257
 - Coste de sujetos: no aplica
