@@ -56,11 +56,35 @@ describe('verdict', () => {
     expect(lines).toEqual(['f1 · 1/1 · umbral 1/1 · verde', 't1 · 1/1 · umbral 1/1 · verde']);
   });
 
-  it('cuenta como faltan los sujetos que no terminaron, sin RESULTADO', () => {
+  it('da «sin evidencia», ni verde ni rojo, al sujeto sin tools.txt', () => {
+    const fs = toyFs();
+    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    tools(fs, 'r2-1', finished('>>> Skill: sdd-kit:sdd-roadmap'));
+    const result = verdict(TABLE, OUT, ['roadmap'], fs);
+    expect(result.lines).toEqual(['r1 · 1/2 · umbral 2/2 · sin evidencia · sin tools.txt: r1-2', 'r2 · 1/1 · umbral 1/1 · verde']);
+    expect(result.red).toBe(false);
+    expect(result.noEvidence).toBe(true);
+  });
+
+  it('da «sin evidencia» al sujeto que no terminó, sin RESULTADO', () => {
     const fs = toyFs();
     tools(fs, 'd1-1', finished('>>> Read: README.md'));
     tools(fs, 'd1-2', '>>> Read: README.md\n');
-    expect(verdict(TABLE, OUT, ['duda'], fs).lines).toEqual(['d1 · 1/2 · umbral 1/2 · rojo · faltan 1']);
+    expect(verdict(TABLE, OUT, ['duda'], fs).lines).toEqual(['d1 · 1/2 · umbral 1/2 · sin evidencia · sin RESULTADO: d1-2']);
+  });
+
+  it('da rojo si lo medido ya no alcanza el umbral, aunque falte evidencia', () => {
+    const fs = toyFs();
+    tools(fs, 'r1-1', finished('>>> Skill: sdd-kit:sdd-start-patch'));
+    const result = verdict(TABLE, OUT, ['roadmap'], fs);
+    expect(lineOf(result.lines, 'r1')).toBe('r1 · 0/2 · umbral 2/2 · rojo · sin tools.txt: r1-2');
+    expect(result.red).toBe(true);
+  });
+
+  it('da rojo si el kit no cargó, aunque falte evidencia', () => {
+    const fs = toyFs();
+    tools(fs, 'd1-1', finished('>>> Skill: sdd-kit:sdd-explore\n<<< Unknown skill: sdd-kit:sdd-explore'));
+    expect(verdict(TABLE, OUT, ['duda'], fs).lines).toEqual(['d1 · 0/2 · umbral 1/2 · rojo · sin tools.txt: d1-2 · el kit no cargó en d1-1']);
   });
 
   it('da por buena cualquier skill con «cualquiera», pero no un sujeto sin terminar', () => {
@@ -133,12 +157,41 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
   });
 
+  it('una fila «antes de» tumba al sujeto que corre lo primero sin haber corrido lo segundo', () => {
+    const fs = withRubric('| W1 Orden | k1, k2 | `tools: /node --test/ antes de /pnpm (install\\|i)\\b/` |');
+    tools(fs, 'k1-1', finished('>>> Bash: node --test\n<<< ERR_MODULE_NOT_FOUND\n\n>>> Bash: pnpm install\n<<< ok'));
+    tools(fs, 'k1-2', finished('>>> Bash: pnpm install 2>&1 | tail -5; node --test\n<<< ok'));
+    tools(fs, 'k2-1', finished('>>> Bash: node --test\n<<< ok'));
+    tools(fs, 'k2-2', finished('>>> Read: README.md\n<<< node --test'));
+    expect(verdict(TABLE, OUT, [], fs).lines).toEqual(['k1 · 1/2 · umbral 2/2 · rojo · W1 falla en k1-1', 'k2 · 1/2 · umbral 1/2 · verde · W1 falla en k2-1']);
+  });
+
   it.each([
+    ['con un orden cuya regex no compila', '| K6 Mal | k1 | `tools: /(/ antes de /x/` |', 'K6: comprobación mal escrita'],
     ['sin presente ni ausente', '| K6 Mal | k1 | `tools: /x/` |', 'K6: comprobación mal escrita'],
     ['con una regex que no compila', '| K6 Mal | k1 | `tools: /(/` presente |', 'K6: comprobación mal escrita'],
     ['con un escenario que no existe', '| K6 Mal | k9 | `tools: /x/` presente |', 'K6: escenario desconocido: k9'],
   ])('rechaza una comprobación %s: callada, no correría', (_name, row, message) => {
     expect(() => verdict(TABLE, OUT, [], withRubric(row))).toThrow(new BatteryError(message));
+  });
+});
+
+describe('la batería de sdd-propose', () => {
+  const real = resolve(import.meta.dirname, '../../../../tests/batteries/sdd-propose/battery.md');
+  const judged = (first: string, second: string) => {
+    const fs = memoryFs();
+    fs.write(TABLE, readFileSync(real, 'utf8'));
+    tools(fs, 'ws3-1', finished('>>> Skill: sdd-kit:sdd-propose\n\n>>> Bash: pnpm install --frozen-lockfile\n<<< ok\n\n>>> Bash: node --test\n<<< ok'));
+    tools(fs, 'ws3-2', finished(`>>> Skill: sdd-kit:sdd-propose\n\n>>> Bash: ${first}\n<<< ok\n\n>>> Bash: ${second}\n<<< ok`));
+    return lineOf(verdict(TABLE, OUT, ['setup-lockfile'], fs).lines, 'ws3');
+  };
+
+  it('da rojo a ws3 con node --test antes de pnpm install (ticket de la 0224 §2)', () => {
+    expect(judged('node --test 2>&1 | tail -8', 'pnpm install --offline')).toBe('ws3 · 1/2 · umbral 2/2 · rojo · WS3 falla en ws3-2');
+  });
+
+  it('da verde a ws3 con pnpm install antes de node --test', () => {
+    expect(judged('pnpm install --offline', 'node --test')).toBe('ws3 · 2/2 · umbral 2/2 · verde');
   });
 });
 
@@ -231,5 +284,15 @@ describe('runBattery', () => {
     const fs = toyFs();
     const fake = fakeDeps(fs);
     expect(await runBattery(env({ STEPS: 'feature' }), CWD, fake.deps)).toBe(1);
+  });
+
+  it('sale con 3 si falta evidencia y nada queda en rojo: no dice que todos pasan', async () => {
+    const fake = fakeDeps(toyFs());
+    fake.deps.launch = (request: LaunchRequest) => {
+      fake.launched.push(request);
+      return { pid: 1, exited: Promise.resolve(0) };
+    };
+    expect(await runBattery(env({ STEPS: 'directa' }), CWD, fake.deps)).toBe(3);
+    expect(fake.log.at(-1)).toBe('t1 · 0/1 · umbral 1/1 · sin evidencia · sin tools.txt: t1-1');
   });
 });

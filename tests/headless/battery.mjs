@@ -1,12 +1,12 @@
 // Lee la tabla de escenarios de una batería (tests/batteries/<skill>/battery.md), la lanza y da su veredicto.
 // Uso: node battery.mjs plan <battery.md> [paso…]              <id> <modelo> <n>, una línea por escenario
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
-//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo: la puerta y las filas `tools: /<regex>/`
+//      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo|sin evidencia: la puerta y las filas `tools: /<regex>/`
 //      BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
 //      [SUPERPOWERS_DIR=…] node battery.mjs run                  lanza la batería, entera o por tramos, y da el veredicto
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
-// run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral.
+// run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,20 +46,40 @@ function readScenarios(batteryPath, fs) {
   return rows.map((row) => Object.fromEntries(Object.entries(row).map(([column, cell]) => [column, unquote(cell)])));
 }
 
+// Solo las llamadas, enteras: en la 0257, rc2-1 nombra `node --test` en un resultado y en su mensaje final sin haberlo corrido.
+const toolCalls = (text) => [...text.matchAll(/^>>> [\s\S]*?(?=^(?:<<< |>>> |=== RESULTADO)|(?![\s\S]))/gm)].map((match) => match[0]);
+
+const presenceCheck = (pattern, failsWhenFound) => (text) => toolCalls(text).some((call) => pattern.test(call)) === failsWhenFound;
+
+// Sobre las llamadas juntas y por posición: `pnpm install; node --test` en una sola llamada lleva buen orden (ws3 de la 0224).
+const orderCheck = (first, second) => (text) => {
+  const calls = toolCalls(text).join('');
+  const firstAt = calls.search(first);
+  const secondAt = calls.search(second);
+  return firstAt >= 0 && (secondAt < 0 || firstAt < secondAt);
+};
+
+function compileCheck(cell) {
+  const regex = (source) => new RegExp(source.replaceAll('\\|', '|'));
+  const presence = cell.match(/^`tools: \/(.+)\/` (presente|ausente)$/);
+  if (presence) return presenceCheck(regex(presence[1]), presence[2] === 'presente');
+  const order = cell.match(/^`tools: \/(.+)\/ antes de \/(.+)\/`$/);
+  if (order) return orderCheck(regex(order[1]), regex(order[2]));
+  throw new SyntaxError(cell);
+}
+
 function parseCheck(row, known) {
   const id = row.Fila.split(' ')[0];
-  const match = row['Falla si…'].match(/^`tools: \/(.+)\/` (presente|ausente)$/);
-  if (!match) throw new BatteryError(`${id}: comprobación mal escrita`);
-  let pattern;
+  let fails;
   try {
-    pattern = new RegExp(match[1].replaceAll('\\|', '|'));
+    fails = compileCheck(row['Falla si…']);
   } catch {
     throw new BatteryError(`${id}: comprobación mal escrita`);
   }
   const scenarioIds = row.Escenarios.split(/,\s*/);
   const unknown = scenarioIds.find((scenario) => !known.has(scenario));
   if (unknown) throw new BatteryError(`${id}: escenario desconocido: ${unknown}`);
-  return { id, scenarioIds, pattern, failsWhenFound: match[2] === 'presente' };
+  return { id, scenarioIds, fails };
 }
 
 // Una fila cuya celda «Falla si…» empieza por `tools: es una comprobación; mal escrita es un error, porque callada no correría.
@@ -68,11 +88,6 @@ function readChecks(batteryPath, rows, fs) {
   const rubric = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
   return rubric.filter((row) => row['Falla si…'].startsWith('`tools:')).map((row) => parseCheck(row, known));
 }
-
-// Solo las llamadas, enteras: en la 0257, rc2-1 nombra `node --test` en un resultado y en su mensaje final sin haberlo corrido.
-const toolCalls = (text) => [...text.matchAll(/^>>> [\s\S]*?(?=^(?:<<< |>>> |=== RESULTADO)|(?![\s\S]))/gm)].map((match) => match[0]);
-
-const failsCheck = (check, text) => toolCalls(text).some((call) => check.pattern.test(call)) === check.failsWhenFound;
 
 function selectSteps(rows, steps) {
   if (steps.length === 0) return rows;
@@ -100,42 +115,61 @@ function kitMissing(text) {
 }
 
 // Un sujeto cortado por tiempo o que no arrancó también deja tools.txt, pero sin RESULTADO: no ha medido nada.
-function finishedRuns(row, outDir, fs) {
-  return Array.from({ length: Number(row.n) }, (_, i) => ({ label: `${row.Id}-${i + 1}`, path: join(outDir, `${row.Id}-${i + 1}.tools.txt`) }))
-    .filter(({ path }) => fs.exists(path))
-    .map(({ label, path }) => ({ label, text: fs.read(path) }))
-    .filter(({ text }) => text.includes('=== RESULTADO'));
+function readRuns(row, outDir, fs) {
+  const all = Array.from({ length: Number(row.n) }, (_, i) => {
+    const path = join(outDir, `${row.Id}-${i + 1}.tools.txt`);
+    return { label: `${row.Id}-${i + 1}`, text: fs.exists(path) ? fs.read(path) : undefined };
+  });
+  const finished = ({ text }) => text?.includes('=== RESULTADO');
+  const labels = (runs) => runs.map(({ label }) => label);
+  return {
+    runs: all.filter(finished),
+    noTools: labels(all.filter(({ text }) => text === undefined)),
+    unfinished: labels(all.filter((run) => run.text !== undefined && !finished(run))),
+  };
+}
+
+// Falta evidencia solo si lo que falta aún podría cambiar el veredicto: con lo medido por debajo del umbral aunque pasaran todos, es rojo.
+function scenarioState({ passed, missing, needed, kitFailed }) {
+  if (kitFailed || passed + missing < needed) return 'rojo';
+  return missing ? 'sin evidencia' : 'verde';
 }
 
 function judge(row, outDir, checks, fs) {
   const n = Number(row.n);
   const [needed] = row.Umbral.split('/').map(Number);
-  const runs = finishedRuns(row, outDir, fs);
+  const { runs, noTools, unfinished } = readRuns(row, outDir, fs);
   const unloaded = runs.filter(({ text }) => kitMissing(text)).map(({ label }) => label);
   const failedChecks = checks
     .filter((check) => check.scenarioIds.includes(row.Id))
-    .map((check) => ({ id: check.id, labels: runs.filter(({ text }) => failsCheck(check, text)).map(({ label }) => label) }))
+    .map((check) => ({ id: check.id, labels: runs.filter(({ text }) => check.fails(text)).map(({ label }) => label) }))
     .filter(({ labels }) => labels.length > 0);
   // «cualquiera»: el escenario mide la conducta, no la puerta; t1b daba rojo al cargar sdd-tdd a propósito.
   const passed = runs.filter(
     ({ label, text }) =>
       !unloaded.includes(label) && !failedChecks.some(({ labels }) => labels.includes(label)) && (row.Esperado === ANY || firstSkill(text) === row.Esperado),
   ).length;
-  const missing = n - runs.length;
-  const green = missing === 0 && unloaded.length === 0 && passed >= needed;
+  const state = scenarioState({ passed, missing: n - runs.length, needed, kitFailed: unloaded.length > 0 });
   const notes = [
-    missing ? `faltan ${missing}` : '',
+    noTools.length ? `sin tools.txt: ${noTools.join(', ')}` : '',
+    unfinished.length ? `sin RESULTADO: ${unfinished.join(', ')}` : '',
     unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
     ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
   ].filter(Boolean);
-  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${green ? 'verde' : 'rojo'}`, ...notes].join(' · ');
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${state}`, ...notes].join(' · ');
 }
 
 export function verdict(batteryPath, outDir, steps, fs) {
   const rows = readScenarios(batteryPath, fs);
   const checks = readChecks(batteryPath, rows, fs);
   const lines = selectSteps(rows, steps).map((row) => judge(row, outDir, checks, fs));
-  return { lines, red: lines.some((line) => line.includes('· rojo')) };
+  return { lines, red: lines.some((line) => line.includes('· rojo')), noEvidence: lines.some((line) => line.includes('· sin evidencia')) };
+}
+
+// Sin evidencia no es verde: con 0, un script leería que todos pasan.
+function exitCode({ red, noEvidence }) {
+  if (red) return 1;
+  return noEvidence ? 3 : 0;
 }
 
 function batteryDir(env) {
@@ -180,7 +214,7 @@ export async function runBattery(env, cwd, deps) {
   for (let index = 1; index <= maxN; index++) await launchIndex(rows, index, launch);
   const result = verdict(table, config.out, steps, deps.fs);
   for (const line of result.lines) deps.log(line);
-  return result.red ? 1 : 0;
+  return exitCode(result);
 }
 
 const fileFs = { read: (path) => readFileSync(path, 'utf8'), exists: existsSync };
@@ -210,9 +244,9 @@ async function main([command, batteryPath, ...rest]) {
     console.log(row[column]);
   } else if (command === 'verdict') {
     const [outDir, ...steps] = rest;
-    const { lines, red } = verdict(batteryPath, outDir, steps, fileFs);
-    console.log(lines.join('\n'));
-    if (red) process.exitCode = 1;
+    const result = verdict(batteryPath, outDir, steps, fileFs);
+    console.log(result.lines.join('\n'));
+    process.exitCode = exitCode(result);
   } else if (command === 'run') {
     const { realDeps, stopOnSignal } = await import('./real-deps.mjs');
     const deps = realDeps();
