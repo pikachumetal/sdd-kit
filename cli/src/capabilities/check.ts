@@ -10,13 +10,24 @@ import {
 const ALLOWED_SECTIONS = ['Propósito', 'Requisitos', 'Reglas de la capacidad'];
 const SCENARIO_KEYWORDS = ['GIVEN', 'WHEN', 'THEN'];
 const PURPOSE_MAX_LENGTH = 300;
+const REQUIREMENT_MAX_LENGTH = 500;
 const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
 const POINTER_TITLE = /^# Capacidad — (.+) \(puntero\)\s*$/i;
 const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
 
-export type Validation = { lines: string[]; code: number; validCount: number; foreign: string[] };
+export type Validation = { lines: string[]; code: number; validCount: number; foreign: string[]; warnings: string[] };
 
 type Resolved = { name: string; lines: string[]; problems: string[]; skipped: boolean; label?: string };
+
+function lengthWarnings(file: Resolved): string[] {
+  if (file.skipped || file.label) return [];
+  const requirements = requirementsOf(sectionLines(file.lines, 'Requisitos') ?? []);
+  return requirements.flatMap(({ title, lines }) => {
+    const { length } = lines.filter((line) => line.trim()).map((line) => line.trim()).join(' ');
+    if (length <= REQUIREMENT_MAX_LENGTH) return [];
+    return [`Aviso: ${file.name}: «${title}» tiene ${length} caracteres; el máximo aconsejado es ${REQUIREMENT_MAX_LENGTH}: si ya existe, no lo partas ni lo recortes; si es nuevo, un comportamiento por requisito`];
+  });
+}
 
 function titleProblems(slug: string, lines: string[]): string[] {
   const title = lines.find((line) => line.trim());
@@ -234,7 +245,8 @@ export function validateCapabilities(sddPath: string, artifactPath?: string): Va
   const foreign = files.filter((file) => !isOwn(file)).flatMap((file) => file.problems);
   const skipped = files.filter((file) => file.skipped).map((file) => file.name);
   const validCount = files.filter((file) => !file.problems.length && !file.skipped).length;
-  if (problems.length) return { lines: problems, code: 1, validCount, foreign };
-  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount, foreign };
-  return { lines: [summaryLine(validCount, skipped)], code: 0, validCount, foreign };
+  const warnings = files.filter(isOwn).flatMap(lengthWarnings);
+  if (problems.length) return { lines: problems, code: 1, validCount, foreign, warnings };
+  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount, foreign, warnings };
+  return { lines: [summaryLine(validCount, skipped)], code: 0, validCount, foreign, warnings };
 }

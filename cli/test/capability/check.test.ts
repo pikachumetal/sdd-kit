@@ -31,6 +31,61 @@ function spec(block: string, deltaNames: string[]): string {
   return `---\nid: x\n---\n\n# Spec — prueba\n\n${block}\n## Decisiones que he tomado yo — valida estas\n\n1. nada\n\n## Delta de comportamiento\n\n${delta}`;
 }
 
+const lengthWarning = (title: string, length: number, file = 'bookings.md') =>
+  `Aviso: ${file}: «${title}» tiene ${length} caracteres; el máximo aconsejado es 500: si ya existe, no lo partas ni lo recortes; si es nuevo, un comportamiento por requisito`;
+
+function sizedRequirement(title: string, length: number): string {
+  const fixed = '- GIVEN x - WHEN y - THEN ';
+  return `### ${title}\n\n- GIVEN x\n- WHEN y\n- THEN ${'a'.repeat(length - fixed.length)}\n`;
+}
+
+function capabilityWith(name: string, requirements: string): string {
+  return `# Capacidad — ${name}\n\n## Propósito\n\nReservar salas.\n\n## Requisitos\n\n${requirements}`;
+}
+
+describe('sdd capability check warns about long requirements', () => {
+  it('warns over 500 characters and exits 0', async () => {
+    const content = capabilityWith('bookings', `${sizedRequirement('Reservar una franja', 501)}\n${sizedRequirement('Cancelar una reserva', 500)}`);
+    const result = await check({ 'capabilities/bookings.md': content });
+    expect(result.lines).toEqual(['Capacidades válidas: 1', lengthWarning('Reservar una franja', 501)]);
+    expect(result.code).toBe(0);
+  });
+
+  it('writes the failure and then the warning, and exits 1', async () => {
+    const content = capabilityWith('bookings', `${sizedRequirement('Reservar una franja', 501)}\n### Cancelar\n\n- GIVEN x\n- WHEN y\n`);
+    const result = await check({ 'capabilities/bookings.md': content });
+    expect(result.lines).toEqual([
+      'bookings.md: «Cancelar» no tiene escenario completo (falta - THEN)',
+      lengthWarning('Reservar una franja', 501),
+    ]);
+    expect(result.code).toBe(1);
+  });
+
+  it('with --artifact warns only about the delta capabilities', async () => {
+    const rooms = capabilityWith('rooms', sizedRequirement('Consultar el aforo', 501));
+    const longBookings = capabilityWith('bookings', sizedRequirement('Reservar una franja', 501));
+    const artifact = '# Spec\n\n## Capacidades\n\n- Modificadas: `rooms` — cambia\n\n## Delta\n\n### Capacidad: `rooms`\n\n#### MODIFIED — Consultar el aforo\n\n' + sizedRequirement('x', 501).split('\n').slice(2).join('\n');
+    const result = await check({ 'capabilities/rooms.md': rooms, 'capabilities/bookings.md': longBookings, 'spec.md': artifact }, 'spec.md');
+    expect(result.lines.filter((line) => line.startsWith('Aviso'))).toEqual([lengthWarning('Consultar el aforo', 501, 'rooms.md')]);
+    expect(result.code).toBe(0);
+  });
+
+  it('does not warn on a marked document or a pointer', async () => {
+    const marked = `# Heredado\n\n> **No es una capacidad.** ${'a'.repeat(600)}\n\n### Largo\n\n> ${'b'.repeat(600)}\n`;
+    const target = capabilityWith('bookings', sizedRequirement('Reservar una franja', 501));
+    const pointer = '# Capacidad — bookings (puntero)\n\n> **Esta capacidad no vive aquí.** Su verdad está en [app](../app/capabilities/bookings.md)\n\n## Propósito\n\nReservas.\n';
+    const result = await check({ 'capabilities/funcional.md': marked, 'capabilities/bookings.md': pointer, 'capabilities/../app/capabilities/bookings.md': target });
+    expect(result.lines.filter((line) => line.startsWith('Aviso'))).toEqual([]);
+    expect(result.code).toBe(0);
+  });
+
+  it('lists warnings in the JSON', async () => {
+    const sdd = sddFolder({ 'capabilities/bookings.md': capabilityWith('bookings', sizedRequirement('Reservar una franja', 501)) });
+    const result = await runSdd(['capability', 'check', '--path', sdd, '--json']);
+    expect(JSON.parse(result.lines.join(''))).toEqual({ validCount: 1, errors: [], warnings: [lengthWarning('Reservar una franja', 501)] });
+  });
+});
+
 describe('sdd capability check on capabilities/', () => {
   it('a well-formed capability passes', async () => {
     const result = await checkBookings(bookings);
@@ -197,6 +252,7 @@ describe('sdd capability check on capabilities/', () => {
     expect(JSON.parse(bad.lines.join('\n'))).toEqual({
       validCount: 0,
       errors: ['bookings.md: «Consultar salas libres» no tiene escenario completo (falta - THEN)'],
+      warnings: [],
     });
     expect(bad.code).toBe(1);
   });
@@ -265,7 +321,7 @@ describe('the repo capabilities', () => {
     const docs = join(repoRoot, '.docs/sdd');
     const count = readdirSync(join(docs, 'capabilities')).filter((name) => name.endsWith('.md')).length;
     const result = await runSdd(['capability', 'check', '--path', docs]);
-    expect(result.lines).toEqual([`Capacidades válidas: ${count}`]);
+    expect(result.lines.filter((line) => !line.startsWith('Aviso: '))).toEqual([`Capacidades válidas: ${count}`]);
     expect(result.code).toBe(0);
   });
 });
@@ -527,14 +583,14 @@ describe('sdd capability check --artifact separates foreign failures', () => {
   it('--artifact --json reports foreign', async () => {
     const sdd = sddFolder(files());
     const result = await runSdd(['capability', 'check', '--path', sdd, '--artifact', join(sdd, artifact), '--json']);
-    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 1, errors: [], foreign: [roomsProblem] });
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 1, errors: [], foreign: [roomsProblem], warnings: [] });
     expect(result.code).toBe(0);
   });
 
   it('--json without --artifact has no foreign key', async () => {
     const sdd = sddFolder({ 'capabilities/rooms.md': rooms });
     const result = await runSdd(['capability', 'check', '--path', sdd, '--json']);
-    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 0, errors: [roomsProblem] });
+    expect(JSON.parse(result.lines.join('\n'))).toEqual({ validCount: 0, errors: [roomsProblem], warnings: [] });
     expect(result.code).toBe(1);
   });
 });
