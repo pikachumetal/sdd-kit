@@ -1,0 +1,74 @@
+--- [27]
+Estoy corrigiendo la spec antes de presentártela. El ensayo de fusión del delta la rechaza, y al repasarla contra el código han salido dos huecos que impiden que funcione.
+
+--- [31]
+Ahora: presentarte la spec para aprobarla. Queda: tu respuesta; con ella escribo el plan.
+
+# Spec 0010 — Motivo al cancelar
+
+🦆 Al cancelar una reserva, ahora hay que decir por qué: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». El motivo se elige de una lista de tres. Una orden nueva, `canceladas`, enseña cada cancelación con su motivo y su autor: «Norte lun — sala ocupada — Ana». Para que esa lista exista, las reservas se guardan en un fichero entre una orden y la siguiente, porque hoy se pierden al terminar cada orden.
+
+**La spec no estaba lista para aprobar tal como llegó, así que la he cambiado.** Fallaba en tres puntos:
+- **Listado siempre vacío:** cada orden es un proceso nuevo y las reservas viven en memoria, así que `canceladas` no vería nada en el uso real.
+- **«Ana» no salía de ningún sitio:** ni las reservas ni `cancelar` llevan nombre de persona.
+- **El delta no se podía fusionar:** `bookings` figuraba como modificada, pero el proyecto no tiene `capabilities/`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**Review de spec propuesta: ninguna.** Hay dos señales (capacidad nueva y datos) y unas 60 líneas en 4 ficheros. Nadie más relee las decisiones 1 a 6: las validas tú aquí.
+
+1. **Guardar las reservas en un fichero entre órdenes.** Es lo añadido que más amplía la feature, y cambia lo que dice `operations.md` («viven en memoria»).
+2. **El autor es el usuario de la sesión del sistema; sin él, «desconocido».** Así la orden acordada no cambia. Tu misión dice que solo la usas tú, así que casi siempre saldrá el mismo nombre.
+3. **El listado enseña sala, día, motivo y autor, sin la franja.** La spec lo justifica con «saber quién y por qué», pero la fila 0010 del roadmap solo nombra el motivo. No he podido comprobar esa frase, así que confírmala.
+4. **`--motivo` es obligatorio.** Sin él responde como con un motivo fuera de la lista. El motivo se comprueba antes de buscar la reserva.
+5. **Textos de respuesta:**
+   - «cancelada Norte lun (sala ocupada)»
+   - «motivo no válido: cambio de planes, sala ocupada, otro»
+   - «sin reserva Sur mar», que ya existe
+   - «sin canceladas»
+6. **`bookings` pasa a capacidad nueva.** El ensayo de fusión en una copia ya sale bien: 2 requisitos añadidos y 5 reglas.
+
+**Política de modelos:**
+- **Revisores de la spec:** ninguno.
+- **Revisión final:** Spec con opus+high, Código con sonnet+high, y Arquitectura según el plan.
+- **Otros despachos en paralelo:** ninguno.
+- **Tope en paralelo:** `control.maxParallelAgents`.
+
+**Decidido contigo:** la lista cerrada de motivos (cambio de planes, sala ocupada, otro). Tu frase literal no quedó registrada en la spec.
+
+## El resto de la spec
+
+- **Validación:** dev-lead.
+- **Entra:**
+  - `cancelar <sala> <día> --motivo <motivo>`
+  - el comando `canceladas`
+  - guardar las reservas en un fichero
+  - actualizar `operations.md` y los tests de cancelar que usan la forma antigua
+- **No entra:** anulaciones del responsable de sala (0011) y nombre de persona en las reservas activas.
+- **Cambia de forma:** la respuesta «cancelada Norte lun» y `cancelar` sin motivo dejan de valer, y hay que cambiar el test existente que lo comprueba.
+- **Dónde se prueba:** todo en `test/cancel.test.js`. El guardado y el autor se prueban lanzando dos órdenes como procesos separados.
+
+**Requisito: cancelar pide un motivo de la lista**
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro» y la reserva sigue activa
+- AND `cancelar Sur mar --motivo otro`, sin reserva ese día, responde «sin reserva Sur mar»
+
+**Requisito: el listado de canceladas enseña el motivo y quién canceló**
+- GIVEN la reserva de Norte del lunes cancelada en una orden anterior por el usuario de sesión Ana con «sala ocupada»
+- WHEN `canceladas`
+- THEN responde «Norte lun — sala ocupada — Ana»
+- AND sin usuario de sesión, el autor sale como «desconocido»
+- AND sin ninguna reserva cancelada responde «sin canceladas»
+
+**Aviso del kit:** el aviso de arranque dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. No he actualizado nada; se hace con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+La spec sigue en borrador, sin commit, y no he tocado código.
+
+**¿Apruebas la spec?**
+
+1. Apruebo (Recomendada)
+2. Cambios
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media. El proyecto fija Native, así que esta sesión implementaría todas las tasks, y eso va bien con Sonnet y effort medium. La sesión no puede cambiar su propio modelo, y tras aprobar no hay otra parada para hacerlo.
+

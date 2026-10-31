@@ -28,6 +28,24 @@ const F19 = '.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note';
 const F20 = '.docs/sdd/specs/20261013-100000-feature-0020-path-reply';
 const F21 = '.docs/sdd/specs/20261012-100000-feature-0021-keep-note';
 const F22 = '.docs/sdd/specs/20261014-100000-feature-0022-scripts-to-node';
+const F23 = '.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure';
+const F24 = '.docs/sdd/specs/20261014-110000-feature-0024-drop-legacy';
+const F25 = '.docs/sdd/specs/20261014-120000-feature-0025-note-tags';
+const F26 = '.docs/sdd/specs/20261014-130000-feature-0026-note-title-date';
+const F27 = '.docs/sdd/specs/20261014-140000-feature-0027-free-rooms-empty';
+const ATTEMPT = "import { spawnSync } from 'node:child_process';\n\nexport const failureReport = (room) => `fallo ${room}`;\n\n"
+  + "export function attempt(room) {\n  const gate = spawnSync(process.execPath, ['scripts/slow-gate.mjs', room]);\n  return gate.status === 0 ? `reservada ${room}` : failureReport(room);\n}\n";
+const SLOW_GATE = 'setTimeout(() => process.exit(1), 30000);\n';
+const REPORT_TEST = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { failureReport } from '../src/attempt.js';\n\n"
+  + "test('el informe nombra la sala', () => {\n  assert.equal(failureReport('Norte'), 'fallo Norte');\n});\n";
+const LEGACY_TEST = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
+  + "test('anular dos veces responde sin reserva', () => {\n  run('anular', ['Norte', 'lun']);\n  assert.equal(run('anular', ['Norte', 'lun']), 'sin reserva Norte lun');\n});\n\n"
+  + "test('libres de una franja sin reservas da todas las salas', () => {\n  assert.equal(run('libres', ['08:00-09:00']), 'Norte, Sur');\n});\n";
+const WORDS_TEST = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { readFileSync } from 'node:fs';\n\n"
+  + "test('guardar-nota cabe en 60 palabras', () => {\n  const words = readFileSync('skills/guardar-nota/SKILL.md', 'utf8').split(/\\s+/).filter(Boolean).length;\n  assert.ok(words <= 60, `mide ${words}`);\n});\n";
+const ART_I = '\n## Art. I — Pruebas de skills\n\nLa guidance nueva lleva un test que falla antes de escribirla; si el baseline no exhibe el fallo, no se escribe.\n';
+const CLEAN_H0 = '# Humo h0 — guardar-nota, sin la frase (Task 1 de la 0026)\n\nPetición: «guarda la nota "Reunión lunes 12 de octubre": "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h0-1 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n| h0-2 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n\nRED: 2 de 2 limpios; el baseline no exhibe el fallo.\n';
+const RED_H1 = '# Humo h1 — guardar-nota, título vacío (Task 1 de la 0026)\n\nPetición: «guarda una nota sin título: "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h1-1 | notas/nota.md | falla: no pidió el título |\n| h1-2 | notas/sin-titulo.md | falla: no pidió el título |\n\nRED: 0 de 2.\n';
 const fixture = (name) => readFileSync(join(FIX, name), 'utf8');
 const HALF_RED = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
   + "test('cancelar con motivo lo guarda', () => {\n  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');\n});\n\n"
@@ -56,7 +74,7 @@ function formRules() {
   writeFileSync(at('CLAUDE.md'), '# notas\n\nReglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.\n');
 }
 
-s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
+s.copy(join(HERE, ['k2', 'k3', 'o1', 'o2', 'a1', 'a2'].includes(s.SC) ? 'mold-kit' : 'mold-reservas'));
 s.putKitMarker(MARKER);
 const molds = {
   r1: () => (cp('app-0012.js', 'src/app.js'), cp('cancel-task1.test.js', 'test/cancel.test.js')),
@@ -85,7 +103,20 @@ const molds = {
     writeFileSync(skill, readLf(skill).split('\n').filter((line) => line !== '3. Tell the user the path you wrote.').join('\n'));
     formRules();
   },
+  g1: () => {
+    mkdirSync(at('scripts'), { recursive: true });
+    writeFileSync(at('scripts/slow-gate.mjs'), SLOW_GATE);
+  },
+  d1: () => writeFileSync(at('test/legacy.test.js'), LEGACY_TEST),
+  a1: () => {
+    mkdirSync(at('test'), { recursive: true });
+    writeFileSync(at('test/words.test.js'), WORDS_TEST);
+  },
+  a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
+  b1: () => cp('readme-0027.md', 'README.md'),
 };
+molds.b2 = molds.b1;
+molds.b3 = molds.b1;
 molds.r2 = molds.r1;
 for (const id of ['t1a', 't1b', 't1c']) molds[id] = molds.r1b;
 for (const id of ['t5a', 'p1', 'p2']) molds[id] = molds.t2;
@@ -175,7 +206,44 @@ function reviewedTwoTasks() {
 }
 
 const greenNote = (folder, name, txt) => s.put(`${folder}/green/${name}`, fixture(txt));
+
+// La base avanza tras abrir la rama: b1 toca otra sección del README, b2 y b3 la línea de la task.
+function baseMovesReadme(from, to) {
+  openFixture('0027-free-rooms-empty', F27, '0027');
+  s.git('checkout', '-q', 'develop');
+  s.put('README.md', fixture('readme-0027.md').replace(from, to));
+  s.commit('docs(readme): poner al día el README');
+  s.git('checkout', '-q', 'feature/0027-free-rooms-empty');
+}
+const FREE_LINE = '- `libres <franja>`: las salas libres en esa franja.';
+
 const steps = {
+  g1: () => {
+    openFixture('0023-attempt-failure', F23, '0023');
+    writeFileSync(at('src/attempt.js'), ATTEMPT);
+    writeFileSync(at('test/report.test.js'), REPORT_TEST);
+  },
+  d1: () => openFixture('0024-drop-legacy', F24, '0024'),
+  a1: () => openFixture('0025-note-tags', F25, '0025'),
+  a2: () => {
+    openFixture('0026-note-title-date', F26, '0026');
+    s.put(`${F26}/red/h0.txt`, CLEAN_H0);
+    s.put(`${F26}/red/h1.txt`, RED_H1);
+  },
+  b1: () => baseMovesReadme('Escribe a salas@example.com.', 'Abre una incidencia en el portal de soporte.'),
+  b2: () => baseMovesReadme(FREE_LINE, '- `libres <franja> [--planta <n>]`: las salas libres en esa franja, por planta.'),
+  b3: () => {
+    const declared = '- `README.md`, sección «Comandos»: la 0030 también la edita; solape previsto, se resuelve al fusionar — «eso ya lo sé, no me pares por ello»';
+    const spec0027 = fixture('spec-0027.md').replace('## Intent', `### Decisiones tomadas con el dev-lead\n\n${declared}\n\n## Intent`);
+    s.git('checkout', '-q', '-b', 'feature/0027-free-rooms-empty');
+    s.put(`${F27}/spec.md`, spec0027);
+    s.put(`${F27}/plan.md`, fixture('plan-0027.md'));
+    s.commit('docs(sdd): abrir la feature 0027 con su spec y su plan');
+    s.git('checkout', '-q', 'develop');
+    s.put('README.md', fixture('readme-0027.md').replace(FREE_LINE, '- `libres <franja> [--planta <n>]`: las salas libres en esa franja, por planta.'));
+    s.commit('feat(bookings): libres por planta (0030)');
+    s.git('checkout', '-q', 'feature/0027-free-rooms-empty');
+  },
   t2: () => openFixture('0016-room-hours', F16, '0016'),
   t3: () => openFixture('0017-reactivate', F17, '0017'),
   t6: () => openFixture('0022-scripts-to-node', F22, '0022'),
@@ -254,6 +322,12 @@ const steps = {
   },
   r4: reviewedTwoTasks,
 };
+steps.n1 = steps.h1;
+steps.e1 = () => {
+  steps.h1();
+  cp('app-task1.js', 'src/app.js');
+  cp('cancel-task1.test.js', 'test/cancel.test.js');
+};
 steps.p1 = steps.t2;
 steps.w2 = steps.w1;
 steps.w3 = steps.w1;
@@ -262,17 +336,18 @@ steps.o2 = steps.o1;
 steps.u2 = steps.u1;
 steps[s.SC]?.();
 
-if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+const FRONTS_0186 = ['g1', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
+if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', h2: '80' };
-for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2']) turns[id] = '40';
+for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_0186]) turns[id] = '40';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '60';
 
 await s.launch(ASK);
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22]) {
+for (const folder of [F10, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24, F25, F26, F27]) {
   for (const kept of ['spec', 'plan', 'tasks']) keepIf(`${folder}/${kept}.md`, `${kept}.md`);
 }
-for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
+for (const test of ['informe', 'price', 'store.e2e', 'cancel', 'horas', 'reactivar', 'ayuda', 'rooms-half', 'rooms', 'no-bash', 'attempt', 'report', 'legacy', 'free', 'words']) keepIf(`test/${test}.test.js`, `${test}.test.js`);
 keepIf('src/app.js', 'app.js');
 keepIf('.sdd-env.json', 'sdd-env.json');
 keepIf('README.md', 'README.md');
