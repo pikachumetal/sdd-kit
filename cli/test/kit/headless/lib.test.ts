@@ -283,14 +283,25 @@ describe('Molde y guardado (lib.mjs)', () => {
   });
 
   it('save no deja el estado si la salida lleva la identidad de git de la máquina (ticket de la feature 0160)', () => {
-    const { subject, fs, errs, cleanup } = start({}, kitFs(), { run: ({ args }) => (args.includes('clean') ? { code: 3 } : undefined) });
+    const cause = 'la salida lleva el nombre o el email de git de la máquina: no se guarda';
+    const { subject, fs, errs, cleanup } = start({}, kitFs(), { run: ({ args }) => (args.includes('clean') ? { code: 3, stdout: '', stderr: `${cause}\n` } : undefined) });
 
     subject.save('aprobada por Alice Liddell');
 
     expect(fs.exists(join(OUT, 'a-1.state.txt'))).toBe(false);
     expect(fs.exists(join(OUT, 'a-1.tools.txt')), 'sin tools.txt, run.mjs no cuenta el coste del sujeto').toBe(true);
-    expect(errs).toEqual([`[a-1] no se guarda a-1.state.txt: el stream sigue en ${join(RUNS, 'red', 'a-1.jsonl')}`]);
+    expect(errs).toEqual([`[a-1] no se guarda a-1.state.txt: ${cause} · el stream sigue en ${join(RUNS, 'red', 'a-1.jsonl')}`]);
     expect(cleanup(), 'el sujeto sale con error').toEqual([1]);
+  });
+
+  it('save dice la línea del error de extract.mjs, sin su traza, o su código si no escribió nada', () => {
+    const trace = "node:fs:620\r\n  return binding\r\n\r\nError: ENOENT: no such file or directory, open 'x'\r\n    at Object.readFileSync\r\n";
+    const { subject, errs } = start({}, kitFs(), { run: ({ args }) => (args.includes('clean') ? { code: 1, stdout: '', stderr: trace } : args.includes('texts') ? { code: 7, stdout: '', stderr: '' } : undefined) });
+
+    subject.save('estado');
+
+    expect(errs[0]).toContain("a-1.state.txt: Error: ENOENT: no such file or directory, open 'x' · el stream");
+    expect(errs[1]).toContain('a-1.texts.txt: extract.mjs salió con 7 · el stream');
   });
 
   it('keep copia plano y limpio', () => {

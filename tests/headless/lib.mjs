@@ -332,8 +332,13 @@ function saveExtract(s, deps, { dest, result }) {
     return true;
   }
   deps.fs.write(s.LEAK, '');
-  deps.err(`[${s.LABEL}] no se guarda ${basename(dest)}: el stream sigue en ${s.JSONL}`);
+  deps.err(`[${s.LABEL}] no se guarda ${basename(dest)}: ${extractFailure(result)} · el stream sigue en ${s.JSONL}`);
   return false;
+}
+
+// La causa que da extract.mjs: su mensaje, o la línea del error de una traza de node.
+function extractFailure({ code, stderr = '' }) {
+  return stderr.match(/^\w*Error: .*/m)?.[0] ?? (stderr.trim() || `extract.mjs salió con ${code}`);
 }
 
 function save(s, deps, state) {
