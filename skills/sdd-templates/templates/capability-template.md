@@ -7,11 +7,12 @@
 > 3. `sdd-archive` fusiona el delta de la spec o el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
 >    requisito que tiene ese mismo título, `REMOVED` lo quita. La capacidad no guarda historial: quién cambió
 >    qué lo dicen git y el bloque «Capacidades» de cada spec o `patch.md`.
-> 4. Las init no vuelcan: la carpeta `capabilities/` no se crea al inicializar y crece feature a feature,
->    con la primera que toque cada capacidad. Única excepción: el volcado inicial de `sdd-init`
->    (paso 8), a petición del usuario, con el código leído entero y la partición aprobada antes.
+> 4. Las init no vuelcan: `capabilities/` crece feature a feature. Solo `sdd-init` (paso 8) vuelca,
+>    a petición del usuario, con el código leído entero y la partición aprobada antes.
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
 >    duplica.
+> 6. Un documento heredado o un puntero que no es una capacidad lleva, tras el título,
+>    `> **No es una capacidad.** <por qué>`: el validador y el índice lo dejan fuera.
 >
 > Índice: lo genera `sdd capability index` al vuelo; no hay `index.md`.
 

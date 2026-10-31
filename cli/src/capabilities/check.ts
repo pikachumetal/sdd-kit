@@ -3,14 +3,13 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { readLines } from '../cli/files.ts';
 import { capabilitiesDir, capabilityFiles } from './files.ts';
 import {
-  declaredCapabilities, deltaEntries, equalsIgnoringCase, includesIgnoringCase, isPatch,
+  declaredCapabilities, deltaEntries, equalsIgnoringCase, includesIgnoringCase, isNotCapability, isPatch,
   requirementsOf, sectionLines, sectionTitle, sectionTitles, purposeOf, RULE_NAMES, type Declared,
 } from './sections.ts';
 
 const ALLOWED_SECTIONS = ['Propósito', 'Requisitos', 'Reglas de la capacidad'];
 const SCENARIO_KEYWORDS = ['GIVEN', 'WHEN', 'THEN'];
 const PURPOSE_MAX_LENGTH = 300;
-const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
 const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
 const POINTER_TITLE = /^# Capacidad — (.+) \(puntero\)\s*$/i;
 const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
@@ -111,11 +110,6 @@ function ruleProblems(lines: string[]): string[] {
 
 function scenarioLines(lines: string[]): string[] {
   return lines.map((line) => line.trim()).filter((line) => /^- (GIVEN|WHEN|THEN|AND)\b/i.test(line));
-}
-
-function isNotCapability(lines: string[]): boolean {
-  const second = lines.filter((line) => line.trim())[1];
-  return second !== undefined && NOT_CAPABILITY_MARK.test(second);
 }
 
 function fileProblems(fileName: string, lines: string[]): string[] {

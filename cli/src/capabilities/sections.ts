@@ -5,7 +5,8 @@ export const RULE_NAMES = ['Dónde viven los datos', 'Idioma de los nombres', 'L
 
 const DELTA_HEADER = /^(?:\*\*|####\s+)(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b/i;
 const BOLD_TITLE = /^\*\*[\p{L}\p{N}_]+ —\s*([^*]+?)\s*\*\*/u;
-const HEADING_TITLE = /^####\s+[\p{L}\p{N}_]+ —\s*(.+?)(?:\s+\(antes:.*)?(?:\s+#+)?\s*$/u;
+const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
+const HEADING_TITLE =/^####\s+[\p{L}\p{N}_]+ —\s*(.+?)(?:\s+\(antes:.*)?(?:\s+#+)?\s*$/u;
 
 export type Requirement = { title: string; lines: string[] };
 export type Declared = { kind: 'Nuevas' | 'Modificadas'; name: string; summary: string };
@@ -37,6 +38,11 @@ export function sectionLines(lines: string[], title: string): string[] | null {
   const rest = lines.slice(start + 1);
   const end = rest.findIndex((line) => line.startsWith('## '));
   return end < 0 ? rest : rest.slice(0, end);
+}
+
+export function isNotCapability(lines: string[]): boolean {
+  const second = lines.filter((line) => line.trim())[1];
+  return second !== undefined && NOT_CAPABILITY_MARK.test(second);
 }
 
 export function purposeOf(lines: string[]): string | null {

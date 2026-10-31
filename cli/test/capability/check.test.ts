@@ -38,6 +38,13 @@ describe('sdd capability check on capabilities/', () => {
     expect(result.code).toBe(0);
   });
 
+  it('does not require a blank line after a requirement title', async () => {
+    const result = await checkBookings(bookings.replace('### Reservar una franja\n\n', '### Reservar una franja\n'));
+    expect(bookings).toContain('### Reservar una franja\n- GIVEN');
+    expect(result.lines).toEqual(['Capacidades válidas: 1']);
+    expect(result.code).toBe(0);
+  });
+
   it('skips and names a document marked «No es una capacidad.» after the title', async () => {
     const legacy = '# Documento funcional heredado\n\n> **No es una capacidad.** Documento funcional anterior al troceo.\n\n## Pantallas\n\nTexto.\n';
     const result = await check({ 'capabilities/bookings.md': bookings, 'capabilities/funcional.md': legacy });

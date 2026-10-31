@@ -64,6 +64,19 @@ describe('sdd capability index cases', () => {
     expect(result.lines.filter((line) => line.includes('(sin propósito)'))).toEqual([]);
   });
 
+  it('omits a marked document', async () => {
+    const marked = '# Documento funcional heredado\n\n> **No es una capacidad.** Anterior al troceo.\n\n## Pantallas\n\nTexto.\n';
+    const bookings = setPurpose(bookingsFixture, 'Reservar salas.');
+    const result = await index(sddFolder({ 'capabilities/funcional.md': marked, 'capabilities/bookings.md': bookings }));
+    expect(result.lines).toEqual(['- `bookings` — Reservar salas.']);
+  });
+
+  it('only a marked document has no capabilities', async () => {
+    const marked = '# Documento funcional heredado\n\n> **No es una capacidad.** Anterior al troceo.\n';
+    const result = await index(sddFolder({ 'capabilities/funcional.md': marked }));
+    expect(result.lines).toEqual(['Sin capacidades']);
+  });
+
   it('exits 2 without --path', async () => {
     const result = await runSdd(['capability', 'index']);
     expect(result.code).toBe(2);
