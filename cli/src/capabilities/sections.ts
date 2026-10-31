@@ -5,17 +5,14 @@ export const RULE_NAMES = ['Dónde viven los datos', 'Idioma de los nombres', 'L
 
 const DELTA_HEADER = /^(?:\*\*|####\s+)(ADDED|MODIFIED|REMOVED|Reglas de la capacidad)\b/i;
 const BOLD_TITLE = /^\*\*[\p{L}\p{N}_]+ —\s*([^*]+?)\s*\*\*/u;
-const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
-const HEADING_TITLE =/^####\s+[\p{L}\p{N}_]+ —\s*(.+?)(?:\s+\(antes:.*)?(?:\s+#+)?\s*$/u;
+const HEADING_TITLE = /^####\s+[\p{L}\p{N}_]+ —\s*(.+?)(?:\s+\(antes:.*)?(?:\s+#+)?\s*$/u;
 
 export type Requirement = { title: string; lines: string[] };
-export type DeclaredKind = 'Nuevas' | 'Modificadas' | 'Retiradas';
-export type Declared = { kind: DeclaredKind; name: string; summary: string };
+const DECLARED_KINDS = ['Nuevas', 'Modificadas', 'Retiradas'] as const;
+export type Declared = { kind: (typeof DECLARED_KINDS)[number]; name: string; summary: string };
 export type DeltaKind = 'ADDED' | 'MODIFIED' | 'REMOVED' | 'RULES';
 export type Delta = { capability: string; kind: DeltaKind; writtenKind: string; title: string; header: string; lines: string[] };
 export type Capability = { name: string; fileName: string; lines: string[]; purpose: string | null };
-
-const DECLARED_KINDS: DeclaredKind[] = ['Nuevas', 'Modificadas', 'Retiradas'];
 
 export function equalsIgnoringCase(left: string, right: string): boolean {
   return left.toLowerCase() === right.toLowerCase();
@@ -42,6 +39,8 @@ export function sectionLines(lines: string[], title: string): string[] | null {
   const end = rest.findIndex((line) => line.startsWith('## '));
   return end < 0 ? rest : rest.slice(0, end);
 }
+
+const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
 
 export function isNotCapability(lines: string[]): boolean {
   const second = lines.filter((line) => line.trim())[1];

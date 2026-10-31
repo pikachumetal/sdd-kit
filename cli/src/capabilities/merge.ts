@@ -180,33 +180,34 @@ function entriesByCapability(entries: Delta[]): Map<string, Delta[]> {
   return groups;
 }
 
-function isRetired(run: Run, name: string): boolean {
-  return run.declared.some((item) => item.kind === 'Retiradas' && equalsIgnoringCase(item.name, name));
+function retirementOf(run: Run, name: string): Declared | undefined {
+  return run.declared.find((item) => item.kind === 'Retiradas' && equalsIgnoringCase(item.name, name));
 }
 
 function requirementTitles(document: Document): string[] {
   return requirementsOf(sectionLines(document.lines, 'Requisitos') ?? []).map((requirement) => requirement.title);
 }
 
-function settleRetirement(run: Run, document: Document, name: string, hadRequirements: boolean): void {
-  const left = requirementTitles(document);
-  if (isRetired(run, name)) {
-    if (left.length) {
-      const titles = left.map((title) => `«${title}»`).join(', ');
-      run.errors.push(`${run.artifactName}: «${name}» está en «Retiradas» y le quedan requisitos: ${titles}`);
-      return;
-    }
-    run.deleted.push(document.file);
-    run.messages.push(`${document.name}: borrado, está en «Retiradas»`);
-  } else if (hadRequirements && !left.length) {
-    run.errors.push(
-      `${run.artifactName}: «${name}» se quedaría sin requisitos: declárala en una línea «- Retiradas:» del bloque «Capacidades» para borrar el fichero, o deja algún requisito`,
-    );
+function retirementProblem(retirement: Declared, left: string[]): string | undefined {
+  if (left.length) {
+    const titles = left.map((title) => `«${title}»`).join(', ');
+    return `«${retirement.name}» está en «Retiradas» y le quedan requisitos: ${titles}`;
   }
+  return retirement.summary ? undefined : `«${retirement.name}» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya`;
+}
+
+function retire(run: Run, document: Document, retirement: Declared): void {
+  const problem = retirementProblem(retirement, requirementTitles(document));
+  if (problem) {
+    run.errors.push(`${run.artifactName}: ${problem}`);
+    return;
+  }
+  run.deleted.push(document.file);
+  run.messages.push(`${document.name}: borrado, está en «Retiradas»`);
 }
 
 function isAlreadyDeleted(run: Run, name: string, entries: Delta[]): boolean {
-  return isRetired(run, name) && entries.every((entry) => entry.kind === 'REMOVED') && !existsSync(join(run.capabilitiesDir, `${name}.md`));
+  return Boolean(retirementOf(run, name)) && entries.every((entry) => entry.kind === 'REMOVED') && !existsSync(join(run.capabilitiesDir, `${name}.md`));
 }
 
 function mergeCapability(run: Run, entries: Delta[]): Document | undefined {
@@ -219,7 +220,13 @@ function mergeCapability(run: Run, entries: Delta[]): Document | undefined {
   if (!document) return undefined;
   const hadRequirements = requirementTitles(document).length > 0;
   entries.forEach((entry) => applyEntry(run, document, entry));
-  settleRetirement(run, document, name, hadRequirements);
+  const retirement = retirementOf(run, name);
+  if (retirement) retire(run, document, retirement);
+  else if (hadRequirements && !requirementTitles(document).length) {
+    run.errors.push(
+      `${run.artifactName}: «${name}» se quedaría sin requisitos: declárala en una línea «- Retiradas:» del bloque «Capacidades» para borrar el fichero, o deja algún requisito`,
+    );
+  }
   return document;
 }
 

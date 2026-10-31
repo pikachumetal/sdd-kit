@@ -118,7 +118,7 @@ Tres tasks: marca (índice, migración, plantilla, control de la línea en blanc
 - AND con esa línea y `bookings.md` con otro requisito que el delta no quita, escribe `spec.md: «bookings» está en «Retiradas» y le quedan requisitos: «Cancelar una reserva»`, sale con 1 y no escribe
 - AND ejecutada otra vez con `bookings.md` ya borrado, escribe `bookings.md: ya estaba borrado` y sale con 0
 - AND un `REMOVED` cuyo título ya no está, en una capacidad que ya no tenía requisitos, no la vacía esta fusión: escribe `ya no estaba` y no para
-- AND la línea `- Retiradas:` lleva el nombre y el motivo, vale en una spec y en un `patch.md`, y su capacidad lleva su subsección en el delta como las demás
+- AND la línea `- Retiradas:` lleva el nombre y el motivo, vale en una spec y en un `patch.md`, y su capacidad lleva su subsección en el delta como las demás; sin motivo, escribe `spec.md: «bookings» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya`, sale con 1 y no escribe
 
 #### MODIFIED — El validador de capacidades
 
@@ -195,6 +195,8 @@ Por sujeto, 0,5 $ (`tech-stack.md`, §Lanzamiento: 0,3–2,5 $; estos son de un 
 Pasos que el agente sigue y su prueba: paso 7 de `v2.0.0.md` y «Verificación» de `v3.0.0.md`, sujeto de migración; ayuda de requisito en `capability-template.md`, sujeto de plantilla; línea «Retiradas» de `spec-template.md` y `patch-template.md`, sin sujeto: la dicta el mensaje de `sdd capability merge`, que cubre Vitest.
 
 ## Enmiendas
+
+- 2026-10-31 — `- Retiradas:` sin motivo falla con `spec.md: «bookings» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya` — lo pide el AND «lleva el nombre y el motivo», porque aquí se borra un fichero (revisión final); pasada de fix — sin aprobar (aplica literal ese AND)
 
 - 2026-10-31 — Scope: entra `migrations/v1.0.0.md` paso 1, cuya nota de `legacy.md` no es la marca y va antes del título — es de donde nacen los documentos heredados; Task 1 — sin aprobar (aplica literal «respeten la migración», del dev-lead)
 

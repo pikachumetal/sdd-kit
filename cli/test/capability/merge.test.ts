@@ -107,7 +107,9 @@ describe('sdd capability merge retiring a capability', () => {
       'capabilities/rooms.md': rooms,
       'specs/x/spec.md': spec('- Modificadas: `bookings`, `rooms` — cambian', sections),
     });
-    expect((await merge(sdd)).code).toBe(1);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual([emptied]);
+    expect(result.code).toBe(1);
     expect(readCapability(sdd)).toBe(single);
     expect(readCapability(sdd, 'rooms')).toBe(rooms);
   });
@@ -131,12 +133,22 @@ describe('sdd capability merge retiring a capability', () => {
   });
 
   it('stops when a Retirada keeps requirements', async () => {
-    const withTwo = bookings;
-    const sdd = retiredFolder(withTwo);
+    const sdd = retiredFolder(bookings);
     const result = await merge(sdd);
     expect(result.lines).toEqual(['spec.md: «bookings» está en «Retiradas» y le quedan requisitos: «Consultar salas libres»']);
     expect(result.code).toBe(1);
-    expect(readCapability(sdd)).toBe(withTwo);
+    expect(readCapability(sdd)).toBe(bookings);
+  });
+
+  it('stops when a Retirada has no reason', async () => {
+    const sdd = sddFolder({
+      'capabilities/bookings.md': single,
+      'specs/x/spec.md': spec('- Retiradas: `bookings`', [`### Capacidad: \`bookings\`\n\n${removeReserve}`]),
+    });
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: «bookings» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya']);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(single);
   });
 
   it('rerun says it was already deleted', async () => {

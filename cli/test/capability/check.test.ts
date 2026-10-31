@@ -64,14 +64,15 @@ describe('sdd capability check warns about long requirements', () => {
   it('with --artifact warns only about the delta capabilities', async () => {
     const rooms = capabilityWith('rooms', sizedRequirement('Consultar el aforo', 501));
     const longBookings = capabilityWith('bookings', sizedRequirement('Reservar una franja', 501));
-    const artifact = '# Spec\n\n## Capacidades\n\n- Modificadas: `rooms` — cambia\n\n## Delta\n\n### Capacidad: `rooms`\n\n#### MODIFIED — Consultar el aforo\n\n' + sizedRequirement('x', 501).split('\n').slice(2).join('\n');
+    const delta = `- GIVEN x\n- WHEN y\n- THEN ${'a'.repeat(475)}\n`;
+    const artifact = `# Spec\n\n## Capacidades\n\n- Modificadas: \`rooms\` — cambia\n\n## Delta\n\n### Capacidad: \`rooms\`\n\n#### MODIFIED — Consultar el aforo\n\n${delta}`;
     const result = await check({ 'capabilities/rooms.md': rooms, 'capabilities/bookings.md': longBookings, 'spec.md': artifact }, 'spec.md');
     expect(result.lines.filter((line) => line.startsWith('Aviso'))).toEqual([lengthWarning('Consultar el aforo', 501, 'rooms.md')]);
     expect(result.code).toBe(0);
   });
 
   it('does not warn on a marked document or a pointer', async () => {
-    const marked = `# Heredado\n\n> **No es una capacidad.** ${'a'.repeat(600)}\n\n### Largo\n\n> ${'b'.repeat(600)}\n`;
+    const marked = `# Heredado\n\n> **No es una capacidad.** Anterior al troceo.\n\n## Requisitos\n\n### Largo\n\n> ${'b'.repeat(499)}\n`;
     const target = capabilityWith('bookings', sizedRequirement('Reservar una franja', 501));
     const pointer = '# Capacidad — bookings (puntero)\n\n> **Esta capacidad no vive aquí.** Su verdad está en [app](../app/capabilities/bookings.md)\n\n## Propósito\n\nReservas.\n';
     const result = await check({ 'capabilities/funcional.md': marked, 'capabilities/bookings.md': pointer, 'capabilities/../app/capabilities/bookings.md': target });
@@ -94,8 +95,8 @@ describe('sdd capability check on capabilities/', () => {
   });
 
   it('does not require a blank line after a requirement title', async () => {
-    const result = await checkBookings(bookings.replace('### Reservar una franja\n\n', '### Reservar una franja\n'));
     expect(bookings).toContain('### Reservar una franja\n- GIVEN');
+    const result = await checkBookings(bookings);
     expect(result.lines).toEqual(['Capacidades válidas: 1']);
     expect(result.code).toBe(0);
   });
