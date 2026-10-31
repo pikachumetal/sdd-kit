@@ -54,7 +54,7 @@ El ciclo es el mismo que en greenfield, guiado por las skills:
 5. **Implementación** en la propia sesión por defecto, o con subagentes en los planes largos, y en los dos casos con los tests en rojo escritos antes del código de cada tarea: son el contrato de quien implementa.
 6. **Verificación**, que se detalla en el punto 2.2.
 7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
-8. **Cierre** con `walkthrough.md` y `sdd-archive`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y changelog, roadmap y registro de estimaciones actualizados.
+8. **Cierre** con `walkthrough.md` y `sdd-archive`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, y roadmap (en 2.x, también changelog) y registro de estimaciones actualizados.
 
 Los artefactos viven en `.docs/sdd/specs/<fecha>-feature-<id>-<nombre>/`, como en greenfield.
 
@@ -88,7 +88,7 @@ Si el cambio se puede describir en una frase, se hace directamente. La planifica
 
 Igual que en el flujo original: presentación periódica, idealmente semanal, de lo implementado al cliente o a los stakeholders internos, y recogida de feedback con notas, capturas y decisiones. Las notas pasan por `sdd-roadmap`, que propone qué cambia en el roadmap, y cada fila nueva entra después por el ciclo de la fase 2.
 
-Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: changelog sellado, notas para el cliente, roadmap colapsado y el merge y el tag, que confirmas tú; la retro con números, si la pides. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
+Si el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente y `sdd-end-release` corta la versión: changelog sellado, lo hecho fuera de Now, notas para el cliente y el merge y el tag, que confirmas tú; la retro con números, si la pides. En brownfield hay un tipo de feedback que importa especialmente: las peticiones que contradicen un supuesto documentado, porque son las que obligan a corregir el anclaje.
 
 ## 4. Trazabilidad y estimación
 

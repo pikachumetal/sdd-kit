@@ -6,7 +6,7 @@ proposal: 0131
 title: El corte saca lo hecho de Now al changelog, sin changelog de cliente ni email
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-31
 author: Àngel Delgado
 approvers:

@@ -360,6 +360,7 @@ function roadmap300() {
 // El corte solo arranca en la forma 3.0.0.
 function release300() {
   roadmap300();
+  // Con ids.mode: sequence, el validador rechaza el id B1 y el corte no pasaría de ahí.
   edit('ROADMAP.md', [/\| B1 \|/, '| 0030 |']);
   s.git('mv', '.docs/sdd/changelog.md', 'CHANGELOG.md');
   s.git('mv', '.docs/sdd/tech-stack.md', '.docs/sdd/steering/operations.md');

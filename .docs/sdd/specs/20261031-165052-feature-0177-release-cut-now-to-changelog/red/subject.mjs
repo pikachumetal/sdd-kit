@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { initSubject } from '../../../../../tests/headless/lib.mjs';
 
 const scenario = process.argv[4];
-const skill = scenario === 'h' ? 'sdd-archive' : 'sdd-end-release';
+const skill = scenario === 'h' || scenario === 'k' ? 'sdd-archive' : 'sdd-end-release';
 const s = initSubject(process.argv.slice(2), skill);
 s.env.MAX_TURNS ||= '60';
 s.env.SUBJECT_TIMEOUT ||= '1200';
@@ -111,6 +111,35 @@ const SCENARIOS = {
     ask: 'Te ordené cerrar la release y propusiste la versión 1.4.0; te respondí «1.4.0». `release.hasRecipient: false` lo escribí yo. Ya hiciste la suite y los pasos previos salvo el corte. Durante el smoke salió un hallazgo y lo arreglé en develop con el patch 0020, ya fusionado: el smoke queda 1 hallazgo, 1 corregido; la 0014 no la he probado. Sigue con el cierre hasta donde te toque según la skill, sin más preámbulo.',
   },
   g: { build: () => baseMold({ changelog: BROKEN_CHANGELOG }), ask: CUT },
+  a4: {
+    build: () => {
+      baseMold({ changelog: CHANGELOG.replace('- **0009** — Reservas por sala.', '- **0009** — Reservas por sala.\n- **0014** — Aviso por correo.') });
+      s.put('ROADMAP.md', roadmap().replace(/\| 0012 \|.*\n\| 0013 \|.*\n/, ''));
+    },
+    ask: CUT,
+  },
+  a3: {
+    build: () => baseMold({ extraNow: [row({ id: '0017', title: 'Informe mensual', line: 'Saca el informe del mes', state: '🧪 validación diferida a el piloto de la clínica' })] }),
+    ask: CUT,
+  },
+  k: {
+    build: () => {
+      s.put('PRODUCT.md', '# salas\n');
+      s.put('package.json', '{ "name": "salas", "version": "1.3.0", "scripts": { "test": "node --test" } }\n');
+      s.put('test/ok.test.js', "import test from 'node:test';\ntest('ok', () => {});\n");
+      s.put('.docs/sdd/changelog.md', CHANGELOG);
+      s.put('.docs/sdd/tech-stack.md', '# Stack\n\n## Testing\n\n- **Gate de cierre**: `npm test`\n');
+      s.put('.docs/sdd/roadmap.md', '# Roadmap\n\n## Próximo\n\n| # | Ítem | Estado |\n| --- | --- | --- |\n| 0016 | Filtros | ⏳ |\n\n## Patches\n\n| Fecha | Id | Descripción |\n| --- | --- | --- |\n\n## Releases cerradas\n\n### v1.3.0 — 2026-08-01\n\nResumen. Ver el [changelog](changelog.md).\n');
+      s.putKitMarker('"ids": {"mode": "sequence"}, "merge": {"into": "develop"}, "validation": {"mode": "field"}');
+      s.put('.docs/sdd/specs/20261020-100000-patch-0021-header/patch.md', '---\nid: "0021"\n---\n# Patch 0021\n\n## 1. Clase\n\nFallo.\n\n## 2. Causa raíz\n\nLa cabecera del CSV iba sin separador.\n\n## 3. Fix\n\n`src/csv.js`.\n\n## 4. Verificación\n\n`npm test` en verde.\n\n## 5. Esfuerzo\n\nEstimado 0,5 h.\n\n## Capacidades\n\nNinguna, porque ninguna capacidad describe el CSV.\n');
+    },
+    history: () => {
+      s.git('checkout', '-q', '-b', 'patch/0021-header');
+      s.put('src/csv.js', "export const header = 'a;b';\n");
+      s.commit('fix(csv): separador de la cabecera', 'Patch 0021.');
+    },
+    ask: 'Cierra el patch 0021 de esta rama. La validación del proyecto es en campo y soy el dev-lead: no me preguntes nada. No hay remoto: deja todo commiteado en la rama, sin fusionar a develop, y dime qué registros has actualizado y cuáles no.',
+  },
   a2: {
     build: () => baseMold({ changelog: CHANGELOG.replace('## [Unreleased]\n', '## [Unreleased]\n\n### Added\n\n- **0012** — Exportar reservas.\n') }),
     ask: CUT,
@@ -160,6 +189,7 @@ s.save(`## git log\n${log}\n## git status\n${status}`);
 for (const [path, name] of [
   ['ROADMAP.md', 'ROADMAP.md'],
   ['CHANGELOG.md', 'CHANGELOG.md'],
+  ...(scenario === 'k' ? [['.docs/sdd/changelog.md', 'changelog.md'], ['.docs/sdd/roadmap.md', 'roadmap.md']] : []),
   ['.docs/sdd/steering/debt.md', 'debt.md'],
   ['.docs/sdd/client-changelog.md', 'client-changelog.md'],
 ]) s.keep(join(s.R, path), name);

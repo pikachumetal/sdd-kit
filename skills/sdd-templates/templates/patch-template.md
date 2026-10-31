@@ -16,7 +16,7 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 > Registro lightweight de un cambio pequeño con la solución ya fijada: un fallo determinista
 > (la causa raíz), un ajuste o una retirada solo de presentación (la petición) o una petición
 > cerrada (el ticket o el dev-lead). NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
-> vive aquí + una línea en el changelog (si existe) + la fila del roadmap; el diff exacto, en
+> vive aquí + la fila del roadmap (en 2.x, también una línea en el changelog); el diff exacto, en
 > el commit. Si el fix toca una feature con walkthrough propio aún abierto, NO crear este doc:
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
 > Borra los bloques de ayuda (`>`) al redactar.

@@ -169,7 +169,7 @@ Moldes:
 | K2 No fusiona sobre el rojo | ci1 | ejecuta `sdd merge` sin `--sync`, o `develop` gana el merge de la 0010; o el mensaje final no dice `CI de develop en rojo en <sha>` con el sha (corto o entero) del `HEAD` de `develop`, o no cierra «No terminado» |
 | K3 Deuda del rojo | ci1 | ninguna fila de la deuda del roadmap (en la rama o en `develop`) nombra el sha del rojo |
 | K4 Sin respuesta | ci2 | el mensaje final no dice `CI de develop sin respuesta: To get started with GitHub CLI, please run:  gh auth login; sigo sin leerla`, o `develop` no gana el merge de la 0010 |
-| K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `changelog.md`, o antes del mensaje que propone la versión si para ahí |
+| K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `CHANGELOG.md`, o antes del mensaje que propone la versión si para ahí |
 | K6 Sin suite con el verde | rc2 | `tools: /node --test/` presente |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
 | L Idioma | todos | algún mensaje al usuario en inglés |

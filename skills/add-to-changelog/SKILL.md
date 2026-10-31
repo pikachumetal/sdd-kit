@@ -7,19 +7,19 @@ description: Use when an entry goes into the project's changelog — invoked by 
 
 ## Overview
 
-The changelog is the project's **technical** record (Keep a Changelog 1.1.0), *backward-looking*. The roadmap is *forward-looking*: touching one doesn't replace the other. Write what the user reads in their language; entries in the language the changelog already uses.
+The changelog is the project's **technical** record (Keep a Changelog 1.1.0), *backward-looking*. The roadmap is *forward-looking*: touching one doesn't replace the other. Talk to the user in their language. Entries follow the changelog's language; in an empty one, the user's.
 
 ## Entry format (contract)
 
 Each entry is **one line**, exactly:
 
 ```markdown
-- **<id>** — <what changed, one sentence>. → [ref](<artifact folder>/)
+- **<id>** — <what changed, one sentence>. → [ref](.docs/sdd/changes/<folder>/)
 ```
 
 - `<id>`: the ticket or module (`Ticket 217`, `M4`).
 - The sentence is for a technical reader; cause, evidence and decisions live in the linked folder.
-- `→ [ref](…)` points to the change's folder in `changes/` or `specs/`. A change without a folder goes **without a link**: never make up a path.
+- `→ [ref](…)` points to the change's folder, relative to the changelog (`specs/` for older ones, and from `.docs/sdd/changelog.md` without `.docs/sdd/`). A change without a folder goes **without a link**: never make up a path.
 
 ## Where it goes
 

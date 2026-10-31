@@ -15,9 +15,12 @@ Evidencia en `.docs/sdd/specs/20261031-165052-feature-0177-release-cut-now-to-ch
 | `h` cierre de un patch | ❌ escribe `[Unreleased]` | ✅ `CHANGELOG.md` sin tocar y fila 0021 ✅ |
 | `i` sin changelog | no medido | ✅ filas fuera, «Tras» a `—`, mensaje del tag con 0012 y 0013 |
 | `j` proyecto 2.x | no medido | ✅ para, no sella y ofrece `sdd-upgrade` |
+| `a3` 🧪 con otro disparador (hallazgo de la revisión) | ✅ `a3-1` respeta el disparador: no se reproduce; el texto se aclara igual | sin sujeto: ya salía bien |
+| `a4` id en una versión sellada, sin filas ✅ | no medido | ✅ la 0014 sigue en Now sin segunda línea. ❌ **no confirma «nada que publicar»**: con solo esa 🧪 en Now, el sujeto publicó la 0012 y la 0013 desde sus carpetas de `changes/`, sin fila. Molde contaminado: dejó esas carpetas y la petición decía «entra todo lo hecho». Sin relanzar: queda por lectura |
+| `k` cierre 2.x (hallazgo de la revisión) | no medido | ✅ entrada en `.docs/sdd/changelog.md` y fila en «Patches» |
 
 Tramo de la batería de `sdd-archive`: a9 2/2, rc1 2/2, rc2 2/2, con rc1 y rc2 en molde 3.0.0.
 
 Lo que `d-1` enseñó: un frente limpio con la guía vieja puede romperse al reescribirla, y una condición en prosa («el commit que borró…») no se ejecuta; la orden literal, sí.
 
-Coste: 29 sujetos, 6,69 $. Límites: n = 1 por frente salvo donde se dice; `f` tiene un patch sin artefacto en el molde, y por eso no gana línea.
+Coste: 32 sujetos, 7,34 $. Límites: n = 1 por frente salvo donde se dice; `f` tiene un patch sin artefacto en el molde, y por eso no gana línea.
