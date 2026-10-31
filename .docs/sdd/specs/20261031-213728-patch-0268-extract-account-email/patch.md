@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-31
 branch: patch/0268-extract-account-email
-commit: <hash>
+commit: 329e9768
 ---
 
 # Patch 0268 — extract.mjs tampoco guarda una salida con el email de la cuenta
@@ -49,9 +49,15 @@ Comprobado lo que da por existente: `~/.claude.json` de esta máquina lleva `oau
 | 3 | Sin fichero, sin clave o con JSON ilegible: avisa, guarda la salida limpia; con la identidad de git sale con 3 | ✅ mismo test, tres variantes |
 | 4 | `saveExtract` guarda y repite el aviso | ✅ `lib.test.ts` |
 | 5 | `kit:test-headless` sin `.claude.json`, como en la CI (`CLAUDE_CONFIG_DIR` a una carpeta vacía) | ✅ verde, 1 min 36 s |
-| 6 | Con la cuenta real de esta máquina, comparando sin imprimir el valor | ver el commit de cierre |
+| 6 | Con la cuenta real de esta máquina, comparando sin imprimir el valor | ✅ salida 3, stdout vacío, valor ausente de stderr; una salida limpia, 0 y sin aviso |
+
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 281/281 · cli:typecheck: corrió 1/1 (caché) · cli:test: corrió 1704/1716, 12 saltados (93 s, sobre 329e9768)
+
+Validación en campo: 2026-10-31 · gate verde, RED/GREEN de 6 tests y comprobación con la cuenta real. No probado: un sujeto real; `CLAUDE_CONFIG_DIR` solo con ficheros falsos.
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,02 h del gate de cierre (80 s, patch 0267)
 - Inicio: 2026-10-31T21:37Z
+- Esfuerzo real: 0,10 h — reloj de la sesión 0,10 h desde 2026-10-31T21:36Z, sin 0 min de espera al dev-lead (0 esperas). Medido antes de los registros de cierre. Desvío de más del 30 % a la baja: la petición traía la solución y el test, sin sujetos ni causa que investigar.
+- Coste de sujetos: no aplica
