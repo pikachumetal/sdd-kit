@@ -36,8 +36,20 @@ const tempFile = (name: string, content: string): string => {
   return path;
 };
 
+const ACCOUNT_EMAIL = 'cuenta.falsa@example.net';
+const ACCOUNT_WARNING = 'no se pudo leer oauthAccount.emailAddress de .claude.json: el email de la cuenta queda sin comprobar';
+
+// Una carpeta con su .claude.json falso, o sin él: ningún test lee el de la máquina.
+const accountDir = (content?: string): string => {
+  const dir = mkdtempSync(join(tmpdir(), 'account-'));
+  if (content !== undefined) writeFileSync(join(dir, '.claude.json'), content);
+  return dir;
+};
+const accountJson = JSON.stringify({ oauthAccount: { emailAddress: ACCOUNT_EMAIL } });
+const fakeAccount = accountDir(accountJson);
+
 function runTools(args: string[], options: { input?: string; env?: NodeJS.ProcessEnv } = {}): RunResult {
-  return run(process.execPath, [tools, ...args], { input: options.input, env: { ...cleanGitEnv, ...options.env } });
+  return run(process.execPath, [tools, ...args], { input: options.input, env: { ...cleanGitEnv, CLAUDE_CONFIG_DIR: fakeAccount, ...options.env } });
 }
 
 const toolsAsAlice = (args: string[], input?: string): string => runTools(args, { input, env: ALICE_HOME }).output;
@@ -105,6 +117,39 @@ describe('El lanzador de sujetos oculta el home y el usuario', () => {
 
     expect(leak.code).toBe(3);
     expect(leak.output).not.toMatch(/alice@example\.org/i);
+  });
+
+  it('extract.mjs falla con el email de la cuenta de ~/.claude.json, sin escribir la salida ni el valor', () => {
+    const home = accountDir(accountJson);
+    const env = { CLAUDE_CONFIG_DIR: undefined, USERPROFILE: home, HOME: home };
+
+    const leak = runTools(['clean', '/c/runs/x'], { input: `userEmail: ${ACCOUNT_EMAIL}`, env });
+    const clean = runTools(['clean', '/c/runs/x'], { input: 'commits de Fixture', env });
+
+    expect(leak).toEqual({ output: 'la salida lleva el email de la cuenta de Claude: no se guarda', code: 3 });
+    expect(clean).toEqual({ output: 'commits de Fixture', code: 0 });
+  });
+
+  it('extract.mjs mira la cuenta de CLAUDE_CONFIG_DIR, que es la que ve el sujeto', () => {
+    const leak = runTools(['clean', '/c/runs/x'], { input: ACCOUNT_EMAIL, env: { USERPROFILE: accountDir(), HOME: accountDir() } });
+
+    expect(leak.code).toBe(3);
+  });
+
+  it.each([
+    { absent: 'el fichero', dir: () => accountDir() },
+    { absent: 'la clave', dir: () => accountDir('{"oauthAccount":{}}') },
+    { absent: 'un JSON legible', dir: () => accountDir(`{"oauthAccount":"${ACCOUNT_EMAIL}`) },
+  ])('extract.mjs sin $absent avisa, guarda una salida limpia y sigue parando la identidad de git', ({ dir }) => {
+    const env = { ...gitUserEnv('Alice Liddell'), CLAUDE_CONFIG_DIR: dir() };
+
+    const clean = runTools(['clean', '/c/runs/x'], { input: 'commits de Fixture', env });
+    const leak = runTools(['clean', '/c/runs/x'], { input: 'aprobada por Alice Liddell', env });
+
+    expect(clean).toEqual({ output: `commits de Fixture${ACCOUNT_WARNING}`, code: 0 });
+    expect(leak.code).toBe(3);
+    expect(leak.output).toContain('la salida lleva el nombre o el email de git de la máquina: no se guarda');
+    expect(leak.output).not.toContain(ACCOUNT_EMAIL);
   });
 
   it.each([

@@ -6,6 +6,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ### Added
 
+- **Patch 0268** — `tests/headless/extract.mjs` sale con 3 ante una salida con el email de la cuenta de Claude, sin repetirlo, y avisa en stderr si no puede leerlo. → [ref](specs/20261031-213728-patch-0268-extract-account-email/)
 - **Feature 0129** — Capacidades en campo: `sdd capability index` y las migraciones respetan la marca «No es una capacidad.», `sdd capability check` avisa de un requisito de más de 500 caracteres, y `sdd capability merge` para antes de vaciar una capacidad salvo con `- Retiradas:`, que borra su fichero. → [ref](specs/20261031-203301-feature-0129-capabilities-in-the-field/)
 - **Feature 0264** — `sdd-roadmap` cuenta los tests de comportamiento nuevo antes de escribir «Patch:» o `**Carril:** patch`: con dos o más, la fila sale como lite o feature y su prompt abre `feature/<id>-<slug>`. Una fila nacida de las medidas o conclusiones de otro cambio enlaza su artefacto, con las cifras añadidas antes en él, en una adenda fechada si está cerrado. La regla de leer del código los ficheros de una fila y la mitad de patch de los topes salen por su RED limpio.
 - **Feature 0263** — La validación se presenta con `validation-template.md`: 🦆, ✋, smoke, suites, lo no probado y el guion el último, que arranca por rama, worktree y entorno y acaba en texto, sin `AskUserQuestion`. La spec y `patch.md` llevan `Validación: dev-lead | agente`; con `agente` no hay guion y queda `Validación por el agente: <fecha> · <evidencia>`.
