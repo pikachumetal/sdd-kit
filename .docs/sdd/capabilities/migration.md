@@ -336,6 +336,13 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN la tabla propone `## Testing` con cada suite y su nivel (`backend` · `dotnet test` · ~13 min · `pendiente`, porque no se ve si arranca el host; `e2e` · `npx playwright test` · ~3 min · E2E), «Sin filtro» con los `*.csproj`, `Directory.Build.props`, `package.json` y lockfiles que existan, «Lint» `lint-staged`, al editar y en el pre-commit, y «CI de la base» `azure-pipelines.yml` · `sin orden de lectura`
 - AND no escribe nada antes del «sí»
 
+### La migración respeta un documento marcado y propone la marca
+
+- GIVEN `capabilities/funcional.md`, sin `## Propósito`, cuya primera línea tras el título es `> **No es una capacidad.** Documento funcional anterior al troceo.`
+- WHEN se aplica el paso 7 de `v2.0.0.md`
+- THEN `funcional.md` no cambia y el informe no lo lista entre las capacidades a las que se ha escrito el propósito
+- AND con `capabilities/legacy.md` sin marca, sin `## Requisitos` y sin escenarios, la verificación de `v3.0.0.md` lista su fallo como pendiente del dev-lead y propone la línea `> **No es una capacidad.**` tras el título, sin escribirla ni frenar el marcador
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Escribe**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.

@@ -1,13 +1,13 @@
 import { capabilityFiles } from './files.ts';
-import { readCapability } from './sections.ts';
+import { isNotCapability, readCapability } from './sections.ts';
 
 export type IndexEntry = { name: string; purpose: string | null };
 
 export function capabilityIndex(sddPath: string): IndexEntry[] {
-  return capabilityFiles(sddPath).map((path) => {
-    const { name, purpose } = readCapability(path);
-    return { name, purpose: purpose || null };
-  });
+  return capabilityFiles(sddPath)
+    .map(readCapability)
+    .filter(({ lines }) => !isNotCapability(lines))
+    .map(({ name, purpose }) => ({ name, purpose: purpose || null }));
 }
 
 export function indexLines(entries: IndexEntry[]): string[] {

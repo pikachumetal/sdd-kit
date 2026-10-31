@@ -27,7 +27,7 @@ Validación: <dev-lead | agente, «<frase literal del dev-lead>»> — <porqué>
 
 ## Capacidades
 
-> Se escribe al cerrar, con la salida de `sdd capability index` y el nombre exacto de cada capacidad. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `sdd capability check` al cerrar.
+> Se escribe al cerrar, con el nombre exacto que da `sdd capability index`. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, con su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Un delta que la vacía: `- Retiradas:`, con nombre y motivo.
 
 - Modificadas: `<nombre>` — <qué requisito cambia>
 

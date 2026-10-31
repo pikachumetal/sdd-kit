@@ -324,11 +324,12 @@ function outPath(s, path) {
   return path;
 }
 
-// Solo se escribe si extract.mjs sale bien: con la identidad de git de la máquina sale con 3.
+// Solo se escribe si extract.mjs sale bien: con la identidad de git de la máquina o el email de la cuenta sale con 3.
 // La marca LEAK hace salir al sujeto con error en la limpieza.
 function saveExtract(s, deps, { dest, result }) {
   if (result.code === 0) {
     deps.fs.write(dest, result.stdout);
+    if (result.stderr?.trim()) deps.err(`[${s.LABEL}] ${result.stderr.trim()}`);
     return true;
   }
   deps.fs.write(s.LEAK, '');

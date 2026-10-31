@@ -36,10 +36,10 @@ export const capabilityCheckVerb: Verb = {
     const path = requiredRootOption(args, 'path', docsFolder);
     const artifact = typeof args.values.artifact === 'string' ? args.values.artifact : undefined;
     if (artifact !== undefined && !existsSync(artifact)) return reportMissingArtifact(artifact, args.values.json === true, io);
-    const { lines, code, validCount, foreign } = validateCapabilities(path, artifact);
+    const { lines, code, validCount, foreign, warnings } = validateCapabilities(path, artifact);
     if (args.values.json) {
       const errors = code ? lines : [];
-      io.json(artifact === undefined ? { validCount, errors } : { validCount, errors, foreign });
+      io.json(artifact === undefined ? { validCount, errors, warnings } : { validCount, errors, foreign, warnings });
       return code;
     }
     lines.forEach((line) => io.out(line));
@@ -47,6 +47,7 @@ export const capabilityCheckVerb: Verb = {
       io.out(`Ajenos al artefacto, no cambian el código de salida: ${foreign.length}`);
       foreign.forEach((line) => io.out(`  ${line}`));
     }
+    warnings.forEach((line) => io.out(line));
     return code;
   },
 };

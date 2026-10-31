@@ -3,21 +3,31 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { readLines } from '../cli/files.ts';
 import { capabilitiesDir, capabilityFiles } from './files.ts';
 import {
-  declaredCapabilities, deltaEntries, equalsIgnoringCase, includesIgnoringCase, isPatch,
+  declaredCapabilities, deltaEntries, equalsIgnoringCase, includesIgnoringCase, isNotCapability, isPatch,
   requirementsOf, sectionLines, sectionTitle, sectionTitles, purposeOf, RULE_NAMES, type Declared,
 } from './sections.ts';
 
 const ALLOWED_SECTIONS = ['Propósito', 'Requisitos', 'Reglas de la capacidad'];
 const SCENARIO_KEYWORDS = ['GIVEN', 'WHEN', 'THEN'];
 const PURPOSE_MAX_LENGTH = 300;
-const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
+const REQUIREMENT_MAX_LENGTH = 500;
 const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
 const POINTER_TITLE = /^# Capacidad — (.+) \(puntero\)\s*$/i;
 const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
 
-export type Validation = { lines: string[]; code: number; validCount: number; foreign: string[] };
+export type Validation = { lines: string[]; code: number; validCount: number; foreign: string[]; warnings: string[] };
 
 type Resolved = { name: string; lines: string[]; problems: string[]; skipped: boolean; label?: string };
+
+function lengthWarnings(file: Resolved): string[] {
+  if (file.skipped || file.label) return [];
+  const requirements = requirementsOf(sectionLines(file.lines, 'Requisitos') ?? []);
+  return requirements.flatMap(({ title, lines }) => {
+    const { length } = lines.filter((line) => line.trim()).map((line) => line.trim()).join(' ');
+    if (length <= REQUIREMENT_MAX_LENGTH) return [];
+    return [`Aviso: ${file.name}: «${title}» tiene ${length} caracteres; el máximo aconsejado es ${REQUIREMENT_MAX_LENGTH}: si ya existe, no lo partas ni lo recortes; si es nuevo, un comportamiento por requisito`];
+  });
+}
 
 function titleProblems(slug: string, lines: string[]): string[] {
   const title = lines.find((line) => line.trim());
@@ -113,11 +123,6 @@ function scenarioLines(lines: string[]): string[] {
   return lines.map((line) => line.trim()).filter((line) => /^- (GIVEN|WHEN|THEN|AND)\b/i.test(line));
 }
 
-function isNotCapability(lines: string[]): boolean {
-  const second = lines.filter((line) => line.trim())[1];
-  return second !== undefined && NOT_CAPABILITY_MARK.test(second);
-}
-
 function fileProblems(fileName: string, lines: string[]): string[] {
   const slug = fileName.replace(/\.[^.]*$/, '');
   if (isNotCapability(lines)) {
@@ -179,6 +184,10 @@ function emptyBlockProblems(block: string[], declared: Declared[]): string[] {
   return ['el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»'];
 }
 
+function fileProblemOf({ kind, name }: Declared): string {
+  return kind === 'Retiradas' ? `«${name}» está en «Retiradas» y sigue en capabilities/` : `«${name}» no tiene fichero en capabilities/`;
+}
+
 function blockAgainstDeltaProblems(declared: Declared[], deltaNames: string[], dir: string): string[] {
   const declaredNames = [...new Set(declared.map((item) => item.name))];
   return [
@@ -188,7 +197,7 @@ function blockAgainstDeltaProblems(declared: Declared[], deltaNames: string[], d
     ...deltaNames
       .filter((name) => !includesIgnoringCase(declaredNames, name))
       .map((name) => `el delta tiene «${name}» y el bloque «Capacidades» no la nombra`),
-    ...declaredNames.filter((name) => !existsSync(join(dir, `${name}.md`))).map((name) => `«${name}» no tiene fichero en capabilities/`),
+    ...declared.filter((item) => existsSync(join(dir, `${item.name}.md`)) === (item.kind === 'Retiradas')).map(fileProblemOf),
   ];
 }
 
@@ -240,7 +249,8 @@ export function validateCapabilities(sddPath: string, artifactPath?: string): Va
   const foreign = files.filter((file) => !isOwn(file)).flatMap((file) => file.problems);
   const skipped = files.filter((file) => file.skipped).map((file) => file.name);
   const validCount = files.filter((file) => !file.problems.length && !file.skipped).length;
-  if (problems.length) return { lines: problems, code: 1, validCount, foreign };
-  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount, foreign };
-  return { lines: [summaryLine(validCount, skipped)], code: 0, validCount, foreign };
+  const warnings = files.filter(isOwn).flatMap(lengthWarnings);
+  if (problems.length) return { lines: problems, code: 1, validCount, foreign, warnings };
+  if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount, foreign, warnings };
+  return { lines: [summaryLine(validCount, skipped)], code: 0, validCount, foreign, warnings };
 }

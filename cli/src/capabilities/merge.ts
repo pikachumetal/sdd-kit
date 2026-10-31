@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -8,7 +8,7 @@ import {
 import { readLines, readText } from '../cli/files.ts';
 import { capabilitiesDir } from './files.ts';
 import {
-  declaredCapabilities, deltaEntries, equalsIgnoringCase, isPatch, sectionLines, type Declared, type Delta,
+  declaredCapabilities, deltaEntries, equalsIgnoringCase, isPatch, requirementsOf, sectionLines, type Declared, type Delta,
 } from './sections.ts';
 
 export type MergeResult = { lines: string[]; code: number };
@@ -21,6 +21,7 @@ interface Run {
   entries: Delta[];
   errors: string[];
   messages: string[];
+  deleted: string[];
 }
 
 type Rule = { name: string; lines: string[] };
@@ -166,7 +167,7 @@ function newRun(sddPath: string, artifactPath: string): Run {
   const block = sectionLines(lines, 'Capacidades');
   return {
     capabilitiesDir: capabilitiesDir(sddPath), artifactName, isPatch: isPatch(artifactName, lines),
-    declared: block ? declaredCapabilities(block) : [], entries: deltaEntries(lines), errors: [], messages: [],
+    declared: block ? declaredCapabilities(block) : [], entries: deltaEntries(lines), errors: [], messages: [], deleted: [],
   };
 }
 
@@ -179,9 +180,53 @@ function entriesByCapability(entries: Delta[]): Map<string, Delta[]> {
   return groups;
 }
 
+function retirementOf(run: Run, name: string): Declared | undefined {
+  return run.declared.find((item) => item.kind === 'Retiradas' && equalsIgnoringCase(item.name, name));
+}
+
+function requirementTitles(document: Document): string[] {
+  return requirementsOf(sectionLines(document.lines, 'Requisitos') ?? []).map((requirement) => requirement.title);
+}
+
+function retirementProblem(retirement: Declared, left: string[]): string | undefined {
+  if (left.length) {
+    const titles = left.map((title) => `«${title}»`).join(', ');
+    return `«${retirement.name}» está en «Retiradas» y le quedan requisitos: ${titles}`;
+  }
+  return retirement.summary ? undefined : `«${retirement.name}» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya`;
+}
+
+function retire(run: Run, document: Document, retirement: Declared): void {
+  const problem = retirementProblem(retirement, requirementTitles(document));
+  if (problem) {
+    run.errors.push(`${run.artifactName}: ${problem}`);
+    return;
+  }
+  run.deleted.push(document.file);
+  run.messages.push(`${document.name}: borrado, está en «Retiradas»`);
+}
+
+function isAlreadyDeleted(run: Run, name: string, entries: Delta[]): boolean {
+  return Boolean(retirementOf(run, name)) && entries.every((entry) => entry.kind === 'REMOVED') && !existsSync(join(run.capabilitiesDir, `${name}.md`));
+}
+
 function mergeCapability(run: Run, entries: Delta[]): Document | undefined {
-  const document = loadDocument(run, entries[0].capability);
-  if (document) entries.forEach((entry) => applyEntry(run, document, entry));
+  const name = entries[0].capability;
+  if (isAlreadyDeleted(run, name, entries)) {
+    run.messages.push(`${name}.md: ya estaba borrado`);
+    return undefined;
+  }
+  const document = loadDocument(run, name);
+  if (!document) return undefined;
+  const hadRequirements = requirementTitles(document).length > 0;
+  entries.forEach((entry) => applyEntry(run, document, entry));
+  const retirement = retirementOf(run, name);
+  if (retirement) retire(run, document, retirement);
+  else if (hadRequirements && !requirementTitles(document).length) {
+    run.errors.push(
+      `${run.artifactName}: «${name}» se quedaría sin requisitos: declárala en una línea «- Retiradas:» del bloque «Capacidades» para borrar el fichero, o deja algún requisito`,
+    );
+  }
   return document;
 }
 
@@ -194,6 +239,7 @@ export function mergeDelta(sddPath: string, artifactPath: string): MergeResult {
   }
   const documents = [...entriesByCapability(run.entries).values()].map((entries) => mergeCapability(run, entries));
   if (run.errors.length) return { lines: run.errors, code: 1 };
-  documents.forEach((document) => document && saveDocument(document));
+  documents.forEach((document) => document && !run.deleted.includes(document.file) && saveDocument(document));
+  run.deleted.forEach((file) => rmSync(file));
   return { lines: run.messages, code: 0 };
 }
