@@ -426,6 +426,16 @@ function claudeArgs(s, settings) {
 // La identidad por entorno gana a la global también en `git config user.name`: sin ella, los sujetos ponían el
 // nombre del dev-lead en las salidas. El sujeto ve primero no-claude/: un claude que lance él no gasta fuera de la cuenta.
 const GIT_IDENTITY = { GIT_CONFIG_COUNT: '2', GIT_CONFIG_KEY_0: 'user.name', GIT_CONFIG_VALUE_0: 'Fixture', GIT_CONFIG_KEY_1: 'user.email', GIT_CONFIG_VALUE_1: 'fixture@example.com' };
+// La línea «Git user» del contexto de arranque de claude ignora GIT_CONFIG_*: solo la tapa la config local.
+// Sin repo propio no se escribe: caería en el repo que contiene el molde.
+function pinIdentity(s, deps) {
+  const cdup = deps.run('git', ['-C', s.R, 'rev-parse', '--show-cdup'], { env: s.env });
+  if (cdup.code !== 0 || cdup.stdout.trim() !== '') return;
+  for (const [key, value] of [['user.name', GIT_IDENTITY.GIT_CONFIG_VALUE_0], ['user.email', GIT_IDENTITY.GIT_CONFIG_VALUE_1]]) {
+    if (deps.run('git', ['-C', s.R, 'config', key, value], { env: s.env }).code !== 0) s.die(`no se pudo fijar ${key} en el molde ${s.R}`);
+  }
+}
+
 function claudeEnv(env) {
   const pathKey = Object.keys(env).find((name) => name.toLowerCase() === 'path') ?? 'PATH';
   return { ...env, [pathKey]: [join(HEADLESS, 'no-claude'), env[pathKey]].filter(Boolean).join(delimiter), ...GIT_IDENTITY };
@@ -484,6 +494,7 @@ function checkSettings(s) {
 
 async function launch(s, deps, ask) {
   s.claudeArgs = claudeArgs(s, checkSettings(s));
+  pinIdentity(s, deps);
   deps.fs.write(join(s.RUNS, `${s.LABEL}.args`), lines([...s.claudeArgs, ask]));
   if (s.env.DRY_RUN === '1') {
     deps.fs.write(s.JSONL, dryStream(s));

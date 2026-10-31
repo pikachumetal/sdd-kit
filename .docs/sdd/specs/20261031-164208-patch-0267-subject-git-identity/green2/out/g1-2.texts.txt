@@ -1,0 +1,87 @@
+--- [30]
+Mientras repasaba la spec, la prueba de fusión la rechazó y he visto huecos entre la spec y el código. Busco qué más nombra lo que cambia, la corrijo y repito la prueba antes de presentártela.
+
+--- [35]
+Ahora: te presento la spec de la 0010 para aprobarla. Queda: tu respuesta; después escribo el plan sin parar, ~5 minutos.
+
+Carril: feature, modo full · Perfil: `delegate`, de la propia feature (`spec.md`)
+
+**Spec — Motivo al cancelar** (`.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`)
+
+🦆 Al cancelar una reserva hay que decir por qué, y luego se puede consultar la lista de cancelaciones. Por ejemplo, si Ana cancela la sala Norte del lunes porque está ocupada, la lista muestra «Norte lun — sala ocupada — Ana». El motivo se elige entre tres: cambio de planes, sala ocupada u otro, y cualquier otro valor, o ninguno, no cancela la reserva. La persona que aparece es la que tiene la reserva a su nombre. Las reservas siguen sin guardarse al terminar cada ejecución, así que la lista solo muestra lo cancelado en esa misma ejecución.
+
+**La spec no estaba lista para aprobar, así que la he corregido.** La prueba de fusión la rechazaba porque daba `bookings` por modificada y el proyecto no tiene `capabilities/`. Ahora va como capacidad nueva y la prueba pasa, sin tocar nada fuera de la carpeta de la spec. También faltaban la línea de validación, el 🦆, la tabla de lo que cambia de forma y la política de modelos.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**La que más pesa: el rastro no queda en el uso real (10).** Las reservas viven en memoria, así que `cancelar` y después `canceladas` en ejecuciones separadas responde «sin canceladas». Guardarlas entre ejecuciones cambia cómo funciona toda la herramienta, y lo he dejado fuera del Scope para no ampliarlo sin tu decisión. Si quieres que el rastro quede de verdad, responde «Cambios», porque con esta spec el Intent solo se cumple dentro de una misma ejecución y en los tests.
+
+**Las que ya estaban:**
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro (de la entrevista).
+2. `canceladas` enseña sala, día, motivo y quién canceló.
+3. Sin review de spec, con dos señales: capacidad nueva y datos. Corrijo el recuento anterior, que contaba `MODIFIED`.
+
+**Las nuevas, para cerrar huecos:**
+
+4. `bookings` es una capacidad nueva.
+5. «Quién canceló» es el titular de la reserva, porque el comando no sabe quién lo ejecuta y no hay login. La reserva pasa a guardar su titular, y la de Norte del lunes queda a nombre de Ana.
+6. `--motivo` es obligatorio. Sin él responde el aviso de motivo no válido y no cancela, lo que cambia el comportamiento actual y obliga a actualizar los tests de `test/cancel.test.js`.
+7. El motivo se comprueba antes que la reserva. Con un motivo válido y sin reserva sigue respondiendo «sin reserva <sala> <día>».
+8. `canceladas` sin ninguna cancelación responde «sin canceladas» (texto mío).
+9. Las anulaciones no salen en `canceladas`.
+11. `mission.md` dice que hay un único usuario y `PRODUCT.md` habla de equipos de una oficina. Sigo `PRODUCT.md`, que es lo que justifica enseñar un nombre.
+
+**Política de modelos:**
+- **Revisores de la spec:** ninguno.
+- **Revisión final:** Spec opus+high, Código sonnet+high, Arquitectura según el plan.
+- **Otros despachos en paralelo:** ninguno, con el tope de `control.maxParallelAgents`.
+
+**Prueba del delta sobre una copia:**
+- `bookings.md: añadido «Cancelar pide un motivo de la lista»`
+- `bookings.md: añadido «El listado de canceladas enseña el motivo y quién canceló»`
+
+## Comportamiento
+
+- **Entra:** `cancelar <sala> <día> --motivo <motivo>`, el comando `canceladas` y el titular de la reserva.
+- **No entra:** las anulaciones del responsable de sala (0011), guardar las reservas entre ejecuciones y pedir el nombre en `reservar`.
+
+| Comando | Respuesta |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista, o ninguno | «motivo no válido: cambio de planes, sala ocupada, otro», y la reserva sigue activa |
+| `canceladas` | «Norte lun — sala ocupada — Ana» |
+| `canceladas` sin cancelaciones | «sin canceladas» |
+
+La validación la haces tú, porque cambia lo que responde un comando que usa una persona.
+
+**Aviso del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que estos pasos siguen una versión anterior a la que declara el proyecto. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+¿Apruebas la spec?
+
+1. Apruebo (Recomendada)
+2. Cambios
+3. Apruebo; escribe el plan y para antes de la Task 1 para que baje la sesión a gama media. El proyecto fija Native, así que esta sesión implementa todas las tasks (prevé 3) y va bien en Sonnet con effort medium. Bajar solo el effort de Opus no es gama media, y la sesión no puede cambiar su propio modelo: tras aprobar no hay otra parada para hacerlo.
+
+--- [43]
+**`spec-template.md` no pide ningún aviso del aprobador:** la búsqueda de «aviso» y «aprobador» en la plantilla no encuentra ninguno. Lo más cercano es la nota de `## Aprobaciones`, que pide registrar «el nombre de quien aprueba (`git config user.name`)». Así que te lo escribo aquí con esa regla y no lo añado a la spec, que no he tocado.
+
+| Fuente | Valor |
+| --- | --- |
+| Contexto de arranque | `Git user: Fixture` |
+| `git config user.name` | `Fixture` |
+| Aprobadora en `spec.md` (frontmatter y `## Aprobaciones`) | `Laura` |
+
+Las dos fuentes de git coinciden entre sí, pero **ninguna coincide con Laura**.
+
+> **Aviso del aprobador:** la spec nombra a Laura como aprobadora, pero el usuario de git de esta sesión es Fixture. Según la plantilla, una aprobación dada aquí se registraría a nombre de Fixture, no de Laura.
+
+Con estos datos no puedo saber si quien responde es Laura: el nombre de git no lo demuestra ni lo descarta. Si apruebas, escribiré en la fila el nombre que da `git config user.name`, Fixture, y no pondré a Laura como aprobadora si no lo dices tú. La fila quedaría así, sin que la de Laura pase a aprobada:
+
+`| Fixture | <fecha> | aprobada (opción «Apruebo») |`
+
+Si eres Laura, dímelo al aprobar y lo hago constar con tu frase literal.
+
+La tabla de la spec tampoco sigue del todo la plantilla: tiene una columna `Rol` que la plantilla no lleva. No la he cambiado.
+
+La spec sigue en espera de tu respuesta a las tres opciones de antes.
+
