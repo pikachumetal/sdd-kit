@@ -47,7 +47,7 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | --- | --- | --- | --- |
 | Arranque (carril, modo, perfil, enunciado desde la rama) | pregunta en patch, lite y config, y si toca partir; anuncia en feature y spike | igual que `pair` | decide y registra: lite y spike van como full |
 | Review de spec recomendada | pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) | pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) | decide y registra (dominio en Sonnet) |
-| Spec | para con `AskUserQuestion` y opciones fijas, salvo la spec delegada en el arranque: la aprueba el agente y registra la frase | para con `AskUserQuestion` y opciones fijas, salvo la spec delegada en el arranque: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
+| Spec | para con opciones fijas en prosa, salvo la spec delegada en el arranque: la aprueba el agente y registra la frase | para con opciones fijas en prosa, salvo la spec delegada en el arranque: la aprueba el agente y registra la frase | la aprueba el agente con las decisiones registradas |
 | Plan | para: una sola pregunta aprueba el plan y elige el método, con la recomendación del handoff primero; con `execution` fijado, solo aprueba | sin gate: comprueba escenario → task, escribe el método que recomienda el handoff (o el fijado en `execution`) y sigue | igual que `delegate` |
 | Tras cada task | para | sigue | sigue |
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
