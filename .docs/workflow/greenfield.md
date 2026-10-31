@@ -28,7 +28,7 @@ El fichero único `Claude.md` del flujo original se convierte en varios document
 
 Esta separación es la recomendación oficial de Anthropic: el `CLAUDE.md` tiene que ser corto y por capas, porque uno inflado hace que Claude ignore las instrucciones que contiene.
 
-Hay documentos que solo aparecen si el proyecto los necesita, y se activan por la presencia de su propio fichero, sin configuración: `estimation.md` enciende el registro de estimaciones, `changelog.md` el changelog técnico, `client-changelog.md` las novedades para el cliente y `environments.md` el contrato de entorno por worktree. La entrevista del init pregunta por cada uno.
+Hay documentos que solo aparecen si el proyecto los necesita, y se activan por la presencia de su propio fichero, sin configuración: `estimation.md` enciende el registro de estimaciones, `changelog.md` el changelog técnico y `environments.md` el contrato de entorno por worktree. La entrevista del init pregunta por cada uno.
 
 La entrevista incluye además **cinco reglas de producto** que, si no se preguntan, el agente decide al azar en cada tarea: dónde viven los datos, en qué idioma van los nombres, qué límites hay, qué se avisa al usuario y qué manda cuando dos vías dan el mismo dato. Quedan escritas en la constitution y cada capacidad puede matizarlas.
 
