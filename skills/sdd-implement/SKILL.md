@@ -63,14 +63,14 @@ digraph native {
         "sdd task done: run the Verificación, ledger the result; mark todo complete" [shape=box];
     }
 
-    "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan" [shape=box];
+    "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan, tasks.md" [shape=box];
     "More tasks remain?" [shape=diamond];
     "sdd-verify: final review in axes (fresh reviewers, in the background)" [shape=box];
     "sdd-verify: closing of the review" [shape=box];
     "Closing done: rulings to tasks.md, delete this plan's workspace" [shape=box];
     "Step 7 of sdd-start-feature (validation)" [shape=box style=filled fillcolor=lightgreen];
 
-    "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan" -> "sdd task start: brief + BASE; read the brief";
+    "Setup: worktree, workspace + ledger, read plan + spec, sdd-tdd, pre-flight scan, tasks.md" -> "sdd task start: brief + BASE; read the brief";
     "sdd task start: brief + BASE; read the brief" -> "Base check; write the RED tests, keep a copy";
     "Base check; write the RED tests, keep a copy" -> "Work the steps in order: TDD, run every verification, read every output";
     "Work the steps in order: TDD, run every verification, read every output" -> "Step output matches plan's Expected?";
@@ -318,6 +318,7 @@ When the closing of the review is done (`sdd-verify`) and its fixes are committe
 ## Red flags — STOP
 
 - You're about to start Task 1 and your messages haven't carried the `Workspace del plan: …` line.
+- First `task start` or dispatch next, more than one task, no `tasks.md` yet.
 - You're about to edit code and the plan isn't approved.
 - You're about to dispatch an implementer, a final reviewer, a fix wave or a re-review without the `## Restricciones de código` section at the start of its brief.
 - You're about to dodge a file marked «NO se tocan» with a fix that isn't in its own commit and doesn't enter review.
