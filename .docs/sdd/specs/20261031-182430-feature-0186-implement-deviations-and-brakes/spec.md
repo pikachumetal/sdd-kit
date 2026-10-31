@@ -62,7 +62,8 @@ El freno «fichero de la task cambiado en la base» para al dev-lead por cambios
 - Entra (enmienda 2026-10-31): la comprobación de `tasks.md` en `cli/src/tasks/brief.ts`, con sus tests en `cli/test/tasks/`.
 - Entra: las dos ofertas de los gates de `skills/sdd-propose/SKILL.md`, pasos 4 y 5.
 - Entra: los escenarios `g1`, `d1`, `a1`, `a2`, `b1`, `b2`, `b3`, `n1` y `e1` en la batería de `sdd-implement`, y la fila de la oferta en la de `sdd-propose`.
-- No entra: un punto del Scope incumplido, ruling contra «Dónde se prueba» o contra una decisión, aviso de fase y esperas: RED limpio, sin texto nuevo.
+- Entra (enmienda 2026-10-31): el ruling que quita o mueve un test de «Dónde se prueba» es desvío, en «Native loop» paso 2 de `skills/sdd-implement/SKILL.md`.
+- No entra: un punto del Scope incumplido, ruling contra una decisión, aviso de fase y esperas: RED limpio, sin texto nuevo.
 - No entra: retirar `sdd-start-feature` y mover `control-profiles.md` (0206); la pasada de fix de `sdd-verify`; coherencia de documentos (0152).
 
 ## Lo que se retira o cambia de forma
@@ -105,7 +106,8 @@ Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos
 - El freno por regiones: `b1`, `b2` y `b3` de la batería de `sdd-implement`.
 - `tasks.md` antes de la Task 1: `e1` y `n1` de la batería de `sdd-implement`.
 - La oferta con su número: `g1` de la batería de `sdd-propose`, en Opus, y su contraejemplo con una sola task (`g1b`).
-- Controles sin texto nuevo: `g1`, `d1`, `a1` y `a2` de la batería de `sdd-implement`.
+- El ruling contra «Dónde se prueba» (enmienda): `g1` de la batería de `sdd-implement`, n = 3.
+- Controles sin texto nuevo: `d1`, `a1` y `a2` de la batería de `sdd-implement`.
 - Los recortes: `word-budget.test.ts` y `moon run cli:test`.
 
 ## Términos y ADR
@@ -182,6 +184,8 @@ Cada paso cambiado: «Before each task» paso 1 (`b1`-`b3`), «Native loop» pas
 ## Enmiendas
 
 - 2026-10-31, aprobada (dev-lead, opción «1»): «`tasks.md` nace antes de la primera task» no se cumple solo con texto (`n1` 0/2 en GREEN y 0/2 tras el REFACTOR). `sdd task start` y `sdd task brief` fallan con más de una task y sin `tasks.md`; entra `cli/src/tasks/` en el Scope, salen el red flag y la caja del grafo de la ronda fallida, y el techo de sujetos pasa de 35 a 40 $.
+
+- 2026-10-31, aprobada (dev-lead, «si»): el control `g1-2` falla: deja `Ruling: no se escribe test/attempt.test.js y se enmienda Dónde se prueba`, sin parar, y cierra la task. El ruling contra «Dónde se prueba» sale de «No entra» y entra en el Scope, con el texto en «Native loop» paso 2, rama «The plan is wrong»: «A ruling that removes or moves a test «Dónde se prueba» names is a deviation: stop with the update action.» Se mide con `g1`, n = 3.
 
 ## Aprobaciones
 

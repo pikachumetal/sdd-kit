@@ -204,6 +204,26 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: Verificación** — los comandos de «Verificación». Esperado: `Tests  N passed (N)`.
 - [ ] **Step 5: Commit de la task** — `feat(cli): task start y task brief exigen tasks.md con más de una task`, con cuerpo en castellano.
 
+### Task 5 — enmienda 2026-10-31: el ruling contra «Dónde se prueba» es desvío
+
+**Tras**: Task 4
+**Modelo**: `general-purpose` + `model: haiku`, porque el texto viene literal.
+**Tests RED**: hilo principal · `g1` de `tests/batteries/sdd-implement/battery.md`, ya commiteado; RED: `control/out/g1-2`.
+**Superficies**: docs
+**Verificación**: `npx vitest run test/kit/word-budget.test.ts` desde `cli/` → `Tests  N passed (N)`
+**Verificación lenta**: la lanza el hilo principal · `g1`, n = 3 · ~10 min
+**Se prueba en la aplicación**: no, porque es guía para el agente: la prueban los sujetos.
+
+**Interfaces**:
+- Consume: nada
+- Produce: nada
+
+**Ficheros**: modificar `skills/sdd-implement/SKILL.md`.
+
+- [ ] **Step 1**: «Native loop», paso 2, viñeta «**The plan is wrong**»: justo tras `a command that cannot work.` añade, con un espacio delante: `A ruling that removes or moves a test «Dónde se prueba» names is a deviation: stop with the update action.`
+- [ ] **Step 2: Verificación** — el comando de «Verificación». Esperado: `Tests  N passed (N)`.
+- [ ] **Step 3: Commit de la task** — `fix(skills): el ruling que quita un test de Dónde se prueba es desvío`, con cuerpo en castellano.
+
 ---
 
 ## Estimación y esfuerzo
