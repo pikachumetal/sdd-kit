@@ -204,7 +204,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: Verificación** — los comandos de «Verificación». Esperado: `Tests  N passed (N)`.
 - [ ] **Step 5: Commit de la task** — `feat(cli): task start y task brief exigen tasks.md con más de una task`, con cuerpo en castellano.
 
-### Task 5 — enmienda 2026-10-31: el ruling contra «Dónde se prueba» es desvío
+### Task 5 — enmienda 2026-10-31: el ruling contra «Dónde se prueba» es desvío (retirada: `g2` no reproduce el fallo)
 
 **Tras**: Task 4
 **Modelo**: `general-purpose` + `model: haiku`, porque el texto viene literal.

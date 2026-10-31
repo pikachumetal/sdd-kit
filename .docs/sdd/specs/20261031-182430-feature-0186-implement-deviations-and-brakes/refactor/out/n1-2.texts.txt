@@ -1,0 +1,56 @@
+--- [2]
+Ahora: abro la implementación de la feature 0010 con `sdd-implement`. Queda: ejecutar las tasks del plan, revisión final y validación, ~por determinar al leer el plan.
+
+--- [15]
+Baseline en verde (4/4). Cargo TDD y las reglas de frenos antes de la Task 1.
+
+--- [22]
+Ahora: ledger, escaneo previo y `tasks.md`, y arranco la Task 1. Queda: las dos tasks, la revisión final y dejarte la validación preparada, ~15 min.
+
+--- [25]
+Tests RED de la Task 1, a partir de los THEN de la spec.
+
+--- [28]
+RED correcto: cuatro fallan porque falta el motivo, y el caso sin reserva sigue en verde. Ahora el código mínimo.
+
+--- [54]
+La feature 0010 está implementada, pero sigue sin cerrar: necesito que decidas una cosa, y después tu validación. Las dos tasks están commiteadas (`33d9db3` y `3ee233b`) y la suite da 8/8 con `node --test`. No he hecho merge ni push, y el roadmap sigue igual.
+
+**La decisión: `canceladas` desde la terminal siempre sale vacío.**
+
+Las reservas viven en memoria, así que cada ejecución arranca de cero con la reserva activa:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"   → cancelada Norte lun (sala ocupada)
+node src/app.js canceladas                                   → (línea vacía)
+```
+
+«Norte lun — sala ocupada» solo sale si `cancelar` y `canceladas` corren en el mismo proceso, que es como lo prueba el test. La spec se cumple tal como dice «Dónde se prueba», pero quien use la terminal no verá nunca el motivo.
+
+¿Cómo sigo?
+
+1. **Cerrar 0010 tal cual y resolverlo en la 0014 (mi recomendación).** La 0014 ya es «Motivo guardado», y la falta de almacén afecta a toda la app, no solo a esta feature. Hasta entonces, `canceladas` no sirve desde la terminal.
+2. **Añadir persistencia aquí.** Cambia el Scope de la spec y se solapa con la 0014, así que iría como enmienda, con una task nueva.
+
+Con tu respuesta te paso el guion de validación. Si eliges la 1, el paso de `canceladas` irá marcado como no observable desde la terminal.
+
+**Rulings que he tomado**
+- **Test anterior:** «cancelar una reserva activa» ahora lleva `--motivo`, porque la spec lo contradecía. Si está mal, se revierte una línea de test.
+- **Orden de comprobación:** primero busco la reserva y luego valido el motivo, así que `cancelar Sur mar` sigue respondiendo «sin reserva Sur mar». Si está mal, se invierten dos líneas y se cambia ese test.
+- **Sin canceladas:** `canceladas` imprime una línea vacía, sin inventar un texto que la spec no da. Si está mal, es una línea y su test.
+- **Varias filas:** irían una por línea, aunque hoy no puede pasar porque solo existe una reserva. Si está mal, se cambia el separador.
+- **Eje de Arquitectura:** no lo he pasado, porque el plan no lo menciona y el diff no da ninguna señal. Si está mal, es una pasada más de revisión.
+- **`canceladas` vacío:** no lo he arreglado y te lo pregunto arriba. Si está mal, la función no sirve desde la terminal hasta la 0014.
+
+**Minors diferidos**
+- `test/cancel.test.js` pasó de CRLF a LF por mi reescritura, y su diff sale entero.
+- Los tests de ese fichero dependen del orden, porque comparten el estado del módulo.
+- Ningún test comprueba que una reserva anulada no salga en `canceladas`; con una sola reserva no se puede preparar.
+- `--motivo` escrito antes de la sala y el día rompe los argumentos; la spec solo da la forma con sala y día primero.
+
+**Lo que debes tener en cuenta**
+- **Revisión más débil:** esta sesión no tiene subagentes, así que la revisión final la hice yo, que soy el autor. Decide si te basta antes del merge.
+- **Versión del kit:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0, así que estas skills pueden estar desfasadas. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Sin worktree aislado:** trabajé directamente en la rama `feature/0010-cancel-reason`, sin preguntarte, porque no estabas.
+- **Sin commitear:** `tasks.md`, el borrador de `walkthrough.md` y la entrada del changelog se quedan así hasta el cierre. El workspace del plan ya está borrado.
+

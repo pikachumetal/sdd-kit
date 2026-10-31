@@ -247,28 +247,29 @@
 | 2026-10-31 | 0265 | patch | 0.5 | 0.1 | 0.2 | — | — | no aplica | — | 20261031-160141-patch-0265-battery-no-evidence-verdict |
 | 2026-10-31 | 0267 | patch | 0.75 | 0.4 | 0.53 | — | — | 6.4 | — | 20261031-164208-patch-0267-subject-git-identity |
 | 2026-10-31 | 0177 | docs | 3 | 1.07 | 0.36 | 19850k | 2812k | 7.34 | 13.29 | 20261031-165052-feature-0177-release-cut-now-to-changelog |
+| 2026-11-01 | 0186 | infra/tooling | 2.5 | 3.83 | 1.53 | 33147k | 11676k | 44.71 | 20.4 | 20261031-182430-feature-0186-implement-deviations-and-brakes |
 
-**Factor de calibración** (ratio mediano real/estimado, 207 artefactos): **0.57** · media 0.74
+**Factor de calibración** (ratio mediano real/estimado, 208 artefactos): **0.57** · media 0.75
 
-- p25–p75: 0.38–0.91
-- p80: 1.03 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 27 % · sobreestimadas: 64 % · infraestimadas: 10 %
-- Error absoluto (h): media 1.31 · mediana 0.85
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.42
+- p25–p75: 0.38–0.92
+- p80: 1.04 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
+- Dentro de ±25 %: 26 % · sobreestimadas: 63 % · infraestimadas: 10 %
+- Error absoluto (h): media 1.31 · mediana 0.86
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.51
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 78 | 38 % |
 | 0.5–0.8 | 61 | 29 % |
 | 0.8–1.25 | 48 | 23 % |
-| 1.25–2 | 12 | 6 % |
+| 1.25–2 | 13 | 6 % |
 | ≥2 | 8 | 4 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
 | docs | 95 | 0.56 | 0.38–0.8 |
-| infra/tooling | 51 | 0.49 | 0.37–0.77 |
+| infra/tooling | 52 | 0.49 | 0.37–0.83 |
 | patch | 59 | 0.8 | 0.42–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -289,6 +290,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 95 | 202.88 | 0.53 | 416.35 | 1670.77 |
+| sin publicar | 96 | 206.71 | 0.53 | 461.06 | 1691.17 |
 
 > Ver `estimation.md`.

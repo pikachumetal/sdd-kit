@@ -42,7 +42,7 @@ Both run in this session, share the workspace, the ledger and its format, and ne
 
 Every task, the second and later ones too, in both methods:
 
-1. **Check the base first**, with or without a remote: `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md`, with `<integration>` `develop` or the one the constitution fixes (with a remote, `git fetch` first and compare `origin/<integration>` too). Without a remote the base moves anyway: another worktree commits to the local branch. If the feature's row is in the diff, it's a scope brake: don't start or dispatch, and follow its row in the [gate table](../sdd-start-feature/references/control-profiles.md). Then cross `git diff --name-only $(git merge-base HEAD <integration>) <integration>` with the task's «Crear» and «Modificar» files: for a match, compare `git diff -U0` of the base with the lines the task will touch. An overlap the spec doesn't declare, or lines you can't tell, is the same brake. Other lines, or an overlap the spec declares with file and region and the base stays inside it, is a `Ruling:` with both ranges, and you go on.
+1. **Check the base first**, with or without a remote: `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md`, with `<integration>` `develop` or the one the constitution fixes (with a remote, `git fetch` first and compare `origin/<integration>` too). Without a remote the base moves anyway: another worktree commits to the local branch. If the feature's row is in the diff, it's a scope brake: don't start or dispatch, and follow its row in the [gate table](../sdd-start-feature/references/control-profiles.md). Then cross `git diff --name-only $(git merge-base HEAD <integration>) <integration>` with the task's «Crear» and «Modificar» files: for a match, compare `git diff -U0` of the base (`origin/<integration>` too if the match comes from there; ranges are the merge base's) with the lines the task will touch. An overlap the spec doesn't declare, or lines you can't tell, is the same brake. Other lines, or an overlap the spec declares with file and region and the base stays inside it, is a `Ruling:` with both ranges, and you go on.
 2. **The RED tests are the thread's**: with the opening already in its commit, you write the tests that encode the task's scenarios —one per THEN and one per Review Focus line that names the task— in RED by compilation or by failure, without committing them: they go in the task's commit. Keep a copy outside the repo to compare later: it's the only proof the test wasn't fitted to the code (`tests/tests-red-hilo-red.md`).
 
 ## Native loop
@@ -95,7 +95,7 @@ Everything you print, and every tool result, stays resident in your context for 
 2. **Work the steps**: the plan's steps are already in RED-GREEN order; follow them in that order under `sdd-tdd`, loaded at setup. A test step's code is written first and run first. Watching it fail is a step, not a formality — a test that passes before the implementation exists is a finding about the test. Every step that runs a command has an `Expected:` line. Run the command, read its output, and compare. Three outcomes:
    - **Matches.** Next step.
    - **The code is wrong.** Use `sdd-debugging`. Find the cause; never patch the symptom to make the step's output match. A failing smoke of text an agent follows (a skill, a prompt): if the constitution has a rule on the form of guidance, read it before the round, name the failure's class by it and write the round in that form; rewording or adding emphasis is the same form.
-   - **The plan is wrong** — a step contradicts the spec, an interface from an earlier task doesn't match what this task consumes, a command that cannot work. A ruling that removes or moves a test «Dónde se prueba» names is a deviation: stop with the update action. Rule on the smallest change that satisfies the spec, ledger it as `Task <N>: Ruling: <finding> — <what you decided and why>`, and continue. The ruling is carried, not remembered: later tasks that touch the same interface read it from the ledger.
+   - **The plan is wrong** — a step contradicts the spec, an interface from an earlier task doesn't match what this task consumes, a command that cannot work. Rule on the smallest change that satisfies the spec, ledger it as `Task <N>: Ruling: <finding> — <what you decided and why>`, and continue. The ruling is carried, not remembered: later tasks that touch the same interface read it from the ledger.
 3. **Completion contract**: before a task's ledger line, all of the following are true, with evidence in this session — not inferred from the diff looking right:
    - Every test the brief names exists and ran in this task, and you read the output.
    - The final test run for the task passed — `sdd task done` is that run, and it writes the command and result into the ledger line.
@@ -353,6 +353,7 @@ Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión;
 [Read plan once: .docs/sdd/specs/<folder>/plan.md; spec read; sdd-tdd loaded]
 [Pre-flight scan: 2 shared-interface rows, 4 self-consistency rows, clean; written to ledger]
 [Create todos for all tasks]
+[tasks.md written]
 
 Task 1: Hook installation script
 
@@ -410,6 +411,7 @@ Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión;
 
 [Read plan file once: .docs/sdd/specs/<folder>/plan.md]
 [Create todos for all tasks]
+[tasks.md written]
 
 Task 1: Hook installation script
 

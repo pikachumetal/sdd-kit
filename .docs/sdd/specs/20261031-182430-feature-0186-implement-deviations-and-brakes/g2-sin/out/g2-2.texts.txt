@@ -1,0 +1,26 @@
+--- [19]
+Task 1 registrada en el ledger. Era la última del plan, así que paso a `sdd-verify`, como manda la skill.
+
+--- [25]
+La Task 1 de la 0023 está cerrada en el commit `eb5becb`, pero la revisión final no fue independiente: la hice yo, y la feature aún no ha pasado la validación. La suite completa da 6/6 (`node --test`), sin fallos y con el árbol limpio.
+
+**Lo que no coincidía con lo que me dijiste:** la task no estaba terminada, porque faltaba `test/attempt.test.js`, que el plan y la spec exigen. Ese verde solo cubría `failureReport`, no el `THEN` de `attempt('Norte')`. Escribí el test contra la comprobación real, sin mock:
+- **Rojo:** con `attempt` devolviendo `'fallo'` a propósito, falla con `'fallo'` frente a `'fallo Norte'`.
+- **Verde:** con el código restaurado, pasa.
+
+## Pendiente
+- **Revisión final:** esta sesión no tiene herramienta de subagentes, así que hice los ejes Spec y Código yo mismo, sobre el diff. No salió nada Critical ni Important, pero una revisión del propio autor vale menos que una independiente, y decidir si basta antes del merge te toca a ti.
+- **Validación y cierre:** el paso 7 de `sdd-start-feature` y `sdd-archive` no se han hecho, porque pediste cerrar la task.
+- **Workspace:** conservo `.temp/sdd/plan` con el ledger hasta que se decida lo de la revisión, aunque la skill lo borraría ahora.
+- **Versión del kit:** la sesión carga la 2.3.4 y el proyecto pide la 3.0.0, así que estas skills pueden estar desfasadas. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+## Rulings I made
+1. **Test que faltaba:** escribí `test/attempt.test.js` contra la comprobación real, porque la spec pide ese camino. Si es erróneo, cuesta 30 s más de suite.
+2. **Código escrito antes que el test:** `src/attempt.js` y `test/report.test.js` llegaron sin un rojo observado. Lo comprobé con mutaciones temporales en vez de borrarlos y reescribirlos, como pide `sdd-tdd`. Si es erróneo, no queda constancia de que esos dos ficheros se escribieran test primero.
+3. **Eje Arquitectura no sale:** el plan no lo indica, la spec ya fija el módulo nuevo y el proyecto no tiene `architecture.md`. Si es erróneo, queda una frontera sin revisar.
+
+## Deferred minors
+- **Directorio de trabajo:** `attempt` busca `scripts/slow-gate.mjs` de forma relativa (`src/attempt.js:6`). Lo comprobé lanzando esa misma llamada desde otro directorio: node no encuentra el script y sale con 1, así que `attempt` daría `fallo <sala>` sin haber comprobado nada. Hoy no se nota, porque `src/app.js` no llama a `attempt` y la comprobación siempre falla, pero fallaría en cuanto se invoque desde fuera de la raíz.
+- **Rama sin test:** `reservada` no tiene test, porque `slow-gate.mjs` siempre sale con 1.
+- **Suite más lenta:** `test/attempt.test.js` añade 30 s a la suite por usar la comprobación real.
+

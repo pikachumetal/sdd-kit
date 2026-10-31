@@ -31,6 +31,15 @@ describe('sdd task start / done (test-executing-plans-scripts.sh)', () => {
     expect(readFileSync(briefPath, 'utf8')).toContain('Do the first thing.');
   });
 
+  it('task start on a plan with two tasks and no tasks.md exits 1 and says no tasks.md', () => {
+    const repo = emptyRepo();
+    write(join(repo, plan), twoTasks);
+    commitAll(repo, 'fixture');
+    const result = sdd(repo, 'task', 'start', plan, '1');
+    expect(result.code).toBe(1);
+    expect(result.err).toMatch(/no tasks\.md/);
+  });
+
   it('task done appends the completion line with commit range and test result', () => {
     const { repo, base, ledger } = repoWithPlan();
     write(join(repo, 'work.txt'), 'x\n');

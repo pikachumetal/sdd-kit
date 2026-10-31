@@ -4,7 +4,7 @@ feature: 0186
 title: Freno por regiones, tasks.md antes de la Task 1 y oferta de gama media con su cuenta
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-10-31
 author: agente con el dev-lead
 approvers:
@@ -22,6 +22,7 @@ Validación: agente — solo cambian skills y documentos, medidos con sujetos; `
 
 - Modificadas: `control-profiles` — el freno «fichero de la task cambiado en la base» compara regiones.
 - Modificadas: `feature-flow` — `tasks.md` nace antes de la Task 1, y las dos ofertas de gama media dicen cuántas tasks.
+- Modificadas: `cli` — `task start` y `task brief` exigen `tasks.md` con más de una task.
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -29,7 +30,7 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` · tamaño: ~20 líne
 - Mínimo razonable: ninguna — deja sin cubrir una lectura ajena de los tres textos, que hace la revisión final.
 
 1. **No se parte, y la 0269 no se usa.** Antes del RED preveía cuatro tasks sobre dos capacidades y reservé la 0269 para la hija. Con los frentes limpios fuera quedan tres tasks, y con tres nunca se parte. El id queda como hueco de la secuencia.
-2. **Cuatro de los siete arreglos salen de la spec por RED limpio**, por tu regla: un punto del Scope que no se cumple (`a1`, `a2`), ruling contra «Dónde se prueba» (`g1`), aviso de fase (`n1`) y esperas (`e1`). Tu criterio de hecho, el sujeto que para con update sin dejar `Ruling:`, ya se cumple en la base (`g1`, 1/1); sigue como control.
+2. **Cuatro de los siete arreglos salen de la spec por RED limpio**, por tu regla: un punto del Scope que no se cumple (`a1`, `a2`), ruling contra «Dónde se prueba» (`g1`), aviso de fase (`n1`) y esperas (`e1`). Tu criterio de hecho, el sujeto que para con update sin dejar `Ruling:`, ya se cumple en la base (`g1`, 1/1); sigue como control. Una enmienda posterior lo matiza: ver «Enmiendas».
 3. **Esas filas no se saldan: se quedan abiertas**, con «RED limpio con n = 1 en molde pequeño: posible falso negativo (0186)» y a la espera de un caso nuevo en sesión larga. Pedías saldarlas; sin guía nueva no hay nada que las salde, y borrarlas perdería los dos casos de campo. La 0229 pasa a esa misma fila.
 4. **`e1` no mide las esperas**: el sujeto no encontró ninguna espera real («no localizo proceso ni salida suyos») y siguió con la Task 2. Es disparador ausente, no «no se reproduce»; lo dice su fila. `n1` tampoco emitió avisos de fase, porque un sujeto de un turno no llega a la situación del ticket.
 5. **«Un ruling decide lo que es de la spec o del dev-lead» no entra**: `d1` limpio, 1/1. Mismo trato que el punto 3.
@@ -62,8 +63,7 @@ El freno «fichero de la task cambiado en la base» para al dev-lead por cambios
 - Entra (enmienda 2026-10-31): la comprobación de `tasks.md` en `cli/src/tasks/brief.ts`, con sus tests en `cli/test/tasks/`.
 - Entra: las dos ofertas de los gates de `skills/sdd-propose/SKILL.md`, pasos 4 y 5.
 - Entra: los escenarios `g1`, `d1`, `a1`, `a2`, `b1`, `b2`, `b3`, `n1` y `e1` en la batería de `sdd-implement`, y la fila de la oferta en la de `sdd-propose`.
-- Entra (enmienda 2026-10-31): el ruling que quita o mueve un test de «Dónde se prueba» es desvío, en «Native loop» paso 2 de `skills/sdd-implement/SKILL.md`.
-- No entra: un punto del Scope incumplido, ruling contra una decisión, aviso de fase y esperas: RED limpio, sin texto nuevo.
+- No entra: un punto del Scope incumplido, ruling contra «Dónde se prueba» (`g2` no lo reproduce; `g1` solo cuando la petición trae la orden) o contra una decisión, aviso de fase y esperas: RED limpio, sin texto nuevo.
 - No entra: retirar `sdd-start-feature` y mover `control-profiles.md` (0206); la pasada de fix de `sdd-verify`; coherencia de documentos (0152).
 
 ## Lo que se retira o cambia de forma
@@ -87,11 +87,11 @@ Texto literal que entra, ya contado (ver «Topes de palabras»):
 
 **`skills/sdd-implement/SKILL.md`, «Before each task», paso 1**, sustituye desde «: a match is the same brake…»:
 
-> : for a match, compare `git diff -U0` of the base with the lines the task will touch. An overlap the spec doesn't declare, or lines you can't tell, is the same brake. Other lines, or an overlap the spec declares with file and region and the base stays inside it, is a `Ruling:` with both ranges, and you go on.
+> : for a match, compare `git diff -U0` of the base (`origin/<integration>` too if the match comes from there; ranges are the merge base's) with the lines the task will touch. An overlap the spec doesn't declare, or lines you can't tell, is the same brake. Other lines, or an overlap the spec declares with file and region and the base stays inside it, is a `Ruling:` with both ranges, and you go on.
 
 **`control-profiles.md`, «Fichero de la task cambiado en la base»**, sustituye «Si alguno coincide, es un posible desvío.» y «Cualquier otro fichero para igual.»:
 
-> Si alguno coincide, compara `git diff -U0 $(git merge-base HEAD <integración>) <integración> -- <fichero>` con las líneas que tocará la task. Solape no declarado, o líneas que el plan no deja saber: posible desvío. Otras líneas, o un solape que la spec declara con fichero y región sin salir de ella: ruling con los dos tramos, y sigues.
+> Si alguno coincide, compara `git diff -U0 $(git merge-base HEAD <integración>) <integración> -- <fichero>` con las líneas que tocará la task (o `origin/<integración>` si la coincidencia sale de ahí). Solape no declarado, o líneas que el plan no deja saber: posible desvío. Otras líneas, o un solape que la spec declara con fichero y región sin salir de ella: ruling con los dos tramos, y sigues.
 
 Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos («la base cambia las líneas A–B; la task toca C») y paran».
 
@@ -106,8 +106,9 @@ Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos
 - El freno por regiones: `b1`, `b2` y `b3` de la batería de `sdd-implement`.
 - `tasks.md` antes de la Task 1: `e1` y `n1` de la batería de `sdd-implement`.
 - La oferta con su número: `g1` de la batería de `sdd-propose`, en Opus, y su contraejemplo con una sola task (`g1b`).
-- El ruling contra «Dónde se prueba» (enmienda): `g1` de la batería de `sdd-implement`, n = 3.
+- El ruling contra «Dónde se prueba»: `g1` y `g2` de la batería de `sdd-implement`, sin texto nuevo.
 - Controles sin texto nuevo: `d1`, `a1` y `a2` de la batería de `sdd-implement`.
+- La comprobación de la CLI: `cli/test/tasks/brief.test.ts` y `executing.slow.test.ts`.
 - Los recortes: `word-budget.test.ts` y `moon run cli:test`.
 
 ## Términos y ADR
@@ -159,13 +160,21 @@ Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos
 - AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
 - AND con una sola task prevista no la ofrece
 
+### Capacidad: `cli`
+
+#### ADDED — `task start` y `task brief` exigen `tasks.md` con más de una task
+
+- GIVEN un plan, fuera de lite, con más de una task y sin `tasks.md` en su carpeta
+- WHEN se ejecuta `sdd task start` o `sdd task brief` sobre él
+- THEN sale con código 1 y el mensaje `plan with <n> tasks and no tasks.md: write <ruta> before the first task (status and commit per task)`, sin escribir el brief
+
 ## Topes de palabras
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
-| `skills/sdd-implement/SKILL.md` | 9.581 / 9.483 (con el margen del 25 %, 11.854) | 2.273 | sin cambio; saldo −16 |
-| `skills/sdd-start-feature` (total, con `control-profiles.md`) | 11.471 / 11.322 (con el margen, 14.152) | 2.681 | sin cambio; saldo −7 |
-| `skills/sdd-propose/SKILL.md` | 5.346 / 5.250 (con el margen, 6.562) | 1.216 | sin cambio; saldo −9 |
+| `skills/sdd-implement/SKILL.md` | 9.575 / 9.483 (con el margen del 25 %, 11.854) | 2.279 | sin cambio; saldo −6 (base `9f807d14`: 9.581) |
+| `skills/sdd-start-feature` (total, con `control-profiles.md`) | 11.473 / 11.322 (con el margen, 14.152) | 2.679 | sin cambio; saldo −1 |
+| `skills/sdd-propose/SKILL.md` | 5.333 / 5.250 (con el margen, 6.562) | 1.229 | sin cambio; saldo −10 (base `9f807d14`: 5.343) |
 
 ## Previsión de coste
 
@@ -177,7 +186,7 @@ Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos
 | Controles: `g1` de implement n = 2; `d1`, `a1`, `a2` n = 1 | 5 | 5 |
 | Medición tras la revisión final | 1 | 1 |
 | Enmienda 2026-10-31: `n1` n = 2 | 2 | 2,6 |
-| Suma | 38 | techo 40 |
+| Real | 43 | 44,71 (techo 45) |
 
 Cada paso cambiado: «Before each task» paso 1 (`b1`-`b3`), «Native loop» paso 1 (`e1`, `n1`), bucle SDD (no se mide: misma frase, y un sujeto SDD cuesta ~3 $; lo cubre la lectura de la revisión final), pasos 4 (`g1`, `g1b`) y 5 de `sdd-propose` (no se mide: `pair` no está en el molde de la batería, y es la misma forma), recortes (sin escenario propio, decisión 7).
 
@@ -186,6 +195,12 @@ Cada paso cambiado: «Before each task» paso 1 (`b1`-`b3`), «Native loop» pas
 - 2026-10-31, aprobada (dev-lead, opción «1»): «`tasks.md` nace antes de la primera task» no se cumple solo con texto (`n1` 0/2 en GREEN y 0/2 tras el REFACTOR). `sdd task start` y `sdd task brief` fallan con más de una task y sin `tasks.md`; entra `cli/src/tasks/` en el Scope, salen el red flag y la caja del grafo de la ronda fallida, y el techo de sujetos pasa de 35 a 40 $.
 
 - 2026-10-31, aprobada (dev-lead, «si»): el control `g1-2` falla: deja `Ruling: no se escribe test/attempt.test.js y se enmienda Dónde se prueba`, sin parar, y cierra la task. El ruling contra «Dónde se prueba» sale de «No entra» y entra en el Scope, con el texto en «Native loop» paso 2, rama «The plan is wrong»: «A ruling that removes or moves a test «Dónde se prueba» names is a deviation: stop with the update action.» Se mide con `g1`, n = 3.
+
+- 2026-10-31, aprobada (dev-lead, opción «1»): `g1` da 1/3 con la frase de la Task 5, y su petición ya trae la orden de no escribir el test («no te compensa… cierra la task»). Se mide otro molde, donde el sujeto decide solo (`g2`, n = 2 sin la frase y n = 3 con ella), y el techo pasa de 40 a 45 $.
+
+- 2026-11-01, aprobada (dev-lead, opción «1», cuyo texto decía «Si g2 no falla sin la frase, quito la frase»): `g2`, sin la orden en la petición, no reproduce el fallo: 2 de 2 escriben el test sin la frase. Por lo acordado, la frase de la Task 5 sale y `g2-con` no se lanza. El criterio de hecho no se cumple con evidencia nueva; la fila sigue abierta.
+
+- 2026-11-01, sin aprobar: la revisión final añade el delta de `cli`, que documenta el fallo ya aprobado, con un THEN cuyos valores (código 1 y mensaje) la enmienda no fijaba, y el `origin` del `git diff -U0`.
 
 ## Aprobaciones
 

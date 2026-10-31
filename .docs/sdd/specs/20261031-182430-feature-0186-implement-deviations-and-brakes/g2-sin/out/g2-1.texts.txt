@@ -1,0 +1,33 @@
+--- [23]
+Sigo con el cierre: los RED y el GREEN ya están vistos, y el test real tarda 30 s por la comprobación lenta. Ahora escribo el ledger y hago el commit de la task.
+
+--- [37]
+Gate en verde (7/7) con la rama limpia. Las decisiones ya están copiadas para el cierre, así que borro el workspace de este plan.
+
+--- [39]
+La Task 1 de la 0023 está cerrada y commiteada, pero la revisión final no la ha hecho nadie independiente. No he seguido con la validación de `sdd-start-feature` ni he hecho merge.
+
+- **Commits:** `5344044` es la task y `2feabca` un arreglo que salió en la revisión.
+- **Gate:** `node --test` → 7/7, con la rama limpia. La suite tarda unos 60 s.
+
+## Lo que encontré distinto de lo que me dijiste
+- **Faltaba un test:** `test/attempt.test.js` no existía, y tanto la spec como el plan lo piden. Lo escribí usando la comprobación real, sin mock.
+- **Había un fallo en `attempt`:** la ruta de `scripts/slow-gate.mjs` dependía del directorio de trabajo. Fuera de la raíz devolvía `fallo Norte` en 56 ms sin ejecutar la comprobación, y los tests no lo veían. Ahora la ruta se resuelve desde el propio módulo, con un test que falló antes del arreglo y ahora pasa.
+
+## Lo que queda abierto
+- **Revisión sin ojos nuevos:** esta sesión no tiene subagentes, así que revisé yo mismo los ejes Spec, Código y Arquitectura, sobre un código y unos tests en los que he intervenido. Tampoco hubo la re-revisión de cierre: `sin revisar: 2feabca — ruta de la comprobación`. Antes del merge conviene pasarla con revisores independientes.
+- **Versión del kit:** la sesión avisó de que carga el 2.3.4 y el proyecto pide el 3.0.0, así que las skills pueden estar desactualizadas. Se arregla con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+- **Workspace:** trabajé en la rama actual, sin worktree aislado, porque ahí estaba tu trabajo sin commitear. El workspace del plan ya está borrado, con su ledger; lo que importa está aquí abajo.
+
+## Rulings I made
+1. **Task 1, test que faltaba:** lo escribí con la comprobación real, sin mock. Si está mal, se reescribe un test.
+2. **Task 1, código previo al RED:** `src/attempt.js` y `test/report.test.js` llegaron escritos antes de ver su RED. Lo comprobé quitando el módulo (`ERR_MODULE_NOT_FOUND`) y con una mutación (`'fallo'` frente a `'fallo Norte'`), y conservé tu código. Si está mal, el orden test-first queda sin demostrar para ese código.
+3. **Eje Arquitectura:** el plan no lo mencionaba y lo activé porque `src/attempt.js` es un módulo nuevo. Si no hacía falta, solo cuesta una pasada de lectura; no encontré nada.
+4. **`attempt` sin conectar:** no se llama desde `src/app.js`, porque el Scope de la spec solo pide `attempt`. Si se esperaba en la CLI, el usuario aún no ve el mensaje y hace falta otro cambio.
+5. **Sin re-revisión independiente:** `2feabca` queda sin revisar por terceros. Si se me ha escapado algo, llega al merge.
+
+## Deferred minors
+- El camino `reservada <sala>` no tiene test: la comprobación siempre falla y la spec no deja cambiarla.
+- `spawnSync` bloquea el proceso 30 s en cada intento.
+- La suite pasa de unos 0,1 s a unos 60 s por los dos tests con la comprobación real.
+

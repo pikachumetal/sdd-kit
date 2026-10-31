@@ -115,6 +115,7 @@ const molds = {
   a2: () => appendFileSync(at('.docs/sdd/constitution.md'), ART_I),
   b1: () => cp('readme-0027.md', 'README.md'),
 };
+molds.g2 = molds.g1;
 molds.b2 = molds.b1;
 molds.b3 = molds.b1;
 molds.r2 = molds.r1;
@@ -199,6 +200,8 @@ function reviewedTwoTasks() {
   const base2 = short('HEAD');
   taskCommit('done', 'feat(bookings): listado de canceladas con su motivo');
   const head2 = short('HEAD');
+  s.put(`${F10}/tasks.md`, fixture('tasks-0010-u1.md').replace('| in_progress | — |', '| done | (commit de la task 2) |'));
+  s.commit('docs(sdd): registrar las tasks de la feature 0010');
   const workspace = sddCli('workspace', `${F10}/plan.md`).trim().split('\n').at(-1);
   sddCli('task', 'brief', `${F10}/plan.md`, '2');
   writeFileSync(join(workspace, 'progress.md'), `# SDD ledger — plan: ${F10}/plan.md\nTask 1: complete (commits ${base1}..${base2}, review clean)\n`);
@@ -322,6 +325,7 @@ const steps = {
   },
   r4: reviewedTwoTasks,
 };
+steps.g2 = steps.g1;
 steps.n1 = steps.h1;
 steps.e1 = () => {
   steps.h1();
@@ -336,7 +340,7 @@ steps.o2 = steps.o1;
 steps.u2 = steps.u1;
 steps[s.SC]?.();
 
-const FRONTS_0186 = ['g1', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
+const FRONTS_0186 = ['g1', 'g2', 'd1', 'a1', 'a2', 'b1', 'b2', 'b3', 'n1', 'e1'];
 if (['r2', 'r3', 'h1', 't2', 't3', 't5a', 't5b', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', 'w1', 'w2', 'w3', 't6', ...FRONTS_0186].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { r2: '35', r3: '35', r4: '35', t5a: '20', t5b: '20', w1: '30', w2: '40', w3: '40', h2: '80' };
 for (const id of ['r1', 'r1b', 'r5', 't1a', 't1b', 't1c', 't2', 't3', 't6', 'p1', 'p2', 'k1', 'k2', 'k3', 'o1', 'o2', ...FRONTS_0186]) turns[id] = '40';

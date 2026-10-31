@@ -1,0 +1,59 @@
+--- [15]
+Escribo `tasks.md` y los tests RED de la Task 1.
+
+--- [18]
+RED por la causa esperada. Implemento el mínimo y cierro la task.
+
+--- [21]
+Fallan los 4 tests y aun así se ha hecho el commit, porque el comando no paraba al fallar la verificación. Ese commit está en rojo. Antes de seguir, busco la causa.
+
+--- [29]
+Task 1 cerrada y comprobada también por la CLI real. Sigo con la Task 2.
+
+--- [42]
+La gate da 7/7, pero la CLI confirma el hueco. Dejo la enmienda propuesta en la spec sin commitear, como pide el kit, y registro la revisión.
+
+--- [47]
+## ⏸️ La feature 0010 está parada: necesito que decidas sobre un desvío de la spec
+
+Las dos tasks están implementadas y la suite pasa, pero **`canceladas` sale vacío cuando se usa desde la terminal**. No he hecho merge ni he tocado el roadmap, y falta tu validación.
+
+🦆 Cancelar con motivo ya funciona: `cancelar Norte lun --motivo "sala ocupada"` responde `cancelada Norte lun (sala ocupada)`. Pero si después ejecutas `canceladas`, responde una línea vacía. Cada comando arranca un proceso nuevo con las reservas en memoria, así que el motivo se pierde al terminar. El test pasa solo porque cancela y lista dentro del mismo proceso. Guardarlo entre ejecuciones es justo la fila 0014 del roadmap.
+
+**✋ Lo que he decidido yo**
+- **Enmienda propuesta:** he dejado sin commitear en `spec.md` la opción 1 de abajo, con su línea en «Enmiendas». No he escrito nada de persistencia.
+- **`canceladas` sin resultados:** responde una línea vacía. La spec no lo fija y entra en la misma decisión.
+
+### Decisión pendiente
+1. **Cerrar la 0010 con el límite escrito y hacer la 0014 a continuación (recomendada).** Respeta el reparto del roadmap, pero hasta la 0014 el motivo no sirve en el uso real.
+2. **Meter la persistencia en la 0010 como Task 3 y absorber la 0014.** Cumple la intención de la spec desde ya, pero amplía el alcance: al guardar las reservas también cambian `libres` y `anular`, y esa spec sigue sin escribir.
+
+Respóndeme «1» o «2». Con la 1 commiteo la enmienda y paso a la validación; con la 2 cambio la enmienda antes de empezar la Task 3.
+
+## Estado
+- **Commits:** `d6b80ae` (Task 1) y `5b66b90` (Task 2), en `feature/0010-cancel-reason`. Sin commitear quedan solo `spec.md` y `tasks.md`.
+- **Suite:** `node --test` → 7/7 sobre `5b66b90`.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo válido | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | suite: pasa · ejecución real: **falla** | en el test, `Norte lun — sala ocupada`; desde la terminal, línea vacía |
+
+## Avisos
+- **La revisión final es más débil de lo normal:** esta sesión no tiene herramienta de subagentes, así que la hice yo, autor del código, sobre el diff. Tú decides si basta antes del merge.
+- **Un commit salió en rojo:** el primero de la Task 1 (`43af2f1`) tenía los tests fallando porque mi comando no paraba ante el fallo. Lo rehíce con `--amend`; era local y no se publicó.
+- **Versión del kit:** el arranque avisó de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, y no lo he actualizado. Para hacerlo, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+## Rulings I made
+1. **Trabajo sin worktree:** uso el checkout, en la rama de la feature. Si no vale, hay que mover la rama a un worktree.
+2. **Tests existentes:** cambié dos a la forma con `--motivo`, porque la spec rechaza cancelar sin él. Si no vale, se revierten dos líneas de test.
+3. **Commit rehecho con `--amend`:** es el de la Task 1 de arriba. No hay nada que deshacer.
+4. **Sin eje de Arquitectura:** el plan no trae la línea y el diff no tiene ninguna señal. Si no vale, cuesta una revisión más.
+5. **Orden de validación:** `--motivo` se valida antes de buscar la reserva, así que `cancelar Sur mar` sin motivo responde «motivo no válido» aunque no exista la reserva. Si no vale, se cambia el orden de dos líneas.
+
+## Deferred minors
+- `cancelar --motivo otro` responde `sin reserva --motivo otro`, porque no se validan la sala ni el día.
+- El test de `canceladas` depende de que antes corra el de cancelar con motivo.
+

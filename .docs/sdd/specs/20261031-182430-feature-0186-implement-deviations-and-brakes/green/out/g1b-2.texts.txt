@@ -1,0 +1,74 @@
+--- [28]
+Antes de presentarla estoy corrigiendo la spec: la prueba de fusión la ha rechazado, y comprobar el código ha sacado huecos en «quién canceló» y en el motivo que falta.
+
+--- [39]
+Ahora: te presento la spec de la 0010 para aprobarla. Queda: tu respuesta; con ella escribo el plan de una task y sigo sin parar hasta la validación.
+
+**Carril:** feature, modo full · **Perfil:** `delegate`, de la feature (`spec.md`) · Sin review de spec
+
+# Spec — Motivo al cancelar
+
+🦆 Quien cancela una reserva dice ahora por qué y quién es, y otro comando enseña las cancelaciones. Por ejemplo, Ana cancela la sala Norte del lunes porque está ocupada, y el listado enseña «Norte lun — sala ocupada — Ana». El motivo sale de una lista cerrada: cambio de planes, sala ocupada u otro. Cancelar sin motivo o sin nombre ya no cancela, y responde qué falta. Las reservas siguen en memoria, así que el listado solo enseña lo cancelado en la misma ejecución del programa.
+
+**Validación:** dev-lead, porque es un comando que usa una persona.
+
+## Lo que más debes mirar
+La spec que me pasaste no estaba lista: la prueba de fusión la rechazaba y le faltaban comportamientos. La he corregido, y estos dos puntos son los que pueden hacer que no la apruebes:
+
+- **El listado no sirve aún en uso real (decisión 10).** Las reservas viven en memoria y cada orden arranca de cero: he ejecutado `cancelar Norte lun` dos veces seguidas y las dos responden «cancelada Norte lun». Con la spec tal cual, `canceladas` en una orden aparte siempre dirá «sin canceladas», así que el Intent («que quede rastro») solo se cumple en los tests. La he dejado en memoria para no ampliar el alcance sin que lo decidas. Si quieres que el rastro sea real, pide en «Cambios» guardarlo a disco; eso añade alcance y puede que más de una task.
+- **Nadie sabe hoy quién cancela (decisiones 2 y 5).** La reserva no guarda titular y no hay login, así que «Ana» no tenía de dónde salir; propongo `--por <nombre>`. Además, la fila del roadmap solo pide el motivo, y «saber quién» no lo encuentro en ningún documento, así que confirma que entra.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro (ya venía de la entrevista).
+2. El listado enseña sala, día, motivo y quién canceló.
+3. Sin review de spec: hay dos señales (capacidad nueva, datos) y la rúbrica pide cuatro. **Corregido:** decía MODIFIED, pero no hay requisito vivo que modificar.
+4. Capacidad nueva `bookings`. **Corregido:** decía «Modificadas», y la fusión lo rechazaba porque `capabilities/` no existe.
+5. **Nuevo:** quién cancela se indica con `--por <nombre>`. Sin él responde «falta quién cancela: usa --por».
+6. **Nuevo:** sin `--motivo` responde lo mismo que con un motivo fuera de la lista, y la reserva sigue activa. Esto deja obsoleto el test actual de `cancelar Norte lun`, que se actualiza.
+7. **Nuevo:** sin reserva sigue respondiendo «sin reserva <sala> <día>», aunque falten `--motivo` o `--por`.
+8. **Nuevo:** sin cancelaciones, `canceladas` responde «sin canceladas».
+9. **Nuevo:** una línea por cancelación, en el orden en que se cancelaron: «<sala> <día> — <motivo> — <quién>».
+10. **Nuevo:** motivo y quién viven en memoria, como las reservas; guardar a disco queda fuera.
+11. **Nuevo:** `canceladas` no lista las anulaciones del responsable de sala.
+
+- **Prueba de fusión:** `sdd capability merge` sobre una copia pasa; crea `bookings.md` con 2 requisitos y 5 reglas.
+- **Política de modelos:**
+  - Revisores de la spec: ninguno.
+  - Revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan.
+  - Otros despachos en paralelo: ninguno; el tope es `control.maxParallelAgents`.
+  - Al aprobar la spec, esta línea confirma el paralelismo que pidan las instrucciones del usuario; lo que no nombra se confirma aparte.
+
+## Alcance
+- **Entra:** `cancelar <sala> <día> --motivo <motivo> --por <nombre>`, el comando `canceladas` y actualizar `test/cancel.test.js`.
+- **No entra:** anulaciones del responsable de sala (0011) y guardar las reservas a disco.
+- **Cambia de forma:** la respuesta «cancelada <sala> <día>» pasa a «cancelada <sala> <día> (<motivo>)», y cancelar sin motivo deja de cancelar.
+
+## Comportamiento
+
+**Cancelar pide un motivo de la lista y quién cancela**
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada" --por Ana`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista, o ningún motivo, responde «motivo no válido: cambio de planes, sala ocupada, otro» y la reserva sigue activa
+- AND sin `--por` responde «falta quién cancela: usa --por» y la reserva sigue activa
+- AND sin reserva en esa sala y día responde «sin reserva <sala> <día>»
+
+**El listado de canceladas enseña el motivo y quién canceló**
+- GIVEN la reserva de Norte del lunes cancelada por Ana con «sala ocupada»
+- WHEN `canceladas`
+- THEN responde «Norte lun — sala ocupada — Ana»
+- AND sin ninguna cancelación responde «sin canceladas»
+- AND una reserva anulada por el responsable de sala no aparece
+
+**Se prueba** por la salida de los dos comandos, en `test/cancel.test.js`.
+
+**Aviso del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las skills pueden estar desfasadas. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`, sin commitear.
+
+**¿Apruebas la spec?**
+
+1. Apruebo (Recomendada)
+2. Cambios
+
