@@ -102,12 +102,12 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND ante una línea `- Se valida en:` en la capacidad escribe `bookings.md: resto de delta «Se valida en:» en la línea 15`
 - AND ante `## Historial` el mensaje es `bookings.md: sección «Historial», resto del kit 1.x: lo quita la migración a 2.0.0`
 - AND sin `## Propósito` escribe `bookings.md: falta la sección «Propósito»`; con la sección vacía, o solo con la ayuda `>` y el hueco `<…>` de la plantilla, `bookings.md: «Propósito» está vacío: escribe en una o dos frases qué cubre la capacidad`; con un propósito de 412 caracteres, medidos sobre el propósito en una sola línea como lo escribe el índice, `bookings.md: «Propósito» tiene 412 caracteres; el máximo es 300 (una o dos frases)`; y con `## Propósito` detrás de otra sección, `bookings.md: «Propósito» debe ser la primera sección`
-- AND con `--artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad del bloque no tiene fichero en `capabilities/`, o si un `patch.md` declara `- Nuevas:`
+- AND con `--artifact <spec.md|patch.md>`, que se ejecuta después de fusionar el delta, falla si falta el bloque `## Capacidades`, si sus nombres no coinciden con las subsecciones `### Capacidad:` del delta, si no nombra ninguna capacidad ni dice «Ninguna, porque…» (`<a>: el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»`), si dice «Ninguna» y hay delta, si una capacidad de «Nuevas» o «Modificadas» no tiene fichero en `capabilities/`, si una de `- Retiradas:` sigue en `capabilities/` (`spec.md: «bookings» está en «Retiradas» y sigue en capabilities/`), o si un `patch.md` declara `- Nuevas:`
 - AND con `--artifact`, un `**ADDED — Cancelar una reserva**` del delta de `bookings` sin fusionar falla con `spec.md: «Cancelar una reserva» del delta no está en capabilities/bookings.md`, y un `**MODIFIED — Reservar una franja**` cuyas líneas `- GIVEN`, `- WHEN`, `- THEN` y `- AND` no son, en orden, las de ese requisito en la capacidad, con `spec.md: «Reservar una franja» del delta no coincide con capabilities/bookings.md`; el título cuenta entero aunque el encabezado en negrita, con su `(antes: «…»)`, ocupe varias líneas
 - AND con `--artifact`, `#### ADDED — Cancelar una reserva` sin fusionar y `#### MODIFIED — Reservar una franja` con otras líneas de escenario fallan con los mismos dos mensajes
 - AND con `--artifact` de una spec cuyo delta solo toca `bookings`, ya fusionado, y `rooms.md` sin `## Requisitos`, escribe `Capacidades válidas: 1`, después `Ajenos al artefacto, no cambian el código de salida: 1` y `  rooms.md: falta la sección «Requisitos»`, y sale con 0
 - AND con `--artifact` y un fallo en `bookings.md` o en el propio artefacto, escribe sus líneas, después el bloque de ajenos, y sale con 1; un artefacto con «Ninguna, porque…» no toca ninguna capacidad, y todos los fallos de `capabilities/` salen como ajenos
-- AND con `--artifact --json` escribe `{ "validCount": <n>, "errors": [<fallos propios>], "foreign": [<ajenos>] }`; sin `--artifact`, el JSON no lleva `foreign` y todos los fallos cuentan
+- AND con `--artifact --json` escribe `{ "validCount": <n>, "errors": [<fallos propios>], "foreign": [<ajenos>], "warnings": [<avisos>] }`; sin `--artifact`, el JSON no lleva `foreign` y todos los fallos cuentan
 - AND sin fallos escribe `Capacidades válidas: <n>` y sale con 0; sin carpeta `capabilities/`, o con la carpeta vacía, y sin `--artifact`, escribe `Sin capacidades que validar` y sale con 0
 
 ### Cada capacidad declara su propósito
@@ -150,7 +150,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND la misma frase entre comillas invertidas (`` `por la decisión 10` ``), como ejemplo, no cuenta como cita
 - AND un `ADDED` que ya está en la capacidad con las mismas líneas no se duplica ni falla; con otras líneas falla con `spec.md: «Cancelar una reserva» del ADDED ya está en capabilities/bookings.md con otro texto: usa MODIFIED`
 - AND un `REMOVED` cuyo título ya no está escribe `bookings.md: «Consultar salas libres» ya no estaba` y no falla
-- AND una capacidad del delta sin fichero se crea solo si el bloque «Capacidades» de una spec la declara con `- Nuevas: \`rooms\` — Salas, su aforo y su mantenimiento`: `# Capacidad — rooms`, `## Propósito` con «Salas, su aforo y su mantenimiento», y sus requisitos; sin esa línea, o desde un `patch.md`, falla con `spec.md: «rooms» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»`
+- AND una capacidad del delta sin fichero se crea solo si el bloque «Capacidades» de una spec la declara con `- Nuevas: \`rooms\` — Salas, su aforo y su mantenimiento`: `# Capacidad — rooms`, `## Propósito` con «Salas, su aforo y su mantenimiento», y sus requisitos; sin esa línea, salvo una capacidad en `- Retiradas:` cuyo delta solo trae `REMOVED`, o desde un `patch.md`, falla con `spec.md: «rooms» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»`
 - AND un `MODIFIED` con menos líneas `- THEN` y `- AND` que el requisito vivo falla con `spec.md: «Reservar una franja» del MODIFIED perdería «- AND <texto>» de capabilities/bookings.md: cópiala en el delta o retírala con «- REMOVED AND <texto>»`, una línea por cada una del vivo que no copió, y no escribe; con la retirada `- REMOVED AND <texto literal>` en el bloque, la quita y no la copia a la capacidad, y una retirada que no casa con ninguna línea del vivo no cuenta
 
 ### Un documento marcado «No es una capacidad.» no se valida
@@ -159,6 +159,7 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - WHEN se ejecuta `sdd capability check --path .docs/sdd`
 - THEN no informa errores de ese fichero, sí de las capacidades reales, y la línea de éxito lo cuenta fuera y lo nombra: `Capacidades válidas: 1 · omitidas por «No es una capacidad.»: funcional.md`
 - AND si el fichero marcado tiene líneas de escenario, falla con `funcional.md: marcado «No es una capacidad.» y con escenarios: quita la marca o los escenarios`
+- AND `sdd capability index` no lo lista: con `funcional.md` marcado y `bookings.md`, escribe solo la línea de `bookings`, y con solo `funcional.md`, `Sin capacidades`
 
 ### Explore lee la capacidad, no las specs
 
@@ -211,10 +212,38 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND con el mismo escenario y la tabla ya rodeada de líneas en blanco en el delta, `bookings.md` queda igual
 - AND `sdd capability check --path .docs/sdd --artifact <spec.md>` escribe `Capacidades válidas: 1` y sale con 0
 
+### El validador no exige la línea en blanco tras el título de un requisito
+
+- GIVEN `bookings.md` con `### Reservar una franja` seguido directamente de `- GIVEN`
+- WHEN se ejecuta `sdd capability check --path .docs/sdd`
+- THEN escribe `Capacidades válidas: 1` y sale con 0
+
+### Un requisito de más de 500 caracteres da un aviso
+
+- GIVEN `bookings.md` con «Reservar una franja», cuyas líneas, sin el título y unidas con un espacio, suman 501 caracteres, y «Cancelar una reserva», con 500
+- WHEN se ejecuta `sdd capability check --path .docs/sdd`
+- THEN escribe `Capacidades válidas: 1`, después `Aviso: bookings.md: «Reservar una franja» tiene 501 caracteres; el máximo aconsejado es 500: si ya existe, no lo partas ni lo recortes; si es nuevo, un comportamiento por requisito`, ningún aviso de «Cancelar una reserva», y sale con 0
+- AND con un fallo además, escribe el fallo, después el aviso, y sale con 1
+- AND con `--artifact` de una spec cuyo delta solo toca `rooms`, no avisa de `bookings.md`
+- AND un documento marcado «No es una capacidad.» y un puntero no avisan
+- AND `capability-template.md` pide un comportamiento por requisito, con los ejemplos y los bordes en escenarios, y dice que bajo `MODIFIED` el bloque existente no se parte ni se recorta para cumplir
+
+### Un `REMOVED` que vacía una capacidad exige declararla en «Retiradas»
+
+- GIVEN `bookings.md` con un solo requisito, «Reservar una franja», y una spec con `#### REMOVED — Reservar una franja` en `bookings`, sin `- Retiradas:`
+- WHEN se ejecuta `sdd capability merge --path .docs/sdd --artifact <spec.md>`
+- THEN escribe `spec.md: «bookings» se quedaría sin requisitos: declárala en una línea «- Retiradas:» del bloque «Capacidades» para borrar el fichero, o deja algún requisito`, sale con 1 y no cambia ningún fichero de `capabilities/`, tampoco los de otras capacidades del delta
+- AND con `- Retiradas: \`bookings\` — las reservas pasan a otro sistema` en el bloque, borra `bookings.md`, escribe `bookings.md: quitado «Reservar una franja»` y `bookings.md: borrado, está en «Retiradas»`, y sale con 0
+- AND justo después, `sdd capability check --path .docs/sdd --artifact <spec.md>` no falla por `bookings`
+- AND con esa línea y `bookings.md` con otro requisito que el delta no quita, escribe `spec.md: «bookings» está en «Retiradas» y le quedan requisitos: «Cancelar una reserva»`, sale con 1 y no escribe
+- AND ejecutada otra vez con `bookings.md` ya borrado, escribe `bookings.md: ya estaba borrado` y sale con 0
+- AND un `REMOVED` cuyo título ya no está, en una capacidad que ya no tenía requisitos, no la vacía esta fusión: escribe `ya no estaba` y no para
+- AND la línea `- Retiradas:` lleva el nombre y el motivo, vale en una spec y en un `patch.md`, y su capacidad lleva su subsección en el delta como las demás; sin motivo, escribe `spec.md: «bookings» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya`, sale con 1 y no escribe
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el índice lo genera `sdd capability index` al vuelo y no se guarda en ningún fichero.
 - **Idioma de los nombres**: slug en inglés kebab-case; el contenido, en el idioma que fija la constitution del proyecto.
-- **Límites**: el propósito de una capacidad, una o dos frases de 300 caracteres como máximo.
-- **Avisos**: `sdd capability check` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`, seguida de `· omitidas por «No es una capacidad.»: <ficheros>` si omitió alguno. Con `--artifact`, el código de salida y la cabecera solo los deciden los fallos del artefacto y de las capacidades de su delta, y los demás salen después bajo `Ajenos al artefacto, no cambian el código de salida: <n>`, sangrados con dos espacios. Un fallo del destino de un puntero sale como `<puntero> → <ruta del enlace>: <qué falla>`. `sdd capability merge` escribe una línea por cambio, `<fichero>: añadido|sustituido|quitado «<requisito>»` o `<fichero>: regla «<nombre>» sustituida|añadida`, y sale con 0; con fallos, una línea por fallo, sale con 1 y no escribe ningún fichero. `sdd capability index` marca con `(sin propósito)` la capacidad que no lo tiene, y sale con 0.
+- **Límites**: el propósito de una capacidad, una o dos frases de 300 caracteres como máximo; un requisito, 500 caracteres aconsejados: por encima, aviso.
+- **Avisos**: `sdd capability check` escribe una línea por fallo, `<fichero>: <qué falla>`, en castellano, y sale con 1; sin fallos, `Capacidades válidas: <n>`, seguida de `· omitidas por «No es una capacidad.»: <ficheros>` si omitió alguno. Con `--artifact`, el código de salida y la cabecera solo los deciden los fallos del artefacto y de las capacidades de su delta, y los demás salen después bajo `Ajenos al artefacto, no cambian el código de salida: <n>`, sangrados con dos espacios. Un fallo del destino de un puntero sale como `<puntero> → <ruta del enlace>: <qué falla>`. `sdd capability merge` escribe una línea por cambio, `<fichero>: añadido|sustituido|quitado «<requisito>»` o `<fichero>: regla «<nombre>» sustituida|añadida`, y sale con 0; con fallos, una línea por fallo, sale con 1 y no escribe ningún fichero; `<fichero>: borrado, está en «Retiradas»` al borrar una capacidad. `sdd capability check` añade `Aviso: <fichero>: «<requisito>» tiene <n> caracteres; …` por cada requisito de más de 500, sin cambiar el código de salida. `sdd capability index` marca con `(sin propósito)` la capacidad que no lo tiene, y sale con 0.
 - **Regla ante conflicto**: entre una capacidad y un documento de anclaje, manda la capacidad.

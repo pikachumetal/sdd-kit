@@ -8,7 +8,8 @@ const BOLD_TITLE = /^\*\*[\p{L}\p{N}_]+ —\s*([^*]+?)\s*\*\*/u;
 const HEADING_TITLE = /^####\s+[\p{L}\p{N}_]+ —\s*(.+?)(?:\s+\(antes:.*)?(?:\s+#+)?\s*$/u;
 
 export type Requirement = { title: string; lines: string[] };
-export type Declared = { kind: 'Nuevas' | 'Modificadas'; name: string; summary: string };
+const DECLARED_KINDS = ['Nuevas', 'Modificadas', 'Retiradas'] as const;
+export type Declared = { kind: (typeof DECLARED_KINDS)[number]; name: string; summary: string };
 export type DeltaKind = 'ADDED' | 'MODIFIED' | 'REMOVED' | 'RULES';
 export type Delta = { capability: string; kind: DeltaKind; writtenKind: string; title: string; header: string; lines: string[] };
 export type Capability = { name: string; fileName: string; lines: string[]; purpose: string | null };
@@ -39,6 +40,13 @@ export function sectionLines(lines: string[], title: string): string[] | null {
   return end < 0 ? rest : rest.slice(0, end);
 }
 
+const NOT_CAPABILITY_MARK = /^> .*No es una capacidad\..*/i;
+
+export function isNotCapability(lines: string[]): boolean {
+  const second = lines.filter((line) => line.trim())[1];
+  return second !== undefined && NOT_CAPABILITY_MARK.test(second);
+}
+
 export function purposeOf(lines: string[]): string | null {
   const section = sectionLines(lines, 'Propósito');
   if (!section) return null;
@@ -67,9 +75,9 @@ export function requirementsOf(lines: string[]): Requirement[] {
 
 export function declaredCapabilities(block: string[]): Declared[] {
   return block.flatMap((line) => {
-    const match = /^(?:-\s*)?(Nuevas|Modificadas):(.*)$/i.exec(line);
+    const match = /^(?:-\s*)?(Nuevas|Modificadas|Retiradas):(.*)$/i.exec(line);
     if (!match) return [];
-    const kind = equalsIgnoringCase(match[1], 'Nuevas') ? 'Nuevas' : 'Modificadas';
+    const kind = DECLARED_KINDS.find((candidate) => equalsIgnoringCase(candidate, match[1]))!;
     const [names, ...rest] = match[2].split('—');
     const summary = rest.length ? rest.join('—').trim() : '';
     return [...names.matchAll(/`([^`]+)`/g)].map((name) => ({ kind, name: name[1], summary }));
