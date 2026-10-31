@@ -1,46 +1,44 @@
 ---
 name: add-to-changelog
-description: Usar al cerrar una feature o patch en un proyecto con .docs/sdd/changelog.md, o cuando el usuario pide poner al día el changelog — normalmente invocada desde sdd-archive.
+description: Use when an entry goes into the project's changelog — invoked by the cut of sdd-end-release with `CHANGELOG.md` at the root, by sdd-archive with `.docs/sdd/changelog.md` (2.x), or when the user asks to bring the changelog up to date.
 ---
 
 # add-to-changelog
 
 ## Overview
 
-`changelog.md` es el changelog **técnico** del proyecto (Keep a Changelog 1.1.0) y la base del changelog de cliente. Es *backward-looking*: registra lo ya hecho. El `roadmap.md` es *forward-looking*: son registros distintos que se actualizan por razones distintas — tocar uno no sustituye al otro.
+The changelog is the project's **technical** record (Keep a Changelog 1.1.0), *backward-looking*. The roadmap is *forward-looking*: touching one doesn't replace the other. Write what the user reads in their language; entries in the language the changelog already uses.
 
-## Formato de entrada (contrato)
+## Entry format (contract)
 
-Cada entrada es **una línea** con esta forma exacta:
+Each entry is **one line**, exactly:
 
 ```markdown
-- **<id>** — <qué cambió, en una frase>. → [ref](specs/<carpeta-del-artefacto>/)
+- **<id>** — <what changed, one sentence>. → [ref](<artifact folder>/)
 ```
 
-- `<id>`: el ticket o módulo (`Ticket 217`, `M4`).
-- La frase describe el cambio para un lector técnico. El detalle (causa, evidencia, decisiones) vive en la carpeta enlazada, no aquí.
-- `→ [ref](…)` apunta a la carpeta de spec o patch en `specs/`. Si el cambio no tiene carpeta (cambio de una frase), la entrada va **sin link** — nunca se inventa una ruta.
+- `<id>`: the ticket or module (`Ticket 217`, `M4`).
+- The sentence is for a technical reader; cause, evidence and decisions live in the linked folder.
+- `→ [ref](…)` points to the change's folder in `changes/` or `specs/`. A change without a folder goes **without a link**: never make up a path.
 
-## Dónde va
+## Where it goes
 
-- Bajo la sección de release activa: `## [Unreleased]` por defecto (SemVer). Si el changelog del proyecto usa `## [Bn] — en curso`, la unidad de release es el **bundle**: localiza la sección activa y no inventes numeración SemVer.
-- En su categoría, manteniendo el orden Keep a Changelog: `Added` · `Changed` · `Deprecated` · `Removed` · `Fixed` · `Security` (solo se crean las categorías que tienen entradas).
+Under the active section: `## [Unreleased]` by default. If the changelog uses `## [Bn] — en curso`, the unit is the **bundle**: find that section, don't invent SemVer. In its category, in Keep a Changelog order (create only those with entries):
 
-| Cambio | Categoría |
+| Change | Category |
 | --- | --- |
-| Funcionalidad nueva | Added |
-| Comportamiento, dependencia o versión que cambia | Changed |
-| Algo marcado para desaparecer | Deprecated |
-| Algo eliminado | Removed |
-| Bug corregido | Fixed |
-| Vulnerabilidad | Security |
+| New functionality; a patch's closed request that adds what the user can do | Added |
+| Behavior, dependency or version that changes; a patch's presentation adjustment or closed request that changes it | Changed |
+| Marked to disappear | Deprecated |
+| Removed | Removed |
+| A failure fixed | Fixed |
+| Vulnerability | Security |
 
-## Errores comunes
+## Common mistakes
 
-| Error | Correcto |
+| Mistake | Correct |
 | --- | --- |
-| Entrada de varias líneas contando causa y detalle | Una frase + link: el detalle vive en la carpeta del artefacto |
-| Inventar un link para un cambio sin carpeta | Entrada sin link |
-| Cortar una versión nueva (`[0.2.0]`) al añadir la entrada | Cortar release es decisión del usuario y lo ejecuta `sdd-end-release`, no esta acción |
-| Registrar aquí deuda técnica diferida | La deuda va al roadmap |
-| Dar el roadmap por actualizado "porque ya toqué el changelog" | Cada registro se actualiza por su propio motivo |
+| Several lines with cause and detail | One sentence + link |
+| A made-up link | No link |
+| Cutting a version (`[0.2.0]`) when adding the entry | Cutting is the user's decision, run by `sdd-end-release` |
+| Recording deferred debt here | It goes to the debt |
