@@ -1,0 +1,70 @@
+--- [29]
+La prueba del delta ya pasa, tras corregir que `bookings` era una capacidad nueva. Ahora añado a las decisiones de la spec lo que faltaba y te la presento.
+
+--- [34]
+Ahora: presentarte la spec de la 0010 para que la apruebes. Queda: tu respuesta; con ella escribo el plan y sigo con la implementación.
+
+# Spec — Motivo al cancelar
+
+🦆 Quien cancela una reserva tendrá que elegir un motivo: cambio de planes, sala ocupada u otro. Por ejemplo, al cancelar la reserva de Norte del lunes con «sala ocupada», la respuesta es «cancelada Norte lun (sala ocupada)». Un comando nuevo lista lo cancelado, una línea por reserva: «Norte lun — sala ocupada — Ana». Sin un motivo válido, la reserva no se cancela y la respuesta enseña los motivos posibles. Las anulaciones del responsable de sala no salen en este listado.
+
+**Lo que he cambiado:** la spec no estaba lista como me dijiste, así que la he tocado:
+- **Capacidad:** la prueba del delta la rechazaba porque `bookings` constaba como modificada y no existe `capabilities/`. Ahora consta como nueva.
+- **Huecos:** cancelar sin motivo, quién canceló y el listado vacío no estaban definidos. He añadido mi propuesta (decisiones 6 a 9) con sus escenarios.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+Las más importantes son la 6 y la 8.
+
+1. **Motivos:** la lista es cerrada: cambio de planes, sala ocupada, otro. Según la spec, se decidió contigo en la entrevista.
+2. **Listado:** enseña sala, día, motivo y quién canceló.
+3. **Sin review de spec:** hay dos señales, capacidad nueva y datos, y el umbral son 4. La spec decía «MODIFIED», pero no hay ningún requisito escrito que modificar.
+4. **`bookings`:** es una capacidad nueva.
+5. **Textos:** no me consta que salieran de la entrevista:
+   - la opción `--motivo`
+   - «cancelada Norte lun (sala ocupada)»
+   - «motivo no válido: cambio de planes, sala ocupada, otro»
+   - «Norte lun — sala ocupada — Ana»
+6. **Cancelar sin motivo:** da el error de motivo no válido y la reserva sigue activa. **Hoy sí cancela**, así que hay que cambiar el test «cancelar una reserva activa».
+7. **Sin reserva:** responde «sin reserva Sur mar» antes de mirar el motivo, como hoy.
+8. **Quién canceló:** es el titular de la reserva, porque `PRODUCT.md` dice que la cancelación la hace el propio cliente y `cancelar` no recibe ninguna persona. La reserva guarda hoy solo sala, día y franja, así que **pasa a guardar también el titular**. El código no comprueba quién cancela y esta spec no lo añade.
+9. **Listado vacío:** responde «sin canceladas». Las reservas anuladas no salen.
+
+Prueba del delta sobre una copia: `bookings.md`, 2 requisitos añadidos, sin rechazos.
+
+## Alcance
+
+- **Entra:** `cancelar <sala> <día> --motivo <motivo>` y el comando `canceladas`.
+- **No entra:** las anulaciones del responsable de sala (0011).
+- **Cómo:** el motivo se guarda con la reserva cancelada, y `canceladas` lista las reservas con ese estado.
+- **Dónde se prueba:** por la salida de los dos comandos, en `test/cancel.test.js`.
+
+## Comportamiento
+
+**Cancelar pide un motivo de la lista**
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro» y la reserva sigue activa
+- AND sin reserva de esa sala y día responde «sin reserva Sur mar», con motivo o sin él
+
+**El listado de canceladas enseña el motivo y quién canceló**
+- GIVEN la reserva de Norte del lunes, a nombre de Ana, cancelada con «sala ocupada»
+- WHEN `canceladas`
+- THEN responde «Norte lun — sala ocupada — Ana»
+- AND sin ninguna cancelación responde «sin canceladas»
+- AND una reserva anulada no sale en el listado
+
+## Avisos
+
+- **Versión del kit:** el aviso de arranque dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Línea que falta:** la skill pide una línea `Política de modelos:` en este perfil, pero el kit cargado no define su formato. No la he inventado y falta en las decisiones.
+
+La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`, sin commitear.
+
+**¿Apruebas la spec?**
+
+1. Apruebo (Recomendada)
+2. Cambios
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media. Este proyecto fija Native, así que esta sesión haría todas las tasks, y eso va bien con Sonnet y effort medium. Esta sesión no puede cambiar su propio modelo y, tras aprobar, no hay otra parada para que lo cambies tú con `/model`.
+

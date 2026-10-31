@@ -544,6 +544,34 @@ describe('Lanzar claude (lib.mjs)', () => {
     expect(fs.read(join(RUNS, 'red', 'a-1.err'))).toBe('');
   });
 
+  it('fija la identidad Fixture en la config local del molde antes de lanzar claude', async () => {
+    const order: string[] = [];
+    const { subject, calls } = start({}, kitFs(), {
+      run: ({ args }) => {
+        if (args.includes('config')) order.push(args.slice(-2).join('='));
+        return undefined;
+      },
+      claude: () => {
+        order.push('claude');
+        return {};
+      },
+    });
+
+    await subject.launch('x');
+
+    expect(order).toEqual(['user.name=Fixture', 'user.email=fixture@example.com', 'claude']);
+    expect(calls.find(({ args }) => args.includes('config'))?.args.slice(0, 2)).toEqual(['-C', subject.R]);
+  });
+
+  it('sin repo propio no escribe la identidad: caería en el repo que contiene el molde', async () => {
+    const { subject, calls, claudeCalls } = start({}, kitFs(), { run: ({ args }) => (args.includes('--show-cdup') ? { stdout: '../\n' } : undefined) });
+
+    await subject.launch('x');
+
+    expect(calls.some(({ args }) => args.includes('config'))).toBe(false);
+    expect(claudeCalls).toHaveLength(1);
+  });
+
   it('con CLAUDE_BIN en .mjs lanza ese claude con node', async () => {
     const fake = join(CWD, 'f', 'fake-claude.mjs');
     const { subject, claudeCalls } = start({ CLAUDE_BIN: fake });
