@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-10-31
 branch: patch/0267-subject-git-identity
-commit:
+commit: 1d9d8feb
 ---
 
 # Patch 0267 — el sujeto de una batería ve la identidad de git del molde
@@ -74,4 +74,5 @@ Validación en campo: 2026-10-31 · gate en verde, `lib.test.ts` 74/74 y los suj
 
 - Estimación: 0,75 h + 0,02 h del gate de cierre (77 s, patch 0265)
 - Inicio: 2026-10-31T16:42Z
+- Esfuerzo real: 0,40 h — reloj de la sesión 0,40 h desde 2026-10-31T16:34Z, sin 0 min de espera al dev-lead (0 esperas)
 - Coste de sujetos: ~6,4 $ en 7 sujetos Opus — RED ~1,6 $ (estimado: borré sus streams antes de leer el coste, y `battery.mjs` no lo contó porque no guardaron `tools.txt`); `green` 1,61 $; `green2` 2,14 $; `green3` 1,02 $
