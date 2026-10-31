@@ -304,6 +304,16 @@ describe('Molde y guardado (lib.mjs)', () => {
     expect(errs[1]).toContain('a-1.texts.txt: extract.mjs salió con 7 · el stream');
   });
 
+  it('save guarda la salida y repite el aviso de extract.mjs, que sin él se perdería', () => {
+    const warning = 'no se pudo leer oauthAccount.emailAddress de .claude.json: el email de la cuenta queda sin comprobar';
+    const { subject, fs, errs } = start({}, kitFs(), { run: ({ args }) => (args.includes('clean') ? { code: 0, stdout: 'estado', stderr: `${warning}\r\n` } : undefined) });
+
+    subject.save('estado');
+
+    expect(fs.read(join(OUT, 'a-1.state.txt'))).toBe('estado');
+    expect(errs).toEqual([`[a-1] ${warning}`]);
+  });
+
   it('keep copia plano y limpio', () => {
     const { subject, fs } = start();
     subject.put('README.md', 'salas');
