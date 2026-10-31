@@ -247,6 +247,7 @@ const steps = {
 };
 for (const id of ['k1', 'k3', 'k4', 'k6']) steps[id] = () => (s.env.TURN2 = 'Sí.');
 steps.p2 = steps.p1;
+steps.g1b = steps.g1;
 steps.ws2 = steps.k5;
 steps.ws3 = steps.ws1;
 const voidOthers = () => {
@@ -268,7 +269,7 @@ steps.pw1 = () => {
 };
 steps[s.SC]?.();
 
-const turns = { g1: '15', r1: '15', d1: '60', p3: '60' };
+const turns = { g1: '40', r1: '15', d1: '60', p3: '60' };
 for (const id of ['a1', 'a3', 'a4', 'k2', 'l1', 'pl1', 'pt1', 'x1', 'c1', 't1', 'pb', 'pb-c', 'adr', 'adr-c', 'e1']) turns[id] = '25';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 
