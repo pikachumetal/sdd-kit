@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { readRepoFile, runSdd, sddFolder } from './helpers.ts';
 
@@ -82,6 +82,93 @@ async function merge(sdd: string, artifact = 'specs/x/spec.md') {
 async function validate(sdd: string) {
   return runSdd(['capability', 'check', '--path', sdd, '--artifact', join(sdd, 'specs/x/spec.md')]);
 }
+
+describe('sdd capability merge retiring a capability', () => {
+  const single = bookings.replace(/### Consultar salas libres[\s\S]*?(?=## Reglas)/, '');
+  const removeReserve = '#### REMOVED — Reservar una franja\n\n- motivo: las reservas pasan a otro sistema';
+  const retired = '- Retiradas: `bookings` — las reservas pasan a otro sistema';
+  const emptied = 'spec.md: «bookings» se quedaría sin requisitos: declárala en una línea «- Retiradas:» del bloque «Capacidades» para borrar el fichero, o deja algún requisito';
+  const retiredFolder = (capability = single, entries = [removeReserve]) =>
+    sddFolder({ 'capabilities/bookings.md': capability, 'specs/x/spec.md': spec(retired, [`### Capacidad: \`bookings\`\n\n${entries.join('\n\n')}`]) });
+
+  it('stops before emptying a capability without Retiradas', async () => {
+    const sdd = bookingsFolder([removeReserve], single);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual([emptied]);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(single);
+  });
+
+  it('leaves every file untouched when one capability would be emptied', async () => {
+    const rooms = bookings.replace('# Capacidad — bookings', '# Capacidad — rooms');
+    const sections = [`### Capacidad: \`bookings\`\n\n${removeReserve}`, `### Capacidad: \`rooms\`\n\n${added}`];
+    const sdd = sddFolder({
+      'capabilities/bookings.md': single,
+      'capabilities/rooms.md': rooms,
+      'specs/x/spec.md': spec('- Modificadas: `bookings`, `rooms` — cambian', sections),
+    });
+    expect((await merge(sdd)).code).toBe(1);
+    expect(readCapability(sdd)).toBe(single);
+    expect(readCapability(sdd, 'rooms')).toBe(rooms);
+  });
+
+  it('deletes the file with Retiradas', async () => {
+    const sdd = retiredFolder();
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['bookings.md: quitado «Reservar una franja»', 'bookings.md: borrado, está en «Retiradas»']);
+    expect(result.code).toBe(0);
+    expect(existsSync(join(sdd, 'capabilities/bookings.md'))).toBe(false);
+    expect((await validate(sdd)).code).toBe(0);
+  });
+
+  it('deletes the file from a patch with Retiradas', async () => {
+    const sdd = sddFolder({
+      'capabilities/bookings.md': single,
+      'specs/x/patch.md': `# Patch\n\n## Capacidades\n\n${retired}\n\n## Delta de capacidad\n\n### Capacidad: \`bookings\`\n\n${removeReserve}\n`,
+    });
+    expect((await merge(sdd, 'specs/x/patch.md')).code).toBe(0);
+    expect(existsSync(join(sdd, 'capabilities/bookings.md'))).toBe(false);
+  });
+
+  it('stops when a Retirada keeps requirements', async () => {
+    const withTwo = bookings;
+    const sdd = retiredFolder(withTwo);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: «bookings» está en «Retiradas» y le quedan requisitos: «Consultar salas libres»']);
+    expect(result.code).toBe(1);
+    expect(readCapability(sdd)).toBe(withTwo);
+  });
+
+  it('rerun says it was already deleted', async () => {
+    const sdd = retiredFolder();
+    await merge(sdd);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['bookings.md: ya estaba borrado']);
+    expect(result.code).toBe(0);
+  });
+
+  it('rerun with an ADDED still fails without a file', async () => {
+    const sdd = retiredFolder(single, [removeReserve, added]);
+    rmSync(join(sdd, 'capabilities/bookings.md'));
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['spec.md: «bookings» no tiene fichero en capabilities/ y el bloque no la declara en «Nuevas»']);
+    expect(result.code).toBe(1);
+  });
+
+  it('an already empty capability is not emptied by this merge', async () => {
+    const empty = single.replace(/### Reservar una franja[\s\S]*?(?=## Reglas)/, '');
+    const sdd = bookingsFolder([removeReserve], empty);
+    const result = await merge(sdd);
+    expect(result.lines).toEqual(['bookings.md: «Reservar una franja» ya no estaba']);
+    expect(result.code).toBe(0);
+  });
+
+  it('check fails when a Retirada is still in capabilities', async () => {
+    const result = await validate(retiredFolder());
+    expect(result.lines).toEqual(['spec.md: «bookings» está en «Retiradas» y sigue en capabilities/']);
+    expect(result.code).toBe(1);
+  });
+});
 
 describe('sdd capability merge', () => {
   it('merges ADDED, a split-header MODIFIED, REMOVED and a rule', async () => {

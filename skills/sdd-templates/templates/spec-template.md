@@ -31,10 +31,11 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Capacidades
 
-> Se escribe con la salida de `sdd capability index`, que ejecuta el paso 1 de `sdd-start-feature`, con el nombre exacto que da el índice. Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo». Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta. Lo comprueba `sdd capability check` al cerrar.
+> Se escribe con la salida de `sdd capability index`, con el nombre exacto que da el índice. Una línea por capacidad; cada una tiene su subsección `### Capacidad:` en el delta, y ninguna subsección del delta falta aquí. Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo»; una que el delta vacía, en «Retiradas», y la fusión borra su fichero. Si el cambio no toca comportamiento observable, deja solo «Ninguna, porque <refactor | herramientas | docs>» y no escribas delta.
 
 - Nuevas: `<nombre>` — <qué cubre>
 - Modificadas: `<nombre>` — <qué requisito cambia>
+- Retiradas: `<nombre>` — <por qué>
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -91,7 +92,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 > Una subsección por capacidad tocada. El título de cada requisito es la clave de fusión de `sdd-archive`: estable, no cambia salvo que la spec lo renombre explícitamente. Una capacidad es un sustantivo del dominio, nunca un ticket. Su slug es un nombre de fichero: va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing`, no `facturacion`), y lo aprueba el dev-lead.
 >
-> Un escenario de una regla de negocio lleva datos concretos de entrada y de salida, no una frase abstracta: «GIVEN bolsa FR, IT, PT · WHEN oferta en DE · THEN no cubre», no «una oferta fuera de la bolsa no cubre». La regla mal entendida se ve en la spec, no al validar.
+> Un escenario de una regla de negocio lleva datos concretos de entrada y de salida, no una frase abstracta: «GIVEN bolsa FR, IT, PT · WHEN oferta en DE · THEN no cubre», no «una oferta fuera de la bolsa no cubre».
 
 ### Capacidad: `<nombre>`
 

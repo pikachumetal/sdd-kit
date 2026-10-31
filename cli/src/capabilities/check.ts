@@ -184,6 +184,10 @@ function emptyBlockProblems(block: string[], declared: Declared[]): string[] {
   return ['el bloque «Capacidades» está vacío: declara las capacidades o «Ninguna, porque <motivo>»'];
 }
 
+function fileProblemOf({ kind, name }: Declared): string {
+  return kind === 'Retiradas' ? `«${name}» está en «Retiradas» y sigue en capabilities/` : `«${name}» no tiene fichero en capabilities/`;
+}
+
 function blockAgainstDeltaProblems(declared: Declared[], deltaNames: string[], dir: string): string[] {
   const declaredNames = [...new Set(declared.map((item) => item.name))];
   return [
@@ -193,7 +197,7 @@ function blockAgainstDeltaProblems(declared: Declared[], deltaNames: string[], d
     ...deltaNames
       .filter((name) => !includesIgnoringCase(declaredNames, name))
       .map((name) => `el delta tiene «${name}» y el bloque «Capacidades» no la nombra`),
-    ...declaredNames.filter((name) => !existsSync(join(dir, `${name}.md`))).map((name) => `«${name}» no tiene fichero en capabilities/`),
+    ...declared.filter((item) => existsSync(join(dir, `${item.name}.md`)) === (item.kind === 'Retiradas')).map(fileProblemOf),
   ];
 }
 

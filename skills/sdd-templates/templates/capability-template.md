@@ -5,7 +5,7 @@
 > 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
 >    la crea `sdd-archive` por su cuenta.
 > 3. `sdd-archive` fusiona el delta de la spec o el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
->    requisito que tiene ese mismo título, `REMOVED` lo quita. La capacidad no guarda historial.
+>    requisito que tiene ese mismo título, `REMOVED` lo quita; si era el último, la spec la declara en `- Retiradas:` y la fusión borra el fichero. La capacidad no guarda historial.
 > 4. Las init no vuelcan: `capabilities/` crece feature a feature. Solo `sdd-init` (paso 8) vuelca,
 >    a petición del usuario.
 > 5. Un requisito vive en una sola capacidad; si otra capacidad lo necesita, lo enlaza — no lo
