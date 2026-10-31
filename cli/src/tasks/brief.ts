@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import { workspaceFor } from './workspace.ts';
 
@@ -15,19 +15,29 @@ function splitLines(text: string): string[] {
   return lines;
 }
 
+const ANY_TASK = /^#+[ \t]+Task[ \t]+[0-9]+/;
+
+function withFenceState(planText: string): { line: string; inFence: boolean }[] {
+  let inFence = false;
+  return splitLines(planText).map((line) => {
+    if (line.startsWith('```')) inFence = !inFence;
+    return { line, inFence };
+  });
+}
+
 export function extractTask(planText: string, task: string): string[] {
   const heading = new RegExp(`^#+[ \t]+Task[ \t]+${task}([^0-9]|$)`);
-  const anyTask = /^#+[ \t]+Task[ \t]+[0-9]+/;
-  const lines = splitLines(planText);
   const picked: string[] = [];
-  let inFence = false;
   let inTask = false;
-  for (const line of lines) {
-    if (line.startsWith('```')) inFence = !inFence;
-    if (!inFence && anyTask.test(line)) inTask = heading.test(line);
+  for (const { line, inFence } of withFenceState(planText)) {
+    if (!inFence && ANY_TASK.test(line)) inTask = heading.test(line);
     if (inTask) picked.push(line);
   }
   return picked;
+}
+
+function countTasks(planText: string): number {
+  return withFenceState(planText).filter(({ line, inFence }) => !inFence && ANY_TASK.test(line)).length;
 }
 
 function readPlan(plan: string): string {
@@ -50,10 +60,21 @@ function briefLines(text: string, task: string): string[] {
   return isLiteSpec(text) ? splitLines(text) : extractTask(text, task);
 }
 
+function requireTasksFile(planText: string, plan: string): void {
+  if (isLiteSpec(planText)) return;
+  const count = countTasks(planText);
+  const tasksFile = join(dirname(resolve(plan)), 'tasks.md');
+  if (count > 1 && !existsSync(tasksFile)) {
+    throw new DomainError(`plan with ${count} tasks and no tasks.md: write ${tasksFile} before the first task (status and commit per task)`);
+  }
+}
+
 export async function writeBrief(request: BriefRequest): Promise<{ path: string; lines: number }> {
   const { plan, task } = request;
+  const planText = readPlan(plan);
+  requireTasksFile(planText, plan);
   const path = request.out ?? join(await workspaceFor(plan), `task-${task}-brief.md`);
-  const picked = briefLines(readPlan(plan), task);
+  const picked = briefLines(planText, task);
   if (picked.length === 0) throw new DomainError(`task ${task} not found in ${plan} (no heading matching 'Task ${task}')`);
   writeFileSync(path, `${picked.join('\n')}\n`);
   return { path, lines: picked.length };

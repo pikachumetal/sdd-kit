@@ -59,6 +59,7 @@ El freno «fichero de la task cambiado en la base» para al dev-lead por cambios
 
 - Entra: el freno por regiones en `skills/sdd-implement/SKILL.md` («Before each task») y `skills/sdd-start-feature/references/control-profiles.md` («Fichero de la task cambiado en la base»).
 - Entra: `tasks.md` antes de la Task 1, en «Native loop» paso 1 y en el bucle SDD de `skills/sdd-implement/SKILL.md`.
+- Entra (enmienda 2026-10-31): la comprobación de `tasks.md` en `cli/src/tasks/brief.ts`, con sus tests en `cli/test/tasks/`.
 - Entra: las dos ofertas de los gates de `skills/sdd-propose/SKILL.md`, pasos 4 y 5.
 - Entra: los escenarios `g1`, `d1`, `a1`, `a2`, `b1`, `b2`, `b3`, `n1` y `e1` en la batería de `sdd-implement`, y la fila de la oferta en la de `sdd-propose`.
 - No entra: un punto del Scope incumplido, ruling contra «Dónde se prueba» o contra una decisión, aviso de fase y esperas: RED limpio, sin texto nuevo.
@@ -136,6 +137,7 @@ Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos
 - THEN escribe `tasks.md` antes del primer `sdd task start` o del primer despacho
 - AND va en el commit de la apertura o, si ya está hecho, en el de la Task 1
 - AND con una sola task no lo escribe por esta regla
+- AND con más de una task y sin `tasks.md` junto al plan, `sdd task start` y `sdd task brief` fallan con un error que nombra el fichero, sin escribir el brief
 
 #### MODIFIED — El gate del plan en `pair` ofrece parar para bajar la sesión a gama media
 
@@ -172,11 +174,14 @@ Y en `pair` y `delegate`: «nombran los ficheros, los commits […] y los tramos
 | Una tanda de REFACTOR | 5 | 5 |
 | Controles: `g1` de implement n = 2; `d1`, `a1`, `a2` n = 1 | 5 | 5 |
 | Medición tras la revisión final | 1 | 1 |
-| Suma | 36 | 34,19 (techo 35) |
+| Enmienda 2026-10-31: `n1` n = 2 | 2 | 2,6 |
+| Suma | 38 | techo 40 |
 
 Cada paso cambiado: «Before each task» paso 1 (`b1`-`b3`), «Native loop» paso 1 (`e1`, `n1`), bucle SDD (no se mide: misma frase, y un sujeto SDD cuesta ~3 $; lo cubre la lectura de la revisión final), pasos 4 (`g1`, `g1b`) y 5 de `sdd-propose` (no se mide: `pair` no está en el molde de la batería, y es la misma forma), recortes (sin escenario propio, decisión 7).
 
 ## Enmiendas
+
+- 2026-10-31, aprobada (dev-lead, opción «1»): «`tasks.md` nace antes de la primera task» no se cumple solo con texto (`n1` 0/2 en GREEN y 0/2 tras el REFACTOR). `sdd task start` y `sdd task brief` fallan con más de una task y sin `tasks.md`; entra `cli/src/tasks/` en el Scope, salen el red flag y la caja del grafo de la ronda fallida, y el techo de sujetos pasa de 35 a 40 $.
 
 ## Aprobaciones
 

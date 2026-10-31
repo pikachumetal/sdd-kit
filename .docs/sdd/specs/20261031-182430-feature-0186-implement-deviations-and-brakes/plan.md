@@ -182,6 +182,28 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: Verificación** — `npx vitest run test/kit/word-budget.test.ts` desde `cli/`. Esperado: `Tests  N passed (N)`.
 - [ ] **Step 5: Commit de la task** — `fix(skills): la oferta de gama media dice cuántas tasks`, con cuerpo en castellano; incluye `tests/batteries/sdd-propose/`.
 
+### Task 4 — enmienda 2026-10-31: la CLI exige `tasks.md`
+
+**Tras**: Task 3
+**Modelo**: `sdd-kit:effort-medium` + `model: sonnet`, porque es código con tests y fixtures que adaptar.
+**Tests RED**: hilo principal · `cli/test/tasks/brief.test.ts`, sin commitear.
+**Superficies**: tooling
+**Verificación**: `npx vitest run test/tasks/brief.test.ts test/tasks/executing.slow.test.ts test/tasks/native.slow.test.ts test/tasks/workspace.slow.test.ts test/kit/word-budget.test.ts --test-timeout 120000` desde `cli/` → `Tests  N passed (N)`
+**Verificación lenta**: la lanza el hilo principal · `n1`, n = 2 · ~10 min
+**Se prueba en la aplicación**: `sdd task start` sobre un plan de dos tasks sin `tasks.md` falla y nombra el fichero.
+
+**Interfaces**:
+- Consume: `writeBrief(request)` y `extractTask` de `cli/src/tasks/brief.ts`.
+- Produce: nada.
+
+**Ficheros**: modificar `cli/src/tasks/brief.ts`, los fixtures de plan de varias tasks de `cli/test/tasks/executing.slow.test.ts`, `native.slow.test.ts` y `workspace.slow.test.ts`, y `skills/sdd-implement/SKILL.md`.
+
+- [ ] **Step 1: Comprobación** en `writeBrief`, antes de escribir: fuera de lite, si los encabezados `Task <n>` del plan fuera de fences son más de uno y no existe `tasks.md` en la carpeta del plan, `DomainError` con el texto `plan with <n> tasks and no tasks.md: write <ruta> before the first task (status and commit per task)`.
+- [ ] **Step 2: Fixtures**: los tests que usan un plan de varias tasks crean también su `tasks.md`; ninguna aserción cambia.
+- [ ] **Step 3: Quitar la ronda fallida** de `skills/sdd-implement/SKILL.md`: la viñeta de «Red flags» que empieza por `- First ` y termina en `no ` + `tasks.md` + ` yet.`, y `, tasks.md` al final de las dos apariciones del nodo Setup del grafo Native.
+- [ ] **Step 4: Verificación** — los comandos de «Verificación». Esperado: `Tests  N passed (N)`.
+- [ ] **Step 5: Commit de la task** — `feat(cli): task start y task brief exigen tasks.md con más de una task`, con cuerpo en castellano.
+
 ---
 
 ## Estimación y esfuerzo
