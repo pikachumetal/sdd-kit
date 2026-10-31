@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-31
 branch: patch/0265-battery-no-evidence-verdict
-commit: <hash>
+commit: e7a1f6df
 ---
 
 # Patch 0265 — el veredicto de `battery.mjs` distingue «sin evidencia» de rojo y dice por qué no guardó
@@ -54,8 +54,13 @@ Son tres huecos del mismo veredicto:
 | 4 | Sujeto sin `tools.txt` | ✅ test «da sin evidencia…»: `r1 · 1/2 · umbral 2/2 · sin evidencia · sin tools.txt: r1-2` |
 | 5 | Salidas reales de la 0224 con `battery.mjs verdict` | ✅ `green`: `ws3 · 1/2 · umbral 2/2 · rojo · WS3 falla en ws3-2`, salida 1. `green2`: `co2 · 0/1 · umbral 1/1 · sin evidencia · sin tools.txt: co2-1`, salida 3 |
 
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 278/278 · cli:typecheck: corrió 1/1 (caché) · cli:test: corrió 1683/1695 (77 s, sobre e7a1f6df)
+
+Validación en campo: 2026-10-31 · `battery.test.ts` y `lib.test.ts` 99/99 · `verdict` sobre las salidas reales de la 0224: `ws3` rojo en `green`, `co2` «sin evidencia» en `green2` · no probado: una campaña nueva con sujetos, ni el mensaje nuevo en un `no se guarda` real
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,5 h + 0,01 h del gate de cierre (48 s, patch 0260)
 - Inicio: 2026-10-31T16:01Z
+- Esfuerzo real: 0,10 h — reloj de la sesión 0,10 h desde 2026-10-31T15:59Z, sin 0 min de espera al dev-lead (0 esperas). Por debajo de lo estimado (−80 %) porque la solución llegó fijada y el RED se midió con las salidas de la 0224
 - Coste de sujetos: no aplica
