@@ -358,7 +358,7 @@ Workspace del plan: <path> — ledger, briefs, informes y paquetes de revisión;
 Task 1: Hook installation script
 
 [sdd task start plan 1 → brief read; BASE a1b2c3d]
-[Base check: row and task files unchanged in develop]
+[Base check: base unchanged]
 [RED test written from the THEN; copy kept outside the repo]
 [Step 2: run it — FAIL: install_hook not defined. Matches Expected.]
 [Step 3: implement — written]
@@ -370,7 +370,7 @@ Task 1: Hook installation script
 Task 2: Recovery modes
 
 [sdd task start plan 2 → brief read; BASE d4e5f6a]
-[Base check: row and task files unchanged in develop]
+[Base check: base unchanged]
 [RED test written from the THEN; copy kept outside the repo]
 [Step 2: run the failing test — FAIL, but on an import error: Task 1 exported
  installHook, brief consumes install_hook]
