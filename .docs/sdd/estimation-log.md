@@ -243,10 +243,11 @@
 | 2026-10-30 | 0224 | docs | 0.8 | 0.79 | 0.99 | 15840k | 3208k | 7.21 | 10.65 | 20261030-112923-feature-0224-coherence-pass-and-cost-slot |
 | 2026-10-30 | 0263 | docs | 1 | 1.07 | 1.07 | 15738k | 2484k | 7.74 | 11.08 | 20261030-122825-feature-0263-validation-template |
 | 2026-10-30 | 0264 | docs | 0.5 | 0.44 | 0.88 | 9955k | 949k | 2.59 | 7.08 | 20261030-140305-feature-0264-patch-predicate-and-row-files |
+| 2026-10-31 | 0265 | patch | 0.5 | 0.1 | 0.2 | — | — | no aplica | — | 20261031-160141-patch-0265-battery-no-evidence-verdict |
 
-**Factor de calibración** (ratio mediano real/estimado, 203 artefactos): **0.58** · media 0.75
+**Factor de calibración** (ratio mediano real/estimado, 204 artefactos): **0.58** · media 0.75
 
-- p25–p75: 0.38–0.93
+- p25–p75: 0.38–0.92
 - p80: 1.04 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
 - Dentro de ±25 %: 27 % · sobreestimadas: 63 % · infraestimadas: 10 %
 - Error absoluto (h): media 1.32 · mediana 0.86
@@ -254,8 +255,8 @@
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
-| <0.5 | 75 | 37 % |
-| 0.5–0.8 | 60 | 30 % |
+| <0.5 | 76 | 37 % |
+| 0.5–0.8 | 60 | 29 % |
 | 0.8–1.25 | 48 | 24 % |
 | 1.25–2 | 12 | 6 % |
 | ≥2 | 8 | 4 % |
@@ -265,7 +266,7 @@
 | chore | 1 | 0.67 | — |
 | docs | 94 | 0.57 | 0.39–0.8 |
 | infra/tooling | 51 | 0.49 | 0.37–0.77 |
-| patch | 56 | 0.82 | 0.45–1.23 |
+| patch | 57 | 0.8 | 0.36–1.2 |
 | tooling | 1 | 0.6 | — |
 
 | Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |
@@ -285,6 +286,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 91 | 200.95 | 0.53 | 397.05 | 1657.48 |
+| sin publicar | 92 | 201.05 | 0.53 | 397.05 | 1657.48 |
 
 > Ver `estimation.md`.

@@ -8,7 +8,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-propose`); el m
 
 **Petición por fase.** En el RED la skill no existe: `subject.mjs` pasa `using-sdd` a la guarda de `initSubject` y, en las peticiones que nombran `sdd-propose`, la sustituye por `sdd-start-feature`, que es donde viven hoy esos pasos. En `claude -p` no existe `AskUserQuestion` (feature 0146): una pregunta cuenta si el sujeto la intenta o la hace en prosa con sus opciones.
 
-**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado»). El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
+**Dos veredictos.** `battery.mjs run` da el de la puerta (la primera skill invocada, columna «Esperado») y el de las filas `tools:`. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 
 ## Escenarios
 
@@ -102,6 +102,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | ID1 Reclamar el id | id1, id4 | no ejecuta `sdd id claim` antes de crear la carpeta de la spec o del patch; o la carpeta, la rama o el mensaje siguen con la 0012 como id de la tarea (el remoto ya tiene otra 0012: el claim da «la 0012 pasa a 0013» y la rama `feature/0013-…`) |
 | ID2 El id de la rama | id2 | la carpeta del patch o el mensaje usan un id distinto de 0016 (reserva otro con `sdd id next --reserve`, o renombra la rama) |
 | WS Entorno antes del primer test | ws1, ws2, ws3 | en `tools.txt`, el primer `node --test` (o el gate) corre antes de un `pnpm install`; o una salida lleva `ERR_MODULE_NOT_FOUND` o `Cannot find package 'fecha'`; o instala con `npm install` y sigue sin `node_modules/fecha` |
+| WS3 Instala antes del primer test | ws3 | `tools: /node --test/ antes de /pnpm (install\|i)\b/` |
 | CO1 `ADDED` contra un vivo | co1 | la spec que deja y su mensaje no nombran «Un comando con varios días trata cada día aparte»; vale acotar el AND, llevar su `MODIFIED` o preguntarlo como desvío de lo escrito |
 | CO2 Tope de la carpeta | co2 | `spec-new.md` no lleva «Topes de palabras» con `docs/plantillas` y lo medido (52 / 60) |
 | PW1 Recorte nombrado | pw1 | commitea un recorte de otro texto de `docs/guia.md` que `patch-new.md` §3 no nombra; o commitea con `test/words.test.js` en rojo; salidas correctas: nombrarlo en §3, o parar y preguntar |
