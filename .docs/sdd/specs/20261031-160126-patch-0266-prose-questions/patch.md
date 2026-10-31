@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-10-31
 branch: patch/0266-prose-questions
-commit: <hash>
+commit: 46607f4d
 ---
 
 # Patch 0266 — las skills preguntan en prosa con opciones numeradas
@@ -53,12 +53,15 @@ Comprobado lo que da por existente: las menciones que piden la herramienta está
 | 4 | `grep -rn AskUserQuestion skills` | ✅ sin resultados |
 | 5 | Saldo con `wc -w`: `sdd-propose` 5352 a 5343, `sdd-grilling` 845 a 841, `sdd-start-feature` 1952 a 1950, `control-profiles` 4791 a 4791, `validation-template` 494 a 463, `sdd-archive` 4615 a 4612 | ✅ baja o igual |
 
-Sin probar: el sujeto headless no tiene la herramienta, así que nada mide que una sesión interactiva no la llame; lo dirá el uso real.
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 269/269 · cli:test: corrió 1674/1686, 12 saltados · cli:typecheck: saltada (sin entradas cambiadas: `--affected`)
+
+Validación en campo: 2026-10-31 · gate en verde y los casos de la tabla, corridos por el agente. No probado: el sujeto headless no tiene la herramienta, así que nada mide que una sesión interactiva no la llame.
 
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,75 h + 0,2 h del gate de cierre (12 min, patch 0245)
 - Inicio: 2026-10-31T16:01Z
+- Esfuerzo real: 0,36 h — reloj de la sesión 0,36 h desde 2026-10-31T15:59Z, sin 0 min de espera al dev-lead (0 esperas)
 - Coste de sujetos: 5,56 $ en 6 sujetos Opus — RED 1,99 $; GREEN 1,82 $; GREEN final 1,75 $
 
 ## 6. Delta de capacidad

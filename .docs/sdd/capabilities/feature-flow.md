@@ -291,7 +291,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
 - WHEN el agente presenta la spec
-- THEN entre las opciones de `AskUserQuestion` está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
+- THEN entre las opciones numeradas está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
 - AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
 
 ### Con Native, el plan registra el modelo recomendado para la sesión
@@ -482,8 +482,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una feature en `pair` o `delegate`, con la spec lista para el gate
 - WHEN el agente presenta la spec
-- THEN la pregunta del gate es una llamada a `AskUserQuestion` con, al menos, «Apruebo (Recomendada)» y «Cambios»
-- AND no es una pregunta en prosa al final del mensaje
+- THEN la pregunta del gate va en prosa al final del mensaje, con las opciones numeradas y, al menos, «Apruebo (Recomendada)», la primera, y «Cambios»
+- AND el turno acaba ahí: no llama a `AskUserQuestion`, cuyo diálogo tapa el mensaje, ni implementa
 
 ### El gate de cierre del plan sale de `operations.md`
 
@@ -645,7 +645,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### La fila de «Aprobaciones» dice quién y cómo aprobó
 
-- GIVEN una spec calcada de `spec-template.md` y aprobada por Ana con la opción «Apruebo (Recomendada)» de `AskUserQuestion` el 2026-10-18
+- GIVEN una spec calcada de `spec-template.md` y aprobada por Ana con la opción «Apruebo (Recomendada)» de la pregunta del gate el 2026-10-18
 - WHEN el agente registra la aprobación
 - THEN la tabla «Aprobaciones» tiene las columnas `Nombre | Fecha | Estado`, sin «Rol», y la fila dice `Ana | 2026-10-18 | aprobada (opción «Apruebo»)`
 - AND si Ana escribe «sí, adelante», el Estado es `aprobada: «sí, adelante»`
@@ -704,7 +704,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el agente presenta la validación
 - THEN el guion es lo último del mensaje y empieza por la rama, el worktree y el entorno, con un bloque de código sin lenguaje por terminal y cada comando en su línea, sin puntuación al final
 - AND sigue con pasos de uno en uno, con sus datos y su resultado esperado, y acaba con cómo parar el entorno y «dime "validado" o qué paso falla», en texto
-- AND no usa `AskUserQuestion` para pedir la validación, porque tapa el guion: es una excepción a la norma de preguntar con esa herramienta
 - AND con `validation.startEnvironment: true`, el guion dice que el entorno está arrancado, con su puerto, en vez de dar los comandos de arranque
 
 ## Reglas de la capacidad

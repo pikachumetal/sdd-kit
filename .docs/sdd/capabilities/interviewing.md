@@ -15,15 +15,6 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - AND en otra entrevista, una decisión que depende de otra todavía abierta espera a que esa se cierre (enmienda 2026-10-03)
 - AND no termina con nada supuesto en silencio: cada suposición del agente es una pregunta o una entrada de «decidido por mí» (enmienda 2026-10-03)
 
-### Una decisión de diseño va en texto con formato fijo; una operativa, con diálogo
-
-- GIVEN una decisión cuyas alternativas solo se entienden con su consecuencia explicada (más de una línea por alternativa: un coste, una escena, un argumento), como el diseño del RED con o sin persona en bucle
-- WHEN el agente la pregunta
-- THEN la escribe en texto, no con `AskUserQuestion`: ❓ título y cuerpo, las alternativas numeradas de 1 a N, tantas como tenga la decisión (1️⃣, 2️⃣…; 🔀 para una mezcla que se defiende sola), la recomendada como primera alternativa, y ➡️ la recomendada con su razón
-- AND los iconos solo marcan alternativas de esa pregunta: para referirse a una de una pregunta anterior usa su nombre («primer turno»), no su icono
-- AND una decisión operativa, cuyas alternativas se entienden en una línea sin explicar nada (aprobar o pedir cambios, seguir o parar, confirmar carril y perfil), va con `AskUserQuestion`, la recomendada primero
-- AND unas etiquetas cortas no hacen operativa una decisión de diseño: «¿1️⃣ o 2️⃣?» con costes distintos detrás va en texto
-
 ### Alternativas reales, mezclas incluidas
 
 - GIVEN una decisión con dos alternativas defendibles y una tercera que nadie elegiría («ni clave ni salida en sesión»)
@@ -108,6 +99,16 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - WHEN `sdd-grilling` llega a una decisión
 - THEN no la pregunta: decide las de método con su motivo, deja las demás como pendientes y devuelve las dos listas y lo pendiente a quien la invocó
 - AND las paradas de cada perfil siguen siendo las de `control-profiles`: `sdd-grilling` no añade ni quita ninguna
+
+### Toda pregunta va en texto: la de diseño con formato fijo, la operativa con sus opciones numeradas
+
+- GIVEN una decisión cuyas alternativas solo se entienden con su consecuencia explicada (más de una línea por alternativa: un coste, una escena, un argumento), como el diseño del RED con o sin persona en bucle
+- WHEN el agente la pregunta
+- THEN la escribe en texto: ❓ título y cuerpo, las alternativas numeradas de 1 a N, tantas como tenga la decisión (1️⃣, 2️⃣…; 🔀 para una mezcla que se defiende sola), la recomendada como primera alternativa, y ➡️ la recomendada con su razón
+- AND los iconos solo marcan alternativas de esa pregunta: para referirse a una de una pregunta anterior usa su nombre («primer turno»), no su icono
+- AND una decisión operativa, cuyas alternativas se entienden en una línea sin explicar nada (aprobar o pedir cambios, seguir o parar, confirmar carril y perfil), va al final del mensaje, con las opciones numeradas y la recomendada primero, y el turno acaba ahí
+- AND no llama a `AskUserQuestion`: su diálogo tapa el mensaje que explica la pregunta
+- AND unas etiquetas cortas no hacen operativa una decisión de diseño: «¿1️⃣ o 2️⃣?» con costes distintos detrás lleva su formato fijo
 
 ## Reglas de la capacidad
 
