@@ -154,7 +154,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN el molde `reservas`, con `operations.md` §Testing «Gate de cierre: `node --test`»
 - WHEN el usuario escribe «sube `node` a 22.18 en los `engines` de `package.json`», o «corrige el typo "recervas" del README»
-- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como config y pregunta con `AskUserQuestion` antes de tocar nada
+- THEN la primera skill que se invoca es `sdd-kit:sdd-propose`, que lo clasifica como config y pregunta en prosa antes de tocar nada
 - AND con la confirmación hace el cambio, corre el «Build» si `operations.md` lo declara y `node --test`, y commitea en la rama en la que está con el comando y su resultado en el cuerpo del commit, sin spec, plan, carpeta, id, fila, changelog ni estimación
 - AND si el gate falla, no commitea y lo dice
 - AND en la rama estable del git-flow de la constitution (`main`) no commitea: en `pair` y `delegate` para y pregunta; en `unattended` lo deja sin commitear y lo cuenta en el informe final
@@ -165,7 +165,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN el molde `reservas` en `delegate`
 - WHEN el usuario pide «que el responsable de sala pueda anular reservas de otros», que es feature full
 - THEN `sdd-propose` anuncia el carril, el perfil y de qué nivel sale, y la frase para aprobar la spec por delegación, y sigue con la entrevista en el mismo mensaje, sin pregunta de confirmación
-- AND con «si cancelo una reserva que no existe me dice "cancelada" igual», que es patch, pregunta con `AskUserQuestion` antes de abrir rama, carpeta o id, con el 🦆 de lo que hará y, si existe `estimation.md`, la estimación en horas
+- AND con «si cancelo una reserva que no existe me dice "cancelada" igual», que es patch, pregunta en prosa antes de abrir rama, carpeta o id, con el 🦆 de lo que hará y, si existe `estimation.md`, la estimación en horas
 - AND con un cambio que cumple el predicado de lite, la pregunta ofrece lite citando sus condiciones una por una
 - AND si la feature prevé más de 5 tasks, la pregunta de partir sustituye al anuncio y lleva la opción de aprobar la spec por delegación
 - AND en `unattended` no pregunta: patch y config siguen, lite va en full y spike va como full
