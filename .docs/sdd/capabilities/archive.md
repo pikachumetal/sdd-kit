@@ -236,6 +236,14 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - AND con «CI de la base» `ninguna` o `sin orden de lectura`, no lee nada ni avisa
 - AND un hotfix no la lee
 
+### Con `ROADMAP.md`, el cierre no escribe el changelog
+
+- GIVEN un proyecto con `ROADMAP.md` y `CHANGELOG.md` en la raíz, y el patch 0021 sin fila en Now
+- WHEN `sdd-archive` cierra el patch
+- THEN `CHANGELOG.md` no cambia
+- AND Now gana la fila 0021 con su brief y `✅`, y `sdd roadmap check` escribe `Roadmap válido`
+- AND con `.docs/sdd/roadmap.md` y `.docs/sdd/changelog.md` (2.x), el cierre sigue añadiendo su entrada con `add-to-changelog`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; la de la validación del dev en `skills/sdd-archive/references/dev-validation.md`, con su panel en `validation-panel.js`, que guarda las marcas en el `localStorage` del navegador (`sdd-validation-<id>`) o, en el plan B, en `.temp/validation/<id>.json` del worktree; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md` (3.0.0) o en «Deuda técnica» de `roadmap.md` (2.x)

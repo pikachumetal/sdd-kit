@@ -11,8 +11,8 @@ Con el kit se trabaja con tres verbos, siempre en este orden:
 | Verbo | Skill | Qué haces | Qué queda escrito |
 | --- | --- | --- | --- |
 | **Planificar** | `sdd-roadmap` | Meter trabajo en el roadmap sin hacerlo todavía: algo grande, algo concreto, los items del gestor, las notas de una reunión, un cambio de orden, la siguiente release | Filas en `.docs/sdd/roadmap.md` con su id y su orden y, si es algo grande o una reunión, una propuesta en `.docs/sdd/specs/<fecha>-proposal-<id>-<nombre>/proposal.md` |
-| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, el changelog y la fila del roadmap al día, y el merge en `develop` |
-| **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, las notas de la versión si hay destinatario, el roadmap colapsado y, cuando tú lo confirmas, el merge a `main` y el tag |
+| **Hacer** | `sdd-start-feature` o `sdd-start-patch` | Una fila del roadmap, o lo que acaba de llegar: un patch si la solución ya está fijada (un fallo pequeño y reproducible, un ajuste o una retirada de presentación, o una petición cerrada), una feature si hay que decidir cómo es | La carpeta de la feature (`spec.md`, `plan.md`, `walkthrough.md`) o el `patch.md`, el código, la fila del roadmap al día (en 2.x, también el changelog), y el merge en `develop` |
+| **Entregar** | `sdd-end-release` | Cortar una versión con lo que ya está cerrado | El changelog sellado, lo hecho fuera de Now, la deuda caducada, las notas de la versión si hay destinatario y, cuando tú lo confirmas, el merge a `main` y el tag |
 
 Planificar no hace nada: deja el roadmap listo para que alguien arranque. Hacer arranca una fila y termina con ella fusionada. Entregar publica lo hecho.
 
@@ -80,7 +80,7 @@ Lo que pasa en una feature, en orden:
 2. **La spec**: te la enseña empezando por las decisiones que tomó sin ti, y espera tu aprobación.
 3. **El plan y la implementación**: con el perfil por defecto, sin pararte, salvo desvíos. Los tests se escriben antes que el código.
 4. **La validación**: te presenta lo hecho con un guion de pruebas y te pregunta qué has probado (sección 5).
-5. **El cierre**: walkthrough, changelog, roadmap y merge en `develop` (sección 5).
+5. **El cierre**: walkthrough, roadmap (en 2.x, también changelog) y merge en `develop` (sección 5).
 
 Un patch es igual, pero más corto: un solo documento (`patch.md` con síntoma, causa, fix y verificación; en un ajuste visual, la intención en lugar de la causa, y en una petición cerrada, la solución fijada con su autor), sin spec ni plan, y su validación al cerrar.
 
@@ -170,7 +170,7 @@ Validado el trabajo (o diferido), el cierre lo hace `sdd-archive` de un tirón:
 
 - escribe el `walkthrough.md` con lo que se hizo, cómo se verificó, el tiempo real, el coste de la sesión y las decisiones que tomó sin ti;
 - lleva los aprendizajes a los documentos que los guardan y fusiona el comportamiento nuevo en `capabilities/`;
-- actualiza el changelog, la fila del roadmap y el registro de estimaciones, si el proyecto los tiene;
+- actualiza la fila del roadmap (en 2.x, también el changelog) y el registro de estimaciones, si el proyecto los tiene;
 - fusiona en `develop` con `sdd merge`, según la política del bloque `merge` de `sdd-kit.json`, y hace el push si esa política lo permite (si la rama no tiene remoto, fusiona igual y te dice «push: no hecho: sin remoto»). Si el proyecto no tiene el bloque `merge` completo, o tu perfil es `pair`, te pregunta antes de fusionar;
 - termina con una línea que dice si está **Terminado** (rama fusionada, push hecho o por qué no, y que puedes borrar el worktree) o **No terminado** y qué falta.
 
@@ -184,13 +184,15 @@ Si no lo quieres, dile que no. Lo que no conviene es pedir «no generes más tic
 
 ## 6. Entregar: cortar la release
 
-Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la entrega». `sdd-end-release` corta lo hecho, como la rama de release de git-flow. No importa si la release se preparó antes con `sdd-roadmap` o si has ido cerrando features sueltas: el corte es el mismo, en cinco pasos.
+Cuando lo cerrado vale una versión, pide «cierra la release» o «prepara la entrega». `sdd-end-release` corta lo hecho, como la rama de release de git-flow. No importa si la release se preparó antes con `sdd-roadmap` o si has ido cerrando features sueltas: el corte es el mismo, en siete pasos, y pide el proyecto en la forma 3.0.0: si no, te ofrece migrar.
 
 1. **Alcance y versión.** Te propone qué entra y qué pasa a la siguiente, y la versión. La confirmas tú. Si el proyecto no tiene decidido si la release se entrega a alguien distinto de quien la hace (`release.hasRecipient`), te lo pregunta una vez. Si hay registro de estimaciones, te ofrece la retro en una línea: solo se hace si la pides.
-2. **Changelog sellado.** `[Unreleased]` pasa a `[X.Y.Z] - fecha`.
-3. **Notas de la versión y email**, solo si hay destinatario. Van en `.docs/sdd/releases/vX.Y.Z/`, destiladas del changelog y contadas por lo que gana quien la usa, sin ids ni jerga. El email es un borrador: lo envías tú.
-4. **Roadmap colapsado.** Antes de tocarlo pasa el validador del roadmap: si una sección no es de la plantilla (por ejemplo, una «Versión siguiente» con el trabajo de la release), no corta desde ella; te lo dice y te propone ordenarlo con la migración, que espera tu visto bueno. Antes de resumir la sección de la release, rescata lo que sigue vivo. Si hay features con la validación diferida a esta release, o a esta release desde una anterior, te pregunta qué probaste: las que nombras quedan validadas; las que no, ganan un disparador nuevo y su id pasa a la línea `validaciones pendientes:` del resumen de la release. Lo publicado sale de las tablas, y el corte no sigue hasta que el validador dice `Roadmap válido`.
-5. **Versión, merge y tag.** Sube la versión, deja la rama lista y te presenta el merge a `main`, el tag y el push. Esperan tu «sí». Después fusiona `main` de vuelta en `develop`.
+2. **Smoke y validaciones diferidas.** Te pregunta qué probaste, nombrando lo que tiene la validación diferida a esta release. Lo que nombras queda validado; lo que no, gana un disparador nuevo.
+3. **Changelog.** Una línea por cada fila hecha de Now, y `[Unreleased]` pasa a `[X.Y.Z] - fecha`, con la línea de smoke.
+4. **Now.** Sale lo hecho y validado. Lo que sigue sin validar se queda, con su disparador.
+5. **Deuda.** Lo que lleva dos releases en espera sin segundo caso pasa a «Descartadas», sin preguntar, y lo saldado sale de «Lista».
+6. **Notas de la versión**, solo si hay destinatario. Van en `.docs/sdd/releases/vX.Y.Z/`, destiladas del changelog y contadas por lo que gana quien la usa, sin ids ni jerga. Las envías tú.
+7. **Versión, merge y tag.** Pasa el validador, sube la versión, deja la rama lista y te presenta el merge a `main`, el tag y el push. Esperan tu «sí». Después fusiona `main` de vuelta en `develop`.
 
 El feedback de una demo o una reunión no se procesa en el corte: eso es planificar (sección 2).
 

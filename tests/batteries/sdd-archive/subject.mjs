@@ -357,6 +357,15 @@ function roadmap300() {
   s.put('.docs/sdd/steering/debt.md', '# Deuda técnica — salas\n\n## Por triar\n\n| Ítem | Origen | Fecha |\n| --- | --- | --- |\n\n## En espera\n\n| Ítem | Origen | Impacto | Falta | Fecha |\n| --- | --- | --- | --- | --- |\n\n## Lista\n\n| Ítem | Origen | Impacto | Evidencia | Destino |\n| --- | --- | --- | --- | --- |\n| El motivo de cancelar no se valida | revisión de la 0007 | medio | `cancelar Sur mar --motivo xyz` | 0010 |\n| Los motivos no se traducen (castellano e inglés) | cliente | bajo | `canceladas` | 0010 |\n\n## Descartadas\n\n| Ítem | Origen | Motivo | Fecha |\n| --- | --- | --- | --- |\n');
   s.commit('docs(sdd): roadmap y deuda en la forma 3.0.0');
 }
+// El corte solo arranca en la forma 3.0.0.
+function release300() {
+  roadmap300();
+  // Con ids.mode: sequence, el validador rechaza el id B1 y el corte no pasaría de ahí.
+  edit('ROADMAP.md', [/\| B1 \|/, '| 0030 |']);
+  s.git('mv', '.docs/sdd/changelog.md', 'CHANGELOG.md');
+  s.git('mv', '.docs/sdd/tech-stack.md', '.docs/sdd/steering/operations.md');
+  s.commit('docs(sdd): changelog y operations en la forma 3.0.0');
+}
 const openPlan0010 = () => {
   moldReservas();
   if (cell('Molde') === 'reservas-gate-plan') affectedGate();
@@ -425,10 +434,11 @@ const molds = {
   'reservas-docs-clash': () => (moldReservas(), done0010(), stackConflict('clash')),
   'reservas-ci-red': () => (moldReservas(), baseCi(false), ghFake(ghRun('failure', 'develop')), done0010()),
   'reservas-ci-down': () => (moldReservas(), baseCi(false), ghFake(GH_LOGGED_OUT), done0010()),
-  'reservas-release-ci': () => (moldReservas(), baseCi(true), ghFake(ghRun('success', 'develop'))),
+  'reservas-release-ci': () => (moldReservas(), baseCi(true), release300(), ghFake(ghRun('success', 'develop'))),
   'reservas-release-ci-old': () => {
     moldReservas();
     baseCi(true);
+    release300();
     const run = ghRun('success', 'develop');
     developAfterCi();
     ghFake(run);
@@ -478,7 +488,7 @@ const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
 for (const kept of ['tasks', 'walkthrough', 'patch']) for (const dir of [F10, P8, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
 const files = (dir, pattern) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => pattern.test(name)).sort() : []);
 for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\.md$/)) keepIf(`skills/sdd-upgrade/references/migrations/${migration}`, migration);
-for (const kept of ['ROADMAP.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));
+for (const kept of ['ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));
 for (const adr of files('.docs/sdd/decisions', /\.md$/)) keepIf(`.docs/sdd/decisions/${adr}`, adr);
 keepIf('.docs/sdd/steering/operations.md', 'operations.md');
 for (const doc of ['roadmap', 'tech-stack', 'changelog']) keepIf(`.docs/sdd/${doc}.md`, `${doc}.md`);

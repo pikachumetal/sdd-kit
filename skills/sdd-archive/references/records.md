@@ -10,7 +10,7 @@
 
 With `ROADMAP.md` at the project root (otherwise the 2.x form above):
 
-- The change's row stays in Now with `✅` (or `🧪 validación diferida a <disparador>`) in «Estado», and doesn't move section: what's done stays in Now until the release is cut, which moves it.
+- The change's row stays in Now with `✅` (or `🧪 validación diferida a <disparador>`) in «Estado», and doesn't move section: what's done stays in Now until the release is cut, which moves it to the changelog. A change without a row gains one in Now, with its brief: without it, the cut doesn't see it.
 - In «Lista» of `.docs/sdd/steering/debt.md`, the rows whose «Destino» is the closed id go; a row settled only in part stays, with «Ítem» rewritten to what's left. Debt the work uncovered goes to «Por triar», with its origin and date.
 - `sdd roadmap check` checks both files, as in 2.x.
 

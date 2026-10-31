@@ -28,7 +28,7 @@ El fichero único `Claude.md` del flujo original se convierte en varios document
 
 Esta separación es la recomendación oficial de Anthropic: el `CLAUDE.md` tiene que ser corto y por capas, porque uno inflado hace que Claude ignore las instrucciones que contiene.
 
-Hay documentos que solo aparecen si el proyecto los necesita, y se activan por la presencia de su propio fichero, sin configuración: `estimation.md` enciende el registro de estimaciones, `changelog.md` el changelog técnico, `client-changelog.md` las novedades para el cliente y `environments.md` el contrato de entorno por worktree. La entrevista del init pregunta por cada uno.
+Hay documentos que solo aparecen si el proyecto los necesita, y se activan por la presencia de su propio fichero, sin configuración: `estimation.md` enciende el registro de estimaciones, `changelog.md` el changelog técnico y `environments.md` el contrato de entorno por worktree. La entrevista del init pregunta por cada uno.
 
 La entrevista incluye además **cinco reglas de producto** que, si no se preguntan, el agente decide al azar en cada tarea: dónde viven los datos, en qué idioma van los nombres, qué límites hay, qué se avisa al usuario y qué manda cuando dos vías dan el mismo dato. Quedan escritas en la constitution y cada capacidad puede matizarlas.
 
@@ -144,7 +144,7 @@ Durante la reunión se recoge toda la información posible: notas, capturas, dec
 
 ### 3.3. Carril de release
 
-Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado: congela el alcance y la versión, que confirmas tú; sella el changelog; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; colapsa el roadmap tras pedirte el smoke de lo que quedó con la validación diferida a esa release; y prepara el merge a la rama estable y el tag, que confirmas tú. La retro con los números del registro de estimaciones es opcional: se hace si la pides.
+Cuando el trabajo se agrupa en entregas, `sdd-roadmap` prepara la siguiente: convierte las notas de la reunión y la deuda en un scope ordenado con su recomendación y sus bloqueos, y no arranca ninguna tarea, porque detallar lo lejano produce specs que caducan. `sdd-end-release` corta la versión con lo que ya está cerrado: congela el alcance y la versión, que confirmas tú; te pide el smoke de lo que quedó con la validación diferida a esa release; pasa lo hecho de Now al changelog y lo sella; caduca la deuda en espera; destila las notas de release para quien las va a recibir, escritas por beneficio y nunca copiadas del changelog; y prepara el merge a la rama estable y el tag, que confirmas tú. La retro con los números del registro de estimaciones es opcional: se hace si la pides.
 
 Trabajar por releases es opcional. Si el proyecto no lo necesita, las tareas se cierran una a una y ya está.
 

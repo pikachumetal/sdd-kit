@@ -14,5 +14,5 @@
 | Si existe… | Entonces… |
 | --- | --- |
 | `.docs/sdd/estimation.md` | Bloque "Estimación y esfuerzo" obligatorio en `plan.md`, y tiempo real obligatorio en `walkthrough.md` |
-| `.docs/sdd/changelog.md` | Entrada vía `add-to-changelog` durante el cierre |
+| `.docs/sdd/changelog.md` (2.x) | Entrada vía `add-to-changelog` durante el cierre; con `CHANGELOG.md` en la raíz, la escribe el corte de `sdd-end-release` |
 | `.docs/sdd/architecture.md` | Se lee en el paso 1. Si falta y la feature tiene que crearlo, se calca de `architecture-template.md` de `sdd-templates` |
