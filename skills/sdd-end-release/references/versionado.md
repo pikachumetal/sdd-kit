@@ -1,6 +1,3 @@
-# Versionado de la release — detalle
+# Release versioning
 
-   pre-1.0: cada release es `v0.N.0` (patches: `v0.N.x`); **`v1.0.0` está RESERVADO para la puesta en
-   producción** — un breaking change en pre-1.0 NO lo adelanta. La versión se propone y **la confirma el
-   usuario** sobre la propuesta final de cierre: que el encargo nombre la versión ("cierra la v0.2.0")
-   describe el hito, NO es la confirmación.
+Pre-1.0: each release is `v0.N.0` (patches: `v0.N.x`); **`v1.0.0` is RESERVED for going to production**: a breaking change in pre-1.0 does NOT bring it forward. The version is proposed and **the user confirms it** on the final closing proposal: a request that names the version («cierra la v0.2.0») describes the milestone, it is NOT the confirmation.

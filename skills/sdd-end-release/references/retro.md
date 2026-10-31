@@ -1,7 +1,3 @@
-# Retro de la release — detalle
+# Release retro
 
-**Retro con evidencia** *(opcional: se ofrece en el paso 1 si existe `estimation-log.md`, y se hace solo si
-el usuario la pide)* — en `.docs/sdd/releases/vX.Y.Z/retro.md`, calcando la sección «Retro» de
-`feedback-template.md` del skill `sdd-templates`, cuando el usuario la pida; la entrada de la release en el roadmap la enlaza, y si ya está colapsada se le añade el enlace:
-agregado estimado-vs-real de la release, qué funcionó/qué corregir, action items **verificables**, y
-comprobación de los action items de la release anterior. Sin evidencia no es retro, es opinión.
+**Retro with evidence** *(optional: offered in step 1 if `estimation-log.md` exists, and done only if the user asks)*, at `.docs/sdd/releases/vX.Y.Z/retro.md`, tracing the «Retro» section of `feedback-template.md` of `sdd-templates`: the release's aggregated estimate against real time, what worked and what to correct, **verifiable** action items, and a check of the previous release's action items. Without evidence it isn't a retro, it's an opinion.

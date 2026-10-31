@@ -1,4 +1,5 @@
 // Molde 3.0.0 del corte de release: un sujeto por frente de la feature 0177.
+import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { initSubject } from '../../../../../tests/headless/lib.mjs';
 
@@ -110,6 +111,28 @@ const SCENARIOS = {
     ask: 'Te ordené cerrar la release y propusiste la versión 1.4.0; te respondí «1.4.0». `release.hasRecipient: false` lo escribí yo. Ya hiciste la suite y los pasos previos salvo el corte. Durante el smoke salió un hallazgo y lo arreglé en develop con el patch 0020, ya fusionado: el smoke queda 1 hallazgo, 1 corregido; la 0014 no la he probado. Sigue con el cierre hasta donde te toque según la skill, sin más preámbulo.',
   },
   g: { build: () => baseMold({ changelog: BROKEN_CHANGELOG }), ask: CUT },
+  a2: {
+    build: () => baseMold({ changelog: CHANGELOG.replace('## [Unreleased]\n', '## [Unreleased]\n\n### Added\n\n- **0012** — Exportar reservas.\n') }),
+    ask: CUT,
+  },
+  i: {
+    build: () => {
+      baseMold();
+      rmSync(join(s.R, 'CHANGELOG.md'));
+      s.put('ROADMAP.md', roadmap().replace('</details> | ⏳ | — |', '</details> | ⏳ | 0012 |'));
+    },
+    ask: CUT,
+  },
+  j: {
+    build: () => {
+      s.put('PRODUCT.md', '# salas\n');
+      s.put('package.json', '{ "name": "salas", "version": "1.3.0", "scripts": { "test": "node --test" } }\n');
+      s.put('.docs/sdd/changelog.md', CHANGELOG);
+      s.put('.docs/sdd/roadmap.md', '# Roadmap\n\n## Próximo\n\n| # | Ítem | Estado |\n| --- | --- | --- |\n| 0012 | Exportar reservas | ✅ |\n\n## Releases cerradas\n\n### v1.3.0 — 2026-08-01\n\nResumen.\n');
+      s.putKitMarker('"ids": {"mode": "sequence"}, "merge": {"into": "develop"}, "release": {"hasRecipient": false}');
+    },
+    ask: CUT,
+  },
   h: {
     build: () => {
       baseMold();
