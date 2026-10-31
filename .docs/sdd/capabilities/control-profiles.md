@@ -97,7 +97,10 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una feature en ejecución y la siguiente task del plan con ficheros en «Crear» o «Modificar»
 - WHEN el agente va a despacharla, antes de escribir sus tests RED
 - THEN cruza `git diff --name-only $(git merge-base HEAD <integración>) <integración>` (y `origin/<integración>` tras `git fetch` si hay remoto) con esos ficheros
-- AND si alguno coincide, lo trata como freno de alcance: en `pair` y `delegate` nombra los ficheros y los commits que los tocan y para; en `unattended` sigue y lo registra como enmienda sin aprobar
+- AND si alguno coincide, compara `git diff -U0` de la base con las líneas que la task va a tocar
+- AND si la task solo toca la línea de `libres` de `README.md` y la base cambia «Soporte», registra un ruling con los dos tramos y sigue, sin parar
+- AND si la base cambia esa misma línea y la spec declara ese solape con fichero y región, registra un ruling con los dos tramos y sigue
+- AND si la base cambia esa misma línea sin que la spec lo declare, o el plan no deja saber qué líneas toca la task, es freno de alcance: en `pair` y `delegate` nombra los ficheros, los commits y los tramos («la base cambia las líneas 11-11; la task toca la 11») y para; en `unattended` sigue y lo registra como enmienda sin aprobar
 
 ### La validación puede diferirse con condiciones
 

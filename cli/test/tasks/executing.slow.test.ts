@@ -9,6 +9,7 @@ const twoTasks = '# Plan\n\n## Task 1: First thing\n\nDo the first thing.\n\n## 
 function repoWithPlan(): { repo: string; base: string; ledger: string } {
   const repo = emptyRepo();
   write(join(repo, plan), twoTasks);
+  write(join(repo, 'tasks.md'), '# Tasks\n');
   const base = commitAll(repo, 'fixture');
   write(join(repo, 'task.txt'), 'x\n');
   commitAll(repo, 'task');
@@ -28,6 +29,15 @@ describe('sdd task start / done (test-executing-plans-scripts.sh)', () => {
     expect(result.out).toContain(`brief: ${briefPath}`);
     expect(result.out).toContain(`base: ${head}`);
     expect(readFileSync(briefPath, 'utf8')).toContain('Do the first thing.');
+  });
+
+  it('task start on a plan with two tasks and no tasks.md exits 1 and says no tasks.md', () => {
+    const repo = emptyRepo();
+    write(join(repo, plan), twoTasks);
+    commitAll(repo, 'fixture');
+    const result = sdd(repo, 'task', 'start', plan, '1');
+    expect(result.code).toBe(1);
+    expect(result.err).toMatch(/no tasks\.md/);
   });
 
   it('task done appends the completion line with commit range and test result', () => {
@@ -81,6 +91,7 @@ describe('sdd task brief', () => {
 
   it('does not treat a heading inside a code fence as a task boundary', () => {
     const repo = emptyRepo();
+    write(join(repo, 'tasks.md'), '# Tasks\n');
     write(join(repo, plan), '## Task 1: A\n\n```\n## Task 2: fake\n```\n\nstill task 1\n\n## Task 2: B\n\nreal\n');
     sdd(repo, 'task', 'brief', plan, '1');
     const brief = readFileSync(join(repo, '.temp', 'sdd', 'plan', 'task-1-brief.md'), 'utf8');
@@ -91,6 +102,7 @@ describe('sdd task brief', () => {
 
   it('does not match Task 1 against Task 10', () => {
     const repo = emptyRepo();
+    write(join(repo, 'tasks.md'), '# Tasks\n');
     write(join(repo, plan), '## Task 10: Tenth\n\nten\n\n## Task 1: First\n\none\n');
     sdd(repo, 'task', 'brief', plan, '1');
     expect(readFileSync(join(repo, '.temp', 'sdd', 'plan', 'task-1-brief.md'), 'utf8')).toBe('## Task 1: First\n\none\n');
@@ -106,6 +118,7 @@ describe('sdd task brief', () => {
   it('honors an explicit OUTFILE and extracts the Interfaces block (DispatchBrief.Tests.ps1)', () => {
     const repo = emptyRepo();
     const template = readFileSync(new URL('../../../skills/sdd-templates/templates/plan-template.md', import.meta.url), 'utf8');
+    write(join(repo, 'tasks.md'), '# Tasks\n');
     write(join(repo, plan), template);
     const out = join(repo, 'out.md');
     const result = sdd(repo, 'task', 'brief', plan, '1', out);

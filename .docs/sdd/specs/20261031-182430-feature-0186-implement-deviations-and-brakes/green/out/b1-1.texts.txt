@@ -1,0 +1,40 @@
+--- [12]
+RED por el motivo correcto: la respuesta es `''` y se espera `sin salas`. Paso a GREEN.
+
+--- [15]
+El commit salió mal: `src/app.js` aparece reescrito entero (70 líneas) por un cambio de dos. Parece un problema de fin de línea causado por mi `sed`. Lo compruebo antes de cerrar la task.
+
+--- [21]
+El `sed` de Git Bash también quita los CR cuando lee de una tubería, así que el fichero sigue en LF. Hago la sustitución con Node, trabajando en bytes.
+
+--- [23]
+Ahora el diff son las dos líneas reales. Registro el cierre, comparo la copia RED y cargo `sdd-verify`, que es el que decide qué hay que hacer tras la última task.
+
+--- [36]
+La Task 1 de la 0027 está cerrada en el commit `8c026e7`: con todas las salas ocupadas, `libres` responde `sin salas`. Eso sí, **esa respuesta todavía no puede verse desde la terminal**, y la revisión final es una autorrevisión mía, no de revisores independientes.
+
+`node --test` da 5/5 sobre ese commit, en un worktree separado (eran 4/4 antes del cambio). El test nuevo falló primero por el motivo correcto (`''` en vez de `sin salas`). El README recoge la respuesta en la línea de `libres`, y la rama combina sin conflictos con `develop`. No he hecho merge ni push.
+
+## Lo que tienes que saber
+- **`sin salas` no se ve en uso:** el único dato cargado es una reserva de Norte y `reservar` no guarda nada, así que Norte y Sur nunca están ocupadas a la vez. Hoy solo el test llega a ese caso, preparando las reservas a mano. La spec no pide más, pero la feature no tendrá efecto visible hasta que `reservar` guarde reservas.
+- **Revisión más débil:** esta sesión no tiene subagentes, así que los ejes Spec y Código los he revisado yo, el mismo autor del código. No salió ningún hallazgo Critical ni Important. Decide tú si te basta antes del merge.
+- **Commit rehecho:** mi `sed` cambió los finales de línea de `src/app.js` de CRLF a LF, y el diff parecía reescribir el fichero entero. Lo corregí enmendando el commit, que no estaba publicado; ahora `src/app.js` cambia solo en dos líneas.
+- **Versión del kit:** el aviso de inicio dice que la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. No lo he actualizado. Se hace con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+- **Línea del ledger:** la línea `complete` pone `duration_ms` como resultado de los tests, porque el comando recoge lo último que imprime `node --test`. Dejé una nota con el resultado real, 5/5.
+
+## Rulings I made
+1. **Sin worktree propio:** trabajo en el checkout, porque la rama de la feature ya existía, estaba limpia y no es `main`. Si fuera mal: mover un commit a otra rama.
+2. **`develop` también toca el README:** cambia la línea 17 («Soporte») y la task la 11, sin solaparse, y la fila de la feature no cambió. Sigo adelante. Si fuera mal: un conflicto de una línea.
+3. **`export const bookings` en `src/app.js`:** el plan solo mencionaba `run`, que no crea reservas, y sembrar datos habría cambiado las respuestas. Si fuera mal: otra forma de preparar el test y una línea.
+4. **Enmienda de mi commit:** es la corrección de los finales de línea. Si fuera mal: un commit local rehecho.
+5. **Sin eje de Arquitectura:** el plan no trae esa línea y el diff no añade módulos, dependencias ni datos. Si fuera mal: queda pendiente esa revisión.
+6. **`sin salas` inalcanzable desde la terminal:** lo dejo así porque arreglarlo queda fuera del Scope. Si fuera mal: la respuesta no se verá hasta que `reservar` guarde.
+7. **`libres` no distingue el día:** una reserva del lunes ocupa esa franja todos los días. Ya era así antes de esta rama y queda fuera del Scope. Si fuera mal: `sin salas` podría salir habiendo salas libres otro día.
+
+## Deferred minors
+- `bookings` se exporta mutable solo para el test (`src/app.js:3`).
+- `test/free.test.js` quedó en LF, mientras sus vecinos de `test/` están en CRLF.
+
+## Dónde queda
+Me paro aquí porque pediste cerrar la Task 1: la validación y el cierre de la feature siguen pendientes. Conservo el workspace `.temp/sdd/plan` con el ledger para retomarlo, aunque el kit lo borra con la revisión limpia, porque esa revisión aún espera tu visto bueno. Tampoco hay `tasks.md`, ya que el plan tiene una sola task; los rulings pasarán a la presentación de la validación.
+

@@ -20,6 +20,7 @@ function newRepo(): string {
   git(repo, 'init', '-q', '-b', 'main');
   mkdirSync(join(repo, 'docs'));
   writeFileSync(join(repo, plan), '# Plan\n\n### Task 1: Primera\n\nHacer la primera.\n\n### Task 2: Segunda\n\nHacer la segunda.\n');
+  writeFileSync(join(repo, 'docs', 'tasks.md'), '# Tasks\n');
   git(repo, 'add', '-A');
   git(repo, 'commit', '-q', '-m', 'base');
   return repo;

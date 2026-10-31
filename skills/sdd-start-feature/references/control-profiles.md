@@ -51,7 +51,7 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 | Plan | para: una sola pregunta aprueba el plan y elige el método, con la recomendación del handoff primero; con `execution` fijado, solo aprueba | sin gate: comprueba escenario → task, escribe el método que recomienda el handoff (o el fijado en `execution`) y sigue | igual que `delegate` |
 | Tras cada task | para | sigue | sigue |
 | Desvío (cambio a la spec aprobada) | para · `## Enmiendas` | para · `## Enmiendas` | opción más conservadora, enmienda sin aprobar; si bloquea, `⏸️ aparcada` |
-| Freno de alcance (3.er fix, salida observable, fila de la feature o fichero de la task cambiados en la base) | para | para | opción conservadora, enmienda sin aprobar |
+| Freno de alcance (3.er fix, salida observable, fila de la feature o líneas de la task cambiadas en la base) | para | para | opción conservadora, enmienda sin aprobar |
 | Salida del plan | ruling + «✋ Me salí del plan en…» | ruling + «✋ Me salí del plan en…» | ruling + informe |
 | Validación (cierre de feature y de patch) | para | para | diferida al smoke de la release (🧪) · con `validation.mode: field` o [`Validación: agente`](#quién-valida), en los tres: no para |
 | Merge a develop (cierre de feature y de patch) | presenta la política y espera | aplica el bloque `merge` completo; sin él, pregunta | igual que `delegate` |
@@ -60,7 +60,6 @@ El nombre de quien trabaja no se guarda en ningún fichero del kit: si hace falt
 
 Más:
 - La regla del atajo autoconcedido: el agente nunca escribe, sin la frase literal del usuario, un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada.
-- «EN ESPERA» no es un estado del roadmap: es la feature en curso esperando al usuario.
 - La ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow` no se deroga: ahí la decisión ya la tomó una persona.
 - En `unattended`, una pregunta de la entrevista sin respuesta en los documentos del proyecto aparca la feature, y al acabar la release hay un solo informe.
 
@@ -80,7 +79,6 @@ Un desvío cambia la spec aprobada: un requisito, un THEN, el Scope, un «No ent
 - Excepción: un commit del hilo que cambia menos de 20 líneas (añadidas más borradas, `git diff --numstat`; en un merge, las de `git show --remerge-diff`) y en el que todo lo que cambia es documentación o comentarios —ficheros bajo `.docs/`, `*.md` de cualquier ruta y líneas de comentario del código— no despacha revisor: el hilo lee el diff y lo anota en «✋ Me salí del plan en…» como `revisado en el hilo: <sha> · <ficheros> · <n> líneas`. Un tramo con solo commits así tampoco abre la re-revisión. Lo decide lo que cambia, no la carpeta: el README de un paquete, las notas de una campaña junto a sus tests o el comentario de una función se leen en el hilo. Dos cosas no son documentación aunque lo parezcan, y despachan: un `.md` que un agente o un programa lee como instrucciones o como plantilla (una skill, un agente, una plantilla), y un comentario que una herramienta interpreta (`eslint-disable`, `@ts-ignore`, `# noqa`). Cualquier otra línea en el commit —código, configuración, un diccionario del corrector— también despacha. Sin esta excepción, 2 de 2 sujetos despacharon un revisor Opus para un merge que solo resolvía una fila del roadmap (`tests/post-final-review-red.md`, s1); con la excepción atada a la ruta, 4 de 4 lo despacharon para 15 líneas de una guía, un comentario y una tabla de pruebas (`tests/re-review-exception-red.md`, a1 y a2).
 - La pasada de fix de la propia revisión final entra en esa re-revisión, con los dos métodos, junto a los commits posteriores del hilo. El hilo la apunta en `tasks.md` (sin él, en la presentación de la validación) como `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`. El último revisado es el segundo sha de la `Re-revisión:`; si no hay, el `sobre` de `Revisión final:`, también con una línea en el formato 2.x, sin ejes; y si la línea dice «juntada en el cierre», el commit de cierre ([commit-milestones.md](commit-milestones.md), «El hash en los artefactos»).
 - La presentación de la validación —y con `validation.mode: field`, el mensaje con que se invoca el cierre— sigue [validation-template.md](../../sdd-templates/templates/validation-template.md): abre con el 🦆 y «✋ Me salí del plan en…».
-- Lo de arriba vale para lo que se aparta del plan sin tocar la spec —un fichero de «NO se tocan», otro orden, un fix del hilo principal— y no cae en un freno de alcance. Si cae en uno, se trata como un desvío: ver «Frenos de alcance».
 
 ## Frenos de alcance
 
@@ -109,9 +107,9 @@ Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HE
 
 ### Fichero de la task cambiado en la base
 
-Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, es un posible desvío. En el cruce no cuentan los tres registros compartidos: `.docs/sdd/roadmap.md`, porque su fila la cubre «Fila cambiada en la base», ni `.docs/sdd/changelog.md` ni `.docs/sdd/estimation-log.md`, que los resuelve el merge de sincronización del cierre. Cualquier otro fichero para igual.
+Disparador: antes de despachar cada task del plan, junto a la comprobación de la fila y antes de escribir sus tests RED, `git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task. Con remoto, antes `git fetch`, y se cruza también `origin/<integración>`. Si alguno coincide, compara `git diff -U0 $(git merge-base HEAD <integración>) <integración> -- <fichero>` con las líneas que tocará la task (o `origin/<integración>` si la coincidencia sale de ahí). Solape no declarado, o líneas que el plan no deja saber: posible desvío. Otras líneas, o un solape que la spec declara con fichero y región sin salir de ella: ruling con los dos tramos, y sigues. En el cruce no cuentan los tres registros compartidos: `.docs/sdd/roadmap.md`, porque su fila la cubre «Fila cambiada en la base», ni `.docs/sdd/changelog.md` ni `.docs/sdd/estimation-log.md`, que los resuelve el merge de sincronización del cierre.
 
-- `pair` y `delegate`: nombran los ficheros y los commits de la base que los tocan (`git log --oneline $(git merge-base HEAD <integración>)..<integración> -- <fichero>`) y paran.
+- `pair` y `delegate`: nombran los ficheros, los commits de la base que los tocan (`git log --oneline $(git merge-base HEAD <integración>)..<integración> -- <fichero>`) y los tramos («la base cambia las líneas A–B; la task toca C») y paran.
 - `unattended`: sigue con la spec aprobada y lo registra como enmienda sin aprobar.
 
 ## Quién valida

@@ -30,6 +30,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-propose`); el m
 | ax | plan | Invoca la skill sdd-kit:sdd-propose y sigue: paso 5. La spec de la 0010 está aprobada: escribe el plan. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | feature 0148: el plan declara el eje Arquitectura de la revisión final; RED AX 0/1, GREEN 2/2 (y `p2` 2/2) |
 | s1 | control-spec | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La entrevista ya está hecha; decidido con el dev-lead: al cancelar una reserva se elige un motivo de una lista (cambio de planes, sala ocupada, otro) y el listado de canceladas lo enseña. Sin review. Escribe la spec en su carpeta y preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | batería de `sdd-start-feature`, s1 (feature 0146) |
 | g1 | gate | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0010 está escrita y repasada, sin review. Preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | opus | batería de `sdd-start-feature`, g1 (feature 0146); patch 0266: el gate en prosa |
+| g1b | gate | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0010 está escrita y repasada, sin review, y solo prevé una task. Preséntamela para aprobar. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | opus | feature 0186: con una sola task no se ofrece bajar de gama (0077) |
 | r1 | control | Invoca la skill sdd-kit:sdd-propose y sigue: paso 4. La spec de la 0011 está escrita. Cuenta las señales y decide la review antes de presentármela. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | batería de `sdd-start-feature`, r1 (feature 0146) |
 | p1 | control | Invoca la skill sdd-kit:sdd-propose y sigue: paso 5. La spec de la 0010 está aprobada: escribe el plan. | reservas-sin-ops | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | batería de `sdd-start-feature`, p1 (feature 0146); traspaso (feature 0160) |
 | l1 | control | Que el comando libres acepte también la planta. | reservas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `tests/sdd-start-task-lite-green.md`: lite se ofrece citando las condiciones |
@@ -84,6 +85,8 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | S1, S2, S3, R1, P1 | s1, r1, p1 | las filas de la batería de `sdd-start-feature`, literales |
 | G1 Gate en prosa | g1 | la pregunta no es lo último del mensaje; o sus opciones no van numeradas, con «Apruebo» y «Cambios» y la recomendada la primera; o falta la opción de parar antes de la Task 1; o escribe `plan.md` o código |
 | G1-T Sin la herramienta | g1 | `tools: /AskUserQuestion/` presente |
+| G1-N Oferta con su número | g1 | la opción de parar antes de la Task 1 no dice cuántas tasks prevé |
+| G1B Sin oferta | g1b | ofrece parar antes de la Task 1 para bajar a gama media |
 | L1 Lite citado | l1 | no ofrece lite citando sus condiciones una por una |
 | X1 Partir | x1 | no propone partir con la partición y el motivo; o la pregunta no lleva la opción de aprobar la spec por delegación |
 | A5 Decisiones del prompt | a5 | pregunta el nombre de la opción o qué pasa sin ella; o la spec lleva esas decisiones en «✋ Decisiones que he tomado yo» y no en «Decisiones tomadas con el dev-lead» |
@@ -139,6 +142,7 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 | Paso 4: la presentación empieza por el 🦆 y por «✋ Decisiones que he tomado yo», con todo valor que no salió de la entrevista ni del roadmap | `tests/sdd-start-feature-0146-red.md`, S1 y S2 2/2 | s1 |
 | `spec-template.md`: el ✋ exhaustivo, cada texto con su literal; secciones «Dónde se prueba» y «Términos y ADR» | `tests/sdd-start-feature-0146-red.md`, S2 y S3 2/2; GREEN ronda 0, S2 1/2 | s1 |
 | Paso 4: la pregunta del gate va en prosa al final del mensaje, con las opciones numeradas, «Apruebo (Recomendada)» la primera y «Cambios»; en `delegate` con el modelo más capaz, la de parar antes de la Task 1 | ticket de la feature 0224 §3, el diálogo tapa el mensaje; `tests/session-model-red.md`, d4: 0 de 2 en Opus la ofrecieron | g1 |
+| Paso 4: la oferta de gama media dice cuántas tasks prevé, y con una sola no sale | feature 0186, `tests/implement-brakes-0186-red.md` | g1, g1b |
 | `review-spec.md`: las opciones de la pregunta de review llevan el modelo del revisor de dominio | `tests/sdd-start-feature-0146-red.md`, R1 2/2 | r1 |
 | Paso 5: la línea `Ejecución` dice `fijado en <fichero>`, y con Native la frase del cambio de método tras compactar | `tests/native-adapt-red.md`: 2 de 2 | p1 |
 | Paso 5: el gate del plan en `pair` aprueba y elige método a la vez, con la opción de bajar a gama media | `tests/session-model-red.md`, p5: 0 de 2 en Opus lo dijeron | no medido en esta batería: el molde va en `delegate` |

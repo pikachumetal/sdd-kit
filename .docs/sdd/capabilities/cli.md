@@ -214,6 +214,12 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - AND pregunta el montaje a un binario de Git con `execFile`, nunca con un `bash -c`
 - AND en otro sistema, o sin Git en el `PATH`, no ejecuta nada
 
+### `task start` y `task brief` exigen `tasks.md` con más de una task
+
+- GIVEN un plan, fuera de lite, con más de una task y sin `tasks.md` en su carpeta
+- WHEN se ejecuta `sdd task start` o `sdd task brief` sobre él
+- THEN sale con código 1 y el mensaje `plan with <n> tasks and no tasks.md: write <ruta> before the first task (status and commit per task)`, sin escribir el brief
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `sdd init` escribe `.claude/settings.json`, `.gitignore` y `.docs/sdd/sdd-kit.json` del proyecto; la versión, de `.claude-plugin/plugin.json` del kit; el bloque de settings, de su constante en `cli/src/init/`. `sdd upgrade` lee las migraciones de `skills/sdd-upgrade/references/migrations/` del kit cargado y escribe solo `.docs/sdd/sdd-kit.json`. `sdd validation serve` lee los pasos de `--steps` y el panel de `skills/sdd-archive/references/validation-panel.js` del kit cargado, y escribe solo el fichero de `--out`. `sdd hook session-end` lee el JSON de stdin, `CLAUDE_CODE_TMPDIR` y `CLAUDE_PROJECT_DIR`, y solo borra subcarpetas de `<CLAUDE_CODE_TMPDIR o la carpeta temporal del sistema>/claude/<carpeta del proyecto>/`.

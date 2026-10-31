@@ -1,0 +1,38 @@
+--- [6]
+Uso sdd-worktrees para preparar el workspace aislado.
+
+--- [19]
+RED correcto: 4 fallan por falta de la función y el de «sin reserva» sigue pasando. Paso a GREEN.
+
+--- [29]
+**La feature está parada antes de la Task 2: necesito que decidas dos cosas sobre lo que ve quien usa `canceladas`.** La Task 1 está hecha y commiteada (`447703b`). Con el perfil `delegate` este freno de alcance me obliga a parar, aunque estés fuera. No he llegado a la revisión final ni a la validación.
+
+🦆 `cancelar` ya exige un motivo de la lista, lo guarda con la reserva y lo enseña en la respuesta. Falta `canceladas`, que tiene un problema: las reservas solo viven en memoria, así que cada ejecución del comando arranca de cero. Lo he comprobado con dos ejecuciones seguidas: cancelé Norte lun y, en la siguiente, la reserva seguía activa.
+
+## Decisiones para ti
+
+**1. ¿Qué hacemos con el «Norte lun — sala ocupada» de la spec, que por terminal no se verá nunca?** Ese resultado solo sale si se cancela y se lista dentro del mismo proceso, como hacen los tests.
+- **Recomiendo: A. Dejarlo en memoria.** Se prueba por `test/cancel.test.js`, como dice «Dónde se prueba», y el guardado queda para la 0014 («Motivo guardado»), que ya está en el roadmap. Hasta entonces, `canceladas` por terminal siempre saldrá como si no hubiera ninguna.
+- **B. Traer el guardado a esta feature.** El listado funcionaría de verdad, pero agranda el Scope, cambia la spec y solapa con la 0014.
+
+**2. ¿Qué responde `canceladas` si no hay ninguna?** La spec no lo dice, y con la opción A es lo que verá siempre quien lo use por terminal.
+- **Recomiendo: A. `sin canceladas`.** Queda claro que el comando ha funcionado, igual que `sin reserva` en `cancelar`.
+- **B. Salida vacía.** Es lo que hace hoy `libres` cuando no hay salas, pero parece que el comando no ha hecho nada.
+
+Basta con que respondas, por ejemplo, «1A, 2A». Lo apunto en «Enmiendas» y sigo con la Task 2 y la revisión final. Después te presento la validación.
+
+## Rulings que he tomado
+- **Sin reserva y con motivo inválido a la vez:** responde `sin reserva <sala> <día>`. La spec solo fija los rechazos cuando la reserva existe, y así esa respuesta sigue como hoy. Si no te vale, se cambia invirtiendo dos líneas y un test.
+- **`--motivo` sin valor:** cuenta como si no hubiera motivo y da el mismo mensaje. Si no te vale, se cambia un caso de test.
+- **Test «cancelar una reserva activa»:** lo he sustituido, porque iba sin motivo y la spec ahora lo rechaza. Esto no tiene coste: lo manda la spec.
+
+## Comprobaciones
+- **Tests:** `node --test test/cancel.test.js` da 5/5. Vi fallar primero los 4 tests nuevos y el de «sin reserva» ya pasaba. La suite completa dio 4/4 antes de empezar; no la he vuelto a pasar porque toca al cerrar.
+- **Por terminal:** he probado las respuestas de cancelar con motivo válido, con motivo inválido, sin motivo y sin reserva, y todas salen como se esperaba.
+- **Sin revisar:** este commit todavía no ha pasado por ningún revisor, porque en Native la revisión llega al final de la rama.
+
+## Otros avisos
+- **Versión del kit:** esta sesión avisa de que carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las skills pueden estar desfasadas. No lo he actualizado porque obliga a reiniciar Claude Code. Para hacerlo: `claude plugin update sdd-kit@sdd-kit --scope project`, y luego reinicia.
+- **Registro de progreso:** el resultado de la Task 1 en el ledger quedó como `duration_ms` en vez de 5/5. El dato bueno es el de arriba.
+- **Workspace del plan:** sigue en `.temp/sdd/plan`, sin versionar, con el ledger para retomar en la Task 2.
+

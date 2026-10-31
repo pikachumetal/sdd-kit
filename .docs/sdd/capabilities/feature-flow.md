@@ -282,17 +282,19 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El gate del plan en `pair` ofrece parar para bajar la sesión a gama media
 
-- GIVEN una feature en `pair`, una sesión con Opus 5.5 y un plan con `Ejecución: native, porque…`
+- GIVEN una feature en `pair`, una sesión con Opus 5.5 y un plan de dos o más tasks con `Ejecución: native, porque…`
 - WHEN el agente presenta el gate del plan
-- THEN entre las opciones está «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con su motivo: Native va bien en gama media (Sonnet, effort medium) y bajar solo el effort de Opus no es gama media
+- THEN entre las opciones está «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media (quedan 3 tasks)», con las tasks del plan, que no es la recomendada, con su motivo: Native va bien en gama media (Sonnet, effort medium) y bajar solo el effort de Opus no es gama media
 - AND si el usuario la elige, el agente junta la apertura en su commit y termina el turno antes de la Task 1 diciendo el cambio (`/model`, Sonnet con effort medium)
+- AND con un plan de una sola task no la ofrece
 
 ### El gate de la spec en `delegate` ofrece parar tras el plan para bajar la sesión a gama media
 
-- GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
+- GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate, con dos o más tasks previstas
 - WHEN el agente presenta la spec
-- THEN entre las opciones numeradas está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
+- THEN entre las opciones numeradas está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 3 tasks)», con las tasks previstas, que no es la recomendada, con el mismo motivo
 - AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
+- AND con una sola task prevista no la ofrece
 
 ### Con Native, el plan registra el modelo recomendado para la sesión
 
@@ -705,6 +707,15 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN el guion es lo último del mensaje y empieza por la rama, el worktree y el entorno, con un bloque de código sin lenguaje por terminal y cada comando en su línea, sin puntuación al final
 - AND sigue con pasos de uno en uno, con sus datos y su resultado esperado, y acaba con cómo parar el entorno y «dime "validado" o qué paso falla», en texto
 - AND con `validation.startEnvironment: true`, el guion dice que el entorno está arrancado, con su puerto, en vez de dar los comandos de arranque
+
+### `tasks.md` nace antes de la primera task
+
+- GIVEN un plan con dos tasks y la apertura commiteada sin `tasks.md`
+- WHEN el agente va a empezar la Task 1, en Native o en SDD
+- THEN escribe `tasks.md` antes del primer `sdd task start` o del primer despacho
+- AND va en el commit de la apertura o, si ya está hecho, en el de la Task 1
+- AND con una sola task no lo escribe por esta regla
+- AND con más de una task y sin `tasks.md` junto al plan, `sdd task start` y `sdd task brief` fallan con un error que nombra el fichero, sin escribir el brief
 
 ## Reglas de la capacidad
 
