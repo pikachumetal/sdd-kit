@@ -6,6 +6,7 @@ import { isRecord } from '../cli/records.ts';
 import type { Io } from '../cli/io.ts';
 import { mergeGitignore } from './gitignore.ts';
 import { finishMarker, mergeConfig, recordApproved } from './marker.ts';
+import { PROJECT_HOOK_SCRIPT, projectHookSource, withProjectHook } from './project-hook.ts';
 import { mergeSettings } from './settings.ts';
 
 export type InitAction = { kind: 'approved'; path: string } | { kind: 'config'; config: Record<string, unknown> } | { kind: 'finish'; ignores: string[]; memoryOff: boolean };
@@ -57,7 +58,8 @@ function plan(options: InitOptions, notes: string[]): Write[] {
   notes.push(...settings.notes);
   const gitignore = readOptional(root, GITIGNORE);
   return [
-    { file: SETTINGS, before: readOptional(root, SETTINGS), after: jsonText(settings.merged) },
+    { file: SETTINGS, before: readOptional(root, SETTINGS), after: jsonText(withProjectHook(settings.merged)) },
+    { file: PROJECT_HOOK_SCRIPT, before: readOptional(root, PROJECT_HOOK_SCRIPT), after: projectHookSource() },
     { file: GITIGNORE, before: gitignore, after: mergeGitignore(gitignore, action.ignores) },
     markerWrite(finishMarker(marker, options.kitVersion, options.today)),
   ];

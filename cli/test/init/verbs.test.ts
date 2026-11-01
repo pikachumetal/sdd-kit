@@ -89,11 +89,11 @@ describe('sdd init --finish', () => {
     expect(JSON.parse(read(root, SETTINGS)).permissions).toEqual({ allow: [] });
   });
 
-  it('writes the three files with one line each', async () => {
+  it('writes the four files with one line each', async () => {
     const root = project({ '.gitignore': 'node_modules/\r\n.superpowers/\r\n', [MARKER]: '{"init":{"config":{"ids":{"mode":"sequence"},"control":{"profile":"delegate"}}}}' });
     const { lines, code } = await sdd(['init', '--root', root, '--finish', '--ignore', '.auth/']);
     expect(code).toBe(0);
-    expect(lines).toEqual([`${SETTINGS}: creado`, '.gitignore: actualizado', `${MARKER}: actualizado`]);
+    expect(lines).toEqual([`${SETTINGS}: creado`, '.claude/hooks/sdd-kit-loaded.mjs: creado', '.gitignore: actualizado', `${MARKER}: actualizado`]);
     expect(read(root, '.gitignore')).toBe('node_modules/\r\n.superpowers/\r\n.playwright-mcp/\r\n.docs/sdd/sdd-kit.local.json\r\n.temp/\r\n.auth/\r\n');
     const marker = JSON.parse(read(root, MARKER));
     expect(marker).toMatchObject({ channel: 'plugin', ids: { mode: 'sequence' }, control: { profile: 'delegate' } });
@@ -101,11 +101,11 @@ describe('sdd init --finish', () => {
     expect(marker.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  it('second finish says sin cambios three times', async () => {
+  it('second finish says sin cambios four times', async () => {
     const root = project();
     await sdd(['init', '--root', root, '--finish']);
     const { lines } = await sdd(['init', '--root', root, '--finish']);
-    expect(lines).toEqual([`${SETTINGS}: sin cambios`, '.gitignore: sin cambios', `${MARKER}: sin cambios`]);
+    expect(lines).toEqual([`${SETTINGS}: sin cambios`, '.claude/hooks/sdd-kit-loaded.mjs: sin cambios', '.gitignore: sin cambios', `${MARKER}: sin cambios`]);
   });
 
   it('finish works without init key', async () => {
