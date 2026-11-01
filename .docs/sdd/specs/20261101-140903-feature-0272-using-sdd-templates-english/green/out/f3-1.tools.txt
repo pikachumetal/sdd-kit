@@ -1,0 +1,74 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md 2>/dev/null | head -200; node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/cli/bin/sdd.js" capability index --path .docs/sdd; ls; ls node_modules 2>/dev/null | head -3
+<<< ./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interf
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls test specs 2>/dev/null; ls .docs/sdd/specs; cat README.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/skills/sdd-propose/references/modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+=== RESULTADO (6 turnos, 0.162264 $)
+**Ahora:** clasificar el cambio. **Queda:** que elijas el carril (~1 min); luego spec corta, tests y código.
+
+🦆 En llano: hoy `reservar` solo crea la reserva (y con `--cada-semana` devuelve «reserva semanal creada»). Quieres poder añadirle un texto libre al reservar. Todo vive en `src/app.js`, y las reservas son un array en memoria.
+
+No es un patch. Nadie ha fijado el literal de la opción, dónde se muestra la nota ni qué pasa con una nota vacía, y eso lo tendría que decidir yo. Que sea pequeño no lo cambia. Puede ir en **modo lite**, y estas son las condiciones que he comprobado:
+
+- **Flujo existente:** el comando `reservar` ya está en `run`.
+- **Contratos públicos:** no cambia ninguno. Es un comando de terminal sin otros módulos que lo consuman.
+- **Schema de datos:** no hay persistencia, solo el array en memoria. La nota sería un campo opcional más.
+- **Un solo módulo:** solo toca `src/app.js` y su test.
+- **Estimación:** no hay `estimation.md`, así que esta condición no aplica.
+
+Perfil: el del proyecto, `sdd-kit.json`, que no fija ninguno. Si te vas a ausentar, dime «apruebo la spec por delegación, nos vemos en la validación».
+
+¿Cómo lo hago?
+
+1. **Lite (recomendada):** spec corta con las decisiones a validar, tests antes que código y un solo commit. Sin `plan.md`.
+2. **Full:** spec, plan y tareas. Es más ceremonia de la que pide el cambio.
+
+Aviso: la lite sube a full si al implementar cae alguna de esas condiciones.

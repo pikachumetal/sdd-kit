@@ -1,6 +1,6 @@
 ---
 name: sdd-templates
-description: Usar cuando hay que crear un artefacto SDD (spec, plan, tasks, walkthrough, patch, propuesta, data-model, research, feedback de release, release notes) o un documento del proyecto (PRODUCT, constitution, operations, architecture, roadmap, estimation, changelog, ADR) — la plantilla se calca desde aquí. Las plantillas viven SOLO en el kit; los proyectos NO llevan carpeta templates/.
+description: Use when an SDD artifact must be created (spec, plan, tasks, walkthrough, patch, proposal, data-model, research, release feedback, release notes) or a project document (PRODUCT, constitution, operations, architecture, roadmap, estimation, changelog, ADR) — the template is traced from here. Templates live ONLY in the kit; projects do NOT carry a templates/ folder.
 user-invocable: false
 ---
 
@@ -8,67 +8,67 @@ user-invocable: false
 
 ## Overview
 
-Plantillas canónicas del kit SDD. **Viven solo aquí**: los proyectos no llevan carpeta `templates/` — al crear un artefacto se invoca esta skill y se calca la plantilla que toque. Una copia por proyecto sería deriva instantánea (la plantilla evoluciona en el kit y las copias se quedan atrás).
+The SDD kit's canonical templates. **They live only here**: projects don't carry a `templates/` folder — to create an artifact, invoke this skill and trace the template that applies. A copy per project would drift instantly (the template evolves in the kit and the copies fall behind). Write everything the user reads in the language of their message; a template's text and literals stay as they are.
 
-| Plantilla | Artefacto | Cuándo |
+| Template | Artifact | When |
 | --- | --- | --- |
-| [spec-template.md](templates/spec-template.md) | `spec.md` | Toda feature, en los dos modos. Spec ligera: decisiones a validar · Intent/Scope/Approach · delta por capacidad · aprobaciones |
-| [plan-template.md](templates/plan-template.md) | `plan.md` | Solo modo full, tras aprobar la spec (cómo) |
-| [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Solo si el plan tiene >1 task (registro vivo) |
-| [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Cierre de toda feature |
-| [patch-template.md](templates/patch-template.md) | `patch.md` | Carril patch (único artefacto) |
-| [proposal-template.md](templates/proposal-template.md) | `proposal.md` | Carril `proposal`: la escribe `sdd-roadmap` para algo grande o una reunión con el cliente; histórica, con enmiendas fechadas |
-| [launch-prompt-template.md](templates/launch-prompt-template.md) | prompt de arranque, en el chat | Lo dan `sdd-roadmap` y `sdd-explore`: arranca el cambio en otro worktree con su carril y sus decisiones |
-| [validation-template.md](templates/validation-template.md) | mensaje de validación, en el chat | Lo presenta `sdd-archive` |
-| [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Opcional: cambios de datos que no caben en el plan |
-| [research-template.md](templates/research-template.md) | `research.md` | Opcional: investigación previa con timebox |
-| [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Cierre de release: acta única (inventario + triage + retro) |
-| [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Cierre de release: notas de cliente destiladas del changelog |
-| [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Verdad viva del comportamiento: la crea la spec que declara la capacidad, la fusiona `sdd-archive` |
-| [kit-feedback-template.md](templates/kit-feedback-template.md) | ticket en `.docs/sdd/kit-feedback/` | Al cerrar una feature o un patch, vía `sdd-feedback` |
-| [PRODUCT-template.md](templates/PRODUCT-template.md) | `PRODUCT.md` en la raíz | Para quién y para qué es el producto, y su glosario (`## Terminology`). Encabezados de impeccable, que lee el mismo fichero |
-| [constitution-template.md](templates/constitution-template.md) | `.docs/sdd/steering/constitution.md` (2.x: `.docs/sdd/constitution.md`) | Documento de anclaje: lo calca el init, con las cinco «Reglas de producto» por nombre |
-| [operations-template.md](templates/operations-template.md) | `.docs/sdd/steering/operations.md` | Cómo se ejecuta y se verifica: comandos, testing, frontend y entornos; sin versiones |
-| [architecture-template.md](templates/architecture-template.md) | `.docs/sdd/steering/architecture.md` (2.x: `.docs/sdd/architecture.md`) | Documento de anclaje: lo calca el init, o quien lo necesite si se pospuso (una feature, `sdd-archive` con un aprendizaje estructural, `sdd-explore`) |
-| [now-next-later-template.md](templates/now-next-later-template.md) | `ROADMAP.md` en la raíz | Documento de anclaje: lo calca el init; Now, Next y Later con la cabecera de tabla literal, porque las leen otras skills y `sdd roadmap check` |
-| [debt-template.md](templates/debt-template.md) | `.docs/sdd/steering/debt.md` | Documento de estado de la deuda técnica: Por triar, En espera, Lista y Descartadas; lo escribe `sdd-roadmap` al triar |
-| [roadmap-template.md](templates/roadmap-template.md) | `.docs/sdd/roadmap.md` | **2.x, deprecada: la leen `migrations/v2.3.0.md` y los proyectos sin migrar; se borra en la 4.0.0.** Documento de anclaje 2.x: secciones y cabeceras de tabla literales, porque las leen otras skills |
-| [estimation-template.md](templates/estimation-template.md) | `.docs/sdd/steering/estimation.md` (2.x: `.docs/sdd/estimation.md`) | Opt-in del proyecto: activa el módulo de estimación; calibración vacía al nacer |
-| [changelog-template.md](templates/changelog-template.md) | `CHANGELOG.md` en la raíz (2.x: `.docs/sdd/changelog.md`) | Opt-in del proyecto (entrevista de init): activa `add-to-changelog`; nace con `## [Unreleased]` y sin entradas |
-| [adr-template.md](templates/adr-template.md) | `.docs/sdd/decisions/NNNN-<slug>.md` | El porqué de una decisión difícil de deshacer; inmutable, se sustituye con otra |
+| [spec-template.md](templates/spec-template.md) | `spec.md` | Every feature, in both modes. Light spec: decisions to validate · Intent/Scope/Approach · delta per capability · approvals |
+| [plan-template.md](templates/plan-template.md) | `plan.md` | Full mode only, after the spec is approved (how) |
+| [tasks-template.md](templates/tasks-template.md) | `tasks.md` | Only if the plan has >1 task (live record) |
+| [walkthrough-template.md](templates/walkthrough-template.md) | `walkthrough.md` | Closing of every feature |
+| [patch-template.md](templates/patch-template.md) | `patch.md` | Patch lane (only artifact) |
+| [proposal-template.md](templates/proposal-template.md) | `proposal.md` | `proposal` lane: `sdd-roadmap` writes it for something big or a client meeting; historical, with dated amendments |
+| [launch-prompt-template.md](templates/launch-prompt-template.md) | launch prompt, in the chat | Given by `sdd-roadmap` and `sdd-explore`: starts the change in another worktree with its lane and its decisions |
+| [validation-template.md](templates/validation-template.md) | validation message, in the chat | Presented by `sdd-archive` |
+| [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Optional: data changes that don't fit in the plan |
+| [research-template.md](templates/research-template.md) | `research.md` | Optional: prior research with a timebox |
+| [feedback-template.md](templates/feedback-template.md) | `feedback.md` | Release closing: single record (inventory + triage + retro) |
+| [release-notes-template.md](templates/release-notes-template.md) | `release-notes.md` | Release closing: client notes distilled from the changelog |
+| [capability-template.md](templates/capability-template.md) | `capabilities/<capability>.md` | Living truth of behavior: created by the spec that declares the capability, merged by `sdd-archive` |
+| [kit-feedback-template.md](templates/kit-feedback-template.md) | ticket in `.docs/sdd/kit-feedback/` | When closing a feature or a patch, via `sdd-feedback` |
+| [PRODUCT-template.md](templates/PRODUCT-template.md) | `PRODUCT.md` at the root | Who the product is for and what for, and its glossary (`## Terminology`). Impeccable's headings, since it reads the same file |
+| [constitution-template.md](templates/constitution-template.md) | `.docs/sdd/steering/constitution.md` (2.x: `.docs/sdd/constitution.md`) | Anchor document: traced by the init, with the five «Reglas de producto» by name |
+| [operations-template.md](templates/operations-template.md) | `.docs/sdd/steering/operations.md` | How it runs and is verified: commands, testing, frontend and environments; no versions |
+| [architecture-template.md](templates/architecture-template.md) | `.docs/sdd/steering/architecture.md` (2.x: `.docs/sdd/architecture.md`) | Anchor document: traced by the init, or by whoever needs it if it was postponed (a feature, `sdd-archive` with a structural learning, `sdd-explore`) |
+| [now-next-later-template.md](templates/now-next-later-template.md) | `ROADMAP.md` at the root | Anchor document: traced by the init; Now, Next and Later with the literal table header, because other skills and `sdd roadmap check` read them |
+| [debt-template.md](templates/debt-template.md) | `.docs/sdd/steering/debt.md` | State document of the technical debt: Por triar, En espera, Lista and Descartadas; `sdd-roadmap` writes it when triaging |
+| [roadmap-template.md](templates/roadmap-template.md) | `.docs/sdd/roadmap.md` | **2.x, deprecated: read by `migrations/v2.3.0.md` and unmigrated projects; deleted in 4.0.0.** 2.x anchor document: literal sections and table headers, because other skills read them |
+| [estimation-template.md](templates/estimation-template.md) | `.docs/sdd/steering/estimation.md` (2.x: `.docs/sdd/estimation.md`) | Project opt-in: activates the estimation module; empty calibration at birth |
+| [changelog-template.md](templates/changelog-template.md) | `CHANGELOG.md` at the root (2.x: `.docs/sdd/changelog.md`) | Project opt-in (init interview): activates `add-to-changelog`; born with `## [Unreleased]` and no entries |
+| [adr-template.md](templates/adr-template.md) | `.docs/sdd/decisions/NNNN-<slug>.md` | The why of a decision that is hard to undo; immutable, replaced by another |
 
 ## CLI
 
-El código ejecutable del kit es una CLI en Node, `cli/bin/sdd.js`, que viaja con el plugin; no se copia al proyecto. Se invoca `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verbo> <opciones>`; `--help` lista los verbos. Abajo van sin la ruta.
+The kit's executable code is a Node CLI, `cli/bin/sdd.js`, that travels with the plugin; it isn't copied to the project. Invoke `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb> <options>`; `--help` lists the verbs. Below they go without the path.
 
-| Verbo | Uso |
+| Verb | Use |
 | --- | --- |
-| `sdd estimation log` | Regenera `estimation-log.md` desde los walkthroughs y patches (`walkthrough.md` §2, `patch.md` §5, `hotfix.md` legacy): `estimation log --root "<raíz del proyecto>"`. Una copia local en el proyecto es deriva. |
-| `sdd id next` | Reserva el siguiente id (`0001`–`9999`) en modo `ids.mode: sequence`: `id next --project-root "<raíz>" --reserve [--count N]`. Cerrojo en el directorio común de git y contador compartido entre worktrees: un id reservado no vuelve a salir. Sin `--reserve` solo propone y no escribe (lo usa `sdd-explore`). En modo `tracker` sale con error. |
-| `sdd merge` | Merge del cierre según la política `merge` de `sdd-kit.json`, con cerrojo por repo, en un worktree temporal `merge-<id>`; regenera `estimation-log.md` si choca y ejecuta `--verify` antes, en el worktree del cambio y sin el cerrojo. Con `--push` empuja la rama destino. Si falla, la deja como estaba. Receta: [merge-recipe](../sdd-archive/references/merge-recipe.md): `merge --project-root "<worktree>" [--push] [--verify "<suite>"]`. |
-| `sdd capability check` | Valida `capabilities/` (título, secciones, propósito ≤ 300 caracteres, GIVEN/WHEN/THEN, sin marcas de delta, reglas con sus cinco entradas). Con `--artifact`, tras fusionar, comprueba que el bloque «Capacidades» de la spec o del `patch.md` nombra las capacidades de su delta y que cada `ADDED` o `MODIFIED` está en su capacidad: `capability check --path "<raíz>/.docs/sdd" [--artifact "<spec.md o patch.md>"]`. |
-| `sdd capability merge` | Fusiona el delta de una spec o `patch.md` en `capabilities/` (`ADDED` añade, `MODIFIED` sustituye, `REMOVED` quita, las reglas por nombre; solo pasan los escenarios). Todo o nada: con un fallo no escribe y sale con 1: `capability merge --path "<raíz>/.docs/sdd" --artifact "<spec.md o patch.md>"`. |
-| `sdd capability index` | El índice de `capabilities/`, al vuelo: una línea `` - `<nombre>` — <propósito> `` por capacidad, o `(sin propósito)`. Lo usan `sdd-propose`, `sdd-roadmap` y `sdd-explore` antes de elegir qué leer. Sale siempre con 0: `capability index --path "<raíz>/.docs/sdd"`. |
-| `sdd decision check` | Valida las ADR de `decisions/` (nombre, `status`, `date`, `rutas`, secciones en orden, números sin repetir); una línea por fallo y sale con 1: `decision check --path "<raíz>/.docs/sdd"`. |
-| `sdd decision index` | Lista las ADR; con `--files`, solo las `accepted` y `proposed` cuyas `rutas` casan con esos ficheros. Sale siempre con 0: `decision index --path "<raíz>/.docs/sdd" [--files <fichero>]…`. |
-| `sdd roadmap check` | Valida `ROADMAP.md` (forma de `now-next-later-template.md`) o `.docs/sdd/roadmap.md` (forma de `roadmap-template.md`), y `steering/debt.md` si existe (secciones, orden, tablas, cabeceras y estados, nada saldado tras la última release cerrada). Una línea por fallo y sale con 1; sin fallos, `Roadmap válido`. Bloquea el corte de `sdd-end-release`; en los demás cierres avisa de lo heredado: `roadmap check --path "<raíz>/.docs/sdd"`. |
-| `sdd id claim` | Al arrancar, publica el id en la integración del remoto: `id claim --project-root "<raíz>"`. Si otro clon ya lo tiene, renumera y renombra la rama. |
-| `sdd roadmap publish` | Commitea en la rama de integración los ficheros de `.docs/sdd/` que se le pasan, con el cerrojo de `sdd merge`: `roadmap publish --project-root "<raíz>" --message "<mensaje>" [--into <rama>] <ficheros>`. Lo usa `sdd-roadmap`. |
-| `sdd session tokens` | Mide los tokens y el coste de las sesiones de Claude Code de un worktree: `session tokens --path <worktree> --branch <rama>`. Lo usa `sdd-archive`. |
-| `sdd watch subagent` | Vigila el transcript de un subagente y termina cuando se cuelga o acaba: `watch subagent --description "<description del despacho>"`. |
-| `sdd watch command` | Lanza un comando en segundo plano, guarda su salida y termina con él (`TERMINADO: <comando> salió con <rc>`) o si se queda en silencio: `watch command -- <comando…>`. Para un comando que ya corre, `watch command --path <fichero de salida>`. |
-| `sdd workspace` | Resuelve y crea el workspace de SDD de un plan: `workspace <plan>`. |
-| `sdd task start` | Abre una task Native y registra el commit base: `task start <plan> <n>`. |
-| `sdd task done` | Ejecuta la «Verificación» de una task y, si pasa, la anota en el ledger: `task done <plan> <n> <base> -- <comando…>`. |
-| `sdd task brief` | Extrae el texto de una task del plan a un fichero: `task brief <plan> <n> <out>`. |
-| `sdd review package` | Genera el paquete de revisión de un rango de commits: `review package <plan> <base> <head> <out>`. |
-| `sdd ledger rulings` | Lista los rulings y los minor diferidos del ledger de un plan: `ledger rulings <plan>`. Lo usan `sdd-implement` y `sdd-archive`. |
-| `sdd hook session-start` | Escribe el contexto de arranque de sesión; lo ejecuta `hooks/hooks.json`, no las skills. |
+| `sdd estimation log` | Regenerates `estimation-log.md` from the walkthroughs and patches (`walkthrough.md` §2, `patch.md` §5, legacy `hotfix.md`): `estimation log --root "<project root>"`. A local copy in the project is drift. |
+| `sdd id next` | Reserves the next id (`0001`–`9999`) in `ids.mode: sequence`: `id next --project-root "<root>" --reserve [--count N]`. Lock in git's common directory and a counter shared across worktrees: a reserved id doesn't come out again. Without `--reserve` it only proposes and doesn't write (`sdd-explore` uses it). In `tracker` mode it exits with an error. |
+| `sdd merge` | The closing merge per the `merge` policy of `sdd-kit.json`, with a per-repo lock, in a temporary worktree `merge-<id>`; regenerates `estimation-log.md` if it clashes and runs `--verify` first, in the change's worktree and without the lock. With `--push` it pushes the target branch. If it fails, it leaves it as it was. Recipe: [merge-recipe](../sdd-archive/references/merge-recipe.md): `merge --project-root "<worktree>" [--push] [--verify "<suite>"]`. |
+| `sdd capability check` | Validates `capabilities/` (title, sections, purpose ≤ 300 characters, GIVEN/WHEN/THEN, no delta marks, rules with their five entries). With `--artifact`, after merging, it checks that the «Capacidades» block of the spec or `patch.md` names the capabilities of its delta and that each `ADDED` or `MODIFIED` is in its capability: `capability check --path "<root>/.docs/sdd" [--artifact "<spec.md or patch.md>"]`. |
+| `sdd capability merge` | Merges the delta of a spec or `patch.md` into `capabilities/` (`ADDED` adds, `MODIFIED` replaces, `REMOVED` removes, rules by name; only the scenarios pass). All or nothing: on a failure it doesn't write and exits with 1: `capability merge --path "<root>/.docs/sdd" --artifact "<spec.md or patch.md>"`. |
+| `sdd capability index` | The index of `capabilities/`, on the fly: one line `` - `<name>` — <purpose> `` per capability, or `(sin propósito)`. Used by `sdd-propose`, `sdd-roadmap` and `sdd-explore` before choosing what to read. Always exits with 0: `capability index --path "<root>/.docs/sdd"`. |
+| `sdd decision check` | Validates the ADRs of `decisions/` (name, `status`, `date`, `rutas`, sections in order, unrepeated numbers); one line per failure and exits with 1: `decision check --path "<root>/.docs/sdd"`. |
+| `sdd decision index` | Lists the ADRs; with `--files`, only the `accepted` and `proposed` ones whose `rutas` match those files. Always exits with 0: `decision index --path "<root>/.docs/sdd" [--files <file>]…`. |
+| `sdd roadmap check` | Validates `ROADMAP.md` (shape of `now-next-later-template.md`) or `.docs/sdd/roadmap.md` (shape of `roadmap-template.md`), and `steering/debt.md` if it exists (sections, order, tables, headers and states, nothing settled after the last closed release). One line per failure and exits with 1; with no failures, `Roadmap válido`. Blocks the cut of `sdd-end-release`; in other closings it warns about what was inherited: `roadmap check --path "<root>/.docs/sdd"`. |
+| `sdd id claim` | At start, publishes the id on the remote's integration branch: `id claim --project-root "<root>"`. If another clone already has it, it renumbers and renames the branch. |
+| `sdd roadmap publish` | Commits on the integration branch the `.docs/sdd/` files passed to it, with the lock of `sdd merge`: `roadmap publish --project-root "<root>" --message "<message>" [--into <branch>] <files>`. Used by `sdd-roadmap`. |
+| `sdd session tokens` | Measures the tokens and cost of a worktree's Claude Code sessions: `session tokens --path <worktree> --branch <branch>`. Used by `sdd-archive`. |
+| `sdd watch subagent` | Watches a subagent's transcript and ends when it hangs or finishes: `watch subagent --description "<dispatch description>"`. |
+| `sdd watch command` | Runs a command in the background, saves its output and ends with it (`TERMINADO: <comando> salió con <rc>`) or if it goes silent: `watch command -- <command…>`. For a command already running, `watch command --path <output file>`. |
+| `sdd workspace` | Resolves and creates the SDD workspace of a plan: `workspace <plan>`. |
+| `sdd task start` | Opens a Native task and records the base commit: `task start <plan> <n>`. |
+| `sdd task done` | Runs a task's «Verificación» and, if it passes, notes it in the ledger: `task done <plan> <n> <base> -- <command…>`. |
+| `sdd task brief` | Extracts a task's text from the plan to a file: `task brief <plan> <n> <out>`. |
+| `sdd review package` | Generates the review package of a commit range: `review package <plan> <base> <head> <out>`. |
+| `sdd ledger rulings` | Lists the rulings and deferred minors of a plan's ledger: `ledger rulings <plan>`. Used by `sdd-implement` and `sdd-archive`. |
+| `sdd hook session-start` | Writes the session-start context; run by `hooks/hooks.json`, not by the skills. |
 
-Reglas al usarlas:
+Rules when using them:
 
-- **Calcar la estructura** (mismas secciones, mismo orden); los bloques de ayuda en citas (`>`) se borran al redactar.
-- **Estructura 3.0.0**: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md` en la raíz del proyecto; en `.docs/sdd/`, `steering/` (constitution, operations, architecture, estimation), `decisions/`, `capabilities/`, `changes/` y `releases/vX.Y.Z/`. Los artefactos de feature, patch y propuesta, en `changes/<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>/`. Las carpetas de `specs/` anteriores a la 3.0.0 se leen y no se mueven (y las `-task-` anteriores a la 2.0.0 no se renombran); un proyecto aún en la 2.x sigue con sus documentos en `.docs/sdd/` y sus artefactos en `specs/`.
-- Las secciones marcadas *(si el módulo está activo)* se rigen por los predicados del proyecto (`estimation.md`, `changelog.md` presentes o no).
-- **Modo lite**: la spec se calca de la MISMA plantilla ligera (decisiones · Intent/Scope/Approach · delta · aprobaciones) y añade el bloque «Estimación y esfuerzo», que en modo full vive en `plan.md`. No existe ni se crea un `spec-lite-template.md`: una segunda plantilla es deriva instantánea (Art. VIII).
-- Al redactar el artefacto, sustituir los huecos `<proyecto>` (stack, comandos de build, artículos de constitution) por los valores reales del proyecto (`tech-stack.md`, `constitution.md`).
+- **Trace the structure** (same sections, same order); the help blocks in quotes (`>`) are deleted when drafting.
+- **3.0.0 structure**: `PRODUCT.md`, `ROADMAP.md` and `CHANGELOG.md` at the project root; in `.docs/sdd/`, `steering/` (constitution, operations, architecture, estimation), `decisions/`, `capabilities/`, `changes/` and `releases/vX.Y.Z/`. The artifacts of a feature, patch and proposal, in `changes/<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>/`. The `specs/` folders from before 3.0.0 are read and not moved (and the `-task-` ones from before 2.0.0 aren't renamed); a project still on 2.x keeps its documents in `.docs/sdd/` and its artifacts in `specs/`.
+- Sections marked *(si el módulo está activo)* are governed by the project's predicates (`estimation.md`, `changelog.md` present or not).
+- **Lite mode**: the spec is traced from the SAME light template (decisions · Intent/Scope/Approach · delta · approvals) and adds the «Estimación y esfuerzo» block, which in full mode lives in `plan.md`. No `spec-lite-template.md` exists or is created: a second template is instant drift (Art. VIII).
+- When drafting the artifact, replace the `<proyecto>` gaps (stack, build commands, constitution articles) with the project's real values (`tech-stack.md`, `constitution.md`).
