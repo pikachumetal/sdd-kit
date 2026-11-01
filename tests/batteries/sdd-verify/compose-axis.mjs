@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 
-const names = ['kit', 'superpowers', 'axis', 'scenario', 'package', 'sha', 'dir', 'adrs', 'caps'];
+const names = ['kit', 'superpowers', 'axis', 'scenario', 'package', 'sha', 'dir', 'adrs', 'caps', 'comments'];
 const { values: opt } = parseArgs({ options: Object.fromEntries(names.map((name) => [name, { type: 'string', default: '' }])) });
 
 function fencedAfter(text, marker, fence) {
@@ -42,6 +42,7 @@ function briefValues() {
     ['<REVIEW_DIR>', opt.dir],
     ['<líneas que imprime sdd decision index --files con los ficheros del diff, o «ninguna»>', opt.adrs || 'ninguna'],
     ['<salida de sdd capability index --path .docs/sdd>', opt.caps],
+    ['<la salida de `sdd review comments`, literal>', opt.comments],
     ['[BASE_SHA]', `${opt.sha}~`],
     ['[HEAD_SHA]', opt.sha],
   ];

@@ -127,7 +127,7 @@ Los agentes dejan comentarios que citan la spec, una task o la constitution, y c
 Y a continuación de la línea «**Comments:**» de «What to Check»:
 
 ```text
-Each line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive, or a citation with its own reason (an ADR, a living document), goes to «Declined to judge». The list doesn't limit you: a citation it missed is a finding too.
+Each line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito del proveedor»), or a citation with its own reason (an ADR, a living document), goes to «Declined to judge», never to Issues. The list doesn't limit you: a citation it missed is a finding too.
 ```
 
 ## Dónde se prueba
@@ -216,17 +216,17 @@ Medido con el conteo de `word-budget.test.ts`, sin el margen del 25 %, que el te
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
 | `sdd-verify` `SKILL.md` | 3.567 / 3.825 | 258 | sin cambio (+12 → 3.579) |
-| `sdd-verify` total | 9.635 / 11.400 | 1.765 | sin cambio (−18 → 9.617) |
+| `sdd-verify` total | 9.635 / 11.400 | 1.765 | sin cambio (−4 → 9.631) |
 
-**Saldo: −18 palabras en la skill.** Si `f6` saca la frase de juicio, −74.
+**Saldo: −4 palabras en la skill** (9.635 → 9.631).
 
 | Sube | Palabras | Baja, en `encargo-revision.md` | Palabras |
 | --- | --- | --- | --- |
 | Fila Code de `SKILL.md` | +12 | «Medido en… 3 de 3 runs» (29 → 3) | −26 |
 | Sección con la salida en `code-reviewer-prompt.md` | +12 | «en un proyecto del equipo, 27 minutos…» | −21 |
-| Regla de juicio en `code-reviewer-prompt.md` | +56 | «Con el cuerpo de los borrados…» (45 → 15) | −30 |
+| Regla de juicio en `code-reviewer-prompt.md` | +70 | «Con el cuerpo de los borrados…» (45 → 15) | −30 |
 | | | «Sin esta frase, 2 de 2 sujetos…» (23 → 2) | −21 |
-| **Total** | **+80** | **Total** | **−98** |
+| **Total** | **+94** | **Total** | **−98** |
 
 ## Previsión de coste
 
@@ -244,6 +244,9 @@ Cifras con el precio de `tech-stack.md` (~0,4 $ por turno y sujeto), redondeado 
 Cada paso cambiado de lo que sigue el agente: la fila Code y las dos piezas de `code-reviewer-prompt.md`, medidas por `f6`; las frases de `encargo-revision.md`, sin medir, porque son evidencia y no instrucción.
 
 ## Enmiendas
+
+- 2026-11-01 — La regla de juicio de «Approach» gana un contraejemplo y «never to Issues» (14 palabras); el saldo pasa de −18 a −4 — con la lista y sin ese contraejemplo, `f6` marcó el falso positivo como Minor dos veces (`tests/sdd-verify-0182-comments.md`) — sin aprobar (no cambia ningún THEN; el RED limpio no sacó la frase, porque el GREEN la pidió)
+
 
 ## Aprobaciones
 
