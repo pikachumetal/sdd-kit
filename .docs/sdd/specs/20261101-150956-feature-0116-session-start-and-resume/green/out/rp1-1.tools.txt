@@ -1,0 +1,182 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0116-session-start-and-resume\.temp\claude\D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume\74405bf9-2b85-4c04-8d5c-2fde2a174cfe\scratchpad\kit-green\skills\sdd-implement\references\patch-flow.md
+<<< 1	# The patch flow
+2	
+3	A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/SKILL.md#is-it-really-a-patch)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+4	
+5	One todo per step. Resuming, start at the first step whose output `patch.md` or the branch lacks, never with a second `patch.md`.
+6	
+7	1. **Root cause, MANDATORY in a failure** (the intent, in a
+
+>>> Glob: .docs/sdd/specs/20260921-090000-patch-0021-cancel-missing/**
+<<< .docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md
+<<< 1	---
+2	solution: causa raíz
+3	---
+4	
+5	# Patch 0021 — cancelar una reserva que no existe
+6	
+7	## 1. Síntoma
+8	
+9	«Si cancelo una reserva que no existe me dice cancelada igual.»
+10	
+11	## 2. Causa raíz
+12	
+13	`run` en src/app.js:12 devuelve `cancelada` sin mirar `bookings`.
+14	
+15	## 3. Fix
+16	
+17	Si no hay reserva de ese día y franja, responde `no existe`; el test `cancelar respeta el día` pasa a usar `lun 10:00-12:00`. Decisiones: texto, dev-lead.
+18	
+19	## 4. Verificación
+20	
+21	Pendiente.
+22	
+23	## 5. Tiempo
+24	
+25	- Inicio: 2026-09-21T09:00:00Z
+26	
+
+>>> Bash: git status --short; git log --oneline -5; git diff --stat
+<<< ?? .docs/sdd/specs/20260921-090000-patch-0021-cancel-missing/
+610fb20 feat: base del molde salas
+
+>>> Bash: cat src/app.js; ls; ls test tests 2>/dev/null; cat package.json; grep -rn "cancel" --include=*.js . -l | grep -v node_modules
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cat test/app.test.js; cat README.md | head -30; cat .docs/sdd/sdd-kit.json; ls .docs/sdd
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+{"version": "3.
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Edit: <run>\repo\test\app.test.js
+<<< The file <run>\repo\test\app.test.js has been updated successfully.
+
+>>> Bash: node --test test/ 2>&1 | grep -E "^# (pass|fail)|not ok|expected|actual|\+|\-  " | head -20
+<<<   + actual - expected
+  + 'cancelada mar 10:00-12:00'
+    actual: 'cancelada mar 10:00-12:00',
+    expected: 'no existe',
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: node --test test/ 2>&1 | grep -E "^# (tests|pass|fail)"; git diff --numstat
+<<< 5	1	src/app.js
+5	1	test/app.test.js
+
+>>> Bash: node --test test/ 2>&1 | tail -15; echo exit=$?
+<<< ✔ libres excluye la sala reservada en la franja (0.6851ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1115ms)
+✔ cancelar respeta el día (14.216ms)
+✔ cancelar una reserva que no existe responde no existe (0.1329ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 97.9481
+exit=0
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md
+<<< The file <run>\repo\.docs\sdd\specs\20260921-090000-patch-0021-cancel-missing\patch.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add -A && git commit -q -m "fix: cancelar una reserva inexistente responde no existe (patch 0021)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< warning: in the working copy of '.docs/sdd/specs/20260921-090000-patch-0021-cancel-missing/patch.md', LF will be replaced by CRLF the next time Git touches it
+014b122 fix: cancelar una reserva inexistente responde no existe (patch 0021)
+610fb20 feat: base del molde salas
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-green/cli/bin/sdd.js"; git status --porcelain; node "$S" merge --check --project-root "$PWD"; echo ---; git worktree list; cat .docs/sdd/roadmap.md | head -40; ls .docs/sdd; ls ROADMAP.md 2>&1
+<<< Exit code 2
+política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+---
+<run>/repo 014b122 [patch/0021-cancel-missing]
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --
+
+>>> Bash: D="D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-green/skills"; cat "$D/sdd-templates/templates/validation-template.md"; sed -n 1,60p "$D/sdd-archive/references/dev-validation.md"
+<<< # Mensaje de validación — plantilla
+
+> Lo presenta `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+>
+> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` no hay guion. En los dos no paras: lo de «Sin probar» se informa, no se pregunta, y sigues con el cierre. Con `agente`, sin `field`, registras `Validación por el agente: <fecha> · <evidencia>`.
+>
+> **El guion 
+
+>>> Bash: node src/app.js cancelar lun 10:00-12:00; node src/app.js cancelar mar 10:00-12:00; node src/app.js cancelar lun 14:00-16:00; git status --porcelain; grep -n "temp" .gitignore 2>&1
+<<< Exit code 2
+cancelada lun 10:00-12:00
+no existe
+no existe
+grep: .gitignore: No such file or directory
+
+=== RESULTADO (15 turnos, 0.3969109 $)
+

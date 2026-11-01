@@ -1,6 +1,6 @@
 ---
 name: sdd-implement
-description: Use when sdd-propose hands off a confirmed patch, or an approved spec (and plan, in full mode), to implement it task by task, in this session (Native) or with a subagent per task (SDD). Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-propose hands off a confirmed patch, or an approved spec (and plan, in full mode), to implement it task by task, or to resume a paused feature or patch on its branch («retoma la feature», «sigue con la Task 3», «retoma el patch»). Not the entry of a new change (that is sdd-propose).
 ---
 
 # sdd-implement
@@ -11,7 +11,7 @@ Execute the approved plan, task by task, and leave a record that survives your o
 
 **Core principle:** the plan already did the thinking. Execute it exactly, prove each step with a test you watched fail and then pass, and leave a record that survives your own forgetting.
 
-**Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2. Saying «preparo el workspace» or «leo el ledger» isn't it.
+**Your first message after loading this skill**, new run or resumed, except in a patch, carries under its phase notice the line `Workspace del plan: <ruta> — …` of [Setup](#setup), step 2.
 
 **Narration:** between tool calls, narrate at most one short line — the ledger and the tool results carry the record. Each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: <what is left until the user's next stop>, ~<minutes>`, and `, ~<dollars>` if it launches subagents or subjects; a counter or a step number alone isn't a notice.
 
@@ -19,7 +19,7 @@ Execute the approved plan, task by task, and leave a record that survives your o
 
 ## Patch
 
-If `sdd-propose` handed you a confirmed patch, first thing, read [references/patch-flow.md](references/patch-flow.md) and follow it from its step 1, with the class and the estimate it brought; implement nothing from here. Everything below is for features and lites: the Setup, both loops and [After the last task](#after-the-last-task) don't apply, so a patch has no ledger, no final review and no axes. Its `sdd <verb>` run as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
+If `sdd-propose` handed you a confirmed patch, or you resume one (its `patch.md` on the branch), first thing, read [references/patch-flow.md](references/patch-flow.md) and follow it, with the class and the estimate it brought; implement nothing from here. Everything below is for features and lites: the Setup, both loops and [After the last task](#after-the-last-task) don't apply, so a patch has no ledger, no final review and no axes. Its `sdd <verb>` run as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
 
 ## Method
 
@@ -34,7 +34,7 @@ Both run in this session, share the workspace, the ledger and its format, and ne
 
 ## Setup
 
-With no approved `spec.md` on the branch, stop and send the change to `sdd-propose`: an unapproved spec isn't a contract.
+With no approved `spec.md` on the branch, stop and send the change to `sdd-propose`: an unapproved spec isn't a contract. Resuming without a ledger, `tasks.md` and `git log` say what's done: start it from them and go on at the first pending task.
 
 1. **Worktree**: invoke `sdd-worktrees` with `Skill`; it detects or creates the isolated workspace, runs `env:setup` if `.docs/sdd/environments.md` exists and the baseline in a detached worktree.
 2. **Workspace**: each plan owns one. Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" workspace <plan>`; it prints the plan's git-ignored directory, home to every artifact of THIS plan: ledger, briefs, reports, review packages. Another plan's directory is never yours to read or write. **Your next message to the user**, right under its phase notice, carries this line, also when you resume: `Workspace del plan: <ruta> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia` (resuming, add `· retomo en la Task <N>`). «Preparo el workspace» isn't it (`tests/sdd-implement-red.md`, `tests/sdd-implement-green.md`). The `sdd <verb>` of this skill (`workspace`, `task start|done|brief`, `review package`, `ledger rulings`) runs the same way, from any shell.
@@ -344,7 +344,6 @@ When the closing of the review is done (`sdd-verify`) and its fixes are committe
 | "It doesn't change the spec, so it's a ruling" | True for other deviations from the plan, not for the scope brakes: the third fix, the observable output, the row and the task's lines changed in the base stop without touching the spec's letter. |
 | "The tests pass and the review is clean: the UI task is done" | A unit test doesn't look at a browser. Without «Verificación visual» run, the task stays «no probado» in `tasks.md`. |
 | "The spec doesn't fix the padding and the task is reviewed: I leave it for the dev-lead" | A detector finding in what the task touches is fixed in its own commit, which enters review, or justified citing the criterion (`tests/frontend-verification-red.md`, q1). |
-| "No Playwright MCP: the visual check stays «no probado»" | Without the MCP there's still a browser: a script with the `playwright` package opens the same screen. |
 | "I kill every `node.exe` (or `pkill -f server.mjs`): that surely stops mine" | And the dev-lead's server, their MCPs and the other sessions. Stop what you started by its PID or port. |
 
 ## Example workflows
