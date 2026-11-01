@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd .docs/sdd/capabilities 2>&1; git branch --show-current; ls node_modules 2>&1 | head -1; ls
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+develop
+ls: cannot access 'node_modules': No such file or directory
+package.json
+README.md
+src/
+test/
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md sdd-kit.json; ls -a . specs; cd ../..; cat package.json; ls -R src test; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -5
+
+>>> Bash: grep -rn -i "cancel" src test | head -30
+<<< src/app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+test/app.test.js:13:test('cancelar respeta el día', () => {
+test/app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cat src/app.js test/app.test.js; ls .docs/sdd/specs/*; cat .docs/sdd/specs/*0007*/patch.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/skills/sdd-propose/references/modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+=== RESULTADO (8 turnos, 0.1717048 $)
+Estoy clasificando el cambio. Hasta ahora leí el contexto SDD y `src/app.js`, y todavía no he tocado nada.
+
+🦆 En `src/app.js:12`, `cancelar` devuelve siempre `cancelada <día> <hora>` sin mirar si esa reserva existe. Por eso cancelar una reserva inexistente también dice «cancelada».
+
+No lo trato como patch, porque la petición no fija la solución. Tendría que decidir yo dos cosas:
+- **El texto del error.** Por ejemplo `no hay reserva el mar a las 10:00`.
+- **Cuándo una reserva «existe».** `cancelar` recibe día y hora (`10:00`), pero las reservas guardan la franja completa (`10:00-12:00`) y la sala. No está definido si basta con que la hora coincida con el inicio de la franja.
+
+Eso es diseño visible para ti, así que el cambio es una feature pequeña.
+
+¿Cómo lo llevamos?
+
+1. **Modo lite (recomendada).** Cumple el predicado, comprobado condición por condición:
+   - El flujo ya existe y se puede leer.
+   - No cambia contratos públicos, porque la única salida es el texto del CLI.
+   - No toca datos ni schema.
+   - Cabe en un solo módulo, `src/app.js`.
+   - No hay `estimation.md`, así que esa condición no aplica.
+
+   Haría una `spec.md` corta con esas dos decisiones para que las valides, sin plan. Después iría con test primero y la validación al cierre.
+2. **Modo full.** Lo mismo, pero con plan y tareas aparte. Es más ceremonia de la que pide un cambio de una línea.
+
+El perfil sería el del proyecto (`sdd-kit.json`), porque no existe `sdd-kit.local.json`. Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+
+Dime 1 o 2 y arranco.

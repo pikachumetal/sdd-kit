@@ -1,0 +1,65 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/cli/bin/sdd.js" capability index --path .docs/sdd; ls; ls node_modules 2>/dev/null | head -1
+
+>>> Glob: **/*.{js,html}
+<<< ./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+- `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+app.js
+package.json
+pages/
+README.md
+styles/
+<<< app.js
+pages\albaran-detalle.html
+pages\pedido-detalle.html
+
+>>> Bash: cat app.js package.json; cat .docs/sdd/capabilities/order-sheets.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md; grep -n "cancelar\|<script" pages/*.html; git log --oneline | head
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+{ "name": "ventas", "private": true }
+# Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de 
+
+=== RESULTADO (6 turnos, 0.1548575 $)
+Ahora: clasifiqué el cambio y te pregunto antes de abrir nada. Queda: tu confirmación, y luego el fix, la verificación en navegador y el cierre, ~15 min.
+
+🦆 Hoy, al pulsar Cancelar en la ficha de pedido o en la de albarán, no pasa nada. El ticket pide que lleve al listado de pedidos. Para eso añadiría en `app.js` un listener de click sobre `[data-accion="cancelar"]` que haga `location.assign('../index.html')`. Ese botón está en `pages/pedido-detalle.html` y en `pages/albaran-detalle.html`, y ambas cargan `app.js`. No toco el IVA ni el resto de la ficha.
+
+**Carril: patch, petición cerrada.** El ticket fija qué cambia (Cancelar navega) y dónde (`../index.html`), así que no hay que decidir ni texto ni destino. Una prueba lo reproduce: pulsar Cancelar y ver que la URL cambia.
+
+**Problema con el destino:** `../index.html` no existe en el repo. Solo hay `app.js`, `pages/` y `styles/`, y no hay ningún listado de pedidos. Con la solución tal cual, Cancelar llevaría a un 404. Dos cosas más:
+- `order-sheets.md` solo dice que la ficha *ofrece* Cancelar, no a dónde lleva. Habría que añadir ese requisito a la capacidad.
+- No hay tests automáticos (`tech-stack.md`), así que la verificación sería abrir las dos fichas en el navegador. Con 404, esa comprobación solo demuestra que la navegación se dispara.
+
+¿Cómo seguimos?
+
+1. **Patch tal cual el ticket (Recomendada):** implemento el listener hacia `../index.html` en las dos fichas, añado el requisito a `order-sheets` y te aviso de que el destino aún no existe. Perfil `delegate`, el del proyecto.
+2. **Patch + parar antes:** igual, pero me detengo antes de implementar para que confirmes con quien lleve el ticket que el listado va a existir o que la ruta es otra.
+3. **Feature:** si quieres que también se cree el listado `index.html`. Es otro alcance (maquetación, contenido, datos), y lo decidirías con una spec.
+
+Aviso aparte: esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.

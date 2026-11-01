@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; git branch --show-current
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+develop
+<<< - `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md capabilities/order-sheets.md; cd ../..; ls pages styles; cat package.json; wc -l app.js pages/*
+<<< # Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 001
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0151-retro-agent-writing\.temp\k0151\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the sp
+
+>>> Bash: cat app.js pages/pedido-detalle.html; diff pages/pedido-detalle.html pages/albaran-detalle.html
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Pedido</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+<body>
+  <main class="ficha">
+    <header class="ficha-cabecera">
+     
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.18245809999999998 $)
+Ahora: clasificar el cambio y abrir la entrevista de la spec. Queda: 2-3 preguntas de diseño, spec, plan e implementación, ~25 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+**Por qué no es un patch:** aunque lo pidas como patch rápido, «avisa cuando el total pase de 1.000 €» no fija el texto del aviso, dónde sale ni qué total se compara. Esas decisiones son de diseño. Es una feature pequeña: unas 2 tasks, así que no la parto. Va por el flujo con spec y puerta de aprobación.
+
+**Lo que he entendido:** las dos fichas (`pedido-detalle.html` y `albaran-detalle.html`) comparten `app.js`. Hoy solo calculan el «Total con IVA» de cada línea. Quieres que, si el total del pedido supera 1.000 €, la ficha se lo diga al usuario. Corrígeme si me equivoco.
+
+❓ **¿Qué total se compara con 1.000 €?**
+Hoy no existe un total de la ficha, solo el de cada línea (`36,26 €` en el ejemplo de `order-sheets`). Hay que decidir qué cifra pasa de 1.000 €.
+1️⃣ **La suma de los totales con IVA de todas las líneas.** Una ficha con Cable HDMI `36,26 €` y Monitor `1.100,00 €` suma `1.136,26 €` y avisa. Es lo que el usuario paga de verdad y coincide con la columna que ya ve.
+2️⃣ **La suma sin IVA.** Las mismas líneas suman `1.099,97 €` sin IVA y avisan. Una ficha de 1.000 € de base con IVA al 21 % (`1.210,00 €`) también avisa. Pero el umbral no coincide con la columna «Total con IVA» que ve el usuario.
+3️⃣ **El total de cada línea por separado.** Cada línea que pase de 1.000 € se marca. No cumple lo que pides («el total del pedido»).
+➡️ **Recomiendo 1️⃣**, porque la ficha ya enseña el total con IVA por línea y el aviso debe cuadrar con lo que el usuario puede sumar a ojo. A cambio, una ficha con base de 900 € y IVA al 21 % (`1.089,00 €`) avisa aunque la base no llegue a 1.000 €.
