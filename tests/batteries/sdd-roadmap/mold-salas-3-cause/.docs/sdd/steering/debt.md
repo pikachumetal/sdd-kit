@@ -9,16 +9,16 @@
 
 ## En espera
 
-| Ítem | Origen | Impacto | Falta | Fecha |
-| --- | --- | --- | --- | --- |
-| Las salidas de `DRY_RUN=1` no aparecen en `out/` | [ticket](../../../docs/tickets/2026-10-05-salidas.md) | Medio | 2.º caso | 2026-10-05 |
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las salidas de `DRY_RUN=1` no aparecen en `out/` | herramienta del kit | [ticket](../../../docs/tickets/2026-10-05-salidas.md) | Medio | 2.º caso | 2026-10-05 |
 
 ## Lista
 
-| Ítem | Origen | Impacto | Evidencia | Destino |
-| --- | --- | --- | --- | --- |
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Descartadas
 
-| Ítem | Origen | Motivo | Fecha |
-| --- | --- | --- | --- |
+| Ítem | Causa | Origen | Motivo | Fecha |
+| --- | --- | --- | --- | --- |
