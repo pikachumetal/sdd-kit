@@ -52,7 +52,6 @@ beforeAll(() => {
     SCENARIOS: 'x1',
     SUBJECT_CAP: '1',
     COST_CAP: '1',
-    SUPERPOWERS_DIR: join(root, 'superpowers'),
     CLAUDE_BIN: write(join(root, 'fake-claude.mjs'), FAKE_CLAUDE),
     FAKE_CLAUDE_LOG: log,
     KEEP_MOLD: '1',

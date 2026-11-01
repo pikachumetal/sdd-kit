@@ -2,7 +2,7 @@
 
 Cómo escribe un agente lo que lee otro agente: una skill nueva, una edición con el fallo que la motiva y su prueba. Nace en la feature 0151 y mide las reglas que los tickets de campo ya pagaron.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). El molde es `tests/batteries/using-sdd/mold-salas` con `mold-skill/` encima: las skills `exportes` y `avisos` del proyecto.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-agent-writing`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado. El molde es `tests/batteries/using-sdd/mold-salas` con `mold-skill/` encima: las skills `exportes` y `avisos` del proyecto.
 
 **Petición por fase.** Fuera del RED, en f1, t1, b1, b2, h1, m1 y c1, `subject.mjs` antepone «Invoca la skill sdd-kit:sdd-agent-writing y »; p1, p2 y e1 miden la puerta y van siempre sin nombrarla. `p2` corre sin la carpeta `.claude/skills/` del molde.
 

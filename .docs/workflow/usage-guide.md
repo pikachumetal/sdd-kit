@@ -214,13 +214,12 @@ El feedback de una demo o una reunión no se procesa en el corte: eso es planifi
 
 ### Uso otra carpeta de configuración (`CLAUDE_CONFIG_DIR`)
 
-Si arrancas Claude Code con `CLAUDE_CONFIG_DIR` apuntando a otra carpeta (por ejemplo, una por cuenta), esa carpeta tiene sus propios plugins. El kit y superpowers tienen que estar instalados en la configuración con la que abres la sesión, no solo en `~/.claude`. Fija también ahí `model` en `settings.json`: sin él, una sesión puede arrancar en el modelo más caro.
+Si arrancas Claude Code con `CLAUDE_CONFIG_DIR` apuntando a otra carpeta (por ejemplo, una por cuenta), esa carpeta tiene sus propios plugins. El kit tiene que estar instalado en la configuración con la que abres la sesión, no solo en `~/.claude`. Fija también ahí `model` en `settings.json`: sin él, una sesión puede arrancar en el modelo más caro.
 
 Al medir los tokens de la sesión en el cierre, `sdd session tokens` busca los transcripts en `CLAUDE_CONFIG_DIR`, en `~/.claude` y en cualquier `~/.claude-*`. Si aun así el walkthrough sale con «no medido», pídele al agente que lo repita pasando `--projects-root <tu carpeta de configuración>/projects`.
 
 ### Las skills no cargan, o llegan viejas
 
-- **El kit aparece deshabilitado**: falta superpowers o su marketplace. Añade `obra/superpowers-marketplace` antes que el del kit y reinstala (pasos en el [README](../../README.md#instalación)). Si tenías `superpowers@claude-plugins-official`, desinstálalo: con los dos, las skills salen duplicadas.
 - **El agente no entra por el carril que toca**: `using-sdd` la inyecta un hook al empezar la sesión, solo si el proyecto tiene `.docs/sdd/`. Si el hook no llegó a correr (sin Node, Claude Code enseña el error del hook; el kit pide Node 22.18 o posterior), nombra la skill en la petición («con `sdd-propose`, añade…»).
 - **Tras actualizar el kit, el agente sigue con la versión anterior** o nombra una skill que ya no existe (la 2.0.0 renombró las skills de «task» a «feature»): una sesión sirve las skills con el texto que tenían al arrancar. Actualiza con `/plugin marketplace update`, abre una sesión nueva y, si el proyecto viene de una versión anterior, pide «ponme el proyecto al día con `sdd-init`». Desde la 2.2.0, el arranque de la sesión te avisa de los dos casos: si el kit cargado es más viejo que el del proyecto, con el comando para actualizarlo, y si el proyecto tiene migraciones pendientes, con esa misma frase.
 

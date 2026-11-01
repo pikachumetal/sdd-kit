@@ -3,7 +3,7 @@
 //      node battery.mjs field <battery.md> <id> <columna>       la celda, sin las comillas de código
 //      node battery.mjs verdict <battery.md> <out> [paso…]      <id> · <pasan>/<n> · umbral <u> · verde|rojo|sin evidencia: la puerta y las filas `tools: /<regex>/`
 //      BATTERY=<skill> [STEPS="<paso> …"] SPEC_DIR=… PHASE=… KIT_DIR=… RUNS_DIR=… SUBJECT_CAP=… COST_CAP=… \
-//      [SUPERPOWERS_DIR=…] node battery.mjs run                  lanza la batería, entera o por tramos, y da el veredicto
+//      node battery.mjs run                 lanza la batería, entera o por tramos, y da el veredicto
 // La batería vive en tests/batteries/<skill>/ (battery.md y subject.mjs); BATTERY_DIR la sustituye.
 // Cada escenario se lanza n veces con su modelo; run.mjs limita cuántos corren a la vez (MAX_PARALLEL).
 // run sale con el código del veredicto: 0 si todos los escenarios pasan su umbral, 1 con algún rojo, 3 si solo falta evidencia.
