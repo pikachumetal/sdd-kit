@@ -30,7 +30,7 @@ describe('commentLinesOf', () => {
   });
 
   it('gives the line text without its indentation', () => {
-    expect(commentLinesOf('a.ts', 'function f() {\n    // nota\n}\n')?.get(2)).toBe('// nota');
+    expect(commentLinesOf('a.ts', 'function f() {\n    // nota\n}\n')?.get(2)?.text).toBe('// nota');
   });
 
   it.each([
@@ -59,7 +59,21 @@ describe('commentLinesOf', () => {
   });
 
   it('lists a trailing comment', () => {
-    expect(commentLinesOf('a.ts', 'save(); // nota\n')?.get(1)).toBe('save(); // nota');
+    expect(commentLinesOf('a.ts', 'save(); // nota\n')?.get(1)?.text).toBe('save(); // nota');
+  });
+
+  it('separates the comment from the code on its line', () => {
+    expect(commentLinesOf('a.ts', 'const spec = "x"; // nota\n')?.get(1)?.comment).toBe('// nota');
+  });
+
+  it('joins the comments of a line, without the code between them', () => {
+    expect(commentLinesOf('a.ts', '/* uno */ const spec = 1; // dos\n')?.get(1)?.comment).toBe('/* uno */ // dos');
+  });
+
+  it('gives each line its part of a block comment', () => {
+    const lines = commentLinesOf('a.cs', 'var spec; /* uno\n dos */ var task;\n');
+    expect(lines?.get(1)?.comment).toBe('/* uno');
+    expect(lines?.get(2)?.comment).toBe('dos */');
   });
 
   it('ignores a hash inside a word', () => {
@@ -68,7 +82,7 @@ describe('commentLinesOf', () => {
 
   it('strips the carriage return', () => {
     const lines = commentLinesOf('a.ts', 'const a = 1;\r\n// nota\r\nconst b = 2;\r\n');
-    expect(lines?.get(2)).toBe('// nota');
+    expect(lines?.get(2)?.text).toBe('// nota');
     expect([...(lines?.keys() ?? [])]).toEqual([2]);
   });
 

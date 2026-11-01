@@ -8,7 +8,14 @@ interface Family {
   lineNeedsSpaceBefore?: boolean;
 }
 
-// shortcut: un literal regex de JS o un apóstrofo en shell o YAML abren una cadena hasta el fin de línea y un comentario detrás se pierde; pide un parser por lenguaje si el revisor echa de menos casos.
+type Span = [start: number, end: number];
+
+export interface CommentLine {
+  text: string;
+  comment: string;
+}
+
+// shortcut: no entiende literales regex de JS (un «\//» abre un comentario falso), lifetimes de Rust, cadenas verbatim de C#, el «#» de PHP ni un apóstrofo en shell o YAML, que abre una cadena hasta el fin de línea y pierde el comentario de detrás; pide un parser por lenguaje si el revisor echa de menos casos.
 const C_LIKE: Family = { line: ['//'], blocks: [['/*', '*/']], strings: ['"', "'"], multilineStrings: ['`'] };
 const CSS: Family = { line: [], blocks: [['/*', '*/']], strings: ['"', "'"], multilineStrings: [] };
 const HASH: Family = { line: ['#'], blocks: [], strings: ['"', "'"], multilineStrings: [], lineNeedsSpaceBefore: true };
@@ -36,6 +43,8 @@ const BY_NAME = new Map([['Dockerfile', HASH], ['Makefile', HASH]]);
 function familyOf(path: string): Family | null {
   return BY_NAME.get(basename(path)) ?? BY_EXTENSION.get(extname(path).slice(1).toLowerCase()) ?? null;
 }
+
+export const hasLexer = (path: string): boolean => familyOf(path) !== null;
 
 function endOfLine(source: string, from: number): number {
   const newline = source.indexOf('\n', from);
@@ -69,27 +78,42 @@ function opensLineComment(source: string, index: number, family: Family): boolea
   return !family.lineNeedsSpaceBefore || index === 0 || /\s/.test(source[index - 1]);
 }
 
-function commentSpans(source: string, family: Family): [start: number, end: number][] {
-  const spans: [number, number][] = [];
+function commentEnd(source: string, index: number, family: Family): number | null {
+  const block = family.blocks.find(([open]) => source.startsWith(open, index));
+  if (block) return endOfBlock(source, index + block[0].length, block[1]);
+  return opensLineComment(source, index, family) ? endOfLine(source, index) : null;
+}
+
+function commentSpans(source: string, family: Family): Span[] {
+  const spans: Span[] = [];
   let index = 0;
   while (index < source.length) {
-    const block = family.blocks.find(([open]) => source.startsWith(open, index));
-    const end = block ? endOfBlock(source, index + block[0].length, block[1]) : opensLineComment(source, index, family) ? endOfLine(source, index) : null;
+    const end = commentEnd(source, index, family);
     if (end !== null) spans.push([index, end]);
     index = end ?? stringEnd(source, index, family) ?? index + 1;
   }
   return spans;
 }
 
-export function commentLinesOf(path: string, source: string): Map<number, string> | null {
+function commentOfLine(source: string, spans: Span[], [lineStart, lineEnd]: Span): string {
+  return spans
+    .map(([start, end]) => source.slice(Math.max(start, lineStart), Math.min(end, lineEnd)).trim())
+    .join(' ');
+}
+
+export function commentLinesOf(path: string, source: string): Map<number, CommentLine> | null {
   const family = familyOf(path);
   if (family === null) return null;
   const spans = commentSpans(source, family);
-  const comments = new Map<number, string>();
+  const comments = new Map<number, CommentLine>();
+  let first = 0;
   let lineStart = 0;
   source.split('\n').forEach((text, index) => {
     const lineEnd = lineStart + text.length;
-    if (spans.some(([start, end]) => start <= lineEnd && end > lineStart)) comments.set(index + 1, text.trim());
+    while (first < spans.length && spans[first][1] <= lineStart) first++;
+    let past = first;
+    while (past < spans.length && spans[past][0] <= lineEnd) past++;
+    if (past > first) comments.set(index + 1, { text: text.trim(), comment: commentOfLine(source, spans.slice(first, past), [lineStart, lineEnd]) });
     lineStart = lineEnd + 1;
   });
   return comments;

@@ -31,6 +31,7 @@ describe('citedKinds', () => {
     '// moon hereda el entorno: sin limpiarlo usa otro workspace',
     '// las capabilities del token',
     '// el Artículo de portada',
+    '// run spec.ts',
   ])('no cita nada: %s', (comment) => {
     expect(citedKinds(comment)).toEqual([]);
   });

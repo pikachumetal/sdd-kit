@@ -4,7 +4,8 @@ import type { Io } from '../cli/io.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { git } from '../git/git.ts';
 import { citedKinds } from './citations.ts';
-import { commentLinesOf } from './lexer.ts';
+import { addedLinesByFile } from './diff.ts';
+import { commentLinesOf, hasLexer, type CommentLine } from './lexer.ts';
 
 export interface CitingComment {
   file: string;
@@ -19,55 +20,35 @@ interface Scan {
 }
 
 const NOT_CODE = ['.md', '.mdx', '.json'];
-const EVIDENCE = ['.docs/sdd/specs/', '.docs/sdd/changes/'];
-const HUNK_NEW_START = /^@@ -\S+ \+(\d+)(?:,(\d+))? @@/;
+const DIFF_OPTIONS = ['diff', '-U0', '-M', '--inter-hunk-context=0', '--diff-filter=d', '--no-color', '--no-ext-diff', '--src-prefix=a/', '--dst-prefix=b/'];
+const DIFF_PATHS = ['--', ':/', ':(top,exclude,glob).docs/sdd/specs/**', ':(top,exclude,glob).docs/sdd/changes/**'];
 
-async function gitOrThrow(root: string, args: string[]): Promise<string> {
-  const { code, stdout, stderr } = await git(root, args);
-  if (code !== 0) throw new Error(stderr.trim());
+async function branchDiff(root: string, base: string): Promise<string> {
+  const { code, stdout, stderr } = await git(root, [...DIFF_OPTIONS, base, 'HEAD', ...DIFF_PATHS]);
+  if (code !== 0) throw new Error(stderr.trim() || `git diff falló con el código ${code}`);
   return stdout;
 }
 
-// Las cabeceras se separan del cuerpo con el primer @@: una línea añadida «++ b/x» también empieza por +++ en el diff.
-function addedLinesByFile(diff: string): Map<string, number[]> {
-  const added = new Map<string, number[]>();
-  let file: string | null = null;
-  let inHeader = false;
-  for (const line of diff.split(/\r?\n/)) {
-    if (line.startsWith('diff --git ')) [file, inHeader] = [null, true];
-    else if (inHeader && line.startsWith('+++ b/')) file = line.slice('+++ b/'.length).replace(/\t$/, '');
-    else if (line.startsWith('@@ ') && file !== null) {
-      inHeader = false;
-      added.set(file, [...(added.get(file) ?? []), ...hunkLines(line)]);
-    }
-  }
-  return added;
-}
-
-function hunkLines(header: string): number[] {
-  const [, start, count] = HUNK_NEW_START.exec(header) ?? [];
-  return Array.from({ length: Number(count ?? 1) }, (_, offset) => Number(start) + offset);
-}
-
-function isRead(file: string): boolean {
-  return !NOT_CODE.includes(extname(file).toLowerCase()) && !EVIDENCE.some((folder) => file.startsWith(folder));
-}
-
-function citingComments(file: string, lines: number[], comments: Map<number, string>): CitingComment[] {
+function citingComments(file: string, lines: number[], comments: Map<number, CommentLine>): CitingComment[] {
   return lines.flatMap((line) => {
-    const comment = comments.get(line);
-    const cites = comment === undefined ? [] : citedKinds(comment);
-    return comment === undefined || cites.length === 0 ? [] : [{ file, line, cites, text: comment }];
+    const found = comments.get(line);
+    if (found === undefined) return [];
+    const cites = citedKinds(found.comment);
+    return cites.length === 0 ? [] : [{ file, line, cites, text: found.text }];
   });
 }
 
+async function commentsAtHead(root: string, file: string): Promise<Map<number, CommentLine> | null> {
+  if (!hasLexer(file)) return null;
+  const { code, stdout } = await git(root, ['show', `HEAD:${file}`]);
+  return code === 0 ? commentLinesOf(file, stdout) : null;
+}
+
 async function scanBranch(root: string, base: string): Promise<Scan> {
-  const diffOptions = ['diff', '-U0', '--diff-filter=d', '--no-color', '--no-ext-diff', '--src-prefix=a/', '--dst-prefix=b/'];
-  const added = addedLinesByFile(await gitOrThrow(root, [...diffOptions, base, 'HEAD']));
   const scan: Scan = { comments: [], unread: [] };
-  for (const [file, lines] of added) {
-    if (!isRead(file) || lines.length === 0) continue;
-    const comments = commentLinesOf(file, await gitOrThrow(root, ['show', `HEAD:${file}`]));
+  for (const [file, lines] of addedLinesByFile(await branchDiff(root, base))) {
+    if (NOT_CODE.includes(extname(file).toLowerCase()) || lines.length === 0) continue;
+    const comments = await commentsAtHead(root, file);
     if (comments === null) scan.unread.push(file);
     else scan.comments.push(...citingComments(file, lines, comments));
   }

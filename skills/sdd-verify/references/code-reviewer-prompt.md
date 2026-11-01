@@ -80,7 +80,7 @@ pass, review it in passes yourself and say so in your report.
 - DRY without premature abstraction?
 - Edge cases handled?
 
-**Comments:** a comment that repeats what the code says is Important, also when «Restricciones de código» doesn't mention comments. Each line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito del proveedor»), or a citation with its own reason (an ADR, a living document), goes to «Declined to judge», never to Issues. The list doesn't limit you: a citation it missed is a finding too.
+**Comments:** a comment that repeats what the code says is Important, also when «Restricciones de código» doesn't mention comments. Each `file:line` line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Restricciones de código» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
 
 **E2E tests.** With the fields of «E2E del proyecto» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
 - a new E2E test that names none of the core flows: what no core flow covers is tested one layer down;

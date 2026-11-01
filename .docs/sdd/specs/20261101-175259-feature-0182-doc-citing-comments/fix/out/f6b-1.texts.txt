@@ -1,0 +1,40 @@
+--- [3]
+### Strengths
+- El cambio es mínimo (5 líneas) y `saveRefund` es una función corta y pura, fácil de probar.
+- El comentario da un motivo de negocio real (el banco rechaza los céntimos), no solo repite el código.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+1. **`src/app.js:51`: el comentario cita un documento (`capabilities/refunds.md`).**
+   - «Restricciones de código» lo prohíbe aunque el comentario traiga su propio motivo. Si el documento se mueve o cambia, la cita queda obsoleta.
+   - Arreglo: dejar solo el motivo, sin la ruta. Por ejemplo: `// el banco rechaza las devoluciones con céntimos`.
+
+2. **`src/app.js:52`: el parámetro `iban` se usa como si fuera un importe.**
+   - `Math.trunc(iban)` y el comentario sobre céntimos solo tienen sentido para una cantidad. Un IBAN es una cadena, y `Math.trunc` sobre una cadena IBAN devuelve `NaN`.
+   - Con el nombre actual, quien llame con un IBAN real guardará `NaN`. Quien llame con un importe pasará un argumento llamado `iban`.
+   - Arreglo: renombrar a `amount` (o `importe`). Si el IBAN también hace falta, añadirlo como parámetro propio y devolverlo aparte.
+   - Esto es una posible violación de Clean Code, fila «¿Puedes entender cada función sin leer su cuerpo?»: el nombre no revela la intención.
+
+#### Minor (Nice to Have)
+- `src/app.js:50`: `saveRefund` está después de `if (command) console.log(...)`. Funciona, porque la declaración se eleva y los `export` se evalúan igual. Aun así, es más claro agrupar las funciones antes del punto de entrada.
+- `src/app.js:52`: truncar descarta la parte decimal en silencio. Si el importe llega con céntimos, la devolución pierde dinero sin avisar. Conviene decidir si se rechaza el valor con un error o se trunca de forma deliberada, y dejarlo claro en el código.
+- No he visto ningún test de `saveRefund` en el paquete. Los informes de cada task deberían cubrirlo.
+
+### Recommendations
+- Cubrir con tests el caso con céntimos y el caso con un valor no numérico.
+
+### Declined to judge
+- Que `saveRefund` no esté conectada a `run`/CLI: no sé si la spec la quiere expuesta (eje Spec).
+- Que la función esté en `app.js` y no en otro módulo: es una cuestión de límites entre módulos (eje Arquitectura).
+- E2E: el proyecto no declara ninguno, así que no aplica ninguna regla de E2E.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** El comentario viola de forma directa la restricción de no citar documentos. Además, el parámetro `iban` mal nombrado hace que la función no pueda usarse con lo que su nombre promete.
+

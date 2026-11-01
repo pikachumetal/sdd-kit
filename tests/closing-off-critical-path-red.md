@@ -64,3 +64,4 @@ Coste de c4 en el RED: 3 sujetos, 1,09 $ (0,32 descartado + 0,37 + 0,40). Techo 
 ## Coste
 
 7 sujetos, 4,10 $ (c1: 1,08 + 0,61; c2: 0,42 descartado + 0,62 + 0,54; c3: 0,38 + 0,45). Previsión: 12 sujetos y ~24 $ para RED y GREEN; techo de 15 sujetos y 35 $.
+- Revisando un sha antiguo desde el árbol que avanza, 3 de 4 revisores vieron el commit que ya arreglaba el fallo (cifra que vivía en `encargo-revision.md` hasta la feature 0182).

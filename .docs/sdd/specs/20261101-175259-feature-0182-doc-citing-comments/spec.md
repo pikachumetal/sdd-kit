@@ -6,7 +6,7 @@ proposal: 0131
 title: Comentarios que citan documentos, detectados por la CLI
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-01
 author: Àngel Delgado
 approvers:
@@ -83,7 +83,7 @@ Los agentes dejan comentarios que citan la spec, una task o la constitution, y c
   - `skills/sdd-verify/SKILL.md`: la fila del eje Código de la tabla de ejes.
   - `skills/sdd-verify/references/code-reviewer-prompt.md`: sección con la salida y la regla de juicio.
   - `skills/sdd-verify/references/encargo-revision.md`: lo que paga el saldo.
-  - `tests/batteries/sdd-verify/`: escenario `f6`, su fixture y su fila de procedencia.
+  - `tests/batteries/sdd-verify/`: escenarios `f6` y `f6b`, sus fixtures y su fila de procedencia; `tests/sdd-verify-0182-comments.md`; `tests/proportional-review-red.md`, que recibe la cifra de los 27 minutos; `tests/closing-off-critical-path-red.md`, que recibe la de los 3 de 4 revisores.
   - `.docs/sdd/roadmap.md`: las tres filas de deuda de la decisión 1.
   - El delta de `cli` y `verification`.
 - No entra:
@@ -102,6 +102,7 @@ Los agentes dejan comentarios que citan la spec, una task o la constitution, y c
 | Frase «en un proyecto del equipo, 27 minutos…» | `encargo-revision.md:64` | Scope, decisión 10 |
 | Frase «Con el cuerpo de los borrados… 235.524 bytes…» → versión corta | `encargo-revision.md:54` | Scope, decisión 10; el THEN de `verification` con el error literal se queda |
 | Frase «Sin esta frase, 2 de 2 sujetos en Native…» → `Medido: tests/native-adapt-red.md.` | `encargo-revision.md:25` | Scope, decisión 10 |
+| Frase «Revisando un sha antiguo… 3 de 4 revisores…» → versión corta | `encargo-revision.md:35` | Scope, decisión 10; la cifra pasa a `tests/closing-off-critical-path-red.md` |
 | Destino «Actuar → 0182» de tres filas de deuda | `.docs/sdd/roadmap.md:215`, `:432`, `:437` | Scope, decisión 1: pasa a «Actuar → 0152» |
 
 - Filas que implementa: 0182 → `.docs/sdd/roadmap.md:101` (su fila, la marca el cierre), `:100` (dice que la 0148 se partió, historia, se queda), `:127` y `:128` (dependencias de 0198 y 0152, las lee el roadmap sin cambio), `:207` (nota «vuelven a mirarse si la 0182 toca `sdd-verify`», un menor con dos candidatos: la toca, y no trae (c), se queda como «Esperar 2.º ticket») y las tres de la decisión 1; ningún hit en `capabilities/` ni en `skills/`: comprobado con `grep -n '\b0182\b'` en `roadmap.md`, y sobre `.docs/sdd/capabilities` y `skills`.
@@ -127,7 +128,7 @@ Los agentes dejan comentarios que citan la spec, una task o la constitution, y c
 Y a continuación de la línea «**Comments:**» de «What to Check»:
 
 ```text
-Each line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito del proveedor»), or a citation with its own reason (an ADR, a living document), goes to «Declined to judge», never to Issues. The list doesn't limit you: a citation it missed is a finding too.
+Each `file:line` line of «Comentarios que citan documentos» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Restricciones de código» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
 ```
 
 ## Dónde se prueba
@@ -216,9 +217,9 @@ Medido con el conteo de `word-budget.test.ts`, sin el margen del 25 %, que el te
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
 | `sdd-verify` `SKILL.md` | 3.567 / 3.825 | 258 | sin cambio (+12 → 3.579) |
-| `sdd-verify` total | 9.635 / 11.400 | 1.765 | sin cambio (−4 → 9.631) |
+| `sdd-verify` total | 9.635 / 11.400 | 1.765 | sin cambio (−14 → 9.621) |
 
-**Saldo: −4 palabras en la skill** (9.635 → 9.631).
+**Saldo: −14 palabras en la skill** (9.635 → 9.621), tras la pasada de fix; las cuentas de abajo son las del primer GREEN: la pasada suma la regla de juicio ampliada y baja «Revisando un sha antiguo…» de `encargo-revision.md`.
 
 | Sube | Palabras | Baja, en `encargo-revision.md` | Palabras |
 | --- | --- | --- | --- |
@@ -239,11 +240,14 @@ Cifras con el precio de `tech-stack.md` (~0,4 $ por turno y sujeto), redondeado 
 | Una tanda de REFACTOR | 1, `f6`, solo si el GREEN falla | 1 |
 | Controles | 0: `f6` hace de control si el RED sale limpio, y `f4` no se relanza porque la línea de `// incrementa` no cambia | 0 |
 | Medición tras la revisión final | 1, `f6`, solo si la pasada de fix cambia el texto del eje | 1 |
-| Suma | hasta 4 sujetos | 4 |
+| Suma | hasta 4 sujetos, 4 $ de techo; real: 6 sujetos, 0,71 $ (dos más en la pasada de fix, `f6` y `f6b`) | 4 |
 
 Cada paso cambiado de lo que sigue el agente: la fila Code y las dos piezas de `code-reviewer-prompt.md`, medidas por `f6`; las frases de `encargo-revision.md`, sin medir, porque son evidencia y no instrucción.
 
 ## Enmiendas
+
+- 2026-11-01 — Los patrones miran el texto del comentario, no el código ni las cadenas de su línea; `spec` seguido de una extensión que no sea `.md` no cuenta; un `git show` que falla, como el de un submódulo, va a `sin leer:` — hallazgos de la revisión final; los THEN no cambian, los cumplen mejor — sin aprobar
+- 2026-11-01 — La regla de juicio gana el contraejemplo de otro dominio, «lo dice la spec» como motivo que no vale, y el caso del bloque que prohíbe; `f6b` mide la salida fácil — hallazgos 3, 4 y 5 del eje Spec — sin aprobar (aplica literal la decisión 9)
 
 - 2026-11-01 — La regla de juicio de «Approach» gana un contraejemplo y «never to Issues» (14 palabras); el saldo pasa de −18 a −4 — con la lista y sin ese contraejemplo, `f6` marcó el falso positivo como Minor dos veces (`tests/sdd-verify-0182-comments.md`) — sin aprobar (no cambia ningún THEN; el RED limpio no sacó la frase, porque el GREEN la pidió)
 

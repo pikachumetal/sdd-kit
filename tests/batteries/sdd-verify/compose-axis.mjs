@@ -1,4 +1,4 @@
-// Compone el encargo de un eje de la revisión final (f3, f3n, f4) con el texto del kit que se prueba:
+// Compone el encargo de un eje de la revisión final (f3, f3n, f4, f5, f6, f6b) con el texto del kit que se prueba:
 // el de sdd-verify si existe; si no, la cabecera de encargo-revision.md más code-reviewer.md de superpowers.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';

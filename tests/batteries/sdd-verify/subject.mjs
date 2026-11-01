@@ -103,9 +103,9 @@ function emptyListText() {
   edit('src/app.js', (text) => text.replace(".join('\\n');", ".join('\\n') || 'sin canceladas';"));
   s.commit('fix(bookings): canceladas sin canceladas dice «sin canceladas»');
 }
-// El encargo del eje de f3, f3n o f4, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
+// El encargo del eje de f3, f3n, f4, f5, f6 o f6b, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
 function axisBrief(base, headSha, pkg) {
-  const axis = ['f4', 'f5', 'f6'].includes(s.SC) ? 'code' : 'spec';
+  const axis = ['f4', 'f5', 'f6', 'f6b'].includes(s.SC) ? 'code' : 'spec';
   const files = s.git('diff', '--name-only', base, 'HEAD', '--', '.', ':(exclude,glob).docs/sdd/specs/**').split('\n').filter(Boolean);
   const adrs = sddCli('decision', 'index', '--path', '.docs/sdd', '--files', ...files);
   const caps = sddCli('capability', 'index', '--path', '.docs/sdd');
@@ -175,7 +175,7 @@ function reviewBase() {
   const text = s.SC === 'f3n' ? readLf(adr).replace(/^ {2}- src\/\*\*$/m, '  - docs/**') : readFileSync(adr);
   writeFileSync(at('.docs/sdd/decisions/0003-bookings-in-memory.md'), text);
   for (const name of readdirSync(join(FIX, 'capabilities')).filter((file) => file.endsWith('.md'))) cp(join(FIX, 'capabilities', name), `.docs/sdd/capabilities/${name}`);
-  cp(['f4', 'f6'].includes(s.SC) ? join(IMPL, 'fixtures', 'app-done.js') : join(FIX, 'app-f3-base.js'), 'src/app.js');
+  cp(['f4', 'f6', 'f6b'].includes(s.SC) ? join(IMPL, 'fixtures', 'app-done.js') : join(FIX, 'app-f3-base.js'), 'src/app.js');
   s.commit('feat: la app antes del cambio');
   return s.git('rev-parse', 'HEAD').trim();
 }
@@ -193,8 +193,8 @@ function reviewF3() {
   if (s.SC === 'f4') {
     cp(join(FIX, 'app-f4.js'), 'src/app.js');
     s.commit('feat(bookings): informe de ocupación');
-  } else if (s.SC === 'f6') {
-    appendFileSync(at('src/app.js'), readLf(join(FIX, 'app-f6.js')));
+  } else if (s.SC === 'f6' || s.SC === 'f6b') {
+    appendFileSync(at('src/app.js'), readLf(join(FIX, `app-${s.SC}.js`)));
     s.commit('feat(bookings): guardar la devolución');
   } else {
     voidWithReason();
@@ -330,12 +330,12 @@ steps.c7 = () => {
   steps.c1();
 };
 steps.f2 = steps.f1;
-for (const id of ['f3', 'f3n', 'f4', 'f6']) steps[id] = reviewF3;
+for (const id of ['f3', 'f3n', 'f4', 'f6', 'f6b']) steps[id] = reviewF3;
 steps[s.SC]?.();
 
-if (['v1', 'f3', 'f3n', 'f4', 'f5', 'f6', 's1', 's1b'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
+if (['v1', 'f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b'].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { f1: '30', f2: '30', mp1: '30', c2: '30', c3: '30', c4: '30' };
-for (const id of ['f3', 'f3n', 'f4', 'f5', 'f6', 's1', 's1b']) turns[id] = '25';
+for (const id of ['f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b']) turns[id] = '25';
 for (const id of ['c1', 'c1f', 'c5', 'c6', 'c7', 'c8', 'c9']) turns[id] = '50';
 s.env.MAX_TURNS ||= turns[s.SC] ?? '40';
 

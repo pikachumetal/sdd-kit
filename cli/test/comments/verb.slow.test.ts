@@ -62,7 +62,9 @@ describe('sdd review comments', () => {
   });
 
   it('sin --base sale con 2', () => {
-    expect(review(repoOnBranch()).code).toBe(2);
+    const result = review(repoOnBranch());
+    expect(result.code).toBe(2);
+    expect(result.err).toContain('uso: sdd review');
   });
 
   it('con una base que no existe avisa y sale con 1', () => {
@@ -128,6 +130,38 @@ describe('sdd review comments', () => {
     const repo = repoOnBranch({ 'a.ts': 'const kept = 1;\n' });
     commit(repo, { 'a.ts': '++ b/x\nconst kept = 1;\n// Task 4\n' });
     expect(review(repo, '--base', 'develop').out).toContain('a.ts:3 · task · // Task 4');
+  });
+
+  it('los patrones miran el comentario, no el código ni la cadena de su línea', () => {
+    const repo = repoOnBranch();
+    commit(repo, { 'a.ts': 'const spec = load(); // un porqué\nconst n = "según la spec §3"; // otro porqué\nsave(); // Task 4\n' });
+    expect(review(repo, '--base', 'develop').out.trim().split(/\r?\n/)).toEqual(['a.ts:3 · task · save(); // Task 4', '1 comentario cita documentos']);
+  });
+
+  it('un submódulo en el diff va a sin leer y no tumba el verbo', () => {
+    const repo = repoOnBranch();
+    write(join(repo, 'a.ts'), '// Task 4\n');
+    git(repo, 'add', '-A');
+    git(repo, 'update-index', '--add', '--cacheinfo', `160000,${'1'.repeat(40)},vendor/chart.js`);
+    git(repo, 'commit', '-q', '-m', 'submódulo');
+    const result = review(repo, '--base', 'develop');
+    expect(result.code).toBe(0);
+    expect(result.out.trim().split(/\r?\n/)).toEqual(['a.ts:1 · task · // Task 4', 'sin leer: vendor/chart.js', '1 comentario cita documentos']);
+  });
+
+  it('un renombrado no lista sus comentarios viejos, también con diff.renames=false', () => {
+    const repo = repoOnBranch({ 'old.ts': '// Task 2 viejo\nconst a = 1;\nconst b = 2;\nconst c = 3;\n' });
+    git(repo, 'mv', 'old.ts', 'new.ts');
+    git(repo, 'commit', '-q', '-m', 'renombra');
+    git(repo, 'config', 'diff.renames', 'false');
+    expect(review(repo, '--base', 'develop').out.trim()).toBe('ningún comentario cita documentos');
+  });
+
+  it('diff.interHunkContext no cuenta como añadida una línea de contexto', () => {
+    const repo = repoOnBranch({ 'x.ts': 'const a = 1;\n// Task 2 viejo\nconst b = 2;\n' });
+    commit(repo, { 'x.ts': 'const a = 9;\n// Task 2 viejo\nconst b = 9;\n' });
+    git(repo, 'config', 'diff.interHunkContext', '3');
+    expect(review(repo, '--base', 'develop').out.trim()).toBe('ningún comentario cita documentos');
   });
 
   it('un fichero borrado no rompe la lectura', () => {

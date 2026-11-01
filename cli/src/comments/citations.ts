@@ -1,5 +1,5 @@
 const CITATIONS: [kind: string, pattern: RegExp][] = [
-  ['spec', /(?<![\w.-])specs?(?![\w-])|§\s*\d/iu],
+  ['spec', /(?<![\w.-])specs?(?![\w-])(?!\.(?!md\b)\w)|§\s*\d/iu],
   ['task', /\b(?:task|tarea)\s*#?\d+\b|\b(?:feature|patch)\s*#?\d{2,}\b/iu],
   ['constitution', /\bconstituci[oó]n\b|\bconstitution\b|\bArt\.\s*[IVXLC]+\b|\bart[ií]culo\s+[IVXLC]+\b/iu],
   ['requisito', /\brequisitos?\b|\brequirements?\b|\bREQ-\d+/iu],
