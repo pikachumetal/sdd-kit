@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-upgrade
+<<< Launching skill: sdd-kit:sdd-upgrade
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-now/cli/bin/sdd.js" upgrade --root "<run>/repo"
+<<< el proyecto ya está al día con el kit 3.0.0
+
+>>> Grep: ^\s*(8\.|\*\*8)
+<<< 147:8. **Reglas del proyecto que ya cubre el kit.** Después del commit del paso 7, y en su propio commit. Lee `CLAUDE.md`, `AGENTS.md`, `PRODUCT.md` y `.docs/sdd/steering/*.md`, y busca cada regla de trabajo que repite o contradice el kit instalado. **gate** — enseña una tabla:
+148-
+149-   | Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+150-   | --- | --- | --- | --- | --- |
+151-   | «el id de una feature se elige a mano» | `steering/constitution.md:7` | `skills/sdd-propose/references/nombrado.md` | choca | quitarla |
+152-
+153-[Omitted long context line]
+154-
+155-[Omitted lon
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0279-drop-superpowers-dependency\.temp\sdd\plan\kit-now\skills\sdd-upgrade\references\migrations\v3.0.0.md
+<<< 147	8. **Reglas del proyecto que ya cubre el kit.** Después del commit del paso 7, y en su propio commit. Lee `CLAUDE.md`, `AGENTS.md`, `PRODUCT.md` y `.docs/sdd/steering/*.md`, y busca cada regla de trabajo que repite o contradice el kit instalado. **gate** — enseña una tabla:
+148	
+149	   | Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+150	   | --- | --- | --- | --- | --- |
+151	   | «el id de una feature se elige a mano» | `steering/constitution.md:7` | `skills/sdd-propose/references/nombrado.md` | choca | quitarla |
+152	
+153	   «Kit» es la ruta, dentro del plugin (`${CLAUDE
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1; cat CLAUDE.md AGENTS.md PRODUCT.md .docs/sdd/steering/*.md .claude/settings.json 2>&1 | head -200
+<<< .:
+./
+../
+.claude/
+.docs/
+.git/
+CHANGELOG.md
+CLAUDE.md
+docs/
+ROADMAP.md
+src/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+steering/
+
+.docs/sdd/steering:
+./
+../
+debt.md
+# salas
+
+- El id de una feature se elige a mano.
+cat: AGENTS.md: No such file or directory
+cat: PRODUCT.md: No such file or directory
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En e
+
+>>> Grep: id
+<<< 3:`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+7:[Omitted long matching line]
+8:[Omitted long matching line]
+9:- Features, patches y propuestas comparten **una sola secuencia**: un id no se repite entre carriles. Una feature partida toma un **id reservado** con `sdd id next --reserve`, con `parent: <id>` en el frontmatter **y su fila propia en el roadmap** — nunca un sufijo tipo `0006a`. Sin esa fila, la relación entre las dos mitades se pierde en cuanto se cierra la sesión.
+
+>>> Bash: sed -n 5,9p "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-now/skills/sdd-propose/references/nombrado.md" | cut -c1-600
+<<< - Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay.
+
+=== RESULTADO (9 turnos, 0.1320225 $)
+Revisé las reglas del proyecto contra el kit 3.0.0. El proyecto ya está al día (`sdd upgrade` no tiene migraciones pendientes), así que solo hice el paso 8 de la migración v3.0.0. No he cambiado nada.
+
+**Reglas que chocan con el kit**
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «El id de una feature se elige a mano» | `CLAUDE.md:3` | `skills/sdd-propose/references/nombrado.md` | Choca | Quitarla |
+
+El kit fija el id según `ids.mode`:
+- En `tracker` es el id del ticket.
+- En `sequence` es el id reservado con `sdd id next --reserve`.
+
+Elegir el id a mano choca con ambos y puede repetir ids entre worktrees. `AGENTS.md` y `PRODUCT.md` no existen, y `steering/` solo tiene `debt.md`, sin reglas de trabajo.
+
+**Otros avisos**
+- **Superpowers (paso 10):** `.claude/settings.json` sigue activando `superpowers@superpowers-marketplace` y su marketplace. El kit ya no lo usa. Si lo quitas, el commit sería `chore(sdd): quitar la activación de superpowers`. Si el proyecto usa sus skills fuera del kit, déjalo como está.
+- **Gate de merge (paso 9):** no hay `operations.md` ni `tech-stack.md`, así que no hay gate que avisar.
+- **Sesión desfasada:** esta sesión cargó el kit 2.3.4 aunque el proyecto pide el 3.0.0. Para actualizarlo, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+¿Aplico estas propuestas? Es decir:
+1. Quitar la regla del id de `CLAUDE.md`, en el commit `chore(sdd): reglas del proyecto que ya cubre el kit`.
+2. Quitar la activación de superpowers de `.claude/settings.json`.
+
+Si no respondes, quedan pendientes. Para reanudar, pide «revisa las reglas del proyecto contra el kit».

@@ -83,14 +83,12 @@ describe('manifests del plugin', () => {
     expect(plugin.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
-  it('plugin.json resuelve superpowers, y solo una vez, desde superpowers-marketplace', () => {
-    const superpowers = plugin.dependencies.filter((dependency: { name: string }) => dependency.name === 'superpowers');
-    expect(superpowers).toHaveLength(1);
-    expect(superpowers[0].marketplace).toBe('superpowers-marketplace');
+  it('plugin.json no declara dependencias: el kit carga solo', () => {
+    expect(plugin.dependencies).toBeUndefined();
   });
 
-  it('marketplace.json permite la dependencia de superpowers-marketplace y solo esa', () => {
-    expect(marketplace.allowCrossMarketplaceDependenciesOn).toEqual(['superpowers-marketplace']);
+  it('marketplace.json no permite dependencias de otros marketplaces', () => {
+    expect(marketplace.allowCrossMarketplaceDependenciesOn).toBeUndefined();
   });
 
   it('marketplace.json publica el plugin desde la raíz del repo, con description', () => {

@@ -41,7 +41,7 @@ beforeAll(() => {
 afterAll(() => rmSync(root, { recursive: true, force: true }));
 
 function launchMold({ battery, id, runs }: MoldCase): Promise<{ code: number; output: string }> {
-  const env = { ...cleanGitEnv, DRY_RUN: '1', KEEP_MOLD: '1', RUNS_DIR: runs, SUPERPOWERS_DIR: join(root, 'superpowers'), NODE: process.execPath };
+  const env = { ...cleanGitEnv, DRY_RUN: '1', KEEP_MOLD: '1', RUNS_DIR: runs, NODE: process.execPath };
   const subject = join(BATTERIES, battery, 'subject.mjs');
   const child = spawn(process.execPath, [subject, kit, `${id}-1`, id, join(runs, 'out')], { env, windowsHide: true });
   let output = '';

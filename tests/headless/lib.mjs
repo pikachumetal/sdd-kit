@@ -17,7 +17,7 @@
 // SETTINGS (el JSON de --settings: sin él, deshabilita el kit instalado y carga el hook deny-kill.mjs; uno propio lo lleva),
 // EXTRA_ALLOWED (herramientas que se suman a --allowedTools, como un servidor MCP), APPEND_SYSTEM (--append-system-prompt),
 // PORT (puerto del molde, si arranca un servidor), CLAUDE_CONFIG_DIR (raíz de los transcripts de seedTranscript; sin ella, ~/.claude),
-// SUPERPOWERS_DIR (sujeto sin la configuración del usuario, ni su CLAUDE.md ni sus plugins, y con superpowers cargado desde esa ruta),
+// SUPERPOWERS_DIR (opcional: superpowers cargado desde esa ruta, junto al kit; el sujeto va siempre sin la configuración del usuario, ni su CLAUDE.md ni sus plugins),
 // SUBJECT_TIMEOUT (segundos de reloj de cada llamada a claude: 1800 por omisión; 0, sin tope; al vencer, el sujeto sale con 124),
 // CLAUDE_BIN (otro claude; un .mjs se lanza con node), TURN2 (mensaje del segundo turno: launch reanuda la sesión con resume),
 // DRY_RESULT (texto del result en seco; con «?», converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
@@ -188,11 +188,6 @@ function checkInputs(s, fs, { kit, skill, cwd }) {
   // Con .docs/, el sujeto leyó la spec de lo que se medía.
   if (fs.exists(join(s.KIT, '.docs')) || fs.exists(join(s.KIT, 'tests'))) {
     s.die('la copia del kit lleva .docs/ o tests/: sácala con git archive <commit> skills .claude-plugin agents cli hooks');
-  }
-  // Con dependencies y sin SUPERPOWERS_DIR, el kit no carga: «unmet dependency».
-  const plugin = join(s.KIT, '.claude-plugin', 'plugin.json');
-  if (!s.env.SUPERPOWERS_DIR && fs.exists(plugin) && fs.read(plugin).includes('"dependencies"')) {
-    s.die('el kit declara dependencies: define SUPERPOWERS_DIR (ruta de superpowers)');
   }
 }
 
@@ -414,7 +409,8 @@ function claudeArgs(s, settings) {
   // La carpeta de ejecución, junto al molde: sin ella, los sujetos no abrían sus capturas.
   const args = ['-p', '--model', env.MODEL || 'sonnet', '--settings', settings, '--plugin-dir', s.KIT, '--add-dir', s.KIT, '--add-dir', s.RUN];
   // El CLAUDE.md del dev-lead ya enruta al kit: medir con él da por buena una puerta que un dev sin él no tiene.
-  if (env.SUPERPOWERS_DIR) args.push('--setting-sources', '', '--plugin-dir', env.SUPERPOWERS_DIR);
+  args.push('--setting-sources', '');
+  if (env.SUPERPOWERS_DIR) args.push('--plugin-dir', env.SUPERPOWERS_DIR);
   args.push('--permission-mode', 'acceptEdits', '--allowedTools', 'Bash(*)', 'PowerShell(*)', 'Agent', ...words(env.EXTRA_ALLOWED));
   // La mensajería entre sesiones va bloqueada.
   args.push('--disallowedTools', 'SendMessage', 'ListAgents', 'AskUserQuestion', ...words(env.EXTRA_DISALLOWED));

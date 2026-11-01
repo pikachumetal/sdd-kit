@@ -11,7 +11,7 @@ Repo del kit SDD del equipo (plugin de Claude Code). Antes de trabajar en cualqu
 - `.docs/sdd/mission.md` — por qué existe el kit, usuarios, y el glosario del equipo (documentos de anclaje, carriles, predicados, walkthrough).
 - `.docs/sdd/constitution.md` — las reglas del kit: preámbulo de cinco principios y once artículos, cada uno con su porqué en una frase y el enlace a su ADR.
 - `.docs/sdd/decisions/` — ADR: el porqué y la historia de cada regla, una por fichero (`NNNN-<slug>.md`), inmutables; se sustituyen con otra ADR.
-- `.docs/sdd/tech-stack.md` — distribución (solo plugin de Claude Code), dependencia de superpowers, cómo se testean las skills.
+- `.docs/sdd/tech-stack.md` — distribución (solo plugin de Claude Code), dependencias, cómo se testean las skills.
 - `.docs/sdd/architecture.md` — estructura del repo, anatomía de una skill y de su evidencia de test, y la tabla de los documentos de `.docs/sdd/`: tipo, quién escribe cada uno, quién lo lee y qué lo acota.
 - `.docs/sdd/roadmap.md` — próximo, release en preparación, backlog, deuda técnica, patches y releases cerradas. Solo tablas, con la forma de `roadmap-template.md`; lo comprueba `sdd roadmap check` en el pre-commit.
 - `.docs/sdd/changelog.md` — historial de releases (Keep a Changelog, SemVer).

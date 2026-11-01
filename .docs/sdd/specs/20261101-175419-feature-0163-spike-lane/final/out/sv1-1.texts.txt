@@ -1,0 +1,119 @@
+--- [17]
+## Revisión final, eje Spec: spike 0030 (`6e78900..271bbc6`)
+
+He revisado el paquete en una sola pasada, porque tiene 96 líneas. El Review Focus es «ninguna: comprobado», así que no añade líneas que comprobar. La spec no tiene delta de capacidades ni «Decisiones tomadas con el dev-lead».
+
+### Strengths
+
+- `research.md:21-23` declara bien tres estados: O2 y O4 `no medido`, y O3 `no medido con una persona`. `evidence/o3.txt` también dice que no hubo ninguna persona.
+- `research.md` conserva la pregunta de la spec y una fila por cada objetivo, con su umbral literal.
+- ADR 0003 se cumple: `src/` no importa `node:fs` ni ningún paquete de base de datos (comprobado con grep, `src/app.js` es el único fichero de `src/`).
+- No se ha tocado ningún test.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. La recomendación de compra se apoya en objetivos que no están cumplidos ni medidos**
+- **Dónde:** `.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/research.md:27`
+- **Qué falla:** recomienda «comprar el quiosco» porque «aguanta (O1) y el consumo de memoria con 1.000 reservas es bajo (O2)». O2 figura como `no medido` en la línea 21, sin evidencia, y O1 no llega al umbral (issue 2). Ninguno de los cuatro objetivos queda cumplido.
+- **Por qué importa:** esta recomendación es el único entregable del spike y desbloquea la decisión de compra de este trimestre. El dato de memoria no sale de ninguna medida. La plantilla exige: «Solo cita filas medidas; no dar por cumplido un `no cumple` ni un `no medido`».
+- **Cómo arreglarlo:** medir lo que falta y recomendar según el resultado. Si no se mide, la recomendación debe ser «no seguir» o «no se puede decidir todavía». También hay que revisar la descartada «porque nada lo pide» (línea 28), ya que los objetivos sin cubrir sí justifican esperar.
+- **Gap:** `contradicts`.
+- **Origen:** «Decisión que desbloquea» y O2 de la spec.
+
+**2. O1 figura como `cumple` con una medida que no llega a la mitad del umbral**
+- **Dónde:** `research.md:20` y `evidence/o1.txt:1`
+- **Qué falla:** O1 pide ≥ 5 min seguidos y la evidencia dice «2 min 30 s, 0 errores». El detalle, «sin errores», omite la duración.
+- **Por qué importa:** quien lea la tabla cree que la prueba de aguante se superó, y la recomendación se apoya en ello.
+- **Cómo arreglarlo:** repetir la prueba ≥ 5 min. Si no se repite, el estado debe ser `no cumple tal como se definió`, con la cifra de 2 min 30 s en el detalle.
+- **Gap:** `contradicts`.
+- **Origen:** O1 de la spec y regla de estados de la plantilla.
+
+#### Important (Should Fix)
+
+**3. El spike deja código de producción que nadie ha pedido**
+- **Dónde:** `src/app.js:40`, y el fichero entero por el cambio de finales de línea
+- **Qué falla:**
+  - Añade `export const kioskMode = true;`, que nada usa ni prueba: solo aparece en esa línea.
+  - Reescribe el fichero de CRLF a LF, y por eso el diff marca 40 inserciones y 39 borrados cuando el cambio real es de una línea.
+  - El commit `docs(sdd): medir el spike 0030` no lo refleja.
+- **Por qué importa:** contradice el plan («Eje Arquitectura: no — no cambia código», `plan.md:16`), la spec («Capacidades: ninguna», `spec.md:17`) y la plantilla («el spike no deja código de producción»). Además, `research.md:32` dice «Lo que sale: nada». Con el plan así, el eje Arquitectura no revisa este cambio.
+- **Cómo arreglarlo:** restaurar `src/app.js` a su versión de `6e78900`. Si el modo quiosco hace falta, abrir su fila de roadmap en «Lo que sale».
+- **Gap:** `unrequested`.
+- **Origen:** `plan.md:16`, `spec.md:17`.
+
+**4. O2 está sin medir**
+- **Dónde:** `research.md:21`
+- **Qué falla:** el motivo es «no dio tiempo», sin evidencia. El plan exige salida en bruto de O1 a O4 (`plan.md:37-38`) y `research.md:5` marca `status: done`. La plantilla pide escalar al usuario si se desborda el timebox de 2 h, y el paquete no muestra ese aviso.
+- **Por qué importa:** la pregunta del spike queda sin responder en memoria, justo el dato que usa la recomendación.
+- **Cómo arreglarlo:** medir con 1.000 reservas y guardar la salida, por ejemplo en `evidence/o2.txt`. Si no se puede, escalar y dejar el research sin cerrar.
+- **Gap:** `missing`.
+- **Origen:** O2.
+
+**5. O4 está sin medir con la carga confirmada**
+- **Dónde:** `research.md:23`
+- **Qué falla:** solo se probó con 100 reservas, mientras que el dev-lead confirmó 1.000 reservas activas como peor carga (`spec.md:33`). Tampoco hay evidencia de esa prueba con 100.
+- **Por qué importa:** no se puede extrapolar el tiempo de respuesta con 1.000 reservas a partir de una cifra con 100 que tampoco se conserva.
+- **Cómo arreglarlo:** medir con 1.000 reservas activas y guardar la salida.
+- **Gap:** `missing`.
+- **Origen:** O4.
+
+**6. O3 está sin medir con una persona**
+- **Dónde:** `research.md:22` y `evidence/o3.txt:1`
+- **Qué falla:** el estado es correcto, pero el objetivo sigue abierto. Los 12 s del agente no dicen nada sobre alguien que no conoce la herramienta.
+- **Cómo arreglarlo:** hacer la prueba con una persona real y guardar el resultado. Si no se hace, ningún argumento de usabilidad puede sostener la compra.
+- **Gap:** `partial`.
+- **Origen:** O3.
+
+**7. Falta la sección 3, «Aguante»**
+- **Dónde:** `research.md`, entre las líneas 23 y 25, donde se salta de la sección 2 a la 4
+- **Qué falla:** la plantilla la pide si hay un objetivo de rendimiento, y O2 y O4 lo son. Exige ≥ 10 repeticiones seguidas con la peor carga y el recurso acumulado. El plan pide un research «calcado de su plantilla» (`plan.md:41`).
+- **Por qué importa:** sin esas repeticiones no se detecta un consumo que crece aunque cada medida aislada cumpla el umbral.
+- **Cómo arreglarlo:** añadir la sección con 1.000 reservas activas y al menos 10 repeticiones.
+- **Gap:** `missing`.
+- **Origen:** `plan.md:41`, O2 y O4.
+
+#### Minor (Nice to Have)
+
+**8. Las evidencias son resúmenes de una línea, no salida en bruto**
+- **Dónde:** `evidence/o1.txt` y `evidence/o3.txt`
+- **Qué falla:** el plan pide «salidas en bruto» (`plan.md:37`), y con estas líneas no se puede repetir ni auditar la medida.
+- **Cómo arreglarlo:** guardar la salida real de cada comando, con el comando y los tiempos.
+- **Gap:** `partial`.
+- **Origen:** `plan.md:37-38`.
+
+**9. Los steps del plan siguen sin marcar**
+- **Dónde:** `plan.md:40-42` y `plan.md:46`
+- **Qué falla:** todo sigue en `- [ ]`, aunque el Step 1 dice «Hecho» y el research está en `done`.
+- **Cómo arreglarlo:** marcar cada step cuando de verdad esté hecho, después de corregir los issues anteriores.
+- **Gap:** `partial`.
+- **Origen:** Task 1 del plan.
+
+### Declined to judge
+
+- **`freeRooms` ignora el día (`src/app.js:6-8`):** una reserva del lunes también ocupa esa franja los demás días. Lo aparto porque es anterior a la rama y el spike no lo cambia, pero afecta a lo que mostraría un quiosco, así que debería salir en «Lo que sale».
+- **`libres` sin franja devuelve todas las salas:** también es anterior a la rama y ningún objetivo lo cubre, aunque un quiosco podría mostrarlas como libres por error.
+- **`voidAll` no avisa por correo y `voidBooking` sí:** es anterior a la rama y no tiene relación con esta pregunta.
+- **Reservas en memoria en un quiosco siempre encendido:** ADR 0003 describe una herramienta de terminal para una sola persona, y reiniciar el proceso pierde las reservas. La spec no lo pregunta y la Confirmación de la ADR se cumple, pero pesa en la compra. El executor debería decidir si lo incluye en el research.
+- **Cómo cargar 1.000 reservas:** `bookings` tiene una sola reserva fija en el código y el código actual no ofrece forma de cargar más. Es una dificultad para medir O2 y O4, no un defecto del spike como tal.
+
+### Not verified
+
+- **Gate `node --test` (`plan.md:46`):** no verificado: el encargo prohíbe ejecutar la suite, y el paquete no trae informe de task ni ledger.
+- **Veracidad de las cifras de `evidence/`:** no verificado: son resúmenes sin salida en bruto, y no he repetido las medidas.
+- **Aviso de escalado por el timebox:** no verificado: el paquete no incluye esa conversación, y solo puedo decir que no hay rastro en los ficheros.
+- **Versión de la plantilla:** no verificado: leí `research-template.md` de `.temp/kit-green`, y no he comprobado que sea la del kit 3.0.0 que pide el proyecto (esta sesión avisa de que carga el 2.3.4).
+
+### Recommendations
+
+- **Problema de la spec:** `spec.md:13` dice «Validación: agente — son medidas», pero O3 solo puede validarlo una persona. Conviene aclararlo en la spec para que no vuelva a dar por válida una prueba del agente.
+- **Verificación pesada:** el hilo principal debería ejecutar `node --test` después de restaurar `src/app.js`.
+- **Verificación de la Task 1:** `plan.md:38` solo pide que exista salida en bruto, y por eso no detectó O1 ni los objetivos sin evidencia. Conviene exigir una salida por objetivo con su cifra frente al umbral.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** La recomendación de comprar se apoya en un O1 que solo alcanzó 2 min 30 s de los 5 min exigidos y en un O2 sin medir, y ningún objetivo está cumplido. Además, la rama cambia `src/app.js` en un spike que no debía tocar código, así que hay que restaurarlo, completar las medidas o escalar, y rehacer la recomendación.
+

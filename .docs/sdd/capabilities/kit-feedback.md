@@ -20,10 +20,10 @@ El ticket de mejora del kit: lo que un proyecto consumidor escribe sobre el comp
 - WHEN se redacta el ticket
 - THEN cada hallazgo lleva evidencia de lo que pasó en la sesión, la línea «Fuente» con el fichero y la línea, o el comando, de donde sale cada versión, cifra o cita de «Qué pasó», el fichero **del kit** y el paso que lo origina —nunca un fichero del repo consumidor—, por qué el kit no lo evitó, una propuesta, la línea «Verificada» con `sí — <cómo>` o `sin verificar`, y un criterio de aceptación en forma de escenario
 - AND si el hallazgo cita un fallo de ejecución, «Qué pasó» da el comando exacto, el shell y la línea de error: «`./scripts/check-docs.sh` en PowerShell → `The term './scripts/check-docs.sh' is not recognized`»
-- AND un dato que el agente recuerda y no ha comprobado no va en «Qué pasó»: si recuerda «superpowers 7.1.0» y la versión instalada que lee es la 7.0.0, el ticket dice 7.0.0 con esa lectura en «Fuente», o no da versión
+- AND un dato que el agente recuerda y no ha comprobado no va en «Qué pasó»: si recuerda «kit 2.4.0» y la versión que lee en `.docs/sdd/sdd-kit.json` es la 2.3.4, el ticket dice 2.3.4 con esa lectura en «Fuente», o no da versión
 - AND «Fuente» cita metadatos o ficheros del kit (`.docs/sdd/sdd-kit.json`, la versión de un plugin, una skill) o un comando; un dato que sale de un fichero del proyecto se cita con un descriptor genérico («el changelog del proyecto»), como el resto del ticket
 - AND una causa de coste cita la spec, el walkthrough o el commit que la respalda; con solo una frase del dev-lead, el coste da la cifra y marca la causa «sin respaldo»
-- AND la cabecera declara la versión del kit (`.docs/sdd/sdd-kit.json`), la de superpowers, el carril, el modo y el coste en reloj y tokens, con «no medido» como valor honesto cuando no hay contador
+- AND la cabecera declara la versión del kit (`.docs/sdd/sdd-kit.json`), el carril, el modo y el coste en reloj y tokens, con «no medido» como valor honesto cuando no hay contador
 
 ### «Sin hallazgos» es una salida válida
 

@@ -1,0 +1,323 @@
+--- [3]
+Ahora: leer la guía de redacción del plan y la spec aprobada. Queda: escribir `plan.md` para el spike 0031, unos minutos.
+
+--- [20]
+Ahora: dejar el plan en un commit de apertura y pasar a la implementación. Queda: Task 1 y Task 2 del spike, unos 45 min.
+
+--- [24]
+Ahora: preparar el workspace del plan y cargar las skills de arranque. Queda: Task 1 y Task 2, la revisión final y la validación, ~45 min.
+
+--- [30]
+Estoy en el repo normal, en la rama `feature/0031-free-rooms-load` (no `main`). Trabajo en el sitio, sin worktree nuevo. Paso a la línea base del gate en un worktree desacoplado.
+
+--- [35]
+Escribo el ledger (con el pre-flight) y `tasks.md`, y arranco la Task 1.
+
+--- [41]
+El copiado de `src/app.js` también ejecuta su línea de arranque (imprime `salas` porque `o1` entra como comando). La quito de la copia para que la medida sea limpia.
+
+--- [47]
+Task 1 funciona: sin la línea `salas` espuria, salida 0 y 202 líneas. Commit y cierre de la task.
+
+--- [50]
+Ahora: Task 2, el aguante y `research.md`. Queda: la revisión final y la validación, ~30 min.
+
+--- [58]
+Las evidencias coinciden otra vez con `research.md`. Commit de `tasks.md` y paso a la revisión final de la rama.
+
+--- [62]
+Ahora: la revisión final de la rama, con los ejes Spec y Código en segundo plano. Queda: el cierre de la revisión y la validación, ~20 min y algo de coste en subagentes.
+
+--- [72]
+Empiezo leyendo el paquete de review.
+
+--- [85]
+Los dos ejes de la revisión final (Spec con opus y Código con sonnet) están en marcha en segundo plano. Hasta que vuelvan sus informes no sé qué dirán.
+
+Mientras tanto, esto es lo que ya hay hecho en la rama `feature/0031-free-rooms-load`:
+
+- **Plan:** `plan.md`, método Native, dos tasks.
+- **Task 1:** `harness.mjs` y `measure-libres.mjs o1`, con `evidencia-o1.txt`. En la última pasada, el máximo de las 201 llamadas (la fría incluida) fue 0,0982 ms, frente al umbral de 50 ms.
+- **Task 2:** modo `aguante` (12 repeticiones de 200 llamadas, heap tras `gc()`), `evidencia-aguante.txt` y `research.md`. Esa pasada dio un máximo de 0,0863 ms, y el heap pasó de 4,64 a 4,67 MB. `research.md` recomienda no poner caché a `libres` con esta carga.
+- **`src/`:** sin cambios.
+- **`seed`:** no existía en el repo. Es una función del arnés, en la carpeta de la spec; lo anoté en las decisiones del plan.
+
+Cuando los informes lleguen, hago el cierre de la revisión (una sola pasada de fix si hace falta y la re-revisión), copio los rulings a `tasks.md` y paso a `sdd-archive`.
+
+--- [91]
+`src/` no aparece en el diff. Ahora compruebo las cifras de research.md contra las evidencias y busco la plantilla de research.
+
+--- [94]
+### Strengths
+
+- Las restricciones del repo se cumplen. El diff solo toca la carpeta de la spec, así que `src/` y `package.json` quedan intactos. Los nombres `harness.mjs` y `measure-libres.mjs` no los recoge `node --test`. No hay comentarios, ni los que repiten el código ni los que citan documentos. Los textos de salida están en castellano.
+- `harness.mjs` es corto y tiene una responsabilidad clara: carga una copia temporal de `src/app.js` y siembra las reservas.
+- El regex `^if \(command\).*$` con flag `m` funciona con el `src/app.js` real, que tiene fin de línea CRLF. En JS `$` en modo multilínea también casa antes de `\r`, así que se quita la línea sin tocar el resto. Solo queda un `\r` suelto, inofensivo.
+- La ruta relativa `../../../../src/app.js` sube exactamente 4 niveles desde `.docs/sdd/specs/<id>/` hasta la raíz del repo.
+- La siembra es el peor caso con criterio. Las 1.000 reservas van en `Norte`, así que `Sur` recorre todo el array sin coincidencia. Antes de medir se comprueba que hay 1.000 activas y que el resultado de `libres` es `Sur`.
+- `gc()` se llama antes de cada lectura de heap y queda fuera de la medición de tiempos. Las lecturas de heap no contaminan los `performance.now()`.
+- La CLI valida el modo y el flag `--expose-gc` y falla con mensajes claros. Las constantes `CALLS_PER_BATCH`, `THRESHOLD_MS` y `REPETITIONS` están nombradas.
+- `research.md` es coherente con las evidencias. 50 / 0,0982 son unas 509 veces, y el heap pasa de 4,64 a 4,67 MB.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguna.
+
+#### Important (Should Fix)
+
+1. `measure-libres.mjs:290-292` y `:313`: la «llamada fría» no es fría.
+   - `loadSeededApp` ejecuta `run('libres', [SLOT])` dentro de la validación (`... || run('libres', [SLOT]) !== 'Sur'`) antes de devolver `run`.
+   - Cuando `measureO1` mide `cold`, esa es en realidad la segunda llamada.
+   - `evidencia-o1.txt` lo delata: `fría=0.0233` es menor que las llamadas 2 a 4 (0.0362, 0.0587, 0.0845), que son el calentamiento real del JIT.
+   - `research.md` §2 presenta «la fría, 0,0233 ms» como medida de arranque en frío, y no lo es.
+   - El veredicto no cambia: el máximo es 0,0982 ms, unas 500 veces por debajo de 50 ms. Pero el dato de la fría es erróneo y era un punto de metodología explícito.
+   - Arreglo: no llamar a `run` en la validación. Comprobar el resultado esperado con la propia llamada fría, o validar sobre una copia que no caliente `freeRooms`. Después regenerar `evidencia-o1.txt` y corregir la cifra en `research.md`.
+
+#### Minor (Nice to Have)
+
+1. `measure-libres.mjs:291` y `harness.mjs:268`: el número mágico `1000` aparece en `seed` (valor por defecto) y en la validación `active !== 1000`. Si cambia uno, la comprobación falla sin pista. Conviene exportar una constante `BOOKINGS` desde el arnés y usarla en ambos sitios.
+2. `measure-libres.mjs:287-296`: `loadSeededApp` carga, siembra, valida, escribe en stderr y llama a `process.exit`, y además invoca `run` dos veces solo para el mensaje de error. Una función que lance un `Error` y un único `process.exit` en el punto de entrada sería más limpia (possible Clean Code «una función hace una cosa»).
+3. `measure-libres.mjs:322-344`: `measureEndurance` tiene 23 líneas y mezcla niveles de abstracción. Define el closure `heapMb`, acumula filas, calcula el máximo y formatea el resumen. Extraer `heapMb` al nivel de módulo y una función `enduranceRow` la dejaría legible (possible Clean Code «un nivel de abstracción»). `Math.max(...calls)` se calcula además dos veces por repetición (líneas 337 y 338).
+4. `harness.mjs:262`: si el `src/app.js` cambiara y el regex dejara de casar, la copia seguiría ejecutando `console.log(run(command, args))` con `command = 'o1'` y la salida se ensuciaría en silencio. Una comprobación `source !== original` evitaría el fallo mudo.
+5. `harness.mjs:263`: `mkdtempSync` crea un directorio en `tmpdir()` en cada ejecución y nunca se borra. La copia temporal tampoco resolvería imports relativos si `app.js` llegara a tenerlos. Hoy no es un problema.
+6. `research.md`: mezcla coma decimal en la prosa (0,0982) y punto en la tabla (0.0121), que viene tal cual de la salida del script. Es cosmético.
+
+### Recommendations
+
+- Corregir el punto Important y regenerar `evidencia-o1.txt` con `node measure-libres.mjs o1`. Es una ejecución barata, no hace falta lanzar la suite.
+- Si se quiere más rigor, sacar un `warmup` explícito y reportar por separado la fría (primera llamada real) y la caliente. Hoy el máximo mezcla las llamadas 1 a 20, que son de calentamiento, con el régimen estable.
+
+### Declined to judge
+
+- Si el umbral de 50 ms y la carga de 1.000 reservas responden a lo que pide la spec: pertenece al eje Spec.
+- Si la recomendación «no cachear `libres`» es la decisión de producto adecuada: pertenece al eje Spec y a la decisión del spike.
+- La estructura de carpetas y la ubicación del arnés dentro de la carpeta de la spec: pertenece al eje Architecture.
+- El contenido de `tasks.md`, `plan.md` y `spec.md` (commits solo de documentación): no están en el paquete de código.
+- La suite de tests y el lint: no se ejecutan en esta revisión. La suite completa la corre el hilo principal.
+- El formato de `evidencia-*.txt`: son salidas crudas y no hay criterio de código aplicable.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** El arnés está limpio, cumple las restricciones del repo y su conclusión (unas 500 veces por debajo del umbral) se sostiene. Falla un punto de metodología: la «llamada fría» ya está calentada por la validación previa. Hay que corregirlo y regenerar la evidencia, o al menos dejar de presentar esa cifra como fría en `research.md`.
+
+--- [97]
+El eje Código ha vuelto. Sigo esperando al eje Spec antes de la pasada de fix, que es una sola para los dos ejes.
+
+Del eje Código tengo ya un hallazgo Important. En `measure-libres.mjs`, `loadSeededApp` llama a `run('libres', …)` para validar la siembra. Esa llamada calienta `freeRooms`, así que la «fría» que mido después es en realidad la segunda llamada. Lo confirmo leyendo mi propio código. No cambia la conclusión: el máximo sigue unas 500 veces por debajo de 50 ms. Pero la cifra de la fría en `research.md` es incorrecta. Corregiré el arnés, regeneraré las evidencias y arreglaré `research.md` en esa pasada.
+
+Los demás hallazgos son Minor y no entran en la pasada de fix. Los apunto como diferidos: el número mágico `1000`, `loadSeededApp` y `measureEndurance` mezclando niveles de abstracción, la comprobación de que el regex ha casado, el directorio temporal sin borrar y el separador decimal.
+
+--- [102]
+### Strengths
+
+- `src/` no se toca. El diff `a8ba23f..5b3f3be` solo trae ficheros de la carpeta de la spec y `package.json` no cambia. El arnés mide el `src/app.js` real: lo copia a `tmpdir`, le añade `export { bookings }` y le quita la línea de arranque (Ruling de la Task 1, razonable). No hay mock.
+- La carga es la peor que confirmó la spec. `seed` deja 1.000 reservas activas en `10:00-12:00`, todas en `Norte`, y así `Sur` recorre las 1.000 en el `some` de `freeRooms` (`src/app.js:6`). La comprobación de siembra (`measure-libres.mjs:13-16`) aborta con salida 1 si no hay exactamente 1.000 activas en la franja o si `libres` no devuelve `Sur`, también en el modo `aguante`.
+- He recalculado las cifras de `research.md` desde las evidencias y cuadran:
+  - `evidencia-o1.txt` tiene 202 líneas.
+  - El máximo con la fría es 0,0982, la fría 0,0233 y la mediana de las 200 es 0,0067.
+  - `evidencia-aguante.txt` tiene 12 filas `rep=`, máximo 0,0863 y heap de 4,64 a 4,67.
+  - La tabla de §3 copia fila a fila las de la evidencia.
+  - «Unas 500 veces» (50/0,0982 ≈ 509) y «menos del 1 %» también son correctos.
+- `research.md` sigue `research-template.md`: frontmatter, §1 a §5, sin bloques de ayuda. Usa el estado `cumple`, la recomendación cita filas medidas de §2 y §3, «Sin medir» es honesto y responde a la decisión que desbloquea (caché sí o no).
+- Restricciones de código: los nombres de fichero no casan con los patrones de test, el código no tiene comentarios y la salida está en castellano.
+
+### Issues
+
+#### Critical (Must Fix)
+
+Ninguno.
+
+#### Important (Should Fix)
+
+1. **`measure-libres.mjs:13` y `:36`. La llamada «fría» que se mide no es la primera.**
+   - **Qué pasa:** `loadSeededApp` ya llama a `run('libres', [SLOT])` en la comprobación de siembra (línea 13) antes de que `measureO1` mida `cold` (línea 36). La primera ejecución real de `freeRooms`, la que corre interpretada antes de que V8 la optimice, no se mide nunca. `fría=` registra la segunda.
+   - **Lo confirma la propia evidencia:** `fría=0.0233` sale más baja que las tres siguientes (0.0362, 0.0587, 0.0845).
+   - **Por qué importa:** `research.md:20` afirma «la fría, 0,0233 ms», que contradice lo que es ese número. Además, `src/app.js` es una CLI que arranca un proceso por invocación, así que en uso real cada llamada es fría: es justo la medida que más representa al usuario. Con un margen de unas 500 veces, la conclusión casi seguro no cambia, pero la cifra está mal etiquetada y el foco no queda cubierto.
+   - **Cómo arreglarlo:** comprobar primero el recuento de activas, cronometrar la primera llamada a `libres` y validar después que su resultado es `Sur`. Luego regenerar `evidencia-o1.txt` y actualizar §2.
+   - **Gap:** `contradicts`.
+   - **Origen:** primera línea del Review Focus («se mide aparte y entra en O1») y decisión 6 del plan.
+   - **Fallo del plan:** el Step 1 de la Task 1 (`plan.md:135`) ya ordena «comprobar … que `run('libres', [SLOT])` devuelve `Sur` … [y después] medir la llamada fría». La implementación sigue un plan que choca con su propio Review Focus.
+
+#### Minor (Nice to Have)
+
+2. **`measure-libres.mjs:13-16`. El camino de aborto de la siembra no lo fija ninguna verificación.**
+   - La Verificación de la Task 1 solo ejercita el camino feliz. La salida 0 sí demuestra que la carga medida es la confirmada, pero nada comprueba que se aborte con 1 ante una siembra mala. Leyendo el código, el aborto es correcto.
+   - **Cómo arreglarlo:** basta una ejecución manual con `seed(bookings, 999)` (o equivalente), anotada en el ledger.
+   - **Gap:** `partial`. **Origen:** segunda línea del Review Focus.
+3. **Ledger, Task 2, y su Ruling (`progress.md:12-13`). La salida en bruto de la última ejecución se descartó.**
+   - La Verificación registrada dio `max=0.1095 ms; heap 5.03 → 4.67 MB`. Lo commiteado es la ejecución anterior (`max=0.0863; heap 4.64 → 4.67`), restaurada con `git checkout`.
+   - El Ruling mantiene `research.md` coherente con su fichero, pero oculta que entre ejecuciones el máximo del aguante varía un 27 %, y la ejecución descartada tenía el máximo más alto.
+   - **Cómo arreglarlo:** una línea en §3 que diga que otra ejecución dio 0,1095 ms, o rehacer el aguante y la tabla desde una sola ejecución.
+   - **Gap:** `partial`. **Origen:** objetivo O1, que pide evidencia en bruto.
+4. **`research.md`. El separador decimal es inconsistente:** §2 y la prosa usan coma (0,0982) y la tabla de §3 usa punto (0.0121). Es cosmético; en castellano conviene unificar.
+
+Deferred minors: el ledger no tiene líneas `minor (deferred)` ni `parked`. De los Rulings, el de la Task 1 y el del paquete final me parecen correctos. Al de la Task 2 le basta con lo del punto 3, que no bloquea el merge.
+
+### Not verified
+
+- Que las evidencias commiteadas salgan de estos scripts en este commit. No ejecuté nada, por instrucción, y la evidencia del aguante viene de una ejecución anterior a la registrada en el ledger.
+- El tiempo de la primera llamada real a `libres`: no está medido en ningún fichero (ver Important 1).
+- El gate de cierre `node --test && node scripts/lint.mjs`: lo ejecuta el hilo principal.
+- El cumplimiento del timebox de 2 h: `research.md` no recoge el tiempo invertido.
+
+### Recommendations
+
+- Corregir el orden comprobación/medida de la fría y volver a ejecutar `o1`. Es barato y deja el Review Focus cubierto de verdad.
+- Medir el arranque del proceso no es parte de O1 tal como lo define el plan, pero sería útil para «abrirlo a toda la oficina». Con 10 ejecuciones de `node src/app.js libres 10:00-12:00` cronometradas bastaría para una fila informativa. `research.md` ya lo declara «Sin medir», así que es opcional.
+
+### Declined to judge
+
+- **El tiempo de arranque del proceso Node como parte de O1.** La decisión 6 del plan define una medida como una llamada a `run()`, y `research.md` declara el arranque «Sin medir». No lo cuento como incumplimiento.
+- **Cargas por encima de 1.000 o en otras franjas o salas.** La spec fija la peor carga confirmada y el research las declara sin medir.
+- **El `replace` de la línea `if (command)` en el arnés (`harness.mjs:9`), que no avisa si deja de casar.** Es robustez del arnés y le toca al eje de calidad, no a la spec.
+- **Que la caché «añadiría invalidación al cancelar, anular y reservar» cuando `reservar` no crea reservas en `src/app.js`.** Es razonamiento de diseño en «Descartadas», no una fila medida, y no altera la recomendación.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** O1 está medido sobre el código real con la peor carga confirmada, `research.md` cuadra con las evidencias y responde a si hace falta caché. Pero la «fría» que cita es la segunda llamada, porque la comprobación de siembra consume la primera, así que el Review Focus de la llamada fría no está cubierto. Hay que reordenar la medida, regenerar `evidencia-o1.txt` y actualizar §2 antes del merge.
+
+Ficheros relevantes:
+- `<run>/review-0031-5b3f3be/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/measure-libres.mjs`
+- `<run>/review-0031-5b3f3be/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/research.md`
+- `<run>/review-0031-5b3f3be/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/evidencia-o1.txt`
+- `<run>/review-0031-5b3f3be/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/plan.md`
+- `<run>/repo/.temp/sdd/plan/progress.md`
+
+--- [104]
+Los dos ejes coinciden en el mismo hallazgo Important. Hago la única pasada de fix: la fría pasa a ser la primera llamada real, y regenero las dos evidencias y `research.md` desde una sola ejecución.
+
+--- [109]
+El script de edición falló (el argumento era `-`) y la ejecución sobrescribió la evidencia con el código antiguo. Edito con la herramienta.
+
+--- [117]
+Gate de cierre completo antes de commitear el fix.
+
+--- [119]
+Ahora la única re-revisión del fix (opus, effort high), en un worktree desacoplado en `fb049e5`.
+
+--- [122]
+Voy a despachar la re-revisión con rutas absolutas. El worktree de revisión es de solo lectura y se retira al volver; mi trabajo sigue en el repo de la rama.
+
+--- [125]
+La re-revisión está en marcha. Mientras tanto, dejo `tasks.md` al día y copio los rulings, sin tocar el worktree de revisión.
+
+--- [137]
+El verbo `sdd` resuelve el workspace desde el directorio actual, que ahora es el worktree de revisión. Leo el ledger directamente por su ruta absoluta, que es el mismo contenido.
+
+--- [140]
+Escribo en `tasks.md` el estado de la revisión y los rulings, por ruta absoluta. La línea de la re-revisión espera a su veredicto.
+
+--- [147]
+Los cambios de `tasks.md` quedan sin commitear hasta que la re-revisión vuelva, porque el veredicto va en el mismo fichero. No sé aún qué dirá.
+
+Estado actual de la rama `feature/0031-free-rooms-load`:
+
+- **Revisión final:** los dos ejes (Spec con opus, Código con sonnet) coincidieron en un hallazgo Important: la «llamada fría» que medía no era la primera. Está arreglado en `fb049e5`.
+- **Evidencias:** las regeneré desde una sola ejecución. En esa pasada, el máximo de O1 con la fría incluida fue 1,3329 ms frente al umbral de 50 ms. La primera llamada, en frío, tardó 0,1586 ms y la mediana de las 200 siguientes, 0,0118 ms. `research.md` lo cita y dice que otras ejecuciones dieron máximos de 0,0982 y 0,4326 ms.
+- **Gate de cierre:** 4/4 tests y lint sin hallazgos. `src/` y `package.json` siguen sin cambios.
+- **Minors:** seis quedan diferidos y anotados en `tasks.md`.
+- **Pendiente:** la re-revisión (opus, effort high) del fix.
+
+Cuando vuelva, anoto su veredicto en `tasks.md`, retiro el worktree de revisión y borro el workspace del plan. Después paso a `sdd-archive`.
+
+--- [151]
+**Re-review of fix pass 5b3f3be..fb049e5 (spike 0031)**
+
+The fix closes all three findings. I found one new Minor in the `research.md` text. Every figure in `research.md` matches the evidence files. I recomputed them from `evidencia-o1.txt` and checked them against `evidencia-aguante.txt`.
+
+**Finding 1 [Spec, Important]: ADDRESSED**
+- `measure-libres.mjs:13-16`: `loadSeededApp` now checks only that there are 1,000 active bookings. It no longer calls `libres`.
+- `harness.mjs` (`loadApp` and `seed`) doesn't call `libres` either. So `measure-libres.mjs:41`, `const cold = timeCall(run)`, really is the first call.
+- `measure-libres.mjs:21-27`: the `Sur` check runs after `elapsed` is captured, so it's outside the timed part, and it runs on every call.
+- `evidencia-o1.txt` was regenerated with 202 lines: `fría=0.1586`, then 200 measurements, then `O1 medido: max=1.3329 ms`.
+- `research.md:20` now calls it "la primera llamada, en frío, 0,1586 ms".
+
+**Finding 2 [Code, Important]: ADDRESSED**
+- It's the same fix as Finding 1, at `measure-libres.mjs:9-18` (`loadSeededApp`) and `:20-29`, `:39-47` (`timeCall`/`measureO1`). The max at line 43 still includes the cold call.
+
+**Finding 3 [Spec, Minor 3]: ADDRESSED**
+- `research.md:20` now says outright that the max varies between runs ("Otras ejecuciones del mismo script dieron máximos de 0,0982 ms y 0,4326 ms…").
+- Each evidence file comes from a single run, and the §2, §3 and §4 figures match those files.
+
+**Numbers checked against the evidence**
+- **O1 max with cold call:** 1.3329 = `max(fría, 200)` (the max comes from a warm call; the claim "la fría incluida" is still correct).
+- **Cold call:** 0.1586.
+- **Median of the 200:** 0.0118 (element [100] after sorting).
+- **Aguante max:** 0.3005.
+- **Heap:** 4.64 → 4.67 MB, with the 4.85 MB spike at repetition 5.
+- **12-row table:** row by row identical to `evidencia-aguante.txt`.
+- **Median range:** 0.0115 to 0.0129.
+- **«Unas 37 veces»:** 50 / 1.3329 = 37.5.
+- **«3 %»:** 2.67 %.
+
+## New breakage in the fix diff
+
+- **Minor**, `research.md:20`: "el máximo varía con el ruido de la máquina, la mediana no" doesn't hold up. The previous run (evidence at 5b3f3be) had an O1 median of 0.0067 ms, and this one has 0.0118 ms, nearly double. Its aguante medians ranged from 0.0064 to 0.0134. Also, the 0.4326 ms run it cites isn't in any committed evidence file, so it can't be checked. Suggestion: drop "la mediana no", or say the median also varies but stays around hundredths of a millisecond.
+
+Nothing else. The diff respects the restrictions: no changes to `src/`, no dependencies, no comments, text in Spanish. Dropping "reservar" from the "Descartadas" line is consistent with `src/app.js:29`, since `reservar` doesn't add any booking.
+
+## Out-of-scope observations
+
+- `plan.md:135` (Task 1 Step 1) still describes the old order: check that `libres` returns `Sur` before measuring the cold call. The code now follows the reviewer's ordering, so the plan text no longer matches the implementation.
+
+Verdict: all findings addressed
+
+--- [153]
+La re-revisión da todos los hallazgos por arreglados. Deja una observación Minor mía: «la mediana no varía» es falso, porque la mediana de O1 pasó de 0,0067 a 0,0118 ms entre ejecuciones. Es una corrección de texto de pocas líneas y la reviso yo en el hilo.
+
+--- [157]
+El registro de git ya no lista el worktree de revisión; la carpeta quedó porque era mi directorio actual. La borro ahora que estoy fuera, tras mirar qué contiene.
+
+--- [160]
+Los rulings y los minors diferidos ya están en `tasks.md`. Borro el workspace de este plan (solo `.temp/sdd/plan`, que es scratch ignorado por git) y paso al cierre.
+
+--- [164]
+Ahora: los pre-chequeos del cierre y mirar cómo cierra un spike. Queda: validación, registros y merge, ~15 min.
+
+--- [175]
+Validación por el agente (la spec lo declara: «son medidas»): suite 4/4, lint limpio y `src/` intacto, todo sobre `09ed5b6`. Ahora el walkthrough, el log de estimación y el commit de cierre.
+
+--- [183]
+**No terminado.** La rama `feature/0031-free-rooms-load` no se ha fusionado: el bloque `merge` de `sdd-kit.json` no existe (falta `merge.into` y `merge.noFf`), y sin él el merge lo decide una persona. No borres todavía el worktree `<run>/repo`.
+
+## Qué respondió el spike
+
+**¿Aguanta `libres` 1.000 reservas? Sí: O1 cumple.** Con 1.000 reservas activas en la misma franja, el máximo medido en las 201 llamadas de O1, la fría incluida, fue 1,3329 ms (umbral: 50 ms). En las 2.400 llamadas del aguante el máximo fue 0,3005 ms. El heap pasó de 4,64 a 4,67 MB. `research.md` recomienda no poner caché con esta carga.
+
+Otras ejecuciones del mismo script dieron máximos de 0,0982 y 0,4326 ms, y el texto lo dice. No se conservó su salida.
+
+Queda sin medir el arranque del proceso (`node src/app.js libres`) y las cargas por encima de 1.000 reservas.
+
+## Validación y gate
+
+- **Validación por el agente**, como declara la spec («son medidas»): suite 4/4, lint limpio y `src/` y `package.json` sin cambios.
+- **Revisión final** de los ejes Spec y Código: un Important (la «llamada fría» no era la primera), arreglado en la pasada de fix. La re-revisión lo dio por arreglado y dejó un Minor en `research.md` (decía que la mediana no varía), que corregí y revisé yo.
+- **Historia:** el cierre quedó junto en un commit (`f0585d4`).
+
+## Decisiones que tomé sin el dev-lead
+
+- `seed` no existía en el repo: es una función del arnés, en la carpeta de la spec.
+- La copia de `src/app.js` del arnés pierde su línea de arranque `if (command)`; si no, imprimía `salas`.
+- `sdd task done` repitió el comando de Verificación y pisó la evidencia. Restauré con `git checkout` la que cita `research.md`.
+- El paquete de la revisión final excluyó solo `spec.md`, `plan.md` y `tasks.md`, no la carpeta entera, porque el trabajo del spike vive en ella.
+- O1 y el aguante se regeneraron desde una sola ejecución, y `research.md` cita esa.
+
+## Pendiente
+
+- **Merge:** el bloque `merge` de `sdd-kit.json` está vacío. Dime a qué rama fusiono (por defecto `develop`) y si con `--no-ff`, o fusiónala tú.
+- **Roadmap:** `roadmap.md` no tiene fila para 0031 y no inventé una. `sdd roadmap check` ya falla por dos cosas heredadas: la cabecera de «Deuda técnica» y el formato de la release v0.3.0. No las toqué.
+- **Minors diferidos:** seis, en `tasks.md`.
+- **Plan desfasado:** `plan.md` (Task 1, Step 1) conserva el orden antiguo de validar y medir. El código ya sigue el orden corregido.
+- **Esfuerzo:** real 0,19 h frente a 0,75 h estimadas (−75 %). La causa está en el walkthrough.
+
+## Ticket del kit
+
+¿Quieres que escriba el ticket de mejora del kit con `sdd-feedback`? Hay dos aprendizajes: `sdd task done` pisa la evidencia que escribe la Verificación, y `sdd workspace` y `sdd ledger rulings` resuelven el workspace desde el directorio actual, que cambió al worktree de revisión.
+
+**No terminado.** Falta fusionar `feature/0031-free-rooms-load` en la rama de integración. No borres todavía el worktree `<run>/repo`.
+

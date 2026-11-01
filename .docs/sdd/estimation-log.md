@@ -260,29 +260,31 @@
 | 2026-11-01 | 0275 | patch | 0.25 | 0.05 | 0.2 | — | — | no aplica | — | 20261101-170209-patch-0275-r1-threshold |
 | 2026-11-01 | 0282 | docs | 1.5 | 1.53 | 1.02 | 23553k | 1458k | 6.66 | 12.53 | 20261101-171153-feature-0282-e2e-titles-ratchet |
 | 2026-11-01 | 0182 | infra/tooling | 2 | 1.16 | 0.58 | 19859k | 4679k | 0.71 | 15.15 | 20261101-175259-feature-0182-doc-citing-comments |
+| 2026-11-01 | 0279 | infra/tooling | 1.5 | 1.02 | 0.68 | 19497k | 5894k | 4.29 | 16.7 | 20261101-175350-feature-0279-drop-superpowers-dependency |
+| 2026-11-01 | 0163 | docs | 3 | 2.44 | 0.81 | 31285k | 4699k | 24.8 | 16.41 | 20261101-175419-feature-0163-spike-lane |
 | 2026-11-01 | 0277 | infra/tooling | 3 | 1.69 | 0.56 | 35604k | 4587k | 8.5 | 20.63 | 20261101-191641-feature-0277-sdd-retro |
 
-**Factor de calibración** (ratio mediano real/estimado, 221 artefactos): **0.56** · media 0.73
+**Factor de calibración** (ratio mediano real/estimado, 223 artefactos): **0.57** · media 0.73
 
 - p25–p75: 0.37–0.9
 - p80: 1.02 — para comprometer una fecha, multiplica la estimación por el p80: así cubre 4 de cada 5 artefactos.
-- Dentro de ±25 %: 25 % · sobreestimadas: 65 % · infraestimadas: 10 %
-- Error absoluto (h): media 1.29 · mediana 0.86
-- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.42
+- Dentro de ±25 %: 26 % · sobreestimadas: 65 % · infraestimadas: 9 %
+- Error absoluto (h): media 1.28 · mediana 0.85
+- Tendencia (mediana de las 10 primeras frente a las 10 últimas): 0.33 frente a 0.53
 
 | Tramo del ratio | n | % |
 | --- | --- | --- |
 | <0.5 | 87 | 39 % |
-| 0.5–0.8 | 64 | 29 % |
-| 0.8–1.25 | 49 | 22 % |
+| 0.5–0.8 | 65 | 29 % |
+| 0.8–1.25 | 50 | 22 % |
 | 1.25–2 | 13 | 6 % |
 | ≥2 | 8 | 4 % |
 
 | Tipo | n | Mediana | p25–p75 |
 | --- | --- | --- | --- |
 | chore | 1 | 0.67 | — |
-| docs | 98 | 0.57 | 0.39–0.8 |
-| infra/tooling | 58 | 0.49 | 0.36–0.73 |
+| docs | 99 | 0.57 | 0.39–0.81 |
+| infra/tooling | 59 | 0.49 | 0.36–0.73 |
 | patch | 63 | 0.8 | 0.31–1.2 |
 | tooling | 1 | 0.6 | — |
 
@@ -303,6 +305,6 @@
 | 2.3.2 | 3 | 1.3 | — | — | — |
 | 2.3.3 | 3 | 1.3 | — | — | — |
 | 2.3.4 | 1 | 0.3 | — | — | — |
-| sin publicar | 109 | 217.6 | 0.53 | 544.71 | 1826.41 |
+| sin publicar | 111 | 221.06 | 0.53 | 573.8 | 1859.52 |
 
 > Ver `estimation.md`.

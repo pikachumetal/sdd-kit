@@ -1,5 +1,5 @@
 // Sujeto de la batería de sdd-propose: una petición de cambio, o un paso del flujo con sus artefactos ya escritos.
-// Lo lanza tests/headless/battery.mjs run, con SUPERPOWERS_DIR: el sujeto no lleva el CLAUDE.md del dev-lead.
+// Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -248,6 +248,12 @@ const steps = {
 };
 for (const id of ['k1', 'k3', 'k4', 'k6']) steps[id] = () => (s.env.TURN2 = 'Sí.');
 steps.p2 = steps.p1;
+steps.k2p = () => {
+  const folder = '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load';
+  s.git('checkout', '-q', '-b', 'feature/0031-free-rooms-load');
+  s.put(`${folder}/spec.md`, readFileSync(join(HERE, '..', 'sdd-implement', 'fixtures', 'spec-0031.md'), 'utf8'));
+  s.commit('docs(sdd): abrir el spike 0031 con su spec');
+};
 steps.g1b = steps.g1;
 steps.ws2 = steps.k5;
 steps.ws3 = steps.ws1;

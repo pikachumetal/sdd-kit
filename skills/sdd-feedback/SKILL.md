@@ -11,7 +11,7 @@ The ticket is what this session learned about the kit, written for the agent who
 
 ## Checklist (create a todo per step)
 
-1. **Versions** — read `.docs/sdd/sdd-kit.json` (kit version and `ids.mode`) and the installed superpowers version. A version from the user's notes or from memory doesn't replace that reading.
+1. **Versions** — read `.docs/sdd/sdd-kit.json` (kit version and `ids.mode`). A version from the user's notes or from memory doesn't replace that reading.
 2. **Walk the session** — kit skills and steps that ran, gates, detours, decisions nothing backed. Not the project's code.
 3. **Template** — trace `kit-feedback-template.md` from the `sdd-templates` skill. Clean close —no finding above a minor and the clock within the estimate's ceiling, or no estimate— → the template's **minimal ticket**: header and three lines, plus the minors. A ruling, a deviation from the plan, a step worked around or a decision no step covered is already a finding.
 4. **Save** — in `.docs/sdd/kit-feedback/<yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>.md`, UTC timestamp, id and slug as in the spec folders. One ticket per feature or patch: only this one's own is extended; if the session wrote another's, its own is born and that one is left alone. If the folder doesn't exist, create it and say **once** that it can be git-ignored; do **not** edit `.gitignore`.

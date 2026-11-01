@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a && ls -a .docs/sdd .docs/sdd/capabilities 2>&1 | head -50 && cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20
+<<< develop
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && cd .docs/sdd && cat constitution.md mission.md tech-stack.md roadmap.md sdd-kit.json; ls specs; cd ../.. ; cat package.json; find src test -type f; cat README.md
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; ls .docs/sdd/specs/*; ls node_modules 2>&1 | head -1
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-green/skills/sdd-propose/references" && cat modo-lite.md control-profiles.md | head -150; cat ../../../../runs/green/f1-1/repo/.docs/sdd/specs/*0006*/spec.md
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-green/skills/sdd-propose/references/spec-writing.md"; cat "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-green/skills/sdd-propose/references/nombrado.md" | head -60
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Writing the spec
+
+Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec cover
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.2255513 $)
+Carril: feature, modo full · Perfil: `delegate`, por defecto (en `sdd-kit.json` no hay `control.profile` y no existe `sdd-kit.local.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+**Lo que he entendido:** hoy `libres <franja>` lista las salas sin reserva en esa franja (con los datos actuales, `libres 10:00-12:00` devuelve `Sur`). Quieres poder acotar esa consulta a una sala concreta. No fijas la sintaxis ni qué responde cuando la sala está ocupada o no existe. Esas decisiones las tomamos aquí, de una en una. Es un cambio pequeño, de una sola task, y no lo parto.
+
+Corrígeme si algo no es así. La primera decisión es cómo se escribe el filtro:
+
+❓ **Sintaxis del filtro por sala**
+En `reservar` ya existe un modificador con nombre: `reservar Norte --cada-semana`. `libres` hoy solo recibe la franja (`src/app.js`).
+1️⃣ **Opción con nombre `--sala`:** `libres 10:00-12:00 --sala Sur`. Puede ir en cualquier posición y se lee solo. Cuesta una opción más que escribir.
+2️⃣ **Segundo argumento posicional:** `libres 10:00-12:00 Sur`. Es más corto. Pero `libres Sur 10:00-12:00` ya no se entendería, y el orden de los argumentos pasa a ser parte del contrato.
+➡️ **Recomiendo 1️⃣**, porque `reservar` ya usa opciones con nombre y así el orden no importa. A cambio, se teclea más.
