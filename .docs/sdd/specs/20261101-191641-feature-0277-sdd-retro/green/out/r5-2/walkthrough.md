@@ -8,4 +8,4 @@ Recordatorio por correo de cada reserva.
 
 - Ninguno.
 
-Retro: error que cazaría un chequeo → test (test/no-console-log.test.js: console.log de depuración en src/)
+Retro: error que cazaría un chequeo → test que falla si hay un console.log de depuración en src/ (test/sin-depuracion.test.js)

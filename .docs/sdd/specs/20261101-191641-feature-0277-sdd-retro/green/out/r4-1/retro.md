@@ -26,5 +26,5 @@ Cerradas desde la 1.3.0: 1
 
 | Causa | Filas | Cambio | Arreglo |
 | --- | --- | --- | --- |
-| regla lejos de su paso | «El anuncio sale 4 de 6», «El prompt sale sin su forma» | Mover cada regla junto al paso que la aplica | mover regla |
+| regla lejos de su paso | «El anuncio sale 4 de 6», «El prompt sale sin su forma» | Mover cada regla al paso donde se aplica | mover regla |
 | regla lejos de su paso | «El anuncio sale 4 de 6» | prioriza o descarta | mover regla |

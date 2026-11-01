@@ -67,6 +67,7 @@ const DEBT = [
   '## Lista', '', '| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |', '| --- | --- | --- | --- | --- | --- | --- | --- |', ...LIST, '',
   '## Descartadas', '', '| Ítem | Causa | Origen | Motivo | Fecha |', '| --- | --- | --- | --- | --- |', '',
 ].join('\n');
+const EMPTY_DEBT = DEBT.split('\n').filter((line) => !/^\| (El |`--planta)/.test(line)).join('\n');
 const PREVIOUS_RETRO = [
   '# Retro — v1.3.0', '', '## Repaso por causa', '', '| Causa | En espera | Lista | Descartadas |', '| --- | --- | --- | --- |', '| regla lejos de su paso | 0 | 2 | 0 |', '',
   '## Abiertas en «Lista»', '', '| Ítem | Causa | Casos | Destino | Abierta desde |', '| --- | --- | --- | --- | --- |',
@@ -95,6 +96,12 @@ s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
 s.putKitMarker(MARKER);
 if (cell('Molde') === 'cierre') closeMold();
 else if (cell('Molde') === 'corte') cutMold();
+else if (cell('Molde') === 'corte-vacio') {
+  cutMold();
+  s.put('.docs/sdd/steering/debt.md', EMPTY_DEBT);
+  s.put('.docs/sdd/estimation-log.md', '# Log de estimación\n\n| Id | Estimado | Real |\n| --- | --- | --- |\n| 0040 | 2 h | 1,5 h |\n');
+  rmSync(join(s.R, '.docs/sdd/releases'), { recursive: true, force: true });
+}
 else s.die(`molde desconocido en battery.md: ${s.SC}`);
 s.initRepo();
 s.git('branch', 'develop');

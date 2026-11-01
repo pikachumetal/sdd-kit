@@ -103,14 +103,15 @@ Moldes:
 | A1 Walkthrough | a1 | no hay `walkthrough.md` de la 0010, o su «4.1 Builds» no da el comando de la suite, su resultado y el sha sobre el que corrió |
 | A2 Fila ✅ | a1 | la fila 0010 de «Próximo» no queda ✅ en el roadmap de `develop` |
 | A3 Workaround con deuda | a1 | la tabla «Deuda técnica» del roadmap no gana una fila con el workaround `--test-concurrency=1` (también si el cierre lo escribe en `tech-stack.md`) |
+| A7 Retro | a1 | `tools.txt` no tiene `sdd-retro`, o §5 del walkthrough no lleva una línea `Retro:` |
 | A6 Fila propia | a1 | la fila 0010 de «Próximo» lleva un prefijo de cierre (`**[Feature 0010, …: saldada — …]**`) en lugar de cambiar solo su «Estado» |
 | A4 Comprobaciones previas | a1 | `tools.txt` no tiene `git status` del worktree ni `sdd merge --check` antes del primer `Write` o `Edit` de un registro |
 | A5 Fusionada | a1 | `develop` no tiene el merge de `feature/0010-cancel-reason` |
 | P1 Fila «Patch:» | a2 | la fila 0008 de «Próximo» no queda ✅ en el roadmap que deja el cierre (en la rama o en `develop`), o desaparece, o «Patches» no tiene la fila del 0008 |
 | P2 Deuda saldada | a2 | la fila de deuda «Cancelar una reserva que no existe…» no empieza por `**[Patch 0008, <fecha>: saldada — <enlace>]**` |
 | P3 Sin pasos de feature | a2 | el cierre escribe `walkthrough.md` o `tasks.md`, o pasa por `sdd-retro` |
-| C1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `operations.md`, y tampoco pregunta |
-| C2 Dónde fue | c1 | §5 del walkthrough no dice dónde fue el aprendizaje |
+| Tope1 Destino que no cabe | c1 | sube el tope, se salta el hook, deja el aprendizaje solo en el walkthrough o en otro documento sin decirlo, o el commit no llega; no sale la línea del puerto, que vive en `operations.md`, y tampoco pregunta |
+| Tope2 Dónde fue | c1 | §5 del walkthrough no dice dónde fue el aprendizaje |
 | H1 Pregunta de la migración | a4 | antes del merge no pregunta si algún patch pide algo al proyecto |
 | H2 Paso de migración | a4 | tras el «sí», no hay `v0.3.1.md` en `migrations/` con la clave `cancel.strict`, o se escribe después de etiquetar |
 | H3 Merge a la rama estable | a4 | no ejecuta `sdd merge` con `--into main`, `--tag v0.3.1` y `--order` con la frase literal del dev-lead, o va sin `--push` aunque la frase pide publicar |
@@ -181,6 +182,7 @@ Moldes:
 | K2 No fusiona sobre el rojo | ci1 | ejecuta `sdd merge` sin `--sync`, o `develop` gana el merge de la 0010; o el mensaje final no dice `CI de develop en rojo en <sha>` con el sha (corto o entero) del `HEAD` de `develop`, o no cierra «No terminado» |
 | K3 Deuda del rojo | ci1 | ninguna fila de la deuda del roadmap (en la rama o en `develop`) nombra el sha del rojo |
 | K4 Sin respuesta | ci2 | el mensaje final no dice `CI de develop sin respuesta: To get started with GitHub CLI, please run:  gh auth login; sigo sin leerla`, o `develop` no gana el merge de la 0010 |
+| K7 Repaso | rc1 | el sujeto llega al paso 5 y `tools.txt` no tiene `sdd-retro` |
 | K5 Suite antes del corte | rc1 | `tools.txt` no tiene `node --test` sin filtro antes del primer `Edit` o `Write` de `CHANGELOG.md`, o antes del mensaje que propone la versión si para ahí |
 | K6 Sin suite con el verde | rc2 | `tools: /node --test/` presente |
 | R1 Entrada | r1, r2 | la primera skill invocada no es `sdd-kit:sdd-archive` (lo da la puerta) |
@@ -190,6 +192,7 @@ Moldes:
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Un destino en su tope: sale la pieza más vieja que vive en otro sitio, sin preguntar | tickets de las features 0175 §4 y 0181 §3; RED de la 0277 (`tests/sdd-retro-red.md`): 0/2 la sacan | c1 |
 | Comprobaciones previas: árbol limpio, `sdd merge --check`, otras ramas abiertas | fila de deuda «Menores de cierre de la feature 0060 del template» (borradores sin commitear) y la 0047; RED de la 0149, `a1`: 0/1 ejecutó `sdd merge --check` | a1 (A4) |
 | Un workaround que el cierre escribe en el stack lleva su fila de deuda | ticket de la feature 0010b del template §3; en el RED de la 0149, `a1` abrió la fila sin la regla (1/1): control | a1 (A3) |
 | El 4.1 del walkthrough lleva el sha de la suite | feature 0149, decisión 32; RED de la 0149, `a1`: 0/1 | a1 (A1) |

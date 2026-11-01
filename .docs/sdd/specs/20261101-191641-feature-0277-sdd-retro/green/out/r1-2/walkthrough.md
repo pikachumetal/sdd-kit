@@ -8,5 +8,5 @@ Recordatorio por correo de cada reserva.
 
 - Ninguno.
 
-Retro: corrección repetida → operations.md (los tests se lanzan con `npm run test:unit`)
-Retro: documento o skill desmentido → operations.md (decía `npm test`; corregido en el mismo documento)
+Retro: corrección repetida → una línea corregida en operations.md (.docs/sdd/steering/operations.md)
+Retro: documento o skill desmentido → corregido en el propio documento: operations.md decía `npm test` y es `npm run test:unit` (.docs/sdd/steering/operations.md)

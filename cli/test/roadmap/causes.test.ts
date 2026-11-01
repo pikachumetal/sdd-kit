@@ -10,7 +10,13 @@ const floorRow = '| `--planta 2` lista otra planta | defecto del producto | [d](
 const waitingRow = '| El aviso sale doble | regla lejos de su paso | [e](e.md) | bajo | 2.º caso | 2026-10-01 |';
 const openHeader = ['## Abiertas en «Lista»', '', '| Ítem | Causa | Casos | Destino | Abierta desde |', '| --- | --- | --- | --- | --- |'];
 
-function debt(list: string[], waiting: string[] = [], discarded: string[] = [], untriaged: string[] = []): string {
+interface OtherRows {
+  waiting?: string[];
+  discarded?: string[];
+  untriaged?: string[];
+}
+
+function debt(list: string[], { waiting = [], discarded = [], untriaged = [] }: OtherRows = {}): string {
   return [
     '# Deuda técnica — salas', '',
     '## Por triar', '', ...debtHeaders['Por triar'], ...untriaged, '',
@@ -26,7 +32,7 @@ function retro(rows: [string, string][]): string {
 }
 
 const retroTemplate = readRepoFile('skills/sdd-templates/templates/retro-template.md');
-const fullDebt = debt([announceRow, promptRow, floorRow], [waitingRow]);
+const fullDebt = debt([announceRow, promptRow, floorRow], { waiting: [waitingRow] });
 const previousRetro = retro([[ANNOUNCE, '1.2.0'], ['La fila cerrada', '1.3.0']]);
 
 function causes(files: Record<string, string>, ...extra: string[]) {
@@ -113,8 +119,9 @@ describe('sdd roadmap causes', () => {
   });
 
   it('ignores untriaged rows', async () => {
-    const { lines } = await causes(withDebt(debt([floorRow], [], [], ['| Sin triar | [t](t.md) | 2026-10-12 |'])));
+    const { lines } = await causes(withDebt(debt([floorRow], { untriaged: ['| Sin triar | [t](t.md) | 2026-10-12 |'] })));
     expect(lines.join('\n')).not.toContain('Sin triar');
+    expect(lines.join('\n')).not.toContain('[t](t.md)');
   });
 
   it('ignores settled rows', async () => {
@@ -126,7 +133,7 @@ describe('sdd roadmap causes', () => {
 
   it('counts discarded rows in the causes table', async () => {
     const discarded = '| Descartada | prueba o molde | [c](c.md) | motivo | 2026-10-01 |';
-    const { lines } = await causes(withDebt(debt([floorRow], [], [discarded])));
+    const { lines } = await causes(withDebt(debt([floorRow], { discarded: [discarded] })));
     expect(lines).toContain('| prueba o molde | 0 | 0 | 1 |');
   });
 
@@ -150,7 +157,7 @@ describe('sdd roadmap causes', () => {
   });
 
   it('says no triaged debt', async () => {
-    const { lines, code } = await causes(withDebt(debt([], [], [], ['| Sin triar | [t](t.md) | 2026-10-12 |'])));
+    const { lines, code } = await causes(withDebt(debt([], { untriaged: ['| Sin triar | [t](t.md) | 2026-10-12 |'] })));
     expect(lines).toEqual(['Sin deuda triada']);
     expect(code).toBe(0);
   });
@@ -173,6 +180,23 @@ describe('sdd roadmap causes', () => {
     const { lines, code } = await runSdd(['roadmap', 'causes', '--project-root', root, '--version', '1.4.0']);
     expect(code).toBe(0);
     expect(lines[0]).toBe('## Repaso por causa');
+  });
+
+  it('skips a retro whose table has another form', async () => {
+    const swapped = ['# Retro', '', '## Abiertas en «Lista»', '', '| Ítem | Abierta desde | Causa |', '| --- | --- | --- |', `| ${ANNOUNCE} | 1.1.0 | sin fila |`, ''].join('\n');
+    const { lines } = await causes(withDebt(fullDebt, { 'releases/v1.3.0/retro.md': swapped }));
+    expect(lines.join('\n')).not.toContain('Cerradas desde');
+    expect(lines).toContain(`| ${ANNOUNCE} | regla lejos de su paso | 2 | sin fila | 1.4.0 |`);
+  });
+
+  it('does not inherit an open since that is not a version', async () => {
+    const { lines } = await causes(withDebt(fullDebt, { 'releases/v1.3.0/retro.md': retro([[ANNOUNCE, 'sin fila']]) }));
+    expect(lines).toContain(`| ${ANNOUNCE} | regla lejos de su paso | 2 | sin fila | 1.4.0 |`);
+  });
+
+  it('lists the verb in the help', async () => {
+    const { lines } = await runSdd(['--help']);
+    expect(lines.join('\n')).toContain('sdd roadmap causes');
   });
 
   it('reads a retro traced from the template and filled with its output', async () => {

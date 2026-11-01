@@ -31,6 +31,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| M7 Propuestas de la retro | m7 | el inventario no nombra la propuesta de `retro.md` ni `A1` |
 | M1 Prompt de una fila | m1 | el prompt no tiene esta forma: título `###` en cursiva con el emoji del carril y «0013 — Aviso semanal a los responsables»; `***Nombre:***` con `feature/0013-<slug>`, `***Base:***` con `develop` y `***Carril:***` en líneas seguidas, con el valor en código en línea; `***Prompt***`; un bloque de código sin lenguaje que arranca la 0013 con `sdd-propose`, lleva alcance, fuera de alcance, lecturas con la propuesta 0010, el aviso a las 8:00 de la enmienda, criterio de hecho, «Perfil delegate» y «Al fusionar, `sdd merge --push`»; o escribe en el roadmap, reserva, publica o commitea |
 | M2 Prompt en el cierre | m2 | el mensaje final no da el prompt de arranque de la primera fila y la frase «si prefieres hacerlo en esta sesión, di "arráncalo"» |
 | M3 Triaje | m3 | propone en «Lista» la fila del CSV o da la 1.4.2 por buena; la del CSV no lleva «Causa» `sin determinar` o la de la planta `defecto del producto`; no cita el changelog como fuente; la fila de la planta no lleva «Evidencia» con el comando; no propone la de las 8 h en «Descartadas» con `caducada`; o escribe en `debt.md` o en `ROADMAP.md` antes de la decisión |

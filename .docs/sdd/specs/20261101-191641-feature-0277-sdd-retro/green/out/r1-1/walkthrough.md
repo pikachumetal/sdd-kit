@@ -8,5 +8,5 @@ Recordatorio por correo de cada reserva.
 
 - Ninguno.
 
-Retro: corrección repetida → operations.md (comando de tests)
-Retro: documento o skill desmentido → operations.md (comando de tests)
+Retro: corrección repetida → línea en operations.md (.docs/sdd/steering/operations.md)
+Retro: documento o skill desmentido → corregido en el mismo documento (.docs/sdd/steering/operations.md)

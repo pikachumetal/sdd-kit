@@ -2,4 +2,4 @@
 
 ## Testing
 
-- Tests: `npm run test:unit` (`npm test` no existe)
+- Tests: `npm run test:unit` (`npm test` no existe: no hay script `test`)

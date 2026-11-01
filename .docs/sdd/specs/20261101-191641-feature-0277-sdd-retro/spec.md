@@ -6,7 +6,7 @@ proposal: 0131
 title: sdd-retro, señales del cierre y repaso por causa de cada release
 mode: full
 profile: delegate
-status: approved
+status: done
 created: 2026-11-01
 author: Àngel Delgado
 approvers:
@@ -147,6 +147,8 @@ Tres tasks: el verbo con sus tests; `sdd-retro` con su batería y el paso de `sd
 - Sin señales, una línea: `r2`, 2 sujetos.
 - Señal del kit, al ticket: `r3`, 1 sujeto.
 - Repaso y propuestas: `r4`, 2 sujetos en `unattended`, con la plantilla y el verbo.
+- El chequeo como primer peldaño: `r5`, 2 sujetos.
+- Sin carpeta sin deuda triada: `r6`, 1 sujeto.
 - `sdd-roadmap` lee las propuestas: `m7`, 1 sujeto.
 - El destino no cabe: `c1` de la batería de `sdd-archive`, 2 sujetos.
 - Control de no regresión: `a1` (una feature pasa por `sdd-retro`) y `a2` (un patch no) de `sdd-archive`; `rc1` (el corte llama al repaso y sigue).
@@ -319,6 +321,9 @@ Precio: `a9` de `sdd-archive`, estimado en 1 $ en la spec de la 0276, y los 39 s
 | Suma | | 13,8 |
 
 ## Enmiendas
+
+- 2026-11-01 — «Dónde se prueba» gana `r6`: el plan daba el corte sin carpeta por cubierto con `rc1`, cuyo molde sí tiene `debt.md` — lo vio el eje Spec — sin aprobar (solo añade una prueba).
+- 2026-11-01 — «Dónde se prueba» gana `r5`: el peldaño de chequeo quedaba sin observar — lo avisaba el plan — sin aprobar (solo añade una prueba).
 
 ## Aprobaciones
 

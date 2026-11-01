@@ -11,8 +11,8 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - GIVEN la rama `feature/0081-booking-reminders` con su `spec.md` aprobada y todas sus tasks hechas, y la rama `patch/0082-slot-overlap` con su `patch.md` y el fix commiteado
 - WHEN se cierra cada una
 - THEN las dos se cierran con `sdd-archive`
-- AND el cierre de la 0081 escribe `walkthrough.md`, actualiza `tasks.md` y hace la revisión de skills
-- AND el cierre de la 0082 no escribe `walkthrough.md`, no toca `tasks.md` ni hace la revisión de skills: completa `patch.md` y su fila del roadmap
+- AND el cierre de la 0081 escribe `walkthrough.md`, actualiza `tasks.md` y pasa por `sdd-retro`
+- AND el cierre de la 0082 no escribe `walkthrough.md`, no toca `tasks.md` ni pasa por `sdd-retro`: completa `patch.md` y su fila del roadmap
 
 ### El cierre comprueba el árbol, el destino y las otras ramas antes de escribir
 
@@ -243,6 +243,16 @@ el cierre de una feature o de un patch con `sdd-archive`: lo que comprueba antes
 - THEN `CHANGELOG.md` no cambia
 - AND Now gana la fila 0021 con su brief y `✅`, y `sdd roadmap check` escribe `Roadmap válido`
 - AND con `.docs/sdd/roadmap.md` y `.docs/sdd/changelog.md` (2.x), el cierre sigue añadiendo su entrada con `add-to-changelog`
+
+### Un aprendizaje cuyo destino no cabe tiene salida
+
+- GIVEN el cierre de una feature con el aprendizaje «la suite lenta necesita `--maxWorkers 8`», cuyo destino `tech-stack.md` está en su tope de palabras, y un pre-commit que lo comprueba
+- WHEN se vuelca el aprendizaje
+- THEN sale de ese documento la pieza más vieja que ya vive en otro sitio, y el aprendizaje entra
+- AND una regla de una skill con batería (`tests/batteries/<skill>/`) va a la procedencia de esa batería
+- AND si no hay pieza que salga, pregunta; en `unattended`, va a «Por triar» de la deuda
+- AND el tope no sube y el commit no se salta el hook
+- AND §5 del walkthrough dice dónde fue el aprendizaje
 
 ## Reglas de la capacidad
 

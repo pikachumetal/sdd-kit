@@ -2,4 +2,4 @@
 
 ## Testing
 
-- Tests: `npm run test:unit`
+- Tests: `npm run test:unit` (`npm test` no existe: falla con «missing script: test»)

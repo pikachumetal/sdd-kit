@@ -8,4 +8,4 @@ Recordatorio por correo de cada reserva.
 
 - Ninguno.
 
-Retro: documento o skill desmentido → ticket del kit: el paso de arranque de una task de `sdd-implement` dice `sdd task open`, y ese verbo no existe (`unknown verb`); es `sdd task start`
+Retro: documento o skill desmentido → ticket del kit: el paso de arranque de una task en `sdd-implement` dice `sdd task open`, pero el verbo no existe (`unknown verb`); es `sdd task start`

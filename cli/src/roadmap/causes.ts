@@ -3,12 +3,15 @@ import { join } from 'node:path';
 import { readLines } from '../cli/files.ts';
 import { caseCount, isSettledRow, LIST_COLUMN } from './debt.ts';
 import { parseSections, tableBlocks } from './parse.ts';
-import { rowsOf } from './tables.ts';
+import { headerIs, rowsOf } from './tables.ts';
 import type { Row } from './tables.ts';
 
 const OPEN_SECTION = 'Abiertas en «Lista»';
+const OPEN_HEADER = '| Ítem | Causa | Casos | Destino | Abierta desde |';
+const ITEM_COLUMN = 0;
 const CAUSE_COLUMN = 1;
 const SINCE_COLUMN = 4;
+export const VERSION = /^\d+\.\d+\.\d+$/;
 const VERSION_FOLDER = /^v(\d+\.\d+\.\d+)$/;
 
 export interface CauseCount {
@@ -33,7 +36,7 @@ export interface CausesReport {
   previous: string | null;
 }
 
-interface PreviousRetro {
+export interface PreviousRetro {
   version: string;
   since: Map<string, string>;
 }
@@ -42,6 +45,11 @@ function sectionRows(lines: string[], title: string): Row[] {
   return tableBlocks(lines, parseSections(lines))
     .filter((block) => block.section?.title === title && block.header !== null)
     .flatMap((block) => rowsOf(lines, block));
+}
+
+function hasOpenTable(lines: string[]): boolean {
+  const blocks = tableBlocks(lines, parseSections(lines)).filter((block) => block.section?.title === OPEN_SECTION);
+  return blocks.length > 0 && blocks.every((block) => headerIs(lines, block, OPEN_HEADER));
 }
 
 function compareVersions(left: string, right: string): number {
@@ -62,11 +70,11 @@ function readRetro(docsPath: string, version: string): PreviousRetro | null {
   const path = join(docsPath, 'releases', `v${version}`, 'retro.md');
   if (!existsSync(path)) return null;
   const lines = readLines(path);
-  if (!parseSections(lines).some((section) => section.title === OPEN_SECTION)) return null;
-  return { version, since: new Map(sectionRows(lines, OPEN_SECTION).map((row) => [row.cells[0] ?? '', row.cells[SINCE_COLUMN] ?? ''])) };
+  if (!hasOpenTable(lines)) return null;
+  return { version, since: new Map(sectionRows(lines, OPEN_SECTION).map((row) => [row.cells[ITEM_COLUMN] ?? '', row.cells[SINCE_COLUMN] ?? ''])) };
 }
 
-function previousRetro(docsPath: string, version: string): PreviousRetro | null {
+export function previousRetro(docsPath: string, version: string): PreviousRetro | null {
   for (const candidate of earlierVersions(docsPath, version)) {
     const retro = readRetro(docsPath, candidate);
     if (retro) return retro;
@@ -92,19 +100,18 @@ function countCauses(waiting: Row[], listed: Row[], discarded: Row[]): CauseCoun
 
 function openRow(row: Row, since: Map<string, string> | undefined, version: string): OpenRow {
   const item = row.cells[LIST_COLUMN.item] ?? '';
+  const inherited = since?.get(item) ?? '';
   return {
     item,
     cause: row.cells[LIST_COLUMN.cause] ?? '',
     cases: caseCount(row.cells[LIST_COLUMN.origin] ?? ''),
     destination: row.cells[LIST_COLUMN.destination] ?? '',
-    openSince: since?.get(item) ?? version,
+    openSince: VERSION.test(inherited) ? inherited : version,
   };
 }
 
-export function causesReport(docsPath: string, version: string): CausesReport {
-  const lines = readLines(join(docsPath, 'steering', 'debt.md'));
+export function causesReport(lines: string[], previous: PreviousRetro | null, version: string): CausesReport {
   const listed = sectionRows(lines, 'Lista').filter((row) => !isSettledRow(row));
-  const previous = previousRetro(docsPath, version);
   const open = listed.map((row) => openRow(row, previous?.since, version)).sort((left, right) => compareVersions(left.openSince, right.openSince));
   const stillOpen = new Set(open.map((row) => row.item));
   return {
@@ -126,7 +133,7 @@ export function renderCauses(report: CausesReport): string[] {
     '| Causa | En espera | Lista | Descartadas |', '| --- | --- | --- | --- |',
     ...report.causes.map(({ cause, waiting, listed, discarded }) => tableLine([cause, waiting, listed, discarded])), '',
     `## ${OPEN_SECTION}`, '',
-    '| Ítem | Causa | Casos | Destino | Abierta desde |', '| --- | --- | --- | --- | --- |',
+    OPEN_HEADER, '| --- | --- | --- | --- | --- |',
     ...report.open.map(({ item, cause, cases, destination, openSince }) => tableLine([item, cause, cases, destination, openSince])),
     ...(report.previous === null ? [] : ['', `Cerradas desde la ${report.previous}: ${report.closedSinceLast}`]),
   ];

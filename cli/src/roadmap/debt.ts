@@ -1,3 +1,4 @@
+import { join, resolve } from 'node:path';
 import { lineAt, parseSections, tableBlocks } from './parse.ts';
 import type { Block } from './parse.ts';
 import { CLOSING_PREFIX } from './releases.ts';
@@ -41,6 +42,10 @@ const WARNING_TEXT = new Map([
   ['En espera', (date: string) => `en espera desde ${date}, dos releases sin 2.º caso: caduca`],
   ['Descartadas', (date: string) => `descartada el ${date}, dos releases después: sale en el corte`],
 ]);
+
+export function debtPath(docsPath: string): string {
+  return join(resolve(docsPath), 'steering', 'debt.md');
+}
 
 function isBlank(value: string | undefined): boolean {
   return value === undefined || value === '' || value === '—';

@@ -3,7 +3,7 @@ id: 20261101-191641-feature-0277-sdd-retro
 feature: 0277
 title: Plan de implementación — sdd-retro, señales del cierre y repaso por causa de cada release
 spec: ./spec.md
-status: approved
+status: done
 created: 2026-11-01
 ---
 
@@ -214,9 +214,9 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - `--planta 2` fuera, `Sin propuestas`, sin repaso → Task 3, `r4` y test del verbo; `Sin propuestas` en plantilla y lectura de `r4`. ⚠
 - `archive`, los dos cierres → Task 2, `a1`, `a2`. ✓
 - `archive`, destino que no cabe, cada `AND` → Task 2, `c1`; `unattended` sin observar con sujeto, lectura en la revisión final. ⚠
-- `release-flow`, carpeta, cada `AND` → Task 3, `r4`; el caso sin carpeta, `rc1`, cuyo molde no tiene `debt.md`. ✓
-- `release-flow`, estimación opcional → Task 3, `rc1` y control de la oferta en el mismo run; pedida sin `debt.md`, sin sujeto, lectura. ⚠
-- `cli`, lista de verbos → Task 1, el test de `--help` existente. ✓
+- `release-flow`, carpeta, cada `AND` → Task 3, `r4`; el caso sin carpeta, `r6`. ✓
+- `release-flow`, estimación opcional → Task 3, `r6`, la oferta; pedida sin `debt.md`, sin sujeto, lectura. ⚠
+- `cli`, lista de verbos → Task 1, `lists the verb in the help`. ✓
 - `cli`, `roadmap causes`, cada `AND` → Task 1, los tests nombrados. ✓
 - Plantilla releída → Task 3, `calques the retro template`. ✓
 - `planning`, inventario → Task 3, `m7`. ✓
