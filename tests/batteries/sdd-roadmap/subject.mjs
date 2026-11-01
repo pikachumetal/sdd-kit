@@ -60,6 +60,19 @@ const molds = {
     layer3();
     s.copy(join(HERE, 'mold-salas-3-wt'));
   },
+  // salas-3 con dos tickets que cuentan la misma causa con palabras distintas, y otro de la misma categoría y otro mecanismo.
+  'salas-3-cause': () => {
+    layer3();
+    s.copy(join(HERE, 'mold-salas-3-cause'));
+  },
+  // 2.x: una fila que espera su 2.º ticket, sin causa, y el ticket que la completa con otras palabras.
+  'salas-cause-2x': () => {
+    s.copy(join(HERE, 'mold-salas-cause-2x'));
+    const row = '| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |';
+    const roadmap = readLf(ROADMAP);
+    if (!roadmap.includes(row)) s.die('el roadmap del molde salas cambió: no hay dónde poner la fila de deuda');
+    writeFileSync(ROADMAP, roadmap.replace(row, `${row}\n| Las salidas de \`DRY_RUN=1\` no aparecen en \`out/\` ([ticket](../../docs/tickets/2026-10-05-salidas.md)) | Medio | **Esperar 2.º ticket** — falta 2.º caso |`));
+  },
   // salas-3-plain con un fichero que solo reexporta: el arreglo vive en src/lib/notify.js.
   'salas-3-reexport': () => {
     layer3();

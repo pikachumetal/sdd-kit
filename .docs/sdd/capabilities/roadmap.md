@@ -146,11 +146,11 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 
 ### `debt.md` tiene una sección por estado, y «Lista» exige evidencia
 
-- GIVEN un `.docs/sdd/steering/debt.md` con `## Por triar` en la línea 3 y el párrafo «Revisar cada lunes» en la línea 4; `## Lista` en la línea 9, con la fila «`libres --planta 2` lista salas de la planta 1» y «Evidencia» `—` en la línea 12; `## En espera` en la línea 15; y `## Descartadas`, con una fila cuya «Fecha» es `ayer` en la línea 21
+- GIVEN un `.docs/sdd/steering/debt.md` con `## Por triar` en la línea 3 y el párrafo «Revisar cada lunes» en la línea 4; `## Lista` en la línea 9, con la fila «`libres --planta 2` lista salas de la planta 1», «Causa» `defecto del producto` y «Evidencia» `—` en la línea 12; `## En espera` en la línea 15; y `## Descartadas`, con una fila con «Causa» `sin determinar` y «Fecha» `ayer` en la línea 21
 - WHEN se ejecuta `sdd roadmap check`
 - THEN escribe `debt.md: línea 4: prosa en «Por triar»; debt.md solo lleva tablas`, `debt.md: línea 12: fila de «Lista» sin «Evidencia»`, `debt.md: línea 15: «En espera» va antes que «Lista»` y `debt.md: línea 21: «Fecha» «ayer» no es AAAA-MM-DD`, y sale con 1
 - AND el orden de las secciones es «Por triar», «En espera», «Lista» y «Descartadas»
-- AND una cabecera que no es la de su sección da `debt.md: línea <n>: la cabecera de «<sección>» debe ser «<cabecera>»`, con `| Ítem | Origen | Fecha |` en «Por triar», `| Ítem | Origen | Impacto | Falta | Fecha |` en «En espera», `| Ítem | Origen | Impacto | Evidencia | Destino |` en «Lista» y `| Ítem | Origen | Motivo | Fecha |` en «Descartadas»
+- AND una cabecera que no es la de su sección da `debt.md: línea <n>: la cabecera de «<sección>» debe ser «<cabecera>»`, con `| Ítem | Origen | Fecha |` en «Por triar», `| Ítem | Causa | Origen | Impacto | Falta | Fecha |` en «En espera», `| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |` en «Lista» y `| Ítem | Causa | Origen | Motivo | Fecha |` en «Descartadas»
 - AND una sección que falta da `debt.md: falta la sección «<sección>»`, y una «Evidencia» vacía da el mismo fallo que `—`
 - AND una fila de «Lista» con «Destino» vacío o `—` da `debt.md: línea <n>: fila de «Lista» sin «Destino»`
 - AND sin `debt.md` no hay ninguna línea `debt.md:`, y `debt-template.md` calcada sin sus bloques de ayuda escribe `Roadmap válido`
@@ -203,10 +203,30 @@ La forma del roadmap —las secciones, tablas y estados de la plantilla, que com
 - THEN escribe `roadmap.md: aviso: línea 12: apunta a 0149, ya ✅: sáldala` y `roadmap.md: aviso: línea 30: apunta a 0149, ya ✅: sáldala`, y ningún aviso de la fila `0048`, porque la `0150` no está ✅
 - AND una fila «Absorbida» o de deuda cuya «Ítem» ya empieza por `**[Feature <id>, <fecha>: saldada — …]**` no avisa, ni una cuyo destino está 🧪
 - AND sin fallos, la última línea es `Roadmap válido` y sale con 0
+- AND un «Destino» `**Actuar** → 0149 · causa: herramienta del kit · arreglo: mover regla` avisa igual
+
+### Cada fila triada de `debt.md` lleva una causa de la lista, y «Lista» un tipo de arreglo
+
+- GIVEN un `debt.md` con una fila de «En espera» con «Causa» `mala suerte` en la línea 8, una de «Descartadas» con «Causa» `—` en la línea 20, y en «Lista» una con «Causa» `prueba o molde` y «Arreglo» `más cuidado` en la línea 14, otra con «Causa» `sin determinar` en la línea 15 y otra con «Causa» `prueba o molde` y «Arreglo» `—` en la línea 16
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe, entre otras, `debt.md: línea 8: causa «mala suerte» no admitida: entorno de la máquina, carga o paralelismo, herramienta del kit, regla lejos de su paso, decisión que no era del agente, fusión de registros, prueba o molde, defecto del producto, sin determinar`, la misma línea para la 20 con `causa «—»`, `debt.md: línea 14: arreglo «más cuidado» no admitido: comprobación automática, conectar comprobación, mover regla, línea nueva`, `debt.md: línea 15: una fila de «Lista» no admite la causa «sin determinar»` y la misma de arreglo para la 16 con `arreglo «—»`, y sale con 1
+- AND una fila de «Lista» con «Causa» `defecto del producto` y «Arreglo» `—` no da fallo de arreglo; una con «Causa» `defecto del producto` y «Arreglo» `más cuidado` da el fallo de arreglo
+- AND una celda vacía da el mismo fallo que `—`
+- AND una fila de «Lista» cuyo «Ítem» empieza por `**[Feature 0009, 2026-07-20: saldada — …]**` no exige causa ni arreglo
+- AND una fila de «Por triar» no lleva causa y no da fallo
+- AND `debt-template.md` nombra cada causa y cada arreglo que el check admite
+
+### Una fila de problema lleva su remedio temporal
+
+- GIVEN cuatro filas de «Lista» con «Remedio temporal» `—`: en la línea 14 con «Origen» `[ticket](a.md), [ticket](b.md)`, en la 15 con `[ticket](a.md#1), [ticket](a.md#2)`, en la 16 con `[ticket](a.md), [ticket](a.md)` y en la 17 con `[ticket](a.md)`; y otras dos con `[ticket](a.md), [ticket](b.md)`, una con `lanza desde D:\r` y otra con `ninguno`
+- WHEN se ejecuta `sdd roadmap check`
+- THEN escribe `debt.md: línea 14: fila de problema sin «Remedio temporal»` y la misma línea para la 15, y sale con 1
+- AND las líneas 16 y 17 no dan ese fallo: el mismo enlace repetido cuenta una vez
+- AND las filas con el remedio o con `ninguno` no dan ese fallo, y una celda vacía da el mismo fallo que `—`
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: el roadmap 3.0.0, en `ROADMAP.md` de la raíz, con la forma de `now-next-later-template.md`; la deuda, en `.docs/sdd/steering/debt.md`, con la de `debt-template.md`; el roadmap 2.x, en `.docs/sdd/roadmap.md`, con la de `roadmap-template.md`, cuyo bloque de ayuda de «Deuda técnica» guarda el formato de cierre que citan los cierres y el de «Release N», la cabecera de su tabla. Qué va en cada sección, en los bloques de ayuda de cada plantilla; lo comprueba `sdd roadmap check`.
+- **Dónde viven los datos**: el roadmap 3.0.0, en `ROADMAP.md` de la raíz, con la forma de `now-next-later-template.md`; la deuda, en `.docs/sdd/steering/debt.md`, con la de `debt-template.md`, cuya ayuda define las causas y los tipos de arreglo que `sdd roadmap check` admite; el roadmap 2.x, en `.docs/sdd/roadmap.md`, con la de `roadmap-template.md`, cuyo bloque de ayuda de «Deuda técnica» guarda el formato de cierre que citan los cierres y el de «Release N», la cabecera de su tabla. Qué va en cada sección, en los bloques de ayuda de cada plantilla; lo comprueba `sdd roadmap check`.
 - **Idioma de los nombres**: las secciones de `ROADMAP.md`, `Now`, `Next` y `Later`, en inglés, como las nombra la propuesta 0131; sus columnas, las secciones de `debt.md`, los estados `saldada` y `parcial`, la etiqueta `validaciones pendientes:` y los mensajes del validador, en castellano, como el resto del roadmap.
 - **Límites**: cada roadmap solo lleva las secciones de su plantilla y solo tablas, salvo «Releases cerradas» en la 2.x; `debt.md`, sus cuatro secciones y solo tablas. Una fila saldada y una fila de «Patches» del roadmap 2.x duran hasta el corte de la release siguiente. Una fila de «En espera» caduca, y una de «Descartadas» sale en el corte, con dos releases (versiones `X.Y.0` del changelog) posteriores a su fecha. Later solo lleva filas `⏳` o `⏸️`. La única línea de texto de `ROADMAP.md` es `Perfil de control: <perfil>`, bajo `## Now`.
 - **Avisos**: una línea por fallo del validador, con la regla incumplida. Son avisos, sin fallo: el prefijo de cierre fuera de forma (2.x), la fila de «En espera» que caduca, la descartada que sale en el corte, el roadmap que no se lee cuando están los dos y el id repetido en la columna de id de dos filas. Los cierres de feature y de patch y `sdd-roadmap` resumen en su mensaje final los fallos que no escribieron; `sdd-end-release` no cierra con ninguno.

@@ -1,0 +1,23 @@
+--- [2]
+Fase 1: primero la deuda técnica del proyecto, y reproduzco el fallo.
+
+--- [6]
+**Causa raíz:** `scripts/informe.mjs` escribe en `.cache/informes/ocupacion.csv`, pero nada en el repo crea la carpeta `.cache/informes/`. `writeFileSync` no crea directorios intermedios, así que Node lanza `ENOENT`.
+
+**Evidencia**
+- La línea 3 de `scripts/informe.mjs` es `writeFileSync('.cache/informes/ocupacion.csv', ...)`. Es el único código que toca esa ruta, y no hay ningún `mkdirSync` antes.
+- El stack trace apunta a `writeFileSync` en esa misma línea, con `syscall: 'open'`. Falla al abrir el fichero, no al escribirlo.
+- `ls -la` en la raíz no muestra ninguna carpeta `.cache`. En el repo solo hay `scripts/informe.mjs` y `src/app.js`.
+- `package.json` solo define `informe`. No hay `prebuild`, `postinstall` ni otro script que prepare la carpeta.
+- No hay `.gitignore`, y el repo tiene un único commit. Por eso la carpeta no está versionada y no existe en un clon o worktree nuevo ni tras limpiar.
+
+**Deuda técnica**
+La primera fila de «Lista» en `.docs/sdd/steering/debt.md` cubre este fallo: «El listado de ocupación no sale tras limpiar el repo». Sus dos tickets describen el mismo síntoma, tras limpiar y en un worktree nuevo.
+- **Remedio temporal de la fila:** recrear la carpeta de la caché a mano. Es lo que ya hicieron en los dos tickets.
+- **Causa que anota la fila:** «entorno de la máquina». Los hechos de arriba no la sostienen. El fallo no depende de la máquina: ocurre en cualquier checkout limpio porque el script da por hecho un directorio que nadie crea. Es un defecto del propio script.
+- **Arreglo previsto en la fila:** «comprobación automática». Eso detectaría el fallo, pero no lo evitaría.
+
+La fila sigue abierta. El remedio temporal no es la causa raíz.
+
+No he cambiado nada ni creado la carpeta. Cuando quieras arreglarlo, el cambio pasa por `sdd-propose`. Antes habría que decidir si el script crea el directorio él mismo o si la carpeta se versiona.
+

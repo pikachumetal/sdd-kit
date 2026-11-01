@@ -48,9 +48,9 @@ export const validRoadmap = [
 
 export const debtHeaders: Record<string, [string, string]> = {
   'Por triar': ['| Ítem | Origen | Fecha |', '| --- | --- | --- |'],
-  'En espera': ['| Ítem | Origen | Impacto | Falta | Fecha |', '| --- | --- | --- | --- | --- |'],
-  Lista: ['| Ítem | Origen | Impacto | Evidencia | Destino |', '| --- | --- | --- | --- | --- |'],
-  Descartadas: ['| Ítem | Origen | Motivo | Fecha |', '| --- | --- | --- | --- |'],
+  'En espera': ['| Ítem | Causa | Origen | Impacto | Falta | Fecha |', '| --- | --- | --- | --- | --- | --- |'],
+  Lista: ['| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |', '| --- | --- | --- | --- | --- | --- | --- | --- |'],
+  Descartadas: ['| Ítem | Causa | Origen | Motivo | Fecha |', '| --- | --- | --- | --- | --- |'],
 };
 
 export const validDebt = [
@@ -64,17 +64,17 @@ export const validDebt = [
   '## En espera',
   '',
   ...debtHeaders['En espera'],
-  '| El aviso semanal sale duplicado | [ticket](t.md) | bajo | reproducirlo | 2026-09-15 |',
+  '| El aviso semanal sale duplicado | sin determinar | [ticket](t.md) | bajo | reproducirlo | 2026-09-15 |',
   '',
   '## Lista',
   '',
   ...debtHeaders.Lista,
-  '| `libres --planta 2` lista salas de la planta 1 | [informe de QA](q.md) | alto | `node src/app.js libres --planta 2` → `Norte (planta 1)` | 0014 |',
+  '| `libres --planta 2` lista salas de la planta 1 | defecto del producto | [informe de QA](q.md) | alto | `node src/app.js libres --planta 2` → `Norte (planta 1)` | — | — | 0014 |',
   '',
   '## Descartadas',
   '',
   ...debtHeaders.Descartadas,
-  '| El tema oscuro | [reunión](r.md) | fuera del producto | 2026-09-20 |',
+  '| El tema oscuro | sin determinar | [reunión](r.md) | fuera del producto | 2026-09-20 |',
 ];
 
 export interface Project {

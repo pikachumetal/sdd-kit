@@ -1,0 +1,27 @@
+--- [2]
+Fase 1: reproduzco el error y miro la definición del script.
+
+--- [7]
+## Causa raíz
+
+`npm run informe` falla porque `scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` con `writeFileSync`, y ese directorio no existe. `writeFileSync` no crea directorios intermedios, así que Node lanza `ENOENT`.
+
+## Evidencia
+
+- Reproduje el fallo. El error es `ENOENT ... open '...\repo\.cache\informes\ocupacion.csv'` con `syscall: 'open'`, lanzado desde `informe.mjs:3`.
+- El script solo hace `writeFileSync('.cache/informes/ocupacion.csv', ...)`. No tiene ningún `mkdirSync`.
+- La carpeta `.cache/` no está en el repo ni en el árbol de trabajo. No hay `.gitignore`, y nada en el proyecto la crea (ni `package.json` ni otros scripts).
+- Por eso falla en cualquier checkout limpio, en un worktree nuevo o tras limpiar el repo. Solo funciona en una máquina donde alguien ya creó `.cache/informes/` a mano.
+- Los dos tickets de `docs/tickets/` cuentan lo mismo: tras limpiar o en un worktree nuevo no sale el listado, y recrear la carpeta de la caché lo arregló.
+- `.docs/sdd/steering/debt.md:17` ya tiene esa deuda anotada, pero la clasifica como "entorno de la máquina".
+
+## Matiz sobre esa clasificación
+
+La causa no está en la máquina. El script da por hecho que existe un directorio que nadie crea, así que el fallo está en el propio script. Ese fallo se repite en cada checkout limpio, y el entorno no tiene nada que ver. Por eso diría que esa fila del triaje está mal clasificada. Lo que sigue sería una decisión tuya.
+
+## Qué no he hecho
+
+No he tocado nada, como pediste. Cuando quieras pasar al arreglo, el cambio entra por `sdd-propose`.
+
+Una nota aparte: el hook de sesión avisa de que está cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he usado pueden ser de una versión vieja.
+
