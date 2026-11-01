@@ -214,7 +214,7 @@ You MUST complete each phase before proceeding to the next.
    - Are we "sticking with it through sheer inertia"?
    - Should we refactor architecture vs. continue fixing symptoms?
 
-   **Discuss with the user before attempting more fixes**: the thread stops as at a deviation from the approved approach ([control-profiles.md](../sdd-start-feature/references/control-profiles.md)); an implementer returns `BLOCKED` with the three attempts and what each one showed
+   **Discuss with the user before attempting more fixes**: the thread stops as at a deviation from the approved approach ([control-profiles.md](../sdd-propose/references/control-profiles.md)); an implementer returns `BLOCKED` with the three attempts and what each one showed
 
    This is NOT a failed hypothesis - this is a wrong architecture.
 

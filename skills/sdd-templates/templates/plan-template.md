@@ -10,7 +10,7 @@ created: <YYYY-MM-DD>
 # Plan de implementación — <título>
 
 > Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
-> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-propose/references/control-profiles.md)).
 > Borra los bloques de ayuda (`>`) al redactar.
 
 ## Decisiones que he tomado yo — valida estas
@@ -150,7 +150,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Verificación lenta**: <omitir si ningún comando de «Verificación» pasa de 10 min · comando · duración>
 **Se prueba en la aplicación**: <omitir si el plan no cambia ninguna aplicación · qué hace el usuario y qué ve al acabar la task, con los datos de la spec: «el gestor sube `marzo.pdf` y lo ve en el listado de facturas como Pendiente» · o «no, porque <base común | migración | refactor>: <motivo>»>
 
-> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve, con el criterio escrito antes del código; la hace el hilo principal en un navegador, con el método de `sdd-start-feature/references/frontend-verification.md` (detector de `§Frontend`, capturas con rúbrica). Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
+> BD es migraciones, persistencia o dialecto; un servicio que usa la BD sin cambiar su acceso es backend. La suite de BD solo entra en «Verificación» si las superficies incluyen BD. Una constitution que pide «todo verde en cada task» se cumple con las superficies de la task: el gate completo no va aquí, va en §3. «Verificación visual» es obligatoria si la task cambia lo que se ve, con el criterio escrito antes del código; la hace el hilo principal en un navegador, con el método de `sdd-implement/references/frontend-verification.md` (detector de `§Frontend`, capturas con rúbrica). Un comando de más de 10 min va en «Verificación lenta» y no en «Verificación»: lo lanza el hilo principal en segundo plano, no el implementador.
 
 **Interfaces**:
 - Consume: <lo que usa de tasks anteriores o de §1: nombres, firmas y formatos exactos; «nada» si no usa nada>
@@ -163,7 +163,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 1: Implementación** — por cada pieza, la firma exacta (nombre, parámetros, retorno), el fichero y los valores de la spec que fija; por cada test, su nombre y sus asserts como código, con esos valores. El cuerpo lo escribe el implementador: el plan lo lleva solo para un algoritmo que la firma y los tests no determinan, o para un texto exacto que fija la spec. Sin placeholders.
 - [ ] **Step 2: Build** — el build de las superficies de la task. Esperado: verde, sin errores.
 - [ ] **Step 3: Verificación** — los comandos de «Verificación» de esta task (tests si TDD, smoke manual si no), con resultado esperado.
-- [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-start-feature/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
+- [ ] **Step 4: Commit de la task** — uno solo, al quedar limpia su revisión: los intermedios se juntan (`sdd-implement/references/commit-milestones.md`). Convención del proyecto, referenciando el ticket.
 
 > Un cuerpo que la firma y los tests ya determinan es una transcripción, también en §1: el implementador lo escribiría igual. Medido con superpowers 6.4.2 (patch 0082): 2 de 4 planes copiaron el cuerpo entero de un endpoint (el parseo del filtro, el 400 y la paginación). Lo que tocaba era la firma (`MapGet("/bookings", (BookingsDb db, int page = 1, string? status = null))` en `BookingsEndpoints.cs`), los valores (`status` sin distinguir mayúsculas y minúsculas, 400 si no es un estado) y los tests que los fijan, con sus asserts como código (`Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode)`).
 

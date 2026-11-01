@@ -5,7 +5,7 @@ El kit decide **cuándo** se verifica lo que se ve y **qué evidencia** hace fal
 ## Cuándo
 
 - **Task full** con «Verificación visual» en el plan: tras su revisión, antes de marcarla hecha (paso 6 de `sdd-start-feature`).
-- **Feature lite** que cambia lo que se ve: antes de presentar la validación ([modo-lite.md](modo-lite.md)).
+- **Feature lite** que cambia lo que se ve: antes de presentar la validación ([modo-lite.md](../../sdd-propose/references/modo-lite.md)).
 - **Patch visual** (ajuste solo de presentación): tras el cambio, antes de pedir la validación (paso 4 de `sdd-start-patch`).
 
 ## Con qué: `§Frontend`

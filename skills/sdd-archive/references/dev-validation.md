@@ -54,7 +54,7 @@ No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLU
 
 - All `ok` and «listo»: `Validado: <fecha> · panel: <n>/<n> OK · «listo»`, then `clear()`.
 - A `ko`: «No funciona», with its comment and, in Chrome, the console and network read and a screenshot; then `clear()`: the retest starts clean.
-- A `pending` step isn't OK: ask. If the person won't test it now, deferred validation ([control-profiles.md](../../sdd-start-feature/references/control-profiles.md)) applies to those steps.
+- A `pending` step isn't OK: ask. If the person won't test it now, deferred validation ([control-profiles.md](../../sdd-propose/references/control-profiles.md)) applies to those steps.
 - What the person says in the chat wins over a mark: record their phrase.
 
 ## Common Rationalizations
