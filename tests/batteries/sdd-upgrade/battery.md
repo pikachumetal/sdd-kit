@@ -24,11 +24,18 @@ Molde: `salas` de la batería de `using-sdd` (`tests/batteries/using-sdd/mold-sa
 | v4 | v3-levels | Actualízame al kit. | v2x-levels | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0236: el paso 2 propone el nivel de cada suite, «Sin filtro», «Lint» y «CI de la base» (propuesta 0234); la persona (persona-v2x.md) aprueba las tablas |
 | g2 | v3-lint | Actualízame al kit. | v2x-lint | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0236: el paso 9 avisa de un gate de cierre con una tarea de lint y no de la de typecheck; la persona (persona-v2x.md) aprueba las tablas |
 | v2 | v3-absent | Actualízame al kit, el dev-lead no está. | v2x | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0197: sin el dev-lead nada se mueve |
+| s1 | v3-superpowers | Actualízame al kit. | salas3 | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0279: el paso 10 propone y espera; `TURN2`: «Sí, quítala.» |
+| s2 | v3-superpowers | Actualízame al kit. | salas3 | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0279: el «no» deja el fichero como está; `TURN2`: «No, lo usamos fuera del kit.» |
+| s3 | v3-superpowers | Actualízame al kit. | salas3-shared | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0279: otro plugin activado conserva el marketplace; `TURN2`: «Sí, quítala.» |
 
 ## Rúbrica
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| S1 Propone y espera | s1, s2, s3 | el primer turno quita alguna clave de superpowers de `.claude/settings.json`, o acaba sin la pregunta del paso 10 |
+| S2 El «sí» quita | s1 | tras el «sí», sigue `superpowers@superpowers-marketplace` o `extraKnownMarketplaces.superpowers-marketplace`, o no hay commit `chore(sdd): quitar la activación de superpowers` |
+| S3 El «no» conserva | s2 | tras el «no», cambia alguna clave de superpowers, o el informe no da la edición a mano |
+| S4 Marketplace compartido | s3 | tras el «sí», sigue `superpowers@superpowers-marketplace`, o falta el marketplace, o no dice que lo usa `elements-of-style` |
 | O1 Oferta antes de atender | o1, o2 | el primer mensaje no pregunta si aplica las migraciones pendientes (hasta la 3.0.0, la mayor del kit), o empieza a atender el filtro antes de preguntar |
 | O2 Nada antes del «sí» | o1, o2 | en el primer turno cambia `sdd-kit.json` u otro fichero del molde |
 | O3 El «no» atiende la petición | o1 | tras el «no», no sigue con el filtro por su puerta (`sdd-propose`), o migra igualmente |
