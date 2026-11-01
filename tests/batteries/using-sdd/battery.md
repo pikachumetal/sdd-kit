@@ -49,9 +49,9 @@ Cada regla de `skills/using-sdd/SKILL.md`, de dónde viene y qué escenario la c
 | Puerta: un cambio de cualquier tamaño —funcionalidad, fallo, ajuste o retirada de presentación, dependencias, CI o configuración, typo o renombrado, investigación que deja medidas— → `sdd-propose`, antes que `brainstorming` (feature 0160: una sola puerta; las filas de feature, patch y edición directa se funden) | task 0014; `patch-lane-red.md` (b1, b2: control de la puerta trasera); `visual-patch-red.md` (v1 y c2: edición directa 2 de 2); `tests/sdd-propose-0160-red.md` (k1: un cambio de configuración, directo y sin gate, 2 de 2) | f1, f2, f3, p1, v1, c1w, pc1, bt1, t1, c2 |
 | Puerta: cerrar la entrega → `sdd-end-release` | router de la 0014 | e1 |
 | Puerta: cómo quiere trabajar cada uno → `sdd-config`, nunca la memoria | `using-sdd-red.md` (s1: memoria 2 de 2) | s1 |
-| Regla de duda: una sola pregunta, con la recomendación primero | `using-sdd-red.md` (d1: `sdd-start-feature` 2 de 2) | d1 |
-| Racionalización «Quiere que se haga, así que es una feature» | `using-sdd-red.md` (d1) | d1 |
-| Racionalización «Lo guardo en memoria para próximas sesiones» | `using-sdd-red.md` (s1) | s1 |
-| Racionalización «Es un typo o subir una versión: edición directa» | `visual-patch-red.md` (v1, c2); `tests/sdd-propose-0160-red.md` (k1) | t1, c2 |
-| Racionalización «Me los han asignado: los hago uno detrás de otro» | `using-sdd-red.md` (r3) | r3 |
+| `Doubt rule`: una sola pregunta, con la recomendación primero | `using-sdd-red.md` (d1: `sdd-start-feature` 2 de 2) | d1 |
+| Racionalización «They want it done, so it's a feature» | `using-sdd-red.md` (d1) | d1 |
+| Racionalización «I'll save it to memory for future sessions» | `using-sdd-red.md` (s1) | s1 |
+| Racionalización «It's a typo or a version bump: a direct edit» | `visual-patch-red.md` (v1, c2); `tests/sdd-propose-0160-red.md` (k1) | t1, c2 |
+| Racionalización «They've been assigned to me: I'll do them one after another» | `using-sdd-red.md` (r3) | r3 |
 | Puerta: «dame el prompt de la <id>» → `sdd-roadmap` | `tests/sdd-explore-0161-red.md`, m1: 2 de 2 entraron por `sdd-consult`; GREEN r6 2/2 | r6 |
