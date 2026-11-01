@@ -60,6 +60,11 @@ const molds = {
     layer3();
     s.copy(join(HERE, 'mold-salas-3-wt'));
   },
+  // salas-3 con dos tickets que cuentan la misma causa con palabras distintas, y otro de la misma categoría y otro mecanismo.
+  'salas-3-cause': () => {
+    layer3();
+    s.copy(join(HERE, 'mold-salas-3-cause'));
+  },
   // salas-3-plain con un fichero que solo reexporta: el arreglo vive en src/lib/notify.js.
   'salas-3-reexport': () => {
     layer3();
