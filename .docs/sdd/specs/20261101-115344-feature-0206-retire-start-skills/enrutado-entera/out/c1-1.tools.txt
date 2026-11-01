@@ -1,0 +1,94 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls .docs/sdd 2>&1 | head -30; node "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+
+>>> Grep: cancel
+<<< changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+<<< Found 5 files
+src\app.js
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+
+>>> Grep: cancel
+<<< 6-  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7-}
+8-
+9-export function run(cmd, params) {
+10-  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11-  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13-  return 'salas';
+14-}
+15-
+16-if (command) console.log(run(command, args));
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel
+<<< 25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Grep: cancel
+<<< 9-test('reservar --cada-semana crea la reserva semanal', () => {
+10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (10 turnos, 0.1202434 $)
+Lo que hay de cancelar reservas es muy poco, y por eso cuesta pillarlo: casi no hay lógica real. Distingo lo que dicen los documentos de lo que deduzco yo.
+
+**Lo que hay en el código** (`src/app.js:12`)
+- `cancelar` es una sola línea: `if (cmd === 'cancelar') return \`cancelada ${params[0]} ${params[1]}\``.
+- Solo devuelve un texto con los dos parámetros (día y franja, p. ej. `mar 10:00`). **No toca el array `bookings`**, así que no cancela nada de verdad.
+- Además `bookings` es una constante en memoria con una única reserva de ejemplo (`Norte`, `lun`, `10:00-12:00`). No hay persistencia.
+
+**Lo que dicen los documentos**
+- `roadmap.md:31`: la funcionalidad prevista es «Cancelar una reserva propia».
+- `roadmap.md:25` y el patch 0007: se arregló un fallo en el que la cancelación «borraba reservas de otro día con la misma hora». La causa era comparar solo por hora, y el arreglo fue pasar a comparar día y hora.
+- El test (`test/app.test.js:13`) solo comprueba que `cancelar mar 10:00` devuelve `cancelada mar 10:00`. Es decir, verifica el texto, no que se borre la reserva correcta.
+
+**Lo que deduzco**
+- El patch 0007 dice que el fallo está arreglado y verificado, pero en este código no hay ninguna comparación por día que se pueda ver. Lo más probable es que `cancelar` sea un esbozo y la lógica real no esté implementada, o que este repo sea un molde («base del molde salas», según el último commit).
+- Tampoco aparece ninguna noción de «reserva propia»: no hay usuario ni propietario en `bookings`.
+
+Si la lógica real tendría que estar aquí y no está, el patch 0007 y el código no cuadran, y vale la pena revisarlo. Si quieres que se implemente de verdad, eso ya es trabajo: lo apuntaría en el roadmap con `sdd-roadmap`. ¿Qué prefieres?

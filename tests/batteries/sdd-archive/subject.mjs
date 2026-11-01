@@ -463,6 +463,7 @@ const molds = {
     appendFileSync(at(`${F10}/plan.md`), '\n**Se prueba en la aplicación**: la persona arranca el servidor y cancela y lista por `GET /run` con la misma sesión (`x-session`), porque el servidor es la aplicación que usa.\n');
     s.commit('docs(sdd): cómo se prueba la 0010 en la aplicación');
   },
+  'reservas-campo': () => (moldReservas(), done0010()),
   'reservas-valida-en': () => {
     manualValidation();
     moldReservas();

@@ -10,13 +10,10 @@ import { initSubject, readLf } from '../../headless/lib.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIX = join(HERE, 'fixtures');
 const [kit, , SC] = process.argv.slice(2);
-// Si el kit que se prueba aún no tiene sdd-propose, la guarda comprueba la puerta de entrada
-// y los pasos de spec y plan se piden a sdd-start-feature, donde vivían.
 const guard = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
 const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', guard)) ? guard : 'using-sdd');
 const cell = subjectCell(HERE, s);
 let ASK = cell('Petición');
-if (!existsSync(join(kit, 'skills', 'sdd-propose'))) ASK = ASK.replaceAll('sdd-propose', 'sdd-start-feature');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const F11 = '.docs/sdd/specs/20261008-110000-feature-0011-void-others';
@@ -189,6 +186,10 @@ const withoutWho = (text) => text
 const branch = (name) => s.git('checkout', '-q', '-b', name);
 
 const steps = {
+  sr1: () => {
+    s.git('checkout', '-q', '-b', 'feature/0011-void-others');
+    s.put(`${F11}/spec.md`, readFileSync(join(FIX, 'spec-0011-review.md'), 'utf8'));
+  },
   id1: () => {
     remoteMold('| 0012 | **Exportar las reservas a CSV**: un fichero con una fila por reserva | ⏳ |');
     branch('feature/0012-export-csv');
