@@ -2,7 +2,7 @@
 
 A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/SKILL.md#is-it-really-a-patch)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
 
-One todo per step.
+One todo per step. Resuming, start at the first step whose output `patch.md` or the branch lacks, never with a second `patch.md`.
 
 1. **Root cause, MANDATORY in a failure** (the intent, in a visual adjustment; the fixed solution, in a closed request) — `sdd-debugging` BEFORE proposing the fix. Never patch the symptom, and never implement the report's hypothesis without confirming it with evidence in the code. If the investigation shows the cause needs interpreting requirements, or the fix leaves something the user sees unfixed → STOP: it was a feature, move up through step 4 of `sdd-propose`, unless it's settled by choosing between options already written (step 3).
 
@@ -34,5 +34,4 @@ One todo per step.
 | --- | --- |
 | "It's a one-line fix, no document needed" | One line without a trace is a regression waiting to repeat. `patch.md` costs 2 minutes. |
 | "I don't want to open a whole task" | Right: a patch isn't a whole task. But a patch isn't no process: root cause + `patch.md` + close. |
-| "I'll put it in `.docs/sdd/patches/`, it's tidier" | A second location is instant drift. ONLY `.docs/sdd/specs/`. |
 | "It doesn't reproduce, but I'll leave the patch as coverage and a paper trail" | A patch without a failure consumes an id, a branch and a folder for nothing: 2/2 subjects of the RED did it (`tests/fewer-stops-red.md`, s5). Stop, and the row stays re-measured. |

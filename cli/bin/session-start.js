@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { gitBashTmpPath, repairGitBashTmp, withSystemMessage } from './git-bash-tmp.js';
 import { nodeVersionProblem } from './node-version.js';
 
@@ -74,7 +75,42 @@ function gitBashTmpNotice() {
   }
 }
 
-export function runSessionStart(pluginRoot) {
+// esta ruta la leen las copias del hook del proyecto: cambiarla exige una migración
+export function sessionMarkerPath(id, base = tmpdir()) {
+  return join(base, `sdd-kit-sessions${process.getuid ? `-${process.getuid()}` : ''}`, id);
+}
+
+function writeMark(id, base) {
+  if (typeof id !== 'string' || !/^[A-Za-z0-9-]+$/.test(id)) return;
+  try {
+    mkdirSync(dirname(sessionMarkerPath(id, base)), { recursive: true });
+    writeFileSync(sessionMarkerPath(id, base), '');
+  } catch {
+    // sin marca, el hook del proyecto avisa de más: mejor que perder el arranque
+  }
+}
+
+// la marca dice al hook del proyecto que el plugin cargó; devuelve el `source` de la sesión
+export function markSession(stdin, base = tmpdir()) {
+  try {
+    const { session_id: id, source } = JSON.parse(stdin) ?? {};
+    writeMark(id, base);
+    return typeof source === 'string' ? source : '';
+  } catch {
+    return '';
+  }
+}
+
+function hookInput(readInput) {
+  try {
+    return readInput();
+  } catch {
+    return '';
+  }
+}
+
+export function runSessionStart(pluginRoot, readInput = () => readFileSync(0, 'utf8')) {
+  if (markSession(hookInput(readInput)) === 'resume') return 0;
   const notice = gitBashTmpNotice();
   try {
     const projectDir = resolve(process.env.CLAUDE_PROJECT_DIR || process.cwd());
