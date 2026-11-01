@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-01
 branch: patch/0275-r1-threshold
-commit: <hash>
+commit: 56518be1
 ---
 
 # Patch 0275 — `r1` lleva un umbral que su tasa sostiene, y un rojo de enrutado se contrasta con el texto anterior
@@ -47,8 +47,14 @@ Lo que da por existente, comprobado: la fila `r1` y la regla, tal como las cita;
 | 4 | Binomial: rojo por azar con 70 %, y paso con 30 % | ✅ 8,37 % (el criterio de la fila pide menos de uno de cada diez) y 34,83 % |
 | 5 | `npx vitest run test/kit/headless/battery.test.ts` | ✅ `Tests  27 passed (27)` |
 
+Gate: no corre, porque la rama solo toca `.docs/` y `*.md`; el pre-commit dio verde en `cli:typecheck`, `cli:test` y `kit:roadmap`.
+
+Validación en campo: 2026-11-01 · veredicto de `battery.mjs` antes y después sobre un resultado de juguete · binomial · `battery.test.ts` 27/27 · no probado: la batería con sujetos reales, que el dev-lead dejó fuera, y un rojo de enrutado real siguiendo la regla
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,25 h + ~10 min de gate de cierre (patch 0278)
 - Inicio: 2026-11-01T17:02Z
+- Esfuerzo real: 0,05 h — reloj de la sesión 0,05 h desde 2026-11-01T17:00Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desvío: −80 % sobre las 0,25 h, y el gate previsto no corrió. La estimación contaba una medida que ya estaba hecha
 - Coste de sujetos: no aplica, sin sujetos nuevos
